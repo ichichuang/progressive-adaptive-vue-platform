@@ -8,6 +8,10 @@ PROJECT_MODEL=GREENFIELD
 IMPLEMENTATION_STATE=NOT_STARTED
 MAINTENANCE_MODEL=SOLO_MAIN_BRANCH
 ARCHITECTURE_AUTHORITY=ARCHITECTURE.md
+TEST_POLICY=NO_TEST_FILES
+BROWSER_VALIDATION=CODEX_CHROMEDEV_RUNTIME_ACCEPTANCE
+VALIDATION_MODEL=STATIC_GATES_AND_OWNER_RUNTIME_ACCEPTANCE
+PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 ```
 
 ---
@@ -161,7 +165,6 @@ Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 
 | 简单动画            | CSS                                  |
 | 页面主题切换          | View Transition，渐进增强                 |
 | 布局动画            | Motion for Vue，按需                    |
-| 组件工作台           | Storybook Vue 3 + Vite               |
 
 UnoCSS `presetWind4` 是官方 Tailwind 4 风格 Preset，包含内部 Reset、按需主题变量和现代 CSS Property Layer；Attributify 是独立可选 Preset，不在本架构启用。
 
@@ -171,30 +174,30 @@ Reka UI 提供无样式、可访问、完整类型化的 Vue 原语，负责 ARI
 
 ## 3.3 工程质量层
 
-| 领域             | 最终选择                                |
-| -------------- | ----------------------------------- |
-| Type Check     | `vue-tsc`                           |
-| JS/TS/Vue Lint | ESLint 10 Flat Config               |
-| Vue 规范         | `eslint-plugin-vue`                 |
-| TS 规范          | `typescript-eslint`                 |
-| A11y Lint      | `eslint-plugin-vuejs-accessibility` |
-| UnoCSS Lint    | `@unocss/eslint-plugin`             |
-| 导入边界           | `eslint-plugin-boundaries`          |
-| CSS Lint       | Stylelint                           |
-| 格式化            | Prettier                            |
-| 未使用代码          | Knip                                |
-| 单元测试           | Vitest                              |
-| Vue 组件测试       | Vue Test Utils                      |
-| 浏览器验收          | Playwright                          |
-| A11y 浏览器测试     | `@axe-core/playwright`              |
-| UI 文档          | Storybook                           |
-| 依赖审查           | GitHub Dependency Graph + Dependabot alerts |
-| CI             | GitHub Actions                      |
-| 安全扫描           | CodeQL                              |
+| 领域 | 最终选择 |
+| --- | --- |
+| 格式检查 | Prettier |
+| JS/TS/Vue Lint | ESLint 10 Flat Config |
+| Vue 规范 | `eslint-plugin-vue` |
+| TS 规范 | `typescript-eslint` |
+| A11y 静态检查 | `eslint-plugin-vuejs-accessibility` |
+| UnoCSS Lint | `@unocss/eslint-plugin` |
+| 导入边界 | `eslint-plugin-boundaries` |
+| CSS Lint | Stylelint |
+| Type Check | `vue-tsc` + TypeScript 6 Strict |
+| 配置与 Schema 校验 | Zod 4 |
+| Token 一致性 | Generator Check |
+| 未使用代码 | Knip |
+| 生产构建 | Vite |
+| 构建体积 | Bundle Budget |
+| CI | GitHub Actions |
+| 安全扫描 | CodeQL |
+| 依赖风险信号 | GitHub Dependency Graph + Dependabot alerts |
+| Owner Runtime Acceptance | Codex 内置浏览器 + 已配置的 ChromeDev / Chrome DevTools |
+
+ChromeDev 是外部操作能力，不是仓库依赖、Package、生成文件、已提交配置或架构层。
 
 ESLint 10 已进入稳定版本，当前 10.x 持续发布更新，并以 Node 24 LTS 作为主要运行环境之一。
-
-Storybook 的 Vue 3 + Vite 集成能够复用 Vite 配置并使用 `vue-component-meta` 生成组件文档；Storybook 10.3 已增加 Vite 8 和 ESLint 10 支持。
 
 ---
 
@@ -354,29 +357,15 @@ progressive-adaptive-vue-platform/
 │   ├── tokens/
 │   └── verify/
 │
-├── tests/
-│   └── e2e/
-│       ├── fixtures/
-│       ├── appearance/
-│       ├── responsive/
-│       ├── accessibility/
-│       └── navigation/
-│
 ├── docs/
 │   ├── decisions/
 │   ├── architecture/
 │   ├── accessibility/
 │   └── quality/
 │
-├── .storybook/
-│   ├── main.ts
-│   ├── preview.ts
-│   └── manager.ts
-│
 ├── .github/
 │   └── workflows/
-│       ├── verify.yml
-│       └── e2e.yml
+│       └── verify.yml
 │
 ├── AGENTS.md
 ├── ARCHITECTURE.md
@@ -390,10 +379,7 @@ progressive-adaptive-vue-platform/
 ├── stylelint.config.mjs
 ├── prettier.config.mjs
 ├── uno.config.ts
-├── playwright.config.ts
-├── vitest.config.ts
 ├── knip.jsonc
-├── commitlint.config.mjs
 ├── .editorconfig
 ├── .gitattributes
 ├── .gitignore
@@ -422,7 +408,6 @@ packages/hooks
 packages/charts
 packages/forms
 packages/table
-packages/test-utils
 apps/desktop
 apps/mobile
 apps/docs
@@ -435,7 +420,7 @@ apps/docs
 1. 至少两个真实应用消费。
 2. 公共 API 已稳定。
 3. 拆包能减少依赖或构建成本。
-4. 存在独立测试价值。
+4. 存在独立验证和维护价值。
 5. 复制成本已经高于 Package 维护成本。
 6. 有明确 Owner。
 7. 有明确退出和替换策略。
@@ -686,7 +671,6 @@ packages/design-system/
 │   │
 │   └── index.ts
 │
-├── tests/
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -1173,7 +1157,6 @@ packages/ui/
 │   ├── types/
 │   └── index.ts
 │
-├── tests/
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -1290,9 +1273,9 @@ import Component from '@platform/ui/src/internal/component'
 * 支持 Light/Dark。
 * 支持三档密度。
 * 支持 Reduced Motion。
-* 提供 Storybook Story。
-* 提供至少一个正确用法。
-* 提供无障碍名称要求。
+* 提供简洁 JSDoc 或组件 README 文档。
+* 明确记录无障碍合同和无障碍名称要求。
+* 在成为共享组件前至少有一个真实生产消费者。
 
 示例：
 
@@ -1812,14 +1795,21 @@ WCAG 2.2 AA
 
 拖动操作必须存在非拖动替代方案；WCAG 2.2 对 Dragging Movement 已提出对应要求。
 
-测试层：
+静态门槛：
 
 ```text
 eslint-plugin-vuejs-accessibility
-axe
-Playwright keyboard paths
-manual screen-reader baseline
+TypeScript typed component contracts
+Stylelint production CSS rules
 ```
+
+Owner Runtime Acceptance 通过 Codex 内置浏览器和已配置的 ChromeDev / Chrome DevTools 验证：
+
+* 键盘操作与焦点行为。
+* 语义结构与 Accessible Name。
+* 对比度、Reduced Motion 与 Forced Colors。
+* Touch Target 与触控行为。
+* Responsive Reading Order。
 
 ---
 
@@ -1863,8 +1853,6 @@ TypeScript files: kebab-case.ts
 Composables: use-*.ts
 Schemas: *.schema.ts
 Stores: *.store.ts
-Tests: *.spec.ts
-Stories: *.stories.ts
 ```
 
 ## 27.2 导出
@@ -1930,7 +1918,7 @@ ARCHITECTURE.md
 * 状态。
 * API。
 * A11y。
-* 测试。
+* 静态门槛和 Owner Runtime Acceptance。
 * 扩展门槛。
 
 禁止重新建立：
@@ -1971,7 +1959,7 @@ ADR 只解释历史原因，不承担规范权威。
 | Token 漂移          | Generator Check            |
 | 路由类型              | Vue Router Generator       |
 | 未使用代码             | Knip                       |
-| A11y              | ESLint + axe + Playwright  |
+| A11y              | ESLint + Owner ChromeDev Runtime Acceptance |
 | 构建体积              | Bundle Budget              |
 
 ## 28.4 显式导入
@@ -2041,6 +2029,7 @@ pnpm preview
 
 pnpm tokens:build
 pnpm tokens:check
+pnpm schema:check
 
 pnpm typecheck
 pnpm lint
@@ -2048,105 +2037,66 @@ pnpm lint:css
 pnpm format
 pnpm format:check
 
-pnpm test
-pnpm test:browser
-pnpm test:e2e
-pnpm test:a11y
-
-pnpm storybook
-pnpm storybook:build
-
 pnpm check:arch
 pnpm check:unused
 pnpm check:bundle
 
-pnpm verify:fast
 pnpm verify
-pnpm verify:ci
 ```
 
-## 31.1 `verify:fast`
+## 31.1 `pnpm verify`
 
 ```text
-token generation check
 format check
 ESLint
 Stylelint
+UnoCSS lint
 vue-tsc
+TypeScript strict checking
 architecture boundaries
-```
-
-## 31.2 `verify`
-
-```text
-verify:fast
-unit tests
-component tests
-Knip
+token generation consistency
+Zod configuration and schema validation
+Knip unused-code analysis
 production build
-Storybook build
 bundle budget
 ```
 
-## 31.3 `verify:ci`
+`pnpm verify` 只执行静态生产门槛，不启动浏览器自动化或生成验证专用资产。
+
+## 31.2 GitHub 托管门槛
 
 ```text
-verify
-Playwright E2E
-accessibility matrix
-responsive matrix
-visual regression
+CodeQL
+GitHub Dependency Graph
+Dependabot alerts
 ```
+
+这些信号补充本地 `pnpm verify`，但不创建依赖更新分支。
 
 ---
 
-# 32. CI 验证矩阵
+# 32. Owner Runtime Acceptance
 
-## Viewport
+浏览器行为由 Owner 使用 Codex 内置浏览器和已配置的 ChromeDev / Chrome DevTools 完成显式运行时验收。
 
-```text
-390 × 844
-768 × 1024
-1024 × 768
-1440 × 900
-1920 × 1080
-```
+ChromeDev 是外部 Operator Capability，不是仓库依赖、Package、生成文件、已提交配置或架构层。
 
-## Appearance
+运行时验收必须覆盖：
 
-```text
-Light
-Dark
-High Contrast
-Forced Colors
-```
+* 真实浏览器 Console Error。
+* 失败的网络请求。
+* DOM 与无障碍结构检查。
+* 键盘操作和焦点行为。
+* PC、iPad、平板和 Mobile H5 响应式行为。
+* Light、Dark、System Appearance。
+* Compact、Comfortable、Spacious Density。
+* Touch Target 与触控行为。
+* Safe Area 处理。
+* Layout Preferences。
+* Performance Observations。
+* Production Build Preview 行为。
 
-## Density
-
-```text
-Compact
-Comfortable
-Spacious
-```
-
-## Motion
-
-```text
-Full
-Reduced
-None
-```
-
-## Input
-
-```text
-Mouse
-Keyboard
-Touch
-Hybrid
-```
-
-Playwright 支持设备、Viewport、Touch、Color Scheme、Locale 和 Timezone 模拟。验证使用 Pairwise 代表组合，不执行全部笛卡尔积。
+运行时验收证据只记录在任务完成报告中，不提交截图、录屏、Trace、基线资料、样例数据或证据目录。
 
 ---
 
@@ -2194,33 +2144,17 @@ Playwright 支持设备、Viewport、Touch、Color Scheme、Locale 和 Timezone 
 
 ---
 
-# 35. Storybook 使用边界
+# 35. 生产专用仓库政策
 
-Story 与组件放在一起：
+The repository contains production architecture only.
 
-```text
-UiButton.vue
-UiButton.spec.ts
-UiButton.stories.ts
-```
+No automated test files or test-only infrastructure are permitted.
 
-每个核心 Story 至少覆盖：
+Browser behavior is validated through Codex and configured ChromeDev runtime inspection.
 
-```text
-default
-disabled
-loading
-keyboard focus
-compact
-comfortable
-spacious
-light
-dark
-high contrast
-long text
-```
+Static gates plus explicit owner runtime acceptance are the complete validation model.
 
-Storybook 是开发和文档工具，不进入生产 Bundle。
+仓库不提交验证专用代码、测试专用目录或依赖、演示与展示系统、浏览器自动化基础设施或验证证据资产。
 
 ---
 
@@ -2285,7 +2219,7 @@ AGENTS.md
 ARCHITECTURE.md
 依赖边界
 统一 verify
-GitHub Actions
+GitHub Actions static gates
 ```
 
 ## Phase 1：Design System
@@ -2316,8 +2250,8 @@ Form Field
 Dialog / Sheet / Popover
 Navigation
 Toast
-Storybook
-A11y Baseline
+Component API Documentation
+A11y Contract
 ```
 
 ## Phase 3：App Shell 与布局
@@ -2407,15 +2341,7 @@ eslint-plugin-boundaries
 @unocss/eslint-plugin
 stylelint
 prettier
-vitest
-@vue/test-utils
-playwright
-@axe-core/playwright
-storybook
-@storybook/vue3-vite
 knip
-commitlint
-lint-staged
 tsx
 ```
 
@@ -2489,7 +2415,15 @@ New abstractions require real consumers.
 
 Specialist components use replaceable adapters.
 
-One command verifies the complete architecture.
+One command verifies all static production gates; explicit owner runtime acceptance verifies browser behavior.
+
+The repository contains production architecture only.
+
+No automated test files or test-only infrastructure are permitted.
+
+Browser behavior is validated through Codex and configured ChromeDev runtime inspection.
+
+Static gates plus explicit owner runtime acceptance are the complete validation model.
 ```
 
 ---
@@ -2520,14 +2454,12 @@ Node 24 LTS
 + Vue I18n
 + CSS / View Transitions
 + Motion for Vue
-+ Storybook
-+ Vitest
-+ Playwright
-+ axe
 + ESLint 10
 + Stylelint
 + Prettier
 + Knip
++ Static Production Gates
++ External ChromeDev Runtime Acceptance
 + GitHub Actions
 ```
 
@@ -2541,6 +2473,11 @@ Node 24 LTS
 1 verification command
 1 protected main branch
 0 branch-based maintenance workflows
+0 automated test files
+0 test-only directories
+0 test-only dependencies
+0 demo or showcase systems
+0 automated browser-test infrastructure
 ```
 
 # Foundational Architecture Values
