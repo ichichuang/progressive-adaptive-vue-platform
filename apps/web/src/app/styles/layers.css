@@ -1,1 +1,3 @@
 @layer reset, tokens, base, utilities, components, app, overrides;
+
+@import '@platform/design-system/tokens.css';

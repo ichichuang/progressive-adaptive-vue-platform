@@ -1,0 +1,22 @@
+{
+  "spacing": {
+    "page": {
+      "inline": {
+        "$type": "dimension",
+        "$value": "{dimension.space.6}"
+      }
+    },
+    "section": {
+      "block": {
+        "$type": "dimension",
+        "$value": "{dimension.space.8}"
+      }
+    },
+    "content": {
+      "gap": {
+        "$type": "dimension",
+        "$value": "{dimension.space.3}"
+      }
+    }
+  }
+}

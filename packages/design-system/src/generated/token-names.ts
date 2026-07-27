@@ -1,0 +1,30 @@
+/* Generated file. Do not edit directly. */
+export const tokenNames = [
+  'color.action.primary',
+  'color.border.default',
+  'color.focus.ring',
+  'color.surface.page',
+  'color.surface.panel',
+  'color.text.primary',
+  'color.text.secondary',
+  'interaction.control.height',
+  'interaction.motion.duration',
+  'interaction.motion.easing',
+  'interaction.radius.panel',
+  'interaction.shadow.panel',
+  'layout.content.max-width',
+  'layout.z.base',
+  'layout.z.overlay',
+  'spacing.content.gap',
+  'spacing.page.inline',
+  'spacing.section.block',
+  'typography.family.body',
+  'typography.line-height.body',
+  'typography.line-height.title',
+  'typography.size.body',
+  'typography.size.title',
+  'typography.weight.body',
+  'typography.weight.title',
+] as const
+
+export type TokenName = (typeof tokenNames)[number]

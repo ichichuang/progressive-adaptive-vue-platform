@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 
-import 'virtual:uno.css'
 import './app/styles/layers.css'
+import 'virtual:uno.css'
 import App from './App.vue'
 
 const application = createApp(App)

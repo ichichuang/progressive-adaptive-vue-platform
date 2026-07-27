@@ -1,0 +1,9 @@
+{
+  "id": "neutral",
+  "label": "Neutral",
+  "palette": {
+    "brand": "{color.palette.neutral.700}",
+    "accent": "{color.palette.neutral.500}",
+    "neutral": "neutral"
+  }
+}

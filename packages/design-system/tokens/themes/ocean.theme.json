@@ -1,0 +1,9 @@
+{
+  "id": "ocean",
+  "label": "Ocean",
+  "palette": {
+    "brand": "{color.palette.blue.600}",
+    "accent": "{color.palette.blue.500}",
+    "neutral": "cool"
+  }
+}

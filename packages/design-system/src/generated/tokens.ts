@@ -1,0 +1,30 @@
+/* Generated file. Do not edit directly. */
+import type { TokenName } from './token-names'
+
+export const tokens = {
+  'color.action.primary': 'var(--ui-color-action-primary)',
+  'color.border.default': 'var(--ui-color-border-default)',
+  'color.focus.ring': 'var(--ui-color-focus-ring)',
+  'color.surface.page': 'var(--ui-color-surface-page)',
+  'color.surface.panel': 'var(--ui-color-surface-panel)',
+  'color.text.primary': 'var(--ui-color-text-primary)',
+  'color.text.secondary': 'var(--ui-color-text-secondary)',
+  'interaction.control.height': 'var(--ui-control-height)',
+  'interaction.motion.duration': 'var(--ui-motion-duration)',
+  'interaction.motion.easing': 'var(--ui-motion-easing)',
+  'interaction.radius.panel': 'var(--ui-radius-panel)',
+  'interaction.shadow.panel': 'var(--ui-shadow-panel)',
+  'layout.content.max-width': 'var(--ui-layout-content-max-width)',
+  'layout.z.base': 'var(--ui-z-base)',
+  'layout.z.overlay': 'var(--ui-z-overlay)',
+  'spacing.content.gap': 'var(--ui-space-content-gap)',
+  'spacing.page.inline': 'var(--ui-space-page-inline)',
+  'spacing.section.block': 'var(--ui-space-section-block)',
+  'typography.family.body': 'var(--ui-font-family-body)',
+  'typography.line-height.body': 'var(--ui-font-line-height-body)',
+  'typography.line-height.title': 'var(--ui-font-line-height-title)',
+  'typography.size.body': 'var(--ui-font-size-body)',
+  'typography.size.title': 'var(--ui-font-size-title)',
+  'typography.weight.body': 'var(--ui-font-weight-body)',
+  'typography.weight.title': 'var(--ui-font-weight-title)',
+} as const satisfies Record<TokenName, string>

@@ -1,0 +1,12 @@
+{
+  "z-index": {
+    "base": {
+      "$type": "number",
+      "$value": 0
+    },
+    "overlay": {
+      "$type": "number",
+      "$value": 1000
+    }
+  }
+}

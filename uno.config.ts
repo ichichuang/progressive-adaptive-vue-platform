@@ -1,6 +1,7 @@
 import { defineConfig } from 'unocss'
 import { presetIcons } from '@unocss/preset-icons'
 import { presetWind4 } from '@unocss/preset-wind4'
+import { platformPreset } from '@platform/design-system'
 
 export default defineConfig({
   blocklist: [
@@ -31,5 +32,6 @@ export default defineConfig({
         lucide: () => import('@iconify-json/lucide/icons.json').then((module) => module.default),
       },
     }),
+    platformPreset(),
   ],
 })

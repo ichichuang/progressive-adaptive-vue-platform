@@ -1,0 +1,32 @@
+{
+  "interaction": {
+    "control": {
+      "height": {
+        "$type": "dimension",
+        "$value": "{dimension.control.md}"
+      }
+    },
+    "radius": {
+      "panel": {
+        "$type": "dimension",
+        "$value": "{radius.md}"
+      }
+    },
+    "shadow": {
+      "panel": {
+        "$type": "shadow",
+        "$value": "{elevation.panel}"
+      }
+    },
+    "motion": {
+      "duration": {
+        "$type": "duration",
+        "$value": "{motion.duration.normal}"
+      },
+      "easing": {
+        "$type": "cubicBezier",
+        "$value": "{motion.easing.standard}"
+      }
+    }
+  }
+}

@@ -45,6 +45,26 @@ expectEqual(rootEngines['node'], '>=24.0.0 <25.0.0', 'Node engine baseline')
 expectEqual(rootEngines['pnpm'], '>=10.0.0 <11.0.0', 'pnpm engine baseline')
 expectEqual(rootDevDependencies['typescript'], 'catalog:', 'TypeScript catalog binding')
 
+const designSystemManifest = await readJsonObject(
+  resolve(rootDirectory, 'packages/design-system/package.json'),
+)
+const designSystemDependencies = designSystemManifest['dependencies']
+const designSystemDevDependencies = designSystemManifest['devDependencies']
+
+if (!isJsonObject(designSystemDependencies) || !isJsonObject(designSystemDevDependencies)) {
+  throw new Error(
+    'The design-system package must declare dependencies and devDependencies objects.',
+  )
+}
+
+expectEqual(designSystemDependencies['colorjs.io'], 'catalog:', 'Color.js catalog binding')
+expectEqual(designSystemDependencies['zod'], 'catalog:', 'Zod catalog binding')
+expectEqual(
+  designSystemDevDependencies['style-dictionary'],
+  'catalog:',
+  'Style Dictionary catalog binding',
+)
+
 const knownNames = new Set(projectConfig.workspaces.map((workspace) => workspace.name))
 const knownPaths = new Set(projectConfig.workspaces.map((workspace) => workspace.path))
 
@@ -91,6 +111,6 @@ expectEqual(
   'Architecture authority',
 )
 expectEqual(projectConfig.governance.defaultBranch, 'main', 'Default branch governance')
-expectEqual(projectConfig.governance.implementationPhase, 0, 'Implementation phase')
+expectEqual(projectConfig.governance.implementationPhase, 1, 'Implementation phase')
 
 console.log('Project configuration schema: valid')

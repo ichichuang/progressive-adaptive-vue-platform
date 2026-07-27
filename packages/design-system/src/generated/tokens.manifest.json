@@ -1,0 +1,219 @@
+{
+  "generatedNotice": "Generated file. Do not edit directly.",
+  "schemaVersion": 1,
+  "sourceFiles": [
+    "density/comfortable.tokens.json",
+    "density/compact.tokens.json",
+    "density/spacious.tokens.json",
+    "primitive/color.tokens.json",
+    "primitive/dimension.tokens.json",
+    "primitive/elevation.tokens.json",
+    "primitive/motion.tokens.json",
+    "primitive/radius.tokens.json",
+    "primitive/typography.tokens.json",
+    "primitive/z-index.tokens.json",
+    "semantic/color.tokens.json",
+    "semantic/interaction.tokens.json",
+    "semantic/layout.tokens.json",
+    "semantic/spacing.tokens.json",
+    "semantic/typography.tokens.json",
+    "themes/neutral.theme.json",
+    "themes/ocean.theme.json",
+    "themes/warm.theme.json"
+  ],
+  "densityPresets": ["comfortable", "compact", "spacious"],
+  "themes": [
+    {
+      "id": "neutral",
+      "label": "Neutral",
+      "neutral": "neutral"
+    },
+    {
+      "id": "ocean",
+      "label": "Ocean",
+      "neutral": "cool"
+    },
+    {
+      "id": "warm",
+      "label": "Warm",
+      "neutral": "warm"
+    }
+  ],
+  "tokens": [
+    {
+      "name": "color.action.primary",
+      "type": "color",
+      "cssVariable": "--ui-color-action-primary",
+      "value": "oklch(21% 0.012 247)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "color.border.default",
+      "type": "color",
+      "cssVariable": "--ui-color-border-default",
+      "value": "oklch(92% 0.005 247)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "color.focus.ring",
+      "type": "color",
+      "cssVariable": "--ui-color-focus-ring",
+      "value": "oklch(62% 0.17 250)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "color.surface.page",
+      "type": "color",
+      "cssVariable": "--ui-color-surface-page",
+      "value": "oklch(98.5% 0.002 247)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "color.surface.panel",
+      "type": "color",
+      "cssVariable": "--ui-color-surface-panel",
+      "value": "oklch(100% 0 0)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "color.text.primary",
+      "type": "color",
+      "cssVariable": "--ui-color-text-primary",
+      "value": "oklch(14.5% 0.01 247)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "color.text.secondary",
+      "type": "color",
+      "cssVariable": "--ui-color-text-secondary",
+      "value": "oklch(37% 0.014 247)",
+      "source": "semantic/color.tokens.json"
+    },
+    {
+      "name": "interaction.control.height",
+      "type": "dimension",
+      "cssVariable": "--ui-control-height",
+      "value": "2.25rem",
+      "source": "semantic/interaction.tokens.json"
+    },
+    {
+      "name": "interaction.motion.duration",
+      "type": "duration",
+      "cssVariable": "--ui-motion-duration",
+      "value": "200ms",
+      "source": "semantic/interaction.tokens.json"
+    },
+    {
+      "name": "interaction.motion.easing",
+      "type": "cubicBezier",
+      "cssVariable": "--ui-motion-easing",
+      "value": "cubic-bezier(0.2, 0, 0, 1)",
+      "source": "semantic/interaction.tokens.json"
+    },
+    {
+      "name": "interaction.radius.panel",
+      "type": "dimension",
+      "cssVariable": "--ui-radius-panel",
+      "value": "0.75rem",
+      "source": "semantic/interaction.tokens.json"
+    },
+    {
+      "name": "interaction.shadow.panel",
+      "type": "shadow",
+      "cssVariable": "--ui-shadow-panel",
+      "value": "0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12)",
+      "source": "semantic/interaction.tokens.json"
+    },
+    {
+      "name": "layout.content.max-width",
+      "type": "dimension",
+      "cssVariable": "--ui-layout-content-max-width",
+      "value": "72rem",
+      "source": "semantic/layout.tokens.json"
+    },
+    {
+      "name": "layout.z.base",
+      "type": "number",
+      "cssVariable": "--ui-z-base",
+      "value": "0",
+      "source": "semantic/layout.tokens.json"
+    },
+    {
+      "name": "layout.z.overlay",
+      "type": "number",
+      "cssVariable": "--ui-z-overlay",
+      "value": "1000",
+      "source": "semantic/layout.tokens.json"
+    },
+    {
+      "name": "spacing.content.gap",
+      "type": "dimension",
+      "cssVariable": "--ui-space-content-gap",
+      "value": "0.75rem",
+      "source": "semantic/spacing.tokens.json"
+    },
+    {
+      "name": "spacing.page.inline",
+      "type": "dimension",
+      "cssVariable": "--ui-space-page-inline",
+      "value": "1.5rem",
+      "source": "semantic/spacing.tokens.json"
+    },
+    {
+      "name": "spacing.section.block",
+      "type": "dimension",
+      "cssVariable": "--ui-space-section-block",
+      "value": "2rem",
+      "source": "semantic/spacing.tokens.json"
+    },
+    {
+      "name": "typography.family.body",
+      "type": "fontFamily",
+      "cssVariable": "--ui-font-family-body",
+      "value": "ui-sans-serif, system-ui, sans-serif",
+      "source": "semantic/typography.tokens.json"
+    },
+    {
+      "name": "typography.line-height.body",
+      "type": "number",
+      "cssVariable": "--ui-font-line-height-body",
+      "value": "1.5",
+      "source": "semantic/typography.tokens.json"
+    },
+    {
+      "name": "typography.line-height.title",
+      "type": "number",
+      "cssVariable": "--ui-font-line-height-title",
+      "value": "1.2",
+      "source": "semantic/typography.tokens.json"
+    },
+    {
+      "name": "typography.size.body",
+      "type": "dimension",
+      "cssVariable": "--ui-font-size-body",
+      "value": "1rem",
+      "source": "semantic/typography.tokens.json"
+    },
+    {
+      "name": "typography.size.title",
+      "type": "dimension",
+      "cssVariable": "--ui-font-size-title",
+      "value": "2rem",
+      "source": "semantic/typography.tokens.json"
+    },
+    {
+      "name": "typography.weight.body",
+      "type": "fontWeight",
+      "cssVariable": "--ui-font-weight-body",
+      "value": "400",
+      "source": "semantic/typography.tokens.json"
+    },
+    {
+      "name": "typography.weight.title",
+      "type": "fontWeight",
+      "cssVariable": "--ui-font-weight-title",
+      "value": "700",
+      "source": "semantic/typography.tokens.json"
+    }
+  ]
+}

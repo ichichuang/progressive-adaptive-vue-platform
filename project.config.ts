@@ -7,7 +7,7 @@ export const projectConfig = {
   governance: {
     architectureAuthority: 'ARCHITECTURE.md',
     defaultBranch: 'main',
-    implementationPhase: 0,
+    implementationPhase: 1,
     maintenanceModel: 'solo-main-branch',
   },
   runtime: {

@@ -1,0 +1,30 @@
+/* Generated file. Do not edit directly. */
+@layer tokens {
+  :root {
+    --ui-color-action-primary: oklch(21% 0.012 247);
+    --ui-color-border-default: oklch(92% 0.005 247);
+    --ui-color-focus-ring: oklch(62% 0.17 250);
+    --ui-color-surface-page: oklch(98.5% 0.002 247);
+    --ui-color-surface-panel: oklch(100% 0 0);
+    --ui-color-text-primary: oklch(14.5% 0.01 247);
+    --ui-color-text-secondary: oklch(37% 0.014 247);
+    --ui-control-height: 2.25rem;
+    --ui-motion-duration: 200ms;
+    --ui-motion-easing: cubic-bezier(0.2, 0, 0, 1);
+    --ui-radius-panel: 0.75rem;
+    --ui-shadow-panel: 0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12);
+    --ui-layout-content-max-width: 72rem;
+    --ui-z-base: 0;
+    --ui-z-overlay: 1000;
+    --ui-space-content-gap: 0.75rem;
+    --ui-space-page-inline: 1.5rem;
+    --ui-space-section-block: 2rem;
+    --ui-font-family-body: ui-sans-serif, system-ui, sans-serif;
+    --ui-font-line-height-body: 1.5;
+    --ui-font-line-height-title: 1.2;
+    --ui-font-size-body: 1rem;
+    --ui-font-size-title: 2rem;
+    --ui-font-weight-body: 400;
+    --ui-font-weight-title: 700;
+  }
+}

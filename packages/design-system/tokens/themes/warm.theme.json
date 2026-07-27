@@ -1,0 +1,9 @@
+{
+  "id": "warm",
+  "label": "Warm",
+  "palette": {
+    "brand": "{color.palette.orange.600}",
+    "accent": "{color.palette.orange.500}",
+    "neutral": "warm"
+  }
+}

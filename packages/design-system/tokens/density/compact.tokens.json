@@ -1,0 +1,22 @@
+{
+  "density": {
+    "compact": {
+      "control": {
+        "height": {
+          "$type": "dimension",
+          "$value": "{dimension.control.sm}"
+        },
+        "padding-inline": {
+          "$type": "dimension",
+          "$value": "{dimension.space.2}"
+        }
+      },
+      "section": {
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.space.4}"
+        }
+      }
+    }
+  }
+}

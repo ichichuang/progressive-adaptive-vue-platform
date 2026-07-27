@@ -1,0 +1,22 @@
+{
+  "density": {
+    "comfortable": {
+      "control": {
+        "height": {
+          "$type": "dimension",
+          "$value": "{dimension.control.md}"
+        },
+        "padding-inline": {
+          "$type": "dimension",
+          "$value": "{dimension.space.3}"
+        }
+      },
+      "section": {
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.space.6}"
+        }
+      }
+    }
+  }
+}

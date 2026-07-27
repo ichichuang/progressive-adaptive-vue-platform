@@ -20,6 +20,9 @@
     "dev": "pnpm --filter @platform/web dev",
     "build": "pnpm --filter @platform/web build",
     "preview": "pnpm --filter @platform/web preview",
+    "tokens:build": "tsx packages/design-system/src/build/build.ts build",
+    "tokens:check": "tsx packages/design-system/src/build/build.ts check",
+    "tokens:schema": "tsx packages/design-system/src/build/build.ts validate",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
@@ -29,11 +32,11 @@
     "typecheck:vue": "vue-tsc --project apps/web/tsconfig.json --noEmit",
     "typecheck:ts": "tsc --project tsconfig.node.json && tsc --project packages/design-system/tsconfig.json && tsc --project packages/ui/tsconfig.json",
     "check:arch": "tsx scripts/architecture/check-boundaries.ts",
-    "schema:check": "tsx scripts/verify/check-project-config.ts",
+    "schema:check": "tsx scripts/verify/check-project-config.ts && pnpm tokens:schema",
     "check:policy": "tsx scripts/verify/check-repository-policy.ts",
     "check:unused": "knip --config knip.jsonc",
     "check:bundle": "tsx scripts/verify/check-bundle.ts",
-    "verify": "pnpm format:check && pnpm lint && pnpm lint:css && pnpm lint:uno && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm schema:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle"
+    "verify": "pnpm format:check && pnpm lint && pnpm lint:css && pnpm lint:uno && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm schema:check && pnpm tokens:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle"
   },
   "devDependencies": {
     "@iconify-json/lucide": "catalog:",

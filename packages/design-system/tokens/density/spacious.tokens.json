@@ -1,0 +1,22 @@
+{
+  "density": {
+    "spacious": {
+      "control": {
+        "height": {
+          "$type": "dimension",
+          "$value": "{dimension.control.lg}"
+        },
+        "padding-inline": {
+          "$type": "dimension",
+          "$value": "{dimension.space.4}"
+        }
+      },
+      "section": {
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.space.8}"
+        }
+      }
+    }
+  }
+}

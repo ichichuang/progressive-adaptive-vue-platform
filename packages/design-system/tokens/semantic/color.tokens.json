@@ -1,0 +1,42 @@
+{
+  "color": {
+    "surface": {
+      "page": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.50}"
+      },
+      "panel": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.0}"
+      }
+    },
+    "text": {
+      "primary": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.950}"
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.700}"
+      }
+    },
+    "border": {
+      "default": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.200}"
+      }
+    },
+    "action": {
+      "primary": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.900}"
+      }
+    },
+    "focus": {
+      "ring": {
+        "$type": "color",
+        "$value": "{color.palette.blue.500}"
+      }
+    }
+  }
+}
