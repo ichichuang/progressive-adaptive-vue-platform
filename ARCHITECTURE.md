@@ -3,12 +3,11 @@
 ## 全新个人超级前端架构 v1.0
 
 ```text
-STATUS=FINAL_ARCHITECTURE_LOCKED
-
-LEGACY_CCD=REFERENCE_ONLY
-NEW_REPOSITORY=REQUIRED
-IN_PLACE_REFACTOR=REJECTED
-LEGACY_SOURCE_MIGRATION=PROHIBITED_BY_DEFAULT
+STATUS=CANONICAL_ARCHITECTURE_BASELINE_V1
+PROJECT_MODEL=GREENFIELD
+IMPLEMENTATION_STATE=NOT_STARTED
+MAINTENANCE_MODEL=SOLO_MAIN_BRANCH
+ARCHITECTURE_AUTHORITY=ARCHITECTURE.md
 ```
 
 ---
@@ -48,66 +47,9 @@ PAVP
 
 ---
 
-# 2. 旧 CCD 的继承边界
+# 2. 版本与稳定性策略
 
-旧 CCD 已经包含十个内部 Package、Web 与 Desktop 两个应用、PrimeVue 适配层、完整 ProForm、ProTable、TreeTable、图表包、运行时抽象和多层 AI 路由，根 TypeScript 配置也同时引用全部 Package。
-
-旧 `vue-ui` 同时公开 PrimeVue 控件、表单引擎、表格引擎、树表和对话框运行时，已经成为一个独立产品，而不是薄 UI 层。
-
-## 2.1 只继承以下设计思想
-
-| 旧 CCD 设计           | 新架构处理     |
-| ------------------ | --------- |
-| Design Token 单一权威  | 保留并重建     |
-| 类型化主题与尺寸           | 保留并重新分层   |
-| 主题首屏预注入            | 保留并简化     |
-| 布局约束使用纯函数          | 保留，改为能力驱动 |
-| Package 不得反向依赖 App | 保留并自动检查   |
-| 公共 `index.ts` 出口   | 保留        |
-| 一个区域一个滚动 Owner     | 保留        |
-| 禁止无理由同轴嵌套滚动        | 保留        |
-| 单一验证命令             | 保留        |
-| 一个短 `AGENTS.md` 入口 | 保留        |
-| 项目元数据单一来源          | 保留并简化     |
-
-旧仓库的依赖巡检已经能够禁止 Package 导入 App、深层导入、兄弟 App 相互引用以及 Tauri 依赖泄漏；这一类可执行边界值得重新实现。
-
-旧仓库的统一验证脚本会依次执行元数据、类型、Lint、架构边界、运行时边界和构建，这一工作模式继续保留。
-
-## 2.2 明确不继承
-
-```text
-PrimeVue
-PrimeVue Adapter
-ProForm
-ProTable
-ProTreeTable
-vue-app-platform
-vue-hooks
-vue-charts
-shared-utils
-旧 contracts
-旧 core
-旧设备识别器
-旧主题预设源码
-旧 UnoCSS shortcuts
-旧 Safelist
-Attributify
-Alova
-OverlayScrollbars
-Tauri 初始工程
-多层 .ai 路由
-Skill Router
-Node/Python 双路由器
-多客户端 AI 同步
-旧 Git 历史
-```
-
----
-
-# 3. 版本与稳定性策略
-
-## 3.1 生产版本基线
+## 2.1 生产版本基线
 
 | 技术                 | 基线            |
 | ------------------ | ------------- |
@@ -129,7 +71,7 @@ Node 官方要求生产应用使用 Active LTS 或 Maintenance LTS，Node 24 当
 
 Vite 8.1 基于 Rolldown 统一开发与生产构建基础，但实验性的 Bundled Dev Mode 不进入首版默认配置。
 
-## 3.2 TypeScript 6 与 TypeScript 7 的最终决定
+## 2.2 TypeScript 6 与 TypeScript 7 的最终决定
 
 TypeScript 7 已于 2026 年 7 月正式发布，使用 Go 原生编译器。但 TypeScript 官方明确指出，Vue、Volar、Svelte 和 Astro 等嵌入式语言工具目前仍依赖 TypeScript 6 的程序化 API。
 
@@ -156,7 +98,7 @@ TypeScript 7 进入正式基线的门槛：
 4. 模板类型推断与 TS6 一致。
 5. 现有组件公共类型没有变化。
 
-## 3.3 依赖升级政策
+## 2.3 依赖升级政策
 
 ```text
 Stable releases only
@@ -170,17 +112,18 @@ No RC in production dependencies
 * `pnpm-workspace.yaml` 使用 Catalog 统一版本。
 * `pnpm-lock.yaml` 必须提交。
 * CI 使用 `--frozen-lockfile`。
-* Renovate 每周创建更新 PR。
-* Patch 和 Minor 可以自动分组。
-* Major 必须独立 PR。
+* 依赖审查由维护者手动执行，使用 GitHub Dependency Graph 和 Dependabot alerts 提供风险信号。
+* 不配置任何依赖自动更新机制；Dependency Graph 和 Dependabot alerts 仅提供人工审查信号。
+* 依赖升级必须在本地验证通过后直接提交到 `main`。
+* 每个依赖升级提交只处理一个可独立审查的技术领域。
 * UI、构建、路由和类型系统 Major 不得合并在同一提交。
-* 预发布版本只能进入独立实验分支。
+* Alpha、Beta 和 RC 兼容性实验只允许在仓库外的可丢弃本地目录中运行，且绝不得提交到仓库。
 
 ---
 
-# 4. 最终技术栈
+# 3. 最终技术栈
 
-## 4.1 核心运行层
+## 3.1 核心运行层
 
 | 领域     | 最终选择                       | 职责                  |
 | ------ | -------------------------- | ------------------- |
@@ -199,7 +142,7 @@ No RC in production dependencies
 
 Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 自动生成路由和类型，不再需要手工维护完整的路由数组。
 
-## 4.2 设计与 UI 层
+## 3.2 设计与 UI 层
 
 | 领域              | 最终选择                                 |
 | --------------- | ------------------------------------ |
@@ -226,7 +169,7 @@ DTCG 2025.10 是稳定技术报告，但不是 W3C Standards Track 标准；Styl
 
 Reka UI 提供无样式、可访问、完整类型化的 Vue 原语，负责 ARIA、键盘导航和焦点管理；其 Drawer 在 2.10 中仍标记为 Alpha，所以 Drawer 不作为首版不可替换的公共实现合同。
 
-## 4.3 工程质量层
+## 3.3 工程质量层
 
 | 领域             | 最终选择                                |
 | -------------- | ----------------------------------- |
@@ -245,9 +188,9 @@ Reka UI 提供无样式、可访问、完整类型化的 Vue 原语，负责 ARI
 | 浏览器验收          | Playwright                          |
 | A11y 浏览器测试     | `@axe-core/playwright`              |
 | UI 文档          | Storybook                           |
-| 依赖更新           | Renovate                            |
+| 依赖审查           | GitHub Dependency Graph + Dependabot alerts |
 | CI             | GitHub Actions                      |
-| 安全扫描           | CodeQL + Dependency Review          |
+| 安全扫描           | CodeQL                              |
 
 ESLint 10 已进入稳定版本，当前 10.x 持续发布更新，并以 Node 24 LTS 作为主要运行环境之一。
 
@@ -255,7 +198,7 @@ Storybook 的 Vue 3 + Vite 集成能够复用 Vite 配置并使用 `vue-componen
 
 ---
 
-# 5. 明确不使用的基础技术
+# 4. 明确不使用的基础技术
 
 首版禁止引入：
 
@@ -297,11 +240,11 @@ Service Worker
 * 避免隐式导入损害 AI 和代码搜索。
 * 避免基础架构承担未出现的运行时需求。
 * 避免重复建设状态、请求和主题系统。
-* 避免旧 CCD 的 Package 膨胀重新出现。
+* 避免 Package 膨胀失控。
 
 ---
 
-# 6. 最终仓库结构
+# 5. 最终仓库结构
 
 ```text
 progressive-adaptive-vue-platform/
@@ -352,7 +295,7 @@ progressive-adaptive-vue-platform/
 │       │   │   ├── appearance/
 │       │   │   │   ├── appearance.store.ts
 │       │   │   │   ├── apply-appearance.ts
-│       │   │   │   ├── preference-migrations.ts
+│       │   │   │   ├── preference-schema-upgrades.ts
 │       │   │   │   └── use-appearance.ts
 │       │   │   │
 │       │   │   ├── errors/
@@ -431,12 +374,9 @@ progressive-adaptive-vue-platform/
 │   └── manager.ts
 │
 ├── .github/
-│   ├── workflows/
-│   │   ├── verify.yml
-│   │   ├── e2e.yml
-│   │   └── dependency-review.yml
-│   ├── dependabot.yml
-│   └── pull_request_template.md
+│   └── workflows/
+│       ├── verify.yml
+│       └── e2e.yml
 │
 ├── AGENTS.md
 ├── ARCHITECTURE.md
@@ -453,7 +393,6 @@ progressive-adaptive-vue-platform/
 ├── playwright.config.ts
 ├── vitest.config.ts
 ├── knip.jsonc
-├── renovate.json
 ├── commitlint.config.mjs
 ├── .editorconfig
 ├── .gitattributes
@@ -464,7 +403,7 @@ progressive-adaptive-vue-platform/
 
 ---
 
-# 7. 初始 Workspace 只保留三个项目
+# 6. 初始 Workspace 只保留三个项目
 
 ```text
 apps/web
@@ -503,7 +442,7 @@ apps/docs
 
 ---
 
-# 8. Workspace 依赖方向
+# 7. Workspace 依赖方向
 
 ```text
 apps/web
@@ -552,7 +491,7 @@ shared
 
 ---
 
-# 9. TypeScript 规范
+# 8. TypeScript 规范
 
 基础配置：
 
@@ -625,7 +564,7 @@ Vue SFC 固定顺序：
 
 ---
 
-# 10. 文件路由设计
+# 9. 文件路由设计
 
 使用 Vue Router 5 内置文件路由：
 
@@ -673,7 +612,7 @@ definePage({
 
 ---
 
-# 11. Design System Package
+# 10. Design System Package
 
 完整目录：
 
@@ -728,7 +667,7 @@ packages/design-system/
 │   │   ├── apply-theme.ts
 │   │   ├── apply-density.ts
 │   │   ├── create-custom-theme.ts
-│   │   ├── preference-migrations.ts
+│   │   ├── preference-schema-upgrades.ts
 │   │   └── first-paint.ts
 │   │
 │   ├── unocss/
@@ -755,7 +694,7 @@ packages/design-system/
 
 ---
 
-# 12. Token 模型
+# 11. Token 模型
 
 ```text
 Primitive Tokens
@@ -769,7 +708,7 @@ Generated CSS Variables
 UnoCSS / UI / Application
 ```
 
-## 12.1 Primitive Token
+## 11.1 Primitive Token
 
 ```text
 color.palette.blue.500
@@ -788,7 +727,7 @@ Primitive Token：
 * 不成为业务语义。
 * 不应全部输出为运行时 CSS Variable。
 
-## 12.2 Semantic Token
+## 11.2 Semantic Token
 
 ```text
 color.surface.page
@@ -809,7 +748,7 @@ spacing.section.block
 
 业务页面主要消费 Semantic Token。
 
-## 12.3 Component Token
+## 11.3 Component Token
 
 仅在真实组件需要独立合同后创建：
 
@@ -824,7 +763,7 @@ table.row-height
 
 ---
 
-# 13. CSS Variable 命名
+# 12. CSS Variable 命名
 
 统一命名空间：
 
@@ -868,9 +807,9 @@ table.row-height
 
 ---
 
-# 14. 主题和用户配色系统
+# 13. 主题和用户配色系统
 
-## 14.1 根节点状态
+## 13.1 根节点状态
 
 ```html
 <html
@@ -895,7 +834,7 @@ dark
 color-scheme: light dark;
 ```
 
-## 14.2 用户主题 Schema
+## 13.2 用户主题 Schema
 
 ```ts
 interface UserThemePreference {
@@ -919,7 +858,7 @@ interface UserThemePreference {
 }
 ```
 
-## 14.3 颜色生成管线
+## 13.3 颜色生成管线
 
 ```text
 User Color Seed
@@ -947,7 +886,7 @@ Runtime CSS Variables
 
 Color.js 支持 OKLCH、颜色空间转换和基于 CSS Color 4 方法的色域映射，适合作为用户主题颜色处理基础。
 
-## 14.4 用户可修改
+## 13.4 用户可修改
 
 * 品牌色。
 * 强调色。
@@ -957,7 +896,7 @@ Color.js 支持 OKLCH、颜色空间转换和基于 CSS Color 4 方法的色域�
 * 主题预设。
 * 自定义主题名称。
 
-## 14.5 用户不可修改
+## 13.5 用户不可修改
 
 * 任意 CSS。
 * 任意 UnoCSS 类名。
@@ -968,7 +907,7 @@ Color.js 支持 OKLCH、颜色空间转换和基于 CSS Color 4 方法的色域�
 * 组件内部结构。
 * 未经过校验的颜色状态组合。
 
-## 14.6 首屏无闪烁
+## 13.6 首屏无闪烁
 
 构建输出：
 
@@ -1002,9 +941,9 @@ contrast
 
 ---
 
-# 15. 密度和尺寸系统
+# 14. 密度和尺寸系统
 
-## 15.1 六个独立轴
+## 14.1 六个独立轴
 
 ```text
 Spatial Density
@@ -1017,7 +956,7 @@ Layout Dimensions
 
 禁止再将这些轴绑定成一个 `SizePreset`。
 
-## 15.2 密度预设
+## 14.2 密度预设
 
 ```ts
 type UiDensity =
@@ -1052,7 +991,7 @@ themeColor
 layoutColumns
 ```
 
-## 15.3 连续密度微调
+## 14.3 连续密度微调
 
 ```ts
 interface DensityPreference {
@@ -1069,7 +1008,7 @@ maximum = 1.15
 step = 0.05
 ```
 
-## 15.4 字号缩放
+## 14.4 字号缩放
 
 ```ts
 type FontScale =
@@ -1089,7 +1028,7 @@ html {
 
 保留浏览器缩放能力，不阻止用户 Zoom。
 
-## 15.5 触控命中区域
+## 14.5 触控命中区域
 
 视觉紧凑不等于点击区域紧凑。
 
@@ -1106,7 +1045,7 @@ Compact 模式允许视觉高度低于 44px，但外层命中区域仍应安全�
 
 ---
 
-# 16. UnoCSS 最终规范
+# 15. UnoCSS 最终规范
 
 配置：
 
@@ -1136,7 +1075,7 @@ export default defineConfig({
 
 UnoCSS Vite Plugin 使用全局模式并在应用入口显式导入 `virtual:uno.css`。
 
-## 16.1 UnoCSS 负责
+## 15.1 UnoCSS 负责
 
 * Flex。
 * Grid。
@@ -1151,7 +1090,7 @@ UnoCSS Vite Plugin 使用全局模式并在应用入口显式导入 `virtual:uno
 * CSS Variable 表达。
 * 少量语义快捷类。
 
-## 16.2 UnoCSS 不负责
+## 15.2 UnoCSS 不负责
 
 * 自己维护颜色系统。
 * 自己维护密度。
@@ -1160,7 +1099,7 @@ UnoCSS Vite Plugin 使用全局模式并在应用入口显式导入 `virtual:uno
 * 封装完整视觉组件。
 * 保存用户自定义颜色。
 
-## 16.3 允许的 Shortcut
+## 15.3 允许的 Shortcut
 
 ```text
 ui-surface
@@ -1174,7 +1113,7 @@ ui-text-secondary
 ui-border-default
 ```
 
-## 16.4 禁止的 Shortcut
+## 15.4 禁止的 Shortcut
 
 ```text
 center
@@ -1189,7 +1128,7 @@ dashboard-card
 
 过于通用或视觉组件化的名称会降低可读性，并形成第二套组件系统。
 
-## 16.5 明确禁止
+## 15.5 明确禁止
 
 ```text
 Attributify
@@ -1206,7 +1145,7 @@ transition-all
 
 ---
 
-# 17. UI Package
+# 16. UI Package
 
 目录：
 
@@ -1240,7 +1179,7 @@ packages/ui/
 └── README.md
 ```
 
-## 17.1 简单组件使用原生 HTML
+## 16.1 简单组件使用原生 HTML
 
 ```text
 UiButton
@@ -1255,7 +1194,7 @@ UiSpinner
 UiEmptyState
 ```
 
-## 17.2 复杂组件使用 Reka UI
+## 16.2 复杂组件使用 Reka UI
 
 ```text
 UiDialog
@@ -1272,7 +1211,7 @@ UiTree
 UiDateField
 ```
 
-## 17.3 首期组件清单
+## 16.3 首期组件清单
 
 ```text
 UiButton
@@ -1298,7 +1237,7 @@ UiPageShell
 UiResponsiveNavigation
 ```
 
-## 17.4 首期禁止建设
+## 16.4 首期禁止建设
 
 ```text
 ProForm
@@ -1315,7 +1254,7 @@ Custom Scrollbar
 Global Animation Wrapper
 ```
 
-## 17.5 导入规则
+## 16.5 导入规则
 
 业务代码只允许：
 
@@ -1337,7 +1276,7 @@ import Component from '@platform/ui/src/internal/component'
 
 ---
 
-# 18. 组件 API 规范
+# 17. 组件 API 规范
 
 每个组件必须：
 
@@ -1392,9 +1331,9 @@ const emit = defineEmits<{
 
 ---
 
-# 19. 布局系统
+# 18. 布局系统
 
-## 19.1 不使用设备名称
+## 18.1 不使用设备名称
 
 禁止：
 
@@ -1428,7 +1367,7 @@ interface LayoutResolutionInput {
 }
 ```
 
-## 19.2 三种空间 Profile
+## 18.2 三种空间 Profile
 
 ```text
 narrow
@@ -1438,7 +1377,7 @@ wide
 
 这些名称表示可用空间，不表示手机、平板或 PC。
 
-## 19.3 用户布局偏好
+## 18.3 用户布局偏好
 
 ```ts
 interface UserLayoutPreferences {
@@ -1480,7 +1419,7 @@ interface LayoutProfile {
 }
 ```
 
-## 19.4 页面能力合同
+## 18.4 页面能力合同
 
 ```ts
 interface RouteLayoutCapabilities {
@@ -1494,7 +1433,7 @@ interface RouteLayoutCapabilities {
 
 用户只能在页面声明的能力范围内调整布局。
 
-## 19.5 CSS 与 JavaScript 边界
+## 18.5 CSS 与 JavaScript 边界
 
 CSS 负责：
 
@@ -1518,7 +1457,7 @@ JavaScript 负责：
 * 面板顺序。
 * 无法通过 CSS 表达的状态。
 
-## 19.6 滚动所有权
+## 18.6 滚动所有权
 
 每个区域必须明确：
 
@@ -1541,9 +1480,9 @@ Scroll Owner
 
 ---
 
-# 20. 状态管理
+# 19. 状态管理
 
-## 20.1 Pinia 负责
+## 19.1 Pinia 负责
 
 ```text
 appearance preferences
@@ -1559,7 +1498,7 @@ feature-local shared state
 
 Pinia 是 Vue 的稳定 Store 方案，提供 TypeScript、DevTools、SSR 和 HMR 支持。
 
-## 20.2 TanStack Query 负责
+## 19.2 TanStack Query 负责
 
 ```text
 API requests
@@ -1584,7 +1523,7 @@ copy to Pinia
 manually synchronize both
 ```
 
-## 20.3 Store 位置
+## 19.3 Store 位置
 
 全局平台 Store：
 
@@ -1607,7 +1546,7 @@ src/stores/
 
 ---
 
-# 21. API 和请求层
+# 20. API 和请求层
 
 最终选择：
 
@@ -1620,7 +1559,7 @@ Native Fetch
 
 不使用 Axios 或 Alova。
 
-## 21.1 请求层职责
+## 20.1 请求层职责
 
 ```text
 Base URL
@@ -1633,7 +1572,7 @@ Response parsing
 Runtime validation
 ```
 
-## 21.2 API 目录
+## 20.2 API 目录
 
 ```text
 shared/api/
@@ -1644,7 +1583,7 @@ shared/api/
 └── schemas.ts
 ```
 
-## 21.3 OpenAPI 策略
+## 20.3 OpenAPI 策略
 
 当后端提供可靠 OpenAPI Schema 时增加：
 
@@ -1662,7 +1601,7 @@ Zod schemas = untrusted runtime boundary
 
 禁止为所有内部对象重复写 Zod Schema。
 
-## 21.4 错误模型
+## 20.4 错误模型
 
 ```ts
 type AppError =
@@ -1679,7 +1618,7 @@ UI 不直接判断任意 HTTP 状态码，而是消费统一错误类型。
 
 ---
 
-# 22. 表单体系
+# 21. 表单体系
 
 最终选择：
 
@@ -1724,7 +1663,7 @@ UiFormField:
 
 ---
 
-# 23. 数据表格策略
+# 22. 数据表格策略
 
 ## Level 1：静态展示
 
@@ -1774,7 +1713,7 @@ TanStack Table
 
 ---
 
-# 24. 国际化
+# 23. 国际化
 
 基础使用 Vue I18n，但初始可以只有一个 Locale。
 
@@ -1795,7 +1734,7 @@ TanStack Table
 
 ---
 
-# 25. 动画系统
+# 24. 动画系统
 
 优先级：
 
@@ -1846,7 +1785,7 @@ motion.spring.gentle
 
 ---
 
-# 26. 无障碍基线
+# 25. 无障碍基线
 
 目标：
 
@@ -1884,7 +1823,7 @@ manual screen-reader baseline
 
 ---
 
-# 27. CSS 层级
+# 26. CSS 层级
 
 统一 Cascade Layers：
 
@@ -1914,9 +1853,9 @@ manual screen-reader baseline
 
 ---
 
-# 28. 代码结构规范
+# 27. 代码结构规范
 
-## 28.1 命名
+## 27.1 命名
 
 ```text
 Vue components: PascalCase.vue
@@ -1928,7 +1867,7 @@ Tests: *.spec.ts
 Stories: *.stories.ts
 ```
 
-## 28.2 导出
+## 27.2 导出
 
 * 使用 Named Export。
 * 每个 Package 只有一个公共根出口。
@@ -1936,7 +1875,7 @@ Stories: *.stories.ts
 * 禁止跨 Boundary 深层导入。
 * Barrel 仅用于 Boundary，不在任意子目录堆叠。
 
-## 28.3 工具函数
+## 27.3 工具函数
 
 禁止创建无限增长的：
 
@@ -1956,9 +1895,9 @@ parse-theme-preference.ts
 
 ---
 
-# 29. AI 编程治理
+# 28. AI 编程治理
 
-## 29.1 只保留两个权威入口
+## 28.1 只保留两个权威入口
 
 ```text
 AGENTS.md
@@ -2005,7 +1944,7 @@ client adapters
 multiple canonical UI rules
 ```
 
-## 29.2 ADR
+## 28.2 ADR
 
 ```text
 docs/decisions/
@@ -2018,7 +1957,7 @@ docs/decisions/
 
 ADR 只解释历史原因，不承担规范权威。
 
-## 29.3 机器强制规则
+## 28.3 机器强制规则
 
 | 规则                | 工具                         |
 | ----------------- | -------------------------- |
@@ -2035,7 +1974,7 @@ ADR 只解释历史原因，不承担规范权威。
 | A11y              | ESLint + axe + Playwright  |
 | 构建体积              | Bundle Budget              |
 
-## 29.4 显式导入
+## 28.4 显式导入
 
 不使用自动导入。
 
@@ -2049,7 +1988,7 @@ ADR 只解释历史原因，不承担规范权威。
 
 ---
 
-# 30. 本地架构规则
+# 29. 本地架构规则
 
 在 `scripts/eslint-rules/` 中实现少量本地规则：
 
@@ -2067,7 +2006,7 @@ no-workspace-deep-import
 
 ---
 
-# 31. 项目生成器
+# 30. 项目生成器
 
 提供：
 
@@ -2093,7 +2032,7 @@ feature/
 
 ---
 
-# 32. 统一命令
+# 31. 统一命令
 
 ```text
 pnpm dev
@@ -2126,7 +2065,7 @@ pnpm verify
 pnpm verify:ci
 ```
 
-## 32.1 `verify:fast`
+## 31.1 `verify:fast`
 
 ```text
 token generation check
@@ -2137,7 +2076,7 @@ vue-tsc
 architecture boundaries
 ```
 
-## 32.2 `verify`
+## 31.2 `verify`
 
 ```text
 verify:fast
@@ -2149,7 +2088,7 @@ Storybook build
 bundle budget
 ```
 
-## 32.3 `verify:ci`
+## 31.3 `verify:ci`
 
 ```text
 verify
@@ -2161,7 +2100,7 @@ visual regression
 
 ---
 
-# 33. CI 验证矩阵
+# 32. CI 验证矩阵
 
 ## Viewport
 
@@ -2211,7 +2150,7 @@ Playwright 支持设备、Viewport、Touch、Color Scheme、Locale 和 Timezone 
 
 ---
 
-# 34. 性能规则
+# 33. 性能规则
 
 初始预算：
 
@@ -2238,7 +2177,7 @@ Playwright 支持设备、Viewport、Touch、Color Scheme、Locale 和 Timezone 
 
 ---
 
-# 35. 安全规则
+# 34. 安全规则
 
 * 所有环境变量通过 Zod 校验。
 * `VITE_*` 中不得存放秘密。
@@ -2251,11 +2190,11 @@ Playwright 支持设备、Viewport、Touch、Color Scheme、Locale 和 Timezone 
 * 建立 CSP。
 * 外部 URL 经过协议和域名校验。
 * 文件下载验证 MIME、文件名和来源。
-* CI 启用 CodeQL 和 Dependency Review。
+* GitHub 安全设置启用 CodeQL、Dependency Graph 和 Dependabot alerts。
 
 ---
 
-# 36. Storybook 使用边界
+# 35. Storybook 使用边界
 
 Story 与组件放在一起：
 
@@ -2285,7 +2224,7 @@ Storybook 是开发和文档工具，不进入生产 Bundle。
 
 ---
 
-# 37. 用户个性化发布顺序
+# 36. 用户个性化发布顺序
 
 ## 第一阶段
 
@@ -2329,14 +2268,14 @@ Full / Reduced / None Motion
 
 ---
 
-# 38. 初始建设阶段
+# 37. 初始建设阶段
 
 ## Phase 0：仓库治理
 
 交付：
 
 ```text
-新仓库
+仓库治理基线
 Node / pnpm / TS 基线
 Workspace
 ESLint
@@ -2363,7 +2302,7 @@ UnoCSS Preset
 Light / Dark / System
 Compact / Comfortable / Spacious
 First Paint Script
-Preference Migration
+Preference Schema Upgrades
 ```
 
 ## Phase 2：基础 UI
@@ -2427,7 +2366,7 @@ Theme/Layout Import Export
 
 ---
 
-# 39. 延迟引入的能力
+# 38. 延迟引入的能力
 
 | 能力               | 引入门槛                    |
 | ---------------- | ----------------------- |
@@ -2447,7 +2386,7 @@ Theme/Layout Import Export
 
 ---
 
-# 40. 最终 Package 清单
+# 39. 最终 Package 清单
 
 ## Root Dev Dependencies
 
@@ -2517,7 +2456,7 @@ clsx
 
 ---
 
-# 41. 最终不变原则
+# 40. 最终不变原则
 
 ```text
 Project Design Tokens are the only visual authority.
@@ -2555,7 +2494,7 @@ One command verifies the complete architecture.
 
 ---
 
-# 42. 最终架构摘要
+# 41. 最终架构摘要
 
 ```text
 Node 24 LTS
@@ -2589,7 +2528,6 @@ Node 24 LTS
 + Stylelint
 + Prettier
 + Knip
-+ Renovate
 + GitHub Actions
 ```
 
@@ -2601,18 +2539,17 @@ Node 24 LTS
 1 architecture authority
 1 AI entry
 1 verification command
-0 legacy implementation dependencies
+1 protected main branch
+0 branch-based maintenance workflows
 ```
 
-该架构从旧 CCD 中只保留以下抽象价值：
+# Foundational Architecture Values
 
-```text
-Single Source of Truth
-Typed Contracts
-Pure Constraint Resolvers
-Public Export Boundaries
-Executable Architecture Rules
-One-command Verification
-```
+These are native principles of Progressive Adaptive Vue Platform:
 
-它不继承旧 CCD 的实现复杂度，也不在真实产品需求出现前预建完整 UI、Grid、Desktop、Mobile 或多运行时平台。
+- Single Source of Truth
+- Typed Contracts
+- Pure Constraint Resolvers
+- Public Export Boundaries
+- Executable Architecture Rules
+- One-command Verification
