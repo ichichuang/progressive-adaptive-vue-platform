@@ -8,14 +8,6 @@
     "node": ">=24.0.0 <25.0.0",
     "pnpm": ">=10.0.0 <11.0.0"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ],
-    "patchedDependencies": {
-      "unconfig@7.5.0": "patches/unconfig@7.5.0.patch"
-    }
-  },
   "scripts": {
     "dev": "pnpm --filter @platform/web dev",
     "build": "pnpm --filter @platform/web build",

@@ -6,6 +6,7 @@ import { projectConfig } from '../../project.config'
 type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
+const expectedNodeVersion = projectConfig.runtime.node
 const expectedPackageManager = `pnpm@${projectConfig.runtime.pnpm}`
 
 function isJsonObject(value: unknown): value is JsonObject {
@@ -41,9 +42,14 @@ if (!isJsonObject(rootEngines) || !isJsonObject(rootDevDependencies)) {
 expectEqual(rootManifest['name'], projectConfig.identity.packageName, 'Root package identity')
 expectEqual(rootManifest['private'], true, 'Root package privacy')
 expectEqual(rootManifest['packageManager'], expectedPackageManager, 'Package manager baseline')
+expectEqual(rootManifest['pnpm'], undefined, 'Legacy package.json pnpm configuration')
 expectEqual(rootEngines['node'], '>=24.0.0 <25.0.0', 'Node engine baseline')
 expectEqual(rootEngines['pnpm'], '>=10.0.0 <11.0.0', 'pnpm engine baseline')
 expectEqual(rootDevDependencies['typescript'], 'catalog:', 'TypeScript catalog binding')
+
+const miseConfiguration = await readFile(resolve(rootDirectory, 'mise.toml'), 'utf8')
+
+expectEqual(miseConfiguration, `[tools]\nnode = "${expectedNodeVersion}"\n`, 'mise Node baseline')
 
 const designSystemManifest = await readJsonObject(
   resolve(rootDirectory, 'packages/design-system/package.json'),
@@ -103,6 +109,35 @@ for (const workspacePattern of ['apps/*', 'packages/*']) {
 
 if (!workspaceConfiguration.includes('\ncatalog:\n')) {
   throw new Error('pnpm-workspace.yaml must define the shared version catalog.')
+}
+
+if (
+  !workspaceConfiguration.includes(
+    "\nonlyBuiltDependencies:\n  - esbuild@0.28.1\n\nignoredBuiltDependencies:\n  - '@bundled-es-modules/glob'\n  - style-dictionary\n",
+  )
+) {
+  throw new Error('pnpm-workspace.yaml must preserve the reviewed dependency build policy.')
+}
+
+if (
+  !workspaceConfiguration.includes(
+    '\npatchedDependencies:\n  unconfig@7.5.0: patches/unconfig@7.5.0.patch\n',
+  )
+) {
+  throw new Error('pnpm-workspace.yaml must declare the reviewed unconfig patch.')
+}
+
+const ciConfiguration = await readFile(
+  resolve(rootDirectory, '.github/workflows/verify.yml'),
+  'utf8',
+)
+
+if (!ciConfiguration.includes(`          version: ${projectConfig.runtime.pnpm}\n`)) {
+  throw new Error('The verification workflow pnpm version must match the project baseline.')
+}
+
+if (!ciConfiguration.includes(`          node-version: ${expectedNodeVersion}\n`)) {
+  throw new Error('The verification workflow Node version must match the project baseline.')
 }
 
 expectEqual(

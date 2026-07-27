@@ -73,6 +73,8 @@ PAVP
 
 Node 官方要求生产应用使用 Active LTS 或 Maintenance LTS，Node 24 当前处于 LTS 状态；Vite 官方当前对 8.1 发布常规补丁。
 
+项目根 `mise.toml` 固定经验证的 Node 24 补丁版本并提交到版本控制；pnpm 的精确版本继续由 `package.json#packageManager` 和 Corepack 统一选择，不在 mise 中重复声明。
+
 Vite 8.1 基于 Rolldown 统一开发与生产构建基础，但实验性的 Bundled Dev Mode 不进入首版默认配置。
 
 ## 2.2 TypeScript 6 与 TypeScript 7 的最终决定
@@ -369,6 +371,7 @@ progressive-adaptive-vue-platform/
 │
 ├── AGENTS.md
 ├── ARCHITECTURE.md
+├── mise.toml
 ├── project.config.ts
 ├── package.json
 ├── pnpm-workspace.yaml

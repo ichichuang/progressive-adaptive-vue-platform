@@ -2,6 +2,16 @@ packages:
   - apps/*
   - packages/*
 
+onlyBuiltDependencies:
+  - esbuild@0.28.1
+
+ignoredBuiltDependencies:
+  - '@bundled-es-modules/glob'
+  - style-dictionary
+
+patchedDependencies:
+  unconfig@7.5.0: patches/unconfig@7.5.0.patch
+
 catalog:
   '@iconify-json/lucide': 1.2.120
   '@types/node': 24.13.3

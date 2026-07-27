@@ -11,7 +11,7 @@ export const projectConfig = {
     maintenanceModel: 'solo-main-branch',
   },
   runtime: {
-    node: '24.x',
+    node: '24.15.0',
     pnpm: '10.34.5',
     typescript: '6.0.3',
   },
