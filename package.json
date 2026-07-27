@@ -1,0 +1,59 @@
+{
+  "name": "progressive-adaptive-vue-platform",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.34.5",
+  "engines": {
+    "node": ">=24.0.0 <25.0.0",
+    "pnpm": ">=10.0.0 <11.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ],
+    "patchedDependencies": {
+      "unconfig@7.5.0": "patches/unconfig@7.5.0.patch"
+    }
+  },
+  "scripts": {
+    "dev": "pnpm --filter @platform/web dev",
+    "build": "pnpm --filter @platform/web build",
+    "preview": "pnpm --filter @platform/web preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint . --max-warnings 0",
+    "lint:css": "stylelint \"apps/web/src/**/*.css\"",
+    "lint:uno": "eslint \"apps/web/src/**/*.{ts,vue}\" --max-warnings 0",
+    "typecheck": "pnpm typecheck:vue && pnpm typecheck:ts",
+    "typecheck:vue": "vue-tsc --project apps/web/tsconfig.json --noEmit",
+    "typecheck:ts": "tsc --project tsconfig.node.json && tsc --project packages/design-system/tsconfig.json && tsc --project packages/ui/tsconfig.json",
+    "check:arch": "tsx scripts/architecture/check-boundaries.ts",
+    "schema:check": "tsx scripts/verify/check-project-config.ts",
+    "check:policy": "tsx scripts/verify/check-repository-policy.ts",
+    "check:unused": "knip --config knip.jsonc",
+    "check:bundle": "tsx scripts/verify/check-bundle.ts",
+    "verify": "pnpm format:check && pnpm lint && pnpm lint:css && pnpm lint:uno && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm schema:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle"
+  },
+  "devDependencies": {
+    "@iconify-json/lucide": "catalog:",
+    "@types/node": "catalog:",
+    "@unocss/eslint-plugin": "catalog:",
+    "@unocss/preset-icons": "catalog:",
+    "@unocss/preset-wind4": "catalog:",
+    "@vitejs/plugin-vue": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-boundaries": "catalog:",
+    "eslint-plugin-vue": "catalog:",
+    "eslint-plugin-vuejs-accessibility": "catalog:",
+    "knip": "catalog:",
+    "prettier": "catalog:",
+    "stylelint": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
+    "unocss": "catalog:",
+    "vite": "catalog:",
+    "vue-tsc": "catalog:"
+  }
+}
