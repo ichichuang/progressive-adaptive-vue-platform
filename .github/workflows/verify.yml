@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify:
-    name: Phase 0 production gates
+    name: Production static gates
     runs-on: ubuntu-latest
     timeout-minutes: 15
 

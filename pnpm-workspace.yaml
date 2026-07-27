@@ -2,12 +2,12 @@ packages:
   - apps/*
   - packages/*
 
-onlyBuiltDependencies:
-  - esbuild@0.28.1
+strictDepBuilds: true
 
-ignoredBuiltDependencies:
-  - '@bundled-es-modules/glob'
-  - style-dictionary
+allowBuilds:
+  esbuild@0.28.1: true
+  '@bundled-es-modules/glob': false
+  style-dictionary: false
 
 patchedDependencies:
   unconfig@7.5.0: patches/unconfig@7.5.0.patch
@@ -35,4 +35,5 @@ catalog:
   vite: 8.1.5
   vue: 3.5.40
   vue-tsc: 3.3.8
+  yaml: 2.9.0
   zod: 4.4.3
