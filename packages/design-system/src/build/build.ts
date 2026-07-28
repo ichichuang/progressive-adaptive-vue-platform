@@ -2,10 +2,18 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { isDeepStrictEqual } from 'node:util'
 
 import StyleDictionary from 'style-dictionary'
 import type { PreprocessedTokens } from 'style-dictionary/types'
 
+import { applyAppearance } from '../runtime/apply-appearance'
+import { defaultUserPreferenceV2 } from '../runtime/appearance-defaults'
+import { prepareFirstPaint } from '../runtime/first-paint'
+import { upgradeUserPreference } from '../runtime/preference-schema-upgrades'
+import { resolveColorMode } from '../runtime/resolve-color-mode'
+import { resolveMaterial } from '../runtime/resolve-material'
+import { userPreferenceV2Schema } from '../schema/preference.schema'
 import { createCssFormat } from './formats/css'
 import { createManifestFormat } from './formats/manifest'
 import {
@@ -189,7 +197,302 @@ function requireResult(context: FormatContext): TokenBuildResult {
     throw new Error('Token validation completed without build metadata.')
   }
 
+  validateAppearanceContracts(context.result)
   return context.result
+}
+
+function assertInvariant(condition: unknown, message: string): asserts condition {
+  if (!condition) {
+    throw new Error(`Appearance contract: ${message}.`)
+  }
+}
+
+function assertInvariantEqual(actual: unknown, expected: unknown, message: string): void {
+  assertInvariant(isDeepStrictEqual(actual, expected), message)
+}
+
+function validateAppearanceContracts(result: TokenBuildResult): void {
+  const validatedDefault = userPreferenceV2Schema.safeParse(defaultUserPreferenceV2)
+
+  assertInvariant(validatedDefault.success, 'the canonical V2 default must pass its schema')
+  assertInvariant(
+    !('schemaVersion' in defaultUserPreferenceV2.appearance),
+    'schemaVersion must exist only on the outer preference envelope',
+  )
+  assertInvariantEqual(
+    {
+      colorMode: defaultUserPreferenceV2.appearance.colorMode,
+      contrast: defaultUserPreferenceV2.appearance.contrast,
+      density: defaultUserPreferenceV2.appearance.density,
+      fontScale: defaultUserPreferenceV2.appearance.fontScale,
+      material: defaultUserPreferenceV2.appearance.material,
+      motion: defaultUserPreferenceV2.appearance.motion,
+      theme: defaultUserPreferenceV2.appearance.theme,
+    },
+    {
+      colorMode: 'system',
+      contrast: 'standard',
+      density: {
+        preset: 'comfortable',
+        scale: 1,
+      },
+      fontScale: 1,
+      material: 'adaptive',
+      motion: 'full',
+      theme: 'neutral',
+    },
+    'the canonical V2 default values must remain fixed',
+  )
+  assertInvariant(
+    !userPreferenceV2Schema.safeParse({
+      ...defaultUserPreferenceV2,
+      appearance: {
+        ...defaultUserPreferenceV2.appearance,
+        colorMode: 'high-contrast',
+      },
+    }).success,
+    'the V2 color mode schema must reject legacy high contrast',
+  )
+  assertInvariant(
+    !userPreferenceV2Schema.safeParse({
+      ...defaultUserPreferenceV2,
+      appearance: {
+        ...defaultUserPreferenceV2.appearance,
+        schemaVersion: 2,
+      },
+    }).success,
+    'the V2 appearance schema must reject a nested schemaVersion',
+  )
+
+  const neutralTheme = result.themes.find((theme) => theme.id === 'neutral')
+
+  assertInvariant(neutralTheme !== undefined, 'the neutral theme must exist')
+  assertInvariantEqual(
+    defaultUserPreferenceV2.appearance.palette,
+    {
+      accent: tokenValueToCss('color', neutralTheme.palette.accent),
+      brand: tokenValueToCss('color', neutralTheme.palette.brand),
+      neutral: neutralTheme.palette.neutral,
+    },
+    'the canonical default palette must match the resolved neutral theme source',
+  )
+
+  const legacyAppearance = {
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    density: {
+      preset: 'spacious',
+      scale: 1.1,
+    },
+    fontScale: 1.2,
+    motion: 'reduced',
+    palette: {
+      accent: defaultUserPreferenceV2.appearance.palette.accent,
+      brand: defaultUserPreferenceV2.appearance.palette.brand,
+      neutral: 'warm',
+    },
+    theme: 'ocean',
+  } as const
+  const legacyPreference = {
+    appearance: legacyAppearance,
+    schemaVersion: 1,
+  } as const
+  const legacySnapshot = JSON.stringify(legacyPreference)
+  const migrated = upgradeUserPreference(legacyPreference)
+
+  assertInvariantEqual(
+    migrated,
+    {
+      appearance: {
+        ...legacyAppearance,
+        material: 'solid',
+      },
+      schemaVersion: 2,
+    },
+    'valid V1 preferences must migrate to solid while preserving valid fields',
+  )
+  assertInvariant(
+    JSON.stringify(legacyPreference) === legacySnapshot,
+    'migration must not mutate its input',
+  )
+
+  const highContrastMigrated = upgradeUserPreference({
+    appearance: {
+      ...legacyAppearance,
+      colorMode: 'high-contrast',
+      contrast: 'standard',
+    },
+    schemaVersion: 1,
+  })
+
+  assertInvariantEqual(
+    {
+      colorMode: highContrastMigrated.appearance.colorMode,
+      contrast: highContrastMigrated.appearance.contrast,
+      material: highContrastMigrated.appearance.material,
+    },
+    {
+      colorMode: 'system',
+      contrast: 'enhanced',
+      material: 'solid',
+    },
+    'legacy high contrast must migrate to system, enhanced, and solid',
+  )
+  assertInvariantEqual(
+    upgradeUserPreference(migrated),
+    migrated,
+    'valid V2 preferences must remain idempotent',
+  )
+
+  const firstFallback = upgradeUserPreference({
+    appearance: {
+      colorMode: 'dark',
+    },
+    schemaVersion: 1,
+  })
+  const secondFallback = upgradeUserPreference(undefined)
+
+  assertInvariantEqual(
+    firstFallback,
+    defaultUserPreferenceV2,
+    'invalid input must return the complete canonical default',
+  )
+  assertInvariantEqual(
+    secondFallback,
+    defaultUserPreferenceV2,
+    'unknown input must return the complete canonical default',
+  )
+  assertInvariant(
+    firstFallback !== secondFallback &&
+      firstFallback.appearance !== secondFallback.appearance &&
+      firstFallback.appearance.palette !== secondFallback.appearance.palette &&
+      firstFallback.appearance.density !== secondFallback.appearance.density,
+    'fallback preferences must not share mutable object state',
+  )
+  assertInvariant(
+    Object.isFrozen(defaultUserPreferenceV2) &&
+      Object.isFrozen(defaultUserPreferenceV2.appearance) &&
+      Object.isFrozen(defaultUserPreferenceV2.appearance.palette) &&
+      Object.isFrozen(defaultUserPreferenceV2.appearance.density),
+    'the exported canonical default must not expose mutable shared state',
+  )
+
+  assertInvariantEqual(
+    [
+      resolveColorMode({
+        prefersDark: false,
+        storedColorMode: 'light',
+      }),
+      resolveColorMode({
+        prefersDark: true,
+        storedColorMode: 'dark',
+      }),
+      resolveColorMode({
+        prefersDark: false,
+        storedColorMode: 'system',
+      }),
+      resolveColorMode({
+        prefersDark: true,
+        storedColorMode: 'system',
+      }),
+    ],
+    ['light', 'dark', 'light', 'dark'],
+    'the color mode resolver must use only stored mode and explicit prefersDark',
+  )
+
+  const reducedWithoutBackdrop = Object.freeze({
+    backdropFilterSupported: false,
+    forcedColorsActive: false,
+    reducedTransparencyRequested: false,
+    storedMaterial: 'reduced' as const,
+  })
+
+  assertInvariantEqual(
+    [
+      resolveMaterial({
+        backdropFilterSupported: true,
+        forcedColorsActive: true,
+        reducedTransparencyRequested: false,
+        storedMaterial: 'adaptive',
+      }),
+      resolveMaterial({
+        backdropFilterSupported: true,
+        forcedColorsActive: false,
+        reducedTransparencyRequested: true,
+        storedMaterial: 'solid',
+      }),
+      resolveMaterial(reducedWithoutBackdrop),
+      resolveMaterial({
+        backdropFilterSupported: true,
+        forcedColorsActive: false,
+        reducedTransparencyRequested: true,
+        storedMaterial: 'adaptive',
+      }),
+      resolveMaterial({
+        backdropFilterSupported: false,
+        forcedColorsActive: false,
+        reducedTransparencyRequested: false,
+        storedMaterial: 'adaptive',
+      }),
+      resolveMaterial({
+        backdropFilterSupported: true,
+        forcedColorsActive: false,
+        reducedTransparencyRequested: false,
+        storedMaterial: 'adaptive',
+      }),
+    ],
+    ['solid', 'solid', 'reduced', 'reduced', 'solid', 'adaptive'],
+    'the material resolver precedence must remain canonical',
+  )
+
+  const prepared = prepareFirstPaint({
+    environment: {
+      backdropFilterSupported: false,
+      forcedColorsActive: false,
+      prefersDark: true,
+      reducedTransparencyRequested: false,
+    },
+    storedPreference: defaultUserPreferenceV2,
+  })
+
+  assertInvariantEqual(
+    {
+      effectiveColorMode: prepared.effectiveAppearance.colorMode,
+      effectiveMaterial: prepared.effectiveAppearance.material,
+      storedColorMode: prepared.storedPreference.appearance.colorMode,
+      storedMaterial: prepared.storedPreference.appearance.material,
+    },
+    {
+      effectiveColorMode: 'dark',
+      effectiveMaterial: 'solid',
+      storedColorMode: 'system',
+      storedMaterial: 'adaptive',
+    },
+    'first-paint preparation must separate stored and effective appearance state',
+  )
+
+  const attributes = new Map<string, string>()
+
+  applyAppearance(
+    {
+      setAttribute(name, value) {
+        attributes.set(name, value)
+      },
+    },
+    prepared.effectiveAppearance,
+  )
+  assertInvariantEqual(
+    Object.fromEntries(attributes),
+    {
+      'data-color-mode': 'dark',
+      'data-contrast': 'standard',
+      'data-density': 'comfortable',
+      'data-material': 'solid',
+      'data-motion': 'full',
+      'data-theme': 'neutral',
+    },
+    'appearance application must write only canonical effective attributes',
+  )
 }
 
 export async function validateTokens(): Promise<TokenBuildResult> {
