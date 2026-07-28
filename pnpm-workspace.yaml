@@ -12,6 +12,9 @@ allowBuilds:
 patchedDependencies:
   unconfig@7.5.0: patches/unconfig@7.5.0.patch
 
+overrides:
+  '@bundled-es-modules/glob@10.4.2': 11.1.0
+
 catalog:
   '@iconify-json/lucide': 1.2.120
   '@types/node': 24.13.3
