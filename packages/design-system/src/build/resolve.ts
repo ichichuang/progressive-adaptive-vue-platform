@@ -4,24 +4,31 @@ import {
   type ColorValue,
   type DtcgTokenType,
   type ShadowValue,
+  type TokenConditions,
   type TokenDefinition,
+  type TokenVisibility,
 } from '../schema/token.schema'
 import { normalizeColor } from './color'
 import { compareCodePoints } from './order'
-
-export type TokenTier = 'density' | 'primitive' | 'semantic'
+import type { TokenRoleMetadata, TokenTier } from './token-contract'
 
 export interface TokenRecord {
+  compound?: string
+  conditions: TokenConditions
+  cssVariable?: string
   description?: string
   path: string
-  sourcePath: string
+  role: TokenRoleMetadata
+  source: string
   tier: TokenTier
   type: DtcgTokenType
   value: TokenDefinition['$value']
+  visibility: TokenVisibility
 }
 
 export interface ResolvedTokenRecord extends Omit<TokenRecord, 'value'> {
-  value: Exclude<TokenDefinition['$value'], string>
+  reference?: string
+  resolvedValue: Exclude<TokenDefinition['$value'], string>
 }
 
 type ResolutionState = 'resolved' | 'resolving'
@@ -59,7 +66,7 @@ export function createTokenResolver(records: readonly TokenRecord[]): TokenResol
       )
     }
 
-    return resolveRecord(target).value
+    return resolveRecord(target).resolvedValue
   }
 
   function resolveShadow(value: ShadowValue, context: string): ShadowValue {
@@ -122,17 +129,23 @@ export function createTokenResolver(records: readonly TokenRecord[]): TokenResol
     states.set(record.path, 'resolving')
     stack.push(record.path)
 
-    const resolvedValue = isTokenReference(record.value)
-      ? resolveReference(record.value, record.type, record.path)
-      : normalizeLiteral(record.type, record.value, record.path)
-    const resolved: ResolvedTokenRecord = {
-      path: record.path,
-      sourcePath: record.sourcePath,
-      tier: record.tier,
-      type: record.type,
-      value: resolvedValue,
-      ...(record.description === undefined ? {} : { description: record.description }),
+    let reference: string | undefined
+    let resolvedValue: Exclude<TokenDefinition['$value'], string>
+
+    if (isTokenReference(record.value)) {
+      reference = tokenPathFromReference(record.value)
+      resolvedValue = resolveReference(record.value, record.type, record.path)
+    } else {
+      resolvedValue = normalizeLiteral(record.type, record.value, record.path)
     }
+    const { value: sourceValue, ...metadata } = record
+    const resolved: ResolvedTokenRecord = {
+      ...metadata,
+      resolvedValue,
+      ...(reference === undefined ? {} : { reference }),
+    }
+
+    void sourceValue
 
     stack.pop()
     states.set(record.path, 'resolved')

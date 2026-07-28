@@ -9,6 +9,7 @@ type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
 const sourceExtensions = new Set(['.ts', '.vue'])
+const applicationMaterialSourceExtensions = new Set(['.css', '.ts', '.vue'])
 const rootTypeScriptConfigurationSuffix = '.config.ts'
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
 const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
@@ -117,7 +118,10 @@ async function validateRootConfigurationDependencies(): Promise<string[]> {
   return violations
 }
 
-async function collectSourceFiles(directory: string): Promise<string[]> {
+async function collectSourceFiles(
+  directory: string,
+  extensions: ReadonlySet<string> = sourceExtensions,
+): Promise<string[]> {
   const entries = await readdir(directory, {
     withFileTypes: true,
   })
@@ -127,8 +131,8 @@ async function collectSourceFiles(directory: string): Promise<string[]> {
     const path = join(directory, entry.name)
 
     if (entry.isDirectory()) {
-      files.push(...(await collectSourceFiles(path)))
-    } else if (entry.isFile() && sourceExtensions.has(extname(entry.name))) {
+      files.push(...(await collectSourceFiles(path, extensions)))
+    } else if (entry.isFile() && extensions.has(extname(entry.name))) {
       files.push(path)
     }
   }
@@ -255,7 +259,7 @@ async function validateSourceImports(): Promise<string[]> {
     resolve(rootDirectory, 'packages/design-system/src'),
     resolve(rootDirectory, 'packages/ui/src'),
   ]
-  const sourceFiles = (await Promise.all(roots.map(collectSourceFiles))).flat()
+  const sourceFiles = (await Promise.all(roots.map((root) => collectSourceFiles(root)))).flat()
   const violations: string[] = []
 
   for (const sourceFile of sourceFiles) {
@@ -270,10 +274,50 @@ async function validateSourceImports(): Promise<string[]> {
   return violations
 }
 
+async function validateDesignSystemTokenExports(): Promise<string[]> {
+  const manifestPath = resolve(rootDirectory, 'packages/design-system/package.json')
+  const manifest = await readJsonObject(manifestPath)
+  const exportsField = manifest['exports']
+
+  if (!isJsonObject(exportsField)) {
+    return ['@platform/design-system must declare an explicit exports object.']
+  }
+
+  const allowedExports = new Set(['.', './tokens.css'])
+  return Object.keys(exportsField)
+    .filter((exportPath) => !allowedExports.has(exportPath))
+    .map(
+      (exportPath) =>
+        `@platform/design-system token internals may not be exposed through public subpath "${exportPath}".`,
+    )
+}
+
+async function validateNoApplicationMaterialTokenUse(): Promise<string[]> {
+  const applicationFiles = await collectSourceFiles(
+    resolve(rootDirectory, 'apps/web/src'),
+    applicationMaterialSourceExtensions,
+  )
+  const violations: string[] = []
+
+  for (const applicationFile of applicationFiles) {
+    const sourceText = await readFile(applicationFile, 'utf8')
+
+    if (sourceText.includes('--ui-material-')) {
+      violations.push(
+        `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal --ui-material-* tokens.`,
+      )
+    }
+  }
+
+  return violations
+}
+
 const violations = [
   ...(await validateManifestDependencies()),
   ...(await validateRootConfigurationDependencies()),
   ...(await validateSourceImports()),
+  ...(await validateDesignSystemTokenExports()),
+  ...(await validateNoApplicationMaterialTokenUse()),
 ]
 
 if (violations.length > 0) {

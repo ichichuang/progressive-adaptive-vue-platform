@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -39,181 +39,959 @@
       "neutral": "warm"
     }
   ],
+  "compoundBudget": {
+    "limit": 8,
+    "used": 0
+  },
+  "compounds": [],
   "tokens": [
     {
       "name": "color.action.primary",
       "type": "color",
-      "cssVariable": "--ui-color-action-primary",
-      "value": "oklch(21% 0.012 247)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.action.primary"
+      },
+      "resolvedValue": "oklch(21% 0.012 247)",
+      "cssVariable": "--ui-color-action-primary"
     },
     {
       "name": "color.border.default",
       "type": "color",
-      "cssVariable": "--ui-color-border-default",
-      "value": "oklch(92% 0.005 247)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.border.default"
+      },
+      "resolvedValue": "oklch(92% 0.005 247)",
+      "cssVariable": "--ui-color-border-default"
     },
     {
       "name": "color.focus.ring",
       "type": "color",
-      "cssVariable": "--ui-color-focus-ring",
-      "value": "oklch(62% 0.17 250)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.focus.ring"
+      },
+      "resolvedValue": "oklch(62% 0.17 250)",
+      "cssVariable": "--ui-color-focus-ring"
+    },
+    {
+      "name": "color.palette.blue.500",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.blue.500"
+      },
+      "resolvedValue": "oklch(62% 0.17 250)"
+    },
+    {
+      "name": "color.palette.blue.600",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.blue.600"
+      },
+      "resolvedValue": "oklch(54% 0.15 250)"
+    },
+    {
+      "name": "color.palette.neutral.0",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.0"
+      },
+      "resolvedValue": "oklch(100% 0 0)"
+    },
+    {
+      "name": "color.palette.neutral.200",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.200"
+      },
+      "resolvedValue": "oklch(92% 0.005 247)"
+    },
+    {
+      "name": "color.palette.neutral.50",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.50"
+      },
+      "resolvedValue": "oklch(98.5% 0.002 247)"
+    },
+    {
+      "name": "color.palette.neutral.500",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.500"
+      },
+      "resolvedValue": "oklch(55% 0.012 247)"
+    },
+    {
+      "name": "color.palette.neutral.700",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.700"
+      },
+      "resolvedValue": "oklch(37% 0.014 247)"
+    },
+    {
+      "name": "color.palette.neutral.900",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.900"
+      },
+      "resolvedValue": "oklch(21% 0.012 247)"
+    },
+    {
+      "name": "color.palette.neutral.950",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.neutral.950"
+      },
+      "resolvedValue": "oklch(14.5% 0.01 247)"
+    },
+    {
+      "name": "color.palette.orange.500",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.orange.500"
+      },
+      "resolvedValue": "oklch(67% 0.15 50)"
+    },
+    {
+      "name": "color.palette.orange.600",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.orange.600"
+      },
+      "resolvedValue": "oklch(58% 0.14 45)"
     },
     {
       "name": "color.surface.page",
       "type": "color",
-      "cssVariable": "--ui-color-surface-page",
-      "value": "oklch(98.5% 0.002 247)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.surface.page"
+      },
+      "resolvedValue": "oklch(98.5% 0.002 247)",
+      "cssVariable": "--ui-color-surface-page"
     },
     {
       "name": "color.surface.panel",
       "type": "color",
-      "cssVariable": "--ui-color-surface-panel",
-      "value": "oklch(100% 0 0)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.surface.panel"
+      },
+      "resolvedValue": "oklch(100% 0 0)",
+      "cssVariable": "--ui-color-surface-panel"
     },
     {
       "name": "color.text.primary",
       "type": "color",
-      "cssVariable": "--ui-color-text-primary",
-      "value": "oklch(14.5% 0.01 247)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.text.primary"
+      },
+      "resolvedValue": "oklch(14.5% 0.01 247)",
+      "cssVariable": "--ui-color-text-primary"
     },
     {
       "name": "color.text.secondary",
       "type": "color",
-      "cssVariable": "--ui-color-text-secondary",
-      "value": "oklch(37% 0.014 247)",
-      "source": "semantic/color.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.text.secondary"
+      },
+      "resolvedValue": "oklch(37% 0.014 247)",
+      "cssVariable": "--ui-color-text-secondary"
+    },
+    {
+      "name": "density.comfortable.control.height",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.control.height"
+      },
+      "resolvedValue": "2.25rem"
+    },
+    {
+      "name": "density.comfortable.control.padding-inline",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.control.padding-inline"
+      },
+      "resolvedValue": "0.75rem"
+    },
+    {
+      "name": "density.comfortable.section.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.section.gap"
+      },
+      "resolvedValue": "1.5rem"
+    },
+    {
+      "name": "density.compact.control.height",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.control.height"
+      },
+      "resolvedValue": "2rem"
+    },
+    {
+      "name": "density.compact.control.padding-inline",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.control.padding-inline"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "density.compact.section.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.section.gap"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "density.spacious.control.height",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.control.height"
+      },
+      "resolvedValue": "2.75rem"
+    },
+    {
+      "name": "density.spacious.control.padding-inline",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.control.padding-inline"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "density.spacious.section.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.section.gap"
+      },
+      "resolvedValue": "2rem"
+    },
+    {
+      "name": "dimension.control.lg",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.lg"
+      },
+      "resolvedValue": "2.75rem"
+    },
+    {
+      "name": "dimension.control.md",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.md"
+      },
+      "resolvedValue": "2.25rem"
+    },
+    {
+      "name": "dimension.control.sm",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.sm"
+      },
+      "resolvedValue": "2rem"
+    },
+    {
+      "name": "dimension.layout.content-max",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.content-max"
+      },
+      "resolvedValue": "72rem"
+    },
+    {
+      "name": "dimension.space.0",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.0"
+      },
+      "resolvedValue": "0rem"
+    },
+    {
+      "name": "dimension.space.2",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.2"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "dimension.space.3",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.3"
+      },
+      "resolvedValue": "0.75rem"
+    },
+    {
+      "name": "dimension.space.4",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.4"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "dimension.space.6",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.6"
+      },
+      "resolvedValue": "1.5rem"
+    },
+    {
+      "name": "dimension.space.8",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.8"
+      },
+      "resolvedValue": "2rem"
+    },
+    {
+      "name": "elevation.panel",
+      "type": "shadow",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/elevation.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "elevation",
+        "name": "elevation.panel"
+      },
+      "resolvedValue": "0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12)"
+    },
+    {
+      "name": "font.family.sans",
+      "type": "fontFamily",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.family.sans"
+      },
+      "resolvedValue": "ui-sans-serif, system-ui, sans-serif"
+    },
+    {
+      "name": "font.line-height.body",
+      "type": "number",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.line-height.body"
+      },
+      "resolvedValue": "1.5"
+    },
+    {
+      "name": "font.line-height.title",
+      "type": "number",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.line-height.title"
+      },
+      "resolvedValue": "1.2"
+    },
+    {
+      "name": "font.size.body",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.body"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "font.size.title",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.title"
+      },
+      "resolvedValue": "2rem"
+    },
+    {
+      "name": "font.weight.bold",
+      "type": "fontWeight",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.weight.bold"
+      },
+      "resolvedValue": "700"
+    },
+    {
+      "name": "font.weight.regular",
+      "type": "fontWeight",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.weight.regular"
+      },
+      "resolvedValue": "400"
     },
     {
       "name": "interaction.control.height",
       "type": "dimension",
-      "cssVariable": "--ui-control-height",
-      "value": "2.25rem",
-      "source": "semantic/interaction.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-control-height"
     },
     {
       "name": "interaction.motion.duration",
       "type": "duration",
-      "cssVariable": "--ui-motion-duration",
-      "value": "200ms",
-      "source": "semantic/interaction.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.motion.duration"
+      },
+      "resolvedValue": "200ms",
+      "cssVariable": "--ui-motion-duration"
     },
     {
       "name": "interaction.motion.easing",
       "type": "cubicBezier",
-      "cssVariable": "--ui-motion-easing",
-      "value": "cubic-bezier(0.2, 0, 0, 1)",
-      "source": "semantic/interaction.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.motion.easing"
+      },
+      "resolvedValue": "cubic-bezier(0.2, 0, 0, 1)",
+      "cssVariable": "--ui-motion-easing"
     },
     {
       "name": "interaction.radius.panel",
       "type": "dimension",
-      "cssVariable": "--ui-radius-panel",
-      "value": "0.75rem",
-      "source": "semantic/interaction.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.radius.panel"
+      },
+      "resolvedValue": "0.75rem",
+      "cssVariable": "--ui-radius-panel"
     },
     {
       "name": "interaction.shadow.panel",
       "type": "shadow",
-      "cssVariable": "--ui-shadow-panel",
-      "value": "0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12)",
-      "source": "semantic/interaction.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.shadow.panel"
+      },
+      "resolvedValue": "0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12)",
+      "cssVariable": "--ui-shadow-panel"
     },
     {
       "name": "layout.content.max-width",
       "type": "dimension",
-      "cssVariable": "--ui-layout-content-max-width",
-      "value": "72rem",
-      "source": "semantic/layout.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.content.max-width"
+      },
+      "resolvedValue": "72rem",
+      "cssVariable": "--ui-layout-content-max-width"
     },
     {
       "name": "layout.z.base",
       "type": "number",
-      "cssVariable": "--ui-z-base",
-      "value": "0",
-      "source": "semantic/layout.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.z.base"
+      },
+      "resolvedValue": "0",
+      "cssVariable": "--ui-z-base"
     },
     {
       "name": "layout.z.overlay",
       "type": "number",
-      "cssVariable": "--ui-z-overlay",
-      "value": "1000",
-      "source": "semantic/layout.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.z.overlay"
+      },
+      "resolvedValue": "1000",
+      "cssVariable": "--ui-z-overlay"
+    },
+    {
+      "name": "motion.duration.fast",
+      "type": "duration",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/motion.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "motion",
+        "name": "motion.duration.fast"
+      },
+      "resolvedValue": "120ms"
+    },
+    {
+      "name": "motion.duration.normal",
+      "type": "duration",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/motion.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "motion",
+        "name": "motion.duration.normal"
+      },
+      "resolvedValue": "200ms"
+    },
+    {
+      "name": "motion.easing.standard",
+      "type": "cubicBezier",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/motion.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "motion",
+        "name": "motion.easing.standard"
+      },
+      "resolvedValue": "cubic-bezier(0.2, 0, 0, 1)"
+    },
+    {
+      "name": "radius.lg",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/radius.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "radius",
+        "name": "radius.lg"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "radius.md",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/radius.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "radius",
+        "name": "radius.md"
+      },
+      "resolvedValue": "0.75rem"
+    },
+    {
+      "name": "radius.sm",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/radius.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "radius",
+        "name": "radius.sm"
+      },
+      "resolvedValue": "0.375rem"
     },
     {
       "name": "spacing.content.gap",
       "type": "dimension",
-      "cssVariable": "--ui-space-content-gap",
-      "value": "0.75rem",
-      "source": "semantic/spacing.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.content.gap"
+      },
+      "resolvedValue": "0.75rem",
+      "cssVariable": "--ui-space-content-gap"
     },
     {
       "name": "spacing.page.inline",
       "type": "dimension",
-      "cssVariable": "--ui-space-page-inline",
-      "value": "1.5rem",
-      "source": "semantic/spacing.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.page.inline"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-space-page-inline"
     },
     {
       "name": "spacing.section.block",
       "type": "dimension",
-      "cssVariable": "--ui-space-section-block",
-      "value": "2rem",
-      "source": "semantic/spacing.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.section.block"
+      },
+      "resolvedValue": "2rem",
+      "cssVariable": "--ui-space-section-block"
     },
     {
       "name": "typography.family.body",
       "type": "fontFamily",
-      "cssVariable": "--ui-font-family-body",
-      "value": "ui-sans-serif, system-ui, sans-serif",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.family.body"
+      },
+      "resolvedValue": "ui-sans-serif, system-ui, sans-serif",
+      "cssVariable": "--ui-font-family-body"
     },
     {
       "name": "typography.line-height.body",
       "type": "number",
-      "cssVariable": "--ui-font-line-height-body",
-      "value": "1.5",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.line-height.body"
+      },
+      "resolvedValue": "1.5",
+      "cssVariable": "--ui-font-line-height-body"
     },
     {
       "name": "typography.line-height.title",
       "type": "number",
-      "cssVariable": "--ui-font-line-height-title",
-      "value": "1.2",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.line-height.title"
+      },
+      "resolvedValue": "1.2",
+      "cssVariable": "--ui-font-line-height-title"
     },
     {
       "name": "typography.size.body",
       "type": "dimension",
-      "cssVariable": "--ui-font-size-body",
-      "value": "1rem",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.body"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-font-size-body"
     },
     {
       "name": "typography.size.title",
       "type": "dimension",
-      "cssVariable": "--ui-font-size-title",
-      "value": "2rem",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.title"
+      },
+      "resolvedValue": "2rem",
+      "cssVariable": "--ui-font-size-title"
     },
     {
       "name": "typography.weight.body",
       "type": "fontWeight",
-      "cssVariable": "--ui-font-weight-body",
-      "value": "400",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.weight.body"
+      },
+      "resolvedValue": "400",
+      "cssVariable": "--ui-font-weight-body"
     },
     {
       "name": "typography.weight.title",
       "type": "fontWeight",
-      "cssVariable": "--ui-font-weight-title",
-      "value": "700",
-      "source": "semantic/typography.tokens.json"
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.weight.title"
+      },
+      "resolvedValue": "700",
+      "cssVariable": "--ui-font-weight-title"
+    },
+    {
+      "name": "z-index.base",
+      "type": "number",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/z-index.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "z-index",
+        "name": "z-index.base"
+      },
+      "resolvedValue": "0"
+    },
+    {
+      "name": "z-index.overlay",
+      "type": "number",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/z-index.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "z-index",
+        "name": "z-index.overlay"
+      },
+      "resolvedValue": "1000"
     }
   ]
 }

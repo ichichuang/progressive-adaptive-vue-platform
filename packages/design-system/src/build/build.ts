@@ -14,16 +14,25 @@ import { upgradeUserPreference } from '../runtime/preference-schema-upgrades'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { userPreferenceV2Schema } from '../schema/preference.schema'
-import { createCssFormat } from './formats/css'
-import { createManifestFormat } from './formats/manifest'
+import { createCssFormat, formatRuntimeCss } from './formats/css'
+import { createManifestFormat, formatManifest, manifestDocument } from './formats/manifest'
+import { selectTokensForOutput, tokenValueToCss, type FormatContext } from './formats/shared'
 import {
   createTokenNamesFormat,
   createTokensTypeScriptFormat,
   createUnoCssThemeFormat,
+  formatTokenNames,
+  formatTokensTypeScript,
+  formatUnoCssTheme,
 } from './formats/typescript'
-import { tokenValueToCss, type FormatContext } from './formats/shared'
 import { compareCodePoints } from './order'
-import { preprocessTokenSources, type TokenBuildResult } from './preprocess'
+import {
+  parseTokenSourceRecords,
+  preprocessTokenSources,
+  validateTokenRecords,
+  type TokenBuildResult,
+} from './preprocess'
+import { createTokenResolver, type ResolvedTokenRecord } from './resolve'
 
 const buildDirectory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(buildDirectory, '../../../..')
@@ -63,6 +72,12 @@ async function collectSourcePaths(directory: string): Promise<string[]> {
       (entry.name.endsWith('.tokens.json') || entry.name.endsWith('.theme.json'))
     ) {
       paths.push(path)
+    } else if (entry.isFile()) {
+      const sourcePath = relative(tokenSourceDirectory, path).split(sep).join('/')
+
+      if (sourcePath !== 'component/README.md') {
+        throw new Error(`${sourcePath}: unsupported token source file.`)
+      }
     }
   }
 
@@ -176,10 +191,10 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
   })
 
   for (const format of [
-    createCssFormat(),
-    createTokensTypeScriptFormat(),
-    createTokenNamesFormat(),
-    createUnoCssThemeFormat(),
+    createCssFormat(context),
+    createTokensTypeScriptFormat(context),
+    createTokenNamesFormat(context),
+    createUnoCssThemeFormat(context),
     createManifestFormat(context),
   ]) {
     dictionary.registerFormat(format)
@@ -197,18 +212,654 @@ function requireResult(context: FormatContext): TokenBuildResult {
     throw new Error('Token validation completed without build metadata.')
   }
 
+  validateGeneratorContracts(context.result)
   validateAppearanceContracts(context.result)
   return context.result
 }
 
 function assertInvariant(condition: unknown, message: string): asserts condition {
   if (!condition) {
-    throw new Error(`Appearance contract: ${message}.`)
+    throw new Error(`Production contract: ${message}.`)
   }
 }
 
 function assertInvariantEqual(actual: unknown, expected: unknown, message: string): void {
   assertInvariant(isDeepStrictEqual(actual, expected), message)
+}
+
+function assertContractFailure(
+  operation: () => unknown,
+  expectedMessage: RegExp,
+  message: string,
+): void {
+  let failure: unknown
+
+  try {
+    operation()
+  } catch (error) {
+    failure = error
+  }
+
+  assertInvariant(failure instanceof Error && expectedMessage.test(failure.message), message)
+}
+
+function isUnknownRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function validationRecords(
+  sourcePath: string,
+  source: Record<string, unknown> | string,
+): readonly ResolvedTokenRecord[] {
+  const contents = typeof source === 'string' ? source : JSON.stringify(source)
+  return createTokenResolver(parseTokenSourceRecords(sourcePath, contents)).records
+}
+
+function validationResult(
+  baseline: TokenBuildResult,
+  tokens: readonly ResolvedTokenRecord[],
+): TokenBuildResult {
+  const compounds = validateTokenRecords(tokens, new Set(baseline.themes.map((theme) => theme.id)))
+
+  return {
+    colorCompoundBudget: baseline.colorCompoundBudget,
+    compounds,
+    densityPresets: baseline.densityPresets,
+    sourceFiles: [...new Set(tokens.map((token) => token.source))].sort(compareCodePoints),
+    themes: baseline.themes,
+    tokens,
+  }
+}
+
+function validateGeneratorContracts(result: TokenBuildResult): void {
+  const colorValue = {
+    colorSpace: 'oklch',
+    components: [0.5, 0.1, 250],
+  }
+  const visibilityRecords = validationRecords('semantic/visibility.tokens.json', {
+    color: {
+      $extensions: {
+        'org.pavp': {
+          visibility: 'ui-internal',
+        },
+      },
+      inherited: {
+        $type: 'color',
+        $value: colorValue,
+      },
+      private: {
+        $extensions: {
+          'org.pavp': {
+            visibility: 'build-only',
+          },
+        },
+        inherited: {
+          $type: 'color',
+          $value: colorValue,
+        },
+      },
+      'token-level': {
+        $type: 'color',
+        $value: colorValue,
+        $extensions: {
+          'org.pavp': {
+            visibility: 'build-only',
+          },
+        },
+      },
+    },
+  })
+
+  assertInvariantEqual(
+    visibilityRecords.map((token) => [token.path, token.visibility]),
+    [
+      ['color.inherited', 'ui-internal'],
+      ['color.private.inherited', 'build-only'],
+      ['color.token-level', 'build-only'],
+    ],
+    'visibility must resolve from token metadata, then the nearest parent group, then the tier default',
+  )
+
+  for (const token of result.tokens) {
+    if (token.tier === 'primitive' || token.tier === 'density') {
+      assertInvariant(
+        token.visibility === 'build-only',
+        `${token.path} must remain build-only under its enforced tier`,
+      )
+    }
+
+    if (token.tier === 'semantic.material') {
+      assertInvariant(
+        token.visibility !== 'public',
+        `${token.path} must not widen the semantic.material tier to public`,
+      )
+    }
+
+    assertInvariant(
+      token.tier !== 'component',
+      `${token.path} must not enter the unsupported component tier`,
+    )
+  }
+
+  const futureMaterial = validationRecords('semantic/material.tokens.json', {
+    material: {
+      future: {
+        background: {
+          $type: 'color',
+          $value: colorValue,
+        },
+      },
+    },
+  })[0]
+
+  assertInvariant(
+    futureMaterial?.tier === 'semantic.material' &&
+      futureMaterial.visibility === 'ui-internal' &&
+      futureMaterial.cssVariable === '--ui-material-future-background',
+    'future semantic.material tokens must default to ui-internal and use --ui-material-*',
+  )
+
+  assertContractFailure(
+    () =>
+      validationRecords('primitive/invalid.tokens.json', {
+        color: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+            $extensions: {
+              'org.pavp': {
+                visibility: 'public',
+              },
+            },
+          },
+        },
+      }),
+    /illegally widens/u,
+    'primitive visibility widening to public must fail',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid.tokens.json', {
+        color: {
+          $extensions: {
+            'org.pavp': {
+              visibility: 'ui-internal',
+            },
+          },
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+            $extensions: {
+              'org.pavp': {
+                visibility: 'public',
+              },
+            },
+          },
+        },
+      }),
+    /illegally widens/u,
+    'child visibility widening beyond its nearest enforced group must fail',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('unknown/source.tokens.json', {
+        color: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+          },
+        },
+      }),
+    /unknown token tier/u,
+    'unknown token tiers must fail',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('component/button.tokens.json', {
+        button: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+          },
+        },
+      }),
+    /component token sources are unsupported/u,
+    'component token sources must remain unsupported before admission',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid.tokens.json', {
+        color: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+            $extensions: {
+              'org.pavp': {
+                visibility: 'public',
+                unknown: true,
+              },
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'unknown org.pavp metadata must fail',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid.tokens.json', {
+        color: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+            $extensions: {
+              'org.pavp': {
+                visibility: 'external',
+              },
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'malformed visibility metadata must fail',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid.tokens.json', {
+        color: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+            $extensions: {
+              'org.pavp': {},
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'empty unresolved org.pavp metadata must fail',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords(
+        'semantic/invalid.tokens.json',
+        '{"color":{"invalid":{"$type":"color","$value":{"colorSpace":"oklch","components":[0.5,0.1,250]},"$extensions":{"org.pavp":{"visibility":"public","visibility":"build-only"}}}}}',
+      ),
+    /Duplicate JSON object key/u,
+    'duplicate metadata must fail before validation',
+  )
+
+  const matrixTokens = validationRecords('semantic/output.tokens.json', {
+    color: {
+      alias: {
+        $type: 'color',
+        $value: '{color.public}',
+      },
+      build: {
+        $type: 'color',
+        $value: colorValue,
+        $extensions: {
+          'org.pavp': {
+            visibility: 'build-only',
+          },
+        },
+      },
+      internal: {
+        $type: 'color',
+        $value: colorValue,
+        $extensions: {
+          'org.pavp': {
+            visibility: 'ui-internal',
+          },
+        },
+      },
+      public: {
+        $type: 'color',
+        $value: colorValue,
+      },
+    },
+  })
+  const matrixResult = validationResult(result, matrixTokens)
+
+  assertInvariantEqual(
+    selectTokensForOutput(matrixResult, 'runtime-css').map((token) => token.visibility),
+    ['public', 'ui-internal', 'public'],
+    'Runtime CSS must select public and ui-internal tokens only',
+  )
+  assertInvariantEqual(
+    selectTokensForOutput(matrixResult, 'public-typescript').map((token) => token.visibility),
+    ['public', 'public'],
+    'public TypeScript must select public tokens only',
+  )
+  assertInvariantEqual(
+    selectTokensForOutput(matrixResult, 'public-token-names').map((token) => token.visibility),
+    ['public', 'public'],
+    'public token names must select public tokens only',
+  )
+  assertInvariantEqual(
+    selectTokensForOutput(matrixResult, 'unocss').map((token) => token.visibility),
+    ['public', 'public'],
+    'UnoCSS must select public tokens only',
+  )
+  assertInvariant(
+    selectTokensForOutput(matrixResult, 'manifest').length === matrixTokens.length,
+    'Manifest must select public, ui-internal, and build-only tokens',
+  )
+
+  const matrixCss = formatRuntimeCss(matrixResult)
+  const matrixTypeScript = formatTokensTypeScript(matrixResult)
+  const matrixNames = formatTokenNames(matrixResult)
+  const matrixUnoCss = formatUnoCssTheme(matrixResult)
+
+  assertInvariant(
+    matrixCss.includes('--ui-color-internal:') &&
+      !matrixCss.includes('--ui-color-build:') &&
+      matrixCss.includes('--ui-color-alias: var(--ui-color-public);'),
+    'Runtime CSS filtering must retain internal tokens, exclude build-only tokens, and preserve runtime aliases',
+  )
+  assertInvariant(
+    !matrixTypeScript.includes('color.internal') &&
+      !matrixTypeScript.includes('color.build') &&
+      !matrixNames.includes('color.internal') &&
+      !matrixNames.includes('color.build') &&
+      !matrixUnoCss.includes('color.internal') &&
+      !matrixUnoCss.includes('color.build') &&
+      !matrixUnoCss.includes('--ui-color-internal') &&
+      !matrixUnoCss.includes('--ui-color-build'),
+    'ui-internal and build-only tokens must not enter public TypeScript, names, or UnoCSS',
+  )
+
+  const matrixManifest = manifestDocument(matrixResult)
+  const matrixManifestTokens = matrixManifest['tokens']
+
+  assertInvariant(
+    Array.isArray(matrixManifestTokens) && matrixManifestTokens.length === matrixTokens.length,
+    'Manifest must contain every visibility class',
+  )
+
+  const manifestTokenNames = matrixManifestTokens.map((entry) =>
+    isUnknownRecord(entry) && typeof entry['name'] === 'string' ? entry['name'] : '',
+  )
+
+  assertInvariantEqual(
+    manifestTokenNames,
+    [...manifestTokenNames].sort(compareCodePoints),
+    'Manifest token entries must use deterministic code-point ordering',
+  )
+
+  for (const entry of matrixManifestTokens) {
+    assertInvariant(
+      isUnknownRecord(entry) &&
+        typeof entry['tier'] === 'string' &&
+        typeof entry['visibility'] === 'string' &&
+        typeof entry['source'] === 'string' &&
+        isUnknownRecord(entry['conditions']) &&
+        isUnknownRecord(entry['role']) &&
+        'resolvedValue' in entry,
+      'every Manifest token must contain tier, visibility, source, conditions, role, and resolvedValue metadata',
+    )
+
+    const runtimeExposed = entry['visibility'] === 'public' || entry['visibility'] === 'ui-internal'
+    assertInvariant(
+      'cssVariable' in entry === runtimeExposed,
+      'Manifest cssVariable must exist only for Runtime CSS tokens',
+    )
+  }
+
+  assertInvariantEqual(
+    formatManifest(matrixResult),
+    formatManifest(matrixResult),
+    'Manifest formatting must be deterministic',
+  )
+
+  const selectorRecords = createTokenResolver([
+    ...parseTokenSourceRecords(
+      'semantic/selectors.tokens.json',
+      JSON.stringify({
+        color: {
+          selector: {
+            base: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'color.selector.value',
+                },
+              },
+            },
+            compound: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'color.selector.value',
+                  conditions: {
+                    theme: 'ocean',
+                    colorMode: 'dark',
+                    contrast: 'enhanced',
+                  },
+                  compound: 'ocean-dark-enhanced',
+                },
+              },
+            },
+            contrast: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'color.selector.value',
+                  conditions: {
+                    contrast: 'enhanced',
+                  },
+                },
+              },
+            },
+            density: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'color.selector.value',
+                  conditions: {
+                    density: 'compact',
+                  },
+                },
+              },
+            },
+            mode: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'color.selector.value',
+                  conditions: {
+                    colorMode: 'dark',
+                  },
+                },
+              },
+            },
+            theme: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'color.selector.value',
+                  conditions: {
+                    theme: 'ocean',
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ),
+    ...parseTokenSourceRecords(
+      'semantic/material.tokens.json',
+      JSON.stringify({
+        material: {
+          selector: {
+            reduced: {
+              $type: 'color',
+              $value: colorValue,
+              $extensions: {
+                'org.pavp': {
+                  role: 'material.selector.value',
+                  conditions: {
+                    material: 'reduced',
+                  },
+                },
+              },
+            },
+          },
+        },
+      }),
+    ),
+  ]).records
+  const selectorResult = validationResult(result, selectorRecords)
+  const selectorCss = formatRuntimeCss(selectorResult)
+  const selectorOrder = [
+    ':root',
+    "html[data-theme='ocean']",
+    "html[data-color-mode='dark']",
+    "html[data-contrast='enhanced']",
+    "html[data-theme='ocean'][data-color-mode='dark'][data-contrast='enhanced']",
+    "html[data-density='compact']",
+    "html[data-material='reduced']",
+  ]
+  let previousSelectorIndex = -1
+
+  for (const selector of selectorOrder) {
+    const selectorIndex = selectorCss.indexOf(`  ${selector} {`)
+
+    assertInvariant(
+      selectorIndex > previousSelectorIndex,
+      'conditional selectors must follow base, theme, mode, contrast, compound, density, and material order',
+    )
+    previousSelectorIndex = selectorIndex
+  }
+
+  const compoundSelectorLines = selectorCss
+    .split('\n')
+    .filter((line) => line.includes('data-theme') && line.includes('data-color-mode'))
+
+  assertInvariant(
+    compoundSelectorLines.length === 1 &&
+      !selectorCss.includes("[data-density='compact'][") &&
+      !selectorCss.includes("[data-material='reduced']["),
+    'selector output must remain factorized and prohibit density or material compounds',
+  )
+  assertInvariantEqual(
+    selectorResult.compounds,
+    [
+      {
+        conditions: {
+          theme: 'ocean',
+          colorMode: 'dark',
+          contrast: 'enhanced',
+        },
+        name: 'ocean-dark-enhanced',
+      },
+    ],
+    'named color-plane compounds must be recorded deterministically',
+  )
+
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-compound.tokens.json', {
+        color: {
+          invalid: {
+            $type: 'color',
+            $value: colorValue,
+            $extensions: {
+              'org.pavp': {
+                conditions: {
+                  theme: 'ocean',
+                  colorMode: 'dark',
+                  contrast: 'enhanced',
+                  density: 'compact',
+                },
+                compound: 'invalid-density-compound',
+              },
+            },
+          },
+        },
+      }),
+    /only the bounded Theme × Mode × Contrast/u,
+    'density and material must be prohibited from named compounds',
+  )
+
+  const compoundCases = [
+    ['neutral', 'light', 'standard'],
+    ['neutral', 'light', 'enhanced'],
+    ['neutral', 'dark', 'standard'],
+    ['neutral', 'dark', 'enhanced'],
+    ['ocean', 'light', 'standard'],
+    ['ocean', 'light', 'enhanced'],
+    ['ocean', 'dark', 'standard'],
+    ['ocean', 'dark', 'enhanced'],
+    ['warm', 'light', 'standard'],
+  ] as const
+  const compoundSource = Object.fromEntries(
+    compoundCases.map(([theme, colorMode, contrast], index) => [
+      `case-${String(index)}`,
+      {
+        $type: 'color',
+        $value: colorValue,
+        $extensions: {
+          'org.pavp': {
+            conditions: {
+              theme,
+              colorMode,
+              contrast,
+            },
+            compound: `compound-${String(index)}`,
+          },
+        },
+      },
+    ]),
+  )
+  const overBudgetRecords = validationRecords('semantic/compound-budget.tokens.json', {
+    color: {
+      budget: compoundSource,
+    },
+  })
+
+  assertContractFailure(
+    () => validateTokenRecords(overBudgetRecords, new Set(result.themes.map((theme) => theme.id))),
+    /Color compound budget exceeded/u,
+    'the strict finite color compound budget must fail generation when exceeded',
+  )
+
+  const duplicateRoleRecords = validationRecords('semantic/duplicate-role.tokens.json', {
+    color: {
+      one: {
+        $type: 'color',
+        $value: colorValue,
+        $extensions: {
+          'org.pavp': {
+            role: 'color.duplicate.role',
+          },
+        },
+      },
+      two: {
+        $type: 'color',
+        $value: colorValue,
+        $extensions: {
+          'org.pavp': {
+            role: 'color.duplicate.role',
+          },
+        },
+      },
+    },
+  })
+
+  assertContractFailure(
+    () =>
+      validateTokenRecords(duplicateRoleRecords, new Set(result.themes.map((theme) => theme.id))),
+    /ambiguous role conditions/u,
+    'ambiguous duplicate role conditions must fail generation',
+  )
 }
 
 function validateAppearanceContracts(result: TokenBuildResult): void {

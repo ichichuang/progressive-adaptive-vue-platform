@@ -1,5 +1,3 @@
-import type { TransformedToken } from 'style-dictionary/types'
-
 import {
   colorValueSchema,
   cubicBezierValueSchema,
@@ -12,26 +10,12 @@ import {
 } from '../../schema/token.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
+import type { ResolvedTokenRecord } from '../resolve'
+import { visibilityEntersOutput, type TokenOutput } from '../token-contract'
 
 export const generatedNotice = 'Generated file. Do not edit directly.'
 
-const supportedTokenTypes = new Set<DtcgTokenType>([
-  'color',
-  'cubicBezier',
-  'dimension',
-  'duration',
-  'fontFamily',
-  'fontWeight',
-  'number',
-  'shadow',
-])
-
-interface PavpExtension {
-  source: string
-  tier: string
-}
-
-export interface SemanticToken {
+export interface OutputToken {
   cssVariable: string
   name: string
   source: string
@@ -126,107 +110,60 @@ export function tokenValueToCss(type: DtcgTokenType, value: unknown): string {
   ].join(' ')
 }
 
-function readExtension(token: TransformedToken): PavpExtension {
-  const tokenRecord = token as unknown as Record<string, unknown>
-  const extensions = tokenRecord['$extensions']
-
-  if (typeof extensions !== 'object' || extensions === null || Array.isArray(extensions)) {
-    throw new Error(`${token.path.join('.')}: missing org.pavp token metadata.`)
-  }
-
-  const extension = (extensions as Record<string, unknown>)['org.pavp']
-
-  if (typeof extension !== 'object' || extension === null || Array.isArray(extension)) {
-    throw new Error(`${token.path.join('.')}: missing org.pavp token metadata.`)
-  }
-
-  const candidate = extension as Record<string, unknown>
-
-  if (typeof candidate['source'] !== 'string' || typeof candidate['tier'] !== 'string') {
-    throw new Error(`${token.path.join('.')}: invalid org.pavp token metadata.`)
-  }
-
-  return {
-    source: candidate['source'],
-    tier: candidate['tier'],
-  }
+export function selectTokensForOutput(
+  result: TokenBuildResult,
+  output: TokenOutput,
+): ResolvedTokenRecord[] {
+  return result.tokens.filter((token) => visibilityEntersOutput(token.visibility, output))
 }
 
-function cssVariableForToken(name: string): string {
-  const segments = name.split('.')
-  const root = segments.shift()
+export function resolvedCssValue(token: ResolvedTokenRecord, result: TokenBuildResult): string {
+  if (token.reference !== undefined) {
+    const target = result.tokens.find((candidate) => candidate.path === token.reference)
 
-  if (root === 'color') {
-    return `--ui-color-${segments.join('-')}`
-  }
+    if (target === undefined) {
+      throw new Error(`${token.path}: resolved reference target "${token.reference}" is missing.`)
+    }
 
-  if (root === 'spacing') {
-    return `--ui-space-${segments.join('-')}`
-  }
-
-  if (root === 'typography') {
-    return `--ui-font-${segments.join('-')}`
-  }
-
-  if (root === 'interaction') {
-    const family = segments.shift()
-    const namespace = {
-      control: 'control',
-      motion: 'motion',
-      radius: 'radius',
-      shadow: 'shadow',
-    }[family ?? '']
-
-    if (namespace !== undefined) {
-      return `--ui-${namespace}-${segments.join('-')}`
+    if (target.cssVariable !== undefined && target.cssVariable !== token.cssVariable) {
+      return `var(${target.cssVariable})`
     }
   }
 
-  if (root === 'layout') {
-    const family = segments.shift()
-
-    if (family === 'z') {
-      return `--ui-z-${segments.join('-')}`
-    }
-
-    return `--ui-layout-${[family, ...segments].filter(Boolean).join('-')}`
-  }
-
-  throw new Error(`${name}: semantic token has no canonical --ui-* namespace mapping.`)
+  return tokenValueToCss(token.type, token.resolvedValue)
 }
 
-export function semanticTokens(tokens: readonly TransformedToken[]): SemanticToken[] {
-  return tokens
-    .map((token) => {
-      const extension = readExtension(token)
+export function uniqueRoleTokensForOutput(
+  result: TokenBuildResult,
+  output: Exclude<TokenOutput, 'runtime-css' | 'manifest'>,
+): OutputToken[] {
+  const roles = new Map<string, OutputToken>()
 
-      if (extension.tier !== 'semantic') {
-        return undefined
-      }
+  for (const token of selectTokensForOutput(result, output)) {
+    if (token.cssVariable === undefined) {
+      throw new Error(`${token.path}: ${output} token is missing its Runtime CSS variable.`)
+    }
 
-      const name = token.path.join('.')
-      const tokenRecord = token as unknown as Record<string, unknown>
-      const type = tokenRecord['$type']
-      const value = tokenRecord['$value']
+    const existing = roles.get(token.role.name)
+    const outputToken = {
+      cssVariable: token.cssVariable,
+      name: token.role.name,
+      source: token.source,
+      type: token.type,
+      value: resolvedCssValue(token, result),
+    }
 
-      if (typeof type !== 'string' || !supportedTokenTypes.has(type as DtcgTokenType)) {
-        throw new Error(`${name}: unsupported transformed token type.`)
-      }
+    if (
+      existing !== undefined &&
+      (existing.cssVariable !== outputToken.cssVariable || existing.type !== outputToken.type)
+    ) {
+      throw new Error(`${token.path}: public role "${token.role.name}" has conflicting metadata.`)
+    }
 
-      if (typeof value !== 'string') {
-        throw new Error(`${name}: Style Dictionary CSS transform did not produce a string.`)
-      }
+    roles.set(token.role.name, outputToken)
+  }
 
-      return {
-        cssVariable: cssVariableForToken(name),
-        name,
-        source: extension.source,
-        type: type as DtcgTokenType,
-        value,
-      }
-    })
-    .filter((token): token is SemanticToken => token !== undefined)
-    .sort((left, right) => compareCodePoints(left.name, right.name))
+  return [...roles.values()].sort((left, right) => compareCodePoints(left.name, right.name))
 }
 
 export function requireBuildResult(context: FormatContext): TokenBuildResult {

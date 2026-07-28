@@ -1,7 +1,14 @@
 import type { Format } from 'style-dictionary/types'
 
 import { compareCodePoints } from '../order'
-import { generatedNotice, semanticTokens, type SemanticToken } from './shared'
+import type { TokenBuildResult } from '../preprocess'
+import {
+  generatedNotice,
+  requireBuildResult,
+  uniqueRoleTokensForOutput,
+  type FormatContext,
+  type OutputToken,
+} from './shared'
 
 function stringLiteral(value: string): string {
   return `'${value.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`
@@ -26,38 +33,39 @@ function formatThemeValue(value: UnoThemeValue): string {
   return `{\n${properties}\n    }`
 }
 
-function entries(
-  tokens: readonly SemanticToken[],
-  value: (token: SemanticToken) => string,
-): string {
+function entries(tokens: readonly OutputToken[], value: (token: OutputToken) => string): string {
   return tokens.map((token) => `  ${stringLiteral(token.name)}: ${value(token)},`).join('\n')
 }
 
-export function createTokensTypeScriptFormat(): Format {
+export function formatTokensTypeScript(result: TokenBuildResult): string {
+  const tokens = uniqueRoleTokensForOutput(result, 'public-typescript')
+
+  return `/* ${generatedNotice} */\nimport type { TokenName } from './token-names'\n\nexport const tokens = {\n${entries(tokens, (token) => stringLiteral(`var(${token.cssVariable})`))}\n} as const satisfies Record<TokenName, string>\n`
+}
+
+export function createTokensTypeScriptFormat(context: FormatContext): Format {
   return {
     name: 'pavp/typescript/tokens',
-    format: ({ dictionary }) => {
-      const tokens = semanticTokens(dictionary.allTokens)
-
-      return `/* ${generatedNotice} */\nimport type { TokenName } from './token-names'\n\nexport const tokens = {\n${entries(tokens, (token) => stringLiteral(`var(${token.cssVariable})`))}\n} as const satisfies Record<TokenName, string>\n`
-    },
+    format: () => formatTokensTypeScript(requireBuildResult(context)),
   }
 }
 
-export function createTokenNamesFormat(): Format {
+export function formatTokenNames(result: TokenBuildResult): string {
+  const names = uniqueRoleTokensForOutput(result, 'public-token-names')
+    .map((token) => `  ${stringLiteral(token.name)},`)
+    .join('\n')
+
+  return `/* ${generatedNotice} */\nexport const tokenNames = [\n${names}\n] as const\n\nexport type TokenName = (typeof tokenNames)[number]\n`
+}
+
+export function createTokenNamesFormat(context: FormatContext): Format {
   return {
     name: 'pavp/typescript/token-names',
-    format: ({ dictionary }) => {
-      const names = semanticTokens(dictionary.allTokens)
-        .map((token) => `  ${stringLiteral(token.name)},`)
-        .join('\n')
-
-      return `/* ${generatedNotice} */\nexport const tokenNames = [\n${names}\n] as const\n\nexport type TokenName = (typeof tokenNames)[number]\n`
-    },
+    format: () => formatTokenNames(requireBuildResult(context)),
   }
 }
 
-function themeKey(token: SemanticToken):
+function themeKey(token: OutputToken):
   | {
       family: string
       key: string
@@ -120,54 +128,54 @@ function themeKey(token: SemanticToken):
   return undefined
 }
 
-export function createUnoCssThemeFormat(): Format {
-  return {
-    name: 'pavp/typescript/unocss-theme',
-    format: ({ dictionary }) => {
-      const tokens = semanticTokens(dictionary.allTokens)
-      const tokenVariables = new Map(
-        tokens.map((token) => [token.name, `var(${token.cssVariable})`]),
-      )
-      const families = new Map<string, Map<string, UnoThemeValue>>()
+export function formatUnoCssTheme(result: TokenBuildResult): string {
+  const tokens = uniqueRoleTokensForOutput(result, 'unocss')
+  const tokenVariables = new Map(tokens.map((token) => [token.name, `var(${token.cssVariable})`]))
+  const families = new Map<string, Map<string, UnoThemeValue>>()
 
-      for (const token of tokens) {
-        const target = themeKey(token)
+  for (const token of tokens) {
+    const target = themeKey(token)
 
-        if (target === undefined) {
-          continue
-        }
+    if (target === undefined) {
+      continue
+    }
 
-        const family = families.get(target.family) ?? new Map<string, UnoThemeValue>()
-        const lineHeightVariable = tokenVariables.get(`typography.line-height.${target.key}`)
-        const value =
-          target.family === 'text'
-            ? {
-                fontSize: `var(${token.cssVariable})`,
-                ...(lineHeightVariable === undefined
-                  ? {}
-                  : {
-                      lineHeight: lineHeightVariable,
-                    }),
-              }
-            : `var(${token.cssVariable})`
+    const family = families.get(target.family) ?? new Map<string, UnoThemeValue>()
+    const lineHeightVariable = tokenVariables.get(`typography.line-height.${target.key}`)
+    const value =
+      target.family === 'text'
+        ? {
+            fontSize: `var(${token.cssVariable})`,
+            ...(lineHeightVariable === undefined
+              ? {}
+              : {
+                  lineHeight: lineHeightVariable,
+                }),
+          }
+        : `var(${token.cssVariable})`
 
-        family.set(target.key, value)
-        families.set(target.family, family)
-      }
+    family.set(target.key, value)
+    families.set(target.family, family)
+  }
 
-      const familyLines = [...families.entries()]
+  const familyLines = [...families.entries()]
+    .sort(([left], [right]) => compareCodePoints(left, right))
+    .map(([family, values]) => {
+      const valueLines = [...values.entries()]
         .sort(([left], [right]) => compareCodePoints(left, right))
-        .map(([family, values]) => {
-          const valueLines = [...values.entries()]
-            .sort(([left], [right]) => compareCodePoints(left, right))
-            .map(([key, value]) => `    ${propertyName(key)}: ${formatThemeValue(value)},`)
-            .join('\n')
-
-          return `  ${family}: {\n${valueLines}\n  },`
-        })
+        .map(([key, value]) => `    ${propertyName(key)}: ${formatThemeValue(value)},`)
         .join('\n')
 
-      return `/* ${generatedNotice} */\nexport const platformTheme = {\n${familyLines}\n} as const\n`
-    },
+      return `  ${family}: {\n${valueLines}\n  },`
+    })
+    .join('\n')
+
+  return `/* ${generatedNotice} */\nexport const platformTheme = {\n${familyLines}\n} as const\n`
+}
+
+export function createUnoCssThemeFormat(context: FormatContext): Format {
+  return {
+    name: 'pavp/typescript/unocss-theme',
+    format: () => formatUnoCssTheme(requireBuildResult(context)),
   }
 }

@@ -6,10 +6,55 @@ const tokenReferencePattern = /^\{[a-z][a-z0-9-]*(?:\.(?:[a-z][a-z0-9-]*|\d+))+\
 const finiteNumberSchema = z.number()
 const normalizedNumberSchema = finiteNumberSchema.min(0).max(1)
 const hueSchema = finiteNumberSchema.min(0).lt(360)
+const metadataNameSchema = z.string().regex(/^[a-z][a-z0-9-]*$/u)
 
 export const tokenReferenceSchema = z
   .string()
   .regex(tokenReferencePattern, 'Token references must use the complete {token.path} syntax.')
+
+const tokenVisibilitySchema = z.enum(['public', 'ui-internal', 'build-only'])
+
+const tokenConditionsSchema = z
+  .strictObject({
+    theme: metadataNameSchema.optional(),
+    colorMode: z.enum(['light', 'dark']).optional(),
+    contrast: z.enum(['standard', 'enhanced']).optional(),
+    density: z.enum(['compact', 'comfortable', 'spacious']).optional(),
+    material: z.enum(['adaptive', 'reduced', 'solid']).optional(),
+  })
+  .refine((conditions) => Object.keys(conditions).length > 0, {
+    message: 'Token conditions must select at least one appearance axis.',
+  })
+
+const tokenRoleSchema = z
+  .string()
+  .regex(
+    /^(?:[a-z][a-z0-9-]*|\d+)(?:\.(?:[a-z][a-z0-9-]*|\d+))+$/u,
+    'Token roles must use a complete lower kebab-case dot path.',
+  )
+
+const groupPavpExtensionSchema = z.strictObject({
+  visibility: tokenVisibilitySchema,
+})
+
+const tokenPavpExtensionSchema = z
+  .strictObject({
+    visibility: tokenVisibilitySchema.optional(),
+    role: tokenRoleSchema.optional(),
+    conditions: tokenConditionsSchema.optional(),
+    compound: metadataNameSchema.optional(),
+  })
+  .refine((extension) => Object.keys(extension).length > 0, {
+    message: 'org.pavp token metadata must declare at least one supported field.',
+  })
+
+export const tokenGroupExtensionsSchema = z.strictObject({
+  'org.pavp': groupPavpExtensionSchema,
+})
+
+const tokenExtensionsSchema = z.strictObject({
+  'org.pavp': tokenPavpExtensionSchema,
+})
 
 export const colorValueSchema = z.strictObject({
   colorSpace: z.literal('oklch'),
@@ -47,54 +92,61 @@ export const shadowValueSchema = z.strictObject({
 })
 
 const tokenDescriptionSchema = z.string().min(1).optional()
+const tokenMetadataShape = {
+  $description: tokenDescriptionSchema,
+  $extensions: tokenExtensionsSchema.optional(),
+}
 
 export const tokenDefinitionSchema = z.discriminatedUnion('$type', [
   z.strictObject({
     $type: z.literal('color'),
     $value: z.union([colorValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('dimension'),
     $value: z.union([dimensionValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('duration'),
     $value: z.union([durationValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('cubicBezier'),
     $value: z.union([cubicBezierValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('fontFamily'),
     $value: z.union([fontFamilyValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('fontWeight'),
     $value: z.union([fontWeightValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('number'),
     $value: z.union([finiteNumberSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
   z.strictObject({
     $type: z.literal('shadow'),
     $value: z.union([shadowValueSchema, tokenReferenceSchema]),
-    $description: tokenDescriptionSchema,
+    ...tokenMetadataShape,
   }),
 ])
 
 export type ColorValue = z.infer<typeof colorValueSchema>
 export type DtcgTokenType = z.infer<typeof tokenDefinitionSchema>['$type']
 export type ShadowValue = z.infer<typeof shadowValueSchema>
+export type TokenConditions = z.infer<typeof tokenConditionsSchema>
 export type TokenDefinition = z.infer<typeof tokenDefinitionSchema>
+export type TokenPavpExtension = z.infer<typeof tokenPavpExtensionSchema>
+export type TokenVisibility = z.infer<typeof tokenVisibilitySchema>
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -115,6 +167,21 @@ function validateTokenGroup(
           message: 'Group $description must be a non-empty string.',
           path: [...path, key],
         })
+      }
+      continue
+    }
+
+    if (key === '$extensions') {
+      const result = tokenGroupExtensionsSchema.safeParse(value)
+
+      if (!result.success) {
+        for (const issue of result.error.issues) {
+          context.addIssue({
+            code: 'custom',
+            message: issue.message,
+            path: [...path, key, ...issue.path],
+          })
+        }
       }
       continue
     }
