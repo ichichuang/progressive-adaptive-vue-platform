@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { dirname, extname, join, relative, resolve, sep } from 'node:path'
+import { TextDecoder } from 'node:util'
 
 import ts from 'typescript'
 
@@ -9,7 +10,7 @@ type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
 const sourceExtensions = new Set(['.ts', '.vue'])
-const applicationMaterialSourceExtensions = new Set(['.css', '.ts', '.vue'])
+const excludedApplicationDirectories = new Set(['dist', 'node_modules'])
 const rootTypeScriptConfigurationSuffix = '.config.ts'
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
 const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
@@ -138,6 +139,37 @@ async function collectSourceFiles(
   }
 
   return files
+}
+
+async function collectApplicationFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, {
+    withFileTypes: true,
+  })
+  const files: string[] = []
+
+  for (const entry of entries) {
+    const path = join(directory, entry.name)
+
+    if (entry.isDirectory() && !excludedApplicationDirectories.has(entry.name)) {
+      files.push(...(await collectApplicationFiles(path)))
+    } else if (entry.isFile()) {
+      files.push(path)
+    }
+  }
+
+  return files
+}
+
+function decodeUtf8Text(contents: Uint8Array): string | undefined {
+  if (contents.includes(0)) {
+    return undefined
+  }
+
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(contents)
+  } catch {
+    return undefined
+  }
 }
 
 function sourceTextForImports(path: string, sourceText: string): string {
@@ -293,16 +325,13 @@ async function validateDesignSystemTokenExports(): Promise<string[]> {
 }
 
 async function validateNoApplicationMaterialTokenUse(): Promise<string[]> {
-  const applicationFiles = await collectSourceFiles(
-    resolve(rootDirectory, 'apps/web/src'),
-    applicationMaterialSourceExtensions,
-  )
+  const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
   const violations: string[] = []
 
   for (const applicationFile of applicationFiles) {
-    const sourceText = await readFile(applicationFile, 'utf8')
+    const sourceText = decodeUtf8Text(await readFile(applicationFile))
 
-    if (sourceText.includes('--ui-material-')) {
+    if (sourceText?.includes('--ui-material-')) {
       violations.push(
         `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal --ui-material-* tokens.`,
       )
