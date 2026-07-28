@@ -7,6 +7,10 @@ This file is a route to that authority, not a second copy of it. If guidance her
 appears incomplete, follow `ARCHITECTURE.md`. If a requested change conflicts with
 it, stop and identify the conflict instead of creating an alternative convention.
 
+## UI Work Route
+
+For UI, appearance, component, material, motion, layout, scroll, or runtime-acceptance tasks, read `.ai/skills/pavp-ui/SKILL.md` after `ARCHITECTURE.md`.
+
 ## Working Rules
 
 - Keep changes within the active architecture phase.
