@@ -9,6 +9,7 @@ type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
 const sourceExtensions = new Set(['.ts', '.vue'])
+const rootTypeScriptConfigurationSuffix = '.config.ts'
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
 const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
   projectConfig.workspaces.map((workspace) => [
@@ -71,6 +72,44 @@ async function validateManifestDependencies(): Promise<string[]> {
 
       if (!version.startsWith('workspace:')) {
         violations.push(`${workspace.name} must use the workspace: protocol for ${dependency}.`)
+      }
+    }
+  }
+
+  return violations
+}
+
+async function validateRootConfigurationDependencies(): Promise<string[]> {
+  const rootManifest = await readJsonObject(resolve(rootDirectory, 'package.json'))
+  const declaredDependencies = new Map(dependencyEntries(rootManifest))
+  const rootEntries = await readdir(rootDirectory, {
+    withFileTypes: true,
+  })
+  const configurationFiles = rootEntries
+    .filter((entry) => entry.isFile() && entry.name.endsWith(rootTypeScriptConfigurationSuffix))
+    .map((entry) => resolve(rootDirectory, entry.name))
+  const violations: string[] = []
+
+  for (const configurationFile of configurationFiles) {
+    const sourceText = await readFile(configurationFile, 'utf8')
+    const imports = ts.preProcessFile(sourceText, true, true).importedFiles
+
+    for (const importedFile of imports) {
+      if (!workspaceNames.has(importedFile.fileName)) {
+        continue
+      }
+
+      const version = declaredDependencies.get(importedFile.fileName)
+      const displayPath = relative(rootDirectory, configurationFile)
+
+      if (version === undefined) {
+        violations.push(
+          `${displayPath}: root configuration import "${importedFile.fileName}" requires a direct root dependency declaration.`,
+        )
+      } else if (!version.startsWith('workspace:')) {
+        violations.push(
+          `${displayPath}: root configuration dependency "${importedFile.fileName}" must use the workspace: protocol.`,
+        )
       }
     }
   }
@@ -231,7 +270,11 @@ async function validateSourceImports(): Promise<string[]> {
   return violations
 }
 
-const violations = [...(await validateManifestDependencies()), ...(await validateSourceImports())]
+const violations = [
+  ...(await validateManifestDependencies()),
+  ...(await validateRootConfigurationDependencies()),
+  ...(await validateSourceImports()),
+]
 
 if (violations.length > 0) {
   throw new Error(

@@ -16,6 +16,8 @@
     "zod": "catalog:"
   },
   "devDependencies": {
-    "style-dictionary": "catalog:"
+    "@unocss/core": "catalog:",
+    "style-dictionary": "catalog:",
+    "unocss": "catalog:"
   }
 }

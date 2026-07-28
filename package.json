@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "@iconify-json/lucide": "catalog:",
+    "@platform/design-system": "workspace:*",
     "@types/node": "catalog:",
     "@unocss/eslint-plugin": "catalog:",
     "@unocss/preset-icons": "catalog:",

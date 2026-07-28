@@ -15,6 +15,7 @@ patchedDependencies:
 catalog:
   '@iconify-json/lucide': 1.2.120
   '@types/node': 24.13.3
+  '@unocss/core': 66.7.5
   '@unocss/eslint-plugin': 66.7.5
   '@unocss/preset-icons': 66.7.5
   '@unocss/preset-wind4': 66.7.5

@@ -145,6 +145,11 @@ expectEqual(rootManifest['packageManager'], expectedPackageManager, 'Package man
 expectEqual(rootManifest['pnpm'], undefined, 'Legacy package.json pnpm configuration')
 expectEqual(rootEngines['node'], '>=24.0.0 <25.0.0', 'Node engine baseline')
 expectEqual(rootEngines['pnpm'], '>=10.0.0 <11.0.0', 'pnpm engine baseline')
+expectEqual(
+  rootDevDependencies['@platform/design-system'],
+  'workspace:*',
+  'Root design-system workspace binding',
+)
 expectEqual(rootDevDependencies['typescript'], 'catalog:', 'TypeScript catalog binding')
 expectEqual(rootDevDependencies['yaml'], 'catalog:', 'YAML parser catalog binding')
 
@@ -171,9 +176,19 @@ if (!isJsonObject(designSystemDependencies) || !isJsonObject(designSystemDevDepe
 expectEqual(designSystemDependencies['colorjs.io'], 'catalog:', 'Color.js catalog binding')
 expectEqual(designSystemDependencies['zod'], 'catalog:', 'Zod catalog binding')
 expectEqual(
+  designSystemDevDependencies['@unocss/core'],
+  'catalog:',
+  'Design-system UnoCSS core catalog binding',
+)
+expectEqual(
   designSystemDevDependencies['style-dictionary'],
   'catalog:',
   'Style Dictionary catalog binding',
+)
+expectEqual(
+  designSystemDevDependencies['unocss'],
+  'catalog:',
+  'Design-system UnoCSS catalog binding',
 )
 
 const knownNames = new Set(projectConfig.workspaces.map((workspace) => workspace.name))
@@ -219,6 +234,7 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
 }
 
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
+expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
 expectEqual(workspaceConfiguration['strictDepBuilds'], true, 'Strict dependency build policy')
 expectStructuredEqual(
   workspaceConfiguration['allowBuilds'],
