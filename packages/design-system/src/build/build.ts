@@ -8,12 +8,17 @@ import { runInNewContext } from 'node:vm'
 import StyleDictionary from 'style-dictionary'
 import type { PreprocessedTokens } from 'style-dictionary/types'
 
-import { applyAppearance } from '../runtime/apply-appearance'
+import {
+  applyAppearance,
+  effectiveAppearanceAttributes,
+  effectiveAppearanceCustomProperties,
+} from '../runtime/apply-appearance'
 import { defaultUserPreferenceV2 } from '../runtime/appearance-defaults'
 import { prepareFirstPaint } from '../runtime/first-paint'
 import { upgradeUserPreference } from '../runtime/preference-schema-upgrades'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
+import { fontScaleValues } from '../schema/appearance.schema'
 import { userPreferenceV2Schema } from '../schema/preference.schema'
 import { validateContrastAndMaterialContracts } from './contrast'
 import { createCssFormat, formatRuntimeCss } from './formats/css'
@@ -1182,12 +1187,14 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     {
       effectiveColorMode: prepared.effectiveAppearance.colorMode,
       effectiveMaterial: prepared.effectiveAppearance.material,
+      fontScale: prepared.effectiveAppearance.fontScale,
       storedColorMode: prepared.storedPreference.appearance.colorMode,
       storedMaterial: prepared.storedPreference.appearance.material,
     },
     {
       effectiveColorMode: 'dark',
       effectiveMaterial: 'solid',
+      fontScale: 1,
       storedColorMode: 'system',
       storedMaterial: 'adaptive',
     },
@@ -1195,11 +1202,17 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   )
 
   const attributes = new Map<string, string>()
+  const customProperties = new Map<string, string>()
 
   applyAppearance(
     {
       setAttribute(name, value) {
         attributes.set(name, value)
+      },
+      style: {
+        setProperty(name, value) {
+          customProperties.set(name, value)
+        },
       },
     },
     prepared.effectiveAppearance,
@@ -1214,7 +1227,14 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       'data-motion': 'full',
       'data-theme': 'neutral',
     },
-    'appearance application must write only canonical effective attributes',
+    'appearance application must preserve the six canonical effective attributes',
+  )
+  assertInvariantEqual(
+    Object.fromEntries(customProperties),
+    {
+      '--ui-font-scale': '1',
+    },
+    'appearance application must write the canonical font scale custom property',
   )
 }
 
@@ -1231,6 +1251,7 @@ interface AppearanceInitExecutionOptions {
 
 interface AppearanceInitExecutionResult {
   attributes: Record<string, string>
+  customProperties: Record<string, string>
   networkRequests: number
   requestedStorageKey?: string
   storageWrites: number
@@ -1257,6 +1278,7 @@ function executeAppearanceInit(
     ['data-motion', 'full'],
     ['data-theme', 'neutral'],
   ])
+  const customProperties = new Map<string, string>([['--ui-font-scale', '1']])
   let requestedStorageKey: string | undefined
   let storageWrites = 0
   let networkRequests = 0
@@ -1287,6 +1309,11 @@ function executeAppearanceInit(
       documentElement: {
         setAttribute(name: string, value: string): void {
           attributes.set(name, value)
+        },
+        style: {
+          setProperty(name: string, value: string): void {
+            customProperties.set(name, value)
+          },
         },
       },
     },
@@ -1319,6 +1346,7 @@ function executeAppearanceInit(
 
   return {
     attributes: Object.fromEntries(attributes),
+    customProperties: Object.fromEntries(customProperties),
     networkRequests,
     ...(requestedStorageKey === undefined ? {} : { requestedStorageKey }),
     storageWrites,
@@ -1328,14 +1356,12 @@ function executeAppearanceInit(
 function validateFirstPaintContracts(result: TokenBuildResult): void {
   const criticalTheme = formatCriticalThemeCss(result)
   const appearanceInit = formatAppearanceInitScript()
-  const canonicalAttributes = new Set([
-    'data-color-mode',
-    'data-contrast',
-    'data-density',
-    'data-material',
-    'data-motion',
-    'data-theme',
-  ])
+  const canonicalAttributes = new Set<string>(
+    effectiveAppearanceAttributes.map(([, attributeName]) => attributeName),
+  )
+  const canonicalCustomProperties = new Set<string>(
+    effectiveAppearanceCustomProperties.map(([, propertyName]) => propertyName),
+  )
 
   assertInvariant(
     criticalTheme.includes('--ui-color-surface-page:') &&
@@ -1344,6 +1370,8 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       criticalTheme.includes('--ui-material-overlay-background:') &&
       criticalTheme.includes('--ui-material-modal-background:') &&
       criticalTheme.includes('--ui-material-scrim-background:') &&
+      criticalTheme.includes('--ui-font-scale: 1;') &&
+      criticalTheme.includes('font-size: calc(100% * var(--ui-font-scale));') &&
       criticalTheme.includes("html[data-color-mode='light']") &&
       criticalTheme.includes('@media (forced-colors: active)'),
     'critical-theme.css must provide the Neutral, Light, Standard, Comfortable, and Solid safe baseline',
@@ -1367,6 +1395,24 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       appearanceInit.includes("getAttribute('data-preference-storage-key')"),
     'appearance-init.js must remain synchronous, classic, network-free, storage-read-only, and application-module-free',
   )
+  assertInvariantEqual(
+    manifestDocument(result)['firstPaint'],
+    {
+      applicationKeyAgnostic: true,
+      artifacts: ['appearance-init.js', 'critical-theme.css'],
+      baseline: {
+        colorMode: 'light',
+        contrast: 'standard',
+        density: 'comfortable',
+        fontScale: 1,
+        material: 'solid',
+        motion: 'full',
+        theme: 'neutral',
+      },
+      synchronousClassicScript: true,
+    },
+    'Manifest first-paint metadata must record the complete safe baseline',
+  )
 
   const validExecution = executeAppearanceInit(appearanceInit, {
     prefersDark: true,
@@ -1384,6 +1430,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         'data-motion': 'full',
         'data-theme': 'neutral',
       },
+      customProperties: {
+        '--ui-font-scale': '1',
+      },
       networkRequests: 0,
       requestedStorageKey: 'runtime-supplied-preference-key',
       storageWrites: 0,
@@ -1394,6 +1443,65 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     Object.keys(validExecution.attributes).every((attribute) => canonicalAttributes.has(attribute)),
     'appearance-init.js must set only canonical effective DOM attributes',
   )
+  assertInvariant(
+    Object.keys(validExecution.customProperties).every((propertyName) =>
+      canonicalCustomProperties.has(propertyName),
+    ),
+    'appearance-init.js must set only canonical effective custom properties',
+  )
+
+  for (const fontScale of fontScaleValues) {
+    const storedPreference = {
+      ...defaultUserPreferenceV2,
+      appearance: {
+        ...defaultUserPreferenceV2.appearance,
+        fontScale,
+      },
+    }
+    const generatedExecution = executeAppearanceInit(appearanceInit, {
+      rawPreference: JSON.stringify(storedPreference),
+    })
+    const preparedState = prepareFirstPaint({
+      environment: {
+        backdropFilterSupported: true,
+        forcedColorsActive: false,
+        prefersDark: false,
+        reducedTransparencyRequested: false,
+      },
+      storedPreference,
+    })
+    const runtimeAttributes = new Map<string, string>()
+    const runtimeCustomProperties = new Map<string, string>()
+
+    applyAppearance(
+      {
+        setAttribute(name, value) {
+          runtimeAttributes.set(name, value)
+        },
+        style: {
+          setProperty(name, value) {
+            runtimeCustomProperties.set(name, value)
+          },
+        },
+      },
+      preparedState.effectiveAppearance,
+    )
+
+    assertInvariantEqual(
+      generatedExecution.attributes,
+      Object.fromEntries(runtimeAttributes),
+      `appearance-init.js and the runtime helper must share attribute behavior for fontScale=${String(fontScale)}`,
+    )
+    assertInvariantEqual(
+      generatedExecution.customProperties,
+      Object.fromEntries(runtimeCustomProperties),
+      `appearance-init.js and the runtime helper must share custom property behavior for fontScale=${String(fontScale)}`,
+    )
+    assertInvariant(
+      generatedExecution.customProperties['--ui-font-scale'] === String(fontScale),
+      `appearance-init.js must apply validated fontScale=${String(fontScale)}`,
+    )
+  }
 
   const legacyExecution = executeAppearanceInit(appearanceInit, {
     rawPreference: JSON.stringify({
@@ -1421,6 +1529,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     'data-motion': 'full',
     'data-theme': 'neutral',
   }
+  const solidBaselineCustomProperties = {
+    '--ui-font-scale': '1',
+  }
 
   for (const failure of [
     executeAppearanceInit(appearanceInit, {
@@ -1429,6 +1540,15 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     executeAppearanceInit(appearanceInit, {
       rawPreference: JSON.stringify({
         schemaVersion: 2,
+      }),
+    }),
+    executeAppearanceInit(appearanceInit, {
+      rawPreference: JSON.stringify({
+        ...defaultUserPreferenceV2,
+        appearance: {
+          ...defaultUserPreferenceV2.appearance,
+          fontScale: 1.15,
+        },
       }),
     }),
     executeAppearanceInit(appearanceInit, {
@@ -1445,6 +1565,11 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       failure.attributes,
       solidBaseline,
       'appearance-init.js failures must preserve the complete solid critical baseline',
+    )
+    assertInvariantEqual(
+      failure.customProperties,
+      solidBaselineCustomProperties,
+      'appearance-init.js failures must preserve the default font scale',
     )
     assertInvariant(
       failure.networkRequests === 0 && failure.storageWrites === 0,

@@ -207,7 +207,9 @@
       "colorMode": "light",
       "contrast": "standard",
       "density": "comfortable",
+      "fontScale": 1,
       "material": "solid",
+      "motion": "full",
       "theme": "neutral"
     },
     "artifacts": ["appearance-init.js", "critical-theme.css"],

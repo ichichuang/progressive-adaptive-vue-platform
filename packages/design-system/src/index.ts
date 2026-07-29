@@ -20,7 +20,9 @@ export { themeDefinitionSchema, themeIdSchema, type ThemeDefinition } from './sc
 export { userPreferenceV2Schema, type UserPreferenceV2 } from './schema/preference.schema'
 export {
   applyAppearance,
+  type AppearanceApplicationTarget,
   type AppearanceAttributeTarget,
+  type AppearanceStyleTarget,
   type EffectiveAppearanceState,
 } from './runtime/apply-appearance'
 export { defaultUserPreferenceV2 } from './runtime/appearance-defaults'

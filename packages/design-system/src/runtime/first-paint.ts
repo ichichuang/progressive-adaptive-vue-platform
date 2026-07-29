@@ -1,4 +1,3 @@
-import type { FontScale } from '../schema/appearance.schema'
 import type { UserPreferenceV2 } from '../schema/preference.schema'
 import type { EffectiveAppearanceState } from './apply-appearance'
 import { upgradeUserPreference } from './preference-schema-upgrades'
@@ -24,7 +23,6 @@ export interface PrepareFirstPaintInput {
 export interface PreparedFirstPaintState {
   readonly densityScale: number
   readonly effectiveAppearance: EffectiveAppearanceState
-  readonly fontScale: FontScale
   readonly storedPreference: UserPreferenceV2
 }
 
@@ -43,6 +41,7 @@ export function prepareFirstPaint({
       }),
       contrast: preference.appearance.contrast,
       density: preference.appearance.density.preset,
+      fontScale: preference.appearance.fontScale,
       material: resolveMaterial({
         backdropFilterSupported: environment.backdropFilterSupported,
         forcedColorsActive: environment.forcedColorsActive,
@@ -53,6 +52,5 @@ export function prepareFirstPaint({
       theme: preference.appearance.theme,
     },
     densityScale: preference.appearance.density.scale,
-    fontScale: preference.appearance.fontScale,
   }
 }

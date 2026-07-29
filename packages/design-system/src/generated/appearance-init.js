@@ -267,6 +267,7 @@
     colorMode: resolveColorMode(storedAppearance.colorMode, prefersDark),
     contrast: storedAppearance.contrast,
     density: storedAppearance.density.preset,
+    fontScale: storedAppearance.fontScale,
     material: resolveMaterial(
       storedAppearance.material,
       forcedColorsActive,
@@ -278,7 +279,12 @@
   }
   var root = document.documentElement
 
-  if (!root || typeof root.setAttribute !== 'function') {
+  if (
+    !root ||
+    typeof root.setAttribute !== 'function' ||
+    !root.style ||
+    typeof root.style.setProperty !== 'function'
+  ) {
     return
   }
 
@@ -288,4 +294,5 @@
   root.setAttribute('data-material', effectiveAppearance.material)
   root.setAttribute('data-motion', effectiveAppearance.motion)
   root.setAttribute('data-theme', effectiveAppearance.theme)
+  root.style.setProperty('--ui-font-scale', String(effectiveAppearance.fontScale))
 })()

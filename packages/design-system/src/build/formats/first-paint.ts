@@ -1,6 +1,9 @@
 import type { Format } from 'style-dictionary/types'
 
-import { effectiveAppearanceAttributes } from '../../runtime/apply-appearance'
+import {
+  effectiveAppearanceAttributes,
+  effectiveAppearanceCustomProperties,
+} from '../../runtime/apply-appearance'
 import { defaultUserPreferenceV2 } from '../../runtime/appearance-defaults'
 import { colorModeResolutionContract } from '../../runtime/resolve-color-mode'
 import { materialResolutionContract } from '../../runtime/resolve-material'
@@ -127,6 +130,15 @@ function appearanceAttributeWrites(): string {
     .map(
       ([stateKey, attributeName]) =>
         `  root.setAttribute(${javascriptString(attributeName)}, effectiveAppearance.${stateKey})`,
+    )
+    .join('\n')
+}
+
+function appearanceCustomPropertyWrites(): string {
+  return effectiveAppearanceCustomProperties
+    .map(
+      ([stateKey, propertyName]) =>
+        `  root.style.setProperty(${javascriptString(propertyName)}, String(effectiveAppearance.${stateKey}))`,
     )
     .join('\n')
 }
@@ -374,6 +386,7 @@ export function formatAppearanceInitScript(): string {
     colorMode: resolveColorMode(storedAppearance.colorMode, prefersDark),
     contrast: storedAppearance.contrast,
     density: storedAppearance.density.preset,
+    fontScale: storedAppearance.fontScale,
     material: resolveMaterial(
       storedAppearance.material,
       forcedColorsActive,
@@ -385,11 +398,17 @@ export function formatAppearanceInitScript(): string {
   }
   var root = document.documentElement
 
-  if (!root || typeof root.setAttribute !== 'function') {
+  if (
+    !root ||
+    typeof root.setAttribute !== 'function' ||
+    !root.style ||
+    typeof root.style.setProperty !== 'function'
+  ) {
     return
   }
 
 ${appearanceAttributeWrites()}
+${appearanceCustomPropertyWrites()}
 })()
 `
 }

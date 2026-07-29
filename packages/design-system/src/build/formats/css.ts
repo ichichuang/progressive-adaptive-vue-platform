@@ -42,6 +42,7 @@ export function formatAppearanceBaseCss(): string {
   html {
     background-color: var(--ui-color-surface-page);
     color: var(--ui-color-text-primary);
+    font-size: calc(100% * var(--ui-font-scale));
   }
 
   html[data-color-mode='light'] {
