@@ -185,7 +185,7 @@ Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 
 | UnoCSS Preset   | `presetWind4`                        |
 | 图标              | `presetIcons` + Lucide               |
 | Design Token 格式 | DTCG 2025.10 兼容子集                    |
-| Token 构建        | Style Dictionary 4 + 项目 Preprocessor |
+| Token 构建        | Style Dictionary 5.4 + 项目 Preprocessor |
 | Token 校验        | Zod 4                                |
 | 颜色处理            | Color.js                             |
 | 用户配色空间          | OKLCH                                |
@@ -199,7 +199,7 @@ Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 
 
 UnoCSS `presetWind4` 是官方 Tailwind 4 风格 Preset，包含内部 Reset、按需主题变量和现代 CSS Property Layer；Attributify 是独立可选 Preset，不在本架构启用。
 
-DTCG 2025.10 是稳定技术报告，但不是 W3C Standards Track 标准；Style Dictionary 4 已支持 DTCG 格式，但官方说明对 2025.10 的完整支持仍在推进。因此架构采用“稳定子集 + 显式 Schema”，不绑定尚未完整实现的边缘能力。
+DTCG 2025.10 是稳定技术报告，但不是 W3C Standards Track 标准；Style Dictionary 5 已支持 DTCG 格式，但官方说明对 2025.10 的完整支持仍在推进。因此架构采用“稳定子集 + 显式 Schema”，不绑定尚未完整实现的边缘能力。
 
 Reka UI 提供无样式、可访问、完整类型化的 Vue 原语，负责 ARIA、键盘导航和焦点管理；其 Drawer 在 2.10 中仍标记为 Alpha，所以 Drawer 不作为首版不可替换的公共实现合同。
 
@@ -3337,7 +3337,7 @@ Node 24 LTS
 + DTCG 2025.10 Compatible Tokens
 + Token Visibility and Filtered Outputs
 + Factorized Conditional Selectors
-+ Style Dictionary 4
++ Style Dictionary 5.4
 + Zod 4
 + Color.js / OKLCH
 + Runtime CSS Variables

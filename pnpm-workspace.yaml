@@ -12,9 +12,6 @@ allowBuilds:
 patchedDependencies:
   unconfig@7.5.0: patches/unconfig@7.5.0.patch
 
-overrides:
-  '@bundled-es-modules/glob@10.4.2': 11.1.0
-
 catalog:
   '@iconify-json/lucide': 1.2.120
   '@types/node': 24.13.3
@@ -31,7 +28,7 @@ catalog:
   knip: 6.29.0
   prettier: 3.9.6
   stylelint: 17.14.1
-  style-dictionary: 4.4.0
+  style-dictionary: 5.4.4
   tsx: 4.23.1
   typescript: 6.0.3
   typescript-eslint: 8.65.0
