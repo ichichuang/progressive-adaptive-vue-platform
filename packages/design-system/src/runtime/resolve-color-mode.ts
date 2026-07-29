@@ -7,12 +7,18 @@ export interface ResolveColorModeInput {
   readonly storedColorMode: ColorModePreference
 }
 
+export const colorModeResolutionContract = {
+  dark: 'dark',
+  light: 'light',
+  system: 'system',
+} as const
+
 export function resolveColorMode({
   prefersDark,
   storedColorMode,
 }: ResolveColorModeInput): EffectiveColorMode {
-  if (storedColorMode === 'system') {
-    return prefersDark ? 'dark' : 'light'
+  if (storedColorMode === colorModeResolutionContract.system) {
+    return prefersDark ? colorModeResolutionContract.dark : colorModeResolutionContract.light
   }
 
   return storedColorMode

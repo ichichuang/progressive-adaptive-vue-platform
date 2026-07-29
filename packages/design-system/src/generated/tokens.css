@@ -1,11 +1,21 @@
 /* Generated file. Do not edit directly. */
+@layer reset, tokens, base, utilities, components, app, overrides;
+
 @layer tokens {
   :root {
     --ui-color-action-primary: oklch(21% 0.012 247);
-    --ui-color-border-default: oklch(92% 0.005 247);
-    --ui-color-focus-ring: oklch(62% 0.17 250);
+    --ui-color-border-default: oklch(55% 0.012 247);
+    --ui-color-focus-ring: oklch(54% 0.15 250);
+    --ui-color-material-support-chrome-adaptive: oklch(100% 0 0 / 0.94);
+    --ui-color-material-support-chrome-reduced: oklch(100% 0 0 / 0.98);
+    --ui-color-material-support-modal-adaptive: oklch(100% 0 0 / 0.98);
+    --ui-color-material-support-modal-reduced: oklch(100% 0 0 / 0.99);
+    --ui-color-material-support-overlay-adaptive: oklch(98.5% 0.002 247 / 0.96);
+    --ui-color-material-support-overlay-reduced: oklch(98.5% 0.002 247 / 0.985);
+    --ui-color-scrim-viewport: oklch(0% 0 0 / 0.56);
     --ui-color-surface-page: oklch(98.5% 0.002 247);
     --ui-color-surface-panel: oklch(100% 0 0);
+    --ui-color-text-on-action: oklch(100% 0 0);
     --ui-color-text-primary: oklch(14.5% 0.01 247);
     --ui-color-text-secondary: oklch(37% 0.014 247);
     --ui-control-height: 2.25rem;
@@ -26,5 +36,78 @@
     --ui-font-size-title: 2rem;
     --ui-font-weight-body: 400;
     --ui-font-weight-title: 700;
+  }
+
+  html[data-color-mode='dark'] {
+    --ui-color-action-primary: oklch(100% 0 0);
+    --ui-color-border-default: oklch(55% 0.012 247);
+    --ui-color-focus-ring: oklch(62% 0.17 250);
+    --ui-color-material-support-chrome-adaptive: oklch(14.5% 0.01 247 / 0.94);
+    --ui-color-material-support-chrome-reduced: oklch(14.5% 0.01 247 / 0.98);
+    --ui-color-material-support-modal-adaptive: oklch(21% 0.012 247 / 0.98);
+    --ui-color-material-support-modal-reduced: oklch(21% 0.012 247 / 0.99);
+    --ui-color-material-support-overlay-adaptive: oklch(21% 0.012 247 / 0.96);
+    --ui-color-material-support-overlay-reduced: oklch(21% 0.012 247 / 0.985);
+    --ui-color-surface-page: oklch(14.5% 0.01 247);
+    --ui-color-surface-panel: oklch(21% 0.012 247);
+    --ui-color-text-on-action: oklch(14.5% 0.01 247);
+    --ui-color-text-primary: oklch(100% 0 0);
+    --ui-color-text-secondary: oklch(92% 0.005 247);
+  }
+
+  html[data-material='adaptive'] {
+    --ui-material-chrome-background: var(--ui-color-material-support-chrome-adaptive);
+    --ui-material-modal-background: var(--ui-color-material-support-modal-adaptive);
+    --ui-material-overlay-background: var(--ui-color-material-support-overlay-adaptive);
+    --ui-material-scrim-background: var(--ui-color-scrim-viewport);
+  }
+
+  html[data-material='reduced'] {
+    --ui-material-chrome-background: var(--ui-color-material-support-chrome-reduced);
+    --ui-material-modal-background: var(--ui-color-material-support-modal-reduced);
+    --ui-material-overlay-background: var(--ui-color-material-support-overlay-reduced);
+    --ui-material-scrim-background: oklch(0% 0 0 / 0.82);
+  }
+
+  html[data-material='solid'] {
+    --ui-material-chrome-background: var(--ui-color-surface-panel);
+    --ui-material-modal-background: var(--ui-color-surface-panel);
+    --ui-material-overlay-background: var(--ui-color-surface-panel);
+    --ui-material-scrim-background: oklch(0% 0 0);
+  }
+}
+
+@media (forced-colors: active) {
+  @layer tokens {
+    :root {
+      --ui-color-action-primary: Highlight;
+      --ui-color-border-default: GrayText;
+      --ui-color-focus-ring: Highlight;
+      --ui-color-scrim-viewport: CanvasText;
+      --ui-color-surface-page: Canvas;
+      --ui-color-surface-panel: Canvas;
+      --ui-color-text-on-action: HighlightText;
+      --ui-color-text-primary: CanvasText;
+      --ui-color-text-secondary: CanvasText;
+      --ui-material-chrome-background: Canvas;
+      --ui-material-modal-background: Canvas;
+      --ui-material-overlay-background: Canvas;
+      --ui-material-scrim-background: CanvasText;
+    }
+  }
+}
+
+@layer base {
+  html {
+    background-color: var(--ui-color-surface-page);
+    color: var(--ui-color-text-primary);
+  }
+
+  html[data-color-mode='light'] {
+    color-scheme: light;
+  }
+
+  html[data-color-mode='dark'] {
+    color-scheme: dark;
   }
 }

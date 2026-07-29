@@ -18,6 +18,7 @@ export default {
     'no-duplicate-selectors': true,
     'no-empty-source': true,
     'property-no-unknown': true,
+    'property-disallowed-list': ['backdrop-filter', 'filter'],
     'selector-pseudo-class-no-unknown': true,
     'selector-pseudo-element-no-unknown': true,
     'unit-no-unknown': true,

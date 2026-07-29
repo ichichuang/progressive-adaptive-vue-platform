@@ -2,6 +2,7 @@ import {
   isTokenReference,
   tokenPathFromReference,
   type ColorValue,
+  type ContrastPairDeclaration,
   type DtcgTokenType,
   type ShadowValue,
   type TokenConditions,
@@ -15,6 +16,7 @@ import type { TokenRoleMetadata, TokenTier } from './token-contract'
 export interface TokenRecord {
   compound?: string
   conditions: TokenConditions
+  contrastPairs?: readonly ContrastPairDeclaration[]
   cssVariable?: string
   description?: string
   path: string

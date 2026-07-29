@@ -1,3 +1,4 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
+  "ignore": ["packages/design-system/src/generated/appearance-init.js"],
 }

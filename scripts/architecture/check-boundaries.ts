@@ -4,6 +4,7 @@ import { TextDecoder } from 'node:util'
 
 import ts from 'typescript'
 
+import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
 
 type JsonObject = Record<string, unknown>
@@ -324,18 +325,164 @@ async function validateDesignSystemTokenExports(): Promise<string[]> {
     )
 }
 
-async function validateNoApplicationMaterialTokenUse(): Promise<string[]> {
+async function validateNoApplicationInternalTokenUse(): Promise<string[]> {
+  const manifest = await readJsonObject(
+    resolve(rootDirectory, 'packages/design-system/src/generated/tokens.manifest.json'),
+  )
+  const manifestTokens = manifest['tokens']
+
+  if (!Array.isArray(manifestTokens)) {
+    return ['Generated token Manifest must declare a tokens array.']
+  }
+
+  const internalCssVariables = manifestTokens.flatMap((token) => {
+    if (
+      !isJsonObject(token) ||
+      token['visibility'] !== 'ui-internal' ||
+      typeof token['cssVariable'] !== 'string'
+    ) {
+      return []
+    }
+
+    return [token['cssVariable']]
+  })
   const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
   const violations: string[] = []
 
   for (const applicationFile of applicationFiles) {
     const sourceText = decodeUtf8Text(await readFile(applicationFile))
 
-    if (sourceText?.includes('--ui-material-')) {
+    const referencedInternalVariable = internalCssVariables.find((cssVariable) =>
+      sourceText?.includes(cssVariable),
+    )
+
+    if (referencedInternalVariable !== undefined) {
       violations.push(
-        `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal --ui-material-* tokens.`,
+        `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal token "${referencedInternalVariable}".`,
       )
     }
+  }
+
+  return violations
+}
+
+function cssLikeContent(path: string, sourceText: string): string {
+  const extension = extname(path)
+
+  if (extension === '.css' || extension === '.html') {
+    return sourceText
+  }
+
+  if (extension === '.vue') {
+    return [...sourceText.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gu)]
+      .map((match) => match[1] ?? '')
+      .join('\n')
+  }
+
+  return ''
+}
+
+async function validateNoApplicationOpticalEffects(): Promise<string[]> {
+  const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
+  const forbiddenOpticalSyntax =
+    /\b(?:backdrop-filter|filter)\s*:|(?:blur|brightness|saturate)\s*\(/u
+  const violations: string[] = []
+
+  for (const applicationFile of applicationFiles) {
+    const sourceText = decodeUtf8Text(await readFile(applicationFile))
+
+    if (
+      sourceText !== undefined &&
+      forbiddenOpticalSyntax.test(cssLikeContent(applicationFile, sourceText))
+    ) {
+      violations.push(
+        `${relative(rootDirectory, applicationFile)}: page-authored optical effects are forbidden.`,
+      )
+    }
+  }
+
+  return violations
+}
+
+async function validateFirstPaintApplicationContract(): Promise<string[]> {
+  const indexPath = resolve(rootDirectory, 'apps/web/index.html')
+  const viteConfigurationPath = resolve(rootDirectory, 'apps/web/vite.config.ts')
+  const appearanceInitPath = resolve(
+    rootDirectory,
+    'packages/design-system/src/generated/appearance-init.js',
+  )
+  const [indexHtml, viteConfiguration, appearanceInit] = await Promise.all([
+    readFile(indexPath, 'utf8'),
+    readFile(viteConfigurationPath, 'utf8'),
+    readFile(appearanceInitPath, 'utf8'),
+  ])
+  const violations: string[] = []
+  const storageKeyMatches = [...indexHtml.matchAll(/\bdata-preference-storage-key="([^"]*)"/gu)]
+  const configuredStorageKey = applicationConfig.appearance.preferenceStorageKey
+
+  if (storageKeyMatches.length !== 1 || storageKeyMatches[0]?.[1] !== configuredStorageKey) {
+    violations.push(
+      'apps/web/index.html: the first-paint script storage key must exactly match the application-owned configuration.',
+    )
+  }
+
+  if (appearanceInit.includes(configuredStorageKey)) {
+    violations.push(
+      'packages/design-system/src/generated/appearance-init.js: generated initialization must remain application-key-agnostic.',
+    )
+  }
+
+  const criticalThemeIndex = indexHtml.indexOf('href="/generated/critical-theme.css"')
+  const appearanceInitIndex = indexHtml.indexOf('src="/generated/appearance-init.js"')
+  const vueBootstrapIndex = indexHtml.indexOf('src="/src/main.ts"')
+
+  if (
+    criticalThemeIndex < 0 ||
+    appearanceInitIndex <= criticalThemeIndex ||
+    vueBootstrapIndex <= appearanceInitIndex
+  ) {
+    violations.push(
+      'apps/web/index.html: startup order must be critical theme, synchronous appearance initialization, then Vue bootstrap.',
+    )
+  }
+
+  const appearanceScriptTag =
+    /<script\b(?=[^>]*\bsrc="\/generated\/appearance-init\.js")[^>]*><\/script>/u.exec(
+      indexHtml,
+    )?.[0]
+
+  if (
+    appearanceScriptTag === undefined ||
+    /\b(?:async|defer|type)\s*=/u.test(appearanceScriptTag)
+  ) {
+    violations.push(
+      'apps/web/index.html: appearance-init.js must be included as a synchronous classic script.',
+    )
+  }
+
+  const baselineAttributes = [
+    'data-color-mode="light"',
+    'data-contrast="standard"',
+    'data-density="comfortable"',
+    'data-material="solid"',
+    'data-motion="full"',
+    'data-theme="neutral"',
+  ]
+
+  if (baselineAttributes.some((attribute) => !indexHtml.includes(attribute))) {
+    violations.push(
+      'apps/web/index.html: Neutral/Light/Standard/Comfortable/Solid baseline attributes are incomplete.',
+    )
+  }
+
+  if (
+    !viteConfiguration.includes('appearance-init.js') ||
+    !viteConfiguration.includes('critical-theme.css') ||
+    !viteConfiguration.includes('applicationConfig.appearance.preferenceStorageKey')
+  ) {
+    violations.push(
+      'apps/web/vite.config.ts: generated first-paint asset and application configuration wiring is incomplete.',
+    )
   }
 
   return violations
@@ -346,7 +493,9 @@ const violations = [
   ...(await validateRootConfigurationDependencies()),
   ...(await validateSourceImports()),
   ...(await validateDesignSystemTokenExports()),
-  ...(await validateNoApplicationMaterialTokenUse()),
+  ...(await validateNoApplicationInternalTokenUse()),
+  ...(await validateNoApplicationOpticalEffects()),
+  ...(await validateFirstPaintApplicationContract()),
 ]
 
 if (violations.length > 0) {

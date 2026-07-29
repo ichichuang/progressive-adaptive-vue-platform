@@ -13,17 +13,79 @@
     "text": {
       "primary": {
         "$type": "color",
-        "$value": "{color.palette.neutral.950}"
+        "$value": "{color.palette.neutral.950}",
+        "$extensions": {
+          "org.pavp": {
+            "contrastPairs": [
+              {
+                "id": "text-primary-on-page",
+                "background": "color.surface.page",
+                "kind": "text"
+              },
+              {
+                "id": "text-primary-on-panel",
+                "background": "color.surface.panel",
+                "kind": "text"
+              },
+              {
+                "id": "material-chrome-content",
+                "background": "material.chrome.background",
+                "kind": "text"
+              },
+              {
+                "id": "material-overlay-content",
+                "background": "material.overlay.background",
+                "kind": "text"
+              },
+              {
+                "id": "material-modal-content",
+                "background": "material.modal.background",
+                "kind": "text"
+              }
+            ]
+          }
+        }
       },
       "secondary": {
         "$type": "color",
-        "$value": "{color.palette.neutral.700}"
+        "$value": "{color.palette.neutral.700}",
+        "$extensions": {
+          "org.pavp": {
+            "contrastPairs": [
+              {
+                "id": "text-secondary-on-page",
+                "background": "color.surface.page",
+                "kind": "text"
+              },
+              {
+                "id": "text-secondary-on-panel",
+                "background": "color.surface.panel",
+                "kind": "text"
+              }
+            ]
+          }
+        }
+      },
+      "on-action": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.0}",
+        "$extensions": {
+          "org.pavp": {
+            "contrastPairs": [
+              {
+                "id": "action-content-on-primary",
+                "background": "color.action.primary",
+                "kind": "text"
+              }
+            ]
+          }
+        }
       }
     },
     "border": {
       "default": {
         "$type": "color",
-        "$value": "{color.palette.neutral.200}"
+        "$value": "{color.palette.neutral.500}"
       }
     },
     "action": {
@@ -35,7 +97,284 @@
     "focus": {
       "ring": {
         "$type": "color",
-        "$value": "{color.palette.blue.500}"
+        "$value": "{color.palette.blue.600}",
+        "$extensions": {
+          "org.pavp": {
+            "contrastPairs": [
+              {
+                "id": "focus-ring-on-page",
+                "background": "color.surface.page",
+                "kind": "non-text"
+              },
+              {
+                "id": "focus-ring-on-panel",
+                "background": "color.surface.panel",
+                "kind": "non-text"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "scrim": {
+      "viewport": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0, 0, 0],
+          "alpha": 0.56
+        }
+      }
+    },
+    "mode": {
+      "dark": {
+        "surface-page": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.950}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.surface.page",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "surface-panel": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.900}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.surface.panel",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "text-primary": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.0}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.primary",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "text-secondary": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.200}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.secondary",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "text-on-action": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.950}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.on-action",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "border-default": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.500}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.border.default",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "action-primary": {
+          "$type": "color",
+          "$value": "{color.palette.neutral.0}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.action.primary",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        },
+        "focus-ring": {
+          "$type": "color",
+          "$value": "{color.palette.blue.500}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.focus.ring",
+              "conditions": {
+                "colorMode": "dark"
+              }
+            }
+          }
+        }
+      }
+    },
+    "material-support": {
+      "$extensions": {
+        "org.pavp": {
+          "visibility": "ui-internal"
+        }
+      },
+      "chrome-adaptive": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [1, 0, 0],
+          "alpha": 0.94
+        }
+      },
+      "chrome-adaptive-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.145, 0.01, 247],
+          "alpha": 0.94
+        },
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.material-support.chrome-adaptive",
+            "conditions": {
+              "colorMode": "dark"
+            }
+          }
+        }
+      },
+      "chrome-reduced": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [1, 0, 0],
+          "alpha": 0.98
+        }
+      },
+      "chrome-reduced-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.145, 0.01, 247],
+          "alpha": 0.98
+        },
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.material-support.chrome-reduced",
+            "conditions": {
+              "colorMode": "dark"
+            }
+          }
+        }
+      },
+      "overlay-adaptive": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.985, 0.002, 247],
+          "alpha": 0.96
+        }
+      },
+      "overlay-adaptive-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.21, 0.012, 247],
+          "alpha": 0.96
+        },
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.material-support.overlay-adaptive",
+            "conditions": {
+              "colorMode": "dark"
+            }
+          }
+        }
+      },
+      "overlay-reduced": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.985, 0.002, 247],
+          "alpha": 0.985
+        }
+      },
+      "overlay-reduced-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.21, 0.012, 247],
+          "alpha": 0.985
+        },
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.material-support.overlay-reduced",
+            "conditions": {
+              "colorMode": "dark"
+            }
+          }
+        }
+      },
+      "modal-adaptive": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [1, 0, 0],
+          "alpha": 0.98
+        }
+      },
+      "modal-adaptive-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.21, 0.012, 247],
+          "alpha": 0.98
+        },
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.material-support.modal-adaptive",
+            "conditions": {
+              "colorMode": "dark"
+            }
+          }
+        }
+      },
+      "modal-reduced": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [1, 0, 0],
+          "alpha": 0.99
+        }
+      },
+      "modal-reduced-dark": {
+        "$type": "color",
+        "$value": {
+          "colorSpace": "oklch",
+          "components": [0.21, 0.012, 247],
+          "alpha": 0.99
+        },
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.material-support.modal-reduced",
+            "conditions": {
+              "colorMode": "dark"
+            }
+          }
+        }
       }
     }
   }

@@ -16,14 +16,20 @@ export interface EffectiveAppearanceState {
   readonly theme: ThemeDefinition['id']
 }
 
+export const effectiveAppearanceAttributes = [
+  ['colorMode', 'data-color-mode'],
+  ['contrast', 'data-contrast'],
+  ['density', 'data-density'],
+  ['material', 'data-material'],
+  ['motion', 'data-motion'],
+  ['theme', 'data-theme'],
+] as const satisfies readonly (readonly [keyof EffectiveAppearanceState, `data-${string}`])[]
+
 export function applyAppearance(
   target: AppearanceAttributeTarget,
   appearance: EffectiveAppearanceState,
 ): void {
-  target.setAttribute('data-color-mode', appearance.colorMode)
-  target.setAttribute('data-contrast', appearance.contrast)
-  target.setAttribute('data-density', appearance.density)
-  target.setAttribute('data-material', appearance.material)
-  target.setAttribute('data-motion', appearance.motion)
-  target.setAttribute('data-theme', appearance.theme)
+  for (const [stateKey, attributeName] of effectiveAppearanceAttributes) {
+    target.setAttribute(attributeName, appearance[stateKey])
+  }
 }

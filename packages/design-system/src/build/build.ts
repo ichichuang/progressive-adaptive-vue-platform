@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
+import { runInNewContext } from 'node:vm'
 
 import StyleDictionary from 'style-dictionary'
 import type { PreprocessedTokens } from 'style-dictionary/types'
@@ -14,7 +15,14 @@ import { upgradeUserPreference } from '../runtime/preference-schema-upgrades'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { userPreferenceV2Schema } from '../schema/preference.schema'
+import { validateContrastAndMaterialContracts } from './contrast'
 import { createCssFormat, formatRuntimeCss } from './formats/css'
+import {
+  createAppearanceInitFormat,
+  createCriticalThemeFormat,
+  formatAppearanceInitScript,
+  formatCriticalThemeCss,
+} from './formats/first-paint'
 import { createManifestFormat, formatManifest, manifestDocument } from './formats/manifest'
 import { selectTokensForOutput, tokenValueToCss, type FormatContext } from './formats/shared'
 import {
@@ -39,6 +47,8 @@ const repositoryRoot = resolve(buildDirectory, '../../../..')
 const tokenSourceDirectory = resolve(repositoryRoot, 'packages/design-system/tokens')
 const generatedDirectory = resolve(repositoryRoot, 'packages/design-system/src/generated')
 const generatedFiles = [
+  'appearance-init.js',
+  'critical-theme.css',
   'token-names.ts',
   'tokens.css',
   'tokens.manifest.json',
@@ -140,6 +150,14 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
               format: 'pavp/css',
             },
             {
+              destination: 'critical-theme.css',
+              format: 'pavp/css/critical-theme',
+            },
+            {
+              destination: 'appearance-init.js',
+              format: 'pavp/javascript/appearance-init',
+            },
+            {
               destination: 'tokens.ts',
               format: 'pavp/typescript/tokens',
             },
@@ -192,6 +210,8 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
 
   for (const format of [
     createCssFormat(context),
+    createCriticalThemeFormat(context),
+    createAppearanceInitFormat(),
     createTokensTypeScriptFormat(context),
     createTokenNamesFormat(context),
     createUnoCssThemeFormat(context),
@@ -214,6 +234,7 @@ function requireResult(context: FormatContext): TokenBuildResult {
 
   validateGeneratorContracts(context.result)
   validateAppearanceContracts(context.result)
+  validateFirstPaintContracts(context.result)
   return context.result
 }
 
@@ -264,7 +285,10 @@ function validationResult(
   return {
     colorCompoundBudget: baseline.colorCompoundBudget,
     compounds,
+    contrastPairs: [],
     densityPresets: baseline.densityPresets,
+    materialRoles: [],
+    nonTextBoundaries: [],
     sourceFiles: [...new Set(tokens.map((token) => token.source))].sort(compareCodePoints),
     themes: baseline.themes,
     tokens,
@@ -860,6 +884,54 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     /ambiguous role conditions/u,
     'ambiguous duplicate role conditions must fail generation',
   )
+
+  const publicTypeScript = formatTokensTypeScript(result)
+  const publicNames = formatTokenNames(result)
+  const publicUnoCss = formatUnoCssTheme(result)
+
+  assertInvariant(
+    !publicTypeScript.includes('material.') &&
+      !publicTypeScript.includes('--ui-material-') &&
+      !publicNames.includes('material.') &&
+      !publicUnoCss.includes('material.') &&
+      !publicUnoCss.includes('--ui-material-') &&
+      !publicTypeScript.includes('material-support') &&
+      !publicNames.includes('material-support') &&
+      !publicUnoCss.includes('material-support'),
+    'ui-internal material and support tokens must not leak into public TypeScript, names, or UnoCSS',
+  )
+
+  const themeIds = result.themes.map((theme) => theme.id)
+  const incompleteMaterialTokens = result.tokens.filter(
+    (token) =>
+      !(token.role.name === 'material.chrome.background' && token.conditions.material === 'solid'),
+  )
+
+  assertContractFailure(
+    () => validateContrastAndMaterialContracts(incompleteMaterialTokens, themeIds),
+    /projection contract/u,
+    'incomplete adaptive, reduced, or solid material projections must fail generation',
+  )
+
+  const incompleteContrastTokens = result.tokens.map((token): ResolvedTokenRecord => {
+    if (token.contrastPairs === undefined) {
+      return token
+    }
+
+    const contrastPairs = token.contrastPairs.filter(
+      (pair) => pair.id !== 'action-content-on-primary',
+    )
+    const { contrastPairs: sourceContrastPairs, ...metadata } = token
+
+    void sourceContrastPairs
+    return contrastPairs.length === 0 ? metadata : { ...metadata, contrastPairs }
+  })
+
+  assertContractFailure(
+    () => validateContrastAndMaterialContracts(incompleteContrastTokens, themeIds),
+    /Named contrast pair contract/u,
+    'incomplete named contrast pair metadata must fail generation',
+  )
 }
 
 function validateAppearanceContracts(result: TokenBuildResult): void {
@@ -1144,6 +1216,241 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     },
     'appearance application must write only canonical effective attributes',
   )
+}
+
+interface AppearanceInitExecutionOptions {
+  backdropFilterSupported?: boolean
+  cssColorSupported?: boolean
+  forcedColorsActive?: boolean
+  prefersDark?: boolean
+  rawPreference?: string | null
+  reducedTransparencyRequested?: boolean
+  storageKey?: string | null
+  storageReadFailure?: boolean
+}
+
+interface AppearanceInitExecutionResult {
+  attributes: Record<string, string>
+  networkRequests: number
+  requestedStorageKey?: string
+  storageWrites: number
+}
+
+function executeAppearanceInit(
+  script: string,
+  {
+    backdropFilterSupported = true,
+    cssColorSupported = true,
+    forcedColorsActive = false,
+    prefersDark = false,
+    rawPreference = null,
+    reducedTransparencyRequested = false,
+    storageKey = 'runtime-supplied-preference-key',
+    storageReadFailure = false,
+  }: AppearanceInitExecutionOptions = {},
+): AppearanceInitExecutionResult {
+  const attributes = new Map<string, string>([
+    ['data-color-mode', 'light'],
+    ['data-contrast', 'standard'],
+    ['data-density', 'comfortable'],
+    ['data-material', 'solid'],
+    ['data-motion', 'full'],
+    ['data-theme', 'neutral'],
+  ])
+  let requestedStorageKey: string | undefined
+  let storageWrites = 0
+  let networkRequests = 0
+  const rejectStorageWrite = (): never => {
+    storageWrites += 1
+    throw new Error('Generated first-paint script attempted a storage write.')
+  }
+  const rejectNetwork = (): never => {
+    networkRequests += 1
+    throw new Error('Generated first-paint script attempted a network request.')
+  }
+
+  runInNewContext(script, {
+    CSS: {
+      supports(property: string): boolean {
+        return property === 'color' ? cssColorSupported : backdropFilterSupported
+      },
+    },
+    document: {
+      currentScript:
+        storageKey === null
+          ? null
+          : {
+              getAttribute(name: string): string | null {
+                return name === 'data-preference-storage-key' ? storageKey : null
+              },
+            },
+      documentElement: {
+        setAttribute(name: string, value: string): void {
+          attributes.set(name, value)
+        },
+      },
+    },
+    fetch: rejectNetwork,
+    localStorage: {
+      clear: rejectStorageWrite,
+      getItem(key: string): string | null {
+        requestedStorageKey = key
+
+        if (storageReadFailure) {
+          throw new Error('Storage unavailable.')
+        }
+
+        return rawPreference
+      },
+      removeItem: rejectStorageWrite,
+      setItem: rejectStorageWrite,
+    },
+    matchMedia(query: string): { matches: boolean } {
+      return {
+        matches:
+          (query === '(forced-colors: active)' && forcedColorsActive) ||
+          (query === '(prefers-color-scheme: dark)' && prefersDark) ||
+          (query === '(prefers-reduced-transparency: reduce)' && reducedTransparencyRequested),
+      }
+    },
+    WebSocket: rejectNetwork,
+    XMLHttpRequest: rejectNetwork,
+  })
+
+  return {
+    attributes: Object.fromEntries(attributes),
+    networkRequests,
+    ...(requestedStorageKey === undefined ? {} : { requestedStorageKey }),
+    storageWrites,
+  }
+}
+
+function validateFirstPaintContracts(result: TokenBuildResult): void {
+  const criticalTheme = formatCriticalThemeCss(result)
+  const appearanceInit = formatAppearanceInitScript()
+  const canonicalAttributes = new Set([
+    'data-color-mode',
+    'data-contrast',
+    'data-density',
+    'data-material',
+    'data-motion',
+    'data-theme',
+  ])
+
+  assertInvariant(
+    criticalTheme.includes('--ui-color-surface-page:') &&
+      criticalTheme.includes('--ui-color-text-primary:') &&
+      criticalTheme.includes('--ui-material-chrome-background:') &&
+      criticalTheme.includes('--ui-material-overlay-background:') &&
+      criticalTheme.includes('--ui-material-modal-background:') &&
+      criticalTheme.includes('--ui-material-scrim-background:') &&
+      criticalTheme.includes("html[data-color-mode='light']") &&
+      criticalTheme.includes('@media (forced-colors: active)'),
+    'critical-theme.css must provide the Neutral, Light, Standard, Comfortable, and Solid safe baseline',
+  )
+  assertInvariantEqual(
+    formatCriticalThemeCss(result),
+    criticalTheme,
+    'critical-theme.css generation must be deterministic',
+  )
+  assertInvariantEqual(
+    formatAppearanceInitScript(),
+    appearanceInit,
+    'appearance-init.js generation must be deterministic',
+  )
+  assertInvariant(
+    !/\b(?:import|export)\b/u.test(appearanceInit) &&
+      !/\b(?:async|await|fetch|XMLHttpRequest|WebSocket)\b/u.test(appearanceInit) &&
+      !/\.(?:setItem|removeItem|clear)\s*\(/u.test(appearanceInit) &&
+      !appearanceInit.includes('pinia') &&
+      appearanceInit.includes('document.currentScript') &&
+      appearanceInit.includes("getAttribute('data-preference-storage-key')"),
+    'appearance-init.js must remain synchronous, classic, network-free, storage-read-only, and application-module-free',
+  )
+
+  const validExecution = executeAppearanceInit(appearanceInit, {
+    prefersDark: true,
+    rawPreference: JSON.stringify(defaultUserPreferenceV2),
+  })
+
+  assertInvariantEqual(
+    validExecution,
+    {
+      attributes: {
+        'data-color-mode': 'dark',
+        'data-contrast': 'standard',
+        'data-density': 'comfortable',
+        'data-material': 'adaptive',
+        'data-motion': 'full',
+        'data-theme': 'neutral',
+      },
+      networkRequests: 0,
+      requestedStorageKey: 'runtime-supplied-preference-key',
+      storageWrites: 0,
+    },
+    'appearance-init.js must use only its runtime-supplied key and canonical effective attributes',
+  )
+  assertInvariant(
+    Object.keys(validExecution.attributes).every((attribute) => canonicalAttributes.has(attribute)),
+    'appearance-init.js must set only canonical effective DOM attributes',
+  )
+
+  const legacyExecution = executeAppearanceInit(appearanceInit, {
+    rawPreference: JSON.stringify({
+      appearance: {
+        ...defaultUserPreferenceV2.appearance,
+        colorMode: 'high-contrast',
+        material: undefined,
+      },
+      schemaVersion: 1,
+    }),
+  })
+
+  assertInvariant(
+    legacyExecution.attributes['data-color-mode'] === 'light' &&
+      legacyExecution.attributes['data-contrast'] === 'enhanced' &&
+      legacyExecution.attributes['data-material'] === 'solid',
+    'appearance-init.js must upgrade V1 high contrast in memory and preserve the solid migration',
+  )
+
+  const solidBaseline = {
+    'data-color-mode': 'light',
+    'data-contrast': 'standard',
+    'data-density': 'comfortable',
+    'data-material': 'solid',
+    'data-motion': 'full',
+    'data-theme': 'neutral',
+  }
+
+  for (const failure of [
+    executeAppearanceInit(appearanceInit, {
+      rawPreference: '{invalid',
+    }),
+    executeAppearanceInit(appearanceInit, {
+      rawPreference: JSON.stringify({
+        schemaVersion: 2,
+      }),
+    }),
+    executeAppearanceInit(appearanceInit, {
+      storageReadFailure: true,
+    }),
+    executeAppearanceInit(appearanceInit, {
+      cssColorSupported: false,
+    }),
+    executeAppearanceInit(appearanceInit, {
+      storageKey: null,
+    }),
+  ]) {
+    assertInvariantEqual(
+      failure.attributes,
+      solidBaseline,
+      'appearance-init.js failures must preserve the complete solid critical baseline',
+    )
+    assertInvariant(
+      failure.networkRequests === 0 && failure.storageWrites === 0,
+      'appearance-init.js failure handling must not request the network or write storage',
+    )
+  }
 }
 
 export async function validateTokens(): Promise<TokenBuildResult> {

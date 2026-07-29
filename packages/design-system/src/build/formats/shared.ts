@@ -174,6 +174,45 @@ export function requireBuildResult(context: FormatContext): TokenBuildResult {
   return context.result
 }
 
+function formatJsonValue(value: unknown, indentation: number): string {
+  if (Array.isArray(value)) {
+    const containsOnlyPrimitives = value.every((item) => typeof item !== 'object' || item === null)
+    const compact = `[${value.map((item) => JSON.stringify(item)).join(', ')}]`
+
+    if (containsOnlyPrimitives && indentation + compact.length <= 100) {
+      return compact
+    }
+
+    const itemPadding = ' '.repeat(indentation + 2)
+    const items = value
+      .map((item) => `${itemPadding}${formatJsonValue(item, indentation + 2)}`)
+      .join(',\n')
+
+    return `[\n${items}\n${' '.repeat(indentation)}]`
+  }
+
+  if (typeof value === 'object' && value !== null) {
+    if (Object.keys(value).length === 0) {
+      return '{}'
+    }
+
+    const propertyPadding = ' '.repeat(indentation + 2)
+    const properties = Object.entries(value)
+      .map(
+        ([key, propertyValue]) =>
+          `${propertyPadding}${JSON.stringify(key)}: ${formatJsonValue(
+            propertyValue,
+            indentation + 2,
+          )}`,
+      )
+      .join(',\n')
+
+    return `{\n${properties}\n${' '.repeat(indentation)}}`
+  }
+
+  return JSON.stringify(value)
+}
+
 export function stableJson(value: unknown): string {
-  return `${JSON.stringify(value, null, 2)}\n`
+  return `${formatJsonValue(value, 0)}\n`
 }

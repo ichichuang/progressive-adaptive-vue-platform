@@ -3,23 +3,26 @@ import { z } from 'zod'
 
 import { themeIdSchema } from './theme.schema'
 
-export const colorModePreferenceSchema = z.enum(['light', 'dark', 'system'])
-export const legacyColorModePreferenceV1Schema = z.enum([
+export const colorModePreferenceValues = ['light', 'dark', 'system'] as const
+export const legacyColorModePreferenceV1Values = [
   'light',
   'dark',
   'system',
   'high-contrast',
-])
-export const contrastPreferenceSchema = z.enum(['standard', 'enhanced'])
-export const materialPreferenceSchema = z.enum(['adaptive', 'reduced', 'solid'])
-export const uiDensitySchema = z.enum(['compact', 'comfortable', 'spacious'])
-export const motionPreferenceSchema = z.enum(['full', 'reduced', 'none'])
-export const fontScaleSchema = z.union([
-  z.literal(0.9),
-  z.literal(1),
-  z.literal(1.1),
-  z.literal(1.2),
-])
+] as const
+export const contrastPreferenceValues = ['standard', 'enhanced'] as const
+export const materialPreferenceValues = ['adaptive', 'reduced', 'solid'] as const
+export const uiDensityValues = ['compact', 'comfortable', 'spacious'] as const
+export const motionPreferenceValues = ['full', 'reduced', 'none'] as const
+export const fontScaleValues = [0.9, 1, 1.1, 1.2] as const
+
+export const colorModePreferenceSchema = z.enum(colorModePreferenceValues)
+export const legacyColorModePreferenceV1Schema = z.enum(legacyColorModePreferenceV1Values)
+export const contrastPreferenceSchema = z.enum(contrastPreferenceValues)
+export const materialPreferenceSchema = z.enum(materialPreferenceValues)
+export const uiDensitySchema = z.enum(uiDensityValues)
+export const motionPreferenceSchema = z.enum(motionPreferenceValues)
+export const fontScaleSchema = z.union(fontScaleValues.map((value) => z.literal(value)))
 
 const cssColorSchema = z
   .string()

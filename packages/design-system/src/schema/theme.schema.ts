@@ -2,7 +2,8 @@ import { z } from 'zod'
 
 import { tokenReferenceSchema } from './token.schema'
 
-export const themeIdSchema = z.string().regex(/^[a-z][a-z0-9-]*$/u)
+export const themeIdPattern = /^[a-z][a-z0-9-]*$/u
+export const themeIdSchema = z.string().regex(themeIdPattern)
 
 export const themeDefinitionSchema = z.strictObject({
   id: themeIdSchema,

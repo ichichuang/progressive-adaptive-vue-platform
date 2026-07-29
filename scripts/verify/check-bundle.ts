@@ -16,6 +16,7 @@ type Manifest = Record<string, ManifestChunk>
 
 const rootDirectory = process.cwd()
 const distributionDirectory = resolve(rootDirectory, 'apps/web/dist')
+const generatedSourceDirectory = resolve(rootDirectory, 'packages/design-system/src/generated')
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -47,6 +48,34 @@ async function gzipBytes(relativePath: string): Promise<number> {
   }).byteLength
 }
 
+async function validateFirstPaintBuildOutput(): Promise<void> {
+  for (const fileName of ['appearance-init.js', 'critical-theme.css'] as const) {
+    const [source, emitted] = await Promise.all([
+      readFile(resolve(generatedSourceDirectory, fileName)),
+      readFile(resolve(distributionDirectory, 'generated', fileName)),
+    ])
+
+    if (!source.equals(emitted)) {
+      throw new Error(`${fileName}: production output differs from the generated source artifact.`)
+    }
+  }
+
+  const indexHtml = await readFile(resolve(distributionDirectory, 'index.html'), 'utf8')
+  const criticalThemeIndex = indexHtml.indexOf('href="/generated/critical-theme.css"')
+  const appearanceInitIndex = indexHtml.indexOf('src="/generated/appearance-init.js"')
+  const moduleBootstrapIndex = indexHtml.indexOf('type="module"')
+
+  if (
+    criticalThemeIndex < 0 ||
+    appearanceInitIndex <= criticalThemeIndex ||
+    moduleBootstrapIndex <= appearanceInitIndex
+  ) {
+    throw new Error(
+      'Production startup order must be critical theme, synchronous appearance initialization, then module bootstrap.',
+    )
+  }
+}
+
 function collectInitialChunks(manifest: Manifest, entryKey: string): Set<string> {
   const keys = new Set<string>()
   const pending = [entryKey]
@@ -75,6 +104,7 @@ const manifestValue = JSON.parse(
   await readFile(resolve(distributionDirectory, '.vite/manifest.json'), 'utf8'),
 ) as unknown
 const manifest = parseManifest(manifestValue)
+await validateFirstPaintBuildOutput()
 const entry = Object.entries(manifest).find(([, chunk]) => chunk.isEntry === true)
 
 if (entry === undefined) {
@@ -82,8 +112,8 @@ if (entry === undefined) {
 }
 
 const initialChunkKeys = collectInitialChunks(manifest, entry[0])
-const initialJavaScriptFiles = new Set<string>()
-const initialCssFiles = new Set<string>()
+const initialJavaScriptFiles = new Set<string>(['generated/appearance-init.js'])
+const initialCssFiles = new Set<string>(['generated/critical-theme.css'])
 
 for (const key of initialChunkKeys) {
   const chunk = manifest[key]

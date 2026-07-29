@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -15,6 +15,7 @@
     "semantic/color.tokens.json",
     "semantic/interaction.tokens.json",
     "semantic/layout.tokens.json",
+    "semantic/material.tokens.json",
     "semantic/spacing.tokens.json",
     "semantic/typography.tokens.json",
     "themes/neutral.theme.json",
@@ -44,6 +45,174 @@
     "used": 0
   },
   "compounds": [],
+  "materialRoles": [
+    {
+      "name": "material.chrome.background",
+      "projections": ["adaptive", "reduced", "solid"]
+    },
+    {
+      "name": "material.modal.background",
+      "projections": ["adaptive", "reduced", "solid"]
+    },
+    {
+      "name": "material.overlay.background",
+      "projections": ["adaptive", "reduced", "solid"]
+    },
+    {
+      "name": "material.scrim.background",
+      "projections": ["adaptive", "reduced", "solid"]
+    }
+  ],
+  "contrastPairs": [
+    {
+      "background": "color.surface.page",
+      "foreground": "color.text.primary",
+      "id": "text-primary-on-page",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 18.955,
+        "standard": 18.955
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "color.surface.panel",
+      "foreground": "color.text.primary",
+      "id": "text-primary-on-panel",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 17.703,
+        "standard": 17.703
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "color.surface.page",
+      "foreground": "color.text.secondary",
+      "id": "text-secondary-on-page",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 9.974,
+        "standard": 9.974
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "color.surface.panel",
+      "foreground": "color.text.secondary",
+      "id": "text-secondary-on-panel",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 10.412,
+        "standard": 10.412
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "color.action.primary",
+      "foreground": "color.text.on-action",
+      "id": "action-content-on-primary",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 17.703,
+        "standard": 17.703
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "color.surface.page",
+      "foreground": "color.focus.ring",
+      "id": "focus-ring-on-page",
+      "kind": "non-text",
+      "minimumRatios": {
+        "enhanced": 4.853,
+        "standard": 4.853
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "color.surface.panel",
+      "foreground": "color.focus.ring",
+      "id": "focus-ring-on-panel",
+      "kind": "non-text",
+      "minimumRatios": {
+        "enhanced": 4.858,
+        "standard": 4.858
+      },
+      "projections": ["not-applicable"]
+    },
+    {
+      "background": "material.chrome.background",
+      "foreground": "color.text.primary",
+      "id": "material-chrome-content",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 9.302,
+        "standard": 9.302
+      },
+      "projections": ["adaptive", "reduced", "solid"]
+    },
+    {
+      "background": "material.overlay.background",
+      "foreground": "color.text.primary",
+      "id": "material-overlay-content",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 10.613,
+        "standard": 10.613
+      },
+      "projections": ["adaptive", "reduced", "solid"]
+    },
+    {
+      "background": "material.modal.background",
+      "foreground": "color.text.primary",
+      "id": "material-modal-content",
+      "kind": "text",
+      "minimumRatios": {
+        "enhanced": 13.27,
+        "standard": 13.27
+      },
+      "projections": ["adaptive", "reduced", "solid"]
+    }
+  ],
+  "nonTextBoundaries": [
+    {
+      "background": "color.surface.page",
+      "foreground": "color.action.primary",
+      "id": "control-primary-on-page",
+      "minimumRatio": 16.959
+    },
+    {
+      "background": "color.surface.panel",
+      "foreground": "color.action.primary",
+      "id": "control-primary-on-panel",
+      "minimumRatio": 17.703
+    },
+    {
+      "background": "color.surface.page",
+      "foreground": "color.border.default",
+      "id": "border-default-on-page",
+      "minimumRatio": 4.085
+    },
+    {
+      "background": "color.surface.panel",
+      "foreground": "color.border.default",
+      "id": "border-default-on-panel",
+      "minimumRatio": 3.655
+    }
+  ],
+  "firstPaint": {
+    "applicationKeyAgnostic": true,
+    "baseline": {
+      "colorMode": "light",
+      "contrast": "standard",
+      "density": "comfortable",
+      "material": "solid",
+      "theme": "neutral"
+    },
+    "artifacts": ["appearance-init.js", "critical-theme.css"],
+    "synchronousClassicScript": true
+  },
   "tokens": [
     {
       "name": "color.action.primary",
@@ -60,6 +229,22 @@
       "cssVariable": "--ui-color-action-primary"
     },
     {
+      "name": "color.mode.dark.action-primary",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.action.primary"
+      },
+      "resolvedValue": "oklch(100% 0 0)",
+      "cssVariable": "--ui-color-action-primary"
+    },
+    {
       "name": "color.border.default",
       "type": "color",
       "tier": "semantic",
@@ -70,7 +255,23 @@
         "category": "color",
         "name": "color.border.default"
       },
-      "resolvedValue": "oklch(92% 0.005 247)",
+      "resolvedValue": "oklch(55% 0.012 247)",
+      "cssVariable": "--ui-color-border-default"
+    },
+    {
+      "name": "color.mode.dark.border-default",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.border.default"
+      },
+      "resolvedValue": "oklch(55% 0.012 247)",
       "cssVariable": "--ui-color-border-default"
     },
     {
@@ -84,8 +285,216 @@
         "category": "color",
         "name": "color.focus.ring"
       },
+      "resolvedValue": "oklch(54% 0.15 250)",
+      "contrastPairs": [
+        {
+          "background": "color.surface.page",
+          "id": "focus-ring-on-page",
+          "kind": "non-text"
+        },
+        {
+          "background": "color.surface.panel",
+          "id": "focus-ring-on-panel",
+          "kind": "non-text"
+        }
+      ],
+      "cssVariable": "--ui-color-focus-ring"
+    },
+    {
+      "name": "color.mode.dark.focus-ring",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.focus.ring"
+      },
       "resolvedValue": "oklch(62% 0.17 250)",
       "cssVariable": "--ui-color-focus-ring"
+    },
+    {
+      "name": "color.material-support.chrome-adaptive",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.material-support.chrome-adaptive"
+      },
+      "resolvedValue": "oklch(100% 0 0 / 0.94)",
+      "cssVariable": "--ui-color-material-support-chrome-adaptive"
+    },
+    {
+      "name": "color.material-support.chrome-adaptive-dark",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.material-support.chrome-adaptive"
+      },
+      "resolvedValue": "oklch(14.5% 0.01 247 / 0.94)",
+      "cssVariable": "--ui-color-material-support-chrome-adaptive"
+    },
+    {
+      "name": "color.material-support.chrome-reduced",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.material-support.chrome-reduced"
+      },
+      "resolvedValue": "oklch(100% 0 0 / 0.98)",
+      "cssVariable": "--ui-color-material-support-chrome-reduced"
+    },
+    {
+      "name": "color.material-support.chrome-reduced-dark",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.material-support.chrome-reduced"
+      },
+      "resolvedValue": "oklch(14.5% 0.01 247 / 0.98)",
+      "cssVariable": "--ui-color-material-support-chrome-reduced"
+    },
+    {
+      "name": "color.material-support.modal-adaptive",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.material-support.modal-adaptive"
+      },
+      "resolvedValue": "oklch(100% 0 0 / 0.98)",
+      "cssVariable": "--ui-color-material-support-modal-adaptive"
+    },
+    {
+      "name": "color.material-support.modal-adaptive-dark",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.material-support.modal-adaptive"
+      },
+      "resolvedValue": "oklch(21% 0.012 247 / 0.98)",
+      "cssVariable": "--ui-color-material-support-modal-adaptive"
+    },
+    {
+      "name": "color.material-support.modal-reduced",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.material-support.modal-reduced"
+      },
+      "resolvedValue": "oklch(100% 0 0 / 0.99)",
+      "cssVariable": "--ui-color-material-support-modal-reduced"
+    },
+    {
+      "name": "color.material-support.modal-reduced-dark",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.material-support.modal-reduced"
+      },
+      "resolvedValue": "oklch(21% 0.012 247 / 0.99)",
+      "cssVariable": "--ui-color-material-support-modal-reduced"
+    },
+    {
+      "name": "color.material-support.overlay-adaptive",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.material-support.overlay-adaptive"
+      },
+      "resolvedValue": "oklch(98.5% 0.002 247 / 0.96)",
+      "cssVariable": "--ui-color-material-support-overlay-adaptive"
+    },
+    {
+      "name": "color.material-support.overlay-adaptive-dark",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.material-support.overlay-adaptive"
+      },
+      "resolvedValue": "oklch(21% 0.012 247 / 0.96)",
+      "cssVariable": "--ui-color-material-support-overlay-adaptive"
+    },
+    {
+      "name": "color.material-support.overlay-reduced",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.material-support.overlay-reduced"
+      },
+      "resolvedValue": "oklch(98.5% 0.002 247 / 0.985)",
+      "cssVariable": "--ui-color-material-support-overlay-reduced"
+    },
+    {
+      "name": "color.material-support.overlay-reduced-dark",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.material-support.overlay-reduced"
+      },
+      "resolvedValue": "oklch(21% 0.012 247 / 0.985)",
+      "cssVariable": "--ui-color-material-support-overlay-reduced"
     },
     {
       "name": "color.palette.blue.500",
@@ -231,6 +640,20 @@
       "resolvedValue": "oklch(58% 0.14 45)"
     },
     {
+      "name": "color.scrim.viewport",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.scrim.viewport"
+      },
+      "resolvedValue": "oklch(0% 0 0 / 0.56)",
+      "cssVariable": "--ui-color-scrim-viewport"
+    },
+    {
       "name": "color.surface.page",
       "type": "color",
       "tier": "semantic",
@@ -242,6 +665,22 @@
         "name": "color.surface.page"
       },
       "resolvedValue": "oklch(98.5% 0.002 247)",
+      "cssVariable": "--ui-color-surface-page"
+    },
+    {
+      "name": "color.mode.dark.surface-page",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.surface.page"
+      },
+      "resolvedValue": "oklch(14.5% 0.01 247)",
       "cssVariable": "--ui-color-surface-page"
     },
     {
@@ -259,6 +698,59 @@
       "cssVariable": "--ui-color-surface-panel"
     },
     {
+      "name": "color.mode.dark.surface-panel",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.surface.panel"
+      },
+      "resolvedValue": "oklch(21% 0.012 247)",
+      "cssVariable": "--ui-color-surface-panel"
+    },
+    {
+      "name": "color.text.on-action",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.text.on-action"
+      },
+      "resolvedValue": "oklch(100% 0 0)",
+      "contrastPairs": [
+        {
+          "background": "color.action.primary",
+          "id": "action-content-on-primary",
+          "kind": "text"
+        }
+      ],
+      "cssVariable": "--ui-color-text-on-action"
+    },
+    {
+      "name": "color.mode.dark.text-on-action",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.text.on-action"
+      },
+      "resolvedValue": "oklch(14.5% 0.01 247)",
+      "cssVariable": "--ui-color-text-on-action"
+    },
+    {
       "name": "color.text.primary",
       "type": "color",
       "tier": "semantic",
@@ -270,6 +762,49 @@
         "name": "color.text.primary"
       },
       "resolvedValue": "oklch(14.5% 0.01 247)",
+      "contrastPairs": [
+        {
+          "background": "color.surface.page",
+          "id": "text-primary-on-page",
+          "kind": "text"
+        },
+        {
+          "background": "color.surface.panel",
+          "id": "text-primary-on-panel",
+          "kind": "text"
+        },
+        {
+          "background": "material.chrome.background",
+          "id": "material-chrome-content",
+          "kind": "text"
+        },
+        {
+          "background": "material.overlay.background",
+          "id": "material-overlay-content",
+          "kind": "text"
+        },
+        {
+          "background": "material.modal.background",
+          "id": "material-modal-content",
+          "kind": "text"
+        }
+      ],
+      "cssVariable": "--ui-color-text-primary"
+    },
+    {
+      "name": "color.mode.dark.text-primary",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.text.primary"
+      },
+      "resolvedValue": "oklch(100% 0 0)",
       "cssVariable": "--ui-color-text-primary"
     },
     {
@@ -284,6 +819,34 @@
         "name": "color.text.secondary"
       },
       "resolvedValue": "oklch(37% 0.014 247)",
+      "contrastPairs": [
+        {
+          "background": "color.surface.page",
+          "id": "text-secondary-on-page",
+          "kind": "text"
+        },
+        {
+          "background": "color.surface.panel",
+          "id": "text-secondary-on-panel",
+          "kind": "text"
+        }
+      ],
+      "cssVariable": "--ui-color-text-secondary"
+    },
+    {
+      "name": "color.mode.dark.text-secondary",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {
+        "colorMode": "dark"
+      },
+      "role": {
+        "category": "color",
+        "name": "color.text.secondary"
+      },
+      "resolvedValue": "oklch(92% 0.005 247)",
       "cssVariable": "--ui-color-text-secondary"
     },
     {
@@ -748,6 +1311,198 @@
       },
       "resolvedValue": "1000",
       "cssVariable": "--ui-z-overlay"
+    },
+    {
+      "name": "material.chrome.adaptive.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "adaptive"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.chrome.background"
+      },
+      "resolvedValue": "var(--ui-color-material-support-chrome-adaptive)",
+      "cssVariable": "--ui-material-chrome-background"
+    },
+    {
+      "name": "material.chrome.reduced.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "reduced"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.chrome.background"
+      },
+      "resolvedValue": "var(--ui-color-material-support-chrome-reduced)",
+      "cssVariable": "--ui-material-chrome-background"
+    },
+    {
+      "name": "material.chrome.solid.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "solid"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.chrome.background"
+      },
+      "resolvedValue": "var(--ui-color-surface-panel)",
+      "cssVariable": "--ui-material-chrome-background"
+    },
+    {
+      "name": "material.modal.adaptive.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "adaptive"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.modal.background"
+      },
+      "resolvedValue": "var(--ui-color-material-support-modal-adaptive)",
+      "cssVariable": "--ui-material-modal-background"
+    },
+    {
+      "name": "material.modal.reduced.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "reduced"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.modal.background"
+      },
+      "resolvedValue": "var(--ui-color-material-support-modal-reduced)",
+      "cssVariable": "--ui-material-modal-background"
+    },
+    {
+      "name": "material.modal.solid.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "solid"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.modal.background"
+      },
+      "resolvedValue": "var(--ui-color-surface-panel)",
+      "cssVariable": "--ui-material-modal-background"
+    },
+    {
+      "name": "material.overlay.adaptive.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "adaptive"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.overlay.background"
+      },
+      "resolvedValue": "var(--ui-color-material-support-overlay-adaptive)",
+      "cssVariable": "--ui-material-overlay-background"
+    },
+    {
+      "name": "material.overlay.reduced.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "reduced"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.overlay.background"
+      },
+      "resolvedValue": "var(--ui-color-material-support-overlay-reduced)",
+      "cssVariable": "--ui-material-overlay-background"
+    },
+    {
+      "name": "material.overlay.solid.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "solid"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.overlay.background"
+      },
+      "resolvedValue": "var(--ui-color-surface-panel)",
+      "cssVariable": "--ui-material-overlay-background"
+    },
+    {
+      "name": "material.scrim.adaptive.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "adaptive"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.scrim.background"
+      },
+      "resolvedValue": "var(--ui-color-scrim-viewport)",
+      "cssVariable": "--ui-material-scrim-background"
+    },
+    {
+      "name": "material.scrim.reduced.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "reduced"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.scrim.background"
+      },
+      "resolvedValue": "oklch(0% 0 0 / 0.82)",
+      "cssVariable": "--ui-material-scrim-background"
+    },
+    {
+      "name": "material.scrim.solid.background",
+      "type": "color",
+      "tier": "semantic.material",
+      "visibility": "ui-internal",
+      "source": "semantic/material.tokens.json",
+      "conditions": {
+        "material": "solid"
+      },
+      "role": {
+        "category": "material",
+        "name": "material.scrim.background"
+      },
+      "resolvedValue": "oklch(0% 0 0)",
+      "cssVariable": "--ui-material-scrim-background"
     },
     {
       "name": "motion.duration.fast",

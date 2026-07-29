@@ -34,6 +34,48 @@ const axisRank = {
   material: 50,
 } as const
 
+export const canonicalLayerOrder =
+  '@layer reset, tokens, base, utilities, components, app, overrides;'
+
+export function formatAppearanceBaseCss(): string {
+  return `@layer base {
+  html {
+    background-color: var(--ui-color-surface-page);
+    color: var(--ui-color-text-primary);
+  }
+
+  html[data-color-mode='light'] {
+    color-scheme: light;
+  }
+
+  html[data-color-mode='dark'] {
+    color-scheme: dark;
+  }
+}`
+}
+
+export function formatForcedColorsCss(): string {
+  return `@media (forced-colors: active) {
+  @layer tokens {
+    :root {
+      --ui-color-action-primary: Highlight;
+      --ui-color-border-default: GrayText;
+      --ui-color-focus-ring: Highlight;
+      --ui-color-scrim-viewport: CanvasText;
+      --ui-color-surface-page: Canvas;
+      --ui-color-surface-panel: Canvas;
+      --ui-color-text-on-action: HighlightText;
+      --ui-color-text-primary: CanvasText;
+      --ui-color-text-secondary: CanvasText;
+      --ui-material-chrome-background: Canvas;
+      --ui-material-modal-background: Canvas;
+      --ui-material-overlay-background: Canvas;
+      --ui-material-scrim-background: CanvasText;
+    }
+  }
+}`
+}
+
 function selectorForToken(token: ResolvedTokenRecord): {
   rank: number
   selector: string
@@ -115,7 +157,17 @@ export function formatRuntimeCss(result: TokenBuildResult): string {
     })
     .join('\n\n')
 
-  return `/* ${generatedNotice} */\n@layer tokens {\n${blocks}\n}\n`
+  return `/* ${generatedNotice} */
+${canonicalLayerOrder}
+
+@layer tokens {
+${blocks}
+}
+
+${formatForcedColorsCss()}
+
+${formatAppearanceBaseCss()}
+`
 }
 
 export function createCssFormat(context: FormatContext): Format {

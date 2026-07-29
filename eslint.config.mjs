@@ -132,8 +132,10 @@ export default typescriptEslint.config(
       unocss,
     },
     rules: {
+      'local/no-app-material-token-access': 'error',
       'local/no-direct-storage-access': 'error',
       'local/no-dynamic-unocss-classes': 'error',
+      'local/no-page-optical-effects': 'error',
       'local/no-raw-ui-colors': 'error',
       'local/no-reka-import-outside-ui': 'error',
       'local/no-user-agent-layout-branching': 'error',

@@ -33,6 +33,12 @@ const tokenRoleSchema = z
     'Token roles must use a complete lower kebab-case dot path.',
   )
 
+const contrastPairDeclarationSchema = z.strictObject({
+  background: tokenRoleSchema,
+  id: metadataNameSchema,
+  kind: z.enum(['text', 'non-text']),
+})
+
 const groupPavpExtensionSchema = z.strictObject({
   visibility: tokenVisibilitySchema,
 })
@@ -43,6 +49,7 @@ const tokenPavpExtensionSchema = z
     role: tokenRoleSchema.optional(),
     conditions: tokenConditionsSchema.optional(),
     compound: metadataNameSchema.optional(),
+    contrastPairs: z.array(contrastPairDeclarationSchema).min(1).optional(),
   })
   .refine((extension) => Object.keys(extension).length > 0, {
     message: 'org.pavp token metadata must declare at least one supported field.',
@@ -143,6 +150,7 @@ export const tokenDefinitionSchema = z.discriminatedUnion('$type', [
 export type ColorValue = z.infer<typeof colorValueSchema>
 export type DtcgTokenType = z.infer<typeof tokenDefinitionSchema>['$type']
 export type ShadowValue = z.infer<typeof shadowValueSchema>
+export type ContrastPairDeclaration = z.infer<typeof contrastPairDeclarationSchema>
 export type TokenConditions = z.infer<typeof tokenConditionsSchema>
 export type TokenDefinition = z.infer<typeof tokenDefinitionSchema>
 export type TokenPavpExtension = z.infer<typeof tokenPavpExtensionSchema>

@@ -1,6 +1,7 @@
 const workspacePackagePattern = /^@platform\/[^/]+\/.+/
 const rawColorPattern =
   /(?:^|[^0-9A-Za-z])#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?:$|[^0-9A-Za-z])|(?:color|hsl|hsla|lab|lch|oklab|oklch|rgb|rgba)\s*\(/u
+const opticalEffectPattern = /\b(?:backdrop-filter|filter)\s*:|(?:blur|brightness|saturate)\s*\(/u
 
 function sourceVisitors(context, inspect) {
   function inspectNode(node) {
@@ -205,10 +206,79 @@ const noDynamicUnoCssClasses = {
   },
 }
 
+function literalVisitors(context, inspect) {
+  return {
+    Literal(node) {
+      if (typeof node.value === 'string') {
+        inspect(node.value, node)
+      }
+    },
+    TemplateElement(node) {
+      inspect(node.value.raw, node)
+    },
+  }
+}
+
+const noAppMaterialTokenAccess = {
+  meta: {
+    messages: {
+      internalMaterial:
+        'Applications may not consume ui-internal --ui-material-* implementation tokens.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+  create(context) {
+    const filename = context.filename.replaceAll('\\', '/')
+
+    if (!filename.includes('/apps/')) {
+      return {}
+    }
+
+    return literalVisitors(context, (value, node) => {
+      if (value.includes('--ui-material-')) {
+        context.report({
+          messageId: 'internalMaterial',
+          node,
+        })
+      }
+    })
+  },
+}
+
+const noPageOpticalEffects = {
+  meta: {
+    messages: {
+      opticalEffect:
+        'Application and page code may not author blur, filter, saturation, or brightness effects.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+  create(context) {
+    const filename = context.filename.replaceAll('\\', '/')
+
+    if (!filename.includes('/apps/')) {
+      return {}
+    }
+
+    return literalVisitors(context, (value, node) => {
+      if (opticalEffectPattern.test(value)) {
+        context.report({
+          messageId: 'opticalEffect',
+          node,
+        })
+      }
+    })
+  },
+}
+
 export const localRules = {
   rules: {
+    'no-app-material-token-access': noAppMaterialTokenAccess,
     'no-direct-storage-access': noDirectStorageAccess,
     'no-dynamic-unocss-classes': noDynamicUnoCssClasses,
+    'no-page-optical-effects': noPageOpticalEffects,
     'no-raw-ui-colors': noRawUiColors,
     'no-reka-import-outside-ui': noRekaImportOutsideUi,
     'no-user-agent-layout-branching': noUserAgentLayoutBranching,

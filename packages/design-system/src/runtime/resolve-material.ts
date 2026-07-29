@@ -9,23 +9,31 @@ export interface ResolveMaterialInput {
   readonly storedMaterial: MaterialPreference
 }
 
+export const materialResolutionContract = {
+  adaptive: 'adaptive',
+  reduced: 'reduced',
+  solid: 'solid',
+} as const
+
 export function resolveMaterial({
   backdropFilterSupported,
   forcedColorsActive,
   reducedTransparencyRequested,
   storedMaterial,
 }: ResolveMaterialInput): EffectiveMaterial {
-  if (forcedColorsActive || storedMaterial === 'solid') {
-    return 'solid'
+  if (forcedColorsActive || storedMaterial === materialResolutionContract.solid) {
+    return materialResolutionContract.solid
   }
 
-  if (storedMaterial === 'reduced') {
-    return 'reduced'
+  if (storedMaterial === materialResolutionContract.reduced) {
+    return materialResolutionContract.reduced
   }
 
   if (reducedTransparencyRequested) {
-    return 'reduced'
+    return materialResolutionContract.reduced
   }
 
-  return backdropFilterSupported ? 'adaptive' : 'solid'
+  return backdropFilterSupported
+    ? materialResolutionContract.adaptive
+    : materialResolutionContract.solid
 }

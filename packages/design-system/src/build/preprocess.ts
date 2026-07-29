@@ -12,6 +12,12 @@ import {
   type TokenPavpExtension,
   type TokenVisibility,
 } from '../schema/token.schema'
+import {
+  validateContrastAndMaterialContracts,
+  type ContrastPairValidation,
+  type MaterialRoleValidation,
+  type NonTextBoundaryValidation,
+} from './contrast'
 import { compareCodePoints } from './order'
 import { parseJsonSource } from './parse-json'
 import { createTokenResolver, type ResolvedTokenRecord, type TokenRecord } from './resolve'
@@ -63,7 +69,10 @@ export interface ColorCompound {
 export interface TokenBuildResult {
   colorCompoundBudget: number
   compounds: readonly ColorCompound[]
+  contrastPairs: readonly ContrastPairValidation[]
   densityPresets: readonly string[]
+  materialRoles: readonly MaterialRoleValidation[]
+  nonTextBoundaries: readonly NonTextBoundaryValidation[]
   sourceFiles: readonly string[]
   themes: readonly ResolvedThemeDefinition[]
   tokens: readonly ResolvedTokenRecord[]
@@ -247,6 +256,9 @@ function flattenTokenSource(
           value: token.$value,
           visibility,
           ...(extension?.compound === undefined ? {} : { compound: extension.compound }),
+          ...(extension?.contrastPairs === undefined
+            ? {}
+            : { contrastPairs: extension.contrastPairs }),
           ...(runtimeExposed ? { cssVariable: cssVariableForRole(role) } : {}),
           ...(token.$description === undefined ? {} : { description: token.$description }),
         })
@@ -541,6 +553,10 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
 
   const records = [...resolver.records].sort(compareRecords)
   const compounds = validateTokenRecords(records, new Set(themeIds.keys()))
+  const validation = validateContrastAndMaterialContracts(
+    records,
+    resolvedThemes.map((theme) => theme.id),
+  )
   const tokens: Record<string, unknown> = {}
 
   for (const record of records) {
@@ -551,7 +567,10 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
     result: {
       colorCompoundBudget,
       compounds,
+      contrastPairs: validation.contrastPairs,
       densityPresets: [...new Set(densityPresets)].sort(),
+      materialRoles: validation.materialRoles,
+      nonTextBoundaries: validation.nonTextBoundaries,
       sourceFiles: bundles.map((bundle) => bundle.path),
       themes: resolvedThemes,
       tokens: records,

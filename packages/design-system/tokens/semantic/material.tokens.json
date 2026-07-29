@@ -1,0 +1,192 @@
+{
+  "material": {
+    "$extensions": {
+      "org.pavp": {
+        "visibility": "ui-internal"
+      }
+    },
+    "chrome": {
+      "adaptive": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.material-support.chrome-adaptive}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.chrome.background",
+              "conditions": {
+                "material": "adaptive"
+              }
+            }
+          }
+        }
+      },
+      "reduced": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.material-support.chrome-reduced}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.chrome.background",
+              "conditions": {
+                "material": "reduced"
+              }
+            }
+          }
+        }
+      },
+      "solid": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.panel}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.chrome.background",
+              "conditions": {
+                "material": "solid"
+              }
+            }
+          }
+        }
+      }
+    },
+    "overlay": {
+      "adaptive": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.material-support.overlay-adaptive}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.overlay.background",
+              "conditions": {
+                "material": "adaptive"
+              }
+            }
+          }
+        }
+      },
+      "reduced": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.material-support.overlay-reduced}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.overlay.background",
+              "conditions": {
+                "material": "reduced"
+              }
+            }
+          }
+        }
+      },
+      "solid": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.panel}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.overlay.background",
+              "conditions": {
+                "material": "solid"
+              }
+            }
+          }
+        }
+      }
+    },
+    "modal": {
+      "adaptive": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.material-support.modal-adaptive}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.modal.background",
+              "conditions": {
+                "material": "adaptive"
+              }
+            }
+          }
+        }
+      },
+      "reduced": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.material-support.modal-reduced}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.modal.background",
+              "conditions": {
+                "material": "reduced"
+              }
+            }
+          }
+        }
+      },
+      "solid": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.surface.panel}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.modal.background",
+              "conditions": {
+                "material": "solid"
+              }
+            }
+          }
+        }
+      }
+    },
+    "scrim": {
+      "adaptive": {
+        "background": {
+          "$type": "color",
+          "$value": "{color.scrim.viewport}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.scrim.background",
+              "conditions": {
+                "material": "adaptive"
+              }
+            }
+          }
+        }
+      },
+      "reduced": {
+        "background": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [0, 0, 0],
+            "alpha": 0.82
+          },
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.scrim.background",
+              "conditions": {
+                "material": "reduced"
+              }
+            }
+          }
+        }
+      },
+      "solid": {
+        "background": {
+          "$type": "color",
+          "$value": {
+            "colorSpace": "oklch",
+            "components": [0, 0, 0]
+          },
+          "$extensions": {
+            "org.pavp": {
+              "role": "material.scrim.background",
+              "conditions": {
+                "material": "solid"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
