@@ -1,7 +1,28 @@
+import { relative } from 'node:path'
+
 const workspacePackagePattern = /^@platform\/[^/]+\/.+/
 const rawColorPattern =
   /(?:^|[^0-9A-Za-z])#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?:$|[^0-9A-Za-z])|(?:color|hsl|hsla|lab|lch|oklab|oklch|rgb|rgba)\s*\(/u
 const opticalEffectPattern = /\b(?:backdrop-filter|filter)\s*:|(?:blur|brightness|saturate)\s*\(/u
+const canonicalPreferenceStoragePath = 'apps/web/src/app/appearance/preference-storage.ts'
+const storageNames = new Set(['localStorage', 'sessionStorage'])
+const storageOwners = new Set(['window', 'globalThis'])
+
+function getStaticPropertyName(property, computed) {
+  if (!computed && property.type === 'Identifier') {
+    return property.name
+  }
+
+  if (computed && property.type === 'Literal' && typeof property.value === 'string') {
+    return property.value
+  }
+
+  if (computed && property.type === 'TemplateLiteral' && property.expressions.length === 0) {
+    return property.quasis[0]?.value.cooked ?? property.quasis[0]?.value.raw
+  }
+
+  return undefined
+}
 
 function sourceVisitors(context, inspect) {
   function inspectNode(node) {
@@ -79,33 +100,84 @@ const noDirectStorageAccess = {
     type: 'problem',
   },
   create(context) {
-    const filename = context.filename.replaceAll('\\', '/')
-    const allowed =
-      filename.includes('/apps/web/src/app/appearance/') ||
-      filename.includes('/apps/web/src/app/shell/layout/') ||
-      filename.includes('/packages/design-system/src/runtime/')
+    const filename = relative(process.cwd(), context.filename).replaceAll('\\', '/')
+    const allowed = filename === canonicalPreferenceStoragePath
 
     if (allowed) {
       return {}
     }
 
-    return {
-      MemberExpression(node) {
-        const directStorage =
-          node.object.type === 'Identifier' &&
-          (node.object.name === 'localStorage' || node.object.name === 'sessionStorage')
-        const windowStorage =
-          node.object.type === 'Identifier' &&
-          node.object.name === 'window' &&
-          node.property.type === 'Identifier' &&
-          (node.property.name === 'localStorage' || node.property.name === 'sessionStorage')
+    function isUnshadowedGlobalReference(node) {
+      for (let scope = context.sourceCode.getScope(node); scope; scope = scope.upper) {
+        const reference = scope.references.find(
+          (scopeReference) => scopeReference.identifier === node,
+        )
 
-        if (directStorage || windowStorage) {
+        if (reference) {
+          return reference.resolved === null || reference.resolved.defs.length === 0
+        }
+      }
+
+      return false
+    }
+
+    function isGlobalNamedIdentifier(node, names) {
+      return (
+        node?.type === 'Identifier' && names.has(node.name) && isUnshadowedGlobalReference(node)
+      )
+    }
+
+    function reportDestructuredStorage(pattern, owner) {
+      if (pattern.type !== 'ObjectPattern' || !isGlobalNamedIdentifier(owner, storageOwners)) {
+        return
+      }
+
+      for (const property of pattern.properties) {
+        if (
+          property.type === 'Property' &&
+          storageNames.has(getStaticPropertyName(property.key, property.computed))
+        ) {
+          context.report({
+            messageId: 'directStorage',
+            node: property,
+          })
+        }
+      }
+    }
+
+    return {
+      AssignmentExpression(node) {
+        reportDestructuredStorage(node.left, node.right)
+      },
+      Identifier(node) {
+        if (!isGlobalNamedIdentifier(node, storageNames)) {
+          return
+        }
+
+        if (node.parent.type === 'MemberExpression' && node.parent.object === node) {
+          return
+        }
+
+        context.report({
+          messageId: 'directStorage',
+          node,
+        })
+      },
+      MemberExpression(node) {
+        const directStorage = isGlobalNamedIdentifier(node.object, storageNames)
+        const qualifiedStorage =
+          isGlobalNamedIdentifier(node.object, storageOwners) &&
+          storageNames.has(getStaticPropertyName(node.property, node.computed))
+
+        if (directStorage || qualifiedStorage) {
           context.report({
             messageId: 'directStorage',
             node,
           })
         }
+      },
+      VariableDeclarator(node) {
+        reportDestructuredStorage(node.id, node.init)
       },
     }
   },

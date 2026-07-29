@@ -1,4 +1,4 @@
-import { access, readFile } from 'node:fs/promises'
+import { access, lstat, readFile, readdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 
@@ -18,6 +18,12 @@ const expectedImplementationContract = {
   phase: 1,
   state: 'IN_PROGRESS',
 } as const
+const phaseOneUiDependencySections = [
+  'dependencies',
+  'devDependencies',
+  'peerDependencies',
+  'optionalDependencies',
+] as const
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -57,6 +63,70 @@ function expectStructuredEqual(actual: unknown, expected: unknown, description: 
       `${description}: expected ${JSON.stringify(expected)}, received ${JSON.stringify(actual)}.`,
     )
   }
+}
+
+function normalizePhaseOneUiSource(source: string): string {
+  return source.replace(/\r\n?/gu, '\n').replace(/\n$/u, '')
+}
+
+async function validatePhaseOneUiPackage(): Promise<void> {
+  const packageDirectory = resolve(rootDirectory, 'packages/ui')
+  const manifest = await readJsonObject(resolve(packageDirectory, 'package.json'))
+
+  for (const section of phaseOneUiDependencySections) {
+    const dependencies = manifest[section]
+
+    if (dependencies === undefined) {
+      continue
+    }
+
+    if (!isJsonObject(dependencies)) {
+      throw new Error(`Phase 1 @platform/ui ${section} must be an object when declared.`)
+    }
+
+    if (Object.keys(dependencies).length !== 0) {
+      throw new Error(`Phase 1 @platform/ui ${section} must contain zero entries.`)
+    }
+  }
+
+  expectStructuredEqual(
+    manifest['exports'],
+    {
+      '.': {
+        types: './src/index.ts',
+        default: './src/index.ts',
+      },
+    },
+    'Phase 1 @platform/ui exports',
+  )
+
+  const sourceDirectory = resolve(packageDirectory, 'src')
+  const sourceDirectoryStatus = await lstat(sourceDirectory)
+
+  if (!sourceDirectoryStatus.isDirectory()) {
+    throw new Error('Phase 1 @platform/ui src must be a regular directory.')
+  }
+
+  const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true })
+  const implementationSource = sourceEntries[0]
+
+  if (
+    sourceEntries.length !== 1 ||
+    implementationSource?.name !== 'index.ts' ||
+    !implementationSource.isFile()
+  ) {
+    throw new Error(
+      'Phase 1 @platform/ui src must contain exactly one regular file named index.ts and no subdirectories.',
+    )
+  }
+
+  expectEqual(
+    normalizePhaseOneUiSource(
+      await readFile(resolve(sourceDirectory, implementationSource.name), 'utf8'),
+    ),
+    'export {}',
+    'Phase 1 @platform/ui implementation content',
+  )
 }
 
 function parseMiseTools(configuration: string): JsonObject {
@@ -283,6 +353,8 @@ expectStructuredEqual(
   expectedImplementationContract,
   'Canonical implementation contract',
 )
+
+await validatePhaseOneUiPackage()
 
 const ciConfiguration = await readYamlObject(resolve(rootDirectory, '.github/workflows/verify.yml'))
 
