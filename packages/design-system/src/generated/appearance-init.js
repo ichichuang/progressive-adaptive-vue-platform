@@ -9,7 +9,7 @@
   var densities = ['compact', 'comfortable', 'spacious']
   var fontScales = [0.9, 1, 1.1, 1.2]
   var motions = ['full', 'reduced', 'none']
-  var themeIdPattern = new RegExp('^[a-z][a-z0-9-]*$', 'u')
+  var legacySeedThemeIdPattern = new RegExp('^[a-z][a-z0-9-]*$', 'u')
   var defaultPreference = {
     schemaVersion: 2,
     appearance: {
@@ -115,12 +115,12 @@
       includes(motions, value.motion) &&
       isPalette(value.palette) &&
       typeof value.theme === 'string' &&
-      themeIdPattern.test(value.theme) &&
+      legacySeedThemeIdPattern.test(value.theme) &&
       (!requiresMaterial || includes(materials, value.material))
     )
   }
 
-  function isV2Preference(value) {
+  function isCurrentPreference(value) {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 2 &&
@@ -128,7 +128,7 @@
     )
   }
 
-  function isV1Preference(value) {
+  function isLegacyPreferenceInput(value) {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 1 &&
@@ -136,12 +136,12 @@
     )
   }
 
-  function upgradePreference(value) {
-    if (isV2Preference(value)) {
+  function migrateToCurrentPreference(value) {
+    if (isCurrentPreference(value)) {
       return value
     }
 
-    if (!isV1Preference(value)) {
+    if (!isLegacyPreferenceInput(value)) {
       return null
     }
 
@@ -220,7 +220,7 @@
   var preference
 
   if (rawPreference === null) {
-    preference = upgradePreference(defaultPreference)
+    preference = migrateToCurrentPreference(defaultPreference)
   } else {
     var parsedPreference
 
@@ -230,7 +230,7 @@
       return
     }
 
-    preference = upgradePreference(parsedPreference)
+    preference = migrateToCurrentPreference(parsedPreference)
   }
 
   if (preference === null) {

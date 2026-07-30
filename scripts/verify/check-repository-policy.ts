@@ -119,7 +119,7 @@ const subordinateBrowserRuleSyncFiles = [
 ] as const
 const subordinateBrowserRuleContentHashes = new Map<string, string>([
   ['AGENTS.md', 'd82713a93021b3f5e98136e7274dc118d8aae3250f08da119aade4b188badf06'],
-  ['README.md', '32ef8a464b6a3d93c284d354c5a48eb0ea951a8f1feff920bc60f2bf93d74d46'],
+  ['README.md', 'a9b2a2ebd911a694af71cb5af53d48516f34ca4339800ecda740a58f9ae1f277'],
   [
     '.ai/skills/pavp-ui/SKILL.md',
     '0783a23b91d4c1ec48acf72de2c15a3ef9a517ead5f9ca08eaa166d28b818fd8',
@@ -137,6 +137,12 @@ const subordinateBrowserRuleContentHashes = new Map<string, string>([
     '74d512da345cee79cd7a1301be9eeda121cb298496ef4c022df0510acb32fc71',
   ],
 ])
+const numericVersionStylePattern = new RegExp(
+  ['(?:', 'v', '|version)', '[123]', '(?![0-9])'].join(''),
+  'iu',
+)
+const namingContentScanExcludedPaths = new Set(['pnpm-lock.yaml'])
+
 function normalizePath(path: string): string {
   return path.split(sep).join('/')
 }
@@ -277,6 +283,10 @@ for (const absolutePath of inventory.regularFiles) {
   const segments = repositoryPath.split('/')
   const fileName = segments.at(-1) ?? ''
 
+  if (numericVersionStylePattern.test(repositoryPath)) {
+    violations.push(`${repositoryPath}: numeric-version-style file naming is forbidden.`)
+  }
+
   if (
     (repositoryPath === '.ai' || repositoryPath.startsWith('.ai/')) &&
     !requiredAiWorkflowFiles.has(repositoryPath)
@@ -324,6 +334,15 @@ for (const absolutePath of inventory.regularFiles) {
   }
 
   const text = content.toString('utf8')
+
+  if (
+    !namingContentScanExcludedPaths.has(repositoryPath) &&
+    !repositoryPath.startsWith('patches/') &&
+    !repositoryPath.endsWith('.svg') &&
+    numericVersionStylePattern.test(text)
+  ) {
+    violations.push(`${repositoryPath}: numeric-version-style naming is forbidden.`)
+  }
 
   for (const { label, pattern } of forbiddenHomePathPatterns) {
     if (pattern.test(text)) {

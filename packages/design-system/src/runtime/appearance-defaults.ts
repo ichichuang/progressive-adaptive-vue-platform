@@ -1,6 +1,6 @@
-import { userPreferenceV2Schema, type UserPreferenceV2 } from '../schema/preference.schema'
+import { currentPreferenceSchema, type CurrentPreference } from '../schema/preference.schema'
 
-function freezeUserPreference(preference: UserPreferenceV2): UserPreferenceV2 {
+function freezeCurrentPreference(preference: CurrentPreference): CurrentPreference {
   Object.freeze(preference.appearance.palette)
   Object.freeze(preference.appearance.density)
   Object.freeze(preference.appearance)
@@ -8,8 +8,8 @@ function freezeUserPreference(preference: UserPreferenceV2): UserPreferenceV2 {
   return preference
 }
 
-export const defaultUserPreferenceV2 = freezeUserPreference(
-  userPreferenceV2Schema.parse({
+export const defaultCurrentPreference = freezeCurrentPreference(
+  currentPreferenceSchema.parse({
     schemaVersion: 2,
     appearance: {
       colorMode: 'system',

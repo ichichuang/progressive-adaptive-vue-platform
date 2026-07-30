@@ -1,6 +1,6 @@
-import type { UserPreferenceV2 } from '../schema/preference.schema'
+import type { CurrentPreference } from '../schema/preference.schema'
 import type { EffectiveAppearanceState } from './apply-appearance'
-import { upgradeUserPreference } from './preference-schema-upgrades'
+import { migrateToCurrentPreference } from './preference-migration'
 import { resolveColorMode } from './resolve-color-mode'
 import { resolveMaterial } from './resolve-material'
 
@@ -23,14 +23,14 @@ export interface PrepareFirstPaintInput {
 export interface PreparedFirstPaintState {
   readonly densityScale: number
   readonly effectiveAppearance: EffectiveAppearanceState
-  readonly storedPreference: UserPreferenceV2
+  readonly storedPreference: CurrentPreference
 }
 
 export function prepareFirstPaint({
   environment,
   storedPreference,
 }: PrepareFirstPaintInput): PreparedFirstPaintState {
-  const preference = upgradeUserPreference(storedPreference)
+  const preference = migrateToCurrentPreference(storedPreference)
 
   return {
     storedPreference: preference,

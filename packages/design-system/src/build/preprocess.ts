@@ -1,7 +1,10 @@
 import type { PreprocessedTokens } from 'style-dictionary/types'
 import { z } from 'zod'
 
-import { themeDefinitionSchema, type ThemeDefinition } from '../schema/theme.schema'
+import {
+  legacySeedThemeDefinitionSchema,
+  type LegacySeedThemeDefinition,
+} from '../schema/legacy-seed-theme.schema'
 import {
   tokenDefinitionSchema,
   tokenGroupExtensionsSchema,
@@ -53,11 +56,11 @@ const requiredDensityPresets = ['comfortable', 'compact', 'spacious'] as const
 const requiredThemeIds = ['neutral', 'ocean', 'warm'] as const
 const colorCompoundAxes = ['theme', 'colorMode', 'contrast'] as const
 
-interface ResolvedThemeDefinition extends Omit<ThemeDefinition, 'palette'> {
+interface ResolvedLegacySeedThemeDefinition extends Omit<LegacySeedThemeDefinition, 'palette'> {
   palette: {
     accent: ColorValue
     brand: ColorValue
-    neutral: ThemeDefinition['palette']['neutral']
+    neutral: LegacySeedThemeDefinition['palette']['neutral']
   }
 }
 
@@ -74,7 +77,7 @@ export interface TokenBuildResult {
   materialRoles: readonly MaterialRoleValidation[]
   nonTextBoundaries: readonly NonTextBoundaryValidation[]
   sourceFiles: readonly string[]
-  themes: readonly ResolvedThemeDefinition[]
+  themes: readonly ResolvedLegacySeedThemeDefinition[]
   tokens: readonly ResolvedTokenRecord[]
 }
 
@@ -452,13 +455,16 @@ function assertExactSet(
   }
 }
 
-function parseThemeSource(bundle: { contents: string; path: string }): ThemeDefinition {
+function parseLegacySeedThemeSource(bundle: {
+  contents: string
+  path: string
+}): LegacySeedThemeDefinition {
   if (!/^themes\/[a-z][a-z0-9-]*\.theme\.json$/u.test(bundle.path)) {
     throw new Error(`${bundle.path}: unsupported theme source path.`)
   }
 
   const parsed = parseJsonSource(bundle.contents, bundle.path)
-  const theme = themeDefinitionSchema.safeParse(parsed)
+  const theme = legacySeedThemeDefinitionSchema.safeParse(parsed)
 
   if (!theme.success) {
     throw formatIssues(bundle.path, theme.error)
@@ -482,12 +488,12 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
     .sort((left, right) => compareCodePoints(left.path, right.path))
   const tokenRecords: TokenRecord[] = []
   const tokenPaths = new Map<string, string>()
-  const themes: ThemeDefinition[] = []
+  const themes: LegacySeedThemeDefinition[] = []
   const themeIds = new Map<string, string>()
 
   for (const bundle of bundles) {
     if (bundle.path.endsWith('.theme.json')) {
-      const theme = parseThemeSource(bundle)
+      const theme = parseLegacySeedThemeSource(bundle)
       const existingThemeSource = themeIds.get(theme.id)
 
       if (existingThemeSource !== undefined) {
@@ -522,7 +528,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
   const resolver = createTokenResolver(tokenRecords)
   const resolvedThemes = themes
     .sort((left, right) => compareCodePoints(left.id, right.id))
-    .map((theme): ResolvedThemeDefinition => ({
+    .map((theme): ResolvedLegacySeedThemeDefinition => ({
       id: theme.id,
       label: theme.label,
       palette: {

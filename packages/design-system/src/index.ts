@@ -1,5 +1,5 @@
 export {
-  appearancePreferenceV2Schema,
+  appearancePreferenceSchema,
   colorModePreferenceSchema,
   contrastPreferenceSchema,
   densityPreferenceSchema,
@@ -7,7 +7,7 @@ export {
   materialPreferenceSchema,
   motionPreferenceSchema,
   uiDensitySchema,
-  type AppearancePreferenceV2,
+  type AppearancePreference,
   type ColorModePreference,
   type ContrastPreference,
   type DensityPreference,
@@ -16,8 +16,12 @@ export {
   type MotionPreference,
   type UiDensity,
 } from './schema/appearance.schema'
-export { themeDefinitionSchema, themeIdSchema, type ThemeDefinition } from './schema/theme.schema'
-export { userPreferenceV2Schema, type UserPreferenceV2 } from './schema/preference.schema'
+export {
+  legacySeedThemeDefinitionSchema,
+  legacySeedThemeIdSchema,
+  type LegacySeedThemeDefinition,
+} from './schema/legacy-seed-theme.schema'
+export { currentPreferenceSchema, type CurrentPreference } from './schema/preference.schema'
 export {
   applyAppearance,
   type AppearanceApplicationTarget,
@@ -25,7 +29,7 @@ export {
   type AppearanceStyleTarget,
   type EffectiveAppearanceState,
 } from './runtime/apply-appearance'
-export { defaultUserPreferenceV2 } from './runtime/appearance-defaults'
+export { defaultCurrentPreference } from './runtime/appearance-defaults'
 export {
   prepareFirstPaint,
   type FirstPaintApplicationBoundary,
@@ -33,7 +37,7 @@ export {
   type PreparedFirstPaintState,
   type PrepareFirstPaintInput,
 } from './runtime/first-paint'
-export { upgradeUserPreference } from './runtime/preference-schema-upgrades'
+export { migrateToCurrentPreference } from './runtime/preference-migration'
 export {
   resolveColorMode,
   type EffectiveColorMode,

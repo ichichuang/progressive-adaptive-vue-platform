@@ -1,9 +1,9 @@
 # Progressive Adaptive Vue Platform
 
-## 全新个人超级前端架构 v1.0
+## 全新个人超级前端架构
 
 ```text
-STATUS=CANONICAL_ARCHITECTURE_BASELINE_V1
+STATUS=CANONICAL_ARCHITECTURE_BASELINE
 PROJECT_MODEL=GREENFIELD
 IMPLEMENTATION_STATE=IN_PROGRESS
 MAINTENANCE_MODEL=SOLO_MAIN_BRANCH
@@ -25,9 +25,9 @@ UI_DIRECTION=ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 TEST_POLICY=NO_TEST_FILES
 ACTIVE_PUBLIC_COLOR_ROLES=9
 ACTIVE_PUBLIC_ROLES_TOTAL=27
-ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_V2_EMBEDDED_PALETTE
-TARGET_THEME_DEFINITION_CONTRACT=V3_EXPLICIT_COMPLETE
-TARGET_PREFERENCE_AUTHORITY=V3_THEME_REGISTRY_REFERENCE
+ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_EMBEDDED_PALETTE
+TARGET_THEME_DEFINITION_CONTRACT=EXPLICIT_COMPLETE_THEME
+TARGET_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
 TARGET_PREFERENCE_STATUS=INACTIVE_UNTIL_ATOMIC_CUTOVER
 PREFERENCE_CUTOVER=ATOMIC
 CODEX_BROWSER_OPERATION=PROHIBITED
@@ -724,7 +724,7 @@ packages/design-system/
 ├── src/
 │   ├── schema/
 │   │   ├── token.schema.ts
-│   │   ├── theme.schema.ts
+│   │   ├── legacy-seed-theme.schema.ts
 │   │   ├── appearance.schema.ts
 │   │   └── preference.schema.ts
 │   │
@@ -741,9 +741,9 @@ packages/design-system/
 │   │   ├── resolve-color-mode.ts
 │   │   ├── resolve-material.ts
 │   │   ├── apply-appearance.ts
-│   │   ├── preference-schema-upgrades.ts
+│   │   ├── preference-migration.ts
 │   │   ├── first-paint.ts
-│   │   └── theme-registry.ts                 [admitted by the V3 registry package]
+│   │   └── theme-registry.ts                 [admitted by the explicit-theme registry package]
 │   │
 │   ├── unocss/
 │   │   ├── preset.ts
@@ -903,7 +903,7 @@ cssVariable?
 
 Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role Metadata；只有 Runtime CSS 中真实存在的 Token 才记录 `cssVariable`。Manifest 是生成和治理输入，不是应用公共 API。
 
-加入这些字段时必须提升 Manifest Schema Version。Generator 必须在 Material Source 进入前支持 `material` Namespace → `--ui-material-*` 映射。Atomic Cutover 后，Theme、Mode 与 Contrast 的 Public Color Projection 只能遵守 §13.7 的 Private Theme Bank 和 Stable Public Binding；Cutover 前保留当前 V2 Conditional Projection，不得提前混入 Target Bank。其他 Conditional Semantic Alias 必须保留 CSS `var(...)` 关系与独立单轴 Selector，不得一律压平为 Literal 或复制组合矩阵。
+加入这些字段时必须提升 Manifest Schema Version。Generator 必须在 Material Source 进入前支持 `material` Namespace → `--ui-material-*` 映射。Atomic Cutover 后，Theme、Mode 与 Contrast 的 Public Color Projection 只能遵守 §13.7 的 Private Theme Bank 和 Stable Public Binding；Cutover 前保留当前 Embedded-palette Conditional Projection，不得提前混入 Target Bank。其他 Conditional Semantic Alias 必须保留 CSS `var(...)` 关系与独立单轴 Selector，不得一律压平为 Literal 或复制组合矩阵。
 
 ### Public Output Completeness
 
@@ -1606,7 +1606,7 @@ Material Token 是 `ui-internal`，只允许 `packages/ui` 在真实 Phase 2 消
 
 ## 13.1 Stored Preference 与 Effective State
 
-当前 V2 Runtime 根节点表达解析后的 Effective State，但只写 `data-theme`，不写 `data-theme-kind`。Target Atomic Cutover 接受后，根节点才切换为以下 Tuple-aware 形式：
+当前 Embedded-palette Runtime 根节点表达解析后的 Effective State，但只写 `data-theme`，不写 `data-theme-kind`。Target Atomic Cutover 接受后，根节点才切换为以下 Tuple-aware 形式：
 
 ```html
 <html
@@ -1630,7 +1630,7 @@ stored material = adaptive | reduced | solid
 effective material = adaptive | reduced | solid
 ```
 
-`system` 和尚未解析的 `adaptive` 只存在于用户偏好。`System` 不是第三个 Theme Plane；它只能由浏览器能力解析为 Effective `light` 或 `dark`。Cutover 前，该结果选择当前 V2 Conditional Projection；Cutover 后，它才选择相应的 Explicit Theme Plane。DOM 的 `data-color-mode` 与 `data-material` 只记录 Effective State；不得将派生状态回写为用户偏好。根节点根据 Effective Color Mode 设置：
+`system` 和尚未解析的 `adaptive` 只存在于用户偏好。`System` 不是第三个 Theme Plane；它只能由浏览器能力解析为 Effective `light` 或 `dark`。Cutover 前，该结果选择当前 Embedded-palette Conditional Projection；Cutover 后，它才选择相应的 Explicit Theme Plane。DOM 的 `data-color-mode` 与 `data-material` 只记录 Effective State；不得将派生状态回写为用户偏好。根节点根据 Effective Color Mode 设置：
 
 ```css
 html[data-color-mode='light'] {
@@ -1644,11 +1644,11 @@ html[data-color-mode='dark'] {
 
 Effective Appearance 是纯派生结果，不作为第二份可变 Pinia State，也不持久化。
 
-Atomic Cutover 后，Theme Reference Resolution 同样是纯边界。有效引用解析为已校验、可访问的 Built-in 或 Custom Theme Registry Entry；无效引用不得被改写为 `neutral` 或其他主题，也不得修改 Stored Preference。运行时可以暂时保留 Safe First-paint Baseline，但必须返回结构化的 Invalid-theme Result。Cutover 前，Theme 继续是经过 V2 Schema 校验的 Built-in ID 字符串，不存在 Registry-kind Tuple。
+Atomic Cutover 后，Theme Reference Resolution 同样是纯边界。有效引用解析为已校验、可访问的 Built-in 或 Custom Theme Registry Entry；无效引用不得被改写为 `neutral` 或其他主题，也不得修改 Stored Preference。运行时可以暂时保留 Safe First-paint Baseline，但必须返回结构化的 Invalid-theme Result。Cutover 前，Theme 继续是经过 `CurrentPreference` Schema 校验的 Built-in ID 字符串，不存在 Registry-kind Tuple。
 
-## 13.2 Theme Definition V3
+## 13.2 Theme Definition
 
-Theme Definition 与 User Preference 是不同合同。Theme Definition V3 是完整、显式、版本化的 Target 颜色文档；本 Architecture Amendment 只定义 Target，不使它成为当前 Runtime、Default、Public Export、First-paint 或 Persistence Authority。它只能在 §13.4 的 Atomic Cutover 中激活：
+Theme Definition 与 User Preference 是不同合同。`ThemeDefinition` 是完整、显式、版本化的 Target 颜色文档；本 Architecture Amendment 只定义 Target，不使它成为当前 Runtime、Default、Public Export、First-paint 或 Persistence Authority。它只能在 §13.4 的 Atomic Cutover 中激活：
 
 ```ts
 declare const generatedPublicRoleRegistry: {
@@ -1673,7 +1673,7 @@ type CompletePublicColorRoleMap<Value> = {
   readonly [Role in PublicColorRole]: Value
 }
 
-interface ThemeDefinitionV3<
+interface ThemeDefinition<
   Id extends ThemeId,
   Value extends
     | AbsoluteCssColor
@@ -1695,12 +1695,12 @@ interface ThemeDefinitionV3<
   }
 }
 
-type BuiltInThemeDefinitionV3 = ThemeDefinitionV3<
+type BuiltInThemeDefinition = ThemeDefinition<
   BuiltInThemeId,
   AbsoluteCssColor | DirectBuildOnlyPrimitiveColorAlias
 >
 
-type CustomThemeDefinitionV3 = ThemeDefinitionV3<
+type CustomThemeDefinition = ThemeDefinition<
   CustomThemeId,
   AbsoluteCssColor
 >
@@ -2114,16 +2114,16 @@ ACTIVE_ALPHA_RECORDS=1
 
 ### Active Authority
 
-当前已实现的 `UserPreferenceV2` Embedded-palette Format 保持唯一 Active Authority：
+当前已实现的 `CurrentPreference` Legacy-seed Embedded-palette Format 保持唯一 Active Authority：
 
 ```text
-ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_V2_EMBEDDED_PALETTE
-ACTIVE_SCHEMA=UserPreferenceV2
-ACTIVE_DEFAULT=defaultUserPreferenceV2
-ACTIVE_PUBLIC_EXPORTS=V2_SCHEMA_TYPES_DEFAULT_AND_RUNTIME_HELPERS
-ACTIVE_FIRST_PAINT=V1_V2_EMBEDDED_PALETTE_READER
-ACTIVE_RUNTIME_APPLICATION=V2_THEME_STRING_WITHOUT_THEME_KIND
-ACTIVE_PERSISTENCE_FORMAT=USER_PREFERENCE_V2
+ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_EMBEDDED_PALETTE
+ACTIVE_SCHEMA=CurrentPreference
+ACTIVE_DEFAULT=defaultCurrentPreference
+ACTIVE_PUBLIC_EXPORTS=CURRENT_PREFERENCE_SCHEMA_TYPES_DEFAULT_AND_RUNTIME_HELPERS
+ACTIVE_FIRST_PAINT=LEGACY_PREFERENCE_INPUT_AND_CURRENT_PREFERENCE_READER
+ACTIVE_RUNTIME_APPLICATION=LEGACY_SEED_THEME_STRING_WITHOUT_THEME_KIND
+ACTIVE_PERSISTENCE_FORMAT=CURRENT_PREFERENCE
 TARGET_PREFERENCE_STATUS=INACTIVE_UNTIL_ATOMIC_CUTOVER
 ```
 
@@ -2131,7 +2131,7 @@ Active Envelope 精确包含外层 `schemaVersion: 2` 与 `appearance.{colorMode
 
 ### Legacy Built-in Theme Tuple Registry
 
-在任何 Built-in Theme Source 替换前，以下 Registry 冻结当前 `neutral`、`ocean`、`warm` Source 和 V2 持久化比较值：
+在任何 Built-in Theme Source 替换前，以下 Registry 冻结当前 `neutral`、`ocean`、`warm` Source 和 `CurrentPreference` 持久化比较值：
 
 ```ts
 const LegacyBuiltInThemeTupleRegistry = {
@@ -2189,9 +2189,9 @@ const LegacyBuiltInThemeTupleRegistry = {
 } as const
 ```
 
-Migration Equality 只对 `comparisonFields` 中的 Theme ID 和三个 V2 Persisted String 执行 Code-point Exact Equality。`label`、`sourcePath` 与 `sourceAlias` 是不可变 Provenance，不参与 Equality。早期 Public Role Registry 和完整 Theme-plane Package 必须把新结构 Side-by-side 加入，并保留上述三个 Legacy Source Document；不得在 Migration Registry 可用和 Atomic Cutover 被接受前删除或改写 Legacy Tuple Evidence。
+Migration Equality 只对 `comparisonFields` 中的 Theme ID 和三个 `CurrentPreference` Persisted String 执行 Code-point Exact Equality。`label`、`sourcePath` 与 `sourceAlias` 是不可变 Provenance，不参与 Equality。早期 Public Role Registry 和完整 Theme-plane Package 必须把新结构 Side-by-side 加入，并保留上述三个 Legacy Source Document；不得在 Migration Registry 可用和 Atomic Cutover 被接受前删除或改写 Legacy Tuple Evidence。
 
-### Target V3 Contract
+### Target Explicit-theme Contract
 
 以下 Target Schema 在 Atomic Cutover 前只作为非 Active Contract 存在。
 
@@ -2202,7 +2202,7 @@ type ColorModePreference = 'light' | 'dark' | 'system'
 type ContrastPreference = 'standard' | 'enhanced'
 type MaterialPreference = 'adaptive' | 'reduced' | 'solid'
 
-type ThemeReferenceV3 =
+type ThemeReference =
   | {
       kind: 'built-in'
       id: BuiltInThemeId
@@ -2212,9 +2212,9 @@ type ThemeReferenceV3 =
       id: CustomThemeId
     }
 
-interface AppearancePreferenceV3 {
+interface ExplicitThemeAppearancePreference {
   colorMode: ColorModePreference
-  theme: ThemeReferenceV3
+  theme: ThemeReference
   contrast: ContrastPreference
   material: MaterialPreference
   density: DensityPreference
@@ -2222,9 +2222,9 @@ interface AppearancePreferenceV3 {
   motion: MotionPreference
 }
 
-interface UserPreferenceV3 {
+interface ExplicitThemePreference {
   schemaVersion: 3
-  appearance: AppearancePreferenceV3
+  appearance: ExplicitThemeAppearancePreference
 }
 ```
 
@@ -2243,20 +2243,20 @@ Built-in 与 Custom 可以拥有相同的 `themeId` 字符串，但 Tuple 永不
 Registry Entry 必须通过 Discriminated Union 绑定 Kind、ID 与完整文档，且 Entry ID 必须精确等于 `definition.id`：
 
 ```ts
-type ThemeRegistryEntryV3 =
+type ThemeRegistryEntry =
   | {
       kind: 'built-in'
       id: BuiltInThemeId
-      definition: BuiltInThemeDefinitionV3
+      definition: BuiltInThemeDefinition
     }
   | {
       kind: 'custom'
       id: CustomThemeId
-      definition: CustomThemeDefinitionV3
+      definition: CustomThemeDefinition
     }
 ```
 
-Atomic Cutover 接受后的 Target V3 Default 只引用 Built-in `neutral`，不复制任何颜色值：
+Atomic Cutover 接受后的 Target `ExplicitThemePreference` Default 只引用 Built-in `neutral`，不复制任何颜色值：
 
 ```text
 colorMode=system
@@ -2272,21 +2272,21 @@ Theme Registry 是 Typed Product Data，不是 AI Workflow Registry、Machine-lo
 
 Custom Theme Document 存储在 Preference 之外的 Application-owned Theme Registry。应用可以使用独立、显式提供的同步 Registry Snapshot Storage Key 支持 First Paint，也可以在 Vue Bootstrap 后通过自己的持久化边界解析；两种路径都必须把同一份原始完整 Theme Definition 重新送入 Design System Exact Validator。Preference 始终只保存 Reference，不复制 Theme Plane。
 
-V2 → V3 Migration 必须确定、幂等、无损并返回结构化结果：
+`LegacySeedPreference` → `ExplicitThemePreference` Migration 必须确定、幂等、无损并返回结构化结果：
 
 ```text
-V2 theme ∈ { neutral, ocean, warm }
+LegacySeedPreference theme ∈ { neutral, ocean, warm }
 + embedded palette exactly equals that versioned legacy built-in seed tuple
 → same-ID complete Built-in Theme Reference
 
-V2 built-in ID + modified embedded palette
+LegacySeedPreference built-in ID + modified embedded palette
 → MIGRATION_REQUIRES_THEME_COMPLETION
 
-V2 custom theme or custom seed palette
+LegacySeedPreference custom theme or custom seed palette
 → MIGRATION_REQUIRES_THEME_COMPLETION
 ```
 
-V1 Payload 可以先执行历史确定的 `high-contrast → system + enhanced` 和 `material=solid` 转换，再进入同一 V2 → V3 判定。Migration 不得从 V2 Seed 扩展颜色、丢弃已修改的 Palette、回退到默认 V3 或写入 Storage。
+`LegacyPreferenceInput` Payload 可以先执行历史确定的 `high-contrast → system + enhanced` 和 `material=solid` 转换，再进入同一 `LegacySeedPreference` → `ExplicitThemePreference` 判定。Migration 不得从 Legacy Seed 扩展颜色、丢弃已修改的 Palette、回退到默认 `ExplicitThemePreference` 或写入 Storage。
 
 ### Atomic Cutover Boundary
 
@@ -2304,9 +2304,9 @@ Manifest first-paint metadata
 owning static enforcement
 ```
 
-Schema 包括 Appearance、Preference、Theme 与只读 Legacy Migration Schema；Runtime 切换包括 `(registryKind, themeId)`、`data-theme-kind`、Theme Bank 安装和无效引用结果；Persistence 切换包括所有 Reader、Writer、Snapshot 和 Application-owned Key Contract。上述任一 Surface 仍使用 V2 Authority 时，Target Format 不得报告 Active。
+Schema 包括 Appearance、Preference、Theme 与只读 Legacy Migration Schema；Runtime 切换包括 `(registryKind, themeId)`、`data-theme-kind`、Theme Bank 安装和无效引用结果；Persistence 切换包括所有 Reader、Writer、Snapshot 和 Application-owned Key Contract。上述任一 Surface 仍使用 `CurrentPreference` Authority 时，Target Format 不得报告 Active。
 
-Cutover 之前，新 Public Role Registry 和 Theme Plane 只能作为 Inert Side-by-side Structure 存在，不得删除 Legacy Tuple Source 或改变 V2 Output。Cutover 之后，V1/V2 Format 只允许作为 Read-only Migration Input；任何 First Paint、Runtime、Application Store 或 Persistence Writer 都不得再次写出 V1/V2 Payload。`main` 上不得存在 New Reader + Legacy Writer、New Default + Legacy First Paint、New Schema + Legacy Runtime 或任何其他 Mixed-authority Intermediate Commit。
+Cutover 之前，新 Public Role Registry 和 Theme Plane 只能作为 Inert Side-by-side Structure 存在，不得删除 Legacy Tuple Source 或改变 `CurrentPreference` Output。Cutover 之后，`LegacyPreferenceInput` 与 `LegacySeedPreference` Format 只允许作为 Read-only Migration Input；任何 First Paint、Runtime、Application Store 或 Persistence Writer 都不得再次写出这些 Legacy Payload。`main` 上不得存在 New Reader + Legacy Writer、New Default + Legacy First Paint、New Schema + Legacy Runtime 或任何其他 Mixed-authority Intermediate Commit。
 
 ```text
 PREFERENCE_CUTOVER=ATOMIC
@@ -2364,19 +2364,19 @@ Capability 或 Media Query 状态改变时重新执行纯 Resolver，只更新 E
 
 ## 13.6 Ownership Boundary
 
-以下 Ownership 是 Atomic Cutover 后的 Target Boundary。Cutover 前，§13.4 的 V2 Schema、Default、Public Export、First Paint、Runtime 和 Persistence Ownership 保持不变。
+以下 Ownership 是 Atomic Cutover 后的 Target Boundary。Cutover 前，§13.4 的 `CurrentPreference` Schema、Default、Public Export、First Paint、Runtime 和 Persistence Ownership 保持不变。
 
 `@platform/design-system` 负责机制：
 
 ```text
 Zod schemas
 versioned Public Role Registry
-Theme Definition V3 exact validation
+ThemeDefinition exact validation
 versioned Alpha Contract Registry
 versioned Named Contrast Registry
 Built-in Theme Registry contract
-one reference-only V3 default
-V1 / V2 → V3 structured migration
+one reference-only ExplicitThemePreference default
+LegacyPreferenceInput / LegacySeedPreference → ExplicitThemePreference structured migration
 Theme Reference resolution result
 typed Custom Theme Bank Installer
 pure color-mode and material resolvers
@@ -2470,10 +2470,10 @@ Private Plane Bank 和 Effective Bank 都是 `ui-internal`：只进入 Runtime C
 
 ## 13.8 Explicit Theme Validation Pipeline
 
-本 Pipeline 只在 Atomic Cutover 中与 Target Theme、Preference、Registry、First Paint 和 Runtime 一起激活；当前 V2 Validation 不得被描述为已经执行下列完整 Theme Pipeline。
+本 Pipeline 只在 Atomic Cutover 中与 Target Theme、Preference、Registry、First Paint 和 Runtime 一起激活；当前 Embedded-palette Validation 不得被描述为已经执行下列完整 Theme Pipeline。
 
 ```text
-Explicit Theme Definition V3
+Explicit ThemeDefinition
        ↓
 Duplicate-aware raw document parse
        ↓
@@ -2541,7 +2541,7 @@ text-secondary-on-page: 6.43:1 < 7:1
 
 ## 13.9 Atomic Cutover 后用户可修改
 
-Cutover 前，用户只可修改当前 V2 Schema 已公开的 Embedded Palette 和 Appearance Preference。Cutover 后才开放：
+Cutover 前，用户只可修改当前 `AppearancePreference` Schema 已公开的 Embedded Palette 和 Appearance Preference。Cutover 后才开放：
 
 * Target `roleContractVersion` 准入的每一个 Public Color Role。
 * Light Standard Plane。
@@ -2571,7 +2571,7 @@ Cutover 前，用户只可修改当前 V2 Schema 已公开的 Embedded Palette �
 
 ## 13.11 First Paint
 
-本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Target V3 Validation 只在 §13.4 Atomic Cutover 中共同激活。Cutover 前，当前生成的 V1/V2 Embedded-palette Reader、V2 Default、现有 `data-preference-storage-key` 和 V2 Runtime Application 保持权威；不得因本节落地而单独改变。
+本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Target Explicit-theme Validation 只在 §13.4 Atomic Cutover 中共同激活。Cutover 前，当前生成的 `LegacyPreferenceInput` / `CurrentPreference` Embedded-palette Reader、`defaultCurrentPreference`、现有 `data-preference-storage-key` 和 `CurrentPreference` Runtime Application 保持权威；不得因本节落地而单独改变。
 
 构建输出：
 
@@ -2617,7 +2617,7 @@ effective material
 
 Atomic Cutover 后，Built-in Reference 从生成的 Exact Built-in Registry 同步解析。Custom Reference 只有在应用提供独立 Registry Snapshot Key、Snapshot 中存在该 Opaque ID，且原始 Theme Definition 通过 Duplicate-aware Parse、当前 Role/Alpha/Contrast Contract 和 Exact Validator 后，才能由同一 Typed Bank Installer 同步应用。Snapshot 缺失、异步 Registry 尚未就绪、Entry 不可访问或无效时必须保留 Solid Critical Baseline，并把结构化结果交给 Vue Bootstrap 后的应用边界；不得改成 `neutral`、删除引用、合成颜色或写入任一 Storage。
 
-Cutover 前，当前初始化脚本只按 V1/V2 Embedded-palette Contract 读取和校验 Preference；它不读取 Theme Registry Snapshot、不设置 `data-theme-kind`、不验证 Target Theme Document，也不安装 Theme Bank。
+Cutover 前，当前初始化脚本只按 `LegacyPreferenceInput` / `CurrentPreference` Embedded-palette Contract 读取和校验 Preference；它不读取 Theme Registry Snapshot、不设置 `data-theme-kind`、不验证 Target Theme Document，也不安装 Theme Bank。
 
 Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。读取、解析、Registry Resolution、Bank Installation 或能力检测失败时必须移除 Partial Custom Bank 并保留 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 canonical contract 生成并接受 Drift Check。
 
@@ -2704,7 +2704,7 @@ Reserved Target Projection（不是当前 Public API）：
 | `spacing.dialog.padding` | `--ui-space-dialog-padding` | `p-dialog` |
 | `spacing.list-item.gap` | `--ui-space-list-item-gap` | `gap-list-item` |
 
-这些 Target Name 仍受 `PAVP_NAMING_NORMALIZATION` 与后续 Admission Amendment 共同审查；本修订不重命名当前兼容 Role 或 Class。Toolbar Height、Navigation Item Height、Table Row Height 和 Dialog Padding 是候选 Spatial-density Metric，不授权 Density 控制一般 Layout Geometry。Density 不得修改：
+这些 Target Name 已经过 `PAVP_NAMING_NORMALIZATION` 的语义审查；后续 Admission Amendment 只能决定是否准入，不得借机重命名当前兼容 Role 或 Class。任何未来重命名必须通过独立、显式准入的 Compatibility Change。Toolbar Height、Navigation Item Height、Table Row Height 和 Dialog Padding 是候选 Spatial-density Metric，不授权 Density 控制一般 Layout Geometry。Density 不得修改：
 
 ```text
 fontScale
@@ -2842,7 +2842,7 @@ layout.z.base               → z-base          → z-index
 layout.z.overlay            → z-overlay       → z-index
 ```
 
-其余 21 个 Mapping 也必须从当前隐式 Formatter Logic 转录为 §11.4 的显式 Record 并逐 Class 验证。`border-border-default`、`ring-focus-ring`、`bg-surface-page`、`text-text-primary`、`gap-content-gap` 等当前兼容 Class Spelling 在本修订中保持不变；任何简化都属于 Deferred Naming Normalization。
+其余 21 个 Mapping 也必须从当前隐式 Formatter Logic 转录为 §11.4 的显式 Record 并逐 Class 验证。`border-border-default`、`ring-focus-ring`、`bg-surface-page`、`text-text-primary`、`gap-content-gap` 等当前兼容 Class Spelling 保持不变；任何未来简化都不属于已完成的 Naming Normalization，必须通过独立、显式准入的 Compatibility Change。
 
 ## 15.1 UnoCSS 负责
 
@@ -3924,7 +3924,7 @@ Codex 不得打开或操作浏览器来执行这些观察。Codex 只能审查 O
 
 禁止页面使用 `!important`。第三方组件覆盖必须留在 Adapter。
 
-`tokens` Layer 只由 Generator 输出。Cutover 前保持当前 V2 Conditional Output；Atomic Cutover 后才按 §13.7 的 Theme Bank → Effective Mode Bank → Contrast Public Binding → independent Density → independent Material 顺序排列。Material Selector 只写 `--ui-material-*`；应用和 Component Layer 不得复制 Theme Bank、Density 或 Material Condition Matrix。
+`tokens` Layer 只由 Generator 输出。Cutover 前保持当前 Embedded-palette Conditional Output；Atomic Cutover 后才按 §13.7 的 Theme Bank → Effective Mode Bank → Contrast Public Binding → independent Density → independent Material 顺序排列。Material Selector 只写 `--ui-material-*`；应用和 Component Layer 不得复制 Theme Bank、Density 或 Material Condition Matrix。
 
 ---
 
@@ -4604,7 +4604,7 @@ existing CSS Variables and TypeScript Token Types
 existing UnoCSS Preset
 existing Light / Dark / System
 existing Compact / Comfortable / Spacious
-active UserPreferenceV2 embedded palette
+active CurrentPreference embedded palette
 exact current 27-role public ID set, including 9 color roles
 current single-role density behavior for interaction.control.height
 packages/ui dependency-free src/index.ts stub
@@ -4614,7 +4614,7 @@ packages/ui dependency-free src/index.ts stub
 
 ```text
 subordinate browser-rule synchronization
-deferred naming normalization
+semantic naming normalization
 exact Public Role Registry and complete 27-role UnoCSS mapping
 target explicit complete Theme contract
 complete four-plane Built-in Theme documents side by side with legacy tuples
@@ -4630,7 +4630,7 @@ minimal UI-internal chrome / overlay / modal Material roles
 adaptive / reduced / solid projections and terminal fallbacks
 versioned exact Named Contrast Registry
 critical-theme.css and synchronous appearance-init.js
-Preference Schema Upgrades
+Preference Migration
 Phase 1 static governance
 ```
 
@@ -4735,7 +4735,7 @@ NAMED_CONTRAST_RECORDS=14
 PREFERENCE_CUTOVER=ATOMIC
 MANIFEST_BUDGET=DEFINED
 SUBORDINATE_BROWSER_SYNC_ORDER=IMMEDIATE
-NAMING_NORMALIZATION=DEFERRED
+NAMING_NORMALIZATION=COMPLETE
 RESERVED_COLOR_ROLES=283
 TOTAL_UNIQUE_COLOR_TAXONOMY=292
 ```
@@ -4767,24 +4767,24 @@ scripts/verify/check-repository-policy.ts
 
 ### 2. `PAVP_NAMING_NORMALIZATION`
 
-这是从当前 Architecture-only Repair 延迟、但在 Immediate Chain 中紧随 Package 1 的强制 Compatibility Cleanup。它必须原子移除 Architecture、Type、Schema、File、Runtime API 和 Public Export 中的 V1/V2/V3-style Name，并提供迁移与静态 Drift Enforcement。不得在当前 Architecture Repair 中部分重命名 Role ID、Class、Schema Symbol、File 或 Export。
+这是 Immediate Chain 中紧随 Package 1 的强制 Compatibility Cleanup。它必须原子移除 Architecture、Type、Schema、File、Runtime API 和 Public Export 中的 Numeric-version-style Name，并提供迁移与静态 Drift Enforcement。不得借此重命名 Role ID、Class 或改变 Runtime Behavior。
 
-该包必须在 Package 3 和任何 New Theme 或 Preference Implementation 开始前完成。命名变化不得暗中改变当前 V2 Data Shape、27-role Public Set、Contrast Threshold、Alpha Value 或 UnoCSS Behavior。
+该包必须在 Package 3 和任何 New Theme 或 Preference Implementation 开始前完成。命名变化不得暗中改变当前 `CurrentPreference` Data Shape、27-role Public Set、Contrast Threshold、Alpha Value 或 UnoCSS Behavior。
 
 ```text
-NAMING_NORMALIZATION=DEFERRED
+NAMING_NORMALIZATION=COMPLETE
 NAMING_NORMALIZATION_PARTIAL_EXECUTION=PROHIBITED
 ```
 
 ### 3. `PAVP_ROLE_REGISTRY_AND_OUTPUT_COMPLETENESS`
 
-实现 §11.4 的 Exact 27-record Public Role Registry、27 UnoCSS Mapping、§13.3 的单一 Alpha Record、§25.1 的 14 Named Contrast Record、Public Output Set Equality、Manifest Record Equation、32 KiB gzip Budget、Expected Delta Enforcement 和 Formatter Fatal Failure。该包必须在不重命名或移除现有 Public ID 与 21 个现有 Class Spelling、不改变 Runtime Value 或 Active V2 Preference Authority 的前提下证明 `A = R = T = N = U = M`；同时必须新增 §15 明确列出的六个缺失 Mapping。
+实现 §11.4 的 Exact 27-record Public Role Registry、27 UnoCSS Mapping、§13.3 的单一 Alpha Record、§25.1 的 14 Named Contrast Record、Public Output Set Equality、Manifest Record Equation、32 KiB gzip Budget、Expected Delta Enforcement 和 Formatter Fatal Failure。该包必须在不重命名或移除现有 Public ID 与 21 个现有 Class Spelling、不改变 Runtime Value 或 Active `CurrentPreference` Authority 的前提下证明 `A = R = T = N = U = M`；同时必须新增 §15 明确列出的六个缺失 Mapping。
 
 该包拥有 Manifest Byte、Record 和 Growth Enforcement。它不得公开 Primitive、Theme Bank、Reserved Color、Future Density 或 Internal Material，不得给 Target Theme/Preference 宣称 Active Status。
 
 ### 4. `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`
 
-为当前九个 Active Color Role 人工编写 `neutral`、`ocean`、`warm` 的四个完整 Target Plane，并产生 Target-only Static Validation Result，不提交 Evidence Artifact。新结构必须与当前三个 Legacy Theme Source Side-by-side 存在；不得删除、改写或重新解释 §13.4 的 Legacy Tuple Source，不得改变 V2 Default、First Paint、Runtime、Public Export 或 Persistence。
+为当前九个 Active Color Role 人工编写 `neutral`、`ocean`、`warm` 的四个完整 Target Plane，并产生 Target-only Static Validation Result，不提交 Evidence Artifact。新结构必须与当前三个 Legacy Theme Source Side-by-side 存在；不得删除、改写或重新解释 §13.4 的 Legacy Tuple Source，不得改变 `defaultCurrentPreference`、First Paint、Runtime、Public Export 或 Persistence。
 
 该包不得从 Seed 生成颜色，不得激活 Target `roleContractVersion`，也不得把 Reserved Color Candidate 加入 Theme Plane。
 
@@ -4792,7 +4792,7 @@ NAMING_NORMALIZATION_PARTIAL_EXECUTION=PROHIBITED
 
 在一个不可拆分的 Production Landing 中激活完整 Target Theme 和 Reference-only Preference。该包必须共同改变 §13.4 列出的 Schema、Default、Public Export、First Paint、Runtime Application、Application Bootstrap/Persistence、HTML/Storage Wiring、Manifest Metadata 和 Owning Static Enforcement，并实现 Exact Built-in ID Registry、Opaque Custom ID Registry、`(registryKind, themeId)`、Typed Theme Bank、Structured Migration 与 Invalid-theme Result。
 
-Cutover 必须使用冻结的 Legacy Built-in Theme Tuple Registry。Cutover 后 Legacy V1/V2 Shape 只读、只迁移、永不写回。不得分拆为 Schema Package 和 Runtime Package，不得在 `main` 形成 Mixed Authority。
+Cutover 必须使用冻结的 Legacy Built-in Theme Tuple Registry。Cutover 后 `LegacyPreferenceInput` 与 `LegacySeedPreference` Shape 只读、只迁移、永不写回。不得分拆为 Schema Package 和 Runtime Package，不得在 `main` 形成 Mixed Authority。
 
 ### 6. `PAVP_FINAL_STATIC_GOVERNANCE`
 
@@ -4946,7 +4946,7 @@ DOM_USES_RESOLVED_COLOR_MODE_AND_EFFECTIVE_MATERIAL
 EFFECTIVE_APPEARANCE_IS_DERIVED_NOT_PERSISTED
 APPLICATION_OWNS_PREFERENCE_STORAGE_AND_STORAGE_KEY
 DESIGN_SYSTEM_HAS_NO_HARDCODED_STORAGE_KEY
-ACTIVE_PREFERENCE_AUTHORITY_IS_V2_UNTIL_ATOMIC_CUTOVER
+ACTIVE_PREFERENCE_AUTHORITY_IS_EMBEDDED_PALETTE_UNTIL_ATOMIC_CUTOVER
 TARGET_EXPLICIT_THEME_HAS_FOUR_COMPLETE_PLANES_AFTER_ATOMIC_CUTOVER
 REFERENCE_ONLY_PREFERENCE_RESOLVES_EXACT_REGISTRY_ENTRY_AFTER_ATOMIC_CUTOVER
 TARGET_THEME_IDENTITY_IS_REGISTRY_KIND_AND_OPAQUE_ID_TUPLE

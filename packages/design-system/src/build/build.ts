@@ -13,13 +13,13 @@ import {
   effectiveAppearanceAttributes,
   effectiveAppearanceCustomProperties,
 } from '../runtime/apply-appearance'
-import { defaultUserPreferenceV2 } from '../runtime/appearance-defaults'
+import { defaultCurrentPreference } from '../runtime/appearance-defaults'
 import { prepareFirstPaint } from '../runtime/first-paint'
-import { upgradeUserPreference } from '../runtime/preference-schema-upgrades'
+import { migrateToCurrentPreference } from '../runtime/preference-migration'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { fontScaleValues } from '../schema/appearance.schema'
-import { userPreferenceV2Schema } from '../schema/preference.schema'
+import { currentPreferenceSchema } from '../schema/preference.schema'
 import { validateContrastAndMaterialContracts } from './contrast'
 import { createCssFormat, formatRuntimeCss } from './formats/css'
 import {
@@ -940,22 +940,25 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
 }
 
 function validateAppearanceContracts(result: TokenBuildResult): void {
-  const validatedDefault = userPreferenceV2Schema.safeParse(defaultUserPreferenceV2)
+  const validatedDefault = currentPreferenceSchema.safeParse(defaultCurrentPreference)
 
-  assertInvariant(validatedDefault.success, 'the canonical V2 default must pass its schema')
   assertInvariant(
-    !('schemaVersion' in defaultUserPreferenceV2.appearance),
+    validatedDefault.success,
+    'the canonical embedded-palette/current preference default must pass its schema',
+  )
+  assertInvariant(
+    !('schemaVersion' in defaultCurrentPreference.appearance),
     'schemaVersion must exist only on the outer preference envelope',
   )
   assertInvariantEqual(
     {
-      colorMode: defaultUserPreferenceV2.appearance.colorMode,
-      contrast: defaultUserPreferenceV2.appearance.contrast,
-      density: defaultUserPreferenceV2.appearance.density,
-      fontScale: defaultUserPreferenceV2.appearance.fontScale,
-      material: defaultUserPreferenceV2.appearance.material,
-      motion: defaultUserPreferenceV2.appearance.motion,
-      theme: defaultUserPreferenceV2.appearance.theme,
+      colorMode: defaultCurrentPreference.appearance.colorMode,
+      contrast: defaultCurrentPreference.appearance.contrast,
+      density: defaultCurrentPreference.appearance.density,
+      fontScale: defaultCurrentPreference.appearance.fontScale,
+      material: defaultCurrentPreference.appearance.material,
+      motion: defaultCurrentPreference.appearance.motion,
+      theme: defaultCurrentPreference.appearance.theme,
     },
     {
       colorMode: 'system',
@@ -969,34 +972,34 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       motion: 'full',
       theme: 'neutral',
     },
-    'the canonical V2 default values must remain fixed',
+    'the canonical embedded-palette/current preference default values must remain fixed',
   )
   assertInvariant(
-    !userPreferenceV2Schema.safeParse({
-      ...defaultUserPreferenceV2,
+    !currentPreferenceSchema.safeParse({
+      ...defaultCurrentPreference,
       appearance: {
-        ...defaultUserPreferenceV2.appearance,
+        ...defaultCurrentPreference.appearance,
         colorMode: 'high-contrast',
       },
     }).success,
-    'the V2 color mode schema must reject legacy high contrast',
+    'the embedded-palette/current preference color mode schema must reject legacy high contrast',
   )
   assertInvariant(
-    !userPreferenceV2Schema.safeParse({
-      ...defaultUserPreferenceV2,
+    !currentPreferenceSchema.safeParse({
+      ...defaultCurrentPreference,
       appearance: {
-        ...defaultUserPreferenceV2.appearance,
+        ...defaultCurrentPreference.appearance,
         schemaVersion: 2,
       },
     }).success,
-    'the V2 appearance schema must reject a nested schemaVersion',
+    'the embedded-palette/current appearance schema must reject a nested schemaVersion',
   )
 
   const neutralTheme = result.themes.find((theme) => theme.id === 'neutral')
 
   assertInvariant(neutralTheme !== undefined, 'the neutral theme must exist')
   assertInvariantEqual(
-    defaultUserPreferenceV2.appearance.palette,
+    defaultCurrentPreference.appearance.palette,
     {
       accent: tokenValueToCss('color', neutralTheme.palette.accent),
       brand: tokenValueToCss('color', neutralTheme.palette.brand),
@@ -1015,8 +1018,8 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     fontScale: 1.2,
     motion: 'reduced',
     palette: {
-      accent: defaultUserPreferenceV2.appearance.palette.accent,
-      brand: defaultUserPreferenceV2.appearance.palette.brand,
+      accent: defaultCurrentPreference.appearance.palette.accent,
+      brand: defaultCurrentPreference.appearance.palette.brand,
       neutral: 'warm',
     },
     theme: 'ocean',
@@ -1026,7 +1029,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     schemaVersion: 1,
   } as const
   const legacySnapshot = JSON.stringify(legacyPreference)
-  const migrated = upgradeUserPreference(legacyPreference)
+  const migrated = migrateToCurrentPreference(legacyPreference)
 
   assertInvariantEqual(
     migrated,
@@ -1037,14 +1040,14 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       },
       schemaVersion: 2,
     },
-    'valid V1 preferences must migrate to solid while preserving valid fields',
+    'valid legacy preference input must migrate to solid while preserving valid fields',
   )
   assertInvariant(
     JSON.stringify(legacyPreference) === legacySnapshot,
     'migration must not mutate its input',
   )
 
-  const highContrastMigrated = upgradeUserPreference({
+  const highContrastMigrated = migrateToCurrentPreference({
     appearance: {
       ...legacyAppearance,
       colorMode: 'high-contrast',
@@ -1067,27 +1070,27 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     'legacy high contrast must migrate to system, enhanced, and solid',
   )
   assertInvariantEqual(
-    upgradeUserPreference(migrated),
+    migrateToCurrentPreference(migrated),
     migrated,
-    'valid V2 preferences must remain idempotent',
+    'valid embedded-palette/current preferences must remain idempotent',
   )
 
-  const firstFallback = upgradeUserPreference({
+  const firstFallback = migrateToCurrentPreference({
     appearance: {
       colorMode: 'dark',
     },
     schemaVersion: 1,
   })
-  const secondFallback = upgradeUserPreference(undefined)
+  const secondFallback = migrateToCurrentPreference(undefined)
 
   assertInvariantEqual(
     firstFallback,
-    defaultUserPreferenceV2,
+    defaultCurrentPreference,
     'invalid input must return the complete canonical default',
   )
   assertInvariantEqual(
     secondFallback,
-    defaultUserPreferenceV2,
+    defaultCurrentPreference,
     'unknown input must return the complete canonical default',
   )
   assertInvariant(
@@ -1098,10 +1101,10 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     'fallback preferences must not share mutable object state',
   )
   assertInvariant(
-    Object.isFrozen(defaultUserPreferenceV2) &&
-      Object.isFrozen(defaultUserPreferenceV2.appearance) &&
-      Object.isFrozen(defaultUserPreferenceV2.appearance.palette) &&
-      Object.isFrozen(defaultUserPreferenceV2.appearance.density),
+    Object.isFrozen(defaultCurrentPreference) &&
+      Object.isFrozen(defaultCurrentPreference.appearance) &&
+      Object.isFrozen(defaultCurrentPreference.appearance.palette) &&
+      Object.isFrozen(defaultCurrentPreference.appearance.density),
     'the exported canonical default must not expose mutable shared state',
   )
 
@@ -1180,7 +1183,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       prefersDark: true,
       reducedTransparencyRequested: false,
     },
-    storedPreference: defaultUserPreferenceV2,
+    storedPreference: defaultCurrentPreference,
   })
 
   assertInvariantEqual(
@@ -1416,7 +1419,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   const validExecution = executeAppearanceInit(appearanceInit, {
     prefersDark: true,
-    rawPreference: JSON.stringify(defaultUserPreferenceV2),
+    rawPreference: JSON.stringify(defaultCurrentPreference),
   })
 
   assertInvariantEqual(
@@ -1452,9 +1455,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   for (const fontScale of fontScaleValues) {
     const storedPreference = {
-      ...defaultUserPreferenceV2,
+      ...defaultCurrentPreference,
       appearance: {
-        ...defaultUserPreferenceV2.appearance,
+        ...defaultCurrentPreference.appearance,
         fontScale,
       },
     }
@@ -1506,7 +1509,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   const legacyExecution = executeAppearanceInit(appearanceInit, {
     rawPreference: JSON.stringify({
       appearance: {
-        ...defaultUserPreferenceV2.appearance,
+        ...defaultCurrentPreference.appearance,
         colorMode: 'high-contrast',
         material: undefined,
       },
@@ -1518,7 +1521,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     legacyExecution.attributes['data-color-mode'] === 'light' &&
       legacyExecution.attributes['data-contrast'] === 'enhanced' &&
       legacyExecution.attributes['data-material'] === 'solid',
-    'appearance-init.js must upgrade V1 high contrast in memory and preserve the solid migration',
+    'appearance-init.js must migrate legacy preference input high contrast in memory and preserve the solid migration',
   )
 
   const solidBaseline = {
@@ -1544,9 +1547,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     }),
     executeAppearanceInit(appearanceInit, {
       rawPreference: JSON.stringify({
-        ...defaultUserPreferenceV2,
+        ...defaultCurrentPreference,
         appearance: {
-          ...defaultUserPreferenceV2.appearance,
+          ...defaultCurrentPreference.appearance,
           fontScale: 1.15,
         },
       }),

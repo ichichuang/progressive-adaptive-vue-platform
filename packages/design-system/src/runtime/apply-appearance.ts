@@ -4,7 +4,7 @@ import type {
   MotionPreference,
   UiDensity,
 } from '../schema/appearance.schema'
-import type { ThemeDefinition } from '../schema/theme.schema'
+import type { LegacySeedThemeDefinition } from '../schema/legacy-seed-theme.schema'
 import type { EffectiveColorMode } from './resolve-color-mode'
 import type { EffectiveMaterial } from './resolve-material'
 
@@ -27,7 +27,7 @@ export interface EffectiveAppearanceState {
   readonly fontScale: FontScale
   readonly material: EffectiveMaterial
   readonly motion: MotionPreference
-  readonly theme: ThemeDefinition['id']
+  readonly theme: LegacySeedThemeDefinition['id']
 }
 
 export const effectiveAppearanceAttributes = [

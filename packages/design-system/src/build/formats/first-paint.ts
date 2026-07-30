@@ -4,19 +4,19 @@ import {
   effectiveAppearanceAttributes,
   effectiveAppearanceCustomProperties,
 } from '../../runtime/apply-appearance'
-import { defaultUserPreferenceV2 } from '../../runtime/appearance-defaults'
+import { defaultCurrentPreference } from '../../runtime/appearance-defaults'
 import { colorModeResolutionContract } from '../../runtime/resolve-color-mode'
 import { materialResolutionContract } from '../../runtime/resolve-material'
 import {
   colorModePreferenceValues,
   contrastPreferenceValues,
   fontScaleValues,
-  legacyColorModePreferenceV1Values,
+  legacyColorModePreferenceValues,
   materialPreferenceValues,
   motionPreferenceValues,
   uiDensityValues,
 } from '../../schema/appearance.schema'
-import { themeIdPattern } from '../../schema/theme.schema'
+import { legacySeedThemeIdPattern } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import { canonicalLayerOrder, formatAppearanceBaseCss, formatForcedColorsCss } from './css'
@@ -149,14 +149,14 @@ export function formatAppearanceInitScript(): string {
   'use strict'
 
   var colorModes = ${javascriptLiteral(colorModePreferenceValues)}
-  var legacyColorModes = ${javascriptLiteral(legacyColorModePreferenceV1Values)}
+  var legacyColorModes = ${javascriptLiteral(legacyColorModePreferenceValues)}
   var contrasts = ${javascriptLiteral(contrastPreferenceValues)}
   var materials = ${javascriptLiteral(materialPreferenceValues)}
   var densities = ${javascriptLiteral(uiDensityValues)}
   var fontScales = ${javascriptLiteral(fontScaleValues)}
   var motions = ${javascriptLiteral(motionPreferenceValues)}
-  var themeIdPattern = new RegExp(${javascriptString(themeIdPattern.source)}, 'u')
-  var defaultPreference = ${javascriptLiteral(defaultUserPreferenceV2, 2)}
+  var legacySeedThemeIdPattern = new RegExp(${javascriptString(legacySeedThemeIdPattern.source)}, 'u')
+  var defaultPreference = ${javascriptLiteral(defaultCurrentPreference, 2)}
   var colorModeContract = ${javascriptLiteral(colorModeResolutionContract, 2)}
   var materialContract = ${javascriptLiteral(materialResolutionContract, 2)}
 
@@ -234,12 +234,12 @@ export function formatAppearanceInitScript(): string {
       includes(motions, value.motion) &&
       isPalette(value.palette) &&
       typeof value.theme === 'string' &&
-      themeIdPattern.test(value.theme) &&
+      legacySeedThemeIdPattern.test(value.theme) &&
       (!requiresMaterial || includes(materials, value.material))
     )
   }
 
-  function isV2Preference(value) {
+  function isCurrentPreference(value) {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 2 &&
@@ -247,7 +247,7 @@ export function formatAppearanceInitScript(): string {
     )
   }
 
-  function isV1Preference(value) {
+  function isLegacyPreferenceInput(value) {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 1 &&
@@ -255,12 +255,12 @@ export function formatAppearanceInitScript(): string {
     )
   }
 
-  function upgradePreference(value) {
-    if (isV2Preference(value)) {
+  function migrateToCurrentPreference(value) {
+    if (isCurrentPreference(value)) {
       return value
     }
 
-    if (!isV1Preference(value)) {
+    if (!isLegacyPreferenceInput(value)) {
       return null
     }
 
@@ -339,7 +339,7 @@ export function formatAppearanceInitScript(): string {
   var preference
 
   if (rawPreference === null) {
-    preference = upgradePreference(defaultPreference)
+    preference = migrateToCurrentPreference(defaultPreference)
   } else {
     var parsedPreference
 
@@ -349,7 +349,7 @@ export function formatAppearanceInitScript(): string {
       return
     }
 
-    preference = upgradePreference(parsedPreference)
+    preference = migrateToCurrentPreference(parsedPreference)
   }
 
   if (preference === null) {

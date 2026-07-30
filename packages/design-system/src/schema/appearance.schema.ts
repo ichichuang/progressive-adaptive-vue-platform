@@ -1,15 +1,10 @@
 import Color from 'colorjs.io'
 import { z } from 'zod'
 
-import { themeIdSchema } from './theme.schema'
+import { legacySeedThemeIdSchema } from './legacy-seed-theme.schema'
 
 export const colorModePreferenceValues = ['light', 'dark', 'system'] as const
-export const legacyColorModePreferenceV1Values = [
-  'light',
-  'dark',
-  'system',
-  'high-contrast',
-] as const
+export const legacyColorModePreferenceValues = ['light', 'dark', 'system', 'high-contrast'] as const
 export const contrastPreferenceValues = ['standard', 'enhanced'] as const
 export const materialPreferenceValues = ['adaptive', 'reduced', 'solid'] as const
 export const uiDensityValues = ['compact', 'comfortable', 'spacious'] as const
@@ -17,7 +12,7 @@ export const motionPreferenceValues = ['full', 'reduced', 'none'] as const
 export const fontScaleValues = [0.9, 1, 1.1, 1.2] as const
 
 export const colorModePreferenceSchema = z.enum(colorModePreferenceValues)
-export const legacyColorModePreferenceV1Schema = z.enum(legacyColorModePreferenceV1Values)
+export const legacyColorModePreferenceSchema = z.enum(legacyColorModePreferenceValues)
 export const contrastPreferenceSchema = z.enum(contrastPreferenceValues)
 export const materialPreferenceSchema = z.enum(materialPreferenceValues)
 export const uiDensitySchema = z.enum(uiDensityValues)
@@ -52,9 +47,9 @@ const appearancePaletteSchema = z.strictObject({
   neutral: z.enum(['cool', 'neutral', 'warm']),
 })
 
-export const appearancePreferenceV2Schema = z.strictObject({
+const legacySeedAppearancePreferenceSchema = z.strictObject({
   colorMode: colorModePreferenceSchema,
-  theme: themeIdSchema,
+  theme: legacySeedThemeIdSchema,
   palette: appearancePaletteSchema,
   contrast: contrastPreferenceSchema,
   material: materialPreferenceSchema,
@@ -63,7 +58,9 @@ export const appearancePreferenceV2Schema = z.strictObject({
   motion: motionPreferenceSchema,
 })
 
-export type AppearancePreferenceV2 = z.infer<typeof appearancePreferenceV2Schema>
+type LegacySeedAppearancePreference = z.infer<typeof legacySeedAppearancePreferenceSchema>
+export const appearancePreferenceSchema = legacySeedAppearancePreferenceSchema
+export type AppearancePreference = LegacySeedAppearancePreference
 export type ColorModePreference = z.infer<typeof colorModePreferenceSchema>
 export type ContrastPreference = z.infer<typeof contrastPreferenceSchema>
 export type DensityPreference = z.infer<typeof densityPreferenceSchema>
