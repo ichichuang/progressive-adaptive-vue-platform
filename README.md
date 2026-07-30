@@ -6,6 +6,6 @@ A greenfield, TypeScript-first frontend application platform designed for deeply
 
 This repository is independently designed and maintained as a personal long-term frontend architecture.
 
-This production-only architecture is validated by static quality gates and explicit ChromeDev-assisted owner runtime acceptance, with no automated test infrastructure.
+This production-only architecture is validated by static quality gates, with no automated test infrastructure. Owner manual browser observation is optional, external, owner-operated, and non-gating.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the canonical architecture baseline.

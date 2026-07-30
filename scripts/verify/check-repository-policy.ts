@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { readFile, readdir } from 'node:fs/promises'
 import { join, relative, sep } from 'node:path'
 
@@ -107,7 +108,35 @@ const forbiddenMachineLocalAuthorityPathPatterns = [
   /(?:HKEY_CURRENT_USER|HKCU)(?::)?[\\/]Software[\\/](?:Claude|Codex|Kimi|Kimi Code)(?:[\\/]|$)/iu,
   /\/etc\/(?:claude|codex|kimi|kimi-code)(?:\/|$)/iu,
 ]
-
+const subordinateBrowserRuleSyncFiles = [
+  'AGENTS.md',
+  'README.md',
+  '.ai/skills/pavp-ui/SKILL.md',
+  '.ai/skills/pavp-ui/references/task-routing.md',
+  '.ai/skills/pavp-ui/references/execution-contract.md',
+  '.ai/skills/pavp-ui/references/acceptance-report.md',
+  'scripts/verify/check-repository-policy.ts',
+] as const
+const subordinateBrowserRuleContentHashes = new Map<string, string>([
+  ['AGENTS.md', 'd82713a93021b3f5e98136e7274dc118d8aae3250f08da119aade4b188badf06'],
+  ['README.md', '32ef8a464b6a3d93c284d354c5a48eb0ea951a8f1feff920bc60f2bf93d74d46'],
+  [
+    '.ai/skills/pavp-ui/SKILL.md',
+    '0783a23b91d4c1ec48acf72de2c15a3ef9a517ead5f9ca08eaa166d28b818fd8',
+  ],
+  [
+    '.ai/skills/pavp-ui/references/task-routing.md',
+    '5fc958d96ff7aad63169709d2e5672074a2bec59b814dd1343e6ee709becf18e',
+  ],
+  [
+    '.ai/skills/pavp-ui/references/execution-contract.md',
+    'a31adaef88aab5bc6beb09a71483209bb8fa9d853d28315313387e92a2bb8acd',
+  ],
+  [
+    '.ai/skills/pavp-ui/references/acceptance-report.md',
+    '74d512da345cee79cd7a1301be9eeda121cb298496ef4c022df0510acb32fc71',
+  ],
+])
 function normalizePath(path: string): string {
   return path.split(sep).join('/')
 }
@@ -181,6 +210,26 @@ const repositoryFiles = new Set(
   inventory.regularFiles.map((file) => normalizePath(relative(rootDirectory, file))),
 )
 const violations: string[] = []
+
+for (const repositoryPath of subordinateBrowserRuleSyncFiles) {
+  if (!repositoryFiles.has(repositoryPath)) {
+    violations.push(`${repositoryPath}: subordinate browser-rule synchronization file is missing.`)
+    continue
+  }
+
+  const expectedHash = subordinateBrowserRuleContentHashes.get(repositoryPath)
+
+  if (expectedHash !== undefined) {
+    const content = await readFile(join(rootDirectory, repositoryPath))
+    const actualHash = createHash('sha256').update(content).digest('hex')
+
+    if (actualHash !== expectedHash) {
+      violations.push(
+        `${repositoryPath}: subordinate workflow content drift requires an architecture-authorized synchronization.`,
+      )
+    }
+  }
+}
 
 for (const requiredPath of requiredAiWorkflowFiles) {
   if (!repositoryFiles.has(requiredPath)) {

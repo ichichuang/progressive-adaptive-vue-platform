@@ -6,7 +6,7 @@ Emit the report only in the current task response. Do not commit it or any runti
 
 ```text
 STATUS =
-  COMPLETED | READ_ONLY_COMPLETE | PENDING_OWNER_ACCEPTANCE | BLOCKED | FAILED
+  COMPLETED | READ_ONLY_COMPLETE | BLOCKED | FAILED
 
 STOP_REASON =
   ARCHITECTURE_CONFLICT | PHASE_DISALLOWED | CANONICAL_CONTRACT_MISSING |
@@ -15,15 +15,9 @@ STOP_REASON =
 
 STATIC_VERIFICATION =
   PASS | FAIL | NOT_RUN | NOT_APPLICABLE
-
-OWNER_RUNTIME_ACCEPTANCE =
-  PASS | FAIL | PENDING | NOT_RUN | NOT_APPLICABLE
-
-RUNTIME_ACCEPTANCE_TIER =
-  TIER_0 | TIER_1 | TIER_2 | TIER_3
 ```
 
-`STOP_REASON` is required for `BLOCKED` and is `NOT_APPLICABLE` for every other status. Explain every `NOT_RUN`, `NOT_APPLICABLE`, or `PENDING` verification value in `RESULT_REASON`.
+`STOP_REASON` is required for `BLOCKED` and is `NOT_APPLICABLE` for every other status. Explain every `NOT_RUN` or `NOT_APPLICABLE` verification value in `RESULT_REASON`.
 
 ## Report structure
 
@@ -46,8 +40,6 @@ MOTION_FINDINGS
 ACCESSIBILITY_FINDINGS
 PERFORMANCE_FINDINGS
 STATIC_VERIFICATION
-RUNTIME_ACCEPTANCE_TIER
-OWNER_RUNTIME_ACCEPTANCE
 RESULT_REASON
 DEFERRED_ITEMS
 GIT_DIFF
@@ -58,10 +50,11 @@ Use `CHANGED_FILES=NONE` for a read-only task. Keep findings scoped to the task 
 
 ## State transitions
 
-- Finish `architecture-review`, `plan`, `review`, or a non-mutating `runtime-acceptance` task as `READ_ONLY_COMPLETE` when its required work succeeds.
-- Finish `implement` as `COMPLETED` only when required static verification is `PASS` and owner runtime acceptance is either `PASS` or validly `NOT_APPLICABLE` for the selected tier.
-- Use `PENDING_OWNER_ACCEPTANCE` only when static verification is `PASS` and required owner runtime acceptance is explicitly deferred as `PENDING`.
+- Finish `architecture-review`, `plan`, or `review` as `READ_ONLY_COMPLETE` when its required work succeeds.
+- Finish `implement` as `COMPLETED` only when required static verification is `PASS`.
 - Use `BLOCKED` when a canonical stop condition prevents execution. Supply its stop reason and evidence.
-- Use `FAILED` when static or owner runtime verification fails. Set the failing field to `FAIL` and include evidence.
+- Use `FAILED` when required static verification fails. Set `STATIC_VERIFICATION=FAIL` and include evidence.
 
-For `READ_ONLY_COMPLETE`, each verification field must be `PASS`, `NOT_RUN`, or `NOT_APPLICABLE` with a result reason. Do not use a successful status to hide a required verification that failed.
+For `READ_ONLY_COMPLETE`, `STATIC_VERIFICATION` must be `PASS`, `NOT_RUN`, or `NOT_APPLICABLE` with a result reason. Do not use a successful status to hide required static verification that failed.
+
+Owner manual browser observation is optional, external, owner-operated, and non-gating. It is not a report field, status transition, verification result, or completion requirement. When the owner explicitly supplies an observation, Codex may analyze it only in read-only `review` mode and must not reproduce it or commit observation evidence.

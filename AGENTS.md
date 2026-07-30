@@ -9,14 +9,14 @@ it, stop and identify the conflict instead of creating an alternative convention
 
 ## UI Work Route
 
-For UI, appearance, component, material, motion, layout, scroll, or runtime-acceptance tasks, read `.ai/skills/pavp-ui/SKILL.md` after `ARCHITECTURE.md`.
+For UI, appearance, component, material, motion, layout, or scroll tasks, read `.ai/skills/pavp-ui/SKILL.md` after `ARCHITECTURE.md`.
 
 ## Working Rules
 
 - Keep changes within the active architecture phase.
 - Preserve the production-only repository policy.
 - Do not add tests, test infrastructure, demos, showcases, browser automation, or
-  runtime acceptance artifacts.
+  browser evidence artifacts.
 - Keep imports explicit and public boundaries intact.
 - Do not add packages or dependencies before their canonical introduction gate.
 - Do not create additional AI rule systems or architecture authorities.
@@ -30,6 +30,8 @@ Run the complete static production gate:
 pnpm verify
 ```
 
-Browser behavior is accepted separately by the owner with the external Codex
-ChromeDev capability described in `ARCHITECTURE.md`. Browser automation and its
-evidence do not belong in the repository.
+Codex must not open or operate browsers, Chrome DevTools, or browser testing.
+Any such request is an `ARCHITECTURE_CONFLICT`. Owner manual browser observation
+is optional, external, owner-operated, and non-gating; Codex may only review
+explicitly supplied observations, and no observation evidence belongs in the
+repository.
