@@ -32,9 +32,9 @@ TARGET_PREFERENCE_STATUS=INACTIVE_UNTIL_ATOMIC_CUTOVER
 PREFERENCE_CUTOVER=ATOMIC
 PHASE_1_PACKAGE_1_STATUS=COMPLETE
 PHASE_1_PACKAGE_2_STATUS=COMPLETE
-PHASE_1_PACKAGE_3_STATUS=IMPLEMENTED_PENDING_CANONICAL_GZIP_ALIGNMENT
-PHASE_1_PACKAGE_3A_STATUS=NEXT
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT
+PHASE_1_PACKAGE_3_STATUS=COMPLETE
+PHASE_1_PACKAGE_3A_STATUS=COMPLETE
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=INACTIVE_UNTIL_PACKAGE_5
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -1528,16 +1528,16 @@ PACKAGE_3_EXPECTED_RECORD_COUNT_DELTA=7
 PACKAGE_3_BASELINE_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
 PACKAGE_3_IMPLEMENTATION_COMMIT=08d5f149834060219c9d87527b6365a354bc7b08
 PACKAGE_3_BASELINE_RELATION=DIRECT_PREDECESSOR
-PACKAGE_3_STATUS=IMPLEMENTED_PENDING_CANONICAL_GZIP_ALIGNMENT
+PACKAGE_3_STATUS=COMPLETE
 ```
 
-这些数值描述当前仓库证据。Package 3 已把 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；但其压缩标签、压缩基线和 Generated Manifest 自我治理字段在 Package 3A 完成前仍不是 Canonical Closure，因此 Package 3 不得报告 `COMPLETE`。
+这些数值描述当前仓库证据。Package 3 已把 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。
 
 Manifest 唯一规范压缩配置：
 
 ```text
 MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
-MANIFEST_COMPRESSION_PROFILE_STATUS=INACTIVE_UNTIL_PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT
+MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
 MANIFEST_COMPRESSION_IMPLEMENTATION=node:zlib.gzipSync
 MANIFEST_COMPRESSION_RUNTIME=NODE_24_15_0
 MANIFEST_COMPRESSION_EXTERNAL_CLI_AUTHORITY=NONE
@@ -1545,8 +1545,10 @@ MANIFEST_COMPRESSION_PROFILE_NAMING=DESCRIPTIVE_ID_WITHOUT_NUMERIC_VERSION_SUFFI
 MANIFEST_COMPRESSION_HARD_LIMIT_BYTES=32768
 MANIFEST_CANONICAL_BASELINE_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
 MANIFEST_CANONICAL_BASELINE_BYTES=3366
+MANIFEST_CANONICAL_FINAL_GZIP_BYTES=5213
+MANIFEST_CANONICAL_EXPECTED_GZIP_BYTE_DELTA=1847
 LEGACY_CLI_GZIP_COMMAND=gzip -9 -n
-LEGACY_CLI_GZIP_COMPARISON=NON_AUTHORITATIVE
+LEGACY_CLI_GZIP_COMPARISON=NON_AUTHORITATIVE_HISTORY_ONLY
 ```
 
 `node-zlib-gzip-sync` 精确定义为：
@@ -1577,18 +1579,20 @@ terminal newline=exactly one LF
 
 `project.config.ts` 与 `mise.toml` 固定的 Node `24.15.0` 是该可复现配置的一部分。Profile ID 遵守 Repository 的 Numeric-version-style Naming Prohibition；任何未来 Profile 变化都必须通过独立 Architecture Amendment 获得新的描述性 ID，不得追加数字版本后缀。外部 CLI 只能用于非权威历史比较，不得决定 Baseline、Expected Delta、Hard Limit 或 Package Acceptance。Package 3 Baseline 在 `node-zlib-gzip-sync` 下为 `3366` Bytes；旧 CLI 得到的 `3362` Bytes 只保留为历史差异证据。
 
-Package 3A 完成后的 Generated Manifest 可以包含：
+Package 3A 完成后的 Generated Manifest Metadata Shape 精确为：
 
 ```text
-compressionProfileId
-recordFamilies
-recordCounts
-recordCount
-schemaVersion
-build provenance
+schemaVersion=5
+top-level non-record metadata=generatedNotice, schemaVersion, sourceFiles, compoundBudget, governance
+governance.compressionProfileId
+governance.recordFamilies
+governance.recordCounts
+governance.recordCount
+governance.baselineRecordCount
+governance.expectedRecordCountDelta
 ```
 
-Package 3A 完成后的 Generated Manifest 禁止包含用于断言同一压缩 Payload 大小的字段：
+Generated Manifest 禁止包含用于断言同一压缩 Payload 大小的字段：
 
 ```text
 currentGzipBytes
@@ -1603,7 +1607,7 @@ MANIFEST_ACTUAL_BYTES_IN_PAYLOAD=PROHIBITED
 MANIFEST_EXPECTED_DELTA_IN_PAYLOAD=PROHIBITED
 ```
 
-这些 Target Rule 在 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 完成前不宣称当前 Generated Payload 已满足；当前 Payload 中的旧字段只构成 Package 3 未闭合证据，不构成继续保留它们的 Compatibility Contract。
+`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 已完成；当前 Generated Payload 递归扫描确认上述四个字段全部不存在，且 `compressionProfileId` 精确为 `node-zlib-gzip-sync`。
 
 Canonical Byte Verifier 必须在压缩 Payload 外比较：
 
@@ -1614,7 +1618,7 @@ actual final bytes
 hard limit
 ```
 
-Baseline 必须同时绑定 Exact Commit 和 `node-zlib-gzip-sync`。Package 3 的 Baseline Commit 已由 Git History 证明为其 Implementation Commit 的 Direct Predecessor。Package 3A 必须先冻结最终 Manifest Metadata Shape，再使用同一序列化器、同一 Pinned Node 和同一 Profile 测量 Current Final Payload，随后在 Repository-owned Build Verification Code 和本架构中冻结一致的 Expected Delta 与 Hard Limit；不得测量中间 Payload 后再修改 Metadata Shape 或 Profile Label。
+Baseline 同时绑定 Exact Commit 和 `node-zlib-gzip-sync`。Package 3 的 Baseline Commit 已由 Git History 证明为其 Implementation Commit 的 Direct Predecessor。Package 3A 先冻结上述完整 Metadata Shape，再使用同一序列化器、Pinned Node 和 Profile 测得 Final Payload 为 `5213` Bytes；相对 `3366`-Byte Baseline 的 Expected Delta 为 `1847` Bytes，并通过 `32768`-Byte Hard Limit。Repository-owned Build Verification Code 和本架构共同冻结这些值；Generated Payload 不包含它们。
 
 每个后续 Implementation Package 必须声明 `expectedRecordCountDelta` 与 Canonical Compressed-byte Delta，由 Owning Static Gate 对实际值逐项比较；未声明或非预期增长必须失败。即使总大小仍低于 32 KiB，Delta Mismatch 也不得通过。
 
@@ -4129,7 +4133,7 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 
 本架构工作包只声明未来合同，不创建 `.ai/**`、不修改 `AGENTS.md` 或 Repository Policy。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC` 已完成，Codex Browser Request、状态字段和 Repository Policy Regression Gate 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`；在该包完成前不得开始 Package 4、5 或 6。已落地的 Browser Rule 不得被 3A 或后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC` 与 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate 和 Manifest Canonical Compression Contract 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`；Package 5 或 6 不得提前开始。已落地的 Browser Rule 与 Manifest Compression Contract 不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -4716,9 +4720,11 @@ packages/ui dependency-free src/index.ts stub
 ```text
 Package 1 = COMPLETE
 Package 2 = COMPLETE
-Package 3 = IMPLEMENTED_PENDING_CANONICAL_GZIP_ALIGNMENT
-Package 3A = NEXT
-Packages 4–6 = BLOCKED_BY_PREDECESSOR
+Package 3 = COMPLETE
+Package 3A = COMPLETE
+Package 4 = NEXT
+Package 5 = BLOCKED_BY_4
+Package 6 = BLOCKED_BY_5
 ```
 
 以下是完整 Phase 1 Target Inventory。某项是否已实现、是否已机器强制以及是否允许成为 Runtime Authority，只由 §37.1 的 Package Status 和 Owning Gate 决定，不因出现在本清单而自动激活：
@@ -4823,21 +4829,21 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT` 已完成。`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT` 是当前未编号的 Architecture-only Admission Gate：只修改本文件，不实现任何 Runtime Output，不修改从属 Workflow，不增加依赖、测试、浏览器工作或证据。它完成后，`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 成为唯一编号为 `3A` 的 Next Implementation Package。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT` 和编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 均已完成。当前唯一 Next Implementation Package 是 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`。
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
 
 ```text
 1.  PAVP_SUBORDINATE_BROWSER_RULE_SYNC                    COMPLETE
 2.  PAVP_NAMING_NORMALIZATION                            COMPLETE
-3.  PAVP_ROLE_REGISTRY_AND_OUTPUT_COMPLETENESS           IMPLEMENTED_PENDING_CANONICAL_GZIP_ALIGNMENT
-3A. PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT               NEXT
-4.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE      BLOCKED_BY_3A
+3.  PAVP_ROLE_REGISTRY_AND_OUTPUT_COMPLETENESS           COMPLETE
+3A. PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT               COMPLETE
+4.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE      NEXT
 5.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER        BLOCKED_BY_4
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         BLOCKED_BY_5
 ```
 
-Package 4、5 或 6 不得与 3A 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。`PAVP_PRODUCTION_RUNTIME_KERNEL_ARCHITECTURE_AMENDMENT` 同样只能在 Phase 1 完成后开始，不得插入 Package 4 之前。
+Package 4 现已由 3A 准入为唯一 Next Package；Package 5 或 6 不得与 Package 4 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。`PAVP_PRODUCTION_RUNTIME_KERNEL_ARCHITECTURE_AMENDMENT` 同样只能在 Phase 1 完成后开始，不得插入 Package 4 之前。
 
 当前精确 Acceptance Contract：
 
@@ -4851,8 +4857,8 @@ NAMED_CONTRAST_RECORDS=14
 PREFERENCE_CUTOVER=ATOMIC
 MANIFEST_BUDGET=DEFINED
 MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
-MANIFEST_COMPRESSION_PROFILE_STATUS=INACTIVE_UNTIL_PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT
-MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=PROHIBITED_AFTER_3A
+MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
+MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
 SUBORDINATE_BROWSER_SYNC_STATUS=COMPLETE
 NAMING_NORMALIZATION=COMPLETE
 RESERVED_COLOR_ROLES=283
@@ -4914,7 +4920,7 @@ NAMING_NORMALIZATION_PARTIAL_EXECUTION=PROHIBITED
 状态：
 
 ```text
-STATUS=IMPLEMENTED_PENDING_CANONICAL_GZIP_ALIGNMENT
+STATUS=COMPLETE
 IMPLEMENTATION_COMMIT=08d5f149834060219c9d87527b6365a354bc7b08
 BASELINE_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
 BASELINE_RELATION=DIRECT_PREDECESSOR
@@ -4922,25 +4928,26 @@ BASELINE_RELATION=DIRECT_PREDECESSOR
 
 该包已实现 §11.4 的 Exact 27-record Public Role Registry、27 UnoCSS Mapping、§13.3 的单一 Alpha Record、§25.1 的 14 Named Contrast Record、Public Output Set Equality、Manifest Record Equation 和 Formatter Fatal Failure，并在不重命名或移除现有 Public ID 与 21 个现有 Class Spelling、不改变 Runtime Value 或 Active `CurrentPreference` Authority 的前提下证明 `A = R = T = N = U = M`。
 
-Package 3 的 Record 和 Public Output 实现已经存在，但其 Manifest Compression Label、Canonical Baseline、Expected Delta Ownership 和 Payload Self-governance 仍由 3A 闭合。3A 完成前不得把 Package 3 报告为 `COMPLETE`。Package 3 没有公开 Primitive、Theme Bank、Reserved Color、Future Density 或 Internal Material，也没有把 Target Theme/Preference 宣称为 Active。
+Package 3 的 Record 和 Public Output 实现已由 3A 完成 Manifest Compression Label、Canonical Baseline、Expected Delta Ownership 和 Payload Self-governance 闭包，因此状态为 `COMPLETE`。Package 3 没有公开 Primitive、Theme Bank、Reserved Color、Future Density 或 Internal Material，也没有把 Target Theme/Preference 宣称为 Active。
 
 ### 3A. `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`
 
 状态：
 
 ```text
-STATUS=NEXT
+STATUS=COMPLETE
 ARCHITECTURE_ADMISSION_GATE=PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT
+ARCHITECTURE_ADMISSION_GATE_STATUS=COMPLETE
 ```
 
 目标：使 Architecture、Implementation、Generated Manifest 和 Static Verification 共同使用 §11.4 唯一的 `node-zlib-gzip-sync`，消除 CLI 伪权威、压缩 Payload 自我治理和中间 Metadata 测量。
 
-前置条件：
+完成状态：
 
 ```text
 Package 1 = COMPLETE
 Package 2 = COMPLETE
-Package 3 = IMPLEMENTED_PENDING_CANONICAL_GZIP_ALIGNMENT
+Package 3 = COMPLETE
 Architecture Admission Gate = COMPLETE
 ```
 
@@ -4953,9 +4960,9 @@ packages/design-system/src/build/formats/manifest.ts
 packages/design-system/src/generated/tokens.manifest.json
 ```
 
-Package 3A 必须：
+Package 3A 完成时满足以下精确合同：
 
-1. 将所有误导性的 `gzip -9 -n` Authority Label 替换为 `node-zlib-gzip-sync`。
+1. 将所有曾误标为权威的 Legacy CLI Label 替换为 `node-zlib-gzip-sync`；§11.4 仅保留显式 Non-authoritative Historical Comparison。
 2. 在 Generated Manifest 中记录唯一 `compressionProfileId`，不得记录外部 CLI Authority。
 3. 保持 §11.4 定义的 Exact Stable Serialization、Node Version 和 Zlib Options。
 4. 从 Generated Payload 移除 `currentGzipBytes`、`baselineGzipBytes`、`expectedGzipByteDelta` 与 `gzipHardLimitBytes`。
@@ -5012,10 +5019,16 @@ Acceptance：
 
 ```text
 MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
+MANIFEST_SCHEMA_VERSION=5
 MANIFEST_RECORD_COUNT=181
+MANIFEST_CANONICAL_BASELINE_BYTES=3366
+MANIFEST_CANONICAL_FINAL_GZIP_BYTES=5213
+MANIFEST_CANONICAL_EXPECTED_GZIP_BYTE_DELTA=1847
 MANIFEST_HARD_LIMIT=PASS
 MANIFEST_EXPECTED_DELTA=PASS
 MANIFEST_GENERATION=DETERMINISTIC
+MANIFEST_COMPRESSION_HEADER_METADATA=ABSENT
+MANIFEST_COMPRESSION_PATH_DEPENDENCY=ABSENT
 MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
 ARCHITECTURE_IMPLEMENTATION_ALIGNMENT=PASS
 ```
@@ -5218,7 +5231,7 @@ UNMAPPED_PUBLIC_ROLE_IS_A_GENERATION_FAILURE
 MANIFEST_COMPRESSION_HAS_ONE_PINNED_NODE_PROFILE
 MANIFEST_EXTERNAL_CLI_COMPRESSION_AUTHORITY_IS_NONE
 MANIFEST_COMPRESSION_INPUT_SERIALIZATION_IS_EXACT
-MANIFEST_COMPRESSED_PAYLOAD_DOES_NOT_GOVERN_ITS_OWN_BYTE_BUDGET_AFTER_3A
+MANIFEST_COMPRESSED_PAYLOAD_DOES_NOT_GOVERN_ITS_OWN_BYTE_BUDGET
 MANIFEST_BYTE_BASELINE_DELTA_AND_LIMIT_LIVE_OUTSIDE_THE_COMPRESSED_PAYLOAD
 UI_INTERNAL_TOKENS_NEVER_ENTER_PUBLIC_TS_OR_UNOCSS
 UI_INTERNAL_TOKENS_NEVER_ENTER_PUBLIC_TOKEN_NAMES

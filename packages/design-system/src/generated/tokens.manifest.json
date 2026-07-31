@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -50,10 +50,7 @@
     "recordCount": 181,
     "baselineRecordCount": 174,
     "expectedRecordCountDelta": 7,
-    "gzipAlgorithm": "gzip -9 -n",
-    "baselineGzipBytes": 3366,
-    "expectedGzipByteDelta": 1878,
-    "gzipHardLimitBytes": 32768
+    "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
     {

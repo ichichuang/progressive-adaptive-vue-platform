@@ -1,5 +1,3 @@
-import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
-
 import type { Format } from 'style-dictionary/types'
 
 import { compareCodePoints } from '../order'
@@ -32,14 +30,16 @@ const manifestMetadataKeys = [
   'governance',
 ] as const
 
+const forbiddenManifestSizeGovernanceFields = new Set<string>([
+  'currentGzipBytes',
+  'baselineGzipBytes',
+  'expectedGzipByteDelta',
+  'gzipHardLimitBytes',
+])
+
 const manifestGovernanceContract = {
-  schemaVersion: 4,
-  gzip: {
-    algorithm: 'gzip -9 -n',
-    baselineBytes: 3366,
-    expectedByteDelta: 1878,
-    hardLimitBytes: 32 * 1024,
-  },
+  schemaVersion: 5,
+  compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 174,
     expectedCountDelta: 7,
@@ -58,16 +58,6 @@ const manifestGovernanceContract = {
 
 type ManifestRecordFamily = (typeof manifestRecordFamilies)[number]
 type ManifestDocument = Record<string, unknown>
-
-const manifestGzipOptions = {
-  chunkSize: constants.Z_DEFAULT_CHUNK,
-  finishFlush: constants.Z_FINISH,
-  flush: constants.Z_NO_FLUSH,
-  level: constants.Z_BEST_COMPRESSION,
-  memLevel: constants.Z_DEFAULT_MEMLEVEL,
-  strategy: constants.Z_DEFAULT_STRATEGY,
-  windowBits: constants.Z_DEFAULT_WINDOWBITS,
-} as const satisfies ZlibOptions
 
 function isUnknownRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -103,6 +93,27 @@ function assertExactKeys(
     throw new Error(
       `${description}: expected [${expected.join(', ')}], received [${actual.join(', ')}].`,
     )
+  }
+}
+
+function validateNoForbiddenManifestSizeGovernance(value: unknown, path = 'Manifest'): void {
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => {
+      validateNoForbiddenManifestSizeGovernance(item, `${path}[${String(index)}]`)
+    })
+    return
+  }
+
+  if (!isUnknownRecord(value)) {
+    return
+  }
+
+  for (const [key, item] of Object.entries(value)) {
+    if (forbiddenManifestSizeGovernanceFields.has(key)) {
+      throw new Error(`${path}.${key}: forbidden Manifest size self-governance field.`)
+    }
+
+    validateNoForbiddenManifestSizeGovernance(item, `${path}.${key}`)
   }
 }
 
@@ -193,10 +204,7 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
       recordCount: count,
       baselineRecordCount: manifestGovernanceContract.records.baselineCount,
       expectedRecordCountDelta: manifestGovernanceContract.records.expectedCountDelta,
-      gzipAlgorithm: manifestGovernanceContract.gzip.algorithm,
-      baselineGzipBytes: manifestGovernanceContract.gzip.baselineBytes,
-      expectedGzipByteDelta: manifestGovernanceContract.gzip.expectedByteDelta,
-      gzipHardLimitBytes: manifestGovernanceContract.gzip.hardLimitBytes,
+      compressionProfileId: manifestGovernanceContract.compressionProfileId,
     },
     tokens,
     activePublicRoles,
@@ -210,6 +218,21 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
 }
 
 function validateManifestDocument(document: ManifestDocument): void {
+  validateNoForbiddenManifestSizeGovernance(document)
+
+  const unknownRecordFamilies = Object.entries(document)
+    .filter(
+      ([key, value]) =>
+        Array.isArray(value) &&
+        !manifestMetadataKeys.includes(key as (typeof manifestMetadataKeys)[number]) &&
+        !manifestRecordFamilies.includes(key as ManifestRecordFamily),
+    )
+    .map(([key]) => key)
+
+  if (unknownRecordFamilies.length > 0) {
+    throw new Error(`Manifest unknown record families: ${unknownRecordFamilies.join(', ')}.`)
+  }
+
   assertExactKeys(
     document,
     [...manifestMetadataKeys, ...manifestRecordFamilies],
@@ -267,13 +290,16 @@ function validateManifestDocument(document: ManifestDocument): void {
       'recordCount',
       'baselineRecordCount',
       'expectedRecordCountDelta',
-      'gzipAlgorithm',
-      'baselineGzipBytes',
-      'expectedGzipByteDelta',
-      'gzipHardLimitBytes',
+      'compressionProfileId',
     ],
     'Manifest governance contract',
   )
+
+  if (governance['compressionProfileId'] !== manifestGovernanceContract.compressionProfileId) {
+    throw new Error(
+      `Manifest compressionProfileId: expected "${manifestGovernanceContract.compressionProfileId}", received "${String(governance['compressionProfileId'])}".`,
+    )
+  }
 
   if (
     !Array.isArray(governance['recordFamilies']) ||
@@ -284,79 +310,16 @@ function validateManifestDocument(document: ManifestDocument): void {
     manifestRecordFamilies.some((family) => governanceCounts[family] !== counts[family]) ||
     governance['recordCount'] !== count ||
     governance['baselineRecordCount'] !== manifestGovernanceContract.records.baselineCount ||
-    governance['expectedRecordCountDelta'] !==
-      manifestGovernanceContract.records.expectedCountDelta ||
-    governance['gzipAlgorithm'] !== manifestGovernanceContract.gzip.algorithm ||
-    governance['baselineGzipBytes'] !== manifestGovernanceContract.gzip.baselineBytes ||
-    governance['expectedGzipByteDelta'] !== manifestGovernanceContract.gzip.expectedByteDelta ||
-    governance['gzipHardLimitBytes'] !== manifestGovernanceContract.gzip.hardLimitBytes
+    governance['expectedRecordCountDelta'] !== manifestGovernanceContract.records.expectedCountDelta
   ) {
-    throw new Error('Manifest governance metadata does not match its record equation or budget.')
+    throw new Error('Manifest governance metadata does not match its record or profile contract.')
   }
 }
 
-function validateManifestGzipBytes(gzipBytes: number): void {
-  if (gzipBytes > manifestGovernanceContract.gzip.hardLimitBytes) {
-    throw new Error(
-      `Manifest gzip budget exceeded: ${String(gzipBytes)} bytes exceed ${String(manifestGovernanceContract.gzip.hardLimitBytes)} bytes.`,
-    )
-  }
-
-  const actualDelta = gzipBytes - manifestGovernanceContract.gzip.baselineBytes
-
-  if (actualDelta !== manifestGovernanceContract.gzip.expectedByteDelta) {
-    throw new Error(
-      `Manifest gzip delta: expected ${String(manifestGovernanceContract.gzip.expectedByteDelta)} bytes, received ${String(actualDelta)} bytes (${String(gzipBytes)} total).`,
-    )
-  }
-}
-
-function deterministicManifestGzip(serializedManifest: Buffer): Buffer {
-  return gzipSync(serializedManifest, manifestGzipOptions)
-}
-
-function validateDeterministicManifestGzip(serializedManifest: Buffer): Buffer {
-  const first = deterministicManifestGzip(serializedManifest)
-  const repeated = deterministicManifestGzip(serializedManifest)
-  const expectedHeader = Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02])
-
-  if (!first.equals(repeated)) {
-    throw new Error('Manifest gzip compression must be byte-identical within one process.')
-  }
-
-  if (!first.subarray(0, expectedHeader.length).equals(expectedHeader)) {
-    throw new Error('Manifest gzip header must contain no name or timestamp metadata.')
-  }
-
-  const originalPath = process.env['PATH']
-
-  try {
-    process.env['PATH'] = '/pavp-manifest-gzip-path-must-not-be-read'
-
-    if (!first.equals(deterministicManifestGzip(serializedManifest))) {
-      throw new Error('Manifest gzip compression must not depend on the process PATH.')
-    }
-  } finally {
-    if (originalPath === undefined) {
-      delete process.env['PATH']
-    } else {
-      process.env['PATH'] = originalPath
-    }
-  }
-
-  return first
-}
-
-export function validateManifestGovernance(result: TokenBuildResult): number {
+export function validateManifestGovernance(result: TokenBuildResult): void {
   const document = manifestDocument(result)
 
   validateManifestDocument(document)
-
-  const serializedManifest = Buffer.from(stableJson(document), 'utf8')
-  const gzipBytes = validateDeterministicManifestGzip(serializedManifest).byteLength
-
-  validateManifestGzipBytes(gzipBytes)
-  return gzipBytes
 }
 
 function formatManifest(result: TokenBuildResult): string {

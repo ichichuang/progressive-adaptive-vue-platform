@@ -4,6 +4,7 @@ import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { runInNewContext } from 'node:vm'
+import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 
 import StyleDictionary from 'style-dictionary'
 import type { PreprocessedTokens } from 'style-dictionary/types'
@@ -33,7 +34,12 @@ import {
   manifestDocument,
   validateManifestGovernance,
 } from './formats/manifest'
-import { selectTokensForOutput, tokenValueToCss, type FormatContext } from './formats/shared'
+import {
+  selectTokensForOutput,
+  stableJson,
+  tokenValueToCss,
+  type FormatContext,
+} from './formats/shared'
 import {
   createTokenNamesFormat,
   createTokensTypeScriptFormat,
@@ -76,6 +82,33 @@ const generatedFiles = [
   'tokens.ts',
   'unocss-theme.ts',
 ] as const
+
+const manifestCompressionContract = {
+  profileId: 'node-zlib-gzip-sync',
+  runtimeNodeVersion: '24.15.0',
+  baseline: {
+    commit: 'd2e7354fad616824e52dfe5ca0f7cdbe6b4705cf',
+    bytes: 3366,
+  },
+  current: {
+    expectedBytes: 5213,
+    expectedByteDelta: 1847,
+  },
+  hardLimitBytes: 32768,
+  options: {
+    chunkSize: constants.Z_DEFAULT_CHUNK,
+    finishFlush: constants.Z_FINISH,
+    flush: constants.Z_NO_FLUSH,
+    level: constants.Z_BEST_COMPRESSION,
+    memLevel: constants.Z_DEFAULT_MEMLEVEL,
+    strategy: constants.Z_DEFAULT_STRATEGY,
+    windowBits: constants.Z_DEFAULT_WINDOWBITS,
+  },
+} as const
+
+const manifestGzipOptions = {
+  ...manifestCompressionContract.options,
+} as const satisfies ZlibOptions
 
 interface SourceBundle {
   contents: string
@@ -287,6 +320,105 @@ function assertContractFailure(
 
 function isUnknownRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function deterministicManifestGzip(serializedManifest: Buffer): Buffer {
+  return gzipSync(serializedManifest, manifestGzipOptions)
+}
+
+function validateManifestCompression(result: TokenBuildResult): number {
+  const document = manifestDocument(result)
+  const governance = document['governance']
+
+  assertInvariant(
+    isUnknownRecord(governance) &&
+      governance['compressionProfileId'] === manifestCompressionContract.profileId,
+    'Manifest payload and external compression profile IDs must match',
+  )
+  assertInvariant(
+    process.versions.node === manifestCompressionContract.runtimeNodeVersion,
+    `Manifest compression requires Node ${manifestCompressionContract.runtimeNodeVersion}, received ${process.versions.node}`,
+  )
+  assertInvariantEqual(
+    Object.keys(manifestGzipOptions).sort(compareCodePoints),
+    Object.keys(manifestCompressionContract.options).sort(compareCodePoints),
+    'Manifest gzip option keys must match the canonical compression profile',
+  )
+
+  for (const [option, expected] of Object.entries(manifestCompressionContract.options)) {
+    assertInvariant(
+      manifestGzipOptions[option as keyof typeof manifestGzipOptions] === expected,
+      `Manifest gzip option "${option}" must match the canonical compression profile`,
+    )
+  }
+
+  const serializedText = stableJson(document)
+
+  assertInvariant(
+    serializedText.endsWith('\n') && !serializedText.endsWith('\n\n'),
+    'Manifest compression input must contain exactly one terminal LF',
+  )
+
+  const serializedManifest = Buffer.from(serializedText, 'utf8')
+
+  assertInvariantEqual(
+    serializedManifest.toString('utf8'),
+    serializedText,
+    'Manifest compression input must use UTF-8 encoding',
+  )
+
+  const first = deterministicManifestGzip(serializedManifest)
+  const repeated = deterministicManifestGzip(serializedManifest)
+  const expectedHeader = Buffer.from([0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02])
+
+  assertInvariant(
+    first.equals(repeated),
+    'Manifest gzip compression must be byte-identical within one process',
+  )
+  assertInvariant(
+    first.subarray(0, expectedHeader.length).equals(expectedHeader),
+    'Manifest gzip header must contain no name or timestamp metadata',
+  )
+
+  const originalPath = process.env['PATH']
+
+  try {
+    process.env['PATH'] = '/pavp-manifest-gzip-path-must-not-be-read'
+    assertInvariant(
+      first.equals(deterministicManifestGzip(serializedManifest)),
+      'Manifest gzip compression must not depend on the process PATH',
+    )
+  } finally {
+    if (originalPath === undefined) {
+      delete process.env['PATH']
+    } else {
+      process.env['PATH'] = originalPath
+    }
+  }
+
+  const gzipBytes = first.byteLength
+  const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
+
+  assertInvariant(
+    manifestCompressionContract.current.expectedBytes -
+      manifestCompressionContract.baseline.bytes ===
+      manifestCompressionContract.current.expectedByteDelta,
+    'Manifest external byte-governance expected bytes and delta must match the canonical baseline',
+  )
+  assertInvariant(
+    gzipBytes <= manifestCompressionContract.hardLimitBytes,
+    `Manifest gzip budget exceeded: ${String(gzipBytes)} bytes exceed ${String(manifestCompressionContract.hardLimitBytes)} bytes`,
+  )
+  assertInvariant(
+    gzipBytes === manifestCompressionContract.current.expectedBytes,
+    `Manifest gzip bytes: expected ${String(manifestCompressionContract.current.expectedBytes)}, received ${String(gzipBytes)}`,
+  )
+  assertInvariant(
+    actualDelta === manifestCompressionContract.current.expectedByteDelta,
+    `Manifest gzip delta: expected ${String(manifestCompressionContract.current.expectedByteDelta)}, received ${String(actualDelta)}`,
+  )
+
+  return gzipBytes
 }
 
 function validationRecords(
@@ -678,6 +810,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   validateActivePublicRoleTokens(result.tokens, publicRoleRecords)
   validatePublicOutputCompleteness(result)
   validateManifestGovernance(result)
+  validateManifestCompression(result)
 
   const colorValue = {
     colorSpace: 'oklch',
