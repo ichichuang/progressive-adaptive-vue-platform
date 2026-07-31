@@ -28,7 +28,11 @@ import {
   formatAppearanceInitScript,
   formatCriticalThemeCss,
 } from './formats/first-paint'
-import { createManifestFormat, formatManifest, manifestDocument } from './formats/manifest'
+import {
+  createManifestFormat,
+  manifestDocument,
+  validateManifestGovernance,
+} from './formats/manifest'
 import { selectTokensForOutput, tokenValueToCss, type FormatContext } from './formats/shared'
 import {
   createTokenNamesFormat,
@@ -37,14 +41,26 @@ import {
   formatTokenNames,
   formatTokensTypeScript,
   formatUnoCssTheme,
+  unoCssProjection,
 } from './formats/typescript'
 import { compareCodePoints } from './order'
 import {
   parseTokenSourceRecords,
   preprocessTokenSources,
+  validateActivePublicRoleTokens,
   validateTokenRecords,
   type TokenBuildResult,
 } from './preprocess'
+import {
+  ActiveAlphaContractRegistry,
+  ActiveNamedContrastRegistry,
+  isActivePublicColorRole,
+  PublicRoleRegistry,
+  unoCssMappingRecords,
+  validateAlphaContractRegistry,
+  validateNamedContrastRegistry,
+  validatePublicRoleRegistry,
+} from './public-role-registry'
 import { createTokenResolver, type ResolvedTokenRecord } from './resolve'
 
 const buildDirectory = dirname(fileURLToPath(import.meta.url))
@@ -288,19 +304,381 @@ function validationResult(
   const compounds = validateTokenRecords(tokens, new Set(baseline.themes.map((theme) => theme.id)))
 
   return {
+    activePublicRoles: baseline.activePublicRoles,
+    alphaContracts: baseline.alphaContracts,
     colorCompoundBudget: baseline.colorCompoundBudget,
     compounds,
-    contrastPairs: [],
     densityPresets: baseline.densityPresets,
     materialRoles: [],
-    nonTextBoundaries: [],
+    namedContrasts: [],
     sourceFiles: [...new Set(tokens.map((token) => token.source))].sort(compareCodePoints),
     themes: baseline.themes,
     tokens,
+    unoCssMappings: baseline.unoCssMappings,
   }
 }
 
+function exactRoleIdSet(
+  values: readonly string[],
+  expected: readonly string[],
+  description: string,
+  allowRepeatedConditions = false,
+): string[] {
+  if (!allowRepeatedConditions) {
+    const duplicates = values.filter((value, index) => values.indexOf(value) !== index)
+
+    assertInvariant(
+      duplicates.length === 0,
+      `${description} must not contain duplicate role IDs: ${duplicates.join(', ')}`,
+    )
+  }
+
+  const actualSet = [...new Set(values)].sort(compareCodePoints)
+  const expectedSet = [...expected].sort(compareCodePoints)
+
+  assertInvariantEqual(
+    actualSet,
+    expectedSet,
+    `${description} must equal the active public role set`,
+  )
+  return actualSet
+}
+
+function validateUnoCssProjection(result: TokenBuildResult): string[] {
+  const projection = unoCssProjection(result)
+  const expectedMappings = unoCssMappingRecords(result.activePublicRoles)
+
+  assertInvariantEqual(
+    projection.mappings,
+    expectedMappings,
+    'UnoCSS mapping records must exactly project the Public Role Registry',
+  )
+
+  for (const mapping of projection.mappings) {
+    const role = result.activePublicRoles.find((record) => record.id === mapping.roleId)
+
+    assertInvariant(role !== undefined, `${mapping.roleId} UnoCSS mapping must bind an active role`)
+    assertInvariantEqual(
+      mapping,
+      {
+        roleId: role.id,
+        cssVariable: role.cssVariable,
+        generatorKind: role.unocss.generatorKind,
+        family: role.unocss.family,
+        key: role.unocss.key,
+        classes: role.unocss.classes,
+        allowedCssProperties: role.unocss.allowedCssProperties,
+      },
+      `${mapping.roleId} UnoCSS metadata must remain registry exact`,
+    )
+
+    if (mapping.generatorKind === 'exact-rule') {
+      const rules = projection.rules.filter((rule) => rule.roleId === mapping.roleId)
+
+      assertInvariantEqual(
+        rules.map((rule) => rule.className).sort(compareCodePoints),
+        [...mapping.classes].sort(compareCodePoints),
+        `${mapping.roleId} exact UnoCSS classes must all be generated`,
+      )
+
+      for (const rule of rules) {
+        assertInvariantEqual(
+          Object.keys(rule.declarations).sort(compareCodePoints),
+          [...mapping.allowedCssProperties].sort(compareCodePoints),
+          `${mapping.roleId} exact UnoCSS rule must write only allowed CSS properties`,
+        )
+        assertInvariant(
+          Object.values(rule.declarations).every(
+            (value) => value === `var(${mapping.cssVariable})`,
+          ),
+          `${mapping.roleId} exact UnoCSS rule must reference its canonical CSS variable`,
+        )
+      }
+    } else {
+      const entries = projection.themeEntries.filter((entry) => entry.roleId === mapping.roleId)
+
+      assertInvariant(
+        entries.length === 1,
+        `${mapping.roleId} UnoCSS Theme mapping must generate exactly one entry`,
+      )
+      assertInvariant(
+        entries[0]?.value === `var(${mapping.cssVariable})`,
+        `${mapping.roleId} UnoCSS Theme entry must reference its canonical CSS variable`,
+      )
+    }
+  }
+
+  const projectedClasses = [
+    ...projection.rules.map((rule) => rule.className),
+    ...projection.mappings
+      .filter((mapping) => mapping.generatorKind === 'theme-entry')
+      .flatMap((mapping) => mapping.classes),
+  ]
+  const registeredClasses = projection.mappings.flatMap((mapping) => mapping.classes)
+
+  assertInvariantEqual(
+    [...projectedClasses].sort(compareCodePoints),
+    [...registeredClasses].sort(compareCodePoints),
+    'actual UnoCSS rules and Theme entries must project exactly the registered classes',
+  )
+
+  return exactRoleIdSet(
+    projection.mappings.map((mapping) => mapping.roleId),
+    result.activePublicRoles.map((record) => record.id),
+    'UnoCSS role IDs',
+  )
+}
+
+function validatePublicOutputCompleteness(result: TokenBuildResult): void {
+  const activeIds = exactRoleIdSet(
+    result.activePublicRoles.map((record) => record.id),
+    PublicRoleRegistry.records.map((record) => record.id),
+    'Active Public Role Registry IDs',
+  )
+  const registryByVariable = new Map<string, (typeof result.activePublicRoles)[number]>(
+    result.activePublicRoles.map((record) => [record.cssVariable, record]),
+  )
+  const runtimeContractsByVariable = new Map<
+    string,
+    {
+      roleId: string
+      visibility: (typeof result.tokens)[number]['visibility']
+    }
+  >()
+
+  for (const token of selectTokensForOutput(result, 'runtime-css')) {
+    assertInvariant(
+      token.cssVariable !== undefined,
+      `${token.path} Runtime CSS token must declare a canonical variable`,
+    )
+
+    const contract = {
+      roleId: token.role.name,
+      visibility: token.visibility,
+    }
+    const existing = runtimeContractsByVariable.get(token.cssVariable)
+
+    assertInvariant(
+      existing === undefined || isDeepStrictEqual(existing, contract),
+      `${token.cssVariable} Runtime CSS variable must bind exactly one role and visibility`,
+    )
+    runtimeContractsByVariable.set(token.cssVariable, contract)
+  }
+
+  const runtimeCss = formatRuntimeCss(result)
+  const runtimeVariables = [...runtimeCss.matchAll(/^\s+(--ui-[a-z0-9-]+):/gmu)].map(
+    (match) => match[1] ?? '',
+  )
+
+  assertInvariantEqual(
+    [...new Set(runtimeVariables)].sort(compareCodePoints),
+    [...runtimeContractsByVariable.keys()].sort(compareCodePoints),
+    'Runtime CSS declarations must contain every and only registered public or ui-internal variable',
+  )
+
+  const runtimeIds = exactRoleIdSet(
+    runtimeVariables.flatMap((variable) => {
+      const contract = runtimeContractsByVariable.get(variable)
+
+      assertInvariant(
+        contract !== undefined,
+        `${variable} Runtime CSS declaration must have a registered Token contract`,
+      )
+
+      if (contract.visibility !== 'public') {
+        return []
+      }
+
+      const role = registryByVariable.get(variable)
+
+      assertInvariant(
+        role?.id === contract.roleId,
+        `${variable} public Runtime CSS declaration must bind its own Public Role Registry record`,
+      )
+      return [role.id]
+    }),
+    activeIds,
+    'Runtime CSS public role IDs',
+    true,
+  )
+  const typeScriptEntries = [
+    ...formatTokensTypeScript(result).matchAll(/^  '([^']+)': 'var\((--ui-[a-z0-9-]+)\)',$/gmu),
+  ].map((match) => ({
+    id: match[1] ?? '',
+    variable: match[2] ?? '',
+  }))
+
+  for (const entry of typeScriptEntries) {
+    assertInvariant(
+      result.activePublicRoles.some(
+        (record) => record.id === entry.id && record.cssVariable === entry.variable,
+      ),
+      `${entry.id} public TypeScript token must bind its own canonical CSS variable`,
+    )
+  }
+
+  const typeScriptIds = exactRoleIdSet(
+    typeScriptEntries.map((entry) => entry.id),
+    activeIds,
+    'public TypeScript role IDs',
+  )
+  const tokenNameIds = exactRoleIdSet(
+    [...formatTokenNames(result).matchAll(/^  '([^']+)',$/gmu)].map((match) => match[1] ?? ''),
+    activeIds,
+    'public Token Name role IDs',
+  )
+  const unoCssIds = validateUnoCssProjection(result)
+  const manifest = manifestDocument(result)
+  const manifestTokens = manifest['tokens']
+
+  assertInvariant(Array.isArray(manifestTokens), 'Manifest Token records must be an array')
+
+  const materialProjectionsByRole = new Map(
+    result.materialRoles.map((record) => [record.name, record.projections]),
+  )
+  const materialProjectionIds = manifestTokens.flatMap((entry) => {
+    assertInvariant(isUnknownRecord(entry), 'Manifest Token records must be objects')
+
+    const role = entry['role']
+
+    assertInvariant(
+      isUnknownRecord(role) && typeof role['name'] === 'string',
+      'Manifest Token role metadata must be complete',
+    )
+
+    const expectedProjections = materialProjectionsByRole.get(role['name'])
+
+    if (expectedProjections === undefined) {
+      assertInvariant(
+        entry['materialProjections'] === undefined,
+        `${role['name']} non-Material Token must not carry Material projection metadata`,
+      )
+      return []
+    }
+
+    assertInvariantEqual(
+      entry['materialProjections'],
+      expectedProjections,
+      `${role['name']} Material Token must preserve its complete projection metadata`,
+    )
+    return [role['name']]
+  })
+
+  exactRoleIdSet(
+    materialProjectionIds,
+    result.materialRoles.map((record) => record.name),
+    'Manifest Material projection role IDs',
+    true,
+  )
+
+  const manifestPublicIds = manifestTokens.flatMap((entry) => {
+    if (!isUnknownRecord(entry) || entry['visibility'] !== 'public') {
+      return []
+    }
+
+    const role = entry['role']
+
+    assertInvariant(
+      isUnknownRecord(role) &&
+        typeof role['name'] === 'string' &&
+        typeof role['category'] === 'string',
+      'Manifest public Token role metadata must be complete',
+    )
+
+    const registered = result.activePublicRoles.find((record) => record.id === role['name'])
+
+    assertInvariant(
+      registered !== undefined &&
+        entry['type'] === registered.tokenType &&
+        entry['cssVariable'] === registered.cssVariable &&
+        role['category'] === registered.category,
+      `${role['name']} Manifest public Token metadata must match the Public Role Registry`,
+    )
+    return [role['name']]
+  })
+  const manifestIds = exactRoleIdSet(manifestPublicIds, activeIds, 'Manifest public role IDs', true)
+
+  assertInvariantEqual(
+    {
+      A: activeIds,
+      R: runtimeIds,
+      T: typeScriptIds,
+      N: tokenNameIds,
+      U: unoCssIds,
+      M: manifestIds,
+    },
+    {
+      A: activeIds,
+      R: activeIds,
+      T: activeIds,
+      N: activeIds,
+      U: activeIds,
+      M: activeIds,
+    },
+    'Public Output Completeness requires byte-equivalent sorted A = R = T = N = U = M sets',
+  )
+  assertInvariantEqual(
+    manifest['activePublicRoles'],
+    result.activePublicRoles,
+    'Manifest Active Public Role records must remain exact',
+  )
+  assertInvariantEqual(
+    manifest['unoCssMappings'],
+    result.unoCssMappings,
+    'Manifest UnoCSS mapping records must remain exact',
+  )
+  assertInvariantEqual(
+    manifest['alphaContracts'],
+    result.alphaContracts,
+    'Manifest Alpha records must remain exact',
+  )
+  assertInvariantEqual(
+    manifest['namedContrasts'],
+    result.namedContrasts,
+    'Manifest Named Contrast records must remain exact',
+  )
+}
+
 function validateGeneratorContracts(result: TokenBuildResult): void {
+  const publicRoleRecords = validatePublicRoleRegistry(PublicRoleRegistry)
+  const alphaContracts = validateAlphaContractRegistry(
+    ActiveAlphaContractRegistry,
+    publicRoleRecords,
+  )
+  const namedContrasts = validateNamedContrastRegistry(
+    ActiveNamedContrastRegistry,
+    publicRoleRecords,
+  )
+
+  assertInvariantEqual(
+    result.activePublicRoles,
+    publicRoleRecords,
+    'Token preprocessing must carry the exact Public Role Registry',
+  )
+  assertInvariantEqual(
+    result.alphaContracts,
+    alphaContracts,
+    'Token preprocessing must carry the exact Alpha Registry',
+  )
+  assertInvariantEqual(
+    result.unoCssMappings,
+    unoCssMappingRecords(publicRoleRecords),
+    'Token preprocessing must carry exactly 27 UnoCSS mapping records',
+  )
+  assertInvariantEqual(
+    result.namedContrasts.map((record) =>
+      Object.fromEntries(
+        Object.entries(record).filter(([property]) => property !== 'minimumRatios'),
+      ),
+    ),
+    namedContrasts,
+    'Token preprocessing must carry the exact 14-record Named Contrast Registry',
+  )
+
+  validateActivePublicRoleTokens(result.tokens, publicRoleRecords)
+  validatePublicOutputCompleteness(result)
+  validateManifestGovernance(result)
+
   const colorValue = {
     colorSpace: 'oklch',
     components: [0.5, 0.1, 250],
@@ -578,7 +956,6 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   const matrixCss = formatRuntimeCss(matrixResult)
   const matrixTypeScript = formatTokensTypeScript(matrixResult)
   const matrixNames = formatTokenNames(matrixResult)
-  const matrixUnoCss = formatUnoCssTheme(matrixResult)
 
   assertInvariant(
     matrixCss.includes('--ui-color-internal:') &&
@@ -590,12 +967,8 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     !matrixTypeScript.includes('color.internal') &&
       !matrixTypeScript.includes('color.build') &&
       !matrixNames.includes('color.internal') &&
-      !matrixNames.includes('color.build') &&
-      !matrixUnoCss.includes('color.internal') &&
-      !matrixUnoCss.includes('color.build') &&
-      !matrixUnoCss.includes('--ui-color-internal') &&
-      !matrixUnoCss.includes('--ui-color-build'),
-    'ui-internal and build-only tokens must not enter public TypeScript, names, or UnoCSS',
+      !matrixNames.includes('color.build'),
+    'ui-internal and build-only tokens must not enter public TypeScript or names',
   )
 
   const matrixManifest = manifestDocument(matrixResult)
@@ -636,9 +1009,9 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   }
 
   assertInvariantEqual(
-    formatManifest(matrixResult),
-    formatManifest(matrixResult),
-    'Manifest formatting must be deterministic',
+    manifestDocument(matrixResult),
+    matrixManifest,
+    'Manifest document projection must be deterministic',
   )
 
   const selectorRecords = createTokenResolver([
@@ -913,29 +1286,14 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   )
 
   assertContractFailure(
-    () => validateContrastAndMaterialContracts(incompleteMaterialTokens, themeIds),
+    () =>
+      validateContrastAndMaterialContracts(
+        incompleteMaterialTokens,
+        themeIds,
+        ActiveNamedContrastRegistry.records,
+      ),
     /projection contract/u,
     'incomplete adaptive, reduced, or solid material projections must fail generation',
-  )
-
-  const incompleteContrastTokens = result.tokens.map((token): ResolvedTokenRecord => {
-    if (token.contrastPairs === undefined) {
-      return token
-    }
-
-    const contrastPairs = token.contrastPairs.filter(
-      (pair) => pair.id !== 'action-content-on-primary',
-    )
-    const { contrastPairs: sourceContrastPairs, ...metadata } = token
-
-    void sourceContrastPairs
-    return contrastPairs.length === 0 ? metadata : { ...metadata, contrastPairs }
-  })
-
-  assertContractFailure(
-    () => validateContrastAndMaterialContracts(incompleteContrastTokens, themeIds),
-    /Named contrast pair contract/u,
-    'incomplete named contrast pair metadata must fail generation',
   )
 }
 
@@ -1365,15 +1723,42 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   const canonicalCustomProperties = new Set<string>(
     effectiveAppearanceCustomProperties.map(([, propertyName]) => propertyName),
   )
+  const baselineStart = criticalTheme.indexOf('  :root {\n')
+  const baselineEnd = criticalTheme.indexOf('\n  }', baselineStart)
 
   assertInvariant(
-    criticalTheme.includes('--ui-color-surface-page:') &&
-      criticalTheme.includes('--ui-color-text-primary:') &&
-      criticalTheme.includes('--ui-material-chrome-background:') &&
-      criticalTheme.includes('--ui-material-overlay-background:') &&
-      criticalTheme.includes('--ui-material-modal-background:') &&
-      criticalTheme.includes('--ui-material-scrim-background:') &&
-      criticalTheme.includes('--ui-font-scale: 1;') &&
+    baselineStart >= 0 && baselineEnd > baselineStart,
+    'critical-theme.css must contain one complete baseline :root block',
+  )
+
+  const baselineBlock = criticalTheme.slice(baselineStart, baselineEnd)
+  const actualBaselineVariables = [...baselineBlock.matchAll(/^    (--ui-[a-z0-9-]+):/gmu)].map(
+    (match) => match[1] ?? '',
+  )
+  const expectedPublicColorVariables = result.activePublicRoles
+    .filter(isActivePublicColorRole)
+    .map((record) => record.cssVariable)
+  const expectedMaterialVariables = result.tokens
+    .filter(
+      (token) =>
+        token.tier === 'semantic.material' &&
+        token.visibility === 'ui-internal' &&
+        token.type === 'color' &&
+        Object.keys(token.conditions).length === 1 &&
+        token.conditions.material === 'solid' &&
+        token.cssVariable !== undefined,
+    )
+    .map((token) => token.cssVariable ?? '')
+
+  assertInvariantEqual(
+    [...actualBaselineVariables].sort(compareCodePoints),
+    [...expectedPublicColorVariables, ...expectedMaterialVariables, '--ui-font-scale'].sort(
+      compareCodePoints,
+    ),
+    'critical-theme.css baseline variables must equal the registry-derived Public Colors, actual solid Material records, and font scale',
+  )
+  assertInvariant(
+    criticalTheme.includes('--ui-font-scale: 1;') &&
       criticalTheme.includes('font-size: calc(100% * var(--ui-font-scale));') &&
       criticalTheme.includes("html[data-color-mode='light']") &&
       criticalTheme.includes('@media (forced-colors: active)'),
@@ -1400,20 +1785,22 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   )
   assertInvariantEqual(
     manifestDocument(result)['firstPaint'],
-    {
-      applicationKeyAgnostic: true,
-      artifacts: ['appearance-init.js', 'critical-theme.css'],
-      baseline: {
-        colorMode: 'light',
-        contrast: 'standard',
-        density: 'comfortable',
-        fontScale: 1,
-        material: 'solid',
-        motion: 'full',
-        theme: 'neutral',
+    [
+      {
+        applicationKeyAgnostic: true,
+        artifacts: ['appearance-init.js', 'critical-theme.css'],
+        baseline: {
+          colorMode: 'light',
+          contrast: 'standard',
+          density: 'comfortable',
+          fontScale: 1,
+          material: 'solid',
+          motion: 'full',
+          theme: 'neutral',
+        },
+        synchronousClassicScript: true,
       },
-      synchronousClassicScript: true,
-    },
+    ],
     'Manifest first-paint metadata must record the complete safe baseline',
   )
 
@@ -1616,12 +2003,325 @@ async function compareGeneratedFiles(
   }
 }
 
+function generatedClassDeclarations(css: string, className: string): Record<string, string> {
+  const selector = `.${className}{`
+  const start = css.indexOf(selector)
+
+  assertInvariant(start >= 0, `${className} must generate an actual UnoCSS class rule`)
+  assertInvariant(
+    !css.includes(selector, start + selector.length),
+    `${className} must generate exactly one UnoCSS class rule`,
+  )
+
+  const end = css.indexOf('}', start + selector.length)
+
+  assertInvariant(end >= 0, `${className} must generate a complete UnoCSS class rule`)
+
+  const declarations = css
+    .slice(start + selector.length, end)
+    .split(';')
+    .filter((declaration) => declaration.length > 0)
+    .map((declaration) => {
+      const separator = declaration.indexOf(':')
+
+      assertInvariant(separator > 0, `${className} emitted malformed UnoCSS declarations`)
+      return [declaration.slice(0, separator), declaration.slice(separator + 1)] as const
+    })
+
+  assertInvariant(
+    new Set(declarations.map(([property]) => property)).size === declarations.length,
+    `${className} must not emit duplicate CSS properties`,
+  )
+  return Object.fromEntries(declarations)
+}
+
+async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<void> {
+  const [
+    { createGenerator, presetWind4 },
+    {
+      platformPreset,
+      wind4PublicVariableBypassCandidates,
+      wind4RestrictedThemeAliasCandidates,
+      wind4RestrictedThemeSafelistPaths,
+    },
+    { default: rootUnoConfiguration },
+  ] = await Promise.all([
+    import('unocss'),
+    import('../unocss/preset'),
+    import('../../../../uno.config'),
+  ])
+  const projection = unoCssProjection(result)
+  const installedPreset = platformPreset()
+  const expectedRules = projection.rules.map((rule) => [rule.className, rule.declarations] as const)
+  const rootConfiguration = rootUnoConfiguration as unknown
+
+  assertInvariant(
+    isUnknownRecord(rootConfiguration),
+    'the root UnoCSS configuration must be an object',
+  )
+
+  for (const forbiddenSurface of [
+    'theme',
+    'extendTheme',
+    'rules',
+    'shortcuts',
+    'safelist',
+    'preprocess',
+    'transformers',
+    'prefix',
+  ]) {
+    assertInvariant(
+      rootConfiguration[forbiddenSurface] === undefined,
+      `the root UnoCSS configuration must not define a custom ${forbiddenSurface} surface`,
+    )
+  }
+
+  const rootPresets = rootConfiguration['presets']
+
+  assertInvariant(
+    Array.isArray(rootPresets) && rootPresets.every(isUnknownRecord),
+    'the root UnoCSS configuration must contain its exact preset route',
+  )
+  assertInvariantEqual(
+    rootPresets.map((preset) => preset['name']),
+    ['@unocss/preset-wind4', '@unocss/preset-icons', '@platform/design-system'],
+    'the root UnoCSS configuration must preserve its exact three-preset route',
+  )
+
+  const rootPlatformPreset = rootPresets.find(
+    (preset) => preset['name'] === '@platform/design-system',
+  )
+
+  assertInvariant(
+    rootPlatformPreset !== undefined,
+    'the root UnoCSS configuration must install the platform preset',
+  )
+
+  assertInvariantEqual(
+    installedPreset.rules,
+    expectedRules,
+    'the installed platformPreset rules must equal the generated exact-rule projection',
+  )
+  assertInvariantEqual(
+    installedPreset.theme,
+    projection.theme,
+    'the installed platformPreset Theme must equal the generated Theme-entry projection',
+  )
+  assertInvariantEqual(
+    rootPlatformPreset['rules'],
+    expectedRules,
+    'the root UnoCSS configuration must install only the generated platform rules',
+  )
+  assertInvariantEqual(
+    rootPlatformPreset['theme'],
+    projection.theme,
+    'the root UnoCSS configuration must install only the generated platform Theme entries',
+  )
+  assertInvariant(
+    Array.isArray(rootPlatformPreset['blocklist']) &&
+      rootPlatformPreset['blocklist'].length === 1 &&
+      rootPlatformPreset['blocklist'].every((entry: unknown) => typeof entry === 'function'),
+    'the root platform preset must install exactly one generated Theme containment blocklist',
+  )
+
+  for (const forbiddenSurface of ['shortcuts', 'safelist', 'preprocess']) {
+    assertInvariant(
+      rootPlatformPreset[forbiddenSurface] === undefined,
+      `the root platform preset must not define ${forbiddenSurface}`,
+    )
+  }
+
+  const generator = await createGenerator({
+    ...rootUnoConfiguration,
+    warn: false,
+  })
+  const referenceGenerator = await createGenerator({
+    warn: false,
+    presets: [
+      presetWind4({
+        preflights: {
+          reset: false,
+          theme: false,
+        },
+      }),
+      {
+        name: 'pavp-wind4-theme-reference',
+        theme: projection.theme,
+      },
+    ],
+  })
+  const installedTheme = generator.config.theme as unknown
+  const textTheme = isUnknownRecord(installedTheme) ? installedTheme['text'] : undefined
+  const wind4TextSizeKeys = isUnknownRecord(textTheme) ? Object.keys(textTheme) : []
+  const forbiddenThemeAliases = wind4RestrictedThemeAliasCandidates(wind4TextSizeKeys)
+  const forbiddenCandidates = [...forbiddenThemeAliases, ...wind4PublicVariableBypassCandidates]
+  const expectedRestrictedRoleIds = projection.mappings
+    .filter((mapping) => mapping.generatorKind === 'theme-entry')
+    .map((mapping) => mapping.roleId)
+    .sort(compareCodePoints)
+
+  assertInvariantEqual(
+    [...new Set(forbiddenThemeAliases.map((candidate) => candidate.roleId))].sort(
+      compareCodePoints,
+    ),
+    expectedRestrictedRoleIds,
+    'the Wind4 alias grammar must cover all seven restricted Theme entries',
+  )
+  assertInvariantEqual(
+    [...new Set(wind4PublicVariableBypassCandidates.map((candidate) => candidate.roleId))].sort(
+      compareCodePoints,
+    ),
+    projection.mappings.map((mapping) => mapping.roleId).sort(compareCodePoints),
+    'arbitrary public-variable bypass validation must cover all 27 mappings',
+  )
+  assertInvariant(
+    new Set(forbiddenCandidates.map((candidate) => candidate.className)).size ===
+      forbiddenCandidates.length,
+    'the exhaustive Wind4 and public-variable candidate set must be unique',
+  )
+  assertInvariantEqual(
+    generator.config.safelist,
+    [],
+    'the installed UnoCSS route must not safelist Theme property paths',
+  )
+  assertInvariantEqual(
+    generator.config.preprocess,
+    [],
+    'the installed UnoCSS route must not preprocess classes around containment',
+  )
+
+  for (const safelistPath of wind4RestrictedThemeSafelistPaths) {
+    assertInvariant(
+      !generator.config.safelist.includes(safelistPath),
+      `${safelistPath} must not bypass on-demand Theme containment through the safelist`,
+    )
+  }
+
+  const actualClasses: string[] = []
+
+  for (const mapping of result.unoCssMappings) {
+    for (const className of mapping.classes) {
+      const generated = await generator.generate(className, {
+        preflights: false,
+      })
+      const declarations = generatedClassDeclarations(generated.css, className)
+
+      assertInvariantEqual(
+        [...generated.matched],
+        [className],
+        `${className} must be matched by the actual platformPreset`,
+      )
+      assertInvariantEqual(
+        Object.keys(declarations).sort(compareCodePoints),
+        [...mapping.allowedCssProperties].sort(compareCodePoints),
+        `${className} actual UnoCSS output must remain within its allowed CSS property scope`,
+      )
+
+      if (mapping.generatorKind === 'exact-rule') {
+        assertInvariantEqual(
+          declarations,
+          Object.fromEntries(
+            mapping.allowedCssProperties.map((property) => [
+              property,
+              `var(${mapping.cssVariable})`,
+            ]),
+          ),
+          `${className} actual exact rule must bind its canonical public CSS variable`,
+        )
+      } else {
+        const themeEntry = projection.themeEntries.find((entry) => entry.roleId === mapping.roleId)
+
+        assertInvariant(
+          themeEntry !== undefined,
+          `${mapping.roleId} must have one generated Theme entry`,
+        )
+
+        if (themeEntry.family === 'shadow') {
+          assertInvariant(
+            Object.values(declarations).some((value) =>
+              value.includes(`var(${mapping.cssVariable})`),
+            ),
+            `${className} must consume its canonical public Shadow variable directly`,
+          )
+        } else {
+          const mirrorVariable = `--${themeEntry.family}-${themeEntry.key}`
+
+          assertInvariant(
+            Object.values(declarations).some((value) => value.includes(`var(${mirrorVariable})`)),
+            `${className} must consume only its canonical Wind4 Theme mirror`,
+          )
+        }
+      }
+
+      actualClasses.push(className)
+    }
+  }
+
+  assertInvariantEqual(
+    actualClasses.sort(compareCodePoints),
+    result.unoCssMappings.flatMap((mapping) => mapping.classes).sort(compareCodePoints),
+    'the actual platformPreset must generate all 27 registered public classes',
+  )
+
+  const preflight = await generator.generate(actualClasses.join(' '), {
+    preflights: true,
+  })
+  const compactPreflightCss = preflight.css.replaceAll(/\s+/gu, '')
+
+  for (const mapping of projection.mappings) {
+    if (mapping.generatorKind !== 'theme-entry' || mapping.family === 'shadow') {
+      continue
+    }
+
+    const themeEntry = projection.themeEntries.find((entry) => entry.roleId === mapping.roleId)
+
+    assertInvariant(
+      themeEntry !== undefined,
+      `${mapping.roleId} must have one generated preflight Theme entry`,
+    )
+
+    const mirrorVariable = `--${themeEntry.family}-${themeEntry.key}`
+
+    assertInvariant(
+      compactPreflightCss.includes(`${mirrorVariable}:var(${mapping.cssVariable})`),
+      `${mapping.roleId} on-demand Theme preflight must bind its mirror to the canonical public variable`,
+    )
+  }
+
+  for (const candidate of forbiddenCandidates) {
+    const reference = await referenceGenerator.generate(candidate.className, {
+      preflights: false,
+    })
+
+    assertInvariantEqual(
+      [...reference.matched],
+      [candidate.className],
+      `${candidate.className} must remain an actual pinned-Wind4 resolver path (${candidate.template})`,
+    )
+
+    const generated = await generator.generate(candidate.className, {
+      preflights: false,
+    })
+
+    assertInvariantEqual(
+      [...generated.matched],
+      [],
+      `${candidate.className} must be blocked as an unregistered public resolver path (${candidate.template})`,
+    )
+    assertInvariant(
+      !result.unoCssMappings.some((mapping) => generated.css.includes(mapping.cssVariable)),
+      `${candidate.className} must not resolve to any public CSS variable`,
+    )
+  }
+}
+
 export async function checkTokens(): Promise<void> {
   const temporaryDirectory = await mkdtemp(join(tmpdir(), 'pavp-tokens-'))
 
   try {
-    await buildTokens(temporaryDirectory)
+    const result = await buildTokens(temporaryDirectory)
     await compareGeneratedFiles(temporaryDirectory, generatedDirectory)
+    await validateInstalledUnoCssPreset(result)
   } finally {
     await rm(temporaryDirectory, {
       force: true,

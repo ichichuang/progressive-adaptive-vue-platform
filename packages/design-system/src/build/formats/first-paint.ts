@@ -19,52 +19,112 @@ import {
 import { legacySeedThemeIdPattern } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
+import {
+  isActivePublicColorRole,
+  PublicRoleRegistry,
+  validatePublicRoleRegistry,
+} from '../public-role-registry'
 import { canonicalLayerOrder, formatAppearanceBaseCss, formatForcedColorsCss } from './css'
 import { generatedNotice, requireBuildResult, resolvedCssValue, type FormatContext } from './shared'
 
-const criticalRoleNames = new Set([
-  'color.action.primary',
-  'color.border.default',
-  'color.focus.ring',
-  'color.scrim.viewport',
-  'color.surface.page',
-  'color.surface.panel',
-  'color.text.on-action',
-  'color.text.primary',
-  'color.text.secondary',
-  'material.chrome.background',
-  'material.modal.background',
-  'material.overlay.background',
-  'material.scrim.background',
-])
+function activePublicColorRoleNames(result: TokenBuildResult): string[] {
+  const registryNames = validatePublicRoleRegistry(PublicRoleRegistry)
+    .filter(isActivePublicColorRole)
+    .map((record) => record.id)
+    .sort(compareCodePoints)
+  const carriedNames = result.activePublicRoles
+    .filter(isActivePublicColorRole)
+    .map((record) => record.id)
+    .sort(compareCodePoints)
+
+  if (
+    registryNames.length !== 9 ||
+    carriedNames.length !== registryNames.length ||
+    carriedNames.some((name, index) => name !== registryNames[index])
+  ) {
+    throw new Error(
+      `Critical theme Public Color contract must equal the exact nine-role registry subset; registry=[${registryNames.join(', ')}], build=[${carriedNames.join(', ')}].`,
+    )
+  }
+
+  return registryNames
+}
+
+interface CriticalRoleNames {
+  readonly material: readonly string[]
+  readonly publicColors: readonly string[]
+}
+
+function criticalRoleNames(result: TokenBuildResult): CriticalRoleNames {
+  const publicColorNames = activePublicColorRoleNames(result)
+  const materialNames = [
+    ...new Set(
+      result.tokens
+        .filter(
+          (token) =>
+            token.tier === 'semantic.material' &&
+            token.visibility === 'ui-internal' &&
+            token.type === 'color',
+        )
+        .map((token) => token.role.name),
+    ),
+  ].sort(compareCodePoints)
+  const names = new Set([...publicColorNames, ...materialNames])
+
+  if (names.size !== publicColorNames.length + materialNames.length) {
+    throw new Error('Critical theme Public Color and Material role sets must remain disjoint.')
+  }
+
+  return {
+    material: materialNames,
+    publicColors: publicColorNames,
+  }
+}
 
 function criticalDeclarations(result: TokenBuildResult): string {
-  const declarations = result.tokens
-    .filter((token) => {
-      if (!criticalRoleNames.has(token.role.name) || token.cssVariable === undefined) {
+  const roleNames = criticalRoleNames(result)
+  const criticalRecords = [
+    ...roleNames.publicColors.map((name) => ({
+      kind: 'public-color' as const,
+      name,
+    })),
+    ...roleNames.material.map((name) => ({
+      kind: 'material' as const,
+      name,
+    })),
+  ].map((contract) => {
+    const matches = result.tokens.filter((token) => {
+      if (token.role.name !== contract.name) {
         return false
       }
 
       const conditionEntries = Object.entries(token.conditions)
-      return (
-        conditionEntries.length === 0 ||
-        (conditionEntries.length === 1 && token.conditions.material === 'solid')
+
+      return contract.kind === 'public-color'
+        ? conditionEntries.length === 0
+        : conditionEntries.length === 1 && token.conditions.material === 'solid'
+    })
+
+    if (matches.length !== 1) {
+      throw new Error(
+        `${contract.name}: critical theme requires exactly one ${contract.kind === 'public-color' ? 'unconditional Public Color' : 'solid Material'} record; received ${String(matches.length)}.`,
       )
-    })
-    .sort((left, right) => compareCodePoints(left.role.name, right.role.name))
-    .map((token) => {
-      if (token.cssVariable === undefined) {
-        throw new Error(`${token.path}: critical token is missing its CSS variable.`)
-      }
+    }
 
-      return `    ${token.cssVariable}: ${resolvedCssValue(token, result)};`
-    })
+    const token = matches[0]
 
-  if (declarations.length !== criticalRoleNames.size) {
-    throw new Error(
-      `Critical theme contract requires ${String(criticalRoleNames.size)} complete baseline roles; received ${String(declarations.length)}.`,
-    )
-  }
+    if (token?.cssVariable === undefined) {
+      throw new Error(`${contract.name}: critical token is missing its CSS variable.`)
+    }
+
+    return {
+      cssVariable: token.cssVariable,
+      token,
+    }
+  })
+  const declarations = criticalRecords
+    .sort((left, right) => compareCodePoints(left.token.role.name, right.token.role.name))
+    .map(({ cssVariable, token }) => `    ${cssVariable}: ${resolvedCssValue(token, result)};`)
 
   declarations.push('    --ui-font-scale: 1;')
   return declarations.join('\n')

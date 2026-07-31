@@ -16,13 +16,25 @@ import {
   type TokenVisibility,
 } from '../schema/token.schema'
 import {
+  validatePublicAlphaContracts,
   validateContrastAndMaterialContracts,
-  type ContrastPairValidation,
   type MaterialRoleValidation,
-  type NonTextBoundaryValidation,
+  type NamedContrastValidation,
 } from './contrast'
 import { compareCodePoints } from './order'
 import { parseJsonSource } from './parse-json'
+import {
+  ActiveAlphaContractRegistry,
+  ActiveNamedContrastRegistry,
+  PublicRoleRegistry,
+  unoCssMappingRecords,
+  validateAlphaContractRegistry,
+  validateNamedContrastRegistry,
+  validatePublicRoleRegistry,
+  type AlphaContractRecord,
+  type PublicRoleRecord,
+  type UnoCssMappingRecord,
+} from './public-role-registry'
 import { createTokenResolver, type ResolvedTokenRecord, type TokenRecord } from './resolve'
 import {
   assertVisibilityNarrowing,
@@ -70,15 +82,17 @@ export interface ColorCompound {
 }
 
 export interface TokenBuildResult {
+  activePublicRoles: readonly PublicRoleRecord[]
+  alphaContracts: readonly AlphaContractRecord[]
   colorCompoundBudget: number
   compounds: readonly ColorCompound[]
-  contrastPairs: readonly ContrastPairValidation[]
   densityPresets: readonly string[]
   materialRoles: readonly MaterialRoleValidation[]
-  nonTextBoundaries: readonly NonTextBoundaryValidation[]
+  namedContrasts: readonly NamedContrastValidation[]
   sourceFiles: readonly string[]
   themes: readonly ResolvedLegacySeedThemeDefinition[]
   tokens: readonly ResolvedTokenRecord[]
+  unoCssMappings: readonly UnoCssMappingRecord[]
 }
 
 function formatIssues(sourcePath: string, error: z.ZodError): Error {
@@ -259,9 +273,6 @@ function flattenTokenSource(
           value: token.$value,
           visibility,
           ...(extension?.compound === undefined ? {} : { compound: extension.compound }),
-          ...(extension?.contrastPairs === undefined
-            ? {}
-            : { contrastPairs: extension.contrastPairs }),
           ...(runtimeExposed ? { cssVariable: cssVariableForRole(role) } : {}),
           ...(token.$description === undefined ? {} : { description: token.$description }),
         })
@@ -455,6 +466,62 @@ function assertExactSet(
   }
 }
 
+export function validateActivePublicRoleTokens(
+  records: readonly ResolvedTokenRecord[],
+  registry: readonly PublicRoleRecord[],
+): void {
+  const contracts = new Map<
+    string,
+    Pick<ResolvedTokenRecord, 'cssVariable' | 'tier' | 'type' | 'visibility'> & {
+      category: string
+    }
+  >()
+
+  for (const record of records.filter((token) => token.visibility === 'public')) {
+    const expected = registry.find((candidate) => candidate.id === record.role.name)
+
+    if (expected === undefined) {
+      throw new Error(
+        `${record.source}:${record.path}: unknown active public role "${record.role.name}".`,
+      )
+    }
+
+    if (
+      record.tier !== 'semantic' ||
+      record.type !== expected.tokenType ||
+      record.role.category !== expected.category ||
+      record.cssVariable !== expected.cssVariable
+    ) {
+      throw new Error(
+        `${record.source}:${record.path}: public role "${record.role.name}" metadata does not match the Public Role Registry.`,
+      )
+    }
+
+    const contract = {
+      category: record.role.category,
+      cssVariable: record.cssVariable,
+      tier: record.tier,
+      type: record.type,
+      visibility: record.visibility,
+    }
+    const existing = contracts.get(record.role.name)
+
+    if (existing !== undefined && JSON.stringify(existing) !== JSON.stringify(contract)) {
+      throw new Error(
+        `${record.source}:${record.path}: public role "${record.role.name}" has conflicting condition metadata.`,
+      )
+    }
+
+    contracts.set(record.role.name, contract)
+  }
+
+  assertExactSet(
+    [...contracts.keys()],
+    registry.map((record) => record.id),
+    'Active Public Role Registry projection',
+  )
+}
+
 function parseLegacySeedThemeSource(bundle: {
   contents: string
   path: string
@@ -559,9 +626,23 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
 
   const records = [...resolver.records].sort(compareRecords)
   const compounds = validateTokenRecords(records, new Set(themeIds.keys()))
+  const activePublicRoles = validatePublicRoleRegistry(PublicRoleRegistry)
+  const alphaContracts = validateAlphaContractRegistry(
+    ActiveAlphaContractRegistry,
+    activePublicRoles,
+  )
+  const namedContrastRegistry = validateNamedContrastRegistry(
+    ActiveNamedContrastRegistry,
+    activePublicRoles,
+  )
+
+  validateActivePublicRoleTokens(records, activePublicRoles)
+  validatePublicAlphaContracts(records, activePublicRoles, alphaContracts)
+
   const validation = validateContrastAndMaterialContracts(
     records,
     resolvedThemes.map((theme) => theme.id),
+    namedContrastRegistry,
   )
   const tokens: Record<string, unknown> = {}
 
@@ -571,15 +652,17 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
 
   return {
     result: {
+      activePublicRoles,
+      alphaContracts,
       colorCompoundBudget,
       compounds,
-      contrastPairs: validation.contrastPairs,
       densityPresets: [...new Set(densityPresets)].sort(),
       materialRoles: validation.materialRoles,
-      nonTextBoundaries: validation.nonTextBoundaries,
+      namedContrasts: validation.namedContrasts,
       sourceFiles: bundles.map((bundle) => bundle.path),
       themes: resolvedThemes,
       tokens: records,
+      unoCssMappings: unoCssMappingRecords(activePublicRoles),
     },
     tokens: tokens as PreprocessedTokens,
   }

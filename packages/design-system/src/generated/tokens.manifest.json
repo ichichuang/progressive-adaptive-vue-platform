@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -22,198 +22,38 @@
     "themes/ocean.theme.json",
     "themes/warm.theme.json"
   ],
-  "densityPresets": ["comfortable", "compact", "spacious"],
-  "themes": [
-    {
-      "id": "neutral",
-      "label": "Neutral",
-      "neutral": "neutral"
-    },
-    {
-      "id": "ocean",
-      "label": "Ocean",
-      "neutral": "cool"
-    },
-    {
-      "id": "warm",
-      "label": "Warm",
-      "neutral": "warm"
-    }
-  ],
   "compoundBudget": {
     "limit": 8,
     "used": 0
   },
-  "compounds": [],
-  "materialRoles": [
-    {
-      "name": "material.chrome.background",
-      "projections": ["adaptive", "reduced", "solid"]
+  "governance": {
+    "recordFamilies": [
+      "tokens",
+      "activePublicRoles",
+      "unoCssMappings",
+      "namedContrasts",
+      "alphaContracts",
+      "densities",
+      "themes",
+      "firstPaint"
+    ],
+    "recordCounts": {
+      "tokens": 105,
+      "activePublicRoles": 27,
+      "unoCssMappings": 27,
+      "namedContrasts": 14,
+      "alphaContracts": 1,
+      "densities": 3,
+      "themes": 3,
+      "firstPaint": 1
     },
-    {
-      "name": "material.modal.background",
-      "projections": ["adaptive", "reduced", "solid"]
-    },
-    {
-      "name": "material.overlay.background",
-      "projections": ["adaptive", "reduced", "solid"]
-    },
-    {
-      "name": "material.scrim.background",
-      "projections": ["adaptive", "reduced", "solid"]
-    }
-  ],
-  "contrastPairs": [
-    {
-      "background": "color.surface.page",
-      "foreground": "color.text.primary",
-      "id": "text-primary-on-page",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 18.955,
-        "standard": 18.955
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "color.surface.panel",
-      "foreground": "color.text.primary",
-      "id": "text-primary-on-panel",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 17.703,
-        "standard": 17.703
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "color.surface.page",
-      "foreground": "color.text.secondary",
-      "id": "text-secondary-on-page",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 9.974,
-        "standard": 9.974
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "color.surface.panel",
-      "foreground": "color.text.secondary",
-      "id": "text-secondary-on-panel",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 10.412,
-        "standard": 10.412
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "color.action.primary",
-      "foreground": "color.text.on-action",
-      "id": "action-content-on-primary",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 17.703,
-        "standard": 17.703
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "color.surface.page",
-      "foreground": "color.focus.ring",
-      "id": "focus-ring-on-page",
-      "kind": "non-text",
-      "minimumRatios": {
-        "enhanced": 4.853,
-        "standard": 4.853
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "color.surface.panel",
-      "foreground": "color.focus.ring",
-      "id": "focus-ring-on-panel",
-      "kind": "non-text",
-      "minimumRatios": {
-        "enhanced": 4.858,
-        "standard": 4.858
-      },
-      "projections": ["not-applicable"]
-    },
-    {
-      "background": "material.chrome.background",
-      "foreground": "color.text.primary",
-      "id": "material-chrome-content",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 9.302,
-        "standard": 9.302
-      },
-      "projections": ["adaptive", "reduced", "solid"]
-    },
-    {
-      "background": "material.overlay.background",
-      "foreground": "color.text.primary",
-      "id": "material-overlay-content",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 10.613,
-        "standard": 10.613
-      },
-      "projections": ["adaptive", "reduced", "solid"]
-    },
-    {
-      "background": "material.modal.background",
-      "foreground": "color.text.primary",
-      "id": "material-modal-content",
-      "kind": "text",
-      "minimumRatios": {
-        "enhanced": 13.27,
-        "standard": 13.27
-      },
-      "projections": ["adaptive", "reduced", "solid"]
-    }
-  ],
-  "nonTextBoundaries": [
-    {
-      "background": "color.surface.page",
-      "foreground": "color.action.primary",
-      "id": "control-primary-on-page",
-      "minimumRatio": 16.959
-    },
-    {
-      "background": "color.surface.panel",
-      "foreground": "color.action.primary",
-      "id": "control-primary-on-panel",
-      "minimumRatio": 17.703
-    },
-    {
-      "background": "color.surface.page",
-      "foreground": "color.border.default",
-      "id": "border-default-on-page",
-      "minimumRatio": 4.085
-    },
-    {
-      "background": "color.surface.panel",
-      "foreground": "color.border.default",
-      "id": "border-default-on-panel",
-      "minimumRatio": 3.655
-    }
-  ],
-  "firstPaint": {
-    "applicationKeyAgnostic": true,
-    "baseline": {
-      "colorMode": "light",
-      "contrast": "standard",
-      "density": "comfortable",
-      "fontScale": 1,
-      "material": "solid",
-      "motion": "full",
-      "theme": "neutral"
-    },
-    "artifacts": ["appearance-init.js", "critical-theme.css"],
-    "synchronousClassicScript": true
+    "recordCount": 181,
+    "baselineRecordCount": 174,
+    "expectedRecordCountDelta": 7,
+    "gzipAlgorithm": "gzip -9 -n",
+    "baselineGzipBytes": 3366,
+    "expectedGzipByteDelta": 1878,
+    "gzipHardLimitBytes": 32768
   },
   "tokens": [
     {
@@ -288,18 +128,6 @@
         "name": "color.focus.ring"
       },
       "resolvedValue": "oklch(54% 0.15 250)",
-      "contrastPairs": [
-        {
-          "background": "color.surface.page",
-          "id": "focus-ring-on-page",
-          "kind": "non-text"
-        },
-        {
-          "background": "color.surface.panel",
-          "id": "focus-ring-on-panel",
-          "kind": "non-text"
-        }
-      ],
       "cssVariable": "--ui-color-focus-ring"
     },
     {
@@ -727,13 +555,6 @@
         "name": "color.text.on-action"
       },
       "resolvedValue": "oklch(100% 0 0)",
-      "contrastPairs": [
-        {
-          "background": "color.action.primary",
-          "id": "action-content-on-primary",
-          "kind": "text"
-        }
-      ],
       "cssVariable": "--ui-color-text-on-action"
     },
     {
@@ -764,33 +585,6 @@
         "name": "color.text.primary"
       },
       "resolvedValue": "oklch(14.5% 0.01 247)",
-      "contrastPairs": [
-        {
-          "background": "color.surface.page",
-          "id": "text-primary-on-page",
-          "kind": "text"
-        },
-        {
-          "background": "color.surface.panel",
-          "id": "text-primary-on-panel",
-          "kind": "text"
-        },
-        {
-          "background": "material.chrome.background",
-          "id": "material-chrome-content",
-          "kind": "text"
-        },
-        {
-          "background": "material.overlay.background",
-          "id": "material-overlay-content",
-          "kind": "text"
-        },
-        {
-          "background": "material.modal.background",
-          "id": "material-modal-content",
-          "kind": "text"
-        }
-      ],
       "cssVariable": "--ui-color-text-primary"
     },
     {
@@ -821,18 +615,6 @@
         "name": "color.text.secondary"
       },
       "resolvedValue": "oklch(37% 0.014 247)",
-      "contrastPairs": [
-        {
-          "background": "color.surface.page",
-          "id": "text-secondary-on-page",
-          "kind": "text"
-        },
-        {
-          "background": "color.surface.panel",
-          "id": "text-secondary-on-panel",
-          "kind": "text"
-        }
-      ],
       "cssVariable": "--ui-color-text-secondary"
     },
     {
@@ -1328,7 +1110,8 @@
         "name": "material.chrome.background"
       },
       "resolvedValue": "var(--ui-color-material-support-chrome-adaptive)",
-      "cssVariable": "--ui-material-chrome-background"
+      "cssVariable": "--ui-material-chrome-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.chrome.reduced.background",
@@ -1344,7 +1127,8 @@
         "name": "material.chrome.background"
       },
       "resolvedValue": "var(--ui-color-material-support-chrome-reduced)",
-      "cssVariable": "--ui-material-chrome-background"
+      "cssVariable": "--ui-material-chrome-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.chrome.solid.background",
@@ -1360,7 +1144,8 @@
         "name": "material.chrome.background"
       },
       "resolvedValue": "var(--ui-color-surface-panel)",
-      "cssVariable": "--ui-material-chrome-background"
+      "cssVariable": "--ui-material-chrome-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.modal.adaptive.background",
@@ -1376,7 +1161,8 @@
         "name": "material.modal.background"
       },
       "resolvedValue": "var(--ui-color-material-support-modal-adaptive)",
-      "cssVariable": "--ui-material-modal-background"
+      "cssVariable": "--ui-material-modal-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.modal.reduced.background",
@@ -1392,7 +1178,8 @@
         "name": "material.modal.background"
       },
       "resolvedValue": "var(--ui-color-material-support-modal-reduced)",
-      "cssVariable": "--ui-material-modal-background"
+      "cssVariable": "--ui-material-modal-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.modal.solid.background",
@@ -1408,7 +1195,8 @@
         "name": "material.modal.background"
       },
       "resolvedValue": "var(--ui-color-surface-panel)",
-      "cssVariable": "--ui-material-modal-background"
+      "cssVariable": "--ui-material-modal-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.overlay.adaptive.background",
@@ -1424,7 +1212,8 @@
         "name": "material.overlay.background"
       },
       "resolvedValue": "var(--ui-color-material-support-overlay-adaptive)",
-      "cssVariable": "--ui-material-overlay-background"
+      "cssVariable": "--ui-material-overlay-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.overlay.reduced.background",
@@ -1440,7 +1229,8 @@
         "name": "material.overlay.background"
       },
       "resolvedValue": "var(--ui-color-material-support-overlay-reduced)",
-      "cssVariable": "--ui-material-overlay-background"
+      "cssVariable": "--ui-material-overlay-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.overlay.solid.background",
@@ -1456,7 +1246,8 @@
         "name": "material.overlay.background"
       },
       "resolvedValue": "var(--ui-color-surface-panel)",
-      "cssVariable": "--ui-material-overlay-background"
+      "cssVariable": "--ui-material-overlay-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.scrim.adaptive.background",
@@ -1472,7 +1263,8 @@
         "name": "material.scrim.background"
       },
       "resolvedValue": "var(--ui-color-scrim-viewport)",
-      "cssVariable": "--ui-material-scrim-background"
+      "cssVariable": "--ui-material-scrim-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.scrim.reduced.background",
@@ -1488,7 +1280,8 @@
         "name": "material.scrim.background"
       },
       "resolvedValue": "oklch(0% 0 0 / 0.82)",
-      "cssVariable": "--ui-material-scrim-background"
+      "cssVariable": "--ui-material-scrim-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "material.scrim.solid.background",
@@ -1504,7 +1297,8 @@
         "name": "material.scrim.background"
       },
       "resolvedValue": "oklch(0% 0 0)",
-      "cssVariable": "--ui-material-scrim-background"
+      "cssVariable": "--ui-material-scrim-background",
+      "materialProjections": ["adaptive", "reduced", "solid"]
     },
     {
       "name": "motion.duration.fast",
@@ -1749,6 +1543,1003 @@
         "name": "z-index.overlay"
       },
       "resolvedValue": "1000"
+    }
+  ],
+  "activePublicRoles": [
+    {
+      "id": "color.action.primary",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-action-primary",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.action.primary",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "action-primary",
+        "classes": ["bg-action-primary"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.border.default",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-border-default",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.border.default",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "border-default",
+        "classes": ["border-border-default"],
+        "allowedCssProperties": ["border-color"]
+      }
+    },
+    {
+      "id": "color.focus.ring",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-focus-ring",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.focus.ring",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "focus-ring",
+        "classes": ["ring-focus-ring"],
+        "allowedCssProperties": ["--un-ring-color"]
+      }
+    },
+    {
+      "id": "color.scrim.viewport",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-scrim-viewport",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": null,
+      "alphaContractId": "alpha-scrim-viewport",
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "scrim-viewport",
+        "classes": ["bg-scrim-viewport"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.surface.page",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-surface-page",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.surface.page",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "surface-page",
+        "classes": ["bg-surface-page"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.surface.panel",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-surface-panel",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.surface.panel",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "surface-panel",
+        "classes": ["bg-surface-panel"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.text.on-action",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-text-on-action",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.text.on-action",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "text-on-action",
+        "classes": ["text-text-on-action"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.text.primary",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-text-primary",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.text.primary",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "text-primary",
+        "classes": ["text-text-primary"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.text.secondary",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-text-secondary",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.text.secondary",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "text-secondary",
+        "classes": ["text-text-secondary"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "interaction.control.height",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-control-height",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "control",
+        "classes": ["h-control"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "interaction.motion.duration",
+      "tokenType": "duration",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-motion-duration",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "duration",
+        "key": "motion",
+        "classes": ["duration-motion"],
+        "allowedCssProperties": ["--un-duration", "transition-duration"]
+      }
+    },
+    {
+      "id": "interaction.motion.easing",
+      "tokenType": "cubicBezier",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-motion-easing",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "easing",
+        "key": "motion",
+        "classes": ["ease-motion"],
+        "allowedCssProperties": ["--un-ease", "transition-timing-function"]
+      }
+    },
+    {
+      "id": "interaction.radius.panel",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-radius-panel",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "radius",
+        "key": "panel",
+        "classes": ["rounded-panel"],
+        "allowedCssProperties": ["border-radius"]
+      }
+    },
+    {
+      "id": "interaction.shadow.panel",
+      "tokenType": "shadow",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-shadow-panel",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "shadow",
+        "key": "panel",
+        "classes": ["shadow-panel"],
+        "allowedCssProperties": ["--un-shadow", "box-shadow"]
+      }
+    },
+    {
+      "id": "layout.content.max-width",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-content-max-width",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "content-width",
+        "key": "content",
+        "classes": ["max-w-content"],
+        "allowedCssProperties": ["max-width"]
+      }
+    },
+    {
+      "id": "layout.z.base",
+      "tokenType": "number",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-z-base",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "z-index",
+        "key": "base",
+        "classes": ["z-base"],
+        "allowedCssProperties": ["z-index"]
+      }
+    },
+    {
+      "id": "layout.z.overlay",
+      "tokenType": "number",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-z-overlay",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "z-index",
+        "key": "overlay",
+        "classes": ["z-overlay"],
+        "allowedCssProperties": ["z-index"]
+      }
+    },
+    {
+      "id": "spacing.content.gap",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-content-gap",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "content-gap",
+        "classes": ["gap-content-gap"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.page.inline",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-page-inline",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "page-inline",
+        "classes": ["px-page-inline"],
+        "allowedCssProperties": ["padding-inline"]
+      }
+    },
+    {
+      "id": "spacing.section.block",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-section-block",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "section-block",
+        "classes": ["py-section-block"],
+        "allowedCssProperties": ["padding-block"]
+      }
+    },
+    {
+      "id": "typography.family.body",
+      "tokenType": "fontFamily",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-family-body",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "font-family",
+        "key": "body-family",
+        "classes": ["font-body-family"],
+        "allowedCssProperties": ["font-family"]
+      }
+    },
+    {
+      "id": "typography.line-height.body",
+      "tokenType": "number",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-line-height-body",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "line-height",
+        "key": "body",
+        "classes": ["leading-body"],
+        "allowedCssProperties": ["--un-leading", "line-height"]
+      }
+    },
+    {
+      "id": "typography.line-height.title",
+      "tokenType": "number",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-line-height-title",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "line-height",
+        "key": "title",
+        "classes": ["leading-title"],
+        "allowedCssProperties": ["--un-leading", "line-height"]
+      }
+    },
+    {
+      "id": "typography.size.body",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-body",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "body",
+        "classes": ["text-body"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.title",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-title",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "title",
+        "classes": ["text-title"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.weight.body",
+      "tokenType": "fontWeight",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-weight-body",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "font-weight",
+        "key": "body-weight",
+        "classes": ["font-body-weight"],
+        "allowedCssProperties": ["--un-font-weight", "font-weight"]
+      }
+    },
+    {
+      "id": "typography.weight.title",
+      "tokenType": "fontWeight",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-weight-title",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "font-weight",
+        "key": "title-weight",
+        "classes": ["font-title-weight"],
+        "allowedCssProperties": ["--un-font-weight", "font-weight"]
+      }
+    }
+  ],
+  "unoCssMappings": [
+    {
+      "roleId": "color.action.primary",
+      "cssVariable": "--ui-color-action-primary",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "action-primary",
+      "classes": ["bg-action-primary"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.border.default",
+      "cssVariable": "--ui-color-border-default",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "border-default",
+      "classes": ["border-border-default"],
+      "allowedCssProperties": ["border-color"]
+    },
+    {
+      "roleId": "color.focus.ring",
+      "cssVariable": "--ui-color-focus-ring",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "focus-ring",
+      "classes": ["ring-focus-ring"],
+      "allowedCssProperties": ["--un-ring-color"]
+    },
+    {
+      "roleId": "color.scrim.viewport",
+      "cssVariable": "--ui-color-scrim-viewport",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "scrim-viewport",
+      "classes": ["bg-scrim-viewport"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.surface.page",
+      "cssVariable": "--ui-color-surface-page",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "surface-page",
+      "classes": ["bg-surface-page"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.surface.panel",
+      "cssVariable": "--ui-color-surface-panel",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "surface-panel",
+      "classes": ["bg-surface-panel"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.text.on-action",
+      "cssVariable": "--ui-color-text-on-action",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "text-on-action",
+      "classes": ["text-text-on-action"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.text.primary",
+      "cssVariable": "--ui-color-text-primary",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "text-primary",
+      "classes": ["text-text-primary"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.text.secondary",
+      "cssVariable": "--ui-color-text-secondary",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "text-secondary",
+      "classes": ["text-text-secondary"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "interaction.control.height",
+      "cssVariable": "--ui-control-height",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "control",
+      "classes": ["h-control"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "interaction.motion.duration",
+      "cssVariable": "--ui-motion-duration",
+      "generatorKind": "exact-rule",
+      "family": "duration",
+      "key": "motion",
+      "classes": ["duration-motion"],
+      "allowedCssProperties": ["--un-duration", "transition-duration"]
+    },
+    {
+      "roleId": "interaction.motion.easing",
+      "cssVariable": "--ui-motion-easing",
+      "generatorKind": "exact-rule",
+      "family": "easing",
+      "key": "motion",
+      "classes": ["ease-motion"],
+      "allowedCssProperties": ["--un-ease", "transition-timing-function"]
+    },
+    {
+      "roleId": "interaction.radius.panel",
+      "cssVariable": "--ui-radius-panel",
+      "generatorKind": "theme-entry",
+      "family": "radius",
+      "key": "panel",
+      "classes": ["rounded-panel"],
+      "allowedCssProperties": ["border-radius"]
+    },
+    {
+      "roleId": "interaction.shadow.panel",
+      "cssVariable": "--ui-shadow-panel",
+      "generatorKind": "theme-entry",
+      "family": "shadow",
+      "key": "panel",
+      "classes": ["shadow-panel"],
+      "allowedCssProperties": ["--un-shadow", "box-shadow"]
+    },
+    {
+      "roleId": "layout.content.max-width",
+      "cssVariable": "--ui-layout-content-max-width",
+      "generatorKind": "exact-rule",
+      "family": "content-width",
+      "key": "content",
+      "classes": ["max-w-content"],
+      "allowedCssProperties": ["max-width"]
+    },
+    {
+      "roleId": "layout.z.base",
+      "cssVariable": "--ui-z-base",
+      "generatorKind": "exact-rule",
+      "family": "z-index",
+      "key": "base",
+      "classes": ["z-base"],
+      "allowedCssProperties": ["z-index"]
+    },
+    {
+      "roleId": "layout.z.overlay",
+      "cssVariable": "--ui-z-overlay",
+      "generatorKind": "exact-rule",
+      "family": "z-index",
+      "key": "overlay",
+      "classes": ["z-overlay"],
+      "allowedCssProperties": ["z-index"]
+    },
+    {
+      "roleId": "spacing.content.gap",
+      "cssVariable": "--ui-space-content-gap",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "content-gap",
+      "classes": ["gap-content-gap"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.page.inline",
+      "cssVariable": "--ui-space-page-inline",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "page-inline",
+      "classes": ["px-page-inline"],
+      "allowedCssProperties": ["padding-inline"]
+    },
+    {
+      "roleId": "spacing.section.block",
+      "cssVariable": "--ui-space-section-block",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "section-block",
+      "classes": ["py-section-block"],
+      "allowedCssProperties": ["padding-block"]
+    },
+    {
+      "roleId": "typography.family.body",
+      "cssVariable": "--ui-font-family-body",
+      "generatorKind": "theme-entry",
+      "family": "font-family",
+      "key": "body-family",
+      "classes": ["font-body-family"],
+      "allowedCssProperties": ["font-family"]
+    },
+    {
+      "roleId": "typography.line-height.body",
+      "cssVariable": "--ui-font-line-height-body",
+      "generatorKind": "theme-entry",
+      "family": "line-height",
+      "key": "body",
+      "classes": ["leading-body"],
+      "allowedCssProperties": ["--un-leading", "line-height"]
+    },
+    {
+      "roleId": "typography.line-height.title",
+      "cssVariable": "--ui-font-line-height-title",
+      "generatorKind": "theme-entry",
+      "family": "line-height",
+      "key": "title",
+      "classes": ["leading-title"],
+      "allowedCssProperties": ["--un-leading", "line-height"]
+    },
+    {
+      "roleId": "typography.size.body",
+      "cssVariable": "--ui-font-size-body",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "body",
+      "classes": ["text-body"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.title",
+      "cssVariable": "--ui-font-size-title",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "title",
+      "classes": ["text-title"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.weight.body",
+      "cssVariable": "--ui-font-weight-body",
+      "generatorKind": "theme-entry",
+      "family": "font-weight",
+      "key": "body-weight",
+      "classes": ["font-body-weight"],
+      "allowedCssProperties": ["--un-font-weight", "font-weight"]
+    },
+    {
+      "roleId": "typography.weight.title",
+      "cssVariable": "--ui-font-weight-title",
+      "generatorKind": "theme-entry",
+      "family": "font-weight",
+      "key": "title-weight",
+      "classes": ["font-title-weight"],
+      "allowedCssProperties": ["--un-font-weight", "font-weight"]
+    }
+  ],
+  "namedContrasts": [
+    {
+      "id": "text-primary-on-page",
+      "foregroundRole": "color.text.primary",
+      "backgroundRole": "color.surface.page",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 18.955,
+        "standard": 18.955
+      }
+    },
+    {
+      "id": "text-primary-on-panel",
+      "foregroundRole": "color.text.primary",
+      "backgroundRole": "color.surface.panel",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 17.703,
+        "standard": 17.703
+      }
+    },
+    {
+      "id": "text-secondary-on-page",
+      "foregroundRole": "color.text.secondary",
+      "backgroundRole": "color.surface.page",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 9.974,
+        "standard": 9.974
+      }
+    },
+    {
+      "id": "text-secondary-on-panel",
+      "foregroundRole": "color.text.secondary",
+      "backgroundRole": "color.surface.panel",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 10.412,
+        "standard": 10.412
+      }
+    },
+    {
+      "id": "action-content-on-primary",
+      "foregroundRole": "color.text.on-action",
+      "backgroundRole": "color.action.primary",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 17.703,
+        "standard": 17.703
+      }
+    },
+    {
+      "id": "focus-ring-on-page",
+      "foregroundRole": "color.focus.ring",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 4.853,
+        "standard": 4.853
+      }
+    },
+    {
+      "id": "focus-ring-on-panel",
+      "foregroundRole": "color.focus.ring",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 4.858,
+        "standard": 4.858
+      }
+    },
+    {
+      "id": "material-chrome-content",
+      "foregroundRole": "color.text.primary",
+      "backgroundRole": "material.chrome.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": ["adaptive", "reduced", "solid"],
+      "minimumRatios": {
+        "enhanced": 9.302,
+        "standard": 9.302
+      }
+    },
+    {
+      "id": "material-overlay-content",
+      "foregroundRole": "color.text.primary",
+      "backgroundRole": "material.overlay.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": ["adaptive", "reduced", "solid"],
+      "minimumRatios": {
+        "enhanced": 10.613,
+        "standard": 10.613
+      }
+    },
+    {
+      "id": "material-modal-content",
+      "foregroundRole": "color.text.primary",
+      "backgroundRole": "material.modal.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": ["adaptive", "reduced", "solid"],
+      "minimumRatios": {
+        "enhanced": 13.27,
+        "standard": 13.27
+      }
+    },
+    {
+      "id": "control-primary-on-page",
+      "foregroundRole": "color.action.primary",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 16.959,
+        "standard": 16.959
+      }
+    },
+    {
+      "id": "control-primary-on-panel",
+      "foregroundRole": "color.action.primary",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 17.703,
+        "standard": 17.703
+      }
+    },
+    {
+      "id": "border-default-on-page",
+      "foregroundRole": "color.border.default",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 4.085,
+        "standard": 4.085
+      }
+    },
+    {
+      "id": "border-default-on-panel",
+      "foregroundRole": "color.border.default",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.655,
+        "standard": 3.655
+      }
+    }
+  ],
+  "alphaContracts": [
+    {
+      "id": "alpha-scrim-viewport",
+      "roleId": "color.scrim.viewport",
+      "minimumAlpha": 0.56,
+      "maximumAlpha": 0.56
+    }
+  ],
+  "densities": [
+    {
+      "id": "comfortable"
+    },
+    {
+      "id": "compact"
+    },
+    {
+      "id": "spacious"
+    }
+  ],
+  "themes": [
+    {
+      "id": "neutral",
+      "label": "Neutral",
+      "neutral": "neutral"
+    },
+    {
+      "id": "ocean",
+      "label": "Ocean",
+      "neutral": "cool"
+    },
+    {
+      "id": "warm",
+      "label": "Warm",
+      "neutral": "warm"
+    }
+  ],
+  "firstPaint": [
+    {
+      "applicationKeyAgnostic": true,
+      "baseline": {
+        "colorMode": "light",
+        "contrast": "standard",
+        "density": "comfortable",
+        "fontScale": 1,
+        "material": "solid",
+        "motion": "full",
+        "theme": "neutral"
+      },
+      "artifacts": ["appearance-init.js", "critical-theme.css"],
+      "synchronousClassicScript": true
     }
   ]
 }

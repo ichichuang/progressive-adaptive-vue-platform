@@ -13,73 +13,15 @@
     "text": {
       "primary": {
         "$type": "color",
-        "$value": "{color.palette.neutral.950}",
-        "$extensions": {
-          "org.pavp": {
-            "contrastPairs": [
-              {
-                "id": "text-primary-on-page",
-                "background": "color.surface.page",
-                "kind": "text"
-              },
-              {
-                "id": "text-primary-on-panel",
-                "background": "color.surface.panel",
-                "kind": "text"
-              },
-              {
-                "id": "material-chrome-content",
-                "background": "material.chrome.background",
-                "kind": "text"
-              },
-              {
-                "id": "material-overlay-content",
-                "background": "material.overlay.background",
-                "kind": "text"
-              },
-              {
-                "id": "material-modal-content",
-                "background": "material.modal.background",
-                "kind": "text"
-              }
-            ]
-          }
-        }
+        "$value": "{color.palette.neutral.950}"
       },
       "secondary": {
         "$type": "color",
-        "$value": "{color.palette.neutral.700}",
-        "$extensions": {
-          "org.pavp": {
-            "contrastPairs": [
-              {
-                "id": "text-secondary-on-page",
-                "background": "color.surface.page",
-                "kind": "text"
-              },
-              {
-                "id": "text-secondary-on-panel",
-                "background": "color.surface.panel",
-                "kind": "text"
-              }
-            ]
-          }
-        }
+        "$value": "{color.palette.neutral.700}"
       },
       "on-action": {
         "$type": "color",
-        "$value": "{color.palette.neutral.0}",
-        "$extensions": {
-          "org.pavp": {
-            "contrastPairs": [
-              {
-                "id": "action-content-on-primary",
-                "background": "color.action.primary",
-                "kind": "text"
-              }
-            ]
-          }
-        }
+        "$value": "{color.palette.neutral.0}"
       }
     },
     "border": {
@@ -97,23 +39,7 @@
     "focus": {
       "ring": {
         "$type": "color",
-        "$value": "{color.palette.blue.600}",
-        "$extensions": {
-          "org.pavp": {
-            "contrastPairs": [
-              {
-                "id": "focus-ring-on-page",
-                "background": "color.surface.page",
-                "kind": "non-text"
-              },
-              {
-                "id": "focus-ring-on-panel",
-                "background": "color.surface.panel",
-                "kind": "non-text"
-              }
-            ]
-          }
-        }
+        "$value": "{color.palette.blue.600}"
       }
     },
     "scrim": {

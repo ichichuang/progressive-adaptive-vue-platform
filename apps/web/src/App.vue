@@ -2,20 +2,26 @@
 import { tokens } from '@platform/design-system'
 
 const pageBackground = tokens['color.surface.page']
+const panelPadding = tokens['spacing.page.inline']
+const contentGap = tokens['spacing.content.gap']
 </script>
 
 <template>
   <main
-    class="text-body text-text-primary font-body-family px-page-inline py-section-block min-h-dvh"
+    class="leading-body font-body-family min-h-dvh px-page-inline py-section-block text-body text-text-primary"
     :style="{ backgroundColor: pageBackground }"
   >
     <section
-      class="mx-auto p-page-inline border border-border-default rounded-panel bg-surface-panel max-w-[var(--ui-layout-content-max-width)] shadow-panel"
+      class="mx-auto border rounded-panel shadow-panel bg-surface-panel border-border-default max-w-content"
+      :style="{ padding: panelPadding }"
     >
-      <h1 class="text-title leading-title font-title-weight m-0">
+      <h1 class="leading-title font-title-weight m-0 text-title">
         Progressive Adaptive Vue Platform
       </h1>
-      <p class="text-text-secondary mt-content-gap">
+      <p
+        class="text-text-secondary"
+        :style="{ marginBlockStart: contentGap }"
+      >
         Phase 1A token contract and deterministic build foundation.
       </p>
     </section>

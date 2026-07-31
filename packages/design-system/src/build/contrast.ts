@@ -1,12 +1,12 @@
 import Color from 'colorjs.io'
 
-import {
-  colorValueSchema,
-  type ColorValue,
-  type ContrastPairDeclaration,
-  type TokenConditions,
-} from '../schema/token.schema'
+import { colorValueSchema, type ColorValue, type TokenConditions } from '../schema/token.schema'
 import { compareCodePoints } from './order'
+import type {
+  AlphaContractRecord,
+  NamedContrastRecord,
+  PublicRoleRecord,
+} from './public-role-registry'
 import type { ResolvedTokenRecord } from './resolve'
 
 const materialProjections = ['adaptive', 'reduced', 'solid'] as const
@@ -19,94 +19,6 @@ const requiredMaterialRoleNames = [
 const forbiddenMaterialFamilies =
   /(?:^|\.)(?:clear-media|glass|glow|highlight|illumination|spring)(?:\.|$)/u
 
-const requiredContrastPairs = [
-  {
-    background: 'color.surface.page',
-    foreground: 'color.text.primary',
-    id: 'text-primary-on-page',
-    kind: 'text',
-  },
-  {
-    background: 'color.surface.panel',
-    foreground: 'color.text.primary',
-    id: 'text-primary-on-panel',
-    kind: 'text',
-  },
-  {
-    background: 'color.surface.page',
-    foreground: 'color.text.secondary',
-    id: 'text-secondary-on-page',
-    kind: 'text',
-  },
-  {
-    background: 'color.surface.panel',
-    foreground: 'color.text.secondary',
-    id: 'text-secondary-on-panel',
-    kind: 'text',
-  },
-  {
-    background: 'color.action.primary',
-    foreground: 'color.text.on-action',
-    id: 'action-content-on-primary',
-    kind: 'text',
-  },
-  {
-    background: 'color.surface.page',
-    foreground: 'color.focus.ring',
-    id: 'focus-ring-on-page',
-    kind: 'non-text',
-  },
-  {
-    background: 'color.surface.panel',
-    foreground: 'color.focus.ring',
-    id: 'focus-ring-on-panel',
-    kind: 'non-text',
-  },
-  {
-    background: 'material.chrome.background',
-    foreground: 'color.text.primary',
-    id: 'material-chrome-content',
-    kind: 'text',
-  },
-  {
-    background: 'material.overlay.background',
-    foreground: 'color.text.primary',
-    id: 'material-overlay-content',
-    kind: 'text',
-  },
-  {
-    background: 'material.modal.background',
-    foreground: 'color.text.primary',
-    id: 'material-modal-content',
-    kind: 'text',
-  },
-] as const satisfies readonly (ContrastPairDeclaration & {
-  foreground: string
-})[]
-
-const nonTextBoundaryPairs = [
-  {
-    background: 'color.surface.page',
-    foreground: 'color.action.primary',
-    id: 'control-primary-on-page',
-  },
-  {
-    background: 'color.surface.panel',
-    foreground: 'color.action.primary',
-    id: 'control-primary-on-panel',
-  },
-  {
-    background: 'color.surface.page',
-    foreground: 'color.border.default',
-    id: 'border-default-on-page',
-  },
-  {
-    background: 'color.surface.panel',
-    foreground: 'color.border.default',
-    id: 'border-default-on-panel',
-  },
-] as const
-
 type ColorMode = 'dark' | 'light'
 type Contrast = 'enhanced' | 'standard'
 type MaterialProjection = (typeof materialProjections)[number]
@@ -115,27 +27,15 @@ interface EffectiveConditions {
   colorMode: ColorMode
   contrast: Contrast
   density: 'comfortable'
-  material: MaterialProjection
+  material?: MaterialProjection
   theme: string
 }
 
-export interface ContrastPairValidation {
-  background: string
-  foreground: string
-  id: string
-  kind: 'non-text' | 'text'
+export interface NamedContrastValidation extends NamedContrastRecord {
   minimumRatios: {
     enhanced: number
     standard: number
   }
-  projections: readonly MaterialProjection[] | readonly ['not-applicable']
-}
-
-export interface NonTextBoundaryValidation {
-  background: string
-  foreground: string
-  id: string
-  minimumRatio: number
 }
 
 export interface MaterialRoleValidation {
@@ -144,9 +44,8 @@ export interface MaterialRoleValidation {
 }
 
 export interface ContrastValidationResult {
-  contrastPairs: readonly ContrastPairValidation[]
   materialRoles: readonly MaterialRoleValidation[]
-  nonTextBoundaries: readonly NonTextBoundaryValidation[]
+  namedContrasts: readonly NamedContrastValidation[]
 }
 
 function conditionRank(conditions: TokenConditions): number {
@@ -207,7 +106,7 @@ function effectiveRecord(
 
   if (record === undefined) {
     throw new Error(
-      `${roleName}: no effective token for theme=${state.theme}, colorMode=${state.colorMode}, contrast=${state.contrast}, density=${state.density}, material=${state.material}.`,
+      `${roleName}: no effective token for theme=${state.theme}, colorMode=${state.colorMode}, contrast=${state.contrast}, density=${state.density}, material=${state.material ?? 'not-applicable'}.`,
     )
   }
 
@@ -388,64 +287,21 @@ function validateMaterialRoles(
   return validations
 }
 
-function declaredContrastPairs(
-  tokens: readonly ResolvedTokenRecord[],
-): Map<string, ContrastPairDeclaration & { foreground: string }> {
-  const declarations = new Map<string, ContrastPairDeclaration & { foreground: string }>()
-
-  for (const token of tokens) {
-    for (const declaration of token.contrastPairs ?? []) {
-      const pair = {
-        ...declaration,
-        foreground: token.role.name,
-      }
-      const existing = declarations.get(pair.id)
-
-      if (existing !== undefined && JSON.stringify(existing) !== JSON.stringify(pair)) {
-        throw new Error(`${token.source}:${token.path}: conflicting contrast pair "${pair.id}".`)
-      }
-
-      declarations.set(pair.id, pair)
-    }
-  }
-
-  return declarations
-}
-
-function validateContrastPairDeclarations(tokens: readonly ResolvedTokenRecord[]): void {
-  const declarations = declaredContrastPairs(tokens)
-
-  assertExactValues(
-    [...declarations.keys()],
-    requiredContrastPairs.map((pair) => pair.id),
-    'Named contrast pair contract',
-  )
-
-  for (const expected of requiredContrastPairs) {
-    const actual = declarations.get(expected.id)
-
-    if (
-      actual?.background !== expected.background ||
-      actual.foreground !== expected.foreground ||
-      actual.kind !== expected.kind
-    ) {
-      throw new Error(`${expected.id}: named contrast endpoints or kind are incomplete.`)
-    }
-  }
-}
-
 function validationStates(
   themeIds: readonly string[],
   projections: readonly MaterialProjection[],
 ): EffectiveConditions[] {
+  const materialStates: readonly (MaterialProjection | undefined)[] =
+    projections.length === 0 ? [undefined] : projections
+
   return themeIds.flatMap((theme) =>
     (['light', 'dark'] as const).flatMap((colorMode) =>
       (['standard', 'enhanced'] as const).flatMap((contrast) =>
-        projections.map((material) => ({
+        materialStates.map((material) => ({
           colorMode,
           contrast,
           density: 'comfortable' as const,
-          material,
+          ...(material === undefined ? {} : { material }),
           theme,
         })),
       ),
@@ -456,28 +312,29 @@ function validationStates(
 function validateNamedContrastPairs(
   tokens: readonly ResolvedTokenRecord[],
   themeIds: readonly string[],
-): ContrastPairValidation[] {
-  validateContrastPairDeclarations(tokens)
-
-  return requiredContrastPairs.map((pair) => {
-    const isMaterialPair = pair.background.startsWith('material.')
-    const projections = isMaterialPair ? materialProjections : (['solid'] as const)
+  registry: readonly NamedContrastRecord[],
+): NamedContrastValidation[] {
+  return registry.map((pair) => {
     const ratios = {
       enhanced: Number.POSITIVE_INFINITY,
       standard: Number.POSITIVE_INFINITY,
     }
 
-    for (const state of validationStates(themeIds, projections)) {
-      const foreground = effectiveColorValue(tokens, pair.foreground, state)
-      const background = effectiveColorValue(tokens, pair.background, state)
+    for (const state of validationStates(themeIds, pair.staticMaterialProjections)) {
+      const foreground = effectiveColorValue(tokens, pair.foregroundRole, state)
+      const background = effectiveColorValue(tokens, pair.backgroundRole, state)
       const ratio = minimumContrastRatio(foreground, background)
-      const normalTextThreshold = state.contrast === 'enhanced' ? 7 : 4.5
-      const largeTextThreshold = state.contrast === 'enhanced' ? 4.5 : 3
-      const threshold = pair.kind === 'text' ? normalTextThreshold : 3
+      const threshold = state.contrast === 'enhanced' ? pair.enhancedMinimum : pair.standardMinimum
 
-      if (ratio < threshold || (pair.kind === 'text' && ratio < largeTextThreshold)) {
+      if (ratio < threshold) {
         throw new Error(
-          `${pair.id}: contrast ${ratio.toFixed(3)}:1 fails ${state.theme}/${state.colorMode}/${state.contrast}/${state.material}.`,
+          `${pair.id}: contrast ${ratio.toFixed(3)}:1 fails ${state.theme}/${state.colorMode}/${state.contrast}/${state.material ?? 'not-applicable'}.`,
+        )
+      }
+
+      if (pair.maximumUsefulRatio !== null && ratio > pair.maximumUsefulRatio) {
+        throw new Error(
+          `${pair.id}: contrast ${ratio.toFixed(3)}:1 exceeds its maximum useful ratio for ${state.theme}/${state.colorMode}/${state.contrast}/${state.material ?? 'not-applicable'}.`,
         )
       }
 
@@ -485,58 +342,69 @@ function validateNamedContrastPairs(
     }
 
     return {
-      background: pair.background,
-      foreground: pair.foreground,
-      id: pair.id,
-      kind: pair.kind,
+      ...pair,
       minimumRatios: {
         enhanced: roundRatio(ratios.enhanced),
         standard: roundRatio(ratios.standard),
       },
-      projections: isMaterialPair ? materialProjections : (['not-applicable'] as const),
     }
   })
 }
 
-function validateNonTextBoundaries(
+export function validatePublicAlphaContracts(
   tokens: readonly ResolvedTokenRecord[],
-  themeIds: readonly string[],
-): NonTextBoundaryValidation[] {
-  return nonTextBoundaryPairs.map((pair) => {
-    let minimumRatio = Number.POSITIVE_INFINITY
+  publicRoleRecords: readonly PublicRoleRecord[],
+  alphaRecords: readonly AlphaContractRecord[],
+): void {
+  for (const role of publicRoleRecords.filter((record) => record.tokenType === 'color')) {
+    const roleTokens = tokens.filter(
+      (token) => token.visibility === 'public' && token.role.name === role.id,
+    )
 
-    for (const state of validationStates(themeIds, ['solid'])) {
-      const foreground = effectiveColorValue(tokens, pair.foreground, state)
-      const background = effectiveColorValue(tokens, pair.background, state)
-      const ratio = minimumContrastRatio(foreground, background)
+    if (roleTokens.length === 0) {
+      throw new Error(`${role.id}: active public color role has no Token records.`)
+    }
 
-      if (ratio < 3) {
+    const alphaContract =
+      role.alphaContractId === null
+        ? undefined
+        : alphaRecords.find(
+            (record) => record.id === role.alphaContractId && record.roleId === role.id,
+          )
+
+    if (role.alphaContractId !== null && alphaContract === undefined) {
+      throw new Error(`${role.id}: active Alpha contract binding is missing or mismatched.`)
+    }
+
+    for (const token of roleTokens) {
+      const value = colorValueSchema.parse(token.resolvedValue)
+      const alpha = value.alpha ?? 1
+
+      if (alphaContract === undefined) {
+        if (alpha !== 1) {
+          throw new Error(
+            `${token.source}:${token.path}: public contrast endpoints must be opaque.`,
+          )
+        }
+      } else if (alpha < alphaContract.minimumAlpha || alpha > alphaContract.maximumAlpha) {
         throw new Error(
-          `${pair.id}: non-text contrast ${ratio.toFixed(3)}:1 fails ${state.theme}/${state.colorMode}/${state.contrast}.`,
+          `${token.source}:${token.path}: Alpha ${String(alpha)} violates "${alphaContract.id}".`,
         )
       }
-
-      minimumRatio = Math.min(minimumRatio, ratio)
     }
-
-    return {
-      ...pair,
-      minimumRatio: roundRatio(minimumRatio),
-    }
-  })
+  }
 }
 
 export function validateContrastAndMaterialContracts(
   tokens: readonly ResolvedTokenRecord[],
   themeIds: readonly string[],
+  namedContrastRegistry: readonly NamedContrastRecord[],
 ): ContrastValidationResult {
   const materialRoles = validateMaterialRoles(tokens, themeIds)
-  const contrastPairs = validateNamedContrastPairs(tokens, themeIds)
-  const nonTextBoundaries = validateNonTextBoundaries(tokens, themeIds)
+  const namedContrasts = validateNamedContrastPairs(tokens, themeIds, namedContrastRegistry)
 
   return {
-    contrastPairs,
     materialRoles,
-    nonTextBoundaries,
+    namedContrasts,
   }
 }
