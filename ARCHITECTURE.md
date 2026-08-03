@@ -6,6 +6,10 @@
 STATUS=CANONICAL_ARCHITECTURE_BASELINE
 PROJECT_MODEL=GREENFIELD
 IMPLEMENTATION_STATE=IN_PROGRESS
+ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
+ARCHITECTURE_FOUNDATION_GATE_STATUS=FROZEN
+ARCHITECTURE_TARGET_CONTRACT_STATUS=FROZEN_INACTIVE
+IMPLEMENTATION_BEFORE_ARCHITECTURE_FOUNDATION_GATE_FROZEN=PROHIBITED
 MAINTENANCE_MODEL=SOLO_MAIN_BRANCH
 ARCHITECTURE_AUTHORITY=ARCHITECTURE.md
 AI_ENTRY=AGENTS.md
@@ -28,22 +32,27 @@ ACTIVE_PUBLIC_ROLES_TOTAL=27
 ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_EMBEDDED_PALETTE
 TARGET_THEME_DEFINITION_CONTRACT=EXPLICIT_COMPLETE_THEME
 TARGET_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
-TARGET_PREFERENCE_STATUS=INACTIVE_UNTIL_ATOMIC_CUTOVER
+TARGET_PREFERENCE_STATUS=TARGET_INACTIVE
+TARGET_PREFERENCE_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 PREFERENCE_CUTOVER=ATOMIC
 PHASE_1_PACKAGE_1_STATUS=COMPLETE
 PHASE_1_PACKAGE_2_STATUS=COMPLETE
 PHASE_1_PACKAGE_3_STATUS=COMPLETE
 PHASE_1_PACKAGE_3A_STATUS=COMPLETE
 NEXT_CANONICAL_WORK_PACKAGE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
-PHASE_1_PINIA_ADMISSION_STATUS=INACTIVE_UNTIL_PACKAGE_5
+PHASE_1_PINIA_ADMISSION_STATUS=TARGET_INACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
 PHASE_1_ROUTER_ADMISSION=PROHIBITED
 PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
 PHASE_1_OPENAPI_GENERATOR_ADMISSION=PROHIBITED
 CODEX_BROWSER_OPERATION=PROHIBITED
 CODEX_VERIFICATION_MODEL=STATIC_PRODUCTION_GATES_ONLY
-OWNER_MANUAL_RUNTIME_INSPECTION=OPTIONAL_EXTERNAL_NON_GATING
+OWNER_MANUAL_RUNTIME_INSPECTION_FOR_CODEX_TASKS=OPTIONAL_EXTERNAL_NON_GATING
+OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE=REQUIRED_EXTERNAL_NON_REPOSITORY
+SUBORDINATE_OPTIONAL_OBSERVATION_SCOPE=CODEX_TASK_COMPLETION_ONLY
+SUPPORTING_FILE_PRODUCTION_RELEASE_AUTHORITY=NONE
 PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 ```
 
@@ -97,6 +106,250 @@ ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 * 不建立 `UiGlass`、Glass Card、通用 Material Wrapper 或页面级光学样式系统。
 * 不复制任何平台或厂商的专有视觉外观；PAVP Design Token 始终是唯一视觉权威。
 
+## 1.2 Architecture Foundation Freeze
+
+```text
+WORK_PACKAGE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+ENTRY_BASELINE=main@9e859117cd54b8258b36243cc8d959bdbe0bf7dc; AHEAD=0; BEHIND=0; CLEAN_BEFORE_EDIT=YES
+NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md
+ALLOWED_SCOPE=ARCHITECTURE.md foundation target contracts, status registry, value authority, sequencing and governance corrections
+PROHIBITED_SCOPE=application source, generated artifacts, dependencies, lockfile, workflow, runtime implementation, business behavior and Package 4
+OUTPUTS=one internally consistent frozen architecture authority and one strict future implementation chain
+MACHINE_GATES=contradiction audit; repository text/policy checks; git diff --check; pnpm verify under exact runtime authority
+PRODUCTION_RELEASE_ACCEPTANCE=NOT_APPLICABLE_ARCHITECTURE_ONLY_NO_RUNTIME_ARTIFACT_CHANGE
+COMPLETION_EVIDENCE=scoped unstaged documentation diff plus successful static gate output in the task report; no repository evidence artifact
+TARGET_CONTRACT_DOCUMENTATION_BEFORE_ACTIVATION=ALLOWED
+TARGET_CONTRACT_ACTIVATION=PROHIBITED
+DEPENDENCY_INSTALLATION=PROHIBITED
+RUNTIME_IMPLEMENTATION=PROHIBITED
+BUSINESS_IMPLEMENTATION=PROHIBITED
+PARALLEL_IMPLEMENTATION_PACKAGES=PROHIBITED
+NEXT_IMPLEMENTATION_AFTER_FREEZE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+```
+
+`PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 是任何后续实现之前的严格架构门禁。该门禁允许在 Phase 1 完成前，把 Runtime Kernel、Router、Storage、API、Auth、Observability、Deployment、Forms、I18n、Tables、Mutation、Accessibility、Performance、Layout、Scroll 与 Motion 的完整 Target Contract 写入本文件；这是对原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”限制的显式替换。
+
+在本门禁标记为 `FROZEN` 之前：
+
+* Package 4 与所有实现任务全部阻塞。
+* 不得安装依赖、创建 Runtime Module、生成组件、修改 Generated Artifact 或激活 Target Contract。
+* 不得通过临时 Store、临时 Router、临时 Fetch Wrapper、临时 Storage Key、临时 Error Type 或页面局部默认值形成过渡权威。
+* 不得并行启动会产生多个 Schema、Default、Registry、Provider、Persistence 或 Runtime Authority 的工作包。
+
+门禁只有同时满足以下条件才能标记为 `FROZEN`：
+
+1. §1.3 的 Capability Status Registry 完整且没有未分类能力。
+2. §1.4 的 Value Authority 与 Default Authority 只有一份产品决策来源。
+3. 全部 Foundation Target Contract 已包含 Owner、输入、输出、状态、失败、清理、消费边界和 Static Enforcement Target。
+4. Target Contract 与 Active Implementation 明确分离，没有把未来能力描述为当前行为。
+5. Future Implementation Chain 的 Entry、Allowed Scope、Prohibited Scope、Output、Machine Gate、Owner Release Acceptance 与 Completion Evidence 完整。
+6. `git diff --check`、Repository Policy 和 `pnpm verify` 在精确 Node 与 pnpm 权威下通过。
+
+门禁冻结后，文档完成本身不准入任何依赖或 Runtime Capability。`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 仍然是第一个实现工作包。
+
+## 1.3 Capability Status Registry
+
+所有能力只允许以下四种状态：
+
+```ts
+type CapabilityStatus =
+  | 'ACTIVE'
+  | 'TARGET_INACTIVE'
+  | 'DEFERRED'
+  | 'PROHIBITED'
+```
+
+含义：
+
+| Status | Canonical meaning |
+| --- | --- |
+| `ACTIVE` | 当前仓库已有真实 Artifact、Owning Gate 与静态证据；只能按当前合同使用 |
+| `TARGET_INACTIVE` | 完整目标合同已冻结，但依赖、源码、Runtime Authority 与公共 API 尚未准入 |
+| `DEFERRED` | 只有准入条件或候选方向；不得按完整目标合同实施 |
+| `PROHIBITED` | 当前与目标架构均明确禁止 |
+
+当前精确状态：
+
+| Capability | Status | Current authority |
+| --- | --- | --- |
+| Repository governance and static production gate | `ACTIVE` | Phase 0 artifacts and `pnpm verify` |
+| Token source, schema, generation, visibility and public-output completeness | `ACTIVE` | `@platform/design-system` current generated contract |
+| Current embedded-palette preference compatibility format | `ACTIVE` | `CurrentPreference` until Atomic Cutover |
+| Light, Dark and System color-mode resolution | `ACTIVE` | current First Paint and pure resolver |
+| Font Scale projection | `ACTIVE` | current `--ui-font-scale` contract |
+| Adaptive, Reduced and Solid Material token projection | `ACTIVE` | current UI-internal Material contract |
+| Complete Built-in Theme four-plane documents | `TARGET_INACTIVE` | `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` |
+| Reference-only Preference and Theme Registry | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
+| Standard and Enhanced Theme Plane projection | `TARGET_INACTIVE` | Theme-plane package followed by Atomic Cutover |
+| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | future Public Role Admission |
+| Continuous Density Scale application | `DEFERRED` | independent personalization admission |
+| Pinia appearance orchestration | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` narrow admission |
+| General Pinia state, Session state and workflow state | `TARGET_INACTIVE` | post-Phase-1 named gates |
+| Runtime Kernel | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` |
+| Core Error Registry, normalization and pre-Vue capture | `TARGET_INACTIVE` | Runtime Kernel first admission; exact extension by each consuming package |
+| Core validated Runtime Configuration | `TARGET_INACTIVE` | Runtime Kernel first admission; exact field extension by each consuming package |
+| Vue Router file routes and route lifecycle | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
+| Route Layout and Scroll core | `TARGET_INACTIVE` | Router implementation; first Shell consumer in Protected Vertical Slice |
+| TanStack Query server-state runtime | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
+| Application persistence architecture | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
+| API Transport | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
+| Auth, Session and Permission | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` |
+| Observability reporting and Runtime Performance collection | `TARGET_INACTIVE` | `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` |
+| Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` |
+| Forms, I18n, Tables and Mutations | `TARGET_INACTIVE` | demand-driven implementation gates |
+| Foundational shared UI components | `TARGET_INACTIVE` | Phase 2 consumer admission |
+| CSS Motion Token baseline | `ACTIVE` | current Design Token and static CSS contract only |
+| View Transition progressive enhancement | `TARGET_INACTIVE` | demand-driven Motion/UI admission after Protected Vertical Slice |
+| Motion for Vue, GSAP and specialist adapters | `DEFERRED` | named production-need gates |
+| Accessibility architecture and current static lint baseline | `ACTIVE` | WCAG contract, token validation and current static tooling |
+| Runtime component/route accessibility | `TARGET_INACTIVE` | each component, Router and protected-slice consumer gate |
+| Build and Generated Manifest performance budgets | `ACTIVE` | current `check:bundle` and token Manifest gates |
+| Project generators | `TARGET_INACTIVE` | serial demand-driven generator admission after a repeated real need |
+| Frozen Future Implementation Chain | `TARGET_INACTIVE` | §37.2 strict serial sequencing authority |
+| Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial stage after `PAVP_FIRST_PROTECTED_VERTICAL_SLICE` |
+| Router Experimental Data Loaders | `PROHIBITED` | future stable-dependency decision required |
+| Browser automation, automated test infrastructure and Codex browser operation | `PROHIBITED` | production-only repository policy |
+| Seed-generated, partial or auto-corrected themes | `PROHIBITED` | explicit complete Theme contract |
+| Page-authored visual authority and public optical props | `PROHIBITED` | Design Token and UI boundary |
+
+本表是 Status Authority。其他章节可以解释合同，不得创建另一份状态枚举。Target 章节必须显式写出 `CAPABILITY_STATUS=TARGET_INACTIVE`；未出现 `ACTIVE` 证据的 Target 不得被 README、Page、Package Manifest 或 Generated Output 描述为现有能力。
+
+## 1.4 Canonical Value Authority and Defaults
+
+### Product Preference Default Authority
+
+产品偏好只有一份语义默认决策：
+
+```ts
+const ProductPreferenceDefault = {
+  colorMode: 'system',
+  theme: {
+    registryKind: 'built-in',
+    themeId: 'neutral',
+  },
+  contrast: 'standard',
+  material: 'adaptive',
+  density: {
+    preset: 'comfortable',
+    scale: 1,
+  },
+  fontScale: 1,
+  motion: 'full',
+} as const
+```
+
+```text
+AUTHORITY_ID=product-preference-default
+OWNER=@platform/design-system preference contract
+CAPABILITY_STATUS=TARGET_INACTIVE
+ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+CURRENT_COMPATIBILITY_ENCODING=defaultCurrentPreference
+CURRENT_COMPATIBILITY_ENCODING_STATUS=ACTIVE
+FALLBACK=NONE
+PERSISTED_AS=validated stored preference
+CONSUMERS=First Paint input, application appearance store, settings reset action
+STATIC_ENFORCEMENT=duplicate-default and semantic-equivalence checks
+```
+
+当前 `defaultCurrentPreference` 是上述同一产品决策的 `CurrentPreference` Embedded-palette 兼容编码，不是第二份产品默认。它必须继续与 `ProductPreferenceDefault` 保持静态验证的逐轴语义等价，直到 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`；Legacy Palette 字段只是旧 Persistence Shape 的兼容数据。Atomic Cutover 后，唯一持久化 Default 改为上方 Reference-only Tuple，旧编码只作为 Read-only Migration Input。
+
+Comfortable 是产品默认 Density，不是 Page、Component、Layout 或 Error Fallback。System 是 Stored Color Mode Default，只能在 Runtime 根据浏览器 `prefers-color-scheme` 能力解析，不能在构建时改写为 Light 或 Dark。
+
+### Pre-initialization Safety Baseline Authority
+
+```ts
+const PreInitializationSafetyBaseline = {
+  effectiveColorMode: 'light',
+  effectiveTheme: {
+    registryKind: 'built-in',
+    themeId: 'neutral',
+  },
+  effectiveContrast: 'standard',
+  effectiveMaterial: 'solid',
+  effectiveDensity: 'comfortable',
+} as const
+```
+
+```text
+AUTHORITY_ID=pre-initialization-safety-baseline
+OWNER=@platform/design-system generated First Paint contract
+CAPABILITY_STATUS=TARGET_INACTIVE
+ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+CURRENT_LEGACY_EQUIVALENT_STATUS=ACTIVE
+PERSISTENCE=PROHIBITED
+USER_PREFERENCE=NO
+MUTATION=GENERATED_ONLY
+REPLACEMENT=ATOMIC_AFTER_VALIDATED_PREFERENCE_RESOLUTION
+FAILURE_BEHAVIOR=RETAIN_SAFE_BASELINE_AND_RETURN_STRUCTURED_ERROR
+STATIC_ENFORCEMENT=HTML, critical CSS, manifest and initializer exact parity
+```
+
+该 Baseline 只保护 Vue、Storage 和能力解析执行前的可读首帧，以及初始化失败后的安全状态。它不是 Stored Preference，不得被写入 Storage、Pinia 或用户设置；Preference 与 Theme Registry 校验成功后，Runtime 必须在单个 Appearance Mutation Boundary 中原子替换本 Baseline 的全部五个 Effective Field。任何 Partial Attribute、Partial Theme Bank 或跨帧混合状态均失败。First Paint 中的 Font Scale 与 Motion 不是该五字段 Safety Baseline 的成员；它们只能消费 `ProductPreferenceDefault` 的对应轴或已验证 Stored Preference，并继续受同一 Atomic Appearance Mutation Boundary 约束，不得建立第三份默认。
+
+### Approved Value Authorities
+
+所有可复用值必须且只能属于一个注册 Authority：
+
+```ts
+type ApprovedValueAuthorityKind =
+  | 'design-token-source'
+  | 'typed-default-registry'
+  | 'runtime-configuration-schema'
+  | 'domain-schema'
+  | 'route-registry'
+  | 'error-registry'
+  | 'permission-registry'
+  | 'storage-registry'
+  | 'named-protocol-constant'
+```
+
+每条 Authority Record 必须包含：
+
+```ts
+interface ValueAuthorityRecord {
+  id: string
+  kind: ApprovedValueAuthorityKind
+  owner: string
+  sourcePath: string
+  valueType: string
+  validation: string
+  fallback: string | null
+  migration: string | null
+  visibility: 'public' | 'ui-internal' | 'application-internal' | 'build-only'
+  consumerBoundary: readonly string[]
+  staticEnforcement: readonly string[]
+  capabilityStatus: CapabilityStatus
+}
+```
+
+页面、Feature、Shared Module 和 Public UI Component 禁止独立声明或复制：
+
+```text
+color or theme defaults
+spacing or dimensions
+density values or font scales
+typography values, radius, shadow or z-index
+motion duration, easing or breakpoint
+scroll dimensions or touch targets
+API timeout, retry count or cache duration
+storage key or environment default
+route name or permission name
+error category or protocol policy
+```
+
+Visual Value 只能来自 Design Token；Product Default 只能来自 Typed Default Registry；部署值只能来自 Runtime Configuration Schema；Route、Error、Permission 与 Storage Identifier 只能来自各自 Exact Registry。消费者只能引用 Typed ID、Generated Semantic Variable 或 Registry Entry，不能复制其 Literal。
+
+局部一次性算法值只有在同时满足以下条件时允许：
+
+1. 不是产品配置、视觉政策、协议政策或跨调用共享行为。
+2. 不影响持久化、网络、安全、缓存、路由、权限、无障碍或公共 API。
+3. 由就近命名 Invariant 解释，并且没有第二个消费者。
+4. 一旦出现第二个消费者或配置需求，立即进入对应 Authority Admission，不得复制。
+
+Generated Artifact 中的派生 Literal、Schema Enum Discriminant、HTTP 标准状态、WCAG Threshold 和数学 Identity 可以存在，但它们分别属于 Generated Output、Domain Schema 或 Named Protocol Constant，不构成页面硬编码许可。
+
 ---
 
 # 2. 版本与稳定性策略
@@ -105,7 +358,7 @@ ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 
 | 技术                 | 基线            |
 | ------------------ | ------------- |
-| Node.js            | `24.x LTS`    |
+| Node.js            | `24.15.0` exact verification authority |
 | pnpm               | 当前 `10.x` 稳定线 |
 | TypeScript         | `6.x`         |
 | Vue                | `3.5.x` 稳定线   |
@@ -116,12 +369,12 @@ ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 | Pinia              | `3.x`         |
 | TanStack Vue Query | `5.x`         |
 | Zod                | `4.x`         |
-| VeeValidate        | `5.x`         |
+| VeeValidate        | Stable major selected at Form Admission; v5 unavailable while prerelease |
 | ESLint             | `10.x`        |
 
-Node 官方要求生产应用使用 Active LTS 或 Maintenance LTS，Node 24 当前处于 LTS 状态；Vite 官方当前对 8.1 发布常规补丁。
+Node 官方要求生产应用使用 Active LTS 或 Maintenance LTS，Node 24 当前处于 LTS 状态；Vite 官方当前对 8.1 发布常规补丁。PAVP 的可复现 Verification Authority 精确为 Node `24.15.0`，不是任意 `24.x`。
 
-项目根 `mise.toml` 固定经验证的 Node 24 补丁版本并提交到版本控制；pnpm 的精确版本继续由 `package.json#packageManager` 和 Corepack 统一选择，不在 mise 中重复声明。
+项目根 `mise.toml`、`project.config.ts`、CI 和 Manifest Compression Profile 固定 Node `24.15.0`；pnpm 精确为 `10.34.5`，由 `package.json#packageManager` 和 CI 统一选择。Target Contract 要求所有 `pnpm verify`、Generator、Bundle 和 Compression Command 先执行同一 Process Runtime Preflight，版本不精确匹配时在任何其他 Gate 前失败并报告 Required/Received Version。当前 `check-project-config.ts` 已检查配置文件与 CI 的声明一致性，但 `pnpm verify` 尚未以 Process Version Check 作为第一步，因此 `EARLY_RUNTIME_PREFLIGHT=TARGET_INACTIVE`，由 `PAVP_FINAL_STATIC_GOVERNANCE` 落地；在其激活前，执行者必须在仓库外先确认精确版本再运行命令，不得把该手工确认描述为仓库机器强制。`package.json#engines` 当前较宽是已记录 Drift，只表示安装兼容声明，不得被解释为 Verification 兼容；其收窄属于同一配置治理 Scope，不由本 Architecture-only Freeze 修改。
 
 Vite 8.1 基于 Rolldown 统一开发与生产构建基础，但实验性的 Bundled Dev Mode 不进入首版默认配置。
 
@@ -190,7 +443,7 @@ No RC in production dependencies
 | 客户端状态  | Pinia                      | 偏好、会话和工作流           |
 | 服务端状态  | TanStack Vue Query         | API 缓存、Mutation、失效  |
 | Schema | Zod 4                      | 配置、API 和用户输入校验      |
-| 表单     | VeeValidate 5              | 表单状态和错误管理           |
+| 表单     | Admission 时的 VeeValidate Stable Major | 表单状态和错误管理           |
 | 浏览器能力  | VueUse                     | 按需使用浏览器 Composable  |
 | 国际化    | Vue I18n                   | 文本、格式、RTL 和语言切换     |
 
@@ -448,9 +701,10 @@ progressive-adaptive-vue-platform/
 ├── .gitattributes
 ├── .gitignore
 ├── .prettierignore
-├── .npmrc
-└── LICENSE
+└── .npmrc
 ```
+
+当前 Baseline 不包含 `LICENSE` 文件；Target Directory Tree 不得暗示它已存在。未来新增 License 需要 Owner 明确选择文本和独立仓库治理变更。
 
 当前 Phase 1 对 `packages/ui` 的实际结构是：
 
@@ -647,9 +901,23 @@ Vue SFC 固定顺序：
 
 ---
 
-# 9. 文件路由设计
+# 9. Router Governance Target Contract
 
-使用 Vue Router 5 内置文件路由：
+```text
+CAPABILITY=ROUTER
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/router
+NAVIGATION_OWNER=VUE_ROUTER
+SERVER_STATE_OWNER=TANSTACK_QUERY
+EXPERIMENTAL_ROUTER_DATA_LOADERS=PROHIBITED
+ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+```
+
+本节冻结目标合同，不准入 `vue-router`、页面目录或 Runtime Behavior。Package 4 以前以及 Router Implementation Gate 以前，当前 `App.vue` 继续是真实实现边界。
+
+## 9.1 File Routes and Exact Route Registry
+
+目标使用 Vue Router 5 Stable File Routes：
 
 ```text
 src/pages/
@@ -663,35 +931,191 @@ src/pages/
     └── [id].vue
 ```
 
-页面只负责：
-
-* 路由级数据边界。
-* Feature 组合。
-* Layout Capability 声明。
-* 页面级 Loading、Error 和 Empty 状态。
-* 页面标题和 Meta。
-
-页面不得包含：
-
-* 通用表单引擎。
-* 通用表格引擎。
-* 主题生成逻辑。
-* 直接 Fetch。
-* 第三方 UI 组件。
-* 可复用业务逻辑。
-
-路由 Meta：
+Generated Route Map 必须产出 Exact Typed Route Registry：
 
 ```ts
-definePage({
-  meta: {
-    titleKey: 'routes.settings.appearance',
-    auth: 'required',
-    layout: 'workspace',
-    layoutCapabilities: 'appearance-editor',
-  },
-})
+interface RouteRegistryRecord {
+  name: string
+  pathPattern: string
+  sourcePath: string
+  meta: ValidatedRouteMeta
+  paramsSchemaId: string | null
+  querySchemaId: string | null
+  capabilityStatus: CapabilityStatus
+}
 ```
+
+Route Name 只能来自该 Registry。当前文档阶段没有任何 Target Route Record Artifact；实现 Gate 接受后，生成器只允许把当次准入的真实 Route Record 标为 `ACTIVE`，其余不存在或保持非 Active。页面、Feature、Redirect、Telemetry、Breadcrumb 和 Permission Rule 不得复制任意 Route Name 或 Path Literal。Missing、Duplicate、Unknown Name、Path Collision、未注册 Meta、未绑定 Params/Query Schema 或 Registry/Generated Route Set 差异必须使 Router Generation Failure。
+
+页面只负责：
+
+* Route 数据边界与 Feature 组合。
+* Layout Capability 和精确 Scroll Owner 声明。
+* 页面级 Loading、Error、Empty、Partial、Stale 与 Offline State 组合。
+* Title、Breadcrumb 和 Route Meta 引用。
+* 从 Query Cache 读取当前 Route 所需 Server State。
+
+页面不得包含直接 Fetch、通用表单/表格引擎、主题生成逻辑、第三方 UI、可复用业务逻辑、Session 恢复、Permission 计算或 Router Guard 实现。
+
+## 9.2 Validated Route Meta
+
+Route Meta 使用 Strict Schema，并在构建时对全部 File Route 执行 Exact Validation：
+
+```ts
+type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required'
+type RouteKeepAlivePolicy = 'never' | 'route-instance'
+type RouteDataPrefetchPolicy = 'none' | 'blocking-required' | 'non-blocking'
+type RouteErrorPolicy =
+  | 'route-boundary'
+  | 'application-boundary'
+  | 'fatal-startup-boundary'
+
+interface ValidatedRouteMeta {
+  titleKey: string
+  breadcrumbKey: string | null
+  layout: 'reading' | 'workspace' | 'focused-task'
+  layoutCapabilityId: string
+  auth: RouteAuthPolicy
+  requiredPermissionIds: readonly string[]
+  blockScrollOwnerId: string
+  inlineScrollOwnerId: string
+  keepAlive: RouteKeepAlivePolicy
+  telemetryName: string
+  dataPrefetch: RouteDataPrefetchPolicy
+  errorPolicy: RouteErrorPolicy
+  unsavedChangesPolicy: 'none' | 'confirm-before-leave'
+}
+```
+
+`titleKey`、`breadcrumbKey`、`layoutCapabilityId`、Scroll Owner、Permission ID 和 Telemetry Name 必须引用各自 Registry，不能由页面发明。Keep Alive 只缓存明确的 Route Instance，不能隐式缓存 Session、Query Data、Form Secret 或 DOM Side Effect。Route Disposal 时必须清理 Subscription、Abort Controller、Observer、Timer、Focus Trap、Scroll Lock 和页面本地 Draft Handle。
+
+## 9.3 Bootstrap and History
+
+Router Implementation 必须：
+
+1. 从已验证 Runtime Configuration 获取 `basePath`。
+2. 使用与 Vite Asset Base 相同的 Canonical Base Authority 创建 History。
+3. 安装 Error Handler 和 Guard Pipeline 后才触发 Initial Navigation。
+4. 在 `router.isReady()` 成功后才允许 Application Mount。
+5. Initial Navigation 失败时进入命名 Startup Recovery，不得挂载半初始化 Shell。
+
+Root-only 与 Subpath Deployment 都必须通过同一 Base Authority；页面和 Router Config 不得硬编码 `/`、`/app/` 或环境路径。
+
+## 9.4 Params and Query Boundary
+
+每个 Dynamic Param 和业务 Query 必须有 Strict Domain Schema。解析顺序固定为：
+
+```text
+raw URL
+→ generated route match
+→ duplicate-aware query parse
+→ route-owned Zod params/query validation
+→ canonical normalized value
+→ route component props and Query Key
+```
+
+禁止 Component 直接读取未经验证的 `route.params` 或 `route.query`。缺失、重复、Unknown、格式错误或超限字段根据 Route Contract 精确映射为 400 或 404；不得静默使用页面默认值。Canonical URL Rewrite 只能在验证成功、不会丢失用户输入且不会形成 Redirect Loop 时执行。
+
+## 9.5 Ordered Guard Pipeline
+
+每次 Navigation 具有唯一 `navigationId`。新 Navigation 必须取消旧 Navigation 的 Prefetch 和可取消 Side Effect。Guard 顺序固定为：
+
+1. Generated Route、Params、Query 与 Dynamic Route Membership Validation。
+2. Current Route Unsaved-change Resolution；拒绝离开时不启动目标 Route Side Effect。
+3. Runtime Configuration Readiness。
+4. Session Restoration Completion；`unknown/restoring` 不得被当作 Anonymous。
+5. `anonymous-only` Policy。
+6. `required` Authentication Policy。
+7. Permission Registry Authorization。
+8. Safe Return URL 与 Canonical Redirect Resolution。
+9. TanStack Query Prefetch Orchestration。
+10. Title、Breadcrumb、Layout、Scroll 和 Telemetry Preparation。
+11. Navigation Commit、Focus Transfer 与 Scroll Restoration。
+
+Guard 只能返回 Typed Allow、Redirect、Cancel 或 Failure Result。Guard 不得写 Query Cache、复制 Server State、直接读取 Cookie、执行通用 Fetch、弹出任意 UI 或吞掉 Failure。
+
+## 9.6 Safe Return URL and Redirects
+
+Return URL 必须由 Router Registry 编码为 `{ routeName, params, query }` Typed Object，重新验证后恢复。任意字符串 URL 必须满足 Same-origin、Canonical Base、Allowed Protocol 和 Registered Route；External URL、Protocol-relative URL、Encoded Scheme、Credential URL、Control Character 与 Nested Redirect 均拒绝。每次 Navigation 最多经过一个 Auth Redirect 和一个 Canonicalization Redirect；超过上限进入 `redirect-loop` Failure。
+
+## 9.7 Error Routes and Navigation Failure
+
+Exact Error Route Registry 必须包含：
+
+```text
+400 invalid-route-input
+401 authentication-required
+403 permission-denied
+404 route-not-found
+500 application-route-failure
+offline network-unavailable
+maintenance service-unavailable
+```
+
+401 表示缺少或失效身份，403 表示身份有效但权限不足。Offline 与 Maintenance 不能伪装为 500。Error Route 不回显敏感 Params、Query、Server Body、Token 或内部 Stack。
+
+Navigation Failure 分类固定为：
+
+```text
+duplicated
+cancelled-by-new-navigation
+cancelled-by-user
+aborted-by-guard
+redirected
+invalid-input
+unauthenticated
+unauthorized
+prefetch-failed
+chunk-load-failed
+route-disposal-failed
+unknown-navigation-failure
+```
+
+`duplicated` 是无操作结果；Cancellation 不作为错误上报；其余 Failure 进入 Error Registry 和 Observability Contract。不得按任意 Error Message 字符串分类。
+
+## 9.8 Chunk-load and Release Recovery
+
+Chunk Load Failure 必须先比较当前 HTML Release 与请求 Asset Release。每个 `releaseSha + routeName` 在单次 Application Session 中最多允许一次受控 Reload；Reload 后仍失败、无法识别 Release 或浏览器离线时进入对应 Error Route。禁止无限 Reload、Timer Retry、清空全部 Storage 或绕过 Service/HTTP Cache Contract。
+
+## 9.9 Dynamic Routes
+
+Dynamic Route 只有在以下条件全部满足后准入：
+
+1. 来源是已验证、版本化的 Route Capability Registry。
+2. Route Name、Meta、Params、Query、Permission 和 Layout Contract 全部通过 Exact Validation。
+3. 注册 Owner 返回显式 Disposal Handle。
+4. Session Principal、Tenant 或 Capability 变化时先取消 Navigation/Query，再移除全部失效 Route。
+
+Logout、Revocation、Account Switch 和 Tenant Switch 必须移除其 Dynamic Routes。业务 Payload 不得直接成为 Route Definition。
+
+## 9.10 Query, Cancellation and Disposal
+
+Router 拥有 Navigation 与 Route Lifecycle；TanStack Query 拥有 Server State Cache、Deduplication、Staleness、Retry 和 Invalidation。Router Experimental Data Loaders、`vue-router/experimental` 和第二个 Server State Cache 默认 `PROHIBITED`。
+
+Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 TanStack Query 的 `AbortSignal`。Navigation Cancel、Route Disposal、Logout 和 Account Switch 必须取消相关 In-flight Query；已缓存且仍属于同一 Principal/Tenant 的数据由 Query Policy 决定是否保留。Router 不把 Query Result 复制到 Meta、Pinia、History State 或 Local Storage。
+
+## 9.11 Scroll, Focus and Observability
+
+Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。History Entry 只保存 Registry Owner ID 和有限数值 Offset；Owner 不存在、Layout Profile 变化或内容未就绪时按 Route Scroll Policy 回到 Logical Start。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争。
+
+成功 Navigation 必须把 Focus 移到 Route 声明的 Landmark 或 Heading；Error/Cancel 保留或恢复原 Focus。每次 Navigation 记录 Privacy-safe `navigationId`、From/To Telemetry Name、Release SHA、Duration、Outcome 和 Failure Category，不记录完整 URL、敏感 Query 或用户输入。
+
+## 9.12 Router Static Enforcement Targets
+
+```text
+CAPABILITY_STATUS=TARGET_INACTIVE
+```
+
+Owning Implementation Package 必须把以下检查接入 `pnpm verify`：
+
+* File Route Set = Generated Route Registry Set。
+* Route Name、Meta、Permission、Layout、Scroll、I18n 和 Telemetry Registry Reference 完整。
+* 禁止任意 Route Name/Path Literal、未经验证的 Params/Query 和 Experimental Data Loader Import。
+* Guard Order、Error Route Set、Dynamic Route Disposal 与 Query Ownership 具有静态合同。
+* Vite Base、Router History Base 和 Deployment Base 使用同一 Runtime Configuration Authority。
+* 不存在页面直接 Fetch、页面 Session 恢复、Query Data 复制或任意 Scroll Owner。
+
+这些检查在 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 完成前保持 `TARGET_INACTIVE`，不得宣称当前已强制。
 
 ---
 
@@ -725,9 +1149,13 @@ packages/design-system/
 │   │   └── spacious.tokens.json
 │   │
 │   ├── themes/
-│   │   ├── neutral.theme.json
-│   │   ├── ocean.theme.json
-│   │   └── warm.theme.json
+│   │   ├── neutral.theme.json                 [active legacy seed source until Atomic Cutover]
+│   │   ├── ocean.theme.json                   [active legacy seed source until Atomic Cutover]
+│   │   ├── warm.theme.json                    [active legacy seed source until Atomic Cutover]
+│   │   └── complete/                          [Package 4 inert side-by-side target]
+│   │       ├── neutral.theme.json
+│   │       ├── ocean.theme.json
+│   │       └── warm.theme.json
 │   │
 │   └── component/
 │       └── README.md
@@ -1746,6 +2174,13 @@ Atomic Cutover 后，Theme Reference Resolution 同样是纯边界。有效引�
 
 Theme Definition 与 User Preference 是不同合同。`ThemeDefinition` 是完整、显式、版本化的 Target 颜色文档；本 Architecture Amendment 只定义 Target，不使它成为当前 Runtime、Default、Public Export、First-paint 或 Persistence Authority。它只能在 §13.4 的 Atomic Cutover 中激活：
 
+```text
+CAPABILITY=EXPLICIT_COMPLETE_THEME_DEFINITION
+CAPABILITY_STATUS=TARGET_INACTIVE
+STRUCTURE_ADMISSION_GATE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+RUNTIME_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+```
+
 ```ts
 declare const generatedPublicRoleRegistry: {
   readonly roleContractVersion: 1
@@ -1791,10 +2226,19 @@ interface ThemeDefinition<
   }
 }
 
-type BuiltInThemeDefinition = ThemeDefinition<
-  BuiltInThemeId,
+type NeutralBuiltInThemeDefinition = ThemeDefinition<
+  'neutral',
+  AbsoluteCssColor
+>
+
+type NonNeutralBuiltInThemeDefinition = ThemeDefinition<
+  Exclude<BuiltInThemeId, 'neutral'>,
   AbsoluteCssColor | DirectBuildOnlyPrimitiveColorAlias
 >
+
+type BuiltInThemeDefinition =
+  | NeutralBuiltInThemeDefinition
+  | NonNeutralBuiltInThemeDefinition
 
 type CustomThemeDefinition = ThemeDefinition<
   CustomThemeId,
@@ -1806,7 +2250,8 @@ Target 首次 Atomic Cutover 的初始准入版本预留为：
 
 ```text
 TARGET_PUBLIC_ROLE_CONTRACT_INITIAL_VERSION=1
-TARGET_PUBLIC_ROLE_CONTRACT_STATUS=INACTIVE_UNTIL_ATOMIC_CUTOVER
+TARGET_PUBLIC_ROLE_CONTRACT_STATUS=TARGET_INACTIVE
+TARGET_PUBLIC_ROLE_CONTRACT_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
 `RoleContractVersion` 只能是严格递增的正整数，由 Generated Exact Registry 导出当前 Exact Literal；历史版本只允许进入显式 Migration Input，不进入当前 Theme Definition Union。版本不得复用、回退或仅因实现重排而改变。Theme Definition、Public Role Registry、Named Contrast Registry、Alpha Contract Registry、Manifest 和 Generated Output 必须声明完全相同的版本，不接受“兼容范围”或隐式升级。
@@ -1822,7 +2267,24 @@ dark.enhanced
 
 每个 Plane 必须显式包含当前 `roleContractVersion` 已准入的全部 Public Color Role。任何 Unknown、Missing、Duplicate、Inaccessible Role 或 Role Contract Version Mismatch 都必须使整个 Theme Definition 失败。不存在 Optional Field、Default Value、Implicit Role Inheritance、Partial-theme Merge、Theme Fallback 或缺失字段补齐。
 
-Built-in Theme 可以在每个字段中直接写显式颜色，也可以使用人工选择的 DTCG Alias。Built-in Alias 只能直接指向具有显式 Literal Value 的 `build-only` Primitive Color；不得引用另一个 Semantic Role、另一个 Theme Plane 或运行时 CSS Variable。每个 Alias 选择必须由作者逐字段声明、确定性解析并记录 Source Path，不能由规则、色阶或 Seed 生成。
+Built-in Theme 的每个 Plane 都必须人工逐字段完成。Product Default `neutral` 的每个字段必须是作者直接提交的 `AbsoluteCssColor`，禁止 DTCG Alias；`ocean` 与 `warm` 可以直接写显式颜色，也可以使用人工选择的 DTCG Alias。允许的 Built-in Alias 只能直接指向具有显式 Literal Value 的 `build-only` Primitive Color；不得引用另一个 Semantic Role、另一个 Theme Plane 或运行时 CSS Variable。每个 Alias 选择必须由作者逐字段声明、确定性解析并记录 Source Path，不能由规则、色阶或 Seed 生成。
+
+```text
+DEFAULT_THEME_REFERENCE_AUTHORITY=ProductPreferenceDefault.theme
+NEUTRAL_SOURCE=packages/design-system/tokens/themes/complete/neutral.theme.json
+NEUTRAL_LEGACY_SOURCE=packages/design-system/tokens/themes/neutral.theme.json
+NEUTRAL_PLANES=light.standard,light.enhanced,dark.standard,dark.enhanced
+NEUTRAL_VALUE_KIND=ABSOLUTE_CSS_COLOR_ONLY
+NEUTRAL_AUTHORING=MANUAL_EXACT_FIELD_BY_FIELD
+NEUTRAL_ALIAS=PROHIBITED
+NEUTRAL_INHERITANCE=PROHIBITED
+NEUTRAL_AUTOMATIC_COMPLETION=PROHIBITED
+NEUTRAL_AUTOMATIC_CORRECTION=PROHIBITED
+NEUTRAL_RUNTIME_STATUS=TARGET_INACTIVE
+NEUTRAL_RUNTIME_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+```
+
+`neutral` 后续只能通过该 Canonical Source 显式编辑，并重新通过 Exact-set、Alpha、Gamut、Named Contrast 与 Generated Drift Gate。所有 Built-in 和 Custom Theme 均受同一个 Complete-plane Contract：四个 Plane × 当前全部 Active Public Color Role 必须逐项存在，不允许 Seed Expansion、Palette Derivation、Partial Inheritance、Implicit Completion、Automatic Contrast Repair、Gamut Remap 或 Page-level Color Override。任何一个字段缺失或无效都拒绝整个 Theme，不得用 `neutral` 或其他 Theme 补齐。
 
 Custom User Theme 的每个字段必须提交最终 Absolute CSS Color Value。Custom Theme 禁止：
 
@@ -2220,7 +2682,8 @@ ACTIVE_PUBLIC_EXPORTS=CURRENT_PREFERENCE_SCHEMA_TYPES_DEFAULT_AND_RUNTIME_HELPER
 ACTIVE_FIRST_PAINT=LEGACY_PREFERENCE_INPUT_AND_CURRENT_PREFERENCE_READER
 ACTIVE_RUNTIME_APPLICATION=LEGACY_SEED_THEME_STRING_WITHOUT_THEME_KIND
 ACTIVE_PERSISTENCE_FORMAT=CURRENT_PREFERENCE
-TARGET_PREFERENCE_STATUS=INACTIVE_UNTIL_ATOMIC_CUTOVER
+TARGET_PREFERENCE_STATUS=TARGET_INACTIVE
+TARGET_PREFERENCE_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
 Active Envelope 精确包含外层 `schemaVersion: 2` 与 `appearance.{colorMode,theme,palette,contrast,material,density,fontScale,motion}`；`palette` 精确包含 `brand`、`accent` 和 `neutral`。本 Architecture Amendment、早期 Registry Package 或 Theme-plane Package 均不得改变当前 Schema、Default、Public Export、First Paint、Runtime Application、Application Storage Read/Write Format 或生成输出 Authority。
@@ -2291,6 +2754,12 @@ Migration Equality 只对 `comparisonFields` 中的 Theme ID 和三个 `CurrentP
 
 以下 Target Schema 在 Atomic Cutover 前只作为非 Active Contract 存在。
 
+```text
+CAPABILITY=REFERENCE_ONLY_THEME_PREFERENCE_AND_REGISTRY
+CAPABILITY_STATUS=TARGET_INACTIVE
+ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+```
+
 Schema Version 只存在于最外层 User Preference Envelope：
 
 ```ts
@@ -2300,12 +2769,12 @@ type MaterialPreference = 'adaptive' | 'reduced' | 'solid'
 
 type ThemeReference =
   | {
-      kind: 'built-in'
-      id: BuiltInThemeId
+      registryKind: 'built-in'
+      themeId: BuiltInThemeId
     }
   | {
-      kind: 'custom'
-      id: CustomThemeId
+      registryKind: 'custom'
+      themeId: CustomThemeId
     }
 
 interface ExplicitThemeAppearancePreference {
@@ -2336,32 +2805,29 @@ registryKind = built-in | custom
 
 Built-in 与 Custom 可以拥有相同的 `themeId` 字符串，但 Tuple 永不相等。`CustomThemeId` 是应用分配的 Opaque ID，必须在用户可访问的 Custom Registry 中唯一；Label 不参与身份。Resolver、Cache、Storage、DOM 和 Error Result 都必须保留 `registryKind` 与 `themeId` 两个独立字段，不得把它们连接成未经转义的 Selector、Class Name、CSS Variable 或 Storage Key。
 
-Registry Entry 必须通过 Discriminated Union 绑定 Kind、ID 与完整文档，且 Entry ID 必须精确等于 `definition.id`：
+Registry Entry 必须通过 Discriminated Union 绑定 Registry Kind、Theme ID 与完整文档，且 `themeId` 必须精确等于 `definition.id`：
 
 ```ts
 type ThemeRegistryEntry =
   | {
-      kind: 'built-in'
-      id: BuiltInThemeId
+      registryKind: 'built-in'
+      themeId: BuiltInThemeId
       definition: BuiltInThemeDefinition
     }
   | {
-      kind: 'custom'
-      id: CustomThemeId
+      registryKind: 'custom'
+      themeId: CustomThemeId
       definition: CustomThemeDefinition
     }
 ```
 
-Atomic Cutover 接受后的 Target `ExplicitThemePreference` Default 只引用 Built-in `neutral`，不复制任何颜色值：
+Atomic Cutover 接受后的 Target `ExplicitThemePreference` Default 只引用 §1.4 的 `ProductPreferenceDefault`。本节不得复制完整默认对象；其 Theme Reference 字段精确采用 `registryKind/themeId`，并且只引用 Built-in `neutral`，不复制任何颜色值：
 
 ```text
-colorMode=system
-theme={ kind: built-in, id: neutral }
-contrast=standard
-material=adaptive
-density={ preset: comfortable, scale: 1 }
-fontScale=1
-motion=full
+DEFAULT_AUTHORITY=ProductPreferenceDefault
+DEFAULT_AUTHORITY_LOCATION=SECTION_1_4
+THEME_REFERENCE_FIELDS=registryKind,themeId
+DUPLICATE_DEFAULT_DECLARATION=PROHIBITED
 ```
 
 Theme Registry 是 Typed Product Data，不是 AI Workflow Registry、Machine-local Authority 或第二份 Architecture Authority。
@@ -3037,6 +3503,13 @@ components/adapters/internal/composables/styles/types = absent
 以下是 Phase Gate 通过后的合法位置，不是预建清单：
 
 ```text
+CAPABILITY=FOUNDATIONAL_SHARED_UI_COMPONENTS
+CAPABILITY_STATUS=TARGET_INACTIVE
+FIRST_CONSUMER_GATE=PAVP_FIRST_PROTECTED_VERTICAL_SLICE
+ADDITIONAL_CONSUMER_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+```
+
+```text
 packages/ui/
 ├── src/
 │   ├── components/               [Phase 2; one justified real consumer]
@@ -3225,6 +3698,18 @@ Material Role 由组件语义和 `packages/ui` 私有映射决定，不由页面
 
 # 18. 布局系统
 
+```text
+CAPABILITY=LAYOUT_AND_SCROLL
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/shell/layout
+CORE_ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+FIRST_SHELL_CONSUMER_GATE=PAVP_FIRST_PROTECTED_VERTICAL_SLICE
+CSS_LAYOUT_CAPABILITY=TARGET_INACTIVE
+CURRENT_APP_SHELL=ABSENT
+```
+
+布局 Target Contract 已冻结，但当前 App Shell、Route Capability、Layout Resolver 和 Scroll Runtime 均未实现。任何示例都不构成当前 Behavior。
+
 ## 18.1 不使用设备名称
 
 禁止：
@@ -3403,6 +3888,51 @@ Competing Same-axis Owner 是以下任一情况：
 * 禁止自定义滚动条框架、Scroll Hijacking 和 Native Scroll 替代。
 * 静态检查只能验证声明、Import 和明显 Overflow 结构，不能证明真实浏览器 Scroll Owner；Codex 必须报告该证明边界。Owner 可以选择在仓库外手工观察，不构成 Codex Gate。
 
+## 18.7 Layout Capability and Threshold Authority
+
+Layout Profile Threshold、Shell Region Size、Panel Minimum/Maximum、Content Width、Safe-area Inset Handling、Touch Target、Scroll Offset 和 Resize Snap Point 必须来自 Design Token、Typed Layout Default Registry 或 Route Layout Capability Registry。Page、Feature、Component 和 CSS Module 不得写任意 Breakpoint、Pixel Dimension 或 Viewport Threshold。
+
+```ts
+interface LayoutCapabilityRegistryRecord {
+  id: string
+  allowedProfiles: readonly ('narrow' | 'regular' | 'wide')[]
+  allowedPresets: readonly LayoutPreset[]
+  requiredRegionIds: readonly string[]
+  optionalRegionIds: readonly string[]
+  movablePanelIds: readonly string[]
+  resizableRegionIds: readonly string[]
+  narrowProjection: 'stack' | 'tabs' | 'sheet'
+  blockScrollOwnerId: string
+  inlineScrollOwnerId: string
+  minimumTargetPolicyId: string
+  capabilityStatus: CapabilityStatus
+}
+```
+
+Profile 由应用容器 Inline Size、Block Size、Input Capability 和 Route Capability 纯解析；不得读取 User Agent、设备品牌或屏幕营销分类。Threshold 使用命名 Container Token，CSS Container Query 与 JavaScript Resolver 从同一 Generated Registry 消费，避免两套 Breakpoint。
+
+## 18.8 Safe Area and Dynamic Viewport
+
+Root App Viewport 使用 Dynamic Viewport Contract；`dvh` 不支持时使用已定义 Progressive Fallback。Safe-area Insets 只在 Shell Boundary 解析为内部 Layout Variable，Region 不直接读取 `env(safe-area-inset-*)`。Keyboard/Viewport Resize、Orientation、Zoom 和 Reflow 不得丢失 Focus、遮挡 Primary Action 或创建第二 Body Scroll。
+
+Fixed/Sticky Region 必须有 Route Capability、Stacking Token、Safe-area Policy 和 Scroll Owner Relationship。禁止页面任意 `100vh`、Fixed Fullscreen Layer、负 Safe-area Offset 或 Magic Header Height。
+
+## 18.9 Nested Scroll Admission and Restoration
+
+Nested Same-axis Scroll 只有 Bounded Secondary Owner 满足以下条件才允许：
+
+1. Exact Scroll Owner Registry ID 与 Axis。
+2. Ancestor 在该 Axis 明确不可滚动。
+3. `overscroll-behavior`、Keyboard、Pointer、Focus Reveal 与 Screen Reader Navigation Contract 完整。
+4. Background Lock、Route Disposal 和 Layout Projection Change 具有幂等 Cleanup。
+5. Virtualized Owner 使用命名 Row/Item Metric Authority，不依赖页面 Literal。
+
+Scroll Restoration Record 只包含 Route Registry Name、Owner ID、Logical Block/Inline Offset、Content Identity/Revision 和 History Entry ID。恢复必须等待 Owner Ready 与最小内容布局稳定；超过命名等待 Policy 后回到 Logical Start，不能无限 Poll。Account/Permission 变化、Owner Identity 变化和不可访问内容拒绝旧位置。
+
+## 18.10 Layout and Scroll Static Enforcement Targets
+
+Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Scroll/Touch Literal、未知 Region/Owner、同轴竞争 Overflow、意外 Body Scroll、Fixed Layer 无 Safe-area Policy、自定义滚动条、Scroll Hijacking 和无 Disposal 的 Background Lock。Route Meta、Layout Capability、CSS Container Token 与 Scroll Registry Set 必须闭合。全部为 `TARGET_INACTIVE`。
+
 ---
 
 # 19. 状态管理
@@ -3411,7 +3941,7 @@ Competing Same-axis Owner 是以下任一情况：
 
 ```text
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
-PHASE_1_PINIA_ADMISSION_STATUS=INACTIVE_UNTIL_PACKAGE_5
+PHASE_1_PINIA_ADMISSION_STATUS=TARGET_INACTIVE
 PHASE_1_PINIA_OWNER=apps/web
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
 PHASE_1_ROUTER_ADMISSION=PROHIBITED
@@ -3487,135 +4017,731 @@ src/features/<feature>/model/
 src/stores/
 ```
 
+## 19.4 Production Runtime Kernel Target Contract
+
+```text
+CAPABILITY=PRODUCTION_RUNTIME_KERNEL
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/bootstrap
+ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+CURRENT_RUNTIME=createApp(App).mount('#app')
+```
+
+Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。
+
+### Exact Bootstrap Order
+
+```text
+1. validate-build-and-runtime-configuration
+2. install-pre-vue-global-failure-capture
+3. initialize-design-system-and-resolve-first-paint-handoff
+4. initialize-storage-registries-and-read-migration-inputs
+5. create-vue-application
+6. create-pinia
+7. create-query-client
+8. restore-session
+9. create-router-and-install-ordered-guards
+10. create-i18n
+11. install-platform-providers
+12. await-router-readiness
+13. mount-application
+14. register-post-mount-media-storage-session-and-observability-subscriptions
+15. publish-application-ready
+```
+
+上表是全部 Foundation Capability 激活后的唯一 Superset Order。每个串行 Implementation Package 只能把新准入步骤原子加入 Bootstrap Step Registry；任一时点的 Active Order 必须是该表的 Exact Order-preserving Subsequence。尚未准入的 Storage、Query、Session、Router、I18n 或 Observability Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry 或成功 Stub 占位。新增步骤的同一 Landing 必须交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
+
+后一步只能消费前一步的 Typed Success Output。任何步骤失败都停止后续步骤，按已完成步骤的反向顺序 Dispose，并进入 Fatal Startup Recovery。不得通过 `try/catch` 后继续 Mount、用空 Provider 替代失败 Provider，或把 `unknown` Session 当作 Anonymous。
+
+### Lifecycle Ownership Matrix
+
+| Lifecycle unit | Single owner | Produces | Must not own |
+| --- | --- | --- | --- |
+| Build/runtime config validation | `app/config` | immutable validated config | Router, Session or UI state |
+| Pre-Vue failure capture | `app/errors` | global capture disposal handle | user-facing rendering |
+| Appearance handoff | `app/appearance` | validated Stored/Effective state | application Storage Key definition in Design System |
+| Storage initialization | `app/storage` | typed registry handles | Pinia or Query state |
+| Vue application | `app/bootstrap` | unmounted app instance | Provider internals |
+| Pinia | `app/providers/pinia` | client-state container | Server State cache |
+| Query Client | `app/providers/query` | principal-partitioned server-state cache | Session cookie or Router lifecycle |
+| Session restoration | `app/session` | canonical Session State | Route redirect or component visibility |
+| Router | `app/router` | navigation lifecycle | Server State cache |
+| I18n | `app/providers/i18n` | locale lifecycle | browser language persistence directly |
+| Provider installation | `app/bootstrap/install-providers` | ordered install/disposal handles | Provider construction |
+| Post-mount subscriptions | owning domain orchestrators | explicit unsubscribe handles | hidden global listeners |
+
+Provider A 不得通过 Import Side Effect 创建 Provider B。Cross-provider Interaction 只能由 Bootstrap 传入 Narrow Interface；不得通过 Global Singleton、Event Bus、Window Property 或循环 Store Watcher 编排。
+
+### Startup State and Failure Recovery
+
+```ts
+type ApplicationStartupState =
+  | 'not-started'
+  | 'starting'
+  | 'ready'
+  | 'recoverable-failure'
+  | 'fatal-failure'
+  | 'disposing'
+  | 'disposed'
+```
+
+Fatal Startup Page 是无需 Router、Pinia、Query、I18n Network Load 或 Public UI Package 即可显示的最小静态边界。它只显示本地化安全 Key 的内置 Fallback、Release ID 和允许的 Retry/Reload Action；不显示 Stack、Raw Config、URL Query、Storage Payload 或 Secret。Recoverable Retry 必须先完整 Dispose 失败 Attempt，再使用新 `startupAttemptId` 从步骤 1 重启；同一页面会话最多执行由 Named Startup Recovery Policy 注册的有限次数，超过后只允许 Owner 明确 Reload。
+
+### HMR and Application Disposal
+
+HMR 只在 Development 生效。每个 Provider 必须返回幂等 `dispose()`；HMR Replacement 与 Application Unmount 使用同一 Reverse-order Disposal：
+
+```text
+post-mount subscriptions
+→ router pending navigation and dynamic routes
+→ i18n lazy-load handles
+→ session refresh and cross-tab channel
+→ query cancellation and cache disposal
+→ pinia subscriptions
+→ storage channels
+→ appearance media subscriptions
+→ Vue unmount
+→ global failure capture
+```
+
+Dispose 必须取消 Timer、AbortSignal、Observer、BroadcastChannel、Event Listener、Focus/Scroll Lock、In-flight Query 和 Dynamic Route。重复 Dispose 不得抛错；新 HMR Instance 不得复用已 Dispose Handle 或注册重复 Listener。
+
+### Runtime Kernel Static Enforcement Targets
+
+```text
+CAPABILITY_STATUS=TARGET_INACTIVE
+```
+
+Owning Implementation Package 必须验证 Bootstrap Step Registry 与实现一一对应、Provider Dependency Graph 无环、Create/Ready/Dispose 完整、Mount 只出现于 Kernel、Global Listener 都有 Disposal Handle、Fatal Boundary 不依赖未就绪 Provider。规则在 Runtime Kernel Implementation 前不得宣称 `ACTIVE`。
+
+## 19.5 Application Persistence Target Contract
+
+```text
+CAPABILITY=APPLICATION_PERSISTENCE
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/storage
+ACTIVATION_GATE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+DIRECT_STORAGE_OUTSIDE_OWNER=PROHIBITED
+```
+
+### Storage Registry and Envelope
+
+Storage Key 只能来自 Exact Storage Registry：
+
+```ts
+interface StorageRegistryRecord {
+  id: string
+  ownerDomain: string
+  key: string
+  medium: 'local-storage' | 'indexed-db' | 'memory'
+  schemaId: string
+  currentSchemaVersion: number
+  minimumSupportedSchemaVersion: number
+  principalPartition: 'anonymous' | 'user' | 'tenant-user' | 'none'
+  containsSensitiveData: false
+  corruptionPolicy: 'quarantine-then-reset' | 'delete-then-reset'
+  capabilityStatus: CapabilityStatus
+}
+
+interface PersistedEnvelope<Payload> {
+  schemaVersion: number
+  revision: number
+  updatedAt: string
+  payload: Payload
+}
+```
+
+`updatedAt` 使用 UTC RFC 3339；它只用于冲突诊断，Revision 是同一 Partition 内的顺序权威。Key Namespace、Database Name、Object Store Name、Broadcast Channel Name 和 Quarantine Key 都由 Storage Registry 生成；页面、Feature 和 Component 不得声明字符串 Key。
+
+### Media Boundary
+
+| Medium | Allowed data | Prohibited data |
+| --- | --- | --- |
+| Local Storage | 小型非敏感偏好、First-paint 所需 Appearance、有限布局状态 | Token、Credential、Session ID、Server Authority、Query Cache、长文本草稿、二进制 |
+| IndexedDB | 准入后的大型本地草稿、离线队列、二进制和大量结构化记录 | Credential、Authoritative Session、未经加密即被误称安全的 Secret |
+| Memory only | Session-derived state、CSRF Runtime Value、Query Cache、敏感临时状态、In-flight Workflow | 任何承诺跨重启恢复的数据 |
+
+IndexedDB 仍为 `DEFERRED`，只有真实容量、离线或结构化数据需求通过独立 Gate 后准入。Query Cache 默认 Memory-only；持久化 Query 需要独立 Product、Privacy、Expiration 和 Principal-isolation Contract。
+
+### Read, Validation and Migration
+
+```text
+registry lookup
+→ medium availability check
+→ raw read
+→ duplicate-aware parse where applicable
+→ envelope exact-schema validation
+→ principal partition validation
+→ ordered one-version-at-a-time migration chain
+→ current-schema validation
+→ immutable typed result
+```
+
+Migration 必须纯、确定、幂等且保留原值 Evidence；不得跨过缺失版本、访问网络、读取另一个 Domain Store 或写入 Storage。小于 `minimumSupportedSchemaVersion`、未来版本、缺失 Migration、Principal 不匹配和 Schema Failure 都返回结构化 Failure，不得猜测或 Partial Merge。
+
+### Corruption, Quarantine and Write Failure
+
+Failure Categories：
+
+```text
+storage-unavailable
+read-denied
+parse-failed
+schema-rejected
+unsupported-version
+principal-mismatch
+serialization-failed
+quota-exceeded
+write-denied
+readback-mismatch
+conflict-detected
+```
+
+Corruption Policy 必须避免每次启动重复解析同一坏值。`quarantine-then-reset` 仅对 Registry 声明的非敏感、小型 Payload 使用：先把原始值写入受限 Quarantine Key，成功后删除 Primary；若 Quarantine 写入失败，则删除 Primary 并只上报 Hash、Byte Length 与 Error Category，不记录 Raw Payload。`delete-then-reset` 直接删除 Primary。两种策略都返回 Product Default，但不得把 Default 伪装成成功读取。
+
+写入顺序固定为：Typed Payload Validation → Canonical Serialization → Serialized Round-trip Validation → Revision Conflict Check → 单 Key Atomic `setItem`/Transaction → Readback Validation → Publish Change Event。Quota、Unavailable、Serialization 或 Readback Failure 不得更新内存中的 Persisted Revision，也不得丢弃用户未保存状态。
+
+### Cross-tab Synchronization
+
+每个变更包含 `originId`、`operationId`、`revision` 和 `principalPartitionId`。当前 Tab 在成功写入后直接处理本地结果；其他 Context 通过 `BroadcastChannel`，不支持时使用 `storage` Event。接收方必须拒绝自己的 `originId`、重复 `operationId`、旧 Revision 和其他 Principal/Tenant 事件，防止 Echo Loop。
+
+同一 Revision 的竞争写入返回 `conflict-detected`，不按不可靠的墙上时钟静默覆盖。Domain Contract 必须显式选择 User Resolution、Latest Valid Revision Retry 或 Merge；Appearance Preference 与 Layout Preference 默认使用 Compare-and-swap Retry 一次，仍冲突则要求用户重新确认。
+
+### Principal and Tenant Lifecycle
+
+所有用户级 Key 逻辑上以 Opaque Principal/Tenant Partition 隔离，Raw User ID 不直接进入可枚举 Key。Anonymous Preference 可以在登录后经显式、可预览的 Merge Policy 迁移；Session、Permission 和 Server State 永不迁移。Logout、Revocation、Account Switch 和 Tenant Switch 的顺序固定为：停止写入 → 取消请求 → 清 Query Cache → 清 Session/Permission Pinia → Dispose Dynamic Routes → 清或切换用户级 Storage Handle → 发布跨 Tab Session Event。
+
+### Preference and Custom Theme Atomic Consistency
+
+Preference 与 Custom Theme Registry 保持两个 Schema Boundary 和两个应用 Key。Local Storage 不提供跨 Key 原子事务，因此合同采用 Safe Ordering：
+
+```text
+create/update reference target:
+validate full theme
+→ atomically write complete registry envelope
+→ readback and resolve exact entry
+→ atomically write preference reference
+
+delete referenced theme:
+explicitly select and persist another valid theme reference
+→ confirm effective atomic switch
+→ delete registry entry
+```
+
+在第一种流程中断只会留下 Unreferenced Valid Entry，不会产生 Dangling Preference；第二种流程中断只会留下 Unreferenced Old Entry。Preference Writer 必须在写前解析 Registry Entry；Registry Delete 必须拒绝仍被当前 Preference 引用的 Entry。First Paint 同时读取两个 Snapshot 时，Revision Pair 不一致则保留 Safety Baseline 并返回 `theme-registry-revision-mismatch`，不得回退并改写 Stored Preference。
+
+### Storage Static Enforcement Targets
+
+Owning Package 必须验证：所有 Storage/IndexedDB/BroadcastChannel 访问只在 Registry Owner；所有 Key 来自 Registry；Envelope、Migration、Partition、Write Result 和 Cleanup 完整；敏感字段、Session ID、Query Data 与 Server Authority 不可持久化；Preference/Registry Safe Ordering 可静态追踪。当前只有既有 Appearance First-paint 窄边界为 `ACTIVE`，本节其余 Enforcement 均为 `TARGET_INACTIVE`。
+
 ---
 
-# 20. API 和请求层
-
-最终选择：
+# 20. API Transport Target Contract
 
 ```text
-Native Fetch
-+ AbortController
-+ TanStack Query
-+ Zod
+CAPABILITY=API_TRANSPORT
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/shared/api
+ACTIVATION_GATE=PAVP_API_TRANSPORT_IMPLEMENTATION
+MANDATORY_OPENAPI_FETCH_DEPENDENCY=NONE
 ```
 
-不使用 Axios 或 Alova。
-
-## 20.1 请求层职责
+Canonical Target：
 
 ```text
-Base URL
-Headers
-Credentials
-Timeout
-Abort
-Error normalization
-Response parsing
-Runtime validation
+openapi-typescript generated compile-time types
++ repository-owned Native Fetch transport
++ caller-provided AbortSignal
++ Zod untrusted runtime boundaries
++ TanStack Query server-state orchestration
 ```
 
-## 20.2 API 目录
+Axios、Alova 和 `openapi-fetch` 不属于 Canonical Target。任何未来 Fetch Client Library 必须重新通过 Stable、Bundle、Runtime Validation、Abort、Auth、Maintenance 和 Replacement Gate。
+
+## 20.1 Ownership and Request Definition
 
 ```text
 shared/api/
 ├── client.ts
 ├── request.ts
+├── response.ts
 ├── errors.ts
+├── policies.ts
 ├── query-keys.ts
 └── schemas.ts
 ```
 
-## 20.3 OpenAPI 策略
-
-当后端提供可靠 OpenAPI Schema 时增加：
-
-```text
-openapi-typescript
-openapi-fetch
-```
-
-生成类型必须与手写 Runtime Schema 分工：
-
-```text
-OpenAPI types = compile-time contract
-Zod schemas = untrusted runtime boundary
-```
-
-禁止为所有内部对象重复写 Zod Schema。
-
-## 20.4 错误模型
+目录是 Target Location，不授权创建。Transport 只拥有 HTTP Attempt、Protocol Validation 和 Error Normalization；TanStack Query 拥有 Server State Cache、Retry Orchestration、Deduplication、Staleness、Mutation Lifecycle 和 Invalidation；Feature API Module 拥有 Endpoint Definition 和 Domain Zod Schema。
 
 ```ts
-type AppError =
-  | NetworkError
-  | TimeoutError
-  | UnauthorizedError
-  | ValidationError
-  | ConflictError
-  | ServerError
-  | UnknownError
+type ResponseMode =
+  | 'json'
+  | 'text'
+  | 'blob'
+  | 'array-buffer'
+  | 'stream'
+  | 'empty'
+
+interface RequestDefinition<Response> {
+  endpointId: string
+  method: 'GET' | 'HEAD' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+  pathTemplateId: string
+  authPolicyId: string
+  timeoutPolicyId: string
+  retryPolicyId: string
+  responseMode: ResponseMode
+  responseSchema: unknown
+  idempotencyPolicy: 'safe' | 'explicit-key-required' | 'never-retry'
+  cachePolicyId: string
+}
 ```
 
-UI 不直接判断任意 HTTP 状态码，而是消费统一错误类型。
+Endpoint、Timeout、Retry、Auth 和 Cache Policy 都必须引用 Exact Registry；调用点不得写 Timeout Milliseconds、Retry Count、Base URL、Credential Mode 或 Cache Duration Literal。
+
+## 20.2 Configuration, Identity and Headers
+
+Base URL 来自已验证 Runtime Configuration，只允许 Approved HTTPS Origin；Development 的 HTTP 例外由 Environment Schema 明确声明。URL 使用 `URL` API 和 Typed Path/Query Encoder 构造，禁止字符串拼接、双重编码、Credential URL 与任意 External Origin。
+
+每个 Attempt 生成内部 `requestId`，并传播已验证或新建的 `correlationId`。Header Registry 精确拥有 Content Negotiation、Locale、CSRF、Idempotency、Release 和 Correlation Header Name。禁止记录 Cookie、Authorization、CSRF Secret、Password、完整用户输入和 Raw Response Body。
+
+Cookie Session 的默认 Credential Policy 是 Same-origin；Cross-origin Credential 必须通过独立 CORS/CSRF Gate。Transport 不读取 HttpOnly Cookie，也不把 Session Token 注入 JavaScript Header。
+
+## 20.3 Request Pipeline and Cancellation
+
+```text
+validate request definition and runtime config
+→ encode path/query/body
+→ resolve auth and CSRF policy
+→ combine caller, route/query and timeout AbortSignals
+→ emit privacy-safe attempt-start event
+→ execute one Native Fetch attempt
+→ classify transport/abort/timeout result
+→ validate status and content type
+→ parse declared response mode
+→ apply endpoint Zod boundary
+→ return typed success or normalized AppError
+```
+
+Transport 必须接受调用方 `AbortSignal`，不得用内部 Controller 隐藏外部取消。Timeout Signal、Caller Abort、Route Navigation Cancel、Query Cancel 和 Application Disposal 必须保留不同 Failure Category：
+
+```text
+timeout
+caller-abort
+navigation-abort
+query-cancel
+application-disposal
+network-failure
+```
+
+Cancellation 不进入用户错误 Toast，不触发 Retry，不上报为 Unhandled Error。Timeout Policy 来自 Protocol Registry；调用点不能临时覆盖，除非 Endpoint Contract 明确提供 Typed Override Range。
+
+## 20.4 Response and Error-body Parsing
+
+Native Fetch 对 4xx/5xx 不 Reject，因此任何 Response 都先检查 Status Contract。解析规则：
+
+| Response | Contract |
+| --- | --- |
+| 200/201 JSON | Content-Type 必须匹配，Parse 后通过 Endpoint Zod Schema |
+| 202 | 返回 Typed Accepted Result，不伪装为完成数据 |
+| 204/205 | Body 必须为空，`responseMode='empty'`，禁止调用 `json()` |
+| text | 验证允许的 MIME、Charset 与 Byte Limit |
+| blob/array-buffer | 验证 MIME、Content-Length/实际 Byte Limit 与 Filename Policy |
+| stream | Endpoint 必须显式准入 Streaming、取消、Backpressure 和 Partial Failure |
+| redirect | 仅遵循 Endpoint Redirect Policy；跨 Origin 默认拒绝 |
+| error body | 按 Error Content-Type 和 Byte Limit 解析，再通过 Error-body Schema |
+
+Content-Type 缺失、错误、Body 超限、Malformed JSON、Schema Mismatch 和 Unexpected Body 都返回结构化 Protocol/Validation Error。Error Normalizer 只保留允许字段；未知或 HTML Error Body 不直接显示或记录。
+
+## 20.5 Retry, Backoff and Rate Limit
+
+Transport 每次调用只执行一个 Attempt。TanStack Query 或 Mutation Executor 根据 Retry Registry 决定是否发起下一 Attempt：
+
+| Condition | Default disposition |
+| --- | --- |
+| GET/HEAD transient network failure | retry-eligible |
+| Timeout | endpoint-policy |
+| 408, 425, 429 | retry-eligible only with policy and limit |
+| 500, 502, 503, 504 | retry-eligible for safe/idempotent requests |
+| 400, 401, 403, 404, 409, 412, 422 | no automatic retry |
+| Caller/navigation/query cancellation | no retry |
+| POST/PATCH/DELETE mutation | no retry by default |
+| Mutation with server-approved Idempotency Key | explicit policy only |
+
+Backoff 使用 Registry 拥有的 `baseDelay`、`maximumDelay`、`maximumAttempts` 与 Full Jitter；实现公式固定为 `random(0, min(maximumDelay, baseDelay * 2 ** attemptIndex))`。有效 `Retry-After` 优先但仍受 Policy Maximum 限制。Retry Budget 按 Endpoint、Principal 和 Online State 限制，禁止无限重试、页面级重试循环或 Transport 与 Query 双重重试。
+
+## 20.6 Idempotency, Deduplication and Concurrency
+
+Idempotency Key 只为 Endpoint Registry 声明支持的 Mutation 生成，作用域绑定 Principal、Endpoint 和业务 Operation，不从用户输入直接采用。相同 Key 的响应处理遵守 Server Contract；Key 不记录到 Log。
+
+GET Deduplication 由 TanStack Query 的 Exact Query Key 负责；Transport 不维护第二个 Response Cache。Mutation 默认不合并。重复 Submit 由 Form/Mutation Lock 阻止；Latest-request-wins 只适用于明确声明的只读搜索类 Endpoint，并必须 Abort 旧 Attempt。
+
+并发上限属于 Request Concurrency Registry，按 Origin 和 Priority Queue 执行。Auth Refresh、Critical Mutation 和 Background Prefetch 使用不同命名 Lane；Queue Entry 保留 Caller Abort。禁止页面自行建立 Semaphore。
+
+## 20.7 Mutation, Optimistic Update and Conflict
+
+Mutation Owner 必须声明：
+
+```text
+mutation key
+idempotency policy
+affected query keys
+optimistic eligibility
+rollback snapshot boundary
+conflict policy
+success invalidation
+failure presentation
+```
+
+Optimistic Update 仅在可逆、局部且具有完整 Rollback Snapshot 时允许。Rollback 只恢复本 Mutation 修改的 Cache Segment，不覆盖并发成功更新。ETag/Version 使用 `If-Match`；409/412 返回 Typed Conflict，包含允许的 Current Version Metadata，不自动覆盖 Server。Conflict 必须由 User Resolution、Refetch-and-reapply 或 Domain Merge Policy 处理。
+
+## 20.8 Upload, Download and Streaming
+
+Upload 必须验证文件数量、Declared/Detected MIME、扩展名、单文件与总 Byte Limit；Progress 需要独立 Browser Capability 和 API Contract，Native Fetch 不支持时不得伪造。取消上传必须终止 Body Source 和释放 Object URL。
+
+Download 必须验证 Origin、Status、MIME、Byte Limit 和 Sanitized Filename；不得把服务端 Filename 直接写入文件系统。Streaming 必须定义 Frame Schema、Backpressure、Heartbeat、Resume、Partial Failure、Cancellation 和 Disposal；未定义则 `PROHIBITED`。
+
+## 20.9 Cache Ownership
+
+```text
+Browser HTTP Cache = transport-level HTTP semantics
+TanStack Query Cache = in-memory application server state
+Pinia = client-owned state only
+Storage = explicitly admitted non-sensitive persistence only
+```
+
+Endpoint Cache Registry 定义 `cache` Request Mode、ETag、Vary 和 Revalidation。Query `staleTime`/`gcTime` 来自 Query Policy Registry，不在 Component 写 Literal。禁止把 Query Result 复制到 Pinia/Local Storage、同时用 Service Worker 和 Query Cache 建第二权威，或用 Cache Busting Query 绕过 HTTP Policy。
+
+## 20.10 OpenAPI Governance
+
+`openapi-typescript` 只有后端 Schema 具备 Owner、Version、稳定发布位置和 Drift Gate 后才准入。Generated Types 是 Compile-time Contract；Zod 是 Untrusted Runtime Boundary；两者不能互相冒充。
+
+OpenAPI Package 必须固定 Input Digest、Generator Version、Command、Output Path 和 Generated Notice。CI 对 Canonical Schema 重新生成并拒绝 Drift；Breaking Endpoint、Required Field、Enum、Security Scheme 或 Content Type Change 必须触发显式 API Review。不得直接编辑 Generated Type，不得为所有可信内部对象机械复制 Zod，也不得因为 OpenAPI Type 存在而跳过外部响应校验。
+
+## 20.11 Privacy-safe Diagnostics and Enforcement
+
+Attempt Event 只允许 Endpoint ID、Method、Status Category、Duration、Retry Attempt、Request/Correlation ID、Release SHA 和 Error Category。URL Path Params、Query、Header、Body 和 Response 默认全部 Redacted；允许字段必须逐 Endpoint Allowlist。
+
+Owning Static Gate 必须拒绝直接 `fetch`、直接 `XMLHttpRequest`、未注册 Base URL/Header/Timeout/Retry/Cache Literal、未传 AbortSignal、无 Response Mode、无 Zod Boundary、Mutation 默认重试、Query Data 复制、敏感 Log 和 Generated OpenAPI Drift。本节全部规则在 API Transport Implementation 前为 `TARGET_INACTIVE`。
+
+# 20A. Auth, Session and Permission Target Contract
+
+```text
+CAPABILITY=AUTH_SESSION_PERMISSION
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/session
+SECURITY_AUTHORITY=SERVER
+CLIENT_PERMISSION_MODEL=CAPABILITY_PROJECTION
+ACTIVATION_GATE=PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
+```
+
+## 20A.1 Session State Machine
+
+```ts
+type SessionState =
+  | { status: 'unknown' }
+  | { status: 'restoring' }
+  | { status: 'anonymous' }
+  | { status: 'authenticated'; principal: SessionPrincipal }
+  | { status: 'expired'; lastPrincipalId: string | null }
+  | { status: 'revoked'; lastPrincipalId: string | null }
+  | { status: 'failed'; errorId: string }
+```
+
+唯一合法 Transition：
+
+```text
+unknown → restoring
+restoring → anonymous | authenticated | expired | revoked | failed
+anonymous → authenticated | failed
+authenticated → authenticated (successful refresh)
+authenticated → expired | revoked | anonymous | failed
+expired → restoring | anonymous
+revoked → anonymous
+failed → restoring | anonymous
+any non-unknown → anonymous during completed logout cleanup
+```
+
+`unknown`/`restoring` 不得触发 Anonymous Route、登录重定向或 Permission Denial。Session Principal 只包含服务端返回的最小非敏感 Identity、Tenant 和 Capability Projection；Credential、Session ID 和 Refresh Token 不进入 Pinia。
+
+## 20A.2 Restoration, Login, Logout and Refresh
+
+Startup Restoration 通过 Same-origin Session Endpoint 完成。Login 成功顺序为：Server Session established → Session Response validated → Query Partition created → Permission Registry projection installed → Dynamic Routes admitted → safe Return URL navigation。失败不得保留 Partial Principal。
+
+Logout/Revocation 顺序使用 §19.5 Principal Lifecycle，且 Server Logout Attempt 即使网络失败也必须清本地 Derived State；UI 明确提示 Server Revoke 未确认。Account/Tenant Switch 先完成旧 Partition Cleanup，再恢复新 Session，期间 Route Shell 进入 Blocking Transition。
+
+Refresh 使用全局 Single-flight：同一时间只允许一个 Refresh Attempt。需要身份的并发 Safe Request 可以等待同一 Promise，并保留自己的 AbortSignal；Mutation 不自动排队或重放。Refresh 成功后等待者使用新 Session State 重新执行 Auth Check；失败统一转为 `expired` 或 `revoked`，取消队列并执行一次 Cleanup，禁止每个 Request 独立 Logout 或形成 Refresh Loop。
+
+## 20A.3 Cookie and CSRF
+
+Session Cookie 必须由 Server 设置 `HttpOnly`、`Secure`、适当 `SameSite`、最窄 Path/Domain 和生命周期；JavaScript 不读取 Cookie。Cookie-based Mutation 必须使用 Server-bound CSRF Protection：SameSite 只是 Defense-in-depth，不能替代 Token/Origin Validation。CSRF Runtime Value 只存 Memory，绑定当前 Session，并通过 Header Registry 发送；Login、Logout、Refresh 与高风险 Action 同样受 CSRF/Origin Contract。
+
+禁止把 Credential、Access/Refresh Token、Session ID、CSRF Secret、Password、Recovery Code 或 Authoritative Permission 存入 Local Storage、IndexedDB、URL、Pinia Persistence 或 Log。
+
+## 20A.4 401, 403 and Request Coordination
+
+401 表示 Session 缺失、过期或无效：Request Layer 最多触发一次 Single-flight Refresh；Refresh 后仍 401 则 Session 进入 Expired/Revoked。403 表示已认证但 Operation 不允许：不得 Refresh、不得清 Session、不得重定向登录；返回 Permission-denied UI。429、409 和 Validation Error 不进入 Auth Flow。
+
+## 20A.5 Permission Registry
+
+Capability ID 来自 Exact Permission Registry：
+
+```ts
+interface PermissionRegistryRecord {
+  id: string
+  descriptionKey: string
+  sourceClaim: string
+  routeUseAllowed: boolean
+  componentVisibilityUseAllowed: boolean
+  operationUseAllowed: boolean
+  serverRevalidationRequired: true
+  capabilityStatus: CapabilityStatus
+}
+```
+
+Route Guard 检查 Route Meta 的 Permission ID；Component 只用 Capability 决定可见性/可用性；Operation 在发送前做 UX Check，但 Server 必须重新授权。隐藏按钮、禁用控件、Route Guard 和前端 Claim 永远不是 Security Enforcement。禁止散落 Role String、`isAdmin` Boolean、未经 Registry 的 Permission Name 或 Feature 自行解释 Raw Claim。
+
+## 20A.6 Cross-tab, Partition and Cleanup
+
+Cross-tab Session Channel 只广播 `logout`、`revoked`、`session-changed` 和 Opaque Operation ID，不广播 Credential 或 Principal Detail。接收 Logout/Revoked 后每个 Tab 幂等执行相同 Cleanup。Query Key 与 Cache 必须包含 Opaque Principal/Tenant Partition；Account/Tenant 切换不得复用旧 Cache、Draft、Dynamic Route 或 Permission Projection。
+
+Return URL 使用 §9.6 Typed Same-origin Contract。Logout 后默认导航到注册的 Public Route；不得恢复受保护的旧 Return URL，除非新 Session 重新通过全部 Route/Permission Validation。
+
+## 20A.7 Auth Static Enforcement Targets
+
+Owning Gate 必须验证 Session Transition Exhaustiveness、Single-flight 唯一性、Cookie/CSRF Config Schema、401/403 分离、Permission Registry Closure、Route/Component/Operation Reference、Principal-partitioned Query Keys、Cleanup Order、Cross-tab Payload Allowlist 和 Sensitive Persistence Prohibition。全部为 `TARGET_INACTIVE`，不得用客户端检查宣称安全完成。
+
+# 20B. Error Handling and Observability Target Contract
+
+```text
+CAPABILITY=CORE_ERROR_HANDLING
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/errors
+ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+EXTENSION_GATES=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION; PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
+
+CAPABILITY=OBSERVABILITY_REPORTING
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/observability
+ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+```
+
+Core Error Handling 与 Observability Reporting 是两个串行 Authority。Runtime Kernel 只激活 Startup、Configuration、Vue Boundary 与 Unhandled-rejection 所需的最小 Error Registry、Normalizer 和 Capture；Router、Storage、API 与 Auth 各自在自己的 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 只由 Observability Gate 激活。
+
+## 20B.1 Exact Error Registry
+
+```ts
+type AppErrorCategory =
+  | 'configuration'
+  | 'network'
+  | 'offline'
+  | 'timeout'
+  | 'cancelled'
+  | 'unauthenticated'
+  | 'unauthorized'
+  | 'validation'
+  | 'conflict'
+  | 'rate-limited'
+  | 'server'
+  | 'protocol'
+  | 'storage'
+  | 'navigation'
+  | 'chunk-load'
+  | 'resource-load'
+  | 'component'
+  | 'startup'
+  | 'unknown'
+
+interface ErrorRegistryRecord {
+  id: string
+  category: AppErrorCategory
+  userMessageKey: string
+  recoverability: 'none' | 'retry-operation' | 'retry-navigation' | 'reload-application'
+  retryOwner: 'none' | 'query' | 'mutation' | 'router' | 'runtime-kernel' | 'user'
+  reportLevel: 'debug' | 'info' | 'warning' | 'error' | 'fatal'
+  safeContextFields: readonly string[]
+  capabilityStatus: CapabilityStatus
+}
+```
+
+所有 Error 必须携带 Registry ID、Category、Opaque Error Instance ID、Cause Category、Timestamp 和 Safe Context；Raw `unknown` 只能在 Normalizer Boundary 存在。UI 只消费 `userMessageKey`、Recoverability 和 Safe Action，不判断 HTTP Status、Error Message 或 Stack。Cancellation 是结果，不是用户错误。
+
+## 20B.2 Capture and Boundary Ownership
+
+| Source | Owner | Boundary behavior |
+| --- | --- | --- |
+| Vue render/setup/lifecycle/watcher | `app.config.errorHandler` | normalize, report, nearest component/application boundary |
+| Component subtree | `AppErrorBoundary` or admitted local boundary | preserve Shell, reset subtree only when safe |
+| Unhandled promise rejection | global failure capture | normalize once, prevent duplicate report |
+| Router guard/navigation | Router | typed navigation failure and error route |
+| Query/Mutation | TanStack Query owner | query/mutation policy and feature state |
+| Resource/Chunk load | Runtime/Router | release-aware recovery |
+| Startup | Runtime Kernel | no partial mount, fatal startup page |
+| Reporting provider | Observability owner | never re-enter application error pipeline |
+
+Boundary Reset 必须先 Dispose 失败 Subtree 的 Subscription、Request、Focus/Scroll Lock 和 Draft Handle。Fatal Error 不允许无限 Retry；Recoverability 必须来自 Registry，Component 不得随意添加 Reload Button。
+
+## 20B.3 Structured Log, Event and Trace Schema
+
+```ts
+interface ObservabilityEnvelope {
+  schemaVersion: number
+  eventId: string
+  eventName: string
+  level: 'debug' | 'info' | 'warning' | 'error' | 'fatal'
+  occurredAt: string
+  environment: 'development' | 'staging' | 'production'
+  releaseSha: string
+  buildVersion: string
+  routeTelemetryName: string | null
+  requestId: string | null
+  correlationId: string | null
+  traceId: string | null
+  anonymousPrincipalHash: string | null
+  payload: Record<string, unknown>
+}
+```
+
+Event、Metric、Trace Name 和 Payload Schema 必须来自 Versioned Observability Registry。Client 生成的 Trace 不是安全/计费权威。Anonymous Principal Hash 必须使用 Release-independent、Server-provided Opaque Value 或不可逆 Rotation Policy；不得 Hash Email、Raw User ID 或 Token 后假装匿名。
+
+## 20B.4 Redaction, Sampling and Deduplication
+
+默认拒绝所有字段，只允许 Registry `safeContextFields`。全局禁止 Cookie、Authorization、Token、Password、Secret、CSRF、Full URL、Query、Form Value、Request/Response Body、Storage Payload、File Content 和 DOM Text。Redaction 在 Queue 前执行；失败则丢弃 Event，不发送 Raw Fallback。
+
+Fatal、Startup、Auth Security Anomaly 和 Release Health Event 使用明确 Policy；高频 Performance/Interaction Event 使用 Deterministic Sampling。相同 Error Fingerprint 在命名窗口内 Deduplicate，并保留 Count/First/Last Timestamp；Sampling、Window 和 Queue Limit 来自 Observability Policy Registry，不在调用点写 Literal。
+
+## 20B.5 Required Signals
+
+Target Registry 至少覆盖：
+
+```text
+application startup outcome and duration
+unhandled rejection and Vue boundary failure
+navigation outcome, cancellation and duration
+chunk and resource load failure
+API latency, status category and retry outcome
+session restore, refresh and revocation outcome
+storage migration/corruption/quota outcome
+Web Vitals
+long task
+runtime configuration failure
+release and rollback marker
+```
+
+Web Vitals 与 Long Task 只能在 Browser Capability 可用时收集；缺失能力不是 Error。Performance Entry 不得包含 Full URL 或用户内容。API Latency 使用 Transport Attempt Event，禁止 Feature 重复计时形成双记录。
+
+## 20B.6 Source Maps and Reporting Failure
+
+Production Source Map 可以生成但不得公开部署；只允许 CI/Release Pipeline 私密上传到已准入 Provider，上传成功后按 Retention Policy 处理。Source Map 包含 Source Content 时视为敏感 Build Artifact。Provider 未准入前，Production `sourcemap` 保持关闭，并明确接受较低可诊断性；不得把公开 Source Map 当临时方案。
+
+Reporting Transport 使用独立、最小、无业务拦截器的通道。Report Failure 只增加内存 Drop Counter；不得调用 App Error Reporter、触发 Toast、刷新 Session 或无限重试。Page Unload 只发送 Byte-limited、已 Redact Batch；失败允许丢弃。
+
+## 20B.7 Error and Observability Static Enforcement Targets
+
+Core Error Owning Gate 必须拒绝任意 Error Category/Message、重复 Capture 和无 Owner Retry，并验证每个已准入 Error Consumer 与 Exact Active Registry Subset 同步；新 Package 必须在同一 Landing 中扩展 Registry，不能提前或延后。Observability Gate 另行拒绝任意 Telemetry Name、Raw Console Production Log、未 Redact Context、重复 Report、公开 Source Map、PII Field、未注册 Metric 和 Recursive Reporter，并闭合 Schema Version、Release Fields 与 Capture Source。两组规则在各自 Gate 前均为 `TARGET_INACTIVE`，不得因 Core Error 已激活而宣称 Reporting Active。
 
 ---
 
-# 21. 表单体系
-
-最终选择：
+# 21. Forms Target Contract
 
 ```text
-VeeValidate 5
-+ Zod 4
-+ UiFormField
+CAPABILITY=FORMS
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=feature form boundary plus @platform/ui field primitives
+FORM_LIBRARY=VEEVALIDATE_STABLE_MAJOR_SELECTED_AT_IMPLEMENTATION_ADMISSION
+VEEVALIDATE_STABLE_MAJOR_CAPABILITY_STATUS=TARGET_INACTIVE
+VEEVALIDATE_PRERELEASE_MAJOR_CAPABILITY_STATUS=PROHIBITED
+VEEVALIDATE_V5_CAPABILITY_STATUS=PROHIBITED
+VEEVALIDATE_V5_FREEZE_FACT=PRERELEASE_AND_UNAVAILABLE_AS_OF_2026-08-02
+ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+ACTIVATION_GATE_CREATION=UNIQUE_PAVP_FORM_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
 ```
 
-VeeValidate 5 已支持 Standard Schema，可以直接使用 Zod，不再需要旧的 `@vee-validate/zod` Adapter。
+Stable-only Policy 优先于 Major 偏好。实现 Gate 必须重新核对当时的 Stable Release、Vue/TypeScript Compatibility、Bundle、Standard Schema Integration 和 Migration Cost；Alpha、Beta 或 RC 不得进入 Production Dependency。Zod 4 继续作为已选择的 Runtime Schema 方向，但安装位置仍由真实 Consumer Gate 决定。
 
-Zod 4 当前为稳定版本。
+## 21.1 Ownership
 
-表单职责：
+| Owner | Exact responsibility |
+| --- | --- |
+| Stable admitted form-state library | field registration, touched, dirty, pending, validation lifecycle and submission state |
+| Feature-owned Zod schema | input shape, domain constraints, parse/transform and typed output |
+| `UiFormField` | label, description, required indicator, error ID, `aria-describedby`, layout and focus target |
+| Feature form orchestrator | initial values, server mapping, submit mutation, cancellation, reset and navigation policy |
+| API/Mutation layer | request, idempotency, conflict, optimistic policy and server error normalization |
+
+Form Library 不拥有 Domain Schema、API、Storage、Route Guard 或视觉 Token。禁止首期建设 Schema-driven ProForm、字段 JSON DSL、自动 CRUD Form 或跨 Feature 通用业务字段库。
+
+## 21.2 Initial, Reset and Reinitialize
+
+每个 Form Contract 必须声明 `formId`、Schema ID、Initial Value Source、Submit Mutation ID、Reset Policy、Reinitialize Policy 和 Unsaved-change Policy。Initial Value 必须先通过 Domain Schema；Server Data 到 Editable Draft 使用显式 Mapper，不能直接双向绑定 Query Object。
+
+Reset 精确选择 `initial-snapshot`、`last-server-confirmed` 或 `empty-domain-default`；Default 来自 Domain Typed Default Registry。Reinitialize 只在 Record Identity 改变或显式 Server Revision 被接受时发生；不得因为 Background Refetch 擦除 Dirty Field。Dirty 比较在 Canonical Domain Value 上执行，不依赖对象引用或格式化字符串。
+
+## 21.3 Validation and Server Error Mapping
+
+Client Validation 顺序为：Field Parse → Field Constraint → Cross-field Domain Schema → Submit Transform。Async Validation 必须可取消、按 Canonical Value Deduplicate，并在 Value 改变或 Form Dispose 时 Abort。Async Result 必须绑定 Validation Attempt ID，旧结果不得覆盖新值。
+
+Server Validation Error Body 先通过 API Error Schema，再由 Feature-owned Exact Mapping 将 Server Field Path 映射为 Form Field ID。Unknown Field、Form-level Error 和 Operation Conflict 保持不同 Category；不得把 Raw Server Message 直接显示。新的 Field Mapping 缺失必须在 Development/Static Gate 失败，并在 Production 退到安全 Form-level Message。
+
+## 21.4 Submission and Mutation
+
+Submit 时固定执行：完整 Validation → Canonical Payload Construction → Submission Lock → Mutation Attempt。相同 Form Instance 默认只允许一个 Mutation；重复点击复用 Pending State，不发第二请求。离开 Route、关闭 Dialog 或 Dispose Form 时，按 Mutation Contract 选择 Abort 或允许后台完成，不能默认为隐藏继续。
+
+Mutation 默认不重试；只有 §20 的显式 Idempotency Contract 才允许。成功后更新 Last-server-confirmed Snapshot、执行 Query Invalidation 并清 Dirty；失败保留用户输入。409/412 进入 Conflict UI，不覆盖输入。Optimistic Update 和 Rollback 遵守 §20.7。
+
+## 21.5 Accessibility
+
+每个字段必须有 Programmatic Label、稳定 Description/Error ID、Visible Required Meaning 和 Error Association。Submit Validation Failure 必须把 Focus 移到 Error Summary 或第一个 Invalid Field，并提供包含 Field Link 的 Live Region Summary；不得只用颜色、Placeholder 或 Toast 表达错误。
+
+Pending、Success 和 Failure Announcement 遵守命名 Live-region Policy；Disabled 与 Readonly 使用正确原生语义。Keyboard Submit 不得绕过 Validation；Focus Return、Dialog Form 和 Unsaved Confirmation 遵守 Route/Overlay Contract。
+
+## 21.6 Dates, Time Zones, Numbers and Files
 
 ```text
-VeeValidate:
-- touched
-- dirty
-- pending
-- submit
-- field registration
-- validation lifecycle
-
-Zod:
-- data shape
-- input constraints
-- parsing
-- transformation
-- runtime safety
-
-UiFormField:
-- label
-- description
-- required indicator
-- error id
-- aria-describedby
-- visual layout
+instant = UTC ISO 8601 string at API boundary
+date-only = calendar date without timezone conversion
+local date-time = explicit locale plus timeZone context
+duration = named unit and integer/decimal contract
+money = integer minor unit or validated decimal string, never binary-float authority
 ```
 
-禁止首期建设 Schema-Driven ProForm。
+Locale 与 Time Zone 是独立用户偏好；Formatter 使用 `Intl`。Ambiguous/Nonexistent Local Time 必须要求 Domain Policy，不自动猜测。Temporal 保持 `DEFERRED`，只有 Stable Platform/Polyfill Admission 后使用。
+
+File Input 必须保留用户显式选择，验证数量、MIME、扩展、单个/总大小和 Filename；Preview Object URL 在替换/Dispose 时撤销。File Content 不进 Form Log、Pinia Persistence 或 Local Storage。Upload Progress 和 Resume 需要 Endpoint 独立合同。
+
+## 21.7 Draft Persistence and Static Enforcement
+
+Draft 默认 Memory-only。跨刷新 Draft 只有在 Storage Gate 明确 Owner、Sensitivity、Expiration、Principal Partition、Migration 和 User-clear Action 后准入；Password、Credential、Payment Secret 和 File Content 永不持久化。
+
+Owning Gate 必须检查 Stable Dependency、Schema/Field Mapping Closure、Initial/Reset/Reinitialize Contract、Async Abort、Submission Lock、Server Error Mapping、A11y Association、Unsaved Policy、Sensitive Draft Prohibition 和 Form Direct Fetch。全部为 `TARGET_INACTIVE`。
 
 ---
 
-# 22. 数据表格策略
+# 22. Tables and Mutation-state Target Contract
 
-## Level 1：静态展示
+```text
+CAPABILITY=TABLES_AND_MUTATION_STATES
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=feature data boundary and demand-admitted @platform/ui table component
+ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+ACTIVATION_GATE_CREATION=UNIQUE_PAVP_TABLE_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
+```
+
+## 22.1 Shared Table Contract
+
+每张表必须声明 Exact `tableId`、Row Identity、Column Registry、Data Ownership、Pagination、Sorting、Filtering、Selection、Mutation、State Presentation、Scroll Owner 和 Persistence Policy。Row Key 必须来自稳定 Domain ID；Array Index、Rendered Position 和 Display Label 不得作为身份。
+
+Column Registry 定义 Column ID、Header Key、Cell Semantic、Sort/Filter Capability、Width Policy、Alignment、Visibility、Sensitive-data Classification 和 Export Eligibility。页面不能用任意 Column String、原始 Width 或 Inline Color。Cell Renderer 只接收 Typed Row Projection，不直接 Fetch 或读取全局 Store。
+
+## 22.2 Level 1: Native Static Table
 
 ```text
 Native HTML table
 + semantic tokens
 ```
 
-## Level 2：普通业务表格
+用于有限、非交互数据。必须使用 `caption`、`thead`、`tbody`、`th` Scope 和正确 Reading Order；不得用 CSS Grid/Div 模拟语义 Table。
+
+## 22.3 Level 2: TanStack Table Admission
 
 触发后增加：
 
@@ -3633,7 +4759,11 @@ TanStack Table
 * 普通行选择。
 * 服务端数据。
 
-## Level 3：专业 Grid
+TanStack Table 只有真实 Level 2 Consumer 出现后准入。Client/Server Ownership 必须逐 Capability 声明：Server Sorting/Filtering/Pagination 进入 Query Key 和 URL Schema；Client Capability 只能作用于当前完整数据集。禁止对 Server-paginated 当前页做“全局”Client Sort/Filter 后伪装完整结果。
+
+Pagination 使用 Cursor 或 Page Contract，不能混用。URL State 经 Route Query Schema 验证；Table、Route 和 Query Key 共用同一 Canonical State，不复制到第二个 Pinia Store。Background Refetch 保留稳定 Row Selection，但删除/权限变化的 Row 必须移除并通知。
+
+## 22.4 Level 3: Professional Grid
 
 满足至少两项时使用专业 Grid Adapter：
 
@@ -3660,30 +4790,109 @@ private lazy-loaded packages/ui/src/adapters/grid/**
 
 Adapter Path 和 Vendor Package 永不成为应用公共 API。Grid 拥有 Route Primary Axis 时，其祖先必须在同轴不可滚动，并由 Route Contract 精确声明。
 
+## 22.5 Virtualization, Selection and Editing
+
+Virtualization 只有测量证明 DOM/Render 成为瓶颈并通过 Scroll/A11y Gate 后准入。Virtual List/Grid 必须拥有 Bounded Scroll Region、Stable Estimated/Measured Size Policy、Keyboard Navigation、Focus Retention、Overscan Protocol Constant 和 Dispose Contract；Overscan、Row Height 与 Viewport Size 不在页面写 Literal。
+
+Selection 明确 `page-local`、`query-result` 或 `explicit-id-set`；“Select All”必须说明是当前页、当前过滤结果还是全数据，不能暗中改变语义。跨页 Selection 只保存 Stable ID 和 Query Fingerprint；Data/Permission 变化时重新验证。
+
+Inline Editing 使用 Form/Mutation Contract。每个 Row/Cell Mutation 必须声明 Concurrency、Lock、Optimistic、Rollback、ETag、Conflict 和 Error Placement；不得把 Failed Cell 只标红而无 Accessible Message。
+
+## 22.6 Loading, Empty, Partial, Stale, Offline and Error
+
+```ts
+type DataPresentationState =
+  | 'initial-loading'
+  | 'refreshing'
+  | 'empty-unfiltered'
+  | 'empty-filtered'
+  | 'partial'
+  | 'stale'
+  | 'offline-with-cache'
+  | 'offline-without-cache'
+  | 'error-recoverable'
+  | 'error-terminal'
+  | 'ready'
+```
+
+Initial Loading 与 Refreshing 不清空已有 Row；Empty-filtered 必须提供清除过滤 Action；Partial 显示范围/限制；Stale/Offline 标明数据时效；Error 使用 Error Registry 和 Query Retry Owner。Loading、Empty 和 Error 组件只有出现真实跨页面复用后进入 `@platform/ui`。
+
+## 22.7 Table Persistence and Static Enforcement
+
+Column Visibility/Order/Width 只有在 Storage Registry 声明 Table Schema Version、Column Migration、Principal Partition 和 Reset Action 后持久化。Filter、Sensitive Search、Selection 和 Row Data 默认不持久化。
+
+Owning Gate 必须检查 Table/Column/Row Registry、Stable Identity、URL/Query State 单一权威、Client/Server Capability、Scroll Owner、A11y Markup、Virtualization Admission、Mutation Contract、State Exhaustiveness、Vendor Isolation 和 Persistence Allowlist。全部为 `TARGET_INACTIVE`。
+
 ---
 
-# 23. 国际化
+# 23. Internationalization Target Contract
 
-基础使用 Vue I18n，但初始可以只有一个 Locale。
+```text
+CAPABILITY=I18N
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/shared/i18n
+LIBRARY_DIRECTION=VUE_I18N_STABLE_RELEASE_AT_ADMISSION
+ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+ACTIVATION_GATE_CREATION=UNIQUE_PAVP_I18N_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
+```
 
-规则：
+## 23.1 Locale Registry and Resolution
 
-* 所有用户可见的公共组件文本使用 Key。
-* Route Title 使用 Key。
-* 日期、数字和货币使用 `Intl`。
-* 不自行拼接复数。
-* UI 必须考虑文本膨胀。
-* 组件使用 Logical Properties。
-* Reka UI 的 RTL 和 Locale 能力通过 UI Adapter 配置。
-* Locale 文件按路由或 Feature 懒加载。
+```ts
+interface LocaleRegistryRecord {
+  id: string
+  languageTag: string
+  direction: 'ltr' | 'rtl'
+  messageLoaderId: string
+  intlLocale: string
+  capabilityStatus: CapabilityStatus
+}
+```
 
-禁止使用 Moment 或 Day.js 作为基础依赖。
+初始 Product Locale Default 由 Typed Default Registry 唯一声明为注册的 `en` Locale；HTML 的安全 `lang` 必须与该 Default 生成/校验一致。有效 Locale 解析优先级：Validated User Preference → Authenticated Account Preference → Supported Browser Language Match → Product Locale Default。任何来源先通过 Exact Locale Registry；Unknown Locale 不持久化。
 
-复杂日期和时区需求出现后评估 Temporal；基础架构继续使用 ISO 字符串和 `Intl`。
+Fallback Locale 固定为 Product Locale Default，不能形成多级循环。Locale、Time Zone、Numbering System 和 Calendar 是独立轴；切换 Locale 不改 Time Zone 或业务数据。
+
+## 23.2 Message Ownership and Loading
+
+所有用户可见文本、Route Title、Breadcrumb、Form/Error/Empty/Fatal Message 和公共组件 Copy 使用 Typed Message Key。Message Key 由 App/Feature Owner 分区，禁止运行时字符串拼接 Key、默认英文 Literal、Component 内部 Vendor Copy 或同 Key 不同参数 Shape。
+
+Locale Bundle 按 Route/Feature Lazy Load，并使用 Generated Key/Parameter Schema。切换流程为：Load and validate complete bundle → set Vue I18n locale → atomically update `html.lang` and `html.dir` → announce change。Load Failure 保留当前 Locale，返回注册 Error；不得留下 Message/Direction 混合状态。
+
+Development 遇到 Missing Key/Parameter 必须失败或显式告警；Production 使用同 Key 的 Product Default Locale 文本并发送去重 Observability Event。若 Default Locale 也缺失，显示注册的安全通用消息，不显示 Raw Key 或空白。
+
+## 23.3 Persistence, RTL and Text Expansion
+
+Locale Preference 通过 Storage Registry 持久化并按 Account/Anonymous Merge Policy 处理；Component 不直接访问 `navigator.language` 或 Storage。Cross-tab Locale Change 使用 §19.5 Revision Contract。
+
+布局使用 Logical Properties；Icon Direction、Navigation Order、Table Alignment、Animation Origin 和 Gesture Direction 必须声明是否随 RTL 镜像。品牌标志、媒体内容和不可镜像数据图形保持原方向。所有 UI 必须容纳命名 Text Expansion Budget，不通过 Fixed Height、截断 Required Label 或缩小 Font 绕过。
+
+## 23.4 Date, Time Zone, Number and API Boundary
+
+Formatter 只使用集中 Typed `Intl` Formatter Registry，不能在 Component 重复 `new Intl.*` Options Literal。Instant、Date-only、Local Date-time、Duration、Money 和 Decimal 遵守 §21.6。Time Zone 默认来自 Typed User/Account Preference；缺失时使用 Runtime Configuration 的 Product Zone Policy，不从 Locale 推导。
+
+如果 API 表示随 Locale 变化，Locale ID 必须进入 Request Header Registry 和 Query Key；不随 Locale 变化的数据不得因切换 Locale 重取。Server Message 不直接显示，仍映射到本地 Message Key。禁止 Moment/Day.js 基础依赖；Temporal 在明确 Stable/Polyfill Gate 前为 `DEFERRED`。
+
+## 23.5 I18n Static Enforcement Targets
+
+Owning Gate 必须验证 Locale Registry、Default/Fallback 唯一性、Message Key/Parameter Set、Route/Error/Form Copy Closure、HTML Lang/Dir Atomicity、Storage Ownership、RTL Metadata、Formatter Registry、Locale-sensitive Query Key 和 Missing-key Policy。规则在 I18n Implementation 前为 `TARGET_INACTIVE`。
 
 ---
 
 # 24. 动画系统
+
+```text
+CAPABILITY=RUNTIME_MOTION
+CAPABILITY_STATUS=TARGET_INACTIVE
+CSS_MOTION_TOKEN_BASELINE_STATUS=ACTIVE
+VIEW_TRANSITION_STATUS=TARGET_INACTIVE
+VIEW_TRANSITION_MODE=PROGRESSIVE_ENHANCEMENT
+VIEW_TRANSITION_ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+VIEW_TRANSITION_ACTIVATION_GATE_CREATION=UNIQUE_PAVP_MOTION_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
+MOTION_FOR_VUE_STATUS=DEFERRED
+GSAP_STATUS=DEFERRED
+OWNER=packages/ui private motion boundary after admission
+```
 
 优先级：
 
@@ -3762,6 +4971,55 @@ GSAP 只有同时满足以下条件才允许引入：
 
 外部人员、Machine-local Skill、Registry 或客户端专属能力不能成为 Admission Authority。
 
+## 24.3 Motion Value Authority
+
+Duration、Delay、Easing、Spring、Distance、Origin、Stagger、Gesture Threshold 和 Interruption Window 必须属于 Motion Token、Named Interaction Registry 或准入后的 Private Adapter Contract。页面、Feature、Shared Module 和 Public Component 不得写 Millisecond、Cubic-bezier、Spring Number、Transform Distance 或 `will-change` Literal。
+
+```ts
+interface MotionInteractionRecord {
+  id: string
+  ownerComponent: string
+  semanticPurpose: string
+  implementationTier: 'css' | 'view-transition' | 'motion-adapter' | 'gsap-adapter'
+  durationToken: string
+  easingToken: string
+  fullBehavior: string
+  reducedBehavior: string
+  noneBehavior: string
+  interruptionPolicy: string
+  reversalPolicy: string
+  cleanupPolicy: string
+  capabilityStatus: CapabilityStatus
+}
+```
+
+Motion Preference `full | reduced | none` 只改变表达，不改变最终业务状态、Focus、Reading Order、Accessible Name 或 Operation Result。`reduced` 禁止大幅位移、缩放、视差和自动连续 Motion；`none` 直接提交最终状态，但仍保留必要 Loading/Progress Semantics。
+
+## 24.4 Lifecycle, Interruption and Cleanup
+
+每次 Interaction 使用唯一 Instance ID 和状态机：
+
+```text
+idle → running → completed
+idle → running → interrupted → disposed
+idle → running → reversing → completed
+any non-disposed state → disposed
+```
+
+用户新输入、Route Disposal、Component Unmount、Preference Change、Visibility Loss 和 Application Disposal 必须中断当前 Motion 并提交合同指定的稳定状态。Promise、Callback 和 Focus Transfer 必须恰好完成一次；取消不能留下 Inline Style、Transform、`will-change`、Timer、RAF、Observer 或 Event Listener。
+
+Reversal 只有 Interaction Registry 声明且能保持状态一致时允许；Gesture 可在适用时继承输入速度，但速度、阻尼和边界都由 Private Adapter Contract 管理。长动画不能阻止用户操作；所有可交互控件先立即响应，再表现 Motion。
+
+## 24.5 View Transition Contract
+
+View Transition 仅用于已注册的页面/状态切换 Progressive Enhancement。调用前必须确认 Browser Capability、Motion Preference、Document State、参与 Element Identity 和 Route Lifecycle；任一条件不满足则直接提交 DOM 最终状态。
+
+Transition Name 只能来自 Exact Motion Registry，不能由用户数据、Route Param 或 DOM Text 构造。Transition Callback 抛错或 Navigation 取消时必须恢复稳定 DOM、清 Name 和完成 Focus/Scroll Contract。View Transition 不拥有 Router、Query Prefetch 或业务 Mutation。
+
+## 24.6 Motion Static Enforcement Targets
+
+Static Gate 必须拒绝 `transition-all`、任意 Duration/Easing/Delay/Transform Distance、永久 `will-change`、页面 Motion Vendor Import、未知 Transition Name、Reduced/None Contract 缺失、无 Cleanup/Interruption 的 Interaction、Scroll Hijacking 和 Public Optical/Spring Prop。Motion Registry、Token 和 Adapter Import Set 必须闭合；在对应 Gate 前为 `TARGET_INACTIVE`。
+
 ---
 
 # 25. 无障碍基线
@@ -3770,6 +5028,14 @@ GSAP 只有同时满足以下条件才允许引入：
 
 ```text
 WCAG 2.2 AA
+```
+
+```text
+CAPABILITY=ACCESSIBILITY_ARCHITECTURE_BASELINE
+CAPABILITY_STATUS=ACTIVE
+RUNTIME_COMPONENT_ACCESSIBILITY_STATUS=TARGET_INACTIVE
+RUNTIME_COMPONENT_ACCESSIBILITY_ACTIVATION_GATE=COMPONENT_OR_ROUTE_ADMISSION
+OWNER=semantic component, route and application boundary owners
 ```
 
 ## 25.1 Versioned Named Contrast Registry
@@ -4005,6 +5271,30 @@ Owner 可以选择在仓库外手工观察：
 * Responsive Reading Order。
 
 Codex 不得打开或操作浏览器来执行这些观察。Codex 只能审查 Owner 明确提供的观察记录；这些记录不进入仓库，也不改变 `pnpm verify` 作为唯一 Codex Verification Gate 的合同。
+
+## 25.2 Semantic, Name, Keyboard and Focus Contract
+
+原生语义 HTML 是第一选择；只有原生元素无法满足复合交互时才准入 Reka Adapter。每个交互必须声明 Role、Accessible Name Source、Description、Keyboard Map、Focus Entry、Focus Movement、Focus Exit、Focus Return、Disabled/Readonly State 和 Error/Loading Announcement。
+
+Accessible Name 优先级由 Component Contract 固定：Visible Label → explicit labelled-by ID → semantic `aria-label` only when no visible label is possible。Placeholder、Icon、Tooltip 和 Visual Position 不能单独构成 Name。重复 ID、空 Label、Name 与可见文本冲突、不可达 Description 必须失败。
+
+Keyboard Contract 必须使用平台约定与原生行为：Tab 只移动全局 Focus，Arrow/Home/End/Enter/Space/Escape 由对应 Composite Pattern 定义。不得劫持浏览器、Screen Reader 或文本编辑快捷键。所有 Pointer/Drag Operation 必须有键盘和非拖动替代。
+
+Focus Indicator 只能消费 Focus Token，不能被 Outline Reset 移除。Route、Dialog、Popover、Sheet、Error Boundary、Deletion 和 Async Completion 必须定义 Focus Destination/Return；被删除或 Disabled Trigger 不存在时回到最近有效 Landmark。Programmatic Focus 必须等待 DOM Ready，但不能用任意 Timeout。
+
+## 25.3 Live Region and Adaptive Accessibility
+
+Live Region Registry 定义 `polite`/`assertive`、Message Key、Deduplication Window 和 Owner。Progress、Loading、Save、Validation、Connection 和 Background Refresh 不得同时由多个 Region 重复播报。Assertive 只用于需要立即干预的失败；普通状态使用 Polite 或可见静态文本。
+
+Forced Colors 激活时使用 System Color、Visible Boundary 和 Solid Material；不得用 `forced-color-adjust: none` 绕过，除非保留语义所必需并通过独立审查。Reduced Transparency 解析为 Reduced/Solid；Reduced Motion/None 遵守 §24；Zoom、200% Reflow、Text Spacing 与 RTL 不能造成信息/操作丢失。
+
+Minimum Pointer Target 为注册的 24×24 CSS px AA Contract；Coarse Pointer Preferred Target 为注册的 44×44 CSS px Policy。目标大小来自 Interaction Token，不由 Component 写数字。紧凑视觉可以使用透明命中区域，但不能与相邻目标重叠或改变 Reading Order。
+
+## 25.4 Accessibility Enforcement and Release Acceptance
+
+Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、Forbidden Outline Removal、Token Consumption、Required Keyboard/Focus Metadata、Live Region Registry 和 Component Contract Closure；静态工具不得宣称已证明真实键盘、Screen Reader、Focus Return、Touch Target、合成 Contrast 或 Reading Order。
+
+每个包含新/改变交互、Route、Layout、Material 或 Motion 的 Production Release 必须由 Owner 在仓库外按命名 Runtime Acceptance Matrix 检查 Keyboard、Focus、Name、Reading Order、Contrast、Forced Colors、Reduced Motion/Transparency、Touch Target 和 Zoom/Reflow。该 Release Gate 不由 Codex 执行、不改变 Codex `pnpm verify` Completion，也不提交 Screenshot、Recording、Trace 或 Evidence File。
 
 ---
 
@@ -4366,11 +5656,82 @@ application-owned storage-key consistency
 
 Optical CSS 检查必须覆盖 `apps/**/*.css` 与 Vue `<style>`，UI-internal CSS Variable 使用必须对照 Manifest。Direct Storage Rule 只允许应用所有的 `preference-storage.ts` 与按 Gate 创建的 `custom-theme-registry-storage.ts` 执行各自边界内的读写；另一个窄例外是 Generated `appearance-init.js` 可以使用应用通过 `data-preference-storage-key` 与可选 `data-theme-registry-storage-key` 提供的 Key 执行同步只读 First-paint 访问。它不得写入 Storage，Design System 其他源文件和其他应用文件不得直接访问。
 
+## 29.1 Frozen Static Enforcement Target Registry
+
+每个 Frozen Rule 必须有一条可定位、可失败、可接入 `pnpm verify` 的记录：
+
+```ts
+interface StaticEnforcementTarget {
+  id: string
+  capabilityStatus: CapabilityStatus
+  ownerGate: string
+  scanBoundary: readonly string[]
+  approvedAuthorities: readonly (
+    | ApprovedValueAuthorityKind
+    | 'generated-output'
+    | 'capability-status-registry'
+    | 'package-boundary-registry'
+  )[]
+  failureCode: string
+}
+```
+
+现有规则只对其当前实现范围标记 `ACTIVE`；完整 Foundation Enforcement 在对应 Work Package 落地前保持 `TARGET_INACTIVE`：
+
+| Enforcement ID | Status | Owner gate | Scan boundary | Approved authorities | Failure code |
+| --- | --- | --- | --- | --- | --- |
+| `no-raw-ui-colors` | `ACTIVE` | `CURRENT_STATIC_PRODUCTION_GATE` | App/UI TypeScript and Vue literals | `design-token-source`; `generated-output` | `RAW_UI_COLOR` |
+| `no-dynamic-unocss-classes` | `ACTIVE` | `CURRENT_STATIC_PRODUCTION_GATE` | App/UI Vue class bindings and TypeScript class construction | `generated-output` | `DYNAMIC_UNOCSS_CLASS` |
+| `no-direct-storage-access` | `ACTIVE` | `CURRENT_APPEARANCE_PERSISTENCE_GATE` | App/UI TypeScript and Vue browser-storage globals | `storage-registry` | `DIRECT_STORAGE_ACCESS` |
+| `no-unapproved-raw-colors-complete` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS; UnoCSS maps; Theme Bank consumers | `design-token-source`; `generated-output` | `UNAPPROVED_RAW_COLOR` |
+| `no-unapproved-dimensions` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno width, height, inset, translate, grid/flex basis | `design-token-source`; `named-protocol-constant` | `UNAPPROVED_DIMENSION` |
+| `no-unapproved-spacing` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno margin, padding and gap | `design-token-source` | `UNAPPROVED_SPACING` |
+| `no-unapproved-radius` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno radius and shape | `design-token-source` | `UNAPPROVED_RADIUS` |
+| `no-unapproved-shadow` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno box/text/drop shadow | `design-token-source` | `UNAPPROVED_SHADOW` |
+| `no-unapproved-z-index` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno layer values | `design-token-source`; `domain-schema` | `UNAPPROVED_Z_INDEX` |
+| `no-unapproved-typography-value` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno font, line and letter metrics | `design-token-source` | `UNAPPROVED_TYPOGRAPHY` |
+| `no-unapproved-density-or-font-scale` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Preference schema/default/store; DOM attributes; App/UI consumers | `typed-default-registry`; `design-token-source`; `generated-output` | `UNAPPROVED_DENSITY_FONT_SCALE` |
+| `no-consumer-authored-appearance-default` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Page/Feature/Shared/Public UI TS/Vue/CSS and appearance DOM attributes | `typed-default-registry`; `generated-output` | `CONSUMER_APPEARANCE_DEFAULT` |
+| `no-unapproved-motion-duration` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS animation, transition, delay and animation timeout | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_DURATION` |
+| `no-unapproved-motion-easing` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS timing, spring and curve values | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_EASING` |
+| `no-transition-all` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | All authored CSS, Vue Transition and future motion adapters | `design-token-source` | `TRANSITION_ALL` |
+| `no-unregistered-breakpoint` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Media/container queries and JS layout thresholds | `domain-schema`; `design-token-source` | `UNREGISTERED_BREAKPOINT` |
+| `no-unregistered-scroll-dimension` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Scroll offset, compensation, threshold and restoration tolerance | `route-registry`; `design-token-source`; `named-protocol-constant` | `UNREGISTERED_SCROLL_DIMENSION` |
+| `no-unregistered-touch-target` | `TARGET_INACTIVE` | `PAVP_FIRST_PROTECTED_VERTICAL_SLICE` | Public UI hit-area and pointer target metrics | `design-token-source`; `named-protocol-constant` | `UNREGISTERED_TOUCH_TARGET` |
+| `no-raw-storage-key` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Source, HTML attributes, First Paint, migrations and storage adapters | `storage-registry`; `generated-output` | `RAW_STORAGE_KEY` |
+| `storage-owner-registry-closure` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Local Storage, IndexedDB, memory adapter and cross-tab calls | `storage-registry` | `UNREGISTERED_STORAGE_OWNER` |
+| `no-sensitive-persistence` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Persisted schemas, serializers, writers, migrations and snapshots | `storage-registry`; `domain-schema` | `SENSITIVE_PERSISTENCE` |
+| `no-direct-fetch-access` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | App/UI `fetch`, XHR, Beacon and vendor HTTP imports | `runtime-configuration-schema`; `domain-schema` | `DIRECT_FETCH_ACCESS` |
+| `no-unregistered-api-policy-literal` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Base URL, timeout, retry, backoff, cache, header and concurrency policy | `runtime-configuration-schema`; `domain-schema`; `named-protocol-constant` | `UNREGISTERED_API_POLICY` |
+| `route-registry-name-and-meta-closure` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | File routes, route records, redirects, error routes and navigation consumers | `route-registry`; `generated-output` | `ROUTE_REGISTRY_DRIFT` |
+| `no-undeclared-route-meta` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Every static/dynamic route meta object | `route-registry` | `UNDECLARED_ROUTE_META` |
+| `registered-errors-only` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Core errors plus exact extensions in Router/Storage/API/Auth/Observability consumers | `error-registry` | `UNREGISTERED_ERROR` |
+| `registered-permissions-only` | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` | Route, component visibility, operation and claim projection | `permission-registry` | `UNREGISTERED_PERMISSION` |
+| `no-inactive-capability-import` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | Package manifests and complete workspace import graph | `capability-status-registry`; `package-boundary-registry` | `INACTIVE_CAPABILITY_IMPORT` |
+| `no-query-data-copied-into-pinia` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Pinia state/actions, Query callbacks and server-entity consumers | `domain-schema` | `QUERY_DATA_COPIED_TO_PINIA` |
+| `no-theme-literal-runtime-state` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Appearance stores, pages, features, shared modules, public UI and DOM writers | `typed-default-registry`; `design-token-source`; `generated-output` | `THEME_LITERAL_RUNTIME_STATE` |
+| `single-product-default-authority` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Schema defaults, stores, reset, First Paint, Runtime Config, Page/Feature/Shared/Public UI, appearance attributes and documentation code | `typed-default-registry`; `generated-output` | `DUPLICATE_PRODUCT_DEFAULT` |
+| `single-safety-baseline-authority` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | HTML, Critical CSS, Manifest, initializer and persistence consumers | `typed-default-registry`; `generated-output` | `DUPLICATE_SAFETY_BASELINE` |
+| `no-unregistered-environment-default` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Config loader/schema and every App/Feature/UI environment consumer | `runtime-configuration-schema` | `UNREGISTERED_ENVIRONMENT_DEFAULT` |
+
+`TARGET_INACTIVE` Rule 只有在同一个 Owning Package 中交付现有 Toolchain 内的实现、接入 `pnpm verify`、通过可逆 Negative Probe、证明 Allowed Authority 是 Exact Registry 而不是宽泛 Path Escape，并保持无 Test/Evidence Artifact 后，才能改为 `ACTIVE`。Regex 只能作为确定性 Lexer 的一部分；对 TypeScript/Vue/CSS/JSON/Generated Record 的结构性合同必须使用相应 Parser、AST 或 Exact-set Comparison，不能用注释、命名约定或 Allowlist Wildcard 代替。
+
+所有 Rule 的默认 Failure Policy 是 Closed：未知 Authority、未知 Status、无法解析的动态值、未注册 Consumer 或 Checker 自身配置错误都必须失败。局部 Algorithmic Invariant 例外必须携带 Narrow Named Constant、单一 Consumer 和 Source-local Explanation；Static Gate 必须拒绝把该例外导出、复制或升级为 Product/Visual/Protocol Default。
+
 ---
 
 # 30. 项目生成器
 
-提供：
+```text
+CAPABILITY=PROJECT_GENERATORS
+CAPABILITY_STATUS=TARGET_INACTIVE
+CURRENT_GENERATOR_SCRIPTS=NONE
+ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+ACTIVATION_GATE_CREATION=UNIQUE_PAVP_GENERATOR_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
+EARLIEST_ENTRY=PAVP_FIRST_PROTECTED_VERTICAL_SLICE=COMPLETE_AND_REPEATED_SCAFFOLDING_NEED_PROVEN
+```
+
+以下命令是 Target Command Name，不是当前可用命令：
 
 ```text
 pnpm generate:feature
@@ -4391,6 +5752,8 @@ feature/
 ```
 
 生成器不得生成大段业务代码。
+
+生成器只有出现重复、稳定且可验证的真实脚手架需求后才能准入。准入包必须在同一变更中交付 Script、Input Schema、Exact Output Allowlist、Collision/Existing-file Refusal、Deterministic Formatting、Root `package.json` Command、Knip/Architecture Integration 和 Static Negative Probe。不得覆盖文件、创建空目录、生成业务逻辑、引入第二架构模板或在 Script 实现前把命令列入 §31 Active Command。
 
 ---
 
@@ -4419,6 +5782,19 @@ pnpm verify
 ```
 
 ## 31.1 `pnpm verify`
+
+```text
+NODE_VERIFICATION_AUTHORITY=24.15.0_EXACT
+PNPM_VERIFICATION_AUTHORITY=10.34.5_EXACT
+DECLARED_RUNTIME_PARITY_CHECK=ACTIVE
+PROCESS_RUNTIME_PREFLIGHT=TARGET_INACTIVE
+PROCESS_RUNTIME_PREFLIGHT_OWNER=PAVP_FINAL_STATIC_GOVERNANCE
+PROCESS_RUNTIME_PREFLIGHT_ORDER=FIRST_BEFORE_FORMAT_CHECK
+PROCESS_RUNTIME_MISMATCH=FAIL_CLOSED_WITH_REQUIRED_AND_RECEIVED_VERSION
+CURRENT_EXECUTOR_OBLIGATION=CONFIRM_EXACT_NODE_AND_PNPM_BEFORE_PNPM_VERIFY
+```
+
+`DECLARED_RUNTIME_PARITY_CHECK=ACTIVE` 仅表示现有 Schema Check 会核对 `project.config.ts`、`mise.toml`、Package Manager 声明与 CI 配置，不表示它已检查正在执行的 Node/pnpm Process。Target Preflight 必须读取实际 Process Node Version，并以不依赖全局状态的确定性方式取得实际 pnpm Version；它必须成为 `pnpm verify` 的首个 Gate，不能等到 `schema:check` 才运行。
 
 ```text
 format check
@@ -4476,11 +5852,22 @@ runtime console and network correctness
 Custom Theme Bank switch timing and visual atomicity
 ```
 
-静态检查不得宣称已经证明 Runtime-only Property。Owner 可以在仓库外选择手工观察这些行为并向 Codex 提供明确记录供只读审查；该观察可缺省、非门槛且不得被 Codex 执行。该模型不授权 Test、Browser Automation 或 Committed Evidence。
+静态检查不得宣称已经证明 Runtime-only Property。对于 Codex Task Completion，Owner 可以在仓库外选择手工观察这些行为并向 Codex 提供明确记录供只读审查；该观察可缺省、不是 Codex 门槛且不得被 Codex 执行。对于 Production Release，§32.3 的 Owner External Runtime Acceptance 是独立必需门禁。两种情形都不授权 Test、Browser Automation 或 Committed Evidence。
 
 未来规则只有在其负责 Work Package 实现、接入 `pnpm verify` 并通过后才是机器强制；本文声明本身不代表 Validator 已存在。
 
 ## 31.3 GitHub 托管门槛
+
+```text
+MAINTENANCE_BRANCH=main
+LOCAL_VERIFY_BEFORE_COMMIT=REQUIRED
+PUSH_CI_MONITORING=REQUIRED_UNTIL_TERMINAL_RESULT
+FAILED_MAIN_CI_ACTION=EXPLICIT_REVERT_AFTER_CAUSE_CONFIRMATION
+FORCE_PUSH_OR_HISTORY_REWRITE=PROHIBITED
+PARALLEL_MAINTENANCE_BRANCH_WORKFLOW=PROHIBITED
+```
+
+每个允许产生 Commit 的实现任务都必须在精确 Runtime Authority 下先通过本地 `pnpm verify`，再提交到受保护的 `main`。Push 后必须观察对应 Static Verification 与 CodeQL 的终态；失败时停止后续 Package，确认失败与该 Landing 的因果关系，并用显式 Revert Commit 恢复上一通过状态。不得跳过失败、在其上继续叠加实现、Force Push、Rewrite History 或创建长期维护分支。本节不授权当前 Architecture Freeze 执行 Commit、Push 或 Revert。
 
 ```text
 CodeQL
@@ -4492,7 +5879,7 @@ Dependabot alerts
 
 ---
 
-# 32. Codex Browser Prohibition and Optional Owner Inspection
+# 32. Codex Browser Prohibition and Owner Release Acceptance
 
 ## 32.1 Codex Verification Boundary
 
@@ -4501,14 +5888,17 @@ Codex Browser Operation、Chrome DevTools、ChromeDev、Browser Testing 和 Brow
 ```text
 CODEX_VERIFICATION_MODEL=pnpm verify
 CODEX_BROWSER_OPERATION=PROHIBITED
-OWNER_MANUAL_RUNTIME_INSPECTION=OPTIONAL_EXTERNAL_NON_GATING
+OWNER_MANUAL_RUNTIME_INSPECTION_FOR_CODEX_TASKS=OPTIONAL_EXTERNAL_NON_GATING
+OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE=REQUIRED_EXTERNAL_NON_REPOSITORY
 ```
 
 即使当前客户端提供浏览器能力，也不构成授权。请求 Codex 执行浏览器操作必须以 `ARCHITECTURE_CONFLICT` 停止该部分；其余合法静态工作可以继续。仓库不得包含 Browser Configuration、Automation、Evidence 或专用 Tooling。
 
-## 32.2 Optional Owner-operated Observation
+`AGENTS.md`、README 和从属 Workflow 中的“Owner Observation Optional/Non-gating”只描述 Codex Task Completion，不得解释为免除 Product Release Gate。Supporting File 不承载 Release 规范；本节是唯一规范权威。
 
-Owner 可以完全在仓库外、自行操作浏览器并选择观察：
+## 32.2 Owner-operated Observation Matrix
+
+Owner 完全在仓库外自行操作浏览器。非发布任务可以选择观察；Production Release 必须按 §32.3 选择当前 Release 涉及的全部适用项：
 
 Appearance：
 
@@ -4535,9 +5925,33 @@ Shell, Layout and Scroll：
 
 Owner Observation 不是 Codex Completion Gate。Owner 明确提供观察结果时，Codex 只能以 `review` 模式分析，不得自行复现。观察记录不提交到仓库。
 
+## 32.3 Required External Production Release Acceptance
+
+每个 Production Release 必须由 Owner 在仓库外完成适用 Runtime Matrix，并作出单一 Release Decision：
+
+```text
+OWNER_PRODUCTION_RELEASE_DECISION=ACCEPT | REJECT
+RELEASE_ID=<releaseSha + buildVersion>
+APPLICABLE_RUNTIME_DOMAINS=<named matrix domains>
+```
+
+该 Decision 由 Owner/Deployment Process 保持在仓库外；不得创建 Evidence、Screenshot、Trace、Checklist File、Test 或 Browser Automation。`REJECT` 必须阻止部署或触发 Rollback；`ACCEPT` 只授权该精确 Release，不成为未来 Release 证据。
+
+Minimum Matrix：Startup/Runtime Config、Appearance First Paint and Atomic Theme、关键 Route/Auth/Permission、API/Mutation/Conflict、Storage Migration/Corruption/Cross-tab、Keyboard/Focus/Name、Layout/Scroll、Reduced/Forced Modes、关键 Performance 和 Error Reporting。只发布静态架构文档且没有 Runtime Artifact 变化时，Product Release Gate 不适用；Codex 仍运行 `pnpm verify`。
+
+Release Acceptance 不能覆盖失败的 Static Gate、降低 WCAG/安全合同或批准已知 Secret/数据损失风险。Codex 不得把未提供的 Owner Decision 推断为接受。
+
 ---
 
 # 33. 性能规则
+
+```text
+CAPABILITY=PERFORMANCE_GOVERNANCE
+CAPABILITY_STATUS=ACTIVE
+ACTIVE_SCOPE=BUILD_AND_GENERATED_MANIFEST_BUDGETS
+RUNTIME_PERFORMANCE_OBSERVABILITY=TARGET_INACTIVE
+OWNER=build verification plus observability and owning feature
+```
 
 初始预算：
 
@@ -4568,12 +5982,72 @@ Owner Observation 不是 Codex Completion Gate。Owner 明确提供观察结果�
 * 不嵌套 Material Surface，不形成 Glass-on-glass。
 * 不永久设置 `will-change`。
 * Viewport Scrim 可以使用 Semantic Scrim Token 覆盖 Viewport，但它不是 Full-viewport Material Surface。
-* Material 的 Paint、Layer 和 Interaction Performance 可以由 Owner 在仓库外选择手工观察；不是 Codex Gate。
+* 对 Codex Task Completion，Material 的 Paint、Layer 和 Interaction Performance 可以由 Owner 在仓库外选择手工观察；不是 Codex Gate。对涉及这些行为的 Production Release，§32.3 的适用 Runtime Acceptance 是必需 Gate。
 * Atomic Cutover 后引入的 Private Theme Bank 与独立 Selector Output 必须保持初始 CSS Budget。
+
+## 33.1 Performance Budget Registry
+
+所有 Bundle、Route、Runtime Metric、Long Task、Resource、Memory 和 Interaction Threshold 必须来自 Versioned Performance Budget Registry，不能由 Vite Config、Feature、Component 或 Dashboard 重复数字。
+
+```ts
+interface PerformanceBudgetRecord {
+  id: string
+  metric: string
+  scope: 'application' | 'route' | 'component' | 'resource' | 'interaction'
+  limit: number
+  unit: 'bytes-gzip' | 'milliseconds' | 'ratio' | 'count'
+  percentile: 75 | null
+  environment: 'production-build' | 'production-runtime'
+  owner: string
+  action: 'fail-build' | 'block-release' | 'investigate'
+  capabilityStatus: CapabilityStatus
+}
+```
+
+当前 Bundle Table 是 `ACTIVE` Build Registry 的规范投影。Target Runtime Baseline 在 Observability Gate 激活时必须至少注册：LCP `2500ms` p75、INP `200ms` p75、CLS `0.1` p75；Long Task 使用 Browser `>50ms` 定义并记录 Count/Duration，不直接作为单次用户的失败判定。阈值变化需要 Architecture Amendment，不能由 Telemetry Provider 默认值改变。
+
+## 33.2 Route and Resource Loading
+
+所有业务 Route 默认 Dynamic Import。Root Shell 只包含 First Paint、Fatal Boundary、Router Bootstrap 和当前 Route 必需 Provider；Theme Editor、专业 Grid、Editor、Charts、Locale Bundle 和非当前 Feature 必须 Lazy Load。Prefetch 只能由 Route/Data Policy Registry 在 Network、Save-data、Session、Permission 和 Cache 条件允许时启动，并可由 Navigation Cancel。
+
+Asset 使用 Content Hash 与 Immutable Cache；HTML、Runtime Config 和 Release Manifest 不得使用相同长缓存。Icon 只导入使用的集合成员；禁止整库 Side Effect Import、全局注册所有 Component 和无 Consumer 的 Polyfill。
+
+## 33.3 Rendering, Interaction and Memory
+
+在测量证明前不引入 Virtualization、Memoization Layer 或 Web Worker。Reactive State 保持最小，Derived Value 使用 Computed，不复制 Query Data；大型 Object 不进入 Deep Reactive Store。List 使用 Stable Key，避免 Layout Thrashing、同步读写交错和无界 Watcher。
+
+Interaction Owner 必须定义测量起点、完成点和取消结果。Animation 只使用 §24 准入属性；Backdrop/Filter 不动画。Observer、Listener、Timer、RAF、Object URL、Worker、Query 和 Cache 都有 Disposal/Retention Policy。Route Disposal 后残留 Resource Count 必须回到命名 Baseline。
+
+## 33.4 Measurement and Release Gate
+
+Build Gate 测量 Production Output Gzip，不用 Source Map 或 Dev Bundle 代替。Runtime Metric 只来自 Production-like Release，带 Release SHA、Route Telemetry Name 和匿名环境维度；Field 与 Lab 数据分开，不相互冒充。少量样本不自动阻止 Release，但超过 Block-release Budget 或已知交互回归必须由 Owner 明确处理。
+
+Production Release 的 Owner External Runtime Acceptance 必须覆盖首次加载、一次 Route Lazy Load、关键 Interaction、Material Paint/Layer、长列表/表格和 Cleanup；不向仓库提交 Trace/Screenshot/Evidence。Codex 只验证静态 Bundle 与合同，不操作浏览器。
+
+## 33.5 Performance Static Enforcement Targets
+
+Owning Gate 必须检查所有 Budget 来自 Registry、Route 默认 Lazy、重依赖仅在批准 Chunk、禁止 Query Copy/无界 Cache/永久 `will-change`/Filter Animation、Listener/Observer 有 Dispose、Public Component 不写 Metric Threshold。Runtime Enforcement 在 Observability Gate 前为 `TARGET_INACTIVE`；现有 Bundle/Manifest Budget 保持 `ACTIVE`。
 
 ---
 
 # 34. 安全规则
+
+```text
+CAPABILITY=CORE_RUNTIME_CONFIGURATION
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=apps/web/src/app/config
+ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+CONSUMER_ADMISSION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+FIELD_EXTENSION_GATES=PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+FIELD_EXTENSION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+FIELD_EXTENSION_GATE_CREATION=UNIQUE_PAVP_I18N_INSTANCE_ID_REQUIRED_FOR_PRODUCT_ZONE_POLICY
+
+CAPABILITY=DEPLOYMENT_DELIVERY_AND_SECURITY_INTEGRATION
+CAPABILITY_STATUS=TARGET_INACTIVE
+OWNER=deployment platform plus apps/web configuration boundary
+ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_IMPLICIT
+```
 
 * 所有环境变量通过 Zod 校验。
 * `VITE_*` 中不得存放秘密。
@@ -4588,6 +6062,131 @@ Owner Observation 不是 Codex Completion Gate。Owner 明确提供观察结果�
 * 文件下载验证 MIME、文件名和来源。
 * GitHub 安全设置启用 CodeQL、Dependency Graph 和 Dependabot alerts。
 
+## 34.1 Build-time and Runtime Configuration
+
+Build-time Environment 只允许决定无法在部署后改变的编译事实：Build Mode、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Configuration 决定 Deployment Base、API Origin、Observability Endpoint、Environment Label、公开 Feature Availability 和非敏感服务 URL。
+
+```ts
+interface RuntimeConfiguration {
+  schemaVersion: number
+  environment: 'development' | 'staging' | 'production'
+  deploymentBase: string
+  apiBaseUrl: string
+  releaseSha: string
+  buildVersion: string
+  publicFeatureFlags: Readonly<Record<string, boolean>>
+  productZonePolicyId: string
+  observability: {
+    endpoint: string | null
+    policyId: string
+  }
+}
+```
+
+该 Interface 是全部 Gate 完成后的 End-state Shape，不是 Runtime Kernel Package 可以提前实现的 Optional/Placeholder Object。Runtime Kernel 首次只激活 `schemaVersion`、`environment`、`deploymentBase`、`releaseSha` 与 `buildVersion` 的 Exact Core Record；Router 只消费已激活的 `deploymentBase`，不扩展 Schema；API Package 原子加入 `apiBaseUrl` 及其 Origin Policy；Observability/Deployment Package 原子加入 `observability`、Release Delivery 和当时真实需要的 Public Feature Availability Record；唯一命名的 I18n Admission Instance 原子加入 `productZonePolicyId` 及其 Exact Time-zone Policy Registry Reference。Schema、Default-free Failure Contract、Runtime Loader、Consumer 和 Static Registry 必须随每次 Field Admission 同时扩展。未准入 Field 必须不存在，不能以空字符串、`null`、False、Localhost 或 Vendor Default 作为 Stub。
+
+Runtime Config URL 由 Deployment Template 通过命名 HTML Attribute 提供，必须 Same-origin、位于 Canonical Base、使用 HTTPS（Development 明确例外）并在 Vue 前通过 Strict Zod Schema。Config 一旦验证成功即 Deep Immutable；Feature 不读取 `import.meta.env`、`process.env`、Global Window Value 或未验证 JSON。
+
+`VITE_*` 永不包含 Secret、Credential、Private Key、Token、Password、Internal Host 或仅靠隐藏 Source Map 保护的值。任何进入 Browser Bundle 或 Runtime Config 的值都视为公开。Secret 只存在于 Server/Deployment Secret Store。
+
+## 34.2 Configuration Failure Page
+
+Runtime Config 缺失、网络失败、Schema/Release/Base 不匹配或包含禁止 Origin 时，Bootstrap 在创建 Pinia/Query/Router 前停止并显示 §19.4 Minimal Configuration Failure Page。页面只能显示安全 Message Key、Release/Build ID 和 Retry；不显示 Raw Config、Endpoint、Stack 或 Secret。Retry 必须重新读取完整 Config，不合并旧 Partial Object。
+
+## 34.3 Deployment Base and SPA Fallback
+
+`deploymentBase` 是 Vite Asset Base、HTML Asset URL、First-paint Artifact、Runtime Config URL、Router History Base、Service Endpoint Relative URL 和 SPA Fallback 的唯一 Authority。Root `/` 与 Subpath 均允许，但同一 Release 只能有一个 Validated Base。禁止在 `index.html`、Router、CSS、Component 或 Feature 写绝对 Root Asset Path。
+
+Deployment Server 对 Canonical Base 下的非 Asset、非 API、已允许 HTML Navigation 请求返回 `index.html`；未知 Hashed Asset、Generated Artifact、Runtime Config、API 和文件请求必须返回真实 404，不得 fallback 为 HTML。Base 外请求由 Hosting Policy 处理。
+
+## 34.4 Environment Model
+
+| Environment | Purpose | Data and service rule |
+| --- | --- | --- |
+| Development | local implementation | local non-production service, relaxed diagnostics, no production secret |
+| Staging | production-like acceptance | isolated non-production data, production-equivalent CSP/cache/base |
+| Production | owner-approved release | production service and strict diagnostics/redaction |
+
+Environment 差异只通过 Runtime Configuration/Deployment Policy，不通过散落 `if (development)`。Staging 不能连接 Production Write Service；Development/Staging Telemetry 必须带明确 Environment 并隔离。
+
+## 34.5 CDN and Cache Policy
+
+```text
+hashed JS/CSS/font/image assets → public, immutable, long-lived
+index.html → no-cache or short revalidation, never immutable
+runtime configuration → no-store or release-bound revalidation
+release manifest → no-cache, integrity checked
+appearance-init.js and critical-theme.css → release-bound immutable only when content-hashed; otherwise revalidate
+API → endpoint-owned HTTP cache policy
+```
+
+CDN Cache Key 必须包含 Host、Canonical Path、必要 Vary Header 和 Encoding；不得包含 Credential 或忽略 Locale/Tenant Vary。Purge/Rollback 按 Release Manifest，不用全站随机 Cache Busting。HTML 只能引用同一 Release 的 Asset Manifest，防止新 HTML/旧 Chunk 混合。
+
+## 34.6 Content Security Policy
+
+CSP 由 Deployment Security Policy Registry 生成，Baseline 至少包含：
+
+```text
+default-src 'self'
+base-uri 'self'
+object-src 'none'
+frame-ancestors 'none'
+form-action 'self'
+script-src 'self' plus deployment-owned nonce only when required
+style-src 'self'
+img-src 'self' plus explicitly admitted data/blob origins
+font-src 'self'
+connect-src 'self' plus validated API and observability origins
+worker-src 'self' only after worker admission
+manifest-src 'self'
+upgrade-insecure-requests in production
+report-to/report-uri from admitted reporting policy
+```
+
+禁止 `unsafe-eval`、宽泛 `*`、任意第三方 Origin 和由客户端生成 Nonce。Nonce 由 Server/Edge 每个 HTML Response 生成并绑定允许的 Script/Style；静态部署不需要 Inline Script 时不引入 Nonce。CSP Reporting Body 经过独立 Redaction/Rate Limit，不能成为 Log Injection 通道。
+
+Trusted Types 为 `DEFERRED`；只有富文本/HTML Sink 实际出现、Sanitizer Adapter 与 Browser Support Gate 通过后准入。未经处理的 `v-html`、`innerHTML`、`document.write` 和 Dynamic Script URL 保持禁止。
+
+## 34.7 Source Maps, Release Manifest and Health
+
+Source Map 遵守 §20B.6：可以生成并私密上传，但不公开部署。Release Manifest 必须由 Build 生成：
+
+```ts
+interface ReleaseManifest {
+  schemaVersion: number
+  releaseSha: string
+  buildVersion: string
+  builtAt: string
+  runtimeConfigSchemaVersion: number
+  assetManifestDigest: string
+  architectureFoundationGate: 'FROZEN'
+}
+```
+
+`builtAt` 只用于发布诊断，不参与可复现 Asset Content。Client Health Information 只暴露 Release SHA、Build Version、Environment 和 Startup Status；后端/平台 Health Endpoint 拥有服务健康权威。不得暴露 Dependency List、Internal Host、Commit Message、User 或 Secret。
+
+## 34.8 Browser Support and Polyfill Admission
+
+Browser Support Matrix 是 Versioned Deployment Registry，基于 Engine/Feature Capability，不使用设备名或 UA Runtime Branch。Build Target、CSS Target 和 Polyfill Set 必须从同一 Matrix 生成。Unsupported Browser 显示最小安全页面，不加载任意 Polyfill CDN。
+
+Polyfill 只有目标浏览器缺失生产必需能力、Progressive Fallback 不足、维护/安全/Bundle Gate 通过后准入；按 Feature Lazy Load 或 Build Target 注入，禁止全量 Legacy Bundle。Runtime Behavior 仍优先 Feature Detection。
+
+## 34.9 Deployment Verification and Rollback
+
+Deployment Pipeline 必须验证 Build Artifact Digest、Release Manifest、Runtime Config Schema/Base/Release 一致、CSP Header、Cache Header、SPA Fallback/Asset 404 分离和 Source Map 非公开。该验证由部署平台/Owner 执行，不创建仓库浏览器自动化。
+
+Rollout 使用不可变 Release。Rollback 只切换 HTML/Runtime Config/Asset Manifest 到一个完整已知 Release；不得混合单个旧 Chunk。Runtime Config Schema 必须声明向后兼容窗口；不兼容时与应用 Release 原子切换。Failed `main`/Production Release 使用显式 Revert 或部署回滚，不改写 Git History。
+
+## 34.10 External URL, File and Supply-chain Boundary
+
+External URL 必须通过 Protocol/Origin Registry；`javascript:`、`data:` Navigation、Credential URL、Protocol-relative URL 和 Unicode Confusable Host 默认拒绝。新窗口使用 `noopener`/`noreferrer` Policy。文件上传/下载遵守 §20.8。
+
+依赖继续由 Frozen Lockfile、CodeQL、Dependency Graph 和 Dependabot Alert 提供信号；Alert 需要 Owner Review，不自动修改依赖。Production Artifact 必须可追溯到 Commit、Lockfile 和 CI Run。
+
+## 34.11 Deployment Static Enforcement Targets
+
+Core Runtime Configuration Gate 必须拒绝未验证 Env、Consumer Env Fallback、重复 Base、未准入 Field 和 Placeholder Default；每个 Field Extension Gate 必须证明 Schema、Loader、Consumer 与 Registry Exact Equality。Deployment Gate 另行拒绝 Secret-like `VITE_*`、Root-only Literal、SPA Fallback 吞 Asset 404、错误 Cache Class、宽泛 CSP、公开 Source Map、Unknown Origin、未注册 Polyfill、Release/Config Digest 不匹配和非不可变回滚。除现有 Zod/Build 基础规则外，各 Target Enforcement 在自己的 Owner Gate 前为 `TARGET_INACTIVE`。
+
 ---
 
 # 35. 生产专用仓库政策
@@ -4598,7 +6197,7 @@ No automated test files or test-only infrastructure are permitted.
 
 Codex verification consists only of static production gates.
 
-Owner manual runtime inspection is optional, external, owner-operated, and non-gating.
+Owner manual runtime inspection is optional and non-gating for Codex task completion. Production release runtime acceptance is required, external, owner-operated, release-specific, and never committed to the repository.
 
 仓库不提交验证专用代码、测试专用目录或依赖、演示与展示系统、浏览器自动化基础设施或验证证据资产。
 
@@ -4829,7 +6428,15 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT` 和编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 均已完成。当前唯一 Next Implementation Package 是 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 与 Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 均已完成。Foundation Target Contract 已冻结但保持 Inactive；唯一 Next Implementation Package 是 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`。
+
+```text
+ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
+ARCHITECTURE_FOUNDATION_GATE_STATUS=FROZEN
+IMPLEMENTATION_WHILE_GATE_NOT_FROZEN=BLOCKED
+TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
+NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
 
@@ -4843,7 +6450,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         BLOCKED_BY_5
 ```
 
-Package 4 现已由 3A 准入为唯一 Next Package；Package 5 或 6 不得与 Package 4 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。`PAVP_PRODUCTION_RUNTIME_KERNEL_ARCHITECTURE_AMENDMENT` 同样只能在 Phase 1 完成后开始，不得插入 Package 4 之前。
+Package 4 已由 3A 准入为 Architecture Freeze 后的唯一 Next Implementation Package；Package 5 或 6 不得与 Package 4 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换：完整 Target Contract 现在可以冻结，但 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 仍严格位于 Packages 4–6 之后。
 
 当前精确 Acceptance Contract：
 
@@ -4891,7 +6498,7 @@ scripts/verify/check-repository-policy.ts
 1. 从从属 Workflow 和入口文字移除 `runtime-acceptance` Task Mode。
 2. 移除 Tier 0–3 Gate、`PENDING_OWNER_ACCEPTANCE` 和任何 Codex Browser/ChromeDev Capability Routing。
 3. 将 Codex Browser Operation Request 精确映射到 `ARCHITECTURE_CONFLICT`。
-4. 保留 Owner-only、External、Optional、Non-gating Manual Observation。
+4. 保留仅针对 Codex Task/Package Completion 的 Owner-only、External、Optional、Non-gating Manual Observation；Production Release Acceptance 不属于该从属 Workflow 字段合同。
 5. 更新 Acceptance Report State/Field Contract。
 6. 在 Repository Policy Checker 增加 Regression Enforcement，拒绝上述已删除概念重新进入七文件范围。
 
@@ -5068,9 +6675,207 @@ Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须�
 
 §14.2 的十个新增 Density Candidate、§13.3 的 283 个 Reserved Color Candidate 均受此 Gate。Component-internal Token 继续 Demand-created。该 Gate 不阻塞当前六包 Immediate Chain 的完成，也不允许 Final Governance 预先宣称未来 Candidate 已准入。
 
-每个 Work Package 必须在进入下一包前通过适用的 Static Production Gate。所有 Package 都必须保持 Demand-created Directory、No-test Policy、Codex Browser Prohibition、No Browser Evidence 和 Public/Internal Isolation。Owner 手工观察不阻塞 Package Completion。每个 Package 必须实现自己的 Owning Validator，不得把 Enforcement 推迟到 Final Governance。
+每个 Work Package 必须在进入下一包前通过适用的 Static Production Gate。所有 Package 都必须保持 Demand-created Directory、No-test Policy、Codex Browser Prohibition、No Browser Evidence 和 Public/Internal Isolation。Owner 手工观察不阻塞 Codex Package Completion；包含 Runtime Artifact 的 Production Release 仍受 §32.3 Owner External Runtime Acceptance 约束。每个 Package 必须实现自己的 Owning Validator，不得把 Enforcement 推迟到 Final Governance。
 
 所有未来目录继续遵守 Demand-created Rule。Grid、Editor、Charts、Clear-media Material、Spring Family 和 Component Token Tree 保持在后续 Gate。
+
+## 37.2 Frozen Future Implementation Chain
+
+```text
+CAPABILITY=FUTURE_IMPLEMENTATION_CHAIN
+CAPABILITY_STATUS=TARGET_INACTIVE
+SEQUENCING=STRICT_SERIAL
+PARALLEL_PACKAGES=PROHIBITED
+TEMPORARY_AUTHORITIES=PROHIBITED
+PACKAGE_COMPLETION_REQUIRES=OWNING_STATIC_GATE_PASS
+PRODUCTION_RELEASE_REQUIRES=SECTION_32_3_OWNER_ACCEPTANCE_WHEN_RUNTIME_CHANGES
+```
+
+精确顺序：
+
+```text
+1.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+2.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+3.  PAVP_FINAL_STATIC_GOVERNANCE
+4.  PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+5.  PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+6.  PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+7.  PAVP_API_TRANSPORT_IMPLEMENTATION
+8.  PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
+9.  PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+10. PAVP_FIRST_PROTECTED_VERTICAL_SLICE
+11. DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+```
+
+每个 Package Record 必须声明：
+
+```ts
+interface ImplementationWorkPackageContract {
+  id: string
+  entryConditions: readonly string[]
+  allowedScope: readonly string[]
+  prohibitedScope: readonly string[]
+  outputs: readonly string[]
+  machineGates: readonly string[]
+  productionReleaseAcceptance: string
+  completionEvidence: readonly string[]
+}
+```
+
+Completion Evidence 只存在于 Commit/Diff、Generated Production Artifact、Static Gate Output 和当前任务报告；不得提交 Test、Fixture、Screenshot、Trace 或 Evidence File。任一 Package 失败时停止 Chain，修复或显式 Revert；不得让后续 Package 绕过失败边界。
+
+### 37.2.1 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`
+
+```text
+ENTRY=PAVP_ARCHITECTURE_FOUNDATION_FREEZE=FROZEN; PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT=COMPLETE
+ALLOWED=three built-in target theme documents, target schema/build validation, target-only manifest metadata
+PROHIBITED=active preference/default/runtime/first-paint/public export/persistence change; seed generation; reserved role admission; neutral alias or derived color
+OUTPUT=neutral/ocean/warm × four planes × nine exact public color roles = 108 manually authored cells
+MACHINE_GATES=tokens schema/build/check; exact role/plane/alpha/contrast validation; manifest declared delta; check:arch; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=NOT_APPLICABLE_TARGET_STRUCTURE_REMAINS_INACTIVE
+COMPLETION_EVIDENCE=complete source documents; deterministic generated check result; clean scoped diff; no runtime change
+```
+
+`neutral` 的 36 个 Cell 必须全部是人工提交的显式 Absolute Color；`ocean` 与 `warm` 的 Cell 可以是显式 Absolute Color 或允许的 Direct Primitive Alias。每个 Cell 都保留作者来源。Neutral 是 Product Default Theme，但不能成为其他 Theme/Plane 的继承 Parent、缺失值 Fallback 或自动修正来源。
+
+### 37.2.2 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`
+
+```text
+ENTRY=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE=COMPLETE; all built-in themes pass complete-plane validation; migration registry frozen
+ALLOWED=theme/preference schemas and defaults; Pinia narrow admission; first paint; theme bank; app appearance bootstrap/persistence; HTML storage wiring; owning validators
+PROHIBITED=Router; TanStack Query; Session/general store; UI runtime component; partial legacy/new authority; automatic theme correction
+OUTPUT=reference-only Product Default; exact built-in/custom registry; atomic bank installer; structured legacy migration; invalid-reference results; one active preference authority
+MACHINE_GATES=exact schema/default/export/runtime/first-paint/storage parity; no mixed authority; bank completeness/isolation; migration probes; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_FIRST_PAINT_AND_ATOMIC_APPEARANCE_MATRIX
+COMPLETION_EVIDENCE=all cutover surfaces in one diff/landing; old writer absent; legacy read-only migration preserved; static gates pass
+```
+
+`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 不得拆成 Schema、Runtime 和 Persistence 多个 Main Landing。
+
+### 37.2.3 `PAVP_FINAL_STATIC_GOVERNANCE`
+
+```text
+ENTRY=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER=COMPLETE_AND_STATICALLY_PASSING
+ALLOWED=cross-package validators for already active Phase 1 contracts; architecture-frozen no-literal, no-transition-all and inactive-import guardrails that require no future dependency, schema or runtime activation
+PROHIBITED=new public role; new dependency; runtime feature; Browser/Test infrastructure; postponed owning validator
+OUTPUT=exact-set/no-leak/no-seed/no-correction/theme-bank/density-isolation/migration/first-paint enforcement closure; foundation-wide visual literal guardrails; exact Node/pnpm process preflight as first verify gate; exact engines alignment
+MACHINE_GATES=runtime mismatch fails before format check; all Phase 1 domain checks; reversible negative probes; pnpm verify; git diff --check
+PRODUCTION_RELEASE_ACCEPTANCE=NOT_APPLICABLE_IF_NO_RUNTIME_ARTIFACT_CHANGES; otherwise required for affected Appearance domain
+COMPLETION_EVIDENCE=every Phase 1 invariant mapped to one active checker; exact runtime mismatch probe fails first; negative probes reverted; clean generated state
+```
+
+Final Governance 只能闭合已准入规则，不能为早期 Package 补交其本应拥有的核心 Validator。
+
+### 37.2.4 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`
+
+```text
+ENTRY=PAVP_FINAL_STATIC_GOVERNANCE=COMPLETE; runtime config/error/lifecycle schemas frozen; no overlapping dirty change
+ALLOWED=core runtime config exact active subset and validation; core startup/config/Vue error registry, normalizer and pre-Vue capture; Vue/bootstrap lifecycle; active appearance/Pinia provider integration; fatal boundary; create/ready/dispose registry
+PROHIBITED=Router, API transport, general storage, Auth/Session, Observability vendor, business route, placeholder provider, hidden singleton
+OUTPUT=acyclic kernel for currently admitted providers; exact startup state; minimal active core config/error authorities; reverse disposal; HMR reuse; fatal configuration/startup recovery
+MACHINE_GATES=bootstrap registry parity; dependency graph acyclic; mount uniqueness; disposal closure; config schema; error-boundary independence; bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_STARTUP_FAILURE_RETRY_DISPOSAL_AND_HMR_APPLICABLE_BEHAVIOR
+COMPLETION_EVIDENCE=kernel owns sole mount; all active providers have handles; future provider steps remain absent and TARGET_INACTIVE
+```
+
+后续 Package 通过 Kernel 的 Exact Provider Admission 扩展启动序列；不得提前提交 No-op Provider 或 Stub。
+
+### 37.2.5 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`
+
+```text
+ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; Vue Router stable dependency admission passes; route/layout/error registries frozen
+ALLOWED=Vue Router; file-route generation; exact route/meta registries; route error-registry extension; guards; error routes; dynamic route lifecycle; route layout/scroll core; scroll/focus restoration; kernel router step
+PROHIBITED=experimental data loaders; direct server fetch; non-none Query prefetch before API package; Auth implementation; business protected flow
+OUTPUT=typed navigation lifecycle with public/anonymous-only metadata available but required-auth activation blocked until Auth package
+MACHINE_GATES=route/registry equality; meta/params/query schema closure; guard order; redirect safety; failure classification; disposal; base parity; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_NAVIGATION_ERROR_ROUTES_SCROLL_FOCUS_AND_CHUNK_RECOVERY
+COMPLETION_EVIDENCE=one router authority; no path/name literals; no experimental imports; no server-state cache
+```
+
+`dataPrefetch` 只能使用 `none`，`auth` 只能激活 `public`/`anonymous-only` 的无 Session 子集，直到后续 Owner Package 原子准入；这不是 Stub，而是受 Schema 限制的较小 Active Set。
+
+### 37.2.6 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`
+
+```text
+ENTRY=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE; storage/envelope/partition/migration registries frozen; sensitivity review complete
+ALLOWED=application storage owner; exact registries; storage error-registry extension; envelope/migrations; corruption/quota results; cross-tab channel; preference/theme safe ordering; kernel storage step
+PROHIBITED=credential/session/query persistence; IndexedDB without separate demand gate; feature direct storage; generic persistence plugin
+OUTPUT=typed Local Storage and memory boundaries; compare-and-swap revisions; principal-ready partition interface; deterministic cleanup handles
+MACHINE_GATES=direct-access ban; key registry equality; migration chain; sensitive-field scan; cross-tab allowlist; atomic ordering; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_AND_CLEANUP
+COMPLETION_EVIDENCE=no raw key outside owner/generated first paint; failures structured; bad payload cannot loop; theme reference cannot dangle
+```
+
+Principal Partition Interface 可以存在，但 Auth-specific Principal 数据与 Session Cleanup 只能由 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 激活。
+
+### 37.2.7 `PAVP_API_TRANSPORT_IMPLEMENTATION`
+
+```text
+ENTRY=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE; API registries and runtime config origins frozen; first real typed endpoint or protected-slice endpoint contract accepted
+ALLOWED=Native Fetch transport; API runtime-config field and error-registry extensions; AbortSignal; Zod boundaries; TanStack Query admission; Query Client kernel step; OpenAPI types only when reliable schema gate passes; Router Query integration
+PROHIBITED=openapi-fetch mandatory dependency; Axios/Alova; Auth refresh; mutation default retry; direct fetch; Query-to-Pinia copy; offline cache
+OUTPUT=single-attempt transport; response modes; error normalization; retry/idempotency/cache/concurrency policies; query key registry; diagnostics redaction
+MACHINE_GATES=direct fetch ban; endpoint/policy/schema closure; abort propagation; 204/content-type/error-body handling; retry matrix; OpenAPI drift; query ownership; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_SUCCESS_ERROR_TIMEOUT_ABORT_RETRY_204_UPLOAD_DOWNLOAD_AND_CONFLICT_APPLICABLE_PATHS
+COMPLETION_EVIDENCE=one transport authority; one Query cache; no unvalidated response; no raw timeout/retry/cache literal
+```
+
+`PAVP_API_TRANSPORT_IMPLEMENTATION` 激活 Router `blocking-required/non-blocking` Prefetch 子集，并必须保持 Router 只编排 Query Options、不拥有 Cache。
+
+### 37.2.8 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION`
+
+```text
+ENTRY=PAVP_API_TRANSPORT_IMPLEMENTATION=COMPLETE; server auth/cookie/CSRF/session/capability contract available; security review passes
+ALLOWED=session state machine; auth error-registry extension; restoration/login/logout/refresh single-flight; cookie/CSRF coordination; permission registry; partitions; dynamic protected routes; kernel session step
+PROHIBITED=token in browser storage; client security authority; scattered role strings; mutation replay; unpartitioned Query cache; partial logout
+OUTPUT=server-authoritative session and capability projection; 401/403 separation; cross-tab logout; account/tenant switch; safe return URL
+MACHINE_GATES=transition exhaustiveness; refresh single-flight; sensitive persistence ban; permission closure; query/storage/route cleanup order; CSRF config; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_RESTORE_LOGIN_LOGOUT_REFRESH_EXPIRY_REVOCATION_401_403_CROSS_TAB_AND_SWITCH
+COMPLETION_EVIDENCE=no credential in JS persistence; every protected route/operation references registry; cleanup leaves no prior principal state
+```
+
+### 37.2.9 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION`
+
+```text
+ENTRY=PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION=COMPLETE; deployment/runtime config/event/error/performance registries frozen; provider and hosting contracts accepted
+ALLOWED=observability registry/reporting activation; privacy-safe structured capture; private source-map upload; observability/runtime delivery-config extension; base/subpath; CSP/cache/release/rollback integration
+PROHIBITED=PII/raw body logs; recursive reporter; public source maps; unsafe CSP; browser automation; repository evidence artifact
+OUTPUT=release-aware error/trace/performance pipeline and immutable deploy/rollback contract
+MACHINE_GATES=registry/schema closure; redaction scan; source-map public exclusion; CSP/cache/base/release manifest checks; bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_REPORTING_FAILURE_CSP_CONFIG_SUBPATH_CACHE_RELEASE_AND_ROLLBACK
+COMPLETION_EVIDENCE=release traceable to commit/config/assets; reporting failure cannot recurse; rollback selects complete immutable release
+```
+
+### 37.2.10 `PAVP_FIRST_PROTECTED_VERTICAL_SLICE`
+
+```text
+ENTRY=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION=COMPLETE; all earlier chain packages remain complete; one real protected product flow and backend contract approved; foundational UI consumer gates pass
+ALLOWED=one typed protected route and the minimum feature/UI needed to prove all active platform boundaries
+PROHIBITED=second business flow; generic platform expansion; speculative component variants; specialist vendor without gate
+OUTPUT=end-to-end protected slice exercising startup, route, session, permission, Query, API, mutation, storage, errors, observability, deployment and cleanup
+MACHINE_GATES=all existing static gates; route/API/schema/permission/query/storage registries; boundary imports; bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FULL_APPLICABLE_MATRIX
+COMPLETION_EVIDENCE=single real flow proves contracts without duplicate authority; no unresolved P0/P1 release failure
+```
+
+Minimum Slice Scenarios：Typed protected route、Session Restore、Auth Redirect/Return URL、403/404/500、Query Prefetch/Cancel、200/201/202/204、Timeout/User Abort、Idempotent/Non-idempotent Mutation、409/412、Logout Cache Cleanup、Cross-tab Logout、Corrupt Storage Recovery、Scroll Restoration、Runtime Error Report 和 Release/Rollback Identity。
+
+### 37.2.11 Demand-driven Forms, I18n, Tables and UI Admissions
+
+```text
+STAGE_ID=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+STAGE_KIND=REPEATABLE_STRICT_SERIAL_ADMISSION_TEMPLATE
+CAPABILITY_STATUS=TARGET_INACTIVE
+ENTRY=PAVP_FIRST_PROTECTED_VERTICAL_SLICE=COMPLETE; one named real consumer for the requested capability; stable dependency and bundle gate passes
+ALLOWED=one capability instance at a time following Sections 16 and 21–25 plus applicable Accessibility/Performance contracts; minimum exact Runtime Configuration field extension required by that domain; minimal semantic UI required by the consumer; generator only after repeated real scaffolding need
+PROHIBITED=parallel unrelated capability packages; ProForm/ProTable platform; speculative variants; prerelease dependency; second UI authority
+OUTPUT=one consumer-backed form/i18n/table/motion/component/generator capability instance with exact registries, public root export and private vendor adapter where required
+MACHINE_GATES=domain contract checks; public/internal boundary; stable dependency; accessibility; unused code; bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_EACH_RELEASE_AFFECTING_FORM_LOCALE_TABLE_INTERACTION_OR_UI
+COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted PAVP work-package ID; narrow public API; vendor isolation; all domain states and cleanup verified by static contract plus Owner release decision
+```
+
+`DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Chain 的第十一阶段和 Work-package Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact。
 
 ---
 
@@ -5121,6 +6926,7 @@ stylelint
 prettier
 knip
 tsx
+openapi-typescript
 ```
 
 ## `apps/web`
@@ -5138,7 +6944,7 @@ vue-i18n
 @platform/ui
 ```
 
-这是通过全部 Gate 后的 Target Set。当前 Phase 1 只安装 `vue` 与 `@platform/design-system`。其中 `pinia` 只由 Package 5 的 Atomic Cutover 窄范围准入；`vue-router`、`@tanstack/vue-query`、`vee-validate`、`vue-i18n` 和其他 Runtime Dependency 继续等待各自 Phase 与 Named Gate。
+这是通过全部 Gate 后的 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 的可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。当前 Phase 1 只安装 `vue` 与 `@platform/design-system`。其中 `pinia` 只由 Package 5 的 Atomic Cutover 窄范围准入；`vue-router`、`@tanstack/vue-query`、`vee-validate`、`vue-i18n` 和其他 Runtime Dependency 继续等待各自 Phase 与 Named Gate。
 
 ## `packages/design-system`
 
@@ -5289,7 +7095,8 @@ PNPM_VERIFY_IS_THE_COMPLETE_STATIC_PRODUCTION_GATE
 STATIC_GATES_DO_NOT_CLAIM_RUNTIME_PROOF
 CODEX_BROWSER_OPERATION_IS_PROHIBITED
 STATIC_GATES_ARE_THE_ONLY_CODEX_VERIFICATION
-OWNER_MANUAL_RUNTIME_INSPECTION_IS_OPTIONAL_EXTERNAL_AND_NON_GATING
+OWNER_MANUAL_RUNTIME_INSPECTION_FOR_CODEX_TASKS_IS_OPTIONAL_EXTERNAL_AND_NON_GATING
+OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE_IS_REQUIRED_EXTERNAL_AND_NON_REPOSITORY
 NO_RUNTIME_EVIDENCE_COMMITTED
 
 EACH_STATIC_RULE_IS_ENFORCED_BY_COMPLETION_OF_ITS_OWNING_WORK_PACKAGE
@@ -5337,7 +7144,8 @@ Node 24 LTS
 + Pinia
 + TanStack Vue Query
 + Native Fetch
-+ VeeValidate 5
++ OpenAPI types from openapi-typescript after the reliable-schema gate
++ VeeValidate stable major selected only at Form Admission
 + VueUse
 + Vue I18n
 + CSS / Progressive View Transitions
@@ -5349,7 +7157,8 @@ Node 24 LTS
 + Knip
 + Static Production Gates
 + Codex Browser Prohibition
-+ Optional External Owner-operated Manual Inspection
++ Optional External Owner-operated Manual Inspection for Codex Tasks
++ Required External Owner-operated Runtime Acceptance for Production Releases
 + GitHub Actions
 ```
 
