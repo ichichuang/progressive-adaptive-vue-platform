@@ -39,8 +39,10 @@ PHASE_1_PACKAGE_1_STATUS=COMPLETE
 PHASE_1_PACKAGE_2_STATUS=COMPLETE
 PHASE_1_PACKAGE_3_STATUS=COMPLETE
 PHASE_1_PACKAGE_3A_STATUS=COMPLETE
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+PHASE_1_PACKAGE_4_STATUS=COMPLETE
+PHASE_1_PACKAGE_5_STATUS=NEXT
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=TARGET_INACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -1973,8 +1975,13 @@ MANIFEST_COMPRESSION_PROFILE_NAMING=DESCRIPTIVE_ID_WITHOUT_NUMERIC_VERSION_SUFFI
 MANIFEST_COMPRESSION_HARD_LIMIT_BYTES=32768
 MANIFEST_CANONICAL_BASELINE_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
 MANIFEST_CANONICAL_BASELINE_BYTES=3366
-MANIFEST_CANONICAL_FINAL_GZIP_BYTES=5213
-MANIFEST_CANONICAL_EXPECTED_GZIP_BYTE_DELTA=1847
+MANIFEST_CANONICAL_FINAL_GZIP_BYTES=6153
+MANIFEST_CANONICAL_EXPECTED_GZIP_BYTE_DELTA=2787
+PACKAGE_4_MANIFEST_BASELINE_COMMIT=1daba84b5196e152966bd7e0f2e9e7ed8c24938f
+PACKAGE_4_MANIFEST_BASELINE_BYTES=5213
+PACKAGE_4_MANIFEST_BASELINE_RECORD_COUNT=181
+PACKAGE_4_MANIFEST_EXPECTED_RECORD_COUNT_DELTA=0
+PACKAGE_4_MANIFEST_EXPECTED_GZIP_BYTE_DELTA=940
 LEGACY_CLI_GZIP_COMMAND=gzip -9 -n
 LEGACY_CLI_GZIP_COMPARISON=NON_AUTHORITATIVE_HISTORY_ONLY
 ```
@@ -2020,6 +2027,21 @@ governance.baselineRecordCount
 governance.expectedRecordCountDelta
 ```
 
+Package 4 在不增加 Record Family 或 Record 的前提下，把三份完整 Target Theme Definition 作为现有三个 Theme Metadata Record 的嵌套 `complete` 字段生成。该字段保持 `TARGET_INACTIVE`，只记录 `registryKind='built-in'`、Exact ID 对应的确定性 Future Selector、Canonical Source、Theme/Role Contract Version 和四个完整 Authored Plane；不记录 Private Theme Bank Variable、Public Binding 或任何 Runtime Activation。Metadata Shape 改变使当前 Manifest Schema 提升为：
+
+```text
+schemaVersion=6
+themeMetadataRecords=3
+themes[*].complete.activationStatus=TARGET_INACTIVE
+themes[*].complete.registryKind=built-in
+themes[*].complete.selector
+themes[*].complete.source
+themes[*].complete.schemaVersion=3
+themes[*].complete.roleContractVersion=1
+themes[*].complete.planes=light.standard,light.enhanced,dark.standard,dark.enhanced
+PACKAGE_4_EXPECTED_RECORD_COUNT_DELTA=0
+```
+
 Generated Manifest 禁止包含用于断言同一压缩 Payload 大小的字段：
 
 ```text
@@ -2047,6 +2069,8 @@ hard limit
 ```
 
 Baseline 同时绑定 Exact Commit 和 `node-zlib-gzip-sync`。Package 3 的 Baseline Commit 已由 Git History 证明为其 Implementation Commit 的 Direct Predecessor。Package 3A 先冻结上述完整 Metadata Shape，再使用同一序列化器、Pinned Node 和 Profile 测得 Final Payload 为 `5213` Bytes；相对 `3366`-Byte Baseline 的 Expected Delta 为 `1847` Bytes，并通过 `32768`-Byte Hard Limit。Repository-owned Build Verification Code 和本架构共同冻结这些值；Generated Payload 不包含它们。
+
+Package 4 以 `main@1daba84b5196e152966bd7e0f2e9e7ed8c24938f` 的 `181` Records / `5213` Bytes 作为独立增量 Baseline。最终仍为 `181` Records，Expected Record Delta 为 `0`；同一 Canonical Profile 下最终 Payload 为 `6153` Bytes，Package 4 Expected Byte Delta 为 `940` Bytes。相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `2787` Bytes，且继续通过 `32768`-Byte Hard Limit。两组 Delta 都由 Build Verification Code 在压缩 Payload 外精确比较。
 
 每个后续 Implementation Package 必须声明 `expectedRecordCountDelta` 与 Canonical Compressed-byte Delta，由 Owning Static Gate 对实际值逐项比较；未声明或非预期增长必须失败。即使总大小仍低于 32 KiB，Delta Mismatch 也不得通过。
 
@@ -5423,7 +5447,7 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 
 本架构工作包只声明未来合同，不创建 `.ai/**`、不修改 `AGENTS.md` 或 Repository Policy。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC` 与 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate 和 Manifest Canonical Compression Contract 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`；Package 5 或 6 不得提前开始。已落地的 Browser Rule 与 Manifest Compression Contract 不得被后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 与 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract 与三份 Target-only Complete Built-in Theme Document 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`；Package 6 不得提前开始。已落地的 Browser Rule、Manifest Compression Contract 与 Complete Theme Owning Gate 不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -6321,8 +6345,8 @@ Package 1 = COMPLETE
 Package 2 = COMPLETE
 Package 3 = COMPLETE
 Package 3A = COMPLETE
-Package 4 = NEXT
-Package 5 = BLOCKED_BY_4
+Package 4 = COMPLETE
+Package 5 = NEXT
 Package 6 = BLOCKED_BY_5
 ```
 
@@ -6428,14 +6452,14 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 与 Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 均已完成。Foundation Target Contract 已冻结但保持 Inactive；唯一 Next Implementation Package 是 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 与 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 均已完成。Foundation Target Contract 与 Package 4 Complete Theme Structure 均保持 Inactive；唯一 Next Implementation Package 是 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
 ARCHITECTURE_FOUNDATION_GATE_STATUS=FROZEN
 IMPLEMENTATION_WHILE_GATE_NOT_FROZEN=BLOCKED
 TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
-NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
+NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
@@ -6445,12 +6469,12 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 2.  PAVP_NAMING_NORMALIZATION                            COMPLETE
 3.  PAVP_ROLE_REGISTRY_AND_OUTPUT_COMPLETENESS           COMPLETE
 3A. PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT               COMPLETE
-4.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE      NEXT
-5.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER        BLOCKED_BY_4
+4.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE      COMPLETE
+5.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER        NEXT
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         BLOCKED_BY_5
 ```
 
-Package 4 已由 3A 准入为 Architecture Freeze 后的唯一 Next Implementation Package；Package 5 或 6 不得与 Package 4 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换：完整 Target Contract 现在可以冻结，但 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 仍严格位于 Packages 4–6 之后。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata，未激活 Preference、Theme Bank、Runtime、First Paint、Persistence 或公共导出。Package 5 现为唯一 Next Implementation Package；Package 6 不得与 Package 5 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换：完整 Target Contract 现在可以冻结，但 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 仍严格位于 Packages 4–6 之后。
 
 当前精确 Acceptance Contract：
 
@@ -6466,6 +6490,12 @@ MANIFEST_BUDGET=DEFINED
 MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
 MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
 MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
+MANIFEST_SCHEMA_VERSION=6
+MANIFEST_RECORD_COUNT=181
+COMPLETE_BUILTIN_THEME_DOCUMENTS=3
+COMPLETE_BUILTIN_THEME_PLANES=12
+COMPLETE_BUILTIN_THEME_AUTHORED_COLOR_VALUES=108
+COMPLETE_BUILTIN_THEME_RUNTIME_STATUS=TARGET_INACTIVE
 SUBORDINATE_BROWSER_SYNC_STATUS=COMPLETE
 NAMING_NORMALIZATION=COMPLETE
 RESERVED_COLOR_ROLES=283
@@ -6644,11 +6674,45 @@ Package 3A 不得修改 Dependency、Lockfile、Theme Source、Preference Schema
 
 ### 4. `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`
 
+状态：
+
+```text
+STATUS=COMPLETE
+ENTRY_BASELINE=main@1daba84b5196e152966bd7e0f2e9e7ed8c24938f
+COMPLETE_THEME_DOCUMENTS=3
+COMPLETE_THEME_PLANES=12
+PUBLIC_COLOR_ROLES_PER_PLANE=9
+AUTHORITATIVE_COLOR_VALUES=108
+ABSOLUTE_COLOR_VALUES=108
+PRIMITIVE_ALIAS_VALUES=0
+LEGACY_SEED_THEME_SOURCES=UNCHANGED_ACTIVE_COMPATIBILITY_INPUT
+MANIFEST_SCHEMA_VERSION=6
+MANIFEST_RECORD_COUNT=181
+PACKAGE_EXPECTED_RECORD_COUNT_DELTA=0
+PACKAGE_MANIFEST_BASELINE_GZIP_BYTES=5213
+PACKAGE_MANIFEST_FINAL_GZIP_BYTES=6153
+PACKAGE_EXPECTED_GZIP_BYTE_DELTA=940
+CANONICAL_BASELINE_GZIP_BYTES=3366
+CANONICAL_EXPECTED_GZIP_BYTE_DELTA=2787
+TARGET_RUNTIME_STATUS=TARGET_INACTIVE
+NEXT_IMPLEMENTATION_PACKAGE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+```
+
 为当前九个 Active Color Role 人工编写 `neutral`、`ocean`、`warm` 的四个完整 Target Plane，并产生 Target-only Static Validation Result，不提交 Evidence Artifact。新结构必须与当前三个 Legacy Theme Source Side-by-side 存在；不得删除、改写或重新解释 §13.4 的 Legacy Tuple Source，不得改变 `defaultCurrentPreference`、First Paint、Runtime、Public Export 或 Persistence。
 
 该包不得从 Seed 生成颜色，不得激活 Target `roleContractVersion`，也不得把 Reserved Color Candidate 加入 Theme Plane。
 
+完成结果严格保持该边界：三份 Canonical Source 的 108 个 Cell 全部是逐字段提交且未经改写的 Absolute CSS Color；Target Validator 从 Active Public Role Registry 派生 Exact Role Set，执行 Duplicate-aware Parse、Exact Theme/Plane/Role Set、sRGB、Alpha、Named Contrast、Enhanced Plane Intent、Identity Tuple、逐 Plane/Role Resolved Color Pairwise Non-equality（`DeltaEOK > 1e-6`，只拒绝颜色等价碰撞，不声明 Human-perceptibility/JND Authority）、Manifest Projection、Deterministic Generation 与 Reversible Negative Probe。现有六个 Runtime/Public Generated Artifact 保持字节不变；只有 `tokens.manifest.json` 增加嵌套 Target-only Metadata。Manifest 中的 Future Selector 只是确定性结构元数据，不生成 Theme Bank CSS、不设置 `data-theme-kind`，也不激活 `roleContractVersion`。
+
 ### 5. `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`
+
+状态：
+
+```text
+STATUS=NEXT
+ENTRY=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE=COMPLETE
+RUNTIME_TARGETS_BEFORE_LANDING=TARGET_INACTIVE
+```
 
 在一个不可拆分的 Production Landing 中激活完整 Target Theme 和 Reference-only Preference。该包必须共同改变 §13.4 列出的 Schema、Default、Public Export、First Paint、Runtime Application、Application Bootstrap/Persistence、HTML/Storage Wiring、Manifest Metadata 和 Owning Static Enforcement，并实现 Exact Built-in ID Registry、Opaque Custom ID Registry、`(registryKind, themeId)`、Typed Theme Bank、Structured Migration 与 Invalid-theme Result。
 

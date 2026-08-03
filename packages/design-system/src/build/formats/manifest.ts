@@ -38,7 +38,7 @@ const forbiddenManifestSizeGovernanceFields = new Set<string>([
 ])
 
 const manifestGovernanceContract = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 174,
@@ -140,11 +140,31 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
   }))
   const alphaContracts = result.alphaContracts.map((record) => ({ ...record }))
   const densities = result.densityPresets.map((id) => ({ id }))
-  const themes = result.themes.map((theme) => ({
-    id: theme.id,
-    label: theme.label,
-    neutral: theme.palette.neutral,
-  }))
+  const completeThemesById = new Map<string, (typeof result.completeThemes)[number]>(
+    result.completeThemes.map((theme) => [theme.id, theme]),
+  )
+  const themes = result.themes.map((theme) => {
+    const completeTheme = completeThemesById.get(theme.id)
+
+    if (completeTheme === undefined) {
+      throw new Error(`${theme.id}: complete target Theme metadata is missing.`)
+    }
+
+    return {
+      id: theme.id,
+      label: theme.label,
+      neutral: theme.palette.neutral,
+      complete: {
+        activationStatus: completeTheme.activationStatus,
+        registryKind: completeTheme.registryKind,
+        selector: completeTheme.selector,
+        source: completeTheme.source,
+        schemaVersion: completeTheme.schemaVersion,
+        roleContractVersion: completeTheme.roleContractVersion,
+        planes: completeTheme.planes,
+      },
+    }
+  })
   const firstPaint = [
     {
       applicationKeyAgnostic: true,

@@ -21,6 +21,10 @@ import {
   type MaterialRoleValidation,
   type NamedContrastValidation,
 } from './contrast'
+import {
+  validateCompleteBuiltInThemes,
+  type ValidatedCompleteBuiltInTheme,
+} from './complete-themes'
 import { compareCodePoints } from './order'
 import { parseJsonSource } from './parse-json'
 import {
@@ -85,6 +89,7 @@ export interface TokenBuildResult {
   activePublicRoles: readonly PublicRoleRecord[]
   alphaContracts: readonly AlphaContractRecord[]
   colorCompoundBudget: number
+  completeThemes: readonly ValidatedCompleteBuiltInTheme[]
   compounds: readonly ColorCompound[]
   densityPresets: readonly string[]
   materialRoles: readonly MaterialRoleValidation[]
@@ -555,10 +560,16 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
     .sort((left, right) => compareCodePoints(left.path, right.path))
   const tokenRecords: TokenRecord[] = []
   const tokenPaths = new Map<string, string>()
+  const completeThemeBundles: { contents: string; path: string }[] = []
   const themes: LegacySeedThemeDefinition[] = []
   const themeIds = new Map<string, string>()
 
   for (const bundle of bundles) {
+    if (bundle.path.startsWith('themes/complete/') && bundle.path.endsWith('.theme.json')) {
+      completeThemeBundles.push(bundle)
+      continue
+    }
+
     if (bundle.path.endsWith('.theme.json')) {
       const theme = parseLegacySeedThemeSource(bundle)
       const existingThemeSource = themeIds.get(theme.id)
@@ -612,6 +623,11 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
         neutral: theme.palette.neutral,
       },
     }))
+  const completeThemes = validateCompleteBuiltInThemes({
+    bundles: completeThemeBundles,
+    legacyThemes: themes,
+    resolver,
+  })
   const densityPresets = resolver.records
     .filter((record) => record.tier === 'density')
     .map((record) => record.path.split('.')[1])
@@ -655,6 +671,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
       activePublicRoles,
       alphaContracts,
       colorCompoundBudget,
+      completeThemes,
       compounds,
       densityPresets: [...new Set(densityPresets)].sort(),
       materialRoles: validation.materialRoles,

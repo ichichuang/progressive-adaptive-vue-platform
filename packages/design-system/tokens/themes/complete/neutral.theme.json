@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 3,
+  "roleContractVersion": 1,
+  "id": "neutral",
+  "label": "Neutral",
+  "planes": {
+    "light": {
+      "standard": {
+        "color.action.primary": "oklch(21% 0.012 247)",
+        "color.border.default": "oklch(55% 0.012 247)",
+        "color.focus.ring": "oklch(54% 0.15 250)",
+        "color.scrim.viewport": "oklch(0% 0 0 / 0.56)",
+        "color.surface.page": "oklch(98.5% 0.002 247)",
+        "color.surface.panel": "oklch(100% 0 0)",
+        "color.text.on-action": "oklch(100% 0 0)",
+        "color.text.primary": "oklch(14.5% 0.01 247)",
+        "color.text.secondary": "oklch(37% 0.014 247)"
+      },
+      "enhanced": {
+        "color.action.primary": "oklch(14% 0.01 247)",
+        "color.border.default": "oklch(48% 0.012 247)",
+        "color.focus.ring": "oklch(44% 0.1 250)",
+        "color.scrim.viewport": "oklch(2% 0.004 247 / 0.56)",
+        "color.surface.page": "oklch(96% 0.003 247)",
+        "color.surface.panel": "oklch(99.5% 0.001 247)",
+        "color.text.on-action": "oklch(98% 0.002 247)",
+        "color.text.primary": "oklch(8% 0.006 247)",
+        "color.text.secondary": "oklch(27% 0.01 247)"
+      }
+    },
+    "dark": {
+      "standard": {
+        "color.action.primary": "oklch(100% 0 0)",
+        "color.border.default": "oklch(55% 0.012 247)",
+        "color.focus.ring": "oklch(62% 0.17 250)",
+        "color.scrim.viewport": "oklch(0% 0 0 / 0.56)",
+        "color.surface.page": "oklch(14.5% 0.01 247)",
+        "color.surface.panel": "oklch(21% 0.012 247)",
+        "color.text.on-action": "oklch(14.5% 0.01 247)",
+        "color.text.primary": "oklch(100% 0 0)",
+        "color.text.secondary": "oklch(92% 0.005 247)"
+      },
+      "enhanced": {
+        "color.action.primary": "oklch(92% 0.005 247)",
+        "color.border.default": "oklch(65% 0.01 247)",
+        "color.focus.ring": "oklch(76% 0.11 250)",
+        "color.scrim.viewport": "oklch(1% 0.004 247 / 0.56)",
+        "color.surface.page": "oklch(8% 0.005 247)",
+        "color.surface.panel": "oklch(14.5% 0.008 247)",
+        "color.text.on-action": "oklch(4% 0.003 247)",
+        "color.text.primary": "oklch(99% 0.001 247)",
+        "color.text.secondary": "oklch(82% 0.006 247)"
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 5,
+  "schemaVersion": 6,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -18,6 +18,9 @@
     "semantic/material.tokens.json",
     "semantic/spacing.tokens.json",
     "semantic/typography.tokens.json",
+    "themes/complete/neutral.theme.json",
+    "themes/complete/ocean.theme.json",
+    "themes/complete/warm.theme.json",
     "themes/neutral.theme.json",
     "themes/ocean.theme.json",
     "themes/warm.theme.json"
@@ -2510,17 +2513,191 @@
     {
       "id": "neutral",
       "label": "Neutral",
-      "neutral": "neutral"
+      "neutral": "neutral",
+      "complete": {
+        "activationStatus": "TARGET_INACTIVE",
+        "registryKind": "built-in",
+        "selector": "html[data-theme-kind='built-in'][data-theme='neutral']",
+        "source": "themes/complete/neutral.theme.json",
+        "schemaVersion": 3,
+        "roleContractVersion": 1,
+        "planes": {
+          "light": {
+            "standard": {
+              "color.action.primary": "oklch(21% 0.012 247)",
+              "color.border.default": "oklch(55% 0.012 247)",
+              "color.focus.ring": "oklch(54% 0.15 250)",
+              "color.scrim.viewport": "oklch(0% 0 0 / 0.56)",
+              "color.surface.page": "oklch(98.5% 0.002 247)",
+              "color.surface.panel": "oklch(100% 0 0)",
+              "color.text.on-action": "oklch(100% 0 0)",
+              "color.text.primary": "oklch(14.5% 0.01 247)",
+              "color.text.secondary": "oklch(37% 0.014 247)"
+            },
+            "enhanced": {
+              "color.action.primary": "oklch(14% 0.01 247)",
+              "color.border.default": "oklch(48% 0.012 247)",
+              "color.focus.ring": "oklch(44% 0.1 250)",
+              "color.scrim.viewport": "oklch(2% 0.004 247 / 0.56)",
+              "color.surface.page": "oklch(96% 0.003 247)",
+              "color.surface.panel": "oklch(99.5% 0.001 247)",
+              "color.text.on-action": "oklch(98% 0.002 247)",
+              "color.text.primary": "oklch(8% 0.006 247)",
+              "color.text.secondary": "oklch(27% 0.01 247)"
+            }
+          },
+          "dark": {
+            "standard": {
+              "color.action.primary": "oklch(100% 0 0)",
+              "color.border.default": "oklch(55% 0.012 247)",
+              "color.focus.ring": "oklch(62% 0.17 250)",
+              "color.scrim.viewport": "oklch(0% 0 0 / 0.56)",
+              "color.surface.page": "oklch(14.5% 0.01 247)",
+              "color.surface.panel": "oklch(21% 0.012 247)",
+              "color.text.on-action": "oklch(14.5% 0.01 247)",
+              "color.text.primary": "oklch(100% 0 0)",
+              "color.text.secondary": "oklch(92% 0.005 247)"
+            },
+            "enhanced": {
+              "color.action.primary": "oklch(92% 0.005 247)",
+              "color.border.default": "oklch(65% 0.01 247)",
+              "color.focus.ring": "oklch(76% 0.11 250)",
+              "color.scrim.viewport": "oklch(1% 0.004 247 / 0.56)",
+              "color.surface.page": "oklch(8% 0.005 247)",
+              "color.surface.panel": "oklch(14.5% 0.008 247)",
+              "color.text.on-action": "oklch(4% 0.003 247)",
+              "color.text.primary": "oklch(99% 0.001 247)",
+              "color.text.secondary": "oklch(82% 0.006 247)"
+            }
+          }
+        }
+      }
     },
     {
       "id": "ocean",
       "label": "Ocean",
-      "neutral": "cool"
+      "neutral": "cool",
+      "complete": {
+        "activationStatus": "TARGET_INACTIVE",
+        "registryKind": "built-in",
+        "selector": "html[data-theme-kind='built-in'][data-theme='ocean']",
+        "source": "themes/complete/ocean.theme.json",
+        "schemaVersion": 3,
+        "roleContractVersion": 1,
+        "planes": {
+          "light": {
+            "standard": {
+              "color.action.primary": "oklch(50% 0.14 250)",
+              "color.border.default": "oklch(57% 0.07 240)",
+              "color.focus.ring": "oklch(48% 0.1 250)",
+              "color.scrim.viewport": "oklch(12% 0.03 250 / 0.56)",
+              "color.surface.page": "oklch(97.5% 0.01 235)",
+              "color.surface.panel": "oklch(99.5% 0.001 235)",
+              "color.text.on-action": "oklch(99% 0.003 235)",
+              "color.text.primary": "oklch(25% 0.035 245)",
+              "color.text.secondary": "oklch(39% 0.04 245)"
+            },
+            "enhanced": {
+              "color.action.primary": "oklch(39% 0.1 250)",
+              "color.border.default": "oklch(47% 0.07 240)",
+              "color.focus.ring": "oklch(36% 0.08 250)",
+              "color.scrim.viewport": "oklch(8% 0.018 250 / 0.56)",
+              "color.surface.page": "oklch(95% 0.018 235)",
+              "color.surface.panel": "oklch(99% 0.004 235)",
+              "color.text.on-action": "oklch(100% 0 235)",
+              "color.text.primary": "oklch(12% 0.025 245)",
+              "color.text.secondary": "oklch(27% 0.04 245)"
+            }
+          },
+          "dark": {
+            "standard": {
+              "color.action.primary": "oklch(69% 0.12 240)",
+              "color.border.default": "oklch(52% 0.07 240)",
+              "color.focus.ring": "oklch(72% 0.14 240)",
+              "color.scrim.viewport": "oklch(3% 0.008 250 / 0.56)",
+              "color.surface.page": "oklch(13% 0.025 245)",
+              "color.surface.panel": "oklch(19% 0.03 245)",
+              "color.text.on-action": "oklch(9% 0.025 250)",
+              "color.text.primary": "oklch(90% 0.015 235)",
+              "color.text.secondary": "oklch(73% 0.025 240)"
+            },
+            "enhanced": {
+              "color.action.primary": "oklch(82% 0.1 240)",
+              "color.border.default": "oklch(63% 0.08 240)",
+              "color.focus.ring": "oklch(86% 0.06 240)",
+              "color.scrim.viewport": "oklch(1% 0.008 250 / 0.56)",
+              "color.surface.page": "oklch(8% 0.018 245)",
+              "color.surface.panel": "oklch(14% 0.025 245)",
+              "color.text.on-action": "oklch(3% 0.008 250)",
+              "color.text.primary": "oklch(99% 0.004 235)",
+              "color.text.secondary": "oklch(83% 0.02 240)"
+            }
+          }
+        }
+      }
     },
     {
       "id": "warm",
       "label": "Warm",
-      "neutral": "warm"
+      "neutral": "warm",
+      "complete": {
+        "activationStatus": "TARGET_INACTIVE",
+        "registryKind": "built-in",
+        "selector": "html[data-theme-kind='built-in'][data-theme='warm']",
+        "source": "themes/complete/warm.theme.json",
+        "schemaVersion": 3,
+        "roleContractVersion": 1,
+        "planes": {
+          "light": {
+            "standard": {
+              "color.action.primary": "oklch(49% 0.115 45)",
+              "color.border.default": "oklch(57% 0.065 55)",
+              "color.focus.ring": "oklch(47% 0.125 45)",
+              "color.scrim.viewport": "oklch(11% 0.025 45 / 0.56)",
+              "color.surface.page": "oklch(97.5% 0.014 75)",
+              "color.surface.panel": "oklch(99.5% 0.002 75)",
+              "color.text.on-action": "oklch(99% 0.004 75)",
+              "color.text.primary": "oklch(24% 0.035 50)",
+              "color.text.secondary": "oklch(39% 0.045 50)"
+            },
+            "enhanced": {
+              "color.action.primary": "oklch(38% 0.105 40)",
+              "color.border.default": "oklch(46% 0.06 55)",
+              "color.focus.ring": "oklch(35% 0.105 40)",
+              "color.scrim.viewport": "oklch(7% 0.015 45 / 0.56)",
+              "color.surface.page": "oklch(95% 0.022 75)",
+              "color.surface.panel": "oklch(99% 0.005 75)",
+              "color.text.on-action": "oklch(97.7% 0.018 75)",
+              "color.text.primary": "oklch(11% 0.025 45)",
+              "color.text.secondary": "oklch(26% 0.04 50)"
+            }
+          },
+          "dark": {
+            "standard": {
+              "color.action.primary": "oklch(70% 0.115 55)",
+              "color.border.default": "oklch(52% 0.07 55)",
+              "color.focus.ring": "oklch(73% 0.13 55)",
+              "color.scrim.viewport": "oklch(3% 0.008 45 / 0.56)",
+              "color.surface.page": "oklch(13% 0.025 45)",
+              "color.surface.panel": "oklch(19% 0.03 45)",
+              "color.text.on-action": "oklch(9% 0.025 45)",
+              "color.text.primary": "oklch(91% 0.02 75)",
+              "color.text.secondary": "oklch(74% 0.03 65)"
+            },
+            "enhanced": {
+              "color.action.primary": "oklch(83% 0.095 60)",
+              "color.border.default": "oklch(64% 0.075 55)",
+              "color.focus.ring": "oklch(86% 0.085 60)",
+              "color.scrim.viewport": "oklch(1% 0.008 45 / 0.56)",
+              "color.surface.page": "oklch(8% 0.018 45)",
+              "color.surface.panel": "oklch(14% 0.025 45)",
+              "color.text.on-action": "oklch(3% 0.008 45)",
+              "color.text.primary": "oklch(99% 0.004 75)",
+              "color.text.secondary": "oklch(84% 0.025 65)"
+            }
+          }
+        }
+      }
     }
   ],
   "firstPaint": [

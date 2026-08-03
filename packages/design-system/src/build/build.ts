@@ -21,6 +21,8 @@ import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { fontScaleValues } from '../schema/appearance.schema'
 import { currentPreferenceSchema } from '../schema/preference.schema'
+import { tokenPathFromReference } from '../schema/token.schema'
+import { validateCompleteBuiltInThemes } from './complete-themes'
 import { validateContrastAndMaterialContracts } from './contrast'
 import { createCssFormat, formatRuntimeCss } from './formats/css'
 import {
@@ -67,7 +69,7 @@ import {
   validateNamedContrastRegistry,
   validatePublicRoleRegistry,
 } from './public-role-registry'
-import { createTokenResolver, type ResolvedTokenRecord } from './resolve'
+import { createTokenResolver, type ResolvedTokenRecord, type TokenResolver } from './resolve'
 
 const buildDirectory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(buildDirectory, '../../../..')
@@ -91,8 +93,15 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 5213,
-    expectedByteDelta: 1847,
+    expectedBytes: 6153,
+    expectedByteDelta: 2787,
+  },
+  completeThemePlanes: {
+    baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
+    baselineBytes: 5213,
+    baselineRecordCount: 181,
+    expectedByteDelta: 940,
+    expectedRecordCountDelta: 0,
   },
   hardLimitBytes: 32768,
   options: {
@@ -398,6 +407,9 @@ function validateManifestCompression(result: TokenBuildResult): number {
 
   const gzipBytes = first.byteLength
   const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
+  const completeThemePlanesByteDelta =
+    gzipBytes - manifestCompressionContract.completeThemePlanes.baselineBytes
+  const manifestRecordCount = governance['recordCount']
 
   assertInvariant(
     manifestCompressionContract.current.expectedBytes -
@@ -416,6 +428,23 @@ function validateManifestCompression(result: TokenBuildResult): number {
   assertInvariant(
     actualDelta === manifestCompressionContract.current.expectedByteDelta,
     `Manifest gzip delta: expected ${String(manifestCompressionContract.current.expectedByteDelta)}, received ${String(actualDelta)}`,
+  )
+  assertInvariant(
+    manifestCompressionContract.current.expectedBytes -
+      manifestCompressionContract.completeThemePlanes.baselineBytes ===
+      manifestCompressionContract.completeThemePlanes.expectedByteDelta,
+    'Complete Theme planes expected byte delta must match their accepted baseline',
+  )
+  assertInvariant(
+    completeThemePlanesByteDelta ===
+      manifestCompressionContract.completeThemePlanes.expectedByteDelta,
+    `Complete Theme planes gzip delta: expected ${String(manifestCompressionContract.completeThemePlanes.expectedByteDelta)}, received ${String(completeThemePlanesByteDelta)}`,
+  )
+  assertInvariant(
+    typeof manifestRecordCount === 'number' &&
+      manifestRecordCount - manifestCompressionContract.completeThemePlanes.baselineRecordCount ===
+        manifestCompressionContract.completeThemePlanes.expectedRecordCountDelta,
+    'Complete Theme planes Manifest record delta must equal zero',
   )
 
   return gzipBytes
@@ -439,6 +468,7 @@ function validationResult(
     activePublicRoles: baseline.activePublicRoles,
     alphaContracts: baseline.alphaContracts,
     colorCompoundBudget: baseline.colorCompoundBudget,
+    completeThemes: baseline.completeThemes,
     compounds,
     densityPresets: baseline.densityPresets,
     materialRoles: [],
@@ -771,6 +801,349 @@ function validatePublicOutputCompleteness(result: TokenBuildResult): void {
   )
 }
 
+function completeThemeSourceDocument(
+  theme: TokenBuildResult['completeThemes'][number],
+): Record<string, unknown> {
+  return {
+    schemaVersion: theme.schemaVersion,
+    roleContractVersion: theme.roleContractVersion,
+    id: theme.id,
+    label: theme.label,
+    planes: theme.planes,
+  }
+}
+
+function completeThemeTokenResolver(result: TokenBuildResult): TokenResolver {
+  return {
+    records: result.tokens,
+    resolveReference(reference, expectedType, context) {
+      const targetPath = tokenPathFromReference(reference)
+      const target = result.tokens.find((record) => record.path === targetPath)
+
+      if (target === undefined) {
+        throw new Error(`${context}: unknown token reference "${reference}".`)
+      }
+
+      if (target.type !== expectedType) {
+        throw new Error(
+          `${context}: reference "${reference}" has type "${target.type}", expected "${expectedType}".`,
+        )
+      }
+
+      return target.resolvedValue
+    },
+  }
+}
+
+function mutableThemeRoleMap(
+  document: Record<string, unknown>,
+  mode: 'dark' | 'light',
+  contrast: 'enhanced' | 'standard',
+): Record<string, unknown> {
+  const planes = document['planes']
+  const modePlanes = isUnknownRecord(planes) ? planes[mode] : undefined
+  const roleMap = isUnknownRecord(modePlanes) ? modePlanes[contrast] : undefined
+
+  assertInvariant(isUnknownRecord(roleMap), `${mode}.${contrast} probe role map must exist`)
+  return roleMap
+}
+
+function validateCompleteThemeContracts(result: TokenBuildResult): void {
+  const resolver = completeThemeTokenResolver(result)
+  const canonicalDocuments = result.completeThemes.map(completeThemeSourceDocument)
+  const canonicalSources = result.completeThemes.map((theme) => theme.source)
+  const validateDocuments = (
+    documents: readonly Record<string, unknown>[],
+    sources: readonly string[] = canonicalSources,
+  ) =>
+    validateCompleteBuiltInThemes({
+      bundles: documents.map((document, index) => ({
+        contents: stableJson(document),
+        path: sources[index] ?? '<missing-complete-theme-source>',
+      })),
+      legacyThemes: result.themes,
+      resolver,
+    })
+
+  assertInvariant(
+    result.completeThemes.length === 3,
+    'exactly three complete built-in target Themes must exist',
+  )
+  assertInvariant(
+    result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
+      108,
+    'complete built-in target Themes must contain exactly 108 authored color values',
+  )
+  assertInvariant(
+    result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===
+      108 && result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 0),
+    'Package 4 built-in Theme cells must all be explicit absolute colors without aliases',
+  )
+  assertInvariantEqual(
+    validateDocuments(canonicalDocuments),
+    result.completeThemes,
+    'complete built-in Theme validation must be deterministic and preserve authored values',
+  )
+  assertInvariantEqual(
+    validateDocuments(structuredClone(canonicalDocuments)),
+    result.completeThemes,
+    'repeated complete built-in Theme validation must be byte-stable',
+  )
+
+  const manifest = manifestDocument(result)
+  const expectedThemeMetadata = result.themes.map((legacyTheme) => {
+    const completeTheme = result.completeThemes.find((theme) => theme.id === legacyTheme.id)
+
+    assertInvariant(
+      completeTheme !== undefined,
+      `${legacyTheme.id} complete target Theme metadata must exist`,
+    )
+
+    return {
+      id: legacyTheme.id,
+      label: legacyTheme.label,
+      neutral: legacyTheme.palette.neutral,
+      complete: {
+        activationStatus: 'TARGET_INACTIVE',
+        registryKind: 'built-in',
+        selector: completeTheme.selector,
+        source: completeTheme.source,
+        schemaVersion: completeTheme.schemaVersion,
+        roleContractVersion: completeTheme.roleContractVersion,
+        planes: completeTheme.planes,
+      },
+    }
+  })
+
+  assertInvariantEqual(
+    manifest['themes'],
+    expectedThemeMetadata,
+    'Manifest Theme records must exactly pair Legacy metadata with inert complete definitions',
+  )
+
+  const manifestProjectionDrift = structuredClone(manifest)
+  const driftedThemeRecords = manifestProjectionDrift['themes']
+
+  assertInvariant(
+    Array.isArray(driftedThemeRecords),
+    'Manifest projection probe Theme records must exist',
+  )
+  manifestProjectionDrift['themes'] = driftedThemeRecords.slice(1)
+  assertContractFailure(
+    () => {
+      assertInvariantEqual(
+        manifestProjectionDrift['themes'],
+        expectedThemeMetadata,
+        'Manifest Theme records must exactly pair Legacy metadata with inert complete definitions',
+      )
+    },
+    /Manifest Theme records/u,
+    'complete Theme Manifest projection drift must fail',
+  )
+
+  const inactiveRuntimeArtifacts = {
+    'appearance-init.js': formatAppearanceInitScript(),
+    'critical-theme.css': formatCriticalThemeCss(result),
+    'token-names.ts': formatTokenNames(result),
+    'tokens.css': formatRuntimeCss(result),
+    'tokens.ts': formatTokensTypeScript(result),
+    'unocss-theme.ts': formatUnoCssTheme(result),
+  }
+
+  for (const [file, contents] of Object.entries(inactiveRuntimeArtifacts)) {
+    assertInvariant(
+      !contents.includes('--ui-theme-bank-') && !contents.includes('data-theme-kind'),
+      `${file} must not activate the Package 5 Theme Bank`,
+    )
+  }
+
+  const missingTheme = structuredClone(canonicalDocuments).slice(0, 2)
+
+  assertContractFailure(
+    () => validateDocuments(missingTheme, canonicalSources.slice(0, 2)),
+    /source count/u,
+    'a missing complete built-in Theme must fail',
+  )
+
+  const duplicateTheme = structuredClone(canonicalDocuments)
+  duplicateTheme[1] = structuredClone(duplicateTheme[0] ?? {})
+
+  assertContractFailure(
+    () =>
+      validateDocuments(duplicateTheme, [
+        canonicalSources[0] ?? '',
+        canonicalSources[0] ?? '',
+        canonicalSources[2] ?? '',
+      ]),
+    /Theme IDs/u,
+    'a duplicate complete built-in Theme identity must fail',
+  )
+
+  const missingPlane = structuredClone(canonicalDocuments)
+  const missingPlanePlanes = missingPlane[0]?.['planes']
+
+  assertInvariant(isUnknownRecord(missingPlanePlanes), 'missing-plane probe source must exist')
+  delete missingPlanePlanes['dark']
+  assertContractFailure(
+    () => validateDocuments(missingPlane),
+    /Invalid complete built-in Theme source/u,
+    'a missing complete Theme plane must fail',
+  )
+
+  const missingRole = structuredClone(canonicalDocuments)
+  delete mutableThemeRoleMap(missingRole[0] ?? {}, 'light', 'standard')['color.text.secondary']
+  assertContractFailure(
+    () => validateDocuments(missingRole),
+    /public color role set/u,
+    'a missing complete Theme role must fail',
+  )
+
+  const extraRole = structuredClone(canonicalDocuments)
+  const extraRoleMap = mutableThemeRoleMap(extraRole[0] ?? {}, 'light', 'standard')
+  const existingExtraProbeValue = extraRoleMap['color.action.primary']
+
+  assertInvariant(
+    typeof existingExtraProbeValue === 'string',
+    'extra-role probe source value must exist',
+  )
+  extraRoleMap['color.unapproved.extra'] = existingExtraProbeValue
+  assertContractFailure(
+    () => validateDocuments(extraRole),
+    /public color role set/u,
+    'an extra complete Theme role must fail',
+  )
+
+  const computedColor = structuredClone(canonicalDocuments)
+  mutableThemeRoleMap(computedColor[0] ?? {}, 'light', 'standard')['color.action.primary'] =
+    'var(--unapproved-color)'
+  assertContractFailure(
+    () => validateDocuments(computedColor),
+    /Invalid complete built-in Theme source/u,
+    'computed or fallback-dependent complete Theme colors must fail',
+  )
+
+  const outOfGamutColor = structuredClone(canonicalDocuments)
+  const outOfGamutRoleMap = mutableThemeRoleMap(outOfGamutColor[0] ?? {}, 'light', 'standard')
+  const originalActionColor = outOfGamutRoleMap['color.action.primary']
+
+  assertInvariant(
+    typeof originalActionColor === 'string',
+    'out-of-gamut probe source value must exist',
+  )
+  outOfGamutRoleMap['color.action.primary'] = originalActionColor.replace(/% [^ ]+ /u, '% 0.4 ')
+  assertContractFailure(
+    () => validateDocuments(outOfGamutColor),
+    /Invalid complete built-in Theme source/u,
+    'out-of-gamut complete Theme colors must fail without correction',
+  )
+
+  const invalidAlpha = structuredClone(canonicalDocuments)
+  const invalidAlphaRoleMap = mutableThemeRoleMap(invalidAlpha[0] ?? {}, 'light', 'standard')
+  const originalScrimColor = invalidAlphaRoleMap['color.scrim.viewport']
+
+  assertInvariant(
+    typeof originalScrimColor === 'string',
+    'invalid-Alpha probe source value must exist',
+  )
+  invalidAlphaRoleMap['color.scrim.viewport'] = originalScrimColor.replace('0.56', '0.5')
+  assertContractFailure(
+    () => validateDocuments(invalidAlpha),
+    /Alpha/u,
+    'complete Theme Alpha contract drift must fail',
+  )
+
+  const invalidNamedContrast = structuredClone(canonicalDocuments)
+  const invalidNamedContrastRoleMap = mutableThemeRoleMap(
+    invalidNamedContrast[0] ?? {},
+    'light',
+    'standard',
+  )
+
+  invalidNamedContrastRoleMap['color.text.primary'] =
+    invalidNamedContrastRoleMap['color.surface.page']
+  assertContractFailure(
+    () => validateDocuments(invalidNamedContrast),
+    /contrast/u,
+    'complete Theme Named Contrast violations must fail',
+  )
+
+  const invalidEnhancedIntent = structuredClone(canonicalDocuments)
+  const standardIntentRoleMap = mutableThemeRoleMap(
+    invalidEnhancedIntent[0] ?? {},
+    'light',
+    'standard',
+  )
+  const enhancedIntentRoleMap = mutableThemeRoleMap(
+    invalidEnhancedIntent[0] ?? {},
+    'light',
+    'enhanced',
+  )
+
+  Object.assign(enhancedIntentRoleMap, structuredClone(standardIntentRoleMap))
+  assertContractFailure(
+    () => validateDocuments(invalidEnhancedIntent),
+    /Enhanced plane must not duplicate Standard/u,
+    'complete Theme Enhanced-plane intent violations must fail',
+  )
+
+  const missingPerRoleIdentity = structuredClone(canonicalDocuments)
+  const neutralIdentityRoleMap = mutableThemeRoleMap(
+    missingPerRoleIdentity[0] ?? {},
+    'light',
+    'standard',
+  )
+  const oceanIdentityRoleMap = mutableThemeRoleMap(
+    missingPerRoleIdentity[1] ?? {},
+    'light',
+    'standard',
+  )
+
+  oceanIdentityRoleMap['color.scrim.viewport'] = neutralIdentityRoleMap['color.scrim.viewport']
+  assertContractFailure(
+    () => validateDocuments(missingPerRoleIdentity),
+    /Theme identity must remain present/u,
+    'complete Theme identity must remain present through every public color role',
+  )
+
+  for (const forbiddenField of ['fallback', 'inheritance', 'palette', 'seed']) {
+    const forbiddenAuthority = structuredClone(canonicalDocuments)
+    const firstDocument = forbiddenAuthority[0]
+
+    assertInvariant(firstDocument !== undefined, 'forbidden-authority probe source must exist')
+    firstDocument[forbiddenField] = {}
+    assertContractFailure(
+      () => validateDocuments(forbiddenAuthority),
+      /Invalid complete built-in Theme source/u,
+      `complete Themes must reject ${forbiddenField} authority`,
+    )
+  }
+
+  const duplicateKeyContents = stableJson(canonicalDocuments[0]).replace(
+    '  "id": "neutral",',
+    '  "id": "neutral",\n  "id": "neutral",',
+  )
+
+  assertContractFailure(
+    () =>
+      validateCompleteBuiltInThemes({
+        bundles: [
+          {
+            contents: duplicateKeyContents,
+            path: canonicalSources[0] ?? '',
+          },
+          ...canonicalDocuments.slice(1).map((document, index) => ({
+            contents: stableJson(document),
+            path: canonicalSources[index + 1] ?? '',
+          })),
+        ],
+        legacyThemes: result.themes,
+        resolver,
+      }),
+    /Duplicate JSON object key/u,
+    'duplicate complete Theme fields must fail before object validation',
+  )
+}
+
 function validateGeneratorContracts(result: TokenBuildResult): void {
   const publicRoleRecords = validatePublicRoleRegistry(PublicRoleRegistry)
   const alphaContracts = validateAlphaContractRegistry(
@@ -807,6 +1180,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     'Token preprocessing must carry the exact 14-record Named Contrast Registry',
   )
 
+  validateCompleteThemeContracts(result)
   validateActivePublicRoleTokens(result.tokens, publicRoleRecords)
   validatePublicOutputCompleteness(result)
   validateManifestGovernance(result)
