@@ -250,12 +250,15 @@ ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 CURRENT_COMPATIBILITY_ENCODING=defaultCurrentPreference
 CURRENT_COMPATIBILITY_ENCODING_STATUS=ACTIVE
 FALLBACK=NONE
-PERSISTED_AS=validated stored preference
-CONSUMERS=First Paint input, application appearance store, settings reset action
+PERSISTED_AS=ExplicitThemePreference direct Local Storage value after Atomic Cutover
+PERSISTENCE_CONTRACT=Current-to-target Preference Transition
+CONSUMERS=AUTHORIZED_PACKAGE_5_CONSUMER only
 STATIC_ENFORCEMENT=duplicate-default and semantic-equivalence checks
 ```
 
 当前 `defaultCurrentPreference` 是上述同一产品决策的 `CurrentPreference` Embedded-palette 兼容编码，不是第二份产品默认。它必须继续与 `ProductPreferenceDefault` 保持静态验证的逐轴语义等价，直到 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`；Legacy Palette 字段只是旧 Persistence Shape 的兼容数据。Atomic Cutover 后，唯一持久化 Default 改为上方 Reference-only Tuple，旧编码只作为 Read-only Migration Input。
+
+`CONSUMERS` 只引用 §13.6 定义的 `AUTHORIZED_PACKAGE_5_CONSUMER`，不把尚不存在的文件声明为 Current Consumer。`ProductPreferenceDefault` 只供该 Boundary 构造新偏好或执行显式 Reset，不得由 First Paint、Pinia、页面、Feature 或持久化 Writer 复制成第二份默认对象。
 
 Comfortable 是产品默认 Density，不是 Page、Component、Layout 或 Error Fallback。System 是 Stored Color Mode Default，只能在 Runtime 根据浏览器 `prefers-color-scheme` 能力解析，不能在构建时改写为 Light 或 Dark。
 
@@ -288,7 +291,7 @@ FAILURE_BEHAVIOR=RETAIN_SAFE_BASELINE_AND_RETURN_STRUCTURED_ERROR
 STATIC_ENFORCEMENT=HTML, critical CSS, manifest and initializer exact parity
 ```
 
-该 Baseline 只保护 Vue、Storage 和能力解析执行前的可读首帧，以及初始化失败后的安全状态。它不是 Stored Preference，不得被写入 Storage、Pinia 或用户设置；Preference 与 Theme Registry 校验成功后，Runtime 必须在单个 Appearance Mutation Boundary 中原子替换本 Baseline 的全部五个 Effective Field。任何 Partial Attribute、Partial Theme Bank 或跨帧混合状态均失败。First Paint 中的 Font Scale 与 Motion 不是该五字段 Safety Baseline 的成员；它们只能消费 `ProductPreferenceDefault` 的对应轴或已验证 Stored Preference，并继续受同一 Atomic Appearance Mutation Boundary 约束，不得建立第三份默认。
+该 Baseline 只保护 Vue、Storage 和能力解析执行前的可读首帧，以及初始化失败后的安全状态。它不是 Stored Preference，不得被写入 Storage、Pinia 或用户设置；Preference 与 Theme Registry 校验成功后，Runtime 必须在单个 Appearance Mutation Boundary 中原子替换本 Baseline 的全部五个 Effective Field。任何 Partial Attribute、Partial Theme Bank 或跨帧混合状态均失败。Package 5 的 First Paint 只能同步解析 Built-in Theme；Stored Preference 引用 Custom Theme 时必须保持本 Baseline，直到 Vue Bootstrap 后由应用读取本地 Registry、完成 Design System Validation 并原子应用。First Paint 中的 Font Scale 与 Motion 不是该五字段 Safety Baseline 的成员；它们只能消费 `ProductPreferenceDefault` 的对应轴或已验证 Stored Preference，并继续受同一 Atomic Appearance Mutation Boundary 约束，不得建立第三份默认。
 
 ### Approved Value Authorities
 
@@ -2042,6 +2045,75 @@ themes[*].complete.planes=light.standard,light.enhanced,dark.standard,dark.enhan
 PACKAGE_4_EXPECTED_RECORD_COUNT_DELTA=0
 ```
 
+`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 获得实现授权并完成同一 Atomic Landing 时，必须用以下 Exact Active Flat Shape 原子替换上述 Package 4 Target-only Nested Theme Representation；在该 Landing 完成前，下列 Shape 仍未实现，其 Implementation Eligibility 继续由 §37.1 判定：
+
+```text
+themes[*]
+  activationStatus
+  registryKind
+  themeId
+  label
+  source
+  schemaVersion
+  roleContractVersion
+  planes
+  bank
+    visibility
+    records[*]
+      colorMode
+      contrast
+      publicRole
+      sourceField
+      authoredValue
+      bankVariable
+      publicBinding
+```
+
+```text
+activationStatus=ACTIVE
+registryKind=built-in
+bank.visibility=ui-internal
+ACTIVE_THEME_IDENTITY=registryKind,themeId
+ACTIVE_THEME_FIELDS_REMOVED=themes[*].id,themes[*].neutral,themes[*].complete
+THEME_RECORD_ORDER=Built-in Theme Registry canonical order
+BANK_RECORD_ORDER=Color Mode Registry order → Contrast Registry order → Active Public Color Role Registry order
+```
+
+上列字段集合闭合，不允许 Extra Field。`registryKind` 与 `themeId` 是唯一 Theme Identity，不能保留并行 `id`。Runtime Custom Theme Instance、应用 Storage Key、Pinia State、Raw Validation Failure、First Paint Handoff 和应用 Registry 内容不得进入 Build Manifest。八个现有顶层 Record Family 保持不变，不得因 Active Theme Bank 增加第九种 Record Family。
+
+同一 Atomic Landing 必须把 First-paint Metadata 原子替换为以下 Exact Shape：
+
+```text
+firstPaint[*]
+  applicationKeyAgnostic=true
+  safetyBaseline
+    effectiveColorMode=light
+    effectiveTheme.registryKind=built-in
+    effectiveTheme.themeId=neutral
+    effectiveContrast=standard
+    effectiveMaterial=solid
+    effectiveDensity=comfortable
+  artifacts
+    appearance-init.js
+    critical-theme.css
+  synchronousClassicScript=true
+  storageWrite=false
+  capabilities
+    preferenceStorageKeyAttribute=true
+    preferenceStorageRead=true
+    explicitThemePreferenceValidation=true
+    legacyPreferenceMigration=true
+    builtInThemeResolution=true
+    atomicAppearanceApplication=true
+    synchronousCustomThemeResolution=false
+    customThemeRuntimeResolution=true
+    themeRegistryStorageKeyAttribute=false
+```
+
+该 Shape 不包含 `productDefaultAxes`，不复制 `ProductPreferenceDefault`，不把 Font Scale 或 Motion 加入五字段 `PreInitializationSafetyBaseline`，也不记录实际 Storage Key、Custom Registry Snapshot、Pinia State 或私有 First Paint Handoff。Built-in Theme 可以在 Vue 前同步解析；本 Landing 的 Custom Theme 只允许在 Vue Bootstrap 后恢复。Stored Preference 引用 Custom Theme 时，First Paint 保持 Safety Baseline，不得同步读取 Custom Registry。
+
+Package 5 的不兼容最终 Shape 应用后，Manifest Numeric Discriminator 才由 Authorized Implementation 机械派生；本 Architecture-only Amendment 不冻结或推荐该数字。最终 Record Count、Record Delta、Gzip Bytes、Gzip Delta 与 Production Bundle Delta 同样只由 Authorized Implementation 对最终输出进行确定性测量，本 Amendment 不预声明数值。
+
 Generated Manifest 禁止包含用于断言同一压缩 Payload 大小的字段：
 
 ```text
@@ -2192,7 +2264,7 @@ html[data-color-mode='dark'] {
 
 Effective Appearance 是纯派生结果，不作为第二份可变 Pinia State，也不持久化。
 
-Atomic Cutover 后，Theme Reference Resolution 同样是纯边界。有效引用解析为已校验、可访问的 Built-in 或 Custom Theme Registry Entry；无效引用不得被改写为 `neutral` 或其他主题，也不得修改 Stored Preference。运行时可以暂时保留 Safe First-paint Baseline，但必须返回结构化的 Invalid-theme Result。Cutover 前，Theme 继续是经过 `CurrentPreference` Schema 校验的 Built-in ID 字符串，不存在 Registry-kind Tuple。
+Atomic Cutover 后，Theme Reference Resolution 同样是纯边界。有效引用解析为已校验、可访问的 Built-in 或 Custom Theme Registry Entry；无效引用不得被改写为 `neutral` 或其他主题，也不得修改 Stored Preference，并且必须返回 §13.6 冻结的 `ThemeReferenceResolutionResult` Exact Branch。运行时可以暂时保留 Safe First-paint Baseline，但该 App State 不进入 Public Result。Cutover 前，Theme 继续是经过 `CurrentPreference` Schema 校验的 Built-in ID 字符串，不存在 Registry-kind Tuple。
 
 ## 13.2 Theme Definition
 
@@ -2784,7 +2856,7 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
-Schema Version 只存在于最外层 User Preference Envelope：
+Preference 的持久化协议判别字段只存在于 `ExplicitThemePreference` 根对象，不存在 Additional Preference Envelope；Custom Registry Snapshot 具有自己独立的 Application-owned Discriminator。Numeric Discriminator 不得扩散到类型、函数、文件、模块、标题或功能名称：
 
 ```ts
 type ColorModePreference = 'light' | 'dark' | 'system'
@@ -2817,7 +2889,19 @@ interface ExplicitThemePreference {
 }
 ```
 
-Preference 只保存 Theme Registry Reference，不嵌入 `brand`、`accent`、`neutral` 或 Theme Plane。Built-in Theme ID 必须来自已验证 Built-in Theme Document 生成的 Exact Literal Registry，不得只通过不受限正则。Custom Reference 必须解析到当前用户可访问、Schema Valid、Role-contract Compatible 的 Existing Registry Entry。
+Atomic Cutover 后的 Preference Persistence Contract 精确为：
+
+```text
+PREFERENCE_STORAGE_KEY=pavp:web:user-preference
+PREFERENCE_STORAGE_VALUE=ExplicitThemePreference
+ADDITIONAL_PREFERENCE_ENVELOPE=PROHIBITED
+LEGACY_PREFERENCE_WRITE=PROHIBITED_AFTER_CUTOVER
+LEGACY_PREFERENCE_READ=READ_ONLY_MIGRATION_INPUT
+```
+
+应用在该 Local Storage Key 下直接保存 Repository-defined `ExplicitThemePreference`，不增加应用外层对象、`payload` Wrapper、Revision Wrapper 或 §19.5 的 General Storage Envelope。现有 Application-owned Key 保持不变。Legacy Preference Format、Embedded Palette Value 和 Legacy Default 只允许由 Migration Boundary 读取；Atomic Cutover 后的 Writer、First Paint、Pinia Store、应用 Persistence Boundary 和 Public Runtime 均不得输出 Legacy Format。
+
+Preference 只保存 Theme Registry Reference，不嵌入 `brand`、`accent`、`neutral` 或 Theme Plane。Built-in Theme ID 必须来自已验证 Built-in Theme Document 生成的 Exact Literal Registry，不得只通过不受限正则。Custom Reference 只有在 Exact Application-owned Local Registry Entry 存在且 Complete Design System Validation 成功时才可解析；Package 5 不引入 Account、Principal、Permission、Session、Tenant 或 Auth Access Semantics。
 
 Theme Identity 的 Canonical Key 是不可拼接的 Tuple：
 
@@ -2827,7 +2911,7 @@ Theme Identity 的 Canonical Key 是不可拼接的 Tuple：
 registryKind = built-in | custom
 ```
 
-Built-in 与 Custom 可以拥有相同的 `themeId` 字符串，但 Tuple 永不相等。`CustomThemeId` 是应用分配的 Opaque ID，必须在用户可访问的 Custom Registry 中唯一；Label 不参与身份。Resolver、Cache、Storage、DOM 和 Error Result 都必须保留 `registryKind` 与 `themeId` 两个独立字段，不得把它们连接成未经转义的 Selector、Class Name、CSS Variable 或 Storage Key。
+Built-in 与 Custom 可以拥有相同的 `themeId` 字符串，但 Tuple 永不相等。`CustomThemeId` 是应用分配的 Opaque ID，必须在 Application-owned Local Custom Registry 中唯一；Label 不参与身份。Resolver、Cache、Storage、DOM 和 Error Result 都必须保留 `registryKind` 与 `themeId` 两个独立字段，不得把它们连接成未经转义的 Selector、Class Name、CSS Variable 或 Storage Key。
 
 Registry Entry 必须通过 Discriminated Union 绑定 Registry Kind、Theme ID 与完整文档，且 `themeId` 必须精确等于 `definition.id`：
 
@@ -2856,7 +2940,7 @@ DUPLICATE_DEFAULT_DECLARATION=PROHIBITED
 
 Theme Registry 是 Typed Product Data，不是 AI Workflow Registry、Machine-local Authority 或第二份 Architecture Authority。
 
-Custom Theme Document 存储在 Preference 之外的 Application-owned Theme Registry。应用可以使用独立、显式提供的同步 Registry Snapshot Storage Key 支持 First Paint，也可以在 Vue Bootstrap 后通过自己的持久化边界解析；两种路径都必须把同一份原始完整 Theme Definition 重新送入 Design System Exact Validator。Preference 始终只保存 Reference，不复制 Theme Plane。
+Custom Theme Document 存储在 Preference 之外的 Application-owned Theme Registry。Package 5 只允许在 Vue Bootstrap 后由应用持久化边界读取 Registry，并把原始完整 Theme Definition 送入 Design System Exact Validator；不得向 Pre-Vue First Paint 提供 Custom Registry Storage Key。Preference 始终只保存 Reference，不复制 Theme Plane。
 
 `LegacySeedPreference` → `ExplicitThemePreference` Migration 必须确定、幂等、无损并返回结构化结果：
 
@@ -2873,6 +2957,62 @@ LegacySeedPreference custom theme or custom seed palette
 ```
 
 `LegacyPreferenceInput` Payload 可以先执行历史确定的 `high-contrast → system + enhanced` 和 `material=solid` 转换，再进入同一 `LegacySeedPreference` → `ExplicitThemePreference` 判定。Migration 不得从 Legacy Seed 扩展颜色、丢弃已修改的 Palette、回退到默认 `ExplicitThemePreference` 或写入 Storage。
+
+### Custom Theme Registry Persistence Contract
+
+```text
+CUSTOM_THEME_REGISTRY_STORAGE_KEY=pavp:web:custom-theme-registry
+STORAGE_KEY_OWNER=apps/web
+STORAGE_MEDIUM=Local Storage
+WRITE_MODE=complete Snapshot replacement
+DESIGN_SYSTEM_HARDCODED_KEY=PROHIBITED
+BUILD_MANIFEST_KEY_PROJECTION=PROHIBITED
+PRE_VUE_FIRST_PAINT_REGISTRY_READ=PROHIBITED
+HTML_THEME_REGISTRY_STORAGE_KEY_ATTRIBUTE=PROHIBITED
+```
+
+Application-owned Persisted Shape 精确为：
+
+```ts
+interface CustomThemeRegistrySnapshot {
+  schemaVersion: 1
+  entries: readonly CustomThemeRegistryEntry[]
+}
+
+interface CustomThemeRegistryEntry {
+  registryKind: 'custom'
+  themeId: CustomThemeId
+  definition: CustomThemeDefinition
+}
+```
+
+`schemaVersion` 只用于持久化协议判别，不得扩散到任何名称或说明标签。Snapshot 外层字段集合精确为 `schemaVersion` 与 `entries`；每个 Entry 的字段集合精确为 `registryKind`、`themeId` 与 `definition`。`registryKind` 精确为 `custom`。`themeId` 是 Opaque、Case-sensitive Original String，不执行 Unicode Normalization、Case Folding 或其他改写，并且必须与 `definition.id` Code-point Exact Equal。Snapshot 不包含 Revision、Timestamp、Payload Wrapper、Pinia State、Effective Appearance、Handoff Data、Principal Data 或 General Storage Metadata；Writer 只能完整替换 Snapshot，并且只允许写入全部通过完整验证的 Entry。
+
+Canonical Entry Ordering 固定为：Writer 按 Original `themeId` 的 Locale-independent Code-point Ascending Order 输出；禁止 Locale Sort、Unicode Normalization 与 Case Folding。Reader 必须先完整验证整个 Snapshot，再将 Valid-but-unsorted Entries 仅在内存中规范为同一顺序。输入顺序本身不构成拒绝原因，内存排序也不得触发自动 Local Storage Rewrite。
+
+完整拒绝合同为：
+
+```text
+DUPLICATE_JSON_KEY=REJECT_ENTIRE_SNAPSHOT
+DUPLICATE_THEME_ID=REJECT_ENTIRE_SNAPSHOT
+UNKNOWN_FIELD=REJECT_ENTIRE_SNAPSHOT
+MALFORMED_JSON=REJECT_ENTIRE_SNAPSHOT
+INVALID_ENTRY=REJECT_ENTIRE_SNAPSHOT
+IDENTITY_MISMATCH=REJECT_ENTIRE_SNAPSHOT
+ROLE_CONTRACT_MISMATCH=REJECT_ENTIRE_SNAPSHOT
+PARTIAL_ENTRY_SALVAGE=PROHIBITED
+AUTOMATIC_CORRUPT_VALUE_DELETE=PROHIBITED
+AUTOMATIC_CORRUPT_VALUE_OVERWRITE=PROHIBITED
+AUTOMATIC_STORAGE_REWRITE_AFTER_NORMALIZATION=PROHIBITED
+```
+
+任一失败使整个 Snapshot 不可访问；不得恢复部分 Registry、安装部分 Theme Bank、改写 Preference、替换为 Built-in `neutral` 或合成颜色。坏值保留原状；后续显式、完整 Valid Snapshot Write 可以替换它，但读取或内存规范化本身不得删除、覆盖或修复它。
+
+Custom Theme Deletion 必须 Fail Closed：只有成功读取并验证当前 Stored `ExplicitThemePreference`，且可以证明其 Theme Tuple 不引用目标 Custom Entry 时才允许删除。当前 Preference 引用目标或应用无法证明不引用时都必须拒绝。切换 Theme 与删除 Entry 是两个独立 Operation；另一个 Valid Theme Reference 必须先完成 Resolve、Atomic Apply、Persistence 并确认持久化成功，随后才能从完整 Registry Snapshot 删除旧 Entry。Deletion Failure 不得改变 Stored Preference。
+
+Package 5 中 Custom Theme Accessibility 的唯一含义是：Application-owned Local Registry 中存在 Exact Custom Registry Entry，并且该 Entry 完成 Design System Validation。不得为本合同引入 Account、Principal、Permission、Session、Tenant、Server Ownership 或 Auth Semantics；未来访问扩展只属于其独立 Admission Gate。
+
+本合同不引入 Compare-and-swap、Cross-tab Synchronization、Quarantine Storage、Principal Partition、IndexedDB 或 §19.5 Future General Storage Platform。
 
 ### Atomic Cutover Boundary
 
@@ -2901,22 +3041,11 @@ NO_MIXED_AUTHORITATIVE_FORMAT_ON_MAIN
 LEGACY_FORMAT_AFTER_CUTOVER=READ_ONLY_NEVER_WRITTEN
 ```
 
-未来 `roleContractVersion` 提升时，只允许一种不要求重填颜色的确定性迁移：两个版本的 Public Color Role Set、Alpha Contract Registry 和 Named Contrast Registry 必须逐记录完全相等，版本差异只来自非颜色 Public Role Admission。此时 Migration 可以在内存中把完整旧 Theme 重新验证为当前版本，保持每个 Authored Color 字符串逐字不变，并返回 `ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY` 与 Old/New Version Evidence；不得写回 Storage，是否保存新版本由应用边界显式决定。
+未来 `roleContractVersion` 提升时，只允许一种不要求重填颜色的确定性 Rebound：两个 Historical/Current Public Color Role Set、Alpha Contract Registry 和 Named Contrast Registry 必须逐记录完全相等，差异只来自非颜色 Public Role Admission。此时 `validateCustomThemeDefinition` 可以在内存中把完整 Historical Theme 重新验证为 Current Contract，保持每个 Authored Color String 逐字不变，并返回 §13.6 的 `rebound` Branch 与 Previous/Current Role Contract Evidence；不得写回 Storage，是否保存 Current Contract Document 由应用边界显式决定。Package 5 不得为了使该分支可达而制造 Historical Role Contract Registry。
 
-只要 Public Color Role、Alpha Policy、Named Pair、Endpoint、Kind、Threshold 或 Maximum Useful Ratio 有任何变化，旧版 Custom Theme 就不得自动补齐新增 Role、只改版本号或沿用旧 Validation。它必须以 `ROLE_CONTRACT_MISMATCH` 保持不可应用，直到用户或开发者为全部当前字段提供显式值、重新通过完整 Validation，并保存为当前版本文档；原文档不得被静默覆盖。
+只要 Public Color Role、Alpha Policy、Named Pair、Endpoint、Kind、Threshold 或 Maximum Useful Ratio 有任何变化，Historical Custom Theme 就不得自动补齐新增 Role、只改 Numeric Discriminator 或沿用 Historical Validation。它必须以 `ROLE_CONTRACT_MISMATCH` 保持不可应用，直到用户或开发者为全部 Current Field 提供显式值、重新通过完整 Validation，并保存为 Current Contract Document；原文档不得被静默覆盖。
 
-Theme Resolution 至少返回：
-
-```text
-THEME_NOT_FOUND
-THEME_INACCESSIBLE
-THEME_INVALID
-ROLE_CONTRACT_MISMATCH
-MIGRATION_REQUIRES_THEME_COMPLETION
-ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY
-```
-
-其中 `ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY` 是包含完整 Version Evidence 的 Migration Success Result，不是 Validation Error；其余失败结果必须包含 Registry Kind、Theme ID、Field Path 或 Role Contract Evidence。无效引用可以暂时保留 Safe First-paint Baseline，但不得替换、删除或重写 Stored Preference。
+Migration、Custom Theme Validation、Theme Reference Resolution 与 Custom Theme Bank Installation 只能返回 §13.6 冻结的 Exact Discriminated Union，不得增加 Generic Optional Evidence 或通用 Error Platform。无效引用可以暂时保留 Safe First-paint Baseline，但该 App Runtime State 不进入 Public Result，也不得导致 Stored Preference 被替换、删除或重写。
 
 ## 13.5 Pure Material Resolver
 
@@ -2975,10 +3104,10 @@ generated-output drift contract
 `apps/web` 负责应用编排：
 
 ```text
-preference persistence
-application-owned storage key
-optional application-owned synchronous Custom Theme Registry Snapshot key
-Custom Theme Registry persistence and access boundary
+direct ExplicitThemePreference persistence at pavp:web:user-preference
+application-owned preference Storage Key and HTML attribute wiring
+post-Vue Custom Theme Registry Snapshot persistence at pavp:web:custom-theme-registry
+Custom Theme Registry access, deletion and failure boundary
 Pinia state
 matchMedia subscriptions
 bootstrap order
@@ -2986,7 +3115,185 @@ index.html inclusion
 runtime re-resolution orchestration
 ```
 
-Design System 不得硬编码应用 Storage Key，也不得拥有 Pinia 或直接选择应用持久化策略。应用通过 `appearance-init.js` Script Element 的显式 `data-preference-storage-key` 提供 Preference Storage Key；如需 Custom Theme First Paint，再通过 `data-theme-registry-storage-key` 提供独立 Registry Snapshot Key。Application Store 与 HTML 必须使用同一组应用所有的 Key，并由静态治理验证一致性。Registry Snapshot 与 Preference 是两个 Schema Boundary，不得把 Theme Plane 嵌入 Preference。
+Design System 不得硬编码应用 Storage Key，也不得拥有 Pinia 或直接选择应用持久化策略。应用通过 `appearance-init.js` Script Element 的显式 `data-preference-storage-key` 提供 Preference Storage Key，并由静态治理验证 HTML 与应用配置一致。Package 5 不提供 `data-theme-registry-storage-key`，Generated First Paint 不读取 Custom Registry；Vue Bootstrap 后的 Application-owned Persistence Boundary 才能使用 `pavp:web:custom-theme-registry`。Registry Snapshot 与 Preference 是两个直接持久化的独立 Schema Boundary，不得互相包裹，也不得把 Theme Plane 嵌入 Preference。
+
+### Public Design System Boundary
+
+`AUTHORIZED_PACKAGE_5_CONSUMER` 只表示 Atomic Cutover 获准后由 Package 5 拥有的 `apps/web` Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation、Application Persistence Lifecycle 和 Generated First Paint Integration。该术语不把尚未创建的文件描述为当前 Repository Consumer，也不授权任何 Feature、Page、Shared UI 或 Future Package 使用该边界。
+
+Package 5 新增的 Public Root Symbol 精确为：
+
+```text
+explicitThemePreferenceSchema
+ExplicitThemePreference
+ProductPreferenceDefault
+ThemeReference
+CustomThemeRegistryEntry
+ThemeRegistryEntry
+migrateToExplicitThemePreference
+PreferenceMigrationResult
+validateCustomThemeDefinition
+CustomThemeValidationResult
+resolveThemeReference
+ThemeReferenceResolutionResult
+installCustomThemeBank
+ThemeBankInstallationResult
+```
+
+现有 Public Runtime Mechanism 保留，但在需要处随 Atomic Cutover 更新为 Explicit Theme Contract：
+
+```text
+applyAppearance
+EffectiveAppearanceState
+resolveColorMode
+resolveMaterial
+```
+
+以下 Public Surface 保持不变：
+
+```text
+tokens
+tokenNames
+TokenName
+platformPreset
+./tokens.css
+```
+
+每个 Public Symbol 的 `AUTHORIZED_PACKAGE_5_CONSUMER` 理由精确为：
+
+| Public symbol | Authorized use and boundary reason |
+| --- | --- |
+| `explicitThemePreferenceSchema`; `ExplicitThemePreference` | 应用 Preference Read、Migration Output、Pinia Stored State 与 Direct Persistence 共用一份 Exact Contract，防止应用复制 Schema。 |
+| `ProductPreferenceDefault` | 应用创建新 Preference 和显式 Reset 使用唯一 Default Authority，防止 Consumer-authored Default。 |
+| `ThemeReference`; `CustomThemeRegistryEntry`; `ThemeRegistryEntry` | 应用 Registry、Resolver 与 Appearance Orchestration 共享 Exact Tuple/Entry Contract，防止重复 Theme Identity Authority。 |
+| `migrateToExplicitThemePreference`; `PreferenceMigrationResult` | Generated First Paint 与应用 Bootstrap 共享 Pure Legacy Migration Boundary，防止第二份迁移实现。 |
+| `validateCustomThemeDefinition`; `CustomThemeValidationResult` | 应用 Registry Ingestion 通过公共根调用完整 Design System Validation，防止 Deep Import 或应用自建 Validation。 |
+| `resolveThemeReference`; `ThemeReferenceResolutionResult` | 应用根据可访问 Registry 解析 Exact Reference，防止应用复制 Resolution Code 或 Error Mapping。 |
+| `installCustomThemeBank`; `ThemeBankInstallationResult` | 应用只把已验证 Custom Entry 交给 Typed Installer，防止直接操作 Private Bank Variable 或 DOM Helper。 |
+| `applyAppearance`; `EffectiveAppearanceState`; `resolveColorMode`; `resolveMaterial` | 应用 Appearance Orchestration 保留现有公共机制并原子切换 Tuple-aware Effective Contract，防止应用复制 Resolver/DOM Authority。 |
+| `tokens`; `tokenNames`; `TokenName`; `platformPreset`; `./tokens.css` | Package 5 保持现有公共 Token/CSS Consumer Contract，不以 Theme Bank 扩大或绕过 Public Root。 |
+
+以下保持 Private，不得增加 Design System Deep-import Path：Standalone Custom Theme Document Schema、Standalone Theme Reference Schema、Built-in/Custom ID Schema、Built-in Theme Definition Construction、Duplicate-aware Parser、Raw Document Builder、由 `apps/web` 拥有的 Snapshot Schema Implementation、Manifest Builder、Theme Bank Variable Builder、Serializer Helper、Private DOM Mutation Helper、First Paint Handoff Carrier、可由 Public Function 推断的 Helper Input Type、Runtime Custom Theme Registration Metadata 与 Private Validation Helper。
+
+Atomic Cutover 必须从 Active Public Root 移除：
+
+```text
+appearancePreferenceSchema
+AppearancePreference
+legacySeedThemeDefinitionSchema
+legacySeedThemeIdSchema
+LegacySeedThemeDefinition
+currentPreferenceSchema
+CurrentPreference
+defaultCurrentPreference
+migrateToCurrentPreference
+prepareFirstPaint
+FirstPaintApplicationBoundary
+FirstPaintResolutionEnvironment
+PreparedFirstPaintState
+PrepareFirstPaintInput
+AppearanceApplicationTarget
+AppearanceAttributeTarget
+AppearanceStyleTarget
+ResolveColorModeInput
+ResolveMaterialInput
+```
+
+`LegacyPreferenceInput`、`LegacySeedPreference`、Legacy Built-in Theme Tuple Registry、Legacy Theme Source Documents、Historical High-contrast Interpretation 与 Historical Material Interpretation 仅在 Design System 内部保留为 Read-only Migration Evidence。当前 Repository 不存在 Legacy Preference Writer；Package 5 不得创建任何输出 Legacy Format、Embedded Palette 或 Legacy Default 的 Writer。
+
+### Cross-package Structured Results
+
+Package 5 只冻结下列 Migration、Custom Theme Validation、Theme Reference Resolution 与 Custom Theme Bank Installation Result；不得建立 Generic Result、Error Platform、Public Storage Result 或私有 Helper Error Registry。
+
+```ts
+type PreferenceMigrationResult =
+  | {
+      status: 'success'
+      preference: ExplicitThemePreference
+    }
+  | {
+      status: 'failure'
+      code: 'MIGRATION_REQUIRES_THEME_COMPLETION'
+    }
+```
+
+`migrateToExplicitThemePreference` 必须 Pure：不写 Storage、不替换为 Default、不丢失 Palette、不合成 Theme；Public Result 不包含 Raw Input、Parser Cause、Storage Cause、Stack、Source Label 或 Optional Evidence。
+
+§13.4 已冻结的 `CustomThemeRegistryEntry` 在语义上精确等价于 `Extract<ThemeRegistryEntry, { registryKind: 'custom' }>`；不得定义第二个不同 Shape。Public Validator 只返回该 Custom Entry：
+
+```ts
+type CustomThemeValidationResult =
+  | {
+      status: 'validated'
+      entry: CustomThemeRegistryEntry
+    }
+  | {
+      status: 'rebound'
+      code: 'ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY'
+      entry: CustomThemeRegistryEntry
+      previousRoleContractVersion: number
+      currentRoleContractVersion: number
+    }
+  | {
+      status: 'rejected'
+      code: 'THEME_INVALID'
+      registryKind: 'custom'
+      themeId: string | null
+      evidence: readonly ThemeValidationEvidence[]
+    }
+  | {
+      status: 'rejected'
+      code: 'ROLE_CONTRACT_MISMATCH'
+      registryKind: 'custom'
+      themeId: string
+      receivedRoleContractVersion: number
+      requiredRoleContractVersion: number
+    }
+```
+
+`ThemeValidationEvidence` 是上述 Result Shape 的非 Root-exported Internal Type。每条 Evidence 只允许在适用时包含 Existing Architecture 已要求的 Theme ID、Role Contract Evidence、Field Path、Role、Plane、Safe Submitted Value、Alpha Evidence 与 Contrast Evidence；禁止 Parser Exception、Storage Cause、Stack、DOM Error、App Presentation State 或 Persistence State。`ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY` 保持合法 Frozen Domain Result，但 Package 5 不得仅为使该分支可达而制造 Historical Role Contract Registry。
+
+```ts
+type ThemeReferenceResolutionResult =
+  | {
+      status: 'resolved'
+      reference: ThemeReference
+      entry: ThemeRegistryEntry
+    }
+  | {
+      status: 'unresolved'
+      reference: ThemeReference
+      code: 'THEME_NOT_FOUND'
+    }
+  | {
+      status: 'unresolved'
+      reference: ThemeReference
+      code: 'THEME_INACCESSIBLE'
+    }
+  | {
+      status: 'unresolved'
+      reference: ThemeReference
+      code: 'THEME_INVALID'
+      evidence: readonly ThemeValidationEvidence[]
+    }
+  | {
+      status: 'unresolved'
+      reference: ThemeReference
+      code: 'ROLE_CONTRACT_MISMATCH'
+      receivedRoleContractVersion: number
+      requiredRoleContractVersion: number
+    }
+```
+
+Exact Tuple 不存在于 Accessible Registry 时返回 `THEME_NOT_FOUND`；Application-owned Custom Registry 不可用或完整 Snapshot 不可接受时返回 `THEME_INACCESSIBLE`；Requested Entry 存在但完整 Theme Validation 失败时返回 `THEME_INVALID`；Requested Entry 的 Role Contract 不兼容时返回 `ROLE_CONTRACT_MISMATCH`。该 Union 不包含 App Appearance-retention State、Safety-baseline State、Persistence State、Raw Storage Cause 或 Generic Optional Evidence。
+
+```ts
+type ThemeBankInstallationResult =
+  | { status: 'installed' }
+  | { status: 'rejected' }
+```
+
+`installCustomThemeBank` 只接受 Already-validated `CustomThemeRegistryEntry`。No Partial Bank、No Partial Identity、No Stale Previous Custom Variable、No Custom ID-derived Selector 与 Rejection 后 Complete Cleanup 是强制 Implementation Invariant，不是 Public Result Field；不得增加 `committedAppearanceRetained`、`partialBankPresent`、`partialIdentityPresent`、`storageWritePerformed` 或同类 App/Proof Field。
 
 ## 13.7 Theme-bank Projection
 
@@ -3050,7 +3357,7 @@ Runtime-created Custom Theme 不生成用户可控 Selector、Class Name、CSS T
 
 Installer 不接受 CSS Property Name、Selector、Alias 或任意 Style Text；Custom Theme ID 永不进入 CSS Selector Construction。Built-in Selector 与 Custom Inline Bank 共享后续 Effective Mode Bank 和 Contrast Binding，因此 Public CSS Variable 与 UnoCSS Class 完全不变。
 
-Private Plane Bank 和 Effective Bank 都是 `ui-internal`：只进入 Runtime CSS 与 Manifest Schema，不进入 Public TypeScript、Token Names 或 UnoCSS。Build Manifest 必须记录 Bank Schema、Built-in Registry Kind、Theme ID、Mode、Contrast、Public Role、Source Field、Authored Value、Bank Variable 和 Public Binding。Runtime Custom Instance 只形成同 Schema 的 Ephemeral `RuntimeThemeRegistration` Metadata，不修改 Build Manifest、不成为 Public API，也不落入生成文件。
+Private Plane Bank 和 Effective Bank 都是 `ui-internal`：只进入 Runtime CSS 与 §11.4 冻结的 Active Built-in Theme Manifest Shape，不进入 Public TypeScript、Token Names 或 UnoCSS。Runtime Custom Instance 只形成 Private Ephemeral Registration Metadata，不修改 Build Manifest、不成为 Public API，也不落入生成文件。
 
 禁止 Theme × Mode × Contrast Compound Selector、完整 Cartesian CSS、Value-diff 省略、相等值推断、Theme Inheritance 或运行时颜色合成。Density 与 Material 保持独立，只能使用各自的单轴 Selector；它们不得进入 Color Bank 或 Color Plane。Theme Bank Output 继续受 CSS Budget 和 Generated Drift Gate 约束。
 
@@ -3098,16 +3405,14 @@ silent contrast correction
 replacement with a platform-selected color
 ```
 
-验证失败必须提供可定位证据：
+验证失败必须通过 §13.6 的 Result Branch 提供可定位证据。`ThemeValidationEvidence` 只允许在适用时使用以下 Existing Evidence Field，不得添加 Generic Error、Parser、Storage、DOM、App 或 Persistence Field：
 
 ```text
-registryKind
 themeId
 roleContractVersion
 fieldPath
 role
 plane
-errorCode
 submittedValue
 actualAlpha?
 requiredAlphaPolicy?
@@ -3176,19 +3481,18 @@ synchronous classic appearance-init.js
 Vue Bootstrap
 ```
 
-Atomic Cutover 后，应用在 `index.html` 显式提供自己的 Preference Storage Key 和可选的 Theme Registry Snapshot Key：
+Atomic Cutover 后，应用在 `index.html` 只显式提供自己的 Preference Storage Key：
 
 ```html
 <script
   src="/generated/appearance-init.js"
   data-preference-storage-key="application-owned-key"
-  data-theme-registry-storage-key="optional-application-owned-key"
 ></script>
 ```
 
-示例值只是应用配置位置，不是 Design System 默认值；Custom Registry Snapshot Key 是可选的独立属性，不存在时不得从 Preference 猜测 Theme Data。真实构建路径由 Vite Production Build 固定并由 Drift Check 验证。
+示例值只是应用配置位置，不是 Design System 默认值；它必须由应用配置为 §13.4 冻结的 Existing Preference Key。Package 5 的 `index.html` 不得提供 `data-theme-registry-storage-key`，Generated First Paint 不得读取 `pavp:web:custom-theme-registry` 或从 Preference 猜测 Theme Data。真实构建路径由 Vite Production Build 固定并由 Drift Check 验证。
 
-Atomic Cutover 后，`critical-theme.css` 默认提供 Built-in Neutral 的 Light、Standard、Comfortable、Solid 安全基线及其最小 Critical Selector。初始化脚本在 Vue、Pinia 和应用模块执行前同步读取应用提供的 Preference Key，并在提供时读取独立 Registry Snapshot Key，验证 Target Reference-only Preference，执行允许的结构化 Migration，然后解析并设置：
+Atomic Cutover 后，`critical-theme.css` 默认提供 Built-in Neutral 的 Light、Standard、Comfortable、Solid 安全基线及其最小 Critical Selector。初始化脚本在 Vue、Pinia 和应用模块执行前同步读取应用提供的 Preference Key，直接验证 `ExplicitThemePreference` 或执行允许的 Pure Legacy Migration。只有 Valid Built-in Theme Reference 可以在 Vue 前从 Generated Exact Built-in Registry 同步解析并原子设置：
 
 ```text
 effective colorMode
@@ -3201,11 +3505,11 @@ contrast
 effective material
 ```
 
-Atomic Cutover 后，Built-in Reference 从生成的 Exact Built-in Registry 同步解析。Custom Reference 只有在应用提供独立 Registry Snapshot Key、Snapshot 中存在该 Opaque ID，且原始 Theme Definition 通过 Duplicate-aware Parse、当前 Role/Alpha/Contrast Contract 和 Exact Validator 后，才能由同一 Typed Bank Installer 同步应用。Snapshot 缺失、异步 Registry 尚未就绪、Entry 不可访问或无效时必须保留 Solid Critical Baseline，并把结构化结果交给 Vue Bootstrap 后的应用边界；不得改成 `neutral`、删除引用、合成颜色或写入任一 Storage。
+Stored Preference 引用 Custom Theme 时，First Paint 必须保留完整 Safety Baseline，并通过 Private Implementation Handoff 让 Vue Bootstrap 后的应用边界重新处理该 Reference；Handoff 不是 Public API、Manifest Field 或 Persistence Shape。Vue Bootstrap 后，应用才能读取并完整验证 Application-owned Custom Registry Snapshot；只有 Exact Entry 存在且 Design System Validation 成功时，才可 Resolve、Install Bank 并原子应用 Custom Appearance。Registry 不可用、整个 Snapshot 不可接受、Entry 缺失或 Theme 无效时不得改成 `neutral`、删除或改写 Preference、合成颜色、恢复部分 Registry 或安装 Partial Bank。
 
 Cutover 前，当前初始化脚本只按 `LegacyPreferenceInput` / `CurrentPreference` Embedded-palette Contract 读取和校验 Preference；它不读取 Theme Registry Snapshot、不设置 `data-theme-kind`、不验证 Target Theme Document，也不安装 Theme Bank。
 
-Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。读取、解析、Registry Resolution、Bank Installation 或能力检测失败时必须移除 Partial Custom Bank 并保留 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 canonical contract 生成并接受 Drift Check。
+Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、Custom Registry Snapshot、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。它不得写入任何 Storage。Preference 读取、解析、Migration、Built-in Resolution、Atomic Appearance Application 或能力检测失败时必须保留完整 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 Canonical Contract 生成并接受 Drift Check。
 
 ---
 
@@ -5675,10 +5979,14 @@ first-paint generated-output drift
 Target Explicit Theme duplicate-aware parse and exact-set validation after Atomic Cutover
 Role/Alpha/Named Contrast Registry exact version and endpoint closure after version activation
 Reference-only Preference and legacy migration determinism after Atomic Cutover
-application-owned storage-key consistency
+direct ExplicitThemePreference persistence, no additional envelope and no legacy writer after Atomic Cutover
+Custom Theme Registry Snapshot exact shape, code-point order, whole-Snapshot rejection and deletion safety
+Package 5 Design System public-root, private-boundary and structured-result exact equality
+active Built-in Theme and First Paint Manifest exact shape after Atomic Cutover
+application-owned preference and Custom Registry storage-key consistency
 ```
 
-Optical CSS 检查必须覆盖 `apps/**/*.css` 与 Vue `<style>`，UI-internal CSS Variable 使用必须对照 Manifest。Direct Storage Rule 只允许应用所有的 `preference-storage.ts` 与按 Gate 创建的 `custom-theme-registry-storage.ts` 执行各自边界内的读写；另一个窄例外是 Generated `appearance-init.js` 可以使用应用通过 `data-preference-storage-key` 与可选 `data-theme-registry-storage-key` 提供的 Key 执行同步只读 First-paint 访问。它不得写入 Storage，Design System 其他源文件和其他应用文件不得直接访问。
+Optical CSS 检查必须覆盖 `apps/**/*.css` 与 Vue `<style>`，UI-internal CSS Variable 使用必须对照 Manifest。Direct Storage Rule 只允许应用所有的 `preference-storage.ts` 与按 Gate 创建的 `custom-theme-registry-storage.ts` 执行各自边界内的读写；Package 5 的 Custom Registry Boundary 只能在 Vue Bootstrap 后使用其 Application-owned Key。另一个窄例外是 Generated `appearance-init.js` 可以使用应用通过 `data-preference-storage-key` 提供的 Key 执行同步只读 First-paint Preference 访问。它不得接收 `data-theme-registry-storage-key`、读取 Custom Registry 或写入 Storage；Design System 其他源文件和其他应用文件不得直接访问。
 
 ## 29.1 Frozen Static Enforcement Target Registry
 
@@ -6714,6 +7022,19 @@ ENTRY=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE=COMPLETE
 RUNTIME_TARGETS_BEFORE_LANDING=TARGET_INACTIVE
 ```
 
+#### `PAVP_EXPLICIT_THEME_PROTOCOL_FREEZE_AMENDMENT`
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+IMPLEMENTATION_AUTHORITY=NONE
+ALLOWED_SCOPE=Package 5 preference, Custom Theme Registry persistence, public export, structured result, first-paint metadata and active Theme Bank manifest protocol closure
+PROHIBITED_SCOPE=source implementation, generated artifacts, dependency changes, lockfile changes, Package 6, Runtime Kernel, Router, general Storage, API, Auth, Observability, UI, tests and Git mutation
+ACTIVATION_EFFECT=NONE_UNTIL_PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+```
+
+该 Amendment 只闭合 Existing Package 5 的实施输入，不创建第二个 Package 5 Status Authority。`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 保持 `NEXT`，所有 Runtime Target 在其获得独立实现授权并完成 Atomic Landing 前继续为 `TARGET_INACTIVE`。
+
 在一个不可拆分的 Production Landing 中激活完整 Target Theme 和 Reference-only Preference。该包必须共同改变 §13.4 列出的 Schema、Default、Public Export、First Paint、Runtime Application、Application Bootstrap/Persistence、HTML/Storage Wiring、Manifest Metadata 和 Owning Static Enforcement，并实现 Exact Built-in ID Registry、Opaque Custom ID Registry、`(registryKind, themeId)`、Typed Theme Bank、Structured Migration 与 Invalid-theme Result。
 
 Cutover 必须使用冻结的 Legacy Built-in Theme Tuple Registry。Cutover 后 `LegacyPreferenceInput` 与 `LegacySeedPreference` Shape 只读、只迁移、永不写回。不得分拆为 Schema Package 和 Runtime Package，不得在 `main` 形成 Mixed Authority。
@@ -6726,6 +7047,8 @@ custom Theme Registry orchestration
 effective-state derivation orchestration
 application-owned persistence lifecycle
 ```
+
+本 Amendment 不改变现有 Pinia Stable-line Declaration，也不冻结 Exact Dependency Coordinate；Exact Coordinate 仍是后续 Package 5 Deterministic Implementation Plan 的 Admission Input，不是新的 Architecture Contract。
 
 Package 5 不得增加 Router、TanStack Query、VeeValidate、Vue I18n、OpenAPI Tooling、Session Store、General Store 或 `packages/ui` Runtime Dependency。Pinia、Theme/Preference Schema、Default、Registry、First Paint、Runtime、Bootstrap、Persistence、HTML Storage Wiring、Manifest 和 Owning Verification 必须在同一 Atomic Landing 中激活；不得先建立临时 Global State Layer。
 
@@ -6805,13 +7128,13 @@ COMPLETION_EVIDENCE=complete source documents; deterministic generated check res
 ### 37.2.2 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`
 
 ```text
-ENTRY=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE=COMPLETE; all built-in themes pass complete-plane validation; migration registry frozen
-ALLOWED=theme/preference schemas and defaults; Pinia narrow admission; first paint; theme bank; app appearance bootstrap/persistence; HTML storage wiring; owning validators
-PROHIBITED=Router; TanStack Query; Session/general store; UI runtime component; partial legacy/new authority; automatic theme correction
-OUTPUT=reference-only Product Default; exact built-in/custom registry; atomic bank installer; structured legacy migration; invalid-reference results; one active preference authority
-MACHINE_GATES=exact schema/default/export/runtime/first-paint/storage parity; no mixed authority; bank completeness/isolation; migration probes; pnpm verify
+ENTRY=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE=COMPLETE; PAVP_EXPLICIT_THEME_PROTOCOL_FREEZE_AMENDMENT=FROZEN; all built-in themes pass complete-plane validation; Legacy Built-in Theme Tuple Registry frozen
+ALLOWED=direct ExplicitThemePreference persistence; exact post-Vue Custom Theme Registry Snapshot; exact Design System public root; frozen cross-package results; Pinia narrow admission; Built-in-only synchronous First Paint; post-Vue Custom Theme restoration; Theme Bank; app appearance bootstrap/persistence; preference-only HTML storage wiring; active flat Theme and exact First Paint Manifest metadata; owning validators
+PROHIBITED=additional preference envelope; synchronous Custom Theme First Paint; data-theme-registry-storage-key; legacy writer; partial Registry recovery; automatic theme correction; general Storage/CAS/cross-tab/quarantine/principal/IndexedDB; Router; TanStack Query; Session/Auth/Permission; Observability; General Store; UI runtime component; partial legacy/new authority
+OUTPUT=one direct ExplicitThemePreference authority at pavp:web:user-preference; complete CustomThemeRegistrySnapshot at pavp:web:custom-theme-registry; reference-only Product Default; exact built-in/custom registry; atomic Custom Bank installer; exact structured results; active Built-in Theme Manifest Bank metadata; exact First Paint metadata; no active legacy public or writer surface
+MACHINE_GATES=exact schema/default/public-root/result/runtime/first-paint/storage/manifest parity; no mixed authority; full Snapshot rejection and deletion safety; bank completeness/isolation; legacy migration probes; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_FIRST_PAINT_AND_ATOMIC_APPEARANCE_MATRIX
-COMPLETION_EVIDENCE=all cutover surfaces in one diff/landing; old writer absent; legacy read-only migration preserved; static gates pass
+COMPLETION_EVIDENCE=all cutover surfaces in one diff/landing; no legacy writer created; legacy read-only migration preserved; final Manifest discriminator/count/gzip and production bundle deltas deterministically measured; static gates pass
 ```
 
 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 不得拆成 Schema、Runtime 和 Persistence 多个 Main Landing。
