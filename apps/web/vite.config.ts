@@ -56,13 +56,36 @@ function firstPaintArtifacts(): Plugin {
         })
       }
     },
-    transformIndexHtml(html) {
-      const expectedStorageKeyAttribute = `data-preference-storage-key="${applicationConfig.appearance.preferenceStorageKey}"`
+    async transformIndexHtml(html) {
+      const preferenceStorageKeyMatches = [
+        ...html.matchAll(/\bdata-preference-storage-key="([^"]*)"/gu),
+      ]
 
-      if (!html.includes(expectedStorageKeyAttribute)) {
+      if (
+        preferenceStorageKeyMatches.length !== 1 ||
+        preferenceStorageKeyMatches[0]?.[1] !== applicationConfig.appearance.preferenceStorageKey
+      ) {
         throw new Error(
-          'index.html must provide the application-owned appearance preference storage key.',
+          'index.html must provide exactly one exact application-owned Preference storage key.',
         )
+      }
+
+      if (/\bdata-theme-registry-storage-key\b/u.test(html)) {
+        throw new Error('index.html must not expose the Custom Theme Registry storage key.')
+      }
+
+      const appearanceInitializer = await readFile(
+        resolve(generatedDirectory, 'appearance-init.js'),
+        'utf8',
+      )
+
+      for (const storageKey of [
+        applicationConfig.appearance.preferenceStorageKey,
+        applicationConfig.appearance.customThemeRegistryStorageKey,
+      ]) {
+        if (appearanceInitializer.includes(storageKey)) {
+          throw new Error('Generated First Paint must remain application-storage-key-agnostic.')
+        }
       }
 
       return html

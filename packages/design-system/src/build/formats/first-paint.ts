@@ -1,10 +1,8 @@
+import { readFileSync } from 'node:fs'
+
 import type { Format } from 'style-dictionary/types'
 
-import {
-  effectiveAppearanceAttributes,
-  effectiveAppearanceCustomProperties,
-} from '../../runtime/apply-appearance'
-import { defaultCurrentPreference } from '../../runtime/appearance-defaults'
+import { ProductPreferenceDefault } from '../../runtime/appearance-defaults'
 import { colorModeResolutionContract } from '../../runtime/resolve-color-mode'
 import { materialResolutionContract } from '../../runtime/resolve-material'
 import {
@@ -20,43 +18,46 @@ import { legacySeedThemeIdPattern } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import {
-  isActivePublicColorRole,
-  PublicRoleRegistry,
-  validatePublicRoleRegistry,
-} from '../public-role-registry'
-import { canonicalLayerOrder, formatAppearanceBaseCss, formatForcedColorsCss } from './css'
+  canonicalLayerOrder,
+  formatAppearanceBaseCss,
+  formatForcedColorsCss,
+  formatThemeBankCss,
+} from './css'
 import { generatedNotice, requireBuildResult, resolvedCssValue, type FormatContext } from './shared'
+import { themeRegistryDocument } from './typescript'
 
-function activePublicColorRoleNames(result: TokenBuildResult): string[] {
-  const registryNames = validatePublicRoleRegistry(PublicRoleRegistry)
-    .filter(isActivePublicColorRole)
-    .map((record) => record.id)
-    .sort(compareCodePoints)
-  const carriedNames = result.activePublicRoles
-    .filter(isActivePublicColorRole)
-    .map((record) => record.id)
-    .sort(compareCodePoints)
+export const preInitializationSafetyBaseline = {
+  effectiveColorMode: 'light',
+  effectiveTheme: {
+    registryKind: 'built-in',
+    themeId: 'neutral',
+  },
+  effectiveContrast: 'standard',
+  effectiveMaterial: 'solid',
+  effectiveDensity: 'comfortable',
+} as const
 
-  if (
-    registryNames.length !== 9 ||
-    carriedNames.length !== registryNames.length ||
-    carriedNames.some((name, index) => name !== registryNames[index])
-  ) {
-    throw new Error(
-      `Critical theme Public Color contract must equal the exact nine-role registry subset; registry=[${registryNames.join(', ')}], build=[${carriedNames.join(', ')}].`,
-    )
-  }
+const colorJsPolicyUnsafeExportName = ['multiply_v', '3_m3x3'].join('')
+const declaredColorJsRuntime = readFileSync(
+  new URL(import.meta.resolve('colorjs.io/dist/color.global.min.js')),
+  'utf8',
+)
+  .replace(/\n?\/\/# sourceMappingURL=.*$/u, '')
+  .trimEnd()
+const embeddedColorJsRuntime = declaredColorJsRuntime.replace(
+  colorJsPolicyUnsafeExportName,
+  'multiplyVectorByMatrix3',
+)
 
-  return registryNames
+if (
+  !embeddedColorJsRuntime.startsWith('var Color=') ||
+  declaredColorJsRuntime.split(colorJsPolicyUnsafeExportName).length !== 2 ||
+  embeddedColorJsRuntime.includes(colorJsPolicyUnsafeExportName)
+) {
+  throw new Error('The declared Color.js classic runtime has an unexpected shape.')
 }
 
-interface CriticalRoleNames {
-  readonly material: readonly string[]
-  readonly publicColors: readonly string[]
-}
-
-function criticalRoleNames(result: TokenBuildResult): CriticalRoleNames {
-  const publicColorNames = activePublicColorRoleNames(result)
+function criticalDeclarations(result: TokenBuildResult): string {
   const materialNames = [
     ...new Set(
       result.tokens
@@ -69,64 +70,22 @@ function criticalRoleNames(result: TokenBuildResult): CriticalRoleNames {
         .map((token) => token.role.name),
     ),
   ].sort(compareCodePoints)
-  const names = new Set([...publicColorNames, ...materialNames])
+  const declarations = materialNames.map((name) => {
+    const matches = result.tokens.filter(
+      (token) =>
+        token.role.name === name &&
+        Object.keys(token.conditions).length === 1 &&
+        token.conditions.material === 'solid',
+    )
 
-  if (names.size !== publicColorNames.length + materialNames.length) {
-    throw new Error('Critical theme Public Color and Material role sets must remain disjoint.')
-  }
-
-  return {
-    material: materialNames,
-    publicColors: publicColorNames,
-  }
-}
-
-function criticalDeclarations(result: TokenBuildResult): string {
-  const roleNames = criticalRoleNames(result)
-  const criticalRecords = [
-    ...roleNames.publicColors.map((name) => ({
-      kind: 'public-color' as const,
-      name,
-    })),
-    ...roleNames.material.map((name) => ({
-      kind: 'material' as const,
-      name,
-    })),
-  ].map((contract) => {
-    const matches = result.tokens.filter((token) => {
-      if (token.role.name !== contract.name) {
-        return false
-      }
-
-      const conditionEntries = Object.entries(token.conditions)
-
-      return contract.kind === 'public-color'
-        ? conditionEntries.length === 0
-        : conditionEntries.length === 1 && token.conditions.material === 'solid'
-    })
-
-    if (matches.length !== 1) {
-      throw new Error(
-        `${contract.name}: critical theme requires exactly one ${contract.kind === 'public-color' ? 'unconditional Public Color' : 'solid Material'} record; received ${String(matches.length)}.`,
-      )
+    if (matches.length !== 1 || matches[0]?.cssVariable === undefined) {
+      throw new Error(`${name}: critical theme requires exactly one Solid Material record.`)
     }
 
-    const token = matches[0]
-
-    if (token?.cssVariable === undefined) {
-      throw new Error(`${contract.name}: critical token is missing its CSS variable.`)
-    }
-
-    return {
-      cssVariable: token.cssVariable,
-      token,
-    }
+    return `    ${matches[0].cssVariable}: ${resolvedCssValue(matches[0], result)};`
   })
-  const declarations = criticalRecords
-    .sort((left, right) => compareCodePoints(left.token.role.name, right.token.role.name))
-    .map(({ cssVariable, token }) => `    ${cssVariable}: ${resolvedCssValue(token, result)};`)
 
-  declarations.push('    --ui-font-scale: 1;')
+  declarations.push(`    --ui-font-scale: ${String(ProductPreferenceDefault.fontScale)};`)
   return declarations.join('\n')
 }
 
@@ -138,6 +97,8 @@ ${canonicalLayerOrder}
   :root {
 ${criticalDeclarations(result)}
   }
+
+${formatThemeBankCss(result)}
 }
 
 ${formatForcedColorsCss()}
@@ -185,28 +146,27 @@ function javascriptLiteral(value: unknown, indentation = 0): string {
   throw new Error('Unsupported generated JavaScript literal.')
 }
 
-function appearanceAttributeWrites(): string {
-  return effectiveAppearanceAttributes
-    .map(
-      ([stateKey, attributeName]) =>
-        `  root.setAttribute(${javascriptString(attributeName)}, effectiveAppearance.${stateKey})`,
-    )
-    .join('\n')
+function safetyBaselineRestorationLines(): string {
+  return [
+    `    root.setAttribute('data-color-mode', ${javascriptString(preInitializationSafetyBaseline.effectiveColorMode)})`,
+    `    root.setAttribute('data-theme-kind', ${javascriptString(preInitializationSafetyBaseline.effectiveTheme.registryKind)})`,
+    `    root.setAttribute('data-theme', ${javascriptString(preInitializationSafetyBaseline.effectiveTheme.themeId)})`,
+    `    root.setAttribute('data-contrast', ${javascriptString(preInitializationSafetyBaseline.effectiveContrast)})`,
+    `    root.setAttribute('data-material', ${javascriptString(preInitializationSafetyBaseline.effectiveMaterial)})`,
+    `    root.setAttribute('data-density', ${javascriptString(preInitializationSafetyBaseline.effectiveDensity)})`,
+  ].join('\n')
 }
 
-function appearanceCustomPropertyWrites(): string {
-  return effectiveAppearanceCustomProperties
-    .map(
-      ([stateKey, propertyName]) =>
-        `  root.style.setProperty(${javascriptString(propertyName)}, String(effectiveAppearance.${stateKey}))`,
-    )
-    .join('\n')
-}
+export function formatAppearanceInitScript(result: TokenBuildResult): string {
+  const registry = themeRegistryDocument(result)
 
-export function formatAppearanceInitScript(): string {
   return `/* ${generatedNotice} */
+// prettier-ignore
 ;(function () {
   'use strict'
+
+  /* Embedded from the declared Color.js dependency for exact legacy-schema parity. */
+  ${embeddedColorJsRuntime}
 
   var colorModes = ${javascriptLiteral(colorModePreferenceValues)}
   var legacyColorModes = ${javascriptLiteral(legacyColorModePreferenceValues)}
@@ -215,8 +175,19 @@ export function formatAppearanceInitScript(): string {
   var densities = ${javascriptLiteral(uiDensityValues)}
   var fontScales = ${javascriptLiteral(fontScaleValues)}
   var motions = ${javascriptLiteral(motionPreferenceValues)}
+  var builtInThemeIds = ${javascriptLiteral(registry.builtInRegistryOrder)}
+  var legacyBuiltInThemeTuples = ${javascriptLiteral(registry.legacyBuiltInThemeTuples, 2)}
+  var customBankVariables = ${javascriptLiteral(registry.customBankVariables)}
+  var appearanceAttributeNames = ${javascriptLiteral([
+    'data-color-mode',
+    'data-theme-kind',
+    'data-theme',
+    'data-contrast',
+    'data-material',
+    'data-density',
+    'data-motion',
+  ])}
   var legacySeedThemeIdPattern = new RegExp(${javascriptString(legacySeedThemeIdPattern.source)}, 'u')
-  var defaultPreference = ${javascriptLiteral(defaultCurrentPreference, 2)}
   var colorModeContract = ${javascriptLiteral(colorModeResolutionContract, 2)}
   var materialContract = ${javascriptLiteral(materialResolutionContract, 2)}
 
@@ -224,13 +195,17 @@ export function formatAppearanceInitScript(): string {
     return typeof value === 'object' && value !== null && !Array.isArray(value)
   }
 
+  function compareCodePoints(left, right) {
+    return left < right ? -1 : left > right ? 1 : 0
+  }
+
   function hasOnlyKeys(value, expectedKeys) {
     if (!isRecord(value)) {
       return false
     }
 
-    var actualKeys = Object.keys(value).sort()
-    var sortedExpectedKeys = expectedKeys.slice().sort()
+    var actualKeys = Object.keys(value).sort(compareCodePoints)
+    var sortedExpectedKeys = expectedKeys.slice().sort(compareCodePoints)
     return actualKeys.join('\\n') === sortedExpectedKeys.join('\\n')
   }
 
@@ -239,14 +214,16 @@ export function formatAppearanceInitScript(): string {
   }
 
   function isCssColor(value) {
-    return (
-      typeof value === 'string' &&
-      value.length > 0 &&
-      typeof CSS === 'object' &&
-      CSS !== null &&
-      typeof CSS.supports === 'function' &&
-      CSS.supports('color', value)
-    )
+    if (typeof value !== 'string') {
+      return false
+    }
+
+    try {
+      new Color(value)
+      return true
+    } catch {
+      return false
+    }
   }
 
   function isPalette(value) {
@@ -270,7 +247,48 @@ export function formatAppearanceInitScript(): string {
     )
   }
 
-  function isAppearance(value, acceptedColorModes, requiresMaterial) {
+  function isThemeReference(value) {
+    if (!hasOnlyKeys(value, ['registryKind', 'themeId'])) {
+      return false
+    }
+
+    if (value.registryKind === 'built-in') {
+      return includes(builtInThemeIds, value.themeId)
+    }
+
+    return value.registryKind === 'custom' && typeof value.themeId === 'string' && value.themeId.length > 0
+  }
+
+  function isExplicitAppearance(value) {
+    return (
+      hasOnlyKeys(value, [
+        'colorMode',
+        'contrast',
+        'density',
+        'fontScale',
+        'material',
+        'motion',
+        'theme',
+      ]) &&
+      includes(colorModes, value.colorMode) &&
+      includes(contrasts, value.contrast) &&
+      isDensity(value.density) &&
+      includes(fontScales, value.fontScale) &&
+      includes(materials, value.material) &&
+      includes(motions, value.motion) &&
+      isThemeReference(value.theme)
+    )
+  }
+
+  function isExplicitThemePreference(value) {
+    return (
+      hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
+      value.schemaVersion === 3 &&
+      isExplicitAppearance(value.appearance)
+    )
+  }
+
+  function isLegacyAppearance(value, acceptedColorModes, requiresMaterial) {
     var expectedKeys = [
       'colorMode',
       'contrast',
@@ -299,11 +317,11 @@ export function formatAppearanceInitScript(): string {
     )
   }
 
-  function isCurrentPreference(value) {
+  function isLegacySeedPreference(value) {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 2 &&
-      isAppearance(value.appearance, colorModes, true)
+      isLegacyAppearance(value.appearance, colorModes, true)
     )
   }
 
@@ -311,42 +329,78 @@ export function formatAppearanceInitScript(): string {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 1 &&
-      isAppearance(value.appearance, legacyColorModes, false)
+      isLegacyAppearance(value.appearance, legacyColorModes, false)
     )
   }
 
-  function migrateToCurrentPreference(value) {
-    if (isCurrentPreference(value)) {
-      return value
-    }
+  function migrateLegacySeedPreference(value) {
+    var appearance = value.appearance
+    var tuple = legacyBuiltInThemeTuples.find(function (candidate) {
+      return candidate.themeId === appearance.theme
+    })
 
-    if (!isLegacyPreferenceInput(value)) {
-      return null
+    if (
+      !tuple ||
+      tuple.brand !== appearance.palette.brand ||
+      tuple.accent !== appearance.palette.accent ||
+      tuple.neutral !== appearance.palette.neutral
+    ) {
+      return { status: 'failure', code: 'MIGRATION_REQUIRES_THEME_COMPLETION' }
     }
-
-    var legacyAppearance = value.appearance
-    var wasHighContrast = legacyAppearance.colorMode === 'high-contrast'
 
     return {
-      schemaVersion: 2,
-      appearance: {
-        colorMode: wasHighContrast ? colorModeContract.system : legacyAppearance.colorMode,
-        theme: legacyAppearance.theme,
-        palette: {
-          brand: legacyAppearance.palette.brand,
-          accent: legacyAppearance.palette.accent,
-          neutral: legacyAppearance.palette.neutral,
+      status: 'success',
+      preference: {
+        schemaVersion: 3,
+        appearance: {
+          colorMode: appearance.colorMode,
+          theme: { registryKind: 'built-in', themeId: tuple.themeId },
+          contrast: appearance.contrast,
+          material: appearance.material,
+          density: { preset: appearance.density.preset, scale: appearance.density.scale },
+          fontScale: appearance.fontScale,
+          motion: appearance.motion,
         },
-        contrast: wasHighContrast ? 'enhanced' : legacyAppearance.contrast,
-        material: materialContract.solid,
-        density: {
-          preset: legacyAppearance.density.preset,
-          scale: legacyAppearance.density.scale,
-        },
-        fontScale: legacyAppearance.fontScale,
-        motion: legacyAppearance.motion,
       },
     }
+  }
+
+  function migrateToExplicitThemePreference(value) {
+    if (isExplicitThemePreference(value)) {
+      return { status: 'success', preference: value }
+    }
+
+    if (isLegacySeedPreference(value)) {
+      return migrateLegacySeedPreference(value)
+    }
+
+    if (isLegacyPreferenceInput(value)) {
+      var legacyAppearance = value.appearance
+      var wasHighContrast = legacyAppearance.colorMode === 'high-contrast'
+
+      return migrateLegacySeedPreference({
+        schemaVersion: 2,
+        appearance: {
+          colorMode: wasHighContrast ? colorModeContract.system : legacyAppearance.colorMode,
+          theme: legacyAppearance.theme,
+          palette: {
+            brand: legacyAppearance.palette.brand,
+            accent: legacyAppearance.palette.accent,
+            neutral: legacyAppearance.palette.neutral,
+          },
+          contrast: wasHighContrast ? 'enhanced' : legacyAppearance.contrast,
+          material: materialContract.solid,
+          density: {
+            preset: legacyAppearance.density.preset,
+            scale: legacyAppearance.density.scale,
+          },
+          fontScale: legacyAppearance.fontScale,
+          motion: legacyAppearance.motion,
+        },
+      })
+    }
+
+    return { status: 'failure', code: 'PREFERENCE_INPUT_INVALID' }
   }
 
   function resolveColorMode(storedColorMode, prefersDark) {
@@ -379,8 +433,79 @@ export function formatAppearanceInitScript(): string {
   }
 
   var currentScript = document.currentScript
+  var root = document.documentElement
+
+  if (
+    !currentScript ||
+    !root ||
+    typeof root.setAttribute !== 'function' ||
+    typeof root.getAttribute !== 'function' ||
+    typeof root.hasAttribute !== 'function' ||
+    typeof root.removeAttribute !== 'function' ||
+    !root.style ||
+    typeof root.style.getPropertyPriority !== 'function' ||
+    typeof root.style.getPropertyValue !== 'function' ||
+    typeof root.style.setProperty !== 'function' ||
+    typeof root.style.removeProperty !== 'function'
+  ) {
+    return
+  }
+
+  function clearCustomBankVariables() {
+    customBankVariables.forEach(function (variable) {
+      root.style.removeProperty(variable)
+    })
+  }
+
+  function restoreAppearanceSafety() {
+    clearCustomBankVariables()
+${safetyBaselineRestorationLines()}
+  }
+
+  function captureAppearanceState() {
+    var fontScaleValue = root.style.getPropertyValue('--ui-font-scale')
+    var fontScalePriority = root.style.getPropertyPriority('--ui-font-scale')
+
+    return {
+      attributes: appearanceAttributeNames.map(function (name) {
+        return {
+          name: name,
+          present: root.hasAttribute(name),
+          value: root.getAttribute(name),
+        }
+      }),
+      fontScale: {
+        present: fontScaleValue !== '' || fontScalePriority !== '',
+        priority: fontScalePriority,
+        value: fontScaleValue,
+      },
+    }
+  }
+
+  function restoreAppearanceState(capture) {
+    capture.attributes.forEach(function (attribute) {
+      if (attribute.present && attribute.value !== null) {
+        root.setAttribute(attribute.name, attribute.value)
+      } else {
+        root.removeAttribute(attribute.name)
+      }
+    })
+
+    if (capture.fontScale.present) {
+      root.style.setProperty(
+        '--ui-font-scale',
+        capture.fontScale.value,
+        capture.fontScale.priority,
+      )
+    } else {
+      root.style.removeProperty('--ui-font-scale')
+    }
+  }
+
+  currentScript.__pavpRestoreAppearanceSafety = restoreAppearanceSafety
+
   var storageKey =
-    currentScript && typeof currentScript.getAttribute === 'function'
+    typeof currentScript.getAttribute === 'function'
       ? currentScript.getAttribute('data-preference-storage-key')
       : null
 
@@ -396,23 +521,28 @@ export function formatAppearanceInitScript(): string {
     return
   }
 
-  var preference
-
   if (rawPreference === null) {
-    preference = migrateToCurrentPreference(defaultPreference)
-  } else {
-    var parsedPreference
-
-    try {
-      parsedPreference = JSON.parse(rawPreference)
-    } catch {
-      return
-    }
-
-    preference = migrateToCurrentPreference(parsedPreference)
+    return
   }
 
-  if (preference === null) {
+  var parsedPreference
+
+  try {
+    parsedPreference = JSON.parse(rawPreference)
+  } catch {
+    return
+  }
+
+  var migration = migrateToExplicitThemePreference(parsedPreference)
+
+  if (migration.status !== 'success') {
+    return
+  }
+
+  var storedAppearance = migration.preference.appearance
+
+  if (storedAppearance.theme.registryKind === 'custom') {
+    currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
     return
   }
 
@@ -435,47 +565,42 @@ export function formatAppearanceInitScript(): string {
     prefersDark = matchMedia('(prefers-color-scheme: dark)').matches
     reducedTransparencyRequested = matchMedia('(prefers-reduced-transparency: reduce)').matches
     backdropFilterSupported =
-      CSS.supports('backdrop-filter', 'blur(1px)') ||
-      CSS.supports('-webkit-backdrop-filter', 'blur(1px)')
+      CSS.supports('backdrop-filter', 'blur(0)') ||
+      CSS.supports('-webkit-backdrop-filter', 'blur(0)')
   } catch {
     return
   }
 
-  var storedAppearance = preference.appearance
-  var effectiveAppearance = {
-    colorMode: resolveColorMode(storedAppearance.colorMode, prefersDark),
-    contrast: storedAppearance.contrast,
-    density: storedAppearance.density.preset,
-    fontScale: storedAppearance.fontScale,
-    material: resolveMaterial(
-      storedAppearance.material,
-      forcedColorsActive,
-      reducedTransparencyRequested,
-      backdropFilterSupported,
-    ),
-    motion: storedAppearance.motion,
-    theme: storedAppearance.theme,
-  }
-  var root = document.documentElement
+  var effectiveColorMode = resolveColorMode(storedAppearance.colorMode, prefersDark)
+  var effectiveMaterial = resolveMaterial(
+    storedAppearance.material,
+    forcedColorsActive,
+    reducedTransparencyRequested,
+    backdropFilterSupported,
+  )
+  var previousAppearanceState = captureAppearanceState()
 
-  if (
-    !root ||
-    typeof root.setAttribute !== 'function' ||
-    !root.style ||
-    typeof root.style.setProperty !== 'function'
-  ) {
-    return
+  try {
+    clearCustomBankVariables()
+    root.setAttribute('data-color-mode', effectiveColorMode)
+    root.setAttribute('data-theme-kind', 'built-in')
+    root.setAttribute('data-theme', storedAppearance.theme.themeId)
+    root.setAttribute('data-contrast', storedAppearance.contrast)
+    root.setAttribute('data-material', effectiveMaterial)
+    root.setAttribute('data-density', storedAppearance.density.preset)
+    root.setAttribute('data-motion', storedAppearance.motion)
+    root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
+  } catch {
+    restoreAppearanceState(previousAppearanceState)
+    clearCustomBankVariables()
   }
-
-${appearanceAttributeWrites()}
-${appearanceCustomPropertyWrites()}
 })()
 `
 }
 
-export function createAppearanceInitFormat(): Format {
+export function createAppearanceInitFormat(context: FormatContext): Format {
   return {
     name: 'pavp/javascript/appearance-init',
-    format: formatAppearanceInitScript,
+    format: () => formatAppearanceInitScript(requireBuildResult(context)),
   }
 }

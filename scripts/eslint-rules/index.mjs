@@ -4,7 +4,10 @@ const workspacePackagePattern = /^@platform\/[^/]+\/.+/
 const rawColorPattern =
   /(?:^|[^0-9A-Za-z])#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})(?:$|[^0-9A-Za-z])|(?:color|hsl|hsla|lab|lch|oklab|oklch|rgb|rgba)\s*\(/u
 const opticalEffectPattern = /\b(?:backdrop-filter|filter)\s*:|(?:blur|brightness|saturate)\s*\(/u
-const canonicalPreferenceStoragePath = 'apps/web/src/app/appearance/preference-storage.ts'
+const canonicalAppearanceStoragePaths = new Set([
+  'apps/web/src/app/appearance/preference-storage.ts',
+  'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
+])
 const storageNames = new Set(['localStorage', 'sessionStorage'])
 const storageOwners = new Set(['window', 'globalThis'])
 
@@ -94,17 +97,17 @@ const noDirectStorageAccess = {
   meta: {
     messages: {
       directStorage:
-        'Access browser storage only through the canonical preference persistence boundary.',
+        'Access browser storage only through the two canonical Appearance persistence boundaries.',
     },
     schema: [],
     type: 'problem',
   },
   create(context) {
     const filename = relative(process.cwd(), context.filename).replaceAll('\\', '/')
-    const allowed = filename === canonicalPreferenceStoragePath
+    const ownsLocalStorage = canonicalAppearanceStoragePaths.has(filename)
 
-    if (allowed) {
-      return {}
+    function storageAccessIsAllowed(storageName) {
+      return ownsLocalStorage && storageName === 'localStorage'
     }
 
     function isUnshadowedGlobalReference(node) {
@@ -135,7 +138,8 @@ const noDirectStorageAccess = {
       for (const property of pattern.properties) {
         if (
           property.type === 'Property' &&
-          storageNames.has(getStaticPropertyName(property.key, property.computed))
+          storageNames.has(getStaticPropertyName(property.key, property.computed)) &&
+          !storageAccessIsAllowed(getStaticPropertyName(property.key, property.computed))
         ) {
           context.report({
             messageId: 'directStorage',
@@ -154,6 +158,10 @@ const noDirectStorageAccess = {
           return
         }
 
+        if (storageAccessIsAllowed(node.name)) {
+          return
+        }
+
         if (node.parent.type === 'MemberExpression' && node.parent.object === node) {
           return
         }
@@ -169,7 +177,11 @@ const noDirectStorageAccess = {
           isGlobalNamedIdentifier(node.object, storageOwners) &&
           storageNames.has(getStaticPropertyName(node.property, node.computed))
 
-        if (directStorage || qualifiedStorage) {
+        const storageName = directStorage
+          ? node.object.name
+          : getStaticPropertyName(node.property, node.computed)
+
+        if ((directStorage || qualifiedStorage) && !storageAccessIsAllowed(storageName)) {
           context.report({
             messageId: 'directStorage',
             node,

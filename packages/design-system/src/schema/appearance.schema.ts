@@ -1,6 +1,7 @@
 import Color from 'colorjs.io'
 import { z } from 'zod'
 
+import { builtInThemeIdSchema, customThemeIdSchema } from './complete-theme.schema'
 import { legacySeedThemeIdSchema } from './legacy-seed-theme.schema'
 
 export const colorModePreferenceValues = ['light', 'dark', 'system'] as const
@@ -47,7 +48,7 @@ const appearancePaletteSchema = z.strictObject({
   neutral: z.enum(['cool', 'neutral', 'warm']),
 })
 
-const legacySeedAppearancePreferenceSchema = z.strictObject({
+export const legacySeedAppearancePreferenceSchema = z.strictObject({
   colorMode: colorModePreferenceSchema,
   theme: legacySeedThemeIdSchema,
   palette: appearancePaletteSchema,
@@ -58,9 +59,28 @@ const legacySeedAppearancePreferenceSchema = z.strictObject({
   motion: motionPreferenceSchema,
 })
 
-type LegacySeedAppearancePreference = z.infer<typeof legacySeedAppearancePreferenceSchema>
-export const appearancePreferenceSchema = legacySeedAppearancePreferenceSchema
-export type AppearancePreference = LegacySeedAppearancePreference
+const themeReferenceSchema = z.discriminatedUnion('registryKind', [
+  z.strictObject({
+    registryKind: z.literal('built-in'),
+    themeId: builtInThemeIdSchema,
+  }),
+  z.strictObject({
+    registryKind: z.literal('custom'),
+    themeId: customThemeIdSchema,
+  }),
+])
+
+export const explicitThemeAppearancePreferenceSchema = z.strictObject({
+  colorMode: colorModePreferenceSchema,
+  theme: themeReferenceSchema,
+  contrast: contrastPreferenceSchema,
+  material: materialPreferenceSchema,
+  density: densityPreferenceSchema,
+  fontScale: fontScaleSchema,
+  motion: motionPreferenceSchema,
+})
+
+export type ThemeReference = z.infer<typeof themeReferenceSchema>
 export type ColorModePreference = z.infer<typeof colorModePreferenceSchema>
 export type ContrastPreference = z.infer<typeof contrastPreferenceSchema>
 export type DensityPreference = z.infer<typeof densityPreferenceSchema>

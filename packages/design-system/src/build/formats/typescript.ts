@@ -1,11 +1,13 @@
 import type { Format } from 'style-dictionary/types'
 
+import { builtInThemeIds } from '../../schema/complete-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
-import type { UnoCssMappingRecord } from '../public-role-registry'
+import { isActivePublicColorRole, type UnoCssMappingRecord } from '../public-role-registry'
 import {
   generatedNotice,
   requireBuildResult,
+  tokenValueToCss,
   uniqueRoleTokensForOutput,
   type FormatContext,
   type OutputToken,
@@ -17,6 +19,199 @@ function stringLiteral(value: string): string {
 
 function propertyName(value: string): string {
   return /^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(value) ? value : stringLiteral(value)
+}
+
+function typeScriptLiteral(value: unknown, indentation = 0): string {
+  if (typeof value === 'string') {
+    return stringLiteral(value)
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean' || value === null) {
+    return JSON.stringify(value)
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return '[]'
+    }
+
+    const padding = ' '.repeat(indentation)
+    const compact = `[${value.map((entry) => typeScriptLiteral(entry)).join(', ')}]`
+
+    if (
+      value.every(
+        (entry) =>
+          typeof entry === 'string' ||
+          typeof entry === 'number' ||
+          typeof entry === 'boolean' ||
+          entry === null,
+      ) &&
+      indentation + compact.length <= 100
+    ) {
+      return compact
+    }
+
+    const values = value
+      .map((entry) => `${' '.repeat(indentation + 2)}${typeScriptLiteral(entry, indentation + 2)},`)
+      .join('\n')
+
+    return `[\n${values}\n${padding}]`
+  }
+
+  if (typeof value === 'object') {
+    const padding = ' '.repeat(indentation)
+    const properties = Object.entries(value)
+      .map(
+        ([key, entry]) =>
+          `${' '.repeat(indentation + 2)}${propertyName(key)}: ${typeScriptLiteral(entry, indentation + 2)},`,
+      )
+      .join('\n')
+
+    return `{\n${properties}\n${padding}}`
+  }
+
+  throw new Error('Unsupported generated TypeScript literal.')
+}
+
+const themeColorModes = ['light', 'dark'] as const
+const themeContrasts = ['standard', 'enhanced'] as const
+
+function bankVariable(
+  colorMode: (typeof themeColorModes)[number],
+  contrast: (typeof themeContrasts)[number],
+  publicBinding: string,
+): string {
+  const colorPrefix = '--ui-color-'
+
+  if (!publicBinding.startsWith(colorPrefix)) {
+    throw new Error(`${publicBinding}: Theme Bank bindings must use the Public Color namespace.`)
+  }
+
+  return `--ui-theme-bank-${colorMode}-${contrast}-${publicBinding.slice(colorPrefix.length)}`
+}
+
+export function themeRegistryDocument(result: TokenBuildResult) {
+  const publicColors = result.activePublicRoles.filter(isActivePublicColorRole)
+  const themesById = new Map(result.completeThemes.map((theme) => [theme.id, theme]))
+  const builtInEntries = builtInThemeIds.map((themeId) => {
+    const theme = themesById.get(themeId)
+
+    if (theme === undefined) {
+      throw new Error(`${themeId}: generated Built-in Theme Registry entry is missing.`)
+    }
+
+    const records = themeColorModes.flatMap((colorMode) =>
+      themeContrasts.flatMap((contrast) =>
+        publicColors.map((role) => {
+          const authoredValue = theme.planes[colorMode][contrast][role.id]
+          const resolvedValue = theme.resolvedPlanes[colorMode][contrast][role.id]
+
+          if (authoredValue === undefined || resolvedValue === undefined) {
+            throw new Error(
+              `${themeId}:planes.${colorMode}.${contrast}.${role.id}: generated Bank value is missing.`,
+            )
+          }
+
+          return {
+            colorMode,
+            contrast,
+            publicRole: role.id,
+            sourceField: `planes.${colorMode}.${contrast}.${role.id}`,
+            authoredValue,
+            resolvedValue,
+            bankVariable: bankVariable(colorMode, contrast, role.cssVariable),
+            publicBinding: role.cssVariable,
+          }
+        }),
+      ),
+    )
+
+    return {
+      registryKind: 'built-in' as const,
+      themeId,
+      definition: {
+        schemaVersion: theme.schemaVersion,
+        roleContractVersion: theme.roleContractVersion,
+        id: theme.id,
+        label: theme.label,
+        planes: theme.planes,
+      },
+      source: theme.source,
+      bank: {
+        visibility: 'ui-internal' as const,
+        records,
+      },
+    }
+  })
+  const customBankVariables = [
+    ...new Set(builtInEntries[0]?.bank.records.map((record) => record.bankVariable) ?? []),
+  ]
+
+  if (customBankVariables.length !== themeColorModes.length * themeContrasts.length * 9) {
+    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 36 variables.')
+  }
+
+  for (const entry of builtInEntries) {
+    const entryVariables = entry.bank.records.map((record) => record.bankVariable)
+
+    if (
+      entryVariables.length !== customBankVariables.length ||
+      entryVariables.some((variable, index) => variable !== customBankVariables[index])
+    ) {
+      throw new Error(`${entry.themeId}: Built-in Theme Bank allowlist/order must remain exact.`)
+    }
+  }
+
+  const legacyThemesById = new Map(result.themes.map((theme) => [theme.id, theme]))
+  const legacyBuiltInThemeTuples = builtInThemeIds.map((themeId) => {
+    const legacyTheme = legacyThemesById.get(themeId)
+
+    if (legacyTheme === undefined) {
+      throw new Error(`${themeId}: Legacy Built-in Theme migration tuple is missing.`)
+    }
+
+    return {
+      themeId,
+      brand: tokenValueToCss('color', legacyTheme.palette.brand),
+      accent: tokenValueToCss('color', legacyTheme.palette.accent),
+      neutral: legacyTheme.palette.neutral,
+    }
+  })
+
+  return {
+    roleContractVersion: result.completeThemes[0]?.roleContractVersion,
+    builtInRegistryOrder: builtInThemeIds,
+    activePublicColorRoles: publicColors.map((role) => ({
+      publicRole: role.id,
+      publicBinding: role.cssVariable,
+    })),
+    alphaContracts: result.alphaContracts,
+    namedContrasts: result.namedContrasts.map((record) => ({
+      id: record.id,
+      foregroundRole: record.foregroundRole,
+      backgroundRole: record.backgroundRole,
+      kind: record.kind,
+      standardMinimum: record.standardMinimum,
+      enhancedMinimum: record.enhancedMinimum,
+      maximumUsefulRatio: record.maximumUsefulRatio,
+      enhancedDifferenceRequired: record.enhancedDifferenceRequired,
+      staticMaterialProjections: record.staticMaterialProjections,
+    })),
+    legacyBuiltInThemeTuples,
+    customBankVariables,
+    builtInEntries,
+  } as const
+}
+
+export function formatThemeRegistryTypeScript(result: TokenBuildResult): string {
+  return `/* ${generatedNotice} */\nexport const generatedThemeRegistry = ${typeScriptLiteral(themeRegistryDocument(result))} as const\n`
+}
+
+export function createThemeRegistryFormat(context: FormatContext): Format {
+  return {
+    name: 'pavp/typescript/theme-registry',
+    format: () => formatThemeRegistryTypeScript(requireBuildResult(context)),
+  }
 }
 
 interface UnoCssRuleProjection {

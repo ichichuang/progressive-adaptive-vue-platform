@@ -2,6 +2,7 @@ import type { Format } from 'style-dictionary/types'
 
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
+import { isActivePublicColorRole } from '../public-role-registry'
 import type { ResolvedTokenRecord } from '../resolve'
 import { conditionEntries } from '../token-contract'
 import {
@@ -11,11 +12,24 @@ import {
   selectTokensForOutput,
   type FormatContext,
 } from './shared'
+import { themeRegistryDocument } from './typescript'
 
 interface SelectorGroup {
   rank: number
   selector: string
-  tokens: ResolvedTokenRecord[]
+  declarations: { name: string; value: string }[]
+  sequence: number
+}
+
+function formatDeclaration(declaration: { name: string; value: string }): string {
+  const singleLine = `    ${declaration.name}: ${declaration.value};`
+  const variableReference = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(declaration.value)
+
+  if (singleLine.length <= 100 || variableReference?.[1] === undefined) {
+    return singleLine
+  }
+
+  return `    ${declaration.name}: var(\n      ${variableReference[1]}\n    );`
 }
 
 const axisSelector = {
@@ -118,40 +132,45 @@ function selectorForToken(token: ResolvedTokenRecord): {
 
 export function formatRuntimeCss(result: TokenBuildResult): string {
   const groups = new Map<string, SelectorGroup>()
+  const activePublicColorRoles = new Set(
+    result.activePublicRoles.filter(isActivePublicColorRole).map((record) => record.id),
+  )
+  let sequence = 0
 
   for (const token of selectTokensForOutput(result, 'runtime-css')) {
     if (token.cssVariable === undefined) {
       throw new Error(`${token.path}: Runtime CSS token is missing its CSS variable.`)
     }
 
+    if (activePublicColorRoles.has(token.role.name)) {
+      continue
+    }
+
     const target = selectorForToken(token)
     const group = groups.get(target.selector) ?? {
       ...target,
-      tokens: [],
+      declarations: [],
+      sequence: sequence++,
     }
 
-    group.tokens.push(token)
+    group.declarations.push({
+      name: token.cssVariable,
+      value: resolvedCssValue(token, result),
+    })
     groups.set(target.selector, group)
   }
 
-  const blocks = [...groups.values()]
+  const blocks = [...groups.values(), ...themeBankSelectorGroups(result, sequence)]
     .sort(
-      (left, right) => left.rank - right.rank || compareCodePoints(left.selector, right.selector),
+      (left, right) =>
+        left.rank - right.rank ||
+        compareCodePoints(left.selector, right.selector) ||
+        left.sequence - right.sequence,
     )
     .map((group) => {
-      const declarations = group.tokens
-        .sort(
-          (left, right) =>
-            compareCodePoints(left.role.name, right.role.name) ||
-            compareCodePoints(left.path, right.path),
-        )
-        .map((token) => {
-          if (token.cssVariable === undefined) {
-            throw new Error(`${token.path}: Runtime CSS token is missing its CSS variable.`)
-          }
-
-          return `    ${token.cssVariable}: ${resolvedCssValue(token, result)};`
-        })
+      const declarations = group.declarations
+        .sort((left, right) => compareCodePoints(left.name, right.name))
+        .map(formatDeclaration)
         .join('\n')
 
       return `  ${group.selector} {\n${declarations}\n  }`
@@ -169,6 +188,91 @@ ${formatForcedColorsCss()}
 
 ${formatAppearanceBaseCss()}
 `
+}
+
+function effectiveBankVariable(bankVariable: string, colorMode: 'dark' | 'light'): string {
+  const prefix = `--ui-theme-bank-${colorMode}-`
+
+  if (!bankVariable.startsWith(prefix)) {
+    throw new Error(`${bankVariable}: Theme Bank variable does not match ${colorMode}.`)
+  }
+
+  return `--ui-theme-bank-effective-${bankVariable.slice(prefix.length)}`
+}
+
+function themeBankSelectorGroups(result: TokenBuildResult, initialSequence = 0): SelectorGroup[] {
+  const registry = themeRegistryDocument(result)
+  const groups: SelectorGroup[] = []
+  let sequence = initialSequence
+
+  for (const entry of registry.builtInEntries) {
+    groups.push({
+      rank: axisRank.theme,
+      selector: `html[data-theme-kind='built-in'][data-theme='${entry.themeId}']`,
+      declarations: entry.bank.records.map((record) => ({
+        name: record.bankVariable,
+        value: record.resolvedValue,
+      })),
+      sequence: sequence++,
+    })
+  }
+
+  const representativeRecords = registry.builtInEntries[0]?.bank.records
+
+  if (representativeRecords === undefined) {
+    throw new Error('Generated Theme Bank requires one representative Built-in Theme.')
+  }
+
+  for (const colorMode of ['light', 'dark'] as const) {
+    const records = representativeRecords.filter((record) => record.colorMode === colorMode)
+
+    groups.push({
+      rank: axisRank.colorMode,
+      selector: `html[data-color-mode='${colorMode}']`,
+      declarations: records.map((record) => ({
+        name: effectiveBankVariable(record.bankVariable, colorMode),
+        value: `var(${record.bankVariable})`,
+      })),
+      sequence: sequence++,
+    })
+  }
+
+  for (const contrast of ['standard', 'enhanced'] as const) {
+    const records = representativeRecords.filter(
+      (record) => record.colorMode === 'light' && record.contrast === contrast,
+    )
+
+    groups.push({
+      rank: axisRank.contrast,
+      selector: `html[data-contrast='${contrast}']`,
+      declarations: records.map((record) => ({
+        name: record.publicBinding,
+        value: `var(${effectiveBankVariable(record.bankVariable, 'light')})`,
+      })),
+      sequence: sequence++,
+    })
+  }
+
+  return groups
+}
+
+export function formatThemeBankCss(result: TokenBuildResult): string {
+  return themeBankSelectorGroups(result)
+    .sort(
+      (left, right) =>
+        left.rank - right.rank ||
+        compareCodePoints(left.selector, right.selector) ||
+        left.sequence - right.sequence,
+    )
+    .map((group) => {
+      const declarations = group.declarations
+        .sort((left, right) => compareCodePoints(left.name, right.name))
+        .map(formatDeclaration)
+        .join('\n')
+
+      return `  ${group.selector} {\n${declarations}\n  }`
+    })
+    .join('\n\n')
 }
 
 export function createCssFormat(context: FormatContext): Format {

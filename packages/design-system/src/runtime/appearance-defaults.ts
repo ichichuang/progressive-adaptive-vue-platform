@@ -1,23 +1,24 @@
-import { currentPreferenceSchema, type CurrentPreference } from '../schema/preference.schema'
+import {
+  explicitThemePreferenceSchema,
+  type ExplicitThemePreference,
+} from '../schema/preference.schema'
 
-function freezeCurrentPreference(preference: CurrentPreference): CurrentPreference {
-  Object.freeze(preference.appearance.palette)
-  Object.freeze(preference.appearance.density)
-  Object.freeze(preference.appearance)
-  Object.freeze(preference)
-  return preference
+type ProductPreference = ExplicitThemePreference['appearance']
+
+function freezeProductPreferenceDefault(preference: ProductPreference): ProductPreference {
+  Object.freeze(preference.theme)
+  Object.freeze(preference.density)
+  return Object.freeze(preference)
 }
 
-export const defaultCurrentPreference = freezeCurrentPreference(
-  currentPreferenceSchema.parse({
-    schemaVersion: 2,
+export const ProductPreferenceDefault = freezeProductPreferenceDefault(
+  explicitThemePreferenceSchema.parse({
+    schemaVersion: 3,
     appearance: {
       colorMode: 'system',
-      theme: 'neutral',
-      palette: {
-        brand: 'oklch(37% 0.014 247)',
-        accent: 'oklch(55% 0.012 247)',
-        neutral: 'neutral',
+      theme: {
+        registryKind: 'built-in',
+        themeId: 'neutral',
       },
       contrast: 'standard',
       material: 'adaptive',
@@ -28,5 +29,5 @@ export const defaultCurrentPreference = freezeCurrentPreference(
       fontScale: 1,
       motion: 'full',
     },
-  }),
+  }).appearance,
 )

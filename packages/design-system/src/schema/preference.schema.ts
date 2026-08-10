@@ -1,8 +1,13 @@
 import { z } from 'zod'
 
-import { appearancePreferenceSchema, legacyColorModePreferenceSchema } from './appearance.schema'
+import {
+  explicitThemeAppearancePreferenceSchema,
+  legacyColorModePreferenceSchema,
+  legacySeedAppearancePreferenceSchema,
+  type ThemeReference,
+} from './appearance.schema'
 
-const legacyPreferenceInputAppearanceSchema = appearancePreferenceSchema
+const legacyPreferenceInputAppearanceSchema = legacySeedAppearancePreferenceSchema
   .omit({
     material: true,
   })
@@ -16,11 +21,16 @@ export const legacyPreferenceInputSchema = z.strictObject({
 })
 export type LegacyPreferenceInput = z.infer<typeof legacyPreferenceInputSchema>
 
-const legacySeedPreferenceSchema = z.strictObject({
+export const legacySeedPreferenceSchema = z.strictObject({
   schemaVersion: z.literal(2),
-  appearance: appearancePreferenceSchema,
+  appearance: legacySeedAppearancePreferenceSchema,
 })
 
-type LegacySeedPreference = z.infer<typeof legacySeedPreferenceSchema>
-export const currentPreferenceSchema = legacySeedPreferenceSchema
-export type CurrentPreference = LegacySeedPreference
+export const explicitThemePreferenceSchema = z.strictObject({
+  schemaVersion: z.literal(3),
+  appearance: explicitThemeAppearancePreferenceSchema,
+})
+
+export type ExplicitThemePreference = z.infer<typeof explicitThemePreferenceSchema>
+export type LegacySeedPreference = z.infer<typeof legacySeedPreferenceSchema>
+export type { ThemeReference }

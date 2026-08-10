@@ -3,20 +3,258 @@
 
 @layer tokens {
   :root {
-    --ui-color-action-primary: oklch(21% 0.012 247);
-    --ui-color-border-default: oklch(55% 0.012 247);
-    --ui-color-focus-ring: oklch(54% 0.15 250);
-    --ui-color-scrim-viewport: oklch(0% 0 0 / 0.56);
-    --ui-color-surface-page: oklch(98.5% 0.002 247);
-    --ui-color-surface-panel: oklch(100% 0 0);
-    --ui-color-text-on-action: oklch(100% 0 0);
-    --ui-color-text-primary: oklch(14.5% 0.01 247);
-    --ui-color-text-secondary: oklch(37% 0.014 247);
     --ui-material-chrome-background: var(--ui-color-surface-panel);
     --ui-material-modal-background: var(--ui-color-surface-panel);
     --ui-material-overlay-background: var(--ui-color-surface-panel);
     --ui-material-scrim-background: oklch(0% 0 0);
     --ui-font-scale: 1;
+  }
+
+  html[data-theme-kind='built-in'][data-theme='neutral'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(92% 0.005 247);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(65% 0.01 247);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(76% 0.11 250);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.004 247 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.005 247);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(14.5% 0.008 247);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(4% 0.003 247);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.001 247);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(82% 0.006 247);
+    --ui-theme-bank-dark-standard-action-primary: oklch(100% 0 0);
+    --ui-theme-bank-dark-standard-border-default: oklch(55% 0.012 247);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(62% 0.17 250);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0% 0 0 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(14.5% 0.01 247);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(21% 0.012 247);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(14.5% 0.01 247);
+    --ui-theme-bank-dark-standard-text-primary: oklch(100% 0 0);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(92% 0.005 247);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(14% 0.01 247);
+    --ui-theme-bank-light-enhanced-border-default: oklch(48% 0.012 247);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(44% 0.1 250);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(2% 0.004 247 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(96% 0.003 247);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(99.5% 0.001 247);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(98% 0.002 247);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(8% 0.006 247);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(27% 0.01 247);
+    --ui-theme-bank-light-standard-action-primary: oklch(21% 0.012 247);
+    --ui-theme-bank-light-standard-border-default: oklch(55% 0.012 247);
+    --ui-theme-bank-light-standard-focus-ring: oklch(54% 0.15 250);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0% 0 0 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(98.5% 0.002 247);
+    --ui-theme-bank-light-standard-surface-panel: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-action: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-primary: oklch(14.5% 0.01 247);
+    --ui-theme-bank-light-standard-text-secondary: oklch(37% 0.014 247);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='ocean'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(82% 0.1 240);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(63% 0.08 240);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.06 240);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.008 250 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.018 245);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.025 245);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(3% 0.008 250);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.004 235);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(83% 0.02 240);
+    --ui-theme-bank-dark-standard-action-primary: oklch(69% 0.12 240);
+    --ui-theme-bank-dark-standard-border-default: oklch(52% 0.07 240);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(72% 0.14 240);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.008 250 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.025 245);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.03 245);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(9% 0.025 250);
+    --ui-theme-bank-dark-standard-text-primary: oklch(90% 0.015 235);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(73% 0.025 240);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(39% 0.1 250);
+    --ui-theme-bank-light-enhanced-border-default: oklch(47% 0.07 240);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(36% 0.08 250);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(8% 0.018 250 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.018 235);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.004 235);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(100% 0 235);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(12% 0.025 245);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(27% 0.04 245);
+    --ui-theme-bank-light-standard-action-primary: oklch(50% 0.14 250);
+    --ui-theme-bank-light-standard-border-default: oklch(57% 0.07 240);
+    --ui-theme-bank-light-standard-focus-ring: oklch(48% 0.1 250);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(12% 0.03 250 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.01 235);
+    --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.001 235);
+    --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.003 235);
+    --ui-theme-bank-light-standard-text-primary: oklch(25% 0.035 245);
+    --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.04 245);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='warm'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(83% 0.095 60);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(64% 0.075 55);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.085 60);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.008 45 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.018 45);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.025 45);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(3% 0.008 45);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.004 75);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.025 65);
+    --ui-theme-bank-dark-standard-action-primary: oklch(70% 0.115 55);
+    --ui-theme-bank-dark-standard-border-default: oklch(52% 0.07 55);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.13 55);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.008 45 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.025 45);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.03 45);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(9% 0.025 45);
+    --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.02 75);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.03 65);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(38% 0.105 40);
+    --ui-theme-bank-light-enhanced-border-default: oklch(46% 0.06 55);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(35% 0.105 40);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.015 45 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.022 75);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.005 75);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(97.7% 0.018 75);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.025 45);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.04 50);
+    --ui-theme-bank-light-standard-action-primary: oklch(49% 0.115 45);
+    --ui-theme-bank-light-standard-border-default: oklch(57% 0.065 55);
+    --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.125 45);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.025 45 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.014 75);
+    --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.002 75);
+    --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.004 75);
+    --ui-theme-bank-light-standard-text-primary: oklch(24% 0.035 50);
+    --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.045 50);
+  }
+
+  html[data-color-mode='dark'] {
+    --ui-theme-bank-effective-enhanced-action-primary: var(
+      --ui-theme-bank-dark-enhanced-action-primary
+    );
+    --ui-theme-bank-effective-enhanced-border-default: var(
+      --ui-theme-bank-dark-enhanced-border-default
+    );
+    --ui-theme-bank-effective-enhanced-focus-ring: var(--ui-theme-bank-dark-enhanced-focus-ring);
+    --ui-theme-bank-effective-enhanced-scrim-viewport: var(
+      --ui-theme-bank-dark-enhanced-scrim-viewport
+    );
+    --ui-theme-bank-effective-enhanced-surface-page: var(
+      --ui-theme-bank-dark-enhanced-surface-page
+    );
+    --ui-theme-bank-effective-enhanced-surface-panel: var(
+      --ui-theme-bank-dark-enhanced-surface-panel
+    );
+    --ui-theme-bank-effective-enhanced-text-on-action: var(
+      --ui-theme-bank-dark-enhanced-text-on-action
+    );
+    --ui-theme-bank-effective-enhanced-text-primary: var(
+      --ui-theme-bank-dark-enhanced-text-primary
+    );
+    --ui-theme-bank-effective-enhanced-text-secondary: var(
+      --ui-theme-bank-dark-enhanced-text-secondary
+    );
+    --ui-theme-bank-effective-standard-action-primary: var(
+      --ui-theme-bank-dark-standard-action-primary
+    );
+    --ui-theme-bank-effective-standard-border-default: var(
+      --ui-theme-bank-dark-standard-border-default
+    );
+    --ui-theme-bank-effective-standard-focus-ring: var(--ui-theme-bank-dark-standard-focus-ring);
+    --ui-theme-bank-effective-standard-scrim-viewport: var(
+      --ui-theme-bank-dark-standard-scrim-viewport
+    );
+    --ui-theme-bank-effective-standard-surface-page: var(
+      --ui-theme-bank-dark-standard-surface-page
+    );
+    --ui-theme-bank-effective-standard-surface-panel: var(
+      --ui-theme-bank-dark-standard-surface-panel
+    );
+    --ui-theme-bank-effective-standard-text-on-action: var(
+      --ui-theme-bank-dark-standard-text-on-action
+    );
+    --ui-theme-bank-effective-standard-text-primary: var(
+      --ui-theme-bank-dark-standard-text-primary
+    );
+    --ui-theme-bank-effective-standard-text-secondary: var(
+      --ui-theme-bank-dark-standard-text-secondary
+    );
+  }
+
+  html[data-color-mode='light'] {
+    --ui-theme-bank-effective-enhanced-action-primary: var(
+      --ui-theme-bank-light-enhanced-action-primary
+    );
+    --ui-theme-bank-effective-enhanced-border-default: var(
+      --ui-theme-bank-light-enhanced-border-default
+    );
+    --ui-theme-bank-effective-enhanced-focus-ring: var(--ui-theme-bank-light-enhanced-focus-ring);
+    --ui-theme-bank-effective-enhanced-scrim-viewport: var(
+      --ui-theme-bank-light-enhanced-scrim-viewport
+    );
+    --ui-theme-bank-effective-enhanced-surface-page: var(
+      --ui-theme-bank-light-enhanced-surface-page
+    );
+    --ui-theme-bank-effective-enhanced-surface-panel: var(
+      --ui-theme-bank-light-enhanced-surface-panel
+    );
+    --ui-theme-bank-effective-enhanced-text-on-action: var(
+      --ui-theme-bank-light-enhanced-text-on-action
+    );
+    --ui-theme-bank-effective-enhanced-text-primary: var(
+      --ui-theme-bank-light-enhanced-text-primary
+    );
+    --ui-theme-bank-effective-enhanced-text-secondary: var(
+      --ui-theme-bank-light-enhanced-text-secondary
+    );
+    --ui-theme-bank-effective-standard-action-primary: var(
+      --ui-theme-bank-light-standard-action-primary
+    );
+    --ui-theme-bank-effective-standard-border-default: var(
+      --ui-theme-bank-light-standard-border-default
+    );
+    --ui-theme-bank-effective-standard-focus-ring: var(--ui-theme-bank-light-standard-focus-ring);
+    --ui-theme-bank-effective-standard-scrim-viewport: var(
+      --ui-theme-bank-light-standard-scrim-viewport
+    );
+    --ui-theme-bank-effective-standard-surface-page: var(
+      --ui-theme-bank-light-standard-surface-page
+    );
+    --ui-theme-bank-effective-standard-surface-panel: var(
+      --ui-theme-bank-light-standard-surface-panel
+    );
+    --ui-theme-bank-effective-standard-text-on-action: var(
+      --ui-theme-bank-light-standard-text-on-action
+    );
+    --ui-theme-bank-effective-standard-text-primary: var(
+      --ui-theme-bank-light-standard-text-primary
+    );
+    --ui-theme-bank-effective-standard-text-secondary: var(
+      --ui-theme-bank-light-standard-text-secondary
+    );
+  }
+
+  html[data-contrast='enhanced'] {
+    --ui-color-action-primary: var(--ui-theme-bank-effective-enhanced-action-primary);
+    --ui-color-border-default: var(--ui-theme-bank-effective-enhanced-border-default);
+    --ui-color-focus-ring: var(--ui-theme-bank-effective-enhanced-focus-ring);
+    --ui-color-scrim-viewport: var(--ui-theme-bank-effective-enhanced-scrim-viewport);
+    --ui-color-surface-page: var(--ui-theme-bank-effective-enhanced-surface-page);
+    --ui-color-surface-panel: var(--ui-theme-bank-effective-enhanced-surface-panel);
+    --ui-color-text-on-action: var(--ui-theme-bank-effective-enhanced-text-on-action);
+    --ui-color-text-primary: var(--ui-theme-bank-effective-enhanced-text-primary);
+    --ui-color-text-secondary: var(--ui-theme-bank-effective-enhanced-text-secondary);
+  }
+
+  html[data-contrast='standard'] {
+    --ui-color-action-primary: var(--ui-theme-bank-effective-standard-action-primary);
+    --ui-color-border-default: var(--ui-theme-bank-effective-standard-border-default);
+    --ui-color-focus-ring: var(--ui-theme-bank-effective-standard-focus-ring);
+    --ui-color-scrim-viewport: var(--ui-theme-bank-effective-standard-scrim-viewport);
+    --ui-color-surface-page: var(--ui-theme-bank-effective-standard-surface-page);
+    --ui-color-surface-panel: var(--ui-theme-bank-effective-standard-surface-panel);
+    --ui-color-text-on-action: var(--ui-theme-bank-effective-standard-text-on-action);
+    --ui-color-text-primary: var(--ui-theme-bank-effective-standard-text-primary);
+    --ui-color-text-secondary: var(--ui-theme-bank-effective-standard-text-secondary);
   }
 }
 

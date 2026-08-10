@@ -4,20 +4,24 @@ import type {
   MotionPreference,
   UiDensity,
 } from '../schema/appearance.schema'
-import type { LegacySeedThemeDefinition } from '../schema/legacy-seed-theme.schema'
+import type { ThemeReference } from '../schema/preference.schema'
+import { clearCustomThemeBank } from './theme-registry'
 import type { EffectiveColorMode } from './resolve-color-mode'
 import type { EffectiveMaterial } from './resolve-material'
 
-export interface AppearanceAttributeTarget {
-  setAttribute(name: string, value: string): void
+interface AppearanceStyleTarget {
+  getPropertyPriority(name: string): string
+  getPropertyValue(name: string): string
+  removeProperty(name: string): string
+  setProperty(name: string, value: string, priority?: string): void
 }
 
-export interface AppearanceStyleTarget {
-  setProperty(name: `--ui-${string}`, value: string): void
-}
-
-export interface AppearanceApplicationTarget extends AppearanceAttributeTarget {
+interface AppearanceTarget {
   readonly style: AppearanceStyleTarget
+  getAttribute(name: string): string | null
+  hasAttribute(name: string): boolean
+  removeAttribute(name: string): void
+  setAttribute(name: string, value: string): void
 }
 
 export interface EffectiveAppearanceState {
@@ -27,31 +31,23 @@ export interface EffectiveAppearanceState {
   readonly fontScale: FontScale
   readonly material: EffectiveMaterial
   readonly motion: MotionPreference
-  readonly theme: LegacySeedThemeDefinition['id']
+  readonly theme: ThemeReference
 }
 
-export const effectiveAppearanceAttributes = [
-  ['colorMode', 'data-color-mode'],
-  ['contrast', 'data-contrast'],
-  ['density', 'data-density'],
-  ['material', 'data-material'],
-  ['motion', 'data-motion'],
-  ['theme', 'data-theme'],
-] as const satisfies readonly (readonly [keyof EffectiveAppearanceState, `data-${string}`])[]
-
-export const effectiveAppearanceCustomProperties = [
-  ['fontScale', '--ui-font-scale'],
-] as const satisfies readonly (readonly [keyof EffectiveAppearanceState, `--ui-${string}`])[]
-
 export function applyAppearance(
-  target: AppearanceApplicationTarget,
+  target: AppearanceTarget,
   appearance: EffectiveAppearanceState,
 ): void {
-  for (const [stateKey, attributeName] of effectiveAppearanceAttributes) {
-    target.setAttribute(attributeName, appearance[stateKey])
+  if (appearance.theme.registryKind === 'built-in') {
+    clearCustomThemeBank(target)
   }
 
-  for (const [stateKey, propertyName] of effectiveAppearanceCustomProperties) {
-    target.style.setProperty(propertyName, String(appearance[stateKey]))
-  }
+  target.setAttribute('data-color-mode', appearance.colorMode)
+  target.setAttribute('data-theme-kind', appearance.theme.registryKind)
+  target.setAttribute('data-theme', appearance.theme.themeId)
+  target.setAttribute('data-contrast', appearance.contrast)
+  target.setAttribute('data-material', appearance.material)
+  target.setAttribute('data-density', appearance.density)
+  target.setAttribute('data-motion', appearance.motion)
+  target.style.setProperty('--ui-font-scale', String(appearance.fontScale))
 }

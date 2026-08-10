@@ -6,6 +6,7 @@ import ts from 'typescript'
 
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
+import { validateAppearanceCutover } from './check-appearance-cutover'
 
 type JsonObject = Record<string, unknown>
 
@@ -361,6 +362,12 @@ async function validateNoApplicationInternalTokenUse(): Promise<string[]> {
         `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal token "${referencedInternalVariable}".`,
       )
     }
+
+    if (sourceText?.includes('--ui-theme-bank-')) {
+      violations.push(
+        `${relative(rootDirectory, applicationFile)}: applications may not enumerate private Theme Bank variables.`,
+      )
+    }
   }
 
   return violations
@@ -419,6 +426,7 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
   const violations: string[] = []
   const storageKeyMatches = [...indexHtml.matchAll(/\bdata-preference-storage-key="([^"]*)"/gu)]
   const configuredStorageKey = applicationConfig.appearance.preferenceStorageKey
+  const configuredRegistryStorageKey = applicationConfig.appearance.customThemeRegistryStorageKey
 
   if (storageKeyMatches.length !== 1 || storageKeyMatches[0]?.[1] !== configuredStorageKey) {
     violations.push(
@@ -426,9 +434,18 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
     )
   }
 
-  if (appearanceInit.includes(configuredStorageKey)) {
+  if (
+    appearanceInit.includes(configuredStorageKey) ||
+    appearanceInit.includes(configuredRegistryStorageKey)
+  ) {
     violations.push(
-      'packages/design-system/src/generated/appearance-init.js: generated initialization must remain application-key-agnostic.',
+      'packages/design-system/src/generated/appearance-init.js: generated initialization must remain application-storage-key-agnostic.',
+    )
+  }
+
+  if (/\bdata-theme-registry-storage-key\b/u.test(indexHtml)) {
+    violations.push(
+      'apps/web/index.html: the Custom Theme Registry storage-key attribute is forbidden.',
     )
   }
 
@@ -462,11 +479,12 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
 
   const baselineAttributes = [
     'data-color-mode="light"',
+    'data-theme-kind="built-in"',
+    'data-theme="neutral"',
     'data-contrast="standard"',
     'data-density="comfortable"',
     'data-material="solid"',
     'data-motion="full"',
-    'data-theme="neutral"',
   ]
 
   if (baselineAttributes.some((attribute) => !indexHtml.includes(attribute))) {
@@ -478,7 +496,8 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
   if (
     !viteConfiguration.includes('appearance-init.js') ||
     !viteConfiguration.includes('critical-theme.css') ||
-    !viteConfiguration.includes('applicationConfig.appearance.preferenceStorageKey')
+    !viteConfiguration.includes('applicationConfig.appearance.preferenceStorageKey') ||
+    !viteConfiguration.includes('applicationConfig.appearance.customThemeRegistryStorageKey')
   ) {
     violations.push(
       'apps/web/vite.config.ts: generated first-paint asset and application configuration wiring is incomplete.',
@@ -496,6 +515,7 @@ const violations = [
   ...(await validateNoApplicationInternalTokenUse()),
   ...(await validateNoApplicationOpticalEffects()),
   ...(await validateFirstPaintApplicationContract()),
+  ...(await validateAppearanceCutover()),
 ]
 
 if (violations.length > 0) {

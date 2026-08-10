@@ -65,6 +65,25 @@ function expectStructuredEqual(actual: unknown, expected: unknown, description: 
   }
 }
 
+function expectDirectDependencyAbsent(
+  manifest: JsonObject,
+  dependency: string,
+  description: string,
+): void {
+  for (const section of [
+    'dependencies',
+    'devDependencies',
+    'peerDependencies',
+    'optionalDependencies',
+  ]) {
+    const dependencies = manifest[section]
+
+    if (isJsonObject(dependencies) && Object.hasOwn(dependencies, dependency)) {
+      throw new Error(`${description} must not directly declare ${dependency} in ${section}.`)
+    }
+  }
+}
+
 function normalizePhaseOneUiSource(source: string): string {
   return source.replace(/\r\n?/gu, '\n').replace(/\n$/u, '')
 }
@@ -305,6 +324,79 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
 
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
+expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
+
+const lockfile = await readYamlObject(resolve(rootDirectory, 'pnpm-lock.yaml'))
+const lockfileCatalogs = lockfile['catalogs']
+const defaultLockfileCatalog = isJsonObject(lockfileCatalogs)
+  ? lockfileCatalogs['default']
+  : undefined
+const lockfileImporters = lockfile['importers']
+const webLockfileImporter = isJsonObject(lockfileImporters)
+  ? lockfileImporters['apps/web']
+  : undefined
+const webLockfileDependencies = isJsonObject(webLockfileImporter)
+  ? webLockfileImporter['dependencies']
+  : undefined
+const lockedPiniaDependency = isJsonObject(webLockfileDependencies)
+  ? webLockfileDependencies['pinia']
+  : undefined
+const lockfilePackages = lockfile['packages']
+const lockedPiniaPackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('pinia@'))
+  : []
+
+expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['pinia'] : undefined,
+  { specifier: '3.0.4', version: '3.0.4' },
+  'Pinia lockfile catalog coordinate',
+)
+expectEqual(
+  isJsonObject(lockedPiniaDependency) ? lockedPiniaDependency['specifier'] : undefined,
+  'catalog:',
+  'Pinia web lockfile specifier',
+)
+
+if (
+  !isJsonObject(lockedPiniaDependency) ||
+  typeof lockedPiniaDependency['version'] !== 'string' ||
+  !lockedPiniaDependency['version'].startsWith('3.0.4(')
+) {
+  throw new Error('Pinia web lockfile resolution must bind exact version 3.0.4.')
+}
+
+expectStructuredEqual(lockedPiniaPackageKeys, ['pinia@3.0.4'], 'Pinia lockfile package set')
+
+const webManifest = await readJsonObject(resolve(rootDirectory, 'apps/web/package.json'))
+const uiManifest = await readJsonObject(resolve(rootDirectory, 'packages/ui/package.json'))
+
+expectStructuredEqual(
+  webManifest['dependencies'],
+  {
+    '@platform/design-system': 'workspace:*',
+    pinia: 'catalog:',
+    vue: 'catalog:',
+  },
+  'Package 5 web dependency set',
+)
+
+for (const [manifest, description] of [
+  [rootManifest, 'root package'],
+  [designSystemManifest, '@platform/design-system'],
+  [uiManifest, '@platform/ui'],
+] as const) {
+  expectDirectDependencyAbsent(manifest, 'pinia', description)
+}
+
+for (const [manifest, description] of [
+  [rootManifest, 'root package'],
+  [webManifest, '@platform/web'],
+  [designSystemManifest, '@platform/design-system'],
+  [uiManifest, '@platform/ui'],
+] as const) {
+  expectDirectDependencyAbsent(manifest, '@vue/devtools-api', description)
+}
+
 expectEqual(workspaceConfiguration['strictDepBuilds'], true, 'Strict dependency build policy')
 expectStructuredEqual(
   workspaceConfiguration['allowBuilds'],

@@ -29,10 +29,10 @@ UI_DIRECTION=ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 TEST_POLICY=NO_TEST_FILES
 ACTIVE_PUBLIC_COLOR_ROLES=9
 ACTIVE_PUBLIC_ROLES_TOTAL=27
-ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_EMBEDDED_PALETTE
+ACTIVE_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
 TARGET_THEME_DEFINITION_CONTRACT=EXPLICIT_COMPLETE_THEME
 TARGET_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
-TARGET_PREFERENCE_STATUS=TARGET_INACTIVE
+TARGET_PREFERENCE_STATUS=ACTIVE
 TARGET_PREFERENCE_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 PREFERENCE_CUTOVER=ATOMIC
 PHASE_1_PACKAGE_1_STATUS=COMPLETE
@@ -40,11 +40,11 @@ PHASE_1_PACKAGE_2_STATUS=COMPLETE
 PHASE_1_PACKAGE_3_STATUS=COMPLETE
 PHASE_1_PACKAGE_3A_STATUS=COMPLETE
 PHASE_1_PACKAGE_4_STATUS=COMPLETE
-PHASE_1_PACKAGE_5_STATUS=NEXT
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+PHASE_1_PACKAGE_5_STATUS=COMPLETE
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_FINAL_STATIC_GOVERNANCE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_FINAL_STATIC_GOVERNANCE
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
-PHASE_1_PINIA_ADMISSION_STATUS=TARGET_INACTIVE
+PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
 PHASE_1_ROUTER_ADMISSION=PROHIBITED
 PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
@@ -178,16 +178,19 @@ type CapabilityStatus =
 | --- | --- | --- |
 | Repository governance and static production gate | `ACTIVE` | Phase 0 artifacts and `pnpm verify` |
 | Token source, schema, generation, visibility and public-output completeness | `ACTIVE` | `@platform/design-system` current generated contract |
-| Current embedded-palette preference compatibility format | `ACTIVE` | `CurrentPreference` until Atomic Cutover |
+| Legacy embedded-palette preference compatibility format | `ACTIVE` | read-only migration input only |
 | Light, Dark and System color-mode resolution | `ACTIVE` | current First Paint and pure resolver |
 | Font Scale projection | `ACTIVE` | current `--ui-font-scale` contract |
 | Adaptive, Reduced and Solid Material token projection | `ACTIVE` | current UI-internal Material contract |
-| Complete Built-in Theme four-plane documents | `TARGET_INACTIVE` | `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` |
-| Reference-only Preference and Theme Registry | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
-| Standard and Enhanced Theme Plane projection | `TARGET_INACTIVE` | Theme-plane package followed by Atomic Cutover |
+| Complete Built-in Theme four-plane documents | `ACTIVE` | generated Built-in Registry and Theme Bank |
+| Reference-only Preference and Theme Registry | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
+| Standard and Enhanced Theme Plane projection | `ACTIVE` | generated Theme Bank and stable Public bindings |
 | Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | future Public Role Admission |
 | Continuous Density Scale application | `DEFERRED` | independent personalization admission |
-| Pinia appearance orchestration | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` narrow admission |
+| Pinia appearance orchestration | `ACTIVE` | `apps/web` exact two-field Appearance Store |
+| Appearance Preference and Custom Registry persistence | `ACTIVE` | two application-owned Local Storage boundaries |
+| Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
+| Generated Built-in First Paint and post-Vue Custom restoration | `ACTIVE` | generated artifacts plus application bootstrap |
 | General Pinia state, Session state and workflow state | `TARGET_INACTIVE` | post-Phase-1 named gates |
 | Runtime Kernel | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` |
 | Core Error Registry, normalization and pre-Vue capture | `TARGET_INACTIVE` | Runtime Kernel first admission; exact extension by each consuming package |
@@ -245,20 +248,20 @@ const ProductPreferenceDefault = {
 ```text
 AUTHORITY_ID=product-preference-default
 OWNER=@platform/design-system preference contract
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
-CURRENT_COMPATIBILITY_ENCODING=defaultCurrentPreference
-CURRENT_COMPATIBILITY_ENCODING_STATUS=ACTIVE
+CURRENT_COMPATIBILITY_ENCODING=LegacyPreferenceInput_AND_LegacySeedPreference
+CURRENT_COMPATIBILITY_ENCODING_STATUS=READ_ONLY_MIGRATION_INPUT
 FALLBACK=NONE
-PERSISTED_AS=ExplicitThemePreference direct Local Storage value after Atomic Cutover
+PERSISTED_AS=ExplicitThemePreference direct Local Storage value
 PERSISTENCE_CONTRACT=Current-to-target Preference Transition
 CONSUMERS=AUTHORIZED_PACKAGE_5_CONSUMER only
 STATIC_ENFORCEMENT=duplicate-default and semantic-equivalence checks
 ```
 
-当前 `defaultCurrentPreference` 是上述同一产品决策的 `CurrentPreference` Embedded-palette 兼容编码，不是第二份产品默认。它必须继续与 `ProductPreferenceDefault` 保持静态验证的逐轴语义等价，直到 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`；Legacy Palette 字段只是旧 Persistence Shape 的兼容数据。Atomic Cutover 后，唯一持久化 Default 改为上方 Reference-only Tuple，旧编码只作为 Read-only Migration Input。
+Package 5 完成后，唯一持久化 Default 是上方 Reference-only Tuple。`defaultCurrentPreference` 已从 Public Runtime 和 Writer 移除；Legacy Embedded-palette Shape 只作为内部 Read-only Migration Input，永不成为第二份产品默认或写回格式。
 
-`CONSUMERS` 只引用 §13.6 定义的 `AUTHORIZED_PACKAGE_5_CONSUMER`，不把尚不存在的文件声明为 Current Consumer。`ProductPreferenceDefault` 只供该 Boundary 构造新偏好或执行显式 Reset，不得由 First Paint、Pinia、页面、Feature 或持久化 Writer 复制成第二份默认对象。
+`CONSUMERS` 只引用 §13.6 定义且已由 Package 5 落地的 `AUTHORIZED_PACKAGE_5_CONSUMER`。`ProductPreferenceDefault` 只供该 Boundary 构造新偏好或执行显式 Reset，不得由 First Paint、Pinia、页面、Feature 或持久化 Writer 复制成第二份默认对象。
 
 Comfortable 是产品默认 Density，不是 Page、Component、Layout 或 Error Fallback。System 是 Stored Color Mode Default，只能在 Runtime 根据浏览器 `prefers-color-scheme` 能力解析，不能在构建时改写为 Light 或 Dark。
 
@@ -280,9 +283,9 @@ const PreInitializationSafetyBaseline = {
 ```text
 AUTHORITY_ID=pre-initialization-safety-baseline
 OWNER=@platform/design-system generated First Paint contract
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
-CURRENT_LEGACY_EQUIVALENT_STATUS=ACTIVE
+CURRENT_LEGACY_EQUIVALENT_STATUS=RETIRED
 PERSISTENCE=PROHIBITED
 USER_PREFERENCE=NO
 MUTATION=GENERATED_ONLY
@@ -1154,10 +1157,10 @@ packages/design-system/
 │   │   └── spacious.tokens.json
 │   │
 │   ├── themes/
-│   │   ├── neutral.theme.json                 [active legacy seed source until Atomic Cutover]
-│   │   ├── ocean.theme.json                   [active legacy seed source until Atomic Cutover]
-│   │   ├── warm.theme.json                    [active legacy seed source until Atomic Cutover]
-│   │   └── complete/                          [Package 4 inert side-by-side target]
+│   │   ├── neutral.theme.json                 [read-only legacy migration evidence]
+│   │   ├── ocean.theme.json                   [read-only legacy migration evidence]
+│   │   ├── warm.theme.json                    [read-only legacy migration evidence]
+│   │   └── complete/                          [active Built-in Theme sources]
 │   │       ├── neutral.theme.json
 │   │       ├── ocean.theme.json
 │   │       └── warm.theme.json
@@ -1170,6 +1173,7 @@ packages/design-system/
 │   │   ├── token.schema.ts
 │   │   ├── legacy-seed-theme.schema.ts
 │   │   ├── appearance.schema.ts
+│   │   ├── complete-theme.schema.ts
 │   │   └── preference.schema.ts
 │   │
 │   ├── build/
@@ -1186,8 +1190,7 @@ packages/design-system/
 │   │   ├── resolve-material.ts
 │   │   ├── apply-appearance.ts
 │   │   ├── preference-migration.ts
-│   │   ├── first-paint.ts
-│   │   └── theme-registry.ts                 [admitted by the explicit-theme registry package]
+│   │   └── theme-registry.ts
 │   │
 │   ├── unocss/
 │   │   ├── preset.ts
@@ -1201,6 +1204,7 @@ packages/design-system/
 │   │   ├── appearance-init.js
 │   │   ├── tokens.ts
 │   │   ├── token-names.ts
+│   │   ├── theme-registry.ts
 │   │   ├── unocss-theme.ts
 │   │   └── tokens.manifest.json
 │   │
@@ -1211,7 +1215,7 @@ packages/design-system/
 └── README.md
 ```
 
-`material.tokens.json`、新增 Runtime 文件和新增 Generated 文件是 Phase 1 后续工作包的固定位置，不由架构修订本身创建。Generator Visibility 与 Selector 合同必须先于 Material Token Source 实现。
+`material.tokens.json`、Package 5 Runtime 与 Generated Registry 均已位于上述固定位置。Generator Visibility 与 Selector 合同继续先于任何未来 Material Token Source 扩展实现。
 
 ---
 
@@ -1347,11 +1351,11 @@ cssVariable?
 
 Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role Metadata；只有 Runtime CSS 中真实存在的 Token 才记录 `cssVariable`。Manifest 是生成和治理输入，不是应用公共 API。
 
-加入这些字段时必须提升 Manifest Schema Version。Generator 必须在 Material Source 进入前支持 `material` Namespace → `--ui-material-*` 映射。Atomic Cutover 后，Theme、Mode 与 Contrast 的 Public Color Projection 只能遵守 §13.7 的 Private Theme Bank 和 Stable Public Binding；Cutover 前保留当前 Embedded-palette Conditional Projection，不得提前混入 Target Bank。其他 Conditional Semantic Alias 必须保留 CSS `var(...)` 关系与独立单轴 Selector，不得一律压平为 Literal 或复制组合矩阵。
+加入这些字段时必须提升 Manifest Schema Version。Generator 必须在 Material Source 进入前支持 `material` Namespace → `--ui-material-*` 映射。Package 5 Atomic Cutover 后，Theme、Mode 与 Contrast 的当前 Public Color Projection 只遵守 §13.7 的 Private Theme Bank 和 Stable Public Binding；先前 Embedded-palette Conditional Projection 已退休。其他 Conditional Semantic Alias 必须保留 CSS `var(...)` 关系与独立单轴 Selector，不得一律压平为 Literal 或复制组合矩阵。
 
 ### Public Output Completeness
 
-当前 Active Baseline 的 Public Role ID Contract 是下方精确 Registry；它与当前实现的 Public CSS、`tokens.ts`、`token-names.ts` 和 27 个 UnoCSS Mapping 一致。`roleContractVersion` 是 Target Explicit-theme Contract 的版本机制，在 §13.4 的 Atomic Cutover 前不得写入当前生成输出或暗示 Target Preference 已激活。
+当前 Active Baseline 的 Public Role ID Contract 是下方精确 Registry；它与当前实现的 Public CSS、`tokens.ts`、`token-names.ts` 和 27 个 UnoCSS Mapping 一致。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
 
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
 
@@ -1978,13 +1982,20 @@ MANIFEST_COMPRESSION_PROFILE_NAMING=DESCRIPTIVE_ID_WITHOUT_NUMERIC_VERSION_SUFFI
 MANIFEST_COMPRESSION_HARD_LIMIT_BYTES=32768
 MANIFEST_CANONICAL_BASELINE_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
 MANIFEST_CANONICAL_BASELINE_BYTES=3366
-MANIFEST_CANONICAL_FINAL_GZIP_BYTES=6153
-MANIFEST_CANONICAL_EXPECTED_GZIP_BYTE_DELTA=2787
+MANIFEST_CANONICAL_FINAL_GZIP_BYTES=7687
+MANIFEST_CANONICAL_EXPECTED_GZIP_BYTE_DELTA=4321
 PACKAGE_4_MANIFEST_BASELINE_COMMIT=1daba84b5196e152966bd7e0f2e9e7ed8c24938f
 PACKAGE_4_MANIFEST_BASELINE_BYTES=5213
 PACKAGE_4_MANIFEST_BASELINE_RECORD_COUNT=181
 PACKAGE_4_MANIFEST_EXPECTED_RECORD_COUNT_DELTA=0
 PACKAGE_4_MANIFEST_EXPECTED_GZIP_BYTE_DELTA=940
+PACKAGE_5_MANIFEST_BASELINE_COMMIT=2f5a28a7dbe877f96ac3d24299d892bd7bb9087f
+PACKAGE_5_MANIFEST_BASELINE_BYTES=6153
+PACKAGE_5_MANIFEST_BASELINE_RECORD_COUNT=181
+PACKAGE_5_MANIFEST_FINAL_BYTES=7687
+PACKAGE_5_MANIFEST_FINAL_RECORD_COUNT=181
+PACKAGE_5_MANIFEST_EXPECTED_RECORD_COUNT_DELTA=0
+PACKAGE_5_MANIFEST_EXPECTED_GZIP_BYTE_DELTA=1534
 LEGACY_CLI_GZIP_COMMAND=gzip -9 -n
 LEGACY_CLI_GZIP_COMPARISON=NON_AUTHORITATIVE_HISTORY_ONLY
 ```
@@ -2030,7 +2041,7 @@ governance.baselineRecordCount
 governance.expectedRecordCountDelta
 ```
 
-Package 4 在不增加 Record Family 或 Record 的前提下，把三份完整 Target Theme Definition 作为现有三个 Theme Metadata Record 的嵌套 `complete` 字段生成。该字段保持 `TARGET_INACTIVE`，只记录 `registryKind='built-in'`、Exact ID 对应的确定性 Future Selector、Canonical Source、Theme/Role Contract Version 和四个完整 Authored Plane；不记录 Private Theme Bank Variable、Public Binding 或任何 Runtime Activation。Metadata Shape 改变使当前 Manifest Schema 提升为：
+Package 4 曾在不增加 Record Family 或 Record 的前提下，把三份完整 Target Theme Definition 作为三个 Theme Metadata Record 的嵌套 `complete` 字段生成。该历史 Shape 的 Manifest Schema 为：
 
 ```text
 schemaVersion=6
@@ -2045,7 +2056,7 @@ themes[*].complete.planes=light.standard,light.enhanced,dark.standard,dark.enhan
 PACKAGE_4_EXPECTED_RECORD_COUNT_DELTA=0
 ```
 
-`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 获得实现授权并完成同一 Atomic Landing 时，必须用以下 Exact Active Flat Shape 原子替换上述 Package 4 Target-only Nested Theme Representation；在该 Landing 完成前，下列 Shape 仍未实现，其 Implementation Eligibility 继续由 §37.1 判定：
+`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 已在同一 Atomic Landing 中用以下 Exact Active Flat Shape 原子替换上述 Package 4 Target-only Nested Theme Representation：
 
 ```text
 themes[*]
@@ -2112,7 +2123,7 @@ firstPaint[*]
 
 该 Shape 不包含 `productDefaultAxes`，不复制 `ProductPreferenceDefault`，不把 Font Scale 或 Motion 加入五字段 `PreInitializationSafetyBaseline`，也不记录实际 Storage Key、Custom Registry Snapshot、Pinia State 或私有 First Paint Handoff。Built-in Theme 可以在 Vue 前同步解析；本 Landing 的 Custom Theme 只允许在 Vue Bootstrap 后恢复。Stored Preference 引用 Custom Theme 时，First Paint 保持 Safety Baseline，不得同步读取 Custom Registry。
 
-Package 5 的不兼容最终 Shape 应用后，Manifest Numeric Discriminator 才由 Authorized Implementation 机械派生；本 Architecture-only Amendment 不冻结或推荐该数字。最终 Record Count、Record Delta、Gzip Bytes、Gzip Delta 与 Production Bundle Delta 同样只由 Authorized Implementation 对最终输出进行确定性测量，本 Amendment 不预声明数值。
+Package 5 的不兼容最终 Shape 已机械派生 `schemaVersion=7`。最终仍为 `181` Records，相对 Package 5 Entry 的 Record Delta 为 `0`；Canonical Gzip 为 `7687` Bytes，相对 `6153`-Byte Entry Baseline 的 Delta 为 `1534` Bytes。Production Bundle 的机械测量记录在 §37.1 Package 5 Completion Evidence 与 Owning Bundle Checker 中。
 
 Generated Manifest 禁止包含用于断言同一压缩 Payload 大小的字段：
 
@@ -2143,6 +2154,8 @@ hard limit
 Baseline 同时绑定 Exact Commit 和 `node-zlib-gzip-sync`。Package 3 的 Baseline Commit 已由 Git History 证明为其 Implementation Commit 的 Direct Predecessor。Package 3A 先冻结上述完整 Metadata Shape，再使用同一序列化器、Pinned Node 和 Profile 测得 Final Payload 为 `5213` Bytes；相对 `3366`-Byte Baseline 的 Expected Delta 为 `1847` Bytes，并通过 `32768`-Byte Hard Limit。Repository-owned Build Verification Code 和本架构共同冻结这些值；Generated Payload 不包含它们。
 
 Package 4 以 `main@1daba84b5196e152966bd7e0f2e9e7ed8c24938f` 的 `181` Records / `5213` Bytes 作为独立增量 Baseline。最终仍为 `181` Records，Expected Record Delta 为 `0`；同一 Canonical Profile 下最终 Payload 为 `6153` Bytes，Package 4 Expected Byte Delta 为 `940` Bytes。相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `2787` Bytes，且继续通过 `32768`-Byte Hard Limit。两组 Delta 都由 Build Verification Code 在压缩 Payload 外精确比较。
+
+Package 5 以 `main@2f5a28a7dbe877f96ac3d24299d892bd7bb9087f` 的 `181` Records / `6153` Bytes 作为独立增量 Baseline。最终为 `181` Records / `7687` Bytes，Expected Record Delta 为 `0`，Expected Byte Delta 为 `1534` Bytes；相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `4321` Bytes，并继续通过 `32768`-Byte Hard Limit。Build Verification Code 在压缩 Payload 外精确比较上述 Entry、Final 和 Delta。
 
 每个后续 Implementation Package 必须声明 `expectedRecordCountDelta` 与 Canonical Compressed-byte Delta，由 Owning Static Gate 对实际值逐项比较；未声明或非预期增长必须失败。即使总大小仍低于 32 KiB，Delta Mismatch 也不得通过。
 
@@ -2218,7 +2231,7 @@ Material Token 是 `ui-internal`，只允许 `packages/ui` 在真实 Phase 2 消
 
 所有变量必须有 `--ui-` 命名空间，避免与第三方库和业务变量冲突。
 
-`--ui-material-*` 当前存在于 Runtime CSS；`--ui-theme-bank-*` 只在 Atomic Cutover 后进入 Runtime CSS。两者在各自激活后都不属于应用公共 Token 表面，不得进入公共 `tokens.ts`、`token-names.ts`、UnoCSS Theme、Rule 或 Shortcut，也不得由 `apps/**` 和业务 Feature 直接引用。Private Theme Bank 激活后只存在于 Runtime CSS 与 Manifest。
+`--ui-material-*` 与 Package 5 激活的 `--ui-theme-bank-*` 当前都存在于 Runtime CSS。两者都不属于应用公共 Token 表面，不得进入公共 `tokens.ts`、`token-names.ts`、UnoCSS Theme、Rule 或 Shortcut，也不得由 `apps/**` 和业务 Feature 直接引用。Private Theme Bank 只存在于 Runtime CSS 与 Manifest。
 
 ---
 
@@ -2226,7 +2239,7 @@ Material Token 是 `ui-internal`，只允许 `packages/ui` 在真实 Phase 2 消
 
 ## 13.1 Stored Preference 与 Effective State
 
-当前 Embedded-palette Runtime 根节点表达解析后的 Effective State，但只写 `data-theme`，不写 `data-theme-kind`。Target Atomic Cutover 接受后，根节点才切换为以下 Tuple-aware 形式：
+Package 5 已将先前 Embedded-palette Runtime 根节点原子切换为以下 Tuple-aware Active 形式，并同时写入 `data-theme-kind` 与 `data-theme`：
 
 ```html
 <html
@@ -2250,7 +2263,7 @@ stored material = adaptive | reduced | solid
 effective material = adaptive | reduced | solid
 ```
 
-`system` 和尚未解析的 `adaptive` 只存在于用户偏好。`System` 不是第三个 Theme Plane；它只能由浏览器能力解析为 Effective `light` 或 `dark`。Cutover 前，该结果选择当前 Embedded-palette Conditional Projection；Cutover 后，它才选择相应的 Explicit Theme Plane。DOM 的 `data-color-mode` 与 `data-material` 只记录 Effective State；不得将派生状态回写为用户偏好。根节点根据 Effective Color Mode 设置：
+`system` 和尚未解析的 `adaptive` 只存在于用户偏好。`System` 不是第三个 Theme Plane；它只能由浏览器能力解析为 Effective `light` 或 `dark`，并选择相应的 Explicit Theme Plane。DOM 的 `data-color-mode` 与 `data-material` 只记录 Effective State；不得将派生状态回写为用户偏好。根节点根据 Effective Color Mode 设置：
 
 ```css
 html[data-color-mode='light'] {
@@ -2264,15 +2277,15 @@ html[data-color-mode='dark'] {
 
 Effective Appearance 是纯派生结果，不作为第二份可变 Pinia State，也不持久化。
 
-Atomic Cutover 后，Theme Reference Resolution 同样是纯边界。有效引用解析为已校验、可访问的 Built-in 或 Custom Theme Registry Entry；无效引用不得被改写为 `neutral` 或其他主题，也不得修改 Stored Preference，并且必须返回 §13.6 冻结的 `ThemeReferenceResolutionResult` Exact Branch。运行时可以暂时保留 Safe First-paint Baseline，但该 App State 不进入 Public Result。Cutover 前，Theme 继续是经过 `CurrentPreference` Schema 校验的 Built-in ID 字符串，不存在 Registry-kind Tuple。
+Theme Reference Resolution 当前是纯边界。有效引用解析为已校验、可访问的 Built-in 或 Custom Theme Registry Entry；无效引用不得被改写为 `neutral` 或其他主题，也不得修改 Stored Preference，并且必须返回 §13.6 冻结的 `ThemeReferenceResolutionResult` Exact Branch。运行时可以暂时保留 Safe First-paint Baseline，但该 App State 不进入 Public Result。先前 `CurrentPreference` Built-in ID 字符串只保留为内部 Read-only Migration Evidence，不再是 Runtime Authority。
 
 ## 13.2 Theme Definition
 
-Theme Definition 与 User Preference 是不同合同。`ThemeDefinition` 是完整、显式、版本化的 Target 颜色文档；本 Architecture Amendment 只定义 Target，不使它成为当前 Runtime、Default、Public Export、First-paint 或 Persistence Authority。它只能在 §13.4 的 Atomic Cutover 中激活：
+Theme Definition 与 User Preference 是不同合同。`ThemeDefinition` 是完整、显式、版本化的 Active 颜色文档；Architecture-only Amendment 曾只冻结 Target，Package 5 已在 §13.4 的 Atomic Cutover 中把它激活为当前 Runtime、Default、Public Export、First-paint 与 Persistence Authority：
 
 ```text
 CAPABILITY=EXPLICIT_COMPLETE_THEME_DEFINITION
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 STRUCTURE_ADMISSION_GATE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
 RUNTIME_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
@@ -2342,11 +2355,11 @@ type CustomThemeDefinition = ThemeDefinition<
 >
 ```
 
-Target 首次 Atomic Cutover 的初始准入版本预留为：
+首次 Atomic Cutover 已激活以下初始准入版本：
 
 ```text
 TARGET_PUBLIC_ROLE_CONTRACT_INITIAL_VERSION=1
-TARGET_PUBLIC_ROLE_CONTRACT_STATUS=TARGET_INACTIVE
+TARGET_PUBLIC_ROLE_CONTRACT_STATUS=ACTIVE
 TARGET_PUBLIC_ROLE_CONTRACT_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
@@ -2376,7 +2389,7 @@ NEUTRAL_ALIAS=PROHIBITED
 NEUTRAL_INHERITANCE=PROHIBITED
 NEUTRAL_AUTOMATIC_COMPLETION=PROHIBITED
 NEUTRAL_AUTOMATIC_CORRECTION=PROHIBITED
-NEUTRAL_RUNTIME_STATUS=TARGET_INACTIVE
+NEUTRAL_RUNTIME_STATUS=ACTIVE
 NEUTRAL_RUNTIME_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
@@ -2768,21 +2781,22 @@ ACTIVE_ALPHA_RECORDS=1
 
 ### Active Authority
 
-当前已实现的 `CurrentPreference` Legacy-seed Embedded-palette Format 保持唯一 Active Authority：
+Package 5 Atomic Cutover 已把唯一 Active Authority 切换为 Reference-only Explicit Theme Preference：
 
 ```text
-ACTIVE_PREFERENCE_AUTHORITY=USER_PREFERENCE_EMBEDDED_PALETTE
-ACTIVE_SCHEMA=CurrentPreference
-ACTIVE_DEFAULT=defaultCurrentPreference
-ACTIVE_PUBLIC_EXPORTS=CURRENT_PREFERENCE_SCHEMA_TYPES_DEFAULT_AND_RUNTIME_HELPERS
-ACTIVE_FIRST_PAINT=LEGACY_PREFERENCE_INPUT_AND_CURRENT_PREFERENCE_READER
-ACTIVE_RUNTIME_APPLICATION=LEGACY_SEED_THEME_STRING_WITHOUT_THEME_KIND
-ACTIVE_PERSISTENCE_FORMAT=CURRENT_PREFERENCE
-TARGET_PREFERENCE_STATUS=TARGET_INACTIVE
+ACTIVE_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
+ACTIVE_SCHEMA=ExplicitThemePreference
+ACTIVE_DEFAULT=ProductPreferenceDefault
+ACTIVE_PUBLIC_EXPORTS=EXPLICIT_THEME_SCHEMA_TYPES_DEFAULT_AND_RUNTIME_HELPERS
+ACTIVE_FIRST_PAINT=EXPLICIT_THEME_AND_READ_ONLY_LEGACY_MIGRATION_READER
+ACTIVE_RUNTIME_APPLICATION=REGISTRY_KIND_AND_THEME_ID_TUPLE
+ACTIVE_PERSISTENCE_FORMAT=EXPLICIT_THEME_PREFERENCE_DIRECT_VALUE
+LEGACY_PREFERENCE_STATUS=READ_ONLY_MIGRATION_INPUT
+TARGET_PREFERENCE_STATUS=ACTIVE
 TARGET_PREFERENCE_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
-Active Envelope 精确包含外层 `schemaVersion: 2` 与 `appearance.{colorMode,theme,palette,contrast,material,density,fontScale,motion}`；`palette` 精确包含 `brand`、`accent` 和 `neutral`。本 Architecture Amendment、早期 Registry Package 或 Theme-plane Package 均不得改变当前 Schema、Default、Public Export、First Paint、Runtime Application、Application Storage Read/Write Format 或生成输出 Authority。
+Active Direct Value 精确包含外层 `schemaVersion: 3` 与 `appearance.{colorMode,theme,contrast,material,density,fontScale,motion}`；`theme` 精确包含独立的 `registryKind` 与 `themeId`。Legacy `schemaVersion: 1|2` 与 Embedded Palette 只允许由 Reader/Migration 读取，不得由 Default、Public Root、Pinia、First Paint Writer 或应用 Persistence Writer 输出。
 
 ### Legacy Built-in Theme Tuple Registry
 
@@ -2846,13 +2860,13 @@ const LegacyBuiltInThemeTupleRegistry = {
 
 Migration Equality 只对 `comparisonFields` 中的 Theme ID 和三个 `CurrentPreference` Persisted String 执行 Code-point Exact Equality。`label`、`sourcePath` 与 `sourceAlias` 是不可变 Provenance，不参与 Equality。早期 Public Role Registry 和完整 Theme-plane Package 必须把新结构 Side-by-side 加入，并保留上述三个 Legacy Source Document；不得在 Migration Registry 可用和 Atomic Cutover 被接受前删除或改写 Legacy Tuple Evidence。
 
-### Target Explicit-theme Contract
+### Active Explicit-theme Contract
 
-以下 Target Schema 在 Atomic Cutover 前只作为非 Active Contract 存在。
+以下 Explicit-theme Schema 已由 Package 5 Atomic Cutover 激活。
 
 ```text
 CAPABILITY=REFERENCE_ONLY_THEME_PREFERENCE_AND_REGISTRY
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
@@ -3081,7 +3095,7 @@ Capability 或 Media Query 状态改变时重新执行纯 Resolver，只更新 E
 
 ## 13.6 Ownership Boundary
 
-以下 Ownership 是 Atomic Cutover 后的 Target Boundary。Cutover 前，§13.4 的 `CurrentPreference` Schema、Default、Public Export、First Paint、Runtime 和 Persistence Ownership 保持不变。
+以下 Ownership 是 Atomic Cutover 后的 Active Boundary。Package 5 已原子退休 §13.4 的 `CurrentPreference` Schema、Default、Public Export、First Paint、Runtime 和 Persistence Authority；Legacy Shape 只保留为内部 Read-only Migration Input。
 
 `@platform/design-system` 负责机制：
 
@@ -3121,7 +3135,7 @@ Design System 不得硬编码应用 Storage Key，也不得拥有 Pinia 或直�
 
 ### Public Design System Boundary
 
-`AUTHORIZED_PACKAGE_5_CONSUMER` 只表示 Atomic Cutover 获准后由 Package 5 拥有的 `apps/web` Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation、Application Persistence Lifecycle 和 Generated First Paint Integration。该术语不把尚未创建的文件描述为当前 Repository Consumer，也不授权任何 Feature、Page、Shared UI 或 Future Package 使用该边界。
+`AUTHORIZED_PACKAGE_5_CONSUMER` 只表示已由 Package 5 落地的 `apps/web` Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation、Application Persistence Lifecycle 和 Generated First Paint Integration。该术语不授权任何 Feature、Page、Shared UI 或 Future Package 使用该边界。
 
 Package 5 新增的 Public Root Symbol 精确为：
 
@@ -3307,7 +3321,7 @@ type ThemeBankInstallationResult =
 
 ## 13.7 Theme-bank Projection
 
-本节全部 Projection、Selector、Installer 和 Manifest Mechanic 都是 Atomic Cutover Target；Cutover 前不得生成 Theme Bank、设置 `data-theme-kind` 或安装 Custom Theme Bank。
+本节全部 Projection、Selector、Installer 和 Manifest Mechanic 已由 Package 5 Atomic Cutover 激活；Theme Bank 与 `data-theme-kind` 只由下列生成和 Runtime 边界拥有。
 
 Generator 和 Runtime Custom Theme Installer 必须共享同一份 Private Theme Bank Schema，避免 Theme × Mode × Contrast Selector 的笛卡尔展开。每个 Built-in Theme Selector 一次性写入四套完整 Private Bank，并同时匹配 Registry Kind 与 Exact Built-in ID：
 
@@ -3373,7 +3387,7 @@ Private Plane Bank 和 Effective Bank 都是 `ui-internal`：只进入 Runtime C
 
 ## 13.8 Explicit Theme Validation Pipeline
 
-本 Pipeline 只在 Atomic Cutover 中与 Target Theme、Preference、Registry、First Paint 和 Runtime 一起激活；当前 Embedded-palette Validation 不得被描述为已经执行下列完整 Theme Pipeline。
+本 Pipeline 已在 Atomic Cutover 中与 Theme、Preference、Registry、First Paint 和 Runtime 一起激活；Legacy Embedded-palette 只在只读 Migration Boundary 中使用，不执行或替代下列完整 Theme Pipeline。
 
 ```text
 Explicit ThemeDefinition
@@ -3472,7 +3486,7 @@ Cutover 前，用户只可修改当前 `AppearancePreference` Schema 已公开�
 
 ## 13.11 First Paint
 
-本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Target Explicit-theme Validation 只在 §13.4 Atomic Cutover 中共同激活。Cutover 前，当前生成的 `LegacyPreferenceInput` / `CurrentPreference` Embedded-palette Reader、`defaultCurrentPreference`、现有 `data-preference-storage-key` 和 `CurrentPreference` Runtime Application 保持权威；不得因本节落地而单独改变。
+本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Explicit-theme Validation 已在 §13.4 Atomic Cutover 中共同激活。`LegacyPreferenceInput` / `LegacySeedPreference` 只保留为只读 Migration Input；`data-preference-storage-key` 继续由应用拥有。
 
 构建输出：
 
@@ -3518,8 +3532,6 @@ effective material
 Stored Preference 引用 Custom Theme 时，First Paint 必须保留完整 Safety Baseline，并通过 Private Implementation Handoff 让 Vue Bootstrap 后的应用边界重新处理该 Reference；Handoff 不是 Public API、Manifest Field 或 Persistence Shape。Vue Bootstrap 后，应用才能读取并完整验证 Application-owned Custom Registry Snapshot；只有 Exact Entry 存在且 Design System Validation 成功时，才可 Resolve、Install Bank 并原子应用 Custom Appearance。Registry 不可用、整个 Snapshot 不可接受、Entry 缺失或 Theme 无效时不得改成 `neutral`、删除或改写 Preference、合成颜色、恢复部分 Registry 或安装 Partial Bank。
 
 First Paint 与 Post-Vue Restoration 必须使用同一 §13.6 Result Classification。`MIGRATION_REQUIRES_THEME_COMPLETION` 与 `PREFERENCE_INPUT_INVALID` 都保留完整 Safety Baseline、不继续 Theme Resolution 且不写 Storage，但两者不得互相替代：前者只表示 Valid Legacy Preference 需要 Complete Theme Reconstruction，后者只表示已经解析的 Input 不属于任何允许的 Preference Schema。任一分支都不得静默返回 Product Default。
-
-Cutover 前，当前初始化脚本只按 `LegacyPreferenceInput` / `CurrentPreference` Embedded-palette Contract 读取和校验 Preference；它不读取 Theme Registry Snapshot、不设置 `data-theme-kind`、不验证 Target Theme Document，也不安装 Theme Bank。
 
 Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、Custom Registry Snapshot、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。它不得写入任何 Storage。Preference 读取、解析、Migration、Built-in Resolution、Atomic Appearance Application 或能力检测失败时必须保留完整 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 Canonical Contract 生成并接受 Drift Check。
 
@@ -4277,11 +4289,11 @@ Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Sc
 
 # 19. 状态管理
 
-当前 Phase 1 的 Pinia 准入是 Inactive Target，不是当前依赖许可：
+Package 5 的窄范围 Phase 1 Pinia 准入已激活：
 
 ```text
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
-PHASE_1_PINIA_ADMISSION_STATUS=TARGET_INACTIVE
+PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_OWNER=apps/web
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
 PHASE_1_ROUTER_ADMISSION=PROHIBITED
@@ -4289,7 +4301,7 @@ PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
 PHASE_1_OPENAPI_GENERATOR_ADMISSION=PROHIBITED
 ```
 
-Package 5 必须在同一个 Atomic Cutover 中同时交付 Stored Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation Orchestration 和 Application-owned Persistence Lifecycle，才允许把 Pinia 加入 `apps/web`。不得为了 Package 5 之前的过渡状态建立自定义 Global State Layer，也不得借此准入 Session、General Application Store、Router、TanStack Query、OpenAPI Generator 或 `packages/ui` Runtime Dependency。
+Package 5 已在同一个 Atomic Cutover 中交付 Stored Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation Orchestration 和 Application-owned Persistence Lifecycle，并只把 Pinia 加入 `apps/web`。该准入不扩展到 Session、General Application Store、Router、TanStack Query、OpenAPI Generator 或 `packages/ui` Runtime Dependency。
 
 以下职责表是各自 Admission Gate 通过后的最终 Ownership，不代表对应依赖已经进入当前 Manifest。
 
@@ -5763,7 +5775,7 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 
 本架构工作包只声明未来合同，不创建 `.ai/**`、不修改 `AGENTS.md` 或 Repository Policy。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT` 与 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract 与三份 Target-only Complete Built-in Theme Document 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`；Package 6 不得提前开始。已落地的 Browser Rule、Manifest Compression Contract 与 Complete Theme Owning Gate 不得被后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 与 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document 与 Active Appearance Cutover 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_FINAL_STATIC_GOVERNANCE`。已落地的 Browser Rule、Manifest Compression Contract、Complete Theme Owning Gate 与 Appearance Cutover Owning Gate 不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -6036,8 +6048,8 @@ interface StaticEnforcementTarget {
 | `no-unapproved-shadow` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno box/text/drop shadow | `design-token-source` | `UNAPPROVED_SHADOW` |
 | `no-unapproved-z-index` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno layer values | `design-token-source`; `domain-schema` | `UNAPPROVED_Z_INDEX` |
 | `no-unapproved-typography-value` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno font, line and letter metrics | `design-token-source` | `UNAPPROVED_TYPOGRAPHY` |
-| `no-unapproved-density-or-font-scale` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Preference schema/default/store; DOM attributes; App/UI consumers | `typed-default-registry`; `design-token-source`; `generated-output` | `UNAPPROVED_DENSITY_FONT_SCALE` |
-| `no-consumer-authored-appearance-default` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Page/Feature/Shared/Public UI TS/Vue/CSS and appearance DOM attributes | `typed-default-registry`; `generated-output` | `CONSUMER_APPEARANCE_DEFAULT` |
+| `no-unapproved-density-or-font-scale` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Preference schema/default/store; DOM attributes; App/UI consumers | `typed-default-registry`; `design-token-source`; `generated-output` | `UNAPPROVED_DENSITY_FONT_SCALE` |
+| `no-consumer-authored-appearance-default` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Page/Feature/Shared/Public UI TS/Vue/CSS and appearance DOM attributes | `typed-default-registry`; `generated-output` | `CONSUMER_APPEARANCE_DEFAULT` |
 | `no-unapproved-motion-duration` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS animation, transition, delay and animation timeout | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_DURATION` |
 | `no-unapproved-motion-easing` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS timing, spring and curve values | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_EASING` |
 | `no-transition-all` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | All authored CSS, Vue Transition and future motion adapters | `design-token-source` | `TRANSITION_ALL` |
@@ -6055,9 +6067,9 @@ interface StaticEnforcementTarget {
 | `registered-permissions-only` | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` | Route, component visibility, operation and claim projection | `permission-registry` | `UNREGISTERED_PERMISSION` |
 | `no-inactive-capability-import` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | Package manifests and complete workspace import graph | `capability-status-registry`; `package-boundary-registry` | `INACTIVE_CAPABILITY_IMPORT` |
 | `no-query-data-copied-into-pinia` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Pinia state/actions, Query callbacks and server-entity consumers | `domain-schema` | `QUERY_DATA_COPIED_TO_PINIA` |
-| `no-theme-literal-runtime-state` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Appearance stores, pages, features, shared modules, public UI and DOM writers | `typed-default-registry`; `design-token-source`; `generated-output` | `THEME_LITERAL_RUNTIME_STATE` |
-| `single-product-default-authority` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Schema defaults, stores, reset, First Paint, Runtime Config, Page/Feature/Shared/Public UI, appearance attributes and documentation code | `typed-default-registry`; `generated-output` | `DUPLICATE_PRODUCT_DEFAULT` |
-| `single-safety-baseline-authority` | `TARGET_INACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | HTML, Critical CSS, Manifest, initializer and persistence consumers | `typed-default-registry`; `generated-output` | `DUPLICATE_SAFETY_BASELINE` |
+| `no-theme-literal-runtime-state` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Appearance stores, pages, features, shared modules, public UI and DOM writers | `typed-default-registry`; `design-token-source`; `generated-output` | `THEME_LITERAL_RUNTIME_STATE` |
+| `single-product-default-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Schema defaults, stores, reset, First Paint, Runtime Config, Page/Feature/Shared/Public UI, appearance attributes and documentation code | `typed-default-registry`; `generated-output` | `DUPLICATE_PRODUCT_DEFAULT` |
+| `single-safety-baseline-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | HTML, Critical CSS, Manifest, initializer and persistence consumers | `typed-default-registry`; `generated-output` | `DUPLICATE_SAFETY_BASELINE` |
 | `no-unregistered-environment-default` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Config loader/schema and every App/Feature/UI environment consumer | `runtime-configuration-schema` | `UNREGISTERED_ENVIRONMENT_DEFAULT` |
 
 `TARGET_INACTIVE` Rule 只有在同一个 Owning Package 中交付现有 Toolchain 内的实现、接入 `pnpm verify`、通过可逆 Negative Probe、证明 Allowed Authority 是 Exact Registry 而不是宽泛 Path Escape，并保持无 Test/Evidence Artifact 后，才能改为 `ACTIVE`。Regex 只能作为确定性 Lexer 的一部分；对 TypeScript/Vue/CSS/JSON/Generated Record 的结构性合同必须使用相应 Parser、AST 或 Exact-set Comparison，不能用注释、命名约定或 Allowlist Wildcard 代替。
@@ -6654,7 +6666,7 @@ existing CSS Variables and TypeScript Token Types
 existing UnoCSS Preset
 existing Light / Dark / System
 existing Compact / Comfortable / Spacious
-active CurrentPreference embedded palette
+active ExplicitThemePreference registry reference
 exact current 27-role public ID set, including 9 color roles
 current single-role density behavior for interaction.control.height
 packages/ui dependency-free src/index.ts stub
@@ -6668,8 +6680,8 @@ Package 2 = COMPLETE
 Package 3 = COMPLETE
 Package 3A = COMPLETE
 Package 4 = COMPLETE
-Package 5 = NEXT
-Package 6 = BLOCKED_BY_5
+Package 5 = COMPLETE
+Package 6 = NEXT
 ```
 
 以下是完整 Phase 1 Target Inventory。某项是否已实现、是否已机器强制以及是否允许成为 Runtime Authority，只由 §37.1 的 Package Status 和 Owning Gate 决定，不因出现在本清单而自动激活：
@@ -6698,7 +6710,7 @@ Phase 1 static governance
 
 §14.2 的十个额外 Density Candidate 不属于 Phase 1 Target 交付；它们只能在后续独立 Architecture Admission Amendment 后进入 11 × 3 Projection。
 
-Package 5 是 Phase 1 唯一 Pinia Admission，且只允许 `apps/web` 的 Appearance Preference 与 Theme Registry Orchestration；该 Admission 在 Package 5 开始前保持 Inactive。Phase 1 不准入 Router、TanStack Query、OpenAPI Generator、Session Store 或 General Application Store。
+Package 5 已完成 Phase 1 唯一 Pinia Admission，且只允许 `apps/web` 的 Appearance Preference 与 Theme Registry Orchestration；该 Admission 当前为 Active。Phase 1 不准入 Router、TanStack Query、OpenAPI Generator、Session Store 或 General Application Store。
 
 Phase 1 不实现 UI Component、`UiGlass`、Page Material API、Component Token Tree、Clear-media Role、Spring Family、Reka、Motion、GSAP 或 `packages/ui/src/internal/material`。
 
@@ -6774,14 +6786,14 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 与 `PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 均已完成。Foundation Target Contract 与 Package 4 Complete Theme Structure 均保持 Inactive；唯一 Next Implementation Package 是 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 与 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；唯一 Next Implementation Package 是 `PAVP_FINAL_STATIC_GOVERNANCE`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
 ARCHITECTURE_FOUNDATION_GATE_STATUS=FROZEN
 IMPLEMENTATION_WHILE_GATE_NOT_FROZEN=BLOCKED
 TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
-NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
+NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_FINAL_STATIC_GOVERNANCE
 ```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
@@ -6792,11 +6804,11 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 3.  PAVP_ROLE_REGISTRY_AND_OUTPUT_COMPLETENESS           COMPLETE
 3A. PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT               COMPLETE
 4.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE      COMPLETE
-5.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER        NEXT
-6.  PAVP_FINAL_STATIC_GOVERNANCE                         BLOCKED_BY_5
+5.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER        COMPLETE
+6.  PAVP_FINAL_STATIC_GOVERNANCE                         NEXT
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata，未激活 Preference、Theme Bank、Runtime、First Paint、Persistence 或公共导出。Package 5 现为唯一 Next Implementation Package；Package 6 不得与 Package 5 合并或提前开始。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换：完整 Target Contract 现在可以冻结，但 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 仍严格位于 Packages 4–6 之后。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出。Package 6 现为唯一 Next Implementation Package，不得与已完成的 Package 5 Diff 混入新增治理范围。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换：完整 Target Contract 现在可以冻结，但 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 仍严格位于 Packages 4–6 之后。
 
 当前精确 Acceptance Contract：
 
@@ -6812,12 +6824,12 @@ MANIFEST_BUDGET=DEFINED
 MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
 MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
 MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
-MANIFEST_SCHEMA_VERSION=6
+MANIFEST_SCHEMA_VERSION=7
 MANIFEST_RECORD_COUNT=181
 COMPLETE_BUILTIN_THEME_DOCUMENTS=3
 COMPLETE_BUILTIN_THEME_PLANES=12
 COMPLETE_BUILTIN_THEME_AUTHORED_COLOR_VALUES=108
-COMPLETE_BUILTIN_THEME_RUNTIME_STATUS=TARGET_INACTIVE
+COMPLETE_BUILTIN_THEME_RUNTIME_STATUS=ACTIVE
 SUBORDINATE_BROWSER_SYNC_STATUS=COMPLETE
 NAMING_NORMALIZATION=COMPLETE
 RESERVED_COLOR_ROLES=283
@@ -7031,9 +7043,29 @@ NEXT_IMPLEMENTATION_PACKAGE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 状态：
 
 ```text
-STATUS=NEXT
+STATUS=COMPLETE
 ENTRY=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE=COMPLETE
 RUNTIME_TARGETS_BEFORE_LANDING=TARGET_INACTIVE
+RUNTIME_TARGETS_AFTER_LANDING=ACTIVE
+ENTRY_BASELINE=main@2f5a28a7dbe877f96ac3d24299d892bd7bb9087f
+PINIA_COORDINATE=3.0.4
+PUBLIC_ROOT_EXPORT_COUNT=38
+MANIFEST_SCHEMA_VERSION=7
+MANIFEST_RECORD_COUNT=181
+PACKAGE_EXPECTED_RECORD_COUNT_DELTA=0
+PACKAGE_MANIFEST_BASELINE_GZIP_BYTES=6153
+PACKAGE_MANIFEST_FINAL_GZIP_BYTES=7687
+PACKAGE_EXPECTED_GZIP_BYTE_DELTA=1534
+PRODUCTION_BUNDLE_BASELINE_JS_GZIP_BYTES=25996
+PRODUCTION_BUNDLE_FINAL_JS_GZIP_BYTES=123935
+PRODUCTION_BUNDLE_JS_GZIP_DELTA_BYTES=97939
+PRODUCTION_BUNDLE_BASELINE_CSS_GZIP_BYTES=3591
+PRODUCTION_BUNDLE_FINAL_CSS_GZIP_BYTES=7450
+PRODUCTION_BUNDLE_CSS_GZIP_DELTA_BYTES=3859
+PRODUCTION_BUNDLE_BASELINE_LAZY_CHUNKS=0
+PRODUCTION_BUNDLE_FINAL_LAZY_CHUNKS=0
+PRODUCTION_BUNDLE_LAZY_CHUNK_DELTA=0
+NEXT_IMPLEMENTATION_PACKAGE=PAVP_FINAL_STATIC_GOVERNANCE
 ```
 
 #### `PAVP_EXPLICIT_THEME_PROTOCOL_FREEZE_AMENDMENT`
@@ -7047,7 +7079,7 @@ PROHIBITED_SCOPE=source implementation, generated artifacts, dependency changes,
 ACTIVATION_EFFECT=NONE_UNTIL_PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
-该 Amendment 只闭合 Existing Package 5 的实施输入，不创建第二个 Package 5 Status Authority。`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 保持 `NEXT`，所有 Runtime Target 在其获得独立实现授权并完成 Atomic Landing 前继续为 `TARGET_INACTIVE`。
+该 Amendment 只闭合 Existing Package 5 的实施输入，不创建第二个 Package 5 Status Authority。它在 Package 5 Landing 前不产生 Activation Effect；当前 Package 5 已由上述唯一状态记录标记为 `COMPLETE`，其 Runtime Target 已在 Atomic Landing 中转为 `ACTIVE`。
 
 在一个不可拆分的 Production Landing 中激活完整 Target Theme 和 Reference-only Preference。该包必须共同改变 §13.4 列出的 Schema、Default、Public Export、First Paint、Runtime Application、Application Bootstrap/Persistence、HTML/Storage Wiring、Manifest Metadata 和 Owning Static Enforcement，并实现 Exact Built-in ID Registry、Opaque Custom ID Registry、`(registryKind, themeId)`、Typed Theme Bank、Structured Migration 与 Invalid-theme Result。
 
@@ -7062,9 +7094,31 @@ effective-state derivation orchestration
 application-owned persistence lifecycle
 ```
 
-本 Amendment 不改变现有 Pinia Stable-line Declaration，也不冻结 Exact Dependency Coordinate；Exact Coordinate 仍是后续 Package 5 Deterministic Implementation Plan 的 Admission Input，不是新的 Architecture Contract。
+Architecture-only Amendment 当时没有冻结 Exact Dependency Coordinate；Package 5 Deterministic Implementation 已选择并由 Project Configuration Owning Gate 精确冻结 `pinia@3.0.4`，且只允许作为 `apps/web` 的 Direct Dependency。
 
 Package 5 不得增加 Router、TanStack Query、VeeValidate、Vue I18n、OpenAPI Tooling、Session Store、General Store 或 `packages/ui` Runtime Dependency。Pinia、Theme/Preference Schema、Default、Registry、First Paint、Runtime、Bootstrap、Persistence、HTML Storage Wiring、Manifest 和 Owning Verification 必须在同一 Atomic Landing 中激活；不得先建立临时 Global State Layer。
+
+Package 5 Completion Evidence：
+
+```text
+IMPLEMENTATION_TASKS_COMPLETE=22_OF_22
+STABLE_GENERATED_TOKEN_NAMES_SHA256=15a95705fd99a7a4be1169ea734975c12e1d7a1f3897276002064c04b1c0cb8c
+STABLE_GENERATED_TOKENS_SHA256=90fd7f11153319b683cb6f79a9beb3a88eac7e2d9a34c966aed1f6e5b5808464
+STABLE_GENERATED_UNOCSS_THEME_SHA256=418e1bc8b6b6fa3db431d14f45ee54bd00fc95b19f116d87f5034e9790405840
+EXACT_PUBLIC_ROOT=PASS
+EXACT_PREFERENCE_AND_MIGRATION_RESULTS=PASS
+CUSTOM_REGISTRY_FULL_SNAPSHOT_REJECTION=PASS
+THEME_BANK_COMPLETENESS_AND_ISOLATION=PASS
+FIRST_PAINT_BUILTIN_ONLY_CUSTOM_HANDOFF=PASS
+PINIA_TRANSACTION_OWNER_AND_ROLLBACK=PASS
+STORAGE_OWNER_AND_DIRECT_ACCESS_BOUNDARY=PASS
+MANIFEST_ACTIVE_FLAT_SHAPE=PASS
+GENERATED_ARTIFACT_DETERMINISM=PASS
+OWNING_STATIC_GATE=PASS
+PRODUCTION_RELEASE_ACCEPTANCE=OWNER_EXTERNAL_RUNTIME_MATRIX_REQUIRED
+```
+
+上述 Completion Evidence 由当前 Atomic Diff、Generated Production Artifact、Owning Static Gate 与任务报告组成，不创建 Test、Fixture、Screenshot、Trace 或 Evidence File。Static Package Completion 不替代 §32.3 对含 Runtime Artifact Release 的 Owner External Runtime Acceptance。
 
 ### 6. `PAVP_FINAL_STATIC_GOVERNANCE`
 
@@ -7345,7 +7399,7 @@ vue-i18n
 @platform/ui
 ```
 
-这是通过全部 Gate 后的 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 的可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。当前 Phase 1 只安装 `vue` 与 `@platform/design-system`。其中 `pinia` 只由 Package 5 的 Atomic Cutover 窄范围准入；`vue-router`、`@tanstack/vue-query`、`vee-validate`、`vue-i18n` 和其他 Runtime Dependency 继续等待各自 Phase 与 Named Gate。
+这是通过全部 Gate 后的 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 的可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。当前 Phase 1 的 `apps/web` 只安装 `vue`、`@platform/design-system` 与 Package 5 窄范围准入的 `pinia@3.0.4`；`vue-router`、`@tanstack/vue-query`、`vee-validate`、`vue-i18n` 和其他 Runtime Dependency 继续等待各自 Phase 与 Named Gate。
 
 ## `packages/design-system`
 

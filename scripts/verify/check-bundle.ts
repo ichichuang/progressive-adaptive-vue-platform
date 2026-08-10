@@ -17,6 +17,24 @@ type Manifest = Record<string, ManifestChunk>
 const rootDirectory = process.cwd()
 const distributionDirectory = resolve(rootDirectory, 'apps/web/dist')
 const generatedSourceDirectory = resolve(rootDirectory, 'packages/design-system/src/generated')
+const explicitThemePreferenceBundleContract = {
+  baselineCommit: '2f5a28a7dbe877f96ac3d24299d892bd7bb9087f',
+  baseline: {
+    initialJavaScriptGzipBytes: 25996,
+    initialCssGzipBytes: 3591,
+    lazyChunks: 0,
+  },
+  final: {
+    initialJavaScriptGzipBytes: 123935,
+    initialCssGzipBytes: 7450,
+    lazyChunks: 0,
+  },
+  delta: {
+    initialJavaScriptGzipBytes: 97939,
+    initialCssGzipBytes: 3859,
+    lazyChunks: 0,
+  },
+} as const
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -139,6 +157,30 @@ const initialCssBytes = (await Promise.all([...initialCssFiles].map(gzipBytes)))
   0,
 )
 
+if (
+  explicitThemePreferenceBundleContract.final.initialJavaScriptGzipBytes -
+    explicitThemePreferenceBundleContract.baseline.initialJavaScriptGzipBytes !==
+    explicitThemePreferenceBundleContract.delta.initialJavaScriptGzipBytes ||
+  explicitThemePreferenceBundleContract.final.initialCssGzipBytes -
+    explicitThemePreferenceBundleContract.baseline.initialCssGzipBytes !==
+    explicitThemePreferenceBundleContract.delta.initialCssGzipBytes ||
+  explicitThemePreferenceBundleContract.final.lazyChunks -
+    explicitThemePreferenceBundleContract.baseline.lazyChunks !==
+    explicitThemePreferenceBundleContract.delta.lazyChunks
+) {
+  throw new Error('Package 5 bundle baseline/final/delta arithmetic is inconsistent.')
+}
+
+if (
+  initialJavaScriptBytes !==
+    explicitThemePreferenceBundleContract.final.initialJavaScriptGzipBytes ||
+  initialCssBytes !== explicitThemePreferenceBundleContract.final.initialCssGzipBytes
+) {
+  throw new Error(
+    `Package 5 measured bundle drift: JavaScript ${String(initialJavaScriptBytes)}, CSS ${String(initialCssBytes)}.`,
+  )
+}
+
 if (initialJavaScriptBytes > projectConfig.bundleBudgets.initialJavaScriptGzipBytes) {
   throw new Error(
     `Initial JavaScript is ${String(initialJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
@@ -171,6 +213,12 @@ for (const dynamicChunkKey of dynamicChunkKeys) {
   }
 }
 
+if (dynamicChunkKeys.size !== explicitThemePreferenceBundleContract.final.lazyChunks) {
+  throw new Error(
+    `Package 5 lazy chunk count drift: expected ${String(explicitThemePreferenceBundleContract.final.lazyChunks)}, received ${String(dynamicChunkKeys.size)}.`,
+  )
+}
+
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip, initial CSS ${String(initialCssBytes)} bytes gzip, lazy chunks ${String(dynamicChunkKeys.size)}`,
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip (${String(explicitThemePreferenceBundleContract.delta.initialJavaScriptGzipBytes)} Package 5 delta), initial CSS ${String(initialCssBytes)} bytes gzip (${String(explicitThemePreferenceBundleContract.delta.initialCssGzipBytes)} Package 5 delta), lazy chunks ${String(dynamicChunkKeys.size)}`,
 )

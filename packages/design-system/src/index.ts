@@ -1,5 +1,4 @@
 export {
-  appearancePreferenceSchema,
   colorModePreferenceSchema,
   contrastPreferenceSchema,
   densityPreferenceSchema,
@@ -7,7 +6,6 @@ export {
   materialPreferenceSchema,
   motionPreferenceSchema,
   uiDensitySchema,
-  type AppearancePreference,
   type ColorModePreference,
   type ContrastPreference,
   type DensityPreference,
@@ -17,37 +15,28 @@ export {
   type UiDensity,
 } from './schema/appearance.schema'
 export {
-  legacySeedThemeDefinitionSchema,
-  legacySeedThemeIdSchema,
-  type LegacySeedThemeDefinition,
-} from './schema/legacy-seed-theme.schema'
-export { currentPreferenceSchema, type CurrentPreference } from './schema/preference.schema'
+  explicitThemePreferenceSchema,
+  type ExplicitThemePreference,
+  type ThemeReference,
+} from './schema/preference.schema'
+export { ProductPreferenceDefault } from './runtime/appearance-defaults'
+export { applyAppearance, type EffectiveAppearanceState } from './runtime/apply-appearance'
 export {
-  applyAppearance,
-  type AppearanceApplicationTarget,
-  type AppearanceAttributeTarget,
-  type AppearanceStyleTarget,
-  type EffectiveAppearanceState,
-} from './runtime/apply-appearance'
-export { defaultCurrentPreference } from './runtime/appearance-defaults'
+  migrateToExplicitThemePreference,
+  type PreferenceMigrationResult,
+} from './runtime/preference-migration'
+export { resolveColorMode, type EffectiveColorMode } from './runtime/resolve-color-mode'
+export { resolveMaterial, type EffectiveMaterial } from './runtime/resolve-material'
 export {
-  prepareFirstPaint,
-  type FirstPaintApplicationBoundary,
-  type FirstPaintResolutionEnvironment,
-  type PreparedFirstPaintState,
-  type PrepareFirstPaintInput,
-} from './runtime/first-paint'
-export { migrateToCurrentPreference } from './runtime/preference-migration'
-export {
-  resolveColorMode,
-  type EffectiveColorMode,
-  type ResolveColorModeInput,
-} from './runtime/resolve-color-mode'
-export {
-  resolveMaterial,
-  type EffectiveMaterial,
-  type ResolveMaterialInput,
-} from './runtime/resolve-material'
+  installCustomThemeBank,
+  resolveThemeReference,
+  validateCustomThemeDefinition,
+  type CustomThemeRegistryEntry,
+  type CustomThemeValidationResult,
+  type ThemeBankInstallationResult,
+  type ThemeReferenceResolutionResult,
+  type ThemeRegistryEntry,
+} from './runtime/theme-registry'
 export { tokenNames, type TokenName } from './generated/token-names'
 export { tokens } from './generated/tokens'
 export { platformPreset } from './unocss/preset'

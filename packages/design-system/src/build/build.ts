@@ -9,18 +9,12 @@ import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 import StyleDictionary from 'style-dictionary'
 import type { PreprocessedTokens } from 'style-dictionary/types'
 
-import {
-  applyAppearance,
-  effectiveAppearanceAttributes,
-  effectiveAppearanceCustomProperties,
-} from '../runtime/apply-appearance'
-import { defaultCurrentPreference } from '../runtime/appearance-defaults'
-import { prepareFirstPaint } from '../runtime/first-paint'
-import { migrateToCurrentPreference } from '../runtime/preference-migration'
+import { ProductPreferenceDefault } from '../runtime/appearance-defaults'
+import { migrateToExplicitThemePreference } from '../runtime/preference-migration'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { fontScaleValues } from '../schema/appearance.schema'
-import { currentPreferenceSchema } from '../schema/preference.schema'
+import { explicitThemePreferenceSchema } from '../schema/preference.schema'
 import { tokenPathFromReference } from '../schema/token.schema'
 import { validateCompleteBuiltInThemes } from './complete-themes'
 import { validateContrastAndMaterialContracts } from './contrast'
@@ -30,6 +24,7 @@ import {
   createCriticalThemeFormat,
   formatAppearanceInitScript,
   formatCriticalThemeCss,
+  preInitializationSafetyBaseline,
 } from './formats/first-paint'
 import {
   createManifestFormat,
@@ -44,11 +39,14 @@ import {
 } from './formats/shared'
 import {
   createTokenNamesFormat,
+  createThemeRegistryFormat,
   createTokensTypeScriptFormat,
   createUnoCssThemeFormat,
   formatTokenNames,
+  formatThemeRegistryTypeScript,
   formatTokensTypeScript,
   formatUnoCssTheme,
+  themeRegistryDocument,
   unoCssProjection,
 } from './formats/typescript'
 import { compareCodePoints } from './order'
@@ -62,7 +60,6 @@ import {
 import {
   ActiveAlphaContractRegistry,
   ActiveNamedContrastRegistry,
-  isActivePublicColorRole,
   PublicRoleRegistry,
   unoCssMappingRecords,
   validateAlphaContractRegistry,
@@ -79,6 +76,7 @@ const generatedFiles = [
   'appearance-init.js',
   'critical-theme.css',
   'token-names.ts',
+  'theme-registry.ts',
   'tokens.css',
   'tokens.manifest.json',
   'tokens.ts',
@@ -93,14 +91,22 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 6153,
-    expectedByteDelta: 2787,
+    expectedBytes: 7687,
+    expectedByteDelta: 4321,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
     baselineBytes: 5213,
+    acceptedFinalBytes: 6153,
     baselineRecordCount: 181,
     expectedByteDelta: 940,
+    expectedRecordCountDelta: 0,
+  },
+  explicitThemePreferenceCutover: {
+    baselineCommit: '2f5a28a7dbe877f96ac3d24299d892bd7bb9087f',
+    baselineBytes: 6153,
+    baselineRecordCount: 181,
+    expectedByteDelta: 1534,
     expectedRecordCountDelta: 0,
   },
   hardLimitBytes: 32768,
@@ -229,6 +235,10 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
               format: 'pavp/typescript/token-names',
             },
             {
+              destination: 'theme-registry.ts',
+              format: 'pavp/typescript/theme-registry',
+            },
+            {
               destination: 'unocss-theme.ts',
               format: 'pavp/typescript/unocss-theme',
             },
@@ -274,9 +284,10 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
   for (const format of [
     createCssFormat(context),
     createCriticalThemeFormat(context),
-    createAppearanceInitFormat(),
+    createAppearanceInitFormat(context),
     createTokensTypeScriptFormat(context),
     createTokenNamesFormat(context),
+    createThemeRegistryFormat(context),
     createUnoCssThemeFormat(context),
     createManifestFormat(context),
   ]) {
@@ -407,8 +418,8 @@ function validateManifestCompression(result: TokenBuildResult): number {
 
   const gzipBytes = first.byteLength
   const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
-  const completeThemePlanesByteDelta =
-    gzipBytes - manifestCompressionContract.completeThemePlanes.baselineBytes
+  const explicitThemePreferenceByteDelta =
+    gzipBytes - manifestCompressionContract.explicitThemePreferenceCutover.baselineBytes
   const manifestRecordCount = governance['recordCount']
 
   assertInvariant(
@@ -430,21 +441,28 @@ function validateManifestCompression(result: TokenBuildResult): number {
     `Manifest gzip delta: expected ${String(manifestCompressionContract.current.expectedByteDelta)}, received ${String(actualDelta)}`,
   )
   assertInvariant(
-    manifestCompressionContract.current.expectedBytes -
+    manifestCompressionContract.completeThemePlanes.acceptedFinalBytes -
       manifestCompressionContract.completeThemePlanes.baselineBytes ===
       manifestCompressionContract.completeThemePlanes.expectedByteDelta,
-    'Complete Theme planes expected byte delta must match their accepted baseline',
-  )
-  assertInvariant(
-    completeThemePlanesByteDelta ===
-      manifestCompressionContract.completeThemePlanes.expectedByteDelta,
-    `Complete Theme planes gzip delta: expected ${String(manifestCompressionContract.completeThemePlanes.expectedByteDelta)}, received ${String(completeThemePlanesByteDelta)}`,
+    'historical Complete Theme planes accepted bytes and delta must match their baseline',
   )
   assertInvariant(
     typeof manifestRecordCount === 'number' &&
-      manifestRecordCount - manifestCompressionContract.completeThemePlanes.baselineRecordCount ===
-        manifestCompressionContract.completeThemePlanes.expectedRecordCountDelta,
-    'Complete Theme planes Manifest record delta must equal zero',
+      manifestRecordCount -
+        manifestCompressionContract.explicitThemePreferenceCutover.baselineRecordCount ===
+        manifestCompressionContract.explicitThemePreferenceCutover.expectedRecordCountDelta,
+    'Explicit Theme Preference cutover Manifest record delta must equal zero',
+  )
+  assertInvariant(
+    manifestCompressionContract.current.expectedBytes -
+      manifestCompressionContract.explicitThemePreferenceCutover.baselineBytes ===
+      manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta,
+    'Explicit Theme Preference cutover expected bytes and delta must match the entry baseline',
+  )
+  assertInvariant(
+    explicitThemePreferenceByteDelta ===
+      manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta,
+    `Explicit Theme Preference cutover gzip delta: expected ${String(manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta)}, received ${String(explicitThemePreferenceByteDelta)}`,
   )
 
   return gzipBytes
@@ -631,15 +649,26 @@ function validatePublicOutputCompleteness(result: TokenBuildResult): void {
   const runtimeVariables = [...runtimeCss.matchAll(/^\s+(--ui-[a-z0-9-]+):/gmu)].map(
     (match) => match[1] ?? '',
   )
+  const registry = themeRegistryDocument(result)
+  const privateThemeBankVariables = new Set([
+    ...registry.customBankVariables,
+    ...registry.customBankVariables.map((variable) =>
+      variable.replace(/^--ui-theme-bank-(?:dark|light)-/u, '--ui-theme-bank-effective-'),
+    ),
+  ])
 
   assertInvariantEqual(
     [...new Set(runtimeVariables)].sort(compareCodePoints),
-    [...runtimeContractsByVariable.keys()].sort(compareCodePoints),
-    'Runtime CSS declarations must contain every and only registered public or ui-internal variable',
+    [...runtimeContractsByVariable.keys(), ...privateThemeBankVariables].sort(compareCodePoints),
+    'Runtime CSS declarations must contain every and only registered Token or private Theme Bank variables',
   )
 
   const runtimeIds = exactRoleIdSet(
     runtimeVariables.flatMap((variable) => {
+      if (privateThemeBankVariables.has(variable)) {
+        return []
+      }
+
       const contract = runtimeContractsByVariable.get(variable)
 
       assertInvariant(
@@ -891,34 +920,34 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
 
   const manifest = manifestDocument(result)
-  const expectedThemeMetadata = result.themes.map((legacyTheme) => {
-    const completeTheme = result.completeThemes.find((theme) => theme.id === legacyTheme.id)
-
-    assertInvariant(
-      completeTheme !== undefined,
-      `${legacyTheme.id} complete target Theme metadata must exist`,
-    )
-
-    return {
-      id: legacyTheme.id,
-      label: legacyTheme.label,
-      neutral: legacyTheme.palette.neutral,
-      complete: {
-        activationStatus: 'TARGET_INACTIVE',
-        registryKind: 'built-in',
-        selector: completeTheme.selector,
-        source: completeTheme.source,
-        schemaVersion: completeTheme.schemaVersion,
-        roleContractVersion: completeTheme.roleContractVersion,
-        planes: completeTheme.planes,
-      },
-    }
-  })
+  const registry = themeRegistryDocument(result)
+  const expectedThemeMetadata = registry.builtInEntries.map((entry) => ({
+    activationStatus: 'ACTIVE',
+    registryKind: entry.registryKind,
+    themeId: entry.themeId,
+    label: entry.definition.label,
+    source: entry.source,
+    schemaVersion: entry.definition.schemaVersion,
+    roleContractVersion: entry.definition.roleContractVersion,
+    planes: entry.definition.planes,
+    bank: {
+      visibility: entry.bank.visibility,
+      records: entry.bank.records.map((record) => ({
+        colorMode: record.colorMode,
+        contrast: record.contrast,
+        publicRole: record.publicRole,
+        sourceField: record.sourceField,
+        authoredValue: record.authoredValue,
+        bankVariable: record.bankVariable,
+        publicBinding: record.publicBinding,
+      })),
+    },
+  }))
 
   assertInvariantEqual(
     manifest['themes'],
     expectedThemeMetadata,
-    'Manifest Theme records must exactly pair Legacy metadata with inert complete definitions',
+    'Manifest Theme records must exactly project active Built-in Registry and Bank metadata',
   )
 
   const manifestProjectionDrift = structuredClone(manifest)
@@ -934,26 +963,42 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
       assertInvariantEqual(
         manifestProjectionDrift['themes'],
         expectedThemeMetadata,
-        'Manifest Theme records must exactly pair Legacy metadata with inert complete definitions',
+        'Manifest Theme records must exactly project active Built-in Registry and Bank metadata',
       )
     },
     /Manifest Theme records/u,
     'complete Theme Manifest projection drift must fail',
   )
 
-  const inactiveRuntimeArtifacts = {
-    'appearance-init.js': formatAppearanceInitScript(),
+  const activeRuntimeArtifacts = {
+    'appearance-init.js': formatAppearanceInitScript(result),
     'critical-theme.css': formatCriticalThemeCss(result),
     'token-names.ts': formatTokenNames(result),
+    'theme-registry.ts': formatThemeRegistryTypeScript(result),
     'tokens.css': formatRuntimeCss(result),
     'tokens.ts': formatTokensTypeScript(result),
     'unocss-theme.ts': formatUnoCssTheme(result),
   }
 
-  for (const [file, contents] of Object.entries(inactiveRuntimeArtifacts)) {
+  for (const [file, contents] of Object.entries(activeRuntimeArtifacts)) {
+    const mustOwnThemeBank = [
+      'appearance-init.js',
+      'critical-theme.css',
+      'theme-registry.ts',
+      'tokens.css',
+    ].includes(file)
+
     assertInvariant(
-      !contents.includes('--ui-theme-bank-') && !contents.includes('data-theme-kind'),
-      `${file} must not activate the Package 5 Theme Bank`,
+      mustOwnThemeBank
+        ? contents.includes('--ui-theme-bank-')
+        : !contents.includes('--ui-theme-bank-'),
+      `${file} Package 5 Theme Bank ownership must match its generated boundary`,
+    )
+    assertInvariant(
+      ['appearance-init.js', 'critical-theme.css', 'tokens.css'].includes(file)
+        ? contents.includes('data-theme-kind')
+        : !contents.includes('data-theme-kind'),
+      `${file} Package 5 Theme identity ownership must match its generated boundary`,
     )
   }
 
@@ -1805,172 +1850,65 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
 }
 
 function validateAppearanceContracts(result: TokenBuildResult): void {
-  const validatedDefault = currentPreferenceSchema.safeParse(defaultCurrentPreference)
+  const defaultPreference = explicitThemePreferenceSchema.safeParse({
+    schemaVersion: 3,
+    appearance: ProductPreferenceDefault,
+  })
 
   assertInvariant(
-    validatedDefault.success,
-    'the canonical embedded-palette/current preference default must pass its schema',
-  )
-  assertInvariant(
-    !('schemaVersion' in defaultCurrentPreference.appearance),
-    'schemaVersion must exist only on the outer preference envelope',
+    defaultPreference.success,
+    'the canonical Product Preference Default must produce a valid Explicit Theme Preference',
   )
   assertInvariantEqual(
-    {
-      colorMode: defaultCurrentPreference.appearance.colorMode,
-      contrast: defaultCurrentPreference.appearance.contrast,
-      density: defaultCurrentPreference.appearance.density,
-      fontScale: defaultCurrentPreference.appearance.fontScale,
-      material: defaultCurrentPreference.appearance.material,
-      motion: defaultCurrentPreference.appearance.motion,
-      theme: defaultCurrentPreference.appearance.theme,
-    },
+    ProductPreferenceDefault,
     {
       colorMode: 'system',
+      theme: {
+        registryKind: 'built-in',
+        themeId: 'neutral',
+      },
       contrast: 'standard',
+      material: 'adaptive',
       density: {
         preset: 'comfortable',
         scale: 1,
       },
       fontScale: 1,
-      material: 'adaptive',
       motion: 'full',
-      theme: 'neutral',
     },
-    'the canonical embedded-palette/current preference default values must remain fixed',
+    'the canonical Product Preference Default axes must remain fixed',
   )
   assertInvariant(
-    !currentPreferenceSchema.safeParse({
-      ...defaultCurrentPreference,
-      appearance: {
-        ...defaultCurrentPreference.appearance,
-        colorMode: 'high-contrast',
-      },
-    }).success,
-    'the embedded-palette/current preference color mode schema must reject legacy high contrast',
+    Object.isFrozen(ProductPreferenceDefault) &&
+      Object.isFrozen(ProductPreferenceDefault.theme) &&
+      Object.isFrozen(ProductPreferenceDefault.density),
+    'the Product Preference Default must be deeply frozen at every object boundary',
   )
   assertInvariant(
-    !currentPreferenceSchema.safeParse({
-      ...defaultCurrentPreference,
-      appearance: {
-        ...defaultCurrentPreference.appearance,
-        schemaVersion: 2,
-      },
-    }).success,
-    'the embedded-palette/current appearance schema must reject a nested schemaVersion',
+    !('schemaVersion' in ProductPreferenceDefault),
+    'the Product Preference Default must remain appearance-only',
   )
 
-  const neutralTheme = result.themes.find((theme) => theme.id === 'neutral')
-
-  assertInvariant(neutralTheme !== undefined, 'the neutral theme must exist')
-  assertInvariantEqual(
-    defaultCurrentPreference.appearance.palette,
-    {
-      accent: tokenValueToCss('color', neutralTheme.palette.accent),
-      brand: tokenValueToCss('color', neutralTheme.palette.brand),
-      neutral: neutralTheme.palette.neutral,
-    },
-    'the canonical default palette must match the resolved neutral theme source',
-  )
-
-  const legacyAppearance = {
-    colorMode: 'dark',
-    contrast: 'enhanced',
-    density: {
-      preset: 'spacious',
-      scale: 1.1,
-    },
-    fontScale: 1.2,
-    motion: 'reduced',
-    palette: {
-      accent: defaultCurrentPreference.appearance.palette.accent,
-      brand: defaultCurrentPreference.appearance.palette.brand,
-      neutral: 'warm',
-    },
-    theme: 'ocean',
-  } as const
-  const legacyPreference = {
-    appearance: legacyAppearance,
-    schemaVersion: 1,
-  } as const
-  const legacySnapshot = JSON.stringify(legacyPreference)
-  const migrated = migrateToCurrentPreference(legacyPreference)
+  const registry = themeRegistryDocument(result)
 
   assertInvariantEqual(
-    migrated,
-    {
-      appearance: {
-        ...legacyAppearance,
-        material: 'solid',
-      },
-      schemaVersion: 2,
-    },
-    'valid legacy preference input must migrate to solid while preserving valid fields',
+    registry.builtInRegistryOrder,
+    ['neutral', 'ocean', 'warm'],
+    'the Built-in Theme Registry order must remain canonical',
   )
   assertInvariant(
-    JSON.stringify(legacyPreference) === legacySnapshot,
-    'migration must not mutate its input',
-  )
-
-  const highContrastMigrated = migrateToCurrentPreference({
-    appearance: {
-      ...legacyAppearance,
-      colorMode: 'high-contrast',
-      contrast: 'standard',
-    },
-    schemaVersion: 1,
-  })
-
-  assertInvariantEqual(
-    {
-      colorMode: highContrastMigrated.appearance.colorMode,
-      contrast: highContrastMigrated.appearance.contrast,
-      material: highContrastMigrated.appearance.material,
-    },
-    {
-      colorMode: 'system',
-      contrast: 'enhanced',
-      material: 'solid',
-    },
-    'legacy high contrast must migrate to system, enhanced, and solid',
-  )
-  assertInvariantEqual(
-    migrateToCurrentPreference(migrated),
-    migrated,
-    'valid embedded-palette/current preferences must remain idempotent',
-  )
-
-  const firstFallback = migrateToCurrentPreference({
-    appearance: {
-      colorMode: 'dark',
-    },
-    schemaVersion: 1,
-  })
-  const secondFallback = migrateToCurrentPreference(undefined)
-
-  assertInvariantEqual(
-    firstFallback,
-    defaultCurrentPreference,
-    'invalid input must return the complete canonical default',
-  )
-  assertInvariantEqual(
-    secondFallback,
-    defaultCurrentPreference,
-    'unknown input must return the complete canonical default',
+    registry.builtInEntries.length === 3 &&
+      registry.builtInEntries.every((entry) => entry.bank.records.length === 36),
+    'the generated Built-in Theme Registry must contain three complete 36-cell Banks',
   )
   assertInvariant(
-    firstFallback !== secondFallback &&
-      firstFallback.appearance !== secondFallback.appearance &&
-      firstFallback.appearance.palette !== secondFallback.appearance.palette &&
-      firstFallback.appearance.density !== secondFallback.appearance.density,
-    'fallback preferences must not share mutable object state',
+    registry.customBankVariables.length === 36 && new Set(registry.customBankVariables).size === 36,
+    'the generated Custom Theme Bank allowlist must contain exactly 36 fixed variables',
   )
-  assertInvariant(
-    Object.isFrozen(defaultCurrentPreference) &&
-      Object.isFrozen(defaultCurrentPreference.appearance) &&
-      Object.isFrozen(defaultCurrentPreference.appearance.palette) &&
-      Object.isFrozen(defaultCurrentPreference.appearance.density),
-    'the exported canonical default must not expose mutable shared state',
+  assertInvariantEqual(
+    formatThemeRegistryTypeScript(result),
+    formatThemeRegistryTypeScript(result),
+    'the generated private Theme Registry must be deterministic',
   )
 
   assertInvariantEqual(
@@ -1993,16 +1931,8 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       }),
     ],
     ['light', 'dark', 'light', 'dark'],
-    'the color mode resolver must use only stored mode and explicit prefersDark',
+    'the color-mode resolver must use only stored mode and explicit prefersDark',
   )
-
-  const reducedWithoutBackdrop = Object.freeze({
-    backdropFilterSupported: false,
-    forcedColorsActive: false,
-    reducedTransparencyRequested: false,
-    storedMaterial: 'reduced' as const,
-  })
-
   assertInvariantEqual(
     [
       resolveMaterial({
@@ -2017,7 +1947,12 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
         reducedTransparencyRequested: true,
         storedMaterial: 'solid',
       }),
-      resolveMaterial(reducedWithoutBackdrop),
+      resolveMaterial({
+        backdropFilterSupported: false,
+        forcedColorsActive: false,
+        reducedTransparencyRequested: false,
+        storedMaterial: 'reduced',
+      }),
       resolveMaterial({
         backdropFilterSupported: true,
         forcedColorsActive: false,
@@ -2040,76 +1975,14 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     ['solid', 'solid', 'reduced', 'reduced', 'solid', 'adaptive'],
     'the material resolver precedence must remain canonical',
   )
-
-  const prepared = prepareFirstPaint({
-    environment: {
-      backdropFilterSupported: false,
-      forcedColorsActive: false,
-      prefersDark: true,
-      reducedTransparencyRequested: false,
-    },
-    storedPreference: defaultCurrentPreference,
-  })
-
-  assertInvariantEqual(
-    {
-      effectiveColorMode: prepared.effectiveAppearance.colorMode,
-      effectiveMaterial: prepared.effectiveAppearance.material,
-      fontScale: prepared.effectiveAppearance.fontScale,
-      storedColorMode: prepared.storedPreference.appearance.colorMode,
-      storedMaterial: prepared.storedPreference.appearance.material,
-    },
-    {
-      effectiveColorMode: 'dark',
-      effectiveMaterial: 'solid',
-      fontScale: 1,
-      storedColorMode: 'system',
-      storedMaterial: 'adaptive',
-    },
-    'first-paint preparation must separate stored and effective appearance state',
-  )
-
-  const attributes = new Map<string, string>()
-  const customProperties = new Map<string, string>()
-
-  applyAppearance(
-    {
-      setAttribute(name, value) {
-        attributes.set(name, value)
-      },
-      style: {
-        setProperty(name, value) {
-          customProperties.set(name, value)
-        },
-      },
-    },
-    prepared.effectiveAppearance,
-  )
-  assertInvariantEqual(
-    Object.fromEntries(attributes),
-    {
-      'data-color-mode': 'dark',
-      'data-contrast': 'standard',
-      'data-density': 'comfortable',
-      'data-material': 'solid',
-      'data-motion': 'full',
-      'data-theme': 'neutral',
-    },
-    'appearance application must preserve the six canonical effective attributes',
-  )
-  assertInvariantEqual(
-    Object.fromEntries(customProperties),
-    {
-      '--ui-font-scale': '1',
-    },
-    'appearance application must write the canonical font scale custom property',
-  )
 }
 
 interface AppearanceInitExecutionOptions {
   backdropFilterSupported?: boolean
   cssColorSupported?: boolean
+  fontScaleWriteFailure?: boolean
   forcedColorsActive?: boolean
+  invokeRestorationOperation?: boolean
   prefersDark?: boolean
   rawPreference?: string | null
   reducedTransparencyRequested?: boolean
@@ -2120,17 +1993,23 @@ interface AppearanceInitExecutionOptions {
 interface AppearanceInitExecutionResult {
   attributes: Record<string, string>
   customProperties: Record<string, string>
+  handoff?: unknown
+  hasRestorationOperation: boolean
   networkRequests: number
   requestedStorageKey?: string
   storageWrites: number
 }
+
+const firstPaintSafetyFontScale = String(ProductPreferenceDefault.fontScale)
 
 function executeAppearanceInit(
   script: string,
   {
     backdropFilterSupported = true,
     cssColorSupported = true,
+    fontScaleWriteFailure = false,
     forcedColorsActive = false,
+    invokeRestorationOperation = false,
     prefersDark = false,
     rawPreference = null,
     reducedTransparencyRequested = false,
@@ -2140,13 +2019,22 @@ function executeAppearanceInit(
 ): AppearanceInitExecutionResult {
   const attributes = new Map<string, string>([
     ['data-color-mode', 'light'],
-    ['data-contrast', 'standard'],
-    ['data-density', 'comfortable'],
-    ['data-material', 'solid'],
-    ['data-motion', 'full'],
+    ['data-theme-kind', 'built-in'],
     ['data-theme', 'neutral'],
+    ['data-contrast', 'standard'],
+    ['data-material', 'solid'],
+    ['data-density', 'comfortable'],
+    ['data-motion', 'full'],
   ])
   const customProperties = new Map<string, string>([['--ui-font-scale', '1']])
+  const currentScript =
+    storageKey === null
+      ? null
+      : ({
+          getAttribute(name: string): string | null {
+            return name === 'data-preference-storage-key' ? storageKey : null
+          },
+        } as Record<string, unknown>)
   let requestedStorageKey: string | undefined
   let storageWrites = 0
   let networkRequests = 0
@@ -2166,20 +2054,41 @@ function executeAppearanceInit(
       },
     },
     document: {
-      currentScript:
-        storageKey === null
-          ? null
-          : {
-              getAttribute(name: string): string | null {
-                return name === 'data-preference-storage-key' ? storageKey : null
-              },
-            },
+      currentScript,
       documentElement: {
+        getAttribute(name: string): string | null {
+          return attributes.get(name) ?? null
+        },
+        hasAttribute(name: string): boolean {
+          return attributes.has(name)
+        },
+        removeAttribute(name: string): void {
+          attributes.delete(name)
+        },
         setAttribute(name: string, value: string): void {
           attributes.set(name, value)
         },
         style: {
+          getPropertyPriority(): string {
+            return ''
+          },
+          getPropertyValue(name: string): string {
+            return customProperties.get(name) ?? ''
+          },
+          removeProperty(name: string): string {
+            const previous = customProperties.get(name) ?? ''
+            customProperties.delete(name)
+            return previous
+          },
           setProperty(name: string, value: string): void {
+            if (
+              fontScaleWriteFailure &&
+              name === '--ui-font-scale' &&
+              value !== firstPaintSafetyFontScale
+            ) {
+              throw new Error('Synthetic font-scale write failure.')
+            }
+
             customProperties.set(name, value)
           },
         },
@@ -2212,64 +2121,108 @@ function executeAppearanceInit(
     XMLHttpRequest: rejectNetwork,
   })
 
+  const restorationOperation =
+    currentScript === null ? undefined : currentScript['__pavpRestoreAppearanceSafety']
+
+  if (invokeRestorationOperation && typeof restorationOperation === 'function') {
+    ;(restorationOperation as () => void)()
+  }
+
+  const handoff = currentScript === null ? undefined : currentScript['__pavpAppearanceHandoff']
+  const normalizedHandoff =
+    handoff === undefined ? undefined : (JSON.parse(JSON.stringify(handoff)) as unknown)
+
   return {
     attributes: Object.fromEntries(attributes),
     customProperties: Object.fromEntries(customProperties),
+    ...(normalizedHandoff === undefined ? {} : { handoff: normalizedHandoff }),
+    hasRestorationOperation: typeof restorationOperation === 'function',
     networkRequests,
     ...(requestedStorageKey === undefined ? {} : { requestedStorageKey }),
     storageWrites,
   }
 }
 
-function validateFirstPaintContracts(result: TokenBuildResult): void {
-  const criticalTheme = formatCriticalThemeCss(result)
-  const appearanceInit = formatAppearanceInitScript()
-  const canonicalAttributes = new Set<string>(
-    effectiveAppearanceAttributes.map(([, attributeName]) => attributeName),
+function executeAppearanceMigration(script: string, input: unknown): unknown {
+  const marker = '  var currentScript = document.currentScript'
+  const instrumented = script.replace(
+    marker,
+    `  globalThis.__pavpMigrationProbe = migrateToExplicitThemePreference\n\n${marker}`,
   )
-  const canonicalCustomProperties = new Set<string>(
-    effectiveAppearanceCustomProperties.map(([, propertyName]) => propertyName),
-  )
-  const baselineStart = criticalTheme.indexOf('  :root {\n')
-  const baselineEnd = criticalTheme.indexOf('\n  }', baselineStart)
 
   assertInvariant(
-    baselineStart >= 0 && baselineEnd > baselineStart,
-    'critical-theme.css must contain one complete baseline :root block',
+    instrumented !== script && instrumented.indexOf(marker) === instrumented.lastIndexOf(marker),
+    'appearance-init.js migration probe injection point must remain exact',
   )
 
-  const baselineBlock = criticalTheme.slice(baselineStart, baselineEnd)
-  const actualBaselineVariables = [...baselineBlock.matchAll(/^    (--ui-[a-z0-9-]+):/gmu)].map(
-    (match) => match[1] ?? '',
+  const context: Record<string, unknown> = {
+    document: {
+      currentScript: null,
+      documentElement: null,
+    },
+  }
+
+  runInNewContext(instrumented, context)
+  const migration = context['__pavpMigrationProbe']
+
+  assertInvariant(
+    typeof migration === 'function',
+    'appearance-init.js must retain one private migration classifier',
   )
-  const expectedPublicColorVariables = result.activePublicRoles
-    .filter(isActivePublicColorRole)
-    .map((record) => record.cssVariable)
-  const expectedMaterialVariables = result.tokens
-    .filter(
-      (token) =>
-        token.tier === 'semantic.material' &&
-        token.visibility === 'ui-internal' &&
-        token.type === 'color' &&
-        Object.keys(token.conditions).length === 1 &&
-        token.conditions.material === 'solid' &&
-        token.cssVariable !== undefined,
+
+  return JSON.parse(JSON.stringify((migration as (value: unknown) => unknown)(input))) as unknown
+}
+
+function validateFirstPaintContracts(result: TokenBuildResult): void {
+  const registry = themeRegistryDocument(result)
+  const criticalTheme = formatCriticalThemeCss(result)
+  const runtimeCss = formatRuntimeCss(result)
+  const appearanceInit = formatAppearanceInitScript(result)
+  const canonicalAttributes = new Set([
+    'data-color-mode',
+    'data-theme-kind',
+    'data-theme',
+    'data-contrast',
+    'data-material',
+    'data-density',
+    'data-motion',
+  ])
+  const safetyAttributes = {
+    'data-color-mode': 'light',
+    'data-theme-kind': 'built-in',
+    'data-theme': 'neutral',
+    'data-contrast': 'standard',
+    'data-material': 'solid',
+    'data-density': 'comfortable',
+    'data-motion': 'full',
+  }
+  const safetyCustomProperties = {
+    '--ui-font-scale': firstPaintSafetyFontScale,
+  }
+
+  for (const themeId of registry.builtInRegistryOrder) {
+    const selector = `html[data-theme-kind='built-in'][data-theme='${themeId}']`
+
+    assertInvariant(
+      criticalTheme.includes(selector) && runtimeCss.includes(selector),
+      `${themeId}: critical and runtime CSS must both install the complete Built-in Theme Bank`,
     )
-    .map((token) => token.cssVariable ?? '')
+  }
 
-  assertInvariantEqual(
-    [...actualBaselineVariables].sort(compareCodePoints),
-    [...expectedPublicColorVariables, ...expectedMaterialVariables, '--ui-font-scale'].sort(
-      compareCodePoints,
-    ),
-    'critical-theme.css baseline variables must equal the registry-derived Public Colors, actual solid Material records, and font scale',
-  )
+  for (const bankVariable of registry.customBankVariables) {
+    assertInvariant(
+      criticalTheme.includes(bankVariable) &&
+        runtimeCss.includes(bankVariable) &&
+        appearanceInit.includes(bankVariable),
+      `${bankVariable}: Theme Bank variable must remain generator-owned across both CSS artifacts and First Paint`,
+    )
+  }
+
   assertInvariant(
     criticalTheme.includes('--ui-font-scale: 1;') &&
       criticalTheme.includes('font-size: calc(100% * var(--ui-font-scale));') &&
-      criticalTheme.includes("html[data-color-mode='light']") &&
       criticalTheme.includes('@media (forced-colors: active)'),
-    'critical-theme.css must provide the Neutral, Light, Standard, Comfortable, and Solid safe baseline',
+    'critical-theme.css must provide the complete generated safety baseline',
   )
   assertInvariantEqual(
     formatCriticalThemeCss(result),
@@ -2277,7 +2230,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     'critical-theme.css generation must be deterministic',
   )
   assertInvariantEqual(
-    formatAppearanceInitScript(),
+    formatAppearanceInitScript(result),
     appearanceInit,
     'appearance-init.js generation must be deterministic',
   )
@@ -2286,165 +2239,278 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       !/\b(?:async|await|fetch|XMLHttpRequest|WebSocket)\b/u.test(appearanceInit) &&
       !/\.(?:setItem|removeItem|clear)\s*\(/u.test(appearanceInit) &&
       !appearanceInit.includes('pinia') &&
+      !appearanceInit.includes('pavp:web:user-preference') &&
+      !appearanceInit.includes('pavp:web:custom-theme-registry') &&
       appearanceInit.includes('document.currentScript') &&
       appearanceInit.includes("getAttribute('data-preference-storage-key')"),
-    'appearance-init.js must remain synchronous, classic, network-free, storage-read-only, and application-module-free',
+    'appearance-init.js must remain synchronous, classic, network-free, storage-read-only, application-key-agnostic, and module-free',
   )
   assertInvariantEqual(
     manifestDocument(result)['firstPaint'],
     [
       {
         applicationKeyAgnostic: true,
+        safetyBaseline: preInitializationSafetyBaseline,
         artifacts: ['appearance-init.js', 'critical-theme.css'],
-        baseline: {
-          colorMode: 'light',
-          contrast: 'standard',
-          density: 'comfortable',
-          fontScale: 1,
-          material: 'solid',
-          motion: 'full',
-          theme: 'neutral',
-        },
         synchronousClassicScript: true,
+        storageWrite: false,
+        capabilities: {
+          preferenceStorageKeyAttribute: true,
+          preferenceStorageRead: true,
+          explicitThemePreferenceValidation: true,
+          legacyPreferenceMigration: true,
+          builtInThemeResolution: true,
+          atomicAppearanceApplication: true,
+          synchronousCustomThemeResolution: false,
+          customThemeRuntimeResolution: true,
+          themeRegistryStorageKeyAttribute: false,
+        },
       },
     ],
-    'Manifest first-paint metadata must record the complete safe baseline',
+    'Manifest first-paint metadata must equal the frozen Package 5 contract',
   )
 
-  const validExecution = executeAppearanceInit(appearanceInit, {
+  const builtInPreference = explicitThemePreferenceSchema.parse({
+    schemaVersion: 3,
+    appearance: {
+      ...ProductPreferenceDefault,
+      colorMode: 'system',
+      theme: {
+        registryKind: 'built-in',
+        themeId: 'ocean',
+      },
+      contrast: 'enhanced',
+      material: 'adaptive',
+      density: {
+        preset: 'spacious',
+        scale: 1.1,
+      },
+      fontScale: 1.2,
+      motion: 'reduced',
+    },
+  })
+  const builtInExecution = executeAppearanceInit(appearanceInit, {
     prefersDark: true,
-    rawPreference: JSON.stringify(defaultCurrentPreference),
+    rawPreference: JSON.stringify(builtInPreference),
   })
 
   assertInvariantEqual(
-    validExecution,
+    builtInExecution,
     {
       attributes: {
         'data-color-mode': 'dark',
-        'data-contrast': 'standard',
-        'data-density': 'comfortable',
+        'data-theme-kind': 'built-in',
+        'data-theme': 'ocean',
+        'data-contrast': 'enhanced',
         'data-material': 'adaptive',
-        'data-motion': 'full',
-        'data-theme': 'neutral',
+        'data-density': 'spacious',
+        'data-motion': 'reduced',
       },
       customProperties: {
-        '--ui-font-scale': '1',
+        '--ui-font-scale': '1.2',
       },
+      hasRestorationOperation: true,
       networkRequests: 0,
       requestedStorageKey: 'runtime-supplied-preference-key',
       storageWrites: 0,
     },
-    'appearance-init.js must use only its runtime-supplied key and canonical effective attributes',
+    'appearance-init.js must resolve and atomically apply every Built-in appearance axis',
   )
   assertInvariant(
-    Object.keys(validExecution.attributes).every((attribute) => canonicalAttributes.has(attribute)),
-    'appearance-init.js must set only canonical effective DOM attributes',
-  )
-  assertInvariant(
-    Object.keys(validExecution.customProperties).every((propertyName) =>
-      canonicalCustomProperties.has(propertyName),
+    Object.keys(builtInExecution.attributes).every((attribute) =>
+      canonicalAttributes.has(attribute),
     ),
-    'appearance-init.js must set only canonical effective custom properties',
+    'appearance-init.js must set only the seven Appearance-owned attributes',
   )
 
   for (const fontScale of fontScaleValues) {
-    const storedPreference = {
-      ...defaultCurrentPreference,
+    const preference = explicitThemePreferenceSchema.parse({
+      schemaVersion: 3,
       appearance: {
-        ...defaultCurrentPreference.appearance,
+        ...ProductPreferenceDefault,
         fontScale,
       },
-    }
-    const generatedExecution = executeAppearanceInit(appearanceInit, {
-      rawPreference: JSON.stringify(storedPreference),
     })
-    const preparedState = prepareFirstPaint({
-      environment: {
-        backdropFilterSupported: true,
-        forcedColorsActive: false,
-        prefersDark: false,
-        reducedTransparencyRequested: false,
-      },
-      storedPreference,
+    const execution = executeAppearanceInit(appearanceInit, {
+      rawPreference: JSON.stringify(preference),
     })
-    const runtimeAttributes = new Map<string, string>()
-    const runtimeCustomProperties = new Map<string, string>()
 
-    applyAppearance(
-      {
-        setAttribute(name, value) {
-          runtimeAttributes.set(name, value)
-        },
-        style: {
-          setProperty(name, value) {
-            runtimeCustomProperties.set(name, value)
-          },
-        },
-      },
-      preparedState.effectiveAppearance,
-    )
-
-    assertInvariantEqual(
-      generatedExecution.attributes,
-      Object.fromEntries(runtimeAttributes),
-      `appearance-init.js and the runtime helper must share attribute behavior for fontScale=${String(fontScale)}`,
-    )
-    assertInvariantEqual(
-      generatedExecution.customProperties,
-      Object.fromEntries(runtimeCustomProperties),
-      `appearance-init.js and the runtime helper must share custom property behavior for fontScale=${String(fontScale)}`,
-    )
     assertInvariant(
-      generatedExecution.customProperties['--ui-font-scale'] === String(fontScale),
+      execution.customProperties['--ui-font-scale'] === String(fontScale),
       `appearance-init.js must apply validated fontScale=${String(fontScale)}`,
     )
   }
 
+  const customPreference = explicitThemePreferenceSchema.parse({
+    schemaVersion: 3,
+    appearance: {
+      ...ProductPreferenceDefault,
+      theme: {
+        registryKind: 'custom',
+        themeId: 'Customer Theme Ω',
+      },
+    },
+  })
+  const customExecution = executeAppearanceInit(appearanceInit, {
+    rawPreference: JSON.stringify(customPreference),
+  })
+
+  assertInvariantEqual(
+    customExecution,
+    {
+      attributes: safetyAttributes,
+      customProperties: safetyCustomProperties,
+      handoff: {
+        restoration: 'custom-theme-reference',
+      },
+      hasRestorationOperation: true,
+      networkRequests: 0,
+      requestedStorageKey: 'runtime-supplied-preference-key',
+      storageWrites: 0,
+    },
+    'a valid Custom reference must retain safety and expose only the private restoration signal',
+  )
+
+  const legacyTuple = registry.legacyBuiltInThemeTuples[2]
+
+  assertInvariant(legacyTuple !== undefined, 'the warm legacy migration tuple must exist')
+
   const legacyExecution = executeAppearanceInit(appearanceInit, {
     rawPreference: JSON.stringify({
-      appearance: {
-        ...defaultCurrentPreference.appearance,
-        colorMode: 'high-contrast',
-        material: undefined,
-      },
       schemaVersion: 1,
+      appearance: {
+        colorMode: 'high-contrast',
+        theme: legacyTuple.themeId,
+        palette: {
+          brand: legacyTuple.brand,
+          accent: legacyTuple.accent,
+          neutral: legacyTuple.neutral,
+        },
+        contrast: 'standard',
+        density: {
+          preset: 'comfortable',
+          scale: 1,
+        },
+        fontScale: 1,
+        motion: 'full',
+      },
     }),
   })
 
   assertInvariant(
     legacyExecution.attributes['data-color-mode'] === 'light' &&
+      legacyExecution.attributes['data-theme'] === 'warm' &&
       legacyExecution.attributes['data-contrast'] === 'enhanced' &&
       legacyExecution.attributes['data-material'] === 'solid',
-    'appearance-init.js must migrate legacy preference input high contrast in memory and preserve the solid migration',
+    'appearance-init.js must perform the exact lossless legacy migration in memory',
   )
 
-  const solidBaseline = {
-    'data-color-mode': 'light',
-    'data-contrast': 'standard',
-    'data-density': 'comfortable',
-    'data-material': 'solid',
-    'data-motion': 'full',
-    'data-theme': 'neutral',
-  }
-  const solidBaselineCustomProperties = {
-    '--ui-font-scale': '1',
+  const migrationParityInputs = [
+    builtInPreference,
+    {
+      schemaVersion: 2,
+      appearance: {
+        colorMode: 'system',
+        theme: legacyTuple.themeId,
+        palette: {
+          brand: legacyTuple.brand,
+          accent: legacyTuple.accent,
+          neutral: legacyTuple.neutral,
+        },
+        contrast: 'standard',
+        material: 'adaptive',
+        density: { preset: 'comfortable', scale: 1 },
+        fontScale: 1,
+        motion: 'full',
+      },
+    },
+    {
+      schemaVersion: 2,
+      appearance: {
+        colorMode: 'system',
+        theme: legacyTuple.themeId,
+        palette: {
+          brand: '#123456',
+          accent: legacyTuple.accent,
+          neutral: legacyTuple.neutral,
+        },
+        contrast: 'standard',
+        material: 'adaptive',
+        density: { preset: 'comfortable', scale: 1 },
+        fontScale: 1,
+        motion: 'full',
+      },
+    },
+    {
+      schemaVersion: 2,
+      appearance: {
+        colorMode: 'system',
+        theme: legacyTuple.themeId,
+        palette: {
+          brand: 'var(--invalid-legacy-color)',
+          accent: legacyTuple.accent,
+          neutral: legacyTuple.neutral,
+        },
+        contrast: 'standard',
+        material: 'adaptive',
+        density: { preset: 'comfortable', scale: 1 },
+        fontScale: 1,
+        motion: 'full',
+      },
+    },
+    { schemaVersion: 3 },
+  ] as const
+
+  for (const input of migrationParityInputs) {
+    assertInvariantEqual(
+      executeAppearanceMigration(appearanceInit, input),
+      migrateToExplicitThemePreference(input),
+      'appearance-init.js and runtime must share the exact Preference migration classification',
+    )
   }
 
-  for (const failure of [
+  const atomicFailure = executeAppearanceInit(appearanceInit, {
+    fontScaleWriteFailure: true,
+    rawPreference: JSON.stringify(builtInPreference),
+  })
+
+  assertInvariantEqual(
+    atomicFailure.attributes,
+    safetyAttributes,
+    'appearance-init.js must restore all seven attributes after a partial application failure',
+  )
+  assertInvariantEqual(
+    atomicFailure.customProperties,
+    safetyCustomProperties,
+    'appearance-init.js must restore Font Scale after a partial application failure',
+  )
+
+  const expectedFailures = [
     executeAppearanceInit(appearanceInit, {
       rawPreference: '{invalid',
     }),
     executeAppearanceInit(appearanceInit, {
-      rawPreference: JSON.stringify({
-        schemaVersion: 2,
-      }),
+      rawPreference: JSON.stringify({ schemaVersion: 3 }),
     }),
     executeAppearanceInit(appearanceInit, {
       rawPreference: JSON.stringify({
-        ...defaultCurrentPreference,
+        schemaVersion: 2,
         appearance: {
-          ...defaultCurrentPreference.appearance,
-          fontScale: 1.15,
+          colorMode: 'system',
+          theme: legacyTuple.themeId,
+          palette: {
+            brand: '#123456',
+            accent: legacyTuple.accent,
+            neutral: legacyTuple.neutral,
+          },
+          contrast: 'standard',
+          material: 'adaptive',
+          density: {
+            preset: 'comfortable',
+            scale: 1,
+          },
+          fontScale: 1,
+          motion: 'full',
         },
       }),
     }),
@@ -2452,25 +2518,27 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       storageReadFailure: true,
     }),
     executeAppearanceInit(appearanceInit, {
-      cssColorSupported: false,
+      rawPreference: JSON.stringify(migrationParityInputs[3]),
     }),
     executeAppearanceInit(appearanceInit, {
       storageKey: null,
     }),
-  ]) {
+  ]
+
+  for (const failure of expectedFailures) {
     assertInvariantEqual(
       failure.attributes,
-      solidBaseline,
-      'appearance-init.js failures must preserve the complete solid critical baseline',
+      safetyAttributes,
+      'appearance-init.js expected failures must retain all seven safety attributes',
     )
     assertInvariantEqual(
       failure.customProperties,
-      solidBaselineCustomProperties,
-      'appearance-init.js failures must preserve the default font scale',
+      safetyCustomProperties,
+      'appearance-init.js expected failures must retain the baseline Font Scale',
     )
     assertInvariant(
       failure.networkRequests === 0 && failure.storageWrites === 0,
-      'appearance-init.js failure handling must not request the network or write storage',
+      'appearance-init.js expected failures must not request the network or write Storage',
     )
   }
 }

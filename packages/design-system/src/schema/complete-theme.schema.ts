@@ -6,6 +6,8 @@ import { tokenReferenceSchema } from './token.schema'
 export const builtInThemeIds = ['neutral', 'ocean', 'warm'] as const
 export const completeThemeSchemaVersion = 3 as const
 export const completeThemeRoleContractVersion = 1 as const
+export const builtInThemeIdSchema = z.enum(builtInThemeIds)
+export const customThemeIdSchema = z.string().min(1).brand<'CustomThemeId'>()
 
 const cssWideKeywords = new Set(['inherit', 'initial', 'revert', 'revert-layer', 'unset'])
 const systemColorKeywords = new Set(
@@ -114,6 +116,17 @@ const nonNeutralPlanesSchema = z.strictObject({
   dark: planeSchema(authoredColorRoleMapSchema),
 })
 
+const customPlanesSchema = z.strictObject({
+  light: z.strictObject({
+    standard: absoluteColorRoleMapSchema,
+    enhanced: absoluteColorRoleMapSchema,
+  }),
+  dark: z.strictObject({
+    standard: absoluteColorRoleMapSchema,
+    enhanced: absoluteColorRoleMapSchema,
+  }),
+})
+
 const completeThemeContractShape = {
   schemaVersion: z.literal(completeThemeSchemaVersion),
   roleContractVersion: z.literal(completeThemeRoleContractVersion),
@@ -133,4 +146,13 @@ export const completeBuiltInThemeDefinitionSchema = z.discriminatedUnion('id', [
   }),
 ])
 
-export type BuiltInThemeId = (typeof builtInThemeIds)[number]
+export const customThemeDefinitionSchema = z.strictObject({
+  ...completeThemeContractShape,
+  id: customThemeIdSchema,
+  planes: customPlanesSchema,
+})
+
+export type BuiltInThemeId = z.infer<typeof builtInThemeIdSchema>
+export type BuiltInThemeDefinition = z.infer<typeof completeBuiltInThemeDefinitionSchema>
+export type CustomThemeId = z.infer<typeof customThemeIdSchema>
+export type CustomThemeDefinition = z.infer<typeof customThemeDefinitionSchema>
