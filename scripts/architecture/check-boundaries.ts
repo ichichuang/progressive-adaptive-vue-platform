@@ -2,6 +2,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { TextDecoder } from 'node:util'
 
+import stylelint from 'stylelint'
 import ts from 'typescript'
 
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
@@ -12,8 +13,51 @@ type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
 const sourceExtensions = new Set(['.ts', '.vue'])
+const importSourceExtensions = new Set(['.cjs', '.js', '.mjs', '.ts', '.vue'])
 const excludedApplicationDirectories = new Set(['dist', 'node_modules'])
 const rootTypeScriptConfigurationSuffix = '.config.ts'
+const inactiveCapabilityPackages = [
+  '@capacitor/core',
+  '@tanstack/query-core',
+  '@tanstack/vue-query',
+  '@tanstack/vue-table',
+  '@tanstack/vue-virtual',
+  '@tauri-apps/api',
+  '@unocss/preset-attributify',
+  '@unocss/preset-tagify',
+  '@vueuse/core',
+  'ag-grid-community',
+  'ag-grid-vue3',
+  'alova',
+  'axios',
+  'clsx',
+  'dayjs',
+  'element-plus',
+  'gsap',
+  'less',
+  'lodash',
+  'moment',
+  'motion-v',
+  'naive-ui',
+  'nuxt',
+  'nx',
+  'openapi-fetch',
+  'openapi-typescript',
+  'primevue',
+  'quasar',
+  'react',
+  'react-dom',
+  'reka-ui',
+  'sass',
+  'tailwindcss',
+  'turbo',
+  'unplugin-auto-import',
+  'unplugin-vue-components',
+  'vee-validate',
+  'vue-i18n',
+  'vue-router',
+  'vuetify',
+] as const
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
 const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
   projectConfig.workspaces.map((workspace) => [
@@ -57,8 +101,34 @@ function dependencyEntries(packageJson: JsonObject): [string, string][] {
   return entries
 }
 
+function inactiveCapabilityPackage(specifier: string): string | undefined {
+  return inactiveCapabilityPackages.find(
+    (packageName) => specifier === packageName || specifier.startsWith(`${packageName}/`),
+  )
+}
+
 async function validateManifestDependencies(): Promise<string[]> {
   const violations: string[] = []
+
+  for (const [description, manifestPath] of [
+    ['root package', resolve(rootDirectory, 'package.json')],
+    ...projectConfig.workspaces.map(
+      (workspace) =>
+        [workspace.name, resolve(rootDirectory, workspace.path, 'package.json')] as const,
+    ),
+  ] as const) {
+    const manifest = await readJsonObject(manifestPath)
+
+    for (const [dependency] of dependencyEntries(manifest)) {
+      const inactivePackage = inactiveCapabilityPackage(dependency)
+
+      if (inactivePackage !== undefined) {
+        violations.push(
+          `${description}: Phase 1 may not declare inactive capability package "${inactivePackage}".`,
+        )
+      }
+    }
+  }
 
   for (const workspace of projectConfig.workspaces) {
     const manifestPath = resolve(rootDirectory, workspace.path, 'package.json')
@@ -241,6 +311,13 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
   const violations: string[] = []
   const displayPath = relative(rootDirectory, sourcePath)
   const fromLayer = sourceLayer(sourcePath)
+  const inactivePackage = inactiveCapabilityPackage(specifier)
+
+  if (inactivePackage !== undefined) {
+    violations.push(
+      `${displayPath}: Phase 1 import of inactive capability package "${inactivePackage}" is forbidden.`,
+    )
+  }
 
   if (/^@platform\/[^/]+\/.+/u.test(specifier)) {
     violations.push(`${displayPath}: workspace deep import "${specifier}" is forbidden.`)
@@ -292,8 +369,25 @@ async function validateSourceImports(): Promise<string[]> {
     resolve(rootDirectory, 'apps/web/src'),
     resolve(rootDirectory, 'packages/design-system/src'),
     resolve(rootDirectory, 'packages/ui/src'),
+    resolve(rootDirectory, 'scripts'),
   ]
-  const sourceFiles = (await Promise.all(roots.map((root) => collectSourceFiles(root)))).flat()
+  const rootEntries = await readdir(rootDirectory, { withFileTypes: true })
+  const rootConfigurationFiles = rootEntries
+    .filter(
+      (entry) =>
+        entry.isFile() &&
+        (entry.name.endsWith('.config.ts') ||
+          entry.name.endsWith('.config.mjs') ||
+          entry.name === 'project.config.ts'),
+    )
+    .map((entry) => resolve(rootDirectory, entry.name))
+  const sourceFiles = [
+    ...(
+      await Promise.all(roots.map((root) => collectSourceFiles(root, importSourceExtensions)))
+    ).flat(),
+    ...rootConfigurationFiles,
+    resolve(rootDirectory, 'apps/web/vite.config.ts'),
+  ]
   const violations: string[] = []
 
   for (const sourceFile of sourceFiles) {
@@ -411,6 +505,45 @@ async function validateNoApplicationOpticalEffects(): Promise<string[]> {
   return violations
 }
 
+function vueStyleBlocks(sourceText: string): readonly string[] {
+  return [...sourceText.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gu)].map(
+    (match) => match[1] ?? '',
+  )
+}
+
+async function validateVueStyleGuardrails(): Promise<string[]> {
+  const roots = [resolve(rootDirectory, 'apps/web/src'), resolve(rootDirectory, 'packages/ui/src')]
+  const vueFiles = (
+    await Promise.all(roots.map((root) => collectSourceFiles(root, new Set(['.vue']))))
+  ).flat()
+  const violations: string[] = []
+
+  for (const path of vueFiles) {
+    const displayPath = relative(rootDirectory, path)
+    const blocks = vueStyleBlocks(await readFile(path, 'utf8'))
+
+    for (const [index, code] of blocks.entries()) {
+      const result = await stylelint.lint({
+        code,
+        codeFilename: `${path}.style-${String(index + 1)}.css`,
+        configFile: resolve(rootDirectory, 'stylelint.config.mjs'),
+        cwd: rootDirectory,
+        quietDeprecationWarnings: true,
+      })
+
+      for (const lintResult of result.results) {
+        for (const warning of lintResult.warnings) {
+          violations.push(
+            `${displayPath} <style ${String(index + 1)}>: ${warning.text} (${warning.rule}).`,
+          )
+        }
+      }
+    }
+  }
+
+  return violations
+}
+
 async function validateFirstPaintApplicationContract(): Promise<string[]> {
   const indexPath = resolve(rootDirectory, 'apps/web/index.html')
   const viteConfigurationPath = resolve(rootDirectory, 'apps/web/vite.config.ts')
@@ -514,6 +647,7 @@ const violations = [
   ...(await validateDesignSystemTokenExports()),
   ...(await validateNoApplicationInternalTokenUse()),
   ...(await validateNoApplicationOpticalEffects()),
+  ...(await validateVueStyleGuardrails()),
   ...(await validateFirstPaintApplicationContract()),
   ...(await validateAppearanceCutover()),
 ]

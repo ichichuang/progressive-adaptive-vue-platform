@@ -138,6 +138,7 @@ export default typescriptEslint.config(
       'local/no-page-optical-effects': 'error',
       'local/no-raw-ui-colors': 'error',
       'local/no-reka-import-outside-ui': 'error',
+      'local/no-unapproved-visual-literals': 'error',
       'local/no-user-agent-layout-branching': 'error',
       'local/no-workspace-deep-import': 'error',
       'unocss/blocklist': 'error',

@@ -5,8 +5,8 @@
   "type": "module",
   "packageManager": "pnpm@10.34.5",
   "engines": {
-    "node": ">=24.0.0 <25.0.0",
-    "pnpm": ">=10.0.0 <11.0.0"
+    "node": "24.15.0",
+    "pnpm": "10.34.5"
   },
   "scripts": {
     "dev": "pnpm --filter @platform/web dev",
@@ -18,7 +18,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
-    "lint:css": "stylelint \"apps/web/src/**/*.css\"",
+    "lint:css": "stylelint \"apps/web/src/**/*.css\" \"packages/ui/src/**/*.css\"",
     "lint:uno": "eslint \"apps/web/src/**/*.{ts,vue}\" --max-warnings 0",
     "typecheck": "pnpm typecheck:vue && pnpm typecheck:ts",
     "typecheck:vue": "vue-tsc --project apps/web/tsconfig.json --noEmit",
@@ -28,7 +28,7 @@
     "check:policy": "tsx scripts/verify/check-repository-policy.ts",
     "check:unused": "knip --config knip.jsonc",
     "check:bundle": "tsx scripts/verify/check-bundle.ts",
-    "verify": "pnpm format:check && pnpm lint && pnpm lint:css && pnpm lint:uno && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm schema:check && pnpm tokens:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle"
+    "verify": "tsx scripts/verify/check-runtime.ts && pnpm format:check && pnpm lint && pnpm lint:css && pnpm lint:uno && pnpm typecheck:vue && pnpm typecheck:ts && pnpm check:arch && pnpm schema:check && pnpm tokens:check && pnpm check:policy && pnpm check:unused && pnpm build && pnpm check:bundle"
   },
   "devDependencies": {
     "@iconify-json/lucide": "catalog:",

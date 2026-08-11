@@ -41,8 +41,9 @@ PHASE_1_PACKAGE_3_STATUS=COMPLETE
 PHASE_1_PACKAGE_3A_STATUS=COMPLETE
 PHASE_1_PACKAGE_4_STATUS=COMPLETE
 PHASE_1_PACKAGE_5_STATUS=COMPLETE
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_FINAL_STATIC_GOVERNANCE
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_FINAL_STATIC_GOVERNANCE
+PHASE_1_PACKAGE_6_STATUS=COMPLETE
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -382,7 +383,7 @@ Generated Artifact 中的派生 Literal、Schema Enum Discriminant、HTTP 标准
 
 Node 官方要求生产应用使用 Active LTS 或 Maintenance LTS，Node 24 当前处于 LTS 状态；Vite 官方当前对 8.1 发布常规补丁。PAVP 的可复现 Verification Authority 精确为 Node `24.15.0`，不是任意 `24.x`。
 
-项目根 `mise.toml`、`project.config.ts`、CI 和 Manifest Compression Profile 固定 Node `24.15.0`；pnpm 精确为 `10.34.5`，由 `package.json#packageManager` 和 CI 统一选择。Target Contract 要求所有 `pnpm verify`、Generator、Bundle 和 Compression Command 先执行同一 Process Runtime Preflight，版本不精确匹配时在任何其他 Gate 前失败并报告 Required/Received Version。当前 `check-project-config.ts` 已检查配置文件与 CI 的声明一致性，但 `pnpm verify` 尚未以 Process Version Check 作为第一步，因此 `EARLY_RUNTIME_PREFLIGHT=TARGET_INACTIVE`，由 `PAVP_FINAL_STATIC_GOVERNANCE` 落地；在其激活前，执行者必须在仓库外先确认精确版本再运行命令，不得把该手工确认描述为仓库机器强制。`package.json#engines` 当前较宽是已记录 Drift，只表示安装兼容声明，不得被解释为 Verification 兼容；其收窄属于同一配置治理 Scope，不由本 Architecture-only Freeze 修改。
+项目根 `mise.toml`、`project.config.ts`、CI 和 Manifest Compression Profile 固定 Node `24.15.0`；pnpm 精确为 `10.34.5`，由 `package.json#packageManager` 和 CI 统一选择。`PAVP_FINAL_STATIC_GOVERNANCE` 已把同一 Process Runtime Preflight 激活为根 `pnpm verify` 的首个 Gate；Node 或 pnpm 不精确匹配时，它在 Format、Lint、Type、Architecture、Generator、Build 和 Bundle Gate 之前失败并报告 Required/Received Version。`check-project-config.ts` 同时验证 `project.config.ts`、`mise.toml`、`packageManager`、精确 `engines`、CI 声明、Preflight Authority 与首位命令一致，`EARLY_RUNTIME_PREFLIGHT=ACTIVE`。`package.json#engines` 现已精确收窄为 Node `24.15.0` 与 pnpm `10.34.5`。
 
 Vite 8.1 基于 Rolldown 统一开发与生产构建基础，但实验性的 Bundled Dev Mode 不进入首版默认配置。
 
@@ -5775,7 +5776,7 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 
 本架构工作包只声明未来合同，不创建 `.ai/**`、不修改 `AGENTS.md` 或 Repository Policy。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 与 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document 与 Active Appearance Cutover 已同步。当前唯一 Next Canonical Work Package 是 §37.1 的 `PAVP_FINAL_STATIC_GOVERNANCE`。已落地的 Browser Rule、Manifest Compression Contract、Complete Theme Owning Gate 与 Appearance Cutover Owning Gate 不得被后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 与 `PAVP_FINAL_STATIC_GOVERNANCE` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover 与最终 Phase 1 Static Closure 已同步。当前唯一 Next Canonical Work Package 是 §37.2 的 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`。已落地的 Browser Rule、Manifest Compression Contract、Complete Theme Owning Gate、Appearance Cutover Owning Gate 与 Final Static Governance 不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -6041,18 +6042,18 @@ interface StaticEnforcementTarget {
 | `no-raw-ui-colors` | `ACTIVE` | `CURRENT_STATIC_PRODUCTION_GATE` | App/UI TypeScript and Vue literals | `design-token-source`; `generated-output` | `RAW_UI_COLOR` |
 | `no-dynamic-unocss-classes` | `ACTIVE` | `CURRENT_STATIC_PRODUCTION_GATE` | App/UI Vue class bindings and TypeScript class construction | `generated-output` | `DYNAMIC_UNOCSS_CLASS` |
 | `no-direct-storage-access` | `ACTIVE` | `CURRENT_APPEARANCE_PERSISTENCE_GATE` | App/UI TypeScript and Vue browser-storage globals | `storage-registry` | `DIRECT_STORAGE_ACCESS` |
-| `no-unapproved-raw-colors-complete` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS; UnoCSS maps; Theme Bank consumers | `design-token-source`; `generated-output` | `UNAPPROVED_RAW_COLOR` |
-| `no-unapproved-dimensions` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno width, height, inset, translate, grid/flex basis | `design-token-source`; `named-protocol-constant` | `UNAPPROVED_DIMENSION` |
-| `no-unapproved-spacing` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno margin, padding and gap | `design-token-source` | `UNAPPROVED_SPACING` |
-| `no-unapproved-radius` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno radius and shape | `design-token-source` | `UNAPPROVED_RADIUS` |
-| `no-unapproved-shadow` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno box/text/drop shadow | `design-token-source` | `UNAPPROVED_SHADOW` |
-| `no-unapproved-z-index` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno layer values | `design-token-source`; `domain-schema` | `UNAPPROVED_Z_INDEX` |
-| `no-unapproved-typography-value` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno font, line and letter metrics | `design-token-source` | `UNAPPROVED_TYPOGRAPHY` |
+| `no-unapproved-raw-colors-complete` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS; UnoCSS maps; Theme Bank consumers | `design-token-source`; `generated-output` | `UNAPPROVED_RAW_COLOR` |
+| `no-unapproved-dimensions` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno width, height, inset, translate, grid/flex basis | `design-token-source`; `named-protocol-constant` | `UNAPPROVED_DIMENSION` |
+| `no-unapproved-spacing` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno margin, padding and gap | `design-token-source` | `UNAPPROVED_SPACING` |
+| `no-unapproved-radius` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno radius and shape | `design-token-source` | `UNAPPROVED_RADIUS` |
+| `no-unapproved-shadow` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno box/text/drop shadow | `design-token-source` | `UNAPPROVED_SHADOW` |
+| `no-unapproved-z-index` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno layer values | `design-token-source`; `domain-schema` | `UNAPPROVED_Z_INDEX` |
+| `no-unapproved-typography-value` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno font, line and letter metrics | `design-token-source` | `UNAPPROVED_TYPOGRAPHY` |
 | `no-unapproved-density-or-font-scale` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Preference schema/default/store; DOM attributes; App/UI consumers | `typed-default-registry`; `design-token-source`; `generated-output` | `UNAPPROVED_DENSITY_FONT_SCALE` |
 | `no-consumer-authored-appearance-default` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Page/Feature/Shared/Public UI TS/Vue/CSS and appearance DOM attributes | `typed-default-registry`; `generated-output` | `CONSUMER_APPEARANCE_DEFAULT` |
-| `no-unapproved-motion-duration` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS animation, transition, delay and animation timeout | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_DURATION` |
-| `no-unapproved-motion-easing` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS timing, spring and curve values | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_EASING` |
-| `no-transition-all` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | All authored CSS, Vue Transition and future motion adapters | `design-token-source` | `TRANSITION_ALL` |
+| `no-unapproved-motion-duration` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS animation, transition, delay and animation timeout | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_DURATION` |
+| `no-unapproved-motion-easing` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS timing, spring and curve values | `design-token-source`; `domain-schema` | `UNAPPROVED_MOTION_EASING` |
+| `no-transition-all` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | All authored CSS, Vue Transition and future motion adapters | `design-token-source` | `TRANSITION_ALL` |
 | `no-unregistered-breakpoint` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Media/container queries and JS layout thresholds | `domain-schema`; `design-token-source` | `UNREGISTERED_BREAKPOINT` |
 | `no-unregistered-scroll-dimension` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Scroll offset, compensation, threshold and restoration tolerance | `route-registry`; `design-token-source`; `named-protocol-constant` | `UNREGISTERED_SCROLL_DIMENSION` |
 | `no-unregistered-touch-target` | `TARGET_INACTIVE` | `PAVP_FIRST_PROTECTED_VERTICAL_SLICE` | Public UI hit-area and pointer target metrics | `design-token-source`; `named-protocol-constant` | `UNREGISTERED_TOUCH_TARGET` |
@@ -6065,7 +6066,7 @@ interface StaticEnforcementTarget {
 | `no-undeclared-route-meta` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Every static/dynamic route meta object | `route-registry` | `UNDECLARED_ROUTE_META` |
 | `registered-errors-only` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Core errors plus exact extensions in Router/Storage/API/Auth/Observability consumers | `error-registry` | `UNREGISTERED_ERROR` |
 | `registered-permissions-only` | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` | Route, component visibility, operation and claim projection | `permission-registry` | `UNREGISTERED_PERMISSION` |
-| `no-inactive-capability-import` | `TARGET_INACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | Package manifests and complete workspace import graph | `capability-status-registry`; `package-boundary-registry` | `INACTIVE_CAPABILITY_IMPORT` |
+| `no-inactive-capability-import` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | Package manifests and complete workspace import graph | `capability-status-registry`; `package-boundary-registry` | `INACTIVE_CAPABILITY_IMPORT` |
 | `no-query-data-copied-into-pinia` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Pinia state/actions, Query callbacks and server-entity consumers | `domain-schema` | `QUERY_DATA_COPIED_TO_PINIA` |
 | `no-theme-literal-runtime-state` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Appearance stores, pages, features, shared modules, public UI and DOM writers | `typed-default-registry`; `design-token-source`; `generated-output` | `THEME_LITERAL_RUNTIME_STATE` |
 | `single-product-default-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Schema defaults, stores, reset, First Paint, Runtime Config, Page/Feature/Shared/Public UI, appearance attributes and documentation code | `typed-default-registry`; `generated-output` | `DUPLICATE_PRODUCT_DEFAULT` |
@@ -6145,14 +6146,15 @@ pnpm verify
 NODE_VERIFICATION_AUTHORITY=24.15.0_EXACT
 PNPM_VERIFICATION_AUTHORITY=10.34.5_EXACT
 DECLARED_RUNTIME_PARITY_CHECK=ACTIVE
-PROCESS_RUNTIME_PREFLIGHT=TARGET_INACTIVE
+PROCESS_RUNTIME_PREFLIGHT=ACTIVE
 PROCESS_RUNTIME_PREFLIGHT_OWNER=PAVP_FINAL_STATIC_GOVERNANCE
 PROCESS_RUNTIME_PREFLIGHT_ORDER=FIRST_BEFORE_FORMAT_CHECK
 PROCESS_RUNTIME_MISMATCH=FAIL_CLOSED_WITH_REQUIRED_AND_RECEIVED_VERSION
-CURRENT_EXECUTOR_OBLIGATION=CONFIRM_EXACT_NODE_AND_PNPM_BEFORE_PNPM_VERIFY
+ROOT_ENGINES_ALIGNMENT=NODE_24_15_0_AND_PNPM_10_34_5_EXACT
+CURRENT_EXECUTOR_OBLIGATION=NONE_REPOSITORY_PREFLIGHT_ACTIVE
 ```
 
-`DECLARED_RUNTIME_PARITY_CHECK=ACTIVE` 仅表示现有 Schema Check 会核对 `project.config.ts`、`mise.toml`、Package Manager 声明与 CI 配置，不表示它已检查正在执行的 Node/pnpm Process。Target Preflight 必须读取实际 Process Node Version，并以不依赖全局状态的确定性方式取得实际 pnpm Version；它必须成为 `pnpm verify` 的首个 Gate，不能等到 `schema:check` 才运行。
+`DECLARED_RUNTIME_PARITY_CHECK=ACTIVE` 与 `PROCESS_RUNTIME_PREFLIGHT=ACTIVE` 分别验证声明和当前执行进程。Preflight 读取实际 Process Node Version，并从当前 pnpm Lifecycle User Agent 确定实际 pnpm Version；它是 `pnpm verify` 的首个 Gate，不等待 `schema:check`。`check-project-config.ts` 另行拒绝 Preflight Authority、首位命令、精确 Engines、Package Manager、Mise、Project Config 或 CI 之间的任何 Drift。
 
 ```text
 format check
@@ -6681,7 +6683,8 @@ Package 3 = COMPLETE
 Package 3A = COMPLETE
 Package 4 = COMPLETE
 Package 5 = COMPLETE
-Package 6 = NEXT
+Package 6 = COMPLETE
+NEXT = PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 ```
 
 以下是完整 Phase 1 Target Inventory。某项是否已实现、是否已机器强制以及是否允许成为 Runtime Authority，只由 §37.1 的 Package Status 和 Owning Gate 决定，不因出现在本清单而自动激活：
@@ -6786,14 +6789,14 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 与 `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；唯一 Next Implementation Package 是 `PAVP_FINAL_STATIC_GOVERNANCE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 与 `PAVP_FINAL_STATIC_GOVERNANCE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理，唯一 Next Implementation Package 是 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
 ARCHITECTURE_FOUNDATION_GATE_STATUS=FROZEN
 IMPLEMENTATION_WHILE_GATE_NOT_FROZEN=BLOCKED
 TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
-NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_FINAL_STATIC_GOVERNANCE
+NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 ```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
@@ -6805,10 +6808,10 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 3A. PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT               COMPLETE
 4.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE      COMPLETE
 5.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER        COMPLETE
-6.  PAVP_FINAL_STATIC_GOVERNANCE                         NEXT
+6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出。Package 6 现为唯一 Next Implementation Package，不得与已完成的 Package 5 Diff 混入新增治理范围。Future Public Role Admission 不属于该 Immediate Chain；完成当前 Phase 1 Chain 后，它继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换：完整 Target Contract 现在可以冻结，但 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 仍严格位于 Packages 4–6 之后。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`，不得在 Package 6 中提前开始。
 
 当前精确 Acceptance Contract：
 
@@ -7122,7 +7125,25 @@ PRODUCTION_RELEASE_ACCEPTANCE=OWNER_EXTERNAL_RUNTIME_MATRIX_REQUIRED
 
 ### 6. `PAVP_FINAL_STATIC_GOVERNANCE`
 
-只完成此前已准入合同的跨包最终闭包，包括 Exact-set、No-leak、No-seed、No-correction、Theme Bank、Density Isolation、UnoCSS Completeness、Migration 和 First-paint Drift。Browser Rule Synchronization 已由 Package 1 完成，本包不得接收、延迟或补交 Browser/Runtime-acceptance Sync。
+状态：
+
+```text
+STATUS=COMPLETE
+ENTRY=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER=COMPLETE_AND_STATICALLY_PASSING
+FOUNDATION_VISUAL_LITERAL_GUARDRAILS=ACTIVE
+NO_TRANSITION_ALL=ACTIVE
+INACTIVE_CAPABILITY_IMPORT_GUARD=ACTIVE
+PROCESS_RUNTIME_PREFLIGHT=ACTIVE_FIRST_VERIFY_GATE
+NODE_PROCESS_AUTHORITY=24.15.0_EXACT
+PNPM_PROCESS_AUTHORITY=10.34.5_EXACT
+ROOT_ENGINES=NODE_24_15_0_AND_PNPM_10_34_5_EXACT
+EARLIER_PACKAGE_VALIDATOR_CONFLICT=NONE
+RUNTIME_SOURCE_CHANGE=NONE
+GENERATED_ARTIFACT_CHANGE=NONE
+NEXT_IMPLEMENTATION_PACKAGE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+```
+
+本包只完成此前已准入合同的跨包最终闭包。Packages 1–5 的 Existing Owning Checker 已完整拥有 Exact-set、No-leak、No-seed、No-correction、Theme Bank、Density Isolation、UnoCSS Completeness、Migration 和 First-paint Drift；Package 6 未复制或补交这些 Earlier-package Core Validator。Package 6 激活 Foundation-wide Visual Literal、`transition: all`、Inactive Capability Import、Exact Process Runtime Preflight 与 Exact Engines Guardrail，并通过 Reversible Negative Probe、`pnpm verify` 与 `git diff --check`。Browser Rule Synchronization 已由 Package 1 完成，本包没有接收、延迟或补交 Browser/Runtime-acceptance Sync。
 
 ### Future Admission Gate: `PAVP_FUTURE_PUBLIC_ROLE_ADMISSION_AMENDMENTS`
 

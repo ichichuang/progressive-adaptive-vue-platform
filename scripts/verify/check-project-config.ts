@@ -5,6 +5,8 @@ import { isDeepStrictEqual } from 'node:util'
 import { projectConfig } from '../../project.config'
 import { parse as parseYaml } from 'yaml'
 
+import { runtimePreflightAuthority } from './check-runtime'
+
 type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
@@ -223,17 +225,41 @@ expectStructuredEqual(projectConfig.runtime, expectedRuntime, 'Project runtime b
 const rootManifest = await readJsonObject(resolve(rootDirectory, 'package.json'))
 const rootEngines = rootManifest['engines']
 const rootDevDependencies = rootManifest['devDependencies']
+const rootScripts = rootManifest['scripts']
 
-if (!isJsonObject(rootEngines) || !isJsonObject(rootDevDependencies)) {
-  throw new Error('The root package manifest must declare engines and devDependencies objects.')
+if (
+  !isJsonObject(rootEngines) ||
+  !isJsonObject(rootDevDependencies) ||
+  !isJsonObject(rootScripts)
+) {
+  throw new Error(
+    'The root package manifest must declare engines, scripts, and devDependencies objects.',
+  )
 }
 
 expectEqual(rootManifest['name'], projectConfig.identity.packageName, 'Root package identity')
 expectEqual(rootManifest['private'], true, 'Root package privacy')
 expectEqual(rootManifest['packageManager'], expectedPackageManager, 'Package manager baseline')
 expectEqual(rootManifest['pnpm'], undefined, 'Legacy package.json pnpm configuration')
-expectEqual(rootEngines['node'], '>=24.0.0 <25.0.0', 'Node engine baseline')
-expectEqual(rootEngines['pnpm'], '>=10.0.0 <11.0.0', 'pnpm engine baseline')
+expectEqual(rootEngines['node'], expectedRuntime.node, 'Exact Node engine baseline')
+expectEqual(rootEngines['pnpm'], expectedRuntime.pnpm, 'Exact pnpm engine baseline')
+expectStructuredEqual(
+  runtimePreflightAuthority,
+  { node: expectedRuntime.node, pnpm: expectedRuntime.pnpm },
+  'Process runtime preflight authority',
+)
+
+const verifyScript = rootScripts['verify']
+
+if (typeof verifyScript !== 'string') {
+  throw new Error('The root package manifest must declare a verify script.')
+}
+
+expectEqual(
+  verifyScript.split(' && ')[0],
+  'tsx scripts/verify/check-runtime.ts',
+  'First root verify gate',
+)
 expectEqual(
   rootDevDependencies['@platform/design-system'],
   'workspace:*',
