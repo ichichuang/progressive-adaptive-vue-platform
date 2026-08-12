@@ -1002,13 +1002,13 @@ interface ValidatedRouteMeta {
 
 Router Implementation 必须：
 
-1. 从已验证 Runtime Configuration 获取 `basePath`。
+1. 从已验证 Runtime Configuration 获取 `deploymentBase`。
 2. 使用与 Vite Asset Base 相同的 Canonical Base Authority 创建 History。
 3. 安装 Error Handler 和 Guard Pipeline 后才触发 Initial Navigation。
 4. 在 `router.isReady()` 成功后才允许 Application Mount。
 5. Initial Navigation 失败时进入命名 Startup Recovery，不得挂载半初始化 Shell。
 
-Root-only 与 Subpath Deployment 都必须通过同一 Base Authority；页面和 Router Config 不得硬编码 `/`、`/app/` 或环境路径。
+Router 首次实现只支持当前 Exact Root `/`。未来 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 原子准入 Subpath 后，Root-only 与 Subpath Deployment 必须通过同一 Base Authority；页面和 Router Config 不得硬编码 `/`、`/app/` 或环境路径。
 
 ## 9.4 Params and Query Boundary
 
@@ -4378,9 +4378,12 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 OWNER=apps/web/src/app/bootstrap
 ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 CURRENT_RUNTIME=createApp(App).mount('#app')
+IMPLEMENTATION_STATUS=NOT_ADMITTED
+ACTIVATION_PROVIDER_SET=Pinia,Appearance
+ACTIVATION_BOOTSTRAP_STEP_COUNT=9
 ```
 
-Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。
+Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个当前 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。本节冻结 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` Landing 必须原子激活的精确合同；当前能力仍为 `TARGET_INACTIVE`，本文档不宣称任何 Kernel Protocol 已实现。
 
 ### Exact Bootstrap Order
 
@@ -4388,44 +4391,32 @@ Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Stor
 1. validate-build-and-runtime-configuration
 2. install-pre-vue-global-failure-capture
 3. initialize-design-system-and-resolve-first-paint-handoff
-4. initialize-storage-registries-and-read-migration-inputs
-5. create-vue-application
-6. create-pinia
-7. create-query-client
-8. restore-session
-9. create-router-and-install-ordered-guards
-10. create-i18n
-11. install-platform-providers
-12. await-router-readiness
-13. mount-application
-14. register-post-mount-media-storage-session-and-observability-subscriptions
-15. publish-application-ready
+4. create-vue-application
+5. create-pinia
+6. install-platform-providers
+7. mount-application
+8. register-post-mount-appearance-media-subscriptions
+9. publish-application-ready
 ```
 
-上表是全部 Foundation Capability 激活后的唯一 Superset Order。每个串行 Implementation Package 只能把新准入步骤原子加入 Bootstrap Step Registry；任一时点的 Active Order 必须是该表的 Exact Order-preserving Subsequence。尚未准入的 Storage、Query、Session、Router、I18n 或 Observability Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry 或成功 Stub 占位。新增步骤的同一 Landing 必须交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
+上表是 Runtime Kernel 首次准入时唯一、闭合、顺序保持的九步 Bootstrap Step Registry，不是 Future Superset。尚未准入的 Storage、Query、Session、Router、I18n、Observability 或 Deployment Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry、Placeholder 或成功 Stub 占位。后续串行 Package 只有在自己的 Architecture Authority 与 Implementation Landing 中才能原子扩展该 Registry，并同时交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
 
 后一步只能消费前一步的 Typed Success Output。任何步骤失败都停止后续步骤，按已完成步骤的反向顺序 Dispose，并进入 Fatal Startup Recovery。不得通过 `try/catch` 后继续 Mount、用空 Provider 替代失败 Provider，或把 `unknown` Session 当作 Anonymous。
 
-### Lifecycle Ownership Matrix
+### Configuration-first Startup and Failure-capture Ownership
 
-| Lifecycle unit | Single owner | Produces | Must not own |
-| --- | --- | --- | --- |
-| Build/runtime config validation | `app/config` | immutable validated config | Router, Session or UI state |
-| Pre-Vue failure capture | `app/errors` | global capture disposal handle | user-facing rendering |
-| Appearance handoff | `app/appearance` | validated Stored/Effective state | application Storage Key definition in Design System |
-| Storage initialization | `app/storage` | typed registry handles | Pinia or Query state |
-| Vue application | `app/bootstrap` | unmounted app instance | Provider internals |
-| Pinia | `app/providers/pinia` | client-state container | Server State cache |
-| Query Client | `app/providers/query` | principal-partitioned server-state cache | Session cookie or Router lifecycle |
-| Session restoration | `app/session` | canonical Session State | Route redirect or component visibility |
-| Router | `app/router` | navigation lifecycle | Server State cache |
-| I18n | `app/providers/i18n` | locale lifecycle | browser language persistence directly |
-| Provider installation | `app/bootstrap/install-providers` | ordered install/disposal handles | Provider construction |
-| Post-mount subscriptions | owning domain orchestrators | explicit unsubscribe handles | hidden global listeners |
+配置加载顺序不依赖 Global Listener：
 
-Provider A 不得通过 Import Side Effect 创建 Provider B。Cross-provider Interaction 只能由 Bootstrap 传入 Narrow Interface；不得通过 Global Singleton、Event Bus、Window Property 或循环 Store Watcher 编排。
+* Runtime Configuration Loading 由 Runtime Kernel 第一步 Boundary 直接包裹。
+* Configuration Failure 由无副作用的 Core Error Normalizer 直接规范化。
+* Runtime Configuration Loading 不依赖 `window.error` 或 `unhandledrejection` Listener。
+* Configuration 成功后，`apps/web/src/app/errors` 才原子安装恰好一个 `window.error` Listener 和恰好一个 `unhandledrejection` Listener；第二个 Listener 安装失败时必须回滚第一个。
+* `window.error` 只在 Startup State 为 `starting` 时捕获未被其他 Boundary Claim 的 Execution Error，并在 Ready Transition 时移除。
+* `unhandledrejection` 从安装后持续到最终 Attempt Disposal。
+* 两个 Listener 由同一个幂等 Capture Disposer 移除；Retry 与 HMR 都必须在创建新 Capture Handle 前完整 Dispose 旧 Handle。
+* Listener 不得累积，Existing Normalized Error 不得再次 Normalized 或 Captured。
 
-### Startup State and Failure Recovery
+### Startup State and Lifecycle Ownership
 
 ```ts
 type ApplicationStartupState =
@@ -4438,26 +4429,262 @@ type ApplicationStartupState =
   | 'disposed'
 ```
 
-Fatal Startup Page 是无需 Router、Pinia、Query、I18n Network Load 或 Public UI Package 即可显示的最小静态边界。它只显示本地化安全 Key 的内置 Fallback、Release ID 和允许的 Retry/Reload Action；不显示 Stack、Raw Config、URL Query、Storage Payload 或 Secret。Recoverable Retry 必须先完整 Dispose 失败 Attempt，再使用新 `startupAttemptId` 从步骤 1 重启；同一页面会话最多执行由 Named Startup Recovery Policy 注册的有限次数，超过后只允许 Owner 明确 Reload。
+每个 Attempt 具有一个 Opaque `startupAttemptId`。其生成算法不是 Architecture Contract；ID 只用于同一文档内的安全关联，不能携带 URL、配置、用户数据或 Raw Error。
 
-### HMR and Application Disposal
+| Lifecycle unit | Single owner | Produces | Must not own |
+| --- | --- | --- | --- |
+| Build/runtime config validation | `app/config` | immutable validated config | Router, Session or UI state |
+| Pre-Vue failure capture | `app/errors` | exact listener references and one capture disposal handle | Configuration loading or user-facing rendering |
+| Appearance handoff | `app/appearance` | validated Stored/Effective state | application Storage Key definition in Design System |
+| Vue application | `app/bootstrap` | unmounted app instance | Provider internals |
+| Pinia | `app/providers/pinia` | client-state container | Server State cache |
+| Provider installation | `app/bootstrap/install-providers` | Pinia plus Appearance provider handles | Future Provider construction |
+| Vue Mount | `app/bootstrap` Mount step | one mounted application handle | Provider construction or competing Mount |
+| Appearance media subscriptions | `app/appearance` through Kernel step | exact listener references and one unsubscribe handle | Storage, Session or Observability subscription |
+| Ready publication and aggregate disposal | Runtime Kernel | one private Running Application Handle | Window global, DOM event or event bus publication |
 
-HMR 只在 Development 生效。每个 Provider 必须返回幂等 `dispose()`；HMR Replacement 与 Application Unmount 使用同一 Reverse-order Disposal：
+Provider A 不得通过 Import Side Effect 创建 Provider B。Cross-provider Interaction 只能由 Bootstrap 传入 Narrow Interface；不得通过 Global Singleton、Event Bus、Window Property 或循环 Store Watcher 编排。
+
+Configuration Failure 必须保留 Existing Appearance Safety Baseline、停止全部后续 Step，并进入不依赖 Vue、Pinia、Router、Query、I18n 或 Public UI Package 的 Non-Vue Configuration Failure Boundary。该 Boundary 只消费 Built-in Safe Message Key、允许的 Release/Build Identity 和冻结的 User Action；不得显示 Raw URL、Raw Configuration、Raw Response、Raw Cause、Message、Stack、Secret 或 DOM Content。Failure Renderer 自身失败是 Attempt-terminal Boundary Outcome，不增加第五个 Core Error Record，也不具备 In-document Retry 资格。
+
+### Startup Configuration Retry Policy
 
 ```text
-post-mount subscriptions
-→ router pending navigation and dynamic routes
-→ i18n lazy-load handles
-→ session refresh and cross-tab channel
-→ query cancellation and cache disposal
-→ pinia subscriptions
-→ storage channels
-→ appearance media subscriptions
-→ Vue unmount
-→ global failure capture
+POLICY_ID=startup-configuration-recovery
+OWNER=runtime-kernel
+TRIGGER=user action only
+MAXIMUM_RETRIES_PER_DOCUMENT=1
+TOTAL_ATTEMPTS=initial attempt plus one retry
+ELIGIBLE_ERROR=runtime-configuration-failure only
+ELIGIBLE_CAUSES=all exact Runtime Configuration failure causes frozen in Section 34.1
 ```
 
-Dispose 必须取消 Timer、AbortSignal、Observer、BroadcastChannel、Event Listener、Focus/Scroll Lock、In-flight Query 和 Dynamic Route。重复 Dispose 不得抛错；新 HMR Instance 不得复用已 Dispose Handle 或注册重复 Listener。
+以下 Failure 不具备 In-document Retry 资格：
+
+```text
+application-startup-failure
+vue-component-failure
+unhandled-promise-rejection
+disposal failure
+Fatal renderer failure
+```
+
+Retry 之前必须完成 Failed Attempt 的幂等 Reverse Disposal、分配新的 `startupAttemptId`、从 `validate-build-and-runtime-configuration` 重新开始、重新读取并验证完整 Runtime Configuration Artifact、在先前曾创建 Pinia 时创建全新 Pinia，并重新读取和恢复 Appearance。不得复用 Failed Vue、Pinia、Provider、Listener、Configuration、Handoff 或 Lifecycle Handle。
+
+单次 Retry 再次失败后，Boundary 必须移除 In-document Retry Action，只允许用户显式 Reload Browser。
+
+```text
+RETRY_STATE_STORAGE=document memory only
+PERSISTED_RETRY_STATE=PROHIBITED
+URL_RETRY_STATE=PROHIBITED
+RUNTIME_CONFIG_RETRY_STATE=PROHIBITED
+AUTOMATIC_RETRY=PROHIBITED
+TIMER=PROHIBITED
+BACKOFF=PROHIBITED
+POLLING=PROHIBITED
+LOOP=PROHIBITED
+AUTOMATIC_RELOAD=PROHIBITED
+STORAGE_CLEARING=PROHIBITED
+```
+
+Development HMR 不消耗该 Retry Budget，但必须使用同一完整 Disposer。
+
+### Bootstrap Step Registry
+
+Runtime Kernel 首次准入的 Registry 是 Repository-owned、Closed、Order-preserving、Acyclic、无 Placeholder 且无 Optional Future Step 的精确九步集合。每一步必须定义 Step ID、Dependencies、Create Input、Create Output 或 Handle、Ready Condition、Dispose Responsibility、DOM Mount Ownership、Failure Classification、Retry Participation 和 HMR Behavior。Private Helper Name、Loop、Array、Map、Closure 或 File-internal Data Structure 不属于 Registry Contract。
+
+#### `validate-build-and-runtime-configuration`
+
+```text
+dependencies=[]
+CreateInput=startupAttemptId,AbortSignal,document carrier,compiled build identity,fetch boundary
+CreateOutput=recursively immutable CoreRuntimeConfiguration
+Handle=attempt-local abort/load handle
+Ready=artifact strict validation and all compatibility comparisons complete
+Dispose=abort in-flight request and release attempt-local configuration reference
+DOMMountOwner=NO
+Failure=runtime-configuration-failure
+FailureCategory=configuration
+FatalForAttempt=YES
+RetryParticipant=YES
+OwnFailureEligibleForConfigurationRetry=YES
+HMR=full disposal followed by complete reread; validated object is not reused
+```
+
+#### `install-pre-vue-global-failure-capture`
+
+```text
+dependencies=[validate-build-and-runtime-configuration]
+CreateInput=validated config,startupAttemptId,startup state accessor,core normalizer,kernel capture sink
+CreateOutput=exact listener references and one idempotent capture disposer
+Ready=window.error and unhandledrejection listeners both installed
+PartialAcquisitionRollback=REQUIRED
+Dispose=remove window.error if still active and remove unhandledrejection
+DOMMountOwner=NO
+Failure=application-startup-failure
+FatalForAttempt=YES
+RetryParticipant=YES when a fresh eligible configuration retry reaches this step
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=old listeners removed before a fresh handle is created
+```
+
+#### `initialize-design-system-and-resolve-first-paint-handoff`
+
+```text
+dependencies=[install-pre-vue-global-failure-capture]
+CreateInput=document,exact generated script element,private handoff,safety restoration capability
+CreateOutput=validated no-handoff or custom-theme-reference handoff
+Handle=one-time bridge and safety handle
+Ready=complete handoff shape validation succeeds before private fields are removed
+DisposeOnFailedStartup=idempotently restore safety DOM and release references
+DisposeOnNormalOrHMR=release references without reverting committed Appearance
+DOMMountOwner=NO
+AllowedDOMMutation=Package 5 Appearance safety html mutation only
+Failure=application-startup-failure
+RetryParticipant=YES after an eligible configuration retry
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=consumed handle is never reused; fresh Appearance restoration rereads Package 5 persistence authorities
+```
+
+#### `create-vue-application`
+
+```text
+dependencies=[initialize-design-system-and-resolve-first-paint-handoff]
+CreateInput=root component,core error capture hooks,startupAttemptId
+CreateOutput=unmounted Vue App
+Handle=exact Vue App instance and lifecycle flags
+Ready=app.config.errorHandler and application boundary hooks installed; application not mounted
+DisposeBeforeMount=release unmounted application reference
+DisposeAfterMount=Mount step owns unmount
+DOMMountOwner=NO
+Failure=application-startup-failure
+RetryParticipant=YES after eligible configuration retry
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=fresh Vue App instance only
+```
+
+#### `create-pinia`
+
+```text
+dependencies=[create-vue-application]
+CreateInput=startupAttemptId
+CreateOutput=fresh Pinia instance
+Handle=fresh Pinia instance
+Ready=Pinia construction complete; no placeholder stores created
+Dispose=after Vue unmount and active subscription cleanup, call disposePinia exactly once
+DOMMountOwner=NO
+Failure=application-startup-failure
+RetryParticipant=YES with a fresh Pinia instance
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=old Pinia disposed; attempt stores are never retained
+```
+
+#### `install-platform-providers`
+
+```text
+dependencies=[initialize-design-system-and-resolve-first-paint-handoff,create-vue-application,create-pinia]
+CreateInput=Vue App,Pinia,validated handoff,Package 5 Appearance adapters,current media capability snapshot
+CreateOutput=Pinia installed plus Appearance store and committed restoration result
+Handle=current Pinia and Appearance provider handles only
+Ready=app.use(pinia),Appearance store creation,and one transactional Appearance restoration all succeed; media listeners not yet registered
+Dispose=release attempt-local provider and Appearance handles; on failed startup perform Package 5 safety compensation; Vue and Pinia disposal remain with their owning steps
+DOMMountOwner=NO
+AllowedDOMMutation=canonical Package 5 Appearance mutation only
+Failure=application-startup-failure
+RetryParticipant=YES with fresh Pinia and fresh Appearance reread
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=after Appearance media subscriptions are removed and Vue is unmounted,dispose installed platform-provider handles,then dispose Pinia; provider handles are never reused across HMR attempts; Providers register no competing HMR hooks
+ActiveProviderSet=Pinia,Appearance only
+```
+
+#### `mount-application`
+
+```text
+dependencies=[install-platform-providers]
+CreateInput=ready Vue App,exact #app target
+CreateOutput=MountedApplication handle
+Ready=application.mount('#app') returns normally and mounted state is confirmed
+Dispose=idempotently call application.unmount() exactly once after partial or complete Mount
+DOMMountOwner=YES
+UniqueMountOwner=YES
+Failure=application-startup-failure
+InitialRootComponentFailurePrecedence=application-startup-failure single capture
+RetryParticipant=YES after eligible configuration retry
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=unmount before Pinia disposal
+```
+
+#### `register-post-mount-appearance-media-subscriptions`
+
+```text
+dependencies=[install-platform-providers,mount-application]
+CreateInput=mounted app,Appearance store,three MediaQueryList instances,reapply adapter
+CreateOutput=exact listener references and one idempotent unsubscribe
+Ready=all three Package 5 listeners installed
+PartialRegistrationRollback=REQUIRED
+Dispose=remove all three listeners before Vue unmount
+DOMMountOwner=NO
+Failure=application-startup-failure
+RetryParticipant=YES after eligible configuration retry
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=Ready is withdrawn and this is the first runtime resource disposed
+FutureStorageSessionObservabilityOrOtherProviderSubscriptionPlaceholders=PROHIBITED
+```
+
+#### `publish-application-ready`
+
+```text
+dependencies=[validate-build-and-runtime-configuration,mount-application,register-post-mount-appearance-media-subscriptions]
+CreateInput=startupAttemptId,validated config,mounted application,aggregate step handles
+CreateOutput=RunningApplicationHandle with one reverse disposer
+Ready=atomic starting-to-ready transition and resolution of internal startup completion
+ReadyGlobal=PROHIBITED
+ReadyDOMEvent=PROHIBITED
+ReadyEventBus=PROHIBITED
+ObservabilityStub=PROHIBITED
+Dispose=withdraw Ready; transition ready-to-disposing-to-disposed; release all handles in exact reverse order
+DOMMountOwner=NO
+Failure=application-startup-failure
+RetryParticipant=YES after eligible configuration retry
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=the sole top-level HMR disposer uses RunningApplicationHandle; providers may not register competing HMR hooks
+```
+
+### Reverse Disposal Order
+
+Fully Created Attempt 的精确 Reverse Order：
+
+1. Withdraw Application Ready。
+2. Remove Appearance Media Subscriptions。
+3. Unmount Vue Application。
+4. Dispose Installed Platform-provider Handles。
+5. Dispose Pinia。
+6. Release Vue Application Creation Handle。
+7. Release First Paint Handoff and Safety Handle。
+8. Dispose Global Failure Capture。
+9. Abort/Release Runtime Configuration Handle。
+
+Disposal 必须幂等；一个 Cleanup Failure 后继续其余 Cleanup；收集 Cleanup Failure 时不得暴露 Raw Cause；任何 Cleanup Failure 都不具备 In-document Retry 资格。Disposal 必须保留 User Preference 与 Custom Registry Data，不执行 Storage Clearing 或 Migration。
+
+### HMR Ownership
+
+```text
+HMR_OWNER=Runtime Kernel RunningApplicationHandle
+PROVIDER_HMR_HOOKS=PROHIBITED
+WINDOW_GLOBAL_KERNEL_HANDLE=PROHIBITED
+IMPORT_META_HOT_DATA=ALLOWED only for the exact private Kernel handle
+HMR_REPLACEMENT_ORDER=withdraw Ready,dispose complete old attempt,create complete fresh attempt
+DUPLICATE_MOUNT=PROHIBITED
+DUPLICATE_GLOBAL_LISTENER=PROHIBITED
+DUPLICATE_APPEARANCE_SUBSCRIPTION=PROHIBITED
+PRODUCTION_HMR_BEHAVIOR=NONE
+```
+
+HMR 只在 Development 生效，并与 Failed-attempt Retry、Application Disposal 使用同一个完整 Reverse Disposer。Provider 不得注册竞争 HMR Hook；新 Attempt 不得复用已 Dispose Handle、Validated Configuration、Vue App、Pinia、Appearance Handoff 或 Listener。
+
+### Non-protocol Implementation Details
+
+以下内容不成为 Architecture Contract：Local Helper Name、Local Variable Name、Parser Decomposition、Internal Loop、Private Array/Map/Closure、Opaque Instance-ID Generation Algorithm、Error Normalizer Internal Dispatch、Fatal-boundary DOM Helper Name、JSON Whitespace and Key Formatting、Private Kernel Handle Type Name、Private Bootstrap Executor Data Structure，以及 Kernel Checker 的 Physical Split；`check:arch` 必须保持唯一 Architecture Governance Entry。
 
 ### Runtime Kernel Static Enforcement Targets
 
@@ -4465,7 +4692,17 @@ Dispose 必须取消 Timer、AbortSignal、Observer、BroadcastChannel、Event L
 CAPABILITY_STATUS=TARGET_INACTIVE
 ```
 
-Owning Implementation Package 必须验证 Bootstrap Step Registry 与实现一一对应、Provider Dependency Graph 无环、Create/Ready/Dispose 完整、Mount 只出现于 Kernel、Global Listener 都有 Disposal Handle、Fatal Boundary 不依赖未就绪 Provider。规则在 Runtime Kernel Implementation 前不得宣称 `ACTIVE`。
+Owning Implementation Package 必须验证：
+
+* Exact Runtime Configuration Artifact、HTML Carrier、URL、Field Set、Discriminator、Build Version、Release SHA、Deployment Base 与 Compatibility Comparison。
+* Exact Four-record Core Error Registry，以及每条 Error ID、Message Key、Safe/Prohibited Context、Recoverability、Retry Owner、Report Level、Normalization Source 与 Fatality。
+* Configuration-first Startup Order，Global Listener 的 Exact Count、Owner、Lifetime、Cleanup、Retry 与 HMR Behavior。
+* `startup-configuration-recovery` 的单次 User-triggered Retry Limit。
+* Exact Nine-step Bootstrap Registry、Dependency Graph Acyclicity、Current Provider Set、Unique Mount Owner、Exact Reverse Disposal Order 与 Idempotent Disposal。
+* Exact HMR Owner，且没有 Future Provider、Placeholder Step、Router、Storage、Query、API、Auth、Session、Permission、I18n、Observability 或 Deployment Activation。
+* Package 5 Appearance Behavior 不变。
+
+规则在 Runtime Kernel Implementation Landing 前不得宣称 `ACTIVE`。
 
 ## 19.5 Application Persistence Target Contract
 
@@ -4916,22 +5153,154 @@ interface ErrorRegistryRecord {
 }
 ```
 
-所有 Error 必须携带 Registry ID、Category、Opaque Error Instance ID、Cause Category、Timestamp 和 Safe Context；Raw `unknown` 只能在 Normalizer Boundary 存在。UI 只消费 `userMessageKey`、Recoverability 和 Safe Action，不判断 HTTP Status、Error Message 或 Stack。Cancellation 是结果，不是用户错误。
+上述 Base Record Shape 保持不变。所有 Error 必须携带 Registry ID、Category、Opaque Error Instance ID、Cause Category、Timestamp 和 Safe Context；Raw `unknown` 只能进入 Application-owned Normalizer Boundary。UI 只消费 `userMessageKey`、Recoverability 和 Safe Action，不判断 HTTP Status、Error Message 或 Stack。Cancellation 是结果，不是用户错误。
+
+Runtime Kernel Landing 创建一份 Application-owned Core Error Registry：
+
+```text
+CORE_ERROR_REGISTRY_OWNER=apps/web/src/app/errors
+CORE_ERROR_REGISTRY_CARDINALITY=4
+CORE_ERROR_MESSAGE_KEY_AUTHORITY=apps/web/src/app/errors built-in Core Error message table
+REMOTE_REPORTER=PROHIBITED
+```
+
+Exact Current Set 只包含：
+
+```text
+runtime-configuration-failure
+application-startup-failure
+vue-component-failure
+unhandled-promise-rejection
+```
+
+该 Set 不包含 I18n、Router、API、Storage、Auth、Permission、Observability、Deployment、Business 或 Vendor Error。四个 `userMessageKey` 只引用同一 Built-in Core Error Message-key Authority；这不准入 Vue I18n 或 Remote Reporter。
+
+全部四条 Record 的 Common Prohibited Context 精确为：
+
+```text
+Cookie
+Authorization
+Token
+Password
+Secret
+CSRF
+full URL
+query
+form value
+request body
+response body
+Storage payload
+file content
+DOM text
+raw Runtime Configuration
+raw event
+raw Promise
+raw component instance
+component props
+component emits
+raw cause
+raw message
+raw stack
+```
+
+只有每条 Record 明确列出的 `safeContextFields` 可以进入 Safe Context。Existing Normalized Error 必须保留其 Opaque Instance Identity，不得再次 Normalized、Captured 或 Reported。
+
+### Runtime Configuration Failure Record
+
+```text
+id=runtime-configuration-failure
+owner=apps/web/src/app/errors registry and normalizer
+producer=apps/web/src/app/config loader
+recoveryExecutor=runtime-kernel
+category=configuration
+userMessageKey=core-error.runtime-configuration-failure
+recoverability=retry-operation
+retryOwner=runtime-kernel
+reportLevel=fatal
+safeContextFields=startupAttemptId,configurationFailureCause,releaseSha,buildVersion
+normalizationSource=typed Runtime Configuration loader failure
+fatalForCurrentAttempt=true
+stateWhenRetryBudgetAvailable=recoverable-failure
+stateWhenRetryBudgetExhausted=fatal-failure
+capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+```
+
+### Application Startup Failure Record
+
+```text
+id=application-startup-failure
+owner=apps/web/src/app/errors registry and normalizer
+producer=runtime-kernel bootstrap-step boundary
+presentationOwner=runtime-kernel
+category=startup
+userMessageKey=core-error.application-startup-failure
+recoverability=reload-application
+retryOwner=user
+reportLevel=fatal
+safeContextFields=startupAttemptId,bootstrapStepId,releaseSha,buildVersion
+normalizationSource=bootstrap-step catch or unclaimed startup-phase window.error
+fatal=true
+capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+```
+
+Already-normalized Error 不再 Normalized。Application Startup Failure 不具备 In-document Configuration Retry 资格；唯一 Recovery Action 是用户显式 Browser Reload。Raw Event、Resource URL、Raw Cause、Message、Stack、Component Props 和 Component Instance 全部禁止。
+
+### Vue Component Failure Record
+
+```text
+id=vue-component-failure
+owner=apps/web/src/app/errors capture and normalizer
+presentationOwner=AppErrorBoundary
+category=component
+userMessageKey=core-error.vue-component-failure
+recoverability=none
+retryOwner=none
+reportLevel=error
+safeContextFields=startupAttemptId,vueLifecyclePhase,releaseSha,buildVersion
+allowedVueLifecyclePhase=render | setup | lifecycle | watcher
+normalizationSource=app.config.errorHandler or admitted component boundary
+fatal=false
+capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+```
+
+Initial Mount Step 中的 Root Component Failure 必须恰好一次分类为 `application-startup-failure`，不得同时分类为 Component Failure。Component Name、Instance、Props、Emits、Raw Vue Info、DOM Text、Raw Cause、Message 和 Stack 全部禁止。
+
+### Unhandled Promise Rejection Record
+
+```text
+id=unhandled-promise-rejection
+owner=apps/web/src/app/errors global capture
+category=unknown
+userMessageKey=core-error.unhandled-promise-rejection
+recoverability=none
+retryOwner=none
+reportLevel=error
+safeContextFields=applicationStartupState,startupAttemptId,releaseSha,buildVersion
+normalizationSource=PromiseRejectionEvent.reason at the global listener
+fatal=false
+triggersStartupRecovery=false
+capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+```
+
+Promise、Raw Rejection Reason、Raw Cause、Message 和 Stack 全部禁止。该 Record 不触发 Startup Recovery，也不准入 Remote Reporter。
 
 ## 20B.2 Capture and Boundary Ownership
 
 | Source | Owner | Boundary behavior |
 | --- | --- | --- |
-| Vue render/setup/lifecycle/watcher | `app.config.errorHandler` | normalize, report, nearest component/application boundary |
-| Component subtree | `AppErrorBoundary` or admitted local boundary | preserve Shell, reset subtree only when safe |
-| Unhandled promise rejection | global failure capture | normalize once, prevent duplicate report |
+| Runtime Configuration loader | Runtime Kernel step boundary plus `app/errors` normalizer | direct typed normalization before global capture exists |
+| Startup Bootstrap step or unclaimed startup execution error | Runtime Kernel step boundary or startup-only `window.error` | normalize once as `application-startup-failure` and stop the attempt |
+| Vue render/setup/lifecycle/watcher | `app.config.errorHandler` | normalize once as `vue-component-failure`; initial root Mount uses Startup precedence |
+| Component subtree | `AppErrorBoundary` or admitted local boundary | preserve Shell and reset subtree only when safe |
+| Unhandled promise rejection | the one global `unhandledrejection` listener | normalize once as `unhandled-promise-rejection`; never trigger Startup Recovery |
 | Router guard/navigation | Router | typed navigation failure and error route |
 | Query/Mutation | TanStack Query owner | query/mutation policy and feature state |
 | Resource/Chunk load | Runtime/Router | release-aware recovery |
-| Startup | Runtime Kernel | no partial mount, fatal startup page |
 | Reporting provider | Observability owner | never re-enter application error pipeline |
 
-Boundary Reset 必须先 Dispose 失败 Subtree 的 Subscription、Request、Focus/Scroll Lock 和 Draft Handle。Fatal Error 不允许无限 Retry；Recoverability 必须来自 Registry，Component 不得随意添加 Reload Button。
+Runtime Kernel 首次 Landing 只激活上表前五条所需的四条 Core Record。Router、Query/Mutation、Resource/Chunk-load 和 Reporting 行只保留其 Future Owner，不得在当前 Core Registry 中创建 Placeholder Record 或 Adapter。
+
+Boundary Reset 必须先 Dispose 失败 Subtree 的 Subscription、Request、Focus/Scroll Lock 和 Draft Handle。Fatal Error 不允许无限 Retry；Recoverability 必须来自 Registry，Component 不得随意添加 Reload Button。Global Capture 的 Exact Count、Lifetime、Atomic Installation、Ready-time `window.error` Removal 和 Attempt-final `unhandledrejection` Removal 只由 §19.4 的 Configuration-first Contract 定义，不得建立第二份 Listener Policy。
 
 ## 20B.3 Structured Log, Event and Trace Schema
 
@@ -6064,7 +6433,10 @@ interface StaticEnforcementTarget {
 | `no-unregistered-api-policy-literal` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Base URL, timeout, retry, backoff, cache, header and concurrency policy | `runtime-configuration-schema`; `domain-schema`; `named-protocol-constant` | `UNREGISTERED_API_POLICY` |
 | `route-registry-name-and-meta-closure` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | File routes, route records, redirects, error routes and navigation consumers | `route-registry`; `generated-output` | `ROUTE_REGISTRY_DRIFT` |
 | `no-undeclared-route-meta` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Every static/dynamic route meta object | `route-registry` | `UNDECLARED_ROUTE_META` |
-| `registered-errors-only` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Core errors plus exact extensions in Router/Storage/API/Auth/Observability consumers | `error-registry` | `UNREGISTERED_ERROR` |
+| `runtime-configuration-exact-contract` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Root/app package identity, project config, Vite, production HTML carrier, config loader/schema, emitted artifact and First Paint paths | `runtime-configuration-schema`; `generated-output`; `named-protocol-constant` | `RUNTIME_CONFIGURATION_CONTRACT_DRIFT` |
+| `registered-errors-only` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Exact four-record Core Error Registry, normalizer, capture sources and message-key consumers | `error-registry` | `UNREGISTERED_ERROR` |
+| `runtime-kernel-bootstrap-registry` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Kernel step registry, dependency edges, create/ready/dispose handles, provider set and Mount sites | `named-protocol-constant`; `package-boundary-registry` | `RUNTIME_KERNEL_BOOTSTRAP_DRIFT` |
+| `runtime-kernel-lifecycle-disposal-hmr` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Startup state, retry budget, global/Appearance listeners, reverse disposal and HMR ownership | `named-protocol-constant`; `error-registry`; `capability-status-registry` | `RUNTIME_KERNEL_LIFECYCLE_DRIFT` |
 | `registered-permissions-only` | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` | Route, component visibility, operation and claim projection | `permission-registry` | `UNREGISTERED_PERMISSION` |
 | `no-inactive-capability-import` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | Package manifests and complete workspace import graph | `capability-status-registry`; `package-boundary-registry` | `INACTIVE_CAPABILITY_IMPORT` |
 | `no-query-data-copied-into-pinia` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Pinia state/actions, Query callbacks and server-entity consumers | `domain-schema` | `QUERY_DATA_COPIED_TO_PINIA` |
@@ -6072,6 +6444,24 @@ interface StaticEnforcementTarget {
 | `single-product-default-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Schema defaults, stores, reset, First Paint, Runtime Config, Page/Feature/Shared/Public UI, appearance attributes and documentation code | `typed-default-registry`; `generated-output` | `DUPLICATE_PRODUCT_DEFAULT` |
 | `single-safety-baseline-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | HTML, Critical CSS, Manifest, initializer and persistence consumers | `typed-default-registry`; `generated-output` | `DUPLICATE_SAFETY_BASELINE` |
 | `no-unregistered-environment-default` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Config loader/schema and every App/Feature/UI environment consumer | `runtime-configuration-schema` | `UNREGISTERED_ENVIRONMENT_DEFAULT` |
+
+Runtime Kernel Implementation 必须扩展 Existing Static Owners，不得创建新的 Static-governance Framework：
+
+```text
+scripts/architecture/check-boundaries.ts
+  → registry parity, source parity, dependency-graph parity, Mount ownership parity, listener ownership and lifetime parity, Core Error parity, lifecycle parity, retry parity, disposal parity and HMR parity
+
+scripts/verify/check-project-config.ts
+  → project and build declarations, direct dependency parity, Catalog parity, Lockfile parity, Build Version authority, Release SHA authority and Deployment Base authority
+
+scripts/verify/check-bundle.ts
+  → emitted runtime-configuration.json, production HTML carrier, base/First Paint/build identity parity
+
+scripts/architecture/check-appearance-cutover.ts
+  → unchanged Package 5 Appearance, persistence, handoff and media behavior
+```
+
+Runtime Kernel Checker Logic 的 Physical Split 是 Non-protocol Implementation Detail；Root `check:arch` 保持 Sole Architecture Governance Entry。
 
 `TARGET_INACTIVE` Rule 只有在同一个 Owning Package 中交付现有 Toolchain 内的实现、接入 `pnpm verify`、通过可逆 Negative Probe、证明 Allowed Authority 是 Exact Registry 而不是宽泛 Path Escape，并保持无 Test/Evidence Artifact 后，才能改为 `ACTIVE`。Regex 只能作为确定性 Lexer 的一部分；对 TypeScript/Vue/CSS/JSON/Generated Record 的结构性合同必须使用相应 Parser、AST 或 Exact-set Comparison，不能用注释、命名约定或 Allowlist Wildcard 代替。
 
@@ -6197,6 +6587,29 @@ declared Appearance and Scroll contracts
 Material fallback completeness
 generated-output drift
 bundle budgets
+```
+
+`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 必须在 Existing Static Owners 中额外证明：
+
+```text
+exact runtime-configuration.json artifact name, output and deployed URL
+exact existing module bootstrap-script carrier and one non-empty URL attribute
+exact strict five-field Runtime Configuration record and schema discriminator
+root package Build Version authority and compiled/runtime equality
+single-read full Release SHA authority and compiled/runtime equality
+single deployment-base authority and current exact root-only compatibility
+same-origin/protocol/path/fetch/document/First Paint compatibility comparisons
+exact eleven Runtime Configuration failure causes
+exact four-record Core Error Registry and built-in message-key set
+exact safe and prohibited error context closure
+configuration-first startup and exact two-listener capture ownership
+exact one-user-retry startup-configuration-recovery policy
+exact nine-step Bootstrap Registry and acyclic dependency graph
+exact Pinia-and-Appearance current provider set
+unique Mount owner and exact reverse disposal order
+idempotent cleanup and sole HMR owner
+absence of future Providers, placeholder Steps and inactive capability imports
+unchanged Package 5 Appearance behavior
 ```
 
 静态门槛不能证明：
@@ -6406,7 +6819,7 @@ CAPABILITY=DEPLOYMENT_DELIVERY_AND_SECURITY_INTEGRATION
 CAPABILITY_STATUS=TARGET_INACTIVE
 OWNER=deployment platform plus apps/web configuration boundary
 ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
-CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_IMPLICIT
+CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_ARCHITECTURE_FROZEN_IMPLEMENTATION_INACTIVE
 ```
 
 * 所有环境变量通过 Zod 校验。
@@ -6424,40 +6837,169 @@ CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_IMPLICIT
 
 ## 34.1 Build-time and Runtime Configuration
 
-Build-time Environment 只允许决定无法在部署后改变的编译事实：Build Mode、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Configuration 决定 Deployment Base、API Origin、Observability Endpoint、Environment Label、公开 Feature Availability 和非敏感服务 URL。
+Build-time Environment 只允许决定无法在部署后改变的编译事实：Compiled Environment Identity、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Kernel 首次只准入本节冻结的 Exact Core Runtime Configuration Record；API、Observability、Public Feature Availability、Product Zone、Router、Auth、Session、Storage、Vendor、Secret、Credential 与 Private URL Field 均不存在，不能使用 Optional、Default、Empty String、`null`、False、Localhost 或 Placeholder Stub 提前保留。
 
-```ts
-interface RuntimeConfiguration {
-  schemaVersion: number
-  environment: 'development' | 'staging' | 'production'
-  deploymentBase: string
-  apiBaseUrl: string
-  releaseSha: string
-  buildVersion: string
-  publicFeatureFlags: Readonly<Record<string, boolean>>
-  productZonePolicyId: string
-  observability: {
-    endpoint: string | null
-    policyId: string
-  }
-}
+### Build Version Authority
+
+```text
+BUILD_VERSION_AUTHORITY=root package.json version
+CURRENT_BUILD_VERSION=0.0.0
+BUILD_VERSION_SYNTAX=major.minor.patch without a leading v
+APPS_WEB_PACKAGE_VERSION_AUTHORITY=NONE
+NORMAL_DEVELOPMENT_CHANGE=PROHIBITED
+FORMAL_RELEASE_CHANGE=OWNER_EXPLICIT_AUTHORIZATION_REQUIRED
+RUNTIME_CONFIGURATION_BUILD_VERSION=EXACT_ROOT_PACKAGE_VERSION
+COMPILED_BUILD_VERSION=EXACT_ROOT_PACKAGE_VERSION
+BUILD_RUNTIME_EQUALITY=REQUIRED
 ```
 
-该 Interface 是全部 Gate 完成后的 End-state Shape，不是 Runtime Kernel Package 可以提前实现的 Optional/Placeholder Object。Runtime Kernel 首次只激活 `schemaVersion`、`environment`、`deploymentBase`、`releaseSha` 与 `buildVersion` 的 Exact Core Record；Router 只消费已激活的 `deploymentBase`，不扩展 Schema；API Package 原子加入 `apiBaseUrl` 及其 Origin Policy；Observability/Deployment Package 原子加入 `observability`、Release Delivery 和当时真实需要的 Public Feature Availability Record；唯一命名的 I18n Admission Instance 原子加入 `productZonePolicyId` 及其 Exact Time-zone Policy Registry Reference。Schema、Default-free Failure Contract、Runtime Loader、Consumer 和 Static Registry 必须随每次 Field Admission 同时扩展。未准入 Field 必须不存在，不能以空字符串、`null`、False、Localhost 或 Vendor Default 作为 Stub。
+Root `package.json` 的 `version` 是唯一 Build Version Authority，当前权威值保持 `0.0.0`。Ordinary Feature Work、Architecture Work、Commit、Push、CI Run 和 Work-package Completion 都不得改变它；只有 Owner 明确授权的 Formal Product Release 才能改变它。`apps/web/package.json` 不成为第二份 Authority。Timestamp、CI Run Number、Git Tag、Short SHA、Full SHA、Branch Name 与 Automatic Counter 全部禁止作为 Build Version Producer。`releaseSha` 是独立的 Exact Git Commit Identity，不是 Build Version Producer。
 
-Runtime Config URL 由 Deployment Template 通过命名 HTML Attribute 提供，必须 Same-origin、位于 Canonical Base、使用 HTTPS（Development 明确例外）并在 Vue 前通过 Strict Zod Schema。Config 一旦验证成功即 Deep Immutable；Feature 不读取 `import.meta.env`、`process.env`、Global Window Value 或未验证 JSON。
+### Runtime Configuration Artifact and URL
 
-`VITE_*` 永不包含 Secret、Credential、Private Key、Token、Password、Internal Host 或仅靠隐藏 Source Map 保护的值。任何进入 Browser Bundle 或 Runtime Config 的值都视为公开。Secret 只存在于 Server/Deployment Secret Store。
+```text
+RUNTIME_CONFIGURATION_ARTIFACT_NAME=runtime-configuration.json
+RUNTIME_CONFIGURATION_BUILD_OUTPUT=apps/web/dist/runtime-configuration.json
+RUNTIME_CONFIGURATION_DEPLOYED_URL=/runtime-configuration.json
+RUNTIME_CONFIGURATION_URL_OWNER=apps/web index/Vite deployment template boundary
+RUNTIME_CONFIGURATION_HTML_CARRIER=the existing module bootstrap script element whose src is /src/main.ts
+RUNTIME_CONFIGURATION_HTML_ATTRIBUTE=data-runtime-configuration-url
+RUNTIME_CONFIGURATION_HTML_ATTRIBUTE_VALUE=/runtime-configuration.json
+ENVIRONMENT_SPECIFIC_SOURCE_JSON_IN_REPOSITORY=PROHIBITED
+WINDOW_GLOBAL_CONFIGURATION=PROHIBITED
+```
+
+该 JSON File 是 Generated Production/Deployment Artifact，不是 Committed Environment-specific Source File。Existing Module Bootstrap Script 上必须存在恰好一个非空 `data-runtime-configuration-url` Attribute；不得由另一个 Element、Module、Window Global、Environment Fallback 或 Default 提供第二个 URL。Application 不得推断、修复或默认该 URL，并且必须在创建任何 Vue Application 或 Pinia Instance 之前读取它。
+
+### Exact Core Runtime Configuration Record
+
+```text
+schemaVersion=1
+environment=development | staging | production
+deploymentBase=/
+releaseSha=full lowercase forty-character hexadecimal Git commit SHA
+buildVersion=exact root package.json version
+```
+
+Top-level Field Set 精确为：
+
+```text
+schemaVersion
+environment
+deploymentBase
+releaseSha
+buildVersion
+```
+
+```text
+UNKNOWN_FIELD=REJECT
+MISSING_FIELD=REJECT
+OPTIONAL_FIELD=PROHIBITED
+DEFAULT_FIELD=PROHIBITED
+COERCION=PROHIBITED
+PARTIAL_MERGE=PROHIBITED
+VALIDATED_RESULT=RECURSIVELY_IMMUTABLE
+VALIDATION_TIMING=BEFORE_VUE_APPLICATION_AND_PINIA_CREATION
+```
+
+Runtime Kernel Implementation Package 可以把 Existing Workspace Catalog Zod Coordinate 作为 `apps/web` Direct Dependency 加入；本 Architecture-only Task 不准入 Dependency，也不修改 Manifest 或 Lockfile。Feature 不读取 `import.meta.env`、`process.env`、Window Global 或未验证 JSON。
+
+### Deployment Base Authority
+
+```text
+DEPLOYMENT_BASE_AUTHORITY=projectConfig.deployment.deploymentBase
+CURRENT_DEPLOYMENT_BASE=/
+VITE_BASE_SOURCE=projectConfig.deployment.deploymentBase
+RUNTIME_CONFIGURATION_DEPLOYMENT_BASE_SOURCE=projectConfig.deployment.deploymentBase
+HTML_RUNTIME_CONFIGURATION_URL_SOURCE=projectConfig.deployment.deploymentBase
+FIRST_PAINT_PATH_AUTHORITY=projectConfig.deployment.deploymentBase
+SUBPATH_DEPLOYMENT_STATUS=TARGET_INACTIVE
+```
+
+Future Runtime Kernel Implementation 必须增加 Explicit Declaration：
+
+```ts
+projectConfig.deployment.deploymentBase='/'
+```
+
+Vite Base、Runtime Configuration URL、Generated First Paint Asset Path 与 Runtime Configuration `deploymentBase` 必须从该 Single Authority 派生。当前 Active Compatibility Contract 只接受 Exact `/`；禁止 Trimming、Normalization、Repair、Fallback 或 Subpath Acceptance。Subpath Deployment 保持延迟，只有 Future Deployment Gate 可以激活。本 Architecture-only Task 不修改 `project.config.ts`。
+
+### Release SHA Authority
+
+```text
+RELEASE_SHA_AUTHORITY=git rev-parse HEAD at the build boundary
+RELEASE_SHA_FORMAT=full lowercase forty-character hexadecimal commit SHA
+SHORT_SHA=PROHIBITED
+FALLBACK_SHA=PROHIBITED
+COMPILED_RELEASE_SHA=EXACT_BUILD_BOUNDARY_VALUE
+RUNTIME_CONFIGURATION_RELEASE_SHA=EXACT_BUILD_BOUNDARY_VALUE
+BUILD_RUNTIME_RELEASE_EQUALITY=REQUIRED
+```
+
+Build Boundary 必须恰好读取一次 Git SHA，并把同一个值注入 Compiled Build Identity 与 Emitted Runtime Configuration Artifact。Missing Git Provenance、Malformed SHA 或 Runtime/Compiled Mismatch 必须失败。
+
+### URL, Fetch, Compatibility and Failure Contract
+
+Loader 必须按以下精确顺序执行：
+
+1. 在 Existing Module Bootstrap Script 上定位恰好一个非空 `data-runtime-configuration-url`。
+2. 使用 `new URL(attributeValue, document.baseURI)` 构造 URL。
+3. 拒绝 Credential、Query 和 Fragment。
+4. 要求 `url.origin === location.origin`。
+5. 要求 Pathname 精确为 `/runtime-configuration.json`。
+6. 要求 HTTPS；只有 Compiled Environment 为 `development` 时允许 HTTP。
+7. 使用 `credentials='same-origin'`、`cache='no-store'`、`redirect='error'` Fetch。
+8. 要求 Successful HTTP Response，然后 Parse JSON 并验证 Exact Strict Schema。
+9. 比较 Configuration `environment` 与 Compiled Environment Identity。
+10. 比较 Configuration `releaseSha` 与 Compiled Release Identity。
+11. 比较 Configuration `buildVersion` 与 Compiled Root-package Build Version Identity。
+12. 比较 Configuration `deploymentBase` 与 `import.meta.env.BASE_URL`。
+13. 要求 Document Base Origin 与 `location.origin` 相同。
+14. 要求 Current First Paint Asset Path 分别精确解析为 `/generated/critical-theme.css` 与 `/generated/appearance-init.js`。
+
+Exact Configuration Failure Cause Set：
+
+```text
+configuration-source-missing
+configuration-network-failure
+configuration-malformed-json
+configuration-schema-rejected
+configuration-environment-mismatch
+configuration-release-mismatch
+configuration-build-mismatch
+configuration-base-mismatch
+configuration-origin-prohibited
+configuration-document-mismatch
+configuration-first-paint-mismatch
+```
+
+`configuration-source-missing` 只表示 Carrier/Attribute Cardinality 或 Non-empty Requirement 失败；`configuration-network-failure` 包含 Fetch Boundary Failure、Redirect Rejection 或 Unsuccessful HTTP Response；Malformed JSON 与 Strict Schema Rejection 保持不同 Cause。Credential、Query、Fragment、Protocol、Origin 或 Exact Path Failure 使用 `configuration-origin-prohibited`；Document Base Origin Failure 使用 `configuration-document-mismatch`；First Paint Path Failure 使用 `configuration-first-paint-mismatch`。Environment、Release、Build 与 Base Compatibility 各自使用其同名 Mismatch Cause。内部 Normalizer Dispatch 或 Parser Decomposition 不成为 Public Contract。
+
+任何 Configuration Failure 必须：
+
+* Preserve Existing Appearance Safety Baseline。
+* Stop All Later Bootstrap Steps。
+* Enter Non-Vue Configuration Failure Boundary。
+* Avoid Pinia Creation、Vue Application Creation 与 Mount。
+* 不暴露 Raw URL、Raw Configuration、Raw Response、Raw Cause、Message 或 Stack。
+* 只允许 §19.4 冻结的 Bounded Configuration Retry。
+* Retry 时重新读取完整 Artifact，永不 Partial Merge Previous Configuration。
+
+`VITE_*` 永不包含 Secret、Credential、Private Key、Token、Password、Internal Host 或仅靠隐藏 Source Map 保护的值。任何进入 Browser Bundle 或 Runtime Configuration 的值都视为 Public。Secret 只存在于 Server/Deployment Secret Store。
 
 ## 34.2 Configuration Failure Page
 
-Runtime Config 缺失、网络失败、Schema/Release/Base 不匹配或包含禁止 Origin 时，Bootstrap 在创建 Pinia/Query/Router 前停止并显示 §19.4 Minimal Configuration Failure Page。页面只能显示安全 Message Key、Release/Build ID 和 Retry；不显示 Raw Config、Endpoint、Stack 或 Secret。Retry 必须重新读取完整 Config，不合并旧 Partial Object。
+任一 §34.1 Exact Configuration Failure Cause 都必须在创建 Pinia 或 Vue Application 前停止 Bootstrap，并显示 §19.4 Non-Vue Configuration Failure Boundary。Boundary 只允许 Built-in Safe Message Key、允许的 Release/Build Identity，以及由 `startup-configuration-recovery` 当前 Budget 决定的 Retry 或 Reload Action；不得依赖 Router、Pinia、Query、I18n、Public UI Package 或 Remote Reporter。
+
+Initial Attempt 后只允许一次 User-triggered、Whole-attempt Retry。Retry 必须重新读取完整 Artifact，不合并 Previous Object；第二次 Configuration Failure 后只显示 Explicit Browser Reload。Application Startup、Vue Component、Unhandled Promise Rejection、Disposal 或 Fatal Renderer Failure 都不得使用该 In-document Retry。
 
 ## 34.3 Deployment Base and SPA Fallback
 
-`deploymentBase` 是 Vite Asset Base、HTML Asset URL、First-paint Artifact、Runtime Config URL、Router History Base、Service Endpoint Relative URL 和 SPA Fallback 的唯一 Authority。Root `/` 与 Subpath 均允许，但同一 Release 只能有一个 Validated Base。禁止在 `index.html`、Router、CSS、Component 或 Feature 写绝对 Root Asset Path。
+`projectConfig.deployment.deploymentBase` 是 Vite Asset Base、HTML Runtime Configuration URL、First Paint Artifact Path 与 Runtime Configuration `deploymentBase` 的当前 Single Authority。Runtime Kernel 首次准入只支持 Exact Root `/`，不支持 Subpath。Router History Base、Service Endpoint Relative URL、SPA Fallback 和 Subpath Delivery 只能在各自 Future Gate 激活后消费同一 Authority，不得在当前 Package 创建 Placeholder 或扩展 Runtime Configuration Field Set。
 
-Deployment Server 对 Canonical Base 下的非 Asset、非 API、已允许 HTML Navigation 请求返回 `index.html`；未知 Hashed Asset、Generated Artifact、Runtime Config、API 和文件请求必须返回真实 404，不得 fallback 为 HTML。Base 外请求由 Hosting Policy 处理。
+当前 Exact Root URL 与 First Paint Path 是 Architecture-frozen Compatibility Value，不构成 Page、Component 或 Feature 可以复制 Absolute Path Literal 的许可。Future Subpath Gate 必须原子更新 Deployment、Runtime Configuration、Vite、HTML、First Paint、Router 与 SPA Fallback Contract；在此之前任何 Subpath Value、Normalization、Repair 或 Fallback 都失败。
+
+Future Deployment Server 对 Canonical Base 下的非 Asset、非 API、已允许 HTML Navigation Request 返回 `index.html`；Unknown Hashed Asset、Generated Artifact、Runtime Configuration、API 和 File Request 必须返回真实 404，不得 Fallback 为 HTML。该 Delivery Behavior 保持 `TARGET_INACTIVE`，不由 Runtime Kernel Package 实现。
 
 ## 34.4 Environment Model
 
@@ -7244,14 +7786,27 @@ Final Governance 只能闭合已准入规则，不能为早期 Package 补交其
 
 ### 37.2.4 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`
 
+#### `PAVP_RUNTIME_KERNEL_PROTOCOL_FREEZE_AMENDMENT`
+
 ```text
-ENTRY=PAVP_FINAL_STATIC_GOVERNANCE=COMPLETE; runtime config/error/lifecycle schemas frozen; no overlapping dirty change
-ALLOWED=core runtime config exact active subset and validation; core startup/config/Vue error registry, normalizer and pre-Vue capture; Vue/bootstrap lifecycle; active appearance/Pinia provider integration; fatal boundary; create/ready/dispose registry
-PROHIBITED=Router, API transport, general storage, Auth/Session, Observability vendor, business route, placeholder provider, hidden singleton
-OUTPUT=acyclic kernel for currently admitted providers; exact startup state; minimal active core config/error authorities; reverse disposal; HMR reuse; fatal configuration/startup recovery
-MACHINE_GATES=bootstrap registry parity; dependency graph acyclic; mount uniqueness; disposal closure; config schema; error-boundary independence; bundle budget; pnpm verify
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+IMPLEMENTATION_AUTHORITY=NONE
+ALLOWED_SCOPE=Runtime Configuration artifact and compatibility contract; current Core Error Registry records; configuration-first startup and global failure-capture ownership; bounded startup configuration retry; current Bootstrap Step Registry
+PROHIBITED_SCOPE=source implementation; dependency or lockfile changes; Router; general Storage; Query; API; Auth; Session; Permission; I18n; Observability; Deployment integration; Shared UI; Layout; business pages; tests; browser infrastructure; Git mutation
+ACTIVATION_EFFECT=NONE_UNTIL_PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+```
+
+该 Amendment 只闭合 Existing Runtime Kernel Work Package 的 Protocol Input，不创建第二个 Runtime Kernel Status Authority，不激活 Capability，也不授权 Source Implementation。`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 保持 `NEXT`，Runtime Kernel Capability 保持 `TARGET_INACTIVE`。
+
+```text
+ENTRY=PAVP_FINAL_STATIC_GOVERNANCE=COMPLETE; PAVP_RUNTIME_KERNEL_PROTOCOL_FREEZE_AMENDMENT=FROZEN; no overlapping dirty change
+ALLOWED=exact runtime-configuration.json artifact and production HTML carrier; strict five-field Core Runtime Configuration validation and compatibility; root Build Version, single-read Release SHA and root-only deployment-base build integration; existing Workspace Catalog Zod coordinate as direct apps/web dependency; exact four-record Core Error Registry, built-in message keys, normalizer and global capture; exact nine-step configuration-first Bootstrap Registry; active Package 5 Appearance and Pinia provider integration; non-Vue configuration failure and startup fatal boundaries; single user-triggered configuration retry; reverse disposal and sole HMR ownership; existing static-owner extensions
+PROHIBITED=Router; general Storage; Query; API; Auth; Session; Permission; I18n; Observability; Deployment integration beyond exact root-only compatibility; Shared UI; Layout; business pages; placeholder provider or step; hidden singleton; test or browser infrastructure
+OUTPUT=generated/deployed runtime-configuration.json with exact compiled/runtime identity parity; one recursively immutable Core Runtime Configuration authority; exact four-record Core Error Registry; acyclic nine-step Kernel for Pinia and Appearance only; unique Mount; exact startup state and bounded configuration recovery; one reverse disposer; one private HMR owner; future providers absent
+MACHINE_GATES=runtime artifact/carrier/schema/build/release/base/First Paint parity; exact Core Error Registry and context closure; bootstrap registry parity; dependency graph acyclic; exact listener lifetime; one-retry policy; current provider-set closure; mount uniqueness; exact reverse disposal and HMR ownership; inactive-capability absence; unchanged Package 5 Appearance; bundle budget; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_STARTUP_FAILURE_RETRY_DISPOSAL_AND_HMR_APPLICABLE_BEHAVIOR
-COMPLETION_EVIDENCE=kernel owns sole mount; all active providers have handles; future provider steps remain absent and TARGET_INACTIVE
+COMPLETION_EVIDENCE=kernel owns sole mount; emitted artifact and production HTML carrier match the frozen contract; all four Core Error records and nine active steps match exact registries; all current providers have handles; one user retry and full reread are enforced; future provider steps remain absent and TARGET_INACTIVE
 ```
 
 后续 Package 通过 Kernel 的 Exact Provider Admission 扩展启动序列；不得提前提交 No-op Provider 或 Stub。
