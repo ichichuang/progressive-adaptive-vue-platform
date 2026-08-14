@@ -169,6 +169,9 @@ importers:
       vue:
         specifier: 'catalog:'
         version: 3.5.40(typescript@6.0.3)
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
 
   packages/design-system:
     dependencies:

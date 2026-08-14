@@ -972,10 +972,12 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
   if (
     !isDeepStrictEqual(piniaImporters.sort(compareCodePoints), [
       'apps/web/src/app/appearance/appearance.store.ts',
-      'apps/web/src/main.ts',
+      'apps/web/src/app/providers/pinia.ts',
     ])
   ) {
-    violations.push('Pinia imports must remain limited to main.ts and appearance.store.ts.')
+    violations.push(
+      'Pinia imports must remain limited to its Runtime Kernel provider owner and appearance.store.ts.',
+    )
   }
 
   const preferenceStorage = await readFile(
@@ -1027,37 +1029,138 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
   violations.push(...validateStoreAst(storePath, storeSource))
 
   const bootstrap = await readFile(resolve(appearanceDirectory, 'appearance-bootstrap.ts'), 'utf8')
+  const bootstrapFile = sourceFile('apps/web/src/app/appearance/appearance-bootstrap.ts', bootstrap)
+  const bootstrapCalls: ts.CallExpression[] = []
+  const bootstrapDeletes: ts.DeleteExpression[] = []
+  const collectBootstrapOperations = (node: ts.Node): void => {
+    if (ts.isCallExpression(node)) {
+      bootstrapCalls.push(node)
+    } else if (ts.isDeleteExpression(node)) {
+      bootstrapDeletes.push(node)
+    }
+
+    ts.forEachChild(node, collectBootstrapOperations)
+  }
+  collectBootstrapOperations(bootstrapFile)
+  const callPropertyName = (call: ts.CallExpression): string | undefined => {
+    const expression = unwrapExpression(call.expression)
+    return ts.isPropertyAccessExpression(expression) ? expression.name.text : undefined
+  }
+  const stringArgument = (call: ts.CallExpression, index: number): string | undefined => {
+    const argument = call.arguments[index]
+    const value = argument === undefined ? undefined : unwrapExpression(argument)
+    return value !== undefined && ts.isStringLiteral(value) ? value.text : undefined
+  }
+  const deletedBridgeFields = new Set(
+    bootstrapDeletes.flatMap((operation) => {
+      const expression = unwrapExpression(operation.expression)
+      return ts.isPropertyAccessExpression(expression) ? [expression.name.text] : []
+    }),
+  )
+  const restorationCalls = bootstrapCalls.filter(
+    (call) => callPropertyName(call) === 'restoreAppearance',
+  )
+  const mediaRegistrationCalls = bootstrapCalls.filter(
+    (call) => callPropertyName(call) === 'addEventListener' && stringArgument(call, 0) === 'change',
+  )
+  const mediaRemovalCalls = bootstrapCalls.filter(
+    (call) =>
+      callPropertyName(call) === 'removeEventListener' && stringArgument(call, 0) === 'change',
+  )
+  const backdropCapabilityProbes = bootstrapCalls
+    .filter((call) => callPropertyName(call) === 'supports')
+    .map((call) => [stringArgument(call, 0), stringArgument(call, 1)] as const)
 
   if (
-    !bootstrap.includes('delete script.__pavpAppearanceHandoff') ||
-    !bootstrap.includes('delete script.__pavpRestoreAppearanceSafety') ||
-    (bootstrap.match(/addEventListener\('change'/gu)?.length ?? 0) !== 1 ||
-    (bootstrap.match(/removeEventListener\('change'/gu)?.length ?? 0) !== 1 ||
-    !bootstrap.includes('if (disposed)')
+    !deletedBridgeFields.has('__pavpAppearanceHandoff') ||
+    !deletedBridgeFields.has('__pavpRestoreAppearanceSafety') ||
+    restorationCalls.length !== 1 ||
+    mediaRegistrationCalls.length !== 1 ||
+    mediaRemovalCalls.length !== 1 ||
+    !isDeepStrictEqual(backdropCapabilityProbes, [
+      ['backdrop-filter', 'blur(0)'],
+      ['-webkit-backdrop-filter', 'blur(0)'],
+    ])
   ) {
     violations.push(
-      'appearance-bootstrap.ts: bridge consumption and idempotent media-listener disposal are incomplete.',
+      'appearance-bootstrap.ts: First Paint bridge release, restoration, capability detection, or post-mount media-listener parity is incomplete.',
     )
   }
 
   const mainSource = await readFile(resolve(rootDirectory, 'apps/web/src/main.ts'), 'utf8')
-  const mainOrder = [
-    mainSource.indexOf('createApp('),
-    mainSource.indexOf('createPinia('),
-    mainSource.indexOf('.use(pinia)'),
-    mainSource.indexOf('useAppearanceStore(pinia)'),
-    mainSource.indexOf('bootstrapAppearance(appearanceStore)'),
-    mainSource.indexOf(".mount('#app')"),
-  ]
+  const mainFile = sourceFile('apps/web/src/main.ts', mainSource)
+  const rootComponentImport = mainFile.statements.find(
+    (statement): statement is ts.ImportDeclaration =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === './App.vue' &&
+      statement.importClause?.name !== undefined,
+  )
+  const runtimeKernelImport = mainFile.statements.find(
+    (statement): statement is ts.ImportDeclaration =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === './app/bootstrap/runtime-kernel',
+  )
+  const runtimeKernelBindings = runtimeKernelImport?.importClause?.namedBindings
+  const runtimeKernelValueImports =
+    runtimeKernelBindings !== undefined && ts.isNamedImports(runtimeKernelBindings)
+      ? runtimeKernelBindings.elements.filter((element) => !element.isTypeOnly)
+      : []
+  const runtimeKernelEntryBinding = runtimeKernelValueImports[0]?.name.text
+  const runtimeKernelDelegations: ts.CallExpression[] = []
+  const collectRuntimeKernelDelegations = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === runtimeKernelEntryBinding
+    ) {
+      runtimeKernelDelegations.push(node)
+    }
+
+    ts.forEachChild(node, collectRuntimeKernelDelegations)
+  }
+  collectRuntimeKernelDelegations(mainFile)
+  const runtimeKernelRootArgument = runtimeKernelDelegations[0]?.arguments[0]
+  const rootComponentBinding = rootComponentImport?.importClause?.name
+  const prohibitedMainValueImports = mainFile.statements.filter(
+    (statement): statement is ts.ImportDeclaration => {
+      if (
+        !ts.isImportDeclaration(statement) ||
+        statement.importClause === undefined ||
+        statement.importClause.phaseModifier === ts.SyntaxKind.TypeKeyword ||
+        !ts.isStringLiteral(statement.moduleSpecifier)
+      ) {
+        return false
+      }
+
+      const modulePath = statement.moduleSpecifier.text
+      return (
+        modulePath === 'vue' ||
+        modulePath === 'pinia' ||
+        (modulePath.startsWith('./app/appearance/') &&
+          (statement.importClause.name !== undefined ||
+            (statement.importClause.namedBindings !== undefined &&
+              (!ts.isNamedImports(statement.importClause.namedBindings) ||
+                statement.importClause.namedBindings.elements.some(
+                  (element) => !element.isTypeOnly,
+                )))))
+      )
+    },
+  )
 
   if (
-    mainOrder.some(
-      (index, position) =>
-        index < 0 ||
-        (position > 0 && index <= (mainOrder[position - 1] ?? Number.POSITIVE_INFINITY)),
-    )
+    rootComponentBinding === undefined ||
+    runtimeKernelValueImports.length !== 1 ||
+    runtimeKernelDelegations.length !== 1 ||
+    runtimeKernelRootArgument === undefined ||
+    !ts.isIdentifier(runtimeKernelRootArgument) ||
+    runtimeKernelRootArgument.text !== rootComponentBinding.text ||
+    prohibitedMainValueImports.length !== 0
   ) {
-    violations.push('apps/web/src/main.ts: Package 5 bootstrap order is not exact.')
+    violations.push(
+      'apps/web/src/main.ts: Runtime Kernel delegation and sole aggregate HMR ownership must replace direct Package 5 lifecycle orchestration.',
+    )
   }
 
   const appearanceSource = (

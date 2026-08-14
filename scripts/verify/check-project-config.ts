@@ -1,8 +1,9 @@
 import { access, lstat, readFile, readdir } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { extname, join, relative, resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 
 import { projectConfig } from '../../project.config'
+import ts from 'typescript'
 import { parse as parseYaml } from 'yaml'
 
 import { runtimePreflightAuthority } from './check-runtime'
@@ -16,6 +17,8 @@ const expectedRuntime = {
   typescript: '6.0.3',
 } as const
 const expectedPackageManager = `pnpm@${expectedRuntime.pnpm}`
+const expectedBuildVersion = '0.0.0'
+const expectedZodVersion = '4.4.3'
 const expectedImplementationContract = {
   phase: 1,
   state: 'IN_PROGRESS',
@@ -26,6 +29,10 @@ const phaseOneUiDependencySections = [
   'peerDependencies',
   'optionalDependencies',
 ] as const
+const exactSemanticVersionPattern =
+  /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u
+const buildConfigurationSourceExtensions = new Set(['.html', '.js', '.mjs', '.ts', '.vue'])
+const excludedBuildConfigurationDirectories = new Set(['dist', 'node_modules'])
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -65,6 +72,1368 @@ function expectStructuredEqual(actual: unknown, expected: unknown, description: 
       `${description}: expected ${JSON.stringify(expected)}, received ${JSON.stringify(actual)}.`,
     )
   }
+}
+
+function expectExactCount(actual: number, expected: number, description: string): void {
+  if (actual !== expected) {
+    throw new Error(`${description}: expected ${String(expected)}, received ${String(actual)}.`)
+  }
+}
+
+function unwrapExpression(expression: ts.Expression): ts.Expression {
+  let current = expression
+
+  while (
+    ts.isParenthesizedExpression(current) ||
+    ts.isAsExpression(current) ||
+    ts.isSatisfiesExpression(current)
+  ) {
+    current = current.expression
+  }
+
+  return current
+}
+
+function descendantNodes(node: ts.Node): ts.Node[] {
+  const descendants: ts.Node[] = []
+
+  function visit(current: ts.Node): void {
+    descendants.push(current)
+    ts.forEachChild(current, visit)
+  }
+
+  visit(node)
+
+  return descendants
+}
+
+function callExpressions(sourceFile: ts.Node): ts.CallExpression[] {
+  const calls: ts.CallExpression[] = []
+
+  function visit(node: ts.Node): void {
+    if (ts.isCallExpression(node)) {
+      calls.push(node)
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+
+  return calls
+}
+
+function collectNodes<Node extends ts.Node>(
+  root: ts.Node,
+  predicate: (node: ts.Node) => node is Node,
+): Node[] {
+  const nodes: Node[] = []
+
+  function visit(node: ts.Node): void {
+    if (predicate(node)) {
+      nodes.push(node)
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(root)
+  return nodes
+}
+
+function propertyName(property: ts.ObjectLiteralElementLike): string | undefined {
+  if (property.name === undefined) {
+    return undefined
+  }
+
+  return ts.isIdentifier(property.name) || ts.isStringLiteralLike(property.name)
+    ? property.name.text
+    : undefined
+}
+
+function objectPropertyExpression(
+  object: ts.ObjectLiteralExpression,
+  name: string,
+): ts.Expression | undefined {
+  const property = object.properties.find((candidate) => propertyName(candidate) === name)
+
+  if (property !== undefined && ts.isPropertyAssignment(property)) {
+    return property.initializer
+  }
+
+  if (property !== undefined && ts.isShorthandPropertyAssignment(property)) {
+    return property.name
+  }
+
+  return undefined
+}
+
+function hasExactObjectPropertySet(
+  object: ts.ObjectLiteralExpression,
+  expected: readonly string[],
+): boolean {
+  const names = object.properties.map(propertyName)
+  return (
+    names.every((name): name is string => name !== undefined) &&
+    names.length === expected.length &&
+    new Set(names).size === names.length &&
+    expected.every((name) => names.includes(name))
+  )
+}
+
+function importSpecifier(
+  sourceFile: ts.SourceFile,
+  moduleName: string,
+  importedName: string,
+): ts.ImportSpecifier | undefined {
+  const matchingImports = sourceFile.statements.filter(
+    (statement): statement is ts.ImportDeclaration =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === moduleName,
+  )
+  const matchingSpecifiers = matchingImports.flatMap((statement) => {
+    const bindings = statement.importClause?.namedBindings
+    return bindings !== undefined && ts.isNamedImports(bindings)
+      ? bindings.elements.filter(
+          (element) => (element.propertyName?.text ?? element.name.text) === importedName,
+        )
+      : []
+  })
+
+  return matchingImports.length === 1 && matchingSpecifiers.length === 1
+    ? matchingSpecifiers[0]
+    : undefined
+}
+
+function symbolAt(checker: ts.TypeChecker, node: ts.Node | undefined): ts.Symbol | undefined {
+  if (node === undefined) {
+    return undefined
+  }
+
+  if (
+    ts.isIdentifier(node) &&
+    ts.isShorthandPropertyAssignment(node.parent) &&
+    node.parent.name === node
+  ) {
+    return checker.getShorthandAssignmentValueSymbol(node.parent)
+  }
+
+  return checker.getSymbolAtLocation(node)
+}
+
+function sameSymbol(
+  checker: ts.TypeChecker,
+  left: ts.Node | undefined,
+  right: ts.Node | undefined,
+): boolean {
+  const leftSymbol = symbolAt(checker, left)
+  const rightSymbol = symbolAt(checker, right)
+  return leftSymbol !== undefined && leftSymbol === rightSymbol
+}
+
+function callFromExpression(expression: ts.Expression | undefined): ts.CallExpression | undefined {
+  if (expression === undefined) {
+    return undefined
+  }
+
+  let current = unwrapExpression(expression)
+
+  if (ts.isAwaitExpression(current)) {
+    current = unwrapExpression(current.expression)
+  }
+
+  return ts.isCallExpression(current) ? current : undefined
+}
+
+function isStringLiteral(expression: ts.Expression | undefined, expected: string): boolean {
+  return expression !== undefined && ts.isStringLiteral(expression) && expression.text === expected
+}
+
+function isNumericLiteral(expression: ts.Expression | undefined, expected: number): boolean {
+  return (
+    expression !== undefined &&
+    ts.isNumericLiteral(expression) &&
+    Number(expression.text) === expected
+  )
+}
+
+function resolveAliasedSymbol(checker: ts.TypeChecker, node: ts.Node): ts.Symbol | undefined {
+  const symbol = checker.getSymbolAtLocation(node)
+
+  if (symbol === undefined) {
+    return undefined
+  }
+
+  return (symbol.flags & ts.SymbolFlags.Alias) !== 0 ? checker.getAliasedSymbol(symbol) : symbol
+}
+
+function symbolDeclaredInPath(symbol: ts.Symbol | undefined, expectedPath: string): boolean {
+  return (
+    symbol !== undefined &&
+    symbol.declarations?.some(
+      (declaration) => resolve(declaration.getSourceFile().fileName) === resolve(expectedPath),
+    ) === true
+  )
+}
+
+interface CompilerContext {
+  readonly checker: ts.TypeChecker
+  readonly program: ts.Program
+  readonly runtimeConfigurationSourceFile: ts.SourceFile
+  readonly viteEnvironmentSourceFile: ts.SourceFile
+  readonly viteSourceFile: ts.SourceFile
+}
+
+function createCompilerContext(input: {
+  readonly runtimeConfigurationPath: string
+  readonly viteConfigurationPath: string
+  readonly viteEnvironmentPath: string
+}): CompilerContext {
+  const program = ts.createProgram({
+    rootNames: [
+      input.viteConfigurationPath,
+      input.runtimeConfigurationPath,
+      input.viteEnvironmentPath,
+      resolve(rootDirectory, 'project.config.ts'),
+    ],
+    options: {
+      allowJs: true,
+      module: ts.ModuleKind.ESNext,
+      moduleResolution: ts.ModuleResolutionKind.Bundler,
+      skipLibCheck: true,
+      strict: true,
+      target: ts.ScriptTarget.ES2022,
+      types: ['node', 'vite/client'],
+    },
+  })
+  const viteSourceFile = program.getSourceFile(input.viteConfigurationPath)
+  const runtimeConfigurationSourceFile = program.getSourceFile(input.runtimeConfigurationPath)
+  const viteEnvironmentSourceFile = program.getSourceFile(input.viteEnvironmentPath)
+
+  if (
+    viteSourceFile === undefined ||
+    runtimeConfigurationSourceFile === undefined ||
+    viteEnvironmentSourceFile === undefined
+  ) {
+    throw new Error('Runtime Kernel build authority compiler context is incomplete.')
+  }
+
+  const syntaxDiagnostics = program
+    .getSyntacticDiagnostics()
+    .filter((diagnostic) =>
+      [viteSourceFile, runtimeConfigurationSourceFile, viteEnvironmentSourceFile].includes(
+        diagnostic.file,
+      ),
+    )
+
+  if (syntaxDiagnostics.length !== 0) {
+    throw new Error('Runtime Kernel build authority sources contain syntax diagnostics.')
+  }
+
+  return {
+    checker: program.getTypeChecker(),
+    program,
+    runtimeConfigurationSourceFile,
+    viteEnvironmentSourceFile,
+    viteSourceFile,
+  }
+}
+
+interface BuildAuthorityFlowModel {
+  readonly alternateProducerCount: number
+  readonly artifactDescriptorConsumers: number
+  readonly buildVersionProducerCalls: number
+  readonly compiledIdentityConsumers: number
+  readonly projectConfigImportResolved: boolean
+  readonly releaseShaProducerCalls: number
+  readonly runtimeDescriptorProducers: number
+}
+
+function validateBuildAuthorityFlowModel(model: BuildAuthorityFlowModel): readonly string[] {
+  return model.projectConfigImportResolved &&
+    model.releaseShaProducerCalls === 1 &&
+    model.buildVersionProducerCalls === 1 &&
+    model.runtimeDescriptorProducers === 1 &&
+    model.artifactDescriptorConsumers === 1 &&
+    model.compiledIdentityConsumers === 3 &&
+    model.alternateProducerCount === 0
+    ? []
+    : ['Runtime Kernel build authority compiler dataflow drift.']
+}
+
+function callTargetsSymbol(
+  checker: ts.TypeChecker,
+  call: ts.CallExpression | undefined,
+  declaration: ts.Node | undefined,
+): boolean {
+  return call !== undefined && sameSymbol(checker, call.expression, declaration)
+}
+
+function identifierReferencesSymbol(
+  checker: ts.TypeChecker,
+  sourceFile: ts.SourceFile,
+  declaration: ts.Node | undefined,
+): readonly ts.Identifier[] {
+  const expected = symbolAt(checker, declaration)
+
+  return expected === undefined
+    ? []
+    : collectNodes(sourceFile, ts.isIdentifier).filter(
+        (identifier) => symbolAt(checker, identifier) === expected,
+      )
+}
+
+function isPotentialExecFileSyncCall(call: ts.CallExpression): boolean {
+  return (
+    (ts.isIdentifier(call.expression) && call.expression.text === 'execFileSync') ||
+    (ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === 'execFileSync')
+  )
+}
+
+function validateBuildAuthoritySyntaxNegativeProbes(): void {
+  const decoySource = ts.createSourceFile(
+    '<build-authority-decoy-probe>',
+    "import { execFileSync } from 'node:child_process'; execFileSync('git', ['rev-parse', 'HEAD'])",
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const inertSource = ts.createSourceFile(
+    '<build-authority-inert-probe>',
+    "// execFileSync('git', ['rev-parse', 'HEAD'])\nconst explanation = \"execFileSync('git', ['rev-parse', 'HEAD'])\"",
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const decoyCalls = callExpressions(decoySource)
+  const inertCalls = callExpressions(inertSource)
+
+  if (
+    decoyCalls.filter(isPotentialExecFileSyncCall).length !== 1 ||
+    decoyCalls.filter((call) => isStringLiteral(call.arguments[0], 'git')).length !== 1 ||
+    inertCalls.filter(isPotentialExecFileSyncCall).length !== 0 ||
+    inertCalls.filter((call) => isStringLiteral(call.arguments[0], 'git')).length !== 0
+  ) {
+    throw new Error(
+      'Build authority reversible in-memory decoy/comment/string probe did not preserve AST semantics.',
+    )
+  }
+}
+
+function validateSemanticFlowNegativeProbes(): void {
+  const semanticModel: BuildAuthorityFlowModel = {
+    alternateProducerCount: 0,
+    artifactDescriptorConsumers: 1,
+    buildVersionProducerCalls: 1,
+    compiledIdentityConsumers: 3,
+    projectConfigImportResolved: true,
+    releaseShaProducerCalls: 1,
+    runtimeDescriptorProducers: 1,
+  }
+
+  if (validateBuildAuthorityFlowModel(semanticModel).length !== 0) {
+    throw new Error('Build authority semantic-flow control probe must pass.')
+  }
+
+  for (const mutation of [
+    { alternateProducerCount: 1 },
+    { artifactDescriptorConsumers: 0 },
+    { buildVersionProducerCalls: 2 },
+    { compiledIdentityConsumers: 2 },
+    { projectConfigImportResolved: false },
+    { releaseShaProducerCalls: 0 },
+    { runtimeDescriptorProducers: 2 },
+  ] satisfies readonly Partial<BuildAuthorityFlowModel>[]) {
+    if (validateBuildAuthorityFlowModel({ ...semanticModel, ...mutation }).length === 0) {
+      throw new Error('Build authority semantic-flow mutation probe must fail.')
+    }
+  }
+}
+
+type ImplementedFunction = ts.ArrowFunction | ts.FunctionDeclaration | ts.FunctionExpression
+
+function isImplementedFunction(node: ts.Node): node is ImplementedFunction {
+  return ts.isArrowFunction(node) || ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node)
+}
+
+function enclosingImplementedFunction(node: ts.Node): ImplementedFunction | undefined {
+  let current: ts.Node = node.parent
+
+  while (!isImplementedFunction(current)) {
+    if (ts.isSourceFile(current)) {
+      return undefined
+    }
+
+    current = current.parent
+  }
+
+  return current
+}
+
+function implementedFunctionBody(fn: ImplementedFunction | undefined): ts.Block | undefined {
+  return fn?.body !== undefined && ts.isBlock(fn.body) ? fn.body : undefined
+}
+
+function resolveValueExpression(
+  checker: ts.TypeChecker,
+  expression: ts.Expression | undefined,
+  seen = new Set<ts.Symbol>(),
+): ts.Expression | undefined {
+  if (expression === undefined) {
+    return undefined
+  }
+
+  const current = unwrapExpression(expression)
+
+  if (ts.isAwaitExpression(current)) {
+    return resolveValueExpression(checker, current.expression, seen)
+  }
+
+  if (!ts.isIdentifier(current)) {
+    return current
+  }
+
+  const symbol = symbolAt(checker, current)
+
+  if (symbol === undefined || seen.has(symbol)) {
+    return current
+  }
+
+  const declaration = symbol.valueDeclaration
+
+  if (declaration !== undefined && ts.isVariableDeclaration(declaration)) {
+    seen.add(symbol)
+    return resolveValueExpression(checker, declaration.initializer, seen)
+  }
+
+  return current
+}
+
+function sameValueOrigin(
+  checker: ts.TypeChecker,
+  left: ts.Expression | undefined,
+  right: ts.Expression | undefined,
+): boolean {
+  const resolvedLeft = resolveValueExpression(checker, left)
+  const resolvedRight = resolveValueExpression(checker, right)
+
+  return (
+    resolvedLeft !== undefined &&
+    resolvedRight !== undefined &&
+    (resolvedLeft === resolvedRight || sameSymbol(checker, resolvedLeft, resolvedRight))
+  )
+}
+
+function memberAccess(
+  expression: ts.Expression | undefined,
+): { readonly owner: ts.Expression; readonly key: string } | undefined {
+  if (expression === undefined) {
+    return undefined
+  }
+
+  const current = unwrapExpression(expression)
+
+  if (ts.isPropertyAccessExpression(current)) {
+    return { key: current.name.text, owner: current.expression }
+  }
+
+  if (
+    ts.isElementAccessExpression(current) &&
+    (ts.isStringLiteralLike(current.argumentExpression) ||
+      ts.isNumericLiteral(current.argumentExpression))
+  ) {
+    return { key: current.argumentExpression.text, owner: current.expression }
+  }
+
+  return undefined
+}
+
+function expressionDerivesFrom(
+  checker: ts.TypeChecker,
+  expression: ts.Expression | undefined,
+  authority: ts.Expression | ts.CallExpression,
+  seen = new Set<ts.Node>(),
+): boolean {
+  const current = resolveValueExpression(checker, expression)
+  const expected = resolveValueExpression(checker, authority)
+
+  if (current === undefined || expected === undefined || seen.has(current)) {
+    return false
+  }
+
+  if (current === expected || sameSymbol(checker, current, expected)) {
+    return true
+  }
+
+  seen.add(current)
+
+  if (ts.isPropertyAccessExpression(current) || ts.isElementAccessExpression(current)) {
+    return expressionDerivesFrom(checker, current.expression, authority, seen)
+  }
+
+  if (ts.isTemplateExpression(current)) {
+    return current.templateSpans.some((span) =>
+      expressionDerivesFrom(checker, span.expression, authority, seen),
+    )
+  }
+
+  return false
+}
+
+function objectLiteralFromExpression(
+  checker: ts.TypeChecker,
+  expression: ts.Expression | undefined,
+): ts.ObjectLiteralExpression | undefined {
+  const resolved = resolveValueExpression(checker, expression)
+  return resolved !== undefined && ts.isObjectLiteralExpression(resolved) ? resolved : undefined
+}
+
+function isNamedMemberCall(
+  call: ts.CallExpression | undefined,
+  owner: string,
+  method: string,
+): boolean {
+  return (
+    call !== undefined &&
+    ts.isPropertyAccessExpression(call.expression) &&
+    ts.isIdentifier(call.expression.expression) &&
+    call.expression.expression.text === owner &&
+    call.expression.name.text === method
+  )
+}
+
+function functionImplementationForCall(
+  checker: ts.TypeChecker,
+  call: ts.CallExpression | undefined,
+): ImplementedFunction | undefined {
+  if (call === undefined) {
+    return undefined
+  }
+
+  const symbol = resolveAliasedSymbol(checker, call.expression)
+
+  for (const declaration of symbol?.declarations ?? []) {
+    if (isImplementedFunction(declaration)) {
+      return declaration
+    }
+
+    if (ts.isVariableDeclaration(declaration) && declaration.initializer !== undefined) {
+      const initializer = unwrapExpression(declaration.initializer)
+
+      if (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) {
+        return initializer
+      }
+    }
+  }
+
+  return undefined
+}
+
+function nodeIsWithin(node: ts.Node, ancestor: ts.Node): boolean {
+  let current: ts.Node = node
+
+  for (;;) {
+    if (current === ancestor) {
+      return true
+    }
+
+    if (ts.isSourceFile(current)) {
+      return false
+    }
+
+    current = current.parent
+  }
+}
+
+function isCallbackInputPropertyFlow(
+  checker: ts.TypeChecker,
+  expression: ts.Expression | undefined,
+  callback: ts.ArrowFunction | ts.FunctionExpression,
+  property: string,
+): boolean {
+  const callbackParameter = callback.parameters[0]
+  const resolved = resolveValueExpression(checker, expression)
+
+  if (
+    callback.parameters.length !== 1 ||
+    callbackParameter === undefined ||
+    resolved === undefined
+  ) {
+    return false
+  }
+
+  if (ts.isIdentifier(resolved)) {
+    const symbol = symbolAt(checker, resolved)
+
+    return (
+      symbol?.declarations?.some(
+        (declaration) =>
+          ts.isBindingElement(declaration) &&
+          nodeIsWithin(declaration, callbackParameter) &&
+          (declaration.propertyName?.getText() ?? declaration.name.getText()) === property,
+      ) === true
+    )
+  }
+
+  const access = memberAccess(resolved)
+  return (
+    access?.key === property &&
+    ts.isIdentifier(callbackParameter.name) &&
+    sameSymbol(checker, access.owner, callbackParameter.name)
+  )
+}
+
+function returnExpressions(fn: ImplementedFunction | undefined): readonly ts.Expression[] {
+  const body = implementedFunctionBody(fn)
+
+  if (body === undefined) {
+    return fn !== undefined && ts.isArrowFunction(fn) && ts.isExpression(fn.body) ? [fn.body] : []
+  }
+
+  return body.statements.flatMap((statement) =>
+    ts.isReturnStatement(statement) && statement.expression !== undefined
+      ? [statement.expression]
+      : [],
+  )
+}
+
+function objectFreezeArgument(call: ts.CallExpression | undefined): ts.Expression | undefined {
+  return isNamedMemberCall(call, 'Object', 'freeze') && call?.arguments.length === 1
+    ? call.arguments[0]
+    : undefined
+}
+
+function isRuntimeIdentitySerialization(
+  checker: ts.TypeChecker,
+  expression: ts.Expression | undefined,
+  runtimeDescriptor: ts.Expression,
+  field: 'environment' | 'releaseSha' | 'buildVersion',
+): boolean {
+  const call = callFromExpression(resolveValueExpression(checker, expression))
+  const access = memberAccess(call?.arguments[0])
+
+  return (
+    isNamedMemberCall(call, 'JSON', 'stringify') &&
+    call?.arguments.length === 1 &&
+    access?.key === field &&
+    expressionDerivesFrom(checker, access.owner, runtimeDescriptor)
+  )
+}
+
+async function collectBuildConfigurationFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true })
+  const files: string[] = []
+
+  for (const entry of entries) {
+    const path = join(directory, entry.name)
+
+    if (entry.isDirectory() && !excludedBuildConfigurationDirectories.has(entry.name)) {
+      files.push(...(await collectBuildConfigurationFiles(path)))
+    } else if (entry.isFile() && buildConfigurationSourceExtensions.has(extname(entry.name))) {
+      files.push(path)
+    }
+  }
+
+  return files
+}
+
+async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
+  validateBuildAuthoritySyntaxNegativeProbes()
+  validateSemanticFlowNegativeProbes()
+  const webDirectory = resolve(rootDirectory, 'apps/web')
+  const viteConfigurationPath = resolve(webDirectory, 'vite.config.ts')
+  const runtimeConfigurationPath = resolve(webDirectory, 'src/app/config/runtime-configuration.ts')
+  const viteEnvironmentPath = resolve(webDirectory, 'src/vite-env.d.ts')
+  const { checker, runtimeConfigurationSourceFile, viteEnvironmentSourceFile, viteSourceFile } =
+    createCompilerContext({
+      runtimeConfigurationPath,
+      viteConfigurationPath,
+      viteEnvironmentPath,
+    })
+
+  const projectConfigImport = importSpecifier(
+    viteSourceFile,
+    '../../project.config',
+    'projectConfig',
+  )
+  const projectConfigImportResolved =
+    projectConfigImport !== undefined &&
+    symbolDeclaredInPath(
+      resolveAliasedSymbol(checker, projectConfigImport.name),
+      resolve(rootDirectory, 'project.config.ts'),
+    )
+
+  expectEqual(
+    projectConfigImportResolved,
+    true,
+    'Compiler-resolved Vite projectConfig import authority',
+  )
+
+  const projectConfigSymbol =
+    projectConfigImport === undefined ? undefined : symbolAt(checker, projectConfigImport.name)
+  const projectConfigReferences = collectNodes(viteSourceFile, ts.isIdentifier).filter(
+    (identifier) => symbolAt(checker, identifier) === projectConfigSymbol,
+  )
+  const deploymentBaseAccesses = collectNodes(viteSourceFile, ts.isPropertyAccessExpression).filter(
+    (access) => {
+      if (access.name.text !== 'deploymentBase') {
+        return false
+      }
+
+      const deploymentAccess = memberAccess(access.expression)
+      return (
+        deploymentAccess?.key === 'deployment' &&
+        sameSymbol(checker, deploymentAccess.owner, projectConfigImport?.name)
+      )
+    },
+  )
+
+  expectExactCount(deploymentBaseAccesses.length, 1, 'Vite deployment-base authority')
+  expectExactCount(projectConfigReferences.length, 2, 'Vite projectConfig reference closure')
+
+  const deploymentBaseAuthority = deploymentBaseAccesses[0]
+
+  if (deploymentBaseAuthority === undefined) {
+    throw new Error('Vite deployment-base authority is missing.')
+  }
+
+  const execFileSyncImport = importSpecifier(viteSourceFile, 'node:child_process', 'execFileSync')
+  const readFileImport = importSpecifier(viteSourceFile, 'node:fs/promises', 'readFile')
+  const resolveImport = importSpecifier(viteSourceFile, 'node:path', 'resolve')
+  const defineConfigImport = importSpecifier(viteSourceFile, 'vite', 'defineConfig')
+  const runtimeSchemaImport = importSpecifier(
+    viteSourceFile,
+    './src/app/config/runtime-configuration-contract',
+    'coreRuntimeConfigurationSchema',
+  )
+  const viteChildProcessImports = viteSourceFile.statements.filter(
+    (statement): statement is ts.ImportDeclaration =>
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === 'node:child_process',
+  )
+  const viteChildProcessBindings = viteChildProcessImports[0]?.importClause?.namedBindings
+
+  for (const [binding, description] of [
+    [execFileSyncImport, 'Vite execFileSync import'],
+    [readFileImport, 'Vite readFile import'],
+    [resolveImport, 'Vite resolve import'],
+    [defineConfigImport, 'Vite defineConfig import'],
+    [runtimeSchemaImport, 'Vite Runtime Configuration schema import'],
+  ] as const) {
+    expectEqual(binding === undefined, false, description)
+  }
+
+  expectEqual(
+    runtimeSchemaImport !== undefined &&
+      symbolDeclaredInPath(
+        resolveAliasedSymbol(checker, runtimeSchemaImport.name),
+        resolve(webDirectory, 'src/app/config/runtime-configuration-contract.ts'),
+      ),
+    true,
+    'Compiler-resolved Runtime Configuration schema import authority',
+  )
+
+  if (
+    viteChildProcessImports.length !== 1 ||
+    viteChildProcessBindings === undefined ||
+    !ts.isNamedImports(viteChildProcessBindings) ||
+    viteChildProcessBindings.elements.length !== 1 ||
+    viteChildProcessBindings.elements[0] !== execFileSyncImport
+  ) {
+    throw new Error('Vite child-process authority must be the sole direct execFileSync import.')
+  }
+
+  const execFileSyncCalls = callExpressions(viteSourceFile).filter((call) =>
+    callTargetsSymbol(checker, call, execFileSyncImport?.name),
+  )
+
+  expectExactCount(execFileSyncCalls.length, 1, 'Release SHA build-boundary read count')
+  expectExactCount(
+    identifierReferencesSymbol(checker, viteSourceFile, execFileSyncImport?.name).length,
+    2,
+    'Release SHA execFileSync import/call reference closure',
+  )
+
+  const releaseShaCall = execFileSyncCalls[0]
+  const releaseShaArguments = releaseShaCall?.arguments
+  const releaseShaCommand = releaseShaArguments?.[0]
+  const releaseShaCommandArguments = releaseShaArguments?.[1]
+  const releaseShaOptions = releaseShaArguments?.[2]
+
+  expectEqual(
+    releaseShaCommand !== undefined && ts.isStringLiteral(releaseShaCommand)
+      ? releaseShaCommand.text
+      : undefined,
+    'git',
+    'Release SHA command',
+  )
+  expectStructuredEqual(
+    releaseShaCommandArguments !== undefined &&
+      ts.isArrayLiteralExpression(releaseShaCommandArguments)
+      ? releaseShaCommandArguments.elements.map((element) =>
+          ts.isStringLiteral(element) ? element.text : undefined,
+        )
+      : undefined,
+    ['rev-parse', 'HEAD'],
+    'Release SHA command arguments',
+  )
+  expectStructuredEqual(
+    releaseShaOptions !== undefined && ts.isObjectLiteralExpression(releaseShaOptions)
+      ? releaseShaOptions.properties.map(propertyName).sort()
+      : undefined,
+    ['cwd', 'encoding'].sort(),
+    'Release SHA command option field set',
+  )
+
+  const repositoryPathCalls = callExpressions(viteSourceFile).filter((call) => {
+    const importMetaDirectory = call.arguments[0]
+
+    return (
+      callTargetsSymbol(checker, call, resolveImport?.name) &&
+      call.arguments.length === 2 &&
+      importMetaDirectory !== undefined &&
+      ts.isPropertyAccessExpression(importMetaDirectory) &&
+      ts.isMetaProperty(importMetaDirectory.expression) &&
+      importMetaDirectory.expression.keywordToken === ts.SyntaxKind.ImportKeyword &&
+      importMetaDirectory.name.text === 'dirname' &&
+      isStringLiteral(call.arguments[1], '../..')
+    )
+  })
+  const repositoryPathCall = repositoryPathCalls[0]
+
+  if (
+    releaseShaOptions === undefined ||
+    !ts.isObjectLiteralExpression(releaseShaOptions) ||
+    repositoryPathCalls.length !== 1 ||
+    repositoryPathCall === undefined ||
+    !sameValueOrigin(
+      checker,
+      objectPropertyExpression(releaseShaOptions, 'cwd'),
+      repositoryPathCall,
+    ) ||
+    !isStringLiteral(objectPropertyExpression(releaseShaOptions, 'encoding'), 'utf8')
+  ) {
+    throw new Error('Release SHA command options must use the exact repository authority.')
+  }
+
+  const releaseShaReader = enclosingImplementedFunction(releaseShaCall ?? viteSourceFile)
+  const releaseShaReaderBody = implementedFunctionBody(releaseShaReader)
+  const prohibitedReleaseTransforms = new Set(['slice', 'substr', 'substring', 'trim', 'trimEnd'])
+  const releaseShaReaderNodes =
+    releaseShaReader === undefined ? [] : descendantNodes(releaseShaReader)
+  const prohibitedTransformCalls = releaseShaReaderNodes.filter(
+    (node) =>
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      prohibitedReleaseTransforms.has(node.expression.name.text),
+  )
+  const releaseFallbacks = releaseShaReaderNodes.filter(
+    (node) =>
+      ts.isConditionalExpression(node) ||
+      ts.isTryStatement(node) ||
+      (ts.isBinaryExpression(node) &&
+        (node.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
+          node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken)),
+  )
+
+  expectEqual(releaseShaReaderBody === undefined, false, 'Release SHA reader presence')
+  expectEqual(releaseShaReader?.parameters.length, 0, 'Release SHA reader parameter count')
+  expectExactCount(prohibitedTransformCalls.length, 0, 'Release SHA shortening/trim transforms')
+  expectExactCount(releaseFallbacks.length, 0, 'Release SHA fallback expressions')
+  const releasePatternCalls =
+    releaseShaReaderBody === undefined
+      ? []
+      : collectNodes(releaseShaReaderBody, ts.isCallExpression).filter((call) => {
+          const owner = resolveValueExpression(
+            checker,
+            ts.isPropertyAccessExpression(call.expression) ? call.expression.expression : undefined,
+          )
+
+          return (
+            ts.isPropertyAccessExpression(call.expression) &&
+            call.expression.name.text === 'exec' &&
+            owner !== undefined &&
+            ts.isRegularExpressionLiteral(owner) &&
+            owner.text === '/^([0-9a-f]{40})(?:\\r?\\n)?$/u' &&
+            call.arguments.length === 1 &&
+            releaseShaCall !== undefined &&
+            expressionDerivesFrom(checker, call.arguments[0], releaseShaCall)
+          )
+        })
+  const releaseReturn = returnExpressions(releaseShaReader)[0]
+  const releaseReturnAccess = memberAccess(releaseReturn)
+
+  if (
+    releasePatternCalls.length !== 1 ||
+    releaseReturnAccess?.key !== '1' ||
+    releasePatternCalls[0] === undefined ||
+    !expressionDerivesFrom(checker, releaseReturnAccess.owner, releasePatternCalls[0]) ||
+    collectNodes(releaseShaReaderBody ?? viteSourceFile, ts.isThrowStatement).length !== 1 ||
+    returnExpressions(releaseShaReader).length !== 1
+  ) {
+    throw new Error('Release SHA producer/validation dataflow drifted.')
+  }
+
+  const rootManifestPathCalls = callExpressions(viteSourceFile).filter(
+    (call) =>
+      callTargetsSymbol(checker, call, resolveImport?.name) &&
+      call.arguments.length === 2 &&
+      isStringLiteral(call.arguments[1], 'package.json') &&
+      sameValueOrigin(checker, call.arguments[0], repositoryPathCall),
+  )
+  const rootManifestPathCall = rootManifestPathCalls[0]
+  const buildVersionReadCalls = callExpressions(viteSourceFile).filter(
+    (call) =>
+      callTargetsSymbol(checker, call, readFileImport?.name) &&
+      call.arguments.length === 2 &&
+      rootManifestPathCall !== undefined &&
+      sameValueOrigin(checker, call.arguments[0], rootManifestPathCall) &&
+      isStringLiteral(call.arguments[1], 'utf8'),
+  )
+  const buildVersionReadCall = buildVersionReadCalls[0]
+  const buildVersionReader = enclosingImplementedFunction(buildVersionReadCall ?? viteSourceFile)
+  const buildVersionReaderBody = implementedFunctionBody(buildVersionReader)
+  const buildVersionParseCalls =
+    buildVersionReaderBody === undefined
+      ? []
+      : collectNodes(buildVersionReaderBody, ts.isCallExpression).filter(
+          (call) =>
+            isNamedMemberCall(call, 'JSON', 'parse') &&
+            call.arguments.length === 1 &&
+            buildVersionReadCall !== undefined &&
+            expressionDerivesFrom(checker, call.arguments[0], buildVersionReadCall),
+        )
+  const buildVersionReturn = returnExpressions(buildVersionReader)[0]
+  const buildVersionReturnAccess = memberAccess(buildVersionReturn)
+
+  if (
+    rootManifestPathCalls.length !== 1 ||
+    buildVersionReadCalls.length !== 1 ||
+    buildVersionReaderBody === undefined ||
+    buildVersionReader?.parameters.length !== 0 ||
+    buildVersionParseCalls.length !== 1 ||
+    returnExpressions(buildVersionReader).length !== 1 ||
+    buildVersionReturnAccess?.key !== 'version' ||
+    buildVersionParseCalls[0] === undefined ||
+    !expressionDerivesFrom(checker, buildVersionReturnAccess.owner, buildVersionParseCalls[0])
+  ) {
+    throw new Error('Root package Build Version reader dataflow drifted.')
+  }
+
+  const defineConfigCalls = callExpressions(viteSourceFile).filter((call) =>
+    callTargetsSymbol(checker, call, defineConfigImport?.name),
+  )
+  const defineConfigCall = defineConfigCalls[0]
+  const defineConfigCallback = defineConfigCall?.arguments[0]
+
+  if (
+    defineConfigCalls.length !== 1 ||
+    defineConfigCallback === undefined ||
+    (!ts.isArrowFunction(defineConfigCallback) && !ts.isFunctionExpression(defineConfigCallback)) ||
+    !defineConfigCallback.modifiers?.some(
+      (modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword,
+    ) ||
+    !ts.isBlock(defineConfigCallback.body)
+  ) {
+    throw new Error('Vite defineConfig compiler boundary drifted.')
+  }
+
+  const defineConfigBody = defineConfigCallback.body
+  const buildVersionProducerCalls = callExpressions(defineConfigBody).filter(
+    (call) => functionImplementationForCall(checker, call) === buildVersionReader,
+  )
+  const releaseShaProducerCalls = callExpressions(defineConfigBody).filter(
+    (call) => functionImplementationForCall(checker, call) === releaseShaReader,
+  )
+  const buildVersionProducerCall = buildVersionProducerCalls[0]
+  const releaseShaProducerCall = releaseShaProducerCalls[0]
+  const runtimeParseCalls = callExpressions(defineConfigBody).filter(
+    (call) =>
+      ts.isPropertyAccessExpression(call.expression) &&
+      call.expression.name.text === 'parse' &&
+      sameSymbol(checker, call.expression.expression, runtimeSchemaImport?.name),
+  )
+  const runtimeParseCall = runtimeParseCalls[0]
+  const runtimeRecordArgument = runtimeParseCall?.arguments[0]
+  const runtimeRecord =
+    runtimeRecordArgument !== undefined && ts.isObjectLiteralExpression(runtimeRecordArgument)
+      ? runtimeRecordArgument
+      : undefined
+  const parentCall =
+    runtimeParseCall?.parent !== undefined && ts.isCallExpression(runtimeParseCall.parent)
+      ? runtimeParseCall.parent
+      : undefined
+  const runtimeDescriptorExpression =
+    objectFreezeArgument(parentCall) === runtimeParseCall ? parentCall : runtimeParseCall
+  const environmentExpression =
+    runtimeRecord === undefined ? undefined : objectPropertyExpression(runtimeRecord, 'environment')
+  const deploymentBaseExpression =
+    runtimeRecord === undefined
+      ? undefined
+      : objectPropertyExpression(runtimeRecord, 'deploymentBase')
+  const releaseShaExpression =
+    runtimeRecord === undefined ? undefined : objectPropertyExpression(runtimeRecord, 'releaseSha')
+  const buildVersionExpression =
+    runtimeRecord === undefined
+      ? undefined
+      : objectPropertyExpression(runtimeRecord, 'buildVersion')
+
+  const runtimeProducerChecks = new Map<string, boolean>([
+    ['Build Version reader binding', buildVersionProducerCalls.length === 1],
+    ['Build Version reader arguments', buildVersionProducerCall?.arguments.length === 0],
+    ['Release SHA reader binding', releaseShaProducerCalls.length === 1],
+    ['Release SHA reader arguments', releaseShaProducerCall?.arguments.length === 0],
+    ['Runtime Configuration parse call', runtimeParseCalls.length === 1],
+    [
+      'Runtime Configuration schema binding',
+      runtimeParseCall !== undefined &&
+        ts.isPropertyAccessExpression(runtimeParseCall.expression) &&
+        runtimeParseCall.expression.name.text === 'parse' &&
+        sameSymbol(checker, runtimeParseCall.expression.expression, runtimeSchemaImport?.name),
+    ],
+    ['Runtime Configuration parse arguments', runtimeParseCall?.arguments.length === 1],
+    [
+      'Runtime Configuration exact record',
+      runtimeRecord !== undefined &&
+        hasExactObjectPropertySet(runtimeRecord, [
+          'schemaVersion',
+          'environment',
+          'deploymentBase',
+          'releaseSha',
+          'buildVersion',
+        ]),
+    ],
+    [
+      'Runtime Configuration schema version',
+      runtimeRecord !== undefined &&
+        isNumericLiteral(objectPropertyExpression(runtimeRecord, 'schemaVersion'), 1),
+    ],
+    [
+      'Runtime Configuration environment binding',
+      isCallbackInputPropertyFlow(checker, environmentExpression, defineConfigCallback, 'mode'),
+    ],
+    [
+      'Runtime Configuration deployment-base binding',
+      expressionDerivesFrom(checker, deploymentBaseExpression, deploymentBaseAuthority),
+    ],
+    [
+      'Runtime Configuration Release SHA binding',
+      releaseShaProducerCall !== undefined &&
+        expressionDerivesFrom(checker, releaseShaExpression, releaseShaProducerCall),
+    ],
+    [
+      'Runtime Configuration Build Version binding',
+      buildVersionProducerCall !== undefined &&
+        expressionDerivesFrom(checker, buildVersionExpression, buildVersionProducerCall),
+    ],
+  ])
+  const failedRuntimeProducerChecks = [...runtimeProducerChecks]
+    .filter(([, passed]) => !passed)
+    .map(([description]) => description)
+
+  if (failedRuntimeProducerChecks.length !== 0) {
+    throw new Error(
+      `Runtime Configuration producer compiler dataflow drifted: ${failedRuntimeProducerChecks.join(', ')}.`,
+    )
+  }
+
+  if (runtimeDescriptorExpression === undefined || !ts.isExpression(runtimeDescriptorExpression)) {
+    throw new Error('Runtime Configuration descriptor declaration is missing.')
+  }
+
+  const defineConfigReturns = returnExpressions(defineConfigCallback)
+  const returnedConfiguration = objectLiteralFromExpression(checker, defineConfigReturns[0])
+  const defineRecordExpression =
+    returnedConfiguration === undefined
+      ? undefined
+      : objectPropertyExpression(returnedConfiguration, 'define')
+  const defineRecordValue =
+    defineRecordExpression === undefined ? undefined : unwrapExpression(defineRecordExpression)
+  const defineRecord =
+    defineRecordValue !== undefined && ts.isObjectLiteralExpression(defineRecordValue)
+      ? defineRecordValue
+      : undefined
+
+  if (
+    returnedConfiguration === undefined ||
+    defineConfigReturns.length !== 1 ||
+    !expressionDerivesFrom(
+      checker,
+      objectPropertyExpression(returnedConfiguration, 'base'),
+      deploymentBaseAuthority,
+    ) ||
+    defineRecord === undefined ||
+    !hasExactObjectPropertySet(defineRecord, [
+      '__PAVP_COMPILED_ENVIRONMENT__',
+      '__PAVP_COMPILED_RELEASE_SHA__',
+      '__PAVP_COMPILED_BUILD_VERSION__',
+    ]) ||
+    !isRuntimeIdentitySerialization(
+      checker,
+      objectPropertyExpression(defineRecord, '__PAVP_COMPILED_ENVIRONMENT__'),
+      runtimeDescriptorExpression,
+      'environment',
+    ) ||
+    !isRuntimeIdentitySerialization(
+      checker,
+      objectPropertyExpression(defineRecord, '__PAVP_COMPILED_RELEASE_SHA__'),
+      runtimeDescriptorExpression,
+      'releaseSha',
+    ) ||
+    !isRuntimeIdentitySerialization(
+      checker,
+      objectPropertyExpression(defineRecord, '__PAVP_COMPILED_BUILD_VERSION__'),
+      runtimeDescriptorExpression,
+      'buildVersion',
+    )
+  ) {
+    throw new Error('Compiled Runtime Configuration consumer dataflow drifted.')
+  }
+
+  const pluginsExpression = objectPropertyExpression(returnedConfiguration, 'plugins')
+  const pluginsValue = resolveValueExpression(checker, pluginsExpression)
+  const pluginCalls =
+    pluginsValue !== undefined && ts.isArrayLiteralExpression(pluginsValue)
+      ? pluginsValue.elements.filter(ts.isCallExpression)
+      : []
+  const artifactPluginCalls = pluginCalls.filter(
+    (call) =>
+      call.arguments.length === 1 &&
+      expressionDerivesFrom(checker, call.arguments[0], runtimeDescriptorExpression),
+  )
+  const artifactPluginCall = artifactPluginCalls[0]
+  const runtimeArtifactsFunction = functionImplementationForCall(checker, artifactPluginCall)
+  const runtimeArtifactsBody = implementedFunctionBody(runtimeArtifactsFunction)
+  const runtimeArtifactsParameter = runtimeArtifactsFunction?.parameters[0]
+  const descriptorSerializers =
+    runtimeArtifactsBody === undefined
+      ? []
+      : collectNodes(runtimeArtifactsBody, ts.isCallExpression).filter((call) => {
+          const parameterName = runtimeArtifactsParameter?.name
+          return (
+            isNamedMemberCall(call, 'JSON', 'stringify') &&
+            call.arguments.length === 3 &&
+            parameterName !== undefined &&
+            sameValueOrigin(checker, call.arguments[0], parameterName as ts.Expression) &&
+            call.arguments[1]?.kind === ts.SyntaxKind.NullKeyword &&
+            isNumericLiteral(call.arguments[2], 2)
+          )
+        })
+  const descriptorSerializer = descriptorSerializers[0]
+  const runtimeArtifactDescriptorBindings = callExpressions(viteSourceFile).filter(
+    (call) => functionImplementationForCall(checker, call) === runtimeArtifactsFunction,
+  )
+  const artifactEmitCalls =
+    runtimeArtifactsBody === undefined
+      ? []
+      : collectNodes(runtimeArtifactsBody, ts.isCallExpression).filter((call) => {
+          const descriptor = call.arguments[0]
+
+          return (
+            ts.isPropertyAccessExpression(call.expression) &&
+            call.expression.name.text === 'emitFile' &&
+            descriptor !== undefined &&
+            ts.isObjectLiteralExpression(descriptor) &&
+            descriptorSerializer !== undefined &&
+            expressionDerivesFrom(
+              checker,
+              objectPropertyExpression(descriptor, 'source'),
+              descriptorSerializer,
+            ) &&
+            isStringLiteral(
+              resolveValueExpression(checker, objectPropertyExpression(descriptor, 'fileName')),
+              'runtime-configuration.json',
+            ) &&
+            isStringLiteral(objectPropertyExpression(descriptor, 'type'), 'asset')
+          )
+        })
+
+  if (
+    runtimeArtifactsBody === undefined ||
+    runtimeArtifactsFunction?.parameters.length !== 1 ||
+    runtimeArtifactsParameter === undefined ||
+    !ts.isIdentifier(runtimeArtifactsParameter.name) ||
+    descriptorSerializers.length !== 1 ||
+    artifactPluginCalls.length !== 1 ||
+    runtimeArtifactDescriptorBindings.length !== 1 ||
+    runtimeArtifactDescriptorBindings[0]?.arguments.length !== 1 ||
+    !expressionDerivesFrom(
+      checker,
+      runtimeArtifactDescriptorBindings[0].arguments[0],
+      runtimeDescriptorExpression,
+    ) ||
+    artifactPluginCall !== runtimeArtifactDescriptorBindings[0] ||
+    artifactEmitCalls.length !== 1
+  ) {
+    throw new Error('Runtime Configuration artifact descriptor dataflow drifted.')
+  }
+
+  const expectedCompiledGlobals = [
+    ['environment', '__PAVP_COMPILED_ENVIRONMENT__'],
+    ['releaseSha', '__PAVP_COMPILED_RELEASE_SHA__'],
+    ['buildVersion', '__PAVP_COMPILED_BUILD_VERSION__'],
+  ] as const
+  const compiledGlobalDeclarations = new Map(
+    expectedCompiledGlobals.map(([field, globalName]) => [
+      field,
+      collectNodes(viteEnvironmentSourceFile, ts.isVariableDeclaration).find(
+        (candidate) => ts.isIdentifier(candidate.name) && candidate.name.text === globalName,
+      ),
+    ]),
+  )
+  const compiledIdentityObjects = collectNodes(
+    runtimeConfigurationSourceFile,
+    ts.isObjectLiteralExpression,
+  ).filter((object) => {
+    if (
+      !hasExactObjectPropertySet(
+        object,
+        expectedCompiledGlobals.map(([field]) => field),
+      )
+    ) {
+      return false
+    }
+
+    return expectedCompiledGlobals.every(([field]) => {
+      const declaration = compiledGlobalDeclarations.get(field)
+      const consumer = objectPropertyExpression(object, field)
+      return declaration !== undefined && sameSymbol(checker, consumer, declaration.name)
+    })
+  })
+  const compiledIdentityObject = compiledIdentityObjects[0]
+  let compiledIdentityConsumers = 0
+
+  for (const [field, globalName] of expectedCompiledGlobals) {
+    const declaration = compiledGlobalDeclarations.get(field)
+    const consumer =
+      compiledIdentityObject === undefined
+        ? undefined
+        : objectPropertyExpression(compiledIdentityObject, field)
+
+    if (
+      declaration?.type === undefined ||
+      (field === 'environment'
+        ? declaration.type.getText(viteEnvironmentSourceFile) !==
+          "'development' | 'staging' | 'production'"
+        : declaration.type.getText(viteEnvironmentSourceFile) !== 'string') ||
+      consumer === undefined ||
+      !sameSymbol(checker, consumer, declaration.name)
+    ) {
+      throw new Error(`Compiled identity consumer ${field} is not compiler-bound to ${globalName}.`)
+    }
+
+    compiledIdentityConsumers += 1
+  }
+
+  if (
+    compiledIdentityObjects.length !== 1 ||
+    compiledIdentityObject === undefined ||
+    !hasExactObjectPropertySet(compiledIdentityObject, [
+      'environment',
+      'releaseSha',
+      'buildVersion',
+    ])
+  ) {
+    throw new Error('Compiled Build Identity must be the exact three-field record.')
+  }
+
+  const buildConfigurationFiles = await collectBuildConfigurationFiles(webDirectory)
+  let alternateProducerCount = 0
+  let rootPackagePathLiteralCount = 0
+
+  for (const path of buildConfigurationFiles) {
+    const source = await readFile(path, 'utf8')
+    const displayPath = relative(rootDirectory, path)
+    const sourceFile = ts.createSourceFile(
+      path,
+      extname(path) === '.vue'
+        ? [...source.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gu)]
+            .map((match) => match[1] ?? '')
+            .join('\n')
+        : source,
+      ts.ScriptTarget.Latest,
+      true,
+      extname(path) === '.js' || extname(path) === '.mjs' ? ts.ScriptKind.JS : ts.ScriptKind.TS,
+    )
+    const childProcessImports = sourceFile.statements.filter(
+      (statement): statement is ts.ImportDeclaration =>
+        ts.isImportDeclaration(statement) &&
+        ts.isStringLiteral(statement.moduleSpecifier) &&
+        statement.moduleSpecifier.text === 'node:child_process',
+    )
+
+    if (
+      (path !== viteConfigurationPath && childProcessImports.length !== 0) ||
+      (path === viteConfigurationPath && childProcessImports.length !== 1)
+    ) {
+      alternateProducerCount += 1
+    }
+
+    for (const call of callExpressions(sourceFile)) {
+      if (
+        isPotentialExecFileSyncCall(call) &&
+        (path !== viteConfigurationPath ||
+          !execFileSyncCalls.some((expectedCall) => expectedCall.getStart() === call.getStart()))
+      ) {
+        alternateProducerCount += 1
+      }
+
+      if (
+        isStringLiteral(call.arguments[0], 'git') &&
+        (path !== viteConfigurationPath ||
+          !execFileSyncCalls.some((expectedCall) => expectedCall.getStart() === call.getStart()))
+      ) {
+        alternateProducerCount += 1
+      }
+    }
+
+    const manifestPathLiterals = collectNodes(sourceFile, ts.isStringLiteral).filter(
+      (literal) => literal.text === 'package.json' || literal.text.endsWith('/package.json'),
+    )
+    rootPackagePathLiteralCount += manifestPathLiterals.length
+
+    const alternateEnvironmentAuthorities = [
+      ...collectNodes(sourceFile, ts.isPropertyAccessExpression),
+      ...collectNodes(sourceFile, ts.isElementAccessExpression),
+    ].filter((access) =>
+      /(?:process|import\.meta)\.env(?:\.|\[)[^\n;]*(?:SHA|COMMIT|VERSION|RELEASE)/u.test(
+        access.getText(sourceFile),
+      ),
+    )
+
+    alternateProducerCount += alternateEnvironmentAuthorities.length
+
+    if (alternateEnvironmentAuthorities.length !== 0) {
+      throw new Error(`${displayPath} contains an alternate build identity producer.`)
+    }
+  }
+
+  expectExactCount(rootPackagePathLiteralCount, 1, 'Root package authority path literal count')
+
+  const runtimeDescriptorProducers = callExpressions(viteSourceFile).filter(
+    (call) =>
+      ts.isPropertyAccessExpression(call.expression) &&
+      call.expression.name.text === 'parse' &&
+      sameSymbol(checker, call.expression.expression, runtimeSchemaImport?.name),
+  ).length
+  const flowModel: BuildAuthorityFlowModel = {
+    alternateProducerCount,
+    artifactDescriptorConsumers: artifactEmitCalls.length,
+    buildVersionProducerCalls: buildVersionProducerCalls.length,
+    compiledIdentityConsumers,
+    projectConfigImportResolved,
+    releaseShaProducerCalls: execFileSyncCalls.length,
+    runtimeDescriptorProducers,
+  }
+  const flowViolations = validateBuildAuthorityFlowModel(flowModel)
+
+  if (flowViolations.length !== 0) {
+    throw new Error(flowViolations.join('\n'))
+  }
+
+  expectExactCount(releaseShaProducerCalls.length, 1, 'Release SHA descriptor producer invocation')
 }
 
 function expectDirectDependencyAbsent(
@@ -238,6 +1607,15 @@ if (
 }
 
 expectEqual(rootManifest['name'], projectConfig.identity.packageName, 'Root package identity')
+expectEqual(rootManifest['version'], expectedBuildVersion, 'Root Build Version authority')
+
+if (
+  typeof rootManifest['version'] !== 'string' ||
+  !exactSemanticVersionPattern.test(rootManifest['version'])
+) {
+  throw new Error('The root Build Version authority must use exact semantic-version syntax.')
+}
+
 expectEqual(rootManifest['private'], true, 'Root package privacy')
 expectEqual(rootManifest['packageManager'], expectedPackageManager, 'Package manager baseline')
 expectEqual(rootManifest['pnpm'], undefined, 'Legacy package.json pnpm configuration')
@@ -351,6 +1729,7 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
 expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
+expectEqual(workspaceCatalog['zod'], expectedZodVersion, 'Zod catalog version')
 
 const lockfile = await readYamlObject(resolve(rootDirectory, 'pnpm-lock.yaml'))
 const lockfileCatalogs = lockfile['catalogs']
@@ -371,6 +1750,22 @@ const lockfilePackages = lockfile['packages']
 const lockedPiniaPackageKeys = isJsonObject(lockfilePackages)
   ? Object.keys(lockfilePackages).filter((key) => key.startsWith('pinia@'))
   : []
+const lockedZodPackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('zod@'))
+  : []
+const lockedZodDependency = isJsonObject(webLockfileDependencies)
+  ? webLockfileDependencies['zod']
+  : undefined
+const designSystemLockfileImporter = isJsonObject(lockfileImporters)
+  ? lockfileImporters['packages/design-system']
+  : undefined
+const designSystemLockfileDependencies = isJsonObject(designSystemLockfileImporter)
+  ? designSystemLockfileImporter['dependencies']
+  : undefined
+const lockedDesignSystemZodDependency = isJsonObject(designSystemLockfileDependencies)
+  ? designSystemLockfileDependencies['zod']
+  : undefined
+const lockfileSnapshots = lockfile['snapshots']
 
 expectStructuredEqual(
   isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['pinia'] : undefined,
@@ -392,6 +1787,31 @@ if (
 }
 
 expectStructuredEqual(lockedPiniaPackageKeys, ['pinia@3.0.4'], 'Pinia lockfile package set')
+expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['zod'] : undefined,
+  { specifier: expectedZodVersion, version: expectedZodVersion },
+  'Zod lockfile catalog coordinate',
+)
+expectStructuredEqual(
+  lockedZodDependency,
+  { specifier: 'catalog:', version: expectedZodVersion },
+  'Zod web lockfile coordinate',
+)
+expectStructuredEqual(
+  lockedDesignSystemZodDependency,
+  { specifier: 'catalog:', version: expectedZodVersion },
+  'Zod design-system lockfile coordinate',
+)
+expectStructuredEqual(
+  lockedZodPackageKeys,
+  [`zod@${expectedZodVersion}`],
+  'Zod lockfile package set',
+)
+expectStructuredEqual(
+  isJsonObject(lockfileSnapshots) ? lockfileSnapshots[`zod@${expectedZodVersion}`] : undefined,
+  {},
+  'Zod lockfile snapshot',
+)
 
 const webManifest = await readJsonObject(resolve(rootDirectory, 'apps/web/package.json'))
 const uiManifest = await readJsonObject(resolve(rootDirectory, 'packages/ui/package.json'))
@@ -402,9 +1822,26 @@ expectStructuredEqual(
     '@platform/design-system': 'workspace:*',
     pinia: 'catalog:',
     vue: 'catalog:',
+    zod: 'catalog:',
   },
-  'Package 5 web dependency set',
+  'Runtime Kernel web dependency set',
 )
+
+expectEqual(designSystemDependencies['zod'], 'catalog:', 'Design-system Zod catalog binding')
+
+expectDirectDependencyAbsent(rootManifest, 'zod', 'root package')
+
+for (const workspace of projectConfig.workspaces) {
+  if (workspace.path === 'apps/web' || workspace.path === 'packages/design-system') {
+    continue
+  }
+
+  expectDirectDependencyAbsent(
+    await readJsonObject(resolve(rootDirectory, workspace.path, 'package.json')),
+    'zod',
+    workspace.name,
+  )
+}
 
 for (const [manifest, description] of [
   [rootManifest, 'root package'],
@@ -517,5 +1954,12 @@ expectEqual(
   'Architecture authority',
 )
 expectEqual(projectConfig.governance.defaultBranch, 'main', 'Default branch governance')
+expectStructuredEqual(
+  projectConfig.deployment,
+  { deploymentBase: '/' },
+  'Exact root-only deployment configuration',
+)
+
+await validateRuntimeKernelBuildConfiguration()
 
 console.log('Project configuration schema: valid')

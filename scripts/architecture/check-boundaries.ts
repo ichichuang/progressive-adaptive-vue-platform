@@ -8,6 +8,7 @@ import ts from 'typescript'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
 import { validateAppearanceCutover } from './check-appearance-cutover'
+import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
 
 type JsonObject = Record<string, unknown>
 
@@ -650,6 +651,7 @@ const violations = [
   ...(await validateVueStyleGuardrails()),
   ...(await validateFirstPaintApplicationContract()),
   ...(await validateAppearanceCutover()),
+  ...(await validateRuntimeKernelArchitecture()),
 ]
 
 if (violations.length > 0) {

@@ -15,6 +15,9 @@ export const projectConfig = {
     pnpm: '10.34.5',
     typescript: '6.0.3',
   },
+  deployment: {
+    deploymentBase: '/',
+  },
   workspaces: [
     {
       kind: 'application',

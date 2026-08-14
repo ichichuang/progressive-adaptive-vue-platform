@@ -1,5 +1,9 @@
 /// <reference types="vite/client" />
 
+declare const __PAVP_COMPILED_ENVIRONMENT__: 'development' | 'staging' | 'production'
+declare const __PAVP_COMPILED_RELEASE_SHA__: string
+declare const __PAVP_COMPILED_BUILD_VERSION__: string
+
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
 
