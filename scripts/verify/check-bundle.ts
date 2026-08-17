@@ -30,6 +30,16 @@ interface ProductionHtmlExpectation {
   readonly runtimeConfigurationUrl: string
 }
 
+interface GzipMeasurement {
+  readonly bytes: number
+  readonly releaseShaReplacements: number
+}
+
+interface ReleaseShaMeasurementNormalization {
+  readonly canonicalReleaseSha: string
+  readonly currentReleaseSha: string
+}
+
 const rootDirectory = process.cwd()
 const distributionDirectory = resolve(rootDirectory, 'apps/web/dist')
 const generatedSourceDirectory = resolve(rootDirectory, 'packages/design-system/src/generated')
@@ -57,6 +67,7 @@ const explicitThemePreferenceBundleContract = {
 } as const
 const runtimeKernelBundleContract = {
   baselineCommit: 'fe4a0f7598e000a62d6f45da85711f308ae54971',
+  canonicalMeasurementReleaseSha: '3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177',
   baseline: {
     initialJavaScriptGzipBytes:
       explicitThemePreferenceBundleContract.final.initialJavaScriptGzipBytes,
@@ -602,11 +613,34 @@ function countCompiledIdentityRecords(
   return matches
 }
 
-async function gzipBytes(relativePath: string): Promise<number> {
+async function gzipMeasurement(
+  relativePath: string,
+  releaseShaNormalization?: ReleaseShaMeasurementNormalization,
+): Promise<GzipMeasurement> {
   const contents = await readFile(resolve(distributionDirectory, relativePath))
-  return gzipSync(contents, {
-    level: 9,
-  }).byteLength
+  let measurementContents = contents
+  let releaseShaReplacements = 0
+
+  if (releaseShaNormalization !== undefined) {
+    const source = contents.toString('utf8')
+    const segments = source.split(releaseShaNormalization.currentReleaseSha)
+
+    releaseShaReplacements = segments.length - 1
+
+    if (releaseShaReplacements > 0) {
+      measurementContents = Buffer.from(
+        segments.join(releaseShaNormalization.canonicalReleaseSha),
+        'utf8',
+      )
+    }
+  }
+
+  return {
+    bytes: gzipSync(measurementContents, {
+      level: 9,
+    }).byteLength,
+    releaseShaReplacements,
+  }
 }
 
 async function validateRuntimeKernelBuildOutput(
@@ -760,13 +794,35 @@ await Promise.all([
   ),
 ])
 
-const initialJavaScriptBytes = (
-  await Promise.all([...initialJavaScriptFiles].map(gzipBytes))
-).reduce((total, bytes) => total + bytes, 0)
-const initialCssBytes = (await Promise.all([...initialCssFiles].map(gzipBytes))).reduce(
-  (total, bytes) => total + bytes,
+const initialJavaScriptMeasurements = await Promise.all(
+  [...initialJavaScriptFiles].map((relativePath) =>
+    gzipMeasurement(relativePath, {
+      canonicalReleaseSha: runtimeKernelBundleContract.canonicalMeasurementReleaseSha,
+      currentReleaseSha: expectedReleaseSha,
+    }),
+  ),
+)
+const releaseShaMeasurementReplacements = initialJavaScriptMeasurements.reduce(
+  (total, measurement) => total + measurement.releaseShaReplacements,
   0,
 )
+const initialJavaScriptBytes = initialJavaScriptMeasurements.reduce(
+  (total, measurement) => total + measurement.bytes,
+  0,
+)
+const initialCssMeasurements = await Promise.all(
+  [...initialCssFiles].map((relativePath) => gzipMeasurement(relativePath)),
+)
+const initialCssBytes = initialCssMeasurements.reduce(
+  (total, measurement) => total + measurement.bytes,
+  0,
+)
+
+if (releaseShaMeasurementReplacements !== 1) {
+  throw new Error(
+    `Production bundle measurement must normalize exactly one validated Release SHA; received ${String(releaseShaMeasurementReplacements)}.`,
+  )
+}
 
 if (
   explicitThemePreferenceBundleContract.final.initialJavaScriptGzipBytes -
@@ -827,7 +883,7 @@ for (const dynamicChunkKey of dynamicChunkKeys) {
     continue
   }
 
-  const bytes = await gzipBytes(chunk.file)
+  const { bytes } = await gzipMeasurement(chunk.file)
 
   if (bytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
     throw new Error(

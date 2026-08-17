@@ -13,6 +13,10 @@ IMPLEMENTATION_BEFORE_ARCHITECTURE_FOUNDATION_GATE_FROZEN=PROHIBITED
 MAINTENANCE_MODEL=SOLO_MAIN_BRANCH
 ARCHITECTURE_AUTHORITY=ARCHITECTURE.md
 AI_ENTRY=AGENTS.md
+AI_ENTRY_ROLE=MISSION_AND_EXECUTION_ROUTER
+AI_ENTRY_ARCHITECTURE_AUTHORITY=NONE
+AI_ENTRY_CANONICAL_SOURCE=ARCHITECTURE.md
+AI_ENTRY_CURRENT_WORK_PACKAGE_SOURCE=canonical current-work-package status in ARCHITECTURE.md
 PROJECT_AUTHORITY_PORTABILITY=REPOSITORY_ONLY
 MACHINE_LOCAL_PROJECT_AUTHORITY=NONE
 MACHINE_LOCAL_PROJECT_DEPENDENCY=PROHIBITED
@@ -42,8 +46,10 @@ PHASE_1_PACKAGE_3A_STATUS=COMPLETE
 PHASE_1_PACKAGE_4_STATUS=COMPLETE
 PHASE_1_PACKAGE_5_STATUS=COMPLETE
 PHASE_1_PACKAGE_6_STATUS=COMPLETE
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
+PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -193,9 +199,9 @@ type CapabilityStatus =
 | Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
 | Generated Built-in First Paint and post-Vue Custom restoration | `ACTIVE` | generated artifacts plus application bootstrap |
 | General Pinia state, Session state and workflow state | `TARGET_INACTIVE` | post-Phase-1 named gates |
-| Runtime Kernel | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` |
-| Core Error Registry, normalization and pre-Vue capture | `TARGET_INACTIVE` | Runtime Kernel first admission; exact extension by each consuming package |
-| Core validated Runtime Configuration | `TARGET_INACTIVE` | Runtime Kernel first admission; exact field extension by each consuming package |
+| Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` at `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` |
+| Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract; exact extension by each consuming package |
+| Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Route Layout and Scroll core | `TARGET_INACTIVE` | Router implementation; first Shell consumer in Protected Vertical Slice |
 | TanStack Query server-state runtime | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
@@ -4370,20 +4376,21 @@ src/features/<feature>/model/
 src/stores/
 ```
 
-## 19.4 Production Runtime Kernel Target Contract
+## 19.4 Production Runtime Kernel Contract
 
 ```text
 CAPABILITY=PRODUCTION_RUNTIME_KERNEL
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 OWNER=apps/web/src/app/bootstrap
 ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
-CURRENT_RUNTIME=createApp(App).mount('#app')
-IMPLEMENTATION_STATUS=NOT_ADMITTED
+IMPLEMENTATION_STATUS=COMPLETE
+IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+CURRENT_RUNTIME=exact nine-step Runtime Kernel
 ACTIVATION_PROVIDER_SET=Pinia,Appearance
 ACTIVATION_BOOTSTRAP_STEP_COUNT=9
 ```
 
-Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个当前 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。本节冻结 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` Landing 必须原子激活的精确合同；当前能力仍为 `TARGET_INACTIVE`，本文档不宣称任何 Kernel Protocol 已实现。
+Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个当前 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。本节冻结的 Protocol Contract 已由 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 原子激活；当前 Runtime Kernel、Core Runtime Configuration 和当前 Core Error/Capture 边界为 `ACTIVE`。Router 与所有后续能力保持未实现且未准入。
 
 ### Exact Bootstrap Order
 
@@ -4686,13 +4693,13 @@ HMR 只在 Development 生效，并与 Failed-attempt Retry、Application Dispos
 
 以下内容不成为 Architecture Contract：Local Helper Name、Local Variable Name、Parser Decomposition、Internal Loop、Private Array/Map/Closure、Opaque Instance-ID Generation Algorithm、Error Normalizer Internal Dispatch、Fatal-boundary DOM Helper Name、JSON Whitespace and Key Formatting、Private Kernel Handle Type Name、Private Bootstrap Executor Data Structure，以及 Kernel Checker 的 Physical Split；`check:arch` 必须保持唯一 Architecture Governance Entry。
 
-### Runtime Kernel Static Enforcement Targets
+### Runtime Kernel Static Enforcement
 
 ```text
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 ```
 
-Owning Implementation Package 必须验证：
+Active Owning Static Gates 必须验证：
 
 * Exact Runtime Configuration Artifact、HTML Carrier、URL、Field Set、Discriminator、Build Version、Release SHA、Deployment Base 与 Compatibility Comparison。
 * Exact Four-record Core Error Registry，以及每条 Error ID、Message Key、Safe/Prohibited Context、Recoverability、Retry Owner、Report Level、Normalization Source 与 Fatality。
@@ -4702,7 +4709,7 @@ Owning Implementation Package 必须验证：
 * Exact HMR Owner，且没有 Future Provider、Placeholder Step、Router、Storage、Query、API、Auth、Session、Permission、I18n、Observability 或 Deployment Activation。
 * Package 5 Appearance Behavior 不变。
 
-规则在 Runtime Kernel Implementation Landing 前不得宣称 `ACTIVE`。
+这些规则已随 Runtime Kernel Implementation Landing 激活，并且只证明当前九步 Registry、Pinia/Appearance Provider Set、Core Runtime Configuration、四条 Core Error Record、当前 Listener、Retry、Disposal、Mount 和 HMR 合同。它们不激活或证明任何后续 Provider 或 Capability。
 
 ## 19.5 Application Persistence Target Contract
 
@@ -5100,13 +5107,14 @@ Return URL 使用 §9.6 Typed Same-origin Contract。Logout 后默认导航到�
 
 Owning Gate 必须验证 Session Transition Exhaustiveness、Single-flight 唯一性、Cookie/CSRF Config Schema、401/403 分离、Permission Registry Closure、Route/Component/Operation Reference、Principal-partitioned Query Keys、Cleanup Order、Cross-tab Payload Allowlist 和 Sensitive Persistence Prohibition。全部为 `TARGET_INACTIVE`，不得用客户端检查宣称安全完成。
 
-# 20B. Error Handling and Observability Target Contract
+# 20B. Error Handling and Observability Contract
 
 ```text
 CAPABILITY=CORE_ERROR_HANDLING
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 OWNER=apps/web/src/app/errors
 ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 EXTENSION_GATES=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION; PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
 
 CAPABILITY=OBSERVABILITY_REPORTING
@@ -5115,7 +5123,7 @@ OWNER=apps/web/src/app/observability
 ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
 ```
 
-Core Error Handling 与 Observability Reporting 是两个串行 Authority。Runtime Kernel 只激活 Startup、Configuration、Vue Boundary 与 Unhandled-rejection 所需的最小 Error Registry、Normalizer 和 Capture；Router、Storage、API 与 Auth 各自在自己的 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 只由 Observability Gate 激活。
+Core Error Handling 与 Observability Reporting 是两个串行 Authority。Runtime Kernel 已激活 Startup、Configuration、Vue Boundary 与 Unhandled-rejection 所需的最小 Error Registry、Normalizer 和 Capture；Router、Storage、API 与 Auth 各自在自己的 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 只由 Observability Gate 激活，当前仍为 `TARGET_INACTIVE`。
 
 ## 20B.1 Exact Error Registry
 
@@ -5222,7 +5230,7 @@ normalizationSource=typed Runtime Configuration loader failure
 fatalForCurrentAttempt=true
 stateWhenRetryBudgetAvailable=recoverable-failure
 stateWhenRetryBudgetExhausted=fatal-failure
-capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+capabilityStatus=ACTIVE
 ```
 
 ### Application Startup Failure Record
@@ -5240,7 +5248,7 @@ reportLevel=fatal
 safeContextFields=startupAttemptId,bootstrapStepId,releaseSha,buildVersion
 normalizationSource=bootstrap-step catch or unclaimed startup-phase window.error
 fatal=true
-capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+capabilityStatus=ACTIVE
 ```
 
 Already-normalized Error 不再 Normalized。Application Startup Failure 不具备 In-document Configuration Retry 资格；唯一 Recovery Action 是用户显式 Browser Reload。Raw Event、Resource URL、Raw Cause、Message、Stack、Component Props 和 Component Instance 全部禁止。
@@ -5260,7 +5268,7 @@ safeContextFields=startupAttemptId,vueLifecyclePhase,releaseSha,buildVersion
 allowedVueLifecyclePhase=render | setup | lifecycle | watcher
 normalizationSource=app.config.errorHandler or admitted component boundary
 fatal=false
-capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+capabilityStatus=ACTIVE
 ```
 
 Initial Mount Step 中的 Root Component Failure 必须恰好一次分类为 `application-startup-failure`，不得同时分类为 Component Failure。Component Name、Instance、Props、Emits、Raw Vue Info、DOM Text、Raw Cause、Message 和 Stack 全部禁止。
@@ -5279,7 +5287,7 @@ safeContextFields=applicationStartupState,startupAttemptId,releaseSha,buildVersi
 normalizationSource=PromiseRejectionEvent.reason at the global listener
 fatal=false
 triggersStartupRecovery=false
-capabilityStatus=ACTIVE only at Runtime Kernel implementation landing
+capabilityStatus=ACTIVE
 ```
 
 Promise、Raw Rejection Reason、Raw Cause、Message 和 Stack 全部禁止。该 Record 不触发 Startup Recovery，也不准入 Remote Reporter。
@@ -5298,7 +5306,7 @@ Promise、Raw Rejection Reason、Raw Cause、Message 和 Stack 全部禁止。�
 | Resource/Chunk load | Runtime/Router | release-aware recovery |
 | Reporting provider | Observability owner | never re-enter application error pipeline |
 
-Runtime Kernel 首次 Landing 只激活上表前五条所需的四条 Core Record。Router、Query/Mutation、Resource/Chunk-load 和 Reporting 行只保留其 Future Owner，不得在当前 Core Registry 中创建 Placeholder Record 或 Adapter。
+Runtime Kernel Landing 只激活了上表前五条所需的四条 Core Record。Router、Query/Mutation、Resource/Chunk-load 和 Reporting 行只保留其 Future Owner，不得在当前 Core Registry 中创建 Placeholder Record 或 Adapter。
 
 Boundary Reset 必须先 Dispose 失败 Subtree 的 Subscription、Request、Focus/Scroll Lock 和 Draft Handle。Fatal Error 不允许无限 Retry；Recoverability 必须来自 Registry，Component 不得随意添加 Reload Button。Global Capture 的 Exact Count、Lifetime、Atomic Installation、Ready-time `window.error` Removal 和 Attempt-final `unhandledrejection` Removal 只由 §19.4 的 Configuration-first Contract 定义，不得建立第二份 Listener Policy。
 
@@ -5359,7 +5367,7 @@ Reporting Transport 使用独立、最小、无业务拦截器的通道。Report
 
 ## 20B.7 Error and Observability Static Enforcement Targets
 
-Core Error Owning Gate 必须拒绝任意 Error Category/Message、重复 Capture 和无 Owner Retry，并验证每个已准入 Error Consumer 与 Exact Active Registry Subset 同步；新 Package 必须在同一 Landing 中扩展 Registry，不能提前或延后。Observability Gate 另行拒绝任意 Telemetry Name、Raw Console Production Log、未 Redact Context、重复 Report、公开 Source Map、PII Field、未注册 Metric 和 Recursive Reporter，并闭合 Schema Version、Release Fields 与 Capture Source。两组规则在各自 Gate 前均为 `TARGET_INACTIVE`，不得因 Core Error 已激活而宣称 Reporting Active。
+Core Error Owning Gate 当前为 `ACTIVE`：它拒绝任意 Error Category/Message、重复 Capture 和无 Owner Retry，并验证每个已准入 Error Consumer 与 Exact Active Registry Subset 同步；新 Package 必须在同一 Landing 中扩展 Registry，不能提前或延后。Observability Gate 另行拒绝任意 Telemetry Name、Raw Console Production Log、未 Redact Context、重复 Report、公开 Source Map、PII Field、未注册 Metric 和 Recursive Reporter，并闭合 Schema Version、Release Fields 与 Capture Source。Observability Enforcement 在其 Gate 前保持 `TARGET_INACTIVE`；Core Error 已激活不表示 Reporting Active。
 
 ---
 
@@ -6098,17 +6106,23 @@ parse-theme-preference.ts
 
 ```text
 AI_ENTRY=AGENTS.md
+AI_ENTRY_ROLE=MISSION_AND_EXECUTION_ROUTER
+AI_ENTRY_ARCHITECTURE_AUTHORITY=NONE
+AI_ENTRY_CANONICAL_SOURCE=ARCHITECTURE.md
+AI_ENTRY_CURRENT_WORK_PACKAGE_SOURCE=canonical current-work-package status in ARCHITECTURE.md
 ARCHITECTURE_AUTHORITY=ARCHITECTURE.md
 ```
 
-`AGENTS.md` 是唯一 AI 入口和最小路由器。它只负责：
+`AGENTS.md` 是唯一 AI 入口和简洁的 Mission and Execution Router。它只负责：
 
 * 指向并要求完整读取 `ARCHITECTURE.md`。
-* 保持当前 Phase、Production-only 和 Main-only 边界。
-* 指向唯一 Codex Verification Gate：`pnpm verify`。
+* 使 PAVP Project Mission、Owner Delivery Direction 和高层 Coding Invariant 在任务入口可见。
+* 动态路由到本文件当前 Canonical Work Package，而不硬编码 Package Name 或复制 Serial Chain。
+* 保持 One-task、Production-only、Validation、Git Authorization 和 Mandatory Stop 边界。
 * 将 UI 范围显式路由到现有 `.ai/skills/pavp-ui/SKILL.md`。
+* 要求每次任务输出明确区分 Implementation、Static Validation、Runtime Acceptance、Staging、Commit、Push 和 Release。
 
-`AGENTS.md` 没有行数配额，不复制技术栈、依赖、Token、Material、Motion、Layout、Component、目录或验收正文，也不承担第二份架构权威。
+`AGENTS.md` 没有行数配额，但必须保持可在任务开始时快速扫描。它不复制完整技术栈、依赖表、Registry、Schema、Serial Package List、Material/Motion/Layout Contract、Component Contract、目录树或验收正文，也不承担第二份架构权威。
 
 `ARCHITECTURE.md` 是唯一持久、完整、Canonical 的架构正文。任何其他文件与本文件冲突时必须停止执行并报告冲突，不得创建替代规范。
 
@@ -6143,9 +6157,9 @@ PROJECT_UI_WORKFLOW_CANONICAL_SOURCE=ARCHITECTURE.md
 PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 ```
 
-本架构工作包只声明未来合同，不创建 `.ai/**`、不修改 `AGENTS.md` 或 Repository Policy。
+Architecture Contract 与 `AGENTS.md` 的同步只能由 Owner 明确授权的 Repository-governance Task 修改；UI Workflow 自身不得改写这些 Authority。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 与 `PAVP_FINAL_STATIC_GOVERNANCE` 已完成，Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover 与最终 Phase 1 Static Closure 已同步。当前唯一 Next Canonical Work Package 是 §37.2 的 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`。已落地的 Browser Rule、Manifest Compression Contract、Complete Theme Owning Gate、Appearance Cutover Owning Gate 与 Final Static Governance 不得被后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE` 与 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 已完成。Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover、Phase 1 Static Closure 与 Runtime Kernel Static Ownership 已同步。当前唯一 Next Canonical Work Package 是 §37.2 的 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`。已落地边界不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -6203,6 +6217,202 @@ network-fetched normative Markdown
 ```
 
 Owner 自己操作的浏览器或其他 Operator Capability 是非权威、可选、外部的手工观察能力，不是仓库依赖或项目规范来源。Codex 即使具有该能力也不得调用。
+
+## 28.3A PAVP Mission and Execution Contract
+
+### Project Mission
+
+PAVP 是一套可复用、面向 Production、AI-friendly 的 Vue Frontend Architecture，目标是让未来 Frontend Development 快速、一致、高度可定制、可维护，并使 AI Coding Agent 能够安全理解和修改。
+
+Primary Development Goal 是先完成 Reusable Frontend Foundations，再投入 Business Page 或 Broad UI-framework Integration。Mission Foundation Summary 包含以下能力，但本清单不是第二份 Roadmap：
+
+```text
+Design Tokens
+semantic color roles
+complete built-in and custom themes
+Light / Dark / System
+contrast
+material
+spacing
+size
+density
+typography
+radius
+shadow
+layering
+responsive adaptation
+narrow / regular / wide capabilities
+PC / H5 adaptation
+Safe Area
+Dynamic Viewport
+Container Query
+UnoCSS semantic integration
+Runtime Kernel
+Pinia ownership
+Router and navigation lifecycle
+Layout and Scroll ownership
+Storage and persistence
+API transport
+Zod validation
+server-state management
+Auth
+Session
+Permission
+Motion
+runtime error handling
+Observability
+Deployment
+```
+
+Exact Admission Order、Scope、Dependency、Schema、File、Status、Gate 和 Implementation Contract 只由本文件其他 Canonical Section 定义。
+
+### Owner Delivery Direction
+
+```text
+FIRST
+complete reusable platform foundations
+
+THEN
+admit third-party UI primitives only through PAVP-owned boundaries and only when architecture allows
+
+THEN
+build Shared UI from real consumer demand
+
+FINALLY
+build one simple real frontend surface that uses the completed architecture and demonstrates platform capabilities
+```
+
+最终 Surface 用于证明和消费 Architecture，不创建第二个 Business Platform，也不建立独立 Demo 或 Showcase Infrastructure。它必须是 Architecture-admitted Real Application Surface。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；Third-party UI/Interaction Primitive 只是 PAVP-owned Public Boundary 后的 Private Implementation Detail。除非已由 Canonical Admission 明确选择，不冻结 UI Vendor。
+
+### Task Discipline
+
+```text
+ONE_COMPLETE_BOUNDED_TASK_AT_A_TIME
+AUTOMATIC_ROADMAP_CONTINUATION=PROHIBITED
+UNREQUESTED_SCOPE_EXPANSION=PROHIBITED
+UNREQUESTED_REFACTOR=PROHIBITED
+UNREQUESTED_DEPENDENCY_CHANGE=PROHIBITED
+UNRELATED_CLEANUP=PROHIBITED
+SPECULATIVE_FEATURE=PROHIBITED
+SPECULATIVE_ABSTRACTION=PROHIBITED
+FUTURE_PROVIDER_STUB=PROHIBITED
+PLACEHOLDER_MODULE=PROHIBITED
+DUPLICATE_AUTHORITY=PROHIBITED
+```
+
+Codex 完成当前 Task 后不得自动开始 Next Package。Narrow Task 不得被扩大为 Generic Framework Work、General AST Infrastructure、Generic CFG Analysis、Testing Infrastructure、Security Maintenance、Dependency Modernization、Repository-wide Cleanup 或 Architecture Redesign，除非 Owner 明确授权该 Exact Task 且 Architecture 允许。
+
+Static Checker 只冻结其 Owning Work Package 所需的最小 Stable Cross-file 或 Public Contract。除非 Architecture 明确声明为 Normative，Checker 不得冻结 Private Local Variable、Private Helper、Private Loop Structure、Private Parser Decomposition、Private Map/Array、Closure 或 Private Algorithm。Narrow Repository-specific Invariant 足够时，禁止构建 Generic Static-analysis Machinery。
+
+### Contract-gap Stop Rule
+
+当当前 Task 需要但 Canonical Architecture 未定义 Material Contract 时，Codex 必须在 Mutation 前停止。Material Contract 包括：
+
+```text
+public API
+cross-file identifier
+schema
+persisted format
+dependency
+path authority
+default
+registry
+lifecycle owner
+provider
+work-package boundary
+capability status
+build identity
+deployment identity
+```
+
+Codex 不得发明“合理”答案。Required Result：
+
+```text
+STATUS=BLOCKED
+STOP_REASON=CANONICAL_CONTRACT_MISSING
+```
+
+Report 必须指出 Missing Contract、Gap Location、为什么继续会要求 Invention，以及最小 Owner/Architecture Decision。Minor Private Implementation Detail 只有在不创建或改变 Public/Cross-file Contract 时才可派生。
+
+### Evidence Before Decisions
+
+Codex 必须区分：
+
+```text
+confirmed repository fact
+confirmed official external fact
+explicit Owner decision
+derived private implementation detail
+unresolved canonical gap
+```
+
+只有前四项可以驱动 Implementation。Repository State 必须检查 Actual Repository。可变化 Dependency、API 或 Tool Fact 在需要 External Verification 时必须使用 Official Primary Source。Old Chat、Old Task Report、Planning Document、Memory、Earlier Commit 和 Assistant Assumption 都不是 Current Repository State Proof。已由当前 Evidence 解决的 Owner Decision 不得重复询问。
+
+### Entry-visible Coding Invariants
+
+Detailed Contract 继续由本文件各 Domain Section 定义；`AGENTS.md` 必须立即暴露以下 High-level Rule：
+
+* 使用 Strict TypeScript，并保留 Validated Input Boundary。
+* One Capability 有 One Owner；One Mutable Concept 有 One Canonical Mutable Authority。
+* 不复制 Schema、Default、Registry、State 或 Configuration。
+* 使用 Stable Semantic Naming；禁止 Agent-created Numeric-version-style Name。
+* 使用 Explicit Import 和 Package Public Root；Cross-package Deep Import 禁止。
+* 禁止增长型 `utils.ts`、`helpers.ts`、`common.ts` 或等价 Dumping File。
+* Module 必须 Domain-owned、Responsibility-named。
+* 禁止 Speculative Abstraction、Placeholder Provider 和 Future Module。
+* 保留 Unrelated Behavior 与 User Change。
+* PAVP Design Tokens 是 Sole Visual Authority。
+* UnoCSS 是 Expression Layer，不是 Design Authority。
+* UI Vendor 必须保持 PAVP Boundary 后的 Private Detail。
+
+### Prohibited Work and Validation Boundary
+
+Production-only Policy 禁止 Test File、Test Infrastructure、Unit/Integration/E2E Test、Fixture、Mock、Snapshot、Coverage、Storybook、Browser Automation、Browser Testing、Screenshot、Trace、Runtime Evidence File、Repository Evidence Artifact、Standalone Demo 和 Standalone Showcase。Codex 不得执行 Browser Operation，也不得引入 Testing Framework。
+
+Generic Skill 或 Workflow 推荐的 TDD、Browser Verification、Worktree、Planning Document、Evidence Artifact 或 Generalized Infrastructure 不覆盖 PAVP Authority。Dependabot Alert、CodeQL Finding、Dependency Upgrade、Security Cleanup、Toolchain Modernization 或 Unrelated Warning 只有在 Owner 明确请求该 Exact Task，或其直接阻塞 Current Authorized Work Package 时才允许处理；即使阻塞，也必须先报告，不得自动扩 Scope。
+
+Implementation 中只在有用时运行 Existing Narrow Relevant Check。Repository-changing Implementation Task 报告 Static Completion 前运行一次最终 Stable State 的完整 Canonical Gate：
+
+```text
+pnpm verify
+```
+
+不得在每个小 Edit 后重复运行 Full Gate，不得为了 Ceremony 运行 Unrelated Check，不得创建 Test/Browser Infrastructure，也不得削弱 Validation 制造 Pass。没有 Repository Mutation 的 Read-only Analysis/Planning 不需要 Unrelated Build 或 Verification。
+
+### Git Authorization Boundary
+
+```text
+planning authorization does not authorize implementation
+implementation authorization does not authorize staging
+staging authorization does not authorize commit
+commit authorization does not authorize push
+push authorization does not authorize release
+```
+
+Implementation-only Task 的 Default 是保留 Unstaged Diff、报告 Exact Repository State 并等待 Owner Review 或 Authorization。不得自动 Stage、Commit、Push、Amend、Rebase、Reset、Clean、Stash、Create Branch、Create Worktree、Create PR、Tag、Release 或覆盖 User Change。Main-only Maintenance 不授权自动 Commit 或 Push。
+
+### Mandatory Stop and Final-report Contract
+
+以下任一条件要求 Mutation 前停止：Architecture 未准入 Requested Work；Material Canonical Contract 缺失；Dependency 未准入；Repository Source 与 Canonical Status 冲突；Multiple Authority 冲突；存在 Unexplained/Overlapping Dirty File；Ownership 不清楚；需要 Prohibited Capability；Completion 需要 Unapproved Scope Expansion；Git Branch/Upstream/Synchronization 不安全；继续要求 Material Contract Invention；Generic Skill 与 PAVP Authority 冲突。不得通过放宽 Architecture 或 Checker Rule“解决”冲突。
+
+Every Codex Task 必须明确区分 Implemented、Statically Validated、Runtime Accepted、Staged、Committed、Pushed 和 Released。Report 至少包含：
+
+```text
+STATUS
+STOP_REASON
+REPOSITORY_BASELINE
+ACTIVE_WORK_PACKAGE
+TASK_SCOPE
+COMPLETED_CONTENT
+INCOMPLETE_CONTENT
+CHANGED_FILES
+VALIDATION
+GIT_DIFF
+FINAL_WORKTREE_STATE
+NEXT_POSSIBLE_STAGE
+```
+
+Task-required Acceptance Boundary 未完成时不得报告 `COMPLETED`。`NEXT_POSSIBLE_STAGE` 只提供信息，不构成 Execution Authorization。
 
 ## 28.4 Workflow State Contract
 
@@ -6433,19 +6643,19 @@ interface StaticEnforcementTarget {
 | `no-unregistered-api-policy-literal` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Base URL, timeout, retry, backoff, cache, header and concurrency policy | `runtime-configuration-schema`; `domain-schema`; `named-protocol-constant` | `UNREGISTERED_API_POLICY` |
 | `route-registry-name-and-meta-closure` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | File routes, route records, redirects, error routes and navigation consumers | `route-registry`; `generated-output` | `ROUTE_REGISTRY_DRIFT` |
 | `no-undeclared-route-meta` | `TARGET_INACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Every static/dynamic route meta object | `route-registry` | `UNDECLARED_ROUTE_META` |
-| `runtime-configuration-exact-contract` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Root/app package identity, project config, Vite, production HTML carrier, config loader/schema, emitted artifact and First Paint paths | `runtime-configuration-schema`; `generated-output`; `named-protocol-constant` | `RUNTIME_CONFIGURATION_CONTRACT_DRIFT` |
-| `registered-errors-only` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Exact four-record Core Error Registry, normalizer, capture sources and message-key consumers | `error-registry` | `UNREGISTERED_ERROR` |
-| `runtime-kernel-bootstrap-registry` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Kernel step registry, dependency edges, create/ready/dispose handles, provider set and Mount sites | `named-protocol-constant`; `package-boundary-registry` | `RUNTIME_KERNEL_BOOTSTRAP_DRIFT` |
-| `runtime-kernel-lifecycle-disposal-hmr` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Startup state, retry budget, global/Appearance listeners, reverse disposal and HMR ownership | `named-protocol-constant`; `error-registry`; `capability-status-registry` | `RUNTIME_KERNEL_LIFECYCLE_DRIFT` |
+| `runtime-configuration-exact-contract` | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Root/app package identity, project config, Vite, production HTML carrier, config loader/schema, emitted artifact and First Paint paths | `runtime-configuration-schema`; `generated-output`; `named-protocol-constant` | `RUNTIME_CONFIGURATION_CONTRACT_DRIFT` |
+| `registered-errors-only` | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Exact four-record Core Error Registry, normalizer, capture sources and message-key consumers | `error-registry` | `UNREGISTERED_ERROR` |
+| `runtime-kernel-bootstrap-registry` | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Kernel step registry, dependency edges, create/ready/dispose handles, provider set and Mount sites | `named-protocol-constant`; `package-boundary-registry` | `RUNTIME_KERNEL_BOOTSTRAP_DRIFT` |
+| `runtime-kernel-lifecycle-disposal-hmr` | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Startup state, retry budget, global/Appearance listeners, reverse disposal and HMR ownership | `named-protocol-constant`; `error-registry`; `capability-status-registry` | `RUNTIME_KERNEL_LIFECYCLE_DRIFT` |
 | `registered-permissions-only` | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` | Route, component visibility, operation and claim projection | `permission-registry` | `UNREGISTERED_PERMISSION` |
 | `no-inactive-capability-import` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | Package manifests and complete workspace import graph | `capability-status-registry`; `package-boundary-registry` | `INACTIVE_CAPABILITY_IMPORT` |
 | `no-query-data-copied-into-pinia` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Pinia state/actions, Query callbacks and server-entity consumers | `domain-schema` | `QUERY_DATA_COPIED_TO_PINIA` |
 | `no-theme-literal-runtime-state` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Appearance stores, pages, features, shared modules, public UI and DOM writers | `typed-default-registry`; `design-token-source`; `generated-output` | `THEME_LITERAL_RUNTIME_STATE` |
 | `single-product-default-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | Schema defaults, stores, reset, First Paint, Runtime Config, Page/Feature/Shared/Public UI, appearance attributes and documentation code | `typed-default-registry`; `generated-output` | `DUPLICATE_PRODUCT_DEFAULT` |
 | `single-safety-baseline-authority` | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` | HTML, Critical CSS, Manifest, initializer and persistence consumers | `typed-default-registry`; `generated-output` | `DUPLICATE_SAFETY_BASELINE` |
-| `no-unregistered-environment-default` | `TARGET_INACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Config loader/schema and every App/Feature/UI environment consumer | `runtime-configuration-schema` | `UNREGISTERED_ENVIRONMENT_DEFAULT` |
+| `no-unregistered-environment-default` | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` | Config loader/schema and every App/Feature/UI environment consumer | `runtime-configuration-schema` | `UNREGISTERED_ENVIRONMENT_DEFAULT` |
 
-Runtime Kernel Implementation 必须扩展 Existing Static Owners，不得创建新的 Static-governance Framework：
+Runtime Kernel Implementation 已扩展以下 Existing Static Owners，没有创建新的 Static-governance Framework：
 
 ```text
 scripts/architecture/check-boundaries.ts
@@ -6589,7 +6799,7 @@ generated-output drift
 bundle budgets
 ```
 
-`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 必须在 Existing Static Owners 中额外证明：
+`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 的 Active Existing Static Owners 当前额外证明：
 
 ```text
 exact runtime-configuration.json artifact name, output and deployed URL
@@ -6807,9 +7017,10 @@ Owning Gate 必须检查所有 Budget 来自 Registry、Route 默认 Lazy、重�
 
 ```text
 CAPABILITY=CORE_RUNTIME_CONFIGURATION
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 OWNER=apps/web/src/app/config
 ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 CONSUMER_ADMISSION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 FIELD_EXTENSION_GATES=PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
 FIELD_EXTENSION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
@@ -6837,7 +7048,7 @@ CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_ARCHITECTURE_FROZEN_IMPLEMENTATION_IN
 
 ## 34.1 Build-time and Runtime Configuration
 
-Build-time Environment 只允许决定无法在部署后改变的编译事实：Compiled Environment Identity、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Kernel 首次只准入本节冻结的 Exact Core Runtime Configuration Record；API、Observability、Public Feature Availability、Product Zone、Router、Auth、Session、Storage、Vendor、Secret、Credential 与 Private URL Field 均不存在，不能使用 Optional、Default、Empty String、`null`、False、Localhost 或 Placeholder Stub 提前保留。
+Build-time Environment 只允许决定无法在部署后改变的编译事实：Compiled Environment Identity、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Kernel 已准入本节冻结的 Exact Core Runtime Configuration Record；API、Observability、Public Feature Availability、Product Zone、Router、Auth、Session、Storage、Vendor、Secret、Credential 与 Private URL Field 均不存在，不能使用 Optional、Default、Empty String、`null`、False、Localhost 或 Placeholder Stub 提前保留。
 
 ### Build Version Authority
 
@@ -6902,7 +7113,7 @@ VALIDATED_RESULT=RECURSIVELY_IMMUTABLE
 VALIDATION_TIMING=BEFORE_VUE_APPLICATION_AND_PINIA_CREATION
 ```
 
-Runtime Kernel Implementation Package 可以把 Existing Workspace Catalog Zod Coordinate 作为 `apps/web` Direct Dependency 加入；本 Architecture-only Task 不准入 Dependency，也不修改 Manifest 或 Lockfile。Feature 不读取 `import.meta.env`、`process.env`、Window Global 或未验证 JSON。
+Runtime Kernel Implementation Package 已把 Existing Workspace Catalog Zod Coordinate 作为 `apps/web` Direct Dependency 准入，并由 Web 配置边界直接消费。Feature 不读取 `import.meta.env`、`process.env`、Window Global 或未验证 JSON。
 
 ### Deployment Base Authority
 
@@ -6916,7 +7127,7 @@ FIRST_PAINT_PATH_AUTHORITY=projectConfig.deployment.deploymentBase
 SUBPATH_DEPLOYMENT_STATUS=TARGET_INACTIVE
 ```
 
-Future Runtime Kernel Implementation 必须增加 Explicit Declaration：
+Runtime Kernel Implementation 已增加以下 Explicit Declaration：
 
 ```ts
 projectConfig.deployment.deploymentBase='/'
@@ -7087,7 +7298,7 @@ External URL 必须通过 Protocol/Origin Registry；`javascript:`、`data:` Nav
 
 ## 34.11 Deployment Static Enforcement Targets
 
-Core Runtime Configuration Gate 必须拒绝未验证 Env、Consumer Env Fallback、重复 Base、未准入 Field 和 Placeholder Default；每个 Field Extension Gate 必须证明 Schema、Loader、Consumer 与 Registry Exact Equality。Deployment Gate 另行拒绝 Secret-like `VITE_*`、Root-only Literal、SPA Fallback 吞 Asset 404、错误 Cache Class、宽泛 CSP、公开 Source Map、Unknown Origin、未注册 Polyfill、Release/Config Digest 不匹配和非不可变回滚。除现有 Zod/Build 基础规则外，各 Target Enforcement 在自己的 Owner Gate 前为 `TARGET_INACTIVE`。
+Core Runtime Configuration Gate 当前为 `ACTIVE`，拒绝未验证 Env、Consumer Env Fallback、重复 Base、未准入 Field 和 Placeholder Default；每个 Future Field Extension Gate 必须证明 Schema、Loader、Consumer 与 Registry Exact Equality。Deployment Gate 另行拒绝 Secret-like `VITE_*`、Root-only Literal、SPA Fallback 吞 Asset 404、错误 Cache Class、宽泛 CSP、公开 Source Map、Unknown Origin、未注册 Polyfill、Release/Config Digest 不匹配和非不可变回滚。Deployment 与其他未准入 Target Enforcement 在自己的 Owner Gate 前保持 `TARGET_INACTIVE`。
 
 ---
 
@@ -7226,7 +7437,9 @@ Package 3A = COMPLETE
 Package 4 = COMPLETE
 Package 5 = COMPLETE
 Package 6 = COMPLETE
-NEXT = PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION = COMPLETE
+RUNTIME_KERNEL_IMPLEMENTATION_COMMIT = 3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+NEXT = PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 ```
 
 以下是完整 Phase 1 Target Inventory。某项是否已实现、是否已机器强制以及是否允许成为 Runtime Authority，只由 §37.1 的 Package Status 和 Owning Gate 决定，不因出现在本清单而自动激活：
@@ -7331,14 +7544,16 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` 与 `PAVP_FINAL_STATIC_GOVERNANCE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理，唯一 Next Implementation Package 是 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE` 与 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活当前 Kernel、Configuration、Core Error 和 Static Enforcement。唯一 Next Implementation Package 是 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
 ARCHITECTURE_FOUNDATION_GATE_STATUS=FROZEN
 IMPLEMENTATION_WHILE_GATE_NOT_FROZEN=BLOCKED
 TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
-NEXT_IMPLEMENTATION_AFTER_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+FIRST_IMPLEMENTATION_AFTER_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
+PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 ```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
@@ -7353,11 +7568,13 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`，不得在 Package 6 中提前开始。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel Implementation 随后完成。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`，不得因本次 Status Synchronization 自动开始。
 
 当前精确 Acceptance Contract：
 
 ```text
+PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
+PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 ACTIVE_PUBLIC_COLOR_ROLES=9
 ACTIVE_PUBLIC_ROLES_TOTAL=27
 PUBLIC_ROLE_REGISTRY=EXACT
@@ -7786,6 +8003,34 @@ Final Governance 只能闭合已准入规则，不能为早期 Package 补交其
 
 ### 37.2.4 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`
 
+当前状态：
+
+```text
+STATUS=COMPLETE
+IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+RUNTIME_KERNEL_CAPABILITY_STATUS=ACTIVE
+CORE_RUNTIME_CONFIGURATION_STATUS=ACTIVE
+CORE_ERROR_HANDLING_STATUS=ACTIVE
+OWNING_STATIC_ENFORCEMENT_STATUS=ACTIVE
+STATIC_PACKAGE_COMPLETION=PASS
+PRODUCTION_BUNDLE_COMPRESSION_PROFILE=node-zlib-gzip-sync
+PRODUCTION_BUNDLE_CANONICAL_MEASUREMENT_RELEASE_SHA=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+PRODUCTION_BUNDLE_MEASUREMENT_RELEASE_SHA_OCCURRENCES=EXACTLY_ONE_AFTER_CURRENT_IDENTITY_VALIDATION
+PRODUCTION_BUNDLE_FINAL_JS_GZIP_BYTES=132064
+PRODUCTION_BUNDLE_FINAL_CSS_GZIP_BYTES=7457
+PRODUCTION_BUNDLE_FINAL_LAZY_CHUNKS=0
+PRODUCTION_RELEASE_ACCEPTANCE=NOT_CLAIMED_BY_STATIC_PACKAGE_COMPLETION
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+```
+
+Production Bundle Gate 必须先对真实产物执行当前完整 `HEAD` Release SHA、Build Version 与
+Runtime Configuration 的 Exact Identity Validation；真实产物、文件名、Runtime Configuration
+Artifact 和 Compiled Identity 不得被改写。只有在该验证通过后，Owning Bundle Checker 才能在内存中的
+Gzip Measurement Input 内，把 Initial JavaScript 中恰好一处已验证的当前 Release SHA 替换为上方固定的
+Runtime Kernel Implementation Commit。零处或多于一处替换都必须失败。该固定长度归一化只移除 Commit
+Identity 的压缩熵，使 Exact Byte Delta 继续只响应 Production Code、Dependency 和 Build Output Structure
+变化；它不是 Budget 容差、Artifact 变更、Release Identity Fallback 或任意 Expected Value 更新许可。
+
 #### `PAVP_RUNTIME_KERNEL_PROTOCOL_FREEZE_AMENDMENT`
 
 ```text
@@ -7797,7 +8042,7 @@ PROHIBITED_SCOPE=source implementation; dependency or lockfile changes; Router; 
 ACTIVATION_EFFECT=NONE_UNTIL_PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 ```
 
-该 Amendment 只闭合 Existing Runtime Kernel Work Package 的 Protocol Input，不创建第二个 Runtime Kernel Status Authority，不激活 Capability，也不授权 Source Implementation。`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 保持 `NEXT`，Runtime Kernel Capability 保持 `TARGET_INACTIVE`。
+该 Amendment 在 Freeze 时只闭合 Existing Runtime Kernel Work Package 的 Protocol Input，不创建第二个 Runtime Kernel Status Authority，当时不激活 Capability，也不授权 Source Implementation。它继续作为 Historical Protocol Authority；当前 Implementation/Capability Status 只由本节上方 Current Status、§1.3 与 §19.4 的同步记录决定，不重写其 Frozen Contract。
 
 ```text
 ENTRY=PAVP_FINAL_STATIC_GOVERNANCE=COMPLETE; PAVP_RUNTIME_KERNEL_PROTOCOL_FREEZE_AMENDMENT=FROZEN; no overlapping dirty change
@@ -8015,10 +8260,29 @@ Planned Dependency 不是安装许可。
 
 ```text
 ONE_CANONICAL_ARCHITECTURE_AUTHORITY
-AGENTS_MD_IS_THE_ONLY_MINIMAL_AI_ENTRY
+AGENTS_MD_IS_THE_ONLY_MISSION_AND_EXECUTION_ROUTER
 ARCHITECTURE_MD_IS_THE_ONLY_ARCHITECTURE_AUTHORITY
+AGENTS_MD_HAS_NO_ARCHITECTURE_AUTHORITY
+CURRENT_WORK_PACKAGE_IS_READ_DYNAMICALLY_FROM_ARCHITECTURE_MD
 PROJECT_UI_WORKFLOW_IS_SUBORDINATE_AND_NON_AUTHORITATIVE
 PROJECT_UI_WORKFLOW_CONFLICT_ACTION_IS_STOP
+
+PAVP_FOUNDATIONS_PRECEDE_UI_INTEGRATION_AND_PRODUCT_SURFACES
+THIRD_PARTY_UI_IS_PRIVATE_BEHIND_PAVP_BOUNDARIES
+SHARED_UI_REQUIRES_REAL_CONSUMER_DEMAND
+FINAL_SURFACE_IS_REAL_AND_ARCHITECTURE_ADMITTED_NOT_DEMO_OR_SHOWCASE
+
+ONE_COMPLETE_BOUNDED_TASK_AT_A_TIME
+NO_AUTOMATIC_ROADMAP_CONTINUATION
+NO_UNREQUESTED_SCOPE_EXPANSION_REFACTOR_DEPENDENCY_CHANGE_OR_CLEANUP
+NO_SPECULATIVE_FEATURE_ABSTRACTION_PROVIDER_OR_MODULE
+NO_DUPLICATE_AUTHORITY
+MATERIAL_CANONICAL_CONTRACT_GAP_REQUIRES_STOP_NOT_INVENTION
+EVIDENCE_PRECEDES_IMPLEMENTATION_DECISIONS
+NARROW_STATIC_CHECKS_DO_NOT_FREEZE_PRIVATE_IMPLEMENTATION_DETAIL
+
+PLANNING_IMPLEMENTATION_STAGING_COMMIT_PUSH_AND_RELEASE_ARE_SEPARATE_AUTHORIZATIONS
+IMPLEMENTATION_ONLY_DIFF_REMAINS_UNSTAGED_BY_DEFAULT
 
 REPOSITORY_ONLY_PROJECT_AUTHORITY
 NO_MACHINE_LOCAL_PROJECT_DEPENDENCY
@@ -8088,6 +8352,11 @@ PHASE_1_UI_IS_A_DEPENDENCY_FREE_SRC_INDEX_STUB
 PHASE_1_PINIA_IS_ADMITTED_ONLY_BY_PACKAGE_5_ATOMIC_CUTOVER
 PHASE_1_PINIA_SCOPE_IS_APPEARANCE_AND_THEME_REGISTRY_ORCHESTRATION
 PHASE_1_ROUTER_QUERY_AND_OPENAPI_GENERATOR_ARE_PROHIBITED
+PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_IS_COMPLETE
+PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT_IS_3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+RUNTIME_KERNEL_CORE_CONFIGURATION_AND_CORE_ERROR_HANDLING_ARE_ACTIVE
+ROUTER_REMAINS_TARGET_INACTIVE
+NEXT_CANONICAL_WORK_PACKAGE_IS_PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 FUTURE_DIRECTORIES_ARE_DEMAND_CREATED
 ONE_JUSTIFIED_CONSUMER_ADMITS_INITIAL_SHARED_COMPONENT
 ADDITIONAL_EVIDENCE_DRIVES_GENERALIZATION
