@@ -48,8 +48,14 @@ PHASE_1_PACKAGE_5_STATUS=COMPLETE
 PHASE_1_PACKAGE_6_STATUS=COMPLETE
 PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
 PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
+PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=NEXT
 NEXT_CANONICAL_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+ROUTER_CAPABILITY_STATUS=TARGET_INACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
+TARGET_POST_ROUTER_KERNEL_STEP_COUNT=10
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -930,21 +936,470 @@ ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 
 本节冻结目标合同，不准入 `vue-router`、页面目录或 Runtime Behavior。Package 4 以前以及 Router Implementation Gate 以前，当前 `App.vue` 继续是真实实现边界。
 
-## 9.1 File Routes and Exact Route Registry
-
-目标使用 Vue Router 5 Stable File Routes：
+## 9.0 `PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT`
 
 ```text
-src/pages/
-├── index.vue
-├── settings/
-│   ├── index.vue
-│   ├── appearance.vue
-│   └── layout.vue
-└── projects/
-    ├── index.vue
-    └── [id].vue
+WORK_PACKAGE=PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+IMPLEMENTATION_AUTHORITY=NONE
+PURPOSE=close the exact public and cross-file contracts required by the existing PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION entry gate
+ALLOWED_SCOPE=ARCHITECTURE.md Router dependency, route, meta, params, query, title, message, error, guard, navigation-result, redirect, dynamic-route, layout, scroll, focus, Runtime Kernel extension and static-enforcement target contracts
+PROHIBITED_SCOPE=Router source implementation; dependency, Catalog, Manifest or Lockfile changes; generated artifacts; application source; static-checker implementation; Storage; Query; API; Auth; Session; Permission; I18n; Observability; Deployment activation; Shared UI; App Shell; business routes; tests; browser infrastructure; Git mutation
+ACTIVATION_EFFECT=NONE_UNTIL_PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+CURRENT_ROUTER_STATUS=TARGET_INACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
+TARGET_POST_ROUTER_KERNEL_STEP_COUNT=10
+NEXT_IMPLEMENTATION_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
 ```
+
+Final Canonical State：
+
+```text
+PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=NEXT
+Router=TARGET_INACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
+TARGET_POST_ROUTER_KERNEL_STEP_COUNT=10
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
+```
+
+该 Amendment 只闭合 Existing Router Work Package 的实施输入，不创建新的 Phase、Roadmap、Architecture Version、ADR、Router Design 或第二份 Architecture Authority。Documentation Freeze 不安装依赖、不创建页面、不改变当前 `App.vue`、不扩展当前 Core Error Registry、不修改当前九步 Runtime Kernel，也不激活任何 Router、Layout、Scroll、Focus、Auth、Query、I18n、Observability 或 Deployment Behavior。
+
+### 9.0.1 Exact Dependency and File-route Generation Target
+
+```text
+PACKAGE=vue-router
+EXACT_COORDINATE=5.2.0
+WORKSPACE_ADMISSION=root Workspace Catalog
+APPS_WEB_CONSUMPTION="vue-router": "catalog:"
+VITE_INTEGRATION_IMPORT=vue-router/vite
+GENERATED_RUNTIME_ROUTES_IMPORT=vue-router/auto-routes
+GENERATED_TYPE_ARTIFACT=apps/web/src/route-map.d.ts
+ROUTE_SOURCE_ROOT=apps/web/src/pages
+ADMITTED_EXTENSION_SET=.vue only
+IMPORT_MODE=asynchronous
+VITE_PLUGIN_ORDER=Vue Router Vite plugin before Vue plugin
+UNPLUGIN_VUE_ROUTER=PROHIBITED_AND_ABSENT
+VUE_ROUTER_EXPERIMENTAL_IMPORTS=PROHIBITED
+EXPERIMENTAL_DATA_LOADERS=PROHIBITED
+EXPERIMENTAL_ROUTER_RESOLVER=PROHIBITED
+EXPERIMENTAL_PARAM_PARSERS=PROHIBITED
+```
+
+这些值只是下一实现包的 Frozen Target。当前 Workspace Catalog、`apps/web/package.json`、Lockfile、Vite Plugin Set、页面目录和生成类型保持不变。
+
+Repository-owned Route Registry 是唯一 Canonical Route Instance Authority。官方 Vue Router File-route Plugin 只能通过其 Supported Route-extension Boundary 消费该 Registry；Generated Route Map、Generated Runtime Routes 与 Generated Types 必须反向验证为同一 Exact Set。页面不得通过 `definePage()` 或 `<route>` 再复制完整 Meta；不得准入第二个 Route Generator。
+
+### 9.0.2 Route Identity and Exact Route Registry
+
+`RouteRegistryRecord.name` 是 Stable Typed Router Identity。`pathPattern` 是独立 URL Authority；`sourcePath` 是独立 Page-source Authority。三者分别全局唯一，不得通过 Runtime String Manipulation 从彼此推导。当前没有独立 `routeId`，也不得添加；先前实施请求中的 Separate Route ID 被本 Amendment 明确替换，因为当前 Canonical Record 与真实 Consumer 均不需要它。
+
+Router Landing 后的 Route Registry Cardinality 精确为 `8`：
+
+| # | `sourcePath` | `name` | `pathPattern` | `paramsSchemaId` | `querySchemaId` | `titleKey` | `telemetryName` | `errorPolicy` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `apps/web/src/pages/index.vue` | `home` | `/` | `route-params.none` | `route-query.none` | `route-title.home` | `route.home` | `route-boundary` |
+| 2 | `apps/web/src/pages/error/400.vue` | `error-invalid-route-input` | `/error/400` | `route-params.none` | `route-query.none` | `route-title.error-invalid-route-input` | `route.error.invalid-route-input` | `application-boundary` |
+| 3 | `apps/web/src/pages/error/401.vue` | `error-authentication-required` | `/error/401` | `route-params.none` | `route-query.none` | `route-title.error-authentication-required` | `route.error.authentication-required` | `application-boundary` |
+| 4 | `apps/web/src/pages/error/403.vue` | `error-permission-denied` | `/error/403` | `route-params.none` | `route-query.none` | `route-title.error-permission-denied` | `route.error.permission-denied` | `application-boundary` |
+| 5 | `apps/web/src/pages/[...path].vue` | `error-route-not-found` | `/:path(.*)` | `route-params.not-found-path` | `route-query.none` | `route-title.error-route-not-found` | `route.error.route-not-found` | `application-boundary` |
+| 6 | `apps/web/src/pages/error/500.vue` | `error-application-route-failure` | `/error/500` | `route-params.none` | `route-query.none` | `route-title.error-application-route-failure` | `route.error.application-route-failure` | `application-boundary` |
+| 7 | `apps/web/src/pages/error/offline.vue` | `error-network-unavailable` | `/error/offline` | `route-params.none` | `route-query.none` | `route-title.error-network-unavailable` | `route.error.network-unavailable` | `application-boundary` |
+| 8 | `apps/web/src/pages/error/maintenance.vue` | `error-service-unavailable` | `/error/maintenance` | `route-params.none` | `route-query.none` | `route-title.error-service-unavailable` | `route.error.service-unavailable` | `application-boundary` |
+
+全部八条 Record 的 Common Meta 精确为：
+
+```text
+breadcrumbKey=null
+layout=reading
+layoutCapabilityId=route-layout.reading-document
+auth=public
+requiredPermissionIds=[]
+blockScrollOwnerId=document-block
+inlineScrollOwnerId=document-inline
+keepAlive=never
+dataPrefetch=none
+unsavedChangesPolicy=none
+focusContractId=route-focus.primary-heading
+scrollRestorationPolicyId=route-scroll.document-history
+```
+
+全部八个 Page Contract 必须包含恰好一个 Semantic `main` 与一个携带 `data-route-focus="primary-heading"` 的 Primary `h1`。这不创建 Shared UI、App Shell 或 Layout Admin。
+
+### 9.0.3 Exact Meta and Reference Registries
+
+`ValidatedRouteMeta` 的 Frozen Target Shape 精确增加 Focus 与 Scroll Restoration Reference：
+
+```ts
+interface ValidatedRouteMeta {
+  titleKey: string
+  breadcrumbKey: string | null
+  layout: 'reading' | 'workspace' | 'focused-task'
+  layoutCapabilityId: string
+  auth: RouteAuthPolicy
+  requiredPermissionIds: readonly string[]
+  blockScrollOwnerId: string
+  inlineScrollOwnerId: string
+  keepAlive: RouteKeepAlivePolicy
+  telemetryName: string
+  dataPrefetch: RouteDataPrefetchPolicy
+  errorPolicy: RouteErrorPolicy
+  unsavedChangesPolicy: 'none' | 'confirm-before-leave'
+  focusContractId: string
+  scrollRestorationPolicyId: string
+}
+```
+
+Current Auth Projection：
+
+```text
+ACTIVE_AUTH_SUBSET=public
+SCHEMA_AVAILABLE_BUT_INACTIVE=anonymous-only,required
+```
+
+`anonymous-only` 在 Auth and Session Package 前不得激活。`unknown/restoring` Identity 不得视为 Anonymous；Router Package 不得创建 Session Placeholder、No-op Identity Provider 或 Unconditional Anonymous Guard。
+
+Current Data Prefetch Projection：
+
+```text
+ACTIVE_DATA_PREFETCH_SUBSET=none
+INACTIVE_DATA_PREFETCH_SUBSET=blocking-required,non-blocking
+```
+
+Built-in Router Title Registry 精确为：
+
+| Key | Default English text |
+| --- | --- |
+| `route-title.home` | `Progressive Adaptive Vue Platform` |
+| `route-title.error-invalid-route-input` | `Invalid address` |
+| `route-title.error-authentication-required` | `Authentication required` |
+| `route-title.error-permission-denied` | `Access denied` |
+| `route-title.error-route-not-found` | `Page not found` |
+| `route-title.error-application-route-failure` | `Page unavailable` |
+| `route-title.error-network-unavailable` | `Offline` |
+| `route-title.error-service-unavailable` | `Service unavailable` |
+
+Built-in Router Message Registry 精确为：
+
+| Key | Default English text |
+| --- | --- |
+| `route-message.home-summary` | `Phase 1A token contract and deterministic build foundation.` |
+| `route-message.error-invalid-route-input` | `The requested address contains invalid information.` |
+| `route-message.error-authentication-required` | `Authentication is required to continue.` |
+| `route-message.error-permission-denied` | `You do not have permission to view this page.` |
+| `route-message.error-route-not-found` | `The requested page was not found.` |
+| `route-message.error-application-route-failure` | `The application could not open this page.` |
+| `route-message.error-network-unavailable` | `This page is unavailable while the device is offline.` |
+| `route-message.error-service-unavailable` | `This service is temporarily unavailable.` |
+
+Title 与 Message Table 是临时 Built-in Router Authority，语义上等同于现有 Built-in Core Error Message Table 的窄边界。它们不准入 Vue I18n、Locale Loading、Locale Persistence 或 Remote Copy。Future I18n Admission 可以原子替换 Presentation Source，但必须保持 Typed Key。
+
+Telemetry-name Registry 精确为 Route Registry 中的八个 `telemetryName`，不增加独立 Literal Consumer。Breadcrumb Registry 的当前 Active Set 为空，因为八条 Record 的 `breadcrumbKey` 均为 `null`。
+
+### 9.0.4 Exact Params and Query Schema Registries
+
+Params Schema Registry Cardinality 精确为 `2`：
+
+```text
+route-params.none
+  strict empty object
+  any Param key fails
+
+route-params.not-found-path
+  strict object containing exactly one required normalized string field named path
+  path is validated but must never be displayed, logged, placed in telemetry,
+  placed in an error message or copied into another state owner
+```
+
+Query Schema Registry Cardinality 精确为 `1`：
+
+```text
+route-query.none
+  strict empty object
+  any Query key fails
+  duplicate Query key fails
+  array value fails
+  unknown value fails
+  non-empty raw search fails as invalid-input
+```
+
+当前 Route 不准入任何 Query Value，也不准入 Non-empty URL Hash。Invalid Input 必须解析为 Typed `error-invalid-route-input` Destination，不得静默规范化为 Valid Application Route。Failure Handling 必须从 Safe Destination 移除被拒绝的 Raw Input，且不得 Echo Full URL、Raw Path、Param、Query 或 Hash。
+
+### 9.0.5 Exact Error Route and Router Error Registries
+
+Error Route Registry Cardinality 精确为 `7`：
+
+| Code | Category | Exact Route Name |
+| --- | --- | --- |
+| `400` | `invalid-route-input` | `error-invalid-route-input` |
+| `401` | `authentication-required` | `error-authentication-required` |
+| `403` | `permission-denied` | `error-permission-denied` |
+| `404` | `route-not-found` | `error-route-not-found` |
+| `500` | `application-route-failure` | `error-application-route-failure` |
+| `offline` | `network-unavailable` | `error-network-unavailable` |
+| `maintenance` | `service-unavailable` | `error-service-unavailable` |
+
+401、403 与 Maintenance Route 是 Public Infrastructure Destination；它们的存在不激活 Auth、Permission、Session、API 或 Maintenance Detection。
+
+Router Error Registry Extension 在 Router Landing 中精确增加六条 Record；当前四条 Core Error Registry 在此之前保持不变：
+
+| `id` | `category` | `userMessageKey` | `recoverability` | `retryOwner` | `reportLevel` | `safeRoute` |
+| --- | --- | --- | --- | --- | --- | --- |
+| `route-input-validation-failure` | `validation` | `router-error.route-input-validation-failure` | `none` | `none` | `error` | `error-invalid-route-input` |
+| `route-not-found` | `navigation` | `router-error.route-not-found` | `none` | `none` | `error` | `error-route-not-found` |
+| `route-navigation-failure` | `navigation` | `router-error.route-navigation-failure` | `none` | `none` | `error` | `error-application-route-failure` |
+| `route-chunk-load-failure` | `chunk-load` | `router-error.route-chunk-load-failure` | `reload-application` | `user` | `error` | `error-network-unavailable` when the browser explicitly reports offline; otherwise `error-application-route-failure` |
+| `route-disposal-failure` | `navigation` | `router-error.route-disposal-failure` | `reload-application` | `user` | `fatal` | `error-application-route-failure` |
+| `route-redirect-loop` | `navigation` | `router-error.route-redirect-loop` | `none` | `none` | `error` | `error-application-route-failure` |
+
+Exact Router Error Safe Context Field Union：
+
+```text
+navigationId
+routeName
+failureKind
+releaseSha
+buildVersion
+controlledReloadUsed
+```
+
+§20B.1 的完整 Core Prohibited-context Set 保持不变。Full URL、Raw Path、Raw Params、Raw Query、Hash、User Input、DOM Text、Raw Cause、Raw Message、Raw Stack、Component Instance 与 Component Props 全部禁止。
+
+Application Mount 前发生的 Router Creation 或 Initial-navigation Failure 必须恰好一次规范化为现有 `application-startup-failure`，且 `bootstrapStepId=create-and-ready-router`。它不得同时创建 Router Error Record。现有 Fatal Startup Recovery 与用户显式 Browser Reload 是唯一 Startup Recovery；不得创建第二个 Startup Recovery State、Error ID 或 Fatal Boundary。
+
+### 9.0.6 Exact Layout, Scroll and Focus Registries
+
+Current Router Layout Capability Registry 精确包含一条 Record：
+
+```text
+id=route-layout.reading-document
+layout=reading
+shellRequired=false
+renderOwner=route-component
+blockScrollOwnerId=document-block
+inlineScrollOwnerId=document-inline
+requiredShellRegionIds=[]
+optionalShellRegionIds=[]
+movablePanelIds=[]
+resizableRegionIds=[]
+capabilityStatus=TARGET_INACTIVE until Router implementation; ACTIVE only after the Router landing
+```
+
+该 Narrow Record 不激活 App Shell、Layout Admin、Sidebar、Header、Footer、Panel Movement、Panel Resizing、Layout Preference Persistence、Responsive Shell Projection 或 Shared UI。§18 的 Full Future Layout Capability Registry 保持 Inactive。
+
+Scroll Owner Registry 精确为：
+
+| `id` | `axis` | `ownerKind` | `ownerTarget` | `nativeScrolling` |
+| --- | --- | --- | --- | --- |
+| `document-block` | `block` | `document` | `document.scrollingElement` | `true` |
+| `document-inline` | `inline` | `document` | `document.scrollingElement` | `true` |
+
+Scroll Restoration Policy Registry 精确包含一条 Record：
+
+```text
+id=route-scroll.document-history
+historyTraversal=restore the finite saved native block and inline offsets for the exact matching owner
+newNavigation=logical block start and logical inline start
+missingOrChangedOwner=logical start
+ownerReadiness=after the routed DOM is committed
+arbitraryTimeout=PROHIBITED
+polling=PROHIBITED
+customScroller=PROHIBITED
+scrollHijacking=PROHIBITED
+```
+
+Focus Contract Registry 精确包含一条 Record：
+
+```text
+id=route-focus.primary-heading
+target=the route component's single h1 carrying data-route-focus="primary-heading"
+targetTabIndex=-1
+timing=after routed DOM commit without arbitrary timeout
+focusBehavior=focus with preventScroll, then apply the registered Scroll Restoration policy
+successfulNavigation=transfer focus to the target
+cancelledOrFailedNavigation=preserve or restore the previous valid focus
+missingTarget=typed navigation failure; do not silently focus body
+visibleFocus=preserved through existing semantic focus tokens
+```
+
+### 9.0.7 Active Guard Projection and Typed Navigation Result
+
+Current Guard Pipeline 是 §9.5 Existing Eleven-stage Target Pipeline 的精确 Active Projection。Router Landing 只激活以下五个 Stage，顺序不可变：
+
+1. `validate-route-contract`
+2. `ensure-runtime-configuration-ready`
+3. `resolve-router-owned-safe-destination`
+4. `prepare-route-presentation`
+5. `commit-focus-and-scroll`
+
+职责精确为：
+
+| Stage | Responsibility |
+| --- | --- |
+| `validate-route-contract` | Validate generated membership, exact Route Registry equality, Params, Query and current empty Dynamic Route membership. |
+| `ensure-runtime-configuration-ready` | Consume the already validated Runtime Configuration; do not reload or mutate it. |
+| `resolve-router-owned-safe-destination` | Accept only typed destinations from the exact Route and Error Route registries; reject raw names, raw paths and arbitrary URLs. |
+| `prepare-route-presentation` | Resolve title, null breadcrumb, layout, scroll owners, focus contract and telemetry name. |
+| `commit-focus-and-scroll` | Commit the successful navigation result, title, focus and native scroll restoration. |
+
+以下 Target Stage 在其 Owner Package 前保持 Inactive，且不得创建 Placeholder 或称为 No-op Guard：
+
+```text
+unsaved-change resolution
+Session restoration
+anonymous-only evaluation
+required-auth evaluation
+Permission evaluation
+Query prefetch orchestration
+Auth Return URL restoration
+```
+
+Typed Navigation Result Union 精确为：
+
+```text
+allow
+  contains navigationId and the validated typed destination
+
+redirect
+  contains navigationId, a registered reason, a typed registered destination and replace=true
+
+cancel
+  contains navigationId and a registered cancellation reason
+
+failure
+  contains navigationId, an exact Router Error ID and an exact safe Error Route destination
+```
+
+Current Active Navigation Outcome Subset 精确为：
+
+| Outcome | Typed result semantics |
+| --- | --- |
+| `duplicated` | No-op result; not an Error. |
+| `cancelled-by-new-navigation` | Registered Cancellation; returns `cancel`. |
+| `redirected` | Registered Redirect; returns `redirect`. |
+| `invalid-input` | Router Failure resolving to the typed 400 destination. |
+| `chunk-load-failed` | Router Failure resolving to Offline when the browser explicitly reports offline, otherwise 500. |
+| `route-disposal-failed` | Router Failure resolving to 500. |
+| `redirect-loop` | Router Failure resolving to 500. |
+| `unknown-navigation-failure` | Router Failure resolving to 500. |
+
+以下 Target Categories 保持 Inactive，直到各自 Owner Package 存在：
+
+```text
+cancelled-by-user
+aborted-by-guard
+unauthenticated
+unauthorized
+prefetch-failed
+```
+
+`redirect-loop` 是 Safe Redirect Contract 已使用的 Failure Category，本 Amendment 将它加入 Canonical Navigation Failure Set。
+
+### 9.0.8 Redirect, Safe Return URL and Dynamic Route State
+
+```text
+ACTIVE_REDIRECT_REGISTRY=[]
+ACTIVE_SAFE_RETURN_URL_CONTRACT=INACTIVE
+ACTIVE_DYNAMIC_ROUTE_REGISTRY=[]
+```
+
+空 Registry 是 Exact Canonical Result，不是 Missing Contract。Router Landing 不得创建 Dynamic Route Manager、`addRoute()` Wrapper、Remote Route Loader、Empty Disposal-handle Factory、Auth Return URL Helper 或 Dynamic-route Placeholder。Future Dynamic-route Admission 必须把一个真实 Local Pre-bundled Record 与其 Idempotent Disposal Handle 原子加入。
+
+### 9.0.9 Chunk-load Recovery Deferral
+
+Current Router Landing 只分类 Chunk-load Failure，并选择 Offline 或 500 Error Route。它不得直接 Fetch Runtime Configuration、比较新取得的 Server Release 或执行 Automatic Reload。§9.8 的 Release-comparison 与 Single Controlled Automatic Reload Target 保持 Inactive，直到 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 准入 Exact Current-server-release Authority。
+
+`navigator.onLine === false` 可以选择 Offline Destination，但不得描述为 Authoritative Network Diagnosis。Router Error Safe Context 中的 `controlledReloadUsed` 在当前 Landing 必须保持 `false`；它只为 Future Release-aware Extension 保留已冻结 Field Identity，不授权当前 Reload。
+
+### 9.0.10 Runtime Kernel Target Extension
+
+Router Landing 对 Runtime Kernel 只增加一个 Exact Step：
+
+```text
+stepId=create-and-ready-router
+targetPosition=after install-platform-providers and before mount-application
+dependencies=validate-build-and-runtime-configuration,create-vue-application,install-platform-providers
+CreateInput=validated CoreRuntimeConfiguration, unmounted Vue App, generated routes, exact Router registries, Router/Core error normalization boundary, startupAttemptId
+CreateOutput=one RouterLifecycleHandle containing the sole Router instance, sole Web History instance, exact guard removers, exact error-handler remover and one idempotent disposer
+Ready=create Web History from validated deploymentBase; create Router; install Router error handling and the exact active Guard projection; install Router into the unmounted Vue App; trigger initial navigation; await router.isReady successfully; application remains unmounted
+Dispose=remove exact Router hooks, destroy the exact History instance once, release Router references and leave no active navigation listener
+DOMMountOwner=NO
+Failure=application-startup-failure
+RetryParticipant=YES with a fresh Router and fresh History
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=Runtime Kernel remains the sole top-level HMR owner; every full HMR attempt disposes and recreates Router and History; official generated file-route HMR is not an application lifecycle owner and may not register a competing repository-owned top-level HMR hook
+```
+
+Post-Router Bootstrap Order 精确为十步：
+
+1. `validate-build-and-runtime-configuration`
+2. `install-pre-vue-global-failure-capture`
+3. `initialize-design-system-and-resolve-first-paint-handoff`
+4. `create-vue-application`
+5. `create-pinia`
+6. `install-platform-providers`
+7. `create-and-ready-router`
+8. `mount-application`
+9. `register-post-mount-appearance-media-subscriptions`
+10. `publish-application-ready`
+
+Future `mount-application` 必须依赖 `create-and-ready-router`。当前九步代码在 Router Landing 前保持不变。Router Landing 后的 Reverse Disposal 必须依次 Dispose/Release：Ready Publication、Post-mount Appearance Listeners、Mounted Vue Application、Router/History、Platform Providers、Pinia、Unmounted Vue Application Reference、Design System Handoff、Global Capture、Runtime Configuration Resources。Cleanup Failure 后继续其余 Cleanup；Router Hook Removal 与 History Destruction 必须幂等。Runtime Kernel 继续是 Sole Mount、Disposal 与 Top-level HMR Owner。
+
+### 9.0.11 Exact Implementation-gate Counts
+
+```text
+ROUTE_REGISTRY_RECORDS=8
+ERROR_ROUTE_REGISTRY_RECORDS=7
+ROUTE_TITLE_RECORDS=8
+ROUTE_MESSAGE_RECORDS=8
+TELEMETRY_NAME_RECORDS=8
+PARAMS_SCHEMAS=2
+QUERY_SCHEMAS=1
+ROUTER_LAYOUT_CAPABILITY_RECORDS=1
+SCROLL_OWNER_RECORDS=2
+SCROLL_RESTORATION_POLICIES=1
+FOCUS_CONTRACTS=1
+ACTIVE_GUARD_STAGES=5
+ACTIVE_REDIRECT_RECORDS=0
+ACTIVE_DYNAMIC_ROUTE_RECORDS=0
+ROUTER_ERROR_RECORDS=6
+COMBINED_CORE_PLUS_ROUTER_ERROR_RECORDS_AFTER_IMPLEMENTATION=10
+BOOTSTRAP_STEPS_AFTER_IMPLEMENTATION=10
+ACTIVE_AUTH_VALUES_AFTER_IMPLEMENTATION=1, exactly public
+ACTIVE_DATA_PREFETCH_VALUES_AFTER_IMPLEMENTATION=1, exactly none
+```
+
+### 9.0.12 Future Static-enforcement Target
+
+Router Implementation 必须通过 Existing Static Owners 的最小 Domain-owned Extension 证明：
+
+* Exact `vue-router@5.2.0` 通过 Root Workspace Catalog 准入，且 `apps/web` 只使用 `catalog:`。
+* `unplugin-vue-router` 与全部 Experimental Router Import 均不存在。
+* 只有一个 Route Source Root，且只准入 `.vue`。
+* Source File Set、Canonical Route Registry、Generated Route Map 与 Generated Typed Map Exact Equality。
+* 八个 Route Name、Path 与 Source Path 分别精确、唯一，且不存在 Separate `routeId`。
+* Exact Meta Field Set、Reference Closure、Strict Params/Query Schema Closure。
+* 七个 Exact Error Route，以及 Title、Message、Telemetry、Layout、Scroll 与 Focus Registry Closure。
+* Active Auth Subset 精确为 `public`；Active `dataPrefetch` Subset 精确为 `none`。
+* Active Redirect 与 Dynamic Route Registry 精确为空。
+* 不存在 Placeholder Guard、Provider、Redirect 或 Dynamic-route Manager。
+* Current Guard Projection 精确为五步且顺序一致。
+* Typed Navigation Result 与 Exact Failure Classification 闭合。
+* 只有 Router Owner 注册 Global Router Hook。
+* Router History 只使用已验证 `deploymentBase`。
+* `router.isReady()` 在 Mount 前成功；Initial-navigation Failure 阻止 Mount，并只产生一个 Existing `application-startup-failure`。
+* Target Kernel 精确十步、Dependency Graph Acyclic、Router Authority 与 History Authority 各一个。
+* History Destruction 与 Hook Removal 幂等；Runtime Kernel 仍为 Sole Mount、Disposal 与 Top-level HMR Owner。
+* 不准入 Direct Fetch、Server-state Cache、Storage、Query、Auth、Session、Permission、I18n、Observability、Deployment Provider、Shared UI、App Shell、Business Route、Test 或 Browser Infrastructure。
+* 当前 Package 5 Appearance 与当前 Runtime Kernel Behavior 在 Router Landing 前保持不变。
+
+这些 Enforcement Target 在 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 完成并通过 `pnpm verify` 前保持 `TARGET_INACTIVE`；本 Documentation Amendment 不实现或激活 Checker。
+
+## 9.1 File Routes and Exact Route Registry
+
+目标使用 §9.0.1 冻结的 Vue Router `5.2.0` Stable File Routes。Route Source Set 只允许 §9.0.2 的八个 Exact `.vue` Source；先前 Settings/Projects 示例不构成 Current Target Record，也不准入 Business Route。
 
 Generated Route Map 必须产出 Exact Typed Route Registry：
 
@@ -960,7 +1415,7 @@ interface RouteRegistryRecord {
 }
 ```
 
-Route Name 只能来自该 Registry。当前文档阶段没有任何 Target Route Record Artifact；实现 Gate 接受后，生成器只允许把当次准入的真实 Route Record 标为 `ACTIVE`，其余不存在或保持非 Active。页面、Feature、Redirect、Telemetry、Breadcrumb 和 Permission Rule 不得复制任意 Route Name 或 Path Literal。Missing、Duplicate、Unknown Name、Path Collision、未注册 Meta、未绑定 Params/Query Schema 或 Registry/Generated Route Set 差异必须使 Router Generation Failure。
+Route Name 只能来自该 Registry。§9.0.2 已冻结 Router Landing 的八条 Target Record；它们在 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 完成前全部保持 `TARGET_INACTIVE`，不构成当前 Artifact 或 Runtime Route。实现 Gate 接受后，生成器必须把这八条真实 Route Record 原子标为 `ACTIVE`。页面、Feature、Redirect、Telemetry、Breadcrumb 和 Permission Rule 不得复制任意 Route Name 或 Path Literal。Missing、Duplicate、Unknown Name、Path Collision、未注册 Meta、未绑定 Params/Query Schema 或 Registry/Generated Route Set 差异必须使 Router Generation Failure。
 
 页面只负责：
 
@@ -999,6 +1454,8 @@ interface ValidatedRouteMeta {
   dataPrefetch: RouteDataPrefetchPolicy
   errorPolicy: RouteErrorPolicy
   unsavedChangesPolicy: 'none' | 'confirm-before-leave'
+  focusContractId: string
+  scrollRestorationPolicyId: string
 }
 ```
 
@@ -1083,6 +1540,7 @@ unauthorized
 prefetch-failed
 chunk-load-failed
 route-disposal-failed
+redirect-loop
 unknown-navigation-failure
 ```
 
@@ -1090,7 +1548,7 @@ unknown-navigation-failure
 
 ## 9.8 Chunk-load and Release Recovery
 
-Chunk Load Failure 必须先比较当前 HTML Release 与请求 Asset Release。每个 `releaseSha + routeName` 在单次 Application Session 中最多允许一次受控 Reload；Reload 后仍失败、无法识别 Release 或浏览器离线时进入对应 Error Route。禁止无限 Reload、Timer Retry、清空全部 Storage 或绕过 Service/HTTP Cache Contract。
+Release-aware Chunk Load Recovery 的完整 Target 必须先比较当前 HTML Release 与请求 Asset Release。每个 `releaseSha + routeName` 在单次 Application Session 中最多允许一次受控 Reload；Reload 后仍失败、无法识别 Release 或浏览器离线时进入对应 Error Route。禁止无限 Reload、Timer Retry、清空全部 Storage 或绕过 Service/HTTP Cache Contract。该 Target 按 §9.0.9 保持 Inactive，直到 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 准入 Exact Current-server-release Authority；首次 Router Landing 只分类 Failure 并选择 Offline 或 500 Destination，不 Fetch、比较 Server Release 或 Automatic Reload。
 
 ## 9.9 Dynamic Routes
 
@@ -7553,6 +8011,11 @@ IMPLEMENTATION_WHILE_GATE_NOT_FROZEN=BLOCKED
 TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
 FIRST_IMPLEMENTATION_AFTER_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
+PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+ROUTER_CAPABILITY_STATUS=TARGET_INACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
+TARGET_POST_ROUTER_KERNEL_STEP_COUNT=10
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 ```
 
@@ -8059,16 +8522,16 @@ COMPLETION_EVIDENCE=kernel owns sole mount; emitted artifact and production HTML
 ### 37.2.5 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`
 
 ```text
-ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; Vue Router stable dependency admission passes; route/layout/error registries frozen
-ALLOWED=Vue Router; file-route generation; exact route/meta registries; route error-registry extension; guards; error routes; dynamic route lifecycle; route layout/scroll core; scroll/focus restoration; kernel router step
-PROHIBITED=experimental data loaders; direct server fetch; non-none Query prefetch before API package; Auth implementation; business protected flow
-OUTPUT=typed navigation lifecycle with public/anonymous-only metadata available but required-auth activation blocked until Auth package
-MACHINE_GATES=route/registry equality; meta/params/query schema closure; guard order; redirect safety; failure classification; disposal; base parity; pnpm verify
+ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN; exact vue-router@5.2.0 dependency admission passes; no overlapping dirty change
+ALLOWED=exact vue-router@5.2.0 Catalog admission and apps/web consumption; official vue-router/vite file-route generation before Vue plugin; exact eight-record Route Registry; exact route/meta/reference/schema registries; exact six-record Router Error extension; exact seven Error Routes; exact five-stage Guard projection; typed navigation results; empty Redirect and Dynamic Route registries; narrow reading-document layout; native document scroll owners; exact scroll/focus restoration; one create-and-ready-router Kernel step
+PROHIBITED=unplugin-vue-router; vue-router/experimental; experimental Data Loaders, Router Resolver or Param Parsers; second route generator; routeId; direct server fetch; non-none Query prefetch before API package; anonymous-only or required Auth activation; Session/Auth/Permission placeholder; business protected flow; Dynamic Route Manager; Auth Return URL helper; automatic Chunk Reload before Observability/Deployment; Shared UI; App Shell; test or browser infrastructure
+OUTPUT=one Router and one History authority; typed eight-route navigation lifecycle with active Auth subset exactly public and active dataPrefetch subset exactly none; exact Error/Title/Message/Telemetry/Layout/Scroll/Focus closure; exact ten-step target Runtime Kernel; application remains unmounted until router.isReady succeeds
+MACHINE_GATES=exact dependency/plugin/import/source/generated-map equality; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; exact ten-step Kernel; current Appearance preservation; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_NAVIGATION_ERROR_ROUTES_SCROLL_FOCUS_AND_CHUNK_RECOVERY
-COMPLETION_EVIDENCE=one router authority; no path/name literals; no experimental imports; no server-state cache
+COMPLETION_EVIDENCE=one Router authority; one History authority; exact eight source/name/path records with no separate routeId; no raw path/name consumers; no experimental imports; no placeholder owner; no server-state cache; current Runtime Kernel extended from nine to ten steps only in the Router landing
 ```
 
-`dataPrefetch` 只能使用 `none`，`auth` 只能激活 `public`/`anonymous-only` 的无 Session 子集，直到后续 Owner Package 原子准入；这不是 Stub，而是受 Schema 限制的较小 Active Set。
+`dataPrefetch` 只能使用 `none`，`auth` 只能激活 `public`，直到后续 Owner Package 原子准入。`anonymous-only` 与 `required` 只保留 Schema 可用、Runtime Inactive；`unknown/restoring` 不得作为 Anonymous，也不得用 Session Stub、No-op Guard 或 Unconditional Anonymous Projection 绕过。
 
 ### 37.2.6 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`
 
