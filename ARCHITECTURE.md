@@ -982,13 +982,31 @@ ADMITTED_EXTENSION_SET=.vue only
 IMPORT_MODE=asynchronous
 VITE_PLUGIN_ORDER=Vue Router Vite plugin before Vue plugin
 UNPLUGIN_VUE_ROUTER=PROHIBITED_AND_ABSENT
-VUE_ROUTER_EXPERIMENTAL_IMPORTS=PROHIBITED
+OFFICIAL_RELEASE_TAG=v5.2.0
+OFFICIAL_RELEASE_COMMIT=6e5f8d253b9444a76eb58f176ebe08d686c937cb
+OFFICIAL_GENERATED_DTS_SOURCE=packages/router/src/unplugin/codegen/generateDTS.ts
+REPOSITORY_AUTHORED_VUE_ROUTER_EXPERIMENTAL_IMPORTS=PROHIBITED
+RUNTIME_VUE_ROUTER_EXPERIMENTAL_IMPORTS=PROHIBITED
+OFFICIAL_GENERATED_DTS_TYPE_IMPORT_SOURCE=vue-router/experimental
+OFFICIAL_GENERATED_DTS_TYPE_IMPORT_SYMBOL_SET=_ExtractParamParserType
+OFFICIAL_GENERATED_DTS_TYPE_IMPORT_KIND=import type
+OFFICIAL_GENERATED_DTS_TYPE_IMPORT_PROVENANCE=verbatim output of the official vue-router@5.2.0 generator only
+OFFICIAL_GENERATED_DTS_TYPE_IMPORT_RUNTIME_ACTIVATION=NONE
+OFFICIAL_GENERATED_DTS_MANUAL_PATCH_OR_POST_PROCESSING=PROHIBITED
+OFFICIAL_GENERATED_DTS_SECOND_GENERATOR_OR_REPLACEMENT=PROHIBITED
+OFFICIAL_GENERATED_DTS_EXCEPTION_IMPORT_DECLARATION_SHAPE_CHANGE=FAIL_AND_REQUIRE_EXPLICIT_ARCHITECTURE_REVIEW
 EXPERIMENTAL_DATA_LOADERS=PROHIBITED
 EXPERIMENTAL_ROUTER_RESOLVER=PROHIBITED
 EXPERIMENTAL_PARAM_PARSERS=PROHIBITED
 ```
 
 这些值只是下一实现包的 Frozen Target。当前 Workspace Catalog、`apps/web/package.json`、Lockfile、Vite Plugin Set、页面目录和生成类型保持不变。
+
+`vue-router@5.2.0` 的 Official Release Tag `v5.2.0` 指向上方精确 Release Commit。该 Tag 的
+`packages/router/src/unplugin/codegen/generateDTS.ts` 与其 Empty Param-parser Test Snapshot 证明：只要保留官方生成类型，Generator 就无条件在 Generated DTS 中写入精确的
+`import type { _ExtractParamParserType } from 'vue-router/experimental'`。该 Import 位于 Declaration-only Artifact，TypeScript 不产生 Runtime Import，也不激活 Experimental Router、Data Loader、Router Resolver 或 Param Parser。Official Plugin 中控制是否生成 DTS 及其输出路径的 Public Option 只有 `dts: boolean | string`；不存在既保留 Official Generated Typed Routes 又移除该 Import 的 Supported Configuration，且 `dts=false` 会同时移除本合同要求的 Generated Type Artifact。
+
+因此唯一准入例外只适用于既有 `GENERATED_TYPE_ARTIFACT=apps/web/src/route-map.d.ts` 中由精确 `vue-router@5.2.0` Official Generator 原样产生的上述一个 `import type` Declaration 与一个 `_ExtractParamParserType` Symbol。Repository-authored `.ts`、`.vue`、Vite Config、Script 或其他 Artifact 不得使用该例外；Value Import、Mixed Type/Value Import、Dynamic Import、Side-effect Import、`require()` 与任何 Runtime Use 均继续禁止。Generated DTS 不得手工修改、Post-process、重写、替换或由第二个 Generator 产生。Artifact Path、Import Source、Import Kind、Symbol Set 或 Official Generated DTS Exception Import Declaration Shape 任一变化都必须使 Static Contract 失败，并要求新的显式 Architecture Review，不得自动扩大 Allowlist。
 
 Repository-owned Route Registry 是唯一 Canonical Route Instance Authority。官方 Vue Router File-route Plugin 只能通过其 Supported Route-extension Boundary 消费该 Registry；Generated Route Map、Generated Runtime Routes 与 Generated Types 必须反向验证为同一 Exact Set。页面不得通过 `definePage()` 或 `<route>` 再复制完整 Meta；不得准入第二个 Route Generator。
 
@@ -1376,7 +1394,9 @@ ACTIVE_DATA_PREFETCH_VALUES_AFTER_IMPLEMENTATION=1, exactly none
 Router Implementation 必须通过 Existing Static Owners 的最小 Domain-owned Extension 证明：
 
 * Exact `vue-router@5.2.0` 通过 Root Workspace Catalog 准入，且 `apps/web` 只使用 `catalog:`。
-* `unplugin-vue-router` 与全部 Experimental Router Import 均不存在。
+* `unplugin-vue-router`、全部 Repository-authored Experimental Router Import 与全部 Runtime Experimental Router Import 均不存在。
+* `apps/web/src/route-map.d.ts` 中只允许 §9.0.1 冻结的一个 Official Generated `ImportDeclaration`：整个 Declaration 精确为 `import type`，Import Source 精确为 `vue-router/experimental`，且只有一个 Named Specifier，其 Imported Name 与 Local Name 均精确为 `_ExtractParamParserType`；Default、Namespace、Value、Mixed Type/Value、Side-effect、Dynamic 与 `require()` Form 全部禁止。
+* Exact Coordinate、Official Plugin Configuration 与 Canonical Route Input 相同时，Committed Generated DTS 必须等于 Official Generator 的重新生成结果；不得出现其他 Experimental Import、Manual Mutation、Post-processing、Replacement 或第二个 Generator。
 * 只有一个 Route Source Root，且只准入 `.vue`。
 * Source File Set、Canonical Route Registry、Generated Route Map 与 Generated Typed Map Exact Equality。
 * 八个 Route Name、Path 与 Source Path 分别精确、唯一，且不存在 Separate `routeId`。
@@ -1563,7 +1583,7 @@ Logout、Revocation、Account Switch 和 Tenant Switch 必须移除其 Dynamic R
 
 ## 9.10 Query, Cancellation and Disposal
 
-Router 拥有 Navigation 与 Route Lifecycle；TanStack Query 拥有 Server State Cache、Deduplication、Staleness、Retry 和 Invalidation。Router Experimental Data Loaders、`vue-router/experimental` 和第二个 Server State Cache 默认 `PROHIBITED`。
+Router 拥有 Navigation 与 Route Lifecycle；TanStack Query 拥有 Server State Cache、Deduplication、Staleness、Retry 和 Invalidation。Router Experimental Data Loaders、Repository-authored 或 Runtime `vue-router/experimental` Use 和第二个 Server State Cache 默认 `PROHIBITED`。§9.0.1 唯一 Official Generated DTS Type-only Import 是被 TypeScript 擦除的 Declaration Projection，不构成 Experimental Capability Activation，也不授权任何 Repository-authored 或 Runtime Experimental Import。
 
 Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 TanStack Query 的 `AbortSignal`。Navigation Cancel、Route Disposal、Logout 和 Account Switch 必须取消相关 In-flight Query；已缓存且仍属于同一 Principal/Tenant 的数据由 Query Policy 决定是否保留。Router 不把 Query Result 复制到 Meta、Pinia、History State 或 Local Storage。
 
@@ -1583,7 +1603,8 @@ Owning Implementation Package 必须把以下检查接入 `pnpm verify`：
 
 * File Route Set = Generated Route Registry Set。
 * Route Name、Meta、Permission、Layout、Scroll、I18n 和 Telemetry Registry Reference 完整。
-* 禁止任意 Route Name/Path Literal、未经验证的 Params/Query 和 Experimental Data Loader Import。
+* 禁止任意 Route Name/Path Literal、未经验证的 Params/Query、Experimental Data Loader Import、Router Resolver、Param Parser Activation，以及 Repository-owned Source、Config、Generated Artifact 或 Runtime Module Graph 中除 §9.0.1 Exact Official Generated DTS Type-only Import 外的任何 `vue-router/experimental` Import 或 Use；Dependency-owned Declaration 不属于 Repository-authored Artifact。
+* Exact Official Generated DTS Exception 必须按 Artifact Path、Import Source、Import Kind、Symbol Set、Official Generator Provenance 与 Exception Import Declaration AST Shape 验证；任何 Manual Patch、Post-processing、Replacement、第二个 Generator 或 Exception Import Declaration Shape Drift 都失败。
 * Guard Order、Error Route Set、Dynamic Route Disposal 与 Query Ownership 具有静态合同。
 * Vite Base、Router History Base 和 Deployment Base 使用同一 Runtime Configuration Authority。
 * 不存在页面直接 Fetch、页面 Session 恢复、Query Data 复制或任意 Scroll Owner。
@@ -8523,12 +8544,12 @@ COMPLETION_EVIDENCE=kernel owns sole mount; emitted artifact and production HTML
 
 ```text
 ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN; exact vue-router@5.2.0 dependency admission passes; no overlapping dirty change
-ALLOWED=exact vue-router@5.2.0 Catalog admission and apps/web consumption; official vue-router/vite file-route generation before Vue plugin; exact eight-record Route Registry; exact route/meta/reference/schema registries; exact six-record Router Error extension; exact seven Error Routes; exact five-stage Guard projection; typed navigation results; empty Redirect and Dynamic Route registries; narrow reading-document layout; native document scroll owners; exact scroll/focus restoration; one create-and-ready-router Kernel step
-PROHIBITED=unplugin-vue-router; vue-router/experimental; experimental Data Loaders, Router Resolver or Param Parsers; second route generator; routeId; direct server fetch; non-none Query prefetch before API package; anonymous-only or required Auth activation; Session/Auth/Permission placeholder; business protected flow; Dynamic Route Manager; Auth Return URL helper; automatic Chunk Reload before Observability/Deployment; Shared UI; App Shell; test or browser infrastructure
+ALLOWED=exact vue-router@5.2.0 Catalog admission and apps/web consumption; official vue-router/vite file-route generation before Vue plugin; exact §9.0.1 Official Generated DTS Type-only Import at apps/web/src/route-map.d.ts; exact eight-record Route Registry; exact route/meta/reference/schema registries; exact six-record Router Error extension; exact seven Error Routes; exact five-stage Guard projection; typed navigation results; empty Redirect and Dynamic Route registries; narrow reading-document layout; native document scroll owners; exact scroll/focus restoration; one create-and-ready-router Kernel step
+PROHIBITED=unplugin-vue-router; Repository-authored or Runtime vue-router/experimental Import or Use; any Repository-owned Generated Artifact Experimental Import outside the exact §9.0.1 Official Generated DTS Type-only Import; experimental Data Loaders, Router Resolver or Param Parsers; Generated DTS manual patch, post-processing, replacement or second generator; routeId; direct server fetch; non-none Query prefetch before API package; anonymous-only or required Auth activation; Session/Auth/Permission placeholder; business protected flow; Dynamic Route Manager; Auth Return URL helper; automatic Chunk Reload before Observability/Deployment; Shared UI; App Shell; test or browser infrastructure
 OUTPUT=one Router and one History authority; typed eight-route navigation lifecycle with active Auth subset exactly public and active dataPrefetch subset exactly none; exact Error/Title/Message/Telemetry/Layout/Scroll/Focus closure; exact ten-step target Runtime Kernel; application remains unmounted until router.isReady succeeds
-MACHINE_GATES=exact dependency/plugin/import/source/generated-map equality; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; exact ten-step Kernel; current Appearance preservation; pnpm verify
+MACHINE_GATES=exact dependency/plugin/import/provenance/source/generated-map equality; exact Official Generated DTS path/source/import-kind/symbol-set/exception-import-declaration-AST equality; official regeneration equality under exact coordinate/configuration/input; no Repository-authored or Runtime experimental import; no Generated DTS post-processing or second generator; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; exact ten-step Kernel; current Appearance preservation; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_NAVIGATION_ERROR_ROUTES_SCROLL_FOCUS_AND_CHUNK_RECOVERY
-COMPLETION_EVIDENCE=one Router authority; one History authority; exact eight source/name/path records with no separate routeId; no raw path/name consumers; no experimental imports; no placeholder owner; no server-state cache; current Runtime Kernel extended from nine to ten steps only in the Router landing
+COMPLETION_EVIDENCE=one Router authority; one History authority; exact eight source/name/path records with no separate routeId; no Repository-authored or Runtime experimental imports; sole generated apps/web/src/route-map.d.ts type-only import matches §9.0.1 Exact Provenance; no placeholder owner; no server-state cache; current Runtime Kernel extended from nine to ten steps only in the Router landing
 ```
 
 `dataPrefetch` 只能使用 `none`，`auth` 只能激活 `public`，直到后续 Owner Package 原子准入。`anonymous-only` 与 `required` 只保留 Schema 可用、Runtime Inactive；`unknown/restoring` 不得作为 Anonymous，也不得用 Session Stub、No-op Guard 或 Unconditional Anonymous Projection 绕过。
