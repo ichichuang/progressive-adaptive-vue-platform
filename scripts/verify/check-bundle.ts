@@ -1,9 +1,10 @@
 import { execFileSync } from 'node:child_process'
-import { gzipSync } from 'node:zlib'
+import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 import { projectConfig } from '../../project.config'
+import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
 import ts from 'typescript'
 
 interface ManifestChunk {
@@ -85,6 +86,18 @@ const runtimeKernelBundleContract = {
     lazyChunks: 0,
   },
 } as const
+const productionBundleGzipOptions = {
+  chunkSize: constants.Z_DEFAULT_CHUNK,
+  finishFlush: constants.Z_FINISH,
+  flush: constants.Z_NO_FLUSH,
+  level: constants.Z_BEST_COMPRESSION,
+  memLevel: constants.Z_DEFAULT_MEMLEVEL,
+  strategy: constants.Z_DEFAULT_STRATEGY,
+  windowBits: constants.Z_DEFAULT_WINDOWBITS,
+} as const satisfies ZlibOptions
+const expectedLazyRouteKeys = new Set(
+  routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
+)
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -636,9 +649,7 @@ async function gzipMeasurement(
   }
 
   return {
-    bytes: gzipSync(measurementContents, {
-      level: 9,
-    }).byteLength,
+    bytes: gzipSync(measurementContents, productionBundleGzipOptions).byteLength,
     releaseShaReplacements,
   }
 }
@@ -851,15 +862,6 @@ if (
   throw new Error('Runtime Kernel bundle baseline/final/delta arithmetic is inconsistent.')
 }
 
-if (
-  initialJavaScriptBytes !== runtimeKernelBundleContract.final.initialJavaScriptGzipBytes ||
-  initialCssBytes !== runtimeKernelBundleContract.final.initialCssGzipBytes
-) {
-  throw new Error(
-    `Runtime Kernel measured bundle drift: JavaScript ${String(initialJavaScriptBytes)}, CSS ${String(initialCssBytes)}.`,
-  )
-}
-
 if (initialJavaScriptBytes > projectConfig.bundleBudgets.initialJavaScriptGzipBytes) {
   throw new Error(
     `Initial JavaScript is ${String(initialJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
@@ -876,12 +878,24 @@ const dynamicChunkKeys = new Set(
   Object.values(manifest).flatMap((chunk) => chunk.dynamicImports ?? []),
 )
 
+if (
+  dynamicChunkKeys.size !== expectedLazyRouteKeys.size ||
+  [...dynamicChunkKeys].some((key) => !expectedLazyRouteKeys.has(key))
+) {
+  throw new Error(
+    `Router lazy route closure drifted: expected ${String(expectedLazyRouteKeys.size)} exact routes, received ${String(dynamicChunkKeys.size)}.`,
+  )
+}
+
+const lazyRouteFiles = new Set<string>()
+
 for (const dynamicChunkKey of dynamicChunkKeys) {
   const chunk = manifest[dynamicChunkKey]
 
   if (!chunk?.file.endsWith('.js')) {
-    continue
+    throw new Error(`Router lazy route ${dynamicChunkKey} must emit exactly one JavaScript chunk.`)
   }
+  lazyRouteFiles.add(chunk.file)
 
   const { bytes } = await gzipMeasurement(chunk.file)
 
@@ -892,12 +906,10 @@ for (const dynamicChunkKey of dynamicChunkKeys) {
   }
 }
 
-if (dynamicChunkKeys.size !== runtimeKernelBundleContract.final.lazyChunks) {
-  throw new Error(
-    `Runtime Kernel lazy chunk count drift: expected ${String(runtimeKernelBundleContract.final.lazyChunks)}, received ${String(dynamicChunkKeys.size)}.`,
-  )
+if (lazyRouteFiles.size !== expectedLazyRouteKeys.size) {
+  throw new Error('Each exact Router route must retain its own lazy JavaScript chunk.')
 }
 
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip (${String(runtimeKernelBundleContract.delta.initialJavaScriptGzipBytes)} Runtime Kernel delta from Package 5 final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(runtimeKernelBundleContract.delta.initialCssGzipBytes)} Runtime Kernel delta from Package 5 final), lazy chunks ${String(dynamicChunkKeys.size)} (${String(runtimeKernelBundleContract.delta.lazyChunks)} delta)`,
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), lazy route chunks ${String(dynamicChunkKeys.size)} (${String(dynamicChunkKeys.size - runtimeKernelBundleContract.final.lazyChunks)} Router delta)`,
 )

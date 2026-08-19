@@ -8,6 +8,7 @@ import ts from 'typescript'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
 import { validateAppearanceCutover } from './check-appearance-cutover'
+import { validateRouterArchitecture } from './check-router'
 import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
 
 type JsonObject = Record<string, unknown>
@@ -52,11 +53,11 @@ const inactiveCapabilityPackages = [
   'sass',
   'tailwindcss',
   'turbo',
+  'unplugin-vue-router',
   'unplugin-auto-import',
   'unplugin-vue-components',
   'vee-validate',
   'vue-i18n',
-  'vue-router',
   'vuetify',
 ] as const
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
@@ -651,6 +652,7 @@ const violations = [
   ...(await validateVueStyleGuardrails()),
   ...(await validateFirstPaintApplicationContract()),
   ...(await validateAppearanceCutover()),
+  ...(await validateRouterArchitecture()),
   ...(await validateRuntimeKernelArchitecture()),
 ]
 

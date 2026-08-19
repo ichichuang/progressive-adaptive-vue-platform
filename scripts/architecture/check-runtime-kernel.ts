@@ -23,6 +23,7 @@ const bootstrapStepIds = [
   'create-vue-application',
   'create-pinia',
   'install-platform-providers',
+  'create-and-ready-router',
   'mount-application',
   'register-post-mount-appearance-media-subscriptions',
   'publish-application-ready',
@@ -39,7 +40,12 @@ const bootstrapDependencies = [
     'create-vue-application',
     'create-pinia',
   ],
-  ['install-platform-providers'],
+  [
+    'validate-build-and-runtime-configuration',
+    'create-vue-application',
+    'install-platform-providers',
+  ],
+  ['create-and-ready-router'],
   ['install-platform-providers', 'mount-application'],
   [
     'validate-build-and-runtime-configuration',
@@ -52,6 +58,7 @@ const disposalStepIds = [
   'withdraw-application-ready',
   'remove-appearance-media-subscriptions',
   'unmount-vue-application',
+  'dispose-router-and-history',
   'dispose-installed-platform-provider-handles',
   'dispose-pinia',
   'release-vue-application-creation-handle',
@@ -377,6 +384,107 @@ function callMemberName(call: ts.CallExpression): string | undefined {
   return undefined
 }
 
+function namedImportLocalName(
+  sourceFile: ts.SourceFile,
+  moduleName: string,
+  importedName: string,
+): string | undefined {
+  for (const statement of sourceFile.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      !ts.isStringLiteral(statement.moduleSpecifier) ||
+      statement.moduleSpecifier.text !== moduleName
+    ) {
+      continue
+    }
+
+    const bindings = statement.importClause?.namedBindings
+    if (bindings === undefined || !ts.isNamedImports(bindings)) {
+      continue
+    }
+
+    const specifier = bindings.elements.find(
+      (candidate) => (candidate.propertyName?.text ?? candidate.name.text) === importedName,
+    )
+    if (specifier !== undefined) {
+      return specifier.name.text
+    }
+  }
+
+  return undefined
+}
+
+function memberPath(expression: ts.Expression | undefined): readonly string[] {
+  if (expression === undefined) {
+    return []
+  }
+  if (ts.isIdentifier(expression)) {
+    return [expression.text]
+  }
+  if (ts.isPropertyAccessExpression(expression)) {
+    return [...memberPath(expression.expression), expression.name.text]
+  }
+  return []
+}
+
+function storedValuePath(expression: ts.Expression | undefined): readonly string[] {
+  if (expression === undefined) {
+    return []
+  }
+
+  let current: ts.Node = expression
+  for (;;) {
+    const parent = current.parent
+    if (
+      (ts.isAwaitExpression(parent) && parent.expression === current) ||
+      ((ts.isParenthesizedExpression(parent) ||
+        ts.isAsExpression(parent) ||
+        ts.isSatisfiesExpression(parent) ||
+        ts.isTypeAssertionExpression(parent) ||
+        ts.isNonNullExpression(parent)) &&
+        parent.expression === current)
+    ) {
+      current = parent
+      continue
+    }
+
+    break
+  }
+
+  const parent = current.parent
+  if (
+    ts.isVariableDeclaration(parent) &&
+    parent.initializer === current &&
+    ts.isIdentifier(parent.name)
+  ) {
+    return [parent.name.text]
+  }
+  if (
+    ts.isBinaryExpression(parent) &&
+    parent.right === current &&
+    parent.operatorToken.kind === ts.SyntaxKind.EqualsToken
+  ) {
+    return memberPath(parent.left)
+  }
+  if (
+    ts.isPropertyAssignment(parent) &&
+    parent.initializer === current &&
+    (ts.isIdentifier(parent.name) ||
+      ts.isStringLiteral(parent.name) ||
+      ts.isNumericLiteral(parent.name))
+  ) {
+    const ownerPath = storedValuePath(parent.parent)
+    return ownerPath.length === 0 ? [] : [...ownerPath, parent.name.text]
+  }
+  if (ts.isArrayLiteralExpression(parent)) {
+    const index = parent.elements.findIndex((element) => element === current)
+    const ownerPath = storedValuePath(parent)
+    return index < 0 || ownerPath.length === 0 ? [] : [...ownerPath, String(index)]
+  }
+
+  return []
+}
+
 function directStringArguments(source: ParsedSource, memberName: string): string[] {
   return nodesOf(source.sourceFile, ts.isCallExpression)
     .filter((call) => callMemberName(call) === memberName)
@@ -463,13 +571,13 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
     .filter((record): record is ts.ObjectLiteralExpression => record !== undefined)
 
   if (records?.length !== bootstrapStepIds.length) {
-    return ['Runtime Kernel Bootstrap Registry must contain exactly nine records.']
+    return ['Runtime Kernel Bootstrap Registry must contain exactly ten records.']
   }
 
   const actualIds = records.map((record) => literalValue(propertyExpression(record, 'id')))
   if (!equalArray(actualIds as string[], bootstrapStepIds)) {
     violations.push(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact nine-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact ten-step contract.',
     )
   }
 
@@ -479,7 +587,7 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
       violations.push(`Bootstrap step ${String(index + 1)} dependency graph drifted.`)
     }
     const mountOwner = literalValue(propertyExpression(record, 'domMountOwner'))
-    if (mountOwner !== (index === 6)) {
+    if (mountOwner !== (index === 7)) {
       violations.push(`Bootstrap step ${String(index + 1)} Mount ownership drifted.`)
     }
     const retryEligible = literalValue(
@@ -512,9 +620,7 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
       : []
   })
   if (!equalArray(disposalSteps, disposalStepIds)) {
-    violations.push(
-      'Runtime Kernel reverse disposal order must match the exact nine-step contract.',
-    )
+    violations.push('Runtime Kernel reverse disposal order must match the exact ten-step contract.')
   }
 
   const loadCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
@@ -537,6 +643,149 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
       (createPiniaCalls[0]?.getStart(source.sourceFile) ?? 0)
   ) {
     violations.push('Runtime Configuration must execute before Vue or Pinia creation.')
+  }
+
+  const routerFactoryImport = namedImportLocalName(
+    source.sourceFile,
+    '../router/router-lifecycle',
+    'createAndReadyRouter',
+  )
+  const routerReadyCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) =>
+      routerFactoryImport !== undefined &&
+      ts.isIdentifier(call.expression) &&
+      call.expression.text === routerFactoryImport,
+  )
+  const routerReadyCall = routerReadyCalls[0]
+  const routerReadyAwait =
+    routerReadyCall?.parent !== undefined && ts.isAwaitExpression(routerReadyCall.parent)
+      ? routerReadyCall.parent
+      : undefined
+  const routerHandlePath = storedValuePath(routerReadyCall)
+  const routerInput = objectLiteral(routerReadyCall?.arguments[0])
+  let enclosingFunction: ts.Node | undefined = routerReadyCall
+  while (
+    enclosingFunction !== undefined &&
+    !ts.isFunctionDeclaration(enclosingFunction) &&
+    !ts.isFunctionExpression(enclosingFunction) &&
+    !ts.isArrowFunction(enclosingFunction) &&
+    !ts.isMethodDeclaration(enclosingFunction)
+  ) {
+    enclosingFunction = enclosingFunction.parent
+  }
+  const attemptInputName =
+    enclosingFunction !== undefined &&
+    (ts.isFunctionDeclaration(enclosingFunction) ||
+      ts.isFunctionExpression(enclosingFunction) ||
+      ts.isArrowFunction(enclosingFunction) ||
+      ts.isMethodDeclaration(enclosingFunction)) &&
+    enclosingFunction.parameters[0]?.name !== undefined &&
+    ts.isIdentifier(enclosingFunction.parameters[0].name)
+      ? enclosingFunction.parameters[0].name.text
+      : undefined
+  const startupAttemptInput =
+    routerInput === undefined ? undefined : propertyExpression(routerInput, 'startupAttemptId')
+  const mountStepEntries = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) =>
+      callMemberName(call) === 'enterBootstrapStep' &&
+      literalValue(call.arguments[0]) === 'mount-application',
+  )
+  const routerDisposalCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) => literalValue(call.arguments[0]) === 'dispose-router-and-history',
+  )
+  const routerDisposalOperation = routerDisposalCalls[0]?.arguments[1]
+  const disposalHandlePaths =
+    routerDisposalOperation === undefined
+      ? []
+      : nodesOf(routerDisposalOperation, ts.isCallExpression).flatMap((call) =>
+          ts.isPropertyAccessExpression(call.expression) && call.expression.name.text === 'dispose'
+            ? [memberPath(call.expression.expression)]
+            : [],
+        )
+  const disposalReceiverRoot = disposalHandlePaths[0]?.[0]
+  let disposalOwner: ts.Node | undefined = routerDisposalCalls[0]
+  while (disposalOwner !== undefined) {
+    const ownsReceiverRoot =
+      ts.isFunctionDeclaration(disposalOwner) ||
+      ts.isFunctionExpression(disposalOwner) ||
+      ts.isArrowFunction(disposalOwner) ||
+      ts.isMethodDeclaration(disposalOwner)
+        ? disposalOwner.parameters.some(
+            (parameter) =>
+              ts.isIdentifier(parameter.name) && parameter.name.text === disposalReceiverRoot,
+          )
+        : false
+
+    if (ownsReceiverRoot) {
+      break
+    }
+
+    disposalOwner = disposalOwner.parent
+  }
+  const disposalInputName =
+    disposalOwner !== undefined &&
+    (ts.isFunctionDeclaration(disposalOwner) ||
+      ts.isFunctionExpression(disposalOwner) ||
+      ts.isArrowFunction(disposalOwner) ||
+      ts.isMethodDeclaration(disposalOwner)) &&
+    disposalOwner.parameters[0]?.name !== undefined &&
+    ts.isIdentifier(disposalOwner.parameters[0].name)
+      ? disposalOwner.parameters[0].name.text
+      : undefined
+  const disposalFactoryName =
+    disposalOwner !== undefined &&
+    ts.isFunctionDeclaration(disposalOwner) &&
+    disposalOwner.name !== undefined
+      ? disposalOwner.name.text
+      : undefined
+  const routerResourceOwnerPath = routerHandlePath.slice(0, -1)
+  const routerResourceMember = routerHandlePath.at(-1)
+  const disposalFactoryCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) =>
+      disposalFactoryName !== undefined &&
+      ts.isIdentifier(call.expression) &&
+      call.expression.text === disposalFactoryName,
+  )
+  const disposalFactoryInput = objectLiteral(disposalFactoryCalls[0]?.arguments[0])
+  const resourceHandoffProperty = disposalFactoryInput?.properties.find((property) => {
+    const value =
+      ts.isPropertyAssignment(property) || ts.isShorthandPropertyAssignment(property)
+        ? propertyExpression(disposalFactoryInput, propertyName(property.name) ?? '')
+        : undefined
+
+    return equalArray(memberPath(value), routerResourceOwnerPath)
+  })
+  const resourceHandoffName = propertyName(resourceHandoffProperty?.name)
+  const expectedDisposalHandlePath =
+    disposalInputName === undefined ||
+    resourceHandoffName === undefined ||
+    routerResourceMember === undefined
+      ? []
+      : [disposalInputName, resourceHandoffName, routerResourceMember]
+  const routerDisposalUsesHandle =
+    disposalHandlePaths.some((path) => equalArray(path, routerHandlePath)) ||
+    (disposalFactoryCalls.length === 1 &&
+      expectedDisposalHandlePath.length !== 0 &&
+      disposalHandlePaths.some((path) => equalArray(path, expectedDisposalHandlePath)))
+
+  if (
+    routerFactoryImport === undefined ||
+    routerReadyCalls.length !== 1 ||
+    routerReadyAwait === undefined ||
+    routerHandlePath.length === 0 ||
+    routerInput === undefined ||
+    !exactObjectKeys(routerInput, ['application', 'configuration', 'startupAttemptId']) ||
+    !equalArray(memberPath(startupAttemptInput), [attemptInputName ?? '', 'startupAttemptId']) ||
+    mountStepEntries.length !== 1 ||
+    routerReadyCall === undefined ||
+    routerReadyCall.getStart(source.sourceFile) >
+      (mountStepEntries[0]?.getStart(source.sourceFile) ?? 0) ||
+    routerDisposalCalls.length !== 1 ||
+    !routerDisposalUsesHandle
+  ) {
+    violations.push(
+      'Runtime Kernel must await exactly one Router lifecycle handle before entering application Mount.',
+    )
   }
 
   const readyWithdrawal = nodesOf(source.sourceFile, ts.isCallExpression).filter(
@@ -1138,13 +1387,7 @@ function validateHmr(main: ParsedSource, allSources: readonly ParsedSource[]): s
 
 function validateNoFutureCapabilities(sources: readonly ParsedSource[]): string[] {
   const violations: string[] = []
-  const prohibitedPackages = [
-    'vue-router',
-    '@tanstack/vue-query',
-    'axios',
-    'openapi-fetch',
-    'vue-i18n',
-  ]
+  const prohibitedPackages = ['@tanstack/vue-query', 'axios', 'openapi-fetch', 'vue-i18n']
   for (const source of sources) {
     for (const declaration of nodesOf(source.sourceFile, ts.isImportDeclaration)) {
       const specifier = declaration.moduleSpecifier
@@ -1185,7 +1428,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapRegistry(swappedRegistry).includes(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact nine-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact ten-step contract.',
     )
   ) {
     failures.push('Negative probe failed: Bootstrap Registry drift was accepted.')
@@ -1198,7 +1441,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapExecution(swappedDisposal).includes(
-      'Runtime Kernel reverse disposal order must match the exact nine-step contract.',
+      'Runtime Kernel reverse disposal order must match the exact ten-step contract.',
     )
   ) {
     failures.push('Negative probe failed: reverse disposal drift was accepted.')

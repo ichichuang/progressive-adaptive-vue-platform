@@ -3,3 +3,4 @@ node_modules/
 dist/
 ARCHITECTURE.md
 pnpm-lock.yaml
+apps/web/src/route-map.d.ts
