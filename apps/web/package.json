@@ -12,7 +12,6 @@
     "@platform/design-system": "workspace:*",
     "pinia": "catalog:",
     "vue": "catalog:",
-    "vue-router": "catalog:",
     "zod": "catalog:"
   }
 }

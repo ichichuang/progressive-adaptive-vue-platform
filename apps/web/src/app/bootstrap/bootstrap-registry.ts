@@ -5,7 +5,6 @@ export type BootstrapStepId =
   | 'create-vue-application'
   | 'create-pinia'
   | 'install-platform-providers'
-  | 'create-and-ready-router'
   | 'mount-application'
   | 'register-post-mount-appearance-media-subscriptions'
   | 'publish-application-ready'
@@ -114,26 +113,8 @@ export const bootstrapStepRegistry = [
     hmrBehavior: 'dispose providers after unmount and before Pinia; never reuse handles',
   },
   {
-    id: 'create-and-ready-router',
-    dependencies: [
-      'validate-build-and-runtime-configuration',
-      'create-vue-application',
-      'install-platform-providers',
-    ],
-    createInput:
-      'validated Runtime Configuration, unmounted Vue application, generated routes, exact Router registries, error boundary, startupAttemptId',
-    createOutput: 'one Router lifecycle handle with one Router, one Web History and exact removers',
-    readyCondition: 'Router installed while unmounted and router.isReady() completed successfully',
-    disposeResponsibility: 'remove Router hooks and destroy the exact Web History once',
-    domMountOwner: false,
-    failureClassification: 'application-startup-failure',
-    retryParticipant: true,
-    ownFailureEligibleForConfigurationRetry: false,
-    hmrBehavior: 'dispose and recreate fresh Router and History through the sole Runtime Kernel',
-  },
-  {
     id: 'mount-application',
-    dependencies: ['create-and-ready-router'],
+    dependencies: ['install-platform-providers'],
     createInput: 'ready Vue application and exact #app target',
     createOutput: 'mounted application handle',
     readyCondition: "application.mount('#app') returns and mounted state is confirmed",

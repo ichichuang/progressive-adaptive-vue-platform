@@ -1,11 +1,10 @@
 import { execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
-import { relative, resolve, sep } from 'node:path'
+import { resolve } from 'node:path'
 
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
 import { defineConfig, type Plugin } from 'vite'
-import VueRouter from 'vue-router/vite'
 
 import { projectConfig } from '../../project.config'
 import { applicationConfig } from './src/app/config/app.config'
@@ -15,11 +14,8 @@ import {
   type CompiledEnvironment,
   type CoreRuntimeConfiguration,
 } from './src/app/config/runtime-configuration-contract'
-import { getRouteRecordBySourcePath, routeRegistry } from './src/app/router/route-registry'
 
 type JsonObject = Record<string, unknown>
-type VueRouterPluginOptions = NonNullable<Parameters<typeof VueRouter>[0]>
-type EditableTreeNode = Parameters<NonNullable<VueRouterPluginOptions['extendRoute']>>[0]
 
 const repositoryDirectory = resolve(import.meta.dirname, '../..')
 const rootPackageManifestPath = resolve(repositoryDirectory, 'package.json')
@@ -28,38 +24,6 @@ const runtimeConfigurationArtifactName = 'runtime-configuration.json'
 const firstPaintArtifactNames = ['appearance-init.js', 'critical-theme.css'] as const
 const generatedDirectory = resolve(repositoryDirectory, 'packages/design-system/src/generated')
 const releaseShaOutputPattern = /^([0-9a-f]{40})(?:\r?\n)?$/u
-
-function canonicalPageSourcePath(filePath: string): string {
-  return relative(repositoryDirectory, filePath).split(sep).join('/')
-}
-
-function projectCanonicalFileRoute(route: EditableTreeNode): void {
-  const component = route.component
-
-  if (component === undefined) {
-    return
-  }
-
-  const record = getRouteRecordBySourcePath(canonicalPageSourcePath(component))
-  route.name = record.name
-  route.path = record.pathPattern
-  route.meta = record.meta
-}
-
-function verifyCanonicalFileRouteTree(rootRoute: EditableTreeNode): void {
-  const generatedSourcePaths = [...rootRoute]
-    .flatMap((route) => [...route.components.values()])
-    .map(canonicalPageSourcePath)
-    .sort()
-  const registeredSourcePaths = routeRegistry.map((record) => record.sourcePath).sort()
-
-  if (
-    generatedSourcePaths.length !== registeredSourcePaths.length ||
-    generatedSourcePaths.some((sourcePath, index) => sourcePath !== registeredSourcePaths[index])
-  ) {
-    throw new Error('The official file-route source set diverged from the Route Registry.')
-  }
-}
 
 if (deploymentBase !== '/') {
   throw new Error('The Runtime Kernel currently requires the exact root deployment base.')
@@ -322,15 +286,6 @@ export default defineConfig(async ({ mode }) => {
     plugins: [
       runtimeConfigurationArtifacts(runtimeConfiguration),
       productionRuntimeConfigurationCarrier(),
-      VueRouter({
-        root: import.meta.dirname,
-        routesFolder: 'src/pages',
-        extensions: ['.vue'],
-        importMode: 'async',
-        dts: 'src/route-map.d.ts',
-        extendRoute: projectCanonicalFileRoute,
-        beforeWriteFiles: verifyCanonicalFileRouteTree,
-      }),
       vue(),
       UnoCSS(),
     ],

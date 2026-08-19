@@ -23,7 +23,6 @@ const bootstrapStepIds = [
   'create-vue-application',
   'create-pinia',
   'install-platform-providers',
-  'create-and-ready-router',
   'mount-application',
   'register-post-mount-appearance-media-subscriptions',
   'publish-application-ready',
@@ -40,12 +39,7 @@ const bootstrapDependencies = [
     'create-vue-application',
     'create-pinia',
   ],
-  [
-    'validate-build-and-runtime-configuration',
-    'create-vue-application',
-    'install-platform-providers',
-  ],
-  ['create-and-ready-router'],
+  ['install-platform-providers'],
   ['install-platform-providers', 'mount-application'],
   [
     'validate-build-and-runtime-configuration',
@@ -58,7 +52,6 @@ const disposalStepIds = [
   'withdraw-application-ready',
   'remove-appearance-media-subscriptions',
   'unmount-vue-application',
-  'dispose-router-and-history',
   'dispose-installed-platform-provider-handles',
   'dispose-pinia',
   'release-vue-application-creation-handle',
@@ -470,13 +463,13 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
     .filter((record): record is ts.ObjectLiteralExpression => record !== undefined)
 
   if (records?.length !== bootstrapStepIds.length) {
-    return ['Runtime Kernel Bootstrap Registry must contain exactly ten records.']
+    return ['Runtime Kernel Bootstrap Registry must contain exactly nine records.']
   }
 
   const actualIds = records.map((record) => literalValue(propertyExpression(record, 'id')))
   if (!equalArray(actualIds as string[], bootstrapStepIds)) {
     violations.push(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact ten-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact nine-step contract.',
     )
   }
 
@@ -486,7 +479,7 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
       violations.push(`Bootstrap step ${String(index + 1)} dependency graph drifted.`)
     }
     const mountOwner = literalValue(propertyExpression(record, 'domMountOwner'))
-    if (mountOwner !== (index === 7)) {
+    if (mountOwner !== (index === 6)) {
       violations.push(`Bootstrap step ${String(index + 1)} Mount ownership drifted.`)
     }
     const retryEligible = literalValue(
@@ -519,7 +512,9 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
       : []
   })
   if (!equalArray(disposalSteps, disposalStepIds)) {
-    violations.push('Runtime Kernel reverse disposal order must match the exact ten-step contract.')
+    violations.push(
+      'Runtime Kernel reverse disposal order must match the exact nine-step contract.',
+    )
   }
 
   const loadCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
@@ -531,21 +526,9 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
   const createPiniaCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
     (call) => callMemberName(call) === 'createPiniaProvider',
   )
-  const createRouterCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
-    (call) => callMemberName(call) === 'createAndReadyRouter',
-  )
-  const mountCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
-    (call) => callMemberName(call) === 'mountVueApplication',
-  )
-  if (
-    loadCalls.length !== 1 ||
-    createAppCalls.length !== 1 ||
-    createPiniaCalls.length !== 1 ||
-    createRouterCalls.length !== 1 ||
-    mountCalls.length !== 1
-  ) {
+  if (loadCalls.length !== 1 || createAppCalls.length !== 1 || createPiniaCalls.length !== 1) {
     violations.push(
-      'Runtime Kernel must uniquely own configuration, Vue creation, Pinia creation, Router readiness, and Mount.',
+      'Runtime Kernel must uniquely own configuration, Vue creation, and Pinia creation.',
     )
   } else if (
     (loadCalls[0]?.getStart(source.sourceFile) ?? 0) >
@@ -554,15 +537,6 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
       (createPiniaCalls[0]?.getStart(source.sourceFile) ?? 0)
   ) {
     violations.push('Runtime Configuration must execute before Vue or Pinia creation.')
-  }
-
-  if (
-    createRouterCalls.length === 1 &&
-    mountCalls.length === 1 &&
-    (createRouterCalls[0]?.getStart(source.sourceFile) ?? 0) >
-      (mountCalls[0]?.getStart(source.sourceFile) ?? 0)
-  ) {
-    violations.push('Router readiness must structurally precede application Mount.')
   }
 
   const readyWithdrawal = nodesOf(source.sourceFile, ts.isCallExpression).filter(
@@ -1164,7 +1138,13 @@ function validateHmr(main: ParsedSource, allSources: readonly ParsedSource[]): s
 
 function validateNoFutureCapabilities(sources: readonly ParsedSource[]): string[] {
   const violations: string[] = []
-  const prohibitedPackages = ['@tanstack/vue-query', 'axios', 'openapi-fetch', 'vue-i18n']
+  const prohibitedPackages = [
+    'vue-router',
+    '@tanstack/vue-query',
+    'axios',
+    'openapi-fetch',
+    'vue-i18n',
+  ]
   for (const source of sources) {
     for (const declaration of nodesOf(source.sourceFile, ts.isImportDeclaration)) {
       const specifier = declaration.moduleSpecifier
@@ -1205,7 +1185,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapRegistry(swappedRegistry).includes(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact ten-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact nine-step contract.',
     )
   ) {
     failures.push('Negative probe failed: Bootstrap Registry drift was accepted.')
@@ -1218,7 +1198,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapExecution(swappedDisposal).includes(
-      'Runtime Kernel reverse disposal order must match the exact ten-step contract.',
+      'Runtime Kernel reverse disposal order must match the exact nine-step contract.',
     )
   ) {
     failures.push('Negative probe failed: reverse disposal drift was accepted.')

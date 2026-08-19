@@ -34,7 +34,6 @@ import {
   type GlobalFailureCaptureHandle,
 } from '../errors/global-failure-capture'
 import { createPiniaProvider, type PiniaProviderHandle } from '../providers/pinia'
-import { createAndReadyRouter, type RouterLifecycleHandle } from '../router/router-lifecycle'
 import { bootstrapStepRegistry, type BootstrapStepId } from './bootstrap-registry'
 import {
   createVueApplication,
@@ -67,7 +66,6 @@ interface AttemptResources {
   mountedApplication?: MountedApplicationHandle
   pinia?: PiniaProviderHandle
   providers?: InstalledPlatformProvidersHandle
-  router?: RouterLifecycleHandle
   vueApplication?: VueApplicationCreationHandle
 }
 
@@ -169,12 +167,6 @@ function createAttemptDisposer(input: {
       failedSteps,
     )
     delete input.resources.mountedApplication
-    safeDispose(
-      'dispose-router-and-history',
-      input.resources.router === undefined ? undefined : () => input.resources.router?.dispose(),
-      failedSteps,
-    )
-    delete input.resources.router
     safeDispose(
       'dispose-installed-platform-provider-handles',
       input.resources.providers === undefined
@@ -414,13 +406,6 @@ async function startAttempt(input: {
     })
     throwClaimedStartupFailure()
 
-    enterBootstrapStep('create-and-ready-router')
-    resources.router = await createAndReadyRouter({
-      application: resources.vueApplication.application,
-      configuration: resources.configuration,
-    })
-    throwClaimedStartupFailure()
-
     enterBootstrapStep('mount-application')
     mounting = true
     try {
@@ -434,7 +419,6 @@ async function startAttempt(input: {
     } finally {
       mounting = false
     }
-    resources.router.markApplicationMounted()
     throwClaimedStartupFailure()
 
     enterBootstrapStep('register-post-mount-appearance-media-subscriptions')

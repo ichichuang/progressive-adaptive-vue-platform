@@ -2,10 +2,15 @@ packages:
   - apps/*
   - packages/*
 
+strictDepBuilds: true
+
 allowBuilds:
-  '@bundled-es-modules/glob': false
   esbuild@0.28.1: true
+  '@bundled-es-modules/glob': false
   style-dictionary: false
+
+patchedDependencies:
+  unconfig@7.5.0: patches/unconfig@7.5.0.patch
 
 catalog:
   '@iconify-json/lucide': 1.2.120
@@ -23,24 +28,14 @@ catalog:
   knip: 6.29.0
   pinia: 3.0.4
   prettier: 3.9.6
-  style-dictionary: 5.4.4
   stylelint: 17.14.1
+  style-dictionary: 5.4.4
   tsx: 4.23.1
   typescript: 6.0.3
   typescript-eslint: 8.65.0
   unocss: 66.7.5
   vite: 8.1.5
   vue: 3.5.40
-  vue-router: 5.2.0
   vue-tsc: 3.3.8
   yaml: 2.9.0
   zod: 4.4.3
-
-patchedDependencies:
-  unconfig@7.5.0: patches/unconfig@7.5.0.patch
-  vue-router@5.2.0: patches/vue-router@5.2.0.patch
-
-allowUnusedPatches: false
-ignorePatchFailures: false
-
-strictDepBuilds: true

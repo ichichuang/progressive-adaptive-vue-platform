@@ -1,6 +1,4 @@
-import { access, lstat, mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
-import { createRequire } from 'node:module'
-import { tmpdir } from 'node:os'
+import { access, lstat, readFile, readdir } from 'node:fs/promises'
 import { extname, join, relative, resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 
@@ -8,42 +6,9 @@ import { projectConfig } from '../../project.config'
 import ts from 'typescript'
 import { parse as parseYaml } from 'yaml'
 
-import {
-  getRouteRecordBySourcePath,
-  routeRegistry,
-} from '../../apps/web/src/app/router/route-registry'
 import { runtimePreflightAuthority } from './check-runtime'
 
 type JsonObject = Record<string, unknown>
-
-interface EditableTreeNode extends Iterable<EditableTreeNode> {
-  readonly component: string | undefined
-  readonly components: ReadonlyMap<string, string>
-  name: string
-  path: string
-  meta: unknown
-}
-
-interface OfficialRouteGeneratorContext {
-  generateRoutes(): string
-  scanPages(startWatchers?: boolean): Promise<void>
-  stopWatcher(): void
-}
-
-interface OfficialRouteGeneratorOptions {
-  readonly root: string
-  readonly routesFolder: string
-  readonly extensions: readonly string[]
-  readonly importMode: 'async'
-  readonly dts: string
-  readonly extendRoute: (route: EditableTreeNode) => void
-  readonly beforeWriteFiles: (rootRoute: EditableTreeNode) => void
-}
-
-const officialVueRouterGenerator = createRequire(import.meta.url)('vue-router/unplugin') as {
-  createRoutesContext(options: unknown): OfficialRouteGeneratorContext
-  resolveOptions(options: OfficialRouteGeneratorOptions): unknown
-}
 
 const rootDirectory = process.cwd()
 const expectedRuntime = {
@@ -54,9 +19,6 @@ const expectedRuntime = {
 const expectedPackageManager = `pnpm@${expectedRuntime.pnpm}`
 const expectedBuildVersion = '0.0.0'
 const expectedZodVersion = '4.4.3'
-const expectedVueRouterVersion = '5.2.0'
-const vueRouterDeclarationFileName = 'index-BN0B0y8a.d.ts'
-const vueRouterPatchPath = 'patches/vue-router@5.2.0.patch'
 const expectedImplementationContract = {
   phase: 1,
   state: 'IN_PROGRESS',
@@ -94,176 +56,6 @@ async function readYamlObject(path: string): Promise<JsonObject> {
   }
 
   return parsed
-}
-
-function canonicalPageSourcePath(filePath: string): string {
-  return relative(rootDirectory, filePath).split('\\').join('/')
-}
-
-function projectCanonicalFileRoute(route: EditableTreeNode): void {
-  if (route.component === undefined) {
-    return
-  }
-
-  const record = getRouteRecordBySourcePath(canonicalPageSourcePath(route.component))
-  route.name = record.name
-  route.path = record.pathPattern
-  route.meta = record.meta
-}
-
-function verifyCanonicalFileRouteTree(rootRoute: EditableTreeNode): void {
-  const generatedSourcePaths = [...rootRoute]
-    .flatMap((route) => [...route.components.values()])
-    .map(canonicalPageSourcePath)
-    .sort()
-  const registeredSourcePaths = routeRegistry.map((record) => record.sourcePath).sort()
-
-  if (!isDeepStrictEqual(generatedSourcePaths, registeredSourcePaths)) {
-    throw new Error('Official file-route regeneration source set diverged from the Route Registry.')
-  }
-}
-
-async function validateOfficialRouteDtsRegeneration(): Promise<void> {
-  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'pavp-router-dts-'))
-  const generatedPath = resolve(temporaryDirectory, 'route-map.d.ts')
-  const context = officialVueRouterGenerator.createRoutesContext(
-    officialVueRouterGenerator.resolveOptions({
-      root: resolve(rootDirectory, 'apps/web'),
-      routesFolder: 'src/pages',
-      extensions: ['.vue'],
-      importMode: 'async',
-      dts: generatedPath,
-      extendRoute: projectCanonicalFileRoute,
-      beforeWriteFiles: verifyCanonicalFileRouteTree,
-    }),
-  )
-
-  try {
-    await context.scanPages(false)
-    const generatedRuntimeRoutes = context.generateRoutes()
-    const [generated, repositoryArtifact] = await Promise.all([
-      readFile(generatedPath, 'utf8'),
-      readFile(resolve(rootDirectory, 'apps/web/src/route-map.d.ts'), 'utf8'),
-    ])
-
-    expectEqual(repositoryArtifact, generated, 'Official generated Router DTS equality')
-    expectExactCount(
-      [...generatedRuntimeRoutes.matchAll(/^[ \t]+name: '[^']+',?$/gmu)].length,
-      routeRegistry.length,
-      'Official generated named runtime route count',
-    )
-    expectExactCount(
-      generatedRuntimeRoutes.split('component: () => import(').length - 1,
-      routeRegistry.length,
-      'Official generated asynchronous route component count',
-    )
-
-    for (const record of routeRegistry) {
-      const componentPath = resolve(rootDirectory, record.sourcePath)
-      const projection = `path: '${record.pathPattern}',\n    name: '${record.name}',\n    component: () => import('${componentPath}')`
-      const nestedProjection = `path: '${record.pathPattern}',\n        name: '${record.name}',\n        component: () => import('${componentPath}')`
-
-      if (
-        !generatedRuntimeRoutes.includes(projection) &&
-        !generatedRuntimeRoutes.includes(nestedProjection)
-      ) {
-        throw new Error(`Official generated runtime route projection drifted for ${record.name}.`)
-      }
-    }
-  } finally {
-    context.stopWatcher()
-    await rm(temporaryDirectory, { recursive: true, force: true })
-  }
-}
-
-function vueRouterDeclarationDiagnostics(declarationText: string): readonly ts.Diagnostic[] {
-  const configurationPath = resolve(rootDirectory, 'apps/web/tsconfig.json')
-  const configuration = ts.readConfigFile(configurationPath, (fileName) =>
-    ts.sys.readFile(fileName),
-  )
-
-  if (configuration.error !== undefined) {
-    throw new Error('Router compatibility probe could not read the web TypeScript configuration.')
-  }
-
-  const parsed = ts.parseJsonConfigFileContent(
-    configuration.config,
-    ts.sys,
-    resolve(rootDirectory, 'apps/web'),
-    { noEmit: true },
-    configurationPath,
-  )
-
-  if (
-    parsed.options.strict !== true ||
-    parsed.options.exactOptionalPropertyTypes !== true ||
-    parsed.options.skipLibCheck === true
-  ) {
-    throw new Error('Router compatibility probe requires the unchanged strict TypeScript policy.')
-  }
-
-  const host = ts.createCompilerHost(parsed.options)
-  const originalGetSourceFile = host.getSourceFile.bind(host)
-  host.getSourceFile = (fileName, languageVersion, onError, shouldCreateNewSourceFile) =>
-    fileName.endsWith(`/vue-router/dist/${vueRouterDeclarationFileName}`)
-      ? ts.createSourceFile(fileName, declarationText, languageVersion, true, ts.ScriptKind.TS)
-      : originalGetSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile)
-
-  const program = ts.createProgram({
-    rootNames: [resolve(rootDirectory, 'apps/web/src/route-map.d.ts')],
-    options: parsed.options,
-    host,
-  })
-
-  return ts
-    .getPreEmitDiagnostics(program)
-    .filter(
-      (diagnostic) =>
-        diagnostic.code === 2430 &&
-        diagnostic.file?.fileName.endsWith(`/vue-router/dist/${vueRouterDeclarationFileName}`) ===
-          true,
-    )
-}
-
-async function validateVueRouterCompatibilityProbe(): Promise<void> {
-  const declarationPath = resolve(
-    rootDirectory,
-    `apps/web/node_modules/vue-router/dist/${vueRouterDeclarationFileName}`,
-  )
-  const patchedDeclaration = await readFile(declarationPath, 'utf8')
-  const replacements = [
-    ['name?: RecordName | undefined;', 'name?: RecordName;'],
-    ['path?: MatcherPatternPath | undefined;', 'path?: MatcherPatternPath;'],
-    ['hash?: MatcherPatternHash | undefined;', 'hash?: MatcherPatternHash;'],
-  ] as const
-  let unpatchedDeclaration = patchedDeclaration
-
-  for (const [patched, unpatched] of replacements) {
-    expectExactCount(
-      patchedDeclaration.split(patched).length - 1,
-      1,
-      `Installed Vue Router declaration replacement ${patched}`,
-    )
-    unpatchedDeclaration = unpatchedDeclaration.replace(patched, unpatched)
-  }
-
-  expectExactCount(
-    vueRouterDeclarationDiagnostics(patchedDeclaration).length,
-    0,
-    'Patched Vue Router TS2430 diagnostics',
-  )
-
-  const unpatchedDiagnostics = vueRouterDeclarationDiagnostics(unpatchedDeclaration)
-  const unpatchedLines = unpatchedDiagnostics.map((diagnostic) =>
-    diagnostic.file === undefined || diagnostic.start === undefined
-      ? undefined
-      : diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start).line + 1,
-  )
-  expectStructuredEqual(
-    unpatchedLines,
-    [1227, 1336],
-    'Unpatched official Vue Router TS2430 diagnostic coordinates',
-  )
 }
 
 function expectEqual(actual: unknown, expected: unknown, description: string): void {
@@ -412,21 +204,6 @@ function importSpecifier(
   return matchingImports.length === 1 && matchingSpecifiers.length === 1
     ? matchingSpecifiers[0]
     : undefined
-}
-
-function defaultImportIdentifier(
-  sourceFile: ts.SourceFile,
-  moduleName: string,
-): ts.Identifier | undefined {
-  const matchingImports = sourceFile.statements.filter(
-    (statement): statement is ts.ImportDeclaration =>
-      ts.isImportDeclaration(statement) &&
-      ts.isStringLiteral(statement.moduleSpecifier) &&
-      statement.moduleSpecifier.text === moduleName,
-  )
-  const defaultImport = matchingImports[0]?.importClause?.name
-
-  return matchingImports.length === 1 && defaultImport !== undefined ? defaultImport : undefined
 }
 
 function symbolAt(checker: ts.TypeChecker, node: ts.Node | undefined): ts.Symbol | undefined {
@@ -1421,56 +1198,6 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     pluginsValue !== undefined && ts.isArrayLiteralExpression(pluginsValue)
       ? pluginsValue.elements.filter(ts.isCallExpression)
       : []
-  const routerPluginImport = defaultImportIdentifier(viteSourceFile, 'vue-router/vite')
-  const vuePluginImport = defaultImportIdentifier(viteSourceFile, '@vitejs/plugin-vue')
-  const routerPluginCalls = pluginCalls.filter((call) =>
-    callTargetsSymbol(checker, call, routerPluginImport),
-  )
-  const vuePluginCalls = pluginCalls.filter((call) =>
-    callTargetsSymbol(checker, call, vuePluginImport),
-  )
-  const routerPluginCall = routerPluginCalls[0]
-  const vuePluginCall = vuePluginCalls[0]
-  const routerPluginOptions = objectLiteralFromExpression(checker, routerPluginCall?.arguments[0])
-  const routerExtensions =
-    routerPluginOptions === undefined
-      ? undefined
-      : resolveValueExpression(checker, objectPropertyExpression(routerPluginOptions, 'extensions'))
-
-  if (
-    routerPluginImport === undefined ||
-    vuePluginImport === undefined ||
-    routerPluginCalls.length !== 1 ||
-    vuePluginCalls.length !== 1 ||
-    routerPluginCall === undefined ||
-    vuePluginCall === undefined ||
-    routerPluginOptions === undefined ||
-    pluginCalls.indexOf(routerPluginCall) >= pluginCalls.indexOf(vuePluginCall) ||
-    !hasExactObjectPropertySet(routerPluginOptions, [
-      'root',
-      'routesFolder',
-      'extensions',
-      'importMode',
-      'dts',
-      'extendRoute',
-      'beforeWriteFiles',
-    ]) ||
-    objectPropertyExpression(routerPluginOptions, 'root')?.getText(viteSourceFile) !==
-      'import.meta.dirname' ||
-    !isStringLiteral(objectPropertyExpression(routerPluginOptions, 'routesFolder'), 'src/pages') ||
-    routerExtensions === undefined ||
-    !ts.isArrayLiteralExpression(routerExtensions) ||
-    routerExtensions.elements.length !== 1 ||
-    !isStringLiteral(routerExtensions.elements[0], '.vue') ||
-    !isStringLiteral(objectPropertyExpression(routerPluginOptions, 'importMode'), 'async') ||
-    !isStringLiteral(objectPropertyExpression(routerPluginOptions, 'dts'), 'src/route-map.d.ts') ||
-    objectPropertyExpression(routerPluginOptions, 'extendRoute')?.getText(viteSourceFile) !==
-      'projectCanonicalFileRoute' ||
-    objectPropertyExpression(routerPluginOptions, 'beforeWriteFiles')?.getText(viteSourceFile) !==
-      'verifyCanonicalFileRouteTree'
-  ) {
-    throw new Error('Official Vue Router Vite plugin configuration or pre-Vue order drifted.')
-  }
   const artifactPluginCalls = pluginCalls.filter(
     (call) =>
       call.arguments.length === 1 &&
@@ -2003,61 +1730,6 @@ expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
 expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
 expectEqual(workspaceCatalog['zod'], expectedZodVersion, 'Zod catalog version')
-expectEqual(workspaceCatalog['vue-router'], expectedVueRouterVersion, 'Vue Router catalog version')
-expectEqual(workspaceConfiguration['allowUnusedPatches'], false, 'Unused patch failure policy')
-expectEqual(
-  workspaceConfiguration['ignorePatchFailures'],
-  false,
-  'Patch application failure policy',
-)
-expectStructuredEqual(
-  workspaceConfiguration['patchedDependencies'],
-  {
-    'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
-    'vue-router@5.2.0': vueRouterPatchPath,
-  },
-  'Workspace patched dependency authority',
-)
-
-const vueRouterPatch = await readFile(resolve(rootDirectory, vueRouterPatchPath), 'utf8')
-const vueRouterPatchLines = vueRouterPatch.split('\n')
-expectExactCount(
-  vueRouterPatchLines.filter((line) => line.startsWith('diff --git ')).length,
-  1,
-  'Vue Router patch target count',
-)
-expectExactCount(
-  vueRouterPatchLines.filter((line) => line.startsWith('@@ ')).length,
-  1,
-  'Vue Router patch hunk count',
-)
-expectStructuredEqual(
-  vueRouterPatchLines.filter((line) => /^[-+]  (?:name|path|hash)\?/u.test(line)),
-  [
-    '-  name?: RecordName;',
-    '+  name?: RecordName | undefined;',
-    '-  path?: MatcherPatternPath;',
-    '+  path?: MatcherPatternPath | undefined;',
-    '-  hash?: MatcherPatternHash;',
-    '+  hash?: MatcherPatternHash | undefined;',
-  ],
-  'Vue Router patch declaration replacements',
-)
-
-if (
-  !vueRouterPatch.startsWith(
-    'diff --git a/dist/index-BN0B0y8a.d.ts b/dist/index-BN0B0y8a.d.ts\n',
-  ) ||
-  vueRouterPatchLines.filter(
-    (line) =>
-      (line.startsWith('+') || line.startsWith('-')) &&
-      !line.startsWith('+++') &&
-      !line.startsWith('---') &&
-      !/^[-+]  (?:name|path|hash)\?/u.test(line),
-  ).length !== 0
-) {
-  throw new Error('Vue Router patch must remain declaration-only and exactly scoped.')
-}
 
 const lockfile = await readYamlObject(resolve(rootDirectory, 'pnpm-lock.yaml'))
 const lockfileCatalogs = lockfile['catalogs']
@@ -2074,18 +1746,12 @@ const webLockfileDependencies = isJsonObject(webLockfileImporter)
 const lockedPiniaDependency = isJsonObject(webLockfileDependencies)
   ? webLockfileDependencies['pinia']
   : undefined
-const lockedVueRouterDependency = isJsonObject(webLockfileDependencies)
-  ? webLockfileDependencies['vue-router']
-  : undefined
 const lockfilePackages = lockfile['packages']
 const lockedPiniaPackageKeys = isJsonObject(lockfilePackages)
   ? Object.keys(lockfilePackages).filter((key) => key.startsWith('pinia@'))
   : []
 const lockedZodPackageKeys = isJsonObject(lockfilePackages)
   ? Object.keys(lockfilePackages).filter((key) => key.startsWith('zod@'))
-  : []
-const lockedVueRouterPackageKeys = isJsonObject(lockfilePackages)
-  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('vue-router@'))
   : []
 const lockedZodDependency = isJsonObject(webLockfileDependencies)
   ? webLockfileDependencies['zod']
@@ -2100,16 +1766,6 @@ const lockedDesignSystemZodDependency = isJsonObject(designSystemLockfileDepende
   ? designSystemLockfileDependencies['zod']
   : undefined
 const lockfileSnapshots = lockfile['snapshots']
-const lockfilePatchedDependencies = lockfile['patchedDependencies']
-const lockedVueRouterPatch = isJsonObject(lockfilePatchedDependencies)
-  ? lockfilePatchedDependencies['vue-router@5.2.0']
-  : undefined
-const lockedVueRouterPatchHash = isJsonObject(lockedVueRouterPatch)
-  ? lockedVueRouterPatch['hash']
-  : undefined
-const lockedVueRouterSnapshotKeys = isJsonObject(lockfileSnapshots)
-  ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('vue-router@'))
-  : []
 
 expectStructuredEqual(
   isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['pinia'] : undefined,
@@ -2156,44 +1812,6 @@ expectStructuredEqual(
   {},
   'Zod lockfile snapshot',
 )
-expectStructuredEqual(
-  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['vue-router'] : undefined,
-  { specifier: expectedVueRouterVersion, version: expectedVueRouterVersion },
-  'Vue Router lockfile catalog coordinate',
-)
-
-if (
-  !isJsonObject(lockedVueRouterDependency) ||
-  lockedVueRouterDependency['specifier'] !== 'catalog:' ||
-  typeof lockedVueRouterDependency['version'] !== 'string' ||
-  typeof lockedVueRouterPatchHash !== 'string' ||
-  !/^[0-9a-f]{64}$/u.test(lockedVueRouterPatchHash) ||
-  !lockedVueRouterDependency['version'].startsWith(
-    `${expectedVueRouterVersion}(patch_hash=${lockedVueRouterPatchHash})`,
-  )
-) {
-  throw new Error('Vue Router web lockfile resolution must bind the exact patched coordinate.')
-}
-
-expectStructuredEqual(
-  lockedVueRouterPackageKeys,
-  [`vue-router@${expectedVueRouterVersion}`],
-  'Vue Router lockfile package set',
-)
-expectEqual(
-  isJsonObject(lockedVueRouterPatch) ? lockedVueRouterPatch['path'] : undefined,
-  vueRouterPatchPath,
-  'Vue Router lockfile patch path',
-)
-
-if (
-  lockedVueRouterSnapshotKeys.length !== 1 ||
-  !lockedVueRouterSnapshotKeys[0]?.startsWith(
-    `vue-router@${expectedVueRouterVersion}(patch_hash=${lockedVueRouterPatchHash})`,
-  )
-) {
-  throw new Error('Vue Router patched lockfile snapshot identity drifted.')
-}
 
 const webManifest = await readJsonObject(resolve(rootDirectory, 'apps/web/package.json'))
 const uiManifest = await readJsonObject(resolve(rootDirectory, 'packages/ui/package.json'))
@@ -2204,10 +1822,9 @@ expectStructuredEqual(
     '@platform/design-system': 'workspace:*',
     pinia: 'catalog:',
     vue: 'catalog:',
-    'vue-router': 'catalog:',
     zod: 'catalog:',
   },
-  'Router web dependency set',
+  'Runtime Kernel web dependency set',
 )
 
 expectEqual(designSystemDependencies['zod'], 'catalog:', 'Design-system Zod catalog binding')
@@ -2232,7 +1849,6 @@ for (const [manifest, description] of [
   [uiManifest, '@platform/ui'],
 ] as const) {
   expectDirectDependencyAbsent(manifest, 'pinia', description)
-  expectDirectDependencyAbsent(manifest, 'vue-router', description)
 }
 
 for (const [manifest, description] of [
@@ -2278,9 +1894,8 @@ expectStructuredEqual(
   workspaceConfiguration['patchedDependencies'],
   {
     'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
-    'vue-router@5.2.0': vueRouterPatchPath,
   },
-  'Reviewed exact-version patch set',
+  'Reviewed unconfig patch',
 )
 
 const architecture = await readFile(resolve(rootDirectory, 'ARCHITECTURE.md'), 'utf8')
@@ -2346,7 +1961,5 @@ expectStructuredEqual(
 )
 
 await validateRuntimeKernelBuildConfiguration()
-await validateOfficialRouteDtsRegeneration()
-await validateVueRouterCompatibilityProbe()
 
 console.log('Project configuration schema: valid')
