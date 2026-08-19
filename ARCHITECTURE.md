@@ -49,6 +49,8 @@ PHASE_1_PACKAGE_6_STATUS=COMPLETE
 PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
 PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT=FROZEN
+VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=NEXT
 NEXT_CANONICAL_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
@@ -958,6 +960,8 @@ Final Canonical State：
 
 ```text
 PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT=FROZEN
+VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=NEXT
 Router=TARGET_INACTIVE
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
@@ -967,11 +971,133 @@ PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
 
 该 Amendment 只闭合 Existing Router Work Package 的实施输入，不创建新的 Phase、Roadmap、Architecture Version、ADR、Router Design 或第二份 Architecture Authority。Documentation Freeze 不安装依赖、不创建页面、不改变当前 `App.vue`、不扩展当前 Core Error Registry、不修改当前九步 Runtime Kernel，也不激活任何 Router、Layout、Scroll、Focus、Auth、Query、I18n、Observability 或 Deployment Behavior。
 
+### `PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT`
+
+```text
+WORK_PACKAGE=PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+IMPLEMENTATION_AUTHORITY=NONE
+PURPOSE=resolve the strict published-declaration compatibility blocker for the existing PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+RESEARCHED_AT=2026-08-18T18:27:30-07:00
+OFFICIAL_LATEST_STABLE_VERSION=5.2.0
+OFFICIAL_RELEASE_TAG=v5.2.0
+OFFICIAL_RELEASE_TAG_OBJECT=976cfd47a97455e5881584a539a7021d58851071
+OFFICIAL_RELEASE_COMMIT=6e5f8d253b9444a76eb58f176ebe08d686c937cb
+OFFICIAL_NPM_INTEGRITY=sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw==
+OFFICIAL_MAIN_REVIEWED_COMMIT=67babd4840ea6ec5d0e90fd3d884042161919fdb
+OFFICIAL_FIXED_STABLE_RELEASE=NONE_AS_OF_RESEARCH
+UPSTREAM_FIX_IN_OFFICIAL_MAIN=NO
+UPSTREAM_FIX_IN_STABLE_RELEASE=NO
+UPSTREAM_PR=vuejs/router#2634
+UPSTREAM_PR_STATE=OPEN_UNMERGED
+UPSTREAM_PR_MERGEABILITY=NON_MERGEABLE_DIRTY
+UPSTREAM_PR_MAINTAINER_REVIEW=CHANGES_REQUESTED_NO_MERGE_ACCEPTANCE
+UPSTREAM_PR_HEAD_SHA=f189bbebe89a1486e19d6d443d1832672de6a942
+UPSTREAM_PR_CHANGED_FILES=8
+UPSTREAM_CAUSAL_CHANGE_PRESENT_IN_PR_HEAD=YES_BUT_UNMERGED
+UPSTREAM_PR_HEAD_ROLE=PROVENANCE_ONLY_NOT_PATCH_PAYLOAD
+UPSTREAM_PR_COMPLETE_PAYLOAD=REJECTED_AS_BROADER_THAN_THE_CAUSAL_PAVP_REPAIR
+VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
+PATCH_STATUS=TEMPORARY_UPSTREAM_COMPATIBILITY_PATCH
+PATCH_OWNER=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+PATCH_TARGET_PACKAGE=vue-router
+PATCH_TARGET_VERSION=5.2.0
+PATCH_MECHANISM=pnpm exact-version patchedDependencies
+PATCH_WORKSPACE_AUTHORITY=pnpm-workspace.yaml
+PATCH_REGISTRATION_KEY=vue-router@5.2.0
+PATCH_REGISTRATION_VALUE=patches/vue-router@5.2.0.patch
+PATCH_FILE=patches/vue-router@5.2.0.patch
+PATCH_CREATION_COMMAND=pnpm patch vue-router@5.2.0
+PATCH_FINALIZATION_COMMAND=pnpm patch-commit <the exact edit directory emitted by pnpm patch>
+PATCH_TARGET_ARTIFACT=dist/index-BN0B0y8a.d.ts
+PATCH_TARGET_DECLARATION_SECTION=src/experimental/route-resolver/resolver-fixed.d.ts
+PATCH_CHANGED_FILE_COUNT=1
+PATCH_HUNK_COUNT=1
+PATCH_CHANGED_DECLARATION_COUNT=3
+PATCH_DECLARATION_ONLY=REQUIRED
+PATCH_RUNTIME_CHANGE=PROHIBITED
+PATCH_JAVASCRIPT_CHANGE=PROHIBITED
+PATCH_PACKAGE_JSON_CHANGE_INSIDE_DEPENDENCY=PROHIBITED
+PATCH_PACKAGE_METADATA_CHANGE=PROHIBITED
+PATCH_GENERATED_ROUTE_ARTIFACT_CHANGE=PROHIBITED
+PATCH_UNRELATED_OPTIONAL_PROPERTY_WIDENING=PROHIBITED
+PATCH_PURPOSE=restore compatibility with PAVP exactOptionalPropertyTypes=true and skipLibCheck=false
+PATCH_UPSTREAM_REFERENCE=vuejs/router#2634
+PATCH_UNUSED_POLICY=allowUnusedPatches:false
+PATCH_APPLICATION_POLICY=ignorePatchFailures:false
+PATCH_INSTALL_POLICY=pnpm install --frozen-lockfile
+PATCH_CONTENT_HASH_AUTHORITY=pnpm patch-commit output and pnpm-lock.yaml only; not predeclared by Architecture
+TYPECHECK_COMMAND=vue-tsc --project apps/web/tsconfig.json --noEmit
+COMPATIBILITY_PROBE_TYPESCRIPT=6.0.3
+COMPATIBILITY_PROBE_VUE_TSC=3.3.8
+EXACT_OPTIONAL_PROPERTY_TYPES=true
+SKIP_LIB_CHECK_EFFECTIVE=false
+STRICT_TYPESCRIPT_POLICY_CHANGE=PROHIBITED
+```
+
+截至上述研究时间，Official npm `latest` 与 Official Releases 的最新 Stable 均为 `vue-router@5.2.0`，不存在已发布的 Fixed Stable Release。`v5.2.0` 的 Peeled Release Commit 为上述精确 Commit；Official `main` 在上述 Reviewed Commit 中仍保留同样的不兼容 Declaration Shape。`vuejs/router#2634` 仍为 Open、Unmerged 且 Mergeability State 为 `dirty`；它的当前单一 Commit 横跨八个 Source File，批量改变与 PAVP 当前两条 TS2430 无直接因果关系的 Optional Property。Maintainer 已明确要求不应有 Runtime Change、`meta` 不应因本修复接受 Present `undefined`，并对更广的 Runtime、Scroll、RouterLink 与 Data-loader Change 提出 Changes Requested。因此 PR Head SHA 只是 Provenance Evidence，完整 PR Diff 不是 PAVP Patch Payload。
+
+Official `vue-router@5.2.0` npm Tarball 的 Root 与 `vue-router/experimental` Type Export 最终都进入同一个 Flattened Published Declaration `dist/index-BN0B0y8a.d.ts`。它的 `EXPERIMENTAL_ResolverRecord_Group` 故意把 `name`、`path` 和 `hash` 专化为 Present `undefined`，但 Base Interface 在 `exactOptionalPropertyTypes=true` 下只允许属性缺席或 Present 的实体类型，不允许 Present `undefined`。PAVP 在 `skipLibCheck=false` 的完整 Declaration Check 中因此得到两条精确 Diagnostic：
+
+```text
+TS2430 at dist/index-BN0B0y8a.d.ts:1227
+Interface 'EXPERIMENTAL_ResolverRecord_Group' incorrectly extends interface 'EXPERIMENTAL_ResolverRecord_Base'.
+Types of property 'name' are incompatible.
+Type 'undefined' is not assignable to type 'RecordName'.
+
+TS2430 at dist/index-BN0B0y8a.d.ts:1336
+Interface 'EXPERIMENTAL_RouteRecord_Base' incorrectly extends interface 'EXPERIMENTAL_ResolverRecord_Base'.
+Types of property 'parent' are incompatible.
+Type 'EXPERIMENTAL_RouteRecordNormalized | null' is not assignable to type 'EXPERIMENTAL_ResolverRecord_Base | null'.
+Type 'EXPERIMENTAL_RouteRecordNormalized_Group' is not assignable to type 'EXPERIMENTAL_ResolverRecord_Base' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.
+Types of property 'name' are incompatible.
+Type 'undefined' is not assignable to type 'RecordName'.
+```
+
+精确 Minimal Patch 只允许在上述一个 Published Declaration Artifact 中生成一个 Hunk，并只允许以下三个 Replacement：
+
+```diff
+ interface EXPERIMENTAL_ResolverRecord_Base {
+-  name?: RecordName;
++  name?: RecordName | undefined;
+-  path?: MatcherPatternPath;
++  path?: MatcherPatternPath | undefined;
+   query?: MatcherPatternQuery[];
+-  hash?: MatcherPatternHash;
++  hash?: MatcherPatternHash | undefined;
+ }
+```
+
+`name` 直接对应当前首条 TS2430。只修复 `name` 时，同一继承关系立即以 `path` 重现两条 TS2430；再修复 `path` 时立即以 `hash` 重现；三者同时修复后两条 TS2430 归零。第二条 `parent` Diagnostic 是 Invalid Group 通过 Normalized-record Union 向上传播的直接结果，不要求扩宽 `parent`。`query`、`parent`、`aliasOf`、`meta` 与所有其他 Optional Property 不得改变。该补丁只改 `.d.ts` Type Annotation，不改变 JavaScript、Runtime API、Package Metadata、Official Generator 或 `apps/web/src/route-map.d.ts`。
+
+Patch 实施时，`pnpm patch-commit` 必须在 Root `pnpm-workspace.yaml` 的现有 `patchedDependencies` Authority 中添加精确 `vue-router@5.2.0: patches/vue-router@5.2.0.patch`，并显式保持 `allowUnusedPatches: false` 与 `ignorePatchFailures: false`。实际 Patch Hash 、Peer-suffixed Snapshot Coordinate 和 Lockfile `patch_hash` 只能从真实 `pnpm patch-commit` 与 Install Output 派生，不得在 Architecture 中伪造。Patch File、Workspace Registration、Lockfile Top-level Path/Hash 与全部实际 Resolved `vue-router@5.2.0` Patched Snapshot 必须原子一致。Missing File、Unused Selector、Version Mismatch、Hash Drift、Apply Failure、Target Context Drift、第二个 File、第二个 Hunk 或第四个 Declaration Change 都必须 Fail Closed。
+
+Patch Removal Contract：
+
+```text
+PATCH_VERSION_SCOPE=exactly vue-router@5.2.0 only
+PATCH_VERSION_CHANGE_ACTION=FAIL_AND_REQUIRE_CURRENT_OFFICIAL_RELEASE_RESEARCH
+PATCH_REMOVAL_REVIEW_TRIGGER=any dependency coordinate other than exactly vue-router@5.2.0
+PATCH_REMOVAL_CONDITION=a stable official Vue Router release contains the required causal declaration fix and the unpatched official package passes the canonical Vue typecheck
+PATCH_REMOVAL_ATOMIC_SCOPE=patches/vue-router@5.2.0.patch; pnpm-workspace.yaml vue-router@5.2.0 patchedDependencies entry; all vue-router patch path/hash and patch_hash lockfile state
+PATCH_STALE_FILE_OR_REGISTRATION=PROHIBITED
+PATCH_CARRY_FORWARD_TO_ANOTHER_VERSION=PROHIBITED
+UNPATCHED_OFFICIAL_PACKAGE_TYPECHECK_AFTER_REMOVAL=REQUIRED
+ALLOW_UNUSED_OR_SILENT_PATCH_FAILURE=PROHIBITED
+```
+
+任意 Vue Router Coordinate Change 必须先在当时最新 Official Stable Release 中重新核对上游修复。若已包含所需修复，Version Update 必须与上述 Vue Router Patch File、Registration 和 Lockfile Patch Identity 的删除原子完成，并证明未打补丁的 Official Package 通过 Canonical Vue Typecheck。若新版本未包含修复，不得自动 Carry Forward 旧 Patch；必须通过新的 Explicit Architecture Review 冻结当时的 Exact Published Artifact 与 Minimal Causal Scope。
+
+本 Amendment 只冻结 Existing Router Work Package 的 Dependency Type Compatibility Input。它不创建或应用 Patch，不修改 TypeScript Configuration，不准入 Fork、PR Branch、GitHub SHA Dependency、Ambient Replacement、Path Trick 或 Suppression，不激活 Router Runtime。`exactOptionalPropertyTypes=true`、`strict=true` 与有效的 `skipLibCheck=false` 继续是不可削弱的 Canonical TypeScript Quality Bar。Router 继续为 `TARGET_INACTIVE`，当前 Runtime Kernel 继续为九步，Storage 继续被 Router 阻塞。
+
 ### 9.0.1 Exact Dependency and File-route Generation Target
 
 ```text
 PACKAGE=vue-router
 EXACT_COORDINATE=5.2.0
+TYPE_COMPATIBILITY_AMENDMENT=PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT
+TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 WORKSPACE_ADMISSION=root Workspace Catalog
 APPS_WEB_CONSUMPTION="vue-router": "catalog:"
 VITE_INTEGRATION_IMPORT=vue-router/vite
@@ -1000,7 +1126,7 @@ EXPERIMENTAL_ROUTER_RESOLVER=PROHIBITED
 EXPERIMENTAL_PARAM_PARSERS=PROHIBITED
 ```
 
-这些值只是下一实现包的 Frozen Target。当前 Workspace Catalog、`apps/web/package.json`、Lockfile、Vite Plugin Set、页面目录和生成类型保持不变。
+这些值与 `PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT` 只是下一实现包的 Frozen Target。本 Architecture-only Amendment 不改变 Workspace Catalog、`apps/web/package.json`、Lockfile、Vite Plugin Set、页面目录和生成类型，也不创建或应用 Dependency Patch。后续 Router Resume 必须在同一 Router Landing 中按上述 Amendment 生成精确 Patch，不得另选兼容策略。
 
 `vue-router@5.2.0` 的 Official Release Tag `v5.2.0` 指向上方精确 Release Commit。该 Tag 的
 `packages/router/src/unplugin/codegen/generateDTS.ts` 与其 Empty Param-parser Test Snapshot 证明：只要保留官方生成类型，Generator 就无条件在 Generated DTS 中写入精确的
@@ -1393,7 +1519,12 @@ ACTIVE_DATA_PREFETCH_VALUES_AFTER_IMPLEMENTATION=1, exactly none
 
 Router Implementation 必须通过 Existing Static Owners 的最小 Domain-owned Extension 证明：
 
-* Exact `vue-router@5.2.0` 通过 Root Workspace Catalog 准入，且 `apps/web` 只使用 `catalog:`。
+* Exact `vue-router@5.2.0` 通过 Root Workspace Catalog 准入，且 `apps/web` 只使用 `catalog:`；任意其他 Coordinate 失败。
+* `PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT` 的 Patch Registration 只能是 Root `pnpm-workspace.yaml` 中的 `vue-router@5.2.0: patches/vue-router@5.2.0.patch`；Patch File 必须 Tracked，`allowUnusedPatches` 与 `ignorePatchFailures` 必须都精确为 `false`，并且 Workspace、Lockfile Path/Hash、所有 Resolved Patched Snapshot 与真实 Patch Content 必须 Exact Equality。
+* Patch 必须可以成功应用于 Exact Official npm `vue-router@5.2.0` Published Artifact `dist/index-BN0B0y8a.d.ts`，并且只有一个 File、一个 Hunk 和 Amendment 冻结的三个 Type-annotation Replacement；任意 JavaScript、Package Metadata、第二个 File/Hunk 或 Additional Declaration Change 失败。
+* Compatibility Probe 必须证明未打补丁的精确 Official Artifact 在 Canonical `exactOptionalPropertyTypes=true`、有效 `skipLibCheck=false` 下重现 Amendment 冻结的两条 TS2430，并证明 Patched Artifact 移除该 Incompatibility；任意 TypeScript Policy Weakening、Diagnostic Suppression、Ambient Replacement、Path/Resolution Trick 或 Fork 失败。
+* Patch Provenance 必须指向 Reviewed Official `vuejs/router#2634` 与 Amendment 冻结的 Head SHA，但 Patch Payload 必须等于 PAVP 三行 Minimal Causal Scope，不得等于或扩大到完整 PR Diff。
+* 任意 Package Version Change 必须阻塞 Install/Static Gate 并触发 Patch Removal Review；已包含修复的 Official Stable Upgrade 必须原子删除 Vue Router Patch File、Registration 与 Lockfile Patch Identity，且 Unpatched Official Package 必须通过 Canonical Vue Typecheck。
 * `unplugin-vue-router`、全部 Repository-authored Experimental Router Import 与全部 Runtime Experimental Router Import 均不存在。
 * `apps/web/src/route-map.d.ts` 中只允许 §9.0.1 冻结的一个 Official Generated `ImportDeclaration`：整个 Declaration 精确为 `import type`，Import Source 精确为 `vue-router/experimental`，且只有一个 Named Specifier，其 Imported Name 与 Local Name 均精确为 `_ExtractParamParserType`；Default、Namespace、Value、Mixed Type/Value、Side-effect、Dynamic 与 `require()` Form 全部禁止。
 * Exact Coordinate、Official Plugin Configuration 与 Canonical Route Input 相同时，Committed Generated DTS 必须等于 Official Generator 的重新生成结果；不得出现其他 Experimental Import、Manual Mutation、Post-processing、Replacement 或第二个 Generator。
@@ -1603,8 +1734,9 @@ Owning Implementation Package 必须把以下检查接入 `pnpm verify`：
 
 * File Route Set = Generated Route Registry Set。
 * Route Name、Meta、Permission、Layout、Scroll、I18n 和 Telemetry Registry Reference 完整。
+* Exact Vue Router Dependency Declaration Patch 只能等于 `PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT` 冻结的 Package、Version、Selector、Path、Artifact、一个 Hunk 与三个 Replacement；不得改变 Runtime JavaScript、Package Metadata、Generated Route Artifact 或 TypeScript Policy。
 * 禁止任意 Route Name/Path Literal、未经验证的 Params/Query、Experimental Data Loader Import、Router Resolver、Param Parser Activation，以及 Repository-owned Source、Config、Generated Artifact 或 Runtime Module Graph 中除 §9.0.1 Exact Official Generated DTS Type-only Import 外的任何 `vue-router/experimental` Import 或 Use；Dependency-owned Declaration 不属于 Repository-authored Artifact。
-* Exact Official Generated DTS Exception 必须按 Artifact Path、Import Source、Import Kind、Symbol Set、Official Generator Provenance 与 Exception Import Declaration AST Shape 验证；任何 Manual Patch、Post-processing、Replacement、第二个 Generator 或 Exception Import Declaration Shape Drift 都失败。
+* Exact Official Generated DTS Exception 必须按 Artifact Path、Import Source、Import Kind、Symbol Set、Official Generator Provenance 与 Exception Import Declaration AST Shape 验证；任何 Generated DTS Manual Patch、Post-processing、Replacement、第二个 Generator 或 Exception Import Declaration Shape Drift 都失败。该禁止项不得误伤上述唯一精确 Dependency-owned Published Declaration Patch，也不得被扩大为第二个 Patch Exception。
 * Guard Order、Error Route Set、Dynamic Route Disposal 与 Query Ownership 具有静态合同。
 * Vite Base、Router History Base 和 Deployment Base 使用同一 Runtime Configuration Authority。
 * 不存在页面直接 Fetch、页面 Session 恢复、Query Data 复制或任意 Scroll Owner。
@@ -8033,6 +8165,8 @@ TARGET_CONTRACT_ACTIVATION_BY_DOCUMENTATION=PROHIBITED
 FIRST_IMPLEMENTATION_AFTER_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE
 PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT=FROZEN
+VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 ROUTER_CAPABILITY_STATUS=TARGET_INACTIVE
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
 TARGET_POST_ROUTER_KERNEL_STEP_COUNT=10
@@ -8543,13 +8677,13 @@ COMPLETION_EVIDENCE=kernel owns sole mount; emitted artifact and production HTML
 ### 37.2.5 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`
 
 ```text
-ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN; exact vue-router@5.2.0 dependency admission passes; no overlapping dirty change
-ALLOWED=exact vue-router@5.2.0 Catalog admission and apps/web consumption; official vue-router/vite file-route generation before Vue plugin; exact §9.0.1 Official Generated DTS Type-only Import at apps/web/src/route-map.d.ts; exact eight-record Route Registry; exact route/meta/reference/schema registries; exact six-record Router Error extension; exact seven Error Routes; exact five-stage Guard projection; typed navigation results; empty Redirect and Dynamic Route registries; narrow reading-document layout; native document scroll owners; exact scroll/focus restoration; one create-and-ready-router Kernel step
+ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN; PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT=FROZEN; exact patched vue-router@5.2.0 dependency admission passes; no unexplained overlapping dirty change
+ALLOWED=exact vue-router@5.2.0 Catalog admission and apps/web consumption; exact temporary pnpm-managed declaration-only compatibility patch frozen by PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT; official vue-router/vite file-route generation before Vue plugin; exact §9.0.1 Official Generated DTS Type-only Import at apps/web/src/route-map.d.ts; exact eight-record Route Registry; exact route/meta/reference/schema registries; exact six-record Router Error extension; exact seven Error Routes; exact five-stage Guard projection; typed navigation results; empty Redirect and Dynamic Route registries; narrow reading-document layout; native document scroll owners; exact scroll/focus restoration; one create-and-ready-router Kernel step
 PROHIBITED=unplugin-vue-router; Repository-authored or Runtime vue-router/experimental Import or Use; any Repository-owned Generated Artifact Experimental Import outside the exact §9.0.1 Official Generated DTS Type-only Import; experimental Data Loaders, Router Resolver or Param Parsers; Generated DTS manual patch, post-processing, replacement or second generator; routeId; direct server fetch; non-none Query prefetch before API package; anonymous-only or required Auth activation; Session/Auth/Permission placeholder; business protected flow; Dynamic Route Manager; Auth Return URL helper; automatic Chunk Reload before Observability/Deployment; Shared UI; App Shell; test or browser infrastructure
 OUTPUT=one Router and one History authority; typed eight-route navigation lifecycle with active Auth subset exactly public and active dataPrefetch subset exactly none; exact Error/Title/Message/Telemetry/Layout/Scroll/Focus closure; exact ten-step target Runtime Kernel; application remains unmounted until router.isReady succeeds
-MACHINE_GATES=exact dependency/plugin/import/provenance/source/generated-map equality; exact Official Generated DTS path/source/import-kind/symbol-set/exception-import-declaration-AST equality; official regeneration equality under exact coordinate/configuration/input; no Repository-authored or Runtime experimental import; no Generated DTS post-processing or second generator; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; exact ten-step Kernel; current Appearance preservation; pnpm verify
+MACHINE_GATES=exact dependency/patch selector/path/content/hash/snapshot/fail-closed-policy equality; exact unpatched and patched TS2430 compatibility probe with unchanged strict TypeScript policy; exact plugin/import/provenance/source/generated-map equality; exact Official Generated DTS path/source/import-kind/symbol-set/exception-import-declaration-AST equality; official regeneration equality under exact coordinate/configuration/input; no Repository-authored or Runtime experimental import; no Generated DTS post-processing or second generator; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; exact ten-step Kernel; current Appearance preservation; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_NAVIGATION_ERROR_ROUTES_SCROLL_FOCUS_AND_CHUNK_RECOVERY
-COMPLETION_EVIDENCE=one Router authority; one History authority; exact eight source/name/path records with no separate routeId; no Repository-authored or Runtime experimental imports; sole generated apps/web/src/route-map.d.ts type-only import matches §9.0.1 Exact Provenance; no placeholder owner; no server-state cache; current Runtime Kernel extended from nine to ten steps only in the Router landing
+COMPLETION_EVIDENCE=one Router authority; one History authority; exact temporary vue-router@5.2.0 three-declaration patch with no runtime or metadata change; exact eight source/name/path records with no separate routeId; no Repository-authored or Runtime experimental imports; sole generated apps/web/src/route-map.d.ts type-only import matches §9.0.1 Exact Provenance; no placeholder owner; no server-state cache; current Runtime Kernel extended from nine to ten steps only in the Router landing
 ```
 
 `dataPrefetch` 只能使用 `none`，`auth` 只能激活 `public`，直到后续 Owner Package 原子准入。`anonymous-only` 与 `required` 只保留 Schema 可用、Runtime Inactive；`unknown/restoring` 不得作为 Anonymous，也不得用 Session Stub、No-op Guard 或 Unconditional Anonymous Projection 绕过。
