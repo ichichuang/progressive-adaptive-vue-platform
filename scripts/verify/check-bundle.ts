@@ -85,6 +85,37 @@ const runtimeKernelBundleContract = {
     lazyChunks: 0,
   },
 } as const
+const routerBundleContract = {
+  baselineCommit: '3ecb98172acc81852f8948971923b49a68bc1367',
+  canonicalMeasurementReleaseSha: runtimeKernelBundleContract.canonicalMeasurementReleaseSha,
+  baseline: {
+    initialJavaScriptGzipBytes: runtimeKernelBundleContract.final.initialJavaScriptGzipBytes,
+    initialCssGzipBytes: runtimeKernelBundleContract.final.initialCssGzipBytes,
+    lazyChunks: runtimeKernelBundleContract.final.lazyChunks,
+  },
+  final: {
+    initialJavaScriptGzipBytes: 145514,
+    initialCssGzipBytes: 7457,
+    lazyChunks: 8,
+  },
+  delta: {
+    initialJavaScriptGzipBytes: 13450,
+    initialCssGzipBytes: 0,
+    lazyChunks: 8,
+  },
+  lazyRouteJavaScriptGzipBytes: {
+    'src/pages/[...path].vue': 505,
+    'src/pages/error/400.vue': 504,
+    'src/pages/error/401.vue': 511,
+    'src/pages/error/403.vue': 507,
+    'src/pages/error/500.vue': 509,
+    'src/pages/error/maintenance.vue': 500,
+    'src/pages/error/offline.vue': 498,
+    'src/pages/index.vue': 498,
+  },
+} as const
+const expectedLazyRouteJavaScriptGzipBytes: Readonly<Record<string, number>> =
+  routerBundleContract.lazyRouteJavaScriptGzipBytes
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -797,7 +828,7 @@ await Promise.all([
 const initialJavaScriptMeasurements = await Promise.all(
   [...initialJavaScriptFiles].map((relativePath) =>
     gzipMeasurement(relativePath, {
-      canonicalReleaseSha: runtimeKernelBundleContract.canonicalMeasurementReleaseSha,
+      canonicalReleaseSha: routerBundleContract.canonicalMeasurementReleaseSha,
       currentReleaseSha: expectedReleaseSha,
     }),
   ),
@@ -852,11 +883,24 @@ if (
 }
 
 if (
-  initialJavaScriptBytes !== runtimeKernelBundleContract.final.initialJavaScriptGzipBytes ||
-  initialCssBytes !== runtimeKernelBundleContract.final.initialCssGzipBytes
+  routerBundleContract.final.initialJavaScriptGzipBytes -
+    routerBundleContract.baseline.initialJavaScriptGzipBytes !==
+    routerBundleContract.delta.initialJavaScriptGzipBytes ||
+  routerBundleContract.final.initialCssGzipBytes -
+    routerBundleContract.baseline.initialCssGzipBytes !==
+    routerBundleContract.delta.initialCssGzipBytes ||
+  routerBundleContract.final.lazyChunks - routerBundleContract.baseline.lazyChunks !==
+    routerBundleContract.delta.lazyChunks
+) {
+  throw new Error('Router bundle baseline/final/delta arithmetic is inconsistent.')
+}
+
+if (
+  initialJavaScriptBytes !== routerBundleContract.final.initialJavaScriptGzipBytes ||
+  initialCssBytes !== routerBundleContract.final.initialCssGzipBytes
 ) {
   throw new Error(
-    `Runtime Kernel measured bundle drift: JavaScript ${String(initialJavaScriptBytes)}, CSS ${String(initialCssBytes)}.`,
+    `Router measured bundle drift: JavaScript ${String(initialJavaScriptBytes)}, CSS ${String(initialCssBytes)}.`,
   )
 }
 
@@ -884,6 +928,13 @@ for (const dynamicChunkKey of dynamicChunkKeys) {
   }
 
   const { bytes } = await gzipMeasurement(chunk.file)
+  const expectedBytes = expectedLazyRouteJavaScriptGzipBytes[dynamicChunkKey]
+
+  if (expectedBytes === undefined || bytes !== expectedBytes) {
+    throw new Error(
+      `Router lazy chunk ${dynamicChunkKey} measured ${String(bytes)} gzip bytes; expected ${String(expectedBytes)}.`,
+    )
+  }
 
   if (bytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
     throw new Error(
@@ -892,12 +943,12 @@ for (const dynamicChunkKey of dynamicChunkKeys) {
   }
 }
 
-if (dynamicChunkKeys.size !== runtimeKernelBundleContract.final.lazyChunks) {
+if (dynamicChunkKeys.size !== routerBundleContract.final.lazyChunks) {
   throw new Error(
-    `Runtime Kernel lazy chunk count drift: expected ${String(runtimeKernelBundleContract.final.lazyChunks)}, received ${String(dynamicChunkKeys.size)}.`,
+    `Router lazy chunk count drift: expected ${String(routerBundleContract.final.lazyChunks)}, received ${String(dynamicChunkKeys.size)}.`,
   )
 }
 
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip (${String(runtimeKernelBundleContract.delta.initialJavaScriptGzipBytes)} Runtime Kernel delta from Package 5 final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(runtimeKernelBundleContract.delta.initialCssGzipBytes)} Runtime Kernel delta from Package 5 final), lazy chunks ${String(dynamicChunkKeys.size)} (${String(runtimeKernelBundleContract.delta.lazyChunks)} delta)`,
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip (${String(routerBundleContract.delta.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(routerBundleContract.delta.initialCssGzipBytes)} Router delta from Runtime Kernel final), lazy chunks ${String(dynamicChunkKeys.size)} (${String(routerBundleContract.delta.lazyChunks)} Router delta)`,
 )

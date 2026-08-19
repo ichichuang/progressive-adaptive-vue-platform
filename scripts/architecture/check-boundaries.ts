@@ -8,6 +8,7 @@ import ts from 'typescript'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
 import { validateAppearanceCutover } from './check-appearance-cutover'
+import { validateRouterArchitecture } from './check-router'
 import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
 
 type JsonObject = Record<string, unknown>
@@ -52,13 +53,26 @@ const inactiveCapabilityPackages = [
   'sass',
   'tailwindcss',
   'turbo',
+  'unplugin-vue-router',
   'unplugin-auto-import',
   'unplugin-vue-components',
   'vee-validate',
   'vue-i18n',
-  'vue-router',
   'vuetify',
 ] as const
+const activeRouterImports = new Map<string, ReadonlySet<string>>([
+  ['apps/web/src/App.vue', new Set(['vue-router'])],
+  [
+    'apps/web/src/app/router/router-lifecycle.ts',
+    new Set(['vue-router', 'vue-router/auto-routes']),
+  ],
+  ['apps/web/src/app/router/router-meta.d.ts', new Set(['vue-router'])],
+  [
+    'apps/web/src/route-map.d.ts',
+    new Set(['vue-router', 'vue-router/auto-routes', 'vue-router/experimental']),
+  ],
+  ['apps/web/vite.config.ts', new Set(['vue-router/vite'])],
+])
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
 const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
   projectConfig.workspaces.map((workspace) => [
@@ -313,6 +327,13 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
   const displayPath = relative(rootDirectory, sourcePath)
   const fromLayer = sourceLayer(sourcePath)
   const inactivePackage = inactiveCapabilityPackage(specifier)
+
+  if (
+    (specifier === 'vue-router' || specifier.startsWith('vue-router/')) &&
+    !activeRouterImports.get(displayPath)?.has(specifier)
+  ) {
+    violations.push(`${displayPath}: unsupported Vue Router import "${specifier}" is forbidden.`)
+  }
 
   if (inactivePackage !== undefined) {
     violations.push(
@@ -651,6 +672,7 @@ const violations = [
   ...(await validateVueStyleGuardrails()),
   ...(await validateFirstPaintApplicationContract()),
   ...(await validateAppearanceCutover()),
+  ...(await validateRouterArchitecture()),
   ...(await validateRuntimeKernelArchitecture()),
 ]
 
