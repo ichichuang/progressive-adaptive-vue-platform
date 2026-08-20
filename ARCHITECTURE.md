@@ -5456,6 +5456,395 @@ explicitly select and persist another valid theme reference
 
 Owning Package 必须验证：所有 Storage/IndexedDB/BroadcastChannel 访问只在 Registry Owner；所有 Key 来自 Registry；Envelope、Migration、Partition、Write Result 和 Cleanup 完整；敏感字段、Session ID、Query Data 与 Server Authority 不可持久化；Preference/Registry Safe Ordering 可静态追踪。当前只有既有 Appearance First-paint 窄边界为 `ACTIVE`，本节其余 Enforcement 均为 `TARGET_INACTIVE`。
 
+### 19.5.1 `PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT`
+
+```text
+WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+IMPLEMENTATION_AUTHORITY=NONE
+PURPOSE=close the exact public and cross-file contracts required by the existing PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION entry gate
+ALLOWED_SCOPE=ARCHITECTURE.md Storage Registry, envelope, partition, migration, corruption, quota, cross-tab, Storage Error Registry extension, Runtime Kernel Storage step and Storage static-enforcement target contracts
+PROHIBITED_SCOPE=Storage source implementation; dependency, Catalog, Manifest or Lockfile changes; generated artifacts; application source; static-checker implementation; Query; API; Auth; Session; Permission; I18n; Observability; Deployment activation; Shared UI; App Shell; Layout Admin; business pages; tests; browser infrastructure; Git mutation
+ACTIVATION_EFFECT=NONE_UNTIL_PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+CURRENT_STORAGE_STATUS=TARGET_INACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
+TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
+NEXT_IMPLEMENTATION_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+```
+
+本 Amendment 只闭合 Existing Storage Work Package 的实施输入，不创建新的 Phase、Roadmap、Architecture Version、ADR、第二个 Storage Authority 或平行权威。其 Freeze-time Snapshot 不安装依赖、不创建 `apps/web/src/app/storage` Source、不扩展当时的十步 Runtime Kernel、不激活任何 Storage、Cross-tab、Partition、Migration、Quarantine、Auth、Query、I18n 或 Observability Behavior。当前 Implementation/Capability Status 只由文首 Current Status、§1.3、§19.5、§37.1 与 §37.2.6 的同步记录决定，不重写该 Frozen Contract。
+
+Freeze-time Canonical State：
+
+```text
+PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT
+Application persistence architecture=TARGET_INACTIVE
+Storage implementation=NOT_STARTED
+PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
+ROUTER_CAPABILITY_STATUS=ACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
+TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
+API Transport=TARGET_INACTIVE_BLOCKED_BEHIND_STORAGE
+```
+
+#### Exact Storage Registry and Envelope
+
+`StorageRegistryRecord` 增加一个 Exact Field 以区分 Direct-compatibility 与 Enveloped 记录；`corruptionPolicy` 增加 `preserve-in-place-reject-read`。该 Amend 后的 Shape 是 Storage 域的唯一 Registry Shape：
+
+```ts
+type StoragePersistenceShape =
+  | 'direct-compatibility'
+  | 'persisted-envelope'
+
+type StorageCorruptionPolicy =
+  | 'quarantine-then-reset'
+  | 'delete-then-reset'
+  | 'preserve-in-place-reject-read'
+
+interface StorageRegistryRecord {
+  id: string
+  ownerDomain: string
+  key: string
+  medium: 'local-storage' | 'indexed-db' | 'memory'
+  persistenceShape: StoragePersistenceShape
+  schemaId: string
+  currentSchemaVersion: number
+  minimumSupportedSchemaVersion: number
+  principalPartition: 'anonymous' | 'user' | 'tenant-user' | 'none'
+  containsSensitiveData: false
+  corruptionPolicy: StorageCorruptionPolicy
+  capabilityStatus: CapabilityStatus
+}
+
+interface PersistedEnvelope<Payload> {
+  schemaVersion: number
+  revision: number
+  updatedAt: string
+  payload: Payload
+}
+```
+
+`PersistedEnvelope<Payload>` 只由 `persisted-envelope` Record 使用。本 Package 准入 `persisted-envelope` Record 精确为 0；Envelope、Revision、Compare-and-swap、Cross-tab、Quarantine、Migration-chain 与 Principal/Tenant Partition 只作为 General Infrastructure 存在，不包装任何既有或新建 Payload。
+
+`direct-compatibility` Record 的 Raw Local Storage Value 精确等于 Schema Value：不存在 Envelope Wrapper、`payload` Wrapper、`revision`、`updatedAt`、Compare-and-swap、Cross-tab、Quarantine 或 Storage Migration-chain。其 Read、Write、Validate、Reject 与 Read-only Migration 继续由既有 Application/Design-system Boundary 拥有，Storage Package 不接管、不重写、不包装。
+
+Exact Active-after-landing Storage Registry Record Set 与 Cardinality：
+
+```text
+STORAGE_REGISTRY_RECORDS=2
+STORAGE_ENVELOPE_RECORDS=0
+STORAGE_MEMORY_ONLY_RECORDS=0
+STORAGE_INDEXED_DB_RECORDS=0
+```
+
+| Field | Record 1 | Record 2 |
+| --- | --- | --- |
+| id | `appearance-preference` | `appearance-custom-theme-registry` |
+| ownerDomain | `apps/web/src/app/appearance` | `apps/web/src/app/appearance` |
+| key | `pavp:web:user-preference` | `pavp:web:custom-theme-registry` |
+| medium | `local-storage` | `local-storage` |
+| persistenceShape | `direct-compatibility` | `direct-compatibility` |
+| schemaId | `explicit-theme-preference` | `custom-theme-registry-snapshot` |
+| currentSchemaVersion | `3` | `1` |
+| minimumSupportedSchemaVersion | `3` | `1` |
+| principalPartition | `none` | `none` |
+| containsSensitiveData | `false` | `false` |
+| corruptionPolicy | `preserve-in-place-reject-read` | `preserve-in-place-reject-read` |
+| capabilityStatus | `ACTIVE` | `ACTIVE` |
+
+`capabilityStatus=ACTIVE` 只表示这两条 Record 对应的 Package 5 Persistence Boundary 已经 `ACTIVE`；Application persistence architecture Capability 本身继续 `TARGET_INACTIVE`。
+
+Key Generation Ownership：
+
+```text
+APPEARANCE_PREFERENCE_KEY_OWNER=apps/web/src/app/config/app.config.ts (applicationConfig.appearance.preferenceStorageKey)
+APPEARANCE_CUSTOM_REGISTRY_KEY_OWNER=apps/web/src/app/config/app.config.ts (applicationConfig.appearance.customThemeRegistryStorageKey)
+STORAGE_REGISTRY_ROLE=DECLARES_EXISTING_KEYS_FOR_ENFORCEMENT_DOES_NOT_REGENERATE
+FUTURE_ENVELOPE_KEY_GENERATION=STORAGE_REGISTRY_GENERATED (zero such keys admitted this package)
+```
+
+两条既有 Key 是 Application-owned Frozen Literal，Storage Registry 只把它们声明为 Registry Record 供 `no-raw-storage-key` 与 `storage-owner-registry-closure` 静态验证，不得重新生成、复制为第二份 Key Authority 或改写 `applicationConfig.appearance`。页面、Feature、Component 不得声明任何 Storage Key。
+
+#### Exact Package 5 Compatibility Decision
+
+```text
+PACKAGE_5_PREFERENCE_FORMAT=REMAINS_DIRECT_COMPATIBILITY_BOUNDARY
+PACKAGE_5_CUSTOM_REGISTRY_FORMAT=REMAINS_DIRECT_COMPATIBILITY_BOUNDARY
+PACKAGE_5_ENVELOPE_MIGRATION=PROHIBITED
+PACKAGE_5_REVISION_CAS_CROSS_TAB_QUARANTINE_PRINCIPAL=PROHIBITED
+PACKAGE_5_PREFERENCE_ENVELOPE=PROHIBITED (already frozen in §13.4 and §37.2.2)
+```
+
+现有 `pavp:web:user-preference` 直接保存 `ExplicitThemePreference`（`schemaVersion: 3` + `appearance`），`pavp:web:custom-theme-registry` 直接保存 `CustomThemeRegistrySnapshot`（`schemaVersion: 1` + `entries`），均不被迁入 `PersistedEnvelope`。§13.4 的 `ADDITIONAL_PREFERENCE_ENVELOPE=PROHIBITED`、Custom Registry Snapshot 不含 `revision`/`timestamp`/`payload` Wrapper 与 `§19.5 Future General Storage Platform` 的禁令继续有效且被本 Amendment 继承；§19.5 的 `Preference 与 Custom Theme Registry 保持两个 Schema Boundary 和两个应用 Key` 因此精确实现为两条 `direct-compatibility` Record。未来任何把这两条 Payload 包进 Envelope、加入 Revision/CAS/Cross-tab/Quarantine/Principal 的改动都必须先经独立 Owner Amendment 显式改变 §13.4、§19.5 与 §37.2.2，不得由 Storage 实施包推断。
+
+Migration/Compatibility Rule：
+
+```text
+PREFERENCE_LEGACY_VERSIONS=1|2 read-only migration input owned by @platform/design-system migrateToExplicitThemePreference
+PREFERENCE_STORAGE_MIGRATION=NOT_A_STORAGE_MIGRATION
+STORAGE_MIGRATION_REGISTRY_INCLUDES_PREFERENCE=NO
+CUSTOM_REGISTRY_MIGRATION=NONE
+```
+
+`migrateToExplicitThemePreference`（`LegacyPreferenceInput`/`LegacySeedPreference` → `ExplicitThemePreference`）是 Design-system Read-only Migration Boundary，不属于 Storage Migration Registry，不进入 §19.5 Read/Validate/Migration Pipeline，Storage Package 不接管、不复制、不注册它。两条 `direct-compatibility` Record 的 `minimumSupportedSchemaVersion` 精确等于其 `currentSchemaVersion`，因为 Storage Package 不拥有任何版本迁移。
+
+#### Exact Migration Registry and Chain
+
+```text
+STORAGE_MIGRATION_REGISTRY_CARDINALITY=0
+MIGRATION_CHAIN_CARDINALITY=0
+MIGRATION_IDENTITIES=NONE
+SOURCE_VERSION=NONE
+DESTINATION_VERSION=NONE
+OWNING_SCHEMA=NONE
+FAILURE_BEHAVIOR=NOT_APPLICABLE_EMPTY_REGISTRY
+```
+
+本 Package 准入 0 条 Migration。§19.5 的 Ordered One-version-at-a-time Migration Chain 是 General Infrastructure Contract（纯、确定、幂等、保留原值 Evidence、不跨 Missing Version、不访问网络、不读另一个 Domain Store、不写 Storage），但当前无任何 Migration 记录；未来第一条 Enveloped Record 的 Migration 必须由同一 Storage Package 或后续 Owner Package 原子加入，不得由本 Package 预建 Placeholder。
+
+#### Exact Corruption, Quota, Write and Readback Semantics
+
+Whole-payload Corruption 行为：
+
+```text
+DIRECT_COMPATIBILITY_CORRUPTION=preserve-in-place-reject-read (Package 5 frozen: 坏值保留原状; no automatic delete/overwrite/repair)
+ENVELOPED_CORRUPTION=quarantine-then-reset | delete-then-reset (applies to future persisted-envelope records only)
+```
+
+两条 `direct-compatibility` Record 的 Corruption Policy 精确为 `preserve-in-place-reject-read`：Malformed JSON、Duplicate JSON Key、Unknown Field、Schema Rejection 与 Identity Mismatch 都整体拒绝读取并保留原值，绝不自动删除、覆盖、修复或规范化 Stored Value。§13.4 的 `AUTOMATIC_CORRUPT_VALUE_DELETE=PROHIBITED`/`AUTOMATIC_CORRUPT_VALUE_OVERWRITE=PROHIBITED` 继续有效。
+
+`quarantine-then-reset` 与 `delete-then-reset` 只对 Registry 声明的非敏感、小型 `persisted-envelope` Payload 生效，本 Package 无任何 Enveloped Record，因此不创建 Quarantine Key、不触发任何 Reset。Quarantine Key 由 Storage Registry 生成，本 Package 准入 Quarantine Key 精确为 0。
+
+Write Order（General Envelope Contract，本 Package 无 Enveloped Write 消费）：
+
+```text
+Typed Payload Validation → Canonical Serialization → Serialized Round-trip Validation → Revision Conflict Check → single-key atomic setItem/Transaction → Readback Validation → Publish Change Event
+```
+
+Quota/Write/Readback Failure Semantics：
+
+```text
+QUOTA_OR_UNAVAILABLE_OR_SERIALIZATION_OR_READBACK_FAILURE=MUST_NOT_UPDATE_IN_MEMORY_REVISION_AND_MUST_NOT_DISCARD_UNSAVED_USER_STATE
+WRITE_ATOMICITY=single-key atomic setItem/Transaction
+READBACK=REQUIRED_BEFORE_PUBLISH
+CONFLICT_SAME_REVISION=conflict-detected (never silent wall-clock overwrite)
+CAS_RETRY_COUNT=1 (one automatic compare-and-swap retry, then user re-confirmation)
+```
+
+Compare-and-swap 精确范围：只覆盖 `persisted-envelope` Record 的同一 `(recordId, principalPartitionId)` Revision；两条 `direct-compatibility` Record 不参与 CAS（Package 5 已显式排除 Compare-and-swap）。CAS 自动 Retry 精确 1 次，仍冲突则返回 `storage-conflict-detected` 并要求用户重新确认。
+
+#### Exact Partition Model
+
+```text
+PRINCIPAL_PARTITION_KINDS=anonymous | user | tenant-user | none
+ACTIVE_PARTITION_KINDS=none only
+CONSTRUCTIBLE_PARTITION_IDS=none sentinel only
+AUTH_SPECIFIC_PRINCIPAL_TENANT_VALUE_INVENTION=PROHIBITED
+```
+
+`PrincipalPartitionId` 是 Opaque Branded String；本 Package 只构造一个可构造 Partition Id：`none` Sentinel。两条准入 Record 都使用 `principalPartition=none`（设备本地、无 Principal 隔离、无登录后 Merge）。`anonymous` 是保留 Partition Kind（Schema 可用、Runtime Inactive），本 Package 不准入任何 `anonymous`-partitioned Record；`user` 与 `tenant-user` Partition Id 的构造器在本 Package 不存在，只有 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 可以激活。Storage Package 不得发明任何 Auth-specific Principal/Tenant Value、不得 Hash Email/Raw User ID 后假装匿名、不得建立 Session/Auth/CSRF/Query Partition。Raw User ID 永不进入可枚举 Key。
+
+#### Exact Cross-tab Contract
+
+```text
+BROADCAST_CHANNEL_NAME=pavp:storage:change
+BROADCAST_CHANNEL_NAME_OWNER=Storage Registry generated named protocol constant
+FALLBACK_CONTRACT=window 'storage' event with event.key equal to an exact Storage Registry key
+CROSS_TAB_EVENT_ALLOWLIST_CARDINALITY=0
+```
+
+本 Package 准入 Cross-tab Event Type 精确为 0（两条 `direct-compatibility` Record 不参与 Cross-tab，§13.4 已排除）。Storage Owner 创建 BroadcastChannel（`pavp:storage:change`）并在不支持时安装 `storage` Event Fallback，但当前不发布、不接收任何 Event。Event Shape 只为未来 `persisted-envelope` Record 冻结：
+
+```ts
+interface StorageChangeEvent {
+  readonly recordId: string
+  readonly originId: string
+  readonly operationId: string
+  readonly revision: number
+  readonly principalPartitionId: string
+}
+```
+
+接收方必须拒绝自己的 `originId`、重复 `operationId`、旧 `revision` 与其他 Principal/Tenant 事件，防止 Echo Loop。`originId` 与 `operationId` 是 Opaque Instance/Operation ID（只用于同一文档内安全关联，不携带 URL、配置、用户数据或 Raw Payload）；`revision` 是同一 Partition 内的顺序权威；`principalPartitionId` 在本 Landing 只能是 `none` Sentinel。未来 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 的 Cross-tab Session Channel（`logout`/`revoked`/`session-changed`）是独立 Session Channel，不属于本 Storage Cross-tab Allowlist。
+
+#### Exact Storage Error Registry Extension
+
+Storage Failure Categories Admitted In This Package（Exact Set，来自 §19.5）：
+
+```text
+storage-unavailable
+read-denied
+parse-failed
+schema-rejected
+unsupported-version
+principal-mismatch
+serialization-failed
+quota-exceeded
+write-denied
+readback-mismatch
+conflict-detected
+```
+
+Storage Error Registry Extension 精确为 11 条 Record，全部 `category=storage`，无 `safeRoute`（Storage Error 不是 Navigation Error；"safe route behavior where applicable" 在此域不适用）。每条 Record 的 Safe Context 精确为：
+
+```text
+startupAttemptId, storageRecordId, storageFailureCategory, schemaVersion, byteLength, payloadHash, releaseSha, buildVersion
+```
+
+`byteLength` 与 `payloadHash` 只由 `parse-failed`、`schema-rejected`、`unsupported-version` 三条 Corruption/Version Record 填充，其余 Record 为 `null`；`schemaVersion` 只在遇到版本时填充；`storageRecordId` 只在中型检查后仍可识别 Record 时填充，`storage-unavailable` 时为 `null`。Raw Storage Payload、Raw Cause、Message、Stack、Full URL 与 DOM Text 全部禁止。`storageFailureCategory` 精确等于上方 11 个 Category 之一。User Message Key Authority 是 `apps/web/src/app/storage` Built-in Storage Error Message Table，Key 前缀为 `storage-error.`。
+
+| id | recoverability | retryOwner | reportLevel |
+| --- | --- | --- | --- |
+| `storage-unavailable` | `none` | `none` | `error` |
+| `storage-read-denied` | `none` | `none` | `error` |
+| `storage-parse-failed` | `none` | `none` | `warning` |
+| `storage-schema-rejected` | `none` | `none` | `warning` |
+| `storage-unsupported-version` | `none` | `none` | `warning` |
+| `storage-principal-mismatch` | `none` | `none` | `warning` |
+| `storage-serialization-failed` | `none` | `none` | `error` |
+| `storage-quota-exceeded` | `none` | `none` | `error` |
+| `storage-write-denied` | `none` | `none` | `error` |
+| `storage-readback-mismatch` | `none` | `none` | `error` |
+| `storage-conflict-detected` | `retry-operation` | `user` | `warning` |
+
+`storage-conflict-detected` 只报告 CAS 一次自动 Retry 后的竞争写入，Retry Owner 为 `user`（用户重新确认），不在 `retryOwner` 枚举外发明 Storage Retry Owner。Error Registry Cardinality：
+
+```text
+STORAGE_ERROR_RECORDS=11
+COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
+CORE_ERROR_REGISTRY_CARDINALITY=4 (unchanged)
+ROUTER_ERROR_RECORDS=6 (unchanged)
+```
+
+Storage Extension 是独立 Record Set，不并入 Core Set，不创建 Placeholder Record 或 No-op Reporter；当前仍为 `TARGET_INACTIVE`，只在 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 原子激活。
+
+#### Exact Runtime Kernel Storage Step
+
+```text
+stepId=create-and-ready-storage
+targetPosition=after create-and-ready-router and before mount-application
+dependencies=validate-build-and-runtime-configuration,install-platform-providers
+CreateInput=validated CoreRuntimeConfiguration, exact Storage Registry, Storage/Core error normalization boundary, startupAttemptId
+CreateOutput=one StorageLifecycleHandle containing the sole Storage owner, the exact BroadcastChannel handle, the exact storage-event fallback listener reference and one idempotent disposer
+Ready=Storage Registry exact-equality validation succeeds; BroadcastChannel created with the empty cross-tab allowlist; storage error adapter installed; zero envelope/migration/memory-only records admitted
+Dispose=close the BroadcastChannel and remove the storage-event fallback listener idempotently, then release Storage owner references
+DOMMountOwner=NO
+Failure=application-startup-failure
+RetryParticipant=YES with a fresh Storage owner and fresh cross-tab handles
+OwnFailureEligibleForConfigurationRetry=NO
+HMR=Runtime Kernel remains the sole top-level HMR owner; every full HMR attempt disposes and recreates the Storage owner, BroadcastChannel and storage-event fallback listener; Storage registers no competing HMR hook
+```
+
+Target Post-Storage Bootstrap Order 精确为十一步：
+
+```text
+1. validate-build-and-runtime-configuration
+2. install-pre-vue-global-failure-capture
+3. initialize-design-system-and-resolve-first-paint-handoff
+4. create-vue-application
+5. create-pinia
+6. install-platform-providers
+7. create-and-ready-router
+8. create-and-ready-storage
+9. mount-application
+10. register-post-mount-appearance-media-subscriptions
+11. publish-application-ready
+```
+
+`mount-application` 依赖从 `create-and-ready-router` 扩展为 `create-and-ready-router,create-and-ready-storage`；其余 Step 顺序与依赖不变。Router Step 仍保持第七步。`TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11`。
+
+Reverse-disposal Insertion Point：`dispose-storage` 插入 `unmount-vue-application` 之后、`dispose-router-and-history` 之前（Storage 在 Router 之后创建，因此先于 Router 反向释放）。Target Reverse Disposal Order：
+
+```text
+1. withdraw-application-ready
+2. remove-appearance-media-subscriptions
+3. unmount-vue-application
+4. dispose-storage
+5. dispose-router-and-history
+6. dispose-installed-platform-provider-handles
+7. dispose-pinia
+8. release-vue-application-creation-handle
+9. release-first-paint-handoff-and-safety-handle
+10. dispose-global-failure-capture
+11. abort-release-runtime-configuration-handle
+```
+
+#### Exact Preference/Theme Safe Ordering
+
+Storage 不改变 Package 5 的 Create/Update/Delete Ordering，只把 §19.5 Safe Ordering 精确映射到既有 `direct-compatibility` 边界（不引入 Envelope）：
+
+```text
+create/update reference target:
+validate full theme → atomically write complete CustomThemeRegistrySnapshot → readback and resolve exact entry → atomically write ExplicitThemePreference reference
+
+delete referenced theme:
+explicitly select and persist another valid theme reference → confirm effective atomic switch → delete registry entry
+```
+
+第一种流程中断只留下 Unreferenced Valid Entry；第二种流程中断只留下 Unreferenced Old Entry。Preference Writer 写前解析 Registry Entry；Registry Delete 拒绝仍被当前 Preference 引用的 Entry。First Paint 同时读取两个 Snapshot 时 Revision Pair 不一致保留 Safety Baseline 并返回 `theme-registry-revision-mismatch`，不回退并改写 Stored Preference。Package 5 行为不变。
+
+#### Exact No-sensitive-persistence Closure and Media Scope
+
+```text
+LOCAL_STORAGE_ADMITTED_RECORDS=2 (both containsSensitiveData=false)
+MEMORY_MEDIUM_ADMITTED_RECORDS=0
+INDEXED_DB_ADMITTED=false (no record; separate demand gate required)
+MAXIMUM_PAYLOAD_BYTE_CEILING=NONE_FROZEN (no byte literal invented; small-value constraint enforced by the two admitted record schemas)
+RETAINED_OR_REPORTED_CORRUPTION_METADATA=payloadHash, byteLength, error category only (never raw payload)
+```
+
+IndexedDB 继续 `DEFERRED`/未准入：本 Package 不创建 `indexed-db` Record、不引入 IndexedDB API、不创建 Object Store。Query cache、Session credentials、Auth tokens、Permissions、Server authority、Secrets、CSRF Runtime Value 与 Business data 全部留在本 Package 之外且不可持久化。Memory-only Registry Record 精确为 0：Runtime Kernel 的 `startup-configuration-recovery` Retry State 是 `document memory only`（Owner 为 runtime-kernel），不是 Storage Registry Record。`no-sensitive-persistence` Closure 要求 Persisted Schema、Serializer、Writer、Migration 与 Snapshot 不含 Cookie/Authorization/Token/Password/Secret/CSRF/Session ID/Query Data/Server Authority；两条准入 Record 只含 Appearance 数据。
+
+#### Exact Static-enforcement Records Activated by Implementation
+
+```text
+no-direct-storage-access → ACTIVE extended to admit the single new owner apps/web/src/app/storage (existing two Package 5 owners remain)
+no-raw-storage-key → ACTIVE
+storage-owner-registry-closure → ACTIVE
+no-sensitive-persistence → ACTIVE
+```
+
+Implementation Package 还必须在 Existing Static Owners 内增加最小 Domain-owned Extension（不创建第二个 Governance Framework）：
+
+```text
+Storage Registry exact-equality (2 direct-compatibility records; zero envelope/memory-only/indexed-db records)
+Storage Error Registry extension exact-equality (11 records; combined 21)
+Storage Migration Registry empty
+Cross-tab allowlist empty; BroadcastChannel only in apps/web/src/app/storage; IndexedDB still prohibited everywhere
+Package 5 Appearance source remains free of BroadcastChannel/IndexedDB/principal/tenant (check-appearance-cutover unchanged)
+Preference/Custom Registry safe ordering statically traceable (Package 5 behavior unchanged)
+Exact eleven-step Bootstrap Registry, acyclic dependency graph, one Storage lifecycle authority, disposal insertion point and sole HMR ownership
+```
+
+Exact Implementation-gate Cardinalities：
+
+```text
+STORAGE_REGISTRY_RECORDS=2
+STORAGE_ENVELOPE_RECORDS=0
+STORAGE_MEMORY_ONLY_RECORDS=0
+STORAGE_MIGRATION_RECORDS=0
+STORAGE_CROSS_TAB_EVENT_TYPES=0
+STORAGE_ERROR_RECORDS=11
+COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
+CURRENT_BOOTSTRAP_STEPS=10
+TARGET_POST_STORAGE_BOOTSTRAP_STEPS=11
+```
+
+#### Exact Out-of-scope Confirmation
+
+```text
+STORAGE_DOES_NOT_ACTIVATE=API Transport; Query; Auth; Session; Permission; I18n; Observability; Deployment; Shared UI; App Shell; Layout Admin; business pages; tests; browser infrastructure
+OUTSIDE_STORAGE_PACKAGE=Query cache; Session credentials; Auth tokens; Permissions; Server authority; Secrets; business data
+GENERIC_PERSISTENCE_PLUGIN=PROHIBITED
+PAGE_OR_FEATURE_AUTHORED_RAW_STORAGE_KEY=PROHIBITED
+DIRECT_BROWSER_STORAGE_OUTSIDE_ADMITTED_OWNERS=PROHIBITED
+NO_AUTOMATIC_ROADMAP_CONTINUATION=ENFORCED
+```
+
+本 Amendment 不把 Storage 标记为 `ACTIVE`、`COMPLETE` 或 Implemented；`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT`、Application persistence architecture `TARGET_INACTIVE`、Storage implementation `NOT_STARTED`、Router `COMPLETE/ACTIVE`、Runtime Kernel 当前 `10` 步保持同步，Post-Storage `11` 步只作为 Frozen Target。API Transport 仍 `TARGET_INACTIVE` 且阻塞于 Storage；不启动后继 Package。
+
 ---
 
 # 20. API Transport Target Contract
@@ -8787,10 +9176,21 @@ COMPLETION_EVIDENCE=one Router authority; one History authority; exact temporary
 STATUS=NEXT
 CAPABILITY_STATUS=TARGET_INACTIVE
 IMPLEMENTATION_STATUS=NOT_STARTED
+PROTOCOL_FREEZE_AMENDMENT=PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT
+PROTOCOL_FREEZE_AMENDMENT_STATUS=FROZEN
+STORAGE_REGISTRY_RECORDS=2
+STORAGE_ENVELOPE_RECORDS=0
+STORAGE_MEMORY_ONLY_RECORDS=0
+STORAGE_INDEXED_DB_RECORDS=0
+STORAGE_MIGRATION_RECORDS=0
+STORAGE_CROSS_TAB_EVENT_TYPES=0
+STORAGE_ERROR_RECORDS=11
+COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
+TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
 ```
 
 ```text
-ENTRY=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE; storage/envelope/partition/migration registries frozen; sensitivity review complete
+ENTRY=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE; PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN; storage/envelope/partition/migration registries frozen; sensitivity review complete
 ALLOWED=application storage owner; exact registries; storage error-registry extension; envelope/migrations; corruption/quota results; cross-tab channel; preference/theme safe ordering; kernel storage step
 PROHIBITED=credential/session/query persistence; IndexedDB without separate demand gate; feature direct storage; generic persistence plugin
 OUTPUT=typed Local Storage and memory boundaries; compare-and-swap revisions; principal-ready partition interface; deterministic cleanup handles
@@ -8799,7 +9199,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_
 COMPLETION_EVIDENCE=no raw key outside owner/generated first paint; failures structured; bad payload cannot loop; theme reference cannot dangle
 ```
 
-Principal Partition Interface 可以存在，但 Auth-specific Principal 数据与 Session Cleanup 只能由 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 激活。
+Principal Partition Interface 可以存在，但 Auth-specific Principal 数据与 Session Cleanup 只能由 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 激活。本 Record 的 Exact Implementation Input 由 §19.5.1 `PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT` 唯一冻结：两条 `direct-compatibility` Registry Record、0 Envelope/0 Memory/0 Migration/0 Cross-tab Event、11 条 Storage Error Record、`create-and-ready-storage` Kernel Step（Target 11 步）、`none`-only Partition 与 Package 5 Direct-format 保留决策。实施包不得改写这些 Frozen Value，也不得把 Package 5 两条 Payload 迁入 `PersistedEnvelope`。
 
 ### 37.2.7 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
