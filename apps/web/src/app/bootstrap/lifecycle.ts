@@ -25,6 +25,7 @@ export type BootstrapDisposalStepId =
   | 'withdraw-application-ready'
   | 'remove-appearance-media-subscriptions'
   | 'unmount-vue-application'
+  | 'dispose-storage'
   | 'dispose-router-and-history'
   | 'dispose-installed-platform-provider-handles'
   | 'dispose-pinia'

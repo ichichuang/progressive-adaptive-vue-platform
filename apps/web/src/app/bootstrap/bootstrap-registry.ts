@@ -6,6 +6,7 @@ export type BootstrapStepId =
   | 'create-pinia'
   | 'install-platform-providers'
   | 'create-and-ready-router'
+  | 'create-and-ready-storage'
   | 'mount-application'
   | 'register-post-mount-appearance-media-subscriptions'
   | 'publish-application-ready'
@@ -132,8 +133,26 @@ export const bootstrapStepRegistry = [
     hmrBehavior: 'dispose and recreate fresh Router and History through the sole Runtime Kernel',
   },
   {
+    id: 'create-and-ready-storage',
+    dependencies: ['validate-build-and-runtime-configuration', 'install-platform-providers'],
+    createInput:
+      'validated Runtime Configuration, exact Storage Registry, Storage error normalization boundary, startupAttemptId',
+    createOutput:
+      'one Storage lifecycle handle with the sole Storage owner, exact BroadcastChannel handle, storage-event fallback listener and one idempotent disposer',
+    readyCondition:
+      'Storage Registry exact-equality validation succeeds; cross-tab handles created; storage error adapter installed; zero envelope/migration/memory-only records admitted',
+    disposeResponsibility:
+      'close the BroadcastChannel, remove the storage-event fallback listener idempotently and release Storage owner references',
+    domMountOwner: false,
+    failureClassification: 'application-startup-failure',
+    retryParticipant: true,
+    ownFailureEligibleForConfigurationRetry: false,
+    hmrBehavior:
+      'dispose and recreate the Storage owner and cross-tab handles through the sole Runtime Kernel',
+  },
+  {
     id: 'mount-application',
-    dependencies: ['create-and-ready-router'],
+    dependencies: ['create-and-ready-router', 'create-and-ready-storage'],
     createInput: 'ready Vue application and exact #app target',
     createOutput: 'mounted application handle',
     readyCondition: "application.mount('#app') returns and mounted state is confirmed",

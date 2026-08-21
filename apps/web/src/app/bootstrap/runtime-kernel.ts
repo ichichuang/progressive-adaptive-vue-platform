@@ -35,6 +35,7 @@ import {
 } from '../errors/global-failure-capture'
 import { createPiniaProvider, type PiniaProviderHandle } from '../providers/pinia'
 import { createAndReadyRouter, type RouterLifecycleHandle } from '../router/router-lifecycle'
+import { createAndReadyStorage, type StorageLifecycleHandle } from '../storage/storage-lifecycle'
 import { bootstrapStepRegistry, type BootstrapStepId } from './bootstrap-registry'
 import {
   createVueApplication,
@@ -68,6 +69,7 @@ interface AttemptResources {
   pinia?: PiniaProviderHandle
   providers?: InstalledPlatformProvidersHandle
   router?: RouterLifecycleHandle
+  storage?: StorageLifecycleHandle
   vueApplication?: VueApplicationCreationHandle
 }
 
@@ -169,6 +171,12 @@ function createAttemptDisposer(input: {
       failedSteps,
     )
     delete input.resources.mountedApplication
+    safeDispose(
+      'dispose-storage',
+      input.resources.storage === undefined ? undefined : () => input.resources.storage?.dispose(),
+      failedSteps,
+    )
+    delete input.resources.storage
     safeDispose(
       'dispose-router-and-history',
       input.resources.router === undefined ? undefined : () => input.resources.router?.dispose(),
@@ -417,6 +425,13 @@ async function startAttempt(input: {
     enterBootstrapStep('create-and-ready-router')
     resources.router = await createAndReadyRouter({
       application: resources.vueApplication.application,
+      configuration: resources.configuration,
+      startupAttemptId: input.startupAttemptId,
+    })
+    throwClaimedStartupFailure()
+
+    enterBootstrapStep('create-and-ready-storage')
+    resources.storage = createAndReadyStorage({
       configuration: resources.configuration,
       startupAttemptId: input.startupAttemptId,
     })

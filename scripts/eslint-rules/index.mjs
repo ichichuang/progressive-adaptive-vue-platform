@@ -81,6 +81,7 @@ const canonicalAppearanceStoragePaths = new Set([
   'apps/web/src/app/appearance/preference-storage.ts',
   'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
 ])
+const canonicalStorageOwnerPrefix = 'apps/web/src/app/storage/'
 const storageNames = new Set(['localStorage', 'sessionStorage'])
 const storageOwners = new Set(['window', 'globalThis'])
 
@@ -425,14 +426,16 @@ const noDirectStorageAccess = {
   meta: {
     messages: {
       directStorage:
-        'Access browser storage only through the two canonical Appearance persistence boundaries.',
+        'Access browser storage only through the canonical Appearance persistence boundaries or the Storage owner.',
     },
     schema: [],
     type: 'problem',
   },
   create(context) {
     const filename = relative(process.cwd(), context.filename).replaceAll('\\', '/')
-    const ownsLocalStorage = canonicalAppearanceStoragePaths.has(filename)
+    const ownsLocalStorage =
+      canonicalAppearanceStoragePaths.has(filename) ||
+      filename.startsWith(canonicalStorageOwnerPrefix)
 
     function storageAccessIsAllowed(storageName) {
       return ownsLocalStorage && storageName === 'localStorage'

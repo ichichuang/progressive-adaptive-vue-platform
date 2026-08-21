@@ -946,6 +946,7 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
     'apps/web/src/app/appearance/preference-storage.ts',
     'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
   ])
+  const storageOwnerDirectoryPrefix = 'apps/web/src/app/storage/'
   const applicationFiles = await collectFiles(resolve(rootDirectory, 'apps/web/src'))
   const piniaImporters: string[] = []
 
@@ -960,8 +961,12 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
     const localStorageReferences = sourceText.match(/\blocalStorage\b/gu)?.length ?? 0
     const sessionStorageReferences = sourceText.match(/\bsessionStorage\b/gu)?.length ?? 0
 
-    if (localStorageReferences > 0 && !storageOwners.has(displayPath)) {
-      violations.push(`${displayPath}: direct localStorage access is outside its two owners.`)
+    if (
+      localStorageReferences > 0 &&
+      !storageOwners.has(displayPath) &&
+      !displayPath.startsWith(storageOwnerDirectoryPrefix)
+    ) {
+      violations.push(`${displayPath}: direct localStorage access is outside its admitted owners.`)
     }
 
     if (sessionStorageReferences > 0) {

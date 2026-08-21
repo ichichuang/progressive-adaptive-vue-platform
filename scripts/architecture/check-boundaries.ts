@@ -10,6 +10,7 @@ import { projectConfig } from '../../project.config'
 import { validateAppearanceCutover } from './check-appearance-cutover'
 import { validateRouterArchitecture } from './check-router'
 import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
+import { validateStorageArchitecture } from './check-storage'
 
 type JsonObject = Record<string, unknown>
 
@@ -654,6 +655,7 @@ const violations = [
   ...(await validateAppearanceCutover()),
   ...(await validateRouterArchitecture()),
   ...(await validateRuntimeKernelArchitecture()),
+  ...(await validateStorageArchitecture()),
 ]
 
 if (violations.length > 0) {

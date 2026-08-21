@@ -54,10 +54,12 @@ VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
 ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
-PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
+PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
+APPLICATION_PERSISTENCE_CAPABILITY_STATUS=ACTIVE
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -207,13 +209,13 @@ type CapabilityStatus =
 | Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
 | Generated Built-in First Paint and post-Vue Custom restoration | `ACTIVE` | generated artifacts plus application bootstrap |
 | General Pinia state, Session state and workflow state | `TARGET_INACTIVE` | post-Phase-1 named gates |
-| Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router` extension from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
-| Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension |
+| Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router` and `create-and-ready-storage` extensions from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` and `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
+| Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries; first Shell consumer remains in Protected Vertical Slice |
 | TanStack Query server-state runtime | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
-| Application persistence architecture | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
+| Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | API Transport | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
 | Auth, Session and Permission | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` |
 | Observability reporting and Runtime Performance collection | `TARGET_INACTIVE` | `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` |
@@ -5000,15 +5002,15 @@ CAPABILITY=PRODUCTION_RUNTIME_KERNEL
 CAPABILITY_STATUS=ACTIVE
 OWNER=apps/web/src/app/bootstrap
 ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
-CURRENT_EXTENSION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+CURRENT_EXTENSION_GATE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
 IMPLEMENTATION_STATUS=COMPLETE
 IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
-CURRENT_RUNTIME=exact ten-step Runtime Kernel
+CURRENT_RUNTIME=exact eleven-step Runtime Kernel
 ACTIVATION_PROVIDER_SET=Pinia,Appearance
-ACTIVATION_BOOTSTRAP_STEP_COUNT=10
+ACTIVATION_BOOTSTRAP_STEP_COUNT=11
 ```
 
-Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个当前 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。本节冻结的基础 Protocol Contract 已由 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 原子激活；`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 随后只增加一个 `create-and-ready-router` Lifecycle Step。当前 Runtime Kernel、Core Runtime Configuration、Core Error/Capture 边界与 Router Lifecycle 为 `ACTIVE`；Storage 与所有后续能力保持未实现且未准入。Router 不进入 `ACTIVATION_PROVIDER_SET`，该集合继续精确为 Pinia 与 Appearance。
+Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个当前 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。本节冻结的基础 Protocol Contract 已由 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 原子激活；`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 随后增加一个 `create-and-ready-router` Lifecycle Step，`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 再增加一个 `create-and-ready-storage` Lifecycle Step。当前 Runtime Kernel、Core Runtime Configuration、Core Error/Capture 边界、Router Lifecycle 与 Storage Lifecycle 为 `ACTIVE`；Query、Auth、Session、Permission、I18n、Observability 与 Deployment 等后续能力保持未实现且未准入。Router 与 Storage 均不进入 `ACTIVATION_PROVIDER_SET`，该集合继续精确为 Pinia 与 Appearance。
 
 ### Exact Bootstrap Order
 
@@ -5025,7 +5027,7 @@ Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Stor
 10. publish-application-ready
 ```
 
-上表是当前唯一、闭合、顺序保持的十步 Bootstrap Step Registry，不是 Future Superset。它只在原九步 Kernel 中加入 Router Landing 的一个完整 Lifecycle Step。尚未准入的 Storage、Query、Session、I18n、Observability 或 Deployment Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry、Placeholder 或成功 Stub 占位。后续串行 Package 只有在自己的 Architecture Authority 与 Implementation Landing 中才能原子扩展该 Registry，并同时交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
+上表是当前唯一、闭合、顺序保持的十一步 Bootstrap Step Registry，不是 Future Superset。它只在原九步 Kernel 中加入 Router Landing 与 Storage Landing 各一个完整 Lifecycle Step。尚未准入的 Query、Session、I18n、Observability 或 Deployment Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry、Placeholder 或成功 Stub 占位。后续串行 Package 只有在自己的 Architecture Authority 与 Implementation Landing 中才能原子扩展该 Registry，并同时交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
 
 后一步只能消费前一步的 Typed Success Output。任何步骤失败都停止后续步骤，按已完成步骤的反向顺序 Dispose，并进入 Fatal Startup Recovery。不得通过 `try/catch` 后继续 Mount、用空 Provider 替代失败 Provider，或把 `unknown` Session 当作 Anonymous。
 
@@ -5118,7 +5120,7 @@ Development HMR 不消耗该 Retry Budget，但必须使用同一完整 Disposer
 
 ### Bootstrap Step Registry
 
-当前 Runtime Kernel Registry 是 Repository-owned、Closed、Order-preserving、Acyclic、无 Placeholder 且无 Optional Future Step 的精确十步集合。每一步必须定义 Step ID、Dependencies、Create Input、Create Output 或 Handle、Ready Condition、Dispose Responsibility、DOM Mount Ownership、Failure Classification、Retry Participation 和 HMR Behavior。Private Helper Name、Loop、Array、Map、Closure 或 File-internal Data Structure 不属于 Registry Contract。
+当前 Runtime Kernel Registry 是 Repository-owned、Closed、Order-preserving、Acyclic、无 Placeholder 且无 Optional Future Step 的精确十一步集合。每一步必须定义 Step ID、Dependencies、Create Input、Create Output 或 Handle、Ready Condition、Dispose Responsibility、DOM Mount Ownership、Failure Classification、Retry Participation 和 HMR Behavior。Private Helper Name、Loop、Array、Map、Closure 或 File-internal Data Structure 不属于 Registry Contract。
 
 #### `validate-build-and-runtime-configuration`
 
@@ -5226,7 +5228,7 @@ ActiveProviderSet=Pinia,Appearance only
 
 #### `create-and-ready-router`
 
-当前 Active Exact Contract 由 §9.0.10 唯一拥有；本 Step 是当前十步 Registry 的第七步，不建立第二份 Router Lifecycle Contract。
+当前 Active Exact Contract 由 §9.0.10 唯一拥有；本 Step 是当前十一步 Registry 的第七步，不建立第二份 Router Lifecycle Contract。
 
 #### `mount-application`
 
@@ -5330,17 +5332,17 @@ Active Owning Static Gates 必须验证：
 * Exact Four-record Core Error Registry，以及每条 Error ID、Message Key、Safe/Prohibited Context、Recoverability、Retry Owner、Report Level、Normalization Source 与 Fatality。
 * Configuration-first Startup Order，Global Listener 的 Exact Count、Owner、Lifetime、Cleanup、Retry 与 HMR Behavior。
 * `startup-configuration-recovery` 的单次 User-triggered Retry Limit。
-* Exact Ten-step Bootstrap Registry、Dependency Graph Acyclicity、Current Provider Set、Unique Mount Owner、Exact Reverse Disposal Order 与 Idempotent Disposal。
-* Exact HMR Owner，且没有 Future Provider、Placeholder Step、Storage、Query、API、Auth、Session、Permission、I18n、Observability 或 Deployment Activation。
+* Exact Eleven-step Bootstrap Registry、Dependency Graph Acyclicity、Current Provider Set、Unique Mount Owner、Exact Reverse Disposal Order 与 Idempotent Disposal。
+* Exact HMR Owner，且没有 Future Provider、Placeholder Step、Query、API、Auth、Session、Permission、I18n、Observability 或 Deployment Activation。
 * Package 5 Appearance Behavior 不变。
 
-这些规则已随 Runtime Kernel 与 Router Implementation Landing 激活，并且只证明当前十步 Registry、Pinia/Appearance Provider Set、Core Runtime Configuration、四条 Core Error Record、六条 Router Error Extension、当前 Listener、Retry、Router/History Disposal、Mount 和 HMR 合同。它们不激活或证明任何后续 Provider 或 Capability。
+这些规则已随 Runtime Kernel、Router 与 Storage Implementation Landing 激活，并且只证明当前十一步 Registry、Pinia/Appearance Provider Set、Core Runtime Configuration、四条 Core Error Record、六条 Router Error Extension、十一条 Storage Error Extension、当前 Listener、Retry、Router/History Disposal、Storage Disposal、Mount 和 HMR 合同。它们不激活或证明任何后续 Provider 或 Capability。
 
 ## 19.5 Application Persistence Target Contract
 
 ```text
 CAPABILITY=APPLICATION_PERSISTENCE
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 OWNER=apps/web/src/app/storage
 ACTIVATION_GATE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
 DIRECT_STORAGE_OUTSIDE_OWNER=PROHIBITED
@@ -7692,7 +7694,7 @@ scripts/architecture/check-boundaries.ts and scripts/architecture/check-router.t
   → official Router import boundary; exact eight source/name/path records; route/meta/schema/error/title/message/telemetry/layout/scroll/focus closure; exact five guards; empty redirect/dynamic sets; no future capability activation
 
 scripts/architecture/check-runtime-kernel.ts
-  → exact ten-step Bootstrap Registry; one Router and one History lifecycle authority; router.isReady-before-Mount; Router/History reverse disposal; sole Mount/disposal/top-level HMR ownership; unchanged Pinia-and-Appearance provider set
+  → exact eleven-step Bootstrap Registry; one Router and one History lifecycle authority; one Storage lifecycle authority; router.isReady-before-Mount; Router/History and Storage reverse disposal; sole Mount/disposal/top-level HMR ownership; unchanged Pinia-and-Appearance provider set
 
 scripts/verify/check-project-config.ts
   → exact vue-router@5.2.0 Catalog/manifest/lock/patch identity; exact three declaration changes; strict TypeScript compatibility probe; official plugin order/configuration; Generated DTS AST shape and official regeneration byte equality
@@ -7844,7 +7846,7 @@ exact four-record Core Error Registry and built-in message-key set
 exact safe and prohibited error context closure
 configuration-first startup and exact two-listener capture ownership
 exact one-user-retry startup-configuration-recovery policy
-exact ten-step Bootstrap Registry and acyclic dependency graph
+exact eleven-step Bootstrap Registry and acyclic dependency graph
 exact Pinia-and-Appearance current provider set
 unique Mount owner and exact reverse disposal order
 idempotent cleanup and sole HMR owner
@@ -8476,8 +8478,8 @@ PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION = COMPLETE
 RUNTIME_KERNEL_IMPLEMENTATION_COMMIT = 3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION = COMPLETE
 ROUTER_CAPABILITY_STATUS = ACTIVE
-CURRENT_RUNTIME_KERNEL_STEP_COUNT = 10
-NEXT = PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+CURRENT_RUNTIME_KERNEL_STEP_COUNT = 11
+NEXT = PAVP_API_TRANSPORT_IMPLEMENTATION
 ```
 
 以下是完整 Phase 1 Target Inventory。某项是否已实现、是否已机器强制以及是否允许成为 Runtime Authority，只由 §37.1 的 Package Status 和 Owning Gate 决定，不因出现在本清单而自动激活：
@@ -8582,7 +8584,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 与 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 只把 Kernel 扩展为十步并激活 Router Domain。唯一 Next Implementation Package 是 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 与 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 把 Kernel 扩展为十步并激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为十一步并激活 Storage Domain。唯一 Next Implementation Package 是 `PAVP_API_TRANSPORT_IMPLEMENTATION`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -8597,10 +8599,10 @@ VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
 ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
-PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
 ```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
@@ -8615,7 +8617,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel 与 Router Implementation 随后依次完成。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`，不得因本次 Status Synchronization 自动开始。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel 与 Router Implementation 随后依次完成。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_API_TRANSPORT_IMPLEMENTATION`，不得因本次 Status Synchronization 自动开始。
 
 当前精确 Acceptance Contract：
 
@@ -8625,8 +8627,8 @@ PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
 ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
-PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
+PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 ACTIVE_PUBLIC_COLOR_ROLES=9
 ACTIVE_PUBLIC_ROLES_TOTAL=27
 PUBLIC_ROLE_REGISTRY=EXACT
@@ -9072,7 +9074,7 @@ PRODUCTION_BUNDLE_FINAL_JS_GZIP_BYTES=132064
 PRODUCTION_BUNDLE_FINAL_CSS_GZIP_BYTES=7457
 PRODUCTION_BUNDLE_FINAL_LAZY_CHUNKS=0
 PRODUCTION_RELEASE_ACCEPTANCE=NOT_CLAIMED_BY_STATIC_PACKAGE_COMPLETION
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
 ```
 
 Production Bundle Gate 必须先对真实产物执行当前完整 `HEAD` Release SHA、Build Version 与
@@ -9098,8 +9100,8 @@ ACTIVATION_EFFECT=NONE_UNTIL_PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 
 以下 `ENTRY`、`ALLOWED`、`PROHIBITED`、`OUTPUT`、`MACHINE_GATES` 与 `COMPLETION_EVIDENCE`
 是 Router 准入前完成的 Base Runtime Kernel Historical Landing Record；其中 Exact Nine-step Kernel
-与 Router Prohibition 只描述该 Package 当时的完成边界，不是当前状态。当前 Exact Ten-step Kernel、
-Active Router 与 Router/History Lifecycle 只由 §19.4 和 §37.2.5 的同步记录拥有。
+与 Router Prohibition 只描述该 Package 当时的完成边界，不是当前状态。当前 Exact Eleven-step Kernel、
+Active Router、Active Storage 与 Router/History/Storage Lifecycle 只由 §19.4、§37.2.5 和 §37.2.6 的同步记录拥有。
 
 ```text
 ENTRY=PAVP_FINAL_STATIC_GOVERNANCE=COMPLETE; PAVP_RUNTIME_KERNEL_PROTOCOL_FREEZE_AMENDMENT=FROZEN; no overlapping dirty change
@@ -9142,7 +9144,7 @@ ACTIVE_DATA_PREFETCH_SUBSET=none
 ACTIVE_GUARD_STAGES=5
 ACTIVE_REDIRECT_RECORDS=0
 ACTIVE_DYNAMIC_ROUTE_RECORDS=0
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 RUNTIME_KERNEL_LIFECYCLE_OWNER=sole Mount,disposal and top-level HMR owner
 GENERATED_DTS_OWNER=official vue-router@5.2.0 generator verbatim output
 GENERATED_DTS_PATH=apps/web/src/route-map.d.ts
@@ -9151,7 +9153,7 @@ PRODUCTION_BUNDLE_COMPRESSION_PROFILE=node-zlib-gzip-sync
 PRODUCTION_BUNDLE_LAZY_ROUTE_CHUNKS=8
 PRODUCTION_BUNDLE_HARD_BUDGET_STATUS=PASS
 PRODUCTION_BUNDLE_ACCEPTANCE_AUTHORITY=real artifact identity plus canonical budgets and exact lazy-route structure
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
 ```
 
 该 `COMPLETE` 只表示 Repository Implementation 与 Static Owning Contract 已闭合。它不替代 §32.3 的 Owner External Runtime Matrix，不声明 Production Release Acceptance，也不授权自动开始 Storage。Host-local Router gzip exact-byte snapshot 不是本 Package 的 Canonical Acceptance Contract；Bundle Gate 继续以真实 Artifact Identity、单一冻结 Compression Profile、Canonical Hard Budgets 与精确八个 Lazy Route Chunk 结构作出判定。
@@ -9173,9 +9175,11 @@ COMPLETION_EVIDENCE=one Router authority; one History authority; exact temporary
 当前状态：
 
 ```text
-STATUS=NEXT
-CAPABILITY_STATUS=TARGET_INACTIVE
-IMPLEMENTATION_STATUS=NOT_STARTED
+STATUS=COMPLETE
+CAPABILITY_STATUS=ACTIVE
+IMPLEMENTATION_STATUS=COMPLETE
+OWNING_STATIC_ENFORCEMENT_STATUS=ACTIVE
+STATIC_PACKAGE_COMPLETION=PASS
 PROTOCOL_FREEZE_AMENDMENT=PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT
 PROTOCOL_FREEZE_AMENDMENT_STATUS=FROZEN
 STORAGE_REGISTRY_RECORDS=2
@@ -9187,6 +9191,9 @@ STORAGE_CROSS_TAB_EVENT_TYPES=0
 STORAGE_ERROR_RECORDS=11
 COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
 TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_AND_CLEANUP
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
 ```
 
 ```text
@@ -9474,9 +9481,11 @@ PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT_IS_3bb664f1d81d354ccb0ec7ddcc421
 RUNTIME_KERNEL_CORE_CONFIGURATION_AND_CORE_ERROR_HANDLING_ARE_ACTIVE
 ROUTER_GOVERNANCE_IMPLEMENTATION_IS_COMPLETE
 ROUTER_CAPABILITY_IS_ACTIVE
-CURRENT_RUNTIME_KERNEL_STEP_COUNT_IS_10
+STORAGE_PERSISTENCE_IMPLEMENTATION_IS_COMPLETE
+APPLICATION_PERSISTENCE_CAPABILITY_IS_ACTIVE
+CURRENT_RUNTIME_KERNEL_STEP_COUNT_IS_11
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE_REMAINS_PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-NEXT_CANONICAL_WORK_PACKAGE_IS_PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE_IS_PAVP_API_TRANSPORT_IMPLEMENTATION
 FUTURE_DIRECTORIES_ARE_DEMAND_CREATED
 ONE_JUSTIFIED_CONSUMER_ADMITS_INITIAL_SHARED_COMPONENT
 ADDITIONAL_EVIDENCE_DRIVES_GENERALIZATION

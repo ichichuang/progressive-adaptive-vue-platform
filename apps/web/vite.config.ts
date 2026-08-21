@@ -1,5 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
+import { createServer } from 'node:net'
+import { networkInterfaces } from 'node:os'
 import { relative, resolve, sep } from 'node:path'
 
 import vue from '@vitejs/plugin-vue'
@@ -28,6 +30,72 @@ const runtimeConfigurationArtifactName = 'runtime-configuration.json'
 const firstPaintArtifactNames = ['appearance-init.js', 'critical-theme.css'] as const
 const generatedDirectory = resolve(repositoryDirectory, 'packages/design-system/src/generated')
 const releaseShaOutputPattern = /^([0-9a-f]{40})(?:\r?\n)?$/u
+const defaultDevelopmentPort = 5173
+const maximumTcpPort = 65_535
+
+function localNetworkHosts(): string[] {
+  const hosts = new Set(['127.0.0.1', '::1'])
+
+  for (const [interfaceName, addresses] of Object.entries(networkInterfaces())) {
+    for (const address of addresses ?? []) {
+      hosts.add(
+        address.family === 'IPv6' && address.scopeid > 0
+          ? `${address.address}%${interfaceName}`
+          : address.address,
+      )
+    }
+  }
+
+  return [...hosts]
+}
+
+function canListenOnHost(port: number, host: string): Promise<boolean> {
+  return new Promise((resolveAvailable, reject) => {
+    const server = createServer()
+
+    server.once('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EADDRINUSE') {
+        resolveAvailable(false)
+        return
+      }
+
+      reject(error)
+    })
+    server.once('listening', () => {
+      server.close((error) => {
+        if (error !== undefined) {
+          reject(error)
+          return
+        }
+
+        resolveAvailable(true)
+      })
+    })
+    server.listen({ exclusive: true, host, port })
+  })
+}
+
+async function isPortAvailableOnAllLocalHosts(port: number): Promise<boolean> {
+  for (const host of localNetworkHosts()) {
+    if (!(await canListenOnHost(port, host))) {
+      return false
+    }
+  }
+
+  return true
+}
+
+async function resolveDevelopmentPort(): Promise<number> {
+  for (let port = defaultDevelopmentPort; port <= maximumTcpPort; port += 1) {
+    if (await isPortAvailableOnAllLocalHosts(port)) {
+      return port
+    }
+  }
+
+  throw new Error(
+    `No available port found from ${String(defaultDevelopmentPort)} through ${String(maximumTcpPort)}.`,
+  )
+}
 
 function canonicalPageSourcePath(filePath: string): string {
   return relative(repositoryDirectory, filePath).split(sep).join('/')
@@ -303,7 +371,7 @@ function productionRuntimeConfigurationCarrier(): Plugin {
   }
 }
 
-export default defineConfig(async ({ mode }) => {
+export default defineConfig(async ({ command, isPreview, mode }) => {
   if (!isCompiledEnvironment(mode)) {
     throw new Error(
       'Vite mode must be one of the exact compiled environments: development, staging, production.',
@@ -312,6 +380,8 @@ export default defineConfig(async ({ mode }) => {
 
   const buildVersion = await readBuildVersion()
   const releaseSha = readReleaseSha()
+  const developmentPort =
+    command === 'serve' && !isPreview ? await resolveDevelopmentPort() : defaultDevelopmentPort
   const runtimeConfiguration = Object.freeze(
     coreRuntimeConfigurationSchema.parse({
       schemaVersion: 1,
@@ -352,7 +422,7 @@ export default defineConfig(async ({ mode }) => {
     },
     server: {
       host: true,
-      port: 5173,
+      port: developmentPort,
       strictPort: false,
     },
   }
