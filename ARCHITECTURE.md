@@ -58,8 +58,14 @@ CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_STATUS=ACTIVE
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
+PROJECT_DELIVERY_MODEL=PURE_FRONTEND_PLATFORM
+CURRENT_BACKEND_CONTRACT=NONE
+CURRENT_API_ENDPOINT_CONTRACT=NONE
+BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
+BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -84,6 +90,8 @@ PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 它是一套：
 
 > **以 TypeScript 为核心、以 Vue 和 Vite 为运行基础、以项目自有 Design Token 为唯一视觉权威、以 UnoCSS 为样式表达层、以 Reka UI 为复杂交互原语、以用户个性化和跨设备适配为核心能力、以自动化规则约束人类和 AI 修改行为的渐进式前端应用平台。**
+
+当前交付模型精确为 `PURE_FRONTEND_PLATFORM`。PAVP 的 Frontend Foundation 与真实 Frontend Product Surface 不以 Backend、API、Auth 或 Protected Flow 的存在为前提；这些能力只在未来真实产品和服务合同出现时按需准入。
 
 正式名称：
 
@@ -168,6 +176,75 @@ NEXT_IMPLEMENTATION_AFTER_FREEZE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
 
 门禁冻结后，文档完成本身不准入任何依赖或 Runtime Capability。`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 仍然是第一个实现工作包。
 
+## 1.2A `PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT`
+
+```text
+WORK_PACKAGE=PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+OWNER_DECISION_AUTHORITY=EXPLICIT_OWNER_DECISION
+PROJECT_DELIVERY_MODEL=PURE_FRONTEND_PLATFORM
+CURRENT_BACKEND_CONTRACT=NONE
+CURRENT_API_ENDPOINT_CONTRACT=NONE
+BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
+BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+BACKEND_ABSENCE_IS_AN_INTENTIONAL_CURRENT_PRODUCT_STATE=YES
+BACKEND_ABSENCE_IS_A_REPOSITORY_DEFECT=NO
+CURRENT_PURE_FRONTEND_MAINLINE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+RUNTIME_IMPLEMENTATION=PROHIBITED
+DEPENDENCY_ADMISSION=PROHIBITED
+```
+
+PAVP 当前是纯前端架构。当前没有 Backend、Backend Repository、API Service、OpenAPI Contract 或真实 Endpoint，也没有为了推进实施顺序而发明这些输入的要求。Backend 的缺席是明确的当前产品状态，不是 Repository Defect；任何 Backend-dependent Capability 都不得作为纯前端主线或后续 Frontend-only Admission 的阻塞条件。
+
+原 Mandatory Chain：
+
+```text
+Storage
+→ API Transport
+→ Auth / Session / Permission
+→ Observability / Deployment
+→ First Protected Vertical Slice
+```
+
+由本 Amendment 替换为：
+
+```text
+Completed Active Frontend Foundation
+  = Design System + Appearance + Runtime Kernel + Router + Storage
+
+Current Pure Frontend Mainline
+  = PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+
+Optional Backend-dependent Lane
+  = API Transport + TanStack Query + Auth / Session / Permission
+    + backend-dependent Observability + protected vertical slice
+
+Future Demand-driven Frontend Capability Admissions
+  = Forms + I18n + Tables + Shared UI + Motion + specialist capabilities
+```
+
+`PAVP_API_TRANSPORT_IMPLEMENTATION`、`PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION`、`PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 中依赖 Backend/Auth 的部分，以及 `PAVP_FIRST_PROTECTED_VERTICAL_SLICE` 均退出 Mandatory Pure Frontend Mainline。它们的既有 Target Contract 保留，但 Runtime、Dependency、Registry、Provider、Configuration Field 与 Public API 均不因本 Amendment 准入；它们只能在 §37.2 的真实需求条件满足后由 Owner 显式重新准入。
+
+仅为推进实施顺序而创建以下任一内容均禁止：
+
+```text
+mock or sample service
+health endpoint
+public third-party API
+fake OpenAPI schema
+placeholder Query Client
+invented protected flow
+API origin field
+endpoint registry
+API Error record
+API Runtime Kernel step
+Auth state or protected route
+sample backend data
+```
+
+本 Amendment 只校正 Canonical Status、Sequencing、Admission 和 Work-package Contract，不修改任何已完成 Implementation Evidence、Runtime Artifact、Dependency、Static Checker 或 Production Behavior。
+
 ## 1.3 Capability Status Registry
 
 所有能力只允许以下四种状态：
@@ -208,35 +285,38 @@ type CapabilityStatus =
 | Appearance Preference and Custom Registry persistence | `ACTIVE` | two application-owned Local Storage boundaries |
 | Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
 | Generated Built-in First Paint and post-Vue Custom restoration | `ACTIVE` | generated artifacts plus application bootstrap |
-| General Pinia state, Session state and workflow state | `TARGET_INACTIVE` | post-Phase-1 named gates |
+| General Pinia state and workflow state | `TARGET_INACTIVE` | future named frontend consumer gates |
+| Session state | `DEFERRED` | optional backend-dependent admission after a real server Session contract exists |
 | Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router` and `create-and-ready-storage` extensions from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` and `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
-| Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries; first Shell consumer remains in Protected Vertical Slice |
-| TanStack Query server-state runtime | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
+| Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries; first real frontend surface consumer is `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| Layout Admin frontend surface | `TARGET_INACTIVE` | next canonical pure frontend work package `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
-| API Transport | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` |
-| Auth, Session and Permission | `TARGET_INACTIVE` | `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` |
-| Observability reporting and Runtime Performance collection | `TARGET_INACTIVE` | `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` |
-| Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` |
+| API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
+| Auth, Session and Permission | `DEFERRED` | optional `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` after API Transport and real server security contracts exist |
+| Observability reporting and Runtime Performance collection | `DEFERRED` | optional demand-driven admission; backend/auth-dependent reporting cannot precede its real producers and provider contract |
+| Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | non-blocking future hosting/release admission; backend-dependent portions remain in the optional lane |
 | Forms, I18n, Tables and Mutations | `TARGET_INACTIVE` | demand-driven implementation gates |
-| Foundational shared UI components | `TARGET_INACTIVE` | Phase 2 consumer admission |
+| Foundational shared UI components | `TARGET_INACTIVE` | minimum real consumer admission may begin with `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
 | CSS Motion Token baseline | `ACTIVE` | current Design Token and static CSS contract only |
-| View Transition progressive enhancement | `TARGET_INACTIVE` | demand-driven Motion/UI admission after Protected Vertical Slice |
+| View Transition progressive enhancement | `TARGET_INACTIVE` | demand-driven Motion/UI admission after the Layout Admin frontend surface or another real approved consumer |
 | Motion for Vue, GSAP and specialist adapters | `DEFERRED` | named production-need gates |
 | Accessibility architecture and current static lint baseline | `ACTIVE` | WCAG contract, token validation and current static tooling |
-| Runtime component/route accessibility | `TARGET_INACTIVE` | each component, Router and protected-slice consumer gate |
+| Runtime component/route accessibility | `TARGET_INACTIVE` | each real component/route consumer gate; next applicable consumer is `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
 | Build and Generated Manifest performance budgets | `ACTIVE` | current `check:bundle` and token Manifest gates |
 | Project generators | `TARGET_INACTIVE` | serial demand-driven generator admission after a repeated real need |
-| Frozen Future Implementation Chain | `TARGET_INACTIVE` | §37.2 strict serial sequencing authority |
-| Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial stage after `PAVP_FIRST_PROTECTED_VERTICAL_SLICE` |
+| Pure frontend implementation mainline | `TARGET_INACTIVE` | §37.2 strict sequencing through `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| Optional backend-dependent capability lane | `DEFERRED` | §37.2 explicit future demand-driven admission only |
+| Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial frontend stage after `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` and one real consumer gate |
 | Router Experimental Data Loaders | `PROHIBITED` | future stable-dependency decision required |
 | Browser automation, automated test infrastructure and Codex browser operation | `PROHIBITED` | production-only repository policy |
 | Seed-generated, partial or auto-corrected themes | `PROHIBITED` | explicit complete Theme contract |
 | Page-authored visual authority and public optical props | `PROHIBITED` | Design Token and UI boundary |
 
-本表是 Status Authority。其他章节可以解释合同，不得创建另一份状态枚举。Target 章节必须显式写出 `CAPABILITY_STATUS=TARGET_INACTIVE`；未出现 `ACTIVE` 证据的 Target 不得被 README、Page、Package Manifest 或 Generated Output 描述为现有能力。
+本表是 Status Authority。其他章节可以解释合同，不得创建另一份状态枚举。具有完整、当前可实施 Target Contract 的章节必须显式写出 `CAPABILITY_STATUS=TARGET_INACTIVE`；只有准入条件或候选方向、且缺少真实产品输入的能力必须写出 `CAPABILITY_STATUS=DEFERRED`。未出现 `ACTIVE` 证据的 Target 或 Deferred Capability 不得被 README、Page、Package Manifest 或 Generated Output 描述为现有能力。
 
 ## 1.4 Canonical Value Authority and Defaults
 
@@ -473,6 +553,8 @@ No RC in production dependencies
 | 国际化    | Vue I18n                   | 文本、格式、RTL 和语言切换     |
 
 Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 自动生成路由和类型，不再需要手工维护完整的路由数组。
+
+本表中的 Server State、API、Auth 和相关 Backend Integration 只表示 §20/§20A 保留的条件式 Target Direction，不是当前安装清单、Mandatory Mainline 或实施许可。当前真实产品交付主线只消费 Active Frontend Capability；没有 Backend Contract 时不安装或创建其依赖、Provider、Registry、Configuration Field 或 Placeholder。
 
 ## 3.2 设计与 UI 层
 
@@ -4482,7 +4564,7 @@ components/adapters/internal/composables/styles/types = absent
 ```text
 CAPABILITY=FOUNDATIONAL_SHARED_UI_COMPONENTS
 CAPABILITY_STATUS=TARGET_INACTIVE
-FIRST_CONSUMER_GATE=PAVP_FIRST_PROTECTED_VERTICAL_SLICE
+FIRST_CONSUMER_GATE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 ADDITIONAL_CONSUMER_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 ```
 
@@ -4681,7 +4763,7 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 OWNER=apps/web/src/app/shell/layout
 CORE_ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 ROUTER_READING_DOCUMENT_LAYOUT_SCROLL_FOCUS_CORE_STATUS=ACTIVE
-FIRST_SHELL_CONSUMER_GATE=PAVP_FIRST_PROTECTED_VERTICAL_SLICE
+FIRST_SHELL_CONSUMER_GATE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 CSS_LAYOUT_CAPABILITY=TARGET_INACTIVE
 CURRENT_APP_SHELL=ABSENT
 ```
@@ -4950,6 +5032,8 @@ feature-local shared state
 Pinia 是 Vue 的稳定 Store 方案，提供 TypeScript、DevTools、SSR 和 HMR 支持。
 
 ## 19.2 TanStack Query 负责
+
+本节只描述未来真实 Backend/Service Contract 获得 Owner 显式准入后的条件式 Ownership。当前 `TanStack Query server-state runtime=DEFERRED`，不属于 Pure Frontend Mainline，不得创建 Query Client、Provider、Kernel Step、Placeholder Cache 或依赖声明。
 
 ```text
 API requests
@@ -5853,11 +5937,28 @@ NO_AUTOMATIC_ROADMAP_CONTINUATION=ENFORCED
 
 ```text
 CAPABILITY=API_TRANSPORT
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=DEFERRED
 OWNER=apps/web/src/shared/api
 ACTIVATION_GATE=PAVP_API_TRANSPORT_IMPLEMENTATION
+IMPLEMENTATION_STATUS=NOT_STARTED
+ADMISSION_STATUS=NOT_ELIGIBLE_WITHOUT_REAL_BACKEND_SERVICE_CONTRACT
+CURRENT_BACKEND_CONTRACT=NONE
+CURRENT_API_ENDPOINT_CONTRACT=NONE
 MANDATORY_OPENAPI_FETCH_DEPENDENCY=NONE
 ```
+
+本节完整 Target Contract 保留为未来条件式能力，不是当前 Mainline、Current Implementation Input 或 Backend 缺失缺陷。`PAVP_API_TRANSPORT_IMPLEMENTATION` 只有在 Owner 提供一个真实 Backend/Service Contract，并同时冻结以下全部权威后才可从 `DEFERRED` 进入新的显式 Admission：
+
+```text
+one authoritative real endpoint
+one authoritative API origin
+exact request and response schemas
+exact timeout, retry, auth, cache and concurrency policies
+one real frontend consumer
+one authoritative server owner
+```
+
+在上述条件全部满足前，禁止创建 Mock/Sample/Health/Public-third-party Endpoint、Fake OpenAPI Schema、API Origin Field、Endpoint Registry、Query Client、API Error Record、API Runtime Kernel Step 或 Placeholder Transport。`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios 与 Alova 均不准入；API Transport 不阻塞 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 或其他 Frontend-only Admission。
 
 Canonical Target：
 
@@ -6034,18 +6135,22 @@ OpenAPI Package 必须固定 Input Digest、Generator Version、Command、Output
 
 Attempt Event 只允许 Endpoint ID、Method、Status Category、Duration、Retry Attempt、Request/Correlation ID、Release SHA 和 Error Category。URL Path Params、Query、Header、Body 和 Response 默认全部 Redacted；允许字段必须逐 Endpoint Allowlist。
 
-Owning Static Gate 必须拒绝直接 `fetch`、直接 `XMLHttpRequest`、未注册 Base URL/Header/Timeout/Retry/Cache Literal、未传 AbortSignal、无 Response Mode、无 Zod Boundary、Mutation 默认重试、Query Data 复制、敏感 Log 和 Generated OpenAPI Drift。本节全部规则在 API Transport Implementation 前为 `TARGET_INACTIVE`。
+Owning Static Gate 必须拒绝直接 `fetch`、直接 `XMLHttpRequest`、未注册 Base URL/Header/Timeout/Retry/Cache Literal、未传 AbortSignal、无 Response Mode、无 Zod Boundary、Mutation 默认重试、Query Data 复制、敏感 Log 和 Generated OpenAPI Drift。本节全部规则随 API Transport 保持 `DEFERRED`；只有真实合同获得显式 Admission 后，才能在同一 Implementation Landing 中转为 `ACTIVE`。
 
 # 20A. Auth, Session and Permission Target Contract
 
 ```text
 CAPABILITY=AUTH_SESSION_PERMISSION
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=DEFERRED
 OWNER=apps/web/src/app/session
 SECURITY_AUTHORITY=SERVER
 CLIENT_PERMISSION_MODEL=CAPABILITY_PROJECTION
 ACTIVATION_GATE=PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
+IMPLEMENTATION_STATUS=NOT_STARTED
+ADMISSION_STATUS=NOT_ELIGIBLE_WITHOUT_ACTIVE_API_AND_REAL_SERVER_SECURITY_CONTRACT
 ```
+
+本节完整 Target Contract 保留为未来条件式能力。`PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 只有在 API Transport 已被真实需求准入并实际 `ACTIVE`，且 Owner 提供真实 Server-side Authentication、Cookie、CSRF、Session、Principal、Tenant 与 Capability Contract 后才可进入新的显式 Admission。当前不得创建 Auth State、Session Store、Permission Registry Instance、Protected Route、Fake Principal、No-op Guard 或 Invented Protected Flow；本能力不阻塞任何 Frontend-only Mainline 或 Admission。
 
 ## 20A.1 Session State Machine
 
@@ -6121,7 +6226,7 @@ Return URL 使用 §9.6 Typed Same-origin Contract。Logout 后默认导航到�
 
 ## 20A.7 Auth Static Enforcement Targets
 
-Owning Gate 必须验证 Session Transition Exhaustiveness、Single-flight 唯一性、Cookie/CSRF Config Schema、401/403 分离、Permission Registry Closure、Route/Component/Operation Reference、Principal-partitioned Query Keys、Cleanup Order、Cross-tab Payload Allowlist 和 Sensitive Persistence Prohibition。全部为 `TARGET_INACTIVE`，不得用客户端检查宣称安全完成。
+Owning Gate 必须验证 Session Transition Exhaustiveness、Single-flight 唯一性、Cookie/CSRF Config Schema、401/403 分离、Permission Registry Closure、Route/Component/Operation Reference、Principal-partitioned Query Keys、Cleanup Order、Cross-tab Payload Allowlist 和 Sensitive Persistence Prohibition。全部随 Auth/Session/Permission 保持 `DEFERRED`，不得用客户端检查宣称安全完成；真实 Server Contract 获得显式 Admission 后才能实施并转为 `ACTIVE`。
 
 # 20B. Error Handling and Observability Contract
 
@@ -6134,12 +6239,13 @@ IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 EXTENSION_GATES=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION; PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
 
 CAPABILITY=OBSERVABILITY_REPORTING
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=DEFERRED
 OWNER=apps/web/src/app/observability
 ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+IMPLEMENTATION_STATUS=NOT_STARTED
 ```
 
-Core Error Handling 与 Observability Reporting 是两个串行 Authority。Runtime Kernel 已激活 Startup、Configuration、Vue Boundary 与 Unhandled-rejection 所需的最小 Error Registry、Normalizer 和 Capture；Router Landing 已原子增加独立六条 Router Error Record 与 Adapter，使 Application-owned Combined Registry 精确为十条，同时保留 Core Registry 精确四条。Storage、API 与 Auth 仍只可在自己的 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 只由 Observability Gate 激活，当前仍为 `TARGET_INACTIVE`。
+Core Error Handling 与 Observability Reporting 是两个独立 Authority。Runtime Kernel 已激活 Startup、Configuration、Vue Boundary 与 Unhandled-rejection 所需的最小 Error Registry、Normalizer 和 Capture；Router Landing 已原子增加独立六条 Router Error Record 与 Adapter，使 Application-owned Combined Registry 精确为十条，同时保留 Core Registry 精确四条。Storage 已增加其 Active Extension；API 与 Auth 仍只能在未来各自真实需求 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 当前为 `DEFERRED`；Backend/Auth-dependent Reporting 只有在真实 Producer、Provider 和 Hosting Contract 存在后才可准入，且不阻塞 Pure Frontend Mainline。
 
 ## 20B.1 Exact Error Registry
 
@@ -6383,7 +6489,7 @@ Reporting Transport 使用独立、最小、无业务拦截器的通道。Report
 
 ## 20B.7 Error and Observability Static Enforcement Targets
 
-Core Error Owning Gate 当前为 `ACTIVE`：它拒绝任意 Error Category/Message、重复 Capture 和无 Owner Retry，并验证每个已准入 Error Consumer 与 Exact Active Registry Subset 同步；新 Package 必须在同一 Landing 中扩展 Registry，不能提前或延后。Observability Gate 另行拒绝任意 Telemetry Name、Raw Console Production Log、未 Redact Context、重复 Report、公开 Source Map、PII Field、未注册 Metric 和 Recursive Reporter，并闭合 Schema Version、Release Fields 与 Capture Source。Observability Enforcement 在其 Gate 前保持 `TARGET_INACTIVE`；Core Error 已激活不表示 Reporting Active。
+Core Error Owning Gate 当前为 `ACTIVE`：它拒绝任意 Error Category/Message、重复 Capture 和无 Owner Retry，并验证每个已准入 Error Consumer 与 Exact Active Registry Subset 同步；新 Package 必须在同一 Landing 中扩展 Registry，不能提前或延后。Observability Gate 另行拒绝任意 Telemetry Name、Raw Console Production Log、未 Redact Context、重复 Report、公开 Source Map、PII Field、未注册 Metric 和 Recursive Reporter，并闭合 Schema Version、Release Fields 与 Capture Source。Observability Enforcement 随 Optional Backend-dependent Reporting 保持 `DEFERRED`；Core Error 已激活不表示 Reporting Active。真实 Producer、Provider 与 Hosting Contract 获得显式 Admission 后，Owning Gate 才能实施并转为 `ACTIVE`。
 
 ---
 
@@ -7175,7 +7281,7 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 
 Architecture Contract 与 `AGENTS.md` 的同步只能由 Owner 明确授权的 Repository-governance Task 修改；UI Workflow 自身不得改写这些 Authority。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 与 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 已完成。Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover、Phase 1 Static Closure、Runtime Kernel Static Ownership 与 Router Static Ownership 已同步。当前唯一 Next Canonical Work Package 是 §37.2 的 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`。已落地边界不得被后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 与 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 已完成。Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover、Phase 1 Static Closure、Runtime Kernel、Router 与 Storage Static Ownership 已同步。`PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT` 已把当前唯一 Next Canonical Work Package 冻结为 §37.2 的 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`。已落地边界不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -7238,7 +7344,7 @@ Owner 自己操作的浏览器或其他 Operator Capability 是非权威、可�
 
 ### Project Mission
 
-PAVP 是一套可复用、面向 Production、AI-friendly 的 Vue Frontend Architecture，目标是让未来 Frontend Development 快速、一致、高度可定制、可维护，并使 AI Coding Agent 能够安全理解和修改。
+PAVP 是一套可复用、面向 Production、AI-friendly 的纯 Vue Frontend Architecture，目标是让未来 Frontend Development 快速、一致、高度可定制、可维护，并使 AI Coding Agent 能够安全理解和修改。当前没有 Backend、Backend Repository、API Service、OpenAPI Contract 或真实 Endpoint；这是一项明确产品决策，不是待修缺陷。
 
 Primary Development Goal 是先完成 Reusable Frontend Foundations，再投入 Business Page 或 Broad UI-framework Integration。Mission Foundation Summary 包含以下能力，但本清单不是第二份 Roadmap：
 
@@ -7295,10 +7401,12 @@ THEN
 build Shared UI from real consumer demand
 
 FINALLY
-build one simple real frontend surface that uses the completed architecture and demonstrates platform capabilities
+build one real Layout Admin / frontend capability management surface using only active frontend capabilities
 ```
 
-最终 Surface 用于证明和消费 Architecture，不创建第二个 Business Platform，也不建立独立 Demo 或 Showcase Infrastructure。它必须是 Architecture-admitted Real Application Surface。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；Third-party UI/Interaction Primitive 只是 PAVP-owned Public Boundary 后的 Private Implementation Detail。除非已由 Canonical Admission 明确选择，不冻结 UI Vendor。
+当前 Mainline Surface 是 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`：一个真实、Frontend-only、无 Backend/Auth/Server-state/Mock Dependency 的 Layout Admin / Frontend Capability Management Surface。它用于证明和消费 Architecture，不创建第二个 Business Platform，也不建立独立 Demo、Showcase、Architecture Dashboard、Evidence Page 或 Sample Application。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；Third-party UI/Interaction Primitive 只是 PAVP-owned Public Boundary 后的 Private Implementation Detail。除非已由 Canonical Admission 明确选择，不冻结 UI Vendor。
+
+Backend-dependent API、Query、Auth、Session、Permission、Observability 与 Protected Flow 只属于 §37.2 Optional Demand-driven Lane。它们不阻塞 Layout Admin 或未来 Frontend-only Admission，也不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。
 
 ### Task Discipline
 
@@ -7651,7 +7759,7 @@ interface StaticEnforcementTarget {
 | `no-transition-all` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | All authored CSS, Vue Transition and future motion adapters | `design-token-source` | `TRANSITION_ALL` |
 | `no-unregistered-breakpoint` | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Media/container queries and JS layout thresholds | `domain-schema`; `design-token-source` | `UNREGISTERED_BREAKPOINT` |
 | `no-unregistered-scroll-dimension` | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Scroll offset, compensation, threshold and restoration tolerance | `route-registry`; `design-token-source`; `named-protocol-constant` | `UNREGISTERED_SCROLL_DIMENSION` |
-| `no-unregistered-touch-target` | `TARGET_INACTIVE` | `PAVP_FIRST_PROTECTED_VERTICAL_SLICE` | Public UI hit-area and pointer target metrics | `design-token-source`; `named-protocol-constant` | `UNREGISTERED_TOUCH_TARGET` |
+| `no-unregistered-touch-target` | `TARGET_INACTIVE` | `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` | Public UI hit-area and pointer target metrics | `design-token-source`; `named-protocol-constant` | `UNREGISTERED_TOUCH_TARGET` |
 | `no-raw-storage-key` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Source, HTML attributes, First Paint, migrations and storage adapters | `storage-registry`; `generated-output` | `RAW_STORAGE_KEY` |
 | `storage-owner-registry-closure` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Local Storage, IndexedDB, memory adapter and cross-tab calls | `storage-registry` | `UNREGISTERED_STORAGE_OWNER` |
 | `no-sensitive-persistence` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Persisted schemas, serializers, writers, migrations and snapshots | `storage-registry`; `domain-schema` | `SENSITIVE_PERSISTENCE` |
@@ -7719,7 +7827,7 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 CURRENT_GENERATOR_SCRIPTS=NONE
 ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 ACTIVATION_GATE_CREATION=UNIQUE_PAVP_GENERATOR_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
-EARLIEST_ENTRY=PAVP_FIRST_PROTECTED_VERTICAL_SLICE=COMPLETE_AND_REPEATED_SCAFFOLDING_NEED_PROVEN
+EARLIEST_ENTRY=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE=COMPLETE_AND_REPEATED_SCAFFOLDING_NEED_PROVEN
 ```
 
 以下命令是 Target Command Name，不是当前可用命令：
@@ -7957,7 +8065,7 @@ APPLICABLE_RUNTIME_DOMAINS=<named matrix domains>
 
 该 Decision 由 Owner/Deployment Process 保持在仓库外；不得创建 Evidence、Screenshot、Trace、Checklist File、Test 或 Browser Automation。`REJECT` 必须阻止部署或触发 Rollback；`ACCEPT` 只授权该精确 Release，不成为未来 Release 证据。
 
-Minimum Matrix：Startup/Runtime Config、Appearance First Paint and Atomic Theme、关键 Route/Auth/Permission、API/Mutation/Conflict、Storage Migration/Corruption/Cross-tab、Keyboard/Focus/Name、Layout/Scroll、Reduced/Forced Modes、关键 Performance 和 Error Reporting。只发布静态架构文档且没有 Runtime Artifact 变化时，Product Release Gate 不适用；Codex 仍运行 `pnpm verify`。
+Minimum Matrix 只覆盖该精确 Release 实际改变或消费的 `ACTIVE` Domain：Startup/Runtime Config、Appearance First Paint and Atomic Theme、关键 Route、Storage、Keyboard/Focus/Name、Layout/Scroll、Reduced/Forced Modes 与适用 Performance。Auth/Permission、API/Mutation/Conflict、Backend-dependent Observability 和 Protected Flow 只有在未来显式准入并实际 `ACTIVE` 后才进入适用 Matrix；它们不得阻塞 Frontend-only Release。只发布静态架构文档且没有 Runtime Artifact 变化时，Product Release Gate 不适用；Codex 仍运行 `pnpm verify`。
 
 Release Acceptance 不能覆盖失败的 Static Gate、降低 WCAG/安全合同或批准已知 Secret/数据损失风险。Codex 不得把未提供的 Owner Decision 推断为接受。
 
@@ -8060,6 +8168,7 @@ ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 CONSUMER_ADMISSION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 FIELD_EXTENSION_GATES=PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+BACKEND_DEPENDENT_FIELD_EXTENSION_GATES=OPTIONAL_DEMAND_DRIVEN_ONLY
 FIELD_EXTENSION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 FIELD_EXTENSION_GATE_CREATION=UNIQUE_PAVP_I18N_INSTANCE_ID_REQUIRED_FOR_PRODUCT_ZONE_POLICY
 
@@ -8068,7 +8177,12 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 OWNER=deployment platform plus apps/web configuration boundary
 ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
 CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_ARCHITECTURE_FROZEN_IMPLEMENTATION_INACTIVE
+IMPLEMENTATION_STATUS=NOT_STARTED
 ```
+
+Core Runtime Configuration 的现有五字段 Active Contract 保持不变。API Origin、Observability Origin、Auth、Session、Provider 或 Backend Field 都不是当前 Mainline Input；对应 Field Extension Gate 只在其 Optional Demand-driven Capability 获得真实合同和 Owner 显式准入后适用。
+
+Deployment Delivery Target 不阻塞 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`。`PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 作为当前未准入的组合包整体保持未实现；其中 Backend/Auth-dependent Observability 进入 Optional Backend-dependent Lane。未来纯前端 Hosting/Release 需求若要独立准入，必须由 Owner 以真实 Hosting Contract 建立独立、明确的 Architecture Admission，不得在本次 Alignment 中拆分、激活或实现该组合包。
 
 * 所有环境变量通过 Zod 校验。
 * `VITE_*` 中不得存放秘密。
@@ -8479,7 +8593,12 @@ RUNTIME_KERNEL_IMPLEMENTATION_COMMIT = 3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION = COMPLETE
 ROUTER_CAPABILITY_STATUS = ACTIVE
 CURRENT_RUNTIME_KERNEL_STEP_COUNT = 11
-NEXT = PAVP_API_TRANSPORT_IMPLEMENTATION
+PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE = NEXT
+LAYOUT_ADMIN_RUNTIME_IMPLEMENTATION = NOT_STARTED
+PAVP_API_TRANSPORT_IMPLEMENTATION = DEFERRED / NOT_STARTED
+PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION = DEFERRED / NOT_STARTED
+PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION = NOT_STARTED
+PAVP_FIRST_PROTECTED_VERTICAL_SLICE = DEFERRED / NOT_STARTED
 ```
 
 以下是完整 Phase 1 Target Inventory。某项是否已实现、是否已机器强制以及是否允许成为 Runtime Authority，只由 §37.1 的 Package Status 和 Owning Gate 决定，不因出现在本清单而自动激活：
@@ -8549,19 +8668,21 @@ User Layout Presets
 
 Motion 目录和依赖只有在命名 Interaction 通过 Admission Gate 后才进入；`internal/scroll` 由真实 Phase 3 共享需求创建。
 
-## Phase 4：数据和表单
+## Phase 4：按真实需求准入的数据和表单能力
 
 交付：
 
 ```text
-Native Fetch
-TanStack Query
-Error Model
-VeeValidate + Zod
+Native Fetch only after a real backend/service contract admission
+TanStack Query only after API Transport admission
+API Error Model only with the admitted real API domain
+VeeValidate + Zod only for a named real Form consumer
 Phase 4 Input / Table color-role candidates, admitted only by an independent Architecture Amendment
-Query Key Policy
+Query Key Policy only with admitted server state
 Loading / Error / Empty Contract
 ```
+
+本 Phase 不是 Pure Frontend Mainline 的 Mandatory Predecessor。Backend-dependent 条目属于 §37.2 Optional Lane；Frontend-only Form/Table Capability 可以在 Layout Admin 或另一个真实 Frontend Consumer 出现后按自己的 Demand-driven Gate 准入，不等待 API/Auth/Protected Slice。
 
 ## Phase 5：用户个性化
 
@@ -8584,7 +8705,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 与 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 把 Kernel 扩展为十步并激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为十一步并激活 Storage Domain。唯一 Next Implementation Package 是 `PAVP_API_TRANSPORT_IMPLEMENTATION`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 与 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain。`PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT` 已把唯一 Next Implementation Package 改为 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`；API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -8601,8 +8722,20 @@ ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
+PROJECT_DELIVERY_MODEL=PURE_FRONTEND_PLATFORM
+CURRENT_BACKEND_CONTRACT=NONE
+CURRENT_API_ENDPOINT_CONTRACT=NONE
+BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
+BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE=NEXT
+PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE_IMPLEMENTATION=NOT_STARTED
+PAVP_API_TRANSPORT_IMPLEMENTATION=DEFERRED_NOT_STARTED
+PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION=DEFERRED_NOT_STARTED
+PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION=NOT_STARTED
+PAVP_FIRST_PROTECTED_VERTICAL_SLICE=DEFERRED_NOT_STARTED
 ```
 
 Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插入 `3A`：
@@ -8617,7 +8750,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel 与 Router Implementation 随后依次完成。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_API_TRANSPORT_IMPLEMENTATION`，不得因本次 Status Synchronization 自动开始。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router 与 Storage Implementation 随后依次完成。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`，本次 Architecture-only Alignment 不得自动开始其 Implementation，也不得开始 Optional Backend-dependent Lane。
 
 当前精确 Acceptance Contract：
 
@@ -8968,33 +9101,48 @@ Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须�
 
 所有未来目录继续遵守 Demand-created Rule。Grid、Editor、Charts、Clear-media Material、Spring Family 和 Component Token Tree 保持在后续 Gate。
 
-## 37.2 Frozen Future Implementation Chain
+## 37.2 Pure Frontend Mainline and Optional Demand-driven Lanes
 
 ```text
-CAPABILITY=FUTURE_IMPLEMENTATION_CHAIN
+CAPABILITY=PURE_FRONTEND_IMPLEMENTATION_MAINLINE
 CAPABILITY_STATUS=TARGET_INACTIVE
 SEQUENCING=STRICT_SERIAL
 PARALLEL_PACKAGES=PROHIBITED
 TEMPORARY_AUTHORITIES=PROHIBITED
 PACKAGE_COMPLETION_REQUIRES=OWNING_STATIC_GATE_PASS
 PRODUCTION_RELEASE_REQUIRES=SECTION_32_3_OWNER_ACCEPTANCE_WHEN_RUNTIME_CHANGES
+CURRENT_NEXT_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+
+CAPABILITY=OPTIONAL_BACKEND_DEPENDENT_CAPABILITY_LANE
+CAPABILITY_STATUS=DEFERRED
+ADMISSION=EXPLICIT_OWNER_DEMAND_AND_REAL_BACKEND_SERVICE_CONTRACT_ONLY
+PURE_FRONTEND_MAINLINE_BLOCKING_AUTHORITY=NONE
 ```
 
-精确顺序：
+Mandatory Pure Frontend Mainline 的精确顺序：
 
 ```text
-1.  PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
-2.  PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
-3.  PAVP_FINAL_STATIC_GOVERNANCE
-4.  PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
-5.  PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
-6.  PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
-7.  PAVP_API_TRANSPORT_IMPLEMENTATION
-8.  PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION
-9.  PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
-10. PAVP_FIRST_PROTECTED_VERTICAL_SLICE
-11. DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
+1. PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE       COMPLETE
+2. PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER         COMPLETE
+3. PAVP_FINAL_STATIC_GOVERNANCE                          COMPLETE
+4. PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION         COMPLETE / ACTIVE
+5. PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION                 COMPLETE / ACTIVE
+6. PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION               COMPLETE / ACTIVE
+7. PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE                    NEXT / NOT_STARTED
 ```
+
+Optional Backend-dependent Lane 不属于上方 Strict Serial Mainline，也没有自动 Next 语义：
+
+```text
+PAVP_API_TRANSPORT_IMPLEMENTATION                        DEFERRED / NOT_STARTED
+TanStack Query server-state runtime                      DEFERRED / NOT_STARTED
+PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION              DEFERRED / NOT_STARTED
+backend-dependent PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
+                                                        DEFERRED / NOT_STARTED
+PAVP_FIRST_PROTECTED_VERTICAL_SLICE                      DEFERRED / NOT_STARTED
+```
+
+Future Demand-driven Frontend Capability Admissions 可以在 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 完成后按一个真实 Consumer、一个唯一 Work-package ID、一次一个 Capability 的规则串行进入；Forms、I18n、Tables、Shared UI、Motion 与 Specialist Capability 不依赖 Optional Backend-dependent Lane 完成。Optional Lane 的任何 Package 也不得阻塞 Layout Admin 或这些 Frontend-only Admission。
 
 每个 Package Record 必须声明：
 
@@ -9074,7 +9222,7 @@ PRODUCTION_BUNDLE_FINAL_JS_GZIP_BYTES=132064
 PRODUCTION_BUNDLE_FINAL_CSS_GZIP_BYTES=7457
 PRODUCTION_BUNDLE_FINAL_LAZY_CHUNKS=0
 PRODUCTION_RELEASE_ACCEPTANCE=NOT_CLAIMED_BY_STATIC_PACKAGE_COMPLETION
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 ```
 
 Production Bundle Gate 必须先对真实产物执行当前完整 `HEAD` Release SHA、Build Version 与
@@ -9153,7 +9301,7 @@ PRODUCTION_BUNDLE_COMPRESSION_PROFILE=node-zlib-gzip-sync
 PRODUCTION_BUNDLE_LAZY_ROUTE_CHUNKS=8
 PRODUCTION_BUNDLE_HARD_BUDGET_STATUS=PASS
 PRODUCTION_BUNDLE_ACCEPTANCE_AUTHORITY=real artifact identity plus canonical budgets and exact lazy-route structure
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 ```
 
 该 `COMPLETE` 只表示 Repository Implementation 与 Static Owning Contract 已闭合。它不替代 §32.3 的 Owner External Runtime Matrix，不声明 Production Release Acceptance，也不授权自动开始 Storage。Host-local Router gzip exact-byte snapshot 不是本 Package 的 Canonical Acceptance Contract；Bundle Gate 继续以真实 Artifact Identity、单一冻结 Compression Profile、Canonical Hard Budgets 与精确八个 Lazy Route Chunk 结构作出判定。
@@ -9193,7 +9341,7 @@ COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
 TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_AND_CLEANUP
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_API_TRANSPORT_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 ```
 
 ```text
@@ -9208,74 +9356,119 @@ COMPLETION_EVIDENCE=no raw key outside owner/generated first paint; failures str
 
 Principal Partition Interface 可以存在，但 Auth-specific Principal 数据与 Session Cleanup 只能由 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 激活。本 Record 的 Exact Implementation Input 由 §19.5.1 `PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT` 唯一冻结：两条 `direct-compatibility` Registry Record、0 Envelope/0 Memory/0 Migration/0 Cross-tab Event、11 条 Storage Error Record、`create-and-ready-storage` Kernel Step（Target 11 步）、`none`-only Partition 与 Package 5 Direct-format 保留决策。实施包不得改写这些 Frozen Value，也不得把 Package 5 两条 Payload 迁入 `PersistedEnvelope`。
 
-### 37.2.7 `PAVP_API_TRANSPORT_IMPLEMENTATION`
+### 37.2.7 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`
 
 ```text
-ENTRY=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE; API registries and runtime config origins frozen; first real typed endpoint or protected-slice endpoint contract accepted
-ALLOWED=Native Fetch transport; API runtime-config field and error-registry extensions; AbortSignal; Zod boundaries; TanStack Query admission; Query Client kernel step; OpenAPI types only when reliable schema gate passes; Router Query integration
-PROHIBITED=openapi-fetch mandatory dependency; Axios/Alova; Auth refresh; mutation default retry; direct fetch; Query-to-Pinia copy; offline cache
-OUTPUT=single-attempt transport; response modes; error normalization; retry/idempotency/cache/concurrency policies; query key registry; diagnostics redaction
-MACHINE_GATES=direct fetch ban; endpoint/policy/schema closure; abort propagation; 204/content-type/error-body handling; retry matrix; OpenAPI drift; query ownership; pnpm verify
-PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_SUCCESS_ERROR_TIMEOUT_ABORT_RETRY_204_UPLOAD_DOWNLOAD_AND_CONFLICT_APPLICABLE_PATHS
-COMPLETION_EVIDENCE=one transport authority; one Query cache; no unvalidated response; no raw timeout/retry/cache literal
+STATUS=NEXT
+CAPABILITY_STATUS=TARGET_INACTIVE
+IMPLEMENTATION_STATUS=NOT_STARTED
+PRODUCT_IDENTITY=one real Layout Admin / frontend capability management surface
+PRODUCT_CLASSIFICATION=REAL_PAVP_PRODUCT_SURFACE_NOT_DEMO_SHOWCASE_COMPONENT_GALLERY_ARCHITECTURE_STATUS_DASHBOARD_EVIDENCE_PAGE_OR_SAMPLE_APPLICATION
+DELIVERY_MODEL=FRONTEND_ONLY
+BACKEND_DEPENDENCY=NONE
+AUTHENTICATION_REQUIREMENT=NONE
+SERVER_STATE=NONE
+MOCK_API=PROHIBITED
+FAKE_PROTECTED_ROUTE=PROHIBITED
+INACTIVE_CAPABILITY_CONTROLS=PROHIBITED
+ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE_AND_ACTIVE; PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; Design System and Appearance capabilities remain COMPLETE_AND_ACTIVE; current repository static gates pass; no unresolved overlap or unrelated dirty state
+ALLOWED=one real frontend-only Layout Admin route and surface; application-owned composition using PAVP Design Tokens as the sole visual authority; currently active Appearance and Theme capabilities only; existing Router navigation; existing Package 5 Pinia Appearance orchestration; existing Storage persistence boundaries; minimum consumer-driven UI required by this one real surface; accessibility, layout, responsive capability projection and production bundle enforcement already defined by PAVP
+PROHIBITED=API Transport; Native Fetch business client; TanStack Query; Auth; Session; Permission; protected business flow; mock API; sample endpoint; server data; Observability activation; Deployment activation; Forms; Tables; I18n; Motion; charts; editors; grids; specialist vendors without their own real consumer gate; broad Shared UI platform construction; speculative component variants; controls for TARGET_INACTIVE or DEFERRED capabilities; demo; showcase; architecture dashboard; evidence page; test page; component gallery
+OUTPUT=one real frontend capability management surface; only active capabilities are presented or editable; no duplicate state, schema, default, registry, storage or visual authority; no page-authored visual token system; no backend placeholder; no generic UI framework expansion
+MACHINE_GATES=exact route and route-meta closure; only active-capability consumers; no inactive-capability imports or controls; Design Token and UnoCSS authority preservation; Package 5 Appearance and Storage ownership preservation; accessibility and static lint closure; dependency and package-boundary closure; production bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=OWNER_EXTERNAL_RUNTIME_ACCEPTANCE_REQUIRED_FOR_ACTUAL_LAYOUT_ADMIN_UI_BEHAVIOR_WHEN_IMPLEMENTED
+COMPLETION_EVIDENCE=one real frontend-only route and surface; all required static gates pass; runtime behavior remains external and Owner-operated; no backend-dependent implementation or dependency admitted
 ```
 
-`PAVP_API_TRANSPORT_IMPLEMENTATION` 激活 Router `blocking-required/non-blocking` Prefetch 子集，并必须保持 Router 只编排 Query Options、不拥有 Cache。
+本记录只冻结 Product Identity、Implementation Boundary、Admission Scope、Prohibition、Output、Machine Gate 与 Sequencing。它不定义最终 Detailed UI Layout、Component Tree、Styling Value 或 Implementation File；这些私有实现细节只能在该 Package 被 Owner 单独授权后，由真实 Consumer 和现有 Authority 派生。
 
-### 37.2.8 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION`
+### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
 ```text
-ENTRY=PAVP_API_TRANSPORT_IMPLEMENTATION=COMPLETE; server auth/cookie/CSRF/session/capability contract available; security review passes
-ALLOWED=session state machine; auth error-registry extension; restoration/login/logout/refresh single-flight; cookie/CSRF coordination; permission registry; partitions; dynamic protected routes; kernel session step
-PROHIBITED=token in browser storage; client security authority; scattered role strings; mutation replay; unpartitioned Query cache; partial logout
-OUTPUT=server-authoritative session and capability projection; 401/403 separation; cross-tab logout; account/tenant switch; safe return URL
-MACHINE_GATES=transition exhaustiveness; refresh single-flight; sensitive persistence ban; permission closure; query/storage/route cleanup order; CSRF config; pnpm verify
-PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_RESTORE_LOGIN_LOGOUT_REFRESH_EXPIRY_REVOCATION_401_403_CROSS_TAB_AND_SWITCH
-COMPLETION_EVIDENCE=no credential in JS persistence; every protected route/operation references registry; cleanup leaves no prior principal state
+STATUS=DEFERRED
+CAPABILITY_STATUS=DEFERRED
+IMPLEMENTATION_STATUS=NOT_STARTED
+PURE_FRONTEND_MAINLINE_BLOCKER=NO
+ENTRY=Owner provides one real backend/service contract containing one authoritative endpoint, one authoritative origin, exact request/response schemas, exact timeout/retry/auth/cache/concurrency policies, one real frontend consumer and one authoritative server owner; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION remains COMPLETE; explicit new admission is approved
+ALLOWED_AFTER_ADMISSION=Native Fetch transport; API runtime-config field and error-registry extensions; caller AbortSignal; Zod untrusted boundaries; TanStack Query admission; Query Client kernel step; OpenAPI types only when a reliable real schema gate passes; Router Query integration
+PROHIBITED_BEFORE_ADMISSION=mock/sample/health/public-third-party endpoint; fake OpenAPI schema; API origin field; endpoint registry; Query Client; API Error record; API Runtime Kernel step; openapi-fetch; Axios; Alova; direct fetch; Query-to-Pinia copy; offline cache
+OUTPUT_AFTER_ADMISSION=single-attempt transport; response modes; error normalization; retry/idempotency/cache/concurrency policies; query key registry; diagnostics redaction
+MACHINE_GATES_AFTER_ADMISSION=direct fetch ban; endpoint/policy/schema closure; abort propagation; 204/content-type/error-body handling; retry matrix; OpenAPI drift when applicable; query ownership; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_APPLICABLE_REAL_API_PATHS_AFTER_ADMISSION
+COMPLETION_EVIDENCE=one real transport authority and one Query cache only after admission; no unvalidated response; no raw timeout/retry/cache literal
 ```
 
-### 37.2.9 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION`
+只有该 Package 获得真实合同并完成后，才可以激活 Router `blocking-required/non-blocking` Prefetch 子集；Router 仍只能编排 Query Options，不能拥有 Cache。
+
+### 37.2.9 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION`
 
 ```text
-ENTRY=PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION=COMPLETE; deployment/runtime config/event/error/performance registries frozen; provider and hosting contracts accepted
-ALLOWED=observability registry/reporting activation; privacy-safe structured capture; private source-map upload; observability/runtime delivery-config extension; base/subpath; CSP/cache/release/rollback integration
-PROHIBITED=PII/raw body logs; recursive reporter; public source maps; unsafe CSP; browser automation; repository evidence artifact
-OUTPUT=release-aware error/trace/performance pipeline and immutable deploy/rollback contract
-MACHINE_GATES=registry/schema closure; redaction scan; source-map public exclusion; CSP/cache/base/release manifest checks; bundle budget; pnpm verify
-PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_REPORTING_FAILURE_CSP_CONFIG_SUBPATH_CACHE_RELEASE_AND_ROLLBACK
+STATUS=DEFERRED
+CAPABILITY_STATUS=DEFERRED
+IMPLEMENTATION_STATUS=NOT_STARTED
+PURE_FRONTEND_MAINLINE_BLOCKER=NO
+ENTRY=PAVP_API_TRANSPORT_IMPLEMENTATION is explicitly admitted, implemented and ACTIVE; real server-side authentication, cookie, CSRF, session, principal, tenant and capability contracts exist; security review passes; explicit new admission is approved
+ALLOWED_AFTER_ADMISSION=session state machine; auth error-registry extension; restoration/login/logout/refresh single-flight; cookie/CSRF coordination; permission registry; partitions; dynamic protected routes; kernel session step
+PROHIBITED_BEFORE_ADMISSION=Auth state; Session placeholder; fake principal; protected route; invented protected flow; token in browser storage; client security authority; scattered role strings; mutation replay; unpartitioned Query cache; partial logout
+OUTPUT_AFTER_ADMISSION=server-authoritative session and capability projection; 401/403 separation; cross-tab logout; account/tenant switch; safe return URL
+MACHINE_GATES_AFTER_ADMISSION=transition exhaustiveness; refresh single-flight; sensitive persistence ban; permission closure; query/storage/route cleanup order; CSRF config; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_APPLICABLE_REAL_AUTH_AND_SESSION_PATHS_AFTER_ADMISSION
+COMPLETION_EVIDENCE=no credential in JS persistence; every real protected route/operation references registry; cleanup leaves no prior principal state
+```
+
+### 37.2.10 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION`
+
+```text
+STATUS=DEFERRED
+IMPLEMENTATION_STATUS=NOT_STARTED
+PURE_FRONTEND_MAINLINE_BLOCKER=NO
+BACKEND_AUTH_DEPENDENT_SCOPE_STATUS=DEFERRED
+ENTRY=real observability producer/provider and hosting contracts are accepted; every backend/auth-dependent producer capability is already ACTIVE; deployment/runtime config/event/error/performance registries are frozen; explicit new admission is approved
+ALLOWED_AFTER_ADMISSION=observability registry/reporting activation; privacy-safe structured capture; private source-map upload; admitted delivery-config extension; base/subpath; CSP/cache/release/rollback integration
+PROHIBITED_BEFORE_ADMISSION=No-op reporter; placeholder provider; Backend/Auth event invention; PII/raw body logs; recursive reporter; public source maps; unsafe CSP; browser automation; repository evidence artifact
+OUTPUT_AFTER_ADMISSION=release-aware error/trace/performance pipeline and immutable deploy/rollback contract for the admitted real provider and hosting environment
+MACHINE_GATES_AFTER_ADMISSION=registry/schema closure; redaction scan; source-map public exclusion; CSP/cache/base/release manifest checks; bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_APPLICABLE_REAL_REPORTING_AND_DELIVERY_PATHS_AFTER_ADMISSION
 COMPLETION_EVIDENCE=release traceable to commit/config/assets; reporting failure cannot recurse; rollback selects complete immutable release
 ```
 
-### 37.2.10 `PAVP_FIRST_PROTECTED_VERTICAL_SLICE`
+未来纯前端 Hosting/Release 能力若需要先于 Backend-dependent Observability 独立准入，必须由 Owner 创建一个真实 Hosting Contract 和独立 Architecture Admission；本 Alignment 不拆分或激活该组合包。
+
+### 37.2.11 `PAVP_FIRST_PROTECTED_VERTICAL_SLICE`
 
 ```text
-ENTRY=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION=COMPLETE; all earlier chain packages remain complete; one real protected product flow and backend contract approved; foundational UI consumer gates pass
-ALLOWED=one typed protected route and the minimum feature/UI needed to prove all active platform boundaries
-PROHIBITED=second business flow; generic platform expansion; speculative component variants; specialist vendor without gate
-OUTPUT=end-to-end protected slice exercising startup, route, session, permission, Query, API, mutation, storage, errors, observability, deployment and cleanup
-MACHINE_GATES=all existing static gates; route/API/schema/permission/query/storage registries; boundary imports; bundle budget; pnpm verify
-PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FULL_APPLICABLE_MATRIX
-COMPLETION_EVIDENCE=single real flow proves contracts without duplicate authority; no unresolved P0/P1 release failure
+STATUS=DEFERRED
+CAPABILITY_STATUS=DEFERRED
+IMPLEMENTATION_STATUS=NOT_STARTED
+PURE_FRONTEND_MAINLINE_BLOCKER=NO
+ENTRY=PAVP_API_TRANSPORT_IMPLEMENTATION and PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION are explicitly admitted, implemented and ACTIVE; one real protected business flow and backend contract are approved; any required observability/deployment scope is admitted; foundational UI consumer gates pass
+ALLOWED_AFTER_ADMISSION=one typed protected route and the minimum feature/UI needed to prove the active real backend-dependent platform boundaries
+PROHIBITED_BEFORE_ADMISSION=fake protected route; mock backend; sample data; placeholder auth; second business flow; generic platform expansion; speculative component variants; specialist vendor without gate
+OUTPUT_AFTER_ADMISSION=one real end-to-end protected business slice using only actually active API, Auth and supporting capabilities
+MACHINE_GATES_AFTER_ADMISSION=all existing static gates; route/API/schema/permission/query/storage registries; boundary imports; bundle budget; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FULL_APPLICABLE_MATRIX_AFTER_ADMISSION
+COMPLETION_EVIDENCE=single real flow proves admitted contracts without duplicate authority; no unresolved P0/P1 release failure
 ```
 
-Minimum Slice Scenarios：Typed protected route、Session Restore、Auth Redirect/Return URL、403/404/500、Query Prefetch/Cancel、200/201/202/204、Timeout/User Abort、Idempotent/Non-idempotent Mutation、409/412、Logout Cache Cleanup、Cross-tab Logout、Corrupt Storage Recovery、Scroll Restoration、Runtime Error Report 和 Release/Rollback Identity。
+Minimum Slice Scenarios 只在上述真实 Admission 后按该产品流的适用合同冻结；当前不得为覆盖场景而创建 Endpoint、Auth、Mutation、Storage、Observability 或 Release Placeholder。
 
-### 37.2.11 Demand-driven Forms, I18n, Tables and UI Admissions
+### 37.2.12 Demand-driven Forms, I18n, Tables and UI Admissions
 
 ```text
 STAGE_ID=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 STAGE_KIND=REPEATABLE_STRICT_SERIAL_ADMISSION_TEMPLATE
 CAPABILITY_STATUS=TARGET_INACTIVE
-ENTRY=PAVP_FIRST_PROTECTED_VERTICAL_SLICE=COMPLETE; one named real consumer for the requested capability; stable dependency and bundle gate passes
-ALLOWED=one capability instance at a time following Sections 16 and 21–25 plus applicable Accessibility/Performance contracts; minimum exact Runtime Configuration field extension required by that domain; minimal semantic UI required by the consumer; generator only after repeated real scaffolding need
-PROHIBITED=parallel unrelated capability packages; ProForm/ProTable platform; speculative variants; prerelease dependency; second UI authority
+ENTRY=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE=COMPLETE or another Owner-approved real frontend consumer exists; one named real consumer for the requested capability; stable dependency and bundle gate passes
+BACKEND_DEPENDENT_LANE_COMPLETION_REQUIRED=NO
+ALLOWED=one capability instance at a time following Sections 16 and 21–25 plus applicable Accessibility/Performance contracts; minimum exact Runtime Configuration field extension required by that frontend domain; minimal semantic UI required by the consumer; generator only after repeated real scaffolding need
+PROHIBITED=parallel unrelated capability packages; ProForm/ProTable platform; speculative variants; prerelease dependency; second UI authority; Backend placeholder used only to justify admission
 OUTPUT=one consumer-backed form/i18n/table/motion/component/generator capability instance with exact registries, public root export and private vendor adapter where required
 MACHINE_GATES=domain contract checks; public/internal boundary; stable dependency; accessibility; unused code; bundle budget; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_EACH_RELEASE_AFFECTING_FORM_LOCALE_TABLE_INTERACTION_OR_UI
 COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted PAVP work-package ID; narrow public API; vendor isolation; all domain states and cleanup verified by static contract plus Owner release decision
 ```
 
-`DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Chain 的第十一阶段和 Work-package Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact。
+`DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；Optional Backend-dependent Lane 未完成不构成阻塞。
 
 ---
 
@@ -9303,7 +9496,7 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 
 # 39. 最终 Package 清单
 
-本节是各能力通过 Phase Gate 后的允许目标，不是当前安装清单。Package Manifest 只能包含已经由真实消费者、当前 Phase 和 Admission Gate 同时批准的依赖。
+本节是各能力通过各自真实 Consumer Gate 后的条件式允许目标，不是 Mandatory End State 或当前安装清单。Package Manifest 只能包含已经由真实消费者、当前 Phase 和 Admission Gate 同时批准的依赖。Optional Backend-dependent Lane 的 Planned Dependency 不得因出现在本节而阻塞 Pure Frontend Mainline，也不得由 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 安装。
 
 ## Root Dev Dependencies
 
@@ -9344,7 +9537,7 @@ vue-i18n
 @platform/ui
 ```
 
-这是通过全部 Gate 后的 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 的可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。当前 `apps/web` 的 Direct Dependency Set 精确为 `vue@3.5.40`、`@platform/design-system`、Package 5 窄范围准入的 `pinia@3.0.4`、Runtime Kernel 准入的 `zod@4.4.3` 与 Router Landing 准入并通过 Catalog 消费的 patched `vue-router@5.2.0`；`@tanstack/vue-query`、`vee-validate`、`@vueuse/core`、`vue-i18n`、`@platform/ui` 和其他 Runtime Dependency 继续等待各自 Phase 与 Named Gate。
+这是各独立 Gate 全部满足后的条件式 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 获得真实 Backend/Service Contract，且可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。当前 `apps/web` 的 Direct Dependency Set 精确为 `vue@3.5.40`、`@platform/design-system`、Package 5 窄范围准入的 `pinia@3.0.4`、Runtime Kernel 准入的 `zod@4.4.3` 与 Router Landing 准入并通过 Catalog 消费的 patched `vue-router@5.2.0`；当前没有 `@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios、Alova 或其他 API Dependency 被准入。`@tanstack/vue-query`、`vee-validate`、`@vueuse/core`、`vue-i18n`、`@platform/ui` 和其他 Runtime Dependency 继续等待各自真实 Consumer 与 Named Gate；Layout Admin 不授权安装其中任何一项。
 
 ## `packages/design-system`
 
@@ -9395,6 +9588,16 @@ PAVP_FOUNDATIONS_PRECEDE_UI_INTEGRATION_AND_PRODUCT_SURFACES
 THIRD_PARTY_UI_IS_PRIVATE_BEHIND_PAVP_BOUNDARIES
 SHARED_UI_REQUIRES_REAL_CONSUMER_DEMAND
 FINAL_SURFACE_IS_REAL_AND_ARCHITECTURE_ADMITTED_NOT_DEMO_OR_SHOWCASE
+PROJECT_DELIVERY_MODEL_IS_PURE_FRONTEND_PLATFORM
+CURRENT_BACKEND_CONTRACT_IS_NONE
+CURRENT_API_ENDPOINT_CONTRACT_IS_NONE
+BACKEND_ABSENCE_IS_INTENTIONAL_CURRENT_PRODUCT_STATE_NOT_REPOSITORY_DEFECT
+BACKEND_DEPENDENT_CAPABILITIES_ARE_OPTIONAL_DEMAND_DRIVEN
+BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+NO_MOCK_SAMPLE_HEALTH_PUBLIC_THIRD_PARTY_OR_FAKE_BACKEND_CONTRACT_FOR_SEQUENCE_ADVANCEMENT
+LAYOUT_ADMIN_IS_ONE_REAL_FRONTEND_CAPABILITY_MANAGEMENT_SURFACE
+LAYOUT_ADMIN_IS_NOT_DEMO_SHOWCASE_ARCHITECTURE_DASHBOARD_EVIDENCE_PAGE_OR_SAMPLE_APPLICATION
+LAYOUT_ADMIN_PRESENTS_OR_EDITS_ACTIVE_CAPABILITIES_ONLY
 
 ONE_COMPLETE_BOUNDED_TASK_AT_A_TIME
 NO_AUTOMATIC_ROADMAP_CONTINUATION
@@ -9485,7 +9688,13 @@ STORAGE_PERSISTENCE_IMPLEMENTATION_IS_COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_IS_ACTIVE
 CURRENT_RUNTIME_KERNEL_STEP_COUNT_IS_11
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE_REMAINS_PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-NEXT_CANONICAL_WORK_PACKAGE_IS_PAVP_API_TRANSPORT_IMPLEMENTATION
+NEXT_CANONICAL_WORK_PACKAGE_IS_PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE_IS_NEXT_AND_NOT_STARTED
+PAVP_API_TRANSPORT_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
+PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
+PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION_IS_NOT_STARTED
+PAVP_FIRST_PROTECTED_VERTICAL_SLICE_IS_DEFERRED_AND_NOT_STARTED
+NO_API_DEPENDENCY_ORIGIN_ENDPOINT_QUERY_CLIENT_ERROR_RECORD_KERNEL_STEP_AUTH_STATE_OR_PROTECTED_ROUTE_IS_ADMITTED
 FUTURE_DIRECTORIES_ARE_DEMAND_CREATED
 ONE_JUSTIFIED_CONSUMER_ADMITS_INITIAL_SHARED_COMPONENT
 ADDITIONAL_EVIDENCE_DRIVES_GENERALIZATION
@@ -9536,7 +9745,7 @@ NO_FUTURE_RULE_IS_CLAIMED_ENFORCED_BEFORE_ITS_GATE
 
 # 41. 最终架构摘要
 
-以下是通过全部 Named Gate 后的 Target End State，不是当前 Active Implementation Inventory。当前 Authority 以文首 Status Block、§11.4 Active Registry、§13.4 Preference Transition 和 §37.1 Work-package Order 为准；带 Target 或 Future Gate 的条目在对应 Gate 接受前保持 Inactive。
+以下是各独立 Named Gate 在真实需求下分别通过后的条件式 Target Capability Inventory，不是 Mandatory End State 或当前 Active Implementation Inventory。当前 Authority 以文首 Status Block、§11.4 Active Registry、§13.4 Preference Transition 和 §37.1 Work-package Order 为准；带 Target、Future Gate 或 Backend-dependent 的条目在对应 Gate 接受前保持 Inactive 或 Deferred，不阻塞 Pure Frontend Mainline。
 
 ```text
 Node 24 LTS
@@ -9571,9 +9780,9 @@ Node 24 LTS
 + Reka UI after Phase 2 Consumer Admission
 + Progressive Demand-driven Project UI
 + Pinia
-+ TanStack Vue Query
-+ Native Fetch
-+ OpenAPI types from openapi-typescript after the reliable-schema gate
++ TanStack Vue Query only after real backend-demand admission
++ Native Fetch transport only after real backend-demand admission
++ OpenAPI types from openapi-typescript only after the reliable real-schema gate
 + VeeValidate stable major selected only at Form Admission
 + VueUse
 + Vue I18n
