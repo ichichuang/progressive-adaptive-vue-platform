@@ -144,5 +144,9 @@ export function cssVariableForRole(role: TokenRoleMetadata): string {
     return `--ui-layout-${[family, ...segments].filter(Boolean).join('-')}`
   }
 
+  if (root === 'admin') {
+    return `--ui-admin-${segments.join('-')}`
+  }
+
   throw new Error(`${role.name}: runtime token has no canonical --ui-* namespace mapping.`)
 }

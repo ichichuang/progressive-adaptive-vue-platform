@@ -1,0 +1,96 @@
+{
+  "admin": {
+    "$extensions": {
+      "org.pavp": {
+        "visibility": "ui-internal"
+      }
+    },
+    "ambient": {
+      "canvas": {
+        "$type": "color",
+        "$value": "{color.surface.page}",
+        "$extensions": { "org.pavp": { "role": "admin.ambient.canvas" } }
+      },
+      "grid": {
+        "$type": "color",
+        "$value": "{color.border.default}",
+        "$extensions": { "org.pavp": { "role": "admin.ambient.grid" } }
+      },
+      "light-accent": {
+        "$type": "color",
+        "$value": "{color.focus.ring}",
+        "$extensions": { "org.pavp": { "role": "admin.ambient.light-accent" } }
+      },
+      "light-primary": {
+        "$type": "color",
+        "$value": "{color.action.primary}",
+        "$extensions": { "org.pavp": { "role": "admin.ambient.light-primary" } }
+      },
+      "light-warm": {
+        "$type": "color",
+        "$value": "{color.text.secondary}",
+        "$extensions": { "org.pavp": { "role": "admin.ambient.light-warm" } }
+      }
+    },
+    "border": {
+      "subtle": {
+        "$type": "color",
+        "$value": "{color.border.default}",
+        "$extensions": { "org.pavp": { "role": "admin.border.subtle" } }
+      }
+    },
+    "chrome": {
+      "header": {
+        "$type": "color",
+        "$value": "{material.chrome.adaptive.background}",
+        "$extensions": { "org.pavp": { "role": "admin.chrome.header" } }
+      },
+      "sidebar": {
+        "$type": "color",
+        "$value": "{material.chrome.adaptive.background}",
+        "$extensions": { "org.pavp": { "role": "admin.chrome.sidebar" } }
+      }
+    },
+    "navigation": {
+      "hover": {
+        "$type": "color",
+        "$value": "{color.surface.panel}",
+        "$extensions": { "org.pavp": { "role": "admin.navigation.hover" } }
+      },
+      "selected": {
+        "$type": "color",
+        "$value": "{color.action.primary}",
+        "$extensions": { "org.pavp": { "role": "admin.navigation.selected" } }
+      }
+    },
+    "shadow": {
+      "chrome": {
+        "$type": "shadow",
+        "$value": "{interaction.shadow.panel}",
+        "$extensions": { "org.pavp": { "role": "admin.shadow.chrome" } }
+      },
+      "overlay": {
+        "$type": "shadow",
+        "$value": "{interaction.shadow.panel}",
+        "$extensions": { "org.pavp": { "role": "admin.shadow.overlay" } }
+      }
+    },
+    "surface": {
+      "content": {
+        "$type": "color",
+        "$value": "{color.surface.panel}",
+        "$extensions": { "org.pavp": { "role": "admin.surface.content" } }
+      },
+      "overlay": {
+        "$type": "color",
+        "$value": "{material.overlay.adaptive.background}",
+        "$extensions": { "org.pavp": { "role": "admin.surface.overlay" } }
+      },
+      "settings": {
+        "$type": "color",
+        "$value": "{color.surface.panel}",
+        "$extensions": { "org.pavp": { "role": "admin.surface.settings" } }
+      }
+    }
+  }
+}

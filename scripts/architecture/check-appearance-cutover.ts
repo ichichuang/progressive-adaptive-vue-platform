@@ -32,11 +32,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    '15a95705fd99a7a4be1169ea734975c12e1d7a1f3897276002064c04b1c0cb8c',
+    '1b3abbc3fb41504188175861e5dccdaecd2d2d3fba9a90c4f833824a0c76c202',
   'packages/design-system/src/generated/tokens.ts':
-    '90fd7f11153319b683cb6f79a9beb3a88eac7e2d9a34c966aed1f6e5b5808464',
+    'f63ad587cc65b5b870b2d5792802c3518df7e34f0636440bde063c6beac27f5b',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '418e1bc8b6b6fa3db431d14f45ee54bd00fc95b19f116d87f5034e9790405840',
+    '34d32a8f988260ae2e1cfa75d9e5c5a586821be72fa17d2cbc8bebcaec71d3f7',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -46,6 +46,7 @@ const expectedPublicRootSymbols = [
   'materialPreferenceSchema',
   'motionPreferenceSchema',
   'uiDensitySchema',
+  'fontScaleValues',
   'ColorModePreference',
   'ContrastPreference',
   'DensityPreference',
@@ -53,6 +54,7 @@ const expectedPublicRootSymbols = [
   'MaterialPreference',
   'MotionPreference',
   'UiDensity',
+  'builtInThemeIds',
   'explicitThemePreferenceSchema',
   'ExplicitThemePreference',
   'ThemeReference',
@@ -76,10 +78,18 @@ const expectedPublicRootSymbols = [
   'tokenNames',
   'TokenName',
   'tokens',
+  'layoutRegistry',
+  'LayoutProfileId',
+  'LayoutRegistry',
+  'LayoutRegistryRecord',
+  'LayoutTokenId',
   'platformPreset',
+  'designSystemConsoleProjection',
+  'DesignSystemConsoleProjection',
 ] as const
 const expectedStoreActions = [
   'restoreAppearance',
+  'readEffectiveAppearance',
   'changeAppearancePreference',
   'resetAppearancePreference',
   'replaceCustomThemeRegistry',
@@ -566,7 +576,7 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
     }
 
     if (!isDeepStrictEqual(actionNames, expectedStoreActions)) {
-      violations.push('appearance.store.ts: Store Actions must equal the frozen ordered six.')
+      violations.push('appearance.store.ts: Store Actions must equal the frozen ordered seven.')
     }
 
     const stateProperty = objectProperty(storeOptions, 'state')
@@ -2015,8 +2025,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 7 || recordCount !== 181) {
-    violations.push('tokens.manifest.json: Package 5 discriminator/count must equal 7/181.')
+  if (manifest['schemaVersion'] !== 8 || recordCount !== 231) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 8/231.')
   }
 
   const themes = manifest['themes']

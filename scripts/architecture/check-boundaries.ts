@@ -7,6 +7,7 @@ import ts from 'typescript'
 
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
+import { validateArchitectureAdminConsole } from './check-architecture-admin-console'
 import { validateAppearanceCutover } from './check-appearance-cutover'
 import { validateRouterArchitecture } from './check-router'
 import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
@@ -41,7 +42,6 @@ const inactiveCapabilityPackages = [
   'lodash',
   'moment',
   'motion-v',
-  'naive-ui',
   'nuxt',
   'nx',
   'openapi-fetch',
@@ -279,15 +279,23 @@ function sourceLayer(path: string): string | undefined {
     return segment
   }
 
+  if (segment === 'generated') {
+    return 'generated'
+  }
+
   return 'web-root'
 }
 
 const allowedLayers = new Map<string, Set<string>>([
-  ['web-root', new Set(['web-root', 'app', 'pages', 'features', 'shared', 'ui', 'design-system'])],
-  ['app', new Set(['app', 'pages', 'features', 'shared', 'ui', 'design-system'])],
-  ['pages', new Set(['pages', 'features', 'shared', 'ui', 'design-system'])],
+  [
+    'web-root',
+    new Set(['web-root', 'app', 'pages', 'features', 'shared', 'generated', 'ui', 'design-system']),
+  ],
+  ['app', new Set(['app', 'pages', 'features', 'shared', 'generated', 'ui', 'design-system'])],
+  ['pages', new Set(['app', 'pages', 'features', 'shared', 'generated', 'ui', 'design-system'])],
   ['features', new Set(['features', 'shared', 'ui', 'design-system'])],
   ['shared', new Set(['shared', 'ui', 'design-system'])],
+  ['generated', new Set(['generated', 'design-system'])],
   ['ui', new Set(['ui', 'design-system'])],
   ['design-system', new Set(['design-system'])],
 ])
@@ -324,6 +332,18 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
 
   if (/^@platform\/[^/]+\/.+/u.test(specifier)) {
     violations.push(`${displayPath}: workspace deep import "${specifier}" is forbidden.`)
+  }
+
+  if (
+    (specifier === 'naive-ui' || specifier.startsWith('naive-ui/')) &&
+    !relative(rootDirectory, sourcePath)
+      .split(sep)
+      .join('/')
+      .startsWith('packages/ui/src/adapters/naive/')
+  ) {
+    violations.push(
+      `${displayPath}: "naive-ui" may only be imported by the private @platform/ui Naive adapter.`,
+    )
   }
 
   if (
@@ -656,6 +676,7 @@ const violations = [
   ...(await validateRouterArchitecture()),
   ...(await validateRuntimeKernelArchitecture()),
   ...(await validateStorageArchitecture()),
+  ...(await validateArchitectureAdminConsole()),
 ]
 
 if (violations.length > 0) {

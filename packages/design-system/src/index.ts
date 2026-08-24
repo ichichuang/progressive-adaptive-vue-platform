@@ -6,6 +6,7 @@ export {
   materialPreferenceSchema,
   motionPreferenceSchema,
   uiDensitySchema,
+  fontScaleValues,
   type ColorModePreference,
   type ContrastPreference,
   type DensityPreference,
@@ -14,6 +15,7 @@ export {
   type MotionPreference,
   type UiDensity,
 } from './schema/appearance.schema'
+export { builtInThemeIds } from './schema/complete-theme.schema'
 export {
   explicitThemePreferenceSchema,
   type ExplicitThemePreference,
@@ -39,4 +41,15 @@ export {
 } from './runtime/theme-registry'
 export { tokenNames, type TokenName } from './generated/token-names'
 export { tokens } from './generated/tokens'
+export {
+  layoutRegistry,
+  type LayoutProfileId,
+  type LayoutRegistry,
+  type LayoutRegistryRecord,
+  type LayoutTokenId,
+} from './generated/layout-registry'
 export { platformPreset } from './unocss/preset'
+export {
+  designSystemConsoleProjection,
+  type DesignSystemConsoleProjection,
+} from './console/design-system-console-projection'

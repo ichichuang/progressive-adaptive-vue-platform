@@ -8,6 +8,7 @@ import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 
 import StyleDictionary from 'style-dictionary'
 import type { PreprocessedTokens } from 'style-dictionary/types'
+import ts from 'typescript'
 
 import { ProductPreferenceDefault } from '../runtime/appearance-defaults'
 import { migrateToExplicitThemePreference } from '../runtime/preference-migration'
@@ -31,6 +32,11 @@ import {
   manifestDocument,
   validateManifestGovernance,
 } from './formats/manifest'
+import {
+  createLayoutRegistryFormat,
+  formatLayoutRegistry,
+  layoutRegistryDocument,
+} from './formats/layout'
 import {
   selectTokensForOutput,
   stableJson,
@@ -75,6 +81,7 @@ const generatedDirectory = resolve(repositoryRoot, 'packages/design-system/src/g
 const generatedFiles = [
   'appearance-init.js',
   'critical-theme.css',
+  'layout-registry.ts',
   'token-names.ts',
   'theme-registry.ts',
   'tokens.css',
@@ -91,8 +98,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 7687,
-    expectedByteDelta: 4321,
+    expectedBytes: 9040,
+    expectedByteDelta: 5674,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -106,8 +113,17 @@ const manifestCompressionContract = {
     baselineCommit: '2f5a28a7dbe877f96ac3d24299d892bd7bb9087f',
     baselineBytes: 6153,
     baselineRecordCount: 181,
+    acceptedFinalBytes: 7687,
     expectedByteDelta: 1534,
     expectedRecordCountDelta: 0,
+  },
+  architectureAdminConsole: {
+    baselineCommit: '861c3c949a534e00e27811af6eda04d44e323fb6',
+    baselineBytes: 7687,
+    baselineRecordCount: 181,
+    acceptedFinalBytes: 9040,
+    expectedByteDelta: 1353,
+    expectedRecordCountDelta: 50,
   },
   hardLimitBytes: 32768,
   options: {
@@ -231,6 +247,10 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
               format: 'pavp/typescript/tokens',
             },
             {
+              destination: 'layout-registry.ts',
+              format: 'pavp/typescript/layout-registry',
+            },
+            {
               destination: 'token-names.ts',
               format: 'pavp/typescript/token-names',
             },
@@ -285,6 +305,7 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
     createCssFormat(context),
     createCriticalThemeFormat(context),
     createAppearanceInitFormat(context),
+    createLayoutRegistryFormat(context),
     createTokensTypeScriptFormat(context),
     createTokenNamesFormat(context),
     createThemeRegistryFormat(context),
@@ -418,8 +439,8 @@ function validateManifestCompression(result: TokenBuildResult): number {
 
   const gzipBytes = first.byteLength
   const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
-  const explicitThemePreferenceByteDelta =
-    gzipBytes - manifestCompressionContract.explicitThemePreferenceCutover.baselineBytes
+  const architectureAdminConsoleByteDelta =
+    gzipBytes - manifestCompressionContract.architectureAdminConsole.baselineBytes
   const manifestRecordCount = governance['recordCount']
 
   assertInvariant(
@@ -447,22 +468,28 @@ function validateManifestCompression(result: TokenBuildResult): number {
     'historical Complete Theme planes accepted bytes and delta must match their baseline',
   )
   assertInvariant(
-    typeof manifestRecordCount === 'number' &&
-      manifestRecordCount -
-        manifestCompressionContract.explicitThemePreferenceCutover.baselineRecordCount ===
-        manifestCompressionContract.explicitThemePreferenceCutover.expectedRecordCountDelta,
-    'Explicit Theme Preference cutover Manifest record delta must equal zero',
-  )
-  assertInvariant(
-    manifestCompressionContract.current.expectedBytes -
+    manifestCompressionContract.explicitThemePreferenceCutover.acceptedFinalBytes -
       manifestCompressionContract.explicitThemePreferenceCutover.baselineBytes ===
       manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta,
-    'Explicit Theme Preference cutover expected bytes and delta must match the entry baseline',
+    'historical Explicit Theme Preference cutover accepted bytes and delta must match their baseline',
   )
   assertInvariant(
-    explicitThemePreferenceByteDelta ===
-      manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta,
-    `Explicit Theme Preference cutover gzip delta: expected ${String(manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta)}, received ${String(explicitThemePreferenceByteDelta)}`,
+    typeof manifestRecordCount === 'number' &&
+      manifestRecordCount -
+        manifestCompressionContract.architectureAdminConsole.baselineRecordCount ===
+        manifestCompressionContract.architectureAdminConsole.expectedRecordCountDelta,
+    'Architecture Admin Console Manifest record delta must equal fifty',
+  )
+  assertInvariant(
+    manifestCompressionContract.architectureAdminConsole.acceptedFinalBytes -
+      manifestCompressionContract.architectureAdminConsole.baselineBytes ===
+      manifestCompressionContract.architectureAdminConsole.expectedByteDelta,
+    'Architecture Admin Console accepted bytes and delta must match their baseline',
+  )
+  assertInvariant(
+    architectureAdminConsoleByteDelta ===
+      manifestCompressionContract.architectureAdminConsole.expectedByteDelta,
+    `Architecture Admin Console gzip delta: expected ${String(manifestCompressionContract.architectureAdminConsole.expectedByteDelta)}, received ${String(architectureAdminConsoleByteDelta)}`,
   )
 
   return gzipBytes
@@ -524,6 +551,61 @@ function exactRoleIdSet(
   return actualSet
 }
 
+function publicTypeScriptTokenEntries(source: string): readonly {
+  readonly id: string
+  readonly variable: string
+}[] {
+  const sourceFile = ts.createSourceFile(
+    'tokens.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const declaration = sourceFile.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])
+    .find((candidate) => ts.isIdentifier(candidate.name) && candidate.name.text === 'tokens')
+
+  assertInvariant(declaration?.initializer !== undefined, 'generated tokens export must exist')
+
+  let expression = declaration.initializer
+
+  while (
+    ts.isAsExpression(expression) ||
+    ts.isSatisfiesExpression(expression) ||
+    ts.isParenthesizedExpression(expression)
+  ) {
+    expression = expression.expression
+  }
+
+  assertInvariant(
+    ts.isObjectLiteralExpression(expression),
+    'generated tokens export must use an object literal',
+  )
+
+  return expression.properties.map((property) => {
+    assertInvariant(
+      ts.isPropertyAssignment(property) &&
+        ts.isStringLiteral(property.name) &&
+        ts.isStringLiteral(property.initializer),
+      'generated token entries must be string-literal property assignments',
+    )
+
+    const variable = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(property.initializer.text)?.[1]
+
+    assertInvariant(
+      variable !== undefined,
+      `${property.name.text}: generated token binding is invalid`,
+    )
+
+    return {
+      id: property.name.text,
+      variable,
+    }
+  })
+}
+
 function validateUnoCssProjection(result: TokenBuildResult): string[] {
   const projection = unoCssProjection(result)
   const expectedMappings = unoCssMappingRecords(result.activePublicRoles)
@@ -543,16 +625,18 @@ function validateUnoCssProjection(result: TokenBuildResult): string[] {
       {
         roleId: role.id,
         cssVariable: role.cssVariable,
-        generatorKind: role.unocss.generatorKind,
-        family: role.unocss.family,
-        key: role.unocss.key,
-        classes: role.unocss.classes,
-        allowedCssProperties: role.unocss.allowedCssProperties,
+        ...role.unocss,
       },
       `${mapping.roleId} UnoCSS metadata must remain registry exact`,
     )
 
-    if (mapping.generatorKind === 'exact-rule') {
+    if (mapping.generatorKind === 'container-variant') {
+      assertInvariant(
+        projection.rules.every((rule) => rule.roleId !== mapping.roleId) &&
+          projection.themeEntries.every((entry) => entry.roleId !== mapping.roleId),
+        `${mapping.roleId} container boundary mapping must not generate a utility or Theme entry`,
+      )
+    } else if (mapping.generatorKind === 'exact-rule') {
       const rules = projection.rules.filter((rule) => rule.roleId === mapping.roleId)
 
       assertInvariantEqual(
@@ -590,11 +674,13 @@ function validateUnoCssProjection(result: TokenBuildResult): string[] {
 
   const projectedClasses = [
     ...projection.rules.map((rule) => rule.className),
-    ...projection.mappings
-      .filter((mapping) => mapping.generatorKind === 'theme-entry')
-      .flatMap((mapping) => mapping.classes),
+    ...projection.mappings.flatMap((mapping) =>
+      mapping.generatorKind === 'theme-entry' ? mapping.classes : [],
+    ),
   ]
-  const registeredClasses = projection.mappings.flatMap((mapping) => mapping.classes)
+  const registeredClasses = projection.mappings.flatMap((mapping) =>
+    mapping.generatorKind === 'container-variant' ? [] : mapping.classes,
+  )
 
   assertInvariantEqual(
     [...projectedClasses].sort(compareCodePoints),
@@ -692,12 +778,7 @@ function validatePublicOutputCompleteness(result: TokenBuildResult): void {
     'Runtime CSS public role IDs',
     true,
   )
-  const typeScriptEntries = [
-    ...formatTokensTypeScript(result).matchAll(/^  '([^']+)': 'var\((--ui-[a-z0-9-]+)\)',$/gmu),
-  ].map((match) => ({
-    id: match[1] ?? '',
-    variable: match[2] ?? '',
-  }))
+  const typeScriptEntries = publicTypeScriptTokenEntries(formatTokensTypeScript(result))
 
   for (const entry of typeScriptEntries) {
     assertInvariant(
@@ -973,6 +1054,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   const activeRuntimeArtifacts = {
     'appearance-init.js': formatAppearanceInitScript(result),
     'critical-theme.css': formatCriticalThemeCss(result),
+    'layout-registry.ts': formatLayoutRegistry(result),
     'token-names.ts': formatTokenNames(result),
     'theme-registry.ts': formatThemeRegistryTypeScript(result),
     'tokens.css': formatRuntimeCss(result),
@@ -1213,7 +1295,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     result.unoCssMappings,
     unoCssMappingRecords(publicRoleRecords),
-    'Token preprocessing must carry exactly 27 UnoCSS mapping records',
+    'Token preprocessing must carry exactly 36 UnoCSS mapping records',
   )
   assertInvariantEqual(
     result.namedContrasts.map((record) =>
@@ -1223,6 +1305,10 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     ),
     namedContrasts,
     'Token preprocessing must carry the exact 14-record Named Contrast Registry',
+  )
+  assertInvariant(
+    layoutRegistryDocument(result).records.length === 9,
+    'generated Layout Registry must carry exactly nine records',
   )
 
   validateCompleteThemeContracts(result)
@@ -2775,6 +2861,10 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
   const actualClasses: string[] = []
 
   for (const mapping of result.unoCssMappings) {
+    if (mapping.generatorKind === 'container-variant') {
+      continue
+    }
+
     for (const className of mapping.classes) {
       const generated = await generator.generate(className, {
         preflights: false,
@@ -2834,8 +2924,10 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
 
   assertInvariantEqual(
     actualClasses.sort(compareCodePoints),
-    result.unoCssMappings.flatMap((mapping) => mapping.classes).sort(compareCodePoints),
-    'the actual platformPreset must generate all 27 registered public classes',
+    result.unoCssMappings
+      .flatMap((mapping) => (mapping.generatorKind === 'container-variant' ? [] : mapping.classes))
+      .sort(compareCodePoints),
+    'the actual platformPreset must generate all 34 registered public classes',
   )
 
   const preflight = await generator.generate(actualClasses.join(' '), {

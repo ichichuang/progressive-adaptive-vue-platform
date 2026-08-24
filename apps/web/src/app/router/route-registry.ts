@@ -34,6 +34,43 @@ export interface RouteRegistryRecord {
   readonly capabilityStatus: 'ACTIVE'
 }
 
+export type LayoutPresetId =
+  'navigation-left' | 'navigation-right' | 'navigation-top' | 'focus' | 'workspace'
+
+export interface LayoutCapabilityRegistryRecord {
+  readonly id: string
+  readonly layout: 'reading' | 'workspace' | 'focused-task'
+  readonly shellRequired: boolean
+  readonly renderOwner: 'route-component' | '@platform/ui'
+  readonly allowedProfiles: readonly LayoutProfileId[]
+  readonly allowedPresets: readonly LayoutPresetId[]
+  readonly regionIdsByProfile: Readonly<{
+    narrow: readonly string[]
+    regular: readonly string[]
+    wide: readonly string[]
+  }> | null
+  readonly movablePanelIds: readonly string[]
+  readonly resizableRegionIds: readonly string[]
+  readonly narrowProjection: 'stack' | 'tabs' | 'sheet' | null
+  readonly blockScrollOwnerId: string
+  readonly inlineScrollOwnerId: string
+  readonly minimumTargetPolicyId: string | null
+  readonly profileThresholdPolicyId: string | null
+  readonly safeAreaPolicyId: string | null
+  readonly capabilityStatus: 'ACTIVE'
+}
+
+export interface ScrollOwnerRegistryRecord {
+  readonly id: string
+  readonly axis: 'block' | 'inline'
+  readonly ownerKind: 'document' | 'region'
+  readonly ownerTarget: string
+  readonly nativeScrolling: true
+  readonly bodyScrollPolicy: 'owner-is-document' | 'prohibited-while-shell-mounted'
+  readonly overscrollBehavior: 'native-document-chain' | 'contain'
+  readonly capabilityStatus: 'ACTIVE'
+}
+
 const emptyPermissionIds = Object.freeze([] as const)
 const commonRouteMeta = Object.freeze({
   breadcrumbKey: null,
@@ -50,19 +87,160 @@ const commonRouteMeta = Object.freeze({
   scrollRestorationPolicyId: 'route-scroll.document-history',
 } as const)
 
+const consoleRouteMeta = Object.freeze({
+  layout: 'workspace',
+  layoutCapabilityId: 'route-layout.architecture-admin-console',
+  auth: 'public',
+  requiredPermissionIds: emptyPermissionIds,
+  blockScrollOwnerId: 'architecture-console-content-block',
+  inlineScrollOwnerId: 'architecture-console-content-inline',
+  keepAlive: 'never',
+  dataPrefetch: 'none',
+  errorPolicy: 'route-boundary',
+  unsavedChangesPolicy: 'none',
+  focusContractId: 'route-focus.architecture-console-page-heading',
+  scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
+} as const)
+
 export const routeRegistry = Object.freeze([
   Object.freeze({
-    name: 'home',
+    name: 'console-overview',
     pathPattern: '/',
     sourcePath: 'apps/web/src/pages/index.vue',
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
     meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.home',
-      telemetryName: 'route.home',
-      errorPolicy: 'route-boundary',
+      ...consoleRouteMeta,
+      titleKey: 'route-title.console-overview',
+      breadcrumbKey: 'route-breadcrumb.console-overview',
+      telemetryName: 'route.console.overview',
+    }),
+  }),
+  Object.freeze({
+    name: 'appearance-management',
+    pathPattern: '/appearance',
+    sourcePath: 'apps/web/src/pages/appearance.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.appearance-management',
+      breadcrumbKey: 'route-breadcrumb.appearance-management',
+      telemetryName: 'route.console.appearance',
+    }),
+  }),
+  Object.freeze({
+    name: 'design-token-inspector',
+    pathPattern: '/design-tokens',
+    sourcePath: 'apps/web/src/pages/design-tokens.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.design-token-inspector',
+      breadcrumbKey: 'route-breadcrumb.design-token-inspector',
+      telemetryName: 'route.console.design-tokens',
+    }),
+  }),
+  Object.freeze({
+    name: 'runtime-kernel-inspector',
+    pathPattern: '/runtime-kernel',
+    sourcePath: 'apps/web/src/pages/runtime-kernel.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.runtime-kernel-inspector',
+      breadcrumbKey: 'route-breadcrumb.runtime-kernel-inspector',
+      telemetryName: 'route.console.runtime-kernel',
+    }),
+  }),
+  Object.freeze({
+    name: 'router-governance-inspector',
+    pathPattern: '/router',
+    sourcePath: 'apps/web/src/pages/router.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.router-governance-inspector',
+      breadcrumbKey: 'route-breadcrumb.router-governance-inspector',
+      telemetryName: 'route.console.router',
+    }),
+  }),
+  Object.freeze({
+    name: 'storage-persistence-inspector',
+    pathPattern: '/storage',
+    sourcePath: 'apps/web/src/pages/storage.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.storage-persistence-inspector',
+      breadcrumbKey: 'route-breadcrumb.storage-persistence-inspector',
+      telemetryName: 'route.console.storage',
+    }),
+  }),
+  Object.freeze({
+    name: 'ui-system-inspector',
+    pathPattern: '/ui-system',
+    sourcePath: 'apps/web/src/pages/ui-system.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.ui-system-inspector',
+      breadcrumbKey: 'route-breadcrumb.ui-system-inspector',
+      telemetryName: 'route.console.ui-system',
+    }),
+  }),
+  Object.freeze({
+    name: 'responsive-layout-inspector',
+    pathPattern: '/responsive-layout',
+    sourcePath: 'apps/web/src/pages/responsive-layout.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.responsive-layout-inspector',
+      breadcrumbKey: 'route-breadcrumb.responsive-layout-inspector',
+      telemetryName: 'route.console.responsive-layout',
+    }),
+  }),
+  Object.freeze({
+    name: 'engineering-quality-inspector',
+    pathPattern: '/engineering',
+    sourcePath: 'apps/web/src/pages/engineering.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.engineering-quality-inspector',
+      breadcrumbKey: 'route-breadcrumb.engineering-quality-inspector',
+      telemetryName: 'route.console.engineering',
+    }),
+  }),
+  Object.freeze({
+    name: 'capability-roadmap',
+    pathPattern: '/capabilities',
+    sourcePath: 'apps/web/src/pages/capabilities.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: 'route-title.capability-roadmap',
+      breadcrumbKey: 'route-breadcrumb.capability-roadmap',
+      telemetryName: 'route.console.capabilities',
     }),
   }),
   Object.freeze({
@@ -167,10 +345,23 @@ export const routeRegistry = Object.freeze([
 
 export type RouteName = (typeof routeRegistry)[number]['name']
 export type RouteTitleKey = (typeof routeRegistry)[number]['meta']['titleKey']
+export type RouteBreadcrumbKey = Exclude<
+  (typeof routeRegistry)[number]['meta']['breadcrumbKey'],
+  null
+>
 type ErrorRouteCode = (typeof errorRouteRegistry)[number]['code']
 
 export const routeTitleRegistry = Object.freeze({
-  'route-title.home': 'Progressive Adaptive Vue Platform',
+  'route-title.console-overview': '总览',
+  'route-title.appearance-management': '主题与外观',
+  'route-title.design-token-inspector': '设计令牌',
+  'route-title.runtime-kernel-inspector': '运行时内核',
+  'route-title.router-governance-inspector': '路由治理',
+  'route-title.storage-persistence-inspector': '存储与持久化',
+  'route-title.ui-system-inspector': 'UI 组件',
+  'route-title.responsive-layout-inspector': '响应式布局',
+  'route-title.engineering-quality-inspector': '工程与质量',
+  'route-title.capability-roadmap': '能力路线图',
   'route-title.error-invalid-route-input': 'Invalid address',
   'route-title.error-authentication-required': 'Authentication required',
   'route-title.error-permission-denied': 'Access denied',
@@ -180,11 +371,69 @@ export const routeTitleRegistry = Object.freeze({
   'route-title.error-service-unavailable': 'Service unavailable',
 } as const satisfies Readonly<Record<RouteTitleKey, string>>)
 
+export const routeBreadcrumbRegistry = Object.freeze({
+  'route-breadcrumb.console-overview': '总览',
+  'route-breadcrumb.appearance-management': '主题与外观',
+  'route-breadcrumb.design-token-inspector': '设计令牌',
+  'route-breadcrumb.runtime-kernel-inspector': '运行时内核',
+  'route-breadcrumb.router-governance-inspector': '路由治理',
+  'route-breadcrumb.storage-persistence-inspector': '存储与持久化',
+  'route-breadcrumb.ui-system-inspector': 'UI 组件',
+  'route-breadcrumb.responsive-layout-inspector': '响应式布局',
+  'route-breadcrumb.engineering-quality-inspector': '工程与质量',
+  'route-breadcrumb.capability-roadmap': '能力路线图',
+} as const satisfies Readonly<Record<RouteBreadcrumbKey, string>>)
+
 export const routeMessageRegistry = Object.freeze([
   Object.freeze({
-    routeName: 'home',
-    key: 'route-message.home-summary',
-    text: 'Phase 1A token contract and deterministic build foundation.',
+    routeName: 'console-overview',
+    key: 'route-message.console-overview-summary',
+    text: '查看当前已启用的前端架构能力与运行状态。',
+  }),
+  Object.freeze({
+    routeName: 'appearance-management',
+    key: 'route-message.appearance-management-summary',
+    text: '管理主题、颜色模式、对比度、材质、字号与动效。',
+  }),
+  Object.freeze({
+    routeName: 'design-token-inspector',
+    key: 'route-message.design-token-inspector-summary',
+    text: '查看当前公开角色、主题平面、对比度、材质与清单摘要。',
+  }),
+  Object.freeze({
+    routeName: 'runtime-kernel-inspector',
+    key: 'route-message.runtime-kernel-inspector-summary',
+    text: '查看当前十一阶段启动流程、Provider 与生命周期边界。',
+  }),
+  Object.freeze({
+    routeName: 'router-governance-inspector',
+    key: 'route-message.router-governance-inspector-summary',
+    text: '查看路由、布局、滚动、焦点与错误页治理。',
+  }),
+  Object.freeze({
+    routeName: 'storage-persistence-inspector',
+    key: 'route-message.storage-persistence-inspector-summary',
+    text: '查看当前存储记录、分区、错误与生命周期边界。',
+  }),
+  Object.freeze({
+    routeName: 'ui-system-inspector',
+    key: 'route-message.ui-system-inspector-summary',
+    text: '查看已准入的 PAVP UI 组件与供应商隔离边界。',
+  }),
+  Object.freeze({
+    routeName: 'responsive-layout-inspector',
+    key: 'route-message.responsive-layout-inspector-summary',
+    text: '查看 narrow、regular 与 wide 的布局投影与尺寸权威。',
+  }),
+  Object.freeze({
+    routeName: 'engineering-quality-inspector',
+    key: 'route-message.engineering-quality-inspector-summary',
+    text: '查看工具链、静态门禁、构建预算与托管工作流。',
+  }),
+  Object.freeze({
+    routeName: 'capability-roadmap',
+    key: 'route-message.capability-roadmap-summary',
+    text: '查看尚未启用能力的状态、前置条件与准入要求。',
   }),
   Object.freeze({
     routeName: 'error-invalid-route-input',
@@ -271,27 +520,89 @@ export const errorRouteRegistry = Object.freeze([
 
 export const routeLayoutCapabilityRegistry = Object.freeze([
   Object.freeze({
+    id: 'route-layout.architecture-admin-console',
+    layout: 'workspace',
+    shellRequired: true,
+    renderOwner: '@platform/ui',
+    allowedProfiles: Object.freeze(['narrow', 'regular', 'wide'] as const),
+    allowedPresets: Object.freeze(['workspace'] as const),
+    regionIdsByProfile: Object.freeze({
+      narrow: Object.freeze([
+        'architecture-console-content',
+        'architecture-console-header',
+        'architecture-console-navigation-overlay',
+      ]),
+      regular: Object.freeze([
+        'architecture-console-content',
+        'architecture-console-header',
+        'architecture-console-navigation',
+      ]),
+      wide: Object.freeze([
+        'architecture-console-content',
+        'architecture-console-header',
+        'architecture-console-navigation',
+      ]),
+    }),
+    movablePanelIds: Object.freeze([] as const),
+    resizableRegionIds: Object.freeze([] as const),
+    narrowProjection: 'sheet',
+    blockScrollOwnerId: 'architecture-console-content-block',
+    inlineScrollOwnerId: 'architecture-console-content-inline',
+    minimumTargetPolicyId: 'target-size.enhanced-44',
+    profileThresholdPolicyId: 'layout-profile.architecture-admin-console',
+    safeAreaPolicyId: 'safe-area.viewport-insets',
+    capabilityStatus: 'ACTIVE',
+  }),
+  Object.freeze({
     id: 'route-layout.reading-document',
     layout: 'reading',
     shellRequired: false,
     renderOwner: 'route-component',
-    blockScrollOwnerId: 'document-block',
-    inlineScrollOwnerId: 'document-inline',
-    requiredShellRegionIds: Object.freeze([] as const),
-    optionalShellRegionIds: Object.freeze([] as const),
+    allowedProfiles: Object.freeze([] as const),
+    allowedPresets: Object.freeze([] as const),
+    regionIdsByProfile: null,
     movablePanelIds: Object.freeze([] as const),
     resizableRegionIds: Object.freeze([] as const),
+    narrowProjection: null,
+    blockScrollOwnerId: 'document-block',
+    inlineScrollOwnerId: 'document-inline',
+    minimumTargetPolicyId: null,
+    profileThresholdPolicyId: null,
+    safeAreaPolicyId: null,
     capabilityStatus: 'ACTIVE',
   }),
-] as const)
+] as const satisfies readonly LayoutCapabilityRegistryRecord[])
 
 export const scrollOwnerRegistry = Object.freeze([
+  Object.freeze({
+    id: 'architecture-console-content-block',
+    axis: 'block',
+    ownerKind: 'region',
+    ownerTarget: '[data-scroll-owner="architecture-console-content"]',
+    nativeScrolling: true,
+    bodyScrollPolicy: 'prohibited-while-shell-mounted',
+    overscrollBehavior: 'contain',
+    capabilityStatus: 'ACTIVE',
+  }),
+  Object.freeze({
+    id: 'architecture-console-content-inline',
+    axis: 'inline',
+    ownerKind: 'region',
+    ownerTarget: '[data-scroll-owner="architecture-console-content"]',
+    nativeScrolling: true,
+    bodyScrollPolicy: 'prohibited-while-shell-mounted',
+    overscrollBehavior: 'contain',
+    capabilityStatus: 'ACTIVE',
+  }),
   Object.freeze({
     id: 'document-block',
     axis: 'block',
     ownerKind: 'document',
     ownerTarget: 'document.scrollingElement',
     nativeScrolling: true,
+    bodyScrollPolicy: 'owner-is-document',
+    overscrollBehavior: 'native-document-chain',
+    capabilityStatus: 'ACTIVE',
   }),
   Object.freeze({
     id: 'document-inline',
@@ -299,10 +610,25 @@ export const scrollOwnerRegistry = Object.freeze([
     ownerKind: 'document',
     ownerTarget: 'document.scrollingElement',
     nativeScrolling: true,
+    bodyScrollPolicy: 'owner-is-document',
+    overscrollBehavior: 'native-document-chain',
+    capabilityStatus: 'ACTIVE',
   }),
-] as const)
+] as const satisfies readonly ScrollOwnerRegistryRecord[])
 
 export const scrollRestorationPolicyRegistry = Object.freeze([
+  Object.freeze({
+    id: 'route-scroll.architecture-console-content-history',
+    historyTraversal: 'finite-saved-native-block-and-inline-offsets-for-matching-owner',
+    newNavigation: 'logical-block-and-inline-start',
+    missingOrChangedOwner: 'logical-start',
+    ownerReadiness: 'after-admin-shell-and-routed-dom-commit',
+    arbitraryTimeout: 'PROHIBITED',
+    polling: 'PROHIBITED',
+    customScroller: 'PROHIBITED',
+    scrollHijacking: 'PROHIBITED',
+    capabilityStatus: 'ACTIVE',
+  }),
   Object.freeze({
     id: 'route-scroll.document-history',
     historyTraversal: 'finite-saved-native-block-and-inline-offsets-for-matching-owner',
@@ -313,10 +639,23 @@ export const scrollRestorationPolicyRegistry = Object.freeze([
     polling: 'PROHIBITED',
     customScroller: 'PROHIBITED',
     scrollHijacking: 'PROHIBITED',
+    capabilityStatus: 'ACTIVE',
   }),
 ] as const)
 
 export const focusContractRegistry = Object.freeze([
+  Object.freeze({
+    id: 'route-focus.architecture-console-page-heading',
+    target: 'h1[data-route-focus="architecture-console-page-heading"]',
+    targetTabIndex: -1,
+    timing: 'after-admin-shell-and-routed-dom-commit-without-arbitrary-timeout',
+    focusBehavior: 'prevent-scroll-then-registered-scroll-restoration',
+    successfulNavigation: 'transfer-focus-to-target',
+    cancelledOrFailedNavigation: 'preserve-or-restore-previous-valid-focus',
+    missingTarget: 'typed-navigation-failure',
+    visibleFocus: 'existing-semantic-focus-tokens',
+    capabilityStatus: 'ACTIVE',
+  }),
   Object.freeze({
     id: 'route-focus.primary-heading',
     target: 'h1[data-route-focus="primary-heading"]',
@@ -326,6 +665,65 @@ export const focusContractRegistry = Object.freeze([
     successfulNavigation: 'transfer-focus-to-target',
     cancelledOrFailedNavigation: 'preserve-or-restore-previous-valid-focus',
     missingTarget: 'typed-navigation-failure',
+    visibleFocus: 'existing-semantic-focus-tokens',
+    capabilityStatus: 'ACTIVE',
+  }),
+] as const)
+
+export const consoleNavigationRegistry = Object.freeze([
+  Object.freeze({
+    id: 'workspace',
+    label: '工作台',
+    items: Object.freeze([
+      Object.freeze({ glyph: '总', label: '总览', routeName: 'console-overview' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'visual-system',
+    label: '视觉系统',
+    items: Object.freeze([
+      Object.freeze({ glyph: '外', label: '主题与外观', routeName: 'appearance-management' }),
+      Object.freeze({ glyph: '令', label: '设计令牌', routeName: 'design-token-inspector' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'application-foundation',
+    label: '应用基础',
+    items: Object.freeze([
+      Object.freeze({ glyph: '核', label: '运行时内核', routeName: 'runtime-kernel-inspector' }),
+      Object.freeze({ glyph: '路', label: '路由治理', routeName: 'router-governance-inspector' }),
+      Object.freeze({
+        glyph: '存',
+        label: '存储与持久化',
+        routeName: 'storage-persistence-inspector',
+      }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'interface-foundation',
+    label: '界面基础',
+    items: Object.freeze([
+      Object.freeze({ glyph: '组', label: 'UI 组件', routeName: 'ui-system-inspector' }),
+      Object.freeze({ glyph: '响', label: '响应式布局', routeName: 'responsive-layout-inspector' }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'development-governance',
+    label: '开发治理',
+    items: Object.freeze([
+      Object.freeze({
+        glyph: '工',
+        label: '工程与质量',
+        routeName: 'engineering-quality-inspector',
+      }),
+    ]),
+  }),
+  Object.freeze({
+    id: 'architecture-planning',
+    label: '架构规划',
+    items: Object.freeze([
+      Object.freeze({ glyph: '图', label: '能力路线图', routeName: 'capability-roadmap' }),
+    ]),
   }),
 ] as const)
 
@@ -363,6 +761,7 @@ export function getRouteRecordBySourcePath(sourcePath: string): (typeof routeReg
 }
 
 export function getRoutePresentation(name: unknown): {
+  readonly breadcrumb: string
   readonly title: string
   readonly message: string
 } {
@@ -374,7 +773,12 @@ export function getRoutePresentation(name: unknown): {
   }
 
   return Object.freeze({
+    breadcrumb:
+      record.meta.breadcrumbKey === null
+        ? routeTitleRegistry[record.meta.titleKey]
+        : routeBreadcrumbRegistry[record.meta.breadcrumbKey],
     title: routeTitleRegistry[record.meta.titleKey],
     message: message.text,
   })
 }
+import type { LayoutProfileId } from '@platform/design-system'

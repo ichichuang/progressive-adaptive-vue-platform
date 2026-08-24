@@ -235,7 +235,15 @@ export interface UnoCssProjection {
 }
 
 function entries(tokens: readonly OutputToken[], value: (token: OutputToken) => string): string {
-  return tokens.map((token) => `  ${stringLiteral(token.name)}: ${value(token)},`).join('\n')
+  return tokens
+    .map((token) => {
+      const property = stringLiteral(token.name)
+      const propertyValue = value(token)
+      const compact = `  ${property}: ${propertyValue},`
+
+      return compact.length <= 100 ? compact : `  ${property}:\n    ${propertyValue},`
+    })
+    .join('\n')
 }
 
 export function formatTokensTypeScript(result: TokenBuildResult): string {
@@ -275,6 +283,20 @@ const generatedThemeFamily = {
 } as const
 
 function mappingLine(mapping: UnoCssMappingRecord): string {
+  if (mapping.generatorKind === 'container-variant') {
+    return `  {
+    roleId: ${stringLiteral(mapping.roleId)},
+    cssVariable: ${stringLiteral(mapping.cssVariable)},
+    generatorKind: ${stringLiteral(mapping.generatorKind)},
+    family: ${stringLiteral(mapping.family)},
+    key: ${stringLiteral(mapping.key)},
+    containerName: ${stringLiteral(mapping.containerName)},
+    containerType: ${stringLiteral(mapping.containerType)},
+    measurementAxis: ${stringLiteral(mapping.measurementAxis)},
+    boundaryContributions: ${typeScriptLiteral(mapping.boundaryContributions, 4)},
+  },`
+  }
+
   const classes = mapping.classes.map(stringLiteral).join(', ')
   const properties = mapping.allowedCssProperties.map(stringLiteral).join(', ')
 
@@ -309,6 +331,10 @@ export function unoCssProjection(result: TokenBuildResult): UnoCssProjection {
 
     if (token?.cssVariable !== mapping.cssVariable) {
       throw new Error(`${mapping.roleId}: UnoCSS mapping has no matching public Token output.`)
+    }
+
+    if (mapping.generatorKind === 'container-variant') {
+      continue
     }
 
     for (const className of mapping.classes) {

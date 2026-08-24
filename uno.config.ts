@@ -9,7 +9,7 @@ const presetColorClass =
   /^(?:bg|border|fill|from|outline|ring|stroke|text|to|via)-(?:amber|black|blue|cyan|emerald|fuchsia|gray|green|indigo|lime|neutral|orange|pink|purple|red|rose|sky|slate|stone|teal|transparent|violet|white|yellow|zinc)(?:-\d+)?(?:\/\d+)?$/
 const rawSpacingClass =
   /^-?(?:m[trblxy]?|p[trblxy]?|gap(?:-[xy])?|space-[xy])-(?!(?:0|auto)$)(?:px|\d|\[)/
-const ownedDimensionClass = /^(h|max-w)-(.+)$/
+const ownedDimensionClass = /^(?:h|min-h|min-w|max-w|w)-(.+)$/
 const structuralDimensionClassValue =
   /^(?:0|auto|dvh|dvw|fit|full|lvh|lvw|max|min|none|screen|svh|svw)$/
 const rawTypographyClass =
@@ -22,13 +22,20 @@ const rawOpticalClass = /^(?:backdrop-)?(?:blur|brightness|saturate)(?:$|-)/
 const arbitraryOwnedUtilityClass =
   /^(?:bg|fill|font|from|leading|rounded|shadow|stroke|text|to|via|z)-\[/
 const arbitraryDeclarationClass = /^\[([A-Za-z-]+):(.+)\]$/
-const arbitraryOwnedDimensionClass = /^(h|max-w)-\[(.+)\]$/
+const arbitraryOwnedDimensionClass = /^(?:h|min-h|min-w|max-w|w)-\[(.+)\]$/
 const structuralDimensionValue =
   /^(?:0|auto|fit-content|max-content|min-content|none|(?:calc|clamp|max|min|minmax)\(.+\)|[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:%|dvh|dvw|fr|lvh|lvw|svh|svw|vh|vw))$/
 const generatedSemanticClasses = new Set(
-  tokenManifest.unoCssMappings.flatMap((mapping) => mapping.classes),
+  tokenManifest.unoCssMappings.flatMap((mapping) => mapping.classes ?? []),
 )
-const visualAuthorityMappings = tokenManifest.unoCssMappings
+const visualAuthorityMappings = tokenManifest.unoCssMappings.filter(
+  (
+    mapping,
+  ): mapping is typeof mapping & {
+    readonly allowedCssProperties: readonly string[]
+    readonly classes: readonly string[]
+  } => Array.isArray(mapping.allowedCssProperties) && Array.isArray(mapping.classes),
+)
 const allowedEmptyVisualUtilities = new Set([
   'animate-none',
   'delay-0',
@@ -51,6 +58,8 @@ const governedArbitraryProperties = new Set([
   'gap',
   'height',
   'line-height',
+  'min-height',
+  'min-width',
   'margin',
   'margin-block',
   'margin-block-end',
@@ -80,6 +89,7 @@ const governedArbitraryProperties = new Set([
   'transition-delay',
   'transition-duration',
   'transition-timing-function',
+  'width',
   'z-index',
 ])
 const arbitraryColorProperties = new Set([

@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "sideEffects": false,
+  "dependencies": {
+    "@platform/design-system": "workspace:*",
+    "naive-ui": "catalog:",
+    "vue": "catalog:"
+  },
   "exports": {
     ".": {
       "types": "./src/index.ts",

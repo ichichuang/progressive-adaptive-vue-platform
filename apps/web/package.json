@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@platform/design-system": "workspace:*",
+    "@platform/ui": "workspace:*",
     "pinia": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:",

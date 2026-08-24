@@ -1,4 +1,13 @@
 import { useAppearanceStore } from './appearance.store'
+import {
+  createAppearanceMutationBoundary,
+  type AppearanceMutationBoundary,
+  type AppearanceMutationResult,
+} from './appearance-mutation-boundary'
+import {
+  createAppearanceReadBoundary,
+  type AppearanceReadBoundary,
+} from './appearance-read-boundary'
 
 type AppearanceAttemptDisposalMode = 'failed-startup' | 'normal-or-hmr'
 
@@ -31,6 +40,8 @@ type AppearancePinia = NonNullable<Parameters<typeof useAppearanceStore>[0]>
 
 export interface AppearanceProviderHandle {
   readonly store: AppearanceStore
+  readonly appearanceReadBoundary: AppearanceReadBoundary
+  readonly appearanceMutationBoundary: AppearanceMutationBoundary
   readonly mediaQueries: AppearanceMediaQueries
   readonly currentEnvironment: () => AppearanceEnvironment
   readonly reapply: () => void
@@ -215,13 +226,68 @@ export function installAppearanceProvider(
     throw error
   }
 
+  const initialSnapshot = store.readEffectiveAppearance(currentEnvironment())
+
+  if (initialSnapshot === null) {
+    handoffHandle.restoreSafetyForFailedStartup()
+    throw new Error('Appearance restoration produced no effective state.')
+  }
+
+  const appearanceReadBoundaryWriter = createAppearanceReadBoundary(initialSnapshot)
+  const refreshSnapshot = (): void => {
+    const snapshot = store.readEffectiveAppearance(currentEnvironment())
+
+    if (snapshot === null) {
+      throw new Error('Appearance reapplication produced no effective state.')
+    }
+
+    appearanceReadBoundaryWriter.update(snapshot)
+  }
+  let boundaryMutationInProgress = false
+  const commitBoundaryMutation = (
+    operation: () => AppearanceMutationResult,
+  ): AppearanceMutationResult => {
+    boundaryMutationInProgress = true
+
+    try {
+      const result = operation()
+
+      if (result.status === 'committed') {
+        refreshSnapshot()
+      }
+
+      return result
+    } finally {
+      boundaryMutationInProgress = false
+    }
+  }
+  const appearanceMutationBoundary = createAppearanceMutationBoundary({
+    readPreference: () => store.preference,
+    readCustomThemeRegistry: () => store.customThemeRegistry,
+    commitPreference: (candidate) =>
+      commitBoundaryMutation(() =>
+        store.changeAppearancePreference(candidate, currentEnvironment()),
+      ),
+    resetPreference: () =>
+      commitBoundaryMutation(() => store.resetAppearancePreference(currentEnvironment())),
+  })
+  const unsubscribeStore = store.$subscribe(
+    () => {
+      if (!boundaryMutationInProgress) {
+        refreshSnapshot()
+      }
+    },
+    { detached: true, flush: 'sync' },
+  )
   const reapply = (): void => {
-    store.reapplyAppearance(currentEnvironment())
+    commitBoundaryMutation(() => store.reapplyAppearance(currentEnvironment()))
   }
   let disposed = false
 
   return {
     store,
+    appearanceReadBoundary: appearanceReadBoundaryWriter.boundary,
+    appearanceMutationBoundary,
     mediaQueries,
     currentEnvironment,
     reapply,
@@ -234,6 +300,8 @@ export function installAppearanceProvider(
         handoffHandle.restoreSafetyForFailedStartup()
       }
 
+      unsubscribeStore()
+      appearanceReadBoundaryWriter.dispose()
       disposed = true
     },
   }

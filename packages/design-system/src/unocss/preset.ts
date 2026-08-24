@@ -1,6 +1,7 @@
-import { definePreset, type Rule } from '@unocss/core'
+import { definePreset, type Rule, type Variant } from '@unocss/core'
 import type { Preset } from 'unocss'
 
+import { layoutRegistry, type LayoutTokenId } from '../generated/layout-registry'
 import { platformRules, platformTheme, platformUnoMappings } from '../generated/unocss-theme'
 
 const wind4ThemeFamily = {
@@ -60,12 +61,56 @@ const wind4LeadingPrefixes = [
   'font-line-height',
 ] as const
 const wind4ShadowModifierRepresentatives = ['50', '[50%]', '$opacity'] as const
-const themeMappings = platformUnoMappings.filter(
-  (mapping) => mapping.generatorKind === 'theme-entry',
-)
-const registeredPublicClasses = new Set<string>(
-  platformUnoMappings.flatMap((mapping) => mapping.classes),
-)
+type PlatformUnoMapping = (typeof platformUnoMappings)[number]
+type PlatformClassMapping = Extract<
+  PlatformUnoMapping,
+  { readonly generatorKind: 'exact-rule' | 'theme-entry' }
+>
+
+function isClassMapping(mapping: PlatformUnoMapping): mapping is PlatformClassMapping {
+  return mapping.generatorKind !== 'container-variant'
+}
+
+const classMappings = platformUnoMappings.filter(isClassMapping)
+const themeMappings = classMappings.filter((mapping) => mapping.generatorKind === 'theme-entry')
+const registeredPublicClasses = new Set<string>(classMappings.flatMap((mapping) => mapping.classes))
+
+function layoutThreshold(id: LayoutTokenId): string {
+  const record = layoutRegistry.records.find((candidate) => candidate.id === id)
+
+  if (record?.kind !== 'profile-threshold') {
+    throw new Error(`${id}: generated Layout Registry profile threshold is missing.`)
+  }
+
+  return record.resolvedValue
+}
+
+const regularMinimum = layoutThreshold('layout.profile.regular.min-inline-size')
+const wideMinimum = layoutThreshold('layout.profile.wide.min-inline-size')
+
+function containerVariant(name: string, condition: string): Variant {
+  const prefix = `${name}:`
+
+  return {
+    name,
+    match(matcher) {
+      if (!matcher.startsWith(prefix)) {
+        return undefined
+      }
+
+      return {
+        matcher: matcher.slice(prefix.length),
+        parent: `@container pavp-admin-shell (${condition})`,
+      }
+    },
+  }
+}
+
+const layoutVariants = [
+  containerVariant('layout-narrow', `inline-size < ${regularMinimum}`),
+  containerVariant('layout-regular', `${regularMinimum} <= inline-size < ${wideMinimum}`),
+  containerVariant('layout-wide', `${wideMinimum} <= inline-size`),
+]
 
 export interface Wind4RestrictedThemeAliasCandidate {
   readonly className: string
@@ -83,7 +128,11 @@ function escapeRegularExpression(value: string): string {
   return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&')
 }
 
-function semanticCssProperty(mapping: (typeof platformUnoMappings)[number]): string {
+function semanticCssProperty(mapping: PlatformUnoMapping): string {
+  if (mapping.generatorKind === 'container-variant') {
+    return 'width'
+  }
+
   return (
     mapping.allowedCssProperties.find((property) => !property.startsWith('--')) ??
     mapping.allowedCssProperties[0]
@@ -342,4 +391,5 @@ export const platformPreset = definePreset((): Preset => ({
   blocklist: [blocksUnregisteredThemeUtility],
   rules: platformRules.map(([className, declarations]) => [className, declarations] as Rule),
   theme: platformTheme,
+  variants: layoutVariants,
 }))

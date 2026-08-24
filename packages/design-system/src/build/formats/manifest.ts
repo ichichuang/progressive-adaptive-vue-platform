@@ -45,15 +45,15 @@ const forbiddenManifestSizeGovernanceFields = new Set<string>([
 ])
 
 const manifestGovernanceContract = {
-  schemaVersion: 7,
+  schemaVersion: 8,
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
-    baselineCount: 174,
-    expectedCountDelta: 7,
+    baselineCount: 181,
+    expectedCountDelta: 50,
     expectedCounts: {
-      tokens: 105,
-      activePublicRoles: 27,
-      unoCssMappings: 27,
+      tokens: 137,
+      activePublicRoles: 36,
+      unoCssMappings: 36,
       namedContrasts: 14,
       alphaContracts: 1,
       densities: 3,
@@ -409,17 +409,30 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
   )
   const activePublicRoles = result.activePublicRoles.map((record) => ({
     ...record,
-    unocss: {
-      ...record.unocss,
-      classes: [...record.unocss.classes],
-      allowedCssProperties: [...record.unocss.allowedCssProperties],
-    },
+    unocss:
+      record.unocss.generatorKind === 'container-variant'
+        ? {
+            ...record.unocss,
+            boundaryContributions: [...record.unocss.boundaryContributions],
+          }
+        : {
+            ...record.unocss,
+            classes: [...record.unocss.classes],
+            allowedCssProperties: [...record.unocss.allowedCssProperties],
+          },
   }))
-  const unoCssMappings = result.unoCssMappings.map((record) => ({
-    ...record,
-    classes: [...record.classes],
-    allowedCssProperties: [...record.allowedCssProperties],
-  }))
+  const unoCssMappings = result.unoCssMappings.map((record) =>
+    record.generatorKind === 'container-variant'
+      ? {
+          ...record,
+          boundaryContributions: [...record.boundaryContributions],
+        }
+      : {
+          ...record,
+          classes: [...record.classes],
+          allowedCssProperties: [...record.allowedCssProperties],
+        },
+  )
   const namedContrasts = result.namedContrasts.map((record) => ({
     ...record,
     staticMaterialProjections: [...record.staticMaterialProjections],

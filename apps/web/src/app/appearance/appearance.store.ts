@@ -360,6 +360,14 @@ export const useAppearanceStore = defineStore('appearance', {
       return result
     },
 
+    readEffectiveAppearance(
+      environment: AppearanceEnvironment,
+    ): Readonly<EffectiveAppearanceState> | null {
+      return this.preference === null
+        ? null
+        : deriveEffectiveAppearance(this.preference, environment)
+    },
+
     changeAppearancePreference(
       preference: unknown,
       environment: AppearanceEnvironment,

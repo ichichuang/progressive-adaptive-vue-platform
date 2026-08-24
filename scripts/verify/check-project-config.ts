@@ -38,18 +38,15 @@ const expectedZodVersion = '4.4.3'
 const expectedVueRouterVersion = '5.2.0'
 const expectedVueRouterIntegrity =
   'sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw=='
+const expectedNaiveUiVersion = '2.45.2'
+const expectedNaiveUiIntegrity =
+  'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
 const vueRouterDeclarationFileName = 'index-BN0B0y8a.d.ts'
 const vueRouterPatchPath = 'patches/vue-router@5.2.0.patch'
 const expectedImplementationContract = {
   phase: 1,
   state: 'IN_PROGRESS',
 } as const
-const phaseOneUiDependencySections = [
-  'dependencies',
-  'devDependencies',
-  'peerDependencies',
-  'optionalDependencies',
-] as const
 const exactSemanticVersionPattern =
   /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u
 const buildConfigurationSourceExtensions = new Set(['.html', '.js', '.mjs', '.ts', '.vue'])
@@ -1733,28 +1730,22 @@ function expectDirectDependencyAbsent(
   }
 }
 
-function normalizePhaseOneUiSource(source: string): string {
-  return source.replace(/\r\n?/gu, '\n').replace(/\n$/u, '')
-}
-
-async function validatePhaseOneUiPackage(): Promise<void> {
+async function validateArchitectureConsoleUiPackage(): Promise<void> {
   const packageDirectory = resolve(rootDirectory, 'packages/ui')
   const manifest = await readJsonObject(resolve(packageDirectory, 'package.json'))
 
-  for (const section of phaseOneUiDependencySections) {
-    const dependencies = manifest[section]
+  expectStructuredEqual(
+    manifest['dependencies'],
+    {
+      '@platform/design-system': 'workspace:*',
+      'naive-ui': 'catalog:',
+      vue: 'catalog:',
+    },
+    'Architecture Console @platform/ui dependencies',
+  )
 
-    if (dependencies === undefined) {
-      continue
-    }
-
-    if (!isJsonObject(dependencies)) {
-      throw new Error(`Phase 1 @platform/ui ${section} must be an object when declared.`)
-    }
-
-    if (Object.keys(dependencies).length !== 0) {
-      throw new Error(`Phase 1 @platform/ui ${section} must contain zero entries.`)
-    }
+  for (const section of ['devDependencies', 'peerDependencies', 'optionalDependencies']) {
+    expectEqual(manifest[section], undefined, `Architecture Console @platform/ui ${section}`)
   }
 
   expectStructuredEqual(
@@ -1765,36 +1756,17 @@ async function validatePhaseOneUiPackage(): Promise<void> {
         default: './src/index.ts',
       },
     },
-    'Phase 1 @platform/ui exports',
+    'Architecture Console @platform/ui exports',
   )
 
   const sourceDirectory = resolve(packageDirectory, 'src')
   const sourceDirectoryStatus = await lstat(sourceDirectory)
 
   if (!sourceDirectoryStatus.isDirectory()) {
-    throw new Error('Phase 1 @platform/ui src must be a regular directory.')
+    throw new Error('Architecture Console @platform/ui src must be a regular directory.')
   }
 
-  const sourceEntries = await readdir(sourceDirectory, { withFileTypes: true })
-  const implementationSource = sourceEntries[0]
-
-  if (
-    sourceEntries.length !== 1 ||
-    implementationSource?.name !== 'index.ts' ||
-    !implementationSource.isFile()
-  ) {
-    throw new Error(
-      'Phase 1 @platform/ui src must contain exactly one regular file named index.ts and no subdirectories.',
-    )
-  }
-
-  expectEqual(
-    normalizePhaseOneUiSource(
-      await readFile(resolve(sourceDirectory, implementationSource.name), 'utf8'),
-    ),
-    'export {}',
-    'Phase 1 @platform/ui implementation content',
-  )
+  await access(resolve(sourceDirectory, 'index.ts'))
 }
 
 function parseMiseTools(configuration: string): JsonObject {
@@ -2077,6 +2049,15 @@ const webLockfileImporter = isJsonObject(lockfileImporters)
 const webLockfileDependencies = isJsonObject(webLockfileImporter)
   ? webLockfileImporter['dependencies']
   : undefined
+const uiLockfileImporter = isJsonObject(lockfileImporters)
+  ? lockfileImporters['packages/ui']
+  : undefined
+const uiLockfileDependencies = isJsonObject(uiLockfileImporter)
+  ? uiLockfileImporter['dependencies']
+  : undefined
+const lockedUiNaiveDependency = isJsonObject(uiLockfileDependencies)
+  ? uiLockfileDependencies['naive-ui']
+  : undefined
 const lockedPiniaDependency = isJsonObject(webLockfileDependencies)
   ? webLockfileDependencies['pinia']
   : undefined
@@ -2095,6 +2076,12 @@ const lockedVueRouterPackageKeys = isJsonObject(lockfilePackages)
   : []
 const lockedVueRouterPackage = isJsonObject(lockfilePackages)
   ? lockfilePackages[`vue-router@${expectedVueRouterVersion}`]
+  : undefined
+const lockedNaiveUiPackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('naive-ui@'))
+  : []
+const lockedNaiveUiPackage = isJsonObject(lockfilePackages)
+  ? lockfilePackages[`naive-ui@${expectedNaiveUiVersion}`]
   : undefined
 const lockedZodDependency = isJsonObject(webLockfileDependencies)
   ? webLockfileDependencies['zod']
@@ -2118,6 +2105,9 @@ const lockedVueRouterPatchHash = isJsonObject(lockedVueRouterPatch)
   : undefined
 const lockedVueRouterSnapshotKeys = isJsonObject(lockfileSnapshots)
   ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('vue-router@'))
+  : []
+const lockedNaiveUiSnapshotKeys = isJsonObject(lockfileSnapshots)
+  ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('naive-ui@'))
   : []
 
 expectStructuredEqual(
@@ -2212,13 +2202,56 @@ if (
   throw new Error('Vue Router patched lockfile snapshot identity drifted.')
 }
 
+expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['naive-ui'] : undefined,
+  { specifier: expectedNaiveUiVersion, version: expectedNaiveUiVersion },
+  'Naive UI lockfile catalog coordinate',
+)
+expectStructuredEqual(lockedNaiveUiPackageKeys, ['naive-ui@2.45.2'], 'Naive UI package set')
+if (
+  !isJsonObject(lockedUiNaiveDependency) ||
+  lockedUiNaiveDependency['specifier'] !== 'catalog:' ||
+  typeof lockedUiNaiveDependency['version'] !== 'string' ||
+  !lockedUiNaiveDependency['version'].startsWith('2.45.2(vue@3.5.40')
+) {
+  throw new Error('Naive UI @platform/ui lockfile importer binding drifted.')
+}
+expectEqual(
+  isJsonObject(lockedNaiveUiPackage) && isJsonObject(lockedNaiveUiPackage['resolution'])
+    ? lockedNaiveUiPackage['resolution']['integrity']
+    : undefined,
+  expectedNaiveUiIntegrity,
+  'Naive UI npm integrity',
+)
+
+if (
+  !isJsonObject(lockedNaiveUiPackage) ||
+  !isJsonObject(lockedNaiveUiPackage['engines']) ||
+  lockedNaiveUiPackage['engines']['node'] !== '>=20' ||
+  !isJsonObject(lockedNaiveUiPackage['peerDependencies']) ||
+  lockedNaiveUiPackage['peerDependencies']['vue'] !== '^3.0.0' ||
+  lockedNaiveUiSnapshotKeys.length !== 1 ||
+  !lockedNaiveUiSnapshotKeys[0]?.startsWith('naive-ui@2.45.2(vue@3.5.40')
+) {
+  throw new Error('Naive UI engine, Vue peer or single snapshot closure drifted.')
+}
+
 const webManifest = await readJsonObject(resolve(rootDirectory, 'apps/web/package.json'))
 const uiManifest = await readJsonObject(resolve(rootDirectory, 'packages/ui/package.json'))
+
+expectEqual(
+  workspaceConfiguration['catalog'] !== undefined && isJsonObject(workspaceConfiguration['catalog'])
+    ? workspaceConfiguration['catalog']['naive-ui']
+    : undefined,
+  expectedNaiveUiVersion,
+  'Naive UI workspace catalog coordinate',
+)
 
 expectStructuredEqual(
   webManifest['dependencies'],
   {
     '@platform/design-system': 'workspace:*',
+    '@platform/ui': 'workspace:*',
     pinia: 'catalog:',
     vue: 'catalog:',
     'vue-router': 'catalog:',
@@ -2311,7 +2344,7 @@ expectStructuredEqual(
   'Canonical implementation contract',
 )
 
-await validatePhaseOneUiPackage()
+await validateArchitectureConsoleUiPackage()
 
 const ciConfiguration = await readYamlObject(resolve(rootDirectory, '.github/workflows/verify.yml'))
 

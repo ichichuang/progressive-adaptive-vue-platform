@@ -29,6 +29,7 @@ catalog:
   eslint-plugin-vue: 10.10.0
   eslint-plugin-vuejs-accessibility: 2.5.0
   knip: 6.29.0
+  naive-ui: 2.45.2
   pinia: 3.0.4
   prettier: 3.9.6
   stylelint: 17.14.1

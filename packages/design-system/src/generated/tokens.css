@@ -3,6 +3,21 @@
 
 @layer tokens {
   :root {
+    --ui-admin-ambient-canvas: var(--ui-color-surface-page);
+    --ui-admin-ambient-grid: var(--ui-color-border-default);
+    --ui-admin-ambient-light-accent: var(--ui-color-focus-ring);
+    --ui-admin-ambient-light-primary: var(--ui-color-action-primary);
+    --ui-admin-ambient-light-warm: var(--ui-color-text-secondary);
+    --ui-admin-border-subtle: var(--ui-color-border-default);
+    --ui-admin-chrome-header: var(--ui-material-chrome-background);
+    --ui-admin-chrome-sidebar: var(--ui-material-chrome-background);
+    --ui-admin-navigation-hover: var(--ui-color-surface-panel);
+    --ui-admin-navigation-selected: var(--ui-color-action-primary);
+    --ui-admin-shadow-chrome: var(--ui-shadow-panel);
+    --ui-admin-shadow-overlay: var(--ui-shadow-panel);
+    --ui-admin-surface-content: var(--ui-color-surface-panel);
+    --ui-admin-surface-overlay: var(--ui-material-overlay-background);
+    --ui-admin-surface-settings: var(--ui-color-surface-panel);
     --ui-color-material-support-chrome-adaptive: oklch(100% 0 0 / 0.94);
     --ui-color-material-support-chrome-reduced: oklch(100% 0 0 / 0.98);
     --ui-color-material-support-modal-adaptive: oklch(100% 0 0 / 0.98);
@@ -17,7 +32,16 @@
     --ui-font-size-title: 2rem;
     --ui-font-weight-body: 400;
     --ui-font-weight-title: 700;
+    --ui-layout-admin-content-minimum-inline-size: 20rem;
+    --ui-layout-admin-drawer-maximum-inline-size: 20rem;
+    --ui-layout-admin-header-block-size: 3.5rem;
+    --ui-layout-admin-sidebar-expanded-inline-size: 16rem;
+    --ui-layout-admin-sidebar-rail-inline-size: 4rem;
     --ui-layout-content-max-width: 72rem;
+    --ui-layout-profile-regular-min-inline-size: 48rem;
+    --ui-layout-profile-wide-min-inline-size: 80rem;
+    --ui-layout-target-enhanced-minimum-block-size: 44px;
+    --ui-layout-target-enhanced-minimum-inline-size: 44px;
     --ui-motion-duration: 200ms;
     --ui-motion-easing: cubic-bezier(0.2, 0, 0, 1);
     --ui-radius-panel: 0.75rem;

@@ -32,7 +32,7 @@ NATIVE_CLIENT_DISCOVERY=OPTIONAL_NOT_REQUIRED
 UI_DIRECTION=ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 TEST_POLICY=NO_TEST_FILES
 ACTIVE_PUBLIC_COLOR_ROLES=9
-ACTIVE_PUBLIC_ROLES_TOTAL=27
+ACTIVE_PUBLIC_ROLES_TOTAL=36
 ACTIVE_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
 TARGET_THEME_DEFINITION_CONTRACT=EXPLICIT_COMPLETE_THEME
 TARGET_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
@@ -59,13 +59,26 @@ PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_STATUS=ACTIVE
 PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN
 PROJECT_DELIVERY_MODEL=PURE_FRONTEND_PLATFORM
 CURRENT_BACKEND_CONTRACT=NONE
 CURRENT_API_ENDPOINT_CONTRACT=NONE
 BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
 BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+NEXT_WORK_ADMISSION=OWNER_DEMAND_AND_SEPARATE_ARCHITECTURE_AMENDMENT_REQUIRED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IMPLEMENTATION=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_RENDERED_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_VISUAL_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
+HISTORICAL_LAYOUT_ADMIN_DRAFT=OWNER_REJECTED_AND_RETIRED
+REKA_UI_ACTIVE_RUNTIME_ADMISSION=NONE
+REKA_UI_FUTURE_ROLE=DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE
+NAIVE_UI_TARGET_COORDINATE=naive-ui@2.45.2
+NAIVE_UI_IMPLEMENTATION_STATUS=COMPLETE
 PHASE_1_PINIA_ADMISSION=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER_ONLY
 PHASE_1_PINIA_ADMISSION_STATUS=ACTIVE
 PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
@@ -89,7 +102,7 @@ PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 
 它是一套：
 
-> **以 TypeScript 为核心、以 Vue 和 Vite 为运行基础、以项目自有 Design Token 为唯一视觉权威、以 UnoCSS 为样式表达层、以 Reka UI 为复杂交互原语、以用户个性化和跨设备适配为核心能力、以自动化规则约束人类和 AI 修改行为的渐进式前端应用平台。**
+> **以 TypeScript 为核心、以 Vue 和 Vite 为运行基础、以项目自有 Design Token 为唯一视觉与尺寸权威、以 UnoCSS 为布局与样式表达层、以 PAVP 自有 UI 边界隔离 Styled Component Vendor、以用户个性化和跨设备适配为核心能力、以自动化规则约束人类和 AI 修改行为的渐进式前端应用平台。**
 
 当前交付模型精确为 `PURE_FRONTEND_PLATFORM`。PAVP 的 Frontend Foundation 与真实 Frontend Product Surface 不以 Backend、API、Auth 或 Protected Flow 的存在为前提；这些能力只在未来真实产品和服务合同出现时按需准入。
 
@@ -190,7 +203,7 @@ BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
 BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
 BACKEND_ABSENCE_IS_AN_INTENTIONAL_CURRENT_PRODUCT_STATE=YES
 BACKEND_ABSENCE_IS_A_REPOSITORY_DEFECT=NO
-CURRENT_PURE_FRONTEND_MAINLINE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+CURRENT_PURE_FRONTEND_MAINLINE=PAVP_ARCHITECTURE_ADMIN_CONSOLE
 RUNTIME_IMPLEMENTATION=PROHIBITED
 DEPENDENCY_ADMISSION=PROHIBITED
 ```
@@ -214,7 +227,7 @@ Completed Active Frontend Foundation
   = Design System + Appearance + Runtime Kernel + Router + Storage
 
 Current Pure Frontend Mainline
-  = PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+  = PAVP_ARCHITECTURE_ADMIN_CONSOLE
 
 Optional Backend-dependent Lane
   = API Transport + TanStack Query + Auth / Session / Permission
@@ -244,6 +257,1531 @@ sample backend data
 ```
 
 本 Amendment 只校正 Canonical Status、Sequencing、Admission 和 Work-package Contract，不修改任何已完成 Implementation Evidence、Runtime Artifact、Dependency、Static Checker 或 Production Behavior。
+
+## 1.2B `PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT`
+
+```text
+WORK_PACKAGE=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+OWNER_DECISION_AUTHORITY=EXPLICIT_OWNER_DECISION
+IMPLEMENTATION_AUTHORITY=NONE
+NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md
+ATOMIC_LANDING_BASELINE=main@861c3c949a534e00e27811af6eda04d44e323fb6
+ATOMIC_LANDING_BASELINE_ROUTE_REGISTRY=1_PRODUCT_ROUTE_PLUS_7_ERROR_ROUTES_EQUALS_8
+ATOMIC_LANDING_BASELINE_UI=packages/ui dependency-free src/index.ts stub
+CURRENT_UI_IMPLEMENTATION=8 consumer-backed PAVP public components with private naive-ui@2.45.2 adapters
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT=OWNER_REJECTED_AND_RETIRED
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_ACCEPTANCE=FAILED
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_RUNTIME_ACCEPTANCE=FAILED
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_VISUAL_ACCEPTANCE=FAILED
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_GIT_STATE=NEVER_STAGED_OR_COMMITTED
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_DISPOSITION=PERMANENTLY_RETIRED
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_MUST_NOT_BE_COMMITTED=YES
+HISTORICAL_REJECTED_LAYOUT_ADMIN_DRAFT_CHECKER=scripts/architecture/check-layout-admin.ts (retired and absent)
+REKA_UI_CURRENT_DRAFT_ADMISSION=REJECTED_NOT_TO_BE_COMMITTED
+REKA_UI_ACTIVE_RUNTIME_ADMISSION=NONE
+REKA_UI_FUTURE_ROLE=DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+NEXT_WORK_ADMISSION=OWNER_DEMAND_AND_SEPARATE_ARCHITECTURE_AMENDMENT_REQUIRED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IMPLEMENTATION=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_RENDERED_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_VISUAL_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
+PRODUCT_NAME=PAVP 管理台
+PRODUCT_IDENTITY=one real full-viewport frontend architecture administration console
+DELIVERY_MODEL=PURE_FRONTEND
+BACKEND_API_QUERY_AUTH_SESSION_PERMISSION=NONE
+RUNTIME_IMPLEMENTATION=PROHIBITED_BY_THIS_AMENDMENT
+DEPENDENCY_INSTALLATION=PROHIBITED_BY_THIS_AMENDMENT
+TARGET_POST_CONSOLE_ROUTE_REGISTRY=10_PRODUCT_ROUTES_PLUS_7_UNCHANGED_ERROR_ROUTES_EQUALS_17
+```
+
+本 Amendment 显式替换被拒绝的 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 产品权威。被拒绝草案的本地源码、Manifest、Lockfile、Generated Artifact 和 Checker 不是当前或目标架构证据；它们已由 Owner 授权从工作树永久退役，且没有被保留、修复、复用、暂存或提交。本 Amendment 本身不接受这些历史文件；当前 Naive UI 实现是独立的 Canonical Replacement，并已通过 Owner 实际渲染与视觉验收。
+
+`PAVP 管理台` 是一个完整的纯前端架构管理产品：一个全视口 Admin Shell、一个 Primary Router Outlet、十个产品页面和七个保持不变的 Error Route。它不是 Appearance-only Settings Page、Demo、Showcase、Component Gallery、Marketing Page、Architecture Evidence Page、Test Page 或 Sample Application。它不发明 Backend、API、Query Client、Auth、Session、Permission、Mock Service、Fake Endpoint、Fake Metric 或 Sample Data。
+
+### 1.2B.1 Layout value and responsive authority
+
+全部 Threshold、Shell Dimension、Target Size、Spacing、Radius、Typography、z-index 和 Motion Numeric Value 的唯一权威是 PAVP Design Token Source。Primitive Dimension Token 持有 Numeric Literal；Semantic Layout Token 只 Alias Primitive；Generated Typed Layout Registry 只是九条 Semantic Role 的确定性只读投影，不是第二 Numeric Authority。
+
+```text
+LAYOUT_VALUE_SOURCE_OWNER=@platform/design-system
+LAYOUT_PRIMITIVE_VALUE_SOURCE=packages/design-system/tokens/primitive/dimension.tokens.json
+LAYOUT_SEMANTIC_ROLE_SOURCE=packages/design-system/tokens/semantic/layout.tokens.json
+LAYOUT_VALUE_GENERATOR=packages/design-system/src/build/build.ts
+LAYOUT_VALUE_FORMAT_OWNER=packages/design-system/src/build/formats/layout.ts
+LAYOUT_VALUE_GENERATED_TYPESCRIPT=packages/design-system/src/generated/layout-registry.ts
+LAYOUT_VALUE_GENERATED_CSS=packages/design-system/src/generated/tokens.css
+LAYOUT_VALUE_PUBLIC_ROOT=@platform/design-system
+LAYOUT_VALUE_EXPORT=layoutRegistry
+LAYOUT_VALUE_TYPE_EXPORTS=LayoutRegistry; LayoutRegistryRecord; LayoutTokenId; LayoutProfileId
+LAYOUT_VALUE_CHECKER=packages/design-system/src/build/build.ts check through pnpm tokens:check
+LAYOUT_UNOCSS_EMITTER=packages/design-system/src/unocss/preset.ts
+LAYOUT_CONSOLE_OWNING_CHECKER=scripts/architecture/check-architecture-admin-console.ts
+LAYOUT_VALUE_SORT=Unicode code-point ascending by id
+LAYOUT_VALUE_SERIALIZATION=stable generator construction order, UTF-8, LF, exactly one final newline
+LAYOUT_VALUE_MANUAL_EDIT=PROHIBITED
+LAYOUT_VALUE_REGENERATION_EQUALITY=REQUIRED
+ATOMIC_LANDING_BASELINE_PUBLIC_ROLE_COUNT=27
+CURRENT_PUBLIC_ROLE_COUNT=36
+ATOMIC_LANDING_BASELINE_TOKEN_RECORD_COUNT=105
+CURRENT_TOKEN_RECORD_COUNT=137
+ATOMIC_LANDING_BASELINE_TOKEN_MANIFEST_RECORD_COUNT=181
+CURRENT_TOKEN_MANIFEST_RECORD_COUNT=231
+ATOMIC_LANDING_BASELINE_TOKEN_MANIFEST_SCHEMA_VERSION=7
+CURRENT_TOKEN_MANIFEST_SCHEMA_VERSION=8
+MANIFEST_BASELINE_RECORD_COUNT=181
+MANIFEST_EXPECTED_RECORD_COUNT_DELTA=50
+TARGET_POST_CONSOLE_MANIFEST_DELTA=8 primitive layout tokens + 9 semantic layout tokens + 15 UI-internal Admin semantic-alias tokens + 9 PublicRole records + 9 UnoMapping records = 50
+TARGET_COMPRESSED_BYTE_DELTA=MEASURE_AND_FREEZE_FROM_FINAL_GENERATED_SHAPE_DURING_ATOMIC_CONSOLE_LANDING
+```
+
+```ts
+type LayoutProfileId = 'narrow' | 'regular' | 'wide'
+
+type LayoutPresetId =
+  | 'navigation-left'
+  | 'navigation-right'
+  | 'navigation-top'
+  | 'focus'
+  | 'workspace'
+
+type LayoutTokenId =
+  | 'layout.admin.content.minimum-inline-size'
+  | 'layout.admin.drawer.maximum-inline-size'
+  | 'layout.admin.header.block-size'
+  | 'layout.admin.sidebar.expanded-inline-size'
+  | 'layout.admin.sidebar.rail-inline-size'
+  | 'layout.profile.regular.min-inline-size'
+  | 'layout.profile.wide.min-inline-size'
+  | 'layout.target.enhanced.minimum-block-size'
+  | 'layout.target.enhanced.minimum-inline-size'
+
+interface LayoutRegistryRecord {
+  readonly id: LayoutTokenId
+  readonly kind:
+    | 'profile-threshold'
+    | 'shell-size'
+    | 'content-size'
+    | 'minimum-target'
+  readonly resolvedValue: string
+  readonly cssVariable: `--ui-layout-${string}`
+}
+
+interface LayoutRegistry {
+  readonly schemaVersion: 1
+  readonly records: readonly LayoutRegistryRecord[]
+}
+
+type LayoutContainerVariantId = 'layout-narrow' | 'layout-regular' | 'layout-wide'
+
+interface UnoCssContainerBoundaryContribution {
+  readonly variantName: LayoutContainerVariantId
+  readonly edge: 'minimum-inclusive' | 'maximum-exclusive'
+}
+
+interface PublicRoleContainerVariantProjection {
+  readonly generatorKind: 'container-variant'
+  readonly family: 'layout-profile'
+  readonly key: 'regular-min-inline-size' | 'wide-min-inline-size'
+  readonly containerName: 'pavp-admin-shell'
+  readonly containerType: 'inline-size'
+  readonly measurementAxis: 'inline'
+  readonly boundaryContributions: readonly UnoCssContainerBoundaryContribution[]
+}
+
+type PublicRoleUnoCssProjection =
+  | {
+      readonly generatorKind: 'exact-rule' | 'theme-entry'
+      readonly family: string
+      readonly key: string
+      readonly classes: readonly [string, ...string[]]
+      readonly allowedCssProperties: readonly [string, ...string[]]
+    }
+  | PublicRoleContainerVariantProjection
+
+type UnoCssMappingRecord =
+  | {
+      readonly roleId: string
+      readonly cssVariable: `--ui-${string}`
+      readonly generatorKind: 'exact-rule' | 'theme-entry'
+      readonly family: string
+      readonly key: string
+      readonly classes: readonly string[]
+      readonly allowedCssProperties: readonly string[]
+    }
+  | {
+      readonly roleId: string
+      readonly cssVariable: `--ui-${string}`
+      readonly generatorKind: 'container-variant'
+      readonly family: 'layout-profile'
+      readonly key: 'regular-min-inline-size' | 'wide-min-inline-size'
+      readonly containerName: 'pavp-admin-shell'
+      readonly containerType: 'inline-size'
+      readonly measurementAxis: 'inline'
+      readonly boundaryContributions: readonly UnoCssContainerBoundaryContribution[]
+    }
+```
+
+`LayoutRegistry` Field Order 精确为 `schemaVersion`、`records`；`LayoutRegistryRecord` Field Order 精确为 `id`、`kind`、`resolvedValue`、`cssVariable`。Unknown、Missing、Duplicate ID、Duplicate CSS Variable、Source/Generated/CSS Value Drift、非 Code-point Order 或 Consumer-authored Literal 必须失败。八条 Primitive Numeric Authority 为：
+
+| Primitive token ID | exact literal |
+| --- | --- |
+| `dimension.layout.admin-content-min-inline` | `20rem` |
+| `dimension.layout.admin-drawer-max-inline` | `20rem` |
+| `dimension.layout.admin-header-block` | `3.5rem` |
+| `dimension.layout.admin-sidebar-expanded-inline` | `16rem` |
+| `dimension.layout.admin-sidebar-rail-inline` | `4rem` |
+| `dimension.layout.profile-regular-min-inline` | `48rem` |
+| `dimension.layout.profile-wide-min-inline` | `80rem` |
+| `dimension.target.enhanced-min` | `44px` |
+
+九条 Target Semantic Role 由 `packages/design-system/tokens/semantic/layout.tokens.json` Alias 上述 Primitive；两个 Target Axis Role 必须共同 Alias 唯一的 `dimension.target.enhanced-min`，不得复制 `44px`：
+
+| `id` | `kind` | `resolvedValue` | `cssVariable` | exact Uno projection |
+| --- | --- | --- | --- | --- |
+| `layout.admin.content.minimum-inline-size` | `content-size` | `20rem` | `--ui-layout-admin-content-minimum-inline-size` | `min-w-admin-content` / `min-width` |
+| `layout.admin.drawer.maximum-inline-size` | `shell-size` | `20rem` | `--ui-layout-admin-drawer-maximum-inline-size` | `max-w-admin-drawer` / `max-width` |
+| `layout.admin.header.block-size` | `shell-size` | `3.5rem` | `--ui-layout-admin-header-block-size` | `h-admin-header` / `height` |
+| `layout.admin.sidebar.expanded-inline-size` | `shell-size` | `16rem` | `--ui-layout-admin-sidebar-expanded-inline-size` | `w-admin-sidebar-expanded` / `width` |
+| `layout.admin.sidebar.rail-inline-size` | `shell-size` | `4rem` | `--ui-layout-admin-sidebar-rail-inline-size` | `w-admin-sidebar-rail` / `width` |
+| `layout.profile.regular.min-inline-size` | `profile-threshold` | `48rem` | `--ui-layout-profile-regular-min-inline-size` | `container-variant`; `layout-narrow`, `layout-regular` |
+| `layout.profile.wide.min-inline-size` | `profile-threshold` | `80rem` | `--ui-layout-profile-wide-min-inline-size` | `container-variant`; `layout-regular`, `layout-wide` |
+| `layout.target.enhanced.minimum-block-size` | `minimum-target` | `44px` | `--ui-layout-target-enhanced-minimum-block-size` | `min-h-target-enhanced` / `min-height` |
+| `layout.target.enhanced.minimum-inline-size` | `minimum-target` | `44px` | `--ui-layout-target-enhanced-minimum-inline-size` | `min-w-target-enhanced` / `min-width` |
+
+本 Amendment 是上述九条 Public Role 的显式 `PAVP_FUTURE_PUBLIC_ROLE_ADMISSION_AMENDMENTS` 输入。当前 Atomic Console Implementation 已完成 Token Source、Generated Registry、Public Root、`PublicRoleRecord`、`UnoCssMappingRecord`、十五条 §1.2B.7 UI-internal Admin Semantic-alias Token、Manifest Equation、Generated CSS/TypeScript 和 Checker Closure：Public Role Count 从 `27` 转为 `36`、Token Record Count 从 `105` 转为 `137`、Manifest Count 从 `181` 转为 `231`。Exact Equation 为 `137 + 36 + 36 + 14 + 1 + 3 + 3 + 1 = 231`。Manifest `schemaVersion` 精确从 `7` 升至 `8`，Generated Document 精确为 `governance.baselineRecordCount=181`、`governance.expectedRecordCountDelta=50`，对应 Formatter Internal Constant 为 `manifestGovernanceContract.records.baselineCount=181`、`expectedCountDelta=50`；Exact Expected Counts 为 `{tokens:137,activePublicRoles:36,unoCssMappings:36,namedContrasts:14,alphaContracts:1,densities:3,themes:3,firstPaint:1}`。最终 Generated Shape 的实测 Canonical gzip-byte Budget 为 Baseline `3366`、Pre-console Post-theme `7687`、Current `9040`、Console Increment `1353`、Global Delta `5674`；Current Raw UTF-8 Byte Count 为 `147629`。Owner 验收后，顶层管理台能力现已同步为 `ACTIVE`。
+
+`PublicRoleRecord.unocss` 的 Target Type 精确扩展为上方 `PublicRoleUnoCssProjection`；`UnoCssMappingRecord` 精确扩展为上方 Discriminated Union。每个 Union Member 的 Field Order 与声明一致；`boundaryContributions` 的 Nested Field Order 为 `variantName,edge`。两条 Threshold Mapping 精确为：
+
+```text
+roleId=layout.profile.regular.min-inline-size
+cssVariable=--ui-layout-profile-regular-min-inline-size
+generatorKind=container-variant
+family=layout-profile
+key=regular-min-inline-size
+containerName=pavp-admin-shell
+containerType=inline-size
+measurementAxis=inline
+boundaryContributions=[{variantName:layout-narrow,edge:maximum-exclusive},{variantName:layout-regular,edge:minimum-inclusive}]
+
+roleId=layout.profile.wide.min-inline-size
+cssVariable=--ui-layout-profile-wide-min-inline-size
+generatorKind=container-variant
+family=layout-profile
+key=wide-min-inline-size
+containerName=pavp-admin-shell
+containerType=inline-size
+measurementAxis=inline
+boundaryContributions=[{variantName:layout-regular,edge:maximum-exclusive},{variantName:layout-wide,edge:minimum-inclusive}]
+```
+
+`layout-regular` 是两个 Boundary Contribution 的有意组合，不是 Duplicate Utility Class；现有 `classes` Global-uniqueness Rule 只适用于 `exact-rule` 与 `theme-entry` Member，不适用于 `boundaryContributions.variantName`。Container Checker 必须要求每个 Variant 恰好闭合：`layout-narrow = inline-size < regular minimum`、`layout-regular = regular minimum <= inline-size < wide minimum`、`layout-wide = wide minimum <= inline-size`；Unknown/Missing/Extra Edge、同一 Edge 重复或不能组成这三个区间必须失败。两条 Threshold 各只产生一个 PublicRole Record 和一个 UnoMapping Record，故 Target UnoMapping Count 保持 `36`。
+
+`packages/design-system/src/unocss/preset.ts` 是唯一 Container Query Emitter，精确新增 `layout-narrow:`、`layout-regular:`、`layout-wide:` 三个 Variant；它与 TypeScript Resolver 只消费同一 `layoutRegistry` 两条 Threshold Record，禁止手写 `48rem` 或 `80rem` Literal。Generated UnoCSS 可以把 Registry Resolved Value 写入最终 Container-query CSS，但该 Generated Output 不是第二 Numeric Authority。Threshold Mapping 不得伪装成 CSS Utility；其余七条使用表中 Exact Rule。最终 CSS 由 UnoCSS/Vite Production Artifact 输出；Committed Numeric CSS Variable 继续只有 `generated/tokens.css`，禁止第二份 CSS Value Registry。
+
+Layout Capability Registry 继续由 App Router Domain 唯一拥有；Shell Profile、Minimum Target 与 Safe Area 三类 Policy 由 `@platform/ui` Shell Domain 的一个 Package-internal Registry 唯一拥有：
+
+```text
+LAYOUT_CAPABILITY_REGISTRY_OWNER=apps/web/src/app/router/route-registry.ts
+LAYOUT_CAPABILITY_REGISTRY_VALUE_EXPORT=routeLayoutCapabilityRegistry
+LAYOUT_CAPABILITY_REGISTRY_TYPE_EXPORTS=LayoutPresetId; LayoutCapabilityRegistryRecord
+LAYOUT_CAPABILITY_REGISTRY_VISIBILITY=APPLICATION_INTERNAL
+LAYOUT_CAPABILITY_REGISTRY_SHAPE=readonly LayoutCapabilityRegistryRecord[]
+LAYOUT_CAPABILITY_REGISTRY_SORT=Unicode code-point ascending by id
+
+ADMIN_SHELL_LAYOUT_POLICY_REGISTRY_OWNER=packages/ui/src/internal/layout/admin-shell-layout-policy-registry.ts
+ADMIN_SHELL_LAYOUT_POLICY_REGISTRY_VALUE_EXPORT=adminShellLayoutPolicyRegistry
+ADMIN_SHELL_LAYOUT_POLICY_REGISTRY_TYPE_EXPORTS=AdminShellLayoutPolicyRegistry; LayoutProfileThresholdPolicyRecord; MinimumTargetPolicyRecord; SafeAreaPolicyRecord
+ADMIN_SHELL_LAYOUT_POLICY_REGISTRY_VISIBILITY=PACKAGE_INTERNAL
+ADMIN_SHELL_LAYOUT_POLICY_REGISTRY_SCHEMA_VERSION=1
+ADMIN_SHELL_LAYOUT_POLICY_REGISTRY_SORT=each record array Unicode code-point ascending by id
+```
+
+```ts
+interface AdminShellLayoutPolicyRegistry {
+  readonly schemaVersion: 1
+  readonly profileThresholdPolicies: readonly LayoutProfileThresholdPolicyRecord[]
+  readonly minimumTargetPolicies: readonly MinimumTargetPolicyRecord[]
+  readonly safeAreaPolicies: readonly SafeAreaPolicyRecord[]
+}
+```
+
+Top-level Field Order 精确为 `schemaVersion,profileThresholdPolicies,minimumTargetPolicies,safeAreaPolicies`。Value 与每条 Record/Array 均 Deep-readonly；Unknown/Missing/Duplicate Policy、Wrong Record Order、Dangling Layout Capability Reference 或 Public-root Export of this private Registry 必须失败。`packages/ui/src/console/responsive-layout-console-projection.ts` 是其唯一 Browser-safe Public Projection；App 不得 Deep-import 该 Registry。
+
+Profile Threshold Policy 的唯一 Target Record 为：
+
+```ts
+interface LayoutProfileThresholdPolicyRecord {
+  readonly id: string
+  readonly containerName: string
+  readonly containerType: 'inline-size'
+  readonly measurementAxis: 'inline'
+  readonly resolverOwner: string
+  readonly observerOwner: string
+  readonly regularMinimumTokenId: string
+  readonly wideMinimumTokenId: string
+  readonly profileOrder: readonly ['narrow', 'regular', 'wide']
+  readonly capabilityStatus: 'TARGET_INACTIVE' | 'ACTIVE'
+}
+```
+
+```text
+id=layout-profile.architecture-admin-console
+containerName=pavp-admin-shell
+containerType=inline-size
+measurementAxis=inline
+resolverOwner=packages/ui/src/internal/layout/resolve-admin-shell-profile.ts
+observerOwner=UiAdminShell
+regularMinimumTokenId=layout.profile.regular.min-inline-size
+wideMinimumTokenId=layout.profile.wide.min-inline-size
+profileOrder=narrow,regular,wide
+capabilityStatus=ACTIVE
+```
+
+`UiAdminShell` 拥有恰好一个 `ResizeObserver`、观测自身 `pavp-admin-shell` Query Container 并在 Dispose 时释放；Private Resolver 只接收测量值与 Generated Threshold Records。`narrow` 为 Inline Size `< 48rem`，`regular` 为 `>= 48rem` 且 `< 80rem`，`wide` 为 `>= 80rem`。初次 Landing 只使用 Inline Size；User Agent、Device Model、Mobile、Tablet、iPad、Desktop、第二 Breakpoint Authority 和 Raw Page Breakpoint Literal 均禁止。`NESTED_APPLICATION_SHELL=PROHIBITED`：十个 Product Route 只能渲染在这一个 Admin Shell 的 Primary Router Outlet 内，Route Component 不得再创建第二 Shell、Header、Sidebar 或 Body Scroll Owner。
+
+Layout Capability Registry 的唯一最终 Schema 为：
+
+```ts
+interface LayoutCapabilityRegistryRecord {
+  readonly id: string
+  readonly layout: 'reading' | 'workspace' | 'focused-task'
+  readonly shellRequired: boolean
+  readonly renderOwner: 'route-component' | '@platform/ui'
+  readonly allowedProfiles: readonly LayoutProfileId[]
+  readonly allowedPresets: readonly LayoutPresetId[]
+  readonly regionIdsByProfile: Readonly<{
+    narrow: readonly string[]
+    regular: readonly string[]
+    wide: readonly string[]
+  }> | null
+  readonly movablePanelIds: readonly string[]
+  readonly resizableRegionIds: readonly string[]
+  readonly narrowProjection: 'stack' | 'tabs' | 'sheet' | null
+  readonly blockScrollOwnerId: string
+  readonly inlineScrollOwnerId: string
+  readonly minimumTargetPolicyId: string | null
+  readonly profileThresholdPolicyId: string | null
+  readonly safeAreaPolicyId: string | null
+  readonly capabilityStatus: 'ACTIVE' | 'TARGET_INACTIVE'
+}
+```
+
+Field Order 与上方 Interface 完全一致。所有 Arrays 为 Readonly；`allowedProfiles` 使用 `narrow`、`regular`、`wide` Canonical Order，其余 Set-like ID Arrays 使用 Unicode Code-point Order。`regionIdsByProfile=null` 当且仅当 `shellRequired=false`；此时三个 Policy ID 必须同时为 `null`，Profiles 与 Presets 必须为空。`regionIdsByProfile` 非 Null 时三个 Profile Key 必须全部存在。`narrowProjection=null` 当且仅当该 Layout 没有 Shell 或没有 Narrow Projection；其他字段不可 Null。Current Active Reading Record 行为保持不变并精确补齐为：
+
+```text
+id=route-layout.reading-document
+layout=reading
+shellRequired=false
+renderOwner=route-component
+allowedProfiles=[]
+allowedPresets=[]
+regionIdsByProfile=null
+movablePanelIds=[]
+resizableRegionIds=[]
+narrowProjection=null
+blockScrollOwnerId=document-block
+inlineScrollOwnerId=document-inline
+minimumTargetPolicyId=null
+profileThresholdPolicyId=null
+safeAreaPolicyId=null
+capabilityStatus=ACTIVE
+```
+
+Current Console Record 精确为：
+
+```text
+id=route-layout.architecture-admin-console
+layout=workspace
+shellRequired=true
+renderOwner=@platform/ui
+allowedProfiles=[narrow,regular,wide]
+allowedPresets=[workspace]
+regionIdsByProfile={narrow:[architecture-console-content,architecture-console-header,architecture-console-navigation-overlay],regular:[architecture-console-content,architecture-console-header,architecture-console-navigation],wide:[architecture-console-content,architecture-console-header,architecture-console-navigation]}
+movablePanelIds=[]
+resizableRegionIds=[]
+narrowProjection=sheet
+blockScrollOwnerId=architecture-console-content-block
+inlineScrollOwnerId=architecture-console-content-inline
+minimumTargetPolicyId=target-size.enhanced-44
+profileThresholdPolicyId=layout-profile.architecture-admin-console
+safeAreaPolicyId=safe-area.viewport-insets
+capabilityStatus=ACTIVE
+```
+
+Shell Region Registry 的 Owner Path 为 `packages/ui/src/internal/layout/admin-shell-region-registry.ts`，Value 为 `adminShellRegionRegistry`，Types 为 `AdminShellRegionRegistry` 与 `AdminShellRegionRegistryRecord`，Visibility 为 Package-internal，Owning Checker 为 `scripts/architecture/check-architecture-admin-console.ts`。Schema 和 Field Order 精确为：
+
+```ts
+interface AdminShellRegionRegistryRecord {
+  readonly id: string
+  readonly owner: '@platform/ui'
+  readonly profileAvailability: readonly LayoutProfileId[]
+  readonly requiredProfiles: readonly LayoutProfileId[]
+  readonly overlayRelationship:
+    | 'none'
+    | 'opens-navigation-overlay'
+    | 'background-locked-by-navigation-overlay'
+    | 'navigation-overlay'
+  readonly scrollRelationship:
+    | 'outside-route-primary-scroll-owner'
+    | 'route-primary-block-and-inline-scroll-owner'
+    | 'independent-native-overlay-scroll-with-route-primary-background-lock'
+  readonly capabilityStatus: 'TARGET_INACTIVE' | 'ACTIVE'
+}
+
+interface AdminShellRegionRegistry {
+  readonly schemaVersion: 1
+  readonly records: readonly AdminShellRegionRegistryRecord[]
+}
+```
+
+| `id` | owner | profile availability / required | overlay relationship | scroll relationship | current status |
+| --- | --- | --- | --- | --- | --- |
+| `architecture-console-content` | `@platform/ui` | `narrow,regular,wide` | `background-locked-by-navigation-overlay` | `route-primary-block-and-inline-scroll-owner` | `ACTIVE` |
+| `architecture-console-header` | `@platform/ui` | `narrow,regular,wide` | `opens-navigation-overlay` | `outside-route-primary-scroll-owner` | `ACTIVE` |
+| `architecture-console-navigation` | `@platform/ui` | `regular,wide` | `none` | `outside-route-primary-scroll-owner` | `ACTIVE` |
+| `architecture-console-navigation-overlay` | `@platform/ui` | `narrow` | `navigation-overlay` | `independent-native-overlay-scroll-with-route-primary-background-lock` | `ACTIVE` |
+
+Top-level Field Order 精确为 `schemaVersion,records`；Value 与每条 Record/Array 均 Deep-readonly。`profileAvailability` 必须精确等于 `requiredProfiles`；任一 Profile 不在该数组即为明确 Absent。Narrow Navigation Overlay 不是 Optional Region。Records 按 ID Code-point 排序。
+
+`overlayRelationship` 描述该 Region 在其 Reference Region 可用时的唯一关系；Effective Relationship 必须按 Profile Availability 求交集，不得产生对 Absent Region 的引用：
+
+| profile | content | header | navigation | navigation overlay |
+| --- | --- | --- | --- | --- |
+| `narrow` | `background-locked-by-navigation-overlay` | `opens-navigation-overlay` | `ABSENT` | `navigation-overlay` |
+| `regular` | `none` | `none` | `none` | `ABSENT` |
+| `wide` | `none` | `none` | `none` | `ABSENT` |
+
+因此 Header Open Action 与 Content Background Lock 只在 `narrow` 生效；Regular/Wide 不生成 Drawer Trigger、Lock 或 Overlay Reference。未知 Region、Optional Profile、Dangling/Profile-incompatible Overlay/Scroll Reference、Body Portal 或无幂等 Background Lock Disposal 必须失败。四条 Record 只有在 Shell、Routes、Scroll/Focus/Restoration、Token、UI Registry 和 Owning Gate 全部同一 Atomic Landing 成立时一起转为 `ACTIVE`。`owner=@platform/ui` 是 Package Owner，不提前冻结任何 `UiAdmin*` Public Component API；`UiAdminShell` 仅作为 Target Lifecycle Identity 出现在 ResizeObserver 与 Safe-area Owner 合同中。
+
+Safe Area 与 Minimum Target Registry 使用以下 Exact Record：
+
+```ts
+interface SafeAreaPolicyRecord {
+  readonly id: string
+  readonly owner: string
+  readonly insetSource: 'env-safe-area-insets'
+  readonly childConsumption: 'private-shell-layout-variables-only'
+  readonly progressiveFallback: 'zero'
+  readonly negativeOffsetAllowed: false
+  readonly capabilityStatus: 'TARGET_INACTIVE' | 'ACTIVE'
+}
+
+interface MinimumTargetPolicyRecord {
+  readonly id: string
+  readonly minimumInlineSizeTokenId: string
+  readonly minimumBlockSizeTokenId: string
+  readonly appliesTo: readonly string[]
+  readonly inlineTextLinkException: true
+  readonly densityReductionAllowed: false
+  readonly capabilityStatus: 'TARGET_INACTIVE' | 'ACTIVE'
+}
+```
+
+```text
+safe-area policy:
+  id=safe-area.viewport-insets
+  owner=UiAdminShell
+  insetSource=env-safe-area-insets
+  childConsumption=private-shell-layout-variables-only
+  progressiveFallback=zero
+  negativeOffsetAllowed=false
+  capabilityStatus=ACTIVE
+
+minimum-target policy:
+  id=target-size.enhanced-44
+  minimumInlineSizeTokenId=layout.target.enhanced.minimum-inline-size
+  minimumBlockSizeTokenId=layout.target.enhanced.minimum-block-size
+  appliesTo=[custom-action,custom-drawer-action,custom-header-action,custom-icon-action,custom-navigation-item,custom-setting-control]
+  inlineTextLinkException=true
+  densityReductionAllowed=false
+  capabilityStatus=ACTIVE
+```
+
+只有 `UiAdminShell` 可以读取 `env(safe-area-inset-top|right|bottom|left)` 并转换为 Private Layout Variables；Child Region 只能消费该 Private Projection。全部 Custom Navigation、Header、Drawer、Icon、Action 与 Settings Control 必须包含至少 `44px × 44px` 的 Interaction Target；Density 不得缩小该 Target，Inline Text Link 是唯一例外。Wide 使用 Expanded Persistent Sidebar；Regular 使用带 Icon 和 Accessible Tooltip 的 Persistent Rail；Narrow 没有 Persistent Sidebar，Header Action 打开唯一 Overlay Navigation Drawer。Shell State 只属于 Shell-local Vue State，不进入 Pinia 或 Persistence。
+
+### 1.2B.2 Product routes, navigation and presentation
+
+Atomic Landing 前的 Committed Baseline Route Registry 精确为 `8`：一个 `/` Product Route 加七个现有 Error Route。当前 Atomic Console Implementation 已用十个下列 Product Route 替换该单一 Product Route，并保持七个 Error Route Record 语义不变，使 Current Cardinality 精确为 `17`。
+
+| # | `name` | `pathPattern` | `sourcePath` | visible title / breadcrumb | `titleKey` | `messageKey` | exact Chinese summary | `breadcrumbKey` | `telemetryName` |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | `console-overview` | `/` | `apps/web/src/pages/index.vue` | `总览` | `route-title.console-overview` | `route-message.console-overview-summary` | `查看当前已启用的前端架构能力与运行状态。` | `route-breadcrumb.console-overview` | `route.console.overview` |
+| 2 | `appearance-management` | `/appearance` | `apps/web/src/pages/appearance.vue` | `主题与外观` | `route-title.appearance-management` | `route-message.appearance-management-summary` | `管理主题、颜色模式、对比度、材质、字号与动效。` | `route-breadcrumb.appearance-management` | `route.console.appearance` |
+| 3 | `design-token-inspector` | `/design-tokens` | `apps/web/src/pages/design-tokens.vue` | `设计令牌` | `route-title.design-token-inspector` | `route-message.design-token-inspector-summary` | `查看当前公开角色、主题平面、对比度、材质与清单摘要。` | `route-breadcrumb.design-token-inspector` | `route.console.design-tokens` |
+| 4 | `runtime-kernel-inspector` | `/runtime-kernel` | `apps/web/src/pages/runtime-kernel.vue` | `运行时内核` | `route-title.runtime-kernel-inspector` | `route-message.runtime-kernel-inspector-summary` | `查看当前十一阶段启动流程、Provider 与生命周期边界。` | `route-breadcrumb.runtime-kernel-inspector` | `route.console.runtime-kernel` |
+| 5 | `router-governance-inspector` | `/router` | `apps/web/src/pages/router.vue` | `路由治理` | `route-title.router-governance-inspector` | `route-message.router-governance-inspector-summary` | `查看路由、布局、滚动、焦点与错误页治理。` | `route-breadcrumb.router-governance-inspector` | `route.console.router` |
+| 6 | `storage-persistence-inspector` | `/storage` | `apps/web/src/pages/storage.vue` | `存储与持久化` | `route-title.storage-persistence-inspector` | `route-message.storage-persistence-inspector-summary` | `查看当前存储记录、分区、错误与生命周期边界。` | `route-breadcrumb.storage-persistence-inspector` | `route.console.storage` |
+| 7 | `ui-system-inspector` | `/ui-system` | `apps/web/src/pages/ui-system.vue` | `UI 组件` | `route-title.ui-system-inspector` | `route-message.ui-system-inspector-summary` | `查看已准入的 PAVP UI 组件与供应商隔离边界。` | `route-breadcrumb.ui-system-inspector` | `route.console.ui-system` |
+| 8 | `responsive-layout-inspector` | `/responsive-layout` | `apps/web/src/pages/responsive-layout.vue` | `响应式布局` | `route-title.responsive-layout-inspector` | `route-message.responsive-layout-inspector-summary` | `查看 narrow、regular 与 wide 的布局投影与尺寸权威。` | `route-breadcrumb.responsive-layout-inspector` | `route.console.responsive-layout` |
+| 9 | `engineering-quality-inspector` | `/engineering` | `apps/web/src/pages/engineering.vue` | `工程与质量` | `route-title.engineering-quality-inspector` | `route-message.engineering-quality-inspector-summary` | `查看工具链、静态门禁、构建预算与托管工作流。` | `route-breadcrumb.engineering-quality-inspector` | `route.console.engineering` |
+| 10 | `capability-roadmap` | `/capabilities` | `apps/web/src/pages/capabilities.vue` | `能力路线图` | `route-title.capability-roadmap` | `route-message.capability-roadmap-summary` | `查看尚未启用能力的状态、前置条件与准入要求。` | `route-breadcrumb.capability-roadmap` | `route.console.capabilities` |
+
+`capabilityStatus` 继续只属于 `RouteRegistryRecord`，不得进入或复制到 `ValidatedRouteMeta`。`titleKey`、`breadcrumbKey` 与 `telemetryName` 进入现有 `ValidatedRouteMeta`；`messageKey` 只引用现有 Route Message Registry，不增加 Meta Field。当前十条 Product Record 已与 Routes、Registry、Official Generated Route Types 和 Owning Gate 同时落地并转为 Route-registry-local `ACTIVE`；Owner 验收后，它们现已组成顶层 `ACTIVE` 管理台。每条 Product Route 的 Shared Projection 精确为：
+
+```text
+layout=workspace
+layoutCapabilityId=route-layout.architecture-admin-console
+auth=public
+requiredPermissionIds=[]
+blockScrollOwnerId=architecture-console-content-block
+inlineScrollOwnerId=architecture-console-content-inline
+keepAlive=never
+dataPrefetch=none
+errorPolicy=route-boundary
+unsavedChangesPolicy=none
+focusContractId=route-focus.architecture-console-page-heading
+scrollRestorationPolicyId=route-scroll.architecture-console-content-history
+paramsSchemaId=route-params.none
+querySchemaId=route-query.none
+```
+
+Scroll Owner Registry 的唯一最终 Schema 增加明确 Body/Chain Policy：
+
+```ts
+interface ScrollOwnerRegistryRecord {
+  readonly id: string
+  readonly axis: 'block' | 'inline'
+  readonly ownerKind: 'document' | 'region'
+  readonly ownerTarget: string
+  readonly nativeScrolling: true
+  readonly bodyScrollPolicy: 'owner-is-document' | 'prohibited-while-shell-mounted'
+  readonly overscrollBehavior: 'native-document-chain' | 'contain'
+  readonly capabilityStatus: CapabilityStatus
+}
+```
+
+Current `document-block` 和 `document-inline` 保持原 Target、Native Behavior 与 `ACTIVE`，并分别使用 `owner-is-document` / `native-document-chain`。Target Console Records 为：
+
+| `id` | axis | kind | target | body policy | overscroll | status |
+| --- | --- | --- | --- | --- | --- | --- |
+| `architecture-console-content-block` | `block` | `region` | `[data-scroll-owner="architecture-console-content"]` | `prohibited-while-shell-mounted` | `contain` | `ACTIVE` |
+| `architecture-console-content-inline` | `inline` | `region` | `[data-scroll-owner="architecture-console-content"]` | `prohibited-while-shell-mounted` | `contain` | `ACTIVE` |
+
+Normal Console Page 必须保持 Logical Inline Start 且无 Page-level Horizontal Overflow；Future Bounded Grid、Editor 或 Specialist Owner 需要独立 Admission。
+
+```ts
+interface FocusContractRegistryRecord {
+  readonly id: string
+  readonly target: string
+  readonly targetTabIndex: -1
+  readonly timing: string
+  readonly focusBehavior: string
+  readonly successfulNavigation: string
+  readonly cancelledOrFailedNavigation: string
+  readonly missingTarget: string
+  readonly visibleFocus: string
+  readonly capabilityStatus: CapabilityStatus
+}
+
+interface ScrollRestorationPolicyRegistryRecord {
+  readonly id: string
+  readonly historyTraversal: string
+  readonly newNavigation: string
+  readonly missingOrChangedOwner: string
+  readonly ownerReadiness: string
+  readonly arbitraryTimeout: 'PROHIBITED'
+  readonly polling: 'PROHIBITED'
+  readonly customScroller: 'PROHIBITED'
+  readonly scrollHijacking: 'PROHIBITED'
+  readonly capabilityStatus: CapabilityStatus
+}
+```
+
+```text
+focus:
+  id=route-focus.architecture-console-page-heading
+  target=h1[data-route-focus="architecture-console-page-heading"]
+  targetTabIndex=-1
+  timing=after-admin-shell-and-routed-dom-commit-without-arbitrary-timeout
+  focusBehavior=prevent-scroll-then-registered-scroll-restoration
+  successfulNavigation=transfer-focus-to-target
+  cancelledOrFailedNavigation=preserve-or-restore-previous-valid-focus
+  missingTarget=typed-navigation-failure
+  visibleFocus=existing-semantic-focus-tokens
+  capabilityStatus=ACTIVE
+
+restoration:
+  id=route-scroll.architecture-console-content-history
+  historyTraversal=finite-saved-native-block-and-inline-offsets-for-matching-owner
+  newNavigation=logical-block-and-inline-start
+  missingOrChangedOwner=logical-start
+  ownerReadiness=after-admin-shell-and-routed-dom-commit
+  arbitraryTimeout=PROHIBITED
+  polling=PROHIBITED
+  customScroller=PROHIBITED
+  scrollHijacking=PROHIBITED
+  capabilityStatus=ACTIVE
+```
+
+Sidebar Taxonomy 及顺序精确为：`工作台 → 总览`；`视觉系统 → 主题与外观, 设计令牌`；`应用基础 → 运行时内核, 路由治理, 存储与持久化`；`界面基础 → UI 组件, 响应式布局`；`开发治理 → 工程与质量`；`架构规划 → 能力路线图`。
+
+Appearance 是初次 Landing 唯一 Interactive Capability Page，只能调用现有真实 Appearance Mutation Contract。Active Read-only Page 只显示真实 Registry、Validated Configuration、Lifecycle 和 Governance Fact。`TARGET_INACTIVE` 与 `DEFERRED` 只作为 Capability Roadmap 的 Read-only Record，禁止 Switch、Form、Editable Control、Fake Provider、Fake Data、Sample API、Mock Backend 或 Pretend Activation。Page-authored Capability Status String 禁止。
+
+### 1.2B.3 Capability Manifest curated projection
+
+§1.3 继续是唯一完整 Human Capability Status Authority。Console Capability Manifest 是由它确定性生成的 20-record Curated Read-only Projection，不替换 §1.3、不要求 Equal Cardinality，也不成为 Mutable Status Authority。
+
+```text
+CAPABILITY_MANIFEST_GENERATOR=scripts/architecture/generate-capability-manifest.ts
+CAPABILITY_MANIFEST_CHECKER=scripts/architecture/check-capability-manifest.ts
+CAPABILITY_MANIFEST_OUTPUT=apps/web/src/generated/capability-manifest.ts
+CAPABILITY_MANIFEST_VALUE_EXPORT=capabilityManifest
+CAPABILITY_MANIFEST_TYPE_EXPORTS=CapabilityManifest; CapabilityManifestRecord
+CAPABILITY_MANIFEST_SCHEMA_VERSION=1
+CAPABILITY_MANIFEST_RECORD_COUNT=20
+CAPABILITY_MANIFEST_RUNTIME_BEFORE_CONSOLE_LANDING=ABSENT
+CAPABILITY_MANIFEST_CREATION=ATOMIC_WITH_PAVP_ARCHITECTURE_ADMIN_CONSOLE
+CAPABILITY_MANIFEST_BROWSER_ARCHITECTURE_PARSE_OR_FETCH=PROHIBITED
+```
+
+```ts
+type CapabilityImplementationStatus = 'complete' | 'not-started' | 'deferred'
+
+type CapabilityPresentationMode =
+  | 'active-interactive'
+  | 'active-read-only'
+  | 'roadmap-only'
+
+interface CapabilityManifestRecord {
+  readonly id: string
+  readonly visibleLabel: string
+  readonly summary: string
+  readonly capabilityStatus: Exclude<CapabilityStatus, 'PROHIBITED'>
+  readonly implementationStatus: CapabilityImplementationStatus
+  readonly presentationMode: CapabilityPresentationMode
+  readonly routeName: string
+  readonly owner: string
+  readonly prerequisiteIds: readonly string[]
+  readonly admissionCondition: string
+  readonly interactive: boolean
+}
+
+interface CapabilityManifest {
+  readonly schemaVersion: 1
+  readonly recordCount: 20
+  readonly records: readonly CapabilityManifestRecord[]
+}
+```
+
+Top-level Field Order 精确为 `schemaVersion`、`recordCount`、`records`；Record Field Order 与 Interface 完全一致。`routeName` 在 Schema 1 中不可 Null，Roadmap Record 使用 `capability-roadmap`。Records 和 `prerequisiteIds` 按 Unicode Code-point 排序；UTF-8、LF、Exactly One Final Newline。Unknown/Missing Field、Duplicate ID、Dangling Prerequisite/Route、Manual Edit、Non-deterministic Output 或 Regeneration Inequality 必须失败。
+
+Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGET_INACTIVE=1`、`DEFERRED=2`，Mapped Source 取最大 Rank；任何 `PROHIBITED` Source 被 Mapping 时直接失败。Derived `implementationStatus` 精确为 `ACTIVE → complete`、`TARGET_INACTIVE → not-started`、`DEFERRED → deferred`。Appearance 且 Active 才是 `active-interactive`；其他 Active 为 `active-read-only`；非 Active 为 `roadmap-only`。每条非 `PROHIBITED` §1.3 Record 必须至少出现在以下一个 Mapping 中；重复 Source 只允许表中显式列出的 `Architecture Admin Console frontend surface`。
+
+| Manifest ID | Exact mapped §1.3 Capability records |
+| --- | --- |
+| `api-transport` | `API Transport` |
+| `appearance` | `Light, Dark and System color-mode resolution`; `Font Scale projection`; `Reference-only Preference and Theme Registry`; `Pinia appearance orchestration`; `Appearance Preference and Custom Registry persistence`; `Generated Built-in First Paint and post-Vue Custom restoration` |
+| `architecture-admin-console` | `Architecture Admin Console frontend surface` |
+| `auth-session-permission` | `Session state`; `Auth, Session and Permission` |
+| `deployment-delivery` | `Deployment delivery, CSP, cache, private source maps and rollback` |
+| `design-system` | `Token source, schema, generation, visibility and public-output completeness`; `Legacy embedded-palette preference compatibility format`; `Adaptive, Reduced and Solid Material token projection`; `Complete Built-in Theme four-plane documents`; `Standard and Enhanced Theme Plane projection`; `Complete Custom Theme validation and fixed Bank installation`; `CSS Motion Token baseline` |
+| `first-protected-vertical-slice` | `Optional backend-dependent capability lane` |
+| `forms-i18n-tables` | `General Pinia state and workflow state`; `Forms, I18n, Tables and Mutations` |
+| `observability-reporting` | `Observability reporting and Runtime Performance collection` |
+| `pavp-ui-system` | `Foundational shared UI components`; `Runtime component/route accessibility` |
+| `project-generators` | `Project generators` |
+| `repository-governance` | `Repository governance and static production gate`; `Accessibility architecture and current static lint baseline`; `Build and Generated Manifest performance budgets` |
+| `responsive-layout` | `Architecture Admin Console frontend surface` |
+| `router-governance` | `Vue Router file routes and route lifecycle`; `Router reading-document Layout, native Scroll and Focus core` |
+| `runtime-kernel` | `Runtime Kernel`; `Core Error Registry, normalization and current global capture`; `Core validated Runtime Configuration` |
+| `shared-ui-expansion` | `Compact, Comfortable and Spacious visual density projection`; `Pure frontend implementation mainline`; `Demand-driven Forms/I18n/Tables/UI admission stage` |
+| `specialist-capabilities` | `Continuous Density Scale application`; `Motion for Vue, GSAP and specialist adapters` |
+| `storage-persistence` | `Application persistence architecture` |
+| `tanstack-query` | `TanStack Query server-state runtime` |
+| `view-transition-motion` | `View Transition progressive enhancement` |
+
+下方唯一 JSON Fenced Block 是 Post-landing Manifest Source。当前 Atomic Implementation 已从该 Block 确定性生成并验证 Runtime Artifact；`architecture-admin-console`、`pavp-ui-system` 与 `responsive-layout` 的 `ACTIVE` 描述已落地并经 Owner 实际渲染与视觉验收的页面投影、UI Boundary 与响应式 Artifact。该 Manifest 仍是只读投影，不替代 §1.3 Human Status Authority。
+
+```json
+{
+  "schemaVersion": 1,
+  "recordCount": 20,
+  "records": [
+    { "id": "api-transport", "visibleLabel": "API 传输", "summary": "真实后端合同出现后才可准入的传输能力。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "api-transport", "prerequisiteIds": ["storage-persistence"], "admissionCondition": "需要真实端点、Origin、Schema、策略、消费者与服务端 Owner。", "interactive": false },
+    { "id": "appearance", "visibleLabel": "主题与外观", "summary": "当前主题、颜色模式、对比度、材质、字号与动效能力。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-interactive", "routeName": "appearance-management", "owner": "appearance", "prerequisiteIds": ["design-system"], "admissionCondition": "已激活。", "interactive": true },
+    { "id": "architecture-admin-console", "visibleLabel": "PAVP 管理台", "summary": "统一浏览和管理 PAVP 前端架构能力的纯前端管理台。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "console-overview", "owner": "architecture-admin-console", "prerequisiteIds": ["appearance", "design-system", "router-governance", "runtime-kernel", "storage-persistence"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "auth-session-permission", "visibleLabel": "认证、会话与权限", "summary": "依赖真实服务端安全合同的身份与权限能力。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "auth-session-permission", "prerequisiteIds": ["api-transport", "tanstack-query"], "admissionCondition": "需要真实认证、Cookie、CSRF、Session、Principal、Tenant 与 Capability 合同。", "interactive": false },
+    { "id": "deployment-delivery", "visibleLabel": "部署与交付", "summary": "面向真实托管环境的 CSP、缓存、发布与回滚能力。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "deployment", "prerequisiteIds": [], "admissionCondition": "需要真实托管与发布合同。", "interactive": false },
+    { "id": "design-system", "visibleLabel": "设计系统", "summary": "PAVP 设计令牌、主题平面、对比度、材质与生成清单。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "design-token-inspector", "owner": "design-system", "prerequisiteIds": [], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "first-protected-vertical-slice", "visibleLabel": "首个受保护业务切片", "summary": "真实 API 与认证能力完成后才能准入的端到端业务流。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "protected-slice", "prerequisiteIds": ["api-transport", "auth-session-permission"], "admissionCondition": "需要真实受保护业务流和后端合同。", "interactive": false },
+    { "id": "forms-i18n-tables", "visibleLabel": "表单、国际化与表格", "summary": "由真实前端消费者逐项触发的能力。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "demand-driven-frontend", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要一个真实消费者并一次只准入一个能力。", "interactive": false },
+    { "id": "observability-reporting", "visibleLabel": "可观测性", "summary": "依赖真实 Producer、Provider 与隐私合同的报告能力。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "observability", "prerequisiteIds": [], "admissionCondition": "需要真实事件生产者、报告 Provider 与隐私审查。", "interactive": false },
+    { "id": "pavp-ui-system", "visibleLabel": "PAVP UI 系统", "summary": "由真实管理台消费者驱动的 PAVP 自有组件边界。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "ui-system-inspector", "owner": "pavp-ui", "prerequisiteIds": ["architecture-admin-console", "design-system"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "project-generators", "visibleLabel": "项目生成器", "summary": "只有重复出现的真实脚手架需求才能准入。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "repository-governance", "prerequisiteIds": [], "admissionCondition": "需要重复且稳定的真实生成需求。", "interactive": false },
+    { "id": "repository-governance", "visibleLabel": "仓库治理", "summary": "静态生产门、仓库政策和主线维护规则。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "engineering-quality-inspector", "owner": "repository-governance", "prerequisiteIds": [], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "responsive-layout", "visibleLabel": "响应式布局", "summary": "narrow、regular 与 wide 的空间投影和 Shell 权威。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "responsive-layout-inspector", "owner": "layout-system", "prerequisiteIds": ["architecture-admin-console", "router-governance"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "router-governance", "visibleLabel": "路由治理", "summary": "当前路由、布局、滚动、焦点与错误页治理。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "router-governance-inspector", "owner": "router", "prerequisiteIds": ["runtime-kernel"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "runtime-kernel", "visibleLabel": "运行时内核", "summary": "当前十一阶段启动、Provider、错误与释放流程。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "runtime-kernel-inspector", "owner": "runtime-kernel", "prerequisiteIds": ["appearance"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "shared-ui-expansion", "visibleLabel": "共享 UI 扩展", "summary": "在更多真实消费者出现后扩展 PAVP UI。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "pavp-ui", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要额外真实消费者和独立准入。", "interactive": false },
+    { "id": "specialist-capabilities", "visibleLabel": "专业能力", "summary": "Grid、Editor、Chart 等专业能力的条件式准入。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "specialist-admission", "prerequisiteIds": [], "admissionCondition": "需要真实专业产品需求和替换边界。", "interactive": false },
+    { "id": "storage-persistence", "visibleLabel": "存储与持久化", "summary": "当前两条非敏感本地存储记录及其生命周期。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "storage-persistence-inspector", "owner": "storage", "prerequisiteIds": ["router-governance"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "tanstack-query", "visibleLabel": "服务端状态缓存", "summary": "仅随真实 API Transport 准入的服务端状态能力。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "server-state", "prerequisiteIds": ["api-transport"], "admissionCondition": "需要真实 API Transport 与服务端状态消费者。", "interactive": false },
+    { "id": "view-transition-motion", "visibleLabel": "页面与交互动效", "summary": "由真实交互需求触发的 View Transition 和 Motion 能力。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "motion", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要命名交互需求和独立动效准入。", "interactive": false }
+  ]
+}
+```
+
+`PROHIBITED` Human Capability 继续由 Repository Policy 与 Static Gate 执行，不出现在 Normal Console Navigation，不得被静默转换为 Active、Target 或 Deferred Manifest Record。
+
+### 1.2B.4 Appearance read boundary and application composition
+
+Appearance Preference、Environment Resolution、Effective State Derivation 与 DOM Application 的既有 Mutable Authority 保持不变。Console 新增恰好一个 App-internal Read Boundary，把成功解析后的 `EffectiveAppearanceState` 以真正 Readonly Vue Ref 交给 Root UI Provider；另有一个不持有 State/Environment 的 Mutation Facade 供 Appearance Page 调用 Existing Store Authority。二者都不是第二 Store、Resolver、Media Owner 或 Writer。
+
+```text
+APPEARANCE_READ_BOUNDARY_OWNER=apps/web/src/app/appearance/appearance-read-boundary.ts
+APPEARANCE_READ_BOUNDARY_PUBLIC_INTERFACE=AppearanceReadBoundary
+APPEARANCE_READ_BOUNDARY_FACTORY=createAppearanceReadBoundary
+APPEARANCE_READ_BOUNDARY_PROVIDER=provideAppearanceReadBoundary
+APPEARANCE_READ_BOUNDARY_CONSUMER=useAppearanceReadBoundary
+APPEARANCE_READ_BOUNDARY_EXPORTED_SYMBOL_COUNT=4
+APPEARANCE_READ_BOUNDARY_WRITER_TYPE=MODULE_PRIVATE
+APPEARANCE_READ_BOUNDARY_INJECTION_KEY=MODULE_PRIVATE
+APPEARANCE_READ_BOUNDARY_MISSING_PROVIDER_ERROR=MODULE_PRIVATE
+APPEARANCE_READ_BOUNDARY_NULL_OR_PLACEHOLDER=PROHIBITED
+APPEARANCE_MUTATION_BOUNDARY_OWNER=apps/web/src/app/appearance/appearance-mutation-boundary.ts
+APPEARANCE_MUTATION_BOUNDARY_EXPORTED_SYMBOLS=AppearanceMutationBoundary; AppearanceMutationResult; createAppearanceMutationBoundary; provideAppearanceMutationBoundary; useAppearanceMutationBoundary
+APPEARANCE_MUTATION_BOUNDARY_STATE_AUTHORITY=NONE
+APPEARANCE_MUTATION_BOUNDARY_ENVIRONMENT_AUTHORITY=NONE
+```
+
+```ts
+export interface AppearanceReadBoundary {
+  readonly snapshot: Readonly<
+    ShallowRef<Readonly<EffectiveAppearanceState>>
+  >
+}
+
+interface AppearanceReadBoundaryProviderHandle {
+  readonly boundary: AppearanceReadBoundary
+  update(next: Readonly<EffectiveAppearanceState>): void
+  dispose(): void
+}
+
+export function createAppearanceReadBoundary(
+  initialSnapshot: Readonly<EffectiveAppearanceState>,
+): AppearanceReadBoundaryProviderHandle
+
+export function provideAppearanceReadBoundary(
+  app: App,
+  boundary: AppearanceReadBoundary,
+): void
+
+export function useAppearanceReadBoundary(): AppearanceReadBoundary
+```
+
+Appearance Page 不能取得 `AppearanceProviderHandle.currentEnvironment`，也不能复活 Owner-rejected `appearance-environment.ts`。它只通过一个无状态 Mutation Facade 调用 Existing Store Actions；该 Facade 不保存 Preference、Effective State 或 Environment：
+
+```ts
+export type AppearanceMutationResult =
+  | { readonly status: 'committed' }
+  | { readonly status: 'rejected' }
+
+export interface AppearanceMutationBoundary {
+  readonly preference: Readonly<
+    ComputedRef<DeepReadonly<ExplicitThemePreference> | null>
+  >
+  readonly customThemeRegistry: Readonly<
+    ComputedRef<readonly DeepReadonly<CustomThemeRegistryEntry>[] | null>
+  >
+  readonly commitPreference: (candidate: unknown) => AppearanceMutationResult
+  readonly resetPreference: () => AppearanceMutationResult
+}
+
+export function createAppearanceMutationBoundary(input: {
+  readonly readPreference: () => ExplicitThemePreference | null
+  readonly readCustomThemeRegistry: () =>
+    | readonly CustomThemeRegistryEntry[]
+    | null
+  readonly commitPreference: (candidate: unknown) => AppearanceMutationResult
+  readonly resetPreference: () => AppearanceMutationResult
+}): AppearanceMutationBoundary
+
+export function provideAppearanceMutationBoundary(
+  app: App,
+  boundary: AppearanceMutationBoundary,
+): void
+
+export function useAppearanceMutationBoundary(): AppearanceMutationBoundary
+```
+
+Mutation Boundary Top-level Field Order 精确为 `preference,customThemeRegistry,commitPreference,resetPreference`；Factory Input Field Order 精确为 `readPreference,readCustomThemeRegistry,commitPreference,resetPreference`。Factory 用 Vue `computed` 加 `readonly` 从两个 Getter 构造 Deep-readonly Read Projection；它不复制、缓存或写入 Store State。它拥有一个 Module-private `InjectionKey` 与一个 Module-private Missing-provider Error，Value/Object Deep-readonly，但 Methods 始终委托给 Appearance Provider Closure。Missing-provider Error 固定使用与 Read Boundary 相同的 `classification=application-startup-failure`、`bootstrapStepId=mount-application` 和 Once-only Mount Normalization Policy。`appearance-bootstrap.ts` 是唯一 Factory Caller：两个 Read Closure 分别返回 Existing `store.preference` 与 `store.customThemeRegistry`；Mutation Closure 分别调用 Existing `store.changeAppearancePreference(candidate,currentEnvironment())` 与 `store.resetAppearancePreference(currentEnvironment())`，原样返回 `committed|rejected`，并只在 `committed` 后以 `store.readEffectiveAppearance(currentEnvironment())` 刷新 Read Boundary。它不暴露 Environment、不创建 Store/Resolver/Listener/Provider ID，也不允许 Page 取得或调用 Store Mutation Action。
+
+只有上述四个 `export` 可以存在；`AppearanceReadBoundaryProviderHandle`、`InjectionKey<AppearanceReadBoundary>` 与 Missing-provider Sentinel/Error 不得 Export。Factory 使用 Private `shallowRef` 加 Vue `readonly` Projection；Consumer 的 `.value =` 在 TypeScript 与 Runtime 均被阻止。`apps/web/src/app/appearance/appearance-bootstrap.ts` 是唯一可 Import Factory、持有 Writer Handle、调用 `update` 与 `dispose` 的模块；其他 App、Page、Feature 和 `@platform/ui` 只能获得 `AppearanceReadBoundary` 或解包后的 Readonly Snapshot。
+
+Existing `AppearanceProviderHandle` 在 Atomic Landing 精确新增两个 Boundary Field；Field Order 保持 `store` 在首位，并依次把 `appearanceReadBoundary`、`appearanceMutationBoundary` 放在它之后：
+
+```ts
+export interface AppearanceProviderHandle {
+  readonly store: AppearanceStore
+  readonly appearanceReadBoundary: AppearanceReadBoundary
+  readonly appearanceMutationBoundary: AppearanceMutationBoundary
+  readonly mediaQueries: AppearanceMediaQueries
+  readonly currentEnvironment: () => AppearanceEnvironment
+  readonly reapply: () => void
+  dispose(mode: AppearanceAttemptDisposalMode): void
+}
+```
+
+`installAppearanceProvider` 在成功 `restoreAppearance` 后立即以派生的 Effective State 调用 `createAppearanceReadBoundary`，保留 Private Writer Handle，并创建上方 Stateless Mutation Facade；Handle 只把 `writer.boundary` 作为 `appearanceReadBoundary`、把 Facade 作为 `appearanceMutationBoundary` 暴露。现有 `installPlatformProviders(input:{application,handoff,pinia})` Signature 不增加 Input；它在 `installAppearanceProvider` 成功后依次调用 `provideAppearanceReadBoundary(input.application, appearance.appearanceReadBoundary)` 与 `provideAppearanceMutationBoundary(input.application, appearance.appearanceMutationBoundary)`。因此 Read/Mutation Boundary 跨 Module 的唯一通路是这两个 Readonly Handle Field，Writer Handle 与 Environment Reader 从不离开 `appearance-bootstrap.ts`。Provider Dispose 先停止唯一 Pinia Subscription，再 Dispose Private Read-boundary Writer，最后完成现有 Appearance/Handoff Cleanup；Mutation Facade 不持有独立 Resource，全部步骤幂等。
+
+Effective Snapshot 的跨文件派生继续由 Existing Store Function Authority 拥有。`apps/web/src/app/appearance/appearance.store.ts` 的 Target Store Action 精确新增 `readEffectiveAppearance(environment: AppearanceEnvironment): Readonly<EffectiveAppearanceState> | null`；它只调用该模块现有 Private `deriveEffectiveAppearance`，当 `preference=null` 时返回 `null`，不写 DOM、Store 或 Persistence。Static Checker 只允许 `appearance-bootstrap.ts` 调用该 Action；Page、App、Feature 与 `@platform/ui` 禁止调用。Initial Restore 或成功 Reapply/Preference Commit 后返回 `null` 是 Provider Failure；只有非 Null Result 才能传给 Boundary `update`。这不创建第二 Resolver 或 Mutable Authority。
+
+初始 Snapshot 必须在成功恢复 Appearance 后、Vue Mount 前存在；Null、Optional、Placeholder 或 Pre-initialization Guess 禁止。Existing Appearance Provider 继续是唯一 Effective-state Derivation Owner，并只在以下成功边界后刷新 Snapshot：Initial Restore、Committed Preference Transition、Existing Media-driven Reapplication。只允许一个 Provider-owned Pinia Subscription 刷新派生 Snapshot；它与 Boundary Handle 一起由 Existing Appearance Provider Handle Dispose。禁止第二 `matchMedia`、`CSS.supports`、Media Listener、Environment Resolver、Store、Runtime Kernel Step、Provider ID 或 Public Mutable Writer。
+
+`App.vue` 通过 `useAppearanceReadBoundary` 消费并把解包后的 `Readonly<EffectiveAppearanceState>` 传给唯一 `UiProvider`。Provider 缺失时 Composable 抛出 Module-private `AppearanceReadBoundaryUnavailableError`；该 Error 固定携带 `classification=application-startup-failure` 与 `bootstrapStepId=mount-application`，现有 Mount Owner 识别后只归一化一次为既有 `application-startup-failure` Record，不得增加 Core Error Record、重复 Capture 或泄漏 Private Error Type。
+
+`UiProvider` 的首个 Public API 精确冻结为：
+
+```text
+UI_PROVIDER_PATH=packages/ui/src/providers/UiProvider.vue
+UI_PROVIDER_PUBLIC_ROOT=@platform/ui
+UI_PROVIDER_EXPORT=UiProvider
+UI_PROVIDER_VENDOR_TYPE_EXPOSURE=NONE
+UI_PROVIDER_EMITS=NONE
+UI_PROVIDER_FALLBACK=NONE
+UI_PROVIDER_OVERLAY_ROOT=pavp-overlay-root
+```
+
+```ts
+interface UiProviderProps {
+  readonly appearance: EffectiveAppearanceState
+}
+
+interface UiProviderSlots {
+  readonly default: (
+    props: Readonly<Record<string, never>>,
+  ) => unknown
+}
+```
+
+Prop 是 Required 且无 Default；Slot 精确一个 Required Default Slot；无 Emit、Naive Public Type、Page-authored Theme Override、Optional Theme Fallback 或第二 Provider State。`UiProvider` 只读 Snapshot，不拥有 Appearance Preference Mutation。
+
+“`apps/web` consumes only `@platform/ui`”精确限定为 Styled Component 与 Vendor UI 消费边界：Application/Feature 只能通过 `@platform/ui` 使用 Styled Components，绝不 Import `naive-ui`。`apps/web` 仍可通过 `@platform/design-system` Public Root 消费非 Vendor 的 Public Contract 与 Safe Projection；这不是第二 Styled UI Boundary。
+
+### 1.2B.5 Browser-safe Inspector projections
+
+Console Page 不得解析或 Fetch `ARCHITECTURE.md`，不得 Deep-import Private Registry、Source Path、Handle、Function、Raw Storage Key、Payload、Token Bank、Log、Stack、Secret 或 Machine Path。下列八个 Readonly Projection/Manifest 是唯一 Page Fact Boundary；`schemaVersion` 全部精确为 `1`。除明确标注 Semantic Order 的 Arrays 外，所有 Set-like Arrays 与 Records 均按 Stable ID 的 Unicode Code-point 升序，未知字段、缺失字段、重复 ID、Mutable Array 或 Non-deterministic Construction 均失败。
+
+```text
+PROJECTION_RUNTIME_BEFORE_CONSOLE_LANDING=ABSENT
+PROJECTION_CREATION=IMPLEMENTED_ATOMICALLY_WITH_PAVP_ARCHITECTURE_ADMIN_CONSOLE
+PROJECTION_CURRENT_STATIC_STATUS=COMPLETE
+PROJECTION_CAPABILITY_STATUS=ACTIVE
+```
+
+这些 Module/Export 已与真实页面、Source Registry、生成器和 Owning Gates 在同一 Atomic Implementation 中落地。它们是 Browser-safe Readonly Fact Boundary；Owner 验收后，顶层 Console Capability 现为 `ACTIVE`。
+
+#### Design System Console Projection
+
+```text
+OWNER=packages/design-system/src/console/design-system-console-projection.ts
+VALUE_EXPORT=designSystemConsoleProjection
+TYPE_EXPORT=DesignSystemConsoleProjection
+PUBLIC_ROOT=@platform/design-system
+```
+
+```ts
+interface DesignSystemConsoleProjection {
+  readonly schemaVersion: 1
+  readonly publicRoleCount: 36
+  readonly publicColorRoleCount: 9
+  readonly builtInThemeIds: readonly string[]
+  readonly planeIds: readonly string[]
+  readonly contrastValues: readonly string[]
+  readonly materialValues: readonly string[]
+  readonly manifestSchemaVersion: 8
+  readonly manifestRecordCount: 231
+}
+```
+
+Field Order 与 Interface 精确相同。Semantic Order 精确为 Themes `neutral,ocean,warm`；Planes `light.standard,light.enhanced,dark.standard,dark.enhanced`；Contrast `standard,enhanced`；Material `adaptive,reduced,solid`。该 Projection 在 Atomic Console Landing 前不存在；Landing 激活九条 Layout Public Roles 与十五条 UI-internal Admin Semantic-alias Tokens 后，必须从同一 Generated Authority 得出 `publicRoleCount=36`、`publicColorRoleCount=9`、Manifest Schema `8` 与 Manifest Count `231`，不得手写覆盖。Pre-landing Baseline 保持 Public Role `27`、Public Color Role `9`、Manifest Schema `7`、Manifest Count `181`。Raw Token Values、Private Theme Bank 与 Internal Source Path 禁止。
+
+#### Runtime Kernel Console Projection
+
+```text
+OWNER=apps/web/src/app/bootstrap/runtime-kernel-console-projection.ts
+VALUE_EXPORT=runtimeKernelConsoleProjection
+TYPE_EXPORT=RuntimeKernelConsoleProjection
+VISIBILITY=APPLICATION_INTERNAL
+```
+
+```ts
+interface RuntimeKernelConsoleErrorRecordCounts {
+  readonly core: 4
+  readonly router: 6
+  readonly storage: 11
+  readonly total: 21
+}
+
+interface RuntimeKernelConsoleProjection {
+  readonly schemaVersion: 1
+  readonly stepIds: readonly string[]
+  readonly stepCount: 11
+  readonly activeProviderIds: readonly ['pinia', 'appearance']
+  readonly errorRecordCounts: RuntimeKernelConsoleErrorRecordCounts
+}
+```
+
+Field Order 与 Interface 精确相同。`stepIds` 使用 §19.4 Current Exact Registry Order；Provider IDs 使用 Current Provider Registry Order `pinia,appearance`；Error Count 的 Nested Field Order 精确为 `core,router,storage,total`。Disposer Function、Handle、Mutable Runtime State 与 Error Payload 禁止。
+
+#### Router Console Projection
+
+```text
+OWNER=apps/web/src/app/router/router-console-projection.ts
+VALUE_EXPORT=routerConsoleProjection
+TYPE_EXPORTS=RouterConsoleProjection; RouterConsoleRouteRecord
+VISIBILITY=APPLICATION_INTERNAL
+```
+
+```ts
+interface RouterConsoleRouteRecord {
+  readonly name: string
+  readonly visibleLabel: string
+}
+
+interface RouterConsoleProjection {
+  readonly schemaVersion: 1
+  readonly routeCount: number
+  readonly productRouteCount: number
+  readonly errorRouteCount: number
+  readonly routes: readonly RouterConsoleRouteRecord[]
+  readonly layoutCapabilityIds: readonly string[]
+  readonly scrollOwnerIds: readonly string[]
+  readonly focusContractIds: readonly string[]
+  readonly scrollRestorationPolicyIds: readonly string[]
+}
+```
+
+Top-level 与 Nested Field Order 精确同上；Routes 和全部 ID Sets 按 Stable ID Code-point 排序。Projection 由 Active Route/Layout/Scroll/Focus/Restoration Registries 构造；Atomic Landing Baseline Route Counts 为 `8/1/7`，Current Route Counts 为 `17/10/7`。Source Path、Raw Telemetry Payload、Guard、Resolver 与 Route Component 禁止。
+
+#### Storage Console Projection
+
+```text
+OWNER=apps/web/src/app/storage/storage-console-projection.ts
+VALUE_EXPORT=storageConsoleProjection
+TYPE_EXPORTS=StorageConsoleProjection; StorageConsoleRecord
+VISIBILITY=APPLICATION_INTERNAL
+```
+
+```ts
+interface StorageConsoleRecord {
+  readonly id: string
+  readonly schemaId: string
+  readonly medium: string
+  readonly persistenceShape: string
+  readonly principalPartition: string
+  readonly containsSensitiveData: boolean
+}
+
+interface StorageConsoleProjection {
+  readonly schemaVersion: 1
+  readonly recordCount: number
+  readonly records: readonly StorageConsoleRecord[]
+}
+```
+
+Field Order 精确同上；Records 按 ID Code-point 排序并必须与 Active Storage Registry Cardinality 相等，当前精确为 `2`。Raw Storage Key、Owner Domain、Payload、Stored Value、Codec Function、Backend 或 Migration Implementation 禁止。
+
+#### UI System Console Projection
+
+```text
+OWNER=packages/ui/src/console/ui-system-console-projection.ts
+VALUE_EXPORT=uiSystemConsoleProjection
+TYPE_EXPORTS=UiSystemConsoleProjection; UiSystemConsoleStyledVendor
+PUBLIC_ROOT=@platform/ui
+```
+
+```ts
+interface UiSystemConsoleStyledVendor {
+  readonly packageName: 'naive-ui'
+  readonly coordinate: 'naive-ui@2.45.2'
+}
+
+interface UiSystemConsoleProjection {
+  readonly schemaVersion: 1
+  readonly publicComponentIds: readonly string[]
+  readonly styledVendor: UiSystemConsoleStyledVendor
+  readonly privateAdapterPolicyId: 'ui-vendor-imports.private-naive-adapter-only'
+}
+```
+
+Field Order 精确同上；`publicComponentIds` 从 `uiPublicComponentRegistry` Code-point 投影。Private Adapter Path、Vendor Component Name、Vendor Type、Theme Override Detail 与 Internal Component Source 禁止。
+
+#### Responsive Layout Console Projection
+
+```text
+OWNER=packages/ui/src/console/responsive-layout-console-projection.ts
+VALUE_EXPORT=responsiveLayoutConsoleProjection
+TYPE_EXPORTS=ResponsiveLayoutConsoleProjection; ResponsiveLayoutProfileRecord; ResponsiveLayoutThresholdReference; ResponsiveLayoutSizeTokenRecord
+PUBLIC_ROOT=@platform/ui
+```
+
+```ts
+interface ResponsiveLayoutThresholdReference {
+  readonly tokenId: LayoutTokenId
+  readonly resolvedValue: string
+}
+
+interface ResponsiveLayoutProfileRecord {
+  readonly id: LayoutProfileId
+  readonly minimumInclusive: ResponsiveLayoutThresholdReference | null
+  readonly maximumExclusive: ResponsiveLayoutThresholdReference | null
+}
+
+interface ResponsiveLayoutSizeTokenRecord {
+  readonly tokenId: LayoutTokenId
+  readonly resolvedValue: string
+}
+
+interface ResponsiveLayoutConsoleProjection {
+  readonly schemaVersion: 1
+  readonly profileThresholdPolicyId: 'layout-profile.architecture-admin-console'
+  readonly profiles: readonly ResponsiveLayoutProfileRecord[]
+  readonly shellRegionIds: readonly string[]
+  readonly sizeTokens: readonly ResponsiveLayoutSizeTokenRecord[]
+  readonly minimumTargetPolicyId: 'target-size.enhanced-44'
+  readonly safeAreaPolicyId: 'safe-area.viewport-insets'
+}
+```
+
+Profiles 使用 Semantic Order `narrow,regular,wide`：Narrow Minimum `null`、Maximum `layout.profile.regular.min-inline-size/48rem`；Regular Minimum `48rem`、Maximum `layout.profile.wide.min-inline-size/80rem`；Wide Minimum `80rem`、Maximum `null`。`shellRegionIds` 与 `sizeTokens` 按 ID Code-point；Size Tokens 精确包含 Sidebar Expanded、Sidebar Rail、Header、Drawer Maximum、Content Minimum 与 Enhanced Target Inline/Block 七条 Record。该 Package-owned Projection 只消费 `@platform/design-system` Public `layoutRegistry`、Package-internal `adminShellRegionRegistry` 与 `adminShellLayoutPolicyRegistry`，再由 `@platform/ui` Public Root 导出；所有 Value 从这些唯一 Authority 读取，不复制 Numeric Authority。`apps/web` 的 Overview 与 Responsive Page 只能从 `@platform/ui` Public Root 消费它，禁止 Deep/private Import 或 App-authored Shell Static Fact。
+
+#### Engineering Manifest
+
+```text
+GENERATOR=scripts/architecture/generate-engineering-manifest.ts
+CHECKER=scripts/architecture/check-engineering-manifest.ts
+OUTPUT=apps/web/src/generated/engineering-manifest.ts
+VALUE_EXPORT=engineeringManifest
+TYPE_EXPORTS=EngineeringManifest; EngineeringCoordinates; EngineeringBundleBudgetRecord
+SCHEMA_VERSION=1
+MANUAL_EDIT=PROHIBITED
+REGENERATION_EQUALITY=REQUIRED
+SERIALIZATION=UTF-8, LF, exactly one final newline
+```
+
+```ts
+interface EngineeringCoordinates {
+  readonly node: 'node@24.15.0'
+  readonly pnpm: 'pnpm@10.34.5'
+  readonly typescript: 'typescript@6.0.3'
+  readonly vue: 'vue@3.5.40'
+  readonly vite: 'vite@8.1.5'
+}
+
+interface EngineeringBundleBudgetRecord {
+  readonly id: string
+  readonly limit: number
+  readonly unit: 'bytes-gzip'
+}
+
+interface EngineeringManifest {
+  readonly schemaVersion: 1
+  readonly coordinates: EngineeringCoordinates
+  readonly verifyStageIds: readonly string[]
+  readonly bundleBudgets: readonly EngineeringBundleBudgetRecord[]
+  readonly workflowNames: readonly string[]
+}
+```
+
+Top-level Field Order 精确为 `schemaVersion,coordinates,verifyStageIds,bundleBudgets,workflowNames`；Coordinate Field Order 精确为 `node,pnpm,typescript,vue,vite`；Budget Record Field Order 精确为 `id,limit,unit`。`verifyStageIds` 使用 Root `verify` Command 的 Semantic Execution Order：
+
+```text
+runtime-preflight
+format-check
+lint
+lint-css
+lint-uno
+typecheck-vue
+typecheck-ts
+check-arch
+schema-check
+tokens-check
+check-policy
+check-unused
+build
+check-bundle
+```
+
+Active Bundle Budget Records 按 ID Code-point 排序：
+
+| `id` | `limit` | `unit` |
+| --- | --- | --- |
+| `generated-token-manifest-gzip` | `32768` | `bytes-gzip` |
+| `initial-css-gzip` | `40960` | `bytes-gzip` |
+| `initial-javascript-gzip` | `184320` | `bytes-gzip` |
+| `lazy-route-javascript-gzip` | `122880` | `bytes-gzip` |
+
+`workflowNames` 按 Code-point 精确为 `CodeQL,Static Verification`。Canonical Read Allowlist 精确为：
+
+```text
+package.json
+pnpm-workspace.yaml
+project.config.ts
+packages/design-system/src/build/build.ts
+.github/workflows/codeql.yml
+.github/workflows/verify.yml
+```
+
+Generator 只从 Allowlist 的 Validated Static Authority 产生 Manifest；Unknown/Missing Coordinate、Stage、Budget 或 Workflow、Duplicate ID、Wrong Order、Manual Edit 和 Regeneration Drift 必须失败。Build/Run Log、Workflow Result、Secret、Environment Value、Machine Path、Source Content、Network 或 Runtime Fetch 禁止。
+
+#### Overview Projection
+
+```text
+OWNER=apps/web/src/app/console/overview-projection.ts
+VALUE_EXPORT=overviewProjection
+TYPE_EXPORT=OverviewProjection
+VISIBILITY=APPLICATION_INTERNAL
+```
+
+```ts
+interface OverviewProjection {
+  readonly schemaVersion: 1
+  readonly designSystem: DesignSystemConsoleProjection
+  readonly runtimeKernel: RuntimeKernelConsoleProjection
+  readonly router: RouterConsoleProjection
+  readonly storage: StorageConsoleProjection
+  readonly uiSystem: UiSystemConsoleProjection
+  readonly responsiveLayout: ResponsiveLayoutConsoleProjection
+  readonly engineering: EngineeringManifest
+  readonly capabilities: CapabilityManifest
+}
+```
+
+Overview 只 Reference 七个 Safe Projection 与 Generated Capability Manifest，不复制 Mutable State、Private Registry 或 Source Fact。总览的“Current Appearance Summary”是唯一 Live Exception：`index.vue` 额外调用 `useAppearanceReadBoundary` 读取当前 Snapshot，但不得把该 Snapshot 写入 Static `overviewProjection`。
+
+Page Import Ownership 精确为：
+
+| Page | only admitted fact imports |
+| --- | --- |
+| `index.vue` | `overviewProjection`; `useAppearanceReadBoundary`; rendered components only from `@platform/ui` |
+| `appearance.vue` | exact Appearance/Design-System allowlist below; rendered components only from `@platform/ui` |
+| `design-tokens.vue` | `designSystemConsoleProjection` |
+| `runtime-kernel.vue` | `runtimeKernelConsoleProjection` |
+| `router.vue` | `routerConsoleProjection` |
+| `storage.vue` | `storageConsoleProjection` |
+| `ui-system.vue` | `uiSystemConsoleProjection` |
+| `responsive-layout.vue` | `responsiveLayoutConsoleProjection` from `@platform/ui` Public Root |
+| `engineering.vue` | `engineeringManifest` |
+| `capabilities.vue` | `capabilityManifest` |
+
+Cross-package Design System 与 UI Projection 必须由各自 Public Root Export；App-local Projection 保持 App-internal。`scripts/architecture/check-architecture-admin-console.ts` 必须拒绝 Page Deep/Private Import、错误 Projection Owner、Page-authored Static Fact、Raw Registry Bypass 与 Vendor Import。
+
+`appearance.vue` 的 Application/Design-system Fact Import Allowlist 精确为：
+
+```text
+apps/web/src/app/appearance/appearance-read-boundary.ts:
+  useAppearanceReadBoundary
+
+apps/web/src/app/appearance/appearance-mutation-boundary.ts:
+  useAppearanceMutationBoundary
+
+@platform/design-system public root:
+  builtInThemeIds
+  colorModePreferenceSchema
+  contrastPreferenceSchema
+  fontScaleValues
+  materialPreferenceSchema
+  motionPreferenceSchema
+  ColorModePreference (type-only)
+  ContrastPreference (type-only)
+  ExplicitThemePreference (type-only)
+  MaterialPreference (type-only)
+  MotionPreference (type-only)
+  ThemeReference (type-only)
+```
+
+Page 只能从 `useAppearanceMutationBoundary` 的 Deep-readonly `preference` 与 `customThemeRegistry` Computed Projection 读取 Stored Preference/Registry；Import `appearance.store.ts`、调用任一 Store Action、`$patch`、Assignment 或取得 Environment Reader 必须失败。所有 Preference Commit/Reset 只经同一 Mutation Boundary；Effective Summary 只经 `useAppearanceReadBoundary`。Vue Core Imports 与 Registry-closed `@platform/ui` Rendered Components 不计入 Fact Allowlist，但 Vendor/Deep Import 仍禁止。
+
+### 1.2B.6 Public UI closure and styled-vendor admission
+
+Atomic Landing 前的 Committed Baseline `packages/ui` 是 Dependency-free、Zero-runtime `src/index.ts` Stub；Owner-rejected Local Draft 中的三个 `Ui*` Export、两个 Reka Adapter 与 `reka-ui@2.10.3` Manifest/Lockfile Change 已从工作树永久退役，没有进入当前实现。当前 Atomic Implementation 只准入 `naive-ui@2.45.2` 作为唯一 Styled Vendor，并在 `@platform/ui` Public Boundary 后实现下方精确八个 Consumer-backed Component Export。Reka UI 只保留为未来独立需求触发的 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`。
+
+UI Public Component Registry 的 Current Implementation Contract 为：
+
+```text
+OWNER=packages/ui/src/registry/ui-public-component-registry.ts
+VALUE_EXPORT=uiPublicComponentRegistry
+TYPE_EXPORTS=UiPublicComponentRegistry; UiPublicComponentRegistryRecord; UiPublicPropContract; UiPublicEmitContract; UiPublicSlotContract
+VISIBILITY=PACKAGE_INTERNAL
+CHECKER=scripts/architecture/check-ui-public-components.ts
+PUBLIC_UI_API_CLOSURE_MODE=ATOMIC_CONSUMER_DERIVATION
+```
+
+```ts
+interface UiPublicPropContract {
+  readonly name: string
+  readonly type: string
+  readonly required: boolean
+  readonly defaultValue: string | null
+}
+
+interface UiPublicEmitContract {
+  readonly name: string
+  readonly payloadType: string
+}
+
+interface UiPublicSlotContract {
+  readonly name: string
+  readonly slotPropsType: string
+  readonly required: boolean
+}
+
+interface UiPublicComponentRegistryRecord {
+  readonly id: string
+  readonly exportName: string
+  readonly sourcePath: string
+  readonly props: readonly UiPublicPropContract[]
+  readonly emits: readonly UiPublicEmitContract[]
+  readonly slots: readonly UiPublicSlotContract[]
+  readonly semanticVariants: readonly string[]
+  readonly accessibilityContractIds: readonly string[]
+  readonly consumerRouteNames: readonly string[]
+  readonly capabilityStatus: 'TARGET_INACTIVE' | 'ACTIVE'
+}
+
+interface UiPublicComponentRegistry {
+  readonly schemaVersion: 1
+  readonly records: readonly UiPublicComponentRegistryRecord[]
+}
+```
+
+Top-level Field Order 精确为 `schemaVersion,records`；Nested Field Order 与各 Interface 声明精确相同。`uiPublicComponentRegistry` 是 Deep-readonly `UiPublicComponentRegistry`，不得退化为 Bare Array；`records` Cardinality 精确等于当前实际 `@platform/ui` Public-root Component Export Set `8`。Component Records 和所有 Set-like Arrays 按 Unicode Code-point 排序；Props、Emits、Slots 按 `name` 排序。Checker 使用 AST 闭合 `@platform/ui` Public-root Component Exports、Source Paths、`defineProps`、`defineEmits`、`defineSlots` 与实际 App Route Coverage；非 Component Type/Value/Projection Export 不计入 Component Registry。Unknown/Missing/Duplicate、Vendor Public Type、Optical Prop、Unregistered Export、Unused Record、Unused Public Component 或虚假 Consumer 必须失败。UI Inspector 只能消费 Safe Public Projection，不得公开 Package-internal Registry Source Path。
+
+`@platform/ui` Current Public-root Component Export Set 与 Registry Records 精确为：
+
+```text
+id=ui-admin-shell
+exportName=UiAdminShell
+sourcePath=packages/ui/src/components/UiAdminShell.vue
+props=[{name:activeRouteName,type:string,required:true,defaultValue:null},{name:navigation,type:readonly UiAdminNavigationGroup[],required:true,defaultValue:null}]
+emits=[{name:navigate,payloadType:string}]
+slots=[{name:default,slotPropsType:Readonly<Record<string, never>>,required:true}]
+semanticVariants=[narrow,regular,wide]
+accessibilityContractIds=[a11y.enhanced-target,a11y.named-navigation]
+consumerRouteNames=[appearance-management,capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
+capabilityStatus=ACTIVE
+
+id=ui-button
+exportName=UiButton
+sourcePath=packages/ui/src/components/UiButton.vue
+props=[{name:disabled,type:boolean,required:false,defaultValue:false},{name:type,type:'button' | 'submit',required:false,defaultValue:'button'},{name:variant,type:'ghost' | 'primary' | 'secondary',required:false,defaultValue:'secondary'}]
+emits=[{name:press,payloadType:void}]
+slots=[{name:default,slotPropsType:Readonly<Record<string, never>>,required:true}]
+semanticVariants=[ghost,primary,secondary]
+accessibilityContractIds=[a11y.enhanced-target]
+consumerRouteNames=[appearance-management]
+capabilityStatus=ACTIVE
+
+id=ui-description-list
+exportName=UiDescriptionList
+sourcePath=packages/ui/src/components/UiDescriptionList.vue
+props=[{name:items,type:readonly UiDescriptionItem[],required:true,defaultValue:null}]
+emits=[]
+slots=[]
+semanticVariants=[]
+accessibilityContractIds=[a11y.semantic-description-list]
+consumerRouteNames=[console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
+capabilityStatus=ACTIVE
+
+id=ui-page-header
+exportName=UiPageHeader
+sourcePath=packages/ui/src/components/UiPageHeader.vue
+props=[{name:breadcrumb,type:string,required:true,defaultValue:null},{name:summary,type:string,required:true,defaultValue:null},{name:title,type:string,required:true,defaultValue:null}]
+emits=[]
+slots=[]
+semanticVariants=[]
+accessibilityContractIds=[a11y.route-focus-primary-heading]
+consumerRouteNames=[appearance-management,capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
+capabilityStatus=ACTIVE
+
+id=ui-provider
+exportName=UiProvider
+sourcePath=packages/ui/src/providers/UiProvider.vue
+props=[{name:appearance,type:EffectiveAppearanceState,required:true,defaultValue:null}]
+emits=[]
+slots=[{name:default,slotPropsType:Readonly<Record<string, never>>,required:true}]
+semanticVariants=[]
+accessibilityContractIds=[]
+consumerRouteNames=[appearance-management,capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
+capabilityStatus=ACTIVE
+
+id=ui-section
+exportName=UiSection
+sourcePath=packages/ui/src/components/UiSection.vue
+props=[{name:description,type:string,required:false,defaultValue:null},{name:title,type:string,required:true,defaultValue:null}]
+emits=[]
+slots=[{name:default,slotPropsType:Readonly<Record<string, never>>,required:true}]
+semanticVariants=[]
+accessibilityContractIds=[a11y.semantic-section-heading]
+consumerRouteNames=[appearance-management,capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
+capabilityStatus=ACTIVE
+
+id=ui-segmented-control
+exportName=UiSegmentedControl
+sourcePath=packages/ui/src/components/UiSegmentedControl.vue
+props=[{name:accessibleLabel,type:string,required:true,defaultValue:null},{name:modelValue,type:string,required:true,defaultValue:null},{name:options,type:readonly UiSegmentedOption[],required:true,defaultValue:null}]
+emits=[{name:update:modelValue,payloadType:string}]
+slots=[]
+semanticVariants=[]
+accessibilityContractIds=[a11y.enhanced-target,a11y.named-control-group]
+consumerRouteNames=[appearance-management]
+capabilityStatus=ACTIVE
+
+id=ui-status-badge
+exportName=UiStatusBadge
+sourcePath=packages/ui/src/components/UiStatusBadge.vue
+props=[{name:label,type:string,required:true,defaultValue:null},{name:tone,type:UiStatusTone,required:true,defaultValue:null}]
+emits=[]
+slots=[]
+semanticVariants=[active,complete,deferred,inactive,not-started]
+accessibilityContractIds=[a11y.text-status-equivalent]
+consumerRouteNames=[capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,ui-system-inspector]
+capabilityStatus=ACTIVE
+```
+
+`UiProvider` 的唯一 Direct Import/Render Consumer 是 `apps/web/src/App.vue`，实例数精确为 `1`，禁止 Nested 或 Route-local Provider。其 `consumerRouteNames` 不是 Direct-import List，而是该 Root Provider 包裹的十个 Product Route Coverage Set；七个既有 Error Route 也通过同一 Root Provider 渲染，但作为 Preserved Error Infrastructure 不计入 Consumer-derived Product API Set。Checker 对 `UiProvider` 特判为：一个 `App.vue` Direct Consumer + Exact Ten Product Route Coverage + Same Provider Covers Seven Error Routes；其他 Public Component 的 `consumerRouteNames` 仍表示实际 Direct Route Consumer Set。Provider 自身非 Interactive，故 Accessibility ID 为空；Overlay Ownership 由独立 Policy 约束。当前 Record 已与真实 Export、Root Composition、十个 Product Route Coverage 和 Checker 同时落地并转为 Registry-local `ACTIVE`；Owner 验收后，顶层 Console Capability 也已同步为 `ACTIVE`。
+
+当前 Atomic Implementation 已从十个真实 Route Consumer 派生并闭合上述最小额外 Public API。原 Ceiling 中没有真实独立消费者的 `UiAdminSidebar`、`UiAdminHeader` 与 `UiAdminNavigation` 没有被创建；它们仍不构成 Public API Admission。任何额外 Public Component 均要求新的显式 Architecture Admission。
+
+```text
+UiAdminShell
+UiAdminSidebar
+UiAdminHeader
+UiAdminNavigation
+UiPageHeader
+UiStatusBadge
+UiSection
+UiButton
+UiSegmentedControl
+UiDescriptionList
+```
+
+Naive UI Current Implementation Admission 精确为：
+
+```text
+STYLED_UI_LIBRARY=naive-ui@2.45.2
+CAPABILITY_STATUS=ACTIVE
+IMPLEMENTATION_STATUS=COMPLETE
+WORKSPACE_CATALOG_OWNER=root pnpm-workspace catalog
+DIRECT_DEPENDENCY_OWNER=packages/ui
+APPLICATION_DIRECT_DEPENDENCY=PROHIBITED
+PRIVATE_IMPORT_ROOT=packages/ui/src/adapters/naive/**
+PUBLIC_PROVIDER=packages/ui/src/providers/UiProvider.vue
+PRIVATE_THEME_ADAPTER=packages/ui/src/adapters/naive/pavp-naive-theme.ts
+PRIVATE_THEME_ADAPTER_VALUE_EXPORT=createPavpNaiveThemeProjection
+PRIVATE_THEME_ADAPTER_TYPE_EXPORT=PavpNaiveThemeProjection
+PRIVATE_CONFIG_PROVIDER_ADAPTER_PATH=packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue
+PRIVATE_CONFIG_PROVIDER_ADAPTER_COMPONENT_NAME=PavpNaiveConfigProvider
+PRIVATE_CONFIG_PROVIDER_ADAPTER_VISIBILITY=PACKAGE_PRIVATE
+PRIVATE_CONFIG_PROVIDER=NConfigProvider
+PRIVATE_CONFIG_PROVIDER_COUNT=1
+PRIVATE_NAIVE_RUNTIME_COMPONENT_IMPORTS=NBreadcrumb; NBreadcrumbItem; NButton; NConfigProvider; NDescriptions; NDescriptionsItem; NRadioButton; NRadioGroup; NTag
+PRIVATE_NAIVE_RUNTIME_DARK_THEME_IMPORTS=commonDark; breadcrumbDark; buttonDark; descriptionsDark; radioDark; tagDark
+PRIVATE_NAIVE_TYPE_ONLY_IMPORTS=GlobalTheme; GlobalThemeOverrides
+IMPORT_MODE=explicit tree-shaken naive-ui ES subpath imports
+AUTO_IMPORT_PLUGIN=PROHIBITED
+GLOBAL_LIBRARY_REGISTRATION=PROHIBITED
+SECOND_STYLED_COMPONENT_FRAMEWORK=PROHIBITED
+ACTIVE_REKA_NAIVE_DUAL_STATE=PROHIBITED
+ADDITIONAL_RUNTIME_ICON_PACKAGE=PROHIBITED
+```
+
+Pinned Coordinate 无须在未来持续等于 npm `latest`。本次 Admission 已通过 Exact Coordinate Availability、Integrity、License、Vue/TypeScript Compatibility、Canonical Strict Typecheck、Production Build、Bundle Gate 以及 Owner 外部实际渲染与视觉审查，因此顶层能力现为 `ACTIVE`。`apps/web`、Page 与 Feature 绝不 Direct-import `naive-ui`；只有 `packages/ui/src/adapters/naive/**` 可以 Import Vendor，且不得从 `@platform/ui` Public Root 泄漏 Vendor Type 或 Instance。
+
+初次 Landing 的 Maximum Private Naive Import Ceiling 为：
+
+```text
+NConfigProvider
+NLayout
+NLayoutSider
+NMenu
+NButton
+NDrawer
+NTag
+NDescriptions
+NDescriptionsItem
+NRadioGroup
+NRadioButton
+NTooltip
+NBreadcrumb
+NBreadcrumbItem
+```
+
+当前实现只使用 Ceiling 内九个具有真实 Consumer 的 Component Import：`NBreadcrumb`、`NBreadcrumbItem`、`NButton`、`NConfigProvider`、`NDescriptions`、`NDescriptionsItem`、`NRadioButton`、`NRadioGroup` 与 `NTag`。Shell 的 Layout、Menu、Tooltip 与 Overlay Drawer 由 `UiAdminShell` 使用 Native Semantic HTML、PAVP Token 和 Vue Teleport/Transition 实现，因此没有导入无真实 Consumer 的 `NLayout`、`NLayoutSider`、`NMenu`、`NTooltip` 或 `NDrawer`。任何额外 Naive Import 需要新的显式 Admission。
+
+全库 `darkTheme` 会把未渲染组件的主题集合引入初始 Bundle，因此当前 Private Theme Adapter 只从 Naive ES Subpath 导入 `commonDark` 及五个真实渲染 Component Theme：`breadcrumbDark`、`buttonDark`、`descriptionsDark`、`radioDark`、`tagDark`，并组合一个不公开的 `GlobalTheme`。这不是第二 Theme Authority：全部产品视觉字段仍由下方 PAVP `themeOverrides` 覆盖，Naive Dark Theme 只提供当前五个 Vendor Component 的必要结构。`GlobalTheme` 与 `GlobalThemeOverrides` 仅允许 `import type`；`PavpNaiveConfigProvider.vue` 是 `NConfigProvider` 的唯一 Import Owner。任何其他 Vendor Runtime Value、Type Value-import、Owner 交换或从 `UiProvider.vue` 直接导入 `naive-ui` 均失败。
+
+Private Adapter 的 Exact Cross-file Contract 为：
+
+```ts
+import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
+
+export interface PavpNaiveThemeProjection {
+  readonly theme: GlobalTheme | null
+  readonly themeOverrides: GlobalThemeOverrides
+}
+
+export function createPavpNaiveThemeProjection(
+  appearance: Readonly<EffectiveAppearanceState>,
+): Readonly<PavpNaiveThemeProjection>
+```
+
+Field Order 精确为 `theme,themeOverrides`。该 Type/Function 只可由同一 Private Import Root 下的 `PavpNaiveConfigProvider.vue` Import，不从 `@platform/ui` Public Root 导出；Vendor Types 只存在于 `packages/ui` Private Adapter Boundary。`theme` 在 Effective `colorMode='dark'` 时精确为 `{name:'dark',common:commonDark,Breadcrumb:breadcrumbDark,Button:buttonDark,Descriptions:descriptionsDark,Radio:radioDark,Tag:tagDark}`，在 `light` 时为 `null`；不存在 `system` 分支，因为输入已是 Resolved State。`themeOverrides` 的 Component Inventory 精确为 `common,Breadcrumb,Button,Descriptions,Radio,Tag`，必须为每个实际渲染的 Admitted Naive Component 提供 Complete PAVP-owned Mapping，不得包含 Page Input、Raw Optical Literal 或 Naive-default-as-authority。
+
+Naive UI `2.45.2` 会先把 Global `common` Override 合入 Component Common，再调用 Component `self(mergedCommon)`，最后才合并 Component-local Override。当前五个 Admitted Component Theme 中，以下 Common Color Field 会在该 Eager Derivation 阶段进入 `seemly` Color Parser，因此不得出现在 PAVP `themeOverrides.common` 中；CSS Custom Property、Token Alias、Identifier Alias、Concrete PAVP Color 或其他 Value 形式均不构成例外：
+
+```text
+NAIVE_COMMON_PARSER_SENSITIVE_COLOR_FIELDS=primaryColor;infoColor;successColor;warningColor;errorColor;tableHeaderColor;cardColor;modalColor;popoverColor;dividerColor
+CURRENT_REMOVED_PAVP_COMMON_OVERRIDES=primaryColor;cardColor;modalColor;popoverColor;dividerColor
+NAIVE_COMMON_PARSER_SENSITIVE_COLOR_INPUT_SOURCE=admitted Naive light/dark concrete common theme only
+PAVP_THEME_OVERRIDES_COMMON_FOR_EXACT_FIELDS=PROHIBITED
+```
+
+Naive Light/Dark Concrete Color 在这里仅是 Private、Parser-compatible、Eager-derivation Compatibility Input，不是 PAVP Visual Authority，也不授权 Page、Component 或 Public Contract 把 Vendor-derived Output 作为最终视觉值。现有 Complete PAVP-owned Override Map 要求保持不变；该 Parser-input 规则只证明当前精确 Admitted Component Set 的 `self()` 可以安全完成，不证明任何 Future Component、Variant 或 Context 已覆盖。任何新增 Naive Component、Variant、Context 或 Theme Common Color Mapping 必须先重新审计其 `self()` Derivation，并在同一 Admission 中更新 Exact Map 与 Owning Checker。Checker 必须用 TypeScript AST 证明十个字段在 `themeOverrides.common` 中全部缺席、Override Object 只有可静态命名的精确属性，并用不写磁盘的 Reversible Negative Probe 证明 Token Alias 注入会失败。
+
+Private Wrapper Contract 精确为：
+
+```ts
+defineOptions({ name: 'PavpNaiveConfigProvider' })
+
+defineProps<{
+  readonly appearance: Readonly<EffectiveAppearanceState>
+}>()
+
+defineSlots<{
+  default: (props: Readonly<Record<string, never>>) => unknown
+}>()
+```
+
+`PavpNaiveConfigProvider.vue` 无 Public-root Export、无 Emit、无 Fallback、无 Overlay Root；它调用 `createPavpNaiveThemeProjection`，在 Template 中渲染全仓唯一一个 `NConfigProvider`，只传 `theme`、`themeOverrides` 并透传唯一 Default Slot。`UiProvider.vue` 只 Import/Render 该 Private Wrapper 并传入 `appearance`；其 Template 顶层第一个 Concrete DOM Node 无条件创建唯一 `pavp-overlay-root`，随后才渲染 Private Wrapper，并在 Wrapper Slot 内渲染 Public Default Slot。Overlay Root 必须位于 Wrapper 与 Routed Default Slot Subtree 之外，确保任何 Descendant Teleport Mount 前 Target 已同步存在；`UiProvider.vue` 不 Import `naive-ui`、`pavp-naive-theme.ts` 或任何 Vendor Type。Checker 必须同时证明 Wrapper 不进入 Public Component Registry、`NConfigProvider` Count 精确为 `1`、Theme Adapter 对六个 Dark Theme ES Subpath Value 与两个 Vendor Type-only Import、Wrapper 对 `NConfigProvider` 的 Import Kind/Owner、UiProvider-to-wrapper Composition Closure，以及 Overlay Root 相对 Wrapper/Slot 的结构顺序精确。
+
+`pavp-naive-theme.ts` 只从 PAVP Semantic Color、Size、Radius、Typography、Shadow、z-index、Material 与 Motion Authority 构造 Light/Dark Projection 和 Component Overrides。Naive Default Visual Value 不能成为 PAVP Authority；每个被渲染的 Admitted Naive Component 必须有完整 PAVP-owned Override Map，Missing Required Token/Mapping 是 Static/Build Failure。Page-authored Naive Theme Override 禁止。
+
+Overlay Contract 精确为：
+
+```text
+OVERLAY_ROOT_ID=pavp-overlay-root
+OVERLAY_ROOT_COUNT=1
+OVERLAY_ROOT_OWNER=UiProvider
+ADMITTED_PORTAL_TARGET=pavp-overlay-root only
+Z_INDEX_AUTHORITY=PAVP Design Token
+BODY_PORTAL=PROHIBITED
+PAGE_AUTHORED_Z_INDEX=PROHIBITED
+NEW_RUNTIME_KERNEL_STEP=NONE
+NEW_ACTIVE_PROVIDER_ID=NONE
+ACTIVE_PROVIDER_SET=pinia,appearance
+```
+
+Narrow Navigation Drawer 与所有 Admitted Overlay 只 Target 该 Root；Root 是 `UiProvider` Template 顶层第一个 Concrete DOM Node，必须同步且无条件创建，不得携带 `aria-hidden`，并先于 Private Wrapper、Public Default Slot 与任何 Descendant Teleport Mount。Root 的创建、唯一性和 Dispose 由 `UiProvider` Lifecycle 拥有。Owning Checker 使用 Vue SFC/AST 证明 Root 顺序、唯一 Owner、无条件性、所有 Teleport 的精确 Target、Body Portal 禁止，以及 Conditional Teleport Subtree 中 Template Ref 的 Nullable/Guarded Dereference；并运行 Root 移至 Slot 之后、第二 Root、Body Teleport、Conditional Root、Drawer Ref 无条件解引用五个可逆 In-memory Negative Probes。不得把 `UiProvider` 计为 Runtime Kernel Provider ID。
+
+### 1.2B.7 Visual identity, motion, page responsibility and data boundary
+
+```text
+VISUAL_IDENTITY=PAVP_AMBIENT_ARCHITECTURE_CONSOLE
+VISUAL_IDENTITY_STATUS=ACTIVE
+VISUAL_VALUE_AUTHORITY=PAVP Design Tokens only
+STRUCTURAL_REFERENCE=Vben Admin only; no copied route, token, component or application architecture
+INTEGRATION_REFERENCE=SoybeanAdmin only; no copied implementation or authority
+VISUAL_REFERENCE=Owner CCD screenshots only; no copied proprietary appearance or token set
+```
+
+十五条 Current UI-internal 视觉 ID 精确分类为 `UI-internal Admin semantic alias roles`，不是 §11.5 的 Canonical `material.*` Role，也不建立第二 Material Registry。唯一 Source Path 为 `packages/design-system/tokens/semantic/admin-console.tokens.json`；Source Group Visibility 精确为 `ui-internal`。每个 Role 恰好一个无条件 DTCG Token Leaf，Source 不写 `conditions` Key、Preprocessor 得到的 Effective Conditions 精确为空对象 `{}`，且无 `compound`、无 Numeric/Optical Literal，因此各产生一条 Token Manifest Record，共使 Token Count 增加 `15`；它们不进入 Public Token Names、Public TypeScript Token Set、Public Role Registry 或 UnoCSS。
+
+Target `cssVariableForRole` 精确新增唯一 Namespace Rule：`admin.<segments> → --ui-admin-<segments joined by hyphen>`。每个 Alias 的 Runtime CSS Value 必须保留为 `var(<target role canonical CSS variable>)`，不得在 Admin Variable 中展开或复制 Target Resolved Literal。三条 Material-sensitive Alias 通过既有 `--ui-material-*` Variable 继承 Built-in Theme、Color Mode、Named Contrast 与 Effective Material；其他 Color Alias 通过既有 `--ui-color-*` Theme Bank 继承 Theme/Mode/Contrast；Shadow Alias 继承既有 Semantic Shadow Authority，Appearance Axes 对其 Not-applicable。Existing Material Validator 继续只验证 `material.*` 的 `adaptive/reduced/solid` 三投影；Console Owning Checker 验证下表 Alias Closure、Dynamic-variable Reference、Axis Applicability、Forced-colors/Reduced-transparency Inheritance 和一 Role 一 Manifest Leaf。
+
+| role ID | exact `$type` | exact single unconditional `$value` alias | exact CSS variable | effective-axis source |
+| --- | --- | --- | --- | --- |
+| `admin.ambient.canvas` | `color` | `{color.surface.page}` | `--ui-admin-ambient-canvas` | Theme + Color Mode + Contrast through `--ui-color-surface-page`; Material N/A |
+| `admin.ambient.grid` | `color` | `{color.border.default}` | `--ui-admin-ambient-grid` | Theme + Color Mode + Contrast through `--ui-color-border-default`; Material N/A |
+| `admin.ambient.light-accent` | `color` | `{color.focus.ring}` | `--ui-admin-ambient-light-accent` | Theme + Color Mode + Contrast through `--ui-color-focus-ring`; Material N/A |
+| `admin.ambient.light-primary` | `color` | `{color.action.primary}` | `--ui-admin-ambient-light-primary` | Theme + Color Mode + Contrast through `--ui-color-action-primary`; Material N/A |
+| `admin.ambient.light-warm` | `color` | `{color.text.secondary}` | `--ui-admin-ambient-light-warm` | Theme + Color Mode + Contrast through `--ui-color-text-secondary`; Material N/A |
+| `admin.border.subtle` | `color` | `{color.border.default}` | `--ui-admin-border-subtle` | Theme + Color Mode + Contrast through `--ui-color-border-default`; Material N/A |
+| `admin.chrome.header` | `color` | `{material.chrome.adaptive.background}` | `--ui-admin-chrome-header` | Theme + Color Mode + Contrast + Effective Material through `--ui-material-chrome-background` |
+| `admin.chrome.sidebar` | `color` | `{material.chrome.adaptive.background}` | `--ui-admin-chrome-sidebar` | Theme + Color Mode + Contrast + Effective Material through `--ui-material-chrome-background` |
+| `admin.navigation.hover` | `color` | `{color.surface.panel}` | `--ui-admin-navigation-hover` | Theme + Color Mode + Contrast through `--ui-color-surface-panel`; Material N/A |
+| `admin.navigation.selected` | `color` | `{color.action.primary}` | `--ui-admin-navigation-selected` | Theme + Color Mode + Contrast through `--ui-color-action-primary`; Material N/A |
+| `admin.shadow.chrome` | `shadow` | `{interaction.shadow.panel}` | `--ui-admin-shadow-chrome` | Existing Semantic Shadow; Appearance axes N/A |
+| `admin.shadow.overlay` | `shadow` | `{interaction.shadow.panel}` | `--ui-admin-shadow-overlay` | Existing Semantic Shadow; Appearance axes N/A |
+| `admin.surface.content` | `color` | `{color.surface.panel}` | `--ui-admin-surface-content` | Theme + Color Mode + Contrast through `--ui-color-surface-panel`; Material N/A |
+| `admin.surface.overlay` | `color` | `{material.overlay.adaptive.background}` | `--ui-admin-surface-overlay` | Theme + Color Mode + Contrast + Effective Material through `--ui-material-overlay-background` |
+| `admin.surface.settings` | `color` | `{color.surface.panel}` | `--ui-admin-surface-settings` | Theme + Color Mode + Contrast through `--ui-color-surface-panel`; Material N/A |
+
+Table Order 是 Role ID Unicode Code-point Order。每个 Source Leaf 的 Canonical Field Order 为 `$type,$value,$extensions`；`$extensions.org.pavp` 只包含 `role`（等于 Role ID），Group 已提供 Visibility，故不得重复 Conditions 或 Visibility。Unknown/Missing/Additional Admin Role、Wrong Alias/Type/CSS Variable、Literal Value、Conditional Leaf、Duplicate Role、Non-code-point Order 或 Manifest Count 非 `15` 必须失败。Generated Runtime CSS 和 Manifest 继续由 `packages/design-system/src/build/build.ts` 与 Existing Output Owners 唯一产生。
+
+Ambient Canvas 是 Environmental Background，不是 Full-viewport Material Surface。Liquid Material 只允许用于 Functional Sidebar、Compact Header、Selected Navigation Chrome 和 Overlay；Content 与 Settings Surface 必须 Stable、Readable、Non-glass。禁止 Glass-on-glass、Generic Glass Component、Dead-flat Canvas、Fieldset-card Matrix、Generic SaaS Dashboard、Fake Metrics、Decorative Data Charts、Neon Cyberpunk、Purple-dominant Gradient、Page-authored Optical Literal，以及把 Naive Default Visual Value 提升为 PAVP Authority。
+
+Motion 继续只由 Existing PAVP Motion Preference 与 Existing PAVP CSS Motion Tokens 控制，初次 Landing 不准入 Motion Library。允许的 Named Interaction 精确为：
+
+```text
+Sidebar selected indicator
+Sidebar expanded/rail projection
+Narrow navigation Drawer entrance and exit
+Route-content fade and logical shift
+Layered content entrance
+Button hover and press
+Setting-commit feedback
+Low-frequency ambient background drift
+Theme interpolation only where existing Appearance contract permits
+```
+
+`reduced` 必须显著最小化 Displacement 与 Duration；`none` 禁用全部 Non-essential Motion。Forced Colors 与 Reduced Transparency 必须获得 Solid、Readable Fallback。禁止 Raw Duration/Easing Literal、`transition: all`、Animated Blur、Backdrop-filter、Filter、Saturation、Brightness 或 Full-viewport Filter。
+
+十个 Page Responsibility 精确为：
+
+| Page | responsibility |
+| --- | --- |
+| `总览` | Active Foundation Summary、Current Appearance Summary、Direct Capability Navigation |
+| `主题与外观` | Existing Real Appearance Controls、Validation、Persistence 与 Commit Result |
+| `设计令牌` | Safe Read-only Public Role、Theme Plane、Contrast、Material 与 Manifest Summary |
+| `运行时内核` | Safe Read-only Exact Eleven-step Lifecycle、Provider 与 Error-count Summary |
+| `路由治理` | Safe Read-only Route、Layout、Scroll、Focus、Restoration 与 Error-route Summary |
+| `存储与持久化` | Safe Read-only Two-record Storage Registry 与 Lifecycle Summary |
+| `UI 组件` | Safe Read-only Admitted PAVP UI Inventory、Styled Vendor 与 Private-adapter Boundary |
+| `响应式布局` | Safe Read-only Profile、Threshold、Shell Region、Size、Target 与 Safe-area Projection |
+| `工程与质量` | Safe Read-only Toolchain、Verify Stage、Bundle Budget 与 Hosted Workflow Manifest |
+| `能力路线图` | Safe Read-only Target-inactive/Deferred Capability、Prerequisite 与 Admission Condition |
+
+Data Boundary 精确为：
+
+```text
+BACKEND=NONE
+API_TRANSPORT=NONE
+QUERY_CLIENT=NONE
+AUTH_SESSION_PERMISSION=NONE
+MOCK_OR_SAMPLE_DATA=PROHIBITED
+FAKE_METRIC=PROHIBITED
+RUNTIME_FETCH=existing Runtime Configuration loader only
+FACT_SOURCES=active registries; generated public manifests; validated project configuration; generated Engineering Manifest; generated Capability Manifest; Appearance Read Boundary
+RAW_STORAGE_KEY_OR_PAYLOAD=PROHIBITED
+PRIVATE_SOURCE_PATH_OR_CODE=PROHIBITED
+SECRET_LOG_STACK_TRACE=PROHIBITED
+PAGE_AUTHORED_MUTABLE_STATUS=PROHIBITED
+```
+
+### 1.2B.8 Current atomic implementation work-package contract
+
+本 Amendment 原先只冻结下列唯一 Implementation Package；该精确 Atomic Replacement 已实现、通过 Owner 实际渲染与视觉验收，并获得 Git Publication 授权。Successor Package 仍未获准入：
+
+```text
+ID=PAVP_ARCHITECTURE_ADMIN_CONSOLE
+ENTRY_CONDITIONS=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; current Runtime Kernel exact 11 steps; Router and Storage active; historical rejected Layout Admin/Reka draft was never committed and has been permanently replaced without accepting its authority; naive-ui@2.45.2 availability/integrity/license/compatibility gates pass; no unexplained overlapping dirty change
+ALLOWED_SCOPE=atomic ten-route PAVP 管理台; one responsive Admin Shell; exact Layout tokens/registry/Uno projections and Admin semantic-alias tokens; exact route/layout/region/scroll/focus/restoration contracts; Appearance Read Boundary and stateless Mutation Facade; UiProvider and consumer-derived public UI registry; private Naive adapters; exact safe projections; Engineering and Capability generated manifests; exact visual/material/motion projections; smallest owning checkers; root Catalog and packages/ui dependency admission required by this package only
+PROHIBITED_SCOPE=backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; active Reka/Naive dual state; second styled component framework; auto-import/global vendor registration; raw page visual/responsive values; duplicate Store/Resolver/Provider/Registry/scroll owner; test/browser/evidence infrastructure; successor work package
+OUTPUTS=one full-viewport pure-frontend PAVP 管理台; ten product routes plus seven unchanged error routes; one Admin Shell and primary Router outlet; one Appearance-to-UiProvider read boundary plus one stateless Appearance mutation facade; exact target registries/manifests/projections; only consumer-backed PAVP UI public APIs; target-only statuses atomically promoted only after real artifacts and gates
+MACHINE_GATES=exact dependency/import/public-root/registry/consumer closure; token schema/build/check and 231-record Manifest equation; CSS/TypeScript threshold parity; route 17/10/7 closure; layout/region/scroll/focus/restoration closure; appearance single-writer lifecycle; safe projection and generated-manifest regeneration equality; Naive override/overlay/import boundary; accessibility/minimum-target/safe-area/motion/literal rules; check:arch; check:policy; typecheck; build; bundle; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=PASS_BY_OWNER_EXTERNAL_RENDERED_AND_VISUAL_REVIEW
+COMPLETION_EVIDENCE=one atomic implementation diff/commit after static gates; generated production artifacts and deterministic manifest outputs; exact dependency/route/registry/bundle state in task report; no committed Test/Fixture/Screenshot/Trace/Evidence Artifact; Owner rendered and visual review explicitly reported as accepted
+```
+
+Landing 不得先创建 Target-only Stub、Placeholder Provider、Unused Public Component、Generated Manifest Without Consumer 或 Partial Vendor Admission。当前 Implementation 已在同一 Atomic Diff 中同时建立 `architecture-admin-console`、`pavp-ui-system`、`responsive-layout` 的 Inspector Artifact、九条 Layout Public Role、四条 Shell Region、十条 Product Route、`UiProvider`、Owning Gates 与 Consumer Closure；Owner 验收后，顶层 Package 与 Capability 已同步为 `COMPLETE / ACTIVE`。
 
 ## 1.3 Capability Status Registry
 
@@ -291,8 +1829,8 @@ type CapabilityStatus =
 | Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
-| Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries; first real frontend surface consumer is `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
-| Layout Admin frontend surface | `TARGET_INACTIVE` | next canonical pure frontend work package `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
+| Architecture Admin Console frontend surface | `ACTIVE` | completed and Owner-accepted `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; rejected Layout Admin draft is not current evidence |
 | TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -300,17 +1838,17 @@ type CapabilityStatus =
 | Observability reporting and Runtime Performance collection | `DEFERRED` | optional demand-driven admission; backend/auth-dependent reporting cannot precede its real producers and provider contract |
 | Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | non-blocking future hosting/release admission; backend-dependent portions remain in the optional lane |
 | Forms, I18n, Tables and Mutations | `TARGET_INACTIVE` | demand-driven implementation gates |
-| Foundational shared UI components | `TARGET_INACTIVE` | minimum real consumer admission may begin with `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| Foundational shared UI components | `ACTIVE` | exact eight-component consumer-backed boundary admitted by `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; expansion remains separately gated |
 | CSS Motion Token baseline | `ACTIVE` | current Design Token and static CSS contract only |
-| View Transition progressive enhancement | `TARGET_INACTIVE` | demand-driven Motion/UI admission after the Layout Admin frontend surface or another real approved consumer |
+| View Transition progressive enhancement | `TARGET_INACTIVE` | demand-driven Motion/UI admission after `PAVP_ARCHITECTURE_ADMIN_CONSOLE` or another real approved consumer |
 | Motion for Vue, GSAP and specialist adapters | `DEFERRED` | named production-need gates |
 | Accessibility architecture and current static lint baseline | `ACTIVE` | WCAG contract, token validation and current static tooling |
-| Runtime component/route accessibility | `TARGET_INACTIVE` | each real component/route consumer gate; next applicable consumer is `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| Runtime component/route accessibility | `ACTIVE` | current ten Product Routes, seven existing Error Routes and exact eight Public Components; future consumers remain separately gated |
 | Build and Generated Manifest performance budgets | `ACTIVE` | current `check:bundle` and token Manifest gates |
 | Project generators | `TARGET_INACTIVE` | serial demand-driven generator admission after a repeated real need |
-| Pure frontend implementation mainline | `TARGET_INACTIVE` | §37.2 strict sequencing through `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` |
+| Pure frontend implementation mainline | `ACTIVE` | §37.2 strict sequence completed through `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; no automatic successor |
 | Optional backend-dependent capability lane | `DEFERRED` | §37.2 explicit future demand-driven admission only |
-| Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial frontend stage after `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` and one real consumer gate |
+| Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial frontend stage after `PAVP_ARCHITECTURE_ADMIN_CONSOLE` and one real consumer gate |
 | Router Experimental Data Loaders | `PROHIBITED` | future stable-dependency decision required |
 | Browser automation, automated test infrastructure and Codex browser operation | `PROHIBITED` | production-only repository policy |
 | Seed-generated, partial or auto-corrected themes | `PROHIBITED` | explicit complete Theme contract |
@@ -470,7 +2008,8 @@ Generated Artifact 中的派生 Literal、Schema Enum Discriminant、HTTP 标准
 | Vue Router         | `5.x`         |
 | Vite               | `8.1.x`       |
 | UnoCSS             | 当前稳定版本        |
-| Reka UI            | `2.x` 稳定组件    |
+| Naive UI           | future exact target `2.45.2`; currently inactive |
+| Reka UI            | deferred headless-primitive candidate only |
 | Pinia              | `3.x`         |
 | TanStack Vue Query | `5.x`         |
 | Zod                | `4.x`         |
@@ -569,7 +2108,8 @@ Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 
 | 颜色处理            | Color.js                             |
 | 颜色解析与对比计算       | Color.js；只校验显式值，不生成或修正主题             |
 | 运行时主题           | CSS Custom Properties                |
-| 复杂交互原语          | Reka UI，Phase 2 Consumer Gate 后按需      |
+| Styled UI 组件库     | `naive-ui@2.45.2`，已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` Atomic Landing 激活并保持 `@platform/ui` 私有 |
+| Headless 交互原语    | Reka UI，仅保留为未来独立 Consumer Gate 的 Deferred Candidate |
 | 简单控件            | 原生语义 HTML                            |
 | 项目 UI 公共层       | `@platform/ui`                       |
 | 简单动画            | CSS                                  |
@@ -580,7 +2120,7 @@ UnoCSS `presetWind4` 是官方 Tailwind 4 风格 Preset，包含内部 Reset、�
 
 DTCG 2025.10 是稳定技术报告，但不是 W3C Standards Track 标准；Style Dictionary 5 已支持 DTCG 格式，但官方说明对 2025.10 的完整支持仍在推进。因此架构采用“稳定子集 + 显式 Schema”，不绑定尚未完整实现的边缘能力。
 
-Reka UI 提供无样式、可访问、完整类型化的 Vue 原语，负责 ARIA、键盘导航和焦点管理；其 Drawer 在 2.10 中仍标记为 Alpha，所以 Drawer 不作为首版不可替换的公共实现合同。
+Atomic Landing 前的 Committed Baseline `packages/ui` 没有 Runtime Dependency。当前 Atomic Console Implementation 已按精确 Admission 由 `packages/ui` Direct-own `naive-ui@2.45.2`，Vendor 仍是 PAVP-owned Public Boundary 后的 Private Implementation Detail。Reka UI 不在当前 Active Set；它仅保留为未来真实 Headless Consumer 触发的 Deferred Candidate，且不得与 Naive 形成 Dual Active State。
 
 ## 3.3 工程质量层
 
@@ -622,7 +2162,6 @@ PrimeVue
 PrimeUI
 Vuetify
 Element Plus
-Naive UI
 Quasar
 Tailwind CSS
 Sass
@@ -646,6 +2185,8 @@ Service Worker
 全局组件自动注册
 全局 Composable 自动导入
 ```
+
+本禁止表中的 UI Framework 禁止作为当前或 Target 第二 Styled Component System。`naive-ui@2.45.2` 只有 §1.2B 的窄 Target Admission，不受“未准入通用框架”表述扩张；在 Atomic Console Landing 前仍不得安装或使用。Reka UI Active Admission 与 Reka/Naive Dual State 明确禁止。
 
 理由：
 
@@ -813,7 +2354,7 @@ progressive-adaptive-vue-platform/
 
 当前 Baseline 不包含 `LICENSE` 文件；Target Directory Tree 不得暗示它已存在。未来新增 License 需要 Owner 明确选择文本和独立仓库治理变更。
 
-当前 Phase 1 对 `packages/ui` 的实际结构是：
+Phase 1 初始 Baseline 对 `packages/ui` 的实际结构是：
 
 ```text
 packages/ui/
@@ -823,7 +2364,7 @@ packages/ui/
 └── tsconfig.json
 ```
 
-在 Phase 1：
+在 Phase 1 初始 Baseline：
 
 ```text
 UI_RUNTIME_DEPENDENCIES=NONE
@@ -833,6 +2374,8 @@ FUTURE_UI_DIRECTORIES=DEMAND_CREATED_ONLY
 ```
 
 `.ai/skills/pavp-ui/**`、未来 UI 目录和未来应用目录出现在本节，仅用于固定合法位置和引入门槛。本架构工作包本身不创建这些文件或目录。
+
+原 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 首个消费者准入已被 Owner 拒绝并由 §1.2B Supersede；其本地三个 `Ui*` Component、两个 Reka Adapter 和 Dependency Change 不得提交，也不改变本节 Baseline。首个有效 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 按 §1.2B 的 Atomic Consumer Derivation、Naive Private Adapter 与 Registry Closure 完成；任何后续 Public Component 扩展仍需要真实消费者与独立准入。
 
 ---
 
@@ -883,7 +2426,9 @@ apps/web
 
 @platform/ui
   ├── @platform/design-system
-  ├── reka-ui
+  ├── vue
+  ├── naive-ui                 [target exact 2.45.2 at Console gate]
+  ├── reka-ui                  [deferred independent gate; not dual-active]
   ├── motion-v
   └── approved specialist adapters
 
@@ -893,15 +2438,17 @@ apps/web
   └── style-dictionary (build only)
 ```
 
-上图是最终允许方向，不表示依赖已进入当前 Phase。Phase 1 固定：
+上图是最终允许方向，不表示依赖已进入当前 Phase。Phase 1 初始 Baseline 固定：
 
 ```text
 packages/ui runtime dependencies = 0
 packages/ui implementation sources = src/index.ts only
-Reka UI / Motion / specialist adapters = not admitted
+Naive UI / Reka UI / Motion / specialist adapters = not currently admitted
 ```
 
 依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。未来引入的第三方 UI 依赖只能由 `packages/ui` 的私有 Adapter 导入；应用和业务层仍只从 `@platform/ui` 公共根出口导入语义组件。
+
+Atomic Landing 前的 Committed Baseline `apps/web` 尚未准入 `@platform/ui`，且 `packages/ui` Runtime Dependency 为零。当前 Console Atomic Implementation 精确加入：`apps/web` 通过 `workspace:*` 直接依赖 `@platform/ui`；`packages/ui` 通过 `workspace:*` 直接依赖 `@platform/design-system`，并通过 Catalog 直接依赖 `vue@3.5.40` 与 `naive-ui@2.45.2`。Reka Draft Dependency 无 Admission；除此之外没有加入第二 Styled UI Framework、Motion 或 Specialist Vendor。
 
 应用分层：
 
@@ -928,7 +2475,8 @@ shared
 * 跨 Feature 编排由 Page 或 App 完成。
 * Feature 外部只能访问其 `index.ts`。
 * 禁止 Workspace 深层导入。
-* Reka UI 只允许由 `packages/ui/src/adapters/reka/**` 私有实现导入。
+* Naive UI 在当前 Console Implementation 中只允许由 `packages/ui/src/adapters/naive/**` 私有实现导入。
+* Reka UI 只有未来独立 Headless Consumer Gate 才可由 `packages/ui/src/adapters/reka/**` 私有实现导入，并且不得与 Naive 形成 Active Dual State。
 * Motion、GSAP、专业 Grid、Editor、Charts 只允许由各自已批准的私有 Adapter 导入。
 * 应用不得导入 `@platform/ui/adapters/*`；每个 Package 只有一个公共根出口。
 * Adapter 目录按真实需求创建，不因最终目录树而预建。
@@ -1020,7 +2568,7 @@ EXPERIMENTAL_ROUTER_DATA_LOADERS=PROHIBITED
 ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 ```
 
-本节冻结的 Router 合同已由 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 实现并激活。`apps/web/src/App.vue` 现在只保留 Route Outlet；精确八个 `.vue` Route Source、Router Lifecycle 和本节的窄 Layout/Scroll/Focus Subset 为当前真实实现边界。Server State、Storage、Auth、Session、Permission、I18n、Observability、Deployment、Shared UI、App Shell 与 Business Route 仍未准入。
+本节冻结的 Router 合同已由 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 实现并激活。Atomic Landing 前的 Committed Baseline `apps/web/src/App.vue` 只保留 Route Outlet，并包含精确八个 `.vue` Route Source；当前 Console Implementation 在保持 Router Lifecycle 与既有七个 Error Route 的前提下，原子扩展为十个 Product Route、一个 Primary Router Outlet 与一个 Admin Shell。Storage 仍保持 Active；Server State、Auth、Session、Permission、I18n、Observability、Deployment 与 Business Route 未准入。
 
 ## 9.0 `PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT`
 
@@ -1033,11 +2581,11 @@ PURPOSE=close the exact public and cross-file contracts required by the existing
 ALLOWED_SCOPE=ARCHITECTURE.md Router dependency, route, meta, params, query, title, message, error, guard, navigation-result, redirect, dynamic-route, layout, scroll, focus, Runtime Kernel extension and static-enforcement target contracts
 PROHIBITED_SCOPE=Router source implementation; dependency, Catalog, Manifest or Lockfile changes; generated artifacts; application source; static-checker implementation; Storage; Query; API; Auth; Session; Permission; I18n; Observability; Deployment activation; Shared UI; App Shell; business routes; tests; browser infrastructure; Git mutation
 ACTIVATION_EFFECT=NONE_UNTIL_PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
-CURRENT_ROUTER_STATUS=TARGET_INACTIVE
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=9
+FREEZE_TIME_ROUTER_STATUS=TARGET_INACTIVE
+FREEZE_TIME_RUNTIME_KERNEL_STEP_COUNT=9
 TARGET_POST_ROUTER_KERNEL_STEP_COUNT=10
-NEXT_IMPLEMENTATION_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
-PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
+FREEZE_TIME_NEXT_IMPLEMENTATION_PACKAGE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
+FREEZE_TIME_PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=BLOCKED_BY_ROUTER
 ```
 
 Freeze-time Canonical State：
@@ -1224,7 +2772,7 @@ Repository-owned Route Registry 是唯一 Canonical Route Instance Authority。�
 
 `RouteRegistryRecord.name` 是 Stable Typed Router Identity。`pathPattern` 是独立 URL Authority；`sourcePath` 是独立 Page-source Authority。三者分别全局唯一，不得通过 Runtime String Manipulation 从彼此推导。当前没有独立 `routeId`，也不得添加；先前实施请求中的 Separate Route ID 被本 Amendment 明确替换，因为当前 Canonical Record 与真实 Consumer 均不需要它。
 
-Router Landing 后的 Route Registry Cardinality 精确为 `8`：
+Router Landing 当时的 Historical Route Registry Cardinality 精确为 `8`；它是 Admin Console Landing 前的完成证据，不是 Current Route Authority：
 
 | # | `sourcePath` | `name` | `pathPattern` | `paramsSchemaId` | `querySchemaId` | `titleKey` | `telemetryName` | `errorPolicy` |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -1237,7 +2785,7 @@ Router Landing 后的 Route Registry Cardinality 精确为 `8`：
 | 7 | `apps/web/src/pages/error/offline.vue` | `error-network-unavailable` | `/error/offline` | `route-params.none` | `route-query.none` | `route-title.error-network-unavailable` | `route.error.network-unavailable` | `application-boundary` |
 | 8 | `apps/web/src/pages/error/maintenance.vue` | `error-service-unavailable` | `/error/maintenance` | `route-params.none` | `route-query.none` | `route-title.error-service-unavailable` | `route.error.service-unavailable` | `application-boundary` |
 
-全部八条 Record 的 Common Meta 精确为：
+上述八条 Historical Landing Record 的 Common Meta 精确为：
 
 ```text
 breadcrumbKey=null
@@ -1254,7 +2802,7 @@ focusContractId=route-focus.primary-heading
 scrollRestorationPolicyId=route-scroll.document-history
 ```
 
-全部八个 Page Contract 必须包含恰好一个 Semantic `main` 与一个携带 `data-route-focus="primary-heading"` 的 Primary `h1`。这不创建 Shared UI、App Shell 或 Layout Admin。
+上述八个 Historical Landing Page Contract 必须包含恰好一个 Semantic `main` 与一个携带 `data-route-focus="primary-heading"` 的 Primary `h1`。该 Router Landing 当时不创建 Shared UI、App Shell 或 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`；旧 Layout Admin 是 Owner-rejected Predecessor，不是 Future Authority。当前 Route Authority 已由 §1.2B 原子替换为十个 Product Route 加七个保持语义不变的 Error Route，精确总数为 `17`。
 
 ### 9.0.3 Exact Meta and Reference Registries
 
@@ -1296,7 +2844,7 @@ ACTIVE_DATA_PREFETCH_SUBSET=none
 INACTIVE_DATA_PREFETCH_SUBSET=blocking-required,non-blocking
 ```
 
-Built-in Router Title Registry 精确为：
+Router Landing Historical Built-in Title Registry 精确为：
 
 | Key | Default English text |
 | --- | --- |
@@ -1309,7 +2857,7 @@ Built-in Router Title Registry 精确为：
 | `route-title.error-network-unavailable` | `Offline` |
 | `route-title.error-service-unavailable` | `Service unavailable` |
 
-Built-in Router Message Registry 精确为：
+Router Landing Historical Built-in Message Registry 精确为：
 
 | Key | Default English text |
 | --- | --- |
@@ -1322,9 +2870,9 @@ Built-in Router Message Registry 精确为：
 | `route-message.error-network-unavailable` | `This page is unavailable while the device is offline.` |
 | `route-message.error-service-unavailable` | `This service is temporarily unavailable.` |
 
-Title 与 Message Table 是临时 Built-in Router Authority，语义上等同于现有 Built-in Core Error Message Table 的窄边界。它们不准入 Vue I18n、Locale Loading、Locale Persistence 或 Remote Copy。Future I18n Admission 可以原子替换 Presentation Source，但必须保持 Typed Key。
+这些 Historical Title 与 Message Table 是 Router Landing 当时的 Built-in Router Authority，语义上等同于现有 Built-in Core Error Message Table 的窄边界。当前十七条 Title/Message Authority 由 §1.2B 与 Route Registry 的 Exact Closure 拥有。它们不准入 Vue I18n、Locale Loading、Locale Persistence 或 Remote Copy。Future I18n Admission 可以原子替换 Presentation Source，但必须保持 Typed Key。
 
-Telemetry-name Registry 精确为 Route Registry 中的八个 `telemetryName`，不增加独立 Literal Consumer。Breadcrumb Registry 的当前 Active Set 为空，因为八条 Record 的 `breadcrumbKey` 均为 `null`。
+Router Landing Historical Telemetry-name Registry 精确为当时八条 Route Record 的 `telemetryName`，Historical Breadcrumb Set 为空。当前 Telemetry-name Registry 精确投影十七条 Route Record；当前 Breadcrumb Registry 精确包含十个 Product Route 的非空 `breadcrumbKey`，七个 Error Route 继续为 `null`。二者都不增加独立 Literal Consumer。
 
 ### 9.0.4 Exact Params and Query Schema Registries
 
@@ -1415,7 +2963,7 @@ resizableRegionIds=[]
 capabilityStatus=ACTIVE
 ```
 
-该 Narrow Record 不激活 App Shell、Layout Admin、Sidebar、Header、Footer、Panel Movement、Panel Resizing、Layout Preference Persistence、Responsive Shell Projection 或 Shared UI。§18 的 Full Future Layout Capability Registry 保持 Inactive。
+该 Narrow Record 不激活 App Shell、`PAVP_ARCHITECTURE_ADMIN_CONSOLE`、Sidebar、Header、Footer、Panel Movement、Panel Resizing、Layout Preference Persistence、Responsive Shell Projection 或 Shared UI；旧 Layout Admin 是 Owner-rejected Predecessor。§18 的 Full Future Layout Capability Registry 保持 Inactive。
 
 Scroll Owner Registry 精确为：
 
@@ -1560,7 +3108,7 @@ OwnFailureEligibleForConfigurationRetry=NO
 HMR=Runtime Kernel remains the sole top-level HMR owner; every full HMR attempt disposes and recreates Router and History; official generated file-route HMR is not an application lifecycle owner and may not register a competing repository-owned top-level HMR hook
 ```
 
-Current Post-Router Bootstrap Order 精确为十步：
+以下是 Router Landing 完成当时、Storage Landing 之前的 Historical 十步 Snapshot，不是 Current Runtime Authority：
 
 1. `validate-build-and-runtime-configuration`
 2. `install-pre-vue-global-failure-capture`
@@ -1573,7 +3121,7 @@ Current Post-Router Bootstrap Order 精确为十步：
 9. `register-post-mount-appearance-media-subscriptions`
 10. `publish-application-ready`
 
-Current `mount-application` 依赖 `create-and-ready-router`。Router Landing 只把原九步 Kernel 原子扩展为上述十步。Current Reverse Disposal 依次 Dispose/Release：Ready Publication、Post-mount Appearance Listeners、Mounted Vue Application、Router/History、Platform Providers、Pinia、Unmounted Vue Application Reference、Design System Handoff、Global Capture、Runtime Configuration Resources。Cleanup Failure 后继续其余 Cleanup；Router Hook Removal 与 History Destruction 必须幂等。Runtime Kernel 继续是 Sole Mount、Disposal 与 Top-level HMR Owner。
+在该 Historical Router Landing Snapshot 中，`mount-application` 只依赖 `create-and-ready-router`，Router 把原九步 Kernel 扩展为十步；Reverse Disposal 当时还没有 Storage。Current Eleven-step Order、双依赖与包含 `dispose-storage` 的 Reverse Disposal 只由 §19.4 和 §37.2.6 拥有。Runtime Kernel 继续是 Sole Mount、Disposal 与 Top-level HMR Owner。
 
 ### 9.0.11 Exact Implementation-gate Counts
 
@@ -1594,7 +3142,7 @@ ACTIVE_REDIRECT_RECORDS=0
 ACTIVE_DYNAMIC_ROUTE_RECORDS=0
 ROUTER_ERROR_RECORDS=6
 COMBINED_CORE_PLUS_ROUTER_ERROR_RECORDS=10
-CURRENT_BOOTSTRAP_STEPS=10
+ROUTER_LANDING_HISTORICAL_BOOTSTRAP_STEPS=10
 ACTIVE_AUTH_VALUES=1, exactly public
 ACTIVE_DATA_PREFETCH_VALUES=1, exactly none
 ```
@@ -1625,7 +3173,7 @@ Router Implementation 必须通过 Existing Static Owners 的最小 Domain-owned
 * 只有 Router Owner 注册 Global Router Hook。
 * Router History 只使用已验证 `deploymentBase`。
 * `router.isReady()` 在 Mount 前成功；Initial-navigation Failure 阻止 Mount，并只产生一个 Existing `application-startup-failure`。
-* Current Kernel 精确十步、Dependency Graph Acyclic、Router Authority 与 History Authority 各一个。
+* Router Landing 当时的 Historical Kernel 精确十步、Dependency Graph Acyclic、Router Authority 与 History Authority 各一个；Current Kernel 由后续 Storage Landing 扩展为十一。
 * History Destruction 与 Hook Removal 幂等；Runtime Kernel 仍为 Sole Mount、Disposal 与 Top-level HMR Owner。
 * 不准入 Direct Fetch、Server-state Cache、Storage、Query、Auth、Session、Permission、I18n、Observability、Deployment Provider、Shared UI、App Shell、Business Route、Test 或 Browser Infrastructure。
 * 当前 Package 5 Appearance 与 Router 以外的既有 Runtime Kernel Behavior 保持不变。
@@ -2062,7 +3610,7 @@ Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role 
 
 ### Public Output Completeness
 
-当前 Active Baseline 的 Public Role ID Contract 是下方精确 Registry；它与当前实现的 Public CSS、`tokens.ts`、`token-names.ts` 和 27 个 UnoCSS Mapping 一致。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
+当前 Active Baseline 的 Public Role ID Contract 是下方精确 Registry；它与当前实现的 Public CSS、`tokens.ts`、`token-names.ts` 和 36 个 UnoCSS Mapping 一致。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
 
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
 
@@ -2655,18 +4203,18 @@ manifestRecordCount =
 
 任何 Unknown Record Family、未计数 Array、重复投影或方程差异都必须使 Generation Failure。`sourceFiles`、Schema Version 和 Build Provenance 只能作为非 Record Metadata；Material、Compound 和 Boundary 数据必须归入上述已知 Record 的字段或 Named Contrast Record，不得形成隐藏的第九种 Record Family。
 
-Package 3 实现后的当前 Record Evidence 为：
+Package 3 Landing 的 Historical Record Evidence 为：
 
 ```text
-CURRENT_TOKEN_RECORDS=105
-CURRENT_ACTIVE_PUBLIC_ROLE_RECORDS=27
-CURRENT_UNOCSS_MAPPING_RECORDS_IMPLEMENTED=27
-CURRENT_NAMED_CONTRAST_RECORDS=14
-CURRENT_ALPHA_RECORDS_IMPLEMENTED=1
-CURRENT_DENSITY_METADATA_RECORDS=3
-CURRENT_THEME_METADATA_RECORDS=3
-CURRENT_FIRST_PAINT_METADATA_RECORDS=1
-CURRENT_MANIFEST_RECORD_COUNT=181
+PACKAGE_3_FINAL_TOKEN_RECORDS=105
+PACKAGE_3_FINAL_ACTIVE_PUBLIC_ROLE_RECORDS=27
+PACKAGE_3_FINAL_UNOCSS_MAPPING_RECORDS_IMPLEMENTED=27
+PACKAGE_3_FINAL_NAMED_CONTRAST_RECORDS=14
+PACKAGE_3_FINAL_ALPHA_RECORDS_IMPLEMENTED=1
+PACKAGE_3_FINAL_DENSITY_METADATA_RECORDS=3
+PACKAGE_3_FINAL_THEME_METADATA_RECORDS=3
+PACKAGE_3_FINAL_FIRST_PAINT_METADATA_RECORDS=1
+PACKAGE_3_FINAL_MANIFEST_RECORD_COUNT=181
 PACKAGE_3_BASELINE_RECORD_COUNT=174
 PACKAGE_3_EXPECTED_RECORD_COUNT_DELTA=7
 PACKAGE_3_BASELINE_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
@@ -2675,7 +4223,7 @@ PACKAGE_3_BASELINE_RELATION=DIRECT_PREDECESSOR
 PACKAGE_3_STATUS=COMPLETE
 ```
 
-这些数值描述当前仓库证据。Package 3 已把 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。
+这些数值描述 Package 3 Landing 的历史完成证据。Package 3 已把当时的 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。当前 Admin Console Landing 后的 Record Authority 由 §1.2B 与 Generated Manifest 拥有，精确为 137 个 Token Record、36 个 Active Public Role Record、36 个 UnoCSS Mapping Record 和 231 个 Manifest Record。
 
 Manifest 唯一规范压缩配置：
 
@@ -3454,11 +5002,11 @@ RESERVED_PHASE_3_COLOR_ROLES=46
 RESERVED_PHASE_4_COLOR_ROLES=34
 RESERVED_COLOR_ROLES=283
 TOTAL_UNIQUE_COLOR_TAXONOMY=292
-ACTIVE_PUBLIC_ROLES_TOTAL=27
-ACTIVE_ALL_TYPES_PLUS_RESERVED_COLOR_ENTRIES=310
+ACTIVE_PUBLIC_ROLES_TOTAL=36
+ACTIVE_ALL_TYPES_PLUS_RESERVED_COLOR_ENTRIES=319
 ```
 
-Reserved Set 已移除与 Active Set 重叠的七个 ID；两个仅存在于当前兼容表面的 Active ID `color.action.primary` 与 `color.text.on-action` 保持 Active。Reserved Entry 不属于 `A = R = T = N = U = M`、Theme Completeness、UnoCSS、Public TypeScript、Token Names、Runtime Public CSS 或 Public API。任何 Reserved → Active 变化都需要新的 Admission Amendment，显式修改 §11.4 的 27-record Registry、全部相关 Registry 和生成合同；仅处于此 Catalog 不构成准入。
+Reserved Set 已移除与 Active Set 重叠的七个 ID；两个仅存在于当前兼容表面的 Active ID `color.action.primary` 与 `color.text.on-action` 保持 Active。Reserved Entry 不属于 `A = R = T = N = U = M`、Theme Completeness、UnoCSS、Public TypeScript、Token Names、Runtime Public CSS 或 Public API。任何 Reserved → Active 变化都需要新的 Admission Amendment，显式修改 §11.4 的 36-record Registry、全部相关 Registry 和生成合同；仅处于此 Catalog 不构成准入。
 
 ### Exact Active Alpha Registry
 
@@ -4270,7 +5818,7 @@ type UiDensity =
   | 'spacious'
 ```
 
-当前 27-role Public Contract 中与 Density 相关的唯一 Active Role 是 `interaction.control.height`，且当前值不是三档完整 Public Projection。以下 `TargetDensityProjectionSet` 是未来候选集合，不是当前 Active Set：
+当前 36-role Public Contract 中与 Density 相关的唯一 Active Role 是 `interaction.control.height`，且当前值不是三档完整 Public Projection。以下 `TargetDensityProjectionSet` 是未来候选集合，不是当前 Active Set：
 
 ```text
 interaction.control.height
@@ -4431,7 +5979,7 @@ export default defineConfig({
 
 UnoCSS Vite Plugin 使用全局模式并在应用入口显式导入 `virtual:uno.css`。
 
-UnoCSS 是从 §11.4 的 27-record Public Role Registry 确定性生成的公共消费投影，不是 Token、Theme 或 Density Authority。`platformPreset` 的 Theme Entry、Exact Rule 和已准入 Semantic Shortcut 必须全部来自对应 Record 的 Mapping Metadata；本节不建立第二份 Mapping Authority。
+UnoCSS 是从 §11.4 的 36-record Public Role Registry 确定性生成的公共消费投影，不是 Token、Theme 或 Density Authority。`platformPreset` 的 Theme Entry、Exact Rule 和已准入 Semantic Shortcut 必须全部来自对应 Record 的 Mapping Metadata；本节不建立第二份 Mapping Authority。
 
 Theme、Effective Color Mode、Contrast 和 Density 只能改变稳定 Public CSS Variable 的值；不得改变 Public UnoCSS Class Name。每个 Public Role 必须映射到一个属性范围明确的 Generator Kind、Family、Key、非空 Generated Class List 和 Allowed CSS Property Set。Color、Spacing、Dimension、Typography Size、Content Width 与 z-index 在 Generic Family 会暴露额外 Property 时必须使用 Exact Rule。一个无法安全映射的 Public Role 必须导致 Generation Failure。
 
@@ -4491,7 +6039,7 @@ layout.z.overlay            → z-overlay       → z-index
 * 封装完整视觉组件。
 * 保存用户自定义颜色。
 
-当前 UnoCSS 只消费 §11.4 已准入的 27 个 Public Variable。未来 Density Admission 接受后，UnoCSS 才消费新增 Density-conditioned Public Variable；它不拥有 Density Matrix 或 Preset Value。禁止用 Density Variant、运行时类名拼接或大规模 Safelist 切换外观。
+当前 UnoCSS 只消费 §11.4 已准入的 36 个 Public Variable。未来 Density Admission 接受后，UnoCSS 才消费新增 Density-conditioned Public Variable；它不拥有 Density Matrix 或 Preset Value。禁止用 Density Variant、运行时类名拼接或大规模 Safelist 切换外观。
 
 ## 15.3 允许的 Shortcut
 
@@ -4545,17 +6093,34 @@ transition-all
 
 # 16. UI Package
 
-## 16.1 Active Phase Contract
+## 16.1 Atomic Landing Baseline and Current Consumer Contract
 
-Phase 1 固定：
+Atomic Landing 前的 Committed Baseline 精确为：
 
 ```text
 packages/ui/package.json runtime dependencies = none
 packages/ui/src/index.ts = only implementation source; contains export {}
 components/adapters/internal/composables/styles/types = absent
+ATOMIC_LANDING_BASELINE_PUBLIC_COMPONENT_EXPORTS=0
+ATOMIC_LANDING_BASELINE_STYLED_VENDOR=NONE
 ```
 
-不得为了未来架构提前加入 `vue`、`reka-ui`、`motion-v`、`clsx`、Grid、Editor、Charts 或 GSAP 依赖。
+Working Tree 中的 Layout Admin/Reka Change 是 Owner-rejected Draft，不改变上述 Current Authority：
+
+```text
+REJECTED_DRAFT_PUBLIC_EXPORTS=UiButton; UiSegmentedControl; UiSectionTabs
+REJECTED_DRAFT_VENDOR=reka-ui@2.10.3
+REJECTED_DRAFT_ADMISSION=NONE
+REJECTED_DRAFT_COMMIT_AUTHORITY=NONE
+REKA_UI_ACTIVE_RUNTIME_ADMISSION=NONE
+```
+
+首个 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 满足。它按 §1.2B `PUBLIC_UI_API_CLOSURE_MODE=ATOMIC_CONSUMER_DERIVATION` 在同一 Landing 准入 `UiProvider`、十个真实 Routes 实际消费的最小额外 Public Components、`@platform/design-system` Public Contracts 和 Private `naive-ui@2.45.2` Adapter。它不授权 Reka、Motion Library、Grid、Editor、Charts、GSAP、第二 Styled Framework、通用 Shared UI 扩建或任何 Unused Component。
+
+```text
+CURRENT_PUBLIC_COMPONENT_EXPORTS=8
+CURRENT_STYLED_VENDOR=naive-ui@2.45.2
+```
 
 ## 16.2 Demand-created Target Locations
 
@@ -4563,17 +6128,21 @@ components/adapters/internal/composables/styles/types = absent
 
 ```text
 CAPABILITY=FOUNDATIONAL_SHARED_UI_COMPONENTS
-CAPABILITY_STATUS=TARGET_INACTIVE
-FIRST_CONSUMER_GATE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+CAPABILITY_STATUS=ACTIVE
+FIRST_CONSUMER_GATE=SATISFIED_BY_PAVP_ARCHITECTURE_ADMIN_CONSOLE
 ADDITIONAL_CONSUMER_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 ```
 
 ```text
 packages/ui/
 ├── src/
-│   ├── components/               [Phase 2; one justified real consumer]
+│   ├── components/               [one justified real consumer]
+│   ├── providers/                [UiProvider at Console gate]
+│   ├── registry/                 [exact public component registry at Console gate]
+│   ├── console/                  [browser-safe UI projection at Console gate]
 │   ├── adapters/                 [only an admitted vendor]
-│   │   ├── reka/                 [Phase 2 first complex primitive]
+│   │   ├── naive/                [Console styled-vendor gate]
+│   │   ├── reka/                 [deferred independent headless gate]
 │   │   ├── motion/               [§24.1 Motion admission gate]
 │   │   ├── grid/                 [specialist gate]
 │   │   ├── editor/               [specialist gate]
@@ -4598,12 +6167,12 @@ packages/ui/
 
 ## 16.3 Component and Material Responsibility
 
-简单组件优先使用原生语义 HTML；复杂交互只有在 A11y、Keyboard、Focus 或 Vendor Isolation 需求出现后才使用 Reka UI。
+简单组件优先使用原生语义 HTML；复杂交互只有在 A11y、Keyboard、Focus 或 Vendor Isolation 需求出现后才通过已准入 Vendor Adapter。Console 的唯一 Target Styled Vendor 是 Private Naive Adapter；Reka 仍未准入。
 
 ```text
 Native semantic HTML
         ↓ when insufficient
-private Reka adapter
+private admitted vendor adapter
         ↓
 semantic @platform/ui component
 ```
@@ -4628,16 +6197,17 @@ internal DOM markers
 
 ```ts
 import {
-  UiButton,
-  UiDialog,
-  UiSelect,
+  UiProvider,
 } from '@platform/ui'
 ```
+
+上方记录 §1.2B 提前冻结的 Target API；Atomic Landing 前的 Committed Baseline Public Component Export 为零。当前 Atomic Console Implementation 的实际 Public Component Export 与 Consumer Closure 以 §1.2B.6 的精确八条 Registry Record 为准；不能从示例或 Ceiling 预建其他 Component。
 
 禁止：
 
 ```ts
 import { DialogRoot } from 'reka-ui'
+import { NButton } from 'naive-ui'
 import Grid from 'ag-grid-vue'
 import Component from '@platform/ui/src/internal/component'
 import GridAdapter from '@platform/ui/adapters/grid'
@@ -4674,7 +6244,7 @@ generic Material Wrapper
 * 使用类型化 Emits。
 * 使用类型化 Slots。
 * 支持 `class` 和必要的原生 Attributes。
-* 不暴露 Reka UI 内部类型。
+* 不暴露任何 Vendor UI 内部类型。
 * 使用 `data-*` 表达状态。
 * 保留键盘和焦点合同。
 * 支持 Light/Dark。
@@ -4760,15 +6330,19 @@ Material Role 由组件语义和 `packages/ui` 私有映射决定，不由页面
 ```text
 CAPABILITY=LAYOUT_AND_SCROLL
 CAPABILITY_STATUS=TARGET_INACTIVE
-OWNER=apps/web/src/app/shell/layout
+OWNER=@platform/ui Shell rendering plus Router-owned Layout Capability Registry
 CORE_ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 ROUTER_READING_DOCUMENT_LAYOUT_SCROLL_FOCUS_CORE_STATUS=ACTIVE
-FIRST_SHELL_CONSUMER_GATE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
-CSS_LAYOUT_CAPABILITY=TARGET_INACTIVE
-CURRENT_APP_SHELL=ABSENT
+ADMIN_CONSOLE_RESPONSIVE_SHELL_SUBSET_STATUS=ACTIVE
+FIRST_SHELL_CONSUMER_GATE=SATISFIED_BY_PAVP_ARCHITECTURE_ADMIN_CONSOLE
+CURRENT_APP_SHELL=UiAdminShell
+CURRENT_RESPONSIVE_PROFILES=narrow,regular,wide
+CURRENT_LAYOUT_PREFERENCE_PERSISTENCE=ABSENT
+CURRENT_PANEL_DRAG_RESIZE=ABSENT
+CSS_LAYOUT_FUTURE_CAPABILITY=TARGET_INACTIVE
 ```
 
-完整 Layout Target Contract、App Shell 与 Layout Resolver 仍为 `TARGET_INACTIVE`；§9.0.6 的单条 `route-layout.reading-document` Capability、Native Document Scroll Owners、Scroll Restoration Policy 与 Focus Contract 已由 Router Landing 激活。任何更广的 Shell、Responsive Layout、Panel 或 Persistence 示例均不构成当前 Behavior。
+通用 Layout Preference Persistence、Layout Store、Panel Drag/Resize、Movable Panel 与 Generic Resolver 仍为 `TARGET_INACTIVE`；§9.0.6 的 Reading Document Core 和 §1.2B 的 `UiAdminShell`、三档 Responsive Profile、Console Region/Scroll/Focus/Restoration 子集均已激活。任何更广的 Generic Shell Platform、Panel 或 Persistence 示例均不构成当前 Behavior。
 
 ## 18.1 不使用设备名称
 
@@ -4860,7 +6434,7 @@ interface LayoutProfile {
 
 ```ts
 interface RouteLayoutCapabilities {
-  allowedPresets: LayoutPreset[]
+  allowedPresets: LayoutPresetId[]
   requiredRegions: string[]
   movablePanels: string[]
   resizableRegions: string[]
@@ -4895,6 +6469,8 @@ JavaScript 负责：
 * 用户拖动尺寸。
 * 面板顺序。
 * 无法通过 CSS 表达的状态。
+
+上方是完整 Future Layout Direction；`PAVP_ARCHITECTURE_ADMIN_CONSOLE` 初次 Landing 明确不激活 Layout Preference Persistence、Panel Drag/Resize 或 Layout Store。它只由 `@platform/ui` Shell-local Vue State、一个 owned `ResizeObserver` 与 §1.2B Generated `layoutRegistry` 解析 Profile。
 
 ## 18.6 滚动所有权
 
@@ -4952,24 +6528,7 @@ Competing Same-axis Owner 是以下任一情况：
 
 Layout Profile Threshold、Shell Region Size、Panel Minimum/Maximum、Content Width、Safe-area Inset Handling、Touch Target、Scroll Offset 和 Resize Snap Point 必须来自 Design Token、Typed Layout Default Registry 或 Route Layout Capability Registry。Page、Feature、Component 和 CSS Module 不得写任意 Breakpoint、Pixel Dimension 或 Viewport Threshold。
 
-```ts
-interface LayoutCapabilityRegistryRecord {
-  id: string
-  allowedProfiles: readonly ('narrow' | 'regular' | 'wide')[]
-  allowedPresets: readonly LayoutPreset[]
-  requiredRegionIds: readonly string[]
-  optionalRegionIds: readonly string[]
-  movablePanelIds: readonly string[]
-  resizableRegionIds: readonly string[]
-  narrowProjection: 'stack' | 'tabs' | 'sheet'
-  blockScrollOwnerId: string
-  inlineScrollOwnerId: string
-  minimumTargetPolicyId: string
-  capabilityStatus: CapabilityStatus
-}
-```
-
-Profile 由应用容器 Inline Size、Block Size、Input Capability 和 Route Capability 纯解析；不得读取 User Agent、设备品牌或屏幕营销分类。Threshold 使用命名 Container Token，CSS Container Query 与 JavaScript Resolver 从同一 Generated Registry 消费，避免两套 Breakpoint。
+唯一 Final `LayoutCapabilityRegistryRecord` Schema、Nullability、Current Reading Record、Target Console Record、Shell Region Registry、Threshold Policy、Safe-area Policy 与 Minimum-target Policy 由 §1.2B.1 精确拥有；本节不再建立第二份缩减 Schema。Profile 由应用容器 Inline Size、Input Capability 和 Route Capability 纯解析；不得读取 User Agent、设备品牌或屏幕营销分类。Threshold 使用命名 Container Token，CSS Container Query 与 JavaScript Resolver 从同一 Generated `layoutRegistry` 消费，避免两套 Breakpoint。Console Profile 精确为 `<48rem` Narrow、`>=48rem && <80rem` Regular、`>=80rem` Wide。
 
 ## 18.8 Safe Area and Dynamic Viewport
 
@@ -5090,7 +6649,7 @@ CURRENT_EXTENSION_GATE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
 IMPLEMENTATION_STATUS=COMPLETE
 IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 CURRENT_RUNTIME=exact eleven-step Runtime Kernel
-ACTIVATION_PROVIDER_SET=Pinia,Appearance
+ACTIVATION_PROVIDER_SET=pinia,appearance
 ACTIVATION_BOOTSTRAP_STEP_COUNT=11
 ```
 
@@ -5106,9 +6665,10 @@ Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Stor
 5. create-pinia
 6. install-platform-providers
 7. create-and-ready-router
-8. mount-application
-9. register-post-mount-appearance-media-subscriptions
-10. publish-application-ready
+8. create-and-ready-storage
+9. mount-application
+10. register-post-mount-appearance-media-subscriptions
+11. publish-application-ready
 ```
 
 上表是当前唯一、闭合、顺序保持的十一步 Bootstrap Step Registry，不是 Future Superset。它只在原九步 Kernel 中加入 Router Landing 与 Storage Landing 各一个完整 Lifecycle Step。尚未准入的 Query、Session、I18n、Observability 或 Deployment Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry、Placeholder 或成功 Stub 占位。后续串行 Package 只有在自己的 Architecture Authority 与 Implementation Landing 中才能原子扩展该 Registry，并同时交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
@@ -5152,6 +6712,7 @@ type ApplicationStartupState =
 | Pinia | `app/providers/pinia` | client-state container | Server State cache |
 | Provider installation | `app/bootstrap/install-providers` | Pinia plus Appearance provider handles | Future Provider construction |
 | Router and History lifecycle | `app/router` through the Runtime Kernel step | one ready Router lifecycle handle with one Router and one History authority | DOM Mount, Server State, Session or top-level HMR ownership |
+| Storage lifecycle | `app/storage` through the Runtime Kernel step | one ready Storage lifecycle handle for the exact two-record Registry | DOM Mount, Provider identity, Session persistence or top-level HMR ownership |
 | Vue Mount | `app/bootstrap` Mount step | one mounted application handle | Provider construction or competing Mount |
 | Appearance media subscriptions | `app/appearance` through Kernel step | exact listener references and one unsubscribe handle | Storage, Session or Observability subscription |
 | Ready publication and aggregate disposal | Runtime Kernel | one private Running Application Handle | Window global, DOM event or event bus publication |
@@ -5182,7 +6743,7 @@ disposal failure
 Fatal renderer failure
 ```
 
-Retry 之前必须完成 Failed Attempt 的幂等 Reverse Disposal、分配新的 `startupAttemptId`、从 `validate-build-and-runtime-configuration` 重新开始、重新读取并验证完整 Runtime Configuration Artifact、在先前曾创建 Pinia 时创建全新 Pinia、在先前曾创建 Router 时创建全新 Router 与 History，并重新读取和恢复 Appearance。不得复用 Failed Vue、Pinia、Router、History、Provider、Listener、Configuration、Handoff 或 Lifecycle Handle。
+Retry 之前必须完成 Failed Attempt 的幂等 Reverse Disposal、分配新的 `startupAttemptId`、从 `validate-build-and-runtime-configuration` 重新开始、重新读取并验证完整 Runtime Configuration Artifact、在先前曾创建 Pinia 时创建全新 Pinia、在先前曾创建 Router 时创建全新 Router 与 History、在先前曾创建 Storage 时创建全新 Storage Lifecycle，并重新读取和恢复 Appearance。不得复用 Failed Vue、Pinia、Router、History、Storage、Provider、Listener、Configuration、Handoff 或 Lifecycle Handle。
 
 单次 Retry 再次失败后，Boundary 必须移除 In-document Retry Action，只允许用户显式 Reload Browser。
 
@@ -5314,11 +6875,15 @@ ActiveProviderSet=Pinia,Appearance only
 
 当前 Active Exact Contract 由 §9.0.10 唯一拥有；本 Step 是当前十一步 Registry 的第七步，不建立第二份 Router Lifecycle Contract。
 
+#### `create-and-ready-storage`
+
+当前 Active Exact Contract 由 §19.5.1 的 Frozen Storage Protocol 与 §37.2.6 的 Completed Landing Record 共同拥有；本 Step 是当前十一步 Registry 的第八步。它的 Exact Dependencies 仅为 `validate-build-and-runtime-configuration` 与 `install-platform-providers`；Registry Order 把它放在 Router 后，`mount-application` 再显式依赖 Router 与 Storage 两者。它在 Mount 前完成 Exact Two-record Storage Registry 的 Ready Boundary，产出一个幂等 `StorageLifecycleHandle`；Failure 归一化到 Existing Storage/Core Boundary 并阻止 Mount。它不是 `ACTIVATION_PROVIDER_SET` 成员，不建立第二个 Storage Authority。
+
 #### `mount-application`
 
 ```text
-dependencies=[create-and-ready-router]
-CreateInput=ready Vue App,ready RouterLifecycleHandle,exact #app target
+dependencies=[create-and-ready-router,create-and-ready-storage]
+CreateInput=ready Vue App,ready RouterLifecycleHandle,ready StorageLifecycleHandle,exact #app target
 CreateOutput=MountedApplication handle
 Ready=application.mount('#app') returns normally and mounted state is confirmed
 Dispose=idempotently call application.unmount() exactly once after partial or complete Mount
@@ -5374,13 +6939,14 @@ Fully Created Attempt 的精确 Reverse Order：
 1. Withdraw Application Ready。
 2. Remove Appearance Media Subscriptions。
 3. Unmount Vue Application。
-4. Remove Router Hooks and Dispose Router/History。
-5. Dispose Installed Platform-provider Handles。
-6. Dispose Pinia。
-7. Release Vue Application Creation Handle。
-8. Release First Paint Handoff and Safety Handle。
-9. Dispose Global Failure Capture。
-10. Abort/Release Runtime Configuration Handle。
+4. Dispose Storage Lifecycle (`dispose-storage`)。
+5. Remove Router Hooks and Dispose Router/History。
+6. Dispose Installed Platform-provider Handles。
+7. Dispose Pinia。
+8. Release Vue Application Creation Handle。
+9. Release First Paint Handoff and Safety Handle。
+10. Dispose Global Failure Capture。
+11. Abort/Release Runtime Configuration Handle。
 
 Disposal 必须幂等；一个 Cleanup Failure 后继续其余 Cleanup；收集 Cleanup Failure 时不得暴露 Raw Cause；任何 Cleanup Failure 都不具备 In-document Retry 资格。Disposal 必须保留 User Preference 与 Custom Registry Data，不执行 Storage Clearing 或 Migration。
 
@@ -5398,7 +6964,7 @@ DUPLICATE_APPEARANCE_SUBSCRIPTION=PROHIBITED
 PRODUCTION_HMR_BEHAVIOR=NONE
 ```
 
-HMR 只在 Development 生效，并与 Failed-attempt Retry、Application Disposal 使用同一个完整 Reverse Disposer。Provider 与 Router Source 不得注册竞争 HMR Hook；新 Attempt 不得复用已 Dispose Handle、Validated Configuration、Vue App、Pinia、Router、History、Appearance Handoff 或 Listener。
+HMR 只在 Development 生效，并与 Failed-attempt Retry、Application Disposal 使用同一个完整 Reverse Disposer。Provider、Router 与 Storage Source 不得注册竞争 HMR Hook；新 Attempt 不得复用已 Dispose Handle、Validated Configuration、Vue App、Pinia、Router、History、Storage、Appearance Handoff 或 Listener。
 
 ### Non-protocol Implementation Details
 
@@ -5540,7 +7106,7 @@ explicitly select and persist another valid theme reference
 
 ### Storage Static Enforcement Targets
 
-Owning Package 必须验证：所有 Storage/IndexedDB/BroadcastChannel 访问只在 Registry Owner；所有 Key 来自 Registry；Envelope、Migration、Partition、Write Result 和 Cleanup 完整；敏感字段、Session ID、Query Data 与 Server Authority 不可持久化；Preference/Registry Safe Ordering 可静态追踪。当前只有既有 Appearance First-paint 窄边界为 `ACTIVE`，本节其余 Enforcement 均为 `TARGET_INACTIVE`。
+Owning Package 必须验证：所有 Storage/IndexedDB/BroadcastChannel 访问只在 Registry Owner；所有 Key 来自 Registry；Envelope、Migration、Partition、Write Result 和 Cleanup 完整；敏感字段、Session ID、Query Data 与 Server Authority 不可持久化；Preference/Registry Safe Ordering 可静态追踪。当前 `no-direct-storage-access`、`no-raw-storage-key`、`storage-owner-registry-closure` 与 `no-sensitive-persistence` 已由 Storage Landing 激活；Exact Two-record Registry、Eleven-record Error Extension、Empty Migration/Event Sets、One Storage Lifecycle 与 Disposal Closure 均为 `ACTIVE`。尚无真实 Record 消费的 Future Envelope、IndexedDB、Migration、CAS、Cross-tab Event 与 Principal-specific Policy 仍为 `TARGET_INACTIVE`。
 
 ### 19.5.1 `PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT`
 
@@ -5553,10 +7119,10 @@ PURPOSE=close the exact public and cross-file contracts required by the existing
 ALLOWED_SCOPE=ARCHITECTURE.md Storage Registry, envelope, partition, migration, corruption, quota, cross-tab, Storage Error Registry extension, Runtime Kernel Storage step and Storage static-enforcement target contracts
 PROHIBITED_SCOPE=Storage source implementation; dependency, Catalog, Manifest or Lockfile changes; generated artifacts; application source; static-checker implementation; Query; API; Auth; Session; Permission; I18n; Observability; Deployment activation; Shared UI; App Shell; Layout Admin; business pages; tests; browser infrastructure; Git mutation
 ACTIVATION_EFFECT=NONE_UNTIL_PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
-CURRENT_STORAGE_STATUS=TARGET_INACTIVE
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=10
+FREEZE_TIME_STORAGE_STATUS=TARGET_INACTIVE
+FREEZE_TIME_RUNTIME_KERNEL_STEP_COUNT=10
 TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
-NEXT_IMPLEMENTATION_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
+FREEZE_TIME_NEXT_IMPLEMENTATION_PACKAGE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
 ```
 
 本 Amendment 只闭合 Existing Storage Work Package 的实施输入，不创建新的 Phase、Roadmap、Architecture Version、ADR、第二个 Storage Authority 或平行权威。其 Freeze-time Snapshot 不安装依赖、不创建 `apps/web/src/app/storage` Source、不扩展当时的十步 Runtime Kernel、不激活任何 Storage、Cross-tab、Partition、Migration、Quarantine、Auth、Query、I18n 或 Observability Behavior。当前 Implementation/Capability Status 只由文首 Current Status、§1.3、§19.5、§37.1 与 §37.2.6 的同步记录决定，不重写该 Frozen Contract。
@@ -5640,7 +7206,7 @@ STORAGE_INDEXED_DB_RECORDS=0
 | corruptionPolicy | `preserve-in-place-reject-read` | `preserve-in-place-reject-read` |
 | capabilityStatus | `ACTIVE` | `ACTIVE` |
 
-`capabilityStatus=ACTIVE` 只表示这两条 Record 对应的 Package 5 Persistence Boundary 已经 `ACTIVE`；Application persistence architecture Capability 本身继续 `TARGET_INACTIVE`。
+`capabilityStatus=ACTIVE` 表示两条 Record 对应的 Package 5 Persistence Boundary 与当前 Storage Registry Closure 均已激活；Application Persistence Architecture 现同样为 `ACTIVE / COMPLETE`。这不激活零 Cardinality 的 Envelope、Migration、Cross-tab Event、IndexedDB 或 Principal-specific Target。
 
 Key Generation Ownership：
 
@@ -5804,7 +7370,7 @@ CORE_ERROR_REGISTRY_CARDINALITY=4 (unchanged)
 ROUTER_ERROR_RECORDS=6 (unchanged)
 ```
 
-Storage Extension 是独立 Record Set，不并入 Core Set，不创建 Placeholder Record 或 No-op Reporter；当前仍为 `TARGET_INACTIVE`，只在 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 原子激活。
+Storage Extension 是独立 Record Set，不并入 Core Set，不创建 Placeholder Record 或 No-op Reporter。它在 Freeze-time 为 `TARGET_INACTIVE`，现已由 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 原子激活为 `ACTIVE`。
 
 #### Exact Runtime Kernel Storage Step
 
@@ -5823,7 +7389,7 @@ OwnFailureEligibleForConfigurationRetry=NO
 HMR=Runtime Kernel remains the sole top-level HMR owner; every full HMR attempt disposes and recreates the Storage owner, BroadcastChannel and storage-event fallback listener; Storage registers no competing HMR hook
 ```
 
-Target Post-Storage Bootstrap Order 精确为十一步：
+以下是 Freeze-time Target、并已由 Current Storage Landing 精确激活的十一阶段 Bootstrap Order：
 
 ```text
 1. validate-build-and-runtime-configuration
@@ -5914,7 +7480,7 @@ STORAGE_MIGRATION_RECORDS=0
 STORAGE_CROSS_TAB_EVENT_TYPES=0
 STORAGE_ERROR_RECORDS=11
 COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
-CURRENT_BOOTSTRAP_STEPS=10
+FREEZE_TIME_BOOTSTRAP_STEPS=10
 TARGET_POST_STORAGE_BOOTSTRAP_STEPS=11
 ```
 
@@ -5929,7 +7495,7 @@ DIRECT_BROWSER_STORAGE_OUTSIDE_ADMITTED_OWNERS=PROHIBITED
 NO_AUTOMATIC_ROADMAP_CONTINUATION=ENFORCED
 ```
 
-本 Amendment 不把 Storage 标记为 `ACTIVE`、`COMPLETE` 或 Implemented；`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT`、Application persistence architecture `TARGET_INACTIVE`、Storage implementation `NOT_STARTED`、Router `COMPLETE/ACTIVE`、Runtime Kernel 当前 `10` 步保持同步，Post-Storage `11` 步只作为 Frozen Target。API Transport 仍 `TARGET_INACTIVE` 且阻塞于 Storage；不启动后继 Package。
+上一段是该 Architecture Amendment Freeze 当时的 Historical Conclusion：它自身不把 Storage 标记为 `ACTIVE`、`COMPLETE` 或 Implemented；当时 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=NEXT`、Application Persistence `TARGET_INACTIVE`、Runtime Kernel `10` 步，Post-Storage `11` 步只是 Frozen Target。该 Snapshot 不再是 Current Authority。Current Storage 为 `COMPLETE / ACTIVE`、Runtime Kernel 为精确 `11` 步；API Transport 已由 §1.2A 调整为无真实 Backend Contract 时的 `DEFERRED / NOT_STARTED` Optional Lane。
 
 ---
 
@@ -5958,7 +7524,7 @@ one real frontend consumer
 one authoritative server owner
 ```
 
-在上述条件全部满足前，禁止创建 Mock/Sample/Health/Public-third-party Endpoint、Fake OpenAPI Schema、API Origin Field、Endpoint Registry、Query Client、API Error Record、API Runtime Kernel Step 或 Placeholder Transport。`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios 与 Alova 均不准入；API Transport 不阻塞 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 或其他 Frontend-only Admission。
+在上述条件全部满足前，禁止创建 Mock/Sample/Health/Public-third-party Endpoint、Fake OpenAPI Schema、API Origin Field、Endpoint Registry、Query Client、API Error Record、API Runtime Kernel Step 或 Placeholder Transport。`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios 与 Alova 均不准入；API Transport 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 或其他 Frontend-only Admission。
 
 Canonical Target：
 
@@ -6245,7 +7811,7 @@ ACTIVATION_GATE=PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
 IMPLEMENTATION_STATUS=NOT_STARTED
 ```
 
-Core Error Handling 与 Observability Reporting 是两个独立 Authority。Runtime Kernel 已激活 Startup、Configuration、Vue Boundary 与 Unhandled-rejection 所需的最小 Error Registry、Normalizer 和 Capture；Router Landing 已原子增加独立六条 Router Error Record 与 Adapter，使 Application-owned Combined Registry 精确为十条，同时保留 Core Registry 精确四条。Storage 已增加其 Active Extension；API 与 Auth 仍只能在未来各自真实需求 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 当前为 `DEFERRED`；Backend/Auth-dependent Reporting 只有在真实 Producer、Provider 和 Hosting Contract 存在后才可准入，且不阻塞 Pure Frontend Mainline。
+Core Error Handling 与 Observability Reporting 是两个独立 Authority。Runtime Kernel 已激活精确四条 Core Error Record；Router Landing 原子增加独立六条 Router Error Record；Storage Landing 再增加独立十一条 Storage Error Record。因此 Current Application-owned Combined Registry 精确为 `4 + 6 + 11 = 21`。`10` 只允许描述 Router Landing 当时或 Core-plus-Router 子 Projection，不得再描述 Current Combined Registry。API 与 Auth 仍只能在未来各自真实需求 Package 中原子增加本域 Error Record 和 Capture Adapter。不存在预先标为 Active 的空 Record、No-op Reporter 或 Placeholder Category。Structured Remote Reporting、Sampling、Trace、Web Vitals、Long Task 和 Source-map Provider 当前为 `DEFERRED`；Backend/Auth-dependent Reporting 只有在真实 Producer、Provider 和 Hosting Contract 存在后才可准入，且不阻塞 Pure Frontend Mainline。
 
 ## 20B.1 Exact Error Registry
 
@@ -6290,6 +7856,9 @@ Runtime Kernel Landing 创建一份 Application-owned Core Error Registry：
 ```text
 CORE_ERROR_REGISTRY_OWNER=apps/web/src/app/errors
 CORE_ERROR_REGISTRY_CARDINALITY=4
+ROUTER_ERROR_REGISTRY_CARDINALITY=6
+STORAGE_ERROR_REGISTRY_CARDINALITY=11
+CURRENT_COMBINED_ERROR_REGISTRY_CARDINALITY=21
 CORE_ERROR_MESSAGE_KEY_AUTHORITY=apps/web/src/app/errors built-in Core Error message table
 REMOTE_REPORTER=PROHIBITED
 ```
@@ -6428,7 +7997,7 @@ Promise、Raw Rejection Reason、Raw Cause、Message 和 Stack 全部禁止。�
 | Resource/Chunk load | Runtime/Router | release-aware recovery |
 | Reporting provider | Observability owner | never re-enter application error pipeline |
 
-Runtime Kernel Landing 激活了上表前五条所需的四条 Core Record；Router Landing 随后激活 Router guard/navigation 与 Router-owned Resource/Chunk-load 分类所需的独立六条 Router Error Extension。Query/Mutation 与 Reporting 行仍只保留其 Future Owner。Core Registry 继续精确为四条，Application-owned Combined Registry 精确为十条；不得把 Router Extension 并入 Core Set，也不得为后续域创建 Placeholder Record 或 Adapter。
+Runtime Kernel Landing 激活了上表前五条所需的四条 Core Record；Router Landing 随后激活 Router guard/navigation 与 Router-owned Resource/Chunk-load 分类所需的独立六条 Router Error Extension；Storage Landing 再激活独立十一条 Storage Error Extension。Query/Mutation 与 Reporting 行仍只保留其 Future Owner。Core Registry 继续精确为四条，Current Application-owned Full Combined Registry 精确为二十一条（`4 + 6 + 11`）；十条只表示 Historical Router Landing 或 Core-plus-Router Subprojection。不得把 Router 或 Storage Extension 并入 Core Set，也不得为后续域创建 Placeholder Record 或 Adapter。
 
 Boundary Reset 必须先 Dispose 失败 Subtree 的 Subscription、Request、Focus/Scroll Lock 和 Draft Handle。Fatal Error 不允许无限 Retry；Recoverability 必须来自 Registry，Component 不得随意添加 Reload Button。Global Capture 的 Exact Count、Lifetime、Atomic Installation、Ready-time `window.error` Removal 和 Attempt-final `unhandledrejection` Removal 只由 §19.4 的 Configuration-first Contract 定义，不得建立第二份 Listener Policy。
 
@@ -6885,7 +8454,7 @@ WCAG 2.2 AA
 ```text
 CAPABILITY=ACCESSIBILITY_ARCHITECTURE_BASELINE
 CAPABILITY_STATUS=ACTIVE
-RUNTIME_COMPONENT_ACCESSIBILITY_STATUS=TARGET_INACTIVE
+RUNTIME_COMPONENT_ACCESSIBILITY_STATUS=ACTIVE_FOR_CURRENT_ADMIN_CONSOLE_SCOPE
 RUNTIME_COMPONENT_ACCESSIBILITY_ACTIVATION_GATE=COMPONENT_OR_ROUTE_ADMISSION
 OWNER=semantic component, route and application boundary owners
 ```
@@ -7126,7 +8695,7 @@ Codex 不得打开或操作浏览器来执行这些观察。Codex 只能审查 O
 
 ## 25.2 Semantic, Name, Keyboard and Focus Contract
 
-原生语义 HTML 是第一选择；只有原生元素无法满足复合交互时才准入 Reka Adapter。每个交互必须声明 Role、Accessible Name Source、Description、Keyboard Map、Focus Entry、Focus Movement、Focus Exit、Focus Return、Disabled/Readonly State 和 Error/Loading Announcement。
+原生语义 HTML 是第一选择；只有原生元素无法满足复合交互，且未来独立、Owner-approved Headless Consumer Gate 已明确准入指定 Private Adapter 时，才可使用该 Gate 指定的 Adapter。Reka 当前仍是 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`，本条不自动准入 Reka，也不允许与 Naive Dual-active。每个交互必须声明 Role、Accessible Name Source、Description、Keyboard Map、Focus Entry、Focus Movement、Focus Exit、Focus Return、Disabled/Readonly State 和 Error/Loading Announcement。
 
 Accessible Name 优先级由 Component Contract 固定：Visible Label → explicit labelled-by ID → semantic `aria-label` only when no visible label is possible。Placeholder、Icon、Tooltip 和 Visual Position 不能单独构成 Name。重复 ID、空 Label、Name 与可见文本冲突、不可达 Description 必须失败。
 
@@ -7281,7 +8850,7 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 
 Architecture Contract 与 `AGENTS.md` 的同步只能由 Owner 明确授权的 Repository-governance Task 修改；UI Workflow 自身不得改写这些 Authority。
 
-`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 与 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 已完成。Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover、Phase 1 Static Closure、Runtime Kernel、Router 与 Storage Static Ownership 已同步。`PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT` 已把当前唯一 Next Canonical Work Package 冻结为 §37.2 的 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`。已落地边界不得被后续 Package 回退。
+`PAVP_SUBORDINATE_BROWSER_RULE_SYNC`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 已完成。Codex Browser Request、状态字段、Repository Policy Regression Gate、Manifest Canonical Compression Contract、三份 Complete Built-in Theme Document、Active Appearance Cutover、Phase 1 Static Closure、Runtime Kernel、Router、Storage 与 Admin Console Static Ownership 已同步。当前没有自动 Next Canonical Work Package；后续工作需要 Owner Demand 与独立 Architecture Amendment。已落地边界不得被后续 Package 回退。
 
 ## 28.3 Repository Portability and Explicit Discovery
 
@@ -7401,12 +8970,12 @@ THEN
 build Shared UI from real consumer demand
 
 FINALLY
-build one real Layout Admin / frontend capability management surface using only active frontend capabilities
+build one real full-viewport PAVP 管理台 using active facts and read-only target/deferred roadmap projections
 ```
 
-当前 Mainline Surface 是 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`：一个真实、Frontend-only、无 Backend/Auth/Server-state/Mock Dependency 的 Layout Admin / Frontend Capability Management Surface。它用于证明和消费 Architecture，不创建第二个 Business Platform，也不建立独立 Demo、Showcase、Architecture Dashboard、Evidence Page 或 Sample Application。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；Third-party UI/Interaction Primitive 只是 PAVP-owned Public Boundary 后的 Private Implementation Detail。除非已由 Canonical Admission 明确选择，不冻结 UI Vendor。
+当前 Active Mainline Surface 是 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`：一个真实、Full-viewport、Pure-frontend、无 Backend/Auth/Server-state/Mock Dependency 的 PAVP 管理台。它用于消费 Active Architecture 并以只读 Roadmap 呈现 Target/Deferred Capability，不创建第二 Business Platform，也不建立 Appearance-only Page、Demo、Showcase、Component Gallery、Marketing Page、Architecture Evidence Page、Test Page 或 Sample Application。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；`naive-ui@2.45.2` 是 §1.2B 已精确准入并保持在 `@platform/ui` 边界内的 Active Private Styled Implementation。
 
-Backend-dependent API、Query、Auth、Session、Permission、Observability 与 Protected Flow 只属于 §37.2 Optional Demand-driven Lane。它们不阻塞 Layout Admin 或未来 Frontend-only Admission，也不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。
+Backend-dependent API、Query、Auth、Session、Permission、Observability 与 Protected Flow 只属于 §37.2 Optional Demand-driven Lane。它们不阻塞 PAVP 管理台或未来 Frontend-only Admission，也不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。
 
 ### Task Discipline
 
@@ -7744,7 +9313,7 @@ interface StaticEnforcementTarget {
 | --- | --- | --- | --- | --- | --- |
 | `no-raw-ui-colors` | `ACTIVE` | `CURRENT_STATIC_PRODUCTION_GATE` | App/UI TypeScript and Vue literals | `design-token-source`; `generated-output` | `RAW_UI_COLOR` |
 | `no-dynamic-unocss-classes` | `ACTIVE` | `CURRENT_STATIC_PRODUCTION_GATE` | App/UI Vue class bindings and TypeScript class construction | `generated-output` | `DYNAMIC_UNOCSS_CLASS` |
-| `no-direct-storage-access` | `ACTIVE` | `CURRENT_APPEARANCE_PERSISTENCE_GATE` | App/UI TypeScript and Vue browser-storage globals | `storage-registry` | `DIRECT_STORAGE_ACCESS` |
+| `no-direct-storage-access` | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | App/UI TypeScript and Vue browser-storage globals | `storage-registry` | `DIRECT_STORAGE_ACCESS` |
 | `no-unapproved-raw-colors-complete` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS; UnoCSS maps; Theme Bank consumers | `design-token-source`; `generated-output` | `UNAPPROVED_RAW_COLOR` |
 | `no-unapproved-dimensions` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno width, height, inset, translate, grid/flex basis | `design-token-source`; `named-protocol-constant` | `UNAPPROVED_DIMENSION` |
 | `no-unapproved-spacing` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | App/UI TS/Vue/CSS/Uno margin, padding and gap | `design-token-source` | `UNAPPROVED_SPACING` |
@@ -7759,10 +9328,10 @@ interface StaticEnforcementTarget {
 | `no-transition-all` | `ACTIVE` | `PAVP_FINAL_STATIC_GOVERNANCE` | All authored CSS, Vue Transition and future motion adapters | `design-token-source` | `TRANSITION_ALL` |
 | `no-unregistered-breakpoint` | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Media/container queries and JS layout thresholds | `domain-schema`; `design-token-source` | `UNREGISTERED_BREAKPOINT` |
 | `no-unregistered-scroll-dimension` | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | Scroll offset, compensation, threshold and restoration tolerance | `route-registry`; `design-token-source`; `named-protocol-constant` | `UNREGISTERED_SCROLL_DIMENSION` |
-| `no-unregistered-touch-target` | `TARGET_INACTIVE` | `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` | Public UI hit-area and pointer target metrics | `design-token-source`; `named-protocol-constant` | `UNREGISTERED_TOUCH_TARGET` |
-| `no-raw-storage-key` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Source, HTML attributes, First Paint, migrations and storage adapters | `storage-registry`; `generated-output` | `RAW_STORAGE_KEY` |
-| `storage-owner-registry-closure` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Local Storage, IndexedDB, memory adapter and cross-tab calls | `storage-registry` | `UNREGISTERED_STORAGE_OWNER` |
-| `no-sensitive-persistence` | `TARGET_INACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Persisted schemas, serializers, writers, migrations and snapshots | `storage-registry`; `domain-schema` | `SENSITIVE_PERSISTENCE` |
+| `no-unregistered-touch-target` | `ACTIVE` | `PAVP_ARCHITECTURE_ADMIN_CONSOLE` | Public UI hit-area and pointer target metrics | `design-token-source`; `named-protocol-constant` | `UNREGISTERED_TOUCH_TARGET` |
+| `no-raw-storage-key` | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Source, HTML attributes, First Paint, migrations and storage adapters | `storage-registry`; `generated-output` | `RAW_STORAGE_KEY` |
+| `storage-owner-registry-closure` | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Local Storage, IndexedDB, memory adapter and cross-tab calls | `storage-registry` | `UNREGISTERED_STORAGE_OWNER` |
+| `no-sensitive-persistence` | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` | Persisted schemas, serializers, writers, migrations and snapshots | `storage-registry`; `domain-schema` | `SENSITIVE_PERSISTENCE` |
 | `no-direct-fetch-access` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | App/UI `fetch`, XHR, Beacon and vendor HTTP imports | `runtime-configuration-schema`; `domain-schema` | `DIRECT_FETCH_ACCESS` |
 | `no-unregistered-api-policy-literal` | `TARGET_INACTIVE` | `PAVP_API_TRANSPORT_IMPLEMENTATION` | Base URL, timeout, retry, backoff, cache, header and concurrency policy | `runtime-configuration-schema`; `domain-schema`; `named-protocol-constant` | `UNREGISTERED_API_POLICY` |
 | `route-registry-name-and-meta-closure` | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` | File routes, route records, redirects, error routes and navigation consumers | `route-registry`; `generated-output` | `ROUTE_REGISTRY_DRIFT` |
@@ -7827,7 +9396,7 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 CURRENT_GENERATOR_SCRIPTS=NONE
 ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 ACTIVATION_GATE_CREATION=UNIQUE_PAVP_GENERATOR_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
-EARLIEST_ENTRY=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE=COMPLETE_AND_REPEATED_SCAFFOLDING_NEED_PROVEN
+EARLIEST_ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE_AND_REPEATED_SCAFFOLDING_NEED_PROVEN
 ```
 
 以下命令是 Target Command Name，不是当前可用命令：
@@ -7962,7 +9531,7 @@ absence of future Providers, placeholder Steps and inactive capability imports
 unchanged Package 5 Appearance behavior
 exact one-Router and one-History lifecycle authority
 router.isReady before Mount and initial-navigation startup-failure precedence
-exact six-record Router Error extension and ten-record combined projection
+exact six-record Router Error extension, historical ten-record Core-plus-Router subprojection, and current twenty-one-record full combined projection
 exact eight-route registry/generated-DTS projection and five-stage Guard order
 exact Router/History reverse disposal with sole Runtime Kernel top-level HMR ownership
 ```
@@ -8182,7 +9751,7 @@ IMPLEMENTATION_STATUS=NOT_STARTED
 
 Core Runtime Configuration 的现有五字段 Active Contract 保持不变。API Origin、Observability Origin、Auth、Session、Provider 或 Backend Field 都不是当前 Mainline Input；对应 Field Extension Gate 只在其 Optional Demand-driven Capability 获得真实合同和 Owner 显式准入后适用。
 
-Deployment Delivery Target 不阻塞 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`。`PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 作为当前未准入的组合包整体保持未实现；其中 Backend/Auth-dependent Observability 进入 Optional Backend-dependent Lane。未来纯前端 Hosting/Release 需求若要独立准入，必须由 Owner 以真实 Hosting Contract 建立独立、明确的 Architecture Admission，不得在本次 Alignment 中拆分、激活或实现该组合包。
+Deployment Delivery Target 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`。`PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 作为当前未准入的组合包整体保持未实现；其中 Backend/Auth-dependent Observability 进入 Optional Backend-dependent Lane。未来纯前端 Hosting/Release 需求若要独立准入，必须由 Owner 以真实 Hosting Contract 建立独立、明确的 Architecture Admission，不得在本次 Alignment 中拆分、激活或实现该组合包。
 
 * 所有环境变量通过 Zod 校验。
 * `VITE_*` 中不得存放秘密。
@@ -8573,9 +10142,9 @@ existing UnoCSS Preset
 existing Light / Dark / System
 existing Compact / Comfortable / Spacious
 active ExplicitThemePreference registry reference
-exact current 27-role public ID set, including 9 color roles
+exact current-worktree 36-role public ID set, including 9 newly admitted layout roles
 current single-role density behavior for interaction.control.height
-packages/ui dependency-free src/index.ts stub
+packages/ui exact 8-component consumer-backed public boundary with private naive-ui@2.45.2 adapters
 ```
 
 当前 Package 状态：
@@ -8593,11 +10162,15 @@ RUNTIME_KERNEL_IMPLEMENTATION_COMMIT = 3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION = COMPLETE
 ROUTER_CAPABILITY_STATUS = ACTIVE
 CURRENT_RUNTIME_KERNEL_STEP_COUNT = 11
-PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE = NEXT
-LAYOUT_ADMIN_RUNTIME_IMPLEMENTATION = NOT_STARTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE = COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IMPLEMENTATION = COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS = ACTIVE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_RENDERED_REVIEW = ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_VISUAL_REVIEW = ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION = GRANTED_BY_OWNER
 PAVP_API_TRANSPORT_IMPLEMENTATION = DEFERRED / NOT_STARTED
 PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION = DEFERRED / NOT_STARTED
-PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION = NOT_STARTED
+PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION = DEFERRED / NOT_STARTED
 PAVP_FIRST_PROTECTED_VERTICAL_SLICE = DEFERRED / NOT_STARTED
 ```
 
@@ -8606,7 +10179,7 @@ PAVP_FIRST_PROTECTED_VERTICAL_SLICE = DEFERRED / NOT_STARTED
 ```text
 subordinate browser-rule synchronization
 semantic naming normalization
-exact Public Role Registry and complete 27-role UnoCSS mapping
+exact Public Role Registry and initial 27-role UnoCSS mapping, extended by the active Admin Console to 36 roles
 target explicit complete Theme contract
 complete four-plane Built-in Theme documents side by side with legacy tuples
 reference-only Preference, structured parsed-input classification and legacy migration at Atomic Cutover
@@ -8637,7 +10210,7 @@ Phase 1 不实现 UI Component、`UiGlass`、Page Material API、Component Token
 
 ```text
 demand-driven foundational components
-private Reka / Material / Focus / Overlay implementation only when consumed
+private admitted-vendor / Material / Focus / Overlay implementation only when consumed; Reka remains deferred unless independently admitted
 Phase 2 Card / Menu / Popover / Tooltip / Modal color-role candidates, admitted only by an independent Architecture Amendment
 semantic public Props
 private optical composition
@@ -8682,7 +10255,7 @@ Query Key Policy only with admitted server state
 Loading / Error / Empty Contract
 ```
 
-本 Phase 不是 Pure Frontend Mainline 的 Mandatory Predecessor。Backend-dependent 条目属于 §37.2 Optional Lane；Frontend-only Form/Table Capability 可以在 Layout Admin 或另一个真实 Frontend Consumer 出现后按自己的 Demand-driven Gate 准入，不等待 API/Auth/Protected Slice。
+本 Phase 不是 Pure Frontend Mainline 的 Mandatory Predecessor。Backend-dependent 条目属于 §37.2 Optional Lane；Frontend-only Form/Table Capability 可以在 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 或另一个真实 Frontend Consumer 完成后按自己的 Demand-driven Gate 准入，不等待 API/Auth/Protected Slice。
 
 ## Phase 5：用户个性化
 
@@ -8705,7 +10278,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 与 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain。`PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT` 已把唯一 Next Implementation Package 改为 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`；API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。当前没有自动 Next Implementation Package；任何后继能力都需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -8728,13 +10301,18 @@ CURRENT_BACKEND_CONTRACT=NONE
 CURRENT_API_ENDPOINT_CONTRACT=NONE
 BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
 BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
-NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
-PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE=NEXT
-PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE_IMPLEMENTATION=NOT_STARTED
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+NEXT_WORK_ADMISSION=OWNER_DEMAND_AND_SEPARATE_ARCHITECTURE_AMENDMENT_REQUIRED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IMPLEMENTATION=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_RENDERED_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_VISUAL_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
 PAVP_API_TRANSPORT_IMPLEMENTATION=DEFERRED_NOT_STARTED
 PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION=DEFERRED_NOT_STARTED
-PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION=NOT_STARTED
+PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION=DEFERRED_NOT_STARTED
 PAVP_FIRST_PROTECTED_VERTICAL_SLICE=DEFERRED_NOT_STARTED
 ```
 
@@ -8750,7 +10328,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router 与 Storage Implementation 随后依次完成。Future Public Role Admission 不属于该 Immediate Chain，继续受独立 Amendment Gate 约束。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；当前下一包为 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`，本次 Architecture-only Alignment 不得自动开始其 Implementation，也不得开始 Optional Backend-dependent Lane。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，Atomic Console Implementation 已同步激活这些 Role 及其 Generated Closure，并通过 Owner 实际渲染与视觉验收。原“Runtime Kernel Architecture Amendment 只能在 Phase 1 后开始”的限制已由 `PAVP_ARCHITECTURE_FOUNDATION_FREEZE` 明确替换；`PAVP_ARCHITECTURE_ADMIN_CONSOLE` 当前为 `COMPLETE / ACTIVE`，且没有自动准入 Optional Backend-dependent Lane 或任何 Successor Package。
 
 当前精确 Acceptance Contract：
 
@@ -8762,10 +10340,20 @@ ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IMPLEMENTATION=COMPLETE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_RENDERED_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_VISUAL_REVIEW=ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
+CURRENT_ROUTE_REGISTRY_RECORDS=17
+CURRENT_PRODUCT_ROUTE_RECORDS=10
+CURRENT_ERROR_ROUTE_RECORDS=7
+CURRENT_PUBLIC_COMPONENT_EXPORTS=8
 ACTIVE_PUBLIC_COLOR_ROLES=9
-ACTIVE_PUBLIC_ROLES_TOTAL=27
+ACTIVE_PUBLIC_ROLES_TOTAL=36
 PUBLIC_ROLE_REGISTRY=EXACT
-UNO_MAPPING_RECORDS=27
+UNO_MAPPING_RECORDS=36
 ACTIVE_ALPHA_RECORDS=1
 NAMED_CONTRAST_RECORDS=14
 PREFERENCE_CUTOVER=ATOMIC
@@ -8773,8 +10361,8 @@ MANIFEST_BUDGET=DEFINED
 MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
 MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
 MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
-MANIFEST_SCHEMA_VERSION=7
-MANIFEST_RECORD_COUNT=181
+MANIFEST_SCHEMA_VERSION=8
+MANIFEST_RECORD_COUNT=231
 COMPLETE_BUILTIN_THEME_DOCUMENTS=3
 COMPLETE_BUILTIN_THEME_PLANES=12
 COMPLETE_BUILTIN_THEME_AUTHORED_COLOR_VALUES=108
@@ -8828,7 +10416,7 @@ IMPLEMENTATION_COMMIT=d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf
 
 该包已原子移除 Architecture、Type、Schema、File、Runtime API 和 Public Export 中的 Numeric-version-style Name，并提供迁移与静态 Drift Enforcement；没有借此重命名 Role ID、Class 或改变 Runtime Behavior。
 
-该包已在 Package 3 和任何 New Theme 或 Preference Implementation 开始前完成。后续命名变化不得暗中改变当前 `CurrentPreference` Data Shape、27-role Public Set、Contrast Threshold、Alpha Value 或 UnoCSS Behavior。
+该包已在 Package 3 和任何 New Theme 或 Preference Implementation 开始前完成。Package 2 Landing 时的 Public Set 为 27 Role；Admin Console 后续只通过 §1.2B 显式准入扩展为当前 36 Role。任何后续命名变化仍不得暗中改变当前 `CurrentPreference` Data Shape、Public Role Set、Contrast Threshold、Alpha Value 或 UnoCSS Behavior。
 
 ```text
 NAMING_NORMALIZATION=COMPLETE
@@ -9105,13 +10693,15 @@ Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须�
 
 ```text
 CAPABILITY=PURE_FRONTEND_IMPLEMENTATION_MAINLINE
-CAPABILITY_STATUS=TARGET_INACTIVE
+CAPABILITY_STATUS=ACTIVE
 SEQUENCING=STRICT_SERIAL
 PARALLEL_PACKAGES=PROHIBITED
 TEMPORARY_AUTHORITIES=PROHIBITED
 PACKAGE_COMPLETION_REQUIRES=OWNING_STATIC_GATE_PASS
 PRODUCTION_RELEASE_REQUIRES=SECTION_32_3_OWNER_ACCEPTANCE_WHEN_RUNTIME_CHANGES
-CURRENT_NEXT_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+CURRENT_ACTIVE_PRODUCT=PAVP_ARCHITECTURE_ADMIN_CONSOLE
+CURRENT_NEXT_PACKAGE=NONE
+NEXT_WORK_ADMISSION=OWNER_DEMAND_AND_SEPARATE_ARCHITECTURE_AMENDMENT_REQUIRED
 
 CAPABILITY=OPTIONAL_BACKEND_DEPENDENT_CAPABILITY_LANE
 CAPABILITY_STATUS=DEFERRED
@@ -9128,7 +10718,7 @@ Mandatory Pure Frontend Mainline 的精确顺序：
 4. PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION         COMPLETE / ACTIVE
 5. PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION                 COMPLETE / ACTIVE
 6. PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION               COMPLETE / ACTIVE
-7. PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE                    NEXT / NOT_STARTED
+7. PAVP_ARCHITECTURE_ADMIN_CONSOLE                      COMPLETE / COMPLETE / ACTIVE
 ```
 
 Optional Backend-dependent Lane 不属于上方 Strict Serial Mainline，也没有自动 Next 语义：
@@ -9142,7 +10732,7 @@ backend-dependent PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
 PAVP_FIRST_PROTECTED_VERTICAL_SLICE                      DEFERRED / NOT_STARTED
 ```
 
-Future Demand-driven Frontend Capability Admissions 可以在 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 完成后按一个真实 Consumer、一个唯一 Work-package ID、一次一个 Capability 的规则串行进入；Forms、I18n、Tables、Shared UI、Motion 与 Specialist Capability 不依赖 Optional Backend-dependent Lane 完成。Optional Lane 的任何 Package 也不得阻塞 Layout Admin 或这些 Frontend-only Admission。
+Future Demand-driven Frontend Capability Admissions 可以在 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 完成后按一个真实 Consumer、一个唯一 Work-package ID、一次一个 Capability 的规则串行进入；Forms、I18n、Tables、Shared UI、Motion 与 Specialist Capability 不依赖 Optional Backend-dependent Lane 完成。Optional Lane 的任何 Package 也不得阻塞 PAVP 管理台或这些 Frontend-only Admission。
 
 每个 Package Record 必须声明：
 
@@ -9222,7 +10812,7 @@ PRODUCTION_BUNDLE_FINAL_JS_GZIP_BYTES=132064
 PRODUCTION_BUNDLE_FINAL_CSS_GZIP_BYTES=7457
 PRODUCTION_BUNDLE_FINAL_LAZY_CHUNKS=0
 PRODUCTION_RELEASE_ACCEPTANCE=NOT_CLAIMED_BY_STATIC_PACKAGE_COMPLETION
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+NEXT_CANONICAL_WORK_PACKAGE_AT_RUNTIME_KERNEL_LANDING=PAVP_ARCHITECTURE_ADMIN_CONSOLE
 ```
 
 Production Bundle Gate 必须先对真实产物执行当前完整 `HEAD` Release SHA、Build Version 与
@@ -9301,17 +10891,19 @@ PRODUCTION_BUNDLE_COMPRESSION_PROFILE=node-zlib-gzip-sync
 PRODUCTION_BUNDLE_LAZY_ROUTE_CHUNKS=8
 PRODUCTION_BUNDLE_HARD_BUDGET_STATUS=PASS
 PRODUCTION_BUNDLE_ACCEPTANCE_AUTHORITY=real artifact identity plus canonical budgets and exact lazy-route structure
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+NEXT_CANONICAL_WORK_PACKAGE_AT_ROUTER_LANDING=PAVP_ARCHITECTURE_ADMIN_CONSOLE
 ```
 
-该 `COMPLETE` 只表示 Repository Implementation 与 Static Owning Contract 已闭合。它不替代 §32.3 的 Owner External Runtime Matrix，不声明 Production Release Acceptance，也不授权自动开始 Storage。Host-local Router gzip exact-byte snapshot 不是本 Package 的 Canonical Acceptance Contract；Bundle Gate 继续以真实 Artifact Identity、单一冻结 Compression Profile、Canonical Hard Budgets 与精确八个 Lazy Route Chunk 结构作出判定。
+该 `COMPLETE` 只表示 Repository Implementation 与 Static Owning Contract 已闭合。它不替代 §32.3 的 Owner External Runtime Matrix，也不声明 Production Release Acceptance。Router Landing 当时不授权自动开始 Storage；Storage 后来已由自己的独立 Package 完成并激活。Host-local Router gzip exact-byte snapshot 不是本 Package 的 Canonical Acceptance Contract；Bundle Gate 继续以真实 Artifact Identity、单一冻结 Compression Profile、Canonical Hard Budgets 与精确八个 Lazy Route Chunk 结构作出判定。
+
+以下 `ENTRY` 至 `COMPLETION_EVIDENCE` 是 Storage Landing 之前的 Router Package Historical Landing Record；其中十步 Kernel 只描述当时的完成边界，Current Eleven-step Authority 由 §19.4 与 §37.2.6 拥有。
 
 ```text
 ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE; PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT=FROZEN; PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT=FROZEN; exact patched vue-router@5.2.0 dependency admission passes; no unexplained overlapping dirty change
 ALLOWED=exact vue-router@5.2.0 Catalog admission and apps/web consumption; exact temporary pnpm-managed declaration-only compatibility patch frozen by PAVP_VUE_ROUTER_TYPE_COMPATIBILITY_AMENDMENT; official vue-router/vite file-route generation before Vue plugin; exact §9.0.1 Official Generated DTS Type-only Import at apps/web/src/route-map.d.ts; exact eight-record Route Registry; exact route/meta/reference/schema registries; exact six-record Router Error extension; exact seven Error Routes; exact five-stage Guard projection; typed navigation results; empty Redirect and Dynamic Route registries; narrow reading-document layout; native document scroll owners; exact scroll/focus restoration; one create-and-ready-router Kernel step
 PROHIBITED=unplugin-vue-router; Repository-authored or Runtime vue-router/experimental Import or Use; any Repository-owned Generated Artifact Experimental Import outside the exact §9.0.1 Official Generated DTS Type-only Import; experimental Data Loaders, Router Resolver or Param Parsers; Generated DTS manual patch, post-processing, replacement or second generator; routeId; direct server fetch; non-none Query prefetch before API package; anonymous-only or required Auth activation; Session/Auth/Permission placeholder; business protected flow; Dynamic Route Manager; Auth Return URL helper; automatic Chunk Reload before Observability/Deployment; Shared UI; App Shell; test or browser infrastructure
-OUTPUT=one Router and one History authority; typed eight-route navigation lifecycle with active Auth subset exactly public and active dataPrefetch subset exactly none; exact Error/Title/Message/Telemetry/Layout/Scroll/Focus closure; exact current ten-step Runtime Kernel; application remains unmounted until router.isReady succeeds
-MACHINE_GATES=exact dependency/patch selector/path/content/hash/snapshot/fail-closed-policy equality; exact unpatched and patched TS2430 compatibility probe with unchanged strict TypeScript policy; exact plugin/import/provenance/source/generated-map equality; exact Official Generated DTS path/source/import-kind/symbol-set/exception-import-declaration-AST equality; official regeneration equality under exact coordinate/configuration/input; no Repository-authored or Runtime experimental import; no Generated DTS post-processing or second generator; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; exact ten-step Kernel; current Appearance preservation; pnpm verify
+OUTPUT=one Router and one History authority; typed eight-route navigation lifecycle with active Auth subset exactly public and active dataPrefetch subset exactly none; exact Error/Title/Message/Telemetry/Layout/Scroll/Focus closure; Router-landing historical ten-step Runtime Kernel; application remains unmounted until router.isReady succeeds
+MACHINE_GATES=exact dependency/patch selector/path/content/hash/snapshot/fail-closed-policy equality; exact unpatched and patched TS2430 compatibility probe with unchanged strict TypeScript policy; exact plugin/import/provenance/source/generated-map equality; exact Official Generated DTS path/source/import-kind/symbol-set/exception-import-declaration-AST equality; official regeneration equality under exact coordinate/configuration/input; no Repository-authored or Runtime experimental import; no Generated DTS post-processing or second generator; route/registry identity and cardinality; meta/params/query/reference closure; exact guard projection; empty redirect/dynamic sets; redirect safety; typed outcome and failure classification; error registry extension; hook/history disposal; base parity; Router-landing historical ten-step Kernel; current Appearance preservation; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_NAVIGATION_ERROR_ROUTES_SCROLL_FOCUS_AND_CHUNK_RECOVERY
 COMPLETION_EVIDENCE=one Router authority; one History authority; exact temporary vue-router@5.2.0 three-declaration patch with no runtime or metadata change; exact eight source/name/path records with no separate routeId; no Repository-authored or Runtime experimental imports; sole generated apps/web/src/route-map.d.ts type-only import matches §9.0.1 Exact Provenance; no placeholder owner; no server-state cache; current Runtime Kernel extended from nine to ten steps only in the Router landing
 ```
@@ -9341,46 +10933,47 @@ COMBINED_CORE_PLUS_ROUTER_PLUS_STORAGE_ERROR_RECORDS=21
 TARGET_POST_STORAGE_KERNEL_STEP_COUNT=11
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_AND_CLEANUP
-NEXT_CANONICAL_WORK_PACKAGE=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+NEXT_CANONICAL_WORK_PACKAGE_AT_STORAGE_LANDING=PAVP_ARCHITECTURE_ADMIN_CONSOLE
 ```
 
 ```text
 ENTRY=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE; PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN; storage/envelope/partition/migration registries frozen; sensitivity review complete
-ALLOWED=application storage owner; exact registries; storage error-registry extension; envelope/migrations; corruption/quota results; cross-tab channel; preference/theme safe ordering; kernel storage step
+ALLOWED=application storage owner; exact two-record direct-compatibility Registry; exact eleven-record Storage Error extension; zero envelope/memory/indexed-db/migration/cross-tab event records; empty-allowlist BroadcastChannel and storage-event lifecycle handles; preference/theme safe ordering preservation; one kernel storage step
 PROHIBITED=credential/session/query persistence; IndexedDB without separate demand gate; feature direct storage; generic persistence plugin
-OUTPUT=typed Local Storage and memory boundaries; compare-and-swap revisions; principal-ready partition interface; deterministic cleanup handles
-MACHINE_GATES=direct-access ban; key registry equality; migration chain; sensitive-field scan; cross-tab allowlist; atomic ordering; pnpm verify
+OUTPUT=one Storage lifecycle authority; two direct-compatibility Local Storage metadata records owned by existing Appearance boundaries; none-only partition; deterministic BroadcastChannel/storage-event cleanup handles; no payload format change
+MACHINE_GATES=direct-access ban; two-record key/metadata registry equality; empty migration/envelope/memory/indexed-db/event sets; eleven-record Error extension; sensitive-field scan; empty cross-tab allowlist; Package 5 safe-order preservation; exact eleven-step Kernel and dispose-storage insertion; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_AND_CLEANUP
-COMPLETION_EVIDENCE=no raw key outside owner/generated first paint; failures structured; bad payload cannot loop; theme reference cannot dangle
+COMPLETION_EVIDENCE=no raw key outside existing owner/generated first paint; failures structured; exact zero-cardinality sets preserved; Package 5 payloads remain direct and unchanged; one idempotent Storage lifecycle disposer
 ```
 
 Principal Partition Interface 可以存在，但 Auth-specific Principal 数据与 Session Cleanup 只能由 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 激活。本 Record 的 Exact Implementation Input 由 §19.5.1 `PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT` 唯一冻结：两条 `direct-compatibility` Registry Record、0 Envelope/0 Memory/0 Migration/0 Cross-tab Event、11 条 Storage Error Record、`create-and-ready-storage` Kernel Step（Target 11 步）、`none`-only Partition 与 Package 5 Direct-format 保留决策。实施包不得改写这些 Frozen Value，也不得把 Package 5 两条 Payload 迁入 `PersistedEnvelope`。
 
-### 37.2.7 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE`
+### 37.2.7 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`
 
 ```text
-STATUS=NEXT
-CAPABILITY_STATUS=TARGET_INACTIVE
-IMPLEMENTATION_STATUS=NOT_STARTED
-PRODUCT_IDENTITY=one real Layout Admin / frontend capability management surface
-PRODUCT_CLASSIFICATION=REAL_PAVP_PRODUCT_SURFACE_NOT_DEMO_SHOWCASE_COMPONENT_GALLERY_ARCHITECTURE_STATUS_DASHBOARD_EVIDENCE_PAGE_OR_SAMPLE_APPLICATION
-DELIVERY_MODEL=FRONTEND_ONLY
-BACKEND_DEPENDENCY=NONE
-AUTHENTICATION_REQUIREMENT=NONE
-SERVER_STATE=NONE
-MOCK_API=PROHIBITED
-FAKE_PROTECTED_ROUTE=PROHIBITED
-INACTIVE_CAPABILITY_CONTROLS=PROHIBITED
-ENTRY=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION=COMPLETE_AND_ACTIVE; PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; Design System and Appearance capabilities remain COMPLETE_AND_ACTIVE; current repository static gates pass; no unresolved overlap or unrelated dirty state
-ALLOWED=one real frontend-only Layout Admin route and surface; application-owned composition using PAVP Design Tokens as the sole visual authority; currently active Appearance and Theme capabilities only; existing Router navigation; existing Package 5 Pinia Appearance orchestration; existing Storage persistence boundaries; minimum consumer-driven UI required by this one real surface; accessibility, layout, responsive capability projection and production bundle enforcement already defined by PAVP
-PROHIBITED=API Transport; Native Fetch business client; TanStack Query; Auth; Session; Permission; protected business flow; mock API; sample endpoint; server data; Observability activation; Deployment activation; Forms; Tables; I18n; Motion; charts; editors; grids; specialist vendors without their own real consumer gate; broad Shared UI platform construction; speculative component variants; controls for TARGET_INACTIVE or DEFERRED capabilities; demo; showcase; architecture dashboard; evidence page; test page; component gallery
-OUTPUT=one real frontend capability management surface; only active capabilities are presented or editable; no duplicate state, schema, default, registry, storage or visual authority; no page-authored visual token system; no backend placeholder; no generic UI framework expansion
-MACHINE_GATES=exact route and route-meta closure; only active-capability consumers; no inactive-capability imports or controls; Design Token and UnoCSS authority preservation; Package 5 Appearance and Storage ownership preservation; accessibility and static lint closure; dependency and package-boundary closure; production bundle budget; pnpm verify
-PRODUCTION_RELEASE_ACCEPTANCE=OWNER_EXTERNAL_RUNTIME_ACCEPTANCE_REQUIRED_FOR_ACTUAL_LAYOUT_ADMIN_UI_BEHAVIOR_WHEN_IMPLEMENTED
-COMPLETION_EVIDENCE=one real frontend-only route and surface; all required static gates pass; runtime behavior remains external and Owner-operated; no backend-dependent implementation or dependency admitted
+STATUS=COMPLETE
+CAPABILITY_STATUS=ACTIVE
+IMPLEMENTATION_STATUS=COMPLETE
+OWNER_RENDERED_REVIEW=ACCEPTED
+OWNER_VISUAL_REVIEW=ACCEPTED
+PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
+PRODUCT_NAME=PAVP 管理台
+PRODUCT_IDENTITY=one real full-viewport frontend architecture administration console
+PRODUCT_CLASSIFICATION=REAL_PAVP_PRODUCT_NOT_APPEARANCE_ONLY_NOT_DEMO_SHOWCASE_COMPONENT_GALLERY_MARKETING_ARCHITECTURE_EVIDENCE_TEST_OR_SAMPLE_APPLICATION
+DELIVERY_MODEL=PURE_FRONTEND
+BACKEND_API_QUERY_AUTH_SESSION_PERMISSION=NONE
+OWNER_REJECTED_PREDECESSOR=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
+OWNER_REJECTED_PREDECESSOR_STATUS=OWNER_REJECTED_AND_RETIRED_NEVER_COMMITTED
+ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; Runtime Kernel exact eleven steps; Router, Storage, Appearance and Design System remain COMPLETE_AND_ACTIVE; naive-ui@2.45.2 admission gates pass; no unresolved overlap or unrelated dirty state
+ALLOWED=exact §1.2B atomic ten-route product, responsive Shell, Layout/Route/Region/Scroll/Focus/Restoration registries, Appearance Read Boundary, consumer-derived PAVP UI, private Naive adapters, safe projections/manifests, visual/material/motion contract and smallest owning static gates
+PROHIBITED=backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work
+OUTPUT=one PAVP 管理台 with one Admin Shell, ten product routes plus seven unchanged error routes, one primary Router outlet, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, exact deterministic projections/manifests and only consumer-backed public UI APIs
+MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; check:arch; check:policy; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=PASS_BY_OWNER_EXTERNAL_RENDERED_AND_VISUAL_REVIEW
+COMPLETION_EVIDENCE=complete static production gates; deterministic production/generated artifacts; exact route/registry/dependency/bundle report; no committed test, fixture, screenshot, trace or evidence artifact; Owner rendered and visual reviews accepted; Git publication authorized
 ```
 
-本记录只冻结 Product Identity、Implementation Boundary、Admission Scope、Prohibition、Output、Machine Gate 与 Sequencing。它不定义最终 Detailed UI Layout、Component Tree、Styling Value 或 Implementation File；这些私有实现细节只能在该 Package 被 Owner 单独授权后，由真实 Consumer 和现有 Authority 派生。
+§1.2B 是本 Package 的唯一 Detailed Material Contract，并完整提供 `ImplementationWorkPackageContract` 的八个字段。Owner 已明确授权当前 Atomic Replacement Task 并永久退役被拒绝的 Reka Draft；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。实现与静态门禁已闭合，Owner 实际渲染与视觉验收已通过，因此本 Package 当前为 `COMPLETE / COMPLETE / ACTIVE`，并已获得 Git 提交与发布授权；任何后继 Package 仍需独立准入。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -9458,7 +11051,7 @@ Minimum Slice Scenarios 只在上述真实 Admission 后按该产品流的适用
 STAGE_ID=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 STAGE_KIND=REPEATABLE_STRICT_SERIAL_ADMISSION_TEMPLATE
 CAPABILITY_STATUS=TARGET_INACTIVE
-ENTRY=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE=COMPLETE or another Owner-approved real frontend consumer exists; one named real consumer for the requested capability; stable dependency and bundle gate passes
+ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE or another Owner-approved real frontend consumer exists; one named real consumer for the requested capability; stable dependency and bundle gate passes
 BACKEND_DEPENDENT_LANE_COMPLETION_REQUIRED=NO
 ALLOWED=one capability instance at a time following Sections 16 and 21–25 plus applicable Accessibility/Performance contracts; minimum exact Runtime Configuration field extension required by that frontend domain; minimal semantic UI required by the consumer; generator only after repeated real scaffolding need
 PROHIBITED=parallel unrelated capability packages; ProForm/ProTable platform; speculative variants; prerelease dependency; second UI authority; Backend placeholder used only to justify admission
@@ -9496,7 +11089,7 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 
 # 39. 最终 Package 清单
 
-本节是各能力通过各自真实 Consumer Gate 后的条件式允许目标，不是 Mandatory End State 或当前安装清单。Package Manifest 只能包含已经由真实消费者、当前 Phase 和 Admission Gate 同时批准的依赖。Optional Backend-dependent Lane 的 Planned Dependency 不得因出现在本节而阻塞 Pure Frontend Mainline，也不得由 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 安装。
+本节是各能力通过各自真实 Consumer Gate 后的条件式允许目标，不是 Mandatory End State 或当前安装清单。Package Manifest 只能包含已经由真实消费者、当前 Phase 和 Admission Gate 同时批准的依赖。Optional Backend-dependent Lane 的 Planned Dependency 不得因出现在本节而阻塞 Pure Frontend Mainline，也不得由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 安装。
 
 ## Root Dev Dependencies
 
@@ -9537,7 +11130,7 @@ vue-i18n
 @platform/ui
 ```
 
-这是各独立 Gate 全部满足后的条件式 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 获得真实 Backend/Service Contract，且可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。当前 `apps/web` 的 Direct Dependency Set 精确为 `vue@3.5.40`、`@platform/design-system`、Package 5 窄范围准入的 `pinia@3.0.4`、Runtime Kernel 准入的 `zod@4.4.3` 与 Router Landing 准入并通过 Catalog 消费的 patched `vue-router@5.2.0`；当前没有 `@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios、Alova 或其他 API Dependency 被准入。`@tanstack/vue-query`、`vee-validate`、`@vueuse/core`、`vue-i18n`、`@platform/ui` 和其他 Runtime Dependency 继续等待各自真实 Consumer 与 Named Gate；Layout Admin 不授权安装其中任何一项。
+这是各独立 Gate 全部满足后的条件式 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 获得真实 Backend/Service Contract，且可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。Atomic Landing 前的 Committed Baseline `apps/web` Direct Dependency Set 精确为 `vue@3.5.40`、`@platform/design-system`、Package 5 窄范围准入的 `pinia@3.0.4`、Runtime Kernel 准入的 `zod@4.4.3` 与 Router Landing 准入并通过 Catalog 消费的 patched `vue-router@5.2.0`；当前 Console Implementation 只把 `@platform/ui` 加入 `apps/web`，并由 `packages/ui` 私有拥有 `naive-ui@2.45.2`。当前没有 `reka-ui`、`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios、Alova 或其他 Backend-dependent/Unrelated Runtime Dependency 被准入。
 
 ## `packages/design-system`
 
@@ -9551,19 +11144,36 @@ style-dictionary
 
 ## `packages/ui`
 
-Phase 1：
+Phase 1 初始 Baseline：
 
 ```text
 runtime dependencies = none
 implementation source = src/index.ts only
 ```
 
+被拒绝 Layout Admin/Reka Draft（无 Admission、不得提交）：
+
+```text
+direct dependencies = @platform/design-system workspace:*; vue catalog:; reka-ui catalog:
+public root exports = UiButton; UiSegmentedControl; UiSectionTabs
+private vendor imports = packages/ui/src/adapters/reka/** only
+```
+
+Current admitted `PAVP_ARCHITECTURE_ADMIN_CONSOLE` implementation：
+
+```text
+direct dependencies = @platform/design-system workspace:*; vue catalog:; naive-ui catalog exact 2.45.2
+public component exports = UiAdminShell; UiButton; UiDescriptionList; UiPageHeader; UiProvider; UiSection; UiSegmentedControl; UiStatusBadge
+private vendor imports = packages/ui/src/adapters/naive/** only
+```
+
 未来按需准入：
 
 | Dependency                | Admission |
 | ------------------------- | --------- |
-| `vue`, `@platform/design-system` | 第一个有充分理由的 Phase 2 UI Component |
-| `reka-ui`                 | 第一个复杂 A11y Interaction；只允许 Private Reka Adapter 导入 |
+| `vue`, `@platform/design-system` | `PAVP_ARCHITECTURE_ADMIN_CONSOLE` Atomic Consumer Gate |
+| `naive-ui@2.45.2`         | Console Styled-vendor Gate；只允许 Private Naive Adapter 导入 |
+| `reka-ui`                 | Deferred Independent Headless Gate；不得与 Naive Dual-active |
 | `clsx`                    | 已准入实现证明存在真实组合需求 |
 | `motion-v`                | 命名 Interaction 通过 §24.1；只允许 Private Motion Adapter 导入 |
 | GSAP                      | §24.2 全部条件通过；只允许 Private Lazy Adapter 导入 |
@@ -9595,9 +11205,10 @@ BACKEND_ABSENCE_IS_INTENTIONAL_CURRENT_PRODUCT_STATE_NOT_REPOSITORY_DEFECT
 BACKEND_DEPENDENT_CAPABILITIES_ARE_OPTIONAL_DEMAND_DRIVEN
 BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
 NO_MOCK_SAMPLE_HEALTH_PUBLIC_THIRD_PARTY_OR_FAKE_BACKEND_CONTRACT_FOR_SEQUENCE_ADVANCEMENT
-LAYOUT_ADMIN_IS_ONE_REAL_FRONTEND_CAPABILITY_MANAGEMENT_SURFACE
-LAYOUT_ADMIN_IS_NOT_DEMO_SHOWCASE_ARCHITECTURE_DASHBOARD_EVIDENCE_PAGE_OR_SAMPLE_APPLICATION
-LAYOUT_ADMIN_PRESENTS_OR_EDITS_ACTIVE_CAPABILITIES_ONLY
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IS_ONE_REAL_FULL_VIEWPORT_FRONTEND_PRODUCT
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IS_NOT_APPEARANCE_ONLY_DEMO_SHOWCASE_COMPONENT_GALLERY_MARKETING_EVIDENCE_TEST_OR_SAMPLE_APPLICATION
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRESENTS_ACTIVE_FACTS_AND_READ_ONLY_INACTIVE_ROADMAP_RECORDS
+REJECTED_LAYOUT_ADMIN_REKA_DRAFT_IS_NOT_CURRENT_OR_TARGET_AUTHORITY
 
 ONE_COMPLETE_BOUNDED_TASK_AT_A_TIME
 NO_AUTOMATIC_ROADMAP_CONTINUATION
@@ -9675,7 +11286,7 @@ TEN_FUTURE_DENSITY_CANDIDATES_REQUIRE_ADMISSION_AMENDMENT
 TARGET_DENSITY_VALUES_ARE_MANUALLY_AUTHORED_NOT_SCALED_AFTER_ADMISSION
 
 PHASE_GATE_REQUIRED
-PHASE_1_UI_IS_A_DEPENDENCY_FREE_SRC_INDEX_STUB
+PHASE_1_INITIAL_BASELINE_UI_IS_A_DEPENDENCY_FREE_SRC_INDEX_STUB
 PHASE_1_PINIA_IS_ADMITTED_ONLY_BY_PACKAGE_5_ATOMIC_CUTOVER
 PHASE_1_PINIA_SCOPE_IS_APPEARANCE_AND_THEME_REGISTRY_ORCHESTRATION
 PHASE_1_ROUTER_QUERY_AND_OPENAPI_GENERATOR_ARE_PROHIBITED
@@ -9688,11 +11299,17 @@ STORAGE_PERSISTENCE_IMPLEMENTATION_IS_COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_IS_ACTIVE
 CURRENT_RUNTIME_KERNEL_STEP_COUNT_IS_11
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE_REMAINS_PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-NEXT_CANONICAL_WORK_PACKAGE_IS_PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
-PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE_IS_NEXT_AND_NOT_STARTED
+NEXT_CANONICAL_WORK_PACKAGE_IS_NONE
+NEXT_WORK_ADMISSION_REQUIRES_OWNER_DEMAND_AND_SEPARATE_ARCHITECTURE_AMENDMENT
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_IS_COMPLETE_AND_ACTIVE
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_RENDERED_REVIEW_IS_ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_VISUAL_REVIEW_IS_ACCEPTED
+PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION_IS_GRANTED_BY_OWNER
+NAIVE_UI_2_45_2_IMPLEMENTATION_IS_PRIVATE_TO_PLATFORM_UI_AND_ACTIVE
+REKA_UI_ACTIVE_RUNTIME_ADMISSION_IS_NONE
 PAVP_API_TRANSPORT_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
 PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
-PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION_IS_NOT_STARTED
+PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
 PAVP_FIRST_PROTECTED_VERTICAL_SLICE_IS_DEFERRED_AND_NOT_STARTED
 NO_API_DEPENDENCY_ORIGIN_ENDPOINT_QUERY_CLIENT_ERROR_RECORD_KERNEL_STEP_AUTH_STATE_OR_PROTECTED_ROUTE_IS_ADMITTED
 FUTURE_DIRECTORIES_ARE_DEMAND_CREATED
@@ -9777,8 +11394,10 @@ Node 24 LTS
 + Complete Generated UnoCSS Public Semantics
 + Adaptive / Reduced / Solid Material
 + Adaptive Liquid Chrome over Stable Content
-+ Reka UI after Phase 2 Consumer Admission
++ naive-ui@2.45.2 active only inside the PAVP-owned private adapter boundary admitted by PAVP_ARCHITECTURE_ADMIN_CONSOLE
++ Reka UI only as a deferred independent headless-primitive candidate
 + Progressive Demand-driven Project UI
++ PAVP 管理台 as the current active real full-viewport pure-frontend product; no automatic next product is admitted
 + Pinia
 + TanStack Vue Query only after real backend-demand admission
 + Native Fetch transport only after real backend-demand admission

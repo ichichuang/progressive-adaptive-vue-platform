@@ -4,6 +4,36 @@ import { z } from 'zod'
 
 import { compareCodePoints } from './order'
 
+export type LayoutContainerVariantId = 'layout-narrow' | 'layout-regular' | 'layout-wide'
+
+export interface UnoCssClassProjection {
+  readonly generatorKind: 'exact-rule' | 'theme-entry'
+  readonly family: string
+  readonly key: string
+  readonly classes: readonly [string, ...string[]]
+  readonly allowedCssProperties: readonly [string, ...string[]]
+}
+
+export interface UnoCssContainerBoundaryContribution {
+  readonly variantName: LayoutContainerVariantId
+  readonly edge: 'minimum-inclusive' | 'maximum-exclusive'
+}
+
+export interface UnoCssContainerVariantProjection {
+  readonly generatorKind: 'container-variant'
+  readonly family: 'layout-profile'
+  readonly key: 'regular-min-inline-size' | 'wide-min-inline-size'
+  readonly containerName: 'pavp-admin-shell'
+  readonly containerType: 'inline-size'
+  readonly measurementAxis: 'inline'
+  readonly boundaryContributions: readonly [
+    UnoCssContainerBoundaryContribution,
+    ...UnoCssContainerBoundaryContribution[],
+  ]
+}
+
+export type PublicRoleUnoCssProjection = UnoCssClassProjection | UnoCssContainerVariantProjection
+
 export interface PublicRoleRecord {
   readonly id: string
   readonly tokenType:
@@ -22,13 +52,7 @@ export interface PublicRoleRecord {
   readonly themePlaneApplicability: 'target-required-after-atomic-cutover' | 'not-applicable'
   readonly contrastEndpointId: string | null
   readonly alphaContractId: 'alpha-scrim-viewport' | null
-  readonly unocss: {
-    readonly generatorKind: 'exact-rule' | 'theme-entry'
-    readonly family: string
-    readonly key: string
-    readonly classes: readonly [string, ...string[]]
-    readonly allowedCssProperties: readonly [string, ...string[]]
-  }
+  readonly unocss: PublicRoleUnoCssProjection
 }
 
 export interface AlphaContractRecord {
@@ -50,15 +74,27 @@ export interface NamedContrastRecord {
   readonly staticMaterialProjections: readonly ('adaptive' | 'reduced' | 'solid')[]
 }
 
-export interface UnoCssMappingRecord {
-  readonly roleId: string
-  readonly cssVariable: `--ui-${string}`
-  readonly generatorKind: PublicRoleRecord['unocss']['generatorKind']
-  readonly family: string
-  readonly key: string
-  readonly classes: readonly string[]
-  readonly allowedCssProperties: readonly string[]
-}
+export type UnoCssMappingRecord =
+  | {
+      readonly roleId: string
+      readonly cssVariable: `--ui-${string}`
+      readonly generatorKind: 'exact-rule' | 'theme-entry'
+      readonly family: string
+      readonly key: string
+      readonly classes: readonly string[]
+      readonly allowedCssProperties: readonly string[]
+    }
+  | {
+      readonly roleId: string
+      readonly cssVariable: `--ui-${string}`
+      readonly generatorKind: 'container-variant'
+      readonly family: 'layout-profile'
+      readonly key: 'regular-min-inline-size' | 'wide-min-inline-size'
+      readonly containerName: 'pavp-admin-shell'
+      readonly containerType: 'inline-size'
+      readonly measurementAxis: 'inline'
+      readonly boundaryContributions: readonly UnoCssContainerBoundaryContribution[]
+    }
 
 function metadataEquals(actual: string, expected: string): boolean {
   return actual === expected
@@ -332,6 +368,96 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'layout.admin.content.minimum-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-admin-content-minimum-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'content-size',
+        key: 'admin-content',
+        classes: ['min-w-admin-content'],
+        allowedCssProperties: ['min-width'],
+      },
+    },
+    {
+      id: 'layout.admin.drawer.maximum-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-admin-drawer-maximum-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'shell-size',
+        key: 'admin-drawer',
+        classes: ['max-w-admin-drawer'],
+        allowedCssProperties: ['max-width'],
+      },
+    },
+    {
+      id: 'layout.admin.header.block-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-admin-header-block-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'shell-size',
+        key: 'admin-header',
+        classes: ['h-admin-header'],
+        allowedCssProperties: ['height'],
+      },
+    },
+    {
+      id: 'layout.admin.sidebar.expanded-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-admin-sidebar-expanded-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'shell-size',
+        key: 'admin-sidebar-expanded',
+        classes: ['w-admin-sidebar-expanded'],
+        allowedCssProperties: ['width'],
+      },
+    },
+    {
+      id: 'layout.admin.sidebar.rail-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-admin-sidebar-rail-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'shell-size',
+        key: 'admin-sidebar-rail',
+        classes: ['w-admin-sidebar-rail'],
+        allowedCssProperties: ['width'],
+      },
+    },
+    {
       id: 'layout.content.max-width',
       tokenType: 'dimension',
       category: 'layout',
@@ -347,6 +473,88 @@ export const PublicRoleRegistry = {
         key: 'content',
         classes: ['max-w-content'],
         allowedCssProperties: ['max-width'],
+      },
+    },
+    {
+      id: 'layout.profile.regular.min-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-profile-regular-min-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'container-variant',
+        family: 'layout-profile',
+        key: 'regular-min-inline-size',
+        containerName: 'pavp-admin-shell',
+        containerType: 'inline-size',
+        measurementAxis: 'inline',
+        boundaryContributions: [
+          { variantName: 'layout-narrow', edge: 'maximum-exclusive' },
+          { variantName: 'layout-regular', edge: 'minimum-inclusive' },
+        ],
+      },
+    },
+    {
+      id: 'layout.profile.wide.min-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-profile-wide-min-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'container-variant',
+        family: 'layout-profile',
+        key: 'wide-min-inline-size',
+        containerName: 'pavp-admin-shell',
+        containerType: 'inline-size',
+        measurementAxis: 'inline',
+        boundaryContributions: [
+          { variantName: 'layout-regular', edge: 'maximum-exclusive' },
+          { variantName: 'layout-wide', edge: 'minimum-inclusive' },
+        ],
+      },
+    },
+    {
+      id: 'layout.target.enhanced.minimum-block-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-target-enhanced-minimum-block-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'minimum-target',
+        key: 'target-enhanced',
+        classes: ['min-h-target-enhanced'],
+        allowedCssProperties: ['min-height'],
+      },
+    },
+    {
+      id: 'layout.target.enhanced.minimum-inline-size',
+      tokenType: 'dimension',
+      category: 'layout',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-layout-target-enhanced-minimum-inline-size',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'minimum-target',
+        key: 'target-enhanced',
+        classes: ['min-w-target-enhanced'],
+        allowedCssProperties: ['min-width'],
       },
     },
     {
@@ -769,13 +977,31 @@ const publicRoleRecordSchema = z.strictObject({
   themePlaneApplicability: z.enum(['target-required-after-atomic-cutover', 'not-applicable']),
   contrastEndpointId: z.string().nullable(),
   alphaContractId: z.literal('alpha-scrim-viewport').nullable(),
-  unocss: z.strictObject({
-    generatorKind: z.enum(['exact-rule', 'theme-entry']),
-    family: z.string().regex(/^[a-z][a-z0-9-]*$/u),
-    key: z.string().regex(/^[a-z][a-z0-9-]*$/u),
-    classes: z.array(z.string().regex(/^[a-z][a-z0-9-]*$/u)).min(1),
-    allowedCssProperties: z.array(z.string().regex(/^(?:--[a-z0-9-]+|[a-z][a-z-]*)$/u)).min(1),
-  }),
+  unocss: z.discriminatedUnion('generatorKind', [
+    z.strictObject({
+      generatorKind: z.enum(['exact-rule', 'theme-entry']),
+      family: z.string().regex(/^[a-z][a-z0-9-]*$/u),
+      key: z.string().regex(/^[a-z][a-z0-9-]*$/u),
+      classes: z.array(z.string().regex(/^[a-z][a-z0-9-]*$/u)).min(1),
+      allowedCssProperties: z.array(z.string().regex(/^(?:--[a-z0-9-]+|[a-z][a-z-]*)$/u)).min(1),
+    }),
+    z.strictObject({
+      generatorKind: z.literal('container-variant'),
+      family: z.literal('layout-profile'),
+      key: z.enum(['regular-min-inline-size', 'wide-min-inline-size']),
+      containerName: z.literal('pavp-admin-shell'),
+      containerType: z.literal('inline-size'),
+      measurementAxis: z.literal('inline'),
+      boundaryContributions: z
+        .array(
+          z.strictObject({
+            variantName: z.enum(['layout-narrow', 'layout-regular', 'layout-wide']),
+            edge: z.enum(['minimum-inclusive', 'maximum-exclusive']),
+          }),
+        )
+        .min(1),
+    }),
+  ]),
 })
 
 const alphaContractRecordSchema = z.strictObject({
@@ -826,6 +1052,12 @@ const exactRuleContracts = {
   'color|--un-ring-color': 'ring',
   'color|color': 'text',
   'dimension|height': 'h',
+  'content-size|min-width': 'min-w',
+  'shell-size|max-width': 'max-w',
+  'shell-size|height': 'h',
+  'shell-size|width': 'w',
+  'minimum-target|min-height': 'min-h',
+  'minimum-target|min-width': 'min-w',
   'duration|--un-duration,transition-duration': 'duration',
   'easing|--un-ease,transition-timing-function': 'ease',
   'content-width|max-width': 'max-w',
@@ -891,7 +1123,7 @@ export function validatePublicRoleRegistry(
     .parse(registry)
   const records = parsed.records as unknown as readonly PublicRoleRecord[]
 
-  assertExactCount(records.length, 27, 'Public Role Registry record count')
+  assertExactCount(records.length, 36, 'Public Role Registry record count')
   assertUnique(
     records.map((record) => record.id),
     'Public Role Registry IDs',
@@ -901,7 +1133,9 @@ export function validatePublicRoleRegistry(
     'Public Role Registry CSS variables',
   )
   assertUnique(
-    records.flatMap((record) => record.unocss.classes),
+    records.flatMap((record) =>
+      record.unocss.generatorKind === 'container-variant' ? [] : record.unocss.classes,
+    ),
     'Public Role Registry UnoCSS classes',
   )
 
@@ -919,13 +1153,18 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    20,
+    27,
     'Exact UnoCSS rule count',
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'theme-entry').length,
     7,
     'UnoCSS theme-entry count',
+  )
+  assertExactCount(
+    records.filter((record) => record.unocss.generatorKind === 'container-variant').length,
+    2,
+    'UnoCSS container-variant boundary count',
   )
 
   for (const record of records) {
@@ -955,6 +1194,26 @@ export function validatePublicRoleRegistry(
 
     if (record.contrastEndpointId !== null && record.contrastEndpointId !== record.id) {
       throw new Error(`${record.id}: public contrast endpoint IDs must equal their role IDs.`)
+    }
+
+    if (record.unocss.generatorKind === 'container-variant') {
+      const expectedContributions = {
+        'regular-min-inline-size': [
+          { variantName: 'layout-narrow', edge: 'maximum-exclusive' },
+          { variantName: 'layout-regular', edge: 'minimum-inclusive' },
+        ],
+        'wide-min-inline-size': [
+          { variantName: 'layout-regular', edge: 'maximum-exclusive' },
+          { variantName: 'layout-wide', edge: 'minimum-inclusive' },
+        ],
+      } as const
+
+      assertExactRegistryRecords(
+        record.unocss.boundaryContributions,
+        expectedContributions[record.unocss.key],
+        `${record.id} UnoCSS container boundary contributions`,
+      )
+      continue
     }
 
     if (record.unocss.generatorKind === 'theme-entry') {
@@ -1143,10 +1402,6 @@ export function unoCssMappingRecords(
   return publicRoleRecords.map((record) => ({
     roleId: record.id,
     cssVariable: record.cssVariable,
-    generatorKind: record.unocss.generatorKind,
-    family: record.unocss.family,
-    key: record.unocss.key,
-    classes: record.unocss.classes,
-    allowedCssProperties: record.unocss.allowedCssProperties,
+    ...record.unocss,
   }))
 }

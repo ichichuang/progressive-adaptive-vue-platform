@@ -5,10 +5,12 @@ import {
   type AppearanceFirstPaintHandoffHandle,
   type AppearanceProviderHandle,
 } from '../appearance/appearance-bootstrap'
+import { provideAppearanceMutationBoundary } from '../appearance/appearance-mutation-boundary'
+import { provideAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
 import type { AttemptDisposalReason } from './lifecycle'
 import type { PiniaProviderHandle } from '../providers/pinia'
 
-const activeProviderIds = ['pinia', 'appearance'] as const
+export const activeProviderIds = ['pinia', 'appearance'] as const
 
 export interface InstalledPlatformProvidersHandle {
   readonly ids: readonly ['pinia', 'appearance']
@@ -23,6 +25,8 @@ export function installPlatformProviders(input: {
 }): InstalledPlatformProvidersHandle {
   input.application.use(input.pinia)
   const appearance = installAppearanceProvider(input.pinia, input.handoff)
+  provideAppearanceReadBoundary(input.application, appearance.appearanceReadBoundary)
+  provideAppearanceMutationBoundary(input.application, appearance.appearanceMutationBoundary)
   let disposed = false
 
   return {

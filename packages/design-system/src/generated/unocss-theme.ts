@@ -127,6 +127,51 @@ export const platformUnoMappings = [
     allowedCssProperties: ['--un-shadow', 'box-shadow'],
   },
   {
+    roleId: 'layout.admin.content.minimum-inline-size',
+    cssVariable: '--ui-layout-admin-content-minimum-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'content-size',
+    key: 'admin-content',
+    classes: ['min-w-admin-content'],
+    allowedCssProperties: ['min-width'],
+  },
+  {
+    roleId: 'layout.admin.drawer.maximum-inline-size',
+    cssVariable: '--ui-layout-admin-drawer-maximum-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'shell-size',
+    key: 'admin-drawer',
+    classes: ['max-w-admin-drawer'],
+    allowedCssProperties: ['max-width'],
+  },
+  {
+    roleId: 'layout.admin.header.block-size',
+    cssVariable: '--ui-layout-admin-header-block-size',
+    generatorKind: 'exact-rule',
+    family: 'shell-size',
+    key: 'admin-header',
+    classes: ['h-admin-header'],
+    allowedCssProperties: ['height'],
+  },
+  {
+    roleId: 'layout.admin.sidebar.expanded-inline-size',
+    cssVariable: '--ui-layout-admin-sidebar-expanded-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'shell-size',
+    key: 'admin-sidebar-expanded',
+    classes: ['w-admin-sidebar-expanded'],
+    allowedCssProperties: ['width'],
+  },
+  {
+    roleId: 'layout.admin.sidebar.rail-inline-size',
+    cssVariable: '--ui-layout-admin-sidebar-rail-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'shell-size',
+    key: 'admin-sidebar-rail',
+    classes: ['w-admin-sidebar-rail'],
+    allowedCssProperties: ['width'],
+  },
+  {
     roleId: 'layout.content.max-width',
     cssVariable: '--ui-layout-content-max-width',
     generatorKind: 'exact-rule',
@@ -134,6 +179,64 @@ export const platformUnoMappings = [
     key: 'content',
     classes: ['max-w-content'],
     allowedCssProperties: ['max-width'],
+  },
+  {
+    roleId: 'layout.profile.regular.min-inline-size',
+    cssVariable: '--ui-layout-profile-regular-min-inline-size',
+    generatorKind: 'container-variant',
+    family: 'layout-profile',
+    key: 'regular-min-inline-size',
+    containerName: 'pavp-admin-shell',
+    containerType: 'inline-size',
+    measurementAxis: 'inline',
+    boundaryContributions: [
+      {
+        variantName: 'layout-narrow',
+        edge: 'maximum-exclusive',
+      },
+      {
+        variantName: 'layout-regular',
+        edge: 'minimum-inclusive',
+      },
+    ],
+  },
+  {
+    roleId: 'layout.profile.wide.min-inline-size',
+    cssVariable: '--ui-layout-profile-wide-min-inline-size',
+    generatorKind: 'container-variant',
+    family: 'layout-profile',
+    key: 'wide-min-inline-size',
+    containerName: 'pavp-admin-shell',
+    containerType: 'inline-size',
+    measurementAxis: 'inline',
+    boundaryContributions: [
+      {
+        variantName: 'layout-regular',
+        edge: 'maximum-exclusive',
+      },
+      {
+        variantName: 'layout-wide',
+        edge: 'minimum-inclusive',
+      },
+    ],
+  },
+  {
+    roleId: 'layout.target.enhanced.minimum-block-size',
+    cssVariable: '--ui-layout-target-enhanced-minimum-block-size',
+    generatorKind: 'exact-rule',
+    family: 'minimum-target',
+    key: 'target-enhanced',
+    classes: ['min-h-target-enhanced'],
+    allowedCssProperties: ['min-height'],
+  },
+  {
+    roleId: 'layout.target.enhanced.minimum-inline-size',
+    cssVariable: '--ui-layout-target-enhanced-minimum-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'minimum-target',
+    key: 'target-enhanced',
+    classes: ['min-w-target-enhanced'],
+    allowedCssProperties: ['min-width'],
   },
   {
     roleId: 'layout.z.base',
@@ -297,15 +400,45 @@ export const platformRules = [
     },
   ],
   [
+    'h-admin-header',
+    {
+      height: 'var(--ui-layout-admin-header-block-size)',
+    },
+  ],
+  [
     'h-control',
     {
       height: 'var(--ui-control-height)',
     },
   ],
   [
+    'max-w-admin-drawer',
+    {
+      'max-width': 'var(--ui-layout-admin-drawer-maximum-inline-size)',
+    },
+  ],
+  [
     'max-w-content',
     {
       'max-width': 'var(--ui-layout-content-max-width)',
+    },
+  ],
+  [
+    'min-h-target-enhanced',
+    {
+      'min-height': 'var(--ui-layout-target-enhanced-minimum-block-size)',
+    },
+  ],
+  [
+    'min-w-admin-content',
+    {
+      'min-width': 'var(--ui-layout-admin-content-minimum-inline-size)',
+    },
+  ],
+  [
+    'min-w-target-enhanced',
+    {
+      'min-width': 'var(--ui-layout-target-enhanced-minimum-inline-size)',
     },
   ],
   [
@@ -354,6 +487,18 @@ export const platformRules = [
     'text-title',
     {
       'font-size': 'var(--ui-font-size-title)',
+    },
+  ],
+  [
+    'w-admin-sidebar-expanded',
+    {
+      width: 'var(--ui-layout-admin-sidebar-expanded-inline-size)',
+    },
+  ],
+  [
+    'w-admin-sidebar-rail',
+    {
+      width: 'var(--ui-layout-admin-sidebar-rail-inline-size)',
     },
   ],
   [

@@ -15,16 +15,18 @@ function variablesForMappings(predicate) {
   return [
     ...new Set(
       tokenManifest.unoCssMappings
+        .filter((mapping) => mapping.generatorKind !== 'container-variant')
         .filter((mapping) => predicate(mapping))
         .map((mapping) => mapping.cssVariable),
     ),
   ]
 }
 
-function disallowOutsideAuthorities(variables, allowedValues = []) {
+function disallowOutsideAuthorities(variables, allowedValues = [], allowedPatterns = []) {
   const authorities = [
     ...variables.map((variable) => `var\\(${escapeRegularExpression(variable)}\\)`),
     ...allowedValues.map(escapeRegularExpression),
+    ...allowedPatterns,
     ...cssWideValues,
   ]
 
@@ -73,6 +75,28 @@ const lineHeightVariables = variablesForMappings((mapping) => mapping.family ===
 const durationVariables = variablesForMappings((mapping) => mapping.family === 'duration')
 const easingVariables = variablesForMappings((mapping) => mapping.family === 'easing')
 const motionVariables = [...durationVariables, ...easingVariables]
+const adminColorVariables = tokenManifest.tokens
+  .filter(
+    (token) =>
+      token.visibility === 'ui-internal' &&
+      token.type === 'color' &&
+      token.name.startsWith('admin.'),
+  )
+  .map((token) => token.cssVariable)
+const adminShadowVariables = tokenManifest.tokens
+  .filter(
+    (token) =>
+      token.visibility === 'ui-internal' &&
+      token.type === 'shadow' &&
+      token.name.startsWith('admin.'),
+  )
+  .map((token) => token.cssVariable)
+const approvedSpacingPatterns = [
+  'var\\(--pavp-safe-area-(?:block|inline|bottom|left|right|top)[a-z-]*\\)',
+  'max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\)(?:\\s+max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\))?',
+  'var\\(--ui-space-[a-z-]+\\)\\s+max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\)',
+]
+const approvedDurationPatterns = ['calc\\(var\\(--ui-motion-duration\\) / 2\\)']
 const nonShorthandColorProperties =
   '/^(?:caret-color|fill|outline-color|stroke|text-decoration-color)$/'
 const borderShorthandProperties =
@@ -89,7 +113,7 @@ const cssColorWideValues = ['currentColor', 'currentcolor']
 const colorRulesWithoutExactAuthority = [rawColorFunction]
 const backgroundShorthandRules = [
   rawColorFunction,
-  disallowUnapprovedUiVariables(backgroundColorVariables),
+  disallowUnapprovedUiVariables([...backgroundColorVariables, ...adminColorVariables]),
 ]
 const borderShorthandRules = [rawColorFunction, disallowUnapprovedUiVariables(borderColorVariables)]
 const motionShorthandRules = [
@@ -114,23 +138,30 @@ const typographyAuthorities = {
 }
 const motionAuthorityRules = {
   [motionShorthandProperties]: motionShorthandRules,
-  [motionDurationProperties]: [disallowOutsideAuthorities(durationVariables)],
+  [motionDurationProperties]: [
+    disallowOutsideAuthorities(durationVariables, [], approvedDurationPatterns),
+  ],
   [motionEasingProperties]: [disallowOutsideAuthorities(easingVariables)],
   [transitionShorthandProperty]: transitionRules,
   [transitionAuthorityProperties]: transitionPropertyRules,
 }
 const visualAuthorityRules = {
   background: backgroundShorthandRules,
-  'background-color': colorAuthorityRules(backgroundColorVariables),
+  'background-color': colorAuthorityRules([...backgroundColorVariables, ...adminColorVariables]),
   [borderShorthandProperties]: borderShorthandRules,
   [borderColorProperties]: colorAuthorityRules(borderColorVariables),
   color: colorAuthorityRules(textColorVariables),
   [nonShorthandColorProperties]: colorRulesWithoutExactAuthority,
-  [spacingProperties]: [disallowOutsideAuthorities(spacingVariables, ['0', 'auto'])],
+  [spacingProperties]: [
+    disallowOutsideAuthorities(spacingVariables, ['0', 'auto'], approvedSpacingPatterns),
+  ],
   height: [disallowOutsideDimensionAuthorities(heightVariables)],
   'max-width': [disallowOutsideDimensionAuthorities(maxWidthVariables)],
   [radiusProperties]: [disallowOutsideAuthorities(radiusVariables, ['0'])],
-  'box-shadow': [rawColorFunction, disallowOutsideAuthorities(shadowVariables, ['none'])],
+  'box-shadow': [
+    rawColorFunction,
+    disallowOutsideAuthorities([...shadowVariables, ...adminShadowVariables], ['none']),
+  ],
   'text-shadow': [rawColorFunction, disallowOutsideAuthorities([], ['none'])],
   'z-index': [disallowOutsideAuthorities(zIndexVariables, ['auto'])],
   ...typographyAuthorities,
@@ -157,7 +188,7 @@ export default {
     'no-empty-source': true,
     'property-no-unknown': true,
     'property-disallowed-list': ['backdrop-filter', 'filter'],
-    'selector-pseudo-class-no-unknown': true,
+    'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }],
     'selector-pseudo-element-no-unknown': true,
     'unit-no-unknown': true,
   },

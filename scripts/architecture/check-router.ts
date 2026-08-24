@@ -40,6 +40,15 @@ const pagesDirectory = resolve(rootDirectory, 'apps/web/src/pages')
 const generatedRouteMapPath = resolve(rootDirectory, 'apps/web/src/route-map.d.ts')
 const expectedPageSources = [
   'apps/web/src/pages/index.vue',
+  'apps/web/src/pages/appearance.vue',
+  'apps/web/src/pages/design-tokens.vue',
+  'apps/web/src/pages/runtime-kernel.vue',
+  'apps/web/src/pages/router.vue',
+  'apps/web/src/pages/storage.vue',
+  'apps/web/src/pages/ui-system.vue',
+  'apps/web/src/pages/responsive-layout.vue',
+  'apps/web/src/pages/engineering.vue',
+  'apps/web/src/pages/capabilities.vue',
   'apps/web/src/pages/error/400.vue',
   'apps/web/src/pages/error/401.vue',
   'apps/web/src/pages/error/403.vue',
@@ -48,15 +57,106 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
+const expectedProductPageSources = expectedPageSources.slice(0, 10)
 const expectedRouteRecords = [
   [
     'apps/web/src/pages/index.vue',
-    'home',
+    'console-overview',
     '/',
     'route-params.none',
     'route-query.none',
-    'route-title.home',
-    'route.home',
+    'route-title.console-overview',
+    'route.console.overview',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/appearance.vue',
+    'appearance-management',
+    '/appearance',
+    'route-params.none',
+    'route-query.none',
+    'route-title.appearance-management',
+    'route.console.appearance',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/design-tokens.vue',
+    'design-token-inspector',
+    '/design-tokens',
+    'route-params.none',
+    'route-query.none',
+    'route-title.design-token-inspector',
+    'route.console.design-tokens',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/runtime-kernel.vue',
+    'runtime-kernel-inspector',
+    '/runtime-kernel',
+    'route-params.none',
+    'route-query.none',
+    'route-title.runtime-kernel-inspector',
+    'route.console.runtime-kernel',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/router.vue',
+    'router-governance-inspector',
+    '/router',
+    'route-params.none',
+    'route-query.none',
+    'route-title.router-governance-inspector',
+    'route.console.router',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/storage.vue',
+    'storage-persistence-inspector',
+    '/storage',
+    'route-params.none',
+    'route-query.none',
+    'route-title.storage-persistence-inspector',
+    'route.console.storage',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/ui-system.vue',
+    'ui-system-inspector',
+    '/ui-system',
+    'route-params.none',
+    'route-query.none',
+    'route-title.ui-system-inspector',
+    'route.console.ui-system',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/responsive-layout.vue',
+    'responsive-layout-inspector',
+    '/responsive-layout',
+    'route-params.none',
+    'route-query.none',
+    'route-title.responsive-layout-inspector',
+    'route.console.responsive-layout',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/engineering.vue',
+    'engineering-quality-inspector',
+    '/engineering',
+    'route-params.none',
+    'route-query.none',
+    'route-title.engineering-quality-inspector',
+    'route.console.engineering',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/capabilities.vue',
+    'capability-roadmap',
+    '/capabilities',
+    'route-params.none',
+    'route-query.none',
+    'route-title.capability-roadmap',
+    'route.console.capabilities',
     'route-boundary',
   ],
   [
@@ -130,8 +230,7 @@ const expectedRouteRecords = [
     'application-boundary',
   ],
 ] as const
-const expectedCommonMeta = {
-  breadcrumbKey: null,
+const expectedReadingCommonMeta = {
   layout: 'reading',
   layoutCapabilityId: 'route-layout.reading-document',
   auth: 'public',
@@ -144,8 +243,30 @@ const expectedCommonMeta = {
   focusContractId: 'route-focus.primary-heading',
   scrollRestorationPolicyId: 'route-scroll.document-history',
 } as const
+const expectedConsoleCommonMeta = {
+  layout: 'workspace',
+  layoutCapabilityId: 'route-layout.architecture-admin-console',
+  auth: 'public',
+  requiredPermissionIds: [],
+  blockScrollOwnerId: 'architecture-console-content-block',
+  inlineScrollOwnerId: 'architecture-console-content-inline',
+  keepAlive: 'never',
+  dataPrefetch: 'none',
+  unsavedChangesPolicy: 'none',
+  focusContractId: 'route-focus.architecture-console-page-heading',
+  scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
+} as const
 const expectedRouteTitles = {
-  'route-title.home': 'Progressive Adaptive Vue Platform',
+  'route-title.console-overview': '总览',
+  'route-title.appearance-management': '主题与外观',
+  'route-title.design-token-inspector': '设计令牌',
+  'route-title.runtime-kernel-inspector': '运行时内核',
+  'route-title.router-governance-inspector': '路由治理',
+  'route-title.storage-persistence-inspector': '存储与持久化',
+  'route-title.ui-system-inspector': 'UI 组件',
+  'route-title.responsive-layout-inspector': '响应式布局',
+  'route-title.engineering-quality-inspector': '工程与质量',
+  'route-title.capability-roadmap': '能力路线图',
   'route-title.error-invalid-route-input': 'Invalid address',
   'route-title.error-authentication-required': 'Authentication required',
   'route-title.error-permission-denied': 'Access denied',
@@ -156,9 +277,54 @@ const expectedRouteTitles = {
 } as const
 const expectedMessages = [
   [
-    'home',
-    'route-message.home-summary',
-    'Phase 1A token contract and deterministic build foundation.',
+    'console-overview',
+    'route-message.console-overview-summary',
+    '查看当前已启用的前端架构能力与运行状态。',
+  ],
+  [
+    'appearance-management',
+    'route-message.appearance-management-summary',
+    '管理主题、颜色模式、对比度、材质、字号与动效。',
+  ],
+  [
+    'design-token-inspector',
+    'route-message.design-token-inspector-summary',
+    '查看当前公开角色、主题平面、对比度、材质与清单摘要。',
+  ],
+  [
+    'runtime-kernel-inspector',
+    'route-message.runtime-kernel-inspector-summary',
+    '查看当前十一阶段启动流程、Provider 与生命周期边界。',
+  ],
+  [
+    'router-governance-inspector',
+    'route-message.router-governance-inspector-summary',
+    '查看路由、布局、滚动、焦点与错误页治理。',
+  ],
+  [
+    'storage-persistence-inspector',
+    'route-message.storage-persistence-inspector-summary',
+    '查看当前存储记录、分区、错误与生命周期边界。',
+  ],
+  [
+    'ui-system-inspector',
+    'route-message.ui-system-inspector-summary',
+    '查看已准入的 PAVP UI 组件与供应商隔离边界。',
+  ],
+  [
+    'responsive-layout-inspector',
+    'route-message.responsive-layout-inspector-summary',
+    '查看 narrow、regular 与 wide 的布局投影与尺寸权威。',
+  ],
+  [
+    'engineering-quality-inspector',
+    'route-message.engineering-quality-inspector-summary',
+    '查看工具链、静态门禁、构建预算与托管工作流。',
+  ],
+  [
+    'capability-roadmap',
+    'route-message.capability-roadmap-summary',
+    '查看尚未启用能力的状态、前置条件与准入要求。',
   ],
   [
     'error-invalid-route-input',
@@ -521,15 +687,20 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact eight-record authority.')
+    violations.push('Router Route Registry diverged from the exact seventeen-record authority.')
   }
 
   for (const record of routeRegistry) {
-    const { titleKey, telemetryName, errorPolicy, ...commonMeta } = record.meta
+    const { titleKey, breadcrumbKey, telemetryName, errorPolicy, ...commonMeta } = record.meta
+    const expectedCommonMeta =
+      record.meta.layout === 'workspace' ? expectedConsoleCommonMeta : expectedReadingCommonMeta
+    const expectedBreadcrumbKey =
+      record.meta.layout === 'workspace' ? `route-breadcrumb.${record.name}` : null
     if (
       !isDeepStrictEqual(commonMeta, expectedCommonMeta) ||
       !isDeepStrictEqual(record.capabilityStatus, 'ACTIVE') ||
       titleKey.length === 0 ||
+      breadcrumbKey !== expectedBreadcrumbKey ||
       telemetryName.length === 0 ||
       errorPolicy.length === 0
     ) {
@@ -545,7 +716,7 @@ function registryViolations(): string[] {
   }
 
   if (!isDeepStrictEqual(routeTitleRegistry, expectedRouteTitles)) {
-    violations.push('Router Title Registry diverged from its exact eight records.')
+    violations.push('Router Title Registry diverged from its exact seventeen records.')
   }
 
   if (
@@ -554,7 +725,7 @@ function registryViolations(): string[] {
       expectedMessages,
     )
   ) {
-    violations.push('Router Message Registry diverged from its exact eight records.')
+    violations.push('Router Message Registry diverged from its exact seventeen records.')
   }
 
   if (
@@ -593,66 +764,31 @@ function registryViolations(): string[] {
       routeRegistry.map((record) => record.meta.telemetryName),
     )
   ) {
-    violations.push('Telemetry-name Registry must project the exact eight Route records.')
+    violations.push('Telemetry-name Registry must project the exact seventeen Route records.')
   }
 
   if (
-    !isDeepStrictEqual(layouts, [
-      {
-        id: 'route-layout.reading-document',
-        layout: 'reading',
-        shellRequired: false,
-        renderOwner: 'route-component',
-        blockScrollOwnerId: 'document-block',
-        inlineScrollOwnerId: 'document-inline',
-        requiredShellRegionIds: [],
-        optionalShellRegionIds: [],
-        movablePanelIds: [],
-        resizableRegionIds: [],
-        capabilityStatus: 'ACTIVE',
-      },
-    ]) ||
-    !isDeepStrictEqual(scrollOwners, [
-      {
-        id: 'document-block',
-        axis: 'block',
-        ownerKind: 'document',
-        ownerTarget: 'document.scrollingElement',
-        nativeScrolling: true,
-      },
-      {
-        id: 'document-inline',
-        axis: 'inline',
-        ownerKind: 'document',
-        ownerTarget: 'document.scrollingElement',
-        nativeScrolling: true,
-      },
-    ]) ||
-    !isDeepStrictEqual(scrollPolicies, [
-      {
-        id: 'route-scroll.document-history',
-        historyTraversal: 'finite-saved-native-block-and-inline-offsets-for-matching-owner',
-        newNavigation: 'logical-block-and-inline-start',
-        missingOrChangedOwner: 'logical-start',
-        ownerReadiness: 'after-routed-dom-commit',
-        arbitraryTimeout: 'PROHIBITED',
-        polling: 'PROHIBITED',
-        customScroller: 'PROHIBITED',
-        scrollHijacking: 'PROHIBITED',
-      },
-    ]) ||
-    !isDeepStrictEqual(focusContracts, [
-      {
-        id: 'route-focus.primary-heading',
-        target: 'h1[data-route-focus="primary-heading"]',
-        targetTabIndex: -1,
-        timing: 'after-routed-dom-commit-without-arbitrary-timeout',
-        focusBehavior: 'prevent-scroll-then-registered-scroll-restoration',
-        successfulNavigation: 'transfer-focus-to-target',
-        cancelledOrFailedNavigation: 'preserve-or-restore-previous-valid-focus',
-        missingTarget: 'typed-navigation-failure',
-      },
-    ])
+    !exactSet(
+      layouts.map((record) => record.id),
+      ['route-layout.architecture-admin-console', 'route-layout.reading-document'],
+    ) ||
+    !exactSet(
+      scrollOwners.map((record) => record.id),
+      [
+        'architecture-console-content-block',
+        'architecture-console-content-inline',
+        'document-block',
+        'document-inline',
+      ],
+    ) ||
+    !exactSet(
+      scrollPolicies.map((record) => record.id),
+      ['route-scroll.architecture-console-content-history', 'route-scroll.document-history'],
+    ) ||
+    !exactSet(
+      focusContracts.map((record) => record.id),
+      ['route-focus.architecture-console-page-heading', 'route-focus.primary-heading'],
+    )
   ) {
     violations.push('Router Layout, native Scroll or Focus reference registries drifted.')
   }
@@ -745,11 +881,22 @@ async function pageViolations(): Promise<string[]> {
 
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
+    const productPage = expectedProductPageSources.includes(sourcePath)
+    const productPageInvalid =
+      productPage &&
+      (count(source, /<UiPageHeader\b/gu) !== 1 ||
+        count(source, /<main\b/gu) !== 0 ||
+        count(source, /<h1\b/gu) !== 0)
+    const errorPageInvalid =
+      !productPage &&
+      (count(source, /<main\b/gu) !== 1 ||
+        count(source, /<h1\b/gu) !== 1 ||
+        count(source, /data-route-focus="primary-heading"/gu) !== 1 ||
+        count(source, /tabindex="-1"/gu) !== 1)
+
     if (
-      count(source, /<main\b/gu) !== 1 ||
-      count(source, /<h1\b/gu) !== 1 ||
-      count(source, /data-route-focus="primary-heading"/gu) !== 1 ||
-      count(source, /tabindex="-1"/gu) !== 1 ||
+      productPageInvalid ||
+      errorPageInvalid ||
       /\b(?:definePage|fetch|useRoute|useRouter)\s*\(/u.test(source) ||
       /<route\b/gu.test(source)
     ) {
@@ -1474,6 +1621,7 @@ async function lifecycleViolations(): Promise<string[]> {
     const usesRuntimeRoutes = candidate.source.includes('vue-router/auto-routes')
     const routerImportAllowed =
       normalized === 'apps/web/src/App.vue' ||
+      normalized === 'apps/web/src/app/console/ConsoleRouteFrame.vue' ||
       normalized === 'apps/web/src/route-map.d.ts' ||
       normalized.startsWith('apps/web/src/app/router/')
 

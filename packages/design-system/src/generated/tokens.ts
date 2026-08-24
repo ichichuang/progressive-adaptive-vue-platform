@@ -16,7 +16,19 @@ export const tokens = {
   'interaction.motion.easing': 'var(--ui-motion-easing)',
   'interaction.radius.panel': 'var(--ui-radius-panel)',
   'interaction.shadow.panel': 'var(--ui-shadow-panel)',
+  'layout.admin.content.minimum-inline-size': 'var(--ui-layout-admin-content-minimum-inline-size)',
+  'layout.admin.drawer.maximum-inline-size': 'var(--ui-layout-admin-drawer-maximum-inline-size)',
+  'layout.admin.header.block-size': 'var(--ui-layout-admin-header-block-size)',
+  'layout.admin.sidebar.expanded-inline-size':
+    'var(--ui-layout-admin-sidebar-expanded-inline-size)',
+  'layout.admin.sidebar.rail-inline-size': 'var(--ui-layout-admin-sidebar-rail-inline-size)',
   'layout.content.max-width': 'var(--ui-layout-content-max-width)',
+  'layout.profile.regular.min-inline-size': 'var(--ui-layout-profile-regular-min-inline-size)',
+  'layout.profile.wide.min-inline-size': 'var(--ui-layout-profile-wide-min-inline-size)',
+  'layout.target.enhanced.minimum-block-size':
+    'var(--ui-layout-target-enhanced-minimum-block-size)',
+  'layout.target.enhanced.minimum-inline-size':
+    'var(--ui-layout-target-enhanced-minimum-inline-size)',
   'layout.z.base': 'var(--ui-z-base)',
   'layout.z.overlay': 'var(--ui-z-overlay)',
   'spacing.content.gap': 'var(--ui-space-content-gap)',

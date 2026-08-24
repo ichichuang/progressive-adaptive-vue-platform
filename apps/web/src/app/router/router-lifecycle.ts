@@ -27,6 +27,7 @@ import {
   getRouteRecord,
   routeRegistry,
   routeTitleRegistry,
+  scrollOwnerRegistry,
   type RouteName,
 } from './route-registry'
 import { routeParamsSchema, routeQuerySchema } from './route-schemas'
@@ -205,6 +206,10 @@ function finiteNativeScrollPosition(
   return Object.freeze({ left: 0, top: 0 })
 }
 
+function sameScrollOwnerTarget(left: string, right: string): boolean {
+  return left === right
+}
+
 export async function createAndReadyRouter(input: {
   readonly application: App
   readonly configuration: CoreRuntimeConfiguration
@@ -240,14 +245,21 @@ export async function createAndReadyRouter(input: {
       }
 
       const routeName = getRouteRecord(to.name).name
+      const routeRecord = getRouteRecord(routeName)
       const presentation = getRoutePresentation(routeName)
-      const focusContract = focusContractRegistry[0]
+      const focusContract = focusContractRegistry.find(
+        (contract) => contract.id === routeRecord.meta.focusContractId,
+      )
+
+      if (focusContract === undefined) {
+        throw new TypeError('The routed focus contract is unavailable.')
+      }
+
       const focusTargets = document.querySelectorAll<HTMLElement>(focusContract.target)
       const navigation = navigationAttempts.get(to)
 
       if (
         navigation?.routeName !== routeName ||
-        document.scrollingElement === null ||
         focusTargets.length !== 1 ||
         focusTargets[0]?.tagName !== 'H1' ||
         focusTargets[0].tabIndex !== focusContract.targetTabIndex
@@ -275,7 +287,49 @@ export async function createAndReadyRouter(input: {
         })
       }
 
-      return finiteNativeScrollPosition(savedPosition)
+      const scrollPosition = finiteNativeScrollPosition(savedPosition)
+      const blockOwner = scrollOwnerRegistry.find(
+        (owner) => owner.id === routeRecord.meta.blockScrollOwnerId,
+      )
+      const inlineOwner = scrollOwnerRegistry.find(
+        (owner) => owner.id === routeRecord.meta.inlineScrollOwnerId,
+      )
+
+      if (blockOwner === undefined || inlineOwner === undefined) {
+        throw new TypeError('The routed scroll owner is unavailable.')
+      }
+
+      if (blockOwner.ownerKind === 'document' && inlineOwner.ownerKind === 'document') {
+        if (document.scrollingElement === null) {
+          throw new TypeError('The document scroll owner is unavailable.')
+        }
+
+        return scrollPosition
+      }
+
+      if (
+        blockOwner.ownerKind !== 'region' ||
+        inlineOwner.ownerKind !== 'region' ||
+        !sameScrollOwnerTarget(blockOwner.ownerTarget, inlineOwner.ownerTarget)
+      ) {
+        throw new TypeError('The routed region scroll owner is inconsistent.')
+      }
+
+      const regionOwners = document.querySelectorAll<HTMLElement>(blockOwner.ownerTarget)
+
+      if (regionOwners.length !== 1) {
+        throw new TypeError('The routed region scroll owner is unavailable.')
+      }
+
+      const regionOwner = regionOwners[0]
+
+      if (regionOwner === undefined) {
+        throw new TypeError('The routed region scroll owner is unavailable.')
+      }
+
+      regionOwner.scrollLeft = scrollPosition.left
+      regionOwner.scrollTop = scrollPosition.top
+      return false
     },
   })
 

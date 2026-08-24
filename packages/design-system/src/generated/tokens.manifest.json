@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 7,
+  "schemaVersion": 8,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -12,6 +12,7 @@
     "primitive/radius.tokens.json",
     "primitive/typography.tokens.json",
     "primitive/z-index.tokens.json",
+    "semantic/admin-console.tokens.json",
     "semantic/color.tokens.json",
     "semantic/interaction.tokens.json",
     "semantic/layout.tokens.json",
@@ -41,21 +42,231 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 105,
-      "activePublicRoles": 27,
-      "unoCssMappings": 27,
+      "tokens": 137,
+      "activePublicRoles": 36,
+      "unoCssMappings": 36,
       "namedContrasts": 14,
       "alphaContracts": 1,
       "densities": 3,
       "themes": 3,
       "firstPaint": 1
     },
-    "recordCount": 181,
-    "baselineRecordCount": 174,
-    "expectedRecordCountDelta": 7,
+    "recordCount": 231,
+    "baselineRecordCount": 181,
+    "expectedRecordCountDelta": 50,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
+    {
+      "name": "admin.ambient.canvas",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.ambient.canvas"
+      },
+      "resolvedValue": "var(--ui-color-surface-page)",
+      "cssVariable": "--ui-admin-ambient-canvas"
+    },
+    {
+      "name": "admin.ambient.grid",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.ambient.grid"
+      },
+      "resolvedValue": "var(--ui-color-border-default)",
+      "cssVariable": "--ui-admin-ambient-grid"
+    },
+    {
+      "name": "admin.ambient.light-accent",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.ambient.light-accent"
+      },
+      "resolvedValue": "var(--ui-color-focus-ring)",
+      "cssVariable": "--ui-admin-ambient-light-accent"
+    },
+    {
+      "name": "admin.ambient.light-primary",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.ambient.light-primary"
+      },
+      "resolvedValue": "var(--ui-color-action-primary)",
+      "cssVariable": "--ui-admin-ambient-light-primary"
+    },
+    {
+      "name": "admin.ambient.light-warm",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.ambient.light-warm"
+      },
+      "resolvedValue": "var(--ui-color-text-secondary)",
+      "cssVariable": "--ui-admin-ambient-light-warm"
+    },
+    {
+      "name": "admin.border.subtle",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.border.subtle"
+      },
+      "resolvedValue": "var(--ui-color-border-default)",
+      "cssVariable": "--ui-admin-border-subtle"
+    },
+    {
+      "name": "admin.chrome.header",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.chrome.header"
+      },
+      "resolvedValue": "var(--ui-material-chrome-background)",
+      "cssVariable": "--ui-admin-chrome-header"
+    },
+    {
+      "name": "admin.chrome.sidebar",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.chrome.sidebar"
+      },
+      "resolvedValue": "var(--ui-material-chrome-background)",
+      "cssVariable": "--ui-admin-chrome-sidebar"
+    },
+    {
+      "name": "admin.navigation.hover",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.navigation.hover"
+      },
+      "resolvedValue": "var(--ui-color-surface-panel)",
+      "cssVariable": "--ui-admin-navigation-hover"
+    },
+    {
+      "name": "admin.navigation.selected",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.navigation.selected"
+      },
+      "resolvedValue": "var(--ui-color-action-primary)",
+      "cssVariable": "--ui-admin-navigation-selected"
+    },
+    {
+      "name": "admin.shadow.chrome",
+      "type": "shadow",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.shadow.chrome"
+      },
+      "resolvedValue": "var(--ui-shadow-panel)",
+      "cssVariable": "--ui-admin-shadow-chrome"
+    },
+    {
+      "name": "admin.shadow.overlay",
+      "type": "shadow",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.shadow.overlay"
+      },
+      "resolvedValue": "var(--ui-shadow-panel)",
+      "cssVariable": "--ui-admin-shadow-overlay"
+    },
+    {
+      "name": "admin.surface.content",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.surface.content"
+      },
+      "resolvedValue": "var(--ui-color-surface-panel)",
+      "cssVariable": "--ui-admin-surface-content"
+    },
+    {
+      "name": "admin.surface.overlay",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.surface.overlay"
+      },
+      "resolvedValue": "var(--ui-material-overlay-background)",
+      "cssVariable": "--ui-admin-surface-overlay"
+    },
+    {
+      "name": "admin.surface.settings",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.surface.settings"
+      },
+      "resolvedValue": "var(--ui-color-surface-panel)",
+      "cssVariable": "--ui-admin-surface-settings"
+    },
     {
       "name": "color.action.primary",
       "type": "color",
@@ -790,6 +1001,71 @@
       "resolvedValue": "2rem"
     },
     {
+      "name": "dimension.layout.admin-content-min-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.admin-content-min-inline"
+      },
+      "resolvedValue": "20rem"
+    },
+    {
+      "name": "dimension.layout.admin-drawer-max-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.admin-drawer-max-inline"
+      },
+      "resolvedValue": "20rem"
+    },
+    {
+      "name": "dimension.layout.admin-header-block",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.admin-header-block"
+      },
+      "resolvedValue": "3.5rem"
+    },
+    {
+      "name": "dimension.layout.admin-sidebar-expanded-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.admin-sidebar-expanded-inline"
+      },
+      "resolvedValue": "16rem"
+    },
+    {
+      "name": "dimension.layout.admin-sidebar-rail-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.admin-sidebar-rail-inline"
+      },
+      "resolvedValue": "4rem"
+    },
+    {
       "name": "dimension.layout.content-max",
       "type": "dimension",
       "tier": "primitive",
@@ -801,6 +1077,32 @@
         "name": "dimension.layout.content-max"
       },
       "resolvedValue": "72rem"
+    },
+    {
+      "name": "dimension.layout.profile-regular-min-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.profile-regular-min-inline"
+      },
+      "resolvedValue": "48rem"
+    },
+    {
+      "name": "dimension.layout.profile-wide-min-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.layout.profile-wide-min-inline"
+      },
+      "resolvedValue": "80rem"
     },
     {
       "name": "dimension.space.0",
@@ -879,6 +1181,19 @@
         "name": "dimension.space.8"
       },
       "resolvedValue": "2rem"
+    },
+    {
+      "name": "dimension.target.enhanced-min",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.target.enhanced-min"
+      },
+      "resolvedValue": "44px"
     },
     {
       "name": "elevation.panel",
@@ -1055,6 +1370,76 @@
       "cssVariable": "--ui-shadow-panel"
     },
     {
+      "name": "layout.admin.content.minimum-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.admin.content.minimum-inline-size"
+      },
+      "resolvedValue": "20rem",
+      "cssVariable": "--ui-layout-admin-content-minimum-inline-size"
+    },
+    {
+      "name": "layout.admin.drawer.maximum-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.admin.drawer.maximum-inline-size"
+      },
+      "resolvedValue": "20rem",
+      "cssVariable": "--ui-layout-admin-drawer-maximum-inline-size"
+    },
+    {
+      "name": "layout.admin.header.block-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.admin.header.block-size"
+      },
+      "resolvedValue": "3.5rem",
+      "cssVariable": "--ui-layout-admin-header-block-size"
+    },
+    {
+      "name": "layout.admin.sidebar.expanded-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.admin.sidebar.expanded-inline-size"
+      },
+      "resolvedValue": "16rem",
+      "cssVariable": "--ui-layout-admin-sidebar-expanded-inline-size"
+    },
+    {
+      "name": "layout.admin.sidebar.rail-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.admin.sidebar.rail-inline-size"
+      },
+      "resolvedValue": "4rem",
+      "cssVariable": "--ui-layout-admin-sidebar-rail-inline-size"
+    },
+    {
       "name": "layout.content.max-width",
       "type": "dimension",
       "tier": "semantic",
@@ -1067,6 +1452,62 @@
       },
       "resolvedValue": "72rem",
       "cssVariable": "--ui-layout-content-max-width"
+    },
+    {
+      "name": "layout.profile.regular.min-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.profile.regular.min-inline-size"
+      },
+      "resolvedValue": "48rem",
+      "cssVariable": "--ui-layout-profile-regular-min-inline-size"
+    },
+    {
+      "name": "layout.profile.wide.min-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.profile.wide.min-inline-size"
+      },
+      "resolvedValue": "80rem",
+      "cssVariable": "--ui-layout-profile-wide-min-inline-size"
+    },
+    {
+      "name": "layout.target.enhanced.minimum-block-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.target.enhanced.minimum-block-size"
+      },
+      "resolvedValue": "44px",
+      "cssVariable": "--ui-layout-target-enhanced-minimum-block-size"
+    },
+    {
+      "name": "layout.target.enhanced.minimum-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.target.enhanced.minimum-inline-size"
+      },
+      "resolvedValue": "44px",
+      "cssVariable": "--ui-layout-target-enhanced-minimum-inline-size"
     },
     {
       "name": "layout.z.base",
@@ -1799,6 +2240,96 @@
       }
     },
     {
+      "id": "layout.admin.content.minimum-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-admin-content-minimum-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "content-size",
+        "key": "admin-content",
+        "classes": ["min-w-admin-content"],
+        "allowedCssProperties": ["min-width"]
+      }
+    },
+    {
+      "id": "layout.admin.drawer.maximum-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-admin-drawer-maximum-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "shell-size",
+        "key": "admin-drawer",
+        "classes": ["max-w-admin-drawer"],
+        "allowedCssProperties": ["max-width"]
+      }
+    },
+    {
+      "id": "layout.admin.header.block-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-admin-header-block-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "shell-size",
+        "key": "admin-header",
+        "classes": ["h-admin-header"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "layout.admin.sidebar.expanded-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-admin-sidebar-expanded-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "shell-size",
+        "key": "admin-sidebar-expanded",
+        "classes": ["w-admin-sidebar-expanded"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
+      "id": "layout.admin.sidebar.rail-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-admin-sidebar-rail-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "shell-size",
+        "key": "admin-sidebar-rail",
+        "classes": ["w-admin-sidebar-rail"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
       "id": "layout.content.max-width",
       "tokenType": "dimension",
       "category": "layout",
@@ -1814,6 +2345,100 @@
         "key": "content",
         "classes": ["max-w-content"],
         "allowedCssProperties": ["max-width"]
+      }
+    },
+    {
+      "id": "layout.profile.regular.min-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-profile-regular-min-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "container-variant",
+        "family": "layout-profile",
+        "key": "regular-min-inline-size",
+        "containerName": "pavp-admin-shell",
+        "containerType": "inline-size",
+        "measurementAxis": "inline",
+        "boundaryContributions": [
+          {
+            "variantName": "layout-narrow",
+            "edge": "maximum-exclusive"
+          },
+          {
+            "variantName": "layout-regular",
+            "edge": "minimum-inclusive"
+          }
+        ]
+      }
+    },
+    {
+      "id": "layout.profile.wide.min-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-profile-wide-min-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "container-variant",
+        "family": "layout-profile",
+        "key": "wide-min-inline-size",
+        "containerName": "pavp-admin-shell",
+        "containerType": "inline-size",
+        "measurementAxis": "inline",
+        "boundaryContributions": [
+          {
+            "variantName": "layout-regular",
+            "edge": "maximum-exclusive"
+          },
+          {
+            "variantName": "layout-wide",
+            "edge": "minimum-inclusive"
+          }
+        ]
+      }
+    },
+    {
+      "id": "layout.target.enhanced.minimum-block-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-target-enhanced-minimum-block-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "minimum-target",
+        "key": "target-enhanced",
+        "classes": ["min-h-target-enhanced"],
+        "allowedCssProperties": ["min-height"]
+      }
+    },
+    {
+      "id": "layout.target.enhanced.minimum-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-target-enhanced-minimum-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "minimum-target",
+        "key": "target-enhanced",
+        "classes": ["min-w-target-enhanced"],
+        "allowedCssProperties": ["min-width"]
       }
     },
     {
@@ -2161,6 +2786,51 @@
       "allowedCssProperties": ["--un-shadow", "box-shadow"]
     },
     {
+      "roleId": "layout.admin.content.minimum-inline-size",
+      "cssVariable": "--ui-layout-admin-content-minimum-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "content-size",
+      "key": "admin-content",
+      "classes": ["min-w-admin-content"],
+      "allowedCssProperties": ["min-width"]
+    },
+    {
+      "roleId": "layout.admin.drawer.maximum-inline-size",
+      "cssVariable": "--ui-layout-admin-drawer-maximum-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "shell-size",
+      "key": "admin-drawer",
+      "classes": ["max-w-admin-drawer"],
+      "allowedCssProperties": ["max-width"]
+    },
+    {
+      "roleId": "layout.admin.header.block-size",
+      "cssVariable": "--ui-layout-admin-header-block-size",
+      "generatorKind": "exact-rule",
+      "family": "shell-size",
+      "key": "admin-header",
+      "classes": ["h-admin-header"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "layout.admin.sidebar.expanded-inline-size",
+      "cssVariable": "--ui-layout-admin-sidebar-expanded-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "shell-size",
+      "key": "admin-sidebar-expanded",
+      "classes": ["w-admin-sidebar-expanded"],
+      "allowedCssProperties": ["width"]
+    },
+    {
+      "roleId": "layout.admin.sidebar.rail-inline-size",
+      "cssVariable": "--ui-layout-admin-sidebar-rail-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "shell-size",
+      "key": "admin-sidebar-rail",
+      "classes": ["w-admin-sidebar-rail"],
+      "allowedCssProperties": ["width"]
+    },
+    {
       "roleId": "layout.content.max-width",
       "cssVariable": "--ui-layout-content-max-width",
       "generatorKind": "exact-rule",
@@ -2168,6 +2838,64 @@
       "key": "content",
       "classes": ["max-w-content"],
       "allowedCssProperties": ["max-width"]
+    },
+    {
+      "roleId": "layout.profile.regular.min-inline-size",
+      "cssVariable": "--ui-layout-profile-regular-min-inline-size",
+      "generatorKind": "container-variant",
+      "family": "layout-profile",
+      "key": "regular-min-inline-size",
+      "containerName": "pavp-admin-shell",
+      "containerType": "inline-size",
+      "measurementAxis": "inline",
+      "boundaryContributions": [
+        {
+          "variantName": "layout-narrow",
+          "edge": "maximum-exclusive"
+        },
+        {
+          "variantName": "layout-regular",
+          "edge": "minimum-inclusive"
+        }
+      ]
+    },
+    {
+      "roleId": "layout.profile.wide.min-inline-size",
+      "cssVariable": "--ui-layout-profile-wide-min-inline-size",
+      "generatorKind": "container-variant",
+      "family": "layout-profile",
+      "key": "wide-min-inline-size",
+      "containerName": "pavp-admin-shell",
+      "containerType": "inline-size",
+      "measurementAxis": "inline",
+      "boundaryContributions": [
+        {
+          "variantName": "layout-regular",
+          "edge": "maximum-exclusive"
+        },
+        {
+          "variantName": "layout-wide",
+          "edge": "minimum-inclusive"
+        }
+      ]
+    },
+    {
+      "roleId": "layout.target.enhanced.minimum-block-size",
+      "cssVariable": "--ui-layout-target-enhanced-minimum-block-size",
+      "generatorKind": "exact-rule",
+      "family": "minimum-target",
+      "key": "target-enhanced",
+      "classes": ["min-h-target-enhanced"],
+      "allowedCssProperties": ["min-height"]
+    },
+    {
+      "roleId": "layout.target.enhanced.minimum-inline-size",
+      "cssVariable": "--ui-layout-target-enhanced-minimum-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "minimum-target",
+      "key": "target-enhanced",
+      "classes": ["min-w-target-enhanced"],
+      "allowedCssProperties": ["min-width"]
     },
     {
       "roleId": "layout.z.base",

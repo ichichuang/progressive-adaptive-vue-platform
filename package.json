@@ -22,7 +22,7 @@
     "lint:uno": "eslint \"apps/web/src/**/*.{ts,vue}\" --max-warnings 0",
     "typecheck": "pnpm typecheck:vue && pnpm typecheck:ts",
     "typecheck:vue": "vue-tsc --project apps/web/tsconfig.json --noEmit",
-    "typecheck:ts": "tsc --project tsconfig.node.json && tsc --project packages/design-system/tsconfig.json && tsc --project packages/ui/tsconfig.json",
+    "typecheck:ts": "tsc --project tsconfig.node.json && tsc --project packages/design-system/tsconfig.json && vue-tsc --project packages/ui/tsconfig.json --noEmit",
     "check:arch": "tsx scripts/architecture/check-boundaries.ts",
     "schema:check": "tsx scripts/verify/check-project-config.ts && pnpm tokens:schema",
     "check:policy": "tsx scripts/verify/check-repository-policy.ts",

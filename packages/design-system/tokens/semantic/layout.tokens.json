@@ -1,9 +1,65 @@
 {
   "layout": {
+    "admin": {
+      "content": {
+        "minimum-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.admin-content-min-inline}"
+        }
+      },
+      "drawer": {
+        "maximum-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.admin-drawer-max-inline}"
+        }
+      },
+      "header": {
+        "block-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.admin-header-block}"
+        }
+      },
+      "sidebar": {
+        "expanded-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.admin-sidebar-expanded-inline}"
+        },
+        "rail-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.admin-sidebar-rail-inline}"
+        }
+      }
+    },
     "content": {
       "max-width": {
         "$type": "dimension",
         "$value": "{dimension.layout.content-max}"
+      }
+    },
+    "profile": {
+      "regular": {
+        "min-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.profile-regular-min-inline}"
+        }
+      },
+      "wide": {
+        "min-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.layout.profile-wide-min-inline}"
+        }
+      }
+    },
+    "target": {
+      "enhanced": {
+        "minimum-block-size": {
+          "$type": "dimension",
+          "$value": "{dimension.target.enhanced-min}"
+        },
+        "minimum-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.target.enhanced-min}"
+        }
       }
     },
     "z": {

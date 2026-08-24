@@ -68,11 +68,69 @@
       }
     },
     "layout": {
+      "admin-content-min-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "rem"
+        }
+      },
+      "admin-drawer-max-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 20,
+          "unit": "rem"
+        }
+      },
+      "admin-header-block": {
+        "$type": "dimension",
+        "$value": {
+          "value": 3.5,
+          "unit": "rem"
+        }
+      },
+      "admin-sidebar-expanded-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "rem"
+        }
+      },
+      "admin-sidebar-rail-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 4,
+          "unit": "rem"
+        }
+      },
       "content-max": {
         "$type": "dimension",
         "$value": {
           "value": 72,
           "unit": "rem"
+        }
+      },
+      "profile-regular-min-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 48,
+          "unit": "rem"
+        }
+      },
+      "profile-wide-min-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 80,
+          "unit": "rem"
+        }
+      }
+    },
+    "target": {
+      "enhanced-min": {
+        "$type": "dimension",
+        "$value": {
+          "value": 44,
+          "unit": "px"
         }
       }
     }
