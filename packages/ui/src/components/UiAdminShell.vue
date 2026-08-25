@@ -11,7 +11,7 @@ import type { UiAdminNavigationGroup } from './contracts'
 
 defineOptions({ name: 'UiAdminShell' })
 
-defineProps<{
+const props = defineProps<{
   readonly activeRouteName: string
   readonly navigation: readonly UiAdminNavigationGroup[]
 }>()
@@ -23,6 +23,28 @@ const emit = defineEmits<{
 defineSlots<{
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
+
+const navigationIconClasses = [
+  'i-lucide-layout-dashboard',
+  'i-lucide-palette',
+  'i-lucide-swatch-book',
+  'i-lucide-cpu',
+  'i-lucide-route',
+  'i-lucide-database',
+  'i-lucide-component',
+  'i-lucide-panels-top-left',
+  'i-lucide-workflow',
+  'i-lucide-map',
+] as const
+type NavigationIconClass = (typeof navigationIconClasses)[number]
+
+function resolveNavigationIconClass(iconClass: string): NavigationIconClass {
+  if (!navigationIconClasses.includes(iconClass as NavigationIconClass)) {
+    throw new TypeError(`${iconClass}: Admin Shell navigation icon is not admitted.`)
+  }
+
+  return iconClass as NavigationIconClass
+}
 
 function layoutRecord(id: string): LayoutRegistryRecord {
   const record = layoutRegistry.records.find((candidate) => candidate.id === id)
@@ -66,7 +88,14 @@ function openNavigation(): void {
 }
 
 function navigate(routeName: string): void {
-  closeNavigation()
+  if (profile.value === 'narrow' && navigationOpen.value) {
+    closeNavigation()
+  }
+
+  if (routeName === props.activeRouteName) {
+    return
+  }
+
   emit('navigate', routeName)
 }
 
@@ -181,7 +210,6 @@ watch(navigationOpen, async (isOpen) => {
         <span class="pavp-admin-shell__eyebrow">PAVP</span>
         <strong>架构管理台</strong>
       </div>
-      <span class="pavp-admin-shell__profile">{{ profile }}</span>
     </header>
 
     <div class="pavp-admin-shell__layout">
@@ -221,7 +249,11 @@ watch(navigationOpen, async (isOpen) => {
                 type="button"
                 @click="navigate(item.routeName)"
               >
-                <span aria-hidden="true">{{ item.glyph }}</span>
+                <span
+                  :class="resolveNavigationIconClass(item.iconClass)"
+                  aria-hidden="true"
+                  class="pavp-admin-shell__navigation-icon"
+                />
                 <span v-if="profile === 'wide'">{{ item.label }}</span>
               </button>
               <span
@@ -244,7 +276,7 @@ watch(navigationOpen, async (isOpen) => {
         data-shell-region="architecture-console-content"
         :inert="profile === 'narrow' && navigationOpen"
       >
-        <div class="pavp-admin-shell__content-inner max-w-content">
+        <div class="pavp-admin-shell__content-inner">
           <slot />
         </div>
       </main>
@@ -295,7 +327,11 @@ watch(navigationOpen, async (isOpen) => {
                 @click="navigate(item.routeName)"
                 @keydown="handleDrawerKeydown"
               >
-                <span aria-hidden="true">{{ item.glyph }}</span>
+                <span
+                  :class="resolveNavigationIconClass(item.iconClass)"
+                  aria-hidden="true"
+                  class="pavp-admin-shell__navigation-icon"
+                />
                 <span>{{ item.label }}</span>
               </button>
             </div>
@@ -372,7 +408,7 @@ watch(navigationOpen, async (isOpen) => {
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
   color: var(--ui-color-text-primary);
-  background: var(--ui-admin-chrome-header);
+  background: var(--ui-material-chrome-background);
   box-shadow: var(--ui-admin-shadow-chrome);
 }
 
@@ -382,14 +418,9 @@ watch(navigationOpen, async (isOpen) => {
   gap: var(--ui-space-content-gap);
 }
 
-.pavp-admin-shell__eyebrow,
-.pavp-admin-shell__profile {
+.pavp-admin-shell__eyebrow {
   color: var(--ui-color-text-primary);
   font-weight: var(--ui-font-weight-title);
-}
-
-.pavp-admin-shell__profile {
-  color: var(--ui-color-text-secondary);
 }
 
 .pavp-admin-shell__layout {
@@ -400,10 +431,12 @@ watch(navigationOpen, async (isOpen) => {
 }
 
 .pavp-admin-shell__sidebar {
+  position: relative;
+  z-index: var(--ui-z-overlay);
   flex: 0 0 auto;
   block-size: 100%;
-  overflow: hidden;
-  background: var(--ui-admin-chrome-sidebar);
+  overflow: visible;
+  background: var(--ui-material-chrome-background);
   box-shadow: var(--ui-admin-shadow-chrome);
   transition-duration: var(--ui-motion-duration);
   transition-property: inline-size;
@@ -459,15 +492,22 @@ watch(navigationOpen, async (isOpen) => {
   background: transparent;
   cursor: pointer;
   transition-duration: var(--ui-motion-duration);
-  transition-property: color, background-color, box-shadow;
+  transition-property: color, background-color, box-shadow, transform;
   transition-timing-function: var(--ui-motion-easing);
 }
 
 .pavp-admin-shell__navigation-action {
+  position: relative;
   justify-content: start;
   inline-size: 100%;
   padding-inline: var(--ui-space-page-inline);
   text-align: start;
+}
+
+.pavp-admin-shell__navigation-icon {
+  flex: 0 0 auto;
+  block-size: var(--ui-font-size-body);
+  inline-size: var(--ui-font-size-body);
 }
 
 .pavp-admin-shell__rail .pavp-admin-shell__navigation-action {
@@ -481,6 +521,11 @@ watch(navigationOpen, async (isOpen) => {
   background: var(--ui-admin-navigation-hover);
 }
 
+.pavp-admin-shell__action:active,
+.pavp-admin-shell__navigation-action:active {
+  transform: translateY(calc(var(--ui-space-content-gap) / 4));
+}
+
 .pavp-admin-shell__action:focus-visible,
 .pavp-admin-shell__navigation-action:focus-visible {
   box-shadow: var(--ui-shadow-panel);
@@ -488,8 +533,28 @@ watch(navigationOpen, async (isOpen) => {
 }
 
 .pavp-admin-shell__navigation-action[aria-current='page'] {
-  color: var(--ui-color-text-on-action);
+  color: var(--ui-color-text-primary);
+  background: var(--ui-material-overlay-background);
+}
+
+.pavp-admin-shell__navigation-action::before {
+  position: absolute;
+  block-size: calc(100% - var(--ui-space-content-gap));
+  inline-size: calc(var(--ui-space-content-gap) / 2);
+  border-radius: var(--ui-radius-panel);
   background: var(--ui-admin-navigation-selected);
+  content: '';
+  inset-block-start: calc(var(--ui-space-content-gap) / 2);
+  inset-inline-start: 0;
+  transform: scaleY(0);
+  transform-origin: center;
+  transition-duration: var(--ui-motion-duration);
+  transition-property: transform;
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+.pavp-admin-shell__navigation-action[aria-current='page']::before {
+  transform: scaleY(1);
 }
 
 .pavp-admin-shell__rail-tooltip {
@@ -502,18 +567,20 @@ watch(navigationOpen, async (isOpen) => {
   padding: var(--ui-space-content-gap);
   border-radius: var(--ui-radius-panel);
   color: var(--ui-color-text-primary);
-  background: var(--ui-admin-surface-overlay);
+  background: var(--ui-material-overlay-background);
   box-shadow: var(--ui-admin-shadow-overlay);
   white-space: nowrap;
 }
 
-.pavp-admin-shell__navigation-item:hover .pavp-admin-shell__rail-tooltip,
-.pavp-admin-shell__navigation-item:focus-within .pavp-admin-shell__rail-tooltip {
+:where(.pavp-admin-shell__navigation-item:hover, .pavp-admin-shell__navigation-item:focus-within)
+  .pavp-admin-shell__rail-tooltip {
   display: block;
 }
 
 .pavp-admin-shell__content {
   position: relative;
+  flex: 1 1 auto;
+  inline-size: 100%;
   overflow: auto;
   overscroll-behavior: contain;
   padding-block: var(--ui-space-section-block)
@@ -526,7 +593,7 @@ watch(navigationOpen, async (isOpen) => {
 .pavp-admin-shell__content-inner {
   display: grid;
   gap: var(--ui-space-section-block);
-  margin-inline: auto;
+  inline-size: 100%;
 }
 
 .pavp-admin-shell__drawer-navigation {
@@ -539,7 +606,7 @@ watch(navigationOpen, async (isOpen) => {
     max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
-  background: var(--ui-admin-surface-overlay);
+  background: var(--ui-material-overlay-background);
   box-shadow: var(--ui-admin-shadow-overlay);
 }
 
@@ -561,6 +628,36 @@ watch(navigationOpen, async (isOpen) => {
   align-items: center;
   justify-content: space-between;
   gap: var(--ui-space-content-gap);
+}
+
+:global(html[data-material='adaptive']) .pavp-admin-shell__header,
+:global(html[data-material='adaptive']) .pavp-admin-shell__sidebar,
+:global(html[data-material='adaptive']) .pavp-admin-shell__navigation-action[aria-current='page'],
+:global(html[data-material='adaptive']) .pavp-admin-shell__rail-tooltip,
+:global(html[data-material='adaptive']) .pavp-admin-shell__drawer-navigation {
+  -webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
+  backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
+}
+
+:global(html[data-material='reduced']) .pavp-admin-shell__header,
+:global(html[data-material='reduced']) .pavp-admin-shell__sidebar,
+:global(html[data-material='reduced']) .pavp-admin-shell__navigation-action[aria-current='page'],
+:global(html[data-material='reduced']) .pavp-admin-shell__rail-tooltip,
+:global(html[data-material='reduced']) .pavp-admin-shell__drawer-navigation,
+:global(html[data-material='solid']) .pavp-admin-shell__header,
+:global(html[data-material='solid']) .pavp-admin-shell__sidebar,
+:global(html[data-material='solid']) .pavp-admin-shell__navigation-action[aria-current='page'],
+:global(html[data-material='solid']) .pavp-admin-shell__rail-tooltip,
+:global(html[data-material='solid']) .pavp-admin-shell__drawer-navigation {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+:global(html[data-material='reduced']) .pavp-admin-shell__header,
+:global(html[data-material='reduced']) .pavp-admin-shell__sidebar,
+:global(html[data-material='reduced']) .pavp-admin-shell__rail-tooltip,
+:global(html[data-material='reduced']) .pavp-admin-shell__drawer-navigation {
+  box-shadow: none;
 }
 
 .pavp-admin-drawer-enter-active,
@@ -591,8 +688,26 @@ watch(navigationOpen, async (isOpen) => {
 }
 
 :global(html[data-motion='reduced']) .pavp-admin-drawer-enter-active,
-:global(html[data-motion='reduced']) .pavp-admin-drawer-leave-active {
+:global(html[data-motion='reduced']) .pavp-admin-drawer-leave-active,
+:global(html[data-motion='reduced']) .pavp-admin-shell__sidebar,
+:global(html[data-motion='reduced']) .pavp-admin-shell__action,
+:global(html[data-motion='reduced']) .pavp-admin-shell__navigation-action,
+:global(html[data-motion='reduced']) .pavp-admin-shell__navigation-action::before {
   transition-duration: calc(var(--ui-motion-duration) / 2);
+}
+
+:global(html[data-motion='none']) .pavp-admin-drawer-enter-active,
+:global(html[data-motion='none']) .pavp-admin-drawer-leave-active,
+:global(html[data-motion='none']) .pavp-admin-shell__sidebar,
+:global(html[data-motion='none']) .pavp-admin-shell__action,
+:global(html[data-motion='none']) .pavp-admin-shell__navigation-action,
+:global(html[data-motion='none']) .pavp-admin-shell__navigation-action::before {
+  transition: none;
+}
+
+:global(html[data-motion='reduced']) .pavp-admin-shell__action:active,
+:global(html[data-motion='reduced']) .pavp-admin-shell__navigation-action:active {
+  transform: translateY(calc(var(--ui-space-content-gap) / 8));
 }
 
 :global(html[data-motion='reduced']) .pavp-admin-drawer-enter-from,
@@ -600,9 +715,9 @@ watch(navigationOpen, async (isOpen) => {
   transform: translateX(calc(var(--ui-space-content-gap) * -1));
 }
 
-:global(html[data-motion='none']) .pavp-admin-drawer-enter-active,
-:global(html[data-motion='none']) .pavp-admin-drawer-leave-active {
-  transition: none;
+:global(html[data-motion='none']) .pavp-admin-shell__action:active,
+:global(html[data-motion='none']) .pavp-admin-shell__navigation-action:active {
+  transform: none;
 }
 
 @media (forced-colors: active) {
@@ -614,6 +729,15 @@ watch(navigationOpen, async (isOpen) => {
 @media (prefers-reduced-transparency: reduce) {
   .pavp-admin-shell::before {
     opacity: 0;
+  }
+
+  .pavp-admin-shell__header,
+  .pavp-admin-shell__sidebar,
+  .pavp-admin-shell__navigation-action[aria-current='page'],
+  .pavp-admin-shell__rail-tooltip,
+  .pavp-admin-shell__drawer-navigation {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }
 </style>

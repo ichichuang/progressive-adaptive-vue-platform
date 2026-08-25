@@ -18,7 +18,7 @@ export const ProductPreferenceDefault = freezeProductPreferenceDefault(
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
-        themeId: 'neutral',
+        themeId: 'iris',
       },
       contrast: 'standard',
       material: 'adaptive',

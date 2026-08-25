@@ -3,7 +3,15 @@ import { z } from 'zod'
 
 import { tokenReferenceSchema } from './token.schema'
 
-export const builtInThemeIds = ['neutral', 'ocean', 'warm'] as const
+export const builtInThemeIds = [
+  'amber',
+  'cobalt',
+  'coral',
+  'graphite',
+  'iris',
+  'jade',
+  'lagoon',
+] as const
 export const completeThemeSchemaVersion = 3 as const
 export const completeThemeRoleContractVersion = 1 as const
 export const builtInThemeIdSchema = z.enum(builtInThemeIds)
@@ -100,17 +108,6 @@ function planeSchema(roleMapSchema: typeof authoredColorRoleMapSchema) {
   })
 }
 
-const neutralPlanesSchema = z.strictObject({
-  light: z.strictObject({
-    standard: absoluteColorRoleMapSchema,
-    enhanced: absoluteColorRoleMapSchema,
-  }),
-  dark: z.strictObject({
-    standard: absoluteColorRoleMapSchema,
-    enhanced: absoluteColorRoleMapSchema,
-  }),
-})
-
 const nonNeutralPlanesSchema = z.strictObject({
   light: planeSchema(authoredColorRoleMapSchema),
   dark: planeSchema(authoredColorRoleMapSchema),
@@ -133,18 +130,11 @@ const completeThemeContractShape = {
   label: z.string().min(1),
 }
 
-export const completeBuiltInThemeDefinitionSchema = z.discriminatedUnion('id', [
-  z.strictObject({
-    ...completeThemeContractShape,
-    id: z.literal('neutral'),
-    planes: neutralPlanesSchema,
-  }),
-  z.strictObject({
-    ...completeThemeContractShape,
-    id: z.enum(['ocean', 'warm']),
-    planes: nonNeutralPlanesSchema,
-  }),
-])
+export const completeBuiltInThemeDefinitionSchema = z.strictObject({
+  ...completeThemeContractShape,
+  id: builtInThemeIdSchema,
+  planes: nonNeutralPlanesSchema,
+})
 
 export const customThemeDefinitionSchema = z.strictObject({
   ...completeThemeContractShape,

@@ -10,8 +10,8 @@ export interface DesignSystemConsoleProjection {
   readonly planeIds: readonly string[]
   readonly contrastValues: readonly string[]
   readonly materialValues: readonly string[]
-  readonly manifestSchemaVersion: 8
-  readonly manifestRecordCount: 231
+  readonly manifestSchemaVersion: 9
+  readonly manifestRecordCount: 243
 }
 
 const firstTheme = tokenManifest.themes[0]
@@ -30,8 +30,8 @@ const publicColorRoleCount = tokenManifest.activePublicRoles.filter(
 if (
   tokenManifest.activePublicRoles.length !== 36 ||
   publicColorRoleCount !== 9 ||
-  tokenManifest.schemaVersion !== 8 ||
-  tokenManifest.governance.recordCount !== 231
+  tokenManifest.schemaVersion !== 9 ||
+  tokenManifest.governance.recordCount !== 243
 ) {
   throw new TypeError('The Design System Console projection source is incomplete.')
 }

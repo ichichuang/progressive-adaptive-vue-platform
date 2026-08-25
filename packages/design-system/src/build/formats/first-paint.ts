@@ -14,7 +14,10 @@ import {
   motionPreferenceValues,
   uiDensityValues,
 } from '../../schema/appearance.schema'
-import { legacySeedThemeIdPattern } from '../../schema/legacy-seed-theme.schema'
+import {
+  legacyBuiltInThemeIds,
+  legacySeedThemeIdPattern,
+} from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import {
@@ -30,7 +33,7 @@ export const preInitializationSafetyBaseline = {
   effectiveColorMode: 'light',
   effectiveTheme: {
     registryKind: 'built-in',
-    themeId: 'neutral',
+    themeId: 'iris',
   },
   effectiveContrast: 'standard',
   effectiveMaterial: 'solid',
@@ -176,6 +179,8 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   var fontScales = ${javascriptLiteral(fontScaleValues)}
   var motions = ${javascriptLiteral(motionPreferenceValues)}
   var builtInThemeIds = ${javascriptLiteral(registry.builtInRegistryOrder)}
+  var retiredBuiltInThemeIds = ${javascriptLiteral(legacyBuiltInThemeIds)}
+  var defaultBuiltInThemeId = ${javascriptString(ProductPreferenceDefault.theme.themeId)}
   var legacyBuiltInThemeTuples = ${javascriptLiteral(registry.legacyBuiltInThemeTuples, 2)}
   var customBankVariables = ${javascriptLiteral(registry.customBankVariables)}
   var appearanceAttributeNames = ${javascriptLiteral([
@@ -259,7 +264,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     return value.registryKind === 'custom' && typeof value.themeId === 'string' && value.themeId.length > 0
   }
 
-  function isExplicitAppearance(value) {
+  function isExplicitAppearance(value, themeReferenceValidator) {
     return (
       hasOnlyKeys(value, [
         'colorMode',
@@ -276,7 +281,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
       includes(fontScales, value.fontScale) &&
       includes(materials, value.material) &&
       includes(motions, value.motion) &&
-      isThemeReference(value.theme)
+      themeReferenceValidator(value.theme)
     )
   }
 
@@ -284,7 +289,23 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 3 &&
-      isExplicitAppearance(value.appearance)
+      isExplicitAppearance(value.appearance, isThemeReference)
+    )
+  }
+
+  function isRetiredBuiltInThemeReference(value) {
+    return (
+      hasOnlyKeys(value, ['registryKind', 'themeId']) &&
+      value.registryKind === 'built-in' &&
+      includes(retiredBuiltInThemeIds, value.themeId)
+    )
+  }
+
+  function isRetiredBuiltInPreference(value) {
+    return (
+      hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
+      value.schemaVersion === 3 &&
+      isExplicitAppearance(value.appearance, isRetiredBuiltInThemeReference)
     )
   }
 
@@ -354,7 +375,27 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
         schemaVersion: 3,
         appearance: {
           colorMode: appearance.colorMode,
-          theme: { registryKind: 'built-in', themeId: tuple.themeId },
+          theme: { registryKind: 'built-in', themeId: defaultBuiltInThemeId },
+          contrast: appearance.contrast,
+          material: appearance.material,
+          density: { preset: appearance.density.preset, scale: appearance.density.scale },
+          fontScale: appearance.fontScale,
+          motion: appearance.motion,
+        },
+      },
+    }
+  }
+
+  function migrateReferenceToBuiltIn(value, themeId) {
+    var appearance = value.appearance
+
+    return {
+      status: 'success',
+      preference: {
+        schemaVersion: 3,
+        appearance: {
+          colorMode: appearance.colorMode,
+          theme: { registryKind: 'built-in', themeId: themeId },
           contrast: appearance.contrast,
           material: appearance.material,
           density: { preset: appearance.density.preset, scale: appearance.density.scale },
@@ -367,7 +408,18 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
 
   function migrateToExplicitThemePreference(value) {
     if (isExplicitThemePreference(value)) {
+      if (
+        value.appearance.theme.registryKind === 'custom' &&
+        includes(builtInThemeIds, value.appearance.theme.themeId)
+      ) {
+        return migrateReferenceToBuiltIn(value, value.appearance.theme.themeId)
+      }
+
       return { status: 'success', preference: value }
+    }
+
+    if (isRetiredBuiltInPreference(value)) {
+      return migrateReferenceToBuiltIn(value, defaultBuiltInThemeId)
     }
 
     if (isLegacySeedPreference(value)) {

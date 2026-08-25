@@ -362,13 +362,13 @@ export const routeTitleRegistry = Object.freeze({
   'route-title.responsive-layout-inspector': '响应式布局',
   'route-title.engineering-quality-inspector': '工程与质量',
   'route-title.capability-roadmap': '能力路线图',
-  'route-title.error-invalid-route-input': 'Invalid address',
-  'route-title.error-authentication-required': 'Authentication required',
-  'route-title.error-permission-denied': 'Access denied',
-  'route-title.error-route-not-found': 'Page not found',
-  'route-title.error-application-route-failure': 'Page unavailable',
-  'route-title.error-network-unavailable': 'Offline',
-  'route-title.error-service-unavailable': 'Service unavailable',
+  'route-title.error-invalid-route-input': '地址无效',
+  'route-title.error-authentication-required': '需要身份认证',
+  'route-title.error-permission-denied': '访问被拒绝',
+  'route-title.error-route-not-found': '未找到页面',
+  'route-title.error-application-route-failure': '页面不可用',
+  'route-title.error-network-unavailable': '当前离线',
+  'route-title.error-service-unavailable': '服务不可用',
 } as const satisfies Readonly<Record<RouteTitleKey, string>>)
 
 export const routeBreadcrumbRegistry = Object.freeze({
@@ -393,7 +393,7 @@ export const routeMessageRegistry = Object.freeze([
   Object.freeze({
     routeName: 'appearance-management',
     key: 'route-message.appearance-management-summary',
-    text: '管理主题、颜色模式、对比度、材质、字号与动效。',
+    text: '统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。',
   }),
   Object.freeze({
     routeName: 'design-token-inspector',
@@ -438,37 +438,37 @@ export const routeMessageRegistry = Object.freeze([
   Object.freeze({
     routeName: 'error-invalid-route-input',
     key: 'route-message.error-invalid-route-input',
-    text: 'The requested address contains invalid information.',
+    text: '请求的地址包含无效信息。',
   }),
   Object.freeze({
     routeName: 'error-authentication-required',
     key: 'route-message.error-authentication-required',
-    text: 'Authentication is required to continue.',
+    text: '需要完成身份认证才能继续。',
   }),
   Object.freeze({
     routeName: 'error-permission-denied',
     key: 'route-message.error-permission-denied',
-    text: 'You do not have permission to view this page.',
+    text: '你没有查看此页面的权限。',
   }),
   Object.freeze({
     routeName: 'error-route-not-found',
     key: 'route-message.error-route-not-found',
-    text: 'The requested page was not found.',
+    text: '未找到请求的页面。',
   }),
   Object.freeze({
     routeName: 'error-application-route-failure',
     key: 'route-message.error-application-route-failure',
-    text: 'The application could not open this page.',
+    text: '应用无法打开此页面。',
   }),
   Object.freeze({
     routeName: 'error-network-unavailable',
     key: 'route-message.error-network-unavailable',
-    text: 'This page is unavailable while the device is offline.',
+    text: '当前处于离线状态，无法访问此页面。',
   }),
   Object.freeze({
     routeName: 'error-service-unavailable',
     key: 'route-message.error-service-unavailable',
-    text: 'This service is temporarily unavailable.',
+    text: '此服务暂时不可用。',
   }),
 ] as const satisfies readonly {
   readonly routeName: RouteName
@@ -649,8 +649,10 @@ export const focusContractRegistry = Object.freeze([
     target: 'h1[data-route-focus="architecture-console-page-heading"]',
     targetTabIndex: -1,
     timing: 'after-admin-shell-and-routed-dom-commit-without-arbitrary-timeout',
-    focusBehavior: 'prevent-scroll-then-registered-scroll-restoration',
-    successfulNavigation: 'transfer-focus-to-target',
+    focusBehavior:
+      'initial-preserve-browser-focus;subsequent-prevent-scroll-then-registered-scroll-restoration',
+    successfulNavigation:
+      'initial-preserve-browser-focus;subsequent-location-change-transfer-focus-to-target',
     cancelledOrFailedNavigation: 'preserve-or-restore-previous-valid-focus',
     missingTarget: 'typed-navigation-failure',
     visibleFocus: 'existing-semantic-focus-tokens',
@@ -661,8 +663,10 @@ export const focusContractRegistry = Object.freeze([
     target: 'h1[data-route-focus="primary-heading"]',
     targetTabIndex: -1,
     timing: 'after-routed-dom-commit-without-arbitrary-timeout',
-    focusBehavior: 'prevent-scroll-then-registered-scroll-restoration',
-    successfulNavigation: 'transfer-focus-to-target',
+    focusBehavior:
+      'initial-preserve-browser-focus;subsequent-prevent-scroll-then-registered-scroll-restoration',
+    successfulNavigation:
+      'initial-preserve-browser-focus;subsequent-location-change-transfer-focus-to-target',
     cancelledOrFailedNavigation: 'preserve-or-restore-previous-valid-focus',
     missingTarget: 'typed-navigation-failure',
     visibleFocus: 'existing-semantic-focus-tokens',
@@ -675,25 +679,45 @@ export const consoleNavigationRegistry = Object.freeze([
     id: 'workspace',
     label: '工作台',
     items: Object.freeze([
-      Object.freeze({ glyph: '总', label: '总览', routeName: 'console-overview' }),
+      Object.freeze({
+        iconClass: 'i-lucide-layout-dashboard',
+        label: '总览',
+        routeName: 'console-overview',
+      }),
     ]),
   }),
   Object.freeze({
     id: 'visual-system',
     label: '视觉系统',
     items: Object.freeze([
-      Object.freeze({ glyph: '外', label: '主题与外观', routeName: 'appearance-management' }),
-      Object.freeze({ glyph: '令', label: '设计令牌', routeName: 'design-token-inspector' }),
+      Object.freeze({
+        iconClass: 'i-lucide-palette',
+        label: '主题与外观',
+        routeName: 'appearance-management',
+      }),
+      Object.freeze({
+        iconClass: 'i-lucide-swatch-book',
+        label: '设计令牌',
+        routeName: 'design-token-inspector',
+      }),
     ]),
   }),
   Object.freeze({
     id: 'application-foundation',
     label: '应用基础',
     items: Object.freeze([
-      Object.freeze({ glyph: '核', label: '运行时内核', routeName: 'runtime-kernel-inspector' }),
-      Object.freeze({ glyph: '路', label: '路由治理', routeName: 'router-governance-inspector' }),
       Object.freeze({
-        glyph: '存',
+        iconClass: 'i-lucide-cpu',
+        label: '运行时内核',
+        routeName: 'runtime-kernel-inspector',
+      }),
+      Object.freeze({
+        iconClass: 'i-lucide-route',
+        label: '路由治理',
+        routeName: 'router-governance-inspector',
+      }),
+      Object.freeze({
+        iconClass: 'i-lucide-database',
         label: '存储与持久化',
         routeName: 'storage-persistence-inspector',
       }),
@@ -703,8 +727,16 @@ export const consoleNavigationRegistry = Object.freeze([
     id: 'interface-foundation',
     label: '界面基础',
     items: Object.freeze([
-      Object.freeze({ glyph: '组', label: 'UI 组件', routeName: 'ui-system-inspector' }),
-      Object.freeze({ glyph: '响', label: '响应式布局', routeName: 'responsive-layout-inspector' }),
+      Object.freeze({
+        iconClass: 'i-lucide-component',
+        label: 'UI 组件',
+        routeName: 'ui-system-inspector',
+      }),
+      Object.freeze({
+        iconClass: 'i-lucide-panels-top-left',
+        label: '响应式布局',
+        routeName: 'responsive-layout-inspector',
+      }),
     ]),
   }),
   Object.freeze({
@@ -712,7 +744,7 @@ export const consoleNavigationRegistry = Object.freeze([
     label: '开发治理',
     items: Object.freeze([
       Object.freeze({
-        glyph: '工',
+        iconClass: 'i-lucide-workflow',
         label: '工程与质量',
         routeName: 'engineering-quality-inspector',
       }),
@@ -722,7 +754,11 @@ export const consoleNavigationRegistry = Object.freeze([
     id: 'architecture-planning',
     label: '架构规划',
     items: Object.freeze([
-      Object.freeze({ glyph: '图', label: '能力路线图', routeName: 'capability-roadmap' }),
+      Object.freeze({
+        iconClass: 'i-lucide-map',
+        label: '能力路线图',
+        routeName: 'capability-roadmap',
+      }),
     ]),
   }),
 ] as const)

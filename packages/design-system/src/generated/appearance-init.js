@@ -14,7 +14,9 @@
   var densities = ['compact', 'comfortable', 'spacious']
   var fontScales = [0.9, 1, 1.1, 1.2]
   var motions = ['full', 'reduced', 'none']
-  var builtInThemeIds = ['neutral', 'ocean', 'warm']
+  var builtInThemeIds = ['amber', 'cobalt', 'coral', 'graphite', 'iris', 'jade', 'lagoon']
+  var retiredBuiltInThemeIds = ['neutral', 'ocean', 'warm']
+  var defaultBuiltInThemeId = 'iris'
   var legacyBuiltInThemeTuples = [{
     themeId: 'neutral',
     brand: 'oklch(37% 0.014 247)',
@@ -113,7 +115,7 @@
     return value.registryKind === 'custom' && typeof value.themeId === 'string' && value.themeId.length > 0
   }
 
-  function isExplicitAppearance(value) {
+  function isExplicitAppearance(value, themeReferenceValidator) {
     return (
       hasOnlyKeys(value, [
         'colorMode',
@@ -130,7 +132,7 @@
       includes(fontScales, value.fontScale) &&
       includes(materials, value.material) &&
       includes(motions, value.motion) &&
-      isThemeReference(value.theme)
+      themeReferenceValidator(value.theme)
     )
   }
 
@@ -138,7 +140,23 @@
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
       value.schemaVersion === 3 &&
-      isExplicitAppearance(value.appearance)
+      isExplicitAppearance(value.appearance, isThemeReference)
+    )
+  }
+
+  function isRetiredBuiltInThemeReference(value) {
+    return (
+      hasOnlyKeys(value, ['registryKind', 'themeId']) &&
+      value.registryKind === 'built-in' &&
+      includes(retiredBuiltInThemeIds, value.themeId)
+    )
+  }
+
+  function isRetiredBuiltInPreference(value) {
+    return (
+      hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
+      value.schemaVersion === 3 &&
+      isExplicitAppearance(value.appearance, isRetiredBuiltInThemeReference)
     )
   }
 
@@ -208,7 +226,27 @@
         schemaVersion: 3,
         appearance: {
           colorMode: appearance.colorMode,
-          theme: { registryKind: 'built-in', themeId: tuple.themeId },
+          theme: { registryKind: 'built-in', themeId: defaultBuiltInThemeId },
+          contrast: appearance.contrast,
+          material: appearance.material,
+          density: { preset: appearance.density.preset, scale: appearance.density.scale },
+          fontScale: appearance.fontScale,
+          motion: appearance.motion,
+        },
+      },
+    }
+  }
+
+  function migrateReferenceToBuiltIn(value, themeId) {
+    var appearance = value.appearance
+
+    return {
+      status: 'success',
+      preference: {
+        schemaVersion: 3,
+        appearance: {
+          colorMode: appearance.colorMode,
+          theme: { registryKind: 'built-in', themeId: themeId },
           contrast: appearance.contrast,
           material: appearance.material,
           density: { preset: appearance.density.preset, scale: appearance.density.scale },
@@ -221,7 +259,18 @@
 
   function migrateToExplicitThemePreference(value) {
     if (isExplicitThemePreference(value)) {
+      if (
+        value.appearance.theme.registryKind === 'custom' &&
+        includes(builtInThemeIds, value.appearance.theme.themeId)
+      ) {
+        return migrateReferenceToBuiltIn(value, value.appearance.theme.themeId)
+      }
+
       return { status: 'success', preference: value }
+    }
+
+    if (isRetiredBuiltInPreference(value)) {
+      return migrateReferenceToBuiltIn(value, defaultBuiltInThemeId)
     }
 
     if (isLegacySeedPreference(value)) {
@@ -315,7 +364,7 @@
     clearCustomBankVariables()
     root.setAttribute('data-color-mode', 'light')
     root.setAttribute('data-theme-kind', 'built-in')
-    root.setAttribute('data-theme', 'neutral')
+    root.setAttribute('data-theme', 'iris')
     root.setAttribute('data-contrast', 'standard')
     root.setAttribute('data-material', 'solid')
     root.setAttribute('data-density', 'comfortable')

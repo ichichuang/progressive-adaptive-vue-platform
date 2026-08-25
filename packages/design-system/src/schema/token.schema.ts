@@ -67,6 +67,11 @@ export const dimensionValueSchema = z.strictObject({
   unit: z.enum(['px', 'rem']),
 })
 
+const nonnegativeDimensionValueSchema = z.strictObject({
+  value: finiteNumberSchema.min(0),
+  unit: z.enum(['px', 'rem']),
+})
+
 export const durationValueSchema = z.strictObject({
   value: finiteNumberSchema.min(0),
   unit: z.literal('ms'),
@@ -83,13 +88,25 @@ export const fontFamilyValueSchema = z.union([z.string().min(1), z.array(z.strin
 
 export const fontWeightValueSchema = z.number().int().min(1).max(1000)
 
-export const shadowValueSchema = z.strictObject({
+export const borderValueSchema = z.strictObject({
+  color: z.union([colorValueSchema, tokenReferenceSchema]),
+  width: z.union([nonnegativeDimensionValueSchema, tokenReferenceSchema]),
+  style: z.literal('solid'),
+})
+
+export const shadowLayerValueSchema = z.strictObject({
   color: z.union([colorValueSchema, tokenReferenceSchema]),
   offsetX: z.union([dimensionValueSchema, tokenReferenceSchema]),
   offsetY: z.union([dimensionValueSchema, tokenReferenceSchema]),
-  blur: z.union([dimensionValueSchema, tokenReferenceSchema]),
+  blur: z.union([nonnegativeDimensionValueSchema, tokenReferenceSchema]),
   spread: z.union([dimensionValueSchema, tokenReferenceSchema]),
+  inset: z.boolean().optional(),
 })
+
+export const shadowValueSchema = z.union([
+  shadowLayerValueSchema,
+  z.array(shadowLayerValueSchema).min(1),
+])
 
 const tokenDescriptionSchema = z.string().min(1).optional()
 const tokenMetadataShape = {
@@ -134,6 +151,11 @@ export const tokenDefinitionSchema = z.discriminatedUnion('$type', [
     ...tokenMetadataShape,
   }),
   z.strictObject({
+    $type: z.literal('border'),
+    $value: z.union([borderValueSchema, tokenReferenceSchema]),
+    ...tokenMetadataShape,
+  }),
+  z.strictObject({
     $type: z.literal('shadow'),
     $value: z.union([shadowValueSchema, tokenReferenceSchema]),
     ...tokenMetadataShape,
@@ -141,7 +163,9 @@ export const tokenDefinitionSchema = z.discriminatedUnion('$type', [
 ])
 
 export type ColorValue = z.infer<typeof colorValueSchema>
+export type BorderValue = z.infer<typeof borderValueSchema>
 export type DtcgTokenType = z.infer<typeof tokenDefinitionSchema>['$type']
+export type ShadowLayerValue = z.infer<typeof shadowLayerValueSchema>
 export type ShadowValue = z.infer<typeof shadowValueSchema>
 export type TokenConditions = z.infer<typeof tokenConditionsSchema>
 export type TokenDefinition = z.infer<typeof tokenDefinitionSchema>

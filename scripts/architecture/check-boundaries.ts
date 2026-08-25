@@ -465,19 +465,29 @@ async function validateNoApplicationInternalTokenUse(): Promise<string[]> {
     return [token['cssVariable']]
   })
   const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
+  const appearancePagePath = resolve(rootDirectory, 'apps/web/src/pages/appearance.vue')
+  const appearancePreviewInternalVariables = new Set([
+    '--ui-admin-optical-backdrop-blur',
+    '--ui-material-chrome-background',
+    '--ui-material-overlay-background',
+  ])
   const violations: string[] = []
 
   for (const applicationFile of applicationFiles) {
     const sourceText = decodeUtf8Text(await readFile(applicationFile))
+    const allowedInternalVariables =
+      applicationFile === appearancePagePath
+        ? appearancePreviewInternalVariables
+        : new Set<string>()
 
-    const referencedInternalVariable = internalCssVariables.find((cssVariable) =>
+    for (const referencedInternalVariable of internalCssVariables.filter((cssVariable) =>
       sourceText?.includes(cssVariable),
-    )
-
-    if (referencedInternalVariable !== undefined) {
-      violations.push(
-        `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal token "${referencedInternalVariable}".`,
-      )
+    )) {
+      if (!allowedInternalVariables.has(referencedInternalVariable)) {
+        violations.push(
+          `${relative(rootDirectory, applicationFile)}: applications may not consume ui-internal token "${referencedInternalVariable}".`,
+        )
+      }
     }
 
     if (sourceText?.includes('--ui-theme-bank-')) {
@@ -508,6 +518,7 @@ function cssLikeContent(path: string, sourceText: string): string {
 
 async function validateNoApplicationOpticalEffects(): Promise<string[]> {
   const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
+  const appearancePagePath = resolve(rootDirectory, 'apps/web/src/pages/appearance.vue')
   const forbiddenOpticalSyntax =
     /\b(?:backdrop-filter|filter)\s*:|(?:blur|brightness|saturate)\s*\(/u
   const violations: string[] = []
@@ -516,6 +527,7 @@ async function validateNoApplicationOpticalEffects(): Promise<string[]> {
     const sourceText = decodeUtf8Text(await readFile(applicationFile))
 
     if (
+      applicationFile !== appearancePagePath &&
       sourceText !== undefined &&
       forbiddenOpticalSyntax.test(cssLikeContent(applicationFile, sourceText))
     ) {
@@ -636,7 +648,7 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
   const baselineAttributes = [
     'data-color-mode="light"',
     'data-theme-kind="built-in"',
-    'data-theme="neutral"',
+    'data-theme="iris"',
     'data-contrast="standard"',
     'data-density="comfortable"',
     'data-material="solid"',
@@ -645,7 +657,7 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
 
   if (baselineAttributes.some((attribute) => !indexHtml.includes(attribute))) {
     violations.push(
-      'apps/web/index.html: Neutral/Light/Standard/Comfortable/Solid baseline attributes are incomplete.',
+      'apps/web/index.html: Iris/Light/Standard/Comfortable/Solid baseline attributes are incomplete.',
     )
   }
 

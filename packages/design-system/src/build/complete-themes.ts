@@ -63,11 +63,6 @@ interface CompleteThemeSourceBundle {
   readonly path: string
 }
 
-interface LegacyThemeIdentity {
-  readonly id: string
-  readonly label: string
-}
-
 interface ValidatedRoleMap {
   absoluteColorValueCount: number
   authored: CompleteColorRoleMap
@@ -121,10 +116,6 @@ function resolveAuthoredColor(
       resolvedValue: authoredValue,
       sourceKind: 'absolute',
     }
-  }
-
-  if (themeId === 'neutral') {
-    throw new Error(`${themeId}:${fieldPath}: Neutral complete-theme aliases are prohibited.`)
   }
 
   const targetPath = tokenPathFromReference(authoredValue)
@@ -434,11 +425,9 @@ function validateCompleteThemeSource(
 
 export function validateCompleteBuiltInThemes({
   bundles,
-  legacyThemes,
   resolver,
 }: {
   bundles: readonly CompleteThemeSourceBundle[]
-  legacyThemes: readonly LegacyThemeIdentity[]
   resolver: TokenResolver
 }): readonly ValidatedCompleteBuiltInTheme[] {
   const publicRoles = validatePublicRoleRegistry(PublicRoleRegistry)
@@ -479,12 +468,6 @@ export function validateCompleteBuiltInThemes({
   }
 
   for (const theme of themes) {
-    const legacyTheme = legacyThemes.find((candidate) => candidate.id === theme.id)
-
-    if (legacyTheme?.label !== theme.label) {
-      throw new Error(`${theme.id}: complete and Legacy built-in Theme identity/label must match.`)
-    }
-
     if (theme.authoredColorValueCount !== roleIds.length * 4) {
       throw new Error(`${theme.id}: complete Theme must contain exactly 36 authored colors.`)
     }
@@ -496,7 +479,9 @@ export function validateCompleteBuiltInThemes({
   )
 
   if (authoredColorValueCount !== builtInThemeIds.length * roleIds.length * 4) {
-    throw new Error('Complete built-in Theme set must contain exactly 108 authored colors.')
+    throw new Error(
+      `Complete built-in Theme set must contain exactly ${String(builtInThemeIds.length * roleIds.length * 4)} authored colors.`,
+    )
   }
 
   validateThemeIdentity(themes, roleIds)

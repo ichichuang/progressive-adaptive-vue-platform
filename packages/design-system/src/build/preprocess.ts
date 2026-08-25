@@ -2,6 +2,7 @@ import type { PreprocessedTokens } from 'style-dictionary/types'
 import { z } from 'zod'
 
 import {
+  legacyBuiltInThemeIds,
   legacySeedThemeDefinitionSchema,
   type LegacySeedThemeDefinition,
 } from '../schema/legacy-seed-theme.schema'
@@ -69,7 +70,6 @@ const sourceDictionarySchema = z.strictObject({
 })
 
 const requiredDensityPresets = ['comfortable', 'compact', 'spacious'] as const
-const requiredThemeIds = ['neutral', 'ocean', 'warm'] as const
 const colorCompoundAxes = ['theme', 'colorMode', 'contrast'] as const
 
 interface ResolvedLegacySeedThemeDefinition extends Omit<LegacySeedThemeDefinition, 'palette'> {
@@ -625,7 +625,6 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
     }))
   const completeThemes = validateCompleteBuiltInThemes({
     bundles: completeThemeBundles,
-    legacyThemes: themes,
     resolver,
   })
   const densityPresets = resolver.records
@@ -636,8 +635,8 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
   assertExactSet(densityPresets, requiredDensityPresets, 'Density preset contract')
   assertExactSet(
     resolvedThemes.map((theme) => theme.id),
-    requiredThemeIds,
-    'Theme preset contract',
+    legacyBuiltInThemeIds,
+    'Legacy Theme migration preset contract',
   )
 
   const records = [...resolver.records].sort(compareRecords)

@@ -1,11 +1,14 @@
 import {
+  borderValueSchema,
   colorValueSchema,
   cubicBezierValueSchema,
   dimensionValueSchema,
   durationValueSchema,
   fontFamilyValueSchema,
   fontWeightValueSchema,
+  shadowLayerValueSchema,
   shadowValueSchema,
+  tokenPathFromReference,
   type DtcgTokenType,
 } from '../../schema/token.schema'
 import { compareCodePoints } from '../order'
@@ -52,6 +55,39 @@ function fontFamilyToCss(value: unknown): string {
   return values.map((item) => (/\s/u.test(item) ? JSON.stringify(item) : item)).join(', ')
 }
 
+function borderToCss(value: unknown): string {
+  const border = borderValueSchema.parse(value)
+
+  if (typeof border.color === 'string' || typeof border.width === 'string') {
+    throw new Error('Border references must be resolved by the project preprocessor.')
+  }
+
+  return `${dimensionToCss(border.width)} ${border.style} ${colorToCss(border.color)}`
+}
+
+function shadowLayerToCss(value: unknown): string {
+  const shadow = shadowLayerValueSchema.parse(value)
+
+  if (
+    typeof shadow.color === 'string' ||
+    typeof shadow.offsetX === 'string' ||
+    typeof shadow.offsetY === 'string' ||
+    typeof shadow.blur === 'string' ||
+    typeof shadow.spread === 'string'
+  ) {
+    throw new Error('Shadow references must be resolved by the project preprocessor.')
+  }
+
+  return [
+    ...(shadow.inset === true ? ['inset'] : []),
+    dimensionToCss(shadow.offsetX),
+    dimensionToCss(shadow.offsetY),
+    dimensionToCss(shadow.blur),
+    dimensionToCss(shadow.spread),
+    colorToCss(shadow.color),
+  ].join(' ')
+}
+
 export function tokenValueToCss(type: DtcgTokenType, value: unknown): string {
   if (type === 'color') {
     return colorToCss(value)
@@ -89,25 +125,14 @@ export function tokenValueToCss(type: DtcgTokenType, value: unknown): string {
     )
   }
 
-  const shadow = shadowValueSchema.parse(value)
-
-  if (
-    typeof shadow.color === 'string' ||
-    typeof shadow.offsetX === 'string' ||
-    typeof shadow.offsetY === 'string' ||
-    typeof shadow.blur === 'string' ||
-    typeof shadow.spread === 'string'
-  ) {
-    throw new Error('Shadow references must be resolved by the project preprocessor.')
+  if (type === 'border') {
+    return borderToCss(value)
   }
 
-  return [
-    dimensionToCss(shadow.offsetX),
-    dimensionToCss(shadow.offsetY),
-    dimensionToCss(shadow.blur),
-    dimensionToCss(shadow.spread),
-    colorToCss(shadow.color),
-  ].join(' ')
+  const shadow = shadowValueSchema.parse(value)
+  const layers = Array.isArray(shadow) ? shadow : [shadow]
+
+  return layers.map(shadowLayerToCss).join(', ')
 }
 
 export function selectTokensForOutput(
@@ -130,7 +155,115 @@ export function resolvedCssValue(token: ResolvedTokenRecord, result: TokenBuildR
     }
   }
 
+  if (token.type === 'border' && typeof token.authoredValue !== 'string') {
+    const authored = borderValueSchema.parse(token.authoredValue)
+    const resolved = borderValueSchema.parse(token.resolvedValue)
+
+    return [
+      compositeFieldToCss(token, result, authored.width, resolved.width, 'dimension', 'width'),
+      resolved.style,
+      compositeFieldToCss(token, result, authored.color, resolved.color, 'color', 'color'),
+    ].join(' ')
+  }
+
+  if (token.type === 'shadow' && typeof token.authoredValue !== 'string') {
+    const authoredValue = shadowValueSchema.parse(token.authoredValue)
+    const resolvedValue = shadowValueSchema.parse(token.resolvedValue)
+    const authoredLayers = Array.isArray(authoredValue) ? authoredValue : [authoredValue]
+    const resolvedLayers = Array.isArray(resolvedValue) ? resolvedValue : [resolvedValue]
+
+    if (authoredLayers.length !== resolvedLayers.length) {
+      throw new Error(`${token.path}: resolved Shadow layer cardinality drifted.`)
+    }
+
+    return authoredLayers
+      .map((authored, index) => {
+        const resolved = resolvedLayers[index]
+
+        if (resolved === undefined) {
+          throw new Error(`${token.path}: resolved Shadow layer ${String(index)} is missing.`)
+        }
+
+        return [
+          ...(resolved.inset === true ? ['inset'] : []),
+          compositeFieldToCss(
+            token,
+            result,
+            authored.offsetX,
+            resolved.offsetX,
+            'dimension',
+            `[${String(index)}].offsetX`,
+          ),
+          compositeFieldToCss(
+            token,
+            result,
+            authored.offsetY,
+            resolved.offsetY,
+            'dimension',
+            `[${String(index)}].offsetY`,
+          ),
+          compositeFieldToCss(
+            token,
+            result,
+            authored.blur,
+            resolved.blur,
+            'dimension',
+            `[${String(index)}].blur`,
+          ),
+          compositeFieldToCss(
+            token,
+            result,
+            authored.spread,
+            resolved.spread,
+            'dimension',
+            `[${String(index)}].spread`,
+          ),
+          compositeFieldToCss(
+            token,
+            result,
+            authored.color,
+            resolved.color,
+            'color',
+            `[${String(index)}].color`,
+          ),
+        ].join(' ')
+      })
+      .join(', ')
+  }
+
   return tokenValueToCss(token.type, token.resolvedValue)
+}
+
+function compositeFieldToCss(
+  token: ResolvedTokenRecord,
+  result: TokenBuildResult,
+  authoredValue: unknown,
+  resolvedValue: unknown,
+  expectedType: 'color' | 'dimension',
+  field: string,
+): string {
+  if (typeof authoredValue !== 'string') {
+    return tokenValueToCss(expectedType, resolvedValue)
+  }
+
+  const targetPath = tokenPathFromReference(authoredValue)
+  const target = result.tokens.find((candidate) => candidate.path === targetPath)
+
+  if (target === undefined) {
+    throw new Error(`${token.path}.${field}: reference target "${authoredValue}" is missing.`)
+  }
+
+  if (target.type !== expectedType) {
+    throw new Error(
+      `${token.path}.${field}: reference "${authoredValue}" has type "${target.type}", expected "${expectedType}".`,
+    )
+  }
+
+  if (target.cssVariable !== undefined && target.cssVariable !== token.cssVariable) {
+    return `var(${target.cssVariable})`
+  }
+
+  return tokenValueToCss(target.type, target.resolvedValue)
 }
 
 export function uniqueRoleTokensForOutput(

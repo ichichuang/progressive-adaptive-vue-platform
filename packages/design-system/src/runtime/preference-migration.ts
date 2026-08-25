@@ -3,10 +3,13 @@ import {
   explicitThemePreferenceSchema,
   legacyPreferenceInputSchema,
   legacySeedPreferenceSchema,
+  retiredBuiltInPreferenceSchema,
   type ExplicitThemePreference,
   type LegacyPreferenceInput,
   type LegacySeedPreference,
+  type RetiredBuiltInPreference,
 } from '../schema/preference.schema'
+import { builtInThemeIdSchema } from '../schema/complete-theme.schema'
 
 export type PreferenceMigrationResult =
   | {
@@ -46,7 +49,7 @@ function migrateLegacySeedPreference(preference: LegacySeedPreference): Preferen
         colorMode: preference.appearance.colorMode,
         theme: {
           registryKind: 'built-in',
-          themeId: tuple.themeId,
+          themeId: 'iris',
         },
         contrast: preference.appearance.contrast,
         material: preference.appearance.material,
@@ -56,6 +59,51 @@ function migrateLegacySeedPreference(preference: LegacySeedPreference): Preferen
       },
     }),
   }
+}
+
+function migrateRetiredBuiltInPreference(
+  preference: RetiredBuiltInPreference,
+): PreferenceMigrationResult {
+  return {
+    status: 'success',
+    preference: explicitThemePreferenceSchema.parse({
+      ...preference,
+      appearance: {
+        ...preference.appearance,
+        theme: {
+          registryKind: 'built-in',
+          themeId: 'iris',
+        },
+      },
+    }),
+  }
+}
+
+function promoteFormerCatalogReference(
+  preference: ExplicitThemePreference,
+): ExplicitThemePreference {
+  const reference = preference.appearance.theme
+
+  if (reference.registryKind !== 'custom') {
+    return preference
+  }
+
+  const promotedThemeId = builtInThemeIdSchema.safeParse(reference.themeId)
+
+  if (!promotedThemeId.success) {
+    return preference
+  }
+
+  return explicitThemePreferenceSchema.parse({
+    ...preference,
+    appearance: {
+      ...preference.appearance,
+      theme: {
+        registryKind: 'built-in',
+        themeId: promotedThemeId.data,
+      },
+    },
+  })
 }
 
 function migrateLegacyPreferenceInput(
@@ -82,8 +130,14 @@ export function migrateToExplicitThemePreference(input: unknown): PreferenceMigr
   if (explicitPreference.success) {
     return {
       status: 'success',
-      preference: explicitPreference.data,
+      preference: promoteFormerCatalogReference(explicitPreference.data),
     }
+  }
+
+  const retiredBuiltInPreference = retiredBuiltInPreferenceSchema.safeParse(input)
+
+  if (retiredBuiltInPreference.success) {
+    return migrateRetiredBuiltInPreference(retiredBuiltInPreference.data)
   }
 
   const legacySeedPreference = legacySeedPreferenceSchema.safeParse(input)

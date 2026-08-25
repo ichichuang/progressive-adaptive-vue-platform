@@ -1,6 +1,7 @@
 import type { Format } from 'style-dictionary/types'
 
 import { builtInThemeIds } from '../../schema/complete-theme.schema'
+import { legacyBuiltInThemeIds } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import { isActivePublicColorRole, type UnoCssMappingRecord } from '../public-role-registry'
@@ -163,7 +164,7 @@ export function themeRegistryDocument(result: TokenBuildResult) {
   }
 
   const legacyThemesById = new Map(result.themes.map((theme) => [theme.id, theme]))
-  const legacyBuiltInThemeTuples = builtInThemeIds.map((themeId) => {
+  const legacyBuiltInThemeTuples = legacyBuiltInThemeIds.map((themeId) => {
     const legacyTheme = legacyThemesById.get(themeId)
 
     if (legacyTheme === undefined) {

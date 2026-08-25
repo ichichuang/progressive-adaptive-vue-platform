@@ -267,13 +267,13 @@ const expectedRouteTitles = {
   'route-title.responsive-layout-inspector': '响应式布局',
   'route-title.engineering-quality-inspector': '工程与质量',
   'route-title.capability-roadmap': '能力路线图',
-  'route-title.error-invalid-route-input': 'Invalid address',
-  'route-title.error-authentication-required': 'Authentication required',
-  'route-title.error-permission-denied': 'Access denied',
-  'route-title.error-route-not-found': 'Page not found',
-  'route-title.error-application-route-failure': 'Page unavailable',
-  'route-title.error-network-unavailable': 'Offline',
-  'route-title.error-service-unavailable': 'Service unavailable',
+  'route-title.error-invalid-route-input': '地址无效',
+  'route-title.error-authentication-required': '需要身份认证',
+  'route-title.error-permission-denied': '访问被拒绝',
+  'route-title.error-route-not-found': '未找到页面',
+  'route-title.error-application-route-failure': '页面不可用',
+  'route-title.error-network-unavailable': '当前离线',
+  'route-title.error-service-unavailable': '服务不可用',
 } as const
 const expectedMessages = [
   [
@@ -284,7 +284,7 @@ const expectedMessages = [
   [
     'appearance-management',
     'route-message.appearance-management-summary',
-    '管理主题、颜色模式、对比度、材质、字号与动效。',
+    '统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。',
   ],
   [
     'design-token-inspector',
@@ -329,38 +329,26 @@ const expectedMessages = [
   [
     'error-invalid-route-input',
     'route-message.error-invalid-route-input',
-    'The requested address contains invalid information.',
+    '请求的地址包含无效信息。',
   ],
   [
     'error-authentication-required',
     'route-message.error-authentication-required',
-    'Authentication is required to continue.',
+    '需要完成身份认证才能继续。',
   ],
-  [
-    'error-permission-denied',
-    'route-message.error-permission-denied',
-    'You do not have permission to view this page.',
-  ],
-  [
-    'error-route-not-found',
-    'route-message.error-route-not-found',
-    'The requested page was not found.',
-  ],
+  ['error-permission-denied', 'route-message.error-permission-denied', '你没有查看此页面的权限。'],
+  ['error-route-not-found', 'route-message.error-route-not-found', '未找到请求的页面。'],
   [
     'error-application-route-failure',
     'route-message.error-application-route-failure',
-    'The application could not open this page.',
+    '应用无法打开此页面。',
   ],
   [
     'error-network-unavailable',
     'route-message.error-network-unavailable',
-    'This page is unavailable while the device is offline.',
+    '当前处于离线状态，无法访问此页面。',
   ],
-  [
-    'error-service-unavailable',
-    'route-message.error-service-unavailable',
-    'This service is temporarily unavailable.',
-  ],
+  ['error-service-unavailable', 'route-message.error-service-unavailable', '此服务暂时不可用。'],
 ] as const
 const expectedErrorRoutes = [
   ['400', 'invalid-route-input', 'error-invalid-route-input'],
@@ -428,6 +416,17 @@ const expectedRouterErrors = [
   ],
 ] as const
 
+interface RouterInteractionSnapshot {
+  readonly frameSource: string
+  readonly lifecycleSource: string
+}
+
+interface RouterInteractionNegativeProbeResult {
+  readonly id: string
+  readonly expectedFailureCode: string
+  readonly passed: boolean
+}
+
 async function collectFiles(directory: string): Promise<string[]> {
   const entries = await readdir(directory, { withFileTypes: true })
   const files: string[] = []
@@ -446,6 +445,163 @@ async function collectFiles(directory: string): Promise<string[]> {
 
 function count(source: string, pattern: RegExp): number {
   return [...source.matchAll(pattern)].length
+}
+
+function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot): string[] {
+  const violations: string[] = []
+  const duplicateConditionPattern =
+    /if\s*\(\s*to\.name\s*===\s*from\.name\s*&&\s*to\.fullPath\s*===\s*from\.fullPath\s*\)\s*\{/u
+  const duplicateCondition = duplicateConditionPattern.exec(snapshot.lifecycleSource)
+  const duplicateLookupIndex = snapshot.lifecycleSource.indexOf('navigationAttempts.get(to)')
+  const duplicateBlock =
+    /if\s*\(\s*to\.name\s*===\s*from\.name\s*&&\s*to\.fullPath\s*===\s*from\.fullPath\s*\)\s*\{([\s\S]*?)\}/u.exec(
+      snapshot.lifecycleSource,
+    )
+
+  if (
+    duplicateCondition === null ||
+    duplicateLookupIndex === -1 ||
+    duplicateCondition.index > duplicateLookupIndex
+  ) {
+    violations.push('DUPLICATE_SCROLL_NOOP_ORDER')
+  }
+  if (duplicateBlock?.[1]?.trim() !== 'return false') {
+    violations.push('DUPLICATED_NAVIGATION_ERROR_ROUTE')
+  }
+
+  const headingFocusCalls = [
+    ...snapshot.lifecycleSource.matchAll(/focusTargets\[0\]\.focus\s*\(/gu),
+  ]
+  const guardedHeadingFocus =
+    /if\s*\(\s*from\s*!==\s*START_LOCATION\s*\)\s*\{\s*focusTargets\[0\]\.focus\s*\(\s*\{\s*preventScroll\s*:\s*true\s*\}\s*\)\s*\}/u.test(
+      snapshot.lifecycleSource,
+    )
+  if (!/\bSTART_LOCATION\b/u.test(snapshot.lifecycleSource) || !guardedHeadingFocus) {
+    violations.push('INITIAL_NAVIGATION_FOCUS_PRESERVATION')
+  }
+  if (headingFocusCalls.length !== 1 || !guardedHeadingFocus) {
+    violations.push('SUBSEQUENT_NAVIGATION_HEADING_FOCUS')
+  }
+
+  const currentRouteGuard =
+    /if\s*\(\s*router\.currentRoute\.value\.name\s*===\s*routeName\s*\)\s*\{\s*return\s*\}/u.exec(
+      snapshot.frameSource,
+    )
+  const pushIndex = snapshot.frameSource.indexOf('router.push(')
+  if (currentRouteGuard === null || pushIndex === -1 || currentRouteGuard.index > pushIndex) {
+    violations.push('FRAME_CURRENT_ROUTE_NOOP')
+  }
+
+  const resolvedPush = /const\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+router\.push\s*\([^)]*\)/u.exec(
+    snapshot.frameSource,
+  )
+  const failureBinding = resolvedPush?.[1]
+  const duplicatedNoop =
+    failureBinding !== undefined &&
+    new RegExp(
+      `if\\s*\\(\\s*isNavigationFailure\\(\\s*${failureBinding}\\s*,\\s*NavigationFailureType\\.duplicated\\s*\\)\\s*\\)\\s*\\{\\s*return\\s*\\}`,
+      'u',
+    ).test(snapshot.frameSource)
+  if (!duplicatedNoop) {
+    violations.push('FRAME_DUPLICATED_RESULT_NOOP')
+  }
+  if (
+    /error-application-route-failure|\/error\/500|router\.replace\s*\(/u.test(
+      snapshot.frameSource,
+    ) ||
+    /\bcatch\s*(?:\(|\{)/u.test(snapshot.frameSource)
+  ) {
+    violations.push('DUPLICATED_NAVIGATION_ERROR_ROUTE')
+  }
+
+  return [...new Set(violations)]
+}
+
+function runRouterInteractionNegativeProbes(
+  baseline: RouterInteractionSnapshot,
+): readonly RouterInteractionNegativeProbeResult[] {
+  const duplicateGuard = `if (to.name === from.name && to.fullPath === from.fullPath) {
+        return false
+      }`
+  const currentRouteGuard = `if (router.currentRoute.value.name === routeName) {
+    return
+  }`
+  const duplicatedResultGuard = `if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
+    return
+  }`
+  const probes: readonly [
+    string,
+    string,
+    (snapshot: RouterInteractionSnapshot) => RouterInteractionSnapshot,
+  ][] = [
+    [
+      'initial-navigation-unconditional-heading-focus',
+      'INITIAL_NAVIGATION_FOCUS_PRESERVATION',
+      (snapshot) => ({
+        ...snapshot,
+        lifecycleSource: snapshot.lifecycleSource.replace(
+          'if (from !== START_LOCATION)',
+          'if (true)',
+        ),
+      }),
+    ],
+    [
+      'subsequent-navigation-heading-focus-removed',
+      'SUBSEQUENT_NAVIGATION_HEADING_FOCUS',
+      (snapshot) => ({
+        ...snapshot,
+        lifecycleSource: snapshot.lifecycleSource.replace(
+          'focusTargets[0].focus({ preventScroll: true })',
+          '',
+        ),
+      }),
+    ],
+    [
+      'frame-pushes-current-route',
+      'FRAME_CURRENT_ROUTE_NOOP',
+      (snapshot) => ({
+        ...snapshot,
+        frameSource: snapshot.frameSource.replace(currentRouteGuard, ''),
+      }),
+    ],
+    [
+      'duplicate-scroll-detected-after-attempt-lookup',
+      'DUPLICATE_SCROLL_NOOP_ORDER',
+      (snapshot) => ({
+        ...snapshot,
+        lifecycleSource: snapshot.lifecycleSource
+          .replace(duplicateGuard, '')
+          .replace(
+            'const navigation = navigationAttempts.get(to)',
+            `const navigation = navigationAttempts.get(to)\n\n      ${duplicateGuard}`,
+          ),
+      }),
+    ],
+    [
+      'duplicated-result-maps-to-500',
+      'DUPLICATED_NAVIGATION_ERROR_ROUTE',
+      (snapshot) => ({
+        ...snapshot,
+        frameSource: snapshot.frameSource.replace(
+          duplicatedResultGuard,
+          `if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
+    await router.replace({ name: 'error-application-route-failure' })
+    return
+  }`,
+        ),
+      }),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutate]) =>
+      Object.freeze({
+        id,
+        expectedFailureCode,
+        passed: routerInteractionContractViolations(mutate(baseline)).includes(expectedFailureCode),
+      }),
+    ),
+  )
 }
 
 function nodesOf<T extends ts.Node>(
@@ -791,6 +947,51 @@ function registryViolations(): string[] {
     )
   ) {
     violations.push('Router Layout, native Scroll or Focus reference registries drifted.')
+  }
+
+  if (
+    !isDeepStrictEqual(
+      focusContracts.map((record) => [
+        record.id,
+        record.target,
+        record.targetTabIndex,
+        record.timing,
+        record.focusBehavior,
+        record.successfulNavigation,
+        record.cancelledOrFailedNavigation,
+        record.missingTarget,
+        record.visibleFocus,
+        record.capabilityStatus,
+      ]),
+      [
+        [
+          'route-focus.architecture-console-page-heading',
+          'h1[data-route-focus="architecture-console-page-heading"]',
+          -1,
+          'after-admin-shell-and-routed-dom-commit-without-arbitrary-timeout',
+          'initial-preserve-browser-focus;subsequent-prevent-scroll-then-registered-scroll-restoration',
+          'initial-preserve-browser-focus;subsequent-location-change-transfer-focus-to-target',
+          'preserve-or-restore-previous-valid-focus',
+          'typed-navigation-failure',
+          'existing-semantic-focus-tokens',
+          'ACTIVE',
+        ],
+        [
+          'route-focus.primary-heading',
+          'h1[data-route-focus="primary-heading"]',
+          -1,
+          'after-routed-dom-commit-without-arbitrary-timeout',
+          'initial-preserve-browser-focus;subsequent-prevent-scroll-then-registered-scroll-restoration',
+          'initial-preserve-browser-focus;subsequent-location-change-transfer-focus-to-target',
+          'preserve-or-restore-previous-valid-focus',
+          'typed-navigation-failure',
+          'existing-semantic-focus-tokens',
+          'ACTIVE',
+        ],
+      ],
+    )
+  ) {
+    violations.push('Router Focus Registry diverged from the initial/subsequent focus contract.')
   }
 
   if (
@@ -1175,6 +1376,24 @@ async function lifecycleViolations(): Promise<string[]> {
       }
     }),
   )
+  const frameSource = applicationSources.find(
+    (candidate) =>
+      relative(rootDirectory, candidate.path).split('\\').join('/') ===
+      'apps/web/src/app/console/ConsoleRouteFrame.vue',
+  )?.source
+
+  if (frameSource === undefined) {
+    violations.push('The Admin Console Router frame is unavailable.')
+  } else {
+    const interactionSnapshot = { frameSource, lifecycleSource: lifecycle }
+    violations.push(...routerInteractionContractViolations(interactionSnapshot))
+
+    for (const result of runRouterInteractionNegativeProbes(interactionSnapshot)) {
+      if (!result.passed) {
+        violations.push(`${result.id}: reversible in-memory negative probe did not fail.`)
+      }
+    }
+  }
   const calls = nodesOf(lifecycleSource, ts.isCallExpression)
   const callCount = (name: string): number =>
     calls.filter((call) => callMemberName(call) === name).length

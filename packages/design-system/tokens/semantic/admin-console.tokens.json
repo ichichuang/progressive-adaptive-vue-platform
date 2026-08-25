@@ -33,22 +33,60 @@
       }
     },
     "border": {
+      "action": {
+        "$type": "border",
+        "$value": {
+          "color": "{color.action.primary}",
+          "width": "{admin.border.width}",
+          "style": "solid"
+        },
+        "$extensions": { "org.pavp": { "role": "admin.border.action" } }
+      },
+      "control": {
+        "$type": "border",
+        "$value": {
+          "color": "{color.border.default}",
+          "width": "{admin.border.width}",
+          "style": "solid"
+        },
+        "$extensions": { "org.pavp": { "role": "admin.border.control" } }
+      },
+      "focus": {
+        "$type": "border",
+        "$value": {
+          "color": "{color.focus.ring}",
+          "width": "{admin.border.width}",
+          "style": "solid"
+        },
+        "$extensions": { "org.pavp": { "role": "admin.border.focus" } }
+      },
       "subtle": {
         "$type": "color",
         "$value": "{color.border.default}",
         "$extensions": { "org.pavp": { "role": "admin.border.subtle" } }
+      },
+      "width": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        },
+        "$extensions": { "org.pavp": { "role": "admin.border.width" } }
       }
     },
-    "chrome": {
-      "header": {
-        "$type": "color",
-        "$value": "{material.chrome.adaptive.background}",
-        "$extensions": { "org.pavp": { "role": "admin.chrome.header" } }
+    "focus": {
+      "outline-offset": {
+        "$type": "dimension",
+        "$value": "{admin.focus.width}",
+        "$extensions": { "org.pavp": { "role": "admin.focus.outline-offset" } }
       },
-      "sidebar": {
-        "$type": "color",
-        "$value": "{material.chrome.adaptive.background}",
-        "$extensions": { "org.pavp": { "role": "admin.chrome.sidebar" } }
+      "width": {
+        "$type": "dimension",
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$extensions": { "org.pavp": { "role": "admin.focus.width" } }
       }
     },
     "navigation": {
@@ -63,11 +101,63 @@
         "$extensions": { "org.pavp": { "role": "admin.navigation.selected" } }
       }
     },
+    "optical": {
+      "backdrop-blur": {
+        "$type": "dimension",
+        "$value": "{dimension.space.3}",
+        "$extensions": { "org.pavp": { "role": "admin.optical.backdrop-blur" } }
+      }
+    },
     "shadow": {
       "chrome": {
         "$type": "shadow",
         "$value": "{interaction.shadow.panel}",
         "$extensions": { "org.pavp": { "role": "admin.shadow.chrome" } }
+      },
+      "control": {
+        "$type": "shadow",
+        "$value": {
+          "color": "{color.border.default}",
+          "offsetX": "{dimension.space.0}",
+          "offsetY": "{dimension.space.0}",
+          "blur": "{dimension.space.0}",
+          "spread": "{admin.border.width}",
+          "inset": true
+        },
+        "$extensions": { "org.pavp": { "role": "admin.shadow.control" } }
+      },
+      "control-hover": {
+        "$type": "shadow",
+        "$value": {
+          "color": "{color.action.primary}",
+          "offsetX": "{dimension.space.0}",
+          "offsetY": "{dimension.space.0}",
+          "blur": "{dimension.space.0}",
+          "spread": "{admin.border.width}",
+          "inset": true
+        },
+        "$extensions": { "org.pavp": { "role": "admin.shadow.control-hover" } }
+      },
+      "focus-ring": {
+        "$type": "shadow",
+        "$value": [
+          {
+            "color": "{color.focus.ring}",
+            "offsetX": "{dimension.space.0}",
+            "offsetY": "{dimension.space.0}",
+            "blur": "{dimension.space.0}",
+            "spread": "{admin.border.width}",
+            "inset": true
+          },
+          {
+            "color": "{color.focus.ring}",
+            "offsetX": "{dimension.space.0}",
+            "offsetY": "{dimension.space.0}",
+            "blur": "{dimension.space.0}",
+            "spread": "{admin.focus.width}"
+          }
+        ],
+        "$extensions": { "org.pavp": { "role": "admin.shadow.focus-ring" } }
       },
       "overlay": {
         "$type": "shadow",
@@ -75,16 +165,18 @@
         "$extensions": { "org.pavp": { "role": "admin.shadow.overlay" } }
       }
     },
+    "state": {
+      "disabled-opacity": {
+        "$type": "number",
+        "$value": 0.5,
+        "$extensions": { "org.pavp": { "role": "admin.state.disabled-opacity" } }
+      }
+    },
     "surface": {
       "content": {
         "$type": "color",
         "$value": "{color.surface.panel}",
         "$extensions": { "org.pavp": { "role": "admin.surface.content" } }
-      },
-      "overlay": {
-        "$type": "color",
-        "$value": "{material.overlay.adaptive.background}",
-        "$extensions": { "org.pavp": { "role": "admin.surface.overlay" } }
       },
       "settings": {
         "$type": "color",

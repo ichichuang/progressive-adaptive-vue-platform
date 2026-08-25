@@ -45,19 +45,19 @@ const forbiddenManifestSizeGovernanceFields = new Set<string>([
 ])
 
 const manifestGovernanceContract = {
-  schemaVersion: 8,
+  schemaVersion: 9,
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 50,
+    expectedCountDelta: 62,
     expectedCounts: {
-      tokens: 137,
+      tokens: 145,
       activePublicRoles: 36,
       unoCssMappings: 36,
       namedContrasts: 14,
       alphaContracts: 1,
       densities: 3,
-      themes: 3,
+      themes: 7,
       firstPaint: 1,
     },
   },

@@ -6,6 +6,7 @@ import {
   legacySeedAppearancePreferenceSchema,
   type ThemeReference,
 } from './appearance.schema'
+import { legacyBuiltInThemeIds } from './legacy-seed-theme.schema'
 
 const legacyPreferenceInputAppearanceSchema = legacySeedAppearancePreferenceSchema
   .omit({
@@ -31,6 +32,17 @@ export const explicitThemePreferenceSchema = z.strictObject({
   appearance: explicitThemeAppearancePreferenceSchema,
 })
 
+export const retiredBuiltInPreferenceSchema = z.strictObject({
+  schemaVersion: z.literal(3),
+  appearance: explicitThemeAppearancePreferenceSchema.extend({
+    theme: z.strictObject({
+      registryKind: z.literal('built-in'),
+      themeId: z.enum(legacyBuiltInThemeIds),
+    }),
+  }),
+})
+
 export type ExplicitThemePreference = z.infer<typeof explicitThemePreferenceSchema>
 export type LegacySeedPreference = z.infer<typeof legacySeedPreferenceSchema>
+export type RetiredBuiltInPreference = z.infer<typeof retiredBuiltInPreferenceSchema>
 export type { ThemeReference }

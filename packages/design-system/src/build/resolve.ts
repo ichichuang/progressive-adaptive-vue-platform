@@ -1,8 +1,12 @@
 import {
+  borderValueSchema,
   isTokenReference,
+  shadowLayerValueSchema,
   tokenPathFromReference,
+  type BorderValue,
   type ColorValue,
   type DtcgTokenType,
+  type ShadowLayerValue,
   type ShadowValue,
   type TokenConditions,
   type TokenDefinition,
@@ -27,6 +31,7 @@ export interface TokenRecord {
 }
 
 export interface ResolvedTokenRecord extends Omit<TokenRecord, 'value'> {
+  authoredValue: TokenDefinition['$value']
   reference?: string
   resolvedValue: Exclude<TokenDefinition['$value'], string>
 }
@@ -69,27 +74,78 @@ export function createTokenResolver(records: readonly TokenRecord[]): TokenResol
     return resolveRecord(target).resolvedValue
   }
 
-  function resolveShadow(value: ShadowValue, context: string): ShadowValue {
+  function resolveCompositeField(
+    fieldValue: ColorValue | ShadowLayerValue['offsetX'],
+    expectedType: 'color' | 'dimension',
+    context: string,
+  ): ColorValue | Exclude<ShadowLayerValue['offsetX'], string> {
+    if (!isTokenReference(fieldValue)) {
+      return fieldValue
+    }
+
+    return resolveReference(fieldValue, expectedType, context) as
+      ColorValue | Exclude<ShadowLayerValue['offsetX'], string>
+  }
+
+  function resolveBorder(value: BorderValue, context: string): BorderValue {
+    const resolved = {
+      color: resolveCompositeField(value.color, 'color', `${context}.color`) as ColorValue,
+      width: resolveCompositeField(value.width, 'dimension', `${context}.width`) as Exclude<
+        BorderValue['width'],
+        string
+      >,
+      style: value.style,
+    }
+    const result = borderValueSchema.safeParse(resolved)
+
+    if (!result.success) {
+      throw new Error(`${context}: invalid resolved Border value (${result.error.message}).`)
+    }
+
+    return result.data
+  }
+
+  function resolveShadowLayer(value: ShadowLayerValue, context: string): ShadowLayerValue {
     const resolveField = (
-      fieldValue: ShadowValue[keyof ShadowValue],
+      fieldValue: ColorValue | ShadowLayerValue['offsetX'],
       expectedType: 'color' | 'dimension',
       field: string,
-    ): ShadowValue[keyof ShadowValue] => {
-      if (!isTokenReference(fieldValue)) {
-        return fieldValue
-      }
+    ): ColorValue | Exclude<ShadowLayerValue['offsetX'], string> =>
+      resolveCompositeField(fieldValue, expectedType, `${context}.${field}`)
 
-      return resolveReference(fieldValue, expectedType, `${context}.${field}`) as
-        ColorValue | ShadowValue['offsetX']
-    }
-
-    return {
+    const resolved = {
       color: resolveField(value.color, 'color', 'color') as ColorValue,
-      offsetX: resolveField(value.offsetX, 'dimension', 'offsetX') as ShadowValue['offsetX'],
-      offsetY: resolveField(value.offsetY, 'dimension', 'offsetY') as ShadowValue['offsetY'],
-      blur: resolveField(value.blur, 'dimension', 'blur') as ShadowValue['blur'],
-      spread: resolveField(value.spread, 'dimension', 'spread') as ShadowValue['spread'],
+      offsetX: resolveField(value.offsetX, 'dimension', 'offsetX') as Exclude<
+        ShadowLayerValue['offsetX'],
+        string
+      >,
+      offsetY: resolveField(value.offsetY, 'dimension', 'offsetY') as Exclude<
+        ShadowLayerValue['offsetY'],
+        string
+      >,
+      blur: resolveField(value.blur, 'dimension', 'blur') as Exclude<
+        ShadowLayerValue['blur'],
+        string
+      >,
+      spread: resolveField(value.spread, 'dimension', 'spread') as Exclude<
+        ShadowLayerValue['spread'],
+        string
+      >,
+      ...(value.inset === undefined ? {} : { inset: value.inset }),
     }
+    const result = shadowLayerValueSchema.safeParse(resolved)
+
+    if (!result.success) {
+      throw new Error(`${context}: invalid resolved Shadow layer (${result.error.message}).`)
+    }
+
+    return result.data
+  }
+
+  function resolveShadow(value: ShadowValue, context: string): ShadowValue {
+    return Array.isArray(value)
+      ? value.map((layer, index) => resolveShadowLayer(layer, `${context}[${String(index)}]`))
+      : resolveShadowLayer(value, context)
   }
 
   function normalizeLiteral(
@@ -101,13 +157,27 @@ export function createTokenResolver(records: readonly TokenRecord[]): TokenResol
       return normalizeColor(value as ColorValue, context)
     }
 
+    if (type === 'border') {
+      const border = resolveBorder(value as BorderValue, context)
+
+      return {
+        ...border,
+        color: normalizeColor(border.color as ColorValue, `${context}.color`),
+      }
+    }
+
     if (type === 'shadow') {
       const shadow = resolveShadow(value as ShadowValue, context)
 
-      return {
-        ...shadow,
-        color: normalizeColor(shadow.color as ColorValue, `${context}.color`),
-      }
+      return Array.isArray(shadow)
+        ? shadow.map((layer, index) => ({
+            ...layer,
+            color: normalizeColor(layer.color as ColorValue, `${context}[${String(index)}].color`),
+          }))
+        : {
+            ...shadow,
+            color: normalizeColor(shadow.color as ColorValue, `${context}.color`),
+          }
     }
 
     return value
@@ -141,6 +211,7 @@ export function createTokenResolver(records: readonly TokenRecord[]): TokenResol
     const { value: sourceValue, ...metadata } = record
     const resolved: ResolvedTokenRecord = {
       ...metadata,
+      authoredValue: record.value,
       resolvedValue,
       ...(reference === undefined ? {} : { reference }),
     }

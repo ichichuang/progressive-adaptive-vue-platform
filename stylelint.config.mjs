@@ -91,6 +91,22 @@ const adminShadowVariables = tokenManifest.tokens
       token.name.startsWith('admin.'),
   )
   .map((token) => token.cssVariable)
+const shellMaterialRoleNames = new Set([
+  'material.chrome.background',
+  'material.overlay.background',
+])
+const shellMaterialColorVariables = [
+  ...new Set(
+    tokenManifest.tokens
+      .filter(
+        (token) =>
+          token.visibility === 'ui-internal' &&
+          token.type === 'color' &&
+          shellMaterialRoleNames.has(token.role?.name),
+      )
+      .map((token) => token.cssVariable),
+  ),
+]
 const approvedSpacingPatterns = [
   'var\\(--pavp-safe-area-(?:block|inline|bottom|left|right|top)[a-z-]*\\)',
   'max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\)(?:\\s+max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\))?',
@@ -114,6 +130,14 @@ const colorRulesWithoutExactAuthority = [rawColorFunction]
 const backgroundShorthandRules = [
   rawColorFunction,
   disallowUnapprovedUiVariables([...backgroundColorVariables, ...adminColorVariables]),
+]
+const shellBackgroundShorthandRules = [
+  rawColorFunction,
+  disallowUnapprovedUiVariables([
+    ...backgroundColorVariables,
+    ...adminColorVariables,
+    ...shellMaterialColorVariables,
+  ]),
 ]
 const borderShorthandRules = [rawColorFunction, disallowUnapprovedUiVariables(borderColorVariables)]
 const motionShorthandRules = [
@@ -167,8 +191,39 @@ const visualAuthorityRules = {
   ...typographyAuthorities,
   ...motionAuthorityRules,
 }
+const shellVisualAuthorityRules = {
+  ...visualAuthorityRules,
+  background: shellBackgroundShorthandRules,
+  'background-color': colorAuthorityRules([
+    ...backgroundColorVariables,
+    ...adminColorVariables,
+    ...shellMaterialColorVariables,
+  ]),
+}
 
 export default {
+  overrides: [
+    {
+      files: ['**/apps/web/src/pages/appearance.vue.style-*.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': shellVisualAuthorityRules,
+        'property-disallowed-list': ['filter'],
+      },
+    },
+    {
+      files: ['**/packages/ui/src/components/UiAdminShell.vue.style-*.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': shellVisualAuthorityRules,
+        'property-disallowed-list': ['filter'],
+      },
+    },
+    {
+      files: ['**/packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue.style-*.css'],
+      rules: {
+        'declaration-no-important': null,
+      },
+    },
+  ],
   rules: {
     'annotation-no-unknown': true,
     'at-rule-no-unknown': true,
@@ -187,7 +242,7 @@ export default {
     'no-duplicate-selectors': true,
     'no-empty-source': true,
     'property-no-unknown': true,
-    'property-disallowed-list': ['backdrop-filter', 'filter'],
+    'property-disallowed-list': ['-webkit-backdrop-filter', 'backdrop-filter', 'filter'],
     'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }],
     'selector-pseudo-element-no-unknown': true,
     'unit-no-unknown': true,

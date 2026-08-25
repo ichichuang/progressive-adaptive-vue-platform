@@ -4,6 +4,7 @@ import { tokenReferenceSchema } from './token.schema'
 
 export const legacySeedThemeIdPattern = /^[a-z][a-z0-9-]*$/u
 export const legacySeedThemeIdSchema = z.string().regex(legacySeedThemeIdPattern)
+export const legacyBuiltInThemeIds = ['neutral', 'ocean', 'warm'] as const
 
 export const legacySeedThemeDefinitionSchema = z.strictObject({
   id: legacySeedThemeIdSchema,

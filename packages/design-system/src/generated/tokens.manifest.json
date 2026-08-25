@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 8,
+  "schemaVersion": 9,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -19,9 +19,13 @@
     "semantic/material.tokens.json",
     "semantic/spacing.tokens.json",
     "semantic/typography.tokens.json",
-    "themes/complete/neutral.theme.json",
-    "themes/complete/ocean.theme.json",
-    "themes/complete/warm.theme.json",
+    "themes/complete/amber.theme.json",
+    "themes/complete/cobalt.theme.json",
+    "themes/complete/coral.theme.json",
+    "themes/complete/graphite.theme.json",
+    "themes/complete/iris.theme.json",
+    "themes/complete/jade.theme.json",
+    "themes/complete/lagoon.theme.json",
     "themes/neutral.theme.json",
     "themes/ocean.theme.json",
     "themes/warm.theme.json"
@@ -42,18 +46,18 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 137,
+      "tokens": 145,
       "activePublicRoles": 36,
       "unoCssMappings": 36,
       "namedContrasts": 14,
       "alphaContracts": 1,
       "densities": 3,
-      "themes": 3,
+      "themes": 7,
       "firstPaint": 1
     },
-    "recordCount": 231,
+    "recordCount": 243,
     "baselineRecordCount": 181,
-    "expectedRecordCountDelta": 50,
+    "expectedRecordCountDelta": 62,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
@@ -128,6 +132,48 @@
       "cssVariable": "--ui-admin-ambient-light-warm"
     },
     {
+      "name": "admin.border.action",
+      "type": "border",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.border.action"
+      },
+      "resolvedValue": "var(--ui-admin-border-width) solid var(--ui-color-action-primary)",
+      "cssVariable": "--ui-admin-border-action"
+    },
+    {
+      "name": "admin.border.control",
+      "type": "border",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.border.control"
+      },
+      "resolvedValue": "var(--ui-admin-border-width) solid var(--ui-color-border-default)",
+      "cssVariable": "--ui-admin-border-control"
+    },
+    {
+      "name": "admin.border.focus",
+      "type": "border",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.border.focus"
+      },
+      "resolvedValue": "var(--ui-admin-border-width) solid var(--ui-color-focus-ring)",
+      "cssVariable": "--ui-admin-border-focus"
+    },
+    {
       "name": "admin.border.subtle",
       "type": "color",
       "tier": "semantic",
@@ -142,32 +188,46 @@
       "cssVariable": "--ui-admin-border-subtle"
     },
     {
-      "name": "admin.chrome.header",
-      "type": "color",
+      "name": "admin.border.width",
+      "type": "dimension",
       "tier": "semantic",
       "visibility": "ui-internal",
       "source": "semantic/admin-console.tokens.json",
       "conditions": {},
       "role": {
         "category": "admin",
-        "name": "admin.chrome.header"
+        "name": "admin.border.width"
       },
-      "resolvedValue": "var(--ui-material-chrome-background)",
-      "cssVariable": "--ui-admin-chrome-header"
+      "resolvedValue": "1px",
+      "cssVariable": "--ui-admin-border-width"
     },
     {
-      "name": "admin.chrome.sidebar",
-      "type": "color",
+      "name": "admin.focus.outline-offset",
+      "type": "dimension",
       "tier": "semantic",
       "visibility": "ui-internal",
       "source": "semantic/admin-console.tokens.json",
       "conditions": {},
       "role": {
         "category": "admin",
-        "name": "admin.chrome.sidebar"
+        "name": "admin.focus.outline-offset"
       },
-      "resolvedValue": "var(--ui-material-chrome-background)",
-      "cssVariable": "--ui-admin-chrome-sidebar"
+      "resolvedValue": "var(--ui-admin-focus-width)",
+      "cssVariable": "--ui-admin-focus-outline-offset"
+    },
+    {
+      "name": "admin.focus.width",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.focus.width"
+      },
+      "resolvedValue": "2px",
+      "cssVariable": "--ui-admin-focus-width"
     },
     {
       "name": "admin.navigation.hover",
@@ -198,6 +258,20 @@
       "cssVariable": "--ui-admin-navigation-selected"
     },
     {
+      "name": "admin.optical.backdrop-blur",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.optical.backdrop-blur"
+      },
+      "resolvedValue": "0.75rem",
+      "cssVariable": "--ui-admin-optical-backdrop-blur"
+    },
+    {
       "name": "admin.shadow.chrome",
       "type": "shadow",
       "tier": "semantic",
@@ -210,6 +284,48 @@
       },
       "resolvedValue": "var(--ui-shadow-panel)",
       "cssVariable": "--ui-admin-shadow-chrome"
+    },
+    {
+      "name": "admin.shadow.control",
+      "type": "shadow",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.shadow.control"
+      },
+      "resolvedValue": "inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-border-default)",
+      "cssVariable": "--ui-admin-shadow-control"
+    },
+    {
+      "name": "admin.shadow.control-hover",
+      "type": "shadow",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.shadow.control-hover"
+      },
+      "resolvedValue": "inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-action-primary)",
+      "cssVariable": "--ui-admin-shadow-control-hover"
+    },
+    {
+      "name": "admin.shadow.focus-ring",
+      "type": "shadow",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.shadow.focus-ring"
+      },
+      "resolvedValue": "inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-focus-ring), 0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring)",
+      "cssVariable": "--ui-admin-shadow-focus-ring"
     },
     {
       "name": "admin.shadow.overlay",
@@ -226,6 +342,20 @@
       "cssVariable": "--ui-admin-shadow-overlay"
     },
     {
+      "name": "admin.state.disabled-opacity",
+      "type": "number",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/admin-console.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "admin",
+        "name": "admin.state.disabled-opacity"
+      },
+      "resolvedValue": "0.5",
+      "cssVariable": "--ui-admin-state-disabled-opacity"
+    },
+    {
       "name": "admin.surface.content",
       "type": "color",
       "tier": "semantic",
@@ -238,20 +368,6 @@
       },
       "resolvedValue": "var(--ui-color-surface-panel)",
       "cssVariable": "--ui-admin-surface-content"
-    },
-    {
-      "name": "admin.surface.overlay",
-      "type": "color",
-      "tier": "semantic",
-      "visibility": "ui-internal",
-      "source": "semantic/admin-console.tokens.json",
-      "conditions": {},
-      "role": {
-        "category": "admin",
-        "name": "admin.surface.overlay"
-      },
-      "resolvedValue": "var(--ui-material-overlay-background)",
-      "cssVariable": "--ui-admin-surface-overlay"
     },
     {
       "name": "admin.surface.settings",
@@ -3241,58 +3357,58 @@
     {
       "activationStatus": "ACTIVE",
       "registryKind": "built-in",
-      "themeId": "neutral",
-      "label": "Neutral",
-      "source": "themes/complete/neutral.theme.json",
+      "themeId": "amber",
+      "label": "Amber",
+      "source": "themes/complete/amber.theme.json",
       "schemaVersion": 3,
       "roleContractVersion": 1,
       "planes": {
         "light": {
           "standard": {
-            "color.action.primary": "oklch(21% 0.012 247)",
-            "color.border.default": "oklch(55% 0.012 247)",
-            "color.focus.ring": "oklch(54% 0.15 250)",
-            "color.scrim.viewport": "oklch(0% 0 0 / 0.56)",
-            "color.surface.page": "oklch(98.5% 0.002 247)",
-            "color.surface.panel": "oklch(100% 0 0)",
-            "color.text.on-action": "oklch(100% 0 0)",
-            "color.text.primary": "oklch(14.5% 0.01 247)",
-            "color.text.secondary": "oklch(37% 0.014 247)"
+            "color.action.primary": "oklch(49% 0.0898 78)",
+            "color.border.default": "oklch(57% 0.055 78)",
+            "color.focus.ring": "oklch(47% 0.0862 78)",
+            "color.scrim.viewport": "oklch(11% 0.0199 82 / 0.56)",
+            "color.surface.page": "oklch(97.5% 0.014 82)",
+            "color.surface.panel": "oklch(99.5% 0.0035 82)",
+            "color.text.on-action": "oklch(99% 0.0035 82)",
+            "color.text.primary": "oklch(24% 0.0304 70)",
+            "color.text.secondary": "oklch(39% 0.038 70)"
           },
           "enhanced": {
-            "color.action.primary": "oklch(14% 0.01 247)",
-            "color.border.default": "oklch(48% 0.012 247)",
-            "color.focus.ring": "oklch(44% 0.1 250)",
-            "color.scrim.viewport": "oklch(2% 0.004 247 / 0.56)",
-            "color.surface.page": "oklch(96% 0.003 247)",
-            "color.surface.panel": "oklch(99.5% 0.001 247)",
-            "color.text.on-action": "oklch(98% 0.002 247)",
-            "color.text.primary": "oklch(8% 0.006 247)",
-            "color.text.secondary": "oklch(27% 0.01 247)"
+            "color.action.primary": "oklch(37% 0.0678 78)",
+            "color.border.default": "oklch(46% 0.055 78)",
+            "color.focus.ring": "oklch(34% 0.0623 78)",
+            "color.scrim.viewport": "oklch(7% 0.0126 82 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0196 82)",
+            "color.surface.panel": "oklch(99% 0.0049 82)",
+            "color.text.on-action": "oklch(98.5% 0.007 82)",
+            "color.text.primary": "oklch(11% 0.0209 70)",
+            "color.text.secondary": "oklch(26% 0.038 70)"
           }
         },
         "dark": {
           "standard": {
-            "color.action.primary": "oklch(100% 0 0)",
-            "color.border.default": "oklch(55% 0.012 247)",
-            "color.focus.ring": "oklch(62% 0.17 250)",
-            "color.scrim.viewport": "oklch(0% 0 0 / 0.56)",
-            "color.surface.page": "oklch(14.5% 0.01 247)",
-            "color.surface.panel": "oklch(21% 0.012 247)",
-            "color.text.on-action": "oklch(14.5% 0.01 247)",
-            "color.text.primary": "oklch(100% 0 0)",
-            "color.text.secondary": "oklch(92% 0.005 247)"
+            "color.action.primary": "oklch(70% 0.0892 78)",
+            "color.border.default": "oklch(53% 0.0577 78)",
+            "color.focus.ring": "oklch(73% 0.105 78)",
+            "color.scrim.viewport": "oklch(3% 0.0054 82 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0235 82)",
+            "color.surface.panel": "oklch(19% 0.028 82)",
+            "color.text.on-action": "oklch(9% 0.0171 70)",
+            "color.text.primary": "oklch(91% 0.0171 70)",
+            "color.text.secondary": "oklch(74% 0.0285 70)"
           },
           "enhanced": {
-            "color.action.primary": "oklch(92% 0.005 247)",
-            "color.border.default": "oklch(65% 0.01 247)",
-            "color.focus.ring": "oklch(76% 0.11 250)",
-            "color.scrim.viewport": "oklch(1% 0.004 247 / 0.56)",
-            "color.surface.page": "oklch(8% 0.005 247)",
-            "color.surface.panel": "oklch(14.5% 0.008 247)",
-            "color.text.on-action": "oklch(4% 0.003 247)",
-            "color.text.primary": "oklch(99% 0.001 247)",
-            "color.text.secondary": "oklch(82% 0.006 247)"
+            "color.action.primary": "oklch(83% 0.0735 78)",
+            "color.border.default": "oklch(64% 0.0605 78)",
+            "color.focus.ring": "oklch(86% 0.0735 78)",
+            "color.scrim.viewport": "oklch(1% 0.0018 82 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0145 82)",
+            "color.surface.panel": "oklch(14% 0.0252 82)",
+            "color.text.on-action": "oklch(3% 0.0057 70)",
+            "color.text.primary": "oklch(99% 0.0062 70)",
+            "color.text.secondary": "oklch(84% 0.0209 70)"
           }
         }
       },
@@ -3304,7 +3420,7 @@
             "contrast": "standard",
             "publicRole": "color.action.primary",
             "sourceField": "planes.light.standard.color.action.primary",
-            "authoredValue": "oklch(21% 0.012 247)",
+            "authoredValue": "oklch(49% 0.0898 78)",
             "bankVariable": "--ui-theme-bank-light-standard-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3313,7 +3429,7 @@
             "contrast": "standard",
             "publicRole": "color.border.default",
             "sourceField": "planes.light.standard.color.border.default",
-            "authoredValue": "oklch(55% 0.012 247)",
+            "authoredValue": "oklch(57% 0.055 78)",
             "bankVariable": "--ui-theme-bank-light-standard-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3322,7 +3438,7 @@
             "contrast": "standard",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.light.standard.color.focus.ring",
-            "authoredValue": "oklch(54% 0.15 250)",
+            "authoredValue": "oklch(47% 0.0862 78)",
             "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3331,7 +3447,7 @@
             "contrast": "standard",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.light.standard.color.scrim.viewport",
-            "authoredValue": "oklch(0% 0 0 / 0.56)",
+            "authoredValue": "oklch(11% 0.0199 82 / 0.56)",
             "bankVariable": "--ui-theme-bank-light-standard-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3340,7 +3456,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.page",
             "sourceField": "planes.light.standard.color.surface.page",
-            "authoredValue": "oklch(98.5% 0.002 247)",
+            "authoredValue": "oklch(97.5% 0.014 82)",
             "bankVariable": "--ui-theme-bank-light-standard-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3349,7 +3465,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.light.standard.color.surface.panel",
-            "authoredValue": "oklch(100% 0 0)",
+            "authoredValue": "oklch(99.5% 0.0035 82)",
             "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3358,7 +3474,7 @@
             "contrast": "standard",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.light.standard.color.text.on-action",
-            "authoredValue": "oklch(100% 0 0)",
+            "authoredValue": "oklch(99% 0.0035 82)",
             "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3367,7 +3483,7 @@
             "contrast": "standard",
             "publicRole": "color.text.primary",
             "sourceField": "planes.light.standard.color.text.primary",
-            "authoredValue": "oklch(14.5% 0.01 247)",
+            "authoredValue": "oklch(24% 0.0304 70)",
             "bankVariable": "--ui-theme-bank-light-standard-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3376,7 +3492,7 @@
             "contrast": "standard",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.light.standard.color.text.secondary",
-            "authoredValue": "oklch(37% 0.014 247)",
+            "authoredValue": "oklch(39% 0.038 70)",
             "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -3385,7 +3501,7 @@
             "contrast": "enhanced",
             "publicRole": "color.action.primary",
             "sourceField": "planes.light.enhanced.color.action.primary",
-            "authoredValue": "oklch(14% 0.01 247)",
+            "authoredValue": "oklch(37% 0.0678 78)",
             "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3394,7 +3510,7 @@
             "contrast": "enhanced",
             "publicRole": "color.border.default",
             "sourceField": "planes.light.enhanced.color.border.default",
-            "authoredValue": "oklch(48% 0.012 247)",
+            "authoredValue": "oklch(46% 0.055 78)",
             "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3403,7 +3519,7 @@
             "contrast": "enhanced",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.light.enhanced.color.focus.ring",
-            "authoredValue": "oklch(44% 0.1 250)",
+            "authoredValue": "oklch(34% 0.0623 78)",
             "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3412,7 +3528,7 @@
             "contrast": "enhanced",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.light.enhanced.color.scrim.viewport",
-            "authoredValue": "oklch(2% 0.004 247 / 0.56)",
+            "authoredValue": "oklch(7% 0.0126 82 / 0.56)",
             "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3421,7 +3537,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.page",
             "sourceField": "planes.light.enhanced.color.surface.page",
-            "authoredValue": "oklch(96% 0.003 247)",
+            "authoredValue": "oklch(95% 0.0196 82)",
             "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3430,7 +3546,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.light.enhanced.color.surface.panel",
-            "authoredValue": "oklch(99.5% 0.001 247)",
+            "authoredValue": "oklch(99% 0.0049 82)",
             "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3439,7 +3555,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.light.enhanced.color.text.on-action",
-            "authoredValue": "oklch(98% 0.002 247)",
+            "authoredValue": "oklch(98.5% 0.007 82)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3448,7 +3564,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.primary",
             "sourceField": "planes.light.enhanced.color.text.primary",
-            "authoredValue": "oklch(8% 0.006 247)",
+            "authoredValue": "oklch(11% 0.0209 70)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3457,7 +3573,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.light.enhanced.color.text.secondary",
-            "authoredValue": "oklch(27% 0.01 247)",
+            "authoredValue": "oklch(26% 0.038 70)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -3466,7 +3582,7 @@
             "contrast": "standard",
             "publicRole": "color.action.primary",
             "sourceField": "planes.dark.standard.color.action.primary",
-            "authoredValue": "oklch(100% 0 0)",
+            "authoredValue": "oklch(70% 0.0892 78)",
             "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3475,7 +3591,7 @@
             "contrast": "standard",
             "publicRole": "color.border.default",
             "sourceField": "planes.dark.standard.color.border.default",
-            "authoredValue": "oklch(55% 0.012 247)",
+            "authoredValue": "oklch(53% 0.0577 78)",
             "bankVariable": "--ui-theme-bank-dark-standard-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3484,7 +3600,7 @@
             "contrast": "standard",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.dark.standard.color.focus.ring",
-            "authoredValue": "oklch(62% 0.17 250)",
+            "authoredValue": "oklch(73% 0.105 78)",
             "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3493,7 +3609,7 @@
             "contrast": "standard",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.dark.standard.color.scrim.viewport",
-            "authoredValue": "oklch(0% 0 0 / 0.56)",
+            "authoredValue": "oklch(3% 0.0054 82 / 0.56)",
             "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3502,7 +3618,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.page",
             "sourceField": "planes.dark.standard.color.surface.page",
-            "authoredValue": "oklch(14.5% 0.01 247)",
+            "authoredValue": "oklch(13% 0.0235 82)",
             "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3511,7 +3627,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.dark.standard.color.surface.panel",
-            "authoredValue": "oklch(21% 0.012 247)",
+            "authoredValue": "oklch(19% 0.028 82)",
             "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3520,7 +3636,7 @@
             "contrast": "standard",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.dark.standard.color.text.on-action",
-            "authoredValue": "oklch(14.5% 0.01 247)",
+            "authoredValue": "oklch(9% 0.0171 70)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3529,7 +3645,7 @@
             "contrast": "standard",
             "publicRole": "color.text.primary",
             "sourceField": "planes.dark.standard.color.text.primary",
-            "authoredValue": "oklch(100% 0 0)",
+            "authoredValue": "oklch(91% 0.0171 70)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3538,7 +3654,7 @@
             "contrast": "standard",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.dark.standard.color.text.secondary",
-            "authoredValue": "oklch(92% 0.005 247)",
+            "authoredValue": "oklch(74% 0.0285 70)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -3547,7 +3663,7 @@
             "contrast": "enhanced",
             "publicRole": "color.action.primary",
             "sourceField": "planes.dark.enhanced.color.action.primary",
-            "authoredValue": "oklch(92% 0.005 247)",
+            "authoredValue": "oklch(83% 0.0735 78)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3556,7 +3672,7 @@
             "contrast": "enhanced",
             "publicRole": "color.border.default",
             "sourceField": "planes.dark.enhanced.color.border.default",
-            "authoredValue": "oklch(65% 0.01 247)",
+            "authoredValue": "oklch(64% 0.0605 78)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3565,7 +3681,7 @@
             "contrast": "enhanced",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.dark.enhanced.color.focus.ring",
-            "authoredValue": "oklch(76% 0.11 250)",
+            "authoredValue": "oklch(86% 0.0735 78)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3574,7 +3690,7 @@
             "contrast": "enhanced",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.dark.enhanced.color.scrim.viewport",
-            "authoredValue": "oklch(1% 0.004 247 / 0.56)",
+            "authoredValue": "oklch(1% 0.0018 82 / 0.56)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3583,7 +3699,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.page",
             "sourceField": "planes.dark.enhanced.color.surface.page",
-            "authoredValue": "oklch(8% 0.005 247)",
+            "authoredValue": "oklch(8% 0.0145 82)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3592,7 +3708,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.dark.enhanced.color.surface.panel",
-            "authoredValue": "oklch(14.5% 0.008 247)",
+            "authoredValue": "oklch(14% 0.0252 82)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3601,7 +3717,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.dark.enhanced.color.text.on-action",
-            "authoredValue": "oklch(4% 0.003 247)",
+            "authoredValue": "oklch(3% 0.0057 70)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3610,7 +3726,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.primary",
             "sourceField": "planes.dark.enhanced.color.text.primary",
-            "authoredValue": "oklch(99% 0.001 247)",
+            "authoredValue": "oklch(99% 0.0062 70)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3619,7 +3735,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.dark.enhanced.color.text.secondary",
-            "authoredValue": "oklch(82% 0.006 247)",
+            "authoredValue": "oklch(84% 0.0209 70)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           }
@@ -3629,58 +3745,58 @@
     {
       "activationStatus": "ACTIVE",
       "registryKind": "built-in",
-      "themeId": "ocean",
-      "label": "Ocean",
-      "source": "themes/complete/ocean.theme.json",
+      "themeId": "cobalt",
+      "label": "Cobalt",
+      "source": "themes/complete/cobalt.theme.json",
       "schemaVersion": 3,
       "roleContractVersion": 1,
       "planes": {
         "light": {
           "standard": {
-            "color.action.primary": "oklch(50% 0.14 250)",
-            "color.border.default": "oklch(57% 0.07 240)",
-            "color.focus.ring": "oklch(48% 0.1 250)",
-            "color.scrim.viewport": "oklch(12% 0.03 250 / 0.56)",
-            "color.surface.page": "oklch(97.5% 0.01 235)",
-            "color.surface.panel": "oklch(99.5% 0.001 235)",
-            "color.text.on-action": "oklch(99% 0.003 235)",
-            "color.text.primary": "oklch(25% 0.035 245)",
-            "color.text.secondary": "oklch(39% 0.04 245)"
+            "color.action.primary": "oklch(49% 0.145 258)",
+            "color.border.default": "oklch(57% 0.065 258)",
+            "color.focus.ring": "oklch(47% 0.12 258)",
+            "color.scrim.viewport": "oklch(11% 0.0216 245 / 0.56)",
+            "color.surface.page": "oklch(97.5% 0.0111 245)",
+            "color.surface.panel": "oklch(99.5% 0.0022 245)",
+            "color.text.on-action": "oklch(99% 0.003 245)",
+            "color.text.primary": "oklch(24% 0.032 250)",
+            "color.text.secondary": "oklch(39% 0.04 250)"
           },
           "enhanced": {
-            "color.action.primary": "oklch(39% 0.1 250)",
-            "color.border.default": "oklch(47% 0.07 240)",
-            "color.focus.ring": "oklch(36% 0.08 250)",
-            "color.scrim.viewport": "oklch(8% 0.018 250 / 0.56)",
-            "color.surface.page": "oklch(95% 0.018 235)",
-            "color.surface.panel": "oklch(99% 0.004 235)",
-            "color.text.on-action": "oklch(100% 0 235)",
-            "color.text.primary": "oklch(12% 0.025 245)",
-            "color.text.secondary": "oklch(27% 0.04 245)"
+            "color.action.primary": "oklch(37% 0.1131 258)",
+            "color.border.default": "oklch(46% 0.065 258)",
+            "color.focus.ring": "oklch(34% 0.1019 258)",
+            "color.scrim.viewport": "oklch(7% 0.0155 245 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0168 245)",
+            "color.surface.panel": "oklch(99% 0.0042 245)",
+            "color.text.on-action": "oklch(98.5% 0.006 245)",
+            "color.text.primary": "oklch(11% 0.026 250)",
+            "color.text.secondary": "oklch(26% 0.04 250)"
           }
         },
         "dark": {
           "standard": {
-            "color.action.primary": "oklch(69% 0.12 240)",
-            "color.border.default": "oklch(52% 0.07 240)",
-            "color.focus.ring": "oklch(72% 0.14 240)",
-            "color.scrim.viewport": "oklch(3% 0.008 250 / 0.56)",
-            "color.surface.page": "oklch(13% 0.025 245)",
-            "color.surface.panel": "oklch(19% 0.03 245)",
-            "color.text.on-action": "oklch(9% 0.025 250)",
-            "color.text.primary": "oklch(90% 0.015 235)",
-            "color.text.secondary": "oklch(73% 0.025 240)"
+            "color.action.primary": "oklch(70% 0.1232 258)",
+            "color.border.default": "oklch(53% 0.0682 258)",
+            "color.focus.ring": "oklch(73% 0.12 258)",
+            "color.scrim.viewport": "oklch(3% 0.0066 245 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0216 245)",
+            "color.surface.panel": "oklch(19% 0.024 245)",
+            "color.text.on-action": "oklch(9% 0.022 250)",
+            "color.text.primary": "oklch(91% 0.018 250)",
+            "color.text.secondary": "oklch(74% 0.03 250)"
           },
           "enhanced": {
-            "color.action.primary": "oklch(82% 0.1 240)",
-            "color.border.default": "oklch(63% 0.08 240)",
-            "color.focus.ring": "oklch(86% 0.06 240)",
-            "color.scrim.viewport": "oklch(1% 0.008 250 / 0.56)",
-            "color.surface.page": "oklch(8% 0.018 245)",
-            "color.surface.panel": "oklch(14% 0.025 245)",
-            "color.text.on-action": "oklch(3% 0.008 250)",
-            "color.text.primary": "oklch(99% 0.004 235)",
-            "color.text.secondary": "oklch(83% 0.02 240)"
+            "color.action.primary": "oklch(83% 0.075 258)",
+            "color.border.default": "oklch(64% 0.0715 258)",
+            "color.focus.ring": "oklch(86% 0.061 258)",
+            "color.scrim.viewport": "oklch(1% 0.0022 245 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0168 245)",
+            "color.surface.panel": "oklch(14% 0.0216 245)",
+            "color.text.on-action": "oklch(3% 0.0074 250)",
+            "color.text.primary": "oklch(99% 0.0042 250)",
+            "color.text.secondary": "oklch(84% 0.022 250)"
           }
         }
       },
@@ -3692,7 +3808,7 @@
             "contrast": "standard",
             "publicRole": "color.action.primary",
             "sourceField": "planes.light.standard.color.action.primary",
-            "authoredValue": "oklch(50% 0.14 250)",
+            "authoredValue": "oklch(49% 0.145 258)",
             "bankVariable": "--ui-theme-bank-light-standard-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3701,7 +3817,7 @@
             "contrast": "standard",
             "publicRole": "color.border.default",
             "sourceField": "planes.light.standard.color.border.default",
-            "authoredValue": "oklch(57% 0.07 240)",
+            "authoredValue": "oklch(57% 0.065 258)",
             "bankVariable": "--ui-theme-bank-light-standard-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3710,7 +3826,7 @@
             "contrast": "standard",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.light.standard.color.focus.ring",
-            "authoredValue": "oklch(48% 0.1 250)",
+            "authoredValue": "oklch(47% 0.12 258)",
             "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3719,7 +3835,7 @@
             "contrast": "standard",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.light.standard.color.scrim.viewport",
-            "authoredValue": "oklch(12% 0.03 250 / 0.56)",
+            "authoredValue": "oklch(11% 0.0216 245 / 0.56)",
             "bankVariable": "--ui-theme-bank-light-standard-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3728,7 +3844,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.page",
             "sourceField": "planes.light.standard.color.surface.page",
-            "authoredValue": "oklch(97.5% 0.01 235)",
+            "authoredValue": "oklch(97.5% 0.0111 245)",
             "bankVariable": "--ui-theme-bank-light-standard-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3737,7 +3853,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.light.standard.color.surface.panel",
-            "authoredValue": "oklch(99.5% 0.001 235)",
+            "authoredValue": "oklch(99.5% 0.0022 245)",
             "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3746,7 +3862,7 @@
             "contrast": "standard",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.light.standard.color.text.on-action",
-            "authoredValue": "oklch(99% 0.003 235)",
+            "authoredValue": "oklch(99% 0.003 245)",
             "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3755,7 +3871,7 @@
             "contrast": "standard",
             "publicRole": "color.text.primary",
             "sourceField": "planes.light.standard.color.text.primary",
-            "authoredValue": "oklch(25% 0.035 245)",
+            "authoredValue": "oklch(24% 0.032 250)",
             "bankVariable": "--ui-theme-bank-light-standard-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3764,7 +3880,7 @@
             "contrast": "standard",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.light.standard.color.text.secondary",
-            "authoredValue": "oklch(39% 0.04 245)",
+            "authoredValue": "oklch(39% 0.04 250)",
             "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -3773,7 +3889,7 @@
             "contrast": "enhanced",
             "publicRole": "color.action.primary",
             "sourceField": "planes.light.enhanced.color.action.primary",
-            "authoredValue": "oklch(39% 0.1 250)",
+            "authoredValue": "oklch(37% 0.1131 258)",
             "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3782,7 +3898,7 @@
             "contrast": "enhanced",
             "publicRole": "color.border.default",
             "sourceField": "planes.light.enhanced.color.border.default",
-            "authoredValue": "oklch(47% 0.07 240)",
+            "authoredValue": "oklch(46% 0.065 258)",
             "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3791,7 +3907,7 @@
             "contrast": "enhanced",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.light.enhanced.color.focus.ring",
-            "authoredValue": "oklch(36% 0.08 250)",
+            "authoredValue": "oklch(34% 0.1019 258)",
             "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3800,7 +3916,7 @@
             "contrast": "enhanced",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.light.enhanced.color.scrim.viewport",
-            "authoredValue": "oklch(8% 0.018 250 / 0.56)",
+            "authoredValue": "oklch(7% 0.0155 245 / 0.56)",
             "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3809,7 +3925,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.page",
             "sourceField": "planes.light.enhanced.color.surface.page",
-            "authoredValue": "oklch(95% 0.018 235)",
+            "authoredValue": "oklch(95% 0.0168 245)",
             "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3818,7 +3934,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.light.enhanced.color.surface.panel",
-            "authoredValue": "oklch(99% 0.004 235)",
+            "authoredValue": "oklch(99% 0.0042 245)",
             "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3827,7 +3943,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.light.enhanced.color.text.on-action",
-            "authoredValue": "oklch(100% 0 235)",
+            "authoredValue": "oklch(98.5% 0.006 245)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3836,7 +3952,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.primary",
             "sourceField": "planes.light.enhanced.color.text.primary",
-            "authoredValue": "oklch(12% 0.025 245)",
+            "authoredValue": "oklch(11% 0.026 250)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3845,7 +3961,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.light.enhanced.color.text.secondary",
-            "authoredValue": "oklch(27% 0.04 245)",
+            "authoredValue": "oklch(26% 0.04 250)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -3854,7 +3970,7 @@
             "contrast": "standard",
             "publicRole": "color.action.primary",
             "sourceField": "planes.dark.standard.color.action.primary",
-            "authoredValue": "oklch(69% 0.12 240)",
+            "authoredValue": "oklch(70% 0.1232 258)",
             "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3863,7 +3979,7 @@
             "contrast": "standard",
             "publicRole": "color.border.default",
             "sourceField": "planes.dark.standard.color.border.default",
-            "authoredValue": "oklch(52% 0.07 240)",
+            "authoredValue": "oklch(53% 0.0682 258)",
             "bankVariable": "--ui-theme-bank-dark-standard-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3872,7 +3988,7 @@
             "contrast": "standard",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.dark.standard.color.focus.ring",
-            "authoredValue": "oklch(72% 0.14 240)",
+            "authoredValue": "oklch(73% 0.12 258)",
             "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3881,7 +3997,7 @@
             "contrast": "standard",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.dark.standard.color.scrim.viewport",
-            "authoredValue": "oklch(3% 0.008 250 / 0.56)",
+            "authoredValue": "oklch(3% 0.0066 245 / 0.56)",
             "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3890,7 +4006,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.page",
             "sourceField": "planes.dark.standard.color.surface.page",
-            "authoredValue": "oklch(13% 0.025 245)",
+            "authoredValue": "oklch(13% 0.0216 245)",
             "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3899,7 +4015,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.dark.standard.color.surface.panel",
-            "authoredValue": "oklch(19% 0.03 245)",
+            "authoredValue": "oklch(19% 0.024 245)",
             "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3908,7 +4024,7 @@
             "contrast": "standard",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.dark.standard.color.text.on-action",
-            "authoredValue": "oklch(9% 0.025 250)",
+            "authoredValue": "oklch(9% 0.022 250)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3917,7 +4033,7 @@
             "contrast": "standard",
             "publicRole": "color.text.primary",
             "sourceField": "planes.dark.standard.color.text.primary",
-            "authoredValue": "oklch(90% 0.015 235)",
+            "authoredValue": "oklch(91% 0.018 250)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -3926,7 +4042,7 @@
             "contrast": "standard",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.dark.standard.color.text.secondary",
-            "authoredValue": "oklch(73% 0.025 240)",
+            "authoredValue": "oklch(74% 0.03 250)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -3935,7 +4051,7 @@
             "contrast": "enhanced",
             "publicRole": "color.action.primary",
             "sourceField": "planes.dark.enhanced.color.action.primary",
-            "authoredValue": "oklch(82% 0.1 240)",
+            "authoredValue": "oklch(83% 0.075 258)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -3944,7 +4060,7 @@
             "contrast": "enhanced",
             "publicRole": "color.border.default",
             "sourceField": "planes.dark.enhanced.color.border.default",
-            "authoredValue": "oklch(63% 0.08 240)",
+            "authoredValue": "oklch(64% 0.0715 258)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -3953,7 +4069,7 @@
             "contrast": "enhanced",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.dark.enhanced.color.focus.ring",
-            "authoredValue": "oklch(86% 0.06 240)",
+            "authoredValue": "oklch(86% 0.061 258)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -3962,7 +4078,7 @@
             "contrast": "enhanced",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.dark.enhanced.color.scrim.viewport",
-            "authoredValue": "oklch(1% 0.008 250 / 0.56)",
+            "authoredValue": "oklch(1% 0.0022 245 / 0.56)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -3971,7 +4087,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.page",
             "sourceField": "planes.dark.enhanced.color.surface.page",
-            "authoredValue": "oklch(8% 0.018 245)",
+            "authoredValue": "oklch(8% 0.0168 245)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -3980,7 +4096,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.dark.enhanced.color.surface.panel",
-            "authoredValue": "oklch(14% 0.025 245)",
+            "authoredValue": "oklch(14% 0.0216 245)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -3989,7 +4105,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.dark.enhanced.color.text.on-action",
-            "authoredValue": "oklch(3% 0.008 250)",
+            "authoredValue": "oklch(3% 0.0074 250)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -3998,7 +4114,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.primary",
             "sourceField": "planes.dark.enhanced.color.text.primary",
-            "authoredValue": "oklch(99% 0.004 235)",
+            "authoredValue": "oklch(99% 0.0042 250)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -4007,7 +4123,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.dark.enhanced.color.text.secondary",
-            "authoredValue": "oklch(83% 0.02 240)",
+            "authoredValue": "oklch(84% 0.022 250)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           }
@@ -4017,58 +4133,58 @@
     {
       "activationStatus": "ACTIVE",
       "registryKind": "built-in",
-      "themeId": "warm",
-      "label": "Warm",
-      "source": "themes/complete/warm.theme.json",
+      "themeId": "coral",
+      "label": "Coral",
+      "source": "themes/complete/coral.theme.json",
       "schemaVersion": 3,
       "roleContractVersion": 1,
       "planes": {
         "light": {
           "standard": {
-            "color.action.primary": "oklch(49% 0.115 45)",
-            "color.border.default": "oklch(57% 0.065 55)",
-            "color.focus.ring": "oklch(47% 0.125 45)",
+            "color.action.primary": "oklch(49% 0.13 32)",
+            "color.border.default": "oklch(57% 0.06 32)",
+            "color.focus.ring": "oklch(47% 0.12 32)",
             "color.scrim.viewport": "oklch(11% 0.025 45 / 0.56)",
-            "color.surface.page": "oklch(97.5% 0.014 75)",
-            "color.surface.panel": "oklch(99.5% 0.002 75)",
-            "color.text.on-action": "oklch(99% 0.004 75)",
-            "color.text.primary": "oklch(24% 0.035 50)",
-            "color.text.secondary": "oklch(39% 0.045 50)"
+            "color.surface.page": "oklch(97.5% 0.0115 45)",
+            "color.surface.panel": "oklch(99.5% 0.0022 45)",
+            "color.text.on-action": "oklch(99% 0.0035 45)",
+            "color.text.primary": "oklch(24% 0.032 38)",
+            "color.text.secondary": "oklch(39% 0.04 38)"
           },
           "enhanced": {
-            "color.action.primary": "oklch(38% 0.105 40)",
-            "color.border.default": "oklch(46% 0.06 55)",
-            "color.focus.ring": "oklch(35% 0.105 40)",
-            "color.scrim.viewport": "oklch(7% 0.015 45 / 0.56)",
-            "color.surface.page": "oklch(95% 0.022 75)",
-            "color.surface.panel": "oklch(99% 0.005 75)",
-            "color.text.on-action": "oklch(97.7% 0.018 75)",
-            "color.text.primary": "oklch(11% 0.025 45)",
-            "color.text.secondary": "oklch(26% 0.04 50)"
+            "color.action.primary": "oklch(37% 0.1014 32)",
+            "color.border.default": "oklch(46% 0.06 32)",
+            "color.focus.ring": "oklch(34% 0.1019 32)",
+            "color.scrim.viewport": "oklch(7% 0.0176 45 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0196 45)",
+            "color.surface.panel": "oklch(99% 0.0045 45)",
+            "color.text.on-action": "oklch(98.5% 0.0068 45)",
+            "color.text.primary": "oklch(11% 0.026 38)",
+            "color.text.secondary": "oklch(26% 0.04 38)"
           }
         },
         "dark": {
           "standard": {
-            "color.action.primary": "oklch(70% 0.115 55)",
-            "color.border.default": "oklch(52% 0.07 55)",
-            "color.focus.ring": "oklch(73% 0.13 55)",
-            "color.scrim.viewport": "oklch(3% 0.008 45 / 0.56)",
-            "color.surface.page": "oklch(13% 0.025 45)",
-            "color.surface.panel": "oklch(19% 0.03 45)",
-            "color.text.on-action": "oklch(9% 0.025 45)",
-            "color.text.primary": "oklch(91% 0.02 75)",
-            "color.text.secondary": "oklch(74% 0.03 65)"
+            "color.action.primary": "oklch(70% 0.1105 32)",
+            "color.border.default": "oklch(53% 0.063 32)",
+            "color.focus.ring": "oklch(73% 0.12 32)",
+            "color.scrim.viewport": "oklch(3% 0.0075 45 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0252 45)",
+            "color.surface.panel": "oklch(19% 0.028 45)",
+            "color.text.on-action": "oklch(9% 0.022 38)",
+            "color.text.primary": "oklch(91% 0.018 38)",
+            "color.text.secondary": "oklch(74% 0.03 38)"
           },
           "enhanced": {
-            "color.action.primary": "oklch(83% 0.095 60)",
-            "color.border.default": "oklch(64% 0.075 55)",
-            "color.focus.ring": "oklch(86% 0.085 60)",
-            "color.scrim.viewport": "oklch(1% 0.008 45 / 0.56)",
-            "color.surface.page": "oklch(8% 0.018 45)",
-            "color.surface.panel": "oklch(14% 0.025 45)",
-            "color.text.on-action": "oklch(3% 0.008 45)",
-            "color.text.primary": "oklch(99% 0.004 75)",
-            "color.text.secondary": "oklch(84% 0.025 65)"
+            "color.action.primary": "oklch(83% 0.0838 32)",
+            "color.border.default": "oklch(64% 0.066 32)",
+            "color.focus.ring": "oklch(86% 0.0671 32)",
+            "color.scrim.viewport": "oklch(1% 0.0025 45 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0196 45)",
+            "color.surface.panel": "oklch(14% 0.0252 45)",
+            "color.text.on-action": "oklch(3% 0.0086 38)",
+            "color.text.primary": "oklch(99% 0.0043 38)",
+            "color.text.secondary": "oklch(84% 0.022 38)"
           }
         }
       },
@@ -4080,7 +4196,7 @@
             "contrast": "standard",
             "publicRole": "color.action.primary",
             "sourceField": "planes.light.standard.color.action.primary",
-            "authoredValue": "oklch(49% 0.115 45)",
+            "authoredValue": "oklch(49% 0.13 32)",
             "bankVariable": "--ui-theme-bank-light-standard-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -4089,7 +4205,7 @@
             "contrast": "standard",
             "publicRole": "color.border.default",
             "sourceField": "planes.light.standard.color.border.default",
-            "authoredValue": "oklch(57% 0.065 55)",
+            "authoredValue": "oklch(57% 0.06 32)",
             "bankVariable": "--ui-theme-bank-light-standard-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -4098,7 +4214,7 @@
             "contrast": "standard",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.light.standard.color.focus.ring",
-            "authoredValue": "oklch(47% 0.125 45)",
+            "authoredValue": "oklch(47% 0.12 32)",
             "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -4116,7 +4232,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.page",
             "sourceField": "planes.light.standard.color.surface.page",
-            "authoredValue": "oklch(97.5% 0.014 75)",
+            "authoredValue": "oklch(97.5% 0.0115 45)",
             "bankVariable": "--ui-theme-bank-light-standard-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -4125,7 +4241,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.light.standard.color.surface.panel",
-            "authoredValue": "oklch(99.5% 0.002 75)",
+            "authoredValue": "oklch(99.5% 0.0022 45)",
             "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -4134,7 +4250,7 @@
             "contrast": "standard",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.light.standard.color.text.on-action",
-            "authoredValue": "oklch(99% 0.004 75)",
+            "authoredValue": "oklch(99% 0.0035 45)",
             "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -4143,7 +4259,7 @@
             "contrast": "standard",
             "publicRole": "color.text.primary",
             "sourceField": "planes.light.standard.color.text.primary",
-            "authoredValue": "oklch(24% 0.035 50)",
+            "authoredValue": "oklch(24% 0.032 38)",
             "bankVariable": "--ui-theme-bank-light-standard-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -4152,7 +4268,7 @@
             "contrast": "standard",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.light.standard.color.text.secondary",
-            "authoredValue": "oklch(39% 0.045 50)",
+            "authoredValue": "oklch(39% 0.04 38)",
             "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -4161,7 +4277,7 @@
             "contrast": "enhanced",
             "publicRole": "color.action.primary",
             "sourceField": "planes.light.enhanced.color.action.primary",
-            "authoredValue": "oklch(38% 0.105 40)",
+            "authoredValue": "oklch(37% 0.1014 32)",
             "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -4170,7 +4286,7 @@
             "contrast": "enhanced",
             "publicRole": "color.border.default",
             "sourceField": "planes.light.enhanced.color.border.default",
-            "authoredValue": "oklch(46% 0.06 55)",
+            "authoredValue": "oklch(46% 0.06 32)",
             "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -4179,7 +4295,7 @@
             "contrast": "enhanced",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.light.enhanced.color.focus.ring",
-            "authoredValue": "oklch(35% 0.105 40)",
+            "authoredValue": "oklch(34% 0.1019 32)",
             "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -4188,7 +4304,7 @@
             "contrast": "enhanced",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.light.enhanced.color.scrim.viewport",
-            "authoredValue": "oklch(7% 0.015 45 / 0.56)",
+            "authoredValue": "oklch(7% 0.0176 45 / 0.56)",
             "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -4197,7 +4313,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.page",
             "sourceField": "planes.light.enhanced.color.surface.page",
-            "authoredValue": "oklch(95% 0.022 75)",
+            "authoredValue": "oklch(95% 0.0196 45)",
             "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -4206,7 +4322,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.light.enhanced.color.surface.panel",
-            "authoredValue": "oklch(99% 0.005 75)",
+            "authoredValue": "oklch(99% 0.0045 45)",
             "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -4215,7 +4331,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.light.enhanced.color.text.on-action",
-            "authoredValue": "oklch(97.7% 0.018 75)",
+            "authoredValue": "oklch(98.5% 0.0068 45)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -4224,7 +4340,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.primary",
             "sourceField": "planes.light.enhanced.color.text.primary",
-            "authoredValue": "oklch(11% 0.025 45)",
+            "authoredValue": "oklch(11% 0.026 38)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -4233,7 +4349,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.light.enhanced.color.text.secondary",
-            "authoredValue": "oklch(26% 0.04 50)",
+            "authoredValue": "oklch(26% 0.04 38)",
             "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -4242,7 +4358,7 @@
             "contrast": "standard",
             "publicRole": "color.action.primary",
             "sourceField": "planes.dark.standard.color.action.primary",
-            "authoredValue": "oklch(70% 0.115 55)",
+            "authoredValue": "oklch(70% 0.1105 32)",
             "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -4251,7 +4367,7 @@
             "contrast": "standard",
             "publicRole": "color.border.default",
             "sourceField": "planes.dark.standard.color.border.default",
-            "authoredValue": "oklch(52% 0.07 55)",
+            "authoredValue": "oklch(53% 0.063 32)",
             "bankVariable": "--ui-theme-bank-dark-standard-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -4260,7 +4376,7 @@
             "contrast": "standard",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.dark.standard.color.focus.ring",
-            "authoredValue": "oklch(73% 0.13 55)",
+            "authoredValue": "oklch(73% 0.12 32)",
             "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -4269,7 +4385,7 @@
             "contrast": "standard",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.dark.standard.color.scrim.viewport",
-            "authoredValue": "oklch(3% 0.008 45 / 0.56)",
+            "authoredValue": "oklch(3% 0.0075 45 / 0.56)",
             "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -4278,7 +4394,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.page",
             "sourceField": "planes.dark.standard.color.surface.page",
-            "authoredValue": "oklch(13% 0.025 45)",
+            "authoredValue": "oklch(13% 0.0252 45)",
             "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -4287,7 +4403,7 @@
             "contrast": "standard",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.dark.standard.color.surface.panel",
-            "authoredValue": "oklch(19% 0.03 45)",
+            "authoredValue": "oklch(19% 0.028 45)",
             "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -4296,7 +4412,7 @@
             "contrast": "standard",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.dark.standard.color.text.on-action",
-            "authoredValue": "oklch(9% 0.025 45)",
+            "authoredValue": "oklch(9% 0.022 38)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -4305,7 +4421,7 @@
             "contrast": "standard",
             "publicRole": "color.text.primary",
             "sourceField": "planes.dark.standard.color.text.primary",
-            "authoredValue": "oklch(91% 0.02 75)",
+            "authoredValue": "oklch(91% 0.018 38)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -4314,7 +4430,7 @@
             "contrast": "standard",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.dark.standard.color.text.secondary",
-            "authoredValue": "oklch(74% 0.03 65)",
+            "authoredValue": "oklch(74% 0.03 38)",
             "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           },
@@ -4323,7 +4439,7 @@
             "contrast": "enhanced",
             "publicRole": "color.action.primary",
             "sourceField": "planes.dark.enhanced.color.action.primary",
-            "authoredValue": "oklch(83% 0.095 60)",
+            "authoredValue": "oklch(83% 0.0838 32)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
             "publicBinding": "--ui-color-action-primary"
           },
@@ -4332,7 +4448,7 @@
             "contrast": "enhanced",
             "publicRole": "color.border.default",
             "sourceField": "planes.dark.enhanced.color.border.default",
-            "authoredValue": "oklch(64% 0.075 55)",
+            "authoredValue": "oklch(64% 0.066 32)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
             "publicBinding": "--ui-color-border-default"
           },
@@ -4341,7 +4457,7 @@
             "contrast": "enhanced",
             "publicRole": "color.focus.ring",
             "sourceField": "planes.dark.enhanced.color.focus.ring",
-            "authoredValue": "oklch(86% 0.085 60)",
+            "authoredValue": "oklch(86% 0.0671 32)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
             "publicBinding": "--ui-color-focus-ring"
           },
@@ -4350,7 +4466,7 @@
             "contrast": "enhanced",
             "publicRole": "color.scrim.viewport",
             "sourceField": "planes.dark.enhanced.color.scrim.viewport",
-            "authoredValue": "oklch(1% 0.008 45 / 0.56)",
+            "authoredValue": "oklch(1% 0.0025 45 / 0.56)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
             "publicBinding": "--ui-color-scrim-viewport"
           },
@@ -4359,7 +4475,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.page",
             "sourceField": "planes.dark.enhanced.color.surface.page",
-            "authoredValue": "oklch(8% 0.018 45)",
+            "authoredValue": "oklch(8% 0.0196 45)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
             "publicBinding": "--ui-color-surface-page"
           },
@@ -4368,7 +4484,7 @@
             "contrast": "enhanced",
             "publicRole": "color.surface.panel",
             "sourceField": "planes.dark.enhanced.color.surface.panel",
-            "authoredValue": "oklch(14% 0.025 45)",
+            "authoredValue": "oklch(14% 0.0252 45)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
             "publicBinding": "--ui-color-surface-panel"
           },
@@ -4377,7 +4493,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.on-action",
             "sourceField": "planes.dark.enhanced.color.text.on-action",
-            "authoredValue": "oklch(3% 0.008 45)",
+            "authoredValue": "oklch(3% 0.0086 38)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
             "publicBinding": "--ui-color-text-on-action"
           },
@@ -4386,7 +4502,7 @@
             "contrast": "enhanced",
             "publicRole": "color.text.primary",
             "sourceField": "planes.dark.enhanced.color.text.primary",
-            "authoredValue": "oklch(99% 0.004 75)",
+            "authoredValue": "oklch(99% 0.0043 38)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
             "publicBinding": "--ui-color-text-primary"
           },
@@ -4395,7 +4511,1559 @@
             "contrast": "enhanced",
             "publicRole": "color.text.secondary",
             "sourceField": "planes.dark.enhanced.color.text.secondary",
-            "authoredValue": "oklch(84% 0.025 65)",
+            "authoredValue": "oklch(84% 0.022 38)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          }
+        ]
+      }
+    },
+    {
+      "activationStatus": "ACTIVE",
+      "registryKind": "built-in",
+      "themeId": "graphite",
+      "label": "Graphite",
+      "source": "themes/complete/graphite.theme.json",
+      "schemaVersion": 3,
+      "roleContractVersion": 1,
+      "planes": {
+        "light": {
+          "standard": {
+            "color.action.primary": "oklch(49% 0.035 255)",
+            "color.border.default": "oklch(57% 0.025 255)",
+            "color.focus.ring": "oklch(47% 0.07 255)",
+            "color.scrim.viewport": "oklch(11% 0.0072 255 / 0.56)",
+            "color.surface.page": "oklch(97.5% 0.004 255)",
+            "color.surface.panel": "oklch(99.5% 0.001 255)",
+            "color.text.on-action": "oklch(99% 0.002 255)",
+            "color.text.primary": "oklch(24% 0.0144 255)",
+            "color.text.secondary": "oklch(39% 0.018 255)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(37% 0.0273 255)",
+            "color.border.default": "oklch(46% 0.025 255)",
+            "color.focus.ring": "oklch(34% 0.0595 255)",
+            "color.scrim.viewport": "oklch(7% 0.0056 255 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0056 255)",
+            "color.surface.panel": "oklch(99% 0.002 255)",
+            "color.text.on-action": "oklch(98.5% 0.003 255)",
+            "color.text.primary": "oklch(11% 0.0117 255)",
+            "color.text.secondary": "oklch(26% 0.018 255)"
+          }
+        },
+        "dark": {
+          "standard": {
+            "color.action.primary": "oklch(70% 0.0297 255)",
+            "color.border.default": "oklch(53% 0.0262 255)",
+            "color.focus.ring": "oklch(73% 0.07 255)",
+            "color.scrim.viewport": "oklch(3% 0.0028 255 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0072 255)",
+            "color.surface.panel": "oklch(19% 0.008 255)",
+            "color.text.on-action": "oklch(9% 0.0099 255)",
+            "color.text.primary": "oklch(91% 0.0081 255)",
+            "color.text.secondary": "oklch(74% 0.0134 255)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(83% 0.0245 255)",
+            "color.border.default": "oklch(64% 0.0275 255)",
+            "color.focus.ring": "oklch(86% 0.049 255)",
+            "color.scrim.viewport": "oklch(1% 0.0028 255 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0056 255)",
+            "color.surface.panel": "oklch(14% 0.0072 255)",
+            "color.text.on-action": "oklch(3% 0.0072 255)",
+            "color.text.primary": "oklch(99% 0.0032 255)",
+            "color.text.secondary": "oklch(84% 0.0099 255)"
+          }
+        }
+      },
+      "bank": {
+        "visibility": "ui-internal",
+        "records": [
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.standard.color.action.primary",
+            "authoredValue": "oklch(49% 0.035 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.standard.color.border.default",
+            "authoredValue": "oklch(57% 0.025 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.standard.color.focus.ring",
+            "authoredValue": "oklch(47% 0.07 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.standard.color.scrim.viewport",
+            "authoredValue": "oklch(11% 0.0072 255 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.standard.color.surface.page",
+            "authoredValue": "oklch(97.5% 0.004 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.standard.color.surface.panel",
+            "authoredValue": "oklch(99.5% 0.001 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.standard.color.text.on-action",
+            "authoredValue": "oklch(99% 0.002 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.standard.color.text.primary",
+            "authoredValue": "oklch(24% 0.0144 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.standard.color.text.secondary",
+            "authoredValue": "oklch(39% 0.018 255)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.enhanced.color.action.primary",
+            "authoredValue": "oklch(37% 0.0273 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.enhanced.color.border.default",
+            "authoredValue": "oklch(46% 0.025 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.enhanced.color.focus.ring",
+            "authoredValue": "oklch(34% 0.0595 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(7% 0.0056 255 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.enhanced.color.surface.page",
+            "authoredValue": "oklch(95% 0.0056 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.enhanced.color.surface.panel",
+            "authoredValue": "oklch(99% 0.002 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.enhanced.color.text.on-action",
+            "authoredValue": "oklch(98.5% 0.003 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.enhanced.color.text.primary",
+            "authoredValue": "oklch(11% 0.0117 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.enhanced.color.text.secondary",
+            "authoredValue": "oklch(26% 0.018 255)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.standard.color.action.primary",
+            "authoredValue": "oklch(70% 0.0297 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.standard.color.border.default",
+            "authoredValue": "oklch(53% 0.0262 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.standard.color.focus.ring",
+            "authoredValue": "oklch(73% 0.07 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.standard.color.scrim.viewport",
+            "authoredValue": "oklch(3% 0.0028 255 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.standard.color.surface.page",
+            "authoredValue": "oklch(13% 0.0072 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.standard.color.surface.panel",
+            "authoredValue": "oklch(19% 0.008 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.standard.color.text.on-action",
+            "authoredValue": "oklch(9% 0.0099 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.standard.color.text.primary",
+            "authoredValue": "oklch(91% 0.0081 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.standard.color.text.secondary",
+            "authoredValue": "oklch(74% 0.0134 255)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.enhanced.color.action.primary",
+            "authoredValue": "oklch(83% 0.0245 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.enhanced.color.border.default",
+            "authoredValue": "oklch(64% 0.0275 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.enhanced.color.focus.ring",
+            "authoredValue": "oklch(86% 0.049 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(1% 0.0028 255 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.enhanced.color.surface.page",
+            "authoredValue": "oklch(8% 0.0056 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.enhanced.color.surface.panel",
+            "authoredValue": "oklch(14% 0.0072 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.enhanced.color.text.on-action",
+            "authoredValue": "oklch(3% 0.0072 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.enhanced.color.text.primary",
+            "authoredValue": "oklch(99% 0.0032 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.enhanced.color.text.secondary",
+            "authoredValue": "oklch(84% 0.0099 255)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          }
+        ]
+      }
+    },
+    {
+      "activationStatus": "ACTIVE",
+      "registryKind": "built-in",
+      "themeId": "iris",
+      "label": "Iris",
+      "source": "themes/complete/iris.theme.json",
+      "schemaVersion": 3,
+      "roleContractVersion": 1,
+      "planes": {
+        "light": {
+          "standard": {
+            "color.action.primary": "oklch(49% 0.13 300)",
+            "color.border.default": "oklch(57% 0.06 300)",
+            "color.focus.ring": "oklch(47% 0.12 300)",
+            "color.scrim.viewport": "oklch(11% 0.0216 300 / 0.56)",
+            "color.surface.page": "oklch(97.5% 0.012 300)",
+            "color.surface.panel": "oklch(99.5% 0.0024 300)",
+            "color.text.on-action": "oklch(99% 0.003 300)",
+            "color.text.primary": "oklch(24% 0.0304 300)",
+            "color.text.secondary": "oklch(39% 0.038 300)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(37% 0.1014 300)",
+            "color.border.default": "oklch(46% 0.06 300)",
+            "color.focus.ring": "oklch(34% 0.1019 300)",
+            "color.scrim.viewport": "oklch(7% 0.0168 300 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0168 300)",
+            "color.surface.panel": "oklch(99% 0.0042 300)",
+            "color.text.on-action": "oklch(98.5% 0.006 300)",
+            "color.text.primary": "oklch(11% 0.0247 300)",
+            "color.text.secondary": "oklch(26% 0.038 300)"
+          }
+        },
+        "dark": {
+          "standard": {
+            "color.action.primary": "oklch(70% 0.1105 300)",
+            "color.border.default": "oklch(53% 0.063 300)",
+            "color.focus.ring": "oklch(73% 0.12 300)",
+            "color.scrim.viewport": "oklch(3% 0.0084 300 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0216 300)",
+            "color.surface.panel": "oklch(19% 0.024 300)",
+            "color.text.on-action": "oklch(9% 0.0209 300)",
+            "color.text.primary": "oklch(91% 0.0171 300)",
+            "color.text.secondary": "oklch(74% 0.0285 300)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(83% 0.0877 300)",
+            "color.border.default": "oklch(64% 0.066 300)",
+            "color.focus.ring": "oklch(86% 0.0713 300)",
+            "color.scrim.viewport": "oklch(1% 0.0046 300 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0168 300)",
+            "color.surface.panel": "oklch(14% 0.0216 300)",
+            "color.text.on-action": "oklch(3% 0.014 300)",
+            "color.text.primary": "oklch(99% 0.0048 300)",
+            "color.text.secondary": "oklch(84% 0.0209 300)"
+          }
+        }
+      },
+      "bank": {
+        "visibility": "ui-internal",
+        "records": [
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.standard.color.action.primary",
+            "authoredValue": "oklch(49% 0.13 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.standard.color.border.default",
+            "authoredValue": "oklch(57% 0.06 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.standard.color.focus.ring",
+            "authoredValue": "oklch(47% 0.12 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.standard.color.scrim.viewport",
+            "authoredValue": "oklch(11% 0.0216 300 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.standard.color.surface.page",
+            "authoredValue": "oklch(97.5% 0.012 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.standard.color.surface.panel",
+            "authoredValue": "oklch(99.5% 0.0024 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.standard.color.text.on-action",
+            "authoredValue": "oklch(99% 0.003 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.standard.color.text.primary",
+            "authoredValue": "oklch(24% 0.0304 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.standard.color.text.secondary",
+            "authoredValue": "oklch(39% 0.038 300)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.enhanced.color.action.primary",
+            "authoredValue": "oklch(37% 0.1014 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.enhanced.color.border.default",
+            "authoredValue": "oklch(46% 0.06 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.enhanced.color.focus.ring",
+            "authoredValue": "oklch(34% 0.1019 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(7% 0.0168 300 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.enhanced.color.surface.page",
+            "authoredValue": "oklch(95% 0.0168 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.enhanced.color.surface.panel",
+            "authoredValue": "oklch(99% 0.0042 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.enhanced.color.text.on-action",
+            "authoredValue": "oklch(98.5% 0.006 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.enhanced.color.text.primary",
+            "authoredValue": "oklch(11% 0.0247 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.enhanced.color.text.secondary",
+            "authoredValue": "oklch(26% 0.038 300)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.standard.color.action.primary",
+            "authoredValue": "oklch(70% 0.1105 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.standard.color.border.default",
+            "authoredValue": "oklch(53% 0.063 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.standard.color.focus.ring",
+            "authoredValue": "oklch(73% 0.12 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.standard.color.scrim.viewport",
+            "authoredValue": "oklch(3% 0.0084 300 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.standard.color.surface.page",
+            "authoredValue": "oklch(13% 0.0216 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.standard.color.surface.panel",
+            "authoredValue": "oklch(19% 0.024 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.standard.color.text.on-action",
+            "authoredValue": "oklch(9% 0.0209 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.standard.color.text.primary",
+            "authoredValue": "oklch(91% 0.0171 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.standard.color.text.secondary",
+            "authoredValue": "oklch(74% 0.0285 300)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.enhanced.color.action.primary",
+            "authoredValue": "oklch(83% 0.0877 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.enhanced.color.border.default",
+            "authoredValue": "oklch(64% 0.066 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.enhanced.color.focus.ring",
+            "authoredValue": "oklch(86% 0.0713 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(1% 0.0046 300 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.enhanced.color.surface.page",
+            "authoredValue": "oklch(8% 0.0168 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.enhanced.color.surface.panel",
+            "authoredValue": "oklch(14% 0.0216 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.enhanced.color.text.on-action",
+            "authoredValue": "oklch(3% 0.014 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.enhanced.color.text.primary",
+            "authoredValue": "oklch(99% 0.0048 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.enhanced.color.text.secondary",
+            "authoredValue": "oklch(84% 0.0209 300)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          }
+        ]
+      }
+    },
+    {
+      "activationStatus": "ACTIVE",
+      "registryKind": "built-in",
+      "themeId": "jade",
+      "label": "Jade",
+      "source": "themes/complete/jade.theme.json",
+      "schemaVersion": 3,
+      "roleContractVersion": 1,
+      "planes": {
+        "light": {
+          "standard": {
+            "color.action.primary": "oklch(49% 0.11 150)",
+            "color.border.default": "oklch(57% 0.055 150)",
+            "color.focus.ring": "oklch(47% 0.1 150)",
+            "color.scrim.viewport": "oklch(11% 0.0216 150 / 0.56)",
+            "color.surface.page": "oklch(97.5% 0.012 150)",
+            "color.surface.panel": "oklch(99.5% 0.003 150)",
+            "color.text.on-action": "oklch(99% 0.003 150)",
+            "color.text.primary": "oklch(24% 0.028 150)",
+            "color.text.secondary": "oklch(39% 0.035 150)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(37% 0.0858 150)",
+            "color.border.default": "oklch(46% 0.055 150)",
+            "color.focus.ring": "oklch(34% 0.0823 150)",
+            "color.scrim.viewport": "oklch(7% 0.0168 150 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0168 150)",
+            "color.surface.panel": "oklch(99% 0.0042 150)",
+            "color.text.on-action": "oklch(98.5% 0.006 150)",
+            "color.text.primary": "oklch(11% 0.0227 150)",
+            "color.text.secondary": "oklch(26% 0.035 150)"
+          }
+        },
+        "dark": {
+          "standard": {
+            "color.action.primary": "oklch(70% 0.0935 150)",
+            "color.border.default": "oklch(53% 0.0577 150)",
+            "color.focus.ring": "oklch(73% 0.1 150)",
+            "color.scrim.viewport": "oklch(3% 0.0072 150 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0216 150)",
+            "color.surface.panel": "oklch(19% 0.024 150)",
+            "color.text.on-action": "oklch(9% 0.0192 150)",
+            "color.text.primary": "oklch(91% 0.0157 150)",
+            "color.text.secondary": "oklch(74% 0.0262 150)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(83% 0.077 150)",
+            "color.border.default": "oklch(64% 0.0605 150)",
+            "color.focus.ring": "oklch(86% 0.0699 150)",
+            "color.scrim.viewport": "oklch(1% 0.0024 150 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0168 150)",
+            "color.surface.panel": "oklch(14% 0.0216 150)",
+            "color.text.on-action": "oklch(3% 0.0072 150)",
+            "color.text.primary": "oklch(99% 0.0063 150)",
+            "color.text.secondary": "oklch(84% 0.0192 150)"
+          }
+        }
+      },
+      "bank": {
+        "visibility": "ui-internal",
+        "records": [
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.standard.color.action.primary",
+            "authoredValue": "oklch(49% 0.11 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.standard.color.border.default",
+            "authoredValue": "oklch(57% 0.055 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.standard.color.focus.ring",
+            "authoredValue": "oklch(47% 0.1 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.standard.color.scrim.viewport",
+            "authoredValue": "oklch(11% 0.0216 150 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.standard.color.surface.page",
+            "authoredValue": "oklch(97.5% 0.012 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.standard.color.surface.panel",
+            "authoredValue": "oklch(99.5% 0.003 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.standard.color.text.on-action",
+            "authoredValue": "oklch(99% 0.003 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.standard.color.text.primary",
+            "authoredValue": "oklch(24% 0.028 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.standard.color.text.secondary",
+            "authoredValue": "oklch(39% 0.035 150)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.enhanced.color.action.primary",
+            "authoredValue": "oklch(37% 0.0858 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.enhanced.color.border.default",
+            "authoredValue": "oklch(46% 0.055 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.enhanced.color.focus.ring",
+            "authoredValue": "oklch(34% 0.0823 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(7% 0.0168 150 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.enhanced.color.surface.page",
+            "authoredValue": "oklch(95% 0.0168 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.enhanced.color.surface.panel",
+            "authoredValue": "oklch(99% 0.0042 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.enhanced.color.text.on-action",
+            "authoredValue": "oklch(98.5% 0.006 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.enhanced.color.text.primary",
+            "authoredValue": "oklch(11% 0.0227 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.enhanced.color.text.secondary",
+            "authoredValue": "oklch(26% 0.035 150)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.standard.color.action.primary",
+            "authoredValue": "oklch(70% 0.0935 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.standard.color.border.default",
+            "authoredValue": "oklch(53% 0.0577 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.standard.color.focus.ring",
+            "authoredValue": "oklch(73% 0.1 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.standard.color.scrim.viewport",
+            "authoredValue": "oklch(3% 0.0072 150 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.standard.color.surface.page",
+            "authoredValue": "oklch(13% 0.0216 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.standard.color.surface.panel",
+            "authoredValue": "oklch(19% 0.024 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.standard.color.text.on-action",
+            "authoredValue": "oklch(9% 0.0192 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.standard.color.text.primary",
+            "authoredValue": "oklch(91% 0.0157 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.standard.color.text.secondary",
+            "authoredValue": "oklch(74% 0.0262 150)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.enhanced.color.action.primary",
+            "authoredValue": "oklch(83% 0.077 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.enhanced.color.border.default",
+            "authoredValue": "oklch(64% 0.0605 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.enhanced.color.focus.ring",
+            "authoredValue": "oklch(86% 0.0699 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(1% 0.0024 150 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.enhanced.color.surface.page",
+            "authoredValue": "oklch(8% 0.0168 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.enhanced.color.surface.panel",
+            "authoredValue": "oklch(14% 0.0216 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.enhanced.color.text.on-action",
+            "authoredValue": "oklch(3% 0.0072 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.enhanced.color.text.primary",
+            "authoredValue": "oklch(99% 0.0063 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.enhanced.color.text.secondary",
+            "authoredValue": "oklch(84% 0.0192 150)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          }
+        ]
+      }
+    },
+    {
+      "activationStatus": "ACTIVE",
+      "registryKind": "built-in",
+      "themeId": "lagoon",
+      "label": "Lagoon",
+      "source": "themes/complete/lagoon.theme.json",
+      "schemaVersion": 3,
+      "roleContractVersion": 1,
+      "planes": {
+        "light": {
+          "standard": {
+            "color.action.primary": "oklch(49% 0.0736 205)",
+            "color.border.default": "oklch(57% 0.055 205)",
+            "color.focus.ring": "oklch(47% 0.0706 205)",
+            "color.scrim.viewport": "oklch(11% 0.0167 210 / 0.56)",
+            "color.surface.page": "oklch(97.5% 0.012 210)",
+            "color.surface.panel": "oklch(99.5% 0.003 210)",
+            "color.text.on-action": "oklch(99% 0.003 210)",
+            "color.text.primary": "oklch(24% 0.028 210)",
+            "color.text.secondary": "oklch(39% 0.035 210)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(37% 0.0556 205)",
+            "color.border.default": "oklch(46% 0.055 205)",
+            "color.focus.ring": "oklch(34% 0.051 205)",
+            "color.scrim.viewport": "oklch(7% 0.0106 210 / 0.56)",
+            "color.surface.page": "oklch(95% 0.0168 210)",
+            "color.surface.panel": "oklch(99% 0.0042 210)",
+            "color.text.on-action": "oklch(98.5% 0.006 210)",
+            "color.text.primary": "oklch(11% 0.0167 210)",
+            "color.text.secondary": "oklch(26% 0.035 210)"
+          }
+        },
+        "dark": {
+          "standard": {
+            "color.action.primary": "oklch(70% 0.0807 205)",
+            "color.border.default": "oklch(53% 0.0577 205)",
+            "color.focus.ring": "oklch(73% 0.095 205)",
+            "color.scrim.viewport": "oklch(3% 0.0045 210 / 0.56)",
+            "color.surface.page": "oklch(13% 0.0197 210)",
+            "color.surface.panel": "oklch(19% 0.024 210)",
+            "color.text.on-action": "oklch(9% 0.0136 210)",
+            "color.text.primary": "oklch(91% 0.0157 210)",
+            "color.text.secondary": "oklch(74% 0.0262 210)"
+          },
+          "enhanced": {
+            "color.action.primary": "oklch(83% 0.0664 205)",
+            "color.border.default": "oklch(64% 0.0605 205)",
+            "color.focus.ring": "oklch(86% 0.0664 205)",
+            "color.scrim.viewport": "oklch(1% 0.0015 210 / 0.56)",
+            "color.surface.page": "oklch(8% 0.0121 210)",
+            "color.surface.panel": "oklch(14% 0.0213 210)",
+            "color.text.on-action": "oklch(3% 0.0045 210)",
+            "color.text.primary": "oklch(99% 0.0063 210)",
+            "color.text.secondary": "oklch(84% 0.0192 210)"
+          }
+        }
+      },
+      "bank": {
+        "visibility": "ui-internal",
+        "records": [
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.standard.color.action.primary",
+            "authoredValue": "oklch(49% 0.0736 205)",
+            "bankVariable": "--ui-theme-bank-light-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.standard.color.border.default",
+            "authoredValue": "oklch(57% 0.055 205)",
+            "bankVariable": "--ui-theme-bank-light-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.standard.color.focus.ring",
+            "authoredValue": "oklch(47% 0.0706 205)",
+            "bankVariable": "--ui-theme-bank-light-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.standard.color.scrim.viewport",
+            "authoredValue": "oklch(11% 0.0167 210 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.standard.color.surface.page",
+            "authoredValue": "oklch(97.5% 0.012 210)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.standard.color.surface.panel",
+            "authoredValue": "oklch(99.5% 0.003 210)",
+            "bankVariable": "--ui-theme-bank-light-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.standard.color.text.on-action",
+            "authoredValue": "oklch(99% 0.003 210)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.standard.color.text.primary",
+            "authoredValue": "oklch(24% 0.028 210)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.standard.color.text.secondary",
+            "authoredValue": "oklch(39% 0.035 210)",
+            "bankVariable": "--ui-theme-bank-light-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.light.enhanced.color.action.primary",
+            "authoredValue": "oklch(37% 0.0556 205)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.light.enhanced.color.border.default",
+            "authoredValue": "oklch(46% 0.055 205)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.light.enhanced.color.focus.ring",
+            "authoredValue": "oklch(34% 0.051 205)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.light.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(7% 0.0106 210 / 0.56)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.light.enhanced.color.surface.page",
+            "authoredValue": "oklch(95% 0.0168 210)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.light.enhanced.color.surface.panel",
+            "authoredValue": "oklch(99% 0.0042 210)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.light.enhanced.color.text.on-action",
+            "authoredValue": "oklch(98.5% 0.006 210)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.light.enhanced.color.text.primary",
+            "authoredValue": "oklch(11% 0.0167 210)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "light",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.light.enhanced.color.text.secondary",
+            "authoredValue": "oklch(26% 0.035 210)",
+            "bankVariable": "--ui-theme-bank-light-enhanced-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.standard.color.action.primary",
+            "authoredValue": "oklch(70% 0.0807 205)",
+            "bankVariable": "--ui-theme-bank-dark-standard-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.standard.color.border.default",
+            "authoredValue": "oklch(53% 0.0577 205)",
+            "bankVariable": "--ui-theme-bank-dark-standard-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.standard.color.focus.ring",
+            "authoredValue": "oklch(73% 0.095 205)",
+            "bankVariable": "--ui-theme-bank-dark-standard-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.standard.color.scrim.viewport",
+            "authoredValue": "oklch(3% 0.0045 210 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-standard-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.standard.color.surface.page",
+            "authoredValue": "oklch(13% 0.0197 210)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.standard.color.surface.panel",
+            "authoredValue": "oklch(19% 0.024 210)",
+            "bankVariable": "--ui-theme-bank-dark-standard-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.standard.color.text.on-action",
+            "authoredValue": "oklch(9% 0.0136 210)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.standard.color.text.primary",
+            "authoredValue": "oklch(91% 0.0157 210)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "standard",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.standard.color.text.secondary",
+            "authoredValue": "oklch(74% 0.0262 210)",
+            "bankVariable": "--ui-theme-bank-dark-standard-text-secondary",
+            "publicBinding": "--ui-color-text-secondary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.action.primary",
+            "sourceField": "planes.dark.enhanced.color.action.primary",
+            "authoredValue": "oklch(83% 0.0664 205)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-action-primary",
+            "publicBinding": "--ui-color-action-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.border.default",
+            "sourceField": "planes.dark.enhanced.color.border.default",
+            "authoredValue": "oklch(64% 0.0605 205)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-border-default",
+            "publicBinding": "--ui-color-border-default"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.focus.ring",
+            "sourceField": "planes.dark.enhanced.color.focus.ring",
+            "authoredValue": "oklch(86% 0.0664 205)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-focus-ring",
+            "publicBinding": "--ui-color-focus-ring"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.scrim.viewport",
+            "sourceField": "planes.dark.enhanced.color.scrim.viewport",
+            "authoredValue": "oklch(1% 0.0015 210 / 0.56)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-scrim-viewport",
+            "publicBinding": "--ui-color-scrim-viewport"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.page",
+            "sourceField": "planes.dark.enhanced.color.surface.page",
+            "authoredValue": "oklch(8% 0.0121 210)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-page",
+            "publicBinding": "--ui-color-surface-page"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.surface.panel",
+            "sourceField": "planes.dark.enhanced.color.surface.panel",
+            "authoredValue": "oklch(14% 0.0213 210)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-surface-panel",
+            "publicBinding": "--ui-color-surface-panel"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.on-action",
+            "sourceField": "planes.dark.enhanced.color.text.on-action",
+            "authoredValue": "oklch(3% 0.0045 210)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-on-action",
+            "publicBinding": "--ui-color-text-on-action"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.primary",
+            "sourceField": "planes.dark.enhanced.color.text.primary",
+            "authoredValue": "oklch(99% 0.0063 210)",
+            "bankVariable": "--ui-theme-bank-dark-enhanced-text-primary",
+            "publicBinding": "--ui-color-text-primary"
+          },
+          {
+            "colorMode": "dark",
+            "contrast": "enhanced",
+            "publicRole": "color.text.secondary",
+            "sourceField": "planes.dark.enhanced.color.text.secondary",
+            "authoredValue": "oklch(84% 0.0192 210)",
             "bankVariable": "--ui-theme-bank-dark-enhanced-text-secondary",
             "publicBinding": "--ui-color-text-secondary"
           }
@@ -4410,7 +6078,7 @@
         "effectiveColorMode": "light",
         "effectiveTheme": {
           "registryKind": "built-in",
-          "themeId": "neutral"
+          "themeId": "iris"
         },
         "effectiveContrast": "standard",
         "effectiveMaterial": "solid",

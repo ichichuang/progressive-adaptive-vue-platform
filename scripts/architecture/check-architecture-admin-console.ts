@@ -13,6 +13,8 @@ import {
   type UnoCssContainerBoundaryContribution,
   type UnoCssContainerVariantProjection,
 } from '../../packages/design-system/src/build/public-role-registry'
+import { validateTokens } from '../../packages/design-system/src/build/build'
+import { formatRuntimeCss } from '../../packages/design-system/src/build/formats/css'
 import type { LayoutTokenId } from '../../packages/design-system/src/build/formats/layout'
 import { layoutRegistry } from '../../packages/design-system/src/generated/layout-registry'
 import tokenManifest from '../../packages/design-system/src/generated/tokens.manifest.json' with { type: 'json' }
@@ -69,16 +71,28 @@ import { validateUiPublicComponents } from './check-ui-public-components'
 type JsonObject = Record<string, unknown>
 
 interface MaterialGateSnapshot {
+  readonly appStylesSource: string
   readonly applicationImportSource: string
+  readonly nonAdapterUiSource: string
   readonly manifestAndLockSource: string
   readonly pageVisualSource: string
+  readonly appearancePageSource: string
+  readonly appearanceThemeProjectionSource: string
+  readonly appearanceMutationSource: string
   readonly appTemplateSource: string
+  readonly consoleFrameSource: string
   readonly factImportViolation: boolean
   readonly pageStorageSource: string
   readonly competingAppearanceEnvironmentSource: string
   readonly capabilityPageTemplateSource: string
   readonly themeAdapterSource: string
+  readonly naiveProviderSource: string
+  readonly shellSource: string
+  readonly adminTokenSource: string
+  readonly routeRegistrySource: string
   readonly generatedManifestsEqual: boolean
+  readonly generatedTokensCssSource: string
+  readonly expectedTokensCssSource: string
   readonly routeCount: number
   readonly publicComponentExports: readonly string[]
   readonly registeredPublicComponents: readonly {
@@ -95,8 +109,22 @@ interface ArchitectureAdminConsoleNegativeProbeResult {
 
 const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
+const expectedArchitectureAdminConsoleNegativeProbeCount = 50
+const expectedMotionGeometryNegativeProbeCount = 12
 const expectedNaiveUiIntegrity =
   'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
+const expectedNavigationIconClasses = [
+  'i-lucide-layout-dashboard',
+  'i-lucide-palette',
+  'i-lucide-swatch-book',
+  'i-lucide-cpu',
+  'i-lucide-route',
+  'i-lucide-database',
+  'i-lucide-component',
+  'i-lucide-panels-top-left',
+  'i-lucide-workflow',
+  'i-lucide-map',
+] as const
 const styledFrameworkPackages = [
   'ant-design-vue',
   'arco-design-vue',
@@ -186,59 +214,214 @@ const expectedLayoutRecords = [
     '--ui-layout-target-enhanced-minimum-inline-size',
   ],
 ] as const satisfies readonly (readonly [LayoutTokenId, string, string, string])[]
-const expectedAdminAliases = [
-  ['admin.ambient.canvas', 'color', '{color.surface.page}', '--ui-admin-ambient-canvas'],
-  ['admin.ambient.grid', 'color', '{color.border.default}', '--ui-admin-ambient-grid'],
-  ['admin.ambient.light-accent', 'color', '{color.focus.ring}', '--ui-admin-ambient-light-accent'],
-  [
-    'admin.ambient.light-primary',
-    'color',
-    '{color.action.primary}',
-    '--ui-admin-ambient-light-primary',
-  ],
-  ['admin.ambient.light-warm', 'color', '{color.text.secondary}', '--ui-admin-ambient-light-warm'],
-  ['admin.border.subtle', 'color', '{color.border.default}', '--ui-admin-border-subtle'],
-  [
-    'admin.chrome.header',
-    'color',
-    '{material.chrome.adaptive.background}',
-    '--ui-admin-chrome-header',
-  ],
-  [
-    'admin.chrome.sidebar',
-    'color',
-    '{material.chrome.adaptive.background}',
-    '--ui-admin-chrome-sidebar',
-  ],
-  ['admin.navigation.hover', 'color', '{color.surface.panel}', '--ui-admin-navigation-hover'],
-  [
-    'admin.navigation.selected',
-    'color',
-    '{color.action.primary}',
-    '--ui-admin-navigation-selected',
-  ],
-  ['admin.shadow.chrome', 'shadow', '{interaction.shadow.panel}', '--ui-admin-shadow-chrome'],
-  ['admin.shadow.overlay', 'shadow', '{interaction.shadow.panel}', '--ui-admin-shadow-overlay'],
-  ['admin.surface.content', 'color', '{color.surface.panel}', '--ui-admin-surface-content'],
-  [
-    'admin.surface.overlay',
-    'color',
-    '{material.overlay.adaptive.background}',
-    '--ui-admin-surface-overlay',
-  ],
-  ['admin.surface.settings', 'color', '{color.surface.panel}', '--ui-admin-surface-settings'],
+const expectedAdminTokens = [
+  {
+    name: 'admin.ambient.canvas',
+    type: 'color',
+    value: '{color.surface.page}',
+    cssVariable: '--ui-admin-ambient-canvas',
+    resolvedValue: 'var(--ui-color-surface-page)',
+  },
+  {
+    name: 'admin.ambient.grid',
+    type: 'color',
+    value: '{color.border.default}',
+    cssVariable: '--ui-admin-ambient-grid',
+    resolvedValue: 'var(--ui-color-border-default)',
+  },
+  {
+    name: 'admin.ambient.light-accent',
+    type: 'color',
+    value: '{color.focus.ring}',
+    cssVariable: '--ui-admin-ambient-light-accent',
+    resolvedValue: 'var(--ui-color-focus-ring)',
+  },
+  {
+    name: 'admin.ambient.light-primary',
+    type: 'color',
+    value: '{color.action.primary}',
+    cssVariable: '--ui-admin-ambient-light-primary',
+    resolvedValue: 'var(--ui-color-action-primary)',
+  },
+  {
+    name: 'admin.ambient.light-warm',
+    type: 'color',
+    value: '{color.text.secondary}',
+    cssVariable: '--ui-admin-ambient-light-warm',
+    resolvedValue: 'var(--ui-color-text-secondary)',
+  },
+  {
+    name: 'admin.border.action',
+    type: 'border',
+    value: {
+      color: '{color.action.primary}',
+      width: '{admin.border.width}',
+      style: 'solid',
+    },
+    cssVariable: '--ui-admin-border-action',
+    resolvedValue: 'var(--ui-admin-border-width) solid var(--ui-color-action-primary)',
+  },
+  {
+    name: 'admin.border.control',
+    type: 'border',
+    value: {
+      color: '{color.border.default}',
+      width: '{admin.border.width}',
+      style: 'solid',
+    },
+    cssVariable: '--ui-admin-border-control',
+    resolvedValue: 'var(--ui-admin-border-width) solid var(--ui-color-border-default)',
+  },
+  {
+    name: 'admin.border.focus',
+    type: 'border',
+    value: {
+      color: '{color.focus.ring}',
+      width: '{admin.border.width}',
+      style: 'solid',
+    },
+    cssVariable: '--ui-admin-border-focus',
+    resolvedValue: 'var(--ui-admin-border-width) solid var(--ui-color-focus-ring)',
+  },
+  {
+    name: 'admin.border.subtle',
+    type: 'color',
+    value: '{color.border.default}',
+    cssVariable: '--ui-admin-border-subtle',
+    resolvedValue: 'var(--ui-color-border-default)',
+  },
+  {
+    name: 'admin.border.width',
+    type: 'dimension',
+    value: { value: 1, unit: 'px' },
+    cssVariable: '--ui-admin-border-width',
+    resolvedValue: '1px',
+  },
+  {
+    name: 'admin.focus.outline-offset',
+    type: 'dimension',
+    value: '{admin.focus.width}',
+    cssVariable: '--ui-admin-focus-outline-offset',
+    resolvedValue: 'var(--ui-admin-focus-width)',
+  },
+  {
+    name: 'admin.focus.width',
+    type: 'dimension',
+    value: { value: 2, unit: 'px' },
+    cssVariable: '--ui-admin-focus-width',
+    resolvedValue: '2px',
+  },
+  {
+    name: 'admin.navigation.hover',
+    type: 'color',
+    value: '{color.surface.panel}',
+    cssVariable: '--ui-admin-navigation-hover',
+    resolvedValue: 'var(--ui-color-surface-panel)',
+  },
+  {
+    name: 'admin.navigation.selected',
+    type: 'color',
+    value: '{color.action.primary}',
+    cssVariable: '--ui-admin-navigation-selected',
+    resolvedValue: 'var(--ui-color-action-primary)',
+  },
+  {
+    name: 'admin.optical.backdrop-blur',
+    type: 'dimension',
+    value: '{dimension.space.3}',
+    cssVariable: '--ui-admin-optical-backdrop-blur',
+    resolvedValue: '0.75rem',
+  },
+  {
+    name: 'admin.shadow.chrome',
+    type: 'shadow',
+    value: '{interaction.shadow.panel}',
+    cssVariable: '--ui-admin-shadow-chrome',
+    resolvedValue: 'var(--ui-shadow-panel)',
+  },
+  {
+    name: 'admin.shadow.control',
+    type: 'shadow',
+    value: {
+      color: '{color.border.default}',
+      offsetX: '{dimension.space.0}',
+      offsetY: '{dimension.space.0}',
+      blur: '{dimension.space.0}',
+      spread: '{admin.border.width}',
+      inset: true,
+    },
+    cssVariable: '--ui-admin-shadow-control',
+    resolvedValue:
+      'inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-border-default)',
+  },
+  {
+    name: 'admin.shadow.control-hover',
+    type: 'shadow',
+    value: {
+      color: '{color.action.primary}',
+      offsetX: '{dimension.space.0}',
+      offsetY: '{dimension.space.0}',
+      blur: '{dimension.space.0}',
+      spread: '{admin.border.width}',
+      inset: true,
+    },
+    cssVariable: '--ui-admin-shadow-control-hover',
+    resolvedValue:
+      'inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-action-primary)',
+  },
+  {
+    name: 'admin.shadow.focus-ring',
+    type: 'shadow',
+    value: [
+      {
+        color: '{color.focus.ring}',
+        offsetX: '{dimension.space.0}',
+        offsetY: '{dimension.space.0}',
+        blur: '{dimension.space.0}',
+        spread: '{admin.border.width}',
+        inset: true,
+      },
+      {
+        color: '{color.focus.ring}',
+        offsetX: '{dimension.space.0}',
+        offsetY: '{dimension.space.0}',
+        blur: '{dimension.space.0}',
+        spread: '{admin.focus.width}',
+      },
+    ],
+    cssVariable: '--ui-admin-shadow-focus-ring',
+    resolvedValue:
+      'inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-focus-ring), 0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring)',
+  },
+  {
+    name: 'admin.shadow.overlay',
+    type: 'shadow',
+    value: '{interaction.shadow.panel}',
+    cssVariable: '--ui-admin-shadow-overlay',
+    resolvedValue: 'var(--ui-shadow-panel)',
+  },
+  {
+    name: 'admin.state.disabled-opacity',
+    type: 'number',
+    value: 0.5,
+    cssVariable: '--ui-admin-state-disabled-opacity',
+    resolvedValue: '0.5',
+  },
+  {
+    name: 'admin.surface.content',
+    type: 'color',
+    value: '{color.surface.panel}',
+    cssVariable: '--ui-admin-surface-content',
+    resolvedValue: 'var(--ui-color-surface-panel)',
+  },
+  {
+    name: 'admin.surface.settings',
+    type: 'color',
+    value: '{color.surface.panel}',
+    cssVariable: '--ui-admin-surface-settings',
+    resolvedValue: 'var(--ui-color-surface-panel)',
+  },
 ] as const
-const adminAliasResolvedValues = new Map<string, string>([
-  ['{color.action.primary}', 'var(--ui-color-action-primary)'],
-  ['{color.border.default}', 'var(--ui-color-border-default)'],
-  ['{color.focus.ring}', 'var(--ui-color-focus-ring)'],
-  ['{color.surface.page}', 'var(--ui-color-surface-page)'],
-  ['{color.surface.panel}', 'var(--ui-color-surface-panel)'],
-  ['{color.text.secondary}', 'var(--ui-color-text-secondary)'],
-  ['{interaction.shadow.panel}', 'var(--ui-shadow-panel)'],
-  ['{material.chrome.adaptive.background}', 'var(--ui-material-chrome-background)'],
-  ['{material.overlay.adaptive.background}', 'var(--ui-material-overlay-background)'],
-])
 const pageFactImportContract = new Map<string, readonly string[]>([
   [
     'apps/web/src/pages/index.vue',
@@ -311,6 +494,7 @@ const themeOverrideContract = {
     'iconColorHover',
     'iconColorPressed',
     'lineHeight',
+    'opacityDisabled',
     'pressedColor',
     'primaryColorHover',
     'primaryColorPressed',
@@ -335,22 +519,39 @@ const themeOverrideContract = {
     'separatorColor',
   ],
   Button: [
+    'border',
+    'borderDisabled',
+    'borderDisabledPrimary',
+    'borderFocus',
+    'borderFocusPrimary',
+    'borderHover',
+    'borderHoverPrimary',
+    'borderPressed',
+    'borderPressedPrimary',
+    'borderPrimary',
     'borderRadiusMedium',
+    'colorDisabledPrimary',
     'colorFocusPrimary',
     'colorHoverPrimary',
     'colorPressedPrimary',
     'colorPrimary',
+    'colorSecondary',
+    'colorSecondaryHover',
+    'colorSecondaryPressed',
     'fontSizeMedium',
     'heightMedium',
     'rippleColor',
     'rippleColorPrimary',
+    'rippleDuration',
     'textColor',
-    'textColorFocus',
     'textColorFocusPrimary',
-    'textColorHover',
+    'textColorGhost',
+    'textColorGhostDisabled',
+    'textColorGhostHover',
+    'textColorGhostPressed',
     'textColorHoverPrimary',
-    'textColorPressed',
     'textColorPressedPrimary',
+    'textColorDisabledPrimary',
     'textColorPrimary',
   ],
   Descriptions: [
@@ -359,42 +560,1032 @@ const themeOverrideContract = {
     'fontSizeMedium',
     'lineHeight',
     'tdColor',
+    'tdPaddingBorderedMedium',
     'tdTextColor',
     'thColor',
     'thFontWeight',
+    'thPaddingBorderedMedium',
     'thTextColor',
-    'titleTextColor',
   ],
   Radio: [
     'buttonBorderColor',
     'buttonBorderColorActive',
-    'buttonBorderColorHover',
     'buttonBorderRadius',
+    'buttonBoxShadow',
     'buttonBoxShadowFocus',
+    'buttonBoxShadowHover',
     'buttonColor',
     'buttonColorActive',
     'buttonHeightMedium',
     'buttonTextColor',
     'buttonTextColorActive',
     'buttonTextColorHover',
-    'color',
-    'colorActive',
-    'dotColorActive',
     'fontSizeMedium',
-    'labelLineHeight',
-    'textColor',
   ],
-  Tag: [
-    'border',
-    'borderRadius',
-    'color',
-    'colorBordered',
-    'fontSizeMedium',
-    'fontWeightStrong',
-    'heightMedium',
-    'textColor',
-  ],
+  Tag: ['border', 'borderRadius', 'colorBordered', 'fontSizeMedium', 'heightMedium', 'textColor'],
 } as const
+
+type NaiveThemeComponent = Exclude<keyof typeof themeOverrideContract, 'common'>
+type NaiveThemeValueKind =
+  | 'border'
+  | 'color'
+  | 'easing'
+  | 'font-family'
+  | 'font-weight'
+  | 'length'
+  | 'number'
+  | 'shadow'
+  | 'time'
+
+interface NaiveThemeAuthority {
+  readonly authority: string
+  readonly valueKind: NaiveThemeValueKind | 'unknown'
+}
+
+interface NaiveThemeSemanticGroup {
+  readonly component: NaiveThemeComponent | 'common'
+  readonly fields: readonly string[]
+  readonly authority: string
+  readonly valueKind: NaiveThemeValueKind
+}
+
+type Naive2452FieldConsumption = readonly [
+  overrideKey: string,
+  selfLookup: string,
+  emittedCssVariables: readonly `--n-${string}`[],
+  variant: string,
+  selectorState: string,
+]
+
+interface Naive2452ComponentConsumptionRecord {
+  readonly component: NaiveThemeComponent
+  readonly fields: readonly Naive2452FieldConsumption[]
+  readonly useThemeKey: string
+}
+
+interface Naive2452SharedConsumptionRecord {
+  readonly consumingComponent: NaiveThemeComponent
+  readonly emittedCssVariable: `--n-${string}`
+  readonly overrideKey: string
+  readonly selectorState: string
+  readonly selfLookup: string
+  readonly useThemeKey: string
+}
+
+const naiveThemeSemanticGroups = [
+  {
+    component: 'common',
+    fields: ['cubicBezierEaseIn', 'cubicBezierEaseInOut', 'cubicBezierEaseOut'],
+    authority: 'interaction.motion.easing',
+    valueKind: 'easing',
+  },
+  {
+    component: 'common',
+    fields: ['opacityDisabled'],
+    authority: 'admin.state.disabled-opacity',
+    valueKind: 'number',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['fontSize'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['itemLineHeight'],
+    authority: 'typography.line-height.body',
+    valueKind: 'number',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['itemTextColor'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['itemTextColorHover', 'itemTextColorPressed'],
+    authority: 'color.action.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['itemTextColorActive'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['itemBorderRadius'],
+    authority: 'interaction.radius.panel',
+    valueKind: 'length',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['itemColorHover', 'itemColorPressed'],
+    authority: 'appearance.material.chrome',
+    valueKind: 'color',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['separatorColor'],
+    authority: 'color.border.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'Breadcrumb',
+    fields: ['fontWeightActive'],
+    authority: 'typography.weight.title',
+    valueKind: 'font-weight',
+  },
+  {
+    component: 'Button',
+    fields: ['heightMedium'],
+    authority: 'layout.target.enhanced.minimum-block-size',
+    valueKind: 'length',
+  },
+  {
+    component: 'Button',
+    fields: ['borderRadiusMedium'],
+    authority: 'interaction.radius.panel',
+    valueKind: 'length',
+  },
+  {
+    component: 'Button',
+    fields: ['fontSizeMedium'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'Button',
+    fields: ['border', 'borderDisabled'],
+    authority: 'admin.border.control',
+    valueKind: 'border',
+  },
+  {
+    component: 'Button',
+    fields: [
+      'borderHover',
+      'borderPressed',
+      'borderPrimary',
+      'borderHoverPrimary',
+      'borderPressedPrimary',
+      'borderDisabledPrimary',
+    ],
+    authority: 'admin.border.action',
+    valueKind: 'border',
+  },
+  {
+    component: 'Button',
+    fields: ['borderFocus', 'borderFocusPrimary'],
+    authority: 'admin.border.focus',
+    valueKind: 'border',
+  },
+  {
+    component: 'Button',
+    fields: ['colorSecondary', 'colorSecondaryHover', 'colorSecondaryPressed'],
+    authority: 'appearance.material.chrome',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: [
+      'colorPrimary',
+      'colorHoverPrimary',
+      'colorPressedPrimary',
+      'colorFocusPrimary',
+      'colorDisabledPrimary',
+    ],
+    authority: 'color.action.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: [
+      'textColorPrimary',
+      'textColorHoverPrimary',
+      'textColorPressedPrimary',
+      'textColorFocusPrimary',
+      'textColorDisabledPrimary',
+    ],
+    authority: 'color.text.on-action',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColor', 'textColorGhost'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorGhostHover', 'textColorGhostPressed'],
+    authority: 'color.action.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorGhostDisabled'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['rippleColor', 'rippleColorPrimary'],
+    authority: 'color.focus.ring',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['rippleDuration'],
+    authority: 'appearance.motion.duration',
+    valueKind: 'time',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['lineHeight'],
+    authority: 'typography.line-height.body',
+    valueKind: 'number',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['fontSizeMedium'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['thColor', 'tdColor'],
+    authority: 'color.surface.panel',
+    valueKind: 'color',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['thTextColor'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['thFontWeight'],
+    authority: 'typography.weight.title',
+    valueKind: 'font-weight',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['thPaddingBorderedMedium', 'tdPaddingBorderedMedium'],
+    authority: 'spacing.content.gap',
+    valueKind: 'length',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['tdTextColor'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['borderColor'],
+    authority: 'color.border.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'Descriptions',
+    fields: ['borderRadius'],
+    authority: 'interaction.radius.panel',
+    valueKind: 'length',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonHeightMedium'],
+    authority: 'layout.target.enhanced.minimum-block-size',
+    valueKind: 'length',
+  },
+  {
+    component: 'Radio',
+    fields: ['fontSizeMedium'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonBorderColor'],
+    authority: 'color.border.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonBorderColorActive', 'buttonColorActive', 'buttonTextColorHover'],
+    authority: 'color.action.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonBoxShadow'],
+    authority: 'admin.shadow.control',
+    valueKind: 'shadow',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonBoxShadowHover'],
+    authority: 'admin.shadow.control-hover',
+    valueKind: 'shadow',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonBoxShadowFocus'],
+    authority: 'admin.shadow.focus-ring',
+    valueKind: 'shadow',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonColor'],
+    authority: 'appearance.material.chrome',
+    valueKind: 'color',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonTextColor'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonTextColorActive'],
+    authority: 'color.text.on-action',
+    valueKind: 'color',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonBorderRadius'],
+    authority: 'interaction.radius.panel',
+    valueKind: 'length',
+  },
+  {
+    component: 'Tag',
+    fields: ['heightMedium'],
+    authority: 'interaction.control.height',
+    valueKind: 'length',
+  },
+  {
+    component: 'Tag',
+    fields: ['borderRadius'],
+    authority: 'interaction.radius.panel',
+    valueKind: 'length',
+  },
+  {
+    component: 'Tag',
+    fields: ['fontSizeMedium'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'Tag',
+    fields: ['border'],
+    authority: 'admin.border.control',
+    valueKind: 'border',
+  },
+  {
+    component: 'Tag',
+    fields: ['textColor'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['colorBordered'],
+    authority: 'appearance.material.chrome',
+    valueKind: 'color',
+  },
+] as const satisfies readonly NaiveThemeSemanticGroup[]
+
+const naive2452ConsumptionContract = [
+  {
+    component: 'Breadcrumb',
+    fields: [
+      ['fontSize', 'self.fontSize', ['--n-font-size'], 'base', '.n-breadcrumb typography'],
+      [
+        'fontWeightActive',
+        'self.fontWeightActive',
+        ['--n-font-weight-active'],
+        'active',
+        '.n-breadcrumb-item:last-child .n-breadcrumb-item__link active weight',
+      ],
+      [
+        'itemBorderRadius',
+        'self.itemBorderRadius',
+        ['--n-item-border-radius'],
+        'base',
+        '.n-breadcrumb-item__link radius',
+      ],
+      [
+        'itemColorHover',
+        'self.itemColorHover',
+        ['--n-item-color-hover'],
+        'clickable-hover',
+        '.n-breadcrumb-item:not(:last-child).n-breadcrumb-item--clickable .n-breadcrumb-item__link:hover background',
+      ],
+      [
+        'itemColorPressed',
+        'self.itemColorPressed',
+        ['--n-item-color-pressed'],
+        'clickable-pressed',
+        '.n-breadcrumb-item:not(:last-child).n-breadcrumb-item--clickable .n-breadcrumb-item__link:active background',
+      ],
+      [
+        'itemLineHeight',
+        'self.itemLineHeight',
+        ['--n-item-line-height'],
+        'base',
+        '.n-breadcrumb-item line height',
+      ],
+      [
+        'itemTextColor',
+        'self.itemTextColor',
+        ['--n-item-text-color'],
+        'base',
+        '.n-breadcrumb-item__link text',
+      ],
+      [
+        'itemTextColorActive',
+        'self.itemTextColorActive',
+        ['--n-item-text-color-active'],
+        'active',
+        '.n-breadcrumb-item:last-child .n-breadcrumb-item__link text',
+      ],
+      [
+        'itemTextColorHover',
+        'self.itemTextColorHover',
+        ['--n-item-text-color-hover'],
+        'link-hover',
+        '.n-breadcrumb-item__link:hover text and icon',
+      ],
+      [
+        'itemTextColorPressed',
+        'self.itemTextColorPressed',
+        ['--n-item-text-color-pressed'],
+        'link-pressed',
+        '.n-breadcrumb-item__link:active text and icon',
+      ],
+      [
+        'separatorColor',
+        'self.separatorColor',
+        ['--n-separator-color'],
+        'base',
+        '.n-breadcrumb-item__separator color',
+      ],
+    ],
+    useThemeKey: 'Breadcrumb/-breadcrumb',
+  },
+  {
+    component: 'Button',
+    fields: [
+      [
+        'border',
+        'self.border via createKey("border", mergedType)',
+        ['--n-border'],
+        'default-or-ghost',
+        '.n-button__border base',
+      ],
+      [
+        'borderDisabled',
+        'self.borderDisabled via createKey("borderDisabled", mergedType)',
+        ['--n-border-disabled'],
+        'default-or-ghost-disabled',
+        '.n-button--disabled .n-button__border',
+      ],
+      [
+        'borderDisabledPrimary',
+        'self.borderDisabledPrimary via createKey("borderDisabled", mergedType)',
+        ['--n-border-disabled'],
+        'primary-disabled',
+        '.n-button--disabled .n-button__border primary',
+      ],
+      [
+        'borderFocus',
+        'self.borderFocus via createKey("borderFocus", mergedType)',
+        ['--n-border-focus'],
+        'default-or-ghost-focus',
+        '.n-button:focus .n-button__state-border',
+      ],
+      [
+        'borderFocusPrimary',
+        'self.borderFocusPrimary via createKey("borderFocus", mergedType)',
+        ['--n-border-focus'],
+        'primary-focus',
+        '.n-button:focus .n-button__state-border primary',
+      ],
+      [
+        'borderHover',
+        'self.borderHover via createKey("borderHover", mergedType)',
+        ['--n-border-hover'],
+        'default-or-ghost-hover',
+        '.n-button:hover .n-button__state-border',
+      ],
+      [
+        'borderHoverPrimary',
+        'self.borderHoverPrimary via createKey("borderHover", mergedType)',
+        ['--n-border-hover'],
+        'primary-hover',
+        '.n-button:hover .n-button__state-border primary',
+      ],
+      [
+        'borderPressed',
+        'self.borderPressed via createKey("borderPressed", mergedType)',
+        ['--n-border-pressed'],
+        'default-or-ghost-pressed',
+        '.n-button:active .n-button__state-border',
+      ],
+      [
+        'borderPressedPrimary',
+        'self.borderPressedPrimary via createKey("borderPressed", mergedType)',
+        ['--n-border-pressed'],
+        'primary-pressed',
+        '.n-button:active .n-button__state-border primary',
+      ],
+      [
+        'borderPrimary',
+        'self.borderPrimary via createKey("border", mergedType)',
+        ['--n-border'],
+        'primary',
+        '.n-button__border primary',
+      ],
+      [
+        'borderRadiusMedium',
+        'self.borderRadiusMedium via createKey("borderRadius", size)',
+        ['--n-border-radius'],
+        'medium',
+        '.n-button medium radius',
+      ],
+      [
+        'colorDisabledPrimary',
+        'self.colorDisabledPrimary via createKey("colorDisabled", mergedType)',
+        ['--n-color-disabled'],
+        'primary-disabled',
+        '.n-button--disabled primary background',
+      ],
+      [
+        'colorFocusPrimary',
+        'self.colorFocusPrimary via createKey("colorFocus", mergedType)',
+        ['--n-color-focus'],
+        'primary-focus',
+        '.n-button:focus primary background',
+      ],
+      [
+        'colorHoverPrimary',
+        'self.colorHoverPrimary via createKey("colorHover", mergedType)',
+        ['--n-color-hover'],
+        'primary-hover',
+        '.n-button:hover primary background',
+      ],
+      [
+        'colorPressedPrimary',
+        'self.colorPressedPrimary via createKey("colorPressed", mergedType)',
+        ['--n-color-pressed'],
+        'primary-pressed',
+        '.n-button:active primary background',
+      ],
+      [
+        'colorPrimary',
+        'self.colorPrimary via createKey("color", mergedType)',
+        ['--n-color'],
+        'primary',
+        '.n-button primary background',
+      ],
+      [
+        'colorSecondary',
+        'self.colorSecondary',
+        ['--n-color', '--n-color-disabled'],
+        'secondary-default-and-disabled',
+        '.n-button secondary default background',
+      ],
+      [
+        'colorSecondaryHover',
+        'self.colorSecondaryHover',
+        ['--n-color-hover', '--n-color-focus'],
+        'secondary-hover-and-focus',
+        '.n-button secondary default hover and focus background',
+      ],
+      [
+        'colorSecondaryPressed',
+        'self.colorSecondaryPressed',
+        ['--n-color-pressed'],
+        'secondary-pressed',
+        '.n-button secondary default pressed background',
+      ],
+      [
+        'fontSizeMedium',
+        'self.fontSizeMedium via createKey("fontSize", size)',
+        ['--n-font-size'],
+        'medium',
+        '.n-button medium typography',
+      ],
+      [
+        'heightMedium',
+        'self.heightMedium via createKey("height", size)',
+        ['--n-height'],
+        'medium',
+        '.n-button medium geometry',
+      ],
+      [
+        'rippleColor',
+        'self.rippleColor via createKey("rippleColor", mergedType)',
+        ['--n-ripple-color'],
+        'default-or-ghost-wave',
+        '.n-button .n-base-wave animation',
+      ],
+      [
+        'rippleColorPrimary',
+        'self.rippleColorPrimary via createKey("rippleColor", mergedType)',
+        ['--n-ripple-color'],
+        'primary-wave',
+        '.n-button .n-base-wave primary animation',
+      ],
+      [
+        'rippleDuration',
+        'self.rippleDuration',
+        ['--n-ripple-duration'],
+        'wave-duration',
+        '.n-button .n-base-wave animation duration',
+      ],
+      [
+        'textColor',
+        'self.textColor',
+        [
+          '--n-text-color',
+          '--n-text-color-hover',
+          '--n-text-color-pressed',
+          '--n-text-color-focus',
+          '--n-text-color-disabled',
+        ],
+        'default-and-secondary',
+        '.n-button default or secondary text states',
+      ],
+      [
+        'textColorFocusPrimary',
+        'self.textColorFocusPrimary via createKey("textColorFocus", mergedType)',
+        ['--n-text-color-focus'],
+        'primary-focus',
+        '.n-button:focus primary text',
+      ],
+      [
+        'textColorGhost',
+        'self.textColorGhost via createKey("textColorGhost", mergedType)',
+        ['--n-text-color'],
+        'ghost',
+        '.n-button ghost text',
+      ],
+      [
+        'textColorGhostDisabled',
+        'self.textColorGhostDisabled via createKey("textColorGhostDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'ghost-disabled',
+        '.n-button--disabled ghost text',
+      ],
+      [
+        'textColorGhostHover',
+        'self.textColorGhostHover via createKey("textColorGhostHover", mergedType)',
+        ['--n-text-color-hover', '--n-text-color-focus'],
+        'ghost-hover-and-focus',
+        '.n-button ghost hover and focus text',
+      ],
+      [
+        'textColorGhostPressed',
+        'self.textColorGhostPressed via createKey("textColorGhostPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'ghost-pressed',
+        '.n-button ghost pressed text',
+      ],
+      [
+        'textColorHoverPrimary',
+        'self.textColorHoverPrimary via createKey("textColorHover", mergedType)',
+        ['--n-text-color-hover'],
+        'primary-hover',
+        '.n-button:hover primary text',
+      ],
+      [
+        'textColorPressedPrimary',
+        'self.textColorPressedPrimary via createKey("textColorPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'primary-pressed',
+        '.n-button:active primary text',
+      ],
+      [
+        'textColorDisabledPrimary',
+        'self.textColorDisabledPrimary via createKey("textColorDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'primary-disabled',
+        '.n-button--disabled primary text',
+      ],
+      [
+        'textColorPrimary',
+        'self.textColorPrimary via createKey("textColor", mergedType)',
+        ['--n-text-color'],
+        'primary',
+        '.n-button primary text',
+      ],
+    ],
+    useThemeKey: 'Button/-button',
+  },
+  {
+    component: 'Descriptions',
+    fields: [
+      [
+        'borderColor',
+        'self.borderColor',
+        ['--n-border-color'],
+        'bordered',
+        '.n-descriptions--bordered .n-descriptions-table-wrapper border',
+      ],
+      [
+        'borderRadius',
+        'self.borderRadius',
+        ['--n-border-radius'],
+        'bordered',
+        '.n-descriptions--bordered .n-descriptions-table-wrapper radius',
+      ],
+      [
+        'fontSizeMedium',
+        'self.fontSizeMedium via createKey("fontSize", mergedSize)',
+        ['--n-font-size'],
+        'medium',
+        '.n-descriptions medium typography',
+      ],
+      [
+        'lineHeight',
+        'self.lineHeight',
+        ['--n-line-height'],
+        'base',
+        '.n-descriptions-table-header and .n-descriptions-table-content line height',
+      ],
+      [
+        'tdColor',
+        'self.tdColor',
+        ['--n-td-color'],
+        'bordered',
+        '.n-descriptions-table-wrapper content background',
+      ],
+      [
+        'tdPaddingBorderedMedium',
+        'self.tdPaddingBorderedMedium via createKey("tdPaddingBordered", mergedSize)',
+        ['--n-td-padding'],
+        'bordered-medium',
+        '.n-descriptions--bordered .n-descriptions-table-content padding',
+      ],
+      [
+        'tdTextColor',
+        'self.tdTextColor',
+        ['--n-td-text-color'],
+        'base',
+        '.n-descriptions-table-content text',
+      ],
+      [
+        'thColor',
+        'self.thColor',
+        ['--n-th-color'],
+        'bordered',
+        '.n-descriptions-table-header background',
+      ],
+      [
+        'thFontWeight',
+        'self.thFontWeight',
+        ['--n-th-font-weight'],
+        'base',
+        '.n-descriptions-table-header weight',
+      ],
+      [
+        'thPaddingBorderedMedium',
+        'self.thPaddingBorderedMedium via createKey("thPaddingBordered", mergedSize)',
+        ['--n-th-padding'],
+        'bordered-medium',
+        '.n-descriptions--bordered .n-descriptions-table-header padding',
+      ],
+      [
+        'thTextColor',
+        'self.thTextColor',
+        ['--n-th-text-color'],
+        'base',
+        '.n-descriptions-table-header text',
+      ],
+    ],
+    useThemeKey: 'Descriptions/-descriptions',
+  },
+  {
+    component: 'Radio',
+    fields: [
+      [
+        'buttonBorderColor',
+        'self.buttonBorderColor',
+        ['--n-button-border-color'],
+        'base',
+        '.n-radio-button and .n-radio-group__splitor base borders',
+      ],
+      [
+        'buttonBorderColorActive',
+        'self.buttonBorderColorActive',
+        ['--n-button-border-color-active'],
+        'checked',
+        '.n-radio-button--checked and .n-radio-group__splitor--checked borders',
+      ],
+      [
+        'buttonBorderRadius',
+        'self.buttonBorderRadius',
+        ['--n-button-border-radius'],
+        'edge-buttons',
+        '.n-radio-button:first-child, .n-radio-button:last-child and state-border radius',
+      ],
+      [
+        'buttonBoxShadow',
+        'self.buttonBoxShadow',
+        ['--n-button-box-shadow'],
+        'base',
+        '.n-radio-button__state-border base shadow',
+      ],
+      [
+        'buttonBoxShadowFocus',
+        'self.buttonBoxShadowFocus',
+        ['--n-button-box-shadow-focus'],
+        'focus',
+        '.n-radio-button--focus:not(:active) .n-radio-button__state-border',
+      ],
+      [
+        'buttonBoxShadowHover',
+        'self.buttonBoxShadowHover',
+        ['--n-button-box-shadow-hover'],
+        'hover',
+        '.n-radio-button:not(.n-radio-button--disabled):hover .n-radio-button__state-border',
+      ],
+      [
+        'buttonColor',
+        'self.buttonColor',
+        ['--n-button-color'],
+        'base',
+        '.n-radio-button base background',
+      ],
+      [
+        'buttonColorActive',
+        'self.buttonColorActive',
+        ['--n-button-color-active'],
+        'checked',
+        '.n-radio-button--checked background',
+      ],
+      [
+        'buttonHeightMedium',
+        'self.buttonHeightMedium via createKey("buttonHeight", size)',
+        ['--n-height'],
+        'medium',
+        '.n-radio-group--button-group medium geometry',
+      ],
+      [
+        'buttonTextColor',
+        'self.buttonTextColor',
+        ['--n-button-text-color'],
+        'base',
+        '.n-radio-button base text',
+      ],
+      [
+        'buttonTextColorActive',
+        'self.buttonTextColorActive',
+        ['--n-button-text-color-active'],
+        'checked',
+        '.n-radio-button--checked text',
+      ],
+      [
+        'buttonTextColorHover',
+        'self.buttonTextColorHover',
+        ['--n-button-text-color-hover'],
+        'hover-unchecked',
+        '.n-radio-button:not(.n-radio-button--disabled):hover:not(.n-radio-button--checked) text',
+      ],
+      [
+        'fontSizeMedium',
+        'self.fontSizeMedium via createKey("fontSize", size)',
+        ['--n-font-size'],
+        'medium',
+        '.n-radio-group medium typography',
+      ],
+    ],
+    useThemeKey: 'Radio/-radio-group',
+  },
+  {
+    component: 'Tag',
+    fields: [
+      [
+        'border',
+        'self.border via createKey("border", type)',
+        ['--n-border'],
+        'default',
+        '.n-tag__border default bordered status badge',
+      ],
+      ['borderRadius', 'self.borderRadius', ['--n-border-radius'], 'base', '.n-tag radius'],
+      [
+        'colorBordered',
+        'self.colorBordered via createKey("colorBordered", type)',
+        ['--n-color'],
+        'default-bordered',
+        '.n-tag default bordered background',
+      ],
+      [
+        'fontSizeMedium',
+        'self.fontSizeMedium via createKey("fontSize", size)',
+        ['--n-font-size'],
+        'medium',
+        '.n-tag medium typography',
+      ],
+      [
+        'heightMedium',
+        'self.heightMedium via createKey("height", size)',
+        ['--n-height'],
+        'medium',
+        '.n-tag medium geometry',
+      ],
+      [
+        'textColor',
+        'self.textColor via createKey("textColor", type)',
+        ['--n-text-color'],
+        'default',
+        '.n-tag default text',
+      ],
+    ],
+    useThemeKey: 'Tag/-tag',
+  },
+] as const satisfies readonly Naive2452ComponentConsumptionRecord[]
+
+const naive2452SharedConsumptionContract = [
+  {
+    consumingComponent: 'Breadcrumb',
+    overrideKey: 'cubicBezierEaseInOut',
+    selfLookup: 'common.cubicBezierEaseInOut',
+    emittedCssVariable: '--n-bezier',
+    selectorState: '.n-breadcrumb-item transition states',
+    useThemeKey: 'Breadcrumb/-breadcrumb',
+  },
+  {
+    consumingComponent: 'Button',
+    overrideKey: 'cubicBezierEaseInOut',
+    selfLookup: 'common.cubicBezierEaseInOut',
+    emittedCssVariable: '--n-bezier',
+    selectorState: '.n-button transition states',
+    useThemeKey: 'Button/-button',
+  },
+  {
+    consumingComponent: 'Button',
+    overrideKey: 'cubicBezierEaseOut',
+    selfLookup: 'common.cubicBezierEaseOut',
+    emittedCssVariable: '--n-bezier-ease-out',
+    selectorState: '.n-button .n-base-wave animation timing',
+    useThemeKey: 'Button/-button',
+  },
+  {
+    consumingComponent: 'Button',
+    overrideKey: 'opacityDisabled',
+    selfLookup: 'self.opacityDisabled derived from common.opacityDisabled',
+    emittedCssVariable: '--n-opacity-disabled',
+    selectorState: '.n-button--disabled opacity',
+    useThemeKey: 'Button/-button',
+  },
+  {
+    consumingComponent: 'Descriptions',
+    overrideKey: 'cubicBezierEaseInOut',
+    selfLookup: 'common.cubicBezierEaseInOut',
+    emittedCssVariable: '--n-bezier',
+    selectorState: '.n-descriptions table transition states',
+    useThemeKey: 'Descriptions/-descriptions',
+  },
+  {
+    consumingComponent: 'Radio',
+    overrideKey: 'cubicBezierEaseInOut',
+    selfLookup: 'common.cubicBezierEaseInOut',
+    emittedCssVariable: '--n-bezier',
+    selectorState: '.n-radio-group and .n-radio-button transition states',
+    useThemeKey: 'Radio/-radio-group',
+  },
+  {
+    consumingComponent: 'Radio',
+    overrideKey: 'opacityDisabled',
+    selfLookup: 'self.opacityDisabled derived from common.opacityDisabled',
+    emittedCssVariable: '--n-opacity-disabled',
+    selectorState: '.n-radio-button--disabled and .n-radio-group__splitor--disabled opacity',
+    useThemeKey: 'Radio/-radio-group',
+  },
+  {
+    consumingComponent: 'Tag',
+    overrideKey: 'cubicBezierEaseInOut',
+    selfLookup: 'common.cubicBezierEaseInOut',
+    emittedCssVariable: '--n-bezier',
+    selectorState: '.n-tag transition states',
+    useThemeKey: 'Tag/-tag',
+  },
+] as const satisfies readonly Naive2452SharedConsumptionRecord[]
+
+const naive2452UseThemeKeyContract = {
+  Breadcrumb: 'Breadcrumb/-breadcrumb',
+  Button: 'Button/-button',
+  Descriptions: 'Descriptions/-descriptions',
+  Radio: 'Radio/-radio-group',
+  Tag: 'Tag/-tag',
+} as const satisfies Readonly<Record<NaiveThemeComponent, string>>
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -446,6 +1637,127 @@ function scriptContent(source: string): string {
 
 function templateContent(source: string): string {
   return /<template>([\s\S]*?)<\/template>/u.exec(source)?.[1] ?? ''
+}
+
+function styleContent(source: string): string {
+  return [...source.matchAll(/<style(?:\s[^>]*)?>([\s\S]*?)<\/style>/gu)]
+    .map((match) => match[1] ?? '')
+    .join('\n')
+}
+
+interface CssRuleBlock {
+  readonly declarations: string
+  readonly selector: string
+}
+
+function cssRuleBlocks(source: string): readonly CssRuleBlock[] {
+  return [...source.matchAll(/([^{}]+)\{([^{}]*)\}/gu)].map((match) => ({
+    declarations: match[2] ?? '',
+    selector: (match[1] ?? '').replaceAll(/\s+/gu, ' ').trim(),
+  }))
+}
+
+function cssDeclarationsForSelector(
+  rules: readonly CssRuleBlock[],
+  selector: string,
+): string | undefined {
+  const declarations = rules
+    .filter((rule) => rule.selector.split(',').some((candidate) => candidate.trim() === selector))
+    .map((rule) => rule.declarations)
+
+  return declarations.length === 0 ? undefined : declarations.join('\n')
+}
+
+function cssDeclarationNames(declarations: string): readonly string[] {
+  return [...declarations.matchAll(/(?:^|[;{])\s*([a-z-]+)\s*:/gimu)].map((match) => match[1] ?? '')
+}
+
+function selectorTargetsPersistentOwner(selector: string, owner: string): boolean {
+  const normalizedSelector = selector
+    .replaceAll(/:global\(([^)]*)\)/gu, '$1')
+    .replaceAll(/\s+/gu, ' ')
+    .trim()
+
+  if (owner === '.pavp-route-content > *') {
+    const directChildMarker = '.pavp-route-content >'
+    const markerIndex = normalizedSelector.lastIndexOf(directChildMarker)
+
+    if (markerIndex >= 0) {
+      const directChildTarget = normalizedSelector
+        .slice(markerIndex + directChildMarker.length)
+        .trim()
+      const structuralTarget = directChildTarget
+        .replaceAll(/\[[^\]]*\]/gu, '')
+        .replaceAll(/\([^)]*\)/gu, '')
+
+      if (
+        directChildTarget.length > 0 &&
+        !directChildTarget.includes('::') &&
+        !/[\s>+~]/u.test(structuralTarget)
+      ) {
+        return true
+      }
+    }
+  }
+
+  const ownerIndex = normalizedSelector.lastIndexOf(owner)
+
+  if (ownerIndex < 0) {
+    return false
+  }
+
+  const characterBeforeOwner = normalizedSelector[ownerIndex - 1]
+  if (
+    ownerIndex > 0 &&
+    characterBeforeOwner !== ' ' &&
+    characterBeforeOwner !== '>' &&
+    characterBeforeOwner !== '+' &&
+    characterBeforeOwner !== '~'
+  ) {
+    return false
+  }
+
+  const suffix = normalizedSelector.slice(ownerIndex + owner.length).trim()
+
+  if (suffix.includes('::')) {
+    return false
+  }
+
+  return (
+    suffix.length === 0 || /^(?:\[[^\]]*\]|:[a-z-]+(?:\([^)]*\))?|[.#][a-z0-9_-]+)*$/iu.test(suffix)
+  )
+}
+
+function balancedBlock(source: string, marker: string): string | undefined {
+  const markerIndex = source.indexOf(marker)
+
+  if (markerIndex < 0) {
+    return undefined
+  }
+
+  const openingBrace = source.indexOf('{', markerIndex + marker.length)
+
+  if (openingBrace < 0) {
+    return undefined
+  }
+
+  let depth = 1
+
+  for (let index = openingBrace + 1; index < source.length; index += 1) {
+    const character = source[index]
+
+    if (character === '{') {
+      depth += 1
+    } else if (character === '}') {
+      depth -= 1
+
+      if (depth === 0) {
+        return source.slice(openingBrace + 1, index)
+      }
+    }
+  }
+
+  return undefined
 }
 
 function importedModules(path: string, source: string): string[] {
@@ -521,6 +1833,23 @@ function objectPropertyObject(
   return ts.isObjectLiteralExpression(value) ? value : undefined
 }
 
+function objectPropertyInitializer(
+  object: ts.ObjectLiteralExpression,
+  name: string,
+): ts.Expression | undefined {
+  const property = object.properties.find((candidate) => objectPropertyName(candidate) === name)
+
+  if (property === undefined) {
+    return undefined
+  }
+
+  if (ts.isPropertyAssignment(property)) {
+    return property.initializer
+  }
+
+  return ts.isShorthandPropertyAssignment(property) ? property.name : undefined
+}
+
 function themeOverrideObject(source: string): ts.ObjectLiteralExpression | undefined {
   const parsed = ts.createSourceFile('pavp-naive-theme.ts', source, ts.ScriptTarget.Latest, true)
   let result: ts.ObjectLiteralExpression | undefined
@@ -558,6 +1887,383 @@ function naiveCommonParserSensitiveOverrides(source: string): readonly string[] 
   )
 }
 
+function themeVariableInitializers(sourceFile: ts.SourceFile): ReadonlyMap<string, ts.Expression> {
+  const declarations = new Map<string, ts.Expression>()
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer !== undefined
+    ) {
+      declarations.set(node.name.text, node.initializer)
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return declarations
+}
+
+function manifestTypeToNaiveValueKind(type: string): NaiveThemeValueKind | 'unknown' {
+  return (
+    (
+      {
+        border: 'border',
+        color: 'color',
+        cubicBezier: 'easing',
+        dimension: 'length',
+        duration: 'time',
+        fontFamily: 'font-family',
+        fontWeight: 'font-weight',
+        number: 'number',
+        shadow: 'shadow',
+      } as const satisfies Readonly<Record<string, NaiveThemeValueKind>>
+    )[type] ?? 'unknown'
+  )
+}
+
+function tokenAuthority(name: string): NaiveThemeAuthority {
+  const records = tokenManifest.tokens.filter((record) => record.name === name)
+  const types = [...new Set(records.map((record) => record.type))]
+
+  return records.length > 0 && types.length === 1 && types[0] !== undefined
+    ? {
+        authority: name,
+        valueKind: manifestTypeToNaiveValueKind(types[0]),
+      }
+    : { authority: 'unresolved', valueKind: 'unknown' }
+}
+
+function cssVariableAuthority(cssVariable: string): NaiveThemeAuthority {
+  if (cssVariable === '--ui-material-chrome-background') {
+    return { authority: 'appearance.material.chrome', valueKind: 'color' }
+  }
+
+  const records = tokenManifest.tokens.filter((record) => record.cssVariable === cssVariable)
+  const names = [...new Set(records.map((record) => record.name))]
+  const types = [...new Set(records.map((record) => record.type))]
+
+  return names.length === 1 &&
+    names[0] !== undefined &&
+    types.length === 1 &&
+    types[0] !== undefined
+    ? {
+        authority: names[0],
+        valueKind: manifestTypeToNaiveValueKind(types[0]),
+      }
+    : { authority: 'unresolved', valueKind: 'unknown' }
+}
+
+function resolveThemeAuthority(
+  expression: ts.Expression | undefined,
+  declarations: ReadonlyMap<string, ts.Expression>,
+  seen: ReadonlySet<string> = new Set(),
+): NaiveThemeAuthority {
+  if (expression === undefined) {
+    return { authority: 'missing', valueKind: 'unknown' }
+  }
+
+  const value = unwrapExpression(expression)
+
+  if (ts.isIdentifier(value)) {
+    if (seen.has(value.text)) {
+      return { authority: 'circular-private-alias', valueKind: 'unknown' }
+    }
+
+    const initializer = declarations.get(value.text)
+    return resolveThemeAuthority(initializer, declarations, new Set([...seen, value.text]))
+  }
+
+  if (
+    ts.isElementAccessExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === 'tokens' &&
+    ts.isStringLiteral(value.argumentExpression)
+  ) {
+    return tokenAuthority(value.argumentExpression.text)
+  }
+
+  if (
+    ts.isPropertyAccessExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === 'material'
+  ) {
+    if (value.name.text === 'chrome') {
+      return { authority: 'appearance.material.chrome', valueKind: 'color' }
+    }
+
+    if (value.name.text === 'shadow') {
+      return { authority: 'appearance.material.shadow', valueKind: 'shadow' }
+    }
+  }
+
+  if (
+    ts.isCallExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === 'resolveMotionDuration'
+  ) {
+    return { authority: 'appearance.motion.duration', valueKind: 'time' }
+  }
+
+  if (ts.isStringLiteral(value)) {
+    const cssVariable = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(value.text)?.[1]
+    return cssVariable === undefined
+      ? { authority: 'raw-literal', valueKind: 'unknown' }
+      : cssVariableAuthority(cssVariable)
+  }
+
+  if (
+    ts.isPropertyAccessExpression(value) &&
+    /(?:breadcrumb|button|common|descriptions|radio|tag)Dark\.self/iu.test(value.getText())
+  ) {
+    return { authority: 'visible-vendor-default', valueKind: 'unknown' }
+  }
+
+  return { authority: 'unresolved', valueKind: 'unknown' }
+}
+
+function naiveSemanticExpectations(): ReadonlyMap<
+  string,
+  Readonly<{ authority: string; valueKind: NaiveThemeValueKind }>
+> {
+  const expectations = new Map<
+    string,
+    Readonly<{ authority: string; valueKind: NaiveThemeValueKind }>
+  >()
+
+  for (const group of naiveThemeSemanticGroups) {
+    for (const field of group.fields) {
+      const key = `${group.component}.${field}`
+
+      if (expectations.has(key)) {
+        throw new TypeError(`${key}: duplicate frozen Naive semantic expectation.`)
+      }
+
+      expectations.set(key, {
+        authority: group.authority,
+        valueKind: group.valueKind,
+      })
+    }
+  }
+
+  return expectations
+}
+
+function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
+  const violations: string[] = []
+  const sourceFile = ts.createSourceFile(
+    'pavp-naive-theme.ts',
+    snapshot.themeAdapterSource,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const declarations = themeVariableInitializers(sourceFile)
+  const overrides = themeOverrideObject(snapshot.themeAdapterSource)
+  const expectations = naiveSemanticExpectations()
+  const authorities = new Map<string, NaiveThemeAuthority>()
+
+  if (overrides === undefined) {
+    return ['NAIVE_OVERRIDE_INVENTORY']
+  }
+
+  for (const component of Object.keys(
+    themeOverrideContract,
+  ) as (keyof typeof themeOverrideContract)[]) {
+    const componentOverride = objectPropertyObject(overrides, component)
+    const expectedProperties = themeOverrideContract[component]
+    const actualProperties =
+      componentOverride === undefined ? undefined : staticObjectPropertyNames(componentOverride)
+
+    if (actualProperties === undefined || !exactSet(actualProperties, expectedProperties)) {
+      violations.push('NAIVE_OVERRIDE_INVENTORY')
+    }
+
+    for (const field of expectedProperties) {
+      const key = `${component}.${field}`
+      const expectation = expectations.get(key)
+
+      if (expectation === undefined) {
+        continue
+      }
+
+      const authority = resolveThemeAuthority(
+        componentOverride === undefined
+          ? undefined
+          : objectPropertyInitializer(componentOverride, field),
+        declarations,
+      )
+      authorities.set(key, authority)
+
+      if (authority.authority === 'visible-vendor-default') {
+        violations.push('NAIVE_VISIBLE_VENDOR_DEFAULT')
+      }
+      if (authority.valueKind !== expectation.valueKind) {
+        violations.push('NAIVE_OVERRIDE_VALUE_KIND')
+      }
+      if (authority.authority !== expectation.authority) {
+        violations.push('NAIVE_OVERRIDE_SEMANTIC_ROLE')
+      }
+    }
+  }
+
+  for (const component of Object.keys(themeOverrideContract).filter(
+    (name): name is NaiveThemeComponent => name !== 'common',
+  )) {
+    const semanticFields = [...expectations.keys()]
+      .filter((key) => key.startsWith(`${component}.`))
+      .map((key) => key.slice(component.length + 1))
+    const consumption = naive2452ConsumptionContract.find(
+      (record) => record.component === component,
+    )
+    const componentOverride = objectPropertyObject(overrides, component)
+    const actualFields =
+      componentOverride === undefined ? undefined : staticObjectPropertyNames(componentOverride)
+    const frozenFields = consumption?.fields ?? []
+    const frozenOverrideKeys = frozenFields.map(([overrideKey]) => overrideKey)
+    const duplicateFrozenKeys = new Set(frozenOverrideKeys).size !== frozenOverrideKeys.length
+    const invalidFrozenField = frozenFields.some(
+      ([overrideKey, selfLookup, emittedCssVariables, variant, selectorState]) =>
+        overrideKey.length === 0 ||
+        !selfLookup.startsWith('self.') ||
+        runtimeCount(emittedCssVariables) === 0 ||
+        new Set(emittedCssVariables).size !== emittedCssVariables.length ||
+        emittedCssVariables.some((variable) => !variable.startsWith('--n-')) ||
+        variant.length === 0 ||
+        !selectorState.includes('.n-'),
+    )
+
+    if (
+      consumption === undefined ||
+      actualFields === undefined ||
+      duplicateFrozenKeys ||
+      invalidFrozenField ||
+      !exactSet(frozenOverrideKeys, themeOverrideContract[component]) ||
+      !exactSet(frozenOverrideKeys, semanticFields) ||
+      !exactSet(frozenOverrideKeys, actualFields) ||
+      consumption.useThemeKey !== naive2452UseThemeKeyContract[component]
+    ) {
+      violations.push('NAIVE_2452_CONSUMPTION_CONTRACT')
+    }
+  }
+
+  const sharedConsumptionIdentities = new Set<string>()
+  const commonOverrideKeys = new Set<string>(themeOverrideContract.common)
+
+  for (const consumption of naive2452SharedConsumptionContract) {
+    const identity = [
+      consumption.consumingComponent,
+      consumption.overrideKey,
+      consumption.emittedCssVariable,
+    ].join('/')
+    const expectation = expectations.get(`common.${consumption.overrideKey}`)
+
+    if (
+      sharedConsumptionIdentities.has(identity) ||
+      !commonOverrideKeys.has(consumption.overrideKey) ||
+      expectation === undefined ||
+      consumption.selfLookup.length === 0 ||
+      !consumption.selectorState.includes('.n-') ||
+      consumption.useThemeKey !== naive2452UseThemeKeyContract[consumption.consumingComponent]
+    ) {
+      violations.push('NAIVE_2452_CONSUMPTION_CONTRACT')
+    }
+
+    sharedConsumptionIdentities.add(identity)
+  }
+
+  for (const component of ['Button', 'Radio'] as const) {
+    if (
+      !naive2452SharedConsumptionContract.some(
+        (record) =>
+          record.consumingComponent === component &&
+          record.overrideKey === 'cubicBezierEaseInOut' &&
+          runtimeString(record.emittedCssVariable) === '--n-bezier',
+      ) ||
+      !naive2452SharedConsumptionContract.some(
+        (record) =>
+          record.consumingComponent === component &&
+          record.overrideKey === 'opacityDisabled' &&
+          runtimeString(record.emittedCssVariable) === '--n-opacity-disabled',
+      )
+    ) {
+      violations.push('NAIVE_2452_CONSUMPTION_CONTRACT')
+    }
+  }
+
+  const matches = (component: string, field: string, authority: string): boolean =>
+    authorities.get(`${component}.${field}`)?.authority === authority
+  const matchesExpectation = (component: string, field: string): boolean => {
+    const expectation = expectations.get(`${component}.${field}`)
+    const authority = authorities.get(`${component}.${field}`)
+
+    return (
+      expectation !== undefined &&
+      authority?.authority === expectation.authority &&
+      authority.valueKind === expectation.valueKind
+    )
+  }
+
+  if (
+    !matches('Radio', 'buttonBoxShadowHover', 'admin.shadow.control-hover') ||
+    snapshot.themeAdapterSource.includes('buttonBorderColorHover')
+  ) {
+    violations.push('NAIVE_RADIO_HOVER_SHADOW')
+  }
+  if (!matches('Radio', 'buttonBoxShadowFocus', 'admin.shadow.focus-ring')) {
+    violations.push('NAIVE_FOCUS_SEMANTIC')
+  }
+  if (
+    ['borderPrimary', 'borderHoverPrimary', 'borderPressedPrimary', 'borderFocusPrimary'].some(
+      (field) => !matchesExpectation('Button', field),
+    )
+  ) {
+    violations.push('NAIVE_BUTTON_PRIMARY_BORDER')
+  }
+  if (
+    ['borderDisabledPrimary', 'colorDisabledPrimary', 'textColorDisabledPrimary'].some(
+      (field) => !matchesExpectation('Button', field),
+    )
+  ) {
+    violations.push('NAIVE_BUTTON_PRIMARY_DISABLED')
+  }
+  if (
+    !matches('Tag', 'border', 'admin.border.control') ||
+    authorities.get('Tag.border')?.valueKind !== 'border'
+  ) {
+    violations.push('NAIVE_TAG_BORDER_KIND')
+  }
+
+  const normalizedProviderSource = snapshot.naiveProviderSource.replaceAll(/\s+/gu, ' ')
+  if (
+    !normalizedProviderSource.includes('.n-button:focus-visible') ||
+    !normalizedProviderSource.includes('.n-radio-button--focus') ||
+    !normalizedProviderSource.includes('box-shadow: var(--ui-admin-shadow-focus-ring);') ||
+    !normalizedProviderSource.includes('@media (forced-colors: active)') ||
+    !normalizedProviderSource.includes('outline: var(--ui-admin-border-focus);') ||
+    !normalizedProviderSource.includes('outline-offset: var(--ui-admin-focus-outline-offset);')
+  ) {
+    violations.push('NAIVE_FOCUS_PRESENTATION')
+  }
+
+  if (
+    /#[\da-f]{3,8}\b|\b(?:hsl|hwb|lab|lch|oklab|oklch|rgb)\s*\(|['"][^'"]*\b\d+(?:\.\d+)?(?:ms|s|px|rem)\b[^'"]*['"]|['"][^'"]*(?:\binset\s+|\s+solid\b)[^'"]*['"]/iu.test(
+      snapshot.themeAdapterSource,
+    )
+  ) {
+    violations.push('NAIVE_RAW_VISUAL_AUTHORITY')
+  }
+
+  if (
+    /\.n-[a-z0-9_-]+/iu.test(snapshot.nonAdapterUiSource) ||
+    /\bthemeOverrides\b/u.test(snapshot.nonAdapterUiSource)
+  ) {
+    violations.push('NAIVE_OVERRIDE_OUTSIDE_PRIVATE_ADAPTER')
+  }
+
+  return [...new Set(violations)]
+}
+
 function exportNames(source: string): string[] {
   const parsed = ts.createSourceFile('source.ts', source, ts.ScriptTarget.Latest, true)
   const names: string[] = []
@@ -590,8 +2296,494 @@ function exportNames(source: string): string[] {
   return names
 }
 
-function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
+function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   const violations: string[] = []
+  const normalizedShell = snapshot.shellSource.replaceAll(/\s+/gu, ' ')
+  const normalizedNaiveProvider = snapshot.naiveProviderSource.replaceAll(/\s+/gu, ' ')
+  const functionalChromeSelectors = [
+    '.pavp-admin-shell__header',
+    '.pavp-admin-shell__sidebar',
+    ".pavp-admin-shell__navigation-action[aria-current='page']",
+    '.pavp-admin-shell__rail-tooltip',
+    '.pavp-admin-shell__drawer-navigation',
+  ] as const
+  const materialProfiles = ['adaptive', 'reduced', 'solid'] as const
+  const allowedShellMaterialVariables = new Set([
+    '--ui-material-chrome-background',
+    '--ui-material-overlay-background',
+  ])
+  const shellMaterialVariables = [
+    ...snapshot.shellSource.matchAll(/--ui-material-[a-z0-9-]+/gu),
+  ].map((match) => match[0])
+  const backdropLines = snapshot.shellSource
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(
+      (line) => line.startsWith('backdrop-filter:') || line.startsWith('-webkit-backdrop-filter:'),
+    )
+  const allowedBackdropDeclarations = new Set([
+    '-webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));',
+    'backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));',
+    '-webkit-backdrop-filter: none;',
+    'backdrop-filter: none;',
+  ])
+
+  if (/pavp-admin-shell__profile|\{\{\s*profile\s*\}\}/u.test(snapshot.shellSource)) {
+    violations.push('PROFILE_DEBUG_TEXT')
+  }
+  if (/\bmax-w-content\b/u.test(snapshot.shellSource)) {
+    violations.push('ADMIN_WORKSPACE_MAX_WIDTH')
+  }
+
+  const navigationIconRecords = [
+    ...snapshot.routeRegistrySource.matchAll(/\biconClass\s*:\s*['"]([^'"]+)['"]/gu),
+  ].map((match) => match[1])
+  const shellNavigationIconClasses = [
+    ...snapshot.shellSource.matchAll(/['"](i-lucide-[a-z0-9-]+)['"]/gu),
+  ].map((match) => match[1])
+  if (
+    !isDeepStrictEqual(navigationIconRecords, expectedNavigationIconClasses) ||
+    !isDeepStrictEqual(shellNavigationIconClasses, expectedNavigationIconClasses) ||
+    /\bglyph\s*:/u.test(snapshot.routeRegistrySource) ||
+    !snapshot.shellSource.includes(':class="resolveNavigationIconClass(item.iconClass)"') ||
+    !snapshot.shellSource.includes('class="pavp-admin-shell__navigation-icon"') ||
+    !snapshot.shellSource.includes('aria-hidden="true"')
+  ) {
+    violations.push('SIDEBAR_ICON_CONTRACT')
+  }
+
+  const navigationButtonTags = [
+    ...snapshot.shellSource.matchAll(
+      /<button\b(?=[^>]*:aria-current\s*=\s*"item\.routeName\s*===\s*activeRouteName\s*\?\s*'page'\s*:\s*undefined")[^>]*>/gu,
+    ),
+  ].map((match) => match[0])
+  if (
+    navigationButtonTags.length !== 2 ||
+    navigationButtonTags.some(
+      (tag) =>
+        !/\btype\s*=\s*"button"/u.test(tag) ||
+        !/@click\s*=\s*"navigate\(item\.routeName\)"/u.test(tag) ||
+        /\bdisabled\b|\btabindex\s*=\s*"-1"/u.test(tag),
+    )
+  ) {
+    violations.push('ACTIVE_NAVIGATION_ITEM_ACCESSIBILITY')
+  }
+
+  const activeNavigationNoop =
+    /function\s+navigate\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?if\s*\(\s*profile\.value\s*===\s*'narrow'\s*&&\s*navigationOpen\.value\s*\)\s*\{\s*closeNavigation\(\)\s*\}[\s\S]*?if\s*\(\s*routeName\s*===\s*props\.activeRouteName\s*\)\s*\{\s*return\s*\}[\s\S]*?emit\(\s*'navigate'\s*,\s*routeName\s*\)/u.test(
+      snapshot.shellSource,
+    )
+  if (!activeNavigationNoop) {
+    violations.push('ACTIVE_NAVIGATION_ITEM_NOOP')
+  }
+
+  if (/\{material\.[^}]*\.adaptive\.[^}]*\}/u.test(snapshot.adminTokenSource)) {
+    violations.push('ADMIN_ADAPTIVE_PIN')
+  }
+
+  const completeMaterialSelectors = materialProfiles.every((material) =>
+    functionalChromeSelectors.every((selector) =>
+      normalizedShell.includes(`:global(html[data-material='${material}']) ${selector}`),
+    ),
+  )
+  if (
+    !completeMaterialSelectors ||
+    !snapshot.shellSource.includes('background: var(--ui-material-chrome-background);') ||
+    !snapshot.shellSource.includes('background: var(--ui-material-overlay-background);') ||
+    shellMaterialVariables.some((variable) => !allowedShellMaterialVariables.has(variable)) ||
+    snapshot.shellSource.includes('--ui-admin-chrome-header') ||
+    snapshot.shellSource.includes('--ui-admin-chrome-sidebar') ||
+    snapshot.shellSource.includes('--ui-admin-surface-overlay')
+  ) {
+    violations.push('MATERIAL_BRANCH_INCOMPLETE')
+  }
+
+  if (
+    backdropLines.length !== 6 ||
+    backdropLines.some((line) => !allowedBackdropDeclarations.has(line)) ||
+    backdropLines.filter((line) => line.includes('blur(')).length !== 2 ||
+    /(?:^|\n)\s*filter\s*:|\b(?:brightness|saturate)\s*\(/iu.test(snapshot.shellSource) ||
+    /transition-property\s*:[^;]*(?:backdrop-filter|filter)/iu.test(snapshot.shellSource)
+  ) {
+    violations.push('MATERIAL_BACKDROP_CONTRACT')
+  }
+
+  const motionNoneShellSelectors = [
+    '.pavp-admin-drawer-enter-active',
+    '.pavp-admin-drawer-leave-active',
+    '.pavp-admin-shell__sidebar',
+    '.pavp-admin-shell__action',
+    '.pavp-admin-shell__navigation-action',
+    '.pavp-admin-shell__navigation-action::before',
+  ] as const
+  if (
+    motionNoneShellSelectors.some(
+      (selector) => !normalizedShell.includes(`:global(html[data-motion='none']) ${selector}`),
+    ) ||
+    !normalizedNaiveProvider.includes("html[data-motion='none'] :where(") ||
+    !normalizedNaiveProvider.includes('transition: none !important;') ||
+    !normalizedNaiveProvider.includes('animation: none !important;')
+  ) {
+    violations.push('NAIVE_MOTION_NONE_INCOMPLETE')
+  }
+
+  if (/\.n-[a-z0-9_-]+/iu.test(snapshot.pageVisualSource)) {
+    violations.push('VENDOR_SELECTOR_IN_PAGE')
+  }
+  const errorTitles = [
+    ...snapshot.routeRegistrySource.matchAll(/'route-title\.error-[^']+'\s*:\s*'([^']+)'/gu),
+  ].map((match) => match[1] ?? '')
+  if (errorTitles.length !== 7 || errorTitles.some((title) => /[a-z]/iu.test(title))) {
+    violations.push('ENGLISH_ERROR_TITLE')
+  }
+
+  return violations
+}
+
+function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[] {
+  const violations: string[] = []
+  const source = snapshot.appearancePageSource
+  const projectionSource = snapshot.appearanceThemeProjectionSource
+  const template = templateContent(source)
+  const normalizedSource = source.replaceAll(/\s+/gu, ' ')
+  const visibleLiteralText = template
+    .replaceAll(/<!--[\s\S]*?-->/gu, ' ')
+    .replaceAll(/<[^>]+>/gu, ' ')
+    .replaceAll(/\{\{[\s\S]*?\}\}/gu, ' ')
+    .replaceAll(/\s+/gu, ' ')
+    .replaceAll('PAVP', '')
+    .trim()
+  const requiredChineseCopy = [
+    "label: '跟随系统'",
+    "label: '浅色'",
+    "label: '深色'",
+    "label: '标准'",
+    "label: '增强'",
+    "label: '自适应'",
+    "label: '弱化'",
+    "label: '纯色'",
+    "'0.9': '90%'",
+    "'1': '100%'",
+    "'1.1': '110%'",
+    "'1.2': '120%'",
+    "label: '完整'",
+    "label: '减少'",
+    "label: '关闭'",
+    'description="七套内置主题会按当前明暗模式与对比度即时投影。"',
+    'displayLabel: theme.label',
+  ] as const
+  const appearanceAxes = [...source.matchAll(/data-appearance-axis="([a-z-]+)"/gu)].map(
+    (match) => match[1],
+  )
+  const requiredProjectionMarkers = [
+    'builtInThemeIds.map',
+    '.filter((entry) => !builtInThemeIds.some',
+    'completeBuiltInThemeDefinitionSchema.parse',
+    'validateCustomThemeDefinition(entry.definition)',
+    'surfacePage:',
+    'surfacePanel:',
+    'actionPrimary:',
+    'borderDefault:',
+    'focusRing:',
+    'Object.freeze(reference)',
+  ] as const
+
+  if (
+    source.includes('pavp-appearance-grid') ||
+    source.includes('title="外观偏好"') ||
+    source.includes('所有变更均通过应用内部无状态') ||
+    !source.includes('pavp-appearance-theme-gallery') ||
+    !source.includes('pavp-appearance-workspace') ||
+    !source.includes('pavp-appearance-preview')
+  ) {
+    violations.push('OLD_FLAT_APPEARANCE')
+  }
+
+  if (
+    !isDeepStrictEqual(appearanceAxes, [
+      'theme',
+      'color-mode',
+      'contrast',
+      'material',
+      'font-scale',
+      'motion',
+    ]) ||
+    appearanceAxes.includes('density')
+  ) {
+    violations.push('DENSITY_CONTROL')
+  }
+
+  if (
+    requiredChineseCopy.some((copy) => !source.includes(copy)) ||
+    /[A-Za-z]/u.test(visibleLiteralText)
+  ) {
+    violations.push('ENGLISH_PRIMARY_LABEL')
+  }
+
+  if (
+    !source.includes('v-for="(theme, themeIndex) in themePreviews"') ||
+    !source.includes('type="radio"') ||
+    !source.includes('name="appearance-theme"') ||
+    !source.includes(':data-selected="isThemeSelected(theme)"') ||
+    !source.includes('已选') ||
+    [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 5 ||
+    !source.includes('currentSwatches(theme)') ||
+    !source.includes('builtInAppearanceThemePreviews') ||
+    !source.includes('projectAccessibleCustomAppearanceThemePreviews') ||
+    requiredProjectionMarkers.some((marker) => !projectionSource.includes(marker)) ||
+    /\b(?:source|bank)\s*:/u.test(projectionSource)
+  ) {
+    violations.push('THEME_GALLERY_PROJECTION')
+  }
+
+  if (
+    /installCuratedThemeCatalog|安装七套主题|七套精选主题已安装|pavp-appearance-theme-catalog/u.test(
+      source,
+    )
+  ) {
+    violations.push('CURATED_THEME_CATALOG_ENTRY')
+  }
+
+  if (
+    /#[\da-f]{3,8}\b|\b(?:hsl|hwb|lab|lch|oklab|oklch|rgb)\s*\(/iu.test(source) ||
+    /--pavp-appearance-swatch\s*:\s*(?:#|[a-z]+\()/iu.test(source)
+  ) {
+    violations.push('HARDCODED_THEME_SWATCH')
+  }
+
+  if (
+    !source.includes(':data-material-preview="effective.snapshot.value.material"') ||
+    !source.includes(':data-motion-preview="effective.snapshot.value.motion"') ||
+    !source.includes('<UiButton') ||
+    !source.includes('<UiStatusBadge') ||
+    !source.includes('<UiDescriptionList') ||
+    !source.includes('<UiSegmentedControl') ||
+    !source.includes('pavp-material-stage__header') ||
+    !source.includes('pavp-material-stage__navigation') ||
+    !source.includes('pavp-material-stage__content') ||
+    !source.includes('pavp-material-stage__focus-example') ||
+    /<(?:UiProvider|UiAdminShell|RouterView)\b/u.test(template)
+  ) {
+    violations.push('FAKE_APPEARANCE_PREVIEW')
+  }
+
+  if (
+    !source.includes('density: current.appearance.density') ||
+    !source.includes('const currentDensity = candidate.appearance.density') ||
+    !source.includes('density: currentDensity') ||
+    !source.includes('ProductPreferenceDefault') ||
+    /candidate\.appearance\.density\s*=/u.test(source) ||
+    /mutation\.resetPreference\s*\(/u.test(source) ||
+    [...source.matchAll(/commitAxis\(\(candidate\)\s*=>/gu)].length !== 6
+  ) {
+    violations.push('DENSITY_PRESERVATION')
+  }
+
+  if (/\buseAppearanceStore\b|appearance\.store/u.test(source)) {
+    violations.push('DIRECT_APPEARANCE_STORE')
+  }
+  if (/\b(?:localStorage|sessionStorage)\b/u.test(source)) {
+    violations.push('DIRECT_PAGE_STORAGE')
+  }
+  if (/\b(?:matchMedia|CSS\.supports)\s*\(/u.test(source)) {
+    violations.push('DUPLICATE_APPEARANCE_ENVIRONMENT')
+  }
+  if (/\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]/u.test(source)) {
+    violations.push('DIRECT_NAIVE_IMPORT')
+  }
+  if (/<UiProvider\b/u.test(template)) {
+    violations.push('SECOND_UI_PROVIDER')
+  }
+
+  const materialVariables = [...source.matchAll(/--ui-material-[a-z0-9-]+/gu)].map(
+    (match) => match[0],
+  )
+  const allowedMaterialVariables = new Set([
+    '--ui-material-chrome-background',
+    '--ui-material-overlay-background',
+  ])
+  const backdropLines = source
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(
+      (line) => line.startsWith('backdrop-filter:') || line.startsWith('-webkit-backdrop-filter:'),
+    )
+  const allowedBackdropDeclarations = new Set([
+    '-webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));',
+    'backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));',
+    '-webkit-backdrop-filter: none;',
+    'backdrop-filter: none;',
+  ])
+  if (
+    materialVariables.length < 3 ||
+    materialVariables.some((variable) => !allowedMaterialVariables.has(variable)) ||
+    !source.includes("data-material-preview='adaptive'") ||
+    !source.includes("data-material-preview='reduced'") ||
+    !source.includes("data-material-preview='solid'") ||
+    !source.includes('background: var(--ui-color-surface-panel);') ||
+    !source.includes('background: var(--ui-material-chrome-background);') ||
+    !source.includes('background: var(--ui-material-overlay-background);') ||
+    backdropLines.length !== 8 ||
+    backdropLines.some((line) => !allowedBackdropDeclarations.has(line)) ||
+    backdropLines.filter((line) => line.includes('blur(')).length !== 2 ||
+    /\bopacity\s*:/iu.test(source)
+  ) {
+    violations.push('MATERIAL_PREVIEW_CONSUMER')
+  }
+
+  if (
+    !source.includes("data-motion-preview='full'") ||
+    !source.includes("data-motion-preview='reduced'") ||
+    !source.includes("data-motion-preview='none'") ||
+    !source.includes('@media (prefers-reduced-motion: reduce)') ||
+    !/data-motion-preview='none'[\s\S]*?animation:\s*none;[\s\S]*?transition:\s*none;/u.test(source)
+  ) {
+    violations.push('MOTION_NONE_BRANCH')
+  }
+
+  if (!normalizedSource.includes('function replayMotion(): void { motionSequence.value += 1 }')) {
+    violations.push('MOTION_REPLAY_MUTATES')
+  }
+
+  if (
+    [...source.matchAll(/aria-live="polite"/gu)].length !== 1 ||
+    !source.includes(':key="feedbackSequence"') ||
+    !source.includes('feedbackSequence.value += 1') ||
+    !source.includes("'设置已保存'") ||
+    !source.includes("'无法应用此设置，已恢复原状态'") ||
+    !source.includes("'已恢复默认设置'") ||
+    !source.includes(':data-feedback-phase="feedbackPhase"')
+  ) {
+    violations.push('FEEDBACK_REPLAY')
+  }
+
+  if (
+    /Mutation Boundary|Appearance Store|内部所有者|内部架构/u.test(visibleLiteralText) ||
+    !snapshot.routeRegistrySource.includes(
+      '统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。',
+    )
+  ) {
+    violations.push('APPEARANCE_PRODUCT_COPY')
+  }
+
+  return violations
+}
+
+function validateProductExperienceReworkStatus(architectureSource: string): string[] {
+  const requiredMarkers = [
+    'WORK_PACKAGE=PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK',
+    'STATUS=COMPLETE',
+    'PAVP_ARCHITECTURE_ADMIN_CONSOLE_INFRASTRUCTURE=ACTIVE',
+    'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK=COMPLETE',
+    'CURRENT_BOUNDED_WORK=PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT',
+    'PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=PAVP_MOTION_GEOMETRY_STABILITY_REPAIR',
+    'ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE',
+    'PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE',
+    'PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE',
+    'PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED',
+    'PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE',
+    'PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE',
+    'PAVP_MOTION_GEOMETRY_STABILITY_REPAIR = COMPLETE',
+    'PAVP_MOTION_GEOMETRY_STABILITY_REPAIR_IS_COMPLETE',
+    'OWNER_APPEARANCE_WORKSPACE_ACCEPTANCE=ACCEPTED',
+    'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE=REJECTED',
+    'OWNER_SEVEN_BUILTIN_THEME_REPLACEMENT_ACCEPTANCE=ACCEPTED',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE=ACCEPTED',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE = ACCEPTED',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE_IS_ACCEPTED',
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE=ACCEPTED',
+    'CURRENT_RELEASE_ACCEPTANCE=OWNER_ACCEPTED',
+    'PUBLICATION_AUTHORIZATION_FOR_REWORK=GRANTED_BY_OWNER',
+    'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER',
+    'PREVIOUS_VISUAL_ACCEPTANCE=REVOKED',
+    'COMMIT_BEFORE_OWNER_VISUAL_ACCEPTANCE=PROHIBITED',
+    'RELEASE_BEFORE_OWNER_VISUAL_ACCEPTANCE=PROHIBITED',
+    'CURRENT_PROHIBITED_SCOPE=redesign of the other nine product-page content models',
+    'PREVIOUS_APPEARANCE_PAGE_EXPERIENCE=OWNER_REJECTED',
+    'CURRENT_BOUNDED_IMPLEMENTATION=Appearance Capability Workspace only',
+    'WORK_PACKAGE=PAVP_NAIVE_THEME_STATE_FUSION_REPAIR',
+    'STATUS=COMPLETE',
+    'OWNER_OBSERVED_RUNTIME_RESULT=REJECTED',
+    'PRE_REPAIR_BASELINE_KIND=UNCOMMITTED_CORRECTED_WORKTREE_MEASUREMENT',
+    'PRE_REPAIR_BASELINE_COMMIT=NONE',
+    'REPAIR_FINAL_MANIFEST_SCHEMA_VERSION=9',
+    'REPAIR_FINAL_TOKEN_RECORD_COUNT=145',
+    'REPAIR_FINAL_MANIFEST_RECORD_COUNT=239',
+    'MOTION_GEOMETRY_REPAIR_WITHIN_THIS_COMPLETED_PACKAGE=NOT_STARTED_AND_OUT_OF_SCOPE',
+    'DEPENDENCY_CHANGE=NONE',
+    'WORK_PACKAGE=PAVP_CURATED_CUSTOM_THEME_CATALOG',
+    'STATUS=OWNER_REJECTED_AND_RETIRED',
+    'CATALOG_SOURCE_DISPOSITION=REMOVED',
+    'INSTALL_CONTROL_DISPOSITION=REMOVED',
+    'WORK_PACKAGE=PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT',
+    'STATUS=COMPLETE',
+    'ACTIVE_BUILT_IN_THEME_COUNT=7',
+    'ACTIVE_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon',
+    'ACTIVE_BUILT_IN_THEME_PLANE_COUNT=28',
+    'ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=252',
+    'PRODUCT_PREFERENCE_DEFAULT_THEME=built-in:iris',
+    'PRE_INITIALIZATION_SAFETY_BASELINE_THEME=built-in:iris',
+    'CATALOG_INSTALLATION_CAPABILITY=REMOVED',
+    'MIGRATION_STORAGE_WRITE=PROHIBITED',
+    'CUSTOM_REGISTRY_SNAPSHOT_CLEAR_OR_REWRITE=PROHIBITED',
+    'CURRENT_MANIFEST_SCHEMA_VERSION=9',
+    'CURRENT_TOKEN_RECORD_COUNT=145',
+    'CURRENT_MANIFEST_RECORD_COUNT=243',
+    'CURRENT_EXPECTED_RECORD_COUNT_DELTA=62',
+    'CURRENT_MANIFEST_GZIP_BYTES=11550',
+    'CURRENT_MANIFEST_RAW_UTF8_BYTES=220193',
+    'WORK_PACKAGE=PAVP_MOTION_GEOMETRY_STABILITY_REPAIR',
+    'RUNTIME_MOTION_CAPABILITY_ACTIVATION=NONE',
+    'MOTION_MODE_SWITCH_GEOMETRY_DELTA=0',
+    'ROUTE_ENTRY_FULL=opacity-only with existing PAVP standard duration and easing',
+    'ROUTE_ENTRY_REDUCED=opacity-only with one-half existing PAVP duration and no displacement',
+    'ROUTE_ENTRY_NONE=no animation;no transition;stable opacity',
+    'PERSISTENT_OR_ROUTE_OWNER_ANIMATION_FILL_MODE_FORWARDS=PROHIBITED',
+    'PERSISTENT_OR_ROUTE_OWNER_ANIMATION_FILL_MODE_BOTH=PROHIBITED',
+    'REVERSIBLE_MOTION_GEOMETRY_NEGATIVE_PROBE_COUNT=12',
+    'EXISTING_CSS_MOTION_GEOMETRY_REPAIR_DOES_NOT_ACTIVATE_RUNTIME_MOTION',
+    'PERSISTENT_SHELL_AND_ROUTE_GEOMETRY_IS_INVARIANT_ACROSS_FULL_REDUCED_NONE',
+    'ROUTE_ENTRY_MOTION_IS_OPACITY_ONLY_AND_NONE_HAS_NO_ANIMATION_OR_TRANSITION',
+    'TOKENS_CSS_FORMAT_OWNER=packages/design-system/src/build/formats/css.ts',
+    'TOKENS_CSS_GENERATOR_CONTRACT_OWNER=packages/design-system/src/build/build.ts',
+    'TOKENS_CSS_MANUAL_EDIT=PROHIBITED',
+    'TOKENS_CSS_REGENERATION_EQUALITY=PASS',
+    'STATIC_PRODUCTION_GATE=PASS',
+    'NEXT_PAGE_REWORK_AUTHORIZATION=NONE',
+    'NEW_CAPABILITY_STATUS_ENUM=PROHIBITED',
+    'INITIAL_NAVIGATION_FOCUS=preserve-browser-focus',
+    'SUBSEQUENT_SUCCESSFUL_NAVIGATION_FOCUS=registered-page-heading',
+    'ACTIVE_NAVIGATION_ITEM_ACTIVATION=no-op',
+    'DUPLICATED_SAME_LOCATION_NAVIGATION=no-op-before-navigation-attempt',
+  ] as const
+  const staleCurrentAcceptanceMarkers = [
+    'PAVP_CURATED_CUSTOM_THEME_CATALOG=IMPLEMENTED_PENDING_OWNER_VISUAL_ACCEPTANCE',
+    'PAVP_CURATED_CUSTOM_THEME_CATALOG = IMPLEMENTED_PENDING_OWNER_VISUAL_ACCEPTANCE',
+    'PAVP_CURATED_CUSTOM_THEME_CATALOG_IS_IMPLEMENTED_PENDING_OWNER_VISUAL_ACCEPTANCE',
+    'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE=PENDING',
+    'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE = PENDING',
+    'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE_IS_PENDING',
+  ] as const
+
+  return requiredMarkers.some((marker) => !architectureSource.includes(marker)) ||
+    staleCurrentAcceptanceMarkers.some((marker) => architectureSource.includes(marker)) ||
+    /PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_(?:RENDERED|VISUAL)_REVIEW=ACCEPTED/u.test(
+      architectureSource,
+    )
+    ? ['Architecture Admin Console Product Experience Rework status drifted.']
+    : []
+}
+
+function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
+  const violations: string[] = [
+    ...shellExperienceViolations(snapshot),
+    ...appearanceWorkspaceViolations(snapshot),
+    ...naiveThemeStateViolations(snapshot),
+  ]
+  const nonAppearancePageVisualSource = snapshot.pageVisualSource.replace(
+    snapshot.appearancePageSource,
+    '',
+  )
 
   if (
     /\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]|\bimport\s*\(\s*['"]naive-ui(?:\/[^'"]+)?['"]/u.test(
@@ -617,8 +2809,11 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('NAIVE_COMMON_PARSER_INPUT')
   }
   if (
-    /#[\da-f]{3,8}\b|\b(?:hsl|hwb|lab|lch|oklab|oklch|rgb)\s*\(|\b(?:backdrop-filter|filter)\s*:|\b(?:blur|brightness|saturate)\s*\(/iu.test(
+    /#[\da-f]{3,8}\b|\b(?:hsl|hwb|lab|lch|oklab|oklch|rgb)\s*\(/iu.test(
       snapshot.pageVisualSource,
+    ) ||
+    /\b(?:backdrop-filter|filter)\s*:|\b(?:blur|brightness|saturate)\s*\(/iu.test(
+      nonAppearancePageVisualSource,
     )
   ) {
     violations.push('RAW_VISUAL_AUTHORITY')
@@ -681,6 +2876,428 @@ function modifiedSnapshot(
   return { ...snapshot, ...change }
 }
 
+function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
+  const violations: string[] = []
+  const appStyleRules = cssRuleBlocks(snapshot.appStylesSource)
+  const shellStyle = styleContent(snapshot.shellSource)
+  const appearanceStyle = styleContent(snapshot.appearancePageSource)
+  const allMotionStyle = [
+    snapshot.appStylesSource,
+    shellStyle,
+    appearanceStyle,
+    styleContent(snapshot.naiveProviderSource),
+  ].join('\n')
+  const allGeometryRules = cssRuleBlocks(
+    [snapshot.appStylesSource, shellStyle, appearanceStyle].join('\n'),
+  )
+  const persistentOwnerSelectors = [
+    'html',
+    'body',
+    '#app',
+    '#pavp-overlay-root',
+    '.pavp-route-content',
+    '.pavp-route-content > *',
+    '.pavp-admin-shell',
+    '.pavp-admin-shell__header',
+    '.pavp-admin-shell__sidebar',
+    '.pavp-admin-shell__content',
+    '.pavp-appearance-workspace',
+    '.pavp-appearance-preview-column',
+  ] as const
+  const routeDeclarations = cssDeclarationsForSelector(appStyleRules, '.pavp-route-content')
+  const layeredDeclarations = cssDeclarationsForSelector(appStyleRules, '.pavp-route-content > *')
+  const reducedDeclarations = [
+    cssDeclarationsForSelector(appStyleRules, "html[data-motion='reduced'] .pavp-route-content"),
+    cssDeclarationsForSelector(
+      appStyleRules,
+      "html[data-motion='reduced'] .pavp-route-content > *",
+    ),
+  ]
+  const noneDeclarations = [
+    cssDeclarationsForSelector(appStyleRules, "html[data-motion='none'] .pavp-route-content"),
+    cssDeclarationsForSelector(appStyleRules, "html[data-motion='none'] .pavp-route-content > *"),
+  ]
+  const routeKeyframes = balancedBlock(
+    snapshot.appStylesSource,
+    '@keyframes pavp-route-content-enter',
+  )
+  const layeredKeyframes = balancedBlock(
+    snapshot.appStylesSource,
+    '@keyframes pavp-layered-content-enter',
+  )
+
+  if (
+    persistentOwnerSelectors.some(
+      (owner) =>
+        !appStyleRules.some(
+          (rule) =>
+            rule.selector
+              .split(',')
+              .some((selector) => selectorTargetsPersistentOwner(selector, owner)) &&
+            /\btransform\s*:\s*none\s*;/u.test(rule.declarations) &&
+            /\btranslate\s*:\s*none\s*;/u.test(rule.declarations),
+        ),
+    )
+  ) {
+    violations.push('PERSISTENT_OWNER_BASE_GEOMETRY')
+  }
+
+  for (const rule of allGeometryRules) {
+    const selectors = rule.selector.split(',')
+    if (
+      !selectors.some((selector) =>
+        persistentOwnerSelectors.some((owner) => selectorTargetsPersistentOwner(selector, owner)),
+      )
+    ) {
+      continue
+    }
+
+    const geometryValues = [
+      ...rule.declarations.matchAll(/(?:^|;)\s*(transform|translate)\s*:\s*([^;]+)/gimu),
+    ]
+    if (geometryValues.some((match) => (match[2] ?? '').trim() !== 'none')) {
+      violations.push('PERSISTENT_OWNER_TRANSFORM')
+    }
+  }
+
+  if (
+    routeDeclarations === undefined ||
+    layeredDeclarations === undefined ||
+    routeKeyframes === undefined ||
+    layeredKeyframes === undefined ||
+    !routeDeclarations.includes(
+      'animation: pavp-route-content-enter var(--ui-motion-duration) var(--ui-motion-easing);',
+    ) ||
+    !layeredDeclarations.includes(
+      'animation: pavp-layered-content-enter var(--ui-motion-duration) var(--ui-motion-easing);',
+    ) ||
+    !/\banimation-fill-mode\s*:\s*none\s*;/u.test(routeDeclarations) ||
+    !/\banimation-fill-mode\s*:\s*none\s*;/u.test(layeredDeclarations) ||
+    [routeKeyframes, layeredKeyframes].some(
+      (keyframes) =>
+        !/\bfrom\s*\{[\s\S]*?\bopacity\s*:\s*0\s*;/u.test(keyframes) ||
+        !/\bto\s*\{[\s\S]*?\bopacity\s*:\s*1\s*;/u.test(keyframes) ||
+        cssDeclarationNames(keyframes).some((property) => property !== 'opacity'),
+    )
+  ) {
+    violations.push('ROUTE_OPACITY_ONLY')
+  }
+
+  if (/translateX\s*\(/u.test(routeKeyframes ?? '')) {
+    violations.push('ROUTE_HORIZONTAL_TRANSFORM')
+  }
+  if (
+    /(?:translate[XY]?\s*\(\s*0(?:[a-z%]+)?\s*\)|scale(?:[XY])?\s*\(\s*1\s*\))/iu.test(
+      routeKeyframes ?? '',
+    )
+  ) {
+    violations.push('PERSISTENT_IDENTITY_TRANSFORM')
+  }
+
+  const persistentRouteRules = appStyleRules.filter((rule) =>
+    rule.selector.includes('.pavp-route-content'),
+  )
+  if (
+    persistentRouteRules.some(
+      (rule) =>
+        /\banimation-fill-mode\s*:\s*(?:both|forwards)\b/iu.test(rule.declarations) ||
+        /\banimation\s*:[^;]*\b(?:both|forwards)\b/iu.test(rule.declarations),
+    )
+  ) {
+    violations.push('ROUTE_PERSISTENT_FILL_MODE')
+  }
+
+  if (
+    reducedDeclarations.some(
+      (declarations) =>
+        declarations === undefined ||
+        !declarations.includes('animation-duration: calc(var(--ui-motion-duration) / 2);') ||
+        !/\banimation-fill-mode\s*:\s*none\s*;/u.test(declarations) ||
+        /\b(?:transform|translate|scale|rotate)\s*:/iu.test(declarations) ||
+        cssDeclarationNames(declarations).some(
+          (property) =>
+            property !== 'animation-delay' &&
+            property !== 'animation-duration' &&
+            property !== 'animation-fill-mode',
+        ),
+    )
+  ) {
+    violations.push('REDUCED_ROUTE_OPACITY_ONLY')
+  }
+
+  if (
+    noneDeclarations.some(
+      (declarations) =>
+        declarations === undefined ||
+        !/\banimation\s*:\s*none\s*;/u.test(declarations) ||
+        !/\btransition\s*:\s*none\s*;/u.test(declarations) ||
+        !/\bopacity\s*:\s*1\s*;/u.test(declarations) ||
+        !/\btransform\s*:\s*none\s*;/u.test(declarations) ||
+        !/\btranslate\s*:\s*none\s*;/u.test(declarations),
+    )
+  ) {
+    violations.push('NONE_ROUTE_ANIMATION')
+  }
+
+  const motionRules = cssRuleBlocks(allMotionStyle).filter((rule) =>
+    rule.selector.includes('data-motion'),
+  )
+  for (const rule of motionRules) {
+    const properties = cssDeclarationNames(rule.declarations)
+    if (properties.some((property) => /^(?:margin|padding)(?:-|$)/u.test(property))) {
+      violations.push('MOTION_LAYOUT_SPACING')
+    }
+    if (properties.some((property) => /^(?:grid|grid-template)(?:-|$)/u.test(property))) {
+      violations.push('MOTION_GRID_GEOMETRY')
+    }
+    if (
+      properties.some((property) =>
+        /^(?:(?:min-|max-)?(?:block-size|inline-size|width|height)|gap$|row-gap$|column-gap$|flex(?:-|$)|align(?:-|$)|justify(?:-|$)|place(?:-|$)|inset(?:-|$)|left$|right$|top$|bottom$|position$|overflow(?:-|$)|overscroll(?:-|$)|scroll(?:-|$)|container(?:-|$)|contain$|content-visibility$|columns$|column(?:-|$)|float$|clear$)/u.test(
+          property,
+        ),
+      )
+    ) {
+      violations.push('MOTION_GEOMETRY_PROPERTY')
+    }
+  }
+
+  const shellTags = [
+    /<UiProvider\b[\s\S]*?>/u.exec(snapshot.appTemplateSource)?.[0] ?? '',
+    /<ConsoleRouteFrame\b[\s\S]*?>/u.exec(snapshot.appTemplateSource)?.[0] ?? '',
+    /<UiAdminShell\b[\s\S]*?>/u.exec(snapshot.consoleFrameSource)?.[0] ?? '',
+  ]
+  if (shellTags.some((tag) => /(?:^|\s)(?::key|v-bind:key)\s*=/u.test(tag))) {
+    violations.push('MOTION_SHELL_REMOUNT')
+  }
+
+  const routeContentTag = /<div\b(?=[^>]*class="pavp-route-content")[^>]*>/u.exec(
+    snapshot.appTemplateSource,
+  )?.[0]
+  if (
+    routeContentTag === undefined ||
+    !routeContentTag.includes(':key="routeRecord.name"') ||
+    [...routeContentTag.matchAll(/(?:^|\s)(?::key|v-bind:key)\s*=/gu)].length !== 1
+  ) {
+    violations.push('MOTION_ROUTE_REMOUNT')
+  }
+
+  const appearanceWorkspaceTag = /<[^>]*\bclass="pavp-appearance-workspace"[^>]*>/u.exec(
+    snapshot.appearancePageSource,
+  )?.[0]
+  if (
+    appearanceWorkspaceTag === undefined ||
+    /(?:^|\s)(?::key|v-bind:key)\s*=/u.test(appearanceWorkspaceTag)
+  ) {
+    violations.push('MOTION_APPEARANCE_REMOUNT')
+  }
+
+  const appearancePreviewColumnTag = /<[^>]*\bclass="pavp-appearance-preview-column"[^>]*>/u.exec(
+    snapshot.appearancePageSource,
+  )?.[0]
+  if (
+    appearancePreviewColumnTag === undefined ||
+    /(?:^|\s)(?::key|v-bind:key)\s*=/u.test(appearancePreviewColumnTag)
+  ) {
+    violations.push('MOTION_APPEARANCE_REMOUNT')
+  }
+
+  const appearanceMotionOwnerSource = `${scriptContent(snapshot.appearancePageSource)}\n${snapshot.appearanceMutationSource}`
+  if (
+    /\buseRouter\b|\brouter\.(?:push|replace|go|back|forward)\s*\(|\bhistory\.(?:pushState|replaceState|go|back|forward)\s*\(|\blocation\.(?:assign|replace)\s*\(|\blocation\.(?:href|hash)\s*=/u.test(
+      appearanceMotionOwnerSource,
+    )
+  ) {
+    violations.push('MOTION_ROUTER_NAVIGATION')
+  }
+  if (
+    /\b(?:scrollLeft|scrollTop)\s*=|\.scroll(?:To|By|IntoView)\s*\(/u.test(
+      appearanceMotionOwnerSource,
+    )
+  ) {
+    violations.push('MOTION_SCROLL_WRITE')
+  }
+  if (
+    /\.dataset\.layoutProfile\s*=|\.setAttribute\(\s*['"]data-layout-profile['"]|\.layoutProfile\s*=/u.test(
+      appearanceMotionOwnerSource,
+    )
+  ) {
+    violations.push('MOTION_LAYOUT_PROFILE_WRITE')
+  }
+
+  const motionReplayKeys = [
+    ...snapshot.appearancePageSource.matchAll(/:key="([^"]*motionSequence[^"]*)"/gu),
+  ].map((match) => match[1])
+  const updateMotionBody = balancedBlock(snapshot.appearancePageSource, 'function updateMotion')
+  if (
+    !isDeepStrictEqual(motionReplayKeys, [
+      '`overview-${String(motionSequence)}`',
+      '`details-${String(motionSequence)}`',
+      '`content-${String(motionSequence)}`',
+      '`motion-${String(motionSequence)}`',
+    ]) ||
+    updateMotionBody === undefined ||
+    updateMotionBody.includes('motionSequence') ||
+    !snapshot.appearancePageSource
+      .replaceAll(/\s+/gu, ' ')
+      .includes('function replayMotion(): void { motionSequence.value += 1 }')
+  ) {
+    violations.push('MOTION_REPLAY_SCOPE')
+  }
+
+  if (
+    !snapshot.shellSource.includes('.pavp-admin-shell__navigation-action::before') ||
+    !snapshot.shellSource.includes(
+      'transform: translateX(calc(var(--ui-layout-admin-drawer-maximum-inline-size) * -1));',
+    ) ||
+    !snapshot.appearancePageSource.includes('@keyframes pavp-appearance-indicator-enter') ||
+    !snapshot.appearancePageSource.includes('@keyframes pavp-appearance-content-enter')
+  ) {
+    violations.push('LOCAL_MOTION_CONTRACT')
+  }
+
+  if (snapshot.generatedTokensCssSource !== snapshot.expectedTokensCssSource) {
+    violations.push('GENERATED_TOKENS_CSS_DRIFT')
+  }
+
+  return [...new Set(violations)]
+}
+
+function runMotionGeometryNegativeProbes(
+  baseline: MaterialGateSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
+    [
+      'route-horizontal-entry-transform-restored',
+      'ROUTE_HORIZONTAL_TRANSFORM',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          'from {\n    opacity: 0;',
+          'from {\n    opacity: 0;\n    transform: translateX(var(--ui-space-content-gap));',
+        ),
+      },
+    ],
+    [
+      'route-persistent-fill-mode-both-restored',
+      'ROUTE_PERSISTENT_FILL_MODE',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          'animation-fill-mode: none;',
+          'animation-fill-mode: both;',
+        ),
+      },
+    ],
+    [
+      'route-settled-identity-transform-restored',
+      'PERSISTENT_IDENTITY_TRANSFORM',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          'to {\n    opacity: 1;',
+          'to {\n    opacity: 1;\n    transform: translateX(0);',
+        ),
+      },
+    ],
+    [
+      'motion-specific-content-padding-added',
+      'MOTION_LAYOUT_SPACING',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          'animation-duration: calc(var(--ui-motion-duration) / 2);',
+          'animation-duration: calc(var(--ui-motion-duration) / 2);\n  padding-inline: var(--ui-space-content-gap);',
+        ),
+      },
+    ],
+    [
+      'motion-specific-grid-template-added',
+      'MOTION_GRID_GEOMETRY',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          'animation-duration: calc(var(--ui-motion-duration) / 2);',
+          'animation-duration: calc(var(--ui-motion-duration) / 2);\n  grid-template-columns: 1fr;',
+        ),
+      },
+    ],
+    [
+      'motion-state-keys-admin-shell',
+      'MOTION_SHELL_REMOUNT',
+      {
+        consoleFrameSource: baseline.consoleFrameSource.replace(
+          '<UiAdminShell\n',
+          '<UiAdminShell\n    :key="document.documentElement.dataset.motion"\n',
+        ),
+      },
+    ],
+    [
+      'motion-state-keys-appearance-workspace',
+      'MOTION_APPEARANCE_REMOUNT',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          '<div class="pavp-appearance-workspace">',
+          '<div :key="effective.snapshot.value.motion" class="pavp-appearance-workspace">',
+        ),
+      },
+    ],
+    [
+      'motion-mutation-writes-scroll-left',
+      'MOTION_SCROLL_WRITE',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          'function updateMotion(value: string): void {',
+          'function updateMotion(value: string): void {\n  document.documentElement.scrollLeft = 0',
+        ),
+      },
+    ],
+    [
+      'sticky-preview-owner-transform-added',
+      'PERSISTENT_OWNER_TRANSFORM',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          '</style>',
+          '.pavp-appearance-preview-column { transform: translateX(0); }\n</style>',
+        ),
+      },
+    ],
+    [
+      'reduced-opacity-only-branch-removed',
+      'REDUCED_ROUTE_OPACITY_ONLY',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          "html[data-motion='reduced'] .pavp-route-content,",
+          "html[data-motion='probe-reduced'] .pavp-route-content,",
+        ),
+      },
+    ],
+    [
+      'route-animation-left-active-under-none',
+      'NONE_ROUTE_ANIMATION',
+      {
+        appStylesSource: baseline.appStylesSource.replace(
+          'animation: none;',
+          'animation: pavp-route-content-enter var(--ui-motion-duration) var(--ui-motion-easing);',
+        ),
+      },
+    ],
+    [
+      'generated-tokens-css-manual-drift',
+      'GENERATED_TOKENS_CSS_DRIFT',
+      { generatedTokensCssSource: `${baseline.generatedTokensCssSource}\n/* manual drift */\n` },
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, change]) => {
+      const mutatedSnapshot = modifiedSnapshot(baseline, change)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          !isDeepStrictEqual(mutatedSnapshot, baseline) &&
+          motionGeometryViolations(mutatedSnapshot).includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
 function runArchitectureAdminConsoleNegativeProbes(
   baseline: MaterialGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
@@ -713,12 +3330,109 @@ function runArchitectureAdminConsoleNegativeProbes(
       },
     ],
     [
+      'naive-radio-hover-shadow-removed',
+      'NAIVE_RADIO_HOVER_SHADOW',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      buttonBoxShadowHover: shadowControlHover,\n',
+          '',
+        ),
+      },
+    ],
+    [
+      'naive-radio-unused-hover-key-restored',
+      'NAIVE_RADIO_HOVER_SHADOW',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      buttonBoxShadowHover: shadowControlHover,',
+          '      buttonBorderColorHover: colorAction,',
+        ),
+      },
+    ],
+    [
+      'naive-radio-focus-uses-material-shadow',
+      'NAIVE_FOCUS_SEMANTIC',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      buttonBoxShadowFocus: shadowFocusRing,',
+          '      buttonBoxShadowFocus: material.shadow,',
+        ),
+      },
+    ],
+    [
+      'naive-focus-provider-ring-removed',
+      'NAIVE_FOCUS_PRESENTATION',
+      {
+        naiveProviderSource: baseline.naiveProviderSource.replace(
+          '  box-shadow: var(--ui-admin-shadow-focus-ring);\n',
+          '',
+        ),
+      },
+    ],
+    [
+      'naive-radio-visible-vendor-default',
+      'NAIVE_VISIBLE_VENDOR_DEFAULT',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      buttonTextColorHover: colorAction,',
+          '      buttonTextColorHover: radioDark.self.buttonTextColorHover,',
+        ),
+      },
+    ],
+    [
+      'naive-button-primary-border-removed',
+      'NAIVE_BUTTON_PRIMARY_BORDER',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      borderPrimary: borderAction,\n',
+          '',
+        ),
+      },
+    ],
+    [
+      'naive-button-primary-disabled-removed',
+      'NAIVE_BUTTON_PRIMARY_DISABLED',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      colorDisabledPrimary: colorAction,\n',
+          '',
+        ),
+      },
+    ],
+    [
+      'naive-tag-border-color-only',
+      'NAIVE_TAG_BORDER_KIND',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      border: borderControl,\n      textColor: colorText,\n      colorBordered: material.chrome,',
+          '      border: colorBorder,\n      textColor: colorText,\n      colorBordered: material.chrome,',
+        ),
+      },
+    ],
+    [
       'naive-common-parser-sensitive-token-alias',
       'NAIVE_COMMON_PARSER_INPUT',
       {
         themeAdapterSource: baseline.themeAdapterSource.replace(
           '  common: {',
-          '  common: {\n    primaryColor: colorAction,',
+          "  common: {\n    primaryColor: 'var(--ui-color-action-primary)',",
+        ),
+      },
+    ],
+    [
+      'naive-component-local-override',
+      'NAIVE_OVERRIDE_OUTSIDE_PRIVATE_ADAPTER',
+      {
+        nonAdapterUiSource: `${baseline.nonAdapterUiSource}\n.n-radio-button { color: inherit; }`,
+      },
+    ],
+    [
+      'naive-raw-border-composite',
+      'NAIVE_RAW_VISUAL_AUTHORITY',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      borderPrimary: borderAction,',
+          "      borderPrimary: '1px solid var(--ui-color-action-primary)',",
         ),
       },
     ],
@@ -779,6 +3493,199 @@ function runArchitectureAdminConsoleNegativeProbes(
         ],
       },
     ],
+    [
+      'visible-layout-profile-debug-text',
+      'PROFILE_DEBUG_TEXT',
+      { shellSource: `${baseline.shellSource}\n<span>{{ profile }}</span>` },
+    ],
+    [
+      'admin-workspace-reading-width',
+      'ADMIN_WORKSPACE_MAX_WIDTH',
+      { shellSource: `${baseline.shellSource}\n<div class="max-w-content" />` },
+    ],
+    [
+      'single-character-sidebar-glyph',
+      'SIDEBAR_ICON_CONTRACT',
+      { routeRegistrySource: `${baseline.routeRegistrySource}\nglyph: '总'` },
+    ],
+    [
+      'admin-alias-adaptive-pin',
+      'ADMIN_ADAPTIVE_PIN',
+      {
+        adminTokenSource: `${baseline.adminTokenSource}\n"$value": "{material.chrome.adaptive.background}"`,
+      },
+    ],
+    [
+      'missing-reduced-material-branch',
+      'MATERIAL_BRANCH_INCOMPLETE',
+      {
+        shellSource: baseline.shellSource.replaceAll(
+          "data-material='reduced'",
+          "data-material='adaptive'",
+        ),
+      },
+    ],
+    [
+      'missing-solid-material-branch',
+      'MATERIAL_BRANCH_INCOMPLETE',
+      {
+        shellSource: baseline.shellSource.replaceAll(
+          "data-material='solid'",
+          "data-material='adaptive'",
+        ),
+      },
+    ],
+    [
+      'naive-transition-active-under-none',
+      'NAIVE_MOTION_NONE_INCOMPLETE',
+      {
+        naiveProviderSource: baseline.naiveProviderSource.replaceAll(
+          'transition: none !important;',
+          'transition-duration: var(--ui-motion-duration) !important;',
+        ),
+      },
+    ],
+    [
+      'vendor-selector-in-page',
+      'VENDOR_SELECTOR_IN_PAGE',
+      { pageVisualSource: `${baseline.pageVisualSource}\n.n-button {}` },
+    ],
+    [
+      'english-error-title',
+      'ENGLISH_ERROR_TITLE',
+      {
+        routeRegistrySource: `${baseline.routeRegistrySource}\n'route-title.error-probe': 'Bad Request',`,
+      },
+    ],
+    [
+      'active-navigation-emits',
+      'ACTIVE_NAVIGATION_ITEM_NOOP',
+      {
+        shellSource: baseline.shellSource.replace(
+          /if\s*\(routeName\s*===\s*props\.activeRouteName\)\s*\{\s*return\s*\}/u,
+          '',
+        ),
+      },
+    ],
+    [
+      'active-navigation-loses-accessibility',
+      'ACTIVE_NAVIGATION_ITEM_ACCESSIBILITY',
+      {
+        shellSource: baseline.shellSource.replaceAll(
+          ':aria-current="item.routeName === activeRouteName ? \'page\' : undefined"',
+          ':disabled="item.routeName === activeRouteName"',
+        ),
+      },
+    ],
+    [
+      'appearance-old-flat-form-only',
+      'OLD_FLAT_APPEARANCE',
+      {
+        appearancePageSource: `${baseline.appearancePageSource}\n<div class="pavp-appearance-grid" />`,
+      },
+    ],
+    [
+      'appearance-hardcoded-theme-swatch',
+      'HARDCODED_THEME_SWATCH',
+      {
+        appearancePageSource: `${baseline.appearancePageSource}\n.probe { --pavp-appearance-swatch: #fff; }`,
+      },
+    ],
+    [
+      'appearance-density-control',
+      'DENSITY_CONTROL',
+      {
+        appearancePageSource: `${baseline.appearancePageSource}\n<div data-appearance-axis="density" />`,
+      },
+    ],
+    [
+      'appearance-direct-store-import',
+      'DIRECT_APPEARANCE_STORE',
+      {
+        appearancePageSource: `${baseline.appearancePageSource}\nimport { useAppearanceStore } from '../app/appearance/appearance.store'`,
+      },
+    ],
+    [
+      'appearance-direct-local-storage',
+      'DIRECT_PAGE_STORAGE',
+      {
+        appearancePageSource: `${baseline.appearancePageSource}\nlocalStorage.setItem('probe', 'probe')`,
+      },
+    ],
+    [
+      'appearance-second-ui-provider',
+      'SECOND_UI_PROVIDER',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          '</template>',
+          '<UiProvider /></template>',
+        ),
+      },
+    ],
+    [
+      'appearance-fake-preview-without-effective-snapshot',
+      'FAKE_APPEARANCE_PREVIEW',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          ':data-material-preview="effective.snapshot.value.material"',
+          'data-material-preview="adaptive"',
+        ),
+      },
+    ],
+    [
+      'appearance-material-consumer-removed',
+      'MATERIAL_PREVIEW_CONSUMER',
+      {
+        appearancePageSource: baseline.appearancePageSource.replaceAll(
+          '--ui-material-',
+          '--ui-probe-',
+        ),
+      },
+    ],
+    [
+      'appearance-motion-active-under-none',
+      'MOTION_NONE_BRANCH',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          'animation: none;\n  transform: none;\n  transition: none;',
+          'animation: pavp-appearance-content-enter var(--ui-motion-duration) var(--ui-motion-easing);\n  transform: none;\n  transition: none;',
+        ),
+      },
+    ],
+    [
+      'appearance-replay-mutates-preference',
+      'MOTION_REPLAY_MUTATES',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          'motionSequence.value += 1',
+          'mutation.commitPreference({})',
+        ),
+      },
+    ],
+    [
+      'appearance-repeated-feedback-does-not-replay',
+      'FEEDBACK_REPLAY',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(':key="feedbackSequence"', ''),
+      },
+    ],
+    [
+      'appearance-direct-naive-import',
+      'DIRECT_NAIVE_IMPORT',
+      {
+        appearancePageSource: `${baseline.appearancePageSource}\nimport { NButton } from 'naive-ui'`,
+      },
+    ],
+    [
+      'appearance-english-primary-label',
+      'ENGLISH_PRIMARY_LABEL',
+      {
+        appearancePageSource: baseline.appearancePageSource.replace(
+          '</template>',
+          '<span>System</span></template>',
+        ),
+      },
+    ],
   ]
 
   return Object.freeze(
@@ -808,6 +3715,7 @@ async function validateDependencies(): Promise<string[]> {
   const webManifest = JSON.parse(
     await readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
   ) as JsonObject
+  const unoConfigSource = await readFile(resolve(rootDirectory, 'uno.config.ts'), 'utf8')
   const catalog = isJsonObject(workspace['catalog']) ? workspace['catalog'] : {}
   const packages = isJsonObject(lockfile['packages']) ? lockfile['packages'] : {}
   const importers = isJsonObject(lockfile['importers']) ? lockfile['importers'] : {}
@@ -831,7 +3739,6 @@ async function validateDependencies(): Promise<string[]> {
     : {}
   const naivePackageKeys = Object.keys(packages).filter((key) => key.startsWith('naive-ui@'))
   const vuePackageKeys = Object.keys(packages).filter((key) => key.startsWith('vue@'))
-
   if (
     catalog['naive-ui'] !== expectedNaiveUiVersion ||
     !isDeepStrictEqual(uiDependencies, {
@@ -851,6 +3758,14 @@ async function validateDependencies(): Promise<string[]> {
     !isDeepStrictEqual(vuePackageKeys, ['vue@3.5.40'])
   ) {
     violations.push('Naive UI exact dependency, lockfile, integrity or single-Vue closure drifted.')
+  }
+
+  if (
+    /\bsafelist\s*:/u.test(unoConfigSource) ||
+    [...unoConfigSource.matchAll(/\bpresetIcons\s*\(/gu)].length !== 1 ||
+    !unoConfigSource.includes('@iconify-json/lucide/icons.json')
+  ) {
+    violations.push('The exact existing Lucide UnoCSS projection drifted.')
   }
 
   for (const packageName of styledFrameworkPackages) {
@@ -904,13 +3819,13 @@ async function validateTokensAndLayout(): Promise<string[]> {
   if (
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
-    tokenManifest.schemaVersion !== 8 ||
-    tokenManifest.tokens.length !== 137 ||
+    tokenManifest.schemaVersion !== 9 ||
+    tokenManifest.tokens.length !== 145 ||
     tokenManifest.activePublicRoles.length !== 36 ||
     tokenManifest.unoCssMappings.length !== 36 ||
-    tokenManifest.governance.recordCount !== 231 ||
+    tokenManifest.governance.recordCount !== 243 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 50 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 62 ||
     classProjections.length !== 34 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
@@ -930,16 +3845,14 @@ async function validateTokensAndLayout(): Promise<string[]> {
   ) as JsonObject
   const sourceAdmin = isJsonObject(source['admin']) ? source['admin'] : {}
 
-  const expectedAdminManifestRecords = expectedAdminAliases.map(
-    ([name, type, alias, cssVariable]) => [
-      name,
-      type,
-      adminAliasResolvedValues.get(alias),
-      cssVariable,
-    ],
-  )
-  const sourceAliasInvalid = expectedAdminAliases.some(([name, type, alias]) => {
-    const segments = name.split('.').slice(1)
+  const expectedAdminManifestRecords = expectedAdminTokens.map((record) => [
+    record.name,
+    record.type,
+    record.resolvedValue,
+    record.cssVariable,
+  ])
+  const sourceTokenInvalid = expectedAdminTokens.some((record) => {
+    const segments = record.name.split('.').slice(1)
     let current: unknown = sourceAdmin
 
     for (const segment of segments) {
@@ -949,20 +3862,20 @@ async function validateTokensAndLayout(): Promise<string[]> {
     return (
       !isJsonObject(current) ||
       !isDeepStrictEqual(Object.keys(current), ['$type', '$value', '$extensions']) ||
-      current['$type'] !== type ||
-      current['$value'] !== alias ||
-      !isDeepStrictEqual(current['$extensions'], { 'org.pavp': { role: name } })
+      current['$type'] !== record.type ||
+      !isDeepStrictEqual(current['$value'], record.value) ||
+      !isDeepStrictEqual(current['$extensions'], { 'org.pavp': { role: record.name } })
     )
   })
 
   if (
     !isDeepStrictEqual(adminManifestRecords, expectedAdminManifestRecords) ||
-    sourceAliasInvalid ||
+    sourceTokenInvalid ||
     !isJsonObject(sourceAdmin['$extensions']) ||
     JSON.stringify(sourceAdmin['$extensions']) !==
       JSON.stringify({ 'org.pavp': { visibility: 'ui-internal' } })
   ) {
-    violations.push('The exact fifteen Admin semantic aliases drifted.')
+    violations.push('The exact twenty-three Admin semantic projections drifted.')
   }
 
   const containerMappings = tokenManifest.unoCssMappings.filter(
@@ -1083,6 +3996,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     "data-motion='none'",
   ]
   const motionSource = shellSource + appStyles + appearancePage + naiveProviderSource
+  const nonShellAndAppearanceOpticalSource = appStyles + naiveProviderSource
 
   if (
     requiredMotionMarkers.some((marker) => !motionSource.includes(marker)) ||
@@ -1090,7 +4004,9 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     /\b(?:animation|transition)(?:-duration|-delay)?\s*:[^;]*(?:\d+(?:\.\d+)?)(?:ms|s)\b/iu.test(
       motionSource,
     ) ||
-    /\b(?:backdrop-filter|filter)\s*:|\b(?:blur|brightness|saturate)\s*\(/iu.test(motionSource)
+    /\b(?:backdrop-filter|filter)\s*:|\b(?:blur|brightness|saturate)\s*\(/iu.test(
+      nonShellAndAppearanceOpticalSource,
+    )
   ) {
     violations.push('The exact token-governed Motion and optical-effect contract drifted.')
   }
@@ -1175,6 +4091,8 @@ async function validateAppearanceAndPageFacts(): Promise<{
     ]) ||
     [...bootstrapSource.matchAll(/\.\$subscribe\s*\(/gu)].length !== 1 ||
     !bootstrapSource.includes("{ detached: true, flush: 'sync' }") ||
+    mutationBoundarySource.includes('installCuratedThemeCatalog') ||
+    bootstrapSource.includes('installCuratedCustomThemeCatalog') ||
     defineStoreCount !== 1 ||
     competingEnvironmentSources.length !== 0
   ) {
@@ -1211,10 +4129,26 @@ async function validateAppearanceAndPageFacts(): Promise<{
 
 async function validateNaiveOverrides(): Promise<string[]> {
   const violations: string[] = []
-  const themeSource = await readFile(
-    resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'),
-    'utf8',
-  )
+  const [
+    themeSource,
+    providerSource,
+    buttonSource,
+    segmentedSource,
+    statusBadgeSource,
+    descriptionListSource,
+    pageHeaderSource,
+  ] = await Promise.all([
+    readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
+    readFile(
+      resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
+      'utf8',
+    ),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiButton.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiSegmentedControl.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiStatusBadge.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiDescriptionList.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiPageHeader.vue'), 'utf8'),
+  ])
   const overrides = themeOverrideObject(themeSource)
 
   if (overrides === undefined) {
@@ -1249,6 +4183,65 @@ async function validateNaiveOverrides(): Promise<string[]> {
     violations.push('Naive theme projection contains a raw visual authority.')
   }
 
+  const requiredProjectionMarkers = [
+    'appearance.material',
+    'appearance.motion',
+    "case 'adaptive'",
+    "case 'reduced'",
+    "case 'solid'",
+    "case 'full'",
+    "case 'none'",
+    'var(--ui-material-chrome-background)',
+  ]
+  const normalizedThemeSource = themeSource.replaceAll(/\s+/gu, ' ')
+  const expectedMaterialBranches = [
+    "case 'adaptive': return { chrome: materialChrome, shadow }",
+    "case 'reduced': return { chrome: materialChrome, shadow: 'none' }",
+    "case 'solid': return { chrome: materialChrome, shadow: 'none' }",
+  ] as const
+  const importantMotionDeclarations = providerSource
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.includes('!important'))
+  if (
+    requiredProjectionMarkers.some((marker) => !themeSource.includes(marker)) ||
+    expectedMaterialBranches.some((branch) => !normalizedThemeSource.includes(branch)) ||
+    !providerSource.includes("html[data-motion='reduced']") ||
+    !providerSource.includes("html[data-motion='none']") ||
+    !providerSource.includes('transition: none !important;') ||
+    !providerSource.includes('animation: none !important;') ||
+    importantMotionDeclarations.length !== 10 ||
+    importantMotionDeclarations.some(
+      (declaration) =>
+        !/^(?:animation|animation-duration|transition|transition-duration|transition-timing-function):/u.test(
+          declaration,
+        ),
+    )
+  ) {
+    violations.push('Naive Material or Motion projection is incomplete.')
+  }
+
+  if (
+    !buttonSource.includes("readonly variant?: 'ghost' | 'primary' | 'secondary'") ||
+    !buttonSource.includes(':ghost="variant === \'ghost\'"') ||
+    !buttonSource.includes(':secondary="variant === \'secondary\'"') ||
+    !buttonSource.includes(":type=\"variant === 'primary' ? 'primary' : 'default'\"") ||
+    !buttonSource.includes(':disabled="disabled"') ||
+    !segmentedSource.includes('<PavpRadioGroupPrimitive') ||
+    !segmentedSource.includes('<PavpRadioButtonPrimitive') ||
+    !statusBadgeSource.includes('<PavpTagPrimitive') ||
+    !statusBadgeSource.includes('bordered') ||
+    /\b(?:checkable|closable|strong)\b/u.test(templateContent(statusBadgeSource)) ||
+    !descriptionListSource.includes('<PavpDescriptionsPrimitive') ||
+    !descriptionListSource.includes('bordered') ||
+    !descriptionListSource.includes(':column="1"') ||
+    !descriptionListSource.includes('label-placement="left"') ||
+    !pageHeaderSource.includes('<PavpBreadcrumbPrimitive') ||
+    !pageHeaderSource.includes('<PavpBreadcrumbItemPrimitive')
+  ) {
+    violations.push('Current public Naive wrapper variants or rendered-state contract drifted.')
+  }
+
   return violations
 }
 
@@ -1270,8 +4263,17 @@ function validateInspectorProjections(): string[] {
 
   if (
     runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 36 ||
-    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 8 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 231 ||
+    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 9 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 243 ||
+    !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
+      'amber',
+      'cobalt',
+      'coral',
+      'graphite',
+      'iris',
+      'jade',
+      'lagoon',
+    ]) ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 11 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
@@ -1307,6 +4309,9 @@ function validateInspectorProjections(): string[] {
     group.label,
     group.items.map((item) => item.label),
   ])
+  const navigationIconProjection = consoleNavigationRegistry.flatMap((group) =>
+    group.items.map((item) => item.iconClass),
+  )
   if (
     !isDeepStrictEqual(navigationProjection, [
       ['工作台', ['总览']],
@@ -1315,9 +4320,10 @@ function validateInspectorProjections(): string[] {
       ['界面基础', ['UI 组件', '响应式布局']],
       ['开发治理', ['工程与质量']],
       ['架构规划', ['能力路线图']],
-    ])
+    ]) ||
+    !isDeepStrictEqual(navigationIconProjection, expectedNavigationIconClasses)
   ) {
-    violations.push('Visible Chinese Sidebar taxonomy drifted.')
+    violations.push('Visible Chinese Sidebar taxonomy or Lucide projection drifted.')
   }
 
   return violations
@@ -1334,38 +4340,109 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   const applicationFiles = (await collectFiles(resolve(rootDirectory, 'apps/web/src'))).filter(
     (path) => ['.ts', '.vue'].includes(extname(path)),
   )
-  const applicationSources = await Promise.all(
-    applicationFiles.map((path) => readFile(path, 'utf8')),
+  const nonAdapterUiFiles = (await collectFiles(resolve(rootDirectory, 'packages/ui/src'))).filter(
+    (path) =>
+      ['.ts', '.vue'].includes(extname(path)) &&
+      !relative(rootDirectory, path).startsWith('packages/ui/src/adapters/naive/'),
   )
-  const [workspaceSource, lockSource, uiManifestSource, webManifestSource, appSource, themeSource] =
-    await Promise.all([
-      readFile(resolve(rootDirectory, 'pnpm-workspace.yaml'), 'utf8'),
-      readFile(resolve(rootDirectory, 'pnpm-lock.yaml'), 'utf8'),
-      readFile(resolve(rootDirectory, 'packages/ui/package.json'), 'utf8'),
-      readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
-      readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8'),
-      readFile(
-        resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'),
-        'utf8',
+  const [applicationSources, nonAdapterUiSources] = await Promise.all([
+    Promise.all(applicationFiles.map((path) => readFile(path, 'utf8'))),
+    Promise.all(nonAdapterUiFiles.map((path) => readFile(path, 'utf8'))),
+  ])
+  const [
+    workspaceSource,
+    lockSource,
+    uiManifestSource,
+    webManifestSource,
+    appSource,
+    themeSource,
+    naiveProviderSource,
+    shellSource,
+    adminTokenSource,
+    routeRegistrySource,
+    architectureSource,
+    appearancePageSource,
+    appearanceThemeProjectionSource,
+  ] = await Promise.all([
+    readFile(resolve(rootDirectory, 'pnpm-workspace.yaml'), 'utf8'),
+    readFile(resolve(rootDirectory, 'pnpm-lock.yaml'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/package.json'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
+    readFile(
+      resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
+      'utf8',
+    ),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiAdminShell.vue'), 'utf8'),
+    readFile(
+      resolve(rootDirectory, 'packages/design-system/tokens/semantic/admin-console.tokens.json'),
+      'utf8',
+    ),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-registry.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'ARCHITECTURE.md'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/pages/appearance.vue'), 'utf8'),
+    readFile(
+      resolve(
+        rootDirectory,
+        'packages/design-system/src/console/appearance-workspace-theme-projection.ts',
       ),
-    ])
+      'utf8',
+    ),
+  ])
+  const [
+    appStylesSource,
+    consoleFrameSource,
+    appearanceStoreSource,
+    appearanceMutationBoundarySource,
+    appearanceBootstrapSource,
+    generatedTokensCssSource,
+    tokenBuildResult,
+  ] = await Promise.all([
+    readFile(resolve(rootDirectory, 'apps/web/src/app/styles/layers.css'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/appearance/appearance.store.ts'), 'utf8'),
+    readFile(
+      resolve(rootDirectory, 'apps/web/src/app/appearance/appearance-mutation-boundary.ts'),
+      'utf8',
+    ),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/appearance/appearance-bootstrap.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/design-system/src/generated/tokens.css'), 'utf8'),
+    validateTokens(),
+  ])
   const publicComponentExports = uiPublicComponentRegistry.records.map(
     (record) => record.exportName,
   )
   const baseline: MaterialGateSnapshot = {
+    appStylesSource,
     applicationImportSource: applicationSources.join('\n'),
+    nonAdapterUiSource: nonAdapterUiSources.join('\n'),
     manifestAndLockSource: [workspaceSource, lockSource, uiManifestSource, webManifestSource].join(
       '\n',
     ),
     pageVisualSource: appearanceAndFacts.pageSource,
+    appearancePageSource,
+    appearanceThemeProjectionSource,
+    appearanceMutationSource: [
+      appearanceStoreSource,
+      appearanceMutationBoundarySource,
+      appearanceBootstrapSource,
+    ].join('\n'),
     appTemplateSource: appSource,
+    consoleFrameSource,
     factImportViolation: appearanceAndFacts.factImportViolation,
     pageStorageSource: appearanceAndFacts.pageSource,
     competingAppearanceEnvironmentSource: appearanceAndFacts.competingEnvironmentSource,
     capabilityPageTemplateSource: appearanceAndFacts.capabilityTemplate,
     themeAdapterSource: themeSource,
+    naiveProviderSource,
+    shellSource,
+    adminTokenSource,
+    routeRegistrySource,
     generatedManifestsEqual:
       engineeringViolations.length === 0 && capabilityViolations.length === 0,
+    generatedTokensCssSource,
+    expectedTokensCssSource: formatRuntimeCss(tokenBuildResult),
     routeCount: routeRegistry.length,
     publicComponentExports,
     registeredPublicComponents: uiPublicComponentRegistry.records.map((record) => ({
@@ -1374,6 +4451,18 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     })),
   }
   const negativeProbeResults = runArchitectureAdminConsoleNegativeProbes(baseline)
+  const motionGeometryNegativeProbeResults = runMotionGeometryNegativeProbes(baseline)
+
+  if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
+    violations.push(
+      `Architecture Admin Console negative-probe count drifted: expected ${String(expectedArchitectureAdminConsoleNegativeProbeCount)}, received ${String(negativeProbeResults.length)}.`,
+    )
+  }
+  if (motionGeometryNegativeProbeResults.length !== expectedMotionGeometryNegativeProbeCount) {
+    violations.push(
+      `Motion geometry negative-probe count drifted: expected ${String(expectedMotionGeometryNegativeProbeCount)}, received ${String(motionGeometryNegativeProbeResults.length)}.`,
+    )
+  }
 
   violations.push(
     ...(await validateDependencies()),
@@ -1382,9 +4471,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...appearanceAndFacts.violations,
     ...(await validateNaiveOverrides()),
     ...validateInspectorProjections(),
+    ...validateProductExperienceReworkStatus(architectureSource),
     ...engineeringViolations,
     ...capabilityViolations,
     ...uiViolations,
+    ...motionGeometryViolations(baseline),
   )
 
   const baselineViolations = materialGateViolations(baseline)
@@ -1398,6 +4489,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       violations.push(`${result.id}: reversible in-memory negative probe did not fail.`)
     }
   }
+  for (const result of motionGeometryNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(`${result.id}: reversible in-memory Motion negative probe did not fail.`)
+    }
+  }
 
   return [...new Set(violations)]
 }
@@ -1409,5 +4505,7 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
     throw new Error(violations.join('\n'))
   }
 
-  console.log('Architecture Admin Console check: passed (16/16 negative probes)')
+  console.log(
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes)`,
+  )
 }

@@ -1,5 +1,5 @@
 export interface UiAdminNavigationItem {
-  readonly glyph: string
+  readonly iconClass: string
   readonly label: string
   readonly routeName: string
 }

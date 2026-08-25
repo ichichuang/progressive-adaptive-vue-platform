@@ -6,6 +6,7 @@ import { isDeepStrictEqual } from 'node:util'
 import {
   ProductPreferenceDefault,
   applyAppearance,
+  builtInThemeIds,
   explicitThemePreferenceSchema,
   installCustomThemeBank,
   migrateToExplicitThemePreference,
@@ -86,6 +87,10 @@ const expectedPublicRootSymbols = [
   'platformPreset',
   'designSystemConsoleProjection',
   'DesignSystemConsoleProjection',
+  'builtInAppearanceThemePreviews',
+  'projectAccessibleCustomAppearanceThemePreviews',
+  'AppearanceThemePreviewProjection',
+  'AppearanceThemePreviewSwatches',
 ] as const
 const expectedStoreActions = [
   'restoreAppearance',
@@ -436,7 +441,7 @@ async function validatePackageFiveStaticAuthorities(): Promise<readonly string[]
     '<package-five-consumer-negative-probe>',
     `const duplicate = {
       colorMode: 'system',
-      theme: { registryKind: 'built-in', themeId: 'neutral' },
+      theme: { registryKind: 'built-in', themeId: 'iris' },
       contrast: 'standard',
       material: 'adaptive',
       density: { preset: 'comfortable', scale: 1 },
@@ -449,7 +454,7 @@ async function validatePackageFiveStaticAuthorities(): Promise<readonly string[]
     '<package-five-safety-negative-probe>',
     `const duplicateSafety = {
       effectiveColorMode: 'light',
-      effectiveTheme: { registryKind: 'built-in', themeId: 'neutral' },
+      effectiveTheme: { registryKind: 'built-in', themeId: 'iris' },
       effectiveContrast: 'standard',
       effectiveMaterial: 'solid',
       effectiveDensity: 'comfortable',
@@ -504,11 +509,82 @@ async function validatePublicRoot(): Promise<readonly string[]> {
     actual.some((name, index) => name !== expectedPublicRootSymbols[index])
   ) {
     return [
-      `packages/design-system/src/index.ts: expected the frozen ordered 38-symbol Package 5 public root, received [${actual.join(', ')}].`,
+      `packages/design-system/src/index.ts: expected the frozen ordered ${String(expectedPublicRootSymbols.length)}-symbol public root, received [${actual.join(', ')}].`,
     ]
   }
 
   return []
+}
+
+async function validateSevenBuiltInThemes(): Promise<readonly string[]> {
+  const violations: string[] = []
+  const expectedIdentities = [
+    ['amber', 'Amber'],
+    ['cobalt', 'Cobalt'],
+    ['coral', 'Coral'],
+    ['graphite', 'Graphite'],
+    ['iris', 'Iris'],
+    ['jade', 'Jade'],
+    ['lagoon', 'Lagoon'],
+  ] as const
+  const generatedIdentities = generatedThemeRegistry.builtInEntries.map((entry) => [
+    entry.themeId,
+    entry.definition.label,
+  ])
+
+  if (
+    !isDeepStrictEqual(
+      builtInThemeIds,
+      expectedIdentities.map(([themeId]) => themeId),
+    ) ||
+    !isDeepStrictEqual(generatedIdentities, expectedIdentities)
+  ) {
+    violations.push(
+      'Seven Built-in Theme IDs, labels, or canonical order drifted from the Owner contract.',
+    )
+  }
+
+  const colorValues = generatedThemeRegistry.builtInEntries.flatMap((entry) => [
+    ...Object.values(entry.definition.planes.light.standard),
+    ...Object.values(entry.definition.planes.light.enhanced),
+    ...Object.values(entry.definition.planes.dark.standard),
+    ...Object.values(entry.definition.planes.dark.enhanced),
+  ])
+  const scrimValues = generatedThemeRegistry.builtInEntries.flatMap((entry) => [
+    entry.definition.planes.light.standard['color.scrim.viewport'],
+    entry.definition.planes.light.enhanced['color.scrim.viewport'],
+    entry.definition.planes.dark.standard['color.scrim.viewport'],
+    entry.definition.planes.dark.enhanced['color.scrim.viewport'],
+  ])
+  const expectedSourceFiles = expectedIdentities.map(([themeId]) => `${themeId}.theme.json`)
+  const actualSourceFiles = (
+    await readdir(resolve(rootDirectory, 'packages/design-system/tokens/themes/complete'))
+  ).sort(compareCodePoints)
+  const appearanceFiles = await readdir(resolve(rootDirectory, 'apps/web/src/app/appearance'))
+
+  if (
+    colorValues.length !== 252 ||
+    colorValues.some((value) => !value.startsWith('oklch(')) ||
+    scrimValues.length !== 28 ||
+    scrimValues.some((value) => typeof value !== 'string' || !value.endsWith('/ 0.56)'))
+  ) {
+    violations.push(
+      'Seven Built-in Themes must contain 252 absolute OKLCH roles and 28 fixed-alpha scrims.',
+    )
+  }
+
+  if (!isDeepStrictEqual(actualSourceFiles, expectedSourceFiles)) {
+    violations.push('Complete Built-in Theme source files must equal the exact seven-theme set.')
+  }
+
+  if (
+    appearanceFiles.includes('curated-custom-theme-catalog.json') ||
+    appearanceFiles.includes('curated-custom-theme-catalog.ts')
+  ) {
+    violations.push('The rejected Curated Custom Theme Catalog source or reader remains active.')
+  }
+
+  return violations
 }
 
 function validateStoreAst(path: string, sourceText: string): readonly string[] {
@@ -718,7 +794,9 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
   if (
     !isDeepStrictEqual(registryWriterOwners, ['commitAppearanceTransition', 'deleteCustomTheme'])
   ) {
-    violations.push('appearance.store.ts: Registry Writer callers must be transaction + deletion.')
+    violations.push(
+      'appearance.store.ts: Registry Writer callers must be transaction plus deletion only.',
+    )
   }
 
   for (const [name, expectedOwners] of [
@@ -819,6 +897,17 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
   ]) {
     if (!deletionSource.includes(required)) {
       violations.push(`appearance.store.ts: deleteCustomTheme is missing ${required}.`)
+    }
+  }
+
+  for (const retiredCatalogSymbol of [
+    'installCuratedCustomThemeCatalog',
+    'readCuratedCustomThemeCatalog',
+  ]) {
+    if (sourceText.includes(retiredCatalogSymbol)) {
+      violations.push(
+        `appearance.store.ts: retired Catalog symbol ${retiredCatalogSymbol} remains.`,
+      )
     }
   }
 
@@ -1431,13 +1520,13 @@ function validatePersistenceContracts(): readonly string[] {
       violations.push('Preference Writer must persist one direct Explicit Preference value.')
     }
 
-    const neutral = generatedThemeRegistry.builtInEntries[0]
+    const representativeTheme = generatedThemeRegistry.builtInEntries[0]
     const firstValidation = validateCustomThemeDefinition({
-      ...neutral.definition,
+      ...representativeTheme.definition,
       id: 'z.registry',
     })
     const secondValidation = validateCustomThemeDefinition({
-      ...neutral.definition,
+      ...representativeTheme.definition,
       id: 'A.registry',
     })
 
@@ -1569,7 +1658,7 @@ function validateRuntimeContracts(): readonly string[] {
   const violations: string[] = []
   const expectedProductDefault = {
     colorMode: 'system',
-    theme: { registryKind: 'built-in', themeId: 'neutral' },
+    theme: { registryKind: 'built-in', themeId: 'iris' },
     contrast: 'standard',
     material: 'adaptive',
     density: { preset: 'comfortable', scale: 1 },
@@ -1651,7 +1740,7 @@ function validateRuntimeContracts(): readonly string[] {
       motion: 'full',
     },
   } as const
-  const losslessMigration = migrateToExplicitThemePreference(legacyPreference)
+  const legacyMigration = migrateToExplicitThemePreference(legacyPreference)
   const lossyMigration = migrateToExplicitThemePreference({
     ...legacyPreference,
     appearance: {
@@ -1664,10 +1753,41 @@ function validateRuntimeContracts(): readonly string[] {
   })
 
   if (
-    losslessMigration.status !== 'success' ||
-    losslessMigration.preference.appearance.theme.themeId !== tuple.themeId
+    legacyMigration.status !== 'success' ||
+    legacyMigration.preference.appearance.theme.themeId !== 'iris'
   ) {
-    violations.push('Lossless Legacy Preference migration is not deterministic.')
+    violations.push('Verified Legacy Preference migration to Iris is not deterministic.')
+  }
+
+  const retiredBuiltInMigration = migrateToExplicitThemePreference({
+    ...defaultPreference.data,
+    appearance: {
+      ...defaultPreference.data.appearance,
+      theme: { registryKind: 'built-in', themeId: 'neutral' },
+    },
+  })
+  const formerCatalogMigration = migrateToExplicitThemePreference({
+    ...defaultPreference.data,
+    appearance: {
+      ...defaultPreference.data.appearance,
+      theme: { registryKind: 'custom', themeId: 'jade' },
+    },
+  })
+
+  if (
+    retiredBuiltInMigration.status !== 'success' ||
+    retiredBuiltInMigration.preference.appearance.theme.registryKind !== 'built-in' ||
+    retiredBuiltInMigration.preference.appearance.theme.themeId !== 'iris'
+  ) {
+    violations.push('Retired Schema 3 Built-in references must migrate deterministically to Iris.')
+  }
+
+  if (
+    formerCatalogMigration.status !== 'success' ||
+    formerCatalogMigration.preference.appearance.theme.registryKind !== 'built-in' ||
+    formerCatalogMigration.preference.appearance.theme.themeId !== 'jade'
+  ) {
+    violations.push('Former Catalog Custom references must promote to the same Built-in ID.')
   }
 
   if (
@@ -1697,10 +1817,10 @@ function validateRuntimeContracts(): readonly string[] {
     }
   }
 
-  const neutral = generatedThemeRegistry.builtInEntries[0]
+  const representativeTheme = generatedThemeRegistry.builtInEntries[0]
 
   const customDefinition = {
-    ...neutral.definition,
+    ...representativeTheme.definition,
     id: 'checker.custom',
   }
   const validation = validateCustomThemeDefinition(customDefinition)
@@ -1840,7 +1960,7 @@ function validateRuntimeContracts(): readonly string[] {
 
   applyAppearance(target, {
     colorMode: 'light',
-    theme: { registryKind: 'built-in', themeId: 'neutral' },
+    theme: { registryKind: 'built-in', themeId: 'iris' },
     contrast: 'standard',
     material: 'solid',
     density: 'comfortable',
@@ -2025,14 +2145,14 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 8 || recordCount !== 231) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 8/231.')
+  if (manifest['schemaVersion'] !== 9 || recordCount !== 243) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 9/243.')
   }
 
   const themes = manifest['themes']
 
-  if (!Array.isArray(themes) || themes.length !== 3) {
-    violations.push('tokens.manifest.json: exactly three active Built-in Themes are required.')
+  if (!Array.isArray(themes) || themes.length !== builtInThemeIds.length) {
+    violations.push('tokens.manifest.json: exactly seven active Built-in Themes are required.')
   } else {
     for (const [index, value] of themes.entries()) {
       const expectedEntry = generatedThemeRegistry.builtInEntries[index]
@@ -2093,7 +2213,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       applicationKeyAgnostic: true,
       safetyBaseline: {
         effectiveColorMode: 'light',
-        effectiveTheme: { registryKind: 'built-in', themeId: 'neutral' },
+        effectiveTheme: { registryKind: 'built-in', themeId: 'iris' },
         effectiveContrast: 'standard',
         effectiveMaterial: 'solid',
         effectiveDensity: 'comfortable',
@@ -2127,6 +2247,7 @@ export async function validateAppearanceCutover(): Promise<readonly string[]> {
   const checks: readonly (() => readonly string[] | Promise<readonly string[]>)[] = [
     validateStableGeneratedOutputs,
     validatePublicRoot,
+    validateSevenBuiltInThemes,
     validateApplicationOrchestration,
     validatePackageFiveStaticAuthorities,
     validateParserCorpus,

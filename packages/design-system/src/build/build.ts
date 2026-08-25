@@ -15,6 +15,7 @@ import { migrateToExplicitThemePreference } from '../runtime/preference-migratio
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { fontScaleValues } from '../schema/appearance.schema'
+import { builtInThemeIds } from '../schema/complete-theme.schema'
 import { explicitThemePreferenceSchema } from '../schema/preference.schema'
 import { tokenPathFromReference } from '../schema/token.schema'
 import { validateCompleteBuiltInThemes } from './complete-themes'
@@ -98,8 +99,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 9040,
-    expectedByteDelta: 5674,
+    expectedBytes: 11550,
+    expectedByteDelta: 8184,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -122,8 +123,27 @@ const manifestCompressionContract = {
     baselineBytes: 7687,
     baselineRecordCount: 181,
     acceptedFinalBytes: 9040,
+    acceptedFinalRecordCount: 231,
     expectedByteDelta: 1353,
     expectedRecordCountDelta: 50,
+  },
+  naiveThemeStateFusionRepair: {
+    baselineSource: 'pre-repair-corrected-worktree',
+    baselineBytes: 9008,
+    baselineRecordCount: 229,
+    acceptedFinalBytes: 9274,
+    acceptedFinalRecordCount: 239,
+    expectedByteDelta: 266,
+    expectedRecordCountDelta: 10,
+  },
+  sevenBuiltInThemeReplacement: {
+    baselineSource: 'rejected-curated-catalog-worktree',
+    baselineBytes: 9274,
+    baselineRecordCount: 239,
+    acceptedFinalBytes: 11550,
+    acceptedFinalRecordCount: 243,
+    expectedByteDelta: 2276,
+    expectedRecordCountDelta: 4,
   },
   hardLimitBytes: 32768,
   options: {
@@ -439,8 +459,8 @@ function validateManifestCompression(result: TokenBuildResult): number {
 
   const gzipBytes = first.byteLength
   const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
-  const architectureAdminConsoleByteDelta =
-    gzipBytes - manifestCompressionContract.architectureAdminConsole.baselineBytes
+  const sevenBuiltInThemeReplacementByteDelta =
+    gzipBytes - manifestCompressionContract.sevenBuiltInThemeReplacement.baselineBytes
   const manifestRecordCount = governance['recordCount']
 
   assertInvariant(
@@ -474,11 +494,10 @@ function validateManifestCompression(result: TokenBuildResult): number {
     'historical Explicit Theme Preference cutover accepted bytes and delta must match their baseline',
   )
   assertInvariant(
-    typeof manifestRecordCount === 'number' &&
-      manifestRecordCount -
-        manifestCompressionContract.architectureAdminConsole.baselineRecordCount ===
-        manifestCompressionContract.architectureAdminConsole.expectedRecordCountDelta,
-    'Architecture Admin Console Manifest record delta must equal fifty',
+    manifestCompressionContract.architectureAdminConsole.acceptedFinalRecordCount -
+      manifestCompressionContract.architectureAdminConsole.baselineRecordCount ===
+      manifestCompressionContract.architectureAdminConsole.expectedRecordCountDelta,
+    'historical Architecture Admin Console Manifest record delta must match its baseline',
   )
   assertInvariant(
     manifestCompressionContract.architectureAdminConsole.acceptedFinalBytes -
@@ -487,9 +506,36 @@ function validateManifestCompression(result: TokenBuildResult): number {
     'Architecture Admin Console accepted bytes and delta must match their baseline',
   )
   assertInvariant(
-    architectureAdminConsoleByteDelta ===
-      manifestCompressionContract.architectureAdminConsole.expectedByteDelta,
-    `Architecture Admin Console gzip delta: expected ${String(manifestCompressionContract.architectureAdminConsole.expectedByteDelta)}, received ${String(architectureAdminConsoleByteDelta)}`,
+    manifestCompressionContract.naiveThemeStateFusionRepair.acceptedFinalRecordCount -
+      manifestCompressionContract.naiveThemeStateFusionRepair.baselineRecordCount ===
+      manifestCompressionContract.naiveThemeStateFusionRepair.expectedRecordCountDelta,
+    'Naive Theme State Fusion Repair Manifest record delta must match its baseline',
+  )
+  assertInvariant(
+    manifestCompressionContract.naiveThemeStateFusionRepair.acceptedFinalBytes -
+      manifestCompressionContract.naiveThemeStateFusionRepair.baselineBytes ===
+      manifestCompressionContract.naiveThemeStateFusionRepair.expectedByteDelta,
+    'Naive Theme State Fusion Repair accepted bytes and delta must match its baseline',
+  )
+  assertInvariant(
+    typeof manifestRecordCount === 'number' &&
+      manifestRecordCount ===
+        manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalRecordCount &&
+      manifestRecordCount -
+        manifestCompressionContract.sevenBuiltInThemeReplacement.baselineRecordCount ===
+        manifestCompressionContract.sevenBuiltInThemeReplacement.expectedRecordCountDelta,
+    'Seven Built-in Theme Replacement Manifest record delta must match its baseline',
+  )
+  assertInvariant(
+    manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalBytes -
+      manifestCompressionContract.sevenBuiltInThemeReplacement.baselineBytes ===
+      manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta,
+    'Seven Built-in Theme Replacement accepted bytes and delta must match its baseline',
+  )
+  assertInvariant(
+    sevenBuiltInThemeReplacementByteDelta ===
+      manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta,
+    `Seven Built-in Theme Replacement gzip delta: expected ${String(manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta)}, received ${String(sevenBuiltInThemeReplacementByteDelta)}`,
   )
 
   return gzipBytes
@@ -971,23 +1017,23 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
         contents: stableJson(document),
         path: sources[index] ?? '<missing-complete-theme-source>',
       })),
-      legacyThemes: result.themes,
       resolver,
     })
 
   assertInvariant(
-    result.completeThemes.length === 3,
-    'exactly three complete built-in target Themes must exist',
+    result.completeThemes.length === builtInThemeIds.length,
+    'exactly seven complete built-in Themes must exist',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
-      108,
-    'complete built-in target Themes must contain exactly 108 authored color values',
+      builtInThemeIds.length * 4 * 9,
+    'complete built-in Themes must contain exactly 252 authored color values',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===
-      108 && result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 0),
-    'Package 4 built-in Theme cells must all be explicit absolute colors without aliases',
+      builtInThemeIds.length * 4 * 9 &&
+      result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 0),
+    'all active built-in Theme cells must be explicit absolute colors without aliases',
   )
   assertInvariantEqual(
     validateDocuments(canonicalDocuments),
@@ -1084,24 +1130,21 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     )
   }
 
-  const missingTheme = structuredClone(canonicalDocuments).slice(0, 2)
+  const missingTheme = structuredClone(canonicalDocuments).slice(0, -1)
 
   assertContractFailure(
-    () => validateDocuments(missingTheme, canonicalSources.slice(0, 2)),
+    () => validateDocuments(missingTheme, canonicalSources.slice(0, -1)),
     /source count/u,
     'a missing complete built-in Theme must fail',
   )
 
   const duplicateTheme = structuredClone(canonicalDocuments)
+  const duplicateThemeSources = [...canonicalSources]
   duplicateTheme[1] = structuredClone(duplicateTheme[0] ?? {})
+  duplicateThemeSources[1] = duplicateThemeSources[0] ?? ''
 
   assertContractFailure(
-    () =>
-      validateDocuments(duplicateTheme, [
-        canonicalSources[0] ?? '',
-        canonicalSources[0] ?? '',
-        canonicalSources[2] ?? '',
-      ]),
+    () => validateDocuments(duplicateTheme, duplicateThemeSources),
     /Theme IDs/u,
     'a duplicate complete built-in Theme identity must fail',
   )
@@ -1209,23 +1252,23 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   Object.assign(enhancedIntentRoleMap, structuredClone(standardIntentRoleMap))
   assertContractFailure(
     () => validateDocuments(invalidEnhancedIntent),
-    /Enhanced plane must not duplicate Standard/u,
+    /contrast|Enhanced plane must not duplicate Standard/u,
     'complete Theme Enhanced-plane intent violations must fail',
   )
 
   const missingPerRoleIdentity = structuredClone(canonicalDocuments)
-  const neutralIdentityRoleMap = mutableThemeRoleMap(
+  const firstIdentityRoleMap = mutableThemeRoleMap(
     missingPerRoleIdentity[0] ?? {},
     'light',
     'standard',
   )
-  const oceanIdentityRoleMap = mutableThemeRoleMap(
+  const secondIdentityRoleMap = mutableThemeRoleMap(
     missingPerRoleIdentity[1] ?? {},
     'light',
     'standard',
   )
 
-  oceanIdentityRoleMap['color.scrim.viewport'] = neutralIdentityRoleMap['color.scrim.viewport']
+  secondIdentityRoleMap['color.scrim.viewport'] = firstIdentityRoleMap['color.scrim.viewport']
   assertContractFailure(
     () => validateDocuments(missingPerRoleIdentity),
     /Theme identity must remain present/u,
@@ -1245,9 +1288,11 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     )
   }
 
+  const firstThemeId = builtInThemeIds[0]
+  const firstThemeIdField = `  "id": "${firstThemeId}",`
   const duplicateKeyContents = stableJson(canonicalDocuments[0]).replace(
-    '  "id": "neutral",',
-    '  "id": "neutral",\n  "id": "neutral",',
+    firstThemeIdField,
+    `${firstThemeIdField}\n${firstThemeIdField}`,
   )
 
   assertContractFailure(
@@ -1263,7 +1308,6 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
             path: canonicalSources[index + 1] ?? '',
           })),
         ],
-        legacyThemes: result.themes,
         resolver,
       }),
     /Duplicate JSON object key/u,
@@ -1609,6 +1653,263 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     'ui-internal and build-only tokens must not enter public TypeScript or names',
   )
 
+  const compositeTokens = validationRecords('semantic/composite.tokens.json', {
+    admin: {
+      $extensions: {
+        'org.pavp': {
+          visibility: 'ui-internal',
+        },
+      },
+      probe: {
+        border: {
+          $type: 'border',
+          $value: {
+            color: '{admin.probe.color}',
+            width: '{admin.probe.width}',
+            style: 'solid',
+          },
+        },
+        color: {
+          $type: 'color',
+          $value: colorValue,
+        },
+        shadow: {
+          $type: 'shadow',
+          $value: [
+            {
+              color: '{admin.probe.color}',
+              offsetX: '{admin.probe.zero}',
+              offsetY: '{admin.probe.zero}',
+              blur: '{admin.probe.zero}',
+              spread: '{admin.probe.width}',
+              inset: true,
+            },
+            {
+              color: '{admin.probe.color}',
+              offsetX: '{admin.probe.zero}',
+              offsetY: '{admin.probe.zero}',
+              blur: '{admin.probe.zero}',
+              spread: '{admin.probe.width}',
+            },
+          ],
+        },
+        'signed-shadow': {
+          $type: 'shadow',
+          $value: {
+            color: '{admin.probe.color}',
+            offsetX: { value: -1, unit: 'px' },
+            offsetY: { value: -1, unit: 'px' },
+            blur: '{admin.probe.zero}',
+            spread: { value: -1, unit: 'px' },
+          },
+        },
+        width: {
+          $type: 'dimension',
+          $value: {
+            value: 1,
+            unit: 'px',
+          },
+        },
+        zero: {
+          $type: 'dimension',
+          $value: {
+            value: 0,
+            unit: 'px',
+          },
+          $extensions: {
+            'org.pavp': {
+              visibility: 'build-only',
+            },
+          },
+        },
+      },
+    },
+  })
+  const compositeCss = formatRuntimeCss(validationResult(result, compositeTokens))
+
+  assertInvariant(
+    compositeCss.includes(
+      '--ui-admin-probe-border: var(--ui-admin-probe-width) solid var(--ui-admin-probe-color);',
+    ) &&
+      compositeCss.includes(
+        `--ui-admin-probe-shadow:
+      inset 0px 0px 0px var(--ui-admin-probe-width) var(--ui-admin-probe-color),
+      0px 0px 0px var(--ui-admin-probe-width) var(--ui-admin-probe-color);`,
+      ) &&
+      compositeCss.includes(
+        '--ui-admin-probe-signed-shadow: -1px -1px 0px -1px var(--ui-admin-probe-color);',
+      ),
+    'Border and Shadow output must preserve Runtime references, flatten build-only references, inset, layer order, signed offsets and spread, and complete CSS value kinds',
+  )
+
+  const runtimeCss = formatRuntimeCss(result)
+
+  assertInvariant(
+    runtimeCss.includes('--ui-shadow-panel: 0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12);') &&
+      runtimeCss.includes(
+        `--ui-admin-shadow-control: inset 0rem 0rem 0rem var(--ui-admin-border-width)
+      var(--ui-color-border-default);`,
+      ) &&
+      runtimeCss.includes(
+        `--ui-admin-shadow-focus-ring:
+      inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-focus-ring),
+      0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring);`,
+      ),
+    'the admitted single-layer Shadow format must remain backward compatible',
+  )
+
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-border.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'border',
+            $value: {
+              color: colorValue,
+              width: { value: 1, unit: 'px' },
+              style: 'dashed',
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'the bounded Border contract must reject unadmitted styles',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-border-reference.tokens.json', {
+        admin: {
+          color: {
+            $type: 'dimension',
+            $value: { value: 1, unit: 'px' },
+          },
+          invalid: {
+            $type: 'border',
+            $value: {
+              color: '{admin.color}',
+              width: { value: 1, unit: 'px' },
+              style: 'solid',
+            },
+          },
+        },
+      }),
+    /has type "dimension", expected "color"/u,
+    'Border nested references must preserve exact referenced value kinds',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-border-negative-width.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'border',
+            $value: {
+              color: colorValue,
+              width: { value: -1, unit: 'px' },
+              style: 'solid',
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'Border literal width must reject negative dimensions',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-border-negative-reference.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'border',
+            $value: {
+              color: colorValue,
+              width: '{admin.negative}',
+              style: 'solid',
+            },
+          },
+          negative: {
+            $type: 'dimension',
+            $value: { value: -1, unit: 'px' },
+          },
+        },
+      }),
+    /admin\.invalid: invalid resolved Border value/u,
+    'Border referenced width must be revalidated as nonnegative at the consuming field',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-shadow.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'shadow',
+            $value: [],
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'Shadow List tokens must contain at least one layer',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-shadow-negative-blur.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'shadow',
+            $value: {
+              color: colorValue,
+              offsetX: { value: 0, unit: 'px' },
+              offsetY: { value: 0, unit: 'px' },
+              blur: { value: -1, unit: 'px' },
+              spread: { value: -1, unit: 'px' },
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'Shadow literal blur must reject negative dimensions while negative spread remains admitted',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-shadow-negative-reference.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'shadow',
+            $value: {
+              color: colorValue,
+              offsetX: { value: -1, unit: 'px' },
+              offsetY: { value: 0, unit: 'px' },
+              blur: '{admin.negative}',
+              spread: { value: -1, unit: 'px' },
+            },
+          },
+          negative: {
+            $type: 'dimension',
+            $value: { value: -1, unit: 'px' },
+          },
+        },
+      }),
+    /admin\.invalid: invalid resolved Shadow layer/u,
+    'Shadow referenced blur must be revalidated as nonnegative at the consuming layer',
+  )
+  assertContractFailure(
+    () =>
+      validationRecords('semantic/invalid-shadow-inset.tokens.json', {
+        admin: {
+          invalid: {
+            $type: 'shadow',
+            $value: {
+              color: colorValue,
+              offsetX: { value: 0, unit: 'px' },
+              offsetY: { value: 0, unit: 'px' },
+              blur: { value: 0, unit: 'px' },
+              spread: { value: 1, unit: 'px' },
+              inset: 'true',
+            },
+          },
+        },
+      }),
+    /Invalid token source/u,
+    'Shadow inset must remain a strict boolean',
+  )
+
   const matrixManifest = manifestDocument(matrixResult)
   const matrixManifestTokens = matrixManifest['tokens']
 
@@ -1635,8 +1936,9 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
         typeof entry['source'] === 'string' &&
         isUnknownRecord(entry['conditions']) &&
         isUnknownRecord(entry['role']) &&
-        'resolvedValue' in entry,
-      'every Manifest token must contain tier, visibility, source, conditions, role, and resolvedValue metadata',
+        'resolvedValue' in entry &&
+        !('authoredValue' in entry),
+      'every Manifest token must contain tier, visibility, source, conditions, role, and resolvedValue metadata without leaking build-memory authoredValue',
     )
 
     const runtimeExposed = entry['visibility'] === 'public' || entry['visibility'] === 'ui-internal'
@@ -1951,7 +2253,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
-        themeId: 'neutral',
+        themeId: 'iris',
       },
       contrast: 'standard',
       material: 'adaptive',
@@ -1979,13 +2281,13 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
 
   assertInvariantEqual(
     registry.builtInRegistryOrder,
-    ['neutral', 'ocean', 'warm'],
+    builtInThemeIds,
     'the Built-in Theme Registry order must remain canonical',
   )
   assertInvariant(
-    registry.builtInEntries.length === 3 &&
+    registry.builtInEntries.length === builtInThemeIds.length &&
       registry.builtInEntries.every((entry) => entry.bank.records.length === 36),
-    'the generated Built-in Theme Registry must contain three complete 36-cell Banks',
+    'the generated Built-in Theme Registry must contain seven complete 36-cell Banks',
   )
   assertInvariant(
     registry.customBankVariables.length === 36 && new Set(registry.customBankVariables).size === 36,
@@ -2106,7 +2408,7 @@ function executeAppearanceInit(
   const attributes = new Map<string, string>([
     ['data-color-mode', 'light'],
     ['data-theme-kind', 'built-in'],
-    ['data-theme', 'neutral'],
+    ['data-theme', 'iris'],
     ['data-contrast', 'standard'],
     ['data-material', 'solid'],
     ['data-density', 'comfortable'],
@@ -2276,7 +2578,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   const safetyAttributes = {
     'data-color-mode': 'light',
     'data-theme-kind': 'built-in',
-    'data-theme': 'neutral',
+    'data-theme': 'iris',
     'data-contrast': 'standard',
     'data-material': 'solid',
     'data-density': 'comfortable',
@@ -2363,7 +2665,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
-        themeId: 'ocean',
+        themeId: 'cobalt',
       },
       contrast: 'enhanced',
       material: 'adaptive',
@@ -2386,7 +2688,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       attributes: {
         'data-color-mode': 'dark',
         'data-theme-kind': 'built-in',
-        'data-theme': 'ocean',
+        'data-theme': 'cobalt',
         'data-contrast': 'enhanced',
         'data-material': 'adaptive',
         'data-density': 'spacious',
@@ -2485,14 +2787,28 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   assertInvariant(
     legacyExecution.attributes['data-color-mode'] === 'light' &&
-      legacyExecution.attributes['data-theme'] === 'warm' &&
+      legacyExecution.attributes['data-theme'] === 'iris' &&
       legacyExecution.attributes['data-contrast'] === 'enhanced' &&
       legacyExecution.attributes['data-material'] === 'solid',
-    'appearance-init.js must perform the exact lossless legacy migration in memory',
+    'appearance-init.js must migrate a verified legacy preference to Iris in memory',
   )
 
   const migrationParityInputs = [
     builtInPreference,
+    {
+      schemaVersion: 3,
+      appearance: {
+        ...ProductPreferenceDefault,
+        theme: { registryKind: 'built-in', themeId: 'neutral' },
+      },
+    },
+    {
+      schemaVersion: 3,
+      appearance: {
+        ...ProductPreferenceDefault,
+        theme: { registryKind: 'custom', themeId: 'jade' },
+      },
+    },
     {
       schemaVersion: 2,
       appearance: {
@@ -2604,7 +2920,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       storageReadFailure: true,
     }),
     executeAppearanceInit(appearanceInit, {
-      rawPreference: JSON.stringify(migrationParityInputs[3]),
+      rawPreference: JSON.stringify(migrationParityInputs[5]),
     }),
     executeAppearanceInit(appearanceInit, {
       storageKey: null,

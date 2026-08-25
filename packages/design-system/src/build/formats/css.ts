@@ -1,5 +1,6 @@
 import type { Format } from 'style-dictionary/types'
 
+import type { DtcgTokenType } from '../../schema/token.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import { isActivePublicColorRole } from '../public-role-registry'
@@ -17,19 +18,145 @@ import { themeRegistryDocument } from './typescript'
 interface SelectorGroup {
   rank: number
   selector: string
-  declarations: { name: string; value: string }[]
+  declarations: { name: string; type?: DtcgTokenType; value: string }[]
   sequence: number
 }
 
-function formatDeclaration(declaration: { name: string; value: string }): string {
+const cssPrintWidth = 100
+const declarationIndent = '    '
+const continuationIndent = '      '
+
+function splitTopLevelCssValue(value: string, separator: ',' | 'whitespace'): string[] {
+  const segments: string[] = []
+  let depth = 0
+  let escaped = false
+  let quote: '"' | "'" | null = null
+  let start = 0
+
+  const appendSegment = (end: number): void => {
+    const segment = value.slice(start, end).trim()
+
+    if (segment !== '') {
+      segments.push(segment)
+    }
+  }
+
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index]
+
+    if (character === undefined) {
+      continue
+    }
+
+    if (quote !== null) {
+      if (escaped) {
+        escaped = false
+      } else if (character === '\\') {
+        escaped = true
+      } else if (character === quote) {
+        quote = null
+      }
+      continue
+    }
+
+    if (character === '"' || character === "'") {
+      quote = character
+      continue
+    }
+
+    if (character === '(') {
+      depth += 1
+      continue
+    }
+
+    if (character === ')') {
+      depth = Math.max(0, depth - 1)
+      continue
+    }
+
+    const separatesValue =
+      depth === 0 &&
+      (separator === ',' ? character === ',' : character === ' ' || character === '\t')
+
+    if (!separatesValue) {
+      continue
+    }
+
+    appendSegment(index)
+    start = index + 1
+  }
+
+  appendSegment(value.length)
+  return segments
+}
+
+function wrapCssSegments(
+  segments: readonly string[],
+  firstPrefix: string,
+  continuedPrefix: string,
+  finalSuffix: ',' | ';',
+): string[] {
+  const lines: string[] = []
+  let line = firstPrefix
+
+  for (const [index, segment] of segments.entries()) {
+    const spacer = line === firstPrefix ? '' : ' '
+    const candidate = `${line}${spacer}${segment}`
+    const suffixLength = index === segments.length - 1 ? finalSuffix.length : 0
+
+    if (line !== firstPrefix && candidate.length + suffixLength > cssPrintWidth) {
+      lines.push(line)
+      line = `${continuedPrefix}${segment}`
+    } else {
+      line = candidate
+    }
+  }
+
+  lines.push(`${line}${finalSuffix}`)
+  return lines
+}
+
+function formatShadowDeclaration(declaration: { name: string; value: string }): string {
+  const layers = splitTopLevelCssValue(declaration.value, ',')
+
+  if (layers.length > 1) {
+    const formattedLayers = layers.flatMap((layer, index) =>
+      wrapCssSegments(
+        splitTopLevelCssValue(layer, 'whitespace'),
+        continuationIndent,
+        `${continuationIndent}  `,
+        index === layers.length - 1 ? ';' : ',',
+      ),
+    )
+
+    return `${declarationIndent}${declaration.name}:\n${formattedLayers.join('\n')}`
+  }
+
+  return wrapCssSegments(
+    splitTopLevelCssValue(declaration.value, 'whitespace'),
+    `${declarationIndent}${declaration.name}: `,
+    continuationIndent,
+    ';',
+  ).join('\n')
+}
+
+function formatDeclaration(declaration: {
+  name: string
+  type?: DtcgTokenType
+  value: string
+}): string {
   const singleLine = `    ${declaration.name}: ${declaration.value};`
   const variableReference = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(declaration.value)
 
-  if (singleLine.length <= 100 || variableReference?.[1] === undefined) {
+  if (singleLine.length <= cssPrintWidth) {
     return singleLine
   }
 
-  return `    ${declaration.name}: var(\n      ${variableReference[1]}\n    );`
+  if (variableReference?.[1] !== undefined) {
+    return `    ${declaration.name}: var(\n      ${variableReference[1]}\n    );`
+  }
+
+  return declaration.type === 'shadow' ? formatShadowDeclaration(declaration) : singleLine
 }
 
 const axisSelector = {
@@ -155,6 +282,7 @@ export function formatRuntimeCss(result: TokenBuildResult): string {
 
     group.declarations.push({
       name: token.cssVariable,
+      type: token.type,
       value: resolvedCssValue(token, result),
     })
     groups.set(target.selector, group)

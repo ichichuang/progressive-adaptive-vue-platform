@@ -135,6 +135,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.semantic-description-list']),
       consumerRouteNames: Object.freeze([
+        'appearance-management',
         'console-overview',
         'design-token-inspector',
         'engineering-quality-inspector',
@@ -253,6 +254,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       accessibilityContractIds: Object.freeze(['a11y.text-status-equivalent']),
       consumerRouteNames: Object.freeze([
+        'appearance-management',
         'capability-roadmap',
         'console-overview',
         'design-token-inspector',

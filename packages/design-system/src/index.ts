@@ -53,3 +53,9 @@ export {
   designSystemConsoleProjection,
   type DesignSystemConsoleProjection,
 } from './console/design-system-console-projection'
+export {
+  builtInAppearanceThemePreviews,
+  projectAccessibleCustomAppearanceThemePreviews,
+  type AppearanceThemePreviewProjection,
+  type AppearanceThemePreviewSwatches,
+} from './console/appearance-workspace-theme-projection'

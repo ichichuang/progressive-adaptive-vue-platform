@@ -38,12 +38,32 @@
   }
 }
 
+html,
+body,
+#app,
+#pavp-overlay-root,
+.pavp-route-content,
+.pavp-route-content > *,
+.pavp-admin-shell,
+.pavp-admin-shell__header,
+.pavp-admin-shell__sidebar,
+.pavp-admin-shell__content,
+.pavp-appearance-workspace,
+.pavp-appearance-preview-column {
+  transform: none;
+  translate: none;
+}
+
 .pavp-route-content {
-  animation: pavp-route-content-enter var(--ui-motion-duration) var(--ui-motion-easing) both;
+  opacity: 1;
+  animation: pavp-route-content-enter var(--ui-motion-duration) var(--ui-motion-easing);
+  animation-fill-mode: none;
 }
 
 .pavp-route-content > * {
-  animation: pavp-layered-content-enter var(--ui-motion-duration) var(--ui-motion-easing) both;
+  opacity: 1;
+  animation: pavp-layered-content-enter var(--ui-motion-duration) var(--ui-motion-easing);
+  animation-fill-mode: none;
 }
 
 .pavp-route-content > :nth-child(2) {
@@ -57,45 +77,35 @@
 @keyframes pavp-route-content-enter {
   from {
     opacity: 0;
-    transform: translateX(var(--ui-space-content-gap));
   }
 
   to {
     opacity: 1;
-    transform: translateX(0);
   }
 }
 
 @keyframes pavp-layered-content-enter {
   from {
     opacity: 0;
-    transform: translateY(var(--ui-space-content-gap));
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 html[data-motion='reduced'] .pavp-route-content,
 html[data-motion='reduced'] .pavp-route-content > * {
-  animation-name: pavp-content-fade;
   animation-duration: calc(var(--ui-motion-duration) / 2);
   animation-delay: initial;
+  animation-fill-mode: none;
 }
 
 html[data-motion='none'] .pavp-route-content,
 html[data-motion='none'] .pavp-route-content > * {
+  opacity: 1;
   animation: none;
-}
-
-@keyframes pavp-content-fade {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
+  transform: none;
+  transition: none;
+  translate: none;
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { UiAdminShell } from '@platform/ui'
-import { useRouter } from 'vue-router'
+import { isNavigationFailure, NavigationFailureType, useRouter } from 'vue-router'
 
 import { consoleNavigationRegistry, type RouteName } from '../router/route-registry'
 
@@ -17,8 +17,16 @@ defineSlots<{
 
 const router = useRouter()
 
-function navigate(routeName: string): void {
-  void router.push({ name: routeName as RouteName })
+async function navigate(routeName: string): Promise<void> {
+  if (router.currentRoute.value.name === routeName) {
+    return
+  }
+
+  const failure = await router.push({ name: routeName as RouteName })
+
+  if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
+    return
+  }
 }
 </script>
 

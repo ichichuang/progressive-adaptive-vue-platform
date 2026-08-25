@@ -4,6 +4,7 @@ import {
   createWebHistory,
   isNavigationFailure,
   NavigationFailureType,
+  START_LOCATION,
   type RouteLocationNormalized,
   type RouteRecordRaw,
   type Router,
@@ -236,7 +237,11 @@ export async function createAndReadyRouter(input: {
   const router = createRouter({
     history,
     routes,
-    async scrollBehavior(to, _from, savedPosition) {
+    async scrollBehavior(to, from, savedPosition) {
+      if (to.name === from.name && to.fullPath === from.fullPath) {
+        return false
+      }
+
       await applicationMountedPromise
       await nextTick()
 
@@ -269,7 +274,11 @@ export async function createAndReadyRouter(input: {
 
       advanceActiveGuardStage(navigation.guardStageProgress, 'commit-focus-and-scroll')
       document.title = presentation.title
-      focusTargets[0].focus({ preventScroll: true })
+
+      if (from !== START_LOCATION) {
+        focusTargets[0].focus({ preventScroll: true })
+      }
+
       completeActiveGuardStages(navigation.guardStageProgress)
 
       const preservesFailureDestination =
