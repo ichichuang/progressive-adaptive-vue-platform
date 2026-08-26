@@ -22,10 +22,7 @@ const presentation = computed(() => getRoutePresentation(route.name))
       "
     >
       <RouterView v-slot="{ Component }">
-        <div
-          :key="routeRecord.name"
-          class="pavp-route-content"
-        >
+        <div class="pavp-route-content">
           <component
             :is="Component"
             :breadcrumb="presentation.breadcrumb"

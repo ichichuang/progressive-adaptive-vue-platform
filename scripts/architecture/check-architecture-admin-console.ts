@@ -114,6 +114,44 @@ interface VueSfcStyleBlock {
   readonly scoped?: boolean
 }
 
+interface VueTemplateLocation {
+  readonly source: string
+}
+
+interface VueTemplateSimpleExpression {
+  readonly content: string
+}
+
+interface VueTemplateAttribute {
+  readonly loc: VueTemplateLocation
+  readonly name: string
+  readonly type: 6
+  readonly value?: VueTemplateSimpleExpression
+}
+
+interface VueTemplateDirective {
+  readonly arg?: VueTemplateSimpleExpression
+  readonly exp?: VueTemplateSimpleExpression
+  readonly loc: VueTemplateLocation
+  readonly modifiers?: readonly unknown[]
+  readonly name: string
+  readonly type: 7
+}
+
+type VueTemplateProperty = VueTemplateAttribute | VueTemplateDirective
+
+interface VueTemplateNode {
+  readonly children?: readonly VueTemplateNode[]
+  readonly props?: readonly VueTemplateProperty[]
+  readonly tag?: string
+  readonly type: number
+}
+
+interface VueTemplateBlock {
+  readonly ast?: VueTemplateNode
+  readonly content: string
+}
+
 interface VueSfcCompiler {
   readonly compileStyle: (options: {
     readonly filename: string
@@ -131,6 +169,7 @@ interface VueSfcCompiler {
   ) => {
     readonly descriptor: {
       readonly styles: readonly VueSfcStyleBlock[]
+      readonly template?: VueTemplateBlock | null
     }
     readonly errors: readonly unknown[]
   }
@@ -152,6 +191,8 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedArchitectureAdminConsoleNegativeProbeCount = 58
 const expectedMotionGeometryNegativeProbeCount = 12
+const expectedRuntime002NegativeProbeCount = 10
+const expectedRuntime005NegativeProbeCount = 10
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
 const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
@@ -2614,11 +2655,896 @@ function exportNames(source: string): string[] {
   return names
 }
 
+interface ShellTemplateElement {
+  readonly ancestors: readonly VueTemplateNode[]
+  readonly node: VueTemplateNode
+}
+
+interface Runtime002MouseScenario {
+  readonly button: number
+  readonly currentRoute: boolean
+}
+
+interface Runtime002MouseEffect {
+  prevented: number
+  stopped: boolean
+  supported: boolean
+}
+
+interface Runtime002NavigationScenario {
+  readonly currentRoute: boolean
+  readonly initialNavigationOpen: boolean
+  readonly profile: 'narrow' | 'wide'
+}
+
+interface Runtime002NavigationEffect {
+  closeCount: number
+  emitCount: number
+  navigationOpen: boolean
+  stopped: boolean
+  supported: boolean
+}
+
+function normalizeTemplateExpression(expression: string | undefined): string {
+  return expression?.replaceAll(/\s+/gu, ' ').trim() ?? ''
+}
+
+function templateAttributes(node: VueTemplateNode, name: string): readonly VueTemplateAttribute[] {
+  return (node.props ?? []).filter(
+    (property): property is VueTemplateAttribute => property.type === 6 && property.name === name,
+  )
+}
+
+function templateDirectives(
+  node: VueTemplateNode,
+  name: string,
+  argument?: string,
+): readonly VueTemplateDirective[] {
+  return (node.props ?? []).filter(
+    (property): property is VueTemplateDirective =>
+      property.type === 7 &&
+      property.name === name &&
+      (argument === undefined || property.arg?.content === argument),
+  )
+}
+
+function staticTemplateAttribute(node: VueTemplateNode, name: string): string | undefined {
+  const attributes = templateAttributes(node, name)
+  return attributes.length === 1 ? attributes[0]?.value?.content : undefined
+}
+
+function hasStaticTemplateClass(node: VueTemplateNode, className: string): boolean {
+  return (
+    staticTemplateAttribute(node, 'class')
+      ?.split(/\s+/u)
+      .some((candidate) => candidate === className) === true
+  )
+}
+
+function collectShellTemplateElements(root: VueTemplateNode): readonly ShellTemplateElement[] {
+  const elements: ShellTemplateElement[] = []
+
+  function visit(node: VueTemplateNode, ancestors: readonly VueTemplateNode[]): void {
+    if (node.type === 1) {
+      elements.push({ ancestors, node })
+    }
+
+    for (const child of node.children ?? []) {
+      visit(child, [...ancestors, node])
+    }
+  }
+
+  visit(root, [])
+  return elements
+}
+
+function ancestorHasStaticAttribute(
+  element: ShellTemplateElement,
+  tag: string,
+  name: string,
+  value: string,
+): boolean {
+  return element.ancestors.some(
+    (ancestor) => ancestor.tag === tag && staticTemplateAttribute(ancestor, name) === value,
+  )
+}
+
+function ancestorHasDirective(
+  element: ShellTemplateElement,
+  tag: string,
+  name: string,
+  expression: string,
+): boolean {
+  return element.ancestors.some(
+    (ancestor) =>
+      ancestor.tag === tag &&
+      templateDirectives(ancestor, name).some(
+        (directive) => normalizeTemplateExpression(directive.exp?.content) === expression,
+      ),
+  )
+}
+
+function functionDeclaration(
+  sourceFile: ts.SourceFile,
+  name: string,
+): ts.FunctionDeclaration | undefined {
+  return sourceFile.statements.find(
+    (statement): statement is ts.FunctionDeclaration =>
+      ts.isFunctionDeclaration(statement) && statement.name?.text === name,
+  )
+}
+
+function runtime002MouseValue(
+  expression: ts.Expression,
+  sourceFile: ts.SourceFile,
+  eventParameterName: string,
+  routeParameterName: string,
+  scenario: Runtime002MouseScenario,
+): boolean | number | string | undefined {
+  const value = unwrapExpression(expression)
+
+  if (value.kind === ts.SyntaxKind.TrueKeyword) {
+    return true
+  }
+  if (value.kind === ts.SyntaxKind.FalseKeyword) {
+    return false
+  }
+  if (ts.isNumericLiteral(value)) {
+    return Number(value.text)
+  }
+  if (ts.isStringLiteral(value)) {
+    return value.text
+  }
+  if (ts.isIdentifier(value) && value.text === routeParameterName) {
+    return scenario.currentRoute ? 'current-route' : 'different-route'
+  }
+  if (ts.isPropertyAccessExpression(value)) {
+    if (
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === eventParameterName &&
+      value.name.text === 'button'
+    ) {
+      return scenario.button
+    }
+    if (
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === 'props' &&
+      value.name.text === 'activeRouteName'
+    ) {
+      return 'current-route'
+    }
+  }
+  if (ts.isPrefixUnaryExpression(value) && value.operator === ts.SyntaxKind.ExclamationToken) {
+    const operand = runtime002MouseValue(
+      value.operand,
+      sourceFile,
+      eventParameterName,
+      routeParameterName,
+      scenario,
+    )
+    return typeof operand === 'boolean' ? !operand : undefined
+  }
+  if (!ts.isBinaryExpression(value)) {
+    return undefined
+  }
+
+  const left = runtime002MouseValue(
+    value.left,
+    sourceFile,
+    eventParameterName,
+    routeParameterName,
+    scenario,
+  )
+  const right = runtime002MouseValue(
+    value.right,
+    sourceFile,
+    eventParameterName,
+    routeParameterName,
+    scenario,
+  )
+
+  if (value.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+    return typeof left === 'boolean' && typeof right === 'boolean' ? left && right : undefined
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.BarBarToken) {
+    return typeof left === 'boolean' && typeof right === 'boolean' ? left || right : undefined
+  }
+  if (left === undefined || right === undefined) {
+    return undefined
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
+    return left === right
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken) {
+    return left !== right
+  }
+
+  return undefined
+}
+
+function executeRuntime002MouseStatement(
+  statement: ts.Statement,
+  sourceFile: ts.SourceFile,
+  eventParameterName: string,
+  routeParameterName: string,
+  scenario: Runtime002MouseScenario,
+  effect: Runtime002MouseEffect,
+): void {
+  if (effect.stopped || !effect.supported) {
+    return
+  }
+  if (ts.isBlock(statement)) {
+    for (const child of statement.statements) {
+      executeRuntime002MouseStatement(
+        child,
+        sourceFile,
+        eventParameterName,
+        routeParameterName,
+        scenario,
+        effect,
+      )
+    }
+    return
+  }
+  if (ts.isIfStatement(statement)) {
+    const condition = runtime002MouseValue(
+      statement.expression,
+      sourceFile,
+      eventParameterName,
+      routeParameterName,
+      scenario,
+    )
+    if (typeof condition !== 'boolean') {
+      effect.supported = false
+      return
+    }
+    const branch = condition ? statement.thenStatement : statement.elseStatement
+    if (branch !== undefined) {
+      executeRuntime002MouseStatement(
+        branch,
+        sourceFile,
+        eventParameterName,
+        routeParameterName,
+        scenario,
+        effect,
+      )
+    }
+    return
+  }
+  if (ts.isReturnStatement(statement)) {
+    effect.supported = statement.expression === undefined
+    effect.stopped = true
+    return
+  }
+  if (ts.isExpressionStatement(statement)) {
+    const expression = unwrapExpression(statement.expression)
+    if (
+      ts.isCallExpression(expression) &&
+      expression.arguments.length === 0 &&
+      ts.isPropertyAccessExpression(expression.expression) &&
+      ts.isIdentifier(expression.expression.expression) &&
+      expression.expression.expression.text === eventParameterName &&
+      expression.expression.name.text === 'preventDefault'
+    ) {
+      effect.prevented += 1
+      return
+    }
+  }
+
+  effect.supported = false
+}
+
+function runtime002MouseEffect(
+  declaration: ts.FunctionDeclaration,
+  sourceFile: ts.SourceFile,
+  scenario: Runtime002MouseScenario,
+): Runtime002MouseEffect {
+  const effect: Runtime002MouseEffect = {
+    prevented: 0,
+    stopped: false,
+    supported: declaration.body !== undefined,
+  }
+  const eventParameterName = declaration.parameters[0]?.name.getText(sourceFile) ?? ''
+  const routeParameterName = declaration.parameters[1]?.name.getText(sourceFile) ?? ''
+
+  if (declaration.body !== undefined) {
+    executeRuntime002MouseStatement(
+      declaration.body,
+      sourceFile,
+      eventParameterName,
+      routeParameterName,
+      scenario,
+      effect,
+    )
+  }
+
+  return effect
+}
+
+function runtime002HandlerHasProhibitedRepair(declaration: ts.FunctionDeclaration): boolean {
+  let prohibited = false
+  const prohibitedCalls = new Set([
+    'nextTick',
+    'queueMicrotask',
+    'requestAnimationFrame',
+    'setInterval',
+    'setTimeout',
+  ])
+  const prohibitedMethods = new Set(['addEventListener', 'blur', 'focus', 'removeEventListener'])
+
+  function visit(node: ts.Node): void {
+    if (
+      (ts.isIdentifier(node) && ['document', 'globalThis', 'window'].includes(node.text)) ||
+      (ts.isCallExpression(node) &&
+        ((ts.isIdentifier(node.expression) && prohibitedCalls.has(node.expression.text)) ||
+          (ts.isPropertyAccessExpression(node.expression) &&
+            prohibitedMethods.has(node.expression.name.text))))
+    ) {
+      prohibited = true
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  if (declaration.body !== undefined) {
+    visit(declaration.body)
+  }
+  return prohibited
+}
+
+function runtime002HandlerExactGuardChecks(
+  declaration: ts.FunctionDeclaration,
+  sourceFile: ts.SourceFile,
+): Readonly<{ activeRoute: boolean; primaryButton: boolean }> {
+  const eventParameterName = declaration.parameters[0]?.name.getText(sourceFile) ?? ''
+  const routeParameterName = declaration.parameters[1]?.name.getText(sourceFile) ?? ''
+  let activeRoute = false
+  let primaryButton = false
+
+  function isEventButton(expression: ts.Expression): boolean {
+    const value = unwrapExpression(expression)
+    return (
+      ts.isPropertyAccessExpression(value) &&
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === eventParameterName &&
+      value.name.text === 'button'
+    )
+  }
+
+  function isPrimaryButtonLiteral(expression: ts.Expression): boolean {
+    const value = unwrapExpression(expression)
+    return ts.isNumericLiteral(value) && value.text === '0'
+  }
+
+  function isRequestedRoute(expression: ts.Expression): boolean {
+    const value = unwrapExpression(expression)
+    return ts.isIdentifier(value) && value.text === routeParameterName
+  }
+
+  function isActiveRoute(expression: ts.Expression): boolean {
+    const value = unwrapExpression(expression)
+    return (
+      ts.isPropertyAccessExpression(value) &&
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === 'props' &&
+      value.name.text === 'activeRouteName'
+    )
+  }
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+    ) {
+      primaryButton ||=
+        (isEventButton(node.left) && isPrimaryButtonLiteral(node.right)) ||
+        (isPrimaryButtonLiteral(node.left) && isEventButton(node.right))
+      activeRoute ||=
+        (isRequestedRoute(node.left) && isActiveRoute(node.right)) ||
+        (isActiveRoute(node.left) && isRequestedRoute(node.right))
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  if (declaration.body !== undefined) {
+    visit(declaration.body)
+  }
+
+  return { activeRoute, primaryButton }
+}
+
+function runtime002NavigationValue(
+  expression: ts.Expression,
+  routeParameterName: string,
+  scenario: Runtime002NavigationScenario,
+  effect: Runtime002NavigationEffect,
+): boolean | string | undefined {
+  const value = unwrapExpression(expression)
+
+  if (value.kind === ts.SyntaxKind.TrueKeyword) {
+    return true
+  }
+  if (value.kind === ts.SyntaxKind.FalseKeyword) {
+    return false
+  }
+  if (ts.isStringLiteral(value)) {
+    return value.text
+  }
+  if (ts.isIdentifier(value) && value.text === routeParameterName) {
+    return scenario.currentRoute ? 'current-route' : 'different-route'
+  }
+  if (ts.isPropertyAccessExpression(value)) {
+    if (
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === 'props' &&
+      value.name.text === 'activeRouteName'
+    ) {
+      return 'current-route'
+    }
+    if (
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === 'profile' &&
+      value.name.text === 'value'
+    ) {
+      return scenario.profile
+    }
+    if (
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === 'navigationOpen' &&
+      value.name.text === 'value'
+    ) {
+      return effect.navigationOpen
+    }
+  }
+  if (ts.isPrefixUnaryExpression(value) && value.operator === ts.SyntaxKind.ExclamationToken) {
+    const operand = runtime002NavigationValue(value.operand, routeParameterName, scenario, effect)
+    return typeof operand === 'boolean' ? !operand : undefined
+  }
+  if (!ts.isBinaryExpression(value)) {
+    return undefined
+  }
+
+  const left = runtime002NavigationValue(value.left, routeParameterName, scenario, effect)
+  const right = runtime002NavigationValue(value.right, routeParameterName, scenario, effect)
+  if (value.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+    return typeof left === 'boolean' && typeof right === 'boolean' ? left && right : undefined
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.BarBarToken) {
+    return typeof left === 'boolean' && typeof right === 'boolean' ? left || right : undefined
+  }
+  if (left === undefined || right === undefined) {
+    return undefined
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
+    return left === right
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken) {
+    return left !== right
+  }
+
+  return undefined
+}
+
+function executeRuntime002NavigationStatement(
+  statement: ts.Statement,
+  routeParameterName: string,
+  scenario: Runtime002NavigationScenario,
+  effect: Runtime002NavigationEffect,
+): void {
+  if (effect.stopped || !effect.supported) {
+    return
+  }
+  if (ts.isBlock(statement)) {
+    for (const child of statement.statements) {
+      executeRuntime002NavigationStatement(child, routeParameterName, scenario, effect)
+    }
+    return
+  }
+  if (ts.isIfStatement(statement)) {
+    const condition = runtime002NavigationValue(
+      statement.expression,
+      routeParameterName,
+      scenario,
+      effect,
+    )
+    if (typeof condition !== 'boolean') {
+      effect.supported = false
+      return
+    }
+    const branch = condition ? statement.thenStatement : statement.elseStatement
+    if (branch !== undefined) {
+      executeRuntime002NavigationStatement(branch, routeParameterName, scenario, effect)
+    }
+    return
+  }
+  if (ts.isReturnStatement(statement)) {
+    effect.supported = statement.expression === undefined
+    effect.stopped = true
+    return
+  }
+  if (ts.isExpressionStatement(statement)) {
+    const expression = unwrapExpression(statement.expression)
+    if (
+      ts.isCallExpression(expression) &&
+      ts.isIdentifier(expression.expression) &&
+      expression.expression.text === 'closeNavigation' &&
+      expression.arguments.length === 0
+    ) {
+      effect.closeCount += 1
+      effect.navigationOpen = false
+      return
+    }
+    if (
+      ts.isCallExpression(expression) &&
+      ts.isIdentifier(expression.expression) &&
+      expression.expression.text === 'emit' &&
+      expression.arguments.length === 2
+    ) {
+      const eventName = expression.arguments[0]
+      const requestedRoute = expression.arguments[1]
+      if (
+        eventName !== undefined &&
+        requestedRoute !== undefined &&
+        ts.isStringLiteral(eventName) &&
+        eventName.text === 'navigate' &&
+        ts.isIdentifier(requestedRoute) &&
+        requestedRoute.text === routeParameterName
+      ) {
+        effect.emitCount += 1
+        return
+      }
+    }
+  }
+
+  effect.supported = false
+}
+
+function runtime002NavigationEffect(
+  declaration: ts.FunctionDeclaration,
+  scenario: Runtime002NavigationScenario,
+): Runtime002NavigationEffect {
+  const effect: Runtime002NavigationEffect = {
+    closeCount: 0,
+    emitCount: 0,
+    navigationOpen: scenario.initialNavigationOpen,
+    stopped: false,
+    supported: declaration.body !== undefined,
+  }
+  const routeParameterName = declaration.parameters[0]?.name.getText() ?? ''
+
+  if (declaration.body !== undefined) {
+    executeRuntime002NavigationStatement(declaration.body, routeParameterName, scenario, effect)
+  }
+
+  return effect
+}
+
+function runtime002CloseNavigationIsCanonical(
+  declaration: ts.FunctionDeclaration | undefined,
+): boolean {
+  if (declaration?.body?.statements.length !== 1) {
+    return false
+  }
+  const statement = declaration.body.statements[0]
+  if (statement === undefined || !ts.isExpressionStatement(statement)) {
+    return false
+  }
+  const expression = unwrapExpression(statement.expression)
+  return (
+    ts.isBinaryExpression(expression) &&
+    expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+    ts.isPropertyAccessExpression(expression.left) &&
+    ts.isIdentifier(expression.left.expression) &&
+    expression.left.expression.text === 'navigationOpen' &&
+    expression.left.name.text === 'value' &&
+    expression.right.kind === ts.SyntaxKind.FalseKeyword
+  )
+}
+
+function runtime002ButtonIsNativeAndEnabled(node: VueTemplateNode): boolean {
+  return (
+    node.tag === 'button' &&
+    staticTemplateAttribute(node, 'type') === 'button' &&
+    templateAttributes(node, 'disabled').length === 0 &&
+    templateDirectives(node, 'bind', 'disabled').length === 0
+  )
+}
+
+function runtime002ButtonIsSequentiallyFocusable(node: VueTemplateNode): boolean {
+  const staticTabindex = templateAttributes(node, 'tabindex')
+  const boundTabindex = templateDirectives(node, 'bind', 'tabindex')
+
+  return (
+    (staticTabindex.length === 0 && boundTabindex.length === 0) ||
+    (staticTabindex.length === 1 &&
+      staticTabindex[0]?.value?.content === '0' &&
+      boundTabindex.length === 0) ||
+    (boundTabindex.length === 1 &&
+      normalizeTemplateExpression(boundTabindex[0]?.exp?.content) === '0' &&
+      staticTabindex.length === 0)
+  )
+}
+
+function runtime002AriaCurrentIsCanonical(node: VueTemplateNode): boolean {
+  const bindings = templateDirectives(node, 'bind', 'aria-current')
+  return (
+    bindings.length === 1 &&
+    normalizeTemplateExpression(bindings[0]?.exp?.content) ===
+      "item.routeName === activeRouteName ? 'page' : undefined"
+  )
+}
+
+function runtime002NavigationViolations(shellSource: string): string[] {
+  const violations: string[] = []
+  const parsedSfc = vueSfcCompiler.parse(shellSource, { filename: shellSfcPath })
+  const templateAst = parsedSfc.descriptor.template?.ast
+
+  if (parsedSfc.errors.length > 0 || templateAst === undefined) {
+    return ['PAVP_RUNTIME_002_SFC_AST']
+  }
+
+  const elements = collectShellTemplateElements(templateAst)
+  const navigationButtons = elements.filter(
+    (element) =>
+      element.node.tag === 'button' &&
+      hasStaticTemplateClass(element.node, 'pavp-admin-shell__navigation-action'),
+  )
+  const persistentButtons = navigationButtons.filter((element) =>
+    ancestorHasDirective(element, 'aside', 'if', "profile !== 'narrow'"),
+  )
+  const drawerButtons = navigationButtons.filter((element) =>
+    ancestorHasStaticAttribute(element, 'nav', 'ref', 'drawerNavigation'),
+  )
+
+  if (
+    navigationButtons.length !== 2 ||
+    persistentButtons.length !== 1 ||
+    drawerButtons.length !== 1
+  ) {
+    return ['PAVP_RUNTIME_002_NAVIGATION_SURFACES']
+  }
+
+  const persistentButton = persistentButtons[0]?.node
+  const drawerButton = drawerButtons[0]?.node
+  if (persistentButton === undefined || drawerButton === undefined) {
+    return ['PAVP_RUNTIME_002_NAVIGATION_SURFACES']
+  }
+
+  const persistentClick = templateDirectives(persistentButton, 'on', 'click')
+  const persistentMousedown = templateDirectives(persistentButton, 'on', 'mousedown')
+  const drawerMousedown = templateDirectives(drawerButton, 'on', 'mousedown')
+  const drawerClick = templateDirectives(drawerButton, 'on', 'click')
+  const drawerKeydown = templateDirectives(drawerButton, 'on', 'keydown')
+  const mousedownIndex =
+    persistentMousedown[0] === undefined
+      ? -1
+      : (persistentButton.props ?? []).indexOf(persistentMousedown[0])
+  const clickIndex =
+    persistentClick[0] === undefined
+      ? -1
+      : (persistentButton.props ?? []).indexOf(persistentClick[0])
+
+  if (persistentMousedown.length !== 1 || (persistentMousedown[0]?.modifiers?.length ?? 0) !== 0) {
+    violations.push('PAVP_RUNTIME_002_PERSISTENT_MOUSEDOWN_BINDING')
+  }
+  if (
+    persistentClick.length !== 1 ||
+    (persistentClick[0]?.modifiers?.length ?? 0) !== 0 ||
+    normalizeTemplateExpression(persistentClick[0]?.exp?.content) !== 'navigate(item.routeName)'
+  ) {
+    violations.push('PAVP_RUNTIME_002_PERSISTENT_CLICK_CONTRACT')
+  }
+  if (
+    persistentMousedown.length === 1 &&
+    persistentClick.length === 1 &&
+    (mousedownIndex < 0 || clickIndex < 0 || mousedownIndex >= clickIndex)
+  ) {
+    violations.push('PAVP_RUNTIME_002_EVENT_ORDER')
+  }
+  if (drawerMousedown.length !== 0) {
+    violations.push('PAVP_RUNTIME_002_DRAWER_GUARD_ABSENT')
+  }
+  if (
+    drawerClick.length !== 1 ||
+    normalizeTemplateExpression(drawerClick[0]?.exp?.content) !== 'navigate(item.routeName)'
+  ) {
+    violations.push('PAVP_RUNTIME_002_DRAWER_CLOSE_LIFECYCLE')
+  }
+  if (
+    drawerKeydown.length !== 1 ||
+    normalizeTemplateExpression(drawerKeydown[0]?.exp?.content) !== 'handleDrawerKeydown'
+  ) {
+    violations.push('PAVP_RUNTIME_002_DRAWER_CLOSE_LIFECYCLE')
+  }
+  if (
+    !runtime002ButtonIsNativeAndEnabled(persistentButton) ||
+    !runtime002ButtonIsNativeAndEnabled(drawerButton)
+  ) {
+    violations.push('PAVP_RUNTIME_002_NATIVE_BUTTON')
+  }
+  if (
+    !runtime002AriaCurrentIsCanonical(persistentButton) ||
+    !runtime002AriaCurrentIsCanonical(drawerButton)
+  ) {
+    violations.push('PAVP_RUNTIME_002_ARIA_CURRENT')
+  }
+  if (
+    !runtime002ButtonIsSequentiallyFocusable(persistentButton) ||
+    !runtime002ButtonIsSequentiallyFocusable(drawerButton) ||
+    templateDirectives(persistentButton, 'on', 'keydown').length > 0 ||
+    templateDirectives(persistentButton, 'on', 'keyup').length > 0 ||
+    templateDirectives(persistentButton, 'on', 'keypress').length > 0
+  ) {
+    violations.push('PAVP_RUNTIME_002_KEYBOARD_FOCUSABILITY')
+  }
+
+  const handlerCall = /^([A-Z_a-z][$\w]*)\(\s*\$event\s*,\s*item\.routeName\s*\)$/u.exec(
+    normalizeTemplateExpression(persistentMousedown[0]?.exp?.content),
+  )
+  const handlerName = handlerCall?.[1]
+  const shellScript = scriptContent(shellSource)
+  const sourceFile = ts.createSourceFile(
+    shellSfcPath,
+    shellScript,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const handler =
+    handlerName === undefined ? undefined : functionDeclaration(sourceFile, handlerName)
+  const handlerExported =
+    handler !== undefined &&
+    ts.getModifiers(handler)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)
+
+  if (
+    handler === undefined ||
+    handlerExported ||
+    handler.parameters.length !== 2 ||
+    handler.parameters[0]?.type?.getText(sourceFile) !== 'MouseEvent' ||
+    handler.parameters[1]?.type?.getText(sourceFile) !== 'string' ||
+    handler.type?.getText(sourceFile) !== 'void'
+  ) {
+    violations.push('PAVP_RUNTIME_002_HANDLER_INPUT')
+  } else {
+    const exactGuardChecks = runtime002HandlerExactGuardChecks(handler, sourceFile)
+    const primaryCurrent = runtime002MouseEffect(handler, sourceFile, {
+      button: 0,
+      currentRoute: true,
+    })
+    const primaryDifferent = runtime002MouseEffect(handler, sourceFile, {
+      button: 0,
+      currentRoute: false,
+    })
+    const secondaryCurrent = runtime002MouseEffect(handler, sourceFile, {
+      button: 1,
+      currentRoute: true,
+    })
+    const secondaryDifferent = runtime002MouseEffect(handler, sourceFile, {
+      button: 1,
+      currentRoute: false,
+    })
+
+    if (
+      !exactGuardChecks.primaryButton ||
+      !primaryCurrent.supported ||
+      primaryCurrent.prevented !== 1
+    ) {
+      violations.push('PAVP_RUNTIME_002_PRIMARY_CURRENT_GUARD')
+    }
+    if (
+      !secondaryCurrent.supported ||
+      !secondaryDifferent.supported ||
+      secondaryCurrent.prevented !== 0 ||
+      secondaryDifferent.prevented !== 0
+    ) {
+      violations.push('PAVP_RUNTIME_002_PRIMARY_CURRENT_GUARD')
+    }
+    if (
+      !exactGuardChecks.activeRoute ||
+      !primaryDifferent.supported ||
+      primaryDifferent.prevented !== 0
+    ) {
+      violations.push('PAVP_RUNTIME_002_DIFFERENT_ROUTE_DEFAULT')
+    }
+    if (runtime002HandlerHasProhibitedRepair(handler)) {
+      violations.push('PAVP_RUNTIME_002_PROHIBITED_REPAIR')
+    }
+  }
+
+  const navigate = functionDeclaration(sourceFile, 'navigate')
+  const closeNavigation = functionDeclaration(sourceFile, 'closeNavigation')
+  const navigateIsCanonical =
+    navigate?.parameters.length === 1 &&
+    navigate.parameters[0]?.type?.getText(sourceFile) === 'string' &&
+    navigate.type?.getText(sourceFile) === 'void'
+  if (!navigateIsCanonical) {
+    violations.push(
+      'PAVP_RUNTIME_002_CURRENT_ROUTE_NOOP',
+      'PAVP_RUNTIME_002_DIFFERENT_ROUTE_NAVIGATION',
+      'PAVP_RUNTIME_002_DRAWER_CLOSE_LIFECYCLE',
+    )
+  } else {
+    const persistentCurrent = runtime002NavigationEffect(navigate, {
+      currentRoute: true,
+      initialNavigationOpen: false,
+      profile: 'wide',
+    })
+    const persistentDifferent = runtime002NavigationEffect(navigate, {
+      currentRoute: false,
+      initialNavigationOpen: false,
+      profile: 'wide',
+    })
+    const drawerCurrent = runtime002NavigationEffect(navigate, {
+      currentRoute: true,
+      initialNavigationOpen: true,
+      profile: 'narrow',
+    })
+    const drawerDifferent = runtime002NavigationEffect(navigate, {
+      currentRoute: false,
+      initialNavigationOpen: true,
+      profile: 'narrow',
+    })
+
+    if (
+      !persistentCurrent.supported ||
+      !drawerCurrent.supported ||
+      persistentCurrent.emitCount !== 0 ||
+      drawerCurrent.emitCount !== 0
+    ) {
+      violations.push('PAVP_RUNTIME_002_CURRENT_ROUTE_NOOP')
+    }
+    if (
+      !persistentDifferent.supported ||
+      !drawerDifferent.supported ||
+      persistentDifferent.emitCount !== 1 ||
+      drawerDifferent.emitCount !== 1
+    ) {
+      violations.push('PAVP_RUNTIME_002_DIFFERENT_ROUTE_NAVIGATION')
+    }
+    if (
+      !runtime002CloseNavigationIsCanonical(closeNavigation) ||
+      persistentCurrent.closeCount !== 0 ||
+      persistentDifferent.closeCount !== 0 ||
+      drawerCurrent.closeCount !== 1 ||
+      drawerDifferent.closeCount !== 1 ||
+      drawerCurrent.navigationOpen ||
+      drawerDifferent.navigationOpen
+    ) {
+      violations.push('PAVP_RUNTIME_002_DRAWER_CLOSE_LIFECYCLE')
+    }
+  }
+
+  const shellRules = cssRuleBlocks(styleContent(shellSource))
+  const focusDeclarations = cssDeclarationsForSelector(
+    shellRules,
+    '.pavp-admin-shell__navigation-action:focus-visible',
+  )
+  const focusSuppression = shellRules.some(
+    (rule) =>
+      rule.selector.includes('.pavp-admin-shell__navigation-action') &&
+      (/\b(?:display\s*:\s*none|pointer-events\s*:\s*none|visibility\s*:\s*hidden)\b/iu.test(
+        rule.declarations,
+      ) ||
+        (rule.selector.includes(':focus') &&
+          /\boutline\s*:\s*none\b/iu.test(rule.declarations) &&
+          !/\bbox-shadow\s*:\s*var\(--ui-[a-z0-9-]+\)/iu.test(rule.declarations))),
+  )
+  if (
+    focusDeclarations === undefined ||
+    !/\bbox-shadow\s*:\s*var\(--ui-[a-z0-9-]+\)/iu.test(focusDeclarations) ||
+    focusSuppression
+  ) {
+    violations.push('PAVP_RUNTIME_002_FOCUS_PRESENTATION')
+  }
+
+  return [...new Set(violations)]
+}
+
 function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   const violations: string[] = []
   const normalizedNaiveProvider = snapshot.naiveProviderSource.replaceAll(/\s+/gu, ' ')
   const compiledStateViolations = compiledShellStateViolations(snapshot.shellSource)
   violations.push(...compiledStateViolations)
+  violations.push(...runtime002NavigationViolations(snapshot.shellSource))
   const allowedShellMaterialVariables = new Set([
     '--ui-material-chrome-background',
     '--ui-material-overlay-background',
@@ -2977,7 +3903,7 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'STATUS=COMPLETE',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_INFRASTRUCTURE=ACTIVE',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK=COMPLETE',
-    'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-001',
+    'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-005',
     'PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=NONE',
     'ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE',
     'PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE',
@@ -2999,10 +3925,44 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
     'ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
     'ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
-    'PAVP_RUNTIME_001_STATUS=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE',
+    'PAVP_RUNTIME_001_STATUS=ACCEPTED',
     'PAVP_RUNTIME_002_STATUS=OPEN',
+    'PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS',
     'PAVP_RUNTIME_003_STATUS=OPEN',
     'PAVP_RUNTIME_004_STATUS=OPEN',
+    'PAVP_RUNTIME_005_STATUS=OPEN',
+    'PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PAVP_RUNTIME_005_STATIC_VERIFICATION=PASS',
+    'NEXT_CANONICAL_WORK_PACKAGE=NONE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
+    'PAVP_RUNTIME_002_DEFECT_IDENTITY=PERSISTENT_CURRENT_NAVIGATION_PRIMARY_MOUSEDOWN_NATIVE_FOCUS_TRANSFER',
+    'IMPLEMENTED_PRIVATE_HANDLER=preserveCurrentPersistentNavigationFocus',
+    'IMPLEMENTED_EVENT_BOUNDARY=owned mousedown before the existing click navigation handler',
+    'IMPLEMENTED_PREVENT_DEFAULT_GUARD=event.button === 0 AND requested route equals active route AND button belongs to persistent Wide Sidebar or Regular Rail',
+    'IMPLEMENTED_DIFFERENT_ROUTE_MOUSEDOWN=DO_NOT_PREVENT_DEFAULT',
+    'IMPLEMENTED_NARROW_DRAWER_MOUSEDOWN_GUARD=ABSENT',
+    'IMPLEMENTED_NATIVE_KEYBOARD_ENTER_AND_SPACE=UNCHANGED',
+    'STATIC_PROOF_21=dependencies and pnpm-lock.yaml remain unchanged',
+    'REVERSIBLE_PAVP_RUNTIME_002_NEGATIVE_PROBE_COUNT=10',
+    'PAVP_RUNTIME_005_DEFECT_IDENTITY=ADMIN_CONSOLE_FIRST_PAINT_AND_ROUTE_CONTENT_CONTINUITY',
+    'REPAIRED_ROUTE_CONTENT_HOST_COUNT=1',
+    'REPAIRED_ROUTE_CONTENT_HOST_KEY=NONE',
+    'REPAIRED_ROUTE_CONTENT_HOST_LIFECYCLE=stable host remains mounted while routed components change inside it',
+    'REPAIRED_ROUTE_CONTENT_HOST_OPACITY=1',
+    'REPAIRED_ROUTE_LEVEL_ANIMATION=NONE',
+    'REPAIRED_ROUTE_LEVEL_TRANSITION=NONE',
+    'REPAIRED_DIRECT_PAGE_CHILD_BLANKET_ANIMATION=NONE',
+    'REPAIRED_DIRECT_PAGE_CHILD_BLANKET_TRANSITION=NONE',
+    'REPAIRED_DIRECT_PAGE_CHILD_DELAY=NONE',
+    'FULL_REDUCED_NONE_ROUTE_CONTENT_VISIBILITY=IDENTICAL_STABLE_VISIBLE',
+    'FULL_REDUCED_NONE_ROUTE_CONTENT_FINAL_GEOMETRY=IDENTICAL',
+    'PAVP_RUNTIME_002_SOURCE_IMPLEMENTATION=PRESERVED',
+    'PAVP_RUNTIME_002_OWNING_CHECKER_CONTRACT=PRESERVED',
+    'REVERSIBLE_PAVP_RUNTIME_005_NEGATIVE_PROBE_COUNT=10',
+    'PENDING_OWNER_ACCEPTANCE_STATUS_INTRODUCED=NO',
+    'CURRENT_TASK_REPORT_STATUS=COMPLETED',
+    'OWNER_EXTERNAL_REVIEW=NOT_PERFORMED_OPTIONAL_EXTERNAL_NON_GATING',
     'PUBLICATION_AUTHORIZATION_FOR_REWORK=GRANTED_BY_OWNER',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER',
     'PREVIOUS_VISUAL_ACCEPTANCE=REVOKED',
@@ -3045,16 +4005,23 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'WORK_PACKAGE=PAVP_MOTION_GEOMETRY_STABILITY_REPAIR',
     'RUNTIME_MOTION_CAPABILITY_ACTIVATION=NONE',
     'MOTION_MODE_SWITCH_GEOMETRY_DELTA=0',
-    'ROUTE_ENTRY_FULL=opacity-only with existing PAVP standard duration and easing',
-    'ROUTE_ENTRY_REDUCED=opacity-only with one-half existing PAVP duration and no displacement',
-    'ROUTE_ENTRY_NONE=no animation;no transition;stable opacity',
+    'ROUTE_CONTENT_HOST_LIFECYCLE=one stable unkeyed host retained while routed components change inside it',
+    'ROUTE_CONTENT_HOST_VISIBILITY=opacity 1 without route-level animation or transition',
+    'ROUTE_ENTRY_FULL=no route-level animation;no route-level transition;stable opacity;stable geometry',
+    'ROUTE_ENTRY_REDUCED=no route-level animation;no route-level transition;stable opacity;stable geometry',
+    'ROUTE_ENTRY_NONE=no route-level animation;no route-level transition;stable opacity;stable geometry',
+    'ROUTE_LAYERED_CONTENT_ENTRY=NONE',
+    'ROUTE_DIRECT_CHILD_BLANKET_ANIMATION=PROHIBITED',
+    'ROUTE_DIRECT_CHILD_ANIMATION_DELAY=PROHIBITED',
+    'ROUTE_LEVEL_CONTENT_CONCEALMENT=PROHIBITED',
     'PERSISTENT_OR_ROUTE_OWNER_ANIMATION_FILL_MODE_FORWARDS=PROHIBITED',
     'PERSISTENT_OR_ROUTE_OWNER_ANIMATION_FILL_MODE_BOTH=PROHIBITED',
     'REVERSIBLE_MOTION_GEOMETRY_NEGATIVE_PROBE_COUNT=12',
     'REVERSIBLE_ADMIN_NAIVE_NEGATIVE_PROBE_COUNT=58',
     'EXISTING_CSS_MOTION_GEOMETRY_REPAIR_DOES_NOT_ACTIVATE_RUNTIME_MOTION',
     'PERSISTENT_SHELL_AND_ROUTE_GEOMETRY_IS_INVARIANT_ACROSS_FULL_REDUCED_NONE',
-    'ROUTE_ENTRY_MOTION_IS_OPACITY_ONLY_AND_NONE_HAS_NO_ANIMATION_OR_TRANSITION',
+    'ROUTE_CONTENT_KEY=NONE',
+    'ROUTED_COMPONENT_ROUTE_DERIVED_KEY=NONE',
     'TOKENS_CSS_FORMAT_OWNER=packages/design-system/src/build/formats/css.ts',
     'TOKENS_CSS_GENERATOR_CONTRACT_OWNER=packages/design-system/src/build/build.ts',
     'TOKENS_CSS_MANUAL_EDIT=PROHIBITED',
@@ -3087,6 +4054,13 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
 
   return requiredMarkers.some((marker) => !architectureSource.includes(marker)) ||
     staleCurrentAcceptanceMarkers.some((marker) => architectureSource.includes(marker)) ||
+    /^PAVP_RUNTIME_002_STATUS=(?:ACCEPTED|IMPLEMENTED_PENDING_OWNER_ACCEPTANCE|PENDING_OWNER_ACCEPTANCE)$/mu.test(
+      architectureSource,
+    ) ||
+    /^PAVP_RUNTIME_005_STATUS=(?:ACCEPTED|IMPLEMENTED_PENDING_OWNER_ACCEPTANCE|PENDING_OWNER_ACCEPTANCE)$/mu.test(
+      architectureSource,
+    ) ||
+    /^OWNER_RUNTIME_RECHECK_PENDING=/mu.test(architectureSource) ||
     /PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_(?:RENDERED|VISUAL)_REVIEW=ACCEPTED/u.test(
       architectureSource,
     )
@@ -3204,6 +4178,235 @@ function replaceLastOccurrence(source: string, search: string, replacement: stri
     : `${source.slice(0, index)}${replacement}${source.slice(index + search.length)}`
 }
 
+function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): string[] {
+  const violations: string[] = []
+  const parsedApp = vueSfcCompiler.parse(snapshot.appTemplateSource, {
+    filename: 'apps/web/src/App.vue',
+  })
+  const parsedConsoleFrame = vueSfcCompiler.parse(snapshot.consoleFrameSource, {
+    filename: 'apps/web/src/app/console/ConsoleRouteFrame.vue',
+  })
+  const appTemplateRoot = parsedApp.descriptor.template?.ast
+  const consoleFrameTemplateRoot = parsedConsoleFrame.descriptor.template?.ast
+
+  function hasTemplateKey(node: VueTemplateNode): boolean {
+    return (
+      templateAttributes(node, 'key').length > 0 ||
+      templateDirectives(node, 'bind', 'key').length > 0 ||
+      templateDirectives(node, 'bind').some(
+        (directive) =>
+          directive.arg === undefined && /(?:^|[{,]\s*)key\s*:/u.test(directive.exp?.content ?? ''),
+      )
+    )
+  }
+
+  function boundTemplateExpression(node: VueTemplateNode, argument: string): string | undefined {
+    const directives = templateDirectives(node, 'bind', argument)
+    return directives.length === 1
+      ? normalizeTemplateExpression(directives[0]?.exp?.content)
+      : undefined
+  }
+
+  function hasRouteConditional(node: VueTemplateNode): boolean {
+    return templateDirectives(node, 'if').length > 0 || templateDirectives(node, 'show').length > 0
+  }
+
+  if (
+    parsedApp.errors.length > 0 ||
+    parsedConsoleFrame.errors.length > 0 ||
+    appTemplateRoot === undefined ||
+    consoleFrameTemplateRoot === undefined
+  ) {
+    return ['PAVP_RUNTIME_005_APP_TEMPLATE_AST']
+  }
+
+  const appElements = collectShellTemplateElements(appTemplateRoot)
+  const consoleFrameElements = collectShellTemplateElements(consoleFrameTemplateRoot)
+  const routerViews = appElements.filter((element) => element.node.tag === 'RouterView')
+  const routeHosts = appElements.filter((element) =>
+    hasStaticTemplateClass(element.node, 'pavp-route-content'),
+  )
+  const routedComponents = appElements.filter((element) => element.node.tag === 'component')
+  const uiProviders = appElements.filter((element) => element.node.tag === 'UiProvider')
+  const consoleFrames = appElements.filter((element) => element.node.tag === 'ConsoleRouteFrame')
+  const adminShells = consoleFrameElements.filter((element) => element.node.tag === 'UiAdminShell')
+  const routerView = routerViews[0]
+  const routeHost = routeHosts[0]
+  const routedComponent = routedComponents[0]
+
+  if (routerViews.length !== 1) {
+    violations.push('PAVP_RUNTIME_005_ROUTER_VIEW_COUNT')
+  }
+  if (routeHosts.length !== 1) {
+    violations.push('PAVP_RUNTIME_005_ROUTE_HOST_COUNT')
+  }
+  if (routedComponents.length !== 1) {
+    violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
+  }
+
+  if (routeHost !== undefined && hasTemplateKey(routeHost.node)) {
+    violations.push('PAVP_RUNTIME_005_ROUTE_HOST_KEY')
+  }
+  if (routedComponent !== undefined && hasTemplateKey(routedComponent.node)) {
+    violations.push('PAVP_RUNTIME_005_COMPONENT_KEY')
+  }
+  if (
+    uiProviders.length !== 1 ||
+    consoleFrames.length !== 1 ||
+    adminShells.length !== 1 ||
+    [...uiProviders, ...consoleFrames, ...adminShells].some((element) =>
+      hasTemplateKey(element.node),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_005_REMOUNT_WRAPPER')
+  }
+
+  if (routerView !== undefined && routeHost !== undefined && routedComponent !== undefined) {
+    const routerElementChildren = (routerView.node.children ?? []).filter((node) => node.type === 1)
+    const hostElementChildren = (routeHost.node.children ?? []).filter((node) => node.type === 1)
+    const primaryRouteNodes = [
+      ...routedComponent.ancestors.filter((node) => node.type === 1),
+      routedComponent.node,
+    ]
+    const forbiddenWrapperTags = new Set(['KeepAlive', 'Suspense', 'Transition', 'TransitionGroup'])
+    const routeSlotExpressions = templateDirectives(routerView.node, 'slot').map((directive) =>
+      normalizeTemplateExpression(directive.exp?.content),
+    )
+    const componentContract = {
+      breadcrumb: boundTemplateExpression(routedComponent.node, 'breadcrumb'),
+      is: boundTemplateExpression(routedComponent.node, 'is'),
+      message: boundTemplateExpression(routedComponent.node, 'message'),
+      title: boundTemplateExpression(routedComponent.node, 'title'),
+    }
+
+    if (
+      !routeHost.ancestors.includes(routerView.node) ||
+      !routedComponent.ancestors.includes(routeHost.node) ||
+      routerElementChildren.length !== 1 ||
+      routerElementChildren[0] !== routeHost.node ||
+      hostElementChildren.length !== 1 ||
+      hostElementChildren[0] !== routedComponent.node ||
+      !isDeepStrictEqual(routeSlotExpressions, ['{ Component }']) ||
+      !isDeepStrictEqual(componentContract, {
+        breadcrumb: 'presentation.breadcrumb',
+        is: 'Component',
+        message: 'presentation.message',
+        title: 'presentation.title',
+      })
+    ) {
+      violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
+    }
+    if (primaryRouteNodes.some((node) => forbiddenWrapperTags.has(node.tag ?? ''))) {
+      violations.push('PAVP_RUNTIME_005_REMOUNT_WRAPPER')
+    }
+    if (
+      primaryRouteNodes.some(
+        (node) => node !== routeHost.node && node !== routedComponent.node && hasTemplateKey(node),
+      )
+    ) {
+      violations.push('PAVP_RUNTIME_005_REMOUNT_WRAPPER')
+    }
+    if (primaryRouteNodes.some(hasRouteConditional)) {
+      violations.push('PAVP_RUNTIME_005_ROUTE_CONDITIONAL')
+    }
+  } else {
+    violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
+  }
+
+  const appStyleRules = cssRuleBlocks(snapshot.appStylesSource)
+  const hostOpacityValues = selectorDeclarationValues(
+    appStyleRules,
+    '.pavp-route-content',
+    'opacity',
+  )
+  if (hostOpacityValues.length === 0 || hostOpacityValues.some((value) => value !== '1')) {
+    violations.push('PAVP_RUNTIME_005_ROUTE_HOST_VISIBILITY')
+  }
+
+  for (const rule of appStyleRules) {
+    const selectors = rule.selector.split(',')
+    const targetsHost = selectors.some((selector) =>
+      selectorTargetsPersistentOwner(selector, '.pavp-route-content'),
+    )
+    const targetsDirectChild = selectors.some((selector) =>
+      selectorTargetsPersistentOwner(selector, '.pavp-route-content > *'),
+    )
+    if (!targetsHost && !targetsDirectChild) {
+      continue
+    }
+
+    const properties = cssDeclarationNames(rule.declarations)
+    const hasMotionProperty = properties.some((property) =>
+      /^(?:animation|transition)(?:-|$)/u.test(property),
+    )
+    const hasDelay = properties.some((property) =>
+      /^(?:animation|transition)-delay$/u.test(property),
+    )
+    const opacityValues = [
+      ...rule.declarations.matchAll(/(?:^|;)\s*opacity\s*:\s*([^;]+)/gimu),
+    ].map((match) => (match[1] ?? '').trim())
+    const concealsContent =
+      opacityValues.some((value) => value !== '1') ||
+      /\bvisibility\s*:\s*(?:hidden|collapse)\b/iu.test(rule.declarations) ||
+      /\bdisplay\s*:\s*none\b/iu.test(rule.declarations) ||
+      /\bcontent-visibility\s*:\s*hidden\b/iu.test(rule.declarations)
+    const geometryValues = [
+      ...rule.declarations.matchAll(
+        /(?:^|;)\s*(?:transform|translate|scale|rotate)\s*:\s*([^;]+)/gimu,
+      ),
+    ].map((match) => (match[1] ?? '').trim())
+    const changesGeometry =
+      geometryValues.some((value) => value !== 'none') ||
+      /\b(?:clip|clip-path|filter|backdrop-filter|mask|mask-image)\s*:/iu.test(rule.declarations)
+
+    if (targetsDirectChild && hasDelay) {
+      violations.push('PAVP_RUNTIME_005_DIRECT_CHILD_DELAY')
+    }
+    if (targetsHost && hasMotionProperty) {
+      violations.push('PAVP_RUNTIME_005_ROUTE_HOST_MOTION')
+    }
+    if (targetsDirectChild && hasMotionProperty) {
+      violations.push('PAVP_RUNTIME_005_DIRECT_CHILD_MOTION')
+    }
+    if (targetsHost && (concealsContent || changesGeometry)) {
+      violations.push('PAVP_RUNTIME_005_ROUTE_HOST_VISIBILITY')
+    }
+    if (targetsDirectChild && concealsContent) {
+      violations.push('PAVP_RUNTIME_005_DIRECT_CHILD_MOTION')
+    }
+    if (rule.selector.includes('data-motion')) {
+      violations.push('PAVP_RUNTIME_005_MOTION_BRANCH')
+    }
+  }
+
+  if (
+    snapshot.appStylesSource.includes('@keyframes pavp-route-content-enter') ||
+    snapshot.appStylesSource.includes('@keyframes pavp-layered-content-enter')
+  ) {
+    violations.push('PAVP_RUNTIME_005_ROUTE_HOST_MOTION')
+  }
+
+  const pageStyleRules = cssRuleBlocks(styleContent(snapshot.pageVisualSource))
+  if (
+    pageStyleRules.some(
+      (rule) =>
+        rule.selector
+          .split(',')
+          .some(
+            (selector) =>
+              selectorTargetsPersistentOwner(selector, '.pavp-route-content') ||
+              selectorTargetsPersistentOwner(selector, '.pavp-route-content > *'),
+          ) &&
+        (/\b(?:animation|transition)(?:-[a-z-]+)?\s*:/iu.test(rule.declarations) ||
+          /\bopacity\s*:\s*0\b/iu.test(rule.declarations)),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_005_PAGE_RECREATION')
+  }
+
+  return [...new Set(violations)]
+}
+
 function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
   const violations: string[] = []
   const appStyleRules = cssRuleBlocks(snapshot.appStylesSource)
@@ -3232,27 +4435,6 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
     '.pavp-appearance-workspace',
     '.pavp-appearance-preview-column',
   ] as const
-  const routeDeclarations = cssDeclarationsForSelector(appStyleRules, '.pavp-route-content')
-  const layeredDeclarations = cssDeclarationsForSelector(appStyleRules, '.pavp-route-content > *')
-  const reducedDeclarations = [
-    cssDeclarationsForSelector(appStyleRules, "html[data-motion='reduced'] .pavp-route-content"),
-    cssDeclarationsForSelector(
-      appStyleRules,
-      "html[data-motion='reduced'] .pavp-route-content > *",
-    ),
-  ]
-  const noneDeclarations = [
-    cssDeclarationsForSelector(appStyleRules, "html[data-motion='none'] .pavp-route-content"),
-    cssDeclarationsForSelector(appStyleRules, "html[data-motion='none'] .pavp-route-content > *"),
-  ]
-  const routeKeyframes = balancedBlock(
-    snapshot.appStylesSource,
-    '@keyframes pavp-route-content-enter',
-  )
-  const layeredKeyframes = balancedBlock(
-    snapshot.appStylesSource,
-    '@keyframes pavp-layered-content-enter',
-  )
 
   if (
     persistentOwnerSelectors.some(
@@ -3283,43 +4465,31 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
     const geometryValues = [
       ...rule.declarations.matchAll(/(?:^|;)\s*(transform|translate)\s*:\s*([^;]+)/gimu),
     ]
-    if (geometryValues.some((match) => (match[2] ?? '').trim() !== 'none')) {
+    const nonNoneGeometryValues = geometryValues
+      .map((match) => (match[2] ?? '').trim())
+      .filter((value) => value !== 'none')
+    if (nonNoneGeometryValues.length > 0) {
       violations.push('PERSISTENT_OWNER_TRANSFORM')
     }
-  }
-
-  if (
-    routeDeclarations === undefined ||
-    layeredDeclarations === undefined ||
-    routeKeyframes === undefined ||
-    layeredKeyframes === undefined ||
-    !routeDeclarations.includes(
-      'animation: pavp-route-content-enter var(--ui-motion-duration) var(--ui-motion-easing);',
-    ) ||
-    !layeredDeclarations.includes(
-      'animation: pavp-layered-content-enter var(--ui-motion-duration) var(--ui-motion-easing);',
-    ) ||
-    !/\banimation-fill-mode\s*:\s*none\s*;/u.test(routeDeclarations) ||
-    !/\banimation-fill-mode\s*:\s*none\s*;/u.test(layeredDeclarations) ||
-    [routeKeyframes, layeredKeyframes].some(
-      (keyframes) =>
-        !/\bfrom\s*\{[\s\S]*?\bopacity\s*:\s*0\s*;/u.test(keyframes) ||
-        !/\bto\s*\{[\s\S]*?\bopacity\s*:\s*1\s*;/u.test(keyframes) ||
-        cssDeclarationNames(keyframes).some((property) => property !== 'opacity'),
+    const targetsRouteOwner = selectors.some(
+      (selector) =>
+        selectorTargetsPersistentOwner(selector, '.pavp-route-content') ||
+        selectorTargetsPersistentOwner(selector, '.pavp-route-content > *'),
     )
-  ) {
-    violations.push('ROUTE_OPACITY_ONLY')
-  }
-
-  if (/translateX\s*\(/u.test(routeKeyframes ?? '')) {
-    violations.push('ROUTE_HORIZONTAL_TRANSFORM')
-  }
-  if (
-    /(?:translate[XY]?\s*\(\s*0(?:[a-z%]+)?\s*\)|scale(?:[XY])?\s*\(\s*1\s*\))/iu.test(
-      routeKeyframes ?? '',
-    )
-  ) {
-    violations.push('PERSISTENT_IDENTITY_TRANSFORM')
+    if (
+      targetsRouteOwner &&
+      nonNoneGeometryValues.some((value) => /translateX\s*\(/u.test(value))
+    ) {
+      violations.push('ROUTE_HORIZONTAL_TRANSFORM')
+    }
+    if (
+      targetsRouteOwner &&
+      nonNoneGeometryValues.some((value) =>
+        /(?:translate[XY]?\s*\(\s*0(?:[a-z%]+)?\s*\)|scale(?:[XY])?\s*\(\s*1\s*\))/iu.test(value),
+      )
+    ) {
+      violations.push('PERSISTENT_IDENTITY_TRANSFORM')
+    }
   }
 
   const persistentRouteRules = appStyleRules.filter((rule) =>
@@ -3336,32 +4506,11 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    reducedDeclarations.some(
-      (declarations) =>
-        declarations === undefined ||
-        !declarations.includes('animation-duration: calc(var(--ui-motion-duration) / 2);') ||
-        !/\banimation-fill-mode\s*:\s*none\s*;/u.test(declarations) ||
-        /\b(?:transform|translate|scale|rotate)\s*:/iu.test(declarations) ||
-        cssDeclarationNames(declarations).some(
-          (property) =>
-            property !== 'animation-delay' &&
-            property !== 'animation-duration' &&
-            property !== 'animation-fill-mode',
-        ),
-    )
-  ) {
-    violations.push('REDUCED_ROUTE_OPACITY_ONLY')
-  }
-
-  if (
-    noneDeclarations.some(
-      (declarations) =>
-        declarations === undefined ||
-        !/\banimation\s*:\s*none\s*;/u.test(declarations) ||
-        !/\btransition\s*:\s*none\s*;/u.test(declarations) ||
-        !/\bopacity\s*:\s*1\s*;/u.test(declarations) ||
-        !/\btransform\s*:\s*none\s*;/u.test(declarations) ||
-        !/\btranslate\s*:\s*none\s*;/u.test(declarations),
+    persistentRouteRules.some(
+      (rule) =>
+        rule.selector.includes("data-motion='none'") &&
+        (/\banimation\s*:\s*(?!none\b)[^;]+/iu.test(rule.declarations) ||
+          /\btransition\s*:\s*(?!none\b)[^;]+/iu.test(rule.declarations)),
     )
   ) {
     violations.push('NONE_ROUTE_ANIMATION')
@@ -3403,8 +4552,7 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
   )?.[0]
   if (
     routeContentTag === undefined ||
-    !routeContentTag.includes(':key="routeRecord.name"') ||
-    [...routeContentTag.matchAll(/(?:^|\s)(?::key|v-bind:key)\s*=/gu)].length !== 1
+    /(?:^|\s)(?::key|v-bind:key|key)\s*=/u.test(routeContentTag)
   ) {
     violations.push('MOTION_ROUTE_REMOUNT')
   }
@@ -3498,50 +4646,35 @@ function runMotionGeometryNegativeProbes(
       'route-horizontal-entry-transform-restored',
       'ROUTE_HORIZONTAL_TRANSFORM',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          'from {\n    opacity: 0;',
-          'from {\n    opacity: 0;\n    transform: translateX(var(--ui-space-content-gap));',
-        ),
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content { transform: translateX(var(--ui-space-content-gap)); }\n`,
       },
     ],
     [
       'route-persistent-fill-mode-both-restored',
       'ROUTE_PERSISTENT_FILL_MODE',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          'animation-fill-mode: none;',
-          'animation-fill-mode: both;',
-        ),
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content { animation-fill-mode: both; }\n`,
       },
     ],
     [
       'route-settled-identity-transform-restored',
       'PERSISTENT_IDENTITY_TRANSFORM',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          'to {\n    opacity: 1;',
-          'to {\n    opacity: 1;\n    transform: translateX(0);',
-        ),
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content { transform: translateX(0); }\n`,
       },
     ],
     [
       'motion-specific-content-padding-added',
       'MOTION_LAYOUT_SPACING',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          'animation-duration: calc(var(--ui-motion-duration) / 2);',
-          'animation-duration: calc(var(--ui-motion-duration) / 2);\n  padding-inline: var(--ui-space-content-gap);',
-        ),
+        appStylesSource: `${baseline.appStylesSource}\nhtml[data-motion='reduced'] .pavp-route-content { padding-inline: var(--ui-space-content-gap); }\n`,
       },
     ],
     [
       'motion-specific-grid-template-added',
       'MOTION_GRID_GEOMETRY',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          'animation-duration: calc(var(--ui-motion-duration) / 2);',
-          'animation-duration: calc(var(--ui-motion-duration) / 2);\n  grid-template-columns: 1fr;',
-        ),
+        appStylesSource: `${baseline.appStylesSource}\nhtml[data-motion='reduced'] .pavp-route-content { grid-template-columns: 1fr; }\n`,
       },
     ],
     [
@@ -3585,23 +4718,17 @@ function runMotionGeometryNegativeProbes(
       },
     ],
     [
-      'reduced-opacity-only-branch-removed',
-      'REDUCED_ROUTE_OPACITY_ONLY',
+      'motion-specific-route-inline-size-added',
+      'MOTION_GEOMETRY_PROPERTY',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          "html[data-motion='reduced'] .pavp-route-content,",
-          "html[data-motion='probe-reduced'] .pavp-route-content,",
-        ),
+        appStylesSource: `${baseline.appStylesSource}\nhtml[data-motion='reduced'] .pavp-route-content { inline-size: var(--ui-layout-admin-content-minimum-inline-size); }\n`,
       },
     ],
     [
       'route-animation-left-active-under-none',
       'NONE_ROUTE_ANIMATION',
       {
-        appStylesSource: baseline.appStylesSource.replace(
-          'animation: none;',
-          'animation: pavp-route-content-enter var(--ui-motion-duration) var(--ui-motion-easing);',
-        ),
+        appStylesSource: `${baseline.appStylesSource}\nhtml[data-motion='none'] .pavp-route-content { animation: pavp-probe var(--ui-motion-duration) var(--ui-motion-easing); }\n`,
       },
     ],
     [
@@ -3621,6 +4748,123 @@ function runMotionGeometryNegativeProbes(
         passed:
           !isDeepStrictEqual(mutatedSnapshot, baseline) &&
           motionGeometryViolations(mutatedSnapshot).includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function runRuntime005NegativeProbes(
+  baseline: MaterialGateSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const routedComponentBlock = `          <component
+            :is="Component"
+            :breadcrumb="presentation.breadcrumb"
+            :message="presentation.message"
+            :title="presentation.title"
+          />`
+  const transitionWrappedComponentBlock = `          <Transition mode="out-in">
+            <component
+              :is="Component"
+              :breadcrumb="presentation.breadcrumb"
+              :message="presentation.message"
+              :title="presentation.title"
+            />
+          </Transition>`
+  const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
+    [
+      'runtime-005-route-host-key-restored',
+      'PAVP_RUNTIME_005_ROUTE_HOST_KEY',
+      {
+        appTemplateSource: baseline.appTemplateSource.replace(
+          '<div class="pavp-route-content">',
+          '<div :key="routeRecord.name" class="pavp-route-content">',
+        ),
+      },
+    ],
+    [
+      'runtime-005-routed-component-key-added',
+      'PAVP_RUNTIME_005_COMPONENT_KEY',
+      {
+        appTemplateSource: baseline.appTemplateSource.replace(
+          '          <component\n',
+          '          <component\n            :key="routeRecord.name"\n',
+        ),
+      },
+    ],
+    [
+      'runtime-005-route-host-opacity-entry-restored',
+      'PAVP_RUNTIME_005_ROUTE_HOST_MOTION',
+      {
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content { animation: pavp-runtime-005-host-entry var(--ui-motion-duration) var(--ui-motion-easing); }\n@keyframes pavp-runtime-005-host-entry { from { opacity: 0; } to { opacity: 1; } }\n`,
+      },
+    ],
+    [
+      'runtime-005-direct-child-opacity-entry-restored',
+      'PAVP_RUNTIME_005_DIRECT_CHILD_MOTION',
+      {
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content > * { animation: pavp-runtime-005-child-entry var(--ui-motion-duration) var(--ui-motion-easing); }\n@keyframes pavp-runtime-005-child-entry { from { opacity: 0; } to { opacity: 1; } }\n`,
+      },
+    ],
+    [
+      'runtime-005-direct-child-delay-restored',
+      'PAVP_RUNTIME_005_DIRECT_CHILD_DELAY',
+      {
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content > :nth-child(2) { animation-delay: calc(var(--ui-motion-duration) / 2); }\n`,
+      },
+    ],
+    [
+      'runtime-005-transition-out-in-added',
+      'PAVP_RUNTIME_005_REMOUNT_WRAPPER',
+      {
+        appTemplateSource: baseline.appTemplateSource.replace(
+          routedComponentBlock,
+          transitionWrappedComponentBlock,
+        ),
+      },
+    ],
+    [
+      'runtime-005-route-level-v-if-added',
+      'PAVP_RUNTIME_005_ROUTE_CONDITIONAL',
+      {
+        appTemplateSource: baseline.appTemplateSource.replace(
+          '<div class="pavp-route-content">',
+          '<div v-if="Component" class="pavp-route-content">',
+        ),
+      },
+    ],
+    [
+      'runtime-005-route-host-hidden',
+      'PAVP_RUNTIME_005_ROUTE_HOST_VISIBILITY',
+      {
+        appStylesSource: `${baseline.appStylesSource}\n.pavp-route-content { visibility: hidden; }\n`,
+      },
+    ],
+    [
+      'runtime-005-motion-host-opacity-branch',
+      'PAVP_RUNTIME_005_MOTION_BRANCH',
+      {
+        appStylesSource: `${baseline.appStylesSource}\nhtml[data-motion='reduced'] .pavp-route-content { opacity: 0; }\n`,
+      },
+    ],
+    [
+      'runtime-005-product-page-full-page-entry-restored',
+      'PAVP_RUNTIME_005_PAGE_RECREATION',
+      {
+        pageVisualSource: `${baseline.pageVisualSource}\n<style>\n:global(.pavp-route-content) { animation: pavp-runtime-005-page-entry var(--ui-motion-duration) var(--ui-motion-easing); }\n@keyframes pavp-runtime-005-page-entry { from { opacity: 0; } to { opacity: 1; } }\n</style>\n`,
+      },
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, change]) => {
+      const mutatedSnapshot = modifiedSnapshot(baseline, change)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          !isDeepStrictEqual(mutatedSnapshot, baseline) &&
+          runtime005RouteContentViolations(mutatedSnapshot).includes(expectedFailureCode),
       })
     }),
   )
@@ -4114,6 +5358,97 @@ function runArchitectureAdminConsoleNegativeProbes(
   )
 }
 
+function runRuntime002NegativeProbes(
+  baseline: MaterialGateSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const persistentMousedownExpression = /@mousedown="([^"]+)"/u.exec(baseline.shellSource)?.[1]
+  const drawerGuardSource =
+    persistentMousedownExpression === undefined
+      ? baseline.shellSource
+      : replaceLastOccurrence(
+          baseline.shellSource,
+          '                type="button"\n                @click="navigate(item.routeName)"',
+          `                type="button"\n                @mousedown="${persistentMousedownExpression}"\n                @click="navigate(item.routeName)"`,
+        )
+  const disabledCurrentSource = baseline.shellSource.replace(
+    /(\n\s*)(@mousedown="[^"]+")/u,
+    '$1:disabled="item.routeName === activeRouteName"$1$2',
+  )
+  const keyboardRemovedSource = baseline.shellSource.replace(
+    /(\n\s*)(@mousedown="[^"]+")/u,
+    '$1tabindex="-1"$1$2',
+  )
+  const probes: readonly [string, string, string][] = [
+    [
+      'runtime-002-persistent-guard-removed',
+      'PAVP_RUNTIME_002_PERSISTENT_MOUSEDOWN_BINDING',
+      baseline.shellSource.replace(/\n\s*@mousedown="[^"]+"/u, ''),
+    ],
+    [
+      'runtime-002-guard-applies-to-every-route',
+      'PAVP_RUNTIME_002_DIFFERENT_ROUTE_DEFAULT',
+      replaceLastOccurrence(baseline.shellSource, 'routeName === props.activeRouteName', 'true'),
+    ],
+    [
+      'runtime-002-primary-button-check-removed',
+      'PAVP_RUNTIME_002_PRIMARY_CURRENT_GUARD',
+      baseline.shellSource.replace('event.button === 0', 'true'),
+    ],
+    [
+      'runtime-002-guard-attached-to-drawer',
+      'PAVP_RUNTIME_002_DRAWER_GUARD_ABSENT',
+      drawerGuardSource,
+    ],
+    [
+      'runtime-002-blur-repair-restored',
+      'PAVP_RUNTIME_002_PROHIBITED_REPAIR',
+      baseline.shellSource.replace('event.preventDefault()', 'event.currentTarget?.blur()'),
+    ],
+    [
+      'runtime-002-delayed-focus-restore-restored',
+      'PAVP_RUNTIME_002_PROHIBITED_REPAIR',
+      baseline.shellSource.replace(
+        'event.preventDefault()',
+        'setTimeout(() => event.currentTarget?.focus())',
+      ),
+    ],
+    ['runtime-002-current-item-disabled', 'PAVP_RUNTIME_002_NATIVE_BUTTON', disabledCurrentSource],
+    [
+      'runtime-002-aria-current-removed',
+      'PAVP_RUNTIME_002_ARIA_CURRENT',
+      baseline.shellSource.replace(
+        '                :aria-current="item.routeName === activeRouteName ? \'page\' : undefined"\n',
+        '',
+      ),
+    ],
+    [
+      'runtime-002-keyboard-focus-removed',
+      'PAVP_RUNTIME_002_KEYBOARD_FOCUSABILITY',
+      keyboardRemovedSource,
+    ],
+    [
+      'runtime-002-current-route-noop-removed',
+      'PAVP_RUNTIME_002_CURRENT_ROUTE_NOOP',
+      baseline.shellSource.replace(
+        /\n\s*if\s*\(routeName\s*===\s*props\.activeRouteName\)\s*\{\s*return\s*\}/u,
+        '',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, shellSource]) =>
+      Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          shellSource !== baseline.shellSource &&
+          runtime002NavigationViolations(shellSource).includes(expectedFailureCode),
+      }),
+    ),
+  )
+}
+
 async function validateDependencies(): Promise<string[]> {
   const violations: string[] = []
   const workspace = parseYaml(
@@ -4128,10 +5463,21 @@ async function validateDependencies(): Promise<string[]> {
   const webManifest = JSON.parse(
     await readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
   ) as JsonObject
+  const designSystemManifest = JSON.parse(
+    await readFile(resolve(rootDirectory, 'packages/design-system/package.json'), 'utf8'),
+  ) as JsonObject
+  const rootManifest = JSON.parse(
+    await readFile(resolve(rootDirectory, 'package.json'), 'utf8'),
+  ) as JsonObject
   const unoConfigSource = await readFile(resolve(rootDirectory, 'uno.config.ts'), 'utf8')
   const catalog = isJsonObject(workspace['catalog']) ? workspace['catalog'] : {}
   const packages = isJsonObject(lockfile['packages']) ? lockfile['packages'] : {}
   const importers = isJsonObject(lockfile['importers']) ? lockfile['importers'] : {}
+  const rootImporter = isJsonObject(importers['.']) ? importers['.'] : {}
+  const webImporter = isJsonObject(importers['apps/web']) ? importers['apps/web'] : {}
+  const designSystemImporter = isJsonObject(importers['packages/design-system'])
+    ? importers['packages/design-system']
+    : {}
   const uiImporter = isJsonObject(importers['packages/ui']) ? importers['packages/ui'] : {}
   const uiImporterDependencies = isJsonObject(uiImporter['dependencies'])
     ? uiImporter['dependencies']
@@ -4150,8 +5496,92 @@ async function validateDependencies(): Promise<string[]> {
   const webDependencies = isJsonObject(webManifest['dependencies'])
     ? webManifest['dependencies']
     : {}
+  const designSystemDependencies = isJsonObject(designSystemManifest['dependencies'])
+    ? designSystemManifest['dependencies']
+    : {}
+  const designSystemDevDependencies = isJsonObject(designSystemManifest['devDependencies'])
+    ? designSystemManifest['devDependencies']
+    : {}
+  const rootDevDependencies = isJsonObject(rootManifest['devDependencies'])
+    ? rootManifest['devDependencies']
+    : {}
   const naivePackageKeys = Object.keys(packages).filter((key) => key.startsWith('naive-ui@'))
   const vuePackageKeys = Object.keys(packages).filter((key) => key.startsWith('vue@'))
+
+  function importerSpecifiers(importer: JsonObject, field: string): JsonObject {
+    const records = isJsonObject(importer[field]) ? importer[field] : {}
+    return Object.fromEntries(
+      Object.entries(records).map(([name, record]) => [
+        name,
+        isJsonObject(record) ? record['specifier'] : undefined,
+      ]),
+    )
+  }
+
+  if (
+    !isDeepStrictEqual(rootDevDependencies, {
+      '@iconify-json/lucide': 'catalog:',
+      '@platform/design-system': 'workspace:*',
+      '@types/node': 'catalog:',
+      '@unocss/eslint-plugin': 'catalog:',
+      '@unocss/preset-icons': 'catalog:',
+      '@unocss/preset-wind4': 'catalog:',
+      '@vitejs/plugin-vue': 'catalog:',
+      eslint: 'catalog:',
+      'eslint-plugin-boundaries': 'catalog:',
+      'eslint-plugin-vue': 'catalog:',
+      'eslint-plugin-vuejs-accessibility': 'catalog:',
+      knip: 'catalog:',
+      prettier: 'catalog:',
+      stylelint: 'catalog:',
+      tsx: 'catalog:',
+      typescript: 'catalog:',
+      'typescript-eslint': 'catalog:',
+      unocss: 'catalog:',
+      vite: 'catalog:',
+      'vue-tsc': 'catalog:',
+      yaml: 'catalog:',
+    }) ||
+    !isDeepStrictEqual(webDependencies, {
+      '@platform/design-system': 'workspace:*',
+      '@platform/ui': 'workspace:*',
+      pinia: 'catalog:',
+      vue: 'catalog:',
+      'vue-router': 'catalog:',
+      zod: 'catalog:',
+    }) ||
+    !isDeepStrictEqual(designSystemDependencies, {
+      'colorjs.io': 'catalog:',
+      zod: 'catalog:',
+    }) ||
+    !isDeepStrictEqual(designSystemDevDependencies, {
+      '@unocss/core': 'catalog:',
+      'style-dictionary': 'catalog:',
+      unocss: 'catalog:',
+    }) ||
+    !isDeepStrictEqual(uiDependencies, {
+      '@platform/design-system': 'workspace:*',
+      'naive-ui': 'catalog:',
+      vue: 'catalog:',
+    }) ||
+    !exactSet(Object.keys(importers), ['.', 'apps/web', 'packages/design-system', 'packages/ui']) ||
+    !isDeepStrictEqual(importerSpecifiers(rootImporter, 'devDependencies'), rootDevDependencies) ||
+    !isDeepStrictEqual(importerSpecifiers(webImporter, 'dependencies'), webDependencies) ||
+    !isDeepStrictEqual(
+      importerSpecifiers(designSystemImporter, 'dependencies'),
+      designSystemDependencies,
+    ) ||
+    !isDeepStrictEqual(
+      importerSpecifiers(designSystemImporter, 'devDependencies'),
+      designSystemDevDependencies,
+    ) ||
+    !isDeepStrictEqual(importerSpecifiers(uiImporter, 'dependencies'), uiDependencies)
+  ) {
+    violations.push(
+      'PAVP-RUNTIME-002 exact dependency manifests or pnpm lock importer closure drifted.',
+    )
+  }
+
   if (
     catalog['naive-ui'] !== expectedNaiveUiVersion ||
     !isDeepStrictEqual(uiDependencies, {
@@ -4400,8 +5830,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     '.pavp-admin-shell__navigation-action[aria-current=',
     'transition-property: inline-size',
     'pavp-admin-drawer-enter-active',
-    'pavp-route-content-enter',
-    'pavp-layered-content-enter',
+    '.pavp-route-content',
     '.n-button',
     'pavp-setting-commit',
     'pavp-admin-ambient-drift',
@@ -4865,6 +6294,8 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   }
   const negativeProbeResults = runArchitectureAdminConsoleNegativeProbes(baseline)
   const motionGeometryNegativeProbeResults = runMotionGeometryNegativeProbes(baseline)
+  const runtime002NegativeProbeResults = runRuntime002NegativeProbes(baseline)
+  const runtime005NegativeProbeResults = runRuntime005NegativeProbes(baseline)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
     violations.push(
@@ -4874,6 +6305,16 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   if (motionGeometryNegativeProbeResults.length !== expectedMotionGeometryNegativeProbeCount) {
     violations.push(
       `Motion geometry negative-probe count drifted: expected ${String(expectedMotionGeometryNegativeProbeCount)}, received ${String(motionGeometryNegativeProbeResults.length)}.`,
+    )
+  }
+  if (runtime002NegativeProbeResults.length !== expectedRuntime002NegativeProbeCount) {
+    violations.push(
+      `PAVP-RUNTIME-002 negative-probe count drifted: expected ${String(expectedRuntime002NegativeProbeCount)}, received ${String(runtime002NegativeProbeResults.length)}.`,
+    )
+  }
+  if (runtime005NegativeProbeResults.length !== expectedRuntime005NegativeProbeCount) {
+    violations.push(
+      `PAVP-RUNTIME-005 negative-probe count drifted: expected ${String(expectedRuntime005NegativeProbeCount)}, received ${String(runtime005NegativeProbeResults.length)}.`,
     )
   }
 
@@ -4889,6 +6330,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...capabilityViolations,
     ...uiViolations,
     ...motionGeometryViolations(baseline),
+    ...runtime005RouteContentViolations(baseline),
   )
 
   const baselineViolations = materialGateViolations(baseline)
@@ -4907,6 +6349,20 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       violations.push(`${result.id}: reversible in-memory Motion negative probe did not fail.`)
     }
   }
+  for (const result of runtime002NegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory PAVP-RUNTIME-002 negative probe did not fail.`,
+      )
+    }
+  }
+  for (const result of runtime005NegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory PAVP-RUNTIME-005 negative probe did not fail.`,
+      )
+    }
+  }
 
   return [...new Set(violations)]
 }
@@ -4919,6 +6375,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes)`,
   )
 }

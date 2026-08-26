@@ -99,6 +99,12 @@ function navigate(routeName: string): void {
   emit('navigate', routeName)
 }
 
+function preserveCurrentPersistentNavigationFocus(event: MouseEvent, routeName: string): void {
+  if (event.button === 0 && routeName === props.activeRouteName) {
+    event.preventDefault()
+  }
+}
+
 function handleDrawerKeydown(event: KeyboardEvent): void {
   if (event.key === 'Escape') {
     event.preventDefault()
@@ -247,6 +253,7 @@ watch(navigationOpen, async (isOpen) => {
                 :aria-label="profile === 'regular' ? item.label : undefined"
                 class="pavp-admin-shell__navigation-action min-h-target-enhanced min-w-target-enhanced"
                 type="button"
+                @mousedown="preserveCurrentPersistentNavigationFocus($event, item.routeName)"
                 @click="navigate(item.routeName)"
               >
                 <span
