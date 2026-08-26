@@ -359,7 +359,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   />
 
   <UiSection
-    description="七套内置主题会按当前明暗模式与对比度即时投影。"
+    description="十四套内置主题会按当前明暗模式与对比度即时投影。"
     title="主题画廊"
   >
     <fieldset

@@ -49,6 +49,84 @@
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.038 70);
   }
 
+  html[data-theme-kind='built-in'][data-theme='burgundy-snow'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.0754 350);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.05 350);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0522 355);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0136 350 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.01 030);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.01 030);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.0147 355);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0028 350);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.025 350);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.095 350);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.05 350);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.1143 355);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.015 350 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.01 030);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.01 030);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.015 355);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.025 350);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.03 350);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.12 350);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.05 350);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.115 355);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.015 350 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.01 030);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0024 030);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 355);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.04 350);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.04 350);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.11 350);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.05 350);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.115 355);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.015 350 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0058 030);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0009 030);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 355);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.04 350);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.04 350);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='cerulean-sky-navy'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.069 235);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.065 235);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0512 235);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0107 245 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.02 205);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.02 205);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.0079 235);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0027 235);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.025 235);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.11 235);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.065 235);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.1059 235);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.0111 245 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.02 205);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.02 205);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.015 235);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.025 235);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.03 235);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.0891 235);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.065 235);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.1124 235);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0155 245 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.02 205);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0051 205);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 235);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.0339 235);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.04 235);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.1039 235);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.065 235);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.1188 235);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.02 245 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0122 205);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.002 205);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 235);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.04 235);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.04 235);
+  }
+
   html[data-theme-kind='built-in'][data-theme='cobalt'] {
     --ui-theme-bank-dark-enhanced-action-primary: oklch(83% 0.075 258);
     --ui-theme-bank-dark-enhanced-border-default: oklch(64% 0.0715 258);
@@ -127,6 +205,45 @@
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.04 38);
   }
 
+  html[data-theme-kind='built-in'][data-theme='denim-cocoa'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.0662 040);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.075 050);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0499 045);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0131 040 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.02 220);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.02 220);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.0117 045);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0025 040);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.035 040);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.105 040);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.075 050);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.108 045);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.0143 040 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.02 220);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.02 220);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.015 045);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.026 040);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.045 040);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.125 040);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.075 050);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.125 045);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0195 040 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.0174 220);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0034 220);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 045);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.0503 040);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.06 040);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.115 040);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.075 050);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.125 045);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.02 040 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0083 220);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0014 220);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 045);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.06 040);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.06 040);
+  }
+
   html[data-theme-kind='built-in'][data-theme='graphite'] {
     --ui-theme-bank-dark-enhanced-action-primary: oklch(83% 0.0245 255);
     --ui-theme-bank-dark-enhanced-border-default: oklch(64% 0.0275 255);
@@ -164,6 +281,45 @@
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.002 255);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.0144 255);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.018 255);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='honey-apricot-cream'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.071 050);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.065 055);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0545 055);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0135 045 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.02 075);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.02 075);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.0101 055);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0027 050);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.03 050);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.1 050);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.065 055);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.1174 055);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.013 045 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.02 075);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.02 075);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.015 055);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.0279 050);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.04 050);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.111 050);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.065 055);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.125 055);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0178 045 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.02 075);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0039 075);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 055);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.0423 050);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.05 050);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.11 050);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.065 055);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.125 055);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.02 045 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0095 075);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0016 075);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 055);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.05 050);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.05 050);
   }
 
   html[data-theme-kind='built-in'][data-theme='iris'] {
@@ -281,6 +437,123 @@
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.003 210);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.028 210);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.035 210);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='lavender-ivory'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.0595 280);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.045 280);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0451 285);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.015 280 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.015 060);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.015 060);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.015 280);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0023 280);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.025 280);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.09 280);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.045 280);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.0937 285);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.015 280 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.015 060);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.015 060);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.015 280);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.0241 280);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.035 280);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.11 280);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.045 280);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.115 285);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.015 280 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.015 060);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.003 060);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.0047 280);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.045 280);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.045 280);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.1 280);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.045 280);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.115 285);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.015 280 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0073 060);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0012 060);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 280);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.045 280);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.045 280);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='misty-rose-blue'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.045 340);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.04 225);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0583 345);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0076 230 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.015 225);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.015 225);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.015 340);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0029 230);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.02 230);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.05 340);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.04 225);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.12 345);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.0087 230 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.015 225);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.015 225);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.015 340);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.02 230);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.025 230);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.06 340);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.04 225);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.12 345);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0123 230 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.015 225);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0031 225);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 340);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.03 230);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.03 230);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.055 340);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.04 225);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.12 345);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.015 230 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0076 225);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0012 225);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 340);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.03 230);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.03 230);
+  }
+
+  html[data-theme-kind='built-in'][data-theme='stone-blue-ash'] {
+    --ui-theme-bank-dark-enhanced-action-primary: oklch(0.88 0.04 255);
+    --ui-theme-bank-dark-enhanced-border-default: oklch(0.72 0.035 250);
+    --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0448 252);
+    --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.01 245 / 0.56);
+    --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.008 245);
+    --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.008 245);
+    --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.03 0.01 250);
+    --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0024 248);
+    --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.015 248);
+    --ui-theme-bank-dark-standard-action-primary: oklch(0.78 0.045 255);
+    --ui-theme-bank-dark-standard-border-default: oklch(0.63 0.035 250);
+    --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.0927 252);
+    --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.01 245 / 0.56);
+    --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.008 245);
+    --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.008 245);
+    --ui-theme-bank-dark-standard-text-on-action: oklch(0.09 0.01 250);
+    --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.015 248);
+    --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.02 248);
+    --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.055 255);
+    --ui-theme-bank-light-enhanced-border-default: oklch(0.54 0.035 250);
+    --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.11 252);
+    --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.01 245 / 0.56);
+    --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.008 245);
+    --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0025 245);
+    --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.002 250);
+    --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.025 248);
+    --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.025 248);
+    --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.05 255);
+    --ui-theme-bank-light-standard-border-default: oklch(0.6 0.035 250);
+    --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.11 252);
+    --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.01 245 / 0.56);
+    --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.006 245);
+    --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.001 245);
+    --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.002 250);
+    --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.025 248);
+    --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.025 248);
   }
 
   html[data-color-mode='dark'] {

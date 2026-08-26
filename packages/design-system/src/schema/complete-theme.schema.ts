@@ -11,6 +11,13 @@ export const builtInThemeIds = [
   'iris',
   'jade',
   'lagoon',
+  'stone-blue-ash',
+  'misty-rose-blue',
+  'honey-apricot-cream',
+  'cerulean-sky-navy',
+  'lavender-ivory',
+  'denim-cocoa',
+  'burgundy-snow',
 ] as const
 export const completeThemeSchemaVersion = 3 as const
 export const completeThemeRoleContractVersion = 1 as const

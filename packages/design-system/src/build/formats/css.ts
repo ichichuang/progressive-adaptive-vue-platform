@@ -328,6 +328,10 @@ function effectiveBankVariable(bankVariable: string, colorMode: 'dark' | 'light'
   return `--ui-theme-bank-effective-${bankVariable.slice(prefix.length)}`
 }
 
+export function formatThemeBankCssValue(value: string): string {
+  return value.replaceAll(/\d+\.\d+/gu, (numericLexeme) => String(Number(numericLexeme)))
+}
+
 function themeBankSelectorGroups(result: TokenBuildResult, initialSequence = 0): SelectorGroup[] {
   const registry = themeRegistryDocument(result)
   const groups: SelectorGroup[] = []
@@ -339,7 +343,7 @@ function themeBankSelectorGroups(result: TokenBuildResult, initialSequence = 0):
       selector: `html[data-theme-kind='built-in'][data-theme='${entry.themeId}']`,
       declarations: entry.bank.records.map((record) => ({
         name: record.bankVariable,
-        value: record.resolvedValue,
+        value: formatThemeBankCssValue(record.resolvedValue),
       })),
       sequence: sequence++,
     })

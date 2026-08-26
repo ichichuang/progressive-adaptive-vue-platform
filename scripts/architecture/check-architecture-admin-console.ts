@@ -3697,7 +3697,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     "label: '完整'",
     "label: '减少'",
     "label: '关闭'",
-    'description="七套内置主题会按当前明暗模式与对比度即时投影。"',
+    'description="十四套内置主题会按当前明暗模式与对比度即时投影。"',
     'displayLabel: theme.label',
   ] as const
   const appearanceAxes = [...source.matchAll(/data-appearance-axis="([a-z-]+)"/gu)].map(
@@ -3987,10 +3987,24 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'INSTALL_CONTROL_DISPOSITION=REMOVED',
     'WORK_PACKAGE=PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT',
     'STATUS=COMPLETE',
-    'ACTIVE_BUILT_IN_THEME_COUNT=7',
-    'ACTIVE_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon',
-    'ACTIVE_BUILT_IN_THEME_PLANE_COUNT=28',
-    'ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=252',
+    'HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_COUNT=7',
+    'HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon',
+    'HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_PLANE_COUNT=28',
+    'HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=252',
+    'WORK_PACKAGE=PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION',
+    'OWNER_APPROVED_ID_AND_ORDER_CONTRACT=CONFIRMED',
+    'OWNER_APPROVED_SRGB_FIELD_CORRECTION=CONFIRMED',
+    'PRE_EXPANSION_BUILT_IN_THEME_SOURCE_PRESERVATION=byte-for-byte unchanged',
+    'ADDED_BUILT_IN_THEME_ID_ORDER=stone-blue-ash,misty-rose-blue,honey-apricot-cream,cerulean-sky-navy,lavender-ivory,denim-cocoa,burgundy-snow',
+    'ACTIVE_BUILT_IN_THEME_COUNT=14',
+    'ACTIVE_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon,stone-blue-ash,misty-rose-blue,honey-apricot-cream,cerulean-sky-navy,lavender-ivory,denim-cocoa,burgundy-snow',
+    'ACTIVE_BUILT_IN_THEME_PLANE_COUNT=56',
+    'ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=504',
+    'ADDED_SOURCE_AUTHORED_COLOR_COUNT=252',
+    'ADDED_SOURCE_SRGB_IN_GAMUT_ORIGINAL_COUNT=176',
+    'ADDED_SOURCE_SRGB_OUT_OF_GAMUT_ORIGINAL_COUNT=76',
+    'ADDED_SOURCE_SRGB_CORRECTED_FIELD_COUNT=76',
+    'THEME_BANK_CSS_NUMERIC_FORMAT=strip insignificant decimal trailing zeros deterministically without changing the canonical authored source value',
     'PRODUCT_PREFERENCE_DEFAULT_THEME=built-in:iris',
     'PRE_INITIALIZATION_SAFETY_BASELINE_THEME=built-in:iris',
     'CATALOG_INSTALLATION_CAPABILITY=REMOVED',
@@ -3998,10 +4012,10 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'CUSTOM_REGISTRY_SNAPSHOT_CLEAR_OR_REWRITE=PROHIBITED',
     'CURRENT_MANIFEST_SCHEMA_VERSION=9',
     'CURRENT_TOKEN_RECORD_COUNT=145',
-    'CURRENT_MANIFEST_RECORD_COUNT=243',
-    'CURRENT_EXPECTED_RECORD_COUNT_DELTA=62',
-    'CURRENT_MANIFEST_GZIP_BYTES=11550',
-    'CURRENT_MANIFEST_RAW_UTF8_BYTES=220193',
+    'CURRENT_MANIFEST_RECORD_COUNT=250',
+    'CURRENT_EXPECTED_RECORD_COUNT_DELTA=69',
+    'CURRENT_MANIFEST_GZIP_BYTES=15452',
+    'CURRENT_MANIFEST_RAW_UTF8_BYTES=341781',
     'WORK_PACKAGE=PAVP_MOTION_GEOMETRY_STABILITY_REPAIR',
     'RUNTIME_MOTION_CAPABILITY_ACTIVATION=NONE',
     'MOTION_MODE_SWITCH_GEOMETRY_DELTA=0',
@@ -5666,9 +5680,9 @@ async function validateTokensAndLayout(): Promise<string[]> {
     tokenManifest.tokens.length !== 145 ||
     tokenManifest.activePublicRoles.length !== 36 ||
     tokenManifest.unoCssMappings.length !== 36 ||
-    tokenManifest.governance.recordCount !== 243 ||
+    tokenManifest.governance.recordCount !== 250 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 62 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 69 ||
     classProjections.length !== 34 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
@@ -6106,7 +6120,7 @@ function validateInspectorProjections(): string[] {
   if (
     runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 36 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 9 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 243 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 250 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',
       'cobalt',
@@ -6115,6 +6129,13 @@ function validateInspectorProjections(): string[] {
       'iris',
       'jade',
       'lagoon',
+      'stone-blue-ash',
+      'misty-rose-blue',
+      'honey-apricot-cream',
+      'cerulean-sky-navy',
+      'lavender-ivory',
+      'denim-cocoa',
+      'burgundy-snow',
     ]) ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 11 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||

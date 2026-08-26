@@ -99,8 +99,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 11550,
-    expectedByteDelta: 8184,
+    expectedBytes: 15452,
+    expectedByteDelta: 12086,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -144,6 +144,15 @@ const manifestCompressionContract = {
     acceptedFinalRecordCount: 243,
     expectedByteDelta: 2276,
     expectedRecordCountDelta: 4,
+  },
+  additionalBuiltInThemeExpansion: {
+    baselineSource: 'seven-built-in-theme-replacement',
+    baselineBytes: 11550,
+    baselineRecordCount: 243,
+    acceptedFinalBytes: 15452,
+    acceptedFinalRecordCount: 250,
+    expectedByteDelta: 3902,
+    expectedRecordCountDelta: 7,
   },
   hardLimitBytes: 32768,
   options: {
@@ -459,8 +468,8 @@ function validateManifestCompression(result: TokenBuildResult): number {
 
   const gzipBytes = first.byteLength
   const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
-  const sevenBuiltInThemeReplacementByteDelta =
-    gzipBytes - manifestCompressionContract.sevenBuiltInThemeReplacement.baselineBytes
+  const additionalBuiltInThemeExpansionByteDelta =
+    gzipBytes - manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes
   const manifestRecordCount = governance['recordCount']
 
   assertInvariant(
@@ -518,24 +527,36 @@ function validateManifestCompression(result: TokenBuildResult): number {
     'Naive Theme State Fusion Repair accepted bytes and delta must match its baseline',
   )
   assertInvariant(
-    typeof manifestRecordCount === 'number' &&
-      manifestRecordCount ===
-        manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalRecordCount &&
-      manifestRecordCount -
-        manifestCompressionContract.sevenBuiltInThemeReplacement.baselineRecordCount ===
-        manifestCompressionContract.sevenBuiltInThemeReplacement.expectedRecordCountDelta,
-    'Seven Built-in Theme Replacement Manifest record delta must match its baseline',
+    manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalRecordCount -
+      manifestCompressionContract.sevenBuiltInThemeReplacement.baselineRecordCount ===
+      manifestCompressionContract.sevenBuiltInThemeReplacement.expectedRecordCountDelta,
+    'Historical Seven Built-in Theme Replacement Manifest record delta must match its baseline',
   )
   assertInvariant(
     manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalBytes -
       manifestCompressionContract.sevenBuiltInThemeReplacement.baselineBytes ===
       manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta,
-    'Seven Built-in Theme Replacement accepted bytes and delta must match its baseline',
+    'Historical Seven Built-in Theme Replacement accepted bytes and delta must match its baseline',
   )
   assertInvariant(
-    sevenBuiltInThemeReplacementByteDelta ===
-      manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta,
-    `Seven Built-in Theme Replacement gzip delta: expected ${String(manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta)}, received ${String(sevenBuiltInThemeReplacementByteDelta)}`,
+    typeof manifestRecordCount === 'number' &&
+      manifestRecordCount ===
+        manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalRecordCount &&
+      manifestRecordCount -
+        manifestCompressionContract.additionalBuiltInThemeExpansion.baselineRecordCount ===
+        manifestCompressionContract.additionalBuiltInThemeExpansion.expectedRecordCountDelta,
+    'Additional Built-in Theme Expansion Manifest record delta must match its baseline',
+  )
+  assertInvariant(
+    manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalBytes -
+      manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes ===
+      manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta,
+    'Additional Built-in Theme Expansion accepted bytes and delta must match its baseline',
+  )
+  assertInvariant(
+    additionalBuiltInThemeExpansionByteDelta ===
+      manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta,
+    `Additional Built-in Theme Expansion gzip delta: expected ${String(manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta)}, received ${String(additionalBuiltInThemeExpansionByteDelta)}`,
   )
 
   return gzipBytes
@@ -1022,12 +1043,12 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
 
   assertInvariant(
     result.completeThemes.length === builtInThemeIds.length,
-    'exactly seven complete built-in Themes must exist',
+    'exactly fourteen complete built-in Themes must exist',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
       builtInThemeIds.length * 4 * 9,
-    'complete built-in Themes must contain exactly 252 authored color values',
+    'complete built-in Themes must contain exactly 504 authored color values',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===

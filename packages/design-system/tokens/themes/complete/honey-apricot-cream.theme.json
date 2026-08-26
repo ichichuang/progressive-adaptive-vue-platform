@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 3,
+  "roleContractVersion": 1,
+  "id": "honey-apricot-cream",
+  "label": "Honey Apricot & Cream",
+  "planes": {
+    "light": {
+      "standard": {
+        "color.action.primary": "oklch(0.490 0.110 050)",
+        "color.border.default": "oklch(0.600 0.065 055)",
+        "color.focus.ring": "oklch(0.560 0.125 055)",
+        "color.scrim.viewport": "oklch(0.100 0.020 045 / 0.56)",
+        "color.surface.page": "oklch(0.988 0.0095 075)",
+        "color.surface.panel": "oklch(0.998 0.0016 075)",
+        "color.text.on-action": "oklch(0.950 0.005 055)",
+        "color.text.primary": "oklch(0.250 0.050 050)",
+        "color.text.secondary": "oklch(0.470 0.050 050)"
+      },
+      "enhanced": {
+        "color.action.primary": "oklch(0.420 0.1110 050)",
+        "color.border.default": "oklch(0.540 0.065 055)",
+        "color.focus.ring": "oklch(0.530 0.125 055)",
+        "color.scrim.viewport": "oklch(0.060 0.0178 045 / 0.56)",
+        "color.surface.page": "oklch(0.975 0.020 075)",
+        "color.surface.panel": "oklch(0.995 0.0039 075)",
+        "color.text.on-action": "oklch(0.990 0.005 055)",
+        "color.text.primary": "oklch(0.160 0.0423 050)",
+        "color.text.secondary": "oklch(0.360 0.050 050)"
+      }
+    },
+    "dark": {
+      "standard": {
+        "color.action.primary": "oklch(0.780 0.100 050)",
+        "color.border.default": "oklch(0.630 0.065 055)",
+        "color.focus.ring": "oklch(0.820 0.1174 055)",
+        "color.scrim.viewport": "oklch(0.040 0.0130 045 / 0.56)",
+        "color.surface.page": "oklch(0.190 0.020 075)",
+        "color.surface.panel": "oklch(0.250 0.020 075)",
+        "color.text.on-action": "oklch(0.090 0.015 055)",
+        "color.text.primary": "oklch(0.950 0.0279 050)",
+        "color.text.secondary": "oklch(0.800 0.040 050)"
+      },
+      "enhanced": {
+        "color.action.primary": "oklch(0.880 0.0710 050)",
+        "color.border.default": "oklch(0.720 0.065 055)",
+        "color.focus.ring": "oklch(0.910 0.0545 055)",
+        "color.scrim.viewport": "oklch(0.020 0.0135 045 / 0.56)",
+        "color.surface.page": "oklch(0.120 0.020 075)",
+        "color.surface.panel": "oklch(0.190 0.020 075)",
+        "color.text.on-action": "oklch(0.030 0.0101 055)",
+        "color.text.primary": "oklch(0.995 0.0027 050)",
+        "color.text.secondary": "oklch(0.900 0.030 050)"
+      }
+    }
+  }
+}

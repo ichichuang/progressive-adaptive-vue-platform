@@ -14,7 +14,7 @@
   var densities = ['compact', 'comfortable', 'spacious']
   var fontScales = [0.9, 1, 1.1, 1.2]
   var motions = ['full', 'reduced', 'none']
-  var builtInThemeIds = ['amber', 'cobalt', 'coral', 'graphite', 'iris', 'jade', 'lagoon']
+  var builtInThemeIds = ['amber', 'cobalt', 'coral', 'graphite', 'iris', 'jade', 'lagoon', 'stone-blue-ash', 'misty-rose-blue', 'honey-apricot-cream', 'cerulean-sky-navy', 'lavender-ivory', 'denim-cocoa', 'burgundy-snow']
   var retiredBuiltInThemeIds = ['neutral', 'ocean', 'warm']
   var defaultBuiltInThemeId = 'iris'
   var legacyBuiltInThemeTuples = [{

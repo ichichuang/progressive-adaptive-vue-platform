@@ -26,6 +26,7 @@ import {
 } from '../../apps/web/src/app/appearance/preference-storage'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { parseJsonSource } from '../../packages/design-system/src/build/parse-json'
+import { formatThemeBankCssValue } from '../../packages/design-system/src/build/formats/css'
 import { generatedThemeRegistry } from '../../packages/design-system/src/generated/theme-registry'
 
 type JsonObject = Record<string, unknown>
@@ -516,7 +517,7 @@ async function validatePublicRoot(): Promise<readonly string[]> {
   return []
 }
 
-async function validateSevenBuiltInThemes(): Promise<readonly string[]> {
+async function validateFourteenBuiltInThemes(): Promise<readonly string[]> {
   const violations: string[] = []
   const expectedIdentities = [
     ['amber', 'Amber'],
@@ -526,6 +527,13 @@ async function validateSevenBuiltInThemes(): Promise<readonly string[]> {
     ['iris', 'Iris'],
     ['jade', 'Jade'],
     ['lagoon', 'Lagoon'],
+    ['stone-blue-ash', 'Stone Blue & Ash'],
+    ['misty-rose-blue', 'Misty Rose & Blue'],
+    ['honey-apricot-cream', 'Honey Apricot & Cream'],
+    ['cerulean-sky-navy', 'Cerulean Sky & Navy'],
+    ['lavender-ivory', 'Lavender & Ivory'],
+    ['denim-cocoa', 'Denim & Cocoa'],
+    ['burgundy-snow', 'Burgundy & Snow'],
   ] as const
   const generatedIdentities = generatedThemeRegistry.builtInEntries.map((entry) => [
     entry.themeId,
@@ -540,7 +548,7 @@ async function validateSevenBuiltInThemes(): Promise<readonly string[]> {
     !isDeepStrictEqual(generatedIdentities, expectedIdentities)
   ) {
     violations.push(
-      'Seven Built-in Theme IDs, labels, or canonical order drifted from the Owner contract.',
+      'Fourteen Built-in Theme IDs, labels, or canonical order drifted from the Owner contract.',
     )
   }
 
@@ -556,25 +564,27 @@ async function validateSevenBuiltInThemes(): Promise<readonly string[]> {
     entry.definition.planes.dark.standard['color.scrim.viewport'],
     entry.definition.planes.dark.enhanced['color.scrim.viewport'],
   ])
-  const expectedSourceFiles = expectedIdentities.map(([themeId]) => `${themeId}.theme.json`)
+  const expectedSourceFiles = expectedIdentities
+    .map(([themeId]) => `${themeId}.theme.json`)
+    .sort(compareCodePoints)
   const actualSourceFiles = (
     await readdir(resolve(rootDirectory, 'packages/design-system/tokens/themes/complete'))
   ).sort(compareCodePoints)
   const appearanceFiles = await readdir(resolve(rootDirectory, 'apps/web/src/app/appearance'))
 
   if (
-    colorValues.length !== 252 ||
+    colorValues.length !== 504 ||
     colorValues.some((value) => !value.startsWith('oklch(')) ||
-    scrimValues.length !== 28 ||
+    scrimValues.length !== 56 ||
     scrimValues.some((value) => typeof value !== 'string' || !value.endsWith('/ 0.56)'))
   ) {
     violations.push(
-      'Seven Built-in Themes must contain 252 absolute OKLCH roles and 28 fixed-alpha scrims.',
+      'Fourteen Built-in Themes must contain 504 absolute OKLCH roles and 56 fixed-alpha scrims.',
     )
   }
 
   if (!isDeepStrictEqual(actualSourceFiles, expectedSourceFiles)) {
-    violations.push('Complete Built-in Theme source files must equal the exact seven-theme set.')
+    violations.push('Complete Built-in Theme source files must equal the exact fourteen-theme set.')
   }
 
   if (
@@ -2079,7 +2089,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       if (
         declarations?.size !== 36 ||
         entry.bank.records.some(
-          (record) => declarations.get(record.bankVariable) !== record.resolvedValue,
+          (record) =>
+            declarations.get(record.bankVariable) !== formatThemeBankCssValue(record.resolvedValue),
         )
       ) {
         violations.push(`${artifact}: ${entry.themeId} Built-in Theme Bank projection drifted.`)
@@ -2145,14 +2156,14 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 9 || recordCount !== 243) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 9/243.')
+  if (manifest['schemaVersion'] !== 9 || recordCount !== 250) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 9/250.')
   }
 
   const themes = manifest['themes']
 
   if (!Array.isArray(themes) || themes.length !== builtInThemeIds.length) {
-    violations.push('tokens.manifest.json: exactly seven active Built-in Themes are required.')
+    violations.push('tokens.manifest.json: exactly fourteen active Built-in Themes are required.')
   } else {
     for (const [index, value] of themes.entries()) {
       const expectedEntry = generatedThemeRegistry.builtInEntries[index]
@@ -2247,7 +2258,7 @@ export async function validateAppearanceCutover(): Promise<readonly string[]> {
   const checks: readonly (() => readonly string[] | Promise<readonly string[]>)[] = [
     validateStableGeneratedOutputs,
     validatePublicRoot,
-    validateSevenBuiltInThemes,
+    validateFourteenBuiltInThemes,
     validateApplicationOrchestration,
     validatePackageFiveStaticAuthorities,
     validateParserCorpus,

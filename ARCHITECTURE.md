@@ -78,6 +78,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE
 PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
@@ -326,6 +327,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE
 PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
@@ -386,6 +388,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE
 OWNER_APPEARANCE_WORKSPACE_ACCEPTANCE=ACCEPTED
 OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE=REJECTED
@@ -544,15 +547,15 @@ WORK_PACKAGE_KIND=OWNER_DIRECTED_BUILT_IN_THEME_IDENTITY_REPLACEMENT
 STATUS=COMPLETE
 OWNER_DEMAND=CONFIRMED
 SOURCE_PACKAGE_SHA256=cc04e595f2140838d2687fdd63ffebcaa17930042816c2fead90744156b29ef0
-ACTIVE_BUILT_IN_THEME_COUNT=7
-ACTIVE_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon
-ACTIVE_BUILT_IN_THEME_LABEL_ORDER=Amber,Cobalt,Coral,Graphite,Iris,Jade,Lagoon
-ACTIVE_BUILT_IN_THEME_SOURCE_DIRECTORY=packages/design-system/tokens/themes/complete
-ACTIVE_BUILT_IN_THEME_PLANE_COUNT=28
-ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=252
-ACTIVE_BUILT_IN_THEME_DEFINITION_SCHEMA_VERSION=3
-ACTIVE_BUILT_IN_THEME_ROLE_CONTRACT_VERSION=1
-ACTIVE_BUILT_IN_THEME_COLOR_POLICY=absolute CSS colors representable in sRGB
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_COUNT=7
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_LABEL_ORDER=Amber,Cobalt,Coral,Graphite,Iris,Jade,Lagoon
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_SOURCE_DIRECTORY=packages/design-system/tokens/themes/complete
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_PLANE_COUNT=28
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=252
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_DEFINITION_SCHEMA_VERSION=3
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_ROLE_CONTRACT_VERSION=1
+HISTORICAL_POST_REPLACEMENT_BUILT_IN_THEME_COLOR_POLICY=absolute CSS colors representable in sRGB
 RETIRED_ACTIVE_BUILT_IN_THEME_IDS=neutral,ocean,warm
 RETIRED_COMPLETE_THEME_DOCUMENTS=removed
 LEGACY_SEED_THEME_DOCUMENTS=retained read-only for historical schemaVersion 1|2 tuple verification only
@@ -572,12 +575,12 @@ NEW_STORAGE_KEY=NONE
 NEW_DEPENDENCY=NONE
 NEW_PROVIDER_STORE_RESOLVER_LISTENER_KERNEL_STEP=NONE
 PRE_REPLACEMENT_MANIFEST_RECORD_COUNT=239
-CURRENT_MANIFEST_SCHEMA_VERSION=9
-CURRENT_TOKEN_RECORD_COUNT=145
-CURRENT_MANIFEST_RECORD_COUNT=243
-CURRENT_EXPECTED_RECORD_COUNT_DELTA=62
-CURRENT_MANIFEST_GZIP_BYTES=11550
-CURRENT_MANIFEST_RAW_UTF8_BYTES=220193
+HISTORICAL_POST_REPLACEMENT_MANIFEST_SCHEMA_VERSION=9
+HISTORICAL_POST_REPLACEMENT_TOKEN_RECORD_COUNT=145
+HISTORICAL_POST_REPLACEMENT_MANIFEST_RECORD_COUNT=243
+HISTORICAL_POST_REPLACEMENT_EXPECTED_RECORD_COUNT_DELTA=62
+HISTORICAL_POST_REPLACEMENT_MANIFEST_GZIP_BYTES=11550
+HISTORICAL_POST_REPLACEMENT_MANIFEST_RAW_UTF8_BYTES=220193
 REPLACEMENT_MANIFEST_RECORD_DELTA=4
 REPLACEMENT_GZIP_BYTE_DELTA=2276
 REPLACEMENT_RAW_UTF8_BYTE_DELTA=68987
@@ -587,11 +590,84 @@ COMMIT_BEFORE_OWNER_VISUAL_ACCEPTANCE=PROHIBITED
 RELEASE_BEFORE_OWNER_VISUAL_ACCEPTANCE=PROHIBITED
 ```
 
-七套定义必须以设计包中的 252 个精确绝对颜色直接成为唯一活动 Built-in Registry。Built-in ID、生成 Theme Bank、Manifest Theme Record、First Paint 解析、Theme Preview Projection 与 Appearance Gallery 必须只投影上方七个 ID；`neutral`、`ocean`、`warm` 不得再出现在活动 Built-in Schema、Selector、Theme Bank、Manifest Theme Record、产品标签或画廊中。`ProductPreferenceDefault` 与 Pre-initialization Safety Baseline 同时改为 Built-in `iris`，确保无 Stored Preference、显式 Reset 与初始化失败三条路径都有完整可解析的默认颜色。
+该包落地时，七套定义以设计包中的 252 个精确绝对颜色直接取代旧三套 Built-in Registry；这七个 ID 及其颜色现由下方 Additive Expansion 原值保留为最终十四套 Registry 的前七项。`neutral`、`ocean`、`warm` 仍不得出现在活动 Built-in Schema、Selector、Theme Bank、Manifest Theme Record、产品标签或画廊中。`ProductPreferenceDefault` 与 Pre-initialization Safety Baseline 继续固定为 Built-in `iris`，确保无 Stored Preference、显式 Reset 与初始化失败三条路径都有完整可解析的默认颜色。
 
 兼容只由现有 Pure Migration Boundary 读取，不创建第二 Schema Writer：历史 Schema 3 Built-in Reference 的三个退役 ID 确定性迁移到 Iris；历史安装式 Catalog 的 Schema 3 Custom Reference 按同 ID 提升为 Built-in，以保持用户当前选择的精确颜色；其他 Custom Reference 不改写。旧三份 Legacy Seed Theme Source 只为 Schema 1/2 Embedded Palette 的完整 Tuple 比较保留，验证成功后同样迁移到 Iris；它们不属于活动 Built-in Source。迁移不读写 Storage、不清理 Custom Registry Snapshot、不删除用户数据。Appearance Preview 必须隐藏与活动 Built-in ID 冲突的历史 Custom Entry，避免截图所示安装状态升级后出现重复主题。
 
 允许改动精确为 Architecture、七份 Complete Built-in Theme Source、Built-in Schema/Generator/Manifest/First Paint/Preference Migration、既有 Appearance Projection/Page/Store/Mutation Boundary/Bootstrap 的 Catalog 退役、Owning Static Checkers 与由现有 Generator 确定性重建的 Generated Output。此前为当前静态门禁修复的 Token CSS Formatter 合同保持不变。禁止颜色再设计、任意 Custom Theme 编辑器、自动 Storage Mutation、Custom Registry 删除、第二 Registry/Default/Migration Writer、依赖、测试、浏览器或证据 Artifact；最终必须运行 `pnpm verify`。
+
+### 1.2B.0D.1 `PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION`
+
+```text
+WORK_PACKAGE=PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION
+PARENT_WORK_PACKAGE=PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK
+WORK_PACKAGE_KIND=OWNER_DIRECTED_ADDITIVE_BUILT_IN_THEME_EXPANSION
+STATUS=COMPLETE
+OWNER_DEMAND=CONFIRMED
+OWNER_APPROVED_ID_AND_ORDER_CONTRACT=CONFIRMED
+OWNER_APPROVED_SRGB_FIELD_CORRECTION=CONFIRMED
+ENTRY_BASELINE=main@28e24b98a089a4cff7897604b1624df4d57f3478
+PRE_EXPANSION_BUILT_IN_THEME_COUNT=7
+PRE_EXPANSION_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon
+PRE_EXPANSION_BUILT_IN_THEME_SOURCE_PRESERVATION=byte-for-byte unchanged
+ADDED_BUILT_IN_THEME_COUNT=7
+ADDED_BUILT_IN_THEME_ID_ORDER=stone-blue-ash,misty-rose-blue,honey-apricot-cream,cerulean-sky-navy,lavender-ivory,denim-cocoa,burgundy-snow
+ADDED_BUILT_IN_THEME_LABEL_ORDER=Stone Blue & Ash,Misty Rose & Blue,Honey Apricot & Cream,Cerulean Sky & Navy,Lavender & Ivory,Denim & Cocoa,Burgundy & Snow
+ACTIVE_BUILT_IN_THEME_COUNT=14
+ACTIVE_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon,stone-blue-ash,misty-rose-blue,honey-apricot-cream,cerulean-sky-navy,lavender-ivory,denim-cocoa,burgundy-snow
+ACTIVE_BUILT_IN_THEME_LABEL_ORDER=Amber,Cobalt,Coral,Graphite,Iris,Jade,Lagoon,Stone Blue & Ash,Misty Rose & Blue,Honey Apricot & Cream,Cerulean Sky & Navy,Lavender & Ivory,Denim & Cocoa,Burgundy & Snow
+ACTIVE_BUILT_IN_THEME_SOURCE_DIRECTORY=packages/design-system/tokens/themes/complete
+ACTIVE_BUILT_IN_THEME_PLANE_COUNT=56
+ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=504
+ACTIVE_BUILT_IN_THEME_DEFINITION_SCHEMA_VERSION=3
+ACTIVE_BUILT_IN_THEME_ROLE_CONTRACT_VERSION=1
+ACTIVE_BUILT_IN_THEME_COLOR_POLICY=absolute CSS colors representable in sRGB
+ADDED_SOURCE_AUTHORED_COLOR_COUNT=252
+ADDED_SOURCE_SRGB_IN_GAMUT_ORIGINAL_COUNT=176
+ADDED_SOURCE_SRGB_OUT_OF_GAMUT_ORIGINAL_COUNT=76
+ADDED_SOURCE_SRGB_CORRECTED_FIELD_COUNT=76
+SRGB_CORRECTION_POLICY=preserve lightness hue alpha and field identity; reduce chroma only; select the highest four-decimal chroma accepted by strict Color.js inGamut('srgb')
+THEME_BANK_CSS_NUMERIC_FORMAT=strip insignificant decimal trailing zeros deterministically without changing the canonical authored source value
+RUNTIME_GAMUT_MAPPING=PROHIBITED
+GENERATOR_GAMUT_MAPPING=PROHIBITED
+PRODUCT_PREFERENCE_SCHEMA_VERSION=3
+PRODUCT_PREFERENCE_DEFAULT_THEME=built-in:iris
+PRE_INITIALIZATION_SAFETY_BASELINE_THEME=built-in:iris
+RETIRED_ACTIVE_BUILT_IN_THEME_IDS=neutral,ocean,warm
+RETIRED_SCHEMA_3_BUILT_IN_REFERENCE_MIGRATION=neutral|ocean|warm -> built-in:iris
+SAME_ID_SCHEMA_3_CUSTOM_REFERENCE_MIGRATION=amber|cobalt|coral|graphite|iris|jade|lagoon|stone-blue-ash|misty-rose-blue|honey-apricot-cream|cerulean-sky-navy|lavender-ivory|denim-cocoa|burgundy-snow -> same-id built-in
+OTHER_SCHEMA_3_CUSTOM_REFERENCE_MIGRATION=unchanged
+MIGRATION_AUTHORITY=@platform/design-system migrateToExplicitThemePreference
+MIGRATION_STORAGE_WRITE=PROHIBITED
+CUSTOM_REGISTRY_SNAPSHOT_CLEAR_OR_REWRITE=PROHIBITED
+SAME_ID_CUSTOM_PREVIEW_POLICY=hidden behind the canonical Built-in entry
+GENERAL_VALIDATED_CUSTOM_THEME_CAPABILITY=PRESERVED
+CATALOG_INSTALLATION_CAPABILITY=REMOVED
+NEW_STORAGE_KEY=NONE
+NEW_DEPENDENCY=NONE
+NEW_PROVIDER_STORE_RESOLVER_LISTENER_KERNEL_STEP=NONE
+PRE_EXPANSION_MANIFEST_SCHEMA_VERSION=9
+PRE_EXPANSION_MANIFEST_RECORD_COUNT=243
+CURRENT_MANIFEST_SCHEMA_VERSION=9
+CURRENT_TOKEN_RECORD_COUNT=145
+CURRENT_MANIFEST_RECORD_COUNT=250
+CURRENT_EXPECTED_RECORD_COUNT_DELTA=69
+CURRENT_MANIFEST_GZIP_BYTES=15452
+CURRENT_MANIFEST_RAW_UTF8_BYTES=341781
+EXPANSION_MANIFEST_RECORD_DELTA=7
+EXPANSION_GZIP_BYTE_DELTA=3902
+EXPANSION_RAW_UTF8_BYTE_DELTA=121588
+STATIC_PRODUCTION_GATE=PASS
+OWNER_RUNTIME_AND_VISUAL_ACCEPTANCE=NOT_PERFORMED
+COMMIT_AUTHORIZATION=NONE
+PUSH_AUTHORIZATION=NONE
+```
+
+新增七套只通过现有 Built-in Schema、Complete Theme Source、Generator、Theme Bank、Manifest、First Paint、Readonly Theme Preview Projection 与 Appearance Gallery 进入系统。既有七份 Source 必须逐字节保持不变，新七套只能追加在其后；活动 Registry 精确为上方十四个 ID 与顺序。Iris 保持 Product Default 与 Pre-initialization Safety Baseline，退役身份和安装式 Catalog 不恢复，不引入第二 Registry、Default、Migration Writer、Store、Storage Key、Provider、Resolver、Listener 或 Kernel Step。
+
+Owner 提供的新增 252 个字段中，176 个已在 sRGB 内并保持原值；76 个越界字段只允许按上方规则降低 OKLCH Chroma，Lightness、Hue、Alpha、Role、Plane 与 Theme Identity 不得改变。修订后的绝对值由新增七份 Canonical Complete Source 唯一冻结；不得在 Runtime、Generator 或页面层再次自动映射、修复或派生颜色。所有十四套继续使用四个 Plane × 九个活动 Public Color Role 的 Complete-plane Contract，并通过 Exact-set、Alpha、sRGB Gamut、Named Contrast、Theme Identity 与 Generated Drift Gate。
+
+新增 ID 与历史 Custom Registry Entry 冲突时，现有 Pure Migration Boundary 把 Schema 3 same-ID Custom Reference 在内存中提升为 same-ID Built-in，Appearance Preview 隐藏被 Built-in 占用身份的 Custom Entry；Migration 不写 Storage、不清理或重写 Custom Registry Snapshot，也不删除用户数据。其他 Custom Reference 与通用 Validated Custom Theme 能力保持不变。允许改动仅限本 Architecture Amendment、七份新增 Complete Source、Built-in ID Schema、既有 Generator/Manifest/Projection/Page、最小 Owning Static Checkers 与确定性 Generated Output；禁止安装式主题、任意 Theme 编辑器、依赖、测试、浏览器或证据 Artifact。
 
 ### 1.2B.0E `PAVP_MOTION_GEOMETRY_STABILITY_REPAIR`
 
@@ -1034,12 +1110,12 @@ CURRENT_PUBLIC_ROLE_COUNT=36
 ATOMIC_LANDING_BASELINE_TOKEN_RECORD_COUNT=105
 CURRENT_TOKEN_RECORD_COUNT=145
 ATOMIC_LANDING_BASELINE_TOKEN_MANIFEST_RECORD_COUNT=181
-CURRENT_TOKEN_MANIFEST_RECORD_COUNT=243
+CURRENT_TOKEN_MANIFEST_RECORD_COUNT=250
 ATOMIC_LANDING_BASELINE_TOKEN_MANIFEST_SCHEMA_VERSION=7
 CURRENT_TOKEN_MANIFEST_SCHEMA_VERSION=9
 MANIFEST_BASELINE_RECORD_COUNT=181
-MANIFEST_EXPECTED_RECORD_COUNT_DELTA=62
-TARGET_CURRENT_MANIFEST_DELTA=8 primitive layout tokens + 9 semantic layout tokens + 23 UI-internal Admin semantic projections + 9 PublicRole records + 9 UnoMapping records + 4 net Built-in Theme records from the seven-theme replacement = 62
+MANIFEST_EXPECTED_RECORD_COUNT_DELTA=69
+TARGET_CURRENT_MANIFEST_DELTA=8 primitive layout tokens + 9 semantic layout tokens + 23 UI-internal Admin semantic projections + 9 PublicRole records + 9 UnoMapping records + 4 historical net Built-in Theme records from the seven-theme replacement + 7 Built-in Theme records from the additional-theme expansion = 69
 TARGET_COMPRESSED_BYTE_DELTA=MEASURE_AND_FREEZE_FROM_FINAL_GENERATED_SHAPE_DURING_ATOMIC_CONSOLE_LANDING
 ```
 
@@ -1157,7 +1233,7 @@ type UnoCssMappingRecord =
 | `layout.target.enhanced.minimum-block-size` | `minimum-target` | `44px` | `--ui-layout-target-enhanced-minimum-block-size` | `min-h-target-enhanced` / `min-height` |
 | `layout.target.enhanced.minimum-inline-size` | `minimum-target` | `44px` | `--ui-layout-target-enhanced-minimum-inline-size` | `min-w-target-enhanced` / `min-width` |
 
-本 Amendment 是上述九条 Public Role 的显式 `PAVP_FUTURE_PUBLIC_ROLE_ADMISSION_AMENDMENTS` 输入。当前 Product Experience Foundation 保持 Generated Registry、Public Root、`PublicRoleRecord`、`UnoCssMappingRecord`、二十三条 §1.2B.7 UI-internal Admin Semantic Projection、Manifest Equation、Generated CSS/TypeScript 和 Checker Closure：Public Role Count 为 `36`、Token Record Count 为 `145`、Manifest Count 为 `243`。Exact Equation 为 `145 + 36 + 36 + 14 + 1 + 3 + 7 + 1 = 243`。Manifest `schemaVersion` 为 `9`，Generated Document 精确为 `governance.baselineRecordCount=181`、`governance.expectedRecordCountDelta=62`，对应 Formatter Internal Constant 为 `manifestGovernanceContract.records.baselineCount=181`、`expectedCountDelta=62`；Exact Expected Counts 为 `{tokens:145,activePublicRoles:36,unoCssMappings:36,namedContrasts:14,alphaContracts:1,densities:3,themes:7,firstPaint:1}`。当前 Generated Shape 的实测 Canonical gzip-byte Budget 为 Global Baseline `3366`、Pre-console Post-theme `7687`、Historical Console Commit `9040`、Pre-repair Corrected Worktree `9008`、Rejected Catalog Worktree `9274`、Current `11550`、Seven-theme Replacement Increment `2276`、Global Delta `8184`；Rejected Catalog Worktree Raw UTF-8 Byte Count 为 `151206`，Current Raw UTF-8 Byte Count 为 `220193`。技术管理台能力保持 `ACTIVE`，Product Experience Acceptance 已由 Owner 接受。
+本 Amendment 是上述九条 Public Role 的显式 `PAVP_FUTURE_PUBLIC_ROLE_ADMISSION_AMENDMENTS` 输入。当前 Product Experience Foundation 保持 Generated Registry、Public Root、`PublicRoleRecord`、`UnoCssMappingRecord`、二十三条 §1.2B.7 UI-internal Admin Semantic Projection、Manifest Equation、Generated CSS/TypeScript 和 Checker Closure：Public Role Count 为 `36`、Token Record Count 为 `145`、Manifest Count 为 `250`。Exact Equation 为 `145 + 36 + 36 + 14 + 1 + 3 + 14 + 1 = 250`。Manifest `schemaVersion` 为 `9`，Generated Document 精确为 `governance.baselineRecordCount=181`、`governance.expectedRecordCountDelta=69`，对应 Formatter Internal Constant 为 `manifestGovernanceContract.records.baselineCount=181`、`expectedCountDelta=69`；Exact Expected Counts 为 `{tokens:145,activePublicRoles:36,unoCssMappings:36,namedContrasts:14,alphaContracts:1,densities:3,themes:14,firstPaint:1}`。当前 Generated Shape 的实测 Canonical gzip-byte Budget 为 Global Baseline `3366`、Pre-console Post-theme `7687`、Historical Console Commit `9040`、Pre-repair Corrected Worktree `9008`、Rejected Catalog Worktree `9274`、Seven-theme Replacement `11550`、Current `15452`、Seven-theme Replacement Increment `2276`、Additional-theme Expansion Increment `3902`、Global Delta `12086`；Rejected Catalog Worktree Raw UTF-8 Byte Count 为 `151206`，Seven-theme Replacement Raw UTF-8 Byte Count 为 `220193`，Current Raw UTF-8 Byte Count 为 `341781`。技术管理台能力保持 `ACTIVE`，整体 Product Experience Acceptance 仍按当前 Runtime Audit 状态保持撤销。
 
 `PublicRoleRecord.unocss` 的 Target Type 精确扩展为上方 `PublicRoleUnoCssProjection`；`UnoCssMappingRecord` 精确扩展为上方 Discriminated Union。每个 Union Member 的 Field Order 与声明一致；`boundaryContributions` 的 Nested Field Order 为 `variantName,edge`。两条 Threshold Mapping 精确为：
 
@@ -5417,7 +5493,7 @@ dark.enhanced
 
 每个 Plane 必须显式包含当前 `roleContractVersion` 已准入的全部 Public Color Role。任何 Unknown、Missing、Duplicate、Inaccessible Role 或 Role Contract Version Mismatch 都必须使整个 Theme Definition 失败。不存在 Optional Field、Default Value、Implicit Role Inheritance、Partial-theme Merge、Theme Fallback 或缺失字段补齐。
 
-Built-in Theme 的每个 Plane 都必须人工逐字段完成。当前七套 Built-in Theme 的 252 个字段全部是设计包直接提交的 `AbsoluteCssColor`，不包含 DTCG Alias；Generator 必须同时验证 authored-value 总数为 252、absolute-value 总数为 252、primitive-alias 总数为 0。通用 Built-in Schema 仍只允许显式 Absolute Color 或 Direct Build-only Primitive Alias；若未来要重新准入 Alias，必须由独立 Owner Work Package 修改当前七套精确来源合同。任何 Alias 只能直接指向具有显式 Literal Value 的 `build-only` Primitive Color，不得引用另一个 Semantic Role、另一个 Theme Plane 或运行时 CSS Variable。
+Built-in Theme 的每个 Plane 都必须人工逐字段完成。当前十四套 Built-in Theme 的 504 个字段全部是 Canonical Complete Source 直接提交的 `AbsoluteCssColor`，不包含 DTCG Alias；其中新增七套的 76 个 sRGB 越界输入只降低 Chroma 后冻结为绝对值，不属于运行时或生成时 Gamut Remap。Generator 必须同时验证 authored-value 总数为 504、absolute-value 总数为 504、primitive-alias 总数为 0。通用 Built-in Schema 仍只允许显式 Absolute Color 或 Direct Build-only Primitive Alias；若未来要重新准入 Alias，必须由独立 Owner Work Package 修改当前十四套精确来源合同。任何 Alias 只能直接指向具有显式 Literal Value 的 `build-only` Primitive Color，不得引用另一个 Semantic Role、另一个 Theme Plane 或运行时 CSS Variable。
 
 ```text
 DEFAULT_THEME_REFERENCE_AUTHORITY=ProductPreferenceDefault.theme
@@ -5436,7 +5512,7 @@ LEGACY_SEED_SOURCE_GLOB=packages/design-system/tokens/themes/{neutral,ocean,warm
 LEGACY_SEED_SOURCE_STATUS=READ_ONLY_SCHEMA_VERSION_1_2_TUPLE_VERIFICATION_ONLY
 ```
 
-七套活动 Built-in Theme 后续只能通过各自 Canonical Complete Source 显式编辑，并重新通过 Exact-set、Alpha、Gamut、Named Contrast、252 个 Absolute Value 与 Generated Drift Gate。所有 Built-in 和 Custom Theme 均受同一个 Complete-plane Contract：四个 Plane × 当前全部 Active Public Color Role 必须逐项存在，不允许 Seed Expansion、Palette Derivation、Partial Inheritance、Implicit Completion、Automatic Contrast Repair、Gamut Remap 或 Page-level Color Override。任何一个字段缺失或无效都拒绝整个 Theme，不得用 `iris` 或其他 Theme 补齐。
+十四套活动 Built-in Theme 后续只能通过各自 Canonical Complete Source 显式编辑，并重新通过 Exact-set、Alpha、Gamut、Named Contrast、504 个 Absolute Value 与 Generated Drift Gate。所有 Built-in 和 Custom Theme 均受同一个 Complete-plane Contract：四个 Plane × 当前全部 Active Public Color Role 必须逐项存在，不允许 Seed Expansion、Palette Derivation、Partial Inheritance、Implicit Completion、Automatic Contrast Repair、Gamut Remap 或 Page-level Color Override。任何一个字段缺失或无效都拒绝整个 Theme，不得用 `iris` 或其他 Theme 补齐。
 
 Custom User Theme 的每个字段必须提交最终 Absolute CSS Color Value。Custom Theme 禁止：
 
@@ -10966,6 +11042,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK = COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR = COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG = OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT = COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION = COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR = COMPLETE
 PAVP_RUNTIME_002_ADMISSION_AMENDMENT = FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT = FROZEN
@@ -11137,6 +11214,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE
 PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
@@ -11202,6 +11280,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE
 PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
@@ -11245,12 +11324,12 @@ MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
 MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
 MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
 MANIFEST_SCHEMA_VERSION=9
-MANIFEST_RECORD_COUNT=243
-MANIFEST_GZIP_BYTES=11550
-COMPLETE_BUILTIN_THEME_DOCUMENTS=7
-COMPLETE_BUILTIN_THEME_PLANES=28
-COMPLETE_BUILTIN_THEME_AUTHORED_COLOR_VALUES=252
-ACTIVE_BUILT_IN_THEME_IDS=amber,cobalt,coral,graphite,iris,jade,lagoon
+MANIFEST_RECORD_COUNT=250
+MANIFEST_GZIP_BYTES=15452
+COMPLETE_BUILTIN_THEME_DOCUMENTS=14
+COMPLETE_BUILTIN_THEME_PLANES=56
+COMPLETE_BUILTIN_THEME_AUTHORED_COLOR_VALUES=504
+ACTIVE_BUILT_IN_THEME_IDS=amber,cobalt,coral,graphite,iris,jade,lagoon,stone-blue-ash,misty-rose-blue,honey-apricot-cream,cerulean-sky-navy,lavender-ivory,denim-cocoa,burgundy-snow
 PRODUCT_PREFERENCE_DEFAULT_THEME=built-in:iris
 COMPLETE_BUILTIN_THEME_RUNTIME_STATUS=ACTIVE
 SUBORDINATE_BROWSER_SYNC_STATUS=COMPLETE
@@ -11861,6 +11940,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG=OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT=COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR=COMPLETE
 PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
@@ -11896,15 +11976,15 @@ BACKEND_API_QUERY_AUTH_SESSION_PERMISSION=NONE
 OWNER_REJECTED_PREDECESSOR=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 OWNER_REJECTED_PREDECESSOR_STATUS=OWNER_REJECTED_AND_RETIRED_NEVER_COMMITTED
 ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; Runtime Kernel exact eleven steps; Router, Storage, Appearance and Design System remain COMPLETE_AND_ACTIVE; naive-ui@2.45.2 admission gates pass; no unresolved overlap or unrelated dirty state
-ALLOWED=exact §1.2B.0 shared experience foundation plus exact §1.2B.0A Appearance Capability Workspace, §1.2B.0C rejected Catalog retirement and §1.2B.0D Seven Built-in Theme Replacement within the existing ten-route product: fluid responsive Shell workspace, Header debug-label removal, exact Lucide navigation projection, one visual Theme Gallery from the canonical readonly Theme Preview Projection, exact six editable Appearance axes with Density preserved, real effective Preview, resolved Material and replayable Motion stages, reliable feedback, seven exact repository-owned Built-in Themes, Iris Product Default and first-paint Safety Baseline, read-only retired-reference migration, Catalog installer removal, seven Error Route visible copy translations, deterministic projections/manifests and smallest owning static gates; exact §1.2B.0E bounded Motion Geometry Stability Repair; full/reduced/none persistent Shell/Route geometry invariant; exact PAVP-RUNTIME-002 persistent current-navigation primary-mousedown native-focus-transfer repair preserved; exact PAVP-RUNTIME-005 stable unkeyed Route Content Host with no Route-level or Direct-child blanket concealment, opacity entrance or delay
-PROHIBITED=redesign of the other nine product-page content models; Density control or mutation; arbitrary custom-theme editing/import/export/deletion or color authoring; reintroduction of the rejected Catalog or its installation control; automatic Storage mutation or Custom Registry cleanup; Built-in Theme identity/default/migration changes outside §1.2B.0D; removal of the general validated Custom Theme capability; backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate Shell/Router outlet/scroll/appearance/material/provider/registry/writer authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work; Motion-bearing persistent Shell or Route geometry; persistent-owner animation fill-mode forwards or both; Motion Preference navigation, Shell/Route/workspace remount or scroll write; Route-keyed Routed Component remount; Route-level Transition, animation or conditional concealment; blanket Direct-child Route Content animation or delay; eager route conversion or new Loading Placeholder
-OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact Built-in amber/cobalt/coral/graphite/iris/jade/lagoon Gallery with Iris default, no seven-theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior
+ALLOWED=exact §1.2B.0 shared experience foundation plus exact §1.2B.0A Appearance Capability Workspace, §1.2B.0C rejected Catalog retirement, §1.2B.0D Seven Built-in Theme Replacement and §1.2B.0D.1 Additional Built-in Theme Expansion within the existing ten-route product: fluid responsive Shell workspace, Header debug-label removal, exact Lucide navigation projection, one visual Theme Gallery from the canonical readonly Theme Preview Projection, exact six editable Appearance axes with Density preserved, real effective Preview, resolved Material and replayable Motion stages, reliable feedback, fourteen exact repository-owned Built-in Themes, Iris Product Default and first-paint Safety Baseline, read-only retired-reference and same-ID migration, Catalog installer removal, seven Error Route visible copy translations, deterministic projections/manifests and smallest owning static gates; exact §1.2B.0E bounded Motion Geometry Stability Repair; full/reduced/none persistent Shell/Route geometry invariant; exact PAVP-RUNTIME-002 persistent current-navigation primary-mousedown native-focus-transfer repair preserved; exact PAVP-RUNTIME-005 stable unkeyed Route Content Host with no Route-level or Direct-child blanket concealment, opacity entrance or delay
+PROHIBITED=redesign of the other nine product-page content models; Density control or mutation; arbitrary custom-theme editing/import/export/deletion or color authoring; reintroduction of the rejected Catalog or its installation control; automatic Storage mutation or Custom Registry cleanup; Built-in Theme identity/default/migration changes outside §1.2B.0D and §1.2B.0D.1; removal of the general validated Custom Theme capability; backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate Shell/Router outlet/scroll/appearance/material/provider/registry/writer authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work; Motion-bearing persistent Shell or Route geometry; persistent-owner animation fill-mode forwards or both; Motion Preference navigation, Shell/Route/workspace remount or scroll write; Route-keyed Routed Component remount; Route-level Transition, animation or conditional concealment; blanket Direct-child Route Content animation or delay; eager route conversion or new Loading Placeholder
+OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior
 MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes for stable unkeyed Route Host, no route-derived key, visible host, no route-level animation/transition/concealment, no Direct-child blanket animation/delay, and no replacement loading/eager-route workaround; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; PAVP-RUNTIME-001 scoped/global selector compilation repair is runtime-verified and Owner-accepted; PAVP-RUNTIME-002 persistent current-navigation primary-mousedown focus-transfer repair remains implemented and statically verified at OPEN / COMPLETE / PASS; PAVP-RUNTIME-005 is the current bounded work and its First Paint and Route Content Continuity Repair is implemented and statically verified at OPEN / COMPLETE / PASS; Owner external observation is optional and non-gating; PAVP-RUNTIME-003 and PAVP-RUNTIME-004 remain open and unauthorized; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0E 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。`PAVP-RUNTIME-001` 的 scoped/global Selector Compilation 修复已由 Owner 验收；`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；唯一当前 Bounded Defect-remediation Work 已重排为 `PAVP-RUNTIME-005`，其 Repository Implementation 与 Canonical Static Verification 为 `OPEN / COMPLETE / PASS`，Owner 外部观察可选且不构成 Gate；`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。`PAVP-RUNTIME-001` 的 scoped/global Selector Compilation 修复已由 Owner 验收；`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；唯一当前 Bounded Defect-remediation Work 已重排为 `PAVP-RUNTIME-005`，其 Repository Implementation 与 Canonical Static Verification 为 `OPEN / COMPLETE / PASS`，Owner 外部观察可选且不构成 Gate；`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -12239,6 +12319,7 @@ PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK_IS_COMPLETE
 PAVP_NAIVE_THEME_STATE_FUSION_REPAIR_IS_COMPLETE
 PAVP_CURATED_CUSTOM_THEME_CATALOG_IS_OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT_IS_COMPLETE
+PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION_IS_COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR_IS_COMPLETE
 CURRENT_BOUNDED_WORK_IS_PAVP_RUNTIME_005
 PAVP_RUNTIME_001_STATUS_IS_ACCEPTED
