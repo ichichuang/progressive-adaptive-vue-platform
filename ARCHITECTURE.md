@@ -659,8 +659,11 @@ EXPANSION_GZIP_BYTE_DELTA=3902
 EXPANSION_RAW_UTF8_BYTE_DELTA=121588
 STATIC_PRODUCTION_GATE=PASS
 OWNER_RUNTIME_AND_VISUAL_ACCEPTANCE=NOT_PERFORMED
-COMMIT_AUTHORIZATION=NONE
-PUSH_AUTHORIZATION=NONE
+COMMIT_AUTHORIZATION=GRANTED_BY_OWNER
+PUSH_AUTHORIZATION=GRANTED_BY_OWNER
+IMPLEMENTATION_COMMIT=7dc240c025170ee1eaa62d6fbe00627cd22db8d9
+PUBLICATION_TARGET=origin/main
+PUBLICATION_STATUS=COMPLETE
 ```
 
 新增七套只通过现有 Built-in Schema、Complete Theme Source、Generator、Theme Bank、Manifest、First Paint、Readonly Theme Preview Projection 与 Appearance Gallery 进入系统。既有七份 Source 必须逐字节保持不变，新七套只能追加在其后；活动 Registry 精确为上方十四个 ID 与顺序。Iris 保持 Product Default 与 Pre-initialization Safety Baseline，退役身份和安装式 Catalog 不恢复，不引入第二 Registry、Default、Migration Writer、Store、Storage Key、Provider、Resolver、Listener 或 Kernel Step。
