@@ -189,6 +189,38 @@ export const uiPublicComponentRegistry = Object.freeze({
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
+      id: 'ui-radio-card-group',
+      exportName: 'UiRadioCardGroup',
+      sourcePath: 'packages/ui/src/components/UiRadioCardGroup.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'accessibleLabel',
+          type: 'string',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'modelValue', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'options',
+          type: 'readonly UiSegmentedOption[]',
+          required: true,
+          defaultValue: null,
+        }),
+      ]),
+      emits: Object.freeze([Object.freeze({ name: 'update:modelValue', payloadType: 'string' })]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'option',
+          slotPropsType: 'Readonly<{ option: UiSegmentedOption; selected: boolean }>',
+          required: false,
+        }),
+      ]),
+      semanticVariants: Object.freeze(['card-grid']),
+      accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
+      consumerRouteNames: Object.freeze(['appearance-management']),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
       id: 'ui-section',
       exportName: 'UiSection',
       sourcePath: 'packages/ui/src/components/UiSection.vue',

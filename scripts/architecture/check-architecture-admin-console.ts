@@ -3697,7 +3697,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     "label: '完整'",
     "label: '减少'",
     "label: '关闭'",
-    'description="十四套内置主题会按当前明暗模式与对比度即时投影。"',
+    'description="从十四套内置主题中选择界面基调，色板会随明暗模式与对比度即时投影。"',
     'displayLabel: theme.label',
   ] as const
   const appearanceAxes = [...source.matchAll(/data-appearance-axis="([a-z-]+)"/gu)].map(
@@ -3749,15 +3749,18 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   }
 
   if (
-    !source.includes('v-for="(theme, themeIndex) in themePreviews"') ||
-    !source.includes('type="radio"') ||
-    !source.includes('name="appearance-theme"') ||
-    !source.includes(':data-selected="isThemeSelected(theme)"') ||
-    !source.includes('已选') ||
+    !source.includes('<UiRadioCardGroup') ||
+    !source.includes('class="pavp-appearance-theme-gallery"') ||
+    !source.includes('#option="{ option, selected }"') ||
+    !source.includes(':model-value="selectedThemeValue"') ||
+    !source.includes(':options="themeSelectionOptions"') ||
+    !source.includes('@update:model-value="updateThemeSelection"') ||
+    !source.includes('label="当前主题"') ||
     [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 5 ||
-    !source.includes('currentSwatches(theme)') ||
+    !source.includes('currentSwatches(themePreviewForValue(option.value))') ||
     !source.includes('builtInAppearanceThemePreviews') ||
     !source.includes('projectAccessibleCustomAppearanceThemePreviews') ||
+    /<(?:button|input|select|textarea|label)\b/iu.test(template) ||
     requiredProjectionMarkers.some((marker) => !projectionSource.includes(marker)) ||
     /\b(?:source|bank)\s*:/u.test(projectionSource)
   ) {
@@ -3903,7 +3906,12 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'STATUS=COMPLETE',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_INFRASTRUCTURE=ACTIVE',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK=COMPLETE',
-    'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-005',
+    'PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN',
+    'PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE',
+    'CURRENT_BOUNDED_WORK=PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT',
+    'NEW_PUBLIC_UI_COMPONENT=UiRadioCardGroup',
+    'TARGET_PUBLIC_UI_COMPONENT_COUNT=9',
+    'NATIVE_INTERACTIVE_CONTROL_SOURCE_COUNT_IN_APPEARANCE_PAGE=0',
     'PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=NONE',
     'ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE',
     'PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE',
@@ -4625,8 +4633,7 @@ function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
   const updateMotionBody = balancedBlock(snapshot.appearancePageSource, 'function updateMotion')
   if (
     !isDeepStrictEqual(motionReplayKeys, [
-      '`overview-${String(motionSequence)}`',
-      '`details-${String(motionSequence)}`',
+      '`navigation-${previewView}-${String(motionSequence)}`',
       '`content-${String(motionSequence)}`',
       '`motion-${String(motionSequence)}`',
     ]) ||
@@ -5994,6 +6001,7 @@ async function validateNaiveOverrides(): Promise<string[]> {
     themeSource,
     providerSource,
     buttonSource,
+    radioCardSource,
     segmentedSource,
     statusBadgeSource,
     descriptionListSource,
@@ -6005,6 +6013,7 @@ async function validateNaiveOverrides(): Promise<string[]> {
       'utf8',
     ),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiButton.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiRadioCardGroup.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiSegmentedControl.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiStatusBadge.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiDescriptionList.vue'), 'utf8'),
@@ -6088,6 +6097,11 @@ async function validateNaiveOverrides(): Promise<string[]> {
     !buttonSource.includes(':secondary="variant === \'secondary\'"') ||
     !buttonSource.includes(":type=\"variant === 'primary' ? 'primary' : 'default'\"") ||
     !buttonSource.includes(':disabled="disabled"') ||
+    !radioCardSource.includes('<PavpRadioGroupPrimitive') ||
+    !radioCardSource.includes('<PavpRadioButtonPrimitive') ||
+    !radioCardSource.includes(':name="groupName"') ||
+    !radioCardSource.includes(':data-selected="option.value === modelValue"') ||
+    !radioCardSource.includes('pavp-radio-card-group__option:focus-within') ||
     !segmentedSource.includes('<PavpRadioGroupPrimitive') ||
     !segmentedSource.includes('<PavpRadioButtonPrimitive') ||
     !statusBadgeSource.includes('<PavpTagPrimitive') ||
@@ -6151,7 +6165,7 @@ function validateInspectorProjections(): string[] {
     runtimeCount(routerRecords) !== 17 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 2 ||
     runtimeCount(storageRecords) !== 2 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 8 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 9 ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
     runtimeCount(responsiveLayoutConsoleProjection.shellRegionIds) !== 4 ||

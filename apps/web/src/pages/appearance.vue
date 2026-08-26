@@ -17,6 +17,7 @@ import {
   UiButton,
   UiDescriptionList,
   UiPageHeader,
+  UiRadioCardGroup,
   UiSection,
   UiSegmentedControl,
   UiStatusBadge,
@@ -42,7 +43,6 @@ interface DisplayThemePreview extends AppearanceThemePreviewProjection {
   readonly displayLabel: string
 }
 
-const themeGroupLabel = '选择主题'
 const materialStageTitle = '材质效果'
 const materialStageSummary = '功能区域使用当前材质，内容区域保持稳定清晰。'
 const motionStageTitle = '动效效果'
@@ -106,14 +106,40 @@ const themePreviews = computed<readonly DisplayThemePreview[]>(() => [
   ),
 ])
 
+function themeReferenceKey(reference: ThemeReference): string {
+  return `${reference.registryKind}:${reference.themeId}`
+}
+
+const themePreviewByValue = computed(
+  () =>
+    new Map(
+      themePreviews.value.map((theme) => [themeReferenceKey(theme.reference), theme] as const),
+    ),
+)
+const themeSelectionOptions = computed<readonly UiSegmentedOption[]>(() =>
+  themePreviews.value.map((theme) =>
+    Object.freeze({
+      label: theme.displayLabel,
+      value: themeReferenceKey(theme.reference),
+    }),
+  ),
+)
+const selectedThemeValue = computed(() =>
+  preference.value === null ? '' : themeReferenceKey(preference.value.appearance.theme),
+)
+
 function referencesEqual(left: ThemeReference, right: ThemeReference): boolean {
   return left.registryKind === right.registryKind && left.themeId === right.themeId
 }
 
-function isThemeSelected(theme: AppearanceThemePreviewProjection): boolean {
-  return (
-    preference.value !== null && referencesEqual(preference.value.appearance.theme, theme.reference)
-  )
+function themePreviewForValue(value: string): DisplayThemePreview {
+  const theme = themePreviewByValue.value.get(value)
+
+  if (theme === undefined) {
+    throw new Error('Appearance theme option is not present in the canonical preview projection.')
+  }
+
+  return theme
 }
 
 function currentSwatches(theme: AppearanceThemePreviewProjection): AppearanceThemePreviewSwatches {
@@ -202,6 +228,17 @@ function updateTheme(reference: ThemeReference): void {
             themeId: availableTheme.reference.themeId,
           }
   })
+}
+
+function updateThemeSelection(value: string): void {
+  const theme = themePreviewByValue.value.get(value)
+
+  if (theme === undefined) {
+    announceRejectedMutation()
+    return
+  }
+
+  updateTheme(theme.reference)
 }
 
 function updateColorMode(value: string): void {
@@ -359,77 +396,94 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   />
 
   <UiSection
-    description="十四套内置主题会按当前明暗模式与对比度即时投影。"
+    class="pavp-appearance-theme-section"
+    description="从十四套内置主题中选择界面基调，色板会随明暗模式与对比度即时投影。"
     title="主题画廊"
   >
-    <fieldset
-      aria-labelledby="pavp-appearance-theme-legend"
-      class="pavp-appearance-theme-fieldset"
-      data-appearance-axis="theme"
-    >
-      <legend
-        id="pavp-appearance-theme-legend"
-        class="pavp-appearance-theme-legend"
-      >
-        {{ themeGroupLabel }}
-      </legend>
-      <div class="pavp-appearance-theme-gallery">
-        <label
-          v-for="(theme, themeIndex) in themePreviews"
-          :key="`${theme.registryKind}:${theme.themeId}`"
-          class="pavp-appearance-theme-option min-h-target-enhanced"
-          :data-selected="isThemeSelected(theme)"
-          :for="`appearance-theme-${String(themeIndex)}`"
-        >
-          <span class="pavp-appearance-theme-option__heading">
-            <span class="pavp-appearance-theme-option__identity">
-              <!-- prettier-ignore -->
-              <input
-                :id="`appearance-theme-${String(themeIndex)}`"
-                :checked="isThemeSelected(theme)"
-                name="appearance-theme"
-                type="radio"
-                :value="`${theme.registryKind}:${theme.themeId}`"
-                @change="updateTheme(theme.reference)"
-              >
-              <strong>{{ theme.displayLabel }}</strong>
-            </span>
-            <span
-              v-if="isThemeSelected(theme)"
-              class="pavp-appearance-theme-option__selected"
-            >
-              已选
-            </span>
-          </span>
-          <span
-            aria-hidden="true"
-            class="pavp-appearance-theme-swatches"
-          >
-            <span
-              class="pavp-appearance-theme-swatch"
-              :style="{ ['--pavp-appearance-swatch']: currentSwatches(theme).surfacePage }"
-            />
-            <span
-              class="pavp-appearance-theme-swatch"
-              :style="{ ['--pavp-appearance-swatch']: currentSwatches(theme).surfacePanel }"
-            />
-            <span
-              class="pavp-appearance-theme-swatch"
-              :style="{ ['--pavp-appearance-swatch']: currentSwatches(theme).actionPrimary }"
-            />
-            <span
-              class="pavp-appearance-theme-swatch"
-              :style="{ ['--pavp-appearance-swatch']: currentSwatches(theme).borderDefault }"
-            />
-            <span
-              class="pavp-appearance-theme-swatch"
-              :style="{ ['--pavp-appearance-swatch']: currentSwatches(theme).focusRing }"
-            />
-          </span>
-          <span class="text-text-secondary">{{ currentPlaneLabel }}</span>
-        </label>
+    <div class="pavp-appearance-theme-toolbar">
+      <div class="pavp-appearance-theme-toolbar__summary">
+        <span class="pavp-appearance-eyebrow">当前主题</span>
+        <strong>{{ currentThemeLabel }}</strong>
       </div>
-    </fieldset>
+      <div class="pavp-appearance-theme-toolbar__meta">
+        <span class="text-text-secondary">选择后即时应用</span>
+        <UiStatusBadge
+          :label="currentPlaneLabel"
+          tone="active"
+        />
+      </div>
+    </div>
+
+    <UiRadioCardGroup
+      accessible-label="选择主题"
+      class="pavp-appearance-theme-gallery"
+      data-appearance-axis="theme"
+      :model-value="selectedThemeValue"
+      :options="themeSelectionOptions"
+      @update:model-value="updateThemeSelection"
+    >
+      <template #option="{ option, selected }">
+        <span class="pavp-appearance-theme-option__heading">
+          <strong class="pavp-appearance-theme-option__title">{{ option.label }}</strong>
+          <span
+            :aria-hidden="!selected"
+            class="pavp-appearance-theme-option__status"
+            :data-visible="selected"
+          >
+            <UiStatusBadge
+              label="当前主题"
+              tone="active"
+            />
+          </span>
+        </span>
+        <span
+          aria-hidden="true"
+          class="pavp-appearance-theme-swatches"
+        >
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .surfacePage,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .surfacePanel,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .actionPrimary,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .borderDefault,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .focusRing,
+            }"
+          />
+        </span>
+        <span class="pavp-appearance-theme-option__meta text-text-secondary">
+          <span>
+            {{ themePreviewForValue(option.value).registryKind === 'built-in' ? '内置' : '项目' }}
+          </span>
+          <span>{{ currentPlaneLabel }}</span>
+        </span>
+      </template>
+    </UiRadioCardGroup>
   </UiSection>
 
   <div class="pavp-appearance-workspace">
@@ -442,7 +496,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           class="pavp-appearance-control"
           data-appearance-axis="color-mode"
         >
-          <strong>颜色模式</strong>
+          <span class="pavp-appearance-control__copy">
+            <strong>颜色模式</strong>
+            <span class="text-text-secondary">跟随环境，或固定界面的明暗表现。</span>
+          </span>
           <UiSegmentedControl
             accessible-label="颜色模式"
             :model-value="preference?.appearance.colorMode ?? ''"
@@ -454,7 +511,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           class="pavp-appearance-control"
           data-appearance-axis="contrast"
         >
-          <strong>对比度</strong>
+          <span class="pavp-appearance-control__copy">
+            <strong>对比度</strong>
+            <span class="text-text-secondary">增强文字、边框与交互状态的区分。</span>
+          </span>
           <UiSegmentedControl
             accessible-label="对比度"
             :model-value="preference?.appearance.contrast ?? ''"
@@ -466,7 +526,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           class="pavp-appearance-control"
           data-appearance-axis="material"
         >
-          <strong>材质</strong>
+          <span class="pavp-appearance-control__copy">
+            <strong>材质</strong>
+            <span class="text-text-secondary">调整功能区域的通透感与表面层次。</span>
+          </span>
           <UiSegmentedControl
             accessible-label="材质"
             :model-value="preference?.appearance.material ?? ''"
@@ -478,7 +541,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           class="pavp-appearance-control"
           data-appearance-axis="font-scale"
         >
-          <strong>字号</strong>
+          <span class="pavp-appearance-control__copy">
+            <strong>字号</strong>
+            <span class="text-text-secondary">同步调整界面文字的阅读尺寸。</span>
+          </span>
           <UiSegmentedControl
             accessible-label="字号"
             :model-value="preference === null ? '' : String(preference.appearance.fontScale)"
@@ -490,7 +556,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           class="pavp-appearance-control"
           data-appearance-axis="motion"
         >
-          <strong>动效</strong>
+          <span class="pavp-appearance-control__copy">
+            <strong>动效</strong>
+            <span class="text-text-secondary">控制反馈节奏，并尊重系统减少动态效果设置。</span>
+          </span>
           <UiSegmentedControl
             accessible-label="动效"
             :model-value="preference?.appearance.motion ?? ''"
@@ -566,8 +635,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
               </div>
               <div class="pavp-material-stage__frame">
                 <header class="pavp-material-stage__header">
-                  <span class="pavp-material-stage__mark">PAVP</span>
-                  <strong>外观工作区</strong>
+                  <span class="pavp-material-stage__identity">
+                    <span class="pavp-material-stage__mark">PAVP</span>
+                    <strong>外观工作区</strong>
+                  </span>
                   <UiStatusBadge
                     label="实时同步"
                     tone="complete"
@@ -578,35 +649,19 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                   <nav
                     aria-label="界面预览导航"
                     class="pavp-material-stage__navigation"
+                    :data-preview-view="previewView"
                   >
-                    <button
-                      :aria-current="previewView === 'overview' ? 'page' : undefined"
-                      class="pavp-material-stage__navigation-item min-h-target-enhanced min-w-target-enhanced"
-                      type="button"
-                      @click="previewView = 'overview'"
-                    >
-                      <span
-                        v-if="previewView === 'overview'"
-                        :key="`overview-${String(motionSequence)}`"
-                        aria-hidden="true"
-                        class="pavp-material-stage__navigation-indicator"
-                      />
-                      概览
-                    </button>
-                    <button
-                      :aria-current="previewView === 'details' ? 'page' : undefined"
-                      class="pavp-material-stage__navigation-item min-h-target-enhanced min-w-target-enhanced"
-                      type="button"
-                      @click="previewView = 'details'"
-                    >
-                      <span
-                        v-if="previewView === 'details'"
-                        :key="`details-${String(motionSequence)}`"
-                        aria-hidden="true"
-                        class="pavp-material-stage__navigation-indicator"
-                      />
-                      组件
-                    </button>
+                    <UiSegmentedControl
+                      accessible-label="预览内容切换"
+                      :model-value="previewView"
+                      :options="previewViewOptions"
+                      @update:model-value="updatePreviewView"
+                    />
+                    <span
+                      :key="`navigation-${previewView}-${String(motionSequence)}`"
+                      aria-hidden="true"
+                      class="pavp-material-stage__navigation-indicator"
+                    />
                   </nav>
 
                   <div class="pavp-material-stage__content">
@@ -625,13 +680,6 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
                     <UiDescriptionList :items="previewDescriptionItems" />
 
-                    <UiSegmentedControl
-                      accessible-label="预览内容切换"
-                      :model-value="previewView"
-                      :options="previewViewOptions"
-                      @update:model-value="updatePreviewView"
-                    />
-
                     <div class="pavp-material-stage__actions">
                       <UiButton
                         variant="primary"
@@ -639,13 +687,13 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                       >
                         运行示例
                       </UiButton>
-                      <button
-                        class="pavp-material-stage__focus-example min-h-target-enhanced min-w-target-enhanced"
-                        type="button"
-                        @click="replayMotion"
+                      <UiButton
+                        class="pavp-material-stage__focus-example"
+                        variant="secondary"
+                        @press="replayMotion"
                       >
                         键盘焦点示例
-                      </button>
+                      </UiButton>
                     </div>
                   </div>
 
@@ -705,53 +753,19 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 </template>
 
 <style scoped>
-.pavp-appearance-theme-fieldset {
-  min-inline-size: 0;
-  margin: 0;
-  padding: 0;
-  border: 0;
+.pavp-appearance-theme-section {
+  overflow: hidden;
 }
 
-.pavp-appearance-theme-legend {
-  margin-block-end: var(--ui-space-content-gap);
-  color: var(--ui-color-text-secondary);
-}
-
-.pavp-appearance-theme-gallery {
-  display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(min(100%, var(--ui-layout-admin-content-minimum-inline-size)), 1fr)
-  );
-  gap: var(--ui-space-content-gap);
-}
-
-.pavp-appearance-theme-option {
-  display: grid;
-  min-inline-size: 0;
-  gap: var(--ui-space-content-gap);
-  padding: var(--ui-space-page-inline);
-  border-color: var(--ui-color-border-default);
-  border-style: solid;
-  border-radius: var(--ui-radius-panel);
-  background: var(--ui-color-surface-panel);
-  cursor: pointer;
-}
-
-.pavp-appearance-theme-option[data-selected='true'] {
-  box-shadow: var(--ui-shadow-panel);
-}
-
-.pavp-appearance-theme-option:has(input:focus-visible) {
-  outline-color: var(--ui-color-focus-ring);
-  outline-style: solid;
-}
-
+.pavp-appearance-theme-toolbar,
+.pavp-appearance-theme-toolbar__summary,
+.pavp-appearance-theme-toolbar__meta,
 .pavp-appearance-theme-option__heading,
-.pavp-appearance-theme-option__identity,
+.pavp-appearance-theme-option__meta,
 .pavp-appearance-actions,
 .pavp-appearance-stage-heading,
 .pavp-material-stage__header,
+.pavp-material-stage__identity,
 .pavp-material-stage__actions,
 .pavp-motion-stage__demo {
   display: flex;
@@ -759,28 +773,63 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   gap: var(--ui-space-content-gap);
 }
 
+.pavp-appearance-theme-toolbar {
+  flex-wrap: wrap;
+  justify-content: space-between;
+  padding: var(--ui-space-content-gap);
+  border-radius: var(--ui-radius-panel);
+  background: var(--ui-material-overlay-background);
+}
+
+.pavp-appearance-theme-toolbar__summary,
+.pavp-appearance-control__copy {
+  display: grid;
+  gap: var(--ui-space-content-gap);
+}
+
+.pavp-appearance-theme-toolbar__meta {
+  flex-wrap: wrap;
+}
+
+.pavp-appearance-eyebrow {
+  color: var(--ui-color-text-primary);
+  font-weight: var(--ui-font-weight-title);
+}
+
 .pavp-appearance-theme-option__heading,
+.pavp-appearance-theme-option__meta,
 .pavp-appearance-stage-heading,
 .pavp-material-stage__header {
   justify-content: space-between;
 }
 
-.pavp-appearance-theme-option__selected {
-  color: var(--ui-color-text-primary);
-  font-weight: var(--ui-font-weight-title);
+.pavp-appearance-theme-option__meta {
+  color: var(--ui-color-text-secondary);
+}
+
+.pavp-appearance-theme-option__title {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.pavp-appearance-theme-option__status {
+  flex: none;
+  visibility: hidden;
+}
+
+.pavp-appearance-theme-option__status[data-visible='true'] {
+  visibility: visible;
 }
 
 .pavp-appearance-theme-swatches {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   overflow: hidden;
-  border-color: var(--ui-color-border-default);
-  border-style: solid;
   border-radius: var(--ui-radius-panel);
 }
 
 .pavp-appearance-theme-swatch {
-  block-size: var(--ui-control-height);
+  block-size: calc(var(--ui-control-height) / 2);
   background: var(--pavp-appearance-swatch);
 }
 
@@ -804,10 +853,19 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   border-block-end-style: solid;
 }
 
+.pavp-appearance-control__copy {
+  min-inline-size: 0;
+}
+
 .pavp-appearance-actions,
 .pavp-material-stage__actions,
 .pavp-motion-stage__demo {
   flex-wrap: wrap;
+}
+
+.pavp-appearance-actions {
+  justify-content: flex-end;
+  padding-block-start: var(--ui-space-content-gap);
 }
 
 .pavp-appearance-feedback {
@@ -823,7 +881,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 }
 
 .pavp-appearance-feedback[data-feedback-phase='odd'] {
-  box-shadow: var(--ui-shadow-panel);
+  box-shadow: none;
 }
 
 .pavp-appearance-feedback[data-feedback-phase='even'] {
@@ -832,6 +890,12 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
 .pavp-appearance-feedback__message {
   animation: pavp-setting-commit var(--ui-motion-duration) var(--ui-motion-easing) both;
+}
+
+.pavp-appearance-preview {
+  inline-size: 100%;
+  max-inline-size: var(--ui-layout-content-max-width);
+  justify-self: center;
 }
 
 .pavp-material-stage__canvas {
@@ -851,7 +915,12 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 .pavp-material-stage__environment {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  align-content: start;
   pointer-events: none;
+}
+
+.pavp-material-stage__environment > * {
+  block-size: calc(var(--ui-control-height) / 4);
 }
 
 .pavp-material-stage__environment > :first-child {
@@ -875,56 +944,44 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   box-shadow: var(--ui-shadow-panel);
 }
 
+.pavp-material-stage__identity {
+  min-inline-size: 0;
+  flex-wrap: wrap;
+}
+
 .pavp-material-stage__mark {
   color: var(--ui-color-text-primary);
   font-weight: var(--ui-font-weight-title);
 }
 
 .pavp-material-stage__body {
-  grid-template-columns: var(--ui-layout-admin-sidebar-rail-inline-size) minmax(0, 1fr);
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--ui-layout-admin-content-minimum-inline-size)), 1fr)
+  );
+  align-items: start;
 }
 
 .pavp-material-stage__navigation {
-  align-content: start;
-  display: grid;
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  justify-content: space-between;
   min-inline-size: 0;
   gap: var(--ui-space-content-gap);
 }
 
-.pavp-material-stage__navigation-item,
-.pavp-material-stage__focus-example {
-  position: relative;
-  border-color: var(--ui-color-border-default);
-  border-style: solid;
-  border-radius: var(--ui-radius-panel);
-  color: var(--ui-color-text-primary);
-  background: var(--ui-color-surface-panel);
-  cursor: pointer;
-}
-
-.pavp-material-stage__navigation-item[aria-current='page'] {
-  background: var(--ui-material-overlay-background);
-  box-shadow: var(--ui-shadow-panel);
-}
-
-.pavp-material-stage__navigation-item:focus-visible,
-.pavp-material-stage__focus-example:focus-visible {
-  outline-color: var(--ui-color-focus-ring);
-  outline-style: solid;
-}
-
 .pavp-material-stage__navigation-indicator {
-  position: absolute;
-  block-size: calc(100% - var(--ui-space-content-gap));
-  inline-size: calc(var(--ui-space-content-gap) / 2);
+  display: block;
+  flex: none;
+  inline-size: var(--ui-control-height);
+  block-size: calc(var(--ui-space-content-gap) / 2);
   border-radius: var(--ui-radius-panel);
   background: var(--ui-color-action-primary);
-  inset-block-start: calc(var(--ui-space-content-gap) / 2);
-  inset-inline-start: 0;
 }
 
 .pavp-material-stage__content {
-  padding: var(--ui-space-page-inline);
+  padding: var(--ui-space-content-gap);
   border-radius: var(--ui-radius-panel);
   background: var(--ui-color-surface-panel);
 }
@@ -944,7 +1001,8 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
 .pavp-material-stage__floating {
   display: grid;
-  justify-self: end;
+  align-content: start;
+  justify-self: stretch;
   gap: var(--ui-space-content-gap);
   padding: var(--ui-space-content-gap);
   border-radius: var(--ui-radius-panel);
@@ -956,7 +1014,6 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   :where(
     .pavp-material-stage__header,
     .pavp-material-stage__navigation,
-    .pavp-material-stage__navigation-item[aria-current='page'],
     .pavp-material-stage__floating
   ) {
   -webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
@@ -967,14 +1024,12 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   :where(
     .pavp-material-stage__header,
     .pavp-material-stage__navigation,
-    .pavp-material-stage__navigation-item[aria-current='page'],
     .pavp-material-stage__floating
   ),
 .pavp-appearance-preview[data-material-preview='solid']
   :where(
     .pavp-material-stage__header,
     .pavp-material-stage__navigation,
-    .pavp-material-stage__navigation-item[aria-current='page'],
     .pavp-material-stage__floating
   ) {
   -webkit-backdrop-filter: none;
@@ -983,14 +1038,14 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 }
 
 .pavp-motion-stage {
-  padding-block-start: var(--ui-space-section-block);
+  padding-block-start: var(--ui-space-content-gap);
   border-block-start-color: var(--ui-color-border-default);
   border-block-start-style: solid;
 }
 
 .pavp-motion-stage__demo {
   justify-content: space-between;
-  padding: var(--ui-space-page-inline);
+  padding: var(--ui-space-content-gap);
   border-radius: var(--ui-radius-panel);
   background: var(--ui-color-surface-panel);
 }
@@ -1042,10 +1097,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   align-items: start;
 }
 
-:global(.pavp-admin-shell[data-layout-profile='regular']) .pavp-appearance-preview-column,
-:global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-preview-column {
-  position: sticky;
-  inset-block-start: var(--ui-space-section-block);
+:global(.pavp-admin-shell[data-layout-profile='regular']) .pavp-appearance-control,
+:global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-control {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
 }
 
 @keyframes pavp-setting-commit {
@@ -1143,7 +1198,6 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
     :where(
       .pavp-material-stage__header,
       .pavp-material-stage__navigation,
-      .pavp-material-stage__navigation-item[aria-current='page'],
       .pavp-material-stage__floating
     ) {
     -webkit-backdrop-filter: none;
@@ -1152,11 +1206,8 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 }
 
 @media (forced-colors: active) {
-  .pavp-appearance-theme-option,
   .pavp-appearance-theme-swatches,
-  .pavp-material-stage__canvas,
-  .pavp-material-stage__navigation-item,
-  .pavp-material-stage__focus-example {
+  .pavp-material-stage__canvas {
     border-style: solid;
   }
 
@@ -1164,7 +1215,6 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
     :where(
       .pavp-material-stage__header,
       .pavp-material-stage__navigation,
-      .pavp-material-stage__navigation-item[aria-current='page'],
       .pavp-material-stage__floating
     ) {
     -webkit-backdrop-filter: none;
