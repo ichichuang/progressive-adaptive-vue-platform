@@ -1,4 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { extname, join, relative, resolve } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 
@@ -107,10 +108,54 @@ interface ArchitectureAdminConsoleNegativeProbeResult {
   readonly passed: boolean
 }
 
+interface VueSfcStyleBlock {
+  readonly content: string
+  readonly lang?: string
+  readonly scoped?: boolean
+}
+
+interface VueSfcCompiler {
+  readonly compileStyle: (options: {
+    readonly filename: string
+    readonly id: string
+    readonly preprocessLang?: string
+    readonly scoped: boolean
+    readonly source: string
+  }) => {
+    readonly code: string
+    readonly errors: readonly unknown[]
+  }
+  readonly parse: (
+    source: string,
+    options: Readonly<{ filename: string }>,
+  ) => {
+    readonly descriptor: {
+      readonly styles: readonly VueSfcStyleBlock[]
+    }
+    readonly errors: readonly unknown[]
+  }
+}
+
+interface CompiledSfcStyleBlock {
+  readonly code: string
+  readonly rules: readonly CssRuleBlock[]
+  readonly scoped: boolean
+  readonly source: string
+}
+
+interface CompiledSfcStyles {
+  readonly blocks: readonly CompiledSfcStyleBlock[]
+  readonly errors: readonly unknown[]
+}
+
 const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 50
+const expectedArchitectureAdminConsoleNegativeProbeCount = 58
 const expectedMotionGeometryNegativeProbeCount = 12
+const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
+const shellSfcScopeId = 'data-v-pavp-admin-shell'
+const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
+const vueSfcCompiler = requireFromWeb('vue/compiler-sfc') as VueSfcCompiler
 const expectedNaiveUiIntegrity =
   'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
 const expectedNavigationIconClasses = [
@@ -1672,6 +1717,279 @@ function cssDeclarationNames(declarations: string): readonly string[] {
   return [...declarations.matchAll(/(?:^|[;{])\s*([a-z-]+)\s*:/gimu)].map((match) => match[1] ?? '')
 }
 
+function compileSfcStyles(source: string): CompiledSfcStyles {
+  const parsed = vueSfcCompiler.parse(source, { filename: shellSfcPath })
+  const errors: unknown[] = [...parsed.errors]
+  const blocks = parsed.descriptor.styles.map((block) => {
+    const scoped = block.scoped === true
+    const compiled = vueSfcCompiler.compileStyle({
+      filename: shellSfcPath,
+      id: shellSfcScopeId,
+      ...(block.lang === undefined ? {} : { preprocessLang: block.lang }),
+      scoped,
+      source: block.content,
+    })
+
+    errors.push(...compiled.errors)
+
+    return Object.freeze({
+      code: compiled.code,
+      rules: cssRuleBlocks(compiled.code),
+      scoped,
+      source: block.content,
+    })
+  })
+
+  return Object.freeze({ blocks: Object.freeze(blocks), errors: Object.freeze(errors) })
+}
+
+function normalizedCssSelector(selector: string): string {
+  return selector.replaceAll(/\s+/gu, ' ').trim()
+}
+
+function selectorDeclarationValues(
+  rules: readonly CssRuleBlock[],
+  selector: string,
+  property: string,
+): readonly string[] {
+  const values: string[] = []
+
+  for (const rule of rules) {
+    if (
+      !rule.selector.split(',').some((candidate) => normalizedCssSelector(candidate) === selector)
+    ) {
+      continue
+    }
+
+    for (const declaration of rule.declarations.split(';')) {
+      const separatorIndex = declaration.indexOf(':')
+      if (separatorIndex < 0 || declaration.slice(0, separatorIndex).trim() !== property) {
+        continue
+      }
+
+      values.push(declaration.slice(separatorIndex + 1).trim())
+    }
+  }
+
+  return values
+}
+
+function selectorHasDeclarations(
+  rules: readonly CssRuleBlock[],
+  selector: string,
+  declarations: Readonly<Record<string, string>>,
+): boolean {
+  return Object.entries(declarations).every(([property, value]) =>
+    selectorDeclarationValues(rules, selector, property).includes(value),
+  )
+}
+
+function compiledShellStateViolations(source: string): string[] {
+  const violations: string[] = []
+  const compiled = compileSfcStyles(source)
+
+  if (compiled.errors.length > 0) {
+    return ['SHELL_SFC_STYLE_COMPILATION']
+  }
+
+  const scopedBlocks = compiled.blocks.filter((block) => block.scoped)
+  const stateBlocks = compiled.blocks.filter((block) => !block.scoped)
+  if (
+    scopedBlocks.length !== 1 ||
+    stateBlocks.length !== 1 ||
+    scopedBlocks.some((block) => /data-(?:material|motion)/u.test(block.source)) ||
+    stateBlocks.some((block) => block.source.includes(':global('))
+  ) {
+    violations.push('SHELL_STATE_STYLE_BOUNDARY')
+  }
+
+  const allRules = compiled.blocks.flatMap((block) => block.rules)
+  const stateRules = allRules.filter((rule) => /\[data-(?:material|motion)=/u.test(rule.selector))
+  const prohibitedRootProperties = new Set([
+    '-webkit-backdrop-filter',
+    'animation',
+    'backdrop-filter',
+    'box-shadow',
+    'transform',
+    'transition',
+    'transition-duration',
+    'transition-property',
+    'transition-timing-function',
+    'translate',
+  ])
+  const rootOnlySelector = /^(?:html(?:\[[^\]]+\])?|body(?:\[[^\]]+\])?|#app)$/u
+
+  for (const rule of allRules) {
+    const selectors = rule.selector.split(',').map(normalizedCssSelector)
+    const rootOnlySelectors = selectors.filter((selector) => rootOnlySelector.test(selector))
+    if (rootOnlySelectors.length > 0) {
+      violations.push('SHELL_COMPILED_ROOT_SELECTOR')
+      if (
+        cssDeclarationNames(rule.declarations).some((name) => prohibitedRootProperties.has(name))
+      ) {
+        violations.push('SHELL_COMPILED_ROOT_STATE_DECLARATION')
+      }
+    }
+  }
+
+  for (const rule of stateRules) {
+    const selectors = rule.selector.split(',').map(normalizedCssSelector)
+    if (
+      selectors.some(
+        (selector) =>
+          !/^html\[data-(?:material|motion)='[^']+'\] \.pavp-admin-shell/u.test(selector),
+      )
+    ) {
+      violations.push('SHELL_STATE_SELECTOR_NAMESPACE')
+    }
+  }
+
+  const materialTargets = [
+    '.pavp-admin-shell__header',
+    '.pavp-admin-shell__sidebar',
+    ".pavp-admin-shell__navigation-action[aria-current='page']",
+    '.pavp-admin-shell__rail-tooltip',
+    '.pavp-admin-shell__drawer-navigation',
+  ] as const
+  const adaptiveBackdrop = {
+    '-webkit-backdrop-filter': 'blur(var(--ui-admin-optical-backdrop-blur))',
+    'backdrop-filter': 'blur(var(--ui-admin-optical-backdrop-blur))',
+  }
+  if (
+    materialTargets.some(
+      (target) =>
+        !selectorHasDeclarations(
+          allRules,
+          `html[data-material='adaptive'] ${target}`,
+          adaptiveBackdrop,
+        ),
+    )
+  ) {
+    violations.push('MATERIAL_ADAPTIVE_TARGETS')
+  }
+
+  const noBackdrop = {
+    '-webkit-backdrop-filter': 'none',
+    'backdrop-filter': 'none',
+  }
+  if (
+    (['reduced', 'solid'] as const).some((material) =>
+      materialTargets.some(
+        (target) =>
+          !selectorHasDeclarations(
+            allRules,
+            `html[data-material='${material}'] ${target}`,
+            noBackdrop,
+          ),
+      ),
+    )
+  ) {
+    violations.push('MATERIAL_INERT_TARGETS')
+  }
+
+  const reducedShadowTargets = [
+    '.pavp-admin-shell__header',
+    '.pavp-admin-shell__sidebar',
+    '.pavp-admin-shell__rail-tooltip',
+    '.pavp-admin-shell__drawer-navigation',
+  ] as const
+  if (
+    reducedShadowTargets.some(
+      (target) =>
+        !selectorHasDeclarations(allRules, `html[data-material='reduced'] ${target}`, {
+          'box-shadow': 'none',
+        }),
+    )
+  ) {
+    violations.push('MATERIAL_REDUCED_SHADOW_TARGETS')
+  }
+
+  const reducedDurationTargets = [
+    '.pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active',
+    '.pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active',
+    '.pavp-admin-shell__sidebar',
+    '.pavp-admin-shell__action',
+    '.pavp-admin-shell__navigation-action',
+    '.pavp-admin-shell__navigation-action::before',
+  ] as const
+  if (
+    reducedDurationTargets.some(
+      (target) =>
+        !selectorHasDeclarations(allRules, `html[data-motion='reduced'] ${target}`, {
+          'transition-duration': 'calc(var(--ui-motion-duration) / 2)',
+        }),
+    ) ||
+    !selectorHasDeclarations(
+      allRules,
+      "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from",
+      { transform: 'translateX(calc(var(--ui-space-content-gap) * -1))' },
+    ) ||
+    !selectorHasDeclarations(
+      allRules,
+      "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to",
+      { transform: 'translateX(calc(var(--ui-space-content-gap) * -1))' },
+    ) ||
+    !selectorHasDeclarations(allRules, "html[data-motion='reduced'] .pavp-admin-shell::before", {
+      animation: 'none',
+    })
+  ) {
+    violations.push('MOTION_REDUCED_TARGETS')
+  }
+
+  const motionNoneTransitionTargets = reducedDurationTargets
+  if (
+    motionNoneTransitionTargets.some(
+      (target) =>
+        !selectorHasDeclarations(allRules, `html[data-motion='none'] ${target}`, {
+          transition: 'none',
+        }),
+    ) ||
+    !selectorHasDeclarations(allRules, "html[data-motion='none'] .pavp-admin-shell::before", {
+      animation: 'none',
+    }) ||
+    !selectorHasDeclarations(
+      allRules,
+      "html[data-motion='none'] .pavp-admin-shell__action:active",
+      { transform: 'none' },
+    ) ||
+    !selectorHasDeclarations(
+      allRules,
+      "html[data-motion='none'] .pavp-admin-shell__navigation-action:active",
+      { transform: 'none' },
+    )
+  ) {
+    violations.push('MOTION_NONE_TARGETS')
+  }
+
+  const allowedStateSelectors = new Set([
+    ...(['adaptive', 'reduced', 'solid'] as const).flatMap((material) =>
+      materialTargets.map((target) => `html[data-material='${material}'] ${target}`),
+    ),
+    "html[data-motion='reduced'] .pavp-admin-shell::before",
+    "html[data-motion='none'] .pavp-admin-shell::before",
+    ...(['reduced', 'none'] as const).flatMap((motion) =>
+      reducedDurationTargets.map((target) => `html[data-motion='${motion}'] ${target}`),
+    ),
+    "html[data-motion='reduced'] .pavp-admin-shell__action:active",
+    "html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active",
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from",
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to",
+    "html[data-motion='none'] .pavp-admin-shell__action:active",
+    "html[data-motion='none'] .pavp-admin-shell__navigation-action:active",
+  ])
+  const actualStateSelectors = new Set(
+    stateRules.flatMap((rule) => rule.selector.split(',').map(normalizedCssSelector)),
+  )
+  if (
+    actualStateSelectors.size !== allowedStateSelectors.size ||
+    [...actualStateSelectors].some((selector) => !allowedStateSelectors.has(selector))
+  ) {
+    violations.push('SHELL_STATE_SELECTOR_TARGET_SET')
+  }
+
+  return [...new Set(violations)]
+}
+
 function selectorTargetsPersistentOwner(selector: string, owner: string): boolean {
   const normalizedSelector = selector
     .replaceAll(/:global\(([^)]*)\)/gu, '$1')
@@ -2298,16 +2616,9 @@ function exportNames(source: string): string[] {
 
 function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   const violations: string[] = []
-  const normalizedShell = snapshot.shellSource.replaceAll(/\s+/gu, ' ')
   const normalizedNaiveProvider = snapshot.naiveProviderSource.replaceAll(/\s+/gu, ' ')
-  const functionalChromeSelectors = [
-    '.pavp-admin-shell__header',
-    '.pavp-admin-shell__sidebar',
-    ".pavp-admin-shell__navigation-action[aria-current='page']",
-    '.pavp-admin-shell__rail-tooltip',
-    '.pavp-admin-shell__drawer-navigation',
-  ] as const
-  const materialProfiles = ['adaptive', 'reduced', 'solid'] as const
+  const compiledStateViolations = compiledShellStateViolations(snapshot.shellSource)
+  violations.push(...compiledStateViolations)
   const allowedShellMaterialVariables = new Set([
     '--ui-material-chrome-background',
     '--ui-material-overlay-background',
@@ -2381,13 +2692,14 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('ADMIN_ADAPTIVE_PIN')
   }
 
-  const completeMaterialSelectors = materialProfiles.every((material) =>
-    functionalChromeSelectors.every((selector) =>
-      normalizedShell.includes(`:global(html[data-material='${material}']) ${selector}`),
-    ),
-  )
   if (
-    !completeMaterialSelectors ||
+    compiledStateViolations.some((violation) =>
+      [
+        'MATERIAL_ADAPTIVE_TARGETS',
+        'MATERIAL_INERT_TARGETS',
+        'MATERIAL_REDUCED_SHADOW_TARGETS',
+      ].includes(violation),
+    ) ||
     !snapshot.shellSource.includes('background: var(--ui-material-chrome-background);') ||
     !snapshot.shellSource.includes('background: var(--ui-material-overlay-background);') ||
     shellMaterialVariables.some((variable) => !allowedShellMaterialVariables.has(variable)) ||
@@ -2408,18 +2720,8 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('MATERIAL_BACKDROP_CONTRACT')
   }
 
-  const motionNoneShellSelectors = [
-    '.pavp-admin-drawer-enter-active',
-    '.pavp-admin-drawer-leave-active',
-    '.pavp-admin-shell__sidebar',
-    '.pavp-admin-shell__action',
-    '.pavp-admin-shell__navigation-action',
-    '.pavp-admin-shell__navigation-action::before',
-  ] as const
   if (
-    motionNoneShellSelectors.some(
-      (selector) => !normalizedShell.includes(`:global(html[data-motion='none']) ${selector}`),
-    ) ||
+    compiledStateViolations.includes('MOTION_NONE_TARGETS') ||
     !normalizedNaiveProvider.includes("html[data-motion='none'] :where(") ||
     !normalizedNaiveProvider.includes('transition: none !important;') ||
     !normalizedNaiveProvider.includes('animation: none !important;')
@@ -2675,8 +2977,8 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'STATUS=COMPLETE',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_INFRASTRUCTURE=ACTIVE',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK=COMPLETE',
-    'CURRENT_BOUNDED_WORK=PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT',
-    'PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=PAVP_MOTION_GEOMETRY_STABILITY_REPAIR',
+    'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-001',
+    'PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=NONE',
     'ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE',
     'PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE',
     'PAVP_NAIVE_THEME_STATE_FUSION_REPAIR=COMPLETE',
@@ -2688,11 +2990,19 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'OWNER_APPEARANCE_WORKSPACE_ACCEPTANCE=ACCEPTED',
     'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE=REJECTED',
     'OWNER_SEVEN_BUILTIN_THEME_REPLACEMENT_ACCEPTANCE=ACCEPTED',
-    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE=ACCEPTED',
-    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE = ACCEPTED',
-    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE_IS_ACCEPTED',
-    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE=ACCEPTED',
-    'CURRENT_RELEASE_ACCEPTANCE=OWNER_ACCEPTED',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE = REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE_IS_REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'CURRENT_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+    'PAVP_RUNTIME_001_STATUS=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE',
+    'PAVP_RUNTIME_002_STATUS=OPEN',
+    'PAVP_RUNTIME_003_STATUS=OPEN',
+    'PAVP_RUNTIME_004_STATUS=OPEN',
     'PUBLICATION_AUTHORIZATION_FOR_REWORK=GRANTED_BY_OWNER',
     'PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER',
     'PREVIOUS_VISUAL_ACCEPTANCE=REVOKED',
@@ -2741,6 +3051,7 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PERSISTENT_OR_ROUTE_OWNER_ANIMATION_FILL_MODE_FORWARDS=PROHIBITED',
     'PERSISTENT_OR_ROUTE_OWNER_ANIMATION_FILL_MODE_BOTH=PROHIBITED',
     'REVERSIBLE_MOTION_GEOMETRY_NEGATIVE_PROBE_COUNT=12',
+    'REVERSIBLE_ADMIN_NAIVE_NEGATIVE_PROBE_COUNT=58',
     'EXISTING_CSS_MOTION_GEOMETRY_REPAIR_DOES_NOT_ACTIVATE_RUNTIME_MOTION',
     'PERSISTENT_SHELL_AND_ROUTE_GEOMETRY_IS_INVARIANT_ACROSS_FULL_REDUCED_NONE',
     'ROUTE_ENTRY_MOTION_IS_OPACITY_ONLY_AND_NONE_HAS_NO_ANIMATION_OR_TRANSITION',
@@ -2763,6 +3074,15 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE=PENDING',
     'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE = PENDING',
     'OWNER_CURATED_CUSTOM_THEME_CATALOG_ACCEPTANCE_IS_PENDING',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE=ACCEPTED',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE = ACCEPTED',
+    'OWNER_MOTION_GEOMETRY_STABILITY_ACCEPTANCE_IS_ACCEPTED',
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE=ACCEPTED',
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE = ACCEPTED',
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE_IS_ACCEPTED',
+    'CURRENT_RELEASE_ACCEPTANCE=OWNER_ACCEPTED',
+    'CURRENT_PRODUCT_EXPERIENCE_RELEASE_ACCEPTANCE=OWNER_ACCEPTED',
+    'PRODUCTION_RELEASE_ACCEPTANCE=OWNER_ACCEPTED',
   ] as const
 
   return requiredMarkers.some((marker) => !architectureSource.includes(marker)) ||
@@ -2874,6 +3194,14 @@ function modifiedSnapshot(
   change: Partial<MaterialGateSnapshot>,
 ): MaterialGateSnapshot {
   return { ...snapshot, ...change }
+}
+
+function replaceLastOccurrence(source: string, search: string, replacement: string): string {
+  const index = source.lastIndexOf(search)
+
+  return index < 0
+    ? source
+    : `${source.slice(0, index)}${replacement}${source.slice(index + search.length)}`
 }
 
 function motionGeometryViolations(snapshot: MaterialGateSnapshot): string[] {
@@ -3532,6 +3860,91 @@ function runArchitectureAdminConsoleNegativeProbes(
         shellSource: baseline.shellSource.replaceAll(
           "data-material='solid'",
           "data-material='adaptive'",
+        ),
+      },
+    ],
+    [
+      'scoped-grouped-partial-global-state-selector-restored',
+      'SHELL_COMPILED_ROOT_STATE_DECLARATION',
+      {
+        shellSource: baseline.shellSource.replace(
+          '</style>',
+          `:global(html[data-motion='reduced']) .pavp-admin-shell__sidebar,
+:global(html[data-motion='reduced']) .pavp-admin-shell__action {
+  transform: translateX(var(--ui-space-content-gap));
+}
+</style>`,
+        ),
+      },
+    ],
+    [
+      'compiled-root-only-reduced-motion-transform',
+      'SHELL_COMPILED_ROOT_STATE_DECLARATION',
+      {
+        shellSource: baseline.shellSource.replace(
+          /\n<\/style>\s*$/u,
+          "\nhtml[data-motion='reduced'] { transform: translateX(var(--ui-space-content-gap)); }\n</style>\n",
+        ),
+      },
+    ],
+    [
+      'compiled-root-only-none-transition',
+      'SHELL_COMPILED_ROOT_STATE_DECLARATION',
+      {
+        shellSource: baseline.shellSource.replace(
+          /\n<\/style>\s*$/u,
+          "\nhtml[data-motion='none'] { transition: transform var(--ui-motion-duration); }\n</style>\n",
+        ),
+      },
+    ],
+    [
+      'compiled-root-only-adaptive-backdrop',
+      'SHELL_COMPILED_ROOT_STATE_DECLARATION',
+      {
+        shellSource: baseline.shellSource.replace(
+          /\n<\/style>\s*$/u,
+          "\nhtml[data-material='adaptive'] { backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur)); }\n</style>\n",
+        ),
+      },
+    ],
+    [
+      'unscoped-state-selector-loses-shell-namespace',
+      'SHELL_STATE_SELECTOR_NAMESPACE',
+      {
+        shellSource: baseline.shellSource.replace(
+          "html[data-material='adaptive'] .pavp-admin-shell__header,",
+          "html[data-material='adaptive'] .probe-header,",
+        ),
+      },
+    ],
+    [
+      'adaptive-header-target-removed',
+      'MATERIAL_ADAPTIVE_TARGETS',
+      {
+        shellSource: baseline.shellSource.replace(
+          "html[data-material='adaptive'] .pavp-admin-shell__header,",
+          "html[data-material='probe-adaptive'] .pavp-admin-shell__header,",
+        ),
+      },
+    ],
+    [
+      'reduced-drawer-shadow-removal-target-removed',
+      'MATERIAL_REDUCED_SHADOW_TARGETS',
+      {
+        shellSource: replaceLastOccurrence(
+          baseline.shellSource,
+          "html[data-material='reduced'] .pavp-admin-shell__drawer-navigation {",
+          "html[data-material='probe-reduced'] .pavp-admin-shell__drawer-navigation {",
+        ),
+      },
+    ],
+    [
+      'motion-none-drawer-transition-target-removed',
+      'MOTION_NONE_TARGETS',
+      {
+        shellSource: baseline.shellSource.replace(
+          "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,",
+          "html[data-motion='probe-none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,",
         ),
       },
     ],

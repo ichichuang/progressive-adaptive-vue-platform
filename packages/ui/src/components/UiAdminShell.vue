@@ -630,36 +630,6 @@ watch(navigationOpen, async (isOpen) => {
   gap: var(--ui-space-content-gap);
 }
 
-:global(html[data-material='adaptive']) .pavp-admin-shell__header,
-:global(html[data-material='adaptive']) .pavp-admin-shell__sidebar,
-:global(html[data-material='adaptive']) .pavp-admin-shell__navigation-action[aria-current='page'],
-:global(html[data-material='adaptive']) .pavp-admin-shell__rail-tooltip,
-:global(html[data-material='adaptive']) .pavp-admin-shell__drawer-navigation {
-  -webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
-  backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
-}
-
-:global(html[data-material='reduced']) .pavp-admin-shell__header,
-:global(html[data-material='reduced']) .pavp-admin-shell__sidebar,
-:global(html[data-material='reduced']) .pavp-admin-shell__navigation-action[aria-current='page'],
-:global(html[data-material='reduced']) .pavp-admin-shell__rail-tooltip,
-:global(html[data-material='reduced']) .pavp-admin-shell__drawer-navigation,
-:global(html[data-material='solid']) .pavp-admin-shell__header,
-:global(html[data-material='solid']) .pavp-admin-shell__sidebar,
-:global(html[data-material='solid']) .pavp-admin-shell__navigation-action[aria-current='page'],
-:global(html[data-material='solid']) .pavp-admin-shell__rail-tooltip,
-:global(html[data-material='solid']) .pavp-admin-shell__drawer-navigation {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-}
-
-:global(html[data-material='reduced']) .pavp-admin-shell__header,
-:global(html[data-material='reduced']) .pavp-admin-shell__sidebar,
-:global(html[data-material='reduced']) .pavp-admin-shell__rail-tooltip,
-:global(html[data-material='reduced']) .pavp-admin-shell__drawer-navigation {
-  box-shadow: none;
-}
-
 .pavp-admin-drawer-enter-active,
 .pavp-admin-drawer-leave-active {
   transition-duration: var(--ui-motion-duration);
@@ -682,44 +652,6 @@ watch(navigationOpen, async (isOpen) => {
   }
 }
 
-:global(html[data-motion='reduced']) .pavp-admin-shell::before,
-:global(html[data-motion='none']) .pavp-admin-shell::before {
-  animation: none;
-}
-
-:global(html[data-motion='reduced']) .pavp-admin-drawer-enter-active,
-:global(html[data-motion='reduced']) .pavp-admin-drawer-leave-active,
-:global(html[data-motion='reduced']) .pavp-admin-shell__sidebar,
-:global(html[data-motion='reduced']) .pavp-admin-shell__action,
-:global(html[data-motion='reduced']) .pavp-admin-shell__navigation-action,
-:global(html[data-motion='reduced']) .pavp-admin-shell__navigation-action::before {
-  transition-duration: calc(var(--ui-motion-duration) / 2);
-}
-
-:global(html[data-motion='none']) .pavp-admin-drawer-enter-active,
-:global(html[data-motion='none']) .pavp-admin-drawer-leave-active,
-:global(html[data-motion='none']) .pavp-admin-shell__sidebar,
-:global(html[data-motion='none']) .pavp-admin-shell__action,
-:global(html[data-motion='none']) .pavp-admin-shell__navigation-action,
-:global(html[data-motion='none']) .pavp-admin-shell__navigation-action::before {
-  transition: none;
-}
-
-:global(html[data-motion='reduced']) .pavp-admin-shell__action:active,
-:global(html[data-motion='reduced']) .pavp-admin-shell__navigation-action:active {
-  transform: translateY(calc(var(--ui-space-content-gap) / 8));
-}
-
-:global(html[data-motion='reduced']) .pavp-admin-drawer-enter-from,
-:global(html[data-motion='reduced']) .pavp-admin-drawer-leave-to {
-  transform: translateX(calc(var(--ui-space-content-gap) * -1));
-}
-
-:global(html[data-motion='none']) .pavp-admin-shell__action:active,
-:global(html[data-motion='none']) .pavp-admin-shell__navigation-action:active {
-  transform: none;
-}
-
 @media (forced-colors: active) {
   .pavp-admin-shell::before {
     display: none;
@@ -739,5 +671,75 @@ watch(navigationOpen, async (isOpen) => {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
   }
+}
+</style>
+
+<style>
+html[data-material='adaptive'] .pavp-admin-shell__header,
+html[data-material='adaptive'] .pavp-admin-shell__sidebar,
+html[data-material='adaptive'] .pavp-admin-shell__navigation-action[aria-current='page'],
+html[data-material='adaptive'] .pavp-admin-shell__rail-tooltip,
+html[data-material='adaptive'] .pavp-admin-shell__drawer-navigation {
+  -webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
+  backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
+}
+
+html[data-material='reduced'] .pavp-admin-shell__header,
+html[data-material='reduced'] .pavp-admin-shell__sidebar,
+html[data-material='reduced'] .pavp-admin-shell__navigation-action[aria-current='page'],
+html[data-material='reduced'] .pavp-admin-shell__rail-tooltip,
+html[data-material='reduced'] .pavp-admin-shell__drawer-navigation,
+html[data-material='solid'] .pavp-admin-shell__header,
+html[data-material='solid'] .pavp-admin-shell__sidebar,
+html[data-material='solid'] .pavp-admin-shell__navigation-action[aria-current='page'],
+html[data-material='solid'] .pavp-admin-shell__rail-tooltip,
+html[data-material='solid'] .pavp-admin-shell__drawer-navigation {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+html[data-material='reduced'] .pavp-admin-shell__header,
+html[data-material='reduced'] .pavp-admin-shell__sidebar,
+html[data-material='reduced'] .pavp-admin-shell__rail-tooltip,
+html[data-material='reduced'] .pavp-admin-shell__drawer-navigation {
+  box-shadow: none;
+}
+
+html[data-motion='reduced'] .pavp-admin-shell::before,
+html[data-motion='none'] .pavp-admin-shell::before {
+  animation: none;
+}
+
+html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,
+html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active,
+html[data-motion='reduced'] .pavp-admin-shell__sidebar,
+html[data-motion='reduced'] .pavp-admin-shell__action,
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action,
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action::before {
+  transition-duration: calc(var(--ui-motion-duration) / 2);
+}
+
+html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,
+html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active,
+html[data-motion='none'] .pavp-admin-shell__sidebar,
+html[data-motion='none'] .pavp-admin-shell__action,
+html[data-motion='none'] .pavp-admin-shell__navigation-action,
+html[data-motion='none'] .pavp-admin-shell__navigation-action::before {
+  transition: none;
+}
+
+html[data-motion='reduced'] .pavp-admin-shell__action:active,
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active {
+  transform: translateY(calc(var(--ui-space-content-gap) / 8));
+}
+
+html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from,
+html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to {
+  transform: translateX(calc(var(--ui-space-content-gap) * -1));
+}
+
+html[data-motion='none'] .pavp-admin-shell__action:active,
+html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
+  transform: none;
 }
 </style>
