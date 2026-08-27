@@ -1,5 +1,3 @@
-import Color from 'colorjs.io'
-
 import { generatedThemeRegistry } from '../generated/theme-registry'
 import {
   customThemeDefinitionSchema,
@@ -8,6 +6,12 @@ import {
   type CustomThemeDefinition,
   type CustomThemeId,
 } from '../schema/complete-theme.schema'
+import {
+  calculateWcag21Contrast,
+  isInSrgbGamut,
+  parseCssColor,
+  type ParsedCssColor,
+} from '../schema/css-color'
 import type { ThemeReference } from '../schema/preference.schema'
 
 const themeColorModes = ['light', 'dark'] as const
@@ -154,9 +158,9 @@ function colorPlane(
   return definition.planes[colorMode][contrast]
 }
 
-function parsedColor(value: string): Color | null {
+function parsedColor(value: string): ParsedCssColor | null {
   try {
-    return new Color(value)
+    return parseCssColor(value)
   } catch {
     return null
   }
@@ -202,13 +206,13 @@ function validateCustomThemePlanes(
         )
         const requiredAlpha = alphaContract?.minimumAlpha ?? 1
 
-        if (color === null || !color.inGamut('srgb') || color.alpha !== requiredAlpha) {
+        if (color === null || !isInSrgbGamut(color) || color.alpha !== requiredAlpha) {
           evidence.push(
             validationEvidence(`planes.${planeName}.${roleId}`, definition.id, {
               plane: planeName,
               role: roleId,
               submittedValue: value,
-              ...(color === null ? {} : { actualAlpha: color.alpha }),
+              ...(typeof color?.alpha === 'number' ? { actualAlpha: color.alpha } : {}),
               requiredAlphaPolicy: `exact:${String(requiredAlpha)}`,
             }),
           )
@@ -234,7 +238,7 @@ function validateCustomThemePlanes(
           continue
         }
 
-        const actualRatio = foregroundColor.contrastWCAG21(backgroundColor)
+        const actualRatio = calculateWcag21Contrast(foregroundColor, backgroundColor)
         const requiredRatio = contrast === 'enhanced' ? pair.enhancedMinimum : pair.standardMinimum
 
         if (actualRatio < requiredRatio) {

@@ -98,6 +98,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
+const minimumInitialJavaScriptHeadroomBytes = 8 * 1024
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -868,6 +869,15 @@ if (initialJavaScriptBytes > projectConfig.bundleBudgets.initialJavaScriptGzipBy
   )
 }
 
+const initialJavaScriptHeadroomBytes =
+  projectConfig.bundleBudgets.initialJavaScriptGzipBytes - initialJavaScriptBytes
+
+if (initialJavaScriptHeadroomBytes < minimumInitialJavaScriptHeadroomBytes) {
+  throw new Error(
+    `Initial JavaScript headroom is ${String(initialJavaScriptHeadroomBytes)} gzip bytes; minimum is ${String(minimumInitialJavaScriptHeadroomBytes)}.`,
+  )
+}
+
 if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
   throw new Error(
     `Initial CSS is ${String(initialCssBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialCssGzipBytes)}.`,
@@ -880,7 +890,7 @@ const dynamicChunkKeys = new Set(
 
 if (
   dynamicChunkKeys.size !== expectedLazyRouteKeys.size ||
-  [...dynamicChunkKeys].some((key) => !expectedLazyRouteKeys.has(key))
+  [...dynamicChunkKeys].some((key) => !expectedLazyRouteKeys.has(key) || initialChunkKeys.has(key))
 ) {
   throw new Error(
     `Router lazy route closure drifted: expected ${String(expectedLazyRouteKeys.size)} exact routes, received ${String(dynamicChunkKeys.size)}.`,
@@ -911,5 +921,5 @@ if (lazyRouteFiles.size !== expectedLazyRouteKeys.size) {
 }
 
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), lazy route chunks ${String(dynamicChunkKeys.size)} (${String(dynamicChunkKeys.size - runtimeKernelBundleContract.final.lazyChunks)} Router delta)`,
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes headroom (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), lazy route chunks ${String(dynamicChunkKeys.size)} (${String(dynamicChunkKeys.size - runtimeKernelBundleContract.final.lazyChunks)} Router delta)`,
 )

@@ -1,6 +1,6 @@
-import Color from 'colorjs.io'
 import { z } from 'zod'
 
+import { isInSrgbGamut, parseCssColor } from './css-color'
 import { tokenReferenceSchema } from './token.schema'
 
 export const builtInThemeIds = [
@@ -92,9 +92,9 @@ function isSupportedAbsoluteCssColor(value: string): boolean {
   }
 
   try {
-    const color = new Color(value)
+    const color = parseCssColor(value)
 
-    return color.inGamut('srgb')
+    return isInSrgbGamut(color)
   } catch {
     return false
   }

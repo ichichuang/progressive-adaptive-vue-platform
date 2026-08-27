@@ -1,7 +1,7 @@
-import Color from 'colorjs.io'
 import { z } from 'zod'
 
 import { builtInThemeIdSchema, customThemeIdSchema } from './complete-theme.schema'
+import { parseCssColor } from './css-color'
 import { legacySeedThemeIdSchema } from './legacy-seed-theme.schema'
 
 export const colorModePreferenceValues = ['light', 'dark', 'system'] as const
@@ -26,7 +26,7 @@ const cssColorSchema = z
   .refine(
     (value) => {
       try {
-        new Color(value)
+        parseCssColor(value)
         return true
       } catch {
         return false

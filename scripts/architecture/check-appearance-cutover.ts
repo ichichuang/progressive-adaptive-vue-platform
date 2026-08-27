@@ -216,6 +216,108 @@ async function collectFiles(directory: string): Promise<string[]> {
   return files
 }
 
+function colorRuntimeEntryViolations(sources: ReadonlyMap<string, string>): readonly string[] {
+  const violations: string[] = []
+  const helperPath = 'packages/design-system/src/schema/css-color.ts'
+  const helperSource = sources.get(helperPath)
+
+  if (
+    helperSource === undefined ||
+    !helperSource.includes("from 'colorjs.io/fn'") ||
+    helperSource.includes("from 'colorjs.io'")
+  ) {
+    violations.push('css-color.ts must own the exact tree-shakeable Color.js public entry.')
+  }
+
+  for (const requiredSymbol of [
+    'ColorSpace',
+    'parse',
+    'inGamut',
+    'contrastWCAG21',
+    'sRGB',
+    'sRGB_Linear',
+    'HSL',
+    'HWB',
+    'Lab',
+    'LCH',
+    'OKLab',
+    'OKLCH',
+    'P3',
+    'A98RGB',
+    'ProPhoto',
+    'REC_2020',
+    'XYZ_D50',
+    'XYZ_D65',
+  ]) {
+    if (helperSource?.includes(requiredSymbol) !== true) {
+      violations.push(`css-color.ts must retain the admitted ${requiredSymbol} operation or space.`)
+    }
+  }
+
+  for (const [path, source] of sources) {
+    if (path !== helperPath && /from\s+['"]colorjs\.io(?:\/fn)?['"]/u.test(source)) {
+      violations.push(`${path}: runtime Color.js imports must remain owned by css-color.ts.`)
+    }
+  }
+
+  for (const [path, expectedImport] of [
+    ['packages/design-system/src/schema/appearance.schema.ts', "from './css-color'"],
+    ['packages/design-system/src/schema/complete-theme.schema.ts', "from './css-color'"],
+    ['packages/design-system/src/runtime/theme-registry.ts', "from '../schema/css-color'"],
+  ] as const) {
+    if (sources.get(path)?.includes(expectedImport) !== true) {
+      violations.push(`${path}: the private CSS Color operation boundary drifted.`)
+    }
+  }
+
+  return violations
+}
+
+async function validateColorRuntimeEntryOwnership(): Promise<readonly string[]> {
+  const sourceFiles = (
+    await Promise.all(
+      ['schema', 'runtime'].map((directory) =>
+        collectFiles(resolve(rootDirectory, 'packages/design-system/src', directory)),
+      ),
+    )
+  )
+    .flat()
+    .filter((path) => extname(path) === '.ts')
+  const sources = new Map<string, string>()
+
+  for (const path of sourceFiles) {
+    sources.set(relative(rootDirectory, path).split(sep).join('/'), await readFile(path, 'utf8'))
+  }
+
+  const violations = [...colorRuntimeEntryViolations(sources)]
+  const helperPath = 'packages/design-system/src/schema/css-color.ts'
+  const helperSource = sources.get(helperPath)
+  const themeRegistryPath = 'packages/design-system/src/runtime/theme-registry.ts'
+  const themeRegistrySource = sources.get(themeRegistryPath)
+
+  if (helperSource === undefined || themeRegistrySource === undefined) {
+    return [...violations, 'Color runtime ownership probe inputs are missing.']
+  }
+
+  const broadEntryProbe = new Map(sources)
+  broadEntryProbe.set(helperPath, helperSource.replace('colorjs.io/fn', 'colorjs.io'))
+  const competingOwnerProbe = new Map(sources)
+  competingOwnerProbe.set(
+    themeRegistryPath,
+    `${themeRegistrySource}\nimport Color from 'colorjs.io'\nvoid Color\n`,
+  )
+
+  if (colorRuntimeEntryViolations(broadEntryProbe).length === 0) {
+    violations.push('Color.js broad-entry reversible in-memory negative probe did not fail.')
+  }
+
+  if (colorRuntimeEntryViolations(competingOwnerProbe).length === 0) {
+    violations.push('Color.js competing-owner reversible in-memory negative probe did not fail.')
+  }
+
+  return violations
+}
+
 const explicitAppearanceAxisKeys = [
   'colorMode',
   'theme',
@@ -2258,6 +2360,7 @@ export async function validateAppearanceCutover(): Promise<readonly string[]> {
   const checks: readonly (() => readonly string[] | Promise<readonly string[]>)[] = [
     validateStableGeneratedOutputs,
     validatePublicRoot,
+    validateColorRuntimeEntryOwnership,
     validateFourteenBuiltInThemes,
     validateApplicationOrchestration,
     validatePackageFiveStaticAuthorities,
