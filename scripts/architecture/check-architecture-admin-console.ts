@@ -193,6 +193,10 @@ const expectedArchitectureAdminConsoleNegativeProbeCount = 58
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
+const expectedCurrentWorkNegativeProbeCount = 4
+const expectedCurrentBoundedWork = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
+const expectedCurrentBoundedWorkAuthority =
+  'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
 const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
@@ -3900,6 +3904,270 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   return violations
 }
 
+function currentWorkStatusViolations(architectureSource: string): string[] {
+  const violations: string[] = []
+  const canonicalStatusEnd = architectureSource.indexOf('\n---\n')
+  const canonicalStatusSource =
+    canonicalStatusEnd === -1 ? architectureSource : architectureSource.slice(0, canonicalStatusEnd)
+  const canonicalWork = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/mu
+    .exec(canonicalStatusSource)?.[1]
+    ?.trim()
+  const canonicalAuthority = /^CURRENT_BOUNDED_WORK_AUTHORITY[ \t]*=[ \t]*([^\r\n]+)$/mu
+    .exec(canonicalStatusSource)?.[1]
+    ?.trim()
+
+  if (canonicalWork === undefined || canonicalAuthority === undefined) {
+    violations.push('CURRENT_WORK_ACTIVE_MARKER_REQUIRED')
+  } else if (
+    !['NONE', expectedCurrentBoundedWork].includes(canonicalWork) ||
+    !['NONE', expectedCurrentBoundedWorkAuthority].includes(canonicalAuthority)
+  ) {
+    violations.push('CURRENT_WORK_UNAUTHORIZED_ID')
+  } else if (
+    canonicalWork !== expectedCurrentBoundedWork ||
+    canonicalAuthority !== expectedCurrentBoundedWorkAuthority
+  ) {
+    violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+  }
+
+  const amendmentHeading = `### 1.2B.0G \`${expectedCurrentBoundedWork}\``
+  const amendmentStart = architectureSource.indexOf(amendmentHeading)
+  const amendmentEnd =
+    amendmentStart === -1
+      ? -1
+      : architectureSource.indexOf('\n### ', amendmentStart + amendmentHeading.length)
+  const amendmentSource =
+    amendmentStart === -1
+      ? ''
+      : architectureSource.slice(
+          amendmentStart,
+          amendmentEnd === -1 ? architectureSource.length : amendmentEnd,
+        )
+  const requiredAmendmentMarkers = [
+    `AMENDMENT=${expectedCurrentBoundedWorkAuthority}`,
+    'AMENDMENT_STATUS=FROZEN',
+    `WORK_PACKAGE=${expectedCurrentBoundedWork}`,
+    'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
+    `CURRENT_BOUNDED_WORK_AUTHORITY=${expectedCurrentBoundedWorkAuthority}`,
+    `CURRENT_BOUNDED_WORK=${expectedCurrentBoundedWork}`,
+  ] as const
+
+  if (
+    amendmentSource.length === 0 ||
+    requiredAmendmentMarkers.some((marker) => !amendmentSource.includes(marker))
+  ) {
+    violations.push('CURRENT_WORK_FROZEN_RECORD_REQUIRED')
+  }
+
+  const architectureLines = architectureSource.split(/\r?\n/u)
+  const activeMirrorIndexes = architectureLines.flatMap((line, index) =>
+    /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS[ \t]*=/u.test(line) ? [index] : [],
+  )
+
+  if (activeMirrorIndexes.length === 0) {
+    violations.push('CURRENT_WORK_ACTIVE_MARKER_REQUIRED')
+  }
+
+  for (const mirrorIndex of activeMirrorIndexes) {
+    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 12)
+    const workValues = mirrorLines.flatMap((line) => {
+      const match = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
+      return match?.[1] === undefined ? [] : [match[1].trim()]
+    })
+    const authorityValues = mirrorLines.flatMap((line) => {
+      const match = /^CURRENT_BOUNDED_WORK_AUTHORITY[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
+      return match?.[1] === undefined ? [] : [match[1].trim()]
+    })
+
+    if (
+      workValues.some((value) => !['NONE', expectedCurrentBoundedWork].includes(value)) ||
+      authorityValues.some(
+        (value) => !['NONE', expectedCurrentBoundedWorkAuthority].includes(value),
+      )
+    ) {
+      violations.push('CURRENT_WORK_UNAUTHORIZED_ID')
+    } else if (
+      workValues.length !== 1 ||
+      authorityValues.length !== 1 ||
+      workValues[0] !== expectedCurrentBoundedWork ||
+      authorityValues[0] !== expectedCurrentBoundedWorkAuthority
+    ) {
+      violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+    }
+  }
+
+  const completedHistoricalRanges: readonly (readonly [number, number])[] = (() => {
+    const ranges: [number, number][] = []
+    let fenceStart: number | undefined
+
+    for (const [lineIndex, line] of architectureLines.entries()) {
+      if (line === '```text') {
+        fenceStart = lineIndex
+      } else if (line === '```' && fenceStart !== undefined) {
+        const fencedSource = architectureLines.slice(fenceStart + 1, lineIndex).join('\n')
+        if (/^STATUS=COMPLETE$/mu.test(fencedSource)) {
+          ranges.push([fenceStart, lineIndex])
+        }
+        fenceStart = undefined
+      }
+    }
+
+    return ranges
+  })()
+  const belongsToCompletedHistoricalRecord = (lineIndex: number): boolean =>
+    completedHistoricalRanges.some(([start, end]) => lineIndex > start && lineIndex < end)
+  const allCurrentWorkMarkers = architectureLines.flatMap((line, lineIndex) => {
+    const match = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
+    return match?.[1] === undefined ? [] : [{ lineIndex, value: match[1].trim() }]
+  })
+  const allCurrentWorkAuthorityMarkers = architectureLines.flatMap((line, lineIndex) => {
+    const match = /^CURRENT_BOUNDED_WORK_AUTHORITY[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
+    return match?.[1] === undefined ? [] : [{ lineIndex, value: match[1].trim() }]
+  })
+
+  const hasUnauthorizedCurrentWorkValue =
+    allCurrentWorkMarkers.some(
+      ({ value }) => !['NONE', expectedCurrentBoundedWork].includes(value),
+    ) ||
+    allCurrentWorkAuthorityMarkers.some(
+      ({ value }) => !['NONE', expectedCurrentBoundedWorkAuthority].includes(value),
+    )
+
+  if (hasUnauthorizedCurrentWorkValue) {
+    violations.push('CURRENT_WORK_UNAUTHORIZED_ID')
+  }
+  if (
+    !hasUnauthorizedCurrentWorkValue &&
+    (allCurrentWorkMarkers.filter(({ value }) => value === expectedCurrentBoundedWork).length !==
+      activeMirrorIndexes.length ||
+      allCurrentWorkAuthorityMarkers.filter(
+        ({ value }) => value === expectedCurrentBoundedWorkAuthority,
+      ).length !== activeMirrorIndexes.length ||
+      allCurrentWorkMarkers.some(
+        ({ lineIndex, value }) =>
+          value === 'NONE' && !belongsToCompletedHistoricalRecord(lineIndex),
+      ) ||
+      allCurrentWorkAuthorityMarkers.some(
+        ({ lineIndex, value }) =>
+          value === 'NONE' && !belongsToCompletedHistoricalRecord(lineIndex),
+      ))
+  ) {
+    violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+  }
+
+  const statusValues = [
+    ...architectureSource.matchAll(
+      /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS[ \t]*=[ \t]*([^\r\n]+)$/gmu,
+    ),
+  ].map((match) => match[1]?.trim())
+  const implementationValues = [
+    ...architectureSource.matchAll(
+      /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION[ \t]*=[ \t]*([^\r\n]+)$/gmu,
+    ),
+  ].map((match) => match[1]?.trim())
+  const verificationValues = [
+    ...architectureSource.matchAll(
+      /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION[ \t]*=[ \t]*([^\r\n]+)$/gmu,
+    ),
+  ].map((match) => match[1]?.trim())
+  const admissionValues = [
+    ...architectureSource.matchAll(
+      /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT[ \t]*=[ \t]*([^\r\n]+)$/gmu,
+    ),
+  ].map((match) => match[1]?.trim())
+  const hasFalseImplementationClaim =
+    statusValues.length !== activeMirrorIndexes.length ||
+    statusValues.some((value) => value !== 'OPEN') ||
+    implementationValues.length !== activeMirrorIndexes.length ||
+    implementationValues.some((value) => value !== 'NOT_STARTED') ||
+    verificationValues.length !== activeMirrorIndexes.length ||
+    verificationValues.some((value) => value !== 'NOT_RUN') ||
+    admissionValues.length === 0 ||
+    admissionValues.some((value) => value !== 'FROZEN') ||
+    /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT[ \t]*=/mu.test(architectureSource) ||
+    /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_(?:IMPLEMENTATION_COMMIT|COMMIT|PUBLICATION_STATUS|RELEASE_STATUS|OWNER_ACCEPTANCE|ACCEPTANCE)[ \t]*=/mu.test(
+      architectureSource,
+    ) ||
+    /^(?:REPOSITORY_IMPLEMENTATION|STATIC_VERIFICATION|IMPLEMENTATION_COMMIT|PUBLICATION_STATUS|RELEASE_STATUS|OWNER_ACCEPTANCE)[ \t]*=/mu.test(
+      amendmentSource,
+    ) ||
+    /^SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT[ \t]*=[ \t]*(?!PROHIBITED[ \t]*$).+$/mu.test(
+      amendmentSource,
+    ) ||
+    /^PRODUCTION_RELEASE_ACCEPTANCE[ \t]*=[ \t]*(?!REQUIRED_EXTERNAL(?:_|[ \t]*$)).+$/mu.test(
+      amendmentSource,
+    )
+
+  if (hasFalseImplementationClaim) {
+    violations.push('CURRENT_WORK_IMPLEMENTATION_FALSE_CLAIM')
+  }
+
+  if (
+    !architectureSource.includes(
+      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
+    ) ||
+    !architectureSource.includes('PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN') ||
+    !architectureSource.includes(
+      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED',
+    ) ||
+    !architectureSource.includes(
+      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_NOT_RUN',
+    ) ||
+    !architectureSource.includes(`CURRENT_BOUNDED_WORK_IS_${expectedCurrentBoundedWork}`) ||
+    /^CURRENT_BOUNDED_WORK_IS_NONE$/mu.test(architectureSource)
+  ) {
+    violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+  }
+
+  return [...new Set(violations)]
+}
+
+function runCurrentWorkNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const currentWorkMarker = `CURRENT_BOUNDED_WORK=${expectedCurrentBoundedWork}`
+  const probes: readonly [string, string, string][] = [
+    [
+      'current-work-restored-to-none',
+      'CURRENT_WORK_MIRROR_CONFLICT',
+      architectureSource.replace(currentWorkMarker, 'CURRENT_BOUNDED_WORK=NONE'),
+    ],
+    [
+      'current-work-unauthorized-id',
+      'CURRENT_WORK_UNAUTHORIZED_ID',
+      architectureSource.replace(currentWorkMarker, 'CURRENT_BOUNDED_WORK=PAVP_UNAUTHORIZED_WORK'),
+    ],
+    [
+      'current-work-conflicting-mirror',
+      'CURRENT_WORK_MIRROR_CONFLICT',
+      replaceLastOccurrence(architectureSource, currentWorkMarker, 'CURRENT_BOUNDED_WORK=NONE'),
+    ],
+    [
+      'current-work-false-implementation-completion',
+      'CURRENT_WORK_IMPLEMENTATION_FALSE_CLAIM',
+      architectureSource.replace(
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=COMPLETE',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          mutatedSource !== architectureSource &&
+          failureCodes.length === 1 &&
+          failureCodes[0] === expectedFailureCode,
+      })
+    }),
+  )
+}
+
 function validateProductExperienceReworkStatus(architectureSource: string): string[] {
   const requiredMarkers = [
     'WORK_PACKAGE=PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK',
@@ -3919,10 +4187,18 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'DEPENDENCY_CHANGE=NONE',
     'LOCKFILE_CHANGE=NONE',
     'VISIBLE_BEHAVIOR_CHANGE=NONE',
-    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
-    'CURRENT_BOUNDED_WORK=NONE',
-    'CURRENT_BOUNDED_WORK = NONE',
-    'CURRENT_BOUNDED_WORK_IS_NONE',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN',
+    'CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT',
+    'CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_NOT_RUN',
+    'CURRENT_BOUNDED_WORK_IS_PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
     'COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only',
     'REPOSITORY_IMPLEMENTATION=COMPLETE',
     'STATIC_VERIFICATION=PASS',
@@ -4106,16 +4382,14 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PRODUCTION_RELEASE_ACCEPTANCE=OWNER_ACCEPTED',
   ] as const
 
-  return requiredMarkers.some((marker) => !architectureSource.includes(marker)) ||
+  const productExperienceStatusDrifted =
+    requiredMarkers.some((marker) => !architectureSource.includes(marker)) ||
     staleCurrentAcceptanceMarkers.some((marker) => architectureSource.includes(marker)) ||
     [
       ...architectureSource.matchAll(
         /^IMPLEMENTATION_COMMIT=ac66b3a698a5c94b1928a38de7068e8238689a27$/gmu,
       ),
     ].length !== 1 ||
-    /^CURRENT_BOUNDED_WORK[ \t]*=(?![ \t]*NONE[ \t]*$).+$/mu.test(architectureSource) ||
-    /^CURRENT_BOUNDED_WORK_AUTHORITY[ \t]*=(?![ \t]*NONE[ \t]*$).+$/mu.test(architectureSource) ||
-    /^CURRENT_BOUNDED_WORK_IS_(?!NONE$).+$/mu.test(architectureSource) ||
     /^PAVP_RUNTIME_002_STATUS=(?:ACCEPTED|IMPLEMENTED_PENDING_OWNER_ACCEPTANCE|PENDING_OWNER_ACCEPTANCE)$/mu.test(
       architectureSource,
     ) ||
@@ -4126,8 +4400,13 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     /PAVP_ARCHITECTURE_ADMIN_CONSOLE_OWNER_(?:RENDERED|VISUAL)_REVIEW=ACCEPTED/u.test(
       architectureSource,
     )
-    ? ['Architecture Admin Console Product Experience Rework status drifted.']
-    : []
+
+  return [
+    ...(productExperienceStatusDrifted
+      ? ['Architecture Admin Console Product Experience Rework status drifted.']
+      : []),
+    ...currentWorkStatusViolations(architectureSource),
+  ]
 }
 
 function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
@@ -6371,6 +6650,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   const motionGeometryNegativeProbeResults = runMotionGeometryNegativeProbes(baseline)
   const runtime002NegativeProbeResults = runRuntime002NegativeProbes(baseline)
   const runtime005NegativeProbeResults = runRuntime005NegativeProbes(baseline)
+  const currentWorkNegativeProbeResults = runCurrentWorkNegativeProbes(architectureSource)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
     violations.push(
@@ -6390,6 +6670,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   if (runtime005NegativeProbeResults.length !== expectedRuntime005NegativeProbeCount) {
     violations.push(
       `PAVP-RUNTIME-005 negative-probe count drifted: expected ${String(expectedRuntime005NegativeProbeCount)}, received ${String(runtime005NegativeProbeResults.length)}.`,
+    )
+  }
+  if (currentWorkNegativeProbeResults.length !== expectedCurrentWorkNegativeProbeCount) {
+    violations.push(
+      `Current-work negative-probe count drifted: expected ${String(expectedCurrentWorkNegativeProbeCount)}, received ${String(currentWorkNegativeProbeResults.length)}.`,
     )
   }
 
@@ -6438,6 +6723,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of currentWorkNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory current-work negative probe did not fail.`,
+      )
+    }
+  }
 
   return [...new Set(violations)]
 }
@@ -6450,6 +6742,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedCurrentWorkNegativeProbeCount)}/${String(expectedCurrentWorkNegativeProbeCount)} current-work negative probes)`,
   )
 }

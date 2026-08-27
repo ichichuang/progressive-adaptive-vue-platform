@@ -84,9 +84,13 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_001_OWNER_RUNTIME_ACCEPTANCE=PASS
 PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
@@ -336,9 +340,13 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_001_OWNER_RUNTIME_ACCEPTANCE=PASS
 PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
@@ -388,8 +396,12 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=NONE
 ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE
 PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
@@ -432,7 +444,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布，当前没有 Bounded Work；Owner 外部观察已证明此前 revision 存在 Radio Card 固定高度溢出、条件式选中徽标布局位移、Vendor/PAVP 双层边框与过大预览色域，corrected revision 已发布但其 Owner Runtime 与 Visual Review 尚未执行。`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；当前唯一 Bounded Work 是 `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT`，其状态为 `OPEN / NOT_STARTED / NOT_RUN`。Owner 外部观察已证明此前 revision 存在 Radio Card 固定高度溢出、条件式选中徽标布局位移、Vendor/PAVP 双层边框与过大预览色域，corrected revision 已发布但其 Owner Runtime 与 Visual Review 尚未执行。`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -844,6 +856,186 @@ capabilityStatus=ACTIVE
 
 该组件只在 `packages/ui` 内部复用已准入的 `NRadioGroup` 与 `NRadioButton`；Naive 的 Group Name、Radio Input、Selected 与 Focus 语义由包装层封装，应用页不接触 Vendor Import、Vendor Class 或 Vendor Type。Theme Option Value 只作为 Map Key 返回 Canonical `ThemeReference`，禁止拆分字符串重建身份。页面继续保留 `section`、`header`、`nav`、`aside`、Heading 与 Description 等原生语义结构；“替换原生标签”的实施边界只针对页面直接书写的交互控件。
 
+### 1.2B.0G `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT`
+
+```text
+AMENDMENT=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+AMENDMENT_KIND=ARCHITECTURE_ONLY_BOUNDED_PUBLIC_ROLE_CONTRACT_RECONCILIATION
+AMENDMENT_STATUS=FROZEN
+NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md
+SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED
+SOURCE_IMPLEMENTATION_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ONLY_UNDER_THIS_FROZEN_CONTRACT
+ACTIVATION_EFFECT=CANONICAL_WORK_PACKAGE_ADMISSION_ONLY
+WORK_PACKAGE=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
+PARENT_WORK_PACKAGE=PAVP_ARCHITECTURE_ADMIN_CONSOLE_PRODUCT_EXPERIENCE_REWORK
+WORK_PACKAGE_KIND=BOUNDED_PUBLIC_ROLE_SPLIT_AND_BUILT_IN_THEME_COLOR_HARMONY_REFINEMENT
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
+OWNER_DEMAND=CONFIRMED
+OWNER_AMENDMENT_AUTHORIZATION=CONFIRMED
+OWNER_SOURCE_IMPLEMENTATION_AUTHORIZATION=NONE_IN_THIS_ARCHITECTURE_GOVERNANCE_TASK
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
+ROLE_SEPARATION=ACTION_FILL_ON_ACTION_CONTENT_CONTROL_FOREGROUND
+ACTION_FILL_ROLE_ID=color.action.primary
+ACTION_FILL_RESPONSIBILITY=filled primary-action backgrounds only
+ACTION_FILL_CSS_VARIABLE=--ui-color-action-primary
+ACTION_FILL_UNOCSS_CLASS=bg-action-primary
+ACTION_FILL_UNOCSS_PROPERTY=background-color
+ACTION_CONTENT_ROLE_ID=color.text.on-action
+ACTION_CONTENT_RESPONSIBILITY=text and icons on color.action.primary
+CONTROL_FOREGROUND_ROLE_ID=color.control.primary
+CONTROL_FOREGROUND_RESPONSIBILITY=primary control and accent foreground on page and panel surfaces
+CONTROL_FOREGROUND_MUST_NOT_BE_FILLED_ACTION_BACKGROUND=YES
+ACTION_FILL_MUST_NOT_BE_CONTROL_PRIMARY_CONTRAST_FOREGROUND=YES
+ACTION_CONTENT_NAMED_CONTRAST_ID=action-content-on-primary
+ACTION_CONTENT_NAMED_CONTRAST_FOREGROUND=color.text.on-action
+ACTION_CONTENT_NAMED_CONTRAST_BACKGROUND=color.action.primary
+ACTION_CONTENT_NAMED_CONTRAST_KIND=normal-text
+STANDARD_ACTION_PRIMARY_MAXIMUM_OKLCH_LIGHTNESS=0.50
+STANDARD_TEXT_ON_ACTION_MINIMUM_OKLCH_LIGHTNESS=0.94
+ENHANCED_ACTION_PRIMARY_MAXIMUM_OKLCH_LIGHTNESS=0.38
+ENHANCED_TEXT_ON_ACTION_MINIMUM_OKLCH_LIGHTNESS=0.985
+ENHANCED_ACTION_PRIMARY_LIGHTNESS_RELATION=STRICTLY_LOWER_THAN_STANDARD
+ENHANCED_TEXT_ON_ACTION_LIGHTNESS_RELATION=GREATER_THAN_OR_EQUAL_TO_STANDARD
+STANDARD_ACTION_CONTENT_NAMED_CONTRAST_MINIMUM=4.5
+ENHANCED_ACTION_CONTENT_NAMED_CONTRAST_MINIMUM=7
+CONTROL_PRIMARY_ON_PAGE_NAMED_CONTRAST_ID=control-primary-on-page
+CONTROL_PRIMARY_ON_PAGE_FOREGROUND=color.control.primary
+CONTROL_PRIMARY_ON_PAGE_BACKGROUND=color.surface.page
+CONTROL_PRIMARY_ON_PAGE_KIND=non-text
+CONTROL_PRIMARY_ON_PAGE_STANDARD_MINIMUM=3
+CONTROL_PRIMARY_ON_PAGE_ENHANCED_MINIMUM=3
+CONTROL_PRIMARY_ON_PANEL_NAMED_CONTRAST_ID=control-primary-on-panel
+CONTROL_PRIMARY_ON_PANEL_FOREGROUND=color.control.primary
+CONTROL_PRIMARY_ON_PANEL_BACKGROUND=color.surface.panel
+CONTROL_PRIMARY_ON_PANEL_KIND=non-text
+CONTROL_PRIMARY_ON_PANEL_STANDARD_MINIMUM=3
+CONTROL_PRIMARY_ON_PANEL_ENHANCED_MINIMUM=3
+DARK_CONTROL_PRIMARY_MINIMUM_CONTRAST_ON_PAGE=3
+DARK_CONTROL_PRIMARY_MINIMUM_CONTRAST_ON_PANEL=3
+DARK_CONTROL_PRIMARY_ACTION_FILL_LIGHTNESS_CAP_APPLICABILITY=NONE
+OPPOSITE_ROLE_FAMILY_SINGLE_VALUE_REQUIREMENT=NONE
+ACTION_PRIMARY_HUE_IDENTITY=PRESERVE_EACH_THEME_EXISTING_ACTION_HUE_FAMILY
+TEXT_ON_ACTION_HUE_IDENTITY=PRESERVE_EACH_THEME_EXISTING_TEXT_HUE_FAMILY
+TARGET_VALUE_AUTHORING=MANUAL_EXPLICIT_ABSOLUTE_OKLCH_PER_THEME
+TARGET_VALUE_GAMUT=SRGB_ONLY
+AUTOMATIC_PALETTE_DERIVATION=PROHIBITED
+AUTOMATIC_CONTRAST_CORRECTION=PROHIBITED
+GAMUT_REMAP=PROHIBITED
+LIGHT_ACTION_PRIMARY_CHANGE=NONE
+LIGHT_TEXT_ON_ACTION_CHANGE=NONE
+LIGHT_CONTROL_PRIMARY_VALUE_RULE=MAY_EQUAL_ACTION_PRIMARY_WHEN_ALL_CONTRACTS_PASS
+LIGHT_ROLE_IDENTITY_INDEPENDENCE=REQUIRED_EVEN_WHEN_VALUES_ARE_EQUAL
+ARTIFICIAL_LIGHT_ROLE_VALUE_DIFFERENCE=PROHIBITED
+PUBLIC_ROLE_REGISTRY_CHANGE=REQUIRED_ONLY_IN_FUTURE_ATOMIC_IMPLEMENTATION
+NAMED_CONTRAST_REGISTRY_CHANGE=EXACT_TWO_FOREGROUND_ENDPOINT_REWIRES_ONLY_IN_FUTURE_ATOMIC_IMPLEMENTATION
+NAMED_CONTRAST_RECORD_ID_OR_THRESHOLD_CHANGE=NONE
+ALPHA_REGISTRY_CHANGE=NONE
+THEME_ID_ORDER_DEFAULT_OR_LABEL_CHANGE=NONE
+PREFERENCE_FIRST_PAINT_STORAGE_OR_PROVIDER_CHANGE=NONE_IN_THIS_ARCHITECTURE_GOVERNANCE_TASK
+DEPENDENCY_OR_LOCKFILE_CHANGE=NONE
+MANIFEST_SCHEMA_VERSION_CHANGE=NONE
+MANIFEST_GZIP_HARD_LIMIT_CHANGE=NONE
+MANIFEST_EXACT_GZIP_BASELINE_UPDATE=REQUIRED_FROM_FUTURE_FINAL_DETERMINISTIC_GENERATED_PAYLOAD
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_EXTERNAL_FOR_AFFECTED_DARK_THEME_VISUAL_AND_ACTION_CONTENT_PATHS
+```
+
+```text
+CONTROL_PRIMARY_PUBLIC_ROLE_ID=color.control.primary
+CONTROL_PRIMARY_PUBLIC_ROLE_TOKEN_TYPE=color
+CONTROL_PRIMARY_PUBLIC_ROLE_CATEGORY=color
+CONTROL_PRIMARY_PUBLIC_ROLE_VISIBILITY=public
+CONTROL_PRIMARY_PUBLIC_ROLE_ADMISSION_PHASE=1
+CONTROL_PRIMARY_PUBLIC_ROLE_CSS_VARIABLE=--ui-color-control-primary
+CONTROL_PRIMARY_PUBLIC_ROLE_THEME_PLANE_APPLICABILITY=target-required-after-atomic-cutover
+CONTROL_PRIMARY_PUBLIC_ROLE_CONTRAST_ENDPOINT_ID=color.control.primary
+CONTROL_PRIMARY_PUBLIC_ROLE_ALPHA_CONTRACT_ID=null
+CONTROL_PRIMARY_PUBLIC_ROLE_UNOCSS_GENERATOR_KIND=exact-rule
+CONTROL_PRIMARY_PUBLIC_ROLE_UNOCSS_FAMILY=color
+CONTROL_PRIMARY_PUBLIC_ROLE_UNOCSS_KEY=control-primary
+CONTROL_PRIMARY_PUBLIC_ROLE_UNOCSS_CLASS=text-control-primary
+CONTROL_PRIMARY_PUBLIC_ROLE_UNOCSS_ALLOWED_PROPERTY=color
+CURRENT_TOKEN_RECORD_COUNT=145
+CURRENT_PUBLIC_ROLE_COUNT=36
+CURRENT_PUBLIC_COLOR_ROLE_COUNT=9
+CURRENT_UNOCSS_MAPPING_COUNT=36
+CURRENT_NAMED_CONTRAST_RECORD_COUNT=14
+CURRENT_ALPHA_RECORD_COUNT=1
+CURRENT_DENSITY_RECORD_COUNT=3
+CURRENT_BUILT_IN_THEME_COUNT=14
+CURRENT_FIRST_PAINT_RECORD_COUNT=1
+CURRENT_THEME_PLANE_COUNT=56
+CURRENT_PUBLIC_THEME_COLOR_CELL_COUNT=504
+CURRENT_COMPLETE_THEME_SCHEMA_VERSION=3
+CURRENT_COMPLETE_THEME_ROLE_CONTRACT_VERSION=1
+CURRENT_MANIFEST_SCHEMA_VERSION=9
+CURRENT_MANIFEST_RECORD_COUNT=250
+CURRENT_MANIFEST_BASELINE_RECORD_COUNT=181
+CURRENT_MANIFEST_EXPECTED_RECORD_COUNT_DELTA=69
+TARGET_TOKEN_RECORD_COUNT=145
+TARGET_PUBLIC_ROLE_COUNT=37
+TARGET_PUBLIC_COLOR_ROLE_COUNT=10
+TARGET_UNOCSS_MAPPING_COUNT=37
+TARGET_NAMED_CONTRAST_RECORD_COUNT=14
+TARGET_ALPHA_RECORD_COUNT=1
+TARGET_DENSITY_RECORD_COUNT=3
+TARGET_BUILT_IN_THEME_COUNT=14
+TARGET_FIRST_PAINT_RECORD_COUNT=1
+TARGET_THEME_PLANE_COUNT=56
+TARGET_PUBLIC_THEME_COLOR_CELL_COUNT=560
+TARGET_COMPLETE_THEME_SCHEMA_VERSION=3
+TARGET_COMPLETE_THEME_ROLE_CONTRACT_VERSION=2
+TARGET_MANIFEST_SCHEMA_VERSION=9
+TARGET_MANIFEST_RECORD_COUNT=252
+TARGET_MANIFEST_BASELINE_RECORD_COUNT=181
+TARGET_MANIFEST_EXPECTED_RECORD_COUNT_DELTA=71
+TARGET_DEFAULT_THEME=built-in:iris
+TARGET_FIRST_PAINT_SAFE_THEME=built-in:iris
+TARGET_VERSION_2_THEME_PLANE_ROLE_ORDER=color.action.primary,color.control.primary,color.border.default,color.focus.ring,color.scrim.viewport,color.surface.page,color.surface.panel,color.text.on-action,color.text.primary,color.text.secondary
+VERSION_2_BUILT_IN_THEME_MIGRATION=ATOMIC_ALL_FOURTEEN
+VERSION_2_THEME_PLANE_MIGRATION=ATOMIC_ALL_FIFTY_SIX
+PARTIAL_VERSION_2_THEME=INVALID
+TARGET_ADDED_CONTROL_PRIMARY_CELL_COUNT=56
+TARGET_DARK_ACTION_PAIR_REFINED_CELL_COUNT=56
+UNCHANGED_PRE_EXISTING_PUBLIC_THEME_COLOR_CELL_COUNT=448
+LEGACY_CUSTOM_THEME_ROLE_CONTRACT_VERSION=1
+LEGACY_CUSTOM_THEME_COMPATIBILITY_OWNER=existing Design-System-owned compatibility boundary
+LEGACY_CUSTOM_THEME_COMPATIBILITY_PROJECTION=color.control.primary equals legacy color.action.primary
+LEGACY_CUSTOM_THEME_COMPATIBILITY_MODE=IN_MEMORY_READ_ONLY
+LEGACY_CUSTOM_THEME_STORAGE_REWRITE=PROHIBITED
+LEGACY_CUSTOM_THEME_REGISTRY_CLEANUP=PROHIBITED
+LEGACY_CUSTOM_THEME_DATA_DELETION=PROHIBITED
+LEGACY_CUSTOM_THEME_NEW_STORAGE_KEY=NONE
+LEGACY_CUSTOM_THEME_NEW_PERSISTENCE_ENVELOPE=NONE
+LEGACY_CUSTOM_THEME_PAGE_OWNED_MIGRATION=PROHIBITED
+LEGACY_CUSTOM_THEME_BUILT_IN_DARK_FILL_HARMONY_CLAIM=PROHIBITED
+NEW_OR_EXPORTED_CANONICAL_CUSTOM_THEME_ROLE_CONTRACT_VERSION=2
+NEW_OR_EXPORTED_CANONICAL_CUSTOM_THEME_CONTROL_PRIMARY=EXPLICIT_REQUIRED
+ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE; PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE; exact fourteen-theme role-contract version 1 source set remains the implementation truth; generated Theme Bank remains drift-free; proven single-role contrast conflict is reconciled by the frozen Action Fill, On-action Content and Control Foreground separation; source implementation is not started
+ALLOWED_FUTURE_ATOMIC_IMPLEMENTATION=update only the existing Architecture, Public Role Registry, Complete Theme Schema and validator, Complete Theme build owner, exact fourteen Complete Theme sources, existing Design System build and format owners, existing runtime and Custom Theme compatibility boundary, existing generated Design System outputs, existing browser-safe Appearance and Design System projections, private Naive theme adapter, current PAVP semantic aliases that distinguish filled action from control foreground, /appearance only where required to expose the new public role without redesign, and existing Appearance, Design System and Admin Console owning checkers
+PROHIBITED_IN_THIS_ARCHITECTURE_GOVERNANCE_TASK=Theme source changes; Design System source changes; generated artifact changes; application, UI, runtime or page source changes; dependency or lockfile changes; source probes; source implementation; runtime verification; visual acceptance; release
+PROHIBITED_IN_FUTURE_ATOMIC_IMPLEMENTATION=dependency or lockfile changes; Router changes; Runtime Kernel changes; Storage changes; Provider changes; new public component; new styled vendor; page redesign; unrelated product-page changes; second Theme authority; second Focus authority; automatic palette derivation; implicit inheritance; automatic contrast correction; gamut remap; tests; browser operation; screenshots; traces or evidence artifacts
+OUTPUT_AFTER_FUTURE_ATOMIC_IMPLEMENTATION=one version-2 ten-role Complete Theme contract; one new public Control Foreground role; exact two existing control contrast foreground endpoint rewires; exact fifty-six copied control values; exact fifty-six refined Dark Action Fill and On-action Content cells; unchanged Light visual values except the copied role; fourteen-theme identity and Iris defaults preserved; read-only legacy Custom Theme compatibility; deterministic generated closure and exact measured Manifest gzip baseline
+MACHINE_GATES_AFTER_FUTURE_ATOMIC_IMPLEMENTATION=Action Fill remains background-only; Control Foreground exists exactly once; every version-2 plane contains the exact ordered ten-role set; Action Content contrast uses Action Fill; both Control contrast records use Control Foreground; Dark fill caps apply only to Action Fill; Control Foreground retains 3:1 on Dark page and panel; Light values remain unchanged except the copied role; every Dark Control Foreground equals the corresponding pre-refinement Action Fill; legacy Custom Theme compatibility is read-only without Storage write; Naive and PAVP consumers follow the frozen responsibility map; exact target cardinalities and Manifest equation hold; all fourteen Themes, Iris default, First Paint, Custom Theme capability, dependencies and lockfile remain intact; exact reversible source probes; deterministic tokens schema/build/check; Architecture Admin Console checker; policy and boundary checks; git diff --check; one final pnpm verify
+REVERSIBLE_FUTURE_SOURCE_PROBES=restore single-role contrast conflict; point action-content-on-primary to color.control.primary; point either control contrast record to color.action.primary; omit color.control.primary from one version-2 plane; apply Dark fill cap to color.control.primary; rewrite a legacy Custom Theme snapshot; map a control-hover consumer back to Action Fill
+PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_EXTERNAL_FOR_FOURTEEN_THEME_DARK_STANDARD_AND_DARK_ENHANCED_ACTION_CONTENT_VISUAL_MATRIX
+COMPLETION_EVIDENCE_AFTER_FUTURE_ATOMIC_IMPLEMENTATION=one scoped source and generated diff limited to the admitted existing owners; every source and generated gate passes; no dependency, lockfile, browser, test, fixture, screenshot, trace or evidence artifact; Owner external visual review remains required for release and is not claimed by static completion
+```
+
+该 Amendment 原位替换此前不兼容的 Single-role Contract，不创建第二个 Dark-action Package 或第二份 Current-work Authority。经验证，`color.action.primary` 无法同时承担 Dark Filled Action Background 与 Dark Page/Panel Control Foreground：前者需要较暗填充配合亮色 `color.text.on-action`，后者需要相对深色 Surface 足够明亮。当前冻结的唯一分离是 `color.action.primary` 负责 Filled Action、`color.text.on-action` 负责其上的内容、`color.control.primary` 负责 Page/Panel 上的 Control/Accent Foreground；三条既有 Named Contrast ID 及 `4.5`、`7`、`3` 阈值全部保持不变。
+
+未来实现必须把 Filled Primary Button 的 Resting/Hover/Pressed/Focus Filled Background、Filled Selected Radio/Segmented Control 及其他真实 Filled Primary-action Surface 映射到 `color.action.primary`，并把其文字与图标映射到 `color.text.on-action`。Breadcrumb、普通交互图标、Ghost Button、Unfilled Radio 的 Hover/Pressed Foreground、Primary Control Border/Outline、非填充式 Selected Navigation Foreground/Indicator 以及语义为 Control/Accent Foreground 或 Border 的 PAVP Admin Alias 必须映射到 `color.control.primary`；`color.focus.ring` 继续是唯一 Focus-ring Authority。分离后不得把 Control Hover、Border、Icon 或 Indicator 重新映射到 Action Fill。
+
+每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
+
+本 Architecture-governance Landing 只把 Work Package 状态设为 `OPEN / NOT_STARTED / NOT_RUN`，不修改当前 Version-1 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 或页面。当前 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与未来 `37 / 10 / 37 / 560 / 252 / role-contract 2` 必须始终分开陈述；静态治理只能证明未来实现的角色、色域、对比度、身份、兼容与生成一致性，不能替代 Owner 外部视觉验收。
+
 ### Completed production-bundle maintenance: `PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY`
 
 ```text
@@ -944,7 +1136,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定；当前 Bounded Work 只由文首与现行状态镜像中的 `CURRENT_BOUNDED_WORK=NONE` 决定。`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定；当前 Bounded Work 只由文首与现行状态镜像中的 `CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 决定。`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
 
 ##### Defect identity and implemented source behavior
 
@@ -2817,7 +3009,7 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published with corrected-revision Owner review pending, no bounded work is current, prior Runtime repair states remain preserved, and `PAVP-RUNTIME-003` plus `004` remain open and unauthorized, so overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published with corrected-revision Owner review pending; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` is the sole current bounded work at `OPEN / NOT_STARTED / NOT_RUN`; prior Runtime repair states remain preserved, and `PAVP-RUNTIME-003` plus `004` remain open and unauthorized, so overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
 | TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -11197,8 +11389,12 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT = FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT = FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT = FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT = COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY = NONE
-CURRENT_BOUNDED_WORK = NONE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT = FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS = OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION = NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION = NOT_RUN
+CURRENT_BOUNDED_WORK_AUTHORITY = PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK = PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS = ACCEPTED
 PAVP_RUNTIME_002_STATUS = OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION = COMPLETE
@@ -11329,7 +11525,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。当前没有自动 Next Implementation Package；任何后继能力都需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 已冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 是当前唯一 Bounded Work，状态为 `OPEN / NOT_STARTED / NOT_RUN`，本 Architecture-only Landing 不激活 Source Implementation。当前没有自动 Next Implementation Package；任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -11371,9 +11567,13 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -11412,7 +11612,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布，当前没有 Bounded Work。Owner 外部观察已拒绝该 Work Package 的此前 revision，corrected revision 已发布但尚未获得 Owner Runtime/Visual Review；`PAVP-RUNTIME-003` 与 `004` 保持 Open 且未获授权，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；当前唯一 Bounded Work 为 `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT`，状态为 `OPEN / NOT_STARTED / NOT_RUN`，且源码实施尚未开始。Owner 外部观察已拒绝该 Work Package 的此前 revision，corrected revision 已发布但尚未获得 Owner Runtime/Visual Review；`PAVP-RUNTIME-003` 与 `004` 保持 Open 且未获授权，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
 
 当前精确 Acceptance Contract：
 
@@ -11440,8 +11640,12 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -11826,8 +12030,12 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12104,9 +12312,13 @@ PAVP_RUNTIME_002_ADMISSION_AMENDMENT=FROZEN
 PAVP_RUNTIME_005_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
 PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT=COMPLETE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12142,10 +12354,10 @@ PROHIBITED=redesign of the other nine product-page content models; Density contr
 OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior
 MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes for stable unkeyed Route Host, no route-derived key, visible host, no route-level animation/transition/concealment, no Direct-child blanket animation/delay, and no replacement loading/eager-route workaround; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
-COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; corrected-revision Owner runtime and visual review remains pending and is not claimed; no bounded work is current; PAVP-RUNTIME-003 and PAVP-RUNTIME-004 remain open and unauthorized; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
+COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; corrected-revision Owner runtime and visual review remains pending and is not claimed; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT is the sole current bounded work at OPEN / NOT_STARTED / NOT_RUN; PAVP-RUNTIME-003 and PAVP-RUNTIME-004 remain open and unauthorized; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`，当前没有 Bounded Work。Owner 外部观察已拒绝此前 revision；corrected revision 的 Owner Runtime 与 Visual Review 尚未执行；`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；当前唯一 Bounded Work 为 `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT`，其状态为 `OPEN / NOT_STARTED / NOT_RUN`。Owner 外部观察已拒绝此前 revision；corrected revision 的 Owner Runtime 与 Visual Review 尚未执行；`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 保持 Open 且未获授权，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -12482,7 +12694,11 @@ PAVP_CURATED_CUSTOM_THEME_CATALOG_IS_OWNER_REJECTED_AND_RETIRED
 PAVP_SEVEN_BUILTIN_THEME_REPLACEMENT_IS_COMPLETE
 PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION_IS_COMPLETE
 PAVP_MOTION_GEOMETRY_STABILITY_REPAIR_IS_COMPLETE
-CURRENT_BOUNDED_WORK_IS_NONE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_NOT_RUN
+CURRENT_BOUNDED_WORK_IS_PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_001_STATUS_IS_ACCEPTED
 PAVP_RUNTIME_002_STATUS_IS_OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION_IS_COMPLETE
