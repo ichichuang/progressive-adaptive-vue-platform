@@ -193,10 +193,11 @@ const expectedArchitectureAdminConsoleNegativeProbeCount = 59
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
-const expectedCurrentWorkNegativeProbeCount = 4
-const expectedCurrentBoundedWork = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
-const expectedCurrentBoundedWorkAuthority =
-  'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
+const expectedAcceptanceClosureNegativeProbeCount = 5
+const acceptedDarkActionWorkPackage = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
+const darkActionAdmissionAmendment = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
+const darkActionImplementationCommit = '5673236868737f42f3470307b5f5d6c8d4e8639e'
+const darkActionAcceptanceStatement = '验收通过'
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
 const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
@@ -3925,6 +3926,10 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
 
 function currentWorkStatusViolations(architectureSource: string): string[] {
   const violations: string[] = []
+  const valuesForMarker = (marker: string): readonly string[] =>
+    [
+      ...architectureSource.matchAll(new RegExp(`^${marker}[ \\t]*=[ \\t]*([^\\r\\n]+)$`, 'gmu')),
+    ].map((match) => match[1]?.trim() ?? '')
   const canonicalStatusEnd = architectureSource.indexOf('\n---\n')
   const canonicalStatusSource =
     canonicalStatusEnd === -1 ? architectureSource : architectureSource.slice(0, canonicalStatusEnd)
@@ -3935,21 +3940,11 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     .exec(canonicalStatusSource)?.[1]
     ?.trim()
 
-  if (canonicalWork === undefined || canonicalAuthority === undefined) {
-    violations.push('CURRENT_WORK_ACTIVE_MARKER_REQUIRED')
-  } else if (
-    !['NONE', expectedCurrentBoundedWork].includes(canonicalWork) ||
-    !['NONE', expectedCurrentBoundedWorkAuthority].includes(canonicalAuthority)
-  ) {
-    violations.push('CURRENT_WORK_UNAUTHORIZED_ID')
-  } else if (
-    canonicalWork !== expectedCurrentBoundedWork ||
-    canonicalAuthority !== expectedCurrentBoundedWorkAuthority
-  ) {
-    violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+  if (canonicalWork !== 'NONE' || canonicalAuthority !== 'NONE') {
+    violations.push('DARK_ACTION_CURRENT_WORK_NOT_CLEARED')
   }
 
-  const amendmentHeading = `### 1.2B.0G \`${expectedCurrentBoundedWork}\``
+  const amendmentHeading = `### 1.2B.0G \`${acceptedDarkActionWorkPackage}\``
   const amendmentStart = architectureSource.indexOf(amendmentHeading)
   const amendmentEnd =
     amendmentStart === -1
@@ -3963,19 +3958,25 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
           amendmentEnd === -1 ? architectureSource.length : amendmentEnd,
         )
   const requiredAmendmentMarkers = [
-    `AMENDMENT=${expectedCurrentBoundedWorkAuthority}`,
+    `AMENDMENT=${darkActionAdmissionAmendment}`,
     'AMENDMENT_STATUS=FROZEN',
-    `WORK_PACKAGE=${expectedCurrentBoundedWork}`,
+    `WORK_PACKAGE=${acceptedDarkActionWorkPackage}`,
     'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
-    `CURRENT_BOUNDED_WORK_AUTHORITY=${expectedCurrentBoundedWorkAuthority}`,
-    `CURRENT_BOUNDED_WORK=${expectedCurrentBoundedWork}`,
+    `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${darkActionAdmissionAmendment}`,
+    `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
+    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+    'CURRENT_BOUNDED_WORK=NONE',
+    'OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'OWNER_VISUAL_ACCEPTANCE=PASS',
+    `OWNER_ACCEPTANCE_STATEMENT=${darkActionAcceptanceStatement}`,
+    'PRODUCTION_RELEASE_STATUS=NOT_RELEASED',
   ] as const
 
   if (
     amendmentSource.length === 0 ||
     requiredAmendmentMarkers.some((marker) => !amendmentSource.includes(marker))
   ) {
-    violations.push('CURRENT_WORK_FROZEN_RECORD_REQUIRED')
+    violations.push('DARK_ACTION_FROZEN_AMENDMENT_REQUIRED')
   }
 
   const architectureLines = architectureSource.split(/\r?\n/u)
@@ -3984,11 +3985,11 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   )
 
   if (activeMirrorIndexes.length === 0) {
-    violations.push('CURRENT_WORK_ACTIVE_MARKER_REQUIRED')
+    violations.push('DARK_ACTION_ACCEPTANCE_STATUS')
   }
 
   for (const mirrorIndex of activeMirrorIndexes) {
-    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 12)
+    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 20)
     const workValues = mirrorLines.flatMap((line) => {
       const match = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
       return match?.[1] === undefined ? [] : [match[1].trim()]
@@ -3999,79 +4000,31 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     })
 
     if (
-      workValues.some((value) => !['NONE', expectedCurrentBoundedWork].includes(value)) ||
-      authorityValues.some(
-        (value) => !['NONE', expectedCurrentBoundedWorkAuthority].includes(value),
-      )
-    ) {
-      violations.push('CURRENT_WORK_UNAUTHORIZED_ID')
-    } else if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== expectedCurrentBoundedWork ||
-      authorityValues[0] !== expectedCurrentBoundedWorkAuthority
+      workValues[0] !== 'NONE' ||
+      authorityValues[0] !== 'NONE'
     ) {
-      violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+      violations.push('DARK_ACTION_CURRENT_WORK_NOT_CLEARED')
     }
   }
 
-  const completedHistoricalRanges: readonly (readonly [number, number])[] = (() => {
-    const ranges: [number, number][] = []
-    let fenceStart: number | undefined
-
-    for (const [lineIndex, line] of architectureLines.entries()) {
-      if (line === '```text') {
-        fenceStart = lineIndex
-      } else if (line === '```' && fenceStart !== undefined) {
-        const fencedSource = architectureLines.slice(fenceStart + 1, lineIndex).join('\n')
-        if (/^STATUS=COMPLETE$/mu.test(fencedSource)) {
-          ranges.push([fenceStart, lineIndex])
-        }
-        fenceStart = undefined
-      }
-    }
-
-    return ranges
-  })()
-  const belongsToCompletedHistoricalRecord = (lineIndex: number): boolean =>
-    completedHistoricalRanges.some(([start, end]) => lineIndex > start && lineIndex < end)
-  const allCurrentWorkMarkers = architectureLines.flatMap((line, lineIndex) => {
+  const allCurrentWorkMarkers = architectureLines.flatMap((line) => {
     const match = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
-    return match?.[1] === undefined ? [] : [{ lineIndex, value: match[1].trim() }]
+    return match?.[1] === undefined ? [] : [match[1].trim()]
   })
-  const allCurrentWorkAuthorityMarkers = architectureLines.flatMap((line, lineIndex) => {
+  const allCurrentWorkAuthorityMarkers = architectureLines.flatMap((line) => {
     const match = /^CURRENT_BOUNDED_WORK_AUTHORITY[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
-    return match?.[1] === undefined ? [] : [{ lineIndex, value: match[1].trim() }]
+    return match?.[1] === undefined ? [] : [match[1].trim()]
   })
 
-  const hasUnauthorizedCurrentWorkValue =
-    allCurrentWorkMarkers.some(
-      ({ value }) => !['NONE', expectedCurrentBoundedWork].includes(value),
-    ) ||
-    allCurrentWorkAuthorityMarkers.some(
-      ({ value }) => !['NONE', expectedCurrentBoundedWorkAuthority].includes(value),
-    )
-
-  if (hasUnauthorizedCurrentWorkValue) {
-    violations.push('CURRENT_WORK_UNAUTHORIZED_ID')
-  }
   if (
-    !hasUnauthorizedCurrentWorkValue &&
-    (allCurrentWorkMarkers.filter(({ value }) => value === expectedCurrentBoundedWork).length !==
-      activeMirrorIndexes.length ||
-      allCurrentWorkAuthorityMarkers.filter(
-        ({ value }) => value === expectedCurrentBoundedWorkAuthority,
-      ).length !== activeMirrorIndexes.length ||
-      allCurrentWorkMarkers.some(
-        ({ lineIndex, value }) =>
-          value === 'NONE' && !belongsToCompletedHistoricalRecord(lineIndex),
-      ) ||
-      allCurrentWorkAuthorityMarkers.some(
-        ({ lineIndex, value }) =>
-          value === 'NONE' && !belongsToCompletedHistoricalRecord(lineIndex),
-      ))
+    allCurrentWorkMarkers.length === 0 ||
+    allCurrentWorkAuthorityMarkers.length === 0 ||
+    allCurrentWorkMarkers.some((value) => value !== 'NONE') ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== 'NONE')
   ) {
-    violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+    violations.push('DARK_ACTION_CURRENT_WORK_NOT_CLEARED')
   }
 
   const statusValues = [
@@ -4094,79 +4047,193 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
       /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT[ \t]*=[ \t]*([^\r\n]+)$/gmu,
     ),
   ].map((match) => match[1]?.trim())
-  const hasFalseImplementationClaim =
+  const ownerRuntimeAcceptanceValues = valuesForMarker(
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_RUNTIME_ACCEPTANCE',
+  )
+  const ownerVisualAcceptanceValues = valuesForMarker(
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_VISUAL_ACCEPTANCE',
+  )
+  const ownerAcceptanceStatementValues = valuesForMarker(
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT',
+  )
+  const implementationCommitValues = valuesForMarker(
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT',
+  )
+  const publicationTargetValues = valuesForMarker(
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET',
+  )
+  const publicationStatusValues = valuesForMarker(
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS',
+  )
+
+  if (
     statusValues.length !== activeMirrorIndexes.length ||
-    statusValues.some((value) => value !== 'OPEN') ||
+    statusValues.some((value) => value !== 'ACCEPTED')
+  ) {
+    violations.push('DARK_ACTION_ACCEPTANCE_STATUS')
+  }
+  if (
     implementationValues.length !== activeMirrorIndexes.length ||
     implementationValues.some((value) => value !== 'COMPLETE') ||
     verificationValues.length !== activeMirrorIndexes.length ||
     verificationValues.some((value) => value !== 'PASS') ||
     admissionValues.length === 0 ||
     admissionValues.some((value) => value !== 'FROZEN') ||
-    /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT[ \t]*=/mu.test(architectureSource) ||
-    /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_(?:IMPLEMENTATION_COMMIT|COMMIT|PUBLICATION_STATUS|RELEASE_STATUS|OWNER_ACCEPTANCE|ACCEPTANCE)[ \t]*=/mu.test(
-      architectureSource,
-    ) ||
-    /^(?:REPOSITORY_IMPLEMENTATION|STATIC_VERIFICATION|IMPLEMENTATION_COMMIT|PUBLICATION_STATUS|RELEASE_STATUS|OWNER_ACCEPTANCE)[ \t]*=/mu.test(
-      amendmentSource,
-    ) ||
-    /^SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT[ \t]*=[ \t]*(?!PROHIBITED[ \t]*$).+$/mu.test(
-      amendmentSource,
-    ) ||
-    /^PRODUCTION_RELEASE_ACCEPTANCE[ \t]*=[ \t]*(?!REQUIRED_EXTERNAL(?:_|[ \t]*$)).+$/mu.test(
-      amendmentSource,
-    )
+    implementationCommitValues.length !== activeMirrorIndexes.length ||
+    implementationCommitValues.some((value) => value !== darkActionImplementationCommit) ||
+    publicationTargetValues.length !== activeMirrorIndexes.length ||
+    publicationTargetValues.some((value) => value !== 'origin/main') ||
+    publicationStatusValues.length !== activeMirrorIndexes.length ||
+    publicationStatusValues.some((value) => value !== 'COMPLETE') ||
+    ownerAcceptanceStatementValues.length !== activeMirrorIndexes.length ||
+    ownerAcceptanceStatementValues.some((value) => value !== darkActionAcceptanceStatement)
+  ) {
+    violations.push('DARK_ACTION_ACCEPTANCE_MIRROR')
+  }
+  if (
+    ownerRuntimeAcceptanceValues.length !== activeMirrorIndexes.length ||
+    ownerRuntimeAcceptanceValues.some((value) => value !== 'PASS')
+  ) {
+    violations.push('DARK_ACTION_OWNER_RUNTIME_ACCEPTANCE')
+  }
+  if (
+    ownerVisualAcceptanceValues.length !== activeMirrorIndexes.length ||
+    ownerVisualAcceptanceValues.some((value) => value !== 'PASS')
+  ) {
+    violations.push('DARK_ACTION_OWNER_VISUAL_ACCEPTANCE')
+  }
 
-  if (hasFalseImplementationClaim) {
-    violations.push('CURRENT_WORK_IMPLEMENTATION_FALSE_CLAIM')
+  const historicalWorkLine = `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`
+  const historicalAuthorityLine = `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${darkActionAdmissionAmendment}`
+  const historicalWorkLines = architectureLines.filter((line) =>
+    line.includes(`CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`),
+  )
+  const historicalAuthorityLines = architectureLines.filter((line) =>
+    line.includes(`CURRENT_BOUNDED_WORK_AUTHORITY=${darkActionAdmissionAmendment}`),
+  )
+
+  if (
+    historicalWorkLines.length !== 1 ||
+    historicalWorkLines[0] !== historicalWorkLine ||
+    historicalAuthorityLines.length !== 1 ||
+    historicalAuthorityLines[0] !== historicalAuthorityLine
+  ) {
+    violations.push('DARK_ACTION_ADMISSION_HISTORY')
+  }
+
+  const requiredFinalInvariantMarkers = [
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_ACCEPTED',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_PASS',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_RUNTIME_ACCEPTANCE_IS_PASS',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_VISUAL_ACCEPTANCE_IS_PASS',
+    `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT_IS_${darkActionAcceptanceStatement}`,
+    `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_${darkActionImplementationCommit}`,
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE',
+    'CURRENT_BOUNDED_WORK_IS_NONE',
+    'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE_IS_NONE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION_IS_NONE',
+  ] as const
+
+  if (requiredFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))) {
+    violations.push('DARK_ACTION_ACCEPTANCE_MIRROR')
+  }
+
+  const canonicalNextWork = /^NEXT_CANONICAL_WORK_PACKAGE[ \t]*=[ \t]*([^\r\n]+)$/mu
+    .exec(canonicalStatusSource)?.[1]
+    ?.trim()
+  const canonicalNextImplementation =
+    /^NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE[ \t]*=[ \t]*([^\r\n]+)$/mu
+      .exec(canonicalStatusSource)?.[1]
+      ?.trim()
+  const canonicalSuccessorAuthorization =
+    /^SUCCESSOR_PACKAGE_AUTHORIZATION[ \t]*=[ \t]*([^\r\n]+)$/mu
+      .exec(canonicalStatusSource)?.[1]
+      ?.trim()
+
+  if (
+    canonicalNextWork !== 'NONE' ||
+    canonicalNextImplementation !== 'NONE' ||
+    canonicalSuccessorAuthorization !== 'NONE'
+  ) {
+    violations.push('DARK_ACTION_SUCCESSOR_STATE')
+  }
+
+  const overallAcceptanceMarkers = [
+    'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE',
+  ] as const
+  if (
+    overallAcceptanceMarkers.some((marker) => {
+      const values = valuesForMarker(marker)
+      return (
+        values.length === 0 ||
+        values.some((value) => value !== 'REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT')
+      )
+    })
+  ) {
+    violations.push('ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED')
   }
 
   if (
-    !architectureSource.includes(
-      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
-    ) ||
-    !architectureSource.includes('PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN') ||
-    !architectureSource.includes(
-      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
-    ) ||
-    !architectureSource.includes(
-      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_PASS',
-    ) ||
-    !architectureSource.includes(`CURRENT_BOUNDED_WORK_IS_${expectedCurrentBoundedWork}`) ||
-    /^CURRENT_BOUNDED_WORK_IS_NONE$/mu.test(architectureSource)
+    ['PAVP_RUNTIME_003_STATUS', 'PAVP_RUNTIME_004_STATUS'].some((marker) => {
+      const values = valuesForMarker(marker)
+      return values.length === 0 || values.some((value) => value !== 'OPEN')
+    })
   ) {
-    violations.push('CURRENT_WORK_MIRROR_CONFLICT')
+    violations.push('OPEN_RUNTIME_DEFECT_STATUS_DRIFT')
   }
 
   return [...new Set(violations)]
 }
 
-function runCurrentWorkNegativeProbes(
+function runAcceptanceClosureNegativeProbes(
   architectureSource: string,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
-  const currentWorkMarker = `CURRENT_BOUNDED_WORK=${expectedCurrentBoundedWork}`
   const probes: readonly [string, string, string][] = [
     [
-      'current-work-restored-to-none',
-      'CURRENT_WORK_MIRROR_CONFLICT',
-      architectureSource.replace(currentWorkMarker, 'CURRENT_BOUNDED_WORK=NONE'),
-    ],
-    [
-      'current-work-unauthorized-id',
-      'CURRENT_WORK_UNAUTHORIZED_ID',
-      architectureSource.replace(currentWorkMarker, 'CURRENT_BOUNDED_WORK=PAVP_UNAUTHORIZED_WORK'),
-    ],
-    [
-      'current-work-conflicting-mirror',
-      'CURRENT_WORK_MIRROR_CONFLICT',
-      replaceLastOccurrence(architectureSource, currentWorkMarker, 'CURRENT_BOUNDED_WORK=NONE'),
-    ],
-    [
-      'current-work-false-implementation-regression',
-      'CURRENT_WORK_IMPLEMENTATION_FALSE_CLAIM',
+      'dark-action-status-reopened',
+      'DARK_ACTION_ACCEPTANCE_STATUS',
       architectureSource.replace(
-        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=COMPLETE',
-        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=ACCEPTED',
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN',
+      ),
+    ],
+    [
+      'dark-action-retained-as-current-work',
+      'DARK_ACTION_CURRENT_WORK_NOT_CLEARED',
+      architectureSource.replace(
+        'CURRENT_BOUNDED_WORK=NONE',
+        `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
+      ),
+    ],
+    [
+      'dark-action-owner-runtime-acceptance-removed',
+      'DARK_ACTION_OWNER_RUNTIME_ACCEPTANCE',
+      architectureSource.replace(
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_RUNTIME_ACCEPTANCE=PASS\n',
+        '',
+      ),
+    ],
+    [
+      'dark-action-owner-visual-acceptance-removed',
+      'DARK_ACTION_OWNER_VISUAL_ACCEPTANCE',
+      architectureSource.replace(
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_VISUAL_ACCEPTANCE=PASS\n',
+        '',
+      ),
+    ],
+    [
+      'admin-console-overall-acceptance-falsely-restored',
+      'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED',
+      architectureSource.replace(
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=PASS',
       ),
     ],
   ]
@@ -4178,10 +4245,7 @@ function runCurrentWorkNegativeProbes(
       return Object.freeze({
         id,
         expectedFailureCode,
-        passed:
-          mutatedSource !== architectureSource &&
-          failureCodes.length === 1 &&
-          failureCodes[0] === expectedFailureCode,
+        passed: mutatedSource !== architectureSource && failureCodes.includes(expectedFailureCode),
       })
     }),
   )
@@ -4207,16 +4271,28 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'LOCKFILE_CHANGE=NONE',
     'VISIBLE_BEHAVIOR_CHANGE=NONE',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN',
-    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=ACCEPTED',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=COMPLETE',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=PASS',
-    'CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT',
-    'CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_VISUAL_ACCEPTANCE=PASS',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通过',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE',
+    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+    'CURRENT_BOUNDED_WORK=NONE',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
-    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_ACCEPTED',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_PASS',
-    'CURRENT_BOUNDED_WORK_IS_PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_RUNTIME_ACCEPTANCE_IS_PASS',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_VISUAL_ACCEPTANCE_IS_PASS',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT_IS_验收通过',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_5673236868737f42f3470307b5f5d6c8d4e8639e',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE',
+    'CURRENT_BOUNDED_WORK_IS_NONE',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
     'COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only',
     'REPOSITORY_IMPLEMENTATION=COMPLETE',
@@ -6679,7 +6755,8 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   const motionGeometryNegativeProbeResults = runMotionGeometryNegativeProbes(baseline)
   const runtime002NegativeProbeResults = runRuntime002NegativeProbes(baseline)
   const runtime005NegativeProbeResults = runRuntime005NegativeProbes(baseline)
-  const currentWorkNegativeProbeResults = runCurrentWorkNegativeProbes(architectureSource)
+  const acceptanceClosureNegativeProbeResults =
+    runAcceptanceClosureNegativeProbes(architectureSource)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
     violations.push(
@@ -6701,9 +6778,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       `PAVP-RUNTIME-005 negative-probe count drifted: expected ${String(expectedRuntime005NegativeProbeCount)}, received ${String(runtime005NegativeProbeResults.length)}.`,
     )
   }
-  if (currentWorkNegativeProbeResults.length !== expectedCurrentWorkNegativeProbeCount) {
+  if (
+    acceptanceClosureNegativeProbeResults.length !== expectedAcceptanceClosureNegativeProbeCount
+  ) {
     violations.push(
-      `Current-work negative-probe count drifted: expected ${String(expectedCurrentWorkNegativeProbeCount)}, received ${String(currentWorkNegativeProbeResults.length)}.`,
+      `Acceptance-closure negative-probe count drifted: expected ${String(expectedAcceptanceClosureNegativeProbeCount)}, received ${String(acceptanceClosureNegativeProbeResults.length)}.`,
     )
   }
 
@@ -6752,10 +6831,10 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
-  for (const result of currentWorkNegativeProbeResults) {
+  for (const result of acceptanceClosureNegativeProbeResults) {
     if (!result.passed) {
       violations.push(
-        `${result.id}: reversible in-memory current-work negative probe did not fail.`,
+        `${result.id}: reversible in-memory acceptance-closure negative probe did not fail.`,
       )
     }
   }
@@ -6771,6 +6850,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedCurrentWorkNegativeProbeCount)}/${String(expectedCurrentWorkNegativeProbeCount)} current-work negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes)`,
   )
 }
