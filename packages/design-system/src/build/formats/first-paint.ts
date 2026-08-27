@@ -172,6 +172,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   ${embeddedColorJsRuntime}
 
   var colorModes = ${javascriptLiteral(colorModePreferenceValues)}
+  var themeColorModes = ['light', 'dark']
   var legacyColorModes = ${javascriptLiteral(legacyColorModePreferenceValues)}
   var contrasts = ${javascriptLiteral(contrastPreferenceValues)}
   var materials = ${javascriptLiteral(materialPreferenceValues)}
@@ -179,10 +180,27 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   var fontScales = ${javascriptLiteral(fontScaleValues)}
   var motions = ${javascriptLiteral(motionPreferenceValues)}
   var builtInThemeIds = ${javascriptLiteral(registry.builtInRegistryOrder)}
+  var roleContractVersion = ${javascriptLiteral(registry.roleContractVersion)}
+  var legacyCustomThemeRoleContractVersion = 1
+  var activePublicColorRoles = ${javascriptLiteral(
+    registry.activePublicColorRoles.map((record) => record.publicRole),
+  )}
+  var legacyPublicColorRoles = activePublicColorRoles.filter(function (roleId) {
+    return roleId !== 'color.control.primary'
+  })
   var retiredBuiltInThemeIds = ${javascriptLiteral(legacyBuiltInThemeIds)}
   var defaultBuiltInThemeId = ${javascriptString(ProductPreferenceDefault.theme.themeId)}
   var legacyBuiltInThemeTuples = ${javascriptLiteral(registry.legacyBuiltInThemeTuples, 2)}
   var customBankVariables = ${javascriptLiteral(registry.customBankVariables)}
+  var customBankRecords = ${javascriptLiteral(
+    registry.builtInEntries[0]?.bank.records.map((record) => ({
+      bankVariable: record.bankVariable,
+      colorMode: record.colorMode,
+      contrast: record.contrast,
+      publicRole: record.publicRole,
+    })) ?? [],
+    2,
+  )}
   var appearanceAttributeNames = ${javascriptLiteral([
     'data-color-mode',
     'data-theme-kind',
@@ -229,6 +247,142 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     } catch {
       return false
     }
+  }
+
+  function isThemeColor(roleId, value) {
+    if (!isCssColor(value)) {
+      return false
+    }
+
+    try {
+      var color = new Color(value)
+      var expectedAlpha = roleId === 'color.scrim.viewport' ? 0.56 : 1
+      return color.alpha === expectedAlpha && color.inGamut('srgb')
+    } catch {
+      return false
+    }
+  }
+
+  function normalizeCustomThemeDefinition(value) {
+    if (
+      !hasOnlyKeys(value, ['id', 'label', 'planes', 'roleContractVersion', 'schemaVersion']) ||
+      value.schemaVersion !== 3 ||
+      typeof value.id !== 'string' ||
+      value.id.length === 0 ||
+      typeof value.label !== 'string' ||
+      value.label.length === 0 ||
+      (value.roleContractVersion !== roleContractVersion &&
+        value.roleContractVersion !== legacyCustomThemeRoleContractVersion) ||
+      !hasOnlyKeys(value.planes, ['dark', 'light'])
+    ) {
+      return null
+    }
+
+    var sourceRoles =
+      value.roleContractVersion === legacyCustomThemeRoleContractVersion
+        ? legacyPublicColorRoles
+        : activePublicColorRoles
+    var normalizedPlanes = {}
+
+    for (var colorModeIndex = 0; colorModeIndex < themeColorModes.length; colorModeIndex += 1) {
+      var colorMode = themeColorModes[colorModeIndex]
+      var modePlanes = value.planes[colorMode]
+
+      if (!hasOnlyKeys(modePlanes, contrasts)) {
+        return null
+      }
+
+      normalizedPlanes[colorMode] = {}
+
+      for (var contrastIndex = 0; contrastIndex < contrasts.length; contrastIndex += 1) {
+        var contrast = contrasts[contrastIndex]
+        var plane = modePlanes[contrast]
+
+        if (!hasOnlyKeys(plane, sourceRoles)) {
+          return null
+        }
+
+        var normalizedPlane = {}
+
+        for (var roleIndex = 0; roleIndex < sourceRoles.length; roleIndex += 1) {
+          var roleId = sourceRoles[roleIndex]
+          var authoredValue = plane[roleId]
+
+          if (!isThemeColor(roleId, authoredValue)) {
+            return null
+          }
+
+          normalizedPlane[roleId] = authoredValue
+
+          if (
+            value.roleContractVersion === legacyCustomThemeRoleContractVersion &&
+            roleId === 'color.action.primary'
+          ) {
+            normalizedPlane['color.control.primary'] = authoredValue
+          }
+        }
+
+        if (!hasOnlyKeys(normalizedPlane, activePublicColorRoles)) {
+          return null
+        }
+
+        normalizedPlanes[colorMode][contrast] = normalizedPlane
+      }
+    }
+
+    return {
+      schemaVersion: value.schemaVersion,
+      roleContractVersion: roleContractVersion,
+      id: value.id,
+      label: value.label,
+      planes: normalizedPlanes,
+    }
+  }
+
+  function readSelectedCustomThemeDefinition(storageKey, themeId) {
+    if (typeof storageKey !== 'string' || storageKey.length === 0) {
+      return null
+    }
+
+    var rawRegistry
+
+    try {
+      rawRegistry = localStorage.getItem(storageKey)
+    } catch {
+      return null
+    }
+
+    if (rawRegistry === null) {
+      return null
+    }
+
+    var registrySnapshot
+
+    try {
+      registrySnapshot = JSON.parse(rawRegistry)
+    } catch {
+      return null
+    }
+
+    if (
+      !hasOnlyKeys(registrySnapshot, ['entries', 'schemaVersion']) ||
+      registrySnapshot.schemaVersion !== 1 ||
+      !Array.isArray(registrySnapshot.entries)
+    ) {
+      return null
+    }
+
+    var selected = registrySnapshot.entries.find(function (entry) {
+      return (
+        hasOnlyKeys(entry, ['definition', 'registryKind', 'themeId']) &&
+        entry.registryKind === 'custom' &&
+        entry.themeId === themeId &&
+        isRecord(entry.definition) &&
+        entry.definition.id === themeId
+      )
+    })
+
+    return selected ? normalizeCustomThemeDefinition(selected.definition) : null
   }
 
   function isPalette(value) {
@@ -593,11 +747,6 @@ ${safetyBaselineRestorationLines()}
 
   var storedAppearance = migration.preference.appearance
 
-  if (storedAppearance.theme.registryKind === 'custom') {
-    currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
-    return
-  }
-
   var forcedColorsActive
   var prefersDark
   var reducedTransparencyRequested
@@ -633,6 +782,41 @@ ${safetyBaselineRestorationLines()}
   var previousAppearanceState = captureAppearanceState()
 
   try {
+    if (storedAppearance.theme.registryKind === 'custom') {
+      var customThemeRegistryStorageKey = currentScript.getAttribute(
+        'data-theme-registry-storage-key',
+      )
+      var customDefinition = readSelectedCustomThemeDefinition(
+        customThemeRegistryStorageKey,
+        storedAppearance.theme.themeId,
+      )
+
+      if (customDefinition === null) {
+        currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
+        return
+      }
+
+      clearCustomBankVariables()
+
+      customBankRecords.forEach(function (record) {
+        root.style.setProperty(
+          record.bankVariable,
+          customDefinition.planes[record.colorMode][record.contrast][record.publicRole],
+        )
+      })
+
+      root.setAttribute('data-color-mode', effectiveColorMode)
+      root.setAttribute('data-theme-kind', 'custom')
+      root.setAttribute('data-theme', storedAppearance.theme.themeId)
+      root.setAttribute('data-contrast', storedAppearance.contrast)
+      root.setAttribute('data-material', effectiveMaterial)
+      root.setAttribute('data-density', storedAppearance.density.preset)
+      root.setAttribute('data-motion', storedAppearance.motion)
+      root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
+      currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
+      return
+    }
+
     clearCustomBankVariables()
     root.setAttribute('data-color-mode', effectiveColorMode)
     root.setAttribute('data-theme-kind', 'built-in')

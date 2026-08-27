@@ -8,6 +8,7 @@
 //# sourceMappingURL=color.global.min.js.map
 
   var colorModes = ['light', 'dark', 'system']
+  var themeColorModes = ['light', 'dark']
   var legacyColorModes = ['light', 'dark', 'system', 'high-contrast']
   var contrasts = ['standard', 'enhanced']
   var materials = ['adaptive', 'reduced', 'solid']
@@ -15,6 +16,12 @@
   var fontScales = [0.9, 1, 1.1, 1.2]
   var motions = ['full', 'reduced', 'none']
   var builtInThemeIds = ['amber', 'cobalt', 'coral', 'graphite', 'iris', 'jade', 'lagoon', 'stone-blue-ash', 'misty-rose-blue', 'honey-apricot-cream', 'cerulean-sky-navy', 'lavender-ivory', 'denim-cocoa', 'burgundy-snow']
+  var roleContractVersion = 2
+  var legacyCustomThemeRoleContractVersion = 1
+  var activePublicColorRoles = ['color.action.primary', 'color.control.primary', 'color.border.default', 'color.focus.ring', 'color.scrim.viewport', 'color.surface.page', 'color.surface.panel', 'color.text.on-action', 'color.text.primary', 'color.text.secondary']
+  var legacyPublicColorRoles = activePublicColorRoles.filter(function (roleId) {
+    return roleId !== 'color.control.primary'
+  })
   var retiredBuiltInThemeIds = ['neutral', 'ocean', 'warm']
   var defaultBuiltInThemeId = 'iris'
   var legacyBuiltInThemeTuples = [{
@@ -33,7 +40,208 @@
     accent: 'oklch(67% 0.15 50)',
     neutral: 'warm',
   }]
-  var customBankVariables = ['--ui-theme-bank-light-standard-action-primary', '--ui-theme-bank-light-standard-border-default', '--ui-theme-bank-light-standard-focus-ring', '--ui-theme-bank-light-standard-scrim-viewport', '--ui-theme-bank-light-standard-surface-page', '--ui-theme-bank-light-standard-surface-panel', '--ui-theme-bank-light-standard-text-on-action', '--ui-theme-bank-light-standard-text-primary', '--ui-theme-bank-light-standard-text-secondary', '--ui-theme-bank-light-enhanced-action-primary', '--ui-theme-bank-light-enhanced-border-default', '--ui-theme-bank-light-enhanced-focus-ring', '--ui-theme-bank-light-enhanced-scrim-viewport', '--ui-theme-bank-light-enhanced-surface-page', '--ui-theme-bank-light-enhanced-surface-panel', '--ui-theme-bank-light-enhanced-text-on-action', '--ui-theme-bank-light-enhanced-text-primary', '--ui-theme-bank-light-enhanced-text-secondary', '--ui-theme-bank-dark-standard-action-primary', '--ui-theme-bank-dark-standard-border-default', '--ui-theme-bank-dark-standard-focus-ring', '--ui-theme-bank-dark-standard-scrim-viewport', '--ui-theme-bank-dark-standard-surface-page', '--ui-theme-bank-dark-standard-surface-panel', '--ui-theme-bank-dark-standard-text-on-action', '--ui-theme-bank-dark-standard-text-primary', '--ui-theme-bank-dark-standard-text-secondary', '--ui-theme-bank-dark-enhanced-action-primary', '--ui-theme-bank-dark-enhanced-border-default', '--ui-theme-bank-dark-enhanced-focus-ring', '--ui-theme-bank-dark-enhanced-scrim-viewport', '--ui-theme-bank-dark-enhanced-surface-page', '--ui-theme-bank-dark-enhanced-surface-panel', '--ui-theme-bank-dark-enhanced-text-on-action', '--ui-theme-bank-dark-enhanced-text-primary', '--ui-theme-bank-dark-enhanced-text-secondary']
+  var customBankVariables = ['--ui-theme-bank-light-standard-action-primary', '--ui-theme-bank-light-standard-control-primary', '--ui-theme-bank-light-standard-border-default', '--ui-theme-bank-light-standard-focus-ring', '--ui-theme-bank-light-standard-scrim-viewport', '--ui-theme-bank-light-standard-surface-page', '--ui-theme-bank-light-standard-surface-panel', '--ui-theme-bank-light-standard-text-on-action', '--ui-theme-bank-light-standard-text-primary', '--ui-theme-bank-light-standard-text-secondary', '--ui-theme-bank-light-enhanced-action-primary', '--ui-theme-bank-light-enhanced-control-primary', '--ui-theme-bank-light-enhanced-border-default', '--ui-theme-bank-light-enhanced-focus-ring', '--ui-theme-bank-light-enhanced-scrim-viewport', '--ui-theme-bank-light-enhanced-surface-page', '--ui-theme-bank-light-enhanced-surface-panel', '--ui-theme-bank-light-enhanced-text-on-action', '--ui-theme-bank-light-enhanced-text-primary', '--ui-theme-bank-light-enhanced-text-secondary', '--ui-theme-bank-dark-standard-action-primary', '--ui-theme-bank-dark-standard-control-primary', '--ui-theme-bank-dark-standard-border-default', '--ui-theme-bank-dark-standard-focus-ring', '--ui-theme-bank-dark-standard-scrim-viewport', '--ui-theme-bank-dark-standard-surface-page', '--ui-theme-bank-dark-standard-surface-panel', '--ui-theme-bank-dark-standard-text-on-action', '--ui-theme-bank-dark-standard-text-primary', '--ui-theme-bank-dark-standard-text-secondary', '--ui-theme-bank-dark-enhanced-action-primary', '--ui-theme-bank-dark-enhanced-control-primary', '--ui-theme-bank-dark-enhanced-border-default', '--ui-theme-bank-dark-enhanced-focus-ring', '--ui-theme-bank-dark-enhanced-scrim-viewport', '--ui-theme-bank-dark-enhanced-surface-page', '--ui-theme-bank-dark-enhanced-surface-panel', '--ui-theme-bank-dark-enhanced-text-on-action', '--ui-theme-bank-dark-enhanced-text-primary', '--ui-theme-bank-dark-enhanced-text-secondary']
+  var customBankRecords = [{
+    bankVariable: '--ui-theme-bank-light-standard-action-primary',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.action.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-control-primary',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.control.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-border-default',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.border.default',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-focus-ring',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.focus.ring',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-scrim-viewport',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.scrim.viewport',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-surface-page',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.surface.page',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-surface-panel',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.surface.panel',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-text-on-action',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.text.on-action',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-text-primary',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.text.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-standard-text-secondary',
+    colorMode: 'light',
+    contrast: 'standard',
+    publicRole: 'color.text.secondary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-action-primary',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.action.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-control-primary',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.control.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-border-default',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.border.default',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-focus-ring',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.focus.ring',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-scrim-viewport',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.scrim.viewport',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-surface-page',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.surface.page',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-surface-panel',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.surface.panel',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-text-on-action',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.text.on-action',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-text-primary',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.text.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-light-enhanced-text-secondary',
+    colorMode: 'light',
+    contrast: 'enhanced',
+    publicRole: 'color.text.secondary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-action-primary',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.action.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-control-primary',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.control.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-border-default',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.border.default',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-focus-ring',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.focus.ring',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-scrim-viewport',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.scrim.viewport',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-surface-page',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.surface.page',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-surface-panel',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.surface.panel',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-text-on-action',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.text.on-action',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-text-primary',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.text.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-standard-text-secondary',
+    colorMode: 'dark',
+    contrast: 'standard',
+    publicRole: 'color.text.secondary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-action-primary',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.action.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-control-primary',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.control.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-border-default',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.border.default',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-focus-ring',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.focus.ring',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-scrim-viewport',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.scrim.viewport',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-surface-page',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.surface.page',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-surface-panel',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.surface.panel',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-text-on-action',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.text.on-action',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-text-primary',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.text.primary',
+  }, {
+    bankVariable: '--ui-theme-bank-dark-enhanced-text-secondary',
+    colorMode: 'dark',
+    contrast: 'enhanced',
+    publicRole: 'color.text.secondary',
+  }]
   var appearanceAttributeNames = ['data-color-mode', 'data-theme-kind', 'data-theme', 'data-contrast', 'data-material', 'data-density', 'data-motion']
   var legacySeedThemeIdPattern = new RegExp('^[a-z][a-z0-9-]*$', 'u')
   var colorModeContract = {
@@ -80,6 +288,142 @@
     } catch {
       return false
     }
+  }
+
+  function isThemeColor(roleId, value) {
+    if (!isCssColor(value)) {
+      return false
+    }
+
+    try {
+      var color = new Color(value)
+      var expectedAlpha = roleId === 'color.scrim.viewport' ? 0.56 : 1
+      return color.alpha === expectedAlpha && color.inGamut('srgb')
+    } catch {
+      return false
+    }
+  }
+
+  function normalizeCustomThemeDefinition(value) {
+    if (
+      !hasOnlyKeys(value, ['id', 'label', 'planes', 'roleContractVersion', 'schemaVersion']) ||
+      value.schemaVersion !== 3 ||
+      typeof value.id !== 'string' ||
+      value.id.length === 0 ||
+      typeof value.label !== 'string' ||
+      value.label.length === 0 ||
+      (value.roleContractVersion !== roleContractVersion &&
+        value.roleContractVersion !== legacyCustomThemeRoleContractVersion) ||
+      !hasOnlyKeys(value.planes, ['dark', 'light'])
+    ) {
+      return null
+    }
+
+    var sourceRoles =
+      value.roleContractVersion === legacyCustomThemeRoleContractVersion
+        ? legacyPublicColorRoles
+        : activePublicColorRoles
+    var normalizedPlanes = {}
+
+    for (var colorModeIndex = 0; colorModeIndex < themeColorModes.length; colorModeIndex += 1) {
+      var colorMode = themeColorModes[colorModeIndex]
+      var modePlanes = value.planes[colorMode]
+
+      if (!hasOnlyKeys(modePlanes, contrasts)) {
+        return null
+      }
+
+      normalizedPlanes[colorMode] = {}
+
+      for (var contrastIndex = 0; contrastIndex < contrasts.length; contrastIndex += 1) {
+        var contrast = contrasts[contrastIndex]
+        var plane = modePlanes[contrast]
+
+        if (!hasOnlyKeys(plane, sourceRoles)) {
+          return null
+        }
+
+        var normalizedPlane = {}
+
+        for (var roleIndex = 0; roleIndex < sourceRoles.length; roleIndex += 1) {
+          var roleId = sourceRoles[roleIndex]
+          var authoredValue = plane[roleId]
+
+          if (!isThemeColor(roleId, authoredValue)) {
+            return null
+          }
+
+          normalizedPlane[roleId] = authoredValue
+
+          if (
+            value.roleContractVersion === legacyCustomThemeRoleContractVersion &&
+            roleId === 'color.action.primary'
+          ) {
+            normalizedPlane['color.control.primary'] = authoredValue
+          }
+        }
+
+        if (!hasOnlyKeys(normalizedPlane, activePublicColorRoles)) {
+          return null
+        }
+
+        normalizedPlanes[colorMode][contrast] = normalizedPlane
+      }
+    }
+
+    return {
+      schemaVersion: value.schemaVersion,
+      roleContractVersion: roleContractVersion,
+      id: value.id,
+      label: value.label,
+      planes: normalizedPlanes,
+    }
+  }
+
+  function readSelectedCustomThemeDefinition(storageKey, themeId) {
+    if (typeof storageKey !== 'string' || storageKey.length === 0) {
+      return null
+    }
+
+    var rawRegistry
+
+    try {
+      rawRegistry = localStorage.getItem(storageKey)
+    } catch {
+      return null
+    }
+
+    if (rawRegistry === null) {
+      return null
+    }
+
+    var registrySnapshot
+
+    try {
+      registrySnapshot = JSON.parse(rawRegistry)
+    } catch {
+      return null
+    }
+
+    if (
+      !hasOnlyKeys(registrySnapshot, ['entries', 'schemaVersion']) ||
+      registrySnapshot.schemaVersion !== 1 ||
+      !Array.isArray(registrySnapshot.entries)
+    ) {
+      return null
+    }
+
+    var selected = registrySnapshot.entries.find(function (entry) {
+      return (
+        hasOnlyKeys(entry, ['definition', 'registryKind', 'themeId']) &&
+        entry.registryKind === 'custom' &&
+        entry.themeId === themeId &&
+        isRecord(entry.definition) &&
+        entry.definition.id === themeId
+      )
+    })
+
+    return selected ? normalizeCustomThemeDefinition(selected.definition) : null
   }
 
   function isPalette(value) {
@@ -449,11 +793,6 @@
 
   var storedAppearance = migration.preference.appearance
 
-  if (storedAppearance.theme.registryKind === 'custom') {
-    currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
-    return
-  }
-
   var forcedColorsActive
   var prefersDark
   var reducedTransparencyRequested
@@ -489,6 +828,41 @@
   var previousAppearanceState = captureAppearanceState()
 
   try {
+    if (storedAppearance.theme.registryKind === 'custom') {
+      var customThemeRegistryStorageKey = currentScript.getAttribute(
+        'data-theme-registry-storage-key',
+      )
+      var customDefinition = readSelectedCustomThemeDefinition(
+        customThemeRegistryStorageKey,
+        storedAppearance.theme.themeId,
+      )
+
+      if (customDefinition === null) {
+        currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
+        return
+      }
+
+      clearCustomBankVariables()
+
+      customBankRecords.forEach(function (record) {
+        root.style.setProperty(
+          record.bankVariable,
+          customDefinition.planes[record.colorMode][record.contrast][record.publicRole],
+        )
+      })
+
+      root.setAttribute('data-color-mode', effectiveColorMode)
+      root.setAttribute('data-theme-kind', 'custom')
+      root.setAttribute('data-theme', storedAppearance.theme.themeId)
+      root.setAttribute('data-contrast', storedAppearance.contrast)
+      root.setAttribute('data-material', effectiveMaterial)
+      root.setAttribute('data-density', storedAppearance.density.preset)
+      root.setAttribute('data-motion', storedAppearance.motion)
+      root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
+      currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
+      return
+    }
+
     clearCustomBankVariables()
     root.setAttribute('data-color-mode', effectiveColorMode)
     root.setAttribute('data-theme-kind', 'built-in')

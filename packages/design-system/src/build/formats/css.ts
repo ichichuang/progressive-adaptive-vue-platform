@@ -201,6 +201,7 @@ export function formatForcedColorsCss(): string {
   @layer tokens {
     :root {
       --ui-color-action-primary: Highlight;
+      --ui-color-control-primary: Highlight;
       --ui-color-border-default: GrayText;
       --ui-color-focus-ring: Highlight;
       --ui-color-scrim-viewport: CanvasText;

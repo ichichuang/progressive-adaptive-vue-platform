@@ -611,9 +611,16 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
     )
   }
 
-  if (/\bdata-theme-registry-storage-key\b/u.test(indexHtml)) {
+  const registryStorageKeyMatches = [
+    ...indexHtml.matchAll(/\bdata-theme-registry-storage-key="([^"]*)"/gu),
+  ]
+
+  if (
+    registryStorageKeyMatches.length !== 1 ||
+    registryStorageKeyMatches[0]?.[1] !== configuredRegistryStorageKey
+  ) {
     violations.push(
-      'apps/web/index.html: the Custom Theme Registry storage-key attribute is forbidden.',
+      'apps/web/index.html: the Custom Theme Registry storage key must exactly match application configuration.',
     )
   }
 

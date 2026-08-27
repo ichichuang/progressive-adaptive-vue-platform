@@ -49,11 +49,11 @@ const manifestGovernanceContract = {
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 69,
+    expectedCountDelta: 71,
     expectedCounts: {
       tokens: 145,
-      activePublicRoles: 36,
-      unoCssMappings: 36,
+      activePublicRoles: 37,
+      unoCssMappings: 37,
       namedContrasts: 14,
       alphaContracts: 1,
       densities: 3,
@@ -97,9 +97,9 @@ const firstPaintCapabilities = {
   legacyPreferenceMigration: true,
   builtInThemeResolution: true,
   atomicAppearanceApplication: true,
-  synchronousCustomThemeResolution: false,
+  synchronousCustomThemeResolution: true,
   customThemeRuntimeResolution: true,
-  themeRegistryStorageKeyAttribute: false,
+  themeRegistryStorageKeyAttribute: true,
 } as const
 
 function isUnknownRecord(value: unknown): value is Record<string, unknown> {
@@ -186,9 +186,9 @@ function publicColorRoleContracts(document: ManifestDocument): Record<string, un
       record['themePlaneApplicability'] === 'target-required-after-atomic-cutover',
   )
 
-  if (records.length !== 9) {
+  if (records.length !== 10) {
     throw new Error(
-      `Manifest active Public Color Role count: expected 9, received ${String(records.length)}.`,
+      `Manifest active Public Color Role count: expected 10, received ${String(records.length)}.`,
     )
   }
 

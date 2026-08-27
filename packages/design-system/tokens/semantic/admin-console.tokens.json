@@ -23,7 +23,7 @@
       },
       "light-primary": {
         "$type": "color",
-        "$value": "{color.action.primary}",
+        "$value": "{color.control.primary}",
         "$extensions": { "org.pavp": { "role": "admin.ambient.light-primary" } }
       },
       "light-warm": {
@@ -36,7 +36,7 @@
       "action": {
         "$type": "border",
         "$value": {
-          "color": "{color.action.primary}",
+          "color": "{color.control.primary}",
           "width": "{admin.border.width}",
           "style": "solid"
         },
@@ -97,7 +97,7 @@
       },
       "selected": {
         "$type": "color",
-        "$value": "{color.action.primary}",
+        "$value": "{color.control.primary}",
         "$extensions": { "org.pavp": { "role": "admin.navigation.selected" } }
       }
     },
@@ -129,7 +129,7 @@
       "control-hover": {
         "$type": "shadow",
         "$value": {
-          "color": "{color.action.primary}",
+          "color": "{color.control.primary}",
           "offsetX": "{dimension.space.0}",
           "offsetY": "{dimension.space.0}",
           "blur": "{dimension.space.0}",

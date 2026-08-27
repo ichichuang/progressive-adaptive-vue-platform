@@ -134,6 +134,24 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'color.control.primary',
+      tokenType: 'color',
+      category: 'color',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-color-control-primary',
+      themePlaneApplicability: 'target-required-after-atomic-cutover',
+      contrastEndpointId: 'color.control.primary',
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'color',
+        key: 'control-primary',
+        classes: ['text-control-primary'],
+        allowedCssProperties: ['color'],
+      },
+    },
+    {
       id: 'color.border.default',
       tokenType: 'color',
       category: 'color',
@@ -910,7 +928,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'control-primary-on-page',
-      foregroundRole: 'color.action.primary',
+      foregroundRole: 'color.control.primary',
       backgroundRole: 'color.surface.page',
       kind: 'non-text',
       standardMinimum: 3,
@@ -921,7 +939,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'control-primary-on-panel',
-      foregroundRole: 'color.action.primary',
+      foregroundRole: 'color.control.primary',
       backgroundRole: 'color.surface.panel',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1123,7 +1141,7 @@ export function validatePublicRoleRegistry(
     .parse(registry)
   const records = parsed.records as unknown as readonly PublicRoleRecord[]
 
-  assertExactCount(records.length, 36, 'Public Role Registry record count')
+  assertExactCount(records.length, 37, 'Public Role Registry record count')
   assertUnique(
     records.map((record) => record.id),
     'Public Role Registry IDs',
@@ -1140,20 +1158,29 @@ export function validatePublicRoleRegistry(
   )
 
   const sortedIds = records.map((record) => record.id).sort(compareCodePoints)
+  const borderIndex = sortedIds.indexOf('color.border.default')
+  const controlIndex = sortedIds.indexOf('color.control.primary')
+
+  if (borderIndex < 0 || controlIndex < 0) {
+    throw new Error('The Action, Control, and Border public role order is incomplete.')
+  }
+
+  sortedIds.splice(controlIndex, 1)
+  sortedIds.splice(borderIndex, 0, 'color.control.primary')
 
   assertExactArray(
     records.map((record) => record.id),
     sortedIds,
-    'Public Role Registry code-point order',
+    'Public Role Registry canonical order',
   )
   assertExactCount(
     records.filter((record) => record.tokenType === 'color').length,
-    9,
+    10,
     'Active public color role count',
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    27,
+    28,
     'Exact UnoCSS rule count',
   )
   assertExactCount(
@@ -1335,6 +1362,23 @@ export function validateNamedContrastRegistry(
     records.map((record) => record.id),
     'Named Contrast Registry IDs',
   )
+
+  const actionContent = records.find((record) => record.id === 'action-content-on-primary')
+  const controlOnPage = records.find((record) => record.id === 'control-primary-on-page')
+  const controlOnPanel = records.find((record) => record.id === 'control-primary-on-panel')
+
+  if (
+    actionContent?.foregroundRole !== 'color.text.on-action' ||
+    actionContent.backgroundRole !== 'color.action.primary'
+  ) {
+    throw new Error('action-content-on-primary must use On-action Content over Action Fill.')
+  }
+
+  for (const record of [controlOnPage, controlOnPanel]) {
+    if (record?.foregroundRole !== 'color.control.primary') {
+      throw new Error(`${record?.id ?? 'control-primary contrast'} must use Control Foreground.`)
+    }
+  }
 
   for (const record of records) {
     const canonicalRecord = canonicalRecordsById.get(record.id)

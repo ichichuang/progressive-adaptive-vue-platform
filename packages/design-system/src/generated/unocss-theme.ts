@@ -10,6 +10,15 @@ export const platformUnoMappings = [
     allowedCssProperties: ['background-color'],
   },
   {
+    roleId: 'color.control.primary',
+    cssVariable: '--ui-color-control-primary',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'control-primary',
+    classes: ['text-control-primary'],
+    allowedCssProperties: ['color'],
+  },
+  {
     roleId: 'color.border.default',
     cssVariable: '--ui-color-border-default',
     generatorKind: 'exact-rule',
@@ -463,6 +472,12 @@ export const platformRules = [
     'text-body',
     {
       'font-size': 'var(--ui-font-size-body)',
+    },
+  ],
+  [
+    'text-control-primary',
+    {
+      color: 'var(--ui-color-control-primary)',
     },
   ],
   [

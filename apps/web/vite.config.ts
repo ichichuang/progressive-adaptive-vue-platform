@@ -264,8 +264,18 @@ function runtimeConfigurationArtifacts(runtimeConfiguration: CoreRuntimeConfigur
           )
         }
 
-        if (/\bdata-theme-registry-storage-key\b/u.test(html)) {
-          throw new Error('index.html must not expose the Custom Theme Registry storage key.')
+        const registryStorageKeyMatches = [
+          ...html.matchAll(/\bdata-theme-registry-storage-key="([^"]*)"/gu),
+        ]
+
+        if (
+          registryStorageKeyMatches.length !== 1 ||
+          registryStorageKeyMatches[0]?.[1] !==
+            applicationConfig.appearance.customThemeRegistryStorageKey
+        ) {
+          throw new Error(
+            'index.html must provide exactly one exact application-owned Custom Theme Registry storage key.',
+          )
         }
 
         const moduleBootstrapScripts = [...html.matchAll(/<script\b[^>]*>/gu)]

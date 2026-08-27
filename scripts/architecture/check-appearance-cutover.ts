@@ -34,11 +34,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    '1b3abbc3fb41504188175861e5dccdaecd2d2d3fba9a90c4f833824a0c76c202',
+    '707d93f47b88819ab8c04ea337717c1b3d83feff597662a074942f126f1f6cf5',
   'packages/design-system/src/generated/tokens.ts':
-    'f63ad587cc65b5b870b2d5792802c3518df7e34f0636440bde063c6beac27f5b',
+    '901523734120523b06a6490bfe7b8932c714375ed2495cfc18d4dfa77ad02338',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '34d32a8f988260ae2e1cfa75d9e5c5a586821be72fa17d2cbc8bebcaec71d3f7',
+    '72977d3184761d7ce7cdb07f0d3527bde7b7f06233c7b29b0f55bb72b7ad490a',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -675,13 +675,13 @@ async function validateFourteenBuiltInThemes(): Promise<readonly string[]> {
   const appearanceFiles = await readdir(resolve(rootDirectory, 'apps/web/src/app/appearance'))
 
   if (
-    colorValues.length !== 504 ||
+    colorValues.length !== 560 ||
     colorValues.some((value) => !value.startsWith('oklch(')) ||
     scrimValues.length !== 56 ||
     scrimValues.some((value) => typeof value !== 'string' || !value.endsWith('/ 0.56)'))
   ) {
     violations.push(
-      'Fourteen Built-in Themes must contain 504 absolute OKLCH roles and 56 fixed-alpha scrims.',
+      'Fourteen Built-in Themes must contain 560 absolute OKLCH roles and 56 fixed-alpha scrims.',
     )
   }
 
@@ -1646,6 +1646,79 @@ function validatePersistenceContracts(): readonly string[] {
       return [...violations, 'Persistence probe Custom Themes must validate.']
     }
 
+    const legacyDefinition = structuredClone(representativeTheme.definition) as unknown as {
+      id: string
+      label: string
+      planes: Record<string, Record<string, Record<string, string>>>
+      roleContractVersion: number
+      schemaVersion: number
+    }
+    legacyDefinition.id = 'legacy.registry'
+    legacyDefinition.label = 'Legacy Registry'
+    legacyDefinition.roleContractVersion = 1
+
+    for (const colorMode of ['light', 'dark']) {
+      for (const contrast of ['standard', 'enhanced']) {
+        const plane = legacyDefinition.planes[colorMode]?.[contrast]
+
+        if (plane === undefined) {
+          return [...violations, 'Legacy Registry probe plane must exist.']
+        }
+
+        plane['color.action.primary'] = plane['color.control.primary'] ?? ''
+
+        if (colorMode === 'dark') {
+          plane['color.text.on-action'] = plane['color.surface.page'] ?? ''
+        }
+
+        delete plane['color.control.primary']
+      }
+    }
+
+    const legacySnapshot = JSON.stringify({
+      schemaVersion: 1,
+      entries: [
+        {
+          registryKind: 'custom',
+          themeId: legacyDefinition.id,
+          definition: legacyDefinition,
+        },
+      ],
+    })
+    storage.values.set(registryKey, legacySnapshot)
+    const writesBeforeLegacyRead = storage.setCalls
+    const legacyRegistryRead = readCustomThemeRegistry()
+    const normalizedLegacyEntry =
+      legacyRegistryRead.status === 'accessible' ? legacyRegistryRead.entries[0] : undefined
+    const legacyAction = legacyDefinition.planes['dark']?.['standard']?.['color.action.primary']
+    const normalizedControl =
+      normalizedLegacyEntry?.definition.planes.dark.standard['color.control.primary']
+
+    if (
+      normalizedLegacyEntry?.themeId !== legacyDefinition.id ||
+      normalizedControl !== legacyAction ||
+      storage.values.get(registryKey) !== legacySnapshot ||
+      storage.setCalls !== writesBeforeLegacyRead
+    ) {
+      violations.push('Legacy Custom Theme normalization must be read-only and copy Action Fill.')
+    }
+
+    storage.storage.setItem(
+      registryKey,
+      JSON.stringify({ schemaVersion: 1, entries: legacyRegistryRead }),
+    )
+    const legacyRewriteProbeFailed =
+      storage.setCalls !== writesBeforeLegacyRead ||
+      storage.values.get(registryKey) !== legacySnapshot
+    storage.values.set(registryKey, legacySnapshot)
+    storage.setCalls = writesBeforeLegacyRead
+
+    if (!legacyRewriteProbeFailed) {
+      violations.push(
+        'Legacy Custom Theme Snapshot rewrite reversible negative probe did not fail.',
+      )
+    }
+
     const unsortedSnapshot = JSON.stringify({
       schemaVersion: 1,
       entries: [firstValidation.entry, secondValidation.entry],
@@ -2189,7 +2262,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       const declarations = selectorDeclarations(css, selector)
 
       if (
-        declarations?.size !== 36 ||
+        declarations?.size !== 40 ||
         entry.bank.records.some(
           (record) =>
             declarations.get(record.bankVariable) !== formatThemeBankCssValue(record.resolvedValue),
@@ -2258,8 +2331,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 9 || recordCount !== 250) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 9/250.')
+  if (manifest['schemaVersion'] !== 9 || recordCount !== 252) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 9/252.')
   }
 
   const themes = manifest['themes']
@@ -2300,7 +2373,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
         !exactKeys(bank, ['visibility', 'records']) ||
         bank['visibility'] !== 'ui-internal' ||
         !Array.isArray(records) ||
-        records.length !== 36 ||
+        records.length !== 40 ||
         records.some(
           (record) =>
             !isJsonObject(record) ||
@@ -2341,9 +2414,9 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
         legacyPreferenceMigration: true,
         builtInThemeResolution: true,
         atomicAppearanceApplication: true,
-        synchronousCustomThemeResolution: false,
+        synchronousCustomThemeResolution: true,
         customThemeRuntimeResolution: true,
-        themeRegistryStorageKeyAttribute: false,
+        themeRegistryStorageKeyAttribute: true,
       },
     },
   ]

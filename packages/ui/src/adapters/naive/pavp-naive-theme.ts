@@ -13,6 +13,7 @@ export interface PavpNaiveThemeProjection {
 }
 
 const colorAction = tokens['color.action.primary']
+const colorControl = tokens['color.control.primary']
 const colorBorder = tokens['color.border.default']
 const colorFocus = tokens['color.focus.ring']
 const colorOnAction = tokens['color.text.on-action']
@@ -82,16 +83,16 @@ export function createPavpNaiveThemeProjection(
   const projectedMotionDuration = resolveMotionDuration(appearance.motion)
   const themeOverrides = Object.freeze({
     common: {
-      primaryColorHover: colorAction,
-      primaryColorPressed: colorAction,
-      primaryColorSuppl: colorAction,
+      primaryColorHover: colorControl,
+      primaryColorPressed: colorControl,
+      primaryColorSuppl: colorControl,
       textColorBase: colorText,
       textColor1: colorText,
       textColor2: colorTextSecondary,
       textColor3: colorTextSecondary,
       iconColor: colorTextSecondary,
-      iconColorHover: colorAction,
-      iconColorPressed: colorAction,
+      iconColorHover: colorControl,
+      iconColorPressed: colorControl,
       borderColor: colorBorder,
       bodyColor: colorPage,
       tagColor: material.chrome,
@@ -123,8 +124,8 @@ export function createPavpNaiveThemeProjection(
       fontSize,
       itemLineHeight: lineHeight,
       itemTextColor: colorTextSecondary,
-      itemTextColorHover: colorAction,
-      itemTextColorPressed: colorAction,
+      itemTextColorHover: colorControl,
+      itemTextColorPressed: colorControl,
       itemTextColorActive: colorText,
       itemBorderRadius: radius,
       itemColorHover: material.chrome,
@@ -161,8 +162,8 @@ export function createPavpNaiveThemeProjection(
       textColorDisabledPrimary: colorOnAction,
       textColor: colorText,
       textColorGhost: colorText,
-      textColorGhostHover: colorAction,
-      textColorGhostPressed: colorAction,
+      textColorGhostHover: colorControl,
+      textColorGhostPressed: colorControl,
       textColorGhostDisabled: colorTextSecondary,
       rippleColor: colorFocus,
       rippleColorPrimary: colorFocus,
@@ -185,7 +186,7 @@ export function createPavpNaiveThemeProjection(
       buttonHeightMedium: enhancedTargetHeight,
       fontSizeMedium: fontSize,
       buttonBorderColor: colorBorder,
-      buttonBorderColorActive: colorAction,
+      buttonBorderColorActive: colorControl,
       buttonBoxShadow: shadowControl,
       buttonBoxShadowHover: shadowControlHover,
       buttonBoxShadowFocus: shadowFocusRing,
@@ -193,7 +194,7 @@ export function createPavpNaiveThemeProjection(
       buttonColorActive: colorAction,
       buttonTextColor: colorText,
       buttonTextColorActive: colorOnAction,
-      buttonTextColorHover: colorAction,
+      buttonTextColorHover: colorControl,
       buttonBorderRadius: radius,
     },
     Tag: {

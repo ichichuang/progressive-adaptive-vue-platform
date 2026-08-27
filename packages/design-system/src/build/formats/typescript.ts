@@ -148,8 +148,8 @@ export function themeRegistryDocument(result: TokenBuildResult) {
     ...new Set(builtInEntries[0]?.bank.records.map((record) => record.bankVariable) ?? []),
   ]
 
-  if (customBankVariables.length !== themeColorModes.length * themeContrasts.length * 9) {
-    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 36 variables.')
+  if (customBankVariables.length !== themeColorModes.length * themeContrasts.length * 10) {
+    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 40 variables.')
   }
 
   for (const entry of builtInEntries) {

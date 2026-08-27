@@ -658,6 +658,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
     records,
     resolvedThemes.map((theme) => theme.id),
     namedContrastRegistry,
+    completeThemes,
   )
   const tokens: Record<string, unknown> = {}
 

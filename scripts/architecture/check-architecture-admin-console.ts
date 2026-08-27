@@ -189,7 +189,7 @@ interface CompiledSfcStyles {
 
 const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 58
+const expectedArchitectureAdminConsoleNegativeProbeCount = 59
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
@@ -329,9 +329,9 @@ const expectedAdminTokens = [
   {
     name: 'admin.ambient.light-primary',
     type: 'color',
-    value: '{color.action.primary}',
+    value: '{color.control.primary}',
     cssVariable: '--ui-admin-ambient-light-primary',
-    resolvedValue: 'var(--ui-color-action-primary)',
+    resolvedValue: 'var(--ui-color-control-primary)',
   },
   {
     name: 'admin.ambient.light-warm',
@@ -344,12 +344,12 @@ const expectedAdminTokens = [
     name: 'admin.border.action',
     type: 'border',
     value: {
-      color: '{color.action.primary}',
+      color: '{color.control.primary}',
       width: '{admin.border.width}',
       style: 'solid',
     },
     cssVariable: '--ui-admin-border-action',
-    resolvedValue: 'var(--ui-admin-border-width) solid var(--ui-color-action-primary)',
+    resolvedValue: 'var(--ui-admin-border-width) solid var(--ui-color-control-primary)',
   },
   {
     name: 'admin.border.control',
@@ -411,9 +411,9 @@ const expectedAdminTokens = [
   {
     name: 'admin.navigation.selected',
     type: 'color',
-    value: '{color.action.primary}',
+    value: '{color.control.primary}',
     cssVariable: '--ui-admin-navigation-selected',
-    resolvedValue: 'var(--ui-color-action-primary)',
+    resolvedValue: 'var(--ui-color-control-primary)',
   },
   {
     name: 'admin.optical.backdrop-blur',
@@ -448,7 +448,7 @@ const expectedAdminTokens = [
     name: 'admin.shadow.control-hover',
     type: 'shadow',
     value: {
-      color: '{color.action.primary}',
+      color: '{color.control.primary}',
       offsetX: '{dimension.space.0}',
       offsetY: '{dimension.space.0}',
       blur: '{dimension.space.0}',
@@ -457,7 +457,7 @@ const expectedAdminTokens = [
     },
     cssVariable: '--ui-admin-shadow-control-hover',
     resolvedValue:
-      'inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-action-primary)',
+      'inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-control-primary)',
   },
   {
     name: 'admin.shadow.focus-ring',
@@ -725,6 +725,18 @@ interface Naive2452SharedConsumptionRecord {
 const naiveThemeSemanticGroups = [
   {
     component: 'common',
+    fields: [
+      'primaryColorHover',
+      'primaryColorPressed',
+      'primaryColorSuppl',
+      'iconColorHover',
+      'iconColorPressed',
+    ],
+    authority: 'color.control.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
     fields: ['cubicBezierEaseIn', 'cubicBezierEaseInOut', 'cubicBezierEaseOut'],
     authority: 'interaction.motion.easing',
     valueKind: 'easing',
@@ -756,7 +768,7 @@ const naiveThemeSemanticGroups = [
   {
     component: 'Breadcrumb',
     fields: ['itemTextColorHover', 'itemTextColorPressed'],
-    authority: 'color.action.primary',
+    authority: 'color.control.primary',
     valueKind: 'color',
   },
   {
@@ -871,7 +883,7 @@ const naiveThemeSemanticGroups = [
   {
     component: 'Button',
     fields: ['textColorGhostHover', 'textColorGhostPressed'],
-    authority: 'color.action.primary',
+    authority: 'color.control.primary',
     valueKind: 'color',
   },
   {
@@ -966,7 +978,13 @@ const naiveThemeSemanticGroups = [
   },
   {
     component: 'Radio',
-    fields: ['buttonBorderColorActive', 'buttonColorActive', 'buttonTextColorHover'],
+    fields: ['buttonBorderColorActive', 'buttonTextColorHover'],
+    authority: 'color.control.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonColorActive'],
     authority: 'color.action.primary',
     valueKind: 'color',
   },
@@ -3715,6 +3733,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     'surfacePage:',
     'surfacePanel:',
     'actionPrimary:',
+    'controlPrimary:',
     'borderDefault:',
     'focusRing:',
     'Object.freeze(reference)',
@@ -3760,7 +3779,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     !source.includes(':options="themeSelectionOptions"') ||
     !source.includes('@update:model-value="updateThemeSelection"') ||
     !source.includes('label="当前主题"') ||
-    [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 5 ||
+    [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 6 ||
     !source.includes('currentSwatches(themePreviewForValue(option.value))') ||
     !source.includes('builtInAppearanceThemePreviews') ||
     !source.includes('projectAccessibleCustomAppearanceThemePreviews') ||
@@ -4079,9 +4098,9 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     statusValues.length !== activeMirrorIndexes.length ||
     statusValues.some((value) => value !== 'OPEN') ||
     implementationValues.length !== activeMirrorIndexes.length ||
-    implementationValues.some((value) => value !== 'NOT_STARTED') ||
+    implementationValues.some((value) => value !== 'COMPLETE') ||
     verificationValues.length !== activeMirrorIndexes.length ||
-    verificationValues.some((value) => value !== 'NOT_RUN') ||
+    verificationValues.some((value) => value !== 'PASS') ||
     admissionValues.length === 0 ||
     admissionValues.some((value) => value !== 'FROZEN') ||
     /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT[ \t]*=/mu.test(architectureSource) ||
@@ -4108,10 +4127,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     ) ||
     !architectureSource.includes('PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN') ||
     !architectureSource.includes(
-      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED',
+      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
     ) ||
     !architectureSource.includes(
-      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_NOT_RUN',
+      'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_PASS',
     ) ||
     !architectureSource.includes(`CURRENT_BOUNDED_WORK_IS_${expectedCurrentBoundedWork}`) ||
     /^CURRENT_BOUNDED_WORK_IS_NONE$/mu.test(architectureSource)
@@ -4143,11 +4162,11 @@ function runCurrentWorkNegativeProbes(
       replaceLastOccurrence(architectureSource, currentWorkMarker, 'CURRENT_BOUNDED_WORK=NONE'),
     ],
     [
-      'current-work-false-implementation-completion',
+      'current-work-false-implementation-regression',
       'CURRENT_WORK_IMPLEMENTATION_FALSE_CLAIM',
       architectureSource.replace(
-        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
         'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=COMPLETE',
+        'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
       ),
     ],
   ]
@@ -4189,14 +4208,14 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'VISIBLE_BEHAVIOR_CHANGE=NONE',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=OPEN',
-    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
-    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=NOT_RUN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=PASS',
     'CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT',
     'CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_OPEN',
-    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED',
-    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_NOT_RUN',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
+    'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION_IS_PASS',
     'CURRENT_BOUNDED_WORK_IS_PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
     'COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only',
@@ -4310,7 +4329,7 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'ACTIVE_BUILT_IN_THEME_COUNT=14',
     'ACTIVE_BUILT_IN_THEME_ID_ORDER=amber,cobalt,coral,graphite,iris,jade,lagoon,stone-blue-ash,misty-rose-blue,honey-apricot-cream,cerulean-sky-navy,lavender-ivory,denim-cocoa,burgundy-snow',
     'ACTIVE_BUILT_IN_THEME_PLANE_COUNT=56',
-    'ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=504',
+    'ACTIVE_BUILT_IN_THEME_AUTHORED_COLOR_COUNT=560',
     'ADDED_SOURCE_AUTHORED_COLOR_COUNT=252',
     'ADDED_SOURCE_SRGB_IN_GAMUT_ORIGINAL_COUNT=176',
     'ADDED_SOURCE_SRGB_OUT_OF_GAMUT_ORIGINAL_COUNT=76',
@@ -4323,10 +4342,10 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'CUSTOM_REGISTRY_SNAPSHOT_CLEAR_OR_REWRITE=PROHIBITED',
     'CURRENT_MANIFEST_SCHEMA_VERSION=9',
     'CURRENT_TOKEN_RECORD_COUNT=145',
-    'CURRENT_MANIFEST_RECORD_COUNT=250',
-    'CURRENT_EXPECTED_RECORD_COUNT_DELTA=69',
-    'CURRENT_MANIFEST_GZIP_BYTES=15452',
-    'CURRENT_MANIFEST_RAW_UTF8_BYTES=341781',
+    'CURRENT_MANIFEST_RECORD_COUNT=252',
+    'CURRENT_EXPECTED_RECORD_COUNT_DELTA=71',
+    'CURRENT_MANIFEST_GZIP_BYTES=16198',
+    'CURRENT_MANIFEST_RAW_UTF8_BYTES=369028',
     'COMMIT_AUTHORIZATION=GRANTED_BY_OWNER',
     'PUSH_AUTHORIZATION=GRANTED_BY_OWNER',
     'IMPLEMENTATION_COMMIT=7dc240c025170ee1eaa62d6fbe00627cd22db8d9',
@@ -5286,8 +5305,18 @@ function runArchitectureAdminConsoleNegativeProbes(
       'NAIVE_VISIBLE_VENDOR_DEFAULT',
       {
         themeAdapterSource: baseline.themeAdapterSource.replace(
-          '      buttonTextColorHover: colorAction,',
+          '      buttonTextColorHover: colorControl,',
           '      buttonTextColorHover: radioDark.self.buttonTextColorHover,',
+        ),
+      },
+    ],
+    [
+      'naive-control-hover-restored-to-action-fill',
+      'NAIVE_OVERRIDE_SEMANTIC_ROLE',
+      {
+        themeAdapterSource: baseline.themeAdapterSource.replace(
+          '      buttonTextColorHover: colorControl,',
+          '      buttonTextColorHover: colorAction,',
         ),
       },
     ],
@@ -6004,12 +6033,12 @@ async function validateTokensAndLayout(): Promise<string[]> {
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
     tokenManifest.schemaVersion !== 9 ||
     tokenManifest.tokens.length !== 145 ||
-    tokenManifest.activePublicRoles.length !== 36 ||
-    tokenManifest.unoCssMappings.length !== 36 ||
-    tokenManifest.governance.recordCount !== 250 ||
+    tokenManifest.activePublicRoles.length !== 37 ||
+    tokenManifest.unoCssMappings.length !== 37 ||
+    tokenManifest.governance.recordCount !== 252 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 69 ||
-    classProjections.length !== 34 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 71 ||
+    classProjections.length !== 35 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -6451,9 +6480,9 @@ function validateInspectorProjections(): string[] {
     engineeringManifest.bundleBudgets
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 36 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 37 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 9 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 250 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 252 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',
       'cobalt',

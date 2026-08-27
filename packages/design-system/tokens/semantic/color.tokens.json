@@ -36,6 +36,12 @@
         "$value": "{color.palette.neutral.900}"
       }
     },
+    "control": {
+      "primary": {
+        "$type": "color",
+        "$value": "{color.palette.neutral.900}"
+      }
+    },
     "focus": {
       "ring": {
         "$type": "color",
@@ -120,18 +126,6 @@
           "$extensions": {
             "org.pavp": {
               "role": "color.border.default",
-              "conditions": {
-                "colorMode": "dark"
-              }
-            }
-          }
-        },
-        "action-primary": {
-          "$type": "color",
-          "$value": "{color.palette.neutral.0}",
-          "$extensions": {
-            "org.pavp": {
-              "role": "color.action.primary",
               "conditions": {
                 "colorMode": "dark"
               }

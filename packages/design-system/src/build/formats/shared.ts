@@ -13,6 +13,7 @@ import {
 } from '../../schema/token.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
+import { isActivePublicColorRole } from '../public-role-registry'
 import type { ResolvedTokenRecord } from '../resolve'
 import { visibilityEntersOutput, type TokenOutput } from '../token-contract'
 
@@ -294,6 +295,20 @@ export function uniqueRoleTokensForOutput(
     }
 
     roles.set(token.role.name, outputToken)
+  }
+
+  for (const role of result.activePublicRoles.filter(isActivePublicColorRole)) {
+    if (roles.has(role.id)) {
+      continue
+    }
+
+    roles.set(role.id, {
+      cssVariable: role.cssVariable,
+      name: role.id,
+      source: '<Public Role Registry Theme Plane>',
+      type: role.tokenType,
+      value: `var(${role.cssVariable})`,
+    })
   }
 
   return [...roles.values()].sort((left, right) => compareCodePoints(left.name, right.name))

@@ -20,7 +20,8 @@ export const builtInThemeIds = [
   'burgundy-snow',
 ] as const
 export const completeThemeSchemaVersion = 3 as const
-export const completeThemeRoleContractVersion = 1 as const
+export const completeThemeRoleContractVersion = 2 as const
+export const legacyCustomThemeRoleContractVersion = 1 as const
 export const builtInThemeIdSchema = z.enum(builtInThemeIds)
 export const customThemeIdSchema = z.string().min(1).brand<'CustomThemeId'>()
 
@@ -145,6 +146,13 @@ export const completeBuiltInThemeDefinitionSchema = z.strictObject({
 
 export const customThemeDefinitionSchema = z.strictObject({
   ...completeThemeContractShape,
+  id: customThemeIdSchema,
+  planes: customPlanesSchema,
+})
+
+export const legacyCustomThemeDefinitionSchema = z.strictObject({
+  ...completeThemeContractShape,
+  roleContractVersion: z.literal(legacyCustomThemeRoleContractVersion),
   id: customThemeIdSchema,
   planes: customPlanesSchema,
 })

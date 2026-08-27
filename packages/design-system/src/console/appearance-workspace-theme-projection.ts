@@ -14,6 +14,7 @@ export interface AppearanceThemePreviewSwatches {
   readonly surfacePage: string
   readonly surfacePanel: string
   readonly actionPrimary: string
+  readonly controlPrimary: string
   readonly borderDefault: string
   readonly focusRing: string
 }
@@ -63,6 +64,7 @@ function projectSwatches(
     surfacePage: requiredSwatch(definition, colorMode, contrast, 'color.surface.page'),
     surfacePanel: requiredSwatch(definition, colorMode, contrast, 'color.surface.panel'),
     actionPrimary: requiredSwatch(definition, colorMode, contrast, 'color.action.primary'),
+    controlPrimary: requiredSwatch(definition, colorMode, contrast, 'color.control.primary'),
     borderDefault: requiredSwatch(definition, colorMode, contrast, 'color.border.default'),
     focusRing: requiredSwatch(definition, colorMode, contrast, 'color.focus.ring'),
   })
@@ -119,7 +121,10 @@ export function projectAccessibleCustomAppearanceThemePreviews(
       .map((entry) => {
         const validation = validateCustomThemeDefinition(entry.definition)
 
-        if (validation.status !== 'validated' || validation.entry.themeId !== entry.themeId) {
+        if (
+          (validation.status !== 'validated' && validation.status !== 'rebound') ||
+          validation.entry.themeId !== entry.themeId
+        ) {
           throw new TypeError(`${entry.themeId}: the Custom Theme preview projection was rejected.`)
         }
 

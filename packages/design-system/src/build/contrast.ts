@@ -1,6 +1,8 @@
 import Color from 'colorjs.io'
 
+import { calculateWcag21Contrast, parseCssColor } from '../schema/css-color'
 import { colorValueSchema, type ColorValue, type TokenConditions } from '../schema/token.schema'
+import type { ValidatedCompleteBuiltInTheme } from './complete-themes'
 import { compareCodePoints } from './order'
 import type {
   AlphaContractRecord,
@@ -313,6 +315,7 @@ function validateNamedContrastPairs(
   tokens: readonly ResolvedTokenRecord[],
   themeIds: readonly string[],
   registry: readonly NamedContrastRecord[],
+  completeThemes: readonly ValidatedCompleteBuiltInTheme[],
 ): NamedContrastValidation[] {
   return registry.map((pair) => {
     const ratios = {
@@ -320,26 +323,60 @@ function validateNamedContrastPairs(
       standard: Number.POSITIVE_INFINITY,
     }
 
-    for (const state of validationStates(themeIds, pair.staticMaterialProjections)) {
-      const foreground = effectiveColorValue(tokens, pair.foregroundRole, state)
-      const background = effectiveColorValue(tokens, pair.backgroundRole, state)
-      const ratio = minimumContrastRatio(foreground, background)
-      const threshold = state.contrast === 'enhanced' ? pair.enhancedMinimum : pair.standardMinimum
+    const usesThemePlaneOnlyRole = pair.staticMaterialProjections.length === 0
 
-      if (ratio < threshold) {
-        throw new Error(
-          `${pair.id}: contrast ${ratio.toFixed(3)}:1 fails ${state.theme}/${state.colorMode}/${state.contrast}/${state.material ?? 'not-applicable'}.`,
-        )
+    if (usesThemePlaneOnlyRole) {
+      for (const theme of completeThemes) {
+        for (const colorMode of ['light', 'dark'] as const) {
+          for (const contrast of ['standard', 'enhanced'] as const) {
+            const plane = theme.resolvedPlanes[colorMode][contrast]
+            const foreground = plane[pair.foregroundRole]
+            const background = plane[pair.backgroundRole]
+
+            if (foreground === undefined || background === undefined) {
+              throw new Error(
+                `${theme.id}:${colorMode}.${contrast}: ${pair.id} endpoint is missing.`,
+              )
+            }
+
+            const ratio = calculateWcag21Contrast(
+              parseCssColor(foreground),
+              parseCssColor(background),
+            )
+            const threshold = contrast === 'enhanced' ? pair.enhancedMinimum : pair.standardMinimum
+
+            if (ratio < threshold) {
+              throw new Error(
+                `${pair.id}: contrast ${ratio.toFixed(3)}:1 fails ${theme.id}/${colorMode}/${contrast}/not-applicable.`,
+              )
+            }
+
+            ratios[contrast] = Math.min(ratios[contrast], ratio)
+          }
+        }
       }
+    } else
+      for (const state of validationStates(themeIds, pair.staticMaterialProjections)) {
+        const foreground = effectiveColorValue(tokens, pair.foregroundRole, state)
+        const background = effectiveColorValue(tokens, pair.backgroundRole, state)
+        const ratio = minimumContrastRatio(foreground, background)
+        const threshold =
+          state.contrast === 'enhanced' ? pair.enhancedMinimum : pair.standardMinimum
 
-      if (pair.maximumUsefulRatio !== null && ratio > pair.maximumUsefulRatio) {
-        throw new Error(
-          `${pair.id}: contrast ${ratio.toFixed(3)}:1 exceeds its maximum useful ratio for ${state.theme}/${state.colorMode}/${state.contrast}/${state.material ?? 'not-applicable'}.`,
-        )
+        if (ratio < threshold) {
+          throw new Error(
+            `${pair.id}: contrast ${ratio.toFixed(3)}:1 fails ${state.theme}/${state.colorMode}/${state.contrast}/${state.material ?? 'not-applicable'}.`,
+          )
+        }
+
+        if (pair.maximumUsefulRatio !== null && ratio > pair.maximumUsefulRatio) {
+          throw new Error(
+            `${pair.id}: contrast ${ratio.toFixed(3)}:1 exceeds its maximum useful ratio for ${state.theme}/${state.colorMode}/${state.contrast}/${state.material ?? 'not-applicable'}.`,
+          )
+        }
+
+        ratios[state.contrast] = Math.min(ratios[state.contrast], ratio)
       }
-
-      ratios[state.contrast] = Math.min(ratios[state.contrast], ratio)
-    }
 
     return {
       ...pair,
@@ -399,9 +436,15 @@ export function validateContrastAndMaterialContracts(
   tokens: readonly ResolvedTokenRecord[],
   themeIds: readonly string[],
   namedContrastRegistry: readonly NamedContrastRecord[],
+  completeThemes: readonly ValidatedCompleteBuiltInTheme[] = [],
 ): ContrastValidationResult {
   const materialRoles = validateMaterialRoles(tokens, themeIds)
-  const namedContrasts = validateNamedContrastPairs(tokens, themeIds, namedContrastRegistry)
+  const namedContrasts = validateNamedContrastPairs(
+    tokens,
+    themeIds,
+    namedContrastRegistry,
+    completeThemes,
+  )
 
   return {
     materialRoles,

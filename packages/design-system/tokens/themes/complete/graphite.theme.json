@@ -1,12 +1,13 @@
 {
   "schemaVersion": 3,
-  "roleContractVersion": 1,
+  "roleContractVersion": 2,
   "id": "graphite",
   "label": "Graphite",
   "planes": {
     "light": {
       "standard": {
         "color.action.primary": "oklch(49% 0.035 255)",
+        "color.control.primary": "oklch(49% 0.035 255)",
         "color.border.default": "oklch(57% 0.025 255)",
         "color.focus.ring": "oklch(47% 0.07 255)",
         "color.scrim.viewport": "oklch(11% 0.0072 255 / 0.56)",
@@ -18,6 +19,7 @@
       },
       "enhanced": {
         "color.action.primary": "oklch(37% 0.0273 255)",
+        "color.control.primary": "oklch(37% 0.0273 255)",
         "color.border.default": "oklch(46% 0.025 255)",
         "color.focus.ring": "oklch(34% 0.0595 255)",
         "color.scrim.viewport": "oklch(7% 0.0056 255 / 0.56)",
@@ -30,24 +32,26 @@
     },
     "dark": {
       "standard": {
-        "color.action.primary": "oklch(70% 0.0297 255)",
+        "color.action.primary": "oklch(49% 0.0297 255)",
+        "color.control.primary": "oklch(70% 0.0297 255)",
         "color.border.default": "oklch(53% 0.0262 255)",
         "color.focus.ring": "oklch(73% 0.07 255)",
         "color.scrim.viewport": "oklch(3% 0.0028 255 / 0.56)",
         "color.surface.page": "oklch(13% 0.0072 255)",
         "color.surface.panel": "oklch(19% 0.008 255)",
-        "color.text.on-action": "oklch(9% 0.0099 255)",
+        "color.text.on-action": "oklch(95% 0.0099 255)",
         "color.text.primary": "oklch(91% 0.0081 255)",
         "color.text.secondary": "oklch(74% 0.0134 255)"
       },
       "enhanced": {
-        "color.action.primary": "oklch(83% 0.0245 255)",
+        "color.action.primary": "oklch(37% 0.0245 255)",
+        "color.control.primary": "oklch(83% 0.0245 255)",
         "color.border.default": "oklch(64% 0.0275 255)",
         "color.focus.ring": "oklch(86% 0.049 255)",
         "color.scrim.viewport": "oklch(1% 0.0028 255 / 0.56)",
         "color.surface.page": "oklch(8% 0.0056 255)",
         "color.surface.panel": "oklch(14% 0.0072 255)",
-        "color.text.on-action": "oklch(3% 0.0072 255)",
+        "color.text.on-action": "oklch(99% 0.0032 255)",
         "color.text.primary": "oklch(99% 0.0032 255)",
         "color.text.secondary": "oklch(84% 0.0099 255)"
       }

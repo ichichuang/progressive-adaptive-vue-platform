@@ -413,6 +413,17 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
         />
       </div>
     </div>
+    <div
+      aria-label="主题色板角色"
+      class="pavp-appearance-theme-legend text-text-secondary"
+    >
+      <span>页面</span>
+      <span>面板</span>
+      <span>操作填充</span>
+      <span>控件前景</span>
+      <span>边框</span>
+      <span>焦点</span>
+    </div>
 
     <UiRadioCardGroup
       accessible-label="选择主题"
@@ -459,6 +470,13 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             :style="{
               ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
                 .actionPrimary,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .controlPrimary,
             }"
           />
           <span
@@ -791,6 +809,15 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   flex-wrap: wrap;
 }
 
+.pavp-appearance-theme-legend {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--ui-space-content-gap);
+  padding-inline: var(--ui-space-content-gap);
+  font-size: var(--ui-font-size-body);
+  text-align: center;
+}
+
 .pavp-appearance-eyebrow {
   color: var(--ui-color-text-primary);
   font-weight: var(--ui-font-weight-title);
@@ -823,7 +850,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
 .pavp-appearance-theme-swatches {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   overflow: hidden;
   border-radius: var(--ui-radius-panel);
 }
@@ -975,9 +1002,12 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   display: block;
   flex: none;
   inline-size: var(--ui-control-height);
-  block-size: calc(var(--ui-space-content-gap) / 2);
+  block-size: 0;
+  border-block-end-color: currentColor;
+  border-block-end-style: solid;
+  border-block-end-width: calc(var(--ui-space-content-gap) / 2);
   border-radius: var(--ui-radius-panel);
-  background: var(--ui-color-action-primary);
+  color: var(--ui-color-control-primary);
 }
 
 .pavp-material-stage__content {

@@ -14,6 +14,7 @@ import { ProductPreferenceDefault } from '../runtime/appearance-defaults'
 import { migrateToExplicitThemePreference } from '../runtime/preference-migration'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
+import { validateCustomThemeDefinition } from '../runtime/theme-registry'
 import { fontScaleValues } from '../schema/appearance.schema'
 import { builtInThemeIds } from '../schema/complete-theme.schema'
 import { explicitThemePreferenceSchema } from '../schema/preference.schema'
@@ -99,8 +100,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 15452,
-    expectedByteDelta: 12086,
+    expectedBytes: 16198,
+    expectedByteDelta: 12832,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -153,6 +154,15 @@ const manifestCompressionContract = {
     acceptedFinalRecordCount: 250,
     expectedByteDelta: 3902,
     expectedRecordCountDelta: 7,
+  },
+  darkActionColorHarmonyRefinement: {
+    baselineSource: 'additional-built-in-theme-expansion',
+    baselineBytes: 15452,
+    baselineRecordCount: 250,
+    acceptedFinalBytes: 16198,
+    acceptedFinalRecordCount: 252,
+    expectedByteDelta: 746,
+    expectedRecordCountDelta: 2,
   },
   hardLimitBytes: 32768,
   options: {
@@ -469,7 +479,10 @@ function validateManifestCompression(result: TokenBuildResult): number {
   const gzipBytes = first.byteLength
   const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
   const additionalBuiltInThemeExpansionByteDelta =
-    gzipBytes - manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes
+    manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalBytes -
+    manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes
+  const darkActionColorHarmonyByteDelta =
+    gzipBytes - manifestCompressionContract.darkActionColorHarmonyRefinement.baselineBytes
   const manifestRecordCount = governance['recordCount']
 
   assertInvariant(
@@ -539,12 +552,9 @@ function validateManifestCompression(result: TokenBuildResult): number {
     'Historical Seven Built-in Theme Replacement accepted bytes and delta must match its baseline',
   )
   assertInvariant(
-    typeof manifestRecordCount === 'number' &&
-      manifestRecordCount ===
-        manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalRecordCount &&
-      manifestRecordCount -
-        manifestCompressionContract.additionalBuiltInThemeExpansion.baselineRecordCount ===
-        manifestCompressionContract.additionalBuiltInThemeExpansion.expectedRecordCountDelta,
+    manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalRecordCount -
+      manifestCompressionContract.additionalBuiltInThemeExpansion.baselineRecordCount ===
+      manifestCompressionContract.additionalBuiltInThemeExpansion.expectedRecordCountDelta,
     'Additional Built-in Theme Expansion Manifest record delta must match its baseline',
   )
   assertInvariant(
@@ -557,6 +567,20 @@ function validateManifestCompression(result: TokenBuildResult): number {
     additionalBuiltInThemeExpansionByteDelta ===
       manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta,
     `Additional Built-in Theme Expansion gzip delta: expected ${String(manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta)}, received ${String(additionalBuiltInThemeExpansionByteDelta)}`,
+  )
+  assertInvariant(
+    typeof manifestRecordCount === 'number' &&
+      manifestRecordCount ===
+        manifestCompressionContract.darkActionColorHarmonyRefinement.acceptedFinalRecordCount &&
+      manifestRecordCount -
+        manifestCompressionContract.darkActionColorHarmonyRefinement.baselineRecordCount ===
+        manifestCompressionContract.darkActionColorHarmonyRefinement.expectedRecordCountDelta,
+    'Dark Action Color Harmony Refinement Manifest record delta must match its baseline',
+  )
+  assertInvariant(
+    darkActionColorHarmonyByteDelta ===
+      manifestCompressionContract.darkActionColorHarmonyRefinement.expectedByteDelta,
+    `Dark Action Color Harmony Refinement gzip delta: expected ${String(manifestCompressionContract.darkActionColorHarmonyRefinement.expectedByteDelta)}, received ${String(darkActionColorHarmonyByteDelta)}`,
   )
 
   return gzipBytes
@@ -935,7 +959,17 @@ function validatePublicOutputCompleteness(result: TokenBuildResult): void {
     )
     return [role['name']]
   })
-  const manifestIds = exactRoleIdSet(manifestPublicIds, activeIds, 'Manifest public role IDs', true)
+  exactRoleIdSet(manifestPublicIds, activeIds, 'Manifest public role IDs', true)
+  const manifestIds = exactRoleIdSet(
+    Array.isArray(manifest['activePublicRoles'])
+      ? manifest['activePublicRoles'].flatMap((entry) =>
+          isUnknownRecord(entry) && typeof entry['id'] === 'string' ? [entry['id']] : [],
+        )
+      : [],
+    activeIds,
+    'Manifest Active Public Role IDs',
+    true,
+  )
 
   assertInvariantEqual(
     {
@@ -1047,12 +1081,12 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
-      builtInThemeIds.length * 4 * 9,
-    'complete built-in Themes must contain exactly 504 authored color values',
+      builtInThemeIds.length * 4 * 10,
+    'complete built-in Themes must contain exactly 560 authored color values',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===
-      builtInThemeIds.length * 4 * 9 &&
+      builtInThemeIds.length * 4 * 10 &&
       result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 0),
     'all active built-in Theme cells must be explicit absolute colors without aliases',
   )
@@ -1182,11 +1216,37 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
 
   const missingRole = structuredClone(canonicalDocuments)
-  delete mutableThemeRoleMap(missingRole[0] ?? {}, 'light', 'standard')['color.text.secondary']
+  delete mutableThemeRoleMap(missingRole[0] ?? {}, 'light', 'standard')['color.control.primary']
   assertContractFailure(
     () => validateDocuments(missingRole),
-    /public color role set/u,
-    'a missing complete Theme role must fail',
+    /public color role order/u,
+    'a missing explicit Control Foreground role must fail',
+  )
+
+  const restoredSingleRoleConflict = structuredClone(canonicalDocuments)
+  const restoredConflictPlane = mutableThemeRoleMap(
+    restoredSingleRoleConflict[0] ?? {},
+    'dark',
+    'standard',
+  )
+  restoredConflictPlane['color.action.primary'] = restoredConflictPlane['color.control.primary']
+  assertContractFailure(
+    () => validateDocuments(restoredSingleRoleConflict),
+    /contrast/u,
+    'restoring the single-role Dark Action and Control conflict must fail',
+  )
+
+  const cappedControlForeground = structuredClone(canonicalDocuments)
+  const cappedControlPlane = mutableThemeRoleMap(
+    cappedControlForeground[0] ?? {},
+    'dark',
+    'standard',
+  )
+  cappedControlPlane['color.control.primary'] = cappedControlPlane['color.action.primary']
+  assertContractFailure(
+    () => validateDocuments(cappedControlForeground),
+    /contrast/u,
+    'applying the Dark Action Fill lightness cap to Control Foreground must fail',
   )
 
   const extraRole = structuredClone(canonicalDocuments)
@@ -1200,7 +1260,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   extraRoleMap['color.unapproved.extra'] = existingExtraProbeValue
   assertContractFailure(
     () => validateDocuments(extraRole),
-    /public color role set/u,
+    /public color role order/u,
     'an extra complete Theme role must fail',
   )
 
@@ -1292,7 +1352,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   secondIdentityRoleMap['color.scrim.viewport'] = firstIdentityRoleMap['color.scrim.viewport']
   assertContractFailure(
     () => validateDocuments(missingPerRoleIdentity),
-    /Theme identity must remain present/u,
+    /Theme identity must remain present|unchanged pre-existing Theme cells drifted/u,
     'complete Theme identity must remain present through every public color role',
   )
 
@@ -1346,6 +1406,43 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     ActiveNamedContrastRegistry,
     publicRoleRecords,
   )
+  const actionContentUsesControl = structuredClone(ActiveNamedContrastRegistry) as unknown as {
+    records: { foregroundRole: string; id: string }[]
+    schemaVersion: 1
+  }
+  const actionContentRecord = actionContentUsesControl.records.find(
+    (record) => record.id === 'action-content-on-primary',
+  )
+
+  assertInvariant(
+    actionContentRecord !== undefined,
+    'action-content-on-primary reversible probe source must exist',
+  )
+  actionContentRecord.foregroundRole = 'color.control.primary'
+  assertContractFailure(
+    () => validateNamedContrastRegistry(actionContentUsesControl, publicRoleRecords),
+    /action-content-on-primary must use On-action Content over Action Fill/u,
+    'pointing action-content-on-primary to Control Foreground must fail',
+  )
+
+  const controlContrastUsesAction = structuredClone(ActiveNamedContrastRegistry) as unknown as {
+    records: { foregroundRole: string; id: string }[]
+    schemaVersion: 1
+  }
+  const controlOnPageRecord = controlContrastUsesAction.records.find(
+    (record) => record.id === 'control-primary-on-page',
+  )
+
+  assertInvariant(
+    controlOnPageRecord !== undefined,
+    'control-primary-on-page reversible probe source must exist',
+  )
+  controlOnPageRecord.foregroundRole = 'color.action.primary'
+  assertContractFailure(
+    () => validateNamedContrastRegistry(controlContrastUsesAction, publicRoleRecords),
+    /control-primary-on-page must use Control Foreground/u,
+    'pointing a Control contrast to Action Fill must fail',
+  )
 
   assertInvariantEqual(
     result.activePublicRoles,
@@ -1360,7 +1457,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     result.unoCssMappings,
     unoCssMappingRecords(publicRoleRecords),
-    'Token preprocessing must carry exactly 36 UnoCSS mapping records',
+    'Token preprocessing must carry exactly 37 UnoCSS mapping records',
   )
   assertInvariantEqual(
     result.namedContrasts.map((record) =>
@@ -2252,6 +2349,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
         incompleteMaterialTokens,
         themeIds,
         ActiveNamedContrastRegistry.records,
+        result.completeThemes,
       ),
     /projection contract/u,
     'incomplete adaptive, reduced, or solid material projections must fail generation',
@@ -2307,12 +2405,12 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     registry.builtInEntries.length === builtInThemeIds.length &&
-      registry.builtInEntries.every((entry) => entry.bank.records.length === 36),
-    'the generated Built-in Theme Registry must contain seven complete 36-cell Banks',
+      registry.builtInEntries.every((entry) => entry.bank.records.length === 40),
+    'the generated Built-in Theme Registry must contain fourteen complete 40-cell Banks',
   )
   assertInvariant(
-    registry.customBankVariables.length === 36 && new Set(registry.customBankVariables).size === 36,
-    'the generated Custom Theme Bank allowlist must contain exactly 36 fixed variables',
+    registry.customBankVariables.length === 40 && new Set(registry.customBankVariables).size === 40,
+    'the generated Custom Theme Bank allowlist must contain exactly 40 fixed variables',
   )
   assertInvariantEqual(
     formatThemeRegistryTypeScript(result),
@@ -2394,9 +2492,11 @@ interface AppearanceInitExecutionOptions {
   invokeRestorationOperation?: boolean
   prefersDark?: boolean
   rawPreference?: string | null
+  rawThemeRegistry?: string | null
   reducedTransparencyRequested?: boolean
   storageKey?: string | null
   storageReadFailure?: boolean
+  themeRegistryStorageKey?: string | null
 }
 
 interface AppearanceInitExecutionResult {
@@ -2406,6 +2506,7 @@ interface AppearanceInitExecutionResult {
   hasRestorationOperation: boolean
   networkRequests: number
   requestedStorageKey?: string
+  requestedThemeRegistryStorageKey?: string
   storageWrites: number
 }
 
@@ -2421,9 +2522,11 @@ function executeAppearanceInit(
     invokeRestorationOperation = false,
     prefersDark = false,
     rawPreference = null,
+    rawThemeRegistry = null,
     reducedTransparencyRequested = false,
     storageKey = 'runtime-supplied-preference-key',
     storageReadFailure = false,
+    themeRegistryStorageKey = 'runtime-supplied-theme-registry-key',
   }: AppearanceInitExecutionOptions = {},
 ): AppearanceInitExecutionResult {
   const attributes = new Map<string, string>([
@@ -2441,10 +2544,15 @@ function executeAppearanceInit(
       ? null
       : ({
           getAttribute(name: string): string | null {
-            return name === 'data-preference-storage-key' ? storageKey : null
+            if (name === 'data-preference-storage-key') {
+              return storageKey
+            }
+
+            return name === 'data-theme-registry-storage-key' ? themeRegistryStorageKey : null
           },
         } as Record<string, unknown>)
   let requestedStorageKey: string | undefined
+  let requestedThemeRegistryStorageKey: string | undefined
   let storageWrites = 0
   let networkRequests = 0
   const rejectStorageWrite = (): never => {
@@ -2507,13 +2615,21 @@ function executeAppearanceInit(
     localStorage: {
       clear: rejectStorageWrite,
       getItem(key: string): string | null {
-        requestedStorageKey = key
-
         if (storageReadFailure) {
           throw new Error('Storage unavailable.')
         }
 
-        return rawPreference
+        if (key === storageKey) {
+          requestedStorageKey = key
+          return rawPreference
+        }
+
+        if (key === themeRegistryStorageKey) {
+          requestedThemeRegistryStorageKey = key
+          return rawThemeRegistry
+        }
+
+        return null
       },
       removeItem: rejectStorageWrite,
       setItem: rejectStorageWrite,
@@ -2548,6 +2664,7 @@ function executeAppearanceInit(
     hasRestorationOperation: typeof restorationOperation === 'function',
     networkRequests,
     ...(requestedStorageKey === undefined ? {} : { requestedStorageKey }),
+    ...(requestedThemeRegistryStorageKey === undefined ? {} : { requestedThemeRegistryStorageKey }),
     storageWrites,
   }
 }
@@ -2651,7 +2768,8 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       !appearanceInit.includes('pavp:web:user-preference') &&
       !appearanceInit.includes('pavp:web:custom-theme-registry') &&
       appearanceInit.includes('document.currentScript') &&
-      appearanceInit.includes("getAttribute('data-preference-storage-key')"),
+      appearanceInit.includes("getAttribute('data-preference-storage-key')") &&
+      appearanceInit.includes("'data-theme-registry-storage-key'"),
     'appearance-init.js must remain synchronous, classic, network-free, storage-read-only, application-key-agnostic, and module-free',
   )
   assertInvariantEqual(
@@ -2670,9 +2788,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           legacyPreferenceMigration: true,
           builtInThemeResolution: true,
           atomicAppearanceApplication: true,
-          synchronousCustomThemeResolution: false,
+          synchronousCustomThemeResolution: true,
           customThemeRuntimeResolution: true,
-          themeRegistryStorageKeyAttribute: false,
+          themeRegistryStorageKeyAttribute: true,
         },
       },
     ],
@@ -2775,9 +2893,90 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       hasRestorationOperation: true,
       networkRequests: 0,
       requestedStorageKey: 'runtime-supplied-preference-key',
+      requestedThemeRegistryStorageKey: 'runtime-supplied-theme-registry-key',
       storageWrites: 0,
     },
     'a valid Custom reference must retain safety and expose only the private restoration signal',
+  )
+  const representativeDefinition = registry.builtInEntries[0]?.definition
+
+  assertInvariant(
+    representativeDefinition !== undefined,
+    'the legacy Custom Theme compatibility probe source must exist',
+  )
+
+  const legacyCustomTheme = structuredClone(representativeDefinition) as unknown as {
+    id: string
+    label: string
+    planes: Record<string, Record<string, Record<string, string>>>
+    roleContractVersion: number
+    schemaVersion: number
+  }
+  legacyCustomTheme.id = 'legacy.custom'
+  legacyCustomTheme.label = 'Legacy Custom'
+  legacyCustomTheme.roleContractVersion = 1
+
+  for (const colorMode of ['light', 'dark']) {
+    for (const contrast of ['standard', 'enhanced']) {
+      const plane = legacyCustomTheme.planes[colorMode]?.[contrast]
+
+      assertInvariant(plane !== undefined, 'the legacy Custom Theme probe plane must exist')
+      plane['color.action.primary'] = plane['color.control.primary'] ?? ''
+
+      if (colorMode === 'dark') {
+        plane['color.text.on-action'] = plane['color.surface.page'] ?? ''
+      }
+
+      delete plane['color.control.primary']
+    }
+  }
+
+  const legacyCustomPreference = explicitThemePreferenceSchema.parse({
+    schemaVersion: 3,
+    appearance: {
+      ...ProductPreferenceDefault,
+      colorMode: 'dark',
+      theme: {
+        registryKind: 'custom',
+        themeId: legacyCustomTheme.id,
+      },
+    },
+  })
+  const legacyCustomRegistrySnapshot = JSON.stringify({
+    schemaVersion: 1,
+    entries: [
+      {
+        registryKind: 'custom',
+        themeId: legacyCustomTheme.id,
+        definition: legacyCustomTheme,
+      },
+    ],
+  })
+  const legacyCustomExecution = executeAppearanceInit(appearanceInit, {
+    prefersDark: true,
+    rawPreference: JSON.stringify(legacyCustomPreference),
+    rawThemeRegistry: legacyCustomRegistrySnapshot,
+  })
+  const legacyRuntimeValidation = validateCustomThemeDefinition(legacyCustomTheme)
+  const legacyDarkStandardAction =
+    legacyCustomTheme.planes['dark']?.['standard']?.['color.action.primary']
+  const firstPaintControl =
+    legacyCustomExecution.customProperties['--ui-theme-bank-dark-standard-control-primary']
+  const runtimeControl =
+    legacyRuntimeValidation.status === 'rebound'
+      ? legacyRuntimeValidation.entry.definition.planes.dark.standard['color.control.primary']
+      : undefined
+
+  assertInvariant(
+    legacyDarkStandardAction !== undefined &&
+      legacyCustomExecution.attributes['data-theme-kind'] === 'custom' &&
+      legacyCustomExecution.attributes['data-theme'] === legacyCustomTheme.id &&
+      firstPaintControl === legacyDarkStandardAction &&
+      runtimeControl === legacyDarkStandardAction &&
+      legacyCustomExecution.storageWrites === 0 &&
+      legacyCustomExecution.requestedThemeRegistryStorageKey ===
+        'runtime-supplied-theme-registry-key',
+    'First Paint and Vue runtime must normalize legacy Control Foreground identically without Storage rewrite',
   )
 
   const legacyTuple = registry.legacyBuiltInThemeTuples[2]

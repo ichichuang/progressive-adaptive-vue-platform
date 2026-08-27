@@ -4,6 +4,7 @@ import type { TokenName } from './token-names'
 export const tokens = {
   'color.action.primary': 'var(--ui-color-action-primary)',
   'color.border.default': 'var(--ui-color-border-default)',
+  'color.control.primary': 'var(--ui-color-control-primary)',
   'color.focus.ring': 'var(--ui-color-focus-ring)',
   'color.scrim.viewport': 'var(--ui-color-scrim-viewport)',
   'color.surface.page': 'var(--ui-color-surface-page)',

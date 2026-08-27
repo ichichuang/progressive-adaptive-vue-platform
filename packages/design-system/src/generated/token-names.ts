@@ -2,6 +2,7 @@
 export const tokenNames = [
   'color.action.primary',
   'color.border.default',
+  'color.control.primary',
   'color.focus.ring',
   'color.scrim.viewport',
   'color.surface.page',
