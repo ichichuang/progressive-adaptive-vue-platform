@@ -194,10 +194,13 @@ const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
 const expectedAcceptanceClosureNegativeProbeCount = 5
+const expectedRuntime003AdmissionNegativeProbeCount = 5
 const acceptedDarkActionWorkPackage = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
 const darkActionAdmissionAmendment = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
 const darkActionImplementationCommit = '5673236868737f42f3470307b5f5d6c8d4e8639e'
 const darkActionAcceptanceStatement = '验收通过'
+const runtime003WorkItem = 'PAVP-RUNTIME-003'
+const runtime003AdmissionAmendment = 'PAVP_RUNTIME_003_ADMISSION_AMENDMENT'
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
 const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
@@ -3940,8 +3943,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     .exec(canonicalStatusSource)?.[1]
     ?.trim()
 
-  if (canonicalWork !== 'NONE' || canonicalAuthority !== 'NONE') {
-    violations.push('DARK_ACTION_CURRENT_WORK_NOT_CLEARED')
+  if (canonicalWork !== runtime003WorkItem || canonicalAuthority !== runtime003AdmissionAmendment) {
+    violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
   }
 
   const amendmentHeading = `### 1.2B.0G \`${acceptedDarkActionWorkPackage}\``
@@ -3964,8 +3967,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
     `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${darkActionAdmissionAmendment}`,
     `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
-    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
-    'CURRENT_BOUNDED_WORK=NONE',
+    `CURRENT_BOUNDED_WORK_AUTHORITY=${runtime003AdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
     'OWNER_RUNTIME_ACCEPTANCE=PASS',
     'OWNER_VISUAL_ACCEPTANCE=PASS',
     `OWNER_ACCEPTANCE_STATEMENT=${darkActionAcceptanceStatement}`,
@@ -4002,10 +4005,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'NONE' ||
-      authorityValues[0] !== 'NONE'
+      workValues[0] !== runtime003WorkItem ||
+      authorityValues[0] !== runtime003AdmissionAmendment
     ) {
-      violations.push('DARK_ACTION_CURRENT_WORK_NOT_CLEARED')
+      violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
     }
   }
 
@@ -4021,10 +4024,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length === 0 ||
     allCurrentWorkAuthorityMarkers.length === 0 ||
-    allCurrentWorkMarkers.some((value) => value !== 'NONE') ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== 'NONE')
+    allCurrentWorkMarkers.some((value) => value !== runtime003WorkItem) ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== runtime003AdmissionAmendment)
   ) {
-    violations.push('DARK_ACTION_CURRENT_WORK_NOT_CLEARED')
+    violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
   }
 
   const statusValues = [
@@ -4132,7 +4135,12 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_${darkActionImplementationCommit}`,
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE',
-    'CURRENT_BOUNDED_WORK_IS_NONE',
+    'PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN',
+    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
+    'CURRENT_BOUNDED_WORK_IS_PAVP-RUNTIME-003',
+    'PAVP_RUNTIME_003_STATUS_IS_OPEN',
+    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED',
+    'PAVP_RUNTIME_003_STATIC_VERIFICATION_IS_NOT_RUN',
     'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE_IS_NONE',
     'SUCCESSOR_PACKAGE_AUTHORIZATION_IS_NONE',
@@ -4180,13 +4188,39 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED')
   }
 
+  const runtime003AdmissionValues = valuesForMarker('PAVP_RUNTIME_003_ADMISSION_AMENDMENT')
+  const runtime003StatusValues = valuesForMarker('PAVP_RUNTIME_003_STATUS')
+  const runtime003ImplementationValues = valuesForMarker(
+    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION',
+  )
+  const runtime003VerificationValues = valuesForMarker('PAVP_RUNTIME_003_STATIC_VERIFICATION')
+  const runtime004StatusValues = valuesForMarker('PAVP_RUNTIME_004_STATUS')
+
   if (
-    ['PAVP_RUNTIME_003_STATUS', 'PAVP_RUNTIME_004_STATUS'].some((marker) => {
-      const values = valuesForMarker(marker)
-      return values.length === 0 || values.some((value) => value !== 'OPEN')
-    })
+    runtime003AdmissionValues.length === 0 ||
+    runtime003AdmissionValues.some((value) => value !== 'FROZEN')
+  ) {
+    violations.push('PAVP_RUNTIME_003_ADMISSION_NOT_FROZEN')
+  }
+  if (
+    runtime003StatusValues.length === 0 ||
+    runtime003StatusValues.some((value) => value !== 'OPEN') ||
+    runtime004StatusValues.length === 0 ||
+    runtime004StatusValues.some((value) => value !== 'OPEN')
   ) {
     violations.push('OPEN_RUNTIME_DEFECT_STATUS_DRIFT')
+  }
+  if (
+    runtime003ImplementationValues.length === 0 ||
+    runtime003ImplementationValues.some((value) => value !== 'NOT_STARTED')
+  ) {
+    violations.push('PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_STATE')
+  }
+  if (
+    runtime003VerificationValues.length === 0 ||
+    runtime003VerificationValues.some((value) => value !== 'NOT_RUN')
+  ) {
+    violations.push('PAVP_RUNTIME_003_STATIC_VERIFICATION_STATE')
   }
 
   return [...new Set(violations)]
@@ -4206,9 +4240,9 @@ function runAcceptanceClosureNegativeProbes(
     ],
     [
       'dark-action-retained-as-current-work',
-      'DARK_ACTION_CURRENT_WORK_NOT_CLEARED',
+      'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -4230,6 +4264,65 @@ function runAcceptanceClosureNegativeProbes(
     ],
     [
       'admin-console-overall-acceptance-falsely-restored',
+      'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED',
+      architectureSource.replace(
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=PASS',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed: mutatedSource !== architectureSource && failureCodes.includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function runRuntime003AdmissionNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const probes: readonly [string, string, string][] = [
+    [
+      'runtime-003-current-work-restored-to-none',
+      'PAVP_RUNTIME_003_CURRENT_WORK',
+      architectureSource.replace(
+        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
+        'CURRENT_BOUNDED_WORK=NONE',
+      ),
+    ],
+    [
+      'runtime-003-unauthorized-current-work-id',
+      'PAVP_RUNTIME_003_CURRENT_WORK',
+      architectureSource.replace(
+        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
+        'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-999',
+      ),
+    ],
+    [
+      'runtime-003-repository-implementation-falsely-complete',
+      'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_STATE',
+      architectureSource.replace(
+        'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
+        'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE',
+      ),
+    ],
+    [
+      'runtime-003-static-verification-falsely-passed',
+      'PAVP_RUNTIME_003_STATIC_VERIFICATION_STATE',
+      architectureSource.replace(
+        'PAVP_RUNTIME_003_STATIC_VERIFICATION=NOT_RUN',
+        'PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS',
+      ),
+    ],
+    [
+      'runtime-003-overall-admin-console-acceptance-restored',
       'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED',
       architectureSource.replace(
         'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
@@ -4280,8 +4373,9 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE',
-    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
-    'CURRENT_BOUNDED_WORK=NONE',
+    'PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN',
+    'CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
+    'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_ACCEPTED',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
@@ -4292,7 +4386,9 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_5673236868737f42f3470307b5f5d6c8d4e8639e',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE',
-    'CURRENT_BOUNDED_WORK_IS_NONE',
+    'PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN',
+    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
+    'CURRENT_BOUNDED_WORK_IS_PAVP-RUNTIME-003',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
     'COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only',
     'REPOSITORY_IMPLEMENTATION=COMPLETE',
@@ -4333,6 +4429,8 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE',
     'PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS',
     'PAVP_RUNTIME_003_STATUS=OPEN',
+    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
+    'PAVP_RUNTIME_003_STATIC_VERIFICATION=NOT_RUN',
     'PAVP_RUNTIME_004_STATUS=OPEN',
     'PAVP_RUNTIME_005_STATUS=OPEN',
     'PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE',
@@ -6757,6 +6855,8 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   const runtime005NegativeProbeResults = runRuntime005NegativeProbes(baseline)
   const acceptanceClosureNegativeProbeResults =
     runAcceptanceClosureNegativeProbes(architectureSource)
+  const runtime003AdmissionNegativeProbeResults =
+    runRuntime003AdmissionNegativeProbes(architectureSource)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
     violations.push(
@@ -6783,6 +6883,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   ) {
     violations.push(
       `Acceptance-closure negative-probe count drifted: expected ${String(expectedAcceptanceClosureNegativeProbeCount)}, received ${String(acceptanceClosureNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    runtime003AdmissionNegativeProbeResults.length !== expectedRuntime003AdmissionNegativeProbeCount
+  ) {
+    violations.push(
+      `PAVP-RUNTIME-003 admission negative-probe count drifted: expected ${String(expectedRuntime003AdmissionNegativeProbeCount)}, received ${String(runtime003AdmissionNegativeProbeResults.length)}.`,
     )
   }
 
@@ -6838,6 +6945,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of runtime003AdmissionNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory PAVP-RUNTIME-003 admission negative probe did not fail.`,
+      )
+    }
+  }
 
   return [...new Set(violations)]
 }
@@ -6850,6 +6964,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes)`,
   )
 }
