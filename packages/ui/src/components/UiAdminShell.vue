@@ -79,6 +79,15 @@ function closeNavigation(): void {
   navigationOpen.value = false
 }
 
+function handleDrawerScrimPointerDown(event: PointerEvent): void {
+  if (event.button !== 0 || event.target !== event.currentTarget) {
+    return
+  }
+
+  event.preventDefault()
+  closeNavigation()
+}
+
 function openNavigation(): void {
   focusReturnTarget =
     document.activeElement instanceof HTMLElement
@@ -295,6 +304,7 @@ watch(navigationOpen, async (isOpen) => {
           v-if="profile === 'narrow' && navigationOpen"
           class="pavp-admin-shell__drawer-layer"
           data-shell-region="architecture-console-navigation-overlay"
+          @pointerdown="handleDrawerScrimPointerDown($event)"
         >
           <nav
             ref="drawerNavigation"
@@ -608,6 +618,8 @@ watch(navigationOpen, async (isOpen) => {
   align-content: start;
   gap: var(--ui-space-section-block);
   block-size: 100%;
+  inline-size: 100%;
+  max-inline-size: var(--ui-layout-admin-drawer-maximum-inline-size);
   overflow: auto;
   padding-block: max(var(--ui-space-section-block), var(--pavp-safe-area-top))
     max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
@@ -624,10 +636,9 @@ watch(navigationOpen, async (isOpen) => {
   --pavp-safe-area-left: env(safe-area-inset-left, 0px);
   position: fixed;
   z-index: var(--ui-z-overlay);
-  block-size: 100dvh;
-  inline-size: min(100%, var(--ui-layout-admin-drawer-maximum-inline-size));
   inset-block: 0;
-  inset-inline-start: 0;
+  inset-inline: 0;
+  background: var(--ui-color-scrim-viewport);
 }
 
 .pavp-admin-shell__drawer-heading {
@@ -637,15 +648,15 @@ watch(navigationOpen, async (isOpen) => {
   gap: var(--ui-space-content-gap);
 }
 
-.pavp-admin-drawer-enter-active,
-.pavp-admin-drawer-leave-active {
+.pavp-admin-drawer-enter-active .pavp-admin-shell__drawer-navigation,
+.pavp-admin-drawer-leave-active .pavp-admin-shell__drawer-navigation {
   transition-duration: var(--ui-motion-duration);
   transition-property: transform;
   transition-timing-function: var(--ui-motion-easing);
 }
 
-.pavp-admin-drawer-enter-from,
-.pavp-admin-drawer-leave-to {
+.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation,
+.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation {
   transform: translateX(calc(var(--ui-layout-admin-drawer-maximum-inline-size) * -1));
 }
 
@@ -717,8 +728,12 @@ html[data-motion='none'] .pavp-admin-shell::before {
   animation: none;
 }
 
-html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,
-html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active,
+html[data-motion='reduced']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='reduced']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active
+  .pavp-admin-shell__drawer-navigation,
 html[data-motion='reduced'] .pavp-admin-shell__sidebar,
 html[data-motion='reduced'] .pavp-admin-shell__action,
 html[data-motion='reduced'] .pavp-admin-shell__navigation-action,
@@ -726,8 +741,12 @@ html[data-motion='reduced'] .pavp-admin-shell__navigation-action::before {
   transition-duration: calc(var(--ui-motion-duration) / 2);
 }
 
-html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,
-html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active,
+html[data-motion='none']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='none']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active
+  .pavp-admin-shell__drawer-navigation,
 html[data-motion='none'] .pavp-admin-shell__sidebar,
 html[data-motion='none'] .pavp-admin-shell__action,
 html[data-motion='none'] .pavp-admin-shell__navigation-action,
@@ -740,9 +759,22 @@ html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active {
   transform: translateY(calc(var(--ui-space-content-gap) / 8));
 }
 
-html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from,
-html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to {
+html[data-motion='reduced']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='reduced']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to
+  .pavp-admin-shell__drawer-navigation {
   transform: translateX(calc(var(--ui-space-content-gap) * -1));
+}
+
+html[data-motion='none']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='none']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to
+  .pavp-admin-shell__drawer-navigation {
+  transform: none;
 }
 
 html[data-motion='none'] .pavp-admin-shell__action:active,

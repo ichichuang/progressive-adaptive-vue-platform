@@ -88,6 +88,7 @@ interface MaterialGateSnapshot {
   readonly capabilityPageTemplateSource: string
   readonly themeAdapterSource: string
   readonly naiveProviderSource: string
+  readonly uiProviderSource: string
   readonly shellSource: string
   readonly adminTokenSource: string
   readonly routeRegistrySource: string
@@ -195,6 +196,7 @@ const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
 const expectedAcceptanceClosureNegativeProbeCount = 5
 const expectedRuntime003AdmissionNegativeProbeCount = 5
+const expectedRuntime003SourceNegativeProbeCount = 10
 const acceptedDarkActionWorkPackage = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
 const darkActionAdmissionAmendment = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
 const darkActionImplementationCommit = '5673236868737f42f3470307b5f5d6c8d4e8639e'
@@ -1972,8 +1974,8 @@ function compiledShellStateViolations(source: string): string[] {
   }
 
   const reducedDurationTargets = [
-    '.pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active',
-    '.pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active',
+    '.pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active .pavp-admin-shell__drawer-navigation',
+    '.pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active .pavp-admin-shell__drawer-navigation',
     '.pavp-admin-shell__sidebar',
     '.pavp-admin-shell__action',
     '.pavp-admin-shell__navigation-action',
@@ -1988,12 +1990,12 @@ function compiledShellStateViolations(source: string): string[] {
     ) ||
     !selectorHasDeclarations(
       allRules,
-      "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from",
+      "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation",
       { transform: 'translateX(calc(var(--ui-space-content-gap) * -1))' },
     ) ||
     !selectorHasDeclarations(
       allRules,
-      "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to",
+      "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
       { transform: 'translateX(calc(var(--ui-space-content-gap) * -1))' },
     ) ||
     !selectorHasDeclarations(allRules, "html[data-motion='reduced'] .pavp-admin-shell::before", {
@@ -2023,6 +2025,16 @@ function compiledShellStateViolations(source: string): string[] {
       allRules,
       "html[data-motion='none'] .pavp-admin-shell__navigation-action:active",
       { transform: 'none' },
+    ) ||
+    !selectorHasDeclarations(
+      allRules,
+      "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation",
+      { transform: 'none' },
+    ) ||
+    !selectorHasDeclarations(
+      allRules,
+      "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
+      { transform: 'none' },
     )
   ) {
     violations.push('MOTION_NONE_TARGETS')
@@ -2039,8 +2051,10 @@ function compiledShellStateViolations(source: string): string[] {
     ),
     "html[data-motion='reduced'] .pavp-admin-shell__action:active",
     "html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active",
-    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from",
-    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to",
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
     "html[data-motion='none'] .pavp-admin-shell__action:active",
     "html[data-motion='none'] .pavp-admin-shell__navigation-action:active",
   ])
@@ -2707,6 +2721,19 @@ interface Runtime002NavigationEffect {
   closeCount: number
   emitCount: number
   navigationOpen: boolean
+  stopped: boolean
+  supported: boolean
+}
+
+interface Runtime003PointerScenario {
+  readonly button: number
+  readonly selfTarget: boolean
+}
+
+interface Runtime003PointerEffect {
+  closeCount: number
+  operations: string[]
+  prevented: number
   stopped: boolean
   supported: boolean
 }
@@ -3565,6 +3592,709 @@ function runtime002NavigationViolations(shellSource: string): string[] {
   return [...new Set(violations)]
 }
 
+function runtime003PointerValue(
+  expression: ts.Expression,
+  eventParameterName: string,
+  scenario: Runtime003PointerScenario,
+): boolean | number | string | undefined {
+  const value = unwrapExpression(expression)
+
+  if (value.kind === ts.SyntaxKind.TrueKeyword) {
+    return true
+  }
+  if (value.kind === ts.SyntaxKind.FalseKeyword) {
+    return false
+  }
+  if (ts.isNumericLiteral(value)) {
+    return Number(value.text)
+  }
+  if (
+    ts.isPropertyAccessExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === eventParameterName
+  ) {
+    if (value.name.text === 'button') {
+      return scenario.button
+    }
+    if (value.name.text === 'target') {
+      return scenario.selfTarget ? 'self-target' : 'pointer-target'
+    }
+    if (value.name.text === 'currentTarget') {
+      return scenario.selfTarget ? 'self-target' : 'current-target'
+    }
+  }
+  if (ts.isPrefixUnaryExpression(value) && value.operator === ts.SyntaxKind.ExclamationToken) {
+    const operand = runtime003PointerValue(value.operand, eventParameterName, scenario)
+    return typeof operand === 'boolean' ? !operand : undefined
+  }
+  if (!ts.isBinaryExpression(value)) {
+    return undefined
+  }
+
+  const left = runtime003PointerValue(value.left, eventParameterName, scenario)
+  const right = runtime003PointerValue(value.right, eventParameterName, scenario)
+  if (value.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+    return typeof left === 'boolean' && typeof right === 'boolean' ? left && right : undefined
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.BarBarToken) {
+    return typeof left === 'boolean' && typeof right === 'boolean' ? left || right : undefined
+  }
+  if (left === undefined || right === undefined) {
+    return undefined
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken) {
+    return left === right
+  }
+  if (value.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken) {
+    return left !== right
+  }
+
+  return undefined
+}
+
+function executeRuntime003PointerStatement(
+  statement: ts.Statement,
+  eventParameterName: string,
+  scenario: Runtime003PointerScenario,
+  effect: Runtime003PointerEffect,
+): void {
+  if (effect.stopped || !effect.supported) {
+    return
+  }
+  if (ts.isBlock(statement)) {
+    for (const child of statement.statements) {
+      executeRuntime003PointerStatement(child, eventParameterName, scenario, effect)
+    }
+    return
+  }
+  if (ts.isIfStatement(statement)) {
+    const condition = runtime003PointerValue(statement.expression, eventParameterName, scenario)
+    if (typeof condition !== 'boolean') {
+      effect.supported = false
+      return
+    }
+    const branch = condition ? statement.thenStatement : statement.elseStatement
+    if (branch !== undefined) {
+      executeRuntime003PointerStatement(branch, eventParameterName, scenario, effect)
+    }
+    return
+  }
+  if (ts.isReturnStatement(statement)) {
+    effect.supported = statement.expression === undefined
+    effect.stopped = true
+    return
+  }
+  if (ts.isExpressionStatement(statement)) {
+    const expression = unwrapExpression(statement.expression)
+    if (ts.isCallExpression(expression)) {
+      if (
+        ts.isPropertyAccessExpression(expression.expression) &&
+        ts.isIdentifier(expression.expression.expression) &&
+        expression.expression.expression.text === eventParameterName &&
+        expression.expression.name.text === 'preventDefault' &&
+        expression.arguments.length === 0
+      ) {
+        effect.prevented += 1
+        effect.operations.push('preventDefault')
+        return
+      }
+      if (
+        ts.isIdentifier(expression.expression) &&
+        expression.expression.text === 'closeNavigation' &&
+        expression.arguments.length === 0
+      ) {
+        effect.closeCount += 1
+        effect.operations.push('closeNavigation')
+        return
+      }
+    }
+  }
+
+  effect.supported = false
+}
+
+function runtime003PointerEffect(
+  declaration: ts.FunctionDeclaration,
+  scenario: Runtime003PointerScenario,
+): Runtime003PointerEffect {
+  const effect: Runtime003PointerEffect = {
+    closeCount: 0,
+    operations: [],
+    prevented: 0,
+    stopped: false,
+    supported: declaration.body !== undefined,
+  }
+  const eventParameterName = declaration.parameters[0]?.name.getText() ?? ''
+
+  if (declaration.body !== undefined) {
+    executeRuntime003PointerStatement(declaration.body, eventParameterName, scenario, effect)
+  }
+
+  return effect
+}
+
+function runtime003HandlerGuardChecks(
+  declaration: ts.FunctionDeclaration,
+  sourceFile: ts.SourceFile,
+): Readonly<{ primaryButton: boolean; selfTarget: boolean }> {
+  const eventParameterName = declaration.parameters[0]?.name.getText(sourceFile) ?? ''
+  let primaryButton = false
+  let selfTarget = false
+
+  function eventProperty(expression: ts.Expression, property: string): boolean {
+    const value = unwrapExpression(expression)
+    return (
+      ts.isPropertyAccessExpression(value) &&
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === eventParameterName &&
+      value.name.text === property
+    )
+  }
+
+  function isPrimaryButtonLiteral(expression: ts.Expression): boolean {
+    const value = unwrapExpression(expression)
+    return ts.isNumericLiteral(value) && Number(value.text) === 0
+  }
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isBinaryExpression(node) &&
+      (node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken ||
+        node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken)
+    ) {
+      primaryButton ||=
+        (eventProperty(node.left, 'button') && isPrimaryButtonLiteral(node.right)) ||
+        (eventProperty(node.right, 'button') && isPrimaryButtonLiteral(node.left))
+      selfTarget ||=
+        (eventProperty(node.left, 'target') && eventProperty(node.right, 'currentTarget')) ||
+        (eventProperty(node.right, 'target') && eventProperty(node.left, 'currentTarget'))
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  if (declaration.body !== undefined) {
+    visit(declaration.body)
+  }
+
+  return { primaryButton, selfTarget }
+}
+
+function runtime003HasGlobalPointerListener(sourceFile: ts.SourceFile): boolean {
+  let found = false
+
+  function visit(node: ts.Node): void {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const eventName =
+        node.arguments[0] === undefined ? undefined : unwrapExpression(node.arguments[0])
+      if (
+        node.expression.name.text === 'addEventListener' &&
+        eventName !== undefined &&
+        ts.isStringLiteral(eventName) &&
+        eventName.text === 'pointerdown'
+      ) {
+        found = true
+      }
+    }
+    if (ts.isBinaryExpression(node)) {
+      const left = unwrapExpression(node.left)
+      if (
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        ts.isPropertyAccessExpression(left) &&
+        left.name.text === 'onpointerdown'
+      ) {
+        found = true
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return found
+}
+
+function runtime003HandlerHasProhibitedRepair(declaration: ts.FunctionDeclaration): boolean {
+  let prohibited = false
+  const prohibitedCalls = new Set(['nextTick', 'requestAnimationFrame', 'setTimeout'])
+  const prohibitedMethods = new Set([
+    'blur',
+    'focus',
+    'releasePointerCapture',
+    'setPointerCapture',
+    'stopImmediatePropagation',
+    'stopPropagation',
+  ])
+
+  function visit(node: ts.Node): void {
+    if (ts.isCallExpression(node)) {
+      if (ts.isIdentifier(node.expression) && prohibitedCalls.has(node.expression.text)) {
+        prohibited = true
+      }
+      if (
+        ts.isPropertyAccessExpression(node.expression) &&
+        prohibitedMethods.has(node.expression.name.text)
+      ) {
+        prohibited = true
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  if (declaration.body !== undefined) {
+    visit(declaration.body)
+  }
+
+  return prohibited
+}
+
+function logicalCompiledShellSelector(selector: string): string {
+  return normalizedCssSelector(selector.replaceAll(`[${shellSfcScopeId}]`, ''))
+}
+
+function logicalCompiledShellRules(compiled: CompiledSfcStyles): readonly CssRuleBlock[] {
+  return compiled.blocks.flatMap((block) =>
+    block.rules.map((rule) => ({
+      declarations: rule.declarations,
+      selector: rule.selector.split(',').map(logicalCompiledShellSelector).join(', '),
+    })),
+  )
+}
+
+function selectorFinalCompound(selector: string): string {
+  const normalized = logicalCompiledShellSelector(selector)
+  return (
+    normalized
+      .split(/\s+|[>+~]/u)
+      .filter(Boolean)
+      .at(-1) ?? ''
+  )
+}
+
+function selectorFinalTargetHasClass(selector: string, className: string): boolean {
+  return selectorFinalCompound(selector).includes(className)
+}
+
+function selectorTargetsDrawerOuter(selector: string): boolean {
+  const finalCompound = selectorFinalCompound(selector)
+  return (
+    finalCompound.includes('.pavp-admin-shell__drawer-layer') ||
+    (finalCompound.includes('.pavp-admin-drawer-') &&
+      !finalCompound.includes('.pavp-admin-shell__drawer-navigation'))
+  )
+}
+
+function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
+  const violations: string[] = []
+  const parsedShell = vueSfcCompiler.parse(snapshot.shellSource, { filename: shellSfcPath })
+  const parsedProvider = vueSfcCompiler.parse(snapshot.uiProviderSource, {
+    filename: 'packages/ui/src/providers/UiProvider.vue',
+  })
+  const shellTemplateAst = parsedShell.descriptor.template?.ast
+  const providerTemplateAst = parsedProvider.descriptor.template?.ast
+
+  if (
+    parsedShell.errors.length > 0 ||
+    parsedProvider.errors.length > 0 ||
+    shellTemplateAst === undefined ||
+    providerTemplateAst === undefined
+  ) {
+    return ['PAVP_RUNTIME_003_SFC_AST']
+  }
+
+  const shellElements = collectShellTemplateElements(shellTemplateAst)
+  const providerElements = collectShellTemplateElements(providerTemplateAst)
+  const outerOverlays = shellElements.filter((element) =>
+    hasStaticTemplateClass(element.node, 'pavp-admin-shell__drawer-layer'),
+  )
+  const innerPanels = shellElements.filter((element) =>
+    hasStaticTemplateClass(element.node, 'pavp-admin-shell__drawer-navigation'),
+  )
+  const transitions = shellElements.filter(
+    (element) =>
+      element.node.tag === 'Transition' &&
+      staticTemplateAttribute(element.node, 'name') === 'pavp-admin-drawer',
+  )
+  const teleports = shellElements.filter((element) => element.node.tag === 'Teleport')
+  const overlayRoots = providerElements.filter(
+    (element) => staticTemplateAttribute(element.node, 'id') === 'pavp-overlay-root',
+  )
+  const outerOverlay = outerOverlays[0]
+  const innerPanel = innerPanels[0]
+  const transition = transitions[0]
+  const teleport = teleports[0]
+  const nearestElementAncestor = (element: ShellTemplateElement): VueTemplateNode | undefined =>
+    [...element.ancestors].reverse().find((node) => node.type === 1)
+
+  if (
+    outerOverlays.length !== 1 ||
+    innerPanels.length !== 1 ||
+    outerOverlay === undefined ||
+    innerPanel === undefined ||
+    outerOverlay.node === innerPanel.node ||
+    nearestElementAncestor(innerPanel) !== outerOverlay.node
+  ) {
+    violations.push('PAVP_RUNTIME_003_DRAWER_STRUCTURE')
+  }
+
+  if (
+    transitions.length !== 1 ||
+    teleports.length !== 1 ||
+    transition === undefined ||
+    teleport === undefined ||
+    outerOverlay === undefined ||
+    nearestElementAncestor(outerOverlay) !== transition.node ||
+    nearestElementAncestor(transition) !== teleport.node ||
+    staticTemplateAttribute(teleport.node, 'to') !== '#pavp-overlay-root' ||
+    overlayRoots.length !== 1 ||
+    overlayRoots[0]?.node.tag !== 'div' ||
+    [...snapshot.nonAdapterUiSource.matchAll(/id="pavp-overlay-root"/gu)].length !== 1
+  ) {
+    violations.push('PAVP_RUNTIME_003_OVERLAY_OWNERSHIP')
+  }
+
+  const pointerdownBindings = shellElements.flatMap((element) =>
+    templateDirectives(element.node, 'on', 'pointerdown').map((directive) => ({
+      directive,
+      element,
+    })),
+  )
+  const outerPointerdown =
+    outerOverlay === undefined ? [] : templateDirectives(outerOverlay.node, 'on', 'pointerdown')
+  const innerPointerdown =
+    innerPanel === undefined ? [] : templateDirectives(innerPanel.node, 'on', 'pointerdown')
+  const exactPointerExpression = 'handleDrawerScrimPointerDown($event)'
+
+  if (
+    outerPointerdown.length !== 1 ||
+    pointerdownBindings.length !== 1 ||
+    pointerdownBindings[0]?.element !== outerOverlay ||
+    (outerPointerdown[0]?.modifiers?.length ?? 0) !== 0 ||
+    normalizeTemplateExpression(outerPointerdown[0]?.exp?.content) !== exactPointerExpression
+  ) {
+    violations.push('PAVP_RUNTIME_003_OUTER_POINTER_BINDING')
+  }
+  if (innerPointerdown.length !== 0) {
+    violations.push('PAVP_RUNTIME_003_INNER_POINTER_BOUNDARY')
+  }
+
+  const shellScript = scriptContent(snapshot.shellSource)
+  const sourceFile = ts.createSourceFile(
+    shellSfcPath,
+    shellScript,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const handler = functionDeclaration(sourceFile, 'handleDrawerScrimPointerDown')
+  const handlerExported =
+    handler !== undefined &&
+    ts.getModifiers(handler)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)
+
+  if (
+    handler === undefined ||
+    handlerExported ||
+    handler.parameters.length !== 1 ||
+    handler.parameters[0]?.type?.getText(sourceFile) !== 'PointerEvent' ||
+    handler.type?.getText(sourceFile) !== 'void'
+  ) {
+    violations.push('PAVP_RUNTIME_003_HANDLER_INPUT')
+  } else {
+    const guards = runtime003HandlerGuardChecks(handler, sourceFile)
+    const primarySelf = runtime003PointerEffect(handler, { button: 0, selfTarget: true })
+    const nonPrimarySelf = runtime003PointerEffect(handler, { button: 1, selfTarget: true })
+    const primaryInner = runtime003PointerEffect(handler, { button: 0, selfTarget: false })
+    const nonPrimaryInner = runtime003PointerEffect(handler, { button: 1, selfTarget: false })
+
+    if (
+      !guards.primaryButton ||
+      !nonPrimarySelf.supported ||
+      !nonPrimaryInner.supported ||
+      nonPrimarySelf.prevented !== 0 ||
+      nonPrimarySelf.closeCount !== 0 ||
+      nonPrimaryInner.prevented !== 0 ||
+      nonPrimaryInner.closeCount !== 0
+    ) {
+      violations.push('PAVP_RUNTIME_003_PRIMARY_BUTTON_GUARD')
+    }
+    if (
+      !guards.selfTarget ||
+      !primaryInner.supported ||
+      primaryInner.prevented !== 0 ||
+      primaryInner.closeCount !== 0
+    ) {
+      violations.push('PAVP_RUNTIME_003_SELF_TARGET_GUARD')
+    }
+    if (
+      !primarySelf.supported ||
+      primarySelf.prevented !== 1 ||
+      primarySelf.closeCount !== 1 ||
+      !isDeepStrictEqual(primarySelf.operations, ['preventDefault', 'closeNavigation'])
+    ) {
+      violations.push('PAVP_RUNTIME_003_POINTER_ACTION_ORDER')
+    }
+    if (runtime003HandlerHasProhibitedRepair(handler)) {
+      violations.push('PAVP_RUNTIME_003_PROHIBITED_POINTER_REPAIR')
+    }
+  }
+
+  if (runtime003HasGlobalPointerListener(sourceFile)) {
+    violations.push('PAVP_RUNTIME_003_GLOBAL_POINTER_LISTENER')
+  }
+
+  if (
+    innerPanel === undefined ||
+    staticTemplateAttribute(innerPanel.node, 'role') !== 'dialog' ||
+    staticTemplateAttribute(innerPanel.node, 'aria-modal') !== 'true' ||
+    staticTemplateAttribute(innerPanel.node, 'aria-label') !== '架构导航' ||
+    staticTemplateAttribute(innerPanel.node, 'tabindex') !== '-1' ||
+    staticTemplateAttribute(innerPanel.node, 'ref') !== 'drawerNavigation'
+  ) {
+    violations.push('PAVP_RUNTIME_003_DIALOG_SEMANTICS')
+  }
+
+  const mainElements = shellElements.filter((element) => element.node.tag === 'main')
+  const mainInertBindings =
+    mainElements[0] === undefined ? [] : templateDirectives(mainElements[0].node, 'bind', 'inert')
+  if (
+    mainElements.length !== 1 ||
+    mainInertBindings.length !== 1 ||
+    normalizeTemplateExpression(mainInertBindings[0]?.exp?.content) !==
+      "profile === 'narrow' && navigationOpen"
+  ) {
+    violations.push('PAVP_RUNTIME_003_MAIN_INERT')
+  }
+
+  const normalizedScript = shellScript.replaceAll(/\s+/gu, ' ')
+  const focusLifecycleMarkers = [
+    'document.activeElement instanceof HTMLElement',
+    'focusReturnTarget =',
+    'navigationOpen.value = true',
+    "if (event.key === 'Escape')",
+    "if (event.key !== 'Tab')",
+    "drawerNavigation.value?.querySelectorAll<HTMLButtonElement>('button')",
+    'drawerClose.value?.focus()',
+    'focusReturnTarget?.isConnected === true',
+    'focusReturnTarget.focus()',
+    'focusReturnTarget = null',
+  ] as const
+  if (
+    focusLifecycleMarkers.some((marker) => !normalizedScript.includes(marker)) ||
+    [...shellScript.matchAll(/\bnextTick\s*\(/gu)].length !== 1 ||
+    [...shellScript.matchAll(/\bwatch\s*\(\s*navigationOpen\b/gu)].length !== 1 ||
+    !snapshot.shellSource.includes('ref="drawerClose"') ||
+    !snapshot.shellSource.includes('@click="closeNavigation"') ||
+    !snapshot.shellSource.includes('@keydown="handleDrawerKeydown"')
+  ) {
+    violations.push('PAVP_RUNTIME_003_FOCUS_LIFECYCLE')
+  }
+
+  if (
+    runtime002NavigationViolations(snapshot.shellSource).length > 0 ||
+    !snapshot.shellSource.includes('v-if="profile !== \'narrow\'"') ||
+    !snapshot.shellSource.includes(
+      ":class=\"profile === 'wide' ? 'pavp-admin-shell__navigation' : 'pavp-admin-shell__rail'\"",
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_PERSISTENT_NAVIGATION')
+  }
+
+  const compiled = compileSfcStyles(snapshot.shellSource)
+  if (compiled.errors.length > 0) {
+    violations.push('PAVP_RUNTIME_003_COMPILED_CSS')
+    return [...new Set(violations)]
+  }
+  const rules = logicalCompiledShellRules(compiled)
+  const outerSelector = '.pavp-admin-shell__drawer-layer'
+  const innerSelector = '.pavp-admin-shell__drawer-navigation'
+  const outerDeclarations = cssDeclarationsForSelector(rules, outerSelector)
+  const innerDeclarations = cssDeclarationsForSelector(rules, innerSelector)
+
+  if (
+    outerDeclarations === undefined ||
+    !selectorHasDeclarations(rules, outerSelector, {
+      background: 'var(--ui-color-scrim-viewport)',
+      'inset-block': '0',
+      'inset-inline': '0',
+      position: 'fixed',
+      'z-index': 'var(--ui-z-overlay)',
+    }) ||
+    /(?:^|;)\s*(?:inline-size|max-inline-size)\s*:/imu.test(outerDeclarations) ||
+    outerDeclarations.includes('--ui-layout-admin-drawer-maximum-inline-size')
+  ) {
+    violations.push('PAVP_RUNTIME_003_OUTER_VIEWPORT')
+  }
+  if (!outerDeclarations?.includes('var(--ui-color-scrim-viewport)')) {
+    violations.push('PAVP_RUNTIME_003_SCRIM_TOKEN')
+  }
+  if (
+    innerDeclarations === undefined ||
+    !selectorHasDeclarations(rules, innerSelector, {
+      'block-size': '100%',
+      'inline-size': '100%',
+      'max-inline-size': 'var(--ui-layout-admin-drawer-maximum-inline-size)',
+      overflow: 'auto',
+      background: 'var(--ui-material-overlay-background)',
+      'box-shadow': 'var(--ui-admin-shadow-overlay)',
+    }) ||
+    !innerDeclarations.includes('var(--pavp-safe-area-top)') ||
+    !innerDeclarations.includes('var(--pavp-safe-area-bottom)') ||
+    !innerDeclarations.includes('var(--pavp-safe-area-left)') ||
+    !innerDeclarations.includes('var(--pavp-safe-area-right)')
+  ) {
+    violations.push('PAVP_RUNTIME_003_INNER_PANEL')
+  }
+
+  const maximumWidthConsumers = rules.filter((rule) =>
+    rule.declarations.includes('--ui-layout-admin-drawer-maximum-inline-size'),
+  )
+  if (
+    maximumWidthConsumers.length === 0 ||
+    maximumWidthConsumers.some((rule) =>
+      rule.selector
+        .split(',')
+        .some((selector) => !selectorFinalTargetHasClass(selector, innerSelector)),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_MAXIMUM_WIDTH_OWNER')
+  }
+
+  const prohibitedOuterProperties = new Set([
+    '-webkit-backdrop-filter',
+    'animation',
+    'animation-delay',
+    'animation-duration',
+    'backdrop-filter',
+    'filter',
+    'opacity',
+    'transform',
+    'translate',
+    'transition',
+    'transition-delay',
+    'transition-duration',
+    'transition-property',
+    'transition-timing-function',
+  ])
+  const outerRules = rules.filter((rule) =>
+    rule.selector.split(',').some(selectorTargetsDrawerOuter),
+  )
+  const drawerMotionRules = rules.filter(
+    (rule) =>
+      rule.selector.includes('pavp-admin-drawer-') &&
+      cssDeclarationNames(rule.declarations).some((property) =>
+        /^(?:transform|translate|transition)(?:-|$)/u.test(property),
+      ),
+  )
+  if (
+    outerRules.some((rule) =>
+      cssDeclarationNames(rule.declarations).some((property) =>
+        prohibitedOuterProperties.has(property),
+      ),
+    ) ||
+    drawerMotionRules.length === 0 ||
+    drawerMotionRules.some((rule) =>
+      rule.selector
+        .split(',')
+        .filter((selector) => selector.includes('pavp-admin-drawer-'))
+        .some((selector) => !selectorFinalTargetHasClass(selector, innerSelector)),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_DRAWER_MOTION_TARGET')
+  }
+
+  const fullMotionActiveSelectors = [
+    '.pavp-admin-drawer-enter-active .pavp-admin-shell__drawer-navigation',
+    '.pavp-admin-drawer-leave-active .pavp-admin-shell__drawer-navigation',
+  ] as const
+  const fullMotionDisplacementSelectors = [
+    '.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation',
+    '.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation',
+  ] as const
+  if (
+    fullMotionActiveSelectors.some(
+      (selector) =>
+        !selectorHasDeclarations(rules, selector, {
+          'transition-duration': 'var(--ui-motion-duration)',
+          'transition-property': 'transform',
+          'transition-timing-function': 'var(--ui-motion-easing)',
+        }),
+    ) ||
+    fullMotionDisplacementSelectors.some(
+      (selector) =>
+        !selectorHasDeclarations(rules, selector, {
+          transform: 'translateX(calc(var(--ui-layout-admin-drawer-maximum-inline-size) * -1))',
+        }),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_DRAWER_MOTION_TARGET')
+  }
+
+  const reducedMotionActiveSelectors = [
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active .pavp-admin-shell__drawer-navigation",
+  ] as const
+  const reducedMotionDisplacementSelectors = [
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='reduced'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
+  ] as const
+  if (
+    reducedMotionActiveSelectors.some(
+      (selector) =>
+        !selectorHasDeclarations(rules, selector, {
+          'transition-duration': 'calc(var(--ui-motion-duration) / 2)',
+        }),
+    ) ||
+    reducedMotionDisplacementSelectors.some(
+      (selector) =>
+        !selectorHasDeclarations(rules, selector, {
+          transform: 'translateX(calc(var(--ui-space-content-gap) * -1))',
+        }),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_REDUCED_MOTION')
+  }
+
+  const noneMotionActiveSelectors = [
+    "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active .pavp-admin-shell__drawer-navigation",
+  ] as const
+  const noneMotionDisplacementSelectors = [
+    "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation",
+    "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
+  ] as const
+  if (
+    noneMotionActiveSelectors.some(
+      (selector) => !selectorHasDeclarations(rules, selector, { transition: 'none' }),
+    ) ||
+    noneMotionDisplacementSelectors.some(
+      (selector) => !selectorHasDeclarations(rules, selector, { transform: 'none' }),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_NONE_MOTION')
+  }
+
+  if (
+    rules.some(
+      (rule) =>
+        (rule.selector.includes('pavp-admin-shell__drawer-layer') ||
+          rule.selector.includes('pavp-admin-drawer-leave')) &&
+        /(?:^|;)\s*pointer-events\s*:\s*none\s*(?:;|$)/imu.test(rule.declarations),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_003_LEAVE_POINTER_INTERCEPTION')
+  }
+
+  if (
+    runtimeNumber(routeRegistry.length) !== 17 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 11 ||
+    !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 2 ||
+    runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 14
+  ) {
+    violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
+  }
+
+  return [...new Set(violations)]
+}
+
 function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   const violations: string[] = []
   const normalizedNaiveProvider = snapshot.naiveProviderSource.replaceAll(/\s+/gu, ' ')
@@ -4139,8 +4869,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     'CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
     'CURRENT_BOUNDED_WORK_IS_PAVP-RUNTIME-003',
     'PAVP_RUNTIME_003_STATUS_IS_OPEN',
-    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED',
-    'PAVP_RUNTIME_003_STATIC_VERIFICATION_IS_NOT_RUN',
+    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
+    'PAVP_RUNTIME_003_STATIC_VERIFICATION_IS_PASS',
     'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE_IS_NONE',
     'SUCCESSOR_PACKAGE_AUTHORIZATION_IS_NONE',
@@ -4212,13 +4942,13 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
   if (
     runtime003ImplementationValues.length === 0 ||
-    runtime003ImplementationValues.some((value) => value !== 'NOT_STARTED')
+    runtime003ImplementationValues.some((value) => value !== 'COMPLETE')
   ) {
     violations.push('PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_STATE')
   }
   if (
     runtime003VerificationValues.length === 0 ||
-    runtime003VerificationValues.some((value) => value !== 'NOT_RUN')
+    runtime003VerificationValues.some((value) => value !== 'PASS')
   ) {
     violations.push('PAVP_RUNTIME_003_STATIC_VERIFICATION_STATE')
   }
@@ -4309,16 +5039,16 @@ function runRuntime003AdmissionNegativeProbes(
       'runtime-003-repository-implementation-falsely-complete',
       'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_STATE',
       architectureSource.replace(
-        'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
         'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE',
+        'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
       ),
     ],
     [
       'runtime-003-static-verification-falsely-passed',
       'PAVP_RUNTIME_003_STATIC_VERIFICATION_STATE',
       architectureSource.replace(
-        'PAVP_RUNTIME_003_STATIC_VERIFICATION=NOT_RUN',
         'PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS',
+        'PAVP_RUNTIME_003_STATIC_VERIFICATION=NOT_RUN',
       ),
     ],
     [
@@ -4429,8 +5159,8 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE',
     'PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS',
     'PAVP_RUNTIME_003_STATUS=OPEN',
-    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=NOT_STARTED',
-    'PAVP_RUNTIME_003_STATIC_VERIFICATION=NOT_RUN',
+    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS',
     'PAVP_RUNTIME_004_STATUS=OPEN',
     'PAVP_RUNTIME_005_STATUS=OPEN',
     'PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE',
@@ -5730,8 +6460,8 @@ function runArchitectureAdminConsoleNegativeProbes(
       'MOTION_NONE_TARGETS',
       {
         shellSource: baseline.shellSource.replace(
-          "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,",
-          "html[data-motion='probe-none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active,",
+          "html[data-motion='none']\n  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active\n  .pavp-admin-shell__drawer-navigation,",
+          "html[data-motion='probe-none']\n  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active\n  .pavp-admin-shell__drawer-navigation,",
         ),
       },
     ],
@@ -5945,14 +6675,17 @@ function runRuntime002NegativeProbes(
     [
       'runtime-002-blur-repair-restored',
       'PAVP_RUNTIME_002_PROHIBITED_REPAIR',
-      baseline.shellSource.replace('event.preventDefault()', 'event.currentTarget?.blur()'),
+      baseline.shellSource.replace(
+        'if (event.button === 0 && routeName === props.activeRouteName) {\n    event.preventDefault()\n  }',
+        'if (event.button === 0 && routeName === props.activeRouteName) {\n    event.currentTarget?.blur()\n  }',
+      ),
     ],
     [
       'runtime-002-delayed-focus-restore-restored',
       'PAVP_RUNTIME_002_PROHIBITED_REPAIR',
       baseline.shellSource.replace(
-        'event.preventDefault()',
-        'setTimeout(() => event.currentTarget?.focus())',
+        'if (event.button === 0 && routeName === props.activeRouteName) {\n    event.preventDefault()\n  }',
+        'if (event.button === 0 && routeName === props.activeRouteName) {\n    setTimeout(() => event.currentTarget?.focus())\n  }',
       ),
     ],
     ['runtime-002-current-item-disabled', 'PAVP_RUNTIME_002_NATIVE_BUTTON', disabledCurrentSource],
@@ -5989,6 +6722,95 @@ function runRuntime002NegativeProbes(
           runtime002NavigationViolations(shellSource).includes(expectedFailureCode),
       }),
     ),
+  )
+}
+
+function runRuntime003SourceNegativeProbes(
+  baseline: MaterialGateSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const probes: readonly [string, string, string][] = [
+    [
+      'runtime-003-outer-overlay-restricted-to-drawer-width',
+      'PAVP_RUNTIME_003_OUTER_VIEWPORT',
+      baseline.shellSource.replace(
+        '  inset-inline: 0;\n  background: var(--ui-color-scrim-viewport);',
+        '  inline-size: min(100%, var(--ui-layout-admin-drawer-maximum-inline-size));\n  inset-inline: 0;\n  background: var(--ui-color-scrim-viewport);',
+      ),
+    ],
+    [
+      'runtime-003-complete-viewport-inset-removed',
+      'PAVP_RUNTIME_003_OUTER_VIEWPORT',
+      baseline.shellSource.replace('  inset-inline: 0;\n', ''),
+    ],
+    [
+      'runtime-003-scrim-token-removed',
+      'PAVP_RUNTIME_003_SCRIM_TOKEN',
+      baseline.shellSource.replace('  background: var(--ui-color-scrim-viewport);\n', ''),
+    ],
+    [
+      'runtime-003-self-target-guard-removed',
+      'PAVP_RUNTIME_003_SELF_TARGET_GUARD',
+      baseline.shellSource.replace(' || event.target !== event.currentTarget', ''),
+    ],
+    [
+      'runtime-003-primary-button-guard-removed',
+      'PAVP_RUNTIME_003_PRIMARY_BUTTON_GUARD',
+      baseline.shellSource.replace('event.button !== 0 || ', ''),
+    ],
+    [
+      'runtime-003-document-pointer-listener-added',
+      'PAVP_RUNTIME_003_GLOBAL_POINTER_LISTENER',
+      baseline.shellSource.replace(
+        '</script>',
+        "document.addEventListener('pointerdown', handleDrawerScrimPointerDown)\n</script>",
+      ),
+    ],
+    [
+      'runtime-003-inner-panel-pointer-close-added',
+      'PAVP_RUNTIME_003_INNER_POINTER_BOUNDARY',
+      baseline.shellSource.replace(
+        '            class="pavp-admin-shell__drawer-navigation"\n            role="dialog"',
+        '            class="pavp-admin-shell__drawer-navigation"\n            role="dialog"\n            @pointerdown="handleDrawerScrimPointerDown($event)"',
+      ),
+    ],
+    [
+      'runtime-003-drawer-transform-moved-to-outer-overlay',
+      'PAVP_RUNTIME_003_DRAWER_MOTION_TARGET',
+      baseline.shellSource
+        .replace(
+          '.pavp-admin-drawer-enter-from .pavp-admin-shell__drawer-navigation,',
+          '.pavp-admin-drawer-enter-from,',
+        )
+        .replace(
+          '.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation {',
+          '.pavp-admin-drawer-leave-to {',
+        ),
+    ],
+    [
+      'runtime-003-inner-panel-aria-modal-removed',
+      'PAVP_RUNTIME_003_DIALOG_SEMANTICS',
+      baseline.shellSource.replace('            aria-modal="true"\n', ''),
+    ],
+    [
+      'runtime-003-main-inert-removed',
+      'PAVP_RUNTIME_003_MAIN_INERT',
+      baseline.shellSource.replace(
+        '        :inert="profile === \'narrow\' && navigationOpen"\n',
+        '',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, shellSource]) => {
+      const failureCodes = runtime003SourceViolations(modifiedSnapshot(baseline, { shellSource }))
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed: shellSource !== baseline.shellSource && failureCodes.includes(expectedFailureCode),
+      })
+    }),
   )
 }
 
@@ -6756,6 +7578,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     appSource,
     themeSource,
     naiveProviderSource,
+    uiProviderSource,
     shellSource,
     adminTokenSource,
     routeRegistrySource,
@@ -6773,6 +7596,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
       'utf8',
     ),
+    readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiAdminShell.vue'), 'utf8'),
     readFile(
       resolve(rootDirectory, 'packages/design-system/tokens/semantic/admin-console.tokens.json'),
@@ -6835,6 +7659,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     capabilityPageTemplateSource: appearanceAndFacts.capabilityTemplate,
     themeAdapterSource: themeSource,
     naiveProviderSource,
+    uiProviderSource,
     shellSource,
     adminTokenSource,
     routeRegistrySource,
@@ -6857,6 +7682,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAcceptanceClosureNegativeProbes(architectureSource)
   const runtime003AdmissionNegativeProbeResults =
     runRuntime003AdmissionNegativeProbes(architectureSource)
+  const runtime003SourceNegativeProbeResults = runRuntime003SourceNegativeProbes(baseline)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
     violations.push(
@@ -6892,6 +7718,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       `PAVP-RUNTIME-003 admission negative-probe count drifted: expected ${String(expectedRuntime003AdmissionNegativeProbeCount)}, received ${String(runtime003AdmissionNegativeProbeResults.length)}.`,
     )
   }
+  if (runtime003SourceNegativeProbeResults.length !== expectedRuntime003SourceNegativeProbeCount) {
+    violations.push(
+      `PAVP-RUNTIME-003 source negative-probe count drifted: expected ${String(expectedRuntime003SourceNegativeProbeCount)}, received ${String(runtime003SourceNegativeProbeResults.length)}.`,
+    )
+  }
 
   violations.push(
     ...(await validateDependencies()),
@@ -6906,6 +7737,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...uiViolations,
     ...motionGeometryViolations(baseline),
     ...runtime005RouteContentViolations(baseline),
+    ...runtime003SourceViolations(baseline),
   )
 
   const baselineViolations = materialGateViolations(baseline)
@@ -6952,6 +7784,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of runtime003SourceNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory PAVP-RUNTIME-003 source negative probe did not fail.`,
+      )
+    }
+  }
 
   return [...new Set(violations)]
 }
@@ -6964,6 +7803,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes)`,
   )
 }
