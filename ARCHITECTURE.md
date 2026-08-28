@@ -97,17 +97,24 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_001_OWNER_RUNTIME_ACCEPTANCE=PASS
 PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -362,17 +369,24 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_001_OWNER_RUNTIME_ACCEPTANCE=PASS
 PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -426,8 +440,8 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通�
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=NONE
 ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE
 PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
@@ -452,9 +466,16 @@ PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -472,7 +493,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。当前唯一 Bounded Work 已由 `PAVP_RUNTIME_003_ADMISSION_AMENDMENT` 准入为 `PAVP-RUNTIME-003`，其 Repository Implementation 与 Static Verification 精确为 `COMPLETE / PASS`；`PAVP-RUNTIME-004` 保持 Open 且未启动。该静态实现完成和窄范围 Theme refinement 的接受均不恢复整体 Admin Console Acceptance。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按 Owner 陈述 `那没问题` 完成窄范围 Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 已清除为 `NONE`；`PAVP-RUNTIME-004` 保持 Open 且未启动。该窄范围验收不恢复整体 Admin Console Acceptance。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -824,8 +845,8 @@ ROUTE_IDENTITY=appearance-management
 ROUTE_PATH=/appearance
 COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 HISTORICAL_PREVIOUS_CURRENT_BOUNDED_WORK=PAVP-RUNTIME-005
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -914,8 +935,8 @@ OWNER_SOURCE_IMPLEMENTATION_AUTHORIZATION=NONE_IN_THIS_ARCHITECTURE_GOVERNANCE_T
 HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
 HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
@@ -1085,7 +1106,7 @@ IMPLEMENTATION_COMPLETION_EVIDENCE=one scoped source and generated diff limited 
 
 每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
 
-该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；当前唯一 Bounded Work 已切换为本 Runtime Register 准入的 `PAVP-RUNTIME-003`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；该窄范围接受不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。
+该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收，当前 Bounded Work 为 `NONE`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。
 
 Owner 对已发布实现的后续复核最初观察到一个 obsolete Vite config error；仓库源码与当前 Vite 配置当时已经正确，错误来自早于该发布实施且仍在长期运行的 PAVP Vite 进程。仅替换该陈旧 PAVP Vite 进程后加载了当前配置，没有改变任何仓库文件；随后十四主题 Dark Standard / Dark Enhanced、Action Fill、On-action Content、Control Foreground、First Paint 恢复以及 Theme、Color-mode、Contrast 切换的 Owner Runtime 与 Visual Review 均通过。该操作历史不是 Repository Capability、Verification Gate 或永久 Runtime Dependency。
 
@@ -1125,17 +1146,24 @@ FIRST_PAINT_AUTHORITY_CHANGE=NONE
 NAIVE_UI_COORDINATE=naive-ui@2.45.2
 NAIVE_UI_RUNTIME_BOUNDARY_CHANGE=NONE
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 ```
 
@@ -1155,11 +1183,20 @@ SOURCE_IMPLEMENTATION_AUTHORITY=PAVP-RUNTIME-003_ONLY_UNDER_THIS_FROZEN_CONTRACT
 ACTIVATION_EFFECT=CANONICAL_DEFECT_REMEDIATION_WORK_ITEM_ADMISSION_ONLY
 WORK_ITEM=PAVP-RUNTIME-003
 WORK_ITEM_KIND=BOUNDED_DEFECT_REMEDIATION_NOT_CAPABILITY_STATUS
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
-PAVP_RUNTIME_003_STATUS=OPEN
+HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
+HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
@@ -1290,7 +1327,11 @@ Current Implementation Owning Gate 证明：Exactly One Full-viewport Outer Over
 
 Current Owning Gate 执行并完全恢复下列十个可逆 In-memory Source Probes：限制 Outer 为 Drawer Maximum Width；移除 Full-viewport Inset；移除 Scrim Token；移除 Self-target Guard；移除 Primary-button Guard；加入 Document-level Pointer Listener；允许 Inner Pointer Close；把 Drawer Transform 移回 Outer；移除 `aria-modal`；移除 Main `inert`。十个 Probe 均在内存快照中运行并保持零 Repository Artifact。
 
-本 Amendment 的五个既有 Admission-state In-memory Probes 继续保持：把 Active 003 的 `CURRENT_BOUNDED_WORK` 恢复为 `NONE`；替换 Unauthorized Work ID；把已完成的 003 Repository Implementation 回退为 `NOT_STARTED`；把已通过的 003 Static Verification 回退为 `NOT_RUN`；恢复整体 Admin Console Acceptance。每个 Probe 都因预期原因失败、完全恢复且保持零 Artifact。
+本 Amendment 的五个既有 Admission-state In-memory Probes 继续保持：把明确标记为 Historical 的 Admission-time `CURRENT_BOUNDED_WORK` Literal 从 `PAVP-RUNTIME-003` 改为 `NONE`；替换该 Historical Literal 中的 Authorized Work ID；把已完成的 003 Repository Implementation 回退为 `NOT_STARTED`；把已通过的 003 Static Verification 回退为 `NOT_RUN`；恢复整体 Admin Console Acceptance。每个 Probe 都因预期原因失败、完全恢复且保持零 Artifact。
+
+本次验收收口另增加且只增加六个可逆 In-memory Acceptance-closure Probes：把 003 状态改回 `OPEN`；验收后仍把 003 保留为 Current Bounded Work；移除 Runtime Acceptance；移除 Visual Acceptance；移除 Accessibility Acceptance；错误恢复整体 Admin Console Acceptance。六个 Probe 都必须因各自精确原因失败、完整恢复且保持零 Artifact；既有 `10/10` 个 PAVP-RUNTIME-003 Source Probes 与其 Implementation Checks 保持不变。
+
+Current-work Validation 要求本次收口快照的全部 Active Mirrors 一致为 `NONE / NONE`，但这不是未来永远不得存在 Current Work 的永久规则；未来只有新的 Frozen Admission Amendment 在其独立任务中同步更新 Owning Checker，并同时给出一致的 Authority、Work Item/Package 与全部 Active Mirrors 后才能合法迁移，Unknown、Conflicting 或已验收的 `PAVP-RUNTIME-003` 继续被拒绝。
 
 ##### Implemented source and owning static gate
 
@@ -1308,7 +1349,7 @@ PAVP_RUNTIME_003_DRAWER_MOTION_TARGET=Inner Drawer Navigation Panel only
 PAVP_RUNTIME_003_OUTER_OVERLAY_LEAVE_RESULT=full-size untransformed pointer-intercepting Scrim
 PAVP_RUNTIME_003_REVERSIBLE_SOURCE_PROBE_COUNT=10
 PAVP_RUNTIME_003_REVERSIBLE_SOURCE_PROBES=ACTIVE
-PAVP_RUNTIME_003_OWNER_EXTERNAL_REVIEW=NOT_PERFORMED_OPTIONAL_EXTERNAL_NON_GATING
+HISTORICAL_SOURCE_TASK_PAVP_RUNTIME_003_OWNER_EXTERNAL_REVIEW=NOT_PERFORMED_OPTIONAL_EXTERNAL_NON_GATING
 ```
 
 ##### Frozen status transition and Owner external review
@@ -1329,6 +1370,8 @@ OWNER_OBSERVATION_REPOSITORY_EVIDENCE_FILE=PROHIBITED
 ```
 
 Owner External Review Matrix 只供信息使用：在 Narrow Width 检查 `/`、`/appearance`、`/capabilities`；Scrim 覆盖完整 Viewport；Primary Scrim Pointer Close 并返回 Trigger Focus；Inner Primary Pointer 与 Non-primary Scrim Pointer 不关闭；Tab/Shift+Tab、Escape、Current-route、Different-route Single Navigation 与 New H1 Focus 保持；不存在 Drawer Open 且 Focus 落到 `body`；`full`、`reduced`、`none` 保持同一 Containment Result。该 Matrix 不授权 Codex Browser Operation，也不创建 Repository Evidence。
+
+Owner 随后在独立且显式授权的验收与 Git 收口任务中，对已发布实施提交 `3fa078ab75322a17e5e4514d0805f1efea06981b` 陈述 `那没问题`。该陈述只使 `PAVP-RUNTIME-003` 的 Runtime、Visual 与 Accessibility Acceptance 成为 `PASS`，并把该 Work Item 收口为 `ACCEPTED / COMPLETE / PASS`；它不恢复整体 Admin Console Product Experience、Runtime、Visual、Accessibility 或 Release Acceptance，不准入 `PAVP-RUNTIME-004`、Successor Package 或任何新实现工作。
 
 #### `PAVP_RUNTIME_002_ADMISSION_AMENDMENT`
 
@@ -1368,9 +1411,16 @@ PAVP_RUNTIME_001_REAL_CHROME_MATERIAL_ACCEPTANCE=PASS
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
@@ -1381,7 +1431,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定；当前 Bounded Work 只由文首、`PAVP_RUNTIME_003_ADMISSION_AMENDMENT` 与现行状态镜像中的 `CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003` 决定。`PAVP-RUNTIME-004` 保持 Open 且未启动。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定；当前 Bounded Work 已在 `PAVP-RUNTIME-003` 验收收口后清除为 `NONE`。`PAVP-RUNTIME-004` 保持 Open 且未启动。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
 
 ##### Defect identity and implemented source behavior
 
@@ -1532,9 +1582,16 @@ PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -1551,7 +1608,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该 Amendment 只接收 Owner 已证明并显式重排的 First Paint and Route Content Continuity Defect；它不是 Successor Capability、Product Package、Page Rework、Router Redesign、First Paint Redesign 或新 Animation System。`PAVP-RUNTIME-002` 的完整未暂存 Source Implementation、既有 Checker Contract 与 `OPEN / COMPLETE / PASS` 状态继续保留且不获得 Acceptance、Staging 或 Publication；`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 不被启动。
+该 Amendment 只接收 Owner 已证明并显式重排的 First Paint and Route Content Continuity Defect；它不是 Successor Capability、Product Package、Page Rework、Router Redesign、First Paint Redesign 或新 Animation System。`PAVP-RUNTIME-002` 的完整未暂存 Source Implementation、既有 Checker Contract 与 `OPEN / COMPLETE / PASS` 状态继续保留且不获得 Acceptance、Staging 或 Publication；在该 Amendment 的历史准入时点，`PAVP-RUNTIME-003` 与 `PAVP-RUNTIME-004` 均未启动，现行状态则由 Runtime Defect Remediation Register 的 Active Mirrors 唯一决定。
 
 ##### Defect identity and repaired source behavior
 
@@ -3256,7 +3313,7 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` is accepted at `ACCEPTED / COMPLETE / PASS` for exact published implementation commit `5673236868737f42f3470307b5f5d6c8d4e8639e`; current bounded work is `PAVP-RUNTIME-003` at `OPEN / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched, so overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` is accepted at `ACCEPTED / COMPLETE / PASS` for exact published implementation commit `5673236868737f42f3470307b5f5d6c8d4e8639e`; `PAVP-RUNTIME-003` is accepted at `ACCEPTED / COMPLETE / PASS` for exact published implementation commit `3fa078ab75322a17e5e4514d0805f1efea06981b`, and current bounded work is `NONE`; `PAVP-RUNTIME-004` remains open and untouched, so overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
 | TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -11647,15 +11704,22 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT = 验收通
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT = 5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET = origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS = COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY = PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK = PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY = NONE
+CURRENT_BOUNDED_WORK = NONE
 PAVP_RUNTIME_001_STATUS = ACCEPTED
 PAVP_RUNTIME_002_STATUS = OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION = COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION = PASS
-PAVP_RUNTIME_003_STATUS = OPEN
+PAVP_RUNTIME_003_STATUS = ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION = COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION = PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE = PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE = PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE = PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT = 那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT = 3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET = origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS = COMPLETE
 PAVP_RUNTIME_004_STATUS = OPEN
 PAVP_RUNTIME_005_STATUS = OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION = COMPLETE
@@ -11781,7 +11845,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 继续冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 上通过 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。当前唯一 Bounded Work 是本次冻结准入且源码与 Canonical Static Verification 已完成的 `PAVP-RUNTIME-003`；没有自动 Next Implementation Package。任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 继续冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 上通过 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交 `3fa078ab75322a17e5e4514d0805f1efea06981b` 和 Owner 陈述 `那没问题` 完成窄范围验收，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 为 `NONE`；没有自动 Next Implementation Package。任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -11835,15 +11899,22 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -11877,7 +11948,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交上完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。当前 Bounded Work 精确为 `PAVP-RUNTIME-003`，状态为 `OPEN / COMPLETE / PASS`；`PAVP-RUNTIME-004` 保持 Open 且未启动，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交上完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 精确为 `NONE`；`PAVP-RUNTIME-004` 保持 Open 且未启动，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
 
 当前精确 Acceptance Contract：
 
@@ -11916,15 +11987,22 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通�
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12315,15 +12393,22 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通�
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12607,15 +12692,22 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY=NONE
+CURRENT_BOUNDED_WORK=NONE
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
-PAVP_RUNTIME_003_STATUS=OPEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
 PAVP_RUNTIME_004_STATUS=OPEN
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12644,12 +12736,12 @@ ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE
 ALLOWED=exact §1.2B.0 shared experience foundation plus exact §1.2B.0A Appearance Capability Workspace, §1.2B.0C rejected Catalog retirement, §1.2B.0D Seven Built-in Theme Replacement and §1.2B.0D.1 Additional Built-in Theme Expansion within the existing ten-route product: fluid responsive Shell workspace, Header debug-label removal, exact Lucide navigation projection, one visual Theme Gallery from the canonical readonly Theme Preview Projection, exact six editable Appearance axes with Density preserved, real effective Preview, resolved Material and replayable Motion stages, reliable feedback, fourteen exact repository-owned Built-in Themes, Iris Product Default and first-paint Safety Baseline, read-only retired-reference and same-ID migration, Catalog installer removal, seven Error Route visible copy translations, deterministic projections/manifests and smallest owning static gates; exact §1.2B.0E bounded Motion Geometry Stability Repair; full/reduced/none persistent Shell/Route geometry invariant; exact PAVP-RUNTIME-002 persistent current-navigation primary-mousedown native-focus-transfer repair preserved; exact PAVP-RUNTIME-005 stable unkeyed Route Content Host with no Route-level or Direct-child blanket concealment, opacity entrance or delay
 PROHIBITED=redesign of the other nine product-page content models; Density control or mutation; arbitrary custom-theme editing/import/export/deletion or color authoring; reintroduction of the rejected Catalog or its installation control; automatic Storage mutation or Custom Registry cleanup; Built-in Theme identity/default/migration changes outside §1.2B.0D and §1.2B.0D.1; removal of the general validated Custom Theme capability; backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate Shell/Router outlet/scroll/appearance/material/provider/registry/writer authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work; Motion-bearing persistent Shell or Route geometry; persistent-owner animation fill-mode forwards or both; Motion Preference navigation, Shell/Route/workspace remount or scroll write; Route-keyed Routed Component remount; Route-level Transition, animation or conditional concealment; blanket Direct-child Route Content animation or delay; eager route conversion or new Loading Placeholder
 OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior
-MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes for stable unkeyed Route Host, no route-derived key, visible host, no route-level animation/transition/concealment, no Direct-child blanket animation/delay, and no replacement loading/eager-route workaround; exact 10 reversible PAVP-RUNTIME-003 source probes for full-viewport Scrim containment, pointer guards, inner-only Drawer Motion, dialog semantics and Main inert; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
+MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes for stable unkeyed Route Host, no route-derived key, visible host, no route-level animation/transition/concealment, no Direct-child blanket animation/delay, and no replacement loading/eager-route workaround; exact unchanged 10 reversible PAVP-RUNTIME-003 source probes for full-viewport Scrim containment, pointer guards, inner-only Drawer Motion, dialog semantics and Main inert; exact 6 reversible PAVP-RUNTIME-003 acceptance-closure probes for accepted status, cleared current work, Owner runtime/visual/accessibility acceptance and revoked overall acceptance; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
-COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT remains accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 5673236868737f42f3470307b5f5d6c8d4e8639e with Owner runtime and visual acceptance PASS; current bounded work is PAVP-RUNTIME-003 at OPEN / COMPLETE / PASS under the frozen architecture admission with 10 reversible source probes; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
+COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT remains accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 5673236868737f42f3470307b5f5d6c8d4e8639e with Owner runtime and visual acceptance PASS; PAVP-RUNTIME-003 is accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 3fa078ab75322a17e5e4514d0805f1efea06981b with Owner runtime, visual and accessibility acceptance PASS, its 10 reversible source probes unchanged, and current bounded work cleared to NONE; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确发布实施提交完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。当前 Bounded Work 是已冻结准入且 Repository Implementation 与 Canonical Static Verification 已完成的 `PAVP-RUNTIME-003`；`PAVP-RUNTIME-004` 保持 Open 且未触碰，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确发布实施提交完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 为 `NONE`；`PAVP-RUNTIME-004` 保持 Open 且未触碰，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -12998,16 +13090,23 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_5673236868737
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_RUNTIME_003_ADMISSION_AMENDMENT
-CURRENT_BOUNDED_WORK_IS_PAVP-RUNTIME-003
+CURRENT_BOUNDED_WORK_AUTHORITY_IS_NONE
+CURRENT_BOUNDED_WORK_IS_NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION_IS_NONE
 PAVP_RUNTIME_001_STATUS_IS_ACCEPTED
 PAVP_RUNTIME_002_STATUS_IS_OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION_IS_COMPLETE
 PAVP_RUNTIME_002_STATIC_VERIFICATION_IS_PASS
-PAVP_RUNTIME_003_STATUS_IS_OPEN
+PAVP_RUNTIME_003_STATUS_IS_ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_IS_COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION_IS_PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE_IS_PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE_IS_PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT_IS_那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT_IS_3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET_IS_ORIGIN_MAIN
+PAVP_RUNTIME_003_PUBLICATION_STATUS_IS_COMPLETE
 PAVP_RUNTIME_004_STATUS_IS_OPEN
 PAVP_RUNTIME_005_STATUS_IS_OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION_IS_COMPLETE

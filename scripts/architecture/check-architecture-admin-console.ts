@@ -196,6 +196,8 @@ const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
 const expectedAcceptanceClosureNegativeProbeCount = 5
 const expectedRuntime003AdmissionNegativeProbeCount = 5
+const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
+const expectedRuntime003ActiveMirrorCount = 12
 const expectedRuntime003SourceNegativeProbeCount = 10
 const acceptedDarkActionWorkPackage = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
 const darkActionAdmissionAmendment = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
@@ -203,6 +205,8 @@ const darkActionImplementationCommit = '5673236868737f42f3470307b5f5d6c8d4e8639e
 const darkActionAcceptanceStatement = '验收通过'
 const runtime003WorkItem = 'PAVP-RUNTIME-003'
 const runtime003AdmissionAmendment = 'PAVP_RUNTIME_003_ADMISSION_AMENDMENT'
+const runtime003AcceptanceStatement = '那没问题'
+const runtime003ImplementationCommit = '3fa078ab75322a17e5e4514d0805f1efea06981b'
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
 const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
@@ -4663,6 +4667,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     [
       ...architectureSource.matchAll(new RegExp(`^${marker}[ \\t]*=[ \\t]*([^\\r\\n]+)$`, 'gmu')),
     ].map((match) => match[1]?.trim() ?? '')
+  const runtime003StatusValues = valuesForMarker('PAVP_RUNTIME_003_STATUS')
   const canonicalStatusEnd = architectureSource.indexOf('\n---\n')
   const canonicalStatusSource =
     canonicalStatusEnd === -1 ? architectureSource : architectureSource.slice(0, canonicalStatusEnd)
@@ -4673,7 +4678,9 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     .exec(canonicalStatusSource)?.[1]
     ?.trim()
 
-  if (canonicalWork !== runtime003WorkItem || canonicalAuthority !== runtime003AdmissionAmendment) {
+  // This freezes the current acceptance-closure snapshot. A later frozen admission must
+  // update this owning checker together with every active current-work mirror.
+  if (canonicalWork !== 'NONE' || canonicalAuthority !== 'NONE') {
     violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
   }
 
@@ -4697,8 +4704,6 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
     `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${darkActionAdmissionAmendment}`,
     `HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY=${runtime003AdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
     'OWNER_RUNTIME_ACCEPTANCE=PASS',
     'OWNER_VISUAL_ACCEPTANCE=PASS',
     `OWNER_ACCEPTANCE_STATEMENT=${darkActionAcceptanceStatement}`,
@@ -4710,6 +4715,31 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     requiredAmendmentMarkers.some((marker) => !amendmentSource.includes(marker))
   ) {
     violations.push('DARK_ACTION_FROZEN_AMENDMENT_REQUIRED')
+  }
+
+  const runtime003AmendmentHeading = `#### \`${runtime003AdmissionAmendment}\``
+  const runtime003AmendmentStart = architectureSource.indexOf(runtime003AmendmentHeading)
+  const runtime003AmendmentEnd =
+    runtime003AmendmentStart === -1
+      ? -1
+      : architectureSource.indexOf(
+          '\n#### ',
+          runtime003AmendmentStart + runtime003AmendmentHeading.length,
+        )
+  const runtime003AmendmentSource =
+    runtime003AmendmentStart === -1
+      ? ''
+      : architectureSource.slice(
+          runtime003AmendmentStart,
+          runtime003AmendmentEnd === -1 ? architectureSource.length : runtime003AmendmentEnd,
+        )
+
+  if (
+    !runtime003AmendmentSource.includes(`AMENDMENT=${runtime003AdmissionAmendment}`) ||
+    !runtime003AmendmentSource.includes('AMENDMENT_STATUS=FROZEN') ||
+    !runtime003AmendmentSource.includes(`WORK_ITEM=${runtime003WorkItem}`)
+  ) {
+    violations.push('PAVP_RUNTIME_003_ADMISSION_NOT_FROZEN')
   }
 
   const architectureLines = architectureSource.split(/\r?\n/u)
@@ -4735,8 +4765,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== runtime003WorkItem ||
-      authorityValues[0] !== runtime003AdmissionAmendment
+      workValues[0] !== 'NONE' ||
+      authorityValues[0] !== 'NONE'
     ) {
       violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
     }
@@ -4754,8 +4784,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length === 0 ||
     allCurrentWorkAuthorityMarkers.length === 0 ||
-    allCurrentWorkMarkers.some((value) => value !== runtime003WorkItem) ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== runtime003AdmissionAmendment)
+    allCurrentWorkMarkers.length !== runtime003StatusValues.length ||
+    allCurrentWorkAuthorityMarkers.length !== runtime003StatusValues.length ||
+    allCurrentWorkMarkers.some((value) => value !== 'NONE') ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== 'NONE')
   ) {
     violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
   }
@@ -4854,7 +4886,25 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('DARK_ACTION_ADMISSION_HISTORY')
   }
 
-  const requiredFinalInvariantMarkers = [
+  const runtime003HistoricalWorkLine = `HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${runtime003WorkItem}`
+  const runtime003HistoricalAuthorityLine = `HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${runtime003AdmissionAmendment}`
+  const runtime003HistoricalWorkLines = architectureLines.filter((line) =>
+    line.includes(`CURRENT_BOUNDED_WORK=${runtime003WorkItem}`),
+  )
+  const runtime003HistoricalAuthorityLines = architectureLines.filter((line) =>
+    line.includes(`CURRENT_BOUNDED_WORK_AUTHORITY=${runtime003AdmissionAmendment}`),
+  )
+
+  if (
+    runtime003HistoricalWorkLines.length !== 1 ||
+    runtime003HistoricalWorkLines[0] !== runtime003HistoricalWorkLine ||
+    runtime003HistoricalAuthorityLines.length !== 1 ||
+    runtime003HistoricalAuthorityLines[0] !== runtime003HistoricalAuthorityLine
+  ) {
+    violations.push('PAVP_RUNTIME_003_ADMISSION_HISTORY')
+  }
+
+  const requiredDarkActionFinalInvariantMarkers = [
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_ACCEPTED',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
@@ -4865,19 +4915,42 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_${darkActionImplementationCommit}`,
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE',
+  ] as const
+  const requiredRuntime003FinalInvariantMarkers = [
     'PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN',
-    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
-    'CURRENT_BOUNDED_WORK_IS_PAVP-RUNTIME-003',
-    'PAVP_RUNTIME_003_STATUS_IS_OPEN',
+    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_NONE',
+    'CURRENT_BOUNDED_WORK_IS_NONE',
+    'PAVP_RUNTIME_003_STATUS_IS_ACCEPTED',
     'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
     'PAVP_RUNTIME_003_STATIC_VERIFICATION_IS_PASS',
+    'PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE_IS_PASS',
+    'PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE_IS_PASS',
+    'PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_PASS',
+    `PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT_IS_${runtime003AcceptanceStatement}`,
+    `PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT_IS_${runtime003ImplementationCommit}`,
+    'PAVP_RUNTIME_003_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
+    'PAVP_RUNTIME_003_PUBLICATION_STATUS_IS_COMPLETE',
+  ] as const
+  const requiredSuccessorFinalInvariantMarkers = [
     'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE_IS_NONE',
     'SUCCESSOR_PACKAGE_AUTHORIZATION_IS_NONE',
   ] as const
 
-  if (requiredFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))) {
+  if (
+    requiredDarkActionFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
+  ) {
     violations.push('DARK_ACTION_ACCEPTANCE_MIRROR')
+  }
+  if (
+    requiredRuntime003FinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
+  ) {
+    violations.push('PAVP_RUNTIME_003_ACCEPTANCE_MIRROR')
+  }
+  if (
+    requiredSuccessorFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
+  ) {
+    violations.push('DARK_ACTION_SUCCESSOR_STATE')
   }
 
   const canonicalNextWork = /^NEXT_CANONICAL_WORK_PACKAGE[ \t]*=[ \t]*([^\r\n]+)$/mu
@@ -4901,6 +4974,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   const overallAcceptanceMarkers = [
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE',
+    'CURRENT_RELEASE_ACCEPTANCE',
     'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE',
     'ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE',
     'ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE',
@@ -4919,11 +4994,27 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   const runtime003AdmissionValues = valuesForMarker('PAVP_RUNTIME_003_ADMISSION_AMENDMENT')
-  const runtime003StatusValues = valuesForMarker('PAVP_RUNTIME_003_STATUS')
   const runtime003ImplementationValues = valuesForMarker(
     'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION',
   )
   const runtime003VerificationValues = valuesForMarker('PAVP_RUNTIME_003_STATIC_VERIFICATION')
+  const runtime003OwnerRuntimeAcceptanceValues = valuesForMarker(
+    'PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE',
+  )
+  const runtime003OwnerVisualAcceptanceValues = valuesForMarker(
+    'PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE',
+  )
+  const runtime003OwnerAccessibilityAcceptanceValues = valuesForMarker(
+    'PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE',
+  )
+  const runtime003OwnerAcceptanceStatementValues = valuesForMarker(
+    'PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT',
+  )
+  const runtime003ImplementationCommitValues = valuesForMarker(
+    'PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT',
+  )
+  const runtime003PublicationTargetValues = valuesForMarker('PAVP_RUNTIME_003_PUBLICATION_TARGET')
+  const runtime003PublicationStatusValues = valuesForMarker('PAVP_RUNTIME_003_PUBLICATION_STATUS')
   const runtime004StatusValues = valuesForMarker('PAVP_RUNTIME_004_STATUS')
 
   if (
@@ -4933,24 +5024,62 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_RUNTIME_003_ADMISSION_NOT_FROZEN')
   }
   if (
-    runtime003StatusValues.length === 0 ||
-    runtime003StatusValues.some((value) => value !== 'OPEN') ||
-    runtime004StatusValues.length === 0 ||
+    runtime003StatusValues.length !== expectedRuntime003ActiveMirrorCount ||
+    runtime003StatusValues.some((value) => value !== 'ACCEPTED')
+  ) {
+    violations.push('PAVP_RUNTIME_003_ACCEPTANCE_STATUS')
+  }
+  if (
+    runtime004StatusValues.length !== runtime003StatusValues.length ||
     runtime004StatusValues.some((value) => value !== 'OPEN')
   ) {
     violations.push('OPEN_RUNTIME_DEFECT_STATUS_DRIFT')
   }
   if (
-    runtime003ImplementationValues.length === 0 ||
+    runtime003ImplementationValues.length !== runtime003StatusValues.length ||
     runtime003ImplementationValues.some((value) => value !== 'COMPLETE')
   ) {
     violations.push('PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_STATE')
   }
   if (
-    runtime003VerificationValues.length === 0 ||
+    runtime003VerificationValues.length !== runtime003StatusValues.length ||
     runtime003VerificationValues.some((value) => value !== 'PASS')
   ) {
     violations.push('PAVP_RUNTIME_003_STATIC_VERIFICATION_STATE')
+  }
+  if (
+    runtime003OwnerRuntimeAcceptanceValues.length !== runtime003StatusValues.length ||
+    runtime003OwnerRuntimeAcceptanceValues.some((value) => value !== 'PASS')
+  ) {
+    violations.push('PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE')
+  }
+  if (
+    runtime003OwnerVisualAcceptanceValues.length !== runtime003StatusValues.length ||
+    runtime003OwnerVisualAcceptanceValues.some((value) => value !== 'PASS')
+  ) {
+    violations.push('PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE')
+  }
+  if (
+    runtime003OwnerAccessibilityAcceptanceValues.length !== runtime003StatusValues.length ||
+    runtime003OwnerAccessibilityAcceptanceValues.some((value) => value !== 'PASS')
+  ) {
+    violations.push('PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE')
+  }
+  if (
+    runtime003OwnerAcceptanceStatementValues.length !== runtime003StatusValues.length ||
+    runtime003OwnerAcceptanceStatementValues.some(
+      (value) => value !== runtime003AcceptanceStatement,
+    ) ||
+    runtime003ImplementationCommitValues.length !== runtime003StatusValues.length ||
+    runtime003ImplementationCommitValues.some(
+      (value) => value !== runtime003ImplementationCommit,
+    ) ||
+    runtime003PublicationTargetValues.length !== runtime003StatusValues.length ||
+    runtime003PublicationTargetValues.some((value) => value !== 'origin/main') ||
+    runtime003PublicationStatusValues.length !== runtime003StatusValues.length ||
+    runtime003PublicationStatusValues.some((value) => value !== 'COMPLETE')
+  ) {
+    violations.push('PAVP_RUNTIME_003_ACCEPTANCE_MIRROR')
   }
 
   return [...new Set(violations)]
@@ -4972,7 +5101,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
+        'CURRENT_BOUNDED_WORK=NONE',
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -5020,19 +5149,19 @@ function runRuntime003AdmissionNegativeProbes(
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
   const probes: readonly [string, string, string][] = [
     [
-      'runtime-003-current-work-restored-to-none',
-      'PAVP_RUNTIME_003_CURRENT_WORK',
+      'runtime-003-historical-current-work-removed',
+      'PAVP_RUNTIME_003_ADMISSION_HISTORY',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
-        'CURRENT_BOUNDED_WORK=NONE',
+        `HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
+        'HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=NONE',
       ),
     ],
     [
-      'runtime-003-unauthorized-current-work-id',
-      'PAVP_RUNTIME_003_CURRENT_WORK',
+      'runtime-003-historical-current-work-id-replaced',
+      'PAVP_RUNTIME_003_ADMISSION_HISTORY',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
-        'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-999',
+        `HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
+        'HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP-RUNTIME-999',
       ),
     ],
     [
@@ -5053,6 +5182,64 @@ function runRuntime003AdmissionNegativeProbes(
     ],
     [
       'runtime-003-overall-admin-console-acceptance-restored',
+      'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED',
+      architectureSource.replace(
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=PASS',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed: mutatedSource !== architectureSource && failureCodes.includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function runRuntime003AcceptanceClosureNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const probes: readonly [string, string, string][] = [
+    [
+      'runtime-003-status-reopened-after-acceptance',
+      'PAVP_RUNTIME_003_ACCEPTANCE_STATUS',
+      architectureSource.replace(
+        'PAVP_RUNTIME_003_STATUS=ACCEPTED',
+        'PAVP_RUNTIME_003_STATUS=OPEN',
+      ),
+    ],
+    [
+      'runtime-003-retained-as-current-work-after-acceptance',
+      'PAVP_RUNTIME_003_CURRENT_WORK',
+      architectureSource.replace(
+        'CURRENT_BOUNDED_WORK=NONE',
+        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
+      ),
+    ],
+    [
+      'runtime-003-owner-runtime-acceptance-removed',
+      'PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE',
+      architectureSource.replace('PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS\n', ''),
+    ],
+    [
+      'runtime-003-owner-visual-acceptance-removed',
+      'PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE',
+      architectureSource.replace('PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS\n', ''),
+    ],
+    [
+      'runtime-003-owner-accessibility-acceptance-removed',
+      'PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE',
+      architectureSource.replace('PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS\n', ''),
+    ],
+    [
+      'runtime-003-overall-admin-console-acceptance-falsely-restored',
       'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED',
       architectureSource.replace(
         'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
@@ -5104,8 +5291,6 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE',
     'PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN',
-    'CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
-    'CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT_IS_FROZEN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS_IS_ACCEPTED',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
@@ -5117,8 +5302,6 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
     'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE',
     'PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN',
-    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_RUNTIME_003_ADMISSION_AMENDMENT',
-    'CURRENT_BOUNDED_WORK_IS_PAVP-RUNTIME-003',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
     'COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only',
     'REPOSITORY_IMPLEMENTATION=COMPLETE',
@@ -5158,9 +5341,16 @@ function validateProductExperienceReworkStatus(architectureSource: string): stri
     'PAVP_RUNTIME_002_STATUS=OPEN',
     'PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE',
     'PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS',
-    'PAVP_RUNTIME_003_STATUS=OPEN',
+    'PAVP_RUNTIME_003_STATUS=ACCEPTED',
     'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE',
     'PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS',
+    'PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS',
+    'PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS',
+    `PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=${runtime003AcceptanceStatement}`,
+    `PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=${runtime003ImplementationCommit}`,
+    'PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main',
+    'PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE',
     'PAVP_RUNTIME_004_STATUS=OPEN',
     'PAVP_RUNTIME_005_STATUS=OPEN',
     'PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE',
@@ -7682,6 +7872,8 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAcceptanceClosureNegativeProbes(architectureSource)
   const runtime003AdmissionNegativeProbeResults =
     runRuntime003AdmissionNegativeProbes(architectureSource)
+  const runtime003AcceptanceClosureNegativeProbeResults =
+    runRuntime003AcceptanceClosureNegativeProbes(architectureSource)
   const runtime003SourceNegativeProbeResults = runRuntime003SourceNegativeProbes(baseline)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
@@ -7716,6 +7908,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   ) {
     violations.push(
       `PAVP-RUNTIME-003 admission negative-probe count drifted: expected ${String(expectedRuntime003AdmissionNegativeProbeCount)}, received ${String(runtime003AdmissionNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    runtime003AcceptanceClosureNegativeProbeResults.length !==
+    expectedRuntime003AcceptanceClosureNegativeProbeCount
+  ) {
+    violations.push(
+      `PAVP-RUNTIME-003 acceptance-closure negative-probe count drifted: expected ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}, received ${String(runtime003AcceptanceClosureNegativeProbeResults.length)}.`,
     )
   }
   if (runtime003SourceNegativeProbeResults.length !== expectedRuntime003SourceNegativeProbeCount) {
@@ -7784,6 +7984,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of runtime003AcceptanceClosureNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory PAVP-RUNTIME-003 acceptance-closure negative probe did not fail.`,
+      )
+    }
+  }
   for (const result of runtime003SourceNegativeProbeResults) {
     if (!result.passed) {
       violations.push(
@@ -7803,6 +8010,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes)`,
   )
 }
