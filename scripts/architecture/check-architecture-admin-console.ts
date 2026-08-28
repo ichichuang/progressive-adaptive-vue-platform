@@ -197,12 +197,16 @@ const expectedRuntime005NegativeProbeCount = 10
 const expectedAcceptanceClosureNegativeProbeCount = 5
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
-const expectedRuntime003ActiveMirrorCount = 12
+const expectedNavigationReworkAdmissionNegativeProbeCount = 6
+const expectedRuntime003ActiveMirrorCount = 13
 const expectedRuntime003SourceNegativeProbeCount = 10
 const acceptedDarkActionWorkPackage = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
 const darkActionAdmissionAmendment = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT'
 const darkActionImplementationCommit = '5673236868737f42f3470307b5f5d6c8d4e8639e'
 const darkActionAcceptanceStatement = '验收通过'
+const navigationReworkWorkPackage = 'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK'
+const navigationReworkAdmissionAmendment =
+  'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT'
 const runtime003WorkItem = 'PAVP-RUNTIME-003'
 const runtime003AdmissionAmendment = 'PAVP_RUNTIME_003_ADMISSION_AMENDMENT'
 const runtime003AcceptanceStatement = '那没问题'
@@ -4668,6 +4672,14 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
       ...architectureSource.matchAll(new RegExp(`^${marker}[ \\t]*=[ \\t]*([^\\r\\n]+)$`, 'gmu')),
     ].map((match) => match[1]?.trim() ?? '')
   const runtime003StatusValues = valuesForMarker('PAVP_RUNTIME_003_STATUS')
+  const navigationReworkAdmissionValues = valuesForMarker(navigationReworkAdmissionAmendment)
+  const navigationReworkStatusValues = valuesForMarker(`${navigationReworkWorkPackage}_STATUS`)
+  const navigationReworkImplementationValues = valuesForMarker(
+    `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION`,
+  )
+  const navigationReworkVerificationValues = valuesForMarker(
+    `${navigationReworkWorkPackage}_STATIC_VERIFICATION`,
+  )
   const canonicalStatusEnd = architectureSource.indexOf('\n---\n')
   const canonicalStatusSource =
     canonicalStatusEnd === -1 ? architectureSource : architectureSource.slice(0, canonicalStatusEnd)
@@ -4678,10 +4690,16 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     .exec(canonicalStatusSource)?.[1]
     ?.trim()
 
-  // This freezes the current acceptance-closure snapshot. A later frozen admission must
-  // update this owning checker together with every active current-work mirror.
-  if (canonicalWork !== 'NONE' || canonicalAuthority !== 'NONE') {
+  const recordCurrentWorkViolation = (): void => {
     violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
+    violations.push('PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_CURRENT_WORK')
+  }
+
+  if (
+    canonicalWork !== navigationReworkWorkPackage ||
+    canonicalAuthority !== navigationReworkAdmissionAmendment
+  ) {
+    recordCurrentWorkViolation()
   }
 
   const amendmentHeading = `### 1.2B.0G \`${acceptedDarkActionWorkPackage}\``
@@ -4742,6 +4760,58 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_RUNTIME_003_ADMISSION_NOT_FROZEN')
   }
 
+  const navigationReworkAmendmentHeading = `### 1.2B.0H \`${navigationReworkWorkPackage}\``
+  const navigationReworkAmendmentStart = architectureSource.indexOf(
+    navigationReworkAmendmentHeading,
+  )
+  const navigationReworkAmendmentEnd =
+    navigationReworkAmendmentStart === -1
+      ? -1
+      : architectureSource.indexOf(
+          '\n### ',
+          navigationReworkAmendmentStart + navigationReworkAmendmentHeading.length,
+        )
+  const navigationReworkAmendmentSource =
+    navigationReworkAmendmentStart === -1
+      ? ''
+      : architectureSource.slice(
+          navigationReworkAmendmentStart,
+          navigationReworkAmendmentEnd === -1
+            ? architectureSource.length
+            : navigationReworkAmendmentEnd,
+        )
+  const requiredNavigationReworkAmendmentMarkers = [
+    `AMENDMENT=${navigationReworkAdmissionAmendment}`,
+    'AMENDMENT_STATUS=FROZEN',
+    `${navigationReworkAdmissionAmendment}=FROZEN`,
+    'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
+    `WORK_PACKAGE=${navigationReworkWorkPackage}`,
+    `${navigationReworkWorkPackage}_STATUS=OPEN`,
+    `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+    `${navigationReworkWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
+    `CURRENT_BOUNDED_WORK_AUTHORITY=${navigationReworkAdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
+    'PAVP_RUNTIME_003_STATUS=ACCEPTED',
+    'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS',
+    'PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS',
+    'PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS',
+    'PAVP_RUNTIME_004_STATUS=OPEN',
+    'NEXT_CANONICAL_WORK_PACKAGE=NONE',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
+  ] as const
+
+  if (
+    navigationReworkAmendmentSource.length === 0 ||
+    requiredNavigationReworkAmendmentMarkers.some(
+      (marker) => !navigationReworkAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_NOT_FROZEN')
+  }
+
   const architectureLines = architectureSource.split(/\r?\n/u)
   const activeMirrorIndexes = architectureLines.flatMap((line, index) =>
     /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS[ \t]*=/u.test(line) ? [index] : [],
@@ -4752,7 +4822,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   for (const mirrorIndex of activeMirrorIndexes) {
-    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 20)
+    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 28)
     const workValues = mirrorLines.flatMap((line) => {
       const match = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
       return match?.[1] === undefined ? [] : [match[1].trim()]
@@ -4765,10 +4835,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'NONE' ||
-      authorityValues[0] !== 'NONE'
+      workValues[0] !== navigationReworkWorkPackage ||
+      authorityValues[0] !== navigationReworkAdmissionAmendment
     ) {
-      violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
+      recordCurrentWorkViolation()
     }
   }
 
@@ -4782,14 +4852,39 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   })
 
   if (
-    allCurrentWorkMarkers.length === 0 ||
-    allCurrentWorkAuthorityMarkers.length === 0 ||
-    allCurrentWorkMarkers.length !== runtime003StatusValues.length ||
-    allCurrentWorkAuthorityMarkers.length !== runtime003StatusValues.length ||
-    allCurrentWorkMarkers.some((value) => value !== 'NONE') ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== 'NONE')
+    allCurrentWorkMarkers.length !== expectedRuntime003ActiveMirrorCount ||
+    allCurrentWorkAuthorityMarkers.length !== expectedRuntime003ActiveMirrorCount ||
+    allCurrentWorkMarkers.some((value) => value !== navigationReworkWorkPackage) ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== navigationReworkAdmissionAmendment)
   ) {
-    violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
+    recordCurrentWorkViolation()
+  }
+
+  if (
+    navigationReworkAdmissionValues.length !== expectedRuntime003ActiveMirrorCount ||
+    navigationReworkAdmissionValues.some((value) => value !== 'FROZEN')
+  ) {
+    violations.push('PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_NOT_FROZEN')
+  }
+  if (
+    navigationReworkStatusValues.length !== expectedRuntime003ActiveMirrorCount ||
+    navigationReworkStatusValues.some((value) => value !== 'OPEN')
+  ) {
+    violations.push('PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS')
+  }
+  if (
+    navigationReworkImplementationValues.length !== expectedRuntime003ActiveMirrorCount ||
+    navigationReworkImplementationValues.some((value) => value !== 'NOT_STARTED')
+  ) {
+    violations.push(
+      'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION_STATE',
+    )
+  }
+  if (
+    navigationReworkVerificationValues.length !== expectedRuntime003ActiveMirrorCount ||
+    navigationReworkVerificationValues.some((value) => value !== 'NOT_RUN')
+  ) {
+    violations.push('PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION_STATE')
   }
 
   const statusValues = [
@@ -4918,8 +5013,6 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   ] as const
   const requiredRuntime003FinalInvariantMarkers = [
     'PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN',
-    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_NONE',
-    'CURRENT_BOUNDED_WORK_IS_NONE',
     'PAVP_RUNTIME_003_STATUS_IS_ACCEPTED',
     'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION_IS_COMPLETE',
     'PAVP_RUNTIME_003_STATIC_VERIFICATION_IS_PASS',
@@ -4930,6 +5023,14 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT_IS_${runtime003ImplementationCommit}`,
     'PAVP_RUNTIME_003_PUBLICATION_TARGET_IS_ORIGIN_MAIN',
     'PAVP_RUNTIME_003_PUBLICATION_STATUS_IS_COMPLETE',
+  ] as const
+  const requiredNavigationReworkFinalInvariantMarkers = [
+    `${navigationReworkAdmissionAmendment}_IS_FROZEN`,
+    `${navigationReworkWorkPackage}_STATUS_IS_OPEN`,
+    `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED`,
+    `${navigationReworkWorkPackage}_STATIC_VERIFICATION_IS_NOT_RUN`,
+    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${navigationReworkAdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK_IS_${navigationReworkWorkPackage}`,
   ] as const
   const requiredSuccessorFinalInvariantMarkers = [
     'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
@@ -4946,6 +5047,13 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     requiredRuntime003FinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
   ) {
     violations.push('PAVP_RUNTIME_003_ACCEPTANCE_MIRROR')
+  }
+  if (
+    requiredNavigationReworkFinalInvariantMarkers.some(
+      (marker) => !architectureSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_FINAL_INVARIANT')
   }
   if (
     requiredSuccessorFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
@@ -5101,7 +5209,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        `CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -5219,7 +5327,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        `CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -5256,6 +5364,77 @@ function runRuntime003AcceptanceClosureNegativeProbes(
         id,
         expectedFailureCode,
         passed: mutatedSource !== architectureSource && failureCodes.includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function runNavigationReworkAdmissionNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
+  const probes: readonly [string, string, string][] = [
+    [
+      'navigation-rework-current-work-left-as-none',
+      'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_CURRENT_WORK',
+      architectureSource.replace(
+        `CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=NONE',
+      ),
+    ],
+    [
+      'navigation-rework-current-work-id-unauthorized',
+      'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_CURRENT_WORK',
+      architectureSource.replace(
+        `CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
+      ),
+    ],
+    [
+      'navigation-rework-repository-implementation-falsely-complete',
+      'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION_STATE',
+      architectureSource.replace(
+        `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+        `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+      ),
+    ],
+    [
+      'navigation-rework-static-verification-falsely-passed',
+      'PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION_STATE',
+      architectureSource.replace(
+        `${navigationReworkWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
+        `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
+      ),
+    ],
+    [
+      'navigation-rework-regresses-runtime-003-acceptance',
+      'PAVP_RUNTIME_003_ACCEPTANCE_STATUS',
+      architectureSource.replace(
+        'PAVP_RUNTIME_003_STATUS=ACCEPTED',
+        'PAVP_RUNTIME_003_STATUS=OPEN',
+      ),
+    ],
+    [
+      'navigation-rework-falsely-restores-overall-admin-console-acceptance',
+      'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORED',
+      architectureSource.replace(
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+        'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=PASS',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          mutatedSource !== architectureSource &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          failureCodes.includes(expectedFailureCode),
       })
     }),
   )
@@ -7874,6 +8053,8 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runRuntime003AdmissionNegativeProbes(architectureSource)
   const runtime003AcceptanceClosureNegativeProbeResults =
     runRuntime003AcceptanceClosureNegativeProbes(architectureSource)
+  const navigationReworkAdmissionNegativeProbeResults =
+    runNavigationReworkAdmissionNegativeProbes(architectureSource)
   const runtime003SourceNegativeProbeResults = runRuntime003SourceNegativeProbes(baseline)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
@@ -7916,6 +8097,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   ) {
     violations.push(
       `PAVP-RUNTIME-003 acceptance-closure negative-probe count drifted: expected ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}, received ${String(runtime003AcceptanceClosureNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    navigationReworkAdmissionNegativeProbeResults.length !==
+    expectedNavigationReworkAdmissionNegativeProbeCount
+  ) {
+    violations.push(
+      `Naive collapsible multilevel navigation admission negative-probe count drifted: expected ${String(expectedNavigationReworkAdmissionNegativeProbeCount)}, received ${String(navigationReworkAdmissionNegativeProbeResults.length)}.`,
     )
   }
   if (runtime003SourceNegativeProbeResults.length !== expectedRuntime003SourceNegativeProbeCount) {
@@ -7991,6 +8180,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of navigationReworkAdmissionNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory Naive collapsible multilevel navigation admission negative probe did not fail.`,
+      )
+    }
+  }
   for (const result of runtime003SourceNegativeProbeResults) {
     if (!result.passed) {
       violations.push(
@@ -8010,6 +8206,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedNavigationReworkAdmissionNegativeProbeCount)}/${String(expectedNavigationReworkAdmissionNegativeProbeCount)} Naive collapsible multilevel navigation admission negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes)`,
   )
 }

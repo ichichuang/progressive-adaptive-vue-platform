@@ -97,8 +97,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_001_OWNER_RUNTIME_ACCEPTANCE=PASS
 PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
@@ -369,8 +373,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_001_OWNER_RUNTIME_ACCEPTANCE=PASS
 PAVP_RUNTIME_001_OWNER_VISUAL_ACCEPTANCE=PASS
@@ -440,8 +448,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通�
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PARALLEL_OWNER_AUTHORIZED_CORRECTIVE_WORK=NONE
 ADMIN_CONSOLE_EXPERIENCE_FOUNDATION=COMPLETE
 PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE
@@ -493,7 +505,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按 Owner 陈述 `那没问题` 完成窄范围 Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 已清除为 `NONE`；`PAVP-RUNTIME-004` 保持 Open 且未启动。该窄范围验收不恢复整体 Admin Console Acceptance。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按 Owner 陈述 `那没问题` 完成窄范围 Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；当前唯一 Bounded Work 已由 §1.2B.0H 准入为 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`，并保持 `OPEN / NOT_STARTED / NOT_RUN`。`PAVP-RUNTIME-004` 保持 Open 且未启动。该准入与既有窄范围验收不恢复整体 Admin Console Acceptance。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -845,8 +857,12 @@ ROUTE_IDENTITY=appearance-management
 ROUTE_PATH=/appearance
 COMPLETED_BOUNDED_IMPLEMENTATION=/appearance only
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 HISTORICAL_PREVIOUS_CURRENT_BOUNDED_WORK=PAVP-RUNTIME-005
 PAVP_RUNTIME_005_STATUS=OPEN
 PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -935,8 +951,12 @@ OWNER_SOURCE_IMPLEMENTATION_AUTHORIZATION=NONE_IN_THIS_ARCHITECTURE_GOVERNANCE_T
 HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT
 HISTORICAL_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
@@ -1106,9 +1126,384 @@ IMPLEMENTATION_COMPLETION_EVIDENCE=one scoped source and generated diff limited 
 
 每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
 
-该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收，当前 Bounded Work 为 `NONE`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。
+该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；当前 Authority 已由 §1.2B.0H 切换到 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。
 
 Owner 对已发布实现的后续复核最初观察到一个 obsolete Vite config error；仓库源码与当前 Vite 配置当时已经正确，错误来自早于该发布实施且仍在长期运行的 PAVP Vite 进程。仅替换该陈旧 PAVP Vite 进程后加载了当前配置，没有改变任何仓库文件；随后十四主题 Dark Standard / Dark Enhanced、Action Fill、On-action Content、Control Foreground、First Paint 恢复以及 Theme、Color-mode、Contrast 切换的 Owner Runtime 与 Visual Review 均通过。该操作历史不是 Repository Capability、Verification Gate 或永久 Runtime Dependency。
+
+### 1.2B.0H `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`
+
+本 Amendment 是 Owner 确认需求后的单一 Architecture Admission，只冻结后续原子源码实施合同；本次 Architecture-only Landing 不实施导航源码、不改变依赖，也不恢复整体 Admin Console 验收。
+
+```text
+AMENDMENT=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+AMENDMENT_STATUS=FROZEN
+WORK_PACKAGE=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+WORK_PACKAGE_CLASSIFICATION=BOUNDED_ADMIN_PERSISTENT_NAVIGATION_VENDOR_REPLACEMENT_AND_INTERACTION_REWORK
+PARENT=PAVP_ARCHITECTURE_ADMIN_CONSOLE
+OWNER_DEMAND=CONFIRMED
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
+SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED
+DEPENDENCY_CHANGE=NONE
+PACKAGE_MANIFEST_CHANGE=NONE
+LOCKFILE_CHANGE=NONE
+NAIVE_UI_COORDINATE=naive-ui@2.45.2
+ROUTE_REGISTRY_RECORDS=17
+RUNTIME_KERNEL_STEP_COUNT=11
+ACTIVE_PROVIDER_IDS=pinia,appearance
+STORAGE_REGISTRY_RECORDS=2
+BUILT_IN_THEME_COUNT=14
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT=FROZEN
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS=ACCEPTED
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATIC_VERIFICATION=PASS
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通过
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
+PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
+PAVP_RUNTIME_001_STATUS=ACCEPTED
+PAVP_RUNTIME_002_STATUS=OPEN
+PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_RUNTIME_002_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
+PAVP_RUNTIME_003_STATUS=ACCEPTED
+PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
+PAVP_RUNTIME_003_OWNER_RUNTIME_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_VISUAL_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCESSIBILITY_ACCEPTANCE=PASS
+PAVP_RUNTIME_003_OWNER_ACCEPTANCE_STATEMENT=那没问题
+PAVP_RUNTIME_003_IMPLEMENTATION_COMMIT=3fa078ab75322a17e5e4514d0805f1efea06981b
+PAVP_RUNTIME_003_PUBLICATION_TARGET=origin/main
+PAVP_RUNTIME_003_PUBLICATION_STATUS=COMPLETE
+PAVP_RUNTIME_004_STATUS=OPEN
+PAVP_RUNTIME_005_STATUS=OPEN
+PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_RUNTIME_005_STATIC_VERIFICATION=PASS
+OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
+CURRENT_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
+ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
+ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
+ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
+ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
+```
+
+#### 已证明的当前缺陷
+
+Wide/Regular 持久导航当前由 `packages/ui/src/components/UiAdminShell.vue` 手写。侧栏在既有 PAVP expanded/rail 宽度之间继续执行 `inline-size` transition，而分组标题与路由文字由 `profile === 'wide'` 条件独立、立即地插入或移出 DOM；因此宽度生命周期与文字 DOM 生命周期没有同步。收缩和展开经过中间宽度时会出现瞬时换行、压缩、文字位移、图标跳动或视觉错乱，Regular Rail 还独立维护一套 Tooltip 路径。
+
+该因果链只属于 Wide/Regular persistent navigation；不是 `PAVP-RUNTIME-003` 回归。已接受 Narrow Drawer 的 Scrim、Panel、pointer/focus containment、Escape、Main inert、focus return、current-route/different-route 行为与 Drawer Motion 均保持原有所有权和接受状态。
+
+#### 唯一未来 Vendor 与公共边界
+
+后续源码必须且只能通过 `packages/ui/src/adapters/naive/**` 私有边界使用现有 `naive-ui@2.45.2` 的 `NLayout + NLayoutSider + NMenu`；折叠 Root Submenu 只使用 `NMenu` 内部拥有的 `NDropdown`。应用源码不得直接导入 Naive UI，不增加第二 Styled Vendor、第二 Overlay/Focus/Material authority，也不新增 public UI component。
+
+允许按真实消费创建的首选私有桥为：
+
+- `packages/ui/src/adapters/naive/naive-layout.ts`
+- `packages/ui/src/adapters/naive/naive-menu.ts`
+
+这些模块只重导出 `UiAdminShell` 真正需要的私有 runtime value/type，不进入 `@platform/ui` 公共根。`UiAdminShell` 的 `activeRouteName`、`navigation`、`navigate` emit 与 default slot 公共 API 精确保留。
+
+#### 稳定 Layout、Profile 与单一 Collapse Authority
+
+Admin Shell content row 由一棵结构稳定、跨 Narrow/Regular/Wide 始终挂载的 `NLayout` 拥有；只有 persistent navigation 存在时才设 `has-sider`。`NLayoutSider` 必须位于该 `NLayout` 内，并使用 `collapse-mode="width"`；Narrow 不渲染 persistent `NLayoutSider` 或 `NMenu`。不得引入竞争 block-scroll ownership 的 `NLayoutContent`，既有 routed `<main>` 继续是唯一 Admin Console block-scroll owner，身份不因 profile/collapse remount，不新增 Router outlet，不破坏已接受的 RUNTIME-005 route-content continuity。
+
+`NLayoutSider.width` 以已安装 public `string | number` 合同消费现有 expanded rem/CSS authority；`NLayoutSider.collapsedWidth` 与 `NMenu.collapsedWidth` 都必须消费下面同一个 numeric CSS-pixel bridge output，不得各自转换或持有第二宽度值。
+
+Profile 合同：
+
+- Narrow：只保留已接受的 custom Drawer，不以 Naive Drawer 替换。
+- Regular：persistent navigation 存在且永远 collapsed；Sider/Menu 均为 `collapsed=true`，无手动展开控制。
+- Wide：默认 expanded；唯一 PAVP-owned Shell-local control 可手动 collapse/expand。选择只在同一 Shell instance 生命周期内保留，跨 route navigation 保持，不进入 Pinia、Appearance、Storage 或其他 persistence。
+
+唯一派生概念为 `persistentNavigationCollapsed`：Narrow 表示 persistent navigation absent，Regular 为 `true`，Wide 为当前 in-memory Wide choice；从 Regular/Narrow 返回 Wide 时恢复该 Shell instance 的 Wide choice。该唯一值同时驱动 `NLayoutSider.collapsed` 与 `NMenu.collapsed`，禁止独立 width/label timing。
+
+`NLayoutSider.showTrigger=false`。Wide 的 PAVP-owned collapse action 只在 Wide 可见，消费既有 enhanced target-size 与 Lucide/Iconify infrastructure，不新增图标依赖；展开态 label 为 `收起导航`，收缩态 label 为 `展开导航`。
+
+#### Responsive rem-to-pixel Bridge
+
+`layout.admin.sidebar.expanded-inline-size` 继续作为 expanded Sider 的现有 CSS/rem authority。Rail 的唯一来源是 generated Layout Registry 的 `layout.admin.sidebar.rail-inline-size`，且必须保持 strict finite positive `rem`；不得复制 `64`、`64px` 或等价数字。
+
+PAVP Appearance 写入 `--ui-font-scale`，基础 CSS 使用 `html { font-size: calc(100% * var(--ui-font-scale)); }`，所以 Font Scale 会改变 computed root font size。私有 bridge 必须从 `getComputedStyle(document.documentElement).fontSize` 读取当前实际 root px，将权威 rail rem 转成一个 finite positive numeric CSS-pixel output，并让 `NLayoutSider.collapsedWidth` 与 `NMenu.collapsedWidth` 共同消费该同一数字。
+
+`PavpNaiveConfigProvider` 继续是接收 effective PAVP Appearance snapshot 的既有私有 owner。允许一个 `packages/ui` 私有只读 context，首选 `packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts`，只提供现有 `EffectiveAppearanceState` 的 readonly reactive view；它不拥有、复制、派生、修改或持久化 Appearance。Shell 只把它作为 root-font-dependent navigation metrics 的 invalidation signal。
+
+初次 Shell mount 及每次 effective `appearance.fontScale` 变化后，必须在当前 Appearance DOM projection 已提交后通过 Vue post-render reactive lifecycle 重算 root font 与 collapsed px；同一次 invalidation 使用当前 Shell inline size 和新 root font 重跑既有 Admin Shell profile resolution。既有 ResizeObserver 继续独占 container-inline-size invalidation；不得为该 bridge 新建第二 ResizeObserver、MutationObserver、`matchMedia`、Storage listener、Pinia store、global event listener、timeout、polling 或 `requestAnimationFrame` 同步。
+
+```text
+PROFILE_RECOMPUTATION_ON_EFFECTIVE_FONT_SCALE_CHANGE=REQUIRED
+DUPLICATED_RAIL_PIXEL_LITERAL=PROHIBITED
+```
+
+#### Root-Submenu-only 两级投影
+
+公共 `UiAdminNavigationGroup` 与 `consoleNavigationRegistry` 不变；现有六个非空 group 是唯一输入。每个 group 精确生成一个 Root Submenu：key 为 `navigation-group:<group.id>`，label 为原 `group.label`，icon 为 `group.items[0].iconClass`。该 icon 是私有确定性投影，不给公共 schema 增加 group icon 字段。
+
+每个 route item 保持 Level-2 leaf：key 是原 `routeName`，label/icon 是原 route-item label/`iconClass`。层级只通过受控 `NMenu.options` 的 `options[*].children` 与公开 `childrenField` 表达；`children` 不是顶层 `NMenu` prop。
+
+```text
+GROUP_ICON_PROJECTION=group.items[0].iconClass
+ROOT_MENU_OPTION_KIND=SUBMENU_ONLY
+EVERY_ROOT_OPTION_HAS_CHILDREN=REQUIRED
+ROOT_LEAF_OPTION=PROHIBITED
+ROUTE_LEAF_LEVEL=2
+```
+
+Root Leaf 被禁止，因为 collapsed root leaf 会走独立 Tooltip path，无法由本包冻结的 `NMenu.dropdownProps.to` 管理；更深层级不属于本 Work Package。
+
+#### Collapsed Popup、Keyboard 与 Focus
+
+Collapsed Root Submenu 通过公开 `NMenu.dropdownProps` 至少配置 `to: '#pavp-overlay-root'`、`trigger: 'click'`、keyboard support 与 PAVP-owned Dropdown node attributes。已核实 `NSubmenu` 先设默认 hover trigger、后 spread `dropdownProps`，因此 public click override 有效。Pointer 以 click 打开；Keyboard 通过 PAVP 私有 owner 的 Enter/Space event-local activation 打开。Popup 只能进入既有 `#pavp-overlay-root`，不得进入 `body`，不得新增 Overlay Root、z-index 或 Popover authority。
+
+```text
+COLLAPSED_SUBMENU_TRIGGER=click
+FOCUSABILITY_OWNER=PAVP private persistent-navigation adapter
+KEYBOARD_OWNER=PAVP private persistent-navigation adapter
+```
+
+PAVP 只使用公开 `NMenu.nodeProps`、`NMenu.dropdownProps`、`NMenu.onUpdate:value`、`NMenu.onUpdate:expandedKeys`；禁止 Vendor DOM query/patch、post-render Vendor handlers 和 document/window/body listener。
+
+- Expanded Menu：Root Submenu 与 Level-2 leaf 均由 `nodeProps` 提供 Tab focusability；Root 的 Enter/Space 更新 PAVP-owned `expandedKeys`，leaf 的 Enter/Space 调用既有 `navigate(routeName)`，Space 在需要时 `preventDefault()`；option record 不直接调 Router。
+- Collapsed Menu：Root trigger 继续由 `nodeProps` focusable；Enter/Space 通过事件实际 `currentTarget` 和 public click-trigger path 激活，Space 在需要时 `preventDefault()`，不查询 Vendor DOM。该 event-local path 保持真实 trigger 为 focus owner；popup 打开后保留 Naive Dropdown native keyboard navigation，Naive public Escape 负责关闭，PAVP 不假定不存在的 Vendor return-focus API，也不创建第二焦点系统。
+
+`color.focus.ring` 继续是唯一 focus visual authority。
+
+#### RUNTIME-002 双边界保持
+
+Expanded `NMenu` route leaf 通过 `NMenu.nodeProps` 复用既有 current-route primary-pointer guard：当 key 是当前 route 且为 primary pointerdown，阻止浏览器 focus transfer，route activation 仍为 no-op。Collapsed Dropdown route leaf 通过 `NMenu.dropdownProps` 提供的 Dropdown `nodeProps` 复用相同语义 guard。禁止 disable current item、`blur()`、timeout focus restore、Vendor DOM query 或 global pointer listener；different-route activation 仍经既有 `navigate()` 且只 emit 一次。
+
+#### Controlled Menu State
+
+`NMenu` 必须受控使用 `collapsed`、`collapsedWidth`、`value`、`expandedKeys`、`options`、`nodeProps`、`dropdownProps`、`onUpdate:value` 与 `onUpdate:expandedKeys`。`value` 等于 `activeRouteName`，成功选择继续进入既有 `UiAdminShell.navigate()`；当前 route no-op，不同 route emit exactly once。
+
+`expandedKeys` 初始包含六个 group key，`accordion=false`。Expanded 时用户可独立开合 group；route change 必须保证 active route parent 被包含。Rail collapse 不销毁内存状态，再展开恢复；该状态只属于 Shell instance，不持久化。
+
+#### Native Collapse、Selector 与 Popup Namespace
+
+Naive `NMenu` 在同一 `collapsed` state 下保持 label/header/arrow DOM 稳定并使用自身 opacity transition：
+
+```text
+NAIVE_NMENU_NATIVE_COLLAPSED_OPACITY_TRANSITION=ADMITTED_VENDOR_BEHAVIOR
+PAVP_AUTHORED_OPACITY_ZERO_TEXT_CONCEALMENT_WORKAROUND=PROHIBITED
+```
+
+不得再增加 opacity text-hiding layer、delayed `v-if`、timer 或手动同步文字插入/移除。
+
+Theme fields 无法表达的必要 Vendor state 只允许在 `packages/ui` 的 PAVP private provider/navigation boundary 内通过以下 namespace 精确覆盖：
+
+```text
+data-pavp-admin-navigation="persistent"
+pavp-admin-navigation-dropdown
+```
+
+Persistent selector 只能位于 `[data-pavp-admin-navigation='persistent']` 下；popup selector 只能位于 `.pavp-admin-navigation-dropdown` 下。`NMenu.dropdownProps.menuProps` 必须使用已安装 public function 形状返回 `{ class: 'pavp-admin-navigation-dropdown' }`。Application/page `.n-*` selector 为零。Namespaced Vendor CSS 只可补齐 Theme self field 无法表达的 `focus-visible`、pressed、collapsed active-parent indicator 与 Vendor hard-coded Full/Reduced/None duration；所有值只消费既有 PAVP semantic/token CSS variables，不得形成通用 Naive override。
+
+若 Theme self field 不提供 pressed/focus-visible presentation，pressed background/foreground 只消费既有 `--ui-admin-navigation-hover` 与 `color.control.primary`，focus-visible ring 只消费既有 `color.focus.ring`、Admin focus width/offset authority；不得新增 Token。
+
+#### Exact Naive Theme Field Closure
+
+实际 collapsed popup 的 override ownership 是 `themeOverrides.Menu.peers.Dropdown`，需要直接 shadow closure 时再进入 `Menu.peers.Dropdown.peers.Popover`；平行 top-level `Dropdown` override 不会闭合 `NMenu` 内部 popup，不得作为本任务证明。Dark composition 只增加 component-level `layoutDark` 与 `menuDark`；`menuDark` 的 Dropdown/Tooltip peer 只是 Vendor dark base，最终可见值仍由 PAVP projection 决定，禁止 full aggregate dark import。
+
+Layout 的 future visible self-field map：
+
+| Naive Layout field | PAVP authority |
+| --- | --- |
+| `color` | Admin ambient/canvas；`--ui-admin-ambient-canvas` / `color.surface.page` |
+| `textColor` | `color.text.primary` |
+| `siderColor` | functional-chrome Material；`--ui-material-chrome-background` |
+| `siderBorderColor` | `color.border.default` |
+
+`colorEmbedded` 仅在未来明确设置 `embedded=true` 时才需映射同一 Ambient/canvas；当前 stable content-row 不设置。内建 Sider toggle fields 因 `showTrigger=false` 不构成可见 authority；inverted/Scrollbar fields 不属于本 vertical、non-inverted、native-scroll consumer。
+
+Menu 的 future vertical non-inverted visible self-field map：
+
+| Naive Menu fields | PAVP authority |
+| --- | --- |
+| `color` | `--ui-material-chrome-background` |
+| `groupTextColor` | `color.text.secondary` |
+| `itemTextColor` | `color.text.primary` |
+| `itemIconColor`, `itemIconColorCollapsed` | `color.text.secondary` |
+| `itemTextColorHover`, `itemTextColorActive`, `itemTextColorActiveHover`, `itemTextColorChildActive`, `itemTextColorChildActiveHover` | `color.control.primary` |
+| `itemIconColorHover`, `itemIconColorActive`, `itemIconColorActiveHover`, `itemIconColorChildActive`, `itemIconColorChildActiveHover` | `color.control.primary` |
+| `arrowColor` | `color.text.secondary` |
+| `arrowColorHover`, `arrowColorActive`, `arrowColorActiveHover`, `arrowColorChildActive`, `arrowColorChildActiveHover` | `color.control.primary` |
+| `itemColorHover` | `--ui-admin-navigation-hover` |
+| `itemColorActive`, `itemColorActiveHover`, `itemColorActiveCollapsed` | `--ui-material-overlay-background` |
+| `itemHeight` | `layout.target.enhanced.minimum-block-size` |
+| `borderRadius` | `interaction.radius.panel` |
+| `fontSize` | `typography.size.body` |
+| `dividerColor` | `color.border.default` |
+
+Horizontal/inverted fields 不属于该 consumer。`color.action.primary` 不得回流为 generic Menu control foreground。`--ui-admin-navigation-selected` 保持既有 control-primary selected indicator 语义，只能由 approved namespaced selector 表达选中指示条或必要 collapsed active-parent indicator；不得同时充当整行 active background，否则会与 `color.control.primary` 前景失去对比。整行 active background 使用既有 Overlay Material。
+
+Collapsed Root Submenu 的 `NDropdown` 固定 large consumer，future self-field map 位于 `Menu.peers.Dropdown`：
+
+| Naive Dropdown fields | PAVP authority |
+| --- | --- |
+| `color` | `--ui-material-overlay-background` |
+| `optionTextColor` | `color.text.primary` |
+| `prefixColor`, `suffixColor` | `color.text.secondary` |
+| `optionTextColorHover`, `optionTextColorActive`, `optionTextColorChildActive` | `color.control.primary` |
+| `optionColorHover` | `--ui-admin-navigation-hover` |
+| `optionColorActive` | `--ui-material-overlay-background`；indicator 另由 popup namespace 表达 |
+| `optionHeightLarge` | `layout.target.enhanced.minimum-block-size` |
+| `fontSizeLarge` | `typography.size.body`，覆盖 Submenu 内建 `14px` |
+| `optionIconSizeLarge` | `typography.size.body`；与现有 navigation icon authority 相同 |
+| `optionPrefixWidthLarge`, `optionSuffixWidthLarge` | `typography.size.body`；无 icon 的 prefix/suffix 不引入第二尺寸 authority |
+| `optionIconPrefixWidthLarge`, `optionIconSuffixWidthLarge` | `calc(typography.size.body + 2 * spacing.content.gap)`；由现有 navigation icon size/gap 共同派生，不保留 Vendor `36/40px` raw default |
+| `borderRadius` | `interaction.radius.panel` |
+| `padding` | `calc(spacing.content.gap / 2) 0`；不得保留 Vendor `4px 0` raw default |
+| `optionOpacityDisabled` | 只有未来真实 disabled leaf 准入时才映射既有 disabled opacity；当前 leaf 不 disabled |
+
+当前 Root-Submenu + Level-2 leaf popup 不渲染 group/divider；若未来引入必须先扩张 field inventory。Popup shadow 继续消费既有 `common.boxShadow2 -> material.shadow`；需要直接 peer closure 时精确映射 `Menu.peers.Dropdown.peers.Popover.boxShadow` 到既有 `--ui-admin-shadow-overlay`，不新增 shadow authority。所有 Layout/Menu/Dropdown 最终可见 light/dark/hover/active/child-active/collapsed/focus/pressed 状态不得泄漏 Naive 默认绿色/青色或 raw visual literal。
+
+Dropdown self fields 不提供 surface border；若既有 overlay Material 要求可见边界，只能由 `.pavp-admin-navigation-dropdown` namespace 使用既有 `color.border.default` 与 Admin border-width authority 表达，不新增 border authority。
+
+#### Material 与 Motion
+
+Persistent Sider 是 functional chrome，collapsed popup 是 functional overlay chrome，stable routed Main 继续是 stable content surface；禁止 glass-on-glass、新 Material authority，Narrow Drawer Material 不变。
+
+Naive Layout/Sider/Menu/Dropdown 的 CSSR 含固定 `.2s/.3s` transition，Theme self fields 只能闭合 easing，故私有 namespaced Motion policy 必须覆盖 Layout box-shadow/background/color、Sider width/min/max/flex/border/transform/background/scroll opacity、Menu surface/padding/border/label/arrow/submenu height-opacity，以及 Dropdown/Popover surface/option/opacity-scale 的实际 duration/animation：
+
+- Full：使用既有 PAVP duration/easing；一个 collapsed state 驱动 Sider/Menu；仅保留已准入的 NMenu native label/arrow opacity。
+- Reduced：同一 selector closure 使用既有 reduced duration，降低 displacement/duration，popup scale/slide 被减少或关闭，不增加文字 lifecycle。
+- None：关闭非必要 LayoutSider/Menu/Dropdown transition/animation，最终状态立即可读可操作，无延迟生命周期。
+
+禁止 `transition: all`、raw PAVP-authored duration/easing、animated blur/backdrop-filter、full-viewport transform、delayed `v-if`、timeout/`requestAnimationFrame` 同步、第二文字动画或 PAVP opacity-zero workaround。Vendor native opacity 只有在 duration 纳入 Full/Reduced/None policy 后才可保留。
+
+#### Narrow Preservation 与未来源码边界
+
+Narrow 必须继续保留 accepted full-viewport Scrim、bounded inner Panel、primary self-target pointerdown containment、focus trap、Escape、Main inert、focus return、current-route/different-route 与 Drawer Motion；Narrow 不渲染 Sider/Menu，不改 Naive Drawer。`PAVP-RUNTIME-003` 的接受记录和 source contracts 保持，除非一个直接共享的 readonly navigation projection 确实需要最小调整，否则不得改动。
+
+后续原子源码实施只可在真实需要时修改以下既有/准入 owners：
+
+- `ARCHITECTURE.md`
+- `packages/ui/src/components/UiAdminShell.vue`
+- `packages/ui/src/adapters/naive/naive-layout.ts`
+- `packages/ui/src/adapters/naive/naive-menu.ts`
+- `packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts`
+- `packages/ui/src/adapters/naive/pavp-naive-theme.ts`
+- `packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue`
+- `scripts/architecture/check-architecture-admin-console.ts`
+- `scripts/architecture/check-boundaries.ts`
+
+只有既有 project/UI configuration checker 的精确 frozen import/source inventory 确需同步时才可修改对应 checker。不得修改 `apps/web/**`、Route Registry、Router Runtime、Runtime Kernel、Storage、Appearance Store/Persistence、Design System token source/generated artifacts、built-in Theme JSON、Public UI Registry、public `@platform/ui` API、package manifest、`pnpm-lock.yaml`、Vite 或 workflow。
+
+#### Dependency 与 Bundle Gate
+
+不增加 dependency、manifest、lockfile、Styled Vendor 或 icon package；坐标保持 `naive-ui@2.45.2`。源码实施后的真实 Initial JavaScript 必须重新测量，既有 hard budget、gzip measurement 与至少 `8192 bytes gzip` headroom 不变，lazy route count 保持精确 `17`。不得提高预算、改变测量，或仅为过门禁把真实 startup code 移出 measured initial closure。若完整 `NLayout + NLayoutSider + NMenu` 合同使 headroom gate 失败：
+
+```text
+SOURCE_IMPLEMENTATION_PRE_ADMISSION_INITIAL_JAVASCRIPT_HEADROOM=APPROXIMATELY_20_KB_GZIP
+INITIAL_JAVASCRIPT_MINIMUM_HEADROOM_BYTES=8192
+LAZY_ROUTE_COUNT=17
+STOP_REASON=BUNDLE_BUDGET_BLOCKED
+```
+
+#### Future Static Governance Contract
+
+后续 source gate 至少证明以下 58 项；本 Architecture-only Task 不实现这些 source probes：
+
+1. `NLayout`、`NLayoutSider`、`NMenu` runtime import 只存在于 private `packages/ui/src/adapters/naive/**` ownership。
+2. `apps/web` 零 direct Naive import。
+3. exactly one stable `NLayout` owns Shell content row。
+4. `NLayout` 跨 profile 保持 mounted。
+5. Main 仍是唯一 Admin Console block-scroll owner。
+6. Main 不因 profile/collapse remount。
+7. Narrow 不渲染 persistent Sider/Menu。
+8. Regular 渲染 controlled collapsed Sider/Menu。
+9. Wide 默认 expanded 且只有一个 local collapse control。
+10. Wide collapse state 不持久化。
+11. 一个 derived collapsed state 同时驱动 Sider/Menu。
+12. expanded width 保持既有 PAVP authority。
+13. rail width 保持单一 Layout Registry authority。
+14. numeric collapsed width 由 rail rem 与当前 computed root font reactive derive。
+15. Font Scale change 同时重算 collapsed width 与 profile threshold。
+16. 不存在 duplicated rail pixel literal。
+17. `consoleNavigationRegistry` 与 `UiAdminNavigationGroup` 不变。
+18. 六个 group 均成为 Root Submenu。
+19. 每个 Root Submenu 都有 children。
+20. Root Leaf 不可能出现。
+21. Group icon 确定性来自 first child icon。
+22. Route leaf 保持 Level 2。
+23. Route name、label、icon、path 与 cardinality 不变。
+24. `value` 跟随 `activeRouteName`。
+25. 既有 `navigate()` 仍是 route activation owner。
+26. `expandedKeys` local-only 且跨 collapse/expand 保持。
+27. collapsed popup trigger 使用 public `dropdownProps.trigger='click'`。
+28. popup target 精确为 `#pavp-overlay-root`。
+29. collapsed popup 不 teleport 到 `body`。
+30. 不存在 root-leaf Tooltip path。
+31. PAVP private `nodeProps` 提供 focusability/keyboard behavior。
+32. Enter/Space 通过 public click-trigger path 打开 collapsed Root Submenu。
+33. popup 打开后保留 Dropdown native keyboard navigation。
+34. Escape 关闭 popup 且不丢失 trigger focus ownership。
+35. expanded leaf Enter/Space 使用既有 navigation owner。
+36. normal `NMenu.nodeProps` 保留 RUNTIME-002 current-route primary-pointer guard。
+37. collapsed Dropdown option `nodeProps` 保留同一 guard。
+38. 不存在 Vendor DOM query 或 global pointer/keyboard listener。
+39. Layout/Menu/Dropdown 最终可见状态全部使用 PAVP semantic authority。
+40. 不存在可见 Naive default green/teal state。
+41. `color.control.primary` 保持 control/accent foreground authority。
+42. `color.action.primary` 不作为 generic Menu foreground。
+43. `color.focus.ring` 保持 focus authority。
+44. namespaced Vendor CSS 仅覆盖 approved navigation states。
+45. application/page 不存在 `.n-*` selector。
+46. NMenu native collapsed opacity 被准入。
+47. 不存在独立 PAVP opacity-zero concealment workaround。
+48. Full/Reduced/None 覆盖 LayoutSider/Menu/Dropdown Vendor transition。
+49. accepted Narrow Drawer source contract 不变。
+50. RUNTIME-003 保持 accepted。
+51. RUNTIME-004 保持 open。
+52. Route Registry 保持 `17`。
+53. Runtime Kernel 保持 `11`。
+54. Provider IDs 保持 `pinia,appearance`。
+55. Storage Registry 保持 `2`。
+56. built-in Themes 保持 `14`。
+57. package manifest 与 lockfile 不变。
+58. Initial JavaScript headroom 至少 `8192 bytes gzip`。
+
+后续 source checker 至少提供以下 22 个可逆 in-memory probe：
+
+1. direct `apps/web` Naive Menu import。
+2. `NLayoutSider` outside `NLayout`。
+3. missing `has-sider`。
+4. Sider/Menu 使用不同 collapsed state。
+5. hard-coded rail pixel width。
+6. 删除 rem bridge 的 Font Scale invalidation。
+7. 删除 root-font change 后的 profile recomputation。
+8. 恢复 width animation 期间 profile-driven `v-if` label deletion。
+9. 引入 Root Leaf option。
+10. 将 popup target 改为 `body`。
+11. 恢复 hover-only collapsed keyboard dependency。
+12. 删除 Root Submenu keyboard focusability。
+13. 删除 expanded leaf Enter/Space navigation。
+14. 删除 normal Menu current-route pointer guard。
+15. 删除 Dropdown current-route pointer guard。
+16. 引入 Vendor DOM query。
+17. 允许 visible Menu state 回退 Vendor primary green。
+18. 删除 namespaced `focus-visible` coverage。
+19. 删除 Motion None Layout/Menu/Dropdown coverage。
+20. 增加 PAVP opacity-zero label workaround。
+21. 修改 accepted Narrow Drawer。
+22. 为 Wide collapse state 增加 persistence。
+
+#### Admission Checker 与状态转换
+
+本 Amendment 的 owning checker 只同步 current-work governance，继续拒绝 unknown ID、missing/mixed mirror、RUNTIME-003 regression、overall acceptance restoration 与 successor authorization。它新增且只新增 6 个 Architecture admission-state reversible in-memory probes：Current Work 留为 `NONE`、unauthorized Current Work ID、Repository Implementation 伪设 `COMPLETE`、Static Verification 伪设 `PASS`、RUNTIME-003 从 `ACCEPTED` 回退、overall Admin Console acceptance 伪恢复；每个 probe 只修改内存文本、因目标原因失败并零落盘。
+
+源码实施前，本 Work Package 精确保持 `OPEN / NOT_STARTED / NOT_RUN`。未来在一个原子源码实现和完整 canonical static gate 成功后，Work Package 仍为 `OPEN`，只把 Repository Implementation 改为 `COMPLETE`、Static Verification 改为 `PASS`；不引入 pending-owner status。Runtime/Visual/Accessibility Owner acceptance 仍是后续明确 external decision。
 
 ### Completed production-bundle maintenance: `PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY`
 
@@ -1146,8 +1541,12 @@ FIRST_PAINT_AUTHORITY_CHANGE=NONE
 NAIVE_UI_COORDINATE=naive-ui@2.45.2
 NAIVE_UI_RUNTIME_BOUNDARY_CHANGE=NONE
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
@@ -1185,8 +1584,12 @@ WORK_ITEM=PAVP-RUNTIME-003
 WORK_ITEM_KIND=BOUNDED_DEFECT_REMEDIATION_NOT_CAPABILITY_STATUS
 HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_RUNTIME_003_ADMISSION_AMENDMENT
 HISTORICAL_PAVP_RUNTIME_003_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP-RUNTIME-003
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_003_STATUS=ACCEPTED
 PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS
@@ -1331,7 +1734,7 @@ Current Owning Gate 执行并完全恢复下列十个可逆 In-memory Source Pro
 
 本次验收收口另增加且只增加六个可逆 In-memory Acceptance-closure Probes：把 003 状态改回 `OPEN`；验收后仍把 003 保留为 Current Bounded Work；移除 Runtime Acceptance；移除 Visual Acceptance；移除 Accessibility Acceptance；错误恢复整体 Admin Console Acceptance。六个 Probe 都必须因各自精确原因失败、完整恢复且保持零 Artifact；既有 `10/10` 个 PAVP-RUNTIME-003 Source Probes 与其 Implementation Checks 保持不变。
 
-Current-work Validation 要求本次收口快照的全部 Active Mirrors 一致为 `NONE / NONE`，但这不是未来永远不得存在 Current Work 的永久规则；未来只有新的 Frozen Admission Amendment 在其独立任务中同步更新 Owning Checker，并同时给出一致的 Authority、Work Item/Package 与全部 Active Mirrors 后才能合法迁移，Unknown、Conflicting 或已验收的 `PAVP-RUNTIME-003` 继续被拒绝。
+Current-work Validation 要求本次 003 验收收口的历史快照全部 Active Mirrors 一致为 `NONE / NONE`，但这不是未来永远不得存在 Current Work 的永久规则；§1.2B.0H 已通过新的 Frozen Admission Amendment 在独立任务中同步 Owning Checker、Authority、Work Package 与全部 Active Mirrors，合法迁移到 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`。Unknown、Conflicting 或重新把已验收 `PAVP-RUNTIME-003` 设为 Current Work 仍被拒绝。
 
 ##### Implemented source and owning static gate
 
@@ -1431,7 +1834,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定；当前 Bounded Work 已在 `PAVP-RUNTIME-003` 验收收口后清除为 `NONE`。`PAVP-RUNTIME-004` 保持 Open 且未启动。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定，`PAVP-RUNTIME-003` 验收收口时又形成 `NONE` 历史快照；当前 Bounded Work 由 §1.2B.0H 精确准入为 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`。`PAVP-RUNTIME-004` 保持 Open 且未启动。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
 
 ##### Defect identity and implemented source behavior
 
@@ -3313,7 +3716,7 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` is accepted at `ACCEPTED / COMPLETE / PASS` for exact published implementation commit `5673236868737f42f3470307b5f5d6c8d4e8639e`; `PAVP-RUNTIME-003` is accepted at `ACCEPTED / COMPLETE / PASS` for exact published implementation commit `3fa078ab75322a17e5e4514d0805f1efea06981b`, and current bounded work is `NONE`; `PAVP-RUNTIME-004` remains open and untouched, so overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` and `PAVP-RUNTIME-003` retain their exact accepted states; §1.2B.0H admits `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK` as the sole current bounded work at `OPEN / NOT_STARTED / NOT_RUN`; `PAVP-RUNTIME-004` remains open and untouched, and overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
 | TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -11704,8 +12107,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT = 验收通
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT = 5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET = origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS = COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY = NONE
-CURRENT_BOUNDED_WORK = NONE
+CURRENT_BOUNDED_WORK_AUTHORITY = PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK = PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT = FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS = OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION = NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION = NOT_RUN
 PAVP_RUNTIME_001_STATUS = ACCEPTED
 PAVP_RUNTIME_002_STATUS = OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION = COMPLETE
@@ -11845,7 +12252,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 继续冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 上通过 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交 `3fa078ab75322a17e5e4514d0805f1efea06981b` 和 Owner 陈述 `那没问题` 完成窄范围验收，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 为 `NONE`；没有自动 Next Implementation Package。任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 继续冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 上通过 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交 `3fa078ab75322a17e5e4514d0805f1efea06981b` 和 Owner 陈述 `那没问题` 完成窄范围验收，状态为 `ACCEPTED / COMPLETE / PASS`。§1.2B.0H 现已准入唯一 Current Bounded Work `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`，状态为 `OPEN / NOT_STARTED / NOT_RUN`；没有自动 Next Implementation Package。任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -11899,8 +12306,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -11948,7 +12359,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交上完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 精确为 `NONE`；`PAVP-RUNTIME-004` 保持 Open 且未启动，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交上完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；当前 Bounded Work 精确为 §1.2B.0H 准入的 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`，且源码仍为 `NOT_STARTED / NOT_RUN`。`PAVP-RUNTIME-004` 保持 Open 且未启动，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
 
 当前精确 Acceptance Contract：
 
@@ -11987,8 +12398,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通�
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12393,8 +12808,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_OWNER_ACCEPTANCE_STATEMENT=验收通�
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42f3470307b5f5d6c8d4e8639e
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12692,8 +13111,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT=5673236868737f42
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET=origin/main
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS=COMPLETE
 PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY=COMPLETE
-CURRENT_BOUNDED_WORK_AUTHORITY=NONE
-CURRENT_BOUNDED_WORK=NONE
+CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK=PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT=FROZEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS=OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION=NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION=NOT_RUN
 PAVP_RUNTIME_001_STATUS=ACCEPTED
 PAVP_RUNTIME_002_STATUS=OPEN
 PAVP_RUNTIME_002_REPOSITORY_IMPLEMENTATION=COMPLETE
@@ -12736,12 +13159,12 @@ ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE
 ALLOWED=exact §1.2B.0 shared experience foundation plus exact §1.2B.0A Appearance Capability Workspace, §1.2B.0C rejected Catalog retirement, §1.2B.0D Seven Built-in Theme Replacement and §1.2B.0D.1 Additional Built-in Theme Expansion within the existing ten-route product: fluid responsive Shell workspace, Header debug-label removal, exact Lucide navigation projection, one visual Theme Gallery from the canonical readonly Theme Preview Projection, exact six editable Appearance axes with Density preserved, real effective Preview, resolved Material and replayable Motion stages, reliable feedback, fourteen exact repository-owned Built-in Themes, Iris Product Default and first-paint Safety Baseline, read-only retired-reference and same-ID migration, Catalog installer removal, seven Error Route visible copy translations, deterministic projections/manifests and smallest owning static gates; exact §1.2B.0E bounded Motion Geometry Stability Repair; full/reduced/none persistent Shell/Route geometry invariant; exact PAVP-RUNTIME-002 persistent current-navigation primary-mousedown native-focus-transfer repair preserved; exact PAVP-RUNTIME-005 stable unkeyed Route Content Host with no Route-level or Direct-child blanket concealment, opacity entrance or delay
 PROHIBITED=redesign of the other nine product-page content models; Density control or mutation; arbitrary custom-theme editing/import/export/deletion or color authoring; reintroduction of the rejected Catalog or its installation control; automatic Storage mutation or Custom Registry cleanup; Built-in Theme identity/default/migration changes outside §1.2B.0D and §1.2B.0D.1; removal of the general validated Custom Theme capability; backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate Shell/Router outlet/scroll/appearance/material/provider/registry/writer authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work; Motion-bearing persistent Shell or Route geometry; persistent-owner animation fill-mode forwards or both; Motion Preference navigation, Shell/Route/workspace remount or scroll write; Route-keyed Routed Component remount; Route-level Transition, animation or conditional concealment; blanket Direct-child Route Content animation or delay; eager route conversion or new Loading Placeholder
 OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior
-MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes for stable unkeyed Route Host, no route-derived key, visible host, no route-level animation/transition/concealment, no Direct-child blanket animation/delay, and no replacement loading/eager-route workaround; exact unchanged 10 reversible PAVP-RUNTIME-003 source probes for full-viewport Scrim containment, pointer guards, inner-only Drawer Motion, dialog semantics and Main inert; exact 6 reversible PAVP-RUNTIME-003 acceptance-closure probes for accepted status, cleared current work, Owner runtime/visual/accessibility acceptance and revoked overall acceptance; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
+MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes for stable unkeyed Route Host, no route-derived key, visible host, no route-level animation/transition/concealment, no Direct-child blanket animation/delay, and no replacement loading/eager-route workaround; exact unchanged 10 reversible PAVP-RUNTIME-003 source probes for full-viewport Scrim containment, pointer guards, inner-only Drawer Motion, dialog semantics and Main inert; exact 6 reversible PAVP-RUNTIME-003 acceptance-closure probes for accepted status, rejection of retained current work, Owner runtime/visual/accessibility acceptance and revoked overall acceptance; exact 6 reversible PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK admission-state probes; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
-COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT remains accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 5673236868737f42f3470307b5f5d6c8d4e8639e with Owner runtime and visual acceptance PASS; PAVP-RUNTIME-003 is accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 3fa078ab75322a17e5e4514d0805f1efea06981b with Owner runtime, visual and accessibility acceptance PASS, its 10 reversible source probes unchanged, and current bounded work cleared to NONE; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
+COMPLETION_EVIDENCE=technical infrastructure and repository implementation remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT remains accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 5673236868737f42f3470307b5f5d6c8d4e8639e with Owner runtime and visual acceptance PASS; PAVP-RUNTIME-003 is accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 3fa078ab75322a17e5e4514d0805f1efea06981b with Owner runtime, visual and accessibility acceptance PASS and its 10 reversible source probes unchanged; PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK is the sole current bounded work at OPEN / NOT_STARTED / NOT_RUN under its frozen Amendment; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确发布实施提交完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`，当前 Bounded Work 为 `NONE`；`PAVP-RUNTIME-004` 保持 Open 且未触碰，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确发布实施提交完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；当前 Bounded Work 为 §1.2B.0H 准入的 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`，并保持 `OPEN / NOT_STARTED / NOT_RUN`。`PAVP-RUNTIME-004` 保持 Open 且未触碰，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -13090,8 +13513,12 @@ PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_IMPLEMENTATION_COMMIT_IS_5673236868737
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_TARGET_IS_ORIGIN_MAIN
 PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_PUBLICATION_STATUS_IS_COMPLETE
 PAVP_RUNTIME_003_ADMISSION_AMENDMENT_IS_FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY_IS_NONE
-CURRENT_BOUNDED_WORK_IS_NONE
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT_IS_FROZEN
+CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_ADMISSION_AMENDMENT
+CURRENT_BOUNDED_WORK_IS_PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATUS_IS_OPEN
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED
+PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK_STATIC_VERIFICATION_IS_NOT_RUN
 SUCCESSOR_PACKAGE_AUTHORIZATION_IS_NONE
 PAVP_RUNTIME_001_STATUS_IS_ACCEPTED
 PAVP_RUNTIME_002_STATUS_IS_OPEN
