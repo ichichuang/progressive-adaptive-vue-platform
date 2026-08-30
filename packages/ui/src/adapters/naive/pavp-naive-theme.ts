@@ -4,6 +4,8 @@ import commonDark from 'naive-ui/es/_styles/common/dark'
 import breadcrumbDark from 'naive-ui/es/breadcrumb/styles/dark'
 import buttonDark from 'naive-ui/es/button/styles/dark'
 import descriptionsDark from 'naive-ui/es/descriptions/styles/dark'
+import layoutDark from 'naive-ui/es/layout/styles/dark'
+import menuDark from 'naive-ui/es/menu/styles/dark'
 import radioDark from 'naive-ui/es/radio/styles/dark'
 import tagDark from 'naive-ui/es/tag/styles/dark'
 
@@ -21,6 +23,7 @@ const colorPage = tokens['color.surface.page']
 const colorPanel = tokens['color.surface.panel']
 const colorText = tokens['color.text.primary']
 const colorTextSecondary = tokens['color.text.secondary']
+const adminAmbientCanvas = 'var(--ui-admin-ambient-canvas)'
 const borderAction = 'var(--ui-admin-border-action)'
 const borderControl = 'var(--ui-admin-border-control)'
 const borderFocus = 'var(--ui-admin-border-focus)'
@@ -33,13 +36,16 @@ const fontWeight = tokens['typography.weight.body']
 const fontWeightStrong = tokens['typography.weight.title']
 const lineHeight = tokens['typography.line-height.body']
 const materialChrome = 'var(--ui-material-chrome-background)'
+const materialOverlay = 'var(--ui-material-overlay-background)'
 const motionDuration = tokens['interaction.motion.duration']
 const motionEasing = tokens['interaction.motion.easing']
+const navigationHover = 'var(--ui-admin-navigation-hover)'
 const radius = tokens['interaction.radius.panel']
 const shadow = tokens['interaction.shadow.panel']
 const shadowControl = 'var(--ui-admin-shadow-control)'
 const shadowControlHover = 'var(--ui-admin-shadow-control-hover)'
 const shadowFocusRing = 'var(--ui-admin-shadow-focus-ring)'
+const shadowOverlay = 'var(--ui-admin-shadow-overlay)'
 const spacingContentGap = tokens['spacing.content.gap']
 const darkTheme = {
   name: 'dark',
@@ -47,6 +53,8 @@ const darkTheme = {
   Breadcrumb: breadcrumbDark,
   Button: buttonDark,
   Descriptions: descriptionsDark,
+  Layout: layoutDark,
+  Menu: menuDark,
   Radio: radioDark,
   Tag: tagDark,
 } as const satisfies GlobalTheme
@@ -181,6 +189,76 @@ export function createPavpNaiveThemeProjection(
       tdPaddingBorderedMedium: spacingContentGap,
       borderColor: colorBorder,
       borderRadius: radius,
+    },
+    Layout: {
+      common: {
+        bodyColor: commonDark.bodyColor,
+      },
+      color: adminAmbientCanvas,
+      textColor: colorText,
+      siderColor: material.chrome,
+      siderBorderColor: colorBorder,
+    },
+    Menu: {
+      color: material.chrome,
+      groupTextColor: colorTextSecondary,
+      itemTextColor: colorText,
+      itemTextColorHover: colorControl,
+      itemTextColorActive: colorControl,
+      itemTextColorActiveHover: colorControl,
+      itemTextColorChildActive: colorControl,
+      itemTextColorChildActiveHover: colorControl,
+      itemIconColor: colorTextSecondary,
+      itemIconColorHover: colorControl,
+      itemIconColorActive: colorControl,
+      itemIconColorActiveHover: colorControl,
+      itemIconColorChildActive: colorControl,
+      itemIconColorChildActiveHover: colorControl,
+      itemIconColorCollapsed: colorTextSecondary,
+      arrowColor: colorTextSecondary,
+      arrowColorHover: colorControl,
+      arrowColorActive: colorControl,
+      arrowColorActiveHover: colorControl,
+      arrowColorChildActive: colorControl,
+      arrowColorChildActiveHover: colorControl,
+      itemColorHover: navigationHover,
+      itemColorActive: materialOverlay,
+      itemColorActiveHover: materialOverlay,
+      itemColorActiveCollapsed: materialOverlay,
+      itemHeight: enhancedTargetHeight,
+      borderRadius: radius,
+      fontSize,
+      dividerColor: colorBorder,
+      peers: {
+        Dropdown: {
+          color: materialOverlay,
+          optionTextColor: colorText,
+          prefixColor: colorTextSecondary,
+          suffixColor: colorTextSecondary,
+          optionTextColorHover: colorControl,
+          optionTextColorActive: colorControl,
+          optionTextColorChildActive: colorControl,
+          optionColorHover: navigationHover,
+          optionColorActive: materialOverlay,
+          optionHeightLarge: enhancedTargetHeight,
+          fontSizeLarge: fontSize,
+          optionIconSizeLarge: fontSize,
+          optionPrefixWidthLarge: fontSize,
+          optionSuffixWidthLarge: fontSize,
+          optionIconPrefixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
+          optionIconSuffixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
+          borderRadius: radius,
+          padding: `calc(${spacingContentGap} / 2) 0`,
+          dividerColor: colorBorder,
+          optionOpacityDisabled: disabledOpacity,
+          peers: {
+            Popover: {
+              color: materialOverlay,
+              boxShadow: shadowOverlay,
+            },
+          },
+        },
+      },
     },
     Radio: {
       buttonHeightMedium: enhancedTargetHeight,

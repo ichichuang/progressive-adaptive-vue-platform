@@ -37,7 +37,6 @@ const inactiveCapabilityPackages = [
   'clsx',
   'dayjs',
   'element-plus',
-  'gsap',
   'less',
   'lodash',
   'moment',
@@ -61,6 +60,11 @@ const inactiveCapabilityPackages = [
   'vue-i18n',
   'vuetify',
 ] as const
+const gsapPackageName = 'gsap'
+const gsapAdapterPath = 'packages/ui/src/adapters/gsap/admin-navigation-motion.ts'
+const gsapAdapterModulePath = gsapAdapterPath.replace(/\.ts$/u, '')
+const gsapAdapterImportOwner = 'packages/ui/src/components/UiAdminShell.vue'
+const gsapAdapterImportSpecifier = '../adapters/gsap/admin-navigation-motion'
 const workspaceNames = new Set<string>(projectConfig.workspaces.map((workspace) => workspace.name))
 const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
   projectConfig.workspaces.map((workspace) => [
@@ -122,12 +126,21 @@ async function validateManifestDependencies(): Promise<string[]> {
   ] as const) {
     const manifest = await readJsonObject(manifestPath)
 
-    for (const [dependency] of dependencyEntries(manifest)) {
+    for (const [dependency, version] of dependencyEntries(manifest)) {
       const inactivePackage = inactiveCapabilityPackage(dependency)
 
       if (inactivePackage !== undefined) {
         violations.push(
           `${description}: Phase 1 may not declare inactive capability package "${inactivePackage}".`,
+        )
+      }
+
+      if (
+        dependency === gsapPackageName &&
+        (description !== '@platform/ui' || version !== 'catalog:')
+      ) {
+        violations.push(
+          `${description}: GSAP may only be declared by @platform/ui through the shared catalog.`,
         )
       }
     }
@@ -321,6 +334,7 @@ function workspaceLayer(specifier: string): string | undefined {
 function inspectImport(sourcePath: string, specifier: string): string[] {
   const violations: string[] = []
   const displayPath = relative(rootDirectory, sourcePath)
+  const normalizedSourcePath = displayPath.split(sep).join('/')
   const fromLayer = sourceLayer(sourcePath)
   const inactivePackage = inactiveCapabilityPackage(specifier)
 
@@ -332,6 +346,18 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
 
   if (/^@platform\/[^/]+\/.+/u.test(specifier)) {
     violations.push(`${displayPath}: workspace deep import "${specifier}" is forbidden.`)
+  }
+
+  if (specifier === gsapPackageName || specifier.startsWith(`${gsapPackageName}/`)) {
+    if (normalizedSourcePath !== gsapAdapterPath) {
+      violations.push(
+        `${displayPath}: "gsap" may only be imported by the exact private Admin navigation motion adapter.`,
+      )
+    }
+
+    if (specifier !== gsapPackageName) {
+      violations.push(`${displayPath}: GSAP deep import "${specifier}" is forbidden.`)
+    }
   }
 
   if (
@@ -354,6 +380,28 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
   }
 
   const targetPath = specifier.startsWith('.') ? resolve(dirname(sourcePath), specifier) : undefined
+  const targetModulePath =
+    targetPath === undefined
+      ? undefined
+      : relative(rootDirectory, targetPath)
+          .split(sep)
+          .join('/')
+          .replace(/\.(?:cjs|js|mjs|ts|vue)$/u, '')
+
+  if (targetModulePath === gsapAdapterModulePath) {
+    if (normalizedSourcePath !== gsapAdapterImportOwner) {
+      violations.push(
+        `${displayPath}: the private Admin navigation motion adapter may only be imported by UiAdminShell.`,
+      )
+    }
+
+    if (specifier !== gsapAdapterImportSpecifier) {
+      violations.push(
+        `${displayPath}: the private Admin navigation motion adapter must use its exact frozen import specifier.`,
+      )
+    }
+  }
+
   const toLayer = targetPath === undefined ? workspaceLayer(specifier) : sourceLayer(targetPath)
 
   if (

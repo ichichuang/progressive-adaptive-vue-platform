@@ -6,6 +6,7 @@
   "sideEffects": false,
   "dependencies": {
     "@platform/design-system": "workspace:*",
+    "gsap": "catalog:",
     "naive-ui": "catalog:",
     "vue": "catalog:"
   },

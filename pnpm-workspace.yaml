@@ -28,6 +28,7 @@ catalog:
   eslint-plugin-boundaries: 7.1.0
   eslint-plugin-vue: 10.10.0
   eslint-plugin-vuejs-accessibility: 2.5.0
+  gsap: 3.15.0
   knip: 6.29.0
   naive-ui: 2.45.2
   pinia: 3.0.4

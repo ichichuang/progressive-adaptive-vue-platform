@@ -727,8 +727,11 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'packages/ui/src/adapters/naive/naive-breadcrumb.ts',
     'packages/ui/src/adapters/naive/naive-button.ts',
     'packages/ui/src/adapters/naive/naive-descriptions.ts',
+    'packages/ui/src/adapters/naive/naive-layout.ts',
+    'packages/ui/src/adapters/naive/naive-menu.ts',
     'packages/ui/src/adapters/naive/naive-radio.ts',
     'packages/ui/src/adapters/naive/naive-tag.ts',
+    'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
   ] as const
   const actualAdapterFiles = (await readdir(resolve(uiSourceDirectory, 'adapters/naive')))
@@ -758,8 +761,10 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       ) {
         const specifier = statement.moduleSpecifier.text
         runtimeImports.push(
-          ...statement.exportClause.elements.map(
-            (element) => `${element.propertyName?.text ?? element.name.text}@${specifier}`,
+          ...statement.exportClause.elements.flatMap((element) =>
+            element.isTypeOnly
+              ? []
+              : [`${element.propertyName?.text ?? element.name.text}@${specifier}`],
           ),
         )
         continue
@@ -812,6 +817,9 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NConfigProvider@naive-ui/es/config-provider',
     'NDescriptions@naive-ui/es/descriptions',
     'NDescriptionsItem@naive-ui/es/descriptions',
+    'NLayout@naive-ui/es/layout',
+    'NLayoutSider@naive-ui/es/layout',
+    'NMenu@naive-ui/es/menu',
     'NRadioButton@naive-ui/es/radio',
     'NRadioGroup@naive-ui/es/radio',
     'NTag@naive-ui/es/tag',
@@ -819,6 +827,8 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'buttonDark@naive-ui/es/button/styles/dark',
     'commonDark@naive-ui/es/_styles/common/dark',
     'descriptionsDark@naive-ui/es/descriptions/styles/dark',
+    'layoutDark@naive-ui/es/layout/styles/dark',
+    'menuDark@naive-ui/es/menu/styles/dark',
     'radioDark@naive-ui/es/radio/styles/dark',
     'tagDark@naive-ui/es/tag/styles/dark',
   ]
@@ -832,7 +842,15 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'utf8',
   )
 
-  for (const override of ['Breadcrumb', 'Button', 'Descriptions', 'Radio', 'Tag']) {
+  for (const override of [
+    'Breadcrumb',
+    'Button',
+    'Descriptions',
+    'Layout',
+    'Menu',
+    'Radio',
+    'Tag',
+  ]) {
     if (!themeSource.includes(`  ${override}: {`)) {
       violations.push(`${override}: required PAVP-to-Naive override map is missing.`)
     }

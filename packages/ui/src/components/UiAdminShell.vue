@@ -4,8 +4,24 @@ import {
   tokens,
   type LayoutProfileId,
   type LayoutRegistryRecord,
+  type MotionPreference,
 } from '@platform/design-system'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, h, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+
+import type {
+  AdminNavigationMotionCause,
+  AdminNavigationMotionController,
+  AdminNavigationMotionState,
+  AdminNavigationMotionTargets,
+} from '../adapters/gsap/admin-navigation-motion'
+import { PavpLayoutPrimitive, PavpLayoutSiderPrimitive } from '../adapters/naive/naive-layout'
+import {
+  definePavpMenuNodeProps,
+  PavpMenuPrimitive,
+  type PavpMenuDropdownProps,
+  type PavpMenuOption,
+} from '../adapters/naive/naive-menu'
+import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
 import type { UiAdminNavigationGroup } from './contracts'
 
@@ -23,6 +39,14 @@ const emit = defineEmits<{
 defineSlots<{
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
+
+const injectedAppearance = inject(pavpNaiveAppearanceKey)
+
+if (injectedAppearance === undefined) {
+  throw new Error('UiAdminShell requires the private PAVP Naive Appearance context.')
+}
+
+const appearance = injectedAppearance
 
 const navigationIconClasses = [
   'i-lucide-layout-dashboard',
@@ -58,19 +82,71 @@ function layoutRecord(id: string): LayoutRegistryRecord {
 
 const regularMinimum = layoutRecord('layout.profile.regular.min-inline-size')
 const wideMinimum = layoutRecord('layout.profile.wide.min-inline-size')
+const railInlineSize = layoutRecord('layout.admin.sidebar.rail-inline-size')
+const railRemMatch = /^(\d+(?:\.\d+)?)rem$/u.exec(railInlineSize.resolvedValue)
+
+if (railRemMatch?.[1] === undefined) {
+  throw new TypeError(
+    `${railInlineSize.id}: Admin Shell rail width must be a finite positive rem value.`,
+  )
+}
+
+const railRemMagnitude = Number(railRemMatch[1])
+
+if (!Number.isFinite(railRemMagnitude) || railRemMagnitude <= 0) {
+  throw new TypeError(
+    `${railInlineSize.id}: Admin Shell rail width must be a finite positive rem value.`,
+  )
+}
+
+function readRootFontSize(): number {
+  const value = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new TypeError('The computed root font size must be finite and positive.')
+  }
+
+  return value
+}
+
 const shell = ref<HTMLElement>()
 const content = ref<HTMLElement>()
 const navigationTrigger = ref<HTMLButtonElement>()
 const drawerNavigation = ref<HTMLElement>()
 const drawerClose = ref<HTMLButtonElement>()
+const expandedCollapseIcon = ref<HTMLElement>()
+const collapsedCollapseIcon = ref<HTMLElement>()
+const collapseLabel = ref<HTMLElement>()
 const profile = ref<LayoutProfileId>('narrow')
 const navigationOpen = ref(false)
-const sidebarInlineSize = computed(() =>
-  profile.value === 'wide'
-    ? tokens['layout.admin.sidebar.expanded-inline-size']
-    : tokens['layout.admin.sidebar.rail-inline-size'],
+const wideNavigationCollapsed = ref(false)
+const currentRootFontSize = ref(readRootFontSize())
+const collapsedNavigationWidth = computed(() => railRemMagnitude * currentRootFontSize.value)
+const persistentNavigationCollapsed = computed(() => {
+  if (profile.value === 'regular') {
+    return true
+  }
+
+  return profile.value === 'wide' && wideNavigationCollapsed.value
+})
+const expandedNavigationWidth = tokens['layout.admin.sidebar.expanded-inline-size']
+const persistentLayoutContentStyle = Object.freeze({ overflow: 'visible' })
+const persistentSiderContentStyle = Object.freeze({ overflow: 'hidden' })
+const wideNavigationCollapseLabel = computed(() =>
+  wideNavigationCollapsed.value ? '展开导航' : '收起导航',
 )
+const navigationGroupKeys = computed(() =>
+  props.navigation.map((group) => `navigation-group:${group.id}`),
+)
+const navigationRouteInventory = computed(() =>
+  JSON.stringify(props.navigation.map((group) => group.items.map((item) => item.routeName))),
+)
+const expandedNavigationGroupKeys = ref<string[]>([...navigationGroupKeys.value])
+const routeSelectionDots = new Map<string, HTMLElement>()
+let currentShellInlineSize = 0
 let resizeObserver: ResizeObserver | undefined
+let adminNavigationMotionController: AdminNavigationMotionController | undefined
+let adminNavigationMotionLoadEpoch = 0
 let rootOverflow = ''
 let bodyOverflow = ''
 let focusReturnTarget: HTMLElement | null = null
@@ -108,10 +184,289 @@ function navigate(routeName: string): void {
   emit('navigate', routeName)
 }
 
-function preserveCurrentPersistentNavigationFocus(event: MouseEvent, routeName: string): void {
+function preserveCurrentPersistentNavigationFocus(event: PointerEvent, routeName: string): void {
   if (event.button === 0 && routeName === props.activeRouteName) {
     event.preventDefault()
   }
+}
+
+function navigationGroupKey(groupId: string): string {
+  return `navigation-group:${groupId}`
+}
+
+function navigationOptionKind(option: PavpMenuOption): 'group' | 'route' | undefined {
+  return option['pavpNavigationKind'] === 'group' || option['pavpNavigationKind'] === 'route'
+    ? option['pavpNavigationKind']
+    : undefined
+}
+
+function navigationOptionRouteName(option: PavpMenuOption): string | undefined {
+  return typeof option['pavpRouteName'] === 'string' ? option['pavpRouteName'] : undefined
+}
+
+function renderNavigationIcon(iconClass: string): () => ReturnType<typeof h> {
+  const admittedIconClass = resolveNavigationIconClass(iconClass)
+
+  return () =>
+    h('span', {
+      'aria-hidden': 'true',
+      class: [admittedIconClass, 'pavp-admin-shell__navigation-icon'],
+    })
+}
+
+function updateRouteSelectionDotReference(routeName: string, element: unknown): void {
+  if (element instanceof HTMLElement) {
+    routeSelectionDots.set(routeName, element)
+    return
+  }
+
+  if (element === null) {
+    routeSelectionDots.delete(routeName)
+  }
+}
+
+function renderRouteSelectionDot(routeName: string): () => ReturnType<typeof h> {
+  return () =>
+    h('span', {
+      'aria-hidden': 'true',
+      class: 'pavp-admin-shell__route-selection-dot',
+      'data-selected': routeName === props.activeRouteName ? 'true' : 'false',
+      ref: (element: unknown) => {
+        updateRouteSelectionDotReference(routeName, element)
+      },
+    })
+}
+
+const navigationMenuOptions = computed<PavpMenuOption[]>(() =>
+  props.navigation.map((group) => {
+    const firstItem = group.items[0]
+
+    if (firstItem === undefined) {
+      throw new TypeError(`${group.id}: Admin Shell navigation group must contain route items.`)
+    }
+
+    return {
+      key: navigationGroupKey(group.id),
+      label: group.label,
+      icon: renderNavigationIcon(firstItem.iconClass),
+      pavpNavigationKind: 'group',
+      children: group.items.map((item) => ({
+        key: item.routeName,
+        label: item.label,
+        icon: renderNavigationIcon(item.iconClass),
+        pavpNavigationKind: 'route',
+        pavpRouteName: item.routeName,
+        ...(persistentNavigationCollapsed.value
+          ? {}
+          : { extra: renderRouteSelectionDot(item.routeName) }),
+      })),
+    } satisfies PavpMenuOption
+  }),
+)
+
+function toggleExpandedNavigationGroup(groupKey: string): void {
+  if (expandedNavigationGroupKeys.value.includes(groupKey)) {
+    expandedNavigationGroupKeys.value = expandedNavigationGroupKeys.value.filter(
+      (key) => key !== groupKey,
+    )
+  } else {
+    expandedNavigationGroupKeys.value = [...expandedNavigationGroupKeys.value, groupKey]
+  }
+}
+
+function activeNavigationGroupKey(): string | undefined {
+  const group = props.navigation.find((candidate) =>
+    candidate.items.some((item) => item.routeName === props.activeRouteName),
+  )
+
+  return group === undefined ? undefined : navigationGroupKey(group.id)
+}
+
+function ensureActiveNavigationGroupExpanded(): void {
+  const groupKey = activeNavigationGroupKey()
+
+  if (groupKey !== undefined && !expandedNavigationGroupKeys.value.includes(groupKey)) {
+    expandedNavigationGroupKeys.value = [...expandedNavigationGroupKeys.value, groupKey]
+  }
+}
+
+function isKeyboardActivation(event: KeyboardEvent): boolean {
+  return event.key === 'Enter' || event.key === ' '
+}
+
+function handleRootNavigationKeydown(event: KeyboardEvent, groupKey: string): void {
+  if (!isKeyboardActivation(event)) {
+    return
+  }
+
+  event.preventDefault()
+
+  if (persistentNavigationCollapsed.value) {
+    if (!(event.currentTarget instanceof HTMLElement)) {
+      throw new TypeError('The collapsed navigation trigger is unavailable.')
+    }
+
+    event.currentTarget.click()
+    return
+  }
+
+  toggleExpandedNavigationGroup(groupKey)
+}
+
+function handleRouteNavigationKeydown(event: KeyboardEvent, routeName: string): void {
+  if (!isKeyboardActivation(event)) {
+    return
+  }
+
+  event.preventDefault()
+  navigate(routeName)
+}
+
+const persistentNavigationNodeProps = definePavpMenuNodeProps((option) => {
+  const optionKind = navigationOptionKind(option)
+
+  if (optionKind === 'group' && typeof option.key === 'string') {
+    const groupKey = option.key
+
+    return {
+      tabindex: 0,
+      onKeydown: (event: KeyboardEvent) => {
+        handleRootNavigationKeydown(event, groupKey)
+      },
+    }
+  }
+
+  const routeName = navigationOptionRouteName(option)
+
+  if (optionKind !== 'route' || routeName === undefined) {
+    return {}
+  }
+
+  return {
+    'aria-current': routeName === props.activeRouteName ? 'page' : undefined,
+    tabindex: 0,
+    onKeydown: (event: KeyboardEvent) => {
+      handleRouteNavigationKeydown(event, routeName)
+    },
+    onPointerdown: (event: PointerEvent) => {
+      preserveCurrentPersistentNavigationFocus(event, routeName)
+    },
+  }
+})
+
+const persistentNavigationDropdownNodeProps = definePavpMenuNodeProps((option) => {
+  const routeName = navigationOptionRouteName(option)
+
+  if (routeName === undefined) {
+    return {}
+  }
+
+  return {
+    'aria-current': routeName === props.activeRouteName ? 'page' : undefined,
+    onPointerdown: (event: PointerEvent) => {
+      preserveCurrentPersistentNavigationFocus(event, routeName)
+    },
+  }
+})
+
+const persistentNavigationDropdownProps = Object.freeze({
+  keyboard: true,
+  menuProps: () => ({ class: 'pavp-admin-navigation-dropdown' }),
+  nodeProps: persistentNavigationDropdownNodeProps,
+  to: '#pavp-overlay-root',
+  trigger: 'click',
+}) satisfies PavpMenuDropdownProps
+
+function handleNavigationValueUpdate(value: string | number): void {
+  if (typeof value === 'string') {
+    navigate(value)
+  }
+}
+
+function handleNavigationExpandedKeysUpdate(keys: (string | number)[]): void {
+  const admittedGroupKeys = new Set(navigationGroupKeys.value)
+  expandedNavigationGroupKeys.value = keys.filter(
+    (key): key is string => typeof key === 'string' && admittedGroupKeys.has(key),
+  )
+}
+
+function toggleWideNavigation(): void {
+  wideNavigationCollapsed.value = !wideNavigationCollapsed.value
+}
+
+function resolveAdminNavigationMotionState(): AdminNavigationMotionState {
+  return {
+    activeRouteName: props.activeRouteName,
+    collapsed: persistentNavigationCollapsed.value,
+    motion: appearance.value.motion,
+    profile: profile.value,
+  }
+}
+
+function resolveAdminNavigationMotionTargets(): AdminNavigationMotionTargets {
+  return {
+    collapseLabel: collapseLabel.value ?? null,
+    collapsedCollapseIcon: collapsedCollapseIcon.value ?? null,
+    expandedCollapseIcon: expandedCollapseIcon.value ?? null,
+    routeSelectionDots,
+  }
+}
+
+function reportAdminNavigationMotionFailure(error: unknown): void {
+  if (typeof globalThis.reportError === 'function') {
+    globalThis.reportError(error)
+    return
+  }
+
+  console.error('PAVP Admin navigation motion failed to initialize.', error)
+}
+
+function loadAdminNavigationMotion(): void {
+  const loadEpoch = ++adminNavigationMotionLoadEpoch
+
+  void import('../adapters/gsap/admin-navigation-motion')
+    .then(({ createAdminNavigationMotionController }) => {
+      const root = shell.value
+
+      if (loadEpoch !== adminNavigationMotionLoadEpoch || root === undefined) {
+        return
+      }
+
+      adminNavigationMotionController = createAdminNavigationMotionController({
+        initialState: resolveAdminNavigationMotionState(),
+        resolveTargets: resolveAdminNavigationMotionTargets,
+        root,
+      })
+    })
+    .catch((error: unknown) => {
+      if (loadEpoch !== adminNavigationMotionLoadEpoch) {
+        return
+      }
+
+      adminNavigationMotionController?.dispose()
+      adminNavigationMotionController = undefined
+      shell.value?.removeAttribute('data-pavp-admin-navigation-motion')
+      reportAdminNavigationMotionFailure(error)
+    })
+}
+
+function resolveAdminNavigationMotionCause(
+  nextValues: readonly [LayoutProfileId, boolean, string, MotionPreference],
+  previousValues: readonly [LayoutProfileId, boolean, string, MotionPreference],
+): AdminNavigationMotionCause {
+  if (nextValues[3] !== previousValues[3]) {
+    return 'preference'
+  }
+
+  if (nextValues[0] !== previousValues[0]) {
+    return 'profile'
+  }
+
+  if (nextValues[1] !== previousValues[1]) {
+    return 'collapse'
+  }
+
+  return 'route'
 }
 
 function handleDrawerKeydown(event: KeyboardEvent): void {
@@ -146,10 +501,12 @@ function handleDrawerKeydown(event: KeyboardEvent): void {
   }
 }
 
-function updateProfile(inlineSize: number): void {
+function updateResponsiveNavigationMetrics(inlineSize = currentShellInlineSize): void {
+  currentShellInlineSize = inlineSize
+  currentRootFontSize.value = readRootFontSize()
   profile.value = resolveAdminShellProfile({
-    inlineSize,
-    rootFontSize: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+    inlineSize: currentShellInlineSize,
+    rootFontSize: currentRootFontSize.value,
     regularMinimum,
     wideMinimum,
   })
@@ -170,18 +527,25 @@ onMounted(() => {
   bodyOverflow = document.body.style.overflow
   document.documentElement.style.overflow = 'hidden'
   document.body.style.overflow = 'hidden'
-  updateProfile(target.getBoundingClientRect().width)
+  updateResponsiveNavigationMetrics(target.getBoundingClientRect().width)
   resizeObserver = new ResizeObserver((entries) => {
     const entry = entries[0]
 
     if (entry !== undefined) {
-      updateProfile(entry.borderBoxSize[0]?.inlineSize ?? entry.contentRect.width)
+      updateResponsiveNavigationMetrics(
+        entry.borderBoxSize[0]?.inlineSize ?? entry.contentRect.width,
+      )
     }
   })
   resizeObserver.observe(target)
+  loadAdminNavigationMotion()
 })
 
 onBeforeUnmount(() => {
+  adminNavigationMotionLoadEpoch += 1
+  adminNavigationMotionController?.dispose()
+  adminNavigationMotionController = undefined
+  routeSelectionDots.clear()
   resizeObserver?.disconnect()
   resizeObserver = undefined
   document.documentElement.style.overflow = rootOverflow
@@ -199,6 +563,61 @@ watch(navigationOpen, async (isOpen) => {
     focusReturnTarget = null
   }
 })
+
+watch(
+  () => appearance.value.fontScale,
+  () => {
+    updateResponsiveNavigationMetrics()
+  },
+  { flush: 'post' },
+)
+
+watch(
+  () => props.activeRouteName,
+  () => {
+    if (!persistentNavigationCollapsed.value) {
+      ensureActiveNavigationGroupExpanded()
+    }
+  },
+)
+
+watch(persistentNavigationCollapsed, (isCollapsed) => {
+  if (!isCollapsed) {
+    ensureActiveNavigationGroupExpanded()
+  }
+})
+
+watch(
+  expandedNavigationGroupKeys,
+  () => {
+    adminNavigationMotionController?.sync(resolveAdminNavigationMotionState(), 'route')
+  },
+  { flush: 'post' },
+)
+
+watch(
+  navigationRouteInventory,
+  () => {
+    adminNavigationMotionController?.sync(resolveAdminNavigationMotionState(), 'route')
+  },
+  { flush: 'post' },
+)
+
+watch(
+  [
+    profile,
+    persistentNavigationCollapsed,
+    () => props.activeRouteName,
+    () => appearance.value.motion,
+  ],
+  (nextValues, previousValues) => {
+    adminNavigationMotionController?.sync(
+      resolveAdminNavigationMotionState(),
+      resolveAdminNavigationMotionCause(nextValues, previousValues),
+    )
+  },
+  { flush: 'post' },
+)
 </script>
 
 <template>
@@ -206,6 +625,7 @@ watch(navigationOpen, async (isOpen) => {
     ref="shell"
     class="pavp-admin-shell"
     :data-layout-profile="profile"
+    :data-navigation-collapsed="persistentNavigationCollapsed ? 'true' : 'false'"
   >
     <header
       class="pavp-admin-shell__header h-admin-header"
@@ -227,63 +647,82 @@ watch(navigationOpen, async (isOpen) => {
       </div>
     </header>
 
-    <div class="pavp-admin-shell__layout">
-      <aside
+    <PavpLayoutPrimitive
+      class="pavp-admin-shell__layout"
+      :content-style="persistentLayoutContentStyle"
+      data-pavp-admin-navigation="persistent"
+      :has-sider="profile !== 'narrow'"
+      :native-scrollbar="true"
+    >
+      <PavpLayoutSiderPrimitive
         v-if="profile !== 'narrow'"
+        bordered
         class="pavp-admin-shell__sidebar"
+        :collapsed="persistentNavigationCollapsed"
+        :collapsed-width="collapsedNavigationWidth"
+        collapse-mode="width"
+        :content-style="persistentSiderContentStyle"
         data-shell-region="architecture-console-navigation"
-        :style="{ inlineSize: sidebarInlineSize }"
+        :native-scrollbar="true"
+        :show-trigger="false"
+        :width="expandedNavigationWidth"
       >
         <nav
           aria-label="架构导航"
-          :class="profile === 'wide' ? 'pavp-admin-shell__navigation' : 'pavp-admin-shell__rail'"
+          class="pavp-admin-shell__persistent-navigation"
         >
+          <PavpMenuPrimitive
+            :accordion="false"
+            class="pavp-admin-shell__menu"
+            :collapsed="persistentNavigationCollapsed"
+            :collapsed-width="collapsedNavigationWidth"
+            children-field="children"
+            :dropdown-props="persistentNavigationDropdownProps"
+            :expanded-keys="expandedNavigationGroupKeys"
+            mode="vertical"
+            :node-props="persistentNavigationNodeProps"
+            :options="navigationMenuOptions"
+            :value="activeRouteName"
+            @update:expanded-keys="handleNavigationExpandedKeysUpdate"
+            @update:value="handleNavigationValueUpdate"
+          />
+
           <div
-            v-for="group in navigation"
-            :key="group.id"
-            class="pavp-admin-shell__navigation-group"
+            v-if="profile === 'wide'"
+            class="pavp-admin-shell__navigation-dock"
           >
-            <p
-              v-if="profile === 'wide'"
-              class="pavp-admin-shell__navigation-group-label"
+            <button
+              :aria-label="wideNavigationCollapseLabel"
+              class="pavp-admin-shell__action pavp-admin-shell__collapse-action min-h-target-enhanced min-w-target-enhanced"
+              type="button"
+              @click="toggleWideNavigation"
             >
-              {{ group.label }}
-            </p>
-            <div
-              v-for="item in group.items"
-              :key="item.routeName"
-              class="pavp-admin-shell__navigation-item"
-            >
-              <button
-                :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
-                :aria-describedby="
-                  profile === 'regular' ? `rail-tooltip-${item.routeName}` : undefined
-                "
-                :aria-label="profile === 'regular' ? item.label : undefined"
-                class="pavp-admin-shell__navigation-action min-h-target-enhanced min-w-target-enhanced"
-                type="button"
-                @mousedown="preserveCurrentPersistentNavigationFocus($event, item.routeName)"
-                @click="navigate(item.routeName)"
+              <span
+                aria-hidden="true"
+                class="pavp-admin-shell__collapse-icon-stack"
               >
                 <span
-                  :class="resolveNavigationIconClass(item.iconClass)"
+                  ref="expandedCollapseIcon"
                   aria-hidden="true"
-                  class="pavp-admin-shell__navigation-icon"
+                  class="pavp-admin-shell__collapse-icon pavp-admin-shell__collapse-icon--expanded i-lucide-panel-left-close"
                 />
-                <span v-if="profile === 'wide'">{{ item.label }}</span>
-              </button>
-              <span
-                v-if="profile === 'regular'"
-                :id="`rail-tooltip-${item.routeName}`"
-                class="pavp-admin-shell__rail-tooltip"
-                role="tooltip"
-              >
-                {{ item.label }}
+                <span
+                  ref="collapsedCollapseIcon"
+                  aria-hidden="true"
+                  class="pavp-admin-shell__collapse-icon pavp-admin-shell__collapse-icon--collapsed i-lucide-panel-left-open"
+                />
               </span>
-            </div>
+              <span
+                ref="collapseLabel"
+                aria-hidden="true"
+                class="pavp-admin-shell__collapse-label"
+              >
+                收起导航
+              </span>
+            </button>
           </div>
         </nav>
-      </aside>
+      </PavpLayoutSiderPrimitive>
 
       <main
         ref="content"
@@ -296,7 +735,7 @@ watch(navigationOpen, async (isOpen) => {
           <slot />
         </div>
       </main>
-    </div>
+    </PavpLayoutPrimitive>
 
     <Teleport to="#pavp-overlay-root">
       <Transition name="pavp-admin-drawer">
@@ -441,7 +880,6 @@ watch(navigationOpen, async (isOpen) => {
 }
 
 .pavp-admin-shell__layout {
-  display: flex;
   min-inline-size: 0;
   block-size: calc(100dvh - var(--ui-layout-admin-header-block-size) - var(--pavp-safe-area-top));
   background: transparent;
@@ -455,30 +893,105 @@ watch(navigationOpen, async (isOpen) => {
   overflow: visible;
   background: var(--ui-material-chrome-background);
   box-shadow: var(--ui-admin-shadow-chrome);
-  transition-duration: var(--ui-motion-duration);
-  transition-property: inline-size;
-  transition-timing-function: var(--ui-motion-easing);
 }
 
-.pavp-admin-shell__navigation,
-.pavp-admin-shell__rail,
 .pavp-admin-shell__navigation-group {
   display: grid;
   gap: var(--ui-space-content-gap);
 }
 
-.pavp-admin-shell__navigation,
-.pavp-admin-shell__rail {
+.pavp-admin-shell__persistent-navigation {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
   align-content: start;
-  padding-block: var(--ui-space-section-block);
+  block-size: 100%;
+  min-inline-size: 0;
+  padding-block: var(--ui-space-content-gap);
 }
 
-.pavp-admin-shell__navigation {
-  padding-inline: var(--ui-space-page-inline);
-}
-
-.pavp-admin-shell__rail {
+.pavp-admin-shell__navigation-dock {
+  display: flex;
+  align-items: center;
   justify-content: center;
+  min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+  border-block-start-color: var(--ui-color-border-default);
+  border-block-start-style: solid;
+  border-block-start-width: var(--ui-admin-border-width);
+  padding-block-start: var(--ui-space-content-gap);
+  padding-inline: var(--ui-space-content-gap);
+}
+
+.pavp-admin-shell__collapse-action {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-content: start;
+  flex: 0 0 auto;
+  inline-size: 100%;
+  overflow: hidden;
+  padding-inline: var(--ui-space-content-gap);
+  text-align: start;
+}
+
+.pavp-admin-shell[data-navigation-collapsed='true']:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-action {
+  grid-template-columns: auto 0;
+  justify-content: center;
+  column-gap: 0;
+  padding-inline: 0;
+}
+
+.pavp-admin-shell__collapse-icon-stack,
+.pavp-admin-shell__collapse-icon {
+  block-size: var(--ui-font-size-body);
+  inline-size: var(--ui-font-size-body);
+}
+
+.pavp-admin-shell__collapse-icon-stack {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.pavp-admin-shell__collapse-icon {
+  grid-area: 1 / 1;
+  transform-origin: center;
+}
+
+.pavp-admin-shell__collapse-label {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-icon--expanded,
+.pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-label {
+  visibility: visible;
+  opacity: 1;
+}
+
+.pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-icon--collapsed,
+.pavp-admin-shell[data-navigation-collapsed='true']:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-icon--expanded,
+.pavp-admin-shell[data-navigation-collapsed='true']:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-label {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.pavp-admin-shell[data-navigation-collapsed='true']:not([data-pavp-admin-navigation-motion='ready'])
+  .pavp-admin-shell__collapse-icon--collapsed {
+  visibility: visible;
+  opacity: 1;
+}
+
+.pavp-admin-shell__menu {
+  min-block-size: 0;
+  min-inline-size: 0;
 }
 
 .pavp-admin-shell__navigation-group-label {
@@ -487,10 +1000,6 @@ watch(navigationOpen, async (isOpen) => {
   font-size: var(--ui-font-size-body);
   font-weight: var(--ui-font-weight-title);
   line-height: var(--ui-font-line-height-body);
-}
-
-.pavp-admin-shell__navigation-item {
-  position: relative;
 }
 
 .pavp-admin-shell__action,
@@ -527,11 +1036,6 @@ watch(navigationOpen, async (isOpen) => {
   inline-size: var(--ui-font-size-body);
 }
 
-.pavp-admin-shell__rail .pavp-admin-shell__navigation-action {
-  justify-content: center;
-  padding-inline: 0;
-}
-
 .pavp-admin-shell__action:hover,
 .pavp-admin-shell__navigation-action:hover {
   color: var(--ui-color-text-primary);
@@ -554,44 +1058,26 @@ watch(navigationOpen, async (isOpen) => {
   background: var(--ui-material-overlay-background);
 }
 
-.pavp-admin-shell__navigation-action::before {
+.pavp-admin-shell__navigation-action::after {
   position: absolute;
-  block-size: calc(100% - var(--ui-space-content-gap));
+  block-size: calc(var(--ui-space-content-gap) / 2);
   inline-size: calc(var(--ui-space-content-gap) / 2);
   border-radius: var(--ui-radius-panel);
   background: var(--ui-admin-navigation-selected);
   content: '';
-  inset-block-start: calc(var(--ui-space-content-gap) / 2);
-  inset-inline-start: 0;
-  transform: scaleY(0);
+  inset-block-start: 50%;
+  inset-inline-end: var(--ui-space-page-inline);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.72);
   transform-origin: center;
   transition-duration: var(--ui-motion-duration);
-  transition-property: transform;
+  transition-property: opacity, transform;
   transition-timing-function: var(--ui-motion-easing);
 }
 
-.pavp-admin-shell__navigation-action[aria-current='page']::before {
-  transform: scaleY(1);
-}
-
-.pavp-admin-shell__rail-tooltip {
-  position: absolute;
-  z-index: var(--ui-z-overlay);
-  display: none;
-  min-inline-size: max-content;
-  inset-block-start: 0;
-  inset-inline-start: calc(100% + var(--ui-space-content-gap));
-  padding: var(--ui-space-content-gap);
-  border-radius: var(--ui-radius-panel);
-  color: var(--ui-color-text-primary);
-  background: var(--ui-material-overlay-background);
-  box-shadow: var(--ui-admin-shadow-overlay);
-  white-space: nowrap;
-}
-
-:where(.pavp-admin-shell__navigation-item:hover, .pavp-admin-shell__navigation-item:focus-within)
-  .pavp-admin-shell__rail-tooltip {
-  display: block;
+.pavp-admin-shell__navigation-action[aria-current='page']::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
 }
 
 .pavp-admin-shell__content {
@@ -684,7 +1170,6 @@ watch(navigationOpen, async (isOpen) => {
   .pavp-admin-shell__header,
   .pavp-admin-shell__sidebar,
   .pavp-admin-shell__navigation-action[aria-current='page'],
-  .pavp-admin-shell__rail-tooltip,
   .pavp-admin-shell__drawer-navigation {
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
@@ -693,11 +1178,123 @@ watch(navigationOpen, async (isOpen) => {
 </style>
 
 <style>
+[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__route-selection-dot {
+  display: block;
+  flex: 0 0 auto;
+  block-size: calc(var(--ui-space-content-gap) / 2);
+  inline-size: calc(var(--ui-space-content-gap) / 2);
+  border-radius: var(--ui-radius-panel);
+  background: var(--ui-admin-navigation-selected);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])
+  [data-pavp-admin-navigation='persistent']
+  .pavp-admin-shell__route-selection-dot {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])
+  [data-pavp-admin-navigation='persistent']
+  .pavp-admin-shell__route-selection-dot[data-selected='true'] {
+  visibility: visible;
+  opacity: 1;
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu {
+  padding-block-end: 0;
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible {
+  border-radius: var(--ui-radius-panel);
+  box-shadow: var(--ui-admin-shadow-focus-ring);
+  outline: none;
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu-item-content:active::before {
+  background: var(--ui-admin-navigation-hover);
+}
+
+[data-pavp-admin-navigation='persistent']
+  .n-menu-item-content:active
+  :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header) {
+  color: var(--ui-color-control-primary);
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu-item-content::after,
+.pavp-admin-navigation-dropdown .n-dropdown-option-body::after {
+  position: absolute;
+  z-index: var(--ui-z-base);
+  block-size: calc(var(--ui-space-content-gap) / 2);
+  inline-size: calc(var(--ui-space-content-gap) / 2);
+  border-radius: var(--ui-radius-panel);
+  background: var(--ui-admin-navigation-selected);
+  content: '';
+  inset-block-start: 50%;
+  inset-inline-end: var(--ui-space-content-gap);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-50%) scale(0.72);
+  transform-origin: center;
+  transition-property: opacity, transform;
+}
+
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action::after,
+html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::after,
+html[data-motion='reduced'] .pavp-admin-navigation-dropdown .n-dropdown-option-body::after,
+html[data-motion='none'] .pavp-admin-shell__navigation-action::after,
+html[data-motion='none'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::after,
+html[data-motion='none'] .pavp-admin-navigation-dropdown .n-dropdown-option-body::after {
+  transform: translateY(-50%) scale(1);
+}
+
+[data-pavp-admin-navigation='persistent']
+  .n-layout-sider--collapsed
+  .n-menu-item-content--child-active::after,
+.pavp-admin-navigation-dropdown
+  .n-dropdown-option[aria-current='page']
+  .n-dropdown-option-body::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+[data-pavp-admin-navigation='persistent']
+  .n-layout-sider--collapsed
+  .n-menu-item-content--child-active::before {
+  background: var(--ui-material-overlay-background);
+}
+
+.pavp-admin-navigation-dropdown.n-dropdown-menu {
+  border-color: var(--ui-color-border-default);
+  border-style: solid;
+  border-width: var(--ui-admin-border-width);
+  background: var(--ui-material-overlay-background);
+  box-shadow: var(--ui-admin-shadow-overlay);
+}
+
+.pavp-admin-navigation-dropdown .n-dropdown-option-body--pending {
+  box-shadow: var(--ui-admin-shadow-focus-ring);
+}
+
+.pavp-admin-navigation-dropdown .n-dropdown-option-body:active::before {
+  background: var(--ui-admin-navigation-hover);
+}
+
+.pavp-admin-navigation-dropdown
+  .n-dropdown-option-body:active
+  :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label) {
+  color: var(--ui-color-control-primary);
+}
+
 html[data-material='adaptive'] .pavp-admin-shell__header,
 html[data-material='adaptive'] .pavp-admin-shell__sidebar,
 html[data-material='adaptive'] .pavp-admin-shell__navigation-action[aria-current='page'],
-html[data-material='adaptive'] .pavp-admin-shell__rail-tooltip,
-html[data-material='adaptive'] .pavp-admin-shell__drawer-navigation {
+html[data-material='adaptive'] .pavp-admin-shell__drawer-navigation,
+html[data-material='adaptive'] .pavp-admin-navigation-dropdown {
   -webkit-backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
   backdrop-filter: blur(var(--ui-admin-optical-backdrop-blur));
 }
@@ -705,21 +1302,21 @@ html[data-material='adaptive'] .pavp-admin-shell__drawer-navigation {
 html[data-material='reduced'] .pavp-admin-shell__header,
 html[data-material='reduced'] .pavp-admin-shell__sidebar,
 html[data-material='reduced'] .pavp-admin-shell__navigation-action[aria-current='page'],
-html[data-material='reduced'] .pavp-admin-shell__rail-tooltip,
 html[data-material='reduced'] .pavp-admin-shell__drawer-navigation,
+html[data-material='reduced'] .pavp-admin-navigation-dropdown,
 html[data-material='solid'] .pavp-admin-shell__header,
 html[data-material='solid'] .pavp-admin-shell__sidebar,
 html[data-material='solid'] .pavp-admin-shell__navigation-action[aria-current='page'],
-html[data-material='solid'] .pavp-admin-shell__rail-tooltip,
-html[data-material='solid'] .pavp-admin-shell__drawer-navigation {
+html[data-material='solid'] .pavp-admin-shell__drawer-navigation,
+html[data-material='solid'] .pavp-admin-navigation-dropdown {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
 }
 
 html[data-material='reduced'] .pavp-admin-shell__header,
 html[data-material='reduced'] .pavp-admin-shell__sidebar,
-html[data-material='reduced'] .pavp-admin-shell__rail-tooltip,
-html[data-material='reduced'] .pavp-admin-shell__drawer-navigation {
+html[data-material='reduced'] .pavp-admin-shell__drawer-navigation,
+html[data-material='reduced'] .pavp-admin-navigation-dropdown {
   box-shadow: none;
 }
 
@@ -737,7 +1334,7 @@ html[data-motion='reduced']
 html[data-motion='reduced'] .pavp-admin-shell__sidebar,
 html[data-motion='reduced'] .pavp-admin-shell__action,
 html[data-motion='reduced'] .pavp-admin-shell__navigation-action,
-html[data-motion='reduced'] .pavp-admin-shell__navigation-action::before {
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action::after {
   transition-duration: calc(var(--ui-motion-duration) / 2);
 }
 
@@ -750,7 +1347,7 @@ html[data-motion='none']
 html[data-motion='none'] .pavp-admin-shell__sidebar,
 html[data-motion='none'] .pavp-admin-shell__action,
 html[data-motion='none'] .pavp-admin-shell__navigation-action,
-html[data-motion='none'] .pavp-admin-shell__navigation-action::before {
+html[data-motion='none'] .pavp-admin-shell__navigation-action::after {
   transition: none;
 }
 
@@ -780,5 +1377,21 @@ html[data-motion='none']
 html[data-motion='none'] .pavp-admin-shell__action:active,
 html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
   transform: none;
+}
+
+@media (forced-colors: active) {
+  [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible,
+  .pavp-admin-navigation-dropdown .n-dropdown-option-body--pending {
+    outline: var(--ui-admin-border-focus);
+    outline-offset: var(--ui-admin-focus-outline-offset);
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-pavp-admin-navigation='persistent'] .n-layout-sider,
+  .pavp-admin-navigation-dropdown {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 </style>

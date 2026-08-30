@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process'
 import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 import { readFile } from 'node:fs/promises'
-import { resolve } from 'node:path'
+import { relative, resolve } from 'node:path'
 
 import { projectConfig } from '../../project.config'
 import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
@@ -12,7 +12,9 @@ interface ManifestChunk {
   dynamicImports?: string[]
   file: string
   imports?: string[]
+  isDynamicEntry?: boolean
   isEntry?: boolean
+  src?: string
 }
 
 type Manifest = Record<string, ManifestChunk>
@@ -42,7 +44,8 @@ interface ReleaseShaMeasurementNormalization {
 }
 
 const rootDirectory = process.cwd()
-const distributionDirectory = resolve(rootDirectory, 'apps/web/dist')
+const webRootDirectory = resolve(rootDirectory, 'apps/web')
+const distributionDirectory = resolve(webRootDirectory, 'dist')
 const generatedSourceDirectory = resolve(rootDirectory, 'packages/design-system/src/generated')
 const rootPackageManifestPath = resolve(rootDirectory, 'package.json')
 const runtimeConfigurationArtifactName = 'runtime-configuration.json'
@@ -98,6 +101,14 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
+const expectedLazyRouteCount = 17
+const expectedMotionAdapterRootKey = relative(
+  webRootDirectory,
+  resolve(rootDirectory, 'packages/ui/src/adapters/gsap/admin-navigation-motion.ts'),
+)
+  .split('\\')
+  .join('/')
+const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, expectedMotionAdapterRootKey])
 const minimumInitialJavaScriptHeadroomBytes = 8 * 1024
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
@@ -732,9 +743,9 @@ async function validateCompiledBuildIdentity(
   }
 }
 
-function collectInitialChunks(manifest: Manifest, entryKey: string): Set<string> {
+function collectStaticChunkClosure(manifest: Manifest, rootKey: string): Set<string> {
   const keys = new Set<string>()
-  const pending = [entryKey]
+  const pending = [rootKey]
 
   while (pending.length > 0) {
     const key = pending.pop()
@@ -756,6 +767,25 @@ function collectInitialChunks(manifest: Manifest, entryKey: string): Set<string>
   return keys
 }
 
+function setsEqual(left: ReadonlySet<string>, right: ReadonlySet<string>): boolean {
+  return left.size === right.size && [...left].every((value) => right.has(value))
+}
+
+function intersectingValues(
+  left: ReadonlySet<string>,
+  right: ReadonlySet<string>,
+): readonly string[] {
+  return [...left].filter((value) => right.has(value)).sort()
+}
+
+function emittedJavaScriptFiles(manifest: Manifest, chunkKeys: ReadonlySet<string>): Set<string> {
+  return new Set(
+    [...chunkKeys]
+      .map((key) => manifest[key]?.file)
+      .filter((file): file is string => file?.endsWith('.js') === true),
+  )
+}
+
 const manifestValue = JSON.parse(
   await readFile(resolve(distributionDirectory, '.vite/manifest.json'), 'utf8'),
 ) as unknown
@@ -768,7 +798,7 @@ if (entries.length !== 1 || entries[0] === undefined) {
 }
 
 const entry = entries[0]
-const initialChunkKeys = collectInitialChunks(manifest, entry[0])
+const initialChunkKeys = collectStaticChunkClosure(manifest, entry[0])
 const initialJavaScriptFiles = new Set<string>(['generated/appearance-init.js'])
 const initialCssFiles = new Set<string>(['generated/critical-theme.css'])
 
@@ -884,28 +914,69 @@ if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
   )
 }
 
-const dynamicChunkKeys = new Set(
-  Object.values(manifest).flatMap((chunk) => chunk.dynamicImports ?? []),
-)
-
 if (
-  dynamicChunkKeys.size !== expectedLazyRouteKeys.size ||
-  [...dynamicChunkKeys].some((key) => !expectedLazyRouteKeys.has(key) || initialChunkKeys.has(key))
+  expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
+  expectedDynamicRootKeys.size !== expectedLazyRouteCount + 1
 ) {
   throw new Error(
-    `Router lazy route closure drifted: expected ${String(expectedLazyRouteKeys.size)} exact routes, received ${String(dynamicChunkKeys.size)}.`,
+    `Canonical dynamic root authority drifted: expected ${String(expectedLazyRouteCount)} routes plus one Motion adapter root.`,
+  )
+}
+
+const entryDynamicImports = entry[1].dynamicImports ?? []
+const entryDynamicRootKeys = new Set(entryDynamicImports)
+
+if (
+  entryDynamicImports.length !== expectedDynamicRootKeys.size ||
+  !setsEqual(entryDynamicRootKeys, expectedDynamicRootKeys)
+) {
+  throw new Error(
+    `Production entry dynamic roots drifted: expected ${String(expectedLazyRouteCount)} exact routes plus one exact Motion adapter root; received ${String(entryDynamicRootKeys.size)} unique roots.`,
+  )
+}
+
+for (const [ownerKey, chunk] of Object.entries(manifest)) {
+  if (ownerKey !== entry[0] && (chunk.dynamicImports?.length ?? 0) !== 0) {
+    throw new Error(
+      `Dynamic child root is forbidden: ${ownerKey} references ${(chunk.dynamicImports ?? []).join(', ')}.`,
+    )
+  }
+}
+
+const dynamicEntryKeys = new Set(
+  Object.entries(manifest)
+    .filter(([, chunk]) => chunk.isDynamicEntry === true)
+    .map(([key]) => key),
+)
+
+if (!setsEqual(dynamicEntryKeys, expectedDynamicRootKeys)) {
+  throw new Error(
+    `Vite dynamic entry set drifted: expected ${String(expectedDynamicRootKeys.size)} exact roots, received ${String(dynamicEntryKeys.size)}.`,
+  )
+}
+
+const initialDynamicRootIntersection = intersectingValues(initialChunkKeys, expectedDynamicRootKeys)
+
+if (initialDynamicRootIntersection.length !== 0) {
+  throw new Error(
+    `Dynamic roots may not enter the initial static closure: ${initialDynamicRootIntersection.join(', ')}.`,
   )
 }
 
 const lazyRouteFiles = new Set<string>()
+const routeStaticClosureKeys = new Set<string>()
 
-for (const dynamicChunkKey of dynamicChunkKeys) {
-  const chunk = manifest[dynamicChunkKey]
+for (const routeRootKey of expectedLazyRouteKeys) {
+  const chunk = manifest[routeRootKey]
 
   if (!chunk?.file.endsWith('.js')) {
-    throw new Error(`Router lazy route ${dynamicChunkKey} must emit exactly one JavaScript chunk.`)
+    throw new Error(`Router lazy route ${routeRootKey} must emit exactly one JavaScript chunk.`)
   }
   lazyRouteFiles.add(chunk.file)
+
+  for (const closureKey of collectStaticChunkClosure(manifest, routeRootKey)) {
+    routeStaticClosureKeys.add(closureKey)
+  }
 
   const { bytes } = await gzipMeasurement(chunk.file)
 
@@ -920,6 +991,78 @@ if (lazyRouteFiles.size !== expectedLazyRouteKeys.size) {
   throw new Error('Each exact Router route must retain its own lazy JavaScript chunk.')
 }
 
+const motionAdapterRoot = manifest[expectedMotionAdapterRootKey]
+
+if (
+  motionAdapterRoot === undefined ||
+  !motionAdapterRoot.file.endsWith('.js') ||
+  motionAdapterRoot.isDynamicEntry !== true ||
+  motionAdapterRoot.src !== expectedMotionAdapterRootKey
+) {
+  throw new Error(
+    `The exact Motion adapter root ${expectedMotionAdapterRootKey} must remain one Vite JavaScript dynamic entry.`,
+  )
+}
+
+const motionAdapterStaticClosureKeys = collectStaticChunkClosure(
+  manifest,
+  expectedMotionAdapterRootKey,
+)
+const motionInitialKeyIntersection = intersectingValues(
+  motionAdapterStaticClosureKeys,
+  initialChunkKeys,
+)
+const motionRouteKeyIntersection = intersectingValues(
+  motionAdapterStaticClosureKeys,
+  routeStaticClosureKeys,
+)
+
+if (motionInitialKeyIntersection.length !== 0 || motionRouteKeyIntersection.length !== 0) {
+  throw new Error(
+    `Motion adapter static closure must be disjoint from Initial and Route closures; initial intersection [${motionInitialKeyIntersection.join(', ')}], route intersection [${motionRouteKeyIntersection.join(', ')}].`,
+  )
+}
+
+const motionAdapterJavaScriptFiles = emittedJavaScriptFiles(
+  manifest,
+  motionAdapterStaticClosureKeys,
+)
+const routeStaticClosureJavaScriptFiles = emittedJavaScriptFiles(manifest, routeStaticClosureKeys)
+const motionInitialFileIntersection = intersectingValues(
+  motionAdapterJavaScriptFiles,
+  initialJavaScriptFiles,
+)
+const motionRouteFileIntersection = intersectingValues(
+  motionAdapterJavaScriptFiles,
+  routeStaticClosureJavaScriptFiles,
+)
+
+if (motionInitialFileIntersection.length !== 0 || motionRouteFileIntersection.length !== 0) {
+  throw new Error(
+    `Motion adapter emitted JavaScript closure must be file-disjoint from Initial and Route closures; initial intersection [${motionInitialFileIntersection.join(', ')}], route intersection [${motionRouteFileIntersection.join(', ')}].`,
+  )
+}
+
+if (motionAdapterJavaScriptFiles.size === 0) {
+  throw new Error('Motion adapter static closure must emit at least one JavaScript file.')
+}
+
+const motionAdapterMeasurements = await Promise.all(
+  [...motionAdapterJavaScriptFiles].map((relativePath) => gzipMeasurement(relativePath)),
+)
+const motionAdapterJavaScriptBytes = motionAdapterMeasurements.reduce(
+  (total, measurement) => total + measurement.bytes,
+  0,
+)
+
+if (
+  motionAdapterJavaScriptBytes > projectConfig.bundleBudgets.lazyMotionAdapterJavaScriptGzipBytes
+) {
+  throw new Error(
+    `Motion adapter unique static JavaScript closure is ${String(motionAdapterJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.lazyMotionAdapterJavaScriptGzipBytes)}.`,
+  )
+}
+
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes headroom (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), lazy route chunks ${String(dynamicChunkKeys.size)} (${String(dynamicChunkKeys.size - runtimeKernelBundleContract.final.lazyChunks)} Router delta)`,
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes headroom (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), dynamic roots ${String(expectedDynamicRootKeys.size)} (${String(expectedLazyRouteKeys.size)} routes plus one Motion adapter), Motion adapter unique static JavaScript closure ${String(motionAdapterJavaScriptFiles.size)} files / ${String(motionAdapterJavaScriptBytes)} bytes gzip`,
 )
