@@ -128,6 +128,11 @@ interface AdminNavigationGsapSourceSnapshot {
   readonly themeSource: string
 }
 
+interface AdminNavigationThemeReflowSourceSnapshot extends AdminNavigationGsapSourceSnapshot {
+  readonly appearancePageSource: string
+  readonly providerSource: string
+}
+
 interface NavigationBudgetGateSnapshot {
   readonly architectureSource: string
   readonly checkBundleSource: string
@@ -227,6 +232,10 @@ const expectedAcceptanceClosureNegativeProbeCount = 5
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
 const expectedAdminNavigationGsapAdmissionNegativeProbeCount = 12
+const expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount = 12
+const expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount = 12
+const expectedAdminNavigationThemeReflowSourceInvariantCount = 8
+const expectedAdminNavigationThemeReflowSourceNegativeProbeCount = 8
 const expectedAdminNavigationGsapSourceInvariantCount = 12
 const expectedAdminNavigationGsapSourceNegativeProbeCount = 12
 const expectedNavigationReworkSourceInvariantCount = 59
@@ -246,6 +255,16 @@ const adminNavigationGsapWorkPackage =
 const adminNavigationGsapAdmissionAmendment =
   'PAVP_ADMIN_NAVIGATION_INSET_ROUTE_SELECTION_AND_BOTTOM_COLLAPSE_DOCK_GSAP_ADMISSION_AMENDMENT'
 const expectedAdminNavigationGsapActiveMirrorCount = 13
+const adminNavigationThemeReflowWorkPackage =
+  'PAVP_ADMIN_NAVIGATION_THEME_TINTED_SELECTION_AND_REFLOW_STABILITY_REWORK'
+const adminNavigationThemeReflowAdmissionAmendment =
+  'PAVP_ADMIN_NAVIGATION_THEME_TINTED_SELECTION_AND_REFLOW_STABILITY_ADMISSION_AMENDMENT'
+const expectedAdminNavigationThemeReflowActiveMirrorCount = 13
+const adminNavigationHighlightRevealWorkPackage =
+  'PAVP_ADMIN_NAVIGATION_VISIBLE_HOVER_AND_UNIFIED_SELECTED_REVEAL_REWORK'
+const adminNavigationHighlightRevealAdmissionAmendment =
+  'PAVP_ADMIN_NAVIGATION_VISIBLE_HOVER_AND_UNIFIED_SELECTED_REVEAL_ADMISSION_AMENDMENT'
+const expectedAdminNavigationHighlightRevealActiveMirrorCount = 13
 const expectedInitialJavaScriptBudgetBytes = 224 * 1024
 const expectedMinimumInitialJavaScriptHeadroomBytes = 8 * 1024
 const expectedMaximumInitialJavaScriptBytes =
@@ -1825,12 +1844,36 @@ function cssRuleBlocks(source: string): readonly CssRuleBlock[] {
   }))
 }
 
+function splitCssSelectorList(selectorList: string): readonly string[] {
+  const selectors: string[] = []
+  let functionalDepth = 0
+  let selectorStart = 0
+
+  for (let index = 0; index < selectorList.length; index += 1) {
+    const character = selectorList[index]
+
+    if (character === '(') {
+      functionalDepth += 1
+    } else if (character === ')') {
+      functionalDepth = Math.max(0, functionalDepth - 1)
+    } else if (character === ',' && functionalDepth === 0) {
+      selectors.push(selectorList.slice(selectorStart, index))
+      selectorStart = index + 1
+    }
+  }
+
+  selectors.push(selectorList.slice(selectorStart))
+  return selectors
+}
+
 function cssDeclarationsForSelector(
   rules: readonly CssRuleBlock[],
   selector: string,
 ): string | undefined {
   const declarations = rules
-    .filter((rule) => rule.selector.split(',').some((candidate) => candidate.trim() === selector))
+    .filter((rule) =>
+      splitCssSelectorList(rule.selector).some((candidate) => candidate.trim() === selector),
+    )
     .map((rule) => rule.declarations)
 
   return declarations.length === 0 ? undefined : declarations.join('\n')
@@ -1879,7 +1922,9 @@ function selectorDeclarationValues(
 
   for (const rule of rules) {
     if (
-      !rule.selector.split(',').some((candidate) => normalizedCssSelector(candidate) === selector)
+      !splitCssSelectorList(rule.selector).some(
+        (candidate) => normalizedCssSelector(candidate) === selector,
+      )
     ) {
       continue
     }
@@ -1977,6 +2022,7 @@ function compiledShellStateViolations(source: string): string[] {
   const materialTargets = [
     '.pavp-admin-shell__header',
     '.pavp-admin-shell__sidebar',
+    '.pavp-admin-shell__navigation-chrome-bridge',
     ".pavp-admin-shell__navigation-action[aria-current='page']",
     '.pavp-admin-shell__drawer-navigation',
     '.pavp-admin-navigation-dropdown',
@@ -2020,6 +2066,7 @@ function compiledShellStateViolations(source: string): string[] {
   const reducedShadowTargets = [
     '.pavp-admin-shell__header',
     '.pavp-admin-shell__sidebar',
+    '.pavp-admin-shell__navigation-chrome-bridge',
     '.pavp-admin-shell__drawer-navigation',
     '.pavp-admin-navigation-dropdown',
   ] as const
@@ -2120,6 +2167,10 @@ function compiledShellStateViolations(source: string): string[] {
     "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
     "html[data-motion='none'] .pavp-admin-shell__action:active",
     "html[data-motion='none'] .pavp-admin-shell__navigation-action:active",
+    "html[data-motion='full'] .pavp-admin-shell[data-pavp-admin-navigation-collapse-motion='ready'][data-pavp-admin-navigation-switch='active'] .pavp-admin-shell__sidebar",
+    "html[data-motion='full'] .pavp-admin-shell[data-pavp-admin-navigation-collapse-motion='ready'][data-pavp-admin-navigation-switch='active'] .n-layout-sider__border",
+    "html[data-material='reduced'] [data-pavp-admin-navigation='persistent'] .pavp-admin-shell__route-selection-aura",
+    "html[data-material='solid'] [data-pavp-admin-navigation='persistent'] .pavp-admin-shell__route-selection-aura",
   ])
   const actualStateSelectors = new Set(
     stateRules
@@ -4355,6 +4406,10 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     '-webkit-backdrop-filter: none;',
     'backdrop-filter: none;',
   ])
+  const filterLines = snapshot.shellSource
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith('filter:'))
 
   if (/pavp-admin-shell__profile|\{\{\s*profile\s*\}\}/u.test(snapshot.shellSource)) {
     violations.push('PROFILE_DEBUG_TEXT')
@@ -4440,10 +4495,16 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    backdropLines.length !== 8 ||
+    backdropLines.length !== 10 ||
     backdropLines.some((line) => !allowedBackdropDeclarations.has(line)) ||
     backdropLines.filter((line) => line.includes('blur(')).length !== 2 ||
-    /(?:^|\n)\s*filter\s*:|\b(?:brightness|saturate)\s*\(/iu.test(snapshot.shellSource) ||
+    filterLines.length !== 0 ||
+    exactOccurrenceCount(snapshot.shellSource, 'background: radial-gradient(') !== 2 ||
+    exactOccurrenceCount(
+      snapshot.shellSource,
+      'color-mix(in srgb, var(--ui-admin-navigation-selected) 24%, transparent) 0,',
+    ) !== 2 ||
+    /\b(?:brightness|saturate)\s*\(/iu.test(snapshot.shellSource) ||
     /transition-property\s*:[^;]*(?:backdrop-filter|filter)/iu.test(snapshot.shellSource)
   ) {
     violations.push('MATERIAL_BACKDROP_CONTRACT')
@@ -4729,6 +4790,30 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   const adminNavigationGsapVerificationValues = valuesForMarker(
     `${adminNavigationGsapWorkPackage}_STATIC_VERIFICATION`,
   )
+  const adminNavigationThemeReflowAdmissionValues = valuesForMarker(
+    adminNavigationThemeReflowAdmissionAmendment,
+  )
+  const adminNavigationThemeReflowStatusValues = valuesForMarker(
+    `${adminNavigationThemeReflowWorkPackage}_STATUS`,
+  )
+  const adminNavigationThemeReflowImplementationValues = valuesForMarker(
+    `${adminNavigationThemeReflowWorkPackage}_REPOSITORY_IMPLEMENTATION`,
+  )
+  const adminNavigationThemeReflowVerificationValues = valuesForMarker(
+    `${adminNavigationThemeReflowWorkPackage}_STATIC_VERIFICATION`,
+  )
+  const adminNavigationHighlightRevealAdmissionValues = valuesForMarker(
+    adminNavigationHighlightRevealAdmissionAmendment,
+  )
+  const adminNavigationHighlightRevealStatusValues = valuesForMarker(
+    `${adminNavigationHighlightRevealWorkPackage}_STATUS`,
+  )
+  const adminNavigationHighlightRevealImplementationValues = valuesForMarker(
+    `${adminNavigationHighlightRevealWorkPackage}_REPOSITORY_IMPLEMENTATION`,
+  )
+  const adminNavigationHighlightRevealVerificationValues = valuesForMarker(
+    `${adminNavigationHighlightRevealWorkPackage}_STATIC_VERIFICATION`,
+  )
   const canonicalStatusEnd = architectureSource.indexOf('\n---\n')
   const canonicalStatusSource =
     canonicalStatusEnd === -1 ? architectureSource : architectureSource.slice(0, canonicalStatusEnd)
@@ -4741,12 +4826,12 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
 
   const recordCurrentWorkViolation = (): void => {
     violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
-    violations.push('PAVP_ADMIN_NAVIGATION_GSAP_CURRENT_WORK')
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_CURRENT_WORK')
   }
 
   if (
-    canonicalWork !== adminNavigationGsapWorkPackage ||
-    canonicalAuthority !== adminNavigationGsapAdmissionAmendment
+    canonicalWork !== adminNavigationHighlightRevealWorkPackage ||
+    canonicalAuthority !== adminNavigationHighlightRevealAdmissionAmendment
   ) {
     recordCurrentWorkViolation()
   }
@@ -4838,12 +4923,20 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_STATUS=OPEN`,
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationGsapAdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+    `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationHighlightRevealAdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${adminNavigationGsapWorkPackage}_STATIC_VERIFICATION=PASS`,
+    `${adminNavigationThemeReflowAdmissionAmendment}=FROZEN`,
+    `${adminNavigationThemeReflowWorkPackage}_STATUS=OPEN`,
+    `${adminNavigationThemeReflowWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+    `${adminNavigationThemeReflowWorkPackage}_STATIC_VERIFICATION=PASS`,
+    `${adminNavigationHighlightRevealAdmissionAmendment}=FROZEN`,
+    `${adminNavigationHighlightRevealWorkPackage}_STATUS=OPEN`,
+    `${adminNavigationHighlightRevealWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+    `${adminNavigationHighlightRevealWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
     'PAVP_RUNTIME_003_STATUS=ACCEPTED',
     'PAVP_RUNTIME_003_REPOSITORY_IMPLEMENTATION=COMPLETE',
     'PAVP_RUNTIME_003_STATIC_VERIFICATION=PASS',
@@ -5052,6 +5145,448 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_ADMIN_NAVIGATION_GSAP_PRIVATE_BOUNDARY')
   }
 
+  const adminNavigationThemeReflowAmendmentHeading = `### 1.2B.0J \`${adminNavigationThemeReflowWorkPackage}\``
+  const adminNavigationThemeReflowAmendmentStart = architectureSource.indexOf(
+    adminNavigationThemeReflowAmendmentHeading,
+  )
+  const adminNavigationThemeReflowAmendmentEnd =
+    adminNavigationThemeReflowAmendmentStart === -1
+      ? -1
+      : architectureSource.indexOf(
+          '\n### ',
+          adminNavigationThemeReflowAmendmentStart +
+            adminNavigationThemeReflowAmendmentHeading.length,
+        )
+  const adminNavigationThemeReflowAmendmentSource =
+    adminNavigationThemeReflowAmendmentStart === -1
+      ? ''
+      : architectureSource.slice(
+          adminNavigationThemeReflowAmendmentStart,
+          adminNavigationThemeReflowAmendmentEnd === -1
+            ? architectureSource.length
+            : adminNavigationThemeReflowAmendmentEnd,
+        )
+  const requiredAdminNavigationThemeReflowAdmissionMarkers = [
+    `AMENDMENT=${adminNavigationThemeReflowAdmissionAmendment}`,
+    'AMENDMENT_KIND=ARCHITECTURE_ONLY_SERIAL_OWNER_DIRECTED_NAVIGATION_VISUAL_AND_REFLOW_CORRECTION_ADMISSION',
+    'AMENDMENT_STATUS=FROZEN',
+    'NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md',
+    'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
+    'ACTIVATION_EFFECT=CANONICAL_WORK_PACKAGE_ADMISSION_ONLY',
+    `SOURCE_IMPLEMENTATION_AUTHORITY=${adminNavigationThemeReflowWorkPackage}_ONLY_UNDER_THIS_FROZEN_CONTRACT`,
+    `WORK_PACKAGE=${adminNavigationThemeReflowWorkPackage}`,
+    '\nSTATUS=OPEN\n',
+    '\nREPOSITORY_IMPLEMENTATION=COMPLETE\n',
+    '\nSTATIC_VERIFICATION=PASS\n',
+    'OWNER_DEMAND=CONFIRMED',
+    'OWNER_VISUAL_REJECTION=CONFIRMED',
+    'OWNER_SOURCE_IMPLEMENTATION_AUTHORIZATION=CONFIRMED',
+    'OWNER_DO_NOT_REQUEST_RECONFIRMATION=CONFIRMED',
+    'CONTRACT_PRECEDENCE=SECTION_1_2B_0J_SUPERSEDES_SECTION_1_2B_0I_ACTIVE_SURFACE_HARD_DOT_COLLAPSE_REFLOW_AND_DOCK_HANDOFF_ONLY',
+    'HISTORICAL_SECTION_1_2B_0I_CONTRACT_MUTATION=PROHIBITED',
+    'NEW_CAPABILITY_STATUS_ENUM=PROHIBITED',
+    'NEXT_CANONICAL_WORK_PACKAGE=NONE',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
+  ] as const
+
+  if (
+    adminNavigationThemeReflowAmendmentSource.length === 0 ||
+    requiredAdminNavigationThemeReflowAdmissionMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_ADMISSION_NOT_FROZEN')
+  }
+
+  const requiredAdminNavigationGsapAdmissionHistoryMarkers = [
+    `HISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationGsapAdmissionAmendment}`,
+    `HISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+  ] as const
+
+  if (
+    requiredAdminNavigationGsapAdmissionHistoryMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_GSAP_ADMISSION_HISTORY')
+  }
+
+  const requiredAdminNavigationThemeReflowOverlapMarkers = [
+    `PREVIOUS_CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationGsapAdmissionAmendment}`,
+    `PREVIOUS_CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+    'PREVIOUS_CURRENT_BOUNDED_WORK_STATUS=OPEN',
+    'PREVIOUS_CURRENT_BOUNDED_WORK_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PREVIOUS_CURRENT_BOUNDED_WORK_STATIC_VERIFICATION=PASS',
+    'PREVIOUS_CURRENT_BOUNDED_WORK_DISPOSITION=PRESERVED_AS_IMPLEMENTED_STATIC_BASELINE_NOT_CURRENT',
+    'WORK_PACKAGE_RELATION=SERIAL_OWNER_DIRECTED_NAVIGATION_CORRECTION',
+    'PARALLEL_NAVIGATION_IMPLEMENTATION=PROHIBITED',
+    'SOURCE_OVERLAP_DISPOSITION=NEW_WORK_PACKAGE_OWNS_THE_FINAL_NAVIGATION_AND_APPEARANCE_GRID_DIFF',
+    'PREVIOUS_IMPLEMENTATION_ROLLBACK=PROHIBITED',
+  ] as const
+
+  if (
+    requiredAdminNavigationThemeReflowOverlapMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_OVERLAP')
+  }
+
+  const requiredAdminNavigationThemeTintedSelectionMarkers = [
+    'NAVIGATION_VISUAL_DIRECTION=OWNER_SELECTED_DIRECTION_2_ORDERLY_INSET_SELECTION',
+    'EXPANDED_ROOT_ACTIVE_PRESENTATION=FOREGROUND_ONLY',
+    'EXPANDED_ROOT_LEFT_ACTIVE_INDICATOR=PROHIBITED',
+    'NAVIGATION_NON_SELECTED_HOVER_PRESENTATION=EXISTING_LOW_CONTRAST_NAVIGATION_HOVER_SURFACE_ONLY',
+    'NAVIGATION_NON_SELECTED_HOVER_COLOR_AUTHORITY=--ui-admin-navigation-hover',
+    'NAVIGATION_HOVER_CHANGE=NONE',
+    'LEVEL_2_ACTIVE_SURFACE=INSET_THEME_TINTED_OVERLAY_STATE_PROJECTION',
+    'LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 12%,var(--ui-material-overlay-background))',
+    'LEVEL_2_ACTIVE_HOVER_SURFACE=SAME_AS_LEVEL_2_ACTIVE_SURFACE',
+    'LEVEL_2_ACTIVE_PRESSED_SURFACE=SAME_AS_LEVEL_2_ACTIVE_SURFACE',
+    'LEVEL_2_HARD_ROUTE_DOT=PROHIBITED',
+    'ACTIVE_ROUTE_DOT_DISPOSITION=SUPERSEDED_BY_ONE_TRAILING_SOFT_CONTROL_PRIMARY_AURA',
+    'LEVEL_2_ACTIVE_DECORATION=ONE_TRAILING_SOFT_CONTROL_PRIMARY_AURA',
+    'LEVEL_2_ACTIVE_AURA_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 24%,transparent)',
+    'LEVEL_2_ACTIVE_AURA_SOFTENING=STATIC_RADIAL_THEME_TINT_FALLOFF',
+    'LEVEL_2_ACTIVE_AURA_FALLOFF_END=72%',
+    'LEVEL_2_ACTIVE_AURA_FILTER=PROHIBITED',
+    'COLLAPSED_ROOT_ACTIVE_SURFACE=COMPACT_CENTERED_THEME_TINTED_OVERLAY_STATE_PROJECTION',
+    'COLLAPSED_ROOT_HARD_DOT=PROHIBITED',
+    'SELECTED_BACKDROP_FILTER=PROHIBITED',
+    'SELECTED_AURA_FILTER=PROHIBITED',
+    'SELECTED_AURA_FILTER_ANIMATION=PROHIBITED',
+    'ADAPTIVE_MATERIAL_SELECTED_AURA=STATIC_RADIAL_THEME_TINT_FALLOFF',
+    'SOLID_MATERIAL_SELECTED_SURFACE=FLAT_OPAQUE_THEME_TINTED_PANEL',
+    'PREFERS_REDUCED_TRANSPARENCY_SELECTED_AURA=HIDDEN',
+    'FORCED_COLORS_SELECTED_SURFACE=color.action.primary',
+    'FORCED_COLORS_SELECTED_FOREGROUND=color.text.on-action',
+    'FORCED_COLORS_SELECTED_INTERACTION_RETENTION=HIGHER_SPECIFICITY_THAN_VENDOR_BASE_HOVER_AND_ACTIVE_WITHOUT_IMPORTANT',
+    'FORCED_COLORS_SELECTED_AURA=HIDDEN',
+    'COLLAPSED_ROOT_SELECTION_SCOPE=STATIC_COLLAPSED_NAVIGATION_PLANE_NOT_SHARED_SIDER_COLLAPSED_STATE',
+    'COLLAPSED_ROOT_SELECTED_HOVER_SURFACE=SAME_12_PERCENT_THEME_TINT_AS_SELECTED_NOT_NEUTRAL_HOVER',
+    'NEW_PUBLIC_VISUAL_TOKEN=NONE',
+    'NEW_UI_INTERNAL_VISUAL_TOKEN=NONE',
+    'NEW_MATERIAL_AUTHORITY=NONE',
+  ] as const
+
+  if (
+    requiredAdminNavigationThemeTintedSelectionMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_TINTED_SELECTION')
+  }
+
+  const requiredAdminNavigationAtomicCollapseMarkers = [
+    'GSAP_INSTANCE_ADMISSION_COUNT=1',
+    `GSAP_INSTANCE_ADMISSION_OWNER=${adminNavigationThemeReflowWorkPackage}_ONLY`,
+    'GSAP_DEPENDENCY_COORDINATE=gsap@3.15.0',
+    'GSAP_DEPENDENCY_CHANGE=NONE',
+    'GSAP_DYNAMIC_ROOT_CHANGE=NONE',
+    'GSAP_BUNDLE_BUDGET_CHANGE=NONE',
+    'WIDE_COLLAPSE_SEMANTIC_STATE_COMMIT=IMMEDIATE',
+    'WIDE_COLLAPSE_FINAL_LAYOUT_COMMIT=ONE_ATOMIC_COMMIT_PER_INPUT',
+    'WIDE_COLLAPSE_PER_FRAME_SIDER_WIDTH_TWEEN=PROHIBITED',
+    'WIDE_COLLAPSE_PER_FRAME_MAX_WIDTH_TWEEN=PROHIBITED',
+    'WIDE_COLLAPSE_PER_FRAME_MAIN_LAYOUT_REFLOW=PROHIBITED',
+    'WIDE_COLLAPSE_LAYOUT_READ_WRITE_LOOP=PROHIBITED',
+    'WIDE_COLLAPSE_LAYOUT_READ_DURING_TWEEN=PROHIBITED',
+    'NAIVE_SIDER_NATIVE_WIDTH_TRANSITION_DURING_NAMED_SWITCH=DISABLED',
+    'NAIVE_MENU_SUBMENU_HEIGHT_TRANSITION_DURING_NAMED_SWITCH=DISABLED',
+    'NAIVE_MENU_SUBMENU_FORCED_LAYOUT_TRANSITION_DURING_NAMED_SWITCH=PROHIBITED',
+    'PERSISTENT_SIDER_CONTENT_OVERFLOW_STABLE=hidden',
+    'PERSISTENT_SIDER_CONTENT_OVERFLOW_DURING_NAMED_SWITCH=visible',
+    'PERSISTENT_SIDER_SWITCH_OVERFLOW_AUTHORITY=PAVP_SHELL_LOCAL_STATE_CUSTOM_PROPERTY_NOT_DESIGN_TOKEN',
+    'PERSISTENT_SIDER_SWITCH_OVERFLOW_POINTER_TARGET_EXPANSION=PROHIBITED',
+    'NAVIGATION_MENU_OPTION_IDENTITY_ACROSS_COLLAPSE=STABLE',
+    'NAVIGATION_EXPANDED_KEY_STATE_ACROSS_COLLAPSE=PRESERVED',
+    'NAVIGATION_EXPANDED_KEY_MUTATION_DURING_NAMED_SWITCH=PROHIBITED',
+    'PERSISTENT_COLLAPSE_WATCH_EXPANDED_KEY_MUTATION=PROHIBITED',
+    'ACTIVE_ROUTE_WATCH_EXPANDED_KEY_MUTATION=PROHIBITED',
+    'ACTIVE_ROUTE_PARENT_EXPANDED_KEYS_PROJECTION=DERIVED_CONTROLLED_VALUE_WITHOUT_SHELL_STATE_MUTATION',
+    'NAVIGATION_EXPANDED_KEY_PROJECTION_DURING_NAMED_SWITCH=FROZEN_FROM_PRE_COMMIT_UNTIL_SETTLED_OR_FALLBACK',
+    'NAVIGATION_INACTIVE_PLANE_INTERACTION_SUPPRESSION=inert;aria-hidden;pointer-events-none',
+    'NAVIGATION_MENU_DISABLED_STATE_ACROSS_COLLAPSE=PROHIBITED',
+    'NAVIGATION_ROUTE_DECORATION_TARGET_IDENTITY_ACROSS_COLLAPSE=STABLE',
+    'FULL_COLLAPSE_MAIN_CONTENT_PROPERTY_ALLOWLIST=translateX',
+    'FULL_COLLAPSE_MAIN_CONTENT_SCALE=PROHIBITED',
+    'FULL_COLLAPSE_SIDER_OR_MENU_WIDTH_WRITE_BY_GSAP=PROHIBITED',
+    'FULL_COLLAPSE_DURATION=200ms',
+    'REDUCED_COLLAPSE_VISUAL_BRIDGE=100ms_OPACITY_ONLY_WITH_IMMEDIATE_ATOMIC_FINAL_GEOMETRY',
+    'REDUCED_COLLAPSE_TRANSFORM=PROHIBITED',
+    'NONE_COLLAPSE_VISUAL_BRIDGE=NONE_IMMEDIATE_ATOMIC_FINAL_STATE',
+    'FINAL_STABLE_PAVP_OWNED_GEOMETRY_TRANSFORM=none',
+  ] as const
+
+  if (
+    requiredAdminNavigationAtomicCollapseMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_ATOMIC_COLLAPSE')
+  }
+
+  const requiredAdminNavigationBottomDockHandoffMarkers = [
+    'COLLAPSE_CONTROL_PLACEMENT=BOTTOM_UTILITY_DOCK',
+    'BOTTOM_DOCK_STANDALONE_PANEL=PROHIBITED',
+    'BOTTOM_DOCK_SURFACE=SAME_AS_PERSISTENT_SIDER_CHROME',
+    'BOTTOM_DOCK_TOP_DIVIDER=ONE_INSET_EXISTING_TOKEN_OWNED_HAIRLINE',
+    'BOTTOM_DOCK_ACTION_GEOMETRY=ONE_ROW_WITH_ICON_ALIGNED_TO_NAVIGATION_ICON_AXIS',
+    'BOTTOM_DOCK_FOREGROUND_POINTER_EVENTS=NONE',
+    'BOTTOM_DOCK_HIT_TARGET_OVERFLOW=PROHIBITED',
+    'BOTTOM_DOCK_RAIL_CONTENT_WIDTH=FULL_RAIL_WITHOUT_OUTER_INLINE_PADDING',
+    'NAIVE_MENU_ROOT_ICON_AXIS=NAVIGATION_RAIL_CENTER',
+    'NAIVE_MENU_ROOT_LABEL_AXIS=BOTTOM_DOCK_EXPANDED_LABEL_AXIS',
+    'BOTTOM_DOCK_CSS_GSAP_HANDOFF_GEOMETRY_CHANGE=PROHIBITED',
+    'BOTTOM_DOCK_LAZY_READY_HANDOFF_ROW_COUNT=ONE_BEFORE_DURING_AND_AFTER',
+    'BOTTOM_DOCK_LAZY_READY_HANDOFF_ICON_AXIS=INVARIANT',
+    'GSAP_INLINE_STYLE_CLEANUP=REQUIRED_FOR_EVERY_NORMAL_COMPLETION_INTERRUPTION_FAILURE_AND_DISPOSAL_PATH',
+    'GSAP_READY_ATTRIBUTE_CLEANUP=REQUIRED_FOR_EVERY_STABLE_OR_DISPOSED_STATE',
+    'GSAP_GLOBAL_READY_ATTRIBUTE_USE=LIFECYCLE_AGGREGATE_ONLY_NOT_CSS_FALLBACK_OWNER',
+    'GSAP_NAMED_INTERACTION_HANDOFF_MARKERS=INDEPENDENT_COLLAPSE_AND_ROUTE',
+    'GSAP_COLLAPSE_HANDOFF_ATTRIBUTE=data-pavp-admin-navigation-collapse-motion',
+    'GSAP_ROUTE_HANDOFF_ATTRIBUTE=data-pavp-admin-navigation-route-motion',
+    'GSAP_CROSS_INTERACTION_FALLBACK_SUPPRESSION=PROHIBITED',
+    'GSAP_HIDDEN_DOCUMENT_ACTIVATION=PROHIBITED',
+    'GSAP_LAZY_LOAD_FAILURE_UNHANDLED_REJECTION=PROHIBITED',
+  ] as const
+
+  if (
+    requiredAdminNavigationBottomDockHandoffMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_BOTTOM_DOCK_HANDOFF')
+  }
+
+  const requiredAppearanceWideGridMarkers = [
+    'APPEARANCE_THEME_GALLERY_WIDE_COLUMN_COUNT=4',
+    'APPEARANCE_THEME_GALLERY_WIDE_EXPANDED_COLUMN_COUNT=4',
+    'APPEARANCE_THEME_GALLERY_WIDE_COLLAPSED_COLUMN_COUNT=4',
+    'APPEARANCE_THEME_GALLERY_WIDE_SWITCH_COLUMN_REFLOW=PROHIBITED',
+    'APPEARANCE_THEME_GALLERY_WIDE_AUTO_FIT_THRESHOLD_CROSSING=PROHIBITED',
+    'APPEARANCE_THEME_GALLERY_REGULAR_AND_NARROW_RESPONSIVE_BEHAVIOR=PRESERVED',
+    'APPEARANCE_THEME_GALLERY_THEME_COUNT=14',
+    'APPEARANCE_THEME_GALLERY_THEME_ORDER=PRESERVED',
+    'APPEARANCE_THEME_GALLERY_SELECTION_AND_MUTATION_BEHAVIOR=PRESERVED',
+    'OTHER_PAGE_CONTENT_MODEL_CHANGE=NONE',
+  ] as const
+
+  if (
+    requiredAppearanceWideGridMarkers.some(
+      (marker) => !adminNavigationThemeReflowAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_APPEARANCE_WIDE_GRID_STABILITY')
+  }
+
+  const adminNavigationHighlightRevealAmendmentHeading = `### 1.2B.0K \`${adminNavigationHighlightRevealWorkPackage}\``
+  const adminNavigationHighlightRevealAmendmentStart = architectureSource.indexOf(
+    adminNavigationHighlightRevealAmendmentHeading,
+  )
+  const adminNavigationHighlightRevealAmendmentEnd =
+    adminNavigationHighlightRevealAmendmentStart === -1
+      ? -1
+      : architectureSource.indexOf(
+          '\n### ',
+          adminNavigationHighlightRevealAmendmentStart +
+            adminNavigationHighlightRevealAmendmentHeading.length,
+        )
+  const adminNavigationHighlightRevealAmendmentSource =
+    adminNavigationHighlightRevealAmendmentStart === -1
+      ? ''
+      : architectureSource.slice(
+          adminNavigationHighlightRevealAmendmentStart,
+          adminNavigationHighlightRevealAmendmentEnd === -1
+            ? architectureSource.length
+            : adminNavigationHighlightRevealAmendmentEnd,
+        )
+  const requiredAdminNavigationHighlightRevealAdmissionMarkers = [
+    `AMENDMENT=${adminNavigationHighlightRevealAdmissionAmendment}`,
+    'AMENDMENT_KIND=ARCHITECTURE_ONLY_SERIAL_OWNER_DIRECTED_NAVIGATION_INTERACTION_VISIBILITY_AND_REVEAL_ADMISSION',
+    'AMENDMENT_STATUS=FROZEN',
+    'NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md',
+    'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
+    'ACTIVATION_EFFECT=CANONICAL_WORK_PACKAGE_ADMISSION_ONLY',
+    'SOURCE_IMPLEMENTATION_AUTHORITY=REQUIRES_SEPARATE_OWNER_CONFIRMATION',
+    `WORK_PACKAGE=${adminNavigationHighlightRevealWorkPackage}`,
+    '\nSTATUS=OPEN\n',
+    '\nREPOSITORY_IMPLEMENTATION=NOT_STARTED\n',
+    '\nSTATIC_VERIFICATION=NOT_RUN\n',
+    'OWNER_DEMAND=CONFIRMED',
+    'OWNER_BEST_SOLUTION_SELECTION=CONFIRMED',
+    'OWNER_SOURCE_IMPLEMENTATION_AUTHORIZATION=NOT_GRANTED_IN_THIS_ARCHITECTURE_ONLY_TASK',
+    'CONTRACT_PRECEDENCE=SECTION_1_2B_0K_SUPERSEDES_SECTION_1_2B_0J_NON_SELECTED_HOVER_SELECTED_TINT_TRAILING_AURA_MATERIAL_REVEAL_AND_ROUTE_REVEAL_HANDOFF_ONLY',
+    'HISTORICAL_SECTION_1_2B_0J_CONTRACT_MUTATION=PROHIBITED',
+    'NEW_CAPABILITY_STATUS_ENUM=PROHIBITED',
+    'NEXT_CANONICAL_WORK_PACKAGE=NONE',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
+  ] as const
+
+  if (
+    adminNavigationHighlightRevealAmendmentSource.length === 0 ||
+    requiredAdminNavigationHighlightRevealAdmissionMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_ADMISSION_NOT_FROZEN')
+  }
+
+  const requiredAdminNavigationThemeReflowHistoryMarkers = [
+    `PREVIOUS_CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationThemeReflowAdmissionAmendment}`,
+    `PREVIOUS_CURRENT_BOUNDED_WORK=${adminNavigationThemeReflowWorkPackage}`,
+    'PREVIOUS_CURRENT_BOUNDED_WORK_STATUS=OPEN',
+    'PREVIOUS_CURRENT_BOUNDED_WORK_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'PREVIOUS_CURRENT_BOUNDED_WORK_STATIC_VERIFICATION=PASS',
+    'PREVIOUS_CURRENT_BOUNDED_WORK_DISPOSITION=PRESERVED_AS_IMPLEMENTED_STATIC_BASELINE_NOT_CURRENT',
+    `HISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationThemeReflowAdmissionAmendment}`,
+    `HISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationThemeReflowWorkPackage}`,
+    'WORK_PACKAGE_RELATION=SERIAL_OWNER_DIRECTED_NAVIGATION_INTERACTION_CORRECTION',
+    'PARALLEL_NAVIGATION_IMPLEMENTATION=PROHIBITED',
+    'PREVIOUS_IMPLEMENTATION_ROLLBACK=PROHIBITED',
+  ] as const
+
+  if (
+    requiredAdminNavigationThemeReflowHistoryMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_ADMISSION_HISTORY')
+  }
+
+  const requiredAdminNavigationHighlightRevealVisualMarkers = [
+    'NAVIGATION_VISUAL_DIRECTION=PRESERVED_OWNER_SELECTED_DIRECTION_2_ORDERLY_INSET_SELECTION',
+    'EXPANDED_ROOT_LEFT_ACTIVE_INDICATOR=PROHIBITED',
+    'NAVIGATION_NON_SELECTED_HOVER_PRESENTATION=VISIBLE_LOW_CONTRAST_THEME_TINTED_SURFACE',
+    'NAVIGATION_NON_SELECTED_HOVER_SURFACE_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 6%,var(--ui-material-chrome-background))',
+    'NAVIGATION_NON_SELECTED_HOVER_TINT_STRENGTH=6%',
+    'LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 16%,var(--ui-material-overlay-background))',
+    'SELECTED_TINT_STRENGTH=16%',
+    'SELECTED_HOVER_AND_PRESSED_SURFACE=SAME_AS_SELECTED_SURFACE',
+    'SELECTED_REVEAL_DECORATION=ONE_PAVP_OWNED_INSET_FLAT_THEME_TINT_REVEAL_PLANE',
+    'SELECTED_REVEAL_COLOR_FORMULA=SAME_AS_LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA',
+    'SELECTED_REVEAL_GEOMETRY=SAME_AS_NAIVE_NATIVE_MENU_ITEM_CONTENT_BEFORE_GEOMETRY',
+    'SELECTED_REVEAL_FINAL_HANDOFF=IDENTICAL_COLOR_AND_GEOMETRY_FROM_TRANSIENT_REVEAL_TO_NAIVE_STATIC_SURFACE',
+    'NEW_PUBLIC_VISUAL_TOKEN=NONE',
+    'NEW_UI_INTERNAL_VISUAL_TOKEN=NONE',
+    'NEW_MATERIAL_ROLE=NONE',
+  ] as const
+
+  if (
+    requiredAdminNavigationHighlightRevealVisualMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_VISUAL_CONTRACT')
+  }
+
+  const requiredAdminNavigationHighlightRevealMaterialMarkers = [
+    'REDUCED_MATERIAL_SELECTED_REVEAL=VISIBLE_FLAT_DURING_ROUTE_HANDOFF',
+    'SOLID_MATERIAL_SELECTED_REVEAL=VISIBLE_FLAT_OPAQUE_DURING_ROUTE_HANDOFF',
+    'SOLID_MATERIAL_SELECTED_REVEAL_DISPLAY_NONE=PROHIBITED',
+    'PREFERS_REDUCED_TRANSPARENCY_SELECTED_REVEAL=VISIBLE_FLAT_DURING_ROUTE_HANDOFF',
+    'FORCED_COLORS_SELECTED_REVEAL=HIDDEN',
+    'SELECTED_GLASS_ON_GLASS=PROHIBITED',
+    'SELECTED_REVEAL_FILTER_ANIMATION=PROHIBITED',
+  ] as const
+
+  if (
+    requiredAdminNavigationHighlightRevealMaterialMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_MATERIAL_CONTRACT')
+  }
+
+  const requiredAdminNavigationHighlightRevealMotionMarkers = [
+    'MOTION_PREFERENCE_AUTHORITY=EXISTING_FULL_REDUCED_NONE_APPEARANCE_STATE_ONLY',
+    'GSAP_GLOBAL_STATUS=DEFERRED',
+    'GSAP_INSTANCE_ADMISSION_COUNT=1',
+    `GSAP_INSTANCE_ADMISSION_OWNER=${adminNavigationHighlightRevealWorkPackage}_ONLY`,
+    'GSAP_DEPENDENCY_COORDINATE=gsap@3.15.0',
+    'GSAP_DEPENDENCY_CHANGE=NONE',
+    'GSAP_DYNAMIC_ROOT_CHANGE=NONE',
+    'GSAP_BUNDLE_BUDGET_CHANGE=NONE',
+    'GSAP_NAMED_PRODUCTION_INTERACTION_COUNT=2',
+    'GSAP_NAMED_PRODUCTION_INTERACTION_CHANGE=NONE',
+    'GSAP_ROUTE_INTERACTION_ID=admin-navigation.route-selection-inset-surface',
+    'GSAP_ROUTE_HANDOFF_ATTRIBUTE=data-pavp-admin-navigation-route-motion',
+    'FULL_SELECTED_REVEAL=200ms_OPACITY_VISIBILITY_AND_DECORATION_SCALE_0.96_TO_1',
+    'FULL_SELECTED_REVEAL_DURATION_AUTHORITY=interaction.motion.duration',
+    'FULL_SELECTED_REVEAL_EASING_AUTHORITY=interaction.motion.easing',
+    'REDUCED_SELECTED_REVEAL=100ms_OPACITY_ONLY',
+    'REDUCED_SELECTED_REVEAL_DURATION_AUTHORITY=calc(interaction.motion.duration / 2)',
+    'REDUCED_SELECTED_REVEAL_TRANSFORM=PROHIBITED',
+    'NONE_SELECTED_REVEAL=NO_TIMELINE_IMMEDIATE_STATIC_SELECTED_SURFACE',
+    'GSAP_ROUTE_FULL_PROPERTY_ALLOWLIST=opacity;visibility;decoration-scale',
+    'GSAP_ROUTE_REDUCED_PROPERTY_ALLOWLIST=opacity;visibility',
+    'GSAP_ROUTE_NONE_PROPERTY_ALLOWLIST=NONE',
+    'GSAP_FULL_PROPERTY_ALLOWLIST=opacity;visibility;translateX;decoration-scale',
+    'GSAP_REDUCED_PROPERTY_ALLOWLIST=opacity;visibility',
+    'GSAP_NONE_PROPERTY_ALLOWLIST=NONE',
+    'HOVER_GSAP_OWNERSHIP=NONE',
+  ] as const
+
+  if (
+    requiredAdminNavigationHighlightRevealMotionMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_MOTION_CONTRACT')
+  }
+
+  const requiredAdminNavigationHighlightRevealGsapBoundaryMarkers = [
+    'GSAP_BACKGROUND_COLOR_OWNERSHIP=PROHIBITED',
+    'GSAP_FILTER_OWNERSHIP=PROHIBITED',
+    'GSAP_BACKDROP_FILTER_OWNERSHIP=PROHIBITED',
+    'GSAP_LAYOUT_PROPERTY_OWNERSHIP=NONE',
+  ] as const
+
+  if (
+    requiredAdminNavigationHighlightRevealGsapBoundaryMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_GSAP_BOUNDARY')
+  }
+
+  const requiredAdminNavigationHighlightRevealLifecycleMarkers = [
+    'GSAP_ACTIVE_TIMELINE_COUNT_PER_INTERACTION=AT_MOST_ONE',
+    'GSAP_NEW_INPUT_POLICY=INTERRUPT_CURRENT_AND_CONTINUE_FROM_CURRENT_RENDERED_STATE_WITH_REMAINING_DISTANCE_DURATION',
+    'GSAP_REVERSAL_POLICY=REVERSE_WHEN_TARGET_RETURNS_TO_PRIOR_STABLE_STATE',
+    'EMPTY_ROUTE_REVEAL_TARGET_POLICY=NO_CONTEXT_NO_MARKER_NO_TIMELINE_STABLE_CSS_FINAL_STATE',
+    'LAZY_CONTROLLER_NOT_READY_ROUTE_POLICY=STABLE_CSS_FINAL_STATE_WITHOUT_DEFERRED_REPLAY_OR_REWIND',
+    'GSAP_INLINE_STYLE_CLEANUP=REQUIRED_FOR_EVERY_NORMAL_COMPLETION_INTERRUPTION_FAILURE_AND_DISPOSAL_PATH',
+    'GSAP_READY_ATTRIBUTE_CLEANUP=REQUIRED_FOR_EVERY_STABLE_OR_DISPOSED_STATE',
+    'GSAP_DOM_QUERY=PROHIBITED',
+    'GSAP_VENDOR_DOM_PATCH=PROHIBITED',
+    'GSAP_TIMER_OR_RAF_OWNERSHIP=NONE',
+    'MOTION_RESULT_PARITY=REQUIRED',
+  ] as const
+
+  if (
+    requiredAdminNavigationHighlightRevealLifecycleMarkers.some(
+      (marker) => !adminNavigationHighlightRevealAmendmentSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_LIFECYCLE')
+  }
+
+  const adminNavigationHighlightRevealArchitectureOnlyPaths =
+    '```text\nARCHITECTURE.md\nscripts/architecture/check-architecture-admin-console.ts\n```'
+  if (
+    !adminNavigationHighlightRevealAmendmentSource.includes(
+      adminNavigationHighlightRevealArchitectureOnlyPaths,
+    ) ||
+    !adminNavigationHighlightRevealAmendmentSource.includes(
+      'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_ARCHITECTURE_ONLY_SCOPE')
+  }
+
   const architectureLines = architectureSource.split(/\r?\n/u)
   const activeMirrorIndexes = architectureLines.flatMap((line, index) =>
     /^PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_STATUS[ \t]*=/u.test(line) ? [index] : [],
@@ -5062,7 +5597,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   for (const mirrorIndex of activeMirrorIndexes) {
-    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 28)
+    const mirrorLines = architectureLines.slice(mirrorIndex, mirrorIndex + 40)
     const workValues = mirrorLines.flatMap((line) => {
       const match = /^CURRENT_BOUNDED_WORK[ \t]*=[ \t]*([^\r\n]+)$/u.exec(line)
       return match?.[1] === undefined ? [] : [match[1].trim()]
@@ -5075,8 +5610,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== adminNavigationGsapWorkPackage ||
-      authorityValues[0] !== adminNavigationGsapAdmissionAmendment
+      workValues[0] !== adminNavigationHighlightRevealWorkPackage ||
+      authorityValues[0] !== adminNavigationHighlightRevealAdmissionAmendment
     ) {
       recordCurrentWorkViolation()
     }
@@ -5092,10 +5627,13 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   })
 
   if (
-    allCurrentWorkMarkers.length !== expectedAdminNavigationGsapActiveMirrorCount ||
-    allCurrentWorkAuthorityMarkers.length !== expectedAdminNavigationGsapActiveMirrorCount ||
-    allCurrentWorkMarkers.some((value) => value !== adminNavigationGsapWorkPackage) ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== adminNavigationGsapAdmissionAmendment)
+    allCurrentWorkMarkers.length !== expectedAdminNavigationHighlightRevealActiveMirrorCount ||
+    allCurrentWorkAuthorityMarkers.length !==
+      expectedAdminNavigationHighlightRevealActiveMirrorCount ||
+    allCurrentWorkMarkers.some((value) => value !== adminNavigationHighlightRevealWorkPackage) ||
+    allCurrentWorkAuthorityMarkers.some(
+      (value) => value !== adminNavigationHighlightRevealAdmissionAmendment,
+    )
   ) {
     recordCurrentWorkViolation()
   }
@@ -5153,6 +5691,64 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     adminNavigationGsapVerificationValues.some((value) => value !== 'PASS')
   ) {
     violations.push('PAVP_ADMIN_NAVIGATION_GSAP_STATIC_VERIFICATION_STATE')
+  }
+
+  if (
+    adminNavigationThemeReflowAdmissionValues.length !==
+      expectedAdminNavigationThemeReflowActiveMirrorCount ||
+    adminNavigationThemeReflowAdmissionValues.some((value) => value !== 'FROZEN')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_ADMISSION_NOT_FROZEN')
+  }
+  if (
+    adminNavigationThemeReflowStatusValues.length !==
+      expectedAdminNavigationThemeReflowActiveMirrorCount ||
+    adminNavigationThemeReflowStatusValues.some((value) => value !== 'OPEN')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_STATUS')
+  }
+  if (
+    adminNavigationThemeReflowImplementationValues.length !==
+      expectedAdminNavigationThemeReflowActiveMirrorCount ||
+    adminNavigationThemeReflowImplementationValues.some((value) => value !== 'COMPLETE')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_REPOSITORY_IMPLEMENTATION_STATE')
+  }
+  if (
+    adminNavigationThemeReflowVerificationValues.length !==
+      expectedAdminNavigationThemeReflowActiveMirrorCount ||
+    adminNavigationThemeReflowVerificationValues.some((value) => value !== 'PASS')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_STATIC_VERIFICATION_STATE')
+  }
+
+  if (
+    adminNavigationHighlightRevealAdmissionValues.length !==
+      expectedAdminNavigationHighlightRevealActiveMirrorCount ||
+    adminNavigationHighlightRevealAdmissionValues.some((value) => value !== 'FROZEN')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_ADMISSION_NOT_FROZEN')
+  }
+  if (
+    adminNavigationHighlightRevealStatusValues.length !==
+      expectedAdminNavigationHighlightRevealActiveMirrorCount ||
+    adminNavigationHighlightRevealStatusValues.some((value) => value !== 'OPEN')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_STATUS')
+  }
+  if (
+    adminNavigationHighlightRevealImplementationValues.length !==
+      expectedAdminNavigationHighlightRevealActiveMirrorCount ||
+    adminNavigationHighlightRevealImplementationValues.some((value) => value !== 'NOT_STARTED')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_REPOSITORY_IMPLEMENTATION_STATE')
+  }
+  if (
+    adminNavigationHighlightRevealVerificationValues.length !==
+      expectedAdminNavigationHighlightRevealActiveMirrorCount ||
+    adminNavigationHighlightRevealVerificationValues.some((value) => value !== 'NOT_RUN')
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_STATIC_VERIFICATION_STATE')
   }
 
   const statusValues = [
@@ -5300,13 +5896,25 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   ] as const
   const requiredAdminNavigationGsapFinalInvariantMarkers = [
     `${adminNavigationGsapAdmissionAmendment}_IS_FROZEN`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${adminNavigationGsapAdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK_IS_${adminNavigationGsapWorkPackage}`,
     `${adminNavigationGsapWorkPackage}_STATUS_IS_OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
     `${adminNavigationGsapWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
     'GSAP_GLOBAL_STATUS_REMAINS_DEFERRED',
     'GSAP_INSTANCE_ADMISSION_COUNT_IS_1',
+  ] as const
+  const requiredAdminNavigationThemeReflowFinalInvariantMarkers = [
+    `${adminNavigationThemeReflowAdmissionAmendment}_IS_FROZEN`,
+    `${adminNavigationThemeReflowWorkPackage}_STATUS_IS_OPEN`,
+    `${adminNavigationThemeReflowWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
+    `${adminNavigationThemeReflowWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
+  ] as const
+  const requiredAdminNavigationHighlightRevealFinalInvariantMarkers = [
+    `${adminNavigationHighlightRevealAdmissionAmendment}_IS_FROZEN`,
+    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${adminNavigationHighlightRevealAdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK_IS_${adminNavigationHighlightRevealWorkPackage}`,
+    `${adminNavigationHighlightRevealWorkPackage}_STATUS_IS_OPEN`,
+    `${adminNavigationHighlightRevealWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED`,
+    `${adminNavigationHighlightRevealWorkPackage}_STATIC_VERIFICATION_IS_NOT_RUN`,
   ] as const
   const requiredSuccessorFinalInvariantMarkers = [
     'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
@@ -5337,6 +5945,20 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     )
   ) {
     violations.push('PAVP_ADMIN_NAVIGATION_GSAP_FINAL_INVARIANT')
+  }
+  if (
+    requiredAdminNavigationThemeReflowFinalInvariantMarkers.some(
+      (marker) => !architectureSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_THEME_REFLOW_FINAL_INVARIANT')
+  }
+  if (
+    requiredAdminNavigationHighlightRevealFinalInvariantMarkers.some(
+      (marker) => !architectureSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_FINAL_INVARIANT')
   }
   if (
     requiredSuccessorFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
@@ -5492,7 +6114,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -5610,7 +6232,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -5658,19 +6280,19 @@ function runAdminNavigationGsapAdmissionNegativeProbes(
   const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
   const probes: readonly [string, string, string][] = [
     [
-      'admin-navigation-gsap-current-work-left-as-previous-navigation',
-      'PAVP_ADMIN_NAVIGATION_GSAP_CURRENT_WORK',
+      'admin-navigation-gsap-historical-current-work-left-as-previous-navigation',
+      'PAVP_ADMIN_NAVIGATION_GSAP_ADMISSION_HISTORY',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
-        `CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
+        `HISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationGsapAdmissionAmendment}\nHISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+        `HISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${navigationReworkAdmissionAmendment}\nHISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${navigationReworkWorkPackage}`,
       ),
     ],
     [
-      'admin-navigation-gsap-current-work-id-unauthorized',
-      'PAVP_ADMIN_NAVIGATION_GSAP_CURRENT_WORK',
+      'admin-navigation-gsap-historical-current-work-id-unauthorized',
+      'PAVP_ADMIN_NAVIGATION_GSAP_ADMISSION_HISTORY',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
-        'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
+        `HISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+        'HISTORICAL_SECTION_1_2B_0I_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
     [
@@ -5748,6 +6370,266 @@ function runAdminNavigationGsapAdmissionNegativeProbes(
       architectureSource.replace(
         `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
         `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          mutatedSource !== architectureSource &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          failureCodes.includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function runAdminNavigationThemeReflowAdmissionNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
+  const probes: readonly [string, string, string][] = [
+    [
+      'admin-navigation-theme-reflow-historical-current-work-left-as-previous-gsap',
+      'PAVP_ADMIN_NAVIGATION_THEME_REFLOW_ADMISSION_HISTORY',
+      architectureSource.replace(
+        `HISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationThemeReflowAdmissionAmendment}\nHISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationThemeReflowWorkPackage}`,
+        `HISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_AUTHORITY_LITERAL=CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationGsapAdmissionAmendment}\nHISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationGsapWorkPackage}`,
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-historical-current-work-id-unauthorized',
+      'PAVP_ADMIN_NAVIGATION_THEME_REFLOW_ADMISSION_HISTORY',
+      architectureSource.replace(
+        `HISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=${adminNavigationThemeReflowWorkPackage}`,
+        'HISTORICAL_SECTION_1_2B_0J_ADMISSION_TIME_CURRENT_BOUNDED_WORK_LITERAL=CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-amendment-unfrozen',
+      'PAVP_ADMIN_NAVIGATION_THEME_REFLOW_ADMISSION_NOT_FROZEN',
+      architectureSource.replace(
+        `AMENDMENT=${adminNavigationThemeReflowAdmissionAmendment}\nAMENDMENT_KIND=ARCHITECTURE_ONLY_SERIAL_OWNER_DIRECTED_NAVIGATION_VISUAL_AND_REFLOW_CORRECTION_ADMISSION\nAMENDMENT_STATUS=FROZEN`,
+        `AMENDMENT=${adminNavigationThemeReflowAdmissionAmendment}\nAMENDMENT_KIND=ARCHITECTURE_ONLY_SERIAL_OWNER_DIRECTED_NAVIGATION_VISUAL_AND_REFLOW_CORRECTION_ADMISSION\nAMENDMENT_STATUS=DRAFT`,
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-repository-rolled-back-to-not-started',
+      'PAVP_ADMIN_NAVIGATION_THEME_REFLOW_REPOSITORY_IMPLEMENTATION_STATE',
+      architectureSource.replace(
+        `${adminNavigationThemeReflowWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+        `${adminNavigationThemeReflowWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-static-rolled-back-to-not-run',
+      'PAVP_ADMIN_NAVIGATION_THEME_REFLOW_STATIC_VERIFICATION_STATE',
+      architectureSource.replace(
+        `${adminNavigationThemeReflowWorkPackage}_STATIC_VERIFICATION=PASS`,
+        `${adminNavigationThemeReflowWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-changes-existing-hover',
+      'PAVP_ADMIN_NAVIGATION_THEME_TINTED_SELECTION',
+      architectureSource.replace(
+        'NAVIGATION_HOVER_CHANGE=NONE',
+        'NAVIGATION_HOVER_CHANGE=REPLACED',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-selected-tint-formula-drift',
+      'PAVP_ADMIN_NAVIGATION_THEME_TINTED_SELECTION',
+      architectureSource.replace(
+        'LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 12%,var(--ui-material-overlay-background))',
+        'LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA=var(--ui-material-overlay-background)',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-restores-hard-route-dot',
+      'PAVP_ADMIN_NAVIGATION_THEME_TINTED_SELECTION',
+      architectureSource.replace(
+        'LEVEL_2_HARD_ROUTE_DOT=PROHIBITED',
+        'LEVEL_2_HARD_ROUTE_DOT=ALLOWED',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-restores-per-frame-sider-width-tween',
+      'PAVP_ADMIN_NAVIGATION_ATOMIC_COLLAPSE',
+      architectureSource.replace(
+        'WIDE_COLLAPSE_PER_FRAME_SIDER_WIDTH_TWEEN=PROHIBITED',
+        'WIDE_COLLAPSE_PER_FRAME_SIDER_WIDTH_TWEEN=ALLOWED',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-restores-submenu-forced-layout-transition',
+      'PAVP_ADMIN_NAVIGATION_ATOMIC_COLLAPSE',
+      architectureSource.replace(
+        'NAIVE_MENU_SUBMENU_FORCED_LAYOUT_TRANSITION_DURING_NAMED_SWITCH=PROHIBITED',
+        'NAIVE_MENU_SUBMENU_FORCED_LAYOUT_TRANSITION_DURING_NAMED_SWITCH=ALLOWED',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-allows-bottom-dock-handoff-geometry-change',
+      'PAVP_ADMIN_NAVIGATION_BOTTOM_DOCK_HANDOFF',
+      architectureSource.replace(
+        'BOTTOM_DOCK_CSS_GSAP_HANDOFF_GEOMETRY_CHANGE=PROHIBITED',
+        'BOTTOM_DOCK_CSS_GSAP_HANDOFF_GEOMETRY_CHANGE=ALLOWED',
+      ),
+    ],
+    [
+      'admin-navigation-theme-reflow-wide-appearance-five-columns',
+      'PAVP_APPEARANCE_WIDE_GRID_STABILITY',
+      architectureSource.replace(
+        'APPEARANCE_THEME_GALLERY_WIDE_COLUMN_COUNT=4',
+        'APPEARANCE_THEME_GALLERY_WIDE_COLUMN_COUNT=5',
+      ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          mutatedSource !== architectureSource &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          failureCodes.includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function runAdminNavigationHighlightRevealAdmissionNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
+  const probes: readonly [string, string, string][] = [
+    [
+      'admin-navigation-highlight-reveal-current-work-left-as-theme-reflow',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_CURRENT_WORK',
+      architectureSource.replace(
+        `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${adminNavigationThemeReflowWorkPackage}`,
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-current-work-id-unauthorized',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_CURRENT_WORK',
+      architectureSource.replace(
+        `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-amendment-unfrozen',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_ADMISSION_NOT_FROZEN',
+      architectureSource.replace(
+        `AMENDMENT=${adminNavigationHighlightRevealAdmissionAmendment}\nAMENDMENT_KIND=ARCHITECTURE_ONLY_SERIAL_OWNER_DIRECTED_NAVIGATION_INTERACTION_VISIBILITY_AND_REVEAL_ADMISSION\nAMENDMENT_STATUS=FROZEN`,
+        `AMENDMENT=${adminNavigationHighlightRevealAdmissionAmendment}\nAMENDMENT_KIND=ARCHITECTURE_ONLY_SERIAL_OWNER_DIRECTED_NAVIGATION_INTERACTION_VISIBILITY_AND_REVEAL_ADMISSION\nAMENDMENT_STATUS=DRAFT`,
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-premature-repository-implementation',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_REPOSITORY_IMPLEMENTATION_STATE',
+      architectureSource.replace(
+        `${adminNavigationHighlightRevealWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+        `${adminNavigationHighlightRevealWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-premature-static-verification',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_STATIC_VERIFICATION_STATE',
+      architectureSource.replace(
+        `${adminNavigationHighlightRevealWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
+        `${adminNavigationHighlightRevealWorkPackage}_STATIC_VERIFICATION=PASS`,
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-hover-and-selected-formula-drift',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_VISUAL_CONTRACT',
+      architectureSource
+        .replace(
+          'NAVIGATION_NON_SELECTED_HOVER_SURFACE_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 6%,var(--ui-material-chrome-background))',
+          'NAVIGATION_NON_SELECTED_HOVER_SURFACE_COLOR_FORMULA=var(--ui-material-chrome-background)',
+        )
+        .replace(
+          'LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA=color-mix(in srgb,var(--ui-admin-navigation-selected) 16%,var(--ui-material-overlay-background))',
+          'LEVEL_2_ACTIVE_SURFACE_COLOR_FORMULA=var(--ui-material-overlay-background)',
+        ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-restores-trailing-aura',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_VISUAL_CONTRACT',
+      architectureSource.replace(
+        'SELECTED_REVEAL_DECORATION=ONE_PAVP_OWNED_INSET_FLAT_THEME_TINT_REVEAL_PLANE',
+        'SELECTED_REVEAL_DECORATION=ONE_TRAILING_SOFT_CONTROL_PRIMARY_AURA',
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-allows-solid-display-none',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_MATERIAL_CONTRACT',
+      architectureSource.replace(
+        'SOLID_MATERIAL_SELECTED_REVEAL_DISPLAY_NONE=PROHIBITED',
+        'SOLID_MATERIAL_SELECTED_REVEAL_DISPLAY_NONE=ALLOWED',
+      ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-drifts-full-reduced-none-property-allowlists',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_MOTION_CONTRACT',
+      architectureSource
+        .replace(
+          'GSAP_ROUTE_FULL_PROPERTY_ALLOWLIST=opacity;visibility;decoration-scale',
+          'GSAP_ROUTE_FULL_PROPERTY_ALLOWLIST=opacity;visibility;background-color;decoration-scale',
+        )
+        .replace(
+          'GSAP_ROUTE_REDUCED_PROPERTY_ALLOWLIST=opacity;visibility',
+          'GSAP_ROUTE_REDUCED_PROPERTY_ALLOWLIST=opacity;visibility;decoration-scale',
+        )
+        .replace(
+          'GSAP_ROUTE_NONE_PROPERTY_ALLOWLIST=NONE',
+          'GSAP_ROUTE_NONE_PROPERTY_ALLOWLIST=opacity',
+        ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-expands-gsap-property-ownership',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_GSAP_BOUNDARY',
+      architectureSource
+        .replace(
+          'GSAP_BACKGROUND_COLOR_OWNERSHIP=PROHIBITED',
+          'GSAP_BACKGROUND_COLOR_OWNERSHIP=ALLOWED',
+        )
+        .replace('GSAP_FILTER_OWNERSHIP=PROHIBITED', 'GSAP_FILTER_OWNERSHIP=ALLOWED')
+        .replace('GSAP_LAYOUT_PROPERTY_OWNERSHIP=NONE', 'GSAP_LAYOUT_PROPERTY_OWNERSHIP=width'),
+    ],
+    [
+      'admin-navigation-highlight-reveal-removes-empty-target-and-lazy-stability',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_LIFECYCLE',
+      architectureSource
+        .replace(
+          'EMPTY_ROUTE_REVEAL_TARGET_POLICY=NO_CONTEXT_NO_MARKER_NO_TIMELINE_STABLE_CSS_FINAL_STATE',
+          'EMPTY_ROUTE_REVEAL_TARGET_POLICY=CREATE_CONTEXT_AND_MARKER',
+        )
+        .replace(
+          'LAZY_CONTROLLER_NOT_READY_ROUTE_POLICY=STABLE_CSS_FINAL_STATE_WITHOUT_DEFERRED_REPLAY_OR_REWIND',
+          'LAZY_CONTROLLER_NOT_READY_ROUTE_POLICY=DEFERRED_REPLAY_FROM_INITIAL_STATE',
+        ),
+    ],
+    [
+      'admin-navigation-highlight-reveal-expands-architecture-only-paths',
+      'PAVP_ADMIN_NAVIGATION_HIGHLIGHT_REVEAL_ARCHITECTURE_ONLY_SCOPE',
+      architectureSource.replace(
+        '```text\nARCHITECTURE.md\nscripts/architecture/check-architecture-admin-console.ts\n```\n\n本 Architecture-only Stage 必须原子同步修改 `ARCHITECTURE.md` 与 `scripts/architecture/check-architecture-admin-console.ts`；二者之外的 UI、Application、Design Token、Generated Output、Dependency、Lockfile、Project Configuration、Bundle、Runtime、Workflow、Test、Browser、Screenshot、Trace 与 Evidence Artifact 修改全部禁止。',
+        '```text\nARCHITECTURE.md\nscripts/architecture/check-architecture-admin-console.ts\npackages/ui/src/components/UiAdminShell.vue\n```\n\n本 Architecture-only Stage 必须原子同步修改 `ARCHITECTURE.md` 与 `scripts/architecture/check-architecture-admin-console.ts`；二者之外的 UI、Application、Design Token、Generated Output、Dependency、Lockfile、Project Configuration、Bundle、Runtime、Workflow、Test、Browser、Screenshot、Trace 与 Evidence Artifact 修改全部禁止。',
       ),
     ],
   ]
@@ -7534,6 +8416,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
   const normalNodeSource = shellSource.slice(normalNodeStart, dropdownNodeStart)
   const dropdownNodeSource = shellSource.slice(dropdownNodeStart, dropdownPropsStart)
   const vendorMotionSource = `${providerSource}\n${shellSource}`
+  const expandedProjectionSemantics = adminNavigationExpandedProjectionSemantics(shellSource)
   const occurrences = (source: string, value: string): number => source.split(value).length - 1
   const requiredMenuThemeFields = [
     'color: material.chrome',
@@ -7552,8 +8435,9 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     'arrowColorActive: colorControl',
     'arrowColorChildActive: colorControl',
     'itemColorHover: navigationHover',
-    'itemColorActive: materialOverlay',
-    'itemColorActiveCollapsed: materialOverlay',
+    'itemColorActive: navigationSelectedSurface',
+    'itemColorActiveHover: navigationSelectedSurface',
+    'itemColorActiveCollapsed: navigationSelectedSurface',
     'itemHeight: enhancedTargetHeight',
     'borderRadius: radius',
     'fontSize',
@@ -7567,7 +8451,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     'optionTextColorHover: colorControl',
     'optionTextColorActive: colorControl',
     'optionColorHover: navigationHover',
-    'optionColorActive: materialOverlay',
+    'optionColorActive: navigationSelectedSurface',
     'borderRadius: radius',
     'boxShadow: shadowOverlay',
   ] as const
@@ -7641,7 +8525,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_SHARED_COLLAPSED_WIDTH',
-      occurrences(shellSource, ':collapsed-width="collapsedNavigationWidth"') === 2,
+      occurrences(shellSource, ':collapsed-width="collapsedNavigationWidth"') === 3,
     ],
     [
       'NAV_EXPANDED_WIDTH_AUTHORITY',
@@ -7675,7 +8559,9 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       'NAV_COLLAPSED_STATE',
       shellSource.includes('const persistentNavigationCollapsed = computed(() => {') &&
         shellSource.includes("if (profile.value === 'regular')") &&
-        occurrences(shellSource, ':collapsed="persistentNavigationCollapsed"') === 2,
+        occurrences(shellSource, ':collapsed="persistentNavigationCollapsed"') === 1 &&
+        occurrences(shellSource, ':collapsed="false"') === 1 &&
+        occurrences(shellSource, ':collapsed="true"') === 1,
     ],
     [
       'NAV_COLLAPSE_PERSISTENCE',
@@ -7717,9 +8603,12 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_SIDER_SCROLL_BOUNDARY',
-      shellSource.includes(
-        "const persistentSiderContentStyle = Object.freeze({ overflow: 'hidden' })",
-      ) && shellSource.includes(':native-scrollbar="true"'),
+      shellSource.includes("overflow: 'var(--pavp-admin-navigation-sider-content-overflow)',") &&
+        shellSource.includes('--pavp-admin-navigation-sider-content-overflow: hidden;') &&
+        shellSource.includes(
+          ".pavp-admin-shell[data-pavp-admin-navigation-switch='active'] {\n  --pavp-admin-navigation-sider-content-overflow: visible;\n}",
+        ) &&
+        shellSource.includes(':native-scrollbar="true"'),
     ],
     [
       'NAV_WIDE_CONTROL_VISIBILITY',
@@ -7768,13 +8657,13 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
         ':collapsed="persistentNavigationCollapsed"',
         ':collapsed-width="collapsedNavigationWidth"',
         ':dropdown-props="persistentNavigationDropdownProps"',
-        ':expanded-keys="expandedNavigationGroupKeys"',
         ':node-props="persistentNavigationNodeProps"',
         ':options="navigationMenuOptions"',
         ':value="activeRouteName"',
         '@update:expanded-keys="handleNavigationExpandedKeysUpdate"',
         '@update:value="handleNavigationValueUpdate"',
-      ].every((marker) => shellSource.includes(marker)),
+      ].every((marker) => shellSource.includes(marker)) &&
+        expandedProjectionSemantics.controlledProjection,
     ],
     [
       'NAV_MENU_MODE',
@@ -7801,9 +8690,9 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_EXPANDED_ROUTE_STATE',
-      shellSource.includes('function ensureActiveNavigationGroupExpanded(): void') &&
-        shellSource.includes('if (!persistentNavigationCollapsed.value)') &&
-        shellSource.includes('ensureActiveNavigationGroupExpanded()'),
+      expandedProjectionSemantics.activeParentIncluded &&
+        expandedProjectionSemantics.lifecycleMutationFree &&
+        !shellSource.includes('ensureActiveNavigationGroupExpanded'),
     ],
     [
       'NAV_EXPANDED_STATE_PRESERVATION',
@@ -8161,6 +9050,435 @@ function exactOccurrenceCount(source: string, value: string): number {
   return source.split(value).length - 1
 }
 
+interface AdminNavigationExpandedProjectionSemantics {
+  readonly activeParentIncluded: boolean
+  readonly controlledProjection: boolean
+  readonly lifecycleMutationFree: boolean
+}
+
+function topLevelVariableInitializers(
+  sourceFile: ts.SourceFile,
+): ReadonlyMap<string, ts.Expression> {
+  const initializers = new Map<string, ts.Expression>()
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isVariableStatement(statement)) {
+      continue
+    }
+
+    for (const declaration of statement.declarationList.declarations) {
+      if (ts.isIdentifier(declaration.name) && declaration.initializer !== undefined) {
+        initializers.set(declaration.name.text, declaration.initializer)
+      }
+    }
+  }
+
+  return initializers
+}
+
+function topLevelCallables(sourceFile: ts.SourceFile): ReadonlyMap<string, ts.Node> {
+  const callables = new Map<string, ts.Node>()
+
+  for (const statement of sourceFile.statements) {
+    if (ts.isFunctionDeclaration(statement) && statement.name !== undefined) {
+      callables.set(statement.name.text, statement)
+      continue
+    }
+    if (!ts.isVariableStatement(statement)) {
+      continue
+    }
+
+    for (const declaration of statement.declarationList.declarations) {
+      if (
+        ts.isIdentifier(declaration.name) &&
+        declaration.initializer !== undefined &&
+        (ts.isArrowFunction(declaration.initializer) ||
+          ts.isFunctionExpression(declaration.initializer))
+      ) {
+        callables.set(declaration.name.text, declaration.initializer)
+      }
+    }
+  }
+
+  return callables
+}
+
+function expressionDependencyClosure(
+  root: ts.Expression,
+  initializers: ReadonlyMap<string, ts.Expression>,
+): readonly ts.Expression[] {
+  const pending: ts.Expression[] = [root]
+  const result: ts.Expression[] = []
+  const visitedInitializers = new Set<ts.Expression>()
+
+  while (pending.length > 0) {
+    const expression = pending.pop()
+    if (expression === undefined || visitedInitializers.has(expression)) {
+      continue
+    }
+
+    visitedInitializers.add(expression)
+    result.push(expression)
+
+    function visit(node: ts.Node): void {
+      if (ts.isIdentifier(node)) {
+        const dependency = initializers.get(node.text)
+        if (dependency !== undefined && !visitedInitializers.has(dependency)) {
+          pending.push(dependency)
+        }
+      }
+      ts.forEachChild(node, visit)
+    }
+
+    visit(expression)
+  }
+
+  return result
+}
+
+function nodeReferencesRefValue(node: ts.Node, refName: string): boolean {
+  let referenced = false
+
+  function visit(candidate: ts.Node): void {
+    if (
+      ts.isPropertyAccessExpression(candidate) &&
+      ts.isIdentifier(candidate.expression) &&
+      candidate.expression.text === refName &&
+      candidate.name.text === 'value'
+    ) {
+      referenced = true
+      return
+    }
+    ts.forEachChild(candidate, visit)
+  }
+
+  visit(node)
+  return referenced
+}
+
+function expressionIsRefArray(initializer: ts.Expression): boolean {
+  const expression = unwrapExpression(initializer)
+
+  return (
+    ts.isCallExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === 'ref' &&
+    expression.arguments[0] !== undefined &&
+    ts.isArrayLiteralExpression(unwrapExpression(expression.arguments[0]))
+  )
+}
+
+function expressionIsComputed(initializer: ts.Expression): boolean {
+  const expression = unwrapExpression(initializer)
+  return (
+    ts.isCallExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === 'computed' &&
+    expression.arguments[0] !== undefined
+  )
+}
+
+function dependencyClosureHasPropsProperty(
+  closure: readonly ts.Expression[],
+  property: string,
+): boolean {
+  return closure.some((expression) => {
+    let found = false
+
+    function visit(node: ts.Node): void {
+      if (
+        ts.isPropertyAccessExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'props' &&
+        node.name.text === property
+      ) {
+        found = true
+        return
+      }
+      ts.forEachChild(node, visit)
+    }
+
+    visit(expression)
+    return found
+  })
+}
+
+function dependencyClosureCombinesExpandedKeys(
+  closure: readonly ts.Expression[],
+  expandedStateName: string,
+): boolean {
+  const observations = {
+    addsProjectedKey: false,
+    copiesExpandedStateIntoSet: false,
+    directArrayCombination: false,
+    spreadsProjectedCollection: false,
+  }
+
+  for (const expression of closure) {
+    function visit(node: ts.Node): void {
+      if (
+        ts.isNewExpression(node) &&
+        ts.isIdentifier(node.expression) &&
+        node.expression.text === 'Set' &&
+        node.arguments?.some((argument) => nodeReferencesRefValue(argument, expandedStateName)) ===
+          true
+      ) {
+        observations.copiesExpandedStateIntoSet = true
+      }
+      if (
+        ts.isCallExpression(node) &&
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === 'add'
+      ) {
+        observations.addsProjectedKey = true
+      }
+      if (ts.isArrayLiteralExpression(node) && node.elements.some(ts.isSpreadElement)) {
+        observations.spreadsProjectedCollection = true
+      }
+
+      if (ts.isArrayLiteralExpression(node)) {
+        const expandedStateSpreads = node.elements.filter(
+          (element) =>
+            ts.isSpreadElement(element) &&
+            nodeReferencesRefValue(element.expression, expandedStateName),
+        )
+        if (
+          expandedStateSpreads.length === 1 &&
+          node.elements.some((element) => !expandedStateSpreads.includes(element))
+        ) {
+          observations.directArrayCombination = true
+        }
+      }
+      ts.forEachChild(node, visit)
+    }
+
+    visit(expression)
+  }
+
+  return (
+    observations.directArrayCombination ||
+    (observations.copiesExpandedStateIntoSet &&
+      observations.addsProjectedKey &&
+      observations.spreadsProjectedCollection)
+  )
+}
+
+function isRefValueWriteTarget(node: ts.Expression, refName: string): boolean {
+  const expression = unwrapExpression(node)
+
+  if (
+    ts.isPropertyAccessExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === refName &&
+    expression.name.text === 'value'
+  ) {
+    return true
+  }
+
+  if (ts.isElementAccessExpression(expression) || ts.isPropertyAccessExpression(expression)) {
+    return isRefValueWriteTarget(expression.expression, refName)
+  }
+
+  return false
+}
+
+function nodeOrCalledFunctionWritesRef(
+  root: ts.Node,
+  refName: string,
+  callables: ReadonlyMap<string, ts.Node>,
+  visitedCallables = new Set<string>(),
+): boolean {
+  let writes = false
+  const mutatingArrayMethods = new Set([
+    'copyWithin',
+    'fill',
+    'pop',
+    'push',
+    'reverse',
+    'shift',
+    'sort',
+    'splice',
+    'unshift',
+  ])
+
+  function visit(node: ts.Node): void {
+    if (writes) {
+      return
+    }
+
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+      node.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
+      isRefValueWriteTarget(node.left, refName)
+    ) {
+      writes = true
+      return
+    }
+    if (
+      (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+      isRefValueWriteTarget(node.operand, refName)
+    ) {
+      writes = true
+      return
+    }
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      mutatingArrayMethods.has(node.expression.name.text) &&
+      isRefValueWriteTarget(node.expression.expression, refName)
+    ) {
+      writes = true
+      return
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+      const callableName = node.expression.text
+      const callable = callables.get(callableName)
+      if (callable !== undefined && !visitedCallables.has(callableName)) {
+        visitedCallables.add(callableName)
+        if (nodeOrCalledFunctionWritesRef(callable, refName, callables, visitedCallables)) {
+          writes = true
+          return
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(root)
+  return writes
+}
+
+function adminNavigationMenuNodes(shellSource: string): readonly VueTemplateNode[] {
+  const parsedSfc = vueSfcCompiler.parse(shellSource, { filename: shellSfcPath })
+  const templateAst = parsedSfc.descriptor.template?.ast
+
+  if (parsedSfc.errors.length > 0 || templateAst === undefined) {
+    return []
+  }
+
+  return collectShellTemplateElements(templateAst)
+    .map((element) => element.node)
+    .filter((node) => node.tag === 'PavpMenuPrimitive')
+}
+
+function singleBoundExpression(node: VueTemplateNode, argument: string): string | undefined {
+  const bindings = templateDirectives(node, 'bind', argument)
+  return bindings.length === 1 ? normalizeTemplateExpression(bindings[0]?.exp?.content) : undefined
+}
+
+function adminNavigationExpandedProjectionSemantics(
+  shellSource: string,
+): AdminNavigationExpandedProjectionSemantics {
+  const menuNodes = adminNavigationMenuNodes(shellSource)
+  const projectionBindings = menuNodes.map((node) => singleBoundExpression(node, 'expanded-keys'))
+  const projectionName = projectionBindings[0]
+  const shellScript = scriptContent(shellSource)
+  const sourceFile = ts.createSourceFile(
+    shellSfcPath,
+    shellScript,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const initializers = topLevelVariableInitializers(sourceFile)
+  const callables = topLevelCallables(sourceFile)
+  const projectionInitializer =
+    projectionName === undefined ? undefined : initializers.get(projectionName)
+  const controlledProjection =
+    menuNodes.length === 2 &&
+    projectionName !== undefined &&
+    /^[A-Za-z_$][\w$]*$/u.test(projectionName) &&
+    projectionBindings.every((binding) => binding === projectionName)
+
+  if (
+    !controlledProjection ||
+    projectionInitializer === undefined ||
+    !expressionIsComputed(projectionInitializer)
+  ) {
+    return Object.freeze({
+      activeParentIncluded: false,
+      controlledProjection: false,
+      lifecycleMutationFree: false,
+    })
+  }
+
+  const projectionClosure = expressionDependencyClosure(projectionInitializer, initializers)
+  const expandedStateNames = [...initializers.entries()]
+    .filter(
+      ([name, initializer]) =>
+        expressionIsRefArray(initializer) &&
+        projectionClosure.some((expression) => nodeReferencesRefValue(expression, name)),
+    )
+    .map(([name]) => name)
+  const expandedStateName = expandedStateNames.length === 1 ? expandedStateNames[0] : undefined
+  const activeParentIncluded =
+    expandedStateName !== undefined &&
+    dependencyClosureHasPropsProperty(projectionClosure, 'navigation') &&
+    dependencyClosureHasPropsProperty(projectionClosure, 'activeRouteName') &&
+    dependencyClosureCombinesExpandedKeys(projectionClosure, expandedStateName)
+
+  if (expandedStateName === undefined) {
+    return Object.freeze({
+      activeParentIncluded,
+      controlledProjection,
+      lifecycleMutationFree: false,
+    })
+  }
+  const controlledExpandedStateName = expandedStateName
+
+  const watchObservation = { callbackWrites: false }
+  function visitWatchCalls(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'watch'
+    ) {
+      for (const callback of node.arguments.slice(1)) {
+        if (nodeOrCalledFunctionWritesRef(callback, controlledExpandedStateName, callables)) {
+          watchObservation.callbackWrites = true
+          return
+        }
+      }
+    }
+    ts.forEachChild(node, visitWatchCalls)
+  }
+  visitWatchCalls(sourceFile)
+
+  const parsedSfc = vueSfcCompiler.parse(shellSource, { filename: shellSfcPath })
+  const templateAst = parsedSfc.descriptor.template?.ast
+  const collapseActions =
+    templateAst === undefined
+      ? []
+      : collectShellTemplateElements(templateAst)
+          .map((element) => element.node)
+          .filter(
+            (node) =>
+              node.tag === 'button' &&
+              hasStaticTemplateClass(node, 'pavp-admin-shell__collapse-action'),
+          )
+  const collapseAction = collapseActions.length === 1 ? collapseActions.at(0) : undefined
+  const collapseClickExpression =
+    collapseAction === undefined
+      ? ''
+      : normalizeTemplateExpression(
+          templateDirectives(collapseAction, 'on', 'click')[0]?.exp?.content,
+        )
+  const collapseCallableName = /^([A-Za-z_$][\w$]*)(?:\(\))?$/u.exec(collapseClickExpression)?.[1]
+  const collapseCallable =
+    collapseCallableName === undefined ? undefined : callables.get(collapseCallableName)
+  const collapseCallbackWrites =
+    collapseCallable === undefined ||
+    nodeOrCalledFunctionWritesRef(collapseCallable, controlledExpandedStateName, callables)
+
+  return Object.freeze({
+    activeParentIncluded,
+    controlledProjection,
+    lifecycleMutationFree: !watchObservation.callbackWrites && !collapseCallbackWrites,
+  })
+}
+
 function adminNavigationGsapSourceInvariantResults(
   snapshot: AdminNavigationGsapSourceSnapshot,
 ): readonly (readonly [string, boolean])[] {
@@ -8190,11 +9508,17 @@ function adminNavigationGsapSourceInvariantResults(
   const shellMotionImport = "import('../adapters/gsap/admin-navigation-motion')"
   const adapterGsapImport = "import { gsap } from 'gsap'"
   const prohibitedGsapProperty =
-    /\b(?:background|backgroundColor|border|borderColor|bottom|display|height|inset|left|margin|padding|right|top|width|x|y|zIndex)\s*:/u
+    /\b(?:background|backgroundColor|border|borderColor|bottom|display|height|inset|left|margin|maxWidth|padding|right|top|width|y|zIndex)\s*:/u
   const prohibitedAdapterDomAccess =
     /\.(?:closest|getElementById|matches|parentElement|querySelector|querySelectorAll)\s*\(/u
   const prohibitedGlobalSideEffect =
     /\b(?:requestAnimationFrame|setInterval|setTimeout|registerPlugin|ScrollTrigger)\b|\b(?:document|window)\.(?:on|addEventListener\(\s*['"](?:keydown|keyup|mousedown|mousemove|mouseup|pointerdown|pointermove|pointerup|scroll|touchend|touchmove|touchstart|wheel))/u
+  const routeMotionStart = snapshot.motionAdapterSource.indexOf('function animateRoute(')
+  const routeMotionEnd = snapshot.motionAdapterSource.indexOf(
+    'function syncMotion(',
+    routeMotionStart,
+  )
+  const routeMotionSource = snapshot.motionAdapterSource.slice(routeMotionStart, routeMotionEnd)
 
   return Object.freeze([
     Object.freeze<readonly [string, boolean]>([
@@ -8207,9 +9531,9 @@ function adminNavigationGsapSourceInvariantResults(
     ]),
     Object.freeze<readonly [string, boolean]>([
       'ADMIN_NAV_GSAP_BOTTOM_DOCK_STRUCTURE',
-      normalizedShellSource.includes(
-        '<PavpMenuPrimitive :accordion="false" class="pavp-admin-shell__menu"',
-      ) &&
+      exactOccurrenceCount(snapshot.shellSource, '<PavpMenuPrimitive') === 2 &&
+        normalizedShellSource.includes(':collapsed="false"') &&
+        normalizedShellSource.includes(':collapsed="true"') &&
         normalizedShellSource.includes(
           '<div v-if="profile === \'wide\'" class="pavp-admin-shell__navigation-dock"',
         ) &&
@@ -8218,40 +9542,41 @@ function adminNavigationGsapSourceInvariantResults(
           snapshot.shellSource,
         ) &&
         snapshot.shellSource.includes('grid-template-rows: minmax(0, 1fr) auto;') &&
+        snapshot.shellSource.includes('.pavp-admin-shell__navigation-dock::before') &&
         snapshot.shellSource.includes(
           'border-block-start-color: var(--ui-color-border-default);',
         ) &&
         snapshot.shellSource.includes('border-block-start-style: solid;') &&
         snapshot.shellSource.includes('border-block-start-width: var(--ui-admin-border-width);') &&
-        snapshot.shellSource.includes('padding-inline: var(--ui-space-content-gap);') &&
-        normalizedShellSource.includes(
-          ".pavp-admin-shell[data-navigation-collapsed='true']:not([data-pavp-admin-navigation-motion='ready']) .pavp-admin-shell__collapse-action { grid-template-columns: auto 0; justify-content: center; column-gap: 0; padding-inline: 0; }",
-        ) &&
+        snapshot.shellSource.includes('inset-inline: var(--ui-space-content-gap);') &&
+        snapshot.shellSource.includes('padding-inline: 0;') &&
+        snapshot.shellSource.includes("[data-pavp-admin-navigation-switch='active']") &&
         snapshot.shellSource.indexOf('class="pavp-admin-shell__menu"') <
           snapshot.shellSource.indexOf('class="pavp-admin-shell__navigation-dock"'),
     ]),
     Object.freeze<readonly [string, boolean]>([
       'ADMIN_NAV_GSAP_ROUTE_DOT_SEMANTICS',
       normalizedShellSource.includes(
-        "h('span', { 'aria-hidden': 'true', class: 'pavp-admin-shell__route-selection-dot', 'data-selected': routeName === props.activeRouteName ? 'true' : 'false',",
+        "h('span', { 'aria-hidden': 'true', class: 'pavp-admin-shell__route-selection-aura', 'data-selected': routeName === props.activeRouteName ? 'true' : 'false',",
       ) &&
         normalizedShellSource.includes(
           "'aria-current': routeName === props.activeRouteName ? 'page' : undefined",
         ) &&
         normalizedShellSource.includes(
-          "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__route-selection-dot { display: block; flex: 0 0 auto;",
+          "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__route-selection-aura { position: absolute;",
         ) &&
+        snapshot.shellSource.includes('pointer-events: none;') &&
         snapshot.shellSource.includes('visibility: hidden;') &&
-        snapshot.shellSource.includes('transform-origin: center;'),
+        snapshot.shellSource.includes('transform-origin: center center;'),
     ]),
     Object.freeze<readonly [string, boolean]>([
       'ADMIN_NAV_GSAP_VISUAL_OWNERSHIP',
-      normalizedThemeSource.includes('itemColorActive: materialOverlay') &&
-        normalizedThemeSource.includes('itemColorActiveHover: materialOverlay') &&
-        normalizedThemeSource.includes('itemColorActiveCollapsed: materialOverlay') &&
+      normalizedThemeSource.includes('itemColorActive: navigationSelectedSurface') &&
+        normalizedThemeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
+        normalizedThemeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
         !normalizedThemeSource.includes('itemColorChildActive:') &&
-        snapshot.shellSource.includes(
-          '.n-layout-sider--collapsed\n  .n-menu-item-content--child-active::before',
+        normalizedShellSource.includes(
+          '.pavp-admin-shell__navigation-plane--collapsed .n-menu .n-menu-item-content--child-active::before',
         ) &&
         !snapshot.motionAdapterSource.includes('materialOverlay'),
     ]),
@@ -8263,10 +9588,9 @@ function adminNavigationGsapSourceInvariantResults(
         snapshot.shellSource.includes(
           '.pavp-admin-navigation-dropdown .n-dropdown-option-body::after {',
         ) &&
-        exactOccurrenceCount(
-          snapshot.shellSource,
-          'background: var(--ui-admin-navigation-selected);',
-        ) >= 2 &&
+        exactOccurrenceCount(snapshot.shellSource, 'var(--ui-admin-navigation-selected) 24%') >=
+          2 &&
+        exactOccurrenceCount(snapshot.shellSource, 'background: radial-gradient(') === 2 &&
         normalizedShellSource.includes(
           "html[data-motion='reduced'] .pavp-admin-shell__navigation-action::after, html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::after, html[data-motion='reduced'] .pavp-admin-navigation-dropdown .n-dropdown-option-body::after, html[data-motion='none'] .pavp-admin-shell__navigation-action::after, html[data-motion='none'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::after, html[data-motion='none'] .pavp-admin-navigation-dropdown .n-dropdown-option-body::after { transform: translateY(-50%) scale(1); }",
         ),
@@ -8274,10 +9598,14 @@ function adminNavigationGsapSourceInvariantResults(
     Object.freeze<readonly [string, boolean]>([
       'ADMIN_NAV_GSAP_EXPLICIT_TARGETS',
       snapshot.motionAdapterSource.includes(
-        'readonly routeSelectionDots: ReadonlyMap<string, HTMLElement>',
+        'readonly routeSelectionAuras: ReadonlyMap<string, HTMLElement>',
       ) &&
+        snapshot.motionAdapterSource.includes('readonly mainContentPlane: HTMLElement | null') &&
+        snapshot.motionAdapterSource.includes(
+          'readonly expandedNavigationPlane: HTMLElement | null',
+        ) &&
         snapshot.motionAdapterSource.includes('readonly root: HTMLElement') &&
-        snapshot.shellSource.includes('routeSelectionDots,') &&
+        snapshot.shellSource.includes('routeSelectionAuras: resolvedRouteSelectionAuras()') &&
         !prohibitedAdapterDomAccess.test(snapshot.motionAdapterSource),
     ]),
     Object.freeze<readonly [string, boolean]>([
@@ -8286,6 +9614,10 @@ function adminNavigationGsapSourceInvariantResults(
         motionScaleAssignments.length > 0 &&
         snapshot.motionAdapterSource.includes("overwrite: 'auto'") &&
         !prohibitedGsapProperty.test(snapshot.motionAdapterSource) &&
+        snapshot.motionAdapterSource.includes(
+          "gsap.quickSetter(targets.mainContentPlane, 'x', 'px')",
+        ) &&
+        !/\b(?:x|translateX)\s*:/u.test(routeMotionSource) &&
         !snapshot.motionAdapterSource.includes('willChange'),
     ]),
     Object.freeze<readonly [string, boolean]>([
@@ -8303,14 +9635,16 @@ function adminNavigationGsapSourceInvariantResults(
         motionScaleAssignments.length === 4 &&
         !snapshot.motionAdapterSource.includes("state.motion === 'reduced'") &&
         snapshot.shellSource.includes(
-          ".pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])",
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-collapse-motion='ready'])",
+        ) &&
+        snapshot.shellSource.includes(
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-route-motion='ready'])",
         ),
     ]),
     Object.freeze<readonly [string, boolean]>([
       'ADMIN_NAV_GSAP_INTERRUPTION_AND_REVERSAL',
-      exactOccurrenceCount(snapshot.motionAdapterSource, '.kill()') >= 2 &&
-        snapshot.motionAdapterSource.includes('gsap.killTweensOf(') &&
-        exactOccurrenceCount(snapshot.motionAdapterSource, '.revert()') >= 1 &&
+      exactOccurrenceCount(snapshot.motionAdapterSource, '.kill()') >= 3 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, '.revert()') >= 2 &&
         exactOccurrenceCount(snapshot.motionAdapterSource, '.reverse()') >= 2 &&
         exactOccurrenceCount(snapshot.motionAdapterSource, "eventCallback('onComplete'") === 2 &&
         exactOccurrenceCount(snapshot.motionAdapterSource, "eventCallback('onReverseComplete'") ===
@@ -8334,7 +9668,16 @@ function adminNavigationGsapSourceInvariantResults(
         snapshot.shellSource.includes('globalThis.reportError(error)') &&
         snapshot.shellSource.includes(".removeAttribute('data-pavp-admin-navigation-motion')") &&
         snapshot.shellSource.includes(
-          ".pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])",
+          ".removeAttribute('data-pavp-admin-navigation-collapse-motion')",
+        ) &&
+        snapshot.shellSource.includes(
+          ".removeAttribute('data-pavp-admin-navigation-route-motion')",
+        ) &&
+        snapshot.shellSource.includes(
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-collapse-motion='ready'])",
+        ) &&
+        snapshot.shellSource.includes(
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-route-motion='ready'])",
         ),
     ]),
     Object.freeze<readonly [string, boolean]>([
@@ -8376,8 +9719,8 @@ function runAdminNavigationGsapSourceNegativeProbes(
       {
         ...baseline,
         shellSource: baseline.shellSource.replace(
-          ".pavp-admin-shell[data-navigation-collapsed='true']:not([data-pavp-admin-navigation-motion='ready'])\n  .pavp-admin-shell__collapse-action",
-          ".pavp-admin-shell[data-navigation-collapsed='true']\n  .pavp-admin-shell__collapse-action",
+          'grid-template-rows: minmax(0, 1fr) auto;',
+          'grid-template-rows: minmax(0, 1fr);',
         ),
       },
     ],
@@ -8398,8 +9741,8 @@ function runAdminNavigationGsapSourceNegativeProbes(
       {
         ...baseline,
         themeSource: baseline.themeSource.replace(
-          'itemColorActiveCollapsed: materialOverlay,',
-          'itemColorActiveCollapsed: materialOverlay,\n      itemColorChildActive: materialOverlay,',
+          'itemColorActiveCollapsed: navigationSelectedSurface,',
+          'itemColorActiveCollapsed: navigationSelectedSurface,\n      itemColorChildActive: navigationSelectedSurface,',
         ),
       },
     ],
@@ -8428,8 +9771,8 @@ function runAdminNavigationGsapSourceNegativeProbes(
       {
         ...baseline,
         motionAdapterSource: baseline.motionAdapterSource.replace(
-          "overwrite: 'auto',",
-          "overwrite: 'auto',\n          x: 8,",
+          "const values: gsap.TweenVars = {\n      autoAlpha: (index: number) => (entries[index]?.[0] === state.activeRouteName ? 1 : 0),\n      overwrite: 'auto',\n    }",
+          "const values: gsap.TweenVars = {\n      autoAlpha: (index: number) => (entries[index]?.[0] === state.activeRouteName ? 1 : 0),\n      overwrite: 'auto',\n      x: 8,\n    }",
         ),
       },
     ],
@@ -8449,7 +9792,10 @@ function runAdminNavigationGsapSourceNegativeProbes(
       'ADMIN_NAV_GSAP_INTERRUPTION_AND_REVERSAL',
       {
         ...baseline,
-        motionAdapterSource: baseline.motionAdapterSource.replace('gsap.killTweensOf', 'void'),
+        motionAdapterSource: baseline.motionAdapterSource.replace(
+          'collapseTimeline?.kill()',
+          'collapseTimeline?.pause()',
+        ),
       },
     ],
     [
@@ -8487,6 +9833,871 @@ function runAdminNavigationGsapSourceNegativeProbes(
   return Object.freeze(
     probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
       const failureCodes = adminNavigationGsapSourceViolations(mutatedSnapshot)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          !isDeepStrictEqual(mutatedSnapshot, baseline) &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          failureCodes.includes(expectedFailureCode),
+      })
+    }),
+  )
+}
+
+function adminNavigationThemeReflowSourceInvariantResults(
+  snapshot: AdminNavigationThemeReflowSourceSnapshot,
+): readonly (readonly [string, boolean])[] {
+  const normalizedShellSource = snapshot.shellSource.replaceAll(/\s+/gu, ' ')
+  const normalizedThemeSource = snapshot.themeSource.replaceAll(/\s+/gu, ' ')
+  const normalizedProviderSource = snapshot.providerSource.replaceAll(/\s+/gu, ' ')
+  const selectedSurfaceFormula =
+    'color-mix(in srgb, var(--ui-admin-navigation-selected) 12%, var(--ui-material-overlay-background))'
+  const parsedShellSfc = vueSfcCompiler.parse(snapshot.shellSource, { filename: shellSfcPath })
+  const shellTemplateRoot = parsedShellSfc.descriptor.template?.ast
+  const shellTemplateElements =
+    shellTemplateRoot === undefined ? [] : collectShellTemplateElements(shellTemplateRoot)
+  const persistentMenuNodes = shellTemplateElements
+    .filter(({ node }) => node.tag === 'PavpMenuPrimitive')
+    .map(({ node }) => node)
+  const expandedKeyBindings = persistentMenuNodes.map((node) =>
+    normalizeTemplateExpression(templateDirectives(node, 'bind', 'expanded-keys')[0]?.exp?.content),
+  )
+  const collapsedBindings = persistentMenuNodes.map((node) =>
+    normalizeTemplateExpression(templateDirectives(node, 'bind', 'collapsed')[0]?.exp?.content),
+  )
+  const siderNode = shellTemplateElements.find(
+    ({ node }) => node.tag === 'PavpLayoutSiderPrimitive',
+  )?.node
+  const persistentCollapsedBinding = normalizeTemplateExpression(
+    siderNode === undefined
+      ? undefined
+      : templateDirectives(siderNode, 'bind', 'collapsed')[0]?.exp?.content,
+  )
+  const expandedProjectionName =
+    expandedKeyBindings.length === 2 &&
+    expandedKeyBindings[0] !== '' &&
+    expandedKeyBindings[0] === expandedKeyBindings[1] &&
+    /^[A-Za-z_$][\w$]*$/u.test(expandedKeyBindings[0] ?? '')
+      ? expandedKeyBindings[0]
+      : undefined
+  const shellScriptSource = scriptContent(snapshot.shellSource)
+  const shellScriptAst = ts.createSourceFile(
+    'UiAdminShell.ts',
+    shellScriptSource,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const shellInitializers = themeVariableInitializers(shellScriptAst)
+  const menuOptionsInitializer = shellInitializers.get('navigationMenuOptions')
+  const renderedExpandedKeysInitializer =
+    expandedProjectionName === undefined ? undefined : shellInitializers.get(expandedProjectionName)
+  const renderedExpandedKeysSource = renderedExpandedKeysInitializer?.getText(shellScriptAst) ?? ''
+  const motionAdapterAst = ts.createSourceFile(
+    'admin-navigation-motion.ts',
+    snapshot.motionAdapterSource,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const motionInitializers = themeVariableInitializers(motionAdapterAst)
+  const collapseMotionAttributeInitializer = motionInitializers.get('collapseMotionAttribute')
+  const routeMotionAttributeInitializer = motionInitializers.get('routeMotionAttribute')
+  const routeMotionSource =
+    nestedFunctionDeclaration(motionAdapterAst, 'animateRoute')?.getText(motionAdapterAst) ?? ''
+  const collapseReversalSource =
+    nestedFunctionDeclaration(motionAdapterAst, 'continueCollapseReversal')?.getText(
+      motionAdapterAst,
+    ) ?? ''
+  const shellStyleRules = cssRuleBlocks(styleContent(snapshot.shellSource))
+  const appearanceStyleRules = cssRuleBlocks(styleContent(snapshot.appearancePageSource))
+  const auraSelector =
+    "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__route-selection-aura"
+  const auraDeclarations = cssDeclarationsForSelector(shellStyleRules, auraSelector) ?? ''
+  const materialFallbackSelectors = [
+    `html[data-material='reduced'] ${auraSelector}`,
+    "html[data-material='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::after",
+    "html[data-material='reduced'] .pavp-admin-navigation-dropdown .n-dropdown-option-body::after",
+    `html[data-material='solid'] ${auraSelector}`,
+    "html[data-material='solid'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::after",
+    "html[data-material='solid'] .pavp-admin-navigation-dropdown .n-dropdown-option-body::after",
+  ] as const
+  const forcedColorsSelectedSurfaceSelectors = [
+    "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__navigation-plane--expanded .pavp-admin-shell__menu.n-menu .n-menu-item-content.n-menu-item-content--selected::before",
+    "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__navigation-plane--collapsed .pavp-admin-shell__menu.n-menu .n-menu-item-content.n-menu-item-content--child-active::before",
+    ".pavp-admin-navigation-dropdown.n-dropdown-menu .n-dropdown-option[aria-current='page'] .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)::before",
+  ] as const
+  const forcedColorsSelectedForegroundSelectors = [
+    "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__navigation-plane--expanded .pavp-admin-shell__menu.n-menu .n-menu-item-content.n-menu-item-content--selected :is(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
+    "[data-pavp-admin-navigation='persistent'] .pavp-admin-shell__navigation-plane--collapsed .pavp-admin-shell__menu.n-menu .n-menu-item-content.n-menu-item-content--child-active :is(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
+    ".pavp-admin-navigation-dropdown.n-dropdown-menu .n-dropdown-option[aria-current='page'] .n-dropdown-option-body:not(.n-dropdown-option-body--disabled) :is(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)",
+  ] as const
+  const collapsedSelectedSelectors = shellStyleRules.flatMap((rule) =>
+    splitCssSelectorList(rule.selector)
+      .map(normalizedCssSelector)
+      .filter((selector) => selector.includes('.n-menu-item-content--child-active')),
+  )
+  const collapsedActiveHoverRules = shellStyleRules.flatMap((rule) =>
+    splitCssSelectorList(rule.selector)
+      .map(normalizedCssSelector)
+      .filter(
+        (selector) =>
+          selector.includes('.pavp-admin-shell__navigation-plane--collapsed') &&
+          selector.includes('.n-menu-item-content--child-active') &&
+          selector.includes('::before') &&
+          (selector.includes('.n-menu-item-content--hover') || selector.includes(':hover')),
+      )
+      .map((selector) => ({ declarations: rule.declarations, selector })),
+  )
+  const collapsedHoverRetainsSelectedSurface =
+    collapsedActiveHoverRules.length > 0 &&
+    collapsedActiveHoverRules.some((rule) =>
+      rule.selector.includes('.n-menu-item-content--hover'),
+    ) &&
+    collapsedActiveHoverRules.some((rule) => rule.selector.includes(':hover')) &&
+    collapsedActiveHoverRules.every((rule) => {
+      if (!/(?:^|\s)\.n-menu(?:\s|$)/u.test(rule.selector)) {
+        return false
+      }
+
+      const backgroundValues = rule.declarations.split(';').flatMap((declaration) => {
+        const separatorIndex = declaration.indexOf(':')
+        return separatorIndex >= 0 && declaration.slice(0, separatorIndex).trim() === 'background'
+          ? [
+              declaration
+                .slice(separatorIndex + 1)
+                .replaceAll(/\s+/gu, ' ')
+                .replaceAll(/\(\s+/gu, '(')
+                .replaceAll(/\s+\)/gu, ')')
+                .trim(),
+            ]
+          : []
+      })
+      return isDeepStrictEqual(backgroundValues, [selectedSurfaceFormula])
+    })
+  const dockSelector = '.pavp-admin-shell__navigation-dock'
+  const dockPseudoSelector = '.pavp-admin-shell__navigation-dock::before'
+  const collapseActionSelector = '.pavp-admin-shell__collapse-action'
+  const collapseForegroundSelector = '.pavp-admin-shell__collapse-foreground'
+  const navigationChromeBridgeSelector = '.pavp-admin-shell__navigation-chrome-bridge'
+  const stableOverflowSelector = '.pavp-admin-shell'
+  const switchOverflowSelector = ".pavp-admin-shell[data-pavp-admin-navigation-switch='active']"
+  const allSwitchOverflowDeclarations = shellStyleRules.flatMap((rule) =>
+    selectorDeclarationValues(
+      [rule],
+      normalizedCssSelector(rule.selector.split(',')[0] ?? ''),
+      '--pavp-admin-navigation-sider-content-overflow',
+    ),
+  )
+  const wideGallerySelector =
+    ":global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-theme-gallery"
+  const prohibitedMotionProperty =
+    /\b(?:background|backgroundColor|backdropFilter|border|borderColor|bottom|display|filter|flexBasis|height|inset|left|margin|maxWidth|minWidth|padding|right|top|width|y|zIndex)\s*:/u
+  const prohibitedMotionDomAccess =
+    /\.(?:closest|getElementById|matches|parentElement|querySelector|querySelectorAll)\s*\(/u
+  const lazyFailureCleanup =
+    /\.catch\(\(error: unknown\) => \{[\s\S]{0,960}?removeAttribute\('data-pavp-admin-navigation-motion'\)[\s\S]{0,240}?removeAttribute\('data-pavp-admin-navigation-collapse-motion'\)[\s\S]{0,240}?removeAttribute\('data-pavp-admin-navigation-route-motion'\)[\s\S]{0,240}?removeAttribute\('data-pavp-admin-navigation-switch'\)[\s\S]{0,240}?reportAdminNavigationMotionFailure\(error\)/u
+
+  function containsAstNode(
+    root: ts.Node | undefined,
+    predicate: (node: ts.Node) => boolean,
+  ): boolean {
+    if (root === undefined) {
+      return false
+    }
+
+    let found = false
+    function visit(node: ts.Node): void {
+      if (found || predicate(node)) {
+        found = true
+        return
+      }
+      ts.forEachChild(node, visit)
+    }
+    visit(root)
+    return found
+  }
+
+  function nestedFunctionDeclaration(
+    root: ts.Node,
+    name: string,
+  ): ts.FunctionDeclaration | undefined {
+    let result: ts.FunctionDeclaration | undefined
+    containsAstNode(root, (node) => {
+      if (ts.isFunctionDeclaration(node) && node.name?.text === name) {
+        result = node
+        return true
+      }
+      return false
+    })
+    return result
+  }
+
+  function isRefValueAccess(node: ts.Node, identifier: string): boolean {
+    return (
+      ts.isPropertyAccessExpression(node) &&
+      node.name.text === 'value' &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === identifier
+    )
+  }
+
+  function refValueIdentifiers(root: ts.Node | undefined): readonly string[] {
+    const names = new Set<string>()
+    if (root !== undefined) {
+      containsAstNode(root, (node) => {
+        if (
+          ts.isPropertyAccessExpression(node) &&
+          node.name.text === 'value' &&
+          ts.isIdentifier(node.expression)
+        ) {
+          names.add(node.expression.text)
+        }
+        return false
+      })
+    }
+    return [...names]
+  }
+
+  function isComputedInitializer(initializer: ts.Expression | undefined): boolean {
+    if (initializer === undefined) {
+      return false
+    }
+    const value = unwrapExpression(initializer)
+    return (
+      ts.isCallExpression(value) &&
+      ts.isIdentifier(value.expression) &&
+      value.expression.text === 'computed'
+    )
+  }
+
+  function callbackWritesExpandedKeys(node: ts.Node): boolean {
+    const assignmentOperators = new Set<ts.SyntaxKind>([
+      ts.SyntaxKind.EqualsToken,
+      ts.SyntaxKind.PlusEqualsToken,
+      ts.SyntaxKind.MinusEqualsToken,
+      ts.SyntaxKind.AsteriskEqualsToken,
+      ts.SyntaxKind.SlashEqualsToken,
+      ts.SyntaxKind.PercentEqualsToken,
+      ts.SyntaxKind.AsteriskAsteriskEqualsToken,
+      ts.SyntaxKind.AmpersandEqualsToken,
+      ts.SyntaxKind.BarEqualsToken,
+      ts.SyntaxKind.CaretEqualsToken,
+      ts.SyntaxKind.LessThanLessThanEqualsToken,
+      ts.SyntaxKind.GreaterThanGreaterThanEqualsToken,
+      ts.SyntaxKind.GreaterThanGreaterThanGreaterThanEqualsToken,
+      ts.SyntaxKind.BarBarEqualsToken,
+      ts.SyntaxKind.AmpersandAmpersandEqualsToken,
+      ts.SyntaxKind.QuestionQuestionEqualsToken,
+    ])
+    const mutatingMethods = new Set([
+      'copyWithin',
+      'fill',
+      'pop',
+      'push',
+      'reverse',
+      'shift',
+      'sort',
+      'splice',
+      'unshift',
+    ])
+
+    return containsAstNode(node, (candidate) => {
+      if (
+        ts.isBinaryExpression(candidate) &&
+        assignmentOperators.has(candidate.operatorToken.kind) &&
+        isRefValueAccess(candidate.left, 'expandedNavigationGroupKeys')
+      ) {
+        return true
+      }
+
+      return (
+        ts.isCallExpression(candidate) &&
+        ts.isPropertyAccessExpression(candidate.expression) &&
+        mutatingMethods.has(candidate.expression.name.text) &&
+        isRefValueAccess(candidate.expression.expression, 'expandedNavigationGroupKeys')
+      )
+    })
+  }
+
+  const routeOrCollapseWatcherWritesExpandedKeys = containsAstNode(shellScriptAst, (node) => {
+    if (
+      !ts.isCallExpression(node) ||
+      !ts.isIdentifier(node.expression) ||
+      node.expression.text !== 'watch'
+    ) {
+      return false
+    }
+
+    const dependencySource = node.arguments[0]?.getText(shellScriptAst) ?? ''
+    const callback = node.arguments[1]
+    const tracksRouteOrCollapse =
+      dependencySource.includes('props.activeRouteName') ||
+      (persistentCollapsedBinding !== '' && dependencySource.includes(persistentCollapsedBinding))
+
+    return tracksRouteOrCollapse && callback !== undefined && callbackWritesExpandedKeys(callback)
+  })
+  const renderedExpandedKeyDependencies = refValueIdentifiers(renderedExpandedKeysInitializer)
+  const activeParentProjectionName = renderedExpandedKeyDependencies.find((name) => {
+    const initializer = shellInitializers.get(name)
+    const source = initializer?.getText(shellScriptAst) ?? ''
+    return (
+      isComputedInitializer(initializer) &&
+      source.includes('props.activeRouteName') &&
+      source.includes('props.navigation') &&
+      source.includes('expandedNavigationGroupKeys.value')
+    )
+  })
+  const switchExpandedKeySnapshotName = renderedExpandedKeyDependencies.find(
+    (name) =>
+      name !== activeParentProjectionName && !isComputedInitializer(shellInitializers.get(name)),
+  )
+  const activeParentProjectionInitializer =
+    activeParentProjectionName === undefined
+      ? undefined
+      : shellInitializers.get(activeParentProjectionName)
+  const activeParentProjectionSource =
+    activeParentProjectionInitializer?.getText(shellScriptAst) ?? ''
+  const activeParentProjectionMutationFree =
+    activeParentProjectionInitializer !== undefined &&
+    !callbackWritesExpandedKeys(activeParentProjectionInitializer)
+  const shellCallables = topLevelCallables(shellScriptAst)
+  const expandedKeyWriterCallables = [...shellCallables.values()].filter((callable) =>
+    callbackWritesExpandedKeys(callable),
+  )
+  const expandedKeyWritersGuardedDuringSwitch =
+    switchExpandedKeySnapshotName !== undefined &&
+    expandedKeyWriterCallables.length === 2 &&
+    expandedKeyWriterCallables.every((callable) => {
+      if (!ts.isFunctionDeclaration(callable) || callable.body === undefined) {
+        return false
+      }
+
+      const firstStatement = callable.body.statements[0]
+      return (
+        firstStatement !== undefined &&
+        ts.isIfStatement(firstStatement) &&
+        containsAstNode(firstStatement.expression, (node) =>
+          isRefValueAccess(node, switchExpandedKeySnapshotName),
+        ) &&
+        containsAstNode(firstStatement.thenStatement, (node) => ts.isReturnStatement(node))
+      )
+    })
+  const collapseCommitDeclaration = shellScriptAst.statements.find(
+    (statement): statement is ts.FunctionDeclaration =>
+      ts.isFunctionDeclaration(statement) &&
+      statement.body !== undefined &&
+      statement
+        .getText(shellScriptAst)
+        .includes("setAttribute('data-pavp-admin-navigation-switch', 'active')"),
+  )
+  const collapseCommitSource = collapseCommitDeclaration?.getText(shellScriptAst) ?? ''
+  const switchSnapshotIndex =
+    switchExpandedKeySnapshotName === undefined || activeParentProjectionName === undefined
+      ? -1
+      : collapseCommitSource.indexOf(
+          `${switchExpandedKeySnapshotName}.value ??= [...${activeParentProjectionName}.value]`,
+        )
+  const switchAttributeIndex = collapseCommitSource.indexOf(
+    "setAttribute('data-pavp-admin-navigation-switch', 'active')",
+  )
+  const switchSnapshotReleaseDeclaration = shellScriptAst.statements.find(
+    (statement): statement is ts.FunctionDeclaration => {
+      if (
+        !ts.isFunctionDeclaration(statement) ||
+        statement.name === undefined ||
+        statement.body === undefined ||
+        switchExpandedKeySnapshotName === undefined
+      ) {
+        return false
+      }
+      return statement
+        .getText(shellScriptAst)
+        .includes(`${switchExpandedKeySnapshotName}.value = undefined`)
+    },
+  )
+  const switchSnapshotReleaseName = switchSnapshotReleaseDeclaration?.name?.text
+  const switchSnapshotReleaseCallCount =
+    switchSnapshotReleaseName === undefined
+      ? 0
+      : exactOccurrenceCount(shellScriptSource, `${switchSnapshotReleaseName}()`)
+  const auraRenderHasHiddenSemantics = containsAstNode(shellScriptAst, (node) => {
+    if (
+      !ts.isCallExpression(node) ||
+      !ts.isIdentifier(node.expression) ||
+      node.expression.text !== 'h' ||
+      node.arguments.length < 2
+    ) {
+      return false
+    }
+
+    const elementName = node.arguments[0]
+    const properties = node.arguments[1]
+    if (
+      elementName === undefined ||
+      properties === undefined ||
+      !ts.isStringLiteral(elementName) ||
+      elementName.text !== 'span'
+    ) {
+      return false
+    }
+
+    const object = unwrapExpression(properties)
+    if (!ts.isObjectLiteralExpression(object)) {
+      return false
+    }
+
+    const classValue = objectPropertyInitializer(object, 'class')
+    const ariaHiddenValue = objectPropertyInitializer(object, 'aria-hidden')
+    return (
+      classValue !== undefined &&
+      ts.isStringLiteral(classValue) &&
+      classValue.text === 'pavp-admin-shell__route-selection-aura' &&
+      ariaHiddenValue !== undefined &&
+      ts.isStringLiteral(ariaHiddenValue) &&
+      ariaHiddenValue.text === 'true'
+    )
+  })
+
+  return Object.freeze([
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_SELECTED_STATE_PROJECTION',
+      exactOccurrenceCount(snapshot.themeSource, `'${selectedSurfaceFormula}'`) === 1 &&
+        normalizedThemeSource.includes('itemColorHover: navigationHover') &&
+        normalizedThemeSource.includes('itemColorActive: navigationSelectedSurface') &&
+        normalizedThemeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
+        normalizedThemeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
+        normalizedThemeSource.includes('optionColorHover: navigationHover') &&
+        normalizedThemeSource.includes('optionColorActive: navigationSelectedSurface') &&
+        exactOccurrenceCount(snapshot.shellSource, 'var(--ui-admin-navigation-selected) 12%') ===
+          2 &&
+        collapsedSelectedSelectors.length >= 5 &&
+        collapsedSelectedSelectors.every((selector) =>
+          selector.includes('.pavp-admin-shell__navigation-plane--collapsed'),
+        ) &&
+        collapsedHoverRetainsSelectedSurface &&
+        shellStyleRules.every((rule) => !rule.selector.includes('.n-layout-sider--collapsed')),
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_AURA_DECORATION',
+      exactOccurrenceCount(
+        snapshot.shellSource,
+        "class: 'pavp-admin-shell__route-selection-aura'",
+      ) === 1 &&
+        auraRenderHasHiddenSemantics &&
+        snapshot.shellSource.includes(
+          "'data-selected': routeName === props.activeRouteName ? 'true' : 'false'",
+        ) &&
+        snapshot.shellSource.includes(
+          "'aria-current': routeName === props.activeRouteName ? 'page' : undefined",
+        ) &&
+        !snapshot.shellSource.includes('route-selection-dot') &&
+        selectorDeclarationValues(shellStyleRules, auraSelector, 'background').length === 1 &&
+        /radial-gradient\([\s\S]*var\(--ui-admin-navigation-selected\) 24%[\s\S]*transparent 72%[\s\S]*\)/u.test(
+          auraDeclarations,
+        ) &&
+        isDeepStrictEqual(selectorDeclarationValues(shellStyleRules, auraSelector, 'block-size'), [
+          'calc(var(--ui-space-content-gap) * 2)',
+        ]) &&
+        isDeepStrictEqual(selectorDeclarationValues(shellStyleRules, auraSelector, 'inline-size'), [
+          'calc(var(--ui-space-content-gap) * 2)',
+        ]) &&
+        isDeepStrictEqual(
+          selectorDeclarationValues(shellStyleRules, auraSelector, 'pointer-events'),
+          ['none'],
+        ) &&
+        !/\b(?:backdrop-filter|filter)\s*:/iu.test(auraDeclarations) &&
+        snapshot.motionAdapterSource.includes(
+          'readonly routeSelectionAuras: ReadonlyMap<string, HTMLElement>',
+        ),
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_MATERIAL_FALLBACK',
+      materialFallbackSelectors.every((selector) =>
+        isDeepStrictEqual(selectorDeclarationValues(shellStyleRules, selector, 'display'), [
+          'none',
+        ]),
+      ) &&
+        forcedColorsSelectedSurfaceSelectors.every((selector) =>
+          isDeepStrictEqual(selectorDeclarationValues(shellStyleRules, selector, 'background'), [
+            'var(--ui-color-action-primary)',
+          ]),
+        ) &&
+        forcedColorsSelectedForegroundSelectors.every((selector) =>
+          isDeepStrictEqual(selectorDeclarationValues(shellStyleRules, selector, 'color'), [
+            'var(--ui-color-text-on-action)',
+          ]),
+        ) &&
+        normalizedShellSource.includes(
+          "@media (forced-colors: active) { [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible",
+        ) &&
+        normalizedShellSource.includes(
+          "@media (prefers-reduced-transparency: reduce) { [data-pavp-admin-navigation='persistent'] .n-layout-sider",
+        ),
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_BOTTOM_DOCK_HANDOFF',
+      selectorHasDeclarations(shellStyleRules, dockSelector, {
+        position: 'relative',
+        'padding-inline': '0',
+      }) &&
+        selectorHasDeclarations(shellStyleRules, dockPseudoSelector, {
+          'border-block-start-color': 'var(--ui-color-border-default)',
+          'border-block-start-style': 'solid',
+          'border-block-start-width': 'var(--ui-admin-border-width)',
+          'inset-inline': 'var(--ui-space-content-gap)',
+        }) &&
+        selectorDeclarationValues(shellStyleRules, dockSelector, 'background').length === 0 &&
+        selectorDeclarationValues(shellStyleRules, dockSelector, 'box-shadow').length === 0 &&
+        isDeepStrictEqual(
+          selectorDeclarationValues(shellStyleRules, collapseActionSelector, 'inline-size'),
+          ['100%'],
+        ) &&
+        selectorHasDeclarations(shellStyleRules, collapseForegroundSelector, {
+          'grid-template-columns': 'auto minmax(0, 1fr)',
+          'padding-inline-start': 'var(--ui-space-page-inline)',
+        }) &&
+        isDeepStrictEqual(
+          selectorDeclarationValues(shellStyleRules, collapseForegroundSelector, 'pointer-events'),
+          ['none'],
+        ) &&
+        isDeepStrictEqual(
+          selectorDeclarationValues(
+            shellStyleRules,
+            stableOverflowSelector,
+            '--pavp-admin-navigation-sider-content-overflow',
+          ),
+          ['hidden'],
+        ) &&
+        isDeepStrictEqual(
+          selectorDeclarationValues(
+            shellStyleRules,
+            switchOverflowSelector,
+            '--pavp-admin-navigation-sider-content-overflow',
+          ),
+          ['visible'],
+        ) &&
+        isDeepStrictEqual(allSwitchOverflowDeclarations, ['hidden', 'visible']) &&
+        snapshot.shellSource.includes('class="pavp-admin-shell__collapse-foreground"') &&
+        snapshot.shellSource.includes('const naiveMenuIconMarginInline = 8') &&
+        snapshot.shellSource.includes(
+          'const navigationDockIconAxisInline = computed(() => collapsedNavigationWidth.value / 2)',
+        ) &&
+        snapshot.shellSource.includes(
+          'const navigationDockLabelInlineStart = computed(() => (currentRootFontSize.value * 13) / 4)',
+        ) &&
+        exactOccurrenceCount(
+          snapshot.shellSource,
+          ':collapsed-icon-size="navigationMenuIconSize"',
+        ) === 2 &&
+        exactOccurrenceCount(snapshot.shellSource, ':icon-size="navigationMenuIconSize"') === 2 &&
+        exactOccurrenceCount(snapshot.shellSource, ':root-indent="navigationMenuRootIndent"') ===
+          2 &&
+        snapshot.shellSource.includes('grid-template-rows: minmax(0, 1fr) auto;') &&
+        !/\[data-pavp-admin-navigation-switch='active'\][^{]*\.pavp-admin-shell__(?:navigation-dock|collapse-action|collapse-foreground)[^{]*\{/u.test(
+          snapshot.shellSource,
+        ) &&
+        !snapshot.shellSource.includes('navigationDockForeground') &&
+        !snapshot.motionAdapterSource.includes('navigationDockForeground'),
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_ATOMIC_LAYOUT_COMMIT',
+      persistentMenuNodes.length === 2 &&
+        exactSet(collapsedBindings, ['false', 'true']) &&
+        expandedProjectionName !== undefined &&
+        expandedKeyBindings.every((binding) => binding === expandedProjectionName) &&
+        persistentMenuNodes.every(
+          (node) =>
+            templateAttributes(node, 'disabled').length === 0 &&
+            templateDirectives(node, 'bind', 'disabled').length === 0,
+        ) &&
+        isComputedInitializer(renderedExpandedKeysInitializer) &&
+        switchExpandedKeySnapshotName !== undefined &&
+        activeParentProjectionName !== undefined &&
+        renderedExpandedKeysSource.includes(
+          `${switchExpandedKeySnapshotName}.value ?? ${activeParentProjectionName}.value`,
+        ) &&
+        isComputedInitializer(activeParentProjectionInitializer) &&
+        activeParentProjectionSource.includes('props.activeRouteName') &&
+        activeParentProjectionSource.includes('props.navigation') &&
+        activeParentProjectionSource.includes('expandedNavigationGroupKeys.value') &&
+        containsAstNode(activeParentProjectionInitializer, (node) => ts.isSpreadElement(node)) &&
+        activeParentProjectionMutationFree &&
+        !routeOrCollapseWatcherWritesExpandedKeys &&
+        expandedKeyWritersGuardedDuringSwitch &&
+        switchSnapshotIndex >= 0 &&
+        switchAttributeIndex > switchSnapshotIndex &&
+        switchSnapshotReleaseName !== undefined &&
+        switchSnapshotReleaseCallCount >= 3 &&
+        snapshot.shellSource.includes(`onCollapseSettled: ${switchSnapshotReleaseName}`) &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, 'options.onCollapseSettled()') === 2 &&
+        /removeAttribute\(switchAttribute\)[\s\S]{0,240}?options\.onCollapseSettled\(\)/gu.test(
+          snapshot.motionAdapterSource,
+        ) &&
+        menuOptionsInitializer !== undefined &&
+        !menuOptionsInitializer.getText(shellScriptAst).includes(persistentCollapsedBinding) &&
+        exactOccurrenceCount(snapshot.shellSource, ':options="navigationMenuOptions"') === 2 &&
+        exactOccurrenceCount(snapshot.shellSource, ':inert="persistentNavigationCollapsed"') ===
+          1 &&
+        exactOccurrenceCount(snapshot.shellSource, ':inert="!persistentNavigationCollapsed"') ===
+          1 &&
+        normalizedShellSource.includes(
+          '.pavp-admin-shell__navigation-plane--expanded { inline-size: var(--ui-layout-admin-sidebar-expanded-inline-size); }',
+        ) &&
+        normalizedShellSource.includes(
+          '.pavp-admin-shell__navigation-plane--collapsed { inline-size: var(--ui-layout-admin-sidebar-rail-inline-size); }',
+        ) &&
+        normalizedShellSource.includes(
+          "const persistentSiderContentStyle = Object.freeze({ overflow: 'var(--pavp-admin-navigation-sider-content-overflow)', })",
+        ) &&
+        snapshot.shellSource.includes(
+          "[data-pavp-admin-navigation-collapse-motion='ready'][data-pavp-admin-navigation-switch='active']",
+        ) &&
+        exactOccurrenceCount(snapshot.shellSource, 'getBoundingClientRect().left') === 2 &&
+        exactOccurrenceCount(
+          snapshot.providerSource,
+          ".pavp-admin-shell[data-pavp-admin-navigation-switch='active']",
+        ) === 2 &&
+        normalizedProviderSource.includes(
+          ':where(.n-layout-sider, .n-layout-sider-scroll-container) { transition: none !important; }',
+        ) &&
+        normalizedProviderSource.includes(
+          '.n-submenu-children.fade-in-height-expand-transition-enter-active',
+        ) &&
+        normalizedProviderSource.includes(
+          '.n-submenu-children.fade-in-height-expand-transition-leave-active',
+        ) &&
+        snapshot.shellSource.includes('ref="navigationChromeBridge"') &&
+        normalizedShellSource.includes(
+          'aria-hidden="true" class="pavp-admin-shell__navigation-chrome-bridge"',
+        ) &&
+        selectorHasDeclarations(shellStyleRules, navigationChromeBridgeSelector, {
+          position: 'absolute',
+          'inline-size': 'var(--ui-layout-admin-sidebar-expanded-inline-size)',
+          'pointer-events': 'none',
+        }) &&
+        selectorDeclarationValues(shellStyleRules, navigationChromeBridgeSelector, 'will-change')
+          .length === 0,
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_COMPOSITOR_OWNERSHIP',
+      snapshot.motionAdapterSource.includes(
+        "gsap.quickSetter(targets.mainContentPlane, 'x', 'px')",
+      ) &&
+        snapshot.motionAdapterSource.includes(
+          'readonly navigationChromeBridge: HTMLElement | null',
+        ) &&
+        snapshot.motionAdapterSource.includes('targets.navigationChromeBridge') &&
+        snapshot.motionAdapterSource.includes('x: state.collapsed ? -collapseTravelInline : 0') &&
+        snapshot.motionAdapterSource.includes("if (state.motion === 'full')") &&
+        !snapshot.motionAdapterSource.includes("state.motion === 'reduced'") &&
+        !prohibitedMotionProperty.test(snapshot.motionAdapterSource) &&
+        !prohibitedMotionDomAccess.test(snapshot.motionAdapterSource) &&
+        !/\b(?:x|translateX)\s*:/u.test(routeMotionSource) &&
+        snapshot.motionAdapterSource.includes("state.motion === 'none'") &&
+        snapshot.motionAdapterSource.includes('onUpdate: renderMainContentBridge'),
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_MOTION_LIFECYCLE',
+      exactOccurrenceCount(snapshot.motionAdapterSource, 'let collapseTimeline:') === 1 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, 'let routeTimeline:') === 1 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, 'let collapseContext:') === 1 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, 'let routeContext:') === 1 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, "eventCallback('onComplete'") === 2 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, "eventCallback('onReverseComplete'") ===
+          2 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, '.reverse()') >= 2 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, '.kill()') >= 3 &&
+        exactOccurrenceCount(snapshot.motionAdapterSource, '.revert()') >= 2 &&
+        collapseReversalSource !== '' &&
+        !collapseReversalSource.includes('collapseTravelInline =') &&
+        collapseMotionAttributeInitializer !== undefined &&
+        ts.isStringLiteral(collapseMotionAttributeInitializer) &&
+        collapseMotionAttributeInitializer.text === 'data-pavp-admin-navigation-collapse-motion' &&
+        routeMotionAttributeInitializer !== undefined &&
+        ts.isStringLiteral(routeMotionAttributeInitializer) &&
+        routeMotionAttributeInitializer.text === 'data-pavp-admin-navigation-route-motion' &&
+        snapshot.motionAdapterSource.includes(
+          "document.addEventListener('visibilitychange', handleVisibilityChange)",
+        ) &&
+        snapshot.motionAdapterSource.includes(
+          "document.removeEventListener('visibilitychange', handleVisibilityChange)",
+        ) &&
+        exactOccurrenceCount(
+          snapshot.motionAdapterSource,
+          'options.root.setAttribute(collapseMotionAttribute, readyAttributeValue)',
+        ) === 1 &&
+        exactOccurrenceCount(
+          snapshot.motionAdapterSource,
+          'options.root.setAttribute(routeMotionAttribute, readyAttributeValue)',
+        ) === 1 &&
+        exactOccurrenceCount(
+          snapshot.motionAdapterSource,
+          'options.root.removeAttribute(collapseMotionAttribute)',
+        ) >= 3 &&
+        exactOccurrenceCount(
+          snapshot.motionAdapterSource,
+          'options.root.removeAttribute(routeMotionAttribute)',
+        ) >= 3 &&
+        snapshot.shellSource.includes(
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-collapse-motion='ready'])",
+        ) &&
+        snapshot.shellSource.includes(
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-route-motion='ready'])",
+        ) &&
+        !snapshot.shellSource.includes(
+          ".pavp-admin-shell:not([data-pavp-admin-navigation-motion='ready'])",
+        ) &&
+        lazyFailureCleanup.test(snapshot.shellSource) &&
+        snapshot.shellSource.includes('interface PendingAdminNavigationMotionSync') &&
+        snapshot.shellSource.includes('let adminNavigationMotionLoadPromise: Promise<void>') &&
+        snapshot.shellSource.includes('let pendingAdminNavigationCollapseIntent:') &&
+        snapshot.shellSource.includes('let pendingAdminNavigationMotionSync:') &&
+        normalizedShellSource.includes(
+          'pendingAdminNavigationMotionSync?.initialState ?? pendingAdminNavigationCollapseIntent?.initialState',
+        ) &&
+        snapshot.shellSource.includes(
+          'adminNavigationMotionController.sync(pendingSync.state, pendingSync.cause)',
+        ) &&
+        normalizedShellSource.includes(
+          "if (cause === 'route' && pendingAdminNavigationMotionSync !== undefined)",
+        ) &&
+        exactOccurrenceCount(snapshot.shellSource, 'onBeforeMount(() => {') === 1 &&
+        !/\b(?:requestAnimationFrame|setInterval|setTimeout)\b/u.test(snapshot.motionAdapterSource),
+    ]),
+    Object.freeze<readonly [string, boolean]>([
+      'ADMIN_NAV_THEME_REFLOW_APPEARANCE_WIDE_GRID',
+      isDeepStrictEqual(
+        selectorDeclarationValues(
+          appearanceStyleRules,
+          wideGallerySelector,
+          'grid-template-columns',
+        ),
+        ['repeat(4, minmax(0, 1fr))'],
+      ) &&
+        snapshot.appearancePageSource.includes(
+          ":global(.pavp-admin-shell[data-layout-profile='regular']) .pavp-appearance-workspace,",
+        ) &&
+        snapshot.appearancePageSource.includes(
+          ":global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-workspace {",
+        ),
+    ]),
+  ])
+}
+
+function adminNavigationThemeReflowSourceViolations(
+  snapshot: AdminNavigationThemeReflowSourceSnapshot,
+): string[] {
+  return adminNavigationThemeReflowSourceInvariantResults(snapshot)
+    .filter(([, passed]) => !passed)
+    .map(([failureCode]) => failureCode)
+}
+
+function runAdminNavigationThemeReflowSourceNegativeProbes(
+  baseline: AdminNavigationThemeReflowSourceSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = adminNavigationThemeReflowSourceViolations(baseline)
+  const probes: readonly [string, string, AdminNavigationThemeReflowSourceSnapshot][] = [
+    [
+      'admin-navigation-theme-reflow-removes-collapsed-hover-retention',
+      'ADMIN_NAV_THEME_REFLOW_SELECTED_STATE_PROJECTION',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '.pavp-admin-shell__navigation-plane--collapsed\n  .n-menu\n  .n-menu-item-content--child-active.n-menu-item-content--hover::before',
+          '.pavp-admin-shell__navigation-plane--collapsed\n  .n-menu-item-content--child-active.n-menu-item-content--hover::before',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-restores-hard-dot',
+      'ADMIN_NAV_THEME_REFLOW_AURA_DECORATION',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          "class: 'pavp-admin-shell__route-selection-aura'",
+          "class: 'pavp-admin-shell__route-selection-dot'",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-weakens-forced-colors-selection-specificity',
+      'ADMIN_NAV_THEME_REFLOW_MATERIAL_FALLBACK',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '.pavp-admin-shell__menu.n-menu\n    .n-menu-item-content.n-menu-item-content--selected::before',
+          '.pavp-admin-shell__menu\n    .n-menu-item-content--selected::before',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-breaks-dock-hit-area-and-switch-overflow',
+      'ADMIN_NAV_THEME_REFLOW_BOTTOM_DOCK_HANDOFF',
+      {
+        ...baseline,
+        shellSource: `${baseline.shellSource.replace(
+          '  inline-size: 100%;\n  overflow: visible;',
+          '  inline-size: 200%;\n  overflow: visible;',
+        )}\n<style scoped>.pavp-admin-shell { --pavp-admin-navigation-sider-content-overflow: visible; }</style>`,
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-drifts-expanded-keys-during-switch',
+      'ADMIN_NAV_THEME_REFLOW_ATOMIC_LAYOUT_COMMIT',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource
+          .replace(
+            '() => navigationSwitchExpandedGroupKeys.value ?? projectedExpandedNavigationGroupKeys.value,',
+            '() => projectedExpandedNavigationGroupKeys.value,',
+          )
+          .replace(
+            '</script>',
+            'watch([persistentNavigationCollapsed, () => props.activeRouteName], () => { expandedNavigationGroupKeys.value = [] })\n</script>',
+          ),
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-writes-main-width',
+      'ADMIN_NAV_THEME_REFLOW_COMPOSITOR_OWNERSHIP',
+      {
+        ...baseline,
+        motionAdapterSource: baseline.motionAdapterSource.replace(
+          "gsap.quickSetter(targets.mainContentPlane, 'x', 'px')",
+          "gsap.quickSetter(targets.mainContentPlane, 'width', 'px')",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-swaps-motion-handoff-attributes',
+      'ADMIN_NAV_THEME_REFLOW_MOTION_LIFECYCLE',
+      {
+        ...baseline,
+        motionAdapterSource: baseline.motionAdapterSource.replace(
+          "const collapseMotionAttribute = 'data-pavp-admin-navigation-collapse-motion'\nconst routeMotionAttribute = 'data-pavp-admin-navigation-route-motion'",
+          "const collapseMotionAttribute = 'data-pavp-admin-navigation-route-motion'\nconst routeMotionAttribute = 'data-pavp-admin-navigation-collapse-motion'",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-theme-reflow-wide-gallery-five-columns',
+      'ADMIN_NAV_THEME_REFLOW_APPEARANCE_WIDE_GRID',
+      {
+        ...baseline,
+        appearancePageSource: baseline.appearancePageSource.replace(
+          'grid-template-columns: repeat(4, minmax(0, 1fr));',
+          'grid-template-columns: repeat(5, minmax(0, 1fr));',
+        ),
+      },
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
+      const failureCodes = adminNavigationThemeReflowSourceViolations(mutatedSnapshot)
 
       return Object.freeze({
         id,
@@ -9304,7 +11515,7 @@ async function validateNaiveOverrides(): Promise<string[]> {
     !providerSource.includes("html[data-motion='none']") ||
     !providerSource.includes('transition: none !important;') ||
     !providerSource.includes('animation: none !important;') ||
-    importantMotionDeclarations.length !== 18 ||
+    importantMotionDeclarations.length !== 21 ||
     importantMotionDeclarations.some(
       (declaration) =>
         !/^(?:animation|animation-duration|opacity|transform|transition|transition-duration|transition-timing-function):/u.test(
@@ -9608,6 +11819,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     shellSource,
     themeSource,
   }
+  const adminNavigationThemeReflowSourceBaseline: AdminNavigationThemeReflowSourceSnapshot = {
+    ...adminNavigationGsapSourceBaseline,
+    appearancePageSource,
+    providerSource: naiveProviderSource,
+  }
   const navigationBudgetBaseline: NavigationBudgetGateSnapshot = {
     architectureSource,
     checkBundleSource,
@@ -9635,11 +11851,19 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runRuntime003AcceptanceClosureNegativeProbes(architectureSource)
   const adminNavigationGsapAdmissionNegativeProbeResults =
     runAdminNavigationGsapAdmissionNegativeProbes(architectureSource)
+  const adminNavigationThemeReflowAdmissionNegativeProbeResults =
+    runAdminNavigationThemeReflowAdmissionNegativeProbes(architectureSource)
+  const adminNavigationHighlightRevealAdmissionNegativeProbeResults =
+    runAdminNavigationHighlightRevealAdmissionNegativeProbes(architectureSource)
   const adminNavigationGsapSourceInvariantResultsBaseline =
     adminNavigationGsapSourceInvariantResults(adminNavigationGsapSourceBaseline)
   const adminNavigationGsapSourceNegativeProbeResults = runAdminNavigationGsapSourceNegativeProbes(
     adminNavigationGsapSourceBaseline,
   )
+  const adminNavigationThemeReflowSourceInvariantResultsBaseline =
+    adminNavigationThemeReflowSourceInvariantResults(adminNavigationThemeReflowSourceBaseline)
+  const adminNavigationThemeReflowSourceNegativeProbeResults =
+    runAdminNavigationThemeReflowSourceNegativeProbes(adminNavigationThemeReflowSourceBaseline)
   const navigationReworkSourceNegativeProbeResults =
     runNavigationReworkSourceNegativeProbes(navigationReworkBaseline)
   const navigationBudgetNegativeProbeResults =
@@ -9697,6 +11921,22 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     )
   }
   if (
+    adminNavigationThemeReflowAdmissionNegativeProbeResults.length !==
+    expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount
+  ) {
+    violations.push(
+      `Admin navigation theme/reflow admission negative-probe count drifted: expected ${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)}, received ${String(adminNavigationThemeReflowAdmissionNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    adminNavigationHighlightRevealAdmissionNegativeProbeResults.length !==
+    expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount
+  ) {
+    violations.push(
+      `Admin navigation highlight/reveal admission negative-probe count drifted: expected ${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)}, received ${String(adminNavigationHighlightRevealAdmissionNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
     adminNavigationGsapSourceInvariantResultsBaseline.length !==
     expectedAdminNavigationGsapSourceInvariantCount
   ) {
@@ -9710,6 +11950,22 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   ) {
     violations.push(
       `Admin navigation GSAP source negative-probe count drifted: expected ${String(expectedAdminNavigationGsapSourceNegativeProbeCount)}, received ${String(adminNavigationGsapSourceNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    adminNavigationThemeReflowSourceInvariantResultsBaseline.length !==
+    expectedAdminNavigationThemeReflowSourceInvariantCount
+  ) {
+    violations.push(
+      `Admin navigation theme/reflow source-invariant count drifted: expected ${String(expectedAdminNavigationThemeReflowSourceInvariantCount)}, received ${String(adminNavigationThemeReflowSourceInvariantResultsBaseline.length)}.`,
+    )
+  }
+  if (
+    adminNavigationThemeReflowSourceNegativeProbeResults.length !==
+    expectedAdminNavigationThemeReflowSourceNegativeProbeCount
+  ) {
+    violations.push(
+      `Admin navigation theme/reflow source negative-probe count drifted: expected ${String(expectedAdminNavigationThemeReflowSourceNegativeProbeCount)}, received ${String(adminNavigationThemeReflowSourceNegativeProbeResults.length)}.`,
     )
   }
   if (runtime003SourceNegativeProbeResults.length !== expectedRuntime003SourceNegativeProbeCount) {
@@ -9747,6 +12003,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...runtime003SourceViolations(baseline),
     ...navigationReworkSourceViolations(navigationReworkBaseline),
     ...adminNavigationGsapSourceViolations(adminNavigationGsapSourceBaseline),
+    ...adminNavigationThemeReflowSourceViolations(adminNavigationThemeReflowSourceBaseline),
     ...navigationBudgetViolations(navigationBudgetBaseline),
   )
 
@@ -9808,10 +12065,31 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of adminNavigationThemeReflowAdmissionNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory Admin navigation theme/reflow admission negative probe did not fail.`,
+      )
+    }
+  }
+  for (const result of adminNavigationHighlightRevealAdmissionNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory Admin navigation highlight/reveal admission negative probe did not fail.`,
+      )
+    }
+  }
   for (const result of adminNavigationGsapSourceNegativeProbeResults) {
     if (!result.passed) {
       violations.push(
         `${result.id}: reversible in-memory Admin navigation GSAP source negative probe did not fail.`,
+      )
+    }
+  }
+  for (const result of adminNavigationThemeReflowSourceNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory Admin navigation theme/reflow source negative probe did not fail.`,
       )
     }
   }
@@ -9848,6 +12126,6 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)} Admin navigation GSAP admission negative probes; ${String(expectedAdminNavigationGsapSourceInvariantCount)}/${String(expectedAdminNavigationGsapSourceInvariantCount)} Admin navigation GSAP source invariants; ${String(expectedAdminNavigationGsapSourceNegativeProbeCount)}/${String(expectedAdminNavigationGsapSourceNegativeProbeCount)} Admin navigation GSAP source negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes; ${String(expectedNavigationReworkSourceNegativeProbeCount)}/${String(expectedNavigationReworkSourceNegativeProbeCount)} Naive collapsible multilevel navigation source negative probes; ${String(expectedNavigationBudgetNegativeProbeCount)}/${String(expectedNavigationBudgetNegativeProbeCount)} Naive navigation budget negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)} Admin navigation GSAP admission negative probes; ${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)} Admin navigation theme/reflow admission negative probes; ${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)} Admin navigation highlight/reveal admission negative probes; ${String(expectedAdminNavigationGsapSourceInvariantCount)}/${String(expectedAdminNavigationGsapSourceInvariantCount)} Admin navigation GSAP source invariants; ${String(expectedAdminNavigationGsapSourceNegativeProbeCount)}/${String(expectedAdminNavigationGsapSourceNegativeProbeCount)} Admin navigation GSAP source negative probes; ${String(expectedAdminNavigationThemeReflowSourceInvariantCount)}/${String(expectedAdminNavigationThemeReflowSourceInvariantCount)} Admin navigation theme/reflow source invariants; ${String(expectedAdminNavigationThemeReflowSourceNegativeProbeCount)}/${String(expectedAdminNavigationThemeReflowSourceNegativeProbeCount)} Admin navigation theme/reflow source negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes; ${String(expectedNavigationReworkSourceNegativeProbeCount)}/${String(expectedNavigationReworkSourceNegativeProbeCount)} Naive collapsible multilevel navigation source negative probes; ${String(expectedNavigationBudgetNegativeProbeCount)}/${String(expectedNavigationBudgetNegativeProbeCount)} Naive navigation budget negative probes)`,
   )
 }

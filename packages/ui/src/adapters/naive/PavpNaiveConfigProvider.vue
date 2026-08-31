@@ -260,4 +260,20 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
   opacity: 1 !important;
   transform: none !important;
 }
+
+.pavp-admin-shell[data-pavp-admin-navigation-switch='active']
+  [data-pavp-admin-navigation='persistent']
+  :where(.n-layout-sider, .n-layout-sider-scroll-container) {
+  transition: none !important;
+}
+
+.pavp-admin-shell[data-pavp-admin-navigation-switch='active']
+  [data-pavp-admin-navigation='persistent']
+  :where(
+    .n-submenu-children.fade-in-height-expand-transition-enter-active,
+    .n-submenu-children.fade-in-height-expand-transition-leave-active
+  ) {
+  animation: none !important;
+  transition: none !important;
+}
 </style>

@@ -1133,6 +1133,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   align-items: center;
 }
 
+:global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-theme-gallery {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 @keyframes pavp-setting-commit {
   from {
     color: var(--ui-color-text-primary);

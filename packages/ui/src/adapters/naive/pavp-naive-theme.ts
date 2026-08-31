@@ -40,6 +40,8 @@ const materialOverlay = 'var(--ui-material-overlay-background)'
 const motionDuration = tokens['interaction.motion.duration']
 const motionEasing = tokens['interaction.motion.easing']
 const navigationHover = 'var(--ui-admin-navigation-hover)'
+const navigationSelectedSurface =
+  'color-mix(in srgb, var(--ui-admin-navigation-selected) 12%, var(--ui-material-overlay-background))'
 const radius = tokens['interaction.radius.panel']
 const shadow = tokens['interaction.shadow.panel']
 const shadowControl = 'var(--ui-admin-shadow-control)'
@@ -222,9 +224,9 @@ export function createPavpNaiveThemeProjection(
       arrowColorChildActive: colorControl,
       arrowColorChildActiveHover: colorControl,
       itemColorHover: navigationHover,
-      itemColorActive: materialOverlay,
-      itemColorActiveHover: materialOverlay,
-      itemColorActiveCollapsed: materialOverlay,
+      itemColorActive: navigationSelectedSurface,
+      itemColorActiveHover: navigationSelectedSurface,
+      itemColorActiveCollapsed: navigationSelectedSurface,
       itemHeight: enhancedTargetHeight,
       borderRadius: radius,
       fontSize,
@@ -239,7 +241,7 @@ export function createPavpNaiveThemeProjection(
           optionTextColorActive: colorControl,
           optionTextColorChildActive: colorControl,
           optionColorHover: navigationHover,
-          optionColorActive: materialOverlay,
+          optionColorActive: navigationSelectedSurface,
           optionHeightLarge: enhancedTargetHeight,
           fontSizeLarge: fontSize,
           optionIconSizeLarge: fontSize,
