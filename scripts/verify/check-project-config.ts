@@ -41,9 +41,6 @@ const expectedVueRouterIntegrity =
 const expectedNaiveUiVersion = '2.45.2'
 const expectedNaiveUiIntegrity =
   'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
-const expectedGsapVersion = '3.15.0'
-const expectedGsapIntegrity =
-  'sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A=='
 const vueRouterDeclarationFileName = 'index-BN0B0y8a.d.ts'
 const vueRouterPatchPath = 'patches/vue-router@5.2.0.patch'
 const expectedImplementationContract = {
@@ -1741,7 +1738,6 @@ async function validateArchitectureConsoleUiPackage(): Promise<void> {
     manifest['dependencies'],
     {
       '@platform/design-system': 'workspace:*',
-      gsap: 'catalog:',
       'naive-ui': 'catalog:',
       vue: 'catalog:',
     },
@@ -1982,7 +1978,7 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
 
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
-expectEqual(workspaceCatalog['gsap'], expectedGsapVersion, 'GSAP catalog version')
+expectEqual(workspaceCatalog['gsap'], undefined, 'Inactive GSAP catalog coordinate')
 expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
 expectEqual(workspaceCatalog['zod'], expectedZodVersion, 'Zod catalog version')
 expectEqual(workspaceCatalog['vue-router'], expectedVueRouterVersion, 'Vue Router catalog version')
@@ -2094,9 +2090,6 @@ const lockedNaiveUiPackage = isJsonObject(lockfilePackages)
 const lockedGsapPackageKeys = isJsonObject(lockfilePackages)
   ? Object.keys(lockfilePackages).filter((key) => key.startsWith('gsap@'))
   : []
-const lockedGsapPackage = isJsonObject(lockfilePackages)
-  ? lockfilePackages[`gsap@${expectedGsapVersion}`]
-  : undefined
 const lockedZodDependency = isJsonObject(webLockfileDependencies)
   ? webLockfileDependencies['zod']
   : undefined
@@ -2255,34 +2248,16 @@ if (
 
 expectStructuredEqual(
   isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['gsap'] : undefined,
-  { specifier: expectedGsapVersion, version: expectedGsapVersion },
-  'GSAP lockfile catalog coordinate',
+  undefined,
+  'Inactive GSAP lockfile catalog coordinate',
 )
 expectStructuredEqual(
   lockedUiGsapDependency,
-  { specifier: 'catalog:', version: expectedGsapVersion },
-  'GSAP @platform/ui lockfile coordinate',
+  undefined,
+  'Inactive GSAP @platform/ui lockfile coordinate',
 )
-expectStructuredEqual(
-  lockedGsapPackageKeys,
-  [`gsap@${expectedGsapVersion}`],
-  'GSAP lockfile package set',
-)
-expectStructuredEqual(
-  lockedGsapPackage,
-  { resolution: { integrity: expectedGsapIntegrity } },
-  'GSAP lockfile package closure',
-)
-expectStructuredEqual(
-  lockedGsapSnapshotKeys,
-  [`gsap@${expectedGsapVersion}`],
-  'GSAP lockfile snapshot set',
-)
-expectStructuredEqual(
-  isJsonObject(lockfileSnapshots) ? lockfileSnapshots[`gsap@${expectedGsapVersion}`] : undefined,
-  {},
-  'GSAP lockfile snapshot closure',
-)
+expectStructuredEqual(lockedGsapPackageKeys, [], 'Inactive GSAP lockfile package set')
+expectStructuredEqual(lockedGsapSnapshotKeys, [], 'Inactive GSAP lockfile snapshot set')
 
 const webManifest = await readJsonObject(resolve(rootDirectory, 'apps/web/package.json'))
 const uiManifest = await readJsonObject(resolve(rootDirectory, 'packages/ui/package.json'))
@@ -2298,8 +2273,8 @@ expectEqual(
   workspaceConfiguration['catalog'] !== undefined && isJsonObject(workspaceConfiguration['catalog'])
     ? workspaceConfiguration['catalog']['gsap']
     : undefined,
-  expectedGsapVersion,
-  'GSAP workspace catalog coordinate',
+  undefined,
+  'Inactive GSAP workspace catalog coordinate',
 )
 
 expectStructuredEqual(
@@ -2353,6 +2328,7 @@ for (const [manifest, description] of [
   [rootManifest, 'root package'],
   [webManifest, '@platform/web'],
   [designSystemManifest, '@platform/design-system'],
+  [uiManifest, '@platform/ui'],
 ] as const) {
   expectDirectDependencyAbsent(manifest, 'gsap', description)
 }

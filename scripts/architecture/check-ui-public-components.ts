@@ -225,6 +225,23 @@ async function collectVueFiles(directory: string): Promise<string[]> {
   return nestedFiles.flat().sort()
 }
 
+async function collectUiBoundarySourceFiles(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true })
+  const nestedFiles = await Promise.all(
+    entries.map(async (entry) => {
+      const path = join(directory, entry.name)
+
+      if (entry.isDirectory()) {
+        return collectUiBoundarySourceFiles(path)
+      }
+
+      return entry.isFile() && /\.(?:ts|tsx|vue)$/u.test(entry.name) ? [path] : []
+    }),
+  )
+
+  return nestedFiles.flat().sort()
+}
+
 async function loadOverlaySourceMap(): Promise<ReadonlyMap<string, string>> {
   const files = (
     await Promise.all(
@@ -727,10 +744,12 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'packages/ui/src/adapters/naive/naive-breadcrumb.ts',
     'packages/ui/src/adapters/naive/naive-button.ts',
     'packages/ui/src/adapters/naive/naive-descriptions.ts',
+    'packages/ui/src/adapters/naive/naive-icon.ts',
     'packages/ui/src/adapters/naive/naive-layout.ts',
     'packages/ui/src/adapters/naive/naive-menu.ts',
     'packages/ui/src/adapters/naive/naive-radio.ts',
     'packages/ui/src/adapters/naive/naive-tag.ts',
+    'packages/ui/src/adapters/naive/naive-tooltip.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
   ] as const
@@ -742,10 +761,39 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     violations.push('Private Naive adapter file inventory diverged from the exact owned set.')
   }
 
+  const adapterFileSet = new Set<string>(adapterFiles)
+  const boundaryFiles = (
+    await Promise.all([
+      collectUiBoundarySourceFiles(resolve(rootDirectory, 'apps')),
+      collectUiBoundarySourceFiles(uiSourceDirectory),
+    ])
+  ).flat()
+
+  for (const path of boundaryFiles) {
+    const relativePath = relative(rootDirectory, path)
+
+    if (adapterFileSet.has(relativePath)) {
+      continue
+    }
+
+    const rawSource = await readFile(path, 'utf8')
+    const source = relativePath.endsWith('.vue') ? scriptContent(rawSource) : rawSource
+
+    if (/\b(?:from\s+|import\s*\()['"]naive-ui(?:\/[^'"]*)?['"]/u.test(source)) {
+      violations.push(`${relativePath}: direct Naive import escaped the private adapter boundary.`)
+    }
+  }
+
   const runtimeImports: string[] = []
 
   for (const relativePath of adapterFiles) {
-    const rawSource = await readFile(resolve(rootDirectory, relativePath), 'utf8')
+    const rawSource = await readFile(resolve(rootDirectory, relativePath), 'utf8').catch(() => '')
+
+    if (rawSource.length === 0) {
+      violations.push(`${relativePath}: required private Naive adapter is missing.`)
+      continue
+    }
+
     const source = relativePath.endsWith('.vue') ? scriptContent(rawSource) : rawSource
     const parsed = sourceFile(relativePath, source)
 
@@ -817,12 +865,14 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NConfigProvider@naive-ui/es/config-provider',
     'NDescriptions@naive-ui/es/descriptions',
     'NDescriptionsItem@naive-ui/es/descriptions',
+    'NIcon@naive-ui/es/icon',
     'NLayout@naive-ui/es/layout',
     'NLayoutSider@naive-ui/es/layout',
     'NMenu@naive-ui/es/menu',
     'NRadioButton@naive-ui/es/radio',
     'NRadioGroup@naive-ui/es/radio',
     'NTag@naive-ui/es/tag',
+    'NTooltip@naive-ui/es/tooltip',
     'breadcrumbDark@naive-ui/es/breadcrumb/styles/dark',
     'buttonDark@naive-ui/es/button/styles/dark',
     'commonDark@naive-ui/es/_styles/common/dark',
@@ -831,6 +881,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'menuDark@naive-ui/es/menu/styles/dark',
     'radioDark@naive-ui/es/radio/styles/dark',
     'tagDark@naive-ui/es/tag/styles/dark',
+    'tooltipDark@naive-ui/es/tooltip/styles/dark',
   ]
 
   if (!exactSet(runtimeImports, expectedRuntimeImports)) {
@@ -850,6 +901,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'Menu',
     'Radio',
     'Tag',
+    'Tooltip',
   ]) {
     if (!themeSource.includes(`  ${override}: {`)) {
       violations.push(`${override}: required PAVP-to-Naive override map is missing.`)

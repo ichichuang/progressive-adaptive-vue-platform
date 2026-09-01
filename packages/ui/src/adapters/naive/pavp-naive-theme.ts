@@ -8,6 +8,7 @@ import layoutDark from 'naive-ui/es/layout/styles/dark'
 import menuDark from 'naive-ui/es/menu/styles/dark'
 import radioDark from 'naive-ui/es/radio/styles/dark'
 import tagDark from 'naive-ui/es/tag/styles/dark'
+import tooltipDark from 'naive-ui/es/tooltip/styles/dark'
 
 export interface PavpNaiveThemeProjection {
   readonly theme: GlobalTheme | null
@@ -30,6 +31,7 @@ const borderFocus = 'var(--ui-admin-border-focus)'
 const controlHeight = tokens['interaction.control.height']
 const disabledOpacity = 'var(--ui-admin-state-disabled-opacity)'
 const enhancedTargetHeight = tokens['layout.target.enhanced.minimum-block-size']
+const headerActionIconSize = `calc(${enhancedTargetHeight} / 2)`
 const fontBody = tokens['typography.family.body']
 const fontSize = tokens['typography.size.body']
 const fontWeight = tokens['typography.weight.body']
@@ -39,9 +41,10 @@ const materialChrome = 'var(--ui-material-chrome-background)'
 const materialOverlay = 'var(--ui-material-overlay-background)'
 const motionDuration = tokens['interaction.motion.duration']
 const motionEasing = tokens['interaction.motion.easing']
-const navigationHover = 'var(--ui-admin-navigation-hover)'
+const navigationHoverSurface =
+  'color-mix(in srgb, var(--ui-admin-navigation-selected) 6%, var(--ui-material-chrome-background))'
 const navigationSelectedSurface =
-  'color-mix(in srgb, var(--ui-admin-navigation-selected) 12%, var(--ui-material-overlay-background))'
+  'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'
 const radius = tokens['interaction.radius.panel']
 const shadow = tokens['interaction.shadow.panel']
 const shadowControl = 'var(--ui-admin-shadow-control)'
@@ -49,6 +52,7 @@ const shadowControlHover = 'var(--ui-admin-shadow-control-hover)'
 const shadowFocusRing = 'var(--ui-admin-shadow-focus-ring)'
 const shadowOverlay = 'var(--ui-admin-shadow-overlay)'
 const spacingContentGap = tokens['spacing.content.gap']
+const compactOverlaySpacing = `calc(${spacingContentGap} / 2)`
 const darkTheme = {
   name: 'dark',
   common: commonDark,
@@ -59,6 +63,7 @@ const darkTheme = {
   Menu: menuDark,
   Radio: radioDark,
   Tag: tagDark,
+  Tooltip: tooltipDark,
 } as const satisfies GlobalTheme
 
 function resolveMaterialSurface(material: EffectiveAppearanceState['material']): {
@@ -147,11 +152,17 @@ export function createPavpNaiveThemeProjection(
       heightMedium: enhancedTargetHeight,
       borderRadiusMedium: radius,
       fontSizeMedium: fontSize,
+      iconSizeMedium: headerActionIconSize,
       border: borderControl,
       borderHover: borderAction,
       borderPressed: borderAction,
       borderFocus,
       borderDisabled: borderControl,
+      color: material.chrome,
+      colorHover: navigationHoverSurface,
+      colorPressed: navigationSelectedSurface,
+      colorFocus: navigationHoverSurface,
+      colorDisabled: material.chrome,
       colorSecondary: material.chrome,
       colorSecondaryHover: material.chrome,
       colorSecondaryPressed: material.chrome,
@@ -171,6 +182,11 @@ export function createPavpNaiveThemeProjection(
       textColorFocusPrimary: colorOnAction,
       textColorDisabledPrimary: colorOnAction,
       textColor: colorText,
+      textColorHover: colorControl,
+      textColorPressed: colorControl,
+      textColorFocus: colorControl,
+      textColorDisabled: colorTextSecondary,
+      textColorTertiary: colorTextSecondary,
       textColorGhost: colorText,
       textColorGhostHover: colorControl,
       textColorGhostPressed: colorControl,
@@ -223,7 +239,7 @@ export function createPavpNaiveThemeProjection(
       arrowColorActiveHover: colorControl,
       arrowColorChildActive: colorControl,
       arrowColorChildActiveHover: colorControl,
-      itemColorHover: navigationHover,
+      itemColorHover: navigationHoverSurface,
       itemColorActive: navigationSelectedSurface,
       itemColorActiveHover: navigationSelectedSurface,
       itemColorActiveCollapsed: navigationSelectedSurface,
@@ -240,7 +256,7 @@ export function createPavpNaiveThemeProjection(
           optionTextColorHover: colorControl,
           optionTextColorActive: colorControl,
           optionTextColorChildActive: colorControl,
-          optionColorHover: navigationHover,
+          optionColorHover: navigationHoverSurface,
           optionColorActive: navigationSelectedSurface,
           optionHeightLarge: enhancedTargetHeight,
           fontSizeLarge: fontSize,
@@ -284,6 +300,25 @@ export function createPavpNaiveThemeProjection(
       border: borderControl,
       textColor: colorText,
       colorBordered: material.chrome,
+    },
+    Tooltip: {
+      borderRadius: radius,
+      boxShadow: shadowOverlay,
+      color: materialOverlay,
+      textColor: colorText,
+      padding: compactOverlaySpacing,
+      peers: {
+        Popover: {
+          fontSize,
+          borderRadius: radius,
+          color: materialOverlay,
+          dividerColor: colorBorder,
+          textColor: colorText,
+          boxShadow: shadowOverlay,
+          padding: compactOverlaySpacing,
+          space: compactOverlaySpacing,
+        },
+      },
     },
   } as const satisfies GlobalThemeOverrides)
 

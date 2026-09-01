@@ -41,7 +41,6 @@ export const projectConfig = {
   bundleBudgets: {
     initialCssGzipBytes: 40 * 1024,
     initialJavaScriptGzipBytes: 224 * 1024,
-    lazyMotionAdapterJavaScriptGzipBytes: 40 * 1024,
     lazyRouteJavaScriptGzipBytes: 120 * 1024,
   },
 } as const
