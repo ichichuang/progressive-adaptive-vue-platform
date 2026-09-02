@@ -1,4 +1,3 @@
-import { createHash } from 'node:crypto'
 import { access, readFile, readdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { extname, join, relative, resolve } from 'node:path'
@@ -7,6 +6,7 @@ import { isDeepStrictEqual } from 'node:util'
 import ts from 'typescript'
 import { parse as parseYaml } from 'yaml'
 
+import { projectConfig } from '../../project.config'
 import {
   PublicRoleRegistry,
   type LayoutContainerVariantId,
@@ -133,11 +133,15 @@ interface AdminNavigationNativeSourceSnapshot {
   readonly engineeringManifestSource: string
   readonly iconAdapterSource: string
   readonly lockSource: string
+  readonly motionDomMaxSource: string
+  readonly motionRuntimeSource: string
+  readonly motionSelectionLensSource: string
   readonly naiveDropdownSource: string
   readonly naiveMenuChildSource: string
   readonly naivePopoverSource: string
   readonly naiveSubmenuSource: string
   readonly nonAdapterSource: string
+  readonly outsideMotionPrivateSource: string
   readonly projectConfigSource: string
   readonly providerSource: string
   readonly publicComponentExports: readonly string[]
@@ -244,6 +248,8 @@ interface CompiledSfcStyles {
 
 const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
+const expectedMotionVueVersion = '2.4.0'
+const expectedVueUseCoreVersion = '14.4.0'
 const expectedArchitectureAdminConsoleNegativeProbeCount = 59
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
@@ -267,6 +273,9 @@ const expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount = 5
 const expectedAdminNavigationNaiveActionsMotionInvariantCount = 24
 const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 10
 const expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount = 12
+const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 22
+const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 16
+const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
 const expectedNavigationReworkSourceInvariantCount = 59
 const expectedNavigationReworkSourceNegativeProbeCount = 23
 const expectedNavigationBudgetNegativeProbeCount = 6
@@ -327,12 +336,12 @@ const expectedAdminNavigationNativeImplementationPaths = [
 ] as const
 const expectedAdminNavigationNativeImplementationPathInventory =
   expectedAdminNavigationNativeImplementationPaths.join(';')
-const expectedInitialJavaScriptBudgetBytes = 224 * 1024
+const currentInitialJavaScriptBudgetBytes = 224 * 1024
+const expectedInitialJavaScriptBudgetBytes = projectConfig.bundleBudgets.initialJavaScriptGzipBytes
 const expectedMinimumInitialJavaScriptHeadroomBytes = 8 * 1024
+const expectedBundleBudgetAlignmentBytes = 8 * 1024
 const historicalAdminNavigationGsapCheckBundleSha256 =
   '30e618541feb287a82a88076045d232091fb3eabaeb499fb2aae8da3fb1fd372'
-const expectedNativeCheckBundleSha256 =
-  '2b6c5726e44c984ec0ba3c114609fe4a8b3b43262868f32ada450650ce0ce400'
 const runtime003WorkItem = 'PAVP-RUNTIME-003'
 const runtime003AdmissionAmendment = 'PAVP_RUNTIME_003_ADMISSION_AMENDMENT'
 const runtime003AcceptanceStatement = '那没问题'
@@ -344,6 +353,10 @@ const requireFromUi = createRequire(resolve(rootDirectory, 'packages/ui/package.
 const vueSfcCompiler = requireFromWeb('vue/compiler-sfc') as VueSfcCompiler
 const expectedNaiveUiIntegrity =
   'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
+const expectedMotionVueIntegrity =
+  'sha512-kRDGMAZk3nvdjEO36Wo6pezSEIStGXGhVFiwo1QkUDsUg8mB5igjYPXyece8wtu2DrHhmFfA6Y1nOz07+5QH4A=='
+const expectedVueUseCoreIntegrity =
+  'sha512-X4WHz1HlCzCBoYXesUkifzzWBAcZgXG8Fi5iNPQg/epdzOB3gu8Fawj3hvuwYR1nGcXGnvxwYYcUC/71++svtQ=='
 const expectedGsapIntegrity =
   'sha512-dMW4CWBTUK1AEEDeZc1g4xpPGIrSf9fJF960qbTZmN/QwZIWY5wgliS6JWl9/25fpTGJrMRtSjGtOmPnfjZB+A=='
 const expectedNavigationIconClasses = [
@@ -6636,18 +6649,16 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     adminNavigationMotionVueSelectionLensImplementationValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    adminNavigationMotionVueSelectionLensImplementationValues.some(
-      (value) => value !== 'NOT_STARTED',
-    )
+    adminNavigationMotionVueSelectionLensImplementationValues.some((value) => value !== 'COMPLETE')
   ) {
-    violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_IMPLEMENTATION_PREMATURE')
+    violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_IMPLEMENTATION_STATE')
   }
   if (
     adminNavigationMotionVueSelectionLensVerificationValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    adminNavigationMotionVueSelectionLensVerificationValues.some((value) => value !== 'NOT_RUN')
+    adminNavigationMotionVueSelectionLensVerificationValues.some((value) => value !== 'PASS')
   ) {
-    violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_STATIC_VERIFICATION_PREMATURE')
+    violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_STATIC_VERIFICATION_STATE')
   }
   if (
     adminNavigationMotionVueSelectionLensRuntimeAcceptanceValues.length !==
@@ -6851,8 +6862,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
     `CURRENT_BOUNDED_WORK_IS_${adminNavigationMotionVueSelectionLensWorkPackage}`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_STATUS_IS_OPEN`,
-    `${adminNavigationMotionVueSelectionLensWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED`,
-    `${adminNavigationMotionVueSelectionLensWorkPackage}_STATIC_VERIFICATION_IS_NOT_RUN`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_NOT_PERFORMED`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_NOT_PERFORMED`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_NOT_PERFORMED`,
@@ -7625,8 +7636,8 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
 
   const implementationStateMarkers = [
     'STATUS=OPEN',
-    'REPOSITORY_IMPLEMENTATION=NOT_STARTED',
-    'STATIC_VERIFICATION=NOT_RUN',
+    'REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'STATIC_VERIFICATION=PASS',
     'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
     'OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED',
     'OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
@@ -7655,7 +7666,7 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'MOTION_FOR_VUE_GENERAL_CAPABILITY_STATUS=DEFERRED',
     'RUNTIME_MOTION_GENERAL_CAPABILITY_STATUS=TARGET_INACTIVE',
     `MOTION_FOR_VUE_SCOPED_ADMISSION=${adminNavigationMotionVueSelectionLensWorkPackage}_ONLY`,
-    'MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=NOT_INSTALLED',
+    'MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=INSTALLED',
     'MOTION_FOR_VUE_PUBLIC_PLATFORM_API=PROHIBITED',
     'MOTION_FOR_VUE_OTHER_CONSUMERS=PROHIBITED',
     'MOTION_FOR_VUE_ROUTE_CONTENT_ANIMATION=PROHIBITED',
@@ -7668,6 +7679,30 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'MOTION_VUE_COORDINATE=motion-v@2.4.0',
     'MOTION_VUE_LICENSE=MIT',
     'MOTION_VUE_DEPENDENCY_OWNER=@platform/ui',
+    'MOTION_VUE_ONLY_ADMITTED_ANIMATION_RUNTIME=motion-v',
+    'VUEUSE_CORE_ADMISSION_PURPOSE=motion-v_REQUIRED_PEER_ONLY',
+    'PATCH_TARGET_PACKAGE=motion-v',
+    'PATCH_TARGET_VERSION=2.4.0',
+    'PATCH_FILE=patches/motion-v@2.4.0.patch',
+    'PATCH_KIND=DECLARATION_ONLY',
+    'PATCH_RUNTIME_CHANGE=PROHIBITED',
+    'PATCH_JAVASCRIPT_CHANGE=PROHIBITED',
+    'PATCH_PACKAGE_METADATA_CHANGE=PROHIBITED',
+    'PATCH_SECOND_PACKAGE=PROHIBITED',
+    'TYPESCRIPT_STRICTNESS_CHANGE=PROHIBITED',
+    'REACT_TYPE_DEPENDENCY=PROHIBITED',
+    'PATCH_RUNTIME_HASH_EQUALITY=REQUIRED',
+    'PATCH_SHA256=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59',
+    'PATCH_CHANGED_DECLARATION_FILE_COUNT=19',
+    'PATCH_CHANGED_DECLARATION_HUNK_COUNT=20',
+    'PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT=91',
+    'PATCH_RUNTIME_HASH_MANIFEST_SHA256=58f8bbff2272c77b361cbc3eb438f7e3b32d4b42eb83b1599760bb76db502adb',
+    'PATCH_EXACT_MOTION_PATCH_COUNT=1',
+    'PATCH_CANONICAL_TOTAL_SET=motion-v@2.4.0;unconfig@7.5.0;vue-router@5.2.0',
+    'PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY=PROHIBITED',
+    'PATCH_TYPESCRIPT_STRICT=true',
+    'PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES=true',
+    'PATCH_TYPESCRIPT_SKIP_LIB_CHECK=false',
   ] as const
   if (!hasEveryMarker(motionVueDependencyMarkers)) {
     violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_MOTION_VUE_COORDINATE')
@@ -7740,7 +7775,13 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'MOTION_FEATURE_BUDGET_FORMULA=ceil((MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES + 8192) / 8192) * 8192',
     'MOTION_FEATURE_BUDGET_HEADROOM >= 8192',
     'MOTION_FEATURE_BUDGET_HEADROOM < 16384',
-    'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=229376',
+    'MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648',
+    'MOTION_FEATURE_HARD_BUDGET_BYTES=49152',
+    'MOTION_FEATURE_HEADROOM_BYTES=15504',
+    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223501',
+    'FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
+    'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14067',
+    'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568',
     'INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192',
     'INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192',
     'INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=8192',
@@ -7761,7 +7802,10 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'MOTION_SELECTION_LENS_HOVER_OWNER=NAIVE',
     'MOTION_SELECTION_LENS_HOVER_FORMULA=6_PERCENT_THEME_TINT',
     'MOTION_SELECTION_LENS_SELECTED_FORMULA=16_PERCENT_THEME_TINT',
-    'MOTION_SELECTION_LENS_READY_SELECTED_SURFACE_OWNER=ONE_MOTION_LENS_ONLY',
+    'MOTION_SELECTION_LENS_FULL_READY_SELECTED_SURFACE_OWNER=ONE_MOTION_LENS_ONLY',
+    'MOTION_SELECTION_LENS_FULL_NOT_READY_SELECTED_SURFACE_OWNER=NAIVE_SELECTED_BACKGROUND',
+    'MOTION_SELECTION_LENS_REDUCED_SELECTED_SURFACE_OWNER=NAIVE_PERSISTENT_BEFORE_SURFACES',
+    'MOTION_SELECTION_LENS_NONE_SELECTED_SURFACE_OWNER=NAIVE_PERSISTENT_BEFORE_SURFACES',
     'MOTION_SELECTION_LENS_FALLBACK_STACKING=PROHIBITED',
     'MOTION_SELECTION_LENS_AFTER_BLOOM=PROHIBITED',
     'MOTION_SELECTION_LENS_AURA_LEFT_BAR_HARD_DOT_BADGE_SECOND_SHADOW=PROHIBITED',
@@ -7792,10 +7836,21 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'MOTION_FULL_TRANSITION=spring_visualDuration_0.26_bounce_0.16_no_delay',
     'MOTION_FULL_RAPID_SELECTION=INTERRUPTIBLE_FROM_RENDERED_STATE',
     'MOTION_REDUCED_REDUCED_MOTION=always',
-    'MOTION_REDUCED_SELECTED_CHANGE=OPACITY_AND_BACKGROUND_COLOR_CROSSFADE_HALF_PAVP_INTERACTION_DURATION_ONLY',
+    'MOTION_REDUCED_MOTION_LENS=NONE',
+    'MOTION_REDUCED_SELECTED_CHANGE=CONCURRENT_OLD_SURFACE_FADE_OUT_AND_NEW_SURFACE_FADE_IN',
+    'MOTION_REDUCED_SURFACE_SET=.n-menu-item-content::before;.n-dropdown-option-body::before',
+    'MOTION_REDUCED_TRANSITION_PROPERTY=background-color;opacity',
+    'MOTION_REDUCED_TRANSITION_DURATION=var(--ui-motion-duration)',
+    'MOTION_REDUCED_TRANSITION_EASING=var(--ui-motion-easing)',
     'MOTION_REDUCED_LAYOUT_TRANSFORM_SPRING_SCALE_TRANSLATION=PROHIBITED',
+    'MOTION_REDUCED_OWNER_REVISION_REMOUNT=PROHIBITED',
+    'MOTION_REDUCED_ANIMATE_PRESENCE=PROHIBITED',
     'MOTION_NONE_SELECTED_CHANGE=IMMEDIATE_WITHOUT_LAYOUT_OPACITY_OR_ICON_ANIMATION',
+    'MOTION_NONE_ICON_RESPONSE=NONE',
     'MOTION_NONE_STALE_TRANSFORM_OR_OPACITY=PROHIBITED',
+    'MOTION_MODE_SWITCH_NAVIGATION_REPLAY=PROHIBITED',
+    'MOTION_MODE_SWITCH_SELECTED_OWNER_GAP_OR_FLASH=PROHIBITED',
+    'MOTION_NON_ROUTE_INPUT_SELECTED_TRANSITION_REPLAY=PROHIBITED',
     'PAVP_APPEARANCE_MOTION_AUTHORITY=SOLE',
     'DEVICE_MEDIA_QUERY_PRODUCT_AUTHORITY=PROHIBITED',
     'SECOND_MOTION_PREFERENCE_OR_RESOLVER=PROHIBITED',
@@ -7849,19 +7904,19 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       ),
     ],
     [
-      'admin-navigation-motion-vue-selection-lens-implementation-falsely-complete',
-      'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_IMPLEMENTATION_PREMATURE',
+      'admin-navigation-motion-vue-selection-lens-implementation-regresses-not-started',
+      'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_IMPLEMENTATION_STATE',
       architectureSource.replace(
-        `${adminNavigationMotionVueSelectionLensWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
         `${adminNavigationMotionVueSelectionLensWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+        `${adminNavigationMotionVueSelectionLensWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
       ),
     ],
     [
-      'admin-navigation-motion-vue-selection-lens-static-falsely-pass',
-      'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_STATIC_VERIFICATION_PREMATURE',
+      'admin-navigation-motion-vue-selection-lens-static-regresses-not-run',
+      'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_STATIC_VERIFICATION_STATE',
       architectureSource.replace(
-        `${adminNavigationMotionVueSelectionLensWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
         `${adminNavigationMotionVueSelectionLensWorkPackage}_STATIC_VERIFICATION=PASS`,
+        `${adminNavigationMotionVueSelectionLensWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
       ),
     ],
     [
@@ -7974,6 +8029,767 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
           !baselineFailureCodes.includes(expectedFailureCode) &&
           admissionFailureCodes.length === 1 &&
           admissionFailureCodes[0] === expectedFailureCode,
+      })
+    }),
+  )
+}
+
+function adminNavigationMotionVueSelectionLensSourceInvariantResults(
+  snapshot: AdminNavigationNativeSourceSnapshot,
+): readonly Readonly<{ code: string; passed: boolean }>[] {
+  const shellScript = scriptContent(snapshot.shellSource)
+  const shellTemplate = templateContent(snapshot.shellSource)
+  const shellStyles = styleContent(snapshot.shellSource)
+  const lensScript = scriptContent(snapshot.motionSelectionLensSource)
+  const normalizedLensScript = lensScript.replaceAll(/\s+/gu, ' ')
+  const lensTemplate = templateContent(snapshot.motionSelectionLensSource)
+  const normalizedMotionRuntimeSource = snapshot.motionRuntimeSource.replaceAll(/\s+/gu, ' ')
+  const motionPrivateSource = [
+    snapshot.motionSelectionLensSource,
+    snapshot.motionRuntimeSource,
+    snapshot.motionDomMaxSource,
+  ].join('\n')
+  const outsideMotionPrivateSource = snapshot.outsideMotionPrivateSource
+  const ownerFunctionStart = shellScript.indexOf(
+    'function isPersistentNavigationSelectionLensOwner',
+  )
+  const ownerFunctionEnd =
+    ownerFunctionStart === -1
+      ? -1
+      : shellScript.indexOf('\nfunction toggleExpandedNavigationGroup', ownerFunctionStart)
+  const ownerFunctionSource =
+    ownerFunctionStart === -1
+      ? ''
+      : shellScript.slice(
+          ownerFunctionStart,
+          ownerFunctionEnd === -1 ? shellScript.length : ownerFunctionEnd,
+        )
+  const shellRules = cssRuleBlocks(shellStyles)
+  const selectionLensRule = shellRules.find(
+    (rule) => rule.selector.trim() === '.pavp-admin-navigation-selection-lens',
+  )
+  const selectionLensDeclarations = selectionLensRule?.declarations ?? ''
+  const persistentSurfaceSelector =
+    "[data-pavp-admin-navigation='persistent'] .n-menu-item-content::before"
+  const popupSurfaceSelector = '.pavp-admin-navigation-dropdown .n-dropdown-option-body::before'
+  const reducedPersistentSurfaceSelector =
+    "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before"
+  const reducedPopupSurfaceSelector =
+    "html[data-motion='reduced'] .pavp-admin-navigation-dropdown .n-dropdown-option .n-dropdown-option-body::before"
+  const nonePersistentSurfaceSelector =
+    "html[data-motion='none'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before"
+  const nonePopupSurfaceSelector =
+    "html[data-motion='none'] .pavp-admin-navigation-dropdown .n-dropdown-option .n-dropdown-option-body::before"
+  const fullReadyExpandedFallbackSelector =
+    ".pavp-admin-shell[data-navigation-collapsed='false'] [data-pavp-admin-navigation-motion-ready='true'] .n-menu-item-content--selected::before"
+  const fullReadyCollapsedFallbackSelector =
+    ".pavp-admin-shell[data-navigation-collapsed='true'] [data-pavp-admin-navigation-motion-ready='true'] .n-menu-item-content.n-menu-item-content--child-active::before"
+  const expandedRootIdleSurfaceSelector =
+    ".pavp-admin-shell[data-navigation-collapsed='false'] [data-pavp-admin-navigation='persistent'] .n-menu > .n-submenu > .n-menu-item-content:where(:not(.n-menu-item-content--hover):not(:hover))::before"
+  const expandedActiveRootBaselineSelector =
+    ".pavp-admin-shell[data-navigation-collapsed='false'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content--child-active:not(.n-menu-item-content--hover):not(:hover)::before"
+  const reducedForegroundStart = snapshot.providerSource.indexOf(
+    "html[data-motion='reduced']\n  :where(\n    [data-pavp-admin-navigation='persistent'] .n-menu-item-content__icon,",
+  )
+  const reducedForegroundEnd =
+    reducedForegroundStart === -1
+      ? -1
+      : snapshot.providerSource.indexOf(
+          "\nhtml[data-motion='reduced'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transition-enter-from",
+          reducedForegroundStart,
+        )
+  const reducedForegroundSource =
+    reducedForegroundStart === -1
+      ? ''
+      : snapshot.providerSource.slice(
+          reducedForegroundStart,
+          reducedForegroundEnd === -1 ? snapshot.providerSource.length : reducedForegroundEnd,
+        )
+  const motionImportPattern = /\bfrom\s+['"]motion-v(?:\/[^'"]*)?['"]/u
+  const forbiddenMotionLifecyclePattern =
+    /\b(?:querySelector|getElementById|getBoundingClientRect|getComputedStyle|closest|cloneNode|setTimeout|setInterval|requestAnimationFrame|cancelAnimationFrame|MutationObserver|ResizeObserver)\s*\(|\b(?:document|window|globalThis)\./u
+  const rejectedSelectionDecorationPattern =
+    /SelectionFeedbackPhase|selectionFeedback|data-pavp-admin-selection-feedback|idle-a|idle-b|selection-bloom|Bloom|moving-pill|movingPill|route-selection-aura|hard-route-dot|left-selection/iu
+  const publicShellContractStart = shellScript.indexOf('const props = defineProps<')
+  const publicShellContractEnd =
+    publicShellContractStart === -1
+      ? -1
+      : shellScript.indexOf('\nconst emit = defineEmits<', publicShellContractStart)
+  const publicShellContractSource =
+    publicShellContractStart === -1
+      ? ''
+      : shellScript.slice(
+          publicShellContractStart,
+          publicShellContractEnd === -1 ? shellScript.length : publicShellContractEnd,
+        )
+  const runtimeLoadStart = snapshot.motionRuntimeSource.indexOf(
+    'async function startAfterStableMount',
+  )
+  const runtimeLoadSource =
+    runtimeLoadStart === -1 ? '' : snapshot.motionRuntimeSource.slice(runtimeLoadStart)
+
+  return Object.freeze([
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_PRIVATE_INTEGRATION',
+      passed:
+        exactOccurrenceCount(
+          shellScript,
+          "import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'",
+        ) === 1 &&
+        [...shellTemplate.matchAll(/<AdminNavigationSelectionLens(?=[\s>])/gu)].length === 1 &&
+        shellTemplate.includes('v-slot="{ featureReady, renderIcon }"') &&
+        shellTemplate.includes(':render-icon="renderIcon"') &&
+        shellTemplate.includes(':render-base-icon="renderNavigationMenuIcon"') &&
+        !shellTemplate
+          .slice(shellTemplate.indexOf('<Teleport to="#pavp-overlay-root">'))
+          .includes('<AdminNavigationSelectionLens'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_OWNER_PROJECTION',
+      passed:
+        ownerFunctionSource.includes("if (profile.value === 'narrow')") &&
+        ownerFunctionSource.includes('return false') &&
+        ownerFunctionSource.includes(
+          "return optionKind === 'group' && option.key === activeNavigationGroupKey.value",
+        ) &&
+        ownerFunctionSource.includes(
+          "return optionKind === 'route' && navigationOptionRouteName(option) === props.activeRouteName",
+        ) &&
+        !shellTemplate.includes(':owner-key=') &&
+        !lensScript.includes('ownerKey'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_UNIQUE_LAYOUT_ID',
+      passed:
+        exactOccurrenceCount(
+          lensScript,
+          "const selectionLensLayoutId = 'pavp-admin-navigation-selection-lens'",
+        ) === 1 &&
+        exactOccurrenceCount(lensScript, 'layoutId: selectionLensLayoutId') === 1 &&
+        exactOccurrenceCount(lensScript, 'layoutId:') === 1,
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_LAZY_STRICT_RUNTIME',
+      passed:
+        exactOccurrenceCount(lensScript, "import { m, type MotionProps } from 'motion-v'") === 1 &&
+        snapshot.motionRuntimeSource.includes(
+          "import { LayoutGroup, LazyMotion, MotionConfig, type domMax } from 'motion-v'",
+        ) &&
+        exactOccurrenceCount(lensScript, 'h(m.div, {') === 1 &&
+        lensScript.includes('satisfies MotionProps & HTMLAttributes & VNodeProps') &&
+        !lensScript.includes('const MotionSelectionLens') &&
+        !lensScript.includes('type Component') &&
+        exactOccurrenceCount(lensTemplate, '<LazyMotion') === 1 &&
+        exactOccurrenceCount(lensTemplate, '<MotionConfig') === 1 &&
+        exactOccurrenceCount(lensTemplate, '<LayoutGroup>') === 1 &&
+        /<LazyMotion\s+[\s\S]*?:features="features"[\s\S]*?\sstrict\s*>/u.test(lensTemplate) &&
+        !/\bimport\s*\{[^}]*\bMotion\b[^}]*\}\s*from\s*['"]motion-v['"]/u.test(motionPrivateSource),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_ASYNC_DOM_MAX',
+      passed:
+        exactOccurrenceCount(
+          snapshot.motionRuntimeSource,
+          "import('./admin-navigation-dom-max')",
+        ) === 1 &&
+        snapshot.motionDomMaxSource.trim() === "export { domMax as default } from 'motion-v'" &&
+        [...motionPrivateSource.matchAll(/\bimport\s*\(/gu)].length === 1 &&
+        runtimeLoadSource.includes('await nextTick()') &&
+        runtimeLoadSource.indexOf('loadAdminNavigationDomMax()') >
+          runtimeLoadSource.indexOf('await nextTick()') &&
+        !/import\s*\{\s*domMax\s*\}\s*from\s*['"]motion-v['"]/u.test(snapshot.motionRuntimeSource),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_FULL_PROFILE',
+      passed:
+        lensScript.includes("type: 'spring'") &&
+        lensScript.includes('visualDuration: 0.26') &&
+        lensScript.includes('bounce: 0.16') &&
+        lensScript.includes('delay: 0') &&
+        lensScript.includes("props.motion === 'full' ? 'never' : 'always'") &&
+        normalizedLensScript.includes(
+          'layoutId: selectionLensLayoutId, transition: fullLayoutTransition',
+        ),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
+      passed:
+        normalizedLensScript.includes(
+          "featureReady.value && props.motion === 'full' && props.isOwner(option)",
+        ) &&
+        !lensScript.includes("props.motion === 'reduced'") &&
+        !lensScript.includes('reducedSelectionTransition') &&
+        !lensScript.includes('duration: 0.1') &&
+        selectorHasDeclarations(shellRules, reducedPersistentSurfaceSelector, {
+          transform: 'none',
+          'transition-duration': 'var(--ui-motion-duration)',
+          'transition-property': 'background-color, opacity',
+          'transition-timing-function': 'var(--ui-motion-easing)',
+        }) &&
+        selectorHasDeclarations(shellRules, reducedPopupSurfaceSelector, {
+          transform: 'none',
+          'transition-duration': 'var(--ui-motion-duration)',
+          'transition-property': 'background-color, opacity',
+          'transition-timing-function': 'var(--ui-motion-easing)',
+        }) &&
+        !reducedForegroundSource.includes('opacity') &&
+        reducedForegroundSource.includes('transition-property: color !important;'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_NONE_PROFILE',
+      passed:
+        lensScript.includes("const skipAnimations = computed(() => props.motion === 'none')") &&
+        !lensScript.includes("props.motion === 'none' && props.isOwner(option)") &&
+        !shellStyles.includes('.pavp-admin-navigation-selection-lens--none') &&
+        selectorHasDeclarations(shellRules, nonePersistentSurfaceSelector, {
+          animation: 'none',
+          transform: 'none',
+          transition: 'none',
+        }) &&
+        selectorHasDeclarations(shellRules, nonePopupSurfaceSelector, {
+          animation: 'none',
+          transform: 'none',
+          transition: 'none',
+        }),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_READINESS_CUTOVER',
+      passed:
+        snapshot.motionRuntimeSource.includes('const mutableFeatureReady = ref(false)') &&
+        exactOccurrenceCount(snapshot.motionRuntimeSource, 'mutableFeatureReady.value = true') ===
+          1 &&
+        shellTemplate.includes("featureReady && appearance.motion === 'full' ? 'true' : 'false'") &&
+        shellStyles.includes("[data-pavp-admin-navigation-motion-ready='true']") &&
+        exactOccurrenceCount(lensScript, 'initial: false') === 1 &&
+        !/\b(?:queue|replay|missedInteraction)\b/iu.test(motionPrivateSource),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_FAILURE_FALLBACK',
+      passed:
+        snapshot.motionRuntimeSource.includes('.catch(() => undefined)') &&
+        snapshot.motionRuntimeSource.includes('if (loadedFeatures === undefined)') &&
+        normalizedMotionRuntimeSource.includes('if (loadedFeatures === undefined) { return }') &&
+        !/\.catch\([^)]*=>\s*\{?\s*throw\b/u.test(snapshot.motionRuntimeSource) &&
+        !/mutableFeatureReady\.value\s*=\s*true/u.test(
+          snapshot.motionRuntimeSource.slice(
+            snapshot.motionRuntimeSource.indexOf('if (loadedFeatures === undefined)'),
+            snapshot.motionRuntimeSource.indexOf(
+              'if (isDisposed())',
+              snapshot.motionRuntimeSource.indexOf('if (loadedFeatures === undefined)') + 1,
+            ),
+          ),
+        ),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_UNMOUNT_LIFECYCLE',
+      passed:
+        exactOccurrenceCount(lensScript, 'onBeforeUnmount(dispose)') === 1 &&
+        snapshot.motionRuntimeSource.includes('runtimeState.disposed = true') &&
+        exactOccurrenceCount(snapshot.motionRuntimeSource, 'if (isDisposed())') === 2 &&
+        runtimeLoadSource.indexOf('if (isDisposed())') <
+          runtimeLoadSource.indexOf('const loadedFeatures = await loadAdminNavigationDomMax()') &&
+        runtimeLoadSource.lastIndexOf('if (isDisposed())') >
+          runtimeLoadSource.indexOf('const loadedFeatures = await loadAdminNavigationDomMax()') &&
+        runtimeLoadSource.includes('if (!isDisposed())'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_NO_FORBIDDEN_DOM_LIFECYCLE',
+      passed: !forbiddenMotionLifecyclePattern.test(motionPrivateSource),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_NO_ROUTE_MOTION',
+      passed:
+        !/RouterView|useRoute|routeMotion|routeTransition|route-content|<Transition\b/iu.test(
+          motionPrivateSource,
+        ) &&
+        exactOccurrenceCount(snapshot.appSource, '<RouterView') === 1 &&
+        !/<Transition\b/u.test(snapshot.appSource) &&
+        snapshot.architectureSource.includes('PAVP_RUNTIME_005_CHANGE=NONE') &&
+        snapshot.architectureSource.includes('ROUTE_CONTENT_HOST=STABLE_UNKEYED'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_NO_PUBLIC_LEAK',
+      passed:
+        !motionImportPattern.test(outsideMotionPrivateSource) &&
+        !motionImportPattern.test(snapshot.publicUiRootSource) &&
+        !/AdminNavigationSelectionLens|admin-navigation-motion-runtime|admin-navigation-dom-max/u.test(
+          snapshot.publicUiRootSource,
+        ) &&
+        !/\b(?:MotionConfig|LazyMotion|LayoutGroup|MotionProps|domMax)\b/u.test(
+          publicShellContractSource,
+        ) &&
+        !/readonly\s+motion\s*:/u.test(publicShellContractSource),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_NO_REJECTED_BLOOM',
+      passed:
+        !rejectedSelectionDecorationPattern.test(
+          `${snapshot.shellSource}\n${snapshot.providerSource}\n${motionPrivateSource}`,
+        ) &&
+        !/\[data-pavp-admin-navigation=['"]persistent['"]\][^{}]*::after/iu.test(shellStyles) &&
+        !/\.pavp-admin-navigation-selection-lens::after/iu.test(shellStyles),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_TOKEN_SURFACE',
+      passed:
+        selectionLensDeclarations.includes('position: absolute;') &&
+        selectionLensDeclarations.includes('inset-block: 0;') &&
+        selectionLensDeclarations.includes(
+          'inset-inline: calc(var(--ui-space-content-gap) / 2);',
+        ) &&
+        selectionLensDeclarations.includes('border-radius: var(--ui-radius-panel);') &&
+        selectionLensDeclarations.includes('var(--ui-admin-navigation-selected) 16%') &&
+        selectionLensDeclarations.includes('var(--ui-material-overlay-background)') &&
+        selectionLensDeclarations.includes('pointer-events: none;') &&
+        !/\b(?:box-shadow|filter|backdrop-filter)\s*:/iu.test(selectionLensDeclarations) &&
+        lensScript.includes("'aria-hidden': 'true'") &&
+        lensScript.includes("zIndex: 'calc(var(--ui-z-base) - 1)'") &&
+        normalizedLensScript.includes(
+          '? renderSelectionLens() : null, props.renderBaseIcon(option)',
+        ),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_PERSISTENT_CROSSFADE_SURFACES',
+      passed:
+        selectorHasDeclarations(shellRules, persistentSurfaceSelector, {
+          opacity: '0',
+          transform: 'none',
+          'transition-duration': 'var(--ui-motion-duration)',
+          'transition-property': 'background-color, opacity',
+          'transition-timing-function': 'var(--ui-motion-easing)',
+        }) &&
+        selectorHasDeclarations(shellRules, popupSurfaceSelector, {
+          opacity: '0',
+          transform: 'none',
+          'transition-duration': 'var(--ui-motion-duration)',
+          'transition-property': 'background-color, opacity',
+          'transition-timing-function': 'var(--ui-motion-easing)',
+        }) &&
+        selectorHasDeclarations(shellRules, expandedRootIdleSurfaceSelector, {
+          visibility: 'hidden',
+        }) &&
+        selectorHasDeclarations(shellRules, expandedActiveRootBaselineSelector, {
+          opacity: '1',
+          transform: 'none',
+        }) &&
+        exactOccurrenceCount(shellTemplate, '<PavpMenuPrimitive') === 1 &&
+        shellTemplate.includes(':options="navigationMenuOptions"') &&
+        shellTemplate.includes(':value="activeRouteName"') &&
+        !/<PavpMenuPrimitive[\s\S]*?:key=/u.test(
+          shellTemplate.slice(
+            shellTemplate.indexOf('<PavpMenuPrimitive'),
+            shellTemplate.indexOf('/>', shellTemplate.indexOf('<PavpMenuPrimitive')),
+          ),
+        ),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_STATE_FORMULAS',
+      passed:
+        exactOccurrenceCount(
+          snapshot.themeSource,
+          'color-mix(in srgb, var(--ui-admin-navigation-selected) 6%, var(--ui-material-chrome-background))',
+        ) === 1 &&
+        exactOccurrenceCount(
+          snapshot.themeSource,
+          'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))',
+        ) === 1 &&
+        snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
+        snapshot.themeSource.includes('itemColorActive: navigationSelectedSurface') &&
+        snapshot.themeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
+        snapshot.themeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
+        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+        snapshot.themeSource.includes('optionColorActive: navigationSelectedSurface'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_FALLBACK_EXCLUSIVITY',
+      passed:
+        selectorHasDeclarations(shellRules, fullReadyExpandedFallbackSelector, {
+          opacity: '1',
+          transform: 'none',
+          transition: 'none',
+          visibility: 'hidden',
+        }) &&
+        selectorHasDeclarations(shellRules, fullReadyCollapsedFallbackSelector, {
+          opacity: '1',
+          transform: 'none',
+          transition: 'none',
+          visibility: 'hidden',
+        }) &&
+        !cssDeclarationsForSelector(shellRules, fullReadyExpandedFallbackSelector)?.includes(
+          'background: transparent',
+        ),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_SINGLE_NATIVE_NAVIGATION',
+      passed:
+        exactOccurrenceCount(shellTemplate, '<PavpLayoutSiderPrimitive') === 1 &&
+        exactOccurrenceCount(shellTemplate, '<PavpMenuPrimitive') === 1 &&
+        exactOccurrenceCount(shellScript, 'const persistentNavigationCollapsed = computed(') === 1,
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_NO_REDUCED_PRESENCE_OR_REMOUNT',
+      passed:
+        !/AnimatePresence|reducedOwnerRevision|animateReducedOwnerChange|readyOwnerKey|ownerRevision/u.test(
+          motionPrivateSource,
+        ) &&
+        !lensScript.includes("if (props.motion === 'reduced')") &&
+        !lensScript.includes("if (props.motion === 'none')") &&
+        !shellStyles.includes('.pavp-admin-navigation-selection-lens--reduced') &&
+        !shellStyles.includes('.pavp-admin-navigation-selection-lens--none'),
+    },
+    {
+      code: 'ADMIN_NAV_MOTION_VUE_DEPENDENCY_ROOT_BUDGET_CLOSURE',
+      passed:
+        snapshot.workspaceSource.includes('motion-v: 2.4.0') &&
+        snapshot.workspaceSource.includes("'@vueuse/core': 14.4.0") &&
+        snapshot.lockSource.includes('motion-v@2.4.0') &&
+        snapshot.lockSource.includes('@vueuse/core@14.4.0') &&
+        snapshot.lockSource.includes('motion-v@2.4.0:') &&
+        snapshot.lockSource.includes('path: patches/motion-v@2.4.0.patch') &&
+        snapshot.projectConfigSource.includes(
+          'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
+        ) &&
+        snapshot.engineeringManifestSource.includes(
+          "id: 'admin-navigation-motion-feature-javascript-gzip'",
+        ) &&
+        snapshot.engineeringManifestSource.includes('limit: 49152') &&
+        snapshot.checkBundleSource.includes(
+          "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
+        ) &&
+        snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
+        snapshot.checkBundleSource.includes(
+          'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
+        ) &&
+        snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
+        snapshot.routeCount === 17 &&
+        snapshot.runtimeKernelStepCount === 11 &&
+        snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
+        snapshot.storageRecordCount === 2,
+    },
+  ])
+}
+
+function adminNavigationMotionVueSelectionLensSourceViolations(
+  snapshot: AdminNavigationNativeSourceSnapshot,
+): string[] {
+  return adminNavigationMotionVueSelectionLensSourceInvariantResults(snapshot)
+    .filter((result) => !result.passed)
+    .map((result) => result.code)
+}
+
+function runAdminNavigationMotionVueSelectionLensSourceNegativeProbes(
+  baseline: AdminNavigationNativeSourceSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = adminNavigationMotionVueSelectionLensSourceViolations(baseline)
+  const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
+    [
+      'admin-navigation-motion-vue-removes-private-integration',
+      'ADMIN_NAV_MOTION_VUE_PRIVATE_INTEGRATION',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          "import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'\n",
+          '',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-drifts-owner-projection',
+      'ADMIN_NAV_MOTION_VUE_OWNER_PROJECTION',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          "return optionKind === 'group' && option.key === activeNavigationGroupKey.value",
+          "return optionKind === 'route' && option.key === activeNavigationGroupKey.value",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-drifts-layout-id',
+      'ADMIN_NAV_MOTION_VUE_UNIQUE_LAYOUT_ID',
+      {
+        ...baseline,
+        motionSelectionLensSource: baseline.motionSelectionLensSource.replace(
+          "const selectionLensLayoutId = 'pavp-admin-navigation-selection-lens'",
+          "const selectionLensLayoutId = 'pavp-admin-navigation-selection-pill'",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-disables-lazy-strict-mode',
+      'ADMIN_NAV_MOTION_VUE_LAZY_STRICT_RUNTIME',
+      {
+        ...baseline,
+        motionSelectionLensSource: baseline.motionSelectionLensSource.replace(
+          '\n    strict\n',
+          '\n',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-drifts-async-dom-max-root',
+      'ADMIN_NAV_MOTION_VUE_ASYNC_DOM_MAX',
+      {
+        ...baseline,
+        motionRuntimeSource: baseline.motionRuntimeSource.replace(
+          "import('./admin-navigation-dom-max')",
+          "import('./admin-navigation-dom-animation')",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-drifts-full-spring',
+      'ADMIN_NAV_MOTION_VUE_FULL_PROFILE',
+      {
+        ...baseline,
+        motionSelectionLensSource: baseline.motionSelectionLensSource.replace(
+          'visualDuration: 0.26',
+          'visualDuration: 0.27',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-expands-reduced-duration',
+      'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\nhtml[data-motion='reduced']\n  .pavp-admin-navigation-dropdown\n  .n-dropdown-option\n  .n-dropdown-option-body::before {\n  transform: none;\n  transition-duration: var(--ui-motion-duration);",
+          "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\nhtml[data-motion='reduced']\n  .pavp-admin-navigation-dropdown\n  .n-dropdown-option\n  .n-dropdown-option-body::before {\n  transform: none;\n  transition-duration: calc(var(--ui-motion-duration) * 2);",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-removes-none-branch',
+      'ADMIN_NAV_MOTION_VUE_NONE_PROFILE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          'animation: none;\n  transform: none;\n  transition: none;',
+          'animation: none;\n  transform: none;\n  transition: opacity var(--ui-motion-duration);',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-splits-readiness-fallback',
+      'ADMIN_NAV_MOTION_VUE_READINESS_CUTOVER',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          "featureReady && appearance.motion === 'full' ? 'true' : 'false'",
+          "featureReady ? 'true' : 'false'",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-rethrows-feature-load-failure',
+      'ADMIN_NAV_MOTION_VUE_FAILURE_FALLBACK',
+      {
+        ...baseline,
+        motionRuntimeSource: baseline.motionRuntimeSource.replace(
+          '.catch(() => undefined)',
+          '.catch((error: unknown) => { throw error })',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-removes-unmount-disposal',
+      'ADMIN_NAV_MOTION_VUE_UNMOUNT_LIFECYCLE',
+      {
+        ...baseline,
+        motionSelectionLensSource: baseline.motionSelectionLensSource.replace(
+          '\nonBeforeUnmount(dispose)\n',
+          '\n',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-adds-animation-frame-lifecycle',
+      'ADMIN_NAV_MOTION_VUE_NO_FORBIDDEN_DOM_LIFECYCLE',
+      {
+        ...baseline,
+        motionRuntimeSource: `${baseline.motionRuntimeSource}\nrequestAnimationFrame(() => undefined)\n`,
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-adds-route-motion',
+      'ADMIN_NAV_MOTION_VUE_NO_ROUTE_MOTION',
+      {
+        ...baseline,
+        motionRuntimeSource: `${baseline.motionRuntimeSource}\nconst routeMotionIntent = true\n`,
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-leaks-public-export',
+      'ADMIN_NAV_MOTION_VUE_NO_PUBLIC_LEAK',
+      {
+        ...baseline,
+        publicUiRootSource: `${baseline.publicUiRootSource}\nexport { m } from 'motion-v'\n`,
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-restores-selection-bloom-state',
+      'ADMIN_NAV_MOTION_VUE_NO_REJECTED_BLOOM',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '</script>',
+          "type SelectionFeedbackPhase = 'idle-a' | 'idle-b'\n</script>",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-motion-vue-makes-lens-pointer-target',
+      'ADMIN_NAV_MOTION_VUE_TOKEN_SURFACE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '  pointer-events: none;\n}',
+          '  pointer-events: auto;\n}',
+        ),
+      },
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
+      const failureCodes = adminNavigationMotionVueSelectionLensSourceViolations(mutatedSnapshot)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          !isDeepStrictEqual(mutatedSnapshot, baseline) &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          isDeepStrictEqual(failureCodes, [expectedFailureCode]),
+      })
+    }),
+  )
+}
+
+function runAdminNavigationReducedCrossfadeNegativeProbes(
+  baseline: AdminNavigationNativeSourceSnapshot,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = adminNavigationMotionVueSelectionLensSourceViolations(baseline)
+  const reducedSurfaceBlock =
+    "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\nhtml[data-motion='reduced']\n  .pavp-admin-navigation-dropdown\n  .n-dropdown-option\n  .n-dropdown-option-body::before {\n  transform: none;\n  transition-duration: var(--ui-motion-duration);\n  transition-property: background-color, opacity;\n  transition-timing-function: var(--ui-motion-easing);\n}"
+  const noneSurfaceBlock =
+    "html[data-motion='none'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\nhtml[data-motion='none']\n  .pavp-admin-navigation-dropdown\n  .n-dropdown-option\n  .n-dropdown-option-body::before {\n  animation: none;\n  transform: none;\n  transition: none;\n}"
+  const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
+    [
+      'admin-navigation-reduced-crossfade-renders-motion-lens',
+      'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
+      {
+        ...baseline,
+        motionSelectionLensSource: baseline.motionSelectionLensSource.replace(
+          "featureReady.value && props.motion === 'full' && props.isOwner(option)",
+          "featureReady.value && props.motion !== 'none' && props.isOwner(option)",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-restores-raw-point-one-duration',
+      'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          reducedSurfaceBlock,
+          reducedSurfaceBlock.replace(
+            'transition-duration: var(--ui-motion-duration);',
+            'transition-duration: 0.1s;',
+          ),
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-restores-half-duration',
+      'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          reducedSurfaceBlock,
+          reducedSurfaceBlock.replace(
+            'transition-duration: var(--ui-motion-duration);',
+            'transition-duration: calc(var(--ui-motion-duration) / 2);',
+          ),
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-adds-transform-scale',
+      'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          reducedSurfaceBlock,
+          reducedSurfaceBlock.replace('transform: none;', 'transform: scale(0.98);'),
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-disables-feature-ready-fallback',
+      'ADMIN_NAV_MOTION_VUE_READINESS_CUTOVER',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          "featureReady && appearance.motion === 'full' ? 'true' : 'false'",
+          "featureReady ? 'true' : 'false'",
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-stacks-lens-and-naive-surface',
+      'ADMIN_NAV_MOTION_VUE_FALLBACK_EXCLUSIVITY',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '  transition: none;\n  visibility: hidden;\n}',
+          '  transition: none;\n  visibility: visible;\n}',
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-allows-none-transition',
+      'ADMIN_NAV_MOTION_VUE_NONE_PROFILE',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          noneSurfaceBlock,
+          noneSurfaceBlock.replace(
+            'transition: none;',
+            'transition: opacity var(--ui-motion-duration);',
+          ),
+        ),
+      },
+    ],
+    [
+      'admin-navigation-reduced-crossfade-adds-route-motion-and-drifts-runtime-005',
+      'ADMIN_NAV_MOTION_VUE_NO_ROUTE_MOTION',
+      {
+        ...baseline,
+        appSource: baseline.appSource.replace(
+          '<RouterView v-slot="{ Component }">',
+          '<Transition name="pavp-route"><RouterView v-slot="{ Component }">',
+        ),
+        architectureSource: baseline.architectureSource.replace(
+          'PAVP_RUNTIME_005_CHANGE=NONE',
+          'PAVP_RUNTIME_005_CHANGE=ROUTE_ANIMATION',
+        ),
+      },
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
+      const failureCodes = adminNavigationMotionVueSelectionLensSourceViolations(mutatedSnapshot)
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          !isDeepStrictEqual(mutatedSnapshot, baseline) &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          isDeepStrictEqual(failureCodes, [expectedFailureCode]),
       })
     }),
   )
@@ -11241,11 +12057,13 @@ function adminNavigationNativeSourceInvariantResults(
   const prohibitedCompensationPattern =
     /mainContentPlane|main-content-bridge|renderMainContentBridge|mainContentCompensation/iu
   const prohibitedRevealPattern =
-    /route-selection-aura|routeAura|selected-reveal|reveal-plane|moving-pill|movingPill/iu
+    /route-selection-aura|routeAura|selected-reveal|reveal-plane|moving-pill|movingPill|selection-bloom|hard-route-dot|left-selection/iu
   const prohibitedAnimationStatePattern =
-    /collapseTimeline|routeTimeline|requestAnimationFrame|navigationMotionState|routeMotionIntent/iu
+    /collapseTimeline|routeTimeline|requestAnimationFrame|navigationMotionState|routeMotionIntent|SelectionFeedbackPhase|selectionFeedback|idle-a|idle-b/iu
   const exactUiDependencies = {
     '@platform/design-system': 'workspace:*',
+    '@vueuse/core': 'catalog:',
+    'motion-v': 'catalog:',
     'naive-ui': 'catalog:',
     vue: 'catalog:',
   } as const
@@ -11253,6 +12071,9 @@ function adminNavigationNativeSourceInvariantResults(
   const uiDependencies = isJsonObject(uiManifest['dependencies']) ? uiManifest['dependencies'] : {}
   const workspace = parseYaml(snapshot.workspaceSource) as JsonObject
   const workspaceCatalog = isJsonObject(workspace['catalog']) ? workspace['catalog'] : {}
+  const workspacePatchedDependencies = isJsonObject(workspace['patchedDependencies'])
+    ? workspace['patchedDependencies']
+    : {}
   const lockfile = parseYaml(snapshot.lockSource) as JsonObject
   const lockCatalogs = isJsonObject(lockfile['catalogs']) ? lockfile['catalogs'] : {}
   const lockDefaultCatalog = isJsonObject(lockCatalogs['default']) ? lockCatalogs['default'] : {}
@@ -11263,8 +12084,28 @@ function adminNavigationNativeSourceInvariantResults(
     : {}
   const lockPackages = isJsonObject(lockfile['packages']) ? lockfile['packages'] : {}
   const lockSnapshots = isJsonObject(lockfile['snapshots']) ? lockfile['snapshots'] : {}
-  const dependencyRemovalOnly =
+  const lockPatchedDependencies = isJsonObject(lockfile['patchedDependencies'])
+    ? lockfile['patchedDependencies']
+    : {}
+  const motionPatchLockRecord = isJsonObject(lockPatchedDependencies['motion-v@2.4.0'])
+    ? lockPatchedDependencies['motion-v@2.4.0']
+    : {}
+  const scopedMotionDependencyClosure =
     isDeepStrictEqual(uiDependencies, exactUiDependencies) &&
+    workspaceCatalog['motion-v'] === expectedMotionVueVersion &&
+    workspaceCatalog['@vueuse/core'] === expectedVueUseCoreVersion &&
+    isDeepStrictEqual(
+      Object.keys(workspacePatchedDependencies).filter((key) => key.startsWith('motion-v@')),
+      ['motion-v@2.4.0'],
+    ) &&
+    workspacePatchedDependencies['motion-v@2.4.0'] === 'patches/motion-v@2.4.0.patch' &&
+    isDeepStrictEqual(
+      Object.keys(lockPatchedDependencies).filter((key) => key.startsWith('motion-v@')),
+      ['motion-v@2.4.0'],
+    ) &&
+    motionPatchLockRecord['hash'] ===
+      'fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59' &&
+    motionPatchLockRecord['path'] === 'patches/motion-v@2.4.0.patch' &&
     !Object.hasOwn(workspaceCatalog, 'gsap') &&
     !Object.hasOwn(lockDefaultCatalog, 'gsap') &&
     !Object.hasOwn(uiImporterDependencies, 'gsap') &&
@@ -11317,34 +12158,22 @@ function adminNavigationNativeSourceInvariantResults(
   const fullSurfaceOwner =
     acceptedNativeFullSurfaceOwner || toleratedRejectedLocalFullSurfaceResidue
   const acceptedNativeReducedSurfaceOwner =
-    snapshot.providerSource.includes("html[data-motion='reduced']") &&
-    snapshot.providerSource.includes(
-      'transition-duration: calc(var(--ui-motion-duration) / 2) !important;',
-    ) &&
-    snapshot.providerSource.includes(
-      'transform: none !important;\n  transition-property: background-color, opacity !important;',
-    ) &&
-    snapshot.providerSource.includes(
-      "html[data-motion='reduced'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transition-enter-from",
-    ) &&
-    snapshot.providerSource.includes('transform: none !important;')
-  const toleratedRejectedLocalReducedSurfaceResidue =
     [
       "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before",
       "html[data-motion='reduced'] .pavp-admin-navigation-dropdown .n-dropdown-option .n-dropdown-option-body::before",
     ].every((selector) =>
       selectorHasDeclarations(shellRules, selector, {
         transform: 'none',
-        'transition-duration': 'calc(var(--ui-motion-duration) / 2)',
+        'transition-duration': 'var(--ui-motion-duration)',
         'transition-property': 'background-color, opacity',
         'transition-timing-function': 'var(--ui-motion-easing)',
       }),
     ) &&
     snapshot.providerSource.includes(
       "html[data-motion='reduced'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transition-enter-from",
-    )
-  const reducedSurfaceOwner =
-    acceptedNativeReducedSurfaceOwner || toleratedRejectedLocalReducedSurfaceResidue
+    ) &&
+    snapshot.providerSource.includes('transition-property: color !important;')
+  const reducedSurfaceOwner = acceptedNativeReducedSurfaceOwner
   const acceptedNativeNoneSurfaceOwner = snapshot.providerSource.includes(
     "html[data-motion='none']\n  :where(\n    [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\n    .pavp-admin-navigation-dropdown .n-dropdown-option-body::before\n  ) {\n  transform: none !important;\n}",
   )
@@ -11447,22 +12276,21 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes("to: '#pavp-overlay-root'") &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void') &&
     snapshot.appearancePageSource.includes('grid-template-columns: repeat(4, minmax(0, 1fr));')
-  const dynamicRootsAreRoutesOnly =
+  const dynamicRootsIncludeOnlyRoutesAndMotionFeature =
     snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
+    snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
     snapshot.checkBundleSource.includes(
-      'const expectedDynamicRootKeys = new Set(expectedLazyRouteKeys)',
-    ) &&
-    snapshot.checkBundleSource.includes(
-      'entryDynamicImports.length !== expectedDynamicRootKeys.size',
+      'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
     ) &&
     snapshot.checkBundleSource.includes(
-      'if (ownerKey !== entry[0] && (chunk.dynamicImports?.length ?? 0) !== 0)',
+      'const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])',
     ) &&
-    !/admin-navigation-motion|lazyMotionAdapterJavaScriptGzipBytes/iu.test(
-      snapshot.checkBundleSource + snapshot.projectConfigSource,
-    ) &&
-    exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") === 4 &&
-    !snapshot.engineeringManifestSource.includes('lazy-motion-adapter-javascript-gzip')
+    snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max') &&
+    snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:') &&
+    exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") === 5 &&
+    snapshot.engineeringManifestSource.includes(
+      "{ id: 'admin-navigation-motion-feature-javascript-gzip',",
+    )
 
   return Object.freeze([
     {
@@ -11502,8 +12330,7 @@ function adminNavigationNativeSourceInvariantResults(
       code: 'ADMIN_NAV_NATIVE_NO_GSAP',
       passed:
         !snapshot.adminNavigationMotionAdapterPresent &&
-        !/\bgsap\b/iu.test(sourceAndDependencyCorpus) &&
-        !/admin-navigation-motion/iu.test(sourceAndDependencyCorpus),
+        !/\bgsap\b/iu.test(sourceAndDependencyCorpus),
     },
     {
       code: 'ADMIN_NAV_NATIVE_SIDER_TRANSITION',
@@ -11576,12 +12403,12 @@ function adminNavigationNativeSourceInvariantResults(
       passed: snapshot.storageRecordCount === 2,
     },
     {
-      code: 'ADMIN_NAV_NATIVE_DEPENDENCY_REMOVAL_ONLY',
-      passed: dependencyRemovalOnly,
+      code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
+      passed: scopedMotionDependencyClosure,
     },
     {
       code: 'ADMIN_NAV_NATIVE_DYNAMIC_ROOTS',
-      passed: dynamicRootsAreRoutesOnly,
+      passed: dynamicRootsIncludeOnlyRoutesAndMotionFeature,
     },
   ])
 }
@@ -11759,7 +12586,7 @@ function adminNavigationCollapsedPopupInvariantResults(
       code: 'ADMIN_NAV_COLLAPSED_POPUP_RAIL_SINGLE_SURFACE',
       passed:
         railExtraSurfaceRules.length === 0 &&
-        railRejectedSelectionDecorationBaseRules.length <= 1 &&
+        railRejectedSelectionDecorationBaseRules.length === 0 &&
         shellStyles.includes(
           "[data-pavp-admin-navigation='persistent'] .n-menu-item-content::before",
         ) &&
@@ -12374,12 +13201,8 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         shellSource: baseline.shellSource.replace(
-          'transform: none;\n  transition-duration: calc(var(--ui-motion-duration) / 2);\n  transition-property: background-color, opacity;',
-          'transform: scale(0.98);\n  transition-duration: calc(var(--ui-motion-duration) / 2);\n  transition-property: background-color, opacity;',
-        ),
-        providerSource: baseline.providerSource.replace(
-          'transform: none !important;\n  transition-property: background-color, opacity !important;',
-          'transform: scale(0.98) !important;\n  transition-property: background-color, opacity !important;',
+          "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\nhtml[data-motion='reduced']\n  .pavp-admin-navigation-dropdown\n  .n-dropdown-option\n  .n-dropdown-option-body::before {\n  transform: none;\n  transition-duration: var(--ui-motion-duration);\n  transition-property: background-color, opacity;",
+          "html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,\nhtml[data-motion='reduced']\n  .pavp-admin-navigation-dropdown\n  .n-dropdown-option\n  .n-dropdown-option-body::before {\n  transform: scale(0.98);\n  transition-duration: var(--ui-motion-duration);\n  transition-property: background-color, opacity;",
         ),
       },
     ],
@@ -12462,8 +13285,8 @@ function runAdminNavigationNativeSourceNegativeProbes(
       { ...baseline, storageRecordCount: 3 },
     ],
     [
-      'admin-navigation-native-restores-gsap-dependency',
-      'ADMIN_NAV_NATIVE_DEPENDENCY_REMOVAL_ONLY',
+      'admin-navigation-native-adds-unadmitted-animation-dependency',
+      'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
       {
         ...baseline,
         uiManifestSource: baseline.uiManifestSource.replace(
@@ -12473,7 +13296,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       },
     ],
     [
-      'admin-navigation-native-restores-motion-dynamic-root',
+      'admin-navigation-native-drifts-motion-dynamic-root-set',
       'ADMIN_NAV_NATIVE_DYNAMIC_ROOTS',
       {
         ...baseline,
@@ -13624,7 +14447,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
           (rule) =>
             rule.selector ===
             "[data-pavp-admin-navigation='persistent'] .n-menu-item-content::after",
-        ).length <= 1 &&
+        ).length === 0 &&
         !/\.n-dropdown-option-body::after/iu.test(shellStyles) &&
         !/selected-reveal|reveal-plane|moving-pill|route-selection-aura/iu.test(
           snapshot.shellSource,
@@ -13807,24 +14630,69 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 
 function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): string[] {
   const violations: string[] = []
-  const expectedProjectConfigBudget = 'initialJavaScriptGzipBytes: 224 * 1024'
-  const expectedMinimumHeadroom = 'const minimumInitialJavaScriptHeadroomBytes = 8 * 1024'
-  const expectedEngineeringManifestBudget =
-    "{ id: 'initial-javascript-gzip', limit: 229376, unit: 'bytes-gzip' }"
+  const motionFeatureBudgetBytes =
+    projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
+  const expectedInitialProjectConfigBudget = `initialJavaScriptGzipBytes: ${String(expectedInitialJavaScriptBudgetBytes / 1024)} * 1024`
+  const expectedInitialEngineeringManifestBudget = `{ id: 'initial-javascript-gzip', limit: ${String(expectedInitialJavaScriptBudgetBytes)}, unit: 'bytes-gzip' }`
+  const expectedMotionEngineeringManifestBudget = `{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: ${String(motionFeatureBudgetBytes)}, unit: 'bytes-gzip' }`
   const requiredArchitectureMarkers = [
-    `WORK_PACKAGE=${adminNavigationNativeWorkPackage}`,
-    `INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
-    `INITIAL_JAVASCRIPT_MINIMUM_HEADROOM_BYTES=${String(expectedMinimumInitialJavaScriptHeadroomBytes)}`,
-    'NON_ROUTE_DYNAMIC_MOTION_ROOT_COUNT=0',
-    'EXACT_DYNAMIC_ROOT_COUNT=17',
-    'DYNAMIC_ROOT_SET=EXACT_REGISTERED_LAZY_ROUTES_ONLY',
-    'ROUTE_REGISTRY_RECORDS=17',
-    'INITIAL_CSS_AND_LAZY_ROUTE_BUDGET_CHANGE=NONE',
+    `WORK_PACKAGE=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+    'MOTION_FEATURE_ROOT_ID=admin-navigation-motion-dom-max',
+    'MOTION_FEATURE_MANIFEST_KEY=../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
+    'MOTION_FEATURE_DYNAMIC_ROOT_COUNT=1',
+    'FINAL_DYNAMIC_ROOT_COUNT=18',
+    'FINAL_ROUTE_DYNAMIC_ROOT_COUNT=17',
+    'FINAL_NON_ROUTE_DYNAMIC_ROOT_COUNT=1',
+    'DYNAMIC_ROOT_COLLECTION=UNION_OF_DYNAMIC_IMPORTS_FROM_EVERY_INITIAL_STATIC_CLOSURE_CHUNK',
+    'DYNAMIC_ENTRY_SET=EXACT_17_ROUTE_ROOTS_PLUS_1_MOTION_FEATURE_ROOT',
+    'MOTION_FEATURE_EXCLUSIVE_CLOSURE_FORMULA=MOTION_FEATURE_STATIC_CLOSURE minus INITIAL_STATIC_CLOSURE',
+    'MOTION_FEATURE_EXCLUSIVE_CLOSURE_MEASUREMENT=DISTINCT_JAVASCRIPT_PRODUCTION_GZIP_SUM',
+    'MOTION_FEATURE_PROJECT_CONFIG_BUDGET_PROPERTY=projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
+    'MOTION_FEATURE_ENGINEERING_MANIFEST_RECORD_ID=admin-navigation-motion-feature-javascript-gzip',
+    'MOTION_FEATURE_ENGINEERING_MANIFEST_UNIT=bytes-gzip',
+    'MOTION_FEATURE_BUDGET_FORMULA=ceil((MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES + 8192) / 8192) * 8192',
+    'MOTION_FEATURE_BUDGET_HEADROOM >= 8192',
+    'MOTION_FEATURE_BUDGET_HEADROOM < 16384',
+    'MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648',
+    `MOTION_FEATURE_HARD_BUDGET_BYTES=${String(motionFeatureBudgetBytes)}`,
+    `MOTION_FEATURE_HEADROOM_BYTES=${String(motionFeatureBudgetBytes - 33648)}`,
+    'MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILE_COUNT=1',
+    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223501',
+    `FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
+    `FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=${String(expectedInitialJavaScriptBudgetBytes - 223501)}`,
+    `INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
+    `INITIAL_JAVASCRIPT_PRE_REBASE_HARD_BUDGET_BYTES=${String(currentInitialJavaScriptBudgetBytes)}`,
+    `INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=${String(expectedMinimumInitialJavaScriptHeadroomBytes)}`,
+    'INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192',
+    'INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192',
+  ] as const
+  const requiredBundleMeasurementMarkers = [
+    'const expectedLazyRouteCount = 17',
+    'const expectedMotionFeatureDynamicRootCount = 1',
+    'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
+    'const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])',
+    'for (const ownerKey of initialChunkKeys)',
+    'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
+    'differenceValues(motionFeatureStaticClosure, initialChunkKeys)',
+    'const expectedMotionFeatureJavaScriptHardBudgetBytes = exactAlignedBundleBudget(',
+    'motionFeatureJavaScriptBytes,',
+    'projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes !==',
+    'motionFeatureJavaScriptHeadroomBytes < minimumMotionFeatureJavaScriptHeadroomBytes',
+    'motionFeatureJavaScriptHeadroomBytes >= maximumAlignedBudgetHeadroomBytes',
   ] as const
 
   if (
-    exactOccurrenceCount(snapshot.projectConfigSource, expectedProjectConfigBudget) !== 1 ||
-    snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 180 * 1024')
+    projectConfig.bundleBudgets.initialJavaScriptGzipBytes !==
+      expectedInitialJavaScriptBudgetBytes ||
+    expectedInitialJavaScriptBudgetBytes < expectedMinimumInitialJavaScriptHeadroomBytes ||
+    expectedInitialJavaScriptBudgetBytes % expectedBundleBudgetAlignmentBytes !== 0 ||
+    motionFeatureBudgetBytes < expectedMinimumInitialJavaScriptHeadroomBytes ||
+    motionFeatureBudgetBytes % expectedBundleBudgetAlignmentBytes !== 0 ||
+    exactOccurrenceCount(snapshot.projectConfigSource, expectedInitialProjectConfigBudget) !== 1 ||
+    exactOccurrenceCount(
+      snapshot.projectConfigSource,
+      'adminNavigationMotionFeatureJavaScriptGzipBytes:',
+    ) !== 1
   ) {
     violations.push('NAV_BUDGET_HARD_LIMIT')
   }
@@ -13833,21 +14701,39 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     violations.push('NAV_BUDGET_ARCHITECTURE')
   }
 
-  if (exactOccurrenceCount(snapshot.checkBundleSource, expectedMinimumHeadroom) !== 1) {
+  if (
+    exactOccurrenceCount(
+      snapshot.checkBundleSource,
+      'const minimumInitialJavaScriptHeadroomBytes = 8 * 1024',
+    ) !== 1 ||
+    exactOccurrenceCount(
+      snapshot.checkBundleSource,
+      'const minimumMotionFeatureJavaScriptHeadroomBytes = 8 * 1024',
+    ) !== 1 ||
+    exactOccurrenceCount(
+      snapshot.checkBundleSource,
+      'const maximumAlignedBudgetHeadroomBytes = 16 * 1024',
+    ) !== 1
+  ) {
     violations.push('NAV_BUDGET_MINIMUM_HEADROOM')
   }
 
   if (
-    createHash('sha256').update(snapshot.checkBundleSource).digest('hex') !==
-    expectedNativeCheckBundleSha256
+    requiredBundleMeasurementMarkers.some((marker) => !snapshot.checkBundleSource.includes(marker))
   ) {
     violations.push('NAV_BUDGET_MEASUREMENT_INTEGRITY')
   }
 
   if (
-    exactOccurrenceCount(snapshot.engineeringManifestSource, expectedEngineeringManifestBudget) !==
-      1 ||
-    exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") !== 4 ||
+    exactOccurrenceCount(
+      snapshot.engineeringManifestSource,
+      expectedInitialEngineeringManifestBudget,
+    ) !== 1 ||
+    exactOccurrenceCount(
+      snapshot.engineeringManifestSource,
+      expectedMotionEngineeringManifestBudget,
+    ) !== 1 ||
+    exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") !== 5 ||
     snapshot.engineeringManifestSource.includes('lazy-motion-adapter-javascript-gzip')
   ) {
     violations.push('NAV_BUDGET_GENERATED_MIRROR')
@@ -13864,10 +14750,19 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   if (
     snapshot.routeCount !== 17 ||
     !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') ||
+    !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
     !snapshot.checkBundleSource.includes(
-      'const expectedDynamicRootKeys = new Set(expectedLazyRouteKeys)',
+      'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
     ) ||
-    snapshot.checkBundleSource.includes('admin-navigation-motion')
+    !snapshot.checkBundleSource.includes(
+      'const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])',
+    ) ||
+    !snapshot.checkBundleSource.includes(
+      "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
+    ) ||
+    !snapshot.checkBundleSource.includes(
+      "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
+    )
   ) {
     violations.push('NAV_BUDGET_ROUTE_LAZY_COUNT')
   }
@@ -13886,7 +14781,7 @@ function runNavigationBudgetNegativeProbes(
       {
         ...baseline,
         projectConfigSource: baseline.projectConfigSource.replace(
-          'initialJavaScriptGzipBytes: 224 * 1024',
+          `initialJavaScriptGzipBytes: ${String(expectedInitialJavaScriptBudgetBytes / 1024)} * 1024`,
           'initialJavaScriptGzipBytes: 180 * 1024',
         ),
       },
@@ -13903,13 +14798,13 @@ function runNavigationBudgetNegativeProbes(
       },
     ],
     [
-      'navigation-budget-increases-hard-limit-again',
-      'NAV_BUDGET_HARD_LIMIT',
+      'navigation-budget-breaks-motion-exclusive-formula',
+      'NAV_BUDGET_MEASUREMENT_INTEGRITY',
       {
         ...baseline,
-        projectConfigSource: baseline.projectConfigSource.replace(
-          'initialJavaScriptGzipBytes: 224 * 1024',
-          'initialJavaScriptGzipBytes: 225 * 1024',
+        checkBundleSource: baseline.checkBundleSource.replace(
+          'const expectedMotionFeatureJavaScriptHardBudgetBytes = exactAlignedBundleBudget(',
+          'const expectedMotionFeatureJavaScriptHardBudgetBytes = Math.ceil(',
         ),
       },
     ],
@@ -13927,13 +14822,13 @@ function runNavigationBudgetNegativeProbes(
       { ...baseline, routeCount: 18 },
     ],
     [
-      'navigation-budget-leaves-generated-mirror-at-previous-limit',
+      'navigation-budget-leaves-motion-generated-mirror-at-wrong-limit',
       'NAV_BUDGET_GENERATED_MIRROR',
       {
         ...baseline,
         engineeringManifestSource: baseline.engineeringManifestSource.replace(
-          "{ id: 'initial-javascript-gzip', limit: 229376, unit: 'bytes-gzip' }",
-          "{ id: 'initial-javascript-gzip', limit: 184320, unit: 'bytes-gzip' }",
+          `{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}, unit: 'bytes-gzip' }`,
+          "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 8192, unit: 'bytes-gzip' }",
         ),
       },
     ],
@@ -13977,10 +14872,19 @@ async function validateDependencies(): Promise<string[]> {
   ) as JsonObject
   const unoConfigSource = await readFile(resolve(rootDirectory, 'uno.config.ts'), 'utf8')
   const catalog = isJsonObject(workspace['catalog']) ? workspace['catalog'] : {}
+  const workspacePatchedDependencies = isJsonObject(workspace['patchedDependencies'])
+    ? workspace['patchedDependencies']
+    : {}
   const catalogs = isJsonObject(lockfile['catalogs']) ? lockfile['catalogs'] : {}
   const defaultCatalog = isJsonObject(catalogs['default']) ? catalogs['default'] : {}
   const packages = isJsonObject(lockfile['packages']) ? lockfile['packages'] : {}
   const snapshots = isJsonObject(lockfile['snapshots']) ? lockfile['snapshots'] : {}
+  const lockPatchedDependencies = isJsonObject(lockfile['patchedDependencies'])
+    ? lockfile['patchedDependencies']
+    : {}
+  const motionPatchLockRecord = isJsonObject(lockPatchedDependencies['motion-v@2.4.0'])
+    ? lockPatchedDependencies['motion-v@2.4.0']
+    : {}
   const importers = isJsonObject(lockfile['importers']) ? lockfile['importers'] : {}
   const rootImporter = isJsonObject(importers['.']) ? importers['.'] : {}
   const webImporter = isJsonObject(importers['apps/web']) ? importers['apps/web'] : {}
@@ -13994,12 +14898,32 @@ async function validateDependencies(): Promise<string[]> {
   const naiveImporter = isJsonObject(uiImporterDependencies['naive-ui'])
     ? uiImporterDependencies['naive-ui']
     : {}
+  const motionVueImporter = isJsonObject(uiImporterDependencies['motion-v'])
+    ? uiImporterDependencies['motion-v']
+    : {}
+  const vueUseCoreImporter = isJsonObject(uiImporterDependencies['@vueuse/core'])
+    ? uiImporterDependencies['@vueuse/core']
+    : {}
   const naivePackageCandidate = packages[`naive-ui@${expectedNaiveUiVersion}`]
   const naivePackage: JsonObject = isJsonObject(naivePackageCandidate) ? naivePackageCandidate : {}
   const resolution = isJsonObject(naivePackage['resolution']) ? naivePackage['resolution'] : {}
   const engines = isJsonObject(naivePackage['engines']) ? naivePackage['engines'] : {}
   const peerDependencies = isJsonObject(naivePackage['peerDependencies'])
     ? naivePackage['peerDependencies']
+    : {}
+  const motionVuePackageCandidate = packages[`motion-v@${expectedMotionVueVersion}`]
+  const motionVuePackage: JsonObject = isJsonObject(motionVuePackageCandidate)
+    ? motionVuePackageCandidate
+    : {}
+  const motionVueResolution = isJsonObject(motionVuePackage['resolution'])
+    ? motionVuePackage['resolution']
+    : {}
+  const vueUseCorePackageCandidate = packages[`@vueuse/core@${expectedVueUseCoreVersion}`]
+  const vueUseCorePackage: JsonObject = isJsonObject(vueUseCorePackageCandidate)
+    ? vueUseCorePackageCandidate
+    : {}
+  const vueUseCoreResolution = isJsonObject(vueUseCorePackage['resolution'])
+    ? vueUseCorePackage['resolution']
     : {}
   const uiDependencies = isJsonObject(uiManifest['dependencies']) ? uiManifest['dependencies'] : {}
   const webDependencies = isJsonObject(webManifest['dependencies'])
@@ -14015,6 +14939,11 @@ async function validateDependencies(): Promise<string[]> {
     ? rootManifest['devDependencies']
     : {}
   const naivePackageKeys = Object.keys(packages).filter((key) => key.startsWith('naive-ui@'))
+  const motionVuePackageKeys = Object.keys(packages).filter((key) => key.startsWith('motion-v@'))
+  const vueUseCorePackageKeys = Object.keys(packages).filter((key) =>
+    key.startsWith('@vueuse/core@'),
+  )
+  const motionVueSnapshotKeys = Object.keys(snapshots).filter((key) => key.startsWith('motion-v@'))
   const gsapPackageKeys = Object.keys(packages).filter((key) => key.startsWith('gsap@'))
   const gsapSnapshotKeys = Object.keys(snapshots).filter((key) => key.startsWith('gsap@'))
   const vuePackageKeys = Object.keys(packages).filter((key) => key.startsWith('vue@'))
@@ -14072,6 +15001,8 @@ async function validateDependencies(): Promise<string[]> {
     }) ||
     !isDeepStrictEqual(uiDependencies, {
       '@platform/design-system': 'workspace:*',
+      '@vueuse/core': 'catalog:',
+      'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
       vue: 'catalog:',
     }) ||
@@ -14097,6 +15028,8 @@ async function validateDependencies(): Promise<string[]> {
     catalog['naive-ui'] !== expectedNaiveUiVersion ||
     !isDeepStrictEqual(uiDependencies, {
       '@platform/design-system': 'workspace:*',
+      '@vueuse/core': 'catalog:',
+      'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
       vue: 'catalog:',
     }) ||
@@ -14112,6 +15045,43 @@ async function validateDependencies(): Promise<string[]> {
     !isDeepStrictEqual(vuePackageKeys, ['vue@3.5.40'])
   ) {
     violations.push('Naive UI exact dependency, lockfile, integrity or single-Vue closure drifted.')
+  }
+
+  if (
+    catalog['motion-v'] !== expectedMotionVueVersion ||
+    catalog['@vueuse/core'] !== expectedVueUseCoreVersion ||
+    motionVueImporter['specifier'] !== 'catalog:' ||
+    typeof motionVueImporter['version'] !== 'string' ||
+    !motionVueImporter['version'].startsWith(
+      `2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)`,
+    ) ||
+    vueUseCoreImporter['specifier'] !== 'catalog:' ||
+    typeof vueUseCoreImporter['version'] !== 'string' ||
+    !vueUseCoreImporter['version'].startsWith('14.4.0(vue@3.5.40') ||
+    !isDeepStrictEqual(motionVuePackageKeys, ['motion-v@2.4.0']) ||
+    !isDeepStrictEqual(vueUseCorePackageKeys, ['@vueuse/core@14.4.0']) ||
+    motionVueSnapshotKeys.length !== 1 ||
+    !motionVueSnapshotKeys[0]?.includes(
+      'patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59',
+    ) ||
+    !isDeepStrictEqual(
+      Object.keys(workspacePatchedDependencies).filter((key) => key.startsWith('motion-v@')),
+      ['motion-v@2.4.0'],
+    ) ||
+    workspacePatchedDependencies['motion-v@2.4.0'] !== 'patches/motion-v@2.4.0.patch' ||
+    !isDeepStrictEqual(
+      Object.keys(lockPatchedDependencies).filter((key) => key.startsWith('motion-v@')),
+      ['motion-v@2.4.0'],
+    ) ||
+    motionPatchLockRecord['hash'] !==
+      'fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59' ||
+    motionPatchLockRecord['path'] !== 'patches/motion-v@2.4.0.patch' ||
+    motionVueResolution['integrity'] !== expectedMotionVueIntegrity ||
+    vueUseCoreResolution['integrity'] !== expectedVueUseCoreIntegrity
+  ) {
+    violations.push(
+      'Motion Vue scoped dependency, peer, patch identity or lockfile closure drifted.',
+    )
   }
 
   if (
@@ -14586,8 +15556,8 @@ async function validateNaiveOverrides(): Promise<string[]> {
   const expectedImportantMotionDeclarationCount = providerSource.includes(
     '.pavp-admin-shell__header-action.n-button:focus:not(:focus-visible)',
   )
-    ? 49
-    : 48
+    ? 52
+    : 51
   if (
     requiredProjectionMarkers.some((marker) => !themeSource.includes(marker)) ||
     expectedMaterialBranches.some((branch) => !normalizedThemeSource.includes(branch)) ||
@@ -14706,9 +15676,14 @@ function validateInspectorProjections(): string[] {
     capabilityPresentationModes.some(
       (mode) => !['active-interactive', 'active-read-only', 'roadmap-only'].includes(mode),
     ) ||
-    runtimeCount(engineeringBudgets) !== 4 ||
+    runtimeCount(engineeringBudgets) !== 5 ||
     !isDeepStrictEqual(engineeringBudgets, [
       { id: 'generated-token-manifest-gzip', limit: 32768, unit: 'bytes-gzip' },
+      {
+        id: 'admin-navigation-motion-feature-javascript-gzip',
+        limit: projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes,
+        unit: 'bytes-gzip',
+      },
       { id: 'initial-css-gzip', limit: 40960, unit: 'bytes-gzip' },
       {
         id: 'initial-javascript-gzip',
@@ -14770,6 +15745,12 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     Promise.all(allUiFiles.map((path) => readFile(path, 'utf8'))),
     Promise.all(nonAdapterUiFiles.map((path) => readFile(path, 'utf8'))),
   ])
+  const outsideMotionPrivateUiSources = allUiSources.filter(
+    (_source, index) =>
+      !relative(rootDirectory, allUiFiles[index] ?? '').startsWith(
+        'packages/ui/src/adapters/motion/',
+      ),
+  )
   const adminNavigationMotionAdapterPresent = await access(
     resolve(rootDirectory, 'packages/ui/src/adapters/gsap/admin-navigation-motion.ts'),
   ).then(
@@ -14799,6 +15780,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     projectConfigSource,
     checkBundleSource,
     engineeringManifestSource,
+    motionDomMaxSource,
+    motionRuntimeSource,
+    motionSelectionLensSource,
     publicUiRootSource,
     tooltipAdapterSource,
   ] = await Promise.all([
@@ -14843,6 +15827,18 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     readFile(resolve(rootDirectory, 'project.config.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'scripts/verify/check-bundle.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/generated/engineering-manifest.ts'), 'utf8'),
+    readFile(
+      resolve(rootDirectory, 'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'),
+      'utf8',
+    ),
+    readFile(
+      resolve(rootDirectory, 'packages/ui/src/adapters/motion/admin-navigation-motion-runtime.ts'),
+      'utf8',
+    ),
+    readFile(
+      resolve(rootDirectory, 'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue'),
+      'utf8',
+    ),
     readFile(resolve(rootDirectory, 'packages/ui/src/index.ts'), 'utf8'),
     access(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-tooltip.ts'))
       .then(() =>
@@ -14940,11 +15936,17 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     engineeringManifestSource,
     iconAdapterSource,
     lockSource,
+    motionDomMaxSource,
+    motionRuntimeSource,
+    motionSelectionLensSource,
     naiveDropdownSource,
     naiveMenuChildSource,
     naivePopoverSource,
     naiveSubmenuSource,
     nonAdapterSource: [...applicationSources, ...nonAdapterUiSources].join('\n'),
+    outsideMotionPrivateSource: [...applicationSources, ...outsideMotionPrivateUiSources].join(
+      '\n',
+    ),
     projectConfigSource,
     providerSource: naiveProviderSource,
     publicComponentExports,
@@ -14996,6 +15998,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAdminNavigationNativeAcceptanceClosureNegativeProbes(architectureSource)
   const adminNavigationMotionVueSelectionLensAdmissionNegativeProbeResults =
     runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(architectureSource)
+  const adminNavigationMotionVueSelectionLensSourceInvariantResultsBaseline =
+    adminNavigationMotionVueSelectionLensSourceInvariantResults(adminNavigationNativeSourceBaseline)
+  const adminNavigationMotionVueSelectionLensSourceNegativeProbeResults =
+    runAdminNavigationMotionVueSelectionLensSourceNegativeProbes(
+      adminNavigationNativeSourceBaseline,
+    )
+  const adminNavigationReducedCrossfadeNegativeProbeResults =
+    runAdminNavigationReducedCrossfadeNegativeProbes(adminNavigationNativeSourceBaseline)
   const adminNavigationNativeSourceInvariantResultsBaseline =
     adminNavigationNativeSourceInvariantResults(adminNavigationNativeSourceBaseline)
   const adminNavigationNativeSourceNegativeProbeResults =
@@ -15113,6 +16123,30 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     )
   }
   if (
+    adminNavigationMotionVueSelectionLensSourceInvariantResultsBaseline.length !==
+    expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount
+  ) {
+    violations.push(
+      `Admin navigation Motion Vue shared-selection-lens source-invariant count drifted: expected ${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)}, received ${String(adminNavigationMotionVueSelectionLensSourceInvariantResultsBaseline.length)}.`,
+    )
+  }
+  if (
+    adminNavigationMotionVueSelectionLensSourceNegativeProbeResults.length !==
+    expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount
+  ) {
+    violations.push(
+      `Admin navigation Motion Vue shared-selection-lens source negative-probe count drifted: expected ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}, received ${String(adminNavigationMotionVueSelectionLensSourceNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    adminNavigationReducedCrossfadeNegativeProbeResults.length !==
+    expectedAdminNavigationReducedCrossfadeNegativeProbeCount
+  ) {
+    violations.push(
+      `Admin navigation Reduced crossfade negative-probe count drifted: expected ${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)}, received ${String(adminNavigationReducedCrossfadeNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
     adminNavigationNativeSourceInvariantResultsBaseline.length !==
     expectedAdminNavigationNativeSourceInvariantCount
   ) {
@@ -15226,6 +16260,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...runtime005RouteContentViolations(baseline),
     ...runtime003SourceViolations(baseline),
     ...navigationReworkSourceViolations(navigationReworkBaseline),
+    ...adminNavigationMotionVueSelectionLensSourceViolations(adminNavigationNativeSourceBaseline),
     ...adminNavigationNativeSourceViolations(adminNavigationNativeSourceBaseline),
     ...adminNavigationExpansionMotionViolations(adminNavigationNativeSourceBaseline),
     ...adminNavigationCollapsedPopupViolations(adminNavigationNativeSourceBaseline),
@@ -15327,6 +16362,20 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of adminNavigationMotionVueSelectionLensSourceNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory Admin navigation Motion Vue shared-selection-lens source negative probe did not fail.`,
+      )
+    }
+  }
+  for (const result of adminNavigationReducedCrossfadeNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory Admin navigation Reduced crossfade negative probe did not fail exclusively for ${result.expectedFailureCode}.`,
+      )
+    }
+  }
   for (const result of adminNavigationNativeSourceNegativeProbeResults) {
     if (!result.passed) {
       violations.push(
@@ -15395,9 +16444,15 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)} historical Admin navigation GSAP admission negative probes; ${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)} historical Admin navigation theme/reflow admission negative probes; ${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)} historical Admin navigation highlight/reveal admission negative probes; ${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)} Admin navigation Native Naive admission negative probes; ${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)}/${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)} Admin navigation Native Naive acceptance-closure negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} Motion Vue shared-selection-lens admission negative probes; ${String(expectedAdminNavigationNativeSourceInvariantCount)}/${String(expectedAdminNavigationNativeSourceInvariantCount)} Admin navigation Native Naive source invariants; ${String(expectedAdminNavigationNativeSourceNegativeProbeCount)}/${String(expectedAdminNavigationNativeSourceNegativeProbeCount)} Admin navigation Native Naive source negative probes; ${String(expectedAdminNavigationExpansionMotionInvariantCount)}/${String(expectedAdminNavigationExpansionMotionInvariantCount)} Admin navigation expansion/motion source invariants; ${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)}/${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)} Admin navigation expansion/motion negative probes; ${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)}/${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)} Admin navigation collapsed-popup source invariants; ${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)}/${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)} Admin navigation collapsed-popup negative probes; ${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)}/${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)} Admin navigation Header placement source invariants; ${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)}/${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)} Admin navigation Header placement negative probes; ${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)}/${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)} Admin navigation Naive actions/motion source invariants; ${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)}/${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)} Admin navigation Naive actions/motion negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes; ${String(expectedNavigationReworkSourceNegativeProbeCount)}/${String(expectedNavigationReworkSourceNegativeProbeCount)} Naive collapsible multilevel navigation source negative probes; ${String(expectedNavigationBudgetNegativeProbeCount)}/${String(expectedNavigationBudgetNegativeProbeCount)} Naive navigation budget negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)} historical Admin navigation GSAP admission negative probes; ${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)} historical Admin navigation theme/reflow admission negative probes; ${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)} historical Admin navigation highlight/reveal admission negative probes; ${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)} Admin navigation Native Naive admission negative probes; ${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)}/${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)} Admin navigation Native Naive acceptance-closure negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} Motion Vue shared-selection-lens admission negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)} Motion Vue shared-selection-lens source invariants; ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)} Motion Vue shared-selection-lens source negative probes; ${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)}/${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)} Reduced crossfade negative probes; ${String(expectedAdminNavigationNativeSourceInvariantCount)}/${String(expectedAdminNavigationNativeSourceInvariantCount)} Admin navigation Native Naive source invariants; ${String(expectedAdminNavigationNativeSourceNegativeProbeCount)}/${String(expectedAdminNavigationNativeSourceNegativeProbeCount)} Admin navigation Native Naive source negative probes; ${String(expectedAdminNavigationExpansionMotionInvariantCount)}/${String(expectedAdminNavigationExpansionMotionInvariantCount)} Admin navigation expansion/motion source invariants; ${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)}/${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)} Admin navigation expansion/motion negative probes; ${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)}/${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)} Admin navigation collapsed-popup source invariants; ${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)}/${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)} Admin navigation collapsed-popup negative probes; ${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)}/${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)} Admin navigation Header placement source invariants; ${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)}/${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)} Admin navigation Header placement negative probes; ${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)}/${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)} Admin navigation Naive actions/motion source invariants; ${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)}/${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)} Admin navigation Naive actions/motion negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes; ${String(expectedNavigationReworkSourceNegativeProbeCount)}/${String(expectedNavigationReworkSourceNegativeProbeCount)} Naive collapsible multilevel navigation source negative probes; ${String(expectedNavigationBudgetNegativeProbeCount)}/${String(expectedNavigationBudgetNegativeProbeCount)} Naive navigation budget negative probes)`,
   )
   console.log(
     `Admin navigation Motion Vue shared-selection-lens admission check: passed (${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} reversible in-memory Architecture admission negative probes)`,
+  )
+  console.log(
+    `Admin navigation Motion Vue shared-selection-lens source check: passed (${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)} source invariants; ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)} reversible in-memory source negative probes)`,
+  )
+  console.log(
+    `Admin navigation Reduced crossfade check: passed (${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)}/${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)} reversible in-memory negative probes)`,
   )
 }

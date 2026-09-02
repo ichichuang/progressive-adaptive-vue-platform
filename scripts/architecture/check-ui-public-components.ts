@@ -18,6 +18,14 @@ const rootDirectory = process.cwd()
 const uiSourceDirectory = resolve(rootDirectory, 'packages/ui/src')
 const uiProviderPath = 'packages/ui/src/providers/UiProvider.vue'
 const uiAdminShellPath = 'packages/ui/src/components/UiAdminShell.vue'
+const motionAdapterDirectory = 'packages/ui/src/adapters/motion'
+const motionAdapterFiles = [
+  'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue',
+  'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
+  'packages/ui/src/adapters/motion/admin-navigation-motion-runtime.ts',
+] as const
+const forbiddenMotionPublicApi =
+  /\b(?:AdminNavigationSelectionLens|LayoutGroup|LazyMotion|MotionConfig|MotionPreference|domMax)\b|motion-v|adapters\/motion/u
 const overlayRootId = 'pavp-overlay-root'
 const overlayTarget = `#${overlayRootId}`
 
@@ -655,6 +663,30 @@ function macroContractNames(source: string, macroName: string): string[] {
   return [...names].sort()
 }
 
+function macroContractTypes(source: string): string[] {
+  const parsed = sourceFile('component.ts', scriptContent(source))
+  const contracts: string[] = []
+
+  function visit(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      ['defineProps', 'defineEmits', 'defineSlots'].includes(node.expression.text)
+    ) {
+      const type = node.typeArguments?.[0]
+
+      if (type !== undefined) {
+        contracts.push(type.getText(parsed))
+      }
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(parsed)
+  return contracts
+}
+
 function exactSet(actual: readonly string[], expected: readonly string[]): boolean {
   const left = [...actual].sort()
   const right = [...expected].sort()
@@ -676,6 +708,49 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   const indexSource = await readFile(resolve(uiSourceDirectory, 'index.ts'), 'utf8')
   const publicExports = publicComponentExports(indexSource)
   const registeredExports = registryRecords.map((record) => record.exportName)
+
+  if (
+    ts
+      .preProcessFile(indexSource, true, true)
+      .importedFiles.some(
+        ({ fileName }) =>
+          fileName === 'motion-v' ||
+          fileName.startsWith('motion-v/') ||
+          fileName.includes('/adapters/motion/'),
+      )
+  ) {
+    violations.push('@platform/ui public root may not export the private Motion adapter.')
+  }
+
+  const uiPackageManifest = JSON.parse(
+    await readFile(resolve(rootDirectory, 'packages/ui/package.json'), 'utf8'),
+  ) as { readonly exports?: unknown }
+  const uiPackageExports = uiPackageManifest.exports
+
+  if (
+    typeof uiPackageExports !== 'object' ||
+    uiPackageExports === null ||
+    Array.isArray(uiPackageExports) ||
+    !exactSet(Object.keys(uiPackageExports), ['.'])
+  ) {
+    violations.push('@platform/ui package exports must remain limited to the public root.')
+  }
+
+  const registrySource = await readFile(
+    resolve(uiSourceDirectory, 'registry/ui-public-component-registry.ts'),
+    'utf8',
+  )
+
+  if (
+    forbiddenMotionPublicApi.test(registrySource) ||
+    registryRecords.some(
+      (record) =>
+        record.sourcePath.startsWith(`${motionAdapterDirectory}/`) ||
+        /motion/iu.test(record.exportName),
+    )
+  ) {
+    violations.push('Private Admin Navigation Motion must not enter the UI Public Registry.')
+  }
 
   if (!exactSet(publicExports, registeredExports)) {
     violations.push('@platform/ui public component exports must exactly equal the UI Registry.')
@@ -721,6 +796,10 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       violations.push(`${record.exportName}: defineSlots contract diverged from the UI Registry.`)
     }
 
+    if (macroContractTypes(source).some((contract) => forbiddenMotionPublicApi.test(contract))) {
+      violations.push(`${record.exportName}: public macro contract leaks private Motion API.`)
+    }
+
     const actualConsumers =
       record.exportName === 'UiProvider' || record.exportName === 'UiAdminShell'
         ? productRoutes.map((route) => route.name)
@@ -759,6 +838,20 @@ export async function validateUiPublicComponents(): Promise<string[]> {
 
   if (!exactSet(actualAdapterFiles, adapterFiles)) {
     violations.push('Private Naive adapter file inventory diverged from the exact owned set.')
+  }
+
+  const motionAdapterEntries = await readdir(resolve(rootDirectory, motionAdapterDirectory), {
+    withFileTypes: true,
+  })
+  const actualMotionAdapterEntries = motionAdapterEntries
+    .map((entry) => `${motionAdapterDirectory}/${entry.name}`)
+    .sort()
+
+  if (
+    !exactSet(actualMotionAdapterEntries, motionAdapterFiles) ||
+    motionAdapterEntries.some((entry) => !entry.isFile())
+  ) {
+    violations.push('Private Motion adapter file inventory diverged from the exact owned set.')
   }
 
   const adapterFileSet = new Set<string>(adapterFiles)

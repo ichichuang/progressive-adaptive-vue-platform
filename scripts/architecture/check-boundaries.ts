@@ -29,7 +29,6 @@ const inactiveCapabilityPackages = [
   '@tauri-apps/api',
   '@unocss/preset-attributify',
   '@unocss/preset-tagify',
-  '@vueuse/core',
   'ag-grid-community',
   'ag-grid-vue3',
   'alova',
@@ -41,7 +40,6 @@ const inactiveCapabilityPackages = [
   'less',
   'lodash',
   'moment',
-  'motion-v',
   'nuxt',
   'nx',
   'openapi-fetch',
@@ -68,6 +66,9 @@ const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
     new Set<string>(workspace.mayDependOn),
   ]),
 )
+const adminNavigationMotionPackages = ['@vueuse/core', 'motion-v'] as const
+const adminNavigationMotionOwner = '@platform/ui'
+const adminNavigationMotionPrivateDirectory = 'packages/ui/src/adapters/motion/'
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -128,6 +129,28 @@ async function validateManifestDependencies(): Promise<string[]> {
       if (inactivePackage !== undefined) {
         violations.push(
           `${description}: Phase 1 may not declare inactive capability package "${inactivePackage}".`,
+        )
+      }
+    }
+
+    for (const dependency of adminNavigationMotionPackages) {
+      const declarations = dependencyEntries(manifest).filter(([name]) => name === dependency)
+      const dependencies = manifest['dependencies']
+      const admittedVersion = isJsonObject(dependencies) ? dependencies[dependency] : undefined
+
+      if (description === adminNavigationMotionOwner) {
+        if (
+          declarations.length !== 1 ||
+          declarations[0]?.[1] !== 'catalog:' ||
+          admittedVersion !== 'catalog:'
+        ) {
+          violations.push(
+            `${description}: ${dependency} must be declared exactly once as a catalog: dependency.`,
+          )
+        }
+      } else if (declarations.length > 0) {
+        violations.push(
+          `${description}: ${dependency} is owned only by ${adminNavigationMotionOwner}.`,
         )
       }
     }
@@ -321,6 +344,7 @@ function workspaceLayer(specifier: string): string | undefined {
 function inspectImport(sourcePath: string, specifier: string): string[] {
   const violations: string[] = []
   const displayPath = relative(rootDirectory, sourcePath)
+  const normalizedDisplayPath = displayPath.split(sep).join('/')
   const fromLayer = sourceLayer(sourcePath)
   const inactivePackage = inactiveCapabilityPackage(specifier)
 
@@ -336,20 +360,32 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
 
   if (
     (specifier === 'naive-ui' || specifier.startsWith('naive-ui/')) &&
-    !relative(rootDirectory, sourcePath)
-      .split(sep)
-      .join('/')
-      .startsWith('packages/ui/src/adapters/naive/')
+    !normalizedDisplayPath.startsWith('packages/ui/src/adapters/naive/')
   ) {
     violations.push(
       `${displayPath}: "naive-ui" may only be imported by the private @platform/ui Naive adapter.`,
     )
   }
 
-  if (
-    (specifier === 'reka-ui' || specifier === 'motion-v' || specifier === 'clsx') &&
-    fromLayer !== 'ui'
-  ) {
+  if (specifier === 'motion-v' || specifier.startsWith('motion-v/')) {
+    if (specifier !== 'motion-v') {
+      violations.push(`${displayPath}: Motion Vue imports must target the exact "motion-v" root.`)
+    }
+
+    if (!normalizedDisplayPath.startsWith(adminNavigationMotionPrivateDirectory)) {
+      violations.push(
+        `${displayPath}: "motion-v" may only be imported by the private Admin Navigation Motion adapter.`,
+      )
+    }
+  }
+
+  if (specifier === '@vueuse/core' || specifier.startsWith('@vueuse/core/')) {
+    violations.push(
+      `${displayPath}: "@vueuse/core" is admitted only as the Motion Vue peer and may not be imported by repository source.`,
+    )
+  }
+
+  if ((specifier === 'reka-ui' || specifier === 'clsx') && fromLayer !== 'ui') {
     violations.push(`${displayPath}: "${specifier}" may only be imported by @platform/ui.`)
   }
 

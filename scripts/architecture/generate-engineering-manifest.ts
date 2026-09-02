@@ -88,6 +88,10 @@ export async function engineeringManifestSource(): Promise<string> {
 
   const budgets = [
     ['generated-token-manifest-gzip', Number(manifestLimit)],
+    [
+      'admin-navigation-motion-feature-javascript-gzip',
+      projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes,
+    ],
     ['initial-css-gzip', projectConfig.bundleBudgets.initialCssGzipBytes],
     ['initial-javascript-gzip', projectConfig.bundleBudgets.initialJavaScriptGzipBytes],
     ['lazy-route-javascript-gzip', projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes],

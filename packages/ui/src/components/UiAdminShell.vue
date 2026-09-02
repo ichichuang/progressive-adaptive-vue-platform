@@ -5,8 +5,19 @@ import {
   type LayoutProfileId,
   type LayoutRegistryRecord,
 } from '@platform/design-system'
-import { computed, h, inject, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import {
+  computed,
+  h,
+  inject,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  type VNodeChild,
+} from 'vue'
 
+import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'
 import { PavpButtonPrimitive } from '../adapters/naive/naive-button'
 import { PavpIconPrimitive } from '../adapters/naive/naive-icon'
 import { PavpLayoutPrimitive, PavpLayoutSiderPrimitive } from '../adapters/naive/naive-layout'
@@ -234,6 +245,32 @@ const navigationMenuOptions = computed<PavpMenuOption[]>(() =>
     } satisfies PavpMenuOption
   }),
 )
+
+const activeNavigationGroupKey = computed(() => {
+  const activeGroup = props.navigation.find((group) =>
+    group.items.some((item) => item.routeName === props.activeRouteName),
+  )
+
+  return activeGroup === undefined ? undefined : navigationGroupKey(activeGroup.id)
+})
+
+function renderNavigationMenuIcon(option: PavpMenuOption): VNodeChild {
+  return typeof option.icon === 'function' ? option.icon() : null
+}
+
+function isPersistentNavigationSelectionLensOwner(option: PavpMenuOption): boolean {
+  if (profile.value === 'narrow') {
+    return false
+  }
+
+  const optionKind = navigationOptionKind(option)
+
+  if (persistentNavigationCollapsed.value) {
+    return optionKind === 'group' && option.key === activeNavigationGroupKey.value
+  }
+
+  return optionKind === 'route' && navigationOptionRouteName(option) === props.activeRouteName
+}
 
 function toggleExpandedNavigationGroup(groupKey: string): void {
   if (expandedNavigationGroupKeys.value.includes(groupKey)) {
@@ -621,26 +658,37 @@ watch(
         :show-trigger="false"
         :width="expandedNavigationWidth"
       >
-        <nav
-          aria-label="架构导航"
-          class="pavp-admin-shell__persistent-navigation"
+        <AdminNavigationSelectionLens
+          v-slot="{ featureReady, renderIcon }"
+          :is-owner="isPersistentNavigationSelectionLensOwner"
+          :motion="appearance.motion"
+          :render-base-icon="renderNavigationMenuIcon"
         >
-          <PavpMenuPrimitive
-            :accordion="false"
-            class="pavp-admin-shell__menu"
-            :collapsed="persistentNavigationCollapsed"
-            :collapsed-width="collapsedNavigationWidth"
-            children-field="children"
-            :dropdown-props="persistentNavigationDropdownProps"
-            :expanded-keys="validExpandedNavigationGroupKeys"
-            mode="vertical"
-            :node-props="persistentNavigationNodeProps"
-            :options="navigationMenuOptions"
-            :value="activeRouteName"
-            @update:expanded-keys="handleNavigationExpandedKeysUpdate"
-            @update:value="handleNavigationValueUpdate"
-          />
-        </nav>
+          <nav
+            aria-label="架构导航"
+            class="pavp-admin-shell__persistent-navigation"
+            :data-pavp-admin-navigation-motion-ready="
+              featureReady && appearance.motion === 'full' ? 'true' : 'false'
+            "
+          >
+            <PavpMenuPrimitive
+              :accordion="false"
+              class="pavp-admin-shell__menu"
+              :collapsed="persistentNavigationCollapsed"
+              :collapsed-width="collapsedNavigationWidth"
+              children-field="children"
+              :dropdown-props="persistentNavigationDropdownProps"
+              :expanded-keys="validExpandedNavigationGroupKeys"
+              mode="vertical"
+              :node-props="persistentNavigationNodeProps"
+              :options="navigationMenuOptions"
+              :render-icon="renderIcon"
+              :value="activeRouteName"
+              @update:expanded-keys="handleNavigationExpandedKeysUpdate"
+              @update:value="handleNavigationValueUpdate"
+            />
+          </nav>
+        </AdminNavigationSelectionLens>
       </PavpLayoutSiderPrimitive>
 
       <main
@@ -1024,28 +1072,43 @@ watch(
   outline: none;
 }
 
-[data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,
-.pavp-admin-navigation-dropdown .n-dropdown-option-body::before,
 .pavp-admin-shell__header-action-icon-state {
   opacity: 0;
   transform: scale(0.98);
   transform-origin: center;
   transition-duration: var(--ui-motion-duration);
-  transition-property: background-color, opacity, transform;
+  transition-property: opacity, transform;
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,
+.pavp-admin-navigation-dropdown .n-dropdown-option-body::before {
+  opacity: 0;
+  transform: none;
+  transition-duration: var(--ui-motion-duration);
+  transition-property: background-color, opacity;
   transition-timing-function: var(--ui-motion-easing);
 }
 
 [data-pavp-admin-navigation='persistent'] .n-menu-item-content--hover::before,
 [data-pavp-admin-navigation='persistent'] .n-menu-item-content:hover::before,
+.pavp-admin-navigation-dropdown .n-dropdown-option-body--pending::before {
+  opacity: 1;
+  transform: none;
+}
+
 [data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected::before,
 .pavp-admin-shell[data-navigation-collapsed='true']
   [data-pavp-admin-navigation='persistent']
   .n-menu-item-content--child-active::before,
-.pavp-admin-navigation-dropdown .n-dropdown-option-body--pending::before,
 .pavp-admin-navigation-dropdown .n-dropdown-option-body--active::before,
 .pavp-admin-navigation-dropdown
   .n-dropdown-option[aria-current='page']
-  .n-dropdown-option-body::before,
+  .n-dropdown-option-body::before {
+  opacity: 1;
+  transform: none;
+}
+
 .pavp-admin-shell__header-action-icon-state--active {
   opacity: 1;
   transform: scale(1);
@@ -1074,6 +1137,75 @@ watch(
   .n-dropdown-option[aria-current='page']
   .n-dropdown-option-body::before {
   background: var(--n-option-color-active);
+}
+
+.pavp-admin-navigation-selection-lens {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: calc(var(--ui-space-content-gap) / 2);
+  border-radius: var(--ui-radius-panel);
+  background: color-mix(
+    in srgb,
+    var(--ui-admin-navigation-selected) 16%,
+    var(--ui-material-overlay-background)
+  );
+  pointer-events: none;
+}
+
+html[data-motion='reduced'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,
+html[data-motion='reduced']
+  .pavp-admin-navigation-dropdown
+  .n-dropdown-option
+  .n-dropdown-option-body::before {
+  transform: none;
+  transition-duration: var(--ui-motion-duration);
+  transition-property: background-color, opacity;
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+html[data-motion='none'] [data-pavp-admin-navigation='persistent'] .n-menu-item-content::before,
+html[data-motion='none']
+  .pavp-admin-navigation-dropdown
+  .n-dropdown-option
+  .n-dropdown-option-body::before {
+  animation: none;
+  transform: none;
+  transition: none;
+}
+
+.pavp-admin-shell[data-navigation-collapsed='false']
+  [data-pavp-admin-navigation='persistent']
+  .n-menu
+  > .n-submenu
+  > .n-menu-item-content:where(.n-menu-item-content--hover, :hover)::before {
+  visibility: visible;
+}
+
+.pavp-admin-shell[data-navigation-collapsed='false']
+  [data-pavp-admin-navigation='persistent']
+  .n-menu
+  > .n-submenu
+  > .n-menu-item-content:where(:not(.n-menu-item-content--hover):not(:hover))::before {
+  visibility: hidden;
+}
+
+.pavp-admin-shell[data-navigation-collapsed='false']
+  [data-pavp-admin-navigation='persistent']
+  .n-menu-item-content--child-active:not(.n-menu-item-content--hover):not(:hover)::before {
+  opacity: 1;
+  transform: none;
+}
+
+.pavp-admin-shell[data-navigation-collapsed='false']
+  [data-pavp-admin-navigation-motion-ready='true']
+  .n-menu-item-content--selected::before,
+.pavp-admin-shell[data-navigation-collapsed='true']
+  [data-pavp-admin-navigation-motion-ready='true']
+  .n-menu-item-content.n-menu-item-content--child-active::before {
+  opacity: 1;
+  transform: none;
+  transition: none;
+  visibility: hidden;
 }
 
 .pavp-admin-navigation-dropdown.n-dropdown-menu {
@@ -1182,6 +1314,10 @@ html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
   [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible {
     outline: var(--ui-admin-border-focus);
     outline-offset: var(--ui-admin-focus-outline-offset);
+  }
+
+  .pavp-admin-navigation-selection-lens {
+    background: var(--ui-color-action-primary);
   }
 
   [data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected::before,

@@ -35,14 +35,43 @@ const expectedRuntime = {
 const expectedPackageManager = `pnpm@${expectedRuntime.pnpm}`
 const expectedBuildVersion = '0.0.0'
 const expectedZodVersion = '4.4.3'
+const expectedVueVersion = '3.5.40'
 const expectedVueRouterVersion = '5.2.0'
 const expectedVueRouterIntegrity =
   'sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw=='
 const expectedNaiveUiVersion = '2.45.2'
 const expectedNaiveUiIntegrity =
   'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
+const expectedMotionVVersion = '2.4.0'
+const expectedMotionVIntegrity =
+  'sha512-kRDGMAZk3nvdjEO36Wo6pezSEIStGXGhVFiwo1QkUDsUg8mB5igjYPXyece8wtu2DrHhmFfA6Y1nOz07+5QH4A=='
+const expectedVueUseCoreVersion = '14.4.0'
+const expectedVueUseCoreIntegrity =
+  'sha512-X4WHz1HlCzCBoYXesUkifzzWBAcZgXG8Fi5iNPQg/epdzOB3gu8Fawj3hvuwYR1nGcXGnvxwYYcUC/71++svtQ=='
 const vueRouterDeclarationFileName = 'index-BN0B0y8a.d.ts'
 const vueRouterPatchPath = 'patches/vue-router@5.2.0.patch'
+const motionVPatchPath = 'patches/motion-v@2.4.0.patch'
+const expectedMotionVPatchHash = 'fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59'
+const expectedMotionVPatchDeclarationFileCount = 19
+const expectedMotionVPatchDeclarationHunkCount = 20
+const expectedMotionVRuntimeJavaScriptFileCount = 91
+const expectedMotionVRuntimeHashManifest =
+  '58f8bbff2272c77b361cbc3eb438f7e3b32d4b42eb83b1599760bb76db502adb'
+const expectedVueUseCoreSnapshotCoordinate = '@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3))'
+const expectedMotionVSnapshotCoordinate =
+  'motion-v@2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)(@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3)))(vue@3.5.40(typescript@6.0.3))'
+const expectedPatchedDependencies = {
+  'motion-v@2.4.0': motionVPatchPath,
+  'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
+  'vue-router@5.2.0': vueRouterPatchPath,
+} as const
+const prohibitedDirectMotionCompatibilityDependencies = [
+  'react',
+  'react-dom',
+  '@types/react',
+  '@types/react-dom',
+  '@types/web-bluetooth',
+] as const
 const expectedImplementationContract = {
   phase: 1,
   state: 'IN_PROGRESS',
@@ -272,6 +301,289 @@ function expectStructuredEqual(actual: unknown, expected: unknown, description: 
 function expectExactCount(actual: number, expected: number, description: string): void {
   if (actual !== expected) {
     throw new Error(`${description}: expected ${String(expected)}, received ${String(actual)}.`)
+  }
+}
+
+function codePointCompare(left: string, right: string): number {
+  return left < right ? -1 : left > right ? 1 : 0
+}
+
+interface MotionPatchMetadata {
+  readonly hash: string
+  readonly hunkCount: number
+  readonly targetFiles: readonly string[]
+}
+
+function readMotionPatchMetadata(patch: string): MotionPatchMetadata {
+  const lines = patch.split('\n')
+  const targetFiles = lines
+    .filter((line) => line.startsWith('diff --git '))
+    .map((line) => {
+      const match = /^diff --git a\/(\S+) b\/(\S+)$/u.exec(line)
+
+      if (match?.[1] === undefined || match[2] === undefined || match[1] !== match[2]) {
+        throw new Error(`Motion for Vue patch contains an invalid target header: ${line}.`)
+      }
+
+      return match[1]
+    })
+  const declarationOnly = targetFiles.every(
+    (file) => file.endsWith('.d.ts') || file.endsWith('.d.mts'),
+  )
+  const oldTargets = lines
+    .filter((line) => line.startsWith('--- '))
+    .map((line) => line.slice('--- a/'.length))
+  const newTargets = lines
+    .filter((line) => line.startsWith('+++ '))
+    .map((line) => line.slice('+++ b/'.length))
+
+  if (
+    !declarationOnly ||
+    targetFiles.length === 0 ||
+    new Set(targetFiles).size !== targetFiles.length ||
+    !isDeepStrictEqual(oldTargets, targetFiles) ||
+    !isDeepStrictEqual(newTargets, targetFiles) ||
+    lines.some(
+      (line) =>
+        line === 'GIT binary patch' ||
+        line.startsWith('Binary files ') ||
+        line.startsWith('rename from ') ||
+        line.startsWith('rename to '),
+    )
+  ) {
+    throw new Error(
+      'Motion for Vue patch must target unique declaration files only, with matching old/new headers.',
+    )
+  }
+
+  return {
+    hash: createHash('sha256').update(patch).digest('hex'),
+    hunkCount: lines.filter((line) => line.startsWith('@@ ')).length,
+    targetFiles,
+  }
+}
+
+async function collectFiles(
+  directory: string,
+  predicate: (fileName: string) => boolean,
+): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true })
+  const files: string[] = []
+
+  for (const entry of entries) {
+    const path = join(directory, entry.name)
+
+    if (entry.isDirectory()) {
+      files.push(...(await collectFiles(path, predicate)))
+    } else if (entry.isFile() && predicate(entry.name)) {
+      files.push(path)
+    }
+  }
+
+  return files
+}
+
+interface RuntimeHashManifest {
+  readonly fileCount: number
+  readonly hash: string
+}
+
+async function createMotionVRuntimeHashManifest(
+  packageDirectory: string,
+): Promise<RuntimeHashManifest> {
+  const runtimeFiles = await collectFiles(
+    packageDirectory,
+    (fileName) => fileName.endsWith('.js') || fileName.endsWith('.mjs'),
+  )
+  const relativeFiles = runtimeFiles
+    .map((file) => relative(packageDirectory, file).split('\\').join('/'))
+    .sort(codePointCompare)
+  const manifestHash = createHash('sha256')
+
+  for (const relativeFile of relativeFiles) {
+    const fileHash = createHash('sha256')
+      .update(await readFile(resolve(packageDirectory, relativeFile)))
+      .digest('hex')
+    manifestHash.update(relativeFile).update('\0').update(fileHash).update('\n')
+  }
+
+  return { fileCount: relativeFiles.length, hash: manifestHash.digest('hex') }
+}
+
+function architectureAssignmentBlock(
+  architecture: string,
+  firstAssignment: string,
+): Readonly<Record<string, string>> {
+  const starts = [...architecture.matchAll(new RegExp(`^${firstAssignment}$`, 'gmu'))]
+
+  if (starts.length !== 1 || starts[0]?.index === undefined) {
+    throw new Error(`ARCHITECTURE.md must contain exactly one ${firstAssignment} block.`)
+  }
+
+  const blockStart = starts[0].index
+  const blockEnd = architecture.indexOf('\n```', blockStart)
+
+  if (blockEnd === -1) {
+    throw new Error(`ARCHITECTURE.md does not close the ${firstAssignment} block.`)
+  }
+
+  const assignments: Record<string, string> = {}
+
+  for (const line of architecture.slice(blockStart, blockEnd).split('\n')) {
+    const separator = line.indexOf('=')
+
+    if (separator <= 0) {
+      continue
+    }
+
+    const key = line.slice(0, separator)
+
+    if (!/^[A-Z][A-Z0-9_]*$/u.test(key) || Object.hasOwn(assignments, key)) {
+      throw new Error(`ARCHITECTURE.md contains an invalid or duplicate ${key} assignment.`)
+    }
+
+    assignments[key] = line.slice(separator + 1)
+  }
+
+  return assignments
+}
+
+function motionDeclarationCompatibilityDiagnostics(
+  includePublishedGlobalAugmentation: boolean,
+): readonly ts.Diagnostic[] {
+  const fixturePath = resolve(rootDirectory, '<motion-v-declaration-compatibility-probe>.ts')
+  const fixture = `
+interface VueNativeHtmlAttributes {
+  onDrag?: (event: { readonly nativeDrag: true }) => void
+}
+interface PublishedMotionOptions {
+  onDrag?: (event: { readonly motionDrag: true }) => void
+}
+interface EffectiveHtmlAttributes extends VueNativeHtmlAttributes${
+    includePublishedGlobalAugmentation ? ', PublishedMotionOptions' : ''
+  } {}
+`
+  const options: ts.CompilerOptions = {
+    exactOptionalPropertyTypes: true,
+    noEmit: true,
+    skipLibCheck: false,
+    strict: true,
+    target: ts.ScriptTarget.ES2022,
+  }
+  const host = ts.createCompilerHost(options)
+  const originalFileExists = host.fileExists.bind(host)
+  const originalGetSourceFile = host.getSourceFile.bind(host)
+  const originalReadFile = host.readFile.bind(host)
+  host.fileExists = (fileName) => fileName === fixturePath || originalFileExists(fileName)
+  host.readFile = (fileName) => (fileName === fixturePath ? fixture : originalReadFile(fileName))
+  host.getSourceFile = (fileName, languageVersion, onError, shouldCreateNewSourceFile) =>
+    fileName === fixturePath
+      ? ts.createSourceFile(fileName, fixture, languageVersion, true, ts.ScriptKind.TS)
+      : originalGetSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile)
+
+  return ts
+    .getPreEmitDiagnostics(ts.createProgram({ host, options, rootNames: [fixturePath] }))
+    .filter((diagnostic) => diagnostic.file?.fileName === fixturePath)
+}
+
+interface MotionPatchInvariantModel {
+  readonly canonicalPatchCount: number
+  readonly declarationFileCount: number
+  readonly declarationHunkCount: number
+  readonly declarationOnly: boolean
+  readonly directCompatibilityDependencyCount: number
+  readonly exactOptionalPropertyTypes: boolean
+  readonly motionPatchCount: number
+  readonly patchHash: string
+  readonly patchPath: string
+  readonly runtimeFileCount: number
+  readonly runtimeHash: string
+  readonly skipLibCheck: boolean
+  readonly strict: boolean
+}
+
+function motionPatchInvariantViolations(model: MotionPatchInvariantModel): readonly string[] {
+  return [
+    model.canonicalPatchCount === 3 ? undefined : 'canonical patch count',
+    model.declarationFileCount === expectedMotionVPatchDeclarationFileCount
+      ? undefined
+      : 'declaration file count',
+    model.declarationHunkCount === expectedMotionVPatchDeclarationHunkCount
+      ? undefined
+      : 'declaration hunk count',
+    model.declarationOnly ? undefined : 'declaration-only scope',
+    model.directCompatibilityDependencyCount === 0
+      ? undefined
+      : 'direct compatibility dependency count',
+    model.exactOptionalPropertyTypes ? undefined : 'exactOptionalPropertyTypes',
+    model.motionPatchCount === 1 ? undefined : 'Motion patch count',
+    model.patchHash === expectedMotionVPatchHash ? undefined : 'patch hash',
+    model.patchPath === motionVPatchPath ? undefined : 'patch path',
+    model.runtimeFileCount === expectedMotionVRuntimeJavaScriptFileCount
+      ? undefined
+      : 'runtime file count',
+    model.runtimeHash === expectedMotionVRuntimeHashManifest ? undefined : 'runtime hash',
+    !model.skipLibCheck ? undefined : 'skipLibCheck',
+    model.strict ? undefined : 'strict',
+  ].filter((violation): violation is string => violation !== undefined)
+}
+
+function validateMotionPatchCompatibilityProbes(): void {
+  const control: MotionPatchInvariantModel = {
+    canonicalPatchCount: 3,
+    declarationFileCount: expectedMotionVPatchDeclarationFileCount,
+    declarationHunkCount: expectedMotionVPatchDeclarationHunkCount,
+    declarationOnly: true,
+    directCompatibilityDependencyCount: 0,
+    exactOptionalPropertyTypes: true,
+    motionPatchCount: 1,
+    patchHash: expectedMotionVPatchHash,
+    patchPath: motionVPatchPath,
+    runtimeFileCount: expectedMotionVRuntimeJavaScriptFileCount,
+    runtimeHash: expectedMotionVRuntimeHashManifest,
+    skipLibCheck: false,
+    strict: true,
+  }
+
+  if (motionPatchInvariantViolations(control).length !== 0) {
+    throw new Error('Motion declaration-patch invariant control probe must pass.')
+  }
+
+  for (const mutation of [
+    { canonicalPatchCount: 4 },
+    { declarationFileCount: 20 },
+    { declarationHunkCount: 21 },
+    { declarationOnly: false },
+    { directCompatibilityDependencyCount: 1 },
+    { exactOptionalPropertyTypes: false },
+    { motionPatchCount: 2 },
+    { patchHash: '0'.repeat(64) },
+    { patchPath: 'patches/motion-v.patch' },
+    { runtimeFileCount: 92 },
+    { runtimeHash: '0'.repeat(64) },
+    { skipLibCheck: true },
+    { strict: false },
+  ] satisfies readonly Partial<MotionPatchInvariantModel>[]) {
+    if (motionPatchInvariantViolations({ ...control, ...mutation }).length === 0) {
+      throw new Error('Motion declaration-patch reversible in-memory mutation probe must fail.')
+    }
+  }
+
+  const unpatchedDiagnostics = motionDeclarationCompatibilityDiagnostics(true)
+  const patchedDiagnostics = motionDeclarationCompatibilityDiagnostics(false)
+
+  if (
+    unpatchedDiagnostics.length < 1 ||
+    !unpatchedDiagnostics.some(
+      (diagnostic) =>
+        diagnostic.code === 2320 &&
+        ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n').includes('onDrag'),
+    ) ||
+    patchedDiagnostics.length !== 0
+  ) {
+    throw new Error(
+      'Motion declaration compatibility fixture must reproduce the unpatched HTMLAttributes conflict and clear it when patched.',
+    )
   }
 }
 
@@ -953,6 +1265,177 @@ async function collectBuildConfigurationFiles(directory: string): Promise<string
   }
 
   return files
+}
+
+async function validateMotionVDeclarationGraph(
+  packageDirectory: string,
+  patchTargets: readonly string[],
+): Promise<void> {
+  const declarationFiles = await collectFiles(
+    packageDirectory,
+    (fileName) => fileName.endsWith('.d.ts') || fileName.endsWith('.d.mts'),
+  )
+  const prohibitedDeclarationReferences: string[] = []
+
+  for (const file of declarationFiles) {
+    const source = await readFile(file, 'utf8')
+
+    if (
+      /(?:from\s*|export\s+\*\s+from\s*)['"](?:framer-motion(?:\/dom)?|@vueuse\/core)['"]/u.test(
+        source,
+      )
+    ) {
+      prohibitedDeclarationReferences.push(relative(packageDirectory, file).split('\\').join('/'))
+    }
+  }
+
+  expectStructuredEqual(
+    prohibitedDeclarationReferences,
+    [],
+    'Patched Motion for Vue declaration-only React/VueUse reachability',
+  )
+
+  for (const target of patchTargets) {
+    await access(resolve(packageDirectory, target))
+  }
+
+  expectEqual(
+    (await readFile(resolve(packageDirectory, 'dist/es/types/instance.d.ts'), 'utf8')).trim(),
+    'export {};',
+    'Patched Motion for Vue global native-element augmentation removal',
+  )
+
+  const rootDeclaration = await readFile(resolve(packageDirectory, 'dist/es/index.d.ts'), 'utf8')
+
+  if (
+    !rootDeclaration.includes("export * from 'motion-dom';") ||
+    !rootDeclaration.includes("export * from 'motion-utils';") ||
+    rootDeclaration.includes('framer-motion')
+  ) {
+    throw new Error('Patched Motion for Vue root declaration graph drifted.')
+  }
+}
+
+async function validateMotionCompatibilityBypassAbsence(): Promise<void> {
+  const sourceFiles = (
+    await Promise.all(
+      ['apps', 'packages'].map((directory) =>
+        collectBuildConfigurationFiles(resolve(rootDirectory, directory)),
+      ),
+    )
+  )
+    .flat()
+    .sort(codePointCompare)
+  const suppressionInventory: string[] = []
+  const prohibitedMotionAmbientModules: string[] = []
+
+  for (const file of sourceFiles) {
+    const source = await readFile(file, 'utf8')
+    const displayPath = relative(rootDirectory, file).split('\\').join('/')
+
+    for (const match of source.matchAll(/@ts-(?:ignore|nocheck)/gu)) {
+      suppressionInventory.push(`${displayPath}:${match[0]}`)
+    }
+
+    if (!file.endsWith('.ts')) {
+      continue
+    }
+
+    const sourceFile = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TS,
+    )
+
+    for (const declaration of collectNodes(sourceFile, ts.isModuleDeclaration)) {
+      const moduleName = ts.isStringLiteral(declaration.name) ? declaration.name.text : undefined
+
+      if (
+        moduleName === 'motion-v' ||
+        moduleName?.startsWith('motion-v/') === true ||
+        (moduleName?.includes('*') === true && moduleName.toLowerCase().includes('motion'))
+      ) {
+        prohibitedMotionAmbientModules.push(`${displayPath}:${moduleName}`)
+      }
+    }
+  }
+
+  expectStructuredEqual(
+    suppressionInventory,
+    ['apps/web/src/route-map.d.ts:@ts-nocheck'],
+    'Repository TypeScript suppression inventory',
+  )
+  expectStructuredEqual(
+    prohibitedMotionAmbientModules,
+    [],
+    'Repository ambient Motion declaration replacement inventory',
+  )
+}
+
+async function validateMotionTypeScriptStrictness(): Promise<void> {
+  const baseConfiguration = await readJsonObject(resolve(rootDirectory, 'tsconfig.base.json'))
+  const uiConfiguration = await readJsonObject(resolve(rootDirectory, 'packages/ui/tsconfig.json'))
+  const baseCompilerOptions = baseConfiguration['compilerOptions']
+  const uiCompilerOptions = uiConfiguration['compilerOptions']
+
+  if (!isJsonObject(baseCompilerOptions) || !isJsonObject(uiCompilerOptions)) {
+    throw new Error('Motion declaration compatibility requires object TypeScript configurations.')
+  }
+
+  expectEqual(baseCompilerOptions['strict'], true, 'TypeScript strict policy')
+  expectEqual(
+    baseCompilerOptions['exactOptionalPropertyTypes'],
+    true,
+    'TypeScript exactOptionalPropertyTypes policy',
+  )
+  expectEqual(baseCompilerOptions['skipLibCheck'], undefined, 'TypeScript skipLibCheck override')
+  expectEqual(baseCompilerOptions['moduleResolution'], 'Bundler', 'TypeScript module resolution')
+  expectEqual(baseCompilerOptions['types'], undefined, 'TypeScript base types override')
+  expectEqual(baseCompilerOptions['typeRoots'], undefined, 'TypeScript base typeRoots override')
+  expectEqual(baseCompilerOptions['paths'], undefined, 'TypeScript base path aliases')
+  expectStructuredEqual(uiCompilerOptions['lib'], ['ES2022', 'DOM'], 'UI TypeScript library set')
+  expectEqual(uiCompilerOptions['skipLibCheck'], undefined, 'UI TypeScript skipLibCheck override')
+  expectEqual(uiCompilerOptions['types'], undefined, 'UI TypeScript types override')
+  expectEqual(uiCompilerOptions['typeRoots'], undefined, 'UI TypeScript typeRoots override')
+  expectEqual(uiCompilerOptions['paths'], undefined, 'UI TypeScript path aliases')
+  expectEqual(uiCompilerOptions['moduleResolution'], undefined, 'UI module-resolution override')
+
+  const configurationPath = resolve(rootDirectory, 'packages/ui/tsconfig.json')
+  const configuration = ts.readConfigFile(configurationPath, (fileName) =>
+    ts.sys.readFile(fileName),
+  )
+
+  if (configuration.error !== undefined) {
+    throw new Error('Motion declaration compatibility could not read the UI TypeScript config.')
+  }
+
+  const parsed = ts.parseJsonConfigFileContent(
+    configuration.config,
+    ts.sys,
+    resolve(rootDirectory, 'packages/ui'),
+    { noEmit: true },
+    configurationPath,
+  )
+
+  if (
+    parsed.options.strict !== true ||
+    parsed.options.exactOptionalPropertyTypes !== true ||
+    parsed.options.skipLibCheck === true
+  ) {
+    throw new Error('Motion declaration compatibility requires unchanged strict UI TypeScript.')
+  }
+}
+
+function validateMotionFeatureBudgetAuthority(): void {
+  const budget = projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
+
+  if (!Number.isSafeInteger(budget) || budget <= 0 || budget % 8192 !== 0) {
+    throw new Error(
+      'Admin Navigation Motion feature budget must be a positive 8 KiB-aligned integer.',
+    )
+  }
 }
 
 async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
@@ -1738,6 +2221,8 @@ async function validateArchitectureConsoleUiPackage(): Promise<void> {
     manifest['dependencies'],
     {
       '@platform/design-system': 'workspace:*',
+      '@vueuse/core': 'catalog:',
+      'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
       vue: 'catalog:',
     },
@@ -1979,7 +2464,14 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
 expectEqual(workspaceCatalog['gsap'], undefined, 'Inactive GSAP catalog coordinate')
+expectEqual(
+  workspaceCatalog['@vueuse/core'],
+  expectedVueUseCoreVersion,
+  'VueUse core catalog version',
+)
+expectEqual(workspaceCatalog['motion-v'], expectedMotionVVersion, 'Motion for Vue catalog version')
 expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
+expectEqual(workspaceCatalog['vue'], expectedVueVersion, 'Vue catalog version')
 expectEqual(workspaceCatalog['zod'], expectedZodVersion, 'Zod catalog version')
 expectEqual(workspaceCatalog['vue-router'], expectedVueRouterVersion, 'Vue Router catalog version')
 expectEqual(workspaceConfiguration['allowUnusedPatches'], false, 'Unused patch failure policy')
@@ -1990,12 +2482,53 @@ expectEqual(
 )
 expectStructuredEqual(
   workspaceConfiguration['patchedDependencies'],
-  {
-    'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
-    'vue-router@5.2.0': vueRouterPatchPath,
-  },
+  expectedPatchedDependencies,
   'Workspace patched dependency authority',
 )
+
+const workspacePatchedDependencies = workspaceConfiguration['patchedDependencies']
+
+if (!isJsonObject(workspacePatchedDependencies)) {
+  throw new Error('Workspace patched dependency authority must be an object.')
+}
+
+expectExactCount(
+  Object.keys(workspacePatchedDependencies).filter((key) => key.startsWith('motion-v@')).length,
+  1,
+  'Workspace Motion for Vue exact patch count',
+)
+
+const motionVPatch = await readFile(resolve(rootDirectory, motionVPatchPath), 'utf8')
+const motionVPatchMetadata = readMotionPatchMetadata(motionVPatch)
+
+expectEqual(motionVPatchMetadata.hash, expectedMotionVPatchHash, 'Motion for Vue patch SHA-256')
+expectExactCount(
+  motionVPatchMetadata.targetFiles.length,
+  expectedMotionVPatchDeclarationFileCount,
+  'Motion for Vue patch declaration target count',
+)
+expectExactCount(
+  motionVPatchMetadata.hunkCount,
+  expectedMotionVPatchDeclarationHunkCount,
+  'Motion for Vue patch declaration hunk count',
+)
+
+const motionVPackageDirectory = resolve(rootDirectory, 'packages/ui/node_modules/motion-v')
+const motionVRuntimeHashManifest = await createMotionVRuntimeHashManifest(motionVPackageDirectory)
+
+expectStructuredEqual(
+  motionVRuntimeHashManifest,
+  {
+    fileCount: expectedMotionVRuntimeJavaScriptFileCount,
+    hash: expectedMotionVRuntimeHashManifest,
+  },
+  'Installed Motion for Vue runtime JavaScript hash manifest',
+)
+await validateMotionVDeclarationGraph(motionVPackageDirectory, motionVPatchMetadata.targetFiles)
+await validateMotionTypeScriptStrictness()
+await validateMotionCompatibilityBypassAbsence()
+validateMotionPatchCompatibilityProbes()
+validateMotionFeatureBudgetAuthority()
 
 const vueRouterPatch = await readFile(resolve(rootDirectory, vueRouterPatchPath), 'utf8')
 const vueRouterPatchLines = vueRouterPatch.split('\n')
@@ -2059,6 +2592,12 @@ const uiLockfileDependencies = isJsonObject(uiLockfileImporter)
 const lockedUiNaiveDependency = isJsonObject(uiLockfileDependencies)
   ? uiLockfileDependencies['naive-ui']
   : undefined
+const lockedUiVueUseCoreDependency = isJsonObject(uiLockfileDependencies)
+  ? uiLockfileDependencies['@vueuse/core']
+  : undefined
+const lockedUiMotionVDependency = isJsonObject(uiLockfileDependencies)
+  ? uiLockfileDependencies['motion-v']
+  : undefined
 const lockedUiGsapDependency = isJsonObject(uiLockfileDependencies)
   ? uiLockfileDependencies['gsap']
   : undefined
@@ -2087,6 +2626,24 @@ const lockedNaiveUiPackageKeys = isJsonObject(lockfilePackages)
 const lockedNaiveUiPackage = isJsonObject(lockfilePackages)
   ? lockfilePackages[`naive-ui@${expectedNaiveUiVersion}`]
   : undefined
+const lockedVueUseCorePackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('@vueuse/core@'))
+  : []
+const lockedVueUseCorePackage = isJsonObject(lockfilePackages)
+  ? lockfilePackages[`@vueuse/core@${expectedVueUseCoreVersion}`]
+  : undefined
+const lockedMotionVPackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('motion-v@'))
+  : []
+const lockedMotionVPackage = isJsonObject(lockfilePackages)
+  ? lockfilePackages[`motion-v@${expectedMotionVVersion}`]
+  : undefined
+const lockedReactPackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('react@'))
+  : []
+const lockedReactDomPackageKeys = isJsonObject(lockfilePackages)
+  ? Object.keys(lockfilePackages).filter((key) => key.startsWith('react-dom@'))
+  : []
 const lockedGsapPackageKeys = isJsonObject(lockfilePackages)
   ? Object.keys(lockfilePackages).filter((key) => key.startsWith('gsap@'))
   : []
@@ -2107,14 +2664,26 @@ const lockfilePatchedDependencies = lockfile['patchedDependencies']
 const lockedVueRouterPatch = isJsonObject(lockfilePatchedDependencies)
   ? lockfilePatchedDependencies['vue-router@5.2.0']
   : undefined
+const lockedMotionVPatch = isJsonObject(lockfilePatchedDependencies)
+  ? lockfilePatchedDependencies['motion-v@2.4.0']
+  : undefined
 const lockedVueRouterPatchHash = isJsonObject(lockedVueRouterPatch)
   ? lockedVueRouterPatch['hash']
+  : undefined
+const lockedMotionVPatchHash = isJsonObject(lockedMotionVPatch)
+  ? lockedMotionVPatch['hash']
   : undefined
 const lockedVueRouterSnapshotKeys = isJsonObject(lockfileSnapshots)
   ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('vue-router@'))
   : []
 const lockedNaiveUiSnapshotKeys = isJsonObject(lockfileSnapshots)
   ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('naive-ui@'))
+  : []
+const lockedVueUseCoreSnapshotKeys = isJsonObject(lockfileSnapshots)
+  ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('@vueuse/core@'))
+  : []
+const lockedMotionVSnapshotKeys = isJsonObject(lockfileSnapshots)
+  ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('motion-v@'))
   : []
 const lockedGsapSnapshotKeys = isJsonObject(lockfileSnapshots)
   ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('gsap@'))
@@ -2213,6 +2782,80 @@ if (
 }
 
 expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['@vueuse/core'] : undefined,
+  { specifier: expectedVueUseCoreVersion, version: expectedVueUseCoreVersion },
+  'VueUse core lockfile catalog coordinate',
+)
+expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['motion-v'] : undefined,
+  { specifier: expectedMotionVVersion, version: expectedMotionVVersion },
+  'Motion for Vue lockfile catalog coordinate',
+)
+expectStructuredEqual(
+  lockedUiVueUseCoreDependency,
+  {
+    specifier: 'catalog:',
+    version: expectedVueUseCoreSnapshotCoordinate.slice('@vueuse/core@'.length),
+  },
+  'VueUse core @platform/ui lockfile coordinate',
+)
+expectStructuredEqual(
+  lockedUiMotionVDependency,
+  {
+    specifier: 'catalog:',
+    version: expectedMotionVSnapshotCoordinate.slice('motion-v@'.length),
+  },
+  'Motion for Vue @platform/ui lockfile coordinate',
+)
+expectStructuredEqual(
+  lockedVueUseCorePackageKeys,
+  [`@vueuse/core@${expectedVueUseCoreVersion}`],
+  'VueUse core lockfile package set',
+)
+expectStructuredEqual(
+  lockedMotionVPackageKeys,
+  [`motion-v@${expectedMotionVVersion}`],
+  'Motion for Vue lockfile package set',
+)
+expectEqual(
+  isJsonObject(lockedVueUseCorePackage) && isJsonObject(lockedVueUseCorePackage['resolution'])
+    ? lockedVueUseCorePackage['resolution']['integrity']
+    : undefined,
+  expectedVueUseCoreIntegrity,
+  'Official VueUse core npm integrity',
+)
+expectEqual(
+  isJsonObject(lockedMotionVPackage) && isJsonObject(lockedMotionVPackage['resolution'])
+    ? lockedMotionVPackage['resolution']['integrity']
+    : undefined,
+  expectedMotionVIntegrity,
+  'Official Motion for Vue npm integrity',
+)
+expectStructuredEqual(
+  isJsonObject(lockedMotionVPackage) ? lockedMotionVPackage['peerDependencies'] : undefined,
+  { '@vueuse/core': '>=10.0.0', vue: '>=3.0.0' },
+  'Motion for Vue peer dependency authority',
+)
+expectEqual(
+  isJsonObject(lockedMotionVPatch) ? lockedMotionVPatch['path'] : undefined,
+  motionVPatchPath,
+  'Motion for Vue lockfile patch path',
+)
+expectEqual(lockedMotionVPatchHash, expectedMotionVPatchHash, 'Motion for Vue lockfile patch hash')
+expectStructuredEqual(
+  lockedVueUseCoreSnapshotKeys,
+  [expectedVueUseCoreSnapshotCoordinate],
+  'VueUse core lockfile snapshot identity',
+)
+expectStructuredEqual(
+  lockedMotionVSnapshotKeys,
+  [expectedMotionVSnapshotCoordinate],
+  'Motion for Vue patched lockfile snapshot identity',
+)
+expectStructuredEqual(lockedReactPackageKeys, [], 'Direct React lockfile package set')
+expectStructuredEqual(lockedReactDomPackageKeys, [], 'Direct React DOM lockfile package set')
+
+expectStructuredEqual(
   isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['naive-ui'] : undefined,
   { specifier: expectedNaiveUiVersion, version: expectedNaiveUiVersion },
   'Naive UI lockfile catalog coordinate',
@@ -2261,6 +2904,32 @@ expectStructuredEqual(lockedGsapSnapshotKeys, [], 'Inactive GSAP lockfile snapsh
 
 const webManifest = await readJsonObject(resolve(rootDirectory, 'apps/web/package.json'))
 const uiManifest = await readJsonObject(resolve(rootDirectory, 'packages/ui/package.json'))
+
+for (const dependency of prohibitedDirectMotionCompatibilityDependencies) {
+  expectEqual(
+    workspaceCatalog[dependency],
+    undefined,
+    `Prohibited direct compatibility catalog coordinate ${dependency}`,
+  )
+
+  for (const [manifest, description] of [
+    [rootManifest, 'root package'],
+    [webManifest, '@platform/web'],
+    [designSystemManifest, '@platform/design-system'],
+    [uiManifest, '@platform/ui'],
+  ] as const) {
+    expectDirectDependencyAbsent(manifest, dependency, description)
+  }
+}
+
+for (const [manifest, description] of [
+  [rootManifest, 'root package'],
+  [webManifest, '@platform/web'],
+  [designSystemManifest, '@platform/design-system'],
+] as const) {
+  expectDirectDependencyAbsent(manifest, 'motion-v', description)
+  expectDirectDependencyAbsent(manifest, '@vueuse/core', description)
+}
 
 expectEqual(
   workspaceConfiguration['catalog'] !== undefined && isJsonObject(workspaceConfiguration['catalog'])
@@ -2365,14 +3034,88 @@ expectEqual(
 )
 expectStructuredEqual(
   workspaceConfiguration['patchedDependencies'],
-  {
-    'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
-    'vue-router@5.2.0': vueRouterPatchPath,
-  },
+  expectedPatchedDependencies,
   'Reviewed exact-version patch set',
 )
 
 const architecture = await readFile(resolve(rootDirectory, 'ARCHITECTURE.md'), 'utf8')
+const motionPatchArchitecture = architectureAssignmentBlock(
+  architecture,
+  'PATCH_TARGET_PACKAGE=motion-v',
+)
+
+expectStructuredEqual(
+  {
+    PATCH_TARGET_PACKAGE: motionPatchArchitecture['PATCH_TARGET_PACKAGE'],
+    PATCH_TARGET_VERSION: motionPatchArchitecture['PATCH_TARGET_VERSION'],
+    PATCH_FILE: motionPatchArchitecture['PATCH_FILE'],
+    PATCH_KIND: motionPatchArchitecture['PATCH_KIND'],
+    PATCH_RUNTIME_CHANGE: motionPatchArchitecture['PATCH_RUNTIME_CHANGE'],
+    PATCH_JAVASCRIPT_CHANGE: motionPatchArchitecture['PATCH_JAVASCRIPT_CHANGE'],
+    PATCH_PACKAGE_METADATA_CHANGE: motionPatchArchitecture['PATCH_PACKAGE_METADATA_CHANGE'],
+    PATCH_SECOND_PACKAGE: motionPatchArchitecture['PATCH_SECOND_PACKAGE'],
+    TYPESCRIPT_STRICTNESS_CHANGE: motionPatchArchitecture['TYPESCRIPT_STRICTNESS_CHANGE'],
+    REACT_TYPE_DEPENDENCY: motionPatchArchitecture['REACT_TYPE_DEPENDENCY'],
+    PATCH_RUNTIME_HASH_EQUALITY: motionPatchArchitecture['PATCH_RUNTIME_HASH_EQUALITY'],
+    PATCH_SHA256: motionPatchArchitecture['PATCH_SHA256'],
+    PATCH_CHANGED_DECLARATION_FILE_COUNT:
+      motionPatchArchitecture['PATCH_CHANGED_DECLARATION_FILE_COUNT'],
+    PATCH_CHANGED_DECLARATION_HUNK_COUNT:
+      motionPatchArchitecture['PATCH_CHANGED_DECLARATION_HUNK_COUNT'],
+    PATCH_CHANGED_DECLARATION_FILES: motionPatchArchitecture['PATCH_CHANGED_DECLARATION_FILES'],
+    PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT:
+      motionPatchArchitecture['PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT'],
+    PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM:
+      motionPatchArchitecture['PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM'],
+    PATCH_RUNTIME_HASH_MANIFEST_SHA256:
+      motionPatchArchitecture['PATCH_RUNTIME_HASH_MANIFEST_SHA256'],
+    PATCH_EXACT_MOTION_PATCH_COUNT: motionPatchArchitecture['PATCH_EXACT_MOTION_PATCH_COUNT'],
+    PATCH_CANONICAL_TOTAL_SET: motionPatchArchitecture['PATCH_CANONICAL_TOTAL_SET'],
+    PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY:
+      motionPatchArchitecture['PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY'],
+    PATCH_TYPESCRIPT_STRICT: motionPatchArchitecture['PATCH_TYPESCRIPT_STRICT'],
+    PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES:
+      motionPatchArchitecture['PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES'],
+    PATCH_TYPESCRIPT_SKIP_LIB_CHECK: motionPatchArchitecture['PATCH_TYPESCRIPT_SKIP_LIB_CHECK'],
+  },
+  {
+    PATCH_TARGET_PACKAGE: 'motion-v',
+    PATCH_TARGET_VERSION: expectedMotionVVersion,
+    PATCH_FILE: motionVPatchPath,
+    PATCH_KIND: 'DECLARATION_ONLY',
+    PATCH_RUNTIME_CHANGE: 'PROHIBITED',
+    PATCH_JAVASCRIPT_CHANGE: 'PROHIBITED',
+    PATCH_PACKAGE_METADATA_CHANGE: 'PROHIBITED',
+    PATCH_SECOND_PACKAGE: 'PROHIBITED',
+    TYPESCRIPT_STRICTNESS_CHANGE: 'PROHIBITED',
+    REACT_TYPE_DEPENDENCY: 'PROHIBITED',
+    PATCH_RUNTIME_HASH_EQUALITY: 'REQUIRED',
+    PATCH_SHA256: motionVPatchMetadata.hash,
+    PATCH_CHANGED_DECLARATION_FILE_COUNT: String(motionVPatchMetadata.targetFiles.length),
+    PATCH_CHANGED_DECLARATION_HUNK_COUNT: String(motionVPatchMetadata.hunkCount),
+    PATCH_CHANGED_DECLARATION_FILES: motionVPatchMetadata.targetFiles.join(';'),
+    PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT: String(motionVRuntimeHashManifest.fileCount),
+    PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM:
+      'sorted POSIX relative path;NUL;per-file SHA-256 hex;newline',
+    PATCH_RUNTIME_HASH_MANIFEST_SHA256: motionVRuntimeHashManifest.hash,
+    PATCH_EXACT_MOTION_PATCH_COUNT: '1',
+    PATCH_CANONICAL_TOTAL_SET: Object.keys(expectedPatchedDependencies).join(';'),
+    PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY: 'PROHIBITED',
+    PATCH_TYPESCRIPT_STRICT: 'true',
+    PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES: 'true',
+    PATCH_TYPESCRIPT_SKIP_LIB_CHECK: 'false',
+  },
+  'Motion for Vue declaration-patch Architecture synchronization',
+)
+expectExactCount(
+  [
+    ...architecture.matchAll(
+      /^MOTION_FEATURE_PROJECT_CONFIG_BUDGET_PROPERTY=projectConfig\.bundleBudgets\.adminNavigationMotionFeatureJavaScriptGzipBytes$/gmu,
+    ),
+  ].length,
+  1,
+  'Admin Navigation Motion feature project-config budget Architecture authority',
+)
 
 expectStructuredEqual(
   {

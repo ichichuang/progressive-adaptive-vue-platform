@@ -12,6 +12,7 @@ allowBuilds:
   style-dictionary: false
 
 patchedDependencies:
+  motion-v@2.4.0: patches/motion-v@2.4.0.patch
   unconfig@7.5.0: patches/unconfig@7.5.0.patch
   vue-router@5.2.0: patches/vue-router@5.2.0.patch
 
@@ -23,12 +24,14 @@ catalog:
   '@unocss/preset-icons': 66.7.5
   '@unocss/preset-wind4': 66.7.5
   '@vitejs/plugin-vue': 6.0.8
+  '@vueuse/core': 14.4.0
   colorjs.io: 0.7.1
   eslint: 10.8.0
   eslint-plugin-boundaries: 7.1.0
   eslint-plugin-vue: 10.10.0
   eslint-plugin-vuejs-accessibility: 2.5.0
   knip: 6.29.0
+  motion-v: 2.4.0
   naive-ui: 2.45.2
   pinia: 3.0.4
   prettier: 3.9.6

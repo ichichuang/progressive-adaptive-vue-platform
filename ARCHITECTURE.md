@@ -105,8 +105,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -406,8 +406,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -506,8 +506,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -580,7 +580,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按 Owner 陈述 `那没问题` 完成窄范围 Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；§1.2B.0H–0K 只保留其精确历史状态，§1.2B.0L 的 `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` 保持 `FROZEN / ACCEPTED / COMPLETE / PASS` 的已验收直接前序。当前唯一 Bounded Work 由 §1.2B.0M 准入为 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`，Owner Runtime、Visual 与 Accessibility Acceptance 均为 `NOT_PERFORMED`。`PAVP-RUNTIME-004` 保持 Open 且未启动。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001` 的精确 scoped/global Shell State Selector Compilation 修复已通过 Owner Runtime 与 Visual Acceptance；`PAVP-RUNTIME-002` 与 `PAVP-RUNTIME-005` 的窄范围 Repository Implementation 与 Canonical Static Verification 均保持既有状态。`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按 Owner 陈述 `那没问题` 完成窄范围 Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；§1.2B.0H–0K 只保留其精确历史状态，§1.2B.0L 的 `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` 保持 `FROZEN / ACCEPTED / COMPLETE / PASS` 的已验收直接前序。当前唯一 Bounded Work 由 §1.2B.0M 准入为 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / COMPLETE / PASS`，Owner Runtime、Visual 与 Accessibility Acceptance 均为 `NOT_PERFORMED`。`PAVP-RUNTIME-004` 保持 Open 且未启动。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面的内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -940,8 +940,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -1059,8 +1059,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -1251,7 +1251,7 @@ IMPLEMENTATION_COMPLETION_EVIDENCE=one scoped source and generated diff limited 
 
 每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
 
-该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后依次形成原生导航、GSAP、双平面与未实施 Reveal 的历史记录；§1.2B.0L 再形成 `ACCEPTED / COMPLETE / PASS` 的 Native Naive 已验收直接前序，其 Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility Acceptance 为 `NOT_PERFORMED`。当前 Authority 已由 §1.2B.0M 串行切换到 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`，三项 Owner Acceptance 均为 `NOT_PERFORMED`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。
+该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后依次形成原生导航、GSAP、双平面与未实施 Reveal 的历史记录；§1.2B.0L 再形成 `ACCEPTED / COMPLETE / PASS` 的 Native Naive 已验收直接前序，其 Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility Acceptance 为 `NOT_PERFORMED`。当前 Authority 已由 §1.2B.0M 串行切换到 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / COMPLETE / PASS`，三项 Owner Acceptance 均为 `NOT_PERFORMED`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。
 
 Owner 对已发布实现的后续复核最初观察到一个 obsolete Vite config error；仓库源码与当前 Vite 配置当时已经正确，错误来自早于该发布实施且仍在长期运行的 PAVP Vite 进程。仅替换该陈旧 PAVP Vite 进程后加载了当前配置，没有改变任何仓库文件；随后十四主题 Dark Standard / Dark Enhanced、Action Fill、On-action Content、Control Foreground、First Paint 恢复以及 Theme、Color-mode、Contrast 切换的 Owner Runtime 与 Visual Review 均通过。该操作历史不是 Repository Capability、Verification Gate 或永久 Runtime Dependency。
 
@@ -1298,8 +1298,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -2791,7 +2791,9 @@ Owning Checker 在原有全部不变量与 Probe Suite 之外只增加五个可�
 
 ### 1.2B.0M `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`
 
-本 Amendment 只准入一个由 `@platform/ui` 私有拥有的 Motion for Vue Shared-layout Selected Lens，串行取代 §1.2B.0L 成为唯一 Current Bounded Work。它只改变 Persistent Native Naive Admin Navigation 的 Selected-state Visual Transition Authority；§1.2B.0L 的 Native Naive 结构、行为、验收和精确提交保持已接受的直接前序证据。本文档落地不安装依赖、不创建 Motion Source、不改变 UI、Runtime、Bundle、Manifest 或 Generated Artifact，Repository Source Implementation 保持 `NOT_STARTED`。
+本 Amendment 只准入一个由 `@platform/ui` 私有拥有的 Motion for Vue Shared-layout Selected Lens，串行取代 §1.2B.0L 成为唯一 Current Bounded Work。它只改变 Persistent Native Naive Admin Navigation 的 Selected-state Visual Transition Authority；§1.2B.0L 的 Native Naive 结构、行为、验收和精确提交保持已接受的直接前序证据。后续获得明确授权的原子 Source Landing 已完成精确依赖、私有 Motion Source、UI Integration、Bundle/Manifest Closure 与 Canonical Static Verification；Repository Implementation 与 Static Verification 现为 `COMPLETE / PASS`，Owner Runtime、Visual 与 Accessibility Acceptance 仍未执行。
+
+Owner 已拒绝原 Reduced 视觉结果：该实现虽省略 `layoutId`，却只通过按 Owner Revision 重挂载的 Motion Lens 执行 `0.1s` Opacity Entry，没有同时保留旧 Owner 的 Exit，因此真实界面中与 None 无可感知区别。`PAVP_ADMIN_NAVIGATION_REDUCED_MOTION_PERCEPTIBLE_CROSSFADE_REPAIR` 只在本既有 Work Package 内纠正该结果，不创建新 Work Package 或 Amendment。Full Shared-layout Spring 完全保留；Reduced 与 None 不再渲染 Motion Lens，并分别回到常驻 Naive Selected Surface 的可感知非空间 Crossfade 与立即状态切换。
 
 ```text
 AMENDMENT=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
@@ -2802,8 +2804,8 @@ WORK_PACKAGE=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 WORK_PACKAGE_CLASSIFICATION=BOUNDED_PRIVATE_ADMIN_NAVIGATION_SELECTED_STATE_MOTION_ADMISSION
 PARENT_WORK_PACKAGE=PAVP_ARCHITECTURE_ADMIN_CONSOLE
 STATUS=OPEN
-REPOSITORY_IMPLEMENTATION=NOT_STARTED
-STATIC_VERIFICATION=NOT_RUN
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
 OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -2827,17 +2829,17 @@ SELECTED_STATE_VISUAL_TRANSITION_AUTHORITY_CHANGE=ONLY
 PRESERVED_NATIVE_NAVIGATION_OWNERS=NLayoutSider;NMenu;persistentNavigationCollapsed;HEADER_CONTROLS;ACTIVE_GROUP_EXPANSION;COLLAPSED_HOVER_POPUP;NARROW_DRAWER;ROUTER;PAVP_RUNTIME_005
 ```
 
-Uniform Selected-surface Scale、Directional Reveal、One-shot CSS Bloom、`SelectionFeedbackPhase idle/a/b`、Alternating CSS Keyframes、Menu `::after` Bloom，以及 Persistent Hover/Selected Geometry Transforms 是精确基线提交之后出现、未经提交和验收的被拒绝非权威历史。它们不再是活动目标合同，不得由 Owning Checker 作为 Source Invariant 或 Probe 前提；当前两份本地 UI Source Residue 继续保持未提交且字节不变，只能在后续获得明确授权的 Source Implementation Task 中删除。
+Uniform Selected-surface Scale、Directional Reveal、One-shot CSS Bloom、`SelectionFeedbackPhase idle/a/b`、Alternating CSS Keyframes、Menu `::after` Bloom，以及 Persistent Hover/Selected Geometry Transforms 是精确基线提交之后出现、未经提交和验收的被拒绝非权威历史。它们不再是活动目标合同，不得由 Owning Checker 作为 Source Invariant 或 Probe 前提；原两份本地 UI Source Residue 已在授权的 Source Landing 中删除，当前 Source 不再保留这些被拒绝的 CSS Bloom、Directional Reveal 或 Selection Feedback Phase 实现。
 
 #### 限定 Motion 能力与依赖准入
 
-Runtime Motion 的一般能力仍为 Deferred/Target Inactive。唯一例外是本节命名的私有 Admin Navigation Shared-selection-lens；该例外尚未安装、不是 Public Platform API、不得被其他 Consumer 或 Route Content 使用。
+Runtime Motion 的一般能力仍为 Deferred/Target Inactive。唯一例外是本节命名的私有 Admin Navigation Shared-selection-lens；该例外已按冻结的精确坐标安装并只由 `@platform/ui` 私有实现，不是 Public Platform API，不得被其他 Consumer 或 Route Content 使用。
 
 ```text
 MOTION_FOR_VUE_GENERAL_CAPABILITY_STATUS=DEFERRED
 RUNTIME_MOTION_GENERAL_CAPABILITY_STATUS=TARGET_INACTIVE
 MOTION_FOR_VUE_SCOPED_ADMISSION=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ONLY
-MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=NOT_INSTALLED
+MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=INSTALLED
 MOTION_FOR_VUE_PUBLIC_PLATFORM_API=PROHIBITED
 MOTION_FOR_VUE_OTHER_CONSUMERS=PROHIBITED
 MOTION_FOR_VUE_ROUTE_CONTENT_ANIMATION=PROHIBITED
@@ -2849,7 +2851,38 @@ MOTION_VUE_ONLY_ADMITTED_ANIMATION_RUNTIME=motion-v
 VUEUSE_CORE_ADMISSION_PURPOSE=motion-v_REQUIRED_PEER_ONLY
 ```
 
-后续独立 Source Implementation Task 只可把 `motion-v: 2.4.0` 与 `@vueuse/core: 14.4.0` 加入 Workspace Catalog，并只可把二者的 `catalog:` 坐标加入 `packages/ui` Dependencies。除该精确集合外，不准入 GSAP、Anime.js、Hover.css Runtime、Uiverse Package Code、vgpu、`@vueuse/motion` 或第二个 Animation Library。
+本仓库对已冻结坐标 `motion-v@2.4.0` 采用一个由 pnpm 注册的声明兼容性补丁，目的仅为在不改变运行时字节、不削弱 PAVP TypeScript 严格度的前提下，修正该发布包对 Vue、VueUse、React-only 声明图和 `exactOptionalPropertyTypes` 的不兼容。既有 `unconfig` 与 `vue-router` 补丁继续由各自历史权威拥有；本工作包新增且只拥有下列一个 Motion 补丁，不准入第二个 Motion 或兼容性包补丁。
+
+```text
+PATCH_TARGET_PACKAGE=motion-v
+PATCH_TARGET_VERSION=2.4.0
+PATCH_FILE=patches/motion-v@2.4.0.patch
+PATCH_KIND=DECLARATION_ONLY
+PATCH_RUNTIME_CHANGE=PROHIBITED
+PATCH_JAVASCRIPT_CHANGE=PROHIBITED
+PATCH_PACKAGE_METADATA_CHANGE=PROHIBITED
+PATCH_SECOND_PACKAGE=PROHIBITED
+TYPESCRIPT_STRICTNESS_CHANGE=PROHIBITED
+REACT_TYPE_DEPENDENCY=PROHIBITED
+PATCH_RUNTIME_HASH_EQUALITY=REQUIRED
+PATCH_REMOVAL_TRIGGER=a future exact motion-v version passes all PAVP strict type checks without this patch
+PATCH_UPGRADE_POLICY=the patch must never be carried silently to another motion-v version
+PATCH_SHA256=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59
+PATCH_CHANGED_DECLARATION_FILE_COUNT=19
+PATCH_CHANGED_DECLARATION_HUNK_COUNT=20
+PATCH_CHANGED_DECLARATION_FILES=dist/es/animation/hooks/use-animate.d.ts;dist/es/components/RowValue.d.ts;dist/es/components/hooks/use-motion-elm.d.ts;dist/es/components/motion/types.d.ts;dist/es/components/reorder/context.d.ts;dist/es/components/reorder/types.d.ts;dist/es/events/types.d.ts;dist/es/features/animation/calc-child-stagger.d.ts;dist/es/features/gestures/drag/types.d.ts;dist/es/features/gestures/press/types.d.ts;dist/es/features/gestures/types.d.ts;dist/es/features/layout/types.d.ts;dist/es/index.d.ts;dist/es/types/instance.d.ts;dist/es/types/motion-values.d.ts;dist/es/types/state.d.ts;dist/es/utils/use-in-view.d.ts;dist/es/value/use-scroll.d.ts;dist/es/value/use-spring.d.ts
+PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT=91
+PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM=sorted POSIX relative path;NUL;per-file SHA-256 hex;newline
+PATCH_RUNTIME_HASH_MANIFEST_SHA256=58f8bbff2272c77b361cbc3eb438f7e3b32d4b42eb83b1599760bb76db502adb
+PATCH_EXACT_MOTION_PATCH_COUNT=1
+PATCH_CANONICAL_TOTAL_SET=motion-v@2.4.0;unconfig@7.5.0;vue-router@5.2.0
+PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY=PROHIBITED
+PATCH_TYPESCRIPT_STRICT=true
+PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES=true
+PATCH_TYPESCRIPT_SKIP_LIB_CHECK=false
+```
+
+已完成的 Source Landing 把 `motion-v: 2.4.0` 与 `@vueuse/core: 14.4.0` 加入 Workspace Catalog，并只把二者的 `catalog:` 坐标加入 `packages/ui` Dependencies。除该精确集合外，没有准入 GSAP、Anime.js、Hover.css Runtime、Uiverse Package Code、vgpu、`@vueuse/motion` 或第二个 Animation Library。
 
 #### 私有实现边界与 LazyMotion
 
@@ -2876,7 +2909,7 @@ MOTION_VUE_FEATURE_LOADING=ASYNC_AFTER_INITIAL_STABLE_MOUNT
 MOTION_VUE_MISSED_INTERACTION_REPLAY=PROHIBITED
 ```
 
-未来私有实现必须使用 `LazyMotion`、`m`、`LayoutGroup`、`MotionConfig`、Async `domMax` 和 LazyMotion Strict Mode；禁止 Full Motion Component Import。Motion 类型不得进入 Public `UiAdminShell` Props、Emits、Slots、Registry 或其他 Public Contract。
+当前私有实现使用 `LazyMotion`、`m`、`LayoutGroup`、`MotionConfig`、Async `domMax` 和 LazyMotion Strict Mode；没有 Full Motion Component Import。Motion 类型没有进入 Public `UiAdminShell` Props、Emits、Slots、Registry 或其他 Public Contract。
 
 #### Motion Feature Root 与动态根收集
 
@@ -2896,9 +2929,9 @@ MOTION_FEATURE_DYNAMIC_CHILD_ROOT_COUNT=0
 DYNAMIC_ROOT_IN_INITIAL_STATIC_CLOSURE=PROHIBITED
 ```
 
-后续实现必须由 Initial Static Closure 内的 Owner 对精确 `MOTION_FEATURE_SOURCE_PATH` 执行唯一一次 Dynamic Import。该 Motion Feature Root 不是 Route Root，不得隐藏在 Route Chunk 内，不得再拥有 Dynamic Child Root，不得发出 CSS，不得由 Narrow Drawer 加载，也不得同步导入。
+当前实现由 Initial Static Closure 内的 Owner 对精确 `MOTION_FEATURE_SOURCE_PATH` 执行唯一一次 Dynamic Import。该 Motion Feature Root 不是 Route Root，没有隐藏在 Route Chunk 内，没有 Dynamic Child Root，不发出 CSS，不由 Narrow Drawer 加载，也没有被同步导入。
 
-Future Bundle Checker 必须把当前 Entry-only Dynamic-root Assumption 替换为以下唯一算法：
+当前 Bundle Checker 已用以下唯一算法取代旧 Entry-only Dynamic-root Assumption：
 
 1. 从唯一 Vite Entry 收集完整 Initial Static Closure。
 2. 收集 Initial Static Closure 中每个 Chunk 所拥有的 `dynamicImports` Union。
@@ -2932,24 +2965,43 @@ MOTION_FEATURE_ENGINEERING_MANIFEST_UNIT=bytes-gzip
 MOTION_FEATURE_BUDGET_FORMULA=ceil((MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES + 8192) / 8192) * 8192
 MOTION_FEATURE_BUDGET_HEADROOM >= 8192
 MOTION_FEATURE_BUDGET_HEADROOM < 16384
+MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648
+MOTION_FEATURE_HARD_BUDGET_BYTES=49152
+MOTION_FEATURE_HEADROOM_BYTES=15504
+MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILE_COUNT=1
+MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILES=assets/admin-navigation-dom-max-CtUow5k3.js
+ENGINEERING_MANIFEST_MOTION_FEATURE_BUDGET_RECORD_ID=admin-navigation-motion-feature-javascript-gzip
+ENGINEERING_MANIFEST_MOTION_FEATURE_BUDGET_RECORD_LIMIT=49152
+ENGINEERING_MANIFEST_MOTION_FEATURE_BUDGET_RECORD_UNIT=bytes-gzip
 ```
 
-Feature Measurement 只计算 `MOTION_FEATURE_EXCLUSIVE_CLOSURE` 中每个 Distinct JavaScript File 使用既有 Canonical Production Gzip Options 得到的 Gzip Bytes 之和。Shared Initial Chunks 必须排除，因为它们已经由 Initial JavaScript Budget 计数。首次实现 Build 取得 `MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES` 后，Hard Budget 必须精确按上方 Formula 计算；不得预选更大数值、按 Decimal Kilobytes 舍入、使用 Percentage-only Margin 或改变 Gzip Options。Engineering Manifest 继续使用精确 `unit='bytes-gzip'`。
+Feature Measurement 只计算 `MOTION_FEATURE_EXCLUSIVE_CLOSURE` 中每个 Distinct JavaScript File 使用既有 Canonical Production Gzip Options 得到的 Gzip Bytes 之和。Shared Initial Chunks 已排除，因为它们已经由 Initial JavaScript Budget 计数。Production Build 实测唯一独占 JavaScript File `assets/admin-navigation-dom-max-CtUow5k3.js` 为 `33648 bytes gzip`；Hard Budget 按上方 Formula 精确得到 `49152 bytes gzip`，Headroom 为 `15504 bytes gzip`。Engineering Manifest 已确定性记录 `admin-navigation-motion-feature-javascript-gzip / 49152 / bytes-gzip`，没有按 Decimal Kilobytes 舍入、使用 Percentage-only Margin 或改变 Gzip Options。
 
-Initial JavaScript Current Hard Budget 保持 229376 Bytes。后续实现必须先测量 Final Initial JavaScript Closure；若 `229376 - measuredInitialJavaScript >= 8192`，则保留 229376，否则使用最小可能的 8 KiB-aligned Replacement：
+Initial JavaScript 实测 Final Closure 为 `223501 bytes gzip`；相对实施前 `229376 bytes gzip` Hard Budget 只剩 `5875 bytes gzip`，未满足至少 `8192 bytes gzip` Headroom，因此按冻结公式重定基线到最小可行 8 KiB-aligned `237568 bytes gzip`，最终 Headroom 为 `14067 bytes gzip`：
 
 ```text
-INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=229376
+FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223501
+FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568
+FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14067
+INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568
+INITIAL_JAVASCRIPT_PRE_REBASE_HARD_BUDGET_BYTES=229376
 INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192
-INITIAL_JAVASCRIPT_RETAINED_HARD_BUDGET_BYTES=229376
+INITIAL_JAVASCRIPT_RETAIN_CONDITION_RESULT_FOR_223501=FALSE
+INITIAL_JAVASCRIPT_RETAINED_HARD_BUDGET_BYTES=NOT_APPLICABLE_REBASE_REQUIRED
 INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192
+INITIAL_JAVASCRIPT_REBASE_RESULT_BYTES=237568
 INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=8192
 INITIAL_JAVASCRIPT_REBASE_MAXIMUM_HEADROOM_EXCLUSIVE_BYTES=16384
 INITIAL_JAVASCRIPT_PRESELECTED_INCREASE=PROHIBITED
-INITIAL_JAVASCRIPT_ENGINEERING_MANIFEST_RECORD_UPDATE=ONLY_WHEN_FORMULA_REQUIRES
+INITIAL_JAVASCRIPT_ENGINEERING_MANIFEST_RECORD_UPDATE=APPLIED_BECAUSE_FORMULA_REQUIRED
+ENGINEERING_MANIFEST_INITIAL_JAVASCRIPT_BUDGET_RECORD_ID=initial-javascript-gzip
+ENGINEERING_MANIFEST_INITIAL_JAVASCRIPT_BUDGET_RECORD_LIMIT=237568
+ENGINEERING_MANIFEST_INITIAL_JAVASCRIPT_BUDGET_RECORD_UNIT=bytes-gzip
+ENGINEERING_MANIFEST_DYNAMIC_ROOT_SET=EXACT_17_ROUTE_ROOTS_PLUS_1_MOTION_FEATURE_ROOT
+ENGINEERING_MANIFEST_DYNAMIC_ROOT_COUNT=18
 ```
 
-该 Replacement 必须至少保留 8192 Bytes 且少于 16384 Bytes Headroom；只有 Formula 要求时才更新既有 `initial-javascript-gzip` Engineering Manifest Record。
+该 Replacement 保留 `14067 bytes gzip` Headroom，满足至少 `8192` 且少于 `16384` 的冻结区间；既有 `initial-javascript-gzip` Engineering Manifest Record 已因 Formula 要求从 `229376` 更新为 `237568`。现行 Bundle Gate 同时证明精确 17 个 Route Roots 与 1 个 Motion Feature Root，共 18 个 Dynamic Roots。
 
 #### Shared-selection-lens 与公开集成边界
 
@@ -2965,7 +3017,10 @@ MOTION_SELECTION_LENS_HOVER_OWNER=NAIVE
 MOTION_SELECTION_LENS_HOVER_FORMULA=6_PERCENT_THEME_TINT
 MOTION_SELECTION_LENS_SELECTED_FORMULA=16_PERCENT_THEME_TINT
 MOTION_SELECTION_LENS_STATIC_FALLBACK=NAIVE_SELECTED_BACKGROUND_BEFORE_MOTION_FEATURE_READY
-MOTION_SELECTION_LENS_READY_SELECTED_SURFACE_OWNER=ONE_MOTION_LENS_ONLY
+MOTION_SELECTION_LENS_FULL_READY_SELECTED_SURFACE_OWNER=ONE_MOTION_LENS_ONLY
+MOTION_SELECTION_LENS_FULL_NOT_READY_SELECTED_SURFACE_OWNER=NAIVE_SELECTED_BACKGROUND
+MOTION_SELECTION_LENS_REDUCED_SELECTED_SURFACE_OWNER=NAIVE_PERSISTENT_BEFORE_SURFACES
+MOTION_SELECTION_LENS_NONE_SELECTED_SURFACE_OWNER=NAIVE_PERSISTENT_BEFORE_SURFACES
 MOTION_SELECTION_LENS_FALLBACK_STACKING=PROHIBITED
 MOTION_SELECTION_LENS_AFTER_BLOOM=PROHIBITED
 MOTION_SELECTION_LENS_AURA_LEFT_BAR_HARD_DOT_BADGE_SECOND_SHADOW=PROHIBITED
@@ -2974,11 +3029,11 @@ MOTION_SELECTION_LENS_PUBLIC_RENDER_BOUNDARIES=renderLabel;renderIcon;nodeProps_
 MOTION_SELECTION_LENS_VENDOR_DOM_QUERY_OR_PATCH=PROHIBITED
 ```
 
-集成只能使用 Documented `NMenu.renderLabel`、`renderIcon` 与必要时的 `nodeProps` Public Render Boundaries。未来实现可增加一个渲染 Lens 所必需的 Private、Pointer-inert、`aria-hidden` Wrapper；该 Wrapper 不可 Focus、不是 Pointer Target、不是 Route Owner、不是第二个 Navigation Registry，不改变 Menu Geometry，也不改变 Label 或 Icon Position。Persistent Navigation 展开时由 Selected Level-2 Route 拥有唯一 Lens；折叠时由包含 Active Route 的 Root Submenu 拥有。Teleported Dropdown Popup 不拥有第二个 Lens；Popup Navigation 按既有 Naive Behavior 关闭后，由 Persistent Root Lens 激活，Popup 不得为展示动画而保持打开。Narrow Drawer 不改变且不消费 Motion。
+集成只使用 Documented `NMenu.renderLabel`、`renderIcon` 与必要时的 `nodeProps` Public Render Boundaries。当前实现增加一个渲染 Lens 所必需的 Private、Pointer-inert、`aria-hidden` Wrapper；该 Wrapper 不可 Focus、不是 Pointer Target、不是 Route Owner、不是第二个 Navigation Registry，不改变 Menu Geometry，也不改变 Label 或 Icon Position。Persistent Navigation 展开时由 Selected Level-2 Route 拥有唯一 Lens；折叠时由包含 Active Route 的 Root Submenu 拥有。Teleported Dropdown Popup 不拥有第二个 Lens；Popup Navigation 按既有 Naive Behavior 关闭后，由 Persistent Root Lens 激活，Popup 不为展示动画而保持打开。Narrow Drawer 不改变且不消费 Motion。
 
 #### Feature Readiness 与 Full / Reduced / None
 
-在 `domMax` Ready 前，既有 Naive 16% Selected Fallback 可见，Navigation 完全可用，Route Changes 立即应用，任何 Interaction 均不排队。Ready 时在当前 Active Projected Owner 上 Mount Lens，使用 `initial=false` 或等价 Documented No-entry Mechanism，并在同一个 Vue Commit 中关闭 Fallback；不得从旧 Route 动画、重放 Ready 前 Interaction，或造成 Selected State Flash、Duplicate、Temporary Removal。
+在 Full 下且 `domMax` Ready 前，既有 Naive 16% Selected Fallback 可见，Navigation 完全可用，Route Changes 立即应用，任何 Interaction 均不排队。Ready 时在当前 Active Projected Owner 上 Mount Lens，使用 `initial=false` 或等价 Documented No-entry Mechanism，并在同一个 Vue Commit 中关闭 Fallback；不得从旧 Route 动画、重放 Ready 前 Interaction，或造成 Selected State Flash、Duplicate、Temporary Removal。Feature Readiness 不改变 Reduced 或 None 的 Naive Selected Surface 所有权。
 
 ```text
 MOTION_FEATURE_NOT_READY_SELECTED_OWNER=NAIVE_16_PERCENT_STATIC_FALLBACK
@@ -2994,17 +3049,31 @@ MOTION_FULL_REDUCED_MOTION=never
 MOTION_FULL_TRANSITION=spring_visualDuration_0.26_bounce_0.16_no_delay
 MOTION_FULL_RAPID_SELECTION=INTERRUPTIBLE_FROM_RENDERED_STATE
 MOTION_REDUCED_REDUCED_MOTION=always
-MOTION_REDUCED_SELECTED_CHANGE=OPACITY_AND_BACKGROUND_COLOR_CROSSFADE_HALF_PAVP_INTERACTION_DURATION_ONLY
+MOTION_REDUCED_MOTION_LENS=NONE
+MOTION_REDUCED_SELECTED_CHANGE=CONCURRENT_OLD_SURFACE_FADE_OUT_AND_NEW_SURFACE_FADE_IN
+MOTION_REDUCED_SURFACE_SET=.n-menu-item-content::before;.n-dropdown-option-body::before
+MOTION_REDUCED_TRANSITION_PROPERTY=background-color;opacity
+MOTION_REDUCED_TRANSITION_DURATION=var(--ui-motion-duration)
+MOTION_REDUCED_TRANSITION_EASING=var(--ui-motion-easing)
 MOTION_REDUCED_LAYOUT_TRANSFORM_SPRING_SCALE_TRANSLATION=PROHIBITED
+MOTION_REDUCED_OWNER_REVISION_REMOUNT=PROHIBITED
+MOTION_REDUCED_ANIMATE_PRESENCE=PROHIBITED
 MOTION_NONE_SELECTED_CHANGE=IMMEDIATE_WITHOUT_LAYOUT_OPACITY_OR_ICON_ANIMATION
 MOTION_NONE_ICON_RESPONSE=NONE
 MOTION_NONE_STALE_TRANSFORM_OR_OPACITY=PROHIBITED
+MOTION_MODE_SWITCH_NAVIGATION_REPLAY=PROHIBITED
+MOTION_MODE_SWITCH_SELECTED_OWNER_GAP_OR_FLASH=PROHIBITED
+MOTION_NON_ROUTE_INPUT_SELECTED_TRANSITION_REPLAY=PROHIBITED
 PAVP_APPEARANCE_MOTION_AUTHORITY=SOLE
 DEVICE_MEDIA_QUERY_PRODUCT_AUTHORITY=PROHIBITED
 SECOND_MOTION_PREFERENCE_OR_RESOLVER=PROHIBITED
 ```
 
-Full 使用 `MotionConfig reducedMotion='never'` 和一个 Shared-layout Spring，Transition Type 精确为 `spring`、`visualDuration` 为 0.26 Seconds、`bounce` 为 0.16、无 Delay、无 Repeated Bounce、无 Large Overshoot；快速 A → B → C 必须可中断并从 Rendered State 继续。Reduced 使用 `MotionConfig reducedMotion='always'`，禁止 Layout Transform、Spring、Scale 和 Translation，只允许 Selected Change 使用 Opacity/Background-color Crossfade，Duration 精确为 Existing PAVP Interaction Duration 的一半。None 禁止 Layout、Opacity 与 Icon Animation，Selected Ownership 立即切换且不得残留 Transform 或 Opacity。
+Full 使用 `MotionConfig reducedMotion='never'` 和一个 Shared-layout Spring，Transition Type 精确为 `spring`、`visualDuration` 为 0.26 Seconds、`bounce` 为 0.16、无 Delay、无 Repeated Bounce、无 Large Overshoot；快速 A → B → C 必须可中断并从 Rendered State 继续。Reduced 保留 `MotionConfig reducedMotion='always'`，但不渲染 Motion Lens、`layoutId`、Spring、Owner-revision Remount、AnimatePresence、Scale、Translation 或 Icon Response；由已挂载的 `.n-menu-item-content::before` 与 `.n-dropdown-option-body::before` 在 Active Class 改变时，以 `var(--ui-motion-duration)` 和 `var(--ui-motion-easing)` 同时执行旧 Surface `opacity 1 → 0` 与新 Surface `opacity 0 → 1`，其 Transition Property 精确为 `background-color, opacity`。None 不渲染 Motion Lens，禁止 Layout、Opacity、Background 与 Icon Animation，Selected Ownership 立即切换且不得残留 Transform 或 Opacity。
+
+Reduced 的 Inactive Surface 精确为 `opacity:0; transform:none`；Hover 精确为 `opacity:1; transform:none` 并继续消费 6% Theme Tint；Selected、Selected Hover 与 Selected Pressed 精确为 `opacity:1; transform:none` 并继续消费 16% Theme Tint，不叠加 Hover。Expanded 的旧/新 Level-2 Route 与 Collapsed Rail 的旧/新 Active Root 使用同一并发 Crossfade；Dropdown 只保留既有 Naive Hover/Active Surface，不为动画保持打开，也不增加 Lens。Text、Icon 与 Arrow 最多只 Transition Color。None 对同一 Surface 使用 `transition:none; animation:none; transform:none` 并保留最终 Selected 可见。
+
+Full → Reduced 在同一 Vue Render Commit 移除 Lens 并启用当前 Naive Selected Surface；Reduced → Full 在当前 Owner 上以 `initial=false` Mount Lens 并同 Commit 隐藏 Fallback；Reduced → None 立即移除 Transition；None → Reduced 只建立当前 Selected Baseline，后续 Route Change 才 Crossfade。Mode Switch 不 Navigation、不 Replay 历史 Interaction；Theme、Material、Contrast、Font Scale、Sider Collapse、Group Expansion 与 Feature Readiness 不得创建虚假 Selected-route Transition。
 
 #### Route 保留、状态转换与 Owning Checker
 
@@ -3018,9 +3087,9 @@ ROUTE_LEVEL_TRANSITION=PROHIBITED
 ROUTE_OPACITY_ENTRY=PROHIBITED
 MAIN_TRANSFORM=PROHIBITED
 ROUTER_FOCUS_OR_SCROLL_CHANGE=NONE
-SOURCE_IMPLEMENTATION_TRANSITION=SEPARATE_LATER_EXPLICIT_OWNER_AUTHORIZATION_ONLY
-SOURCE_IMPLEMENTATION_STATUS_AFTER_THIS_AMENDMENT=NOT_STARTED
-STATIC_VERIFICATION_STATUS_AFTER_THIS_AMENDMENT=NOT_RUN
+SOURCE_IMPLEMENTATION_TRANSITION=COMPLETED_UNDER_SEPARATE_EXPLICIT_OWNER_AUTHORIZATION
+SOURCE_IMPLEMENTATION_STATUS_AFTER_THIS_AMENDMENT=COMPLETE
+STATIC_VERIFICATION_STATUS_AFTER_THIS_AMENDMENT=PASS
 ARCHITECTURE_ADMISSION_NEGATIVE_PROBE_COUNT=12
 ARCHITECTURE_ADMISSION_PROBE_MUTATION=IN_MEMORY_REVERSIBLE_NO_REPOSITORY_ARTIFACT
 ARCHITECTURE_ADMISSION_OWNING_CHECKER=scripts/architecture/check-architecture-admin-console.ts
@@ -3028,11 +3097,11 @@ ARCHITECTURE_ADMISSION_OWNING_CHECKER=scripts/architecture/check-architecture-ad
 
 PAVP-RUNTIME-005 精确保留一个 RouterView、Stable Unkeyed Route-content Host、无 Route-derived Key、无 Route-level Transition、无 Route Opacity Entry、无 Main Transform，以及无 Router Focus/Scroll Change。
 
-Owning Checker 只能更新既有 Admin Console Checker，不得创建第二个 Checker。它必须删除或历史化要求 Directional Reveal、One-shot Bloom、`SelectionFeedbackPhase`、Alternating Bloom Keyframes 或 Menu `::after` Bloom 的活动 Source Invariant/Probe，不得为尚不存在的 Motion Files 新增 Source Invariant。它必须增加恰好 12 个只修改 In-memory Architecture Source 的可逆 Admission Probes，分别拒绝：Current Work 仍停留在 Accepted Native Naive Package；新 Amendment 不是 `FROZEN`；新 Work Package 被虚报为 `COMPLETE`；新 Static Verification 被虚报为 `PASS`；Predecessor Status 或 Implementation Commit 漂移；`motion-v@2.4.0` 漂移；`@vueuse/core@14.4.0` 缺失或漂移；Feature Source Path、Manifest Key 或 Dynamic-root Identity 漂移；Project-config Budget Property 或 Engineering Manifest Record ID 漂移；Closure Measurement 纳入 Initial 或 Route-owned Chunks；Budget Margin 或 8 KiB Rounding Formula 漂移；General Motion Capability 被激活或 Route-content Animation 被准入。每个 Probe 必须仅因精确目标失败、完整恢复且不留下 Repository Artifact；所有无关既有 Checker Suite 保持。
+Owning Checker 只更新既有 Admin Console Checker，没有创建第二个 Checker。它已删除或历史化要求 Directional Reveal、One-shot Bloom、`SelectionFeedbackPhase`、Alternating Bloom Keyframes 或 Menu `::after` Bloom 的活动 Source Invariant/Probe，并保留精确 12 个只修改 In-memory Architecture Source 的可逆 Admission Probes。当前 Motion Source Closure 由精确 22 项稳定 Source Invariant 与原有 16 个可逆 Source Probe 保护，覆盖 Private Import Boundary、LazyMotion Strict/Async Feature Lifecycle、Full-only 单 Lens Owner Projection、Naive Reduced/None Ownership、Fallback Cutover、失败与 Unmount Cleanup、零 Popup/Narrow Consumer、零 Vendor DOM Patch、零 Timer/RAF、无 AnimatePresence、无 Route Motion 和无 Public Motion Contract；本 Reduced Correction 另增加恰好 8 个可逆 In-memory Probe，逐一拒绝 Reduced Motion Lens、`0.1s`、Half Duration、Transform/Scale、Feature-ready Fallback 禁用、Lens/Fallback Stacking、None Transition 与 Route Motion/PAVP-RUNTIME-005 漂移。每个 Probe 只因精确目标失败、完整恢复且不留下 Repository Artifact；所有无关既有 Checker Suite 保持。
 
-本 Architecture-only Landing 的唯一写入路径是 `ARCHITECTURE.md` 与 `scripts/architecture/check-architecture-admin-console.ts`。禁止修改 Dependency、Lockfile、Project Configuration、Engineering Manifest、Bundle Checker、Application/UI Source、Router、Runtime Kernel、Storage、Appearance、Design System、Generated Artifact、Vite 或 Workflow。Repository Implementation、Dependency Installation、Bundle Measurement、Runtime Behavior、Publication 和 Release 均不得在本 Amendment 中被宣称完成；后续 Source Implementation、Static Verification、Owner Acceptance、Publication 与 Release 必须分别遵守独立授权和既有状态转换边界。
+历史 Architecture-only Landing 的唯一写入路径是 `ARCHITECTURE.md` 与 `scripts/architecture/check-architecture-admin-console.ts`；它没有修改 Dependency、Lockfile、Project Configuration、Engineering Manifest、Bundle Checker、Application/UI Source、Router、Runtime Kernel、Storage、Appearance、Design System、Generated Artifact、Vite 或 Workflow，也没有在 Amendment Landing 中宣称 Repository Implementation、Dependency Installation、Bundle Measurement、Runtime Behavior、Publication 或 Release 完成。后续独立授权的 Source Landing 已在本节冻结的允许边界内完成 Repository Implementation 与 Static Verification；Owner Acceptance、Publication 与 Release 仍分别遵守独立授权和既有状态转换边界。
 
-只有后续单独获得 Owner 授权、同时完成精确 Dependency、Private Source、Bundle/Manifest Contract 的原子 Source Landing，并通过完整 Canonical Static Gate 后，才允许把 `REPOSITORY_IMPLEMENTATION=NOT_STARTED` 转换为 `COMPLETE`、把 `STATIC_VERIFICATION=NOT_RUN` 转换为 `PASS`。Owner Runtime、Visual 与 Accessibility Acceptance 仍必须由外部明确验收决定；Publication 与 Release 继续需要各自独立授权，不能由 Source 或 Static 状态自动推导。
+现已依据独立 Owner 授权完成精确 Dependency、Private Source、Bundle/Manifest Contract 的原子 Source Landing，并通过完整 Canonical Static Gate，因此 Repository Implementation 与 Static Verification 分别收口为 `COMPLETE / PASS`。Owner Runtime、Visual 与 Accessibility Acceptance 仍必须由外部明确验收决定；Publication 与 Release 继续需要各自独立授权，不能由 Source 或 Static 状态自动推导。
 
 ### Completed production-bundle maintenance: `PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY`
 
@@ -3078,8 +3147,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -3146,8 +3215,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -3413,7 +3482,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定，`PAVP-RUNTIME-003` 验收收口时又形成 `NONE` 历史快照，§1.2B.0H–0K 随后完成并保留为旧导航实现的历史证据，§1.2B.0L 则保持 `FROZEN / ACCEPTED / COMPLETE / PASS` 的 Native Naive 已验收直接前序。当前 Bounded Work 由 §1.2B.0M 精确准入为 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`，三项 Owner Acceptance 为 `NOT_PERFORMED`。`PAVP-RUNTIME-004` 保持 Open 且未启动。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；验收矩阵精确覆盖 real-Chrome Motion Geometry、Motion None Drawer 与 Material，且不恢复整体 Console 的 Runtime、Visual、Accessibility 或 Release Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和既有 Checker 兼容证据，不是当前状态或 Pending-owner 权威。`PAVP-RUNTIME-002` 的 Repository Implementation 与 Canonical Static Verification 保持 `OPEN / COMPLETE / PASS`；该状态不表示 Owner Runtime Acceptance，也不恢复整体 Console Acceptance。该记录时点的后续 Bounded Work 曾由 `PAVP_RUNTIME_005_ADMISSION_AMENDMENT` 决定，`PAVP-RUNTIME-003` 验收收口时又形成 `NONE` 历史快照，§1.2B.0H–0K 随后完成并保留为旧导航实现的历史证据，§1.2B.0L 则保持 `FROZEN / ACCEPTED / COMPLETE / PASS` 的 Native Naive 已验收直接前序。当前 Bounded Work 由 §1.2B.0M 精确准入为 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / COMPLETE / PASS`，三项 Owner Acceptance 为 `NOT_PERFORMED`。`PAVP-RUNTIME-004` 保持 Open 且未启动。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。
 
 ##### Defect identity and implemented source behavior
 
@@ -4751,14 +4820,14 @@ build
 check-bundle
 ```
 
-Active Bundle Budget Records 按 ID Code-point 排序：
+Active Bundle Budget Records 按 Canonical Generator 固定顺序：
 
 | `id` | `limit` | `unit` |
 | --- | --- | --- |
 | `generated-token-manifest-gzip` | `32768` | `bytes-gzip` |
+| `admin-navigation-motion-feature-javascript-gzip` | `49152` | `bytes-gzip` |
 | `initial-css-gzip` | `40960` | `bytes-gzip` |
-| `initial-javascript-gzip` | `229376` | `bytes-gzip` |
-| `lazy-motion-adapter-javascript-gzip` | `40960` | `bytes-gzip` |
+| `initial-javascript-gzip` | `237568` | `bytes-gzip` |
 | `lazy-route-javascript-gzip` | `122880` | `bytes-gzip` |
 
 `workflowNames` 按 Code-point 精确为 `CodeQL,Static Verification`。Canonical Read Allowlist 精确为：
@@ -5296,7 +5365,7 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` and `PAVP-RUNTIME-003` retain their exact accepted states; §1.2B.0H–0K preserve exact historical navigation records; §1.2B.0L keeps `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` as the accepted direct predecessor at `FROZEN / ACCEPTED / COMPLETE / PASS`; §1.2B.0M makes `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS` the sole current bounded work at `FROZEN / OPEN / NOT_STARTED / NOT_RUN`, with Runtime, Visual and Accessibility acceptance all `NOT_PERFORMED`; `PAVP-RUNTIME-004` remains open and untouched, and overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit revoked overall Product Experience acceptance; `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` is completed and published; `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` and `PAVP-RUNTIME-003` retain their exact accepted states; §1.2B.0H–0K preserve exact historical navigation records; §1.2B.0L keeps `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` as the accepted direct predecessor at `FROZEN / ACCEPTED / COMPLETE / PASS`; §1.2B.0M makes `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS` the sole current bounded work at `FROZEN / OPEN / COMPLETE / PASS`, with Runtime, Visual and Accessibility acceptance all `NOT_PERFORMED`; `PAVP-RUNTIME-004` remains open and untouched, and overall acceptance remains revoked; rejected Layout Admin draft is not current evidence |
 | TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -5307,7 +5376,7 @@ type CapabilityStatus =
 | Foundational shared UI components | `ACTIVE` | exact nine-component consumer-backed boundary admitted by `PAVP_ARCHITECTURE_ADMIN_CONSOLE` plus `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT`; expansion remains separately gated |
 | CSS Motion Token baseline | `ACTIVE` | current Design Token and static CSS contract only |
 | View Transition progressive enhancement | `TARGET_INACTIVE` | demand-driven Motion/UI admission after `PAVP_ARCHITECTURE_ADMIN_CONSOLE` or another real approved consumer |
-| Motion for Vue, GSAP and specialist adapters | `DEFERRED` | general capability remains deferred; §1.2B.0M freezes one scoped private Motion for Vue Shared-selection-lens admission at `NOT_INSTALLED`; GSAP and all other consumers remain deferred behind named production-need gates |
+| Motion for Vue, GSAP and specialist adapters | `DEFERRED` | general capability remains deferred; §1.2B.0M implements one scoped private Motion for Vue Shared-selection-lens runtime at `INSTALLED`; GSAP and all other consumers remain deferred behind named production-need gates |
 | Accessibility architecture and current static lint baseline | `ACTIVE` | WCAG contract, token validation and current static tooling |
 | Runtime component/route accessibility | `ACTIVE` | current ten Product Routes, seven existing Error Routes and exact nine Public Components; future consumers remain separately gated |
 | Build and Generated Manifest performance budgets | `ACTIVE` | current `check:bundle` and token Manifest gates |
@@ -5912,7 +5981,7 @@ packages/ui implementation sources = src/index.ts only
 Naive UI / Reka UI / Motion / specialist adapters = not admitted in the Phase 1 initial baseline
 ```
 
-依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。§1.2B.0M 现已冻结一个 Motion for Vue Shared-selection-lens 的私有限定准入，但依赖与 Source 仍为 `NOT_INSTALLED / NOT_STARTED`；这不激活一般 Motion Capability。未来引入的第三方 UI 依赖只能由 `packages/ui` 的私有 Adapter 导入；应用和业务层仍只从 `@platform/ui` 公共根出口导入语义组件。
+依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。§1.2B.0M 已冻结并实现一个 Motion for Vue Shared-selection-lens 的私有限定准入，精确依赖已安装且 Source Implementation 为 `COMPLETE`；这不激活一般 Motion Capability。第三方 UI 依赖仍只能由 `packages/ui` 的私有 Adapter 导入；应用和业务层仍只从 `@platform/ui` 公共根出口导入语义组件。
 
 Atomic Landing 前的 Committed Baseline `apps/web` 尚未准入 `@platform/ui`，且 `packages/ui` Runtime Dependency 为零。当前 Console Atomic Implementation 精确加入：`apps/web` 通过 `workspace:*` 直接依赖 `@platform/ui`；`packages/ui` 通过 `workspace:*` 直接依赖 `@platform/design-system`，并通过 Catalog 直接依赖 `vue@3.5.40` 与 `naive-ui@2.45.2`。Reka Draft Dependency 无 Admission；除此之外没有加入第二 Styled UI Framework、Motion 或 Specialist Vendor。
 
@@ -11810,7 +11879,7 @@ MOTION_FOR_VUE_STATUS=DEFERRED
 MOTION_FOR_VUE_GENERAL_CAPABILITY_STATUS=DEFERRED
 RUNTIME_MOTION_GENERAL_CAPABILITY_STATUS=TARGET_INACTIVE
 MOTION_FOR_VUE_SCOPED_ADMISSION=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ONLY
-MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=NOT_INSTALLED
+MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=INSTALLED
 MOTION_FOR_VUE_PUBLIC_PLATFORM_API=PROHIBITED
 MOTION_FOR_VUE_OTHER_CONSUMERS=PROHIBITED
 MOTION_FOR_VUE_ROUTE_CONTENT_ANIMATION=PROHIBITED
@@ -11827,7 +11896,7 @@ OWNER=packages/ui private motion boundary after admission
 4. GSAP after repository-defined admission
 ```
 
-这是技术路由优先级，不是当前依赖清单。Runtime Motion 一般能力与 GSAP 继续不激活；§1.2B.0M 只冻结一个尚未安装的 Motion for Vue 私有 Shared-selection-lens 例外，不能扩张为 Public Platform API、其他 Consumer 或 Route-content Animation。第三方 Motion Vendor 只能由对应的 `packages/ui/src/adapters/**` 私有 Adapter 导入。
+这是技术路由优先级，不是当前依赖清单。Runtime Motion 一般能力与 GSAP 继续不激活；§1.2B.0M 已冻结并实现一个 Motion for Vue 私有 Shared-selection-lens 例外，其精确 scoped Runtime 为 `INSTALLED`，但不能扩张为 Public Platform API、其他 Consumer 或 Route-content Animation。第三方 Motion Vendor 只能由对应的 `packages/ui/src/adapters/**` 私有 Adapter 导入。
 
 §1.2B.0E 只纠正当时的 CSS Motion Baseline Shell/Route Geometry，不激活 Runtime Motion、View Transition、Motion for Vue 或 GSAP；其中旧 Route Opacity 表述已由 PAVP-RUNTIME-005 的后续合同取代，不是当前 Authority。当前 `full`、`reduced` 与 `none` 保持相同的 Persistent Shell/Route Geometry，Route Entry/Leave Motion 与 Route Opacity Entry 均禁止。
 
@@ -13704,8 +13773,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -13866,7 +13935,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 继续冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 上通过 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交 `3fa078ab75322a17e5e4514d0805f1efea06981b` 和 Owner 陈述 `那没问题` 完成窄范围验收，状态为 `ACCEPTED / COMPLETE / PASS`。§1.2B.0H–0K 保留精确历史导航状态；§1.2B.0L 的 `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` 保持 `FROZEN / ACCEPTED / COMPLETE / PASS` 的已验收直接前序。§1.2B.0M 的 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS` 是唯一 Current Bounded Work，状态为 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`，三项 Owner Acceptance 均为 `NOT_PERFORMED`。没有自动 Next Implementation Package；任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Package 5 已原子激活 Explicit Theme Preference、Theme Registry、Theme Bank、First Paint、Pinia 与应用持久化边界；Package 6 已闭合 Phase 1 最终静态治理；Runtime Kernel Landing 已在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 激活基础 Kernel、Configuration、Core Error 和 Static Enforcement；Router Landing 随后按 Frozen Protocol 激活 Router Domain；Storage Landing 再按 Frozen Protocol 把 Kernel 扩展为当前精确十一步并激活 Storage Domain；Admin Console Landing 已激活当前纯前端产品主线。被拒绝的旧 Layout Admin Draft 无 Current Status Authority。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT_ADMISSION_AMENDMENT` 继续冻结十四套 Built-in Theme 的深色操作填充、操作内容与控件前景角色拆分合同；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 上通过 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交 `3fa078ab75322a17e5e4514d0805f1efea06981b` 和 Owner 陈述 `那没问题` 完成窄范围验收，状态为 `ACCEPTED / COMPLETE / PASS`。§1.2B.0H–0K 保留精确历史导航状态；§1.2B.0L 的 `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` 保持 `FROZEN / ACCEPTED / COMPLETE / PASS` 的已验收直接前序。§1.2B.0M 的 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS` 是唯一 Current Bounded Work，状态为 `FROZEN / OPEN / COMPLETE / PASS`，三项 Owner Acceptance 均为 `NOT_PERFORMED`。没有自动 Next Implementation Package；任何其他后继能力仍需要 Owner Demand 与独立 Architecture Amendment。API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -13928,8 +13997,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -13998,7 +14067,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion 一般能力。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交上完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；§1.2B.0H–0K 只保留精确历史导航状态，§1.2B.0L 的 Native Naive 包保持 `ACCEPTED / COMPLETE / PASS` 的直接前序；当前 Bounded Work 精确为 §1.2B.0M 的 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`，三项 Owner Acceptance 均为 `NOT_PERFORMED`。`PAVP-RUNTIME-004` 保持 Open 且未启动，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
+Package 4 已完成三份 Side-by-side Complete Built-in Theme Document、Target-only Schema/Validation 与 Manifest Metadata；Package 5 随后在同一 Atomic Landing 中激活 Preference、Theme Bank、Runtime、First Paint、Persistence 与精确公共导出；Package 6 已闭合所有 Active Phase 1 Contract 的跨包静态治理；Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 随后依次完成。§1.2B 已作为九条 Console Layout Role 的唯一 Public Role Admission Input，历史 Atomic Console Landing 同步激活这些 Role 及其 Generated Closure。精确提交真实 Chrome 审计撤销了后来取得的整体 Product Experience 与 Motion Geometry Runtime 验收；Motion Geometry Repair 不激活 Runtime Motion 一般能力。Admin Console Infrastructure/Capability 继续 `COMPLETE / ACTIVE`，既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 已完成并发布；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已在精确发布实施提交上完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；§1.2B.0H–0K 只保留精确历史导航状态，§1.2B.0L 的 Native Naive 包保持 `ACCEPTED / COMPLETE / PASS` 的直接前序；当前 Bounded Work 精确为 §1.2B.0M 的 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / COMPLETE / PASS`，三项 Owner Acceptance 均为 `NOT_PERFORMED`。`PAVP-RUNTIME-004` 保持 Open 且未启动，因此整体 Product Experience Acceptance 不恢复；没有自动准入 Optional Backend-dependent Lane、Successor Capability 或 Canonical Product Package。
 
 当前精确 Acceptance Contract：
 
@@ -14045,8 +14114,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -14480,8 +14549,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -14808,8 +14877,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT=FROZE
 CURRENT_BOUNDED_WORK_AUTHORITY=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS=OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION=COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION=PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
@@ -14870,15 +14939,15 @@ BACKEND_API_QUERY_AUTH_SESSION_PERMISSION=NONE
 OWNER_REJECTED_PREDECESSOR=PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE
 OWNER_REJECTED_PREDECESSOR_STATUS=OWNER_REJECTED_AND_RETIRED_NEVER_COMMITTED
 ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE_AND_ACTIVE; Runtime Kernel exact eleven steps; Router, Storage, Appearance and Design System remain COMPLETE_AND_ACTIVE; naive-ui@2.45.2 admission gates pass; no unresolved overlap or unrelated dirty state
-ALLOWED=exact §1.2B.0 shared experience foundation plus exact §1.2B.0A Appearance Capability Workspace, §1.2B.0C rejected Catalog retirement, §1.2B.0D Seven Built-in Theme Replacement and §1.2B.0D.1 Additional Built-in Theme Expansion within the existing ten-route product: fluid responsive Shell workspace, Header debug-label removal, exact Lucide navigation projection, one visual Theme Gallery from the canonical readonly Theme Preview Projection, exact six editable Appearance axes with Density preserved, real effective Preview, resolved Material and replayable Motion stages, reliable feedback, fourteen exact repository-owned Built-in Themes, Iris Product Default and first-paint Safety Baseline, read-only retired-reference and same-ID migration, Catalog installer removal, seven Error Route visible copy translations, deterministic projections/manifests and smallest owning static gates; exact §1.2B.0E bounded Motion Geometry Stability Repair; full/reduced/none persistent Shell/Route geometry invariant; exact PAVP-RUNTIME-002 persistent current-navigation primary-mousedown native-focus-transfer repair preserved; exact PAVP-RUNTIME-005 stable unkeyed Route Content Host with no Route-level or Direct-child blanket concealment, opacity entrance or delay; §1.2B.0H–0K exact historical evidence; exact §1.2B.0L accepted Native Naive predecessor with one native NLayoutSider, one native NMenu, one collapsed authority, native geometry/menu transitions, 6% Hover and 16% Selected Surface at FROZEN / ACCEPTED / COMPLETE / PASS; exact §1.2B.0M Architecture-only scoped Motion Vue Shared-selection-lens admission at FROZEN / OPEN / NOT_STARTED / NOT_RUN with general Motion deferred, no installed dependency or source implementation, and all three Owner acceptance axes NOT_PERFORMED; unchanged Wide Appearance four-column projection
+ALLOWED=exact §1.2B.0 shared experience foundation plus exact §1.2B.0A Appearance Capability Workspace, §1.2B.0C rejected Catalog retirement, §1.2B.0D Seven Built-in Theme Replacement and §1.2B.0D.1 Additional Built-in Theme Expansion within the existing ten-route product: fluid responsive Shell workspace, Header debug-label removal, exact Lucide navigation projection, one visual Theme Gallery from the canonical readonly Theme Preview Projection, exact six editable Appearance axes with Density preserved, real effective Preview, resolved Material and replayable Motion stages, reliable feedback, fourteen exact repository-owned Built-in Themes, Iris Product Default and first-paint Safety Baseline, read-only retired-reference and same-ID migration, Catalog installer removal, seven Error Route visible copy translations, deterministic projections/manifests and smallest owning static gates; exact §1.2B.0E bounded Motion Geometry Stability Repair; full/reduced/none persistent Shell/Route geometry invariant; exact PAVP-RUNTIME-002 persistent current-navigation primary-mousedown native-focus-transfer repair preserved; exact PAVP-RUNTIME-005 stable unkeyed Route Content Host with no Route-level or Direct-child blanket concealment, opacity entrance or delay; §1.2B.0H–0K exact historical evidence; exact §1.2B.0L accepted Native Naive predecessor with one native NLayoutSider, one native NMenu, one collapsed authority, native geometry/menu transitions, 6% Hover and 16% Selected Surface at FROZEN / ACCEPTED / COMPLETE / PASS; exact §1.2B.0M implemented scoped Motion Vue Shared-selection-lens at FROZEN / OPEN / COMPLETE / PASS with general Motion deferred, exact private dependencies and source closure, and all three Owner acceptance axes NOT_PERFORMED; unchanged Wide Appearance four-column projection
 PROHIBITED=redesign of the other nine product-page content models; Density control or mutation; arbitrary custom-theme editing/import/export/deletion or color authoring; reintroduction of the rejected Catalog or its installation control; automatic Storage mutation or Custom Registry cleanup; Built-in Theme identity/default/migration changes outside §1.2B.0D and §1.2B.0D.1; removal of the general validated Custom Theme capability; backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate Shell/Router outlet/scroll/appearance/material/provider/registry/writer authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work; duplicate navigation Menu, GSAP navigation runtime, Chrome/FLIP bridge, main-content transform compensation, route Aura, moving Pill, transition suppression, navigation Timer/RAF/state store; persistent-owner animation fill-mode forwards or both; Motion Preference navigation, Shell/Route/workspace remount or scroll write; Route-keyed Routed Component remount; Route-level Transition, animation or conditional concealment; blanket Direct-child Route Content animation or delay; eager route conversion or new Loading Placeholder
-OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior; one native persistent Sider/Menu pair driven by one collapsed state, one existing Naive inset surface for old-selected exit and new-selected entry, zero GSAP navigation runtime and exactly seventeen route dynamic roots
-MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes; exact unchanged 10 reversible PAVP-RUNTIME-003 source probes and 6 acceptance-closure probes; historical §1.2B.0I–0K admission-state evidence; accepted-predecessor §1.2B.0L native simplification invariants and reversible in-memory probes for one Sider/Menu/shared state, zero planes/Bridge/content transform/Aura/GSAP, native transitions, 6%/16% surface formulas, collapsed/dropdown selection visibility and unchanged Narrow behavior; exact 12 reversible §1.2B.0M Architecture-admission probes with no nonexistent Motion-source invariant; exact current Route 17, Runtime Kernel 11, Provider pinia/appearance, Storage 2 and Dynamic Root 17 implementation closure; future Motion feature exact 18-root and exclusive-closure contracts remain NOT_STARTED; no current Motion Adapter budget; generated Engineering Manifest regeneration equality; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
+OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior; one native persistent Sider/Menu pair driven by one collapsed state, one implemented private Motion Vue Shared-selection-lens with static Naive fallback and Full/Reduced/None behavior, zero GSAP navigation runtime, exactly seventeen route dynamic roots plus one Motion feature root and exactly eighteen total dynamic roots
+MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; exact 12 reversible Motion Geometry negative probes; exact 10 reversible PAVP-RUNTIME-002 negative probes; exact 10 reversible PAVP-RUNTIME-005 negative probes; exact unchanged 10 reversible PAVP-RUNTIME-003 source probes and 6 acceptance-closure probes; historical §1.2B.0I–0K admission-state evidence; accepted-predecessor §1.2B.0L native simplification invariants and reversible in-memory probes for one Sider/Menu/shared state, zero planes/Bridge/content transform/Aura/GSAP, native transitions, 6%/16% surface formulas, collapsed/dropdown selection visibility and unchanged Narrow behavior; exact 12 reversible §1.2B.0M Architecture-admission probes plus exact 22 Motion source invariants, 16 retained reversible source probes and 8 Reduced-crossfade reversible probes; exact current Route 17, Runtime Kernel 11, Provider pinia/appearance, Storage 2 and Dynamic Root 18 implementation closure; Motion feature exclusive closure 33648 / 49152 bytes gzip and Initial JavaScript 223501 / 237568 bytes gzip; generated Engineering Manifest regeneration equality; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
-COMPLETION_EVIDENCE=technical infrastructure and prior repository implementations remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT remains accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 5673236868737f42f3470307b5f5d6c8d4e8639e with Owner runtime and visual acceptance PASS; PAVP-RUNTIME-003 is accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 3fa078ab75322a17e5e4514d0805f1efea06981b with Owner runtime, visual and accessibility acceptance PASS and its 10 reversible source probes unchanged; §1.2B.0H–0K retain exact historical state and measurements only; PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION remains the exact accepted direct predecessor at FROZEN / ACCEPTED / COMPLETE / PASS and implementation commit 70cc43995512994b4155df04ddb7896047d8ad3a; PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS is the sole current bounded work at FROZEN / OPEN / NOT_STARTED / NOT_RUN with dependency installation, source implementation, bundle measurement and all Owner acceptance unperformed, publication NOT_PUBLISHED and release NOT_RELEASED; its exactly 12 reversible Architecture-admission probes are the only new active probe contract; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
+COMPLETION_EVIDENCE=technical infrastructure and prior repository implementations remain complete; exact-commit real-Chrome audit revoked previous overall runtime, visual, accessibility and release acceptance; prior Runtime repair states remain preserved; PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT is complete, statically verified and published to origin/main at COMPLETE / COMPLETE / PASS / COMPLETE; PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT remains accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 5673236868737f42f3470307b5f5d6c8d4e8639e with Owner runtime and visual acceptance PASS; PAVP-RUNTIME-003 is accepted at ACCEPTED / COMPLETE / PASS for exact published implementation commit 3fa078ab75322a17e5e4514d0805f1efea06981b with Owner runtime, visual and accessibility acceptance PASS and its 10 reversible source probes unchanged; §1.2B.0H–0K retain exact historical state and measurements only; PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION remains the exact accepted direct predecessor at FROZEN / ACCEPTED / COMPLETE / PASS and implementation commit 70cc43995512994b4155df04ddb7896047d8ad3a; PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS is the sole current bounded work at FROZEN / OPEN / COMPLETE / PASS with dependency installation, source implementation, bundle measurement and canonical static verification complete, all Owner acceptance unperformed, publication NOT_PUBLISHED and release NOT_RELEASED; its exact 12 reversible Architecture-admission probes, exact 22 Motion source invariants, 16 retained reversible Motion source probes and 8 Reduced-crossfade reversible probes are active; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0M 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确发布实施提交完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；§1.2B.0H–0K 只保留精确历史事实，§1.2B.0L 的 `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` 保持 `ACCEPTED / COMPLETE / PASS` 的已验收直接前序及 `NOT_RELEASED` Production Release。当前 Bounded Work 是 §1.2B.0M 的 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`，Owner Runtime、Visual 与 Accessibility Acceptance 均为 `NOT_PERFORMED`，Publication 与 Release 为 `NOT_PUBLISHED / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0M 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。Owner 已永久退役被拒绝的 Reka Draft 与安装式七主题 Catalog；当前 Canonical Naive UI Implementation 与被拒绝 Draft 没有源码、Dependency 或 Contract 继承关系。十四套 Built-in Theme 已按 Additive Expansion 合同进入唯一 Registry，Iris 默认与旧三身份退役规则不变。技术 Infrastructure 与 Capability 保持完成并激活；整体 Runtime、Visual、Accessibility 与 Release Acceptance 已撤销。既有 Runtime Repair 状态保持不变；`PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT` 的 Repository Implementation、Canonical Static Verification 与 origin/main Publication 为 `COMPLETE / PASS / COMPLETE`；`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已按精确发布实施提交完成 Owner Runtime 与 Visual Acceptance，状态保持 `ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-003` 已按精确发布实施提交完成窄范围 Owner Runtime、Visual 与 Accessibility Acceptance，状态为 `ACCEPTED / COMPLETE / PASS`；§1.2B.0H–0K 只保留精确历史事实，§1.2B.0L 的 `PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION` 保持 `ACCEPTED / COMPLETE / PASS` 的已验收直接前序及 `NOT_RELEASED` Production Release。当前 Bounded Work 是 §1.2B.0M 的 `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`，状态为 `FROZEN / OPEN / COMPLETE / PASS`，Owner Runtime、Visual 与 Accessibility Acceptance 均为 `NOT_PERFORMED`，Publication 与 Release 为 `NOT_PUBLISHED / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰，所以整体接受状态不恢复。其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -15251,8 +15320,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT_IS_FR
 CURRENT_BOUNDED_WORK_AUTHORITY_IS_PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT
 CURRENT_BOUNDED_WORK_IS_PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATUS_IS_OPEN
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED
-PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION_IS_NOT_RUN
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_REPOSITORY_IMPLEMENTATION_IS_COMPLETE
+PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_STATIC_VERIFICATION_IS_PASS
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_RUNTIME_ACCEPTANCE_IS_NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_VISUAL_ACCEPTANCE_IS_NOT_PERFORMED
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_NOT_PERFORMED

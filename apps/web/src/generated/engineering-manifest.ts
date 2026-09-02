@@ -48,8 +48,9 @@ export const engineeringManifest = {
   ],
   bundleBudgets: [
     { id: 'generated-token-manifest-gzip', limit: 32768, unit: 'bytes-gzip' },
+    { id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152, unit: 'bytes-gzip' },
     { id: 'initial-css-gzip', limit: 40960, unit: 'bytes-gzip' },
-    { id: 'initial-javascript-gzip', limit: 229376, unit: 'bytes-gzip' },
+    { id: 'initial-javascript-gzip', limit: 237568, unit: 'bytes-gzip' },
     { id: 'lazy-route-javascript-gzip', limit: 122880, unit: 'bytes-gzip' },
   ],
   workflowNames: ['CodeQL', 'Static Verification'],

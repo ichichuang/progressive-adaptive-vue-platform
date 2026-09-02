@@ -6,6 +6,8 @@
   "sideEffects": false,
   "dependencies": {
     "@platform/design-system": "workspace:*",
+    "@vueuse/core": "catalog:",
+    "motion-v": "catalog:",
     "naive-ui": "catalog:",
     "vue": "catalog:"
   },

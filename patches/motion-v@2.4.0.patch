@@ -1,0 +1,249 @@
+diff --git a/dist/es/animation/hooks/use-animate.d.ts b/dist/es/animation/hooks/use-animate.d.ts
+index 42ed2af7375cb15d98fa4c43cc276c50fb60da26..9a57da7663b801ba0ae0d0e96b08c84f2bba6fbd 100644
+--- a/dist/es/animation/hooks/use-animate.d.ts
++++ b/dist/es/animation/hooks/use-animate.d.ts
+@@ -1,8 +1,17 @@
+-import { AnimationPlaybackControls } from 'motion-dom';
++import { AnimationOptions, AnimationPlaybackControls, AnimationPlaybackControlsWithThen, DOMKeyframesDefinition, ElementOrSelector, MotionValue, UnresolvedValueKeyframe, ValueAnimationTransition } from 'motion-dom';
+ import { Ref, UnwrapRef } from 'vue';
+-import { createScopedAnimate } from 'framer-motion/dom';
+ type Scope = Ref<UnwrapRef<Element>> & {
+     animations: AnimationPlaybackControls[];
+ };
+-export declare function useAnimate<T extends Element = any>(): [Scope, ReturnType<typeof createScopedAnimate>];
++type ObjectTarget<O> = {
++    [K in keyof O]?: O[K] | UnresolvedValueKeyframe[];
++};
++interface ScopedAnimate {
++    (value: string | MotionValue<string>, keyframes: string | UnresolvedValueKeyframe<string>[], options?: ValueAnimationTransition<string>): AnimationPlaybackControlsWithThen;
++    (value: number | MotionValue<number>, keyframes: number | UnresolvedValueKeyframe<number>[], options?: ValueAnimationTransition<number>): AnimationPlaybackControlsWithThen;
++    <V extends string | number>(value: V | MotionValue<V>, keyframes: V | UnresolvedValueKeyframe<V>[], options?: ValueAnimationTransition<V>): AnimationPlaybackControlsWithThen;
++    (element: ElementOrSelector, keyframes: DOMKeyframesDefinition, options?: AnimationOptions): AnimationPlaybackControlsWithThen;
++    <O extends {}>(object: O | O[], keyframes: ObjectTarget<O>, options?: AnimationOptions): AnimationPlaybackControlsWithThen;
++}
++export declare function useAnimate<T extends Element = Element>(): [Scope, ScopedAnimate];
+ export {};
+diff --git a/dist/es/components/RowValue.d.ts b/dist/es/components/RowValue.d.ts
+index 127c3d659d4293e6194d4eab74b263b3d5e279f1..5de49e2eae8150d315a42f73ebf1bdedb2529327 100644
+--- a/dist/es/components/RowValue.d.ts
++++ b/dist/es/components/RowValue.d.ts
+@@ -1,4 +1,4 @@
+-import { MotionValue } from 'framer-motion/dom';
++import { MotionValue } from 'motion-dom';
+ declare const _default: <T>(__VLS_props: NonNullable<Awaited<typeof __VLS_setup>>["props"], __VLS_ctx?: __VLS_PrettifyLocal<Pick<NonNullable<Awaited<typeof __VLS_setup>>, "attrs" | "emit" | "slots">>, __VLS_expose?: NonNullable<Awaited<typeof __VLS_setup>>["expose"], __VLS_setup?: Promise<{
+     props: __VLS_PrettifyLocal<Pick<Partial<{}> & Omit<{} & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps, never>, never> & {
+         value: MotionValue<T>;
+diff --git a/dist/es/components/hooks/use-motion-elm.d.ts b/dist/es/components/hooks/use-motion-elm.d.ts
+index 70e9b1ac17708d193ee89069e22e90f0e1286f74..82d382f64494273b378185c4260ebde93d989531 100644
+--- a/dist/es/components/hooks/use-motion-elm.d.ts
++++ b/dist/es/components/hooks/use-motion-elm.d.ts
+@@ -1,4 +1,5 @@
+-import { MaybeComputedElementRef } from '@vueuse/core';
++import { ComponentPublicInstance, MaybeRefOrGetter } from 'vue';
++type MaybeComputedElementRef = MaybeRefOrGetter<HTMLElement | SVGElement | ComponentPublicInstance | null | undefined>;
+ /**
+  * Get the actual motion element, skipping text and comment nodes
+  * @param el - The HTML element to check
+diff --git a/dist/es/components/motion/types.d.ts b/dist/es/components/motion/types.d.ts
+index 45e08aae2d38078c48f2560f795a6767b9172566..0ef469b7f9803b8cfba06badd4ab4cd9f2146760 100644
+--- a/dist/es/components/motion/types.d.ts
++++ b/dist/es/components/motion/types.d.ts
+@@ -3,11 +3,11 @@ import { IntrinsicElementAttributes } from 'vue';
+ export interface MotionProps<T extends AsTag = 'div', K = unknown> extends Omit<Options<K>, 'motionConfig' | 'layoutGroup'> {
+     as?: T;
+     asChild?: boolean;
+-    whileDrag?: Options['whileDrag'];
+-    whileHover?: Options['whileHover'];
+-    whilePress?: Options['whilePress'];
+-    whileInView?: Options['whileInView'];
+-    whileFocus?: Options['whileFocus'];
++    whileDrag?: Exclude<Options['whileDrag'], undefined>;
++    whileHover?: Exclude<Options['whileHover'], undefined>;
++    whilePress?: Exclude<Options['whilePress'], undefined>;
++    whileInView?: Exclude<Options['whileInView'], undefined>;
++    whileFocus?: Exclude<Options['whileFocus'], undefined>;
+     forwardMotionProps?: boolean;
+     ignoreStrict?: boolean;
+ }
+diff --git a/dist/es/components/reorder/context.d.ts b/dist/es/components/reorder/context.d.ts
+index 91a9eebeeddff13b349526adbb0d959f99e39bcb..66e63bf505575741e702c5d05a2f29b9903d7b7e 100644
+--- a/dist/es/components/reorder/context.d.ts
++++ b/dist/es/components/reorder/context.d.ts
+@@ -1,5 +1,4 @@
+-import { Box } from 'framer-motion';
+-import { Point } from 'motion-utils';
++import { Box, Point } from 'motion-utils';
+ import { Ref } from 'vue';
+ import { ReorderAxis } from './types';
+ export interface ReorderContextProps<T> {
+diff --git a/dist/es/components/reorder/types.d.ts b/dist/es/components/reorder/types.d.ts
+index a1e1dbebefd1aee33abd37d4c6ea22a97ab314ef..0f067dd93d4d1f5eae7c60b354c560dbe126ea63 100644
+--- a/dist/es/components/reorder/types.d.ts
++++ b/dist/es/components/reorder/types.d.ts
+@@ -1,4 +1,4 @@
+-import { Box } from 'framer-motion';
++import { Box } from 'motion-utils';
+ export type ReorderAxis = 'x' | 'y' | 'xy';
+ export interface ItemData<T> {
+     value: T;
+diff --git a/dist/es/events/types.d.ts b/dist/es/events/types.d.ts
+index 476df6c79a62b73c3b20ba4991a4fbbea960536a..d808779a7c638ec85f2f11181eab03c3bab06638 100644
+--- a/dist/es/events/types.d.ts
++++ b/dist/es/events/types.d.ts
+@@ -1,4 +1,4 @@
+-import { Point } from 'framer-motion';
++import { Point } from 'motion-utils';
+ /** @public */
+ export interface EventInfo {
+     point: Point;
+diff --git a/dist/es/features/animation/calc-child-stagger.d.ts b/dist/es/features/animation/calc-child-stagger.d.ts
+index ba0ba669606a95e747b5447ef85d43d35b45361e..085ed05e9d4bc8a4a99dedbbae0202a0b3014d9e 100644
+--- a/dist/es/features/animation/calc-child-stagger.d.ts
++++ b/dist/es/features/animation/calc-child-stagger.d.ts
+@@ -1,3 +1,3 @@
+-import { VisualElement } from 'framer-motion';
++import { VisualElement } from 'motion-dom';
+ import { DynamicOption } from 'motion-dom';
+ export declare function calcChildStagger(children: Set<VisualElement>, child: VisualElement, delayChildren?: number | DynamicOption<number>, staggerChildren?: number, staggerDirection?: number): number;
+diff --git a/dist/es/features/gestures/drag/types.d.ts b/dist/es/features/gestures/drag/types.d.ts
+index d18afc5993669b83f40a4745434a998cc190afdf..1d330c806225cf92a68513bf0e936f16064e52b6 100644
+--- a/dist/es/features/gestures/drag/types.d.ts
++++ b/dist/es/features/gestures/drag/types.d.ts
+@@ -1,7 +1,7 @@
+ import { DragControls } from './use-drag-controls';
+ import { VariantType } from '../../../types';
+-import { Axis, BoundingBox, DragElastic, InertiaOptions, PanInfo } from 'framer-motion';
+-import { VariantLabels } from 'motion-dom';
++import { DragElastic, InertiaOptions, PanInfo, VariantLabels } from 'motion-dom';
++import { Axis, BoundingBox } from 'motion-utils';
+ export interface ResolvedConstraints {
+     x: Partial<Axis>;
+     y: Partial<Axis>;
+diff --git a/dist/es/features/gestures/press/types.d.ts b/dist/es/features/gestures/press/types.d.ts
+index a3655f7efbb03796a0561bd0ca5d34e721ed6987..d36f3d1911f63493f1be5774d53a0939f6b9b4b0 100644
+--- a/dist/es/features/gestures/press/types.d.ts
++++ b/dist/es/features/gestures/press/types.d.ts
+@@ -1,6 +1,5 @@
+ import { VariantType } from '../../../types';
+-import { EventInfo } from 'framer-motion';
+-import { VariantLabels } from 'motion-dom';
++import { EventInfo, VariantLabels } from 'motion-dom';
+ export type PressEvent = (event: PointerEvent, info: EventInfo) => void;
+ export interface PressProps {
+     /**
+diff --git a/dist/es/features/gestures/types.d.ts b/dist/es/features/gestures/types.d.ts
+index a35295f87a1ba309f27f0572b43e68e5e3d0943a..b71e47b20b96428c4b18bcaeac3b5f0288a7eaac 100644
+--- a/dist/es/features/gestures/types.d.ts
++++ b/dist/es/features/gestures/types.d.ts
+@@ -1,5 +1,5 @@
+ import { Options } from '../../types';
+-import { InertiaOptions } from 'framer-motion';
++import { InertiaOptions } from 'motion-dom';
+ export interface StateHandlers {
+     enable: VoidFunction;
+     disable: VoidFunction;
+diff --git a/dist/es/features/layout/types.d.ts b/dist/es/features/layout/types.d.ts
+index 12b9350fb202dcd9b5cb8540914ef4aa9d8e7241..f25257afc0dcde08ec753f590a7cdda1a2b49b26 100644
+--- a/dist/es/features/layout/types.d.ts
++++ b/dist/es/features/layout/types.d.ts
+@@ -1,4 +1,4 @@
+-import { Box } from 'framer-motion';
++import { Box } from 'motion-utils';
+ export interface LayoutLifecycles {
+     onBeforeLayoutMeasure?: (box: Box) => void;
+     onLayoutMeasure?: (box: Box, prevBox: Box) => void;
+diff --git a/dist/es/index.d.ts b/dist/es/index.d.ts
+index 3462026ea11d9bb382200d2c55b226a0788c2c5a..672fd0362c9598121808cda4ee870f7997b5876f 100644
+--- a/dist/es/index.d.ts
++++ b/dist/es/index.d.ts
+@@ -1,4 +1,5 @@
+-export * from 'framer-motion/dom';
++export * from 'motion-dom';
++export * from 'motion-utils';
+ export { delay as delayInMs } from 'motion-dom';
+ export { motionValue as useMotionValue } from 'motion-dom';
+ export * from './components';
+diff --git a/dist/es/types/instance.d.ts b/dist/es/types/instance.d.ts
+index 7ed10b1bae195eea397780164fcc96e580b01699..cb0ff5c3b541f646105198ee23ac0fc3d805023e 100644
+--- a/dist/es/types/instance.d.ts
++++ b/dist/es/types/instance.d.ts
+@@ -1,5 +1 @@
+-import { Options } from './state';
+-declare module '@vue/runtime-dom' {
+-    interface HTMLAttributes extends Omit<Options, 'motionConfig' | 'layoutGroup'> {
+-    }
+-}
++export {};
+diff --git a/dist/es/types/motion-values.d.ts b/dist/es/types/motion-values.d.ts
+index d836d11e1fa8bd8626a1b61c1344f4e149ba5a04..2f0624ea7aca9d832c85fc4c8ea8afdbbcf772ac 100644
+--- a/dist/es/types/motion-values.d.ts
++++ b/dist/es/types/motion-values.d.ts
+@@ -1,4 +1,4 @@
+-import { MotionValue } from 'framer-motion/dom';
++import { MotionValue } from 'motion-dom';
+ import { Options } from './state';
+ import { AriaAttributes, Events, IntrinsicElementAttributes, SVGAttributes } from 'vue';
+ import { ElementType } from './common';
+diff --git a/dist/es/types/state.d.ts b/dist/es/types/state.d.ts
+index 76d813d829e500793ba7da1a1e0a18254dae7a99..cfc8d0551073e95bec8410a5e8048550634f5f22 100644
+--- a/dist/es/types/state.d.ts
++++ b/dist/es/types/state.d.ts
+@@ -1,5 +1,4 @@
+-import { DOMKeyframesDefinition, LegacyAnimationControls, MotionPath, MotionValue, ResolvedValues, TransformProperties, VariantLabels } from 'motion-dom';
+-import { animate } from 'framer-motion/dom';
++import { AnimationPlaybackControls, DOMKeyframesDefinition, LegacyAnimationControls, MotionPath, MotionValue, ResolvedValues, TransformProperties, ValueKeyframesDefinition, VariantLabels } from 'motion-dom';
+ import { LayoutOptions } from '../features/layout/types';
+ import { DragProps } from '../features/gestures/drag/types';
+ import { PressProps } from '../features/gestures/press/types';
+@@ -11,12 +10,11 @@ import { MotionConfigState } from '../components/motion-config/types';
+ import { $Transition } from './framer-motion';
+ import { FocusProps } from '../features/gestures/focus/types';
+ import { AsTag } from './common';
+-type AnimationPlaybackControls = ReturnType<typeof animate>;
+ export interface VariantType extends DOMKeyframesDefinition {
+     transition?: Options['transition'];
+-    attrX?: DOMKeyframesDefinition['x'];
+-    attrY?: DOMKeyframesDefinition['y'];
+-    attrScale?: DOMKeyframesDefinition['scale'];
++    attrX?: ValueKeyframesDefinition;
++    attrY?: ValueKeyframesDefinition;
++    attrScale?: ValueKeyframesDefinition;
+ }
+ interface BoundingBox {
+     top: number;
+diff --git a/dist/es/utils/use-in-view.d.ts b/dist/es/utils/use-in-view.d.ts
+index 29e61b4eff3989d921ed248d9a57999a0176168b..706c9b1df5c3437045b008b4e5aa9c55d47411e4 100644
+--- a/dist/es/utils/use-in-view.d.ts
++++ b/dist/es/utils/use-in-view.d.ts
+@@ -1,5 +1,6 @@
+ import { Options } from '../types/state';
+-import { MaybeComputedElementRef, MaybeRef } from '@vueuse/core';
++import { ComponentPublicInstance, MaybeRef, MaybeRefOrGetter } from 'vue';
++type MaybeComputedElementRef = MaybeRefOrGetter<HTMLElement | SVGElement | ComponentPublicInstance | null | undefined>;
+ type InViewOptions = Options['inViewOptions'];
+ export interface UseInViewOptions extends Omit<InViewOptions, 'root'> {
+     root?: MaybeRef<Element | Document>;
+diff --git a/dist/es/value/use-scroll.d.ts b/dist/es/value/use-scroll.d.ts
+index aea4af2c592c34a16260a32ec290d51632eb48a4..f2c8fb72679950ceb3c4549df43bac1d52fcfd89 100644
+--- a/dist/es/value/use-scroll.d.ts
++++ b/dist/es/value/use-scroll.d.ts
+@@ -1,6 +1,6 @@
+-import { MaybeRefOrGetter } from 'vue';
++import { ComponentPublicInstance, MaybeRefOrGetter } from 'vue';
+ import { ScrollInfoOptions } from '../types';
+-import { MaybeComputedElementRef } from '@vueuse/core';
++type MaybeComputedElementRef = MaybeRefOrGetter<HTMLElement | SVGElement | ComponentPublicInstance | null | undefined>;
+ export interface UseScrollOptions extends Omit<ScrollInfoOptions, 'container' | 'target'> {
+     container?: MaybeComputedElementRef;
+     target?: MaybeComputedElementRef;
+diff --git a/dist/es/value/use-spring.d.ts b/dist/es/value/use-spring.d.ts
+index aea447f274b6bf717f466d5c53093b85cdf5ae79..06804e85c7ff9c2cd13626827a89574a18fa693e 100644
+--- a/dist/es/value/use-spring.d.ts
++++ b/dist/es/value/use-spring.d.ts
+@@ -1,5 +1,5 @@
+ import { MaybeRef } from 'vue';
+-import { MotionValue } from 'framer-motion/dom';
++import { MotionValue } from 'motion-dom';
+ import { FollowValueOptions, SpringOptions } from 'motion-dom';
+ type AnyResolvedKeyframe = string | number;
+ export declare function useFollowValue<T extends AnyResolvedKeyframe>(source: T | MotionValue<T>, options?: MaybeRef<FollowValueOptions>): MotionValue<T>;

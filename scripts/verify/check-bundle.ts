@@ -101,8 +101,16 @@ const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
 const expectedLazyRouteCount = 17
-const expectedDynamicRootKeys = new Set(expectedLazyRouteKeys)
+const motionFeatureRootId = 'admin-navigation-motion-dom-max'
+const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
+const expectedMotionFeatureDynamicRootCount = 1
+const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount
+const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])
+const bundleBudgetAlignmentBytes = 8 * 1024
 const minimumInitialJavaScriptHeadroomBytes = 8 * 1024
+const minimumMotionFeatureJavaScriptHeadroomBytes = 8 * 1024
+const maximumAlignedBudgetHeadroomBytes = 16 * 1024
+const currentInitialJavaScriptHardBudgetBytes = 224 * 1024
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -771,6 +779,25 @@ function intersectingValues(
   return [...left].filter((value) => right.has(value)).sort()
 }
 
+function differenceValues(left: ReadonlySet<string>, right: ReadonlySet<string>): Set<string> {
+  return new Set([...left].filter((value) => !right.has(value)))
+}
+
+function emittedJavaScriptFiles(manifest: Manifest, chunkKeys: ReadonlySet<string>): Set<string> {
+  return new Set(
+    [...chunkKeys]
+      .map((key) => manifest[key]?.file)
+      .filter((file): file is string => file?.endsWith('.js') === true),
+  )
+}
+
+function exactAlignedBundleBudget(measuredBytes: number): number {
+  return (
+    Math.ceil((measuredBytes + bundleBudgetAlignmentBytes) / bundleBudgetAlignmentBytes) *
+    bundleBudgetAlignmentBytes
+  )
+}
+
 const manifestValue = JSON.parse(
   await readFile(resolve(distributionDirectory, '.vite/manifest.json'), 'utf8'),
 ) as unknown
@@ -878,9 +905,19 @@ if (
   throw new Error('Runtime Kernel bundle baseline/final/delta arithmetic is inconsistent.')
 }
 
-if (initialJavaScriptBytes > projectConfig.bundleBudgets.initialJavaScriptGzipBytes) {
+const retainedInitialJavaScriptHeadroomBytes =
+  currentInitialJavaScriptHardBudgetBytes - initialJavaScriptBytes
+const expectedInitialJavaScriptHardBudgetBytes =
+  retainedInitialJavaScriptHeadroomBytes >= minimumInitialJavaScriptHeadroomBytes
+    ? currentInitialJavaScriptHardBudgetBytes
+    : exactAlignedBundleBudget(initialJavaScriptBytes)
+
+if (
+  projectConfig.bundleBudgets.initialJavaScriptGzipBytes !==
+  expectedInitialJavaScriptHardBudgetBytes
+) {
   throw new Error(
-    `Initial JavaScript is ${String(initialJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
+    `Initial JavaScript budget must be ${String(expectedInitialJavaScriptHardBudgetBytes)} bytes for a ${String(initialJavaScriptBytes)}-byte measurement; received ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
   )
 }
 
@@ -893,6 +930,15 @@ if (initialJavaScriptHeadroomBytes < minimumInitialJavaScriptHeadroomBytes) {
   )
 }
 
+if (
+  expectedInitialJavaScriptHardBudgetBytes !== currentInitialJavaScriptHardBudgetBytes &&
+  initialJavaScriptHeadroomBytes >= maximumAlignedBudgetHeadroomBytes
+) {
+  throw new Error(
+    `Rebased Initial JavaScript headroom is ${String(initialJavaScriptHeadroomBytes)} gzip bytes; it must be less than ${String(maximumAlignedBudgetHeadroomBytes)}.`,
+  )
+}
+
 if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
   throw new Error(
     `Initial CSS is ${String(initialCssBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialCssGzipBytes)}.`,
@@ -901,31 +947,60 @@ if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
 
 if (
   expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
-  expectedDynamicRootKeys.size !== expectedLazyRouteCount
+  expectedDynamicRootKeys.size !== expectedDynamicRootCount ||
+  !expectedDynamicRootKeys.has(motionFeatureManifestKey) ||
+  expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected exactly ${String(expectedLazyRouteCount)} routes.`,
+    `Canonical dynamic root authority drifted: expected exactly ${String(expectedLazyRouteCount)} routes plus ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} root.`,
   )
 }
 
-const entryDynamicImports = entry[1].dynamicImports ?? []
-const entryDynamicRootKeys = new Set(entryDynamicImports)
+const initialDynamicRootKeys = new Set<string>()
+const dynamicImportOwnerKeys = new Set<string>()
+let motionFeatureDynamicImportReferences = 0
+
+for (const ownerKey of initialChunkKeys) {
+  const dynamicImports = manifest[ownerKey]?.dynamicImports ?? []
+
+  if (dynamicImports.length !== 0) {
+    dynamicImportOwnerKeys.add(ownerKey)
+  }
+
+  for (const dynamicRootKey of dynamicImports) {
+    initialDynamicRootKeys.add(dynamicRootKey)
+
+    if (dynamicRootKey === motionFeatureManifestKey) {
+      motionFeatureDynamicImportReferences += 1
+    }
+  }
+}
 
 if (
-  entryDynamicImports.length !== expectedDynamicRootKeys.size ||
-  !setsEqual(entryDynamicRootKeys, expectedDynamicRootKeys)
+  initialDynamicRootKeys.size !== expectedDynamicRootCount ||
+  !setsEqual(initialDynamicRootKeys, expectedDynamicRootKeys)
 ) {
   throw new Error(
-    `Production entry dynamic roots drifted: expected ${String(expectedLazyRouteCount)} exact routes; received ${String(entryDynamicRootKeys.size)} unique roots.`,
+    `Initial static closure dynamic-root union drifted: expected ${String(expectedDynamicRootCount)} exact roots (${String(expectedLazyRouteCount)} routes plus ${motionFeatureRootId}); received ${String(initialDynamicRootKeys.size)} unique roots.`,
+  )
+}
+
+if (motionFeatureDynamicImportReferences !== expectedMotionFeatureDynamicRootCount) {
+  throw new Error(
+    `${motionFeatureRootId} must be referenced by exactly one Initial Static Closure dynamic import; received ${String(motionFeatureDynamicImportReferences)}.`,
   )
 }
 
 for (const [ownerKey, chunk] of Object.entries(manifest)) {
-  if (ownerKey !== entry[0] && (chunk.dynamicImports?.length ?? 0) !== 0) {
+  if ((chunk.dynamicImports?.length ?? 0) !== 0 && !initialChunkKeys.has(ownerKey)) {
     throw new Error(
-      `Dynamic child root is forbidden: ${ownerKey} references ${(chunk.dynamicImports ?? []).join(', ')}.`,
+      `Dynamic import owner must belong to the Initial Static Closure: ${ownerKey} references ${(chunk.dynamicImports ?? []).join(', ')}.`,
     )
   }
+}
+
+if (dynamicImportOwnerKeys.size === 0) {
+  throw new Error('Initial Static Closure must own the exact production dynamic-root union.')
 }
 
 const dynamicEntryKeys = new Set(
@@ -949,6 +1024,7 @@ if (initialDynamicRootIntersection.length !== 0) {
 }
 
 const lazyRouteFiles = new Set<string>()
+const lazyRouteStaticClosures = new Map<string, Set<string>>()
 
 for (const routeRootKey of expectedLazyRouteKeys) {
   const chunk = manifest[routeRootKey]
@@ -956,6 +1032,14 @@ for (const routeRootKey of expectedLazyRouteKeys) {
   if (!chunk?.file.endsWith('.js')) {
     throw new Error(`Router lazy route ${routeRootKey} must emit exactly one JavaScript chunk.`)
   }
+
+  if ((chunk.dynamicImports?.length ?? 0) !== 0) {
+    throw new Error(
+      `Router lazy route ${routeRootKey} may not own dynamic child roots: ${(chunk.dynamicImports ?? []).join(', ')}.`,
+    )
+  }
+
+  lazyRouteStaticClosures.set(routeRootKey, collectStaticChunkClosure(manifest, routeRootKey))
   lazyRouteFiles.add(chunk.file)
 
   const { bytes } = await gzipMeasurement(chunk.file)
@@ -971,6 +1055,124 @@ if (lazyRouteFiles.size !== expectedLazyRouteKeys.size) {
   throw new Error('Each exact Router route must retain its own lazy JavaScript chunk.')
 }
 
+const motionFeatureRoot = manifest[motionFeatureManifestKey]
+
+if (!motionFeatureRoot?.file.endsWith('.js')) {
+  throw new Error(
+    `${motionFeatureRootId} root ${motionFeatureManifestKey} must emit one JavaScript chunk.`,
+  )
+}
+
+if ((motionFeatureRoot.dynamicImports?.length ?? 0) !== 0) {
+  throw new Error(
+    `${motionFeatureRootId} may not own dynamic child roots: ${(motionFeatureRoot.dynamicImports ?? []).join(', ')}.`,
+  )
+}
+
+const motionFeatureStaticClosure = collectStaticChunkClosure(manifest, motionFeatureManifestKey)
+const motionFeatureExclusiveClosure = differenceValues(motionFeatureStaticClosure, initialChunkKeys)
+
+if (motionFeatureExclusiveClosure.size === 0) {
+  throw new Error(`${motionFeatureRootId} exclusive static closure must be non-empty.`)
+}
+
+const motionFeatureInitialOverlap = intersectingValues(
+  motionFeatureExclusiveClosure,
+  initialChunkKeys,
+)
+
+if (motionFeatureInitialOverlap.length !== 0) {
+  throw new Error(
+    `${motionFeatureRootId} exclusive closure may not include Initial Static Closure chunks: ${motionFeatureInitialOverlap.join(', ')}.`,
+  )
+}
+
+const motionFeatureCssFiles = new Set(
+  [...motionFeatureExclusiveClosure].flatMap((key) => manifest[key]?.css ?? []),
+)
+
+if (motionFeatureCssFiles.size !== 0) {
+  throw new Error(
+    `${motionFeatureRootId} may not emit CSS: ${[...motionFeatureCssFiles].sort().join(', ')}.`,
+  )
+}
+
+for (const [routeRootKey, routeStaticClosure] of lazyRouteStaticClosures) {
+  const routeOverlap = intersectingValues(motionFeatureExclusiveClosure, routeStaticClosure)
+
+  if (routeOverlap.length !== 0) {
+    throw new Error(
+      `${motionFeatureRootId} exclusive closure overlaps Router route ${routeRootKey}: ${routeOverlap.join(', ')}.`,
+    )
+  }
+}
+
+const motionFeatureNonJavaScriptChunks = [...motionFeatureExclusiveClosure].filter(
+  (key) => manifest[key]?.file.endsWith('.js') !== true,
+)
+
+if (motionFeatureNonJavaScriptChunks.length !== 0) {
+  throw new Error(
+    `${motionFeatureRootId} exclusive closure must contain only JavaScript chunks: ${motionFeatureNonJavaScriptChunks.sort().join(', ')}.`,
+  )
+}
+
+const motionFeatureExclusiveJavaScriptFiles = emittedJavaScriptFiles(
+  manifest,
+  motionFeatureExclusiveClosure,
+)
+
+if (motionFeatureExclusiveJavaScriptFiles.size === 0) {
+  throw new Error(`${motionFeatureRootId} exclusive JavaScript closure must be non-empty.`)
+}
+
+const motionFeatureJavaScriptMeasurements = await Promise.all(
+  [...motionFeatureExclusiveJavaScriptFiles]
+    .sort()
+    .map((relativePath) => gzipMeasurement(relativePath)),
+)
+const motionFeatureJavaScriptBytes = motionFeatureJavaScriptMeasurements.reduce(
+  (total, measurement) => total + measurement.bytes,
+  0,
+)
+const expectedMotionFeatureJavaScriptHardBudgetBytes = exactAlignedBundleBudget(
+  motionFeatureJavaScriptBytes,
+)
+
+if (
+  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes !==
+  expectedMotionFeatureJavaScriptHardBudgetBytes
+) {
+  throw new Error(
+    `${motionFeatureRootId} budget must be ${String(expectedMotionFeatureJavaScriptHardBudgetBytes)} bytes for a ${String(motionFeatureJavaScriptBytes)}-byte exclusive measurement; received ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}.`,
+  )
+}
+
+const motionFeatureJavaScriptHeadroomBytes =
+  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes -
+  motionFeatureJavaScriptBytes
+
+if (
+  motionFeatureJavaScriptHeadroomBytes < minimumMotionFeatureJavaScriptHeadroomBytes ||
+  motionFeatureJavaScriptHeadroomBytes >= maximumAlignedBudgetHeadroomBytes
+) {
+  throw new Error(
+    `${motionFeatureRootId} headroom is ${String(motionFeatureJavaScriptHeadroomBytes)} gzip bytes; it must be at least ${String(minimumMotionFeatureJavaScriptHeadroomBytes)} and less than ${String(maximumAlignedBudgetHeadroomBytes)}.`,
+  )
+}
+
+const sortedDynamicRootKeys = [...initialDynamicRootKeys].sort()
+const sortedMotionFeatureExclusiveJavaScriptFiles = [
+  ...motionFeatureExclusiveJavaScriptFiles,
+].sort()
+
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes headroom (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), dynamic roots ${String(expectedDynamicRootKeys.size)} exact routes`,
+  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId}) = ${sortedDynamicRootKeys.join(', ')}`,
+)
+console.log(
+  `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes headroom against exact budget ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,
+)
+
+console.log(
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes headroom against exact budget ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)} (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), route budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)} bytes gzip`,
 )
