@@ -276,6 +276,7 @@ const expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount =
 const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 22
 const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 16
 const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
+const expectedRouteTransitionAdmissionNegativeProbeCount = 12
 const expectedNavigationReworkSourceInvariantCount = 59
 const expectedNavigationReworkSourceNegativeProbeCount = 23
 const expectedNavigationBudgetNegativeProbeCount = 6
@@ -312,6 +313,13 @@ const adminNavigationMotionVueSelectionLensWorkPackage =
 const adminNavigationMotionVueSelectionLensAdmissionAmendment =
   'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ADMISSION_AMENDMENT'
 const expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount = 13
+const adminNavigationMotionVueSelectionLensImplementationCommit =
+  'b6efbb608b309f601217a2765150bd9ec217cf78'
+const adminNavigationMotionVueSelectionLensAcceptanceStatement = '效果还可以 可以接受'
+const routeTransitionWorkPackage = 'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY'
+const routeTransitionAdmissionAmendment =
+  'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT'
+const expectedRouteTransitionActiveMirrorCount = 13
 const adminNavigationNativeImplementationCommit = '70cc43995512994b4155df04ddb7896047d8ad3a'
 const adminNavigationNativeAcceptanceStatement = '没问题 通过'
 const expectedAdminNavigationNativeImplementationPaths = [
@@ -5467,6 +5475,38 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   const adminNavigationMotionVueSelectionLensReleaseValues = valuesForMarker(
     `${adminNavigationMotionVueSelectionLensWorkPackage}_RELEASE_STATUS`,
   )
+  const adminNavigationMotionVueSelectionLensAcceptanceStatementValues = valuesForMarker(
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_ACCEPTANCE_STATEMENT`,
+  )
+  const adminNavigationMotionVueSelectionLensImplementationCommitValues = valuesForMarker(
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_IMPLEMENTATION_COMMIT`,
+  )
+  const adminNavigationMotionVueSelectionLensPublicationTargetValues = valuesForMarker(
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_PUBLICATION_TARGET`,
+  )
+  const routeTransitionAdmissionValues = valuesForMarker(routeTransitionAdmissionAmendment)
+  const routeTransitionStatusValues = valuesForMarker(`${routeTransitionWorkPackage}_STATUS`)
+  const routeTransitionImplementationValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION`,
+  )
+  const routeTransitionVerificationValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_STATIC_VERIFICATION`,
+  )
+  const routeTransitionRuntimeAcceptanceValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_OWNER_RUNTIME_ACCEPTANCE`,
+  )
+  const routeTransitionVisualAcceptanceValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_OWNER_VISUAL_ACCEPTANCE`,
+  )
+  const routeTransitionAccessibilityAcceptanceValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_OWNER_ACCESSIBILITY_ACCEPTANCE`,
+  )
+  const routeTransitionPublicationValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_PUBLICATION_STATUS`,
+  )
+  const routeTransitionReleaseValues = valuesForMarker(
+    `${routeTransitionWorkPackage}_RELEASE_STATUS`,
+  )
   const canonicalStatusEnd = architectureSource.indexOf('\n---\n')
   const canonicalStatusSource =
     canonicalStatusEnd === -1 ? architectureSource : architectureSource.slice(0, canonicalStatusEnd)
@@ -5481,11 +5521,12 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_RUNTIME_003_CURRENT_WORK')
     violations.push('PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK')
     violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_CURRENT_WORK')
+    violations.push('PAVP_ROUTE_TRANSITION_CURRENT_WORK')
   }
 
   if (
-    canonicalWork !== adminNavigationMotionVueSelectionLensWorkPackage ||
-    canonicalAuthority !== adminNavigationMotionVueSelectionLensAdmissionAmendment
+    canonicalWork !== routeTransitionWorkPackage ||
+    canonicalAuthority !== routeTransitionAdmissionAmendment
   ) {
     recordCurrentWorkViolation()
   }
@@ -5577,8 +5618,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_STATUS=OPEN`,
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+    `CURRENT_BOUNDED_WORK_AUTHORITY=${routeTransitionAdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -6460,8 +6501,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== adminNavigationMotionVueSelectionLensWorkPackage ||
-      authorityValues[0] !== adminNavigationMotionVueSelectionLensAdmissionAmendment
+      workValues[0] !== routeTransitionWorkPackage ||
+      authorityValues[0] !== routeTransitionAdmissionAmendment
     ) {
       recordCurrentWorkViolation()
     }
@@ -6477,16 +6518,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   })
 
   if (
-    allCurrentWorkMarkers.length !==
-      expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    allCurrentWorkAuthorityMarkers.length !==
-      expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    allCurrentWorkMarkers.some(
-      (value) => value !== adminNavigationMotionVueSelectionLensWorkPackage,
-    ) ||
-    allCurrentWorkAuthorityMarkers.some(
-      (value) => value !== adminNavigationMotionVueSelectionLensAdmissionAmendment,
-    )
+    allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
+    allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
+    allCurrentWorkMarkers.some((value) => value !== routeTransitionWorkPackage) ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== routeTransitionAdmissionAmendment)
   ) {
     recordCurrentWorkViolation()
   }
@@ -6642,7 +6677,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     adminNavigationMotionVueSelectionLensStatusValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    adminNavigationMotionVueSelectionLensStatusValues.some((value) => value !== 'OPEN')
+    adminNavigationMotionVueSelectionLensStatusValues.some((value) => value !== 'ACCEPTED')
   ) {
     violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_STATUS')
   }
@@ -6664,13 +6699,11 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     adminNavigationMotionVueSelectionLensRuntimeAcceptanceValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
     adminNavigationMotionVueSelectionLensRuntimeAcceptanceValues.some(
-      (value) => value !== 'NOT_PERFORMED',
+      (value) => value !== 'PASS',
     ) ||
     adminNavigationMotionVueSelectionLensVisualAcceptanceValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    adminNavigationMotionVueSelectionLensVisualAcceptanceValues.some(
-      (value) => value !== 'NOT_PERFORMED',
-    ) ||
+    adminNavigationMotionVueSelectionLensVisualAcceptanceValues.some((value) => value !== 'PASS') ||
     adminNavigationMotionVueSelectionLensAccessibilityAcceptanceValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
     adminNavigationMotionVueSelectionLensAccessibilityAcceptanceValues.some(
@@ -6678,14 +6711,55 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     ) ||
     adminNavigationMotionVueSelectionLensPublicationValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    adminNavigationMotionVueSelectionLensPublicationValues.some(
-      (value) => value !== 'NOT_PUBLISHED',
-    ) ||
+    adminNavigationMotionVueSelectionLensPublicationValues.some((value) => value !== 'COMPLETE') ||
     adminNavigationMotionVueSelectionLensReleaseValues.length !==
       expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
-    adminNavigationMotionVueSelectionLensReleaseValues.some((value) => value !== 'NOT_RELEASED')
+    adminNavigationMotionVueSelectionLensReleaseValues.some((value) => value !== 'NOT_RELEASED') ||
+    adminNavigationMotionVueSelectionLensAcceptanceStatementValues.length !==
+      expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
+    adminNavigationMotionVueSelectionLensAcceptanceStatementValues.some(
+      (value) => value !== adminNavigationMotionVueSelectionLensAcceptanceStatement,
+    ) ||
+    adminNavigationMotionVueSelectionLensImplementationCommitValues.length !==
+      expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
+    adminNavigationMotionVueSelectionLensImplementationCommitValues.some(
+      (value) => value !== adminNavigationMotionVueSelectionLensImplementationCommit,
+    ) ||
+    adminNavigationMotionVueSelectionLensPublicationTargetValues.length !==
+      expectedAdminNavigationMotionVueSelectionLensActiveMirrorCount ||
+    adminNavigationMotionVueSelectionLensPublicationTargetValues.some(
+      (value) => value !== 'origin/main',
+    )
   ) {
     violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_STATE_BOUNDARY')
+  }
+
+  if (
+    routeTransitionAdmissionValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionAdmissionValues.some((value) => value !== 'FROZEN')
+  ) {
+    violations.push('PAVP_ROUTE_TRANSITION_ADMISSION_NOT_FROZEN')
+  }
+  if (
+    routeTransitionStatusValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionStatusValues.some((value) => value !== 'OPEN') ||
+    routeTransitionImplementationValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionImplementationValues.some((value) => value !== 'NOT_STARTED') ||
+    routeTransitionVerificationValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionVerificationValues.some((value) => value !== 'NOT_RUN') ||
+    routeTransitionRuntimeAcceptanceValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionRuntimeAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
+    routeTransitionVisualAcceptanceValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionVisualAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
+    routeTransitionAccessibilityAcceptanceValues.length !==
+      expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionAccessibilityAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
+    routeTransitionPublicationValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionPublicationValues.some((value) => value !== 'NOT_PUBLISHED') ||
+    routeTransitionReleaseValues.length !== expectedRouteTransitionActiveMirrorCount ||
+    routeTransitionReleaseValues.some((value) => value !== 'NOT_RELEASED')
+  ) {
+    violations.push('PAVP_ROUTE_TRANSITION_STATE_BOUNDARY')
   }
 
   const statusValues = [
@@ -6859,16 +6933,30 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   ] as const
   const requiredAdminNavigationMotionVueSelectionLensFinalInvariantMarkers = [
     `${adminNavigationMotionVueSelectionLensAdmissionAmendment}_IS_FROZEN`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK_IS_${adminNavigationMotionVueSelectionLensWorkPackage}`,
-    `${adminNavigationMotionVueSelectionLensWorkPackage}_STATUS_IS_OPEN`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_STATUS_IS_ACCEPTED`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
-    `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_NOT_PERFORMED`,
-    `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_NOT_PERFORMED`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_PASS`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_PASS`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_NOT_PERFORMED`,
-    `${adminNavigationMotionVueSelectionLensWorkPackage}_PUBLICATION_STATUS_IS_NOT_PUBLISHED`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_OWNER_ACCEPTANCE_STATEMENT_IS_${adminNavigationMotionVueSelectionLensAcceptanceStatement}`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_IMPLEMENTATION_COMMIT_IS_${adminNavigationMotionVueSelectionLensImplementationCommit}`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_PUBLICATION_TARGET_IS_ORIGIN_MAIN`,
+    `${adminNavigationMotionVueSelectionLensWorkPackage}_PUBLICATION_STATUS_IS_COMPLETE`,
     `${adminNavigationMotionVueSelectionLensWorkPackage}_RELEASE_STATUS_IS_NOT_RELEASED`,
+  ] as const
+  const requiredRouteTransitionFinalInvariantMarkers = [
+    `${routeTransitionAdmissionAmendment}_IS_FROZEN`,
+    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${routeTransitionAdmissionAmendment}`,
+    `CURRENT_BOUNDED_WORK_IS_${routeTransitionWorkPackage}`,
+    `${routeTransitionWorkPackage}_STATUS_IS_OPEN`,
+    `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED`,
+    `${routeTransitionWorkPackage}_STATIC_VERIFICATION_IS_NOT_RUN`,
+    `${routeTransitionWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_NOT_PERFORMED`,
+    `${routeTransitionWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_NOT_PERFORMED`,
+    `${routeTransitionWorkPackage}_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_NOT_PERFORMED`,
+    `${routeTransitionWorkPackage}_PUBLICATION_STATUS_IS_NOT_PUBLISHED`,
+    `${routeTransitionWorkPackage}_RELEASE_STATUS_IS_NOT_RELEASED`,
   ] as const
   const requiredSuccessorFinalInvariantMarkers = [
     'NEXT_CANONICAL_WORK_PACKAGE_IS_NONE',
@@ -6927,6 +7015,13 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     )
   ) {
     violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_FINAL_INVARIANT')
+  }
+  if (
+    requiredRouteTransitionFinalInvariantMarkers.some(
+      (marker) => !architectureSource.includes(marker),
+    )
+  ) {
+    violations.push('PAVP_ROUTE_TRANSITION_FINAL_INVARIANT')
   }
   if (
     requiredSuccessorFinalInvariantMarkers.some((marker) => !architectureSource.includes(marker))
@@ -7064,6 +7159,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   violations.push(...adminNavigationMotionVueSelectionLensAdmissionViolations(architectureSource))
+  violations.push(...routeTransitionAdmissionViolations(architectureSource))
 
   return [...new Set(violations)]
 }
@@ -7084,7 +7180,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -7202,7 +7298,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -7635,13 +7731,16 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
   }
 
   const implementationStateMarkers = [
-    'STATUS=OPEN',
+    'STATUS=ACCEPTED',
     'REPOSITORY_IMPLEMENTATION=COMPLETE',
     'STATIC_VERIFICATION=PASS',
-    'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
-    'OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED',
+    'OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'OWNER_VISUAL_ACCEPTANCE=PASS',
     'OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
-    'PUBLICATION_STATUS=NOT_PUBLISHED',
+    `OWNER_ACCEPTANCE_STATEMENT=${adminNavigationMotionVueSelectionLensAcceptanceStatement}`,
+    `IMPLEMENTATION_COMMIT=${adminNavigationMotionVueSelectionLensImplementationCommit}`,
+    'PUBLICATION_TARGET=origin/main',
+    'PUBLICATION_STATUS=COMPLETE',
     'RELEASE_STATUS=NOT_RELEASED',
     'NEXT_CANONICAL_WORK_PACKAGE=NONE',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
@@ -7778,9 +7877,9 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648',
     'MOTION_FEATURE_HARD_BUDGET_BYTES=49152',
     'MOTION_FEATURE_HEADROOM_BYTES=15504',
-    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223501',
+    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223308',
     'FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
-    'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14067',
+    'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14260',
     'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568',
     'INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192',
     'INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192',
@@ -7877,6 +7976,454 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
   return [...new Set(violations)]
 }
 
+function routeTransitionAdmissionViolations(architectureSource: string): string[] {
+  const violations: string[] = []
+  const amendmentHeading = `### 1.2B.0N \`${routeTransitionWorkPackage}\``
+  const amendmentStart = architectureSource.indexOf(amendmentHeading)
+  const amendmentEnd =
+    amendmentStart === -1
+      ? -1
+      : architectureSource.indexOf('\n### ', amendmentStart + amendmentHeading.length)
+  const amendmentSource =
+    amendmentStart === -1
+      ? ''
+      : architectureSource.slice(
+          amendmentStart,
+          amendmentEnd === -1 ? architectureSource.length : amendmentEnd,
+        )
+  const hasEveryMarker = (markers: readonly string[]): boolean =>
+    amendmentSource.length > 0 && markers.every((marker) => amendmentSource.includes(marker))
+
+  const currentWorkMarkers = [
+    `PREVIOUS_CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+    'PREVIOUS_CURRENT_BOUNDED_WORK_DISPOSITION=ACCEPTED_DIRECT_PREDECESSOR_NOT_CURRENT',
+  ] as const
+  if (!hasEveryMarker(currentWorkMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_CURRENT_WORK')
+  }
+
+  const predecessorReconciliationMarkers = [
+    `DIRECT_PREDECESSOR_WORK_PACKAGE=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+    'DIRECT_PREDECESSOR_STATUS=ACCEPTED',
+    'DIRECT_PREDECESSOR_REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'DIRECT_PREDECESSOR_STATIC_VERIFICATION=PASS',
+    `DIRECT_PREDECESSOR_OWNER_ACCEPTANCE_STATEMENT=${adminNavigationMotionVueSelectionLensAcceptanceStatement}`,
+    'DIRECT_PREDECESSOR_OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'DIRECT_PREDECESSOR_OWNER_VISUAL_ACCEPTANCE=PASS',
+    'DIRECT_PREDECESSOR_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
+    `DIRECT_PREDECESSOR_IMPLEMENTATION_COMMIT=${adminNavigationMotionVueSelectionLensImplementationCommit}`,
+    'DIRECT_PREDECESSOR_PUBLICATION_TARGET=origin/main',
+    'DIRECT_PREDECESSOR_PUBLICATION_STATUS=COMPLETE',
+    'DIRECT_PREDECESSOR_RELEASE_STATUS=NOT_RELEASED',
+  ] as const
+  if (!hasEveryMarker(predecessorReconciliationMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_PREDECESSOR_RECONCILIATION')
+  }
+
+  const admissionMarkers = [
+    `AMENDMENT=${routeTransitionAdmissionAmendment}`,
+    'AMENDMENT_KIND=ARCHITECTURE_ONLY_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION',
+    'AMENDMENT_STATUS=FROZEN',
+    'NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md',
+    'SOURCE_IMPLEMENTATION_IN_THIS_AMENDMENT=PROHIBITED',
+    `WORK_PACKAGE=${routeTransitionWorkPackage}`,
+    'NEW_STATUS_ENUM=PROHIBITED',
+  ] as const
+  if (!hasEveryMarker(admissionMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_ADMISSION_NOT_FROZEN')
+  }
+
+  const stateMarkers = [
+    'STATUS=OPEN',
+    'REPOSITORY_IMPLEMENTATION=NOT_STARTED',
+    'STATIC_VERIFICATION=NOT_RUN',
+    'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
+    'OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED',
+    'OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
+    'PUBLICATION_STATUS=NOT_PUBLISHED',
+    'RELEASE_STATUS=NOT_RELEASED',
+  ] as const
+  if (!hasEveryMarker(stateMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_STATE_BOUNDARY')
+  }
+
+  const technologyMarkers = [
+    'ROUTE_TRANSITION_ENGINE=NATIVE_DOCUMENT_VIEW_TRANSITION_API',
+    'ROUTE_TRANSITION_SCOPE=DOCUMENT_SCOPED_SAME_DOCUMENT_ONLY',
+    'ELEMENT_SCOPED_VIEW_TRANSITION=PROHIBITED',
+    'ROUTE_TRANSITION_NPM_DEPENDENCY=NONE',
+    'ROUTE_TRANSITION_VENDOR_RUNTIME=NONE',
+    'ROUTE_TRANSITION_SECOND_ANIMATION_LIBRARY=PROHIBITED',
+    'SSGOI_ROUTE_CONTENT_OWNERSHIP=PROHIBITED',
+    'MOTION_VUE_ANIMATE_PRESENCE_ROUTE_CONTENT_OWNERSHIP=PROHIBITED',
+    'MOTION_VUE_ROUTE_LAYOUT_OR_PRESENCE_OWNERSHIP=PROHIBITED',
+    'VUE_TRANSITION_AROUND_ROUTER_VIEW=PROHIBITED',
+    'GSAP_ROUTE_TIMELINES=PROHIBITED',
+    'ANIME_JS_ROUTE_CONTENT_OWNERSHIP=PROHIBITED',
+    'ANOTHER_ROUTE_TRANSITION_DEPENDENCY=PROHIBITED',
+    'ROUTE_TRANSITION_REJECTION_NO_ROUTE_DERIVED_KEY=REQUIRED',
+    'ROUTE_TRANSITION_REJECTION_NO_REAL_OUTGOING_DOM=REQUIRED',
+    'ROUTE_TRANSITION_REJECTION_NO_SECOND_SCROLL_CACHE_OR_WRITER=REQUIRED',
+    'ROUTE_TRANSITION_REJECTION_NO_SECOND_HISTORY_DIRECTION_STACK=REQUIRED',
+    'ROUTE_TRANSITION_REJECTION_NO_DUPLICATE_FOCUSABLE_CONTENT=REQUIRED',
+    'ROUTE_TRANSITION_REJECTION_NO_SECOND_ROUTER_OWNER=REQUIRED',
+    `MOTION_VUE_REMAINS_SCOPED_TO=${adminNavigationMotionVueSelectionLensWorkPackage}_ONLY`,
+  ] as const
+  if (!hasEveryMarker(technologyMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_TECHNOLOGY_BOUNDARY')
+  }
+
+  const runtime005Markers = [
+    'PAVP_RUNTIME_005_LIVE_DOM_ROUTE_ANIMATION=PROHIBITED',
+    `PAVP_RUNTIME_005_NATIVE_STATIC_SNAPSHOT_TRANSITION=ADMITTED_ONLY_FOR_${routeTransitionWorkPackage}`,
+    'PAVP_RUNTIME_005_ROUTE_HOST_KEY=NONE',
+    'PAVP_RUNTIME_005_ROUTED_COMPONENT_KEY=NONE',
+    'PAVP_RUNTIME_005_REAL_OUTGOING_DOM_RETENTION=PROHIBITED',
+    'PAVP_RUNTIME_005_ROUTER_VIEW_COUNT=1',
+    'PAVP_RUNTIME_005_ROUTE_CONTENT_HOST_COUNT=1',
+    'PAVP_RUNTIME_005_ROUTE_CONTENT_HOST=.pavp-route-content',
+    'PAVP_RUNTIME_005_ROUTE_V_IF_OR_V_SHOW=PROHIBITED',
+    'PAVP_RUNTIME_005_VUE_TRANSITION=PROHIBITED',
+    'PAVP_RUNTIME_005_ANIMATE_PRESENCE=PROHIBITED',
+    'PAVP_RUNTIME_005_KEEP_ALIVE_OR_SUSPENSE_ADDITION=PROHIBITED',
+    'PAVP_RUNTIME_005_LIVE_ROUTE_DOM_OPACITY=1',
+    'PAVP_RUNTIME_005_LIVE_ROUTE_DOM_TRANSFORM=none',
+    'PAVP_RUNTIME_005_DELIBERATE_BLANK_FRAME=PROHIBITED',
+    'PAVP_RUNTIME_005_ANIMATED_SURFACE=BROWSER_CREATED_STATIC_PSEUDO_ELEMENT_SNAPSHOTS_ONLY',
+    'ROUTER_REMAINS_SOLE_URL_HISTORY_GUARD_ERROR_FOCUS_SCROLL_OWNER=REQUIRED',
+  ] as const
+  if (!hasEveryMarker(runtime005Markers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_RUNTIME_005_BOUNDARY')
+  }
+
+  const presetMarkers = [
+    'ROUTE_TRANSITION_PRESET_REGISTRY=route-transition.none;route-transition.content-crossfade;route-transition.axis-inline-soft;route-transition.drill-soft;route-transition.sheet-soft',
+    'ROUTE_TRANSITION_PRESET_COUNT=5',
+    'ROUTE_TRANSITION_ACTIVE_VISUAL_PRESET_COUNT=4',
+    'ROUTE_TRANSITION_PRESET_ID_OWNER=PAVP',
+    'ROUTE_TRANSITION_DEFAULT_PRESET=route-transition.content-crossfade',
+    'ROUTE_TRANSITION_FULL_DEFAULT=PARALLEL_OLD_NEW_SNAPSHOT_OPACITY_CROSSFADE',
+    'ROUTE_TRANSITION_FULL_DEFAULT_DURATION=var(--ui-motion-duration)',
+    'ROUTE_TRANSITION_FULL_DEFAULT_EASING=var(--ui-motion-easing)',
+    'ROUTE_TRANSITION_FULL_DEFAULT_SPATIAL_EFFECTS=NONE',
+    'ROUTE_TRANSITION_FULL_DEFAULT_FILTER_EFFECTS=NONE',
+    'ROUTE_TRANSITION_FULL_DEFAULT_GEOMETRY_INTERPOLATION=PROHIBITED',
+    'ROUTE_TRANSITION_ROOT_SNAPSHOT_ANIMATION=DISABLED',
+    'ROUTE_TRANSITION_REDUCED_DEFAULT=PERCEPTIBLE_OPACITY_ONLY_CROSSFADE',
+    'ROUTE_TRANSITION_REDUCED_DURATION=var(--ui-motion-duration)',
+    'ROUTE_TRANSITION_REDUCED_EASING=var(--ui-motion-easing)',
+    'ROUTE_TRANSITION_REDUCED_SPATIAL_MOTION=PROHIBITED',
+    'ROUTE_TRANSITION_NONE_BEHAVIOR=BYPASS_DOCUMENT_START_VIEW_TRANSITION_AND_NAVIGATE_IMMEDIATELY',
+    'ROUTE_TRANSITION_CONTENT_CROSSFADE_SEMANTICS=PEER_WORKSPACES_AND_UNRELATED_ROUTE_FAMILIES',
+    'ROUTE_TRANSITION_AXIS_INLINE_SOFT_SEMANTICS=EXPLICITLY_ORDERED_PEER_ROUTES_ONLY',
+    'ROUTE_TRANSITION_DRILL_SOFT_SEMANTICS=LIST_TO_DETAIL_ROUTE_PAIRS_ONLY',
+    'ROUTE_TRANSITION_SHEET_SOFT_SEMANTICS=TEMPORARY_TASK_CREATE_EDIT_FILTER_OR_MODAL_LIKE_ROUTES_ONLY',
+    'ROUTE_TRANSITION_NON_DEFAULT_PRESET_REQUIRES=EXPLICIT_VALIDATED_RULE',
+    'ROUTE_TRANSITION_REDUCED_SPATIAL_PRESET_PROJECTION=route-transition.content-crossfade',
+    'ROUTE_TRANSITION_NONE_PRESET_PROJECTION=route-transition.none',
+    'ROUTE_TRANSITION_INITIAL_EXPRESSIVE_PRESETS=PROHIBITED_HERO_ZOOM_SHARED_ELEMENT_SCROLL_SEQUENCE_FILM_STRIP_BLIND_ROTATE_JAEMIN_OR_OTHER',
+    'ROUTE_TRANSITION_NATIVE_OBJECT_CALLBACK_CSS_KEYFRAME_OR_ARBITRARY_OPTION_EXPOSURE=PROHIBITED',
+  ] as const
+  if (!hasEveryMarker(presetMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_PRESET_REGISTRY')
+  }
+
+  const routeMetaMarkers = [
+    'ROUTE_META_FUTURE_ADDITION=routeTransitionFamilyId',
+    'ROUTE_META_FUTURE_ADDITION_COUNT=1',
+    'ROUTE_TRANSITION_FAMILY_ALLOWED_VALUES=route-family.architecture-workspace;route-family.error',
+    'ROUTE_TRANSITION_FAMILY_ARCHITECTURE_WORKSPACE_ROUTE_COUNT=10',
+    'ROUTE_TRANSITION_FAMILY_ERROR_ROUTE_COUNT=7',
+    'CURRENT_EXACT_ROUTE_META_KEY_COUNT=15',
+    'FUTURE_EXACT_ROUTE_META_KEY_COUNT=16',
+    'ROUTE_META_PRESET_PAIR_ORDER_DIRECTION_VENDOR_PARAMETER_CALLBACK_CSS_OR_KEYFRAME=PROHIBITED',
+    'ROUTE_TRANSITION_PAIR_AND_ORDERED_BEHAVIOR_OWNER=RULE_REGISTRY_ONLY',
+  ] as const
+  if (!hasEveryMarker(routeMetaMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_ROUTE_META_BOUNDARY')
+  }
+
+  const ruleMarkers = [
+    'ROUTE_TRANSITION_RULE_KINDS=global-default;route-family;ordered-routes;exact-route-pair',
+    'ROUTE_TRANSITION_RULE_FIELD_ALLOWLIST=RouteName;RouteTransitionFamilyId;RouteTransitionPresetId;integer_priority;forwardPresetId;reversePresetId;fallbackPresetId',
+    'ROUTE_TRANSITION_RULE_RAW_PATH_COMPONENT_PATH_VENDOR_FUNCTION_CSS_KEYFRAME_OR_ARBITRARY_OBJECT=PROHIBITED',
+    'ROUTE_TRANSITION_RULE_RESOLUTION_ORDER=HIGHER_PRIORITY;EXACT_ROUTE_PAIR;ORDERED_ROUTES;ROUTE_FAMILY;GLOBAL_DEFAULT',
+    'ROUTE_TRANSITION_EQUAL_PRIORITY_AND_SPECIFICITY=STATIC_VERIFICATION_FAIL',
+    'ROUTE_TRANSITION_DECLARATION_ORDER_TIEBREAK=PROHIBITED',
+    'ROUTE_TRANSITION_UNKNOWN_INACTIVE_INVALID_AMBIGUOUS_OR_MISSING_REFERENCE=route-transition.none',
+  ] as const
+  if (!hasEveryMarker(ruleMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_RULE_PRECEDENCE')
+  }
+
+  const navigationMarkers = [
+    'ROUTE_TRANSITION_INITIAL_NAVIGATION_OWNER=ConsoleRouteFrame.navigate()',
+    'ROUTE_TRANSITION_INITIAL_SCOPE=USER_INITIATED_ADMIN_PRODUCT_NAVIGATION_ONLY',
+    'ROUTE_TRANSITION_ELIGIBLE_EDGE=DIFFERENT_PRODUCT_ROUTE_TO_DIFFERENT_PRODUCT_ROUTE',
+    'ROUTE_TRANSITION_ELIGIBLE_MOTION=FULL_OR_REDUCED',
+    'ROUTE_TRANSITION_ELIGIBLE_API=SUPPORTED_DOCUMENT_SCOPED_VIEW_TRANSITION',
+    'ROUTE_TRANSITION_ELIGIBLE_DOCUMENT_VISIBILITY=VISIBLE',
+    'ROUTE_TRANSITION_ELIGIBLE_BOUNDARY=VALID_AND_UNIQUE',
+    'ROUTE_TRANSITION_BROWSER_BACK_FORWARD=DEFERRED',
+    'ROUTE_TRANSITION_SECOND_HISTORY_MODEL=PROHIBITED',
+    'ROUTE_TRANSITION_BYPASS_SET=INITIAL_NAVIGATION;HARD_RELOAD;CURRENT_ROUTE_NO_OP;BROWSER_BACK_FORWARD;ROUTER_REPLACE;REDIRECT;PRODUCT_TO_ERROR;ERROR_TO_PRODUCT;ERROR_TO_ERROR;CHUNK_LOAD_ERROR;RECOVERY_NAVIGATION;MOTION_NONE;UNSUPPORTED_BROWSER;HIDDEN_DOCUMENT;MISSING_OR_DUPLICATE_BOUNDARY',
+    'ROUTE_TRANSITION_FUTURE_COORDINATOR_OWNER=PRIVATE_ROUTER_DOMAIN_MODULE',
+    'ROUTE_TRANSITION_CURRENT_ROUTE_NO_OP_BEFORE_PRELOAD=REQUIRED',
+    'ROUTE_TRANSITION_TARGET_RESOLUTION_OWNER=EXISTING_ROUTER',
+    'ROUTE_TRANSITION_TARGET_PRELOAD=loadRouteLocation()_BEFORE_SNAPSHOT',
+    'ROUTE_TRANSITION_ROUTER_PUSH_COUNT_IN_UPDATE_CALLBACK=1',
+    'ROUTE_TRANSITION_UPDATE_CALLBACK_COMPLETION=AWAIT_ROUTER_RESULT_THEN_VUE_NEXT_TICK',
+    'ROUTE_TRANSITION_TYPED_NAVIGATION_FAILURE_AND_ROUTER_ERROR_NORMALIZATION=PRESERVED',
+    'ROUTE_TRANSITION_ROUTER_FOCUS_AND_SCROLL_OWNERSHIP=PRESERVED',
+    'ROUTE_TRANSITION_MAX_ACTIVE_VIEW_TRANSITION=1',
+    'ROUTE_TRANSITION_OLDER_VISUAL_TRANSITION=SKIP_BEFORE_NEWER',
+    'ROUTE_TRANSITION_NAVIGATION_QUEUE_OR_REPLAY=PROHIBITED',
+    'ROUTE_TRANSITION_NATIVE_PROMISE_REJECTION_HANDLING=ready;updateCallbackDone;finished',
+    'ROUTE_TRANSITION_REAL_ROUTER_OR_LAZY_LOAD_FAILURE=PROPAGATE',
+    'ROUTE_TRANSITION_VISUAL_SKIP_OR_UNSUPPORTED=PROGRESSIVE_ENHANCEMENT_BYPASS',
+    'ROUTE_TRANSITION_BEFORE_RESOLVE_DEFERRED_GUARD_IMPLEMENTATION=NOT_FROZEN',
+    'ROUTE_TRANSITION_IMPLEMENTATION_PATH=EXISTING_PROGRAMMATIC_NAVIGATION_PATH_ONLY',
+    'ROUTE_TRANSITION_PREFERRED_API=document.startViewTransition({update,types:[validatedTransitionType]})',
+    'ROUTE_TRANSITION_PRESET_TO_TYPE_CARDINALITY=EXACTLY_ONE_VALIDATED_PAVP_OWNED_TYPE',
+    'ROUTE_TRANSITION_TYPED_OPTIONS_UNAVAILABLE_FALLBACK=CALLBACK_ONLY_DEFAULT_CONTENT_CROSSFADE_OR_SAFE_BYPASS',
+    'ROUTE_TRANSITION_API_UNAVAILABLE_FALLBACK=NORMAL_ROUTER_NAVIGATION',
+    'ROUTE_TRANSITION_POLYFILL=PROHIBITED',
+  ] as const
+  if (!hasEveryMarker(navigationMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_INITIAL_NAVIGATION_SCOPE')
+  }
+
+  const dynamicRootMarkers = [
+    'ROUTE_TRANSITION_NEW_NPM_DEPENDENCIES=0',
+    'ROUTE_TRANSITION_NEW_DYNAMIC_ROOTS=0',
+    'TOTAL_DYNAMIC_ROOTS_AFTER_FIRST_IMPLEMENTATION=18',
+    'ROUTE_DYNAMIC_ROOTS=17',
+    'ADMIN_NAVIGATION_MOTION_DYNAMIC_ROOTS=1',
+    'ROUTE_TRANSITION_DYNAMIC_ROOTS=0',
+    'ROUTE_TRANSITION_INITIAL_CLOSURE=SYNC_NORMAL_APPLICATION_CLOSURE',
+    'ROUTE_TRANSITION_FEATURE_READY_STATE=PROHIBITED',
+    'ROUTE_TRANSITION_LAZY_RUNTIME=PROHIBITED',
+    'ROUTE_TRANSITION_FIRST_NAVIGATION_ANIMATION_LOSS=PROHIBITED',
+    'ROUTE_TRANSITION_BUNDLE_BUDGET_CHANGE=NONE',
+    'ROUTE_TRANSITION_BUDGET_HEADROOM_FAILURE=STOP_AND_REQUEST_SEPARATE_AMENDMENT',
+  ] as const
+  if (!hasEveryMarker(dynamicRootMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_DYNAMIC_ROOT_BOUNDARY')
+  }
+
+  const modelAndSourceMarkers = [
+    'ROUTE_TRANSITION_BOUNDARY_ID=route-transition-boundary.architecture-console-content',
+    'ROUTE_TRANSITION_BOUNDARY_TARGET=[data-scroll-owner="architecture-console-content"]',
+    'ROUTE_TRANSITION_BOUNDARY_VIEW_TRANSITION_NAME=pavp-admin-route-content',
+    'ROUTE_TRANSITION_BOUNDARY_ELIGIBLE_FAMILY_EDGE=route-family.architecture-workspace->route-family.architecture-workspace',
+    'ROUTE_TRANSITION_PERSISTENT_REGIONS=HEADER;SIDEBAR;MENU;NAVIGATION_MOTION_LENS;DRAWER;OVERLAY_ROOT',
+    'ROUTE_TRANSITION_BOUNDARY_NAME_OWNER_COUNT=1',
+    'ROUTE_TRANSITION_PERSISTENT_REGION_TRANSITION_NAME=NONE',
+    'ROUTE_TRANSITION_PERSISTENT_REGION_ROOT_SNAPSHOT_PARTICIPATION=PROHIBITED',
+    'ROUTE_TRANSITION_BOUNDARY_OVERFLOW_SCROLL_WRAPPER_PAGE_MARKER_OR_REAL_OUTGOING_CHANGE=PROHIBITED',
+    'ROUTE_TRANSITION_RESOLVER_OWNER=PAVP',
+    'ROUTE_TRANSITION_RESOLVER_PURITY=PURE',
+    'ROUTE_TRANSITION_RESOLVER_INPUTS=VALIDATED_FROM_ROUTE_NAME;VALIDATED_TO_ROUTE_NAME;NAVIGATION_KIND;EFFECTIVE_PAVP_MOTION;ROUTE_FAMILIES;LAYOUT_PROFILE;NATIVE_API_AVAILABILITY;DOCUMENT_VISIBILITY;ACTIVE_TRANSITION_STATE',
+    'ROUTE_TRANSITION_RESOLVER_OUTPUT=BYPASS_WITH_REASON_OR_VALIDATED_PRESET_BOUNDARY_MOTION_PROJECTION_AND_DIRECTION',
+    'ROUTE_TRANSITION_RESOLVER_ROUTER_HISTORY_STACK_SCROLL_FOCUS_PERSISTENCE_NATIVE_HANDLE_CALLBACK_CSS_OR_VENDOR_OWNERSHIP=PROHIBITED',
+    'ROUTE_TRANSITION_FUTURE_PRIVATE_DIRECTORY=apps/web/src/app/router/route-transition/**',
+    'ROUTE_TRANSITION_FUTURE_FILE_ALLOWLIST=route-transition-types.ts;route-transition-preset-registry.ts;route-transition-rule-registry.ts;route-transition-boundary-registry.ts;resolve-route-transition.ts;route-transition-coordinator.ts;route-transition.css',
+    'ROUTE_TRANSITION_EXPECTED_EXISTING_INTEGRATION_FILES=apps/web/src/app/router/route-registry.ts;apps/web/src/app/router/router-meta.d.ts;apps/web/src/app/console/ConsoleRouteFrame.vue;apps/web/src/app/styles/layers.css;scripts/architecture/check-router.ts;scripts/architecture/check-architecture-admin-console.ts;scripts/architecture/check-boundaries.ts',
+    'ROUTE_TRANSITION_PRODUCT_PAGE_DIRECT_RUNTIME_IMPORT=PROHIBITED',
+  ] as const
+  if (!hasEveryMarker(modelAndSourceMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_MODEL_AND_SOURCE_BOUNDARY')
+  }
+
+  const successorMarkers = [
+    'NEXT_CANONICAL_WORK_PACKAGE=NONE',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
+    'SOURCE_IMPLEMENTATION_STATUS=NOT_STARTED',
+    'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORATION=PROHIBITED',
+    'PRODUCTION_RELEASE_STATUS=NOT_RELEASED',
+  ] as const
+  if (!hasEveryMarker(successorMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_SUCCESSOR_BOUNDARY')
+  }
+
+  return [...new Set(violations)]
+}
+
+function runRouteTransitionAdmissionNegativeProbes(
+  architectureSource: string,
+): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
+  const probes: readonly [string, string, string][] = [
+    [
+      'route-transition-published-motion-package-remains-current',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource
+        .replace(
+          `CURRENT_BOUNDED_WORK_AUTHORITY=${routeTransitionAdmissionAmendment}`,
+          `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
+        )
+        .replace(
+          `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+          `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+        ),
+    ],
+    [
+      'route-transition-predecessor-publication-or-owner-statement-drifts',
+      'PAVP_ROUTE_TRANSITION_PREDECESSOR_RECONCILIATION',
+      architectureSource
+        .replace(
+          `DIRECT_PREDECESSOR_IMPLEMENTATION_COMMIT=${adminNavigationMotionVueSelectionLensImplementationCommit}`,
+          'DIRECT_PREDECESSOR_IMPLEMENTATION_COMMIT=0000000000000000000000000000000000000000',
+        )
+        .replace(
+          `DIRECT_PREDECESSOR_OWNER_ACCEPTANCE_STATEMENT=${adminNavigationMotionVueSelectionLensAcceptanceStatement}`,
+          'DIRECT_PREDECESSOR_OWNER_ACCEPTANCE_STATEMENT=DRIFTED',
+        ),
+    ],
+    [
+      'route-transition-amendment-is-not-frozen',
+      'PAVP_ROUTE_TRANSITION_ADMISSION_NOT_FROZEN',
+      architectureSource.replace(
+        `${routeTransitionAdmissionAmendment}=FROZEN`,
+        `${routeTransitionAdmissionAmendment}=DRAFT`,
+      ),
+    ],
+    [
+      'route-transition-package-is-falsely-complete-and-passed',
+      'PAVP_ROUTE_TRANSITION_STATE_BOUNDARY',
+      architectureSource
+        .replace(
+          `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
+          `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+        )
+        .replace(
+          `${routeTransitionWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
+          `${routeTransitionWorkPackage}_STATIC_VERIFICATION=PASS`,
+        ),
+    ],
+    [
+      'route-transition-route-content-vendor-or-dependency-is-admitted',
+      'PAVP_ROUTE_TRANSITION_TECHNOLOGY_BOUNDARY',
+      architectureSource
+        .replace(
+          'SSGOI_ROUTE_CONTENT_OWNERSHIP=PROHIBITED',
+          'SSGOI_ROUTE_CONTENT_OWNERSHIP=ADMITTED',
+        )
+        .replace(
+          'MOTION_VUE_ANIMATE_PRESENCE_ROUTE_CONTENT_OWNERSHIP=PROHIBITED',
+          'MOTION_VUE_ANIMATE_PRESENCE_ROUTE_CONTENT_OWNERSHIP=ADMITTED',
+        )
+        .replace(
+          'VUE_TRANSITION_AROUND_ROUTER_VIEW=PROHIBITED',
+          'VUE_TRANSITION_AROUND_ROUTER_VIEW=ADMITTED',
+        )
+        .replace('GSAP_ROUTE_TIMELINES=PROHIBITED', 'GSAP_ROUTE_TIMELINES=ADMITTED')
+        .replace(
+          'ANOTHER_ROUTE_TRANSITION_DEPENDENCY=PROHIBITED',
+          'ANOTHER_ROUTE_TRANSITION_DEPENDENCY=ADMITTED',
+        ),
+    ],
+    [
+      'route-transition-route-key-or-real-outgoing-dom-is-restored',
+      'PAVP_ROUTE_TRANSITION_RUNTIME_005_BOUNDARY',
+      architectureSource
+        .replace(
+          'PAVP_RUNTIME_005_ROUTE_HOST_KEY=NONE',
+          'PAVP_RUNTIME_005_ROUTE_HOST_KEY=routeName',
+        )
+        .replace(
+          'PAVP_RUNTIME_005_REAL_OUTGOING_DOM_RETENTION=PROHIBITED',
+          'PAVP_RUNTIME_005_REAL_OUTGOING_DOM_RETENTION=ADMITTED',
+        ),
+    ],
+    [
+      'route-transition-active-preset-is-removed-and-default-drifts',
+      'PAVP_ROUTE_TRANSITION_PRESET_REGISTRY',
+      architectureSource
+        .replace(
+          'ROUTE_TRANSITION_PRESET_REGISTRY=route-transition.none;route-transition.content-crossfade;route-transition.axis-inline-soft;route-transition.drill-soft;route-transition.sheet-soft',
+          'ROUTE_TRANSITION_PRESET_REGISTRY=route-transition.none;route-transition.content-crossfade;route-transition.axis-inline-soft;route-transition.drill-soft',
+        )
+        .replace(
+          'ROUTE_TRANSITION_DEFAULT_PRESET=route-transition.content-crossfade',
+          'ROUTE_TRANSITION_DEFAULT_PRESET=route-transition.axis-inline-soft',
+        ),
+    ],
+    [
+      'route-transition-vendor-css-function-or-pair-rule-enters-route-meta',
+      'PAVP_ROUTE_TRANSITION_ROUTE_META_BOUNDARY',
+      architectureSource.replace(
+        'ROUTE_META_FUTURE_ADDITION=routeTransitionFamilyId',
+        'ROUTE_META_FUTURE_ADDITION=routeTransitionPresetId;routeTransitionPair;vendorConfig;callback;css',
+      ),
+    ],
+    [
+      'route-transition-rule-precedence-becomes-ambiguous',
+      'PAVP_ROUTE_TRANSITION_RULE_PRECEDENCE',
+      architectureSource
+        .replace(
+          'ROUTE_TRANSITION_EQUAL_PRIORITY_AND_SPECIFICITY=STATIC_VERIFICATION_FAIL',
+          'ROUTE_TRANSITION_EQUAL_PRIORITY_AND_SPECIFICITY=ALLOW',
+        )
+        .replace(
+          'ROUTE_TRANSITION_DECLARATION_ORDER_TIEBREAK=PROHIBITED',
+          'ROUTE_TRANSITION_DECLARATION_ORDER_TIEBREAK=ALLOWED',
+        ),
+    ],
+    [
+      'route-transition-browser-back-forward-is-admitted-in-first-implementation',
+      'PAVP_ROUTE_TRANSITION_INITIAL_NAVIGATION_SCOPE',
+      architectureSource.replace(
+        'ROUTE_TRANSITION_BROWSER_BACK_FORWARD=DEFERRED',
+        'ROUTE_TRANSITION_BROWSER_BACK_FORWARD=ADMITTED',
+      ),
+    ],
+    [
+      'route-transition-dynamic-root-or-total-count-drifts',
+      'PAVP_ROUTE_TRANSITION_DYNAMIC_ROOT_BOUNDARY',
+      architectureSource
+        .replace('ROUTE_TRANSITION_NEW_DYNAMIC_ROOTS=0', 'ROUTE_TRANSITION_NEW_DYNAMIC_ROOTS=1')
+        .replace(
+          'TOTAL_DYNAMIC_ROOTS_AFTER_FIRST_IMPLEMENTATION=18',
+          'TOTAL_DYNAMIC_ROOTS_AFTER_FIRST_IMPLEMENTATION=19',
+        )
+        .replace('ROUTE_TRANSITION_DYNAMIC_ROOTS=0', 'ROUTE_TRANSITION_DYNAMIC_ROOTS=1'),
+    ],
+    [
+      'route-transition-overall-acceptance-or-successor-source-is-started',
+      'PAVP_ROUTE_TRANSITION_SUCCESSOR_BOUNDARY',
+      architectureSource
+        .replace(
+          'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORATION=PROHIBITED',
+          'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORATION=PASS',
+        )
+        .replace(
+          'SOURCE_IMPLEMENTATION_STATUS=NOT_STARTED',
+          'SOURCE_IMPLEMENTATION_STATUS=STARTED',
+        ),
+    ],
+  ]
+
+  return Object.freeze(
+    probes.map(([id, expectedFailureCode, mutatedSource]) => {
+      const failureCodes = currentWorkStatusViolations(mutatedSource).filter((code) =>
+        code.startsWith('PAVP_ROUTE_TRANSITION_'),
+      )
+
+      return Object.freeze({
+        id,
+        expectedFailureCode,
+        passed:
+          mutatedSource !== architectureSource &&
+          !baselineFailureCodes.includes(expectedFailureCode) &&
+          failureCodes.length === 1 &&
+          failureCodes[0] === expectedFailureCode,
+      })
+    }),
+  )
+}
+
 function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
   architectureSource: string,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
@@ -7887,11 +8434,11 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_CURRENT_WORK',
       architectureSource
         .replace(
-          `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
+          `CURRENT_BOUNDED_WORK_AUTHORITY=${routeTransitionAdmissionAmendment}`,
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
         .replace(
-          `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+          `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
           `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
         ),
     ],
@@ -8804,7 +9351,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
@@ -8812,7 +9359,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
+        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
         'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
@@ -14657,9 +15204,9 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     `MOTION_FEATURE_HARD_BUDGET_BYTES=${String(motionFeatureBudgetBytes)}`,
     `MOTION_FEATURE_HEADROOM_BYTES=${String(motionFeatureBudgetBytes - 33648)}`,
     'MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILE_COUNT=1',
-    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223501',
+    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223308',
     `FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
-    `FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=${String(expectedInitialJavaScriptBudgetBytes - 223501)}`,
+    `FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=${String(expectedInitialJavaScriptBudgetBytes - 223308)}`,
     `INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
     `INITIAL_JAVASCRIPT_PRE_REBASE_HARD_BUDGET_BYTES=${String(currentInitialJavaScriptBudgetBytes)}`,
     `INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=${String(expectedMinimumInitialJavaScriptHeadroomBytes)}`,
@@ -15998,6 +16545,8 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAdminNavigationNativeAcceptanceClosureNegativeProbes(architectureSource)
   const adminNavigationMotionVueSelectionLensAdmissionNegativeProbeResults =
     runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(architectureSource)
+  const routeTransitionAdmissionNegativeProbeResults =
+    runRouteTransitionAdmissionNegativeProbes(architectureSource)
   const adminNavigationMotionVueSelectionLensSourceInvariantResultsBaseline =
     adminNavigationMotionVueSelectionLensSourceInvariantResults(adminNavigationNativeSourceBaseline)
   const adminNavigationMotionVueSelectionLensSourceNegativeProbeResults =
@@ -16120,6 +16669,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   ) {
     violations.push(
       `Admin navigation Motion Vue shared-selection-lens admission negative-probe count drifted: expected ${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}, received ${String(adminNavigationMotionVueSelectionLensAdmissionNegativeProbeResults.length)}.`,
+    )
+  }
+  if (
+    routeTransitionAdmissionNegativeProbeResults.length !==
+    expectedRouteTransitionAdmissionNegativeProbeCount
+  ) {
+    violations.push(
+      `Route-transition admission negative-probe count drifted: expected ${String(expectedRouteTransitionAdmissionNegativeProbeCount)}, received ${String(routeTransitionAdmissionNegativeProbeResults.length)}.`,
     )
   }
   if (
@@ -16362,6 +16919,13 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
+  for (const result of routeTransitionAdmissionNegativeProbeResults) {
+    if (!result.passed) {
+      violations.push(
+        `${result.id}: reversible in-memory route-transition Architecture admission negative probe did not fail exclusively for ${result.expectedFailureCode}.`,
+      )
+    }
+  }
   for (const result of adminNavigationMotionVueSelectionLensSourceNegativeProbeResults) {
     if (!result.passed) {
       violations.push(
@@ -16448,6 +17012,9 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   )
   console.log(
     `Admin navigation Motion Vue shared-selection-lens admission check: passed (${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} reversible in-memory Architecture admission negative probes)`,
+  )
+  console.log(
+    `Route-transition routing capability admission check: passed (${String(expectedRouteTransitionAdmissionNegativeProbeCount)}/${String(expectedRouteTransitionAdmissionNegativeProbeCount)} reversible in-memory Architecture admission negative probes)`,
   )
   console.log(
     `Admin navigation Motion Vue shared-selection-lens source check: passed (${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)} source invariants; ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)} reversible in-memory source negative probes)`,
