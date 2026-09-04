@@ -68,6 +68,16 @@ import {
 } from '../../apps/web/src/generated/engineering-manifest'
 import { validateCapabilityManifest } from './check-capability-manifest'
 import { validateEngineeringManifest } from './check-engineering-manifest'
+import {
+  expectedRouterPresentationCommitNegativeProbeCount,
+  expectedRouteTransitionFullPaceNegativeProbeCount,
+  expectedRouteTransitionPresetSelectionNegativeProbeCount,
+  expectedRouteTransitionSourceNegativeProbeCount,
+  expectedRouteTransitionSourceProofCount,
+  expectedRouteTransitionStylelintPolicyNegativeProbeCount,
+  expectedRouteTransitionWorkspaceDefaultNegativeProbeCount,
+  validateRouteTransitionSourceGovernance,
+} from './check-router'
 import { validateUiPublicComponents } from './check-ui-public-components'
 
 type JsonObject = Record<string, unknown>
@@ -6744,9 +6754,9 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     routeTransitionStatusValues.length !== expectedRouteTransitionActiveMirrorCount ||
     routeTransitionStatusValues.some((value) => value !== 'OPEN') ||
     routeTransitionImplementationValues.length !== expectedRouteTransitionActiveMirrorCount ||
-    routeTransitionImplementationValues.some((value) => value !== 'NOT_STARTED') ||
+    routeTransitionImplementationValues.some((value) => value !== 'COMPLETE') ||
     routeTransitionVerificationValues.length !== expectedRouteTransitionActiveMirrorCount ||
-    routeTransitionVerificationValues.some((value) => value !== 'NOT_RUN') ||
+    routeTransitionVerificationValues.some((value) => value !== 'PASS') ||
     routeTransitionRuntimeAcceptanceValues.length !== expectedRouteTransitionActiveMirrorCount ||
     routeTransitionRuntimeAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
     routeTransitionVisualAcceptanceValues.length !== expectedRouteTransitionActiveMirrorCount ||
@@ -6950,8 +6960,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${routeTransitionAdmissionAmendment}`,
     `CURRENT_BOUNDED_WORK_IS_${routeTransitionWorkPackage}`,
     `${routeTransitionWorkPackage}_STATUS_IS_OPEN`,
-    `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_NOT_STARTED`,
-    `${routeTransitionWorkPackage}_STATIC_VERIFICATION_IS_NOT_RUN`,
+    `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
+    `${routeTransitionWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
     `${routeTransitionWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_NOT_PERFORMED`,
     `${routeTransitionWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_NOT_PERFORMED`,
     `${routeTransitionWorkPackage}_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_NOT_PERFORMED`,
@@ -7976,6 +7986,112 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
   return [...new Set(violations)]
 }
 
+const routeTransitionImplementationPaths = Object.freeze([
+  'ARCHITECTURE.md',
+  'apps/web/src/app/console/ConsoleRouteFrame.vue',
+  'apps/web/src/app/router/route-registry.ts',
+  'apps/web/src/app/router/router-lifecycle.ts',
+  'apps/web/src/app/router/route-transition/route-transition-types.ts',
+  'apps/web/src/app/router/route-transition/route-transition-preset-registry.ts',
+  'apps/web/src/app/router/route-transition/route-transition-rule-registry.ts',
+  'apps/web/src/app/router/route-transition/route-transition-boundary-registry.ts',
+  'apps/web/src/app/router/route-transition/resolve-route-transition.ts',
+  'apps/web/src/app/router/route-transition/route-transition-coordinator.ts',
+  'apps/web/src/app/router/route-transition/route-transition.css',
+  'apps/web/src/app/styles/layers.css',
+  'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+  'scripts/architecture/check-router.ts',
+  'scripts/architecture/check-architecture-admin-console.ts',
+  'scripts/architecture/check-boundaries.ts',
+  'stylelint.config.mjs',
+])
+
+function routeTransitionInventoryViolations(source: string): string[] {
+  const failures: string[] = []
+  const inventories = [
+    ...source.matchAll(/^ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILES=(.*)$/gmu),
+  ]
+  const counts = [
+    ...source.matchAll(/^ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILE_COUNT=(.*)$/gmu),
+  ]
+  if (
+    inventories.length !== 1 ||
+    !isDeepStrictEqual(inventories[0]?.[1]?.split(';'), routeTransitionImplementationPaths) ||
+    counts.length !== 1 ||
+    counts[0]?.[1] !== String(routeTransitionImplementationPaths.length)
+  ) {
+    failures.push('PAVP_ROUTE_TRANSITION_EXACT_IMPLEMENTATION_INVENTORY')
+  }
+  if (
+    !source.includes(
+      'ROUTE_TRANSITION_UI_IMPLEMENTATION_EXCEPTION=packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    ) ||
+    !source.includes(
+      'ROUTE_TRANSITION_UI_IMPLEMENTATION_EXCEPTION_SCOPE=PERMANENT_NAIVE_SIDER_DIVIDER_WIDTH_TO_--ui-admin-border-width_ONLY',
+    ) ||
+    !source.includes('ROUTE_TRANSITION_OTHER_UI_IMPLEMENTATION=UNCHANGED') ||
+    !source.includes(
+      '除 `packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue` 外的 `packages/ui/**`、Motion Vue Adapters、Runtime Kernel',
+    )
+  ) {
+    failures.push('PAVP_ROUTE_TRANSITION_PROVIDER_SCOPE')
+  }
+  return failures
+}
+
+function validateRouteTransitionInventoryGovernance(source: string): string[] {
+  const failures = routeTransitionInventoryViolations(source)
+  const inventory =
+    'ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILES=' + routeTransitionImplementationPaths.join(';')
+  const provider = 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'
+  const probes: readonly [string, string][] = [
+    [
+      source.replace(
+        'ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILE_COUNT=17',
+        'ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILE_COUNT=16',
+      ),
+      'PAVP_ROUTE_TRANSITION_EXACT_IMPLEMENTATION_INVENTORY',
+    ],
+    [
+      source.replace(inventory, inventory.replace(';' + provider, '')),
+      'PAVP_ROUTE_TRANSITION_EXACT_IMPLEMENTATION_INVENTORY',
+    ],
+    [
+      source.replace(inventory, inventory + ';apps/web/src/App.vue'),
+      'PAVP_ROUTE_TRANSITION_EXACT_IMPLEMENTATION_INVENTORY',
+    ],
+    [
+      source.replace(inventory, inventory + ';' + provider),
+      'PAVP_ROUTE_TRANSITION_EXACT_IMPLEMENTATION_INVENTORY',
+    ],
+    [
+      source.replace(
+        'PERMANENT_NAIVE_SIDER_DIVIDER_WIDTH_TO_--ui-admin-border-width_ONLY',
+        'GENERAL_UI_OWNERSHIP',
+      ),
+      'PAVP_ROUTE_TRANSITION_PROVIDER_SCOPE',
+    ],
+    [
+      source.replace('除 `' + provider + '` 外的 `packages/ui/**`', '`packages/ui/**`'),
+      'PAVP_ROUTE_TRANSITION_PROVIDER_SCOPE',
+    ],
+  ]
+  for (const [mutated, expected] of probes) {
+    if (
+      mutated === source ||
+      !isDeepStrictEqual(routeTransitionInventoryViolations(mutated), [expected])
+    ) {
+      failures.push('Route Transition inventory negative probe failed: ' + expected)
+    }
+  }
+  if (failures.length === 0) {
+    console.log(
+      'Route Transition exact implementation inventory: 17 paths; 6/6 negative probes passed',
+    )
+  }
+  return failures
+}
+
 function routeTransitionAdmissionViolations(architectureSource: string): string[] {
   const violations: string[] = []
   const amendmentHeading = `### 1.2B.0N \`${routeTransitionWorkPackage}\``
@@ -8035,8 +8151,8 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
 
   const stateMarkers = [
     'STATUS=OPEN',
-    'REPOSITORY_IMPLEMENTATION=NOT_STARTED',
-    'STATIC_VERIFICATION=NOT_RUN',
+    'REPOSITORY_IMPLEMENTATION=COMPLETE',
+    'STATIC_VERIFICATION=PASS',
     'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
     'OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED',
     'OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
@@ -8102,9 +8218,32 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
     'ROUTE_TRANSITION_ACTIVE_VISUAL_PRESET_COUNT=4',
     'ROUTE_TRANSITION_PRESET_ID_OWNER=PAVP',
     'ROUTE_TRANSITION_DEFAULT_PRESET=route-transition.content-crossfade',
+    'ROUTE_TRANSITION_DEFAULT_SCOPE=GLOBAL_AND_UNORDERED_FALLBACK',
+    'ROUTE_TRANSITION_WORKSPACE_FULL_DEFAULT_PRESET=route-transition.axis-inline-soft',
+    'ROUTE_TRANSITION_WORKSPACE_FULL_DEFAULT_RULE=route-transition-rule.architecture-workspace-axis',
+    'ROUTE_TRANSITION_WORKSPACE_FULL_DEFAULT_RULE_KIND=ordered-routes',
+    'ROUTE_TRANSITION_WORKSPACE_AXIS_ORDER=console-overview;appearance-management;design-token-inspector;runtime-kernel-inspector;router-governance-inspector;storage-persistence-inspector;ui-system-inspector;responsive-layout-inspector;engineering-quality-inspector;capability-roadmap',
+    'ROUTE_TRANSITION_WORKSPACE_AXIS_DIRECTION=LATER_INDEX_FORWARD;EARLIER_INDEX_REVERSE',
+    'ROUTE_TRANSITION_OWNER_COMPARISON_RULES=REMOVED',
     'ROUTE_TRANSITION_FULL_DEFAULT=PARALLEL_OLD_NEW_SNAPSHOT_OPACITY_CROSSFADE',
-    'ROUTE_TRANSITION_FULL_DEFAULT_DURATION=var(--ui-motion-duration)',
+    'ROUTE_TRANSITION_FULL_DEFAULT_DURATION=calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)',
     'ROUTE_TRANSITION_FULL_DEFAULT_EASING=var(--ui-motion-easing)',
+    'ROUTE_TRANSITION_DURATION_OWNER=::view-transition-group(pavp-admin-route-content)',
+    'ROUTE_TRANSITION_DESCENDANT_DURATION=IMAGE_PAIR_OLD_NEW_INHERIT_SHARED_GROUP_DURATION',
+    'ROUTE_TRANSITION_FULL_PACE_SCOPE=NAMED_ROUTE_CONTENT_SNAPSHOTS_ONLY;MICROINTERACTIONS_UNCHANGED;NO_USER_PACE_OPTION',
+    'ROUTE_TRANSITION_STYLELINT_POLICY_OWNER=stylelint.config.mjs',
+    'ROUTE_TRANSITION_STYLELINT_FULL_DURATION_SCOPE=apps/web/src/app/router/route-transition/route-transition.css:animation-duration:EXACT_FULL_VALUE_ONLY',
+    'ROUTE_TRANSITION_STYLELINT_GLOBAL_DURATION_POLICY=UNCHANGED',
+    'LIVE_DIVIDER_WIDTH_AUTHORITY=--ui-admin-border-width',
+    'ROUTE_TRANSITION_DIVIDER_ROOT_CAUSE=DOCUMENT_OVERLAY_OCCLUSION_BY_SNAPSHOT_OVERFLOW',
+    'ROUTE_TRANSITION_GROUP_BORDER_MIRROR=REJECTED_INEFFECTIVE',
+    'ROUTE_TRANSITION_GROUP_BORDER_REJECTION_REASON=PARENT_BORDER_PAINTS_BELOW_MOVING_IMAGE_PAIR_DESCENDANTS',
+    'ROUTE_TRANSITION_DIVIDER_OWNER=PERMANENT_LIVE_NAIVE_DIVIDER_ONLY',
+    'ROUTE_TRANSITION_SNAPSHOT_CONTAINMENT_OWNER=::view-transition-image-pair(pavp-admin-route-content)',
+    'ROUTE_TRANSITION_SNAPSHOT_CONTAINMENT=overflow:clip',
+    'ROUTE_TRANSITION_SNAPSHOT_SCROLL_OWNER=NONE',
+    'ROUTE_TRANSITION_DIVIDER_GEOMETRY_COMPENSATION=PROHIBITED',
+    'ROUTE_TRANSITION_STYLELINT_DIVIDER_MARGIN_EXCEPTION=REMOVED_NEGATIVE_EXPRESSION_REJECTED_EVERYWHERE',
     'ROUTE_TRANSITION_FULL_DEFAULT_SPATIAL_EFFECTS=NONE',
     'ROUTE_TRANSITION_FULL_DEFAULT_FILTER_EFFECTS=NONE',
     'ROUTE_TRANSITION_FULL_DEFAULT_GEOMETRY_INTERPOLATION=PROHIBITED',
@@ -8129,13 +8268,13 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
   }
 
   const routeMetaMarkers = [
-    'ROUTE_META_FUTURE_ADDITION=routeTransitionFamilyId',
-    'ROUTE_META_FUTURE_ADDITION_COUNT=1',
+    'ROUTE_META_ADDITION=routeTransitionFamilyId',
+    'ROUTE_META_ADDITION_COUNT=1',
     'ROUTE_TRANSITION_FAMILY_ALLOWED_VALUES=route-family.architecture-workspace;route-family.error',
     'ROUTE_TRANSITION_FAMILY_ARCHITECTURE_WORKSPACE_ROUTE_COUNT=10',
     'ROUTE_TRANSITION_FAMILY_ERROR_ROUTE_COUNT=7',
-    'CURRENT_EXACT_ROUTE_META_KEY_COUNT=15',
-    'FUTURE_EXACT_ROUTE_META_KEY_COUNT=16',
+    'PRE_IMPLEMENTATION_EXACT_ROUTE_META_KEY_COUNT=15',
+    'CURRENT_EXACT_ROUTE_META_KEY_COUNT=16',
     'ROUTE_META_PRESET_PAIR_ORDER_DIRECTION_VENDOR_PARAMETER_CALLBACK_CSS_OR_KEYFRAME=PROHIBITED',
     'ROUTE_TRANSITION_PAIR_AND_ORDERED_BEHAVIOR_OWNER=RULE_REGISTRY_ONLY',
   ] as const
@@ -8150,6 +8289,8 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
     'ROUTE_TRANSITION_RULE_RESOLUTION_ORDER=HIGHER_PRIORITY;EXACT_ROUTE_PAIR;ORDERED_ROUTES;ROUTE_FAMILY;GLOBAL_DEFAULT',
     'ROUTE_TRANSITION_EQUAL_PRIORITY_AND_SPECIFICITY=STATIC_VERIFICATION_FAIL',
     'ROUTE_TRANSITION_DECLARATION_ORDER_TIEBREAK=PROHIBITED',
+    'ROUTE_TRANSITION_RULE_DIRECTION=GLOBAL_DEFAULT_AND_ROUTE_FAMILY_NEUTRAL;ORDERED_ROUTES_BY_ROUTE_ORDER;EXACT_ROUTE_PAIR_BY_CONFIGURED_PAIR',
+    'ROUTE_TRANSITION_DIRECTIONAL_PRESET_MAPPING=ORDERED_OR_EXACT_FORWARD_REVERSE_ONLY;NEUTRAL_FIELDS_REJECT_DIRECTION_AWARE_PRESETS_BEFORE_PROJECTION',
     'ROUTE_TRANSITION_UNKNOWN_INACTIVE_INVALID_AMBIGUOUS_OR_MISSING_REFERENCE=route-transition.none',
   ] as const
   if (!hasEveryMarker(ruleMarkers)) {
@@ -8167,14 +8308,38 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
     'ROUTE_TRANSITION_BROWSER_BACK_FORWARD=DEFERRED',
     'ROUTE_TRANSITION_SECOND_HISTORY_MODEL=PROHIBITED',
     'ROUTE_TRANSITION_BYPASS_SET=INITIAL_NAVIGATION;HARD_RELOAD;CURRENT_ROUTE_NO_OP;BROWSER_BACK_FORWARD;ROUTER_REPLACE;REDIRECT;PRODUCT_TO_ERROR;ERROR_TO_PRODUCT;ERROR_TO_ERROR;CHUNK_LOAD_ERROR;RECOVERY_NAVIGATION;MOTION_NONE;UNSUPPORTED_BROWSER;HIDDEN_DOCUMENT;MISSING_OR_DUPLICATE_BOUNDARY',
-    'ROUTE_TRANSITION_FUTURE_COORDINATOR_OWNER=PRIVATE_ROUTER_DOMAIN_MODULE',
+    'ROUTE_TRANSITION_COORDINATOR_OWNER=PRIVATE_ROUTER_DOMAIN_MODULE',
     'ROUTE_TRANSITION_CURRENT_ROUTE_NO_OP_BEFORE_PRELOAD=REQUIRED',
     'ROUTE_TRANSITION_TARGET_RESOLUTION_OWNER=EXISTING_ROUTER',
     'ROUTE_TRANSITION_TARGET_PRELOAD=loadRouteLocation()_BEFORE_SNAPSHOT',
     'ROUTE_TRANSITION_ROUTER_PUSH_COUNT_IN_UPDATE_CALLBACK=1',
-    'ROUTE_TRANSITION_UPDATE_CALLBACK_COMPLETION=AWAIT_ROUTER_RESULT_THEN_VUE_NEXT_TICK',
+    'ROUTE_TRANSITION_PREVIOUS_UPDATE_CALLBACK_COMPLETION=AWAIT_ROUTER_RESULT_THEN_VUE_NEXT_TICK',
+    'ROUTE_TRANSITION_PREVIOUS_UPDATE_CALLBACK_DEFECT=VUE_NEXT_TICK_DID_NOT_PROVE_ASYNC_ROUTER_SCROLL_BEHAVIOR_COMPLETION',
+    'ROUTE_TRANSITION_INSTALLED_VUE_ROUTER_VERSION=5.2.0',
+    'VUE_ROUTER_FINALIZE_NAVIGATION_HANDLE_SCROLL_AWAIT=NO',
+    'VUE_ROUTER_PUSH_MAY_RESOLVE_BEFORE_ASYNC_SCROLL_BEHAVIOR=YES',
+    'ROUTE_TRANSITION_UPDATE_CALLBACK_COMPLETION=AWAIT_ROUTER_RESULT_THEN_EXACT_ROUTER_PRESENTATION_COMMIT',
+    'ROUTER_PRESENTATION_COMMIT_OWNER=EXISTING_ROUTER_LIFECYCLE_ONLY',
+    'ROUTER_PRESENTATION_COMMIT_BROKER=PRIVATE_WEAKMAP_PER_ROUTER',
+    'ROUTER_PRESENTATION_COMMIT_RESERVATION=ONE_SHOT_EXACT_FUTURE_NAVIGATION',
+    'ROUTER_PRESENTATION_COMMIT_RESERVATION_FIELDS=EXPECTED_ROUTE_NAME;EXPECTED_FULL_PATH;UNIQUE_PRIVATE_SYMBOL;MONOTONIC_RUNTIME_SEQUENCE;PROMISE',
+    'ROUTER_PRESENTATION_COMMIT_RESERVATION_TIMING=IMMEDIATELY_BEFORE_SINGLE_ROUTER_PUSH',
+    'ROUTER_PRESENTATION_COMMIT_BINDING=EXACT_EXPECTED_ROUTE_NAME_AND_FULL_PATH_TO_ACTUAL_NORMALIZED_TO',
+    'ROUTER_PRESENTATION_COMMIT_BINDING_PHASE=EXISTING_BEFORE_EACH_AFTER_NAVIGATION_ATTEMPT_CREATION_BEFORE_PRESENTATION',
+    'ROUTER_PRESENTATION_COMMIT_RAPID_NAVIGATION_IDENTITY=LATEST_MATCHING_UNBOUND_RUNTIME_SEQUENCE_WITH_DISTINCT_PRIVATE_SYMBOL',
+    'ROUTER_PRESENTATION_COMMIT_SUCCESS_POINT=AFTER_DOM_TITLE_H1_FOCUS_INLINE_SCROLL_LEFT_AND_FINAL_BLOCK_SCROLL_TOP_COMMIT',
+    'ROUTER_PRESENTATION_COMMIT_NAVIGATION_FAILURE=SETTLE_CANCELLED_AND_RETURN_ORIGINAL_TYPED_FAILURE',
+    'ROUTER_PRESENTATION_COMMIT_REDIRECT=SETTLE_ORIGINAL_RESERVATION_AND_SKIP_OWNING_VISUAL_TRANSITION',
+    'ROUTER_PRESENTATION_COMMIT_ERROR=REJECT_AND_PRESERVE_ROUTER_ERROR_OBSERVABILITY',
+    'ROUTER_PRESENTATION_COMMIT_SUPERSESSION=SETTLE_CANCELLED_WITHOUT_CANCELLING_ROUTER_COMMIT',
+    'ROUTER_PRESENTATION_COMMIT_ROUTER_DISPOSAL=SETTLE_ALL_REMAINING_RESERVATIONS',
+    'ROUTER_PRESENTATION_COMMIT_COORDINATOR_DISPOSAL_OR_STALE_EPOCH=SETTLE_ALL_OWNED_RESERVATIONS',
+    'ROUTER_PRESENTATION_COMMIT_DIRECT_ROUTER_NAVIGATION=UNCHANGED_WITHOUT_RESERVATION',
+    'ROUTER_PRESENTATION_COMMIT_TIMER_RAF_POLLING_OBSERVER_LISTENER_PERSISTENCE=NONE',
     'ROUTE_TRANSITION_TYPED_NAVIGATION_FAILURE_AND_ROUTER_ERROR_NORMALIZATION=PRESERVED',
     'ROUTE_TRANSITION_ROUTER_FOCUS_AND_SCROLL_OWNERSHIP=PRESERVED',
+    'ROUTER_REMAINS_SOLE_TITLE_FOCUS_BLOCK_SCROLL_INLINE_SCROLL_GUARD_REDIRECT_ERROR_URL_HISTORY_OWNER=REQUIRED',
+    'ROUTE_TRANSITION_COORDINATOR_TITLE_FOCUS_OR_SCROLL_WRITE=PROHIBITED',
     'ROUTE_TRANSITION_MAX_ACTIVE_VIEW_TRANSITION=1',
     'ROUTE_TRANSITION_OLDER_VISUAL_TRANSITION=SKIP_BEFORE_NEWER',
     'ROUTE_TRANSITION_NAVIGATION_QUEUE_OR_REPLAY=PROHIBITED',
@@ -8223,23 +8388,61 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
     'ROUTE_TRANSITION_BOUNDARY_OVERFLOW_SCROLL_WRAPPER_PAGE_MARKER_OR_REAL_OUTGOING_CHANGE=PROHIBITED',
     'ROUTE_TRANSITION_RESOLVER_OWNER=PAVP',
     'ROUTE_TRANSITION_RESOLVER_PURITY=PURE',
-    'ROUTE_TRANSITION_RESOLVER_INPUTS=VALIDATED_FROM_ROUTE_NAME;VALIDATED_TO_ROUTE_NAME;NAVIGATION_KIND;EFFECTIVE_PAVP_MOTION;ROUTE_FAMILIES;LAYOUT_PROFILE;NATIVE_API_AVAILABILITY;DOCUMENT_VISIBILITY;ACTIVE_TRANSITION_STATE',
+    'ROUTE_TRANSITION_RESOLVER_INPUTS=VALIDATED_FROM_ROUTE_NAME;VALIDATED_TO_ROUTE_NAME;NAVIGATION_KIND;EFFECTIVE_PAVP_MOTION;ROUTE_FAMILIES;LAYOUT_PROFILE;NATIVE_API_AVAILABILITY;TYPED_TRANSITION_SUPPORT;DOCUMENT_VISIBILITY;BOUNDARY_VALIDITY;ACTIVE_TRANSITION_STATE',
     'ROUTE_TRANSITION_RESOLVER_OUTPUT=BYPASS_WITH_REASON_OR_VALIDATED_PRESET_BOUNDARY_MOTION_PROJECTION_AND_DIRECTION',
     'ROUTE_TRANSITION_RESOLVER_ROUTER_HISTORY_STACK_SCROLL_FOCUS_PERSISTENCE_NATIVE_HANDLE_CALLBACK_CSS_OR_VENDOR_OWNERSHIP=PROHIBITED',
-    'ROUTE_TRANSITION_FUTURE_PRIVATE_DIRECTORY=apps/web/src/app/router/route-transition/**',
-    'ROUTE_TRANSITION_FUTURE_FILE_ALLOWLIST=route-transition-types.ts;route-transition-preset-registry.ts;route-transition-rule-registry.ts;route-transition-boundary-registry.ts;resolve-route-transition.ts;route-transition-coordinator.ts;route-transition.css',
-    'ROUTE_TRANSITION_EXPECTED_EXISTING_INTEGRATION_FILES=apps/web/src/app/router/route-registry.ts;apps/web/src/app/router/router-meta.d.ts;apps/web/src/app/console/ConsoleRouteFrame.vue;apps/web/src/app/styles/layers.css;scripts/architecture/check-router.ts;scripts/architecture/check-architecture-admin-console.ts;scripts/architecture/check-boundaries.ts',
+    'ROUTE_TRANSITION_PRIVATE_DIRECTORY=apps/web/src/app/router/route-transition/**',
+    'ROUTE_TRANSITION_FILE_ALLOWLIST=route-transition-types.ts;route-transition-preset-registry.ts;route-transition-rule-registry.ts;route-transition-boundary-registry.ts;resolve-route-transition.ts;route-transition-coordinator.ts;route-transition.css',
+    'ROUTE_TRANSITION_EXISTING_INTEGRATION_FILES=apps/web/src/app/router/route-registry.ts;apps/web/src/app/router/router-lifecycle.ts;apps/web/src/app/console/ConsoleRouteFrame.vue;apps/web/src/app/styles/layers.css;scripts/architecture/check-router.ts;scripts/architecture/check-architecture-admin-console.ts;scripts/architecture/check-boundaries.ts',
     'ROUTE_TRANSITION_PRODUCT_PAGE_DIRECT_RUNTIME_IMPORT=PROHIBITED',
   ] as const
   if (!hasEveryMarker(modelAndSourceMarkers)) {
     violations.push('PAVP_ROUTE_TRANSITION_MODEL_AND_SOURCE_BOUNDARY')
   }
 
+  const implementationClosureMarkers = [
+    'ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILE_COUNT=17',
+    'ROUTE_TRANSITION_ROUTE_META_KEY_COUNT=16',
+    'ROUTE_TRANSITION_PRODUCT_FAMILY_RECORD_COUNT=10',
+    'ROUTE_TRANSITION_ERROR_FAMILY_RECORD_COUNT=7',
+    'ROUTE_TRANSITION_IMPLEMENTED_PRESET_RECORD_COUNT=5',
+    'ROUTE_TRANSITION_IMPLEMENTED_VISUAL_RECIPE_COUNT=4',
+    'ROUTE_TRANSITION_ACTIVE_RULE_COUNT=5',
+    'ROUTE_TRANSITION_WORKSPACE_AXIS_CHECK_COUNT=3',
+    'ROUTE_TRANSITION_WORKSPACE_AXIS_NEGATIVE_PROBE_COUNT=4',
+    'ROUTE_TRANSITION_WORKSPACE_AXIS_PROJECTION_MATRIX=90_DIRECTED_EDGES;3_LAYOUT_PROFILES;FULL_REDUCED_NONE_TYPED_FALLBACK',
+    'ROUTE_TRANSITION_IMPLEMENTED_BOUNDARY=route-transition-boundary.architecture-console-content:[data-scroll-owner="architecture-console-content"]:pavp-admin-route-content:narrow,regular,wide',
+    'ROUTE_TRANSITION_COORDINATOR_LIFECYCLE=ONE_CONSOLE_ROUTE_FRAME_INSTANCE;ONE_PRIVATE_MOTION_WATCH;MONOTONIC_PRELOAD_EPOCH;DISTINCT_PRESENTATION_COMMIT_RESERVATION_PER_VISUAL_PUSH;MAX_ONE_ACTIVE_VIEW_TRANSITION;SKIP_ON_NEW_NAVIGATION_OR_MOTION_CHANGE;DISPOSE_INVALIDATES_PRELOAD_SETTLES_RESERVATIONS_AND_SKIPS_VISUAL',
+    'ROUTE_TRANSITION_PRELOAD_COMMIT=router.resolve;loadRouteLocation_BEFORE_SNAPSHOT;STALE_EPOCH_NO_PUSH;PRELOAD_FAILURE_DIRECT_ROUTER_PUSH_FOR_EXISTING_ERROR_CLASSIFICATION;ONE_ROUTER_PUSH_IN_UPDATE;AWAIT_ROUTER_RESULT;AWAIT_EXACT_ROUTER_PRESENTATION_COMMIT_AFTER_FINAL_REGION_SCROLL_WRITE',
+    'ROUTE_TRANSITION_SOURCE_PROOF_COUNT=52',
+    'ROUTE_TRANSITION_RETAINED_SOURCE_NEGATIVE_PROBE_COUNT=12',
+    'ROUTE_TRANSITION_PRESENTATION_COMMIT_SOURCE_NEGATIVE_PROBE_COUNT=8',
+    'ROUTE_TRANSITION_PRESET_SELECTION_SOURCE_NEGATIVE_PROBE_COUNT=7',
+    'ROUTE_TRANSITION_FULL_PACE_SOURCE_NEGATIVE_PROBE_COUNT=9',
+    'ROUTE_TRANSITION_STYLELINT_POLICY_NEGATIVE_PROBE_COUNT=3',
+    'ROUTE_TRANSITION_SOURCE_NEGATIVE_PROBE_COUNT=39',
+    'ROUTE_TRANSITION_NEW_NPM_DEPENDENCIES=0',
+    'ROUTE_TRANSITION_NEW_DYNAMIC_ROOTS=0',
+    'ROUTE_TRANSITION_BUNDLE_BUDGET_CHANGE=NONE',
+    'ROUTE_TRANSITION_FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=226638',
+    'ROUTE_TRANSITION_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
+    'ROUTE_TRANSITION_FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=10930',
+    'ROUTE_TRANSITION_FINAL_INITIAL_CSS_GZIP_BYTES=25854',
+    'ROUTE_TRANSITION_INITIAL_CSS_HARD_BUDGET_BYTES=40960',
+    'ROUTE_TRANSITION_FINAL_DYNAMIC_ROOT_SET=17_ROUTE_ROOTS;1_ADMIN_NAVIGATION_MOTION_ROOT;0_ROUTE_TRANSITION_ROOTS;18_TOTAL',
+    'ROUTE_TRANSITION_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
+    'ROUTE_TRANSITION_OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED',
+    'ROUTE_TRANSITION_OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
+  ] as const
+  if (!hasEveryMarker(implementationClosureMarkers)) {
+    violations.push('PAVP_ROUTE_TRANSITION_IMPLEMENTATION_CLOSURE')
+  }
+
   const successorMarkers = [
     'NEXT_CANONICAL_WORK_PACKAGE=NONE',
     'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE',
     'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
-    'SOURCE_IMPLEMENTATION_STATUS=NOT_STARTED',
+    'SOURCE_IMPLEMENTATION_STATUS=COMPLETE',
     'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORATION=PROHIBITED',
     'PRODUCTION_RELEASE_STATUS=NOT_RELEASED',
   ] as const
@@ -8290,16 +8493,16 @@ function runRouteTransitionAdmissionNegativeProbes(
       ),
     ],
     [
-      'route-transition-package-is-falsely-complete-and-passed',
+      'route-transition-package-is-rolled-back-to-not-started-and-not-run',
       'PAVP_ROUTE_TRANSITION_STATE_BOUNDARY',
       architectureSource
         .replace(
-          `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
           `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
+          `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION=NOT_STARTED`,
         )
         .replace(
-          `${routeTransitionWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
           `${routeTransitionWorkPackage}_STATIC_VERIFICATION=PASS`,
+          `${routeTransitionWorkPackage}_STATIC_VERIFICATION=NOT_RUN`,
         ),
     ],
     [
@@ -8354,8 +8557,8 @@ function runRouteTransitionAdmissionNegativeProbes(
       'route-transition-vendor-css-function-or-pair-rule-enters-route-meta',
       'PAVP_ROUTE_TRANSITION_ROUTE_META_BOUNDARY',
       architectureSource.replace(
-        'ROUTE_META_FUTURE_ADDITION=routeTransitionFamilyId',
-        'ROUTE_META_FUTURE_ADDITION=routeTransitionPresetId;routeTransitionPair;vendorConfig;callback;css',
+        'ROUTE_META_ADDITION=routeTransitionFamilyId',
+        'ROUTE_META_ADDITION=routeTransitionPresetId;routeTransitionPair;vendorConfig;callback;css',
       ),
     ],
     [
@@ -8398,10 +8601,7 @@ function runRouteTransitionAdmissionNegativeProbes(
           'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORATION=PROHIBITED',
           'ADMIN_CONSOLE_OVERALL_ACCEPTANCE_RESTORATION=PASS',
         )
-        .replace(
-          'SOURCE_IMPLEMENTATION_STATUS=NOT_STARTED',
-          'SOURCE_IMPLEMENTATION_STATUS=STARTED',
-        ),
+        .replace('SOURCE_IMPLEMENTATION_STATUS=COMPLETE', 'SOURCE_IMPLEMENTATION_STATUS=STARTED'),
     ],
   ]
 
@@ -15949,9 +16149,19 @@ async function validateAppearanceAndPageFacts(): Promise<{
 
   for (const path of appFiles) {
     const source = await readFile(path, 'utf8')
+    const repositoryPath = relative(rootDirectory, path).split('\\').join('/')
+    const admittedRouteTransitionSupportCheck =
+      repositoryPath ===
+        'apps/web/src/app/router/route-transition/route-transition-coordinator.ts' &&
+      [...source.matchAll(/\bCSS\.supports\s*\(/gu)].length === 1 &&
+      source.includes(
+        "CSS.supports('selector(:active-view-transition-type(pavp-route-content-crossfade))')",
+      ) &&
+      !/\bmatchMedia\s*\(/u.test(source)
     defineStoreCount += [...source.matchAll(/\bdefineStore\s*\(/gu)].length
     if (
-      relative(rootDirectory, path) !== 'apps/web/src/app/appearance/appearance-bootstrap.ts' &&
+      repositoryPath !== 'apps/web/src/app/appearance/appearance-bootstrap.ts' &&
+      !admittedRouteTransitionSupportCheck &&
       /\b(?:matchMedia|CSS\.supports)\s*\(/u.test(source)
     ) {
       competingEnvironmentSources.push(source)
@@ -16547,6 +16757,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(architectureSource)
   const routeTransitionAdmissionNegativeProbeResults =
     runRouteTransitionAdmissionNegativeProbes(architectureSource)
+  violations.push(...validateRouteTransitionInventoryGovernance(architectureSource))
   const adminNavigationMotionVueSelectionLensSourceInvariantResultsBaseline =
     adminNavigationMotionVueSelectionLensSourceInvariantResults(adminNavigationNativeSourceBaseline)
   const adminNavigationMotionVueSelectionLensSourceNegativeProbeResults =
@@ -16824,6 +17035,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...adminNavigationHeaderPlacementViolations(adminNavigationNativeSourceBaseline),
     ...adminNavigationNaiveActionsMotionViolations(adminNavigationNativeSourceBaseline),
     ...navigationBudgetViolations(navigationBudgetBaseline),
+    ...(await validateRouteTransitionSourceGovernance()),
   )
 
   const baselineViolations = materialGateViolations(baseline)
@@ -17015,6 +17227,12 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   )
   console.log(
     `Route-transition routing capability admission check: passed (${String(expectedRouteTransitionAdmissionNegativeProbeCount)}/${String(expectedRouteTransitionAdmissionNegativeProbeCount)} reversible in-memory Architecture admission negative probes)`,
+  )
+  console.log(
+    `Workspace Axis default check: passed (90 directed edges across 3 layout profiles; Full/Reduced/None/typed fallback; ${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)}/${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)} reversible in-memory negative probes)`,
+  )
+  console.log(
+    `Route-transition routing capability source check: passed (${String(expectedRouteTransitionSourceProofCount)} source proofs; ${String(expectedRouteTransitionSourceNegativeProbeCount)}/${String(expectedRouteTransitionSourceNegativeProbeCount)} retained reversible in-memory source negative probes; ${String(expectedRouterPresentationCommitNegativeProbeCount)}/${String(expectedRouterPresentationCommitNegativeProbeCount)} Router Presentation Commit reversible in-memory negative probes; ${String(expectedRouteTransitionPresetSelectionNegativeProbeCount)}/${String(expectedRouteTransitionPresetSelectionNegativeProbeCount)} preset-selection reversible in-memory negative probes; ${String(expectedRouteTransitionFullPaceNegativeProbeCount)}/${String(expectedRouteTransitionFullPaceNegativeProbeCount)} Full pace reversible in-memory negative probes; ${String(expectedRouteTransitionStylelintPolicyNegativeProbeCount)}/${String(expectedRouteTransitionStylelintPolicyNegativeProbeCount)} Stylelint policy reversible in-memory negative probes)`,
   )
   console.log(
     `Admin navigation Motion Vue shared-selection-lens source check: passed (${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)} source invariants; ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)} reversible in-memory source negative probes)`,

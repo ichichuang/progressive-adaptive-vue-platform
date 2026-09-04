@@ -1,3 +1,5 @@
+import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
+
 type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required'
 
 type RouteKeepAlivePolicy = 'never' | 'route-instance'
@@ -22,6 +24,7 @@ export interface ValidatedRouteMeta {
   readonly unsavedChangesPolicy: 'none' | 'confirm-before-leave'
   readonly focusContractId: string
   readonly scrollRestorationPolicyId: string
+  readonly routeTransitionFamilyId: RouteTransitionFamilyId
 }
 
 export interface RouteRegistryRecord {
@@ -85,6 +88,7 @@ const commonRouteMeta = Object.freeze({
   unsavedChangesPolicy: 'none',
   focusContractId: 'route-focus.primary-heading',
   scrollRestorationPolicyId: 'route-scroll.document-history',
+  routeTransitionFamilyId: 'route-family.error',
 } as const)
 
 const consoleRouteMeta = Object.freeze({
@@ -100,6 +104,7 @@ const consoleRouteMeta = Object.freeze({
   unsavedChangesPolicy: 'none',
   focusContractId: 'route-focus.architecture-console-page-heading',
   scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
+  routeTransitionFamilyId: 'route-family.architecture-workspace',
 } as const)
 
 export const routeRegistry = Object.freeze([

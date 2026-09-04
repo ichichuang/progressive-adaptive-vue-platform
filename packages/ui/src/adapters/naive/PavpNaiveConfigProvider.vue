@@ -32,6 +32,12 @@ provide(pavpNaiveAppearanceKey, appearance)
 </template>
 
 <style>
+[data-pavp-admin-navigation='persistent']
+  .pavp-admin-shell__sidebar.n-layout-sider
+  > .n-layout-sider__border {
+  width: var(--ui-admin-border-width);
+}
+
 html[data-motion]
   :where(
     .n-button,

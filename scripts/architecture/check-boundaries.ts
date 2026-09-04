@@ -718,26 +718,150 @@ async function validateFirstPaintApplicationContract(): Promise<string[]> {
   return violations
 }
 
-const violations = [
-  ...(await validateManifestDependencies()),
-  ...(await validateRootConfigurationDependencies()),
-  ...(await validateSourceImports()),
-  ...(await validateDesignSystemTokenExports()),
-  ...(await validateNoApplicationInternalTokenUse()),
-  ...(await validateNoApplicationOpticalEffects()),
-  ...(await validateVueStyleGuardrails()),
-  ...(await validateFirstPaintApplicationContract()),
-  ...(await validateAppearanceCutover()),
-  ...(await validateRouterArchitecture()),
-  ...(await validateRuntimeKernelArchitecture()),
-  ...(await validateStorageArchitecture()),
-  ...(await validateArchitectureAdminConsole()),
-]
+export async function validateRouteTransitionBoundaryContract(): Promise<string[]> {
+  const transitionDirectory = resolve(rootDirectory, 'apps/web/src/app/router/route-transition')
+  const [
+    boundarySource,
+    coordinatorSource,
+    cssSource,
+    layersSource,
+    lifecycleSource,
+    registrySource,
+    routeTransitionTypesSource,
+    shellSource,
+    uiPublicSource,
+  ] = await Promise.all([
+    readFile(resolve(transitionDirectory, 'route-transition-boundary-registry.ts'), 'utf8'),
+    readFile(resolve(transitionDirectory, 'route-transition-coordinator.ts'), 'utf8'),
+    readFile(resolve(transitionDirectory, 'route-transition.css'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/styles/layers.css'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/router/router-lifecycle.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-registry.ts'), 'utf8'),
+    readFile(resolve(transitionDirectory, 'route-transition-types.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiAdminShell.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'packages/ui/src/index.ts'), 'utf8'),
+  ])
+  const violations: string[] = []
+  const exactTarget = '[data-scroll-owner="architecture-console-content"]'
+  const targetOwnerCount = [
+    ...shellSource.matchAll(/data-scroll-owner="architecture-console-content"/gu),
+  ].length
+  const transitionNameCount = [
+    ...cssSource.matchAll(/view-transition-name:\s*pavp-admin-route-content/gu),
+  ].length
+  const brokerStart = lifecycleSource.indexOf('type RouterPresentationCommitOutcome')
+  const brokerEnd = lifecycleSource.indexOf('export interface RouterLifecycleHandle')
+  const brokerSource =
+    brokerStart === -1 || brokerEnd === -1 ? '' : lifecycleSource.slice(brokerStart, brokerEnd)
 
-if (violations.length > 0) {
-  throw new Error(
-    `Architecture boundary violations:\n${violations.map((item) => `- ${item}`).join('\n')}`,
-  )
+  if (
+    targetOwnerCount !== 1 ||
+    !boundarySource.includes(`target: '${exactTarget}'`) ||
+    !boundarySource.includes("viewTransitionName: 'pavp-admin-route-content'")
+  ) {
+    violations.push(
+      'Route Transition must retain one exact architecture-console-content boundary registry owner.',
+    )
+  }
+  if (
+    transitionNameCount !== 1 ||
+    !cssSource.includes(
+      "[data-scroll-owner='architecture-console-content'] {\n    view-transition-name: pavp-admin-route-content;",
+    ) ||
+    !cssSource.includes(':root {\n    view-transition-name: none;') ||
+    shellSource.includes('view-transition-name')
+  ) {
+    violations.push(
+      'Route Transition snapshot naming must remain on the sole content boundary with the root and persistent Shell unnamed.',
+    )
+  }
+  if (
+    !coordinatorSource.includes('document.querySelectorAll<HTMLElement>(boundary.target)') ||
+    !coordinatorSource.includes("closest<HTMLElement>(shellSelector)?.dataset['layoutProfile']") ||
+    /getBoundingClientRect|offset(?:Width|Height)|client(?:Width|Height)|ResizeObserver|MutationObserver|requestAnimationFrame|setTimeout|setInterval|addEventListener/u.test(
+      coordinatorSource,
+    )
+  ) {
+    violations.push(
+      'Route Transition boundary validation must use only the exact selector count and existing Shell layout profile.',
+    )
+  }
+  if (
+    !layersSource.includes("@import '../router/route-transition/route-transition.css';") ||
+    /\bimport\s*\(/u.test(coordinatorSource)
+  ) {
+    violations.push(
+      'Route Transition CSS and runtime must remain in the synchronous application closure.',
+    )
+  }
+  if (
+    !brokerSource.includes(
+      'const routerPresentationCommitBrokers = new WeakMap<Router, RouterPresentationCommitBroker>()',
+    ) ||
+    !brokerSource.includes('export function reserveRouterPresentationCommit') ||
+    !brokerSource.includes('routeName === reservation.expectedRouteName') ||
+    !brokerSource.includes('navigation.fullPath === reservation.expectedFullPath') ||
+    !coordinatorSource.includes(
+      "import { reserveRouterPresentationCommit } from '../router-lifecycle'",
+    ) ||
+    !coordinatorSource.includes('await reservation.completion') ||
+    routeTransitionTypesSource.includes('RouterPresentationCommit') ||
+    registrySource.includes('RouterPresentationCommit') ||
+    uiPublicSource.includes('RouterPresentationCommit')
+  ) {
+    violations.push(
+      'Router Presentation Commit must remain one private per-Router exact-navigation boundary consumed only by the coordinator.',
+    )
+  }
+  if (
+    /\.focus\s*\(|scroll(?:IntoView|To)|scrollTop|scrollLeft|scrollingElement|document\.title\s*=/u.test(
+      coordinatorSource,
+    ) ||
+    /requestAnimationFrame|requestIdleCallback|setTimeout|setInterval|ResizeObserver|MutationObserver|addEventListener/u.test(
+      brokerSource + coordinatorSource,
+    )
+  ) {
+    violations.push(
+      'The Route Transition coordinator may only await Router presentation work without acquiring presentation or timing authority.',
+    )
+  }
+  if (
+    !lifecycleSource.includes('regionOwner.scrollLeft = scrollPosition.left') ||
+    !lifecycleSource.includes('regionOwner.scrollTop = scrollPosition.top') ||
+    lifecycleSource.indexOf('resolveBoundRouterPresentationCommit(presentationCommitBroker, to)') <
+      lifecycleSource.indexOf('regionOwner.scrollTop = scrollPosition.top')
+  ) {
+    violations.push(
+      'Router Presentation Commit must resolve only after the existing final inline and block region scroll writes.',
+    )
+  }
+
+  return violations
 }
 
-console.log('Architecture boundaries: valid')
+if (process.argv[1]?.endsWith('check-boundaries.ts')) {
+  const violations = [
+    ...(await validateManifestDependencies()),
+    ...(await validateRootConfigurationDependencies()),
+    ...(await validateSourceImports()),
+    ...(await validateDesignSystemTokenExports()),
+    ...(await validateNoApplicationInternalTokenUse()),
+    ...(await validateNoApplicationOpticalEffects()),
+    ...(await validateVueStyleGuardrails()),
+    ...(await validateFirstPaintApplicationContract()),
+    ...(await validateRouteTransitionBoundaryContract()),
+    ...(await validateAppearanceCutover()),
+    ...(await validateRouterArchitecture()),
+    ...(await validateRuntimeKernelArchitecture()),
+    ...(await validateStorageArchitecture()),
+    ...(await validateArchitectureAdminConsole()),
+  ]
+
+  if (violations.length > 0) {
+    throw new Error(
+      `Architecture boundary violations:\n${violations.map((item) => `- ${item}`).join('\n')}`,
+    )
+  }
+
+  console.log('Architecture boundaries: valid')
+}

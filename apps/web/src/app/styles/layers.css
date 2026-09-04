@@ -1,6 +1,7 @@
 @layer reset, tokens, base, utilities, components, app, overrides;
 
 @import '@platform/design-system/tokens.css';
+@import '../router/route-transition/route-transition.css';
 
 @layer reset {
   *,

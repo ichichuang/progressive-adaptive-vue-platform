@@ -46,6 +46,188 @@ interface NavigationAttemptState {
   componentResolutionReached: boolean
 }
 
+type RouterPresentationCommitOutcome = 'committed' | 'cancelled'
+
+interface RouterPresentationCommitRecord {
+  readonly identity: symbol
+  readonly sequence: number
+  readonly expectedRouteName: RouteName
+  readonly expectedFullPath: string
+  readonly completion: Promise<RouterPresentationCommitOutcome>
+  readonly resolve: (outcome: RouterPresentationCommitOutcome) => void
+  readonly reject: (source: unknown) => void
+  boundNavigation: RouteLocationNormalized | undefined
+  settled: boolean
+}
+
+interface RouterPresentationCommitBroker {
+  readonly reservations: Map<symbol, RouterPresentationCommitRecord>
+  readonly navigationReservations: WeakMap<RouteLocationNormalized, RouterPresentationCommitRecord>
+  reservationSequence: number
+  disposed: boolean
+}
+
+const routerPresentationCommitBrokers = new WeakMap<Router, RouterPresentationCommitBroker>()
+
+function createRouterPresentationCommitBroker(): RouterPresentationCommitBroker {
+  return {
+    reservations: new Map(),
+    navigationReservations: new WeakMap(),
+    reservationSequence: 0,
+    disposed: false,
+  }
+}
+
+function settleRouterPresentationCommit(
+  broker: RouterPresentationCommitBroker,
+  reservation: RouterPresentationCommitRecord,
+  outcome: RouterPresentationCommitOutcome,
+): void {
+  if (reservation.settled) {
+    return
+  }
+
+  reservation.settled = true
+  broker.reservations.delete(reservation.identity)
+  reservation.resolve(outcome)
+}
+
+function rejectRouterPresentationCommit(
+  broker: RouterPresentationCommitBroker,
+  reservation: RouterPresentationCommitRecord,
+  source: unknown,
+): void {
+  if (reservation.settled) {
+    return
+  }
+
+  reservation.settled = true
+  broker.reservations.delete(reservation.identity)
+  reservation.reject(source)
+}
+
+function bindRouterPresentationCommit(
+  broker: RouterPresentationCommitBroker,
+  navigation: RouteLocationNormalized,
+  routeName: RouteName | undefined,
+): void {
+  let selected: RouterPresentationCommitRecord | undefined
+
+  for (const reservation of broker.reservations.values()) {
+    if (
+      reservation.boundNavigation === undefined &&
+      routeName === reservation.expectedRouteName &&
+      navigation.fullPath === reservation.expectedFullPath &&
+      (selected === undefined || reservation.sequence > selected.sequence)
+    ) {
+      selected = reservation
+    }
+  }
+
+  for (const reservation of [...broker.reservations.values()]) {
+    if (reservation !== selected) {
+      settleRouterPresentationCommit(broker, reservation, 'cancelled')
+    }
+  }
+
+  if (selected === undefined) {
+    return
+  }
+
+  selected.boundNavigation = navigation
+  broker.navigationReservations.set(navigation, selected)
+}
+
+function resolveBoundRouterPresentationCommit(
+  broker: RouterPresentationCommitBroker,
+  navigation: RouteLocationNormalized,
+): void {
+  const reservation = broker.navigationReservations.get(navigation)
+  if (reservation !== undefined) {
+    settleRouterPresentationCommit(broker, reservation, 'committed')
+  }
+}
+
+function cancelBoundRouterPresentationCommit(
+  broker: RouterPresentationCommitBroker,
+  navigation: RouteLocationNormalized,
+): void {
+  const reservation = broker.navigationReservations.get(navigation)
+  if (reservation !== undefined) {
+    settleRouterPresentationCommit(broker, reservation, 'cancelled')
+  }
+}
+
+function rejectBoundRouterPresentationCommit(
+  broker: RouterPresentationCommitBroker,
+  navigation: RouteLocationNormalized,
+  source: unknown,
+): void {
+  const reservation = broker.navigationReservations.get(navigation)
+  if (reservation !== undefined) {
+    rejectRouterPresentationCommit(broker, reservation, source)
+  }
+}
+
+function disposeRouterPresentationCommitBroker(
+  router: Router,
+  broker: RouterPresentationCommitBroker,
+): void {
+  broker.disposed = true
+  for (const reservation of [...broker.reservations.values()]) {
+    settleRouterPresentationCommit(broker, reservation, 'cancelled')
+  }
+  routerPresentationCommitBrokers.delete(router)
+}
+
+export function reserveRouterPresentationCommit(input: {
+  readonly router: Router
+  readonly expectedRouteName: RouteName
+  readonly expectedFullPath: string
+}): Readonly<{
+  readonly completion: Promise<RouterPresentationCommitOutcome>
+  cancel(): void
+}> {
+  const broker = routerPresentationCommitBrokers.get(input.router)
+  const routeRecord = getRouteRecord(input.expectedRouteName)
+
+  if (
+    broker === undefined ||
+    broker.disposed ||
+    input.expectedFullPath.length === 0 ||
+    routeRecord.meta.routeTransitionFamilyId !== 'route-family.architecture-workspace'
+  ) {
+    throw new TypeError('The Router Presentation Commit reservation is unavailable.')
+  }
+
+  let resolveCompletion!: (outcome: RouterPresentationCommitOutcome) => void
+  let rejectCompletion!: (source: unknown) => void
+  const completion = new Promise<RouterPresentationCommitOutcome>((resolve, reject) => {
+    resolveCompletion = resolve
+    rejectCompletion = reject
+  })
+  const reservation: RouterPresentationCommitRecord = {
+    identity: Symbol('router-presentation-commit'),
+    sequence: ++broker.reservationSequence,
+    expectedRouteName: input.expectedRouteName,
+    expectedFullPath: input.expectedFullPath,
+    completion,
+    resolve: resolveCompletion,
+    reject: rejectCompletion,
+    boundNavigation: undefined,
+    settled: false,
+  }
+  broker.reservations.set(reservation.identity, reservation)
+  void completion.catch(() => undefined)
+
+  return Object.freeze({
+    completion,
+    cancel() {
+      settleRouterPresentationCommit(broker, reservation, 'cancelled')
+    },
+  })
+}
+
 export interface RouterLifecycleHandle {
   readonly router: Router
   readonly history: RouterHistory
@@ -81,6 +263,7 @@ const routeMetaKeys = Object.freeze([
   'unsavedChangesPolicy',
   'focusContractId',
   'scrollRestorationPolicyId',
+  'routeTransitionFamilyId',
 ] as const)
 
 function routeMetaMatches(
@@ -233,6 +416,7 @@ export async function createAndReadyRouter(input: {
   let handlingRouterError = false
   let latestNavigationResult: TypedNavigationResult | undefined
   const navigationAttempts = new WeakMap<RouteLocationNormalized, NavigationAttemptState>()
+  const presentationCommitBroker = createRouterPresentationCommitBroker()
   const history = createWebHistory(input.configuration.deploymentBase)
   const router = createRouter({
     history,
@@ -242,105 +426,112 @@ export async function createAndReadyRouter(input: {
         return false
       }
 
-      await applicationMountedPromise
-      await nextTick()
+      try {
+        await applicationMountedPromise
+        await nextTick()
 
-      if (disposed || !applicationMounted) {
-        return false
-      }
-
-      const routeName = getRouteRecord(to.name).name
-      const routeRecord = getRouteRecord(routeName)
-      const presentation = getRoutePresentation(routeName)
-      const focusContract = focusContractRegistry.find(
-        (contract) => contract.id === routeRecord.meta.focusContractId,
-      )
-
-      if (focusContract === undefined) {
-        throw new TypeError('The routed focus contract is unavailable.')
-      }
-
-      const focusTargets = document.querySelectorAll<HTMLElement>(focusContract.target)
-      const navigation = navigationAttempts.get(to)
-
-      if (
-        navigation?.routeName !== routeName ||
-        focusTargets.length !== 1 ||
-        focusTargets[0]?.tagName !== 'H1' ||
-        focusTargets[0].tabIndex !== focusContract.targetTabIndex
-      ) {
-        throw new TypeError('The routed document focus or scroll owner is unavailable.')
-      }
-
-      advanceActiveGuardStage(navigation.guardStageProgress, 'commit-focus-and-scroll')
-      document.title = presentation.title
-
-      if (from !== START_LOCATION) {
-        focusTargets[0].focus({ preventScroll: true })
-      }
-
-      completeActiveGuardStages(navigation.guardStageProgress)
-
-      const preservesFailureDestination =
-        latestNavigationResult?.kind === 'failure' &&
-        latestNavigationResult.destination.name === navigation.routeName
-
-      if (
-        !preservesFailureDestination &&
-        latestNavigationResult?.navigationId !== navigation.navigationId
-      ) {
-        latestNavigationResult = Object.freeze({
-          kind: 'allow',
-          navigationId: navigation.navigationId,
-          destination: registeredRouteDestination(navigation.routeName),
-        })
-      }
-
-      const scrollPosition = finiteNativeScrollPosition(savedPosition)
-      const blockOwner = scrollOwnerRegistry.find(
-        (owner) => owner.id === routeRecord.meta.blockScrollOwnerId,
-      )
-      const inlineOwner = scrollOwnerRegistry.find(
-        (owner) => owner.id === routeRecord.meta.inlineScrollOwnerId,
-      )
-
-      if (blockOwner === undefined || inlineOwner === undefined) {
-        throw new TypeError('The routed scroll owner is unavailable.')
-      }
-
-      if (blockOwner.ownerKind === 'document' && inlineOwner.ownerKind === 'document') {
-        if (document.scrollingElement === null) {
-          throw new TypeError('The document scroll owner is unavailable.')
+        if (disposed || !applicationMounted) {
+          return false
         }
 
-        return scrollPosition
+        const routeName = getRouteRecord(to.name).name
+        const routeRecord = getRouteRecord(routeName)
+        const presentation = getRoutePresentation(routeName)
+        const focusContract = focusContractRegistry.find(
+          (contract) => contract.id === routeRecord.meta.focusContractId,
+        )
+
+        if (focusContract === undefined) {
+          throw new TypeError('The routed focus contract is unavailable.')
+        }
+
+        const focusTargets = document.querySelectorAll<HTMLElement>(focusContract.target)
+        const navigation = navigationAttempts.get(to)
+
+        if (
+          navigation?.routeName !== routeName ||
+          focusTargets.length !== 1 ||
+          focusTargets[0]?.tagName !== 'H1' ||
+          focusTargets[0].tabIndex !== focusContract.targetTabIndex
+        ) {
+          throw new TypeError('The routed document focus or scroll owner is unavailable.')
+        }
+
+        advanceActiveGuardStage(navigation.guardStageProgress, 'commit-focus-and-scroll')
+        document.title = presentation.title
+
+        if (from !== START_LOCATION) {
+          focusTargets[0].focus({ preventScroll: true })
+        }
+
+        completeActiveGuardStages(navigation.guardStageProgress)
+
+        const preservesFailureDestination =
+          latestNavigationResult?.kind === 'failure' &&
+          latestNavigationResult.destination.name === navigation.routeName
+
+        if (
+          !preservesFailureDestination &&
+          latestNavigationResult?.navigationId !== navigation.navigationId
+        ) {
+          latestNavigationResult = Object.freeze({
+            kind: 'allow',
+            navigationId: navigation.navigationId,
+            destination: registeredRouteDestination(navigation.routeName),
+          })
+        }
+
+        const scrollPosition = finiteNativeScrollPosition(savedPosition)
+        const blockOwner = scrollOwnerRegistry.find(
+          (owner) => owner.id === routeRecord.meta.blockScrollOwnerId,
+        )
+        const inlineOwner = scrollOwnerRegistry.find(
+          (owner) => owner.id === routeRecord.meta.inlineScrollOwnerId,
+        )
+
+        if (blockOwner === undefined || inlineOwner === undefined) {
+          throw new TypeError('The routed scroll owner is unavailable.')
+        }
+
+        if (blockOwner.ownerKind === 'document' && inlineOwner.ownerKind === 'document') {
+          if (document.scrollingElement === null) {
+            throw new TypeError('The document scroll owner is unavailable.')
+          }
+
+          return scrollPosition
+        }
+
+        if (
+          blockOwner.ownerKind !== 'region' ||
+          inlineOwner.ownerKind !== 'region' ||
+          !sameScrollOwnerTarget(blockOwner.ownerTarget, inlineOwner.ownerTarget)
+        ) {
+          throw new TypeError('The routed region scroll owner is inconsistent.')
+        }
+
+        const regionOwners = document.querySelectorAll<HTMLElement>(blockOwner.ownerTarget)
+
+        if (regionOwners.length !== 1) {
+          throw new TypeError('The routed region scroll owner is unavailable.')
+        }
+
+        const regionOwner = regionOwners[0]
+
+        if (regionOwner === undefined) {
+          throw new TypeError('The routed region scroll owner is unavailable.')
+        }
+
+        regionOwner.scrollLeft = scrollPosition.left
+        regionOwner.scrollTop = scrollPosition.top
+        resolveBoundRouterPresentationCommit(presentationCommitBroker, to)
+        return false
+      } catch (source: unknown) {
+        rejectBoundRouterPresentationCommit(presentationCommitBroker, to, source)
+        throw source
       }
-
-      if (
-        blockOwner.ownerKind !== 'region' ||
-        inlineOwner.ownerKind !== 'region' ||
-        !sameScrollOwnerTarget(blockOwner.ownerTarget, inlineOwner.ownerTarget)
-      ) {
-        throw new TypeError('The routed region scroll owner is inconsistent.')
-      }
-
-      const regionOwners = document.querySelectorAll<HTMLElement>(blockOwner.ownerTarget)
-
-      if (regionOwners.length !== 1) {
-        throw new TypeError('The routed region scroll owner is unavailable.')
-      }
-
-      const regionOwner = regionOwners[0]
-
-      if (regionOwner === undefined) {
-        throw new TypeError('The routed region scroll owner is unavailable.')
-      }
-
-      regionOwner.scrollLeft = scrollPosition.left
-      regionOwner.scrollTop = scrollPosition.top
-      return false
     },
   })
+  routerPresentationCommitBrokers.set(router, presentationCommitBroker)
 
   const beforeEachRemover = router.beforeEach((to) => {
     const navigationId = crypto.randomUUID()
@@ -356,6 +547,7 @@ export async function createAndReadyRouter(input: {
     advanceActiveGuardStage(guardStageProgress, 'resolve-router-owned-safe-destination')
 
     if (routeName === undefined) {
+      bindRouterPresentationCommit(presentationCommitBroker, to, routeName)
       const failure = createFailureResult({
         configuration: input.configuration,
         errorId: 'route-input-validation-failure',
@@ -378,6 +570,7 @@ export async function createAndReadyRouter(input: {
       guardStageProgress,
       componentResolutionReached: false,
     })
+    bindRouterPresentationCommit(presentationCommitBroker, to, routeName)
 
     if (routeName === getErrorRouteName('404')) {
       latestNavigationResult = createFailureResult({
@@ -432,6 +625,8 @@ export async function createAndReadyRouter(input: {
       return
     }
 
+    cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+
     if (navigation === undefined) {
       return
     }
@@ -449,7 +644,9 @@ export async function createAndReadyRouter(input: {
     }
   })
 
-  const errorHandlerRemover = router.onError((_source, to) => {
+  const errorHandlerRemover = router.onError((source, to) => {
+    rejectBoundRouterPresentationCommit(presentationCommitBroker, to, source)
+
     if (!routerReady || disposed) {
       return
     }
@@ -532,6 +729,7 @@ export async function createAndReadyRouter(input: {
     }
 
     disposed = true
+    disposeRouterPresentationCommitBroker(router, presentationCommitBroker)
     resolveApplicationMounted?.()
     resolveApplicationMounted = undefined
     const failures: unknown[] = []

@@ -201,8 +201,34 @@ const shellVisualAuthorityRules = {
   ]),
 }
 
+const routeTransitionFullDuration =
+  'calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)'
+const routeTransitionVisualAuthorityRules = {
+  ...Object.fromEntries(
+    Object.entries(visualAuthorityRules).filter(
+      ([property]) => property !== motionDurationProperties,
+    ),
+  ),
+  '/^(?:animation-delay|transition-delay|transition-duration)$/':
+    motionAuthorityRules[motionDurationProperties],
+  'animation-duration': [
+    disallowOutsideAuthorities(
+      durationVariables,
+      [routeTransitionFullDuration],
+      approvedDurationPatterns,
+    ),
+  ],
+  animation: [new RegExp(escapeRegularExpression(routeTransitionFullDuration), 'u')],
+}
+
 export default {
   overrides: [
+    {
+      files: ['apps/web/src/app/router/route-transition/route-transition.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': routeTransitionVisualAuthorityRules,
+      },
+    },
     {
       files: ['**/apps/web/src/pages/appearance.vue.style-*.css'],
       rules: {
