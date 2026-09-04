@@ -3750,7 +3750,7 @@ interface RouteTransitionDividerSnapshot {
   readonly scriptSource: string
 }
 
-function routeTransitionDividerFailures(
+export function routeTransitionDividerFailures(
   snapshot: RouteTransitionDividerSnapshot,
 ): readonly string[] {
   const rules = (source: string) =>
@@ -4113,7 +4113,7 @@ const workspaceAxisRouteNames = [
   'capability-roadmap',
 ] as const
 
-function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {
+export function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {
   const expectedIds = [
     'route-transition-rule.global-default',
     'route-transition-rule.architecture-workspace',

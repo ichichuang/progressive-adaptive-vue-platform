@@ -51,6 +51,8 @@ import {
   routerConsoleProjection,
   type RouterConsoleRouteRecord,
 } from '../../apps/web/src/app/router/router-console-projection'
+import { routeTransitionRuleRegistry } from '../../apps/web/src/app/router/route-transition/route-transition-rule-registry'
+import type { RouteTransitionRule } from '../../apps/web/src/app/router/route-transition/route-transition-types'
 import {
   storageConsoleProjection,
   type StorageConsoleRecord,
@@ -76,7 +78,9 @@ import {
   expectedRouteTransitionSourceProofCount,
   expectedRouteTransitionStylelintPolicyNegativeProbeCount,
   expectedRouteTransitionWorkspaceDefaultNegativeProbeCount,
+  routeTransitionDividerFailures,
   validateRouteTransitionSourceGovernance,
+  workspaceAxisDefaultFailures,
 } from './check-router'
 import { validateUiPublicComponents } from './check-ui-public-components'
 
@@ -5534,10 +5538,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_ROUTE_TRANSITION_CURRENT_WORK')
   }
 
-  if (
-    canonicalWork !== routeTransitionWorkPackage ||
-    canonicalAuthority !== routeTransitionAdmissionAmendment
-  ) {
+  if (canonicalWork !== 'NONE' || canonicalAuthority !== 'NONE') {
     recordCurrentWorkViolation()
   }
 
@@ -5628,8 +5629,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_STATUS=OPEN`,
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY=${routeTransitionAdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+    'CURRENT_BOUNDED_WORK=NONE',
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -6511,8 +6512,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== routeTransitionWorkPackage ||
-      authorityValues[0] !== routeTransitionAdmissionAmendment
+      workValues[0] !== 'NONE' ||
+      authorityValues[0] !== 'NONE'
     ) {
       recordCurrentWorkViolation()
     }
@@ -6530,8 +6531,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
     allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
-    allCurrentWorkMarkers.some((value) => value !== routeTransitionWorkPackage) ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== routeTransitionAdmissionAmendment)
+    allCurrentWorkMarkers.some((value) => value !== 'NONE') ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== 'NONE')
   ) {
     recordCurrentWorkViolation()
   }
@@ -6752,20 +6753,20 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
   if (
     routeTransitionStatusValues.length !== expectedRouteTransitionActiveMirrorCount ||
-    routeTransitionStatusValues.some((value) => value !== 'OPEN') ||
+    routeTransitionStatusValues.some((value) => value !== 'ACCEPTED') ||
     routeTransitionImplementationValues.length !== expectedRouteTransitionActiveMirrorCount ||
     routeTransitionImplementationValues.some((value) => value !== 'COMPLETE') ||
     routeTransitionVerificationValues.length !== expectedRouteTransitionActiveMirrorCount ||
     routeTransitionVerificationValues.some((value) => value !== 'PASS') ||
     routeTransitionRuntimeAcceptanceValues.length !== expectedRouteTransitionActiveMirrorCount ||
-    routeTransitionRuntimeAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
+    routeTransitionRuntimeAcceptanceValues.some((value) => value !== 'PASS') ||
     routeTransitionVisualAcceptanceValues.length !== expectedRouteTransitionActiveMirrorCount ||
-    routeTransitionVisualAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
+    routeTransitionVisualAcceptanceValues.some((value) => value !== 'PASS') ||
     routeTransitionAccessibilityAcceptanceValues.length !==
       expectedRouteTransitionActiveMirrorCount ||
     routeTransitionAccessibilityAcceptanceValues.some((value) => value !== 'NOT_PERFORMED') ||
     routeTransitionPublicationValues.length !== expectedRouteTransitionActiveMirrorCount ||
-    routeTransitionPublicationValues.some((value) => value !== 'NOT_PUBLISHED') ||
+    routeTransitionPublicationValues.some((value) => value !== 'COMPLETE') ||
     routeTransitionReleaseValues.length !== expectedRouteTransitionActiveMirrorCount ||
     routeTransitionReleaseValues.some((value) => value !== 'NOT_RELEASED')
   ) {
@@ -6957,15 +6958,15 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   ] as const
   const requiredRouteTransitionFinalInvariantMarkers = [
     `${routeTransitionAdmissionAmendment}_IS_FROZEN`,
-    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${routeTransitionAdmissionAmendment}`,
-    `CURRENT_BOUNDED_WORK_IS_${routeTransitionWorkPackage}`,
-    `${routeTransitionWorkPackage}_STATUS_IS_OPEN`,
+    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_NONE',
+    'CURRENT_BOUNDED_WORK_IS_NONE',
+    `${routeTransitionWorkPackage}_STATUS_IS_ACCEPTED`,
     `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
     `${routeTransitionWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
-    `${routeTransitionWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_NOT_PERFORMED`,
-    `${routeTransitionWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_NOT_PERFORMED`,
+    `${routeTransitionWorkPackage}_OWNER_RUNTIME_ACCEPTANCE_IS_PASS`,
+    `${routeTransitionWorkPackage}_OWNER_VISUAL_ACCEPTANCE_IS_PASS`,
     `${routeTransitionWorkPackage}_OWNER_ACCESSIBILITY_ACCEPTANCE_IS_NOT_PERFORMED`,
-    `${routeTransitionWorkPackage}_PUBLICATION_STATUS_IS_NOT_PUBLISHED`,
+    `${routeTransitionWorkPackage}_PUBLICATION_STATUS_IS_COMPLETE`,
     `${routeTransitionWorkPackage}_RELEASE_STATUS_IS_NOT_RELEASED`,
   ] as const
   const requiredSuccessorFinalInvariantMarkers = [
@@ -7190,7 +7191,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=NONE',
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -7308,7 +7309,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=NONE',
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -8092,6 +8093,214 @@ function validateRouteTransitionInventoryGovernance(source: string): string[] {
   return failures
 }
 
+const routeTransitionImplementationCommit = '083b527b567287544b3786cd4350ee713f6a59f3'
+const routeTransitionAcceptanceStatement = '完美 通过了，越来越好了'
+
+interface RouteTransitionAcceptanceSnapshot {
+  readonly architectureSource: string
+  readonly rules: readonly RouteTransitionRule[]
+  readonly divider: Parameters<typeof routeTransitionDividerFailures>[0]
+}
+
+function routeTransitionAcceptanceViolations(
+  snapshot: RouteTransitionAcceptanceSnapshot,
+): string[] {
+  const source = snapshot.architectureSource
+  const failures: string[] = []
+  const required = {
+    STATUS: 'ACCEPTED',
+    REPOSITORY_IMPLEMENTATION: 'COMPLETE',
+    STATIC_VERIFICATION: 'PASS',
+    OWNER_RUNTIME_ACCEPTANCE: 'PASS',
+    OWNER_VISUAL_ACCEPTANCE: 'PASS',
+    OWNER_ACCESSIBILITY_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_ACCEPTANCE_STATEMENT: routeTransitionAcceptanceStatement,
+    IMPLEMENTATION_COMMIT: routeTransitionImplementationCommit,
+    PUBLICATION_TARGET: 'origin/main',
+    PUBLICATION_STATUS: 'COMPLETE',
+    RELEASE_STATUS: 'NOT_RELEASED',
+  }
+  for (const [field, expected] of Object.entries(required)) {
+    const values = [
+      ...source.matchAll(
+        new RegExp('^' + routeTransitionWorkPackage + '_' + field + '=(.*)$', 'gmu'),
+      ),
+    ]
+    if (
+      values.length !== expectedRouteTransitionActiveMirrorCount ||
+      values.some((match) => match[1] !== expected)
+    ) {
+      failures.push('ROUTE_TRANSITION_ACCEPTED_' + field)
+    }
+  }
+  for (const field of ['CURRENT_BOUNDED_WORK', 'CURRENT_BOUNDED_WORK_AUTHORITY']) {
+    const values = [...source.matchAll(new RegExp('^' + field + '=(.*)$', 'gmu'))]
+    if (
+      values.length !== expectedRouteTransitionActiveMirrorCount ||
+      values.some((match) => match[1] !== 'NONE')
+    ) {
+      failures.push('ROUTE_TRANSITION_ACCEPTED_' + field)
+    }
+  }
+  const currentStatus = source.slice(0, source.indexOf('\n---\n'))
+  for (const field of [
+    'NEXT_CANONICAL_WORK_PACKAGE',
+    'NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE',
+    'SUCCESSOR_PACKAGE_AUTHORIZATION',
+  ]) {
+    if (!currentStatus.includes(field + '=NONE\n'))
+      failures.push('ROUTE_TRANSITION_ACCEPTED_SUCCESSOR')
+  }
+  for (const field of [
+    'OWNER_PRODUCT_EXPERIENCE_ACCEPTANCE',
+    'CURRENT_RELEASE_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE',
+    'ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE',
+  ]) {
+    const values = [...source.matchAll(new RegExp('^' + field + '=(.*)$', 'gmu'))]
+    if (
+      values.length === 0 ||
+      values.some((match) => match[1] !== 'REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT')
+    )
+      failures.push('ROUTE_TRANSITION_ACCEPTED_OVERALL_BOUNDARY')
+  }
+  if (routeTransitionInventoryViolations(source).length > 0)
+    failures.push('ROUTE_TRANSITION_ACCEPTED_INVENTORY')
+  if (workspaceAxisDefaultFailures(snapshot.rules).length > 0)
+    failures.push('ROUTE_TRANSITION_ACCEPTED_AXIS')
+  if (routeTransitionDividerFailures(snapshot.divider).length > 0)
+    failures.push('ROUTE_TRANSITION_ACCEPTED_DIVIDER')
+  return [...new Set(failures)]
+}
+
+function validateRouteTransitionAcceptanceGovernance(
+  snapshot: RouteTransitionAcceptanceSnapshot,
+): string[] {
+  const preserved = structuredClone(snapshot)
+  const failures = routeTransitionAcceptanceViolations(snapshot)
+  const source = snapshot.architectureSource
+  const changes: readonly [string, string, string][] = [
+    ['STATUS=ACCEPTED', 'STATUS=OPEN', 'STATUS'],
+    ['OWNER_RUNTIME_ACCEPTANCE=PASS', '', 'OWNER_RUNTIME_ACCEPTANCE'],
+    ['OWNER_VISUAL_ACCEPTANCE=PASS', '', 'OWNER_VISUAL_ACCEPTANCE'],
+    [
+      'OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
+      'OWNER_ACCESSIBILITY_ACCEPTANCE=PASS',
+      'OWNER_ACCESSIBILITY_ACCEPTANCE',
+    ],
+    [
+      'OWNER_ACCEPTANCE_STATEMENT=' + routeTransitionAcceptanceStatement,
+      'OWNER_ACCEPTANCE_STATEMENT=DRIFTED',
+      'OWNER_ACCEPTANCE_STATEMENT',
+    ],
+    [
+      'IMPLEMENTATION_COMMIT=' + routeTransitionImplementationCommit,
+      'IMPLEMENTATION_COMMIT=' + '0'.repeat(40),
+      'IMPLEMENTATION_COMMIT',
+    ],
+    ['PUBLICATION_TARGET=origin/main', 'PUBLICATION_TARGET=origin/other', 'PUBLICATION_TARGET'],
+    ['PUBLICATION_STATUS=COMPLETE', 'PUBLICATION_STATUS=NOT_PUBLISHED', 'PUBLICATION_STATUS'],
+    ['RELEASE_STATUS=NOT_RELEASED', 'RELEASE_STATUS=RELEASED', 'RELEASE_STATUS'],
+  ]
+  const probes: [RouteTransitionAcceptanceSnapshot, string][] = changes.map(([from, to, code]) => [
+    {
+      ...snapshot,
+      architectureSource: source.replace(
+        routeTransitionWorkPackage + '_' + from,
+        to === '' ? '' : routeTransitionWorkPackage + '_' + to,
+      ),
+    },
+    'ROUTE_TRANSITION_ACCEPTED_' + code,
+  ])
+  for (const [field, replacement, code] of [
+    [
+      'CURRENT_BOUNDED_WORK=NONE',
+      'CURRENT_BOUNDED_WORK=' + routeTransitionWorkPackage,
+      'CURRENT_BOUNDED_WORK',
+    ],
+    [
+      'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+      'CURRENT_BOUNDED_WORK_AUTHORITY=' + routeTransitionAdmissionAmendment,
+      'CURRENT_BOUNDED_WORK_AUTHORITY',
+    ],
+    [
+      'SUCCESSOR_PACKAGE_AUTHORIZATION=NONE',
+      'SUCCESSOR_PACKAGE_AUTHORIZATION=STARTED',
+      'SUCCESSOR',
+    ],
+    [
+      'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
+      'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=PASS',
+      'OVERALL_BOUNDARY',
+    ],
+    [
+      'ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILE_COUNT=17',
+      'ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILE_COUNT=16',
+      'INVENTORY',
+    ],
+  ]) {
+    if (field === undefined || replacement === undefined || code === undefined)
+      throw new Error('Invalid acceptance probe.')
+    probes.push([
+      { ...snapshot, architectureSource: source.replace(field, replacement) },
+      'ROUTE_TRANSITION_ACCEPTED_' + code,
+    ])
+  }
+  probes.push(
+    [
+      {
+        ...snapshot,
+        rules: snapshot.rules.map((rule) =>
+          rule.kind === 'ordered-routes'
+            ? { ...rule, forwardPresetId: 'route-transition.content-crossfade' }
+            : rule,
+        ),
+      },
+      'ROUTE_TRANSITION_ACCEPTED_AXIS',
+    ],
+    [
+      {
+        ...snapshot,
+        divider: {
+          ...snapshot.divider,
+          cssSource: snapshot.divider.cssSource.replace('overflow: clip;', ''),
+        },
+      },
+      'ROUTE_TRANSITION_ACCEPTED_DIVIDER',
+    ],
+    [
+      {
+        ...snapshot,
+        divider: {
+          ...snapshot.divider,
+          providerSource: snapshot.divider.providerSource.replace(
+            'width: var(--ui-admin-border-width);',
+            '',
+          ),
+        },
+      },
+      'ROUTE_TRANSITION_ACCEPTED_DIVIDER',
+    ],
+  )
+  for (const [mutated, expected] of probes) {
+    if (
+      isDeepStrictEqual(mutated, snapshot) ||
+      !isDeepStrictEqual(routeTransitionAcceptanceViolations(mutated), [expected])
+    ) {
+      failures.push('Route Transition acceptance negative probe failed: ' + expected)
+    }
+  }
+  if (probes.length !== 17 || !isDeepStrictEqual(preserved, snapshot))
+    failures.push('Route Transition acceptance probe count or residue drift.')
+  if (failures.length === 0)
+    console.log(
+      'Route Transition acceptance closure: 17/17 reversible in-memory negative probes passed',
+    )
+  return failures
+}
+
 function routeTransitionAdmissionViolations(architectureSource: string): string[] {
   const violations: string[] = []
   const amendmentHeading = `### 1.2B.0N \`${routeTransitionWorkPackage}\``
@@ -8150,13 +8359,13 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
   }
 
   const stateMarkers = [
-    'STATUS=OPEN',
+    'STATUS=ACCEPTED',
     'REPOSITORY_IMPLEMENTATION=COMPLETE',
     'STATIC_VERIFICATION=PASS',
-    'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
-    'OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED',
+    'OWNER_RUNTIME_ACCEPTANCE=PASS',
+    'OWNER_VISUAL_ACCEPTANCE=PASS',
     'OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED',
-    'PUBLICATION_STATUS=NOT_PUBLISHED',
+    'PUBLICATION_STATUS=COMPLETE',
     'RELEASE_STATUS=NOT_RELEASED',
   ] as const
   if (!hasEveryMarker(stateMarkers)) {
@@ -8463,11 +8672,11 @@ function runRouteTransitionAdmissionNegativeProbes(
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource
         .replace(
-          `CURRENT_BOUNDED_WORK_AUTHORITY=${routeTransitionAdmissionAmendment}`,
+          'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
         )
         .replace(
-          `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+          'CURRENT_BOUNDED_WORK=NONE',
           `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
         ),
     ],
@@ -8634,11 +8843,11 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_CURRENT_WORK',
       architectureSource
         .replace(
-          `CURRENT_BOUNDED_WORK_AUTHORITY=${routeTransitionAdmissionAmendment}`,
+          'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
         .replace(
-          `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+          'CURRENT_BOUNDED_WORK=NONE',
           `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
         ),
     ],
@@ -9551,7 +9760,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=NONE',
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
@@ -9559,7 +9768,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        `CURRENT_BOUNDED_WORK=${routeTransitionWorkPackage}`,
+        'CURRENT_BOUNDED_WORK=NONE',
         'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
@@ -16758,6 +16967,27 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   const routeTransitionAdmissionNegativeProbeResults =
     runRouteTransitionAdmissionNegativeProbes(architectureSource)
   violations.push(...validateRouteTransitionInventoryGovernance(architectureSource))
+  violations.push(
+    ...validateRouteTransitionAcceptanceGovernance({
+      architectureSource,
+      rules: routeTransitionRuleRegistry,
+      divider: {
+        cssSource: await readFile(
+          resolve(rootDirectory, 'apps/web/src/app/router/route-transition/route-transition.css'),
+          'utf8',
+        ),
+        providerSource: naiveProviderSource,
+        themeSource,
+        scriptSource: (
+          await Promise.all(
+            routeTransitionImplementationPaths
+              .filter((path) => path.includes('/route-transition/') && path.endsWith('.ts'))
+              .map((path) => readFile(resolve(rootDirectory, path), 'utf8')),
+          )
+        ).join('\n'),
+      },
+    }),
+  )
   const adminNavigationMotionVueSelectionLensSourceInvariantResultsBaseline =
     adminNavigationMotionVueSelectionLensSourceInvariantResults(adminNavigationNativeSourceBaseline)
   const adminNavigationMotionVueSelectionLensSourceNegativeProbeResults =
