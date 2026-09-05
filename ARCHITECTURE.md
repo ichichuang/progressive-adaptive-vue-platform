@@ -12429,7 +12429,7 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 OWNER=apps/web/src/shared/i18n
 LIBRARY_DIRECTION=VUE_I18N_STABLE_RELEASE_AT_ADMISSION
 ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
-ACTIVATION_GATE_CREATION=UNIQUE_PAVP_I18N_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
+ACTIVATION_GATE_CREATION=PAVP_ADMIN_CONSOLE_LOCALIZATION_SPECIFIED_BELOW_SEPARATE_OWNER_IMPLEMENTATION_AUTHORIZATION_REQUIRED
 ```
 
 ## 23.1 Locale Registry and Resolution
@@ -12474,6 +12474,361 @@ Formatter 只使用集中 Typed `Intl` Formatter Registry，不能在 Component 
 ## 23.5 I18n Static Enforcement Targets
 
 Owning Gate 必须验证 Locale Registry、Default/Fallback 唯一性、Message Key/Parameter Set、Route/Error/Form Copy Closure、HTML Lang/Dir Atomicity、Storage Ownership、RTL Metadata、Formatter Registry、Locale-sensitive Query Key 和 Missing-key Policy。规则在 I18n Implementation 前为 `TARGET_INACTIVE`。
+
+## 23.6 Existing Admin Console Chinese/English Integration
+
+本节是 Owner 授权的单次 Architecture Design，基于 `main@bb1e1a730a0328989091a94eca32f51dab1a83ec` 的真实管理台，分配唯一 Work-package ID `PAVP_ADMIN_CONSOLE_LOCALIZATION`。它闭合后续实施输入，不创建另一个路线图、翻译平台或治理权威。
+
+```text
+ID=PAVP_ADMIN_CONSOLE_LOCALIZATION
+CONTRACT_STATUS=FROZEN
+CAPABILITY_STATUS=TARGET_INACTIVE
+REPOSITORY_IMPLEMENTATION=NOT_STARTED
+IMPLEMENTATION_AUTHORIZATION=NONE
+RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER=apps/web/src/shared/i18n
+REAL_CONSUMER=existing ten-route administration console and seven preserved error routes
+```
+
+文首、§1.3、§37.1、§37.2 的 Current Work/Next/Successor 继续为现有状态；本节不把自身排为 Current Work，不改变当前十一阶段 Kernel、两条 Storage Record、二十一条 Combined Error Record、九个 UI Component、二十条 Capability Manifest 或任何历史验收/撤销记录。只有未来另行获得 Owner Implementation Authorization 后，才允许在同一实施任务中落地以下增量及其 Owning Checks。设计就绪不等于 Runtime Active、Starter Complete 或 Release Accepted。
+
+### 23.6.1 Product scope and scoped target clarification
+
+只支持 `zh-CN` 和 `en`，两者均为 `ltr`。默认与唯一 Fallback 都是 `zh-CN`；可恢复已验证的本地选择，`navigator.language`、URL、Runtime Configuration 和账号信息不参与语言选择。英文是用户显式选择或该选择的持久化恢复结果。Route Name、Path、Meta Identifier、Theme ID、Storage Schema、Code、Package Coordinate、Budget、真实 Capability/Implementation Status、用户输入和 Custom Theme Label 保持原值。内置 Theme 的 `Iris` 等名称也是现有源定义的专名；只翻译其周围的“内置”“当前主题”等说明。
+
+唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，复用 `UiSegmentedControl`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用当前已提交语言作为 `modelValue`，加载期间以该行 `aria-busy` 和文本反馈表达状态，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
+
+该行不是 Appearance Axis，不加入 `data-appearance-axis`、Appearance Schema、Pinia Appearance Store、Effective Appearance Snapshot 或外观 Reset。语言切换不得调用 Router Navigation、Reload、Mount/Unmount、Motion Replay 或 Appearance Mutation；不得把 Locale 加入 `RouterView`、Page、Shell、Provider 或 Preview 的 VNode Key。保留现有节点身份、输入/选择、外观、菜单展开状态、页内临时状态及当前仍有效的焦点；不创建第二 Page Tree、Focus/Scroll Owner 或语言专用 Shell。
+
+以下是 §23.1–23.5 对本实例的显式适用解释，不是解除其余 Future Target：
+
+| Target clause | 本实例的闭合决定与理由 |
+| --- | --- |
+| Typed Locale Registry、Default/Fallback、Message Key、Route/Error/Component Copy | 适用；由下述两语言合同、官方 Typed Resources、既有 Router/Error Owner 和语义 Props 闭合 |
+| Generated Key/Parameter Schema | 用中文 JSON 的 TypeScript 类型、Vue I18n `createI18n` Schema Generic 和窄 Named-parameter Contract 实现；不生成通用 Key DSL、解释器或 Schema 平台。只有已有 Capability Manifest 的文案投影继续由其原 Generator 生成 |
+| Production Missing-message Observability Event | 本实例不适用远程事件要求：Observability Provider 未准入。使用 Vue I18n 官方 Development Diagnostics、构建失败及安全 Fallback；不创建 Reporter、Queue、去重服务或 No-op Adapter |
+| Account/Anonymous Merge、Cross-tab Revision | 本实例不适用：无 Auth/Account，只有一次本地显式选择的后续启动恢复；不提供其他窗口实时跟随。按 23.6.6 的单条 Direct Record 例外落地，既有零 Event/零 Envelope/零 Migration 保持 |
+| RTL Mirror Registry | 两个已支持 Locale 的 Direction 均为 `ltr`；不存在 RTL Consumer，不创建镜像图标、导航顺序、动画方向或 Gesture Registry。现有 Logical CSS 继续适用 |
+| Named Text Expansion Budget | 使用当前两套实际文案、现有 `narrow/regular/wide` 和已准入字号范围进行内容适配；不虚构字符数或百分比预算。必需 Label 不截断、不通过减小字号/固定高度掩盖英文溢出；真实适配由后续 Owner 观察确认 |
+| Intl Formatter、Product Zone、Date-domain/Numbering/Calendar/Currency Registry | 当前 Inspector 展示的是原始技术数值、百分比、单位、ID 和名称，无业务日期/金额消费者；不创建这些 Registry，不扩展 Runtime Configuration。Naive `dateLocale` 仅是既有 Vendor Provider 的配套语言输入，不准入 Date Picker 或日期领域 |
+| Locale-sensitive API Header、Query Key、Server Message Mapping | 无 Backend/API/Query Consumer，全部不适用；切换语言不 Fetch 业务数据，不创建 Locale Header 或 Query Client |
+| Form Copy、Field Schema、Draft Persistence、完整配置驱动页面 | 当前没有该类真实 Consumer，仍由各自独立准入处理。本地 Locale Preference 不准入表单草稿、通用表单、表格、认证或完整 Starter；未来页面可复用本实例的语言边界 |
+
+### 23.6.2 Dependency and official evidence
+
+核验日期为 `2026-09-06`。选择 Runtime Dependency `vue-i18n@11.4.10`，仅在 `apps/web/package.json` 用 `catalog:` 声明，精确版本由 Root Workspace Catalog 拥有。选择唯一 Supporting Development Dependency `@intlify/message-compiler@11.4.10`，仅在 Root `devDependencies` 用 `catalog:` 声明，用官方 Parser/AST 检查真实生产文案的语法和 Named Parameters；这避免自写消息语法分析器，也避免 Checker 越过 pnpm Direct-dependency 边界读取 Transitive Package。
+
+| 官方证据 | 核验结论 |
+| --- | --- |
+| [Vue I18n maintenance](https://vue-i18n.intlify.dev/guide/maintenance) 与 [11.4.10 release](https://github.com/intlify/vue-i18n/releases/tag/v11.4.10) | v11 继续维护；v9/v10 已 EOL；11.4.10 是本次核验的 Stable/Latest Release |
+| [Vue I18n exact package metadata](https://registry.npmjs.org/vue-i18n/11.4.10) | MIT；无当前 `deprecated` 字段；Node `>= 22`；Vue Peer `^3.0.0`；Package Public Root 提供 Runtime 与 Types |
+| [Message compiler exact metadata](https://registry.npmjs.org/%40intlify%2Fmessage-compiler/11.4.10) 与 [official compiler source](https://github.com/intlify/vue-i18n/blob/v11.4.10/packages/message-compiler/src/compiler.ts) | MIT、Node `>= 22`；Public-root `baseCompile` 的 JIT 模式返回 AST，不生成或执行 JavaScript；用于静态语法/参数闭合 |
+| [TypeScript resources](https://vue-i18n.intlify.dev/guide/advanced/typescript)、[Composition API](https://vue-i18n.intlify.dev/api/composition)、[lazy loading](https://vue-i18n.intlify.dev/guide/advanced/lazy)、[optimization](https://vue-i18n.intlify.dev/guide/advanced/optimization) | 官方 Schema Generic、`flatJson`、`setLocaleMessage/mergeLocaleMessage`、Locale Ref 和 JIT Compiler 足够完成当前消费者；不需要自定义 Resolver、Message Compiler 或第二 I18n Instance |
+
+当前实测 Repository Declarations 为 Node `24.15.0`、pnpm `10.34.5`、Vue `3.5.40`、Vite `8.1.5`、TypeScript `6.0.3`、vue-tsc `3.3.8`、Naive UI `2.45.2`。Node/Vue 落在上述 Metadata 范围内；这不证明 TS 6、Vite Production Chunk、CSP 或实际语言切换兼容，仍须未来实施时的 Typecheck、Build、Bundle 与 Owner Release Observation。
+
+现有 Vite/TypeScript Bundler Resolution 已支持 JSON Modules；本实例保留 Vue I18n 自带 JIT Compiler，随独立 Locale Runtime Chunk 加载。Vite 只设置官方 `__VUE_I18N_FULL_INSTALL__=false`、`__VUE_I18N_LEGACY_API__=false`，不移除当前需要的 Message Compiler。无需再安装预编译插件、CLI、Polyfill、日期库或新 Runtime Manager；已核验的 `@intlify/unplugin-vue-i18n@11.2.5` 不属于本次选定依赖。未来安装必须通过现有 Catalog/Lockfile 流程，保留单一 Vue、所有既有 Patch/Integrity/Strict-build Policy，不允许顺便升级。任何真实 Compatibility/Budget Failure 先作为阻塞报告，不能增加预算、Patch 或依赖来制造通过。
+
+### 23.6.3 Resource ownership and exact presentation inventory
+
+`apps/web/src/shared/i18n` 是应用语言唯一 Owner。一个 Application Attempt 只有一个 Vue I18n Composition Instance：`legacy=false`、`globalInjection=false`、`flatJson=true`、`locale=zh-CN`、`fallbackLocale=zh-CN`；不使用 Local-scope Composer、`$t` 全局注入或可写 Public Composer。只有该 Owner 能更改 Composer Locale。原生 `html.lang/html.dir` 是该 Locale 的投影，UI Provider 只读相同值。
+
+Production Resources 精确为以下八个 JSON 文件，全部为 Flat `message-key -> non-empty string` Object，UTF-8/LF；Key 不重复、跨 Scope 不冲突，英文与中文同 Scope 的 Key/Named-parameter Set 必须相等。资源属于当前 Build，无 Remote Translation Fetch、Runtime URL 拼接或无界 Language Import Glob。
+
+| Scope | 中文 Source | 英文 Source | 实际 Consumer / Loading |
+| --- | --- | --- | --- |
+| `common` | `apps/web/src/shared/i18n/messages/zh-CN/common.json` | `apps/web/src/shared/i18n/messages/en/common.json` | Root、Shell、全部 17 Route Title/Message、10 Breadcrumb、6 Navigation Group Label、Error/Fatal Copy、Language Feedback、Capability Page 通用 Label；中文静态可用，英文按选择加载 |
+| `console` | `apps/web/src/shared/i18n/messages/zh-CN/console.json` | `apps/web/src/shared/i18n/messages/en/console.json` | Overview 及除 Appearance/Capabilities 外的七个 Inspector Page；首次进入其中任一路由才加载 |
+| `appearance` | `apps/web/src/shared/i18n/messages/zh-CN/appearance.json` | `apps/web/src/shared/i18n/messages/en/appearance.json` | 现有 Appearance Page 的 Gallery、Controls、反馈及实际 Preview；首次进入该页加载 |
+| `capabilities` | `apps/web/src/shared/i18n/messages/zh-CN/capabilities.json`，由现有 Capability Generator 生成 | `apps/web/src/shared/i18n/messages/en/capabilities.json`，应用文案源 | 现有 Capability Page 的 Record Label/Summary/Admission Condition；首次进入该页加载 |
+
+中文 `common.json` 不使用插值，因而可被不依赖 Vue/I18n Instance 的纯读取入口直接消费。它是 Router 默认文案、Core/Storage Built-in Safe Copy 与中文 Common Catalog 的同一文本源；不是另外一份手抄 Fallback Table。向 Vue I18n 传递 JSON 的独立 Object Copy，避免其官方 Flat JSON 转换改写 Import Source 或安全读取边界。参数化文案只在对应 Feature Catalog 中。
+
+| 当前真实文案/事实来源 | 后续实施的权威与消费方式 |
+| --- | --- |
+| `app/router/route-registry.ts` 的 `routeTitleRegistry`、`routeBreadcrumbRegistry`、`routeMessageRegistry`、`consoleNavigationRegistry` | 原 Title/Breadcrumb/Message Key 与 17 Route/6 Group/10 Item 身份不变；中文 Literal 移入 Common Catalog，既有 Registry 的 Default Text 从纯入口读取。`getRoutePresentation` 和 Navigation Projection 接受 Typed Translator；Router 仍拥有 Route-to-key Mapping |
+| `App.vue`、`app/console/ConsoleRouteFrame.vue` | Root 的 Computed Presentation 依赖当前 Translator/Locale；向原 Page Props 传翻译结果，向唯一 `UiAdminShell` 传翻译后的 Navigation 与 Shell Copy；不重建 Outlet |
+| `packages/ui/src/components/UiAdminShell.vue` 的身份标题、导航开关/分组开关/Drawer Copy、Accessible Label、Tooltip | 全部改为 Required `UiAdminShellCopy` Prop；Navigation Item/Group 的 Label 由 App 传入。Package 不读 App Catalog、不保存 Locale、不内置第二套中文默认 |
+| 十个 Product `.vue` Page 的 Header 之外的 Label、Section Description、Explanation、Empty/Feedback/A11y Copy | 按上表迁至 Common/Console/Appearance Catalog；静态 Label Array 改为依赖 `t` 的 Computed Projection；存储反馈状态码/Key 而非已经翻译的字符串，避免切换后保留旧语言 |
+| 七个 Error `.vue` Page | 已仅渲染 `title/message` Props，无自有文案；保持源文件不变，由 Root/Router 更新同一实例的 Props。401/403 仍是 Public Error Infrastructure，不激活 Auth |
+| `app/errors/core-error-messages.ts`、`AppErrorBoundary.vue`、`fatal-boundary.ts` | 四条 Core Key、Recovery/Null Action Shape 不变；默认文案由 Common 中文纯入口读取，Mounted Boundary 可传 Translator，Fatal Renderer 始终可独立显示安全中文。Raw Error Message/Stack 仍不展示 |
+| `app/storage/storage-error-messages.ts` 与 Router Error Extension | 11 条 Storage Message-key Table 从同一 Common 中文源投影；其 Error ID/分类/Recovery 不变，Locale UI 只显示安全结果文案。6 条 Router Extension 仍映射原 Error Route；不虚构未渲染的逐条 Error UI |
+| `app/router/router-console-projection.ts` 与 `app/console/overview-projection.ts` | 既有 Readonly Shape/技术事实保留；`visibleLabel` 继续是源的中文描述，界面通过该 Router Projection Owner 的 Typed Label Function 翻译，禁止渲染时凭字符串拼接 Message Key。Overview 只组合原 Projection |
+| `src/generated/capability-manifest.ts` | 唯一 Source 仍是 §1.2B.3 的既有 JSON；`scripts/architecture/generate-capability-manifest.ts` 继续生成 Manifest，并额外生成中文 Capabilities Catalog 与同一 TS Output 内的 `capabilityMessageKeys`。三类 Key 精确为 `capability.<id>.visible-label`、`capability.<id>.summary`、`capability.<id>.admission-condition`；仅 Generator 构造这些 Key，Page 从生成的 Typed Map 取值。生成器对消息保留字符使用官方 Literal Escaping，不能把源文案解释成指令/表达式 |
+| `src/generated/engineering-manifest.ts` 与其 `generate-engineering-manifest.ts` | Coordinate、Verify Stage ID、Budget/Unit、Workflow Name 都是技术事实；Generator/Output 不因翻译修改，Page 只翻译包围这些值的 Label |
+| Design System Theme/Token Projection、Runtime/Storage/UI/Responsive Projection | ID、Count、Source-defined Theme Name、CSS Value、Status、路径与数值原样呈现；只翻译外围 Label。Theme Generator、Token Bank、Appearance Store、Layout/Motion Registry 不承担应用翻译 |
+
+### 23.6.4 Typed application and UI boundary
+
+新增 Public Application Entry 为 `apps/web/src/shared/i18n/index.ts`；App/Page 使用显式相对 Import 到该入口。`packages/ui` 只能定义和导出自己的语义类型，不能 Import `apps/web`。共享语言模块不能 Import `app/router`、`app/storage`、`app/errors`、Page 或 Feature；Kernel 注入 Storage Port、初始 Scope 和 Router 标题回调。所有 Factory、Injection Key、Writable Ref、Composer、加载缓存和内部 Handle 均不能泄漏给 Page。
+
+`locale-contract.ts` 唯一声明 `consoleLocaleRegistry`、`consoleLocaleSchema` 与 `defaultConsoleLocale='zh-CN'`；Registry 精确为两个 Record，字段沿用 §23.1：`id/languageTag/intlLocale` 分别为 `zh-CN` 或 `en`，`direction=ltr`，`messageLoaderId` 分别为 `console-messages.zh-CN/console-messages.en`，Runtime 实施后 Record 才为 `ACTIVE`。Fallback 引用同一个 Default Constant，不复制 Default Literal。`ConsoleLocale` 从该 Exact Schema 推导，不接受 `en-US`、`zh`、空值或大小写猜测。
+
+`message-schema.ts` 使用八个 JSON 的 Type-only Import；中文四个 Flat Object 的交叉类型为 `ConsoleMessageSchema`，`ConsoleMessageKey=keyof ConsoleMessageSchema`，`ConsoleCommonMessageKey` 只取中文 Common 的 Keys。用 Vue I18n 官方 `createI18n<[ConsoleMessageSchema], ConsoleLocale, false>` Schema Generic 约束 Composer；创建时省略可选 `messages`，准备完成后用官方 `mergeLocaleMessage` 的 Message Schema Generic 注册实际 Scope，不把 Partial Resource 强制断言为完整双语言资源。按 Scope 注册时以相应中文 Schema 检查英文与 Load Result，不能为了 Lazy Loading 把完整类型降为 `Record<string, any>`。初始化中的内部空 Instance 不发布为 Ready Boundary；尚未加载的 Scope 不是空文案或成功 Placeholder，只允许在 `prepareScope` 成功后消费。
+
+以下是 Required Public Application Contract；`ConsoleMessageParams` 只包含当前确有插值的三条，其他 Key 无参数。参数值仅为渲染输入，不是 Key、HTML、Locale 或状态权威。
+
+```ts
+export type ConsoleMessageScope = 'common' | 'console' | 'appearance' | 'capabilities'
+
+export interface ConsoleMessageParams {
+  readonly 'console.storage.active-records': Readonly<{ count: number }>
+  readonly 'appearance.gallery.description': Readonly<{ count: number }>
+  readonly 'appearance.preview.current-material': Readonly<{ material: string }>
+}
+
+export type ConsoleTranslate = <Key extends ConsoleMessageKey>(
+  key: Key,
+  ...args: Key extends keyof ConsoleMessageParams
+    ? [parameters: ConsoleMessageParams[Key]]
+    : []
+) => string
+
+export type LocalePreferenceReadResult =
+  | { readonly status: 'found'; readonly locale: ConsoleLocale }
+  | { readonly status: 'missing' }
+  | { readonly status: 'unusable'; readonly reason: 'invalid' | 'unavailable' }
+
+export interface LocalePreferencePort {
+  read(): LocalePreferenceReadResult
+  write(locale: ConsoleLocale): { readonly status: 'saved' | 'failed' }
+}
+
+export type ConsoleLocaleSwitchResult =
+  | { readonly status: 'applied'; readonly locale: ConsoleLocale; readonly persistence: 'saved' | 'failed' }
+  | { readonly status: 'unchanged'; readonly locale: ConsoleLocale }
+  | { readonly status: 'failed'; readonly locale: ConsoleLocale; readonly reason: 'unsupported-locale' | 'message-load-failed' | 'commit-failed' }
+  | { readonly status: 'cancelled'; readonly locale: ConsoleLocale; readonly reason: 'superseded' | 'disposed' }
+
+export type ConsoleLocaleNotice =
+  | 'none' | 'loading' | 'applied' | 'not-saved'
+  | 'saved-choice-unavailable' | 'preference-unavailable'
+  | 'unsupported-locale' | 'message-load-failed' | 'commit-failed'
+
+export interface ConsoleI18nBoundary {
+  readonly locale: Readonly<Ref<ConsoleLocale>>
+  readonly notice: Readonly<Ref<ConsoleLocaleNotice>>
+  readonly t: ConsoleTranslate
+  switchLocale(candidate: unknown): Promise<ConsoleLocaleSwitchResult>
+  prepareScope(scope: ConsoleMessageScope): Promise<{
+    readonly status: 'ready' | 'failed' | 'cancelled'
+  }>
+}
+
+export interface ConsoleI18nHandle {
+  readonly ready: Promise<
+    | { readonly status: 'ready'; readonly boundary: ConsoleI18nBoundary }
+    | { readonly status: 'cancelled' }
+  >
+  dispose(): void
+}
+
+export function createConsoleI18n(input: {
+  readonly application: App
+  readonly document: Document
+  readonly preference: LocalePreferencePort
+  readonly initialScope: ConsoleMessageScope
+  readonly onLocaleCommitted: (translate: ConsoleTranslate) => void
+}): ConsoleI18nHandle
+
+export function useConsoleI18n(): ConsoleI18nBoundary
+```
+
+`Ref`/`App` 来自 Vue。`useConsoleI18n` 在 Root Mount 时必须取得已就绪 Boundary，缺失即 Existing Mount Startup Failure；不返回 Null/Placeholder。`locale` 是 Composer Locale 的 Runtime Readonly 投影，不创建第二 Mutable Locale；`notice` 只描述同一 Owner 的当前请求结果。Page 不自行保存选中语言，不从 `switchLocale` 的过期 Promise 回写状态。`t` 仅委托官方 Composer，收窄 Key/Parameter、执行安全 Fallback，不解释消息、生成代码或覆盖官方 Resolver/Compiler。
+
+另有纯安全入口 `apps/web/src/shared/i18n/default-messages.ts`：`getDefaultConsoleMessage(key: ConsoleCommonMessageKey): string`，只做中文 Common Object 的按 Key 读取；不依赖 Vue、I18n、Zod、Storage 或任何初始化。只准入 Router Default Projection、Core/Storage Safe Message Table、Locale Owner 与静态检查消费该入口，普通页面仍使用 `useConsoleI18n`。这是同一 Application 内的安全子入口，不是跨 Package Deep Import。
+
+`core-error-messages.ts` 的现有 `getCoreErrorMessage(messageKey: CoreErrorMessageKey)` 仅增加可选第二参数 `translate?: ConsoleTranslate`，返回的 `CoreErrorMessage` Shape 保持；Key/Field 到 Message Key 的映射是该 Owner 的显式闭合映射，不拼接任意字符串。Router 的现有入口作以下最小扩展，仍由 `app/router` 独占实现：
+
+```ts
+// route-registry.ts; return shape 保持现有 shape
+export function getRoutePresentation(name: unknown, translate?: ConsoleTranslate): {
+  readonly breadcrumb: string
+  readonly title: string
+  readonly message: string
+}
+export function getRouteMessageScope(name: unknown): ConsoleMessageScope
+export function getConsoleNavigation(translate: ConsoleTranslate): readonly UiAdminNavigationGroup[]
+
+// router-console-projection.ts; 保留现有静态 Projection 和 schemaVersion
+export function getRouterConsoleRouteLabel(name: string, translate: ConsoleTranslate): string
+
+// RouterLifecycleHandle 新增；其他字段/方法保持
+connectLocalization(boundary: ConsoleI18nBoundary): () => void
+refreshCurrentRouteTitle(translate: ConsoleTranslate): void
+```
+
+`getRouteMessageScope` 对 Appearance/Capabilities 返回同名 Scope，其余八个 Product Route 返回 `console`，七个 Error Route 返回 `common`，输入仍先经 `getRouteRecord`。`getRoutePresentation` 的无 Translator 分支只用于 Pre-I18n Router Readiness 和静态 Default Projection，Ready 后所有界面与 Title Consumer 必须传 `t`。`getRouterConsoleRouteLabel` 重新解析已注册 Route 并使用其已有 `titleKey`，不增加 Registry、Route Literal 或 Projection Status。`getConsoleNavigation` 只替换 Group/Item 的 Label，保留既有顺序、ID、Icon 和 Route Name。参数/动态状态仅用于页面文案；不扩大 `ValidatedRouteMeta` 的运行时输入域。
+
+UI Public Root `@platform/ui` 精确新增两个 Type Export；不新增 Component：
+
+```ts
+export type UiLocale = 'zh-CN' | 'en'
+export interface UiAdminShellCopy {
+  readonly consoleTitle: string
+  readonly navigationLabel: string
+  readonly navigationActionLabel: string
+  readonly openNavigationLabel: string
+  readonly closeNavigationLabel: string
+  readonly closeActionLabel: string
+  readonly expandNavigationLabel: string
+  readonly collapseNavigationLabel: string
+  readonly expandAllMenusLabel: string
+  readonly collapseAllMenusLabel: string
+}
+```
+
+`UiProvider` 在原 Required `appearance` 之外新增 Required `locale: UiLocale`，无 Default/Emit；Private `PavpNaiveConfigProvider` 同样接收 `locale`。`UiAdminShell` 在原 Props 之外新增 Required `copy: UiAdminShellCopy`，没有 Copy Fallback。Application 的 Locale Schema 与 `UiLocale` 必须双向类型相等；UI 类型只描述 Prop 可接受值，不拥有默认值、选择、持久化或 Locale Store。由 `ConsoleRouteFrame` 通过 Computed `t` 产生全部 Shell Copy，不引入新的全局 Context。
+
+Private Naive Provider 是唯一新增 Vendor Locale Import Owner，精确使用四个 ES Subpath Default Import：`zhCN` 从 `naive-ui/es/locales/common/zhCN`，`enUS` 从 `naive-ui/es/locales/common/enUS`，`dateZhCN` 从 `naive-ui/es/locales/date/zhCN`，`dateEnUS` 从 `naive-ui/es/locales/date/enUS`。`zh-CN -> zhCN/dateZhCN`、`en -> enUS/dateEnUS` 为静态映射，直接传给原唯一 `NConfigProvider` 的 `locale/dateLocale` Props；不经全语言 Barrel，不新增 Vendor Public Type。四个小型 Vendor 输入保持静态可用以同步投影，仍计入实际 Initial Budget；不能让 Private Provider 在应用语言 Commit 后再独立异步切换。现有 Appearance Context、Theme Overrides、Overlay Root、Motion 和 Import Owners 保持。
+
+未来消费者只需相同边界，例如现有 Storage Page 可写 `const { t } = useConsoleI18n()` 并渲染 `t('console.storage.active-records', { count: storageConsoleProjection.recordCount })`；页面不安装插件、不构造 Key、不读取 Storage。新增真实页面只能扩展其实际 Scope 文案及类型/参数闭合，不能顺便扩展 Locale Set。
+
+### 23.6.5 Bootstrap, readiness, switching and disposal
+
+未来 Atomic Implementation 只新增一个 Kernel Step `create-and-ready-i18n`，放在 `create-and-ready-storage` 之后、`mount-application` 之前。它的 Dependency Edges 精确为 `create-vue-application,create-and-ready-router,create-and-ready-storage`；Mount 的既有 Router/Storage Dependencies 保留并增加该 Step，其他既有 Edge 和相对执行顺序不变。总数届时为十二；`activeProviderIds` 仍精确为 `pinia,appearance`，不把 I18n 插入 `installPlatformProviders` 或 UI Provider Registry。
+
+该 Step 由 Kernel 调用同步 `createConsoleI18n`，立即登记返回的 Handle，再等待 `ready`。Handle 在 Ready Promise 内显式加载 `runtime.ts`；该模块才从 `vue-i18n` Public Root 创建并安装唯一 Composition Instance。`resource-loaders.ts` 持有七个明确 JSON Dynamic Import，初始 Module Graph 只包含纯 Common 中文、安全读取、Boundary/Contract 和 Loader/生命周期外壳，不静态引入 Vue I18n Runtime 或其他语言资源。不得借用 Router Chunk Handler 来安装 Locale Provider。
+
+初始化顺序：读取 Storage Port → 验证已保存选择 → 保证中文 Common 与初始 Route Scope 可用 → 为有效英文选择加载对应英文资源 → 安装同一 Instance 与 Boundary → 同步提交 Locale/Document Projection 并调用 Router 标题回调 → Ready。未找到、非法或无法读取 Preference 时使用中文且不修复/覆写 Storage；有效英文 Resource 加载失败时保留原 Preference，回到已就绪中文，并保留 `saved-choice-unavailable` Notice。中文初始必需资源、Instance 创建/安装或默认提交失败属于当前 Step 的 Startup Failure；由 Kernel 恰好一次归一化为现有 `application-startup-failure`，停止 Mount/Ready 并反向释放。Raw Import URL、异常文案或 Storage Payload 不进入用户提示。
+
+Router 已在前一 Stage 完成 Initial Navigation；它在 Pre-I18n Preparation 使用纯中文 Default，仍等待 Mount 才进行原 Focus/Scroll Commit。I18n Ready 后、Mount 前，Kernel 用 `connectLocalization` 绑定 Boundary 并保存解除函数。其后每次 Navigation 在原第四阶段 `prepare-route-presentation` 内等待 `prepareScope`；原五阶段、Safe Destination、Cancellation、Same-location No-op、Route Transition Ownership 保持，禁止添加新的全局 Guard 或 Query Prefetch Stage。加载失败映射现有 `route-chunk-load-failure` 的 Offline/500 Safe Destination；Cancellation 不产生 Error。Error Page 的 Common 文案始终可用，不递归加载失败 Scope。
+
+`refreshCurrentRouteTitle` 由 Router 检查当前有效 Route 并写 `document.title`；Locale Commit 只调用这一窄入口，不触发 Navigation、Focus、Scroll、History 或 Route Transition。正常 Navigation 仍在原 Router Commit Timing 写 Title；任何 `await` 后必须重新确认 Navigation Ownership 并读取当前语言的 Presentation，不能提交之前捕获的旧语言 Title。`App.vue` Computed、Shell Props、Provider Props 和 Mounted Error Boundary 同时读取该 Translator 的响应式 Locale。
+
+`switchLocale` 的语义顺序是 Validate Candidate → Prepare Resource Batch → Commit Presentation → Best-effort Preference Write → Vue Render Flush/Result。规则如下：
+
+1. 不支持的输入返回 `failed/unsupported-locale`，不加载、不写入；同语言且没有待决请求时返回 `unchanged`，不写入。新选择（包括切回当前语言）撤销尚未提交旧请求的写入资格。
+2. 成功准备某 Scope 表示当前语言及中文 Fallback 都可安全渲染该 Scope。该 Attempt 只保留实际请求过的四种 Scope 中的资源；切换为所有已请求 Scope 准备目标语言和中文。切换加载期间新 Navigation 请求 Scope，必须纳入该次 Commit 的 Readiness，或先在旧语言完成导航再等待目标语言的同一 Scope；不得先提交新语言再补当前页文案。最多两语言乘四 Scope，无 Prefetch、Timer Retry、持续扩容缓存或未准入页面资源。
+3. 每个异步完成点都检查当前选择与 Attempt 是否仍有效。过期/Disposed Completion 不注册消息、不改 Locale/HTML/Title/Notice、不持久化；不可取消的 `import()` 允许结束，但不得产生应用 Side Effect。只缓存当前 Build 的已验证资源，失败只可由新的显式操作再次请求，不自动重试或 Reload。
+4. 将完整资源交给同一 Composer 后，在一个不含 `await` 的提交段内更新其 Locale、`html.lang` 和 `html.dir=ltr`，并调用 Router Title 回调；Naive Locale/Date-locale 与所有 App Copy 从相同 Ref 在同一次 Vue Flush 投影。加载时仍渲染最后可用语言，不能显示一半新语言的树。Default Fallback 的单条安全中文是有意的缺译降级，不是允许异步混合语言。
+5. Resource Failure 返回 `failed/message-load-failed`，保留最后可用语言及其持久化值；提交异常在让出执行前恢复上一 Locale、Document Language/Direction 和 Router Title，返回 `failed/commit-failed`，不写 Preference。`notice` 用恢复后的语言解释失败，不能显示 Raw Key、Raw Exception 或空白。
+6. Presentation Commit 成功后，Storage Port 在同一同步边界尝试一次小型写入；失败不撤销已生效且可用的语言，而返回 `applied` 加 `persistence=failed`、Notice=`not-saved`，明确提示下次启动可能不能恢复。这是“语言已应用但未保存”，不能报告为“切换失败/已保存”。成功返回 `applied/saved`。过期 Promise 不能覆盖更新请求的反馈；Page 只读 Owner 的当前 Notice。
+7. 初始恢复不回写、同语言 No-op 不回写，失败资源不回写；所有 Promise 必须有可判定终态，Runtime `switchLocale/prepareScope` 不产生未处理 Rejection。`ready` 的真正 Startup Failure 则交回已有 Kernel Catch。语言操作不改变用户数据或其他 Lifecycle Owner。
+
+Kernel 的新增 Disposal Step 为 `dispose-i18n`，插在 `unmount-vue-application` 之后、`dispose-storage` 之前。它先撤销所有 Locale 操作资格并解除 Router 连接，再释放官方 I18n Scope/插件资源与语言 Boundary，恢复该 Owner 接管前的 Document `lang/dir`。必须与 Vue I18n 官方 Unmount Cleanup 合并为幂等、一次有效释放；不得注册第二 HMR Hook、Media/Storage Listener 或 Global Error Listener。Factory 创建后但 Ready 前的 Dispose 同样阻止晚到的插件安装、挂载和状态提交；Kernel 对 `ready=cancelled` 不执行后续 Mount。
+
+Pre-I18n Configuration/Startup Failure 永远可调用纯中文 Safe Message Table；Fatal Renderer 自身标明 `lang=zh-CN,dir=ltr`，不需要 `useConsoleI18n`、Router、Storage 或 UI Provider。Mounted `AppErrorBoundary` 可用同一 `t` 本地化安全消息，Translator 不可用/失败时读取同一中文源。Core 四条、Router 六条、Storage 十一条 Error Registry 及其 Combined Count 保持 `21`；Locale 操作结果是本节闭合的局部结果 Union，不扩展全局 Error/Observability 系统，也不增加 Startup Retry。
+
+### 23.6.6 One Storage-owned locale preference
+
+Raw Key 的唯一声明为现有 `applicationConfig` 新增的 `localization.preferenceStorageKey='pavp:web:locale-preference'`；不扩展 `applicationConfig.appearance`、HTML First-paint Storage Carrier 或 Runtime Configuration 的五字段 Schema。新文件 `apps/web/src/app/storage/locale-preference-storage.ts` 实现上述 Port，只有现有 Storage Lifecycle Factory 创建它并在 `StorageLifecycleHandle.owner` 新增 `localePreference: LocalePreferencePort` 交给 Kernel。Locale Module 只依赖 Port 类型，Component 不接触 Web Storage。
+
+`locale-contract.ts` 导出 `localePreferenceSchema` 和推导类型 `LocalePreference`。Exact Strict Payload 为 `{ schemaVersion: 1, locale: 'zh-CN' | 'en' }`，两个字段均 Required；无额外字段、Envelope、Timestamp、Revision、用户标识或 Appearance Value。`consoleLocaleSchema` 是该 `locale` 字段的唯一校验源。Storage Record 在未来真实实现时追加为：
+
+```text
+id=locale-preference
+ownerDomain=apps/web/src/shared/i18n
+key=applicationConfig.localization.preferenceStorageKey
+medium=local-storage
+persistenceShape=direct-compatibility
+schemaId=locale-preference
+currentSchemaVersion=1
+minimumSupportedSchemaVersion=1
+principalPartition=none
+containsSensitiveData=false
+corruptionPolicy=preserve-in-place-reject-read
+capabilityStatus=ACTIVE
+```
+
+这里 `ownerDomain` 是偏好语义/Schema Owner；实际存取与错误归一化仍在 `app/storage`。这是对 §19.5.1 的局部第三条 Direct Record 准入设计：只对本条允许 Storage Owner 新建 Port，绝不接管、改写或包装已有两条 Appearance Record。Registry 原顺序和原 Record 完整保留，总数未来从 `2` 变为 `3`；`StorageConsoleProjection` 自动投影真实数量，不手写数值。
+
+Read 缺失返回 `missing`；JSON Parse、Unsupported Version、额外字段或未知 Locale 拒绝整条并保留 Raw Value，返回 `unusable/invalid`；访问/读取失败返回 `unusable/unavailable`。解析沿用现有 `preference-storage.ts` 和 Runtime Configuration 的 `JSON.parse -> unknown -> strict Zod` 边界；同名 JSON 成员使用标准 JSON.parse 的最后成员语义，最终有效对象仍须精确符合两个字段的 Schema。这个非敏感小型偏好不新增 Duplicate-aware JSON Parser，不调用或抽取 Appearance Custom Registry 的私有解析器。Write 先用同一 Schema 校验，再序列化完整 Payload、执行一次 `setItem`、读取回传值并用同一 Schema 与目标 Locale 比较。Serialization、Quota、Denied、Readback Mismatch 等通过现有 Storage Error Adapter 映射已有对应 Error ID；Port 仅返回安全 `saved/failed`，不传出 Payload、Raw Error 或 Storage Key。
+
+本条不承诺跨窗口 CAS/事务：多个窗口的当前语言相互独立，Local Storage 中最后完成的有效写入供下一次启动恢复；读回不一致报告写入未确认，不覆盖其他窗口以“修复”。既有 `storageCrossTabEventAllowlist` 仍为零，`storageMigrationRegistry` 仍为零，不创建 Event Type、Revision、Operation ID、Channel、Account Merge 或迁移链。既有 Storage Channel/监听器原生命周期不变。Disposed Port 不读写并返回安全失败结果；正常退出不删除 Preference。该语义明确替代本实例对 §23.3 General Revision Target 的依赖，不削弱现有两条 Appearance Direct Record 或未来其他持久化能力的合同。
+
+### 23.6.7 Missing messages and actual capability truth
+
+所有消息用文本插值渲染，禁止 `v-html`、Runtime HTML、动态拼接 Key 或从 Error/Storage/User Text 取 Key。官方消息语法限当前实际使用的 Text、Literal Escape 和 Named Interpolation；无 Consumer 的 List/Plural/Linked/custom-format 功能不准入。Named Parameters 精确符合 23.6.4；数值参数为有限 Number，`material` 只来自当前已翻译的 Material Label，不接收 HTML。
+
+Development 保留 Vue I18n `missingWarn/fallbackWarn`，缺参在窄 Boundary 显式失败；生产构建先通过资源语法/Key/Parameter Check。Production 使用官方同 Key 中文 Fallback，`fallbackFormat=false`；若两语言均不存在或翻译失败，Boundary 返回 Common 的 `i18n.safe-message` 安全中文，不把 Key 当文本。不安装会吞掉官方告警的自定义 Missing Handler；调用方不得要求 Observable/Remote Reporter 才能安全降级。English 完整覆盖是实施 Gate，Fallback 不是漏译交付许可。
+
+本次仍不改 §1.2B.3 JSON 或任何 Current Capability Status。未来 Atomic Implementation 通过静态 Gate 后，才在 §1.3 单独列出已实现的 Console I18n Scope，并把 §23 对该 Scope 的 Runtime 状态写实；本实例之外的 I18n Target 仍保留适用边界。Manifest 从 `20` 增为 `21`，新增投影 ID `i18n`（唯一 Work-package ID 仍是 `PAVP_ADMIN_CONSOLE_LOCALIZATION`），其字段冻结为：
+
+```text
+id=i18n
+visibleLabel=管理台中英文
+summary=现有管理台的中文与英文展示、语言切换和本地选择恢复。
+capabilityStatus=ACTIVE
+implementationStatus=complete
+presentationMode=active-interactive
+routeName=appearance-management
+owner=apps/web/src/shared/i18n
+prerequisiteIds=architecture-admin-console,router-governance,runtime-kernel,storage-persistence
+admissionCondition=仅限已实现的管理台双语范围；其他语言、账号同步及业务格式须另行准入。
+interactive=true
+```
+
+新增 Record 的先决 ID 必须与原 Source 实际 ID 相等并按既有规则排序。`forms-i18n-tables` 的 ID 与 `TARGET_INACTIVE/not-started/roadmap-only/interactive=false` 保留；其聚合说明在未来实施时明确“管理台双语已由独立 i18n Record 表示，Forms/Tables/General Workflow 仍未实现”，不得借一项已实现把整组、认证、配置驱动页面或完整 Starter 标为完成。Generator 的可交互集合届时精确为 `appearance,i18n`；真实状态仍只来自原唯一 JSON，不从 Translator 或 Page State 推导。
+
+### 23.6.8 Exact later implementation files and checks
+
+下面是本实例未来实施的文件闭合，不授权本次创建/修改它们。范围中的 Source/Registry 变动必须与相应 Checker 同一任务落地；不要求每个无实际变化的派生文件产生 Diff。
+
+| 既有文件（Repository-relative 精确路径） | 后续必要变化 |
+| --- | --- |
+| `ARCHITECTURE.md` | 在真实实施后同步本节、§1.3、当前 Runtime/Storage/I18n 状态、§1.2B 的本次 Props/Consumer/Count 增量及原 Manifest JSON、§31 Current Gate Projection、§37 对应记录；保留历史 Frozen/Acceptance Record |
+| `package.json`; `pnpm-workspace.yaml`; `pnpm-lock.yaml`; `apps/web/package.json` | 仅上述 Runtime/Dev Dependency、Catalog 和正常生成的 Lock Closure；不添加新脚本体系、升级或 Patch |
+| `apps/web/vite.config.ts`; `apps/web/index.html` | 官方 Composition-only Build Flags；中文安全 `lang`、`dir=ltr` 与 Default/Build 一致性；其他 Config/Carrier/Port 行为不变 |
+| `apps/web/src/App.vue`; `apps/web/src/app/console/ConsoleRouteFrame.vue` | 唯一 Boundary 的响应式消费、原 Route Props、Navigation/Shell Copy 和 Provider Locale |
+| `apps/web/src/app/bootstrap/bootstrap-registry.ts`; `apps/web/src/app/bootstrap/lifecycle.ts`; `apps/web/src/app/bootstrap/runtime-kernel.ts`; `apps/web/src/app/bootstrap/runtime-kernel-console-projection.ts` | 上述一个 Step/Disposal、Ready/Cancellation/Router 连接、真实 Step Count；原 Provider/Error 数不变 |
+| `apps/web/src/app/config/app.config.ts`; `apps/web/src/app/storage/storage-registry.ts`; `apps/web/src/app/storage/storage-lifecycle.ts`; `apps/web/src/app/storage/storage-error-messages.ts` | 一个 Key、一条 Record、一个窄 Port 和同源中文 Safe Copy；原两条 Persistence 行为不变 |
+| `apps/web/src/app/router/route-registry.ts`; `apps/web/src/app/router/router-lifecycle.ts`; `apps/web/src/app/router/router-console-projection.ts` | 保留 Keys/机器身份的文案源替换与明确的 Presentation/Scope/Title 接口 |
+| `apps/web/src/app/errors/core-error-messages.ts`; `apps/web/src/app/errors/AppErrorBoundary.vue`; `apps/web/src/app/errors/fatal-boundary.ts` | 同源中文安全表、Ready 后翻译及独立 Fatal Language 标注；Recovery 不变 |
+| `apps/web/src/pages/index.vue`; `apps/web/src/pages/appearance.vue`; `apps/web/src/pages/design-tokens.vue`; `apps/web/src/pages/runtime-kernel.vue`; `apps/web/src/pages/router.vue`; `apps/web/src/pages/storage.vue`; `apps/web/src/pages/ui-system.vue`; `apps/web/src/pages/responsive-layout.vue`; `apps/web/src/pages/engineering.vue`; `apps/web/src/pages/capabilities.vue` | 十个真实 Page 的文案消费；仅 Appearance 增加语言操作；Overview/Router 使用 Router-owned Label Function |
+| `packages/ui/src/index.ts`; `packages/ui/src/components/contracts.ts`; `packages/ui/src/components/UiAdminShell.vue`; `packages/ui/src/providers/UiProvider.vue`; `packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue`; `packages/ui/src/registry/ui-public-component-registry.ts` | 两个语义 Type、两个现有 Public Component 的 Required Prop 增量、四个 Private Locale Imports 与同源投影；Component Set 仍为九 |
+| `scripts/architecture/generate-capability-manifest.ts`; `apps/web/src/generated/capability-manifest.ts` | 现有 Generator 新增文案/Key Map Projection 与真实 21 Record；TS Output 只由 Generator 重生成 |
+
+必要新文件精确为：
+
+```text
+apps/web/src/shared/i18n/index.ts
+apps/web/src/shared/i18n/locale-contract.ts
+apps/web/src/shared/i18n/message-schema.ts
+apps/web/src/shared/i18n/default-messages.ts
+apps/web/src/shared/i18n/boundary.ts
+apps/web/src/shared/i18n/lifecycle.ts
+apps/web/src/shared/i18n/resource-loaders.ts
+apps/web/src/shared/i18n/runtime.ts
+apps/web/src/shared/i18n/messages/zh-CN/common.json
+apps/web/src/shared/i18n/messages/zh-CN/console.json
+apps/web/src/shared/i18n/messages/zh-CN/appearance.json
+apps/web/src/shared/i18n/messages/zh-CN/capabilities.json
+apps/web/src/shared/i18n/messages/en/common.json
+apps/web/src/shared/i18n/messages/en/console.json
+apps/web/src/shared/i18n/messages/en/appearance.json
+apps/web/src/shared/i18n/messages/en/capabilities.json
+apps/web/src/app/storage/locale-preference-storage.ts
+scripts/architecture/check-i18n.ts
+```
+
+`boundary.ts` 持有私有 Injection Key 与 Consumer；`lifecycle.ts` 是同步 Factory/幂等 Handle 外壳；`runtime.ts` 是唯一 Vue I18n Runtime Import/Instance Owner；`resource-loaders.ts` 持有明确 Loader 并验证结果；`message-schema.ts` 拥有生产 Key/Parameter 类型与窄参数描述。以上拆分服务于实际安全初始化、按需加载和依赖方向；内部 Helper 名称、循环、容器、缓存索引或解析算法不成为规范或 Checker 固定目标。
+
+以下既有 Gate 已检查其实际断言，后续只调整与本实例直接关联的部分：
+
+| Exact Checker/Generator | 当前断言与未来最小调整 |
+| --- | --- |
+| `scripts/architecture/check-boundaries.ts` | `inactiveCapabilityPackages`/Manifest 与 Import Validation 当前拒绝 `vue-i18n`。改为精确 Web Dependency、唯一 `shared/i18n/runtime.ts` Runtime Import 和 Root Compiler Dev-only Import 准入；其他 Inactive Package、Package Root/Workspace Direction、Private Vendor 禁令保留。调用新 `validateI18nArchitecture`，复用原 `check:arch` 链 |
+| `scripts/architecture/check-runtime-kernel.ts` | `bootstrapStepIds/bootstrapDependencies/disposalStepIds`、`validateBootstrapRegistry/validateBootstrapExecution` 当前精确 11 Step；按上述一项插入闭合 12 Step/取消/释放。`validateNoFutureCapabilities` 仅承认指定 I18n Owner；`validateCoreErrorMessages` 继续证明四个安全 Key 与不依赖服务的文本来源；`validateProviders` 仍只接受 Pinia/Appearance，所有 Configuration/Retry/Listener/HMR 保护保留 |
+| `scripts/architecture/check-router.ts` | `expectedRouteTitles` 与 `expectedMessages` 当前比较 Literal Text；保留 Exact Key/Route 集合并校验同源中文与英文资源。当前 `useI18n` Future-scope 文本禁令由精确公共 Boundary Import 规则承接，Page 不直接 Import Vendor。Lifecycle Handle Closure、第四阶段 Preparation 与 Title Commit Proof 承认新绑定/刷新接口；17/10/7、五阶段、三个 Guard Remover、错误路由、Same-location、Focus/Scroll、Route Transition 和旧 Navigation 拒绝保持 |
+| `scripts/architecture/check-storage.ts` | `expectedStorageRegistryRecords`/`validateStorageRegistryRecords` 当前只接受两条；追加唯一 Locale Direct Record。Raw Key 扫描承认新 Key 仅在 `app.config.ts` 的新字段声明；增加该 Port 的 Schema/Read/Write/Failure/Disposed Closure。零 Envelope/Migration/Memory/IndexedDB/Event、11 Error ID/Safe Context、现有 Storage Lifecycle/敏感字段/直接访问保护不变；ESLint 已允许 `app/storage` 的 localStorage，无需放宽规则 |
+| `scripts/architecture/check-ui-public-components.ts` | SFC Props/Registry Closure 仅增 `UiProvider.locale` 与 `UiAdminShell.copy`；`expectedRuntimeImports` 仅增上述四个私有 Locale Import。保留九个 Component、现有 Private Adapter Inventory、Overlay 顺序/唯一性和全部 Motion/Theme Import 保护 |
+| `scripts/architecture/check-architecture-admin-console.ts` | `validateDependencies` 的 Root/Web Exact Manifest 与 Lock Importer Object 接受上述两项依赖；`pageFactImportContract` 只给十页增加公共语言入口及 Overview/Router 的指定 Label Function。`validateRoutesShellAndMotion`、`validateAppearanceAndPageFacts`、Naive Provider Closure 与 Shell/A11y Literal Proof 改为 Typed Copy 来源校验，不能删除相应保护。`validateInspectorProjections` 及 Runtime/Native/Route-transition Snapshot 中当前 `stepCount=11/storageCount=2/capabilityCount=20` 的实时事实断言改为 `12/3/21`，相关 Existing Negative Probe 仍须证明错误值被拒绝。`navigationBudgetViolations` 对 Bundle Source 的原 `17+1` 字面结构断言改为下述完整 Dynamic Root 集合；历史结果、预算、Appearance 六轴、Theme/Token/Motion 与视觉数值不变 |
+| `scripts/verify/check-project-config.ts` | 在既有 Catalog/Manifest/Lockfile/Runtime 校验中闭合两个选定坐标及 Owner、单一 Vue 与 Composer Build Flags；原 TS Strict、Runtime Preflight、官方 Router DTS/Patch、Naive/Motion Patch、Integrity、部署身份和无自动 Import Policy 保留；无需改 TS 配置 |
+| `scripts/architecture/generate-capability-manifest.ts`; `scripts/architecture/check-capability-manifest.ts` | 原 20 Record Literal、Header Validation 与仅 Appearance 可交互判断调整为真实 21 Record 和 `appearance/i18n`。从同一原 JSON Source 生成 TS Manifest、`capabilityMessageKeys` 和中文 Capabilities JSON；Checker 对两个 Output 做完整再生成相等及 Key Map/资源覆盖检查，禁止手改 Generated Output |
+| `scripts/verify/check-bundle.ts` | 当前 `expectedDynamicRootKeys`、Initial Closure Dynamic-import Union 与 Dynamic Entry Set 只接受 17 Route 加 1 Motion。未来额外精确允许 `src/shared/i18n/runtime.ts` 和本节七个 Lazy JSON Source，共 `26` 根；所有 Dynamic Import Owner 仍在 Initial Static Closure，禁止 Route/Locale/Motion Dynamic Child Root。Locale Runtime 与每个资源闭包使用既有 `lazyRouteJavaScriptGzipBytes` 上限，不建新预算；保留 Initial JS/CSS、Motion 独占闭包、Manifest Gzip、Release SHA 归一化和至少 8 KiB Initial Headroom 等检查 |
+
+新 `check-i18n.ts` 是该实例唯一窄 Domain Checker，只读上述真实生产资源和相关公共合同，由 `check:arch` 调用；不创建新命令链、Fixture、Mock、Unit/Integration/E2E、浏览器或 Evidence Artifact。它使用现有 TypeScript/Vue AST、Schema 校验和官方 `baseCompile` 的 JIT AST 验证两 Locale、Scope Set、Default/Fallback、Flat Key 全覆盖、Named Parameter 集合、Safe/Common 无参数、Source-to-Consumer 引用、只读 Boundary、单 Instance Owner、HTML/Naive 同源和异步 Commit/Disposal 责任；Production Resources 解析失败直接失败，不执行消息生成代码。参数描述只列上述三项，其他 Key 无参数；禁止独立解释器、全仓通用文案审计平台或冻结私有实现。静态结构证据不证明真实浏览器竞态/焦点/无闪烁。
+
+生成 Artifact 的责任保持明确：七个 Error Page、`apps/web/src/route-map.d.ts`、`engineering-manifest.ts`、`generate-engineering-manifest.ts`、Overview/Storage/UI/Responsive/Theme Safe Projection、Design System Generator/Outputs、`project.config.ts`、TS/ESLint/Stylelint/Uno/Knip/Prettier 配置及 CI Workflow 不需要语言代码改动；原 Generator/Gate 仍运行并要求无漂移。没有翻译需求的技术字段不复制到语言 Catalog。
+
+### 23.6.9 Validation and acceptance boundary
+
+后续实施先运行相关已有窄检查与 Typecheck，生成 Capability Output 后验证相等；最终完整运行 `mise exec -- pnpm verify`。依赖、资源和 Consumer Closure、Router/Kernel/Storage、UI Private Boundary、Type/Policy/Architecture/Generation、Unused Code、Production Build 和 Bundle Gate 都必须通过。Budget 数值保持 Initial JS `237568`、CSS `40960`、普通 Lazy Route `122880`、Motion Feature `49152`、Generated Token Manifest `32768` gzip bytes；仍保留各既有计量算法和余量条件，不能把合同改成只比较更宽松的硬上限。
+
+独立 I18n Runtime 是首次 Mount 的必需按需资源，不是可省略的下载。Bundle 报告除原 Initial Static Closure 外，须列其闭包、当前中文 Route Resource 与恢复英文时所需 Resource 的实际 gzip 体积；不得用 Static Entry 未包含它来宣称启动下载体积不增加。当前设计没有安装/构建该依赖，因此不承诺实现后一定满足预算、声明兼容或运行时行为；这些是具体实施 Gate，不是留待选择的架构合同。不能通过抬高预算、移除失败检查、静默换库或扩展本实例范围解决失败。
+
+代码落地后的 Owner 外部观察项为：无 Preference/非法 Preference 的中文默认；英文保存与重启恢复；资源失败及写入失败的真实提示；连续切换、切换中导航、离开页面、启动中 Dispose/HMR 的晚到结果；Route/输入/外观/菜单状态与焦点保留；Title/Breadcrumb/Page/Shell/A11y/Tooltip/Naive 语言一致；三个 Layout Profile 与已准入字号下英文完整可读；七个 Error Route 和 Pre-I18n Fatal 的安全中文。Codex 不操作浏览器、不要求本次文档设计获得 Runtime Acceptance，不创建观察 Artifact。生产发布仍需 §32.3 对适用行为的独立 Owner Release Acceptance。
 
 ---
 
@@ -15758,6 +16113,21 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 ```
 
 `DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；不相关 Backend-dependent Package 未完成不构成阻塞。按 §21–23 交付的共享能力须最终被完整配置驱动页面和 §20A 的真实标准管理页面消费，保持独立组合能力，不以只有零散原语代替最终页面要求。
+
+#### `PAVP_ADMIN_CONSOLE_LOCALIZATION` scoped admission record
+
+§23.6 是此唯一实例的完整实施输入。当前只完成 Architecture Design：`CONTRACT_STATUS=FROZEN`、`CAPABILITY_STATUS=TARGET_INACTIVE`、`REPOSITORY_IMPLEMENTATION=NOT_STARTED`、`IMPLEMENTATION_AUTHORIZATION=NONE`。它不改变 Current/Next/Successor Work Package，也不续接任何历史 Runtime Acceptance。
+
+```text
+ID=PAVP_ADMIN_CONSOLE_LOCALIZATION
+ENTRY_CONDITIONS=separate explicit Owner implementation authorization; §23.6 frozen contract; existing PAVP_ARCHITECTURE_ADMIN_CONSOLE and PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION repository implementation COMPLETE; affected Router authority PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY repository implementation COMPLETE; affected navigation authority PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS repository implementation COMPLETE; previous instance of the new shared/i18n authority NONE because this is its first implementation; current source/status and clean baseline reverified
+ALLOWED_SCOPE=only §23.6 Chinese/English console boundary, resources, one Storage preference, exact existing UI/Router/Kernel integration, chosen dependencies, authoritative Capability generation and narrow owning checks
+PROHIBITED_SCOPE=other Locale/RTL products; Auth/account merge; backend/API locale behavior; timezone/currency/date-domain models; form-draft persistence; Forms/Tables/starter activation; observability/translation services; new business pages; unrelated Appearance/Layout/Motion changes; new tests/browser/evidence infrastructure; automatic successor
+OUTPUTS=one application-owned Composition locale boundary used by existing console and error presentation; safe pre-I18n Chinese; stable page/state-preserving switch; one validated Storage-owned preference; truthful separate i18n capability projection
+MACHINE_GATES=§23.6.8 exact resource/import/interface/initialization/disposal/generation checks; existing strict type/policy/architecture/unused/build/bundle gates with unchanged budgets; pnpm verify
+PRODUCTION_RELEASE_ACCEPTANCE=separate applicable Owner acceptance under §32.3 and §23.6.9; not performed or requested by this design task
+COMPLETION_EVIDENCE=authorized real implementation and exact generated outputs; complete static gate results; implemented/static/runtime-accepted/staged/committed/pushed/released states reported separately; design-only documentation never counts as active runtime evidence
+```
 
 ---
 
