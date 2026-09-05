@@ -2,9 +2,11 @@
 
 ## Mandatory First Read
 
-1. Read `ARCHITECTURE.md` completely before planning or mutation.
-2. Determine the current canonical work package from the current-work-package status in
-   `ARCHITECTURE.md` on every task.
+1. Read this `AGENTS.md` completely on every task.
+2. Before planning or mutation, follow
+   [Task-scoped Reading and Canonical Navigation](ARCHITECTURE.md#task-scoped-reading-and-canonical-navigation)
+   for repository and scope checks, current work-package status and Owner authorization, and the
+   required architecture reads.
 3. For UI, appearance, component, material, motion, layout, or scroll tasks, then read
    `.ai/skills/pavp-ui/SKILL.md`.
 4. Treat the UI Skill, generic skills, global instructions, and machine-local configuration as

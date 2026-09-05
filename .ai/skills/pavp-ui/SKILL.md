@@ -10,7 +10,7 @@ Act as a client-neutral, subordinate execution workflow. Treat `ARCHITECTURE.md`
 ## Required load order
 
 1. Read `AGENTS.md`.
-2. Read `ARCHITECTURE.md` completely.
+2. Follow [Task-scoped Reading and Canonical Navigation](../../../ARCHITECTURE.md#task-scoped-reading-and-canonical-navigation) for the required architecture reads and scope/status checks.
 3. Read `project.config.ts`.
 4. Read [task-routing.md](references/task-routing.md) and select one task mode.
 5. Read [execution-contract.md](references/execution-contract.md) and hold the task contract in memory.

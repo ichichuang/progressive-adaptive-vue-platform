@@ -12996,7 +12996,7 @@ ARCHITECTURE_AUTHORITY=ARCHITECTURE.md
 
 `AGENTS.md` 是唯一 AI 入口和简洁的 Mission and Execution Router。它只负责：
 
-* 指向并要求完整读取 `ARCHITECTURE.md`。
+* 指向本节的 Task-scoped Reading and Canonical Navigation，要求按该指南读取 `ARCHITECTURE.md`。
 * 使 PAVP Project Mission、Owner Delivery Direction 和高层 Coding Invariant 在任务入口可见。
 * 动态路由到本文件当前 Canonical Work Package，而不硬编码 Package Name 或复制 Serial Chain。
 * 保持 One-task、Production-only、Validation、Git Authorization 和 Mandatory Stop 边界。
@@ -13017,9 +13017,32 @@ LIQUID_GLASS.md
 MOTION_GUIDELINES.md
 ```
 
+### Task-scoped Reading and Canonical Navigation
+
+本指南经 Owner 明确授权，取代每个任务开始前完整重读 `ARCHITECTURE.md` 的统一要求，只调整读取与发现方式。`ARCHITECTURE.md` 继续是唯一完整架构权威；`AGENTS.md` 和 UI Skill 只指向本指南，不维护另一份领域导航。
+
+每个任务必须先完整读取 `AGENTS.md` 和本指南，核对当前仓库身份、Git 状态与请求范围，再读取文首当前 Status Block、§1.3 Capability Status Registry，以及 §37.1 Post-amendment Work-package Order 和 §37.2 Current Frontend Mainline and Future Capability Admission 中适用的当前工作与准入记录，确认本次 Owner 授权。产品目标、当前能力状态和本次实施授权必须分别判断；导航到 Inactive/Deferred 合同不激活能力，也不指定 Next 或 Successor。
+
+每个任务均须遵守 §7 Workspace 依赖方向、§8 TypeScript 规范、§28.3A PAVP Mission and Execution Contract、§31 统一命令、§32 Codex Browser Prohibition and Owner Release Acceptance 和 §35 生产专用仓库政策中的全局边界。源码所有权、依赖准入、禁止工作、静态验证、Git 分步授权与停止条件不因阅读范围缩小而改变。
+
+下表是领域定位入口，不是每个任务的固定全读清单。按实际受影响合同完整读取相关领域章节及当前修订，并读取对应公共接口、实际源文件和已有检查；不得只读标题、摘要或关键词命中来代替周围规范上下文。
+
+| 任务领域 | Canonical 定位入口 |
+| --- | --- |
+| 视觉与响应式 | §1.1 Canonical UI Direction；§10–15 Design System、Token、CSS Variable、Appearance、密度与 UnoCSS；§18 布局系统；§24–26 动画、无障碍与 CSS 层级 |
+| UI、表单与表格 | §16 UI Package；§17 组件 API 规范；§21 Forms Target Contract；§22 Tables and Mutation-state Target Contract；§25 无障碍基线；§37.2.12 Demand-driven Forms, I18n, Tables and UI Admissions |
+| 语言 | §23 Internationalization Target Contract；§37.2.12 Demand-driven Forms, I18n, Tables and UI Admissions |
+| Router 与页面生命周期 | §9 Router Governance Contract；§18 布局系统；§19.4 Production Runtime Kernel Contract；§1.2B.2 Product routes, navigation and presentation |
+| API、认证与存储 | §19 状态管理，含 §19.5 Application Persistence Target Contract；§20 API Transport Target Contract；§20A Auth, Session and Permission Target Contract；§37.2 中对应能力的准入记录 |
+| 仓库治理 | §27 代码结构规范；§28 AI 编程治理；§29 本地架构规则；§31 统一命令；§32 Codex Browser Prohibition and Owner Release Acceptance；§35 生产专用仓库政策；§37.1 与 §37.2 工作包及准入记录 |
+
+必须跟进适用的交叉引用，并在本文件中检查影响同一合同或标识符的后续 Amendment；涉及现有 Console 时，须同时读取 §1.2B 中相关的当前合同与修订。关键词搜索只用于发现位置，不能证明已理解规范上下文或替代优先级判断。历史记录保持原样；当其定义或修订受影响合同、迁移或验收边界时必须读取，不相关的建设历史不再是每个日常任务的必读背景。跨领域任务可以读取多个领域，但读取范围不扩展实施范围。
+
+涉及跨领域所有权、全局政策、生命周期顺序、共享持久化格式或未解决的条款优先级时，必须扩大阅读到所有受影响领域；若局部阅读不能闭合合同或优先级，必须完整复核本文件。Owner 明确授权全架构审查时也必须完整阅读。仅因任务涉及 Vue、UI、规划或代码修改，不自动触发全文历史阅读。缺失实质合同、权威冲突和不安全 Git 状态继续按现有停止合同处理，不得猜测、忽略失败检查或绕过当前能力阶段。
+
 ## 28.2 Subordinate Project UI Workflow
 
-`.ai/skills/pavp-ui/` 是现有从属执行工作流，不是架构权威。它必须先读取 `AGENTS.md`、完整读取本文件、读取 `project.config.ts`、验证仓库和当前 Phase，然后才能：
+`.ai/skills/pavp-ui/` 是现有从属执行工作流，不是架构权威。它必须先读取 `AGENTS.md`、按 §28.1 Task-scoped Reading and Canonical Navigation 完成架构读取、读取 `project.config.ts`、验证仓库和当前 Phase，然后才能：
 
 * 分类 Task Mode。
 * 生成不落盘的临时 Execution Contract。
@@ -13167,7 +13190,7 @@ deliver the independently copyable administration starter defined in Section 1 t
 
 当前 Console 完成不等于最终 Starter 完成。API 集成、登录/Session/角色权限、用户/角色/菜单与操作权限管理、共享 Form 与配置驱动数据管理、中文/可选英文、应用内页签属于必需交付范围；§37.2 只管理它们未来逐项准入，不提前激活 Runtime 或 Dependency。可独立完成的 Frontend-only 工作不等待未约定后端；依赖后端的工作必须先取得真实合同，不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。Chart、Map、专业 Grid、复杂展示特效仍按需引入。
 
-AI-facing 使用目标是清楚默认行为、可复用 API、真实标准管理页中的相关示例和当前任务需要的指导。普通业务页面开发不应被要求重演母仓基础建设历史。本次只记录该易用性目标，保留现有 `AGENTS.md` → 完整 `ARCHITECTURE.md` → 从属 Skill 的读取与治理规则，不重组文档层级、不拆分架构文件、不创建新的指导体系。
+AI-facing 使用目标是清楚默认行为、可复用 API、真实标准管理页中的相关示例和当前任务需要的指导。普通业务页面开发不应被要求重演母仓基础建设历史。读取范围由 §28.1 Task-scoped Reading and Canonical Navigation 统一规定，保持 `AGENTS.md` → `ARCHITECTURE.md` → 从属 Skill 的权威关系，不重组文档层级、不拆分架构文件、不创建新的指导体系。
 
 ### Task Discipline
 
