@@ -118,7 +118,7 @@ const subordinateBrowserRuleSyncFiles = [
   'scripts/verify/check-repository-policy.ts',
 ] as const
 const subordinateBrowserRuleContentHashes = new Map<string, string>([
-  ['AGENTS.md', '0543de229cdd1db496fb97f434e08c9a1e2d94234f92454a07368a9b90ef7de4'],
+  ['AGENTS.md', 'cc69a2f785f3fd9f8f0a4e89a60dd27ca139b43982ff4c2b981c1f6004e5408a'],
   ['README.md', 'a9b2a2ebd911a694af71cb5af53d48516f34ca4339800ecda740a58f9ae1f277'],
   [
     '.ai/skills/pavp-ui/SKILL.md',

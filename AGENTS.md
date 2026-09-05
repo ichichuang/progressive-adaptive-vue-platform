@@ -15,9 +15,10 @@ conflict. Do not create an alternative convention.
 
 ## Project Mission
 
-PAVP is a reusable, production-oriented, highly customizable, AI-friendly Vue frontend
-architecture. Its purpose is to make future frontend development fast, consistent,
-maintainable, and safe for coding agents to understand and change.
+PAVP is an Owner-owned, production-oriented, highly customizable, AI-friendly Vue administration
+starter. Projects copy the code and evolve independently, maintaining shared components within
+each project without required distribution services or synchronization with the mother repository.
+Its primary use is administration systems, with support for interactive data-display screens.
 
 Complete the reusable platform foundations before spending effort on business pages or broad
 UI-framework integration. The exact scope, order, status, contracts, files, and gates are owned
@@ -40,11 +41,14 @@ only by `ARCHITECTURE.md`; this entry is not a second roadmap.
 2. Then admit third-party UI primitives only through PAVP-owned boundaries and only when the
    architecture allows them.
 3. Then build Shared UI from real consumer demand.
-4. Finally build one simple real, architecture-admitted frontend surface that uses and
-   demonstrates the completed platform.
+4. Deliver the complete administration starter defined in `ARCHITECTURE.md`, including reusable
+   forms and configuration-driven data management, login/session/permissions, standard management
+   pages, Chinese/English support, and application tabs that retain in-progress page state.
 
-The final surface proves and uses the architecture; it is not standalone Demo or Showcase
-infrastructure. PAVP Design Tokens remain the sole visual authority. UnoCSS is an expression
+The current architecture console is an implemented consumer, not proof that the complete starter
+has been delivered. Required future capabilities still need their own contracts and implementation
+authorization. Standard pages consume shared capabilities within the production application.
+PAVP Design Tokens remain the sole visual authority. UnoCSS is an expression
 layer, not a design authority. UI vendors remain private implementation details behind
 PAVP-owned public boundaries.
 

@@ -1,6 +1,6 @@
 # Progressive Adaptive Vue Platform
 
-## 全新个人超级前端架构
+## 个人自有、可独立复制的 Vue 后台起始项目
 
 ```text
 STATUS=CANONICAL_ARCHITECTURE_BASELINE
@@ -60,11 +60,11 @@ PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_STATUS=ACTIVE
 PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
 PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN
-PROJECT_DELIVERY_MODEL=PURE_FRONTEND_PLATFORM
+PROJECT_DELIVERY_MODEL=INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER
 CURRENT_BACKEND_CONTRACT=NONE
 CURRENT_API_ENDPOINT_CONTRACT=NONE
-BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
-BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+STARTER_REQUIRED_BACKEND_INTEGRATION=API_AUTH_SESSION_PERMISSION_AND_STANDARD_MANAGEMENT_PAGES
+CURRENT_FRONTEND_ONLY_WORK_IS_NOT_BLOCKED_BY_UNAGREED_BACKEND_CONTRACTS
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
@@ -202,9 +202,11 @@ PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 
 它是一套：
 
-> **以 TypeScript 为核心、以 Vue 和 Vite 为运行基础、以项目自有 Design Token 为唯一视觉与尺寸权威、以 UnoCSS 为布局与样式表达层、以 PAVP 自有 UI 边界隔离 Styled Component Vendor、以用户个性化和跨设备适配为核心能力、以自动化规则约束人类和 AI 修改行为的渐进式前端应用平台。**
+> **由 Owner 自有、以 TypeScript、Vue 和 Vite 为基础、可复制后独立演进的 AI-friendly 后台起始项目：以项目自有 Design Token 为唯一视觉与尺寸权威，以 UnoCSS 为表达层，通过 PAVP 自有边界复用 Naive UI，并提供可组合的表单、完整数据管理页面、登录权限和标准管理页面。**
 
-当前交付模型精确为 `PURE_FRONTEND_PLATFORM`。PAVP 的 Frontend Foundation 与真实 Frontend Product Surface 不以 Backend、API、Auth 或 Protected Flow 的存在为前提；这些能力只在未来真实产品和服务合同出现时按需准入。
+最终交付模型为 `INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER`，主要用于后台管理系统，也能支持交互式数据展示大屏。新项目复制代码后独立维护；共享组件在各项目内部集中维护，不要求共享包分发服务、跨项目自动升级或持续同步母仓库。当前仓库仍是无真实 Backend/API/Auth 的前端实现，`PAVP 管理台` 是已落地的架构消费者，不能据此宣称完整 Starter 已交付。
+
+最终必需能力与当前实现准入分开：配置驱动的数据管理、可复用表单、登录/会话/角色权限、用户/角色/菜单与操作权限分配页面、简体中文默认与可选英文、应用内页签状态保留均属于交付目标；尚未实现的能力继续按 §1.3 的状态和独立 Gate 管理。Backend 未约定不阻塞可独立完成的前端工作，但缺失上述必需集成时不能宣称 Starter 完整。图表、地图、专业 Grid 和复杂展示特效按具体项目需求集成，不是 Starter 完成的前置条件。
 
 正式名称：
 
@@ -225,9 +227,9 @@ PAVP
 3. 用户可以切换 Light、Dark、System，并独立选择 Standard 或 Enhanced Contrast 以及 Adaptive、Reduced 或 Solid Material。
 4. 用户可以选择 Compact、Comfortable、Spacious。
 5. 用户可以独立调节字号、动效和内容宽度。
-6. 用户可以调整导航、面板、工作区和页面布局。
-7. 同一套代码根据可用空间、输入能力和页面约束投影为 narrow、regular 或 wide。
-8. UI 能根据容器空间和输入能力自动改变形态。
+6. 各项目决定导航、面板、工作区和业务布局，不要求所有产品使用固定 Shell 或相同页面结构。
+7. 同一套代码保留 narrow、regular、wide 的可用空间和输入能力表达；项目决定手机、平板、桌面和大屏适合执行哪些业务操作。
+8. 组件能根据容器和输入能力调整排列与交互；空间变小不得自动缩小阅读文字或缩放整页。
 9. AI Agent 只能沿着明确的目录和依赖方向修改代码。
 10. 规范通过 TypeScript、Lint、架构检查和 CI 执行，而不是依赖记忆。
 
@@ -290,6 +292,8 @@ NEXT_IMPLEMENTATION_AFTER_FREEZE=PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE
 门禁冻结后，文档完成本身不准入任何依赖或 Runtime Capability。`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE` 仍然是第一个实现工作包。
 
 ## 1.2A `PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT`
+
+以下保留原 Pure Frontend Alignment 的历史决策记录。其“不阻塞前端基础建设”边界仍有效；其中把后台集成整体视为可选最终交付的旧口径，由本节末的 `PAVP_ADMIN_STARTER_PRODUCT_SCOPE_ALIGNMENT` 显式替换。历史记录不再定义当前最终产品范围，也不构成新的实现授权。
 
 ```text
 WORK_PACKAGE=PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT
@@ -357,6 +361,27 @@ sample backend data
 ```
 
 本 Amendment 只校正 Canonical Status、Sequencing、Admission 和 Work-package Contract，不修改任何已完成 Implementation Evidence、Runtime Artifact、Dependency、Static Checker 或 Production Behavior。
+
+### `PAVP_ADMIN_STARTER_PRODUCT_SCOPE_ALIGNMENT`
+
+```text
+WORK_PACKAGE=PAVP_ADMIN_STARTER_PRODUCT_SCOPE_ALIGNMENT
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+STATUS=FROZEN
+OWNER_DECISION_AUTHORITY=EXPLICIT_OWNER_APPROVED_PRODUCT_REQUIREMENTS
+NORMATIVE_WRITE_AUTHORITY=ARCHITECTURE.md
+PURPOSE=align existing product scope with the independently copyable Vue administration starter
+ALLOWED_SCOPE=targeted architecture positioning and scope; minimal AGENTS.md mission/delivery synchronization; directly affected existing checker assertion or document digest only
+RUNTIME_IMPLEMENTATION=PROHIBITED_BY_THIS_AMENDMENT
+DEPENDENCY_ADMISSION=NONE
+CAPABILITY_ACTIVATION=NONE
+SUCCESSOR_IMPLEMENTATION_AUTHORITY=NONE
+PRODUCTION_RELEASE_ACCEPTANCE=NOT_APPLICABLE_ARCHITECTURE_ONLY_NO_RUNTIME_ARTIFACT_CHANGE
+```
+
+本修订依据 Owner 已批准的产品要求原位调整 §1、§3、§9、§14、§16、§18–23、§28、§30、§34、§37–41 的相关范围，不重写完整架构，不另建规范或 Roadmap。§1 定义最终产品定位；各既有能力章节细化产品要求；§1.3 与既有 Manifest 继续只声明当前能力状态；§37 保持逐项独立准入。必需交付不等于已实现，也不等于已具备完整实施合同。
+
+已落地 Design Tokens、主题、Light/Dark/System、Typography、Density/Size、UnoCSS、响应式基础、Runtime Kernel、Router、Storage、Naive UI 边界及现有功能保持。当前工作、Next 与 Successor 的实现授权仍为 `NONE`；不变更历史验收、撤销记录或生成清单，不发明后端 Endpoint、认证机制、凭据存储策略、Tenant Model 或服务端行为。现有 Console 的限定禁止项继续约束它的当前实施阶段，不能扩张为对新最终目标的永久禁止。
 
 ## 1.2B `PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT`
 
@@ -5915,20 +5940,20 @@ type CapabilityStatus =
 | Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
 | Generated Built-in First Paint and post-Vue Custom restoration | `ACTIVE` | generated artifacts plus application bootstrap |
 | General Pinia state and workflow state | `TARGET_INACTIVE` | future named frontend consumer gates |
-| Session state | `DEFERRED` | optional backend-dependent admission after a real server Session contract exists |
+| Session state | `DEFERRED` | required starter integration; implementation admission waits for a real server Session contract |
 | Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router` and `create-and-ready-storage` extensions from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` and `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
 | Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
 | Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work and authority are `NONE`; next and successor remain `NONE` |
-| TanStack Query server-state runtime | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after a real backend/service contract exists |
+| TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` |
-| API Transport | `DEFERRED` | optional `PAVP_API_TRANSPORT_IMPLEMENTATION` after exact real endpoint/origin/schema/policy/consumer/server-owner admission |
-| Auth, Session and Permission | `DEFERRED` | optional `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` after API Transport and real server security contracts exist |
+| API Transport | `DEFERRED` | required starter integration; `PAVP_API_TRANSPORT_IMPLEMENTATION` still requires exact real endpoint/origin/schema/policy/consumer/server-owner admission |
+| Auth, Session and Permission | `DEFERRED` | required starter integration; `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` still requires active API Transport and real server security contracts |
 | Observability reporting and Runtime Performance collection | `DEFERRED` | optional demand-driven admission; backend/auth-dependent reporting cannot precede its real producers and provider contract |
 | Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | non-blocking future hosting/release admission; backend-dependent portions remain in the optional lane |
-| Forms, I18n, Tables and Mutations | `TARGET_INACTIVE` | demand-driven implementation gates |
+| Forms, I18n, Tables and Mutations | `TARGET_INACTIVE` | required starter capabilities with separate consumer-backed implementation gates |
 | Foundational shared UI components | `ACTIVE` | exact nine-component consumer-backed boundary admitted by `PAVP_ARCHITECTURE_ADMIN_CONSOLE` plus `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT`; expansion remains separately gated |
 | CSS Motion Token baseline | `ACTIVE` | current Design Token and static CSS contract only |
 | View Transition progressive enhancement | `ACTIVE` | §1.2B.0N owns the implemented and statically verified PAVP native document-scoped route-transition capability; Owner runtime, visual and accessibility acceptance remain `NOT_PERFORMED` |
@@ -5938,7 +5963,7 @@ type CapabilityStatus =
 | Build and Generated Manifest performance budgets | `ACTIVE` | current `check:bundle` and token Manifest gates |
 | Project generators | `TARGET_INACTIVE` | serial demand-driven generator admission after a repeated real need |
 | Pure frontend implementation mainline | `ACTIVE` | §37.2 strict sequence completed through `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; no automatic successor |
-| Optional backend-dependent capability lane | `DEFERRED` | §37.2 explicit future demand-driven admission only |
+| Optional backend-dependent capability lane | `DEFERRED` | retained current lane identity; §37.2 separates required starter API/Auth integration from optional specialist/reporting demand; no automatic admission |
 | Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial frontend stage after `PAVP_ARCHITECTURE_ADMIN_CONSOLE` and one real consumer gate |
 | Router Experimental Data Loaders | `PROHIBITED` | future stable-dependency decision required |
 | Browser automation, automated test infrastructure and Codex browser operation | `PROHIBITED` | production-only repository policy |
@@ -5946,6 +5971,8 @@ type CapabilityStatus =
 | Page-authored visual authority and public optical props | `PROHIBITED` | Design Token and UI boundary |
 
 本表是 Status Authority。其他章节可以解释合同，不得创建另一份状态枚举。具有完整、当前可实施 Target Contract 的章节必须显式写出 `CAPABILITY_STATUS=TARGET_INACTIVE`；只有准入条件或候选方向、且缺少真实产品输入的能力必须写出 `CAPABILITY_STATUS=DEFERRED`。未出现 `ACTIVE` 证据的 Target 或 Deferred Capability 不得被 README、Page、Package Manifest 或 Generated Output 描述为现有能力。
+
+最终必需范围是 §1 的产品要求，不是第五种 Capability Status。标准用户/角色/菜单与操作权限管理页面和应用内页签仍未实现、未准入；本次不增加 Registry Record、Manifest Source 或 Generated Artifact。既有 `Optional` Lane 名称及 Console Roadmap 是当前实施边界的保留标识，不表示可以从完整 Starter 交付中省略登录权限、标准管理页面、表单、数据管理、语言或页签要求。
 
 ## 1.4 Canonical Value Authority and Defaults
 
@@ -6184,7 +6211,7 @@ No RC in production dependencies
 
 Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 自动生成路由和类型，不再需要手工维护完整的路由数组。
 
-本表中的 Server State、API、Auth 和相关 Backend Integration 只表示 §20/§20A 保留的条件式 Target Direction，不是当前安装清单、Mandatory Mainline 或实施许可。当前真实产品交付主线只消费 Active Frontend Capability；没有 Backend Contract 时不安装或创建其依赖、Provider、Registry、Configuration Field 或 Placeholder。
+本表中的 Server State、API、Auth 和相关 Backend Integration 仍按 §20/§20A 的条件式技术合同实施，不是当前安装清单或实施许可。§1 要求完整 Starter 交付所需 API/Auth 集成；当前前端实施只消费 Active Capability，没有 Backend Contract 时不安装或创建其依赖、Provider、Registry、Configuration Field 或 Placeholder。产品必需范围不替代真实合同与准入门槛。
 
 ## 3.2 设计与 UI 层
 
@@ -6201,7 +6228,7 @@ Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 
 | 运行时主题           | CSS Custom Properties                |
 | Styled UI 组件库     | `naive-ui@2.45.2`，已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` Atomic Landing 激活并保持 `@platform/ui` 私有 |
 | Headless 交互原语    | Reka UI，仅保留为未来独立 Consumer Gate 的 Deferred Candidate |
-| 简单控件            | 原生语义 HTML                            |
+| 内容结构            | 原生语义 HTML；交互控件遵守 §16 的 Naive UI 复用边界 |
 | 项目 UI 公共层       | `@platform/ui`                       |
 | 简单动画            | CSS                                  |
 | 页面主题切换          | View Transition，渐进增强                 |
@@ -7343,6 +7370,8 @@ interface ValidatedRouteMeta {
 ```
 
 `titleKey`、`breadcrumbKey`、`layoutCapabilityId`、Scroll Owner、Permission ID 和 Telemetry Name 必须引用各自 Registry，不能由页面发明。Keep Alive 只缓存明确的 Route Instance，不能隐式缓存 Session、Query Data、Form Secret 或 DOM Side Effect。Route Disposal 时必须清理 Subscription、Abort Controller、Observer、Timer、Focus Trap、Scroll Lock 和页面本地 Draft Handle。
+
+Starter 必须支持应用内页签，保留每页筛选、排序、分页、滚动位置和未提交表单状态。普通页签切换是页面停用/恢复，不能等同于销毁或丢弃；显式关闭、重置或其他会丢弃未保存工作的动作须先保护用户输入。Router 继续独占路由、URL、Focus 与 Scroll 恢复权威，页签状态不得复制这些权威。当前 Console 的 `keepAlive='never'`、`unsavedChangesPolicy='none'` 及既有 History Restoration 均保持，不能作为已支持页签的证明；具体实例身份、容量、停用/释放与 Unsaved Policy 的实施合同仍须另行准入。页内状态寿命与账号清理由 §19.1 和 §21.7 约束。
 
 ## 9.3 Bootstrap and History
 
@@ -9926,6 +9955,8 @@ Layout Dimensions
 
 这些尺寸轴也不得与 Theme、Effective Color Mode、Contrast、Color、Motion、z-index 或 Material 绑定；Density、Font Scale、Touch Target、Radius、Content Width、Layout Dimensions、Motion、Color、Contrast、Material 和 z-index 始终独立解析。
 
+Starter 保留现有 Typography、Density、Sizing 和响应式表达基础，提供一致尺寸而不替各项目决定业务布局。可用空间变小不能自动减小阅读字号、修改用户 Font Scale 或通过整页缩放适配；排列、滚动与操作入口由项目在已有 Token、可访问性和页面能力边界内选择。既有 Density 候选、Scale 与准入状态保持，产品目标不宣称它们已全部实现。
+
 ## 14.2 密度预设
 
 ```ts
@@ -10284,7 +10315,7 @@ packages/ui/
 
 ## 16.3 Component and Material Responsibility
 
-简单组件优先使用原生语义 HTML；复杂交互只有在 A11y、Keyboard、Focus 或 Vendor Isolation 需求出现后才通过已准入 Vendor Adapter。Console 的唯一 Target Styled Vendor 是 Private Naive Adapter；Reka 仍未准入。
+内容结构优先使用原生语义 HTML；可复用表单、表格、Dialog 和其他交互控件优先复用 Naive UI，经 PAVP-owned Private Adapter 适配已有 Token、主题、尺寸和可访问性边界。不得重做 Naive UI 的组件引擎或替换 UI Library 来实现 Starter。Console 的唯一 Styled Vendor 仍是 Private Naive Adapter；Reka 仍未准入。
 
 ```text
 Native semantic HTML
@@ -10335,8 +10366,9 @@ Adapter 是私有、可替换并按需 Lazy Load 的实现边界。业务代码�
 首期与未触发前继续禁止：
 
 ```text
-ProForm
-ProTable
+universal low-code platform
+custom field expression language
+drag-and-drop page designer
 TreeGrid
 Spreadsheet
 FileManager
@@ -10350,6 +10382,8 @@ Global Animation Wrapper
 UiGlass
 generic Material Wrapper
 ```
+
+§21–22 的可组合表单和配置驱动数据管理页是已批准的最终范围，替换原先对 ProForm/ProTable 名义下所有此类能力的整体排除。它们仍须独立实施准入，不能借此提前创建通用平台、未使用组件或绕过现有 Vendor/Public Root 边界。
 
 ---
 
@@ -10460,6 +10494,8 @@ CSS_LAYOUT_FUTURE_CAPABILITY=TARGET_INACTIVE
 ```
 
 通用 Layout Preference Persistence、Layout Store、Panel Drag/Resize、Movable Panel 与 Generic Resolver 仍为 `TARGET_INACTIVE`；§9.0.6 的 Reading Document Core 和 §1.2B 的 `UiAdminShell`、三档 Responsive Profile、Console Region/Scroll/Focus/Restoration 子集均已激活。任何更广的 Generic Shell Platform、Panel 或 Persistence 示例均不构成当前 Behavior。
+
+当前 `UiAdminShell` 是已落地 Console 的布局，不是所有复制项目必须采用的固定外壳。后台和交互式数据展示屏可以选择不同布局与操作范围，沿用现有空间能力、Token、Safe Area、Dynamic Viewport 和 Scroll Ownership 基础。下方 Future Layout Preference、拖动和面板方案仍按需准入，不是复制 Starter 或完成基本响应式支持的前置条件。
 
 ## 18.1 不使用设备名称
 
@@ -10704,6 +10740,10 @@ feature-local shared state
 ```
 
 其中 `appearance preferences` 只保存经过验证的 Stored Preference。Effective Color Mode 和 Effective Material 是纯派生状态，不作为第二份可变 Store 状态。
+
+上方 `local drafts` 与 Starter 应用内页签状态指当前应用生命周期中的内存工作状态。应用负责页签与页面实例生命周期，Form/Feature 继续拥有可编辑值；筛选、排序、分页只维护一份 Canonical State，Scroll 仍由 Router 的既有 Owner 恢复。页签间切换和语言切换必须保留当前工作，不能依赖浏览器刷新后恢复草稿来实现该目标。
+
+账号变化、退出或 Session 撤销时必须取消旧账号的异步工作，释放页签/页面实例，清理过滤条件、选择、未提交表单及权限和用户级缓存，防止新账号看到旧工作。所有会显式丢弃未保存输入的用户动作都须有 Unsaved Protection；该保护不能阻止失效身份的清理。具体 Session/Query/Storage 顺序仍由相应真实合同与现有生命周期 Owner 闭合，不增加第二状态系统。本段是必需产品行为，当前通用工作状态仍未准入。
 
 Pinia 是 Vue 的稳定 Store 方案，提供 TypeScript、DevTools、SSR 和 HMR 支持。
 
@@ -11148,9 +11188,9 @@ interface PersistedEnvelope<Payload> {
 
 | Medium | Allowed data | Prohibited data |
 | --- | --- | --- |
-| Local Storage | 小型非敏感偏好、First-paint 所需 Appearance、有限布局状态 | Token、Credential、Session ID、Server Authority、Query Cache、长文本草稿、二进制 |
-| IndexedDB | 准入后的大型本地草稿、离线队列、二进制和大量结构化记录 | Credential、Authoritative Session、未经加密即被误称安全的 Secret |
-| Memory only | Session-derived state、CSRF Runtime Value、Query Cache、敏感临时状态、In-flight Workflow | 任何承诺跨重启恢复的数据 |
+| Local Storage | 小型非敏感偏好、First-paint 所需 Appearance、有限布局状态 | Token、Credential、Session ID、Server Authority、Query Cache、业务表单草稿、长文本草稿、二进制 |
+| IndexedDB | 准入后的离线队列、二进制和大量结构化记录，不含业务表单草稿 | Credential、Authoritative Session、业务表单草稿、未经加密即被误称安全的 Secret |
+| Memory only | Session-derived state、CSRF Runtime Value、Query Cache、业务表单草稿、敏感临时状态、In-flight Workflow | 任何承诺跨重启恢复的数据 |
 
 IndexedDB 仍为 `DEFERRED`，只有真实容量、离线或结构化数据需求通过独立 Gate 后准入。Query Cache 默认 Memory-only；持久化 Query 需要独立 Product、Privacy、Expiration 和 Principal-isolation Contract。
 
@@ -11632,7 +11672,7 @@ CURRENT_API_ENDPOINT_CONTRACT=NONE
 MANDATORY_OPENAPI_FETCH_DEPENDENCY=NONE
 ```
 
-本节完整 Target Contract 保留为未来条件式能力，不是当前 Mainline、Current Implementation Input 或 Backend 缺失缺陷。`PAVP_API_TRANSPORT_IMPLEMENTATION` 只有在 Owner 提供一个真实 Backend/Service Contract，并同时冻结以下全部权威后才可从 `DEFERRED` 进入新的显式 Admission：
+API 接口集成是 Starter 的必需交付能力，当前仍为 `DEFERRED / NOT_STARTED`，不是已激活的 Implementation Input。小团队可以按真实项目协商后端格式，由窄的 Feature/Transport 接口边界适配；不建设通用后端兼容框架，不要求所有后端接受同一万能协议。本次不选择或安装新的 HTTP Library，既有 Native Fetch 条件式方向与依赖限制保持。`PAVP_API_TRANSPORT_IMPLEMENTATION` 只有在 Owner 提供一个真实 Backend/Service Contract，并同时冻结以下全部权威后才可从 `DEFERRED` 进入新的显式 Admission：
 
 ```text
 one authoritative real endpoint
@@ -11835,7 +11875,11 @@ IMPLEMENTATION_STATUS=NOT_STARTED
 ADMISSION_STATUS=NOT_ELIGIBLE_WITHOUT_ACTIVE_API_AND_REAL_SERVER_SECURITY_CONTRACT
 ```
 
-本节完整 Target Contract 保留为未来条件式能力。`PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 只有在 API Transport 已被真实需求准入并实际 `ACTIVE`，且 Owner 提供真实 Server-side Authentication、Cookie、CSRF、Session、Principal、Tenant 与 Capability Contract 后才可进入新的显式 Admission。当前不得创建 Auth State、Session Store、Permission Registry Instance、Protected Route、Fake Principal、No-op Guard 或 Invented Protected Flow；本能力不阻塞任何 Frontend-only Mainline 或 Admission。
+登录、会话处理、角色/权限集成、菜单可见性、直接路由访问检查、Action/Button 权限及账号变化清理都是 Starter 的必需交付能力。`PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 当前仍为 `DEFERRED / NOT_STARTED`；只有 API Transport 已实际 `ACTIVE`，且真实服务端身份、会话、权限及适用的 Credential/CSRF 合同获得批准后才能实施。当前不得创建 Auth State、Session Store、Permission Registry Instance、Protected Route、Fake Principal、No-op Guard 或 Invented Protected Flow；这不阻塞可独立完成的前端工作，也不允许把 Starter 的登录权限要求降为可选。
+
+本节保留的 Cookie、Session Endpoint、Refresh、Cross-tab 和 Tenant 条款是对应真实服务合同适用时的条件式安全约束，不是本次对认证机制、Endpoint、Token Storage 或 Tenant Model 的选择；没有多租户业务决策就不要求构造 Tenant Model。后续准入必须明确实际机制及不适用项；敏感持久化禁止、服务端授权、401/403 分离和账号隔离等既有保障保持。
+
+Starter 还必须交付可复用的用户管理、角色管理、菜单及操作权限分配页面，消费同一套 §21 表单与 §22 数据管理能力。标准页面承担真实管理用途，并提供共享 API 的相关用法示例；不另建 Demo、Showcase 或通用权限设计器。实体字段、角色关系、Permission ID、分配粒度和接口函数由项目与后端显式约定，本次不虚构其 Schema、Endpoint 或权限数据。前端可见性和路由检查只改善交互；受保护操作必须由后端强制授权。
 
 ## 20A.1 Session State Machine
 
@@ -12208,7 +12252,7 @@ Stable-only Policy 优先于 Major 偏好。实现 Gate 必须重新核对当时
 | Feature form orchestrator | initial values, server mapping, submit mutation, cancellation, reset and navigation policy |
 | API/Mutation layer | request, idempotency, conflict, optimistic policy and server error normalization |
 
-Form Library 不拥有 Domain Schema、API、Storage、Route Guard 或视觉 Token。禁止首期建设 Schema-driven ProForm、字段 JSON DSL、自动 CRUD Form 或跨 Feature 通用业务字段库。
+Form Library 不拥有 Domain Schema、API、Storage、Route Guard 或视觉 Token。可复用 Form、Table、Dialog 与状态逻辑应可独立维护、单独消费和组合；普通页面通过 §22 的完整配置驱动数据管理能力使用它们，不必逐项拼装所有操作。配置允许 Typed TypeScript Object、普通函数和必要的自定义 Vue Component，不要求所有行为序列化为 JSON，不引入自定义表达式语言、拖拽设计器或万能低代码平台。Naive UI 控件继续经 §16 私有边界复用；Form State、Validation 与 Vendor Control 不得产生重复权威。
 
 ## 21.2 Initial, Reset and Reinitialize
 
@@ -12216,9 +12260,13 @@ Form Library 不拥有 Domain Schema、API、Storage、Route Guard 或视觉 Tok
 
 Reset 精确选择 `initial-snapshot`、`last-server-confirmed` 或 `empty-domain-default`；Default 来自 Domain Typed Default Registry。Reinitialize 只在 Record Identity 改变或显式 Server Revision 被接受时发生；不得因为 Background Refetch 擦除 Dirty Field。Dirty 比较在 Canonical Domain Value 上执行，不依赖对象引用或格式化字符串。
 
+可复用表单必须支持安全的新建初始化和编辑回填，明确区分 Hydration 与用户编辑触发的联动。回填过程中不得因依赖字段尚未就绪而意外清空服务端值，也不得以迟到的加载结果覆盖当前记录或用户新输入。
+
 ## 21.3 Validation and Server Error Mapping
 
 Client Validation 顺序为：Field Parse → Field Constraint → Cross-field Domain Schema → Submit Transform。Async Validation 必须可取消、按 Canonical Value Deduplicate，并在 Value 改变或 Form Dispose 时 Abort。Async Result 必须绑定 Validation Attempt ID，旧结果不得覆盖新值。
+
+必需的 Form 能力包括关联日期限制、字段值联动、依赖选项加载、动态可见/禁用/只读/必填状态和动态校验。关系由项目用显式 Typed 配置、函数或 Component 定义，框架不猜测业务关系。上游变化后的保留/清空策略、隐藏字段提交策略及校验更新须显式声明。异步选项、校验和回填都必须绑定当前记录、依赖值和调用生命周期；取消或过期结果不能覆盖新状态。
 
 Server Validation Error Body 先通过 API Error Schema，再由 Feature-owned Exact Mapping 将 Server Field Path 映射为 Form Field ID。Unknown Field、Form-level Error 和 Operation Conflict 保持不同 Category；不得把 Raw Server Message 直接显示。新的 Field Mapping 缺失必须在 Development/Static Gate 失败，并在 Production 退到安全 Form-level Message。
 
@@ -12248,9 +12296,9 @@ Locale 与 Time Zone 是独立用户偏好；Formatter 使用 `Intl`。Ambiguous
 
 File Input 必须保留用户显式选择，验证数量、MIME、扩展、单个/总大小和 Filename；Preview Object URL 在替换/Dispose 时撤销。File Content 不进 Form Log、Pinia Persistence 或 Local Storage。Upload Progress 和 Resume 需要 Endpoint 独立合同。
 
-## 21.7 Draft Persistence and Static Enforcement
+## 21.7 In-application Draft Lifetime and Static Enforcement
 
-Draft 默认 Memory-only。跨刷新 Draft 只有在 Storage Gate 明确 Owner、Sensitivity、Expiration、Principal Partition、Migration 和 User-clear Action 后准入；Password、Credential、Payment Secret 和 File Content 永不持久化。
+业务 Form Draft 仅在当前应用内存生命周期保留，服务于 §9 的应用内页签切换；显式关闭或丢弃前保护未保存工作，账号变化按 §19.1 清理。本 Starter 不实施、不要求浏览器刷新、关闭或重新打开后的表单草稿恢复，替换原先可通过 Storage Gate 加入跨刷新 Draft 的目标。主题偏好及按独立 Gate 准入的语言偏好持久化与业务 Draft 分离；Password、Credential、Payment Secret 和 File Content 的持久化禁止保持。
 
 Owning Gate 必须检查 Stable Dependency、Schema/Field Mapping Closure、Initial/Reset/Reinitialize Contract、Async Abort、Submission Lock、Server Error Mapping、A11y Association、Unsaved Policy、Sensitive Draft Prohibition 和 Form Direct Fetch。全部为 `TARGET_INACTIVE`。
 
@@ -12272,6 +12320,10 @@ ACTIVATION_GATE_CREATION=UNIQUE_PAVP_TABLE_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_
 
 Column Registry 定义 Column ID、Header Key、Cell Semantic、Sort/Filter Capability、Width Policy、Alignment、Visibility、Sensitive-data Classification 和 Export Eligibility。页面不能用任意 Column String、原始 Width 或 Inline Color。Cell Renderer 只接收 Typed Row Projection，不直接 Fetch 或读取全局 Store。
 
+Starter 必须提供完整的配置驱动数据管理页面。普通消费者配置筛选字段、表格列、新建/编辑字段、校验、操作权限和接口函数后，应获得查询、重置、分页、排序、Loading、Empty/Error State、新建/编辑 Dialog、删除确认、提交保护及成功操作后的刷新。§21 的失败保留输入、异步过期保护、重置和冲突语义同样适用；接口失败不能被当作成功关闭编辑或清空输入。
+
+Form、Table、Dialog 和状态逻辑仍是独立可组合的复用能力，完整页面负责协调常规操作。Typed 配置可使用普通函数和必要的自定义 Vue Component，支持明确的业务扩展，不要求任意页面退回手工拼装全部 CRUD，也不将业务关系隐藏在万能 Schema 或表达式引擎中。具体公共 API、默认值、字段 Schema 与接口协议在各自后续准入中闭合；本节不授权创建占位组件。
+
 ## 22.2 Level 1: Native Static Table
 
 ```text
@@ -12281,12 +12333,12 @@ Native HTML table
 
 用于有限、非交互数据。必须使用 `caption`、`thead`、`tbody`、`th` Scope 和正确 Reading Order；不得用 CSS Grid/Div 模拟语义 Table。
 
-## 22.3 Level 2: TanStack Table Admission
+## 22.3 Level 2: Naive UI Data Table and Conditional Engine Admission
 
-触发后增加：
+普通交互表格优先复用：
 
 ```text
-TanStack Table
+private Naive UI Data Table adapter
 + UiDataTable
 ```
 
@@ -12299,16 +12351,18 @@ TanStack Table
 * 普通行选择。
 * 服务端数据。
 
-TanStack Table 只有真实 Level 2 Consumer 出现后准入。Client/Server Ownership 必须逐 Capability 声明：Server Sorting/Filtering/Pagination 进入 Query Key 和 URL Schema；Client Capability 只能作用于当前完整数据集。禁止对 Server-paginated 当前页做“全局”Client Sort/Filter 后伪装完整结果。
+Naive UI 的 Table、分页、选择和控件引擎经现有 PAVP-owned 边界适配，不自行重写。排序、过滤、分页或服务端数据本身不要求引入 TanStack Table；只有已证明现有 Naive UI 边界无法满足的真实需求并通过独立 Specialist/Dependency Gate 时，才考虑额外表格引擎。Client/Server Ownership 必须逐 Capability 声明：Server Sorting/Filtering/Pagination 进入 Query Key 和适用的 Route Query Schema；Client Capability 只能作用于当前完整数据集。禁止对 Server-paginated 当前页做“全局”Client Sort/Filter 后伪装完整结果。
+
+大数据支持指使用服务端筛选、排序、分页或有界增量加载查询和操作大数据集，在确有必要时采用虚拟化。不得承诺把百万记录一次下载到浏览器并全部渲染也能普遍工作；数据集总量不等于浏览器内存和 DOM 的同时承载量，也不单独构成专业 Grid 的准入理由。
 
 Pagination 使用 Cursor 或 Page Contract，不能混用。URL State 经 Route Query Schema 验证；Table、Route 和 Query Key 共用同一 Canonical State，不复制到第二个 Pinia Store。Background Refetch 保留稳定 Row Selection，但删除/权限变化的 Row 必须移除并通知。
 
 ## 22.4 Level 3: Professional Grid
 
-满足至少两项时使用专业 Grid Adapter：
+存在至少两项且普通 Naive UI 表格不能满足真实需求时，才可按独立 Gate 考虑专业 Grid Adapter；它不是 Starter 必需依赖：
 
 * 二维虚拟化。
-* 十万级数据。
+* 已证明需要专业行模型处理的大数据交互。
 * Range Selection。
 * Fill Handle。
 * Pivot。
@@ -12361,6 +12415,8 @@ Initial Loading 与 Refreshing 不清空已有 Row；Empty-filtered 必须提供
 
 Column Visibility/Order/Width 只有在 Storage Registry 声明 Table Schema Version、Column Migration、Principal Partition 和 Reset Action 后持久化。Filter、Sensitive Search、Selection 和 Row Data 默认不持久化。
 
+应用内切换须保留每页筛选、排序和分页的内存状态，按 §9 与 §19.1 恢复和清理；该要求不准入跨刷新业务草稿、Query Data 持久化或第二套 Table/Route State。
+
 Owning Gate 必须检查 Table/Column/Row Registry、Stable Identity、URL/Query State 单一权威、Client/Server Capability、Scroll Owner、A11y Markup、Virtualization Admission、Mutation Contract、State Exhaustiveness、Vendor Isolation 和 Persistence Allowlist。全部为 `TARGET_INACTIVE`。
 
 ---
@@ -12389,13 +12445,15 @@ interface LocaleRegistryRecord {
 }
 ```
 
-初始 Product Locale Default 由 Typed Default Registry 唯一声明为注册的 `en` Locale；HTML 的安全 `lang` 必须与该 Default 生成/校验一致。有效 Locale 解析优先级：Validated User Preference → Authenticated Account Preference → Supported Browser Language Match → Product Locale Default。任何来源先通过 Exact Locale Registry；Unknown Locale 不持久化。
+Starter 的 Product Locale Default 为简体中文 `zh-CN`，提供可选英文 `en`；由后续 Typed Default Registry 单一声明，HTML 的安全 `lang` 与该 Default 生成/校验一致。有效 Locale 解析优先级：Validated User Preference → 已准入的 Authenticated Account Preference → Product Locale Default。没有已验证的选择时使用简体中文，不由浏览器语言暗中改为英文。任何来源先通过 Exact Locale Registry；Unknown Locale 不持久化。当前 `I18n=TARGET_INACTIVE`，本次不改变现有页面文本或安装 Locale Provider。
 
 Fallback Locale 固定为 Product Locale Default，不能形成多级循环。Locale、Time Zone、Numbering System 和 Calendar 是独立轴；切换 Locale 不改 Time Zone 或业务数据。
 
 ## 23.2 Message Ownership and Loading
 
 所有用户可见文本、Route Title、Breadcrumb、Form/Error/Empty/Fatal Message 和公共组件 Copy 使用 Typed Message Key。Message Key 由 App/Feature Owner 分区，禁止运行时字符串拼接 Key、默认英文 Literal、Component 内部 Vendor Copy 或同 Key 不同参数 Shape。
+
+中文/英文覆盖标准页面、菜单、可配置字段 Label、校验、操作反馈和 Naive UI 内部提示；Vendor Locale 由同一应用语言经现有私有 Provider 边界投影，不形成第二语言状态。切换语言只改变展示与格式，不改变 Entity/Field/Column/Route/Permission 等业务标识，不丢弃筛选、分页、选择或未提交表单，不通过重建页面来清空当前工作。
 
 Locale Bundle 按 Route/Feature Lazy Load，并使用 Generated Key/Parameter Schema。切换流程为：Load and validate complete bundle → set Vue I18n locale → atomically update `html.lang` and `html.dir` → announce change。Load Failure 保留当前 Locale，返回注册 Error；不得留下 Message/Direction 混合状态。
 
@@ -13045,7 +13103,7 @@ Owner 自己操作的浏览器或其他 Operator Capability 是非权威、可�
 
 ### Project Mission
 
-PAVP 是一套可复用、面向 Production、AI-friendly 的纯 Vue Frontend Architecture，目标是让未来 Frontend Development 快速、一致、高度可定制、可维护，并使 AI Coding Agent 能够安全理解和修改。当前没有 Backend、Backend Repository、API Service、OpenAPI Contract 或真实 Endpoint；这是一项明确产品决策，不是待修缺陷。
+PAVP 是 Owner 自有、可复制后独立演进、面向 Production 的 AI-friendly Vue 后台起始项目，主要服务管理系统并支持交互式数据展示屏。目标是让未来页面开发快速、一致、可定制、可维护，使 AI 能安全理解和修改；组件在每个复制项目内集中维护，不要求共享包分发、跨项目自动升级或母仓持续同步。当前没有 Backend、Backend Repository、API Service、OpenAPI Contract 或真实 Endpoint；这是当前实施状态，不能用虚构服务补齐，也不取消 §1 的必需集成目标。
 
 Primary Development Goal 是先完成 Reusable Frontend Foundations，再投入 Business Page 或 Broad UI-framework Integration。Mission Foundation Summary 包含以下能力，但本清单不是第二份 Roadmap：
 
@@ -13102,12 +13160,14 @@ THEN
 build Shared UI from real consumer demand
 
 FINALLY
-build one real full-viewport PAVP 管理台 using active facts and read-only target/deferred roadmap projections
+deliver the independently copyable administration starter defined in Section 1 through separately admitted capabilities and real standard management pages
 ```
 
 当前 Active Mainline Surface 是 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`：一个真实、Full-viewport、Pure-frontend、无 Backend/Auth/Server-state/Mock Dependency 的 PAVP 管理台。它用于消费 Active Architecture 并以只读 Roadmap 呈现 Target/Deferred Capability，不创建第二 Business Platform，也不建立 Appearance-only Page、Demo、Showcase、Component Gallery、Marketing Page、Architecture Evidence Page、Test Page 或 Sample Application。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；`naive-ui@2.45.2` 是 §1.2B 已精确准入并保持在 `@platform/ui` 边界内的 Active Private Styled Implementation。
 
-Backend-dependent API、Query、Auth、Session、Permission、Observability 与 Protected Flow 只属于 §37.2 Optional Demand-driven Lane。它们不阻塞 PAVP 管理台或未来 Frontend-only Admission，也不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。
+当前 Console 完成不等于最终 Starter 完成。API 集成、登录/Session/角色权限、用户/角色/菜单与操作权限管理、共享 Form 与配置驱动数据管理、中文/可选英文、应用内页签属于必需交付范围；§37.2 只管理它们未来逐项准入，不提前激活 Runtime 或 Dependency。可独立完成的 Frontend-only 工作不等待未约定后端；依赖后端的工作必须先取得真实合同，不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。Chart、Map、专业 Grid、复杂展示特效仍按需引入。
+
+AI-facing 使用目标是清楚默认行为、可复用 API、真实标准管理页中的相关示例和当前任务需要的指导。普通业务页面开发不应被要求重演母仓基础建设历史。本次只记录该易用性目标，保留现有 `AGENTS.md` → 完整 `ARCHITECTURE.md` → 从属 Skill 的读取与治理规则，不重组文档层级、不拆分架构文件、不创建新的指导体系。
 
 ### Task Discipline
 
@@ -13522,6 +13582,8 @@ Runtime Kernel Checker Logic 的 Physical Split 是 Non-protocol Implementation 
 
 # 30. 项目生成器
 
+复制代码后独立演进是 §1 的交付方式，不以生成器、共享包分发服务或持续母仓同步为前提。下方生成器保持独立按需能力，不是完成 Starter 的必需工具。
+
 ```text
 CAPABILITY=PROJECT_GENERATORS
 CAPABILITY_STATUS=TARGET_INACTIVE
@@ -13869,7 +13931,7 @@ ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
 CONSUMER_ADMISSION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 FIELD_EXTENSION_GATES=PAVP_API_TRANSPORT_IMPLEMENTATION; PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
-BACKEND_DEPENDENT_FIELD_EXTENSION_GATES=OPTIONAL_DEMAND_DRIVEN_ONLY
+BACKEND_DEPENDENT_FIELD_EXTENSION_GATES=REAL_CONTRACT_AND_EXPLICIT_OWNER_ADMISSION_ONLY
 FIELD_EXTENSION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 FIELD_EXTENSION_GATE_CREATION=UNIQUE_PAVP_I18N_INSTANCE_ID_REQUIRED_FOR_PRODUCT_ZONE_POLICY
 
@@ -13881,7 +13943,7 @@ CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_ARCHITECTURE_FROZEN_IMPLEMENTATION_IN
 IMPLEMENTATION_STATUS=NOT_STARTED
 ```
 
-Core Runtime Configuration 的现有五字段 Active Contract 保持不变。API Origin、Observability Origin、Auth、Session、Provider 或 Backend Field 都不是当前 Mainline Input；对应 Field Extension Gate 只在其 Optional Demand-driven Capability 获得真实合同和 Owner 显式准入后适用。
+Core Runtime Configuration 的现有五字段 Active Contract 保持不变。API Origin、Observability Origin、Auth、Session、Provider 或 Backend Field 都不是当前 Mainline Input；对应 Field Extension Gate 只在其能力获得真实合同和 Owner 显式准入后适用。§1 的必需产品目标不自动扩展 Configuration 或激活 Provider。
 
 Deployment Delivery Target 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`。`PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 作为当前未准入的组合包整体保持未实现；其中 Backend/Auth-dependent Observability 进入 Optional Backend-dependent Lane。未来纯前端 Hosting/Release 需求若要独立准入，必须由 Owner 以真实 Hosting Contract 建立独立、明确的 Architecture Admission，不得在本次 Alignment 中拆分、激活或实现该组合包。
 
@@ -14483,7 +14545,7 @@ Query Key Policy only with admitted server state
 Loading / Error / Empty Contract
 ```
 
-本 Phase 不是 Pure Frontend Mainline 的 Mandatory Predecessor。Backend-dependent 条目属于 §37.2 Optional Lane；Frontend-only Form/Table Capability 可以在 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 或另一个真实 Frontend Consumer 完成后按自己的 Demand-driven Gate 准入，不等待 API/Auth/Protected Slice。
+本 Phase 不是已完成 Pure Frontend 基础主线的 Mandatory Predecessor。Form、配置驱动数据管理和所需 API 集成属于最终 Starter 要求；实现仍由 §37.2 的独立 Gate 准入。Frontend-only Form/Table Capability 可以由已批准标准管理页面的明确需求触发，不等待无关 Backend Package；真实查询与 Mutation 则必须先具备对应 API/Auth 合同。
 
 ## Phase 5：用户个性化
 
@@ -14506,7 +14568,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；API/Auth/Backend-dependent Package 仅保留为 Optional Demand-driven Lane。 当前 Bounded Work 与 Authority 均为 `NONE`，Next 与 Successor 保持 `NONE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；API/Auth 等必需 Starter 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不表示可省略最终必需范围。 当前 Bounded Work 与 Authority 均为 `NONE`，Next 与 Successor 保持 `NONE`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -14524,11 +14586,11 @@ ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
 CURRENT_RUNTIME_KERNEL_STEP_COUNT=11
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
-PROJECT_DELIVERY_MODEL=PURE_FRONTEND_PLATFORM
+PROJECT_DELIVERY_MODEL=INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER
 CURRENT_BACKEND_CONTRACT=NONE
 CURRENT_API_ENDPOINT_CONTRACT=NONE
-BACKEND_DEPENDENT_CAPABILITIES=OPTIONAL_DEMAND_DRIVEN
-BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+STARTER_REQUIRED_BACKEND_INTEGRATION=API_AUTH_SESSION_PERMISSION_AND_STANDARD_MANAGEMENT_PAGES
+CURRENT_FRONTEND_ONLY_WORK_IS_NOT_BLOCKED_BY_UNAGREED_BACKEND_CONTRACTS
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
 NEXT_WORK_ADMISSION=OWNER_DEMAND_AND_SEPARATE_ARCHITECTURE_AMENDMENT_REQUIRED
@@ -15115,7 +15177,9 @@ Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须�
 
 所有未来目录继续遵守 Demand-created Rule。Grid、Editor、Charts、Clear-media Material、Spring Family 和 Component Token Tree 保持在后续 Gate。
 
-## 37.2 Pure Frontend Mainline and Optional Demand-driven Lanes
+## 37.2 Current Frontend Mainline and Future Capability Admission
+
+本节记录当前已完成的前端实施链及尚未准入的工作，不定义可省略的最终交付清单。§1 的 Starter 必需能力仍未全部实现；既有 `OPTIONAL_BACKEND_DEPENDENT_CAPABILITY_LANE` 是保留的当前 Lane 标识，其中 API/Auth 与标准受保护管理集成现在是必需产品目标，不能因 `DEFERRED` 而省略。具体后端、依赖、公共 API、页签生命周期与标准页面实施仍需真实合同和独立授权；本修订不指定 Next Package，也不重新激活任何 Provider。
 
 ```text
 CAPABILITY=PURE_FRONTEND_IMPLEMENTATION_MAINLINE
@@ -15215,7 +15279,7 @@ ADMISSION=EXPLICIT_OWNER_DEMAND_AND_REAL_BACKEND_SERVICE_CONTRACT_ONLY
 PURE_FRONTEND_MAINLINE_BLOCKING_AUTHORITY=NONE
 ```
 
-Mandatory Pure Frontend Mainline 的精确顺序：
+已经完成的 Pure Frontend Foundation 与 Console 实施顺序：
 
 ```text
 1. PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE       COMPLETE
@@ -15227,7 +15291,7 @@ Mandatory Pure Frontend Mainline 的精确顺序：
 7. PAVP_ARCHITECTURE_ADMIN_CONSOLE                      COMPLETE / COMPLETE / ACTIVE
 ```
 
-Optional Backend-dependent Lane 不属于上方 Strict Serial Mainline，也没有自动 Next 语义：
+当前 Deferred Backend-dependent Lane 不属于上方已完成实施链，也没有自动 Next 语义；以下状态保持，必需 API/Auth 集成与仍按需的 Observability/Hosting 分别按真实合同准入：
 
 ```text
 PAVP_API_TRANSPORT_IMPLEMENTATION                        DEFERRED / NOT_STARTED
@@ -15238,7 +15302,7 @@ backend-dependent PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION
 PAVP_FIRST_PROTECTED_VERTICAL_SLICE                      DEFERRED / NOT_STARTED
 ```
 
-Future Demand-driven Frontend Capability Admissions 可以在 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 完成后按一个真实 Consumer、一个唯一 Work-package ID、一次一个 Capability 的规则串行进入；Forms、I18n、Tables、Shared UI、Motion 与 Specialist Capability 不依赖 Optional Backend-dependent Lane 完成。Optional Lane 的任何 Package 也不得阻塞 PAVP 管理台或这些 Frontend-only Admission。
+Future Frontend Capability Admissions 可以按一个真实 Consumer、一个唯一 Work-package ID、一次一个 Capability 的规则串行进入。§1 已批准的标准管理页面是共享 Form、Table、Dialog、语言与权限消费的具体产品需求，不能继续以“没有产品需求”为由把这些必需能力永久降为可选；其准确字段、接口、状态与公共边界仍须在各自准入时闭合。Frontend-only 部分不等待整个 Backend-dependent Lane；真实请求、权限和 Mutation 只等待它实际依赖的已准入合同。Motion 与 Specialist Capability 的需求门槛保持。
 
 每个 Package Record 必须声明：
 
@@ -15582,6 +15646,8 @@ COMPLETION_EVIDENCE=technical infrastructure and prior repository implementation
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
+最终 Starter 必需集成；以下 `DEFERRED / NOT_STARTED` 和 Frontend-only 非阻塞标记只声明当前实施边界。
+
 ```text
 STATUS=DEFERRED
 CAPABILITY_STATUS=DEFERRED
@@ -15600,12 +15666,14 @@ COMPLETION_EVIDENCE=one real transport authority and one Query cache only after 
 
 ### 37.2.9 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION`
 
+最终 Starter 必需集成；§20A 定义登录、角色权限、账号清理与标准管理页面目标。以下 Entry 中 Cookie/CSRF/Tenant 只在真实服务合同适用时要求，不选择认证机制或强制引入多租户；其他安全约束及当前状态保持。
+
 ```text
 STATUS=DEFERRED
 CAPABILITY_STATUS=DEFERRED
 IMPLEMENTATION_STATUS=NOT_STARTED
 PURE_FRONTEND_MAINLINE_BLOCKER=NO
-ENTRY=PAVP_API_TRANSPORT_IMPLEMENTATION is explicitly admitted, implemented and ACTIVE; real server-side authentication, cookie, CSRF, session, principal, tenant and capability contracts exist; security review passes; explicit new admission is approved
+ENTRY=PAVP_API_TRANSPORT_IMPLEMENTATION is explicitly admitted, implemented and ACTIVE; real server-side authentication, session, principal and capability contracts plus applicable credential/CSRF policies exist; cookie or tenant contracts are required only when included in the approved server model; security review passes; explicit new admission is approved
 ALLOWED_AFTER_ADMISSION=session state machine; auth error-registry extension; restoration/login/logout/refresh single-flight; cookie/CSRF coordination; permission registry; partitions; dynamic protected routes; kernel session step
 PROHIBITED_BEFORE_ADMISSION=Auth state; Session placeholder; fake principal; protected route; invented protected flow; token in browser storage; client security authority; scattered role strings; mutation replay; unpartitioned Query cache; partial logout
 OUTPUT_AFTER_ADMISSION=server-authoritative session and capability projection; 401/403 separation; cross-tab logout; account/tenant switch; safe return URL
@@ -15659,14 +15727,14 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE or another Owner-approved real frontend consumer exists; one named real consumer for the requested capability; stable dependency and bundle gate passes; separate Owner admission remains required
 BACKEND_DEPENDENT_LANE_COMPLETION_REQUIRED=NO
 ALLOWED=one capability instance at a time following Sections 16 and 21–25 plus applicable Accessibility/Performance contracts; minimum exact Runtime Configuration field extension required by that frontend domain; minimal semantic UI required by the consumer; generator only after repeated real scaffolding need
-PROHIBITED=parallel unrelated capability packages; ProForm/ProTable platform; speculative variants; prerelease dependency; second UI authority; Backend placeholder used only to justify admission
+PROHIBITED=parallel unrelated capability packages; universal low-code platform, custom expression language or drag-and-drop designer; speculative variants; prerelease dependency; second UI authority; Backend placeholder used only to justify admission
 OUTPUT=one consumer-backed form/i18n/table/motion/component/generator capability instance with exact registries, public root export and private vendor adapter where required
 MACHINE_GATES=domain contract checks; public/internal boundary; stable dependency; accessibility; unused code; bundle budget; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_EACH_RELEASE_AFFECTING_FORM_LOCALE_TABLE_INTERACTION_OR_UI
 COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted PAVP work-package ID; narrow public API; vendor isolation; all domain states and cleanup verified by static contract plus Owner release decision
 ```
 
-`DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；Optional Backend-dependent Lane 未完成不构成阻塞。
+`DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；不相关 Backend-dependent Package 未完成不构成阻塞。按 §21–23 交付的共享能力须最终被完整配置驱动页面和 §20A 的真实标准管理页面消费，保持独立组合能力，不以只有零散原语代替最终页面要求。
 
 ---
 
@@ -15675,7 +15743,7 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 | 能力               | 引入门槛                    |
 | ---------------- | ----------------------- |
 | Turbo            | Package 或 CI 时间出现真实瓶颈   |
-| TanStack Table   | 页面需要排序、过滤或分页            |
+| TanStack Table   | 已证明 Naive UI 无法满足的真实表格需求，并通过独立引擎准入 |
 | TanStack Virtual | 测量证明 DOM 成为瓶颈           |
 | AG Grid          | 同时出现两个以上电子表格式需求         |
 | Motion for Vue   | 命名的 Layout/Gesture/Presence 需求通过 §24.1 |
@@ -15686,6 +15754,7 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 | IndexedDB        | Local Storage 不足或需要离线数据 |
 | Rich Text Editor | 真实产品需要富文本               |
 | Charts           | 真实数据可视化需求出现             |
+| Maps             | 真实交互式地图需求出现；独立 Specialist Gate |
 | 第二 UI 库          | 某类组件维护成本连续超过三个月         |
 | 新 Package        | 至少两个真实消费者               |
 | TypeScript 7     | Vue 工具链正式兼容             |
@@ -15694,7 +15763,7 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 
 # 39. 最终 Package 清单
 
-本节是各能力通过各自真实 Consumer Gate 后的条件式允许目标，不是 Mandatory End State 或当前安装清单。Package Manifest 只能包含已经由真实消费者、当前 Phase 和 Admission Gate 同时批准的依赖。Optional Backend-dependent Lane 的 Planned Dependency 不得因出现在本节而阻塞 Pure Frontend Mainline，也不得由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 安装。
+本节是依赖在各自 Consumer Gate 通过后的条件式允许集合，不是要求全部安装的清单或当前安装清单。产品必需交付范围由 §1 及对应能力章节定义；尚无后端合同不取消 API/Auth 等必需目标，也不授权安装其依赖。Package Manifest 只能包含真实消费者、当前 Phase 和 Admission Gate 同时批准的依赖。Planned Dependency 不阻塞可独立完成的前端工作，也不得借本次文档修订安装。
 
 ## Root Dev Dependencies
 
@@ -15803,12 +15872,15 @@ PAVP_FOUNDATIONS_PRECEDE_UI_INTEGRATION_AND_PRODUCT_SURFACES
 THIRD_PARTY_UI_IS_PRIVATE_BEHIND_PAVP_BOUNDARIES
 SHARED_UI_REQUIRES_REAL_CONSUMER_DEMAND
 FINAL_SURFACE_IS_REAL_AND_ARCHITECTURE_ADMITTED_NOT_DEMO_OR_SHOWCASE
-PROJECT_DELIVERY_MODEL_IS_PURE_FRONTEND_PLATFORM
+PROJECT_DELIVERY_MODEL_IS_INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER
 CURRENT_BACKEND_CONTRACT_IS_NONE
 CURRENT_API_ENDPOINT_CONTRACT_IS_NONE
 BACKEND_ABSENCE_IS_INTENTIONAL_CURRENT_PRODUCT_STATE_NOT_REPOSITORY_DEFECT
-BACKEND_DEPENDENT_CAPABILITIES_ARE_OPTIONAL_DEMAND_DRIVEN
-BACKEND_DEPENDENT_CAPABILITIES_ARE_NOT_PURE_FRONTEND_MAINLINE_BLOCKERS
+STARTER_API_AUTH_SESSION_PERMISSION_AND_STANDARD_MANAGEMENT_PAGES_ARE_REQUIRED
+CURRENT_FRONTEND_ONLY_WORK_IS_NOT_BLOCKED_BY_UNAGREED_BACKEND_CONTRACTS
+REQUIRED_PRODUCT_SCOPE_DOES_NOT_ACTIVATE_CAPABILITIES_OR_AUTHORIZE_IMPLEMENTATION
+COPIED_PROJECTS_EVOLVE_INDEPENDENTLY_WITH_PROJECT_LOCAL_SHARED_COMPONENTS
+CURRENT_ARCHITECTURE_CONSOLE_IS_NOT_PROOF_OF_COMPLETE_STARTER_DELIVERY
 NO_MOCK_SAMPLE_HEALTH_PUBLIC_THIRD_PARTY_OR_FAKE_BACKEND_CONTRACT_FOR_SEQUENCE_ADVANCEMENT
 PAVP_ARCHITECTURE_ADMIN_CONSOLE_IS_ONE_REAL_FULL_VIEWPORT_FRONTEND_PRODUCT
 PAVP_ARCHITECTURE_ADMIN_CONSOLE_IS_NOT_APPEARANCE_ONLY_DEMO_SHOWCASE_COMPONENT_GALLERY_MARKETING_EVIDENCE_TEST_OR_SAMPLE_APPLICATION
@@ -16063,7 +16135,9 @@ NO_FUTURE_RULE_IS_CLAIMED_ENFORCED_BEFORE_ITS_GATE
 
 # 41. 最终架构摘要
 
-以下是各独立 Named Gate 在真实需求下分别通过后的条件式 Target Capability Inventory，不是 Mandatory End State 或当前 Active Implementation Inventory。当前 Authority 以文首 Status Block、§11.4 Active Registry、§13.4 Preference Transition 和 §37.1 Work-package Order 为准；带 Target、Future Gate 或 Backend-dependent 的条目在对应 Gate 接受前保持 Inactive 或 Deferred，不阻塞 Pure Frontend Mainline。
+最终产品是 §1 定义的可独立复制 Vue 后台 Starter。必需范围包括可组合表单、完整配置驱动数据管理、登录/Session/角色权限、用户/角色/菜单与操作权限管理、简体中文默认/可选英文和保留工作状态的应用内页签；当前 Console 不代表这些已经完成。Chart、Map、专业 Grid 和复杂展示特效仍按需集成；跨刷新、关闭或重开浏览器的 Form Draft 恢复不在 Starter 范围内。
+
+下方技术清单仍是各独立 Named Gate 通过后的条件式 Target Inventory，不是当前 Active Implementation Inventory，也不要求安装每项候选依赖。当前 Authority 以文首 Status Block、§1.3 Capability Status、§11.4 Active Registry、§13.4 Preference Transition 和 §37.1 Work-package Order 为准；未准入能力保持原 Inactive/Deferred 状态。最终必需能力尚未实现时，前端基础工作可以完成，完整 Starter 仍不能宣称交付；本任务没有后继实施授权。
 
 ```text
 Node 24 LTS
