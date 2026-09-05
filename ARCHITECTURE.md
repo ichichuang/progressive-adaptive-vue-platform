@@ -12496,7 +12496,7 @@ REAL_CONSUMER=existing ten-route administration console and seven preserved erro
 
 只支持 `zh-CN` 和 `en`，两者均为 `ltr`。默认与唯一 Fallback 都是 `zh-CN`；可恢复已验证的本地选择，`navigator.language`、URL、Runtime Configuration 和账号信息不参与语言选择。英文是用户显式选择或该选择的持久化恢复结果。Route Name、Path、Meta Identifier、Theme ID、Storage Schema、Code、Package Coordinate、Budget、真实 Capability/Implementation Status、用户输入和 Custom Theme Label 保持原值。内置 Theme 的 `Iris` 等名称也是现有源定义的专名；只翻译其周围的“内置”“当前主题”等说明。
 
-唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，复用 `UiSegmentedControl`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用当前已提交语言作为 `modelValue`，加载期间以该行 `aria-busy` 和文本反馈表达状态，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
+唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，复用 `UiSegmentedControl`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用 `pendingLocale.value ?? locale.value` 作为 `modelValue`，继续通过现有 `update:modelValue` 事件调用 `switchLocale`；加载期间选中项表达当前请求目标，实际内容仍使用最后已提交语言。该行以 `aria-busy` 和文本反馈明确“正在切换”，不能把请求选中态当作语言已应用，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
 
 该行不是 Appearance Axis，不加入 `data-appearance-axis`、Appearance Schema、Pinia Appearance Store、Effective Appearance Snapshot 或外观 Reset。语言切换不得调用 Router Navigation、Reload、Mount/Unmount、Motion Replay 或 Appearance Mutation；不得把 Locale 加入 `RouterView`、Page、Shell、Provider 或 Preview 的 VNode Key。保留现有节点身份、输入/选择、外观、菜单展开状态、页内临时状态及当前仍有效的焦点；不创建第二 Page Tree、Focus/Scroll Owner 或语言专用 Shell。
 
@@ -12607,6 +12607,7 @@ export type ConsoleLocaleNotice =
 
 export interface ConsoleI18nBoundary {
   readonly locale: Readonly<Ref<ConsoleLocale>>
+  readonly pendingLocale: Readonly<Ref<ConsoleLocale | null>>
   readonly notice: Readonly<Ref<ConsoleLocaleNotice>>
   readonly t: ConsoleTranslate
   switchLocale(candidate: unknown): Promise<ConsoleLocaleSwitchResult>
@@ -12635,6 +12636,8 @@ export function useConsoleI18n(): ConsoleI18nBoundary
 ```
 
 `Ref`/`App` 来自 Vue。`useConsoleI18n` 在 Root Mount 时必须取得已就绪 Boundary，缺失即 Existing Mount Startup Failure；不返回 Null/Placeholder。`locale` 是 Composer Locale 的 Runtime Readonly 投影，不创建第二 Mutable Locale；`notice` 只描述同一 Owner 的当前请求结果。Page 不自行保存选中语言，不从 `switchLocale` 的过期 Promise 回写状态。`t` 仅委托官方 Composer，收窄 Key/Parameter、执行安全 Fallback，不解释消息、生成代码或覆盖官方 Resolver/Compiler。
+
+`pendingLocale` 是同一语言 Owner 当前已接受、尚未提交的用户切换请求目标的只读投影，无待决请求时为 `null`；优先从该请求派生，不建立需要独立同步的选中语言 Store。它不是第二个生效 Locale，永不持久化，也不得驱动翻译、`html.lang/html.dir`、Naive `locale/dateLocale`、Route Title 或业务数据；初始化与已保存偏好恢复不属于待决用户请求，原有恢复流程保持。
 
 另有纯安全入口 `apps/web/src/shared/i18n/default-messages.ts`：`getDefaultConsoleMessage(key: ConsoleCommonMessageKey): string`，只做中文 Common Object 的按 Key 读取；不依赖 Vue、I18n、Zod、Storage 或任何初始化。只准入 Router Default Projection、Core/Storage Safe Message Table、Locale Owner 与静态检查消费该入口，普通页面仍使用 `useConsoleI18n`。这是同一 Application 内的安全子入口，不是跨 Package Deep Import。
 
@@ -12696,17 +12699,17 @@ Router 已在前一 Stage 完成 Initial Navigation；它在 Pre-I18n Preparatio
 
 `refreshCurrentRouteTitle` 由 Router 检查当前有效 Route 并写 `document.title`；Locale Commit 只调用这一窄入口，不触发 Navigation、Focus、Scroll、History 或 Route Transition。正常 Navigation 仍在原 Router Commit Timing 写 Title；任何 `await` 后必须重新确认 Navigation Ownership 并读取当前语言的 Presentation，不能提交之前捕获的旧语言 Title。`App.vue` Computed、Shell Props、Provider Props 和 Mounted Error Boundary 同时读取该 Translator 的响应式 Locale。
 
-`switchLocale` 的语义顺序是 Validate Candidate → Prepare Resource Batch → Commit Presentation → Best-effort Preference Write → Vue Render Flush/Result。规则如下：
+`switchLocale` 的语义顺序是 Validate Candidate → Accept Pending Request → Prepare Resource Batch → Commit Presentation → Best-effort Preference Write → Vue Render Flush/Result。规则如下：
 
-1. 不支持的输入返回 `failed/unsupported-locale`，不加载、不写入；同语言且没有待决请求时返回 `unchanged`，不写入。新选择（包括切回当前语言）撤销尚未提交旧请求的写入资格。
+1. 不支持的输入返回 `failed/unsupported-locale`，不加载、不写入。有效且不同于已提交语言的新选择，在让出执行进行异步资源准备前记录当前请求目标与 `loading` Notice；新接受的选择撤销旧待决操作的提交和写入资格。请求等于当前已提交语言时，若有待决操作，先撤销其资格、清空 `pendingLocale` 及其 `loading` Notice（回到 `none`），保持已提交展示、不写 Preference，并返回当前 Locale 的 `unchanged`；被取代的操作须以 `cancelled/superseded` 结束。没有待决请求时，同语言选择仍为不写入的 `unchanged` No-op。
 2. 成功准备某 Scope 表示当前语言及中文 Fallback 都可安全渲染该 Scope。该 Attempt 只保留实际请求过的四种 Scope 中的资源；切换为所有已请求 Scope 准备目标语言和中文。切换加载期间新 Navigation 请求 Scope，必须纳入该次 Commit 的 Readiness，或先在旧语言完成导航再等待目标语言的同一 Scope；不得先提交新语言再补当前页文案。最多两语言乘四 Scope，无 Prefetch、Timer Retry、持续扩容缓存或未准入页面资源。
-3. 每个异步完成点都检查当前选择与 Attempt 是否仍有效。过期/Disposed Completion 不注册消息、不改 Locale/HTML/Title/Notice、不持久化；不可取消的 `import()` 允许结束，但不得产生应用 Side Effect。只缓存当前 Build 的已验证资源，失败只可由新的显式操作再次请求，不自动重试或 Reload。
-4. 将完整资源交给同一 Composer 后，在一个不含 `await` 的提交段内更新其 Locale、`html.lang` 和 `html.dir=ltr`，并调用 Router Title 回调；Naive Locale/Date-locale 与所有 App Copy 从相同 Ref 在同一次 Vue Flush 投影。加载时仍渲染最后可用语言，不能显示一半新语言的树。Default Fallback 的单条安全中文是有意的缺译降级，不是允许异步混合语言。
-5. Resource Failure 返回 `failed/message-load-failed`，保留最后可用语言及其持久化值；提交异常在让出执行前恢复上一 Locale、Document Language/Direction 和 Router Title，返回 `failed/commit-failed`，不写 Preference。`notice` 用恢复后的语言解释失败，不能显示 Raw Key、Raw Exception 或空白。
+3. 每个异步完成点（包括 Vue Render Flush 后）都检查当前请求与 Attempt 是否仍有效。完成、取消、失败清理或旧操作释放只能清理仍属于自身的待决状态，不能清空更新请求的 `pendingLocale` 或覆盖其 Notice。过期/Disposed Completion 不注册消息、不改选中态/Locale/HTML/Title/Notice、不持久化；不可取消的 `import()` 允许结束，但不得产生应用 Side Effect。只缓存当前 Build 的已验证资源，失败只可由新的显式操作再次请求，不自动重试或 Reload。
+4. 将完整资源交给同一 Composer 后，在一个不含 `await` 的提交段内更新其 Locale、`html.lang` 和 `html.dir=ltr`，并调用 Router Title 回调，成功后在该同步段清空匹配当前操作的待决目标；Naive Locale/Date-locale 与所有 App Copy 从相同 Ref 在同一次 Vue Flush 投影。加载时仍渲染最后可用语言，不能显示一半新语言的树。Default Fallback 的单条安全中文是有意的缺译降级，不是允许异步混合语言。
+5. Resource Failure 返回 `failed/message-load-failed`，保留最后可用语言及其持久化值；提交异常在让出执行前恢复上一 Locale、Document Language/Direction 和 Router Title，返回 `failed/commit-failed`，不写 Preference。两类失败都只清空仍匹配该失败操作的待决目标，使控件返回已提交语言，不清空输入或其他页面状态；`notice` 用恢复后的语言解释失败，不能显示 Raw Key、Raw Exception 或空白。
 6. Presentation Commit 成功后，Storage Port 在同一同步边界尝试一次小型写入；失败不撤销已生效且可用的语言，而返回 `applied` 加 `persistence=failed`、Notice=`not-saved`，明确提示下次启动可能不能恢复。这是“语言已应用但未保存”，不能报告为“切换失败/已保存”。成功返回 `applied/saved`。过期 Promise 不能覆盖更新请求的反馈；Page 只读 Owner 的当前 Notice。
 7. 初始恢复不回写、同语言 No-op 不回写，失败资源不回写；所有 Promise 必须有可判定终态，Runtime `switchLocale/prepareScope` 不产生未处理 Rejection。`ready` 的真正 Startup Failure 则交回已有 Kernel Catch。语言操作不改变用户数据或其他 Lifecycle Owner。
 
-Kernel 的新增 Disposal Step 为 `dispose-i18n`，插在 `unmount-vue-application` 之后、`dispose-storage` 之前。它先撤销所有 Locale 操作资格并解除 Router 连接，再释放官方 I18n Scope/插件资源与语言 Boundary，恢复该 Owner 接管前的 Document `lang/dir`。必须与 Vue I18n 官方 Unmount Cleanup 合并为幂等、一次有效释放；不得注册第二 HMR Hook、Media/Storage Listener 或 Global Error Listener。Factory 创建后但 Ready 前的 Dispose 同样阻止晚到的插件安装、挂载和状态提交；Kernel 对 `ready=cancelled` 不执行后续 Mount。
+Kernel 的新增 Disposal Step 为 `dispose-i18n`，插在 `unmount-vue-application` 之后、`dispose-storage` 之前。它先撤销所有 Locale 操作资格、清空该 Owner 的待决目标及加载 Notice，使仍有效的待决切换操作以 `cancelled/disposed` 结束，所有晚到工作都不能再产生 Side Effect，解除 Router 连接，再释放官方 I18n Scope/插件资源与语言 Boundary，恢复该 Owner 接管前的 Document `lang/dir`。必须与 Vue I18n 官方 Unmount Cleanup 合并为幂等、一次有效释放；不得注册第二 HMR Hook、Media/Storage Listener 或 Global Error Listener。Factory 创建后但 Ready 前的 Dispose 同样阻止晚到的插件安装、挂载和状态提交；Kernel 对 `ready=cancelled` 不执行后续 Mount。
 
 Pre-I18n Configuration/Startup Failure 永远可调用纯中文 Safe Message Table；Fatal Renderer 自身标明 `lang=zh-CN,dir=ltr`，不需要 `useConsoleI18n`、Router、Storage 或 UI Provider。Mounted `AppErrorBoundary` 可用同一 `t` 本地化安全消息，Translator 不可用/失败时读取同一中文源。Core 四条、Router 六条、Storage 十一条 Error Registry 及其 Combined Count 保持 `21`；Locale 操作结果是本节闭合的局部结果 Union，不扩展全局 Error/Observability 系统，也不增加 Startup Retry。
 
@@ -12828,7 +12831,7 @@ scripts/architecture/check-i18n.ts
 
 独立 I18n Runtime 是首次 Mount 的必需按需资源，不是可省略的下载。Bundle 报告除原 Initial Static Closure 外，须列其闭包、当前中文 Route Resource 与恢复英文时所需 Resource 的实际 gzip 体积；不得用 Static Entry 未包含它来宣称启动下载体积不增加。当前设计没有安装/构建该依赖，因此不承诺实现后一定满足预算、声明兼容或运行时行为；这些是具体实施 Gate，不是留待选择的架构合同。不能通过抬高预算、移除失败检查、静默换库或扩展本实例范围解决失败。
 
-代码落地后的 Owner 外部观察项为：无 Preference/非法 Preference 的中文默认；英文保存与重启恢复；资源失败及写入失败的真实提示；连续切换、切换中导航、离开页面、启动中 Dispose/HMR 的晚到结果；Route/输入/外观/菜单状态与焦点保留；Title/Breadcrumb/Page/Shell/A11y/Tooltip/Naive 语言一致；三个 Layout Profile 与已准入字号下英文完整可读；七个 Error Route 和 Pre-I18n Fatal 的安全中文。Codex 不操作浏览器、不要求本次文档设计获得 Runtime Acceptance，不创建观察 Artifact。生产发布仍需 §32.3 对适用行为的独立 Owner Release Acceptance。
+代码落地后的 Owner 外部观察项为：无 Preference/非法 Preference 的中文默认；英文保存与重启恢复；资源失败及写入失败的真实提示；连续切换（含加载中选回已提交语言的取消、请求选中态与实际展示的区分，以及失败后选中态回归）、切换中导航、离开页面、启动中 Dispose/HMR 的晚到结果；Route/输入/外观/菜单状态与焦点保留；Title/Breadcrumb/Page/Shell/A11y/Tooltip/Naive 语言一致；三个 Layout Profile 与已准入字号下英文完整可读；七个 Error Route 和 Pre-I18n Fatal 的安全中文。Codex 不操作浏览器、不要求本次文档设计获得 Runtime Acceptance，不创建观察 Artifact。生产发布仍需 §32.3 对适用行为的独立 Owner Release Acceptance。
 
 ---
 
