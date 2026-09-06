@@ -1,4 +1,4 @@
-import { computed, nextTick, readonly, shallowRef } from 'vue'
+import { computed, nextTick, readonly, shallowRef, warn } from 'vue'
 import { createI18n } from 'vue-i18n'
 
 import {
@@ -303,6 +303,7 @@ export function createConsoleI18nRuntime(
             return { status: 'cancelled' } as const
           locale = preference.locale
         } catch {
+          if (isDisposed()) return { status: 'cancelled' } as const
           notice.value = 'saved-choice-unavailable'
         }
       } else if (preference.status === 'unusable') notice.value = 'preference-unavailable'
@@ -318,10 +319,23 @@ export function createConsoleI18nRuntime(
         }
       }
       // The public void declaration does not expose this version's async installation result.
-      // Preserve that result as unknown and let Promise.resolve observe completion/failure.
       const install: (application: ConsoleI18nInput['application']) => unknown =
         instance.install.bind(instance)
-      await Promise.resolve(install(input.application))
+      const previousUnmount: unknown = Object.getOwnPropertyDescriptor(
+        input.application,
+        'unmount',
+      )?.value
+      const installation = Promise.resolve(install(input.application))
+      // In 11.4.10, replacing unmount is the last required synchronous registration.
+      // Only optional DevTools work follows it; earlier async-function failures still reject.
+      if (input.application.unmount === previousUnmount) {
+        await installation
+        throw new Error('The language plugin did not complete required registration.')
+      }
+      void installation.catch((source: unknown) => {
+        if (import.meta.env.DEV && !isDisposed())
+          warn('Optional Vue I18n DevTools registration failed.', source)
+      })
       if (isDisposed()) {
         instance.dispose()
         return { status: 'cancelled' } as const
