@@ -979,6 +979,7 @@ watch(
     max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
+  color: var(--ui-color-text-primary);
   background: var(--ui-admin-surface-content);
 }
 

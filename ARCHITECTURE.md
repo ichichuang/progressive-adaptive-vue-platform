@@ -5835,6 +5835,8 @@ Table Order 是 Role ID Unicode Code-point Order。每个 Source Leaf 的 Canoni
 
 Ambient Canvas 是 Environmental Background，不是 Full-viewport Material Surface。Adaptive Material 只允许在上述精确 Functional Chrome Consumer 使用 tokenized Backdrop；Reduced Material 使用更不透明的 Existing Material Color Projection、无 Backdrop且减少 Shadow；Solid Material 使用不透明 Existing Material Color Projection、无 Backdrop 或其他 Transparency-dependent Effect。Appearance Material Preview 的 Stable Content 必须始终直接使用 `--ui-color-surface-panel`，不得继承 Chrome/Overlay Transparency。Reduced Transparency 与 Forced Colors 必须把该 Preview 的 Backdrop 全部降为 `none`。除这一 exact consumer-closed Preview 外，Page-authored Material Variable、Backdrop 或 Optical Effect 仍禁止。Content 与 Settings Surface 必须 Stable、Readable、Opaque、Non-glass。禁止 Glass-on-glass、Generic Glass Component、Dead-flat Canvas、Fieldset-card Matrix、Generic SaaS Dashboard、Fake Metrics、Decorative Data Charts、Neon Cyberpunk、Purple-dominant Gradient、Page-authored Optical Literal，以及把 Naive Default Visual Value 提升为 PAVP Authority。
 
+明暗切换的普通文字修复限定在既有 `UiAdminShell.vue` 的 `.pavp-admin-shell__content`：直接绑定 `color: var(--ui-color-text-primary)`，使继承色正文与 Stable Content 背景共同跟随根 Theme Bank，避免继承外层 Naive `NLayout` 的过渡中间色。源码确认原主内容背景即时换色、未声明颜色的设置标题与当前主题名称却继承祖先颜色过渡；不据此推断浏览器绘制次数或 Owner 所见全部闪动。此修正不改 Appearance 提交/快照顺序、Naive 控件和导航过渡、保存反馈或显式预览动画，不激活新能力；实际视觉结果仍待 Owner 观察。
+
 Motion 继续只由 Existing PAVP Motion Preference 与 Existing PAVP CSS Motion Tokens 控制，初次 Landing 不准入 Motion Library。允许的 Named Interaction 精确为：
 
 ```text
