@@ -52,4 +52,18 @@ export const storageRegistry = Object.freeze([
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   }),
+  Object.freeze({
+    id: 'locale-preference',
+    ownerDomain: 'apps/web/src/shared/i18n',
+    key: applicationConfig.localization.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'locale-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
 ] as const satisfies readonly StorageRegistryRecord[])

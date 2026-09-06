@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { UiPageHeader, UiSection, UiStatusBadge, type UiStatusTone } from '@platform/ui'
 
-import { capabilityManifest } from '../generated/capability-manifest'
+import { capabilityManifest, capabilityMessageKeys } from '../generated/capability-manifest'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'CapabilityRoadmapPage' })
 
@@ -27,8 +30,8 @@ function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatus
     :title="title"
   />
   <UiSection
-    description="状态与准入条件由 20 条生成清单只读投影提供。"
-    title="能力状态"
+    :description="t('capabilities.description')"
+    :title="t('capabilities.title')"
   >
     <div class="pavp-capability-grid">
       <article
@@ -38,7 +41,7 @@ function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatus
       >
         <div class="pavp-capability-card__heading">
           <h2 class="leading-title font-title-weight m-0 text-text-primary text-title">
-            {{ record.visibleLabel }}
+            {{ t(capabilityMessageKeys[record.id].visibleLabel) }}
           </h2>
           <UiStatusBadge
             :label="record.capabilityStatus"
@@ -46,10 +49,10 @@ function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatus
           />
         </div>
         <p class="m-0 text-text-secondary">
-          {{ record.summary }}
+          {{ t(capabilityMessageKeys[record.id].summary) }}
         </p>
         <p class="m-0 text-text-secondary">
-          {{ record.admissionCondition }}
+          {{ t(capabilityMessageKeys[record.id].admissionCondition) }}
         </p>
         <code>{{ record.owner }}</code>
       </article>

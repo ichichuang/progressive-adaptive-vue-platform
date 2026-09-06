@@ -7,6 +7,10 @@ import {
   UiStatusBadge,
   type UiDescriptionItem,
 } from '@platform/ui'
+import { computed } from 'vue'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'DesignTokenInspectorPage' })
 
@@ -16,16 +20,28 @@ defineProps<{
   readonly message: string
 }>()
 
-const manifestItems: readonly UiDescriptionItem[] = [
-  { label: 'Manifest Schema', value: String(designSystemConsoleProjection.manifestSchemaVersion) },
-  { label: 'Manifest Records', value: String(designSystemConsoleProjection.manifestRecordCount) },
-  { label: '公共角色', value: String(designSystemConsoleProjection.publicRoleCount) },
-  { label: '公共颜色角色', value: String(designSystemConsoleProjection.publicColorRoleCount) },
-  { label: '内置主题', value: designSystemConsoleProjection.builtInThemeIds.join(', ') },
-  { label: '主题平面', value: designSystemConsoleProjection.planeIds.join(', ') },
-  { label: '对比度', value: designSystemConsoleProjection.contrastValues.join(', ') },
-  { label: '材质', value: designSystemConsoleProjection.materialValues.join(', ') },
-]
+const manifestItems = computed<readonly UiDescriptionItem[]>(() => [
+  {
+    label: t('console.manifest-schema'),
+    value: String(designSystemConsoleProjection.manifestSchemaVersion),
+  },
+  {
+    label: t('console.manifest-records'),
+    value: String(designSystemConsoleProjection.manifestRecordCount),
+  },
+  { label: t('console.roles'), value: String(designSystemConsoleProjection.publicRoleCount) },
+  {
+    label: t('console.color-roles'),
+    value: String(designSystemConsoleProjection.publicColorRoleCount),
+  },
+  {
+    label: t('console.built-in-themes'),
+    value: designSystemConsoleProjection.builtInThemeIds.join(', '),
+  },
+  { label: t('console.theme-planes'), value: designSystemConsoleProjection.planeIds.join(', ') },
+  { label: t('console.contrast'), value: designSystemConsoleProjection.contrastValues.join(', ') },
+  { label: t('console.material'), value: designSystemConsoleProjection.materialValues.join(', ') },
+])
 </script>
 
 <template>
@@ -35,8 +51,8 @@ const manifestItems: readonly UiDescriptionItem[] = [
     :title="title"
   />
   <UiSection
-    description="只公开计数、稳定 ID 和清单摘要，不公开原始 Token Bank。"
-    title="设计系统清单"
+    :description="t('console.tokens.description')"
+    :title="t('console.tokens.title')"
   >
     <UiStatusBadge
       label="ACTIVE"

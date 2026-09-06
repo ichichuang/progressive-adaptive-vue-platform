@@ -50,6 +50,20 @@ const expectedStorageRegistryRecords = [
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   },
+  {
+    id: 'locale-preference',
+    ownerDomain: 'apps/web/src/shared/i18n',
+    key: applicationConfig.localization.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'locale-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
 ] as const
 
 const expectedStorageErrors = [
@@ -143,6 +157,7 @@ const expectedSafeContextFields = [
 const rawStorageKeyLiterals = [
   'pavp:web:user-preference',
   'pavp:web:custom-theme-registry',
+  'pavp:web:locale-preference',
 ] as const
 
 const approvedRawStorageKeyPaths = new Set([
@@ -267,7 +282,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain exactly the two frozen direct-compatibility records.',
+      'Storage Registry must contain exactly the three admitted direct-compatibility records.',
     )
   }
 
@@ -348,7 +363,12 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
   const violations: string[] = []
 
   for (const keyLiteral of rawStorageKeyLiterals) {
-    if (sourceText.includes(keyLiteral) && !approvedRawStorageKeyPaths.has(displayPath)) {
+    if (
+      sourceText.includes(keyLiteral) &&
+      (keyLiteral === 'pavp:web:locale-preference'
+        ? displayPath !== 'apps/web/src/app/config/app.config.ts'
+        : !approvedRawStorageKeyPaths.has(displayPath))
+    ) {
       violations.push(displayPath + ': raw Storage key literal is outside its approved authority.')
     }
   }
@@ -559,7 +579,7 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain exactly the two frozen direct-compatibility records.',
+      'Storage Registry must contain exactly the three admitted direct-compatibility records.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')

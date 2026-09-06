@@ -25,7 +25,7 @@ interface CapabilityManifestRecordSource {
 
 interface CapabilityManifestSource {
   readonly schemaVersion: 1
-  readonly recordCount: 20
+  readonly recordCount: 21
   readonly records: readonly CapabilityManifestRecordSource[]
 }
 
@@ -39,9 +39,9 @@ function validateSource(source: unknown): CapabilityManifestSource {
 
   if (
     document.schemaVersion !== 1 ||
-    document.recordCount !== 20 ||
+    document.recordCount !== 21 ||
     !Array.isArray(records) ||
-    records.length !== 20
+    records.length !== 21
   ) {
     throw new TypeError('Capability Manifest source header is invalid.')
   }
@@ -61,7 +61,7 @@ function validateSource(source: unknown): CapabilityManifestSource {
       }[record.capabilityStatus]
       const expectedPresentation =
         record.capabilityStatus === 'ACTIVE'
-          ? record.id === 'appearance'
+          ? record.id === 'appearance' || record.id === 'i18n'
             ? 'active-interactive'
             : 'active-read-only'
           : 'roadmap-only'
@@ -70,7 +70,8 @@ function validateSource(source: unknown): CapabilityManifestSource {
         record.implementationStatus !== expectedImplementation ||
         record.presentationMode !== expectedPresentation ||
         record.interactive !==
-          (record.id === 'appearance' && record.capabilityStatus === 'ACTIVE') ||
+          ((record.id === 'appearance' || record.id === 'i18n') &&
+            record.capabilityStatus === 'ACTIVE') ||
         record.prerequisiteIds.some((id, index) => id !== [...record.prerequisiteIds].sort()[index])
       )
     })
@@ -87,7 +88,7 @@ function validateSource(source: unknown): CapabilityManifestSource {
   return document as CapabilityManifestSource
 }
 
-export async function capabilityManifestSource(): Promise<string> {
+async function readManifest(): Promise<CapabilityManifestSource> {
   const architecture = await readFile(architecturePath, 'utf8')
   const markerIndex = architecture.indexOf(sourceMarker)
   const fenceStart = architecture.indexOf('```json\n', markerIndex)
@@ -98,7 +99,35 @@ export async function capabilityManifestSource(): Promise<string> {
     throw new TypeError('The canonical Capability Manifest source block is missing.')
   }
 
-  const manifest = validateSource(JSON.parse(architecture.slice(contentStart, fenceEnd)))
+  const source: unknown = JSON.parse(architecture.slice(contentStart, fenceEnd))
+  return validateSource(source)
+}
+
+function messageKeys(id: string) {
+  return {
+    visibleLabel: `capability.${id}.visible-label`,
+    summary: `capability.${id}.summary`,
+    admissionCondition: `capability.${id}.admission-condition`,
+  }
+}
+
+export async function capabilityCatalogSource(): Promise<string> {
+  const manifest = await readManifest()
+  const messages: Record<string, string> = {}
+  for (const record of manifest.records) {
+    const keys = messageKeys(record.id)
+    for (const field of ['visibleLabel', 'summary', 'admissionCondition'] as const) {
+      messages[keys[field]] = record[field].replace(/[@{}|]/g, (value) => `{'${value}'}`)
+    }
+  }
+  return JSON.stringify(messages, null, 2) + '\n'
+}
+
+export async function capabilityManifestSource(): Promise<string> {
+  const manifest = await readManifest()
+  const keyMap = Object.fromEntries(
+    manifest.records.map((record) => [record.id, messageKeys(record.id)]),
+  )
   const serialized = JSON.stringify(manifest, null, 2)
 
   const source = `/* Generated file. Do not edit directly. */
@@ -125,11 +154,13 @@ export interface CapabilityManifestRecord {
 
 export interface CapabilityManifest {
   readonly schemaVersion: 1
-  readonly recordCount: 20
+  readonly recordCount: 21
   readonly records: readonly CapabilityManifestRecord[]
 }
 
 export const capabilityManifest = ${serialized} as const satisfies CapabilityManifest
+
+export const capabilityMessageKeys = ${JSON.stringify(keyMap, null, 2)} as const
 `
 
   return format(source, {
@@ -141,6 +172,11 @@ export const capabilityManifest = ${serialized} as const satisfies CapabilityMan
 async function main(): Promise<void> {
   await mkdir(dirname(outputPath), { recursive: true })
   await writeFile(outputPath, await capabilityManifestSource(), 'utf8')
+  await writeFile(
+    resolve(repositoryRoot, 'apps/web/src/shared/i18n/messages/zh-CN/capabilities.json'),
+    await capabilityCatalogSource(),
+    'utf8',
+  )
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

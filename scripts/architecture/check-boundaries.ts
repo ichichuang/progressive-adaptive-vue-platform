@@ -9,6 +9,7 @@ import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { projectConfig } from '../../project.config'
 import { validateArchitectureAdminConsole } from './check-architecture-admin-console'
 import { validateAppearanceCutover } from './check-appearance-cutover'
+import { validateI18nArchitecture } from './check-i18n'
 import { validateRouterArchitecture } from './check-router'
 import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
 import { validateStorageArchitecture } from './check-storage'
@@ -126,7 +127,10 @@ async function validateManifestDependencies(): Promise<string[]> {
     for (const [dependency] of dependencyEntries(manifest)) {
       const inactivePackage = inactiveCapabilityPackage(dependency)
 
-      if (inactivePackage !== undefined) {
+      if (
+        inactivePackage !== undefined &&
+        !(inactivePackage === 'vue-i18n' && description === '@platform/web')
+      ) {
         violations.push(
           `${description}: Phase 1 may not declare inactive capability package "${inactivePackage}".`,
         )
@@ -152,6 +156,27 @@ async function validateManifestDependencies(): Promise<string[]> {
         violations.push(
           `${description}: ${dependency} is owned only by ${adminNavigationMotionOwner}.`,
         )
+      }
+    }
+
+    for (const [dependency, owner, section] of [
+      ['vue-i18n', '@platform/web', 'dependencies'],
+      ['@intlify/message-compiler', 'root package', 'devDependencies'],
+    ] as const) {
+      const declarations = dependencyEntries(manifest).filter(([name]) => name === dependency)
+      const admittedSection = manifest[section]
+      if (description === owner) {
+        if (
+          declarations.length !== 1 ||
+          !isJsonObject(admittedSection) ||
+          admittedSection[dependency] !== 'catalog:'
+        ) {
+          violations.push(
+            `${dependency} requires exactly one ${owner} ${section} catalog declaration.`,
+          )
+        }
+      } else if (declarations.length !== 0) {
+        violations.push(`${description}: ${dependency} belongs only to ${owner}.`)
       }
     }
   }
@@ -348,7 +373,21 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
   const fromLayer = sourceLayer(sourcePath)
   const inactivePackage = inactiveCapabilityPackage(specifier)
 
-  if (inactivePackage !== undefined) {
+  if (
+    (specifier === '@intlify/message-compiler' ||
+      specifier.startsWith('@intlify/message-compiler/')) &&
+    !(
+      specifier === '@intlify/message-compiler' &&
+      normalizedDisplayPath === 'scripts/architecture/check-i18n.ts'
+    )
+  ) {
+    violations.push(`${displayPath}: message compiler is private to the Node i18n checker.`)
+  }
+
+  if (
+    inactivePackage !== undefined &&
+    !(specifier === 'vue-i18n' && normalizedDisplayPath === 'apps/web/src/shared/i18n/runtime.ts')
+  ) {
     violations.push(
       `${displayPath}: Phase 1 import of inactive capability package "${inactivePackage}" is forbidden.`,
     )
@@ -854,6 +893,7 @@ if (process.argv[1]?.endsWith('check-boundaries.ts')) {
     ...(await validateRouterArchitecture()),
     ...(await validateRuntimeKernelArchitecture()),
     ...(await validateStorageArchitecture()),
+    ...(await validateI18nArchitecture()),
     ...(await validateArchitectureAdminConsole()),
   ]
 

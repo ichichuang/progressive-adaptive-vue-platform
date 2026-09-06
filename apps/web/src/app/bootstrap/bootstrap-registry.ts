@@ -7,6 +7,7 @@ export type BootstrapStepId =
   | 'install-platform-providers'
   | 'create-and-ready-router'
   | 'create-and-ready-storage'
+  | 'create-and-ready-i18n'
   | 'mount-application'
   | 'register-post-mount-appearance-media-subscriptions'
   | 'publish-application-ready'
@@ -151,8 +152,25 @@ export const bootstrapStepRegistry = [
       'dispose and recreate the Storage owner and cross-tab handles through the sole Runtime Kernel',
   },
   {
+    id: 'create-and-ready-i18n',
+    dependencies: ['create-vue-application', 'create-and-ready-router', 'create-and-ready-storage'],
+    createInput:
+      'Vue application, Storage locale preference port, initial route scope and Router title callback',
+    createOutput: 'synchronously registered ConsoleI18nHandle and ready readonly language boundary',
+    readyCondition:
+      'default and restored locale resources ready, one instance installed, document language and route title committed',
+    disposeResponsibility:
+      'cancel locale work, detach Router, release the official instance and restore document language',
+    domMountOwner: false,
+    failureClassification: 'application-startup-failure',
+    retryParticipant: true,
+    ownFailureEligibleForConfigurationRetry: false,
+    hmrBehavior:
+      'dispose after Vue unmount and before Storage, recreate only through the Runtime Kernel',
+  },
+  {
     id: 'mount-application',
-    dependencies: ['create-and-ready-router', 'create-and-ready-storage'],
+    dependencies: ['create-and-ready-router', 'create-and-ready-storage', 'create-and-ready-i18n'],
     createInput: 'ready Vue application and exact #app target',
     createOutput: 'mounted application handle',
     readyCondition: "application.mount('#app') returns and mounted state is confirmed",

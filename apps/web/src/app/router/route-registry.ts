@@ -1,3 +1,5 @@
+import type { ConsoleMessageScope, ConsoleTranslate } from '../../shared/i18n/message-schema'
+import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
 import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
 
 type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required'
@@ -35,6 +37,16 @@ export interface RouteRegistryRecord {
   readonly paramsSchemaId: string | null
   readonly querySchemaId: string | null
   readonly capabilityStatus: 'ACTIVE'
+}
+
+export interface ConsoleNavigationGroup {
+  readonly id: string
+  readonly label: string
+  readonly items: readonly {
+    readonly iconClass: string
+    readonly label: string
+    readonly routeName: string
+  }[]
 }
 
 export type LayoutPresetId =
@@ -357,123 +369,171 @@ export type RouteBreadcrumbKey = Exclude<
 type ErrorRouteCode = (typeof errorRouteRegistry)[number]['code']
 
 export const routeTitleRegistry = Object.freeze({
-  'route-title.console-overview': '总览',
-  'route-title.appearance-management': '主题与外观',
-  'route-title.design-token-inspector': '设计令牌',
-  'route-title.runtime-kernel-inspector': '运行时内核',
-  'route-title.router-governance-inspector': '路由治理',
-  'route-title.storage-persistence-inspector': '存储与持久化',
-  'route-title.ui-system-inspector': 'UI 组件',
-  'route-title.responsive-layout-inspector': '响应式布局',
-  'route-title.engineering-quality-inspector': '工程与质量',
-  'route-title.capability-roadmap': '能力路线图',
-  'route-title.error-invalid-route-input': '地址无效',
-  'route-title.error-authentication-required': '需要身份认证',
-  'route-title.error-permission-denied': '访问被拒绝',
-  'route-title.error-route-not-found': '未找到页面',
-  'route-title.error-application-route-failure': '页面不可用',
-  'route-title.error-network-unavailable': '当前离线',
-  'route-title.error-service-unavailable': '服务不可用',
+  'route-title.console-overview': getDefaultConsoleMessage('route-title.console-overview'),
+  'route-title.appearance-management': getDefaultConsoleMessage(
+    'route-title.appearance-management',
+  ),
+  'route-title.design-token-inspector': getDefaultConsoleMessage(
+    'route-title.design-token-inspector',
+  ),
+  'route-title.runtime-kernel-inspector': getDefaultConsoleMessage(
+    'route-title.runtime-kernel-inspector',
+  ),
+  'route-title.router-governance-inspector': getDefaultConsoleMessage(
+    'route-title.router-governance-inspector',
+  ),
+  'route-title.storage-persistence-inspector': getDefaultConsoleMessage(
+    'route-title.storage-persistence-inspector',
+  ),
+  'route-title.ui-system-inspector': getDefaultConsoleMessage('route-title.ui-system-inspector'),
+  'route-title.responsive-layout-inspector': getDefaultConsoleMessage(
+    'route-title.responsive-layout-inspector',
+  ),
+  'route-title.engineering-quality-inspector': getDefaultConsoleMessage(
+    'route-title.engineering-quality-inspector',
+  ),
+  'route-title.capability-roadmap': getDefaultConsoleMessage('route-title.capability-roadmap'),
+  'route-title.error-invalid-route-input': getDefaultConsoleMessage(
+    'route-title.error-invalid-route-input',
+  ),
+  'route-title.error-authentication-required': getDefaultConsoleMessage(
+    'route-title.error-authentication-required',
+  ),
+  'route-title.error-permission-denied': getDefaultConsoleMessage(
+    'route-title.error-permission-denied',
+  ),
+  'route-title.error-route-not-found': getDefaultConsoleMessage(
+    'route-title.error-route-not-found',
+  ),
+  'route-title.error-application-route-failure': getDefaultConsoleMessage(
+    'route-title.error-application-route-failure',
+  ),
+  'route-title.error-network-unavailable': getDefaultConsoleMessage(
+    'route-title.error-network-unavailable',
+  ),
+  'route-title.error-service-unavailable': getDefaultConsoleMessage(
+    'route-title.error-service-unavailable',
+  ),
 } as const satisfies Readonly<Record<RouteTitleKey, string>>)
 
 export const routeBreadcrumbRegistry = Object.freeze({
-  'route-breadcrumb.console-overview': '总览',
-  'route-breadcrumb.appearance-management': '主题与外观',
-  'route-breadcrumb.design-token-inspector': '设计令牌',
-  'route-breadcrumb.runtime-kernel-inspector': '运行时内核',
-  'route-breadcrumb.router-governance-inspector': '路由治理',
-  'route-breadcrumb.storage-persistence-inspector': '存储与持久化',
-  'route-breadcrumb.ui-system-inspector': 'UI 组件',
-  'route-breadcrumb.responsive-layout-inspector': '响应式布局',
-  'route-breadcrumb.engineering-quality-inspector': '工程与质量',
-  'route-breadcrumb.capability-roadmap': '能力路线图',
+  'route-breadcrumb.console-overview': getDefaultConsoleMessage(
+    'route-breadcrumb.console-overview',
+  ),
+  'route-breadcrumb.appearance-management': getDefaultConsoleMessage(
+    'route-breadcrumb.appearance-management',
+  ),
+  'route-breadcrumb.design-token-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.design-token-inspector',
+  ),
+  'route-breadcrumb.runtime-kernel-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.runtime-kernel-inspector',
+  ),
+  'route-breadcrumb.router-governance-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.router-governance-inspector',
+  ),
+  'route-breadcrumb.storage-persistence-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.storage-persistence-inspector',
+  ),
+  'route-breadcrumb.ui-system-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.ui-system-inspector',
+  ),
+  'route-breadcrumb.responsive-layout-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.responsive-layout-inspector',
+  ),
+  'route-breadcrumb.engineering-quality-inspector': getDefaultConsoleMessage(
+    'route-breadcrumb.engineering-quality-inspector',
+  ),
+  'route-breadcrumb.capability-roadmap': getDefaultConsoleMessage(
+    'route-breadcrumb.capability-roadmap',
+  ),
 } as const satisfies Readonly<Record<RouteBreadcrumbKey, string>>)
 
 export const routeMessageRegistry = Object.freeze([
   Object.freeze({
     routeName: 'console-overview',
     key: 'route-message.console-overview-summary',
-    text: '查看当前已启用的前端架构能力与运行状态。',
+    text: getDefaultConsoleMessage('route-message.console-overview-summary'),
   }),
   Object.freeze({
     routeName: 'appearance-management',
     key: 'route-message.appearance-management-summary',
-    text: '统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。',
+    text: getDefaultConsoleMessage('route-message.appearance-management-summary'),
   }),
   Object.freeze({
     routeName: 'design-token-inspector',
     key: 'route-message.design-token-inspector-summary',
-    text: '查看当前公开角色、主题平面、对比度、材质与清单摘要。',
+    text: getDefaultConsoleMessage('route-message.design-token-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'runtime-kernel-inspector',
     key: 'route-message.runtime-kernel-inspector-summary',
-    text: '查看当前十一阶段启动流程、Provider 与生命周期边界。',
+    text: getDefaultConsoleMessage('route-message.runtime-kernel-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'router-governance-inspector',
     key: 'route-message.router-governance-inspector-summary',
-    text: '查看路由、布局、滚动、焦点与错误页治理。',
+    text: getDefaultConsoleMessage('route-message.router-governance-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'storage-persistence-inspector',
     key: 'route-message.storage-persistence-inspector-summary',
-    text: '查看当前存储记录、分区、错误与生命周期边界。',
+    text: getDefaultConsoleMessage('route-message.storage-persistence-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'ui-system-inspector',
     key: 'route-message.ui-system-inspector-summary',
-    text: '查看已准入的 PAVP UI 组件与供应商隔离边界。',
+    text: getDefaultConsoleMessage('route-message.ui-system-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'responsive-layout-inspector',
     key: 'route-message.responsive-layout-inspector-summary',
-    text: '查看 narrow、regular 与 wide 的布局投影与尺寸权威。',
+    text: getDefaultConsoleMessage('route-message.responsive-layout-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'engineering-quality-inspector',
     key: 'route-message.engineering-quality-inspector-summary',
-    text: '查看工具链、静态门禁、构建预算与托管工作流。',
+    text: getDefaultConsoleMessage('route-message.engineering-quality-inspector-summary'),
   }),
   Object.freeze({
     routeName: 'capability-roadmap',
     key: 'route-message.capability-roadmap-summary',
-    text: '查看尚未启用能力的状态、前置条件与准入要求。',
+    text: getDefaultConsoleMessage('route-message.capability-roadmap-summary'),
   }),
   Object.freeze({
     routeName: 'error-invalid-route-input',
     key: 'route-message.error-invalid-route-input',
-    text: '请求的地址包含无效信息。',
+    text: getDefaultConsoleMessage('route-message.error-invalid-route-input'),
   }),
   Object.freeze({
     routeName: 'error-authentication-required',
     key: 'route-message.error-authentication-required',
-    text: '需要完成身份认证才能继续。',
+    text: getDefaultConsoleMessage('route-message.error-authentication-required'),
   }),
   Object.freeze({
     routeName: 'error-permission-denied',
     key: 'route-message.error-permission-denied',
-    text: '你没有查看此页面的权限。',
+    text: getDefaultConsoleMessage('route-message.error-permission-denied'),
   }),
   Object.freeze({
     routeName: 'error-route-not-found',
     key: 'route-message.error-route-not-found',
-    text: '未找到请求的页面。',
+    text: getDefaultConsoleMessage('route-message.error-route-not-found'),
   }),
   Object.freeze({
     routeName: 'error-application-route-failure',
     key: 'route-message.error-application-route-failure',
-    text: '应用无法打开此页面。',
+    text: getDefaultConsoleMessage('route-message.error-application-route-failure'),
   }),
   Object.freeze({
     routeName: 'error-network-unavailable',
     key: 'route-message.error-network-unavailable',
-    text: '当前处于离线状态，无法访问此页面。',
+    text: getDefaultConsoleMessage('route-message.error-network-unavailable'),
   }),
   Object.freeze({
     routeName: 'error-service-unavailable',
     key: 'route-message.error-service-unavailable',
-    text: '此服务暂时不可用。',
+    text: getDefaultConsoleMessage('route-message.error-service-unavailable'),
   }),
 ] as const satisfies readonly {
   readonly routeName: RouteName
@@ -682,86 +742,86 @@ export const focusContractRegistry = Object.freeze([
 export const consoleNavigationRegistry = Object.freeze([
   Object.freeze({
     id: 'workspace',
-    label: '工作台',
+    label: getDefaultConsoleMessage('navigation.workspace'),
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-layout-dashboard',
-        label: '总览',
+        label: getDefaultConsoleMessage('route-title.console-overview'),
         routeName: 'console-overview',
       }),
     ]),
   }),
   Object.freeze({
     id: 'visual-system',
-    label: '视觉系统',
+    label: getDefaultConsoleMessage('navigation.visual-system'),
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-palette',
-        label: '主题与外观',
+        label: getDefaultConsoleMessage('route-title.appearance-management'),
         routeName: 'appearance-management',
       }),
       Object.freeze({
         iconClass: 'i-lucide-swatch-book',
-        label: '设计令牌',
+        label: getDefaultConsoleMessage('route-title.design-token-inspector'),
         routeName: 'design-token-inspector',
       }),
     ]),
   }),
   Object.freeze({
     id: 'application-foundation',
-    label: '应用基础',
+    label: getDefaultConsoleMessage('navigation.application-foundation'),
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-cpu',
-        label: '运行时内核',
+        label: getDefaultConsoleMessage('route-title.runtime-kernel-inspector'),
         routeName: 'runtime-kernel-inspector',
       }),
       Object.freeze({
         iconClass: 'i-lucide-route',
-        label: '路由治理',
+        label: getDefaultConsoleMessage('route-title.router-governance-inspector'),
         routeName: 'router-governance-inspector',
       }),
       Object.freeze({
         iconClass: 'i-lucide-database',
-        label: '存储与持久化',
+        label: getDefaultConsoleMessage('route-title.storage-persistence-inspector'),
         routeName: 'storage-persistence-inspector',
       }),
     ]),
   }),
   Object.freeze({
     id: 'interface-foundation',
-    label: '界面基础',
+    label: getDefaultConsoleMessage('navigation.interface-foundation'),
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-component',
-        label: 'UI 组件',
+        label: getDefaultConsoleMessage('route-title.ui-system-inspector'),
         routeName: 'ui-system-inspector',
       }),
       Object.freeze({
         iconClass: 'i-lucide-panels-top-left',
-        label: '响应式布局',
+        label: getDefaultConsoleMessage('route-title.responsive-layout-inspector'),
         routeName: 'responsive-layout-inspector',
       }),
     ]),
   }),
   Object.freeze({
     id: 'development-governance',
-    label: '开发治理',
+    label: getDefaultConsoleMessage('navigation.development-governance'),
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-workflow',
-        label: '工程与质量',
+        label: getDefaultConsoleMessage('route-title.engineering-quality-inspector'),
         routeName: 'engineering-quality-inspector',
       }),
     ]),
   }),
   Object.freeze({
     id: 'architecture-planning',
-    label: '架构规划',
+    label: getDefaultConsoleMessage('navigation.architecture-planning'),
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-map',
-        label: '能力路线图',
+        label: getDefaultConsoleMessage('route-title.capability-roadmap'),
         routeName: 'capability-roadmap',
       }),
     ]),
@@ -801,7 +861,10 @@ export function getRouteRecordBySourcePath(sourcePath: string): (typeof routeReg
   return record
 }
 
-export function getRoutePresentation(name: unknown): {
+export function getRoutePresentation(
+  name: unknown,
+  translate?: ConsoleTranslate,
+): {
   readonly breadcrumb: string
   readonly title: string
   readonly message: string
@@ -813,13 +876,42 @@ export function getRoutePresentation(name: unknown): {
     throw new TypeError('The route presentation is incomplete.')
   }
 
+  const read = translate ?? getDefaultConsoleMessage
   return Object.freeze({
     breadcrumb:
       record.meta.breadcrumbKey === null
-        ? routeTitleRegistry[record.meta.titleKey]
-        : routeBreadcrumbRegistry[record.meta.breadcrumbKey],
-    title: routeTitleRegistry[record.meta.titleKey],
-    message: message.text,
+        ? read(record.meta.titleKey)
+        : read(record.meta.breadcrumbKey),
+    title: read(record.meta.titleKey),
+    message: read(message.key),
   })
 }
 import type { LayoutProfileId } from '@platform/design-system'
+
+export function getRouteMessageScope(name: unknown): ConsoleMessageScope {
+  const record = getRouteRecord(name)
+  if (record.name === 'appearance-management') return 'appearance'
+  if (record.name === 'capability-roadmap') return 'capabilities'
+  return record.meta.breadcrumbKey === null ? 'common' : 'console'
+}
+
+export function getConsoleNavigation(
+  translate: ConsoleTranslate,
+): readonly ConsoleNavigationGroup[] {
+  const labels = {
+    workspace: translate('navigation.workspace'),
+    'visual-system': translate('navigation.visual-system'),
+    'application-foundation': translate('navigation.application-foundation'),
+    'interface-foundation': translate('navigation.interface-foundation'),
+    'development-governance': translate('navigation.development-governance'),
+    'architecture-planning': translate('navigation.architecture-planning'),
+  }
+  return consoleNavigationRegistry.map((group) => ({
+    ...group,
+    label: labels[group.id],
+    items: group.items.map((item) => ({
+      ...item,
+      label: translate(getRouteRecord(item.routeName).meta.titleKey),
+    })),
+  }))
+}

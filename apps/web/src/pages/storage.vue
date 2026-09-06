@@ -2,6 +2,9 @@
 import { UiDescriptionList, UiPageHeader, UiSection, type UiDescriptionItem } from '@platform/ui'
 
 import { storageConsoleProjection } from '../app/storage/storage-console-projection'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'StoragePersistenceInspectorPage' })
 
@@ -31,8 +34,10 @@ const storageItems: readonly UiDescriptionItem[] = storageConsoleProjection.reco
     :title="title"
   />
   <UiSection
-    :description="`当前活动记录：${storageConsoleProjection.recordCount}`"
-    title="持久化记录"
+    :description="
+      t('console.storage.active-records', { count: storageConsoleProjection.recordCount })
+    "
+    :title="t('console.storage.title')"
   >
     <UiDescriptionList :items="storageItems" />
   </UiSection>

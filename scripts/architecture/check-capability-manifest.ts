@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
 import { capabilityManifest } from '../../apps/web/src/generated/capability-manifest'
-import { capabilityManifestSource } from './generate-capability-manifest'
+import { capabilityManifestSource, capabilityCatalogSource } from './generate-capability-manifest'
 
 const repositoryRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const outputPath = resolve(repositoryRoot, 'apps/web/src/generated/capability-manifest.ts')
@@ -13,6 +13,13 @@ export async function validateCapabilityManifest(): Promise<string[]> {
   const routeNames = new Set(routeRegistry.map((record) => record.name))
   const actual = await readFile(outputPath, 'utf8')
   const expected = await capabilityManifestSource()
+
+  const catalog = await readFile(
+    resolve(repositoryRoot, 'apps/web/src/shared/i18n/messages/zh-CN/capabilities.json'),
+    'utf8',
+  )
+  if (catalog !== (await capabilityCatalogSource()))
+    violations.push('Capability catalog regeneration equality failed.')
 
   if (actual !== expected) {
     violations.push('Capability Manifest regeneration equality failed.')

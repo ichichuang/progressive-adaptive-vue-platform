@@ -21,3 +21,17 @@ export interface UiSegmentedOption {
 }
 
 export type UiStatusTone = 'active' | 'complete' | 'deferred' | 'inactive' | 'not-started'
+
+export type UiLocale = 'zh-CN' | 'en'
+export interface UiAdminShellCopy {
+  readonly consoleTitle: string
+  readonly navigationLabel: string
+  readonly navigationActionLabel: string
+  readonly openNavigationLabel: string
+  readonly closeNavigationLabel: string
+  readonly closeActionLabel: string
+  readonly expandNavigationLabel: string
+  readonly collapseNavigationLabel: string
+  readonly expandAllMenusLabel: string
+  readonly collapseAllMenusLabel: string
+}

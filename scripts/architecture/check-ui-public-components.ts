@@ -527,8 +527,14 @@ function changedOverlaySource(
 function runOverlayNegativeProbes(
   baseline: ReadonlyMap<string, string>,
 ): readonly OverlayNegativeProbeResult[] {
-  const providerTemplate = `<template>\n  <div id="${overlayRootId}" />\n  <PavpNaiveConfigProvider :appearance="appearance">\n    <slot />\n  </PavpNaiveConfigProvider>\n</template>`
-  const rootAfterSlotTemplate = `<template>\n  <PavpNaiveConfigProvider :appearance="appearance">\n    <slot />\n    <div id="${overlayRootId}" />\n  </PavpNaiveConfigProvider>\n</template>`
+  const providerTemplate = `<template>\n  <div id="${overlayRootId}" />\n  <PavpNaiveConfigProvider
+    :appearance="appearance"
+    :locale="locale"
+  >\n    <slot />\n  </PavpNaiveConfigProvider>\n</template>`
+  const rootAfterSlotTemplate = `<template>\n  <PavpNaiveConfigProvider
+    :appearance="appearance"
+    :locale="locale"
+  >\n    <slot />\n    <div id="${overlayRootId}" />\n  </PavpNaiveConfigProvider>\n</template>`
   const probes: readonly {
     readonly id: string
     readonly expectedFailureCode: string
@@ -952,6 +958,8 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   }
 
   const expectedRuntimeImports = [
+    'zhCN@naive-ui/es/locales/common/zhCN',
+    'enUS@naive-ui/es/locales/common/enUS',
     'NBreadcrumb@naive-ui/es/breadcrumb',
     'NBreadcrumbItem@naive-ui/es/breadcrumb',
     'NButton@naive-ui/es/button',

@@ -698,6 +698,8 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       'vue',
       '../app/appearance/appearance-read-boundary',
       '../app/console/overview-projection',
+      '../app/router/router-console-projection',
+      '../shared/i18n',
     ],
   ],
   [
@@ -708,19 +710,35 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       'vue',
       '../app/appearance/appearance-mutation-boundary',
       '../app/appearance/appearance-read-boundary',
+      '../shared/i18n',
     ],
   ],
-  ['apps/web/src/pages/design-tokens.vue', ['@platform/design-system', '@platform/ui']],
+  [
+    'apps/web/src/pages/design-tokens.vue',
+    ['@platform/design-system', '@platform/ui', 'vue', '../shared/i18n'],
+  ],
   [
     'apps/web/src/pages/runtime-kernel.vue',
-    ['@platform/ui', '../app/bootstrap/runtime-kernel-console-projection'],
+    ['@platform/ui', 'vue', '../app/bootstrap/runtime-kernel-console-projection', '../shared/i18n'],
   ],
-  ['apps/web/src/pages/router.vue', ['@platform/ui', '../app/router/router-console-projection']],
-  ['apps/web/src/pages/storage.vue', ['@platform/ui', '../app/storage/storage-console-projection']],
-  ['apps/web/src/pages/ui-system.vue', ['@platform/ui']],
-  ['apps/web/src/pages/responsive-layout.vue', ['@platform/ui']],
-  ['apps/web/src/pages/engineering.vue', ['@platform/ui', '../generated/engineering-manifest']],
-  ['apps/web/src/pages/capabilities.vue', ['@platform/ui', '../generated/capability-manifest']],
+  [
+    'apps/web/src/pages/router.vue',
+    ['@platform/ui', 'vue', '../app/router/router-console-projection', '../shared/i18n'],
+  ],
+  [
+    'apps/web/src/pages/storage.vue',
+    ['@platform/ui', '../app/storage/storage-console-projection', '../shared/i18n'],
+  ],
+  ['apps/web/src/pages/ui-system.vue', ['@platform/ui', 'vue', '../shared/i18n']],
+  ['apps/web/src/pages/responsive-layout.vue', ['@platform/ui', '../shared/i18n']],
+  [
+    'apps/web/src/pages/engineering.vue',
+    ['@platform/ui', '../generated/engineering-manifest', '../shared/i18n'],
+  ],
+  [
+    'apps/web/src/pages/capabilities.vue',
+    ['@platform/ui', '../generated/capability-manifest', '../shared/i18n'],
+  ],
 ])
 const naiveCommonParserSensitiveColorProperties: ReadonlySet<string> = new Set([
   'cardColor',
@@ -4764,7 +4782,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
     innerPanel === undefined ||
     staticTemplateAttribute(innerPanel.node, 'role') !== 'dialog' ||
     staticTemplateAttribute(innerPanel.node, 'aria-modal') !== 'true' ||
-    staticTemplateAttribute(innerPanel.node, 'aria-label') !== '架构导航' ||
+    singleBoundExpression(innerPanel.node, 'aria-label') !== 'copy.navigationLabel' ||
     staticTemplateAttribute(innerPanel.node, 'tabindex') !== '-1' ||
     staticTemplateAttribute(innerPanel.node, 'ref') !== 'drawerNavigation'
   ) {
@@ -5003,9 +5021,9 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   if (
     runtimeNumber(routeRegistry.length) !== 17 ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 11 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 12 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 2 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 3 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 14
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -5159,9 +5177,15 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('VENDOR_SELECTOR_IN_PAGE')
   }
   const errorTitles = [
-    ...snapshot.routeRegistrySource.matchAll(/'route-title\.error-[^']+'\s*:\s*'([^']+)'/gu),
-  ].map((match) => match[1] ?? '')
-  if (errorTitles.length !== 7 || errorTitles.some((title) => /[a-z]/iu.test(title))) {
+    ...snapshot.routeRegistrySource.matchAll(
+      /'route-title\.error-([^']+)'\s*:\s*getDefaultConsoleMessage\(\s*'route-title\.error-([^']+)'\s*,?\s*\)/gu,
+    ),
+  ]
+  if (
+    errorTitles.length !== 7 ||
+    errorTitles.some((match) => match[1] !== match[2]) ||
+    /'route-title\.error-[^']+'\s*:\s*'[^']*'/u.test(snapshot.routeRegistrySource)
+  ) {
     violations.push('ENGLISH_ERROR_TITLE')
   }
 
@@ -5182,22 +5206,22 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     .replaceAll('PAVP', '')
     .trim()
   const requiredChineseCopy = [
-    "label: '跟随系统'",
-    "label: '浅色'",
-    "label: '深色'",
-    "label: '标准'",
-    "label: '增强'",
-    "label: '自适应'",
-    "label: '弱化'",
-    "label: '纯色'",
+    "label: t('appearance.system')",
+    "label: t('appearance.light')",
+    "label: t('appearance.dark')",
+    "label: t('appearance.standard')",
+    "label: t('appearance.enhanced')",
+    "label: t('appearance.adaptive')",
+    "label: t('appearance.reduced-material')",
+    "label: t('appearance.solid')",
     "'0.9': '90%'",
     "'1': '100%'",
     "'1.1': '110%'",
     "'1.2': '120%'",
-    "label: '完整'",
-    "label: '减少'",
-    "label: '关闭'",
-    'description="从十四套内置主题中选择界面基调，色板会随明暗模式与对比度即时投影。"',
+    "label: t('appearance.full-motion')",
+    "label: t('appearance.reduced-motion')",
+    "label: t('appearance.no-motion')",
+    "t('appearance.gallery.description', { count: builtInAppearanceThemePreviews.length })",
     'displayLabel: theme.label',
   ] as const
   const appearanceAxes = [...source.matchAll(/data-appearance-axis="([a-z-]+)"/gu)].map(
@@ -5243,7 +5267,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   }
 
   if (
-    requiredChineseCopy.some((copy) => !source.includes(copy)) ||
+    requiredChineseCopy.some((copy) => !normalizedSource.includes(copy)) ||
     /[A-Za-z]/u.test(visibleLiteralText)
   ) {
     violations.push('ENGLISH_PRIMARY_LABEL')
@@ -5256,7 +5280,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     !source.includes(':model-value="selectedThemeValue"') ||
     !source.includes(':options="themeSelectionOptions"') ||
     !source.includes('@update:model-value="updateThemeSelection"') ||
-    !source.includes('label="当前主题"') ||
+    !source.includes(':label="t(\'appearance.current-theme\')"') ||
     [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 6 ||
     !source.includes('currentSwatches(themePreviewForValue(option.value))') ||
     !source.includes('builtInAppearanceThemePreviews') ||
@@ -5378,12 +5402,12 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   }
 
   if (
-    [...source.matchAll(/aria-live="polite"/gu)].length !== 1 ||
+    [...source.matchAll(/aria-live="polite"/gu)].length !== 2 ||
     !source.includes(':key="feedbackSequence"') ||
     !source.includes('feedbackSequence.value += 1') ||
-    !source.includes("'设置已保存'") ||
-    !source.includes("'无法应用此设置，已恢复原状态'") ||
-    !source.includes("'已恢复默认设置'") ||
+    !source.includes("'appearance.feedback.saved'") ||
+    !source.includes("'appearance.feedback.rejected'") ||
+    !source.includes("'appearance.feedback.reset'") ||
     !source.includes(':data-feedback-phase="feedbackPhase"')
   ) {
     violations.push('FEEDBACK_REPLAY')
@@ -5392,7 +5416,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   if (
     /Mutation Boundary|Appearance Store|内部所有者|内部架构/u.test(visibleLiteralText) ||
     !snapshot.routeRegistrySource.includes(
-      '统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。',
+      "getDefaultConsoleMessage('route-message.appearance-management-summary')",
     )
   ) {
     violations.push('APPEARANCE_PRODUCT_COPY')
@@ -9413,14 +9437,12 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes(
-          'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
-        ) &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
         snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
         snapshot.routeCount === 17 &&
-        snapshot.runtimeKernelStepCount === 11 &&
+        snapshot.runtimeKernelStepCount === 12 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 2,
+        snapshot.storageRecordCount === 3,
     },
   ])
 }
@@ -11925,7 +11947,11 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_WIDE_CONTROL_LABELS',
-      shellSource.includes("wideNavigationCollapsed.value ? '展开导航' : '收起导航'"),
+      shellSource
+        .replaceAll(/\s+/gu, ' ')
+        .includes(
+          'wideNavigationCollapsed.value ? props.copy.expandNavigationLabel : props.copy.collapseNavigationLabel',
+        ),
     ],
     [
       'NAV_WIDE_CONTROL_ICON',
@@ -12849,10 +12875,8 @@ function computedBooleanLabelMatches(
     ts.isIdentifier(condition.expression) &&
     condition.expression.text === refName &&
     condition.name.text === 'value' &&
-    ts.isStringLiteralLike(conditional.whenTrue) &&
-    conditional.whenTrue.text === trueLabel &&
-    ts.isStringLiteralLike(conditional.whenFalse) &&
-    conditional.whenFalse.text === falseLabel
+    unwrapExpression(conditional.whenTrue).getText() === trueLabel &&
+    unwrapExpression(conditional.whenFalse).getText() === falseLabel
   )
 }
 
@@ -13232,15 +13256,11 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes("to: '#pavp-overlay-root'") &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void') &&
     snapshot.appearancePageSource.includes('grid-template-columns: repeat(4, minmax(0, 1fr));')
-  const dynamicRootsIncludeOnlyRoutesAndMotionFeature =
+  const admittedDynamicRoots =
     snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes(
-      'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
-    ) &&
-    snapshot.checkBundleSource.includes(
-      'const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])',
-    ) &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
+    snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max') &&
     snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:') &&
     exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") === 5 &&
@@ -13348,7 +13368,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
-      passed: snapshot.runtimeKernelStepCount === 11,
+      passed: snapshot.runtimeKernelStepCount === 12,
     },
     {
       code: 'ADMIN_NAV_NATIVE_PROVIDER_IDS',
@@ -13356,7 +13376,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 2,
+      passed: snapshot.storageRecordCount === 3,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -13364,7 +13384,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_DYNAMIC_ROOTS',
-      passed: dynamicRootsIncludeOnlyRoutesAndMotionFeature,
+      passed: admittedDynamicRoots,
     },
   ])
 }
@@ -13811,11 +13831,11 @@ function adminNavigationHeaderPlacementInvariantResults(
     computedBooleanLabelMatches(
       shellInitializers.get('wideNavigationCollapseLabel'),
       'wideNavigationCollapsed',
-      '展开导航',
-      '收起导航',
+      'props.copy.expandNavigationLabel',
+      'props.copy.collapseNavigationLabel',
     ) &&
-    exactOccurrenceCount(shellScript, "'展开导航'") === 1 &&
-    exactOccurrenceCount(shellScript, "'收起导航'") === 1
+    exactOccurrenceCount(shellScript, 'props.copy.expandNavigationLabel') === 1 &&
+    exactOccurrenceCount(shellScript, 'props.copy.collapseNavigationLabel') === 1
   const noBottomContainer =
     !/pavp-admin-shell__(?:navigation-control|collapse-action|collapse-icon)|collapse-dock|bottom-dock|bottom-control/iu.test(
       `${shellTemplate}\n${shellStyles}`,
@@ -13831,7 +13851,7 @@ function adminNavigationHeaderPlacementInvariantResults(
     ]),
   )
   const narrowTriggerPreserved =
-    /<button\s+[\s\S]*?v-if="profile === 'narrow'"[\s\S]*?ref="navigationTrigger"[\s\S]*?aria-label="打开架构导航"[\s\S]*?@click="openNavigation"[\s\S]*?>\s*导航\s*<\/button>/u.test(
+    /<button\s+[\s\S]*?v-if="profile === 'narrow'"[\s\S]*?ref="navigationTrigger"[\s\S]*?:aria-label="copy\.openNavigationLabel"[\s\S]*?@click="openNavigation"[\s\S]*?>\s*\{\{ copy\.navigationActionLabel \}\}\s*<\/button>/u.test(
       shellTemplate,
     )
   const narrowDrawerPreserved = [
@@ -14238,7 +14258,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
     [
       'admin-navigation-native-storage-count-drift',
       'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      { ...baseline, storageRecordCount: 3 },
+      { ...baseline, storageRecordCount: 2 },
     ],
     [
       'admin-navigation-native-adds-unadmitted-animation-dependency',
@@ -14422,11 +14442,11 @@ function adminNavigationExpansionMotionInvariantResults(
     computedBooleanLabelMatches(
       shellInitializers.get('navigationGroupsToggleLabel'),
       'allNavigationGroupsExpanded',
-      '折叠全部菜单',
-      '展开全部菜单',
+      'props.copy.collapseAllMenusLabel',
+      'props.copy.expandAllMenusLabel',
     ) &&
-    exactOccurrenceCount(shellScript, "'折叠全部菜单'") === 1 &&
-    exactOccurrenceCount(shellScript, "'展开全部菜单'") === 1 &&
+    exactOccurrenceCount(shellScript, 'props.copy.collapseAllMenusLabel') === 1 &&
+    exactOccurrenceCount(shellScript, 'props.copy.expandAllMenusLabel') === 1 &&
     groupControlAriaBindings.length === 1 &&
     normalizeTemplateExpression(groupControlAriaBindings[0]?.exp?.content) ===
       'navigationGroupsToggleLabel' &&
@@ -15353,10 +15373,10 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       passed:
         groupAction !== undefined &&
         sidebarAction !== undefined &&
-        exactOccurrenceCount(shellScript, "'折叠全部菜单'") === 1 &&
-        exactOccurrenceCount(shellScript, "'展开全部菜单'") === 1 &&
-        exactOccurrenceCount(shellScript, "'收起导航'") === 1 &&
-        exactOccurrenceCount(shellScript, "'展开导航'") === 1 &&
+        exactOccurrenceCount(shellScript, 'props.copy.collapseAllMenusLabel') === 1 &&
+        exactOccurrenceCount(shellScript, 'props.copy.expandAllMenusLabel') === 1 &&
+        exactOccurrenceCount(shellScript, 'props.copy.collapseNavigationLabel') === 1 &&
+        exactOccurrenceCount(shellScript, 'props.copy.expandNavigationLabel') === 1 &&
         exactOccurrenceCount(shellTemplate, '{{ navigationGroupsToggleLabel }}') === 1 &&
         exactOccurrenceCount(shellTemplate, '{{ wideNavigationCollapseLabel }}') === 1,
     },
@@ -15614,9 +15634,9 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     `MOTION_FEATURE_HEADROOM_BYTES=${String(motionFeatureBudgetBytes - 33648)}`,
     'MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILE_COUNT=1',
     'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223308',
-    `FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
-    `FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=${String(expectedInitialJavaScriptBudgetBytes - 223308)}`,
-    `INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=${String(expectedInitialJavaScriptBudgetBytes)}`,
+    'FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
+    'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14260',
+    'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568',
     `INITIAL_JAVASCRIPT_PRE_REBASE_HARD_BUDGET_BYTES=${String(currentInitialJavaScriptBudgetBytes)}`,
     `INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=${String(expectedMinimumInitialJavaScriptHeadroomBytes)}`,
     'INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192',
@@ -15625,8 +15645,8 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   const requiredBundleMeasurementMarkers = [
     'const expectedLazyRouteCount = 17',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
-    'const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])',
+    'const expectedDynamicRootCount = 26',
+    '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
     'differenceValues(motionFeatureStaticClosure, initialChunkKeys)',
@@ -15707,12 +15727,8 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     snapshot.routeCount !== 17 ||
     !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes(
-      'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
-    ) ||
-    !snapshot.checkBundleSource.includes(
-      'const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])',
-    ) ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') ||
+    !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
     ) ||
@@ -15916,6 +15932,7 @@ async function validateDependencies(): Promise<string[]> {
 
   if (
     !isDeepStrictEqual(rootDevDependencies, {
+      '@intlify/message-compiler': 'catalog:',
       '@iconify-json/lucide': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@types/node': 'catalog:',
@@ -15939,6 +15956,7 @@ async function validateDependencies(): Promise<string[]> {
       yaml: 'catalog:',
     }) ||
     !isDeepStrictEqual(webDependencies, {
+      'vue-i18n': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@platform/ui': 'workspace:*',
       pinia: 'catalog:',
@@ -16617,15 +16635,15 @@ function validateInspectorProjections(): string[] {
       'denim-cocoa',
       'burgundy-snow',
     ]) ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 11 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 12 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(routerConsoleProjection.routeCount) !== 17 ||
     runtimeNumber(routerConsoleProjection.productRouteCount) !== 10 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
     runtimeCount(routerRecords) !== 17 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 2 ||
-    runtimeCount(storageRecords) !== 2 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 3 ||
+    runtimeCount(storageRecords) !== 3 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 9 ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
@@ -16634,8 +16652,8 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(engineeringManifest.schemaVersion) !== 1 ||
     runtimeCount(engineeringManifest.verifyStageIds) !== 14 ||
     runtimeNumber(capabilityManifest.schemaVersion) !== 1 ||
-    runtimeNumber(capabilityManifest.recordCount) !== 20 ||
-    runtimeCount(capabilityRecords) !== 20 ||
+    runtimeNumber(capabilityManifest.recordCount) !== 21 ||
+    runtimeCount(capabilityRecords) !== 21 ||
     capabilityImplementationStatuses.some(
       (status) => !['complete', 'not-started', 'deferred'].includes(status),
     ) ||

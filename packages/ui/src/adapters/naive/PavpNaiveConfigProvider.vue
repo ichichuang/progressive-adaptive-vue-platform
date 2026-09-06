@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import type { EffectiveAppearanceState } from '@platform/design-system'
+import type { UiLocale } from '../../components/contracts'
+import zhCN from 'naive-ui/es/locales/common/zhCN'
+import enUS from 'naive-ui/es/locales/common/enUS'
 import { NConfigProvider } from 'naive-ui/es/config-provider'
 import { computed, provide, toRef } from 'vue'
 
@@ -10,6 +13,7 @@ defineOptions({ name: 'PavpNaiveConfigProvider' })
 
 const props = defineProps<{
   readonly appearance: Readonly<EffectiveAppearanceState>
+  readonly locale: UiLocale
 }>()
 
 defineSlots<{
@@ -24,6 +28,7 @@ provide(pavpNaiveAppearanceKey, appearance)
 
 <template>
   <NConfigProvider
+    :locale="locale === 'zh-CN' ? zhCN : enUS"
     :theme="projection.theme"
     :theme-overrides="projection.themeOverrides"
   >

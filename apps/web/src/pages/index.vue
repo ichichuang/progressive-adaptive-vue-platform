@@ -10,6 +10,10 @@ import { computed } from 'vue'
 
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
 import { overviewProjection } from '../app/console/overview-projection'
+import { getRouterConsoleRouteLabel } from '../app/router/router-console-projection'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'ConsoleOverviewPage' })
 
@@ -21,19 +25,28 @@ defineProps<{
 
 const appearance = useAppearanceReadBoundary()
 const foundationItems = computed<readonly UiDescriptionItem[]>(() => [
-  { label: '公共设计角色', value: String(overviewProjection.designSystem.publicRoleCount) },
-  { label: '产品路由', value: String(overviewProjection.router.productRouteCount) },
-  { label: '启动阶段', value: String(overviewProjection.runtimeKernel.stepCount) },
-  { label: '存储记录', value: String(overviewProjection.storage.recordCount) },
-  { label: '公共 UI 组件', value: String(overviewProjection.uiSystem.publicComponentIds.length) },
+  {
+    label: t('console.public-roles'),
+    value: String(overviewProjection.designSystem.publicRoleCount),
+  },
+  {
+    label: t('console.product-routes'),
+    value: String(overviewProjection.router.productRouteCount),
+  },
+  { label: t('console.startup-stages'), value: String(overviewProjection.runtimeKernel.stepCount) },
+  { label: t('console.storage-records'), value: String(overviewProjection.storage.recordCount) },
+  {
+    label: t('console.public-ui'),
+    value: String(overviewProjection.uiSystem.publicComponentIds.length),
+  },
 ])
 const appearanceItems = computed<readonly UiDescriptionItem[]>(() => [
-  { label: '颜色模式', value: appearance.snapshot.value.colorMode },
-  { label: '主题', value: appearance.snapshot.value.theme.themeId },
-  { label: '对比度', value: appearance.snapshot.value.contrast },
-  { label: '材质', value: appearance.snapshot.value.material },
-  { label: '密度', value: appearance.snapshot.value.density },
-  { label: '动效', value: appearance.snapshot.value.motion },
+  { label: t('console.color-mode'), value: appearance.snapshot.value.colorMode },
+  { label: t('console.theme'), value: appearance.snapshot.value.theme.themeId },
+  { label: t('console.contrast'), value: appearance.snapshot.value.contrast },
+  { label: t('console.material'), value: appearance.snapshot.value.material },
+  { label: t('console.density'), value: appearance.snapshot.value.density },
+  { label: t('console.motion'), value: appearance.snapshot.value.motion },
 ])
 const capabilityNavigation = overviewProjection.router.productRoutes.filter(
   (record) => record.name !== 'console-overview',
@@ -47,24 +60,24 @@ const capabilityNavigation = overviewProjection.router.productRoutes.filter(
     :title="title"
   />
   <UiSection
-    description="全部数字来自当前安全投影，不解析架构文档或私有注册表。"
-    title="平台基础"
+    :description="t('console.overview.foundation-description')"
+    :title="t('console.overview.foundation-title')"
   >
     <div class="pavp-overview-status">
       <UiStatusBadge
         label="ACTIVE"
         tone="active"
       />
-      <span>架构管理台、PAVP UI 与响应式 Shell 已接入当前静态能力面。</span>
+      <span>{{ t('console.overview.active-summary') }}</span>
     </div>
     <UiDescriptionList :items="foundationItems" />
   </UiSection>
   <UiSection
-    description="直接进入各项当前架构能力的只读视图；外观页提供唯一初始交互面。"
-    title="能力导航"
+    :description="t('console.overview.navigation-description')"
+    :title="t('console.overview.navigation-title')"
   >
     <nav
-      aria-label="架构能力"
+      :aria-label="t('console.overview.navigation-label')"
       class="pavp-overview-navigation"
     >
       <a
@@ -73,13 +86,13 @@ const capabilityNavigation = overviewProjection.router.productRoutes.filter(
         class="border rounded-panel border-border-default min-h-target-enhanced text-text-primary"
         :href="record.pathPattern"
       >
-        {{ record.visibleLabel }}
+        {{ getRouterConsoleRouteLabel(record.name, t) }}
       </a>
     </nav>
   </UiSection>
   <UiSection
-    description="该摘要是总览页唯一的实时状态例外。"
-    title="当前外观"
+    :description="t('console.overview.appearance-description')"
+    :title="t('console.overview.appearance-title')"
   >
     <UiDescriptionList :items="appearanceItems" />
   </UiSection>

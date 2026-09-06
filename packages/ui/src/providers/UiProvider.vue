@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { UiLocale } from '../components/contracts'
 import type { EffectiveAppearanceState } from '@platform/design-system'
 
 import PavpNaiveConfigProvider from '../adapters/naive/PavpNaiveConfigProvider.vue'
@@ -7,6 +8,7 @@ defineOptions({ name: 'UiProvider' })
 
 defineProps<{
   readonly appearance: EffectiveAppearanceState
+  readonly locale: UiLocale
 }>()
 
 defineSlots<{
@@ -16,7 +18,10 @@ defineSlots<{
 
 <template>
   <div id="pavp-overlay-root" />
-  <PavpNaiveConfigProvider :appearance="appearance">
+  <PavpNaiveConfigProvider
+    :appearance="appearance"
+    :locale="locale"
+  >
     <slot />
   </PavpNaiveConfigProvider>
 </template>

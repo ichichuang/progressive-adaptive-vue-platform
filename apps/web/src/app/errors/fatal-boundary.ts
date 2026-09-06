@@ -35,6 +35,8 @@ function renderFatalBoundary(input: {
   const boundary = document.createElement('main')
   boundary.className =
     'leading-body font-body-family min-h-dvh px-page-inline py-section-block text-body text-text-primary bg-surface-page'
+  boundary.setAttribute('lang', 'zh-CN')
+  boundary.setAttribute('dir', 'ltr')
   boundary.setAttribute('role', 'alert')
   boundary.setAttribute('aria-live', 'assertive')
 

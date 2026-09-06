@@ -19,13 +19,13 @@ export interface CapabilityManifestRecord {
 
 export interface CapabilityManifest {
   readonly schemaVersion: 1
-  readonly recordCount: 20
+  readonly recordCount: 21
   readonly records: readonly CapabilityManifestRecord[]
 }
 
 export const capabilityManifest = {
   schemaVersion: 1,
-  recordCount: 20,
+  recordCount: 21,
   records: [
     {
       id: 'api-transport',
@@ -128,7 +128,7 @@ export const capabilityManifest = {
     {
       id: 'forms-i18n-tables',
       visibleLabel: '表单、国际化与表格',
-      summary: '由真实前端消费者逐项触发的能力。',
+      summary: '管理台双语已由独立 i18n Record 表示；表单、表格与通用工作流仍未实现。',
       capabilityStatus: 'TARGET_INACTIVE',
       implementationStatus: 'not-started',
       presentationMode: 'roadmap-only',
@@ -137,6 +137,24 @@ export const capabilityManifest = {
       prerequisiteIds: ['architecture-admin-console'],
       admissionCondition: '需要一个真实消费者并一次只准入一个能力。',
       interactive: false,
+    },
+    {
+      id: 'i18n',
+      visibleLabel: '管理台中英文',
+      summary: '现有管理台的中文与英文展示、语言切换和本地选择恢复。',
+      capabilityStatus: 'ACTIVE',
+      implementationStatus: 'complete',
+      presentationMode: 'active-interactive',
+      routeName: 'appearance-management',
+      owner: 'apps/web/src/shared/i18n',
+      prerequisiteIds: [
+        'architecture-admin-console',
+        'router-governance',
+        'runtime-kernel',
+        'storage-persistence',
+      ],
+      admissionCondition: '仅限已实现的管理台双语范围；其他语言、账号同步及业务格式须另行准入。',
+      interactive: true,
     },
     {
       id: 'observability-reporting',
@@ -219,7 +237,7 @@ export const capabilityManifest = {
     {
       id: 'runtime-kernel',
       visibleLabel: '运行时内核',
-      summary: '当前十一阶段启动、Provider、错误与释放流程。',
+      summary: '当前十二阶段启动、Provider、错误与释放流程。',
       capabilityStatus: 'ACTIVE',
       implementationStatus: 'complete',
       presentationMode: 'active-read-only',
@@ -258,7 +276,7 @@ export const capabilityManifest = {
     {
       id: 'storage-persistence',
       visibleLabel: '存储与持久化',
-      summary: '当前两条非敏感本地存储记录及其生命周期。',
+      summary: '当前三条非敏感本地存储记录及其生命周期。',
       capabilityStatus: 'ACTIVE',
       implementationStatus: 'complete',
       presentationMode: 'active-read-only',
@@ -296,3 +314,111 @@ export const capabilityManifest = {
     },
   ],
 } as const satisfies CapabilityManifest
+
+export const capabilityMessageKeys = {
+  'api-transport': {
+    visibleLabel: 'capability.api-transport.visible-label',
+    summary: 'capability.api-transport.summary',
+    admissionCondition: 'capability.api-transport.admission-condition',
+  },
+  appearance: {
+    visibleLabel: 'capability.appearance.visible-label',
+    summary: 'capability.appearance.summary',
+    admissionCondition: 'capability.appearance.admission-condition',
+  },
+  'architecture-admin-console': {
+    visibleLabel: 'capability.architecture-admin-console.visible-label',
+    summary: 'capability.architecture-admin-console.summary',
+    admissionCondition: 'capability.architecture-admin-console.admission-condition',
+  },
+  'auth-session-permission': {
+    visibleLabel: 'capability.auth-session-permission.visible-label',
+    summary: 'capability.auth-session-permission.summary',
+    admissionCondition: 'capability.auth-session-permission.admission-condition',
+  },
+  'deployment-delivery': {
+    visibleLabel: 'capability.deployment-delivery.visible-label',
+    summary: 'capability.deployment-delivery.summary',
+    admissionCondition: 'capability.deployment-delivery.admission-condition',
+  },
+  'design-system': {
+    visibleLabel: 'capability.design-system.visible-label',
+    summary: 'capability.design-system.summary',
+    admissionCondition: 'capability.design-system.admission-condition',
+  },
+  'first-protected-vertical-slice': {
+    visibleLabel: 'capability.first-protected-vertical-slice.visible-label',
+    summary: 'capability.first-protected-vertical-slice.summary',
+    admissionCondition: 'capability.first-protected-vertical-slice.admission-condition',
+  },
+  'forms-i18n-tables': {
+    visibleLabel: 'capability.forms-i18n-tables.visible-label',
+    summary: 'capability.forms-i18n-tables.summary',
+    admissionCondition: 'capability.forms-i18n-tables.admission-condition',
+  },
+  i18n: {
+    visibleLabel: 'capability.i18n.visible-label',
+    summary: 'capability.i18n.summary',
+    admissionCondition: 'capability.i18n.admission-condition',
+  },
+  'observability-reporting': {
+    visibleLabel: 'capability.observability-reporting.visible-label',
+    summary: 'capability.observability-reporting.summary',
+    admissionCondition: 'capability.observability-reporting.admission-condition',
+  },
+  'pavp-ui-system': {
+    visibleLabel: 'capability.pavp-ui-system.visible-label',
+    summary: 'capability.pavp-ui-system.summary',
+    admissionCondition: 'capability.pavp-ui-system.admission-condition',
+  },
+  'project-generators': {
+    visibleLabel: 'capability.project-generators.visible-label',
+    summary: 'capability.project-generators.summary',
+    admissionCondition: 'capability.project-generators.admission-condition',
+  },
+  'repository-governance': {
+    visibleLabel: 'capability.repository-governance.visible-label',
+    summary: 'capability.repository-governance.summary',
+    admissionCondition: 'capability.repository-governance.admission-condition',
+  },
+  'responsive-layout': {
+    visibleLabel: 'capability.responsive-layout.visible-label',
+    summary: 'capability.responsive-layout.summary',
+    admissionCondition: 'capability.responsive-layout.admission-condition',
+  },
+  'router-governance': {
+    visibleLabel: 'capability.router-governance.visible-label',
+    summary: 'capability.router-governance.summary',
+    admissionCondition: 'capability.router-governance.admission-condition',
+  },
+  'runtime-kernel': {
+    visibleLabel: 'capability.runtime-kernel.visible-label',
+    summary: 'capability.runtime-kernel.summary',
+    admissionCondition: 'capability.runtime-kernel.admission-condition',
+  },
+  'shared-ui-expansion': {
+    visibleLabel: 'capability.shared-ui-expansion.visible-label',
+    summary: 'capability.shared-ui-expansion.summary',
+    admissionCondition: 'capability.shared-ui-expansion.admission-condition',
+  },
+  'specialist-capabilities': {
+    visibleLabel: 'capability.specialist-capabilities.visible-label',
+    summary: 'capability.specialist-capabilities.summary',
+    admissionCondition: 'capability.specialist-capabilities.admission-condition',
+  },
+  'storage-persistence': {
+    visibleLabel: 'capability.storage-persistence.visible-label',
+    summary: 'capability.storage-persistence.summary',
+    admissionCondition: 'capability.storage-persistence.admission-condition',
+  },
+  'tanstack-query': {
+    visibleLabel: 'capability.tanstack-query.visible-label',
+    summary: 'capability.tanstack-query.summary',
+    admissionCondition: 'capability.tanstack-query.admission-condition',
+  },
+  'view-transition-motion': {
+    visibleLabel: 'capability.view-transition-motion.visible-label',
+    summary: 'capability.view-transition-motion.summary',
+    admissionCondition: 'capability.view-transition-motion.admission-condition',
+  },
+} as const

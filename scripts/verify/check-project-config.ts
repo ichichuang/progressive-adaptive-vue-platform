@@ -50,6 +50,10 @@ const expectedVueUseCoreIntegrity =
   'sha512-X4WHz1HlCzCBoYXesUkifzzWBAcZgXG8Fi5iNPQg/epdzOB3gu8Fawj3hvuwYR1nGcXGnvxwYYcUC/71++svtQ=='
 const vueRouterDeclarationFileName = 'index-BN0B0y8a.d.ts'
 const vueRouterPatchPath = 'patches/vue-router@5.2.0.patch'
+const vueI18nPatchPath = 'patches/vue-i18n@11.4.10.patch'
+const expectedVueI18nPatchHash = '51a2f582512db781c35a6326169351dd841348537978e94f0191efb1593e709a'
+const expectedVueI18nIntegrity =
+  'sha512-Lp+BjOxqzOY87DS6Z8KrQrpiTr9IN/Lt4kZEilwyXG2Wrx+AcU6IVsAW92HNXtVcn1HFFPV6ty41p9e/qDpyvg=='
 const motionVPatchPath = 'patches/motion-v@2.4.0.patch'
 const expectedMotionVPatchHash = 'fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59'
 const expectedMotionVPatchDeclarationFileCount = 19
@@ -63,6 +67,7 @@ const expectedMotionVSnapshotCoordinate =
 const expectedPatchedDependencies = {
   'motion-v@2.4.0': motionVPatchPath,
   'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
+  'vue-i18n@11.4.10': vueI18nPatchPath,
   'vue-router@5.2.0': vueRouterPatchPath,
 } as const
 const prohibitedDirectMotionCompatibilityDependencies = [
@@ -1866,10 +1871,16 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     ) ||
     defineRecord === undefined ||
     !hasExactObjectPropertySet(defineRecord, [
+      '__VUE_I18N_FULL_INSTALL__',
+      '__VUE_I18N_LEGACY_API__',
       '__PAVP_COMPILED_ENVIRONMENT__',
       '__PAVP_COMPILED_RELEASE_SHA__',
       '__PAVP_COMPILED_BUILD_VERSION__',
     ]) ||
+    objectPropertyExpression(defineRecord, '__VUE_I18N_FULL_INSTALL__')?.kind !==
+      ts.SyntaxKind.FalseKeyword ||
+    objectPropertyExpression(defineRecord, '__VUE_I18N_LEGACY_API__')?.kind !==
+      ts.SyntaxKind.FalseKeyword ||
     !isRuntimeIdentitySerialization(
       checker,
       objectPropertyExpression(defineRecord, '__PAVP_COMPILED_ENVIRONMENT__'),
@@ -2474,6 +2485,12 @@ expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
 expectEqual(workspaceCatalog['vue'], expectedVueVersion, 'Vue catalog version')
 expectEqual(workspaceCatalog['zod'], expectedZodVersion, 'Zod catalog version')
 expectEqual(workspaceCatalog['vue-router'], expectedVueRouterVersion, 'Vue Router catalog version')
+expectEqual(workspaceCatalog['vue-i18n'], '11.4.10', 'Vue I18n declaration-patch version scope')
+expectEqual(
+  workspaceCatalog['@intlify/message-compiler'],
+  '11.4.10',
+  'I18n checker compiler version scope',
+)
 expectEqual(workspaceConfiguration['allowUnusedPatches'], false, 'Unused patch failure policy')
 expectEqual(
   workspaceConfiguration['ignorePatchFailures'],
@@ -2487,6 +2504,13 @@ expectStructuredEqual(
 )
 
 const workspacePatchedDependencies = workspaceConfiguration['patchedDependencies']
+
+const vueI18nPatch = await readFile(resolve(rootDirectory, vueI18nPatchPath), 'utf8')
+expectEqual(
+  createHash('sha256').update(vueI18nPatch).digest('hex'),
+  expectedVueI18nPatchHash,
+  'Vue I18n exact two-change dist/vue-i18n.d.ts patch SHA-256',
+)
 
 if (!isJsonObject(workspacePatchedDependencies)) {
   throw new Error('Workspace patched dependency authority must be an object.')
@@ -2661,6 +2685,77 @@ const lockedDesignSystemZodDependency = isJsonObject(designSystemLockfileDepende
   : undefined
 const lockfileSnapshots = lockfile['snapshots']
 const lockfilePatchedDependencies = lockfile['patchedDependencies']
+const rootLockfileImporter = isJsonObject(lockfileImporters) ? lockfileImporters['.'] : undefined
+const rootLockfileDevDependencies = isJsonObject(rootLockfileImporter)
+  ? rootLockfileImporter['devDependencies']
+  : undefined
+expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog)
+    ? defaultLockfileCatalog['@intlify/message-compiler']
+    : undefined,
+  { specifier: '11.4.10', version: '11.4.10' },
+  'I18n checker compiler lockfile catalog coordinate',
+)
+expectStructuredEqual(
+  isJsonObject(rootLockfileDevDependencies)
+    ? rootLockfileDevDependencies['@intlify/message-compiler']
+    : undefined,
+  { specifier: 'catalog:', version: '11.4.10' },
+  'I18n compiler root development-only importer coordinate',
+)
+expectStructuredEqual(
+  isJsonObject(lockfilePackages)
+    ? Object.keys(lockfilePackages).filter((key) => key.startsWith('@intlify/message-compiler@'))
+    : [],
+  ['@intlify/message-compiler@11.4.10'],
+  'I18n compiler exact lockfile package set',
+)
+expectStructuredEqual(
+  isJsonObject(lockfileSnapshots)
+    ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('@intlify/message-compiler@'))
+    : [],
+  ['@intlify/message-compiler@11.4.10'],
+  'I18n compiler exact lockfile snapshot set',
+)
+const vueI18nPatchedVersion = `11.4.10(patch_hash=${expectedVueI18nPatchHash})(vue@${expectedVueVersion}(typescript@${expectedRuntime.typescript}))`
+const lockedVueI18nPackage = isJsonObject(lockfilePackages)
+  ? lockfilePackages['vue-i18n@11.4.10']
+  : undefined
+
+expectStructuredEqual(
+  isJsonObject(lockfilePatchedDependencies)
+    ? lockfilePatchedDependencies['vue-i18n@11.4.10']
+    : undefined,
+  { hash: expectedVueI18nPatchHash, path: vueI18nPatchPath },
+  'Vue I18n lockfile patch identity',
+)
+expectStructuredEqual(
+  isJsonObject(webLockfileDependencies) ? webLockfileDependencies['vue-i18n'] : undefined,
+  { specifier: 'catalog:', version: vueI18nPatchedVersion },
+  'Vue I18n web patched lockfile coordinate',
+)
+expectStructuredEqual(
+  isJsonObject(lockfilePackages)
+    ? Object.keys(lockfilePackages).filter((key) => key.startsWith('vue-i18n@'))
+    : [],
+  ['vue-i18n@11.4.10'],
+  'Vue I18n declaration-patch package set',
+)
+expectStructuredEqual(
+  isJsonObject(lockfileSnapshots)
+    ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith('vue-i18n@'))
+    : [],
+  [`vue-i18n@${vueI18nPatchedVersion}`],
+  'Vue I18n patched lockfile snapshot identity',
+)
+expectEqual(
+  isJsonObject(lockedVueI18nPackage) && isJsonObject(lockedVueI18nPackage['resolution'])
+    ? lockedVueI18nPackage['resolution']['integrity']
+    : undefined,
+  expectedVueI18nIntegrity,
+  'Official Vue I18n npm integrity',
+)
+
 const lockedVueRouterPatch = isJsonObject(lockfilePatchedDependencies)
   ? lockfilePatchedDependencies['vue-router@5.2.0']
   : undefined
@@ -2953,6 +3048,7 @@ expectStructuredEqual(
     '@platform/ui': 'workspace:*',
     pinia: 'catalog:',
     vue: 'catalog:',
+    'vue-i18n': 'catalog:',
     'vue-router': 'catalog:',
     zod: 'catalog:',
   },
@@ -3099,7 +3195,8 @@ expectStructuredEqual(
       'sorted POSIX relative path;NUL;per-file SHA-256 hex;newline',
     PATCH_RUNTIME_HASH_MANIFEST_SHA256: motionVRuntimeHashManifest.hash,
     PATCH_EXACT_MOTION_PATCH_COUNT: '1',
-    PATCH_CANONICAL_TOTAL_SET: Object.keys(expectedPatchedDependencies).join(';'),
+    // Preserve the Motion admission's historical set; §23.6.2 owns the I18n exception.
+    PATCH_CANONICAL_TOTAL_SET: 'motion-v@2.4.0;unconfig@7.5.0;vue-router@5.2.0',
     PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY: 'PROHIBITED',
     PATCH_TYPESCRIPT_STRICT: 'true',
     PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES: 'true',

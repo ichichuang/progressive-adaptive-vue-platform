@@ -2,6 +2,10 @@
 import { UiDescriptionList, UiPageHeader, UiSection, type UiDescriptionItem } from '@platform/ui'
 
 import { runtimeKernelConsoleProjection } from '../app/bootstrap/runtime-kernel-console-projection'
+import { computed } from 'vue'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'RuntimeKernelInspectorPage' })
 
@@ -11,20 +15,29 @@ defineProps<{
   readonly message: string
 }>()
 
-const kernelItems: readonly UiDescriptionItem[] = [
-  { label: '启动阶段数', value: String(runtimeKernelConsoleProjection.stepCount) },
-  { label: 'Provider', value: runtimeKernelConsoleProjection.activeProviderIds.join(', ') },
-  { label: 'Core Errors', value: String(runtimeKernelConsoleProjection.errorRecordCounts.core) },
+const kernelItems = computed<readonly UiDescriptionItem[]>(() => [
+  { label: t('console.startup-count'), value: String(runtimeKernelConsoleProjection.stepCount) },
   {
-    label: 'Router Errors',
+    label: t('console.provider'),
+    value: runtimeKernelConsoleProjection.activeProviderIds.join(', '),
+  },
+  {
+    label: t('console.core-errors'),
+    value: String(runtimeKernelConsoleProjection.errorRecordCounts.core),
+  },
+  {
+    label: t('console.router-errors'),
     value: String(runtimeKernelConsoleProjection.errorRecordCounts.router),
   },
   {
-    label: 'Storage Errors',
+    label: t('console.storage-errors'),
     value: String(runtimeKernelConsoleProjection.errorRecordCounts.storage),
   },
-  { label: 'Error Total', value: String(runtimeKernelConsoleProjection.errorRecordCounts.total) },
-]
+  {
+    label: t('console.error-total'),
+    value: String(runtimeKernelConsoleProjection.errorRecordCounts.total),
+  },
+])
 </script>
 
 <template>
@@ -34,8 +47,8 @@ const kernelItems: readonly UiDescriptionItem[] = [
     :title="title"
   />
   <UiSection
-    description="阶段顺序来自现有 Runtime Kernel Registry。"
-    title="启动与 Provider"
+    :description="t('console.kernel.description')"
+    :title="t('console.kernel.title')"
   >
     <UiDescriptionList :items="kernelItems" />
     <ol class="pavp-id-list text-text-secondary">

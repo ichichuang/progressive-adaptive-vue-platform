@@ -1,3 +1,5 @@
+import type { LocalePreferencePort } from '../../shared/i18n'
+import { createLocalePreferenceStorage } from './locale-preference-storage'
 import type { StartupAttemptId } from '../bootstrap/lifecycle'
 import type { CoreRuntimeConfiguration } from '../config/runtime-configuration-contract'
 import { createStorageCrossTabHandle, type StorageCrossTabHandle } from './storage-cross-tab'
@@ -10,6 +12,7 @@ import { nonePrincipalPartitionId, type PrincipalPartitionId } from './storage-p
 import { storageRegistry, type StorageRegistryRecord } from './storage-registry'
 
 interface StorageOwner {
+  readonly localePreference: LocalePreferencePort
   readonly registry: readonly StorageRegistryRecord[]
   readonly migrationRegistry: readonly StorageMigrationRecord[]
   readonly crossTabEventAllowlist: readonly string[]
@@ -35,7 +38,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 2 ||
+    records.length !== 3 ||
     envelopeRecords.length !== 0 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -62,7 +65,9 @@ export function createAndReadyStorage(input: {
     buildVersion: input.configuration.buildVersion,
   })
 
+  let disposed = false
   const owner = Object.freeze({
+    localePreference: createLocalePreferenceStorage(errorAdapter, () => disposed),
     registry: storageRegistry,
     migrationRegistry: storageMigrationRegistry,
     crossTabEventAllowlist: storageCrossTabEventAllowlist,
@@ -73,7 +78,6 @@ export function createAndReadyStorage(input: {
   })
 
   const crossTabHandle: StorageCrossTabHandle = createStorageCrossTabHandle()
-  let disposed = false
 
   return {
     owner,

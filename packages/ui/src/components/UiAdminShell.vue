@@ -30,11 +30,12 @@ import {
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { PavpTooltipPrimitive } from '../adapters/naive/naive-tooltip'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
-import type { UiAdminNavigationGroup } from './contracts'
+import type { UiAdminNavigationGroup, UiAdminShellCopy } from './contracts'
 
 defineOptions({ name: 'UiAdminShell' })
 
 const props = defineProps<{
+  readonly copy: UiAdminShellCopy
   readonly activeRouteName: string
   readonly navigation: readonly UiAdminNavigationGroup[]
 }>()
@@ -136,7 +137,9 @@ const expandedNavigationWidth = tokens['layout.admin.sidebar.expanded-inline-siz
 const persistentLayoutContentStyle = Object.freeze({ overflow: 'visible' })
 const persistentSiderContentStyle = Object.freeze({ overflow: 'hidden' })
 const wideNavigationCollapseLabel = computed(() =>
-  wideNavigationCollapsed.value ? '展开导航' : '收起导航',
+  wideNavigationCollapsed.value
+    ? props.copy.expandNavigationLabel
+    : props.copy.collapseNavigationLabel,
 )
 const navigationGroupKeys = computed(() =>
   props.navigation.map((group) => `navigation-group:${group.id}`),
@@ -151,7 +154,9 @@ const allNavigationGroupsExpanded = computed(() =>
   navigationGroupKeys.value.every((key) => validExpandedNavigationGroupKeys.value.includes(key)),
 )
 const navigationGroupsToggleLabel = computed(() =>
-  allNavigationGroupsExpanded.value ? '折叠全部菜单' : '展开全部菜单',
+  allNavigationGroupsExpanded.value
+    ? props.copy.collapseAllMenusLabel
+    : props.copy.expandAllMenusLabel,
 )
 let currentShellInlineSize = 0
 let resizeObserver: ResizeObserver | undefined
@@ -528,16 +533,16 @@ watch(
       <button
         v-if="profile === 'narrow'"
         ref="navigationTrigger"
-        aria-label="打开架构导航"
+        :aria-label="copy.openNavigationLabel"
         class="pavp-admin-shell__action min-h-target-enhanced min-w-target-enhanced"
         type="button"
         @click="openNavigation"
       >
-        导航
+        {{ copy.navigationActionLabel }}
       </button>
       <div class="pavp-admin-shell__identity">
         <span class="pavp-admin-shell__eyebrow">PAVP</span>
-        <strong>架构管理台</strong>
+        <strong>{{ copy.consoleTitle }}</strong>
       </div>
       <div
         v-if="profile === 'wide'"
@@ -665,7 +670,7 @@ watch(
           :render-base-icon="renderNavigationMenuIcon"
         >
           <nav
-            aria-label="架构导航"
+            :aria-label="copy.navigationLabel"
             class="pavp-admin-shell__persistent-navigation"
             :data-pavp-admin-navigation-motion-ready="
               featureReady && appearance.motion === 'full' ? 'true' : 'false'
@@ -713,23 +718,23 @@ watch(
         >
           <nav
             ref="drawerNavigation"
-            aria-label="架构导航"
+            :aria-label="copy.navigationLabel"
             aria-modal="true"
             class="pavp-admin-shell__drawer-navigation"
             role="dialog"
             tabindex="-1"
           >
             <div class="pavp-admin-shell__drawer-heading">
-              <strong>架构导航</strong>
+              <strong>{{ copy.navigationLabel }}</strong>
               <button
                 ref="drawerClose"
-                aria-label="关闭架构导航"
+                :aria-label="copy.closeNavigationLabel"
                 class="pavp-admin-shell__action min-h-target-enhanced min-w-target-enhanced"
                 type="button"
                 @click="closeNavigation"
                 @keydown="handleDrawerKeydown"
               >
-                关闭
+                {{ copy.closeActionLabel }}
               </button>
             </div>
             <div

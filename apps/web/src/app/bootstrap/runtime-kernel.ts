@@ -1,3 +1,5 @@
+import { createConsoleI18n, type ConsoleI18nHandle } from '../../shared/i18n'
+import { getRouteMessageScope } from '../router/route-registry'
 import type { Component } from 'vue'
 
 import {
@@ -60,6 +62,8 @@ import { startupConfigurationRecoveryPolicy } from './startup-configuration-reco
 const applicationMountTarget = '#app'
 
 interface AttemptResources {
+  i18n?: ConsoleI18nHandle
+  disconnectLocalization?: () => void
   appearanceHandoff?: AppearanceFirstPaintHandoffHandle
   appearanceSubscriptions?: AppearanceMediaSubscriptionsUnsubscribe
   configuration?: CoreRuntimeConfiguration
@@ -172,6 +176,19 @@ function createAttemptDisposer(input: {
     )
     delete input.resources.mountedApplication
     safeDispose(
+      'dispose-i18n',
+      () => {
+        try {
+          input.resources.disconnectLocalization?.()
+        } finally {
+          input.resources.i18n?.dispose()
+        }
+      },
+      failedSteps,
+    )
+    delete input.resources.disconnectLocalization
+    delete input.resources.i18n
+    safeDispose(
       'dispose-storage',
       input.resources.storage === undefined ? undefined : () => input.resources.storage?.dispose(),
       failedSteps,
@@ -267,6 +284,7 @@ async function startAttempt(input: {
   const setState = (nextState: ApplicationStartupState): void => {
     state = nextState
   }
+  const attemptIsStarting = (): boolean => state === 'starting'
   const enterBootstrapStep = (stepId: BootstrapStepId): void => {
     currentBootstrapStepId = stepId
 
@@ -430,11 +448,32 @@ async function startAttempt(input: {
     })
     throwClaimedStartupFailure()
 
+    if (!attemptIsStarting()) {
+      resources.router.dispose()
+      delete resources.router
+      return { status: 'cancelled' }
+    }
     enterBootstrapStep('create-and-ready-storage')
     resources.storage = createAndReadyStorage({
       configuration: resources.configuration,
       startupAttemptId: input.startupAttemptId,
     })
+    throwClaimedStartupFailure()
+
+    enterBootstrapStep('create-and-ready-i18n')
+    const router = resources.router
+    resources.i18n = createConsoleI18n({
+      application: resources.vueApplication.application,
+      document,
+      preference: resources.storage.owner.localePreference,
+      initialScope: getRouteMessageScope(router.router.currentRoute.value.name),
+      onLocaleCommitted: (translate) => {
+        router.refreshCurrentRouteTitle(translate)
+      },
+    })
+    const localization = await resources.i18n.ready
+    if (!attemptIsStarting() || localization.status === 'cancelled') return { status: 'cancelled' }
+    resources.disconnectLocalization = router.connectLocalization(localization.boundary)
     throwClaimedStartupFailure()
 
     enterBootstrapStep('mount-application')

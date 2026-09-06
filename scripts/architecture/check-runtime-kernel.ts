@@ -25,6 +25,7 @@ const bootstrapStepIds = [
   'install-platform-providers',
   'create-and-ready-router',
   'create-and-ready-storage',
+  'create-and-ready-i18n',
   'mount-application',
   'register-post-mount-appearance-media-subscriptions',
   'publish-application-ready',
@@ -47,7 +48,8 @@ const bootstrapDependencies = [
     'install-platform-providers',
   ],
   ['validate-build-and-runtime-configuration', 'install-platform-providers'],
-  ['create-and-ready-router', 'create-and-ready-storage'],
+  ['create-vue-application', 'create-and-ready-router', 'create-and-ready-storage'],
+  ['create-and-ready-router', 'create-and-ready-storage', 'create-and-ready-i18n'],
   ['install-platform-providers', 'mount-application'],
   [
     'validate-build-and-runtime-configuration',
@@ -60,6 +62,7 @@ const disposalStepIds = [
   'withdraw-application-ready',
   'remove-appearance-media-subscriptions',
   'unmount-vue-application',
+  'dispose-i18n',
   'dispose-storage',
   'dispose-router-and-history',
   'dispose-installed-platform-provider-handles',
@@ -574,13 +577,13 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
     .filter((record): record is ts.ObjectLiteralExpression => record !== undefined)
 
   if (records?.length !== bootstrapStepIds.length) {
-    return ['Runtime Kernel Bootstrap Registry must contain exactly eleven records.']
+    return ['Runtime Kernel Bootstrap Registry must contain exactly twelve records.']
   }
 
   const actualIds = records.map((record) => literalValue(propertyExpression(record, 'id')))
   if (!equalArray(actualIds as string[], bootstrapStepIds)) {
     violations.push(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact eleven-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact twelve-step contract.',
     )
   }
 
@@ -590,7 +593,7 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
       violations.push(`Bootstrap step ${String(index + 1)} dependency graph drifted.`)
     }
     const mountOwner = literalValue(propertyExpression(record, 'domMountOwner'))
-    if (mountOwner !== (index === 8)) {
+    if (mountOwner !== (actualIds[index] === 'mount-application')) {
       violations.push(`Bootstrap step ${String(index + 1)} Mount ownership drifted.`)
     }
     const retryEligible = literalValue(
@@ -624,7 +627,7 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
   })
   if (!equalArray(disposalSteps, disposalStepIds)) {
     violations.push(
-      'Runtime Kernel reverse disposal order must match the exact eleven-step contract.',
+      'Runtime Kernel reverse disposal order must match the exact twelve-step contract.',
     )
   }
 
@@ -1398,6 +1401,10 @@ function validateNoFutureCapabilities(sources: readonly ParsedSource[]): string[
       const specifier = declaration.moduleSpecifier
       if (
         ts.isStringLiteral(specifier) &&
+        !(
+          specifier.text === 'vue-i18n' &&
+          relative(rootDirectory, source.path) === 'apps/web/src/shared/i18n/runtime.ts'
+        ) &&
         prohibitedPackages.some(
           (name) => specifier.text === name || specifier.text.startsWith(`${name}/`),
         )
@@ -1433,7 +1440,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapRegistry(swappedRegistry).includes(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact eleven-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact twelve-step contract.',
     )
   ) {
     failures.push('Negative probe failed: Bootstrap Registry drift was accepted.')
@@ -1446,7 +1453,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapExecution(swappedDisposal).includes(
-      'Runtime Kernel reverse disposal order must match the exact eleven-step contract.',
+      'Runtime Kernel reverse disposal order must match the exact twelve-step contract.',
     )
   ) {
     failures.push('Negative probe failed: reverse disposal drift was accepted.')

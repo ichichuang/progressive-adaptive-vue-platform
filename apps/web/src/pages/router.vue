@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { UiDescriptionList, UiPageHeader, UiSection, type UiDescriptionItem } from '@platform/ui'
 
-import { routerConsoleProjection } from '../app/router/router-console-projection'
+import { computed } from 'vue'
+import {
+  getRouterConsoleRouteLabel,
+  routerConsoleProjection,
+} from '../app/router/router-console-projection'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'RouterGovernanceInspectorPage' })
 
@@ -11,15 +18,24 @@ defineProps<{
   readonly message: string
 }>()
 
-const routerItems: readonly UiDescriptionItem[] = [
-  { label: '全部路由', value: String(routerConsoleProjection.routeCount) },
-  { label: '产品路由', value: String(routerConsoleProjection.productRouteCount) },
-  { label: '错误路由', value: String(routerConsoleProjection.errorRouteCount) },
-  { label: '布局能力', value: routerConsoleProjection.layoutCapabilityIds.join(', ') },
-  { label: '滚动 Owner', value: routerConsoleProjection.scrollOwnerIds.join(', ') },
-  { label: '焦点合同', value: routerConsoleProjection.focusContractIds.join(', ') },
-  { label: '恢复策略', value: routerConsoleProjection.scrollRestorationPolicyIds.join(', ') },
-]
+const routerItems = computed<readonly UiDescriptionItem[]>(() => [
+  { label: t('console.all-routes'), value: String(routerConsoleProjection.routeCount) },
+  { label: t('console.product-routes'), value: String(routerConsoleProjection.productRouteCount) },
+  { label: t('console.error-routes'), value: String(routerConsoleProjection.errorRouteCount) },
+  {
+    label: t('console.layout-capabilities'),
+    value: routerConsoleProjection.layoutCapabilityIds.join(', '),
+  },
+  { label: t('console.scroll-owner'), value: routerConsoleProjection.scrollOwnerIds.join(', ') },
+  {
+    label: t('console.focus-contract'),
+    value: routerConsoleProjection.focusContractIds.join(', '),
+  },
+  {
+    label: t('console.restoration-policy'),
+    value: routerConsoleProjection.scrollRestorationPolicyIds.join(', '),
+  },
+])
 </script>
 
 <template>
@@ -29,8 +45,8 @@ const routerItems: readonly UiDescriptionItem[] = [
     :title="title"
   />
   <UiSection
-    description="路由、滚动、焦点与布局能力均由 Router Domain 的活动注册表投影。"
-    title="治理闭包"
+    :description="t('console.router.description')"
+    :title="t('console.router.title')"
   >
     <UiDescriptionList :items="routerItems" />
     <ul class="pavp-route-list">
@@ -39,7 +55,7 @@ const routerItems: readonly UiDescriptionItem[] = [
         :key="route.name"
       >
         <code>{{ route.name }}</code>
-        <span>{{ route.visibleLabel }}</span>
+        <span>{{ getRouterConsoleRouteLabel(route.name, t) }}</span>
       </li>
     </ul>
   </UiSection>

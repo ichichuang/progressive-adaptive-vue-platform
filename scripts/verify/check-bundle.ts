@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 import { projectConfig } from '../../project.config'
-import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
+import { getRouteMessageScope, routeRegistry } from '../../apps/web/src/app/router/route-registry'
 import ts from 'typescript'
 
 interface ManifestChunk {
@@ -104,8 +104,23 @@ const expectedLazyRouteCount = 17
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
-const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount
-const expectedDynamicRootKeys = new Set([...expectedLazyRouteKeys, motionFeatureManifestKey])
+const localizationRuntimeManifestKey = 'src/shared/i18n/runtime.ts'
+const localizationResourceManifestKeys = [
+  'src/shared/i18n/messages/zh-CN/console.json',
+  'src/shared/i18n/messages/zh-CN/appearance.json',
+  'src/shared/i18n/messages/zh-CN/capabilities.json',
+  'src/shared/i18n/messages/en/common.json',
+  'src/shared/i18n/messages/en/console.json',
+  'src/shared/i18n/messages/en/appearance.json',
+  'src/shared/i18n/messages/en/capabilities.json',
+] as const
+const expectedDynamicRootCount = 26
+const expectedDynamicRootKeys = new Set([
+  ...expectedLazyRouteKeys,
+  motionFeatureManifestKey,
+  localizationRuntimeManifestKey,
+  ...localizationResourceManifestKeys,
+])
 const bundleBudgetAlignmentBytes = 8 * 1024
 const minimumInitialJavaScriptHeadroomBytes = 8 * 1024
 const minimumMotionFeatureJavaScriptHeadroomBytes = 8 * 1024
@@ -947,12 +962,17 @@ if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
 
 if (
   expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
+  expectedLazyRouteCount +
+    expectedMotionFeatureDynamicRootCount +
+    1 +
+    localizationResourceManifestKeys.length !==
+    expectedDynamicRootCount ||
   expectedDynamicRootKeys.size !== expectedDynamicRootCount ||
   !expectedDynamicRootKeys.has(motionFeatureManifestKey) ||
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected exactly ${String(expectedLazyRouteCount)} routes plus ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} root.`,
+    `Canonical dynamic root authority drifted: expected 17 routes, one motion root, one i18n runtime and seven catalog roots.`,
   )
 }
 
@@ -981,7 +1001,7 @@ if (
   !setsEqual(initialDynamicRootKeys, expectedDynamicRootKeys)
 ) {
   throw new Error(
-    `Initial static closure dynamic-root union drifted: expected ${String(expectedDynamicRootCount)} exact roots (${String(expectedLazyRouteCount)} routes plus ${motionFeatureRootId}); received ${String(initialDynamicRootKeys.size)} unique roots.`,
+    `Initial static closure dynamic-root union drifted: expected ${String(expectedDynamicRootCount)} exact route, motion and localization roots; received ${String(initialDynamicRootKeys.size)} unique roots.`,
   )
 }
 
@@ -1166,8 +1186,86 @@ const sortedMotionFeatureExclusiveJavaScriptFiles = [
   ...motionFeatureExclusiveJavaScriptFiles,
 ].sort()
 
+async function measureJavaScriptClosure(
+  rootKeys: readonly string[],
+): Promise<{ readonly files: ReadonlySet<string>; readonly bytes: number }> {
+  const files = new Set<string>()
+  for (const rootKey of rootKeys) {
+    for (const key of collectStaticChunkClosure(manifest, rootKey)) {
+      const file = manifest[key]?.file
+      if (file?.endsWith('.js')) files.add(file)
+    }
+  }
+  const measurements = await Promise.all(
+    [...files].map((file) =>
+      gzipMeasurement(file, {
+        canonicalReleaseSha: runtimeKernelBundleContract.canonicalMeasurementReleaseSha,
+        currentReleaseSha: expectedReleaseSha,
+      }),
+    ),
+  )
+  return { files, bytes: measurements.reduce((total, measurement) => total + measurement.bytes, 0) }
+}
+
+for (const rootKey of [localizationRuntimeManifestKey, ...localizationResourceManifestKeys]) {
+  const chunk = manifest[rootKey]
+  if (!chunk?.file.endsWith('.js') || (chunk.dynamicImports?.length ?? 0) !== 0) {
+    throw new Error(
+      `Localization root must emit JavaScript without dynamic child roots: ${rootKey}.`,
+    )
+  }
+  const closure = await measureJavaScriptClosure([rootKey])
+  if (closure.bytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
+    throw new Error(
+      `Localization static closure ${rootKey} is ${String(closure.bytes)} gzip bytes; budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)}.`,
+    )
+  }
+  const additionalFiles = [...closure.files].filter((file) => !initialJavaScriptFiles.has(file))
+  const additionalMeasurements = await Promise.all(
+    additionalFiles.map((file) => gzipMeasurement(file)),
+  )
+  console.log(
+    `Bundle localization root: ${rootKey}; full static closure ${String(closure.bytes)} gzip bytes; additional to initial ${String(additionalMeasurements.reduce((total, value) => total + value.bytes, 0))} gzip bytes.`,
+  )
+}
+
+for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const) {
+  const routes = routeRegistry.filter((route) => getRouteMessageScope(route.name) === scope)
+  for (const locale of ['zh-CN', 'en'] as const) {
+    const resourceRoots = [localizationRuntimeManifestKey]
+    if (scope !== 'common') resourceRoots.push(`src/shared/i18n/messages/zh-CN/${scope}.json`)
+    if (locale === 'en') {
+      resourceRoots.push('src/shared/i18n/messages/en/common.json')
+      if (scope !== 'common') resourceRoots.push(`src/shared/i18n/messages/en/${scope}.json`)
+    }
+    const localization = await measureJavaScriptClosure(resourceRoots)
+    const additionalFiles = [...localization.files].filter(
+      (file) => !initialJavaScriptFiles.has(file),
+    )
+    const additional = (
+      await Promise.all(additionalFiles.map((file) => gzipMeasurement(file)))
+    ).reduce((sum, value) => sum + value.bytes, 0)
+    const startupSizes: number[] = []
+    for (const route of routes) {
+      const closure = await measureJavaScriptClosure([
+        entry[0],
+        route.sourcePath.replace(/^apps\/web\//u, ''),
+        ...resourceRoots,
+      ])
+      const otherInitial = [...initialJavaScriptFiles].filter((file) => !closure.files.has(file))
+      const remaining = (
+        await Promise.all(otherInitial.map((file) => gzipMeasurement(file)))
+      ).reduce((sum, value) => sum + value.bytes, 0)
+      startupSizes.push(closure.bytes + remaining)
+    }
+    console.log(
+      `Bundle pre-mount startup: ${locale}/${scope}; localization additional ${String(additional)} gzip bytes; deduplicated initial + route + localization ${String(Math.min(...startupSizes))}..${String(Math.max(...startupSizes))} gzip bytes across ${String(routes.length)} routes.`,
+    )
+  }
+}
+
 console.log(
-  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId}) = ${sortedDynamicRootKeys.join(', ')}`,
+  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
   `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes headroom against exact budget ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,

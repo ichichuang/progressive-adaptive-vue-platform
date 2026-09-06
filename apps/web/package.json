@@ -13,6 +13,7 @@
     "@platform/ui": "workspace:*",
     "pinia": "catalog:",
     "vue": "catalog:",
+    "vue-i18n": "catalog:",
     "vue-router": "catalog:",
     "zod": "catalog:"
   }

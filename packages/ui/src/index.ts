@@ -7,6 +7,8 @@ export { default as UiSection } from './components/UiSection.vue'
 export { default as UiSegmentedControl } from './components/UiSegmentedControl.vue'
 export { default as UiStatusBadge } from './components/UiStatusBadge.vue'
 export type {
+  UiLocale,
+  UiAdminShellCopy,
   UiAdminNavigationGroup,
   UiAdminNavigationItem,
   UiDescriptionItem,

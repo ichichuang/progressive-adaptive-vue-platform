@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { UiAdminShell } from '@platform/ui'
-import { onScopeDispose } from 'vue'
+import { UiAdminShell, type UiAdminNavigationGroup } from '@platform/ui'
+import { computed, onScopeDispose } from 'vue'
 import { isNavigationFailure, NavigationFailureType, useRouter } from 'vue-router'
 
+import { useConsoleI18n } from '../../shared/i18n'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
-import { consoleNavigationRegistry, type RouteName } from '../router/route-registry'
+import { getConsoleNavigation, type RouteName } from '../router/route-registry'
 import { createRouteTransitionCoordinator } from '../router/route-transition/route-transition-coordinator'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
@@ -18,6 +19,20 @@ defineSlots<{
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
 
+const { t } = useConsoleI18n()
+const navigation = computed((): readonly UiAdminNavigationGroup[] => getConsoleNavigation(t))
+const copy = computed(() => ({
+  consoleTitle: t('shell.consoleTitle'),
+  navigationLabel: t('shell.navigationLabel'),
+  navigationActionLabel: t('shell.navigationActionLabel'),
+  openNavigationLabel: t('shell.openNavigationLabel'),
+  closeNavigationLabel: t('shell.closeNavigationLabel'),
+  closeActionLabel: t('shell.closeActionLabel'),
+  expandNavigationLabel: t('shell.expandNavigationLabel'),
+  collapseNavigationLabel: t('shell.collapseNavigationLabel'),
+  expandAllMenusLabel: t('shell.expandAllMenusLabel'),
+  collapseAllMenusLabel: t('shell.collapseAllMenusLabel'),
+}))
 const router = useRouter()
 const routeTransitionCoordinator = createRouteTransitionCoordinator({
   router,
@@ -45,7 +60,8 @@ async function navigate(routeName: string): Promise<void> {
   <UiAdminShell
     v-if="shellRequired"
     :active-route-name="activeRouteName"
-    :navigation="consoleNavigationRegistry"
+    :navigation="navigation"
+    :copy="copy"
     @navigate="navigate"
   >
     <slot />

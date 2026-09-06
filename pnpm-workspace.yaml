@@ -14,10 +14,12 @@ allowBuilds:
 patchedDependencies:
   motion-v@2.4.0: patches/motion-v@2.4.0.patch
   unconfig@7.5.0: patches/unconfig@7.5.0.patch
+  vue-i18n@11.4.10: patches/vue-i18n@11.4.10.patch
   vue-router@5.2.0: patches/vue-router@5.2.0.patch
 
 catalog:
   '@iconify-json/lucide': 1.2.120
+  '@intlify/message-compiler': 11.4.10
   '@types/node': 24.13.3
   '@unocss/core': 66.7.5
   '@unocss/eslint-plugin': 66.7.5
@@ -43,6 +45,7 @@ catalog:
   unocss: 66.7.5
   vite: 8.1.5
   vue: 3.5.40
+  vue-i18n: 11.4.10
   vue-router: 5.2.0
   vue-tsc: 3.3.8
   yaml: 2.9.0

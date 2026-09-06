@@ -8,6 +8,9 @@ import {
 } from '@platform/ui'
 
 import { engineeringManifest } from '../generated/engineering-manifest'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'EngineeringQualityInspectorPage' })
 
@@ -36,17 +39,17 @@ const budgetItems: readonly UiDescriptionItem[] = engineeringManifest.bundleBudg
   />
   <UiSection
     :description="engineeringManifest.workflowNames.join(', ')"
-    title="固定工具链"
+    :title="t('console.engineering.toolchain')"
   >
     <UiStatusBadge
-      label="Generated"
+      :label="t('console.engineering.generated')"
       tone="complete"
     />
     <UiDescriptionList :items="coordinateItems" />
   </UiSection>
   <UiSection
     :description="engineeringManifest.verifyStageIds.join(' → ')"
-    title="静态门与预算"
+    :title="t('console.engineering.gates')"
   >
     <UiDescriptionList :items="budgetItems" />
   </UiSection>

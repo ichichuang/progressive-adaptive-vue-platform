@@ -313,7 +313,7 @@ const expectedMessages = [
   [
     'runtime-kernel-inspector',
     'route-message.runtime-kernel-inspector-summary',
-    '查看当前十一阶段启动流程、Provider 与生命周期边界。',
+    '查看当前十二阶段启动流程、Provider 与生命周期边界。',
   ],
   [
     'router-governance-inspector',
@@ -2468,7 +2468,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 232 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 240 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         snapshot.engineeringManifestSource.includes(
           "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
@@ -2476,13 +2476,11 @@ function routeTransitionSourceProofResults(
         !snapshot.uiSource.includes('route-transition'),
     }),
     Object.freeze({
-      id: 'ROUTE_TRANSITION_SOURCE_36_DYNAMIC_ROOTS_18',
+      id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
         snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes(
-          'const expectedDynamicRootCount = expectedLazyRouteCount + expectedMotionFeatureDynamicRootCount',
-        ) &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -2607,7 +2605,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 232 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 240 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])
@@ -3502,7 +3500,7 @@ function runRouteTransitionFullPaceNegativeProbes(
     ],
     [
       'pace-adds-dynamic-root',
-      'ROUTE_TRANSITION_SOURCE_36_DYNAMIC_ROOTS_18',
+      'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       {
         ...baseline,
         typesSource: `${baseline.typesSource}\nvoid import('./route-pace');`,

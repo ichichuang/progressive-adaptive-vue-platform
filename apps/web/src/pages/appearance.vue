@@ -28,6 +28,32 @@ import { computed, ref } from 'vue'
 
 import { useAppearanceMutationBoundary } from '../app/appearance/appearance-mutation-boundary'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
+import {
+  consoleLocaleRegistry,
+  useConsoleI18n,
+  type ConsoleLocaleNotice,
+  type ConsoleMessageKey,
+} from '../shared/i18n'
+
+const language = useConsoleI18n()
+const { t, locale, pendingLocale, notice } = language
+const languageOptions = Object.freeze(
+  consoleLocaleRegistry.map((record) => ({
+    value: record.id,
+    label: record.id === 'zh-CN' ? '简体中文' : 'English',
+  })),
+)
+const languageNoticeKeys = {
+  none: 'i18n.none',
+  loading: 'i18n.loading',
+  applied: 'i18n.applied',
+  'not-saved': 'i18n.not-saved',
+  'saved-choice-unavailable': 'i18n.saved-choice-unavailable',
+  'preference-unavailable': 'i18n.preference-unavailable',
+  'unsupported-locale': 'i18n.unsupported-locale',
+  'message-load-failed': 'i18n.message-load-failed',
+  'commit-failed': 'i18n.commit-failed',
+} as const satisfies Readonly<Record<ConsoleLocaleNotice, ConsoleMessageKey>>
 
 defineOptions({ name: 'AppearanceManagementPage' })
 
@@ -37,29 +63,54 @@ defineProps<{
   readonly message: string
 }>()
 
-type FeedbackMessage = '设置已保存' | '无法应用此设置，已恢复原状态' | '已恢复默认设置'
+type FeedbackMessage =
+  'appearance.feedback.saved' | 'appearance.feedback.rejected' | 'appearance.feedback.reset'
 
 interface DisplayThemePreview extends AppearanceThemePreviewProjection {
   readonly displayLabel: string
 }
 
-const materialStageTitle = '材质效果'
-const materialStageSummary = '功能区域使用当前材质，内容区域保持稳定清晰。'
-const motionStageTitle = '动效效果'
-const colorModeOptions = Object.freeze([
-  Object.freeze({ label: '跟随系统', value: colorModePreferenceSchema.parse('system') }),
-  Object.freeze({ label: '浅色', value: colorModePreferenceSchema.parse('light') }),
-  Object.freeze({ label: '深色', value: colorModePreferenceSchema.parse('dark') }),
-] as const satisfies readonly UiSegmentedOption[])
-const contrastOptions = Object.freeze([
-  Object.freeze({ label: '标准', value: contrastPreferenceSchema.parse('standard') }),
-  Object.freeze({ label: '增强', value: contrastPreferenceSchema.parse('enhanced') }),
-] as const satisfies readonly UiSegmentedOption[])
-const materialOptions = Object.freeze([
-  Object.freeze({ label: '自适应', value: materialPreferenceSchema.parse('adaptive') }),
-  Object.freeze({ label: '弱化', value: materialPreferenceSchema.parse('reduced') }),
-  Object.freeze({ label: '纯色', value: materialPreferenceSchema.parse('solid') }),
-] as const satisfies readonly UiSegmentedOption[])
+const materialStageTitle = computed(() => t('appearance.material-stage-title'))
+const materialStageSummary = computed(() => t('appearance.material-stage-summary'))
+const motionStageTitle = computed(() => t('appearance.motion-stage-title'))
+const colorModeOptions = computed(() =>
+  Object.freeze([
+    Object.freeze({
+      label: t('appearance.system'),
+      value: colorModePreferenceSchema.parse('system'),
+    }),
+    Object.freeze({
+      label: t('appearance.light'),
+      value: colorModePreferenceSchema.parse('light'),
+    }),
+    Object.freeze({ label: t('appearance.dark'), value: colorModePreferenceSchema.parse('dark') }),
+  ] as const satisfies readonly UiSegmentedOption[]),
+)
+const contrastOptions = computed(() =>
+  Object.freeze([
+    Object.freeze({
+      label: t('appearance.standard'),
+      value: contrastPreferenceSchema.parse('standard'),
+    }),
+    Object.freeze({
+      label: t('appearance.enhanced'),
+      value: contrastPreferenceSchema.parse('enhanced'),
+    }),
+  ] as const satisfies readonly UiSegmentedOption[]),
+)
+const materialOptions = computed(() =>
+  Object.freeze([
+    Object.freeze({
+      label: t('appearance.adaptive'),
+      value: materialPreferenceSchema.parse('adaptive'),
+    }),
+    Object.freeze({
+      label: t('appearance.reduced-material'),
+      value: materialPreferenceSchema.parse('reduced'),
+    }),
+    Object.freeze({ label: t('appearance.solid'), value: materialPreferenceSchema.parse('solid') }),
+  ] as const satisfies readonly UiSegmentedOption[]),
+)
 const fontScaleLabels = Object.freeze({
   '0.9': '90%',
   '1': '100%',
@@ -74,15 +125,28 @@ const fontScaleOptions = Object.freeze(
     }),
   ),
 ) satisfies readonly UiSegmentedOption[]
-const motionOptions = Object.freeze([
-  Object.freeze({ label: '完整', value: motionPreferenceSchema.parse('full') }),
-  Object.freeze({ label: '减少', value: motionPreferenceSchema.parse('reduced') }),
-  Object.freeze({ label: '关闭', value: motionPreferenceSchema.parse('none') }),
-] as const satisfies readonly UiSegmentedOption[])
-const previewViewOptions = Object.freeze([
-  Object.freeze({ label: '概览', value: 'overview' }),
-  Object.freeze({ label: '详情', value: 'details' }),
-] as const satisfies readonly UiSegmentedOption[])
+const motionOptions = computed(() =>
+  Object.freeze([
+    Object.freeze({
+      label: t('appearance.full-motion'),
+      value: motionPreferenceSchema.parse('full'),
+    }),
+    Object.freeze({
+      label: t('appearance.reduced-motion'),
+      value: motionPreferenceSchema.parse('reduced'),
+    }),
+    Object.freeze({
+      label: t('appearance.no-motion'),
+      value: motionPreferenceSchema.parse('none'),
+    }),
+  ] as const satisfies readonly UiSegmentedOption[]),
+)
+const previewViewOptions = computed(() =>
+  Object.freeze([
+    Object.freeze({ label: t('appearance.overview'), value: 'overview' }),
+    Object.freeze({ label: t('appearance.details'), value: 'details' }),
+  ] as const satisfies readonly UiSegmentedOption[]),
+)
 
 const effective = useAppearanceReadBoundary()
 const mutation = useAppearanceMutationBoundary()
@@ -183,15 +247,18 @@ function announceFeedback(message: FeedbackMessage): void {
 }
 
 function announceRejectedMutation(): void {
-  announceFeedback('无法应用此设置，已恢复原状态')
+  announceFeedback('appearance.feedback.rejected')
 }
 
 function commitCandidate(
   candidate: ExplicitThemePreference,
-  successMessage: Extract<FeedbackMessage, '设置已保存' | '已恢复默认设置'>,
+  successMessage: Extract<
+    FeedbackMessage,
+    'appearance.feedback.saved' | 'appearance.feedback.reset'
+  >,
 ): void {
   const result = mutation.commitPreference(candidate)
-  announceFeedback(result.status === 'committed' ? successMessage : '无法应用此设置，已恢复原状态')
+  announceFeedback(result.status === 'committed' ? successMessage : 'appearance.feedback.rejected')
 }
 
 function commitAxis(update: (candidate: ExplicitThemePreference) => void): void {
@@ -203,7 +270,7 @@ function commitAxis(update: (candidate: ExplicitThemePreference) => void): void 
   }
 
   update(candidate)
-  commitCandidate(candidate, '设置已保存')
+  commitCandidate(candidate, 'appearance.feedback.saved')
 }
 
 function updateTheme(reference: ThemeReference): void {
@@ -324,7 +391,7 @@ function resetVisibleAppearanceAxes(): void {
     fontScale: ProductPreferenceDefault.fontScale,
     motion: ProductPreferenceDefault.motion,
   }
-  commitCandidate(candidate, '已恢复默认设置')
+  commitCandidate(candidate, 'appearance.feedback.reset')
 }
 
 function updatePreviewView(value: string): void {
@@ -338,32 +405,36 @@ function replayMotion(): void {
 }
 
 function effectiveColorModeLabel(): string {
-  return effective.snapshot.value.colorMode === 'light' ? '浅色' : '深色'
+  return effective.snapshot.value.colorMode === 'light'
+    ? t('appearance.light')
+    : t('appearance.dark')
 }
 
 function effectiveContrastLabel(): string {
-  return effective.snapshot.value.contrast === 'standard' ? '标准' : '增强'
+  return effective.snapshot.value.contrast === 'standard'
+    ? t('appearance.standard')
+    : t('appearance.enhanced')
 }
 
 function effectiveMaterialLabel(): string {
   switch (effective.snapshot.value.material) {
     case 'adaptive':
-      return '自适应'
+      return t('appearance.adaptive')
     case 'reduced':
-      return '弱化'
+      return t('appearance.reduced-material')
     case 'solid':
-      return '纯色'
+      return t('appearance.solid')
   }
 }
 
 function effectiveMotionLabel(): string {
   switch (effective.snapshot.value.motion) {
     case 'full':
-      return '完整'
+      return t('appearance.full-motion')
     case 'reduced':
-      return '减少'
+      return t('appearance.reduced-motion')
     case 'none':
-      return '关闭'
+      return t('appearance.no-motion')
   }
 }
 
@@ -371,20 +442,20 @@ const currentThemeLabel = computed(
   () =>
     themePreviews.value.find((theme) =>
       referencesEqual(theme.reference, effective.snapshot.value.theme),
-    )?.displayLabel ?? '当前主题',
+    )?.displayLabel ?? t('appearance.current-theme'),
 )
 const currentPlaneLabel = computed(
   () => `${effectiveColorModeLabel()} · ${effectiveContrastLabel()}`,
 )
 const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
-  { label: '主题', value: currentThemeLabel.value },
-  { label: '显示', value: currentPlaneLabel.value },
-  { label: '材质', value: effectiveMaterialLabel() },
+  { label: t('appearance.theme'), value: currentThemeLabel.value },
+  { label: t('appearance.display'), value: currentPlaneLabel.value },
+  { label: t('appearance.material'), value: effectiveMaterialLabel() },
   {
-    label: '字号',
+    label: t('appearance.font-size'),
     value: `${String(Math.round(effective.snapshot.value.fontScale * 100))}%`,
   },
-  { label: '动效', value: effectiveMotionLabel() },
+  { label: t('appearance.motion'), value: effectiveMotionLabel() },
 ])
 </script>
 
@@ -397,16 +468,18 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
   <UiSection
     class="pavp-appearance-theme-section"
-    description="从十四套内置主题中选择界面基调，色板会随明暗模式与对比度即时投影。"
-    title="主题画廊"
+    :description="
+      t('appearance.gallery.description', { count: builtInAppearanceThemePreviews.length })
+    "
+    :title="t('appearance.gallery.title')"
   >
     <div class="pavp-appearance-theme-toolbar">
       <div class="pavp-appearance-theme-toolbar__summary">
-        <span class="pavp-appearance-eyebrow">当前主题</span>
+        <span class="pavp-appearance-eyebrow">{{ t('appearance.current-theme') }}</span>
         <strong>{{ currentThemeLabel }}</strong>
       </div>
       <div class="pavp-appearance-theme-toolbar__meta">
-        <span class="text-text-secondary">选择后即时应用</span>
+        <span class="text-text-secondary">{{ t('appearance.apply-immediately') }}</span>
         <UiStatusBadge
           :label="currentPlaneLabel"
           tone="active"
@@ -414,19 +487,19 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
       </div>
     </div>
     <div
-      aria-label="主题色板角色"
+      :aria-label="t('appearance.swatch-roles')"
       class="pavp-appearance-theme-legend text-text-secondary"
     >
-      <span>页面</span>
-      <span>面板</span>
-      <span>操作填充</span>
-      <span>控件前景</span>
-      <span>边框</span>
-      <span>焦点</span>
+      <span>{{ t('appearance.page') }}</span>
+      <span>{{ t('appearance.panel') }}</span>
+      <span>{{ t('appearance.action-fill') }}</span>
+      <span>{{ t('appearance.control-foreground') }}</span>
+      <span>{{ t('appearance.border') }}</span>
+      <span>{{ t('appearance.focus') }}</span>
     </div>
 
     <UiRadioCardGroup
-      accessible-label="选择主题"
+      :accessible-label="t('appearance.choose-theme')"
       class="pavp-appearance-theme-gallery"
       data-appearance-axis="theme"
       :model-value="selectedThemeValue"
@@ -442,7 +515,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             :data-visible="selected"
           >
             <UiStatusBadge
-              label="当前主题"
+              :label="t('appearance.current-theme')"
               tone="active"
             />
           </span>
@@ -496,7 +569,11 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
         </span>
         <span class="pavp-appearance-theme-option__meta text-text-secondary">
           <span>
-            {{ themePreviewForValue(option.value).registryKind === 'built-in' ? '内置' : '项目' }}
+            {{
+              themePreviewForValue(option.value).registryKind === 'built-in'
+                ? t('appearance.built-in')
+                : t('appearance.project')
+            }}
           </span>
           <span>{{ currentPlaneLabel }}</span>
         </span>
@@ -507,19 +584,19 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
   <div class="pavp-appearance-workspace">
     <div class="pavp-appearance-controls">
       <UiSection
-        description="调整任一选项后，实时预览与实际界面会同步更新。"
-        title="显示偏好"
+        :description="t('appearance.preferences.description')"
+        :title="t('appearance.preferences.title')"
       >
         <div
           class="pavp-appearance-control"
           data-appearance-axis="color-mode"
         >
           <span class="pavp-appearance-control__copy">
-            <strong>颜色模式</strong>
-            <span class="text-text-secondary">跟随环境，或固定界面的明暗表现。</span>
+            <strong>{{ t('appearance.color-mode') }}</strong>
+            <span class="text-text-secondary">{{ t('appearance.color-mode-description') }}</span>
           </span>
           <UiSegmentedControl
-            accessible-label="颜色模式"
+            :accessible-label="t('appearance.color-mode')"
             :model-value="preference?.appearance.colorMode ?? ''"
             :options="colorModeOptions"
             @update:model-value="updateColorMode"
@@ -530,11 +607,11 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           data-appearance-axis="contrast"
         >
           <span class="pavp-appearance-control__copy">
-            <strong>对比度</strong>
-            <span class="text-text-secondary">增强文字、边框与交互状态的区分。</span>
+            <strong>{{ t('appearance.contrast') }}</strong>
+            <span class="text-text-secondary">{{ t('appearance.contrast-description') }}</span>
           </span>
           <UiSegmentedControl
-            accessible-label="对比度"
+            :accessible-label="t('appearance.contrast')"
             :model-value="preference?.appearance.contrast ?? ''"
             :options="contrastOptions"
             @update:model-value="updateContrast"
@@ -545,11 +622,11 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           data-appearance-axis="material"
         >
           <span class="pavp-appearance-control__copy">
-            <strong>材质</strong>
-            <span class="text-text-secondary">调整功能区域的通透感与表面层次。</span>
+            <strong>{{ t('appearance.material') }}</strong>
+            <span class="text-text-secondary">{{ t('appearance.material-description') }}</span>
           </span>
           <UiSegmentedControl
-            accessible-label="材质"
+            :accessible-label="t('appearance.material')"
             :model-value="preference?.appearance.material ?? ''"
             :options="materialOptions"
             @update:model-value="updateMaterial"
@@ -560,11 +637,11 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           data-appearance-axis="font-scale"
         >
           <span class="pavp-appearance-control__copy">
-            <strong>字号</strong>
-            <span class="text-text-secondary">同步调整界面文字的阅读尺寸。</span>
+            <strong>{{ t('appearance.font-size') }}</strong>
+            <span class="text-text-secondary">{{ t('appearance.font-size-description') }}</span>
           </span>
           <UiSegmentedControl
-            accessible-label="字号"
+            :accessible-label="t('appearance.font-size')"
             :model-value="preference === null ? '' : String(preference.appearance.fontScale)"
             :options="fontScaleOptions"
             @update:model-value="updateFontScale"
@@ -575,23 +652,46 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
           data-appearance-axis="motion"
         >
           <span class="pavp-appearance-control__copy">
-            <strong>动效</strong>
-            <span class="text-text-secondary">控制反馈节奏，并尊重系统减少动态效果设置。</span>
+            <strong>{{ t('appearance.motion') }}</strong>
+            <span class="text-text-secondary">{{ t('appearance.motion-description') }}</span>
           </span>
           <UiSegmentedControl
-            accessible-label="动效"
+            :accessible-label="t('appearance.motion')"
             :model-value="preference?.appearance.motion ?? ''"
             :options="motionOptions"
             @update:model-value="updateMotion"
           />
         </div>
 
+        <div
+          class="pavp-appearance-control"
+          :aria-busy="pendingLocale !== null"
+        >
+          <span class="pavp-appearance-control__copy">
+            <strong>{{ t('i18n.language-label') }}</strong>
+            <span class="text-text-secondary">{{ t('i18n.language-description') }}</span>
+            <span
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+              class="text-text-secondary"
+            >
+              {{ t(languageNoticeKeys[notice]) }}
+            </span>
+          </span>
+          <UiSegmentedControl
+            :accessible-label="t('i18n.language-label')"
+            :model-value="pendingLocale ?? locale"
+            :options="languageOptions"
+            @update:model-value="language.switchLocale($event)"
+          />
+        </div>
         <div class="pavp-appearance-actions">
           <UiButton
             variant="ghost"
             @press="resetVisibleAppearanceAxes"
           >
-            恢复默认设置
+            {{ t('appearance.reset') }}
           </UiButton>
         </div>
         <div
@@ -605,7 +705,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             :key="feedbackSequence"
             class="pavp-appearance-feedback__message text-text-secondary"
           >
-            {{ feedbackMessage }}
+            {{ t(feedbackMessage) }}
           </span>
         </div>
       </UiSection>
@@ -613,8 +713,8 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
     <aside class="pavp-appearance-preview-column">
       <UiSection
-        description="这里使用当前真实外观快照与已启用的 PAVP 界面组件。"
-        title="实时预览"
+        :description="t('appearance.preview.description')"
+        :title="t('appearance.preview.title')"
       >
         <div
           class="pavp-appearance-preview"
@@ -638,7 +738,9 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                 </p>
               </div>
               <UiStatusBadge
-                :label="`当前：${effectiveMaterialLabel()}`"
+                :label="
+                  t('appearance.preview.current-material', { material: effectiveMaterialLabel() })
+                "
                 tone="active"
               />
             </div>
@@ -655,22 +757,22 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                 <header class="pavp-material-stage__header">
                   <span class="pavp-material-stage__identity">
                     <span class="pavp-material-stage__mark">PAVP</span>
-                    <strong>外观工作区</strong>
+                    <strong>{{ t('appearance.workspace') }}</strong>
                   </span>
                   <UiStatusBadge
-                    label="实时同步"
+                    :label="t('appearance.live-sync')"
                     tone="complete"
                   />
                 </header>
 
                 <div class="pavp-material-stage__body">
                   <nav
-                    aria-label="界面预览导航"
+                    :aria-label="t('appearance.preview.navigation')"
                     class="pavp-material-stage__navigation"
                     :data-preview-view="previewView"
                   >
                     <UiSegmentedControl
-                      accessible-label="预览内容切换"
+                      :accessible-label="t('appearance.preview.switch')"
                       :model-value="previewView"
                       :options="previewViewOptions"
                       @update:model-value="updatePreviewView"
@@ -687,12 +789,18 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                       :key="`content-${String(motionSequence)}`"
                       class="pavp-material-stage__content-entry"
                     >
-                      <h4>{{ previewView === 'overview' ? '界面概览' : '组件详情' }}</h4>
+                      <h4>
+                        {{
+                          previewView === 'overview'
+                            ? t('appearance.preview.overview')
+                            : t('appearance.preview.details')
+                        }}
+                      </h4>
                       <p class="text-text-primary">
-                        主要文字会随主题、明暗模式、对比度与字号同步变化。
+                        {{ t('appearance.preview.primary-text') }}
                       </p>
                       <p class="text-text-secondary">
-                        次要文字继续保持清晰层级，并使用同一套设计令牌。
+                        {{ t('appearance.preview.secondary-text') }}
                       </p>
                     </div>
 
@@ -703,24 +811,26 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                         variant="primary"
                         @press="replayMotion"
                       >
-                        运行示例
+                        {{ t('appearance.preview.run') }}
                       </UiButton>
                       <UiButton
                         class="pavp-material-stage__focus-example"
                         variant="secondary"
                         @press="replayMotion"
                       >
-                        键盘焦点示例
+                        {{ t('appearance.preview.keyboard') }}
                       </UiButton>
                     </div>
                   </div>
 
                   <aside
-                    aria-label="浮层示例"
+                    :aria-label="t('appearance.preview.overlay')"
                     class="pavp-material-stage__floating"
                   >
-                    <strong>快捷操作</strong>
-                    <span class="text-text-secondary">浮层同样使用当前材质投影。</span>
+                    <strong>{{ t('appearance.preview.quick-actions') }}</strong>
+                    <span class="text-text-secondary">{{
+                      t('appearance.preview.overlay-description')
+                    }}</span>
                   </aside>
                 </div>
               </div>
@@ -740,27 +850,31 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                   {{ motionStageTitle }}
                 </h3>
                 <p class="text-text-secondary">
-                  导航指示、内容进入与按钮交互会按当前动效偏好运行。
+                  {{ t('appearance.preview.motion-description') }}
                 </p>
               </div>
               <UiButton
                 variant="secondary"
                 @press="replayMotion"
               >
-                重新播放动效
+                {{ t('appearance.preview.replay') }}
               </UiButton>
             </div>
             <div
               :key="`motion-${String(motionSequence)}`"
               class="pavp-motion-stage__demo"
             >
-              <span class="pavp-motion-stage__indicator">已选导航</span>
-              <span class="pavp-motion-stage__content text-text-secondary">内容已进入</span>
+              <span class="pavp-motion-stage__indicator">{{
+                t('appearance.preview.selected')
+              }}</span>
+              <span class="pavp-motion-stage__content text-text-secondary">{{
+                t('appearance.preview.entered')
+              }}</span>
               <UiButton
                 variant="ghost"
                 @press="replayMotion"
               >
-                交互按钮
+                {{ t('appearance.preview.button') }}
               </UiButton>
             </div>
           </section>

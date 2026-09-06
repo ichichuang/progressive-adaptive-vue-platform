@@ -1,4 +1,6 @@
+import type { ConsoleTranslate } from '../../shared/i18n/message-schema'
 import {
+  getRouteRecord,
   errorRouteRegistry,
   focusContractRegistry,
   routeLayoutCapabilityRegistry,
@@ -64,3 +66,7 @@ export const routerConsoleProjection = Object.freeze({
     scrollRestorationPolicyRegistry.map((record) => record.id).sort(compareIds),
   ),
 } as const satisfies RouterConsoleProjection)
+
+export function getRouterConsoleRouteLabel(name: string, translate: ConsoleTranslate): string {
+  return translate(getRouteRecord(name).meta.titleKey)
+}

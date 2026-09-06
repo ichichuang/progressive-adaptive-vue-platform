@@ -405,6 +405,8 @@ export default defineConfig(async ({ command, isPreview, mode }) => {
   return {
     base: deploymentBase,
     define: {
+      __VUE_I18N_FULL_INSTALL__: false,
+      __VUE_I18N_LEGACY_API__: false,
       __PAVP_COMPILED_ENVIRONMENT__: JSON.stringify(runtimeConfiguration.environment),
       __PAVP_COMPILED_RELEASE_SHA__: JSON.stringify(runtimeConfiguration.releaseSha),
       __PAVP_COMPILED_BUILD_VERSION__: JSON.stringify(runtimeConfiguration.buildVersion),

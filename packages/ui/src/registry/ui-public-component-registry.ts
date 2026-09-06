@@ -56,6 +56,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       sourcePath: 'packages/ui/src/components/UiAdminShell.vue',
       props: Object.freeze([
         Object.freeze({
+          name: 'copy',
+          type: 'UiAdminShellCopy',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'activeRouteName',
           type: 'string',
           required: true,
@@ -168,6 +174,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       exportName: 'UiProvider',
       sourcePath: 'packages/ui/src/providers/UiProvider.vue',
       props: Object.freeze([
+        Object.freeze({ name: 'locale', type: 'UiLocale', required: true, defaultValue: null }),
         Object.freeze({
           name: 'appearance',
           type: 'EffectiveAppearanceState',

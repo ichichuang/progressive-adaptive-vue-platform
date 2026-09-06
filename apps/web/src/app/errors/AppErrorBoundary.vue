@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, onErrorCaptured, shallowRef, type Component } from 'vue'
 
+import { useConsoleI18n } from '../../shared/i18n'
+
 import type { AppErrorBoundaryHooks, NormalizedCoreError } from './core-error'
 import { getCoreErrorMessage } from './core-error-messages'
 import { getCoreErrorRecord } from './core-error-registry'
@@ -11,6 +13,7 @@ const props = defineProps<{
   errorHooks: AppErrorBoundaryHooks
 }>()
 
+const { t } = useConsoleI18n()
 const capturedError = shallowRef<NormalizedCoreError | null>(null)
 const message = computed(() => {
   if (capturedError.value === null) {
@@ -18,7 +21,7 @@ const message = computed(() => {
   }
 
   const record = getCoreErrorRecord(capturedError.value.id)
-  return getCoreErrorMessage(record.userMessageKey)
+  return getCoreErrorMessage(record.userMessageKey, t)
 })
 
 onErrorCaptured((source, _instance, info) => {

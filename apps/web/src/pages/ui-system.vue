@@ -7,6 +7,10 @@ import {
   uiSystemConsoleProjection,
   type UiDescriptionItem,
 } from '@platform/ui'
+import { computed } from 'vue'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'UiSystemInspectorPage' })
 
@@ -16,12 +20,18 @@ defineProps<{
   readonly message: string
 }>()
 
-const uiItems: readonly UiDescriptionItem[] = [
-  { label: 'Styled Vendor', value: uiSystemConsoleProjection.styledVendor.coordinate },
-  { label: 'Import Policy', value: uiSystemConsoleProjection.privateAdapterPolicyId },
-  { label: '公共组件数', value: String(uiSystemConsoleProjection.publicComponentIds.length) },
-  { label: '公共组件', value: uiSystemConsoleProjection.publicComponentIds.join(', ') },
-]
+const uiItems = computed<readonly UiDescriptionItem[]>(() => [
+  { label: t('console.styled-vendor'), value: uiSystemConsoleProjection.styledVendor.coordinate },
+  { label: t('console.import-policy'), value: uiSystemConsoleProjection.privateAdapterPolicyId },
+  {
+    label: t('console.component-count'),
+    value: String(uiSystemConsoleProjection.publicComponentIds.length),
+  },
+  {
+    label: t('console.components'),
+    value: uiSystemConsoleProjection.publicComponentIds.join(', '),
+  },
+])
 </script>
 
 <template>
@@ -31,8 +41,8 @@ const uiItems: readonly UiDescriptionItem[] = [
     :title="title"
   />
   <UiSection
-    description="供应商组件和类型保留在 @platform/ui 私有适配目录。"
-    title="组件边界"
+    :description="t('console.ui.description')"
+    :title="t('console.ui.title')"
   >
     <UiStatusBadge
       label="ACTIVE"

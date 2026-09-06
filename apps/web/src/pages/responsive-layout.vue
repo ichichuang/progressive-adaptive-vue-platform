@@ -6,6 +6,9 @@ import {
   responsiveLayoutConsoleProjection,
   type UiDescriptionItem,
 } from '@platform/ui'
+import { useConsoleI18n } from '../shared/i18n'
+
+const { t } = useConsoleI18n()
 
 defineOptions({ name: 'ResponsiveLayoutInspectorPage' })
 
@@ -34,13 +37,13 @@ const sizeItems: readonly UiDescriptionItem[] = responsiveLayoutConsoleProjectio
   />
   <UiSection
     :description="responsiveLayoutConsoleProjection.profileThresholdPolicyId"
-    title="布局 Profile"
+    :title="t('console.responsive.profiles')"
   >
     <UiDescriptionList :items="profileItems" />
   </UiSection>
   <UiSection
     :description="`${responsiveLayoutConsoleProjection.minimumTargetPolicyId} · ${responsiveLayoutConsoleProjection.safeAreaPolicyId}`"
-    title="尺寸权威"
+    :title="t('console.responsive.sizes')"
   >
     <UiDescriptionList :items="sizeItems" />
   </UiSection>

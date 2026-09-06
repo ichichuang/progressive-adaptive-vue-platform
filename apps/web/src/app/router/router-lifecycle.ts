@@ -1,3 +1,4 @@
+import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
 import { nextTick, type App } from 'vue'
 import {
   createRouter,
@@ -25,6 +26,7 @@ import {
   focusContractRegistry,
   getErrorRouteName,
   getRoutePresentation,
+  getRouteMessageScope,
   getRouteRecord,
   routeRegistry,
   routeTitleRegistry,
@@ -233,6 +235,8 @@ export interface RouterLifecycleHandle {
   readonly history: RouterHistory
   readonly guardRemovers: readonly [() => void, () => void, () => void]
   readonly errorHandlerRemover: () => void
+  connectLocalization(boundary: ConsoleI18nBoundary): () => void
+  refreshCurrentRouteTitle(translate: ConsoleTranslate): void
   markApplicationMounted(): void
   getLatestNavigationResult(): TypedNavigationResult | undefined
   dispose(): void
@@ -413,6 +417,8 @@ export async function createAndReadyRouter(input: {
   })
   let disposed = false
   let routerReady = false
+  let localization: ConsoleI18nBoundary | undefined
+  let activeNavigationId: string | undefined
   let handlingRouterError = false
   let latestNavigationResult: TypedNavigationResult | undefined
   const navigationAttempts = new WeakMap<RouteLocationNormalized, NavigationAttemptState>()
@@ -436,7 +442,7 @@ export async function createAndReadyRouter(input: {
 
         const routeName = getRouteRecord(to.name).name
         const routeRecord = getRouteRecord(routeName)
-        const presentation = getRoutePresentation(routeName)
+        const presentation = getRoutePresentation(routeName, localization?.t)
         const focusContract = focusContractRegistry.find(
           (contract) => contract.id === routeRecord.meta.focusContractId,
         )
@@ -447,6 +453,13 @@ export async function createAndReadyRouter(input: {
 
         const focusTargets = document.querySelectorAll<HTMLElement>(focusContract.target)
         const navigation = navigationAttempts.get(to)
+        if (
+          navigation?.navigationId !== activeNavigationId ||
+          router.currentRoute.value.fullPath !== to.fullPath
+        ) {
+          cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+          return false
+        }
 
         if (
           navigation?.routeName !== routeName ||
@@ -535,6 +548,7 @@ export async function createAndReadyRouter(input: {
 
   const beforeEachRemover = router.beforeEach((to) => {
     const navigationId = crypto.randomUUID()
+    activeNavigationId = navigationId
     const pendingFailure =
       latestNavigationResult?.kind === 'failure' ? latestNavigationResult : undefined
     latestNavigationResult = undefined
@@ -586,7 +600,7 @@ export async function createAndReadyRouter(input: {
     return true
   })
 
-  const beforeResolveRemover = router.beforeResolve((to) => {
+  const beforeResolveRemover = router.beforeResolve(async (to) => {
     const routeName = getRouteRecord(to.name).name
     const navigation = navigationAttempts.get(to)
 
@@ -599,6 +613,30 @@ export async function createAndReadyRouter(input: {
 
     if (routeTitleRegistry[getRouteRecord(routeName).meta.titleKey] !== presentation.title) {
       throw new TypeError('The route presentation authority is incomplete.')
+    }
+
+    if (localization !== undefined) {
+      const prepared = await localization.prepareScope(getRouteMessageScope(routeName))
+      if (
+        disposed ||
+        navigation === undefined ||
+        navigation.navigationId !== activeNavigationId ||
+        prepared.status === 'cancelled'
+      ) {
+        return false
+      }
+      if (prepared.status === 'failed') {
+        const failure = createFailureResult({
+          configuration: input.configuration,
+          errorId: 'route-chunk-load-failure',
+          failureKind: 'chunk-load-failed',
+          navigationId: navigation.navigationId,
+          routeName,
+          browserExplicitlyOffline: !navigator.onLine,
+        })
+        latestNavigationResult = failure
+        return { name: failure.destination.name, replace: true }
+      }
     }
 
     return true
@@ -729,6 +767,8 @@ export async function createAndReadyRouter(input: {
     }
 
     disposed = true
+    localization = undefined
+    activeNavigationId = undefined
     disposeRouterPresentationCommitBroker(router, presentationCommitBroker)
     resolveApplicationMounted?.()
     resolveApplicationMounted = undefined
@@ -783,6 +823,19 @@ export async function createAndReadyRouter(input: {
     history,
     guardRemovers: Object.freeze([beforeEachRemover, beforeResolveRemover, afterEachRemover]),
     errorHandlerRemover,
+    connectLocalization(boundary) {
+      if (disposed || localization !== undefined)
+        throw new Error('The Router locale binding is unavailable.')
+      localization = boundary
+      return () => {
+        if (localization === boundary) localization = undefined
+      }
+    },
+    refreshCurrentRouteTitle(translate) {
+      if (disposed) return
+      const record = getRouteRecord(router.currentRoute.value.name)
+      document.title = getRoutePresentation(record.name, translate).title
+    },
     markApplicationMounted() {
       if (disposed || applicationMounted) {
         return
