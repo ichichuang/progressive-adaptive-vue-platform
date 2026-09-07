@@ -7711,13 +7711,13 @@ Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 Ta
 
 ## 9.11 Scroll, Focus and Observability
 
-Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。History Entry 只保存 Registry Owner ID 和有限数值 Offset；Owner 不存在、Layout Profile 变化或内容未就绪时按 Route Scroll Policy 回到 Logical Start。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争。
+Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 History Entry Marker 与导航提交协议；§18.9 唯一拥有 Router 内存中的 Region Record、内容有效性与恢复条件，Offset 不写入原生 History State。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争；缺失或重复的声明 DOM Owner 是呈现合同失败，不能伪装成 Cache Miss。
 
 当前首次导航保留浏览器焦点，其余成功 Location Change 由 Router 聚焦已注册 Heading；未来可配置输入实施后按下表区分页面变化与同页地址更新，不能继续用 RouteName 相等阻止 URL 更新。Error/Cancel 保留或恢复原 Focus。每次 Navigation 的 Observability 目标记录 Privacy-safe `navigationId`、From/To Telemetry Name、Release SHA、Duration、Outcome 和 Failure Category，不记录完整 URL、敏感 Query 或用户输入。
 
 ### Address identity, result and presentation target
 
-完整导航地址包含匹配 Route Identity、normalized Params、Query 与 decoded Hash；Parsed Default/Transform 相同不代表地址相同。`push` 为默认，`replace: true` 替换当前 History Entry。地址缺省 Query/Hash 表示清空，不保留当前值；`params` 不做隐式继承。实际重复采用 Vue Router 普通 Router 的语义：同一最终 Matched Record、等价 normalized Params、原生 `stringifyQuery` 输出相同、Hash 相同。Query Key 顺序不额外排序，重复值数组保持顺序；原生返回 `NavigationFailureType.duplicated` 必须始终无副作用。可用 Name + exact fullPath 作保守提前判断，但不能把所有同名地址视为 Duplicate，也不能从宽松的匹配规则反推未校验输入已有效。
+完整导航地址包含匹配 Route Identity、normalized Params、Query 与 decoded Hash；Parsed Default/Transform 相同不代表地址相同。`push` 为默认，`replace: true` 替换当前 History Entry。地址缺省 Query/Hash 表示清空，不保留当前值；`params` 不做隐式继承。程序化请求的实际重复采用 Vue Router 普通 Router 的语义：同一最终 Matched Record、等价 normalized Params、原生 `stringifyQuery` 输出相同、Hash 相同。Query Key 顺序不额外排序，重复值数组保持顺序；原生返回 `NavigationFailureType.duplicated` 必须始终无副作用。可用 Name + exact fullPath 作程序化请求的保守提前判断，但不能把所有同名地址视为 Duplicate，也不能从宽松的匹配规则反推未校验输入已有效。History Traversal 必须独立核对 Entry Identity；不同 Entry 即使 URL 完全相等也是真实导航，不能被该提前判断或 `scrollBehavior` 的同地址判断吞掉。
 
 | 情形 | URL / 页面 / 呈现行为 |
 | --- | --- |
@@ -7726,11 +7726,41 @@ Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。History Entry 只保
 | 同 Name 改 Params / Query | 真实导航，重新校验和提交新 `routeInput`，复用组件实例。默认不播放页面过渡、不强制 Focus、不重置当前 Owner Offset；不通过 Key、remount 或 UI Shell No-op 吞掉更新。 |
 | 同 Name 改 Hash | 同样验证；非空合法目标在当前声明 Owner 内定位，其他位置和焦点保持。清空 Hash 或找不到 ID 时保留当前位置。 |
 | Replace / Redirect / Error Recovery | 正常验证与提交，跳过动画；同页地址 Replace 保持同页策略，跨页或安全错误页按其现有 Heading/Scroll 合同提交。 |
-| Back / Forward | 原生 History 导航并重新验证输入及当前访问要求；不播放现有页面过渡。优先恢复该 History Entry、Route 与有效 Owner 对应的已保存有限 Offset；没有有效记录则定位合法 Fragment，否则 Logical Start。同页不强制 Focus，跨页保留现有 Heading 行为。 |
-| 真正 Duplicate | 无 Push/Replace、Guard Work、Title、Props、Focus、Scroll、Preload、动画或 Recovery；Shell 当前项 Pointer Focus Protection 和 Narrow Drawer 关闭/返回焦点的既有局部行为保留。 |
+| Back / Forward | 原生 History 导航并重新验证输入及当前访问要求；不播放现有页面过渡。Region 按 §18.9 优先恢复有效 Entry Record，否则定位合法 Fragment，再否则 Logical Start；Document 保留其原生位置合同。同页不强制 Focus，跨页保留现有 Heading 行为；相同 URL 的不同 Entry 也执行此策略。 |
+| 真正程序化 Duplicate | 无 Push/Replace、Guard Work、Title、Props、Focus、Scroll、Preload、动画或 Recovery；不 Stamp、不清除或刷新 Record/LRU。Shell 当前项 Pointer Focus Protection 和 Narrow Drawer 关闭/返回焦点的既有局部行为保留。 |
 | 无效输入 / 失败 / 取消 | 无效匹配输入安全 Replace 到 400；未知地址保持 Catch-all 404；Chunk/Offline/500/启动异常沿用已有分类。被取消或过期 Attempt 不提交目标 Props/Title/Focus/Scroll；真正错误继续可观察，不因动画 Bypass 吞掉。 |
 
-Scroll 仍由 `router-lifecycle.ts` 唯一写入。Vue Router 的 `savedPosition` 是其原生文档位置，不能误当作任意 Console Region 的位置；Region 的有效记录必须由既有 Router Scroll Policy 按真实 History Entry、Route/Owner/Profile 保存和恢复有限两轴 Offset（§18.9），不得由过渡 Coordinator 或 Shell 再建 Scroll Cache/History Stack。记录失配按上表回到安全起点；本规格不把当前 Region 恢复实现宣称为已验证。Fragment 定位仅在没有优先有效 History Record 时发生，Title 仍来自现有语言投影，不从 Query/Hash 生成文案。
+Scroll 仍由 `router-lifecycle.ts` 唯一写入。Vue Router 的 `savedPosition` 只适用于声明的 Document Owner，永不复制给 Element Owner；Coordinator 或 Shell 不得另建 Scroll Cache/History Stack。History Record 失配按 Traversal 策略回退，不能借此重置上表要求保留 Offset/Focus 的同页程序化更新。Title 仍来自现有语言投影，不从 Query/Hash 生成文案。本规格不把当前 Region 恢复实现宣称为已验证。
+
+### Owned history-entry marker and commit boundary
+
+以下为该目标能力的唯一 Native State Property 定义，由 `apps/web/src/app/router/router-lifecycle.ts` 独占：
+
+```ts
+// Reserved property in native window.history.state; no other marker fields.
+__pavpRouteEntry: { scopeId: string; entryId: string }
+```
+
+每次 Router 构造或重建使用既有 `crypto.randomUUID()` 生成新的 opaque `scopeId`；每个成功创建的新 Entry 使用同一设施生成新的 opaque `entryId`，无新增依赖。读取时只接受精确两字段、非空 String、当前 Scope 的 Marker；不得把它当作地址或认证值。Marker 不含 URL、Query、Parsed Input、用户身份、表单数据、DOM Reference 或 Offset。原生历史可跨 Refresh 留下 Marker，但旧 Scope 不可复用内存记录。
+
+已核对已安装 `vue-router@5.2.0` 的公开 `HistoryState` / `RouterHistory` 声明及 HTML5 History 实现：[公开接口](https://router.vuejs.org/api/interfaces/routerhistory) 提供 State Data 与 `listen`，没有 PAVP 可依赖的 Entry ID；其接口标记为 Alpha，依赖升级时须重新核对。该实现先完成原生 History 变更、再提交 `currentRoute`、触发 `afterEach`；Pop 通知 Guard 前原生 State 已指向目标。原生 metadata `replaceState` 不同步 Router 的内部 State 缓存，但该版本后续 Push/Replace 会合并当时 `window.history.state`，Pop 会重新读取目标 State。不得读取或改写 `position`、`back`、`forward`、`current`、`replaced`、`scroll` 等 Vendor Field 来推导身份或分支。
+
+所有地址导航继续经过现有 Router。唯一额外原生写入是在**无导航 Failure 的既有 `afterEach` 同步提交分支**，核实当前 Attempt、实际 normalized `to === router.currentRoute.value`、Router History 的公开 Location 与当前浏览器 Location 一致，且对应的 Entry/Traversal 操作仍归该 Attempt 后，执行 [官方合并保留方式](https://router.vuejs.org/guide/migration/#usage-of-history-state)：`window.history.replaceState({ ...window.history.state, __pavpRouteEntry: marker }, '')`。从读取当前完整 State、复核到写入之间不跨 `await`；省略 URL 参数，保留当前完整 URL 和除自有 Property 外的全部 State，不按已知 Vendor 字段重建白名单。State 不是可完整合并的非空普通对象、标记生成/写入失败或写后 Marker 核对失败，只使该 Entry 的 Region Record 不可用并移除对应旧记录，保持普通导航与既有呈现回退；该次提交不重试、不 Reload，也不能因 Marker 不可用而取消整个 Scroll/Focus Policy。不得调用 raw `pushState`、绕过 Router 调用 History 导航方法、包装浏览器原型、强制 Duplicate 或调用会进入导航/Reload 回退的 Vendor `history.replace` 来 Stamp。
+
+| 已核实的实际导航 | Entry 与 Record 处理 |
+| --- | --- |
+| 启动 / Refresh / Router 重建的首次成功提交 | 当前 Entry Stamp 新 Scope 和新 Entry ID；不恢复旧 Scope，不提前改写未通过校验的初始目标。 |
+| 成功 Push（含同 Name 地址变化） | 新 Entry ID，即使其他历史 Entry 曾用同一 URL；来源 Record 归来源 ID，新 Entry 不继承它。 |
+| 成功 Replace | 保留**实际被替换 Entry** 的有效同 Scope ID，删除该 Entry 被替换内容的 Record；Marker 无效时在此次提交新建身份。Pop 后 Redirect Replace 替换的是 Pop 选中的目标 Entry，不能冒用仍显示旧页面的来源 ID。真正无变化的请求按 Duplicate 处理，不作此失效。 |
+| Back / Forward | 复用目标的有效同 Scope Marker；缺失、Malformed、Foreign 或旧 Scope Marker 都没有可复用 Record，只能在目标成功提交时重新 Stamp 新 ID。已有有效 Marker 无需重复原生写入；任何不匹配记录仍按 §18.9 拒绝。 |
+| Redirect / Safe Error Destination | 中间请求不 Stamp；仅最终通过验证、实际提交的目的地按其真实 Push/Replace/首次提交处理，不以最初请求或 `redirectedFrom` 猜测 Entry。 |
+| Rejected / Cancelled / Failed / Stale Attempt | 不 Stamp、不提交目标 Record、不因该失败/取消使成功来源失效；内容自身变化仍按 §18.9 处理，允许保留此前合法采集的来源快照。URL 回退由原生 Router 处理，不另做历史修复。Presentation Failure 不能被缓存回退吞掉。 |
+
+来源采集放在现有 `beforeResolve` 的异步资源准备完成、当前 Attempt 复核通过后的同步成功尾部，先于 Router 改变 `currentRoute` 和替换旧 Routed DOM；无需第二条 Guard Pipeline。使用 Router 保存的**最后成功提交且已完成呈现的来源 Entry Handle**，核对 `from`、当前 Route 与仍属于它的 Owner DOM 后采集；绝不能用 Pop 后的 `window.history.state` 给来源 Offset 命名。刚提交但未完成呈现的页面不采集，避免把更早页面的 DOM 当作新来源。`afterEach` 更新目标提交 Handle；§18.9 呈现完成后才把它标为可采集。Handle 中的临时当前导航/DOM 关联不进入 Native State 或长期 Record。
+
+Traversal 识别只在同一 Router Owner 对既有 History 对象的公开 `listen` 订阅内完成，先于异步 Guard 绑定当前 Traversal 和目标 Marker；返回的取消订阅由现有 Router Disposal 回收。它只持有当前操作的身份，不维护 Entry 顺序或读取私有 `position`/Delta 来重建分支，不新增 Owner 外的全局 History Listener。程序化意图和实际最终提交都必须绑定现有 Attempt；任意更新的请求/Traversal 使旧提交工作失效。Stamp 前及每次异步呈现返回后、真正写 Scroll 前，复核该 Attempt、实际 `to`、当前 Entry 与目标 Marker；Name/fullPath 相等本身不能证明仍属同一 Entry。不得让过期完成给更新后的 Entry 写标记或位置。
+
+Back 后新 Push 永远取得新 ID，不能访问被放弃 Forward Entry 的 Record；遗留记录按 §18.9 有界淘汰，不为主动枚举删除而重建 Forward Stack。Dispose/Refresh/Router 重建清空所有自有 Handle、Record、待处理工作与订阅；不遍历或改写其他原生 Entry。浏览器恢复一个仍保有同一 Router 和内存的 Document 时，只按同 Scope 和当前有效性复核；这不同于重建，不建立独立 BFCache 子系统。
 
 未来 `TypedNavigationResult` 精确保留四个既有分支并增加独立 Duplicate 返回值：
 
@@ -10990,7 +11020,33 @@ Nested Same-axis Scroll 只有 Bounded Secondary Owner 满足以下条件才允�
 4. Background Lock、Route Disposal 和 Layout Projection Change 具有幂等 Cleanup。
 5. Virtualized Owner 使用命名 Row/Item Metric Authority，不依赖页面 Literal。
 
-Scroll Restoration Record 只包含 Route Registry Name、Owner ID、Logical Block/Inline Offset、Content Identity/Revision 和 History Entry ID。恢复必须等待 Owner Ready 与最小内容布局稳定；超过命名等待 Policy 后回到 Logical Start，不能无限 Poll。Account/Permission 变化、Owner Identity 变化和不可访问内容拒绝旧位置。
+### Router-local region record and content validity
+
+Entry 身份、Stamp 和来源采集时机只由 §9.11 定义。Region Record 是 Router 实例私有的最多 **64 条 LRU**，每个 Scope/Entry 最多一条，包含两轴 Owner ID 与两个有限原生 Offset；有效采集写入或成功恢复时更新最近使用次序，插入第 65 条前淘汰最久未使用者。失配记录删除，Miss/拒绝/Duplicate 不刷新次序。记录只保留 Scope/Entry、已验证 Route/Content Identity、Content Revision、注册 Layout/Owner Identity 与下述呈现有效性比较值、native `scrollLeft`/`scrollTop`；不保存 DOM、函数或用户状态副本。只在内存比较已校验的地址输入，不日志记录或持久化地址内容。不得引入 Pinia、Local/Session Storage、IndexedDB、Storage Registry Record、定时保留服务或通用缓存配置；记录只优化位置恢复，不授权渲染或访问。
+
+Content Identity 回答“是哪一页及哪组已校验页面输入”，Content Revision 回答“该内容现在是否仍相同”。记录另核对 §9.11 的完整 normalized 地址身份，不能用 Parsed Defaults/Transforms 合并不同地址；当前九个候选 Console 页均无内容 Params/Query，因此 Content Identity 是其 Route Registry Name 与空页面输入。Hash 当前只定位 Fragment，不是内容版本。后续页面有内容输入时使用 §9.4 的已验证 Parsed Input 语义区分内容，不能把相同 URL、高度或 DOM Node 当作 Revision。
+
+当前候选均为固定构建中的只读页面，公共 Revision 基础是 Router 已接收并通过校验的 `CoreRuntimeConfiguration.releaseSha` + `buildVersion`（`runtime-configuration-contract.ts` / `runtime-configuration.ts`，构建身份由 `apps/web/vite.config.ts` 生成并核对）。它标识下面真实随源码构建的 Projection、Manifest、页面模板和语言资源，不以 Schema Version、Record Count 或页面数量代替内容版本。开发/HMR 可在同一编译身份内改变源码，因此 `environment === 'development'` 不复用 Region Record；不新建 HMR 监听或伪造版本。
+
+| 当前 Route / 页面 | 随构建确定的实际内容来源；额外内容规则 |
+| --- | --- |
+| `console-overview` / `pages/index.vue` | `app/console/overview-projection.ts` 聚合现有 Projection/Manifest；实际显示的有效外观文本还须比较下述 Appearance Snapshot。 |
+| `design-token-inspector` / `pages/design-tokens.vue` | `@platform/design-system` 的 `designSystemConsoleProjection`，来自 Generated Token Manifest 和现有 Theme/Appearance Schema。 |
+| `runtime-kernel-inspector`、`router-governance-inspector`、`storage-persistence-inspector` | 各自 `runtime-kernel-console-projection.ts`、`router-console-projection.ts`、`storage-console-projection.ts`；来源是 Bootstrap/Provider/Error、Route/Layout/Scroll/Focus、Storage Registry 的只读声明。当前页没有实时运行日志、导航结果或存储业务数据；不能把这些声明页误作动态状态恢复。 |
+| `ui-system-inspector`、`responsive-layout-inspector` | `@platform/ui` 的 `uiSystemConsoleProjection`、`responsiveLayoutConsoleProjection`；来源是 Public Component Registry、Generated Layout Registry 与现有 Shell Policy/Region Registry。后者显示声明的阈值/尺寸，不是实时窗口尺寸列表。 |
+| `engineering-quality-inspector`、`capability-roadmap` | `generated/engineering-manifest.ts`、`generated/capability-manifest.ts` 及其 Message Key 映射，均随当前构建固定。 |
+| `appearance-management` / `pages/appearance.vue` | 当前**不采集、不恢复 Region Record**：除 Preference/Custom Theme Registry 外，还有局部 `previewView`、反馈、动画演示以及语言 Pending/Notice 状态，没有覆盖这些呈现内容、跨正常路由重建仍可信的只读 Revision。重进页面不能假称恢复了原内容，也不通过保存这些状态、Remount Counter 或新增 Provider 补齐。Traversal 仍按合法 Fragment/Logical Start 回退，同页程序化更新仍保持其既有策略。 |
+| 七个现有 Error Routes（含 Catch-all） | 声明为 Document Owner，保持原生 Document Scroll Policy，不进入 Region Cache。 |
+
+九个候选的语言和外观均影响内容或呈现。Revision/Presentation 比较须使用已接入 `ConsoleI18nBoundary.locale` 的当前已提交语言及 `getRouteMessageScope` 对应的现有 `shared/i18n/messages` 构建资源；Pending Language 不是已显示语言，`pendingLocale !== null` 时不采集或复用记录。Appearance 从已提供的 `AppearanceReadBoundary.snapshot` 读取并按值比较 `colorMode`、`contrast`、`density`、`fontScale`、`material`、`motion`、`theme.registryKind` 和 `theme.themeId`，不读取 Mutation Boundary、复制 Store 或只比较 Ref/Object Identity。全 Snapshot 比较允许保守失效，尤其不能漏掉改变换行与 Shell Profile 的 Font Scale。当前 Custom Theme Plane 只定义颜色，候选页不显示其可变 Label/Preview；同 ID 颜色编辑不伪称新几何版本，含这些内容的外观页已排除。
+
+Layout 比较值为 Route 的 Layout Capability/两轴 Owner Registry ID、Shell 实际 `data-layout-profile`、Owner 的 `clientWidth`/`clientHeight`、有效根字体大小及当前 `writing-mode`/`direction`。尺寸和字体必须有限、可用且兼容，当前收窄为上述值相等；尺寸只提供额外失效条件，永不证明内容相同。正常路由重建 DOM 可以恢复：不要求新旧 Node 相同，只要求当前导航的注册 Owner 唯一、Connected、Ready 且合同匹配。缺失/重复/脱离 DOM 的声明 Owner 或无效 Registry 引用仍走既有 Presentation Failure；有效 Owner 的 Profile/尺寸/Revision 改变才是可回退的缓存失配。
+
+来源采集时保存对应已完成呈现的 Revision/比较值；若当前源值已偏离来源 Handle 完成呈现时的快照，本次保守地不采集并删除该 Entry 旧 Record，不能把新 Revision 标到未核实的旧 DOM 上。目的地在资源准备与 Routed DOM 提交后重新读取当前权威值，逐项比较 Scope、Entry、已验证 Route/地址/Content Identity、Revision、Layout 和 Owner。页面不活跃期间的语言、外观或内容源变化也会在这次比较中拒绝旧记录，不能等到该页面重新订阅才认为它失效；源值尚未反映到已提交 DOM 时不复用。未来动态页必须先有真实内容 Revision 和就绪合同，无可靠来源时不恢复，不生成 `getContentRevision` Placeholder、后端 Revision、DOM Hash、时间戳或 Mount Counter。未来 Account/Permission/可访问内容变化仍拒绝旧位置，本次不激活这些提供方。
+
+恢复沿用现有 `beforeResolve` 资源准备及 `scrollBehavior` 的 Mount 完成与 `nextTick` 提交边界。当前候选内容无独立异步页面数据；此时唯一 Owner、当前语言资源和上述源值必须已对应本次 DOM。尚未就绪的有效内容不等待任意时间，按当前导航策略放弃此次缓存恢复；不新增 Poll、固定 Delay、等待重试、强制 Remount 或通用 Layout-stability Service。写入前按 §9.11 再核对 Attempt/Entry，Background Lock 有效时不得与其竞争写入或延迟重放旧位置。
+
+Region Traversal 的优先级精确为：**有效匹配记录 → 声明允许且确实位于当前 Owner 内的 Fragment → 既有 Logical Start**。Marker 不可用、Record 缺失/淘汰、Revision/Layout 失配都只进入该回退，不触发导航重试或 Reload。每轴拒绝非有限 Offset，有限值按目标的实际原生滚动范围 Clamp；当前 `horizontal-tb` 的 `scrollTop` 范围是 `0..max(0, scrollHeight-clientHeight)`，LTR `scrollLeft` 是 `0..max(0, scrollWidth-clientWidth)`，RTL 则是负最大值到 `0`，不能一律截成非负数，原生 Overscroll 超界也只按真实范围处理（[原生 scrollLeft 语义](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollLeft)）。当前语言只投影 LTR；其他 Writing Mode 在没有已准入轴映射时拒绝 Record，不能猜测换轴。两轴恢复或明确的保留/回退 Policy 完成后才结算所属 Presentation Reservation；失败/取消/Dispose 按 §9.11 原合同结算，不能靠缓存掩盖真实呈现错误。
 
 ## 18.10 Layout and Scroll Static Enforcement Targets
 
@@ -16439,6 +16495,8 @@ MACHINE_GATES=direct complete document diff review; git diff --check; existing c
 PRODUCTION_RELEASE_ACCEPTANCE=not performed; document-only task changes no runtime artifact and does not grant release acceptance
 COMPLETION_EVIDENCE=document diff and actual static/Git/CI results in task response; specification, source implementation, runtime acceptance, account integration and release remain distinct
 ```
+
+上述记录保留 `main@4efa36938fed909e76fb4f53011f08fc8196c5c9` 上原规格授权的历史含义。其后 Owner 已批准 Typed Address 源码目标，但该任务在 `main@d4bd7c24d650eda667ea3b1e628e3da7bf45a902` 因 History Entry/Content Revision 合同缺口于修改前停止，源码与工作区均无变化。本次 Owner 仅授权补齐 §9.11 和 §18.9 及本段记录，并在原有文档 Gate 与安全同步后仅 Stage/Commit/正常 Push `ARCHITECTURE.md` 到 `origin/main`；不创建新工作包，不恢复源码任务，不激活目标能力，不改变 Runtime/Acceptance/Next/Successor 状态。既定源码目标保持，规格缺口关闭与实现、运行验收、发布分别报告。
 
 ### 37.2.6 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`
 
