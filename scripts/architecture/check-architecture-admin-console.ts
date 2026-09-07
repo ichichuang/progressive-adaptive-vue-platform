@@ -115,6 +115,7 @@ interface MaterialGateSnapshot {
   readonly registeredPublicComponents: readonly {
     readonly exportName: string
     readonly consumerCount: number
+    readonly capabilityStatus: 'ACTIVE' | 'TARGET_INACTIVE'
   }[]
 }
 
@@ -10265,7 +10266,11 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   ) {
     violations.push('SECOND_STYLED_FRAMEWORK')
   }
-  if (!snapshot.themeAdapterSource.includes('  Button: {')) {
+  const publicThemeOverrides = themeOverrideObject(snapshot.themeAdapterSource)
+  if (
+    publicThemeOverrides === undefined ||
+    objectPropertyObject(publicThemeOverrides, 'Button') === undefined
+  ) {
     violations.push('MISSING_NAIVE_OVERRIDE')
   }
   if (naiveCommonParserSensitiveOverrides(snapshot.themeAdapterSource).length > 0) {
@@ -10323,7 +10328,10 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if (
     snapshot.registeredPublicComponents.some(
       (record) =>
-        !snapshot.publicComponentExports.includes(record.exportName) || record.consumerCount === 0,
+        !snapshot.publicComponentExports.includes(record.exportName) ||
+        (['UiForm', 'UiFormField'].includes(record.exportName)
+          ? record.capabilityStatus !== 'TARGET_INACTIVE' || record.consumerCount !== 0
+          : record.capabilityStatus !== 'ACTIVE' || record.consumerCount === 0),
     )
   ) {
     violations.push('PUBLIC_UI_UNUSED')
@@ -11063,10 +11071,18 @@ function runArchitectureAdminConsoleNegativeProbes(
       'missing-naive-override',
       'MISSING_NAIVE_OVERRIDE',
       {
-        themeAdapterSource: baseline.themeAdapterSource.replace(
-          '  Button: {',
-          '  MissingButton: {',
-        ),
+        themeAdapterSource: (() => {
+          const button = themeOverrideObject(baseline.themeAdapterSource)?.properties.find(
+            (property) => objectPropertyName(property) === 'Button',
+          )
+          if (button === undefined || !ts.isPropertyAssignment(button))
+            return baseline.themeAdapterSource
+          return (
+            baseline.themeAdapterSource.slice(0, button.name.getStart()) +
+            'MissingButton' +
+            baseline.themeAdapterSource.slice(button.name.end)
+          )
+        })(),
       },
     ],
     [
@@ -11239,7 +11255,7 @@ function runArchitectureAdminConsoleNegativeProbes(
         publicComponentExports: [...baseline.publicComponentExports, 'UiProbe'],
         registeredPublicComponents: [
           ...baseline.registeredPublicComponents,
-          { exportName: 'UiProbe', consumerCount: 0 },
+          { exportName: 'UiProbe', consumerCount: 0, capabilityStatus: 'ACTIVE' },
         ],
       },
     ],
@@ -14963,6 +14979,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     'UiSection',
     'UiSegmentedControl',
     'UiStatusBadge',
+    'UiForm',
+    'UiFormField',
   ]
   const headerActionsContainer = elements.find((element) =>
     hasStaticTemplateClass(element.node, 'pavp-admin-shell__header-actions'),
@@ -16644,7 +16662,11 @@ function validateInspectorProjections(): string[] {
     runtimeCount(routerRecords) !== 17 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 3 ||
     runtimeCount(storageRecords) !== 3 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 9 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 11 ||
+    !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
+      'ui-form',
+      'ui-form-field',
+    ]) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
     runtimeCount(responsiveLayoutConsoleProjection.shellRegionIds) !== 4 ||
@@ -16896,6 +16918,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     registeredPublicComponents: uiPublicComponentRegistry.records.map((record) => ({
       exportName: record.exportName,
       consumerCount: record.consumerRouteNames.length,
+      capabilityStatus: record.capabilityStatus,
     })),
   }
   const navigationReworkBaseline: NavigationReworkSourceSnapshot = {

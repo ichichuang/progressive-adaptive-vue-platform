@@ -563,8 +563,10 @@ export async function validateI18nArchitecture(): Promise<string[]> {
     equalSet(providerLocaleImports, [
       'zhCN:naive-ui/es/locales/common/zhCN',
       'enUS:naive-ui/es/locales/common/enUS',
+      'dateZhCN:naive-ui/es/locales/date/zhCN',
+      'dateEnUS:naive-ui/es/locales/date/enUS',
     ]),
-    'two exact common locale imports belong to the existing private provider.',
+    'Four exact common/date locale imports belong to the existing private provider.',
   )
   function checkProvider(node: TemplateNode): void {
     if (node.tag === 'NConfigProvider') {
@@ -575,8 +577,8 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       )
       report(
         bindings.get('locale') === "locale === 'zh-CN' ? zhCN : enUS" &&
-          !bindings.has('date-locale'),
-        'Naive common locale must project the committed input; date consumers are not admitted.',
+          bindings.get('date-locale') === "locale === 'zh-CN' ? dateZhCN : dateEnUS",
+        'Naive common and date locales must project the same committed input.',
       )
     }
     for (const child of node.children ?? []) checkProvider(child)

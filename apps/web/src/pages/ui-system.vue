@@ -29,7 +29,13 @@ const uiItems = computed<readonly UiDescriptionItem[]>(() => [
   },
   {
     label: t('console.components'),
-    value: uiSystemConsoleProjection.publicComponentIds.join(', '),
+    value: uiSystemConsoleProjection.publicComponentIds
+      .map((id) =>
+        uiSystemConsoleProjection.inactivePublicComponentIds.some((inactiveId) => inactiveId === id)
+          ? `${id} (TARGET_INACTIVE)`
+          : id,
+      )
+      .join(', '),
   },
 ])
 </script>

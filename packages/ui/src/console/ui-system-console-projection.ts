@@ -8,6 +8,7 @@ export interface UiSystemConsoleStyledVendor {
 export interface UiSystemConsoleProjection {
   readonly schemaVersion: 1
   readonly publicComponentIds: readonly string[]
+  readonly inactivePublicComponentIds: readonly string[]
   readonly styledVendor: UiSystemConsoleStyledVendor
   readonly privateAdapterPolicyId: 'ui-vendor-imports.private-naive-adapter-only'
 }
@@ -15,6 +16,11 @@ export interface UiSystemConsoleProjection {
 export const uiSystemConsoleProjection = Object.freeze({
   schemaVersion: 1,
   publicComponentIds: Object.freeze(uiPublicComponentRegistry.records.map((record) => record.id)),
+  inactivePublicComponentIds: Object.freeze(
+    uiPublicComponentRegistry.records
+      .filter((record) => record.capabilityStatus === 'TARGET_INACTIVE')
+      .map((record) => record.id),
+  ),
   styledVendor: Object.freeze({
     packageName: 'naive-ui',
     coordinate: 'naive-ui@2.45.2',

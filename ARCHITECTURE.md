@@ -10273,9 +10273,11 @@ REKA_UI_ACTIVE_RUNTIME_ADMISSION=NONE
 首个 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 满足。它按 §1.2B `PUBLIC_UI_API_CLOSURE_MODE=ATOMIC_CONSUMER_DERIVATION` 在同一 Landing 准入 `UiProvider`、十个真实 Routes 实际消费的最小额外 Public Components、`@platform/design-system` Public Contracts 和 Private `naive-ui@2.45.2` Adapter。它不授权 Reka、Motion Library、Grid、Editor、Charts、GSAP、第二 Styled Framework、通用 Shared UI 扩建或任何 Unused Component。
 
 ```text
-CURRENT_PUBLIC_COMPONENT_EXPORTS=9
+CURRENT_PUBLIC_COMPONENT_EXPORTS=11
 CURRENT_STYLED_VENDOR=naive-ui@2.45.2
 ```
+
+其中九条 ACTIVE 组件保留真实消费者；仅 §21 的 UiForm/UiFormField 共享源码准入允许两条 TARGET_INACTIVE Record 暂无消费者。
 
 ## 16.2 Demand-created Target Locations
 
@@ -10411,7 +10413,7 @@ generic Material Wrapper
 * 支持 Reduced Motion。
 * 提供简洁 JSDoc 或组件 README 文档。
 * 明确记录无障碍合同和无障碍名称要求。
-* 在成为共享组件前至少有一个真实生产消费者。
+* 在成为共享组件前至少有一个真实生产消费者；仅 §21 本次明确批准的两项表单源码登记例外，保持 TARGET_INACTIVE。
 
 示例：
 
@@ -12248,8 +12250,8 @@ CAPABILITY=FORMS
 CAPABILITY_STATUS=TARGET_INACTIVE
 ID=PAVP_CONFIGURATION_DRIVEN_FORMS
 CONTRACT_STATUS=FROZEN
-REPOSITORY_IMPLEMENTATION=NOT_STARTED
-IMPLEMENTATION_AUTHORIZATION=NONE_DESIGN_ONLY
+REPOSITORY_IMPLEMENTATION=SHARED_SOURCE_IMPLEMENTED
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SHARED_SOURCE_ONLY
 OWNER=@platform/ui form controller and presentation; feature-owned Zod domain contracts
 FORM_STATE=INSTANCE_LOCAL_VUE_COMPOSABLE
 VALIDATION=FEATURE_ZOD_THROUGH_APPLICATION_BRIDGE
@@ -12258,7 +12260,7 @@ ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
 ACTIVATION_GATE=PAVP_CONFIGURATION_DRIVEN_FORMS_SEPARATE_OWNER_IMPLEMENTATION_ADMISSION
 ```
 
-本次在 `main@2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f` 上闭合一个可复用配置表单合同。普通消费者提供 Typed 字段、业务 Schema、初值和业务函数；共享实现集中维护控件、布局、反馈与状态。Forms、Tables、完整配置驱动页面与 Starter 保持未实现；§22 的用户管理、角色管理新建/编辑是明确下游需求，Table、Dialog、API/Auth 不成为共享表单的依赖。Owner 本次明确允许修订旧 Inactive VeeValidate-only、初值必须通过提交 Schema、通用 Form 自动处理 Mutation 的假设；不改变其他能力或历史实施结果。
+合同在 `main@2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f` 上闭合；Owner 随后在干净同步的 `main@a4f2d790d122b78cf14476a656730eb3bdbcfea3` 上单独授权共享组件源码与必要的既有检查同步。普通消费者提供 Typed 字段、业务 Schema、初值和业务函数；共享实现集中维护控件、布局、反馈与状态。共享 UiForm/UiFormField/useUiForm 源码已实现，完整 Forms、Tables、配置驱动页面与 Starter 仍未交付；§22 的用户管理、角色管理新建/编辑是明确下游需求，Table、Dialog、API/Auth 不成为共享表单的依赖。Owner 本次明确允许修订旧 Inactive VeeValidate-only、初值必须通过提交 Schema、通用 Form 自动处理 Mutation 的假设；不改变其他能力或历史实施结果。
 
 ## 21.1 Selected approach and ownership
 
@@ -12513,17 +12515,17 @@ const form = useUiForm<Draft, Payload>({
 // 同一 SFC 的 template 使用 <UiForm :form="form" />。
 ```
 
-共享实现的真实接入边界是以后用户管理或角色管理 Feature 中的 create/edit Form：Feature 从同源 Zod Schema 构造 validation，传入明确的业务回调、Typed 初值和编辑 Mapper，Page 后续组合 Form/Table/Dialog。共享前端合同已在此定义，当前仍没有真实管理 Feature、记录字段/响应 Schema、业务 Endpoint、权限与 Mutation 协议；这些是**生产消费者接线的未决业务合同**，不能填假值或把 Appearance 重构成证明消费者。后续可单独授权共享前端实现，但实际 Public UI Consumer Registry、路由和 capability activation 必须在真实接入时闭合；未使用公共组件不能以例子冒充已消费。没有 Consumer 接线时不能宣称完整 Form Landing 已满足 §37.2.12 completion evidence。
+共享实现的真实接入边界是以后用户管理或角色管理 Feature 中的 create/edit Form：Feature 从同源 Zod Schema 构造 validation，传入明确的业务回调、Typed 初值和编辑 Mapper，Page 后续组合 Form/Table/Dialog。共享前端合同已在此定义，当前仍没有真实管理 Feature、记录字段/响应 Schema、业务 Endpoint、权限与 Mutation 协议；这些是**生产消费者接线的未决业务合同**，不能填假值或把 Appearance 重构成证明消费者。本次共享源码准入仅允许 UiForm/UiFormField 两条 Public UI Consumer Registry Record 以 `TARGET_INACTIVE` 和空 `consumerRouteNames` 登记已实现而未消费的组件；全部既有 ACTIVE Record 的真实消费者要求保持。应用 Zod Bridge、业务 Schema/Callback/文案、路由和 capability activation 仍须在真实接入时闭合，不能以例子冒充消费。没有 Consumer 接线时不能宣称完整 Form Landing 已满足 §37.2.12 completion evidence。
 
 当前 Controller 的 Lifetime 只到所属 Vue scope dispose，不建立 Pinia/Form Store、跨刷新草稿、账号同步、Route Guard 或 Tabs。未来应用内页签保留未保存输入仍是 §9/§19.1 的最终目标，由未来页面 Lifetime Owner 保持该同一 Controller 并在关闭/丢弃/账号变化时清理，不复制成第二份值。浏览器刷新、关闭或重开后的业务草稿恢复仍不实施；现有主题/语言偏好持久化独立保留，敏感字段持久化禁止不变。
 
-后续必要源码按职责限定如下，不是本次写入清单或占位目录许可：
+本次共享源码及以后真实消费接线按以下职责限定；允许同一表单边界内责任命名的私有 Helper，不预建控件 Wrapper、桥或业务占位目录：
 
 | 职责 | 现有集成文件 / 必要未来源码 |
 | --- | --- |
 | 公共 Form 与实例状态 | 新 `packages/ui/src/components/UiForm.vue`、`UiFormField.vue`、`packages/ui/src/components/form-contracts.ts`、`packages/ui/src/composables/use-ui-form.ts`；现有 `packages/ui/src/index.ts` 和 `registry/ui-public-component-registry.ts` 闭合两组件与 Composable/类型，不为每个控件预建公开 Wrapper |
 | Vendor 呈现 | 在现有 `packages/ui/src/adapters/naive/` 增加仅本 Form 消费的 `PavpNaiveForm.vue`、`PavpNaiveFormField.vue`、`PavpNaiveFormControl.vue`；现有 `pavp-naive-theme.ts` 和 `PavpNaiveConfigProvider.vue` 扩展实际 Form/Control/Peer Overrides 与日期语言；`providers/UiProvider.vue` 的 locale/appearance 公共 Props 保持 |
-| Zod 适配与业务接入 | 新 `apps/web/src/shared/forms/index.ts`、`zod-form-validation.ts` 只实现上述桥；将来的用户/角色 Feature 拥有自己的 schemas、fields、initial mapper 与 business callback，确切业务文件/路由在真实 Consumer Admission 冻结，本次不发明它们 |
+| Zod 适配与业务接入 | 未来新 `apps/web/src/shared/forms/index.ts`、`zod-form-validation.ts` 只实现上述桥，本次不创建；将来的用户/角色 Feature 拥有自己的 schemas、fields、initial mapper 与 business callback，确切业务文件/路由在真实 Consumer Admission 冻结，本次不发明它们 |
 | 文案 | 现有 `apps/web/src/shared/i18n/message-schema.ts`、两语言 `messages/*/common.json` 按实际 FormCopy 消费扩展；原 `boundary.ts`/`runtime.ts`/`resource-loaders.ts` 保持唯一语言与加载所有权，新增业务 scope 只在真实接入时补齐 |
 
 已检查的 Existing Assertion 与后续同步点：
@@ -12532,14 +12534,14 @@ const form = useUiForm<Draft, Payload>({
 | --- | --- |
 | `scripts/architecture/check-boundaries.ts`；`scripts/verify/check-project-config.ts` | 继续禁止 `vee-validate`、第二 Schema/未准入 Vendor 和反向导入；已有 Web/Design System Zod、UI Vue/Naive 的 Exact Catalog/Manifest/Lock Set 不需变化。源码导入只放行此处职责；不得向 UI 加 Zod，或为通过 Gate 修改依赖 |
 | `scripts/architecture/check-ui-public-components.ts` | 当前 Public Exports=Registry，Macro Props/Emits/Slots 与 direct route consumers 严格相等；Private Adapter Inventory 与 `expectedRuntimeImports` 是精确集合。实现时只增加上述实际文件、Form/Control/必要 Peer Styles 与 Date Locale Imports；为 Form 的泛型 Props/Slot 及真实 Feature 消费链提供窄解析支持，保留直接 Vendor Import、Overlay、Motion 与全部已有消费者校验 |
-| `scripts/architecture/check-i18n.ts` | 目前精确两个 Common Locale Imports 且明确 `!bindings.has('date-locale')`；日期实施须原子替换为同一 Provider 四个 Locale Imports 和同源 date-locale 投影。沿用既有 scope/key/parameter/资源 AST 校验，扩展真实 common 文案和参数，禁止用放宽全部文本/Imports 的方式绕过 |
+| `scripts/architecture/check-i18n.ts` | 已将原两个 Common Locale Imports/no-date 断言替换为同一 Provider 四个 Locale Imports 和同源 date-locale 投影。沿用既有 scope/key/parameter/资源 AST 校验；真实 common 文案和参数仍待应用消费者，禁止用放宽全部文本/Imports 的方式绕过 |
 | `scripts/architecture/check-architecture-admin-console.ts` | 既有 `validateDependencies`、`validateInspectorProjections`、`validateRoutesShellAndMotion`、Naive Theme/Public UI Counts 与 pageFactImportContract 只对真实消费增量同步；保护现有十页面/Appearance、导航、Kernel/Storage 和历史验收，不为表单另造 console 展示页 |
 | `scripts/architecture/generate-capability-manifest.ts`；`check-capability-manifest.ts` | 当前 Canonical JSON/生成器严格为 21 Record，仅 appearance/i18n 可交互。本次不改 JSON 或生成物；真实 Form 激活时才冻结独立生产 Record/Consumer、同步生成/检查，不能把 forms-i18n-tables 聚合或整个 Starter 标为完成。`generate-engineering-manifest.ts`/`check-engineering-manifest.ts` 仍从真实依赖/命令生成；本方案无新依赖 |
 | `scripts/verify/check-bundle.ts`；Design System 生成检查 | Date Locale/新控件及 Peer 的实际闭包须进入现有 26 Dynamic Roots/Initial/Route 度量政策，真实路由新增时同步确切 Roots，不用假 Lazy Root 隐藏字节。保留现有预算及 8 KiB Initial Headroom；当前 Role/Theme/Token Generated Output 不因本设计改变 |
 
-未来窄 Form Owner 检查接入现有 `check:arch`，可在 `scripts/architecture/check-ui-public-components.ts` 增加相应检查；只保护字段/值类型、单一 owner、Zod bridge、无 Vendor Rules、snapshot/reset/hydration、异步失效、提交锁和输出、公共 slot/ID/A11y/语言及禁止直接传输/持久化等稳定合同，不冻结 helper 名、循环、容器或私有算法，不建设通用分析框架。当前这些 Form Checks 仍未实现，§29 未激活的 Server Error/Unsaved/Permission 等规则不借此激活。
+本次窄 Form Owner 检查接入现有 `check:arch`，在 `scripts/architecture/check-ui-public-components.ts` 增加相应检查；只保护字段/值类型、单一 owner、Zod bridge、无 Vendor Rules、snapshot/reset/hydration、异步失效、提交锁和输出、公共 slot/ID/A11y/语言及禁止直接传输/持久化等稳定合同，不冻结 helper 名、循环、容器或私有算法，不建设通用分析框架。本次只实现已有公共注册、泛型 Props/Slots、必需业务输入、原生表单和私有 Vendor 边界的静态保护；异步语义另经源代码审阅，静态检查不代表运行验收，§29 未激活的 Server Error/Unsaved/Permission 等规则不借此激活。
 
-本次只修改本节、与旧 Form Target 直接冲突的五处引用、§37.2.12 的一条准入记录和既有文字闪烁待验收说明。现有 Checker 未发现直接强制旧 VeeValidate-only/初值提交 Schema 的断言，故无需 Checker Diff；当前 Date Locale 禁令保护的是尚无 Date Consumer 的真实实现，本次保留。`ARCHITECTURE.md` 继续使用现有格式排除并直接审阅 Diff；设计变更运行 `git diff --check`、既有 `check:arch`/`check:policy` 及最终 `mise exec -- pnpm verify`。这些 Gate 不编译文档 API 示例；新增泛型、严格 SFC、Date/Peer Theme、Bundle 和 Owner Runtime 兼容必须在代码实施开始时以真实源代码验证，不能据本次文档通过而称实现就绪或生产验收完成。
+本次源码交付保持 `CAPABILITY_STATUS=TARGET_INACTIVE`；共享实现、静态验证、业务接入和 Owner 运行验收分别报告。泛型计算放在同一表单边界的普通 TypeScript Helper，SFC 保留上述泛型公共 Props/Slots，由现有 vue-tsc 与类型感知 ESLint 分别检查实际代码；不增加声明补丁或放宽类型。Naive Form/Control/Peer 主题按实际控件消费投影，不为未消费控件创建动态 Root；NInputNumber 内部会对 iconColorDisabled 调用 rgba，因此保留其仅用于计算的具体颜色输入，并由 Button Peer Overrides 最终投影所有实际按钮文字颜色与禁用透明度，避免将 CSS Variable 传入颜色解析器。新增日期语言是当前生产 Provider 的真实产物增量；表单控件被现有应用 Tree Shake 的部分不能用来证明未来消费者的 Bundle 成本或渲染行为。`ARCHITECTURE.md` 保持格式排除；最终 `git diff --check` 与完整 `mise exec -- pnpm verify` 均必须通过，8 KiB Initial Headroom、现有预算、21 条 Capability 和路由清单不变。
 
 ---
 
@@ -12950,7 +12952,7 @@ export interface UiAdminShellCopy {
 
 Private Naive Provider 是唯一新增 Vendor Locale Import Owner，精确使用两个 ES Subpath Default Import：`zhCN` 从 `naive-ui/es/locales/common/zhCN`，`enUS` 从 `naive-ui/es/locales/common/enUS`。`zh-CN -> zhCN`、`en -> enUS` 为静态映射，直接传给原唯一 `NConfigProvider` 的 `locale` Prop；不经全语言 Barrel，不新增 Vendor Public Type。两个完整 Common Locale 保持静态可用以同步投影，仍计入实际 Initial Budget；不能让 Private Provider 在应用语言 Commit 后再独立异步切换。现有 Appearance Context、Theme Overrides、Overlay Root、Motion 和 Import Owners 保持。
 
-Owner 已明确准入本实例的日期适用性修正：当前九个公共组件及其真实生产依赖图中的内部组件不消费本地化日期，生产图没有保留日期组件或 `useLocale` 消费者；只由此前显式 `dateZhCN/dateEnUS` 配置保留的日期数据不属于必需行为。因此本实例省略 `naive-ui/es/locales/date/zhCN`、`naive-ui/es/locales/date/enUS` 与 `date-locale` 绑定。Naive 源码中 `useLocale` 的默认 `dateEnUS` 引用仍保持原样，是否消除其传递字节须由实际产物验证；不修改 Vendor Runtime、不手抄 Locale Dictionary、不创建异步 Vendor Locale 系统。未来真实日期组件的独立准入必须在同一 UI-owned Provider 先提供与当前应用语言一致的正确 Date Locale；本次不实现该未来能力。
+Owner 已明确准入本实例的日期适用性修正：该本地化 Landing 当时九个公共组件及其真实生产依赖图中的内部组件不消费本地化日期，生产图没有保留日期组件或 `useLocale` 消费者；只由此前显式 `dateZhCN/dateEnUS` 配置保留的日期数据不属于必需行为。因此该本地化 Landing 当时省略 `naive-ui/es/locales/date/zhCN`、`naive-ui/es/locales/date/enUS` 与 `date-locale` 绑定；当前 §21 共享表单源码准入已在原同一 Provider 恢复这两项日期 Locale 与同源绑定。Naive 源码中 `useLocale` 的默认 `dateEnUS` 引用仍保持原样，是否消除其传递字节须由实际产物验证；不修改 Vendor Runtime、不手抄 Locale Dictionary、不创建异步 Vendor Locale 系统。未来真实日期组件的独立准入必须在同一 UI-owned Provider 先提供与当前应用语言一致的正确 Date Locale；本次不实现该未来能力。
 
 未来消费者只需相同边界，例如现有 Storage Page 可写 `const { t } = useConsoleI18n()` 并渲染 `t('console.storage.active-records', { count: storageConsoleProjection.recordCount })`；页面不安装插件、不构造 Key、不读取 Storage。新增真实页面只能扩展其实际 Scope 文案及类型/参数闭合，不能顺便扩展 Locale Set。
 
@@ -15489,7 +15491,7 @@ PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
 CURRENT_ROUTE_REGISTRY_RECORDS=17
 CURRENT_PRODUCT_ROUTE_RECORDS=10
 CURRENT_ERROR_ROUTE_RECORDS=7
-CURRENT_PUBLIC_COMPONENT_EXPORTS=9
+CURRENT_PUBLIC_COMPONENT_EXPORTS=11
 ACTIVE_PUBLIC_COLOR_ROLES=10
 ACTIVE_PUBLIC_ROLES_TOTAL=37
 PUBLIC_ROLE_REGISTRY=EXACT
@@ -16395,17 +16397,17 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 
 #### `PAVP_CONFIGURATION_DRIVEN_FORMS` scoped admission record
 
-§21 是唯一完整合同；本次只完成规范，`CONTRACT_STATUS=FROZEN`、`CAPABILITY_STATUS=TARGET_INACTIVE`、`REPOSITORY_IMPLEMENTATION=NOT_STARTED`、`IMPLEMENTATION_AUTHORIZATION=NONE_DESIGN_ONLY`。不增加 Capability Manifest Record，不变更 Current Work/Next/Successor，不把下游业务接线或新控件视为已实现。
+§21 是唯一完整合同。当前 `CONTRACT_STATUS=FROZEN`、`CAPABILITY_STATUS=TARGET_INACTIVE`、`REPOSITORY_IMPLEMENTATION=SHARED_SOURCE_IMPLEMENTED`、`IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SHARED_SOURCE_ONLY`。只登记共享源码进展；应用 Zod Bridge、业务消费者、完整 Forms Landing 与运行验收均未完成。不增加 Capability Manifest Record，不变更 Current Work/Next/Successor。
 
 ```text
 ID=PAVP_CONFIGURATION_DRIVEN_FORMS
-ENTRY_CONDITIONS=Owner-authorized bounded Section 21 design on clean synchronized main@2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f; approved user/role create-edit demand; shared UI predecessor PAVP_ARCHITECTURE_ADMIN_CONSOLE repository implementation COMPLETE; locale predecessor PAVP_ADMIN_CONSOLE_LOCALIZATION repository implementation COMPLETE; first form-state authority instance; later source implementation requires separate Owner authorization and the real consumer integration boundary in Section 21.7
-ALLOWED_SCOPE=Section 21 reusable typed forms contract and directly conflicting inactive form-target references; this minimal admission record; existing light/dark text-flicker note limited to Owner acceptance after 2e5b6e3
-PROHIBITED_SCOPE=runtime implementation or capability activation; dependencies/manifests/lockfiles/patches; generated outputs/budgets/TS/CI; backend/API/Auth/Table/Dialog/CRUD implementation; Appearance refactor; browser/test/evidence artifacts; separate specification or governance documents; automatic successor
-OUTPUTS=one canonical bounded contract for typed fields, Vue-local value ownership, feature Zod validation, initial/reset/hydration, stale-result cancellation, submission and extension behavior; truthful production-consumer and later source/checker boundaries
-MACHINE_GATES=git diff --check; existing check:arch and check:policy; final mise exec -- pnpm verify; direct ARCHITECTURE.md diff review under the existing formatting exclusion; no generated-source drift
-PRODUCTION_RELEASE_ACCEPTANCE=not applicable to this documentation-only change; future Form runtime release requires the applicable Section 32.3 external Owner matrix
-COMPLETION_EVIDENCE=reviewed canonical specification and actual static gate results; current dependency metadata/source evidence distinguished from future strict code/build compatibility; implementation/runtime/staged/committed/pushed/released reported separately; no fake consumer or backend contract
+ENTRY_CONDITIONS=Owner-authorized shared-source implementation of the committed Section 21 contract on clean synchronized main@a4f2d790d122b78cf14476a656730eb3bdbcfea3; approved user/role create-edit demand; shared UI predecessor PAVP_ARCHITECTURE_ADMIN_CONSOLE repository implementation COMPLETE; locale predecessor PAVP_ADMIN_CONSOLE_LOCALIZATION repository implementation COMPLETE; first form-state authority instance
+ALLOWED_SCOPE=UiForm, UiFormField, form-contracts, useUiForm, the three Section 21.7 private Naive form adapters and responsibility-named private form helpers; exact package-root exports and two TARGET_INACTIVE empty-consumer records; necessary existing theme/date-locale projection and owning-checker/factual-count synchronization; minimum in-place architecture synchronization
+PROHIBITED_SCOPE=application Zod bridge or fabricated business validators/callbacks/resources; business consumers/routes/pages or capability activation; dependencies/manifests/lockfiles/patches; generated outputs/budgets/TS/CI; backend/API/Auth/Table/Dialog/CRUD implementation; Appearance refactor; browser/test/evidence artifacts; separate specification or governance documents; automatic successor
+OUTPUTS=implemented typed shared form source with Vue-local value ownership, validation port, initial/reset/hydration, stale-result cancellation, submission lock, controlled Naive presentation and supplied copy getters; two inactive unconsumed registrations; production-consumer integration remains absent
+MACHINE_GATES=existing strict type and owning checks; final git diff --check and mise exec -- pnpm verify; unchanged production budgets and minimum 8 KiB initial JavaScript headroom; no generated-source drift; no unused-code suppression or artificial dynamic roots
+PRODUCTION_RELEASE_ACCEPTANCE=not performed; future real Form release requires the applicable Section 32.3 external Owner matrix; shared source is not runtime/accessibility/visual acceptance
+COMPLETION_EVIDENCE=actual shared-source implementation and complete static gate results; production before/after bundle measurements distinguished from tree-shaken unconsumed form source; implementation/runtime/staged/committed/pushed/released reported separately; full Form landing still requires a real consumer
 ```
 
 #### `PAVP_ADMIN_CONSOLE_LOCALIZATION` scoped admission record

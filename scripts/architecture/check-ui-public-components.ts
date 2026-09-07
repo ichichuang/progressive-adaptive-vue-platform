@@ -639,7 +639,7 @@ function publicComponentExports(source: string): string[] {
   })
 }
 
-function macroContractNames(source: string, macroName: string): string[] {
+function macroContractNames(source: string, macroName: string, formContracts = ''): string[] {
   const parsed = sourceFile('component.ts', scriptContent(source))
   const names = new Set<string>()
 
@@ -649,9 +649,17 @@ function macroContractNames(source: string, macroName: string): string[] {
       ts.isIdentifier(node.expression) &&
       node.expression.text === macroName
     ) {
-      const type = node.typeArguments?.[0]
+      const argument = node.typeArguments?.[0]
+      const type =
+        argument !== undefined && ts.isTypeReferenceNode(argument)
+          ? sourceFile('form-contracts.ts', formContracts).statements.find(
+              (statement) =>
+                ts.isInterfaceDeclaration(statement) &&
+                statement.name.text === argument.typeName.getText(parsed),
+            )
+          : argument
 
-      if (type !== undefined && ts.isTypeLiteralNode(type)) {
+      if (type !== undefined && (ts.isTypeLiteralNode(type) || ts.isInterfaceDeclaration(type))) {
         for (const member of type.members) {
           if (ts.isPropertySignature(member) || ts.isMethodSignature(member)) {
             if (ts.isIdentifier(member.name) || ts.isStringLiteral(member.name)) {
@@ -714,6 +722,159 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   const indexSource = await readFile(resolve(uiSourceDirectory, 'index.ts'), 'utf8')
   const publicExports = publicComponentExports(indexSource)
   const registeredExports = registryRecords.map((record) => record.exportName)
+  const formContracts = await readFile(
+    resolve(uiSourceDirectory, 'components/form-contracts.ts'),
+    'utf8',
+  )
+  const inactiveForms = new Set(['UiForm', 'UiFormField'])
+  const parsedFormContracts = sourceFile('form-contracts.ts', formContracts)
+  const formInterfaces = parsedFormContracts.statements.filter(ts.isInterfaceDeclaration)
+  const compactType = (value: string): string => value.replace(/\s+/gu, '')
+  for (const component of ['UiForm', 'UiFormField']) {
+    const record = registryRecords.find((record) => record.exportName === component)
+    const props = formInterfaces.find((node) => node.name.text === `${component}Props`)
+    const slots = formInterfaces.find((node) => node.name.text === `${component}Slots`)
+    if (record === undefined || props === undefined || slots === undefined) {
+      violations.push(
+        `${component}: exact generic props, slots and inactive source registration are required.`,
+      )
+      continue
+    }
+    for (const property of props.members.filter(ts.isPropertySignature)) {
+      const contract = record.props.find(
+        (prop) => prop.name === property.name.getText(parsedFormContracts),
+      )
+      if (
+        contract?.required !== (property.questionToken === undefined) ||
+        compactType(contract.type) !==
+          compactType(property.type?.getText(parsedFormContracts) ?? '')
+      ) {
+        violations.push(
+          `${component}: generic prop type/requiredness differs from its registry contract.`,
+        )
+      }
+    }
+    for (const property of slots.members.filter(ts.isPropertySignature)) {
+      const contract = record.slots.find(
+        (slot) => slot.name === property.name.getText(parsedFormContracts),
+      )
+      const slotType = property.type
+      const parameter =
+        slotType !== undefined && ts.isFunctionTypeNode(slotType)
+          ? slotType.parameters[0]?.type
+          : undefined
+      if (
+        contract?.required !== (property.questionToken === undefined) ||
+        compactType(contract.slotPropsType) !==
+          compactType(parameter?.getText(parsedFormContracts) ?? '')
+      ) {
+        violations.push(`${component}: typed slot binding differs from its registry contract.`)
+      }
+    }
+  }
+  const formInput = formInterfaces.find((node) => node.name.text === 'UiFormInput')
+  if (
+    formInput === undefined ||
+    ['validation', 'copy', 'onSubmit'].some(
+      (name) =>
+        !formInput.members.some(
+          (member) =>
+            ts.isPropertySignature(member) &&
+            member.name.getText(parsedFormContracts) === name &&
+            member.questionToken === undefined,
+        ),
+    )
+  ) {
+    violations.push('UiFormInput must require the real validation port, copy and submit callback.')
+  }
+  const controller = formInterfaces.find((node) => node.name.text === 'UiFormController')
+  if (
+    controller === undefined ||
+    !exactSet(
+      controller.members.flatMap((member) =>
+        member.name === undefined ? [] : [member.name.getText(parsedFormContracts)],
+      ),
+      [
+        'formId',
+        'draftId',
+        'fields',
+        'copy',
+        'values',
+        'dirty',
+        'touched',
+        'issues',
+        'phase',
+        'submitting',
+        'notice',
+        'setValues',
+        'blur',
+        'validate',
+        'submit',
+        'reset',
+        'replaceInitial',
+        'field',
+        'dispose',
+      ],
+    )
+  )
+    violations.push('UiFormController must retain the bounded Section 21 public surface.')
+  if (
+    !indexSource.includes("export { useUiForm } from './composables/use-ui-form'") ||
+    !indexSource.includes("export type * from './components/form-contracts'")
+  ) {
+    violations.push(
+      'Forms must expose the controller and vendor-independent contracts through the package root.',
+    )
+  }
+  for (const name of ['UiForm', 'UiFormField']) {
+    const source = await readFile(resolve(uiSourceDirectory, `components/${name}.vue`), 'utf8')
+    const expectedGeneric = name === 'UiForm' ? 'I' : 'I, K extends UiFormKey<I>'
+    if (
+      !source.includes(`generic="${expectedGeneric}"`) ||
+      !macroContractTypes(source).includes(`${name}Props<${name === 'UiForm' ? 'I' : 'I, K'}>`) ||
+      !macroContractTypes(source).includes(`${name}Slots<${name === 'UiForm' ? 'I' : 'I, K'}>`)
+    ) {
+      violations.push(`${name}: public SFC must preserve the admitted generic props and slots.`)
+    }
+  }
+  for (const name of ['PavpNaiveForm', 'PavpNaiveFormField', 'PavpNaiveFormControl']) {
+    const path = `packages/ui/src/adapters/naive/${name}.vue`
+    const source = await readFile(resolve(rootDirectory, path), 'utf8')
+    const template = parseVueTemplate(path, source)
+    if (typeof template === 'string') {
+      violations.push(template)
+      continue
+    }
+    let forms = 0
+    walkVueElements(template.root, (element) => {
+      if (element.tag === 'form' || element.tag === 'NForm') {
+        forms += 1
+        if (
+          name !== 'PavpNaiveForm' ||
+          element.tag !== 'NForm' ||
+          !hasAttributeOrBinding(element, 'novalidate')
+        ) {
+          violations.push('Only PavpNaiveForm may own the single native novalidate form boundary.')
+        }
+      }
+      if (
+        (element.tag === 'NForm' || element.tag === 'NFormItem') &&
+        ['rules', 'rule', 'model'].some((prop) => hasAttributeOrBinding(element, prop))
+      ) {
+        violations.push(
+          'Naive forms may project feedback but must not own domain rules or a second model.',
+        )
+      }
+      if (element.tag === 'NSelect' || element.tag === 'NDatePicker') {
+        if (resolvedAttribute(element, 'to') !== overlayTarget)
+          violations.push(`${name}: form popups must use the existing overlay root.`)
+      }
+    })
+    if (forms !== (name === 'PavpNaiveForm' ? 1 : 0))
+      violations.push(`${name}: native form boundary count diverged.`)
+    if (/\.(?:restoreValidation|validate)\s*\(/u.test(scriptContent(source)))
+      violations.push(`${name}: vendor validation methods are forbidden.`)
+  }
 
   if (
     ts
@@ -765,9 +926,17 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   if (
     !Object.isFrozen(registry) ||
     !Object.isFrozen(registry.records) ||
-    registryRecords.some((record) => record.capabilityStatus !== 'ACTIVE')
+    registryRecords.some((record) =>
+      inactiveForms.has(record.exportName)
+        ? record.capabilityStatus !== 'TARGET_INACTIVE' ||
+          record.consumerRouteNames.length !== 0 ||
+          record.sourcePath !== `packages/ui/src/components/${record.exportName}.vue`
+        : record.capabilityStatus !== 'ACTIVE' || record.consumerRouteNames.length === 0,
+    )
   ) {
-    violations.push('UI Public Component Registry must be active and deeply immutable.')
+    violations.push(
+      'UI Registry must preserve ACTIVE consumers and exactly two unconsumed TARGET_INACTIVE forms.',
+    )
   }
 
   const productRoutes = routeRegistry.filter((record) => record.meta.layout === 'workspace')
@@ -790,7 +959,8 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     const expectedEmits = registeredContractNames(record.emits)
     const expectedSlots = registeredContractNames(record.slots)
 
-    if (!exactSet(macroContractNames(source, 'defineProps'), expectedProps)) {
+    const importedContracts = inactiveForms.has(record.exportName) ? formContracts : ''
+    if (!exactSet(macroContractNames(source, 'defineProps', importedContracts), expectedProps)) {
       violations.push(`${record.exportName}: defineProps contract diverged from the UI Registry.`)
     }
 
@@ -798,7 +968,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       violations.push(`${record.exportName}: defineEmits contract diverged from the UI Registry.`)
     }
 
-    if (!exactSet(macroContractNames(source, 'defineSlots'), expectedSlots)) {
+    if (!exactSet(macroContractNames(source, 'defineSlots', importedContracts), expectedSlots)) {
       violations.push(`${record.exportName}: defineSlots contract diverged from the UI Registry.`)
     }
 
@@ -826,6 +996,10 @@ export async function validateUiPublicComponents(): Promise<string[]> {
 
   const adapterFiles = [
     'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
+    'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
+    'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
+    'packages/ui/src/adapters/naive/use-form-control.ts',
     'packages/ui/src/adapters/naive/naive-breadcrumb.ts',
     'packages/ui/src/adapters/naive/naive-button.ts',
     'packages/ui/src/adapters/naive/naive-descriptions.ts',
@@ -960,6 +1134,15 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   const expectedRuntimeImports = [
     'zhCN@naive-ui/es/locales/common/zhCN',
     'enUS@naive-ui/es/locales/common/enUS',
+    'dateZhCN@naive-ui/es/locales/date/zhCN',
+    'dateEnUS@naive-ui/es/locales/date/enUS',
+    'NForm@naive-ui/es/form',
+    'NFormItem@naive-ui/es/form',
+    'NInput@naive-ui/es/input',
+    'NInputNumber@naive-ui/es/input-number',
+    'NSelect@naive-ui/es/select',
+    'NSwitch@naive-ui/es/switch',
+    'NDatePicker@naive-ui/es/date-picker',
     'NBreadcrumb@naive-ui/es/breadcrumb',
     'NBreadcrumbItem@naive-ui/es/breadcrumb',
     'NButton@naive-ui/es/button',

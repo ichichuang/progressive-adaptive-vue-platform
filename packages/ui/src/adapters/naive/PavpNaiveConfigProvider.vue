@@ -3,6 +3,8 @@ import type { EffectiveAppearanceState } from '@platform/design-system'
 import type { UiLocale } from '../../components/contracts'
 import zhCN from 'naive-ui/es/locales/common/zhCN'
 import enUS from 'naive-ui/es/locales/common/enUS'
+import dateZhCN from 'naive-ui/es/locales/date/zhCN'
+import dateEnUS from 'naive-ui/es/locales/date/enUS'
 import { NConfigProvider } from 'naive-ui/es/config-provider'
 import { computed, provide, toRef } from 'vue'
 
@@ -29,6 +31,7 @@ provide(pavpNaiveAppearanceKey, appearance)
 <template>
   <NConfigProvider
     :locale="locale === 'zh-CN' ? zhCN : enUS"
+    :date-locale="locale === 'zh-CN' ? dateZhCN : dateEnUS"
     :theme="projection.theme"
     :theme-overrides="projection.themeOverrides"
   >
@@ -180,7 +183,14 @@ html[data-motion='none']
     .n-tag,
     .n-tag__border,
     .n-tag__icon,
-    .n-tag__close
+    .n-tag__close,
+    .pavp-form-control,
+    .pavp-form-control *,
+    .pavp-form-field .n-form-item-feedback,
+    .pavp-form-select-menu,
+    .pavp-form-select-menu *,
+    .n-date-panel,
+    .n-date-panel *
   ) {
   animation: none !important;
   transition: none !important;
@@ -207,7 +217,21 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown {
 }
 
 html[data-motion='full'] .pavp-admin-shell__header-action-icon-state,
-html[data-motion='full'] .pavp-admin-shell__header-action-tooltip {
+html[data-motion='full'] .pavp-admin-shell__header-action-tooltip,
+html[data-motion='full'] .pavp-form-control .n-input,
+html[data-motion='full'] .pavp-form-control .n-input__border,
+html[data-motion='full'] .pavp-form-control .n-input__state-border,
+html[data-motion='full'] .pavp-form-control .n-base-selection,
+html[data-motion='full'] .pavp-form-control .n-base-selection__border,
+html[data-motion='full'] .pavp-form-control .n-base-selection__state-border,
+html[data-motion='full'] .pavp-form-control .n-switch__rail,
+html[data-motion='full'] .pavp-form-control .n-switch__button,
+html[data-motion='full'] .pavp-form-field .n-form-item-feedback,
+html[data-motion='full'] .pavp-form-select-menu,
+html[data-motion='full'] .n-date-panel,
+html[data-motion='full'] .n-date-panel-date,
+html[data-motion='full'] .n-date-panel-calendar__title,
+html[data-motion='full'] .n-date-panel-month {
   transition-duration: var(--ui-motion-duration) !important;
   transition-timing-function: var(--ui-motion-easing) !important;
 }
@@ -223,18 +247,46 @@ html[data-motion='full'] .pavp-admin-shell__header-action-icon-state {
 }
 
 html[data-motion='reduced'] .pavp-admin-shell__header-action-icon-state,
-html[data-motion='reduced'] .pavp-admin-shell__header-action-tooltip {
+html[data-motion='reduced'] .pavp-admin-shell__header-action-tooltip,
+html[data-motion='reduced'] .pavp-form-control .n-input,
+html[data-motion='reduced'] .pavp-form-control .n-input__border,
+html[data-motion='reduced'] .pavp-form-control .n-input__state-border,
+html[data-motion='reduced'] .pavp-form-control .n-base-selection,
+html[data-motion='reduced'] .pavp-form-control .n-base-selection__border,
+html[data-motion='reduced'] .pavp-form-control .n-base-selection__state-border,
+html[data-motion='reduced'] .pavp-form-control .n-switch__rail,
+html[data-motion='reduced'] .pavp-form-control .n-switch__button,
+html[data-motion='reduced'] .pavp-form-field .n-form-item-feedback,
+html[data-motion='reduced'] .pavp-form-select-menu,
+html[data-motion='reduced'] .n-date-panel,
+html[data-motion='reduced'] .n-date-panel-date,
+html[data-motion='reduced'] .n-date-panel-calendar__title,
+html[data-motion='reduced'] .n-date-panel-month {
   transition-duration: calc(var(--ui-motion-duration) / 2) !important;
   transition-timing-function: var(--ui-motion-easing) !important;
 }
 
-html[data-motion='reduced'] .pavp-admin-shell__header-action.n-button {
+html[data-motion='reduced'] .pavp-admin-shell__header-action.n-button,
+html[data-motion='reduced'] .pavp-form-control .n-input,
+html[data-motion='reduced'] .pavp-form-control .n-input__border,
+html[data-motion='reduced'] .pavp-form-control .n-input__state-border,
+html[data-motion='reduced'] .pavp-form-control .n-base-selection,
+html[data-motion='reduced'] .pavp-form-control .n-base-selection__border,
+html[data-motion='reduced'] .pavp-form-control .n-base-selection__state-border,
+html[data-motion='reduced'] .pavp-form-control .n-switch__rail,
+html[data-motion='reduced'] .pavp-form-control .n-switch__button,
+html[data-motion='reduced'] .pavp-form-select-menu,
+html[data-motion='reduced'] .n-date-panel,
+html[data-motion='reduced'] .n-date-panel-date,
+html[data-motion='reduced'] .n-date-panel-calendar__title,
+html[data-motion='reduced'] .n-date-panel-month {
   transition-duration: calc(var(--ui-motion-duration) / 2) !important;
   transition-property: background-color, color, opacity !important;
   transition-timing-function: var(--ui-motion-easing) !important;
 }
 
-html[data-motion='reduced'] .pavp-admin-shell__header-action-icon-state {
+html[data-motion='reduced'] .pavp-admin-shell__header-action-icon-state,
+html[data-motion='reduced'] .pavp-form-field .n-form-item-feedback {
   transform: none !important;
   transition-property: opacity !important;
 }
@@ -247,7 +299,14 @@ html[data-motion='reduced']
   .pavp-admin-shell__header-action-tooltip:is(
     .popover-transition-enter-from,
     .popover-transition-leave-to
-  ) {
+  ),
+html[data-motion='reduced']
+  .pavp-form-select-menu:is(
+    .fade-in-scale-up-transition-enter-from,
+    .fade-in-scale-up-transition-leave-to
+  ),
+html[data-motion='reduced']
+  .n-date-panel:is(.fade-in-scale-up-transition-enter-from, .fade-in-scale-up-transition-leave-to) {
   transform: none !important;
 }
 
@@ -255,7 +314,14 @@ html[data-motion='none']
   .pavp-admin-shell__header-action-tooltip:is(
     .popover-transition-enter-from,
     .popover-transition-leave-to
-  ) {
+  ),
+html[data-motion='none']
+  .pavp-form-select-menu:is(
+    .fade-in-scale-up-transition-enter-from,
+    .fade-in-scale-up-transition-leave-to
+  ),
+html[data-motion='none']
+  .n-date-panel:is(.fade-in-scale-up-transition-enter-from, .fade-in-scale-up-transition-leave-to) {
   opacity: 1 !important;
   transform: none !important;
 }
@@ -398,5 +464,12 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
 html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transition-leave-to {
   opacity: 1 !important;
   transform: none !important;
+}
+
+@media (forced-colors: active) {
+  .pavp-form-control :focus-visible {
+    outline: var(--ui-admin-border-focus);
+    outline-offset: var(--ui-admin-focus-outline-offset);
+  }
 }
 </style>

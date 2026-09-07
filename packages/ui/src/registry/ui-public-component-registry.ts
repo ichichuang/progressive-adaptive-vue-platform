@@ -51,6 +51,75 @@ export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
   records: Object.freeze([
     Object.freeze({
+      id: 'ui-form',
+      exportName: 'UiForm',
+      sourcePath: 'packages/ui/src/components/UiForm.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'form',
+          type: 'UiFormController<I>',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'columns', type: '1 | 2', required: false, defaultValue: '1' }),
+      ]),
+      emits: Object.freeze([]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'default',
+          slotPropsType: '{ readonly form: UiFormController<I> }',
+          required: false,
+        }),
+        Object.freeze({
+          name: 'field',
+          slotPropsType: '{ [K in UiFormKey<I>]: UiFormFieldBinding<I, K> }[UiFormKey<I>]',
+          required: false,
+        }),
+        Object.freeze({
+          name: 'actions',
+          slotPropsType: '{ readonly form: UiFormController<I> }',
+          required: false,
+        }),
+      ]),
+      semanticVariants: Object.freeze(['1', '2']),
+      accessibilityContractIds: Object.freeze([
+        'a11y.form-label-feedback',
+        'a11y.form-summary-focus',
+      ]),
+      consumerRouteNames: Object.freeze([]),
+      capabilityStatus: 'TARGET_INACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-form-field',
+      exportName: 'UiFormField',
+      sourcePath: 'packages/ui/src/components/UiFormField.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'form',
+          type: 'UiFormController<I>',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'name', type: 'K', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'default',
+          slotPropsType: 'UiFormFieldBinding<I, K>',
+          required: false,
+        }),
+      ]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze([
+        'a11y.form-label-feedback',
+        'a11y.form-summary-focus',
+      ]),
+      consumerRouteNames: Object.freeze([]),
+      capabilityStatus: 'TARGET_INACTIVE',
+    }),
+
+    Object.freeze({
       id: 'ui-admin-shell',
       exportName: 'UiAdminShell',
       sourcePath: 'packages/ui/src/components/UiAdminShell.vue',
