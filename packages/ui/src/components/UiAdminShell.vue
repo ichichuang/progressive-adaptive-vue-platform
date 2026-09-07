@@ -319,6 +319,15 @@ function handleRouteNavigationKeydown(event: KeyboardEvent, routeName: string): 
   navigate(routeName)
 }
 
+function collapsedNavigationGroupRouteName(groupKey: string): string | undefined {
+  if (!persistentNavigationCollapsed.value) {
+    return undefined
+  }
+
+  return props.navigation.find((group) => navigationGroupKey(group.id) === groupKey)?.items[0]
+    ?.routeName
+}
+
 const persistentNavigationNodeProps = definePavpMenuNodeProps((option) => {
   const optionKind = navigationOptionKind(option)
 
@@ -329,6 +338,24 @@ const persistentNavigationNodeProps = definePavpMenuNodeProps((option) => {
       tabindex: 0,
       onKeydown: (event: KeyboardEvent) => {
         handleRootNavigationKeydown(event, groupKey)
+      },
+      onClick: (event: MouseEvent) => {
+        if (event.button !== 0) {
+          return
+        }
+
+        const firstRouteName = collapsedNavigationGroupRouteName(groupKey)
+
+        if (firstRouteName !== undefined) {
+          navigate(firstRouteName)
+        }
+      },
+      onPointerdown: (event: PointerEvent) => {
+        const firstRouteName = collapsedNavigationGroupRouteName(groupKey)
+
+        if (firstRouteName !== undefined) {
+          preserveCurrentPersistentNavigationFocus(event, firstRouteName)
+        }
       },
     }
   }

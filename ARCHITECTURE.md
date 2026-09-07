@@ -2765,6 +2765,8 @@ DUPLICATE_TOOLTIP_BORDER_OUTLINE_SHADOW_OR_STATE_STACKING=PROHIBITED
 NEW_STATE_PERSISTENCE_DEPENDENCY_MOTION_AUTHORITY_PUBLIC_API_OR_ROUTER_BEHAVIOR=NONE
 ```
 
+Owner 额外授权 Collapsed Root 的普通 Primary Click 直接导航：仅在 `persistentNavigationCollapsed=true` 时，通过公开 `NMenu.nodeProps` 挂在 Root Menu Item 的完整既有 Hit Area（含 Icon），按该 Root Group Key 从当前 `props.navigation` 解析同一 Group，取 supplied order 中的 `items[0].routeName`，调用既有 `UiAdminShell.navigate()`。单项 Group 进入唯一页面，多项 Group 进入第一项；保留既有空 Group Validation，不增加 Fallback Destination、缓存 Registry 或 Last-visited State。Primary Pointerdown 只在该目标已为当前 Route 时复用既有 Focus Guard，不触发导航；Click 是唯一新增导航路径，Current-route No-op 与 Different-route Single Emit 保持。Hover 仍只打开原 Popup，Enter/Space 仍只通过既有 event-local `mouseenter` 打开 Popup；Popup Route Selection 不绑定 Root Shortcut，其第二或第三项只选择自身 Route。Expanded Root 继续只展开/折叠 Group，Regular Rail 与手动折叠的 Wide Rail 共享该 Shortcut，Narrow Drawer 不变。
+
 展开状态继续由 `expandedNavigationGroupKeys` 作为唯一可写 Authority，传给 `NMenu` 的值只过滤当前仍被 Navigation Registry 准入的 Root Group Key，不得根据当前 Route 在 Computed Projection 中持续补回 Active Parent。初始状态展开全部 Root Submenu；用户手动折叠 Active Parent 后，该折叠在当前 Route 不变期间必须稳定。只有实际 `activeRouteName` 变化时，才允许一次性把新 Route 的 Parent Group 补入现有有效展开集合，并保留其他用户展开状态。
 
 现有 Header Trailing Actions 在 Wide 且 Persistent Navigation 展开时增加一个独立的 Root Submenu 全部展开/折叠 Action；该 Action 位于既有 Sidebar Collapse Action 之前，不得进入 Sider、Menu 或 Narrow Drawer，只能写入 `expandedNavigationGroupKeys`。全部 Root Submenu 已展开时 Accessible Name 与 Naive Tooltip 文本都是 `折叠全部菜单`，否则都是 `展开全部菜单`；既有 Sidebar Collapse Action 继续只写入 `wideNavigationCollapsed`，两项控制不得互相代写状态。
