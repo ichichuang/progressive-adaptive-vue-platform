@@ -98,6 +98,12 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
     const result = props.binding.setValue(value)
     return result === 'applied' || result === 'unchanged'
   }
+  function blurNumber(): void {
+    // Naive normalizes or reverts its numeric text before emitting blur, even
+    // when the canonical value is unchanged and no update:value event fires.
+    if (!composing.value) buffer = null
+    props.binding.blur()
+  }
   function commit(): boolean {
     if (composing.value) return false
     if (buffer === null) return true
@@ -174,6 +180,7 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
     composing,
     captureInput,
     update,
+    blurNumber,
     dateDisabled,
   }
 }

@@ -37,6 +37,7 @@ const {
   composing,
   captureInput,
   update,
+  blurNumber,
   dateDisabled,
 } = useFormControl(props)
 </script>
@@ -90,7 +91,7 @@ const {
       :theme-overrides="theme.InputNumber"
       v-bind="{ ...validationProps, ...numberHints }"
       @update:value="update"
-      @blur="binding.blur()"
+      @blur="blurNumber"
     />
     <NSelect
       v-else-if="config.kind === 'select' || config.kind === 'multi-select'"
