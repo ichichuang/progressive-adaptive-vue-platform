@@ -480,7 +480,7 @@ interface RouteTransitionSourceNegativeProbeResult {
 }
 
 export const expectedRouteTransitionSourceProofCount = 52
-export const expectedRouteTransitionSourceNegativeProbeCount = 12
+export const expectedRouteTransitionSourceNegativeProbeCount = 16
 export const expectedRouterPresentationCommitNegativeProbeCount = 8
 export const expectedRouteTransitionPresetSelectionNegativeProbeCount = 7
 export const expectedRouteTransitionFullPaceNegativeProbeCount = 9
@@ -2220,7 +2220,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_07_PRODUCT_AXIS',
       passed:
-        fullWorkspaceDecision.kind === 'native-document' &&
+        fullWorkspaceDecision.kind === 'native-element' &&
         fullWorkspaceDecision.presetId === 'route-transition.axis-inline-soft' &&
         fullWorkspaceDecision.transitionType === 'pavp-route-axis-inline-soft' &&
         fullWorkspaceDecision.direction === 'forward',
@@ -2253,7 +2253,7 @@ function routeTransitionSourceProofResults(
       id: 'ROUTE_TRANSITION_SOURCE_11_BOUNDARY_IDENTITY',
       passed:
         contentBoundary?.target === '[data-scroll-owner="architecture-console-content"]' &&
-        contentBoundary.viewTransitionName === 'pavp-admin-route-content',
+        contentBoundary.viewTransitionName === 'root',
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_12_COORDINATOR_INSTANCE',
@@ -2265,8 +2265,12 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_13_NATIVE_CALL_OWNER',
       passed:
-        count(snapshot.applicationSource, /document\.startViewTransition\s*\(/gu) === 1 &&
-        count(snapshot.coordinatorSource, /document\.startViewTransition\s*\(/gu) === 1,
+        count(snapshot.applicationSource, /\.startViewTransition\s*\(/gu) === 1 &&
+        count(snapshot.coordinatorSource, /\.startViewTransition\s*\(/gu) === 1 &&
+        !/document(?:\.documentElement)?\.startViewTransition|document\.documentElement/.test(
+          snapshot.coordinatorSource,
+        ) &&
+        /typeof \w+\.startViewTransition === 'function'/u.test(snapshot.coordinatorSource),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_14_CURRENT_ROUTE_BEFORE_COORDINATOR',
@@ -2296,9 +2300,13 @@ function routeTransitionSourceProofResults(
       passed:
         navigateSource.includes('await loadRouteLocation(resolvedTarget)') &&
         navigateSource.indexOf('await loadRouteLocation(resolvedTarget)') <
-          navigateSource.indexOf(
-            'runVisualTransition(targetRouteName, resolvedTarget, decision, currentEpoch)',
-          ),
+          navigateSource.indexOf('runVisualTransition(') &&
+        snapshot.coordinatorSource.includes('instanceof HTMLElement') &&
+        /!\w+\.isConnected/u.test(snapshot.coordinatorSource) &&
+        /\w+ !== \w+\.element/u.test(
+          navigateSource.slice(navigateSource.indexOf('await loadRouteLocation')),
+        ) &&
+        count(navigateSource, /readBoundaryState\(\)/gu) === 2,
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_17_SINGLE_ROUTER_PUSH_IN_UPDATE',
@@ -2335,7 +2343,7 @@ function routeTransitionSourceProofResults(
       id: 'ROUTE_TRANSITION_SOURCE_20_STALE_PRELOAD_EPOCH',
       passed:
         count(navigateSource, /currentEpoch !== navigationEpoch/gu) === 2 &&
-        navigateSource.includes('currentEpoch !== navigationEpoch || disposed') &&
+        navigateSource.includes('currentEpoch !== navigationEpoch') &&
         snapshot.coordinatorSource.includes('navigationEpoch += 1'),
     }),
     Object.freeze({
@@ -2363,7 +2371,17 @@ function routeTransitionSourceProofResults(
           snapshot.coordinatorSource,
           'const stopMotionObservation = watch',
           'const clearDirection',
-        ).includes('router.'),
+        ).includes('router.') &&
+        sourceSection(
+          snapshot.coordinatorSource,
+          'const stopMotionObservation',
+          'const clearDirection',
+        ).includes('navigationEpoch += 1') &&
+        sourceSection(
+          snapshot.coordinatorSource,
+          'const stopMotionObservation',
+          'const clearDirection',
+        ).includes("flush: 'sync'"),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_24_NO_SECOND_HISTORY_OR_NAVIGATION_OWNER',
@@ -2379,17 +2397,20 @@ function routeTransitionSourceProofResults(
         ),
     }),
     Object.freeze({
-      id: 'ROUTE_TRANSITION_SOURCE_26_ROOT_SNAPSHOT_DISABLED',
+      id: 'ROUTE_TRANSITION_SOURCE_26_CONTENT_SCOPED_ROOT_ONLY',
       passed:
-        snapshot.cssSource.includes(':root {\n    view-transition-name: none;') &&
-        snapshot.cssSource.includes('::view-transition-group(root)') &&
-        snapshot.cssSource.includes('::view-transition-new(root) {\n    animation: none;'),
+        [...snapshot.cssSource.matchAll(/([^{}]+)\{[^{}]*\}/gu)]
+          .flatMap((match) => (match[1] ?? '').split(','))
+          .filter((selector) => selector.includes('::view-transition'))
+          .every((selector) =>
+            selector.includes("[data-scroll-owner='architecture-console-content']"),
+          ) && !snapshot.cssSource.includes(':root {'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_27_CONTENT_BOUNDARY_NAMED',
       passed:
         snapshot.cssSource.includes(
-          "[data-scroll-owner='architecture-console-content'] {\n    view-transition-name: pavp-admin-route-content;",
+          "[data-scroll-owner='architecture-console-content'] {\n    view-transition-name: root;",
         ) &&
         snapshot.boundarySource.includes(
           'target: \'[data-scroll-owner="architecture-console-content"]\'',
@@ -2398,7 +2419,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_28_PERSISTENT_REGIONS_UNNAMED',
       passed:
-        count(snapshot.cssSource, /view-transition-name:/gu) === 2 &&
+        count(snapshot.cssSource, /view-transition-name:/gu) === 1 &&
         !/pavp-admin-shell__(?:header|sidebar)|pavp-overlay-root|navigation-selection-lens[\s\S]{0,80}view-transition-name/u.test(
           snapshot.cssSource,
         ),
@@ -2566,7 +2587,14 @@ function routeTransitionSourceProofResults(
         presentationCommitBrokerSource.includes('reservation.resolve(outcome)') &&
         presentationCommitBrokerSource.includes('reservation.reject(source)') &&
         count(presentationCommitBrokerSource, /broker\.reservations\.delete\(/gu) === 2 &&
-        count(snapshot.coordinatorSource, /cancelPresentationCommitReservations\s*\(/gu) === 4 &&
+        sourceSection(
+          snapshot.coordinatorSource,
+          'const stopMotionObservation',
+          'const clearDirection',
+        ).includes('cancelPresentationCommitReservations(() => true)') &&
+        sourceSection(snapshot.coordinatorSource, 'dispose() {', '\n  })').includes(
+          'cancelPresentationCommitReservations(() => true)',
+        ) &&
         snapshot.coordinatorSource.includes('cancelPresentationCommitReservations(() => true)') &&
         navigateSource.includes('(reservationEpoch) => reservationEpoch < currentEpoch'),
     }),
@@ -2619,6 +2647,50 @@ function runRouteTransitionSourceNegativeProbes(
     string,
     (snapshot: RouteTransitionSourceSnapshot) => RouteTransitionSourceSnapshot,
   ][] = [
+    [
+      'route-transition-document-api-restored',
+      'ROUTE_TRANSITION_SOURCE_13_NATIVE_CALL_OWNER',
+      (snapshot) => ({
+        ...snapshot,
+        coordinatorSource: snapshot.coordinatorSource.replace(
+          'element.startViewTransition({',
+          'document.startViewTransition({',
+        ),
+      }),
+    ],
+    [
+      'route-transition-replaced-boundary-not-checked',
+      'ROUTE_TRANSITION_SOURCE_16_PRELOAD_BEFORE_SNAPSHOT',
+      (snapshot) => ({
+        ...snapshot,
+        coordinatorSource: snapshot.coordinatorSource.replace(
+          'element !== boundaryState.element',
+          'false',
+        ),
+      }),
+    ],
+    [
+      'route-transition-motion-retains-stale-callback',
+      'ROUTE_TRANSITION_SOURCE_23_MOTION_CHANGE_SKIPS_VISUAL',
+      (snapshot) => ({
+        ...snapshot,
+        coordinatorSource: snapshot.coordinatorSource.replace(
+          '      navigationEpoch += 1',
+          '      navigationEpoch += 0',
+        ),
+      }),
+    ],
+    [
+      'route-transition-document-pseudo-tree-restored',
+      'ROUTE_TRANSITION_SOURCE_26_CONTENT_SCOPED_ROOT_ONLY',
+      (snapshot) => ({
+        ...snapshot,
+        cssSource: snapshot.cssSource.replace(
+          "[data-scroll-owner='architecture-console-content']::view-transition {",
+          '::view-transition {',
+        ),
+      }),
+    ],
     [
       'route-transition-family-meta-removal',
       'ROUTE_TRANSITION_SOURCE_01_ROUTE_META_16',
@@ -2713,8 +2785,8 @@ function runRouteTransitionSourceNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         coordinatorSource: snapshot.coordinatorSource.replace(
-          '      skipVisualTransition(activeTransition)\n      const fromRoute',
-          '      const fromRoute',
+          '      skipVisualTransition(activeTransition)\n      clearDirection(directionOwner)',
+          '      clearDirection(directionOwner)',
         ),
       }),
     ],
@@ -2723,7 +2795,7 @@ function runRouteTransitionSourceNegativeProbes(
       'ROUTE_TRANSITION_SOURCE_28_PERSISTENT_REGIONS_UNNAMED',
       (snapshot) => ({
         ...snapshot,
-        cssSource: `${snapshot.cssSource}\n.pavp-admin-shell__header { view-transition-name: pavp-admin-route-content; }`,
+        cssSource: `${snapshot.cssSource}\n.pavp-admin-shell__header { view-transition-name: root; }`,
       }),
     ],
     [
@@ -2956,7 +3028,7 @@ function routeTransitionPresetProjectionValid(
     direction: RouteTransitionDirection,
   ): boolean =>
     isDeepStrictEqual(resolveRouteTransition(input, rules), {
-      kind: 'native-document',
+      kind: 'native-element',
       presetId,
       boundaryId: 'route-transition-boundary.architecture-console-content',
       motionProjection: input.motion,
@@ -3123,7 +3195,7 @@ function routeTransitionTypedRecipeCascadeValid(
   const recipeRules = [...recipeSource.matchAll(/([^{}]+)\{([^{}]*)\}/gu)].flatMap((block) =>
     (block[1] ?? '').split(',').flatMap((rawSelector) => {
       const selector = rawSelector.trim().replaceAll(/\(\s+/gu, '(').replaceAll(/\s+\)/gu, ')')
-      const target = /::view-transition-(old|new)\(pavp-admin-route-content\)$/u.exec(selector)
+      const target = /::view-transition-(old|new)\(root\)$/u.exec(selector)
       if (target === null) {
         return []
       }
@@ -3144,12 +3216,23 @@ function routeTransitionTypedRecipeCascadeValid(
       const transitionType = /:active-view-transition-type\((pavp-route-[a-z-]+)\)/u.exec(
         qualifiers,
       )?.[1]
+      const scope = "[data-scroll-owner='architecture-console-content']"
+      const [ancestor, subject] = qualifiers.split(scope)
+      const scopedSubjectValid =
+        subject !== undefined &&
+        !/\s|:root|:dir|data-motion/u.test(subject) &&
+        (ancestor === '' ||
+          /^html(?::root)?(?::dir\((?:ltr|rtl)\)|\[data-motion=['"](?:reduced|none)['"]\])*\s+$/u.test(
+            ancestor ?? '',
+          ))
       const remainder = qualifiers
+        .replace(scope, '')
         .replaceAll(/\[(?:data-motion|data-pavp-route-transition-direction)=['"][a-z]+['"]\]/gu, '')
         .replaceAll(
           /:root|:dir\((?:ltr|rtl)\)|:active-view-transition-type\(pavp-route-[a-z-]+\)/gu,
           '',
         )
+        .trim()
       return [
         {
           animationName,
@@ -3160,7 +3243,7 @@ function routeTransitionTypedRecipeCascadeValid(
           transitionType,
           classSpecificity: count(qualifiers, /\[|:(?:root|dir\(|active-view-transition-type\()/gu),
           typeSpecificity: remainder === 'html' ? 2 : 1,
-          valid: remainder === '' || remainder === 'html',
+          valid: scopedSubjectValid && (remainder === '' || remainder === 'html'),
         },
       ]
     }),
@@ -3274,8 +3357,8 @@ function runRouteTransitionPresetSelectionNegativeProbes(
       {
         ...baseline,
         cssSource: baseline.cssSource.replaceAll(
-          'html:root[data-pavp-route-transition-direction=',
-          'html :root[data-pavp-route-transition-direction=',
+          "[data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction=",
+          "[data-scroll-owner='architecture-console-content'] [data-pavp-route-transition-direction=",
         ),
       },
     ],
@@ -3285,7 +3368,7 @@ function runRouteTransitionPresetSelectionNegativeProbes(
       {
         ...baseline,
         cssSource: `${baseline.cssSource}\n@layer app {
-          html:root[data-pavp-route-transition-direction='forward']:active-view-transition-type(pavp-route-sheet-soft)::view-transition-new(pavp-admin-route-content) {
+          [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(pavp-route-sheet-soft)::view-transition-new(root) {
             animation-name: pavp-route-content-crossfade-new;
           }
         }`,
@@ -3347,10 +3430,11 @@ function routeTransitionFullPaceProofResults(
   snapshot: RouteTransitionSourceSnapshot,
 ): readonly RouteTransitionSourceProofResult[] {
   const fullDuration = 'calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)'
-  const target = 'pavp-admin-route-content'
-  const group = `::view-transition-group(${target})`
-  const pair = `::view-transition-image-pair(${target})`
-  const images = `::view-transition-old(${target}),::view-transition-new(${target})`
+  const scope = "[data-scroll-owner='architecture-console-content']"
+  const target = 'root'
+  const group = `${scope}::view-transition-group(${target})`
+  const pair = `${scope}::view-transition-image-pair(${target})`
+  const images = `${scope}::view-transition-old(${target}),${scope}::view-transition-new(${target})`
   const reducedGroup = `html:root[data-motion='reduced'][data-motion='reduced']${group}`
   const expectedDurations = new Map([
     [group, fullDuration],
@@ -3438,7 +3522,7 @@ function runRouteTransitionFullPaceNegativeProbes(
       timingCode,
       {
         ...baseline,
-        cssSource: `${baseline.cssSource}\n::view-transition-old(pavp-admin-route-content) { animation-duration: var(--ui-motion-duration); }`,
+        cssSource: `${baseline.cssSource}\n[data-scroll-owner='architecture-console-content']::view-transition-old(root) { animation-duration: var(--ui-motion-duration); }`,
       },
     ],
     [
@@ -3611,7 +3695,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     rejected: boolean,
   ): Promise<boolean> => {
     const result = await stylelint.lint({
-      code: `::view-transition-group(pavp-admin-route-content) { ${property}: ${value}; }`,
+      code: `::view-transition-group(root) { ${property}: ${value}; }`,
       codeFilename: resolve(rootDirectory, path),
       config,
       cwd: rootDirectory,
@@ -3762,9 +3846,11 @@ export function routeTransitionDividerFailures(
       }),
     )
   const cssRules = rules(snapshot.cssSource)
-  const groupSelector = '::view-transition-group(pavp-admin-route-content)'
+  const groupSelector =
+    "[data-scroll-owner='architecture-console-content']::view-transition-group(root)"
   const group = cssRules.find((rule) => rule.selector === groupSelector)?.declarations ?? []
-  const pairSelector = '::view-transition-image-pair(pavp-admin-route-content)'
+  const pairSelector =
+    "[data-scroll-owner='architecture-console-content']::view-transition-image-pair(root)"
   const pairOverflow = cssRules
     .filter((rule) => rule.selector === pairSelector)
     .flatMap((rule) =>
@@ -3888,8 +3974,8 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
       {
         ...baseline,
         cssSource: source.cssSource.replace(
-          '::view-transition-group(pavp-admin-route-content) {',
-          '::view-transition-group(pavp-admin-route-content) { border-inline-start-width: var(--ui-admin-border-width);',
+          '::view-transition-group(root) {',
+          '::view-transition-group(root) { border-inline-start-width: var(--ui-admin-border-width);',
         ),
       },
     ],
@@ -3898,8 +3984,8 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
       {
         ...baseline,
         cssSource: source.cssSource.replace(
-          '::view-transition-group(pavp-admin-route-content) {',
-          '::view-transition-group(pavp-admin-route-content) { margin-inline-start: calc(-1 * var(--ui-admin-border-width));',
+          '::view-transition-group(root) {',
+          '::view-transition-group(root) { margin-inline-start: calc(-1 * var(--ui-admin-border-width));',
         ),
       },
     ],
@@ -3907,14 +3993,14 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
       ['DIVIDER_NO_TRANSIENT_BORDER'],
       {
         ...baseline,
-        cssSource: `${source.cssSource}\n::view-transition-old(pavp-admin-route-content), ::view-transition-new(pavp-admin-route-content) { border-inline-start-width: var(--ui-admin-border-width); }`,
+        cssSource: `${source.cssSource}\n::view-transition-old(root), ::view-transition-new(root) { border-inline-start-width: var(--ui-admin-border-width); }`,
       },
     ],
     [
       ['DIVIDER_IMAGE_PAIR_GEOMETRY'],
       {
         ...baseline,
-        cssSource: `${source.cssSource}\n::view-transition-image-pair(pavp-admin-route-content) { inset: 0; }`,
+        cssSource: `${source.cssSource}\n::view-transition-image-pair(root) { inset: 0; }`,
       },
     ],
     [
@@ -3934,8 +4020,8 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
     ...[
       '.pavp-route-content',
       "[data-scroll-owner='architecture-console-content']",
-      '::view-transition-old(pavp-admin-route-content)',
-      '::view-transition-new(pavp-admin-route-content)',
+      '::view-transition-old(root)',
+      '::view-transition-new(root)',
     ].map(
       (selector) =>
         [
@@ -3947,7 +4033,7 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
       ['DIVIDER_SNAPSHOT_GEOMETRY'],
       {
         ...baseline,
-        cssSource: `${source.cssSource}\n::view-transition-old(pavp-admin-route-content) { inset: 0; }`,
+        cssSource: `${source.cssSource}\n::view-transition-old(root) { inset: 0; }`,
       },
     ],
   ]
@@ -4017,7 +4103,7 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
         return declarations.map(async ([property, value, rejected]) => {
           const result = await stylelint.lint({
             config,
-            code: `::view-transition-group(pavp-admin-route-content) { ${property}: ${value}; }`,
+            code: `::view-transition-group(root) { ${property}: ${value}; }`,
             codeFilename: resolve(rootDirectory, paths[index] ?? routePath),
           })
           const warnings = result.results.flatMap((entry) => entry.warnings)
@@ -4157,7 +4243,7 @@ export function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule
           }
           const matches = (candidate: RouteTransitionResolverInput, spatial: boolean): boolean =>
             isDeepStrictEqual(resolveRouteTransition(candidate, rules), {
-              kind: 'native-document',
+              kind: 'native-element',
               presetId: spatial
                 ? 'route-transition.axis-inline-soft'
                 : 'route-transition.content-crossfade',

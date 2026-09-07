@@ -16,7 +16,7 @@ export interface RouteTransitionPresetRecord {
   readonly directionAware: boolean
   readonly reducedPresetId: RouteTransitionPresetId
   readonly nonePresetId: 'route-transition.none'
-  readonly routerBehavior: 'immediate' | 'native-document'
+  readonly routerBehavior: 'immediate' | 'native-element'
 }
 
 export const routeTransitionPresetRegistry = Object.freeze([
@@ -40,7 +40,7 @@ export const routeTransitionPresetRegistry = Object.freeze([
     directionAware: false,
     reducedPresetId: 'route-transition.content-crossfade',
     nonePresetId: 'route-transition.none',
-    routerBehavior: 'native-document',
+    routerBehavior: 'native-element',
   }),
   Object.freeze({
     id: 'route-transition.axis-inline-soft',
@@ -51,7 +51,7 @@ export const routeTransitionPresetRegistry = Object.freeze([
     directionAware: true,
     reducedPresetId: 'route-transition.content-crossfade',
     nonePresetId: 'route-transition.none',
-    routerBehavior: 'native-document',
+    routerBehavior: 'native-element',
   }),
   Object.freeze({
     id: 'route-transition.drill-soft',
@@ -62,7 +62,7 @@ export const routeTransitionPresetRegistry = Object.freeze([
     directionAware: true,
     reducedPresetId: 'route-transition.content-crossfade',
     nonePresetId: 'route-transition.none',
-    routerBehavior: 'native-document',
+    routerBehavior: 'native-element',
   }),
   Object.freeze({
     id: 'route-transition.sheet-soft',
@@ -73,7 +73,7 @@ export const routeTransitionPresetRegistry = Object.freeze([
     directionAware: true,
     reducedPresetId: 'route-transition.content-crossfade',
     nonePresetId: 'route-transition.none',
-    routerBehavior: 'native-document',
+    routerBehavior: 'native-element',
   }),
 ] as const satisfies readonly RouteTransitionPresetRecord[])
 

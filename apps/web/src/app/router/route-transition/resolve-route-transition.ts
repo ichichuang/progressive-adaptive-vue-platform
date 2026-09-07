@@ -127,7 +127,7 @@ export function resolveRouteTransition(
   }
 
   return Object.freeze({
-    kind: 'native-document',
+    kind: 'native-element',
     presetId: preset.id,
     boundaryId,
     motionProjection: input.motion satisfies RouteTransitionMotionProjection,

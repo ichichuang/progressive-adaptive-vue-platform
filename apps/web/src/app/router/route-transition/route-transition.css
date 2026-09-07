@@ -1,10 +1,6 @@
 @layer app {
-  :root {
-    view-transition-name: none;
-  }
-
   [data-scroll-owner='architecture-console-content'] {
-    view-transition-name: pavp-admin-route-content;
+    view-transition-name: root;
     visibility: visible;
     opacity: 1;
     transform: none;
@@ -18,30 +14,23 @@
     translate: none;
   }
 
-  ::view-transition {
+  [data-scroll-owner='architecture-console-content']::view-transition {
     pointer-events: none;
   }
 
-  ::view-transition-group(root),
-  ::view-transition-image-pair(root),
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
-  }
-
-  ::view-transition-group(pavp-admin-route-content) {
+  [data-scroll-owner='architecture-console-content']::view-transition-group(root) {
     animation: none;
     animation-duration: calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2);
   }
 
-  ::view-transition-image-pair(pavp-admin-route-content) {
+  [data-scroll-owner='architecture-console-content']::view-transition-image-pair(root) {
     overflow: clip;
     animation-duration: inherit;
     isolation: isolate;
   }
 
-  ::view-transition-old(pavp-admin-route-content),
-  ::view-transition-new(pavp-admin-route-content) {
+  [data-scroll-owner='architecture-console-content']::view-transition-old(root),
+  [data-scroll-owner='architecture-console-content']::view-transition-new(root) {
     animation-duration: inherit;
     animation-timing-function: var(--ui-motion-easing);
     animation-delay: initial;
@@ -49,159 +38,166 @@
     mix-blend-mode: plus-lighter;
   }
 
-  ::view-transition-old(pavp-admin-route-content) {
+  [data-scroll-owner='architecture-console-content']::view-transition-old(root) {
     animation-name: pavp-route-content-crossfade-old;
   }
 
-  ::view-transition-new(pavp-admin-route-content) {
+  [data-scroll-owner='architecture-console-content']::view-transition-new(root) {
     animation-name: pavp-route-content-crossfade-new;
   }
 
-  html:active-view-transition-type(pavp-route-content-crossfade)::view-transition-old(
-      pavp-admin-route-content
-    ) {
+  [data-scroll-owner='architecture-console-content']:active-view-transition-type(
+      pavp-route-content-crossfade
+    )::view-transition-old(root) {
     animation-name: pavp-route-content-crossfade-old;
   }
 
-  html:active-view-transition-type(pavp-route-content-crossfade)::view-transition-new(
-      pavp-admin-route-content
-    ) {
+  [data-scroll-owner='architecture-console-content']:active-view-transition-type(
+      pavp-route-content-crossfade
+    )::view-transition-new(root) {
     animation-name: pavp-route-content-crossfade-new;
   }
 
-  html:dir(ltr)[data-pavp-route-transition-direction='forward']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-old(pavp-admin-route-content),
-  html:dir(rtl)[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-old(pavp-admin-route-content) {
-    animation-name: pavp-route-axis-inline-old-toward-left;
-  }
-
-  html:dir(ltr)[data-pavp-route-transition-direction='forward']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-new(pavp-admin-route-content),
-  html:dir(rtl)[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-new(pavp-admin-route-content) {
-    animation-name: pavp-route-axis-inline-new-from-right;
-  }
-
-  html:dir(ltr)[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-old(pavp-admin-route-content),
-  html:dir(rtl)[data-pavp-route-transition-direction='forward']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-old(pavp-admin-route-content) {
-    animation-name: pavp-route-axis-inline-old-toward-right;
-  }
-
-  html:dir(ltr)[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-new(pavp-admin-route-content),
-  html:dir(rtl)[data-pavp-route-transition-direction='forward']:active-view-transition-type(
-      pavp-route-axis-inline-soft
-    )::view-transition-new(pavp-admin-route-content) {
-    animation-name: pavp-route-axis-inline-new-from-left;
-  }
-
-  html:root[data-pavp-route-transition-direction='forward']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
       pavp-route-drill-soft
-    )::view-transition-old(pavp-admin-route-content) {
+    )::view-transition-old(root) {
     animation-name: pavp-route-drill-forward-old;
     transform-origin: center top;
   }
 
-  html:root[data-pavp-route-transition-direction='forward']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
       pavp-route-drill-soft
-    )::view-transition-new(pavp-admin-route-content) {
+    )::view-transition-new(root) {
     animation-name: pavp-route-drill-forward-new;
     transform-origin: center top;
   }
 
-  html:root[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
       pavp-route-drill-soft
-    )::view-transition-old(pavp-admin-route-content) {
+    )::view-transition-old(root) {
     animation-name: pavp-route-drill-reverse-old;
     transform-origin: center top;
   }
 
-  html:root[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
       pavp-route-drill-soft
-    )::view-transition-new(pavp-admin-route-content) {
+    )::view-transition-new(root) {
     animation-name: pavp-route-drill-reverse-new;
     transform-origin: center top;
   }
 
-  html:root[data-pavp-route-transition-direction='forward']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
       pavp-route-sheet-soft
-    )::view-transition-old(pavp-admin-route-content) {
+    )::view-transition-old(root) {
     animation-name: pavp-route-sheet-forward-old;
   }
 
-  html:root[data-pavp-route-transition-direction='forward']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
       pavp-route-sheet-soft
-    )::view-transition-new(pavp-admin-route-content) {
+    )::view-transition-new(root) {
     animation-name: pavp-route-sheet-forward-new;
   }
 
-  html:root[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
       pavp-route-sheet-soft
-    )::view-transition-old(pavp-admin-route-content) {
+    )::view-transition-old(root) {
     animation-name: pavp-route-sheet-reverse-old;
   }
 
-  html:root[data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+  [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
       pavp-route-sheet-soft
-    )::view-transition-new(pavp-admin-route-content) {
+    )::view-transition-new(root) {
     animation-name: pavp-route-sheet-reverse-new;
   }
 
-  html:root[data-motion='reduced'][data-motion='reduced']::view-transition-group(
-      pavp-admin-route-content
-    ) {
+  html:dir(ltr)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-old(root),
+  html:dir(rtl)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-old(root) {
+    animation-name: pavp-route-axis-inline-old-toward-left;
+  }
+
+  html:dir(ltr)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-new(root),
+  html:dir(rtl)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-new(root) {
+    animation-name: pavp-route-axis-inline-new-from-right;
+  }
+
+  html:dir(ltr)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-old(root),
+  html:dir(rtl)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-old(root) {
+    animation-name: pavp-route-axis-inline-old-toward-right;
+  }
+
+  html:dir(ltr)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='reverse']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-new(root),
+  html:dir(rtl)
+    [data-scroll-owner='architecture-console-content'][data-pavp-route-transition-direction='forward']:active-view-transition-type(
+      pavp-route-axis-inline-soft
+    )::view-transition-new(root) {
+    animation-name: pavp-route-axis-inline-new-from-left;
+  }
+
+  html:root[data-motion='reduced'][data-motion='reduced']
+    [data-scroll-owner='architecture-console-content']::view-transition-group(root) {
     animation-duration: var(--ui-motion-duration);
   }
 
-  html:root[data-motion='reduced'][data-motion='reduced']::view-transition-old(
-      pavp-admin-route-content
-    ) {
+  html:root[data-motion='reduced'][data-motion='reduced']
+    [data-scroll-owner='architecture-console-content']::view-transition-old(root) {
     animation-name: pavp-route-content-crossfade-old;
     transform: none;
     translate: none;
   }
 
-  html:root[data-motion='reduced'][data-motion='reduced']::view-transition-new(
-      pavp-admin-route-content
-    ) {
+  html:root[data-motion='reduced'][data-motion='reduced']
+    [data-scroll-owner='architecture-console-content']::view-transition-new(root) {
     animation-name: pavp-route-content-crossfade-new;
     transform: none;
     translate: none;
   }
 
-  html:root[data-motion='none'][data-motion='none']::view-transition-group(
-      pavp-admin-route-content
-    ),
-  html:root[data-motion='none'][data-motion='none']::view-transition-image-pair(
-      pavp-admin-route-content
-    ) {
+  html:root[data-motion='none'][data-motion='none']
+    [data-scroll-owner='architecture-console-content']::view-transition-group(root),
+  html:root[data-motion='none'][data-motion='none']
+    [data-scroll-owner='architecture-console-content']::view-transition-image-pair(root) {
     animation: none;
   }
 
-  html:root[data-motion='none'][data-motion='none']::view-transition-old(pavp-admin-route-content),
-  html:root[data-motion='none'][data-motion='none']::view-transition-new(pavp-admin-route-content) {
+  html:root[data-motion='none'][data-motion='none']
+    [data-scroll-owner='architecture-console-content']::view-transition-old(root),
+  html:root[data-motion='none'][data-motion='none']
+    [data-scroll-owner='architecture-console-content']::view-transition-new(root) {
     animation: none;
     transition: none;
     transform: none;
     translate: none;
   }
 
-  html:root[data-motion='none'][data-motion='none']::view-transition-old(pavp-admin-route-content) {
+  html:root[data-motion='none'][data-motion='none']
+    [data-scroll-owner='architecture-console-content']::view-transition-old(root) {
     visibility: hidden;
     opacity: 0;
   }
 
-  html:root[data-motion='none'][data-motion='none']::view-transition-new(pavp-admin-route-content) {
+  html:root[data-motion='none'][data-motion='none']
+    [data-scroll-owner='architecture-console-content']::view-transition-new(root) {
     visibility: visible;
     opacity: 1;
   }

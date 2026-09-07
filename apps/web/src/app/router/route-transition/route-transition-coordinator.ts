@@ -20,7 +20,11 @@ import type {
 
 interface ActiveVisualTransition {
   readonly handle: ViewTransition
-  readonly directionOwnerId: number
+  readonly directionOwner: { readonly element: HTMLElement }
+}
+
+interface RouteTransitionElement extends HTMLElement {
+  startViewTransition(options: StartViewTransitionOptions): ViewTransition
 }
 
 type RouterPushResult = Awaited<ReturnType<Router['push']>>
@@ -37,24 +41,40 @@ const shellSelector = '.pavp-admin-shell'
 function readBoundaryState(): {
   readonly validity: RouteTransitionBoundaryValidity
   readonly layoutProfile: 'narrow' | 'regular' | 'wide' | null
+  readonly element: HTMLElement | undefined
 } {
   const boundary = routeTransitionBoundaryRegistry[0]
-  const targets = document.querySelectorAll<HTMLElement>(boundary.target)
+  const targets = document.querySelectorAll(boundary.target)
   if (targets.length === 0) {
-    return Object.freeze({ validity: 'missing', layoutProfile: null })
+    return Object.freeze({ validity: 'missing', layoutProfile: null, element: undefined })
   }
   if (targets.length !== 1) {
-    return Object.freeze({ validity: 'duplicate', layoutProfile: null })
+    return Object.freeze({ validity: 'duplicate', layoutProfile: null, element: undefined })
   }
 
-  const layoutProfile = targets[0]?.closest<HTMLElement>(shellSelector)?.dataset['layoutProfile']
+  const element = targets[0]
+  if (!(element instanceof HTMLElement) || !element.isConnected) {
+    return Object.freeze({ validity: 'missing', layoutProfile: null, element: undefined })
+  }
+  const layoutProfile = element.closest<HTMLElement>(shellSelector)?.dataset['layoutProfile']
   return Object.freeze({
     validity: 'valid',
+    element,
     layoutProfile:
       layoutProfile === 'narrow' || layoutProfile === 'regular' || layoutProfile === 'wide'
         ? layoutProfile
         : null,
   })
+}
+
+function supportsElementViewTransition(
+  element: HTMLElement | undefined,
+): element is RouteTransitionElement {
+  return (
+    element !== undefined &&
+    'startViewTransition' in element &&
+    typeof element.startViewTransition === 'function'
+  )
 }
 
 function supportsTypedViewTransitions(): boolean {
@@ -81,8 +101,7 @@ export function createRouteTransitionCoordinator(input: {
   readonly appearance: AppearanceReadBoundary
 }): RouteTransitionCoordinator {
   let navigationEpoch = 0
-  let directionOwnerSequence = 0
-  let directionOwnerId: number | undefined
+  let directionOwner: ActiveVisualTransition['directionOwner'] | undefined
   let activeTransition: ActiveVisualTransition | undefined
   let disposed = false
   const activePresentationCommitReservations = new Map<
@@ -94,22 +113,26 @@ export function createRouteTransitionCoordinator(input: {
     () => input.appearance.snapshot.value.motion,
     () => {
       skipVisualTransition(activeTransition)
+      navigationEpoch += 1
+      cancelPresentationCommitReservations(() => true)
+      clearDirection(directionOwner)
     },
+    { flush: 'sync' },
   )
 
-  const clearDirection = (ownerId: number): void => {
-    if (directionOwnerId !== ownerId) {
+  const clearDirection = (owner: typeof directionOwner): void => {
+    if (owner === undefined || directionOwner !== owner) {
       return
     }
-    document.documentElement.removeAttribute(directionAttribute)
-    directionOwnerId = undefined
+    owner.element.removeAttribute(directionAttribute)
+    directionOwner = undefined
   }
 
-  const projectDirection = (direction: RouteTransitionDirection): number => {
-    const ownerId = ++directionOwnerSequence
-    directionOwnerId = ownerId
-    document.documentElement.setAttribute(directionAttribute, direction)
-    return ownerId
+  const projectDirection = (element: HTMLElement, direction: RouteTransitionDirection) => {
+    clearDirection(directionOwner)
+    directionOwner = { element }
+    element.setAttribute(directionAttribute, direction)
+    return directionOwner
   }
 
   const cancelPresentationCommitReservations = (
@@ -142,40 +165,30 @@ export function createRouteTransitionCoordinator(input: {
     input.router.push({ name: targetRouteName })
 
   const startNativeTransition = (
+    element: RouteTransitionElement,
     update: () => Promise<void>,
-    decision: Extract<RouteTransitionDecision, { readonly kind: 'native-document' }>,
-    typed: boolean,
-  ): ViewTransition =>
-    document.startViewTransition(
-      typed
-        ? {
-            update,
-            types: [decision.transitionType],
-          }
-        : update,
-    )
+    decision: Extract<RouteTransitionDecision, { readonly kind: 'native-element' }>,
+  ): ViewTransition => element.startViewTransition({ update, types: [decision.transitionType] })
 
   const runVisualTransition = async (
     targetRouteName: RouteName,
     resolvedTarget: RouteLocationResolved,
-    decision: Extract<RouteTransitionDecision, { readonly kind: 'native-document' }>,
+    decision: Extract<RouteTransitionDecision, { readonly kind: 'native-element' }>,
     requestEpoch: number,
+    element: RouteTransitionElement,
   ): Promise<RouterPushResult> => {
     skipVisualTransition(activeTransition)
 
     const updateState: {
       result: RouterPushResult
-      started: boolean
       owningVisualTransition: ActiveVisualTransition | undefined
     } = {
       result: undefined,
-      started: false,
       owningVisualTransition: undefined,
     }
-    let ownerId = projectDirection(decision.direction)
+    const owner = projectDirection(element, decision.direction)
     const requestIsStale = (): boolean => requestEpoch !== navigationEpoch || disposed
     const update = async (): Promise<void> => {
-      updateState.started = true
       if (requestIsStale()) {
         return
       }
@@ -218,37 +231,20 @@ export function createRouteTransitionCoordinator(input: {
         activePresentationCommitReservations.delete(reservation)
       }
     }
-    const hasUpdateStarted = (): boolean => updateState.started
+    // Visual startup can throw after scheduling the callback. Both paths share one update.
+    let updatePromise: Promise<void> | undefined
+    const updateOnce = (): Promise<void> => (updatePromise ??= update())
 
     let transition: ViewTransition
     try {
-      transition = startNativeTransition(update, decision, supportsTypedViewTransitions())
-    } catch (error) {
-      if (updateState.started) {
-        cancelPresentationCommitReservations(
-          (reservationEpoch) => reservationEpoch === requestEpoch,
-        )
-        clearDirection(ownerId)
-        throw error
-      }
-
-      clearDirection(ownerId)
-      ownerId = projectDirection('neutral')
-      try {
-        transition = startNativeTransition(update, decision, false)
-      } catch (fallbackError) {
-        clearDirection(ownerId)
-        if (hasUpdateStarted()) {
-          cancelPresentationCommitReservations(
-            (reservationEpoch) => reservationEpoch === requestEpoch,
-          )
-          throw fallbackError
-        }
-        return navigateDirectly(targetRouteName)
-      }
+      transition = startNativeTransition(element, updateOnce, decision)
+    } catch {
+      clearDirection(owner)
+      await updateOnce()
+      return updateState.result
     }
 
-    const ownedTransition = Object.freeze({ handle: transition, directionOwnerId: ownerId })
+    const ownedTransition = Object.freeze({ handle: transition, directionOwner: owner })
     updateState.owningVisualTransition = ownedTransition
     activeTransition = ownedTransition
 
@@ -264,13 +260,13 @@ export function createRouteTransitionCoordinator(input: {
         if (activeTransition === ownedTransition) {
           activeTransition = undefined
         }
-        clearDirection(ownedTransition.directionOwnerId)
+        clearDirection(ownedTransition.directionOwner)
       },
       () => {
         if (activeTransition === ownedTransition) {
           activeTransition = undefined
         }
-        clearDirection(ownedTransition.directionOwnerId)
+        clearDirection(ownedTransition.directionOwner)
       },
     )
 
@@ -279,14 +275,18 @@ export function createRouteTransitionCoordinator(input: {
 
   return Object.freeze({
     navigate: async (targetRouteName: RouteName) => {
+      if (disposed || input.router.currentRoute.value.name === targetRouteName) {
+        return
+      }
       const currentEpoch = ++navigationEpoch
       cancelPresentationCommitReservations((reservationEpoch) => reservationEpoch < currentEpoch)
       skipVisualTransition(activeTransition)
+      clearDirection(directionOwner)
       const fromRoute = getRouteRecord(input.router.currentRoute.value.name)
       const toRoute = getRouteRecord(targetRouteName)
       const motion = input.appearance.snapshot.value.motion
-      const nativeApiAvailable = typeof document.startViewTransition === 'function'
       const boundaryState = readBoundaryState()
+      const nativeApiAvailable = supportsElementViewTransition(boundaryState.element)
       const decision = resolveRouteTransition({
         fromRouteName: fromRoute.name,
         toRouteName: toRoute.name,
@@ -312,17 +312,28 @@ export function createRouteTransitionCoordinator(input: {
       try {
         await loadRouteLocation(resolvedTarget)
       } catch (error) {
-        if (currentEpoch !== navigationEpoch || disposed) {
+        if (currentEpoch !== navigationEpoch) {
           throw error
         }
         return navigateDirectly(targetRouteName)
       }
 
-      if (currentEpoch !== navigationEpoch || disposed) {
+      if (currentEpoch !== navigationEpoch) {
         return
       }
 
-      return runVisualTransition(targetRouteName, resolvedTarget, decision, currentEpoch)
+      const preparedBoundary = readBoundaryState()
+      const element = preparedBoundary.element
+      if (
+        element !== boundaryState.element ||
+        !supportsElementViewTransition(element) ||
+        preparedBoundary.layoutProfile !== boundaryState.layoutProfile ||
+        document.visibilityState !== 'visible'
+      ) {
+        return navigateDirectly(targetRouteName)
+      }
+
+      return runVisualTransition(targetRouteName, resolvedTarget, decision, currentEpoch, element)
     },
     dispose() {
       if (disposed) {
@@ -334,9 +345,7 @@ export function createRouteTransitionCoordinator(input: {
       stopMotionObservation()
       skipVisualTransition(activeTransition)
       activeTransition = undefined
-      if (directionOwnerId !== undefined) {
-        clearDirection(directionOwnerId)
-      }
+      clearDirection(directionOwner)
     },
   })
 }

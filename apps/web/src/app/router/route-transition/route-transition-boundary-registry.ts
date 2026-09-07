@@ -3,7 +3,7 @@ import type { RouteTransitionBoundaryId, RouteTransitionFamilyId } from './route
 export interface RouteTransitionBoundaryRecord {
   readonly id: RouteTransitionBoundaryId
   readonly target: '[data-scroll-owner="architecture-console-content"]'
-  readonly viewTransitionName: 'pavp-admin-route-content'
+  readonly viewTransitionName: 'root'
   readonly fromFamilyId: RouteTransitionFamilyId
   readonly toFamilyId: RouteTransitionFamilyId
   readonly allowedProfiles: readonly ['narrow', 'regular', 'wide']
@@ -21,7 +21,7 @@ export const routeTransitionBoundaryRegistry = Object.freeze([
   Object.freeze({
     id: 'route-transition-boundary.architecture-console-content',
     target: '[data-scroll-owner="architecture-console-content"]',
-    viewTransitionName: 'pavp-admin-route-content',
+    viewTransitionName: 'root',
     fromFamilyId: 'route-family.architecture-workspace',
     toFamilyId: 'route-family.architecture-workspace',
     allowedProfiles: Object.freeze(['narrow', 'regular', 'wide'] as const),

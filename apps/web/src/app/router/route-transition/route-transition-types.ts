@@ -66,7 +66,7 @@ export type RouteTransitionDecision =
       reason: RouteTransitionBypassReason
     }>
   | Readonly<{
-      kind: 'native-document'
+      kind: 'native-element'
       presetId: Exclude<RouteTransitionPresetId, 'route-transition.none'>
       boundaryId: RouteTransitionBoundaryId
       motionProjection: RouteTransitionMotionProjection

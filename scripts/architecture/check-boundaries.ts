@@ -785,9 +785,7 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
   const targetOwnerCount = [
     ...shellSource.matchAll(/data-scroll-owner="architecture-console-content"/gu),
   ].length
-  const transitionNameCount = [
-    ...cssSource.matchAll(/view-transition-name:\s*pavp-admin-route-content/gu),
-  ].length
+  const transitionNameCount = [...cssSource.matchAll(/view-transition-name:\s*root/gu)].length
   const brokerStart = lifecycleSource.indexOf('type RouterPresentationCommitOutcome')
   const brokerEnd = lifecycleSource.indexOf('export interface RouterLifecycleHandle')
   const brokerSource =
@@ -796,7 +794,7 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
   if (
     targetOwnerCount !== 1 ||
     !boundarySource.includes(`target: '${exactTarget}'`) ||
-    !boundarySource.includes("viewTransitionName: 'pavp-admin-route-content'")
+    !boundarySource.includes("viewTransitionName: 'root'")
   ) {
     violations.push(
       'Route Transition must retain one exact architecture-console-content boundary registry owner.',
@@ -805,24 +803,24 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
   if (
     transitionNameCount !== 1 ||
     !cssSource.includes(
-      "[data-scroll-owner='architecture-console-content'] {\n    view-transition-name: pavp-admin-route-content;",
+      "[data-scroll-owner='architecture-console-content'] {\n    view-transition-name: root;",
     ) ||
-    !cssSource.includes(':root {\n    view-transition-name: none;') ||
+    cssSource.includes(':root {\n    view-transition-name: none;') ||
     shellSource.includes('view-transition-name')
   ) {
     violations.push(
-      'Route Transition snapshot naming must remain on the sole content boundary with the root and persistent Shell unnamed.',
+      'Route Transition snapshot naming must remain on the sole content boundary as the element-scoped root with persistent Shell regions unnamed.',
     )
   }
   if (
-    !coordinatorSource.includes('document.querySelectorAll<HTMLElement>(boundary.target)') ||
+    !coordinatorSource.includes('document.querySelectorAll(boundary.target)') ||
     !coordinatorSource.includes("closest<HTMLElement>(shellSelector)?.dataset['layoutProfile']") ||
     /getBoundingClientRect|offset(?:Width|Height)|client(?:Width|Height)|ResizeObserver|MutationObserver|requestAnimationFrame|setTimeout|setInterval|addEventListener/u.test(
       coordinatorSource,
     )
   ) {
     violations.push(
-      'Route Transition boundary validation must use only the exact selector count and existing Shell layout profile.',
+      'Route Transition boundary validation must use the exact selector count, connected element identity and existing Shell layout profile.',
     )
   }
   if (
