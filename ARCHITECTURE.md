@@ -5835,7 +5835,7 @@ Table Order 是 Role ID Unicode Code-point Order。每个 Source Leaf 的 Canoni
 
 Ambient Canvas 是 Environmental Background，不是 Full-viewport Material Surface。Adaptive Material 只允许在上述精确 Functional Chrome Consumer 使用 tokenized Backdrop；Reduced Material 使用更不透明的 Existing Material Color Projection、无 Backdrop且减少 Shadow；Solid Material 使用不透明 Existing Material Color Projection、无 Backdrop 或其他 Transparency-dependent Effect。Appearance Material Preview 的 Stable Content 必须始终直接使用 `--ui-color-surface-panel`，不得继承 Chrome/Overlay Transparency。Reduced Transparency 与 Forced Colors 必须把该 Preview 的 Backdrop 全部降为 `none`。除这一 exact consumer-closed Preview 外，Page-authored Material Variable、Backdrop 或 Optical Effect 仍禁止。Content 与 Settings Surface 必须 Stable、Readable、Opaque、Non-glass。禁止 Glass-on-glass、Generic Glass Component、Dead-flat Canvas、Fieldset-card Matrix、Generic SaaS Dashboard、Fake Metrics、Decorative Data Charts、Neon Cyberpunk、Purple-dominant Gradient、Page-authored Optical Literal，以及把 Naive Default Visual Value 提升为 PAVP Authority。
 
-明暗切换保留 `UiAdminShell.vue` 的 `.pavp-admin-shell__content` 直接绑定 `color: var(--ui-color-text-primary)`，使继承色正文与 Stable Content 背景共同跟随根 Theme Bank；Owner 确认该声明未解决全部文字闪动。后续限定观察定位到 `NRadioButton` 内部 `.n-radio__label`：它继承父级颜色，却被 `PavpNaiveConfigProvider.vue` 的 Full/Reduced 时长列表启用了默认 `transition-property: all`，自身过渡结束时重新接回父级中间色，产生颜色回跳。修正仅从这两个时长列表移除该选择器，保留父级按钮的颜色与交互过渡、None 防护、导航、Appearance 提交/快照顺序、保存反馈和显式预览动画。临时单项覆盖已消除双向回跳，移除覆盖后原现象再次出现；持久源码经 HMR 生效后，同场景双向观察未再出现该回跳。此为限定 AI 观察，Owner 最终确认及更广运行时验收仍待完成，不激活新能力或修改浏览器政策。
+明暗切换保留 `UiAdminShell.vue` 的 `.pavp-admin-shell__content` 直接绑定 `color: var(--ui-color-text-primary)`，使继承色正文与 Stable Content 背景共同跟随根 Theme Bank；Owner 确认该声明未解决全部文字闪动。后续限定观察定位到 `NRadioButton` 内部 `.n-radio__label`：它继承父级颜色，却被 `PavpNaiveConfigProvider.vue` 的 Full/Reduced 时长列表启用了默认 `transition-property: all`，自身过渡结束时重新接回父级中间色，产生颜色回跳。修正仅从这两个时长列表移除该选择器，保留父级按钮的颜色与交互过渡、None 防护、导航、Appearance 提交/快照顺序、保存反馈和显式预览动画。临时单项覆盖已消除双向回跳，移除覆盖后原现象再次出现；持久源码经 HMR 生效后，同场景双向观察未再出现该回跳。Owner 已接受 `2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f` 后该明暗文字闪动修正；此限定确认不代表未观察的 Accessibility、Failure Recovery、更广 Runtime 或 Release Acceptance，也不激活新能力或延续该缺陷任务已结束的浏览器例外。
 
 Motion 继续只由 Existing PAVP Motion Preference 与 Existing PAVP CSS Motion Tokens 控制，初次 Landing 不准入 Motion Library。允许的 Named Interaction 精确为：
 
@@ -6138,7 +6138,7 @@ Generated Artifact 中的派生 Literal、Schema Enum Discriminant、HTTP 标准
 | Pinia              | `3.x`         |
 | TanStack Vue Query | `5.x`         |
 | Zod                | `4.x`         |
-| VeeValidate        | Stable major selected at Form Admission; v5 unavailable while prerelease |
+| 表单状态与校验        | §21 的 Vue 局部状态 + 既有 Zod；不准入 VeeValidate 或 prerelease |
 | ESLint             | `10.x`        |
 
 Node 官方要求生产应用使用 Active LTS 或 Maintenance LTS，Node 24 当前处于 LTS 状态；Vite 官方当前对 8.1 发布常规补丁。PAVP 的可复现 Verification Authority 精确为 Node `24.15.0`，不是任意 `24.x`。
@@ -6212,7 +6212,7 @@ No RC in production dependencies
 | 客户端状态  | Pinia                      | 偏好、会话和工作流           |
 | 服务端状态  | TanStack Vue Query         | API 缓存、Mutation、失效  |
 | Schema | Zod 4                      | 配置、API 和用户输入校验      |
-| 表单     | Admission 时的 VeeValidate Stable Major | 表单状态和错误管理           |
+| 表单     | §21 的 Vue 局部状态 + Zod，Naive UI 私有控件 | 单一草稿、校验和提交生命周期 |
 | 浏览器能力  | VueUse                     | 按需使用浏览器 Composable  |
 | 国际化    | Vue I18n                   | 文本、格式、RTL 和语言切换     |
 
@@ -12246,77 +12246,300 @@ Core Error Owning Gate 当前为 `ACTIVE`：它拒绝任意 Error Category/Messa
 ```text
 CAPABILITY=FORMS
 CAPABILITY_STATUS=TARGET_INACTIVE
-OWNER=feature form boundary plus @platform/ui field primitives
-FORM_LIBRARY=VEEVALIDATE_STABLE_MAJOR_SELECTED_AT_IMPLEMENTATION_ADMISSION
-VEEVALIDATE_STABLE_MAJOR_CAPABILITY_STATUS=TARGET_INACTIVE
-VEEVALIDATE_PRERELEASE_MAJOR_CAPABILITY_STATUS=PROHIBITED
-VEEVALIDATE_V5_CAPABILITY_STATUS=PROHIBITED
-VEEVALIDATE_V5_FREEZE_FACT=PRERELEASE_AND_UNAVAILABLE_AS_OF_2026-08-02
+ID=PAVP_CONFIGURATION_DRIVEN_FORMS
+CONTRACT_STATUS=FROZEN
+REPOSITORY_IMPLEMENTATION=NOT_STARTED
+IMPLEMENTATION_AUTHORIZATION=NONE_DESIGN_ONLY
+OWNER=@platform/ui form controller and presentation; feature-owned Zod domain contracts
+FORM_STATE=INSTANCE_LOCAL_VUE_COMPOSABLE
+VALIDATION=FEATURE_ZOD_THROUGH_APPLICATION_BRIDGE
+ADDITIONAL_FORM_LIBRARY=NONE
 ACTIVATION_STAGE=DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS
-ACTIVATION_GATE_CREATION=UNIQUE_PAVP_FORM_INSTANCE_ID_REQUIRED_BY_ARCHITECTURE_AMENDMENT
+ACTIVATION_GATE=PAVP_CONFIGURATION_DRIVEN_FORMS_SEPARATE_OWNER_IMPLEMENTATION_ADMISSION
 ```
 
-Stable-only Policy 优先于 Major 偏好。实现 Gate 必须重新核对当时的 Stable Release、Vue/TypeScript Compatibility、Bundle、Standard Schema Integration 和 Migration Cost；Alpha、Beta 或 RC 不得进入 Production Dependency。Zod 4 继续作为已选择的 Runtime Schema 方向，但安装位置仍由真实 Consumer Gate 决定。
+本次在 `main@2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f` 上闭合一个可复用配置表单合同。普通消费者提供 Typed 字段、业务 Schema、初值和业务函数；共享实现集中维护控件、布局、反馈与状态。Forms、Tables、完整配置驱动页面与 Starter 保持未实现；§22 的用户管理、角色管理新建/编辑是明确下游需求，Table、Dialog、API/Auth 不成为共享表单的依赖。Owner 本次明确允许修订旧 Inactive VeeValidate-only、初值必须通过提交 Schema、通用 Form 自动处理 Mutation 的假设；不改变其他能力或历史实施结果。
 
-## 21.1 Ownership
+## 21.1 Selected approach and ownership
+
+核验日期 `2026-09-07`。当前实际安装 Vue `3.5.40`、Naive UI `2.45.2`、Zod `4.4.3`；Zod 已直接属于 `apps/web` 和 `packages/design-system`，不经 Design System 转导给业务，也不加入 `packages/ui`。以下是元数据和源码证据，不能代替新增表单代码在 TypeScript `6.0.3`、vue-tsc `3.3.8`、Vite `8.1.5` 下的严格编译和 Production Build。
+
+| 核验来源 | 决定所依据的事实 |
+| --- | --- |
+| [VeeValidate releases](https://github.com/logaretm/vee-validate/releases)、[4.15.1 metadata](https://registry.npmjs.org/vee-validate/4.15.1)、[Zod adapter metadata](https://registry.npmjs.org/%40vee-validate%2Fzod/4.15.1) | Stable/latest 是 `4.15.1`，Vue peer 为 `^3.4.26`；`@vee-validate/zod@4.15.1` 的 Zod peer 是 `^3.24.0`，不覆盖本仓 Zod 4。`5.0.0-beta.0` 仍为 prerelease，v5 文档不能证明 Stable 可用 |
+| [官方 v4 adapter source](https://github.com/logaretm/vee-validate/blob/v4.15.1/packages/zod/src/index.ts) | 适配层使用 Zod 3 的 `ParseParams`、`ZodFirstPartyTypeKind`、`_def.typeName/defaultValue()` 与 `unionErrors`；不是仅缺一个宽松 peer range。不得降级 Zod、另装 Zod 3、忽略 peer 或自行移植该 Adapter |
+| [Naive exact metadata](https://registry.npmjs.org/naive-ui/2.45.2) 及安装包 `es/form/src/Form.mjs`、`FormItem.mjs`、`utils.mjs` | NForm 读取外部 `model`、组织 FormItem；NFormItem 用 async-validator 执行 `rules/rule`，可由外部 `validationStatus` 和 feedback slot 投影结果；没有完整 dirty、初始快照或提交所有权 |
+| [Zod basics](https://zod.dev/basics)、[exact metadata](https://registry.npmjs.org/zod/4.4.3) 与既有应用 Schema | 既有 Zod 可校验输入、返回 issues、区分 input/output 并执行显式 transform；无需第二 Schema Library |
+
+选择已有依赖足够覆盖的边界：Vue 只维护一个有限、实例内的值/快照/操作状态；Zod 执行业务校验；Naive UI 复用控件与布局。没有通用字段路径解析器、自动 Schema 推导、规则 DSL、字段注册引擎或工作流调度器。当前需求不构成额外 form-state library 的必要缺口，不选备用库，也不安装研究包。实施开始时仍须核对这些精确依赖、公共 Generic/SFC 类型和实际产物；发生编译或预算问题先报告，不放宽 TS、Patch、版本或预算。
 
 | Owner | Exact responsibility |
 | --- | --- |
-| Stable admitted form-state library | field registration, touched, dirty, pending, validation lifecycle and submission state |
-| Feature-owned Zod schema | input shape, domain constraints, parse/transform and typed output |
-| `UiFormField` | label, description, required indicator, error ID, `aria-describedby`, layout and focus target |
-| Feature form orchestrator | initial values, server mapping, submit mutation, cancellation, reset and navigation policy |
-| API/Mutation layer | request, idempotency, conflict, optimistic policy and server error normalization |
+| `useUiForm` in `@platform/ui` | sole mutable editable values, accepted initial snapshot, touched/dirty, current validation result, option requests, pending submit and invalidation/disposal |
+| Feature-owned Zod input/submission schemas | domain rules, conditional requirements, cross-field constraints, explicit output transform and safe issue mapping; defaults and business predicates stay at the same feature owner |
+| `createZodFormValidation` in application `shared/forms` | thin reuse of Zod parse and feature issue mapping; supplies the controller's one validation port; owns no values, errors, touched or locale state |
+| `UiForm` / `UiFormField` | automatic field layout, native submit, accessible label/description/error/summary/actions and typed custom slots; consume controller state without copying it |
+| Private Naive adapter | controlled widget values and update/blur events, native composition/display buffer, theme/size/date-locale projection; no domain rules or independent errors |
+| Feature/page business boundary | response validation and edit mapper, explicit snapshot acceptance, business submit callback and later API/Query/Dialog/Route composition |
 
-Form Library 不拥有 Domain Schema、API、Storage、Route Guard 或视觉 Token。可复用 Form、Table、Dialog 与状态逻辑应可独立维护、单独消费和组合；普通页面通过 §22 的完整配置驱动数据管理能力使用它们，不必逐项拼装所有操作。配置允许 Typed TypeScript Object、普通函数和必要的自定义 Vue Component，不要求所有行为序列化为 JSON，不引入自定义表达式语言、拖拽设计器或万能低代码平台。Naive UI 控件继续经 §16 私有边界复用；Form State、Validation 与 Vendor Control 不得产生重复权威。
+NForm/NFormItem 只作呈现，禁止传 `rules/rule`、调用 Vendor `validate/restoreValidation`、生成另一份 async-validator Rules 或把 required Indicator 变成 Vendor Domain Rule。`validationStatus`、feedback、Control status 均由同一 Controller Result 派生；无错误时显式使用非错误呈现，不能依赖 Vendor 内部错误缓存。Package 不导入应用、Zod、Vue I18n 或 Vendor 公共类型；业务只从 `@platform/ui` 根出口及 `shared/forms/index.ts` 消费相应接口。
 
-## 21.2 Initial, Reset and Reinitialize
+## 21.2 Public contract and initial field subset
 
-每个 Form Contract 必须声明 `formId`、Schema ID、Initial Value Source、Submit Mutation ID、Reset Policy、Reinitialize Policy 和 Unsaved-change Policy。Initial Value 必须先通过 Domain Schema；Server Data 到 Editable Draft 使用显式 Mapper，不能直接双向绑定 Query Object。
+以下为所需公共 TypeScript 签名；辅助条件类型的写法不冻结私有实现。`I` 是完整可编辑输入类型，`O` 是提交解析输出；字段只支持 `Extract<keyof I, string>` 顶层键，禁止 dot/bracket path。每个初值键恰有一个配置且配置名不重复，不接受任意字符串键。可编辑值首期为 string、finite number、boolean、null 及只读 string/number 选项数组；空值显式使用 `''`、`null`、`[]`，不靠缺字段或 Schema Default 偷填。复杂对象/任意嵌套数组编辑另行准入，不能用 `custom` 绕过。
 
-Reset 精确选择 `initial-snapshot`、`last-server-confirmed` 或 `empty-domain-default`；Default 来自 Domain Typed Default Registry。Reinitialize 只在 Record Identity 改变或显式 Server Revision 被接受时发生；不得因为 Background Refetch 擦除 Dirty Field。Dirty 比较在 Canonical Domain Value 上执行，不依赖对象引用或格式化字符串。
+```ts
+import type { DeepReadonly, Ref } from 'vue'
 
-可复用表单必须支持安全的新建初始化和编辑回填，明确区分 Hydration 与用户编辑触发的联动。回填过程中不得因依赖字段尚未就绪而意外清空服务端值，也不得以迟到的加载结果覆盖当前记录或用户新输入。
+type UiFormKey<I> = Extract<keyof I, string>
+type UiFormValues<I> = DeepReadonly<I>
+type UiFormText = () => string
+type UiFormDraftValue = string | number | boolean | null | readonly (string | number)[]
+type UiFormFlag<I> = boolean | ((values: UiFormValues<I>) => boolean)
+type UiFormMaybePromise<T> = T | Promise<T>
+type UiFormOptionValue<V> = V extends readonly (infer Item)[]
+  ? Extract<Item, string | number> : Extract<V, string | number>
+type UiFormMatch<V, Expected, Config> = [V] extends [Expected]
+  ? [Expected] extends [V] ? Config : never : never
 
-## 21.3 Validation and Server Error Mapping
+interface UiFormWorkContext { readonly signal: AbortSignal }
+interface UiFormSnapshot<I> { readonly draftId: string; readonly values: I }
+interface UiFormIssue<I> { readonly field: UiFormKey<I> | null; readonly message: UiFormText }
+interface UiFormOption<V> { readonly value: V; readonly label: UiFormText; readonly disabled?: boolean }
+type UiFormOptions<I, V> = readonly UiFormOption<V>[] | {
+  readonly dependsOn: readonly UiFormKey<I>[]
+  readonly load: (values: UiFormValues<I>, context: UiFormWorkContext) => Promise<readonly UiFormOption<V>[]>
+}
+type UiFormControlConfig<I, V> =
+  | UiFormMatch<V, string, { readonly kind: 'text' | 'textarea'; readonly placeholder?: UiFormText }>
+  | UiFormMatch<V, number | null, { readonly kind: 'number'; readonly min?: number; readonly max?: number; readonly step?: number }>
+  | UiFormMatch<V, boolean, { readonly kind: 'switch' }>
+  | UiFormMatch<V, string | null, {
+      readonly kind: 'date'; readonly isDateAllowed?: (date: string, values: UiFormValues<I>) => boolean
+    }>
+  | ([V] extends [string | number | null] ? null extends V ? {
+      readonly kind: 'select'; readonly options: UiFormOptions<I, Exclude<V, null>>
+    } : never : never)
+  | ([V] extends [readonly (string | number)[]] ? V[number][] extends V ? {
+      readonly kind: 'multi-select'; readonly options: UiFormOptions<I, V[number]>
+    } : never : never)
+  | ([V] extends [UiFormDraftValue] ? { readonly kind: 'custom' } : never)
+type UiFormFieldConfig<I> = {
+  [K in UiFormKey<I>]: {
+    readonly name: K; readonly label: UiFormText; readonly description?: UiFormText
+    readonly required?: UiFormFlag<I>; readonly hidden?: UiFormFlag<I>
+    readonly disabled?: UiFormFlag<I>; readonly readonly?: UiFormFlag<I>
+  } & UiFormControlConfig<I, I[K]>
+}[UiFormKey<I>]
 
-Client Validation 顺序为：Field Parse → Field Constraint → Cross-field Domain Schema → Submit Transform。Async Validation 必须可取消、按 Canonical Value Deduplicate，并在 Value 改变或 Form Dispose 时 Abort。Async Result 必须绑定 Validation Attempt ID，旧结果不得覆盖新值。
-
-必需的 Form 能力包括关联日期限制、字段值联动、依赖选项加载、动态可见/禁用/只读/必填状态和动态校验。关系由项目用显式 Typed 配置、函数或 Component 定义，框架不猜测业务关系。上游变化后的保留/清空策略、隐藏字段提交策略及校验更新须显式声明。异步选项、校验和回填都必须绑定当前记录、依赖值和调用生命周期；取消或过期结果不能覆盖新状态。
-
-Server Validation Error Body 先通过 API Error Schema，再由 Feature-owned Exact Mapping 将 Server Field Path 映射为 Form Field ID。Unknown Field、Form-level Error 和 Operation Conflict 保持不同 Category；不得把 Raw Server Message 直接显示。新的 Field Mapping 缺失必须在 Development/Static Gate 失败，并在 Production 退到安全 Form-level Message。
-
-## 21.4 Submission and Mutation
-
-Submit 时固定执行：完整 Validation → Canonical Payload Construction → Submission Lock → Mutation Attempt。相同 Form Instance 默认只允许一个 Mutation；重复点击复用 Pending State，不发第二请求。离开 Route、关闭 Dialog 或 Dispose Form 时，按 Mutation Contract 选择 Abort 或允许后台完成，不能默认为隐藏继续。
-
-Mutation 默认不重试；只有 §20 的显式 Idempotency Contract 才允许。成功后更新 Last-server-confirmed Snapshot、执行 Query Invalidation 并清 Dirty；失败保留用户输入。409/412 进入 Conflict UI，不覆盖输入。Optimistic Update 和 Rollback 遵守 §20.7。
-
-## 21.5 Accessibility
-
-每个字段必须有 Programmatic Label、稳定 Description/Error ID、Visible Required Meaning 和 Error Association。Submit Validation Failure 必须把 Focus 移到 Error Summary 或第一个 Invalid Field，并提供包含 Field Link 的 Live Region Summary；不得只用颜色、Placeholder 或 Toast 表达错误。
-
-Pending、Success 和 Failure Announcement 遵守命名 Live-region Policy；Disabled 与 Readonly 使用正确原生语义。Keyboard Submit 不得绕过 Validation；Focus Return、Dialog Form 和 Unsaved Confirmation 遵守 Route/Overlay Contract。
-
-## 21.6 Dates, Time Zones, Numbers and Files
-
-```text
-instant = UTC ISO 8601 string at API boundary
-date-only = calendar date without timezone conversion
-local date-time = explicit locale plus timeZone context
-duration = named unit and integer/decimal contract
-money = integer minor unit or validated decimal string, never binary-float authority
+type UiFormParseResult<I, O> =
+  | { readonly status: 'valid'; readonly output: O }
+  | { readonly status: 'invalid'; readonly issues: readonly UiFormIssue<I>[] }
+interface UiFormValidation<I, O> {
+  check(values: UiFormValues<I>, context: UiFormWorkContext): UiFormMaybePromise<readonly UiFormIssue<I>[]>
+  parse(values: UiFormValues<I>, context: UiFormWorkContext): UiFormMaybePromise<UiFormParseResult<I, O>>
+}
+type UiFormSubmitResult<I> =
+  | { readonly status: 'success'; readonly initial?: UiFormSnapshot<I> }
+  | { readonly status: 'failure'; readonly message: UiFormText }
+type UiFormSubmitOutcome = 'success' | 'invalid' | 'failure' | 'cancelled'
+interface UiFormCopy {
+  readonly submit: UiFormText; readonly reset: UiFormText; readonly required: UiFormText
+  readonly loadingOptions: UiFormText; readonly noOptions: UiFormText
+  readonly optionsFailed: UiFormText; readonly retryOptions: UiFormText
+  readonly validating: UiFormText; readonly submitting: UiFormText
+  readonly submitSucceeded: UiFormText; readonly submitFailed: UiFormText
+  readonly validationUnavailable: UiFormText
+  readonly inputIncomplete: UiFormText
+  readonly errorSummary: (count: number) => string
+}
+interface UiFormInput<I, O> {
+  readonly formId: string
+  readonly initial: UiFormSnapshot<I>
+  readonly fields: readonly UiFormFieldConfig<I>[]
+  readonly validation: UiFormValidation<I, O>
+  readonly copy: UiFormCopy
+  readonly onSubmit: (output: O, context: UiFormWorkContext) => Promise<UiFormSubmitResult<I>>
+  readonly onChange?: (change: {
+    readonly previous: UiFormValues<I>; readonly values: UiFormValues<I>
+    readonly changed: readonly UiFormKey<I>[]
+  }) => Partial<I>
+}
+interface UiFormController<I> {
+  readonly formId: string
+  readonly draftId: Readonly<Ref<string>>
+  readonly fields: readonly UiFormFieldConfig<I>[]
+  readonly copy: UiFormCopy
+  readonly values: Readonly<Ref<UiFormValues<I>>>
+  readonly dirty: Readonly<Ref<boolean>>
+  readonly touched: Readonly<Ref<Readonly<Partial<Record<UiFormKey<I>, boolean>>>>>
+  readonly issues: Readonly<Ref<readonly UiFormIssue<I>[]>>
+  readonly phase: Readonly<Ref<'idle' | 'validating' | 'submitting' | 'disposed'>>
+  readonly submitting: Readonly<Ref<boolean>>
+  readonly notice: Readonly<Ref<null | UiFormText>>
+  setValues(patch: Partial<I>): 'applied' | 'unchanged' | 'busy' | 'disposed'
+  blur(name: UiFormKey<I>): void
+  validate(): Promise<'valid' | 'invalid' | 'cancelled'>
+  submit(): Promise<UiFormSubmitOutcome>
+  reset(): void
+  replaceInitial(snapshot: UiFormSnapshot<I>): void
+  field<K extends UiFormKey<I>>(name: K): UiFormFieldBinding<I, K>
+  dispose(): void
+}
+interface UiFormFieldBinding<I, K extends UiFormKey<I>> {
+  readonly name: K; readonly value: DeepReadonly<I[K]>
+  readonly controlId: string; readonly labelId: string; readonly describedBy: string
+  readonly hidden: boolean; readonly disabled: boolean; readonly readonly: boolean
+  readonly required: boolean; readonly invalid: boolean
+  readonly errors: readonly UiFormText[]
+  readonly options: readonly UiFormOption<UiFormOptionValue<I[K]>>[]
+  readonly optionsState: 'idle' | 'loading' | 'ready' | 'failed'
+  setValue(value: I[K]): 'applied' | 'unchanged' | 'blocked' | 'busy' | 'disposed'
+  blur(): void
+  retryOptions(): void
+  setFocusTarget(focus: (() => void) | null): void
+  setCommitTarget(commit: (() => boolean) | null): void
+}
+declare function useUiForm<I extends object, O>(input: UiFormInput<I, O>): UiFormController<I>
+interface UiFormProps<I> {
+  readonly form: UiFormController<I>
+  readonly columns?: 1 | 2
+}
+interface UiFormFieldProps<I, K extends UiFormKey<I>> {
+  readonly form: UiFormController<I>; readonly name: K
+}
+interface UiFormSlots<I> {
+  default?: (props: { readonly form: UiFormController<I> }) => unknown
+  field?: (props: { [K in UiFormKey<I>]: UiFormFieldBinding<I, K> }[UiFormKey<I>]) => unknown
+  actions?: (props: { readonly form: UiFormController<I> }) => unknown
+}
+interface UiFormFieldSlots<I, K extends UiFormKey<I>> {
+  default?: (props: UiFormFieldBinding<I, K>) => unknown
+}
 ```
 
-Locale 与 Time Zone 是独立用户偏好；Formatter 使用 `Intl`。Ambiguous/Nonexistent Local Time 必须要求 Domain Policy，不自动猜测。Temporal 保持 `DEFERRED`，只有 Stable Platform/Polyfill Admission 后使用。
+`UiForm` 和 `UiFormField` 是仅有的新增公共组件，`useUiForm` 是无 DOM 的公共 Composable；控制器可独立使用。`UiForm` Props/Slots 如上，`columns` 默认 1，2 列在 narrow/未知容器时仍回到单列；无值更新或成功副作用 Emits。`field` slot 只为 `kind=custom` 提供控件；`default` slot 提供时替换自动字段区域以组合独立 `UiFormField`；`actions` slot 提供时替换默认提交/重置按钮。`UiFormField` 无 Emits，无 slot 时渲染内置类型，custom 缺 slot 在开发/静态消费者检查中失败。组件接受必要原生 Attributes 和 class，不将其任意透传为 Vendor Props。`field()` 返回当前状态的响应式只读 Binding，非字段值/错误副本；Option Value 与 `setValue` 同样保留字段类型。上述公共组件、函数及跨边界类型只从各自 public root 导出。配置使用普通 Typed TypeScript Object、函数和 Vue slot，不要求 JSON 序列化、字符串表达式、解释器、Plugin Platform 或全局组件查找。
 
-File Input 必须保留用户显式选择，验证数量、MIME、扩展、单个/总大小和 Filename；Preview Object URL 在替换/Dispose 时撤销。File Content 不进 Form Log、Pinia Persistence 或 Local Storage。Upload Progress 和 Resume 需要 Endpoint 独立合同。
+初始控件集合精确为 `text / textarea / number / select / multi-select / switch / date / custom`。文本为空字符串，Number 允许 null，Select 允许 null，Multi-select 为空数组，Switch 为 boolean，Date 为 `YYYY-MM-DD | null` 的 date-only 字符串；选项 ID 不混淆数字与字符串，不把 Label 当值。Number 的 min/max/step 是来自 Feature 同源约束的交互提示，不替代 Zod。字段选择必须与其值类型匹配；特别是任意文本控件不能绑定只允许少数字面值的枚举字段，Multi-select 不能绑定固定长度 tuple。Binding setValue 在 hidden/disabled/readonly、Options 尚不可编辑或收到未允许选项时返回 blocked；Feature 的显式 setValues/onChange 仍可更新依赖字段，不能借该入口绕过提交锁。Private Adapter 分别复用 NInput、NInputNumber、NSelect、NSwitch、NDatePicker；仅 custom 使用消费者显式导入的 Vue Component/slot，不解析字符串组件名。
 
-## 21.7 In-application Draft Lifetime and Static Enforcement
+应用桥的最小签名如下；Zod 类型只在应用内出现，不污染 Package API：
 
-业务 Form Draft 仅在当前应用内存生命周期保留，服务于 §9 的应用内页签切换；显式关闭或丢弃前保护未保存工作，账号变化按 §19.1 清理。本 Starter 不实施、不要求浏览器刷新、关闭或重新打开后的表单草稿恢复，替换原先可通过 Storage Gate 加入跨刷新 Draft 的目标。主题偏好及按独立 Gate 准入的语言偏好持久化与业务 Draft 分离；Password、Credential、Payment Secret 和 File Content 的持久化禁止保持。
+```ts
+import type { z } from 'zod'
+import type { UiFormIssue, UiFormValidation, UiFormValues, UiFormWorkContext } from '@platform/ui'
 
-Owning Gate 必须检查 Stable Dependency、Schema/Field Mapping Closure、Initial/Reset/Reinitialize Contract、Async Abort、Submission Lock、Server Error Mapping、A11y Association、Unsaved Policy、Sensitive Draft Prohibition 和 Form Direct Fetch。全部为 `TARGET_INACTIVE`。
+interface ZodFormValidationInput<I extends object, O> {
+  readonly inputSchema: z.ZodType<I, I>
+  readonly submitSchema: z.ZodType<O, I>
+  readonly mapIssue: (issue: z.core.$ZodIssue) => UiFormIssue<I>
+  readonly validateAsync?: (
+    values: UiFormValues<I>, context: UiFormWorkContext,
+  ) => Promise<readonly UiFormIssue<I>[]>
+}
+declare function createZodFormValidation<I extends object, O>(
+  input: ZodFormValidationInput<I, O>,
+): UiFormValidation<I, O>
+```
+
+## 21.3 Initial, reset, hydration and draft identity
+
+`formId` 是当前挂载范围唯一的稳定表单身份；`draftId` 由消费者提供，区分每次新建草稿与编辑记录，不是 API/数据库/租户模型。新建默认值由 Feature 的一个 Typed Factory 提供；它必须覆盖可编辑形状，但允许尚未满足 required/minimum/domain constraints。挂载不跑最终提交 Schema、不展示整页必填错误、不从 Zod 内部结构抽取 Default。外部未知数据先在其入口验证；编辑响应经 Feature 显式 Mapper 变成输入形状，Controller 复制接纳的值与数组，不双向绑定 Query Object。
+
+只经 `setValues` / Binding `setValue` 写入；`values` 对外深只读。Touched 由真实 blur 设置，Dirty 按当前可编辑值与已接纳初始快照逐值比较，数组按有序值比较，不比较引用、译文或提交后输出。Normal Change 根据 Typed Patch 计算候选值，再调用一次同步 `onChange`，将其返回 Patch 合入后原子发布；不递归触发回调，异常不得留下半次联动。跨字段清空/赋值由该普通函数明确表达，不推导依赖图或连锁规则。Naive 的输入法/数字显示缓冲只负责控件编辑，不能成为第二份业务草稿；有缓冲的 Adapter/Custom 控件通过 `setCommitTarget` 提供同步提交函数，完成有效输入的 setValue 后返回 true，尚在 IME composition 或语法未完成则返回 false，不提交缓冲背后的旧数值。该函数只完成控件输入，不执行领域规则或业务副作用，挂载解除时传 null；无缓冲/无 DOM 的字段无需登记。
+
+初始 Hydration、`replaceInitial`、`reset` 不调用 `onChange`，不标记 touched，不因 Options 未返回而清空有效回填值。`reset()` 唯一默认是回到最近已接纳快照，清 touched/issues/notice，取消旧工作；不用“重新计算空值”替换该快照。`replaceInitial(snapshot)` 表示调用者已经明确接受换记录或替换当前版本，整份替换并清 dirty；同 draftId 也算新的接纳世代。Props/ref 变化和后台刷新没有自动 reinitialize 行为，即使 pristine 也需显式接纳；Feature 不得把 refetch watch 直接连到 replacement，Dirty 替换必须先取得真实用户接受。Feature 发起异步读取时自行绑定当时记录与请求身份，只能把仍有效的映射结果交给 replacement；共享 Form 不接管数据读取。
+
+## 21.4 Validation, dependent fields and asynchronous work
+
+`inputSchema` 包含唯一领域约束，保持输入形状、无 coercion/default/transform/I/O；required/min 等不意味着草稿已有效。`submitSchema` 必须从该同一 Schema 组合显式纯 transform/输出约束，不能复制一份规则。Bridge 的 `check` 用 `inputSchema.safeParseAsync`；成功后才运行可选 `validateAsync`。`parse` 先执行相同完整输入与异步校验，成功后才调用 `submitSchema.safeParseAsync`，返回真正的 `O`；输出变换只在此提交阶段运行一次，绝不写回正在编辑的 `I`。Zod 内同步/异步 refinement 无副作用，远程异步校验放在显式 `validateAsync` 中以接收 signal；不把 Zod parse 误称为原生可 Abort。
+
+默认首个 blur 后检查完整输入，但只呈现已 touched 字段和已经显式校验后的 Form-level Issue；已有错误的表单在值变化后重新检查以修正相关错误。`validate()` 显式显示当前全部错误，`submit()` 总是重新完整校验，不能用一次过期的 valid 缓存放行。Controller 只发布与当前世代/值版本匹配的一份 issues；字段错误、Error Summary、aria-invalid 均从它派生。业务 `mapIssue` 把 Zod path 精确映射到已配置 Field 或 null；Unknown/不可表示的路径显式转为安全 Form-level Issue，不静默吞掉。无错误与未检查不是“已有效”的同义词。Schema/Callback 意外抛错使用 `copy.validationUnavailable` 形成唯一结果中的 Form-level Issue 并阻止提交，不显示 Raw Exception，不把失败当空错误集。
+
+| 扩展 | 最小确定行为 |
+| --- | --- |
+| 动态 hidden/disabled/readonly/required | 默认 false；纯函数读取当前输入，状态变化不复制值。required 只展示 Feature 同源业务谓词的结果，Zod 仍唯一裁决。隐藏保留值与 dirty，默认仍参加完整 Schema；需忽略其约束或从 payload 排除时由 Feature 条件 Schema/输出投影明确处理，不删除草稿键 |
+| Disabled / readonly | 保留输入并参与校验/提交；不是权限验证。Readonly 使用原生 readonly；无合适 Vendor readonly 的选择/开关/日期控件呈现带原 Label 的可聚焦只读值，不伪装为可编辑控件。Hidden/disabled 不成为错误跳转焦点，相关阻塞错误仍在 Summary 中可读 |
+| Options | 静态或带显式 `dependsOn` 的 Typed Loader；挂载/换记录/reset 加载一次，依赖值变化使旧结果无效并重新加载。只同世代、同依赖值的 pending 请求复用，无全局/跨记录缓存；提供 loading/empty/failure/retry 反馈。加载失败不清空选择、不伪造空列表成功；默认加载或失败期间禁止该选择控件编辑。有效选择的保留/清空只由 Feature 的 onChange 决定；Options Result 永不写值。静态/远程结果必须有唯一 Typed ID；无已知选项 Label 的回填值暂用其原 ID 的文本呈现，不能制造一个可选记录 |
+| 选项有效性 | 内置控件只提交当下有效选项 ID；已回填但不在列表的值保留并由业务 Schema/async validator 决定是否合法，不能将本地选项集当服务端权限。Options loading 本身不暗中改变领域有效性；提交所需远程确认须由同一 validateAsync 完成 |
+| 关联日期 | Date-only 控件的 `isDateAllowed(candidate, values)` 投影可选日；同一 Feature Predicate 在 Zod 中校验手输/回填/提交。起止先后或上游日期变化默认保留值并呈现错误；清空须由 onChange 显式决定。Hydration 不触发用户联动，Locale 不改变日期或时区 |
+| Custom | 普通 Vue SFC/slot 通过相应 Binding 读值、写值、blur 并登记/解除 focus target，使用同一 Label/Error/Disabled/Readonly 契约；没有独立错误、校验引擎或表单 Store。自定义控件入口不表示文件、富文本或复杂数组 Adapter 已实现 |
+
+每个 Controller 自己拥有接纳世代、输入版本及各类请求的有效性。值变化使旧 Validation/已捕获 Submit 工作失效；Options 只在其声明依赖变化时失效，Loader 不得读取未声明依赖来决定结果。换记录/accepted replacement/reset/dispose 全部 Abort 旧 Options、异步校验和提交 signal，并使旧 resolve/reject/finally 无权更新值、errors、loading、pending、notice 或焦点；即使业务 Promise 忽略 Abort，也必须丢弃其迟到结果，Controller 返回的旧 validate/submit Promise 以 cancelled 结束而不无限等待业务 Promise。同版本同类 Validation/Options 复用在途工作，不重跑外部操作；无后台轮询、自动 retry、全局 scheduler 或持久化队列。`dispose()` 幂等并由 Vue scope disposal 自动调用，释放 Watcher、AbortController、focus/commit references；dispose 后写操作无效。
+
+## 21.5 Submission and business composition
+
+原生 form 使用 novalidate，把键盘和按钮统一到 `submit()`，不并行运行浏览器约束校验。提交入口先取得单一 in-flight lock，只在随后的同步控件 commit 窗口允许 Binding 写入和相应 onChange；任一 commit 返回 false，就以该 Field 的 `copy.inputIncomplete` Issue 结束为 invalid。然后捕获独立 `I` 快照、完整 parse、向显式 `onSubmit(O, { signal })` 交付 payload。`submitting` 是该锁从入口到终态的只读投影，覆盖校验和提交；重复提交返回同一 Promise，窗口之后禁止值写入及提交/重置按钮重复操作。普通 blur/validate 的 `phase=validating` 不锁输入，值变化按上一节取消它；提交期间显式 validate 加入当前校验结果，不另启校验或结束提交锁。Controller 的 validate/check 不拥有第二套错误；提交结果发布前验证身份仍有效。
+
+Validation 失败返回 invalid、保留输入并呈现错误。业务返回 failure 或意外 reject 时返回 failure，保留输入和原 accepted snapshot，显示安全 Form-level Feedback；无默认 retry。success 默认把此次提交的**输入快照**接纳为新 reset 基线并清 dirty；业务若有真实服务端规范化结果，可显式返回映射后的 `initial`（包括新身份），只在当前 attempt 仍有效时接纳。不能用 `O` 反写 `I`，不能认为“变换后 payload”就是编辑模型。Success Notice 来自明确成功结果；没有业务函数时表单不能制造成功。
+
+显式 `replaceInitial/reset/dispose` 可使 pending attempt 失效并请求 Abort；中止 UI 等待不证明远端操作已回滚。API Transport、请求重试/幂等、Query Invalidation、409/412 Conflict、乐观更新、全局通知、自动关闭 Dialog 与导航均由未来 Feature/Page 和 §20/§22 负责；共享 Form 不导入这些服务、不直接 fetch。成功/失败后外部协调者依据 `await form.submit()` 的结果处理自身行为。Backend Field Error 需要真实 API Error Schema 和精确字段映射后独立接入；此处不发明服务器字段错误协议、setErrors 后门或冲突响应。
+
+## 21.6 Language, accessibility, visual and date boundaries
+
+Label、Description、required 说明、Options、issues、加载/提交反馈均使用 `UiFormText` getter；应用以现有 `useConsoleI18n().t` 和 Typed Key/Parameter 构造，Package 不读 Catalog、创建 Locale Ref 或内置另一套中文/英文默认。错误保存安全消息描述/getter，禁止缓存已经翻译的字符串或 Raw Server Message。组件在响应式呈现中读取 getter，切换语言只更新文本，不重跑 Validation、Options、Transform、onChange 或创建新表单。共用文案进入现有两语言 common scope；真实业务文案在其 Feature Admission 接入原唯一加载边界，不为未实现页面造资源。
+
+Form Field 提供稳定 formId+field 派生 Control/Label/Description/Error ID。原生 Label 的 for 或复合控件 aria-labelledby 关联真实焦点元素，Description 与 Error 通过 aria-describedby 连接，required 同时有可见说明及 aria-required；Vendor 随机 feedback key 不拥有这些 ID。默认一个 form-level `polite` Region 宣布 validating/submitting/success/failure；校验失败把焦点移到 DOM 已就绪的 Error Summary（tabindex=-1），列出可聚焦字段的链接并允许激活后定位该字段。无可聚焦目标的隐藏/禁用/表单级错误保留文字。一次当前提交只宣布一次结果，不为每个 Field 再建 Live Region；不按字符、语言变化或旧异步结果抢焦点。Enter 保留 Textarea/IME/Select/Date Composite 自身语义，只有原生 submit 路径触发表单提交；无全局按键监听。Default Slot/Custom Focus Target 也必须满足该契约。
+
+复用 `pavp-naive-theme.ts` 的 PAVP 色彩、字体、control height、spacing、radius、focus、Motion，以及现有 responsive container/Touch Target 边界。首期只提供 1/2 列语义选择，Label 在上且可换行；用已有 `narrow/regular/wide` 容器表达，独立使用而无已知容器时单列，不新增断点或以变小字号适配。整体不新增 Scroll Owner、页面 Material 或 Density Axis，未激活的三档 Density 仍待其自己的 Gate；未来密度投影由现有尺寸权威消费，不能假称已实现。
+
+实际 PublicRoleRegistry 有十个活动 Color Role，尚无专用 invalid/danger 色。首期选择清楚的文字/错误标记和现有语义边框反馈：错误和 required 文字/图标使用 `color.text.primary`，说明使用 `color.text.secondary`，边框使用 `color.border.default`，Focus 使用 `color.focus.ring`。私有 Adapter 必须覆盖 Form 的 `feedbackTextColorError/asteriskColor`、所有初始控件与其内部 Peer 的 Error Text/Border/Focus Shadow 等实际字段，避免 Naive 默认红色或另立 Vendor Palette；普通、禁用、只读、loading、error 均保持可读。此决定不准入新 Role；若后续明确需要专用错误色，最小候选是现有 Reserved `color.status.danger.text` / `color.status.danger.border`，须先通过 §37.1 Public-role Admission，不能顺带激活全部状态颜色或重做主题。Light/Dark、Standard/Enhanced、字号、Forced Colors、Full/Reduced/None 与真实 Focus/Contrast 的验收仍属适用外部 Release Gate。
+
+Date 首期只含 date-only，NDatePicker 使用受控 formattedValue/valueFormat 的私有 `yyyy-MM-dd` 映射；不把日期值当 UTC instant 或经 `toISOString()` 做日历日转换，内部 timestamp 只属于 Vendor 日历选择。日期显示必须在同一 `PavpNaiveConfigProvider.vue` 增加 `dateZhCN` 从 `naive-ui/es/locales/date/zhCN`、`dateEnUS` 从 `naive-ui/es/locales/date/enUS` 的私有 Default Import，并按已提交 `locale` 同步绑定 `date-locale`；完整 Common Locale 保留。§23.6.4 的 no-date-consumer 例外到此不再适用；不能显示默认英文日历、另存 Locale 或在包内手写翻译。仅复用安装包的 date-fns 传递依赖，不从应用直接导入，不新增日期库或全局 Product Zone。
+
+最终扩展仍保留：instant 在 API 边界为 UTC ISO 8601；local date-time 必须有独立 timeZone/歧义时间政策；duration 有命名单位；money 用最小货币单位整数或验证过的 decimal string，不能把普通 Number 控件当精确金额模型。Locale 不推导 timeZone，Intl 格式按 §23.4，Temporal 仍 Deferred。File、Upload、Rich Text、任意嵌套数组、公式和时间范围等不进入初始实现，不预建 Adapter。未来 File Consumer 仍需数量/MIME/扩展/大小/Filename 规则，替换/dispose 撤销 Object URL，禁止内容入 Log/Pinia Persistence/Local Storage，进度与续传等待真实 Endpoint。
+
+## 21.7 Consumer, draft lifetime and implementation synchronization
+
+下面仅说明 API 用法，不冻结后端用户模型或已实现页面。两个 declare 输入来自未来 Feature 的真实 Schema/业务边界；示例不包含假用户、接口或成功函数。`copy` 与 Label getter 由同一 Typed Translator 构造。
+
+```ts
+import { UiForm, useUiForm, type UiFormInput } from '@platform/ui'
+
+type Draft = { displayName: string; enabled: boolean; priority: number | null }
+type Payload = { displayName: string; enabled: boolean; priority: number }
+declare const business: Pick<UiFormInput<Draft, Payload>, 'validation' | 'onSubmit' | 'copy'>
+declare const labels: { displayName: () => string; enabled: () => string; priority: () => string }
+
+const form = useUiForm<Draft, Payload>({
+  formId: 'account-editor',
+  initial: { draftId: 'new-account-draft', values: { displayName: '', enabled: false, priority: null } },
+  fields: [
+    { name: 'displayName', kind: 'text', label: labels.displayName, required: true },
+    { name: 'enabled', kind: 'switch', label: labels.enabled },
+    { name: 'priority', kind: 'number', label: labels.priority, required: true },
+  ],
+  ...business,
+})
+// 同一 SFC 的 template 使用 <UiForm :form="form" />。
+```
+
+共享实现的真实接入边界是以后用户管理或角色管理 Feature 中的 create/edit Form：Feature 从同源 Zod Schema 构造 validation，传入明确的业务回调、Typed 初值和编辑 Mapper，Page 后续组合 Form/Table/Dialog。共享前端合同已在此定义，当前仍没有真实管理 Feature、记录字段/响应 Schema、业务 Endpoint、权限与 Mutation 协议；这些是**生产消费者接线的未决业务合同**，不能填假值或把 Appearance 重构成证明消费者。后续可单独授权共享前端实现，但实际 Public UI Consumer Registry、路由和 capability activation 必须在真实接入时闭合；未使用公共组件不能以例子冒充已消费。没有 Consumer 接线时不能宣称完整 Form Landing 已满足 §37.2.12 completion evidence。
+
+当前 Controller 的 Lifetime 只到所属 Vue scope dispose，不建立 Pinia/Form Store、跨刷新草稿、账号同步、Route Guard 或 Tabs。未来应用内页签保留未保存输入仍是 §9/§19.1 的最终目标，由未来页面 Lifetime Owner 保持该同一 Controller 并在关闭/丢弃/账号变化时清理，不复制成第二份值。浏览器刷新、关闭或重开后的业务草稿恢复仍不实施；现有主题/语言偏好持久化独立保留，敏感字段持久化禁止不变。
+
+后续必要源码按职责限定如下，不是本次写入清单或占位目录许可：
+
+| 职责 | 现有集成文件 / 必要未来源码 |
+| --- | --- |
+| 公共 Form 与实例状态 | 新 `packages/ui/src/components/UiForm.vue`、`UiFormField.vue`、`packages/ui/src/components/form-contracts.ts`、`packages/ui/src/composables/use-ui-form.ts`；现有 `packages/ui/src/index.ts` 和 `registry/ui-public-component-registry.ts` 闭合两组件与 Composable/类型，不为每个控件预建公开 Wrapper |
+| Vendor 呈现 | 在现有 `packages/ui/src/adapters/naive/` 增加仅本 Form 消费的 `PavpNaiveForm.vue`、`PavpNaiveFormField.vue`、`PavpNaiveFormControl.vue`；现有 `pavp-naive-theme.ts` 和 `PavpNaiveConfigProvider.vue` 扩展实际 Form/Control/Peer Overrides 与日期语言；`providers/UiProvider.vue` 的 locale/appearance 公共 Props 保持 |
+| Zod 适配与业务接入 | 新 `apps/web/src/shared/forms/index.ts`、`zod-form-validation.ts` 只实现上述桥；将来的用户/角色 Feature 拥有自己的 schemas、fields、initial mapper 与 business callback，确切业务文件/路由在真实 Consumer Admission 冻结，本次不发明它们 |
+| 文案 | 现有 `apps/web/src/shared/i18n/message-schema.ts`、两语言 `messages/*/common.json` 按实际 FormCopy 消费扩展；原 `boundary.ts`/`runtime.ts`/`resource-loaders.ts` 保持唯一语言与加载所有权，新增业务 scope 只在真实接入时补齐 |
+
+已检查的 Existing Assertion 与后续同步点：
+
+| Owning file | 实施时必须同步的最小合同 |
+| --- | --- |
+| `scripts/architecture/check-boundaries.ts`；`scripts/verify/check-project-config.ts` | 继续禁止 `vee-validate`、第二 Schema/未准入 Vendor 和反向导入；已有 Web/Design System Zod、UI Vue/Naive 的 Exact Catalog/Manifest/Lock Set 不需变化。源码导入只放行此处职责；不得向 UI 加 Zod，或为通过 Gate 修改依赖 |
+| `scripts/architecture/check-ui-public-components.ts` | 当前 Public Exports=Registry，Macro Props/Emits/Slots 与 direct route consumers 严格相等；Private Adapter Inventory 与 `expectedRuntimeImports` 是精确集合。实现时只增加上述实际文件、Form/Control/必要 Peer Styles 与 Date Locale Imports；为 Form 的泛型 Props/Slot 及真实 Feature 消费链提供窄解析支持，保留直接 Vendor Import、Overlay、Motion 与全部已有消费者校验 |
+| `scripts/architecture/check-i18n.ts` | 目前精确两个 Common Locale Imports 且明确 `!bindings.has('date-locale')`；日期实施须原子替换为同一 Provider 四个 Locale Imports 和同源 date-locale 投影。沿用既有 scope/key/parameter/资源 AST 校验，扩展真实 common 文案和参数，禁止用放宽全部文本/Imports 的方式绕过 |
+| `scripts/architecture/check-architecture-admin-console.ts` | 既有 `validateDependencies`、`validateInspectorProjections`、`validateRoutesShellAndMotion`、Naive Theme/Public UI Counts 与 pageFactImportContract 只对真实消费增量同步；保护现有十页面/Appearance、导航、Kernel/Storage 和历史验收，不为表单另造 console 展示页 |
+| `scripts/architecture/generate-capability-manifest.ts`；`check-capability-manifest.ts` | 当前 Canonical JSON/生成器严格为 21 Record，仅 appearance/i18n 可交互。本次不改 JSON 或生成物；真实 Form 激活时才冻结独立生产 Record/Consumer、同步生成/检查，不能把 forms-i18n-tables 聚合或整个 Starter 标为完成。`generate-engineering-manifest.ts`/`check-engineering-manifest.ts` 仍从真实依赖/命令生成；本方案无新依赖 |
+| `scripts/verify/check-bundle.ts`；Design System 生成检查 | Date Locale/新控件及 Peer 的实际闭包须进入现有 26 Dynamic Roots/Initial/Route 度量政策，真实路由新增时同步确切 Roots，不用假 Lazy Root 隐藏字节。保留现有预算及 8 KiB Initial Headroom；当前 Role/Theme/Token Generated Output 不因本设计改变 |
+
+未来窄 Form Owner 检查接入现有 `check:arch`，可在 `scripts/architecture/check-ui-public-components.ts` 增加相应检查；只保护字段/值类型、单一 owner、Zod bridge、无 Vendor Rules、snapshot/reset/hydration、异步失效、提交锁和输出、公共 slot/ID/A11y/语言及禁止直接传输/持久化等稳定合同，不冻结 helper 名、循环、容器或私有算法，不建设通用分析框架。当前这些 Form Checks 仍未实现，§29 未激活的 Server Error/Unsaved/Permission 等规则不借此激活。
+
+本次只修改本节、与旧 Form Target 直接冲突的五处引用、§37.2.12 的一条准入记录和既有文字闪烁待验收说明。现有 Checker 未发现直接强制旧 VeeValidate-only/初值提交 Schema 的断言，故无需 Checker Diff；当前 Date Locale 禁令保护的是尚无 Date Consumer 的真实实现，本次保留。`ARCHITECTURE.md` 继续使用现有格式排除并直接审阅 Diff；设计变更运行 `git diff --check`、既有 `check:arch`/`check:policy` 及最终 `mise exec -- pnpm verify`。这些 Gate 不编译文档 API 示例；新增泛型、严格 SFC、Date/Peer Theme、Bundle 和 Owner Runtime 兼容必须在代码实施开始时以真实源代码验证，不能据本次文档通过而称实现就绪或生产验收完成。
 
 ---
 
@@ -14973,7 +15196,7 @@ Motion 目录和依赖只有在命名 Interaction 通过 Admission Gate 后才�
 Native Fetch only after a real backend/service contract admission
 TanStack Query only after API Transport admission
 API Error Model only with the admitted real API domain
-VeeValidate + Zod only for a named real Form consumer
+Section 21 Vue-local form state + existing Zod and private Naive controls, only after named Form consumer admission
 Phase 4 Input / Table color-role candidates, admitted only by an independent Architecture Amendment
 Query Key Policy only with admitted server state
 Loading / Error / Empty Contract
@@ -16170,6 +16393,21 @@ COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted 
 
 `DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；不相关 Backend-dependent Package 未完成不构成阻塞。按 §21–23 交付的共享能力须最终被完整配置驱动页面和 §20A 的真实标准管理页面消费，保持独立组合能力，不以只有零散原语代替最终页面要求。
 
+#### `PAVP_CONFIGURATION_DRIVEN_FORMS` scoped admission record
+
+§21 是唯一完整合同；本次只完成规范，`CONTRACT_STATUS=FROZEN`、`CAPABILITY_STATUS=TARGET_INACTIVE`、`REPOSITORY_IMPLEMENTATION=NOT_STARTED`、`IMPLEMENTATION_AUTHORIZATION=NONE_DESIGN_ONLY`。不增加 Capability Manifest Record，不变更 Current Work/Next/Successor，不把下游业务接线或新控件视为已实现。
+
+```text
+ID=PAVP_CONFIGURATION_DRIVEN_FORMS
+ENTRY_CONDITIONS=Owner-authorized bounded Section 21 design on clean synchronized main@2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f; approved user/role create-edit demand; shared UI predecessor PAVP_ARCHITECTURE_ADMIN_CONSOLE repository implementation COMPLETE; locale predecessor PAVP_ADMIN_CONSOLE_LOCALIZATION repository implementation COMPLETE; first form-state authority instance; later source implementation requires separate Owner authorization and the real consumer integration boundary in Section 21.7
+ALLOWED_SCOPE=Section 21 reusable typed forms contract and directly conflicting inactive form-target references; this minimal admission record; existing light/dark text-flicker note limited to Owner acceptance after 2e5b6e3
+PROHIBITED_SCOPE=runtime implementation or capability activation; dependencies/manifests/lockfiles/patches; generated outputs/budgets/TS/CI; backend/API/Auth/Table/Dialog/CRUD implementation; Appearance refactor; browser/test/evidence artifacts; separate specification or governance documents; automatic successor
+OUTPUTS=one canonical bounded contract for typed fields, Vue-local value ownership, feature Zod validation, initial/reset/hydration, stale-result cancellation, submission and extension behavior; truthful production-consumer and later source/checker boundaries
+MACHINE_GATES=git diff --check; existing check:arch and check:policy; final mise exec -- pnpm verify; direct ARCHITECTURE.md diff review under the existing formatting exclusion; no generated-source drift
+PRODUCTION_RELEASE_ACCEPTANCE=not applicable to this documentation-only change; future Form runtime release requires the applicable Section 32.3 external Owner matrix
+COMPLETION_EVIDENCE=reviewed canonical specification and actual static gate results; current dependency metadata/source evidence distinguished from future strict code/build compatibility; implementation/runtime/staged/committed/pushed/released reported separately; no fake consumer or backend contract
+```
+
 #### `PAVP_ADMIN_CONSOLE_LOCALIZATION` scoped admission record
 
 §23.6 是此唯一实例的完整实施输入。当前 `CONTRACT_STATUS=FROZEN`、`CAPABILITY_STATUS=ACTIVE`、`REPOSITORY_IMPLEMENTATION=COMPLETE`、`IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SINGLE_IMPLEMENTATION`、`STATIC_VERIFICATION=PASS`。精确声明补丁、Router 编译边界、Pending Selection 与日期适用性修正保留；§23.6.9 的 Owner 精确预算调整后，完整 Typecheck、Owning Checks、生成一致性、Production Build 与全部 Bundle Gate 已通过。旧 `232891/237568/4677` 余量不足、差 `3515` 的失败仍为历史事实。当前十二阶段/三条 Storage/二十一条 Capability 实现只激活限定管理台双语，不续接任何历史 Runtime Acceptance；Owner Runtime Acceptance 未执行，未 Release，Next/Successor 保持原状态。
@@ -16245,7 +16483,6 @@ vue
 vue-router
 pinia
 @tanstack/vue-query
-vee-validate
 zod
 @vueuse/core
 vue-i18n
@@ -16627,7 +16864,7 @@ Node 24 LTS
 + TanStack Vue Query only after real backend-demand admission
 + Native Fetch transport only after real backend-demand admission
 + OpenAPI types from openapi-typescript only after the reliable real-schema gate
-+ VeeValidate stable major selected only at Form Admission
++ Section 21 Vue-local form state with existing Zod and PAVP-owned Naive controls, after separate Form implementation admission
 + VueUse
 + Vue I18n
 + CSS / Progressive View Transitions
