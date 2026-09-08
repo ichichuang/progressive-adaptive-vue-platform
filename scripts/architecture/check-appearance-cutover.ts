@@ -1188,11 +1188,12 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
   if (
     !isDeepStrictEqual(piniaImporters.sort(compareCodePoints), [
       'apps/web/src/app/appearance/appearance.store.ts',
+      'apps/web/src/app/navigation/navigation-preference.store.ts',
       'apps/web/src/app/providers/pinia.ts',
     ])
   ) {
     violations.push(
-      'Pinia imports must remain limited to its Runtime Kernel provider owner and appearance.store.ts.',
+      'Pinia imports must remain limited to its Runtime Kernel provider owner, appearance.store.ts and navigation-preference.store.ts.',
     )
   }
 

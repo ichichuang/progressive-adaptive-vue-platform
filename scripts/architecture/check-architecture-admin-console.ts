@@ -281,7 +281,7 @@ const expectedAdminNavigationNativeAdmissionNegativeProbeCount = 12
 const expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount = 5
 const expectedAdminNavigationNativeSourceInvariantCount = 24
 const expectedAdminNavigationNativeSourceNegativeProbeCount = 24
-const expectedAdminNavigationExpansionMotionInvariantCount = 20
+const expectedAdminNavigationExpansionMotionInvariantCount = 21
 const expectedAdminNavigationExpansionMotionNegativeProbeCount = 8
 const expectedAdminNavigationCollapsedPopupSourceInvariantCount = 15
 const expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount = 8
@@ -5046,9 +5046,9 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   if (
     runtimeNumber(routeRegistry.length) !== 17 ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 12 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 13 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 3 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 4 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 14
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -9471,9 +9471,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
         snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
         snapshot.routeCount === 17 &&
-        snapshot.runtimeKernelStepCount === 12 &&
+        snapshot.runtimeKernelStepCount === 13 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 3,
+        snapshot.storageRecordCount === 4,
     },
   ])
 }
@@ -11931,7 +11931,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
           shellSource,
         ),
     ],
-    ['NAV_WIDE_LOCAL_STATE', shellSource.includes('const wideNavigationCollapsed = ref(false)')],
+    ['NAV_WIDE_CONTROLLED_STATE', controlledWideNavigationToggle(scriptContent(shellSource))],
     [
       'NAV_COLLAPSED_STATE',
       shellSource.includes('const persistentNavigationCollapsed = computed(() => {') &&
@@ -11997,7 +11997,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       shellSource
         .replaceAll(/\s+/gu, ' ')
         .includes(
-          'wideNavigationCollapsed.value ? props.copy.expandNavigationLabel : props.copy.collapseNavigationLabel',
+          'props.wideNavigationCollapsed ? props.copy.expandNavigationLabel : props.copy.collapseNavigationLabel',
         ),
     ],
     [
@@ -12059,16 +12059,15 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_EXPANDED_INITIAL_STATE',
-      shellSource.includes(
-        'const expandedNavigationGroupKeys = ref<string[]>([...navigationGroupKeys.value])',
-      ),
+      shellSource.includes('readonly expandedNavigationGroupIds: readonly string[]') &&
+        !/expandedNavigationGroupKeys\s*=\s*ref/u.test(shellSource),
     ],
     [
       'NAV_EXPANDED_ROUTE_STATE',
       expandedProjectionSemantics.controlledProjection &&
         !expandedProjectionSemantics.activeParentIncluded &&
         shellSource.includes('const validExpandedNavigationGroupKeys = computed(() => {') &&
-        shellSource.includes('() => props.activeRouteName') &&
+        !shellSource.includes('() => props.activeRouteName') &&
         !shellSource.includes('ensureActiveNavigationGroupExpanded'),
     ],
     [
@@ -12405,8 +12404,8 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '  wideNavigationCollapsed.value = !wideNavigationCollapsed.value',
-        "  wideNavigationCollapsed.value = !wideNavigationCollapsed.value\n  localStorage.setItem('wide-navigation-collapsed', String(wideNavigationCollapsed.value))",
+        "  emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed)",
+        "  emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed)\n  localStorage.setItem('wide-navigation-collapsed', String(props.wideNavigationCollapsed))",
       ),
     ],
   ]
@@ -12787,85 +12786,6 @@ function refValueWriteCount(root: ts.Node, refName: string): number {
   return count
 }
 
-function templateEventExpressionWritesRef(
-  expression: string,
-  refName: string,
-  callables: ReadonlyMap<string, ts.Node>,
-): boolean {
-  const sourceFile = ts.createSourceFile(
-    'pavp-template-event-expression.ts',
-    expression,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  )
-  const onlyStatement = sourceFile.statements[0]
-  const expressionStatement =
-    sourceFile.statements.length === 1 &&
-    onlyStatement !== undefined &&
-    ts.isExpressionStatement(onlyStatement)
-      ? onlyStatement
-      : undefined
-  const rootExpression =
-    expressionStatement === undefined ? undefined : unwrapExpression(expressionStatement.expression)
-
-  if (rootExpression !== undefined && ts.isIdentifier(rootExpression)) {
-    const rootCallable = callables.get(rootExpression.text)
-    if (
-      rootCallable !== undefined &&
-      nodeOrCalledFunctionWritesRef(rootCallable, refName, callables)
-    ) {
-      return true
-    }
-  }
-
-  let writes = false
-
-  function directTarget(candidate: ts.Expression): boolean {
-    const target = unwrapExpression(candidate)
-    return (
-      (ts.isIdentifier(target) && target.text === refName) || isRefValueWriteTarget(target, refName)
-    )
-  }
-
-  function visit(node: ts.Node): void {
-    if (writes) {
-      return
-    }
-
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
-      node.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
-      directTarget(node.left)
-    ) {
-      writes = true
-      return
-    }
-    if (
-      (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
-      (node.operator === ts.SyntaxKind.PlusPlusToken ||
-        node.operator === ts.SyntaxKind.MinusMinusToken) &&
-      directTarget(node.operand)
-    ) {
-      writes = true
-      return
-    }
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
-      const callable = callables.get(node.expression.text)
-      if (callable !== undefined && nodeOrCalledFunctionWritesRef(callable, refName, callables)) {
-        writes = true
-        return
-      }
-    }
-
-    ts.forEachChild(node, visit)
-  }
-
-  visit(sourceFile)
-  return writes
-}
-
 function computedBooleanLabelMatches(
   initializer: ts.Expression | undefined,
   refName: string,
@@ -12920,8 +12840,9 @@ function computedBooleanLabelMatches(
   return (
     ts.isPropertyAccessExpression(condition) &&
     ts.isIdentifier(condition.expression) &&
-    condition.expression.text === refName &&
-    condition.name.text === 'value' &&
+    (refName.startsWith('props.')
+      ? condition.expression.text === 'props' && condition.name.text === refName.slice(6)
+      : condition.expression.text === refName && condition.name.text === 'value') &&
     unwrapExpression(conditional.whenTrue).getText() === trueLabel &&
     unwrapExpression(conditional.whenFalse).getText() === falseLabel
   )
@@ -13061,7 +12982,6 @@ function adminNavigationNativeSourceInvariantResults(
 ): readonly Readonly<{ code: string; passed: boolean }>[] {
   const shellTemplate = templateContent(snapshot.shellSource)
   const shellScript = scriptContent(snapshot.shellSource)
-  const normalizedShellScript = shellScript.replaceAll(/\s+/gu, ' ')
   const shellStyles = styleContent(snapshot.shellSource)
   const shellRules = cssRuleBlocks(shellStyles)
   const sourceAndDependencyCorpus = [
@@ -13271,9 +13191,7 @@ function adminNavigationNativeSourceInvariantResults(
       /\b(?:background|background-color)\s*:/iu.test(rule.declarations),
   )
   const wideCollapseControlOwned =
-    normalizedShellScript.includes(
-      'function toggleWideNavigation(): void { wideNavigationCollapsed.value = !wideNavigationCollapsed.value }',
-    ) &&
+    controlledWideNavigationToggle(shellScript) &&
     shellTemplate.includes('data-pavp-admin-navigation-collapse-control="header-trailing"') &&
     shellTemplate.includes('v-if="profile === \'wide\'"') &&
     shellTemplate.includes(':aria-label="wideNavigationCollapseLabel"') &&
@@ -13415,7 +13333,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
-      passed: snapshot.runtimeKernelStepCount === 12,
+      passed: snapshot.runtimeKernelStepCount === 13,
     },
     {
       code: 'ADMIN_NAV_NATIVE_PROVIDER_IDS',
@@ -13423,7 +13341,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 3,
+      passed: snapshot.storageRecordCount === 4,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -13783,6 +13701,49 @@ function runAdminNavigationCollapsedPopupNegativeProbes(
   )
 }
 
+function navigationPreferenceEmits(node: ts.Node, eventName: string): readonly ts.CallExpression[] {
+  const calls: ts.CallExpression[] = []
+  function visit(candidate: ts.Node): void {
+    if (
+      ts.isCallExpression(candidate) &&
+      ts.isIdentifier(candidate.expression) &&
+      candidate.expression.text === 'emit' &&
+      candidate.arguments[0] !== undefined &&
+      ts.isStringLiteral(candidate.arguments[0]) &&
+      candidate.arguments[0].text === eventName
+    )
+      calls.push(candidate)
+    ts.forEachChild(candidate, visit)
+  }
+  visit(node)
+  return calls
+}
+
+function controlledWideNavigationToggle(shellScript: string): boolean {
+  const source = ts.createSourceFile(
+    shellSfcPath,
+    shellScript,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const calls = navigationPreferenceEmits(source, 'update:wideNavigationCollapsed')
+  const payload = calls[0]?.arguments[1]
+  return (
+    calls.length === 1 &&
+    payload !== undefined &&
+    ts.isPrefixUnaryExpression(payload) &&
+    payload.operator === ts.SyntaxKind.ExclamationToken &&
+    ts.isPropertyAccessExpression(payload.operand) &&
+    payload.operand.expression.getText(source) === 'props' &&
+    payload.operand.name.text === 'wideNavigationCollapsed' &&
+    !/\b(?:wideNavigationCollapsed|expandedNavigationGroupKeys)\s*=\s*(?:ref|shallowRef|reactive)\b/u.test(
+      shellScript,
+    ) &&
+    refValueWriteCount(source, 'wideNavigationCollapsed') === 0
+  )
+}
+
 function adminNavigationHeaderPlacementInvariantResults(
   snapshot: AdminNavigationNativeSourceSnapshot,
 ): readonly Readonly<{ code: string; passed: boolean }>[] {
@@ -13824,9 +13785,10 @@ function adminNavigationHeaderPlacementInvariantResults(
     templateDirectives(element.node, 'on')
       .filter((directive) => {
         const expression = normalizeTemplateExpression(directive.exp?.content)
+        const callable = shellCallables.get(expression)
         return (
-          expression.length > 0 &&
-          templateEventExpressionWritesRef(expression, 'wideNavigationCollapsed', shellCallables)
+          callable !== undefined &&
+          navigationPreferenceEmits(callable, 'update:wideNavigationCollapsed').length !== 0
         )
       })
       .map((directive) => ({ directive, element })),
@@ -13848,14 +13810,13 @@ function adminNavigationHeaderPlacementInvariantResults(
   const collapsedRefAuthorities = [
     ...shellScript.matchAll(/\bconst\s+([A-Za-z_$][\w$]*Collapsed)\s*=\s*ref\s*\(/gu),
   ].map((match) => match[1])
-  const exactToggleAuthority = normalizedShellScript.includes(
-    'function toggleWideNavigation(): void { wideNavigationCollapsed.value = !wideNavigationCollapsed.value }',
-  )
+  const exactToggleAuthority = controlledWideNavigationToggle(shellScript)
   const toggleDeclaration = functionDeclaration(shellSourceFile, 'toggleWideNavigation')
   const uniqueScriptStateWriter =
     toggleDeclaration !== undefined &&
-    refValueWriteCount(shellSourceFile, 'wideNavigationCollapsed') === 1 &&
-    refValueWriteCount(toggleDeclaration, 'wideNavigationCollapsed') === 1 &&
+    navigationPreferenceEmits(shellSourceFile, 'update:wideNavigationCollapsed').length === 1 &&
+    navigationPreferenceEmits(toggleDeclaration, 'update:wideNavigationCollapsed').length === 1 &&
+    refValueWriteCount(shellSourceFile, 'wideNavigationCollapsed') === 0 &&
     shellSourceFile.statements.every(
       (statement) =>
         statement === toggleDeclaration ||
@@ -13872,12 +13833,12 @@ function adminNavigationHeaderPlacementInvariantResults(
     normalizeTemplateExpression(soleTemplateStateWriter.directive.exp?.content) ===
       'toggleWideNavigation'
   const exactCollapsedProjection = normalizedShellScript.includes(
-    "const persistentNavigationCollapsed = computed(() => { if (profile.value === 'regular') { return true } return profile.value === 'wide' && wideNavigationCollapsed.value })",
+    "const persistentNavigationCollapsed = computed(() => { if (profile.value === 'regular') { return true } return profile.value === 'wide' && props.wideNavigationCollapsed })",
   )
   const exactDynamicLabels =
     computedBooleanLabelMatches(
       shellInitializers.get('wideNavigationCollapseLabel'),
-      'wideNavigationCollapsed',
+      'props.wideNavigationCollapsed',
       'props.copy.expandNavigationLabel',
       'props.copy.collapseNavigationLabel',
     ) &&
@@ -13938,7 +13899,7 @@ function adminNavigationHeaderPlacementInvariantResults(
         exactToggleAuthority &&
         uniqueScriptStateWriter &&
         uniqueTemplateStateWriter &&
-        isDeepStrictEqual(collapsedRefAuthorities, ['wideNavigationCollapsed']) &&
+        collapsedRefAuthorities.length === 0 &&
         !/\b(?:localStorage|sessionStorage|setItem|useStorage)\b/u.test(shellScript),
     },
     {
@@ -14358,7 +14319,6 @@ function adminNavigationExpansionMotionInvariantResults(
       : []
   const shellTemplate = templateContent(snapshot.shellSource)
   const shellScript = scriptContent(snapshot.shellSource)
-  const normalizedShellScript = shellScript.replaceAll(/\s+/gu, ' ')
   const shellStyles = styleContent(snapshot.shellSource)
   const providerStyles = styleContent(snapshot.providerSource)
   const shellSourceFile = ts.createSourceFile(
@@ -14398,33 +14358,19 @@ function adminNavigationExpansionMotionInvariantResults(
         nodeOrCalledFunctionWritesRef(argument, 'expandedNavigationGroupKeys', shellCallables),
       ),
   )
-  const routeWatch =
-    expansionWritingWatchCalls.length === 1 ? expansionWritingWatchCalls[0] : undefined
-  const routeWatchSource = routeWatch?.getText(shellSourceFile).replaceAll(/\s+/gu, ' ') ?? ''
-  const routeWatchGetterSource =
-    routeWatch?.arguments[0]?.getText(shellSourceFile).replaceAll(/\s+/gu, ' ') ?? ''
+  const frameSource = snapshot.consoleFrameSource
   const routeWatchContract =
-    routeWatchGetterSource === '() => props.activeRouteName' &&
-    routeWatchSource.includes('(activeRouteName, previousActiveRouteName') &&
-    routeWatchSource.includes('if (activeRouteName === previousActiveRouteName) { return }') &&
-    routeWatchSource.includes(
-      'const activeGroup = props.navigation.find((group) => group.items.some((item) => item.routeName === activeRouteName), )',
-    ) &&
-    routeWatchSource.includes('if (activeGroup === undefined) { return }') &&
-    routeWatchSource.includes('const groupKey = navigationGroupKey(activeGroup.id)') &&
-    routeWatchSource.includes('if (!validExpandedNavigationGroupKeys.value.includes(groupKey))') &&
-    routeWatchSource.includes(
-      'expandedNavigationGroupKeys.value = [...validExpandedNavigationGroupKeys.value, groupKey]',
-    ) &&
-    !/\b(?:nextTick|setTimeout|setInterval|requestAnimationFrame|querySelector|getElementById)\b/u.test(
-      routeWatchSource,
-    )
+    /watch\(\s*\(\) => router\.currentRoute\.value,/u.test(frameSource) &&
+    frameSource.includes("{ flush: 'sync' }") &&
+    frameSource.includes('item.isCurrentDestination') &&
+    frameSource.includes('reconcileNavigationGroupIds') &&
+    !/\b(?:localStorage|sessionStorage|setItem|\$subscribe)\b/u.test(frameSource)
   const expansionWatchSourcesAreExact =
-    expansionWritingWatchCalls.length === 1 &&
-    !watchCalls.some((call) => {
-      const getterSource = call.arguments[0]?.getText(shellSourceFile) ?? ''
-      return /expandedNavigationGroupKeys|validExpandedNavigationGroupKeys/u.test(getterSource)
-    })
+    expansionWritingWatchCalls.length === 0 &&
+    watchCalls.every(
+      (call) => navigationPreferenceEmits(call, 'update:expandedNavigationGroupIds').length === 0,
+    ) &&
+    !/\bexpandedNavigationGroupKeys\s*=\s*(?:ref|shallowRef|reactive)\b/u.test(shellScript)
 
   const headers = shellElements.filter(
     (element) =>
@@ -14477,10 +14423,13 @@ function adminNavigationExpansionMotionInvariantResults(
   const normalizedToggleAllSource =
     toggleAllDeclaration?.getText(shellSourceFile).replaceAll(/\s+/gu, ' ') ?? ''
   const toggleAllExactStateAuthority =
-    normalizedToggleAllSource ===
-      'function toggleAllNavigationGroups(): void { expandedNavigationGroupKeys.value = allNavigationGroupsExpanded.value ? [] : [...navigationGroupKeys.value] }' &&
     toggleAllDeclaration !== undefined &&
-    refValueWriteCount(toggleAllDeclaration, 'expandedNavigationGroupKeys') === 1 &&
+    navigationPreferenceEmits(toggleAllDeclaration, 'update:expandedNavigationGroupIds').length ===
+      1 &&
+    navigationPreferenceEmits(toggleAllDeclaration, 'update:wideNavigationCollapsed').length ===
+      0 &&
+    normalizedToggleAllSource.includes("intent: 'all'") &&
+    refValueWriteCount(toggleAllDeclaration, 'expandedNavigationGroupKeys') === 0 &&
     refValueWriteCount(toggleAllDeclaration, 'wideNavigationCollapsed') === 0 &&
     !/\b(?:route|router|focus|appearance|storage|localStorage|sessionStorage)\b/iu.test(
       normalizedToggleAllSource,
@@ -14704,22 +14653,33 @@ function adminNavigationExpansionMotionInvariantResults(
         validExpandedInitializer !== undefined &&
         expressionIsComputed(validExpandedInitializer) &&
         dependencyClosureHasPropsProperty(validExpandedClosure, 'navigation') &&
-        validExpandedClosure.some((expression) =>
-          nodeReferencesRefValue(expression, 'expandedNavigationGroupKeys'),
-        ) &&
-        normalizedShellScript.includes(
-          'const admittedGroupKeys = new Set(navigationGroupKeys.value) return expandedNavigationGroupKeys.value.filter((key) => admittedGroupKeys.has(key))',
-        ) &&
+        dependencyClosureHasPropsProperty(validExpandedClosure, 'expandedNavigationGroupIds') &&
         !shellScript.includes('projectedExpandedNavigationGroupKeys'),
     },
     {
       code: 'ADMIN_NAV_EXPANSION_ACTIVE_PARENT_OPTIONAL',
       passed:
         !dependencyClosureHasPropsProperty(validExpandedClosure, 'activeRouteName') &&
-        normalizedShellScript.includes(
-          'const expandedNavigationGroupKeys = ref<string[]>([...navigationGroupKeys.value])',
-        ) &&
-        normalizedToggleAllSource.includes('? [] : [...navigationGroupKeys.value]'),
+        dependencyClosureHasPropsProperty(validExpandedClosure, 'expandedNavigationGroupIds') &&
+        normalizedToggleAllSource.includes(
+          'allNavigationGroupsExpanded.value ? [] : props.navigation.map(',
+        ),
+    },
+    {
+      code: 'ADMIN_NAV_PREFERENCE_APPLICATION_BOUNDARY',
+      passed:
+        frameSource.includes('useNavigationPreferenceStore()') &&
+        frameSource.includes(':wide-navigation-collapsed=') &&
+        frameSource.includes(':expanded-navigation-group-ids=') &&
+        frameSource.includes('@update:wide-navigation-collapsed=') &&
+        frameSource.includes('@update:expanded-navigation-group-ids=') &&
+        frameSource.includes('.setWideNavigationCollapsed') &&
+        frameSource.includes('.setExpandedGroupIds(') &&
+        frameSource.includes("update.intent === 'all'") &&
+        frameSource.includes('item.isCurrentDestination') &&
+        !/\$subscribe|\$patch|\$state|\b(?:setTimeout|setInterval|requestAnimationFrame)\b/u.test(
+          frameSource,
+        ),
     },
     {
       code: 'ADMIN_NAV_EXPANSION_ROUTE_CHANGE_RECONCILIATION',
@@ -14766,9 +14726,7 @@ function adminNavigationExpansionMotionInvariantResults(
         exactOccurrenceCount(shellTemplate, 'data-pavp-admin-navigation-collapse-control') === 1 &&
         exactOccurrenceCount(shellTemplate, 'data-pavp-admin-navigation-groups-control') === 1 &&
         shellTemplate.includes('@click="toggleWideNavigation"') &&
-        normalizedShellScript.includes(
-          'function toggleWideNavigation(): void { wideNavigationCollapsed.value = !wideNavigationCollapsed.value }',
-        ) &&
+        controlledWideNavigationToggle(shellScript) &&
         !normalizedToggleAllSource.includes('wideNavigationCollapsed'),
     },
     {
@@ -14853,12 +14811,12 @@ function runAdminNavigationExpansionMotionNegativeProbes(
           `\n          ${groupControlSource}\n        `,
         )
   const unconditionalProjectionSource = baseline.shellSource.replace(
-    'const validExpandedNavigationGroupKeys = computed(() => {\n  const admittedGroupKeys = new Set(navigationGroupKeys.value)\n\n  return expandedNavigationGroupKeys.value.filter((key) => admittedGroupKeys.has(key))\n})',
-    'const validExpandedNavigationGroupKeys = computed(() => {\n  const projectedKeys = new Set(expandedNavigationGroupKeys.value)\n\n  for (const group of props.navigation) {\n    if (group.items.some((item) => item.routeName === props.activeRouteName)) {\n      projectedKeys.add(navigationGroupKey(group.id))\n    }\n  }\n\n  return [...projectedKeys]\n})',
+    'new Set(props.expandedNavigationGroupIds)',
+    'new Set([...props.expandedNavigationGroupIds, props.activeRouteName])',
   )
   const actionMutatesWideSource = baseline.shellSource.replace(
-    'function toggleAllNavigationGroups(): void {\n  expandedNavigationGroupKeys.value = allNavigationGroupsExpanded.value\n    ? []\n    : [...navigationGroupKeys.value]\n}',
-    'function toggleAllNavigationGroups(): void {\n  wideNavigationCollapsed.value = !wideNavigationCollapsed.value\n  expandedNavigationGroupKeys.value = []\n}',
+    "intent: 'all',",
+    "intent: 'all',\n    extra: emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed),",
   )
   const reducedMotionRemovedSource = baseline.providerSource.replace(
     "html[data-motion='reduced']\n  :where(\n    [data-pavp-admin-navigation='persistent'].n-layout,",
@@ -16462,7 +16420,7 @@ async function validateAppearanceAndPageFacts(): Promise<{
     !bootstrapSource.includes("{ detached: true, flush: 'sync' }") ||
     mutationBoundarySource.includes('installCuratedThemeCatalog') ||
     bootstrapSource.includes('installCuratedCustomThemeCatalog') ||
-    defineStoreCount !== 1 ||
+    defineStoreCount !== 2 ||
     competingEnvironmentSources.length !== 0
   ) {
     violations.push(
@@ -16684,15 +16642,15 @@ function validateInspectorProjections(): string[] {
       'denim-cocoa',
       'burgundy-snow',
     ]) ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 12 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 13 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(routerConsoleProjection.routeCount) !== 17 ||
     runtimeNumber(routerConsoleProjection.productRouteCount) !== 10 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
     runtimeCount(routerRecords) !== 17 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 3 ||
-    runtimeCount(storageRecords) !== 3 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 4 ||
+    runtimeCount(storageRecords) !== 4 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 11 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
       'ui-form',

@@ -137,13 +137,32 @@ export const uiPublicComponentRegistry = Object.freeze({
           defaultValue: null,
         }),
         Object.freeze({
+          name: 'expandedNavigationGroupIds',
+          type: 'readonly string[]',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'wideNavigationCollapsed',
+          type: 'boolean',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'navigation',
           type: 'readonly UiAdminNavigationGroup[]',
           required: true,
           defaultValue: null,
         }),
       ]),
-      emits: Object.freeze([Object.freeze({ name: 'navigate', payloadType: 'string' })]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'navigate', payloadType: 'string' }),
+        Object.freeze({
+          name: 'update:expandedNavigationGroupIds',
+          payloadType: 'UiAdminNavigationExpansionUpdate',
+        }),
+        Object.freeze({ name: 'update:wideNavigationCollapsed', payloadType: 'boolean' }),
+      ]),
       slots: Object.freeze([
         Object.freeze({
           name: 'default',

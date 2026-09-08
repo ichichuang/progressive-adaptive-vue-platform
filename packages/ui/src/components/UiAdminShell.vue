@@ -30,11 +30,17 @@ import {
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { PavpTooltipPrimitive } from '../adapters/naive/naive-tooltip'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
-import type { UiAdminNavigationGroup, UiAdminShellCopy } from './contracts'
+import type {
+  UiAdminNavigationExpansionUpdate,
+  UiAdminNavigationGroup,
+  UiAdminShellCopy,
+} from './contracts'
 
 defineOptions({ name: 'UiAdminShell' })
 
 const props = defineProps<{
+  readonly wideNavigationCollapsed: boolean
+  readonly expandedNavigationGroupIds: readonly string[]
   readonly copy: UiAdminShellCopy
   readonly activeRouteName: string
   readonly navigation: readonly UiAdminNavigationGroup[]
@@ -42,6 +48,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   navigate: [routeName: string]
+  'update:wideNavigationCollapsed': [collapsed: boolean]
+  'update:expandedNavigationGroupIds': [update: UiAdminNavigationExpansionUpdate]
 }>()
 
 defineSlots<{
@@ -123,7 +131,6 @@ const drawerNavigation = ref<HTMLElement>()
 const drawerClose = ref<HTMLButtonElement>()
 const profile = ref<LayoutProfileId>('narrow')
 const navigationOpen = ref(false)
-const wideNavigationCollapsed = ref(false)
 const currentRootFontSize = ref(readRootFontSize())
 const collapsedNavigationWidth = computed(() => railRemMagnitude * currentRootFontSize.value)
 const persistentNavigationCollapsed = computed(() => {
@@ -131,24 +138,24 @@ const persistentNavigationCollapsed = computed(() => {
     return true
   }
 
-  return profile.value === 'wide' && wideNavigationCollapsed.value
+  return profile.value === 'wide' && props.wideNavigationCollapsed
 })
 const expandedNavigationWidth = tokens['layout.admin.sidebar.expanded-inline-size']
 const persistentLayoutContentStyle = Object.freeze({ overflow: 'visible' })
 const persistentSiderContentStyle = Object.freeze({ overflow: 'hidden' })
 const wideNavigationCollapseLabel = computed(() =>
-  wideNavigationCollapsed.value
+  props.wideNavigationCollapsed
     ? props.copy.expandNavigationLabel
     : props.copy.collapseNavigationLabel,
 )
 const navigationGroupKeys = computed(() =>
   props.navigation.map((group) => `navigation-group:${group.id}`),
 )
-const expandedNavigationGroupKeys = ref<string[]>([...navigationGroupKeys.value])
 const validExpandedNavigationGroupKeys = computed(() => {
-  const admittedGroupKeys = new Set(navigationGroupKeys.value)
-
-  return expandedNavigationGroupKeys.value.filter((key) => admittedGroupKeys.has(key))
+  const expandedIds = new Set(props.expandedNavigationGroupIds)
+  return props.navigation
+    .filter((group) => expandedIds.has(group.id))
+    .map((group) => navigationGroupKey(group.id))
 })
 const allNavigationGroupsExpanded = computed(() =>
   navigationGroupKeys.value.every((key) => validExpandedNavigationGroupKeys.value.includes(key)),
@@ -284,13 +291,10 @@ function isPersistentNavigationSelectionLensOwner(option: PavpMenuOption): boole
 }
 
 function toggleExpandedNavigationGroup(groupKey: string): void {
-  if (expandedNavigationGroupKeys.value.includes(groupKey)) {
-    expandedNavigationGroupKeys.value = expandedNavigationGroupKeys.value.filter(
-      (key) => key !== groupKey,
-    )
-  } else {
-    expandedNavigationGroupKeys.value = [...expandedNavigationGroupKeys.value, groupKey]
-  }
+  const keys = validExpandedNavigationGroupKeys.value
+  handleNavigationExpandedKeysUpdate(
+    keys.includes(groupKey) ? keys.filter((key) => key !== groupKey) : [...keys, groupKey],
+  )
 }
 
 function isKeyboardActivation(event: KeyboardEvent): boolean {
@@ -414,20 +418,28 @@ function handleNavigationValueUpdate(value: string | number): void {
 }
 
 function handleNavigationExpandedKeysUpdate(keys: (string | number)[]): void {
-  const admittedGroupKeys = new Set(navigationGroupKeys.value)
-  expandedNavigationGroupKeys.value = keys.filter(
-    (key): key is string => typeof key === 'string' && admittedGroupKeys.has(key),
-  )
+  if (profile.value !== 'wide' || persistentNavigationCollapsed.value) return
+  emit('update:expandedNavigationGroupIds', {
+    expandedGroupIds: props.navigation
+      .filter((group) => keys.includes(navigationGroupKey(group.id)))
+      .map((group) => group.id),
+    intent: 'group',
+  })
 }
 
 function toggleWideNavigation(): void {
-  wideNavigationCollapsed.value = !wideNavigationCollapsed.value
+  if (profile.value !== 'wide') return
+  emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed)
 }
 
 function toggleAllNavigationGroups(): void {
-  expandedNavigationGroupKeys.value = allNavigationGroupsExpanded.value
-    ? []
-    : [...navigationGroupKeys.value]
+  if (profile.value !== 'wide' || persistentNavigationCollapsed.value) return
+  emit('update:expandedNavigationGroupIds', {
+    expandedGroupIds: allNavigationGroupsExpanded.value
+      ? []
+      : props.navigation.map((group) => group.id),
+    intent: 'all',
+  })
 }
 
 function handleDrawerKeydown(event: KeyboardEvent): void {
@@ -519,29 +531,6 @@ watch(navigationOpen, async (isOpen) => {
     focusReturnTarget = null
   }
 })
-
-watch(
-  () => props.activeRouteName,
-  (activeRouteName, previousActiveRouteName) => {
-    if (activeRouteName === previousActiveRouteName) {
-      return
-    }
-
-    const activeGroup = props.navigation.find((group) =>
-      group.items.some((item) => item.routeName === activeRouteName),
-    )
-
-    if (activeGroup === undefined) {
-      return
-    }
-
-    const groupKey = navigationGroupKey(activeGroup.id)
-
-    if (!validExpandedNavigationGroupKeys.value.includes(groupKey)) {
-      expandedNavigationGroupKeys.value = [...validExpandedNavigationGroupKeys.value, groupKey]
-    }
-  },
-)
 
 watch(
   () => appearance.value.fontScale,

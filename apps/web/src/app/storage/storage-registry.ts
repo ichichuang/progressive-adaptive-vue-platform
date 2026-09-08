@@ -66,4 +66,18 @@ export const storageRegistry = Object.freeze([
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   }),
+  Object.freeze({
+    id: 'navigation-preference',
+    ownerDomain: 'apps/web/src/app/navigation',
+    key: applicationConfig.navigation.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'navigation-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
 ] as const satisfies readonly StorageRegistryRecord[])

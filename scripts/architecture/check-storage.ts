@@ -64,6 +64,20 @@ const expectedStorageRegistryRecords = [
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   },
+  {
+    id: 'navigation-preference',
+    ownerDomain: 'apps/web/src/app/navigation',
+    key: applicationConfig.navigation.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'navigation-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
 ] as const
 
 const expectedStorageErrors = [
@@ -158,6 +172,7 @@ const rawStorageKeyLiterals = [
   'pavp:web:user-preference',
   'pavp:web:custom-theme-registry',
   'pavp:web:locale-preference',
+  'pavp:web:navigation-preference',
 ] as const
 
 const approvedRawStorageKeyPaths = new Set([
@@ -282,7 +297,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain exactly the three admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the four admitted direct-compatibility records.',
     )
   }
 
@@ -365,7 +380,8 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
   for (const keyLiteral of rawStorageKeyLiterals) {
     if (
       sourceText.includes(keyLiteral) &&
-      (keyLiteral === 'pavp:web:locale-preference'
+      (keyLiteral === 'pavp:web:locale-preference' ||
+      keyLiteral === 'pavp:web:navigation-preference'
         ? displayPath !== 'apps/web/src/app/config/app.config.ts'
         : !approvedRawStorageKeyPaths.has(displayPath))
     ) {
@@ -378,6 +394,20 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
 
 function storageOwnerClosureFileViolation(displayPath: string, source: ts.SourceFile): string[] {
   const violations: string[] = []
+
+  const localStorageOwners = new Set([
+    'apps/web/src/app/appearance/preference-storage.ts',
+    'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
+    'apps/web/src/app/storage/locale-preference-storage.ts',
+    'apps/web/src/app/storage/navigation-preference-storage.ts',
+  ])
+  if (
+    displayPath.startsWith('apps/web/src/') &&
+    nodesOf(source, ts.isIdentifier).some((node) => node.text === 'localStorage') &&
+    !localStorageOwners.has(displayPath)
+  ) {
+    violations.push(displayPath + ': localStorage requires an exact admitted record adapter.')
+  }
 
   for (const identifier of nodesOf(source, ts.isIdentifier)) {
     if (identifier.text === 'indexedDB' || identifier.text.startsWith('IDB')) {
@@ -571,6 +601,206 @@ async function storageLifecycleViolations(): Promise<string[]> {
   return violations
 }
 
+async function navigationPreferenceViolations(): Promise<string[]> {
+  const contractPath = 'apps/web/src/app/navigation/navigation-preference-contract.ts'
+  const storePath = 'apps/web/src/app/navigation/navigation-preference.store.ts'
+  const adapterPath = 'apps/web/src/app/storage/navigation-preference-storage.ts'
+  const paths = [
+    contractPath,
+    storePath,
+    adapterPath,
+    'apps/web/src/app/storage/storage-lifecycle.ts',
+    'apps/web/src/app/bootstrap/runtime-kernel.ts',
+  ] as const
+  const sources = new Map(
+    await Promise.all(
+      paths.map(
+        async (path) =>
+          [path, scriptSource(path, await readFile(resolve(rootDirectory, path), 'utf8'))] as const,
+      ),
+    ),
+  )
+  const contract = sources.get(contractPath)
+  const store = sources.get(storePath)
+  const adapter = sources.get(adapterPath)
+  const lifecycle = sources.get('apps/web/src/app/storage/storage-lifecycle.ts')
+  const kernel = sources.get('apps/web/src/app/bootstrap/runtime-kernel.ts')
+  if (
+    contract === undefined ||
+    store === undefined ||
+    adapter === undefined ||
+    lifecycle === undefined ||
+    kernel === undefined
+  ) {
+    return ['Navigation preference requires its exact application, Storage and Kernel owners.']
+  }
+  const violations: string[] = []
+  const report = (valid: boolean, detail: string): void => {
+    if (!valid) violations.push('Navigation preference: ' + detail)
+  }
+  report(
+    isDeepStrictEqual(
+      applicationConfig.navigation.preferenceStorageKey,
+      'pavp:web:navigation-preference',
+    ) &&
+      isDeepStrictEqual(Object.keys(applicationConfig).sort(), [
+        'appearance',
+        'localization',
+        'navigation',
+      ]) &&
+      isDeepStrictEqual(Object.keys(applicationConfig.navigation), ['preferenceStorageKey']),
+    'the exact application configuration key surface drifted.',
+  )
+  const schema = nodesOf(contract, ts.isVariableDeclaration).find(
+    (node) => node.name.getText(contract) === 'navigationPreferenceSchema',
+  )?.initializer
+  const schemaArgument =
+    schema !== undefined && ts.isCallExpression(schema) ? schema.arguments[0] : undefined
+  const payloadFields = ['schemaVersion', 'wideNavigationCollapsed', 'expandedGroupIds']
+  report(
+    schema !== undefined &&
+      ts.isCallExpression(schema) &&
+      callMemberName(schema) === 'strictObject' &&
+      schemaArgument !== undefined &&
+      ts.isObjectLiteralExpression(schemaArgument) &&
+      isDeepStrictEqual(
+        schemaArgument.properties.map((field) => field.name?.getText(contract)),
+        payloadFields,
+      ),
+    'the payload must be the exact strict three-field schema.',
+  )
+  // These are persisted schema types and constraints, not private parser implementation details.
+  const fieldSchemas =
+    schemaArgument !== undefined && ts.isObjectLiteralExpression(schemaArgument)
+      ? new Map(
+          schemaArgument.properties
+            .filter(ts.isPropertyAssignment)
+            .map((field) => [
+              field.name.getText(contract),
+              field.initializer.getText(contract).replaceAll(/\s+/gu, ''),
+            ]),
+        )
+      : new Map<string, string>()
+  report(
+    fieldSchemas.get('schemaVersion') === 'z.literal(1)' &&
+      fieldSchemas.get('wideNavigationCollapsed') === 'z.boolean()' &&
+      fieldSchemas.get('expandedGroupIds') === 'z.array(z.string().min(1)).readonly()',
+    'version, Boolean, nonempty string IDs and readonly array constraints must remain exact.',
+  )
+  const adapterCalls = nodesOf(adapter, ts.isCallExpression)
+  const schemaImport = namedImportLocalName(
+    adapter,
+    '../navigation/navigation-preference-contract',
+    'navigationPreferenceSchema',
+  )
+  report(
+    schemaImport !== undefined &&
+      adapterCalls.filter(
+        (call) =>
+          ts.isPropertyAccessExpression(call.expression) &&
+          call.expression.expression.getText(adapter) === schemaImport &&
+          call.expression.name.text === 'safeParse',
+      ).length === 3 &&
+      adapterCalls.filter((call) => callMemberName(call) === 'getItem').length === 2 &&
+      adapterCalls.filter((call) => callMemberName(call) === 'setItem').length === 1 &&
+      !adapterCalls.some((call) => ['clear', 'removeItem'].includes(callMemberName(call) ?? '')),
+    'read, write and readback must validate through the canonical schema without destructive recovery.',
+  )
+  const disposalPredicate = nodesOf(adapter, ts.isFunctionDeclaration)
+    .find((node) => node.name?.text === 'createNavigationPreferenceStorage')
+    ?.parameters[1]?.name.getText(adapter)
+  for (const methodName of ['read', 'write']) {
+    const method = nodesOf(adapter, ts.isMethodDeclaration).find(
+      (node) => node.name.getText(adapter) === methodName,
+    )
+    const first = method?.body?.statements[0]
+    report(
+      disposalPredicate !== undefined &&
+        first !== undefined &&
+        ts.isIfStatement(first) &&
+        ts.isCallExpression(first.expression) &&
+        first.expression.expression.getText(adapter) === disposalPredicate &&
+        nodesOf(first.thenStatement, ts.isReturnStatement).length === 1,
+      'disposed ' + methodName + ' must return before accessing storage.',
+    )
+  }
+  const errorIds = new Set(nodesOf(adapter, ts.isStringLiteral).map((literal) => literal.text))
+  report(
+    [
+      'storage-unavailable',
+      'storage-read-denied',
+      'storage-parse-failed',
+      'storage-unsupported-version',
+      'storage-schema-rejected',
+      'storage-serialization-failed',
+      'storage-quota-exceeded',
+      'storage-write-denied',
+      'storage-readback-mismatch',
+    ].every((id) => errorIds.has(id)) &&
+      adapterCalls.some((call) => callMemberName(call) === 'normalize'),
+    'all safe storage failure classifications must remain connected.',
+  )
+  report(
+    nodesOf(lifecycle, ts.isCallExpression).filter(
+      (call) => callMemberName(call) === 'createNavigationPreferenceStorage',
+    ).length === 1 &&
+      lifecycle.text.includes('readonly navigationPreference: NavigationPreferencePort') &&
+      nodesOf(kernel, ts.isCallExpression).filter(
+        (call) => callMemberName(call) === 'initializeNavigationPreference',
+      ).length === 1 &&
+      kernel.text.includes('resources.storage.owner.navigationPreference') &&
+      kernel.text.includes('consoleNavigationRegistry'),
+    'the Storage port and one pre-mount Kernel initializer must retain their application owners.',
+  )
+  const definitions = nodesOf(store, ts.isCallExpression).filter(
+    (call) => callMemberName(call) === 'defineStore',
+  )
+  const setup = definitions[0]?.arguments[1]
+  const stateRefs =
+    setup !== undefined
+      ? nodesOf(setup, ts.isVariableDeclaration)
+          .filter(
+            (node) =>
+              node.initializer !== undefined &&
+              ts.isCallExpression(node.initializer) &&
+              ['ref', 'shallowRef', 'reactive'].includes(callMemberName(node.initializer) ?? ''),
+          )
+          .map((node) => node.name.getText(store))
+      : []
+  report(
+    definitions.length === 1 &&
+      definitions[0]?.arguments[0]?.getText(store) === "'navigation-preference'" &&
+      isDeepStrictEqual(stateRefs.sort(), ['expandedGroupIds', 'wideNavigationCollapsed']),
+    'Pinia must contain exactly the two runtime preference fields in one private Store.',
+  )
+  const writes = nodesOf(store, ts.isCallExpression).filter(
+    (call) => callMemberName(call) === 'write',
+  )
+  const snapshot = writes[0]?.arguments[0]
+  report(
+    writes.length === 1 &&
+      snapshot !== undefined &&
+      ts.isObjectLiteralExpression(snapshot) &&
+      isDeepStrictEqual(
+        snapshot.properties.map((field) => field.name?.getText(store)),
+        payloadFields,
+      ),
+    'explicit actions must write one complete preference snapshot.',
+  )
+  report(
+    nodesOf(store, ts.isCallExpression).filter((call) => callMemberName(call) === 'read').length ===
+      1 &&
+      !/\b(?:watch|watchEffect|localStorage|sessionStorage|setTimeout|setInterval|requestAnimationFrame|useRouter|useRoute)\b|\$subscribe|\$patch|\$state/u.test(
+        store.text,
+      ),
+    'one initialization read must remain separate from routing and automatic persistence.',
+  )
+  for (const source of [contract, store]) {
+    violations.push(...sensitivePersistenceFileViolation(source.fileName, source.text))
+  }
+  return violations
+}
+
 function focusedNegativeProbes(): string[] {
   const failures: string[] = []
 
@@ -579,7 +809,7 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain exactly the three admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the four admitted direct-compatibility records.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
@@ -664,6 +894,7 @@ export async function validateStorageArchitecture(): Promise<readonly string[]> 
     ...(await rawStorageKeyViolations()),
     ...(await sensitivePersistenceViolations()),
     ...(await storageLifecycleViolations()),
+    ...(await navigationPreferenceViolations()),
     ...focusedNegativeProbes(),
   ]
 

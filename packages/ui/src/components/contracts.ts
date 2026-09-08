@@ -36,3 +36,8 @@ export interface UiAdminShellCopy {
   readonly expandAllMenusLabel: string
   readonly collapseAllMenusLabel: string
 }
+
+export interface UiAdminNavigationExpansionUpdate {
+  readonly expandedGroupIds: readonly string[]
+  readonly intent: 'group' | 'all'
+}

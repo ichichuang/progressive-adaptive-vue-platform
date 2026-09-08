@@ -1,3 +1,5 @@
+import type { NavigationPreferencePort } from '../navigation/navigation-preference-contract'
+import { createNavigationPreferenceStorage } from './navigation-preference-storage'
 import type { LocalePreferencePort } from '../../shared/i18n'
 import { createLocalePreferenceStorage } from './locale-preference-storage'
 import type { StartupAttemptId } from '../bootstrap/lifecycle'
@@ -12,6 +14,7 @@ import { nonePrincipalPartitionId, type PrincipalPartitionId } from './storage-p
 import { storageRegistry, type StorageRegistryRecord } from './storage-registry'
 
 interface StorageOwner {
+  readonly navigationPreference: NavigationPreferencePort
   readonly localePreference: LocalePreferencePort
   readonly registry: readonly StorageRegistryRecord[]
   readonly migrationRegistry: readonly StorageMigrationRecord[]
@@ -38,7 +41,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 3 ||
+    records.length !== 4 ||
     envelopeRecords.length !== 0 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -67,6 +70,7 @@ export function createAndReadyStorage(input: {
 
   let disposed = false
   const owner = Object.freeze({
+    navigationPreference: createNavigationPreferenceStorage(errorAdapter, () => disposed),
     localePreference: createLocalePreferenceStorage(errorAdapter, () => disposed),
     registry: storageRegistry,
     migrationRegistry: storageMigrationRegistry,

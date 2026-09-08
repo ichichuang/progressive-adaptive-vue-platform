@@ -313,7 +313,7 @@ const expectedMessages = [
   [
     'runtime-kernel-inspector',
     'route-message.runtime-kernel-inspector-summary',
-    '查看当前十二阶段启动流程、Provider 与生命周期边界。',
+    '查看当前十三阶段启动流程、Provider 与生命周期边界。',
   ],
   [
     'router-governance-inspector',

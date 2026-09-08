@@ -1,8 +1,14 @@
 <script setup lang="ts">
-import { UiAdminShell, type UiAdminNavigationGroup } from '@platform/ui'
-import { computed, onScopeDispose } from 'vue'
+import {
+  UiAdminShell,
+  type UiAdminNavigationExpansionUpdate,
+  type UiAdminNavigationGroup,
+} from '@platform/ui'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { reconcileNavigationGroupIds } from '../navigation/navigation-preference-contract'
+import { useNavigationPreferenceStore } from '../navigation/navigation-preference.store'
 import { useConsoleI18n } from '../../shared/i18n'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
 import {
@@ -65,6 +71,50 @@ const copy = computed(() => ({
   collapseAllMenusLabel: t('shell.collapseAllMenusLabel'),
 }))
 const router = useRouter()
+const navigationPreference = useNavigationPreferenceStore()
+const activeGroupExplicitlyCollapsed = ref(false)
+const currentGroupIds = computed(() => navigation.value.map((group) => group.id))
+const preferredExpandedGroupIds = computed(() =>
+  reconcileNavigationGroupIds(navigationPreference.expandedGroupIds, currentGroupIds.value),
+)
+const activeGroupId = computed(
+  () => navigation.value.find((group) => group.items.some((item) => item.isCurrentDestination))?.id,
+)
+const effectiveExpandedGroupIds = computed(() =>
+  reconcileNavigationGroupIds(
+    activeGroupExplicitlyCollapsed.value || activeGroupId.value === undefined
+      ? preferredExpandedGroupIds.value
+      : [...preferredExpandedGroupIds.value, activeGroupId.value],
+    currentGroupIds.value,
+  ),
+)
+
+watch(
+  () => router.currentRoute.value,
+  () => {
+    activeGroupExplicitlyCollapsed.value = false
+  },
+  { flush: 'sync' },
+)
+
+function updateExpandedNavigationGroups(update: UiAdminNavigationExpansionUpdate): void {
+  const requested = reconcileNavigationGroupIds(update.expandedGroupIds, currentGroupIds.value)
+  const previousEffective = new Set(effectiveExpandedGroupIds.value)
+  const nextEffective = new Set(requested)
+  const preferred = new Set(preferredExpandedGroupIds.value)
+  const nextPreferred =
+    update.intent === 'all'
+      ? requested
+      : currentGroupIds.value.filter((id) =>
+          previousEffective.has(id) !== nextEffective.has(id)
+            ? nextEffective.has(id)
+            : preferred.has(id),
+        )
+  activeGroupExplicitlyCollapsed.value =
+    activeGroupId.value !== undefined && !nextEffective.has(activeGroupId.value)
+  navigationPreference.setExpandedGroupIds(nextPreferred)
+}
+
 const routeTransitionCoordinator = createRouteTransitionCoordinator({
   router,
   appearance: useAppearanceReadBoundary(),
@@ -88,8 +138,12 @@ async function navigate(routeName: string): Promise<void> {
     v-if="shellRequired"
     :active-route-name="activeRouteName"
     :navigation="navigation"
+    :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
+    :expanded-navigation-group-ids="effectiveExpandedGroupIds"
     :copy="copy"
     @navigate="navigate"
+    @update:wide-navigation-collapsed="navigationPreference.setWideNavigationCollapsed"
+    @update:expanded-navigation-group-ids="updateExpandedNavigationGroups"
   >
     <slot />
   </UiAdminShell>

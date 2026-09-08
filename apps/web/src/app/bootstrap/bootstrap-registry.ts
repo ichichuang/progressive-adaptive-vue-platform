@@ -8,6 +8,7 @@ export type BootstrapStepId =
   | 'create-and-ready-router'
   | 'create-and-ready-storage'
   | 'create-and-ready-i18n'
+  | 'initialize-navigation-preference'
   | 'mount-application'
   | 'register-post-mount-appearance-media-subscriptions'
   | 'publish-application-ready'
@@ -169,8 +170,29 @@ export const bootstrapStepRegistry = [
       'dispose after Vue unmount and before Storage, recreate only through the Runtime Kernel',
   },
   {
+    id: 'initialize-navigation-preference',
+    dependencies: ['create-pinia', 'create-and-ready-storage'],
+    createInput:
+      'current Pinia, Storage navigation preference port and admitted navigation group IDs',
+    createOutput: 'initialized navigation preference Store and disposal handle',
+    readyCondition: 'one safe read or nonfatal fallback reconciled before the first Shell render',
+    disposeResponsibility:
+      'detach the preference port and revoke explicit writes before Storage disposal',
+    domMountOwner: false,
+    failureClassification: 'application-startup-failure',
+    retryParticipant: true,
+    ownFailureEligibleForConfigurationRetry: false,
+    hmrBehavior:
+      'release after Vue unmount; initialize a fresh Store only through the Runtime Kernel',
+  },
+  {
     id: 'mount-application',
-    dependencies: ['create-and-ready-router', 'create-and-ready-storage', 'create-and-ready-i18n'],
+    dependencies: [
+      'create-and-ready-router',
+      'create-and-ready-storage',
+      'create-and-ready-i18n',
+      'initialize-navigation-preference',
+    ],
     createInput: 'ready Vue application and exact #app target',
     createOutput: 'mounted application handle',
     readyCondition: "application.mount('#app') returns and mounted state is confirmed",

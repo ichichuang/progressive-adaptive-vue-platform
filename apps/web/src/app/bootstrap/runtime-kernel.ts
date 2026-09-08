@@ -1,5 +1,6 @@
 import { createConsoleI18n, type ConsoleI18nHandle } from '../../shared/i18n'
-import { getRouteMessageScope } from '../router/route-registry'
+import { initializeNavigationPreference } from '../navigation/navigation-preference.store'
+import { consoleNavigationRegistry, getRouteMessageScope } from '../router/route-registry'
 import type { Component } from 'vue'
 
 import {
@@ -62,6 +63,7 @@ import { startupConfigurationRecoveryPolicy } from './startup-configuration-reco
 const applicationMountTarget = '#app'
 
 interface AttemptResources {
+  navigationPreference?: { dispose(): void }
   i18n?: ConsoleI18nHandle
   disconnectLocalization?: () => void
   appearanceHandoff?: AppearanceFirstPaintHandoffHandle
@@ -175,6 +177,14 @@ function createAttemptDisposer(input: {
       failedSteps,
     )
     delete input.resources.mountedApplication
+    safeDispose(
+      'dispose-navigation-preference',
+      input.resources.navigationPreference === undefined
+        ? undefined
+        : () => input.resources.navigationPreference?.dispose(),
+      failedSteps,
+    )
+    delete input.resources.navigationPreference
     safeDispose(
       'dispose-i18n',
       () => {
@@ -474,6 +484,16 @@ async function startAttempt(input: {
     const localization = await resources.i18n.ready
     if (!attemptIsStarting() || localization.status === 'cancelled') return { status: 'cancelled' }
     resources.disconnectLocalization = router.connectLocalization(localization.boundary)
+    throwClaimedStartupFailure()
+
+    enterBootstrapStep('initialize-navigation-preference')
+    resources.navigationPreference = initializeNavigationPreference(
+      resources.pinia.pinia,
+      resources.storage.owner.navigationPreference,
+      consoleNavigationRegistry
+        .filter((group) => group.items.length !== 0)
+        .map((group) => group.id),
+    )
     throwClaimedStartupFailure()
 
     enterBootstrapStep('mount-application')

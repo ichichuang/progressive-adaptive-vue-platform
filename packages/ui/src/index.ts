@@ -9,6 +9,7 @@ export { default as UiStatusBadge } from './components/UiStatusBadge.vue'
 export type {
   UiLocale,
   UiAdminShellCopy,
+  UiAdminNavigationExpansionUpdate,
   UiAdminNavigationGroup,
   UiAdminNavigationItem,
   UiDescriptionItem,

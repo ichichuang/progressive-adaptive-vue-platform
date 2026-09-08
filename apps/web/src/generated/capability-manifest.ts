@@ -237,7 +237,7 @@ export const capabilityManifest = {
     {
       id: 'runtime-kernel',
       visibleLabel: '运行时内核',
-      summary: '当前十二阶段启动、Provider、错误与释放流程。',
+      summary: '当前十三阶段启动、Provider、错误与释放流程。',
       capabilityStatus: 'ACTIVE',
       implementationStatus: 'complete',
       presentationMode: 'active-read-only',
@@ -276,7 +276,7 @@ export const capabilityManifest = {
     {
       id: 'storage-persistence',
       visibleLabel: '存储与持久化',
-      summary: '当前三条非敏感本地存储记录及其生命周期。',
+      summary: '当前四条非敏感本地存储记录及其生命周期。',
       capabilityStatus: 'ACTIVE',
       implementationStatus: 'complete',
       presentationMode: 'active-read-only',
