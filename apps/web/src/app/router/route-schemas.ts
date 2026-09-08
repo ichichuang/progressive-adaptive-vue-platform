@@ -18,7 +18,13 @@ export const routeQuerySchemaRegistry = Object.freeze([
   }),
 ] as const)
 
-export function routeParamsSchema(schemaId: string): z.ZodType {
+export type RouteParamsSchemaId = (typeof routeParamsSchemaRegistry)[number]['id']
+export type RouteQuerySchemaId = (typeof routeQuerySchemaRegistry)[number]['id']
+
+export function routeParamsSchema<const I extends RouteParamsSchemaId>(
+  schemaId: I,
+): Extract<(typeof routeParamsSchemaRegistry)[number], { readonly id: I }>['schema']
+export function routeParamsSchema(schemaId: string) {
   const record = routeParamsSchemaRegistry.find((candidate) => candidate.id === schemaId)
 
   if (record === undefined) {
@@ -28,7 +34,10 @@ export function routeParamsSchema(schemaId: string): z.ZodType {
   return record.schema
 }
 
-export function routeQuerySchema(schemaId: string): z.ZodType {
+export function routeQuerySchema<const I extends RouteQuerySchemaId>(
+  schemaId: I,
+): Extract<(typeof routeQuerySchemaRegistry)[number], { readonly id: I }>['schema']
+export function routeQuerySchema(schemaId: string) {
   const record = routeQuerySchemaRegistry.find((candidate) => candidate.id === schemaId)
 
   if (record === undefined) {

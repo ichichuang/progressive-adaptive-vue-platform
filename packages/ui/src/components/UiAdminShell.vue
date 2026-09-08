@@ -185,12 +185,18 @@ function openNavigation(): void {
   navigationOpen.value = true
 }
 
+function isCurrentDestination(routeName: string): boolean {
+  return props.navigation.some((group) =>
+    group.items.some((item) => item.routeName === routeName && item.isCurrentDestination),
+  )
+}
+
 function navigate(routeName: string): void {
   if (profile.value === 'narrow' && navigationOpen.value) {
     closeNavigation()
   }
 
-  if (routeName === props.activeRouteName) {
+  if (isCurrentDestination(routeName)) {
     return
   }
 
@@ -198,7 +204,7 @@ function navigate(routeName: string): void {
 }
 
 function preserveCurrentPersistentNavigationFocus(event: PointerEvent, routeName: string): void {
-  if (event.button === 0 && routeName === props.activeRouteName) {
+  if (event.button === 0 && isCurrentDestination(routeName)) {
     event.preventDefault()
   }
 }

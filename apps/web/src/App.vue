@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { UiProvider } from '@platform/ui'
 import { computed } from 'vue'
-import { RouterView, useRoute } from 'vue-router'
+import { RouterView, useRoute, useRouter } from 'vue-router'
 
 import { useConsoleI18n } from './shared/i18n'
 import { useAppearanceReadBoundary } from './app/appearance/appearance-read-boundary'
 import ConsoleRouteFrame from './app/console/ConsoleRouteFrame.vue'
+import { committedRouteInputProps } from './app/router/router-lifecycle'
 import { getRoutePresentation, getRouteRecord } from './app/router/route-registry'
 
 const { t, locale } = useConsoleI18n()
 const route = useRoute()
+const router = useRouter()
+const routeInputProps = computed(() => committedRouteInputProps(router))
 const appearance = useAppearanceReadBoundary()
 const routeRecord = computed(() => getRouteRecord(route.name))
 const presentation = computed(() => getRoutePresentation(route.name, t))
@@ -30,6 +33,7 @@ const presentation = computed(() => getRoutePresentation(route.name, t))
         <div class="pavp-route-content">
           <component
             :is="Component"
+            v-bind="routeInputProps"
             :breadcrumb="presentation.breadcrumb"
             :message="presentation.message"
             :title="presentation.title"

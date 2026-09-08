@@ -2,6 +2,7 @@ export interface UiAdminNavigationItem {
   readonly iconClass: string
   readonly label: string
   readonly routeName: string
+  readonly isCurrentDestination: boolean
 }
 
 export interface UiAdminNavigationGroup {

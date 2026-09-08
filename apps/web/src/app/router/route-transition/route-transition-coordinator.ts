@@ -1,14 +1,15 @@
 import { watch } from 'vue'
-import {
-  isNavigationFailure,
-  loadRouteLocation,
-  type Router,
-  type RouteLocationResolved,
-} from 'vue-router'
+import { loadRouteLocation, type Router, type RouteLocationResolved } from 'vue-router'
 
 import type { AppearanceReadBoundary } from '../../appearance/appearance-read-boundary'
-import { getRouteRecord, type RouteName } from '../route-registry'
-import { reserveRouterPresentationCommit } from '../router-lifecycle'
+import { getRouteRecord } from '../route-registry'
+import {
+  acceptRouterNavigation,
+  cancelledRouterNavigationResult,
+  type RouterNavigationRequest,
+  reserveRouterPresentationCommit,
+} from '../router-lifecycle'
+import type { RegisteredRouteDestination, TypedNavigationResult } from '../route-input'
 import { routeTransitionBoundaryRegistry } from './route-transition-boundary-registry'
 import { resolveRouteTransition } from './resolve-route-transition'
 import type {
@@ -27,11 +28,13 @@ interface RouteTransitionElement extends HTMLElement {
   startViewTransition(options: StartViewTransitionOptions): ViewTransition
 }
 
-type RouterPushResult = Awaited<ReturnType<Router['push']>>
 type RouterPresentationCommitReservation = ReturnType<typeof reserveRouterPresentationCommit>
 
 export interface RouteTransitionCoordinator {
-  navigate(targetRouteName: RouteName): Promise<RouterPushResult>
+  navigate(
+    destination: RegisteredRouteDestination,
+    options?: Readonly<{ replace?: boolean }>,
+  ): Promise<TypedNavigationResult>
   dispose(): void
 }
 
@@ -100,32 +103,39 @@ export function createRouteTransitionCoordinator(input: {
   readonly router: Router
   readonly appearance: AppearanceReadBoundary
 }): RouteTransitionCoordinator {
-  let navigationEpoch = 0
   let directionOwner: ActiveVisualTransition['directionOwner'] | undefined
   let activeTransition: ActiveVisualTransition | undefined
+  let activeReservation: RouterPresentationCommitReservation | undefined
+  let pendingNavigation: RouterNavigationRequest | undefined
   let disposed = false
-  const activePresentationCommitReservations = new Map<
-    RouterPresentationCommitReservation,
-    number
-  >()
+
+  const clearDirection = (owner: typeof directionOwner): void => {
+    if (owner === undefined || directionOwner !== owner) return
+    owner.element.removeAttribute(directionAttribute)
+    directionOwner = undefined
+  }
+
+  const cancelPresentation = (): void => {
+    activeReservation?.cancel()
+    activeReservation = undefined
+  }
 
   const stopMotionObservation = watch(
     () => input.appearance.snapshot.value.motion,
     () => {
       skipVisualTransition(activeTransition)
-      navigationEpoch += 1
-      cancelPresentationCommitReservations(() => true)
+      cancelPresentation()
       clearDirection(directionOwner)
     },
     { flush: 'sync' },
   )
 
-  const clearDirection = (owner: typeof directionOwner): void => {
-    if (owner === undefined || directionOwner !== owner) {
-      return
-    }
-    owner.element.removeAttribute(directionAttribute)
-    directionOwner = undefined
+  const requestIsCurrent = (request: RouterNavigationRequest): boolean =>
+    !disposed && request.isCurrent()
+
+  const navigateDirectly = (request: RouterNavigationRequest): Promise<TypedNavigationResult> => {
+    if (pendingNavigation === request) pendingNavigation = undefined
+    return request.navigate()
   }
 
   const projectDirection = (element: HTMLElement, direction: RouteTransitionDirection) => {
@@ -135,35 +145,6 @@ export function createRouteTransitionCoordinator(input: {
     return directionOwner
   }
 
-  const cancelPresentationCommitReservations = (
-    shouldCancel: (reservationEpoch: number) => boolean,
-  ): void => {
-    for (const [reservation, reservationEpoch] of activePresentationCommitReservations) {
-      if (!shouldCancel(reservationEpoch)) {
-        continue
-      }
-      reservation.cancel()
-      activePresentationCommitReservations.delete(reservation)
-    }
-  }
-
-  const beginPresentationCommitReservation = (
-    targetRouteName: RouteName,
-    resolvedTarget: RouteLocationResolved,
-    reservationEpoch: number,
-  ): RouterPresentationCommitReservation => {
-    const reservation = reserveRouterPresentationCommit({
-      router: input.router,
-      expectedRouteName: targetRouteName,
-      expectedFullPath: resolvedTarget.fullPath,
-    })
-    activePresentationCommitReservations.set(reservation, reservationEpoch)
-    return reservation
-  }
-
-  const navigateDirectly = (targetRouteName: RouteName): Promise<RouterPushResult> =>
-    input.router.push({ name: targetRouteName })
-
   const startNativeTransition = (
     element: RouteTransitionElement,
     update: () => Promise<void>,
@@ -171,177 +152,138 @@ export function createRouteTransitionCoordinator(input: {
   ): ViewTransition => element.startViewTransition({ update, types: [decision.transitionType] })
 
   const runVisualTransition = async (
-    targetRouteName: RouteName,
+    request: RouterNavigationRequest,
     resolvedTarget: RouteLocationResolved,
     decision: Extract<RouteTransitionDecision, { readonly kind: 'native-element' }>,
-    requestEpoch: number,
     element: RouteTransitionElement,
-  ): Promise<RouterPushResult> => {
-    skipVisualTransition(activeTransition)
-
-    const updateState: {
-      result: RouterPushResult
-      owningVisualTransition: ActiveVisualTransition | undefined
-    } = {
-      result: undefined,
-      owningVisualTransition: undefined,
-    }
+  ): Promise<void> => {
     const owner = projectDirection(element, decision.direction)
-    const requestIsStale = (): boolean => requestEpoch !== navigationEpoch || disposed
+    const visual: { transition: ActiveVisualTransition | undefined } = { transition: undefined }
     const update = async (): Promise<void> => {
-      if (requestIsStale()) {
-        return
-      }
-
-      const reservation = beginPresentationCommitReservation(
-        targetRouteName,
-        resolvedTarget,
-        requestEpoch,
-      )
+      if (!requestIsCurrent(request)) return
+      const reservation = reserveRouterPresentationCommit({
+        router: input.router,
+        navigationId: request.navigationId,
+        expectedRouteName: getRouteRecord(resolvedTarget.name).name,
+        expectedFullPath: resolvedTarget.fullPath,
+      })
+      activeReservation = reservation
       try {
-        updateState.result = await input.router.push({ name: targetRouteName })
-
-        if (isNavigationFailure(updateState.result)) {
-          reservation.cancel()
-          skipVisualTransition(updateState.owningVisualTransition)
-          return
-        }
-
+        const result = await navigateDirectly(request)
         const currentRoute = input.router.currentRoute.value
         if (
-          requestIsStale() ||
+          result.kind !== 'allow' ||
+          !requestIsCurrent(request) ||
           currentRoute.name !== resolvedTarget.name ||
           currentRoute.fullPath !== resolvedTarget.fullPath ||
           currentRoute.redirectedFrom !== undefined
         ) {
           reservation.cancel()
-          skipVisualTransition(updateState.owningVisualTransition)
+          skipVisualTransition(visual.transition)
           return
         }
-
         const presentationCommit = await reservation.completion
-        if (presentationCommit === 'cancelled') {
-          skipVisualTransition(updateState.owningVisualTransition)
-        }
+        if (presentationCommit === 'cancelled') skipVisualTransition(visual.transition)
       } catch (error) {
         reservation.cancel()
-        skipVisualTransition(updateState.owningVisualTransition)
+        skipVisualTransition(visual.transition)
         throw error
       } finally {
-        activePresentationCommitReservations.delete(reservation)
+        if (activeReservation === reservation) activeReservation = undefined
       }
     }
-    // Visual startup can throw after scheduling the callback. Both paths share one update.
+    // Visual startup may schedule the callback before throwing; both paths share one update.
     let updatePromise: Promise<void> | undefined
     const updateOnce = (): Promise<void> => (updatePromise ??= update())
-
     let transition: ViewTransition
     try {
       transition = startNativeTransition(element, updateOnce, decision)
     } catch {
       clearDirection(owner)
       await updateOnce()
-      return updateState.result
+      return
     }
-
     const ownedTransition = Object.freeze({ handle: transition, directionOwner: owner })
-    updateState.owningVisualTransition = ownedTransition
+    visual.transition = ownedTransition
     activeTransition = ownedTransition
-
     void transition.ready.catch(() => undefined)
-    const updateCompletion = transition.updateCallbackDone.then(
-      () => updateState.result,
-      (error: unknown) => {
-        throw error
-      },
-    )
-    void transition.finished.then(
-      () => {
-        if (activeTransition === ownedTransition) {
-          activeTransition = undefined
-        }
-        clearDirection(ownedTransition.directionOwner)
-      },
-      () => {
-        if (activeTransition === ownedTransition) {
-          activeTransition = undefined
-        }
-        clearDirection(ownedTransition.directionOwner)
-      },
-    )
+    void request.completion.then((result) => {
+      if (result.kind !== 'allow') skipVisualTransition(ownedTransition)
+    })
+    const finishVisual = (): void => {
+      if (activeTransition === ownedTransition) activeTransition = undefined
+      clearDirection(ownedTransition.directionOwner)
+    }
+    void transition.finished.then(finishVisual, finishVisual)
+    await transition.updateCallbackDone
+  }
 
-    return updateCompletion
+  const performNavigation = async (
+    request: RouterNavigationRequest,
+    options?: Readonly<{ replace?: boolean }>,
+  ): Promise<TypedNavigationResult> => {
+    const resolvedTarget = request.resolvedTarget
+    if (resolvedTarget === undefined) return navigateDirectly(request)
+    const fromRoute = getRouteRecord(input.router.currentRoute.value.name)
+    const toRoute = getRouteRecord(resolvedTarget.name)
+    const motion = input.appearance.snapshot.value.motion
+    const boundaryState = readBoundaryState()
+    const decision = resolveRouteTransition({
+      fromRouteName: fromRoute.name,
+      toRouteName: toRoute.name,
+      navigationKind: options?.replace === true ? 'replace' : 'push',
+      fromFamilyId: fromRoute.meta.routeTransitionFamilyId,
+      toFamilyId: toRoute.meta.routeTransitionFamilyId,
+      motion,
+      layoutProfile: boundaryState.layoutProfile,
+      nativeApiAvailable: supportsElementViewTransition(boundaryState.element),
+      typedTransitionSupport: supportsTypedViewTransitions(),
+      documentVisibility: document.visibilityState,
+      boundaryValidity: boundaryState.validity,
+      activeTransitionState: (activeTransition === undefined
+        ? 'idle'
+        : 'active') satisfies RouteTransitionActiveState,
+    })
+    if (decision.kind === 'bypass') return navigateDirectly(request)
+    try {
+      await loadRouteLocation(resolvedTarget)
+    } catch {
+      if (!requestIsCurrent(request)) return request.completion
+      return navigateDirectly(request)
+    }
+    if (!requestIsCurrent(request)) return request.completion
+    const preparedBoundary = readBoundaryState()
+    const element = preparedBoundary.element
+    if (
+      input.appearance.snapshot.value.motion !== motion ||
+      element !== boundaryState.element ||
+      !supportsElementViewTransition(element) ||
+      preparedBoundary.layoutProfile !== boundaryState.layoutProfile ||
+      document.visibilityState !== 'visible'
+    )
+      return navigateDirectly(request)
+    await runVisualTransition(request, resolvedTarget, decision, element)
+    return request.completion
   }
 
   return Object.freeze({
-    navigate: async (targetRouteName: RouteName) => {
-      if (disposed || input.router.currentRoute.value.name === targetRouteName) {
-        return
-      }
-      const currentEpoch = ++navigationEpoch
-      cancelPresentationCommitReservations((reservationEpoch) => reservationEpoch < currentEpoch)
+    navigate(destination: RegisteredRouteDestination, options?: Readonly<{ replace?: boolean }>) {
+      if (disposed) return Promise.resolve(cancelledRouterNavigationResult())
+      const request = acceptRouterNavigation(input.router, destination, options)
+      if (request.kind !== 'accepted') return Promise.resolve(request)
+      pendingNavigation = request
+      cancelPresentation()
       skipVisualTransition(activeTransition)
       clearDirection(directionOwner)
-      const fromRoute = getRouteRecord(input.router.currentRoute.value.name)
-      const toRoute = getRouteRecord(targetRouteName)
-      const motion = input.appearance.snapshot.value.motion
-      const boundaryState = readBoundaryState()
-      const nativeApiAvailable = supportsElementViewTransition(boundaryState.element)
-      const decision = resolveRouteTransition({
-        fromRouteName: fromRoute.name,
-        toRouteName: toRoute.name,
-        navigationKind: 'push',
-        fromFamilyId: fromRoute.meta.routeTransitionFamilyId,
-        toFamilyId: toRoute.meta.routeTransitionFamilyId,
-        motion,
-        layoutProfile: boundaryState.layoutProfile,
-        nativeApiAvailable,
-        typedTransitionSupport: supportsTypedViewTransitions(),
-        documentVisibility: document.visibilityState,
-        boundaryValidity: boundaryState.validity,
-        activeTransitionState: (activeTransition === undefined
-          ? 'idle'
-          : 'active') satisfies RouteTransitionActiveState,
-      })
-
-      if (decision.kind === 'bypass') {
-        return navigateDirectly(targetRouteName)
-      }
-
-      const resolvedTarget: RouteLocationResolved = input.router.resolve({ name: targetRouteName })
-      try {
-        await loadRouteLocation(resolvedTarget)
-      } catch (error) {
-        if (currentEpoch !== navigationEpoch) {
-          throw error
-        }
-        return navigateDirectly(targetRouteName)
-      }
-
-      if (currentEpoch !== navigationEpoch) {
-        return
-      }
-
-      const preparedBoundary = readBoundaryState()
-      const element = preparedBoundary.element
-      if (
-        element !== boundaryState.element ||
-        !supportsElementViewTransition(element) ||
-        preparedBoundary.layoutProfile !== boundaryState.layoutProfile ||
-        document.visibilityState !== 'visible'
-      ) {
-        return navigateDirectly(targetRouteName)
-      }
-
-      return runVisualTransition(targetRouteName, resolvedTarget, decision, currentEpoch, element)
+      // Each caller can settle as soon as its lifecycle operation is superseded, even during preload.
+      return Promise.race([request.completion, performNavigation(request, options)])
     },
     dispose() {
-      if (disposed) {
-        return
-      }
+      if (disposed) return
       disposed = true
-      navigationEpoch += 1
-      cancelPresentationCommitReservations(() => true)
+      pendingNavigation?.cancelBeforeStart()
+      pendingNavigation = undefined
+      cancelPresentation()
       stopMotionObservation()
       skipVisualTransition(activeTransition)
       activeTransition = undefined

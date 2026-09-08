@@ -1,5 +1,6 @@
 import type { ConsoleMessageScope, ConsoleTranslate } from '../../shared/i18n/message-schema'
 import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
+import type { RouteParamsSchemaId, RouteQuerySchemaId } from './route-schemas'
 import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
 
 type RouteAuthPolicy = 'public' | 'anonymous-only' | 'required'
@@ -34,19 +35,10 @@ export interface RouteRegistryRecord {
   readonly pathPattern: string
   readonly sourcePath: string
   readonly meta: ValidatedRouteMeta
-  readonly paramsSchemaId: string | null
-  readonly querySchemaId: string | null
+  readonly paramsSchemaId: RouteParamsSchemaId
+  readonly querySchemaId: RouteQuerySchemaId
+  readonly hashPolicy?: 'none' | 'element-id'
   readonly capabilityStatus: 'ACTIVE'
-}
-
-export interface ConsoleNavigationGroup {
-  readonly id: string
-  readonly label: string
-  readonly items: readonly {
-    readonly iconClass: string
-    readonly label: string
-    readonly routeName: string
-  }[]
 }
 
 export type LayoutPresetId =
@@ -56,6 +48,8 @@ export interface LayoutCapabilityRegistryRecord {
   readonly id: string
   readonly layout: 'reading' | 'workspace' | 'focused-task'
   readonly shellRequired: boolean
+  readonly focusContractId: string
+  readonly scrollRestorationPolicyId: string
   readonly renderOwner: 'route-component' | '@platform/ui'
   readonly allowedProfiles: readonly LayoutProfileId[]
   readonly allowedPresets: readonly LayoutPresetId[]
@@ -86,41 +80,110 @@ export interface ScrollOwnerRegistryRecord {
   readonly capabilityStatus: 'ACTIVE'
 }
 
+export const routeLayoutCapabilityRegistry = Object.freeze([
+  Object.freeze({
+    id: 'route-layout.architecture-admin-console',
+    layout: 'workspace',
+    focusContractId: 'route-focus.architecture-console-page-heading',
+    scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
+    shellRequired: true,
+    renderOwner: '@platform/ui',
+    allowedProfiles: Object.freeze(['narrow', 'regular', 'wide'] as const),
+    allowedPresets: Object.freeze(['workspace'] as const),
+    regionIdsByProfile: Object.freeze({
+      narrow: Object.freeze([
+        'architecture-console-content',
+        'architecture-console-header',
+        'architecture-console-navigation-overlay',
+      ]),
+      regular: Object.freeze([
+        'architecture-console-content',
+        'architecture-console-header',
+        'architecture-console-navigation',
+      ]),
+      wide: Object.freeze([
+        'architecture-console-content',
+        'architecture-console-header',
+        'architecture-console-navigation',
+      ]),
+    }),
+    movablePanelIds: Object.freeze([] as const),
+    resizableRegionIds: Object.freeze([] as const),
+    narrowProjection: 'sheet',
+    blockScrollOwnerId: 'architecture-console-content-block',
+    inlineScrollOwnerId: 'architecture-console-content-inline',
+    minimumTargetPolicyId: 'target-size.enhanced-44',
+    profileThresholdPolicyId: 'layout-profile.architecture-admin-console',
+    safeAreaPolicyId: 'safe-area.viewport-insets',
+    capabilityStatus: 'ACTIVE',
+  }),
+  Object.freeze({
+    id: 'route-layout.reading-document',
+    layout: 'reading',
+    focusContractId: 'route-focus.primary-heading',
+    scrollRestorationPolicyId: 'route-scroll.document-history',
+    shellRequired: false,
+    renderOwner: 'route-component',
+    allowedProfiles: Object.freeze([] as const),
+    allowedPresets: Object.freeze([] as const),
+    regionIdsByProfile: null,
+    movablePanelIds: Object.freeze([] as const),
+    resizableRegionIds: Object.freeze([] as const),
+    narrowProjection: null,
+    blockScrollOwnerId: 'document-block',
+    inlineScrollOwnerId: 'document-inline',
+    minimumTargetPolicyId: null,
+    profileThresholdPolicyId: null,
+    safeAreaPolicyId: null,
+    capabilityStatus: 'ACTIVE',
+  }),
+] as const satisfies readonly LayoutCapabilityRegistryRecord[])
+
+function layoutMeta(capability: (typeof routeLayoutCapabilityRegistry)[number]) {
+  return {
+    layoutCapabilityId: capability.id,
+    layout: capability.layout,
+    blockScrollOwnerId: capability.blockScrollOwnerId,
+    inlineScrollOwnerId: capability.inlineScrollOwnerId,
+    focusContractId: capability.focusContractId,
+    scrollRestorationPolicyId: capability.scrollRestorationPolicyId,
+  }
+}
+
 const emptyPermissionIds = Object.freeze([] as const)
 const commonRouteMeta = Object.freeze({
   breadcrumbKey: null,
-  layout: 'reading',
-  layoutCapabilityId: 'route-layout.reading-document',
+  ...layoutMeta(routeLayoutCapabilityRegistry[1]),
   auth: 'public',
   requiredPermissionIds: emptyPermissionIds,
-  blockScrollOwnerId: 'document-block',
-  inlineScrollOwnerId: 'document-inline',
   keepAlive: 'never',
   dataPrefetch: 'none',
   unsavedChangesPolicy: 'none',
-  focusContractId: 'route-focus.primary-heading',
-  scrollRestorationPolicyId: 'route-scroll.document-history',
   routeTransitionFamilyId: 'route-family.error',
 } as const)
 
 const consoleRouteMeta = Object.freeze({
-  layout: 'workspace',
-  layoutCapabilityId: 'route-layout.architecture-admin-console',
+  ...layoutMeta(routeLayoutCapabilityRegistry[0]),
   auth: 'public',
   requiredPermissionIds: emptyPermissionIds,
-  blockScrollOwnerId: 'architecture-console-content-block',
-  inlineScrollOwnerId: 'architecture-console-content-inline',
   keepAlive: 'never',
   dataPrefetch: 'none',
   errorPolicy: 'route-boundary',
   unsavedChangesPolicy: 'none',
-  focusContractId: 'route-focus.architecture-console-page-heading',
-  scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
   routeTransitionFamilyId: 'route-family.architecture-workspace',
 } as const)
 
+function defineRoute<const R extends RouteRegistryRecord>(
+  record: R,
+): Readonly<
+  Omit<R, 'hashPolicy'> & { hashPolicy: R extends { readonly hashPolicy: infer H } ? H : 'none' }
+>
+function defineRoute(record: RouteRegistryRecord) {
+  return Object.freeze({ ...record, hashPolicy: record.hashPolicy ?? 'none' })
+}
+
 export const routeRegistry = Object.freeze([
-  Object.freeze({
+  defineRoute({
     name: 'console-overview',
     pathPattern: '/',
     sourcePath: 'apps/web/src/pages/index.vue',
@@ -134,7 +197,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.overview',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'appearance-management',
     pathPattern: '/appearance',
     sourcePath: 'apps/web/src/pages/appearance.vue',
@@ -148,7 +211,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.appearance',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'design-token-inspector',
     pathPattern: '/design-tokens',
     sourcePath: 'apps/web/src/pages/design-tokens.vue',
@@ -162,7 +225,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.design-tokens',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'runtime-kernel-inspector',
     pathPattern: '/runtime-kernel',
     sourcePath: 'apps/web/src/pages/runtime-kernel.vue',
@@ -176,7 +239,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.runtime-kernel',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'router-governance-inspector',
     pathPattern: '/router',
     sourcePath: 'apps/web/src/pages/router.vue',
@@ -190,7 +253,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.router',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'storage-persistence-inspector',
     pathPattern: '/storage',
     sourcePath: 'apps/web/src/pages/storage.vue',
@@ -204,7 +267,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.storage',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'ui-system-inspector',
     pathPattern: '/ui-system',
     sourcePath: 'apps/web/src/pages/ui-system.vue',
@@ -218,7 +281,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.ui-system',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'responsive-layout-inspector',
     pathPattern: '/responsive-layout',
     sourcePath: 'apps/web/src/pages/responsive-layout.vue',
@@ -232,7 +295,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.responsive-layout',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'engineering-quality-inspector',
     pathPattern: '/engineering',
     sourcePath: 'apps/web/src/pages/engineering.vue',
@@ -246,7 +309,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.engineering',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'capability-roadmap',
     pathPattern: '/capabilities',
     sourcePath: 'apps/web/src/pages/capabilities.vue',
@@ -260,7 +323,7 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.capabilities',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-invalid-route-input',
     pathPattern: '/error/400',
     sourcePath: 'apps/web/src/pages/error/400.vue',
@@ -274,7 +337,7 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-authentication-required',
     pathPattern: '/error/401',
     sourcePath: 'apps/web/src/pages/error/401.vue',
@@ -288,7 +351,7 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-permission-denied',
     pathPattern: '/error/403',
     sourcePath: 'apps/web/src/pages/error/403.vue',
@@ -302,7 +365,7 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-route-not-found',
     pathPattern: '/:path(.*)',
     sourcePath: 'apps/web/src/pages/[...path].vue',
@@ -316,7 +379,7 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-application-route-failure',
     pathPattern: '/error/500',
     sourcePath: 'apps/web/src/pages/error/500.vue',
@@ -330,7 +393,7 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-network-unavailable',
     pathPattern: '/error/offline',
     sourcePath: 'apps/web/src/pages/error/offline.vue',
@@ -344,7 +407,7 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  Object.freeze({
+  defineRoute({
     name: 'error-service-unavailable',
     pathPattern: '/error/maintenance',
     sourcePath: 'apps/web/src/pages/error/maintenance.vue',
@@ -583,61 +646,6 @@ export const errorRouteRegistry = Object.freeze([
   readonly routeName: RouteName
 }[])
 
-export const routeLayoutCapabilityRegistry = Object.freeze([
-  Object.freeze({
-    id: 'route-layout.architecture-admin-console',
-    layout: 'workspace',
-    shellRequired: true,
-    renderOwner: '@platform/ui',
-    allowedProfiles: Object.freeze(['narrow', 'regular', 'wide'] as const),
-    allowedPresets: Object.freeze(['workspace'] as const),
-    regionIdsByProfile: Object.freeze({
-      narrow: Object.freeze([
-        'architecture-console-content',
-        'architecture-console-header',
-        'architecture-console-navigation-overlay',
-      ]),
-      regular: Object.freeze([
-        'architecture-console-content',
-        'architecture-console-header',
-        'architecture-console-navigation',
-      ]),
-      wide: Object.freeze([
-        'architecture-console-content',
-        'architecture-console-header',
-        'architecture-console-navigation',
-      ]),
-    }),
-    movablePanelIds: Object.freeze([] as const),
-    resizableRegionIds: Object.freeze([] as const),
-    narrowProjection: 'sheet',
-    blockScrollOwnerId: 'architecture-console-content-block',
-    inlineScrollOwnerId: 'architecture-console-content-inline',
-    minimumTargetPolicyId: 'target-size.enhanced-44',
-    profileThresholdPolicyId: 'layout-profile.architecture-admin-console',
-    safeAreaPolicyId: 'safe-area.viewport-insets',
-    capabilityStatus: 'ACTIVE',
-  }),
-  Object.freeze({
-    id: 'route-layout.reading-document',
-    layout: 'reading',
-    shellRequired: false,
-    renderOwner: 'route-component',
-    allowedProfiles: Object.freeze([] as const),
-    allowedPresets: Object.freeze([] as const),
-    regionIdsByProfile: null,
-    movablePanelIds: Object.freeze([] as const),
-    resizableRegionIds: Object.freeze([] as const),
-    narrowProjection: null,
-    blockScrollOwnerId: 'document-block',
-    inlineScrollOwnerId: 'document-inline',
-    minimumTargetPolicyId: null,
-    profileThresholdPolicyId: null,
-    safeAreaPolicyId: null,
-    capabilityStatus: 'ACTIVE',
-  }),
-] as const satisfies readonly LayoutCapabilityRegistryRecord[])
-
 export const scrollOwnerRegistry = Object.freeze([
   Object.freeze({
     id: 'architecture-console-content-block',
@@ -742,87 +750,77 @@ export const focusContractRegistry = Object.freeze([
 export const consoleNavigationRegistry = Object.freeze([
   Object.freeze({
     id: 'workspace',
-    label: getDefaultConsoleMessage('navigation.workspace'),
+    labelKey: 'navigation.workspace',
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-layout-dashboard',
-        label: getDefaultConsoleMessage('route-title.console-overview'),
-        routeName: 'console-overview',
+        destination: Object.freeze({ name: 'console-overview' }),
       }),
     ]),
   }),
   Object.freeze({
     id: 'visual-system',
-    label: getDefaultConsoleMessage('navigation.visual-system'),
+    labelKey: 'navigation.visual-system',
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-palette',
-        label: getDefaultConsoleMessage('route-title.appearance-management'),
-        routeName: 'appearance-management',
+        destination: Object.freeze({ name: 'appearance-management' }),
       }),
       Object.freeze({
         iconClass: 'i-lucide-swatch-book',
-        label: getDefaultConsoleMessage('route-title.design-token-inspector'),
-        routeName: 'design-token-inspector',
+        destination: Object.freeze({ name: 'design-token-inspector' }),
       }),
     ]),
   }),
   Object.freeze({
     id: 'application-foundation',
-    label: getDefaultConsoleMessage('navigation.application-foundation'),
+    labelKey: 'navigation.application-foundation',
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-cpu',
-        label: getDefaultConsoleMessage('route-title.runtime-kernel-inspector'),
-        routeName: 'runtime-kernel-inspector',
+        destination: Object.freeze({ name: 'runtime-kernel-inspector' }),
       }),
       Object.freeze({
         iconClass: 'i-lucide-route',
-        label: getDefaultConsoleMessage('route-title.router-governance-inspector'),
-        routeName: 'router-governance-inspector',
+        destination: Object.freeze({ name: 'router-governance-inspector' }),
       }),
       Object.freeze({
         iconClass: 'i-lucide-database',
-        label: getDefaultConsoleMessage('route-title.storage-persistence-inspector'),
-        routeName: 'storage-persistence-inspector',
+        destination: Object.freeze({ name: 'storage-persistence-inspector' }),
       }),
     ]),
   }),
   Object.freeze({
     id: 'interface-foundation',
-    label: getDefaultConsoleMessage('navigation.interface-foundation'),
+    labelKey: 'navigation.interface-foundation',
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-component',
-        label: getDefaultConsoleMessage('route-title.ui-system-inspector'),
-        routeName: 'ui-system-inspector',
+        destination: Object.freeze({ name: 'ui-system-inspector' }),
       }),
       Object.freeze({
         iconClass: 'i-lucide-panels-top-left',
-        label: getDefaultConsoleMessage('route-title.responsive-layout-inspector'),
-        routeName: 'responsive-layout-inspector',
+        destination: Object.freeze({ name: 'responsive-layout-inspector' }),
       }),
     ]),
   }),
   Object.freeze({
     id: 'development-governance',
-    label: getDefaultConsoleMessage('navigation.development-governance'),
+    labelKey: 'navigation.development-governance',
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-workflow',
-        label: getDefaultConsoleMessage('route-title.engineering-quality-inspector'),
-        routeName: 'engineering-quality-inspector',
+        destination: Object.freeze({ name: 'engineering-quality-inspector' }),
       }),
     ]),
   }),
   Object.freeze({
     id: 'architecture-planning',
-    label: getDefaultConsoleMessage('navigation.architecture-planning'),
+    labelKey: 'navigation.architecture-planning',
     items: Object.freeze([
       Object.freeze({
         iconClass: 'i-lucide-map',
-        label: getDefaultConsoleMessage('route-title.capability-roadmap'),
-        routeName: 'capability-roadmap',
+        destination: Object.freeze({ name: 'capability-roadmap' }),
       }),
     ]),
   }),
@@ -831,7 +829,9 @@ export const consoleNavigationRegistry = Object.freeze([
 export const activeRedirectRegistry = Object.freeze([] as const)
 export const activeDynamicRouteRegistry = Object.freeze([] as const)
 
-export function getErrorRouteName(code: ErrorRouteCode): RouteName {
+export function getErrorRouteName(
+  code: ErrorRouteCode,
+): (typeof errorRouteRegistry)[number]['routeName'] {
   const record = errorRouteRegistry.find((candidate) => candidate.code === code)
 
   if (record === undefined) {
@@ -893,25 +893,4 @@ export function getRouteMessageScope(name: unknown): ConsoleMessageScope {
   if (record.name === 'appearance-management') return 'appearance'
   if (record.name === 'capability-roadmap') return 'capabilities'
   return record.meta.breadcrumbKey === null ? 'common' : 'console'
-}
-
-export function getConsoleNavigation(
-  translate: ConsoleTranslate,
-): readonly ConsoleNavigationGroup[] {
-  const labels = {
-    workspace: translate('navigation.workspace'),
-    'visual-system': translate('navigation.visual-system'),
-    'application-foundation': translate('navigation.application-foundation'),
-    'interface-foundation': translate('navigation.interface-foundation'),
-    'development-governance': translate('navigation.development-governance'),
-    'architecture-planning': translate('navigation.architecture-planning'),
-  }
-  return consoleNavigationRegistry.map((group) => ({
-    ...group,
-    label: labels[group.id],
-    items: group.items.map((item) => ({
-      ...item,
-      label: translate(getRouteRecord(item.routeName).meta.titleKey),
-    })),
-  }))
 }

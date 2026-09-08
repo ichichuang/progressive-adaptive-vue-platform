@@ -462,6 +462,7 @@ interface RouteTransitionSourceSnapshot {
   readonly presetSource: string
   readonly projectConfigSource: string
   readonly registrySource: string
+  readonly routeInputSource: string
   readonly resolverSource: string
   readonly ruleSource: string
   readonly typesSource: string
@@ -509,14 +510,9 @@ function count(source: string, pattern: RegExp): number {
 
 function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot): string[] {
   const violations: string[] = []
-  const duplicateConditionPattern =
-    /if\s*\(\s*to\.name\s*===\s*from\.name\s*&&\s*to\.fullPath\s*===\s*from\.fullPath\s*\)\s*\{/u
+  const duplicateConditionPattern = /if\s*\(\s*to\s*===\s*from\s*\)\s*return false/u
   const duplicateCondition = duplicateConditionPattern.exec(snapshot.lifecycleSource)
-  const duplicateLookupIndex = snapshot.lifecycleSource.indexOf('navigationAttempts.get(to)')
-  const duplicateBlock =
-    /if\s*\(\s*to\.name\s*===\s*from\.name\s*&&\s*to\.fullPath\s*===\s*from\.fullPath\s*\)\s*\{([\s\S]*?)\}/u.exec(
-      snapshot.lifecycleSource,
-    )
+  const duplicateLookupIndex = snapshot.lifecycleSource.indexOf('await applicationMountedPromise')
 
   if (
     duplicateCondition === null ||
@@ -525,15 +521,13 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
   ) {
     violations.push('DUPLICATE_SCROLL_NOOP_ORDER')
   }
-  if (duplicateBlock?.[1]?.trim() !== 'return false') {
+  if (duplicateCondition === null) {
     violations.push('DUPLICATED_NAVIGATION_ERROR_ROUTE')
   }
 
-  const headingFocusCalls = [
-    ...snapshot.lifecycleSource.matchAll(/focusTargets\[0\]\.focus\s*\(/gu),
-  ]
+  const headingFocusCalls = [...snapshot.lifecycleSource.matchAll(/heading\.focus\s*\(/gu)]
   const guardedHeadingFocus =
-    /if\s*\(\s*from\s*!==\s*START_LOCATION\s*\)\s*\{\s*focusTargets\[0\]\.focus\s*\(\s*\{\s*preventScroll\s*:\s*true\s*\}\s*\)\s*\}/u.test(
+    /if\s*\(\s*from\s*!==\s*START_LOCATION\s*&&\s*!samePage\s*&&\s*!locked\s*\)\s*heading\.focus\(\{ preventScroll: true \}\)/u.test(
       snapshot.lifecycleSource,
     )
   if (!/\bSTART_LOCATION\b/u.test(snapshot.lifecycleSource) || !guardedHeadingFocus) {
@@ -544,7 +538,7 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
   }
 
   const currentRouteGuard =
-    /if\s*\(\s*router\.currentRoute\.value\.name\s*===\s*routeName\s*\)\s*\{\s*return\s*\}/u.exec(
+    /isCurrentDestination:\s*resolved !== undefined && sameRouteAddress\(router.currentRoute.value, resolved\)/u.exec(
       snapshot.frameSource,
     )
   const pushIndex = snapshot.frameSource.indexOf('routeTransitionCoordinator.navigate(')
@@ -552,17 +546,11 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
     violations.push('FRAME_CURRENT_ROUTE_NOOP')
   }
 
-  const resolvedPush =
-    /const\s+([A-Za-z_$][\w$]*)\s*=\s*await\s+routeTransitionCoordinator\.navigate\s*\([^)]*\)/u.exec(
+  // The frame consumes the typed operation without adding result-dependent side effects.
+  const duplicatedNoop =
+    /await routeTransitionCoordinator\.navigate\(item\.destination\)\s*\}/u.test(
       snapshot.frameSource,
     )
-  const failureBinding = resolvedPush?.[1]
-  const duplicatedNoop =
-    failureBinding !== undefined &&
-    new RegExp(
-      `if\\s*\\(\\s*isNavigationFailure\\(\\s*${failureBinding}\\s*,\\s*NavigationFailureType\\.duplicated\\s*\\)\\s*\\)\\s*\\{\\s*return\\s*\\}`,
-      'u',
-    ).test(snapshot.frameSource)
   if (!duplicatedNoop) {
     violations.push('FRAME_DUPLICATED_RESULT_NOOP')
   }
@@ -581,15 +569,9 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
 function runRouterInteractionNegativeProbes(
   baseline: RouterInteractionSnapshot,
 ): readonly RouterInteractionNegativeProbeResult[] {
-  const duplicateGuard = `if (to.name === from.name && to.fullPath === from.fullPath) {
-        return false
-      }`
-  const currentRouteGuard = `if (router.currentRoute.value.name === routeName) {
-    return
-  }`
-  const duplicatedResultGuard = `if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
-    return
-  }`
+  const duplicateGuard = 'if (to === from) return false'
+  const currentRouteGuard = 'sameRouteAddress(router.currentRoute.value, resolved)'
+  const duplicatedResultGuard = 'await routeTransitionCoordinator.navigate(item.destination)'
   const probes: readonly [
     string,
     string,
@@ -601,8 +583,8 @@ function runRouterInteractionNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'if (from !== START_LOCATION)',
-          'if (true)',
+          'from !== START_LOCATION && !samePage && !locked',
+          '!samePage && !locked',
         ),
       }),
     ],
@@ -612,7 +594,7 @@ function runRouterInteractionNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'focusTargets[0].focus({ preventScroll: true })',
+          'heading.focus({ preventScroll: true })',
           '',
         ),
       }),
@@ -633,8 +615,8 @@ function runRouterInteractionNegativeProbes(
         lifecycleSource: snapshot.lifecycleSource
           .replace(duplicateGuard, '')
           .replace(
-            'const navigation = navigationAttempts.get(to)',
-            `const navigation = navigationAttempts.get(to)\n\n      ${duplicateGuard}`,
+            'await applicationMountedPromise',
+            `await applicationMountedPromise\n      ${duplicateGuard}`,
           ),
       }),
     ],
@@ -645,7 +627,8 @@ function runRouterInteractionNegativeProbes(
         ...snapshot,
         frameSource: snapshot.frameSource.replace(
           duplicatedResultGuard,
-          `if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
+          `const result = await routeTransitionCoordinator.navigate(item.destination)
+  if (result.kind === 'duplicated') {
     await router.replace({ name: 'error-application-route-failure' })
     return
   }`,
@@ -1221,7 +1204,7 @@ async function generatedTypeViolations(): Promise<string[]> {
 }
 
 async function navigationContractViolations(): Promise<string[]> {
-  const sourcePath = resolve(routerDirectory, 'navigation-contract.ts')
+  const sourcePath = resolve(routerDirectory, 'route-input.ts')
   const source = await readFile(sourcePath, 'utf8')
   const sourceFile = ts.createSourceFile(
     sourcePath,
@@ -1239,6 +1222,10 @@ async function navigationContractViolations(): Promise<string[]> {
       ? resultDeclaration.type.types.filter(ts.isTypeLiteralNode)
       : []
   const expectedVariants: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+    duplicated: {
+      kind: "'duplicated'",
+      destination: 'RegisteredRouteDestination',
+    },
     allow: {
       kind: "'allow'",
       navigationId: 'string',
@@ -1254,13 +1241,13 @@ async function navigationContractViolations(): Promise<string[]> {
     cancel: {
       kind: "'cancel'",
       navigationId: 'string',
-      reason: "'cancelled-by-new-navigation'",
+      reason: "'cancelled-by-new-navigation' | 'access-invalidated'",
     },
     failure: {
       kind: "'failure'",
       navigationId: 'string',
       errorId: 'RouterErrorId',
-      destination: 'RegisteredRouteDestination',
+      destination: "Readonly<{ name: (typeof errorRouteRegistry)[number]['routeName'] }>",
     },
   }
   const actualVariants = new Map<string, Readonly<Record<string, string>>>()
@@ -1282,7 +1269,7 @@ async function navigationContractViolations(): Promise<string[]> {
       fields[property.name.text] = property.type.getText(sourceFile).replaceAll(/\s+/gu, ' ')
     }
 
-    const kind = fields['kind']?.match(/^'(allow|redirect|cancel|failure)'$/u)?.[1]
+    const kind = fields['kind']?.match(/^'(duplicated|allow|redirect|cancel|failure)'$/u)?.[1]
     if (kind !== undefined) {
       actualVariants.set(kind, fields)
     }
@@ -1293,13 +1280,13 @@ async function navigationContractViolations(): Promise<string[]> {
     !resultDeclaration.modifiers?.some(
       (modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword,
     ) ||
-    variants.length !== 4 ||
-    actualVariants.size !== 4 ||
+    variants.length !== 5 ||
+    actualVariants.size !== 5 ||
     Object.entries(expectedVariants).some(
       ([kind, expected]) => !isDeepStrictEqual(actualVariants.get(kind), expected),
     )
   ) {
-    return ['Typed Navigation Result Union diverged from its exact four variants.']
+    return ['Typed Navigation Result Union diverged from its exact five variants.']
   }
 
   return []
@@ -1386,6 +1373,7 @@ async function routerErrorContractViolations(): Promise<string[]> {
       'route-redirect-loop',
     ]) ||
     !isDeepStrictEqual(exactStringLiteralUnion('RouterFailureKind'), [
+      'aborted-by-guard',
       'invalid-input',
       'route-not-found',
       'chunk-load-failed',
@@ -1898,7 +1886,17 @@ async function lifecycleViolations(): Promise<string[]> {
   for (const candidate of applicationSources) {
     const normalized = relative(rootDirectory, candidate.path).split('\\').join('/')
     const usesExperimental = candidate.source.includes('vue-router/experimental')
-    const usesRuntimeRoutes = candidate.source.includes('vue-router/auto-routes')
+    const usesRuntimeRoutes = candidate.sourceFile.statements.some(
+      (statement) =>
+        ts.isImportDeclaration(statement) &&
+        ts.isStringLiteral(statement.moduleSpecifier) &&
+        statement.moduleSpecifier.text === 'vue-router/auto-routes' &&
+        statement.importClause?.phaseModifier !== ts.SyntaxKind.TypeKeyword &&
+        (statement.importClause?.name !== undefined ||
+          statement.importClause?.namedBindings === undefined ||
+          ts.isNamespaceImport(statement.importClause.namedBindings) ||
+          statement.importClause.namedBindings.elements.some((element) => !element.isTypeOnly)),
+    )
     const routerImportAllowed =
       normalized === 'apps/web/src/App.vue' ||
       normalized === 'apps/web/src/app/console/ConsoleRouteFrame.vue' ||
@@ -1975,6 +1973,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     presetSource,
     projectConfigSource,
     registrySource,
+    routeInputSource,
     resolverSource,
     ruleSource,
     typesSource,
@@ -1995,6 +1994,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     readFile(resolve(transitionDirectory, 'route-transition-preset-registry.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'project.config.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-registry.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-input.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'resolve-route-transition.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-rule-registry.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-types.ts'), 'utf8'),
@@ -2016,6 +2016,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     presetSource,
     projectConfigSource,
     registrySource,
+    routeInputSource,
     resolverSource,
     ruleSource,
     typesSource,
@@ -2114,8 +2115,33 @@ function routeTransitionSourceProofResults(
   )
   const navigateSource = sourceSection(
     snapshot.coordinatorSource,
-    'navigate: async (targetRouteName: RouteName)',
+    'navigate(destination: RegisteredRouteDestination',
     'dispose() {',
+  )
+  const preparationSource = sourceSection(
+    snapshot.coordinatorSource,
+    'const performNavigation = async',
+    'return Object.freeze({\n    navigate(',
+  )
+  const acceptanceSource = sourceSection(
+    snapshot.lifecycleSource,
+    'presentationCommitBroker.accept =',
+    'const beforeEachRemover',
+  )
+  const operationSource = sourceSection(
+    snapshot.lifecycleSource,
+    'function beginOperation(',
+    'function ownsNavigation(',
+  )
+  const nativeNavigationSource = sourceSection(
+    snapshot.lifecycleSource,
+    'function issueNavigation(',
+    'presentationCommitBroker.accept =',
+  )
+  const motionObservationSource = sourceSection(
+    snapshot.coordinatorSource,
+    'const stopMotionObservation = watch',
+    'const requestIsCurrent',
   )
   const updateSource = sourceSection(
     snapshot.coordinatorSource,
@@ -2141,6 +2167,21 @@ function routeTransitionSourceProofResults(
     snapshot.lifecycleSource,
     'const afterEachRemover = router.afterEach',
     'const errorHandlerRemover = router.onError',
+  )
+  const beforeResolveSource = sourceSection(
+    snapshot.lifecycleSource,
+    'const beforeResolveRemover',
+    'const afterEachRemover',
+  )
+  const regionCommitSource = sourceSection(
+    scrollBehaviorSource,
+    'const context = regionContext(to',
+    'completeActiveGuardStages(',
+  )
+  const regionWriteSource = sourceSection(
+    snapshot.lifecycleSource,
+    'function writeRegionPosition(',
+    'export async function createAndReadyRouter(',
   )
   const errorHandlerSource = sourceSection(
     snapshot.lifecycleSource,
@@ -2173,7 +2214,10 @@ function routeTransitionSourceProofResults(
       id: 'ROUTE_TRANSITION_SOURCE_01_ROUTE_META_16',
       passed:
         count(snapshot.registrySource, /readonly routeTransitionFamilyId:/gu) === 1 &&
-        count(snapshot.lifecycleSource, /'routeTransitionFamilyId'/gu) === 1 &&
+        snapshot.routeInputSource.includes('!routeMetaMatches(location.meta, record.meta)') &&
+        snapshot.routeInputSource.includes(
+          'Object.keys(actual).length === Object.keys(expected).length',
+        ) &&
         routeRegistry.every((route) => Object.keys(route.meta).length === 16),
     }),
     Object.freeze({
@@ -2275,11 +2319,15 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_14_CURRENT_ROUTE_BEFORE_COORDINATOR',
       passed:
-        snapshot.frameSource.includes('router.currentRoute.value.name === routeName') &&
-        snapshot.frameSource.indexOf('router.currentRoute.value.name === routeName') <
-          snapshot.frameSource.indexOf(
-            'routeTransitionCoordinator.navigate(routeName as RouteName)',
-          ),
+        snapshot.frameSource.includes('isCurrentDestination:') &&
+        snapshot.frameSource.includes('sameRouteAddress(router.currentRoute.value, resolved)') &&
+        snapshot.frameSource.includes('resolveRegisteredDestination(router, item.destination)') &&
+        snapshot.frameSource.includes('routeTransitionCoordinator.navigate(item.destination)') &&
+        snapshot.routeInputSource.includes(
+          'stringifyQuery(left.query) === stringifyQuery(right.query)',
+        ) &&
+        snapshot.routeInputSource.includes('left.hash === right.hash') &&
+        snapshot.routeInputSource.includes('paramValuesEqual(leftParams[key], rightParams[key])'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_15_BYPASS_MATRIX',
@@ -2298,68 +2346,105 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_16_PRELOAD_BEFORE_SNAPSHOT',
       passed:
-        navigateSource.includes('await loadRouteLocation(resolvedTarget)') &&
-        navigateSource.indexOf('await loadRouteLocation(resolvedTarget)') <
-          navigateSource.indexOf('runVisualTransition(') &&
+        preparationSource.includes('await loadRouteLocation(resolvedTarget)') &&
+        preparationSource.indexOf('await loadRouteLocation(resolvedTarget)') <
+          preparationSource.indexOf('runVisualTransition(') &&
         snapshot.coordinatorSource.includes('instanceof HTMLElement') &&
         /!\w+\.isConnected/u.test(snapshot.coordinatorSource) &&
         /\w+ !== \w+\.element/u.test(
-          navigateSource.slice(navigateSource.indexOf('await loadRouteLocation')),
+          preparationSource.slice(preparationSource.indexOf('await loadRouteLocation')),
         ) &&
-        count(navigateSource, /readBoundaryState\(\)/gu) === 2,
+        count(preparationSource, /readBoundaryState\(\)/gu) === 2,
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_17_SINGLE_ROUTER_PUSH_IN_UPDATE',
       passed:
-        count(snapshot.coordinatorSource, /input\.router\.push\s*\(/gu) === 2 &&
-        count(updateSource, /input\.router\.push\s*\(/gu) === 1 &&
-        count(
-          sourceSection(
-            snapshot.coordinatorSource,
-            'const navigateDirectly',
-            'const startNativeTransition',
-          ),
-          /input\.router\.push\s*\(/gu,
-        ) === 1,
+        !/input\.router\.(?:push|replace)\s*\(/u.test(snapshot.coordinatorSource) &&
+        count(snapshot.lifecycleSource, /router\.(?:push|replace)\s*\(/gu) === 2 &&
+        nativeNavigationSource.includes(
+          "request.kind === 'replace' ? router.replace(target.fullPath) : router.push(target.fullPath)",
+        ) &&
+        /if \(!navigationStarted && !disposed && operation === request\) \{\s*navigationStarted = true\s*issueNavigation\(request, target\)/u.test(
+          acceptanceSource,
+        ) &&
+        count(updateSource, /await navigateDirectly\(request\)/gu) === 1 &&
+        snapshot.coordinatorSource.includes('(updatePromise ??= update())'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_18_ROUTER_RESULT_AWAITED',
-      passed: updateSource.includes(
-        'updateState.result = await input.router.push({ name: targetRouteName })',
-      ),
+      passed:
+        updateSource.includes('const result = await navigateDirectly(request)') &&
+        acceptanceSource.includes('return request.completion') &&
+        nativeNavigationSource.includes('finishNativeFailure(request, failure, target)'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_19_ACTIVE_INTERRUPTION',
       passed:
-        navigateSource.includes('const currentEpoch = ++navigationEpoch') &&
-        navigateSource.indexOf('const currentEpoch = ++navigationEpoch') <
-          navigateSource.indexOf('skipVisualTransition(activeTransition)') &&
-        snapshot.coordinatorSource.includes(
-          'const runVisualTransition = async (\n    targetRouteName: RouteName',
+        navigateSource.includes(
+          'const request = acceptRouterNavigation(input.router, destination, options)',
         ) &&
-        count(snapshot.coordinatorSource, /skipVisualTransition\(activeTransition\)/gu) >= 4,
+        navigateSource.indexOf('acceptRouterNavigation(') <
+          navigateSource.indexOf('skipVisualTransition(activeTransition)') &&
+        navigateSource.includes('skipVisualTransition(activeTransition)') &&
+        navigateSource.indexOf('acceptRouterNavigation(') <
+          navigateSource.indexOf('performNavigation(request, options)') &&
+        acceptanceSource.includes(
+          'if (resolved !== undefined && sameRouteAddress(router.currentRoute.value, resolved))',
+        ) &&
+        acceptanceSource.indexOf('sameRouteAddress(router.currentRoute.value, resolved)') <
+          acceptanceSource.indexOf('const request = beginOperation(') &&
+        operationSource.includes('operation?.finish({') &&
+        operationSource.includes("reason: 'cancelled-by-new-navigation'") &&
+        operationSource.indexOf('operation?.finish({') <
+          operationSource.indexOf('operation = next') &&
+        !/navigationEpoch|routerNavigationSequence/u.test(snapshot.coordinatorSource),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_20_STALE_PRELOAD_EPOCH',
       passed:
-        count(navigateSource, /currentEpoch !== navigationEpoch/gu) === 2 &&
-        navigateSource.includes('currentEpoch !== navigationEpoch') &&
-        snapshot.coordinatorSource.includes('navigationEpoch += 1'),
+        count(
+          preparationSource,
+          /if \(!requestIsCurrent\(request\)\) return request\.completion/gu,
+        ) === 2 &&
+        snapshot.coordinatorSource.includes('!disposed && request.isCurrent()') &&
+        acceptanceSource.includes('isCurrent: () => !disposed && operation === request') &&
+        beforeEachSource.includes('request !== operation') &&
+        /!disposed &&[\s\S]*?navigation\.operation === operation &&\s*operation\.navigation === to/u.test(
+          sourceSection(
+            snapshot.lifecycleSource,
+            'function ownsNavigation(',
+            'function currentLocationMatches(',
+          ),
+        ) &&
+        /if \(!ownsNavigation\(to, navigation\)\) return false[\s\S]*await localization\.prepareScope[\s\S]*if \(!ownsNavigation\(to, navigation\)[\s\S]*if \(!ownsNavigation\(to, navigation\)\) return false\s*captureSource\(from\)/u.test(
+          beforeResolveSource,
+        ) &&
+        afterEachSource.includes(
+          'if (!ownsNavigation(to, navigation) || !currentLocationMatches(to)) return',
+        ) &&
+        scrollBehaviorSource.includes('!entryIsCurrent(entry)') &&
+        navigateSource.includes(
+          'Promise.race([request.completion, performNavigation(request, options)])',
+        ),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_21_NATIVE_PROMISE_HANDLING',
       passed:
         snapshot.coordinatorSource.includes('transition.ready.catch') &&
-        snapshot.coordinatorSource.includes('transition.updateCallbackDone.then') &&
+        snapshot.coordinatorSource.includes('await transition.updateCallbackDone') &&
         snapshot.coordinatorSource.includes('transition.finished.then'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_22_REAL_FAILURES_OBSERVABLE',
       passed:
-        navigateSource.includes('catch (error)') &&
-        navigateSource.includes('throw error') &&
-        navigateSource.includes('return navigateDirectly(targetRouteName)') &&
-        snapshot.coordinatorSource.includes('(error: unknown) => {\n        throw error'),
+        updateSource.includes('catch (error)') &&
+        updateSource.includes('throw error') &&
+        preparationSource.includes('return navigateDirectly(request)') &&
+        errorHandlerSource.includes("const recovering = request.result?.kind === 'failure'") &&
+        errorHandlerSource.includes("? 'route-redirect-loop'") &&
+        /request\.result = failure[\s\S]*if \(recovering \|\| to\.name === failure\.destination\.name\) \{\s*request\.finish\(failure\)[\s\S]*issueNavigation\(request, target\)/u.test(
+          errorHandlerSource,
+        ),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_23_MOTION_CHANGE_SKIPS_VISUAL',
@@ -2367,21 +2452,9 @@ function routeTransitionSourceProofResults(
         snapshot.coordinatorSource.includes(
           '() => input.appearance.snapshot.value.motion,\n    () => {\n      skipVisualTransition(activeTransition)',
         ) &&
-        !sourceSection(
-          snapshot.coordinatorSource,
-          'const stopMotionObservation = watch',
-          'const clearDirection',
-        ).includes('router.') &&
-        sourceSection(
-          snapshot.coordinatorSource,
-          'const stopMotionObservation',
-          'const clearDirection',
-        ).includes('navigationEpoch += 1') &&
-        sourceSection(
-          snapshot.coordinatorSource,
-          'const stopMotionObservation',
-          'const clearDirection',
-        ).includes("flush: 'sync'"),
+        !/router\.|cancelBeforeStart|beginOperation/u.test(motionObservationSource) &&
+        motionObservationSource.includes('clearDirection(directionOwner)') &&
+        motionObservationSource.includes("flush: 'sync'"),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_24_NO_SECOND_HISTORY_OR_NAVIGATION_OWNER',
@@ -2489,7 +2562,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 240 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 248 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         snapshot.engineeringManifestSource.includes(
           "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
@@ -2519,11 +2592,12 @@ function routeTransitionSourceProofResults(
         snapshot.lifecycleSource.includes(
           'const routerPresentationCommitBrokers = new WeakMap<Router, RouterPresentationCommitBroker>()',
         ) &&
-        count(updateSource, /beginPresentationCommitReservation\s*\(/gu) === 1 &&
-        /const reservation = beginPresentationCommitReservation\([\s\S]*?\)\s*try\s*\{\s*updateState\.result = await input\.router\.push\(\{ name: targetRouteName \}\)/u.test(
+        count(updateSource, /reserveRouterPresentationCommit\s*\(/gu) === 1 &&
+        /const reservation = reserveRouterPresentationCommit\(\{[\s\S]*navigationId: request\.navigationId,[\s\S]*?\}\)[\s\S]*?try\s*\{\s*const result = await navigateDirectly\(request\)/u.test(
           updateSource,
         ) &&
-        updateSource.indexOf('updateState.result = await input.router.push') <
+        updateSource.includes('await reservation.completion') &&
+        updateSource.indexOf('await navigateDirectly(request)') <
           updateSource.indexOf('await reservation.completion') &&
         !/\bnextTick\b/u.test(snapshot.coordinatorSource),
     }),
@@ -2536,17 +2610,18 @@ function routeTransitionSourceProofResults(
           'readonly completion: Promise<RouterPresentationCommitOutcome>',
         ) &&
         presentationCommitBrokerSource.includes('routeName === reservation.expectedRouteName') &&
+        presentationCommitBrokerSource.includes('reservation.navigationId === navigationId') &&
         presentationCommitBrokerSource.includes(
           'navigation.fullPath === reservation.expectedFullPath',
         ) &&
         presentationCommitBrokerSource.includes('if (selected === undefined) {\n    return') &&
         beforeEachSource.indexOf('navigationAttempts.set(to') <
           beforeEachSource.lastIndexOf(
-            'bindRouterPresentationCommit(presentationCommitBroker, to, routeName)',
+            'bindRouterPresentationCommit(presentationCommitBroker, to, routeName, navigationId)',
           ) &&
-        scrollBehaviorSource.indexOf('document.title = presentation.title') <
-          scrollBehaviorSource.indexOf('focusTargets[0].focus({ preventScroll: true })') &&
-        scrollBehaviorSource.indexOf('focusTargets[0].focus({ preventScroll: true })') <
+        scrollBehaviorSource.indexOf('document.title = getRoutePresentation(') <
+          scrollBehaviorSource.indexOf('heading.focus({ preventScroll: true })') &&
+        scrollBehaviorSource.indexOf('heading.focus({ preventScroll: true })') <
           scrollBehaviorSource.indexOf(
             'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)',
           ),
@@ -2554,9 +2629,16 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_39_FINAL_REGION_SCROLL_COMMIT',
       passed:
-        scrollBehaviorSource.indexOf('regionOwner.scrollLeft = scrollPosition.left') <
-          scrollBehaviorSource.indexOf('regionOwner.scrollTop = scrollPosition.top') &&
-        scrollBehaviorSource.indexOf('regionOwner.scrollTop = scrollPosition.top') <
+        regionWriteSource.includes('owner.scrollLeft =') &&
+        regionWriteSource.includes(
+          'owner.scrollTop = Math.max(0, Math.min(height, position.top))',
+        ) &&
+        regionWriteSource.includes("style.direction === 'rtl'") &&
+        regionWriteSource.includes('Math.max(-width, Math.min(0, position.left))') &&
+        regionCommitSource.includes('writeRegionPosition(owner, record)') &&
+        regionCommitSource.includes('writeRegionPosition(owner, fragment)') &&
+        !regionCommitSource.includes('resolveBoundRouterPresentationCommit(') &&
+        scrollBehaviorSource.lastIndexOf('writeRegionPosition(') <
           scrollBehaviorSource.lastIndexOf(
             'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)',
           ),
@@ -2571,9 +2653,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_41_FAILURE_CANCELLATION_AND_DISPOSAL_SETTLEMENT',
       passed:
-        /if \(isNavigationFailure\(updateState\.result\)\) \{\s*reservation\.cancel\(\)\s*skipVisualTransition\(updateState\.owningVisualTransition\)\s*return/u.test(
-          updateSource,
-        ) &&
+        /result\.kind !== 'allow'[^{}]*\) \{\s*reservation\.cancel\(\)/u.test(updateSource) &&
         /catch \(error\) \{\s*reservation\.cancel\(\)/u.test(updateSource) &&
         afterEachSource.includes(
           'cancelBoundRouterPresentationCommit(presentationCommitBroker, to)',
@@ -2587,21 +2667,22 @@ function routeTransitionSourceProofResults(
         presentationCommitBrokerSource.includes('reservation.resolve(outcome)') &&
         presentationCommitBrokerSource.includes('reservation.reject(source)') &&
         count(presentationCommitBrokerSource, /broker\.reservations\.delete\(/gu) === 2 &&
-        sourceSection(
-          snapshot.coordinatorSource,
-          'const stopMotionObservation',
-          'const clearDirection',
-        ).includes('cancelPresentationCommitReservations(() => true)') &&
+        motionObservationSource.includes('cancelPresentation()') &&
         sourceSection(snapshot.coordinatorSource, 'dispose() {', '\n  })').includes(
-          'cancelPresentationCommitReservations(() => true)',
+          'cancelPresentation()',
         ) &&
-        snapshot.coordinatorSource.includes('cancelPresentationCommitReservations(() => true)') &&
-        navigateSource.includes('(reservationEpoch) => reservationEpoch < currentEpoch'),
+        snapshot.coordinatorSource.includes('activeReservation?.cancel()') &&
+        navigateSource.includes('cancelPresentation()') &&
+        operationSource.includes(
+          "settleRouterPresentationCommit(presentationCommitBroker, reservation, 'cancelled')",
+        ) &&
+        lifecycleDisposeSource.includes('operation?.finish({') &&
+        snapshot.coordinatorSource.includes('pendingNavigation?.cancelBeforeStart()'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_42_REDIRECT_SKIPS_OWNING_VISUAL',
       passed:
-        /currentRoute\.name !== resolvedTarget\.name[\s\S]*?currentRoute\.fullPath !== resolvedTarget\.fullPath[\s\S]*?currentRoute\.redirectedFrom !== undefined[\s\S]*?reservation\.cancel\(\)[\s\S]*?skipVisualTransition\(updateState\.owningVisualTransition\)[\s\S]*?return/u.test(
+        /currentRoute\.name !== resolvedTarget\.name[\s\S]*?currentRoute\.fullPath !== resolvedTarget\.fullPath[\s\S]*?currentRoute\.redirectedFrom !== undefined[\s\S]*?skipVisualTransition\(visual\.transition\)[\s\S]*?return/u.test(
           updateSource,
         ),
     }),
@@ -2617,9 +2698,11 @@ function routeTransitionSourceProofResults(
         presentationCommitBrokerSource.includes(
           'broker.navigationReservations.set(navigation, selected)',
         ) &&
-        snapshot.coordinatorSource.includes(
-          'const activePresentationCommitReservations = new Map<',
-        ),
+        presentationCommitBrokerSource.includes('navigationId: input.navigationId') &&
+        presentationCommitBrokerSource.includes(
+          'broker.currentOperation?.()?.navigationId !== input.navigationId',
+        ) &&
+        operationSource.includes('navigationId: crypto.randomUUID()'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_44_PRESENTATION_COMMIT_SCOPE_CLOSURE',
@@ -2633,7 +2716,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 240 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 248 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])
@@ -2675,8 +2758,8 @@ function runRouteTransitionSourceNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         coordinatorSource: snapshot.coordinatorSource.replace(
-          '      navigationEpoch += 1',
-          '      navigationEpoch += 0',
+          '      clearDirection(directionOwner)\n    },',
+          '      // Direction projection retained incorrectly.\n    },',
         ),
       }),
     ],
@@ -2764,7 +2847,7 @@ function runRouteTransitionSourceNegativeProbes(
         ...snapshot,
         coordinatorSource: snapshot.coordinatorSource.replace(
           'await loadRouteLocation(resolvedTarget)',
-          'await runVisualTransition(targetRouteName, resolvedTarget, decision, currentEpoch)\n        await loadRouteLocation(resolvedTarget)',
+          'await runVisualTransition(request, resolvedTarget, decision, boundaryState.element)\n      await loadRouteLocation(resolvedTarget)',
         ),
       }),
     ],
@@ -2774,8 +2857,8 @@ function runRouteTransitionSourceNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         coordinatorSource: snapshot.coordinatorSource.replace(
-          'updateState.result = await input.router.push({ name: targetRouteName })',
-          'updateState.result = await input.router.push({ name: targetRouteName })\n      void input.router.push({ name: targetRouteName })',
+          'const result = await navigateDirectly(request)',
+          'const result = await navigateDirectly(request)\n      void input.router.push(resolvedTarget.fullPath)',
         ),
       }),
     ],
@@ -2871,8 +2954,8 @@ function runRouterPresentationCommitNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          '          focusTargets[0].focus({ preventScroll: true })',
-          '          resolveBoundRouterPresentationCommit(presentationCommitBroker, to)\n          focusTargets[0].focus({ preventScroll: true })',
+          'if (from !== START_LOCATION && !samePage && !locked) heading.focus({ preventScroll: true })',
+          'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)\n        if (from !== START_LOCATION && !samePage && !locked) heading.focus({ preventScroll: true })',
         ),
       }),
     ],
@@ -2882,8 +2965,8 @@ function runRouterPresentationCommitNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          '        regionOwner.scrollLeft = scrollPosition.left\n        regionOwner.scrollTop = scrollPosition.top\n        resolveBoundRouterPresentationCommit(presentationCommitBroker, to)',
-          '        resolveBoundRouterPresentationCommit(presentationCommitBroker, to)\n        regionOwner.scrollLeft = scrollPosition.left\n        regionOwner.scrollTop = scrollPosition.top',
+          'const context = regionContext(to, navigation, owner)',
+          'const context = regionContext(to, navigation, owner)\n            resolveBoundRouterPresentationCommit(presentationCommitBroker, to)',
         ),
       }),
     ],
@@ -2901,8 +2984,8 @@ function runRouterPresentationCommitNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         coordinatorSource: snapshot.coordinatorSource.replace(
-          '        if (isNavigationFailure(updateState.result)) {\n          reservation.cancel()\n          skipVisualTransition(updateState.owningVisualTransition)\n          return',
-          '        if (isNavigationFailure(updateState.result)) {\n          skipVisualTransition(updateState.owningVisualTransition)\n          return',
+          '        ) {\n          reservation.cancel()',
+          '        ) {',
         ),
       }),
     ],
@@ -2912,7 +2995,7 @@ function runRouterPresentationCommitNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         coordinatorSource: snapshot.coordinatorSource.replace(
-          '          currentRoute.redirectedFrom !== undefined\n        ) {\n          reservation.cancel()\n          skipVisualTransition(updateState.owningVisualTransition)\n          return',
+          '          currentRoute.redirectedFrom !== undefined\n        ) {\n          reservation.cancel()\n          skipVisualTransition(visual.transition)\n          return',
           '          currentRoute.redirectedFrom !== undefined\n        ) {\n          reservation.cancel()\n          return',
         ),
       }),
@@ -4219,7 +4302,9 @@ export function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule
     axis?.ruleId !== 'route-transition-rule.architecture-workspace-axis' ||
     !isDeepStrictEqual(axis.routeNames, workspaceAxisRouteNames) ||
     !isDeepStrictEqual(
-      consoleNavigationRegistry.flatMap((group) => group.items.map((item) => item.routeName)),
+      consoleNavigationRegistry.flatMap((group) =>
+        group.items.map((item) => item.destination.name),
+      ),
       workspaceAxisRouteNames,
     ) ||
     axis.forwardPresetId !== 'route-transition.axis-inline-soft' ||

@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import { UiAdminShell, type UiAdminNavigationGroup } from '@platform/ui'
 import { computed, onScopeDispose } from 'vue'
-import { isNavigationFailure, NavigationFailureType, useRouter } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 import { useConsoleI18n } from '../../shared/i18n'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
-import { getConsoleNavigation, type RouteName } from '../router/route-registry'
+import {
+  registeredRouteDestination,
+  resolveRegisteredDestination,
+  sameRouteAddress,
+} from '../router/route-input'
+import { consoleNavigationRegistry, getRouteRecord } from '../router/route-registry'
 import { createRouteTransitionCoordinator } from '../router/route-transition/route-transition-coordinator'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
@@ -20,7 +25,33 @@ defineSlots<{
 }>()
 
 const { t } = useConsoleI18n()
-const navigation = computed((): readonly UiAdminNavigationGroup[] => getConsoleNavigation(t))
+const projectedNavigation = computed(() =>
+  consoleNavigationRegistry
+    .map((group) => ({
+      id: group.id,
+      label: t(group.labelKey),
+      items: group.items.map((item) => ({
+        ...item,
+        destination: registeredRouteDestination(item.destination),
+        routeName: item.destination.name,
+        label: t(getRouteRecord(item.destination.name).meta.titleKey),
+      })),
+    }))
+    .filter((group) => group.items.length !== 0),
+)
+const navigation = computed((): readonly UiAdminNavigationGroup[] =>
+  projectedNavigation.value.map((group) => ({
+    ...group,
+    items: group.items.map((item) => {
+      const resolved = resolveRegisteredDestination(router, item.destination)
+      return {
+        ...item,
+        isCurrentDestination:
+          resolved !== undefined && sameRouteAddress(router.currentRoute.value, resolved),
+      }
+    }),
+  })),
+)
 const copy = computed(() => ({
   consoleTitle: t('shell.consoleTitle'),
   navigationLabel: t('shell.navigationLabel'),
@@ -44,15 +75,11 @@ onScopeDispose(() => {
 })
 
 async function navigate(routeName: string): Promise<void> {
-  if (router.currentRoute.value.name === routeName) {
-    return
-  }
-
-  const failure = await routeTransitionCoordinator.navigate(routeName as RouteName)
-
-  if (isNavigationFailure(failure, NavigationFailureType.duplicated)) {
-    return
-  }
+  const item = projectedNavigation.value
+    .flatMap((group) => group.items)
+    .find((candidate) => candidate.routeName === routeName)
+  if (item === undefined) return
+  await routeTransitionCoordinator.navigate(item.destination)
 }
 </script>
 

@@ -7,6 +7,7 @@ import ts from 'typescript'
 import { parse as parseYaml } from 'yaml'
 
 import { projectConfig } from '../../project.config'
+import { getDefaultConsoleMessage } from '../../apps/web/src/shared/i18n/default-messages'
 import {
   PublicRoleRegistry,
   type LayoutContainerVariantId,
@@ -41,6 +42,7 @@ import {
 import {
   consoleNavigationRegistry,
   errorRouteRegistry,
+  getRouteRecord,
   routeBreadcrumbRegistry,
   routeRegistry,
   routeTitleRegistry,
@@ -3602,6 +3604,15 @@ function runtime002MouseValue(
   if (ts.isIdentifier(value) && value.text === routeParameterName) {
     return scenario.currentRoute ? 'current-route' : 'different-route'
   }
+  if (
+    ts.isCallExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === 'isCurrentDestination' &&
+    value.arguments.length === 1 &&
+    value.arguments[0]?.getText(sourceFile) === routeParameterName
+  ) {
+    return scenario.currentRoute
+  }
   if (ts.isPropertyAccessExpression(value)) {
     if (
       ts.isIdentifier(value.expression) &&
@@ -3819,22 +3830,15 @@ function runtime002HandlerExactGuardChecks(
     return ts.isNumericLiteral(value) && value.text === '0'
   }
 
-  function isRequestedRoute(expression: ts.Expression): boolean {
-    const value = unwrapExpression(expression)
-    return ts.isIdentifier(value) && value.text === routeParameterName
-  }
-
-  function isActiveRoute(expression: ts.Expression): boolean {
-    const value = unwrapExpression(expression)
-    return (
-      ts.isPropertyAccessExpression(value) &&
-      ts.isIdentifier(value.expression) &&
-      value.expression.text === 'props' &&
-      value.name.text === 'activeRouteName'
-    )
-  }
-
   function visit(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'isCurrentDestination' &&
+      node.arguments.length === 1 &&
+      node.arguments[0]?.getText(sourceFile) === routeParameterName
+    )
+      activeRoute = true
     if (
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
@@ -3842,9 +3846,6 @@ function runtime002HandlerExactGuardChecks(
       primaryButton ||=
         (isEventButton(node.left) && isPrimaryButtonLiteral(node.right)) ||
         (isPrimaryButtonLiteral(node.left) && isEventButton(node.right))
-      activeRoute ||=
-        (isRequestedRoute(node.left) && isActiveRoute(node.right)) ||
-        (isActiveRoute(node.left) && isRequestedRoute(node.right))
     }
     ts.forEachChild(node, visit)
   }
@@ -3863,6 +3864,17 @@ function runtime002NavigationValue(
   effect: Runtime002NavigationEffect,
 ): boolean | string | undefined {
   const value = unwrapExpression(expression)
+
+  if (
+    ts.isCallExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === 'isCurrentDestination' &&
+    value.arguments.length === 1 &&
+    value.arguments[0] !== undefined &&
+    ts.isIdentifier(value.arguments[0]) &&
+    value.arguments[0].text === routeParameterName
+  )
+    return scenario.currentRoute
 
   if (value.kind === ts.SyntaxKind.TrueKeyword) {
     return true
@@ -4177,6 +4189,18 @@ function runtime002NavigationViolations(shellSource: string): string[] {
   }
 
   const handler = functionDeclaration(sourceFile, 'preserveCurrentPersistentNavigationFocus')
+  const currentDestination = functionDeclaration(sourceFile, 'isCurrentDestination')
+  if (
+    currentDestination === undefined ||
+    !/return props\.navigation\.some\(\(group\) =>\s*group\.items\.some\(\(item\) => item\.routeName === routeName && item\.isCurrentDestination\),?\s*\)/u.test(
+      currentDestination.getText(sourceFile),
+    )
+  ) {
+    violations.push(
+      'PAVP_RUNTIME_002_CURRENT_ROUTE_NOOP',
+      'PAVP_RUNTIME_002_DIFFERENT_ROUTE_DEFAULT',
+    )
+  }
   const handlerExported =
     handler !== undefined &&
     ts.getModifiers(handler)?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)
@@ -5122,7 +5146,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   const activeNavigationNoop =
-    /function\s+navigate\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?if\s*\(\s*profile\.value\s*===\s*'narrow'\s*&&\s*navigationOpen\.value\s*\)\s*\{\s*closeNavigation\(\)\s*\}[\s\S]*?if\s*\(\s*routeName\s*===\s*props\.activeRouteName\s*\)\s*\{\s*return\s*\}[\s\S]*?emit\(\s*'navigate'\s*,\s*routeName\s*\)/u.test(
+    /function\s+navigate\s*\([^)]*\)\s*:\s*void\s*\{[\s\S]*?if\s*\(\s*profile\.value\s*===\s*'narrow'\s*&&\s*navigationOpen\.value\s*\)\s*\{\s*closeNavigation\(\)\s*\}[\s\S]*?if\s*\(\s*isCurrentDestination\(routeName\)\s*\)\s*\{\s*return\s*\}[\s\S]*?emit\(\s*'navigate'\s*,\s*routeName\s*\)/u.test(
       snapshot.shellSource,
     )
   if (!activeNavigationNoop) {
@@ -10940,6 +10964,7 @@ function runRuntime005NegativeProbes(
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
   const routedComponentBlock = `          <component
             :is="Component"
+            v-bind="routeInputProps"
             :breadcrumb="presentation.breadcrumb"
             :message="presentation.message"
             :title="presentation.title"
@@ -11419,7 +11444,7 @@ function runArchitectureAdminConsoleNegativeProbes(
       'ACTIVE_NAVIGATION_ITEM_NOOP',
       {
         shellSource: baseline.shellSource.replace(
-          /if\s*\(routeName\s*===\s*props\.activeRouteName\)\s*\{\s*return\s*\}/u,
+          /if\s*\(isCurrentDestination\(routeName\)\)\s*\{\s*return\s*\}/u,
           '',
         ),
       },
@@ -11585,7 +11610,7 @@ function runRuntime002NegativeProbes(
       'runtime-002-guard-applies-to-every-route',
       'PAVP_RUNTIME_002_DIFFERENT_ROUTE_DEFAULT',
       baseline.shellSource.replace(
-        'event.button === 0 && routeName === props.activeRouteName',
+        'event.button === 0 && isCurrentDestination(routeName)',
         'event.button === 0 && true',
       ),
     ],
@@ -11603,16 +11628,16 @@ function runRuntime002NegativeProbes(
       'runtime-002-blur-repair-restored',
       'PAVP_RUNTIME_002_PROHIBITED_REPAIR',
       baseline.shellSource.replace(
-        'if (event.button === 0 && routeName === props.activeRouteName) {\n    event.preventDefault()\n  }',
-        'if (event.button === 0 && routeName === props.activeRouteName) {\n    event.currentTarget?.blur()\n  }',
+        'if (event.button === 0 && isCurrentDestination(routeName)) {\n    event.preventDefault()\n  }',
+        'if (event.button === 0 && isCurrentDestination(routeName)) {\n    event.currentTarget?.blur()\n  }',
       ),
     ],
     [
       'runtime-002-delayed-focus-restore-restored',
       'PAVP_RUNTIME_002_PROHIBITED_REPAIR',
       baseline.shellSource.replace(
-        'if (event.button === 0 && routeName === props.activeRouteName) {\n    event.preventDefault()\n  }',
-        'if (event.button === 0 && routeName === props.activeRouteName) {\n    setTimeout(() => event.currentTarget?.focus())\n  }',
+        'if (event.button === 0 && isCurrentDestination(routeName)) {\n    event.preventDefault()\n  }',
+        'if (event.button === 0 && isCurrentDestination(routeName)) {\n    setTimeout(() => event.currentTarget?.focus())\n  }',
       ),
     ],
     ['runtime-002-current-item-disabled', 'PAVP_RUNTIME_002_NATIVE_BUTTON', disabledCurrentSource],
@@ -11633,7 +11658,7 @@ function runRuntime002NegativeProbes(
       'runtime-002-current-route-noop-removed',
       'PAVP_RUNTIME_002_CURRENT_ROUTE_NOOP',
       baseline.shellSource.replace(
-        /\n\s*if\s*\(routeName\s*===\s*props\.activeRouteName\)\s*\{\s*return\s*\}/u,
+        /\n\s*if\s*\(isCurrentDestination\(routeName\)\)\s*\{\s*return\s*\}/u,
         '',
       ),
     ],
@@ -16710,8 +16735,10 @@ function validateInspectorProjections(): string[] {
   }
 
   const navigationProjection = consoleNavigationRegistry.map((group) => [
-    group.label,
-    group.items.map((item) => item.label),
+    getDefaultConsoleMessage(group.labelKey),
+    group.items.map((item) =>
+      getDefaultConsoleMessage(getRouteRecord(item.destination.name).meta.titleKey),
+    ),
   ])
   const navigationIconProjection = consoleNavigationRegistry.flatMap((group) =>
     group.items.map((item) => item.iconClass),

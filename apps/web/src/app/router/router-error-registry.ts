@@ -1,5 +1,5 @@
 import { coreErrorRegistry } from '../errors/core-error-registry'
-import type { RouteName } from './route-registry'
+import type { RouteName, errorRouteRegistry } from './route-registry'
 
 export type RouterErrorId =
   | 'route-input-validation-failure'
@@ -10,6 +10,7 @@ export type RouterErrorId =
   | 'route-redirect-loop'
 
 export type RouterFailureKind =
+  | 'aborted-by-guard'
   | 'invalid-input'
   | 'route-not-found'
   | 'chunk-load-failed'
@@ -125,7 +126,7 @@ export function createNormalizedRouterError<Id extends RouterErrorId>(
 export function safeRouterErrorRoute(
   id: RouterErrorId,
   browserExplicitlyOffline: boolean,
-): RouteName {
+): (typeof errorRouteRegistry)[number]['routeName'] {
   const record = routerErrorRegistry.find((candidate) => candidate.id === id)
 
   if (record === undefined) {

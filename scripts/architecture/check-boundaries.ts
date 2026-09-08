@@ -838,9 +838,11 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
     !brokerSource.includes('export function reserveRouterPresentationCommit') ||
     !brokerSource.includes('routeName === reservation.expectedRouteName') ||
     !brokerSource.includes('navigation.fullPath === reservation.expectedFullPath') ||
-    !coordinatorSource.includes(
-      "import { reserveRouterPresentationCommit } from '../router-lifecycle'",
+    !/import\s*\{[^}]*\breserveRouterPresentationCommit\b[^}]*\}\s*from '\.\.\/router-lifecycle'/u.test(
+      coordinatorSource,
     ) ||
+    !brokerSource.includes('reservation.navigationId === navigationId') ||
+    !coordinatorSource.includes('navigationId: request.navigationId') ||
     !coordinatorSource.includes('await reservation.completion') ||
     routeTransitionTypesSource.includes('RouterPresentationCommit') ||
     registrySource.includes('RouterPresentationCommit') ||
@@ -863,10 +865,12 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
     )
   }
   if (
-    !lifecycleSource.includes('regionOwner.scrollLeft = scrollPosition.left') ||
-    !lifecycleSource.includes('regionOwner.scrollTop = scrollPosition.top') ||
+    !lifecycleSource.includes('owner.scrollLeft =') ||
+    !lifecycleSource.includes('owner.scrollTop = Math.max(0, Math.min(height, position.top))') ||
+    !lifecycleSource.includes('Math.max(-width, Math.min(0, position.left))') ||
+    !lifecycleSource.includes('writeRegionPosition(owner, fragment)') ||
     lifecycleSource.indexOf('resolveBoundRouterPresentationCommit(presentationCommitBroker, to)') <
-      lifecycleSource.indexOf('regionOwner.scrollTop = scrollPosition.top')
+      lifecycleSource.lastIndexOf('writeRegionPosition(owner,')
   ) {
     violations.push(
       'Router Presentation Commit must resolve only after the existing final inline and block region scroll writes.',

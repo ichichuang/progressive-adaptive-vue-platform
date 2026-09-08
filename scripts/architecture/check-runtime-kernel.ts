@@ -1379,10 +1379,11 @@ function validateHmr(main: ParsedSource, allSources: readonly ParsedSource[]): s
   for (const source of allSources) {
     for (const binary of nodesOf(source.sourceFile, ts.isBinaryExpression)) {
       const left = canonicalText(binary.left, source)
+      const operator = binary.operatorToken.kind
       if (
-        left.startsWith('window.') ||
-        left.startsWith('globalThis.') ||
-        left.startsWith('self.')
+        operator >= ts.SyntaxKind.FirstAssignment &&
+        operator <= ts.SyntaxKind.LastAssignment &&
+        (left.startsWith('window.') || left.startsWith('globalThis.') || left.startsWith('self.'))
       ) {
         violations.push(
           `${relative(rootDirectory, source.path)} must not publish a Runtime Kernel global.`,

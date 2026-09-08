@@ -5433,8 +5433,10 @@ Active Bundle Budget Records 按 Canonical Generator 固定顺序：
 | `generated-token-manifest-gzip` | `32768` | `bytes-gzip` |
 | `admin-navigation-motion-feature-javascript-gzip` | `49152` | `bytes-gzip` |
 | `initial-css-gzip` | `40960` | `bytes-gzip` |
-| `initial-javascript-gzip` | `245760` | `bytes-gzip` |
+| `initial-javascript-gzip` | `253952` | `bytes-gzip` |
 | `lazy-route-javascript-gzip` | `122880` | `bytes-gzip` |
+
+Owner 单独批准将当前 Initial JavaScript 预算从 `245760`（240 KiB）调整为 `253952`（248 KiB）gzip bytes；唯一配置权威仍为 `project.config.ts.bundleBudgets.initialJavaScriptGzipBytes`。最低 Headroom 保持 `8192`（8 KiB），因此最大允许实测 Initial JavaScript 为 `245760` bytes gzip。其他预算、既有 gzip/SHA 归一化、闭包计数、对齐公式与失败语义不变；§1.2B 各已完成导航包及 §23.6.9 的旧预算、批准和测量记录保留历史含义。本次只同步当前预算及其既有生成镜像和预算常量断言，不实施或接受未提交的可配置路由候选，不改变 Current Work、Next、Successor 或 Release 状态。
 
 `workflowNames` 按 Code-point 精确为 `CodeQL,Static Verification`。Canonical Read Allowlist 精确为：
 
