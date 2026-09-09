@@ -52,6 +52,12 @@ const surfaceVariants = Object.freeze({
   focus: { opacity: 1 },
   press: { opacity: 1 },
 })
+const closeMarkVariants = computed(() => ({
+  rest: { opacity: 0.68, scale: 1 },
+  hover: { opacity: 1, scale: full.value ? 1.04 : 1 },
+  focus: resting,
+  press: { opacity: 0.86, scale: full.value ? 0.985 : 1 },
+}))
 function setStrip(value: unknown): void {
   strip.value =
     value !== null &&
@@ -187,6 +193,7 @@ watch(
               class="pavp-workspace-tabs__item"
               role="presentation"
               :data-active="item.id === activeId"
+              :data-closable="item.closable"
               :layout="full ? 'position' : false"
               :initial="featureReady && motion !== 'none' ? entering : false"
               :animate="{ ...resting, y: 0 }"
@@ -237,7 +244,6 @@ watch(
                 while-hover="hover"
                 while-focus="focus"
                 while-press="press"
-                :variants="buttonVariants"
                 :transition="transition"
                 :aria-label="item.closeLabel"
                 @focus="focusedId = item.id"
@@ -250,12 +256,13 @@ watch(
                   :variants="surfaceVariants"
                   :transition="transition"
                 />
-                <span
-                  class="pavp-workspace-tabs__label"
+                <m.span
+                  class="pavp-workspace-tabs__close-mark"
                   aria-hidden="true"
-                >
-                  ×
-                </span>
+                  :initial="false"
+                  :variants="closeMarkVariants"
+                  :transition="transition"
+                />
               </m.button>
             </m.div>
           </AnimatePresence>
@@ -331,6 +338,10 @@ watch(
 .pavp-workspace-tabs__tab:hover {
   color: var(--ui-color-text-primary);
 }
+.pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab {
+  padding-inline-end: 0;
+  text-align: end;
+}
 .pavp-workspace-tabs__lens,
 .pavp-workspace-tabs[data-layout-motion='false'] .pavp-workspace-tabs__item[data-active='true'] {
   background: color-mix(
@@ -367,6 +378,36 @@ watch(
 
   padding-inline: 0;
   color: var(--ui-color-text-secondary);
+}
+.pavp-workspace-tabs__close .pavp-workspace-tabs__hover {
+  inset-inline-end: auto;
+  margin-block: auto;
+  inline-size: calc(var(--ui-font-size-body) + var(--ui-space-content-gap));
+  block-size: calc(var(--ui-font-size-body) + var(--ui-space-content-gap));
+}
+/* Keep the target beside the label; only the mark and its small surface sit near it. */
+.pavp-workspace-tabs__close-mark {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(var(--ui-space-content-gap) / 2);
+  margin-block: auto;
+  inline-size: var(--ui-font-size-body);
+  block-size: var(--ui-font-size-body);
+  pointer-events: none;
+}
+.pavp-workspace-tabs__close-mark::before,
+.pavp-workspace-tabs__close-mark::after {
+  content: '';
+  position: absolute;
+  inset-block-start: calc(50% - var(--ui-admin-focus-width) / 2);
+  inset-inline: calc(var(--ui-font-size-body) * -0.1875);
+  border-block-start-width: var(--ui-admin-focus-width);
+  border-block-start-style: solid;
+  border-block-start-color: currentColor;
+  transform: rotate(45deg);
+}
+.pavp-workspace-tabs__close-mark::after {
+  transform: rotate(-45deg);
 }
 .pavp-workspace-tabs__item:hover .pavp-workspace-tabs__close,
 .pavp-workspace-tabs__item:focus-within .pavp-workspace-tabs__close,
