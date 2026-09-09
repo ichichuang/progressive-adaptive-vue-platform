@@ -208,6 +208,11 @@ watch(
                 :initial="false"
                 :transition="transition"
               />
+              <div
+                v-else-if="item.id === activeId"
+                class="pavp-workspace-tabs__lens"
+                aria-hidden="true"
+              />
               <m.button
                 :id="`${item.id}-tab`"
                 type="button"
@@ -274,17 +279,21 @@ watch(
 
 <style scoped>
 .pavp-workspace-tabs {
-  --workspace-hover-surface: var(--ui-admin-navigation-hover);
+  --workspace-hover-surface: color-mix(
+    in srgb,
+    var(--ui-admin-navigation-selected) 6%,
+    transparent
+  );
 
   position: relative;
   isolation: isolate;
   display: flex;
   flex: 0 0 auto;
-  gap: var(--ui-space-content-gap);
+  gap: 0;
   overflow-x: auto;
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
-  background-color: var(--ui-color-surface-page);
+  background-color: var(--ui-color-surface-panel);
   border-block-end-width: var(--ui-admin-border-width);
   border-block-end-style: solid;
   border-block-end-color: var(--ui-color-border-default);
@@ -293,10 +302,22 @@ watch(
 .pavp-workspace-tabs__item {
   position: relative;
   isolation: isolate;
-  border-radius: var(--ui-radius-panel);
   display: flex;
   flex: 0 0 auto;
   align-items: center;
+}
+.pavp-workspace-tabs__item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-block-start-width: var(--ui-admin-border-width);
+  border-block-start-style: solid;
+  border-block-start-color: var(--ui-color-border-default);
+  border-inline-end-width: var(--ui-admin-border-width);
+  border-inline-end-style: solid;
+  border-inline-end-color: var(--ui-color-border-default);
+  opacity: 0.4;
+  pointer-events: none;
 }
 .pavp-workspace-tabs button {
   position: relative;
@@ -306,7 +327,7 @@ watch(
   min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
   padding-inline: var(--ui-space-content-gap);
   border: 0;
-  border-radius: var(--ui-radius-panel);
+  border-radius: 0;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -342,54 +363,50 @@ watch(
   padding-inline-end: 0;
   text-align: end;
 }
-.pavp-workspace-tabs__lens,
-.pavp-workspace-tabs[data-layout-motion='false'] .pavp-workspace-tabs__item[data-active='true'] {
-  background: color-mix(
-    in srgb,
-    var(--ui-admin-navigation-selected) 12%,
-    var(--ui-color-surface-panel)
-  );
-  box-shadow: var(--ui-admin-shadow-control-hover);
-}
-.pavp-workspace-tabs__lens::after,
-.pavp-workspace-tabs[data-layout-motion='false']
-  .pavp-workspace-tabs__item[data-active='true']::after {
-  content: '';
-  position: absolute;
-  inset-inline: var(--ui-radius-panel);
-  inset-block-end: 0;
-  block-size: var(--ui-admin-focus-width);
-  background: var(--ui-admin-navigation-selected);
-  pointer-events: none;
-}
 .pavp-workspace-tabs__lens {
   position: absolute;
   inset: 0;
   z-index: var(--ui-z-base);
   border-radius: inherit;
+  background: color-mix(
+    in srgb,
+    var(--ui-admin-navigation-selected) 12%,
+    var(--ui-color-surface-panel)
+  );
+  pointer-events: none;
+}
+.pavp-workspace-tabs__lens::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: var(--ui-admin-shadow-control);
+  opacity: 0.4;
+  pointer-events: none;
+}
+.pavp-workspace-tabs__lens::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  block-size: var(--ui-admin-focus-width);
+  background: var(--ui-admin-navigation-selected);
   pointer-events: none;
 }
 .pavp-workspace-tabs .pavp-workspace-tabs__close {
-  --workspace-hover-surface: color-mix(
-    in srgb,
-    var(--ui-admin-navigation-selected) 16%,
-    transparent
-  );
-
   padding-inline: 0;
   color: var(--ui-color-text-secondary);
 }
-.pavp-workspace-tabs__close .pavp-workspace-tabs__hover {
-  inset-inline-end: auto;
-  margin-block: auto;
-  inline-size: calc(var(--ui-font-size-body) + var(--ui-space-content-gap));
-  block-size: calc(var(--ui-font-size-body) + var(--ui-space-content-gap));
+/* Paint one tab surface across adjacent targets without extending either hit box. */
+.pavp-workspace-tabs__item[data-closable='true']
+  .pavp-workspace-tabs__tab
+  .pavp-workspace-tabs__hover {
+  inset-inline-end: calc(var(--ui-layout-target-enhanced-minimum-inline-size) * -1);
 }
-/* Keep the target beside the label; only the mark and its small surface sit near it. */
+/* Center the small mark inside the full close target, keeping the rail geometry stable. */
 .pavp-workspace-tabs__close-mark {
   position: absolute;
   inset-block: 0;
-  inset-inline-start: calc(var(--ui-space-content-gap) / 2);
+  inset-inline-start: calc((100% - var(--ui-font-size-body)) / 2);
   margin-block: auto;
   inline-size: var(--ui-font-size-body);
   block-size: var(--ui-font-size-body);
@@ -399,9 +416,9 @@ watch(
 .pavp-workspace-tabs__close-mark::after {
   content: '';
   position: absolute;
-  inset-block-start: calc(50% - var(--ui-admin-focus-width) / 2);
-  inset-inline: calc(var(--ui-font-size-body) * -0.1875);
-  border-block-start-width: var(--ui-admin-focus-width);
+  inset-block-start: calc(50% - var(--ui-admin-border-width) / 2);
+  inset-inline: 0;
+  border-block-start-width: var(--ui-admin-border-width);
   border-block-start-style: solid;
   border-block-start-color: currentColor;
   transform: rotate(45deg);
