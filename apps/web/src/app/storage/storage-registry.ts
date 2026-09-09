@@ -6,7 +6,7 @@ type StoragePersistenceShape = 'direct-compatibility' | 'persisted-envelope'
 type StorageCorruptionPolicy =
   'quarantine-then-reset' | 'delete-then-reset' | 'preserve-in-place-reject-read'
 
-type StorageMedium = 'local-storage' | 'indexed-db' | 'memory'
+type StorageMedium = 'local-storage' | 'session-storage' | 'indexed-db' | 'memory'
 
 export interface StorageRegistryRecord {
   readonly id: string
@@ -87,6 +87,34 @@ export const storageRegistry = Object.freeze([
     medium: 'local-storage',
     persistenceShape: 'direct-compatibility',
     schemaId: 'workspace-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
+  Object.freeze({
+    id: 'scroll-preference',
+    ownerDomain: 'apps/web/src/app/scroll',
+    key: applicationConfig.scroll.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'scroll-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
+  Object.freeze({
+    id: 'scroll-refresh-session',
+    ownerDomain: 'apps/web/src/app/router',
+    key: applicationConfig.scroll.refreshSessionStorageKey,
+    medium: 'session-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'scroll-refresh-session',
     currentSchemaVersion: 1,
     minimumSupportedSchemaVersion: 1,
     principalPartition: 'none',

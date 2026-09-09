@@ -92,6 +92,34 @@ const expectedStorageRegistryRecords = [
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   },
+  {
+    id: 'scroll-preference',
+    ownerDomain: 'apps/web/src/app/scroll',
+    key: applicationConfig.scroll.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'scroll-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
+  {
+    id: 'scroll-refresh-session',
+    ownerDomain: 'apps/web/src/app/router',
+    key: applicationConfig.scroll.refreshSessionStorageKey,
+    medium: 'session-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'scroll-refresh-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
 ] as const
 
 const expectedStorageErrors = [
@@ -188,6 +216,8 @@ const rawStorageKeyLiterals = [
   'pavp:web:locale-preference',
   'pavp:web:navigation-preference',
   'pavp:web:workspace-session',
+  'pavp:web:scroll-preference',
+  'pavp:web:scroll-refresh-session',
 ] as const
 
 const approvedRawStorageKeyPaths = new Set([
@@ -312,7 +342,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain exactly the five admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the seven admitted direct-compatibility records.',
     )
   }
 
@@ -397,7 +427,9 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
       sourceText.includes(keyLiteral) &&
       (keyLiteral === 'pavp:web:locale-preference' ||
       keyLiteral === 'pavp:web:navigation-preference' ||
-      keyLiteral === 'pavp:web:workspace-session'
+      keyLiteral === 'pavp:web:workspace-session' ||
+      keyLiteral === 'pavp:web:scroll-preference' ||
+      keyLiteral === 'pavp:web:scroll-refresh-session'
         ? displayPath !== 'apps/web/src/app/config/app.config.ts'
         : !approvedRawStorageKeyPaths.has(displayPath))
     ) {
@@ -417,6 +449,7 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     'apps/web/src/app/storage/locale-preference-storage.ts',
     'apps/web/src/app/storage/navigation-preference-storage.ts',
     'apps/web/src/app/storage/workspace-session-storage.ts',
+    'apps/web/src/app/storage/scroll-preference-storage.ts',
   ])
   if (
     displayPath.startsWith('apps/web/src/') &&
@@ -450,7 +483,8 @@ function sensitivePersistenceFileViolation(displayPath: string, sourceText: stri
   for (const token of sensitivePersistenceTokens) {
     if (
       token === 'sessionstorage'
-        ? /\bsessionStorage\b/iu.test(sourceText)
+        ? displayPath !== 'apps/web/src/app/storage/scroll-refresh-storage.ts' &&
+          /\bsessionStorage\b/iu.test(sourceText)
         : normalized.includes(token)
     ) {
       violations.push(
@@ -668,6 +702,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         'appearance',
         'localization',
         'navigation',
+        'scroll',
         'workspace',
       ]) &&
       isDeepStrictEqual(Object.keys(applicationConfig.navigation), ['preferenceStorageKey']),
@@ -953,7 +988,7 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain exactly the five admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the seven admitted direct-compatibility records.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
@@ -1025,6 +1060,74 @@ function focusedNegativeProbes(): string[] {
   return failures
 }
 
+async function scrollStorageViolations(): Promise<string[]> {
+  const violations: string[] = []
+  const contracts = [
+    [
+      'scroll-preference-contract',
+      'scrollPreferenceSchema',
+      ['schemaVersion', 'restoreOnRefresh'],
+      'scroll-preference-storage',
+      'localStorage',
+    ],
+    [
+      'scroll-refresh-contract',
+      'scrollRefreshSchema',
+      ['schemaVersion', 'routeName', 'ownerId', 'left', 'top', 'context'],
+      'scroll-refresh-storage',
+      'sessionStorage',
+    ],
+  ] as const
+  for (const [file, schemaName, fields, adapterName, medium] of contracts) {
+    const path = `apps/web/src/app/scroll/${file}.ts`
+    const contract = scriptSource(path, await readFile(resolve(rootDirectory, path), 'utf8'))
+    const schema = nodesOf(contract, ts.isVariableDeclaration).find(
+      (node) => node.name.getText(contract) === schemaName,
+    )?.initializer
+    const argument =
+      schema !== undefined && ts.isCallExpression(schema) ? schema.arguments[0] : undefined
+    if (
+      schema === undefined ||
+      !ts.isCallExpression(schema) ||
+      callMemberName(schema) !== 'strictObject' ||
+      argument === undefined ||
+      !ts.isObjectLiteralExpression(argument) ||
+      !isDeepStrictEqual(
+        argument.properties.map((field) => field.name?.getText(contract)),
+        fields,
+      )
+    )
+      violations.push(`${path}: the exact strict scroll payload contract drifted.`)
+    const adapter = await readFile(
+      resolve(rootDirectory, `apps/web/src/app/storage/${adapterName}.ts`),
+      'utf8',
+    )
+    if (
+      !adapter.includes(`window.${medium}`) ||
+      !adapter.includes(`${schemaName}.safeParse`) ||
+      !adapter.includes("reason: 'disposed'") ||
+      [
+        'storage-unavailable',
+        'storage-read-denied',
+        'storage-parse-failed',
+        'storage-unsupported-version',
+        'storage-schema-rejected',
+        'storage-serialization-failed',
+        'storage-quota-exceeded',
+        'storage-write-denied',
+        'storage-readback-mismatch',
+      ].some((id) => !adapter.includes(id))
+    )
+      violations.push(
+        `${adapterName}: scroll Storage validation, error or disposal ownership drifted.`,
+      )
+  }
+  const crossTab = await readFile(resolve(storageDirectory, 'storage-cross-tab.ts'), 'utf8')
+  if (!/\.medium\s*===\s*'local-storage'/u.test(crossTab))
+    violations.push('Session Storage must not participate in localStorage event routing.')
+  return violations
+}
+
 export async function validateStorageArchitecture(): Promise<readonly string[]> {
   const violations = [
     ...validateStorageRegistryRecords(storageRegistry),
@@ -1040,6 +1143,7 @@ export async function validateStorageArchitecture(): Promise<readonly string[]> 
     ...(await storageLifecycleViolations()),
     ...(await navigationPreferenceViolations()),
     ...(await workspaceSessionViolations()),
+    ...(await scrollStorageViolations()),
     ...focusedNegativeProbes(),
   ]
 

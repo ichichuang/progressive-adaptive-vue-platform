@@ -721,6 +721,61 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   const registry: UiPublicComponentRegistry = uiPublicComponentRegistry
   const registryRecords: readonly UiPublicComponentRegistryRecord[] = registry.records
   const indexSource = await readFile(resolve(uiSourceDirectory, 'index.ts'), 'utf8')
+  const scrollSource = await readFile(
+    resolve(uiSourceDirectory, 'components/UiScrollArea.vue'),
+    'utf8',
+  )
+  const scrollContracts = sourceFile(
+    'scroll-contracts.ts',
+    await readFile(resolve(uiSourceDirectory, 'components/scroll-contracts.ts'), 'utf8'),
+  )
+  const scrollController = scrollContracts.statements.find(
+    (statement) =>
+      ts.isInterfaceDeclaration(statement) && statement.name.text === 'UiScrollController',
+  )
+  if (
+    scrollController === undefined ||
+    !ts.isInterfaceDeclaration(scrollController) ||
+    !exactSet(
+      scrollController.members.flatMap((member) =>
+        member.name === undefined ? [] : [member.name.getText(scrollContracts)],
+      ),
+      [
+        'ownerId',
+        'readState',
+        'ownsBoundary',
+        'readOffset',
+        'scrollTo',
+        'scrollBy',
+        'scrollToStart',
+        'scrollToEnd',
+        'scrollToAnchor',
+        'dispose',
+      ],
+    ) ||
+    /naive-ui|ScrollbarInst|containerRef|contentRef|\$el/u.test(scrollContracts.text) ||
+    /_internal\/scrollbar|containerRef|contentRef|n-scrollbar|\$el|requestAnimationFrame|setInterval|scrollIntoView/u.test(
+      scriptContent(scrollSource),
+    ) ||
+    !scrollSource.includes('PavpScrollbarPrimitive') ||
+    !/onBeforeUnmount\(\s*[\w$]+\.dispose\s*\)/u.test(scriptContent(scrollSource))
+  )
+    violations.push(
+      'Scroll Area must retain the PAVP controller, public Naive boundary and native disposable execution contract.',
+    )
+  const workspaceScrollSource = await readFile(
+    resolve(uiSourceDirectory, 'adapters/motion/WorkspaceTabsSurface.vue'),
+    'utf8',
+  )
+  if (
+    !workspaceScrollSource.includes('<UiScrollArea') ||
+    !workspaceScrollSource.includes('x-scrollable') ||
+    !workspaceScrollSource.includes(':layout-root="full"') ||
+    /scrollLeft\s*(?:=|\+=|-=)|layout-scroll|containerRef|contentRef/u.test(workspaceScrollSource)
+  )
+    violations.push(
+      'Workspace horizontal reveal must use the Scroll Controller and PAVP-owned Motion geometry.',
+    )
   const publicExports = publicComponentExports(indexSource)
   const registeredExports = registryRecords.map((record) => record.exportName)
   const formContracts = await readFile(
@@ -947,6 +1002,15 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'),
     'utf8',
   )
+  const shellScrollSource = await readFile(resolve(rootDirectory, uiAdminShellPath), 'utf8')
+  if (
+    shellScrollSource.includes("import UiScrollArea from './UiScrollArea.vue'") &&
+    shellScrollSource.includes('owner-id="architecture-console-content"')
+  )
+    directConsumers.set(
+      'UiScrollArea',
+      productRoutes.map((route) => route.name),
+    )
   if (
     importedNames(scriptContent(workspaceFrame), '@platform/ui').includes('UiWorkspaceTabs') &&
     [...workspaceFrame.matchAll(/<UiWorkspaceTabs\b/gu)].length === 1
@@ -1020,6 +1084,8 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'packages/ui/src/adapters/naive/naive-layout.ts',
     'packages/ui/src/adapters/naive/naive-menu.ts',
     'packages/ui/src/adapters/naive/naive-radio.ts',
+    'packages/ui/src/adapters/naive/naive-scrollbar.ts',
+    'packages/ui/src/adapters/naive/naive-switch.ts',
     'packages/ui/src/adapters/naive/naive-tag.ts',
     'packages/ui/src/adapters/naive/naive-tooltip.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
@@ -1093,6 +1159,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
         statement.exportClause !== undefined &&
         ts.isNamedExports(statement.exportClause)
       ) {
+        if (statement.isTypeOnly) continue
         const specifier = statement.moduleSpecifier.text
         runtimeImports.push(
           ...statement.exportClause.elements.flatMap((element) =>
@@ -1155,6 +1222,8 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NInputNumber@naive-ui/es/input-number',
     'NSelect@naive-ui/es/select',
     'NSwitch@naive-ui/es/switch',
+    'NSwitch@naive-ui/es/switch', // The admitted Form Control and UiSwitch private adapters.
+    'NScrollbar@naive-ui/es/scrollbar',
     'NDatePicker@naive-ui/es/date-picker',
     'NBreadcrumb@naive-ui/es/breadcrumb',
     'NBreadcrumbItem@naive-ui/es/breadcrumb',

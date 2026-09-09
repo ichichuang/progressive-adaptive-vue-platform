@@ -64,6 +64,7 @@ import { startupConfigurationRecoveryPolicy } from './startup-configuration-reco
 const applicationMountTarget = '#app'
 
 interface AttemptResources {
+  scrollSystem?: { dispose(): void }
   workspaceSession?: { dispose(): void }
   navigationPreference?: { dispose(): void }
   i18n?: ConsoleI18nHandle
@@ -179,6 +180,14 @@ function createAttemptDisposer(input: {
       failedSteps,
     )
     delete input.resources.mountedApplication
+    safeDispose(
+      'dispose-scroll-system',
+      input.resources.scrollSystem === undefined
+        ? undefined
+        : () => input.resources.scrollSystem?.dispose(),
+      failedSteps,
+    )
+    delete input.resources.scrollSystem
     safeDispose(
       'dispose-workspace-session',
       input.resources.workspaceSession === undefined
@@ -513,6 +522,15 @@ async function startAttempt(input: {
     )
     throwClaimedStartupFailure()
 
+    enterBootstrapStep('initialize-scroll-system')
+    resources.scrollSystem = initializeScrollSystem(
+      resources.pinia.pinia,
+      resources.router,
+      resources.storage.owner.scrollPreference,
+      resources.storage.owner.scrollRefresh,
+    )
+    throwClaimedStartupFailure()
+
     enterBootstrapStep('mount-application')
     mounting = true
     try {
@@ -747,3 +765,4 @@ export function startRuntimeKernel(
     },
   }
 }
+import { initializeScrollSystem } from '../scroll/scroll-system'

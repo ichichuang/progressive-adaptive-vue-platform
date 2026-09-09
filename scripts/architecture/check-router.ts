@@ -314,7 +314,7 @@ const expectedMessages = [
   [
     'runtime-kernel-inspector',
     'route-message.runtime-kernel-inspector-summary',
-    '查看当前十四阶段启动流程、Provider 与生命周期边界。',
+    '查看当前十五阶段启动流程、Provider 与生命周期边界。',
   ],
   [
     'router-governance-inspector',
@@ -2659,14 +2659,12 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_39_FINAL_REGION_SCROLL_COMMIT',
       passed:
-        regionWriteSource.includes('owner.scrollLeft =') &&
-        regionWriteSource.includes(
-          'owner.scrollTop = Math.max(0, Math.min(height, position.top))',
-        ) &&
-        regionWriteSource.includes("style.direction === 'rtl'") &&
-        regionWriteSource.includes('Math.max(-width, Math.min(0, position.left))') &&
-        regionCommitSource.includes('writeRegionPosition(owner, record)') &&
-        regionCommitSource.includes('writeRegionPosition(owner, fragment)') &&
+        regionWriteSource.includes("controller.scrollTo({ ...position, behavior: 'instant' })") &&
+        regionWriteSource.includes('!state.ready') &&
+        regionWriteSource.includes('Number.isFinite(position.left)') &&
+        regionWriteSource.includes('Number.isFinite(position.top)') &&
+        regionCommitSource.includes('writeRegionPosition(controller, record)') &&
+        regionCommitSource.includes('writeRegionFragment(controller, hash)') &&
         !regionCommitSource.includes('resolveBoundRouterPresentationCommit(') &&
         scrollBehaviorSource.lastIndexOf('writeRegionPosition(') <
           scrollBehaviorSource.lastIndexOf(

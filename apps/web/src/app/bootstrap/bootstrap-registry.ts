@@ -10,6 +10,7 @@ export type BootstrapStepId =
   | 'create-and-ready-i18n'
   | 'initialize-navigation-preference'
   | 'initialize-workspace-session'
+  | 'initialize-scroll-system'
   | 'mount-application'
   | 'register-post-mount-appearance-media-subscriptions'
   | 'publish-application-ready'
@@ -201,6 +202,30 @@ export const bootstrapStepRegistry = [
     hmrBehavior: 'dispose after Vue unmount; restore fresh structure through the Runtime Kernel',
   },
   {
+    id: 'initialize-scroll-system',
+    dependencies: [
+      'create-pinia',
+      'create-and-ready-router',
+      'create-and-ready-storage',
+      'create-and-ready-i18n',
+      'initialize-navigation-preference',
+      'initialize-workspace-session',
+    ],
+    createInput:
+      'current Pinia, ready Router, scroll preference and refresh snapshot Storage ports',
+    createOutput: 'initialized scroll preference, Router-owned pending snapshot and one disposer',
+    readyCondition:
+      'safe reads or nonfatal fallbacks complete before mount, without a scroll write',
+    disposeResponsibility:
+      'detach preference watch and pagehide capture before Storage and Router disposal',
+    domMountOwner: false,
+    failureClassification: 'application-startup-failure',
+    retryParticipant: true,
+    ownFailureEligibleForConfigurationRetry: false,
+    hmrBehavior:
+      'dispose after Vue unmount; initialize fresh scroll state through the Runtime Kernel',
+  },
+  {
     id: 'mount-application',
     dependencies: [
       'create-and-ready-router',
@@ -208,6 +233,7 @@ export const bootstrapStepRegistry = [
       'create-and-ready-i18n',
       'initialize-navigation-preference',
       'initialize-workspace-session',
+      'initialize-scroll-system',
     ],
     createInput: 'ready Vue application and exact #app target',
     createOutput: 'mounted application handle',

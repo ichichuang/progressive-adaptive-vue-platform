@@ -51,6 +51,55 @@ export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
   records: Object.freeze([
     Object.freeze({
+      id: 'ui-scroll-area',
+      exportName: 'UiScrollArea',
+      sourcePath: 'packages/ui/src/components/UiScrollArea.vue',
+      props: Object.freeze([
+        Object.freeze({ name: 'ownerId', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'enabled', type: 'boolean', required: false, defaultValue: 'true' }),
+        Object.freeze({
+          name: 'xScrollable',
+          type: 'boolean',
+          required: false,
+          defaultValue: 'false',
+        }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'controller', payloadType: 'UiScrollController | null' }),
+      ]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'default',
+          slotPropsType: 'Readonly<Record<string, never>>',
+          required: true,
+        }),
+      ]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze([]),
+      consumerRouteNames: allProductRoutes,
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-switch',
+      exportName: 'UiSwitch',
+      sourcePath: 'packages/ui/src/components/UiSwitch.vue',
+      props: Object.freeze([
+        Object.freeze({ name: 'modelValue', type: 'boolean', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'accessibleLabel',
+          type: 'string',
+          required: true,
+          defaultValue: null,
+        }),
+      ]),
+      emits: Object.freeze([Object.freeze({ name: 'update:modelValue', payloadType: 'boolean' })]),
+      slots: Object.freeze([]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
+      consumerRouteNames: Object.freeze(['appearance-management']),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
       id: 'ui-form',
       exportName: 'UiForm',
       sourcePath: 'packages/ui/src/components/UiForm.vue',
@@ -194,6 +243,10 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       emits: Object.freeze([
         Object.freeze({ name: 'navigate', payloadType: 'string' }),
+        Object.freeze({
+          name: 'content-scroll-controller',
+          payloadType: 'UiScrollController | null',
+        }),
         Object.freeze({
           name: 'update:expandedNavigationGroupIds',
           payloadType: 'UiAdminNavigationExpansionUpdate',

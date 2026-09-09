@@ -472,4 +472,16 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
     outline-offset: var(--ui-admin-focus-outline-offset);
   }
 }
+.pavp-switch * {
+  transition-duration: var(--ui-motion-duration);
+  transition-timing-function: var(--ui-motion-easing);
+}
+.pavp-switch:not([data-motion='full']) * {
+  transition: none;
+}
+@media (forced-colors: active) {
+  .pavp-switch [role='switch'] {
+    outline: var(--ui-admin-border-width) solid ButtonText;
+  }
+}
 </style>

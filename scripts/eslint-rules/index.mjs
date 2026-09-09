@@ -438,7 +438,11 @@ const noDirectStorageAccess = {
       filename.startsWith(canonicalStorageOwnerPrefix)
 
     function storageAccessIsAllowed(storageName) {
-      return ownsLocalStorage && storageName === 'localStorage'
+      return (
+        (ownsLocalStorage && storageName === 'localStorage') ||
+        (filename === 'apps/web/src/app/storage/scroll-refresh-storage.ts' &&
+          storageName === 'sessionStorage')
+      )
     }
 
     function isUnshadowedGlobalReference(node) {

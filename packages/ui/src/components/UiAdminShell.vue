@@ -30,6 +30,8 @@ import {
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { PavpTooltipPrimitive } from '../adapters/naive/naive-tooltip'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
+import UiScrollArea from './UiScrollArea.vue'
+import type { UiScrollController } from './scroll-contracts'
 import type {
   UiAdminNavigationExpansionUpdate,
   UiAdminNavigationGroup,
@@ -48,6 +50,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  'content-scroll-controller': [controller: UiScrollController | null]
   navigate: [routeName: string]
   'update:wideNavigationCollapsed': [collapsed: boolean]
   'update:expandedNavigationGroupIds': [update: UiAdminNavigationExpansionUpdate]
@@ -698,37 +701,39 @@ watch(
         :show-trigger="false"
         :width="expandedNavigationWidth"
       >
-        <AdminNavigationSelectionLens
-          v-slot="{ featureReady, renderIcon }"
-          :is-owner="isPersistentNavigationSelectionLensOwner"
-          :motion="appearance.motion"
-          :render-base-icon="renderNavigationMenuIcon"
-        >
-          <nav
-            :aria-label="copy.navigationLabel"
-            class="pavp-admin-shell__persistent-navigation"
-            :data-pavp-admin-navigation-motion-ready="
-              featureReady && appearance.motion === 'full' ? 'true' : 'false'
-            "
+        <UiScrollArea owner-id="architecture-console-sidebar">
+          <AdminNavigationSelectionLens
+            v-slot="{ featureReady, renderIcon }"
+            :is-owner="isPersistentNavigationSelectionLensOwner"
+            :motion="appearance.motion"
+            :render-base-icon="renderNavigationMenuIcon"
           >
-            <PavpMenuPrimitive
-              :accordion="false"
-              class="pavp-admin-shell__menu"
-              :collapsed="persistentNavigationCollapsed"
-              :collapsed-width="collapsedNavigationWidth"
-              children-field="children"
-              :dropdown-props="persistentNavigationDropdownProps"
-              :expanded-keys="validExpandedNavigationGroupKeys"
-              mode="vertical"
-              :node-props="persistentNavigationNodeProps"
-              :options="navigationMenuOptions"
-              :render-icon="renderIcon"
-              :value="activeRouteName"
-              @update:expanded-keys="handleNavigationExpandedKeysUpdate"
-              @update:value="handleNavigationValueUpdate"
-            />
-          </nav>
-        </AdminNavigationSelectionLens>
+            <nav
+              :aria-label="copy.navigationLabel"
+              class="pavp-admin-shell__persistent-navigation"
+              :data-pavp-admin-navigation-motion-ready="
+                featureReady && appearance.motion === 'full' ? 'true' : 'false'
+              "
+            >
+              <PavpMenuPrimitive
+                :accordion="false"
+                class="pavp-admin-shell__menu"
+                :collapsed="persistentNavigationCollapsed"
+                :collapsed-width="collapsedNavigationWidth"
+                children-field="children"
+                :dropdown-props="persistentNavigationDropdownProps"
+                :expanded-keys="validExpandedNavigationGroupKeys"
+                mode="vertical"
+                :node-props="persistentNavigationNodeProps"
+                :options="navigationMenuOptions"
+                :render-icon="renderIcon"
+                :value="activeRouteName"
+                @update:expanded-keys="handleNavigationExpandedKeysUpdate"
+                @update:value="handleNavigationValueUpdate"
+              />
+            </nav>
+          </AdminNavigationSelectionLens>
+        </UiScrollArea>
       </PavpLayoutSiderPrimitive>
 
       <div
@@ -746,9 +751,15 @@ watch(
           :data-shell-region="enabled ? 'architecture-console-content' : undefined"
           :inert="enabled && profile === 'narrow' && navigationOpen"
         >
-          <div :class="enabled ? 'pavp-admin-shell__content-inner' : undefined">
-            <slot />
-          </div>
+          <UiScrollArea
+            owner-id="architecture-console-content"
+            :enabled="enabled"
+            @controller="emit('content-scroll-controller', $event)"
+          >
+            <div :class="enabled ? 'pavp-admin-shell__content-inner' : undefined">
+              <slot />
+            </div>
+          </UiScrollArea>
         </div>
       </div>
     </PavpLayoutPrimitive>
@@ -769,44 +780,48 @@ watch(
             role="dialog"
             tabindex="-1"
           >
-            <div class="pavp-admin-shell__drawer-heading">
-              <strong>{{ copy.navigationLabel }}</strong>
-              <button
-                ref="drawerClose"
-                :aria-label="copy.closeNavigationLabel"
-                class="pavp-admin-shell__action min-h-target-enhanced min-w-target-enhanced"
-                type="button"
-                @click="closeNavigation"
-                @keydown="handleDrawerKeydown"
-              >
-                {{ copy.closeActionLabel }}
-              </button>
-            </div>
-            <div
-              v-for="group in navigation"
-              :key="group.id"
-              class="pavp-admin-shell__navigation-group"
-            >
-              <p class="pavp-admin-shell__navigation-group-label">
-                {{ group.label }}
-              </p>
-              <button
-                v-for="item in group.items"
-                :key="item.routeName"
-                :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
-                class="pavp-admin-shell__navigation-action min-h-target-enhanced min-w-target-enhanced"
-                type="button"
-                @click="navigate(item.routeName)"
-                @keydown="handleDrawerKeydown"
-              >
-                <span
-                  :class="resolveNavigationIconClass(item.iconClass)"
-                  aria-hidden="true"
-                  class="pavp-admin-shell__navigation-icon"
-                />
-                <span>{{ item.label }}</span>
-              </button>
-            </div>
+            <UiScrollArea owner-id="architecture-console-drawer">
+              <div class="pavp-admin-shell__drawer-content">
+                <div class="pavp-admin-shell__drawer-heading">
+                  <strong>{{ copy.navigationLabel }}</strong>
+                  <button
+                    ref="drawerClose"
+                    :aria-label="copy.closeNavigationLabel"
+                    class="pavp-admin-shell__action min-h-target-enhanced min-w-target-enhanced"
+                    type="button"
+                    @click="closeNavigation"
+                    @keydown="handleDrawerKeydown"
+                  >
+                    {{ copy.closeActionLabel }}
+                  </button>
+                </div>
+                <div
+                  v-for="group in navigation"
+                  :key="group.id"
+                  class="pavp-admin-shell__navigation-group"
+                >
+                  <p class="pavp-admin-shell__navigation-group-label">
+                    {{ group.label }}
+                  </p>
+                  <button
+                    v-for="item in group.items"
+                    :key="item.routeName"
+                    :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
+                    class="pavp-admin-shell__navigation-action min-h-target-enhanced min-w-target-enhanced"
+                    type="button"
+                    @click="navigate(item.routeName)"
+                    @keydown="handleDrawerKeydown"
+                  >
+                    <span
+                      :class="resolveNavigationIconClass(item.iconClass)"
+                      aria-hidden="true"
+                      class="pavp-admin-shell__navigation-icon"
+                    />
+                    <span>{{ item.label }}</span>
+                  </button>
+                </div>
+              </div>
+            </UiScrollArea>
           </nav>
         </div>
       </Transition>
@@ -1033,12 +1048,8 @@ watch(
   position: relative;
   flex: 1 1 auto;
   inline-size: 100%;
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
-  padding-block: var(--ui-space-section-block)
-    max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
-  padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
-    max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
   color: var(--ui-color-text-primary);
   background: var(--ui-admin-surface-content);
 }
@@ -1047,22 +1058,29 @@ watch(
   display: grid;
   gap: var(--ui-space-section-block);
   inline-size: 100%;
+  padding-block: var(--ui-space-section-block)
+    max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
+  padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
+    max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
 }
 
 .pavp-admin-shell__drawer-navigation {
-  display: grid;
-  align-content: start;
-  gap: var(--ui-space-section-block);
   block-size: 100%;
   inline-size: 100%;
   max-inline-size: var(--ui-layout-admin-drawer-maximum-inline-size);
-  overflow: auto;
+  overflow: hidden;
+  background: var(--ui-material-overlay-background);
+  box-shadow: var(--ui-admin-shadow-overlay);
+}
+
+.pavp-admin-shell__drawer-content {
+  display: grid;
+  align-content: start;
+  gap: var(--ui-space-section-block);
   padding-block: max(var(--ui-space-section-block), var(--pavp-safe-area-top))
     max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
-  background: var(--ui-material-overlay-background);
-  box-shadow: var(--ui-admin-shadow-overlay);
 }
 
 .pavp-admin-shell__drawer-layer {

@@ -54,7 +54,7 @@ VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
 ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=14
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=15
 PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_STATUS=ACTIVE
@@ -4781,7 +4781,7 @@ Atomic Landing 前的 Committed Baseline Route Registry 精确为 `8`：一个 `
 | 1 | `console-overview` | `/` | `apps/web/src/pages/index.vue` | `总览` | `route-title.console-overview` | `route-message.console-overview-summary` | `查看当前已启用的前端架构能力与运行状态。` | `route-breadcrumb.console-overview` | `route.console.overview` |
 | 2 | `appearance-management` | `/appearance` | `apps/web/src/pages/appearance.vue` | `主题与外观` | `route-title.appearance-management` | `route-message.appearance-management-summary` | `统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。` | `route-breadcrumb.appearance-management` | `route.console.appearance` |
 | 3 | `design-token-inspector` | `/design-tokens` | `apps/web/src/pages/design-tokens.vue` | `设计令牌` | `route-title.design-token-inspector` | `route-message.design-token-inspector-summary` | `查看当前公开角色、主题平面、对比度、材质与清单摘要。` | `route-breadcrumb.design-token-inspector` | `route.console.design-tokens` |
-| 4 | `runtime-kernel-inspector` | `/runtime-kernel` | `apps/web/src/pages/runtime-kernel.vue` | `运行时内核` | `route-title.runtime-kernel-inspector` | `route-message.runtime-kernel-inspector-summary` | `查看当前十四阶段启动流程、Provider 与生命周期边界。` | `route-breadcrumb.runtime-kernel-inspector` | `route.console.runtime-kernel` |
+| 4 | `runtime-kernel-inspector` | `/runtime-kernel` | `apps/web/src/pages/runtime-kernel.vue` | `运行时内核` | `route-title.runtime-kernel-inspector` | `route-message.runtime-kernel-inspector-summary` | `查看当前十五阶段启动流程、Provider 与生命周期边界。` | `route-breadcrumb.runtime-kernel-inspector` | `route.console.runtime-kernel` |
 | 5 | `router-governance-inspector` | `/router` | `apps/web/src/pages/router.vue` | `路由治理` | `route-title.router-governance-inspector` | `route-message.router-governance-inspector-summary` | `查看路由、布局、滚动、焦点与错误页治理。` | `route-breadcrumb.router-governance-inspector` | `route.console.router` |
 | 6 | `storage-persistence-inspector` | `/storage` | `apps/web/src/pages/storage.vue` | `存储与持久化` | `route-title.storage-persistence-inspector` | `route-message.storage-persistence-inspector-summary` | `查看当前存储记录、分区、错误与生命周期边界。` | `route-breadcrumb.storage-persistence-inspector` | `route.console.storage` |
 | 7 | `ui-system-inspector` | `/ui-system` | `apps/web/src/pages/ui-system.vue` | `UI 组件` | `route-title.ui-system-inspector` | `route-message.ui-system-inspector-summary` | `查看已准入的 PAVP UI 组件与供应商隔离边界。` | `route-breadcrumb.ui-system-inspector` | `route.console.ui-system` |
@@ -4997,10 +4997,10 @@ Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGE
     { "id": "repository-governance", "visibleLabel": "仓库治理", "summary": "静态生产门、仓库政策和主线维护规则。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "engineering-quality-inspector", "owner": "repository-governance", "prerequisiteIds": [], "admissionCondition": "已激活。", "interactive": false },
     { "id": "responsive-layout", "visibleLabel": "响应式布局", "summary": "narrow、regular 与 wide 的空间投影和 Shell 权威。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "responsive-layout-inspector", "owner": "layout-system", "prerequisiteIds": ["architecture-admin-console", "router-governance"], "admissionCondition": "已激活。", "interactive": false },
     { "id": "router-governance", "visibleLabel": "路由治理", "summary": "当前路由、布局、滚动、焦点与错误页治理。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "router-governance-inspector", "owner": "router", "prerequisiteIds": ["runtime-kernel"], "admissionCondition": "已激活。", "interactive": false },
-    { "id": "runtime-kernel", "visibleLabel": "运行时内核", "summary": "当前十四阶段启动、Provider、错误与释放流程。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "runtime-kernel-inspector", "owner": "runtime-kernel", "prerequisiteIds": ["appearance"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "runtime-kernel", "visibleLabel": "运行时内核", "summary": "当前十五阶段启动、Provider、错误与释放流程。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "runtime-kernel-inspector", "owner": "runtime-kernel", "prerequisiteIds": ["appearance"], "admissionCondition": "已激活。", "interactive": false },
     { "id": "shared-ui-expansion", "visibleLabel": "共享 UI 扩展", "summary": "在更多真实消费者出现后扩展 PAVP UI。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "pavp-ui", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要额外真实消费者和独立准入。", "interactive": false },
     { "id": "specialist-capabilities", "visibleLabel": "专业能力", "summary": "Grid、Editor、Chart 等专业能力的条件式准入。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "specialist-admission", "prerequisiteIds": [], "admissionCondition": "需要真实专业产品需求和替换边界。", "interactive": false },
-    { "id": "storage-persistence", "visibleLabel": "存储与持久化", "summary": "当前五条非敏感本地存储记录及其生命周期。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "storage-persistence-inspector", "owner": "storage", "prerequisiteIds": ["router-governance"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "storage-persistence", "visibleLabel": "存储与持久化", "summary": "当前七条非敏感浏览器存储记录及其生命周期。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "storage-persistence-inspector", "owner": "storage", "prerequisiteIds": ["router-governance"], "admissionCondition": "已激活。", "interactive": false },
     { "id": "tanstack-query", "visibleLabel": "服务端状态缓存", "summary": "仅随真实 API Transport 准入的服务端状态能力。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "server-state", "prerequisiteIds": ["api-transport"], "admissionCondition": "需要真实 API Transport 与服务端状态消费者。", "interactive": false },
     { "id": "view-transition-motion", "visibleLabel": "页面与交互动效", "summary": "由真实交互需求触发的 View Transition 和 Motion 能力。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "motion", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要命名交互需求和独立动效准入。", "interactive": false }
   ]
@@ -5975,26 +5975,26 @@ type CapabilityStatus =
 | General Pinia state and workflow state | `TARGET_INACTIVE` | future named frontend consumer gates |
 | Administration Global Breadcrumb and in-session Workspace Tabs core | `TARGET_INACTIVE` | §18.11 combined target remains incomplete: Global Breadcrumb runtime is not started; route-single Workspace core is active under §18.11.10, with structural restoration and local Motion under §18.11.11; no new generated capability record |
 | Session state | `DEFERRED` | required starter integration; implementation admission waits for a real server Session contract |
-| Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router`, `create-and-ready-storage`, `create-and-ready-i18n` and §19.5.2 `initialize-navigation-preference` / §18.11.11 `initialize-workspace-session` extensions from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`, `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` and `PAVP_ADMIN_CONSOLE_LOCALIZATION` |
+| Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router`, `create-and-ready-storage`, `create-and-ready-i18n` and §19.5.2 `initialize-navigation-preference` / §18.11.11 `initialize-workspace-session` / §18.12 `initialize-scroll-system` extensions from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`, `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`, `PAVP_ADMIN_CONSOLE_LOCALIZATION` and `PAVP_SCROLL_SYSTEM` |
 | Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
 | Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work and authority are `NONE`; next and successor remain `NONE` |
 | TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
-| Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11; five current records |
+| Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12; seven current records |
 | API Transport | `DEFERRED` | required starter integration; `PAVP_API_TRANSPORT_IMPLEMENTATION` still requires exact real endpoint/origin/schema/policy/consumer/server-owner admission |
 | Auth, Session and Permission | `DEFERRED` | required starter integration; `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` still requires active API Transport and real server security contracts |
 | Observability reporting and Runtime Performance collection | `DEFERRED` | optional demand-driven admission; backend/auth-dependent reporting cannot precede its real producers and provider contract |
 | Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | non-blocking future hosting/release admission; backend-dependent portions remain in the optional lane |
 | Existing Admin Console Chinese/English localization | `ACTIVE` | `PAVP_ADMIN_CONSOLE_LOCALIZATION` implemented and statically verified; default Chinese, optional English and one local preference; Owner runtime acceptance pending |
 | Forms, I18n, Tables and Mutations | `TARGET_INACTIVE` | remaining starter capabilities and I18n beyond the separately active console scope require separate consumer-backed implementation gates |
-| Foundational shared UI components | `ACTIVE` | exact nine-component consumer-backed boundary admitted by `PAVP_ARCHITECTURE_ADMIN_CONSOLE` plus `PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT`; expansion remains separately gated |
+| Foundational shared UI components | `ACTIVE` | original nine-component boundary plus §21 shared Form source, §18.11 Workspace Tabs and §18.12 Scroll System admissions; fourteen public records, twelve with active consumers and two inactive Form records; further expansion remains separately gated |
 | CSS Motion Token baseline | `ACTIVE` | current Design Token and static CSS contract only |
 | View Transition progressive enhancement | `ACTIVE` | §1.2B.0N owns the implemented and statically verified PAVP native element-scoped route-transition capability; Owner confirmed the reported navigation interaction after `4efa369`; the scope correction has no broader runtime matrix, accessibility or release acceptance |
 | Motion for Vue, GSAP and specialist adapters | `DEFERRED` | general capability remains deferred; §1.2B.0M implements one scoped private Motion for Vue Shared-selection-lens runtime at `INSTALLED`; GSAP and all other consumers remain deferred behind named production-need gates |
 | Accessibility architecture and current static lint baseline | `ACTIVE` | WCAG contract, token validation and current static tooling |
-| Runtime component/route accessibility | `ACTIVE` | current ten Product Routes, seven existing Error Routes and exact nine Public Components; future consumers remain separately gated |
+| Runtime component/route accessibility | `ACTIVE` | current ten Product Routes, seven existing Error Routes and twelve active Public Components; two shared Form records remain inactive; future consumers remain separately gated |
 | Build and Generated Manifest performance budgets | `ACTIVE` | current `check:bundle` and token Manifest gates |
 | Project generators | `TARGET_INACTIVE` | serial demand-driven generator admission after a repeated real need |
 | Pure frontend implementation mainline | `ACTIVE` | §37.2 strict sequence completed through `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; no automatic successor |
@@ -10596,11 +10596,11 @@ REKA_UI_ACTIVE_RUNTIME_ADMISSION=NONE
 首个 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 满足。它按 §1.2B `PUBLIC_UI_API_CLOSURE_MODE=ATOMIC_CONSUMER_DERIVATION` 在同一 Landing 准入 `UiProvider`、十个真实 Routes 实际消费的最小额外 Public Components、`@platform/design-system` Public Contracts 和 Private `naive-ui@2.45.2` Adapter。它不授权 Reka、Motion Library、Grid、Editor、Charts、GSAP、第二 Styled Framework、通用 Shared UI 扩建或任何 Unused Component。
 
 ```text
-CURRENT_PUBLIC_COMPONENT_EXPORTS=11
+CURRENT_PUBLIC_COMPONENT_EXPORTS=14
 CURRENT_STYLED_VENDOR=naive-ui@2.45.2
 ```
 
-其中九条 ACTIVE 组件保留真实消费者；仅 §21 的 UiForm/UiFormField 共享源码准入允许两条 TARGET_INACTIVE Record 暂无消费者。
+原九条 ACTIVE 组件经 §18.11 Workspace Tabs 与 §18.12 Scroll System 窄范围准入后，当前十二条 ACTIVE 组件保留真实消费者；仅 §21 的 UiForm/UiFormField 共享源码准入允许两条 TARGET_INACTIVE Record 暂无消费者。
 
 ## 16.2 Demand-created Target Locations
 
@@ -10709,7 +10709,7 @@ Chart Platform
 Gantt
 Scheduler
 Command Platform
-Custom Scrollbar
+Custom Scrollbar outside the public NScrollbar admission in §18.12
 Global Animation Wrapper
 UiGlass
 generic Material Wrapper
@@ -11061,7 +11061,7 @@ Region Traversal 的优先级精确为：**有效匹配记录 → 声明允许�
 
 ## 18.10 Layout and Scroll Static Enforcement Targets
 
-Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Scroll/Touch Literal、未知 Region/Owner、同轴竞争 Overflow、意外 Body Scroll、Fixed Layer 无 Safe-area Policy、自定义滚动条、Scroll Hijacking 和无 Disposal 的 Background Lock。Route Meta、Layout Capability、CSS Container Token 与 Scroll Registry Set 必须闭合。当前 §9 和 §1.2B.1–1.2B.2 已激活 Reading Document 与 Admin Console 两套 Layout/Focus/Restoration Policy、合计四条按轴登记的 Scroll Owner、响应式 Shell 与其既有阈值和目标尺寸。更广 Nested Scroll、可移动/缩放 Panel 等仍未准入；§18.11 的 Workspace Scroll 仅为未来目标，不能反向把现有 Shell/Region 描述为尚未实现。
+Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Scroll/Touch Literal、未知 Region/Owner、同轴竞争 Overflow、意外 Body Scroll、Fixed Layer 无 Safe-area Policy、§18.12 之外的自定义滚动条、Scroll Hijacking 和无 Disposal 的 Background Lock。Route Meta、Layout Capability、CSS Container Token 与 Scroll Registry Set 必须闭合。当前 §9 和 §1.2B.1–1.2B.2 已激活 Reading Document 与 Admin Console 两套 Layout/Focus/Restoration Policy、合计四条按轴登记的 Scroll Owner、响应式 Shell 与其既有阈值和目标尺寸。更广 Nested Scroll、可移动/缩放 Panel 等仍未准入；§18.11 的 Workspace Scroll 仅为未来目标，不能反向把现有 Shell/Region 描述为尚未实现。
 
 ---
 
@@ -11251,13 +11251,40 @@ Owner 在干净同步 `main@d6ebecb3be389830db54b2784096edd7f9d851a9` 上明确�
 
 `UiWorkspaceTabs` 保留受控 Items/Active/Label/Panel 与两种事件，新增必需语义 `motion: EffectiveAppearanceState['motion']`，由 Frame 的既有 Appearance Read Boundary 投影。私有 `WorkspaceTabsSurface.vue` 拥有 Motion/呈现适配，不向公共根导出 Vendor。现有 Feature Loader 提升为 `packages/ui/src/adapters/motion/motion-feature-runtime.ts`，Sidebar 与 Workspace 共享同一 Promise 和原 `admin-navigation-dom-max.ts` 唯一动态根，加载失败保留即时可用静态控件；Sidebar 的 Lens/数值/所有权不改变。
 
-Workspace 使用严格 LazyMotion 下的 `m`、独立 LayoutGroup Namespace 和稳定共享 `layoutId`，实际水平滚动 Owner 使用 `layoutScroll`；AnimatePresence 与初始 Lens 使用 `initial=false`，首屏全部恢复项立即出现。Full 的选中面/列表重排采用私有短 Spring（visualDuration 0.26 秒，bounce 0），运行新增采用 3px y/opacity/scale（0.98 到 1，0.16 秒），关闭采用克制 opacity/scale 反馈；Reduced 不启用 layout/scale/translation/spring，仅允许 Motion 0.08 秒 opacity 与现有 Token 半时长的 CSS Color 过渡；None 使用 skipAnimations、零时长且关闭 CSS Transition。偏好切换不重建工作区，不重放启动前交互。选中面使用既有 Surface/Border/Accent Token，移除大块实色主按钮；关闭按钮弱化视觉但保持最小命中、键盘可达及本地化名称，Hover/Focus/Active 清晰。退出中的旧标签立即 inert，不再参与操作/辅助语义；控件焦点恢复仍与 Router 焦点权威分开。
+Workspace 使用严格 LazyMotion 下的 `m`、独立 LayoutGroup Namespace 和稳定共享 `layoutId`；本 Landing 的原生 Strip 使用 `layoutScroll`，当前 §18.12 迁移使用 PAVP-owned Content 的公共 `layoutRoot` 相对几何边界，避免读取 Naive 私有滚动元素；AnimatePresence 与初始 Lens 使用 `initial=false`，首屏全部恢复项立即出现。Full 的选中面/列表重排采用私有短 Spring（visualDuration 0.26 秒，bounce 0），运行新增采用 3px y/opacity/scale（0.98 到 1，0.16 秒），关闭采用克制 opacity/scale 反馈；Reduced 不启用 layout/scale/translation/spring，仅允许 Motion 0.08 秒 opacity 与现有 Token 半时长的 CSS Color 过渡；None 使用 skipAnimations、零时长且关闭 CSS Transition。偏好切换不重建工作区，不重放启动前交互。选中面使用既有 Surface/Border/Accent Token，移除大块实色主按钮；关闭按钮弱化视觉但保持最小命中、键盘可达及本地化名称，Hover/Focus/Active 清晰。退出中的旧标签立即 inert，不再参与操作/辅助语义；控件焦点恢复仍与 Router 焦点权威分开。
 
 本节明确准入两个实际 `m.button` 的 `whileHover`、`whilePress` 与 `whileFocus`，仅为 Workspace Tabs 的局部交互例外，不扩展 §24 一般 Motion 使用范围。Hover/Focus 用继承的 Gesture Variant 插值 Token 绘制 Surface 的 Opacity，Press 使用局部透明度与 Full-only 0.985 Scale；Reduced/None 的 Scale 恒为 1。Active 使用 Control-primary 混合 Panel 的选中底面、清晰轮廓和 Focus-width Token 决定的 Accent 底边；Inactive 使用 Secondary Text 与安静表面，Hover Surface 与选中面保持区分。关闭控件有独立 Hover/Focus 面且始终保留增强最小命中尺寸，选中边与键盘 Focus Ring 分离。
 
 每个 Tab 均指向同一当前 Panel 的 `aria-controls`，Selected 与 Panel Label 来自实际活动项；方向键/Home/End 只移焦、Enter/Space 激活，RTL/触摸原生溢出、Forced Colors 和 PAVP Token Authority 保持。没有第二 Motion 偏好、Vendor Public API、自定义滚轮/循环、第二 domMax 或 Route-content Motion。
 
 本任务不持久化 Active Route、Workspace/History/组件 Instance、组件名称、完整目的地/Params/Query/Hash、Form Draft/Controller/页面状态、Scroll/Focus/Overlay/动画/账号/时间戳。不支持多实例持久化、跨窗口同步、Breadcrumb Runtime 或增强页签命令。先前冻结硬预算 `253952`、最低预留 `8192`、有效上限 `245760` 下，干净基线 JS `244810` / CSS `26402`、未提交候选 JS `247684` / CSS `26559` bytes gzip，候选超出有效上限 `1924` 的失败保留历史含义。Owner 随后明确批准本次收敛仅把当前 Initial JS 硬预算调整为精确 `262144`（256 KiB），强制最低预留仍为精确 `8192`，故当前最大允许实测值为 `253952` bytes gzip。唯一配置权威仍为 `project.config.ts`，现有生成器更新 Engineering Manifest；仅同步 Owning Checker 的当前预算断言，不改变其他预算、gzip 参数、Release SHA 归一化、Static/Dynamic Closure、对齐算法、警告与失败语义，不准许继续加预算。最终实现必须重新 Build 和通过 Bundle Gate；完整 `mise exec -- pnpm verify` Exit 0 且安全同步后，才准许显式 Stage、一次中文 Commit 和普通 origin/main Push，之后核对精确提交 CI。Runtime/Visual/Refresh Acceptance 仍由 Owner 手动完成并独立报告。无依赖/锁文件/补丁/CI 修改或部署/Release。
+
+## 18.12 PAVP Scroll System
+
+```text
+WORK_PACKAGE=PAVP_SCROLL_SYSTEM
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED
+IMPLEMENTATION_STATUS=SOURCE_IMPLEMENTED
+SOURCE_BASELINE=main@628efafabe50408667252d688e2c9c0a92c581db
+RUNTIME_ACCEPTANCE=OWNER_PENDING
+NEXT=NONE
+```
+
+Owner 明确准入同一个有界任务：使用已安装的公共 `naive-ui/es/scrollbar` 中的 `NScrollbar`，作为 `packages/ui` 私有呈现和原生执行适配器；公共 `UiScrollArea` 与 `scroll-contracts.ts` 独占 PAVP 控制器合同。本文取代仅针对本节四个 Shell 区域的 Custom Scrollbar 禁令，不放开第三方滚动物理、额外依赖、Naive 私有 API、私有 CSS Class、内部 DOM 结构或 `$el` 遍历。Scrollbar 的公共 `scrollTo/scrollBy`、`xScrollable/onScroll/trigger/contentClass/contentStyle/size/xPlacement/yPlacement` 与 Theme Projection 可用。Controller 仅暴露 PAVP Offset、Command、Readiness、Owner 和 Disposal，不泄漏 Naive Instance/Ref。
+
+`UiScrollController` 提供 `readOffset`、`scrollTo`、`scrollBy`、`scrollToStart`、`scrollToEnd`、`scrollToAnchor`、`readState`、`ownsBoundary` 与幂等 `dispose`。`ownerId` 是当前绑定的语义身份；`readState` 提供 Ready、Viewport/Content 尺寸及 Direction/Writing Mode。`UiScrollArea` 的 Props 为必需 `ownerId`、默认 true 的 `enabled` 和默认 false 的 `xScrollable`；`controller` Emit 交付当前 Controller 或注销用 null。Native `onScroll` 只更新内存 Offset，PAVP-owned Viewport/Content 几何使同步命令与首次事件前的 Offset 可读。部分坐标保留另一轴，合法 RTL 负值不能被当成无效数据。Native 容器拥有滚轮、触控板、触摸、键盘和拖动，无 JS Momentum、Wheel Damping、Transform Scrolling、rAF Loop 或全局 Smooth CSS。
+
+显式用户命令仅在既有有效 Motion 为 full 且请求 smooth 时使用 Native smooth；reduced/none 始终 instant，默认命令也是 instant。Router 的 History、Workspace、Refresh、Fragment 和 Logical Start 命令始终 instant。锚点只在本 Scroll Area 的 PAVP Content Wrapper 内以固定 `[id]` 查询后比较 Exact ID；拒绝 Missing、Duplicate、Unavailable 与被嵌套独立 Overflow 隔开的目标，不插值 Selector、不查全局目标、不调用 scrollIntoView/Naive 私有 el API。有限 blockOffset 与 PAVP 自有几何计算目标，再调用公共 scrollTo。Route Hash Admission 不变。
+
+应用 `router/router-scroll-controller.ts` 提供 Router-owned Registration Port，`ConsoleRouteFrame` 仅桥接 `UiAdminShell` 的 `content-scroll-controller` Emit 并释放 Registration。一个 `architecture-console-content` 只能有一个活动 Controller；Router 同时核对 Registry 中的稳定 Outer Boundary 唯一性、Controller Identity/Readiness 和所属 Boundary。`[data-scroll-owner="architecture-console-content"]` 与其未加 Key 的 `.pavp-route-content`、单 RouterView/KeepAlive 拓扑保持；外层不再直接读写 Offset。Shell 主内容用 UiScrollArea，Padding 移入 Content Wrapper，外层只保留布局/过渡与边界约束；`nativeScrolling=true` 仍表示真实 Native Element 滚动。Reading/Error 保留 Document Owner，Shell 禁用时无高度约束、不注册 Region Controller，不替换 document.scrollingElement。Sidebar/Drawer 和水平 Workspace Strip 是本地呈现 Owner，不进入 Router Registry 或持久化；Strip 使用 PAVP 自有可见区与公共 layoutRoot 保持内容相对坐标，移除不再指向实际滚动元素的 layoutScroll。公共 size 是可用数字 API，本次实际厚度由现有 spacing Token 投影到 Scrollbar Theme width/height；Border/Text Token、Radius、Hover 和 Forced Colors 的系统色投影保持可发现的非零轨道；原 Navigation、Focus/Drawer、Responsive、Tabs/Motion 和 Form 行为保持。
+
+本任务已接线的两个 Storage Record：`scroll-preference` 的 local-storage Key `pavp:web:scroll-preference`，严格 Payload `{schemaVersion:1,restoreOnRefresh:boolean}`，默认 true；`scroll-refresh-session` 的 session-storage Key `pavp:web:scroll-refresh-session`，严格 Payload `{schemaVersion:1,routeName:string,ownerId:string,left:number,top:number,context:readonly (string|number)[]}`。两者均为 direct-compatibility、Current/Minimum Version 1、Partition none、非敏感、preserve-in-place-reject-read。当前 Registry 精确七条、Kernel 精确十五步；前序五条/十四步的 Landing 历史计数不改写。不得增加 Migration、IndexedDB、Memory Record、Cross-tab Event；session-storage 不参与 localStorage Storage Event。`applicationConfig.scroll` 独占两个 Key；`scroll-preference-contract.ts` 与 `scroll-refresh-contract.ts` 拥有严格 Zod Schema，Zod 4 的 number 已拒绝非有限值。独立 `scroll-preference-storage.ts` / `scroll-refresh-storage.ts` 仅由 Storage Lifecycle 创建，经 `owner.scrollPreference` / `owner.scrollRefresh` 暴露。Read 为 missing/unusable(invalid|unavailable|disposed)/found，Write/Clear 为 saved/failed（Disposed 可辨识）；所有 Parse/Version/Schema/Serialize/Quota/Write/Readback 异常归现有安全 Error Adapter。Store 与 Router 不读写浏览器 Storage。
+
+私有 Scroll Preference Store 仅拥有 restoreOnRefresh，不拥有 Offset；显式 Setter 持久化失败保留当前内存值。Appearance 使用新增公共 `UiSwitch`，仅接受必需的 `modelValue:boolean` 与 `accessibleLabel:string`，仅 Emit `update:modelValue(boolean)`，无 Slot；公共 Naive `NSwitch` 保持私有。中英文 Control 关闭时清除 Snapshot 并禁止 Capture，开启时不跳动当前页面。当前 Public Registry 精确十四条，其中十二条 ACTIVE 与两条既有 TARGET_INACTIVE Form Record。新 `initialize-scroll-system` 位于 Router/Storage/I18n/Navigation Preference/Workspace Session 就绪后、Mount 前；读取 Preference/Snapshot，仅 Prime Router Pending 候选，不提前滚动。对应 Disposal 在 Unmount 后、Storage/Router/Pinia 前解除 Watch 和 pagehide Listener。当前十五步和七条记录与源码及直接 Owning Check 同步。
+
+Router 仅在 pagehide 且 Preference 开启、当前 Console Region/Controller/Presentation/Content Ready 时写入本标签页唯一 Snapshot，不按 Scroll/Timer/rAF 写入。Context 复用 History/Workspace 的隐私安全 Build/Release、Committed Locale/Resource、Appearance、Layout/Owner、Content Revision 事实；不得持久化 URL/Params/Query/Hash、Scope/History Entry ID、任意 Selector、页面/表单/账号数据或时间戳。初次 Hard Refresh 的候选必须 Route/Owner Exact Match、有限 Offset、Context Exact Match、当前 Navigation/Presentation 与 Controller Ready；在已有 Mount/nextTick 边界执行。优先级唯一为 Pop History → Explicit Live Workspace Activation → Initial Hard Refresh → Same-workspace Address Policy → Fragment/Logical Start，失配走现有 Fallback，不引入第二 Writer。成功不立即删除 Snapshot；下次有效 pagehide 替换。原 History/Workspace Map 只驻内存，不持久化业务草稿。Development/HMR 继续保守不恢复；Appearance 使用现有 Workspace Content Ready/Revision，修订不匹配即拒绝，不能推断或保存 Form Values。Snapshot Context 不包含前四项仅属于内存 History 的 Scope/Name/地址输入，由同一 restoration validity 投影单独组合。
+
+本任务无依赖/Lock/Patch/Vite/Budget/CI 配置变更，无规划文档、测试/浏览器/证据工件、部署或 Release。干净基线 Production Build + Bundle：Initial JS 247944、CSS 26845 bytes gzip；当前硬预算 JS 262144、强制保留 8192，允许实测上限 253952、可用增量 6008。最小 UiScrollArea + Main Shell + Router 接线编译后立即测量，超门禁停止，保留未暂存 Diff，不继续偏好 UI、不调预算/分块/计费。最终完整 `mise exec -- pnpm verify` Exit 0 且同步安全后，Owner 才授权显式 Stage、一次中文 Commit、普通 origin/main Push 和精确 SHA CI 核对；Runtime 由 Owner 交付后手动验证，不与静态/Git/CI 状态混写。
 
 # 19. 状态管理
 
@@ -11273,7 +11300,7 @@ PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
 PHASE_1_OPENAPI_GENERATOR_ADMISSION=PROHIBITED
 ```
 
-Package 5 已在同一个 Atomic Cutover 中交付 Stored Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation Orchestration 和 Application-owned Persistence Lifecycle，并只把 Pinia 加入 `apps/web`。该原始准入不扩展到 Session、General Application Store、Router、TanStack Query、OpenAPI Generator 或 `packages/ui` Runtime Dependency。§19.5.2 另行限定准入一个应用私有导航偏好 Store；§18.11.10 再限定准入一个 Workspace Store，§18.11.11 仅扩展其有序 route-single 结构恢复，均沿用现有 Pinia Provider，其他通用状态边界保持。
+Package 5 已在同一个 Atomic Cutover 中交付 Stored Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation Orchestration 和 Application-owned Persistence Lifecycle，并只把 Pinia 加入 `apps/web`。该原始准入不扩展到 Session、General Application Store、Router、TanStack Query、OpenAPI Generator 或 `packages/ui` Runtime Dependency。§19.5.2 另行限定准入一个应用私有导航偏好 Store；§18.11.10 再限定准入一个 Workspace Store，§18.11.11 仅扩展其有序 route-single 结构恢复；§18.12 仅准入拥有 restoreOnRefresh 的私有 Scroll Preference Store，均沿用现有 Pinia Provider，其他通用状态边界保持。
 
 以下职责表是各自 Admission Gate 通过后的最终 Ownership，不代表对应依赖已经进入当前 Manifest。
 
@@ -11355,12 +11382,12 @@ CAPABILITY=PRODUCTION_RUNTIME_KERNEL
 CAPABILITY_STATUS=ACTIVE
 OWNER=apps/web/src/app/bootstrap
 ACTIVATION_GATE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
-CURRENT_EXTENSION_GATE=SECTION_18_11_11_WORKSPACE_SESSION
+CURRENT_EXTENSION_GATE=SECTION_18_12_SCROLL_SYSTEM
 IMPLEMENTATION_STATUS=COMPLETE
 IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177
-CURRENT_RUNTIME=exact fourteen-step Runtime Kernel
+CURRENT_RUNTIME=exact fifteen-step Runtime Kernel
 ACTIVATION_PROVIDER_SET=pinia,appearance
-ACTIVATION_BOOTSTRAP_STEP_COUNT=14
+ACTIVATION_BOOTSTRAP_STEP_COUNT=15
 ```
 
 Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Storage Payload、Server State、Route、Session、Locale 或 Feature 业务状态。每个当前 Provider 必须暴露 Typed Create/Ready/Dispose Contract，禁止互相隐式初始化或形成 Circular Ownership。本节冻结的基础 Protocol Contract 已由 `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` 在 `3bb664f1d81d354ccb0ec7ddcc4219d54b5d7177` 原子激活；`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 随后增加一个 `create-and-ready-router` Lifecycle Step，`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 再增加一个 `create-and-ready-storage` Lifecycle Step。§23.6 的 `PAVP_ADMIN_CONSOLE_LOCALIZATION` 再增加一个 `create-and-ready-i18n` Step。当前 Runtime Kernel、Core Runtime Configuration、Core Error/Capture 边界、Router Lifecycle、Storage Lifecycle 与限定管理台 I18n 为 `ACTIVE`；Query、Auth、Session、Permission、其他 I18n、Observability 与 Deployment 等后续能力保持未实现且未准入。Router 与 Storage 均不进入 `ACTIVATION_PROVIDER_SET`，该集合继续精确为 Pinia 与 Appearance。
@@ -11379,12 +11406,13 @@ Runtime Kernel 只负责应用生命周期编排，不拥有 Design Token、Stor
 9. create-and-ready-i18n
 10. initialize-navigation-preference
 11. initialize-workspace-session
-12. mount-application
-13. register-post-mount-appearance-media-subscriptions
-14. publish-application-ready
+12. initialize-scroll-system
+13. mount-application
+14. register-post-mount-appearance-media-subscriptions
+15. publish-application-ready
 ```
 
-上表是当前唯一、闭合、顺序保持的十四步 Bootstrap Step Registry，不是 Future Superset。它只在原九步 Kernel 中加入 Router、Storage 与 §23.6 管理台 I18n 各一个完整 Lifecycle Step，再按 §19.5.2 增加导航偏好初始化，并按 §18.11.11 增加 Workspace 结构恢复。尚未准入的 Query、Session、其他 I18n、Observability 或 Deployment Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry、Placeholder 或成功 Stub 占位。后续串行 Package 只有在自己的 Architecture Authority 与 Implementation Landing 中才能原子扩展该 Registry，并同时交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
+上表是当前唯一、闭合、顺序保持的十五步 Bootstrap Step Registry，不是 Future Superset。它只在原九步 Kernel 中加入 Router、Storage 与 §23.6 管理台 I18n 各一个完整 Lifecycle Step，再按 §19.5.2 增加导航偏好初始化，并按 §18.11.11 增加 Workspace 结构恢复，再由 §18.12 增加 Scroll System 初始化。尚未准入的 Query、Session、其他 I18n、Observability 或 Deployment Step 必须完全不存在，不能以 Optional `undefined`、No-op Provider、空 Registry、Placeholder 或成功 Stub 占位。后续串行 Package 只有在自己的 Architecture Authority 与 Implementation Landing 中才能原子扩展该 Registry，并同时交付 Create、Ready、Failure、Dispose、Dependency Edge 与 Static Registry Evidence。
 
 后一步只能消费前一步的 Typed Success Output。任何步骤失败都停止后续步骤，按已完成步骤的反向顺序 Dispose，并进入 Fatal Startup Recovery。不得通过 `try/catch` 后继续 Mount、用空 Provider 替代失败 Provider，或把 `unknown` Session 当作 Anonymous。
 
@@ -11425,10 +11453,11 @@ type ApplicationStartupState =
 | Pinia | `app/providers/pinia` | client-state container | Server State cache |
 | Provider installation | `app/bootstrap/install-providers` | Pinia plus Appearance provider handles | Future Provider construction |
 | Router and History lifecycle | `app/router` through the Runtime Kernel step | one ready Router lifecycle handle with one Router and one History authority | DOM Mount, Server State, Session or top-level HMR ownership |
-| Storage lifecycle | `app/storage` through the Runtime Kernel step | one ready Storage lifecycle handle for the exact five-record Registry | DOM Mount, Provider identity, active Workspace or account Session state, or top-level HMR ownership |
+| Storage lifecycle | `app/storage` through the Runtime Kernel step | one ready Storage lifecycle handle for the exact seven-record Registry | DOM Mount, Provider identity, active Workspace or account Session state, or top-level HMR ownership |
 | Console I18n lifecycle | `shared/i18n` through the Runtime Kernel step | one ready Console I18n handle with Storage port and Router title connection | Router navigation, Appearance state or top-level HMR ownership |
 | Navigation preference initialization | `app/navigation` through the Runtime Kernel step | one initialized private Store and preference-port disposer under §19.5.2 | Route/highlight, responsive profile, drawer or Provider identity |
 | Workspace structure restoration | `app/workspace` through the Runtime Kernel step | one initialized Workspace Session controller and disposer under §18.11.11 | active route, component cache, Form Draft, Scroll or Focus persistence |
+| Scroll System initialization | `app/scroll` through the Runtime Kernel step | one initialized preference Store, Router refresh binding and disposer under §18.12 | primitive scrolling, current offsets, direct Storage access or a second Router writer |
 | Vue Mount | `app/bootstrap` Mount step | one mounted application handle | Provider construction or competing Mount |
 | Appearance media subscriptions | `app/appearance` through Kernel step | exact listener references and one unsubscribe handle | Storage, Session or Observability subscription |
 | Ready publication and aggregate disposal | Runtime Kernel | one private Running Application Handle | Window global, DOM event or event bus publication |
@@ -11589,11 +11618,11 @@ ActiveProviderSet=Pinia,Appearance only
 
 #### `create-and-ready-router`
 
-当前 Active Exact Contract 由 §9.0.10 唯一拥有；本 Step 是当前十四步 Registry 的第七步，不建立第二份 Router Lifecycle Contract。
+当前 Active Exact Contract 由 §9.0.10 唯一拥有；本 Step 是当前十五步 Registry 的第七步，不建立第二份 Router Lifecycle Contract。
 
 #### `create-and-ready-storage`
 
-当前 Active Exact Contract 由 §19.5.1 的 Frozen Storage Protocol、§37.2.6 的 Completed Landing Record 及 §23.6.6 的限定 Locale Preference、§19.5.2 导航偏好与 §18.11.11 Workspace Session 扩展共同拥有；本 Step 是当前十四步 Registry 的第八步。它的 Exact Dependencies 仍为 `validate-build-and-runtime-configuration` 与 `install-platform-providers`；Registry Order 把它放在 Router 后、I18n 前，`mount-application` 显式依赖 Router、Storage 与已就绪 I18n。它在 Mount 前完成 Exact Five-record Storage Registry 的 Ready Boundary，产出一个幂等 `StorageLifecycleHandle`；Failure 归一化到 Existing Storage/Core Boundary 并阻止 Mount。它不是 `ACTIVATION_PROVIDER_SET` 成员，不建立第二个 Storage Authority。
+当前 Active Exact Contract 由 §19.5.1 的 Frozen Storage Protocol、§37.2.6 的 Completed Landing Record 及 §23.6.6 的限定 Locale Preference、§19.5.2 导航偏好与 §18.11.11 Workspace Session 扩展共同拥有；本 Step 是当前十五步 Registry 的第八步。它的 Exact Dependencies 仍为 `validate-build-and-runtime-configuration` 与 `install-platform-providers`；Registry Order 把它放在 Router 后、I18n 前，`mount-application` 显式依赖 Router、Storage 与已就绪 I18n。它在 Mount 前完成 Exact Seven-record Storage Registry 的 Ready Boundary，产出一个幂等 `StorageLifecycleHandle`；Failure 归一化到 Existing Storage/Core Boundary 并阻止 Mount。它不是 `ACTIVATION_PROVIDER_SET` 成员，不建立第二个 Storage Authority。
 
 #### `create-and-ready-i18n`
 
@@ -11607,11 +11636,15 @@ ActiveProviderSet=Pinia,Appearance only
 
 该第十一步由 §18.11.11 唯一拥有：Dependencies 精确为 `create-pinia,create-and-ready-router,create-and-ready-storage`。读取并恢复有序结构后才安装持久化 Watch，不创建 Provider；失败/取消与 HMR 沿用 Kernel 的应用启动失败与幂等释放边界。
 
+#### `initialize-scroll-system`
+
+该第十二步由 §18.12 唯一拥有：Dependencies 精确为 `create-pinia,create-and-ready-router,create-and-ready-storage,create-and-ready-i18n,initialize-navigation-preference,initialize-workspace-session`。读取偏好和单个刷新候选，只 Prime Router；实际滚动仍在 Mount/Presentation Ready 边界。释放 `dispose-scroll-system` 停止偏好 Watch、解除 Router pagehide Binding，不创建 Provider。
+
 #### `mount-application`
 
 ```text
-dependencies=[create-and-ready-router,create-and-ready-storage,create-and-ready-i18n,initialize-navigation-preference,initialize-workspace-session]
-CreateInput=ready Vue App,ready RouterLifecycleHandle,ready StorageLifecycleHandle,ready ConsoleI18nBoundary,initialized navigation preference,restored Workspace structure,exact #app target
+dependencies=[create-and-ready-router,create-and-ready-storage,create-and-ready-i18n,initialize-navigation-preference,initialize-workspace-session,initialize-scroll-system]
+CreateInput=ready Vue App,ready RouterLifecycleHandle,ready StorageLifecycleHandle,ready ConsoleI18nBoundary,initialized navigation preference,restored Workspace structure,initialized Scroll System,exact #app target
 CreateOutput=MountedApplication handle
 Ready=application.mount('#app') returns normally and mounted state is confirmed
 Dispose=idempotently call application.unmount() exactly once after partial or complete Mount
@@ -11667,17 +11700,18 @@ Fully Created Attempt 的精确 Reverse Order：
 1. Withdraw Application Ready。
 2. Remove Appearance Media Subscriptions。
 3. Unmount Vue Application。
-4. Dispose Workspace Session Handle (`dispose-workspace-session`)，停止结构持久化 Watch。
-5. Dispose Navigation Preference Handle (`dispose-navigation-preference`)。
-6. Dispose Console I18n Lifecycle (`dispose-i18n`)。
-7. Dispose Storage Lifecycle (`dispose-storage`)。
-8. Remove Router Hooks and Dispose Router/History。
-9. Dispose Installed Platform-provider Handles。
-10. Dispose Pinia。
-11. Release Vue Application Creation Handle。
-12. Release First Paint Handoff and Safety Handle。
-13. Dispose Global Failure Capture。
-14. Abort/Release Runtime Configuration Handle。
+4. Dispose Scroll System Handle (`dispose-scroll-system`)，解除偏好 Watch 与 Router pagehide Binding。
+5. Dispose Workspace Session Handle (`dispose-workspace-session`)，停止结构持久化 Watch。
+6. Dispose Navigation Preference Handle (`dispose-navigation-preference`)。
+7. Dispose Console I18n Lifecycle (`dispose-i18n`)。
+8. Dispose Storage Lifecycle (`dispose-storage`)。
+9. Remove Router Hooks and Dispose Router/History。
+10. Dispose Installed Platform-provider Handles。
+11. Dispose Pinia。
+12. Release Vue Application Creation Handle。
+13. Release First Paint Handoff and Safety Handle。
+14. Dispose Global Failure Capture。
+15. Abort/Release Runtime Configuration Handle。
 
 Disposal 必须幂等；一个 Cleanup Failure 后继续其余 Cleanup；收集 Cleanup Failure 时不得暴露 Raw Cause；任何 Cleanup Failure 都不具备 In-document Retry 资格。Disposal 必须保留 User Preference 与 Custom Registry Data，不执行 Storage Clearing 或 Migration。
 
@@ -11717,7 +11751,7 @@ Active Owning Static Gates 必须验证：
 * Exact HMR Owner，且没有 Future Provider、Placeholder Step、Query、API、Auth、Session、Permission、其他 I18n、Observability 或 Deployment Activation。
 * Package 5 Appearance Behavior 不变。
 
-这些规则已随 Runtime Kernel、Router、Storage 与 §23.6 管理台 I18n Implementation 激活，并且只证明当前十四步 Registry、Pinia/Appearance Provider Set、Core Runtime Configuration、四条 Core Error Record、六条 Router Error Extension、十一条 Storage Error Extension、当前 Listener、Retry、Router/History Disposal、Storage Disposal、Mount 和 HMR 合同。它们不激活或证明任何后续 Provider 或 Capability。
+这些规则已随 Runtime Kernel、Router、Storage 与 §23.6 管理台 I18n Implementation 激活，并且只证明当前十五步 Registry、Pinia/Appearance Provider Set、Core Runtime Configuration、四条 Core Error Record、六条 Router Error Extension、十一条 Storage Error Extension、当前 Listener、Retry、Router/History Disposal、Storage Disposal、Mount 和 HMR 合同。它们不激活或证明任何后续 Provider 或 Capability。
 
 ## 19.5 Application Persistence Target Contract
 
@@ -11729,7 +11763,7 @@ ACTIVATION_GATE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
 DIRECT_STORAGE_OUTSIDE_OWNER=PROHIBITED
 ```
 
-§23.6.6 已实现第三条 `locale-preference` Direct Record 及其窄 Port；本节原 Storage Landing 的两条记录、十一阶段及 Disposal 插入描述保留为该 Landing 历史，当前十四阶段与五条 Registry 由 §19.4、§23.6、§19.5.2 和 §18.11.11 拥有。原两条 Appearance Payload、零 Envelope/Migration/Cross-tab Event 与敏感数据边界保持。
+§23.6.6 已实现第三条 `locale-preference` Direct Record 及其窄 Port；本节原 Storage Landing 的两条记录、十一阶段及 Disposal 插入描述保留为该 Landing 历史，当前十五阶段与七条 Registry 由 §19.4、§23.6、§19.5.2、§18.11.11 和 §18.12 拥有。原两条 Appearance Payload、零 Envelope/Migration/Cross-tab Event 与敏感数据边界保持。
 
 ### Storage Registry and Envelope
 
@@ -11740,7 +11774,7 @@ interface StorageRegistryRecord {
   id: string
   ownerDomain: string
   key: string
-  medium: 'local-storage' | 'indexed-db' | 'memory'
+  medium: 'local-storage' | 'session-storage' | 'indexed-db' | 'memory'
   schemaId: string
   currentSchemaVersion: number
   minimumSupportedSchemaVersion: number
@@ -11892,7 +11926,7 @@ interface StorageRegistryRecord {
   id: string
   ownerDomain: string
   key: string
-  medium: 'local-storage' | 'indexed-db' | 'memory'
+  medium: 'local-storage' | 'session-storage' | 'indexed-db' | 'memory'
   persistenceShape: StoragePersistenceShape
   schemaId: string
   currentSchemaVersion: number
@@ -12238,7 +12272,7 @@ NO_AUTOMATIC_ROADMAP_CONTINUATION=ENFORCED
 
 Owner 明确授权本次限定架构修订、实现、直接归属检查及通过完整静态门槛后的 main 提交/推送。本合同扩展已 Active 的 Storage 与 Administration Shell，不新增 Top-level Capability Record，不激活 General Pinia Workflow、通用 Layout Persistence、Auth、Session、Role、Permission Provider、API 或 Backend Route。后续工作仍须单独授权。
 
-本合同取代 §1.2B.0H/0L 中导航偏好仅限 Shell-local ref、不得进入 Pinia/Storage 的旧所有权约束，以及原十二阶段/三条记录的当前投影；其余导航行为和历史实施、测量、验收事实保留。本导航偏好 Landing 的 Registry 四条、Kernel 十三阶段是历史事实；§18.11.11 当前扩展为五条、十四阶段，Provider Set 仍为 `pinia,appearance`。
+本合同取代 §1.2B.0H/0L 中导航偏好仅限 Shell-local ref、不得进入 Pinia/Storage 的旧所有权约束，以及原十二阶段/三条记录的当前投影；其余导航行为和历史实施、测量、验收事实保留。本导航偏好 Landing 的 Registry 四条、Kernel 十三阶段是历史事实；§18.11.11 随后扩展为五条、十四阶段，§18.12 当前再扩展为七条、十五阶段，Provider Set 仍为 `pinia,appearance`。
 
 ```text
 NAVIGATION_PREFERENCE_OWNER=apps/web/src/app/navigation
@@ -14844,7 +14878,7 @@ scripts/verify/check-bundle.ts
   → exact production artifact identity and canonical measurement profile; eight lazy-route chunks; hard initial and lazy-route budgets
 ```
 
-当前 §23.6 Localization 扩展沿用上述 Owners，并由 `scripts/architecture/check-i18n.ts` 接入同一 `check:arch`：当前增加 §19.5.2 导航偏好与 §18.11.11 Workspace 结构恢复后，十四阶段 Kernel、五条 Storage Record、二十一条 Capability、十七条 Route 与二十六个 Dynamic Root 均由既有生产 Gate 闭合，导航偏好扩展只由原 Storage、Kernel 和 Admin Console Owners 检查。上方 Router Landing 的原始计数不改写为该 Landing 的历史结果。
+当前 §23.6 Localization 扩展沿用上述 Owners，并由 `scripts/architecture/check-i18n.ts` 接入同一 `check:arch`：当前增加 §19.5.2 导航偏好与 §18.11.11 Workspace 结构恢复后，再经 §18.12 Scroll System 扩展，十五阶段 Kernel、七条 Storage Record、二十一条 Capability、十七条 Route 与二十六个 Dynamic Root 均由既有生产 Gate 闭合，导航偏好扩展只由原 Storage、Kernel 和 Admin Console Owners 检查。上方 Router Landing 的原始计数不改写为该 Landing 的历史结果。
 
 Runtime Kernel Checker Logic 的 Physical Split 是 Non-protocol Implementation Detail；Root `check:arch` 保持 Sole Architecture Governance Entry。
 
@@ -14991,9 +15025,9 @@ exact four-record Core Error Registry and built-in message-key set
 exact safe and prohibited error context closure
 configuration-first startup and exact two-listener capture ownership
 exact one-user-retry startup-configuration-recovery policy
-exact fourteen-step Bootstrap Registry and acyclic dependency graph after the scoped Console I18n, navigation preference and Workspace Session extensions
+exact fifteen-step Bootstrap Registry and acyclic dependency graph after the scoped Console I18n, navigation preference, Workspace Session and Scroll System extensions
 exact Pinia-and-Appearance current provider set
-unique Mount owner and exact reverse disposal order including dispose-workspace-session before dispose-navigation-preference before dispose-i18n before dispose-storage
+unique Mount owner and exact reverse disposal order including dispose-scroll-system before dispose-workspace-session before dispose-navigation-preference before dispose-i18n before dispose-storage
 idempotent cleanup and sole HMR owner
 absence of future Providers, placeholder Steps and inactive capability imports
 unchanged Package 5 Appearance behavior
@@ -15858,7 +15892,7 @@ VUE_ROUTER_TYPE_COMPATIBILITY_STRATEGY=EXACT_VERSION_PNPM_DECLARATION_PATCH
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
 ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=14
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=15
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
 PROJECT_DELIVERY_MODEL=INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER
@@ -16000,7 +16034,7 @@ PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION_COMMIT=3bb664f1d81d354ccb0ec7ddcc4
 PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE
 ROUTER_CAPABILITY_STATUS=ACTIVE
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
-CURRENT_RUNTIME_KERNEL_STEP_COUNT=14
+CURRENT_RUNTIME_KERNEL_STEP_COUNT=15
 PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION=COMPLETE
 PAVP_ARCHITECTURE_ADMIN_CONSOLE=COMPLETE
 PAVP_ARCHITECTURE_ADMIN_CONSOLE_IMPLEMENTATION=COMPLETE
@@ -16107,7 +16141,7 @@ PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
 CURRENT_ROUTE_REGISTRY_RECORDS=17
 CURRENT_PRODUCT_ROUTE_RECORDS=10
 CURRENT_ERROR_ROUTE_RECORDS=7
-CURRENT_PUBLIC_COMPONENT_EXPORTS=11
+CURRENT_PUBLIC_COMPONENT_EXPORTS=14
 ACTIVE_PUBLIC_COLOR_ROLES=10
 ACTIVE_PUBLIC_ROLES_TOTAL=37
 PUBLIC_ROLE_REGISTRY=EXACT

@@ -21,12 +21,14 @@ import {
   UiSection,
   UiSegmentedControl,
   UiStatusBadge,
+  UiSwitch,
   type UiDescriptionItem,
   type UiSegmentedOption,
 } from '@platform/ui'
 import { computed, ref } from 'vue'
 
 import { useWorkspaceContentRevision } from '../app/workspace/workspace-content'
+import { useScrollPreferenceStore } from '../app/scroll/scroll-preference.store'
 import { useAppearanceMutationBoundary } from '../app/appearance/appearance-mutation-boundary'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
 import {
@@ -37,6 +39,7 @@ import {
 } from '../shared/i18n'
 
 const language = useConsoleI18n()
+const scrollPreference = useScrollPreferenceStore()
 const { t, locale, pendingLocale, notice } = language
 const languageOptions = Object.freeze(
   consoleLocaleRegistry.map((record) => ({
@@ -673,6 +676,23 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             :model-value="preference?.appearance.motion ?? ''"
             :options="motionOptions"
             @update:model-value="updateMotion"
+          />
+        </div>
+
+        <div
+          class="pavp-appearance-control"
+          data-scroll-preference="restore-on-refresh"
+        >
+          <span class="pavp-appearance-control__copy">
+            <strong>{{ t('appearance.restore-scroll') }}</strong>
+            <span class="text-text-secondary">{{
+              t('appearance.restore-scroll-description')
+            }}</span>
+          </span>
+          <UiSwitch
+            :accessible-label="t('appearance.restore-scroll')"
+            :model-value="scrollPreference.restoreOnRefresh"
+            @update:model-value="scrollPreference.setRestoreOnRefresh"
           />
         </div>
 

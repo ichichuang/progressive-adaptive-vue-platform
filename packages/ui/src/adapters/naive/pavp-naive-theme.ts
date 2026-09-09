@@ -286,6 +286,32 @@ export function createPavpNaiveThemeProjection(
   const material = resolveMaterialSurface(appearance.material)
   const projectedMotionDuration = resolveMotionDuration(appearance.motion)
   const themeOverrides = Object.freeze({
+    Scrollbar: {
+      width: compactOverlaySpacing,
+      height: compactOverlaySpacing,
+      color: `var(--pavp-scrollbar-color, ${colorBorder})`,
+      colorHover: `var(--pavp-scrollbar-hover, ${colorTextSecondary})`,
+      railColor: 'transparent',
+      borderRadius: radius,
+    },
+    Switch: {
+      railColor: colorBorder,
+      railColorActive: colorControl,
+      buttonColor: colorPanel,
+      buttonBoxShadow: shadowControl,
+      boxShadowFocus: shadowFocusRing,
+      textColor: colorOnAction,
+      iconColor: colorText,
+      loadingColor: colorControl,
+      opacityDisabled: disabledOpacity,
+      railHeightMedium: `calc(${controlHeight} / 2)`,
+      railWidthMedium: controlHeight,
+      buttonHeightMedium: `calc(${controlHeight} / 2)`,
+      buttonWidthMedium: `calc(${controlHeight} / 2)`,
+      buttonWidthPressedMedium: `calc(${controlHeight} / 2)`,
+      railBorderRadiusMedium: radius,
+      buttonBorderRadiusMedium: radius,
+    },
     common: {
       primaryColorHover: colorControl,
       primaryColorPressed: colorControl,

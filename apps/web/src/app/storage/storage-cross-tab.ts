@@ -8,7 +8,11 @@ export interface StorageCrossTabHandle {
 }
 
 export function createStorageCrossTabHandle(): StorageCrossTabHandle {
-  const registryKeys = new Set<string>(storageRegistry.map((record) => record.key))
+  const registryKeys = new Set<string>(
+    storageRegistry
+      .filter((record) => record.medium === 'local-storage')
+      .map((record) => record.key),
+  )
 
   // The active cross-tab event allowlist is empty: the two direct-compatibility records do not
   // publish or consume Storage change events. The fallback listener only verifies that a storage

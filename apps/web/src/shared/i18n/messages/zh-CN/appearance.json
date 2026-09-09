@@ -1,4 +1,6 @@
 {
+  "appearance.restore-scroll": "刷新后恢复滚动位置",
+  "appearance.restore-scroll-description": "刷新当前页面后，返回上次阅读的位置。",
   "appearance.material-stage-title": "材质效果",
   "appearance.material-stage-summary": "功能区域使用当前材质，内容区域保持稳定清晰。",
   "appearance.motion-stage-title": "动效效果",

@@ -867,12 +867,11 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
     )
   }
   if (
-    !lifecycleSource.includes('owner.scrollLeft =') ||
-    !lifecycleSource.includes('owner.scrollTop = Math.max(0, Math.min(height, position.top))') ||
-    !lifecycleSource.includes('Math.max(-width, Math.min(0, position.left))') ||
-    !lifecycleSource.includes('writeRegionPosition(owner, fragment)') ||
+    !lifecycleSource.includes("controller.scrollTo({ ...position, behavior: 'instant' })") ||
+    !lifecycleSource.includes('writeRegionFragment(controller, hash)') ||
+    /owner\.scroll(?:Left|Top)\s*=/u.test(lifecycleSource) ||
     lifecycleSource.indexOf('resolveBoundRouterPresentationCommit(presentationCommitBroker, to)') <
-      lifecycleSource.lastIndexOf('writeRegionPosition(owner,')
+      lifecycleSource.lastIndexOf('writeRegionPosition(controller,')
   ) {
     violations.push(
       'Router Presentation Commit must resolve only after the existing final inline and block region scroll writes.',

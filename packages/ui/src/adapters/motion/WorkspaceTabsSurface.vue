@@ -10,6 +10,8 @@ import {
 } from './motion-feature-runtime'
 
 import type { UiWorkspaceTab } from '../../components/contracts'
+import UiScrollArea from '../../components/UiScrollArea.vue'
+import type { UiScrollController } from '../../components/scroll-contracts'
 
 defineOptions({ name: 'WorkspaceTabsSurface' })
 
@@ -25,6 +27,11 @@ const emit = defineEmits<{
   close: [id: string]
 }>()
 const strip = ref<HTMLElement>()
+const viewport = ref<HTMLElement>()
+let scrollController: UiScrollController | null = null
+function connectScrollController(controller: UiScrollController | null): void {
+  scrollController = controller
+}
 const groupId = `pavp-workspace-${useId()}`
 const { dispose, features, featureReady, startAfterStableMount } = createMotionFeatureRuntime()
 const full = computed(() => featureReady.value && props.motion === 'full')
@@ -80,7 +87,7 @@ onBeforeUnmount(dispose)
 const focusedId = ref<string | null>(null)
 
 function revealTab(button: HTMLElement): void {
-  const owner = strip.value
+  const owner = viewport.value
   if (owner === undefined) return
   const bounds = owner.getBoundingClientRect()
   const target = button.getBoundingClientRect()
@@ -90,7 +97,7 @@ function revealTab(button: HTMLElement): void {
       : target.right > bounds.right
         ? target.right - bounds.right
         : 0
-  owner.scrollLeft += offset
+  if (offset !== 0) scrollController?.scrollBy({ left: offset, behavior: 'smooth' })
 }
 
 function focusTab(button: HTMLElement | undefined): void {
@@ -169,115 +176,136 @@ watch(
         :id="groupId"
         :inherit="false"
       >
-        <m.div
-          :ref="setStrip"
-          layout-scroll
-          :data-motion="motion"
-          :data-layout-motion="full"
-          class="pavp-workspace-tabs"
-          :aria-label="label"
-          role="tablist"
-          tabindex="-1"
-          aria-orientation="horizontal"
-          @keydown="moveFocus"
+        <div
+          ref="viewport"
+          class="pavp-workspace-tabs-viewport"
         >
-          <AnimatePresence
-            :initial="false"
-            mode="popLayout"
-            @before-leave="retireTab"
-            @before-enter="revealEnteringTab"
+          <UiScrollArea
+            owner-id="workspace-tabs"
+            x-scrollable
+            @controller="connectScrollController"
           >
             <m.div
-              v-for="item in items"
-              :key="item.id"
-              class="pavp-workspace-tabs__item"
-              role="presentation"
-              :data-active="item.id === activeId"
-              :data-closable="item.closable"
+              :ref="setStrip"
+              :layout-root="full"
               :layout="full ? 'position' : false"
-              :initial="featureReady && motion !== 'none' ? entering : false"
-              :animate="{ ...resting, y: 0 }"
-              :exit="leaving"
-              :transition="transition"
+              :data-motion="motion"
+              :data-layout-motion="full"
+              class="pavp-workspace-tabs"
+              :aria-label="label"
+              role="tablist"
+              tabindex="-1"
+              aria-orientation="horizontal"
+              @keydown="moveFocus"
             >
-              <m.div
-                v-if="full && item.id === activeId"
-                class="pavp-workspace-tabs__lens"
-                aria-hidden="true"
-                layout-id="active-surface"
+              <AnimatePresence
                 :initial="false"
-                :transition="transition"
-              />
-              <div
-                v-else-if="item.id === activeId"
-                class="pavp-workspace-tabs__lens"
-                aria-hidden="true"
-              />
-              <m.button
-                :id="`${item.id}-tab`"
-                type="button"
-                role="tab"
-                class="pavp-workspace-tabs__tab"
-                :initial="false"
-                animate="rest"
-                while-hover="hover"
-                while-focus="focus"
-                while-press="press"
-                :variants="buttonVariants"
-                :transition="transition"
-                :aria-selected="item.id === activeId"
-                :aria-controls="panelId"
-                :tabindex="item.id === (focusedId ?? activeId) ? 0 : -1"
-                @focus="focusedId = item.id"
-                @click="emit('activate', item.id)"
+                mode="popLayout"
+                @before-leave="retireTab"
+                @before-enter="revealEnteringTab"
               >
-                <m.span
-                  class="pavp-workspace-tabs__hover"
-                  aria-hidden="true"
-                  :initial="false"
-                  :variants="surfaceVariants"
+                <m.div
+                  v-for="item in items"
+                  :key="item.id"
+                  class="pavp-workspace-tabs__item"
+                  role="presentation"
+                  :data-active="item.id === activeId"
+                  :data-closable="item.closable"
+                  :layout="full ? 'position' : false"
+                  :initial="featureReady && motion !== 'none' ? entering : false"
+                  :animate="{ ...resting, y: 0 }"
+                  :exit="leaving"
                   :transition="transition"
-                />
-                <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
-              </m.button>
-              <m.button
-                v-if="item.closable"
-                type="button"
-                class="pavp-workspace-tabs__close"
-                :initial="false"
-                animate="rest"
-                while-hover="hover"
-                while-focus="focus"
-                while-press="press"
-                :transition="transition"
-                :aria-label="item.closeLabel"
-                @focus="focusedId = item.id"
-                @click.stop="emit('close', item.id)"
-              >
-                <m.span
-                  class="pavp-workspace-tabs__hover"
-                  aria-hidden="true"
-                  :initial="false"
-                  :variants="surfaceVariants"
-                  :transition="transition"
-                />
-                <m.span
-                  class="pavp-workspace-tabs__close-mark"
-                  aria-hidden="true"
-                  :initial="false"
-                  :variants="closeMarkVariants"
-                  :transition="transition"
-                />
-              </m.button>
+                >
+                  <m.div
+                    v-if="full && item.id === activeId"
+                    class="pavp-workspace-tabs__lens"
+                    aria-hidden="true"
+                    layout-id="active-surface"
+                    :initial="false"
+                    :transition="transition"
+                  />
+                  <div
+                    v-else-if="item.id === activeId"
+                    class="pavp-workspace-tabs__lens"
+                    aria-hidden="true"
+                  />
+                  <m.button
+                    :id="`${item.id}-tab`"
+                    type="button"
+                    role="tab"
+                    class="pavp-workspace-tabs__tab"
+                    :initial="false"
+                    animate="rest"
+                    while-hover="hover"
+                    while-focus="focus"
+                    while-press="press"
+                    :variants="buttonVariants"
+                    :transition="transition"
+                    :aria-selected="item.id === activeId"
+                    :aria-controls="panelId"
+                    :tabindex="item.id === (focusedId ?? activeId) ? 0 : -1"
+                    @focus="focusedId = item.id"
+                    @click="emit('activate', item.id)"
+                  >
+                    <m.span
+                      class="pavp-workspace-tabs__hover"
+                      aria-hidden="true"
+                      :initial="false"
+                      :variants="surfaceVariants"
+                      :transition="transition"
+                    />
+                    <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
+                  </m.button>
+                  <m.button
+                    v-if="item.closable"
+                    type="button"
+                    class="pavp-workspace-tabs__close"
+                    :initial="false"
+                    animate="rest"
+                    while-hover="hover"
+                    while-focus="focus"
+                    while-press="press"
+                    :transition="transition"
+                    :aria-label="item.closeLabel"
+                    @focus="focusedId = item.id"
+                    @click.stop="emit('close', item.id)"
+                  >
+                    <m.span
+                      class="pavp-workspace-tabs__hover"
+                      aria-hidden="true"
+                      :initial="false"
+                      :variants="surfaceVariants"
+                      :transition="transition"
+                    />
+                    <m.span
+                      class="pavp-workspace-tabs__close-mark"
+                      aria-hidden="true"
+                      :initial="false"
+                      :variants="closeMarkVariants"
+                      :transition="transition"
+                    />
+                  </m.button>
+                </m.div>
+              </AnimatePresence>
             </m.div>
-          </AnimatePresence>
-        </m.div>
+          </UiScrollArea>
+        </div>
       </LayoutGroup>
     </MotionConfig>
   </LazyMotion>
 </template>
 
 <style scoped>
+.pavp-workspace-tabs-viewport {
+  min-inline-size: 0;
+  flex: 0 0 auto;
+  background-color: var(--ui-color-surface-panel);
+  border-block-end-width: var(--ui-admin-border-width);
+  border-block-end-style: solid;
+  border-block-end-color: var(--ui-color-border-default);
+}
+
 .pavp-workspace-tabs {
   --workspace-hover-surface: color-mix(
     in srgb,
@@ -290,13 +318,8 @@ watch(
   display: flex;
   flex: 0 0 auto;
   gap: 0;
-  overflow-x: auto;
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
-  background-color: var(--ui-color-surface-panel);
-  border-block-end-width: var(--ui-admin-border-width);
-  border-block-end-style: solid;
-  border-block-end-color: var(--ui-color-border-default);
   color: var(--ui-color-text-secondary);
 }
 .pavp-workspace-tabs__item {

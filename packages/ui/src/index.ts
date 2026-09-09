@@ -1,3 +1,6 @@
+export { default as UiScrollArea } from './components/UiScrollArea.vue'
+export { default as UiSwitch } from './components/UiSwitch.vue'
+export type * from './components/scroll-contracts'
 export { default as UiWorkspaceTabs } from './components/UiWorkspaceTabs.vue'
 export { default as UiAdminShell } from './components/UiAdminShell.vue'
 export { default as UiButton } from './components/UiButton.vue'

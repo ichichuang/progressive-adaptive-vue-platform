@@ -14,7 +14,7 @@ export interface RuntimeKernelConsoleErrorRecordCounts {
 export interface RuntimeKernelConsoleProjection {
   readonly schemaVersion: 1
   readonly stepIds: readonly string[]
-  readonly stepCount: 14
+  readonly stepCount: 15
   readonly activeProviderIds: readonly ['pinia', 'appearance']
   readonly errorRecordCounts: RuntimeKernelConsoleErrorRecordCounts
 }
@@ -28,7 +28,7 @@ const routerErrorCount = runtimeCount(routerErrorRegistry)
 const storageErrorCount = runtimeCount(storageErrorRegistry)
 
 if (
-  stepCount !== 14 ||
+  stepCount !== 15 ||
   coreErrorCount !== 4 ||
   routerErrorCount !== 6 ||
   storageErrorCount !== 11 ||

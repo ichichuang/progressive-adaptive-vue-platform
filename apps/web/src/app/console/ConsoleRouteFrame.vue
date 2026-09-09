@@ -4,8 +4,9 @@ import {
   UiWorkspaceTabs,
   type UiAdminNavigationExpansionUpdate,
   type UiAdminNavigationGroup,
+  type UiScrollController,
 } from '@platform/ui'
-import { computed, nextTick, onScopeDispose, ref, watch } from 'vue'
+import { computed, inject, nextTick, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import {
@@ -14,6 +15,7 @@ import {
   type WorkspaceIdentity,
 } from '../workspace/workspace.store'
 import { isRouterNavigationCurrent } from '../router/router-lifecycle'
+import { routerScrollControllerKey } from '../router/router-scroll-controller'
 import { reconcileNavigationGroupIds } from '../navigation/navigation-preference-contract'
 import { useNavigationPreferenceStore } from '../navigation/navigation-preference.store'
 import { useConsoleI18n } from '../../shared/i18n'
@@ -78,6 +80,20 @@ const copy = computed(() => ({
   collapseAllMenusLabel: t('shell.collapseAllMenusLabel'),
 }))
 const router = useRouter()
+const registerScrollController = inject(routerScrollControllerKey)
+if (registerScrollController === undefined)
+  throw new Error('The Console requires the Router Scroll Controller port.')
+let unregisterScrollController: (() => void) | undefined
+function connectContentScrollController(controller: UiScrollController | null): void {
+  if (controller === null) {
+    unregisterScrollController?.()
+    unregisterScrollController = undefined
+    return
+  }
+  if (unregisterScrollController !== undefined)
+    throw new TypeError('The Console content already has a Scroll Controller.')
+  unregisterScrollController = registerScrollController?.(controller)
+}
 const workspace = useWorkspaceStore()
 const closing = new Set<WorkspaceIdentity>()
 const workspaceTabs = computed(() =>
@@ -208,6 +224,7 @@ const routeTransitionCoordinator = createRouteTransitionCoordinator({
 })
 
 onScopeDispose(() => {
+  unregisterScrollController?.()
   routeTransitionCoordinator.dispose()
 })
 
@@ -229,6 +246,7 @@ async function navigate(routeName: string): Promise<void> {
     :expanded-navigation-group-ids="effectiveExpandedGroupIds"
     :copy="copy"
     @navigate="navigate"
+    @content-scroll-controller="connectContentScrollController"
     @update:wide-navigation-collapsed="navigationPreference.setWideNavigationCollapsed"
     @update:expanded-navigation-group-ids="updateExpandedNavigationGroups"
   >

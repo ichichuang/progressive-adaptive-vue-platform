@@ -715,6 +715,7 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       '../app/appearance/appearance-read-boundary',
       '../shared/i18n',
       '../app/workspace/workspace-content',
+      '../app/scroll/scroll-preference.store',
     ],
   ],
   [
@@ -756,6 +757,27 @@ const naiveCommonParserSensitiveColorProperties: ReadonlySet<string> = new Set([
   'tableHeaderColor',
   'warningColor',
 ])
+const scrollSystemThemeOverrideContract = {
+  Scrollbar: ['width', 'height', 'color', 'colorHover', 'railColor', 'borderRadius'],
+  Switch: [
+    'railColor',
+    'railColorActive',
+    'buttonColor',
+    'buttonBoxShadow',
+    'boxShadowFocus',
+    'textColor',
+    'iconColor',
+    'loadingColor',
+    'opacityDisabled',
+    'railHeightMedium',
+    'railWidthMedium',
+    'buttonHeightMedium',
+    'buttonWidthMedium',
+    'buttonWidthPressedMedium',
+    'railBorderRadiusMedium',
+    'buttonBorderRadiusMedium',
+  ],
+} as const
 const themeOverrideContract = {
   common: [
     'actionColor',
@@ -4881,6 +4903,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   const innerSelector = '.pavp-admin-shell__drawer-navigation'
   const outerDeclarations = cssDeclarationsForSelector(rules, outerSelector)
   const innerDeclarations = cssDeclarationsForSelector(rules, innerSelector)
+  const contentDeclarations = cssDeclarationsForSelector(rules, '.pavp-admin-shell__drawer-content')
 
   if (
     outerDeclarations === undefined ||
@@ -4905,14 +4928,15 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
       'block-size': '100%',
       'inline-size': '100%',
       'max-inline-size': 'var(--ui-layout-admin-drawer-maximum-inline-size)',
-      overflow: 'auto',
+      overflow: 'hidden',
       background: 'var(--ui-material-overlay-background)',
       'box-shadow': 'var(--ui-admin-shadow-overlay)',
     }) ||
-    !innerDeclarations.includes('var(--pavp-safe-area-top)') ||
-    !innerDeclarations.includes('var(--pavp-safe-area-bottom)') ||
-    !innerDeclarations.includes('var(--pavp-safe-area-left)') ||
-    !innerDeclarations.includes('var(--pavp-safe-area-right)')
+    !snapshot.shellSource.includes('owner-id="architecture-console-drawer"') ||
+    !contentDeclarations?.includes('var(--pavp-safe-area-top)') ||
+    !contentDeclarations.includes('var(--pavp-safe-area-bottom)') ||
+    !contentDeclarations.includes('var(--pavp-safe-area-left)') ||
+    !contentDeclarations.includes('var(--pavp-safe-area-right)')
   ) {
     violations.push('PAVP_RUNTIME_003_INNER_PANEL')
   }
@@ -5058,9 +5082,9 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   if (
     runtimeNumber(routeRegistry.length) !== 17 ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 14 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 5 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 14
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -9484,9 +9508,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
         snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
         snapshot.routeCount === 17 &&
-        snapshot.runtimeKernelStepCount === 14 &&
+        snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 5,
+        snapshot.storageRecordCount === 7,
     },
   ])
 }
@@ -11632,8 +11656,8 @@ function runRuntime002NegativeProbes(
   const pointerGuardCall = '      preserveCurrentPersistentNavigationFocus(event, routeName)\n'
   const drawerGuardSource = replaceLastOccurrence(
     baseline.shellSource,
-    '                type="button"\n                @click="navigate(item.routeName)"',
-    '                type="button"\n                @pointerdown="preserveCurrentPersistentNavigationFocus($event, item.routeName)"\n                @click="navigate(item.routeName)"',
+    '@click="navigate(item.routeName)"',
+    '@pointerdown="preserveCurrentPersistentNavigationFocus($event, item.routeName)" @click="navigate(item.routeName)"',
   )
   const disabledCurrentSource = baseline.shellSource.replace(
     "    'aria-current': routeName === props.activeRouteName ? 'page' : undefined,",
@@ -13387,7 +13411,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
-      passed: snapshot.runtimeKernelStepCount === 14,
+      passed: snapshot.runtimeKernelStepCount === 15,
     },
     {
       code: 'ADMIN_NAV_NATIVE_PROVIDER_IDS',
@@ -13395,7 +13419,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 5,
+      passed: snapshot.storageRecordCount === 7,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -15015,6 +15039,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   const selectedFormula =
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const exactPublicComponents = [
+    'UiScrollArea',
+    'UiSwitch',
     'UiAdminShell',
     'UiButton',
     'UiDescriptionList',
@@ -16483,7 +16509,7 @@ async function validateAppearanceAndPageFacts(): Promise<{
     !bootstrapSource.includes("{ detached: true, flush: 'sync' }") ||
     mutationBoundarySource.includes('installCuratedThemeCatalog') ||
     bootstrapSource.includes('installCuratedCustomThemeCatalog') ||
-    defineStoreCount !== 3 ||
+    defineStoreCount !== 4 ||
     competingEnvironmentSources.length !== 0
   ) {
     violations.push(
@@ -16550,12 +16576,20 @@ async function validateNaiveOverrides(): Promise<string[]> {
   const overrideNames = staticObjectPropertyNames(overrides)
   if (
     overrideNames === undefined ||
-    !exactSet(overrideNames, [...Object.keys(themeOverrideContract), 'Layout', 'Menu'])
+    !exactSet(overrideNames, [
+      ...Object.keys(themeOverrideContract),
+      ...Object.keys(scrollSystemThemeOverrideContract),
+      'Layout',
+      'Menu',
+    ])
   ) {
     violations.push('PAVP-to-Naive override component inventory drifted.')
   }
 
-  for (const [component, expectedProperties] of Object.entries(themeOverrideContract)) {
+  for (const [component, expectedProperties] of Object.entries({
+    ...themeOverrideContract,
+    ...scrollSystemThemeOverrideContract,
+  })) {
     const componentOverride = objectPropertyObject(overrides, component)
     const actualProperties =
       componentOverride === undefined ? undefined : staticObjectPropertyNames(componentOverride)
@@ -16705,16 +16739,16 @@ function validateInspectorProjections(): string[] {
       'denim-cocoa',
       'burgundy-snow',
     ]) ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 14 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(routerConsoleProjection.routeCount) !== 17 ||
     runtimeNumber(routerConsoleProjection.productRouteCount) !== 10 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
     runtimeCount(routerRecords) !== 17 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 5 ||
-    runtimeCount(storageRecords) !== 5 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 12 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
+    runtimeCount(storageRecords) !== 7 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 14 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
       'ui-form',
       'ui-form-field',

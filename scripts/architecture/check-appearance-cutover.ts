@@ -1201,8 +1201,11 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
       violations.push(`${displayPath}: direct localStorage access is outside its admitted owners.`)
     }
 
-    if (sessionStorageReferences > 0) {
-      violations.push(`${displayPath}: sessionStorage is not admitted.`)
+    if (
+      sessionStorageReferences > 0 &&
+      displayPath !== 'apps/web/src/app/storage/scroll-refresh-storage.ts'
+    ) {
+      violations.push(`${displayPath}: sessionStorage requires the exact scroll-refresh adapter.`)
     }
   }
 
@@ -1211,6 +1214,7 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
       'apps/web/src/app/appearance/appearance.store.ts',
       'apps/web/src/app/navigation/navigation-preference.store.ts',
       'apps/web/src/app/providers/pinia.ts',
+      'apps/web/src/app/scroll/scroll-preference.store.ts',
       'apps/web/src/app/workspace/workspace.store.ts',
     ])
   ) {

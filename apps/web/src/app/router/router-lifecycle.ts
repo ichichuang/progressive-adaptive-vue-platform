@@ -1,5 +1,11 @@
 import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
 import { nextTick, watch, type App } from 'vue'
+import type { UiScrollController } from '@platform/ui'
+import type { ScrollRefreshSnapshot } from '../scroll/scroll-refresh-contract'
+import {
+  createRouterScrollControllers,
+  routerScrollControllerKey,
+} from './router-scroll-controller'
 import {
   createRouter,
   createWebHistory,
@@ -270,10 +276,17 @@ export interface RouterLifecycleHandle {
   readonly guardRemovers: readonly [() => void, () => void, () => void]
   readonly errorHandlerRemover: () => void
   connectLocalization(boundary: ConsoleI18nBoundary): () => void
+  connectRefreshScroll(binding: RefreshScrollBinding): () => void
   refreshCurrentRouteTitle(translate: ConsoleTranslate): void
   markApplicationMounted(): void
   getLatestNavigationResult(): TypedNavigationResult | undefined
   dispose(): void
+}
+
+interface RefreshScrollBinding {
+  readEnabled(): boolean
+  readonly pending: ScrollRefreshSnapshot | undefined
+  capture(snapshot: ScrollRefreshSnapshot): void
 }
 
 function generatedRouteRecords(records: readonly RouteRecordRaw[]): RouteRecordRaw[] {
@@ -394,6 +407,7 @@ interface CommittedEntry {
   presented:
     | {
         readonly owner: HTMLElement
+        readonly controller: UiScrollController
         readonly context: readonly (string | number)[] | undefined
         readonly workspaceContext: readonly (string | number)[] | undefined
       }
@@ -516,24 +530,27 @@ function fragmentPosition(owner: Element, hash: string): { left: number; top: nu
 }
 
 function writeRegionPosition(
-  owner: HTMLElement,
+  controller: UiScrollController,
   position: { readonly left: number; readonly top: number },
 ): boolean {
-  const style = getComputedStyle(owner)
+  const state = controller.readState()
   if (
-    style.writingMode !== 'horizontal-tb' ||
+    !state.ready ||
+    state.writingMode !== 'horizontal-tb' ||
     !Number.isFinite(position.left) ||
     !Number.isFinite(position.top)
   )
     return false
-  const width = Math.max(0, owner.scrollWidth - owner.clientWidth)
-  const height = Math.max(0, owner.scrollHeight - owner.clientHeight)
-  owner.scrollLeft =
-    style.direction === 'rtl'
-      ? Math.max(-width, Math.min(0, position.left))
-      : Math.max(0, Math.min(width, position.left))
-  owner.scrollTop = Math.max(0, Math.min(height, position.top))
+  controller.scrollTo({ ...position, behavior: 'instant' })
   return true
+}
+
+function writeRegionFragment(controller: UiScrollController, hash: string): boolean {
+  if (hash === '') return false
+  const result = controller.scrollToAnchor(hash.slice(1), { behavior: 'instant' })
+  if (result.kind === 'rejected' && result.reason === 'duplicate')
+    throw new TypeError('The routed fragment target is duplicated.')
+  return result.kind === 'scrolled'
 }
 
 export async function createAndReadyRouter(input: {
@@ -556,12 +573,16 @@ export async function createAndReadyRouter(input: {
   let disposed = false
   let routerReady = false
   let localization: ConsoleI18nBoundary | undefined
+  let refreshScroll: RefreshScrollBinding | undefined
+  let pendingRefresh: ScrollRefreshSnapshot | undefined
   let latestNavigationResult: TypedNavigationResult | undefined
   let operation: NavigationOperation | undefined
   let nativeOperation: NavigationOperation | undefined
   let committedEntry: CommittedEntry | undefined
   const scopeId = crypto.randomUUID()
   const regionRecords = new Map<string, RegionRecord>()
+  const scrollControllers = createRouterScrollControllers()
+  input.application.provide(routerScrollControllerKey, scrollControllers.register)
   const workspace = input.application.runWithContext(useWorkspaceStore)
   const workspaceRecords = new Map<WorkspaceIdentity, WorkspaceRegionRecord>()
   const workspaceContents = new Map<WorkspaceInstanceIdentity, () => WorkspaceContentState>()
@@ -721,8 +742,7 @@ export async function createAndReadyRouter(input: {
     }
   }
 
-  function regionContext(
-    to: RouteLocationNormalized,
+  function restorationValidity(
     navigation: NavigationAttemptState,
     owner: HTMLElement,
     workspaceEntry?: LiveWorkspaceEntry,
@@ -759,24 +779,20 @@ export async function createAndReadyRouter(input: {
     const profile = owner.closest<HTMLElement>('.pavp-admin-shell')?.dataset['layoutProfile']
     const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
     const style = getComputedStyle(owner)
+    const viewport = scrollControllers.read(owner).readState()
     if (
       capability === undefined ||
       profile === undefined ||
       !capability.allowedProfiles.some((value) => value === profile) ||
       !Number.isFinite(rootFontSize) ||
       rootFontSize <= 0 ||
-      owner.clientWidth <= 0 ||
-      owner.clientHeight <= 0 ||
+      !viewport.ready ||
       style.writingMode !== 'horizontal-tb' ||
       (style.direction !== 'ltr' && style.direction !== 'rtl')
     )
       return undefined
     const snapshot = appearance.snapshot.value
     return [
-      scopeId,
-      navigation.routeName,
-      JSON.stringify([to.params, to.query, to.hash]),
-      JSON.stringify([navigation.input.params, navigation.input.query]),
       input.configuration.releaseSha,
       input.configuration.buildVersion,
       localization.locale.value,
@@ -793,13 +809,67 @@ export async function createAndReadyRouter(input: {
       route.meta.blockScrollOwnerId,
       route.meta.inlineScrollOwnerId,
       profile,
-      owner.clientWidth,
-      owner.clientHeight,
+      viewport.width,
+      viewport.height,
       rootFontSize,
       style.writingMode,
       style.direction,
       ...(workspaceEntry === undefined ? [] : [content?.revision ?? 0]),
     ]
+  }
+
+  function regionContext(
+    to: RouteLocationNormalized,
+    navigation: NavigationAttemptState,
+    owner: HTMLElement,
+    workspaceEntry?: LiveWorkspaceEntry,
+  ): readonly (string | number)[] | undefined {
+    const validity = restorationValidity(navigation, owner, workspaceEntry)
+    return validity === undefined
+      ? undefined
+      : [
+          scopeId,
+          navigation.routeName,
+          JSON.stringify([to.params, to.query, to.hash]),
+          JSON.stringify([navigation.input.params, navigation.input.query]),
+          ...validity,
+        ]
+  }
+
+  function captureRefreshScroll(): void {
+    const binding = refreshScroll
+    const entry = committedEntry
+    if (
+      disposed ||
+      binding?.readEnabled() !== true ||
+      entry?.presented === undefined ||
+      !entryIsCurrent(entry)
+    )
+      return
+    try {
+      const owner = regionOwner(entry.navigation.routeName)
+      if (owner === undefined || owner !== entry.presented.owner) return
+      const controller = scrollControllers.read(owner)
+      if (controller !== entry.presented.controller || !controller.readState().ready) return
+      const context = restorationValidity(entry.navigation, owner, entry.workspace)
+      const offset = controller.readOffset()
+      if (
+        context === undefined ||
+        !Number.isFinite(offset.left) ||
+        !Number.isFinite(offset.top) ||
+        !entryIsCurrent(entry)
+      )
+        return
+      binding.capture({
+        schemaVersion: 1,
+        routeName: entry.navigation.routeName,
+        ownerId: controller.ownerId,
+        ...offset,
+        context,
+      })
+    } catch {
+      // A withdrawn or nonunique presentation is ineligible; never capture a replacement owner.
+    }
   }
 
   function retainRecord(record: RegionRecord): void {
@@ -819,6 +889,11 @@ export async function createAndReadyRouter(input: {
     if (owner === undefined) return
     if (owner !== source.presented.owner)
       throw new TypeError('The presented source scroll owner changed.')
+    const controller = scrollControllers.read(owner)
+    if (controller !== source.presented.controller)
+      throw new TypeError('The presented source scroll controller changed.')
+    if (!controller.readState().ready) return
+    const offset = controller.readOffset()
     if (source.workspace !== undefined) {
       const context = regionContext(from, source.navigation, owner, source.workspace)
       // A page-owned ready revision may advance after its own render. All layout/address
@@ -826,14 +901,14 @@ export async function createAndReadyRouter(input: {
       if (
         context !== undefined &&
         sameContext(context.slice(0, -1), source.presented.workspaceContext?.slice(0, -1)) &&
-        Number.isFinite(owner.scrollLeft) &&
-        Number.isFinite(owner.scrollTop)
+        Number.isFinite(offset.left) &&
+        Number.isFinite(offset.top)
       )
         workspaceRecords.set(source.workspace.identity, {
           instance: source.workspace.instance,
           context,
-          left: owner.scrollLeft,
-          top: owner.scrollTop,
+          left: offset.left,
+          top: offset.top,
         })
       else workspaceRecords.delete(source.workspace.identity)
     }
@@ -842,13 +917,13 @@ export async function createAndReadyRouter(input: {
     if (
       !sameContext(context, source.presented.context) ||
       context === undefined ||
-      !Number.isFinite(owner.scrollLeft) ||
-      !Number.isFinite(owner.scrollTop)
+      !Number.isFinite(offset.left) ||
+      !Number.isFinite(offset.top)
     ) {
       regionRecords.delete(source.marker.entryId)
       return
     }
-    retainRecord({ marker: source.marker, context, left: owner.scrollLeft, top: owner.scrollTop })
+    retainRecord({ marker: source.marker, context, ...offset })
   }
 
   const router = createRouter({
@@ -911,6 +986,7 @@ export async function createAndReadyRouter(input: {
                     preserve && from.hash === to.hash ? '' : navigation.input.hash,
                   ) ?? (preserve ? false : { left: 0, top: 0 }))
           } else {
+            const controller = scrollControllers.read(owner)
             const context = regionContext(to, navigation, owner)
             const record =
               entry.marker === undefined ? undefined : regionRecords.get(entry.marker.entryId)
@@ -920,7 +996,7 @@ export async function createAndReadyRouter(input: {
                 navigation.operation.kind === 'pop' &&
                 record.marker.scopeId === scopeId &&
                 sameContext(record.context, context) &&
-                writeRegionPosition(owner, record)
+                writeRegionPosition(controller, record)
               ) {
                 retainRecord(record)
                 restored = true
@@ -938,21 +1014,34 @@ export async function createAndReadyRouter(input: {
                   sameContext(record.context, workspaceContext) &&
                   entryIsCurrent(entry)
                 )
-                  restored = writeRegionPosition(owner, record)
+                  restored = writeRegionPosition(controller, record)
                 else workspaceRecords.delete(entry.workspace.identity)
               }
             }
+            const refresh = pendingRefresh
+            if (
+              !restored &&
+              navigation.operation.kind === 'initial' &&
+              !workspaceActivation &&
+              refreshScroll?.readEnabled() === true &&
+              refresh?.routeName === navigation.routeName &&
+              refresh.ownerId === controller.ownerId &&
+              sameContext(
+                refresh.context,
+                restorationValidity(navigation, owner, entry.workspace),
+              ) &&
+              entryIsCurrent(entry)
+            )
+              restored = writeRegionPosition(controller, refresh)
             if (!restored) {
-              const fragment = fragmentPosition(
-                owner,
-                preserve && from.hash === to.hash ? '' : navigation.input.hash,
-              )
-              if (fragment !== undefined) writeRegionPosition(owner, fragment)
-              else if (!preserve) writeRegionPosition(owner, { left: 0, top: 0 })
+              const hash = preserve && from.hash === to.hash ? '' : navigation.input.hash
+              if (!writeRegionFragment(controller, hash) && !preserve)
+                writeRegionPosition(controller, { left: 0, top: 0 })
             }
-            entry.presented = { owner, context, workspaceContext }
+            entry.presented = { owner, controller, context, workspaceContext }
           }
         }
+        pendingRefresh = undefined
         completeActiveGuardStages(navigation.guardStageProgress)
         const result = navigation.operation.result ?? {
           kind: 'allow',
@@ -1274,11 +1363,15 @@ export async function createAndReadyRouter(input: {
     nativeOperation = undefined
     committedEntry = undefined
     regionRecords.clear()
+    scrollControllers.dispose()
     stopWorkspaceObservation()
     workspaceRecords.clear()
     workspaceContents.clear()
     workspace.dispose()
     localization = undefined
+    refreshScroll = undefined
+    pendingRefresh = undefined
+    window.removeEventListener('pagehide', captureRefreshScroll)
     disposeRouterPresentationCommitBroker(router, presentationCommitBroker)
     resolveApplicationMounted?.()
     resolveApplicationMounted = undefined
@@ -1319,6 +1412,25 @@ export async function createAndReadyRouter(input: {
     history,
     guardRemovers: Object.freeze([beforeEachRemover, beforeResolveRemover, afterEachRemover]),
     errorHandlerRemover,
+    connectRefreshScroll(binding) {
+      if (disposed || applicationMounted || refreshScroll !== undefined)
+        throw new Error('The Router refresh scroll binding is unavailable.')
+      refreshScroll = binding
+      const navigation = performance.getEntriesByType('navigation')[0]
+      pendingRefresh =
+        binding.readEnabled() &&
+        navigation instanceof PerformanceNavigationTiming &&
+        navigation.type === 'reload'
+          ? binding.pending
+          : undefined
+      window.addEventListener('pagehide', captureRefreshScroll)
+      return () => {
+        if (refreshScroll !== binding) return
+        refreshScroll = undefined
+        pendingRefresh = undefined
+        window.removeEventListener('pagehide', captureRefreshScroll)
+      }
+    },
     connectLocalization(boundary) {
       if (disposed || localization !== undefined)
         throw new Error('The Router locale binding is unavailable.')

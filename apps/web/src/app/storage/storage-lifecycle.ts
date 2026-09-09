@@ -16,6 +16,8 @@ import { nonePrincipalPartitionId, type PrincipalPartitionId } from './storage-p
 import { storageRegistry, type StorageRegistryRecord } from './storage-registry'
 
 interface StorageOwner {
+  readonly scrollPreference: ScrollPreferencePort
+  readonly scrollRefresh: ScrollRefreshPort
   readonly workspaceSession: WorkspaceSessionPort
   readonly navigationPreference: NavigationPreferencePort
   readonly localePreference: LocalePreferencePort
@@ -44,7 +46,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 5 ||
+    records.length !== 7 ||
     envelopeRecords.length !== 0 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -73,6 +75,8 @@ export function createAndReadyStorage(input: {
 
   let disposed = false
   const owner = Object.freeze({
+    scrollPreference: createScrollPreferenceStorage(errorAdapter, () => disposed),
+    scrollRefresh: createScrollRefreshStorage(errorAdapter, () => disposed),
     workspaceSession: createWorkspaceSessionStorage(errorAdapter, () => disposed),
     navigationPreference: createNavigationPreferenceStorage(errorAdapter, () => disposed),
     localePreference: createLocalePreferenceStorage(errorAdapter, () => disposed),
@@ -101,3 +105,7 @@ export function createAndReadyStorage(input: {
     },
   }
 }
+import type { ScrollPreferencePort } from '../scroll/scroll-preference-contract'
+import type { ScrollRefreshPort } from '../scroll/scroll-refresh-contract'
+import { createScrollPreferenceStorage } from './scroll-preference-storage'
+import { createScrollRefreshStorage } from './scroll-refresh-storage'

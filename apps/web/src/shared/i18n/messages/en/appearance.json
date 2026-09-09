@@ -1,4 +1,6 @@
 {
+  "appearance.restore-scroll": "Restore scroll position after refresh",
+  "appearance.restore-scroll-description": "Return to your reading position when you refresh the current page.",
   "appearance.material-stage-title": "Material effect",
   "appearance.material-stage-summary": "Functional areas use the current material while content stays stable and clear.",
   "appearance.motion-stage-title": "Motion effect",
