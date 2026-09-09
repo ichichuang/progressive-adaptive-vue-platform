@@ -29,7 +29,7 @@
   "route-message.console-overview-summary": "View the frontend architecture capabilities and runtime state currently available.",
   "route-message.appearance-management-summary": "Manage themes, color mode, contrast, material, text size and motion, with a live preview.",
   "route-message.design-token-inspector-summary": "View public roles, theme planes, contrast, materials and the manifest summary.",
-  "route-message.runtime-kernel-inspector-summary": "View the thirteen-stage startup sequence, providers and lifecycle boundaries.",
+  "route-message.runtime-kernel-inspector-summary": "View the fourteen-stage startup sequence, providers and lifecycle boundaries.",
   "route-message.router-governance-inspector-summary": "View route, layout, scroll, focus and error-page governance.",
   "route-message.storage-persistence-inspector-summary": "View storage records, partitions, errors and lifecycle boundaries.",
   "route-message.ui-system-inspector-summary": "View admitted PAVP UI components and vendor isolation boundaries.",

@@ -1,5 +1,6 @@
 import { createConsoleI18n, type ConsoleI18nHandle } from '../../shared/i18n'
 import { initializeNavigationPreference } from '../navigation/navigation-preference.store'
+import { initializeWorkspaceSession } from '../workspace/workspace-session'
 import { consoleNavigationRegistry, getRouteMessageScope } from '../router/route-registry'
 import type { Component } from 'vue'
 
@@ -63,6 +64,7 @@ import { startupConfigurationRecoveryPolicy } from './startup-configuration-reco
 const applicationMountTarget = '#app'
 
 interface AttemptResources {
+  workspaceSession?: { dispose(): void }
   navigationPreference?: { dispose(): void }
   i18n?: ConsoleI18nHandle
   disconnectLocalization?: () => void
@@ -177,6 +179,14 @@ function createAttemptDisposer(input: {
       failedSteps,
     )
     delete input.resources.mountedApplication
+    safeDispose(
+      'dispose-workspace-session',
+      input.resources.workspaceSession === undefined
+        ? undefined
+        : () => input.resources.workspaceSession?.dispose(),
+      failedSteps,
+    )
+    delete input.resources.workspaceSession
     safeDispose(
       'dispose-navigation-preference',
       input.resources.navigationPreference === undefined
@@ -493,6 +503,13 @@ async function startAttempt(input: {
       consoleNavigationRegistry
         .filter((group) => group.items.length !== 0)
         .map((group) => group.id),
+    )
+    throwClaimedStartupFailure()
+
+    enterBootstrapStep('initialize-workspace-session')
+    resources.workspaceSession = initializeWorkspaceSession(
+      resources.pinia.pinia,
+      resources.storage.owner.workspaceSession,
     )
     throwClaimedStartupFailure()
 

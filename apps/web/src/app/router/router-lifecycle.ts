@@ -17,7 +17,8 @@ import { routes } from 'vue-router/auto-routes'
 
 import {
   useWorkspaceStore,
-  type WorkspaceEntry,
+  isLiveWorkspace,
+  type LiveWorkspaceEntry,
   type WorkspaceIdentity,
   type WorkspaceInstanceIdentity,
 } from '../workspace/workspace.store'
@@ -386,7 +387,7 @@ interface WorkspaceRegionRecord {
 }
 
 interface CommittedEntry {
-  readonly workspace: WorkspaceEntry | undefined
+  readonly workspace: LiveWorkspaceEntry | undefined
   readonly to: RouteLocationNormalized
   readonly navigation: NavigationAttemptState
   readonly marker: RouteEntryMarker | undefined
@@ -407,7 +408,7 @@ export function committedRouteInputProps(
 
 export interface RouterNavigationOptions {
   readonly replace?: boolean
-  readonly workspaceActivation?: Pick<WorkspaceEntry, 'identity' | 'instance'>
+  readonly workspaceActivation?: Pick<LiveWorkspaceEntry, 'identity' | 'instance'>
 }
 
 export function isRouterNavigationCurrent(router: Router, navigationId: string): boolean {
@@ -567,7 +568,7 @@ export async function createAndReadyRouter(input: {
   input.application.provide(workspaceContentKey, (instance, read) => {
     if (
       disposed ||
-      !workspace.entries.some((entry) => entry.instance === instance) ||
+      !workspace.entries.some((entry) => isLiveWorkspace(entry) && entry.instance === instance) ||
       workspaceContents.has(instance)
     )
       throw new TypeError('The Workspace content owner is unavailable.')
@@ -584,7 +585,10 @@ export async function createAndReadyRouter(input: {
       for (const [identity, record] of workspaceRecords)
         if (
           !workspace.entries.some(
-            (entry) => entry.identity === identity && entry.instance === record.instance,
+            (entry) =>
+              isLiveWorkspace(entry) &&
+              entry.identity === identity &&
+              entry.instance === record.instance,
           )
         )
           workspaceRecords.delete(identity)
@@ -721,7 +725,7 @@ export async function createAndReadyRouter(input: {
     to: RouteLocationNormalized,
     navigation: NavigationAttemptState,
     owner: HTMLElement,
-    workspaceEntry?: WorkspaceEntry,
+    workspaceEntry?: LiveWorkspaceEntry,
   ): readonly (string | number)[] | undefined {
     if (
       input.configuration.environment === 'development' ||
@@ -1048,6 +1052,7 @@ export async function createAndReadyRouter(input: {
       activation !== undefined &&
       !workspace.entries.some(
         (entry) =>
+          isLiveWorkspace(entry) &&
           entry.identity === activation.identity &&
           entry.instance === activation.instance &&
           entry.destination.name === resolved?.name,

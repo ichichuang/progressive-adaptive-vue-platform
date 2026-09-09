@@ -14,11 +14,11 @@ import {
 
 import type { PavpMenuOption } from '../naive/naive-menu'
 import {
-  createAdminNavigationMotionFeatureRuntime,
+  createMotionFeatureRuntime,
   LayoutGroup,
   LazyMotion,
   MotionConfig,
-} from './admin-navigation-motion-runtime'
+} from './motion-feature-runtime'
 
 defineOptions({ name: 'AdminNavigationSelectionLens' })
 
@@ -47,8 +47,7 @@ const fullLayoutTransition = Object.freeze({
     visualDuration: 0.26,
   }),
 })
-const { dispose, featureReady, features, startAfterStableMount } =
-  createAdminNavigationMotionFeatureRuntime()
+const { dispose, featureReady, features, startAfterStableMount } = createMotionFeatureRuntime()
 const reducedMotion = computed(() => (props.motion === 'full' ? 'never' : 'always'))
 const skipAnimations = computed(() => props.motion === 'none')
 

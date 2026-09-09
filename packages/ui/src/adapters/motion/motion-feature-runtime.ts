@@ -1,23 +1,22 @@
 import { LayoutGroup, LazyMotion, MotionConfig, type domMax } from 'motion-v'
 import { nextTick, readonly, ref, type Ref } from 'vue'
 
-type AdminNavigationDomMaxFeaturePackage = typeof domMax
+type MotionDomMaxFeaturePackage = typeof domMax
 
-let adminNavigationDomMaxPromise:
-  Promise<AdminNavigationDomMaxFeaturePackage | undefined> | undefined
+let motionDomMaxPromise: Promise<MotionDomMaxFeaturePackage | undefined> | undefined
 
-function loadAdminNavigationDomMax(): Promise<AdminNavigationDomMaxFeaturePackage | undefined> {
-  adminNavigationDomMaxPromise ??= import('./admin-navigation-dom-max')
+function loadMotionDomMax(): Promise<MotionDomMaxFeaturePackage | undefined> {
+  motionDomMaxPromise ??= import('./admin-navigation-dom-max')
     .then(({ default: features }) => features)
     .catch(() => undefined)
 
-  return adminNavigationDomMaxPromise
+  return motionDomMaxPromise
 }
 
-export function createAdminNavigationMotionFeatureRuntime(): {
+export function createMotionFeatureRuntime(): {
   readonly dispose: () => void
   readonly featureReady: Readonly<Ref<boolean>>
-  readonly features: Promise<AdminNavigationDomMaxFeaturePackage>
+  readonly features: Promise<MotionDomMaxFeaturePackage>
   readonly startAfterStableMount: () => Promise<void>
 } {
   const mutableFeatureReady = ref(false)
@@ -26,8 +25,8 @@ export function createAdminNavigationMotionFeatureRuntime(): {
     disposed: false,
     started: false,
   }
-  let resolveFeatures!: (features: AdminNavigationDomMaxFeaturePackage) => void
-  const features = new Promise<AdminNavigationDomMaxFeaturePackage>((resolve) => {
+  let resolveFeatures!: (features: MotionDomMaxFeaturePackage) => void
+  const features = new Promise<MotionDomMaxFeaturePackage>((resolve) => {
     resolveFeatures = resolve
   })
 
@@ -47,7 +46,7 @@ export function createAdminNavigationMotionFeatureRuntime(): {
       return
     }
 
-    const loadedFeatures = await loadAdminNavigationDomMax()
+    const loadedFeatures = await loadMotionDomMax()
 
     if (loadedFeatures === undefined) {
       return

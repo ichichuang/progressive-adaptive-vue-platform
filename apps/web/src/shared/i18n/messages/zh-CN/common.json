@@ -29,7 +29,7 @@
   "route-message.console-overview-summary": "查看当前已启用的前端架构能力与运行状态。",
   "route-message.appearance-management-summary": "统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。",
   "route-message.design-token-inspector-summary": "查看当前公开角色、主题平面、对比度、材质与清单摘要。",
-  "route-message.runtime-kernel-inspector-summary": "查看当前十三阶段启动流程、Provider 与生命周期边界。",
+  "route-message.runtime-kernel-inspector-summary": "查看当前十四阶段启动流程、Provider 与生命周期边界。",
   "route-message.router-governance-inspector-summary": "查看路由、布局、滚动、焦点与错误页治理。",
   "route-message.storage-persistence-inspector-summary": "查看当前存储记录、分区、错误与生命周期边界。",
   "route-message.ui-system-inspector-summary": "查看已准入的 PAVP UI 组件与供应商隔离边界。",

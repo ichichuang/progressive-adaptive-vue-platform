@@ -78,6 +78,20 @@ const expectedStorageRegistryRecords = [
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   },
+  {
+    id: 'workspace-session',
+    ownerDomain: 'apps/web/src/app/workspace',
+    key: applicationConfig.workspace.sessionStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'workspace-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
 ] as const
 
 const expectedStorageErrors = [
@@ -173,6 +187,7 @@ const rawStorageKeyLiterals = [
   'pavp:web:custom-theme-registry',
   'pavp:web:locale-preference',
   'pavp:web:navigation-preference',
+  'pavp:web:workspace-session',
 ] as const
 
 const approvedRawStorageKeyPaths = new Set([
@@ -297,7 +312,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain exactly the four admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the five admitted direct-compatibility records.',
     )
   }
 
@@ -381,7 +396,8 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
     if (
       sourceText.includes(keyLiteral) &&
       (keyLiteral === 'pavp:web:locale-preference' ||
-      keyLiteral === 'pavp:web:navigation-preference'
+      keyLiteral === 'pavp:web:navigation-preference' ||
+      keyLiteral === 'pavp:web:workspace-session'
         ? displayPath !== 'apps/web/src/app/config/app.config.ts'
         : !approvedRawStorageKeyPaths.has(displayPath))
     ) {
@@ -400,6 +416,7 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
     'apps/web/src/app/storage/locale-preference-storage.ts',
     'apps/web/src/app/storage/navigation-preference-storage.ts',
+    'apps/web/src/app/storage/workspace-session-storage.ts',
   ])
   if (
     displayPath.startsWith('apps/web/src/') &&
@@ -431,7 +448,11 @@ function sensitivePersistenceFileViolation(displayPath: string, sourceText: stri
   const normalized = sourceText.toLowerCase()
 
   for (const token of sensitivePersistenceTokens) {
-    if (normalized.includes(token)) {
+    if (
+      token === 'sessionstorage'
+        ? /\bsessionStorage\b/iu.test(sourceText)
+        : normalized.includes(token)
+    ) {
       violations.push(
         displayPath + ': persisted Storage surface contains sensitive field ' + token + '.',
       )
@@ -647,6 +668,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         'appearance',
         'localization',
         'navigation',
+        'workspace',
       ]) &&
       isDeepStrictEqual(Object.keys(applicationConfig.navigation), ['preferenceStorageKey']),
     'the exact application configuration key surface drifted.',
@@ -801,6 +823,128 @@ async function navigationPreferenceViolations(): Promise<string[]> {
   return violations
 }
 
+async function workspaceSessionViolations(): Promise<string[]> {
+  const directory = 'apps/web/src/app/'
+  const paths = [
+    directory + 'workspace/workspace-session-contract.ts',
+    directory + 'workspace/workspace-session.ts',
+    directory + 'workspace/workspace.store.ts',
+    directory + 'storage/workspace-session-storage.ts',
+    directory + 'storage/storage-lifecycle.ts',
+    directory + 'bootstrap/runtime-kernel.ts',
+  ]
+  const [contract, controller, store, adapter, lifecycle, kernel] = await Promise.all(
+    paths.map(async (path) =>
+      scriptSource(path, await readFile(resolve(rootDirectory, path), 'utf8')),
+    ),
+  )
+  if (!contract || !controller || !store || !adapter || !lifecycle || !kernel)
+    return ['Workspace Session requires its exact application, Storage and Kernel owners.']
+  const violations: string[] = []
+  const report = (valid: boolean, detail: string): void => {
+    if (!valid) violations.push('Workspace Session: ' + detail)
+  }
+  report(
+    isDeepStrictEqual(
+      applicationConfig.workspace.sessionStorageKey,
+      'pavp:web:workspace-session',
+    ) && isDeepStrictEqual(Object.keys(applicationConfig.workspace), ['sessionStorageKey']),
+    'the exact application configuration authority drifted.',
+  )
+  const schema = nodesOf(contract, ts.isVariableDeclaration).find(
+    (node) => node.name.getText(contract) === 'workspaceSessionSchema',
+  )?.initializer
+  const argument = schema && ts.isCallExpression(schema) ? schema.arguments[0] : undefined
+  const fields =
+    argument && ts.isObjectLiteralExpression(argument)
+      ? argument.properties
+          .filter(ts.isPropertyAssignment)
+          .map((field) => [
+            field.name.getText(contract),
+            field.initializer.getText(contract).replaceAll(/\s+/gu, ''),
+          ])
+      : []
+  report(
+    schema !== undefined &&
+      ts.isCallExpression(schema) &&
+      callMemberName(schema) === 'strictObject' &&
+      isDeepStrictEqual(fields, [
+        ['schemaVersion', 'z.literal(1)'],
+        ['openRouteNames', 'z.array(z.string().min(1)).readonly()'],
+      ]),
+    'the persisted payload must remain the strict version and ordered nonempty route-name array only.',
+  )
+  const adapterCalls = nodesOf(adapter, ts.isCallExpression)
+  const schemaImport = namedImportLocalName(
+    adapter,
+    '../workspace/workspace-session-contract',
+    'workspaceSessionSchema',
+  )
+  report(
+    schemaImport !== undefined &&
+      adapterCalls.filter(
+        (call) =>
+          ts.isPropertyAccessExpression(call.expression) &&
+          call.expression.expression.getText(adapter) === schemaImport &&
+          call.expression.name.text === 'safeParse',
+      ).length === 3 &&
+      adapterCalls.filter((call) => callMemberName(call) === 'getItem').length === 2 &&
+      adapterCalls.filter((call) => callMemberName(call) === 'setItem').length === 1 &&
+      !adapterCalls.some((call) => ['removeItem', 'clear'].includes(callMemberName(call) ?? '')),
+    'read, write and readback must validate the canonical schema without destructive recovery.',
+  )
+  const calls = nodesOf(controller, ts.isCallExpression)
+  const write = calls.filter((call) => callMemberName(call) === 'write')
+  const snapshot = write[0]?.arguments[0]
+  const restore = calls.find((call) => callMemberName(call) === 'restore')
+  const watch = calls.find((call) => callMemberName(call) === 'watch')
+  report(
+    calls.filter((call) => callMemberName(call) === 'read').length === 1 &&
+      restore !== undefined &&
+      watch !== undefined &&
+      restore.end < watch.pos &&
+      write.length === 1 &&
+      write[0] !== undefined &&
+      write[0].pos > watch.pos &&
+      write[0].end < watch.end &&
+      snapshot !== undefined &&
+      ts.isObjectLiteralExpression(snapshot) &&
+      isDeepStrictEqual(
+        snapshot.properties.map((field) => field.name?.getText(controller)),
+        ['schemaVersion', 'openRouteNames'],
+      ) &&
+      !/\b(?:activeIdentity|componentName|instance|localStorage|sessionStorage|useRouter|useRoute|setTimeout|requestAnimationFrame)\b/u.test(
+        controller.text,
+      ),
+    'restore must precede the structural watcher; only ordered route names may reach the sole write.',
+  )
+  report(
+    nodesOf(lifecycle, ts.isCallExpression).filter(
+      (call) => callMemberName(call) === 'createWorkspaceSessionStorage',
+    ).length === 1 &&
+      lifecycle.text.includes('readonly workspaceSession: WorkspaceSessionPort') &&
+      nodesOf(kernel, ts.isCallExpression).filter(
+        (call) => callMemberName(call) === 'initializeWorkspaceSession',
+      ).length === 1 &&
+      kernel.text.includes('resources.storage.owner.workspaceSession'),
+    'one Storage-owned adapter and one pre-mount Kernel controller must retain their owners.',
+  )
+  const restoreBody = nodesOf(store, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === 'restore',
+  )?.body
+  report(
+    restoreBody !== undefined &&
+      !nodesOf(restoreBody, ts.isIdentifier).some((node) =>
+        ['Symbol', 'componentName', 'instance', 'activeIdentity'].includes(node.text),
+      ) &&
+      nodesOf(restoreBody, ts.isStringLiteral).some(
+        (node) => node.text === 'workspace-identity.route-single',
+      ),
+    'restored structure must filter current route-single policy without fabricating live state or choosing active identity.',
+  )
+  return violations
+}
+
 function focusedNegativeProbes(): string[] {
   const failures: string[] = []
 
@@ -809,7 +953,7 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain exactly the four admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the five admitted direct-compatibility records.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
@@ -895,6 +1039,7 @@ export async function validateStorageArchitecture(): Promise<readonly string[]> 
     ...(await sensitivePersistenceViolations()),
     ...(await storageLifecycleViolations()),
     ...(await navigationPreferenceViolations()),
+    ...(await workspaceSessionViolations()),
     ...focusedNegativeProbes(),
   ]
 

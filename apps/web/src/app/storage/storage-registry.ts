@@ -80,4 +80,18 @@ export const storageRegistry = Object.freeze([
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   }),
+  Object.freeze({
+    id: 'workspace-session',
+    ownerDomain: 'apps/web/src/app/workspace',
+    key: applicationConfig.workspace.sessionStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'workspace-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
 ] as const satisfies readonly StorageRegistryRecord[])

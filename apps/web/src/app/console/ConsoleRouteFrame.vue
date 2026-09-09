@@ -8,7 +8,11 @@ import {
 import { computed, nextTick, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import { useWorkspaceStore, type WorkspaceInstanceIdentity } from '../workspace/workspace.store'
+import {
+  useWorkspaceStore,
+  isLiveWorkspace,
+  type WorkspaceIdentity,
+} from '../workspace/workspace.store'
 import { isRouterNavigationCurrent } from '../router/router-lifecycle'
 import { reconcileNavigationGroupIds } from '../navigation/navigation-preference-contract'
 import { useNavigationPreferenceStore } from '../navigation/navigation-preference.store'
@@ -75,7 +79,7 @@ const copy = computed(() => ({
 }))
 const router = useRouter()
 const workspace = useWorkspaceStore()
-const closing = new Set<WorkspaceInstanceIdentity>()
+const closing = new Set<WorkspaceIdentity>()
 const workspaceTabs = computed(() =>
   workspace.entries.map((entry) => {
     const label = t(getRouteRecord(entry.destination.name).meta.titleKey)
@@ -91,35 +95,41 @@ const workspaceTabs = computed(() =>
 async function activateWorkspace(id: string): Promise<void> {
   const entry = workspace.entries.find((candidate) => candidate.identity === id)
   if (entry !== undefined)
-    await routeTransitionCoordinator.navigate(entry.destination, { workspaceActivation: entry })
+    await routeTransitionCoordinator.navigate(
+      entry.destination,
+      isLiveWorkspace(entry) ? { workspaceActivation: entry } : undefined,
+    )
 }
 
 async function closeWorkspace(id: string): Promise<void> {
   const entries = workspace.entries
   const index = entries.findIndex((entry) => entry.identity === id)
   const entry = entries[index]
-  if (entry === undefined || closing.has(entry.instance)) return
+  if (entry === undefined || closing.has(entry.identity)) return
   if (entry.identity !== workspace.activeIdentity) {
     workspace.discard(entry)
     await nextTick() // KeepAlive's public include pruning disposes the inactive instance.
     return
   }
   if (entries.length === 1 && entry.destination.name === 'console-overview') return
+  if (!isLiveWorkspace(entry)) return
   if (!workspace.canDiscard(entry)) return
   const fallback = entries[index + 1] ?? entries[index - 1]
   const destination =
     fallback?.destination ?? registeredRouteDestination({ name: 'console-overview' })
-  closing.add(entry.instance)
+  closing.add(entry.identity)
   try {
     const result = await routeTransitionCoordinator.navigate(
       destination,
-      fallback === undefined ? undefined : { workspaceActivation: fallback },
+      fallback !== undefined && isLiveWorkspace(fallback)
+        ? { workspaceActivation: fallback }
+        : undefined,
     )
     const active = workspace.active
     const resolved = resolveRegisteredDestination(router, destination)
     // A list mutation or independent navigation invalidates this destructive request.
     const survivors = workspace.entries.filter((candidate) =>
-      entries.some((original) => original.instance === candidate.instance),
+      entries.some((original) => original.identity === candidate.identity),
     )
     if (
       result.kind !== 'allow' ||
@@ -127,16 +137,24 @@ async function closeWorkspace(id: string): Promise<void> {
       resolved === undefined ||
       !sameRouteAddress(router.currentRoute.value, resolved) ||
       active === undefined ||
-      (fallback !== undefined && active.instance !== fallback.instance) ||
+      (fallback !== undefined &&
+        (active.identity !== fallback.identity ||
+          (isLiveWorkspace(fallback) && active.instance !== fallback.instance))) ||
       survivors.length !== entries.length ||
-      survivors.some((candidate, position) => candidate.instance !== entries[position]?.instance) ||
+      survivors.some((candidate, position) => {
+        const original = entries[position]
+        if (candidate.identity !== original?.identity) return true
+        return isLiveWorkspace(original)
+          ? !isLiveWorkspace(candidate) || candidate.instance !== original.instance
+          : candidate !== original && !(original === fallback && candidate === active)
+      }) ||
       workspace.entries.length !== entries.length + (fallback === undefined ? 1 : 0)
     )
       return
     workspace.discard(entry)
     await nextTick()
   } finally {
-    closing.delete(entry.instance)
+    closing.delete(entry.identity)
   }
 }
 const navigationPreference = useNavigationPreferenceStore()
@@ -183,9 +201,10 @@ function updateExpandedNavigationGroups(update: UiAdminNavigationExpansionUpdate
   navigationPreference.setExpandedGroupIds(nextPreferred)
 }
 
+const appearance = useAppearanceReadBoundary()
 const routeTransitionCoordinator = createRouteTransitionCoordinator({
   router,
-  appearance: useAppearanceReadBoundary(),
+  appearance,
 })
 
 onScopeDispose(() => {
@@ -217,6 +236,7 @@ async function navigate(routeName: string): Promise<void> {
       <UiWorkspaceTabs
         :items="workspaceTabs"
         :active-id="workspace.activeIdentity"
+        :motion="appearance.snapshot.value.motion"
         :label="t('workspace.label')"
         panel-id="pavp-workspace-panel"
         @activate="activateWorkspace"

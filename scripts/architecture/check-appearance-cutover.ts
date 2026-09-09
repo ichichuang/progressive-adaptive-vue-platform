@@ -1165,7 +1165,28 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
     const displayPath = relative(rootDirectory, path).split(sep).join('/')
     const sourceText = await readFile(path, 'utf8')
 
-    if (/from\s+['"]pinia['"]/u.test(sourceText)) {
+    if (
+      sourceFile(
+        displayPath,
+        extname(path) === '.vue'
+          ? [...sourceText.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gu)]
+              .map((match) => match[1])
+              .join('\n')
+          : sourceText,
+      ).statements.some((statement) => {
+        if (
+          (!ts.isImportDeclaration(statement) && !ts.isExportDeclaration(statement)) ||
+          statement.moduleSpecifier === undefined ||
+          !ts.isStringLiteral(statement.moduleSpecifier) ||
+          statement.moduleSpecifier.text !== 'pinia'
+        )
+          return false
+        // With verbatimModuleSyntax, named type specifiers still emit an evaluating empty import.
+        return ts.isImportDeclaration(statement)
+          ? statement.importClause?.phaseModifier !== ts.SyntaxKind.TypeKeyword
+          : !statement.isTypeOnly
+      })
+    ) {
       piniaImporters.push(displayPath)
     }
 

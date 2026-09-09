@@ -5058,9 +5058,9 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   if (
     runtimeNumber(routeRegistry.length) !== 17 ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 13 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 14 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 4 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 5 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 14
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -7883,6 +7883,7 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
   }
 
   const privateBoundaryMarkers = [
+    // This amendment records the original navigation landing; §18.11.11 owns its current rename.
     'packages/ui/src/adapters/motion/admin-navigation-motion-runtime.ts',
     'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
     'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue',
@@ -9218,7 +9219,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.motionDomMaxSource.trim() === "export { domMax as default } from 'motion-v'" &&
         [...motionPrivateSource.matchAll(/\bimport\s*\(/gu)].length === 1 &&
         runtimeLoadSource.includes('await nextTick()') &&
-        runtimeLoadSource.indexOf('loadAdminNavigationDomMax()') >
+        runtimeLoadSource.indexOf('loadMotionDomMax()') >
           runtimeLoadSource.indexOf('await nextTick()') &&
         !/import\s*\{\s*domMax\s*\}\s*from\s*['"]motion-v['"]/u.test(snapshot.motionRuntimeSource),
     },
@@ -9310,9 +9311,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.motionRuntimeSource.includes('runtimeState.disposed = true') &&
         exactOccurrenceCount(snapshot.motionRuntimeSource, 'if (isDisposed())') === 2 &&
         runtimeLoadSource.indexOf('if (isDisposed())') <
-          runtimeLoadSource.indexOf('const loadedFeatures = await loadAdminNavigationDomMax()') &&
+          runtimeLoadSource.indexOf('const loadedFeatures = await loadMotionDomMax()') &&
         runtimeLoadSource.lastIndexOf('if (isDisposed())') >
-          runtimeLoadSource.indexOf('const loadedFeatures = await loadAdminNavigationDomMax()') &&
+          runtimeLoadSource.indexOf('const loadedFeatures = await loadMotionDomMax()') &&
         runtimeLoadSource.includes('if (!isDisposed())'),
     },
     {
@@ -9335,7 +9336,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
       passed:
         !motionImportPattern.test(outsideMotionPrivateSource) &&
         !motionImportPattern.test(snapshot.publicUiRootSource) &&
-        !/AdminNavigationSelectionLens|admin-navigation-motion-runtime|admin-navigation-dom-max/u.test(
+        !/AdminNavigationSelectionLens|motion-feature-runtime|admin-navigation-dom-max/u.test(
           snapshot.publicUiRootSource,
         ) &&
         !/\b(?:MotionConfig|LazyMotion|LayoutGroup|MotionProps|domMax)\b/u.test(
@@ -9483,9 +9484,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
         snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
         snapshot.routeCount === 17 &&
-        snapshot.runtimeKernelStepCount === 13 &&
+        snapshot.runtimeKernelStepCount === 14 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 4,
+        snapshot.storageRecordCount === 5,
     },
   ])
 }
@@ -13386,7 +13387,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
-      passed: snapshot.runtimeKernelStepCount === 13,
+      passed: snapshot.runtimeKernelStepCount === 14,
     },
     {
       code: 'ADMIN_NAV_NATIVE_PROVIDER_IDS',
@@ -13394,7 +13395,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 4,
+      passed: snapshot.storageRecordCount === 5,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -16704,15 +16705,15 @@ function validateInspectorProjections(): string[] {
       'denim-cocoa',
       'burgundy-snow',
     ]) ||
-    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 13 ||
+    runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 14 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(routerConsoleProjection.routeCount) !== 17 ||
     runtimeNumber(routerConsoleProjection.productRouteCount) !== 10 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
     runtimeCount(routerRecords) !== 17 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 4 ||
-    runtimeCount(storageRecords) !== 4 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 5 ||
+    runtimeCount(storageRecords) !== 5 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 12 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
       'ui-form',
@@ -16891,7 +16892,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       'utf8',
     ),
     readFile(
-      resolve(rootDirectory, 'packages/ui/src/adapters/motion/admin-navigation-motion-runtime.ts'),
+      resolve(rootDirectory, 'packages/ui/src/adapters/motion/motion-feature-runtime.ts'),
       'utf8',
     ),
     readFile(

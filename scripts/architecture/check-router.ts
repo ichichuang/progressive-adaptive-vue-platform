@@ -314,7 +314,7 @@ const expectedMessages = [
   [
     'runtime-kernel-inspector',
     'route-message.runtime-kernel-inspector-summary',
-    '查看当前十三阶段启动流程、Provider 与生命周期边界。',
+    '查看当前十四阶段启动流程、Provider 与生命周期边界。',
   ],
   [
     'router-governance-inspector',
@@ -2592,7 +2592,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 248 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 256 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         snapshot.engineeringManifestSource.includes(
           "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
@@ -2746,7 +2746,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 248 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 256 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])

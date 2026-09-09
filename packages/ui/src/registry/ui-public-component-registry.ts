@@ -138,6 +138,12 @@ export const uiPublicComponentRegistry = Object.freeze({
         }),
         Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'panelId', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'motion',
+          type: "EffectiveAppearanceState['motion']",
+          required: true,
+          defaultValue: null,
+        }),
       ]),
       emits: Object.freeze([
         Object.freeze({ name: 'activate', payloadType: 'string' }),

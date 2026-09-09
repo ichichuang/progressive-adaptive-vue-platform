@@ -1,4 +1,6 @@
 import type { NavigationPreferencePort } from '../navigation/navigation-preference-contract'
+import type { WorkspaceSessionPort } from '../workspace/workspace-session-contract'
+import { createWorkspaceSessionStorage } from './workspace-session-storage'
 import { createNavigationPreferenceStorage } from './navigation-preference-storage'
 import type { LocalePreferencePort } from '../../shared/i18n'
 import { createLocalePreferenceStorage } from './locale-preference-storage'
@@ -14,6 +16,7 @@ import { nonePrincipalPartitionId, type PrincipalPartitionId } from './storage-p
 import { storageRegistry, type StorageRegistryRecord } from './storage-registry'
 
 interface StorageOwner {
+  readonly workspaceSession: WorkspaceSessionPort
   readonly navigationPreference: NavigationPreferencePort
   readonly localePreference: LocalePreferencePort
   readonly registry: readonly StorageRegistryRecord[]
@@ -41,7 +44,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 4 ||
+    records.length !== 5 ||
     envelopeRecords.length !== 0 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -70,6 +73,7 @@ export function createAndReadyStorage(input: {
 
   let disposed = false
   const owner = Object.freeze({
+    workspaceSession: createWorkspaceSessionStorage(errorAdapter, () => disposed),
     navigationPreference: createNavigationPreferenceStorage(errorAdapter, () => disposed),
     localePreference: createLocalePreferenceStorage(errorAdapter, () => disposed),
     registry: storageRegistry,

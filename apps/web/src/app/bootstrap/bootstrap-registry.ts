@@ -9,6 +9,7 @@ export type BootstrapStepId =
   | 'create-and-ready-storage'
   | 'create-and-ready-i18n'
   | 'initialize-navigation-preference'
+  | 'initialize-workspace-session'
   | 'mount-application'
   | 'register-post-mount-appearance-media-subscriptions'
   | 'publish-application-ready'
@@ -186,12 +187,27 @@ export const bootstrapStepRegistry = [
       'release after Vue unmount; initialize a fresh Store only through the Runtime Kernel',
   },
   {
+    id: 'initialize-workspace-session',
+    dependencies: ['create-pinia', 'create-and-ready-router', 'create-and-ready-storage'],
+    createInput: 'current Pinia, ready Router-derived Workspace and Storage Workspace Session port',
+    createOutput: 'restored Workspace structure and structural persistence disposer',
+    readyCondition:
+      'safe read or nonfatal fallback reconciled with the current committed URL before mount',
+    disposeResponsibility: 'stop structural persistence before Storage, Router and Pinia disposal',
+    domMountOwner: false,
+    failureClassification: 'application-startup-failure',
+    retryParticipant: true,
+    ownFailureEligibleForConfigurationRetry: false,
+    hmrBehavior: 'dispose after Vue unmount; restore fresh structure through the Runtime Kernel',
+  },
+  {
     id: 'mount-application',
     dependencies: [
       'create-and-ready-router',
       'create-and-ready-storage',
       'create-and-ready-i18n',
       'initialize-navigation-preference',
+      'initialize-workspace-session',
     ],
     createInput: 'ready Vue application and exact #app target',
     createOutput: 'mounted application handle',

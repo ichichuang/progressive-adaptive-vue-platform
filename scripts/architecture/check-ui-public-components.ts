@@ -22,10 +22,11 @@ const motionAdapterDirectory = 'packages/ui/src/adapters/motion'
 const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue',
   'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
-  'packages/ui/src/adapters/motion/admin-navigation-motion-runtime.ts',
+  'packages/ui/src/adapters/motion/motion-feature-runtime.ts',
+  'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
 ] as const
 const forbiddenMotionPublicApi =
-  /\b(?:AdminNavigationSelectionLens|LayoutGroup|LazyMotion|MotionConfig|MotionPreference|domMax)\b|motion-v|adapters\/motion/u
+  /\b(?:AdminNavigationSelectionLens|WorkspaceTabsSurface|createMotionFeatureRuntime|LayoutGroup|LazyMotion|MotionConfig|MotionPreference|domMax)\b|motion-v|adapters\/motion/u
 const overlayRootId = 'pavp-overlay-root'
 const overlayTarget = `#${overlayRootId}`
 

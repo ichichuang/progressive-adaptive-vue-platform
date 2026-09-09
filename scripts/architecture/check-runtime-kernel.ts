@@ -27,6 +27,7 @@ const bootstrapStepIds = [
   'create-and-ready-storage',
   'create-and-ready-i18n',
   'initialize-navigation-preference',
+  'initialize-workspace-session',
   'mount-application',
   'register-post-mount-appearance-media-subscriptions',
   'publish-application-ready',
@@ -51,11 +52,13 @@ const bootstrapDependencies = [
   ['validate-build-and-runtime-configuration', 'install-platform-providers'],
   ['create-vue-application', 'create-and-ready-router', 'create-and-ready-storage'],
   ['create-pinia', 'create-and-ready-storage'],
+  ['create-pinia', 'create-and-ready-router', 'create-and-ready-storage'],
   [
     'create-and-ready-router',
     'create-and-ready-storage',
     'create-and-ready-i18n',
     'initialize-navigation-preference',
+    'initialize-workspace-session',
   ],
   ['install-platform-providers', 'mount-application'],
   [
@@ -69,6 +72,7 @@ const disposalStepIds = [
   'withdraw-application-ready',
   'remove-appearance-media-subscriptions',
   'unmount-vue-application',
+  'dispose-workspace-session',
   'dispose-navigation-preference',
   'dispose-i18n',
   'dispose-storage',
@@ -585,13 +589,13 @@ function validateBootstrapRegistry(source: ParsedSource): string[] {
     .filter((record): record is ts.ObjectLiteralExpression => record !== undefined)
 
   if (records?.length !== bootstrapStepIds.length) {
-    return ['Runtime Kernel Bootstrap Registry must contain exactly thirteen records.']
+    return ['Runtime Kernel Bootstrap Registry must contain exactly fourteen records.']
   }
 
   const actualIds = records.map((record) => literalValue(propertyExpression(record, 'id')))
   if (!equalArray(actualIds as string[], bootstrapStepIds)) {
     violations.push(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact thirteen-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact fourteen-step contract.',
     )
   }
 
@@ -635,7 +639,7 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
   })
   if (!equalArray(disposalSteps, disposalStepIds)) {
     violations.push(
-      'Runtime Kernel reverse disposal order must match the exact thirteen-step contract.',
+      'Runtime Kernel reverse disposal order must match the exact fourteen-step contract.',
     )
   }
 
@@ -1449,7 +1453,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapRegistry(swappedRegistry).includes(
-      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact thirteen-step contract.',
+      'Runtime Kernel Bootstrap Registry IDs/order drifted from the exact fourteen-step contract.',
     )
   ) {
     failures.push('Negative probe failed: Bootstrap Registry drift was accepted.')
@@ -1462,7 +1466,7 @@ function focusedNegativeProbes(input: {
   )
   if (
     !validateBootstrapExecution(swappedDisposal).includes(
-      'Runtime Kernel reverse disposal order must match the exact thirteen-step contract.',
+      'Runtime Kernel reverse disposal order must match the exact fourteen-step contract.',
     )
   ) {
     failures.push('Negative probe failed: reverse disposal drift was accepted.')
