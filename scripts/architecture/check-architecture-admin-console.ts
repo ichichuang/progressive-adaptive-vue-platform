@@ -9505,7 +9505,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') &&
         snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
         snapshot.routeCount === 17 &&
         snapshot.runtimeKernelStepCount === 15 &&
@@ -13088,8 +13088,10 @@ function adminNavigationNativeSourceInvariantResults(
   const exactUiDependencies = {
     '@platform/design-system': 'workspace:*',
     '@vueuse/core': 'catalog:',
+    lenis: 'catalog:',
     'motion-v': 'catalog:',
     'naive-ui': 'catalog:',
+    overlayscrollbars: 'catalog:',
     vue: 'catalog:',
   } as const
   const uiManifest = JSON.parse(snapshot.uiManifestSource) as JsonObject
@@ -13302,7 +13304,7 @@ function adminNavigationNativeSourceInvariantResults(
   const admittedDynamicRoots =
     snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max') &&
     snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:') &&
@@ -15735,7 +15737,7 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   const requiredBundleMeasurementMarkers = [
     'const expectedLazyRouteCount = 17',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 26',
+    'const expectedDynamicRootCount = 27',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -15817,7 +15819,7 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     snapshot.routeCount !== 17 ||
     !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -16066,8 +16068,10 @@ async function validateDependencies(): Promise<string[]> {
     !isDeepStrictEqual(uiDependencies, {
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      lenis: 'catalog:',
       'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
+      overlayscrollbars: 'catalog:',
       vue: 'catalog:',
     }) ||
     !exactSet(Object.keys(importers), ['.', 'apps/web', 'packages/design-system', 'packages/ui']) ||
@@ -16093,8 +16097,10 @@ async function validateDependencies(): Promise<string[]> {
     !isDeepStrictEqual(uiDependencies, {
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      lenis: 'catalog:',
       'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
+      overlayscrollbars: 'catalog:',
       vue: 'catalog:',
     }) ||
     webDependencies['@platform/ui'] !== 'workspace:*' ||

@@ -643,6 +643,8 @@ export async function createAndReadyRouter(input: {
     kind: NavigationOperation['kind'],
     expectedFullPath: string,
   ): NavigationOperation {
+    // The presented source owns any inertia before route-transition presentation begins.
+    committedEntry?.presented?.controller.cancelMotion()
     operation?.finish({
       kind: 'cancel',
       navigationId: operation.navigationId,
@@ -893,6 +895,8 @@ export async function createAndReadyRouter(input: {
     if (controller !== source.presented.controller)
       throw new TypeError('The presented source scroll controller changed.')
     if (!controller.readState().ready) return
+    // Input can arrive while route resources load; stop again at the final source capture.
+    controller.cancelMotion()
     const offset = controller.readOffset()
     if (source.workspace !== undefined) {
       const context = regionContext(from, source.navigation, owner, source.workspace)

@@ -24,6 +24,7 @@ const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
   'packages/ui/src/adapters/motion/motion-feature-runtime.ts',
   'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
+  'packages/ui/src/adapters/motion/ScrollViewport.vue',
 ] as const
 const forbiddenMotionPublicApi =
   /\b(?:AdminNavigationSelectionLens|WorkspaceTabsSurface|createMotionFeatureRuntime|LayoutGroup|LazyMotion|MotionConfig|MotionPreference|domMax)\b|motion-v|adapters\/motion/u
@@ -745,6 +746,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
         'readState',
         'ownsBoundary',
         'readOffset',
+        'cancelMotion',
         'scrollTo',
         'scrollBy',
         'scrollToStart',
@@ -753,29 +755,93 @@ export async function validateUiPublicComponents(): Promise<string[]> {
         'dispose',
       ],
     ) ||
-    /naive-ui|ScrollbarInst|containerRef|contentRef|\$el/u.test(scrollContracts.text) ||
+    /naive-ui|overlayscrollbars|lenis|ScrollbarInst|containerRef|contentRef|\$el/iu.test(
+      scrollContracts.text,
+    ) ||
     /_internal\/scrollbar|containerRef|contentRef|n-scrollbar|\$el|requestAnimationFrame|setInterval|scrollIntoView/u.test(
       scriptContent(scrollSource),
     ) ||
-    !scrollSource.includes('PavpScrollbarPrimitive') ||
+    !scrollSource.includes('../adapters/scroll/scroll-enhancement-loader') ||
+    !/\.scrollLeft\b/u.test(scrollSource) ||
+    !/\.scrollTop\b/u.test(scrollSource) ||
+    /PavpScrollbarPrimitive|data-overlayscrollbars-initialize/u.test(scrollSource) ||
     !/onBeforeUnmount\(\s*[\w$]+\.dispose\s*\)/u.test(scriptContent(scrollSource))
   )
     violations.push(
-      'Scroll Area must retain the PAVP controller, public Naive boundary and native disposable execution contract.',
+      'Scroll Area must retain the native PAVP viewport/controller, private enhancement and disposable execution contract.',
     )
   const workspaceScrollSource = await readFile(
     resolve(uiSourceDirectory, 'adapters/motion/WorkspaceTabsSurface.vue'),
     'utf8',
   )
+  const scrollViewportSource = await readFile(
+    resolve(uiSourceDirectory, 'adapters/motion/ScrollViewport.vue'),
+    'utf8',
+  )
   if (
     !workspaceScrollSource.includes('<UiScrollArea') ||
     !workspaceScrollSource.includes('x-scrollable') ||
-    !workspaceScrollSource.includes(':layout-root="full"') ||
-    /scrollLeft\s*(?:=|\+=|-=)|layout-scroll|containerRef|contentRef/u.test(workspaceScrollSource)
+    !scrollViewportSource.includes(':layout-scroll=') ||
+    !scrollSource.includes('<ScrollViewport') ||
+    /scrollLeft\s*(?:=|\+=|-=)|layout-root|containerRef|contentRef/u.test(workspaceScrollSource)
   )
     violations.push(
       'Workspace horizontal reveal must use the Scroll Controller and PAVP-owned Motion geometry.',
     )
+  const workspaceTemplate = parseVueTemplate('WorkspaceTabsSurface.vue', workspaceScrollSource)
+  if (typeof workspaceTemplate === 'string') violations.push(workspaceTemplate)
+  else {
+    const controls: VueTemplateNode[] = []
+    const tablists: VueTemplateNode[] = []
+    const labels = new Set<string>()
+    walkVueElements(workspaceTemplate.root, (element) => {
+      if (staticAttribute(element, 'role') === 'tablist') tablists.push(element)
+      const label = element.props.find(
+        (property) => property.name === 'bind' && property.arg?.content === 'aria-label',
+      )?.exp?.content
+      if (label !== 'previousLabel' && label !== 'nextLabel') return
+      controls.push(element)
+      labels.add(label)
+      if (
+        element.tag !== 'm.button' ||
+        staticAttribute(element, 'type') !== 'button' ||
+        hasAttributeOrBinding(element, 'role') ||
+        !hasAttributeOrBinding(element, 'disabled') ||
+        hasAttributeOrBinding(element, 'tabindex') ||
+        hasStructuralCondition(element)
+      )
+        violations.push(
+          'Workspace adjacent activation controls must remain visible native buttons with disabled semantics.',
+        )
+    })
+    if (controls.length !== 2 || labels.size !== 2 || tablists.length !== 1)
+      violations.push(
+        'Workspace Tabs require two localized adjacent controls and one manual tablist.',
+      )
+    for (const tablist of tablists)
+      walkVueElements(tablist, (element) => {
+        if (controls.includes(element))
+          violations.push('Workspace adjacent activation controls must remain outside the tablist.')
+      })
+    let fixedRegionCount = 0
+    walkVueElements(workspaceTemplate.root, (element) => {
+      const children = element.children.filter(isVueElement)
+      if (
+        children.length === 3 &&
+        children[0] !== undefined &&
+        controls.includes(children[0]) &&
+        children[2] !== undefined &&
+        controls.includes(children[2]) &&
+        children[1] !== undefined &&
+        containsElementTag(children[1], 'UiScrollArea')
+      )
+        fixedRegionCount += 1
+    })
+    if (fixedRegionCount !== 1)
+      violations.push(
+        'Workspace adjacent controls must flank the central scroll viewport as fixed siblings.',
+      )
+  }
   const publicExports = publicComponentExports(indexSource)
   const registeredExports = registryRecords.map((record) => record.exportName)
   const formContracts = await readFile(
@@ -1084,7 +1150,6 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'packages/ui/src/adapters/naive/naive-layout.ts',
     'packages/ui/src/adapters/naive/naive-menu.ts',
     'packages/ui/src/adapters/naive/naive-radio.ts',
-    'packages/ui/src/adapters/naive/naive-scrollbar.ts',
     'packages/ui/src/adapters/naive/naive-switch.ts',
     'packages/ui/src/adapters/naive/naive-tag.ts',
     'packages/ui/src/adapters/naive/naive-tooltip.ts',
@@ -1223,7 +1288,6 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NSelect@naive-ui/es/select',
     'NSwitch@naive-ui/es/switch',
     'NSwitch@naive-ui/es/switch', // The admitted Form Control and UiSwitch private adapters.
-    'NScrollbar@naive-ui/es/scrollbar',
     'NDatePicker@naive-ui/es/date-picker',
     'NBreadcrumb@naive-ui/es/breadcrumb',
     'NBreadcrumbItem@naive-ui/es/breadcrumb',

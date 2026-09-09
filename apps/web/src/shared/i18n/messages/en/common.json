@@ -50,6 +50,8 @@
   "navigation.development-governance": "Development governance",
   "navigation.architecture-planning": "Architecture planning",
   "workspace.label": "Workspaces",
+  "workspace.previousLabel": "Previous tab",
+  "workspace.nextLabel": "Next tab",
   "shell.consoleTitle": "Architecture console",
   "shell.navigationLabel": "Architecture navigation",
   "shell.navigationActionLabel": "Navigation",

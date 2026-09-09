@@ -2604,7 +2604,7 @@ function routeTransitionSourceProofResults(
       passed:
         snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 26') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,

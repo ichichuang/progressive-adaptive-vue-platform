@@ -51,12 +51,18 @@ catalogs:
     knip:
       specifier: 6.29.0
       version: 6.29.0
+    lenis:
+      specifier: 1.3.26
+      version: 1.3.26
     motion-v:
       specifier: 2.4.0
       version: 2.4.0
     naive-ui:
       specifier: 2.45.2
       version: 2.45.2
+    overlayscrollbars:
+      specifier: 2.16.0
+      version: 2.16.0
     pinia:
       specifier: 3.0.4
       version: 3.0.4
@@ -239,12 +245,18 @@ importers:
       '@vueuse/core':
         specifier: 'catalog:'
         version: 14.4.0(vue@3.5.40(typescript@6.0.3))
+      lenis:
+        specifier: 'catalog:'
+        version: 1.3.26(vue@3.5.40(typescript@6.0.3))
       motion-v:
         specifier: 'catalog:'
         version: 2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)(@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3)))(vue@3.5.40(typescript@6.0.3))
       naive-ui:
         specifier: 'catalog:'
         version: 2.45.2(vue@3.5.40(typescript@6.0.3))
+      overlayscrollbars:
+        specifier: 'catalog:'
+        version: 2.16.0
       vue:
         specifier: 'catalog:'
         version: 3.5.40(typescript@6.0.3)
@@ -2274,6 +2286,20 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
+  lenis@1.3.26:
+    resolution: {integrity: sha512-s/xTCZCxTFvHbAN1OzuhNaN5YPJH2ail0XAkctKW1b+RUAG4nUL5UHLXwNko1h8aEeT2jspBXegMgPJd8zcuag==}
+    peerDependencies:
+      '@nuxt/kit': '>=3.0.0'
+      react: '>=17.0.0'
+      vue: '>=3.0.0'
+    peerDependenciesMeta:
+      '@nuxt/kit':
+        optional: true
+      react:
+        optional: true
+      vue:
+        optional: true
+
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
     engines: {node: '>= 0.8.0'}
@@ -2504,6 +2530,9 @@ packages:
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
+
+  overlayscrollbars@2.16.0:
+    resolution: {integrity: sha512-N03oje/q7j93D0aLZtoCdsDSYLmhheSsv8H7oSLE7HhdV9P/bmCURtLV/KbPye7P/bpfyt/obSfDpGUYoJ0OWg==}
 
   oxc-parser@0.131.0:
     resolution: {integrity: sha512-SJ3/7ZPbgie8dr5Z9BI/M51zZbpXba+hRSG0MDzVwMW5CRQg2fjYE0jHGlLX4eeiibGgC/mzoDFKSDHwVZEHRQ==}
@@ -5071,6 +5100,10 @@ snapshots:
       yaml: 2.9.0
       zod: 4.4.3
 
+  lenis@1.3.26(vue@3.5.40(typescript@6.0.3)):
+    optionalDependencies:
+      vue: 3.5.40(typescript@6.0.3)
+
   levn@0.4.1:
     dependencies:
       prelude-ls: 1.2.1
@@ -5306,6 +5339,8 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
       word-wrap: 1.2.5
+
+  overlayscrollbars@2.16.0: {}
 
   oxc-parser@0.131.0:
     dependencies:

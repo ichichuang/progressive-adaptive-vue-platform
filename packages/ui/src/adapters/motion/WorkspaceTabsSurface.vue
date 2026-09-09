@@ -20,12 +20,23 @@ const props = defineProps<{
   readonly items: readonly UiWorkspaceTab[]
   readonly activeId: string | null
   readonly label: string
+  readonly previousLabel: string
+  readonly nextLabel: string
   readonly panelId: string
 }>()
 const emit = defineEmits<{
   activate: [id: string]
   close: [id: string]
 }>()
+const activeIndex = computed(() =>
+  props.activeId === null ? -1 : props.items.findIndex((item) => item.id === props.activeId),
+)
+const previousTab = computed(() =>
+  activeIndex.value > 0 ? props.items[activeIndex.value - 1] : undefined,
+)
+const nextTab = computed(() =>
+  activeIndex.value < 0 ? undefined : props.items[activeIndex.value + 1],
+)
 const strip = ref<HTMLElement>()
 const viewport = ref<HTMLElement>()
 let scrollController: UiScrollController | null = null
@@ -65,6 +76,26 @@ const closeMarkVariants = computed(() => ({
   focus: resting,
   press: { opacity: 0.86, scale: full.value ? 0.985 : 1 },
 }))
+const edgeSurfaceVariants = Object.freeze({
+  rest: { opacity: 0 },
+  hover: { opacity: 0.6 },
+  focus: { opacity: 0.6 },
+  press: { opacity: 1 },
+  disabled: { opacity: 0, transition: { duration: 0 } },
+})
+const edgeGestures = Object.freeze({
+  whileHover: 'hover',
+  whileFocus: 'focus',
+  whilePress: 'press',
+})
+// Only the mark scales; the button keeps its full minimum interactive target.
+const edgeMarkVariants = computed(() => ({
+  rest: resting,
+  hover: { opacity: 1, scale: full.value ? 1.04 : 1 },
+  focus: resting,
+  press: { opacity: 0.86, scale: full.value ? 0.96 : 1 },
+  disabled: { ...resting, transition: { duration: 0 } },
+}))
 function setStrip(value: unknown): void {
   strip.value =
     value !== null &&
@@ -88,9 +119,11 @@ const focusedId = ref<string | null>(null)
 
 function revealTab(button: HTMLElement): void {
   const owner = viewport.value
-  if (owner === undefined) return
+  const item = button.closest<HTMLElement>('.pavp-workspace-tabs__item')
+  if (owner === undefined || item === null || strip.value?.contains(item) !== true) return
   const bounds = owner.getBoundingClientRect()
-  const target = button.getBoundingClientRect()
+  // Reveal the complete tab, including its separate close target.
+  const target = item.getBoundingClientRect()
   const offset =
     target.left < bounds.left
       ? target.left - bounds.left
@@ -177,119 +210,179 @@ watch(
         :inherit="false"
       >
         <div
-          ref="viewport"
-          class="pavp-workspace-tabs-viewport"
+          class="pavp-workspace-tabs-region"
+          :data-motion="motion"
         >
-          <UiScrollArea
-            owner-id="workspace-tabs"
-            x-scrollable
-            @controller="connectScrollController"
+          <m.button
+            type="button"
+            class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--previous"
+            :aria-label="previousLabel"
+            :disabled="previousTab === undefined"
+            :initial="false"
+            :animate="previousTab === undefined ? 'disabled' : 'rest'"
+            v-bind="previousTab === undefined ? {} : edgeGestures"
+            :transition="transition"
+            @click="previousTab !== undefined && emit('activate', previousTab.id)"
           >
-            <m.div
-              :ref="setStrip"
-              :layout-root="full"
-              :layout="full ? 'position' : false"
-              :data-motion="motion"
-              :data-layout-motion="full"
-              class="pavp-workspace-tabs"
-              :aria-label="label"
-              role="tablist"
-              tabindex="-1"
-              aria-orientation="horizontal"
-              @keydown="moveFocus"
+            <m.span
+              class="pavp-workspace-tabs-edge__surface"
+              aria-hidden="true"
+              :initial="false"
+              :variants="edgeSurfaceVariants"
+              :transition="transition"
+            />
+            <m.span
+              class="pavp-workspace-tabs-edge__mark"
+              aria-hidden="true"
+              :initial="false"
+              :variants="edgeMarkVariants"
+              :transition="transition"
             >
-              <AnimatePresence
-                :initial="false"
-                mode="popLayout"
-                @before-leave="retireTab"
-                @before-enter="revealEnteringTab"
+              <span class="pavp-workspace-tabs-edge__icon i-lucide-chevron-left" />
+            </m.span>
+          </m.button>
+          <div
+            ref="viewport"
+            class="pavp-workspace-tabs-viewport"
+          >
+            <UiScrollArea
+              owner-id="workspace-tabs"
+              x-scrollable
+              @controller="connectScrollController"
+            >
+              <m.div
+                :ref="setStrip"
+                :layout="full ? 'position' : false"
+                :data-motion="motion"
+                :data-layout-motion="full"
+                class="pavp-workspace-tabs"
+                :aria-label="label"
+                role="tablist"
+                tabindex="-1"
+                aria-orientation="horizontal"
+                @keydown="moveFocus"
               >
-                <m.div
-                  v-for="item in items"
-                  :key="item.id"
-                  class="pavp-workspace-tabs__item"
-                  role="presentation"
-                  :data-active="item.id === activeId"
-                  :data-closable="item.closable"
-                  :layout="full ? 'position' : false"
-                  :initial="featureReady && motion !== 'none' ? entering : false"
-                  :animate="{ ...resting, y: 0 }"
-                  :exit="leaving"
-                  :transition="transition"
+                <AnimatePresence
+                  :initial="false"
+                  mode="popLayout"
+                  @before-leave="retireTab"
+                  @before-enter="revealEnteringTab"
                 >
                   <m.div
-                    v-if="full && item.id === activeId"
-                    class="pavp-workspace-tabs__lens"
-                    aria-hidden="true"
-                    layout-id="active-surface"
-                    :initial="false"
+                    v-for="item in items"
+                    :key="item.id"
+                    class="pavp-workspace-tabs__item"
+                    role="presentation"
+                    :data-active="item.id === activeId"
+                    :data-closable="item.closable"
+                    :layout="full ? 'position' : false"
+                    :initial="featureReady && motion !== 'none' ? entering : false"
+                    :animate="{ ...resting, y: 0 }"
+                    :exit="leaving"
                     :transition="transition"
-                  />
-                  <div
-                    v-else-if="item.id === activeId"
-                    class="pavp-workspace-tabs__lens"
-                    aria-hidden="true"
-                  />
-                  <m.button
-                    :id="`${item.id}-tab`"
-                    type="button"
-                    role="tab"
-                    class="pavp-workspace-tabs__tab"
-                    :initial="false"
-                    animate="rest"
-                    while-hover="hover"
-                    while-focus="focus"
-                    while-press="press"
-                    :variants="buttonVariants"
-                    :transition="transition"
-                    :aria-selected="item.id === activeId"
-                    :aria-controls="panelId"
-                    :tabindex="item.id === (focusedId ?? activeId) ? 0 : -1"
-                    @focus="focusedId = item.id"
-                    @click="emit('activate', item.id)"
                   >
-                    <m.span
-                      class="pavp-workspace-tabs__hover"
+                    <m.div
+                      v-if="full && item.id === activeId"
+                      class="pavp-workspace-tabs__lens"
                       aria-hidden="true"
+                      layout-id="active-surface"
                       :initial="false"
-                      :variants="surfaceVariants"
                       :transition="transition"
                     />
-                    <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
-                  </m.button>
-                  <m.button
-                    v-if="item.closable"
-                    type="button"
-                    class="pavp-workspace-tabs__close"
-                    :initial="false"
-                    animate="rest"
-                    while-hover="hover"
-                    while-focus="focus"
-                    while-press="press"
-                    :transition="transition"
-                    :aria-label="item.closeLabel"
-                    @focus="focusedId = item.id"
-                    @click.stop="emit('close', item.id)"
-                  >
-                    <m.span
-                      class="pavp-workspace-tabs__hover"
+                    <div
+                      v-else-if="item.id === activeId"
+                      class="pavp-workspace-tabs__lens"
                       aria-hidden="true"
-                      :initial="false"
-                      :variants="surfaceVariants"
-                      :transition="transition"
                     />
-                    <m.span
-                      class="pavp-workspace-tabs__close-mark"
-                      aria-hidden="true"
+                    <m.button
+                      :id="`${item.id}-tab`"
+                      type="button"
+                      role="tab"
+                      class="pavp-workspace-tabs__tab"
                       :initial="false"
-                      :variants="closeMarkVariants"
+                      animate="rest"
+                      while-hover="hover"
+                      while-focus="focus"
+                      while-press="press"
+                      :variants="buttonVariants"
                       :transition="transition"
-                    />
-                  </m.button>
-                </m.div>
-              </AnimatePresence>
-            </m.div>
-          </UiScrollArea>
+                      :aria-selected="item.id === activeId"
+                      :aria-controls="panelId"
+                      :tabindex="item.id === (focusedId ?? activeId) ? 0 : -1"
+                      @focus="focusedId = item.id"
+                      @click="emit('activate', item.id)"
+                    >
+                      <m.span
+                        class="pavp-workspace-tabs__hover"
+                        aria-hidden="true"
+                        :initial="false"
+                        :variants="surfaceVariants"
+                        :transition="transition"
+                      />
+                      <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
+                    </m.button>
+                    <m.button
+                      v-if="item.closable"
+                      type="button"
+                      class="pavp-workspace-tabs__close"
+                      :initial="false"
+                      animate="rest"
+                      while-hover="hover"
+                      while-focus="focus"
+                      while-press="press"
+                      :transition="transition"
+                      :aria-label="item.closeLabel"
+                      @focus="focusedId = item.id"
+                      @click.stop="emit('close', item.id)"
+                    >
+                      <m.span
+                        class="pavp-workspace-tabs__hover"
+                        aria-hidden="true"
+                        :initial="false"
+                        :variants="surfaceVariants"
+                        :transition="transition"
+                      />
+                      <m.span
+                        class="pavp-workspace-tabs__close-mark"
+                        aria-hidden="true"
+                        :initial="false"
+                        :variants="closeMarkVariants"
+                        :transition="transition"
+                      />
+                    </m.button>
+                  </m.div>
+                </AnimatePresence>
+              </m.div>
+            </UiScrollArea>
+          </div>
+          <m.button
+            type="button"
+            class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--next"
+            :aria-label="nextLabel"
+            :disabled="nextTab === undefined"
+            :initial="false"
+            :animate="nextTab === undefined ? 'disabled' : 'rest'"
+            v-bind="nextTab === undefined ? {} : edgeGestures"
+            :transition="transition"
+            @click="nextTab !== undefined && emit('activate', nextTab.id)"
+          >
+            <m.span
+              class="pavp-workspace-tabs-edge__surface"
+              aria-hidden="true"
+              :initial="false"
+              :variants="edgeSurfaceVariants"
+              :transition="transition"
+            />
+            <m.span
+              class="pavp-workspace-tabs-edge__mark"
+              aria-hidden="true"
+              :initial="false"
+              :variants="edgeMarkVariants"
+              :transition="transition"
+            >
+              <span class="pavp-workspace-tabs-edge__icon i-lucide-chevron-right" />
+            </m.span>
+          </m.button>
         </div>
       </LayoutGroup>
     </MotionConfig>
@@ -297,13 +390,96 @@ watch(
 </template>
 
 <style scoped>
-.pavp-workspace-tabs-viewport {
+.pavp-workspace-tabs-region {
+  display: flex;
   min-inline-size: 0;
   flex: 0 0 auto;
+  padding-inline-start: var(--pavp-safe-area-left);
+  padding-inline-end: var(--pavp-safe-area-right);
   background-color: var(--ui-color-surface-panel);
   border-block-end-width: var(--ui-admin-border-width);
   border-block-end-style: solid;
   border-block-end-color: var(--ui-color-border-default);
+}
+.pavp-workspace-tabs-region:dir(rtl) {
+  padding-inline-start: var(--pavp-safe-area-right);
+  padding-inline-end: var(--pavp-safe-area-left);
+}
+.pavp-workspace-tabs-viewport {
+  min-inline-size: 0;
+  flex: 1 1 0;
+}
+.pavp-workspace-tabs-edge {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+  inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+  min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ui-color-text-secondary);
+  cursor: pointer;
+}
+.pavp-workspace-tabs-edge--previous {
+  border-inline-end-width: var(--ui-admin-border-width);
+  border-inline-end-style: solid;
+  border-inline-end-color: var(--ui-color-border-default);
+}
+.pavp-workspace-tabs-edge--next {
+  border-inline-start-width: var(--ui-admin-border-width);
+  border-inline-start-style: solid;
+  border-inline-start-color: var(--ui-color-border-default);
+}
+.pavp-workspace-tabs-edge__surface {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--ui-admin-navigation-selected) 10%, transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+.pavp-workspace-tabs-edge__mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  inline-size: var(--ui-font-size-body);
+  block-size: var(--ui-font-size-body);
+  pointer-events: none;
+}
+.pavp-workspace-tabs-edge__icon {
+  inline-size: 100%;
+  block-size: 100%;
+}
+.pavp-workspace-tabs-edge__icon:dir(rtl) {
+  transform: scaleX(-1);
+}
+.pavp-workspace-tabs-edge:focus-visible {
+  color: var(--ui-color-text-primary);
+  outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
+  outline-offset: calc(var(--ui-admin-focus-width) * -1);
+}
+.pavp-workspace-tabs-edge:disabled {
+  cursor: not-allowed;
+}
+.pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__icon {
+  opacity: var(--ui-admin-state-disabled-opacity);
+}
+.pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__surface {
+  visibility: hidden;
+}
+.pavp-workspace-tabs-edge:enabled:hover,
+.pavp-workspace-tabs-edge:enabled:active {
+  color: var(--ui-color-text-primary);
+}
+.pavp-workspace-tabs-region:not([data-motion='none']) .pavp-workspace-tabs-edge:enabled {
+  transition: color var(--ui-motion-duration) var(--ui-motion-easing);
+}
+.pavp-workspace-tabs-region[data-motion='reduced'] .pavp-workspace-tabs-edge:enabled {
+  transition-duration: calc(var(--ui-motion-duration) / 2);
 }
 
 .pavp-workspace-tabs {
@@ -318,8 +494,6 @@ watch(
   display: flex;
   flex: 0 0 auto;
   gap: 0;
-  padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
-    max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
   color: var(--ui-color-text-secondary);
 }
 .pavp-workspace-tabs__item {
@@ -469,7 +643,8 @@ watch(
     outline: var(--ui-admin-border-width) solid Highlight;
     outline-offset: calc(var(--ui-admin-border-width) * -1);
   }
-  .pavp-workspace-tabs button:focus-visible {
+  .pavp-workspace-tabs button:focus-visible,
+  .pavp-workspace-tabs-edge:focus-visible {
     outline-color: Highlight;
   }
 }

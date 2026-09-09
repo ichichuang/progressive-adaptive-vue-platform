@@ -186,6 +186,13 @@ export const uiPublicComponentRegistry = Object.freeze({
           defaultValue: null,
         }),
         Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'previousLabel',
+          type: 'string',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'nextLabel', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'panelId', type: 'string', required: true, defaultValue: null }),
         Object.freeze({
           name: 'motion',

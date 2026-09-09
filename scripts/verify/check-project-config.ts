@@ -40,6 +40,15 @@ const expectedVueRouterVersion = '5.2.0'
 const expectedVueRouterIntegrity =
   'sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw=='
 const expectedNaiveUiVersion = '2.45.2'
+const scrollDependencies = [
+  { name: 'overlayscrollbars', version: '2.16.0', resolution: '2.16.0', snapshot: {} },
+  {
+    name: 'lenis',
+    version: '1.3.26',
+    resolution: '1.3.26(vue@3.5.40(typescript@6.0.3))',
+    snapshot: { optionalDependencies: { vue: '3.5.40(typescript@6.0.3)' } },
+  },
+] as const
 const expectedNaiveUiIntegrity =
   'sha512-KshetbFOX/uZ/Pe+60hJoUAo47x5QO1JpZaUVPQCQkNhFfJ7hKsX55A8oMFQHccEpLuQUMPkJ41cX94R4nWUjg=='
 const expectedMotionVVersion = '2.4.0'
@@ -2233,8 +2242,10 @@ async function validateArchitectureConsoleUiPackage(): Promise<void> {
     {
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      lenis: 'catalog:',
       'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
+      overlayscrollbars: 'catalog:',
       vue: 'catalog:',
     },
     'Architecture Console @platform/ui dependencies',
@@ -2684,6 +2695,44 @@ const lockedDesignSystemZodDependency = isJsonObject(designSystemLockfileDepende
   ? designSystemLockfileDependencies['zod']
   : undefined
 const lockfileSnapshots = lockfile['snapshots']
+for (const dependency of scrollDependencies) {
+  const { name, version, resolution, snapshot } = dependency
+  expectEqual(workspaceCatalog[name], version, `${name} exact catalog version`)
+  expectStructuredEqual(
+    isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog[name] : undefined,
+    { specifier: version, version },
+    `${name} lockfile catalog`,
+  )
+  expectStructuredEqual(
+    isJsonObject(uiLockfileDependencies) ? uiLockfileDependencies[name] : undefined,
+    { specifier: 'catalog:', version: resolution },
+    `${name} UI lockfile edge`,
+  )
+  expectStructuredEqual(
+    isJsonObject(lockfilePackages)
+      ? Object.keys(lockfilePackages).filter((key) => key.startsWith(`${name}@`))
+      : [],
+    [`${name}@${version}`],
+    `${name} exact package set`,
+  )
+  expectStructuredEqual(
+    isJsonObject(lockfileSnapshots)
+      ? Object.keys(lockfileSnapshots).filter((key) => key.startsWith(`${name}@`))
+      : [],
+    [`${name}@${resolution}`],
+    `${name} exact snapshot set`,
+  )
+  expectStructuredEqual(
+    isJsonObject(lockfileSnapshots) ? lockfileSnapshots[`${name}@${resolution}`] : undefined,
+    snapshot,
+    `${name} zero additional runtime dependencies`,
+  )
+  const installed = await readJsonObject(
+    resolve(rootDirectory, 'packages/ui/node_modules', name, 'package.json'),
+  )
+  expectEqual(installed['version'], version, `${name} installed version`)
+  expectEqual(installed['dependencies'], undefined, `${name} installed runtime dependencies`)
+}
 const lockfilePatchedDependencies = lockfile['patchedDependencies']
 const rootLockfileImporter = isJsonObject(lockfileImporters) ? lockfileImporters['.'] : undefined
 const rootLockfileDevDependencies = isJsonObject(rootLockfileImporter)

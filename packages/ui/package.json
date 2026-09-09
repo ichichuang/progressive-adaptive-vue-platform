@@ -7,8 +7,10 @@
   "dependencies": {
     "@platform/design-system": "workspace:*",
     "@vueuse/core": "catalog:",
+    "lenis": "catalog:",
     "motion-v": "catalog:",
     "naive-ui": "catalog:",
+    "overlayscrollbars": "catalog:",
     "vue": "catalog:"
   },
   "exports": {

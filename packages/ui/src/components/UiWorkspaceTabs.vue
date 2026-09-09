@@ -8,6 +8,8 @@ defineProps<{
   readonly items: readonly UiWorkspaceTab[]
   readonly activeId: string | null
   readonly label: string
+  readonly previousLabel: string
+  readonly nextLabel: string
   readonly panelId: string
   readonly motion: EffectiveAppearanceState['motion']
 }>()
@@ -22,6 +24,8 @@ const emit = defineEmits<{
     :items="items"
     :active-id="activeId"
     :label="label"
+    :previous-label="previousLabel"
+    :next-label="nextLabel"
     :panel-id="panelId"
     :motion="motion"
     @activate="emit('activate', $event)"

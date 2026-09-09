@@ -45,6 +45,7 @@ const inactiveCapabilityPackages = [
   'nx',
   'openapi-fetch',
   'openapi-typescript',
+  'overlayscrollbars-vue',
   'primevue',
   'quasar',
   'react',
@@ -137,7 +138,7 @@ async function validateManifestDependencies(): Promise<string[]> {
       }
     }
 
-    for (const dependency of adminNavigationMotionPackages) {
+    for (const dependency of [...adminNavigationMotionPackages, 'overlayscrollbars', 'lenis']) {
       const declarations = dependencyEntries(manifest).filter(([name]) => name === dependency)
       const dependencies = manifest['dependencies']
       const admittedVersion = isJsonObject(dependencies) ? dependencies[dependency] : undefined
@@ -414,6 +415,17 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
     if (!normalizedDisplayPath.startsWith(adminNavigationMotionPrivateDirectory)) {
       violations.push(
         `${displayPath}: "motion-v" may only be imported by the private Admin Navigation Motion adapter.`,
+      )
+    }
+  }
+
+  if (/^(?:overlayscrollbars|lenis)(?:\/|$)/u.test(specifier)) {
+    if (
+      normalizedDisplayPath !== 'packages/ui/src/adapters/scroll/scroll-enhancement-runtime.ts' ||
+      !['overlayscrollbars', 'overlayscrollbars/overlayscrollbars.css', 'lenis'].includes(specifier)
+    ) {
+      violations.push(
+        `${displayPath}: Scroll vendors are private to the admitted Scroll enhancement runtime and exact public exports.`,
       )
     }
   }

@@ -256,6 +256,8 @@ async function navigate(routeName: string): Promise<void> {
         :active-id="workspace.activeIdentity"
         :motion="appearance.snapshot.value.motion"
         :label="t('workspace.label')"
+        :previous-label="t('workspace.previousLabel')"
+        :next-label="t('workspace.nextLabel')"
         panel-id="pavp-workspace-panel"
         @activate="activateWorkspace"
         @close="closeWorkspace"

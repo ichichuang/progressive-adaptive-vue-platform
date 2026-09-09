@@ -32,6 +32,7 @@ export interface UiScrollController {
   }
   ownsBoundary(boundary: Element): boolean
   readOffset(): UiScrollOffset
+  cancelMotion(): void
   scrollTo(input: UiScrollInput): void
   scrollBy(input: UiScrollInput): void
   scrollToStart(options?: UiScrollOptions): void

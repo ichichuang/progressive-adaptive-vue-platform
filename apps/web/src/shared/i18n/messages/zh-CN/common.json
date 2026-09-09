@@ -50,6 +50,8 @@
   "navigation.development-governance": "开发治理",
   "navigation.architecture-planning": "架构规划",
   "workspace.label": "工作区",
+  "workspace.previousLabel": "上一个标签",
+  "workspace.nextLabel": "下一个标签",
   "shell.consoleTitle": "架构管理台",
   "shell.navigationLabel": "架构导航",
   "shell.navigationActionLabel": "导航",

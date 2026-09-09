@@ -104,6 +104,8 @@ const expectedLazyRouteCount = 17
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
+const scrollEnhancementManifestKey =
+  '../../packages/ui/src/adapters/scroll/scroll-enhancement-runtime.ts'
 const localizationRuntimeManifestKey = 'src/shared/i18n/runtime.ts'
 const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/zh-CN/console.json',
@@ -114,10 +116,11 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/appearance.json',
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
-const expectedDynamicRootCount = 26
+const expectedDynamicRootCount = 27
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
+  scrollEnhancementManifestKey,
   localizationRuntimeManifestKey,
   ...localizationResourceManifestKeys,
 ])
@@ -965,6 +968,7 @@ if (
   expectedLazyRouteCount +
     expectedMotionFeatureDynamicRootCount +
     1 +
+    1 +
     localizationResourceManifestKeys.length !==
     expectedDynamicRootCount ||
   expectedDynamicRootKeys.size !== expectedDynamicRootCount ||
@@ -972,13 +976,14 @@ if (
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected 17 routes, one motion root, one i18n runtime and seven catalog roots.`,
+    `Canonical dynamic root authority drifted: expected 17 routes, one motion root, one scroll enhancement, one i18n runtime and seven catalog roots.`,
   )
 }
 
 const initialDynamicRootKeys = new Set<string>()
 const dynamicImportOwnerKeys = new Set<string>()
 let motionFeatureDynamicImportReferences = 0
+let scrollEnhancementDynamicImportReferences = 0
 
 for (const ownerKey of initialChunkKeys) {
   const dynamicImports = manifest[ownerKey]?.dynamicImports ?? []
@@ -993,6 +998,8 @@ for (const ownerKey of initialChunkKeys) {
     if (dynamicRootKey === motionFeatureManifestKey) {
       motionFeatureDynamicImportReferences += 1
     }
+    if (dynamicRootKey === scrollEnhancementManifestKey)
+      scrollEnhancementDynamicImportReferences += 1
   }
 }
 
@@ -1008,6 +1015,15 @@ if (
 if (motionFeatureDynamicImportReferences !== expectedMotionFeatureDynamicRootCount) {
   throw new Error(
     `${motionFeatureRootId} must be referenced by exactly one Initial Static Closure dynamic import; received ${String(motionFeatureDynamicImportReferences)}.`,
+  )
+}
+
+if (
+  scrollEnhancementDynamicImportReferences !== 1 ||
+  initialChunkKeys.has(scrollEnhancementManifestKey)
+) {
+  throw new Error(
+    'Scroll enhancement must have exactly one shared dynamic import and remain outside the Initial Static Closure.',
   )
 }
 
@@ -1229,6 +1245,48 @@ for (const rootKey of [localizationRuntimeManifestKey, ...localizationResourceMa
   )
 }
 
+const scrollEnhancementRoot = manifest[scrollEnhancementManifestKey]
+if (
+  !scrollEnhancementRoot?.file.endsWith('.js') ||
+  (scrollEnhancementRoot.dynamicImports?.length ?? 0) !== 0
+) {
+  throw new Error('Scroll enhancement must emit JavaScript without dynamic child roots.')
+}
+const scrollEnhancementClosure = differenceValues(
+  collectStaticChunkClosure(manifest, scrollEnhancementManifestKey),
+  initialChunkKeys,
+)
+const scrollEnhancementFiles = emittedJavaScriptFiles(manifest, scrollEnhancementClosure)
+const scrollEnhancementMeasurements = await Promise.all(
+  [...scrollEnhancementFiles].map((file) => gzipMeasurement(file)),
+)
+const scrollEnhancementBytes = scrollEnhancementMeasurements.reduce(
+  (sum, item) => sum + item.bytes,
+  0,
+)
+if (scrollEnhancementBytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
+  throw new Error(
+    `Scroll enhancement exceeds the existing lazy JavaScript budget: ${String(scrollEnhancementBytes)} bytes.`,
+  )
+}
+const scrollEnhancementCss = new Set(
+  [...scrollEnhancementClosure].flatMap((key) => manifest[key]?.css ?? []),
+)
+const scrollCssSources = await Promise.all(
+  [...scrollEnhancementCss].map((file) => readFile(resolve(distributionDirectory, file), 'utf8')),
+)
+if (!scrollCssSources.some((source) => source.includes('--os-handle-interactive-area-offset'))) {
+  throw new Error(
+    'Scroll enhancement production CSS must retain the official OverlayScrollbars stylesheet.',
+  )
+}
+const scrollCssMeasurements = await Promise.all(
+  [...scrollEnhancementCss].map((file) => gzipMeasurement(file)),
+)
+console.log(
+  `Bundle Scroll enhancement: ${[...scrollEnhancementFiles].join(', ')}; ${String(scrollEnhancementBytes)} bytes gzip; CSS ${[...scrollEnhancementCss].join(', ')}; ${String(scrollCssMeasurements.reduce((sum, item) => sum + item.bytes, 0))} bytes gzip.`,
+)
+
 for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const) {
   const routes = routeRegistry.filter((route) => getRouteMessageScope(route.name) === scope)
   for (const locale of ['zh-CN', 'en'] as const) {
@@ -1265,7 +1323,7 @@ for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const
 }
 
 console.log(
-  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
+  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one Scroll enhancement + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
   `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes headroom against exact budget ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,

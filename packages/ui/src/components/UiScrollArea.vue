@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import {
-  PavpScrollbarPrimitive,
-  type PavpScrollbarInstance,
-} from '../adapters/naive/naive-scrollbar'
+  loadScrollEnhancement,
+  type ScrollEnhancement,
+} from '../adapters/scroll/scroll-enhancement-loader'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
+import ScrollViewport from '../adapters/motion/ScrollViewport.vue'
 import type { UiScrollController, UiScrollInput, UiScrollOffset } from './scroll-contracts'
 
 defineOptions({ name: 'UiScrollArea' })
@@ -22,10 +23,11 @@ const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined) throw new Error('UiScrollArea requires the PAVP Appearance context.')
 const viewport = ref<HTMLElement>()
 const content = ref<HTMLElement>()
-const primitive = ref<PavpScrollbarInstance>()
+const host = ref<HTMLElement>()
+let enhancement: ScrollEnhancement | undefined
+let enhancementGeneration = 0
 let disposed = false
 let mounted = false
-let offset: UiScrollOffset = { left: 0, top: 0 }
 
 function readState(): ReturnType<UiScrollController['readState']> {
   const view = viewport.value
@@ -40,8 +42,7 @@ function readState(): ReturnType<UiScrollController['readState']> {
       body?.isConnected === true &&
       view.closest('[inert]') === null &&
       view.clientWidth > 0 &&
-      view.clientHeight > 0 &&
-      primitive.value !== undefined,
+      view.clientHeight > 0,
     width: view?.clientWidth ?? 0,
     height: view?.clientHeight ?? 0,
     contentWidth: body?.scrollWidth ?? 0,
@@ -52,22 +53,42 @@ function readState(): ReturnType<UiScrollController['readState']> {
 }
 
 function readOffset(): UiScrollOffset {
-  // PAVP geometry also observes synchronous native commands before their scroll event.
-  // Neither the vendor instance's DOM nor its private container is inspected.
-  const state = readState()
-  const view = viewport.value?.getBoundingClientRect()
-  const body = content.value?.getBoundingClientRect()
-  if (state.ready && view !== undefined && body !== undefined)
-    offset = {
-      left: state.direction === 'rtl' ? view.right - body.right : view.left - body.left,
-      top: view.top - body.top,
-    }
-  return { ...offset }
+  return { left: viewport.value?.scrollLeft ?? 0, top: viewport.value?.scrollTop ?? 0 }
 }
 
-function onScroll(event: Event): void {
-  if (!disposed && event.target instanceof HTMLElement)
-    offset = { left: event.target.scrollLeft, top: event.target.scrollTop }
+function canEnhance(): boolean {
+  return mounted && !disposed && props.enabled
+}
+
+async function enhance(): Promise<void> {
+  const generation = ++enhancementGeneration
+  enhancement?.dispose()
+  enhancement = undefined
+  if (!canEnhance()) return
+  const runtime = await loadScrollEnhancement()
+  if (runtime === undefined || generation !== enhancementGeneration || !canEnhance()) return
+  const view = viewport.value
+  const body = content.value
+  const target = host.value
+  if (view === undefined || body === undefined || target === undefined) return
+  try {
+    enhancement = runtime.createScrollEnhancement({
+      host: target,
+      viewport: view,
+      content: body,
+      mainContent: props.ownerId === 'architecture-console-content',
+      workspaceTabs: props.ownerId === 'workspace-tabs' && props.xScrollable,
+      horizontal: props.xScrollable,
+      navigation:
+        props.ownerId === 'architecture-console-sidebar' ||
+        props.ownerId === 'architecture-console-drawer',
+    })
+    enhancement.setFullMotion(appearance?.value.motion === 'full')
+  } catch {
+    enhancement?.dispose()
+    enhancement = undefined
+    console.warn('PAVP scroll enhancement unavailable; native scrolling remains active.')
+  }
 }
 
 function behavior(input: UiScrollInput): 'smooth' | 'instant' {
@@ -89,21 +110,27 @@ const controller = Object.freeze<UiScrollController>({
   readState,
   ownsBoundary: (boundary) => viewport.value !== undefined && boundary.contains(viewport.value),
   readOffset,
+  cancelMotion() {
+    if (disposed) return
+    if (enhancement !== undefined) enhancement.cancelMotion()
+    else viewport.value?.scrollTo({ ...readOffset(), behavior: 'instant' })
+  },
   scrollTo(input) {
     if (!valid(input)) return
-    const current = readOffset()
-    primitive.value?.scrollTo({
-      left: input.left ?? current.left,
-      top: input.top ?? current.top,
+    const command = {
+      ...input,
       behavior: behavior(input),
-    })
+    }
+    if (enhancement !== undefined) enhancement.scrollTo(command)
+    else viewport.value?.scrollTo(command)
   },
   scrollBy(input) {
     if (!valid(input)) return
-    primitive.value?.scrollBy({
-      left: input.left ?? 0,
-      top: input.top ?? 0,
-      behavior: behavior(input),
+    const current = readOffset()
+    controller.scrollTo({
+      ...input,
+      ...(input.left === undefined ? {} : { left: current.left + input.left }),
+      ...(input.top === undefined ? {} : { top: current.top + input.top }),
     })
   },
   scrollToStart(options = {}) {
@@ -154,6 +181,9 @@ const controller = Object.freeze<UiScrollController>({
   dispose() {
     if (disposed) return
     disposed = true
+    enhancementGeneration += 1
+    enhancement?.dispose()
+    enhancement = undefined
     emit('controller', null)
   },
 })
@@ -161,32 +191,41 @@ const controller = Object.freeze<UiScrollController>({
 onMounted(() => {
   mounted = true
   if (props.enabled) emit('controller', controller)
+  void enhance()
 })
 watch(
-  () => [props.enabled, props.ownerId] as const,
+  () => [props.enabled, props.ownerId, props.xScrollable] as const,
   ([enabled]) => {
     if (mounted && !disposed) {
       emit('controller', null)
       if (enabled) emit('controller', controller)
+      void enhance()
     }
   },
   { flush: 'post' },
+)
+watch(
+  () => appearance.value.motion,
+  (motion) => {
+    if (motion !== 'full') controller.cancelMotion()
+    enhancement?.setFullMotion(motion === 'full')
+  },
+  { flush: 'sync' },
 )
 onBeforeUnmount(controller.dispose)
 </script>
 
 <template>
   <div
-    ref="viewport"
+    ref="host"
     class="pavp-scroll-area"
     :data-enabled="enabled"
+    :data-horizontal="xScrollable"
   >
-    <PavpScrollbarPrimitive
-      ref="primitive"
-      class="pavp-scroll-area__primitive"
-      :x-scrollable="xScrollable"
-      trigger="hover"
-      @scroll="onScroll"
+    <ScrollViewport
+      class="pavp-scroll-area__viewport"
+      :horizontal="xScrollable"
+      @viewport="viewport = $event ?? undefined"
     >
       <div
         ref="content"
@@ -194,12 +233,13 @@ onBeforeUnmount(controller.dispose)
       >
         <slot />
       </div>
-    </PavpScrollbarPrimitive>
+    </ScrollViewport>
   </div>
 </template>
 
 <style scoped>
 .pavp-scroll-area {
+  position: relative;
   block-size: 100%;
   min-block-size: 0;
   min-inline-size: 0;
@@ -212,8 +252,20 @@ onBeforeUnmount(controller.dispose)
   overflow: visible;
 }
 
-.pavp-scroll-area[data-enabled='false'] .pavp-scroll-area__primitive {
+.pavp-scroll-area__viewport {
+  block-size: 100%;
+  min-block-size: 0;
+  min-inline-size: 0;
+  overscroll-behavior: contain;
+}
+
+.pavp-scroll-area[data-horizontal='true'] .pavp-scroll-area__viewport {
+  overflow: auto hidden;
+}
+
+.pavp-scroll-area[data-enabled='false'] .pavp-scroll-area__viewport {
   block-size: auto;
+  overflow: visible;
 }
 
 .pavp-scroll-area__content {
@@ -222,14 +274,46 @@ onBeforeUnmount(controller.dispose)
 }
 
 @media (forced-colors: active) {
-  .pavp-scroll-area {
-    --pavp-scrollbar-color: ButtonText;
-    --pavp-scrollbar-hover: Highlight;
-    forced-color-adjust: none;
+  .pavp-scroll-area__viewport {
+    scrollbar-color: ButtonText Canvas;
   }
+}
+</style>
 
-  .pavp-scroll-area__content {
-    forced-color-adjust: auto;
+<style>
+:where(.pavp-scroll-area__viewport) {
+  overflow: hidden auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ui-color-text-secondary) var(--ui-color-surface-panel);
+}
+
+.pavp-scroll-area .os-theme-pavp {
+  --os-size: calc(var(--ui-space-content-gap) / 2);
+  --os-track-border-radius: var(--ui-radius-panel);
+  --os-track-bg: var(--ui-color-surface-panel);
+  --os-track-bg-hover: var(--ui-color-surface-panel);
+  --os-track-bg-active: var(--ui-color-surface-panel);
+  --os-handle-border-radius: var(--ui-radius-panel);
+  --os-handle-bg: var(--ui-color-text-secondary);
+  --os-handle-bg-hover: var(--ui-color-text-primary);
+  --os-handle-bg-active: var(--ui-color-text-primary);
+  --os-handle-interactive-area-offset: calc(var(--ui-space-content-gap) / 2);
+}
+
+.pavp-scroll-area[data-horizontal='true'] .os-theme-pavp {
+  --os-size: calc(var(--ui-space-content-gap) / 6);
+  --os-handle-interactive-area-offset: calc(var(--ui-space-content-gap) * 5 / 6);
+}
+
+@media (forced-colors: active) {
+  .pavp-scroll-area .os-theme-pavp {
+    --os-track-bg: Canvas;
+    --os-track-bg-hover: Canvas;
+    --os-track-bg-active: Canvas;
+    --os-handle-bg: ButtonText;
+    --os-handle-bg-hover: Highlight;
+    --os-handle-bg-active: Highlight;
+    forced-color-adjust: none;
   }
 }
 </style>
