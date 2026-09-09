@@ -3340,6 +3340,8 @@ ROUTER_REMAINS_SOLE_URL_HISTORY_GUARD_ERROR_FOCUS_SCROLL_OWNER=REQUIRED
 
 本 Amendment 只替换旧的 Blanket Snapshot Prohibition：后续实施可以只动画 Browser-created Static Pseudo-element Snapshots。真实 Live Route DOM 仍只有一个 RouterView 和一个稳定、无 Key 的 `.pavp-route-content`；不得添加 Routed-component Key、Vue Transition、AnimatePresence、KeepAlive、Suspense、Route `v-if`/`v-show`、Opacity Concealment、Transform、Real Outgoing DOM 或故意 Blank Frame。Router 继续唯一拥有 URL、History、Guard、Error、Focus 和 Scroll。
 
+以上是当前已实现过渡边界。§18.11.5 仅冻结未来 Workspace 所属 Routed-component 缓存/实例 Key 的条件式例外，须另行获准并同步现有 Owning Checks 后才可替换相应禁令；它不放开外层 Host Key、动画用双份 Live DOM、Vue Transition、Suspense 或内容隐藏，不改变本 Amendment 的历史证据和当前检查。
+
 #### Initial Preset Registry
 
 ```text
@@ -4889,7 +4891,7 @@ restoration:
 
 Sidebar Taxonomy 及顺序精确为：`工作台 → 总览`；`视觉系统 → 主题与外观, 设计令牌`；`应用基础 → 运行时内核, 路由治理, 存储与持久化`；`界面基础 → UI 组件, 响应式布局`；`开发治理 → 工程与质量`；`架构规划 → 能力路线图`。
 
-当前导航项仍可键盘聚焦，并保持 `aria-current="page"`。当前无 Query/Hash 的实现按 Current Route Name 在 Shell/Frame 提前 No-op；Narrow Drawer 已打开时仍通过既有 Lifecycle 关闭并恢复原 Focus Return Target。未来 §9 可配置输入实施后，当前项 No-op 和 Pointer Focus Protection 以应用派生的完整目的地相等为准，不能阻止同名 Params/Query/Hash 更新；真正 `NavigationFailureType.duplicated` 仍不得创建呈现或错误恢复工作。
+当前导航项仍可键盘聚焦，并保持 `aria-current="page"`。当前项 No-op 和 Pointer Focus Protection 已使用应用派生的完整目的地相等值 `isCurrentDestination`；Narrow Drawer 已打开时仍通过既有 Lifecycle 关闭并恢复原 Focus Return Target。`activeRouteName` 只负责页面级选中展示，不能阻止同名有效地址更新；真正 `NavigationFailureType.duplicated` 仍不得创建呈现或错误恢复工作。
 
 ```text
 ACTIVE_NAVIGATION_ITEM_ACTIVATION=no-op
@@ -5436,7 +5438,7 @@ Active Bundle Budget Records 按 Canonical Generator 固定顺序：
 | `initial-javascript-gzip` | `253952` | `bytes-gzip` |
 | `lazy-route-javascript-gzip` | `122880` | `bytes-gzip` |
 
-Owner 单独批准将当前 Initial JavaScript 预算从 `245760`（240 KiB）调整为 `253952`（248 KiB）gzip bytes；唯一配置权威仍为 `project.config.ts.bundleBudgets.initialJavaScriptGzipBytes`。最低 Headroom 保持 `8192`（8 KiB），因此最大允许实测 Initial JavaScript 为 `245760` bytes gzip。其他预算、既有 gzip/SHA 归一化、闭包计数、对齐公式与失败语义不变；§1.2B 各已完成导航包及 §23.6.9 的旧预算、批准和测量记录保留历史含义。本次只同步当前预算及其既有生成镜像和预算常量断言，不实施或接受未提交的可配置路由候选，不改变 Current Work、Next、Successor 或 Release 状态。
+Owner 单独批准将当前 Initial JavaScript 预算从 `245760`（240 KiB）调整为 `253952`（248 KiB）gzip bytes；唯一配置权威仍为 `project.config.ts.bundleBudgets.initialJavaScriptGzipBytes`。最低 Headroom 保持 `8192`（8 KiB），因此最大允许实测 Initial JavaScript 为 `245760` bytes gzip。其他预算、既有 gzip/SHA 归一化、闭包计数、对齐公式与失败语义不变；§1.2B 各已完成导航包及 §23.6.9 的旧预算、批准和测量记录保留历史含义。当时预算同步授权只覆盖预算及其既有生成镜像和预算常量断言，不构成路由候选的实施或运行验收授权。当前已提交的路由核心源码事实另见 §9，本次 Workspace 规格不修改任何预算、测量、配置或生成镜像，不改变 Current Work、Next、Successor 或 Release 状态。
 
 `workflowNames` 按 Code-point 精确为 `CodeQL,Static Verification`。Canonical Read Allowlist 精确为：
 
@@ -5969,11 +5971,12 @@ type CapabilityStatus =
 | Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
 | Generated Built-in First Paint and post-Vue Custom restoration | `ACTIVE` | generated artifacts plus application bootstrap |
 | General Pinia state and workflow state | `TARGET_INACTIVE` | future named frontend consumer gates |
+| Administration Global Breadcrumb and in-session Workspace Tabs core | `TARGET_INACTIVE` | §18.11 frozen contract and §37.2.13 specification-only admission; runtime implementation `NOT_STARTED`, no generated capability or source activation |
 | Session state | `DEFERRED` | required starter integration; implementation admission waits for a real server Session contract |
 | Runtime Kernel | `ACTIVE` | `PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION` base plus the exact `create-and-ready-router`, `create-and-ready-storage`, `create-and-ready-i18n` and §19.5.2 `initialize-navigation-preference` extensions from `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`, `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` and `PAVP_ADMIN_CONSOLE_LOCALIZATION` |
 | Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
-| Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`; the configurable local-address and external-access contract in §9 is a `TARGET_INACTIVE` extension only, with source implementation not authorized by its specification admission in §37.2.5 |
+| Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
 | Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work and authority are `NONE`; next and successor remain `NONE` |
 | TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
@@ -6002,7 +6005,7 @@ type CapabilityStatus =
 
 本表是 Status Authority。其他章节可以解释合同，不得创建另一份状态枚举。具有完整、当前可实施 Target Contract 的章节必须显式写出 `CAPABILITY_STATUS=TARGET_INACTIVE`；只有准入条件或候选方向、且缺少真实产品输入的能力必须写出 `CAPABILITY_STATUS=DEFERRED`。未出现 `ACTIVE` 证据的 Target 或 Deferred Capability 不得被 README、Page、Package Manifest 或 Generated Output 描述为现有能力。
 
-最终必需范围是 §1 的产品要求，不是第五种 Capability Status。标准用户/角色/菜单与操作权限管理页面和应用内页签仍未实现、未准入；本次不增加 Registry Record、Manifest Source 或 Generated Artifact。既有 `Optional` Lane 名称及 Console Roadmap 是当前实施边界的保留标识，不表示可以从完整 Starter 交付中省略登录权限、标准管理页面、表单、数据管理、语言或页签要求。
+最终必需范围是 §1 的产品要求，不是第五种 Capability Status。标准用户/角色/菜单与操作权限管理页面和应用内页签仍未实现、未获源码准入；页签与全局面包屑的冻结合同见 §18.11。本次只增加本表的目标状态说明，不增加源码 Registry Record、Manifest Source 或 Generated Artifact。既有 `Optional` Lane 名称及 Console Roadmap 是当前实施边界的保留标识，不表示可以从完整 Starter 交付中省略登录权限、标准管理页面、表单、数据管理、语言或页签要求。
 
 ## 1.4 Canonical Value Authority and Defaults
 
@@ -6718,7 +6721,11 @@ ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 
 本节的现有 Router 核心已由 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 实现并激活。当前应用为 §1.2B.2 的十个 Product Route、七个 Error Route、一个 Primary Router Outlet 与一个 Admin Shell；Storage 和 §23.6 限定管理台 I18n 已 Active，Server State、Auth、Session、Permission、其他 I18n、Observability、Deployment 与 Business Route 未准入。§9.0 保留 Router 首次落地合同及历史清单，后续 Console、I18n 和 §1.2B.0N 修订优先。
 
-本次 Owner 批准的可配置路由目标由 §9.1、§9.4–9.6、§9.11–9.12 原位定义，准入记录只在 §37.2.5。该目标为 `CAPABILITY_STATUS=TARGET_INACTIVE`，源码实施尚未授权；它不把现有 Router 的 `ACTIVE` 扩大为已支持业务参数或访问接入。当前真实限制仍是：`RegisteredRouteDestination` 只有 `name`，`routeParamsSchema()`/`routeQuerySchema()` 返回宽化的 `z.ZodType`，校验结果只消费 `success`；所有页面拒绝 Query/Hash；Frame、Shell 和 Coordinator 按路由名提前返回；没有访问决策源或菜单过滤。以下未来合同只在另行授权的源码切换后替换这些限制，现有地址、17 条应用配置和错误语义保持有效。
+当前状态以 `main@97a40fa2de4075e143d706a9a0ddeca4ff39c9da` 的实际源码为准：既有提交 `372fc16141357ef2e1bf1071e9fd2443142797ff` 已落地类型化完整地址、逐 Route 输入验证、提交 Props、完整地址导航结果，以及 §9.11 / §18.9 的 History Entry 与 Region Restoration 核心。`route-input.ts` 已拥有 `RegisteredRouteDestination`、`ValidatedRouteInput`、`validateRouteInput` 和地址比较；Schema Lookup 保留具体 Zod 类型；`router-lifecycle.ts` 消费 Parsed Output 并在真实提交后投影；Frame/Shell 使用 `isCurrentDestination`，Coordinator 的同名视觉 Bypass 不阻止地址导航。这些不是尚不存在的 API。
+
+本次只纠正状态描述，不追认或扩大历史授权。§37.2.5 的规格记录保留冻结时含义；上述源码提交的 Static Verification 与 CodeQL 均为 success（[Static Verification](https://github.com/ichichuang/progressive-adaptive-vue-platform/actions/runs/34191277137)、[CodeQL](https://github.com/ichichuang/progressive-adaptive-vue-platform/actions/runs/34191277134)）。源码和 CI 不构成 Owner Runtime Acceptance；文首 `ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE=PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX` 保持，§1.2B.0N 中既有过渡的局部验收不外推到完整路由核心。
+
+尚未实现的扩展继续为 `TARGET_INACTIVE`：§9.5 的外部 Access Decision Source、权限菜单过滤及对应接入；§9.6 的 Return Destination 流程；非空业务 Params/Query/Fragment 的真实消费者。当前十个 Product Route 仍显式使用空 Params/Query 与 `hashPolicy='none'`，七个 Error Route 的身份与边界不变，Redirect/Dynamic Registry 仍为空，Auth/Session/Permission/Prefetch 不激活。§9.1、§9.4、§9.11 中已经落地的机制与这些未来消费者分别判断；§9.0 的历史清单、冻结时限制和测量不重写为当前状态。
 
 ## 9.0 `PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT`
 
@@ -7343,7 +7350,7 @@ Router Implementation 必须通过 Existing Static Owners 的最小 Domain-owned
 
 当前实现使用 §9.0.1 冻结的 Vue Router `5.2.0` File Routes。当前 Source Set 是 §1.2B.2 的十个 Product Source 加七个 Error Source；§9.0.2 的八条是历史清单。当前页面清单是这个应用的配置，不是可复用导航执行器的永久上限；新增真实页面仍需其任务授权。
 
-本地 Route Registry 是声明权威，Generated Route Map 是其类型投影。现有宽化记录外形如下；可配置目标在下文收紧 Schema 引用并保留逐条 Literal，不把该宽接口当作最终类型：
+本地 Route Registry 是声明权威，Generated Route Map 是其类型投影。下面保留原规格的宽化记录示意；当前源码已经收紧 Schema ID 引用、增加 `hashPolicy` 并保留逐条 Literal，应以实际声明和下文合同为准，不能复制该历史宽接口替代当前类型：
 
 ```ts
 interface RouteRegistryRecord {
@@ -7359,15 +7366,15 @@ interface RouteRegistryRecord {
 
 Route Name 只能来自该 Registry。当前十七条 `ACTIVE` Record 与 Source、Generated Artifact 和 Runtime Route Set 闭合。消费方可以使用受派生 `RouteName` 类型约束的名称，不能维护另一份名称枚举、Path 拼接表或任意字符串逃生口。Missing、Duplicate、Unknown Name、Path Collision、未注册 Meta、未绑定 Params/Query Schema 或 Registry/Generated Route Set 差异必须使 Router Generation Failure。
 
-### Configurable local declarations target
+### Configurable local declarations
 
 唯一默认方案继续使用 `route-registry.ts` 的本地 TypeScript 声明、`route-schemas.ts` 的 Zod Schema 和现有 `vue-router/vite` Plugin。项目内容与执行职责分开，仍只有一个 Route Registry、一个 Generator、一个 Router 和一个 Guard Pipeline；不增加插件平台、字符串表达式或运行时架构模式开关。
 
 | 内容 | 唯一作者与派生关系 |
 | --- | --- |
 | Name、URL、页面关联 | `routeRegistry` 中的 `name`、`pathPattern`、`sourcePath` 分别权威且唯一。`pages/**/*.vue` 是实际文件集合，Generator 按 `sourcePath` 关联本地 Lazy Component；不在 Registry 手写另一组 Import。 |
-| Params / Query | 既有两个 Schema Registry 的唯一 Zod 对象；每条 Route 用非空、保留 Literal 的 `paramsSchemaId` / `querySchemaId` 引用。无输入也显式引用 `route-params.none` / `route-query.none`，目标不再允许 `null`。不得复制 Params/Query 接口或默认值。 |
-| Fragment | Route Record 顶层新增 `hashPolicy?: 'none' | 'element-id'`，缺省只在声明规范化处成为 `none`，不进入 Vue Router Meta；具体处理见 §9.4。 |
+| Params / Query | 既有两个 Schema Registry 的唯一 Zod 对象；每条 Route 用非空、保留 Literal 的 `paramsSchemaId` / `querySchemaId` 引用。无输入也显式引用 `route-params.none` / `route-query.none`，当前不允许 `null`。不得复制 Params/Query 接口或默认值。 |
+| Fragment | Route Record 顶层已有 `hashPolicy?: 'none' | 'element-id'`，缺省只在声明规范化处成为 `none`，不进入 Vue Router Meta；具体处理见 §9.4。 |
 | Layout | 作者只选择已准入的 `layoutCapabilityId`；既有 Layout Capability Record 统一提供 `layout` 和两轴 Scroll Owner。当前两套 Focus / Restoration 引用随该 Capability 记录集中关联，展开到现有 Meta，不能在每页重复写不同默认。可选项只有 Reading Document 和 Architecture Admin Console Workspace；不因现有类型含 `focused-task` 或五个 Preset 就激活其他布局。 |
 | 标题、文案 | Route 引用 Typed Title/Breadcrumb/Message Key，实际文字继续由 §23.6 Message 资源拥有；Locale 切换只重投影，不改 Route Identity。 |
 | 菜单 | 既有 `consoleNavigationRegistry` 只拥有分组、顺序、图标及每叶一个完整 Typed Destination；组标签改为资源 Key 引用，叶标签由目的 Route Title 派生。组不是 Route，不拥有 Path、Component、Auth 或另一份标题文字。 |
@@ -7423,7 +7430,7 @@ interface ValidatedRouteMeta {
 
 `titleKey`、`breadcrumbKey`、`layoutCapabilityId`、Scroll Owner、Permission ID 和 Telemetry Name 必须引用各自 Registry，不能由页面发明。Keep Alive 只缓存明确的 Route Instance，不能隐式缓存 Session、Query Data、Form Secret 或 DOM Side Effect。Route Disposal 时必须清理 Subscription、Abort Controller、Observer、Timer、Focus Trap、Scroll Lock 和页面本地 Draft Handle。
 
-Starter 必须支持应用内页签，保留每页筛选、排序、分页、滚动位置和未提交表单状态。普通页签切换是页面停用/恢复，不能等同于销毁或丢弃；显式关闭、重置或其他会丢弃未保存工作的动作须先保护用户输入。Router 继续独占路由、URL、Focus 与 Scroll 恢复权威，页签状态不得复制这些权威。当前 Console 的 `keepAlive='never'`、`unsavedChangesPolicy='none'` 及既有 History Restoration 均保持，不能作为已支持页签的证明；具体实例身份、容量、停用/释放与 Unsaved Policy 的实施合同仍须另行准入。页内状态寿命与账号清理由 §19.1 和 §21.7 约束。
+Starter 必须支持应用内页签，保留每页筛选、排序、分页、滚动位置和未提交表单状态。普通页签切换是页面停用/恢复，不能等同于销毁或丢弃；显式关闭、重置或其他会丢弃未保存工作的动作须先保护用户输入。Router 继续独占路由、URL、Focus 与 Scroll 恢复权威，页签状态不得复制这些权威。当前 Console 的 `keepAlive='never'`、`unsavedChangesPolicy='none'` 及既有 History Restoration 均保持，不能作为已支持页签的证明；§18.11 唯一冻结实例身份、容量、停用/释放、Discard 与 Router Workspace Scroll 合同，源码实施仍须另行准入。页内状态寿命与账号清理由 §19.1 和 §21.7 约束。
 
 ## 9.3 Bootstrap and History
 
@@ -7439,7 +7446,7 @@ Router 首次实现只支持当前 Exact Root `/`。未来 `PAVP_OBSERVABILITY_D
 
 ## 9.4 Params and Query Boundary
 
-本节为未实施的可配置输入目标；当前 §9.0.4 的空 Query/Hash 限制继续有效。每个 Params/Query Schema 都是纯、同步、Strict Zod Object；字段变换可以产生应用值，但不读状态、做请求、补写 URL 或执行异步副作用。解析顺序为：
+本节的类型化地址、同步校验与提交输入投影机制已经实现，当前源码证据见 §9 开头；当前应用仍选择空 Query/Hash，非空业务输入消费者未准入。每个 Params/Query Schema 都是纯、同步、Strict Zod Object；字段变换可以产生应用值，但不读状态、做请求、补写 URL 或执行异步副作用。解析顺序为：
 
 ```text
 caller address / direct URL
@@ -7453,7 +7460,7 @@ caller address / direct URL
 
 ### Typed address and parsed input
 
-以下是未来应用层公共签名，沿用 `RegisteredRouteDestination`、`registeredRouteDestination`、`TypedNavigationResult` 和 `RouteTransitionCoordinator`；不是已存在的源码 API。辅助类型仅表达派生关系，不增加可手写的 Route Type Map。`RouteNamedMap` 来自官方 `vue-router/auto-routes`，`RouteLocationNormalized` 来自稳定公共根，`z` 来自已安装 Zod `4.4.3`。
+以下签名表达已落地的应用层地址/输入合同，具体声明由 `route-input.ts`、`navigation-contract.ts` 和 `RouteTransitionCoordinator` 拥有；示例中的业务路由仍不是现有消费者。辅助类型仅表达派生关系，不增加可手写的 Route Type Map。`RouteNamedMap` 来自官方 `vue-router/auto-routes`，`RouteLocationNormalized` 来自稳定公共根，`z` 来自已安装 Zod `4.4.3`。
 
 ```ts
 type RouteDeclarationFor<N extends RouteName> =
@@ -7646,7 +7653,7 @@ Invalidation 立即取消旧 Pending Decision、过渡预加载与 Presentation 
 
 菜单是可见性投影，不是路由准入权威；未来 Action Permission 也仍是独立消费边界。菜单与导航使用同一源、同一 Revision、同一合成规则；菜单决定只供显示，点击必须重新验证。源可以在本地不可变权限快照上计算，不能因每个菜单项创建用户信息请求。项目菜单叶必须提供完整且可验证的 `RegisteredRouteDestination`；参数页没有固定有效地址时不出现在菜单，不虚构 ID。每个 RouteName 最多一个菜单叶，Group ID 唯一，故 Shared UI 继续以不透明 `routeName: string` 发出事件，应用查回该叶的完整目的地，禁止 `as RouteName` 强转任意事件值。
 
-投影按声明原顺序过滤未获准叶，再省略空 Group；缺源时 Public 叶可见，保护叶与 Anonymous-only 叶不可见。Root Icon Shortcut 取**传给 Shell 的同一个投影**的首个可用叶，点击时重新查找、重验，不缓存 Raw Group 的 `items[0]`。保留已接受的 Hover Panel 生命周期。未来 `UiAdminNavigationItem` 只需增加 `readonly isCurrentDestination: boolean`，由应用比较完整目的地派生；Shell 的当前项 No-op 与 Pointer Focus Protection 改用该值，`activeRouteName` 继续只负责页面级选中展示。UI 不导入应用 Router/Access 类型，不计算权限或 URL。
+投影按声明原顺序过滤未获准叶，再省略空 Group；缺源时 Public 叶可见，保护叶与 Anonymous-only 叶不可见。Root Icon Shortcut 取**传给 Shell 的同一个投影**的首个可用叶，点击时重新查找、重验，不缓存 Raw Group 的 `items[0]`。保留已接受的 Hover Panel 生命周期。当前 `UiAdminNavigationItem` 已有 `readonly isCurrentDestination: boolean`，由应用比较完整目的地派生；Shell 的当前项 No-op 与 Pointer Focus Protection 已使用该值，`activeRouteName` 继续只负责页面级选中展示。UI 不导入应用 Router/Access 类型，不计算权限或 URL。
 
 ## 9.6 Safe Return URL and Redirects
 
@@ -7668,7 +7675,7 @@ maintenance service-unavailable
 
 401 表示缺少或失效身份，403 表示身份有效但权限不足。Offline 与 Maintenance 不能伪装为 500。Error Route 不回显敏感 Params、Query、Server Body、Token 或内部 Stack。
 
-既有 Navigation Failure 分类为以下集合；§9.5 的可配置访问接入另行冻结 `access-unavailable` 与 `access-invalidated` 目标扩展，当前 Active Subset 仍只由 §9.0.7 拥有：
+既有 Navigation Failure 目标分类为以下集合；当前源码在 §9.0.7 历史子集之上已处理 `aborted-by-guard`，并独立返回 §9.11 的 `duplicated`。`cancelled-by-user`、认证/权限和 Prefetch 业务分支未激活；§9.5 的 `access-unavailable` / `access-invalidated` 接入仍为目标，类型保留不表示提供方已存在：
 
 ```text
 duplicated
@@ -7715,7 +7722,7 @@ Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 Ta
 
 Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 History Entry Marker 与导航提交协议；§18.9 唯一拥有 Router 内存中的 Region Record、内容有效性与恢复条件，Offset 不写入原生 History State。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争；缺失或重复的声明 DOM Owner 是呈现合同失败，不能伪装成 Cache Miss。
 
-当前首次导航保留浏览器焦点，其余成功 Location Change 由 Router 聚焦已注册 Heading；未来可配置输入实施后按下表区分页面变化与同页地址更新，不能继续用 RouteName 相等阻止 URL 更新。Error/Cancel 保留或恢复原 Focus。每次 Navigation 的 Observability 目标记录 Privacy-safe `navigationId`、From/To Telemetry Name、Release SHA、Duration、Outcome 和 Failure Category，不记录完整 URL、敏感 Query 或用户输入。
+当前首次导航保留浏览器焦点，后续按下表区分页面变化、同页地址更新与 History Traversal；这套输入/呈现机制已经落地，不能用 RouteName 相等阻止 URL 更新。Error/Cancel 保留或恢复原 Focus。每次 Navigation 的 Observability 目标记录 Privacy-safe `navigationId`、From/To Telemetry Name、Release SHA、Duration、Outcome 和 Failure Category，不记录完整 URL、敏感 Query 或用户输入；该记录/上报目标仍未激活。未来 Workspace Identity 变化的窄呈现扩展由 §18.11 拥有，不改变当前源行为。
 
 ### Address identity, result and presentation target
 
@@ -7732,11 +7739,11 @@ Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 H
 | 真正程序化 Duplicate | 无 Push/Replace、Guard Work、Title、Props、Focus、Scroll、Preload、动画或 Recovery；不 Stamp、不清除或刷新 Record/LRU。Shell 当前项 Pointer Focus Protection 和 Narrow Drawer 关闭/返回焦点的既有局部行为保留。 |
 | 无效输入 / 失败 / 取消 | 无效匹配输入安全 Replace 到 400；未知地址保持 Catch-all 404；Chunk/Offline/500/启动异常沿用已有分类。被取消或过期 Attempt 不提交目标 Props/Title/Focus/Scroll；真正错误继续可观察，不因动画 Bypass 吞掉。 |
 
-Scroll 仍由 `router-lifecycle.ts` 唯一写入。Vue Router 的 `savedPosition` 只适用于声明的 Document Owner，永不复制给 Element Owner；Coordinator 或 Shell 不得另建 Scroll Cache/History Stack。History Record 失配按 Traversal 策略回退，不能借此重置上表要求保留 Offset/Focus 的同页程序化更新。Title 仍来自现有语言投影，不从 Query/Hash 生成文案。本规格不把当前 Region 恢复实现宣称为已验证。
+Scroll 仍由 `router-lifecycle.ts` 唯一写入。Vue Router 的 `savedPosition` 只适用于声明的 Document Owner，永不复制给 Element Owner；Coordinator 或 Shell 不得另建 Scroll Cache/History Stack。History Record 失配按 Traversal 策略回退，不能借此重置上表要求保留 Offset/Focus 的同页程序化更新。Title 仍来自现有语言投影，不从 Query/Hash 生成文案。本规格不把当前 Region 恢复源码与静态证据宣称为已获运行验收。
 
 ### Owned history-entry marker and commit boundary
 
-以下为该目标能力的唯一 Native State Property 定义，由 `apps/web/src/app/router/router-lifecycle.ts` 独占：
+以下为已落地 History Entry 核心的唯一 Native State Property 定义，由 `apps/web/src/app/router/router-lifecycle.ts` 独占：
 
 ```ts
 // Reserved property in native window.history.state; no other marker fields.
@@ -7764,7 +7771,7 @@ Traversal 识别只在同一 Router Owner 对既有 History 对象的公开 `lis
 
 Back 后新 Push 永远取得新 ID，不能访问被放弃 Forward Entry 的 Record；遗留记录按 §18.9 有界淘汰，不为主动枚举删除而重建 Forward Stack。Dispose/Refresh/Router 重建清空所有自有 Handle、Record、待处理工作与订阅；不遍历或改写其他原生 Entry。浏览器恢复一个仍保有同一 Router 和内存的 Document 时，只按同 Scope 和当前有效性复核；这不同于重建，不建立独立 BFCache 子系统。
 
-未来 `TypedNavigationResult` 精确保留四个既有分支并增加独立 Duplicate 返回值：
+当前 `TypedNavigationResult` 已具有以下五个分支；`access-invalidated` 仅保留目标类型，尚无 Access Source 产生该结果：
 
 ```ts
 type TypedNavigationResult =
@@ -7785,8 +7792,8 @@ Allow/Redirect 返回最终通过验证的 URL 输入形态，不是 Zod Parsed 
 
 保留 §1.2B.0N 的精确 Presentation Reservation：绑定实际 normalized `to`、Name/fullPath 和所属 Attempt，真实 DOM/Title/所需 Focus/两轴 Scroll 全部完成后才结算。对于同页更新，“保留 Focus/Scroll”本身是已完成的 Policy，不得等待一次不会发生的聚焦/滚动写入。Duplicate、Redirect、Cancel、Access Invalidation、Error 与 Dispose 都结算或拒绝所属 Reservation；原生 `router.push()` 完成不等于异步 `scrollBehavior()` 完成。Coordinator 仅协调现有视觉增强与单次 Router 导航，所有地址更新都应令旧预加载和旧动画工作失效；同名动画 Bypass 不能成为同名导航 Bypass。外部访问接入后，保护目标的校验和 Decision 必须早于该 Coordinator 的显式 Preload/Snapshot，并在实际 Guard/Commit 复核；不由 `loadRouteLocation()` 绕过准入。
 
-Current Router Landing 只激活 §9.0.6 的 Narrow Scroll/Focus Contract，并在 Route Registry 中解析
-`telemetryName`；本节的 Navigation Event Recording、Duration、From/To Projection 与 Reporting 仍为
+首次 Router Landing 的 §9.0.6 Narrow Scroll/Focus Contract 是历史基线；当前另已实现本节与 §18.9 的 Entry/Region Restoration，仍只在 Route Registry 中解析
+`telemetryName`。本节的 Navigation Event Recording、Duration、From/To Projection 与 Reporting 仍为
 `PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 的 Target Contract，当前不得记录、发送或创建
 Placeholder Observability Provider。
 
@@ -7811,11 +7818,11 @@ Owning Implementation Package 必须把以下检查接入 `pnpm verify`：
 
 ### Configurable-routing implementation and checker boundary
 
-本任务只改架构。后续首个建议源码切片是**类型化完整地址与逐 Route 输入验证**：在现有应用配置不变的前提下贯通 Generated Literal Types、Schema 输入/输出、Named Navigation、全局 URL 验证、提交 Props、同名地址更新及其现有呈现 Reservation；同步相关窄检查。只使用现有 Public 页面，不新增示例路由或假身份。访问源及菜单权限过滤属于后续独立接入授权，首片仍保持全部当前 Public、空 Permission、空 Redirect/Dynamic Registry；不为它创建接口 Stub、Session 或 Provider。此建议不是 Next/Successor 或自动实施授权。
+原规格建议的**类型化完整地址与逐 Route 输入验证**源码切片已由 §9 开头所列提交落地，其范围为：在现有应用配置不变的前提下贯通 Generated Literal Types、Schema 输入/输出、Named Navigation、全局 URL 验证、提交 Props、同名地址更新及其现有呈现 Reservation；同步相关窄检查。只使用现有 Public 页面，不新增示例路由或假身份。访问源及菜单权限过滤属于后续独立接入授权，当前仍保持全部 Public、空 Permission、空 Redirect/Dynamic Registry；不为后续接入创建接口 Stub、Session 或 Provider，不自动设置 Next/Successor。
 
-必要现有集成点按责任为：`route-registry.ts`（项目声明、引用、菜单/布局投影）、`route-schemas.ts`（具体 Zod 类型与默认值）、`navigation-contract.ts`（完整地址/结果）、`router-lifecycle.ts`（统一验证、取消、Props/访问/呈现提交及 History Scroll）、`route-transition/route-transition-coordinator.ts` 与 `resolve-route-transition.ts`（接受完整地址、同名视觉 Bypass）、`ConsoleRouteFrame.vue` / `App.vue`（UI 事件解析与已提交 Props）、`UiAdminShell.vue` / 既有 UI Contracts 与公共组件 Registry（`isCurrentDestination` 语义）、`apps/web/vite.config.ts`（同一生成边界）。生成的 `route-map.d.ts` 仍只能由官方工具产生，`router-meta.d.ts` 继续消费唯一 Meta，Console/语言投影跟随实际声明。若避免混合声明与运行验证确有需要，只新增 Router 内负责输入验证与 Prop 投影的 `route-input.ts`；访问接入获准时才按同一责任原则提供决策 Port 的实现边界。不预建文件、不固定私有 Helper、算法、容器或穷尽文件清单。
+必要现有集成点按责任为：`route-registry.ts`（项目声明、引用、菜单/布局投影）、`route-schemas.ts`（具体 Zod 类型与默认值）、`route-input.ts`（完整地址、验证与 Parsed Input）和 `navigation-contract.ts`（结果）、`router-lifecycle.ts`（统一验证、取消、Props/访问/呈现提交及 History Scroll）、`route-transition/route-transition-coordinator.ts` 与 `resolve-route-transition.ts`（接受完整地址、同名视觉 Bypass）、`ConsoleRouteFrame.vue` / `App.vue`（UI 事件解析与已提交 Props）、`UiAdminShell.vue` / 既有 UI Contracts 与公共组件 Registry（`isCurrentDestination` 语义）、`apps/web/vite.config.ts`（同一生成边界）。生成的 `route-map.d.ts` 仍只能由官方工具产生，`router-meta.d.ts` 继续消费唯一 Meta，Console/语言投影跟随实际声明。`route-input.ts` 已作为 Router 内输入边界落地，Props 提交投影由 `router-lifecycle.ts` 拥有；访问接入获准时才按同一责任原则提供决策 Port 的实现边界。不预建文件、不固定私有 Helper、算法、容器或穷尽文件清单。
 
-后续实施须改变的**现有断言**及保留边界：
+下表保留原规格对当时断言的审查与调整目标；其中地址/输入/结果核心已随源码更新，不能将历史断言拼写视为当前检查器合同。访问接入、未来页面集合变化等仍须按真实准入同步；私有 Helper、算法或容器不因本表成为规范：
 
 | Existing owner / assertion | 必需调整与不能退让的合同 |
 | --- | --- |
@@ -7828,7 +7835,7 @@ Owning Implementation Package 必须把以下检查接入 `pnpm verify`：
 | `scripts/verify/check-bundle.ts` 的 `expectedLazyRouteCount = 17` 及 Admin/Router Checker 对该源码字符串的断言 | 后续实际页面变更时，按官方生成的页面 Component 集合与独立构建 Manifest 的真正 Lazy Root 双向核对；不能只把两个数字一起调成相同。历史 Count/测量不改，现有预算、Headroom、压缩方式、非 Route Dynamic Root 准入均保持。 |
 | 未来 Access 接入时的 `public` Common Meta、五阶段与八 Outcome 固定集合、未来 Owner 禁止扫描 | 仅在实际接入获准时同步到本节的有效投影；保护 fail-closed、父级 AND、源缺席与匿名区分、revision/abort、安全目的地、Root Shortcut 和边界隔离，不能删除检查或宽泛豁免未准入 Auth/Session。 |
 
-本次不改以上 Checker、任何 Runtime/Generated File、依赖、配置、预算或 CI。历史 Router 八条清单、Console 十七条清单、已接受过渡与字节测量仍为原来的事实。§9.2 的应用页签/KeepAlive、§21.7 Unsaved、§18 更广 Layout、外链、API、Forms、Tables 与后端动态加载均不扩写。规格完成只通过文档直接审阅、`git diff --check`、现有 `check:arch` / `check:policy` 及最终一次 `mise exec -- pnpm verify`；Markdown API 片段不是已编译的源实现，更不是运行验收。
+原路由规格任务只改文档，其历史 Router 八条清单、Console 十七条清单、已接受过渡与字节测量仍为原来的事实；后续已落地核心见 §9，未来 Workspace 的单独目标合同见 §18.11。本次仍不改 Checker、Runtime/Generated File、依赖、配置、预算或 CI，也不扩写外链、API、Forms、Tables 或后端动态加载。规格完成只通过文档直接审阅、`git diff --check`、现有 `check:arch` / `check:policy` 及最终一次 `mise exec -- pnpm verify`；Markdown API 片段不是已编译的源实现，更不是运行验收。
 
 ---
 
@@ -11052,7 +11059,153 @@ Region Traversal 的优先级精确为：**有效匹配记录 → 声明允许�
 
 ## 18.10 Layout and Scroll Static Enforcement Targets
 
-Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Scroll/Touch Literal、未知 Region/Owner、同轴竞争 Overflow、意外 Body Scroll、Fixed Layer 无 Safe-area Policy、自定义滚动条、Scroll Hijacking 和无 Disposal 的 Background Lock。Route Meta、Layout Capability、CSS Container Token 与 Scroll Registry Set 必须闭合。Router 精确 `route-layout.reading-document`、两个 Native Document Scroll Owner、一条 Restoration Policy 和一条 Focus Contract 已由 §9 激活；其余 Shell、Region、Breakpoint、Nested Scroll、Panel 和 Touch Target 仍为 `TARGET_INACTIVE`。
+Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Scroll/Touch Literal、未知 Region/Owner、同轴竞争 Overflow、意外 Body Scroll、Fixed Layer 无 Safe-area Policy、自定义滚动条、Scroll Hijacking 和无 Disposal 的 Background Lock。Route Meta、Layout Capability、CSS Container Token 与 Scroll Registry Set 必须闭合。当前 §9 和 §1.2B.1–1.2B.2 已激活 Reading Document 与 Admin Console 两套 Layout/Focus/Restoration Policy、合计四条按轴登记的 Scroll Owner、响应式 Shell 与其既有阈值和目标尺寸。更广 Nested Scroll、可移动/缩放 Panel 等仍未准入；§18.11 的 Workspace Scroll 仅为未来目标，不能反向把现有 Shell/Region 描述为尚未实现。
+
+---
+
+## 18.11 Administration Workspace Chrome Target Contract
+
+```text
+CONTRACT_STATUS=FROZEN
+CAPABILITY_STATUS=TARGET_INACTIVE
+REPOSITORY_IMPLEMENTATION=NOT_STARTED
+IMPLEMENTATION_AUTHORIZATION=NONE
+SPECIFICATION_ADMISSION=PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION
+WORKSPACE_OWNER=apps/web/src/app/workspace
+ROUTE_AND_SCROLL_OWNER=apps/web/src/app/router
+CROSS_REFRESH_WORKSPACE_PERSISTENCE=DEFERRED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+本节是 Global Breadcrumb 与应用内 Workspace Tabs 核心的唯一完整目标合同，§37.2.13 只记录规格任务准入。它以 §9 已落地路由核心为依赖，不把文档设计当作运行能力，也不自动修改任何 Source Registry、Public UI API 或 Generated Manifest。Workspace Tabs 是应用工作上下文能力，不能由一个 Vendor Tabs Wrapper 替代，也不建立第二个 Router。
+
+### 18.11.1 Current source and four distinct identities
+
+当前 `UiPageHeader` 的公共 Props 精确为 `breadcrumb`、`summary`、`title`，没有 Slots/Emits；它显示简单的 `PAVP / 当前页`，拥有唯一 `h1[data-route-focus="architecture-console-page-heading"]`。`App.vue` 通过单一 RouterView 提交 Props，`ConsoleRouteFrame.vue` 组合 Shell 和路由过渡协调器；`UiAdminShell` 拥有受控导航呈现及注册内容区域。当前没有 Workspace Store、Tabs 或 KeepAlive Host，十个 Product Route 仍为 `keepAlive='never'`、`unsavedChangesPolicy='none'`。现有 UI Public Registry 与 Capability Manifest 不声称具备本节能力。
+
+| 概念 | 唯一职责与身份关系 |
+| --- | --- |
+| Validated navigation address | Router 验证并提交的完整目的地，保留原生 Params/Query/Hash 地址语义；`ValidatedRouteInput` 是其已校验应用值投影，不是另一份可序列化地址。`sameRouteAddress()` 只回答地址重复问题。 |
+| Workspace Identity | 应用生命周期内的一份工作上下文，按 §18.11.3 Route-owned Policy 解析。一个 Workspace 可以经历多个地址更新和多个 History Entry；不能直接用 fullPath、History ID 或组件名称代替其策略。 |
+| Cached component-instance identity | Workspace Host 对一份仍存活 Vue 页面实例的关联。开放期间再激活复用同一实例；实际关闭后重开，即使 Workspace Identity 相同，也产生新实例身份。它不作为 URL 或浏览器访问身份。 |
+| History Entry identity | §9.11 的 Router Scope/Entry Marker，回答浏览器历史中的哪次访问。相同 URL 的两次访问仍是不同 Entry；Workspace 激活通常创建新 Entry，不冒充 Back/Forward。 |
+
+Router 继续独占 URL、History、地址验证、安全目的地、Route Input Commit、Title、Focus、Scroll Write 与 Presentation Settlement。Workspace 只拥有开放上下文及实例关联；表单、筛选、排序、分页与其他可编辑值由 Page/Feature/Form Controller 保持原有唯一所有权。Sidebar 分组、Breadcrumb 祖先、Workspace Identity 和路由过渡 Axis 顺序不能互相替代。
+
+### 18.11.2 Global Breadcrumb and existing page header
+
+Breadcrumb 数据是**当前已提交 Router Destination + 显式 ancestry 声明 + 现有语言资源**的只读投影；没有独立可变 Current Path，不进 Pinia、History 或 Storage。唯一声明位置沿用 `route-registry.ts` 的 Route Record：未来 Breadcrumb 源码切片增加 `breadcrumbAncestry`，按显示顺序声明有限的 Group 引用或 Registered Route 祖先引用；当前项直接来自该 Route 的 `breadcrumbKey`，没有 Key 时使用既有 Title Key。声明不得循环、重复当前项或引用不存在的记录。
+
+Menu Group 与祖先关系分别负责菜单组织和页面位置。当前十个 Product Route 的目标投影为 `PAVP → 所声明的现有分组 → 当前页`：PAVP 根项对应现有 `console-overview` 的合法空输入目的地；当前页就是总览时省略重复根项，显示 `工作台 → 总览`，其中总览为当前非交互项。根项文案亦由现有 Message Authority 提供，分组通过现有 Group ID 引用其 `labelKey`；例如 `application-foundation` 本身没有 Destination，必须是不可点击的分组文字，不能借用其第一个菜单叶制造分组链接。
+
+真正的 Route 祖先只有在引用已注册且可用的 Route、全部必需 Params/Query 可构造并再次通过 §9 地址验证时才可交互；点击走既有 Typed Navigation/Coordinator。当前项永远不可点击，并以 `aria-current="page"` 表明当前位置。仅有标签、参数缺失、验证失败或未来访问规则不允许时，不输出可执行链接；不能拼 Path、填假 ID 或把失败变成另一个目的地。
+
+Hidden/Detail Route 可以在自己的 Route Record 声明祖先，无需出现在 `consoleNavigationRegistry`，也不需要新增 Router Parent 或 Outlet。未来参数化祖先的 Params 来源须在该真实路由准入时逐字段明确为**当前已提交 `ValidatedRouteInput.params` 的选定字段**；若目标需要 Query，也只能显式选择已校验字段，缺省不继承当前 Query/Hash。字段类型、数组/可选性及到目标原生地址输入的表示必须闭合目标 Schema；Parsed Transform 不能直接冒充 Raw Address，缺少可验证的表示时保留非交互标签并报告合同缺口。首批现有路由全部为空输入，不创建通用映射引擎、表达式语言或任意 Callback 配置。Breadcrumb Label 只使用现有 Typed Message Key；不从原始 URL、Query 文本、Hash 或敏感实体值编造显示文字和导航。
+
+未来可把同一个 Breadcrumb 投影移到 Global Header；移动时删除原重复呈现，保留 `UiPageHeader` 的 `title`、`summary`、唯一 h1 和原焦点选择器。不得创建 `UiPageContainer` 或第二 Page Header Authority；`actions` Slot / Structured Metadata 只在真实页面消费者提出需求后单独收紧公共合同，不能把 `summary` 改造成并列的 `description` API。页内分区 Tabs 是独立组件需求，不拥有 Workspace 或 Router 状态。
+
+### 18.11.3 Route participation, identity policy and workspace state
+
+未来首个源码切片仅在现有 `route-registry.ts` 增加小型只读 `workspaceIdentityPolicyRegistry` 及 Route Record 顶层引用 `workspaceIdentityPolicyId`；不复制 RouteName 集合，不放入 Storage。该引用为已准入 Policy ID 或 `null`，缺省归一为 `null`，`null` 表示不参与。当前源码没有该字段，本段不直接激活 Route Meta。
+
+首片 Registry 只含 `workspace-identity.route-single`：输入是当前 Route Record 与对应 `ValidatedRouteInput`，在同一应用生命周期内每个 Route 最多一个 Workspace；十个现有 Product Route 显式选择此项，七个 Error Route 选择 `null`。该默认由当前没有并发参数化消费者的事实支持，不把 RouteName 冻结为所有未来页面的普遍身份规则。
+
+Query 与 Hash 默认均不参与 Workspace Identity；改变它们即使构成不同导航地址，也不自动打开新 Workspace。Hash 不作为首片身份字段。未来“两条实体详情同时编辑”等真实需求必须在同一 Registry 单独准入有名称的 Policy，并逐项列出参与身份的已验证 Params 或 Query 字段、等价规则与缺失处理；其余字段仍是同一 Workspace 的地址更新。不得将全部 Params/Query 自动序列化，不设计通用 Serializer、字符串表达式、用户脚本或 Callback Plugin 系统。身份策略必须先于该消费者的缓存接线闭合。
+
+Policy 结果在应用内稳定、不可混淆且 Privacy-safe；值比较只使用已验证输入，不接受调用者提供的 Workspace Key。对外呈现/事件使用不含用户输入的 opaque Key；选定业务值、地址和 History Marker 不得编码进 DOM Key 文本、日志、Telemetry 或持久化。关闭后重开可解析到同一 Workspace Identity，但旧组件实例和旧 Workspace Scroll 记录不能复活。
+
+应用私有 Workspace State 只包含按首次成功打开顺序排列的开放记录、opaque Workspace Identity、实例关联和**最近一次已提交的 Typed Destination 快照**。后者只供再次导航使用，每次激活仍须 Router 重新验证，不是 URL 权威；失败尝试不得更新它。活动项由当前已提交 Route/Input 的 Policy 解析派生，不允许 UI 乐观写一个与 Router 不同的 `activeId`。UI 接收只读显示投影及 Activate/Close Intent，不导入应用 Router/Form 类型或直接改变实例。组件对象和 Disposal Handle 由私有 Host 持有，不进可序列化 Store。停用实例只保留自己的已提交 Props，不能随全局 `currentRoute` 接收另一 Workspace 的 `routeInput` 或标题；语言文本按自身 Route Key 重投影，页面继续遵守 §9.4 的 Props 输入边界。
+
+### 18.11.4 Committed navigation, activation and close-one
+
+1. 只在 Router 成功提交 eligible 目的地后确保对应 Workspace 恰好存在一次并激活；重复进入更新该项的 committed destination，保留原顺序和实例。预加载、动画预约和尝试导航不能先创建 Tabs。
+2. 激活已开放项时，从受控记录取其 Typed Destination，通过现有 Coordinator 发起一次正常导航。由提交结果驱动实例激活，禁止在 Router 之外直接换组件；当前项的真正 Duplicate 不更新顺序、缓存、Scroll 或生命周期。
+3. 关闭非活动项先走 §18.11.6 Discard；获准后移除该项并真实释放它的实例与 Workspace Scroll 记录，不导航、不改变当前页面 Focus/Scroll。删除条目自身造成的键盘焦点转移由 §18.11.9 的控件规则处理。
+4. 关闭活动项时，按当前开放顺序优先选择其**右侧相邻**幸存项，无右侧则左侧；若没有幸存项，使用现有 `registeredRouteDestination({ name: 'console-overview' })`。不得从菜单首项、History Stack 或原始 Path 推导默认页。
+5. Discard 获准后仅向选定目的地执行一次正常 Typed Navigation。原项先保持开放并可被缓存；只有该操作实际提交选定目标、完成已有 Presentation Settlement 且许可仍有效后，才移除和 Dispose 原项。不得先删再补救导航，不循环尝试多个邻居，不私写 URL。独立的新操作或非本次提交造成的列表变化使待处理关闭失效，重新操作须重新解析当前状态；本次成功导航打开缺席的默认总览不属于外部干扰。
+6. 只剩当前总览时，默认目的地与当前地址重复，关闭是无操作并保留当前总览实例；无需请求丢弃许可，不通过先清空、强制重挂载或 Replace 制造“成功关闭”。真正 Duplicate 始终无副作用。
+7. Redirect、取消、新导航取代、Guard Abort 或 Failure 均按**实际已提交目的地**核对活动项与开放记录。关闭导航未完成选定目标时保留待关闭项；若 Router 已提交另一个合法页，只按该真实页投影，不回滚成功导航、不加入原尝试目标。Safe Error Commit 为非工作区时按 §18.11.8 处理，原开放工作不被顺带销毁。
+
+Workspace 操作只关联现有 Navigation Attempt/Reservation，不新建平行导航 ID、Guard Pipeline 或 History Stack。Back/Forward 同样根据真实提交确保 eligible Workspace 存在；若该工作区先前已显式关闭，返回该历史地址只创建新实例，不能恢复已丢弃的 Form Memory。未来同 RouteName 的不同 Workspace 是不同组件上下文；只有解析后 Workspace Identity 相同的 Params/Query 更新才沿用 §9.11 的同实例更新策略。
+
+### 18.11.5 Retained component host and safe capacity
+
+未来 Workspace Host 位于 `apps/web` 的 Routed-content 集成边界，通过**单一 RouterView Slot 的 Component**保留页面实例；应用根、`UiProvider`、Router 和稳定无 Key 的 `.pavp-route-content` 均在缓存外。不得包缓存 RouterView 自身，不得添加 `:key="$route.fullPath"`、History Entry Key、第二 Outlet、路由级 Transition/Suspense 或动画用的双份 Live Route DOM。仅 Workspace Host 内为区分明确实例所需的 opaque 实例 Key 是条件式例外；外层 Host 和现有元素级 View Transition Boundary 不因此重挂载。
+
+当前 `ConsoleRouteFrame` 在 Shell/non-Shell 间使用条件分支。未来缓存接线必须保证进入非 Workspace 错误页、响应式切换、语言/外观变化时，开放实例的缓存所属父级持续存在；不能将 Cache Host 放在会被该条件分支销毁的子树中，然后宣称工作仍保留。允许的未来集成调整仅用于保持这条生命周期与唯一注册内容宿主，不建立另一 Shell/Layout 系统；任一时刻只有当前提交的路由组件参与活动呈现、Focus 与 Scroll。
+
+Host 保留**同一 Vue 实例**，从而保留其 Filter/Sort/Pagination、局部状态和同一个 `useUiForm` Controller；不把这些值复制到 Workspace Store。停用执行 Vue `onDeactivated` 语义，返回执行 `onActivated` 语义；真正关闭后才 Unmount/Scope Dispose。未来实现须用公开的 KeepAlive/VNode 机制支持按 Workspace 实例独立释放，不能访问 Vue 私有 Cache/Prune 成员，也不能按公共组件名误删另一工作区。容器组织、私有 Helper 和具体渲染算法不是新的架构权威。
+
+已核对仓库安装的 Vue `3.5.40` 公共 `KeepAliveProps` / Activated / Deactivated 声明及 Vue Router `5.2.0` RouterView Slot 声明。[Vue KeepAlive 官方合同](https://vuejs.org/guide/built-ins/keep-alive.html) 明确 `max` 满额会以 LRU **销毁**实例，停用也不同于卸载；[RouterView Slot 官方用法](https://router.vuejs.org/guide/advanced/router-view-slot.html) 缓存的是 Slot 内的路由组件。这些公共能力不自动解决 PAVP 的关闭保护。
+
+首片保留已准入且仍开放的工作区，不设置任意数值上限，不用 `<KeepAlive max>` 静默淘汰。当前 route-single 的有限产品路由集合已限定可开放上下文；未来新增容量约束必须在 Router 提交新上下文前明确准入或拒绝，拒绝不得销毁旧工作。需要自动淘汰时须另行设计可执行 Discard 的策略，不能直接复用 §18.9 的 64 条**滚动快照**LRU；删除位置快照与丢弃页面输入的风险不同。
+
+### 18.11.6 Discard readiness and cached resource lifecycle
+
+普通开放工作区之间切换只停用页面，不丢弃 Controller，不因未保存输入弹出破坏性离开确认。显式 Close、Replacement、Reset 或任何真正销毁/覆盖页面工作的动作才是 Discard Request；未来批量动作必须组合相同的逐实例保护，首片不实现批量命令、Replace/Reset UI 或通用 Guard 框架。未来同一 Workspace 的地址更新若会替换现有草稿，也属于 Replacement，必须在导致覆盖的 Router Commit 之前完成同一 Discard 保护；普通筛选/定位更新不因此自动确认。
+
+未来应用私有 `WorkspaceDiscardBoundary` 由**持有该页编辑状态的 Page/Feature**注册到所属实例，最低合同为 `prepareDiscard({ reason: 'close' | 'replace' | 'reset', signal: AbortSignal })`，返回 `Promise<{ readonly kind: 'cancel' } | { readonly kind: 'allow'; release(): void }>`；Allow 许可仅对该次请求和实例有效。取消、异常、Signal Abort、旧实例或缺失应有的 Boundary 一律不授权破坏；取消该请求不改变 Workspace List 或由该请求发起导航。其他独立导航已经提交时不倒退 Router。
+
+Page 负责判断其全部未保存工作、按既有语言/UI Authority 获取必要确认，并在 Allow 许可有效到实际销毁/取消期间阻止该实例的新编辑和异步结果覆盖，以免确认旧值后丢失新值。Workspace Owner 在完成、失败、取消或 Dispose 时幂等释放许可；它不读取/复制 Form Values，不替 Page 比较 dirty，不让许可跨实例复用。确认过程中仍保留原页签和路由；处于不能安全中断的提交等状态时由 Page 拒绝本次请求，不让缓存管理器强制结束业务。
+
+Route `keepAlive='route-instance'` 将在未来首片仅用于已参与 Workspace 的路由；`unsavedChangesPolicy='none'` 表示该路由明确没有需保护的未保存工作，可由 Host 直接判定无需确认，不为只读页创建空的 Form/Guard Stub。真实编辑页必须选择现有目标 `confirm-before-leave` 并注册上述 Boundary；在 Workspace 中其“leave”指**丢弃工作实例**，不是每次离开活动路由。非缓存页面若沿用该策略，实际路由离开导致销毁时仍须保护。不得盲目安装 `beforeRouteLeave` 令每次缓存切换都被误判为丢弃。现有十条路由和未消费的共享 Form 源码在本规格中不变。
+
+`packages/ui` 的 Form Controller 继续以 Vue Scope 为唯一 Lifetime，公开 `dirty`、`phase`、`submitting` 等现有读取与业务回调仍归其原合同；应用在真实 Consumer 处适配 Discard，不要求 UI 导入 Router/Workspace，也不引入 Form Store 或新草稿格式。共享 Form 尚无生产消费者的状态保持，不把控制器源码存在当作 Unsaved 页面已接线。
+
+停用实例保留页面数据，但不能假定仍可见：页面拥有的 Observer、Subscription、未来 Polling 等按用途暂停/解除，并在激活时幂等恢复；需要继续运行的局部工作必须明确只更新所属实例，不能把晚到结果或提示投射到其他活动页。路由所属 Teleport Overlay、Focus Trap、Focus Registration 和 Background Lock 在停用时关闭/解除，不得浮在当前页之上或窃取焦点。重新激活不得重复注册。Close 只走一次真正 Scope Disposal，幂等取消其 AbortController 并释放资源；Deactivate 与 Unmount 都可能触发清理，不能重复提交业务。
+
+全局 Router、Storage、I18n、Appearance 及现有 Coordinator Owner 保持在页面缓存外，沿用既有 Kernel/HMR Disposal。未来 Account/Session 撤销仍遵守 §19.1 清除失效身份工作的要求，具体源和顺序留给真实 Session Admission；本节不创建账号监听、Stub Provider、Timer 或浏览器机制。
+
+### 18.11.7 Router-owned workspace scroll projection
+
+Workspace Store 不保存 DOM Offset。未来只由既有 `router-lifecycle.ts` 增加 Router 私有、同应用寿命的 Workspace Presentation Record，以 Workspace Identity 索引并绑定确切组件实例，最多每个开放 Workspace 一份；其中有限两轴原生位置、已验证地址/内容关联、Revision 与 Layout/Owner 比较值仍归 Router。它与 §9.11 / §18.9 的 Scope/History Entry Record 分开，不新增 Local Storage、Native History Property、Shell Scroll Writer 或第二 Scroll Manager。
+
+应用通过同一 Navigation Attempt 的窄 Workspace Intent 告知 Router 本次 Activate/Close Fallback 的目标身份与实例关联；Router 在提交后按实际验证结果核对该关系，不能信任 UI 任意 Key。Capture 沿用 `beforeResolve` 成功尾部、最后成功提交且完成呈现的来源 Handle 和当前注册 Owner DOM；不能使用 Pop 后的 Entry 给来源命名，也不能在 Page/Tab 点击事件里读写 Offset。
+
+一次导航只选一个恢复分支，优先级如下：
+
+| 实际导航类型 | 唯一恢复策略 |
+| --- | --- |
+| 真正程序化 Duplicate | 不 Capture、不更新记录、不恢复、不写 Scroll。 |
+| Browser Back/Forward | 只用 §9.11 / §18.9 的 History Entry 策略；没有有效 Entry 记录时按该策略回退，不能再用 Workspace 快照覆盖。即使重新激活缓存实例或 URL 相同也保持这一优先级。 |
+| 显式 Workspace Activate / Close Fallback 到另一开放 Workspace | 在精确目标实例重新激活并提交后，使用匹配的 Workspace Record；有效位置优先，否则合法 Owner 内 Fragment，再否则 Logical Start。这是普通 Typed Navigation，不是 Traversal。 |
+| 同一 Workspace 的普通 Params/Query/Hash 更新 | 保持 §9.11 的同页 Policy；Query/Params 默认保持当前位置，Hash 按已准入 Fragment 规则处理，不被旧 Workspace 快照覆盖。 |
+| 新 Workspace 或其他非 Traversal 导航 | 使用既有正常导航 Policy；未来同 Name 但不同 Workspace Identity 的新上下文按新实例处理，不能误用同页保留策略。通过其他入口回到已开放项仍按该次普通导航 Policy，只有显式 Workspace Intent 才选择 Workspace Record。 |
+
+Workspace Record 必须匹配当前 Router Lifetime、Workspace/实例关联、最近已提交地址与 Content Identity、已就绪内容，以及 §18.9 的 Locale/Appearance Snapshot、Layout Profile、Owner ID、原生尺寸、字体和 Writing Mode/Direction 条件。页面内容变化或未反映到 DOM 的异步更新须使旧记录失效；同 URL、同高度、同一活实例都不能单独证明 Revision 有效。Route Input 更新、替换、Reset、Close、实例销毁、Registry/内容/语言/外观/几何失配及 Router Dispose 均不得复用旧位置。
+
+现有九个只读页继续使用 §18.9 的真实 Build/Content Revision；其 Development/HMR 不复用限制保持。对仍存活的交互页，未来首片接线须提供页面拥有的**内容变化通知和呈现就绪状态**，只让 Router 失效/确认所属记录，不输出值副本或 Offset；真实编辑、预览、反馈等导致内容变化就失效，未发生内容变化的 Deactivate/Activate 不伪造新 Revision。`appearance-management` 的 Workspace 恢复接线必须覆盖现有 `previewView`、`motionSequence`、`feedbackSequence`、Notice/Pending Locale 与实际 Theme Preview 等状态变化；缺少可靠通知/就绪关系时放弃该次位置恢复。此窄活实例合同不解除它在现有 History Region Record 中的排除，也不让跨销毁内容用 Mount Counter、时间戳或 DOM Hash 冒充 Revision。
+
+恢复仍在已注册 Owner Ready、Routed DOM/激活更新和既有 Presentation 边界内完成；写入前重新核对 Attempt、当前 Route、实例和 Entry。有限值按真实原生范围 Clamp，RTL 等规则沿用 §18.9；失配只是回退，缺失/重复 Owner 和真实呈现错误仍失败。Focus 由 Router 使用 `preventScroll` 后执行选定 Scroll Policy；从另一 Workspace 返回时不能把焦点留在停用实例，即使 RouteName 相同，也须由现有 Focus Owner 定位当前有效 Heading。同 Workspace 的普通更新继续保留焦点。
+
+完成所选两轴恢复、保留或回退后只结算原 Presentation Reservation；更新导航、失败、取消或 Dispose 使过期恢复失效，不延时重放，不 Poll/Retry，不与 Overlay Lock 竞争。Vue Router 的 [Scroll Behavior](https://router.vuejs.org/guide/advanced/scroll-behavior.html) 中 `savedPosition` 属于原生 History Traversal；它不能作为 Tab 激活意图或复制给 Element Owner。
+
+### 18.11.8 Startup and persistence boundary
+
+首片是纯 in-session 保留：启动仍等待 Router Ready，仅从成功提交且参与 Workspace 的当前目的地建立一项；不额外打开默认页，不先放总览 Placeholder。Unknown/非法地址继续由 Router 处理，不能把原请求插入 Workspace。400、401、403、404、500、Offline、Maintenance 及其他未选择 Policy 的路由均不参与，不因它们有 RouteName 或被访问过而自动成为工作页签。
+
+进入非参与路由时活动 Workspace 为 `null`，已开放且仍有效的工作实例保留但全部停用；错误页自身不缓存为 Workspace。返回合法工作区仍经 Router 验证。Startup 直接进入非参与路由时列表为空；此前没有开放工作时不凭空恢复一项。缓存拓扑必须满足 §18.11.5，不能因 Shell 退出误删保留工作。
+
+浏览器 Hard Refresh / 应用重建会创建新的 Vue 应用与实例，只按当前成功路由重新初始化。首片禁止序列化 Workspace List、Destination、Page State、Form Draft/Controller Memory、组件实例或 Scroll Offset；没有 Saved Workspace List 可在启动时协调。现有 §19.5.2 `pavp:web:navigation-preference` 三字段格式与四条 Storage Record 不变。跨刷新结构恢复是以后独立 Admission，须先评估隐私、安全地址序列化、失效路由协调和启动体验；不借导航偏好存储扩容提前实现。
+
+### 18.11.9 Accessible responsive chrome and deferred utilities
+
+核心交互只含提交后打开、活动状态、激活现有项、关闭一项、可访问横向溢出及确定的安全回退。视觉组件是受控呈现边界；可在应用拥有的组件中消费既有 UI 能力和 Token，不因产品名为 Tabs 就准入 `<n-tabs>` 或新增 Public Export。真实公共组件扩展仍须消费闭包、Registry 与既有 Gate。
+
+语义采用与未来真实原语一致的 Tab/List 或等效导航语义，不能贴上 `role="tablist"` 却缺少对应键盘行为。每项可键盘到达并能显式激活，焦点可见，Close 是独立可访问操作，其名称含翻译后的页签名称，不嵌套交互元素；当前状态可被辅助技术感知。焦点移动不必自动导航，关闭控件不会意外激活项。删除当前聚焦的非活动项后，控件焦点移至幸存相邻项，若无项则移至现有有效导航控件；使用不触发内容滚动的焦点行为。活动项关闭后的页面焦点仍归 Router。
+
+Overflow 必须支持键盘与触摸，并能触达活动项和每一项 Close；不能只有拖拽、滚轮、Hover 或右键入口。只滚动页签条的局部横向溢出不构成页面内容滚动恢复，不能借 `scrollIntoView` 连带滚动外层内容。Narrow 可呈现紧凑 Overflow 列表，Workspace Identity、活动状态、关闭/Discard 和导航语义与 Wide/Regular 完全相同，不强制桌面条宽或改变 Sidebar Preference。
+
+所有外观、Material、Safe Area、Target Size 与 Motion 继续使用 §10–18、§24–26 的既有 PAVP Authority，支持 Reduced/None Motion 与 Forced Colors；不冻结颜色、像素高度、圆角、Chrome 形状或 Selection Lens 效果。
+
+Drag、Pin、中键关闭、Close Left/Right/Others/All、Context Menu、Tab Refresh、Search/Command Palette、Maximize、快捷键框架和其他 Header Widgets 均不是首片要求；以后分别准入并复用同一 Workspace Identity/Discard 合同。Global Search、语言/外观快捷入口等与 Breadcrumb/Tabs 核心分开；当前 Appearance 内语言控制与外观系统不动。不创建 Avatar、通知、Logout、Lock Screen 或账号/API/Auth Placeholder。
+
+### 18.11.10 One recommended first source slice
+
+唯一建议首片是：**应用私有 Workspace Identity/State + 受控基本页签条 + 既有 Router 激活/关闭回退 + 窄 Workspace KeepAlive Host + 每实例激活/停用/Discard 边界 + Router 自有 Workspace Scroll 恢复**。这六部分共同保证“切换后工作仍在、关闭可控、返回位置有唯一 Owner”，不得只接一条视觉 Tabs 就声称核心完成。沿用当前十个产品路由，不新增假详情、业务 Form Consumer、第三方 Tabs 依赖或缓存容量数字；声明和 Host/Router/既有 Owning Checks 的必要原子接线须在下一次 Owner 明确源码准入时完成，预算不能自行调整。
+
+Global Breadcrumb 源码放在后续独立切片：现有 `UiPageHeader` 与简单 Breadcrumb 已可继续使用，源码检查没有发现它与上述核心不可分割。跨刷新工作区恢复及 §18.11.9 的增强另行准入。本建议不设置 Next、不授权源码/生成/检查器变更，不自动开工。
 
 ---
 
@@ -11090,7 +11243,7 @@ feature-local shared state
 
 其中 `appearance preferences` 只保存经过验证的 Stored Preference。Effective Color Mode 和 Effective Material 是纯派生状态，不作为第二份可变 Store 状态。
 
-上方 `local drafts` 与 Starter 应用内页签状态指当前应用生命周期中的内存工作状态。应用负责页签与页面实例生命周期，Form/Feature 继续拥有可编辑值；筛选、排序、分页只维护一份 Canonical State，Scroll 仍由 Router 的既有 Owner 恢复。页签间切换和语言切换必须保留当前工作，不能依赖浏览器刷新后恢复草稿来实现该目标。
+上方 `local drafts` 与 Starter 应用内页签状态指当前应用生命周期中的内存工作状态。应用负责页签与页面实例生命周期，Form/Feature 继续拥有可编辑值；筛选、排序、分页只维护一份 Canonical State，Scroll 仍由 Router 的既有 Owner 恢复。页签间切换和语言切换必须保留当前工作，不能依赖浏览器刷新后恢复草稿来实现该目标；Workspace 的唯一具体合同见 §18.11，现有导航偏好存储边界 §19.5.2 不扩展。
 
 账号变化、退出或 Session 撤销时必须取消旧账号的异步工作，释放页签/页面实例，清理过滤条件、选择、未提交表单及权限和用户级缓存，防止新账号看到旧工作。所有会显式丢弃未保存输入的用户动作都须有 Unsaved Protection；该保护不能阻止失效身份的清理。具体 Session/Query/Storage 顺序仍由相应真实合同与现有生命周期 Owner 闭合，不增加第二状态系统。本段是必需产品行为，当前通用工作状态仍未准入。
 
@@ -12923,7 +13076,7 @@ const form = useUiForm<Draft, Payload>({
 
 共享实现的真实接入边界是以后用户管理或角色管理 Feature 中的 create/edit Form：Feature 从同源 Zod Schema 构造 validation，传入明确的业务回调、Typed 初值和编辑 Mapper，Page 后续组合 Form/Table/Dialog。共享前端合同已在此定义，当前仍没有真实管理 Feature、记录字段/响应 Schema、业务 Endpoint、权限与 Mutation 协议；这些是**生产消费者接线的未决业务合同**，不能填假值或把 Appearance 重构成证明消费者。本次共享源码准入仅允许 UiForm/UiFormField 两条 Public UI Consumer Registry Record 以 `TARGET_INACTIVE` 和空 `consumerRouteNames` 登记已实现而未消费的组件；全部既有 ACTIVE Record 的真实消费者要求保持。应用 Zod Bridge、业务 Schema/Callback/文案、路由和 capability activation 仍须在真实接入时闭合，不能以例子冒充消费。没有 Consumer 接线时不能宣称完整 Form Landing 已满足 §37.2.12 completion evidence。
 
-当前 Controller 的 Lifetime 只到所属 Vue scope dispose，不建立 Pinia/Form Store、跨刷新草稿、账号同步、Route Guard 或 Tabs。未来应用内页签保留未保存输入仍是 §9/§19.1 的最终目标，由未来页面 Lifetime Owner 保持该同一 Controller 并在关闭/丢弃/账号变化时清理，不复制成第二份值。浏览器刷新、关闭或重开后的业务草稿恢复仍不实施；现有主题/语言偏好持久化独立保留，敏感字段持久化禁止不变。
+当前 Controller 的 Lifetime 只到所属 Vue scope dispose，不建立 Pinia/Form Store、跨刷新草稿、账号同步、Route Guard 或 Tabs。未来应用内页签按 §18.11 冻结的激活/停用/Discard 合同保持同一 Controller，由页面 Lifetime Owner 在实际关闭/丢弃时释放，不复制成第二份值；账号变化仍须未来真实 Session 合同闭合 §19.1 的清理要求。浏览器刷新、关闭或重开后的业务草稿恢复仍不实施；现有主题/语言偏好持久化独立保留，敏感字段持久化禁止不变。
 
 本次共享源码及以后真实消费接线按以下职责限定；允许同一表单边界内责任命名的私有 Helper，不预建控件 Wrapper、桥或业务占位目录：
 
@@ -16564,7 +16717,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=not performed; document-only task changes no runti
 COMPLETION_EVIDENCE=document diff and actual static/Git/CI results in task response; specification, source implementation, runtime acceptance, account integration and release remain distinct
 ```
 
-上述记录保留 `main@4efa36938fed909e76fb4f53011f08fc8196c5c9` 上原规格授权的历史含义。其后 Owner 已批准 Typed Address 源码目标，但该任务在 `main@d4bd7c24d650eda667ea3b1e628e3da7bf45a902` 因 History Entry/Content Revision 合同缺口于修改前停止，源码与工作区均无变化。本次 Owner 仅授权补齐 §9.11 和 §18.9 及本段记录，并在原有文档 Gate 与安全同步后仅 Stage/Commit/正常 Push `ARCHITECTURE.md` 到 `origin/main`；不创建新工作包，不恢复源码任务，不激活目标能力，不改变 Runtime/Acceptance/Next/Successor 状态。既定源码目标保持，规格缺口关闭与实现、运行验收、发布分别报告。
+上述 `NOT_STARTED / TARGET_INACTIVE` 记录保留 `main@4efa36938fed909e76fb4f53011f08fc8196c5c9` 上原规格授权时的历史含义，不是后续源码提交的当前状态；当前已实现路由核心及未实现扩展由 §9 开头与 §1.3 统一解释。其后 Owner 已批准 Typed Address 源码目标，但该任务在 `main@d4bd7c24d650eda667ea3b1e628e3da7bf45a902` 因 History Entry/Content Revision 合同缺口于修改前停止，源码与工作区均无变化。本次 Owner 仅授权补齐 §9.11 和 §18.9 及本段记录，并在原有文档 Gate 与安全同步后仅 Stage/Commit/正常 Push `ARCHITECTURE.md` 到 `origin/main`；不创建新工作包，不恢复源码任务，不激活目标能力，不改变 Runtime/Acceptance/Next/Successor 状态。既定源码目标保持，规格缺口关闭与实现、运行验收、发布分别报告。
 
 ### 37.2.6 `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION`
 
@@ -16851,6 +17004,26 @@ MACHINE_GATES=§23.6.8 exact resource/import/interface/initialization/disposal/g
 PRODUCTION_RELEASE_ACCEPTANCE=separate applicable Owner acceptance under §32.3 and §23.6.9; not performed or requested by this design task
 COMPLETION_EVIDENCE=authorized real implementation and exact generated outputs; complete static gate results; implemented/static/runtime-accepted/staged/committed/pushed/released states reported separately; design-only documentation never counts as active runtime evidence
 ```
+
+---
+
+### 37.2.13 `PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION`
+
+§18.11 是唯一完整合同，本记录只准入一次架构规格修订及安全的文档 Git 交付。`CONTRACT_STATUS=FROZEN`；Global Breadcrumb / Workspace Tabs 的 `REPOSITORY_IMPLEMENTATION=NOT_STARTED`、`CAPABILITY_STATUS=TARGET_INACTIVE`、源码 `IMPLEMENTATION_AUTHORIZATION=NONE`。本任务不续接任何历史 Runtime Acceptance，不增加 Capability Manifest Source/Generated Record；文首 Current Work、Next 和 Successor 保持 `NONE`。
+
+```text
+ID=PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+ENTRY_CONDITIONS=explicit Owner document-only authorization; clean synchronized main@97a40fa2de4075e143d706a9a0ddeca4ff39c9da with origin/main reverified after fetch without prune; current routing core, Shell/PageHeader, public UI registries, navigation preference, Form Controller, presentation/scroll owners and installed Vue/Router declarations inspected
+ALLOWED_SCOPE=ARCHITECTURE.md Section 18.11 canonical target; directly conflicting routing/current-status corrections and narrow cross-references; this admission record; explicit stage of ARCHITECTURE.md, Simplified Chinese commit and normal origin/main push only after complete static gates and safe synchronization
+PROHIBITED_SCOPE=runtime/UI/Router/checker/generated-source/route-DTS/dependency/package/lockfile/patch/configuration/budget/CI changes; new containers/pages/providers/APIs/accounts; browser/tests/screenshots/traces/evidence artifacts; branches/worktrees/destructive Git/history rewriting; automatic source implementation or successor; deployment/release
+OUTPUTS=one frozen Global Breadcrumb and in-session Workspace core contract separating address/workspace/instance/history identity, route-owned participation, committed navigation and close fallback, retained-state/discard/resource lifecycle, Router-owned scroll and non-persistent startup; stale landed-routing descriptions corrected without activating future access/parameter consumers
+MACHINE_GATES=complete final document and staged-diff review; git diff --check; existing check:arch and check:policy; one final mise exec -- pnpm verify; only authorized file changed; refetch origin without prune before staging; exact pushed commit and accessible Static Verification/CodeQL verification
+PRODUCTION_RELEASE_ACCEPTANCE=not performed or requested; architecture and static checks do not prove runtime, visual, accessibility or Owner acceptance; no release
+COMPLETION_EVIDENCE=specification diff and actual static/Git/CI results in task response; separate implemented/static/runtime/staged/committed/pushed/released states; unresolved material contract or unsafe synchronization stops before Git delivery
+```
+
+后续只推荐 §18.11.10 的一个最小完整源码切片；推荐不构成源码准入，Global Breadcrumb 源码及其他增强不随本任务开始。
 
 ---
 
