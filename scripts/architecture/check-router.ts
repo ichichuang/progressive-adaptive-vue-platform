@@ -26,6 +26,7 @@ import {
   scrollOwnerRegistry,
   scrollRestorationPolicyRegistry,
   telemetryNameRegistry,
+  workspaceIdentityPolicyRegistry,
 } from '../../apps/web/src/app/router/route-registry'
 import {
   routeParamsSchemaRegistry,
@@ -268,7 +269,7 @@ const expectedConsoleCommonMeta = {
   requiredPermissionIds: [],
   blockScrollOwnerId: 'architecture-console-content-block',
   inlineScrollOwnerId: 'architecture-console-content-inline',
-  keepAlive: 'never',
+  keepAlive: 'route-instance',
   dataPrefetch: 'none',
   unsavedChangesPolicy: 'none',
   focusContractId: 'route-focus.architecture-console-page-heading',
@@ -890,6 +891,13 @@ function registryViolations(): string[] {
     violations.push('Router Route Registry diverged from the exact seventeen-record authority.')
   }
 
+  if (
+    !isDeepStrictEqual(workspaceIdentityPolicyRegistry, [
+      { id: 'workspace-identity.route-single', kind: 'route-single' },
+    ])
+  )
+    violations.push('Workspace policy must remain the single admitted route-single policy.')
+
   for (const record of routeRegistry) {
     const { titleKey, breadcrumbKey, telemetryName, errorPolicy, ...commonMeta } = record.meta
     const expectedCommonMeta =
@@ -902,7 +910,9 @@ function registryViolations(): string[] {
       titleKey.length === 0 ||
       breadcrumbKey !== expectedBreadcrumbKey ||
       telemetryName.length === 0 ||
-      errorPolicy.length === 0
+      errorPolicy.length === 0 ||
+      record.workspaceIdentityPolicyId !==
+        (record.meta.layout === 'workspace' ? 'workspace-identity.route-single' : null)
     ) {
       violations.push(`Route ${record.name} diverged from the exact active Common Meta contract.`)
     }
@@ -1124,9 +1134,26 @@ async function pageViolations(): Promise<string[]> {
     return ['Official Router page source root must contain exactly the eight admitted Vue files.']
   }
 
+  const workspaceComponentNames = new Set<string>()
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
     const productPage = expectedProductPageSources.includes(sourcePath)
+    if (productPage) {
+      const options = [
+        ...source.matchAll(/\bdefineOptions\(\{\s*name:\s*['"]([^'"]+)['"]\s*\}\)/gu),
+      ]
+      const name = options[0]?.[1]
+      if (
+        options.length !== 1 ||
+        name === undefined ||
+        name.length === 0 ||
+        workspaceComponentNames.has(name)
+      )
+        violations.push(
+          `${sourcePath}: route-single KeepAlive requires an explicit unique page component name.`,
+        )
+      if (name !== undefined) workspaceComponentNames.add(name)
+    }
     const productPageInvalid =
       productPage &&
       (count(source, /<UiPageHeader\b/gu) !== 1 ||
@@ -2303,7 +2330,7 @@ function routeTransitionSourceProofResults(
       id: 'ROUTE_TRANSITION_SOURCE_12_COORDINATOR_INSTANCE',
       passed:
         count(snapshot.frameSource, /createRouteTransitionCoordinator\s*\(\s*\{/gu) === 1 &&
-        count(snapshot.frameSource, /routeTransitionCoordinator\.navigate\s*\(/gu) === 1 &&
+        count(snapshot.frameSource, /routeTransitionCoordinator\.navigate\s*\(/gu) === 3 &&
         snapshot.frameSource.includes('routeTransitionCoordinator.dispose()'),
     }),
     Object.freeze({
@@ -2547,8 +2574,11 @@ function routeTransitionSourceProofResults(
       passed:
         count(snapshot.appSource, /<RouterView\b/gu) === 1 &&
         count(snapshot.appSource, /class="pavp-route-content"/gu) === 1 &&
+        count(snapshot.appSource, /<KeepAlive\b/gu) === 1 &&
         !/:key=|<Transition\b|<TransitionGroup\b|AnimatePresence|<KeepAlive\b|<Suspense\b|v-if=|v-show=/u.test(
-          snapshot.appSource,
+          snapshot.appSource
+            .replace(/<KeepAlive\s+:include="[\w$]+\.includedComponentNames"\s*>/gu, '')
+            .replace(/(<component\b[^>]*):key="[\w$]+\.active\?\.instance"/gu, '$1'),
         ),
     }),
     Object.freeze({

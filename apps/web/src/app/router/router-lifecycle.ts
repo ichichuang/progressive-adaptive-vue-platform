@@ -1,5 +1,5 @@
 import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
-import { nextTick, type App } from 'vue'
+import { nextTick, watch, type App } from 'vue'
 import {
   createRouter,
   createWebHistory,
@@ -15,6 +15,13 @@ import {
 } from 'vue-router'
 import { routes } from 'vue-router/auto-routes'
 
+import {
+  useWorkspaceStore,
+  type WorkspaceEntry,
+  type WorkspaceIdentity,
+  type WorkspaceInstanceIdentity,
+} from '../workspace/workspace.store'
+import { workspaceContentKey, type WorkspaceContentState } from '../workspace/workspace-content'
 import type { CoreRuntimeConfiguration } from '../config/runtime-configuration-contract'
 import {
   advanceActiveGuardStage,
@@ -85,7 +92,7 @@ interface RouterPresentationCommitBroker {
   currentOperation?: () => NavigationOperation | undefined
   accept?: (
     destination: RegisteredRouteDestination,
-    options?: Readonly<{ replace?: boolean }>,
+    options?: RouterNavigationOptions,
   ) => RouterNavigationRequest | Extract<TypedNavigationResult, { kind: 'duplicated' | 'cancel' }>
   routeInput?: () => Readonly<{ routeInput?: ValidatedRouteInput }>
 }
@@ -353,6 +360,7 @@ interface RouteEntryMarker {
 }
 
 interface NavigationOperation {
+  workspaceActivation?: RouterNavigationOptions['workspaceActivation']
   readonly navigationId: string
   kind: 'initial' | 'push' | 'replace' | 'pop'
   expectedFullPath: string
@@ -370,12 +378,24 @@ interface RegionRecord {
   readonly top: number
 }
 
+interface WorkspaceRegionRecord {
+  readonly instance: WorkspaceInstanceIdentity
+  readonly context: readonly (string | number)[]
+  readonly left: number
+  readonly top: number
+}
+
 interface CommittedEntry {
+  readonly workspace: WorkspaceEntry | undefined
   readonly to: RouteLocationNormalized
   readonly navigation: NavigationAttemptState
   readonly marker: RouteEntryMarker | undefined
   presented:
-    | { readonly owner: HTMLElement; readonly context: readonly (string | number)[] | undefined }
+    | {
+        readonly owner: HTMLElement
+        readonly context: readonly (string | number)[] | undefined
+        readonly workspaceContext: readonly (string | number)[] | undefined
+      }
     | undefined
 }
 
@@ -383,6 +403,17 @@ export function committedRouteInputProps(
   router: Router,
 ): Readonly<{ routeInput?: ValidatedRouteInput }> {
   return routerPresentationCommitBrokers.get(router)?.routeInput?.() ?? {}
+}
+
+export interface RouterNavigationOptions {
+  readonly replace?: boolean
+  readonly workspaceActivation?: Pick<WorkspaceEntry, 'identity' | 'instance'>
+}
+
+export function isRouterNavigationCurrent(router: Router, navigationId: string): boolean {
+  return (
+    routerPresentationCommitBrokers.get(router)?.currentOperation?.()?.navigationId === navigationId
+  )
 }
 
 export interface RouterNavigationRequest {
@@ -404,7 +435,7 @@ export function cancelledRouterNavigationResult(
 export function acceptRouterNavigation(
   router: Router,
   destination: RegisteredRouteDestination,
-  options?: Readonly<{ replace?: boolean }>,
+  options?: RouterNavigationOptions,
 ): RouterNavigationRequest | Extract<TypedNavigationResult, { kind: 'duplicated' | 'cancel' }> {
   return (
     routerPresentationCommitBrokers.get(router)?.accept?.(destination, options) ??
@@ -530,6 +561,36 @@ export async function createAndReadyRouter(input: {
   let committedEntry: CommittedEntry | undefined
   const scopeId = crypto.randomUUID()
   const regionRecords = new Map<string, RegionRecord>()
+  const workspace = input.application.runWithContext(useWorkspaceStore)
+  const workspaceRecords = new Map<WorkspaceIdentity, WorkspaceRegionRecord>()
+  const workspaceContents = new Map<WorkspaceInstanceIdentity, () => WorkspaceContentState>()
+  input.application.provide(workspaceContentKey, (instance, read) => {
+    if (
+      disposed ||
+      !workspace.entries.some((entry) => entry.instance === instance) ||
+      workspaceContents.has(instance)
+    )
+      throw new TypeError('The Workspace content owner is unavailable.')
+    workspaceContents.set(instance, read)
+    return () => {
+      workspaceContents.delete(instance)
+      for (const [identity, record] of workspaceRecords)
+        if (record.instance === instance) workspaceRecords.delete(identity)
+    }
+  })
+  const stopWorkspaceObservation = watch(
+    () => workspace.entries,
+    () => {
+      for (const [identity, record] of workspaceRecords)
+        if (
+          !workspace.entries.some(
+            (entry) => entry.identity === identity && entry.instance === record.instance,
+          )
+        )
+          workspaceRecords.delete(identity)
+    },
+    { flush: 'sync' },
+  )
   const appearance = input.application.runWithContext(useAppearanceReadBoundary)
   const navigationAttempts = new WeakMap<RouteLocationNormalized, NavigationAttemptState>()
   const presentationCommitBroker = createRouterPresentationCommitBroker()
@@ -660,6 +721,7 @@ export async function createAndReadyRouter(input: {
     to: RouteLocationNormalized,
     navigation: NavigationAttemptState,
     owner: HTMLElement,
+    workspaceEntry?: WorkspaceEntry,
   ): readonly (string | number)[] | undefined {
     if (
       input.configuration.environment === 'development' ||
@@ -667,7 +729,12 @@ export async function createAndReadyRouter(input: {
       owner.closest('[inert]') !== null
     )
       return undefined
+    const content =
+      workspaceEntry === undefined ? undefined : workspaceContents.get(workspaceEntry.instance)?.()
     switch (navigation.routeName) {
+      case 'appearance-management':
+        if (workspaceEntry === undefined || content?.ready !== true) return undefined
+        break
       case 'console-overview':
       case 'design-token-inspector':
       case 'runtime-kernel-inspector':
@@ -727,6 +794,7 @@ export async function createAndReadyRouter(input: {
       rootFontSize,
       style.writingMode,
       style.direction,
+      ...(workspaceEntry === undefined ? [] : [content?.revision ?? 0]),
     ]
   }
 
@@ -741,17 +809,31 @@ export async function createAndReadyRouter(input: {
 
   function captureSource(from: RouteLocationNormalized): void {
     const source = committedEntry
-    if (
-      source?.to !== from ||
-      router.currentRoute.value !== from ||
-      source.presented === undefined ||
-      source.marker === undefined
-    )
+    if (source?.to !== from || router.currentRoute.value !== from || source.presented === undefined)
       return
     const owner = regionOwner(source.navigation.routeName)
     if (owner === undefined) return
     if (owner !== source.presented.owner)
       throw new TypeError('The presented source scroll owner changed.')
+    if (source.workspace !== undefined) {
+      const context = regionContext(from, source.navigation, owner, source.workspace)
+      // A page-owned ready revision may advance after its own render. All layout/address
+      // signals must still match the presented source; offsets never come from a detached page.
+      if (
+        context !== undefined &&
+        sameContext(context.slice(0, -1), source.presented.workspaceContext?.slice(0, -1)) &&
+        Number.isFinite(owner.scrollLeft) &&
+        Number.isFinite(owner.scrollTop)
+      )
+        workspaceRecords.set(source.workspace.identity, {
+          instance: source.workspace.instance,
+          context,
+          left: owner.scrollLeft,
+          top: owner.scrollTop,
+        })
+      else workspaceRecords.delete(source.workspace.identity)
+    }
+    if (source.marker === undefined) return
     const context = regionContext(from, source.navigation, owner)
     if (
       !sameContext(context, source.presented.context) ||
@@ -805,7 +887,12 @@ export async function createAndReadyRouter(input: {
           cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
           return false
         }
-        const preserve = samePage && navigation.operation.kind !== 'pop'
+        const workspaceActivation =
+          navigation.operation.kind !== 'pop' &&
+          entry.workspace !== undefined &&
+          navigation.operation.workspaceActivation?.identity === entry.workspace.identity &&
+          navigation.operation.workspaceActivation.instance === entry.workspace.instance
+        const preserve = samePage && navigation.operation.kind !== 'pop' && !workspaceActivation
         let documentPosition: { readonly left: number; readonly top: number } | false = false
         if (!locked && entryIsCurrent(entry)) {
           if (owner === undefined) {
@@ -835,6 +922,22 @@ export async function createAndReadyRouter(input: {
                 restored = true
               } else regionRecords.delete(record.marker.entryId)
             }
+            const workspaceContext =
+              entry.workspace === undefined
+                ? undefined
+                : regionContext(to, navigation, owner, entry.workspace)
+            if (workspaceActivation) {
+              const record = workspaceRecords.get(entry.workspace.identity)
+              if (record !== undefined) {
+                if (
+                  record.instance === entry.workspace.instance &&
+                  sameContext(record.context, workspaceContext) &&
+                  entryIsCurrent(entry)
+                )
+                  restored = writeRegionPosition(owner, record)
+                else workspaceRecords.delete(entry.workspace.identity)
+              }
+            }
             if (!restored) {
               const fragment = fragmentPosition(
                 owner,
@@ -843,7 +946,7 @@ export async function createAndReadyRouter(input: {
               if (fragment !== undefined) writeRegionPosition(owner, fragment)
               else if (!preserve) writeRegionPosition(owner, { left: 0, top: 0 })
             }
-            entry.presented = { owner, context }
+            entry.presented = { owner, context, workspaceContext }
           }
         }
         completeActiveGuardStages(navigation.guardStageProgress)
@@ -940,11 +1043,23 @@ export async function createAndReadyRouter(input: {
     const resolved = resolveRegisteredDestination(router, destination)
     if (resolved !== undefined && sameRouteAddress(router.currentRoute.value, resolved))
       return { kind: 'duplicated', destination: routeDestination(resolved) }
+    const activation = options?.workspaceActivation
+    if (
+      activation !== undefined &&
+      !workspace.entries.some(
+        (entry) =>
+          entry.identity === activation.identity &&
+          entry.instance === activation.instance &&
+          entry.destination.name === resolved?.name,
+      )
+    )
+      return cancelledRouterNavigationResult()
     const target = resolved ?? router.resolve({ name: 'error-invalid-route-input' })
     const request = beginOperation(
       resolved === undefined || options?.replace === true ? 'replace' : 'push',
       target.fullPath,
     )
+    request.workspaceActivation = activation
     if (resolved === undefined)
       request.result = createFailureResult({
         configuration: input.configuration,
@@ -1086,7 +1201,12 @@ export async function createAndReadyRouter(input: {
     if (failure === undefined) {
       if (!ownsNavigation(to, navigation) || !currentLocationMatches(to)) return
       const marker = stampEntry(to, navigation)
-      committedEntry = { to, navigation, marker, presented: undefined }
+      const entry = workspace.commit(
+        routeDestination(to),
+        navigation.input,
+        to.matched.at(-1)?.components?.['default'],
+      )
+      committedEntry = { to, navigation, marker, workspace: entry, presented: undefined }
       if (navigation.operation.result === undefined && to.redirectedFrom !== undefined)
         navigation.operation.result = {
           kind: 'redirect',
@@ -1149,6 +1269,10 @@ export async function createAndReadyRouter(input: {
     nativeOperation = undefined
     committedEntry = undefined
     regionRecords.clear()
+    stopWorkspaceObservation()
+    workspaceRecords.clear()
+    workspaceContents.clear()
+    workspace.dispose()
     localization = undefined
     disposeRouterPresentationCommitBroker(router, presentationCommitBroker)
     resolveApplicationMounted?.()

@@ -49,6 +49,7 @@
   "navigation.interface-foundation": "界面基础",
   "navigation.development-governance": "开发治理",
   "navigation.architecture-planning": "架构规划",
+  "workspace.label": "工作区",
   "shell.consoleTitle": "架构管理台",
   "shell.navigationLabel": "架构导航",
   "shell.navigationActionLabel": "导航",

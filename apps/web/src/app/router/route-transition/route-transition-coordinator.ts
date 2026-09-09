@@ -7,6 +7,7 @@ import {
   acceptRouterNavigation,
   cancelledRouterNavigationResult,
   type RouterNavigationRequest,
+  type RouterNavigationOptions,
   reserveRouterPresentationCommit,
 } from '../router-lifecycle'
 import type { RegisteredRouteDestination, TypedNavigationResult } from '../route-input'
@@ -33,7 +34,7 @@ type RouterPresentationCommitReservation = ReturnType<typeof reserveRouterPresen
 export interface RouteTransitionCoordinator {
   navigate(
     destination: RegisteredRouteDestination,
-    options?: Readonly<{ replace?: boolean }>,
+    options?: RouterNavigationOptions,
   ): Promise<TypedNavigationResult>
   dispose(): void
 }
@@ -220,7 +221,7 @@ export function createRouteTransitionCoordinator(input: {
 
   const performNavigation = async (
     request: RouterNavigationRequest,
-    options?: Readonly<{ replace?: boolean }>,
+    options?: RouterNavigationOptions,
   ): Promise<TypedNavigationResult> => {
     const resolvedTarget = request.resolvedTarget
     if (resolvedTarget === undefined) return navigateDirectly(request)
@@ -267,7 +268,7 @@ export function createRouteTransitionCoordinator(input: {
   }
 
   return Object.freeze({
-    navigate(destination: RegisteredRouteDestination, options?: Readonly<{ replace?: boolean }>) {
+    navigate(destination: RegisteredRouteDestination, options?: RouterNavigationOptions) {
       if (disposed) return Promise.resolve(cancelledRouterNavigationResult())
       const request = acceptRouterNavigation(input.router, destination, options)
       if (request.kind !== 'accepted') return Promise.resolve(request)

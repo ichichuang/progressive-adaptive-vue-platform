@@ -49,6 +49,7 @@
   "navigation.interface-foundation": "Interface foundations",
   "navigation.development-governance": "Development governance",
   "navigation.architecture-planning": "Architecture planning",
+  "workspace.label": "Workspaces",
   "shell.consoleTitle": "Architecture console",
   "shell.navigationLabel": "Architecture navigation",
   "shell.navigationActionLabel": "Navigation",

@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import {
   UiAdminShell,
+  UiWorkspaceTabs,
   type UiAdminNavigationExpansionUpdate,
   type UiAdminNavigationGroup,
 } from '@platform/ui'
-import { computed, onScopeDispose, ref, watch } from 'vue'
+import { computed, nextTick, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
+import { useWorkspaceStore, type WorkspaceInstanceIdentity } from '../workspace/workspace.store'
+import { isRouterNavigationCurrent } from '../router/router-lifecycle'
 import { reconcileNavigationGroupIds } from '../navigation/navigation-preference-contract'
 import { useNavigationPreferenceStore } from '../navigation/navigation-preference.store'
 import { useConsoleI18n } from '../../shared/i18n'
@@ -71,6 +74,71 @@ const copy = computed(() => ({
   collapseAllMenusLabel: t('shell.collapseAllMenusLabel'),
 }))
 const router = useRouter()
+const workspace = useWorkspaceStore()
+const closing = new Set<WorkspaceInstanceIdentity>()
+const workspaceTabs = computed(() =>
+  workspace.entries.map((entry) => {
+    const label = t(getRouteRecord(entry.destination.name).meta.titleKey)
+    return {
+      id: entry.identity,
+      label,
+      closeLabel: `${t('shell.closeActionLabel')} ${label}`,
+      closable: !(workspace.entries.length === 1 && entry.destination.name === 'console-overview'),
+    }
+  }),
+)
+
+async function activateWorkspace(id: string): Promise<void> {
+  const entry = workspace.entries.find((candidate) => candidate.identity === id)
+  if (entry !== undefined)
+    await routeTransitionCoordinator.navigate(entry.destination, { workspaceActivation: entry })
+}
+
+async function closeWorkspace(id: string): Promise<void> {
+  const entries = workspace.entries
+  const index = entries.findIndex((entry) => entry.identity === id)
+  const entry = entries[index]
+  if (entry === undefined || closing.has(entry.instance)) return
+  if (entry.identity !== workspace.activeIdentity) {
+    workspace.discard(entry)
+    await nextTick() // KeepAlive's public include pruning disposes the inactive instance.
+    return
+  }
+  if (entries.length === 1 && entry.destination.name === 'console-overview') return
+  if (!workspace.canDiscard(entry)) return
+  const fallback = entries[index + 1] ?? entries[index - 1]
+  const destination =
+    fallback?.destination ?? registeredRouteDestination({ name: 'console-overview' })
+  closing.add(entry.instance)
+  try {
+    const result = await routeTransitionCoordinator.navigate(
+      destination,
+      fallback === undefined ? undefined : { workspaceActivation: fallback },
+    )
+    const active = workspace.active
+    const resolved = resolveRegisteredDestination(router, destination)
+    // A list mutation or independent navigation invalidates this destructive request.
+    const survivors = workspace.entries.filter((candidate) =>
+      entries.some((original) => original.instance === candidate.instance),
+    )
+    if (
+      result.kind !== 'allow' ||
+      !isRouterNavigationCurrent(router, result.navigationId) ||
+      resolved === undefined ||
+      !sameRouteAddress(router.currentRoute.value, resolved) ||
+      active === undefined ||
+      (fallback !== undefined && active.instance !== fallback.instance) ||
+      survivors.length !== entries.length ||
+      survivors.some((candidate, position) => candidate.instance !== entries[position]?.instance) ||
+      workspace.entries.length !== entries.length + (fallback === undefined ? 1 : 0)
+    )
+      return
+    workspace.discard(entry)
+    await nextTick()
+  } finally {
+    closing.delete(entry.instance)
+  }
+}
 const navigationPreference = useNavigationPreferenceStore()
 const activeGroupExplicitlyCollapsed = ref(false)
 const currentGroupIds = computed(() => navigation.value.map((group) => group.id))
@@ -135,7 +203,7 @@ async function navigate(routeName: string): Promise<void> {
 
 <template>
   <UiAdminShell
-    v-if="shellRequired"
+    :enabled="shellRequired"
     :active-route-name="activeRouteName"
     :navigation="navigation"
     :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
@@ -145,7 +213,16 @@ async function navigate(routeName: string): Promise<void> {
     @update:wide-navigation-collapsed="navigationPreference.setWideNavigationCollapsed"
     @update:expanded-navigation-group-ids="updateExpandedNavigationGroups"
   >
+    <template #workspace>
+      <UiWorkspaceTabs
+        :items="workspaceTabs"
+        :active-id="workspace.activeIdentity"
+        :label="t('workspace.label')"
+        panel-id="pavp-workspace-panel"
+        @activate="activateWorkspace"
+        @close="closeWorkspace"
+      />
+    </template>
     <slot />
   </UiAdminShell>
-  <slot v-else />
 </template>

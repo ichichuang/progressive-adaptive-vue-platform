@@ -41,3 +41,10 @@ export interface UiAdminNavigationExpansionUpdate {
   readonly expandedGroupIds: readonly string[]
   readonly intent: 'group' | 'all'
 }
+
+export interface UiWorkspaceTab {
+  readonly id: string
+  readonly label: string
+  readonly closeLabel: string
+  readonly closable: boolean
+}

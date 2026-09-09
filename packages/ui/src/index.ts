@@ -1,3 +1,4 @@
+export { default as UiWorkspaceTabs } from './components/UiWorkspaceTabs.vue'
 export { default as UiAdminShell } from './components/UiAdminShell.vue'
 export { default as UiButton } from './components/UiButton.vue'
 export { default as UiDescriptionList } from './components/UiDescriptionList.vue'
@@ -7,6 +8,7 @@ export { default as UiSection } from './components/UiSection.vue'
 export { default as UiSegmentedControl } from './components/UiSegmentedControl.vue'
 export { default as UiStatusBadge } from './components/UiStatusBadge.vue'
 export type {
+  UiWorkspaceTab,
   UiLocale,
   UiAdminShellCopy,
   UiAdminNavigationExpansionUpdate,

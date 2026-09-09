@@ -30,7 +30,14 @@ export interface ValidatedRouteMeta {
   readonly routeTransitionFamilyId: RouteTransitionFamilyId
 }
 
+export const workspaceIdentityPolicyRegistry = Object.freeze([
+  Object.freeze({ id: 'workspace-identity.route-single', kind: 'route-single' }),
+] as const)
+
+type WorkspaceIdentityPolicyId = (typeof workspaceIdentityPolicyRegistry)[number]['id']
+
 export interface RouteRegistryRecord {
+  readonly workspaceIdentityPolicyId?: WorkspaceIdentityPolicyId | null
   readonly name: string
   readonly pathPattern: string
   readonly sourcePath: string
@@ -166,7 +173,7 @@ const consoleRouteMeta = Object.freeze({
   ...layoutMeta(routeLayoutCapabilityRegistry[0]),
   auth: 'public',
   requiredPermissionIds: emptyPermissionIds,
-  keepAlive: 'never',
+  keepAlive: 'route-instance',
   dataPrefetch: 'none',
   errorPolicy: 'route-boundary',
   unsavedChangesPolicy: 'none',
@@ -176,10 +183,17 @@ const consoleRouteMeta = Object.freeze({
 function defineRoute<const R extends RouteRegistryRecord>(
   record: R,
 ): Readonly<
-  Omit<R, 'hashPolicy'> & { hashPolicy: R extends { readonly hashPolicy: infer H } ? H : 'none' }
+  Omit<R, 'hashPolicy' | 'workspaceIdentityPolicyId'> & {
+    hashPolicy: R extends { readonly hashPolicy: infer H } ? H : 'none'
+    workspaceIdentityPolicyId: R extends { readonly workspaceIdentityPolicyId: infer P } ? P : null
+  }
 >
 function defineRoute(record: RouteRegistryRecord) {
-  return Object.freeze({ ...record, hashPolicy: record.hashPolicy ?? 'none' })
+  return Object.freeze({
+    ...record,
+    hashPolicy: record.hashPolicy ?? 'none',
+    workspaceIdentityPolicyId: record.workspaceIdentityPolicyId ?? null,
+  })
 }
 
 export const routeRegistry = Object.freeze([
@@ -190,6 +204,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.console-overview',
@@ -204,6 +219,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.appearance-management',
@@ -218,6 +234,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.design-token-inspector',
@@ -232,6 +249,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.runtime-kernel-inspector',
@@ -246,6 +264,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.router-governance-inspector',
@@ -260,6 +279,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.storage-persistence-inspector',
@@ -274,6 +294,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.ui-system-inspector',
@@ -288,6 +309,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.responsive-layout-inspector',
@@ -302,6 +324,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.engineering-quality-inspector',
@@ -316,6 +339,7 @@ export const routeRegistry = Object.freeze([
     paramsSchemaId: 'route-params.none',
     querySchemaId: 'route-query.none',
     capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
     meta: Object.freeze({
       ...consoleRouteMeta,
       titleKey: 'route-title.capability-roadmap',

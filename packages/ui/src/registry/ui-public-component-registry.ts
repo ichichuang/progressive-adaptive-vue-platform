@@ -120,10 +120,41 @@ export const uiPublicComponentRegistry = Object.freeze({
     }),
 
     Object.freeze({
+      id: 'ui-workspace-tabs',
+      exportName: 'UiWorkspaceTabs',
+      sourcePath: 'packages/ui/src/components/UiWorkspaceTabs.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'items',
+          type: 'readonly UiWorkspaceTab[]',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'activeId',
+          type: 'string | null',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'panelId', type: 'string', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'activate', payloadType: 'string' }),
+        Object.freeze({ name: 'close', payloadType: 'string' }),
+      ]),
+      slots: Object.freeze([]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
+      consumerRouteNames: allProductRoutes,
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
       id: 'ui-admin-shell',
       exportName: 'UiAdminShell',
       sourcePath: 'packages/ui/src/components/UiAdminShell.vue',
       props: Object.freeze([
+        Object.freeze({ name: 'enabled', type: 'boolean', required: true, defaultValue: null }),
         Object.freeze({
           name: 'copy',
           type: 'UiAdminShellCopy',
@@ -164,6 +195,11 @@ export const uiPublicComponentRegistry = Object.freeze({
         Object.freeze({ name: 'update:wideNavigationCollapsed', payloadType: 'boolean' }),
       ]),
       slots: Object.freeze([
+        Object.freeze({
+          name: 'workspace',
+          slotPropsType: 'Readonly<Record<string, never>>',
+          required: true,
+        }),
         Object.freeze({
           name: 'default',
           slotPropsType: 'Readonly<Record<string, never>>',

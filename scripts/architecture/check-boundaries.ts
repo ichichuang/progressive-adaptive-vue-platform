@@ -783,7 +783,9 @@ export async function validateRouteTransitionBoundaryContract(): Promise<string[
   const violations: string[] = []
   const exactTarget = '[data-scroll-owner="architecture-console-content"]'
   const targetOwnerCount = [
-    ...shellSource.matchAll(/data-scroll-owner="architecture-console-content"/gu),
+    ...shellSource.matchAll(
+      /:data-scroll-owner="enabled \? 'architecture-console-content' : undefined"/gu,
+    ),
   ].length
   const transitionNameCount = [...cssSource.matchAll(/view-transition-name:\s*root/gu)].length
   const brokerStart = lifecycleSource.indexOf('type RouterPresentationCommitOutcome')

@@ -11068,8 +11068,11 @@ Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Sc
 ```text
 CONTRACT_STATUS=FROZEN
 CAPABILITY_STATUS=TARGET_INACTIVE
-REPOSITORY_IMPLEMENTATION=NOT_STARTED
-IMPLEMENTATION_AUTHORIZATION=NONE
+REPOSITORY_IMPLEMENTATION=WORKSPACE_ROUTE_SINGLE_SOURCE_ONLY
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SECTION_18_11_10_ONLY
+WORKSPACE_ROUTE_SINGLE_CAPABILITY_STATUS=ACTIVE
+WORKSPACE_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+GLOBAL_BREADCRUMB_REPOSITORY_IMPLEMENTATION=NOT_STARTED
 SPECIFICATION_ADMISSION=PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION
 WORKSPACE_OWNER=apps/web/src/app/workspace
 ROUTE_AND_SCROLL_OWNER=apps/web/src/app/router
@@ -11080,9 +11083,9 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 
 本节是 Global Breadcrumb 与应用内 Workspace Tabs 核心的唯一完整目标合同，§37.2.13 只记录规格任务准入。它以 §9 已落地路由核心为依赖，不把文档设计当作运行能力，也不自动修改任何 Source Registry、Public UI API 或 Generated Manifest。Workspace Tabs 是应用工作上下文能力，不能由一个 Vendor Tabs Wrapper 替代，也不建立第二个 Router。
 
-### 18.11.1 Current source and four distinct identities
+### 18.11.1 Specification baseline and four distinct identities
 
-当前 `UiPageHeader` 的公共 Props 精确为 `breadcrumb`、`summary`、`title`，没有 Slots/Emits；它显示简单的 `PAVP / 当前页`，拥有唯一 `h1[data-route-focus="architecture-console-page-heading"]`。`App.vue` 通过单一 RouterView 提交 Props，`ConsoleRouteFrame.vue` 组合 Shell 和路由过渡协调器；`UiAdminShell` 拥有受控导航呈现及注册内容区域。当前没有 Workspace Store、Tabs 或 KeepAlive Host，十个 Product Route 仍为 `keepAlive='never'`、`unsavedChangesPolicy='none'`。现有 UI Public Registry 与 Capability Manifest 不声称具备本节能力。
+规格基线 `e8c7474e4b0d1cc4c45fb5472add0e42b83149b0` 中，`UiPageHeader` 的公共 Props 精确为 `breadcrumb`、`summary`、`title`，没有 Slots/Emits；它显示简单的 `PAVP / 当前页`，拥有唯一 `h1[data-route-focus="architecture-console-page-heading"]`。`App.vue` 通过单一 RouterView 提交 Props，`ConsoleRouteFrame.vue` 组合 Shell 和路由过渡协调器；`UiAdminShell` 拥有受控导航呈现及注册内容区域。该规格基线没有 Workspace Store、Tabs 或 KeepAlive Host，十个 Product Route 仍为 `keepAlive='never'`、`unsavedChangesPolicy='none'`。规格基线的 UI Public Registry 与 Capability Manifest 不声称具备本节能力。下文保留冻结目标合同及其规格时点说明；Owner 此次另行准入的当前源码事实只在 §18.11.10 收紧，未实现部分仍为 Target。
 
 | 概念 | 唯一职责与身份关系 |
 | --- | --- |
@@ -11107,7 +11110,7 @@ Hidden/Detail Route 可以在自己的 Route Record 声明祖先，无需出现�
 
 ### 18.11.3 Route participation, identity policy and workspace state
 
-未来首个源码切片仅在现有 `route-registry.ts` 增加小型只读 `workspaceIdentityPolicyRegistry` 及 Route Record 顶层引用 `workspaceIdentityPolicyId`；不复制 RouteName 集合，不放入 Storage。该引用为已准入 Policy ID 或 `null`，缺省归一为 `null`，`null` 表示不参与。当前源码没有该字段，本段不直接激活 Route Meta。
+未来首个源码切片仅在现有 `route-registry.ts` 增加小型只读 `workspaceIdentityPolicyRegistry` 及 Route Record 顶层引用 `workspaceIdentityPolicyId`；不复制 RouteName 集合，不放入 Storage。该引用为已准入 Policy ID 或 `null`，缺省归一为 `null`，`null` 表示不参与。规格基线没有该字段；当前仅 §18.11.10 的显式源码准入激活此引用及对应 Meta。
 
 首片 Registry 只含 `workspace-identity.route-single`：输入是当前 Route Record 与对应 `ValidatedRouteInput`，在同一应用生命周期内每个 Route 最多一个 Workspace；十个现有 Product Route 显式选择此项，七个 Error Route 选择 `null`。该默认由当前没有并发参数化消费者的事实支持，不把 RouteName 冻结为所有未来页面的普遍身份规则。
 
@@ -11207,6 +11210,26 @@ Drag、Pin、中键关闭、Close Left/Right/Others/All、Context Menu、Tab Ref
 
 Global Breadcrumb 源码放在后续独立切片：现有 `UiPageHeader` 与简单 Breadcrumb 已可继续使用，源码检查没有发现它与上述核心不可分割。跨刷新工作区恢复及 §18.11.9 的增强另行准入。本建议不设置 Next、不授权源码/生成/检查器变更，不自动开工。
 
+
+本次 Owner 已明确授权在干净同步 `main@e8c7474e4b0d1cc4c45fb5472add0e42b83149b0` 上实现且交付上述一个源码切片。此准入不回写 §37.2.13 的文档任务历史，也不授权任何后继能力。当前源码已接线的精确范围如下；完整 `mise exec -- pnpm verify` 和冻结 Bundle Gate 是本次 Stage/Commit/Push 的前置条件，静态、Git 与精确提交 CI 结果单独在任务报告中给出，Owner Runtime/Visual/Accessibility 均尚未执行。
+
+| 当前源码边界 | 唯一责任与已接线合同 |
+| --- | --- |
+| `route-registry.ts` | `workspaceIdentityPolicyRegistry` 仅有 `workspace-identity.route-single`；十个产品 Route 显式选择该 Policy 且 `keepAlive='route-instance'`，七个错误 Route 缺省归一 `null`，仍不缓存。所有现有 Params/Query/Hash、Auth、Permission、Unsaved Policy 均不扩展。 |
+| `apps/web/src/app/workspace/workspace.store.ts` | 沿用 Kernel 的同一个 Pinia，Store ID 为 `workspace`；`entries` 只保存 `identity`、`instance`、`componentName`、最近成功提交的 `destination`，另有由 Router Commit 写入的 `activeIdentity`；`active`、`includedComponentNames` 为派生值。`WorkspaceIdentity` 是应用私有 Branded String，`WorkspaceInstanceIdentity` 是每次真实新开产生的 Branded Symbol；两者均不借用地址或 History Marker。`commit` 仅由 Router 成功 `afterEach` 调用，`canDiscard`/`discard` 仅允许当前 `none` 策略；当前没有 Dirty Form 注册者。 |
+| `App.vue` / `ConsoleRouteFrame.vue` | 保持单一 RouterView、稳定无 Key 的 `.pavp-route-content`；其内单一 KeepAlive 只包 Slot 的实际 `Component`，Key 为当前 Workspace 的 `instance`，公开 `include` 来自开放项的 `componentName`。名称读取真实已加载 Route Component，并由 Owning Checker 校验十页显式且唯一的组件名，不建立名称映射 Registry。关闭后从 `include` 移除，Vue 完成公开 Prune/Scope Dispose 后才结束该操作；无 `max`、私有 Cache API 或多实例同名缓存。 |
+| 激活与单项关闭 | Frame 把 Activate 与 Close Fallback 交给同一 RouteTransitionCoordinator。非活动项关闭不导航；活动项按右邻、左邻、总览选择一次目标，等待原 Router Operation 的成功呈现结果，并再次核对 Operation、实际地址、实例与列表未受外部变更后删除原项。唯一总览不提供关闭操作，重复地址无副作用。失败、取消、异常或外部变更保留待关闭项。当前保护策略只允许 `none`；未来声明保护却没有 Page Authority 时关闭失败封闭，不导出未使用的通用 Discard/Form 框架。 |
+| `UiAdminShell.enabled` / `workspace` Slot | Shell 实例及 default Slot 的父链持续存在；`enabled=false` 时解除文档滚动锁、移除注册区域和 Shell 呈现、关闭抽屉并清除失效焦点回归目标，保持缓存。稳定内容元素仅在启用时投影 `role=main`，避免与错误页自身 main 重叠。工作区列占用既有可用高度，标签条位于内容滚动 Owner 外；窄屏抽屉打开时标签条与内容共同 inert。其余 Sidebar Preference、Hover、Selection Lens 与全局 Owner 不改变。 |
+| `UiWorkspaceTabs` | 新增受控 PAVP 公共组件，必需 Props 为 `items: readonly UiWorkspaceTab[]`、`activeId: string|null`、`label`、`panelId`；Emits 仅为 `activate(id: string)`、`close(id: string)`，无 Slots。Item 仅含 `id`、`label`、`closeLabel`、`closable`。标签来自当前 i18n Route Title，关闭名称复用现有本地化关闭文案并包含该标题；不保存翻译。Tablist/Tab 与活动 Panel 关联，方向键和 Home/End 仅移焦，Enter/Space 用原生按钮激活；Close 独立且不冒泡激活。原生横向溢出支持触摸，程序焦点使用 preventScroll 并只显露标签条局部水平位置；无 Wheel/Drag/Timer/Motion 实现。公开 Registry 为十二项：十项 Active、两个未消费 Form Target。 |
+| `router-lifecycle.ts` / Coordinator | `RouterNavigationOptions.workspaceActivation` 仅携带目标 `identity`/`instance`，经已有 Operation 传递并按真实提交核验。History Region Map 保持原合同；另有 Router 私有 Workspace Region Map，每个开放 Identity 最多一项且绑定确切实例。Capture 在既有 `beforeResolve` 尾部，恢复在挂载/更新后的既有 Scroll/Focus 呈现边界；只选择 History、显式 Workspace、同工作区普通地址更新、正常导航中的一个策略，保留原生 RTL Clamp。关闭/实例变化/Router Dispose 清理记录，不持久化。 |
+| `workspace-content.ts` / `appearance.vue` | 实际外观消费者通过应用私有 `workspaceContentKey` 注册所属实例的只读 Revision/Ready 读取器；`useWorkspaceContentRevision` 观察 Preview、Motion/Feedback、Notice、Pending Locale、Locale、Preference 与实际 Theme Preview 变化，先失效、待 Vue DOM Flush 后才就绪，Scope Dispose 解除注册。不因 Activate/Deactivate 伪造 Revision，不复制页面值或 Offset 到 Store。九个只读页保留 Build/Content Revision 与 Development/HMR 不复用规则；外观页仍排除在 History Region 恢复之外。失配或未就绪是安全 Cache Miss。 |
+
+本片复用现有 Tokens，标签条不引入新的材质、颜色或动效权威；不修改 `UiPageHeader`、Global Breadcrumb、共享 Form 实现、四条 Storage Record 或导航偏好三字段格式。当前没有需额外暂停的页面级 Overlay/Observer/Subscription；将来真实资源 Owner 使用 Vue 激活/停用及 Scope Dispose，不能把全局 Owner 移进页面缓存。
+
+Owning Checks 只同步上述 Route Policy、唯一组件名、Pinia/公开 UI 消费闭包、Shell 注册区域与缓存父链、Router Host 的条件式例外。旧 Outer Key、额外 RouterView、Route Conditional、Transition/Suspense、双 Live DOM、私有/自动缓存淘汰、重复导航与滚动 Owner 的保护保持；不把私有 helper 或算法改写为新架构权威。无新的 Capability Manifest Record，本片不把含 Breadcrumb 的完整 Workspace Chrome 或整个 Starter 标为完成；既有 Generated Manifest 无需因此新增记录。
+
+Initial JavaScript 硬预算保持 `253952` bytes gzip，强制余量保持 `8192` bytes，实测上限为 `245760`；清洁源码基线为 JS `241202` / CSS `26135` bytes gzip，增量上限 `4558`。首次最小可编译接线测得 JS `244745` / CSS `26402`，进入后续静态收口前已通过该预算。最终结果仍须使用既有完整 Gate 的真实测量；不得通过依赖/分块/压缩/计费方式或预算调整制造通过。跨刷新持久化、多实例 Route Identity、增强标签控制、Breadcrumb、账号/权限/API、部署与 Release 均未准入本片。
+
 ---
 
 # 19. 状态管理
@@ -11223,7 +11246,7 @@ PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
 PHASE_1_OPENAPI_GENERATOR_ADMISSION=PROHIBITED
 ```
 
-Package 5 已在同一个 Atomic Cutover 中交付 Stored Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation Orchestration 和 Application-owned Persistence Lifecycle，并只把 Pinia 加入 `apps/web`。该原始准入不扩展到 Session、General Application Store、Router、TanStack Query、OpenAPI Generator 或 `packages/ui` Runtime Dependency。§19.5.2 另行限定准入一个应用私有导航偏好 Store，其余边界保持。
+Package 5 已在同一个 Atomic Cutover 中交付 Stored Appearance Preference、Custom Theme Registry Orchestration、Effective-state Derivation Orchestration 和 Application-owned Persistence Lifecycle，并只把 Pinia 加入 `apps/web`。该原始准入不扩展到 Session、General Application Store、Router、TanStack Query、OpenAPI Generator 或 `packages/ui` Runtime Dependency。§19.5.2 另行限定准入一个应用私有导航偏好 Store；§18.11.10 再限定准入一个无持久化的 Workspace Store，均沿用现有 Pinia Provider，其他通用状态边界保持。
 
 以下职责表是各自 Admission Gate 通过后的最终 Ownership，不代表对应依赖已经进入当前 Manifest。
 
@@ -11245,7 +11268,7 @@ feature-local shared state
 
 上方 `local drafts` 与 Starter 应用内页签状态指当前应用生命周期中的内存工作状态。应用负责页签与页面实例生命周期，Form/Feature 继续拥有可编辑值；筛选、排序、分页只维护一份 Canonical State，Scroll 仍由 Router 的既有 Owner 恢复。页签间切换和语言切换必须保留当前工作，不能依赖浏览器刷新后恢复草稿来实现该目标；Workspace 的唯一具体合同见 §18.11，现有导航偏好存储边界 §19.5.2 不扩展。
 
-账号变化、退出或 Session 撤销时必须取消旧账号的异步工作，释放页签/页面实例，清理过滤条件、选择、未提交表单及权限和用户级缓存，防止新账号看到旧工作。所有会显式丢弃未保存输入的用户动作都须有 Unsaved Protection；该保护不能阻止失效身份的清理。具体 Session/Query/Storage 顺序仍由相应真实合同与现有生命周期 Owner 闭合，不增加第二状态系统。本段是必需产品行为，当前通用工作状态仍未准入。
+账号变化、退出或 Session 撤销时必须取消旧账号的异步工作，释放页签/页面实例，清理过滤条件、选择、未提交表单及权限和用户级缓存，防止新账号看到旧工作。所有会显式丢弃未保存输入的用户动作都须有 Unsaved Protection；该保护不能阻止失效身份的清理。具体 Session/Query/Storage 顺序仍由相应真实合同与现有生命周期 Owner 闭合，不增加第二状态系统。本段是必需产品行为；当前仅 §18.11.10 的 route-single Workspace 内存状态已准入，Session 与通用工作状态仍未准入。
 
 Pinia 是 Vue 的稳定 Store 方案，提供 TypeScript、DevTools、SSR 和 HMR 支持。
 
@@ -17023,7 +17046,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=not performed or requested; architecture and stati
 COMPLETION_EVIDENCE=specification diff and actual static/Git/CI results in task response; separate implemented/static/runtime/staged/committed/pushed/released states; unresolved material contract or unsafe synchronization stops before Git delivery
 ```
 
-后续只推荐 §18.11.10 的一个最小完整源码切片；推荐不构成源码准入，Global Breadcrumb 源码及其他增强不随本任务开始。
+本规格任务完成时只推荐 §18.11.10 的一个最小完整源码切片，推荐本身不构成源码准入。后续 Owner 已另行明确授权该源码切片，其当前实现范围与交付条件仅记录在 §18.11.10；本节保留文档任务的精确历史边界，Global Breadcrumb 源码及其他增强不随源码核心切片开始。
 
 ---
 

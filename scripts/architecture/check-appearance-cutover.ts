@@ -1190,10 +1190,11 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
       'apps/web/src/app/appearance/appearance.store.ts',
       'apps/web/src/app/navigation/navigation-preference.store.ts',
       'apps/web/src/app/providers/pinia.ts',
+      'apps/web/src/app/workspace/workspace.store.ts',
     ])
   ) {
     violations.push(
-      'Pinia imports must remain limited to its Runtime Kernel provider owner, appearance.store.ts and navigation-preference.store.ts.',
+      'Pinia imports must remain limited to its Runtime Kernel provider owner, appearance.store.ts, navigation-preference.store.ts and workspace.store.ts.',
     )
   }
 

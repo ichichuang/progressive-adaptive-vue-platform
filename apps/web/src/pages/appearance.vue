@@ -26,6 +26,7 @@ import {
 } from '@platform/ui'
 import { computed, ref } from 'vue'
 
+import { useWorkspaceContentRevision } from '../app/workspace/workspace-content'
 import { useAppearanceMutationBoundary } from '../app/appearance/appearance-mutation-boundary'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
 import {
@@ -168,6 +169,18 @@ const themePreviews = computed<readonly DisplayThemePreview[]>(() => [
       displayLabel: theme.label,
     }),
   ),
+])
+
+useWorkspaceContentRevision(() => [
+  previewView.value,
+  motionSequence.value,
+  feedbackSequence.value,
+  feedbackMessage.value,
+  pendingLocale.value,
+  notice.value,
+  locale.value,
+  preference.value,
+  themePreviews.value,
 ])
 
 function themeReferenceKey(reference: ThemeReference): string {

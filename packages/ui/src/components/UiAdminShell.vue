@@ -39,6 +39,7 @@ import type {
 defineOptions({ name: 'UiAdminShell' })
 
 const props = defineProps<{
+  readonly enabled: boolean
   readonly wideNavigationCollapsed: boolean
   readonly expandedNavigationGroupIds: readonly string[]
   readonly copy: UiAdminShellCopy
@@ -53,6 +54,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
+  workspace: (props: Readonly<Record<string, never>>) => unknown
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
 
@@ -489,6 +491,17 @@ function updateResponsiveNavigationMetrics(inlineSize = currentShellInlineSize):
   }
 }
 
+function updateDocumentScrollLock(): void {
+  document.documentElement.style.overflow = props.enabled ? 'hidden' : rootOverflow
+  document.body.style.overflow = props.enabled ? 'hidden' : bodyOverflow
+  if (!props.enabled) {
+    focusReturnTarget = null
+    navigationOpen.value = false
+  }
+}
+
+watch(() => props.enabled, updateDocumentScrollLock, { flush: 'post' })
+
 onMounted(() => {
   const target = shell.value
 
@@ -498,8 +511,7 @@ onMounted(() => {
 
   rootOverflow = document.documentElement.style.overflow
   bodyOverflow = document.body.style.overflow
-  document.documentElement.style.overflow = 'hidden'
-  document.body.style.overflow = 'hidden'
+  updateDocumentScrollLock()
   updateResponsiveNavigationMetrics(target.getBoundingClientRect().width)
   resizeObserver = new ResizeObserver((entries) => {
     const entry = entries[0]
@@ -544,11 +556,12 @@ watch(
 <template>
   <div
     ref="shell"
-    class="pavp-admin-shell"
-    :data-layout-profile="profile"
+    :class="enabled ? 'pavp-admin-shell' : 'pavp-admin-shell-document'"
+    :data-layout-profile="enabled ? profile : undefined"
     :data-navigation-collapsed="persistentNavigationCollapsed ? 'true' : 'false'"
   >
     <header
+      v-if="enabled"
       class="pavp-admin-shell__header h-admin-header"
       data-shell-region="architecture-console-header"
     >
@@ -666,14 +679,14 @@ watch(
     </header>
 
     <PavpLayoutPrimitive
-      class="pavp-admin-shell__layout"
+      :class="enabled ? 'pavp-admin-shell__layout' : 'pavp-admin-shell__document-layout'"
       :content-style="persistentLayoutContentStyle"
       data-pavp-admin-navigation="persistent"
-      :has-sider="profile !== 'narrow'"
+      :has-sider="enabled && profile !== 'narrow'"
       :native-scrollbar="true"
     >
       <PavpLayoutSiderPrimitive
-        v-if="profile !== 'narrow'"
+        v-if="enabled && profile !== 'narrow'"
         bordered
         class="pavp-admin-shell__sidebar"
         :collapsed="persistentNavigationCollapsed"
@@ -718,22 +731,32 @@ watch(
         </AdminNavigationSelectionLens>
       </PavpLayoutSiderPrimitive>
 
-      <main
-        class="pavp-admin-shell__content min-w-admin-content"
-        data-scroll-owner="architecture-console-content"
-        data-shell-region="architecture-console-content"
-        :inert="profile === 'narrow' && navigationOpen"
+      <div
+        :class="enabled ? 'pavp-admin-shell__workspace' : undefined"
+        :inert="enabled && profile === 'narrow' && navigationOpen"
       >
-        <div class="pavp-admin-shell__content-inner">
-          <slot />
+        <slot
+          v-if="enabled"
+          name="workspace"
+        />
+        <div
+          :role="enabled ? 'main' : undefined"
+          :class="enabled ? 'pavp-admin-shell__content min-w-admin-content' : undefined"
+          :data-scroll-owner="enabled ? 'architecture-console-content' : undefined"
+          :data-shell-region="enabled ? 'architecture-console-content' : undefined"
+          :inert="enabled && profile === 'narrow' && navigationOpen"
+        >
+          <div :class="enabled ? 'pavp-admin-shell__content-inner' : undefined">
+            <slot />
+          </div>
         </div>
-      </main>
+      </div>
     </PavpLayoutPrimitive>
 
     <Teleport to="#pavp-overlay-root">
       <Transition name="pavp-admin-drawer">
         <div
-          v-if="profile === 'narrow' && navigationOpen"
+          v-if="enabled && profile === 'narrow' && navigationOpen"
           class="pavp-admin-shell__drawer-layer"
           data-shell-region="architecture-console-navigation-overlay"
           @pointerdown="handleDrawerScrimPointerDown($event)"
@@ -991,7 +1014,22 @@ watch(
   transform: translateY(-50%) scale(1);
 }
 
+.pavp-admin-shell__document-layout {
+  overflow: visible;
+  background: transparent;
+}
+
+.pavp-admin-shell__workspace {
+  display: flex;
+  block-size: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-inline-size: 0;
+  min-block-size: 0;
+}
+
 .pavp-admin-shell__content {
+  min-block-size: 0;
   position: relative;
   flex: 1 1 auto;
   inline-size: 100%;

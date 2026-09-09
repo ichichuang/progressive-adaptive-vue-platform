@@ -714,6 +714,7 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       '../app/appearance/appearance-mutation-boundary',
       '../app/appearance/appearance-read-boundary',
       '../shared/i18n',
+      '../app/workspace/workspace-content',
     ],
   ],
   [
@@ -3461,7 +3462,14 @@ function adminNavigationHeaderCollapseControlProjection(
   const isStableOwnershipPathNode = (node: VueTemplateNode): boolean =>
     !hasConditionalVisibilityDirective(node) && !hasRuntimeMultiplicityDirective(node)
   const headerProfileIndependent =
-    header !== undefined && [...header.ancestors, header.node].every(isStableOwnershipPathNode)
+    header !== undefined &&
+    header.ancestors.every(isStableOwnershipPathNode) &&
+    templateDirectives(header.node, 'if').length === 1 &&
+    normalizeTemplateExpression(templateDirectives(header.node, 'if')[0]?.exp?.content) ===
+      'enabled' &&
+    ['else-if', 'else', 'show', 'for'].every(
+      (name) => templateDirectives(header.node, name).length === 0,
+    )
   const profileIndependentPathBelowHeader = (
     element: ShellTemplateElement | undefined,
   ): boolean => {
@@ -4814,14 +4822,18 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('PAVP_RUNTIME_003_DIALOG_SEMANTICS')
   }
 
-  const mainElements = shellElements.filter((element) => element.node.tag === 'main')
+  const mainElements = shellElements.filter(
+    (element) =>
+      element.node.tag === 'div' &&
+      singleBoundExpression(element.node, 'role') === "enabled ? 'main' : undefined",
+  )
   const mainInertBindings =
     mainElements[0] === undefined ? [] : templateDirectives(mainElements[0].node, 'bind', 'inert')
   if (
     mainElements.length !== 1 ||
     mainInertBindings.length !== 1 ||
     normalizeTemplateExpression(mainInertBindings[0]?.exp?.content) !==
-      "profile === 'narrow' && navigationOpen"
+      "enabled && profile === 'narrow' && navigationOpen"
   ) {
     violations.push('PAVP_RUNTIME_003_MAIN_INERT')
   }
@@ -4852,7 +4864,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   if (
     runtime002NavigationViolations(snapshot.shellSource).length > 0 ||
-    !snapshot.shellSource.includes('v-if="profile !== \'narrow\'"') ||
+    !snapshot.shellSource.includes('v-if="enabled && profile !== \'narrow\'"') ||
     !snapshot.shellSource.includes('<PavpMenuPrimitive') ||
     !snapshot.shellSource.includes(':collapsed="persistentNavigationCollapsed"')
   ) {
@@ -10427,6 +10439,26 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
     return ['PAVP_RUNTIME_005_APP_TEMPLATE_AST']
   }
 
+  const shell = vueSfcCompiler.parse(snapshot.shellSource, { filename: shellSfcPath })
+  const shellDefaultSlots =
+    shell.descriptor.template?.ast === undefined
+      ? []
+      : collectShellTemplateElements(shell.descriptor.template.ast).filter(
+          (element) =>
+            element.node.tag === 'slot' &&
+            staticTemplateAttribute(element.node, 'name') === undefined,
+        )
+  if (
+    shell.errors.length !== 0 ||
+    shellDefaultSlots.length !== 1 ||
+    shellDefaultSlots.some((slot) =>
+      [...slot.ancestors, slot.node].some(
+        (node) => hasTemplateKey(node) || hasRouteConditional(node),
+      ),
+    )
+  )
+    violations.push('PAVP_RUNTIME_005_REMOUNT_WRAPPER')
+
   const appElements = collectShellTemplateElements(appTemplateRoot)
   const consoleFrameElements = collectShellTemplateElements(consoleFrameTemplateRoot)
   const routerViews = appElements.filter((element) => element.node.tag === 'RouterView')
@@ -10437,6 +10469,8 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   const uiProviders = appElements.filter((element) => element.node.tag === 'UiProvider')
   const consoleFrames = appElements.filter((element) => element.node.tag === 'ConsoleRouteFrame')
   const adminShells = consoleFrameElements.filter((element) => element.node.tag === 'UiAdminShell')
+  const caches = appElements.filter((element) => element.node.tag === 'KeepAlive')
+  const cache = caches[0]
   const routerView = routerViews[0]
   const routeHost = routeHosts[0]
   const routedComponent = routedComponents[0]
@@ -10454,13 +10488,25 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   if (routeHost !== undefined && hasTemplateKey(routeHost.node)) {
     violations.push('PAVP_RUNTIME_005_ROUTE_HOST_KEY')
   }
-  if (routedComponent !== undefined && hasTemplateKey(routedComponent.node)) {
+  if (
+    routedComponent !== undefined &&
+    (!/^[\w$]+\.active\?\.instance$/u.test(
+      boundTemplateExpression(routedComponent.node, 'key') ?? '',
+    ) ||
+      templateAttributes(routedComponent.node, 'key').length !== 0)
+  ) {
     violations.push('PAVP_RUNTIME_005_COMPONENT_KEY')
   }
   if (
     uiProviders.length !== 1 ||
     consoleFrames.length !== 1 ||
     adminShells.length !== 1 ||
+    adminShells.some(
+      (element) =>
+        hasRouteConditional(element.node) ||
+        element.ancestors.some(hasRouteConditional) ||
+        boundTemplateExpression(element.node, 'enabled') !== 'shellRequired',
+    ) ||
     [...uiProviders, ...consoleFrames, ...adminShells].some((element) =>
       hasTemplateKey(element.node),
     )
@@ -10475,7 +10521,7 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       ...routedComponent.ancestors.filter((node) => node.type === 1),
       routedComponent.node,
     ]
-    const forbiddenWrapperTags = new Set(['KeepAlive', 'Suspense', 'Transition', 'TransitionGroup'])
+    const forbiddenWrapperTags = new Set(['Suspense', 'Transition', 'TransitionGroup'])
     const routeSlotExpressions = templateDirectives(routerView.node, 'slot').map((directive) =>
       normalizeTemplateExpression(directive.exp?.content),
     )
@@ -10492,7 +10538,15 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       routerElementChildren.length !== 1 ||
       routerElementChildren[0] !== routeHost.node ||
       hostElementChildren.length !== 1 ||
-      hostElementChildren[0] !== routedComponent.node ||
+      caches.length !== 1 ||
+      cache === undefined ||
+      hostElementChildren[0] !== cache.node ||
+      (cache.node.children ?? []).filter((node) => node.type === 1).length !== 1 ||
+      !(cache.node.children ?? []).includes(routedComponent.node) ||
+      !/^[\w$]+\.includedComponentNames$/u.test(
+        boundTemplateExpression(cache.node, 'include') ?? '',
+      ) ||
+      (cache.node.props ?? []).length !== 1 ||
       !isDeepStrictEqual(routeSlotExpressions, ['{ Component }']) ||
       !isDeepStrictEqual(componentContract, {
         breadcrumb: 'presentation.breadcrumb',
@@ -10962,29 +11016,17 @@ function runMotionGeometryNegativeProbes(
 function runRuntime005NegativeProbes(
   baseline: MaterialGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
-  const routedComponentBlock = `          <component
-            :is="Component"
-            v-bind="routeInputProps"
-            :breadcrumb="presentation.breadcrumb"
-            :message="presentation.message"
-            :title="presentation.title"
-          />`
-  const transitionWrappedComponentBlock = `          <Transition mode="out-in">
-            <component
-              :is="Component"
-              :breadcrumb="presentation.breadcrumb"
-              :message="presentation.message"
-              :title="presentation.title"
-            />
-          </Transition>`
+  const routedComponentBlock =
+    /<component\b[\s\S]*?\/>/u.exec(baseline.appTemplateSource)?.[0] ?? ''
+  const transitionWrappedComponentBlock = `<Transition mode="out-in">${routedComponentBlock}</Transition>`
   const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
     [
       'runtime-005-route-host-key-restored',
       'PAVP_RUNTIME_005_ROUTE_HOST_KEY',
       {
         appTemplateSource: baseline.appTemplateSource.replace(
-          '<div class="pavp-route-content">',
-          '<div :key="routeRecord.name" class="pavp-route-content">',
+          'class="pavp-route-content"',
+          ':key="routeRecord.name" class="pavp-route-content"',
         ),
       },
     ],
@@ -10993,8 +11035,8 @@ function runRuntime005NegativeProbes(
       'PAVP_RUNTIME_005_COMPONENT_KEY',
       {
         appTemplateSource: baseline.appTemplateSource.replace(
-          '          <component\n',
-          '          <component\n            :key="routeRecord.name"\n',
+          ':key="workspace.active?.instance"',
+          ':key="routeRecord.name"',
         ),
       },
     ],
@@ -11034,8 +11076,8 @@ function runRuntime005NegativeProbes(
       'PAVP_RUNTIME_005_ROUTE_CONDITIONAL',
       {
         appTemplateSource: baseline.appTemplateSource.replace(
-          '<div class="pavp-route-content">',
-          '<div v-if="Component" class="pavp-route-content">',
+          'class="pavp-route-content"',
+          'v-if="Component" class="pavp-route-content"',
         ),
       },
     ],
@@ -11747,7 +11789,7 @@ function runRuntime003SourceNegativeProbes(
       'runtime-003-main-inert-removed',
       'PAVP_RUNTIME_003_MAIN_INERT',
       baseline.shellSource.replace(
-        '        :inert="profile === \'narrow\' && navigationOpen"\n',
+        '          :inert="enabled && profile === \'narrow\' && navigationOpen"\n',
         '',
       ),
     ],
@@ -11951,8 +11993,8 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_LAYOUT_PROFILE',
-      shellSource.includes(':has-sider="profile !== \'narrow\'"') &&
-        shellSource.includes('v-if="profile !== \'narrow\'"'),
+      shellSource.includes(':has-sider="enabled && profile !== \'narrow\'"') &&
+        shellSource.includes('v-if="enabled && profile !== \'narrow\'"'),
     ],
     [
       'NAV_LAYOUT_NESTING',
@@ -11968,14 +12010,25 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_STABLE_MAIN',
-      shellSource.includes('data-shell-region="architecture-console-content"') &&
-        shellSource.includes(':inert="profile === \'narrow\' && navigationOpen"'),
+      shellSource.includes(
+        ':data-shell-region="enabled ? \'architecture-console-content\' : undefined"',
+      ) && shellSource.includes(':inert="enabled && profile === \'narrow\' && navigationOpen"'),
     ],
     ['NAV_NO_LAYOUT_CONTENT', !shellSource.includes('PavpLayoutContent')],
-    ['NAV_NO_MAIN_REMOUNT_KEY', !/<main[\s\S]{0,320}\s:key=/u.test(shellSource)],
+    [
+      'NAV_NO_MAIN_REMOUNT_KEY',
+      !/\s:key=/u.test(
+        /<div\b[^>]*:data-scroll-owner="enabled \? 'architecture-console-content' : undefined"[^>]*>/u.exec(
+          shellSource,
+        )?.[0] ?? '',
+      ),
+    ],
     [
       'NAV_SINGLE_SCROLL_OWNER',
-      occurrences(shellSource, 'data-scroll-owner="architecture-console-content"') === 1,
+      occurrences(
+        shellSource,
+        ':data-scroll-owner="enabled ? \'architecture-console-content\' : undefined"',
+      ) === 1,
     ],
     [
       'NAV_SIDER_SCROLL_BOUNDARY',
@@ -12169,12 +12222,12 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       'NAV_NARROW_DRAWER_PRESERVATION',
       [
         '<Teleport to="#pavp-overlay-root">',
-        'v-if="profile === \'narrow\' && navigationOpen"',
+        'v-if="enabled && profile === \'narrow\' && navigationOpen"',
         '@pointerdown="handleDrawerScrimPointerDown($event)"',
         'aria-modal="true"',
         'role="dialog"',
         '@keydown="handleDrawerKeydown"',
-        ':inert="profile === \'narrow\' && navigationOpen"',
+        ':inert="enabled && profile === \'narrow\' && navigationOpen"',
       ].every((marker) => shellSource.includes(marker)),
     ],
   ]
@@ -12231,7 +12284,7 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '      :has-sider="profile !== \'narrow\'"\n',
+        '      :has-sider="enabled && profile !== \'narrow\'"\n',
         '',
       ),
     ],
@@ -13864,12 +13917,12 @@ function adminNavigationHeaderPlacementInvariantResults(
     )
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
-    'v-if="profile === \'narrow\' && navigationOpen"',
+    'v-if="enabled && profile === \'narrow\' && navigationOpen"',
     '@pointerdown="handleDrawerScrimPointerDown($event)"',
     'aria-modal="true"',
     'role="dialog"',
     '@keydown="handleDrawerKeydown"',
-    ':inert="profile === \'narrow\' && navigationOpen"',
+    ':inert="enabled && profile === \'narrow\' && navigationOpen"',
   ].every((marker) => shellTemplate.includes(marker))
 
   return Object.freeze([
@@ -13967,8 +14020,8 @@ function adminNavigationHeaderPlacementInvariantResults(
         projection.identityProfileIndependent &&
         projection.narrowTriggerProfileIndependent &&
         projection.wideOnly &&
-        shellTemplate.includes(':has-sider="profile !== \'narrow\'"') &&
-        shellTemplate.includes('v-if="profile !== \'narrow\'"') &&
+        shellTemplate.includes(':has-sider="enabled && profile !== \'narrow\'"') &&
+        shellTemplate.includes('v-if="enabled && profile !== \'narrow\'"') &&
         narrowTriggerPreserved &&
         narrowDrawerPreserved,
     },
@@ -14575,8 +14628,10 @@ function adminNavigationExpansionMotionInvariantResults(
   const stableUnkeyedRouteHost =
     routeHostOpenTag !== undefined &&
     !/(?:^|\s)(?::)?key\s*=/u.test(routeHostOpenTag) &&
-    exactOccurrenceCount(snapshot.appSource, '<div class="pavp-route-content">') === 1 &&
-    !/<component\b[^>]*(?:^|\s)(?::)?key\s*=/u.test(snapshot.appSource) &&
+    exactOccurrenceCount(snapshot.appSource, 'class="pavp-route-content"') === 1 &&
+    [...snapshot.appSource.matchAll(/:key="([^"]+)"/gu)].every((match) =>
+      /^[\w$]+\.active\?\.instance$/u.test(match[1] ?? ''),
+    ) &&
     snapshot.appStylesSource.includes('.pavp-route-content {\n  opacity: 1;\n}')
   const routeStyleRulesAreMotionFree = routeStyleRules.every((rule) => {
     const opacityValues = [...rule.declarations.matchAll(/\bopacity\s*:\s*([^;]+);/giu)].map(
@@ -14636,12 +14691,12 @@ function adminNavigationExpansionMotionInvariantResults(
   ].every((marker) => snapshot.architectureSource.includes(marker))
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
-    'v-if="profile === \'narrow\' && navigationOpen"',
+    'v-if="enabled && profile === \'narrow\' && navigationOpen"',
     '@pointerdown="handleDrawerScrimPointerDown($event)"',
     'aria-modal="true"',
     'role="dialog"',
     '@keydown="handleDrawerKeydown"',
-    ':inert="profile === \'narrow\' && navigationOpen"',
+    ':inert="enabled && profile === \'narrow\' && navigationOpen"',
   ].every((marker) => shellTemplate.includes(marker))
 
   return Object.freeze([
@@ -14824,8 +14879,8 @@ function runAdminNavigationExpansionMotionNegativeProbes(
   )
   const noneMotionAllowedSource = `${baseline.providerSource}\n<style>\nhtml[data-motion='none'] [data-pavp-admin-navigation='persistent'] .n-menu { transition: opacity var(--ui-motion-duration) !important; animation: pavp-probe var(--ui-motion-duration) !important; }\n</style>\n`
   const routeKeySource = baseline.appSource.replace(
-    '<div class="pavp-route-content">',
-    '<div :key="route.fullPath" class="pavp-route-content">',
+    'class="pavp-route-content"',
+    ':key="route.fullPath" class="pavp-route-content"',
   )
   const secondRouterViewSource = baseline.appSource.replace(
     '</UiProvider>',
@@ -14970,6 +15025,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     'UiStatusBadge',
     'UiForm',
     'UiFormField',
+    'UiWorkspaceTabs',
   ]
   const headerActionsContainer = elements.find((element) =>
     hasStaticTemplateClass(element.node, 'pavp-admin-shell__header-actions'),
@@ -15230,12 +15286,12 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   ].every((marker) => snapshot.architectureSource.includes(marker))
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
-    'v-if="profile === \'narrow\' && navigationOpen"',
+    'v-if="enabled && profile === \'narrow\' && navigationOpen"',
     '@pointerdown="handleDrawerScrimPointerDown($event)"',
     'aria-modal="true"',
     'role="dialog"',
     '@keydown="handleDrawerKeydown"',
-    ':inert="profile === \'narrow\' && navigationOpen"',
+    ':inert="enabled && profile === \'narrow\' && navigationOpen"',
   ].every((marker) => shellTemplate.includes(marker))
 
   return Object.freeze([
@@ -15539,8 +15595,8 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
     'itemColorActiveHover: navigationHoverSurface',
   )
   const routeKeySource = baseline.appSource.replace(
-    '<div class="pavp-route-content">',
-    '<div :key="route.fullPath" class="pavp-route-content">',
+    'class="pavp-route-content"',
+    ':key="route.fullPath" class="pavp-route-content"',
   )
   const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
     [
@@ -16264,9 +16320,15 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     [...appSource.matchAll(/<RouterView\b/gu)].length !== 1 ||
     [...shellSource.matchAll(/new ResizeObserver\b/gu)].length !== 1 ||
     !shellSource.includes('container-name: pavp-admin-shell') ||
-    !shellSource.includes('data-scroll-owner="architecture-console-content"') ||
-    !shellSource.includes("document.documentElement.style.overflow = 'hidden'") ||
-    !shellSource.includes("document.body.style.overflow = 'hidden'") ||
+    !shellSource.includes(
+      ':data-scroll-owner="enabled ? \'architecture-console-content\' : undefined"',
+    ) ||
+    !shellSource.includes(
+      "document.documentElement.style.overflow = props.enabled ? 'hidden' : rootOverflow",
+    ) ||
+    !shellSource.includes(
+      "document.body.style.overflow = props.enabled ? 'hidden' : bodyOverflow",
+    ) ||
     [...shellSource.matchAll(/env\(safe-area-inset-/gu)].length !== 8 ||
     /(?:48rem|80rem|3\.5rem|4rem|16rem|20rem|44px)/u.test(shellSource)
   ) {
@@ -16420,7 +16482,7 @@ async function validateAppearanceAndPageFacts(): Promise<{
     !bootstrapSource.includes("{ detached: true, flush: 'sync' }") ||
     mutationBoundarySource.includes('installCuratedThemeCatalog') ||
     bootstrapSource.includes('installCuratedCustomThemeCatalog') ||
-    defineStoreCount !== 2 ||
+    defineStoreCount !== 3 ||
     competingEnvironmentSources.length !== 0
   ) {
     violations.push(
@@ -16651,7 +16713,7 @@ function validateInspectorProjections(): string[] {
     runtimeCount(routerRecords) !== 17 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 4 ||
     runtimeCount(storageRecords) !== 4 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 11 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 12 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
       'ui-form',
       'ui-form-field',

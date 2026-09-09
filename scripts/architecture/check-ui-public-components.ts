@@ -942,6 +942,18 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   const productRoutes = routeRegistry.filter((record) => record.meta.layout === 'workspace')
   const routeNameBySource = new Map(productRoutes.map((record) => [record.sourcePath, record.name]))
   const directConsumers = new Map<string, string[]>()
+  const workspaceFrame = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'),
+    'utf8',
+  )
+  if (
+    importedNames(scriptContent(workspaceFrame), '@platform/ui').includes('UiWorkspaceTabs') &&
+    [...workspaceFrame.matchAll(/<UiWorkspaceTabs\b/gu)].length === 1
+  )
+    directConsumers.set(
+      'UiWorkspaceTabs',
+      productRoutes.map((route) => route.name),
+    )
 
   for (const [sourcePath, routeName] of routeNameBySource) {
     const pageSource = scriptContent(await readFile(resolve(rootDirectory, sourcePath), 'utf8'))
