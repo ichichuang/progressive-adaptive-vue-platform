@@ -5011,6 +5011,8 @@ Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGE
 
 ### 1.2B.4 Appearance read boundary and application composition
 
+本节当前七轴快照与 Provider API 保持已实现状态；§13.12 冻结未来同一快照携带已解析 Status 值的最小 Type/Read Boundary 扩展，其源码授权仍为零，不创建第二 Appearance Authority。
+
 Appearance Preference、Environment Resolution、Effective State Derivation 与 DOM Application 的既有 Mutable Authority 保持不变。Console 新增恰好一个 App-internal Read Boundary，把成功解析后的 `EffectiveAppearanceState` 以真正 Readonly Vue Ref 交给 Root UI Provider；另有一个不持有 State/Environment 的 Mutation Facade 供 Appearance Page 调用 Existing Store Authority。二者都不是第二 Store、Resolver、Media Owner 或 Writer。
 
 ```text
@@ -5183,6 +5185,8 @@ interface DesignSystemConsoleProjection {
 Field Order 与 Interface 精确相同。Semantic Order 精确为 Themes `neutral,ocean,warm`；Planes `light.standard,light.enhanced,dark.standard,dark.enhanced`；Contrast `standard,enhanced`；Material `adaptive,reduced,solid`。该 Projection 在 Atomic Console Landing 前不存在；当前 Product Experience Foundation 保持九条 Layout Public Roles 与二十三条 UI-internal Admin Semantic Projections，并必须从同一 Generated Authority 得出 `publicRoleCount=36`、`publicColorRoleCount=9`、Manifest Schema `9` 与 Manifest Count `239`，不得手写覆盖。Pre-landing Baseline 保持 Public Role `27`、Public Color Role `9`、Manifest Schema `7`、Manifest Count `181`。Raw Token Values、Private Theme Bank 与 Internal Source Path 禁止。
 
 #### Appearance Workspace Theme Preview Projection
+
+当前六色 Preview 以 §1.2B.0G 和实际 Source 为准；§13.12 只冻结未来从相同 Resolved Theme Plane 增加状态 Summary，保持下列 Owner 与 Consumer Boundary。
 
 ```text
 OWNER=packages/design-system/src/console/appearance-workspace-theme-projection.ts
@@ -5773,6 +5777,8 @@ Field Order 精确为 `theme,themeOverrides`。该 Type/Function 只可由同一
 
 Naive UI `2.45.2` 会先把 Global `common` Override 合入 Component Common，再调用 Component `self(mergedCommon)`，最后才合并 Component-local Override。当前五个 Admitted Component Theme 中，以下 Common Color Field 会在该 Eager Derivation 阶段进入 `seemly` Color Parser，因此不得出现在 PAVP `themeOverrides.common` 中；CSS Custom Property、Token Alias、Identifier Alias、Concrete PAVP Color 或其他 Value 形式均不构成例外：
 
+该当前禁写合同保持到 §13.12 消费者切片实际落地；届时仅四族 Semantic Status 的精确绝对色映射取得该节规定的窄例外，同时同步 Owning Checker。其他 Parser-sensitive Field 与所有 `var(...)` 颜色运算限制继续有效，本次文档任务不改变 Adapter。
+
 ```text
 NAIVE_COMMON_PARSER_SENSITIVE_COLOR_FIELDS=primaryColor;infoColor;successColor;warningColor;errorColor;tableHeaderColor;cardColor;modalColor;popoverColor;dividerColor
 CURRENT_REMOVED_PAVP_COMMON_OVERRIDES=primaryColor;cardColor;modalColor;popoverColor;dividerColor
@@ -5966,6 +5972,7 @@ type CapabilityStatus =
 | Complete Built-in Theme four-plane documents | `ACTIVE` | generated Built-in Registry and Theme Bank |
 | Reference-only Preference and Theme Registry | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
 | Standard and Enhanced Theme Plane projection | `ACTIVE` | generated Theme Bank and stable Public bindings |
+| Semantic Status Color System | `TARGET_INACTIVE` | §13.12 freezes the Owner-required core foundation; source remains `NOT_IMPLEMENTED`; §37.2.14 admits documentation only |
 | Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | future Public Role Admission |
 | Continuous Density Scale application | `DEFERRED` | independent personalization admission |
 | Pinia appearance orchestration | `ACTIVE` | `apps/web` exact two-field Appearance Store |
@@ -8069,6 +8076,8 @@ Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role 
 
 ### Public Output Completeness
 
+§13.12 是 Semantic Status Color System 的唯一目标增量合同。当前源码仍采用 §1.2B.0G 的 10 Color / 37 Public Roles；下列早期 Registry 和计数保留其历史边界。未来新增角色、单角色 UnoCSS Binding 扩展、Manifest Shape 与输出同步只按 §13.12 激活，不由本文目标声明改变当前 Generated Set。
+
 当前 Active Baseline 的 Public Role ID Contract 是下方精确 Registry；它与当前实现的 Public CSS、`tokens.ts`、`token-names.ts` 和 36 个 UnoCSS Mapping 一致。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
 
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
@@ -9011,6 +9020,8 @@ Theme Reference Resolution 当前是纯边界。有效引用解析为已校验�
 
 ## 13.2 Theme Definition
 
+本节初始 Shape、无隐式补齐和 Primitive Alias 机制继续有效；当前 Role Contract 2 的十色来源与历史值保护见 §1.2B.0G。未来 Role Contract 3、状态色共享 Alias 准入和精确计数仅由 §13.12 修订；本次不改写已接受的 504/560 个绝对值历史事实。
+
 Theme Definition 与 User Preference 是不同合同。`ThemeDefinition` 是完整、显式、版本化的 Active 颜色文档；Architecture-only Amendment 曾只冻结 Target，Package 5 已在 §13.4 的 Atomic Cutover 中把它激活为当前 Runtime、Default、Public Export、First-paint 与 Persistence Authority：
 
 ```text
@@ -9149,6 +9160,8 @@ Partial Merge
 Custom Value 只允许不含依赖或计算的 Absolute CSS Color Syntax，例如 Hex、非 System Named Color、绝对 `rgb()`、`hsl()`、`hwb()`、`lab()`、`lch()`、`oklab()`、`oklch()` 或 `color(srgb ...)`。它必须可静态解析、落入 sRGB、满足该 Role 的 Alpha Contract，并保持用户提交值不变。Parser 可以建立临时数值用于校验，但不得替换、规范化、四舍五入、转换、Gamut Remap 或重新序列化用户颜色。
 
 ## 13.3 Active and Reserved Color Role Taxonomy
+
+本节早期 Active/Reserved 数组须与后续 §1.2B.0G 一起读取。§13.12 单独列出恰好十六个目标状态角色；它不激活 Reserved 的 `danger`、`positive` 或其他同义角色，也不自动扩展既有 Taxonomy Source。
 
 当前 Active Public Color Role Set 是以下九个现有兼容 ID，不多不少：
 
@@ -9763,6 +9776,8 @@ Package 5 中 Custom Theme Accessibility 的唯一含义是：Application-owned 
 
 ### Atomic Cutover Boundary
 
+Semantic Status Role Contract 3 的未来兼容迁移是 §13.12 明确冻结的第二个窄例外：它在下文既有 Contract 1 → 2 规则之后执行，并优先于下文对新增颜色一律拒绝 Rebound 的一般限制。当前源码仍只有既有兼容行为；不得以这条目标引用跳过独立源码授权。
+
 Target Explicit-theme Format 只允许通过一个不可拆分的 Production Landing 激活。该 Cutover 必须同时切换：
 
 ```text
@@ -10052,6 +10067,8 @@ type ThemeBankInstallationResult =
 
 ## 13.7 Theme-bank Projection
 
+§13.12 的未来状态色沿用本节 Bank、单轴 Selector 与稳定公共变量机制；共享 Primitive 不直接输出 CSS Variable，Supplementary 只经窄 UI 读投影交付。当前 40 个、目标 104 个每主题 Public Bank Binding 必须分开报告。
+
 本节全部 Projection、Selector、Installer 和 Manifest Mechanic 已由 Package 5 Atomic Cutover 激活；Theme Bank 与 `data-theme-kind` 只由下列生成和 Runtime 边界拥有。
 
 Generator 和 Runtime Custom Theme Installer 必须共享同一份 Private Theme Bank Schema，避免 Theme × Mode × Contrast Selector 的笛卡尔展开。每个 Built-in Theme Selector 一次性写入四套完整 Private Bank，并同时匹配 Registry Kind 与 Exact Built-in ID：
@@ -10217,6 +10234,8 @@ Cutover 前，用户只可修改当前 `AppearancePreference` Schema 已公开�
 
 ## 13.11 First Paint
 
+当前同步 Custom First Paint 以 §1.2B.0G、现有 `formats/first-paint.ts` 和 Manifest 的 `synchronousCustomThemeResolution=true` 为准；下文 Built-in-only / Post-Vue-only 限制是 Package 5 的历史边界。§13.12 的未来迁移须同步覆盖现有只读 Custom 首屏路径，不退回旧路径或增加挂载后状态色注入。
+
 本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Explicit-theme Validation 已在 §13.4 Atomic Cutover 中共同激活。`LegacyPreferenceInput` / `LegacySeedPreference` 只保留为只读 Migration Input；`data-preference-storage-key` 继续由应用拥有。
 
 构建输出：
@@ -10265,6 +10284,260 @@ Stored Preference 引用 Custom Theme 时，First Paint 必须保留完整 Safet
 First Paint 与 Post-Vue Restoration 必须使用同一 §13.6 Result Classification。`MIGRATION_REQUIRES_THEME_COMPLETION` 与 `PREFERENCE_INPUT_INVALID` 都保留完整 Safety Baseline、不继续 Theme Resolution 且不写 Storage，但两者不得互相替代：前者只表示 Valid Legacy Preference 需要 Complete Theme Reconstruction，后者只表示已经解析的 Input 不属于任何允许的 Preference Schema。任一分支都不得静默返回 Product Default。
 
 Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、Custom Registry Snapshot、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。它不得写入任何 Storage。Preference 读取、解析、Migration、Built-in Resolution、Atomic Appearance Application 或能力检测失败时必须保留完整 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 Canonical Contract 生成并接受 Drift Check。
+
+---
+
+## 13.12 Semantic Status Color System
+
+本节是唯一完整的语义状态色目标合同，来自 Owner 确认的 Design System 核心基础缺口。它冻结后续实现的语义、所有权、兼容性和生成边界，不实现源码，也不激活消费者；规格任务准入仅见 §37.2.14。
+
+```text
+CAPABILITY=PAVP_SEMANTIC_STATUS_COLOR_SYSTEM
+CAPABILITY_STATUS=TARGET_INACTIVE
+CONTRACT_STATUS=FROZEN
+REPOSITORY_IMPLEMENTATION=NOT_IMPLEMENTED
+SOURCE_IMPLEMENTATION_AUTHORIZATION=NONE
+SPECIFICATION_BASELINE=f7ca671f1ec16516699ea82af941c7a3c24e2adf
+SPECIFICATION_ALLOWED_FILE=ARCHITECTURE.md
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+### Current source and approved target
+
+基线实查：Complete Theme 外层 `schemaVersion=3`、`roleContractVersion=2`；十四个 Built-in Theme、四个 Plane、每 Plane 十个公共色，合计 560 个显式绝对值、0 个 Alias。十色由 §1.2B.0G 的 Action、Control、Page、Panel、Primary/Secondary/On-action Text、Border、Focus、Scrim 拥有；全部 Public Roles 为 37，UnoCSS Mapping Records 为 37，Named Contrast Records 为 14。`tokens/primitive/color.tokens.json` 当前只有十一条普通 Primitive Color，没有 Semantic Status Bank。
+
+已安装 `naive-ui@2.45.2` 的 `es/_styles/common/{light,dark}.mjs` 定义 Primary、Info、Success、Warning、Error，每族有 Default、Hover、Pressed、Suppl。`es/button/styles/light.mjs` 与 `es/button/src/Button.mjs` 消费这些值并可调用 `changeColor`；`es/alert/styles/light.mjs` 对状态色调用 `changeColor` / `composite`。Alert 是核查依赖行为的例子，不因本规范获得 PAVP 组件准入。
+
+当前 `packages/ui/src/adapters/naive/pavp-naive-theme.ts` 用 PAVP 值覆盖已准入的表面、文字、边框、焦点和 Action/Control 消费，并覆盖 `primaryColorHover/Pressed/Suppl`；它有意没有覆盖 parser-sensitive `common.primaryColor`。Info / Success / Warning / Error 的全部十六个 Common 字段也没有覆盖，仍使用 Naive Light/Dark 默认色。因此当前切换 PAVP Theme 并不使全部语义状态色成为 PAVP-owned；不得把现有 Primary 组件覆盖误报为完整 Common 颜色所有权。
+
+已安装 `@unocss/core@66.7.5`、`@unocss/preset-wind4@66.7.5` 和 `unocss@66.7.5` 支持 Theme-driven 值、Static/Generated Rules 与 Variants。PAVP 有意在此机制上收窄为 PublicRoleRegistry 驱动的语义映射，未把普通 Wind 色阶作为应用设计权威。[UnoCSS Rules](https://unocss.dev/config/rules) 与 [Theme](https://unocss.dev/config/theme) 说明工具能力；当前精确行为以安装源码、`src/unocss/preset.ts` 和 `src/build/formats/typescript.ts` 为准。
+
+### Semantic families, roles and shared bank
+
+Semantic Status 精确为 `info | success | warning | error`，表达信息、成功、警告和错误。Interaction State 为 Default / Hover / Pressed / Focus / Disabled，两者不是同一维度。本任务不增加 neutral、brand、destructive、critical、positive、notice 或 danger 家族。Focus 继续只有 `color.focus.ring`；Disabled 继续由现有 Disabled Opacity、Neutral Text 和 Disabled Surface 合同负责，不生成四套 Focus/Disabled Palette。
+
+以下表是新增 Public Role、CSS Variable 和语义值的唯一完整列表。保留既有十色 ID、值和职责；未来将表中十六条记录追加到当前角色顺序之后，顺序即表顺序。每条的 `tokenType=color`、`category=color`、`visibility=public`、`admissionPhase=1`、`themePlaneApplicability=target-required-after-atomic-cutover`、`contrastEndpointId` 等于自身 ID、`alphaContractId=null`。它们全部要求 Alpha 精确为 1。
+
+| Public Role | Stable CSS Variable | Bank value |
+| --- | --- | --- |
+| `color.status.info` | `--ui-color-status-info` | info.default |
+| `color.status.info.hover` | `--ui-color-status-info-hover` | info.hover |
+| `color.status.info.pressed` | `--ui-color-status-info-pressed` | info.pressed |
+| `color.text.on-status.info` | `--ui-color-text-on-status-info` | info.onStatus |
+| `color.status.success` | `--ui-color-status-success` | success.default |
+| `color.status.success.hover` | `--ui-color-status-success-hover` | success.hover |
+| `color.status.success.pressed` | `--ui-color-status-success-pressed` | success.pressed |
+| `color.text.on-status.success` | `--ui-color-text-on-status-success` | success.onStatus |
+| `color.status.warning` | `--ui-color-status-warning` | warning.default |
+| `color.status.warning.hover` | `--ui-color-status-warning-hover` | warning.hover |
+| `color.status.warning.pressed` | `--ui-color-status-warning-pressed` | warning.pressed |
+| `color.text.on-status.warning` | `--ui-color-text-on-status-warning` | warning.onStatus |
+| `color.status.error` | `--ui-color-status-error` | error.default |
+| `color.status.error.hover` | `--ui-color-status-error-hover` | error.hover |
+| `color.status.error.pressed` | `--ui-color-status-error-pressed` | error.pressed |
+| `color.text.on-status.error` | `--ui-color-text-on-status-error` | error.onStatus |
+
+一个 Canonical Semantic Status Palette Bank 精确覆盖 `light,dark` × `standard,enhanced` × `info,success,warning,error` × `default,hover,pressed,supplementary,onStatus`，共 80 个人工设计的 Canonical 值。其来源冻结为既有 `packages/design-system/tokens/primitive/color.tokens.json` 中的 `color.palette.status.<colorMode>.<contrast>.<tone>.<value>` Group；Token Path 中 `onStatus` 使用现有语义命名风格 `on-status`，只是字段拼写映射。每个叶子是既有 DTCG Color Literal，继承 Primitive 的 `build-only` Visibility，不能 Alias 另一个颜色或包含运行时表达式；不新建 Color Engine、Seed Generator 或另一套 Palette Registry。
+
+既有 `tokens/semantic/color.tokens.json` 同步增加十六条直接 Alias 到 Bank 的 Public Semantic Source Record，并用现有 `org.pavp.role` Metadata 精确绑定上表 ID，避免 DTCG 叶子同时充当 Group；其无 Condition 基值引用 `light.standard`，实际 Theme 颜色仍全部由 Complete Plane/Theme Bank 选择。`validateActivePublicRoleTokens` 与 Public Alpha Source Coverage 要求每个 Public Role 有真实 Source，不能仅依赖 Formatter 的补投影跳过该门槛。新增公共 Alias 不增加第二份颜色 Literal，不复制四平面条件矩阵。
+
+Supplementary 是 Naive 所需的 UI-internal 派生输入，其 Canonical Source 仍为 Bank 的十六个 `build-only` 叶子；不是第五类状态或公共交互角色。禁止公共 `color.status.*.suppl` / `*.supplementary`、Naive 命名的 Public API、Supplementary Token Export、Token Name、UnoCSS Utility 或 Public CSS Variable。唯一运行时交付例外是下文限定的 UI 只读快照；不能由应用页面读取任意 Primitive 或整个 Bank。
+
+### Complete planes and stable semantic hues
+
+每个 Built-in Theme × Color Mode × Contrast Plane 都必须显式写全 26 个 Public Color Role；新增十六个 Binding 默认直接 Alias 对应 Plane 的共享 Bank Literal。没有 Partial Theme、隐式继承或构建时缺项补齐。目标为 `14 × 4 × 26 = 1456` 条 Theme Plane Public-role Entries；其中默认 896 条新增 Status Binding 为 Alias，原有 560 条 Authored Absolute Color 不变。这不是 1456 个独立设计的颜色。
+
+本节只为新增十六个 Role 解除此前十四主题“全部值必须为 Absolute、Alias Count=0”的来源限制。既有十色保持当前作者值、sRGB 检查与主题差异合同；`complete-themes.ts` 的逐主题逐角色 Pairwise DeltaE Difference 必须只继续约束历史角色，不得强迫共享 Status 值在每个 Theme 上不同。其历史 448 个 Unchanged Cell Hash 必须继续仅计算原有角色，不能把新增 Binding 纳入历史 Hash 后要求改写旧证据。
+
+Info 的语义 Hue 固定为 Blue/Cyan，Success 为 Green，Warning 为 Amber/Orange，Error 为 Red。任何 Theme，包括 Custom Theme，都不能仅为匹配 Brand Hue 重新解释这些含义：Iris Success 不变 Purple，Coral Error 不退化为通用 Accent，Jade Warning 不变 Green。允许按 Plane/Theme 调整 Lightness、Chroma、Contrast、Hover/Pressed Delta、Supplementary、On-status Foreground 与 Page/Panel 适配，不要求 Enhanced 任意换 Hue。
+
+Built-in Theme-specific Public Status Override 仅在共享 Bank 对真实 Surface 的视觉/对比度证据确实不足、Hue 含义保留、全部 Status Contrast Contract 仍通过时才允许显式绝对值；没有这种理由就用共享 Alias。证据不授权 Codex 浏览器操作或提交截图。初始切片不预设任何 Override；80 个共享 Bank 值的完整性不会因 Override 缩减。
+
+若同一证据确实要求 Theme-specific Supplementary，唯一允许来源是同一个 Primitive Color Source 的 `color.palette.status-theme.<builtInThemeId>.<colorMode>.<contrast>.<tone>.supplementary` 显式 Build-only Literal，使用现有 Theme ID/Plane 精确校验；它只覆盖同 Tuple 的 Supplementary 读值，其余 Tuple 仍取共享 Bank。Override 同样必须为合法 Absolute sRGB、Alpha 精确为 1，不符合时拒绝，不允许投影时丢弃透明度。既有 Registry Generator 从该已验证 Source 生成私有紧凑投影，不新建 Mutable Registry，不改变 Complete Theme JSON Shape，也不允许 Custom 自定义该私有字段。没有获准 Override 就不创建该 Source 分支或专用模块。Override 是共享 80 值之外的显式例外，不重复计算公共 Role；下文初始精确计数以零 Override 为条件，未来真实新增 Literal 必须在其单独批准的源码范围中计入 Token/Manifest Delta。
+
+既有 `SUPPORTED_THEME_GAMUT=sRGB`、Absolute Color Parse、Alpha 与拒绝 Gamut Remap/自动修色的规则继续有效；80 个 Bank 值也全部不透明且可表示于 sRGB。规格不选择尚未测量的 80 个 Literal，后续源码任务需在上述固定语义内人工选值并通过全体 Theme Plane 的现有颜色门槛。
+
+### Status Contrast Contract
+
+沿用 Color.js 与 §25.1 的 WCAG Contrast Ratio / Named Contrast Authority，不引入 APCA。下表每格是一个显式 Named Record ID，四列共恰好二十条新 Record；`tone` 按所在列确定，Endpoint 精确引用本节 Role 表。原有十四条 Record 的 ID、Endpoint、Kind、阈值和 Alpha Policy 不变。
+
+| Foreground vs background | Info record ID | Success record ID | Warning record ID | Error record ID | Kind | Standard / Enhanced |
+| --- | --- | --- | --- | --- | --- | --- |
+| status default vs page | `status-info-on-page` | `status-success-on-page` | `status-warning-on-page` | `status-error-on-page` | non-text | 3 / 3 |
+| status default vs panel | `status-info-on-panel` | `status-success-on-panel` | `status-warning-on-panel` | `status-error-on-panel` | non-text | 3 / 3 |
+| on-status vs status default | `on-status-info-on-default` | `on-status-success-on-default` | `on-status-warning-on-default` | `on-status-error-on-default` | normal-text | 4.5 / 7 |
+| on-status vs status hover | `on-status-info-on-hover` | `on-status-success-on-hover` | `on-status-warning-on-hover` | `on-status-error-on-hover` | normal-text | 4.5 / 7 |
+| on-status vs status pressed | `on-status-info-on-pressed` | `on-status-success-on-pressed` | `on-status-warning-on-pressed` | `on-status-error-on-pressed` | normal-text | 4.5 / 7 |
+
+前两行 Foreground 是 `color.status.<tone>`，Background 分别是 `color.surface.page` / `color.surface.panel`；后三行 Foreground 是 `color.text.on-status.<tone>`，Background 分别为 `color.status.<tone>`、其 `.hover`、其 `.pressed`。所有新 Record 的 `maximumUsefulRatio=null`、`staticMaterialProjections=[]`；非文字八条的 `enhancedDifferenceRequired=false`，文字十二条为 `true`。Named Contrast 总数目标为 34。
+
+Non-text `3:1` 沿用现有边界最小值；Normal Text 的 `4.5:1` / `7:1` 沿用当前 Standard / Enhanced 哲学，依据 [WCAG Contrast Minimum](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)、[Contrast Enhanced](https://www.w3.org/WAI/WCAG22/Understanding/contrast-enhanced.html) 和 [Non-text Contrast](https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html)。不得把计算结果四舍五入到阈值来通过。
+
+现有 `NamedContrastRecord` Shape 已能表达全部 Endpoint/Pair，不需要新 Kind 或 Validator。最小模型行为扩展是解除当前对 `enhancedDifferenceRequired=true` 的整体禁止，仅准入上述十二条，并在每个 Theme、每个 Color Mode、每个同 ID Pair 上要求 `ratio(enhanced) > ratio(standard)`，同时各自达到最小值；Build、Custom Validator 和同步 First Paint 必须一致。其余 Record 不附加该要求，不引入任意 Hue/Chroma 差异阈值或 Maximum Ceiling。仅改变一个字符串或其他 Plane 字段不能证明状态 Enhanced 有效，Standard 全值复制到 Enhanced 必须失败。
+
+On-status 不默认等于白色；每族同一个 Foreground 必须对 Default、Hover、Pressed 三种背景分别通过。尤其 Warning 必须根据 Contrast 选择深色或浅色内容，不能沿用 Naive 白字默认。状态 Accent 的 `3:1` 不证明它是 Page/Panel 上的普通文字色；本目标不准入 `text-status-*`、状态 Accent 普通文字或以 Accent `currentColor` 绘制的信息图标。On-status Text/Icon 只用于对应的已验证 Status Fill。Hover/Pressed Fill 不单独取得 Page/Panel Non-text Boundary 证明；有边界识别要求的交互组件须保留通过验证的 Default Status Border 或其他既有合格边界，不能只靠 Hover/Pressed Fill 识别控件。
+
+### Role Contract and Custom Theme compatibility
+
+目标 `roleContractVersion=3`，因为 Exact Required Public Color Set 从 10 变成 26。Complete Theme 根字段仍精确为 `schemaVersion,roleContractVersion,id,label,planes`，业务结构仍为 `id,label,planes` 和四个完整 Plane；外层 `schemaVersion` 保持现有 3。共享 Role Contract Authority 及已有 Generated Registry/Manifest 引用同步为 3，各 Registry 按此同一成员合同校验；不要求向目前只有结构 `schemaVersion` 的 PublicRole/Alpha/Named Source Registry 新增独立版本字段。Alpha/Named 结构 Schema 仍为 1，PublicRole 结构 Schema 只在下述多 Binding Shape 变化时升级，不用结构版本代替角色成员版本。
+
+兼容转换由现有 `validateCustomThemeDefinition` / Design System 私有 Normalizer 拥有，依次执行，失败拒绝整个文档：
+
+1. Contract 2 输入先通过其十色 Exact Shape 和历史颜色合法性检查；保留 `id`、`label`、全部四 Plane 的十色字符串逐字不变。只为每个 Plane 注入本节十六个 Public Status 值，取相应 Bank 已解析的 Absolute Color，然后规范为 Role Contract 3 并执行全部当前颜色、Alpha、Named Contrast 和 Enhanced Difference 检查。
+2. Contract 1 输入先验证历史严格 Shape、每 Plane 恰好原九角色和历史颜色合法性；额外 Control/Status、Unknown/Missing Role 必须在归一化前拒绝，不能被对象覆盖吞掉。通过后按现有兼容规则将 `color.action.primary` 原值逐字复制成 `color.control.primary`，保留原九色，再执行同一 Contract 2 → 3 步骤。只有两步和完整验证成功后才输出当前 Contract，不允许部分成功或直接跳过 Control。
+3. 新 Contract 3 Custom Theme 必须自己提交四 Plane 的精确 26-role Absolute Set；不能利用兼容入口补齐缺失 Role，不能接受 Alias、计算色、额外字段或 Naive Palette。合法输入返回现有 `validated` 分支，保留作者的原始颜色字符串。
+
+迁移成功返回既有 `rebound` Shape，并为此转换精确新增 code `ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS`；`previousRoleContractVersion` 为原输入的 1 或 2，`currentRoleContractVersion=3`，`entry.definition` 是完整通过验证的结果。原 `ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY` 名称不得用于本次新增颜色；它只保留原本适用的非颜色迁移含义。本目标不新增通用 Migration Registry、Optional Evidence 或 Result Platform。
+
+失败语义精确如下：
+
+| Condition | Existing result / evidence |
+| --- | --- |
+| Malformed JSON、重复 Key | 原 Duplicate-aware Import/Snapshot Reader 拒绝整个输入，不调用丢失重复键的普通 Parse 来冒充验证；坏 Storage 原值保留 |
+| Parsed Theme malformed、错误/缺失 Role、额外字段、无效版本类型或 Identity | `rejected / THEME_INVALID`，使用现有安全 `fieldPath`、可用 Theme ID 等 Evidence；不部分恢复 |
+| 结构可识别、具有有效 ID 和正整数未来 Role Contract（大于 3），或非受支持的历史版本 | `rejected / ROLE_CONTRACT_MISMATCH`，保留 `receivedRoleContractVersion` / `requiredRoleContractVersion=3`；不尝试按当前成员集合重填未来格式 |
+| Invalid Status Color、非 Absolute、非 sRGB、错误 Alpha | `rejected / THEME_INVALID`，Evidence 指向具体 Role / Plane / Field，Alpha 失败携带现有 Alpha Evidence；不自动修色 |
+| Status Named Contrast 或 Enhanced Difference 失败 | `rejected / THEME_INVALID`，携带 `contrastPairId`、`actualRatio`、`requiredRatio` 与 Plane/Role；Difference 失败的 `requiredRatio` 是同 Color Mode 的 Standard 实测值，Pair 的 `enhancedDifferenceRequired=true` 明确比较为严格大于 |
+
+当前历史 Custom Theme 没有“Light/Dark 背景亮度区间”约束，不能承诺固定 Bank 对任意历史背景都满足新 Pair。迁移消除的是所有旧主题因版本号变化被直接判无效的问题；若保留原十色后确有 Contrast 失败，必须按上表返回定位证据并保留原文档，等待显式完整 Current Theme 输入，禁止偷偷改 Surface/Primary/Text、选择另一主题或退回 Naive 默认色。
+
+Contract 2 → 3 自动注入仅限十六个 Status Role。现有 Preference `schemaVersion=3`、Custom Registry Snapshot `schemaVersion=1`、Storage Keys、完整 Snapshot 替换、无自动 Write/Delete 和 Identity Tuple 全部不变。Reader 在内存中接受成功 Rebound 的完整 Entry，任一 Entry 失败仍拒绝整个 Snapshot；不增加新持久化格式。迁移本身不写回，后续显式保存才可由现有应用边界写出完整 Contract 3 文档。
+
+### Resolved UI read boundary and private Naive projection
+
+唯一目标管线为 `PAVP Theme / Semantic Status Bank → validated resolved Plane → private Naive Theme Projection → admitted Naive components`。`packages/ui` 不解析 Theme JSON、不查询任意 DOM CSS Variable、不建立 Theme Registry、不读取 Build Manifest。Generated Built-in `definition.planes` 将含 Authored Alias，不能把它当成绝对色；解析依据是同一个 Registry Owner 的 `bank.records[].resolvedValue` 或等价已验证 Resolved Plane，Custom 使用同一 Validator 接受的 Absolute Plane。
+
+未来消费者切片在 `packages/design-system/src/runtime/ui-appearance-projection.ts` 增加纯 `projectUiAppearance`，并仅从 `@platform/design-system` 公共根提供该函数与 `UiAppearanceSnapshot` Type，供现有 Appearance 编排和 UI Provider 传输使用。形状冻结为：
+
+```ts
+interface UiAppearanceSnapshot {
+  readonly appearance: Readonly<EffectiveAppearanceState>
+  readonly statusColors: {
+    readonly [Tone in 'info' | 'success' | 'warning' | 'error']: {
+      readonly default: string
+      readonly hover: string
+      readonly pressed: string
+      readonly supplementary: string
+      readonly onStatus: string
+    }
+  }
+}
+
+declare function projectUiAppearance(
+  appearance: Readonly<EffectiveAppearanceState>,
+  entry: Readonly<ThemeRegistryEntry>,
+): Readonly<UiAppearanceSnapshot>
+```
+
+该签名只接受现有 Resolution 已成功的 Entry；Theme Tuple 必须与 Appearance 精确相等，否则在提交前失败，不能生成默认颜色或空值。结果及嵌套对象只读，恰好一个活动 Plane 的二十个绝对值，不包含全 Theme 表、Source Path、CSS Property Name、Vendor Type、Writer 或 Storage。状态不是第八个可编辑 Appearance Axis；`EffectiveAppearanceState` 七轴和 Store 两字段不变。Supplementary 仅此 UI-internal 传输例外，不成为页面可选的公共应用 Token/API，也不增加公共 Bank Export 或 Deep Import。
+
+Design System 复用现有 Color.js，从已验证 sRGB 数值产生 vendor-parser-compatible 的逗号 `rgba(R, G, B, 1)` 传输值。已安装的 Naive 传递依赖 `seemly@0.3.10` 的 `es/color/index.js` 不支持 `oklch(...)` 或现代空格 RGB，且会将 RGB 通道取整；因此 R/G/B 按其语义明确为 `Math.round(channel × 255)` 的 0–255 整数。这是 UI 读投影的派生表示，不回写或替换 Authored/Custom/Stored Value，不执行 Gamut Remap、修色或另一套颜色算法；sRGB 不合法的源值必须先拒绝，不能借 Clamp 修复。
+
+原始 Plane 的 Named Contrast 通过后，还须用相同 WCAG 算法复核实际输出的整数通道状态值：On-status/Default/Hover/Pressed 使用真实投影值，Page/Panel 使用实际 PAVP Surface Endpoint，Standard/Enhanced 的最小值及严格增强关系均不变。量化后失守则在提交前拒绝并保持旧完整快照，不靠 Ratio 四舍五入或调整用户颜色通过。Supplementary 同样按此语法交付，不新增公共 Pair。Built-in 转换及验证优先在构建时完成并共享；Custom 只在既有验证/准备阶段转换，不增加 Runtime Color Engine 依赖。
+
+现有 `AppearanceReadBoundary.snapshot` 的唯一 Readonly Ref 目标改为这个传输 Shape；`appearance-bootstrap.ts` 仍持有唯一 Writer。`UiProvider` 及私有 Provider 的既有 required `appearance` Prop 传递 `UiAppearanceSnapshot`，现有 `locale` Prop、Default Slot、Overlay Root 和唯一 `NConfigProvider` 不变；私有 `createPavpNaiveThemeProjection`、`createPavpNaiveFormThemeProjection` 与 `pavp-naive-runtime-context.ts` 的既有注入类型链同步接受同一快照。App/私有组件既有 Effective State 消费显式取 `.appearance`，不得另设 palette Ref/Store/Provider/Media Listener。投影的缺失、内部不一致或上述量化对比度失败在既有 Appearance 操作失败/启动失败边界拒绝，不新增通用错误注册表。
+
+Naive Common 映射精确为下表十六项，全部取 `statusColors` 已解析的绝对值：
+
+| Family | Default | Hover | Pressed | Supplementary |
+| --- | --- | --- | --- | --- |
+| Info | `infoColor ← info.default` | `infoColorHover ← info.hover` | `infoColorPressed ← info.pressed` | `infoColorSuppl ← info.supplementary` |
+| Success | `successColor ← success.default` | `successColorHover ← success.hover` | `successColorPressed ← success.pressed` | `successColorSuppl ← success.supplementary` |
+| Warning | `warningColor ← warning.default` | `warningColorHover ← warning.hover` | `warningColorPressed ← warning.pressed` | `warningColorSuppl ← warning.supplementary` |
+| Error | `errorColor ← error.default` | `errorColorHover ← error.hover` | `errorColorPressed ← error.pressed` | `errorColorSuppl ← error.supplementary` |
+
+Default/Hover/Pressed 对应本节公共 Role，Supplementary 对应共享 Bank 的同 Color Mode/Contrast 叶子；只有上文已获准的 Built-in 同 Tuple Supplementary Override 可以替代该私有值。新规则在消费者切片原子落地时，仅对这十六个绝对值字段优先于 §1.2B.6 的 parser-sensitive Common 全面禁写条款；当前文档任务保留其源码缺席检查。`primaryColor`、`tableHeaderColor`、`cardColor`、`modalColor`、`popoverColor`、`dividerColor` 等其余保护和既有 Action/Control 处理不随本准入改变。Checker 须验证四族完整覆盖、已验证 PAVP 来源和无 `var(...)`/Alias/Vendor Fallback，不能简单删除 Parser Guard。
+
+Common 映射不自动证明所有 Vendor Component/Variant 的最终颜色已正确。每个实际准入的语义消费者必须审查其 `self()` / Peer / 颜色合成，并通过组件级 Override 把 Filled 状态的 Text/Icon 接到对应 `onStatus`；尤其不能让 Warning 沿用全局白色 `baseColor`。不得为此改动其他 Primary/Neutral 白色含义。Vendor 生成的透明 Alert 背景等不是已验证的 Public Status Fill，必须在真实消费者准入时核对实际组合，不能宣称本节二十个 Pair 已证明任意合成对比度。
+
+### Registry-governed UnoCSS and public CSS consumers
+
+所有公共状态变量由既有 Token/CSS/Theme Bank 生成，Theme 切换只换值不换名。PAVP CSS 组件消费这些变量或 `tokens`，不能内联状态含义的红/绿/黄/蓝常量；AI 与应用源码表达语义状态时不得用 `text-red-*`、`bg-green-*`、`border-yellow-*`、`text-blue-*` 等绕过 Status Contract。Charts、Data Visualization、Illustration 和 Brand Artwork 可按其自身已准入颜色权威处理，不在本状态禁令中自动获得新权限。
+
+当前一个 Public Role 有且只有一个 UnoCSS Mapping Record，`classes` 中每个 Class 都写整份 `allowedCssProperties`。目标保留既有 `exact-rule`、`theme-entry`、`container-variant`，只为本节四个 Base Role 增加一个明确的 `property-specific-exact-rule` 分支：
+
+```ts
+interface StatusUtilityBinding {
+  readonly className: string
+  readonly cssProperty: 'background-color' | 'border-color'
+}
+
+interface StatusPropertyProjection {
+  readonly generatorKind: 'property-specific-exact-rule'
+  readonly family: 'color'
+  readonly key: string
+  readonly bindings: readonly [StatusUtilityBinding, ...StatusUtilityBinding[]]
+}
+```
+
+同一个 `PublicRoleRecord.unocss` 持有一份该结构；Generated Mapping 只附加既有 `roleId` 与唯一 `cssVariable`。每个 Binding 只产生一个 Exact CSS Property，Value 强制为该 Role 的 `var(cssVariable)`，不是另一个可填写值。新分支不再带重复的 `classes/allowedCssProperties` 权威；Class 列表按 Binding 派生并逐条反向验证。Key 为对应 `status-<tone>`，Binding 顺序为 background 后 border。拒绝空 Binding、额外属性、跨 Role 值、重复 Role/Binding/Class、未知 Family 和 Generic Palette Alias。
+
+最终精确 Utility 名称如下；表中的 Base 两类分别只写 `background-color` / `border-color`，Hover/Pressed 只写 `background-color`，On-status 只写 `color`，各自 Value 都来自本节同名 Role 的 CSS Variable。
+
+| Family | Base | Hover | Pressed | On-status |
+| --- | --- | --- | --- | --- |
+| Info | `bg-status-info`, `border-status-info` | `bg-status-info-hover` | `bg-status-info-pressed` | `text-on-status-info` |
+| Success | `bg-status-success`, `border-status-success` | `bg-status-success-hover` | `bg-status-success-pressed` | `text-on-status-success` |
+| Warning | `bg-status-warning`, `border-status-warning` | `bg-status-warning-hover` | `bg-status-warning-pressed` | `text-on-status-warning` |
+| Error | `bg-status-error`, `border-status-error` | `bg-status-error-hover` | `bg-status-error-pressed` | `text-on-status-error` |
+
+最终共二十个 Status Class、十六个 Status Mapping Record；Hover/Pressed 和 On-status 保留单属性 `exact-rule`，Family 为 `color`，Key 分别为 `status-<tone>-hover`、`status-<tone>-pressed`、`on-status-<tone>`。不准入 `text-status-*`、`border-status-*-hover/pressed` 或任意更多状态 Utility。状态值名称与伪类分开：可静态写 `hover:bg-status-error-hover` / `active:bg-status-error-pressed`，不授权运行时拼接、任意色阶、Opacity Modifier 改造状态值或大规模 Safelist。UnoCSS 官方 Theme/Rule 只是实现机制，PublicRoleRegistry 始终是唯一映射权威。
+
+### PAVP components, preview, first paint and Forced Colors
+
+后续切换后的 PAVP 语义 UI 使用同一状态系统。`UiStatusBadge` 当前 Tone 是 `active,complete,deferred,inactive,not-started`，目前只用 Primary/Secondary Neutral Text 区分；真正成功完成含义的 `complete` 消费必须改用 Success Fill/On-status 或合格的 Success 标记。未来真实 Info/Warning/Error Tone 必须消费对应 Role，不能采用 Naive 默认色。`ACTIVE`、`DEFERRED`、`TARGET_INACTIVE` 等 Capability Lifecycle Label 不自动代表成功/错误；必须保留领域含义。本规格不改其 Public API、布局或设计，也不预建未来 Tone。
+
+Appearance Preview 当前恰好六个 Swatch：page、panel、action、control、border、focus。未来在既有 `AppearanceThemePreviewSwatches` 增加一个只读 `status` Summary，字段按 `info,success,warning,error` 顺序各取当前 Plane 的 Default 值。仍从同一 Theme Registry 的 Resolved Plane 生成，不能显示 Authored Alias 或另写展示 Palette；Compact Card 只需四个 Default 色。更丰富的真实 Inspector 可投影 Default/Hover/Pressed/On-status，但无真实需求时不新增页面、Inspector API 或 Supplementary 展示。本次不修改 Appearance UI。
+
+状态公共变量必须与现有颜色一起进入 `tokens.css`、`critical-theme.css`、Generated Theme Bank 和同步 `appearance-init.js`。保留当前 Built-in 与已准入 Custom 首屏恢复能力；Contract 1/2 → 3、Exact Allowlist、Alpha、Named Contrast 与失败语义同时进入其现有只读路径。依赖 UI 使用前就有完整 26-role 安全基线，禁止第二个 Post-mount Injector 或暂时回退到 Vendor Status。
+
+Theme、Color Mode、Contrast 变化复用现有 Appearance Commit Transaction：先完整验证并准备下一个 Plane/Bank 和 UI Status Snapshot，再同步应用所有颜色/Root Attributes 并发布同一 Read Boundary Snapshot。不得在两步之间 `await`、Timer、下一帧或独立 Watcher 延迟获取 Naive 值；Vue 在同一提交的渲染更新中消费快照。失败保留或恢复前一个完整 Bank、Identity 和快照，不发布一半。Naive 消费者首次挂载前必须已有对应快照；既有 Media Reapply、Custom Restore 和 Disposal 同步覆盖，不新增 Runtime Kernel Step、Provider ID 或持久化派生状态。
+
+Forced Colors 独立于普通 Theme Palette。System Color Keyword 不写入 Complete Theme JSON；既有 `formats/css.ts` 的 Forced Colors / Accessibility CSS 是覆盖权威，未来在同一 Owner 覆盖新增 Role：Status Fill 与 Border 使用 `Highlight`，On-status 使用 `HighlightText`，原 Focus/Disabled 规则保留，接受系统可能合并四族色相。不设置 `forced-color-adjust:none` 来强保主题色；有状态含义的现有组件必须通过 Text/Icon/State 语义共同表达，不能只靠颜色区分。此 CSS 覆盖不改变 Naive Absolute Common 输入，必要的 Vendor Forced Colors 处理仍在私有组件 CSS 边界。
+
+### Synchronized outputs, budgets and implementation sequence
+
+未来源码需同步的精确既有 Owner / Surface 如下，不在本规格任务修改：
+
+| Owner / source surface | Required synchronization |
+| --- | --- |
+| `tokens/primitive/color.tokens.json`; `tokens/semantic/color.tokens.json` | 一个 80-value Build-only Bank；十六个 Public Alias Source Records |
+| `src/build/public-role-registry.ts`; `src/schema/complete-theme.schema.ts`; `src/build/preprocess.ts`; `src/build/contrast.ts` | 53 个 Role、34 个 Named Pair、Role Contract 3、真实 Source/Alpha Coverage、Enhanced Difference；不新增 Alpha Record |
+| `src/build/complete-themes.ts`; `tokens/themes/complete/*.theme.json` | 十四主题精确 Alias/Absolute 来源与 1456 Entry；旧值保护和 Status 共享例外 |
+| `src/runtime/theme-registry.ts`; 现有 Custom Snapshot ingestion | Contract 1/2 → 3、完整拒绝语义与 104-variable Custom Bank Allowlist，Storage Format 不变 |
+| `src/build/build.ts`; `src/build/formats/{shared,typescript,css,manifest,first-paint}.ts` | Registry、Token、Bank、首屏、Manifest、UnoCSS 生成和 Determinism / Byte Delta 同步 |
+| `src/generated/{token-names.ts,tokens.ts,tokens.css,theme-registry.ts,critical-theme.css,appearance-init.js,tokens.manifest.json,unocss-theme.ts}` | 八个直接受影响 Generated Surface；现有 `layout-registry.ts` 无状态色变化需求，继续受总生成 Drift Check |
+| `src/console/design-system-console-projection.ts`; `src/console/appearance-workspace-theme-projection.ts` | 真实 Count 投影；消费者切片增加 Resolved Status Preview |
+| `src/runtime/ui-appearance-projection.ts`; 现有 App Appearance Store/Bootstrap/Read Boundary；`UiProvider` / private Provider / `pavp-naive-theme.ts` | 消费者切片的单一已提交绝对色快照与四族精确 Common Mapping |
+| `src/unocss/preset.ts` 及既有映射生成/Schema；`UiStatusBadge.vue` | Property-specific 精确规则、状态语义消费和绕过防护 |
+| 既有 Design System checks、`check-appearance-cutover.ts`、`check-architecture-admin-console.ts`、`check-ui-public-components.ts`、相关 Stylelint/UnoCSS 边界 | 当前源码、公共接口、Manifest 与目标规则的直接一致性；不创建通用检查平台 |
+
+表内 `src/` 与 `tokens/` 默认为 `packages/design-system/`，UI 名称沿用当前 `packages/ui/` Owners；应用边界沿用 `apps/web/src/app/appearance/`。不能以该清单为理由重写无关源码。
+
+| Exact count | Current source | Target |
+| --- | ---: | ---: |
+| Public Color Roles | 10 | 26 |
+| Total Public Roles / UnoCSS Mapping Records | 37 / 37 | 53 / 53 |
+| Built-in Themes / Planes | 14 / 56 | 14 / 56 |
+| Public Bank Bindings per Theme | 40 | 104 |
+| Complete Built-in Public-role Entries | 560 | 1456 |
+| Shared Status Bank Literals | 0 | 80 |
+| Named Contrast Records / Alpha Records | 14 / 1 | 34 / 1 |
+| Token Records | 145 | 241 = 145 + 80 Primitive + 16 Semantic Alias |
+| Manifest Records | 252 | 400 = 241 + 53 + 53 + 34 + 1 + 3 + 14 + 1 |
+
+Manifest 保留 §11.4 的八个 Record Families，Supplementary 已计在 Primitive Token Records 内，绝不另计 Public Role 或第九种 Family。第一基础切片只增 Record 内容时 Manifest `schemaVersion=9` 保持；第二切片引入上述新的 Mapping Record Shape 时升至 `10`，PublicRoleRegistry 的结构 Schema 同步由 `1` 升至 `2`，不重复增加 Role Contract Version。这是有实际结构变化的版本，不是人为文件命名。当前历史 `9 / 252 / 16198 bytes` 及早期测量保留；未来实际 Gzip 与 Expected Delta 必须按现有 Canonical Profile 从完整生成结果测量、记录并验证，禁止预填一个未经测量的未来 Byte 值。
+
+当前 `project.config.ts` 的 Initial JS Hard Budget 为 262144 bytes，既有 `check-bundle.ts` 还要求至少保留 8192 bytes Headroom，有效最高 253952 bytes；§18.11.12 的历史测量 252562 bytes 仅余 1390 bytes 有效空间，不当成本任务的实时测量。Semantic Status 不授权增加任何 Bundle/Manifest Budget、降低 Headroom、改压缩规则或放宽 Gate。
+
+必须用共享 Canonical Bank、显式 Alias、Build-time Generation、CSS/Theme Bank 和一个小的当前 Plane UI 投影控制体积。当前 Runtime Registry 同时输出 `definition.planes` 与含 authored/resolved 值的 Bank Records；仅让 JSON 使用 Alias 不保证 Initial JS 不重复。未来 Generator 必须在同一 Registry Owner 内共享状态表/紧凑引用，禁止为十四主题分别内嵌 80 值或重复序列化相同 Status 数据；CSS 和 Manifest 仍可按完整契约展开。不创建第二 Registry、不用 Artificial Dynamic Import 或 Vite Chunk Manipulation 隐藏启动必需工作。
+
+推荐的第一源码切片是一个原子基础：Bank、十六 Public Roles 与 Semantic Source、Role Contract 3、全部 Built-in Alias、Contract 1/2 兼容、Contrast、Generated Registry/Token/CSS/首屏/Manifest、Count Projection 与直接 Source/Checker 同步。它还必须为十六角色生成最小 UnoCSS 映射：Base/Hover/Pressed 各一个稳定 `bg-status-*`，On-status 一个 `text-on-status-*`，沿用现有单属性 `exact-rule`；Family/Key 用上文最终名称，不能引入临时类。当前 `A = R = T = N = U = M` 和 Source Coverage 使这些 Mapping/Generated Output 无法留到第二片；但现有一属性映射足以支持该稳定子集，因此不需要提前扩展多属性模型或消费者。
+
+推荐的第二独立消费者切片是：单一 Resolved-absolute UI Snapshot 与 Naive 四族映射；四个 Base Role 的 property-specific Mapping 扩展及四个 `border-status-*` Utility；真实 PAVP 状态组件切换；Appearance Status Preview；对应 UI/Consumer Governance Checks。第一片不包含 Naive 接线、UiStatusBadge 或 Appearance 视觉扩展；Status 整体能力在消费者未完成前不能声明端到端 Active。两片均须另获 Owner 源码与 Git 授权，本任务授权为零。
+
+第一片生成闭包完成时就运行既有 Build/Bundle 测量；第二片在最小 Bank + Role Contract + Active Runtime Projection + Naive Mapping 接通后立即早测 Bundle，再进行剩余消费者工作。越界必须停止并报告，不能等全部 UI 做完再调预算。每次实际源码 Landing 还须完整 `mise exec -- pnpm verify`；其静态通过不代替真实 Theme 切换、视觉、Forced Colors、辅助功能或 Release 验收。本次只交付规格，不执行这些切片。
 
 ---
 
@@ -10428,6 +10701,8 @@ Compact 模式允许视觉高度低于 44px，但外层命中区域仍应安全�
 ---
 
 # 15. UnoCSS 最终规范
+
+当前模型保持原样；Semantic Status 的唯一目标 Class、可用 Property、单 Role 多 Binding 小扩展及最小生成原子边界见 §13.12。本节不另列状态 Role/Palette，目标未实施时不把其 Class 当作当前可用能力。
 
 配置：
 
@@ -13970,6 +14245,8 @@ OWNER=semantic component, route and application boundary owners
 
 ## 25.1 Versioned Named Contrast Registry
 
+§13.12 精确冻结未来二十条 Status Named Pair、十二条文字 Pair 的 Enhanced Difference 行为以及 Endpoint 扩展；它只在独立源码切片中随 Role Contract 3 激活，优先于本节对当前十四条 Record 的限制。现有十四条阈值与行为保持，本文不重复状态 Pair 列表。
+
 当前十个 Named Pair 与四个 Non-text Boundary 必须统一进入一个精确的 Active Named Contrast Registry，不得一部分存在于 Token Metadata、另一部分硬编码在 Validator：
 
 ```ts
@@ -17151,6 +17428,26 @@ COMPLETION_EVIDENCE=specification diff and actual static/Git/CI results in task 
 ```
 
 本规格任务完成时只推荐 §18.11.10 的一个最小完整源码切片，推荐本身不构成源码准入。后续 Owner 已另行明确授权该源码切片，其当前实现范围与交付条件仅记录在 §18.11.10；本节保留文档任务的精确历史边界，Global Breadcrumb 源码及其他增强不随源码核心切片开始。
+
+---
+
+### 37.2.14 `PAVP_SEMANTIC_STATUS_COLOR_SYSTEM_SPECIFICATION`
+
+Owner 确认语义状态色是 PAVP 必需的核心 Design System Foundation，现由 §13.12 冻结唯一完整合同；源码没有改变，能力保持 `TARGET_INACTIVE / NOT_IMPLEMENTED`。本记录只准入本次架构文档及明确授权的安全 Git 交付，不创建新的 Current Work、Next、Successor、Capability Manifest Source/Generated Record 或第二份 Roadmap。
+
+```text
+ID=PAVP_SEMANTIC_STATUS_COLOR_SYSTEM_SPECIFICATION
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+ENTRY_CONDITIONS=explicit Owner specification authorization; clean main@f7ca671f1ec16516699ea82af941c7a3c24e2adf; origin/main and remote main exactly equal after fetch without prune; index/worktree/untracked/conflict state verified; current theme, custom compatibility, generator, first-paint, Naive/UnoCSS installed source and direct owning checks inspected
+ALLOWED_SCOPE=ARCHITECTURE.md Section 13.12 and narrow affected cross-references/status/admission only; explicit ARCHITECTURE.md staging, one Simplified Chinese commit and normal origin/main push after complete verify and safe re-fetch
+PROHIBITED_SCOPE=production source; Theme JSON; Role Registry; token regeneration; Naive/UnoCSS/Custom runtime/Appearance UI; dependencies/lockfile/patches/configuration/CI/budgets; tests/browser/screenshots/traces/evidence artifacts; branches/worktrees/destructive Git/history rewriting; automatic source implementation; deployment/release
+CONTRACT_STATUS=FROZEN
+SOURCE_IMPLEMENTATION=NOT_IMPLEMENTED
+SOURCE_IMPLEMENTATION_AUTHORIZATION=NONE
+MACHINE_GATES=full document and staged-diff review; git diff --check; existing check:arch and check:policy; complete mise exec -- pnpm verify exit 0; only authorized architecture diff; safe exact-ref synchronization before Git write; exact-commit Static Verification and CodeQL terminal results
+RUNTIME_ACCEPTANCE=NOT_APPLICABLE_TO_DOCUMENT_ONLY_TASK
+COMPLETION_EVIDENCE=actual specification/static/Git/CI states in task response; no source or runtime claim; unsafe sync or material unresolved contract stops delivery
+```
 
 ---
 
