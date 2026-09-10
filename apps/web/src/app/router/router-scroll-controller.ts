@@ -1,11 +1,21 @@
 import type { UiScrollController } from '@platform/ui'
 import type { InjectionKey } from 'vue'
+import type { LiveWorkspaceEntry } from '../workspace/workspace.store'
 
 type RegisterScrollController = (controller: UiScrollController) => () => void
 
 export const routerScrollControllerKey: InjectionKey<RegisterScrollController> = Symbol(
   'PAVP Router Scroll Controller',
 )
+
+export const routerWorkspaceRefreshKey: InjectionKey<
+  (entry: LiveWorkspaceEntry) =>
+    | {
+        isCurrent(): boolean
+        reset(replacement: LiveWorkspaceEntry): void
+      }
+    | undefined
+> = Symbol('PAVP Router Workspace Refresh')
 
 export function createRouterScrollControllers() {
   const controllers = new Map<string, UiScrollController>()

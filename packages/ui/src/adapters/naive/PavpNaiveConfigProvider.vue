@@ -484,4 +484,37 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
     outline: var(--ui-admin-border-width) solid ButtonText;
   }
 }
+
+.pavp-workspace-context-menu {
+  border-width: var(--ui-admin-border-width);
+  border-style: solid;
+  border-color: var(--ui-color-border-default);
+}
+.pavp-workspace-context-menu:focus-visible {
+  outline: var(--ui-admin-border-focus);
+}
+html[data-motion] .pavp-workspace-context-menu,
+html[data-motion] .pavp-workspace-context-menu .n-dropdown-option-body {
+  transition-duration: var(--ui-motion-duration) !important;
+  transition-timing-function: var(--ui-motion-easing) !important;
+}
+html[data-motion='reduced'] .pavp-workspace-context-menu,
+html[data-motion='reduced'] .pavp-workspace-context-menu .n-dropdown-option-body {
+  transition-duration: calc(var(--ui-motion-duration) / 2) !important;
+  transform: none !important;
+}
+html[data-motion='none'] .pavp-workspace-context-menu,
+html[data-motion='none'] .pavp-workspace-context-menu .n-dropdown-option-body {
+  transition: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+@media (forced-colors: active) {
+  .pavp-workspace-context-menu.n-dropdown-menu {
+    background: Canvas;
+  }
+  .pavp-workspace-context-menu .n-dropdown-option-body--pending {
+    outline: var(--ui-admin-border-width) solid Highlight;
+  }
+}
 </style>

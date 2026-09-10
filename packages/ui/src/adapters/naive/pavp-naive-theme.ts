@@ -4,6 +4,7 @@ import commonDark from 'naive-ui/es/_styles/common/dark'
 import breadcrumbDark from 'naive-ui/es/breadcrumb/styles/dark'
 import buttonDark from 'naive-ui/es/button/styles/dark'
 import descriptionsDark from 'naive-ui/es/descriptions/styles/dark'
+import dropdownDark from 'naive-ui/es/dropdown/styles/dark'
 import layoutDark from 'naive-ui/es/layout/styles/dark'
 import menuDark from 'naive-ui/es/menu/styles/dark'
 import radioDark from 'naive-ui/es/radio/styles/dark'
@@ -59,6 +60,7 @@ const darkTheme = {
   Breadcrumb: breadcrumbDark,
   Button: buttonDark,
   Descriptions: descriptionsDark,
+  Dropdown: dropdownDark,
   Layout: layoutDark,
   Menu: menuDark,
   Radio: radioDark,
@@ -285,7 +287,36 @@ export function createPavpNaiveThemeProjection(
 ): Readonly<PavpNaiveThemeProjection> {
   const material = resolveMaterialSurface(appearance.material)
   const projectedMotionDuration = resolveMotionDuration(appearance.motion)
+  const dropdown = {
+    color: materialOverlay,
+    optionTextColor: colorText,
+    prefixColor: colorTextSecondary,
+    suffixColor: colorTextSecondary,
+    optionTextColorHover: colorControl,
+    optionTextColorActive: colorControl,
+    optionTextColorChildActive: colorControl,
+    optionColorHover: navigationHoverSurface,
+    optionColorActive: navigationSelectedSurface,
+    optionHeightLarge: enhancedTargetHeight,
+    fontSizeLarge: fontSize,
+    optionIconSizeLarge: fontSize,
+    optionPrefixWidthLarge: fontSize,
+    optionSuffixWidthLarge: fontSize,
+    optionIconPrefixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
+    optionIconSuffixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
+    borderRadius: radius,
+    padding: `calc(${spacingContentGap} / 2) 0`,
+    dividerColor: colorBorder,
+    optionOpacityDisabled: disabledOpacity,
+    peers: {
+      Popover: {
+        color: materialOverlay,
+        boxShadow: shadowOverlay,
+      },
+    },
+  } satisfies NonNullable<GlobalThemeOverrides['Dropdown']>
   const themeOverrides = Object.freeze({
+    Dropdown: dropdown,
     Scrollbar: {
       width: compactOverlaySpacing,
       height: compactOverlaySpacing,
@@ -463,34 +494,7 @@ export function createPavpNaiveThemeProjection(
       fontSize,
       dividerColor: colorBorder,
       peers: {
-        Dropdown: {
-          color: materialOverlay,
-          optionTextColor: colorText,
-          prefixColor: colorTextSecondary,
-          suffixColor: colorTextSecondary,
-          optionTextColorHover: colorControl,
-          optionTextColorActive: colorControl,
-          optionTextColorChildActive: colorControl,
-          optionColorHover: navigationHoverSurface,
-          optionColorActive: navigationSelectedSurface,
-          optionHeightLarge: enhancedTargetHeight,
-          fontSizeLarge: fontSize,
-          optionIconSizeLarge: fontSize,
-          optionPrefixWidthLarge: fontSize,
-          optionSuffixWidthLarge: fontSize,
-          optionIconPrefixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
-          optionIconSuffixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
-          borderRadius: radius,
-          padding: `calc(${spacingContentGap} / 2) 0`,
-          dividerColor: colorBorder,
-          optionOpacityDisabled: disabledOpacity,
-          peers: {
-            Popover: {
-              color: materialOverlay,
-              boxShadow: shadowOverlay,
-            },
-          },
-        },
+        Dropdown: dropdown,
       },
     },
     Radio: {

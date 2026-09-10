@@ -5,6 +5,7 @@ import type { ScrollRefreshSnapshot } from '../scroll/scroll-refresh-contract'
 import {
   createRouterScrollControllers,
   routerScrollControllerKey,
+  routerWorkspaceRefreshKey,
 } from './router-scroll-controller'
 import {
   createRouter,
@@ -707,6 +708,60 @@ export async function createAndReadyRouter(input: {
       (entry.marker === undefined || readMarker()?.entryId === entry.marker.entryId)
     )
   }
+
+  input.application.provide(routerWorkspaceRefreshKey, (target) => {
+    const entry = committedEntry
+    const resolved = resolveRegisteredDestination(router, target.destination)
+    if (
+      entry?.workspace !== target ||
+      entry.presented === undefined ||
+      resolved === undefined ||
+      !sameRouteAddress(entry.to, resolved)
+    )
+      return undefined
+    const presented = entry.presented
+    const isCurrent = (): boolean =>
+      entryIsCurrent(entry) &&
+      entry.navigation.operation.result?.kind === 'allow' &&
+      regionOwner(entry.navigation.routeName) === presented.owner &&
+      scrollControllers.read(presented.owner) === presented.controller &&
+      presented.controller.readState().ready &&
+      presented.owner.closest('[inert]') === null
+    if (!isCurrent()) return undefined
+    return {
+      isCurrent,
+      reset(replacement) {
+        if (
+          !isCurrent() ||
+          workspace.active !== replacement ||
+          replacement.identity !== target.identity ||
+          replacement.instance === target.instance ||
+          replacement.destination !== target.destination ||
+          replacement.componentName !== target.componentName
+        )
+          return
+        workspaceRecords.delete(target.identity)
+        if (entry.marker !== undefined) regionRecords.delete(entry.marker.entryId)
+        presented.controller.cancelMotion()
+        if (!writeRegionPosition(presented.controller, { left: 0, top: 0 }))
+          throw new TypeError('The locally refreshed Workspace scroll owner is unavailable.')
+        committedEntry = {
+          ...entry,
+          workspace: replacement,
+          presented: {
+            ...presented,
+            context: regionContext(entry.to, entry.navigation, presented.owner),
+            workspaceContext: regionContext(
+              entry.to,
+              entry.navigation,
+              presented.owner,
+              replacement,
+            ),
+          },
+        }
+      },
+    }
+  })
 
   function stampEntry(
     to: RouteLocationNormalized,

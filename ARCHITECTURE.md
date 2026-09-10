@@ -11071,7 +11071,7 @@ Owning Gate 必须拒绝 User Agent 分支、任意 Breakpoint/Viewport/Panel/Sc
 CONTRACT_STATUS=FROZEN
 CAPABILITY_STATUS=TARGET_INACTIVE
 REPOSITORY_IMPLEMENTATION=WORKSPACE_ROUTE_SINGLE_SOURCE_ONLY
-IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SECTION_18_11_10_AND_18_11_11
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SECTION_18_11_10_AND_18_11_11_AND_18_11_12
 WORKSPACE_ROUTE_SINGLE_CAPABILITY_STATUS=ACTIVE
 WORKSPACE_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
 GLOBAL_BREADCRUMB_REPOSITORY_IMPLEMENTATION=NOT_STARTED
@@ -11262,6 +11262,26 @@ Workspace 使用严格 LazyMotion 下的 `m`、独立 LayoutGroup Namespace 和�
 Owner 后续在保留 `main@99b0f31` 上已手动验收的未提交 Scroll System 候选时，仅授权 Workspace 两侧固定相邻激活按钮。`UiWorkspaceTabs` 增加必需 `previousLabel: string` / `nextLabel: string`，由现有 Frame/i18n 投影“上一个标签 / 下一个标签”和“Previous tab / Next tab”，其余公共 Props、Item、Activate/Close 事件不变。结构为相邻按钮、可收缩中央 Scroll Viewport、相邻按钮；按钮是 `role=tablist` 外的普通 `type=button`，始终可见，按当前 `items` 顺序和实际 `activeId` 取 index−1/index+1；首尾不循环，空列表、null/无效活动项及单项两侧均按无目标原生 disabled。按钮复用同一个 `activate(id)` → Frame → Typed Coordinator/Router → 成功 Commit 链，不乐观写活动项；原 activeId Watch 通过 UiScrollArea 显露中央视口外的活动标签，Full 平滑、Reduced/None 即时。原手动键盘模型、Tab/Close Motion、缓存和持久化保持。
 
 仅移除 Strip 的页面级 inline padding，真实 Safe Area 移至固定 Region 两侧；三种 Profile 均保留增强最小命中尺寸与既有标签高度，滚动条留在中央视口。LTR 的物理左/右分别为 previous/next；RTL 随逻辑行排列镜像为 next/previous，方向图标同步镜像，始终表示视觉相邻方向且不反转存储顺序。使用已安装 Lucide Chevron 与既有 Foreground、Disabled Opacity、Selected Surface、Border、Focus Token；Full 为图标轻微 Hover/Press Scale 和 Surface/Color 反馈，Reduced 仅短 Opacity/Color，None 即时，禁用态无 Gesture。此为基本激活入口的局部扩展，不准入其他增强命令。既有 Scroll System 和 OverlayScrollbars/Lenis 配置保持；本次箭头仍待 Owner Visual/Runtime Acceptance，完整静态 Gate 后保持全部 Diff 未暂存，Stage/Commit/Push/Release 均未授权。
+
+### 18.11.12 Workspace Tab context menu and local page refresh
+
+Owner 在干净同步 `main@187ba9c2c465e9c420607f90282753e0359ea21a` 上明确准入 `PAVP_WORKSPACE_TAB_CONTEXT_MENU_AND_LOCAL_REFRESH`，仅实施此处一个源码与静态验证任务。该记录在当前范围取代 §18.11.9 的 Context Menu/Tab Refresh 延期，不修改前序历史，不准入高级菜单、Global Breadcrumb、账号/API、业务页或后继任务。当前候选已有 Refresh/Close 菜单源码；完整 `mise exec -- pnpm verify` Exit 0 和冻结 Bundle Gate 才证明静态就绪。Owner Runtime Acceptance 是本次 Git 交付的必需前置条件；Stage/Commit/Push/Release 均未授权，不以一般 Optional Observation 条款替代此边界。
+
+`UiWorkspaceTabs` 在原有 Props 上仅增加必需 `refreshLabel: string` / `closeLabel: string`，事件仅增加 `refresh(id: string)`；`UiWorkspaceTab` 仅增加必需 `refreshable: boolean`，Activate/Close 与 Slots 合同不变。Frame 用同一 `workspace.canDiscard(entry)` 投影 Refresh 可用性：dormant 为 true，live 服从现有 Discard Authority，UI 不读取策略或 Store。Frame 从同一 Common Catalog 传入 `workspace.refreshLabel`（刷新/Refresh）和既有 `shell.closeActionLabel`（关闭/Close）。私有 `adapters/naive/naive-dropdown.ts` 仅导出本地别名的公开 NDropdown 与 DropdownOption，不能从 `@platform/ui` 公共根导出 Vendor。私有 Workspace Surface 在 Motion 容器与 `role=tablist` 外只放一个菜单，使用 manual trigger、受控 show、client x/y、update:show、clickoutside、select 及现有 `#pavp-overlay-root`。右键阻止原生菜单，不激活目标；临时状态只含目标 Workspace ID 与屏幕坐标，不进入 Pinia/Storage。关闭清除目标但保留最后 x/y 至下次打开替换，避免退场动画期间坐标归零导致左上角闪跳。
+
+菜单精确包含 Refresh/Close；`refreshable=false` 的 Refresh 与 `closable=false` 的 Close 保持可见且禁用，执行边界再次拒绝。Close 使用同一 `close` Emit 和 Frame 原有 discard/相邻回退逻辑，唯一总览不变。ContextMenu/Shift+F10 从聚焦 Tab 完整条目的 PAVP-owned Bounding Rectangle 在逻辑起侧/底边定位，RTL 使用右侧，不读取 Vendor DOM；方向键/Home/End 只移焦、Enter/Space 原生激活的既有 Tab 模型保持。菜单取得键盘焦点；Refresh/Close 先用 preventScroll 聚焦仍有效的目标 Tab，再关闭菜单，最后 Emit，让原有删除焦点规则接续。Escape 通过 Naive update:show 关闭；Escape/外点仅在焦点仍属菜单或退回 Body 且未指向其他控件时返回目标，不能抢走用户外点控件的焦点。选择、外点、Escape、目标消失、活动 Workspace 的独立 Commit 与组件 Dispose 均关闭菜单。
+
+Frame 仅持有一个应用私有 in-flight Refresh Guard；不存在目标安全无操作。非活动目标复用原 `activateWorkspace` → RouteTransitionCoordinator 路径，仅在结果 allow、原 Router Operation 仍有效、实际地址等于目标已提交 Destination、目标已真实 active/live 后继续。原 live 目标必须仍是预期旧 Instance；原 dormant 没有旧 Vue 实例，成功激活已完成 Refresh，不再次换 Key。活动 live 目标不做重复导航。取消、失败、不兼容 Redirect、过期操作或实例失配拒绝破坏；Store `canDiscard` 是 Close/Refresh 的同一权威，仅现有 `unsavedChangesPolicy='none'` 允许，没有未来 Page Discard Authority 时失败封闭，不增加确认框或保存草稿。
+
+Store 的 `refresh(entry, isCurrent)` 使用公开 Vue KeepAlive include 与 VNode Key：①校验活动 Entry、旧 Instance、Discard 与 Router Ownership，临时排除该唯一 live Component Name，保留旧 Symbol，等待 nextTick 完成 Prune；②复核后原位仅换新 Symbol-backed WorkspaceInstanceIdentity，保持排除，等待 nextTick 完成旧实例 Unmount 与新实例 Mount；③复核后恢复 Include，再等待 nextTick 完成新实例缓存准入。try/finally 确保失效/异常也恢复正常 Include；每个阶段检查相同 Workspace、预期实例、活动状态与 Router-owned current predicate。当前 route-single 的唯一组件名保证不牵连其他 Workspace；不合并排除与换 Key 的 Flush，不访问私有 Cache/Renderer/Component Internals，不使用 max 或自动淘汰。Workspace Identity、Destination、Component Name、顺序和 Session 开放路由结构保持原样。
+
+`App.vue` 的单一 RouterView、稳定无 Key 的 `pavp-route-content` 和原单一 KeepAlive 不改；实际页面 Key 继续是 `workspace.active?.instance`。新页面通过原 `workspace-content.ts` 机制注册自身 Revision/Ready，不使用时间戳、刷新计数或伪造 Content Revision。
+
+`router-scroll-controller.ts` 的应用私有 `routerWorkspaceRefreshKey` 提供 `(entry) => { isCurrent(); reset(replacement) } | undefined`；实现只在 `router-lifecycle.ts`，绑定当前成功 Operation、Committed Entry、实际 URL/History Marker 与原 Controller/Boundary。Store 各 Flush 用该 predicate 复核，成功重挂载后 Frame 请求 reset；Router 再核对新实例，删除旧 Workspace Scroll Record 与当前 History Entry Region Record，通过原 Controller cancelMotion + instant Logical Start 写入，并把原 Committed Entry 的 Workspace/呈现上下文更新为新实例，后续来源采集不再引用旧实例。Frame/Store/UI 均不写页面 Offset，不暴露 Lenis/OverlayScrollbars，不改 Scroll System 架构或 sessionStorage Hard-refresh Snapshot；下次正常 pagehide 仍按既有规则采集。活动 Refresh 无 push/replace/History Entry/URL 变化；非活动 Refresh 仅初次激活的一次正常导航，不追加刷新导航。
+
+Dropdown 复用同一个 PAVP Naive Theme：现有 Menu Peer Dropdown Override 与顶层 Dropdown 共用一个私有对象，增加 Dropdown Dark Theme 的真实准入，不复制颜色/材质权威。菜单的局部 Vendor CSS 仅将现有 Motion Token 投影到 Naive Popover Transition：Full 使用正常时长，Reduced 半时长且无 Transform，None 无过渡且即时可见；保留 Light/Dark/Custom、Enhanced 与 Forced Colors 的 Token/System Color 边界。不使用 motion-v 包装菜单，不新增依赖或图标。
+
+直接 Owning Checks 保护 UI Props/Emits 与唯一私有菜单、Vendor Import 闭包、公开 KeepAlive 刷新顺序和 Router 滚动所有权、Frame 接线、同一 Close 路径及两种语言。原 App Host、私有 Cache 禁令、Session 结构、任意 Vendor Import 和无直接 App Scroll Write 的保护不放宽。无测试/浏览器/截图/运行证据工件。干净基线重新 Build/Bundle 为 Initial JS `251482` / CSS `27538` bytes gzip；JS 硬预算 `262144`、强制预留 `8192`、有效上限 `253952` 不变，初始可用增量 `2470`。最小接线已 Build/Bundle 通过，JS `252562` / CSS `27640`；最终值以完整静态门槛输出为准，超预算即停止并保留未暂存 Diff，不修改压缩/分块/预算。
 
 ## 18.12 PAVP Scroll System
 

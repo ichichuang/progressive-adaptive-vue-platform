@@ -47,4 +47,5 @@ export interface UiWorkspaceTab {
   readonly label: string
   readonly closeLabel: string
   readonly closable: boolean
+  readonly refreshable: boolean
 }

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, shallowRef } from 'vue'
+import { computed, nextTick, shallowRef } from 'vue'
 
 import {
   registeredRouteDestination,
@@ -36,10 +36,11 @@ export function isLiveWorkspace(entry: WorkspaceEntry): entry is LiveWorkspaceEn
   return entry.state === 'live'
 }
 
-// Only Router commits choose the active entry and create live instances; restore rebuilds structure.
+// Router commits choose the active entry; local refresh replaces only its live instance.
 export const useWorkspaceStore = defineStore('workspace', () => {
   const entries = shallowRef<readonly WorkspaceEntry[]>([])
   const activeIdentity = shallowRef<WorkspaceIdentity | null>(null)
+  const refreshing = shallowRef<LiveWorkspaceEntry>()
   const active = computed(() =>
     entries.value.find(
       (entry): entry is LiveWorkspaceEntry =>
@@ -47,7 +48,10 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     ),
   )
   const includedComponentNames = computed(() =>
-    entries.value.filter(isLiveWorkspace).map((entry) => entry.componentName),
+    entries.value
+      .filter(isLiveWorkspace)
+      .filter((entry) => entry.identity !== refreshing.value?.identity)
+      .map((entry) => entry.componentName),
   )
   let restored = false
 
@@ -150,8 +154,42 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   }
 
   function dispose(): void {
+    refreshing.value = undefined
     activeIdentity.value = null
     entries.value = []
+  }
+
+  async function refresh(
+    entry: LiveWorkspaceEntry,
+    isCurrent: () => boolean,
+  ): Promise<LiveWorkspaceEntry | undefined> {
+    const owns = (expected: LiveWorkspaceEntry): boolean =>
+      isCurrent() && active.value === expected && canDiscard(expected)
+    if (refreshing.value !== undefined || !owns(entry)) return undefined
+    refreshing.value = entry
+    try {
+      // Public include pruning must finish before changing the current VNode key.
+      await nextTick()
+      if (!owns(entry)) return undefined
+      const replacement = Object.freeze({
+        ...entry,
+        instance: Symbol(entry.identity) as WorkspaceInstanceIdentity,
+      })
+      entries.value = entries.value.map((candidate) =>
+        candidate === entry ? replacement : candidate,
+      )
+      // Exclusion stays in force until the old keyed page is actually unmounted.
+      await nextTick()
+      if (!owns(replacement)) return undefined
+      refreshing.value = undefined
+      await nextTick()
+      return owns(replacement) ? replacement : undefined
+    } finally {
+      if (refreshing.value !== undefined) {
+        refreshing.value = undefined
+        await nextTick()
+      }
+    }
   }
 
   return {
@@ -163,6 +201,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     commit,
     canDiscard,
     discard,
+    refresh,
     dispose,
   }
 })

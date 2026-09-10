@@ -774,6 +774,21 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     resolve(uiSourceDirectory, 'adapters/motion/WorkspaceTabsSurface.vue'),
     'utf8',
   )
+  const workspaceTab = sourceFile(
+    'contracts.ts',
+    await readFile(resolve(uiSourceDirectory, 'components/contracts.ts'), 'utf8'),
+  )
+    .statements.filter(ts.isInterfaceDeclaration)
+    .find((statement) => statement.name.text === 'UiWorkspaceTab')
+  const refreshable = workspaceTab?.members
+    .filter(ts.isPropertySignature)
+    .find((member) => member.name.getText() === 'refreshable')
+  if (
+    refreshable?.type?.kind !== ts.SyntaxKind.BooleanKeyword ||
+    refreshable.questionToken !== undefined ||
+    !refreshable.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ReadonlyKeyword)
+  )
+    violations.push('UiWorkspaceTab requires a readonly boolean refreshable display fact.')
   const scrollViewportSource = await readFile(
     resolve(uiSourceDirectory, 'adapters/motion/ScrollViewport.vue'),
     'utf8',
@@ -791,6 +806,67 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   const workspaceTemplate = parseVueTemplate('WorkspaceTabsSurface.vue', workspaceScrollSource)
   if (typeof workspaceTemplate === 'string') violations.push(workspaceTemplate)
   else {
+    const menus: (VueTemplateNode & { readonly props: readonly VueTemplateProperty[] })[] = []
+    walkVueElements(workspaceTemplate.root, (element) => {
+      if (element.tag === 'PavpDropdownPrimitive') menus.push(element)
+      if (
+        (staticAttribute(element, 'role') === 'tablist' || element.tag === 'LazyMotion') &&
+        containsElementTag(element, 'PavpDropdownPrimitive')
+      )
+        violations.push(
+          'Workspace context menu must remain outside the tablist and Motion wrapper.',
+        )
+    })
+    const menu = menus[0]
+    if (
+      menus.length !== 1 ||
+      menu === undefined ||
+      staticAttribute(menu, 'trigger') !== 'manual' ||
+      staticAttribute(menu, 'to') !== overlayTarget ||
+      !['show', 'x', 'y', 'options'].every((name) => hasAttributeOrBinding(menu, name)) ||
+      !['update:show', 'clickoutside', 'select'].every((name) =>
+        menu.props.some((prop) => prop.name === 'on' && prop.arg?.content === name),
+      )
+    )
+      violations.push(
+        'Workspace context menu requires one controlled public manual-position Dropdown.',
+      )
+    const actionKeys: string[] = []
+    const disabledActionKeys: string[] = []
+    const script = sourceFile('WorkspaceTabsSurface.vue', scriptContent(workspaceScrollSource))
+    function collectActions(node: ts.Node): void {
+      if (
+        ts.isPropertyAssignment(node) &&
+        node.name.getText() === 'key' &&
+        ts.isStringLiteral(node.initializer)
+      ) {
+        actionKeys.push(node.initializer.text)
+        if (ts.isObjectLiteralExpression(node.parent)) {
+          const disabled = node.parent.properties
+            .filter(ts.isPropertyAssignment)
+            .find((property) => property.name.getText() === 'disabled')
+          const field = node.initializer.text === 'refresh' ? 'refreshable' : 'closable'
+          if (disabled?.initializer.getText().includes(`.${field}`))
+            disabledActionKeys.push(node.initializer.text)
+        }
+      }
+      ts.forEachChild(node, collectActions)
+    }
+    collectActions(script)
+    if (
+      !exactSet(actionKeys, ['refresh', 'close']) ||
+      !exactSet(disabledActionKeys, ['refresh', 'close']) ||
+      !workspaceScrollSource.includes('@contextmenu.prevent=') ||
+      !workspaceScrollSource.includes("'ContextMenu'") ||
+      !workspaceScrollSource.includes("'F10'") ||
+      !workspaceScrollSource.includes('getBoundingClientRect()') ||
+      /\b(?:useRouter|useWorkspaceStore|KeepAlive|localStorage|sessionStorage)\b/u.test(
+        workspaceScrollSource,
+      )
+    )
+      violations.push(
+        'Workspace menu must preserve the two intents, keyboard opening and UI-only ownership.',
+      )
     const controls: VueTemplateNode[] = []
     const tablists: VueTemplateNode[] = []
     const labels = new Set<string>()
@@ -1146,6 +1222,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'packages/ui/src/adapters/naive/naive-breadcrumb.ts',
     'packages/ui/src/adapters/naive/naive-button.ts',
     'packages/ui/src/adapters/naive/naive-descriptions.ts',
+    'packages/ui/src/adapters/naive/naive-dropdown.ts',
     'packages/ui/src/adapters/naive/naive-icon.ts',
     'packages/ui/src/adapters/naive/naive-layout.ts',
     'packages/ui/src/adapters/naive/naive-menu.ts',
@@ -1295,6 +1372,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NConfigProvider@naive-ui/es/config-provider',
     'NDescriptions@naive-ui/es/descriptions',
     'NDescriptionsItem@naive-ui/es/descriptions',
+    'NDropdown@naive-ui/es/dropdown',
     'NIcon@naive-ui/es/icon',
     'NLayout@naive-ui/es/layout',
     'NLayoutSider@naive-ui/es/layout',
@@ -1307,6 +1385,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'buttonDark@naive-ui/es/button/styles/dark',
     'commonDark@naive-ui/es/_styles/common/dark',
     'descriptionsDark@naive-ui/es/descriptions/styles/dark',
+    'dropdownDark@naive-ui/es/dropdown/styles/dark',
     'layoutDark@naive-ui/es/layout/styles/dark',
     'menuDark@naive-ui/es/menu/styles/dark',
     'radioDark@naive-ui/es/radio/styles/dark',

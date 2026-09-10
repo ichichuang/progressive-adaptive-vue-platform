@@ -4532,6 +4532,115 @@ export async function validateRouteTransitionSourceGovernance(): Promise<readonl
   ]
 }
 
+async function workspaceRefreshViolations(): Promise<string[]> {
+  const violations: string[] = []
+  const [store, frame, lifecycle, port] = await Promise.all([
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace.store.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
+    readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'),
+    readFile(resolve(routerDirectory, 'router-scroll-controller.ts'), 'utf8'),
+  ])
+  const parsedStore = ts.createSourceFile('workspace.store.ts', store, ts.ScriptTarget.Latest, true)
+  const refresh = nodesOf(parsedStore, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === 'refresh',
+  )
+  const transaction = refresh === undefined ? undefined : nodesOf(refresh, ts.isTryStatement)[0]
+  const ticks =
+    transaction?.tryBlock.statements.filter(
+      (node) =>
+        ts.isExpressionStatement(node) &&
+        ts.isAwaitExpression(node.expression) &&
+        ts.isCallExpression(node.expression.expression) &&
+        callMemberName(node.expression.expression) ===
+          namedImportLocalName(parsedStore, 'vue', 'nextTick'),
+    ) ?? []
+  const calls = refresh === undefined ? [] : nodesOf(refresh, ts.isCallExpression)
+  if (
+    refresh?.parameters.length !== 2 ||
+    transaction?.finallyBlock === undefined ||
+    ticks.length !== 3 ||
+    !calls.some((call) => callMemberName(call) === 'canDiscard') ||
+    !calls.some((call) => callMemberName(call) === 'Symbol') ||
+    /\b(?:localStorage|sessionStorage|workspaceSession|router)\b/u.test(refresh.getText())
+  )
+    violations.push(
+      'Workspace refresh requires discard authority and three separate public KeepAlive flush phases with cleanup.',
+    )
+
+  const parsedFrame = ts.createSourceFile(
+    'ConsoleRouteFrame.ts',
+    /<script[^>]*>([\s\S]*?)<\/script>/u.exec(frame)?.[1] ?? '',
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  if (
+    !nodesOf(parsedFrame, ts.isPropertyAssignment).some(
+      (property) =>
+        property.name.getText() === 'refreshable' &&
+        ts.isCallExpression(property.initializer) &&
+        callMemberName(property.initializer) === 'canDiscard',
+    )
+  )
+    violations.push('Workspace Refresh availability must project the existing discard authority.')
+  const activateHandler = /@activate="([\w$]+)"/u.exec(frame)?.[1]
+  const refreshHandler = /@refresh="([\w$]+)"/u.exec(frame)?.[1]
+  const handler = nodesOf(parsedFrame, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === refreshHandler,
+  )
+  const handlerCalls = handler === undefined ? [] : nodesOf(handler, ts.isCallExpression)
+  const activateCall = handlerCalls.find((call) => callMemberName(call) === activateHandler)
+  const refreshCall = handlerCalls.find((call) => callMemberName(call) === 'refresh')
+  if (
+    handler === undefined ||
+    activateCall === undefined ||
+    refreshCall === undefined ||
+    activateCall.pos >= refreshCall.pos ||
+    !handlerCalls.some((call) => callMemberName(call) === 'isRouterNavigationCurrent') ||
+    !handlerCalls.some((call) => callMemberName(call) === 'isLiveWorkspace') ||
+    !handlerCalls.some((call) => callMemberName(call) === 'sameRouteAddress') ||
+    handlerCalls.some((call) =>
+      ['navigate', 'push', 'replace', 'go'].includes(callMemberName(call) ?? ''),
+    )
+  )
+    violations.push(
+      'Context Refresh must reuse committed activation, reject stale navigation and avoid a second navigation or dormant remount.',
+    )
+  const parsedLifecycle = ts.createSourceFile(
+    'router-lifecycle.ts',
+    lifecycle,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const registrations = nodesOf(parsedLifecycle, ts.isCallExpression).filter(
+    (call) =>
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText() === 'routerWorkspaceRefreshKey',
+  )
+  const resetOwner = registrations[0]?.arguments[1]
+  const resetCalls = resetOwner === undefined ? [] : nodesOf(resetOwner, ts.isCallExpression)
+  if (
+    registrations.length !== 1 ||
+    !port.includes('InjectionKey<') ||
+    !port.includes('reset(replacement: LiveWorkspaceEntry): void') ||
+    !frame.includes('inject(routerWorkspaceRefreshKey)') ||
+    !resetCalls.some((call) => callMemberName(call) === 'cancelMotion') ||
+    !resetCalls.some((call) => callMemberName(call) === 'isCurrent')
+  )
+    violations.push(
+      'Router alone must own the current-operation refresh port, scroll invalidation and motion cancellation.',
+    )
+  if (
+    /scrollTo|scrollTop\s*=|scrollLeft\s*=|scrollIntoView/u.test(frame) ||
+    /__v_cache|__keepAliveStorageContainer|pruneCache|rendererInternals|\$forceUpdate|location\.reload|router\.go\(0\)/u.test(
+      `${store}\n${frame}\n${lifecycle}`,
+    )
+  )
+    violations.push(
+      'Workspace refresh must not access private KeepAlive internals, reload the application or write scroll from the Frame.',
+    )
+  return violations
+}
+
 export async function validateRouterArchitecture(): Promise<readonly string[]> {
   const routerSources = await collectFiles(routerDirectory)
   const routeIdOwners = await Promise.all(
@@ -4555,6 +4664,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...(await navigationContractViolations()),
     ...(await routerErrorContractViolations()),
     ...(await lifecycleViolations()),
+    ...(await workspaceRefreshViolations()),
     ...(await validateRouteTransitionSourceGovernance()),
     ...routeIdViolations,
   ]

@@ -52,6 +52,7 @@
   "workspace.label": "Workspaces",
   "workspace.previousLabel": "Previous tab",
   "workspace.nextLabel": "Next tab",
+  "workspace.refreshLabel": "Refresh",
   "shell.consoleTitle": "Architecture console",
   "shell.navigationLabel": "Architecture navigation",
   "shell.navigationActionLabel": "Navigation",

@@ -52,6 +52,7 @@
   "workspace.label": "工作区",
   "workspace.previousLabel": "上一个标签",
   "workspace.nextLabel": "下一个标签",
+  "workspace.refreshLabel": "刷新",
   "shell.consoleTitle": "架构管理台",
   "shell.navigationLabel": "架构导航",
   "shell.navigationActionLabel": "导航",

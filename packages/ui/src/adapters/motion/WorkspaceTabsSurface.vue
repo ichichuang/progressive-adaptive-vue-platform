@@ -10,6 +10,7 @@ import {
 } from './motion-feature-runtime'
 
 import type { UiWorkspaceTab } from '../../components/contracts'
+import { PavpDropdownPrimitive, type PavpDropdownOption } from '../naive/naive-dropdown'
 import UiScrollArea from '../../components/UiScrollArea.vue'
 import type { UiScrollController } from '../../components/scroll-contracts'
 
@@ -22,11 +23,14 @@ const props = defineProps<{
   readonly label: string
   readonly previousLabel: string
   readonly nextLabel: string
+  readonly refreshLabel: string
+  readonly closeLabel: string
   readonly panelId: string
 }>()
 const emit = defineEmits<{
   activate: [id: string]
   close: [id: string]
+  refresh: [id: string]
 }>()
 const activeIndex = computed(() =>
   props.activeId === null ? -1 : props.items.findIndex((item) => item.id === props.activeId),
@@ -44,6 +48,78 @@ function connectScrollController(controller: UiScrollController | null): void {
   scrollController = controller
 }
 const groupId = `pavp-workspace-${useId()}`
+const menuId = `${groupId}-menu`
+const contextMenu = ref<{ readonly id: string | null; readonly x: number; readonly y: number }>({
+  id: null,
+  x: 0,
+  y: 0,
+})
+const contextItem = computed(() => props.items.find((item) => item.id === contextMenu.value.id))
+const contextOptions = computed<PavpDropdownOption[]>(() => [
+  {
+    key: 'refresh',
+    label: props.refreshLabel,
+    disabled: contextItem.value?.refreshable !== true,
+    props: { role: 'menuitem', 'aria-disabled': contextItem.value?.refreshable !== true },
+  },
+  {
+    key: 'close',
+    label: props.closeLabel,
+    disabled: contextItem.value?.closable !== true,
+    props: { role: 'menuitem', 'aria-disabled': contextItem.value?.closable !== true },
+  },
+])
+function closeContextMenu(): void {
+  // Keep the anchor stable while the dropdown finishes its leave transition.
+  if (contextMenu.value.id !== null) contextMenu.value = { ...contextMenu.value, id: null }
+}
+async function openContextMenu(id: string, x: number, y: number): Promise<void> {
+  if (!props.items.some((item) => item.id === id)) return
+  contextMenu.value = { id, x, y }
+  await nextTick()
+  if (contextItem.value?.id === id) document.getElementById(menuId)?.focus({ preventScroll: true })
+}
+function updateContextMenu(show: boolean): void {
+  if (!show) dismissContextMenu()
+}
+function dismissContextMenu(event?: MouseEvent): void {
+  const item = contextItem.value
+  const focused = document.activeElement
+  // Native pointer focus may complete after clickoutside (notably labels and touch).
+  const targetsControl = event
+    ?.composedPath()
+    .some(
+      (target) =>
+        target instanceof Element &&
+        target.matches(
+          'a[href], button, input, select, textarea, label, summary, [tabindex], [contenteditable]',
+        ),
+    )
+  if (
+    item !== undefined &&
+    targetsControl !== true &&
+    (focused === document.body || document.getElementById(menuId)?.contains(focused) === true)
+  )
+    focusTab(document.getElementById(`${item.id}-tab`) ?? undefined)
+  closeContextMenu()
+}
+function selectContextAction(key: string | number): void {
+  const item = contextItem.value
+  if (item !== undefined) focusTab(document.getElementById(`${item.id}-tab`) ?? undefined)
+  closeContextMenu()
+  if (item === undefined) return
+  if (key === 'refresh' && item.refreshable) emit('refresh', item.id)
+  else if (key === 'close' && item.closable) emit('close', item.id)
+}
+watch(
+  contextItem,
+  (item) => {
+    if (item === undefined) closeContextMenu()
+  },
+  { flush: 'sync' },
+)
+watch(() => props.activeId, closeContextMenu, { flush: 'sync' })
+onBeforeUnmount(closeContextMenu)
 const { dispose, features, featureReady, startAfterStableMount } = createMotionFeatureRuntime()
 const full = computed(() => featureReady.value && props.motion === 'full')
 const transition = computed(() => ({
@@ -158,6 +234,16 @@ function moveFocus(event: KeyboardEvent): void {
   if (current < 0) return
   const direction =
     strip.value !== undefined && getComputedStyle(strip.value).direction === 'rtl' ? -1 : 1
+  if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+    const button = buttons[current]
+    const item = props.items.find((candidate) => `${candidate.id}-tab` === button?.id)
+    if (button === undefined || item === undefined) return
+    event.preventDefault()
+    const bounds = button.closest('.pavp-workspace-tabs__item')?.getBoundingClientRect()
+    if (bounds === undefined) return
+    void openContextMenu(item.id, direction === -1 ? bounds.right : bounds.left, bounds.bottom)
+    return
+  }
   const offset = event.key === 'ArrowRight' ? direction : event.key === 'ArrowLeft' ? -direction : 0
   const next =
     event.key === 'Home'
@@ -280,6 +366,7 @@ watch(
                     :animate="{ ...resting, y: 0 }"
                     :exit="leaving"
                     :transition="transition"
+                    @contextmenu.prevent="openContextMenu(item.id, $event.clientX, $event.clientY)"
                   >
                     <m.div
                       v-if="full && item.id === activeId"
@@ -308,6 +395,8 @@ watch(
                       :transition="transition"
                       :aria-selected="item.id === activeId"
                       :aria-controls="panelId"
+                      aria-haspopup="menu"
+                      :aria-expanded="contextMenu.id === item.id"
                       :tabindex="item.id === (focusedId ?? activeId) ? 0 : -1"
                       @focus="focusedId = item.id"
                       @click="emit('activate', item.id)"
@@ -387,6 +476,24 @@ watch(
       </LayoutGroup>
     </MotionConfig>
   </LazyMotion>
+  <PavpDropdownPrimitive
+    :id="menuId"
+    class="pavp-workspace-context-menu"
+    role="menu"
+    tabindex="-1"
+    :aria-labelledby="contextMenu.id === null ? undefined : `${contextMenu.id}-tab`"
+    trigger="manual"
+    size="large"
+    to="#pavp-overlay-root"
+    :show="contextMenu.id !== null"
+    :x="contextMenu.x"
+    :y="contextMenu.y"
+    :options="contextOptions"
+    @update:show="updateContextMenu"
+    @clickoutside="dismissContextMenu"
+    @select="selectContextAction"
+    @keydown.tab="closeContextMenu"
+  />
 </template>
 
 <style scoped>

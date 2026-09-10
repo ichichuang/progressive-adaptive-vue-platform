@@ -193,6 +193,8 @@ export const uiPublicComponentRegistry = Object.freeze({
           defaultValue: null,
         }),
         Object.freeze({ name: 'nextLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'refreshLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'closeLabel', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'panelId', type: 'string', required: true, defaultValue: null }),
         Object.freeze({
           name: 'motion',
@@ -204,6 +206,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       emits: Object.freeze([
         Object.freeze({ name: 'activate', payloadType: 'string' }),
         Object.freeze({ name: 'close', payloadType: 'string' }),
+        Object.freeze({ name: 'refresh', payloadType: 'string' }),
       ]),
       slots: Object.freeze([]),
       semanticVariants: Object.freeze([]),

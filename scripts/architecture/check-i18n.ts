@@ -223,6 +223,16 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       `${scope}: Chinese/English key coverage differs.`,
     )
   }
+  for (const [locale, refresh, close] of [
+    ['zh-CN', '刷新', '关闭'],
+    ['en', 'Refresh', 'Close'],
+  ] as const) {
+    const common = catalogs.get(`${owner}/messages/${locale}/common.json`)
+    report(
+      common?.['workspace.refreshLabel'] === refresh && common['shell.closeActionLabel'] === close,
+      `${locale}: Workspace Refresh/Close must use the common localized labels.`,
+    )
+  }
   report(
     isDeepStrictEqual(messageParameterKinds, expectedParameters),
     'the three named-parameter contracts must remain exact.',

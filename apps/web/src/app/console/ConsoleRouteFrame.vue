@@ -15,7 +15,10 @@ import {
   type WorkspaceIdentity,
 } from '../workspace/workspace.store'
 import { isRouterNavigationCurrent } from '../router/router-lifecycle'
-import { routerScrollControllerKey } from '../router/router-scroll-controller'
+import {
+  routerScrollControllerKey,
+  routerWorkspaceRefreshKey,
+} from '../router/router-scroll-controller'
 import { reconcileNavigationGroupIds } from '../navigation/navigation-preference-contract'
 import { useNavigationPreferenceStore } from '../navigation/navigation-preference.store'
 import { useConsoleI18n } from '../../shared/i18n'
@@ -24,6 +27,7 @@ import {
   registeredRouteDestination,
   resolveRegisteredDestination,
   sameRouteAddress,
+  type TypedNavigationResult,
 } from '../router/route-input'
 import { consoleNavigationRegistry, getRouteRecord } from '../router/route-registry'
 import { createRouteTransitionCoordinator } from '../router/route-transition/route-transition-coordinator'
@@ -81,6 +85,9 @@ const copy = computed(() => ({
 }))
 const router = useRouter()
 const registerScrollController = inject(routerScrollControllerKey)
+const prepareWorkspaceRefresh = inject(routerWorkspaceRefreshKey)
+if (prepareWorkspaceRefresh === undefined)
+  throw new Error('The Console requires the Router Workspace Refresh port.')
 if (registerScrollController === undefined)
   throw new Error('The Console requires the Router Scroll Controller port.')
 let unregisterScrollController: (() => void) | undefined
@@ -104,17 +111,66 @@ const workspaceTabs = computed(() =>
       label,
       closeLabel: `${t('shell.closeActionLabel')} ${label}`,
       closable: !(workspace.entries.length === 1 && entry.destination.name === 'console-overview'),
+      refreshable: workspace.canDiscard(entry),
     }
   }),
 )
 
-async function activateWorkspace(id: string): Promise<void> {
+async function activateWorkspace(id: string): Promise<TypedNavigationResult | undefined> {
   const entry = workspace.entries.find((candidate) => candidate.identity === id)
   if (entry !== undefined)
-    await routeTransitionCoordinator.navigate(
+    return routeTransitionCoordinator.navigate(
       entry.destination,
       isLiveWorkspace(entry) ? { workspaceActivation: entry } : undefined,
     )
+}
+
+let refreshTarget: WorkspaceIdentity | undefined
+async function refreshWorkspace(id: string): Promise<void> {
+  const target = workspace.entries.find((entry) => entry.identity === id)
+  if (
+    target === undefined ||
+    refreshTarget !== undefined ||
+    closing.has(target.identity) ||
+    !workspace.canDiscard(target)
+  )
+    return
+  refreshTarget = target.identity
+  try {
+    if (target.identity !== workspace.activeIdentity) {
+      const result = await activateWorkspace(id)
+      const resolved = resolveRegisteredDestination(router, target.destination)
+      if (
+        result?.kind !== 'allow' ||
+        !isRouterNavigationCurrent(router, result.navigationId) ||
+        resolved === undefined ||
+        !sameRouteAddress(router.currentRoute.value, resolved)
+      )
+        return
+    }
+    const active = workspace.active
+    if (
+      active?.identity !== target.identity ||
+      refreshTarget !== target.identity ||
+      closing.has(target.identity)
+    )
+      return
+    // Dormant activation already mounted a fresh instance; never mount it twice.
+    if (!isLiveWorkspace(target)) return
+    if (active.instance !== target.instance) return
+    const presentation = prepareWorkspaceRefresh?.(active)
+    if (presentation === undefined) return
+    const replacement = await workspace.refresh(
+      active,
+      () =>
+        refreshTarget === target.identity &&
+        !closing.has(target.identity) &&
+        presentation.isCurrent(),
+    )
+    if (replacement !== undefined) presentation.reset(replacement)
+  } finally {
+    refreshTarget = undefined
+  }
 }
 
 async function closeWorkspace(id: string): Promise<void> {
@@ -224,6 +280,7 @@ const routeTransitionCoordinator = createRouteTransitionCoordinator({
 })
 
 onScopeDispose(() => {
+  refreshTarget = undefined
   unregisterScrollController?.()
   routeTransitionCoordinator.dispose()
 })
@@ -258,9 +315,12 @@ async function navigate(routeName: string): Promise<void> {
         :label="t('workspace.label')"
         :previous-label="t('workspace.previousLabel')"
         :next-label="t('workspace.nextLabel')"
+        :refresh-label="t('workspace.refreshLabel')"
+        :close-label="t('shell.closeActionLabel')"
         panel-id="pavp-workspace-panel"
         @activate="activateWorkspace"
         @close="closeWorkspace"
+        @refresh="refreshWorkspace"
       />
     </template>
     <slot />

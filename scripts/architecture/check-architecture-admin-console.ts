@@ -2764,6 +2764,32 @@ function themeOverrideObject(source: string): ts.ObjectLiteralExpression | undef
   return result
 }
 
+function navigationDropdownThemeOverride(source: string): ts.ObjectLiteralExpression | undefined {
+  const overrides = themeOverrideObject(source)
+  const menu = overrides === undefined ? undefined : objectPropertyObject(overrides, 'Menu')
+  const peers = menu === undefined ? undefined : objectPropertyObject(menu, 'peers')
+  const value = peers === undefined ? undefined : objectPropertyInitializer(peers, 'Dropdown')
+  if (value === undefined) return undefined
+  const expression = unwrapExpression(value)
+  if (ts.isObjectLiteralExpression(expression)) return expression
+  if (!ts.isIdentifier(expression)) return undefined
+  let result: ts.ObjectLiteralExpression | undefined
+  function visit(node: ts.Node): void {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.name.text === expression.getText() &&
+      node.initializer !== undefined
+    ) {
+      const initializer = unwrapExpression(node.initializer)
+      if (ts.isObjectLiteralExpression(initializer)) result = initializer
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(expression.getSourceFile())
+  return result
+}
+
 function naiveCommonParserSensitiveOverrides(source: string): readonly string[] {
   const overrides = themeOverrideObject(source)
   const commonOverride =
@@ -12214,8 +12240,10 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_THEME_DROPDOWN_PEER',
-      themeSource.includes('peers: {\n        Dropdown: {') &&
-        requiredDropdownThemeFields.every((field) => themeSource.includes(field)) &&
+      navigationDropdownThemeOverride(themeSource) !== undefined &&
+        requiredDropdownThemeFields.every((field) =>
+          navigationDropdownThemeOverride(themeSource)?.getText().includes(field),
+        ) &&
         !/#18a058|#36ad6a|#0c7a43/iu.test(themeSource),
     ],
     [
@@ -12439,8 +12467,8 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'themeSource',
-        '          optionTextColorHover: colorControl,',
-        "          optionTextColorHover: '#18a058',",
+        'optionTextColorHover: colorControl,',
+        "optionTextColorHover: '#18a058',",
       ),
     ],
     [
@@ -13518,9 +13546,7 @@ function adminNavigationCollapsedPopupInvariantResults(
   const eventLocalHoverActivation =
     rootKeydownSource.includes("event.key === 'Enter' || event.key === ' '") ||
     shellScript.includes("return event.key === 'Enter' || event.key === ' '")
-  const popupPeerStart = snapshot.themeSource.indexOf('      peers: {\n        Dropdown: {')
-  const popupPeerEnd = snapshot.themeSource.indexOf('    Radio: {', popupPeerStart)
-  const popupPeerSource = snapshot.themeSource.slice(popupPeerStart, popupPeerEnd)
+  const popupPeerSource = navigationDropdownThemeOverride(snapshot.themeSource)?.getText() ?? ''
 
   return Object.freeze([
     {
@@ -16580,6 +16606,22 @@ async function validateNaiveOverrides(): Promise<string[]> {
   }
 
   const overrideNames = staticObjectPropertyNames(overrides)
+  const menuOverrides = objectPropertyObject(overrides, 'Menu')
+  const menuPeers =
+    menuOverrides === undefined ? undefined : objectPropertyObject(menuOverrides, 'peers')
+  const rootDropdown = objectPropertyInitializer(overrides, 'Dropdown')
+  const menuDropdown =
+    menuPeers === undefined ? undefined : objectPropertyInitializer(menuPeers, 'Dropdown')
+  if (
+    rootDropdown === undefined ||
+    !ts.isIdentifier(rootDropdown) ||
+    menuDropdown?.getText() !== rootDropdown.getText() ||
+    navigationDropdownThemeOverride(themeSource) === undefined ||
+    !themeSource.includes('Dropdown: dropdownDark')
+  )
+    violations.push(
+      'Workspace and Menu Dropdown must share one PAVP theme projection with the admitted dark theme.',
+    )
   if (
     overrideNames === undefined ||
     !exactSet(overrideNames, [
@@ -16587,6 +16629,7 @@ async function validateNaiveOverrides(): Promise<string[]> {
       ...Object.keys(scrollSystemThemeOverrideContract),
       'Layout',
       'Menu',
+      'Dropdown',
     ])
   ) {
     violations.push('PAVP-to-Naive override component inventory drifted.')
@@ -16650,8 +16693,8 @@ async function validateNaiveOverrides(): Promise<string[]> {
   const expectedImportantMotionDeclarationCount = providerSource.includes(
     '.pavp-admin-shell__header-action.n-button:focus:not(:focus-visible)',
   )
-    ? 52
-    : 51
+    ? 59
+    : 58
   if (
     requiredProjectionMarkers.some((marker) => !themeSource.includes(marker)) ||
     expectedMaterialBranches.some((branch) => !normalizedThemeSource.includes(branch)) ||
