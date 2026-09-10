@@ -16252,14 +16252,15 @@ async function validateTokensAndLayout(): Promise<string[]> {
   if (
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
-    tokenManifest.schemaVersion !== 9 ||
-    tokenManifest.tokens.length !== 145 ||
-    tokenManifest.activePublicRoles.length !== 37 ||
-    tokenManifest.unoCssMappings.length !== 37 ||
-    tokenManifest.governance.recordCount !== 252 ||
+    tokenManifest.schemaVersion !== 10 ||
+    tokenManifest.tokens.length !== 241 ||
+    tokenManifest.activePublicRoles.length !== 53 ||
+    tokenManifest.unoCssMappings.length !== 53 ||
+    tokenManifest.namedContrasts.length !== 34 ||
+    tokenManifest.governance.recordCount !== 400 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 71 ||
-    classProjections.length !== 35 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 219 ||
+    classProjections.length !== 51 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -16769,9 +16770,10 @@ function validateInspectorProjections(): string[] {
     engineeringManifest.bundleBudgets
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 37 ||
-    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 9 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 252 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 53 ||
+    runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 26 ||
+    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 10 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 400 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',
       'cobalt',

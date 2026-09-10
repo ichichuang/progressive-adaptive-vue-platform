@@ -27,18 +27,21 @@ import {
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { parseJsonSource } from '../../packages/design-system/src/build/parse-json'
 import { formatThemeBankCssValue } from '../../packages/design-system/src/build/formats/css'
+import { deriveThemeBankRecords } from '../../packages/design-system/src/build/formats/typescript'
+import { validatePublicRoleRegistry } from '../../packages/design-system/src/build/public-role-registry'
 import { generatedThemeRegistry } from '../../packages/design-system/src/generated/theme-registry'
+import { completeBuiltInThemeDefinitionSchema } from '../../packages/design-system/src/schema/complete-theme.schema'
 
 type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    '707d93f47b88819ab8c04ea337717c1b3d83feff597662a074942f126f1f6cf5',
+    '3179dda9dda2c56590fac4ceb1cb2dd05bb51a76ce09a03af34f428a2d6e9586',
   'packages/design-system/src/generated/tokens.ts':
-    '901523734120523b06a6490bfe7b8932c714375ed2495cfc18d4dfa77ad02338',
+    '3c2e3aef7b0a83536145cc920eceebabf46bed9b52fd375b2d5b2cb4d57ef6cf',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '72977d3184761d7ce7cdb07f0d3527bde7b7f06233c7b29b0f55bb72b7ad490a',
+    '32915881ff20670dfabd1806cd7a8d85d99ea138389f2b599bd8b414e6deafd8',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -675,13 +678,14 @@ async function validateFourteenBuiltInThemes(): Promise<readonly string[]> {
   const appearanceFiles = await readdir(resolve(rootDirectory, 'apps/web/src/app/appearance'))
 
   if (
-    colorValues.length !== 560 ||
-    colorValues.some((value) => !value.startsWith('oklch(')) ||
+    colorValues.length !== 1456 ||
+    colorValues.filter((value) => value.startsWith('oklch(')).length !== 560 ||
+    colorValues.filter((value) => value.startsWith('{color.palette.status.')).length !== 896 ||
     scrimValues.length !== 56 ||
     scrimValues.some((value) => typeof value !== 'string' || !value.endsWith('/ 0.56)'))
   ) {
     violations.push(
-      'Fourteen Built-in Themes must contain 560 absolute OKLCH roles and 56 fixed-alpha scrims.',
+      'Fourteen Built-in Themes must retain 560 absolute OKLCH colors, 896 Status aliases and 56 fixed-alpha scrims.',
     )
   }
 
@@ -1661,11 +1665,11 @@ function validatePersistenceContracts(): readonly string[] {
 
     const representativeTheme = generatedThemeRegistry.builtInEntries[0]
     const firstValidation = validateCustomThemeDefinition({
-      ...representativeTheme.definition,
+      ...resolvedCustomThemeProbeDefinition(),
       id: 'z.registry',
     })
     const secondValidation = validateCustomThemeDefinition({
-      ...representativeTheme.definition,
+      ...resolvedCustomThemeProbeDefinition(),
       id: 'A.registry',
     })
 
@@ -1699,6 +1703,10 @@ function validatePersistenceContracts(): readonly string[] {
         }
 
         delete plane['color.control.primary']
+        for (const role of Object.keys(plane)) {
+          if (role.startsWith('color.status.') || role.startsWith('color.text.on-status.'))
+            Reflect.deleteProperty(plane, role)
+        }
       }
     }
 
@@ -1866,6 +1874,15 @@ function validatePersistenceContracts(): readonly string[] {
   })
 }
 
+function resolvedCustomThemeProbeDefinition() {
+  const entry = generatedThemeRegistry.builtInEntries[0]
+  const definition = structuredClone(entry.definition)
+  for (const record of entry.bank.records) {
+    definition.planes[record.colorMode][record.contrast][record.publicRole] = record.resolvedValue
+  }
+  return definition
+}
+
 function validateRuntimeContracts(): readonly string[] {
   const violations: string[] = []
   const expectedProductDefault = {
@@ -2029,10 +2046,8 @@ function validateRuntimeContracts(): readonly string[] {
     }
   }
 
-  const representativeTheme = generatedThemeRegistry.builtInEntries[0]
-
   const customDefinition = {
-    ...representativeTheme.definition,
+    ...resolvedCustomThemeProbeDefinition(),
     id: 'checker.custom',
   }
   const validation = validateCustomThemeDefinition(customDefinition)
@@ -2104,7 +2119,7 @@ function validateRuntimeContracts(): readonly string[] {
       [...generatedThemeRegistry.customBankVariables].sort(compareCodePoints),
     )
   ) {
-    violations.push('Custom Theme Bank installation escaped its fixed 36-variable allowlist.')
+    violations.push('Custom Theme Bank installation escaped its fixed 104-variable allowlist.')
   }
 
   const firstBankVariable = generatedThemeRegistry.customBankVariables[0]
@@ -2289,7 +2304,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       const declarations = selectorDeclarations(css, selector)
 
       if (
-        declarations?.size !== 40 ||
+        declarations?.size !== 104 ||
         entry.bank.records.some(
           (record) =>
             declarations.get(record.bankVariable) !== formatThemeBankCssValue(record.resolvedValue),
@@ -2302,8 +2317,12 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
 
   for (const role of generatedThemeRegistry.activePublicColorRoles) {
     if (
-      !runtimeCss.includes(`${role.publicBinding}: var(--ui-theme-bank-effective-`) ||
-      !criticalCss.includes(`${role.publicBinding}: var(--ui-theme-bank-effective-`)
+      !runtimeCss
+        .replace(/var\(\s+(--ui-[a-z0-9-]+)\s+\)/gu, 'var($1)')
+        .includes(`${role.publicBinding}: var(--ui-theme-bank-effective-`) ||
+      !criticalCss
+        .replace(/var\(\s+(--ui-[a-z0-9-]+)\s+\)/gu, 'var($1)')
+        .includes(`${role.publicBinding}: var(--ui-theme-bank-effective-`)
     ) {
       violations.push(`${role.publicRole}: public Theme Bank binding is incomplete.`)
     }
@@ -2358,8 +2377,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 9 || recordCount !== 252) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 9/252.')
+  if (manifest['schemaVersion'] !== 10 || recordCount !== 400) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 10/400.')
   }
 
   const themes = manifest['themes']
@@ -2393,29 +2412,51 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       }
 
       const bank = value['bank']
-      const records = isJsonObject(bank) ? bank['records'] : undefined
 
       if (
         !isJsonObject(bank) ||
-        !exactKeys(bank, ['visibility', 'records']) ||
+        !exactKeys(bank, ['visibility', 'derivation']) ||
         bank['visibility'] !== 'ui-internal' ||
-        !Array.isArray(records) ||
-        records.length !== 40 ||
-        records.some(
-          (record) =>
-            !isJsonObject(record) ||
-            !exactKeys(record, [
-              'colorMode',
-              'contrast',
-              'publicRole',
-              'sourceField',
-              'authoredValue',
-              'bankVariable',
-              'publicBinding',
-            ]),
-        )
+        bank['derivation'] !== 'theme-planes-and-active-public-roles'
       ) {
         violations.push(`tokens.manifest.json: themes[${String(index)}].bank drifted.`)
+      }
+      const definition = completeBuiltInThemeDefinitionSchema.parse({
+        schemaVersion: value['schemaVersion'],
+        roleContractVersion: value['roleContractVersion'],
+        id: value['themeId'],
+        label: value['label'],
+        planes: value['planes'],
+      })
+      const publicRoles = validatePublicRoleRegistry({
+        schemaVersion: 1,
+        status: 'active-current-public-surface',
+        records: manifest['activePublicRoles'],
+      })
+      const records = deriveThemeBankRecords(definition.planes, publicRoles)
+      const expectedRecords = expectedEntry.bank.records.map(
+        ({
+          colorMode,
+          contrast,
+          publicRole,
+          sourceField,
+          authoredValue,
+          bankVariable,
+          publicBinding,
+        }) => ({
+          colorMode,
+          contrast,
+          publicRole,
+          sourceField,
+          authoredValue,
+          bankVariable,
+          publicBinding,
+        }),
+      )
+      if (records.length !== 104 || !isDeepStrictEqual(records, expectedRecords)) {
+        violations.push(
+          `tokens.manifest.json: ${expectedEntry.themeId} logical Bank records lost information or order.`,
+        )
       }
     }
   }

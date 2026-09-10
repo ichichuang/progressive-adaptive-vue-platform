@@ -6,6 +6,7 @@ import {
   builtInThemeIds,
   completeBuiltInThemeDefinitionSchema,
   completeThemeRoleContractVersion,
+  controlCustomThemeRoleIds,
   type BuiltInThemeId,
   type completeThemeSchemaVersion,
 } from '../schema/complete-theme.schema'
@@ -284,6 +285,25 @@ function validateRoleMap(
       throw new Error(`${themeId}:${fieldRoot}.${roleId}: authored value is missing.`)
     }
 
+    const statusRole =
+      /^color\.(?:status\.(info|success|warning|error)(?:\.(hover|pressed))?|text\.on-status\.(info|success|warning|error))$/u.exec(
+        roleId,
+      )
+    if (statusRole !== null) {
+      const tone = statusRole[1] ?? statusRole[3]
+      if (tone === undefined) throw new Error(`${roleId}: Semantic Status family is missing.`)
+      const state = statusRole[3] === undefined ? (statusRole[2] ?? 'default') : 'on-status'
+      if (authoredValue !== `{color.palette.status.${mode}.${contrast}.${tone}.${state}}`) {
+        throw new Error(
+          `${themeId}:${fieldRoot}.${roleId}: the shared Status Bank alias is required; Theme-specific overrides are not admitted.`,
+        )
+      }
+    } else if (isTokenReference(authoredValue)) {
+      throw new Error(
+        `${themeId}:${fieldRoot}.${roleId}: historical colors must remain authored absolute values.`,
+      )
+    }
+
     const { resolvedValue, sourceKind } = resolveAuthoredColor(
       authoredValue,
       themeId,
@@ -353,6 +373,19 @@ function validateNamedContrasts(theme: ValidatedCompleteBuiltInTheme): void {
             `${theme.id}:${mode}.${contrast}:${pair.id}: contrast ${ratio.toFixed(3)}:1 is below ${String(minimum)}:1.`,
           )
         }
+
+        if (contrast === 'enhanced' && pair.enhancedDifferenceRequired) {
+          const standard = theme.resolvedPlanes[mode].standard
+          const standardRatio = contrastRatio(
+            standard[pair.foregroundRole] ?? '',
+            standard[pair.backgroundRole] ?? '',
+          )
+          if (ratio <= standardRatio) {
+            throw new Error(
+              `${theme.id}:${mode}.${contrast}:${pair.id}: contrast ${String(ratio)} must be strictly greater than Standard ${String(standardRatio)}.`,
+            )
+          }
+        }
       }
     }
   }
@@ -409,6 +442,7 @@ function validateDarkActionHarmony(theme: ValidatedCompleteBuiltInTheme): void {
 
   const unchangedCells = planeTuples.flatMap(([colorMode, contrast]) =>
     Object.entries(theme.planes[colorMode][contrast]).flatMap(([roleId, value]) =>
+      !(controlCustomThemeRoleIds as readonly string[]).includes(roleId) ||
       roleId === 'color.control.primary' ||
       (colorMode === 'dark' &&
         (roleId === 'color.action.primary' || roleId === 'color.text.on-action'))
@@ -628,7 +662,7 @@ export function validateCompleteBuiltInThemes({
     ActiveNamedContrastRegistry.schemaVersion,
   ]
 
-  if (activeContractVersions.join(',') !== '2,1,1,1') {
+  if (activeContractVersions.join(',') !== '3,1,1,1') {
     throw new Error('Complete Theme role-contract and registry schema versions are incomplete.')
   }
 
@@ -654,7 +688,7 @@ export function validateCompleteBuiltInThemes({
 
   for (const theme of themes) {
     if (theme.authoredColorValueCount !== roleIds.length * 4) {
-      throw new Error(`${theme.id}: complete Theme must contain exactly 40 authored colors.`)
+      throw new Error(`${theme.id}: complete Theme must contain exactly 104 authored colors.`)
     }
   }
 
@@ -669,6 +703,6 @@ export function validateCompleteBuiltInThemes({
     )
   }
 
-  validateThemeIdentity(themes, roleIds)
+  validateThemeIdentity(themes, controlCustomThemeRoleIds)
   return themes
 }

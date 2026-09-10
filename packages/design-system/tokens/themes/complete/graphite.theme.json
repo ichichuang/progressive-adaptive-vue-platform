@@ -1,6 +1,6 @@
 {
   "schemaVersion": 3,
-  "roleContractVersion": 2,
+  "roleContractVersion": 3,
   "id": "graphite",
   "label": "Graphite",
   "planes": {
@@ -15,7 +15,23 @@
         "color.surface.panel": "oklch(99.5% 0.001 255)",
         "color.text.on-action": "oklch(99% 0.002 255)",
         "color.text.primary": "oklch(24% 0.0144 255)",
-        "color.text.secondary": "oklch(39% 0.018 255)"
+        "color.text.secondary": "oklch(39% 0.018 255)",
+        "color.status.info": "{color.palette.status.light.standard.info.default}",
+        "color.status.info.hover": "{color.palette.status.light.standard.info.hover}",
+        "color.status.info.pressed": "{color.palette.status.light.standard.info.pressed}",
+        "color.text.on-status.info": "{color.palette.status.light.standard.info.on-status}",
+        "color.status.success": "{color.palette.status.light.standard.success.default}",
+        "color.status.success.hover": "{color.palette.status.light.standard.success.hover}",
+        "color.status.success.pressed": "{color.palette.status.light.standard.success.pressed}",
+        "color.text.on-status.success": "{color.palette.status.light.standard.success.on-status}",
+        "color.status.warning": "{color.palette.status.light.standard.warning.default}",
+        "color.status.warning.hover": "{color.palette.status.light.standard.warning.hover}",
+        "color.status.warning.pressed": "{color.palette.status.light.standard.warning.pressed}",
+        "color.text.on-status.warning": "{color.palette.status.light.standard.warning.on-status}",
+        "color.status.error": "{color.palette.status.light.standard.error.default}",
+        "color.status.error.hover": "{color.palette.status.light.standard.error.hover}",
+        "color.status.error.pressed": "{color.palette.status.light.standard.error.pressed}",
+        "color.text.on-status.error": "{color.palette.status.light.standard.error.on-status}"
       },
       "enhanced": {
         "color.action.primary": "oklch(37% 0.0273 255)",
@@ -27,7 +43,23 @@
         "color.surface.panel": "oklch(99% 0.002 255)",
         "color.text.on-action": "oklch(98.5% 0.003 255)",
         "color.text.primary": "oklch(11% 0.0117 255)",
-        "color.text.secondary": "oklch(26% 0.018 255)"
+        "color.text.secondary": "oklch(26% 0.018 255)",
+        "color.status.info": "{color.palette.status.light.enhanced.info.default}",
+        "color.status.info.hover": "{color.palette.status.light.enhanced.info.hover}",
+        "color.status.info.pressed": "{color.palette.status.light.enhanced.info.pressed}",
+        "color.text.on-status.info": "{color.palette.status.light.enhanced.info.on-status}",
+        "color.status.success": "{color.palette.status.light.enhanced.success.default}",
+        "color.status.success.hover": "{color.palette.status.light.enhanced.success.hover}",
+        "color.status.success.pressed": "{color.palette.status.light.enhanced.success.pressed}",
+        "color.text.on-status.success": "{color.palette.status.light.enhanced.success.on-status}",
+        "color.status.warning": "{color.palette.status.light.enhanced.warning.default}",
+        "color.status.warning.hover": "{color.palette.status.light.enhanced.warning.hover}",
+        "color.status.warning.pressed": "{color.palette.status.light.enhanced.warning.pressed}",
+        "color.text.on-status.warning": "{color.palette.status.light.enhanced.warning.on-status}",
+        "color.status.error": "{color.palette.status.light.enhanced.error.default}",
+        "color.status.error.hover": "{color.palette.status.light.enhanced.error.hover}",
+        "color.status.error.pressed": "{color.palette.status.light.enhanced.error.pressed}",
+        "color.text.on-status.error": "{color.palette.status.light.enhanced.error.on-status}"
       }
     },
     "dark": {
@@ -41,7 +73,23 @@
         "color.surface.panel": "oklch(19% 0.008 255)",
         "color.text.on-action": "oklch(95% 0.0099 255)",
         "color.text.primary": "oklch(91% 0.0081 255)",
-        "color.text.secondary": "oklch(74% 0.0134 255)"
+        "color.text.secondary": "oklch(74% 0.0134 255)",
+        "color.status.info": "{color.palette.status.dark.standard.info.default}",
+        "color.status.info.hover": "{color.palette.status.dark.standard.info.hover}",
+        "color.status.info.pressed": "{color.palette.status.dark.standard.info.pressed}",
+        "color.text.on-status.info": "{color.palette.status.dark.standard.info.on-status}",
+        "color.status.success": "{color.palette.status.dark.standard.success.default}",
+        "color.status.success.hover": "{color.palette.status.dark.standard.success.hover}",
+        "color.status.success.pressed": "{color.palette.status.dark.standard.success.pressed}",
+        "color.text.on-status.success": "{color.palette.status.dark.standard.success.on-status}",
+        "color.status.warning": "{color.palette.status.dark.standard.warning.default}",
+        "color.status.warning.hover": "{color.palette.status.dark.standard.warning.hover}",
+        "color.status.warning.pressed": "{color.palette.status.dark.standard.warning.pressed}",
+        "color.text.on-status.warning": "{color.palette.status.dark.standard.warning.on-status}",
+        "color.status.error": "{color.palette.status.dark.standard.error.default}",
+        "color.status.error.hover": "{color.palette.status.dark.standard.error.hover}",
+        "color.status.error.pressed": "{color.palette.status.dark.standard.error.pressed}",
+        "color.text.on-status.error": "{color.palette.status.dark.standard.error.on-status}"
       },
       "enhanced": {
         "color.action.primary": "oklch(37% 0.0245 255)",
@@ -53,7 +101,23 @@
         "color.surface.panel": "oklch(14% 0.0072 255)",
         "color.text.on-action": "oklch(99% 0.0032 255)",
         "color.text.primary": "oklch(99% 0.0032 255)",
-        "color.text.secondary": "oklch(84% 0.0099 255)"
+        "color.text.secondary": "oklch(84% 0.0099 255)",
+        "color.status.info": "{color.palette.status.dark.enhanced.info.default}",
+        "color.status.info.hover": "{color.palette.status.dark.enhanced.info.hover}",
+        "color.status.info.pressed": "{color.palette.status.dark.enhanced.info.pressed}",
+        "color.text.on-status.info": "{color.palette.status.dark.enhanced.info.on-status}",
+        "color.status.success": "{color.palette.status.dark.enhanced.success.default}",
+        "color.status.success.hover": "{color.palette.status.dark.enhanced.success.hover}",
+        "color.status.success.pressed": "{color.palette.status.dark.enhanced.success.pressed}",
+        "color.text.on-status.success": "{color.palette.status.dark.enhanced.success.on-status}",
+        "color.status.warning": "{color.palette.status.dark.enhanced.warning.default}",
+        "color.status.warning.hover": "{color.palette.status.dark.enhanced.warning.hover}",
+        "color.status.warning.pressed": "{color.palette.status.dark.enhanced.warning.pressed}",
+        "color.text.on-status.warning": "{color.palette.status.dark.enhanced.warning.on-status}",
+        "color.status.error": "{color.palette.status.dark.enhanced.error.default}",
+        "color.status.error.hover": "{color.palette.status.dark.enhanced.error.hover}",
+        "color.status.error.pressed": "{color.palette.status.dark.enhanced.error.pressed}",
+        "color.text.on-status.error": "{color.palette.status.dark.enhanced.error.on-status}"
       }
     }
   }

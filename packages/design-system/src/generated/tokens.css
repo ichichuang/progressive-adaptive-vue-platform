@@ -71,9 +71,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.0735 78);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.0735 78);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0018 82 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0145 82);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0252 82);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0057 70);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0062 70);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.0209 70);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.0892 78);
@@ -81,9 +97,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.0892 78);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.105 78);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0054 82 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0235 82);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.028 82);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.0171 70);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.0171 70);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.0285 70);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.0678 78);
@@ -91,9 +123,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.0678 78);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.0623 78);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0126 82 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0196 82);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.0049 82);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.007 82);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.0209 70);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.038 70);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.0898 78);
@@ -101,9 +149,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.0898 78);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.0862 78);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.0199 82 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.014 82);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.0035 82);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.0035 82);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.0304 70);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.038 70);
   }
@@ -114,9 +178,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.0754 350);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0522 355);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0136 350 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.01 030);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.01 030);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0028 355);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0028 350);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.025 350);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.095 350);
@@ -124,9 +204,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.095 350);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.1143 355);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.015 350 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.01 030);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.01 030);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.015 355);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.025 350);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.03 350);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.12 350);
@@ -134,9 +230,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.12 350);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.115 355);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.015 350 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.01 030);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0024 030);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 355);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.04 350);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.04 350);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.11 350);
@@ -144,9 +256,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.11 350);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.115 355);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.015 350 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0058 030);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0009 030);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 355);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.04 350);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.04 350);
   }
@@ -157,9 +285,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.069 235);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0512 235);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0107 245 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.02 205);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.02 205);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0027 235);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0027 235);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.025 235);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.1039 235);
@@ -167,9 +311,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.11 235);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.1059 235);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.0111 245 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.02 205);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.02 205);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.015 235);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.025 235);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.03 235);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.0891 235);
@@ -177,9 +337,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.0891 235);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.1124 235);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0155 245 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.02 205);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0051 205);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 235);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.0339 235);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.04 235);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.1039 235);
@@ -187,9 +363,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.1039 235);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.1188 235);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.02 245 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0122 205);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.002 205);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 235);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.04 235);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.04 235);
   }
@@ -200,9 +392,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.075 258);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.061 258);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0022 245 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0168 245);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0216 245);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0042 250);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0042 250);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.022 250);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.1232 258);
@@ -210,9 +418,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.1232 258);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.12 258);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0066 245 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0216 245);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.024 245);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.022 250);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.018 250);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.03 250);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.1131 258);
@@ -220,9 +444,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.1131 258);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.1019 258);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0155 245 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0168 245);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.0042 245);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.006 245);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.026 250);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.04 250);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.145 258);
@@ -230,9 +470,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.145 258);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.12 258);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.0216 245 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.0111 245);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.0022 245);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.003 245);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.032 250);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.04 250);
   }
@@ -243,9 +499,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.0838 32);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.0671 32);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0025 45 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0196 45);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0252 45);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0043 38);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0043 38);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.022 38);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.1105 32);
@@ -253,9 +525,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.1105 32);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.12 32);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0075 45 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0252 45);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.028 45);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.022 38);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.018 38);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.03 38);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.1014 32);
@@ -263,9 +551,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.1014 32);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.1019 32);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0176 45 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0196 45);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.0045 45);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.0068 45);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.026 38);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.04 38);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.13 32);
@@ -273,9 +577,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.13 32);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.12 32);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.025 45 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.0115 45);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.0022 45);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.0035 45);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.032 38);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.04 38);
   }
@@ -286,9 +606,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.0662 040);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0499 045);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0131 040 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.02 220);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.02 220);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0025 045);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0025 040);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.035 040);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.105 040);
@@ -296,9 +632,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.105 040);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.108 045);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.0143 040 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.02 220);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.02 220);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.015 045);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.026 040);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.045 040);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.125 040);
@@ -306,9 +658,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.125 040);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.125 045);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0195 040 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.0174 220);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0034 220);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 045);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.0503 040);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.06 040);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.115 040);
@@ -316,9 +684,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.115 040);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.125 045);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.02 040 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0083 220);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0014 220);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 045);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.06 040);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.06 040);
   }
@@ -329,9 +713,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.0245 255);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.049 255);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0028 255 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0056 255);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0072 255);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0032 255);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0032 255);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.0099 255);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.0297 255);
@@ -339,9 +739,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.0297 255);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.07 255);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0028 255 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0072 255);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.008 255);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.0099 255);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.0081 255);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.0134 255);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.0273 255);
@@ -349,9 +765,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.0273 255);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.0595 255);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0056 255 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0056 255);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.002 255);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.003 255);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.0117 255);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.018 255);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.035 255);
@@ -359,9 +791,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.035 255);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.07 255);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.0072 255 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.004 255);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.001 255);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.002 255);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.0144 255);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.018 255);
   }
@@ -372,9 +820,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.071 050);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0545 055);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0135 045 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.02 075);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.02 075);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0027 055);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0027 050);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.03 050);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.1 050);
@@ -382,9 +846,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.1 050);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.1174 055);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.013 045 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.02 075);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.02 075);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.015 055);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.0279 050);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.04 050);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.111 050);
@@ -392,9 +872,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.111 050);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.125 055);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0178 045 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.02 075);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0039 075);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 055);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.0423 050);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.05 050);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.11 050);
@@ -402,9 +898,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.11 050);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.125 055);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.02 045 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0095 075);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0016 075);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 055);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.05 050);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.05 050);
   }
@@ -415,9 +927,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.0877 300);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.0713 300);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0046 300 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0168 300);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0216 300);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0048 300);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0048 300);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.0209 300);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.1105 300);
@@ -425,9 +953,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.1105 300);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.12 300);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0084 300 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0216 300);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.024 300);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.0209 300);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.0171 300);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.0285 300);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.1014 300);
@@ -435,9 +979,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.1014 300);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.1019 300);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0168 300 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0168 300);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.0042 300);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.006 300);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.0247 300);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.038 300);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.13 300);
@@ -445,9 +1005,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.13 300);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.12 300);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.0216 300 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.012 300);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.0024 300);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.003 300);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.0304 300);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.038 300);
   }
@@ -458,9 +1034,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.077 150);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.0699 150);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0024 150 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0168 150);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0216 150);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0072 150);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0063 150);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.0192 150);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.0935 150);
@@ -468,9 +1060,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.0935 150);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.1 150);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0072 150 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0216 150);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.024 150);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.0192 150);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.0157 150);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.0262 150);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.0858 150);
@@ -478,9 +1086,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.0858 150);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.0823 150);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0168 150 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0168 150);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.0042 150);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.006 150);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.0227 150);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.035 150);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.11 150);
@@ -488,9 +1112,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.11 150);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.1 150);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.0216 150 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.012 150);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.003 150);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.003 150);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.028 150);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.035 150);
   }
@@ -501,9 +1141,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(83% 0.0664 205);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(86% 0.0664 205);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(1% 0.0015 210 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(8% 0.0121 210);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(14% 0.0213 210);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(99% 0.0045 210);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(99% 0.0063 210);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(84% 0.0192 210);
     --ui-theme-bank-dark-standard-action-primary: oklch(49% 0.0807 205);
@@ -511,9 +1167,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(70% 0.0807 205);
     --ui-theme-bank-dark-standard-focus-ring: oklch(73% 0.095 205);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(3% 0.0045 210 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(13% 0.0197 210);
     --ui-theme-bank-dark-standard-surface-panel: oklch(19% 0.024 210);
     --ui-theme-bank-dark-standard-text-on-action: oklch(95% 0.0136 210);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(91% 0.0157 210);
     --ui-theme-bank-dark-standard-text-secondary: oklch(74% 0.0262 210);
     --ui-theme-bank-light-enhanced-action-primary: oklch(37% 0.0556 205);
@@ -521,9 +1193,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(37% 0.0556 205);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(34% 0.051 205);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(7% 0.0106 210 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(95% 0.0168 210);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(99% 0.0042 210);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(98.5% 0.006 210);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(11% 0.0167 210);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(26% 0.035 210);
     --ui-theme-bank-light-standard-action-primary: oklch(49% 0.0736 205);
@@ -531,9 +1219,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(49% 0.0736 205);
     --ui-theme-bank-light-standard-focus-ring: oklch(47% 0.0706 205);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(11% 0.0167 210 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(97.5% 0.012 210);
     --ui-theme-bank-light-standard-surface-panel: oklch(99.5% 0.003 210);
     --ui-theme-bank-light-standard-text-on-action: oklch(99% 0.003 210);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(24% 0.028 210);
     --ui-theme-bank-light-standard-text-secondary: oklch(39% 0.035 210);
   }
@@ -544,9 +1248,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.0595 280);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0451 285);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.015 280 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.015 060);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.015 060);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0023 280);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0023 280);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.025 280);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.09 280);
@@ -554,9 +1274,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.09 280);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.0937 285);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.015 280 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.015 060);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.015 060);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.015 280);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.0241 280);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.035 280);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.11 280);
@@ -564,9 +1300,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.11 280);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.115 285);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.015 280 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.015 060);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.003 060);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.0047 280);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.045 280);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.045 280);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.1 280);
@@ -574,9 +1326,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.1 280);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.115 285);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.015 280 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0073 060);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0012 060);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 280);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.045 280);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.045 280);
   }
@@ -587,9 +1355,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.045 340);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0583 345);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.0076 230 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.015 225);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.015 225);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0029 340);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0029 230);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.02 230);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.05 340);
@@ -597,9 +1381,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.05 340);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.12 345);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.0087 230 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.015 225);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.015 225);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.015 340);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.02 230);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.025 230);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.06 340);
@@ -607,9 +1407,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.06 340);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.12 345);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.0123 230 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.015 225);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0031 225);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.005 340);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.03 230);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.03 230);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.055 340);
@@ -617,9 +1433,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.055 340);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.12 345);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.015 230 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.0076 225);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.0012 225);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.005 340);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.03 230);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.03 230);
   }
@@ -630,9 +1462,25 @@
     --ui-theme-bank-dark-enhanced-control-primary: oklch(0.88 0.04 255);
     --ui-theme-bank-dark-enhanced-focus-ring: oklch(0.91 0.0448 252);
     --ui-theme-bank-dark-enhanced-scrim-viewport: oklch(0.02 0.01 245 / 0.56);
+    --ui-theme-bank-dark-enhanced-status-error: oklch(84% 0.065 25);
+    --ui-theme-bank-dark-enhanced-status-error-hover: oklch(88% 0.055 25);
+    --ui-theme-bank-dark-enhanced-status-error-pressed: oklch(80% 0.075 25);
+    --ui-theme-bank-dark-enhanced-status-info: oklch(84% 0.065 245);
+    --ui-theme-bank-dark-enhanced-status-info-hover: oklch(88% 0.055 245);
+    --ui-theme-bank-dark-enhanced-status-info-pressed: oklch(80% 0.075 245);
+    --ui-theme-bank-dark-enhanced-status-success: oklch(84% 0.065 150);
+    --ui-theme-bank-dark-enhanced-status-success-hover: oklch(88% 0.055 150);
+    --ui-theme-bank-dark-enhanced-status-success-pressed: oklch(80% 0.075 150);
+    --ui-theme-bank-dark-enhanced-status-warning: oklch(84% 0.065 75);
+    --ui-theme-bank-dark-enhanced-status-warning-hover: oklch(88% 0.055 75);
+    --ui-theme-bank-dark-enhanced-status-warning-pressed: oklch(80% 0.075 75);
     --ui-theme-bank-dark-enhanced-surface-page: oklch(0.12 0.008 245);
     --ui-theme-bank-dark-enhanced-surface-panel: oklch(0.19 0.008 245);
     --ui-theme-bank-dark-enhanced-text-on-action: oklch(0.99 0.0024 250);
+    --ui-theme-bank-dark-enhanced-text-on-status-error: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-info: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-success: oklch(10% 0 0);
+    --ui-theme-bank-dark-enhanced-text-on-status-warning: oklch(10% 0 0);
     --ui-theme-bank-dark-enhanced-text-primary: oklch(0.995 0.0024 248);
     --ui-theme-bank-dark-enhanced-text-secondary: oklch(0.9 0.015 248);
     --ui-theme-bank-dark-standard-action-primary: oklch(0.49 0.045 255);
@@ -640,9 +1488,25 @@
     --ui-theme-bank-dark-standard-control-primary: oklch(0.78 0.045 255);
     --ui-theme-bank-dark-standard-focus-ring: oklch(0.82 0.0927 252);
     --ui-theme-bank-dark-standard-scrim-viewport: oklch(0.04 0.01 245 / 0.56);
+    --ui-theme-bank-dark-standard-status-error: oklch(72% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-hover: oklch(76% 0.1 25);
+    --ui-theme-bank-dark-standard-status-error-pressed: oklch(68% 0.1 25);
+    --ui-theme-bank-dark-standard-status-info: oklch(72% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-hover: oklch(76% 0.1 245);
+    --ui-theme-bank-dark-standard-status-info-pressed: oklch(68% 0.1 245);
+    --ui-theme-bank-dark-standard-status-success: oklch(72% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-hover: oklch(76% 0.1 150);
+    --ui-theme-bank-dark-standard-status-success-pressed: oklch(68% 0.1 150);
+    --ui-theme-bank-dark-standard-status-warning: oklch(72% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-hover: oklch(76% 0.1 75);
+    --ui-theme-bank-dark-standard-status-warning-pressed: oklch(68% 0.1 75);
     --ui-theme-bank-dark-standard-surface-page: oklch(0.19 0.008 245);
     --ui-theme-bank-dark-standard-surface-panel: oklch(0.25 0.008 245);
     --ui-theme-bank-dark-standard-text-on-action: oklch(0.95 0.01 250);
+    --ui-theme-bank-dark-standard-text-on-status-error: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-info: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-success: oklch(16% 0 0);
+    --ui-theme-bank-dark-standard-text-on-status-warning: oklch(16% 0 0);
     --ui-theme-bank-dark-standard-text-primary: oklch(0.95 0.015 248);
     --ui-theme-bank-dark-standard-text-secondary: oklch(0.8 0.02 248);
     --ui-theme-bank-light-enhanced-action-primary: oklch(0.42 0.055 255);
@@ -650,9 +1514,25 @@
     --ui-theme-bank-light-enhanced-control-primary: oklch(0.42 0.055 255);
     --ui-theme-bank-light-enhanced-focus-ring: oklch(0.53 0.11 252);
     --ui-theme-bank-light-enhanced-scrim-viewport: oklch(0.06 0.01 245 / 0.56);
+    --ui-theme-bank-light-enhanced-status-error: oklch(40% 0.07 25);
+    --ui-theme-bank-light-enhanced-status-error-hover: oklch(44% 0.075 25);
+    --ui-theme-bank-light-enhanced-status-error-pressed: oklch(36% 0.065 25);
+    --ui-theme-bank-light-enhanced-status-info: oklch(40% 0.07 245);
+    --ui-theme-bank-light-enhanced-status-info-hover: oklch(44% 0.075 245);
+    --ui-theme-bank-light-enhanced-status-info-pressed: oklch(36% 0.065 245);
+    --ui-theme-bank-light-enhanced-status-success: oklch(40% 0.07 150);
+    --ui-theme-bank-light-enhanced-status-success-hover: oklch(44% 0.075 150);
+    --ui-theme-bank-light-enhanced-status-success-pressed: oklch(36% 0.065 150);
+    --ui-theme-bank-light-enhanced-status-warning: oklch(40% 0.07 75);
+    --ui-theme-bank-light-enhanced-status-warning-hover: oklch(44% 0.075 75);
+    --ui-theme-bank-light-enhanced-status-warning-pressed: oklch(36% 0.065 75);
     --ui-theme-bank-light-enhanced-surface-page: oklch(0.975 0.008 245);
     --ui-theme-bank-light-enhanced-surface-panel: oklch(0.995 0.0025 245);
     --ui-theme-bank-light-enhanced-text-on-action: oklch(0.99 0.002 250);
+    --ui-theme-bank-light-enhanced-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-enhanced-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-enhanced-text-primary: oklch(0.16 0.025 248);
     --ui-theme-bank-light-enhanced-text-secondary: oklch(0.36 0.025 248);
     --ui-theme-bank-light-standard-action-primary: oklch(0.49 0.05 255);
@@ -660,9 +1540,25 @@
     --ui-theme-bank-light-standard-control-primary: oklch(0.49 0.05 255);
     --ui-theme-bank-light-standard-focus-ring: oklch(0.56 0.11 252);
     --ui-theme-bank-light-standard-scrim-viewport: oklch(0.1 0.01 245 / 0.56);
+    --ui-theme-bank-light-standard-status-error: oklch(53% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-hover: oklch(55% 0.1 25);
+    --ui-theme-bank-light-standard-status-error-pressed: oklch(49% 0.09 25);
+    --ui-theme-bank-light-standard-status-info: oklch(53% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-hover: oklch(55% 0.1 245);
+    --ui-theme-bank-light-standard-status-info-pressed: oklch(49% 0.09 245);
+    --ui-theme-bank-light-standard-status-success: oklch(53% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-hover: oklch(55% 0.1 150);
+    --ui-theme-bank-light-standard-status-success-pressed: oklch(49% 0.09 150);
+    --ui-theme-bank-light-standard-status-warning: oklch(53% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-hover: oklch(55% 0.1 75);
+    --ui-theme-bank-light-standard-status-warning-pressed: oklch(49% 0.09 75);
     --ui-theme-bank-light-standard-surface-page: oklch(0.988 0.006 245);
     --ui-theme-bank-light-standard-surface-panel: oklch(0.998 0.001 245);
     --ui-theme-bank-light-standard-text-on-action: oklch(0.95 0.002 250);
+    --ui-theme-bank-light-standard-text-on-status-error: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-info: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-success: oklch(100% 0 0);
+    --ui-theme-bank-light-standard-text-on-status-warning: oklch(100% 0 0);
     --ui-theme-bank-light-standard-text-primary: oklch(0.25 0.025 248);
     --ui-theme-bank-light-standard-text-secondary: oklch(0.47 0.025 248);
   }
@@ -690,6 +1586,40 @@
     --ui-theme-bank-effective-enhanced-scrim-viewport: var(
       --ui-theme-bank-dark-enhanced-scrim-viewport
     );
+    --ui-theme-bank-effective-enhanced-status-error: var(
+      --ui-theme-bank-dark-enhanced-status-error
+    );
+    --ui-theme-bank-effective-enhanced-status-error-hover: var(
+      --ui-theme-bank-dark-enhanced-status-error-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-error-pressed: var(
+      --ui-theme-bank-dark-enhanced-status-error-pressed
+    );
+    --ui-theme-bank-effective-enhanced-status-info: var(--ui-theme-bank-dark-enhanced-status-info);
+    --ui-theme-bank-effective-enhanced-status-info-hover: var(
+      --ui-theme-bank-dark-enhanced-status-info-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-info-pressed: var(
+      --ui-theme-bank-dark-enhanced-status-info-pressed
+    );
+    --ui-theme-bank-effective-enhanced-status-success: var(
+      --ui-theme-bank-dark-enhanced-status-success
+    );
+    --ui-theme-bank-effective-enhanced-status-success-hover: var(
+      --ui-theme-bank-dark-enhanced-status-success-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-success-pressed: var(
+      --ui-theme-bank-dark-enhanced-status-success-pressed
+    );
+    --ui-theme-bank-effective-enhanced-status-warning: var(
+      --ui-theme-bank-dark-enhanced-status-warning
+    );
+    --ui-theme-bank-effective-enhanced-status-warning-hover: var(
+      --ui-theme-bank-dark-enhanced-status-warning-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-warning-pressed: var(
+      --ui-theme-bank-dark-enhanced-status-warning-pressed
+    );
     --ui-theme-bank-effective-enhanced-surface-page: var(
       --ui-theme-bank-dark-enhanced-surface-page
     );
@@ -698,6 +1628,18 @@
     );
     --ui-theme-bank-effective-enhanced-text-on-action: var(
       --ui-theme-bank-dark-enhanced-text-on-action
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-error: var(
+      --ui-theme-bank-dark-enhanced-text-on-status-error
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-info: var(
+      --ui-theme-bank-dark-enhanced-text-on-status-info
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-success: var(
+      --ui-theme-bank-dark-enhanced-text-on-status-success
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-warning: var(
+      --ui-theme-bank-dark-enhanced-text-on-status-warning
     );
     --ui-theme-bank-effective-enhanced-text-primary: var(
       --ui-theme-bank-dark-enhanced-text-primary
@@ -718,6 +1660,40 @@
     --ui-theme-bank-effective-standard-scrim-viewport: var(
       --ui-theme-bank-dark-standard-scrim-viewport
     );
+    --ui-theme-bank-effective-standard-status-error: var(
+      --ui-theme-bank-dark-standard-status-error
+    );
+    --ui-theme-bank-effective-standard-status-error-hover: var(
+      --ui-theme-bank-dark-standard-status-error-hover
+    );
+    --ui-theme-bank-effective-standard-status-error-pressed: var(
+      --ui-theme-bank-dark-standard-status-error-pressed
+    );
+    --ui-theme-bank-effective-standard-status-info: var(--ui-theme-bank-dark-standard-status-info);
+    --ui-theme-bank-effective-standard-status-info-hover: var(
+      --ui-theme-bank-dark-standard-status-info-hover
+    );
+    --ui-theme-bank-effective-standard-status-info-pressed: var(
+      --ui-theme-bank-dark-standard-status-info-pressed
+    );
+    --ui-theme-bank-effective-standard-status-success: var(
+      --ui-theme-bank-dark-standard-status-success
+    );
+    --ui-theme-bank-effective-standard-status-success-hover: var(
+      --ui-theme-bank-dark-standard-status-success-hover
+    );
+    --ui-theme-bank-effective-standard-status-success-pressed: var(
+      --ui-theme-bank-dark-standard-status-success-pressed
+    );
+    --ui-theme-bank-effective-standard-status-warning: var(
+      --ui-theme-bank-dark-standard-status-warning
+    );
+    --ui-theme-bank-effective-standard-status-warning-hover: var(
+      --ui-theme-bank-dark-standard-status-warning-hover
+    );
+    --ui-theme-bank-effective-standard-status-warning-pressed: var(
+      --ui-theme-bank-dark-standard-status-warning-pressed
+    );
     --ui-theme-bank-effective-standard-surface-page: var(
       --ui-theme-bank-dark-standard-surface-page
     );
@@ -726,6 +1702,18 @@
     );
     --ui-theme-bank-effective-standard-text-on-action: var(
       --ui-theme-bank-dark-standard-text-on-action
+    );
+    --ui-theme-bank-effective-standard-text-on-status-error: var(
+      --ui-theme-bank-dark-standard-text-on-status-error
+    );
+    --ui-theme-bank-effective-standard-text-on-status-info: var(
+      --ui-theme-bank-dark-standard-text-on-status-info
+    );
+    --ui-theme-bank-effective-standard-text-on-status-success: var(
+      --ui-theme-bank-dark-standard-text-on-status-success
+    );
+    --ui-theme-bank-effective-standard-text-on-status-warning: var(
+      --ui-theme-bank-dark-standard-text-on-status-warning
     );
     --ui-theme-bank-effective-standard-text-primary: var(
       --ui-theme-bank-dark-standard-text-primary
@@ -749,6 +1737,40 @@
     --ui-theme-bank-effective-enhanced-scrim-viewport: var(
       --ui-theme-bank-light-enhanced-scrim-viewport
     );
+    --ui-theme-bank-effective-enhanced-status-error: var(
+      --ui-theme-bank-light-enhanced-status-error
+    );
+    --ui-theme-bank-effective-enhanced-status-error-hover: var(
+      --ui-theme-bank-light-enhanced-status-error-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-error-pressed: var(
+      --ui-theme-bank-light-enhanced-status-error-pressed
+    );
+    --ui-theme-bank-effective-enhanced-status-info: var(--ui-theme-bank-light-enhanced-status-info);
+    --ui-theme-bank-effective-enhanced-status-info-hover: var(
+      --ui-theme-bank-light-enhanced-status-info-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-info-pressed: var(
+      --ui-theme-bank-light-enhanced-status-info-pressed
+    );
+    --ui-theme-bank-effective-enhanced-status-success: var(
+      --ui-theme-bank-light-enhanced-status-success
+    );
+    --ui-theme-bank-effective-enhanced-status-success-hover: var(
+      --ui-theme-bank-light-enhanced-status-success-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-success-pressed: var(
+      --ui-theme-bank-light-enhanced-status-success-pressed
+    );
+    --ui-theme-bank-effective-enhanced-status-warning: var(
+      --ui-theme-bank-light-enhanced-status-warning
+    );
+    --ui-theme-bank-effective-enhanced-status-warning-hover: var(
+      --ui-theme-bank-light-enhanced-status-warning-hover
+    );
+    --ui-theme-bank-effective-enhanced-status-warning-pressed: var(
+      --ui-theme-bank-light-enhanced-status-warning-pressed
+    );
     --ui-theme-bank-effective-enhanced-surface-page: var(
       --ui-theme-bank-light-enhanced-surface-page
     );
@@ -757,6 +1779,18 @@
     );
     --ui-theme-bank-effective-enhanced-text-on-action: var(
       --ui-theme-bank-light-enhanced-text-on-action
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-error: var(
+      --ui-theme-bank-light-enhanced-text-on-status-error
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-info: var(
+      --ui-theme-bank-light-enhanced-text-on-status-info
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-success: var(
+      --ui-theme-bank-light-enhanced-text-on-status-success
+    );
+    --ui-theme-bank-effective-enhanced-text-on-status-warning: var(
+      --ui-theme-bank-light-enhanced-text-on-status-warning
     );
     --ui-theme-bank-effective-enhanced-text-primary: var(
       --ui-theme-bank-light-enhanced-text-primary
@@ -777,6 +1811,40 @@
     --ui-theme-bank-effective-standard-scrim-viewport: var(
       --ui-theme-bank-light-standard-scrim-viewport
     );
+    --ui-theme-bank-effective-standard-status-error: var(
+      --ui-theme-bank-light-standard-status-error
+    );
+    --ui-theme-bank-effective-standard-status-error-hover: var(
+      --ui-theme-bank-light-standard-status-error-hover
+    );
+    --ui-theme-bank-effective-standard-status-error-pressed: var(
+      --ui-theme-bank-light-standard-status-error-pressed
+    );
+    --ui-theme-bank-effective-standard-status-info: var(--ui-theme-bank-light-standard-status-info);
+    --ui-theme-bank-effective-standard-status-info-hover: var(
+      --ui-theme-bank-light-standard-status-info-hover
+    );
+    --ui-theme-bank-effective-standard-status-info-pressed: var(
+      --ui-theme-bank-light-standard-status-info-pressed
+    );
+    --ui-theme-bank-effective-standard-status-success: var(
+      --ui-theme-bank-light-standard-status-success
+    );
+    --ui-theme-bank-effective-standard-status-success-hover: var(
+      --ui-theme-bank-light-standard-status-success-hover
+    );
+    --ui-theme-bank-effective-standard-status-success-pressed: var(
+      --ui-theme-bank-light-standard-status-success-pressed
+    );
+    --ui-theme-bank-effective-standard-status-warning: var(
+      --ui-theme-bank-light-standard-status-warning
+    );
+    --ui-theme-bank-effective-standard-status-warning-hover: var(
+      --ui-theme-bank-light-standard-status-warning-hover
+    );
+    --ui-theme-bank-effective-standard-status-warning-pressed: var(
+      --ui-theme-bank-light-standard-status-warning-pressed
+    );
     --ui-theme-bank-effective-standard-surface-page: var(
       --ui-theme-bank-light-standard-surface-page
     );
@@ -785,6 +1853,18 @@
     );
     --ui-theme-bank-effective-standard-text-on-action: var(
       --ui-theme-bank-light-standard-text-on-action
+    );
+    --ui-theme-bank-effective-standard-text-on-status-error: var(
+      --ui-theme-bank-light-standard-text-on-status-error
+    );
+    --ui-theme-bank-effective-standard-text-on-status-info: var(
+      --ui-theme-bank-light-standard-text-on-status-info
+    );
+    --ui-theme-bank-effective-standard-text-on-status-success: var(
+      --ui-theme-bank-light-standard-text-on-status-success
+    );
+    --ui-theme-bank-effective-standard-text-on-status-warning: var(
+      --ui-theme-bank-light-standard-text-on-status-warning
     );
     --ui-theme-bank-effective-standard-text-primary: var(
       --ui-theme-bank-light-standard-text-primary
@@ -800,9 +1880,33 @@
     --ui-color-control-primary: var(--ui-theme-bank-effective-enhanced-control-primary);
     --ui-color-focus-ring: var(--ui-theme-bank-effective-enhanced-focus-ring);
     --ui-color-scrim-viewport: var(--ui-theme-bank-effective-enhanced-scrim-viewport);
+    --ui-color-status-error: var(--ui-theme-bank-effective-enhanced-status-error);
+    --ui-color-status-error-hover: var(--ui-theme-bank-effective-enhanced-status-error-hover);
+    --ui-color-status-error-pressed: var(--ui-theme-bank-effective-enhanced-status-error-pressed);
+    --ui-color-status-info: var(--ui-theme-bank-effective-enhanced-status-info);
+    --ui-color-status-info-hover: var(--ui-theme-bank-effective-enhanced-status-info-hover);
+    --ui-color-status-info-pressed: var(--ui-theme-bank-effective-enhanced-status-info-pressed);
+    --ui-color-status-success: var(--ui-theme-bank-effective-enhanced-status-success);
+    --ui-color-status-success-hover: var(--ui-theme-bank-effective-enhanced-status-success-hover);
+    --ui-color-status-success-pressed: var(
+      --ui-theme-bank-effective-enhanced-status-success-pressed
+    );
+    --ui-color-status-warning: var(--ui-theme-bank-effective-enhanced-status-warning);
+    --ui-color-status-warning-hover: var(--ui-theme-bank-effective-enhanced-status-warning-hover);
+    --ui-color-status-warning-pressed: var(
+      --ui-theme-bank-effective-enhanced-status-warning-pressed
+    );
     --ui-color-surface-page: var(--ui-theme-bank-effective-enhanced-surface-page);
     --ui-color-surface-panel: var(--ui-theme-bank-effective-enhanced-surface-panel);
     --ui-color-text-on-action: var(--ui-theme-bank-effective-enhanced-text-on-action);
+    --ui-color-text-on-status-error: var(--ui-theme-bank-effective-enhanced-text-on-status-error);
+    --ui-color-text-on-status-info: var(--ui-theme-bank-effective-enhanced-text-on-status-info);
+    --ui-color-text-on-status-success: var(
+      --ui-theme-bank-effective-enhanced-text-on-status-success
+    );
+    --ui-color-text-on-status-warning: var(
+      --ui-theme-bank-effective-enhanced-text-on-status-warning
+    );
     --ui-color-text-primary: var(--ui-theme-bank-effective-enhanced-text-primary);
     --ui-color-text-secondary: var(--ui-theme-bank-effective-enhanced-text-secondary);
   }
@@ -813,9 +1917,33 @@
     --ui-color-control-primary: var(--ui-theme-bank-effective-standard-control-primary);
     --ui-color-focus-ring: var(--ui-theme-bank-effective-standard-focus-ring);
     --ui-color-scrim-viewport: var(--ui-theme-bank-effective-standard-scrim-viewport);
+    --ui-color-status-error: var(--ui-theme-bank-effective-standard-status-error);
+    --ui-color-status-error-hover: var(--ui-theme-bank-effective-standard-status-error-hover);
+    --ui-color-status-error-pressed: var(--ui-theme-bank-effective-standard-status-error-pressed);
+    --ui-color-status-info: var(--ui-theme-bank-effective-standard-status-info);
+    --ui-color-status-info-hover: var(--ui-theme-bank-effective-standard-status-info-hover);
+    --ui-color-status-info-pressed: var(--ui-theme-bank-effective-standard-status-info-pressed);
+    --ui-color-status-success: var(--ui-theme-bank-effective-standard-status-success);
+    --ui-color-status-success-hover: var(--ui-theme-bank-effective-standard-status-success-hover);
+    --ui-color-status-success-pressed: var(
+      --ui-theme-bank-effective-standard-status-success-pressed
+    );
+    --ui-color-status-warning: var(--ui-theme-bank-effective-standard-status-warning);
+    --ui-color-status-warning-hover: var(--ui-theme-bank-effective-standard-status-warning-hover);
+    --ui-color-status-warning-pressed: var(
+      --ui-theme-bank-effective-standard-status-warning-pressed
+    );
     --ui-color-surface-page: var(--ui-theme-bank-effective-standard-surface-page);
     --ui-color-surface-panel: var(--ui-theme-bank-effective-standard-surface-panel);
     --ui-color-text-on-action: var(--ui-theme-bank-effective-standard-text-on-action);
+    --ui-color-text-on-status-error: var(--ui-theme-bank-effective-standard-text-on-status-error);
+    --ui-color-text-on-status-info: var(--ui-theme-bank-effective-standard-text-on-status-info);
+    --ui-color-text-on-status-success: var(
+      --ui-theme-bank-effective-standard-text-on-status-success
+    );
+    --ui-color-text-on-status-warning: var(
+      --ui-theme-bank-effective-standard-text-on-status-warning
+    );
     --ui-color-text-primary: var(--ui-theme-bank-effective-standard-text-primary);
     --ui-color-text-secondary: var(--ui-theme-bank-effective-standard-text-secondary);
   }
@@ -855,6 +1983,22 @@
       --ui-color-text-on-action: HighlightText;
       --ui-color-text-primary: CanvasText;
       --ui-color-text-secondary: CanvasText;
+      --ui-color-status-info: Highlight;
+      --ui-color-status-info-hover: Highlight;
+      --ui-color-status-info-pressed: Highlight;
+      --ui-color-text-on-status-info: HighlightText;
+      --ui-color-status-success: Highlight;
+      --ui-color-status-success-hover: Highlight;
+      --ui-color-status-success-pressed: Highlight;
+      --ui-color-text-on-status-success: HighlightText;
+      --ui-color-status-warning: Highlight;
+      --ui-color-status-warning-hover: Highlight;
+      --ui-color-status-warning-pressed: Highlight;
+      --ui-color-text-on-status-warning: HighlightText;
+      --ui-color-status-error: Highlight;
+      --ui-color-status-error-hover: Highlight;
+      --ui-color-status-error-pressed: Highlight;
+      --ui-color-text-on-status-error: HighlightText;
       --ui-material-chrome-background: Canvas;
       --ui-material-modal-background: Canvas;
       --ui-material-overlay-background: Canvas;

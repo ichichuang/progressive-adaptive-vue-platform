@@ -1,6 +1,7 @@
 import type { PreprocessedTokens } from 'style-dictionary/types'
 import { z } from 'zod'
 
+import { isInSrgbGamut, parseCssColor } from '../schema/css-color'
 import {
   legacyBuiltInThemeIds,
   legacySeedThemeDefinitionSchema,
@@ -27,6 +28,7 @@ import {
   type ValidatedCompleteBuiltInTheme,
 } from './complete-themes'
 import { compareCodePoints } from './order'
+import { tokenValueToCss } from './formats/shared'
 import { parseJsonSource } from './parse-json'
 import {
   ActiveAlphaContractRegistry,
@@ -527,6 +529,67 @@ export function validateActivePublicRoleTokens(
   )
 }
 
+function validateSemanticStatusSources(records: readonly ResolvedTokenRecord[]): void {
+  const bankPaths = ['light', 'dark'].flatMap((mode) =>
+    ['standard', 'enhanced'].flatMap((contrast) =>
+      ['info', 'success', 'warning', 'error'].flatMap((tone) =>
+        ['default', 'hover', 'pressed', 'supplementary', 'on-status'].map(
+          (state) => `color.palette.status.${mode}.${contrast}.${tone}.${state}`,
+        ),
+      ),
+    ),
+  )
+  const bank = records.filter((record) => record.path.startsWith('color.palette.status.'))
+  assertExactSet(
+    bank.map((record) => record.path),
+    bankPaths,
+    'Semantic Status Bank source paths',
+  )
+  for (const record of bank) {
+    if (
+      record.source !== 'primitive/color.tokens.json' ||
+      record.tier !== 'primitive' ||
+      record.visibility !== 'build-only' ||
+      record.type !== 'color' ||
+      record.reference !== undefined ||
+      Object.keys(record.conditions).length !== 0
+    ) {
+      throw new Error(
+        `${record.path}: Status Bank requires an unconditional build-only Primitive Color Literal.`,
+      )
+    }
+    const color = parseCssColor(tokenValueToCss('color', record.resolvedValue))
+    if (color.alpha !== 1 || !isInSrgbGamut(color)) {
+      throw new Error(`${record.path}: Status Bank requires opaque sRGB values without correction.`)
+    }
+  }
+  if (records.some((record) => record.path.startsWith('color.palette.status-theme.'))) {
+    throw new Error('Theme-specific Status Bank overrides are not admitted.')
+  }
+  for (const tone of ['info', 'success', 'warning', 'error']) {
+    for (const state of ['default', 'hover', 'pressed', 'on-status']) {
+      const role =
+        state === 'on-status'
+          ? `color.text.on-status.${tone}`
+          : `color.status.${tone}${state === 'default' ? '' : `.${state}`}`
+      const sources = records.filter((record) => record.role.name === role)
+      const record = sources[0]
+      if (
+        sources.length !== 1 ||
+        record?.source !== 'semantic/color.tokens.json' ||
+        record.visibility !== 'public' ||
+        record.tier !== 'semantic' ||
+        Object.keys(record.conditions).length !== 0 ||
+        record.reference !== `color.palette.status.light.standard.${tone}.${state}`
+      ) {
+        throw new Error(
+          `${role}: exactly one unconditional Semantic Alias to the shared Status Bank is required.`,
+        )
+      }
+    }
+  }
+}
+
 function parseLegacySeedThemeSource(bundle: {
   contents: string
   path: string
@@ -604,6 +667,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
   }
 
   const resolver = createTokenResolver(tokenRecords)
+  validateSemanticStatusSources(resolver.records)
   const resolvedThemes = themes
     .sort((left, right) => compareCodePoints(left.id, right.id))
     .map((theme): ResolvedLegacySeedThemeDefinition => ({

@@ -1,10 +1,14 @@
 import type { Format } from 'style-dictionary/types'
 
-import { builtInThemeIds } from '../../schema/complete-theme.schema'
+import { builtInThemeIds, type BuiltInThemeDefinition } from '../../schema/complete-theme.schema'
 import { legacyBuiltInThemeIds } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
-import { isActivePublicColorRole, type UnoCssMappingRecord } from '../public-role-registry'
+import {
+  isActivePublicColorRole,
+  type PublicRoleRecord,
+  type UnoCssMappingRecord,
+} from '../public-role-registry'
 import {
   generatedNotice,
   requireBuildResult,
@@ -22,7 +26,13 @@ function propertyName(value: string): string {
   return /^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(value) ? value : stringLiteral(value)
 }
 
-function typeScriptLiteral(value: unknown, indentation = 0): string {
+function typeScriptLiteral(
+  value: unknown,
+  indentation = 0,
+  references?: ReadonlyMap<unknown, string>,
+): string {
+  const reference = references?.get(value)
+  if (reference !== undefined) return reference
   if (typeof value === 'string') {
     return stringLiteral(value)
   }
@@ -37,7 +47,7 @@ function typeScriptLiteral(value: unknown, indentation = 0): string {
     }
 
     const padding = ' '.repeat(indentation)
-    const compact = `[${value.map((entry) => typeScriptLiteral(entry)).join(', ')}]`
+    const compact = `[${value.map((entry) => typeScriptLiteral(entry, 0, references)).join(', ')}]`
 
     if (
       value.every(
@@ -53,7 +63,10 @@ function typeScriptLiteral(value: unknown, indentation = 0): string {
     }
 
     const values = value
-      .map((entry) => `${' '.repeat(indentation + 2)}${typeScriptLiteral(entry, indentation + 2)},`)
+      .map(
+        (entry) =>
+          `${' '.repeat(indentation + 2)}${typeScriptLiteral(entry, indentation + 2, references)},`,
+      )
       .join('\n')
 
     return `[\n${values}\n${padding}]`
@@ -64,7 +77,7 @@ function typeScriptLiteral(value: unknown, indentation = 0): string {
     const properties = Object.entries(value)
       .map(
         ([key, entry]) =>
-          `${' '.repeat(indentation + 2)}${propertyName(key)}: ${typeScriptLiteral(entry, indentation + 2)},`,
+          `${' '.repeat(indentation + 2)}${propertyName(key)}: ${typeScriptLiteral(entry, indentation + 2, references)},`,
       )
       .join('\n')
 
@@ -91,6 +104,35 @@ function bankVariable(
   return `--ui-theme-bank-${colorMode}-${contrast}-${publicBinding.slice(colorPrefix.length)}`
 }
 
+export function deriveThemeBankRecords(
+  planes: BuiltInThemeDefinition['planes'],
+  activePublicRoles: readonly PublicRoleRecord[],
+) {
+  const publicColors = activePublicRoles.filter(isActivePublicColorRole)
+
+  return themeColorModes.flatMap((colorMode) =>
+    themeContrasts.flatMap((contrast) =>
+      publicColors.map((role) => {
+        const authoredValue = planes[colorMode][contrast][role.id]
+
+        if (authoredValue === undefined) {
+          throw new Error(`planes.${colorMode}.${contrast}.${role.id}: Bank value is missing.`)
+        }
+
+        return {
+          colorMode,
+          contrast,
+          publicRole: role.id,
+          sourceField: `planes.${colorMode}.${contrast}.${role.id}`,
+          authoredValue,
+          bankVariable: bankVariable(colorMode, contrast, role.cssVariable),
+          publicBinding: role.cssVariable,
+        }
+      }),
+    ),
+  )
+}
+
 export function themeRegistryDocument(result: TokenBuildResult) {
   const publicColors = result.activePublicRoles.filter(isActivePublicColorRole)
   const themesById = new Map(result.completeThemes.map((theme) => [theme.id, theme]))
@@ -101,31 +143,25 @@ export function themeRegistryDocument(result: TokenBuildResult) {
       throw new Error(`${themeId}: generated Built-in Theme Registry entry is missing.`)
     }
 
-    const records = themeColorModes.flatMap((colorMode) =>
-      themeContrasts.flatMap((contrast) =>
-        publicColors.map((role) => {
-          const authoredValue = theme.planes[colorMode][contrast][role.id]
-          const resolvedValue = theme.resolvedPlanes[colorMode][contrast][role.id]
+    const records = deriveThemeBankRecords(theme.planes, result.activePublicRoles).map((record) => {
+      const resolvedValue =
+        theme.resolvedPlanes[record.colorMode][record.contrast][record.publicRole]
 
-          if (authoredValue === undefined || resolvedValue === undefined) {
-            throw new Error(
-              `${themeId}:planes.${colorMode}.${contrast}.${role.id}: generated Bank value is missing.`,
-            )
-          }
+      if (resolvedValue === undefined) {
+        throw new Error(`${themeId}:${record.sourceField}: resolved Bank value is missing.`)
+      }
 
-          return {
-            colorMode,
-            contrast,
-            publicRole: role.id,
-            sourceField: `planes.${colorMode}.${contrast}.${role.id}`,
-            authoredValue,
-            resolvedValue,
-            bankVariable: bankVariable(colorMode, contrast, role.cssVariable),
-            publicBinding: role.cssVariable,
-          }
-        }),
-      ),
-    )
+      return {
+        colorMode: record.colorMode,
+        contrast: record.contrast,
+        publicRole: record.publicRole,
+        sourceField: record.sourceField,
+        authoredValue: record.authoredValue,
+        resolvedValue,
+        bankVariable: record.bankVariable,
+        publicBinding: record.publicBinding,
+      }
+    })
 
     return {
       registryKind: 'built-in' as const,
@@ -148,8 +184,8 @@ export function themeRegistryDocument(result: TokenBuildResult) {
     ...new Set(builtInEntries[0]?.bank.records.map((record) => record.bankVariable) ?? []),
   ]
 
-  if (customBankVariables.length !== themeColorModes.length * themeContrasts.length * 10) {
-    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 40 variables.')
+  if (customBankVariables.length !== themeColorModes.length * themeContrasts.length * 26) {
+    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 104 variables.')
   }
 
   for (const entry of builtInEntries) {
@@ -205,7 +241,167 @@ export function themeRegistryDocument(result: TokenBuildResult) {
 }
 
 export function formatThemeRegistryTypeScript(result: TokenBuildResult): string {
-  return `/* ${generatedNotice} */\nexport const generatedThemeRegistry = ${typeScriptLiteral(themeRegistryDocument(result))} as const\n`
+  const document = themeRegistryDocument(result)
+  const representative = document.builtInEntries[0]
+  if (representative === undefined)
+    throw new Error('The shared Status Bank requires a Built-in Theme.')
+  const isStatus = (value: string) => value.startsWith('{color.palette.status.')
+  const statusRecords = representative.bank.records.filter((record) =>
+    isStatus(record.authoredValue),
+  )
+  const bankTemplates = representative.bank.records.map((record) => ({
+    colorMode: record.colorMode,
+    contrast: record.contrast,
+    publicRole: record.publicRole,
+    sourceField: record.sourceField,
+    bankVariable: record.bankVariable,
+    publicBinding: record.publicBinding,
+  }))
+  const sharedStatus = Object.fromEntries(
+    themeColorModes.map((mode) => [
+      mode,
+      Object.fromEntries(
+        themeContrasts.map((contrast) => [
+          contrast,
+          statusRecords
+            .filter((record) => record.colorMode === mode && record.contrast === contrast)
+            .map((record) => [record.publicRole, record.authoredValue, record.resolvedValue]),
+        ]),
+      ),
+    ]),
+  )
+  const references = new Map<unknown, string>([
+    [document.activePublicColorRoles, 'activePublicColorRoles'],
+    [
+      document.customBankVariables,
+      '[\n    bankTemplates[0].bankVariable,\n    ...bankTemplates.slice(1).map((record) => record.bankVariable),\n  ]',
+    ],
+  ])
+
+  for (const entry of document.builtInEntries) {
+    if (
+      JSON.stringify(entry.bank.records.filter((record) => isStatus(record.authoredValue))) !==
+        JSON.stringify(statusRecords) ||
+      entry.bank.records.some(
+        (record) =>
+          !isStatus(record.authoredValue) && record.authoredValue !== record.resolvedValue,
+      )
+    ) {
+      throw new Error(
+        `${entry.themeId}: compact Registry requires shared Status and absolute historical values.`,
+      )
+    }
+    const historicalPlanes = Object.fromEntries(
+      themeColorModes.map((mode) => [
+        mode,
+        Object.fromEntries(
+          themeContrasts.map((contrast) => [
+            contrast,
+            Object.fromEntries(
+              Object.entries(entry.definition.planes[mode][contrast]).filter(
+                ([, value]) => !isStatus(value),
+              ),
+            ),
+          ]),
+        ),
+      ]),
+    )
+    const argumentsSource = [entry.themeId, entry.definition.label, entry.source].map(stringLiteral)
+    const callStart = `createBuiltInTheme(${argumentsSource.join(', ')}, {`
+    references.set(
+      entry,
+      callStart.length + 4 <= 100
+        ? `createBuiltInTheme(${argumentsSource.join(', ')}, ${typeScriptLiteral(historicalPlanes, 4)})`
+        : `createBuiltInTheme(\n${argumentsSource.map((argument) => `      ${argument},`).join('\n')}\n      ${typeScriptLiteral(historicalPlanes, 6)},\n    )`,
+    )
+  }
+
+  return `/* ${generatedNotice} */
+const activePublicColorRoles = ${typeScriptLiteral(document.activePublicColorRoles)} as const
+const bankTemplates = ${typeScriptLiteral(bankTemplates)} as const
+const sharedStatus = ${typeScriptLiteral(sharedStatus)} as const
+
+type PublicColorRole = (typeof activePublicColorRoles)[number]['publicRole']
+type StatusRole = (typeof sharedStatus.light.standard)[number][0]
+type ThemePlane = Readonly<Record<PublicColorRole, string>>
+type StatusPlane = Readonly<Record<StatusRole, string>>
+type HistoricalPlane = Omit<ThemePlane, StatusRole>
+interface ThemePlanes<Plane> {
+  readonly light: { readonly standard: Plane; readonly enhanced: Plane }
+  readonly dark: { readonly standard: Plane; readonly enhanced: Plane }
+}
+
+function statusPlane(
+  records: readonly (readonly [StatusRole, string, string])[],
+  valueIndex: 1 | 2,
+): StatusPlane {
+  return Object.fromEntries(records.map((record) => [record[0], record[valueIndex]])) as StatusPlane
+}
+
+const statusAuthoredPlanes = {
+  light: {
+    standard: statusPlane(sharedStatus.light.standard, 1),
+    enhanced: statusPlane(sharedStatus.light.enhanced, 1),
+  },
+  dark: {
+    standard: statusPlane(sharedStatus.dark.standard, 1),
+    enhanced: statusPlane(sharedStatus.dark.enhanced, 1),
+  },
+} as const
+const statusResolvedValues = new Map<string, string>(
+  [
+    ...sharedStatus.light.standard,
+    ...sharedStatus.light.enhanced,
+    ...sharedStatus.dark.standard,
+    ...sharedStatus.dark.enhanced,
+  ].map((record) => [record[1], record[2]]),
+)
+
+type BuiltInThemeId =
+${builtInThemeIds.map((id) => `  | ${stringLiteral(id)}`).join('\n')}
+
+function createBuiltInTheme<const Id extends BuiltInThemeId>(
+  themeId: Id,
+  label: string,
+  source: string,
+  historicalPlanes: ThemePlanes<HistoricalPlane>,
+) {
+  const planes = {
+    light: {
+      standard: { ...historicalPlanes.light.standard, ...statusAuthoredPlanes.light.standard },
+      enhanced: { ...historicalPlanes.light.enhanced, ...statusAuthoredPlanes.light.enhanced },
+    },
+    dark: {
+      standard: { ...historicalPlanes.dark.standard, ...statusAuthoredPlanes.dark.standard },
+      enhanced: { ...historicalPlanes.dark.enhanced, ...statusAuthoredPlanes.dark.enhanced },
+    },
+  } satisfies ThemePlanes<ThemePlane>
+  const records = bankTemplates.map((record) => {
+    const authoredValue = planes[record.colorMode][record.contrast][record.publicRole]
+    // The generator proves historical cells are absolute and every shared Status alias resolves.
+    const resolvedValue = statusResolvedValues.get(authoredValue) ?? authoredValue
+    return {
+      colorMode: record.colorMode,
+      contrast: record.contrast,
+      publicRole: record.publicRole,
+      sourceField: record.sourceField,
+      authoredValue,
+      resolvedValue,
+      bankVariable: record.bankVariable,
+      publicBinding: record.publicBinding,
+    } as const
+  })
+  return {
+    registryKind: 'built-in',
+    themeId,
+    definition: { schemaVersion: ${String(representative.definition.schemaVersion)}, roleContractVersion: ${String(representative.definition.roleContractVersion)}, id: themeId, label, planes },
+    source,
+    bank: { visibility: 'ui-internal', records },
+  } as const
+}
+
+export const generatedThemeRegistry = ${typeScriptLiteral(document, 0, references)} as const
+`
 }
 
 export function createThemeRegistryFormat(context: FormatContext): Format {

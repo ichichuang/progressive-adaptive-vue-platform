@@ -20,13 +20,37 @@ export const builtInThemeIds = [
   'burgundy-snow',
 ] as const
 export const completeThemeSchemaVersion = 3 as const
-export const completeThemeRoleContractVersion = 2 as const
+export const completeThemeRoleContractVersion = 3 as const
 export const legacyCustomThemeRoleContractVersion = 1 as const
+export const controlCustomThemeRoleContractVersion = 2 as const
+export const legacyCustomThemeRoleIds = [
+  'color.action.primary',
+  'color.border.default',
+  'color.focus.ring',
+  'color.scrim.viewport',
+  'color.surface.page',
+  'color.surface.panel',
+  'color.text.on-action',
+  'color.text.primary',
+  'color.text.secondary',
+] as const
+export const controlCustomThemeRoleIds = [
+  'color.action.primary',
+  'color.control.primary',
+  'color.border.default',
+  'color.focus.ring',
+  'color.scrim.viewport',
+  'color.surface.page',
+  'color.surface.panel',
+  'color.text.on-action',
+  'color.text.primary',
+  'color.text.secondary',
+] as const
 export const builtInThemeIdSchema = z.enum(builtInThemeIds)
 export const customThemeIdSchema = z.string().min(1).brand<'CustomThemeId'>()
 
-const cssWideKeywords = new Set(['inherit', 'initial', 'revert', 'revert-layer', 'unset'])
-const systemColorKeywords = new Set(
+export const cssWideKeywords = new Set(['inherit', 'initial', 'revert', 'revert-layer', 'unset'])
+export const systemColorKeywords = new Set(
   [
     'accentcolor',
     'accentcolortext',
@@ -72,9 +96,9 @@ const systemColorKeywords = new Set(
     'windowtext',
   ].map((value) => value.toLowerCase()),
 )
-const forbiddenComputedColorSyntax =
+export const forbiddenComputedColorSyntax =
   /\b(?:attr|calc|color-mix|env|light-dark|var)\s*\(|\bcurrentcolor\b|\(\s*from\b/iu
-const supportedAbsoluteColorSyntax =
+export const supportedAbsoluteColorSyntax =
   /^(?:#[0-9a-f]{3,4}|#[0-9a-f]{6}|#[0-9a-f]{8}|[a-z][a-z0-9-]*|(?:hsl|hsla|hwb|lab|lch|oklab|oklch|rgb|rgba)\(.+\)|color\(\s*srgb\s+.+\))$/iu
 
 function isSupportedAbsoluteCssColor(value: string): boolean {
@@ -121,16 +145,10 @@ const nonNeutralPlanesSchema = z.strictObject({
   dark: planeSchema(authoredColorRoleMapSchema),
 })
 
-const customPlanesSchema = z.strictObject({
-  light: z.strictObject({
-    standard: absoluteColorRoleMapSchema,
-    enhanced: absoluteColorRoleMapSchema,
-  }),
-  dark: z.strictObject({
-    standard: absoluteColorRoleMapSchema,
-    enhanced: absoluteColorRoleMapSchema,
-  }),
-})
+function customPlanesSchema(roleMap: z.ZodType<Record<string, string>>) {
+  const mode = z.strictObject({ standard: roleMap, enhanced: roleMap })
+  return z.strictObject({ light: mode, dark: mode })
+}
 
 const completeThemeContractShape = {
   schemaVersion: z.literal(completeThemeSchemaVersion),
@@ -147,14 +165,21 @@ export const completeBuiltInThemeDefinitionSchema = z.strictObject({
 export const customThemeDefinitionSchema = z.strictObject({
   ...completeThemeContractShape,
   id: customThemeIdSchema,
-  planes: customPlanesSchema,
+  planes: customPlanesSchema(absoluteColorRoleMapSchema),
 })
 
 export const legacyCustomThemeDefinitionSchema = z.strictObject({
   ...completeThemeContractShape,
   roleContractVersion: z.literal(legacyCustomThemeRoleContractVersion),
   id: customThemeIdSchema,
-  planes: customPlanesSchema,
+  planes: customPlanesSchema(z.record(z.enum(legacyCustomThemeRoleIds), absoluteCssColorSchema)),
+})
+
+export const controlCustomThemeDefinitionSchema = z.strictObject({
+  ...completeThemeContractShape,
+  roleContractVersion: z.literal(controlCustomThemeRoleContractVersion),
+  id: customThemeIdSchema,
+  planes: customPlanesSchema(z.record(z.enum(controlCustomThemeRoleIds), absoluteCssColorSchema)),
 })
 
 export type BuiltInThemeId = z.infer<typeof builtInThemeIdSchema>

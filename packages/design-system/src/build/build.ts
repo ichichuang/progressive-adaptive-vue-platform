@@ -50,6 +50,7 @@ import {
   createThemeRegistryFormat,
   createTokensTypeScriptFormat,
   createUnoCssThemeFormat,
+  deriveThemeBankRecords,
   formatTokenNames,
   formatThemeRegistryTypeScript,
   formatTokensTypeScript,
@@ -100,8 +101,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 16198,
-    expectedByteDelta: 12832,
+    expectedBytes: 14722,
+    expectedByteDelta: 11356,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -482,8 +483,8 @@ function validateManifestCompression(result: TokenBuildResult): number {
     manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalBytes -
     manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes
   const darkActionColorHarmonyByteDelta =
-    gzipBytes - manifestCompressionContract.darkActionColorHarmonyRefinement.baselineBytes
-  const manifestRecordCount = governance['recordCount']
+    manifestCompressionContract.darkActionColorHarmonyRefinement.acceptedFinalBytes -
+    manifestCompressionContract.darkActionColorHarmonyRefinement.baselineBytes
 
   assertInvariant(
     manifestCompressionContract.current.expectedBytes -
@@ -569,12 +570,9 @@ function validateManifestCompression(result: TokenBuildResult): number {
     `Additional Built-in Theme Expansion gzip delta: expected ${String(manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta)}, received ${String(additionalBuiltInThemeExpansionByteDelta)}`,
   )
   assertInvariant(
-    typeof manifestRecordCount === 'number' &&
-      manifestRecordCount ===
-        manifestCompressionContract.darkActionColorHarmonyRefinement.acceptedFinalRecordCount &&
-      manifestRecordCount -
-        manifestCompressionContract.darkActionColorHarmonyRefinement.baselineRecordCount ===
-        manifestCompressionContract.darkActionColorHarmonyRefinement.expectedRecordCountDelta,
+    manifestCompressionContract.darkActionColorHarmonyRefinement.acceptedFinalRecordCount -
+      manifestCompressionContract.darkActionColorHarmonyRefinement.baselineRecordCount ===
+      manifestCompressionContract.darkActionColorHarmonyRefinement.expectedRecordCountDelta,
     'Dark Action Color Harmony Refinement Manifest record delta must match its baseline',
   )
   assertInvariant(
@@ -1081,14 +1079,14 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
-      builtInThemeIds.length * 4 * 10,
-    'complete built-in Themes must contain exactly 560 authored color values',
+      builtInThemeIds.length * 4 * 26,
+    'complete built-in Themes must contain exactly 1456 authored color values',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===
       builtInThemeIds.length * 4 * 10 &&
-      result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 0),
-    'all active built-in Theme cells must be explicit absolute colors without aliases',
+      result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 64),
+    'Built-in Themes must retain 560 historical absolute colors and 896 canonical Status aliases',
   )
   assertInvariantEqual(
     validateDocuments(canonicalDocuments),
@@ -1114,15 +1112,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     planes: entry.definition.planes,
     bank: {
       visibility: entry.bank.visibility,
-      records: entry.bank.records.map((record) => ({
-        colorMode: record.colorMode,
-        contrast: record.contrast,
-        publicRole: record.publicRole,
-        sourceField: record.sourceField,
-        authoredValue: record.authoredValue,
-        bankVariable: record.bankVariable,
-        publicBinding: record.publicBinding,
-      })),
+      derivation: 'theme-planes-and-active-public-roles',
     },
   }))
 
@@ -1131,6 +1121,33 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     expectedThemeMetadata,
     'Manifest Theme records must exactly project active Built-in Registry and Bank metadata',
   )
+  for (const entry of registry.builtInEntries) {
+    const logicalRecords = deriveThemeBankRecords(entry.definition.planes, result.activePublicRoles)
+    assertInvariant(logicalRecords.length === 104, `${entry.themeId}: exactly 104 logical records`)
+    assertInvariantEqual(
+      logicalRecords,
+      entry.bank.records.map(
+        ({
+          colorMode,
+          contrast,
+          publicRole,
+          sourceField,
+          authoredValue,
+          bankVariable,
+          publicBinding,
+        }) => ({
+          colorMode,
+          contrast,
+          publicRole,
+          sourceField,
+          authoredValue,
+          bankVariable,
+          publicBinding,
+        }),
+      ),
+      `${entry.themeId}: Manifest derivation must preserve all seven Bank fields and canonical order`,
+    )
+  }
 
   const manifestProjectionDrift = structuredClone(manifest)
   const driftedThemeRecords = manifestProjectionDrift['themes']
@@ -1330,7 +1347,12 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     'enhanced',
   )
 
-  Object.assign(enhancedIntentRoleMap, structuredClone(standardIntentRoleMap))
+  // Status aliases are plane-specific; keep them valid so this probe reaches contrast validation.
+  for (const [roleId, value] of Object.entries(standardIntentRoleMap)) {
+    if (typeof value === 'string' && !value.startsWith('{color.palette.status.')) {
+      enhancedIntentRoleMap[roleId] = value
+    }
+  }
   assertContractFailure(
     () => validateDocuments(invalidEnhancedIntent),
     /contrast|Enhanced plane must not duplicate Standard/u,
@@ -1457,7 +1479,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     result.unoCssMappings,
     unoCssMappingRecords(publicRoleRecords),
-    'Token preprocessing must carry exactly 37 UnoCSS mapping records',
+    'Token preprocessing must carry exactly 53 UnoCSS mapping records',
   )
   assertInvariantEqual(
     result.namedContrasts.map((record) =>
@@ -1466,7 +1488,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
       ),
     ),
     namedContrasts,
-    'Token preprocessing must carry the exact 14-record Named Contrast Registry',
+    'Token preprocessing must carry the exact 34-record Named Contrast Registry',
   )
   assertInvariant(
     layoutRegistryDocument(result).records.length === 9,
@@ -2405,17 +2427,35 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     registry.builtInEntries.length === builtInThemeIds.length &&
-      registry.builtInEntries.every((entry) => entry.bank.records.length === 40),
-    'the generated Built-in Theme Registry must contain fourteen complete 40-cell Banks',
+      registry.builtInEntries.every((entry) => entry.bank.records.length === 104),
+    'the generated Built-in Theme Registry must contain fourteen complete 104-cell Banks',
   )
   assertInvariant(
-    registry.customBankVariables.length === 40 && new Set(registry.customBankVariables).size === 40,
-    'the generated Custom Theme Bank allowlist must contain exactly 40 fixed variables',
+    registry.customBankVariables.length === 104 &&
+      new Set(registry.customBankVariables).size === 104,
+    'the generated Custom Theme Bank allowlist must contain exactly 104 fixed variables',
   )
   assertInvariantEqual(
     formatThemeRegistryTypeScript(result),
     formatThemeRegistryTypeScript(result),
     'the generated private Theme Registry must be deterministic',
+  )
+  const registryScript = ts
+    .transpileModule(formatThemeRegistryTypeScript(result), {
+      compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext },
+    })
+    .outputText.replace('export const generatedThemeRegistry', 'const generatedThemeRegistry')
+  const materializedRegistry: unknown = JSON.parse(
+    runInNewContext(
+      `${registryScript}\nJSON.stringify(generatedThemeRegistry)`,
+      {},
+      { timeout: 1000 },
+    ) as string,
+  )
+  assertInvariantEqual(
+    materializedRegistry,
+    registry,
+    'compact generated Registry evaluation must preserve every complete definition, Bank field, order and compatibility record',
   )
 
   assertInvariantEqual(
@@ -2737,10 +2777,8 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   for (const bankVariable of registry.customBankVariables) {
     assertInvariant(
-      criticalTheme.includes(bankVariable) &&
-        runtimeCss.includes(bankVariable) &&
-        appearanceInit.includes(bankVariable),
-      `${bankVariable}: Theme Bank variable must remain generator-owned across both CSS artifacts and First Paint`,
+      criticalTheme.includes(bankVariable) && runtimeCss.includes(bankVariable),
+      `${bankVariable}: Theme Bank variable must remain generator-owned across both CSS artifacts`,
     )
   }
 
@@ -2928,6 +2966,10 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       }
 
       delete plane['color.control.primary']
+      for (const role of Object.keys(plane)) {
+        if (role.startsWith('color.status.') || role.startsWith('color.text.on-status.'))
+          Reflect.deleteProperty(plane, role)
+      }
     }
   }
 
@@ -2978,6 +3020,169 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         'runtime-supplied-theme-registry-key',
     'First Paint and Vue runtime must normalize legacy Control Foreground identically without Storage rewrite',
   )
+
+  const executeCustomTheme = (definition: typeof legacyCustomTheme) =>
+    executeAppearanceInit(appearanceInit, {
+      prefersDark: true,
+      rawPreference: JSON.stringify({
+        ...legacyCustomPreference,
+        appearance: {
+          ...legacyCustomPreference.appearance,
+          theme: { registryKind: 'custom', themeId: definition.id },
+        },
+      }),
+      rawThemeRegistry: JSON.stringify({
+        schemaVersion: 1,
+        entries: [{ registryKind: 'custom', themeId: definition.id, definition }],
+      }),
+    })
+  const controlCustomTheme = structuredClone(legacyCustomTheme)
+  controlCustomTheme.roleContractVersion = 2
+  for (const mode of ['light', 'dark']) {
+    for (const contrast of ['standard', 'enhanced']) {
+      const plane = controlCustomTheme.planes[mode]?.[contrast]
+      assertInvariant(plane !== undefined, 'Contract 2 probe plane must exist')
+      plane['color.control.primary'] = plane['color.action.primary'] ?? ''
+    }
+  }
+  assertInvariant(
+    legacyRuntimeValidation.status === 'rebound',
+    'Contract 1 must rebound before parity probes',
+  )
+  const currentCustomTheme = structuredClone(legacyRuntimeValidation.entry.definition)
+  for (const definition of [legacyCustomTheme, controlCustomTheme, currentCustomTheme]) {
+    const original = stableJson(definition)
+    const runtime = validateCustomThemeDefinition(definition)
+    const version = definition.roleContractVersion
+    assertInvariant(
+      version === 3
+        ? runtime.status === 'validated'
+        : runtime.status === 'rebound' &&
+            runtime.code === 'ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS' &&
+            runtime.previousRoleContractVersion === version,
+      `Contract ${String(version)} normalization must preserve its exact success code`,
+    )
+    assertInvariant(
+      runtime.status === 'validated' || runtime.status === 'rebound',
+      'normalization must supply the complete entry',
+    )
+    const normalized = runtime.entry.definition
+    for (const mode of ['light', 'dark'] as const) {
+      for (const contrast of ['standard', 'enhanced'] as const) {
+        const plane = normalized.planes[mode][contrast]
+        for (const [role, value] of Object.entries(definition.planes[mode][contrast])) {
+          assertInvariant(
+            plane[role] === value,
+            `Contract ${String(version)} must retain the authored ${role} string`,
+          )
+        }
+        assertInvariant(
+          Object.keys(plane).length === 26,
+          'all normalized planes must contain exactly 26 roles',
+        )
+        for (const record of registry.builtInEntries[0]?.bank.records ?? []) {
+          if (
+            record.colorMode === mode &&
+            record.contrast === contrast &&
+            record.authoredValue.startsWith('{color.palette.status.')
+          ) {
+            assertInvariant(
+              plane[record.publicRole] === record.resolvedValue,
+              'historical status injection must equal the current shared Bank',
+            )
+          }
+        }
+      }
+    }
+    const execution = executeCustomTheme(definition)
+    assertInvariantEqual(
+      execution.customProperties,
+      {
+        ...safetyCustomProperties,
+        ...Object.fromEntries(
+          (registry.builtInEntries[0]?.bank.records ?? []).map((record) => [
+            record.bankVariable,
+            normalized.planes[record.colorMode][record.contrast][record.publicRole],
+          ]),
+        ),
+      },
+      `Contract ${String(version)} First Paint must install all 104 bindings identically to runtime normalization`,
+    )
+    assertInvariant(
+      execution.attributes['data-theme-kind'] === 'custom' &&
+        execution.attributes['data-theme'] === definition.id &&
+        execution.storageWrites === 0 &&
+        execution.networkRequests === 0 &&
+        stableJson(definition) === original,
+      'Custom normalization must remain synchronous and preserve input/Storage without network access',
+    )
+
+    for (const kind of [
+      'missing-role',
+      'extra-role',
+      'computed-color',
+      'invalid-alpha',
+      'invalid-contrast',
+    ] as const) {
+      const invalid = structuredClone(definition)
+      const plane = invalid.planes.light.standard
+      if (kind === 'missing-role')
+        Reflect.deleteProperty(plane, version === 3 ? 'color.status.info' : 'color.action.primary')
+      if (kind === 'extra-role') plane['color.unapproved.extra'] = '#000'
+      if (kind === 'computed-color')
+        plane['color.action.primary'] = 'var(--ui-color-action-primary)'
+      if (kind === 'invalid-alpha') plane['color.scrim.viewport'] = 'oklch(0% 0 0 / 0.5)'
+      if (kind === 'invalid-contrast')
+        plane['color.text.primary'] = plane['color.surface.page'] ?? ''
+      const before = stableJson(invalid)
+      const rejected = validateCustomThemeDefinition(invalid)
+      const firstPaint = executeCustomTheme(invalid)
+      assertInvariant(
+        rejected.status === 'rejected' &&
+          rejected.code === 'THEME_INVALID' &&
+          rejected.evidence.length > 0,
+        `Contract ${String(version)} ${kind} must retain THEME_INVALID evidence`,
+      )
+      assertInvariantEqual(
+        firstPaint.attributes,
+        safetyAttributes,
+        `Contract ${String(version)} ${kind} must preserve First Paint safety`,
+      )
+      assertInvariantEqual(
+        firstPaint.customProperties,
+        safetyCustomProperties,
+        'invalid Custom Themes must install no partial Bank',
+      )
+      assertInvariant(
+        firstPaint.storageWrites === 0 &&
+          firstPaint.networkRequests === 0 &&
+          stableJson(invalid) === before,
+        'rejected Custom normalization must preserve source and Storage',
+      )
+    }
+  }
+
+  for (const [version, expectedCode] of [
+    [0, 'THEME_INVALID'],
+    [4, 'ROLE_CONTRACT_MISMATCH'],
+  ] as const) {
+    const unsupported = { ...currentCustomTheme, roleContractVersion: version }
+    const runtime = validateCustomThemeDefinition(unsupported)
+    assertInvariant(
+      runtime.status === 'rejected' && runtime.code === expectedCode,
+      'invalid and unsupported Role Contracts must preserve their distinct rejection codes',
+    )
+    const firstPaint = executeCustomTheme(unsupported)
+    assertInvariantEqual(
+      firstPaint.customProperties,
+      safetyCustomProperties,
+      'unsupported Role Contracts must install no Bank',
+    )
+    assertInvariant(
+      firstPaint.storageWrites === 0,
+      'unsupported Role Contracts must not rewrite Storage',
+    )
+  }
 
   const legacyTuple = registry.legacyBuiltInThemeTuples[2]
 
@@ -3369,7 +3574,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
       compareCodePoints,
     ),
     projection.mappings.map((mapping) => mapping.roleId).sort(compareCodePoints),
-    'arbitrary public-variable bypass validation must cover all 27 mappings',
+    'arbitrary public-variable bypass validation must cover all 53 mappings',
   )
   assertInvariant(
     new Set(forbiddenCandidates.map((candidate) => candidate.className)).size ===

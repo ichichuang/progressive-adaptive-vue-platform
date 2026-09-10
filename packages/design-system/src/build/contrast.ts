@@ -328,6 +328,7 @@ function validateNamedContrastPairs(
     if (usesThemePlaneOnlyRole) {
       for (const theme of completeThemes) {
         for (const colorMode of ['light', 'dark'] as const) {
+          let standardRatio = 0
           for (const contrast of ['standard', 'enhanced'] as const) {
             const plane = theme.resolvedPlanes[colorMode][contrast]
             const foreground = plane[pair.foregroundRole]
@@ -348,6 +349,14 @@ function validateNamedContrastPairs(
             if (ratio < threshold) {
               throw new Error(
                 `${pair.id}: contrast ${ratio.toFixed(3)}:1 fails ${theme.id}/${colorMode}/${contrast}/not-applicable.`,
+              )
+            }
+
+            if (contrast === 'standard') {
+              standardRatio = ratio
+            } else if (pair.enhancedDifferenceRequired && ratio <= standardRatio) {
+              throw new Error(
+                `${theme.id}:${colorMode}.${contrast}:${pair.id}: Enhanced contrast must be strictly greater than Standard ${String(standardRatio)}.`,
               )
             }
 

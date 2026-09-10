@@ -4,14 +4,14 @@ import { builtInThemeIds } from '../schema/complete-theme.schema'
 
 export interface DesignSystemConsoleProjection {
   readonly schemaVersion: 1
-  readonly publicRoleCount: 37
-  readonly publicColorRoleCount: 10
+  readonly publicRoleCount: 53
+  readonly publicColorRoleCount: 26
   readonly builtInThemeIds: readonly string[]
   readonly planeIds: readonly string[]
   readonly contrastValues: readonly string[]
   readonly materialValues: readonly string[]
-  readonly manifestSchemaVersion: 9
-  readonly manifestRecordCount: 252
+  readonly manifestSchemaVersion: 10
+  readonly manifestRecordCount: 400
 }
 
 const firstTheme = tokenManifest.themes[0]
@@ -28,10 +28,10 @@ const publicColorRoleCount = tokenManifest.activePublicRoles.filter(
 ).length
 
 if (
-  tokenManifest.activePublicRoles.length !== 37 ||
-  publicColorRoleCount !== 10 ||
-  tokenManifest.schemaVersion !== 9 ||
-  tokenManifest.governance.recordCount !== 252
+  tokenManifest.activePublicRoles.length !== 53 ||
+  publicColorRoleCount !== 26 ||
+  tokenManifest.schemaVersion !== 10 ||
+  tokenManifest.governance.recordCount !== 400
 ) {
   throw new TypeError('The Design System Console projection source is incomplete.')
 }

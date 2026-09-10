@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 import type { Format } from 'style-dictionary/types'
+import ts from 'typescript'
 
 import { ProductPreferenceDefault } from '../../runtime/appearance-defaults'
 import { colorModeResolutionContract } from '../../runtime/resolve-color-mode'
@@ -14,6 +15,15 @@ import {
   motionPreferenceValues,
   uiDensityValues,
 } from '../../schema/appearance.schema'
+import {
+  controlCustomThemeRoleContractVersion,
+  controlCustomThemeRoleIds,
+  cssWideKeywords,
+  forbiddenComputedColorSyntax,
+  legacyCustomThemeRoleIds,
+  supportedAbsoluteColorSyntax,
+  systemColorKeywords,
+} from '../../schema/complete-theme.schema'
 import {
   legacyBuiltInThemeIds,
   legacySeedThemeIdPattern,
@@ -51,6 +61,15 @@ const embeddedColorJsRuntime = declaredColorJsRuntime.replace(
   colorJsPolicyUnsafeExportName,
   'multiplyVectorByMatrix3',
 )
+const duplicateAwareJsonRuntime = ts
+  .transpileModule(readFileSync(new URL('../parse-json.ts', import.meta.url), 'utf8'), {
+    compilerOptions: {
+      target: ts.ScriptTarget.ES2022,
+      module: ts.ModuleKind.ESNext,
+      removeComments: true,
+    },
+  })
+  .outputText.replace('export function parseJsonSource', 'function parseJsonSource')
 
 if (
   !embeddedColorJsRuntime.startsWith('var Color=') ||
@@ -139,7 +158,7 @@ function javascriptLiteral(value: unknown, indentation = 0): string {
     const properties = Object.entries(value)
       .map(
         ([key, propertyValue]) =>
-          `${padding}  ${key}: ${javascriptLiteral(propertyValue, indentation + 2)},`,
+          `${padding}  ${/^[A-Za-z_$][A-Za-z0-9_$]*$/u.test(key) ? key : javascriptString(key)}: ${javascriptLiteral(propertyValue, indentation + 2)},`,
       )
       .join('\n')
 
@@ -162,6 +181,42 @@ function safetyBaselineRestorationLines(): string {
 
 export function formatAppearanceInitScript(result: TokenBuildResult): string {
   const registry = themeRegistryDocument(result)
+  const roleIndices = (roles: readonly string[]) =>
+    roles.map((role) => {
+      const index = registry.activePublicColorRoles.findIndex(
+        (record) => record.publicRole === role,
+      )
+      if (index < 0) throw new Error(`${role}: First Paint compatibility role is missing.`)
+      return index
+    })
+  const statusRoleIndices = roleIndices(
+    (registry.builtInEntries[0]?.bank.records ?? [])
+      .filter(
+        (record) =>
+          record.colorMode === 'light' &&
+          record.contrast === 'standard' &&
+          record.authoredValue.startsWith('{color.palette.status.'),
+      )
+      .map((record) => record.publicRole),
+  )
+  const statusPlanes = Object.fromEntries(
+    ['light', 'dark'].map((mode) => [
+      mode,
+      Object.fromEntries(
+        ['standard', 'enhanced'].map((contrast) => [
+          contrast,
+          (registry.builtInEntries[0]?.bank.records ?? [])
+            .filter(
+              (record) =>
+                record.colorMode === mode &&
+                record.contrast === contrast &&
+                record.authoredValue.startsWith('{color.palette.status.'),
+            )
+            .map((record) => record.resolvedValue),
+        ]),
+      ),
+    ]),
+  )
 
   return `/* ${generatedNotice} */
 // prettier-ignore
@@ -170,6 +225,8 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
 
   /* Embedded from the declared Color.js dependency for exact legacy-schema parity. */
   ${embeddedColorJsRuntime}
+
+  ${duplicateAwareJsonRuntime}
 
   var colorModes = ${javascriptLiteral(colorModePreferenceValues)}
   var themeColorModes = ['light', 'dark']
@@ -182,25 +239,43 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   var builtInThemeIds = ${javascriptLiteral(registry.builtInRegistryOrder)}
   var roleContractVersion = ${javascriptLiteral(registry.roleContractVersion)}
   var legacyCustomThemeRoleContractVersion = 1
-  var activePublicColorRoles = ${javascriptLiteral(
-    registry.activePublicColorRoles.map((record) => record.publicRole),
+  var controlCustomThemeRoleContractVersion = ${String(controlCustomThemeRoleContractVersion)}
+  var publicColorBindings = ${javascriptLiteral(
+    registry.activePublicColorRoles.map((record) => [record.publicRole, record.publicBinding]),
   )}
-  var legacyPublicColorRoles = activePublicColorRoles.filter(function (roleId) {
-    return roleId !== 'color.control.primary'
+  var activePublicColorRoles = publicColorBindings.map(function (record) { return record[0] })
+  // Version membership comes from the canonical historical role sets, not a current-list prefix.
+  var legacyPublicColorRoles = ${javascriptLiteral(roleIndices(legacyCustomThemeRoleIds))}.map(function (index) { return activePublicColorRoles[index] })
+  var controlPublicColorRoles = ${javascriptLiteral(roleIndices(controlCustomThemeRoleIds))}.map(function (index) { return activePublicColorRoles[index] })
+  var statusRoleIndices = ${javascriptLiteral(statusRoleIndices)}
+  var statusPlanes = ${javascriptLiteral(statusPlanes, 2)}
+  themeColorModes.forEach(function (mode) {
+    contrasts.forEach(function (contrast) {
+      statusPlanes[mode][contrast] = Object.fromEntries(statusRoleIndices.map(function (roleIndex, valueIndex) {
+        return [activePublicColorRoles[roleIndex], statusPlanes[mode][contrast][valueIndex]]
+      }))
+    })
   })
+  var namedContrasts = ${javascriptLiteral(registry.namedContrasts.filter((pair) => pair.staticMaterialProjections.length === 0).map((pair) => [pair.foregroundRole, pair.backgroundRole, pair.standardMinimum, pair.enhancedMinimum, pair.enhancedDifferenceRequired]))}
+  var forbiddenColorKeywords = ${javascriptLiteral([...cssWideKeywords, ...systemColorKeywords])}
+  var supportedColorSyntax = new RegExp(${javascriptString(supportedAbsoluteColorSyntax.source)}, 'iu')
+  var forbiddenColorSyntax = new RegExp(${javascriptString(forbiddenComputedColorSyntax.source)}, 'iu')
   var retiredBuiltInThemeIds = ${javascriptLiteral(legacyBuiltInThemeIds)}
   var defaultBuiltInThemeId = ${javascriptString(ProductPreferenceDefault.theme.themeId)}
   var legacyBuiltInThemeTuples = ${javascriptLiteral(registry.legacyBuiltInThemeTuples, 2)}
-  var customBankVariables = ${javascriptLiteral(registry.customBankVariables)}
-  var customBankRecords = ${javascriptLiteral(
-    registry.builtInEntries[0]?.bank.records.map((record) => ({
-      bankVariable: record.bankVariable,
-      colorMode: record.colorMode,
-      contrast: record.contrast,
-      publicRole: record.publicRole,
-    })) ?? [],
-    2,
-  )}
+  var customBankRecords = themeColorModes.flatMap(function (colorMode) {
+    return contrasts.flatMap(function (contrast) {
+      return publicColorBindings.map(function (binding) {
+        var colorPrefix = '--ui-color-'
+        if (!binding[1].startsWith(colorPrefix)) throw new Error('Invalid Public Color binding')
+        return {
+          bankVariable: '--ui-theme-bank-' + colorMode + '-' + contrast + '-' + binding[1].slice(colorPrefix.length),
+          colorMode: colorMode, contrast: contrast, publicRole: binding[0],
+        }
+      })
+    })
+  })
+  var customBankVariables = customBankRecords.map(function (record) { return record.bankVariable })
   var appearanceAttributeNames = ${javascriptLiteral([
     'data-color-mode',
     'data-theme-kind',
@@ -250,7 +325,9 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   }
 
   function isThemeColor(roleId, value) {
-    if (!isCssColor(value)) {
+    if (typeof value !== 'string' || value.trim() !== value ||
+      !supportedColorSyntax.test(value) || forbiddenColorSyntax.test(value) ||
+      includes(forbiddenColorKeywords, value.toLowerCase()) || !isCssColor(value)) {
       return false
     }
 
@@ -272,7 +349,8 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
       typeof value.label !== 'string' ||
       value.label.length === 0 ||
       (value.roleContractVersion !== roleContractVersion &&
-        value.roleContractVersion !== legacyCustomThemeRoleContractVersion) ||
+        value.roleContractVersion !== legacyCustomThemeRoleContractVersion &&
+        value.roleContractVersion !== controlCustomThemeRoleContractVersion) ||
       !hasOnlyKeys(value.planes, ['dark', 'light'])
     ) {
       return null
@@ -281,7 +359,8 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     var sourceRoles =
       value.roleContractVersion === legacyCustomThemeRoleContractVersion
         ? legacyPublicColorRoles
-        : activePublicColorRoles
+        : value.roleContractVersion === controlCustomThemeRoleContractVersion
+          ? controlPublicColorRoles : activePublicColorRoles
     var normalizedPlanes = {}
 
     for (var colorModeIndex = 0; colorModeIndex < themeColorModes.length; colorModeIndex += 1) {
@@ -322,12 +401,30 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
           }
         }
 
+        if (value.roleContractVersion !== roleContractVersion) {
+          Object.assign(normalizedPlane, statusPlanes[colorMode][contrast])
+        }
+
         if (!hasOnlyKeys(normalizedPlane, activePublicColorRoles)) {
           return null
         }
 
         normalizedPlanes[colorMode][contrast] = normalizedPlane
       }
+
+      var standard = normalizedPlanes[colorMode].standard
+      var enhanced = normalizedPlanes[colorMode].enhanced
+      var changedStricterEndpoint = false
+      for (var pairIndex = 0; pairIndex < namedContrasts.length; pairIndex += 1) {
+        var pair = namedContrasts[pairIndex]
+        var standardRatio = new Color(standard[pair[0]]).contrastWCAG21(new Color(standard[pair[1]]))
+        var enhancedRatio = new Color(enhanced[pair[0]]).contrastWCAG21(new Color(enhanced[pair[1]]))
+        if (standardRatio < pair[2] || enhancedRatio < pair[3] ||
+          (pair[4] && enhancedRatio <= standardRatio)) return null
+        if (pair[3] > pair[2] && (standard[pair[0]] !== enhanced[pair[0]] ||
+          standard[pair[1]] !== enhanced[pair[1]])) changedStricterEndpoint = true
+      }
+      if (!changedStricterEndpoint) return null
     }
 
     return {
@@ -360,6 +457,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
 
     try {
       registrySnapshot = JSON.parse(rawRegistry)
+      parseJsonSource(rawRegistry, 'Custom Theme Registry')
     } catch {
       return null
     }
@@ -372,17 +470,19 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
       return null
     }
 
-    var selected = registrySnapshot.entries.find(function (entry) {
-      return (
-        hasOnlyKeys(entry, ['definition', 'registryKind', 'themeId']) &&
-        entry.registryKind === 'custom' &&
-        entry.themeId === themeId &&
-        isRecord(entry.definition) &&
-        entry.definition.id === themeId
-      )
-    })
-
-    return selected ? normalizeCustomThemeDefinition(selected.definition) : null
+    var selected = null
+    var themeIds = new Set()
+    for (var entryIndex = 0; entryIndex < registrySnapshot.entries.length; entryIndex += 1) {
+      var entry = registrySnapshot.entries[entryIndex]
+      if (!hasOnlyKeys(entry, ['definition', 'registryKind', 'themeId']) ||
+        entry.registryKind !== 'custom' || !isRecord(entry.definition) ||
+        entry.definition.id !== entry.themeId || themeIds.has(entry.themeId)) return null
+      var definition = normalizeCustomThemeDefinition(entry.definition)
+      if (definition === null) return null
+      themeIds.add(entry.themeId)
+      if (entry.themeId === themeId) selected = definition
+    }
+    return selected
   }
 
   function isPalette(value) {

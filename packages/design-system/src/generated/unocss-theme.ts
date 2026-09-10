@@ -91,6 +91,150 @@ export const platformUnoMappings = [
     allowedCssProperties: ['color'],
   },
   {
+    roleId: 'color.status.info',
+    cssVariable: '--ui-color-status-info',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-info',
+    classes: ['bg-status-info'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.info.hover',
+    cssVariable: '--ui-color-status-info-hover',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-info-hover',
+    classes: ['bg-status-info-hover'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.info.pressed',
+    cssVariable: '--ui-color-status-info-pressed',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-info-pressed',
+    classes: ['bg-status-info-pressed'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.text.on-status.info',
+    cssVariable: '--ui-color-text-on-status-info',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'on-status-info',
+    classes: ['text-on-status-info'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.status.success',
+    cssVariable: '--ui-color-status-success',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-success',
+    classes: ['bg-status-success'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.success.hover',
+    cssVariable: '--ui-color-status-success-hover',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-success-hover',
+    classes: ['bg-status-success-hover'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.success.pressed',
+    cssVariable: '--ui-color-status-success-pressed',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-success-pressed',
+    classes: ['bg-status-success-pressed'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.text.on-status.success',
+    cssVariable: '--ui-color-text-on-status-success',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'on-status-success',
+    classes: ['text-on-status-success'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.status.warning',
+    cssVariable: '--ui-color-status-warning',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-warning',
+    classes: ['bg-status-warning'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.warning.hover',
+    cssVariable: '--ui-color-status-warning-hover',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-warning-hover',
+    classes: ['bg-status-warning-hover'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.warning.pressed',
+    cssVariable: '--ui-color-status-warning-pressed',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-warning-pressed',
+    classes: ['bg-status-warning-pressed'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.text.on-status.warning',
+    cssVariable: '--ui-color-text-on-status-warning',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'on-status-warning',
+    classes: ['text-on-status-warning'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.status.error',
+    cssVariable: '--ui-color-status-error',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-error',
+    classes: ['bg-status-error'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.error.hover',
+    cssVariable: '--ui-color-status-error-hover',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-error-hover',
+    classes: ['bg-status-error-hover'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.status.error.pressed',
+    cssVariable: '--ui-color-status-error-pressed',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'status-error-pressed',
+    classes: ['bg-status-error-pressed'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.text.on-status.error',
+    cssVariable: '--ui-color-text-on-status-error',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'on-status-error',
+    classes: ['text-on-status-error'],
+    allowedCssProperties: ['color'],
+  },
+  {
     roleId: 'interaction.control.height',
     cssVariable: '--ui-control-height',
     generatorKind: 'exact-rule',
@@ -371,6 +515,78 @@ export const platformRules = [
     },
   ],
   [
+    'bg-status-error',
+    {
+      'background-color': 'var(--ui-color-status-error)',
+    },
+  ],
+  [
+    'bg-status-error-hover',
+    {
+      'background-color': 'var(--ui-color-status-error-hover)',
+    },
+  ],
+  [
+    'bg-status-error-pressed',
+    {
+      'background-color': 'var(--ui-color-status-error-pressed)',
+    },
+  ],
+  [
+    'bg-status-info',
+    {
+      'background-color': 'var(--ui-color-status-info)',
+    },
+  ],
+  [
+    'bg-status-info-hover',
+    {
+      'background-color': 'var(--ui-color-status-info-hover)',
+    },
+  ],
+  [
+    'bg-status-info-pressed',
+    {
+      'background-color': 'var(--ui-color-status-info-pressed)',
+    },
+  ],
+  [
+    'bg-status-success',
+    {
+      'background-color': 'var(--ui-color-status-success)',
+    },
+  ],
+  [
+    'bg-status-success-hover',
+    {
+      'background-color': 'var(--ui-color-status-success-hover)',
+    },
+  ],
+  [
+    'bg-status-success-pressed',
+    {
+      'background-color': 'var(--ui-color-status-success-pressed)',
+    },
+  ],
+  [
+    'bg-status-warning',
+    {
+      'background-color': 'var(--ui-color-status-warning)',
+    },
+  ],
+  [
+    'bg-status-warning-hover',
+    {
+      'background-color': 'var(--ui-color-status-warning-hover)',
+    },
+  ],
+  [
+    'bg-status-warning-pressed',
+    {
+      'background-color': 'var(--ui-color-status-warning-pressed)',
+    },
+  ],
+  [
     'bg-surface-page',
     {
       'background-color': 'var(--ui-color-surface-page)',
@@ -478,6 +694,30 @@ export const platformRules = [
     'text-control-primary',
     {
       color: 'var(--ui-color-control-primary)',
+    },
+  ],
+  [
+    'text-on-status-error',
+    {
+      color: 'var(--ui-color-text-on-status-error)',
+    },
+  ],
+  [
+    'text-on-status-info',
+    {
+      color: 'var(--ui-color-text-on-status-info)',
+    },
+  ],
+  [
+    'text-on-status-success',
+    {
+      color: 'var(--ui-color-text-on-status-success)',
+    },
+  ],
+  [
+    'text-on-status-warning',
+    {
+      color: 'var(--ui-color-text-on-status-warning)',
     },
   ],
   [

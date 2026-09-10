@@ -2,11 +2,13 @@ import type { Format } from 'style-dictionary/types'
 
 import {
   builtInThemeIds,
+  completeBuiltInThemeDefinitionSchema,
   completeThemeRoleContractVersion,
   completeThemeSchemaVersion,
 } from '../../schema/complete-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
+import { isActivePublicColorRole, validatePublicRoleRegistry } from '../public-role-registry'
 import {
   generatedNotice,
   requireBuildResult,
@@ -16,7 +18,7 @@ import {
   type FormatContext,
 } from './shared'
 import { preInitializationSafetyBaseline } from './first-paint'
-import { themeRegistryDocument } from './typescript'
+import { deriveThemeBankRecords, themeRegistryDocument } from './typescript'
 
 const manifestRecordFamilies = [
   'tokens',
@@ -45,16 +47,16 @@ const forbiddenManifestSizeGovernanceFields = new Set<string>([
 ])
 
 const manifestGovernanceContract = {
-  schemaVersion: 9,
+  schemaVersion: 10,
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 71,
+    expectedCountDelta: 219,
     expectedCounts: {
-      tokens: 145,
-      activePublicRoles: 37,
-      unoCssMappings: 37,
-      namedContrasts: 14,
+      tokens: 241,
+      activePublicRoles: 53,
+      unoCssMappings: 53,
+      namedContrasts: 34,
       alphaContracts: 1,
       densities: 3,
       themes: 14,
@@ -80,15 +82,6 @@ const themeRecordKeys = [
   'roleContractVersion',
   'planes',
   'bank',
-] as const
-const themeBankRecordKeys = [
-  'colorMode',
-  'contrast',
-  'publicRole',
-  'sourceField',
-  'authoredValue',
-  'bankVariable',
-  'publicBinding',
 ] as const
 const firstPaintCapabilities = {
   preferenceStorageKeyAttribute: true,
@@ -176,49 +169,15 @@ function requireRecords(value: unknown, description: string): Record<string, unk
   return value
 }
 
-function publicColorRoleContracts(document: ManifestDocument): Record<string, unknown>[] {
-  const records = requireRecords(
-    document['activePublicRoles'],
-    'Manifest Active Public Role records',
-  ).filter(
-    (record) =>
-      record['tokenType'] === 'color' &&
-      record['themePlaneApplicability'] === 'target-required-after-atomic-cutover',
-  )
-
-  if (records.length !== 10) {
-    throw new Error(
-      `Manifest active Public Color Role count: expected 10, received ${String(records.length)}.`,
-    )
-  }
-
-  for (const record of records) {
-    if (typeof record['id'] !== 'string' || typeof record['cssVariable'] !== 'string') {
-      throw new Error('Manifest active Public Color Role identity/binding is malformed.')
-    }
-  }
-
-  return records
-}
-
-function expectedBankVariable(
-  colorMode: ThemeColorMode,
-  contrast: ThemeContrast,
-  publicBinding: string,
-): string {
-  const prefix = '--ui-color-'
-
-  if (!publicBinding.startsWith(prefix)) {
-    throw new Error(`${publicBinding}: Manifest Public Color binding has an invalid namespace.`)
-  }
-
-  return `--ui-theme-bank-${colorMode}-${contrast}-${publicBinding.slice(prefix.length)}`
-}
-
 function validateActiveThemeManifest(document: ManifestDocument): void {
   const themes = requireRecords(document['themes'], 'Manifest Theme records')
-  const publicColors = publicColorRoleContracts(document)
-  const publicRoleIds = publicColors.map((record) => record['id'] as string)
+  const activePublicRoles = validatePublicRoleRegistry({
+    schemaVersion: 1,
+    status: 'active-current-public-surface',
+    records: document['activePublicRoles'],
+  })
+  const publicColors = activePublicRoles.filter(isActivePublicColorRole)
+  const publicRoleIds = publicColors.map((record) => record.id)
 
   if (themes.length !== builtInThemeIds.length) {
     throw new Error(
@@ -249,22 +208,16 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
     const bank = requireRecord(theme['bank'], `${description}.bank`)
 
     assertExactKeys(planes, themeColorModes, `${description}.planes`)
-    assertExactKeys(bank, ['visibility', 'records'], `${description}.bank`)
+    assertExactKeys(bank, ['visibility', 'derivation'], `${description}.bank`)
 
-    if (bank['visibility'] !== 'ui-internal') {
-      throw new Error(`${description}.bank.visibility must equal "ui-internal".`)
-    }
-
-    const bankRecords = requireRecords(bank['records'], `${description}.bank.records`)
-    const expectedRecordCount = themeColorModes.length * themeContrasts.length * publicColors.length
-
-    if (bankRecords.length !== expectedRecordCount) {
+    if (
+      bank['visibility'] !== 'ui-internal' ||
+      bank['derivation'] !== 'theme-planes-and-active-public-roles'
+    ) {
       throw new Error(
-        `${description}.bank.records: expected ${String(expectedRecordCount)}, received ${String(bankRecords.length)}.`,
+        `${description}.bank: the schemaVersion-10 derivation descriptor is malformed.`,
       )
     }
-
-    let recordIndex = 0
 
     for (const colorMode of themeColorModes) {
       const modePlanes = requireRecord(planes[colorMode], `${description}.planes.${colorMode}`)
@@ -279,41 +232,25 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
 
         assertExactKeys(roleMap, publicRoleIds, `${description}.planes.${colorMode}.${contrast}`)
 
-        for (const publicColor of publicColors) {
-          const publicRole = publicColor['id'] as string
-          const publicBinding = publicColor['cssVariable'] as string
-          const authoredValue = roleMap[publicRole]
-          const bankRecord = bankRecords[recordIndex]
-
-          if (bankRecord === undefined) {
-            throw new Error(`${description}.bank.records[${String(recordIndex)}] is missing.`)
-          }
-
-          assertExactKeys(
-            bankRecord,
-            themeBankRecordKeys,
-            `${description}.bank.records[${String(recordIndex)}]`,
+        if (Object.values(roleMap).some((value) => typeof value !== 'string')) {
+          throw new Error(
+            `${description}.planes.${colorMode}.${contrast}: authored values must be strings.`,
           )
-
-          if (
-            typeof authoredValue !== 'string' ||
-            bankRecord['colorMode'] !== colorMode ||
-            bankRecord['contrast'] !== contrast ||
-            bankRecord['publicRole'] !== publicRole ||
-            bankRecord['sourceField'] !== `planes.${colorMode}.${contrast}.${publicRole}` ||
-            bankRecord['authoredValue'] !== authoredValue ||
-            bankRecord['bankVariable'] !==
-              expectedBankVariable(colorMode, contrast, publicBinding) ||
-            bankRecord['publicBinding'] !== publicBinding
-          ) {
-            throw new Error(
-              `${description}.bank.records[${String(recordIndex)}]: active Theme Bank projection is malformed.`,
-            )
-          }
-
-          recordIndex += 1
         }
       }
+    }
+    const definition = completeBuiltInThemeDefinitionSchema.parse({
+      schemaVersion: theme['schemaVersion'],
+      roleContractVersion: theme['roleContractVersion'],
+      id: theme['themeId'],
+      label: theme['label'],
+      planes,
+    })
+    const logicalRecords = deriveThemeBankRecords(definition.planes, activePublicRoles)
+    if (logicalRecords.length !== 104) {
+      throw new Error(
+        `${description}: the compact Theme must derive exactly 104 logical Bank records.`,
+      )
     }
   }
 }
@@ -450,15 +387,7 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
     planes: entry.definition.planes,
     bank: {
       visibility: entry.bank.visibility,
-      records: entry.bank.records.map((record) => ({
-        colorMode: record.colorMode,
-        contrast: record.contrast,
-        publicRole: record.publicRole,
-        sourceField: record.sourceField,
-        authoredValue: record.authoredValue,
-        bankVariable: record.bankVariable,
-        publicBinding: record.publicBinding,
-      })),
+      derivation: 'theme-planes-and-active-public-roles',
     },
   }))
   const firstPaint = [

@@ -1,5 +1,7 @@
 import { generatedThemeRegistry } from '../generated/theme-registry'
 import {
+  controlCustomThemeDefinitionSchema,
+  controlCustomThemeRoleContractVersion,
   customThemeDefinitionSchema,
   legacyCustomThemeDefinitionSchema,
   legacyCustomThemeRoleContractVersion,
@@ -64,6 +66,13 @@ export type CustomThemeValidationResult =
       readonly entry: CustomThemeRegistryEntry
       readonly previousRoleContractVersion: number
       readonly currentRoleContractVersion: number
+    }
+  | {
+      readonly status: 'rebound'
+      readonly code: 'ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS'
+      readonly entry: CustomThemeRegistryEntry
+      readonly previousRoleContractVersion: 1 | 2
+      readonly currentRoleContractVersion: 3
     }
   | {
       readonly status: 'rejected'
@@ -169,7 +178,11 @@ function parsedColor(value: string): ParsedCssColor | null {
 }
 
 function normalizeLegacyCustomThemeDefinition(input: unknown): CustomThemeDefinition | null {
-  const legacy = legacyCustomThemeDefinitionSchema.safeParse(input)
+  const schema =
+    isRecord(input) && input['roleContractVersion'] === legacyCustomThemeRoleContractVersion
+      ? legacyCustomThemeDefinitionSchema
+      : controlCustomThemeDefinitionSchema
+  const legacy = schema.safeParse(input)
 
   if (!legacy.success) {
     return null
@@ -181,21 +194,21 @@ function normalizeLegacyCustomThemeDefinition(input: unknown): CustomThemeDefini
       Object.fromEntries(
         themeContrasts.map((contrast) => {
           const plane = legacy.data.planes[colorMode][contrast]
-          const actionPrimary = plane['color.action.primary']
+          const normalizedPlane: Record<string, string> = { ...plane }
+          if (legacy.data.roleContractVersion === legacyCustomThemeRoleContractVersion) {
+            normalizedPlane['color.control.primary'] = plane['color.action.primary'] ?? ''
+          }
+          for (const record of generatedThemeRegistry.builtInEntries[0].bank.records) {
+            if (
+              record.colorMode === colorMode &&
+              record.contrast === contrast &&
+              record.authoredValue.startsWith('{color.palette.status.')
+            ) {
+              normalizedPlane[record.publicRole] = record.resolvedValue
+            }
+          }
 
-          return [
-            contrast,
-            Object.fromEntries(
-              Object.entries(plane).flatMap(([roleId, value]) =>
-                roleId === 'color.action.primary'
-                  ? [
-                      [roleId, value],
-                      ['color.control.primary', actionPrimary],
-                    ]
-                  : [[roleId, value]],
-              ),
-            ),
-          ]
+          return [contrast, normalizedPlane]
         }),
       ),
     ]),
@@ -298,6 +311,33 @@ function validateCustomThemePlanes(
 
     const standard = colorPlane(definition, colorMode, 'standard')
     const enhanced = colorPlane(definition, colorMode, 'enhanced')
+    for (const pair of generatedThemeRegistry.namedContrasts) {
+      if (!pair.enhancedDifferenceRequired) continue
+      const values = [
+        standard[pair.foregroundRole],
+        standard[pair.backgroundRole],
+        enhanced[pair.foregroundRole],
+        enhanced[pair.backgroundRole],
+      ]
+      const colors = values.map((value) => (value === undefined ? null : parsedColor(value)))
+      const [standardForeground, standardBackground, enhancedForeground, enhancedBackground] =
+        colors
+      if (!standardForeground || !standardBackground || !enhancedForeground || !enhancedBackground)
+        continue
+      const requiredRatio = calculateWcag21Contrast(standardForeground, standardBackground)
+      const actualRatio = calculateWcag21Contrast(enhancedForeground, enhancedBackground)
+      if (actualRatio <= requiredRatio) {
+        evidence.push(
+          validationEvidence(`planes.${colorMode}.enhanced.${pair.foregroundRole}`, definition.id, {
+            plane: `${colorMode}.enhanced`,
+            role: pair.foregroundRole,
+            contrastPairId: pair.id,
+            actualRatio,
+            requiredRatio,
+          }),
+        )
+      }
+    }
     const enhancedDuplicatesStandard = roleIds.every(
       (roleId) => standard[roleId] === enhanced[roleId],
     )
@@ -328,11 +368,18 @@ export function validateCustomThemeDefinition(input: unknown): CustomThemeValida
   const themeId = submittedThemeId(input)
   const receivedRoleContractVersion = isRecord(input) ? input['roleContractVersion'] : undefined
 
-  if (receivedRoleContractVersion === legacyCustomThemeRoleContractVersion) {
+  if (
+    receivedRoleContractVersion === legacyCustomThemeRoleContractVersion ||
+    receivedRoleContractVersion === controlCustomThemeRoleContractVersion
+  ) {
     const normalized = normalizeLegacyCustomThemeDefinition(input)
 
     if (normalized === null) {
-      const parsed = legacyCustomThemeDefinitionSchema.safeParse(input)
+      const parsed = (
+        receivedRoleContractVersion === legacyCustomThemeRoleContractVersion
+          ? legacyCustomThemeDefinitionSchema
+          : controlCustomThemeDefinitionSchema
+      ).safeParse(input)
 
       return {
         status: 'rejected',
@@ -361,13 +408,13 @@ export function validateCustomThemeDefinition(input: unknown): CustomThemeValida
 
     return {
       status: 'rebound',
-      code: 'ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY',
+      code: 'ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS',
       entry: {
         registryKind: 'custom',
         themeId: normalized.id,
         definition: normalized,
       },
-      previousRoleContractVersion: legacyCustomThemeRoleContractVersion,
+      previousRoleContractVersion: receivedRoleContractVersion,
       currentRoleContractVersion: generatedThemeRegistry.roleContractVersion,
     }
   }
@@ -375,6 +422,20 @@ export function validateCustomThemeDefinition(input: unknown): CustomThemeValida
   if (
     themeId !== null &&
     typeof receivedRoleContractVersion === 'number' &&
+    Number.isInteger(receivedRoleContractVersion) &&
+    receivedRoleContractVersion > 0 &&
+    isRecord(input) &&
+    exactStringSet(Object.keys(input), [
+      'schemaVersion',
+      'roleContractVersion',
+      'id',
+      'label',
+      'planes',
+    ]) &&
+    input['schemaVersion'] === 3 &&
+    typeof input['label'] === 'string' &&
+    input['label'].length > 0 &&
+    isRecord(input['planes']) &&
     receivedRoleContractVersion !== generatedThemeRegistry.roleContractVersion
   ) {
     return {

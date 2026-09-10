@@ -22,6 +22,44 @@
       "on-action": {
         "$type": "color",
         "$value": "{color.palette.neutral.0}"
+      },
+      "on-status": {
+        "info": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.info.on-status}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.on-status.info"
+            }
+          }
+        },
+        "success": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.success.on-status}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.on-status.success"
+            }
+          }
+        },
+        "warning": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.warning.on-status}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.on-status.warning"
+            }
+          }
+        },
+        "error": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.error.on-status}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.text.on-status.error"
+            }
+          }
+        }
       }
     },
     "border": {
@@ -292,6 +330,124 @@
             "role": "color.material-support.modal-reduced",
             "conditions": {
               "colorMode": "dark"
+            }
+          }
+        }
+      }
+    },
+    "status": {
+      "info": {
+        "default": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.info.default}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.info"
+            }
+          }
+        },
+        "hover": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.info.hover}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.info.hover"
+            }
+          }
+        },
+        "pressed": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.info.pressed}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.info.pressed"
+            }
+          }
+        }
+      },
+      "success": {
+        "default": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.success.default}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.success"
+            }
+          }
+        },
+        "hover": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.success.hover}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.success.hover"
+            }
+          }
+        },
+        "pressed": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.success.pressed}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.success.pressed"
+            }
+          }
+        }
+      },
+      "warning": {
+        "default": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.warning.default}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.warning"
+            }
+          }
+        },
+        "hover": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.warning.hover}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.warning.hover"
+            }
+          }
+        },
+        "pressed": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.warning.pressed}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.warning.pressed"
+            }
+          }
+        }
+      },
+      "error": {
+        "default": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.error.default}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.error"
+            }
+          }
+        },
+        "hover": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.error.hover}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.error.hover"
+            }
+          }
+        },
+        "pressed": {
+          "$type": "color",
+          "$value": "{color.palette.status.light.standard.error.pressed}",
+          "$extensions": {
+            "org.pavp": {
+              "role": "color.status.error.pressed"
             }
           }
         }
