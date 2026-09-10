@@ -5011,7 +5011,7 @@ Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGE
 
 ### 1.2B.4 Appearance read boundary and application composition
 
-本节当前七轴快照与 Provider API 保持已实现状态；§13.12 冻结未来同一快照携带已解析 Status 值的最小 Type/Read Boundary 扩展，其源码授权仍为零，不创建第二 Appearance Authority。
+本节当前七轴快照与 Provider API 保持已实现状态；§13.12 冻结未来同一快照保留七轴顶层访问路径、仅追加 `statusColors` 的最小 Type/Read Boundary 扩展，其源码授权仍为零，不创建第二 Appearance Authority。
 
 Appearance Preference、Environment Resolution、Effective State Derivation 与 DOM Application 的既有 Mutable Authority 保持不变。Console 新增恰好一个 App-internal Read Boundary，把成功解析后的 `EffectiveAppearanceState` 以真正 Readonly Vue Ref 交给 Root UI Provider；另有一个不持有 State/Environment 的 Mutation Facade 供 Appearance Page 调用 Existing Store Authority。二者都不是第二 Store、Resolver、Media Owner 或 Writer。
 
@@ -5186,7 +5186,7 @@ Field Order 与 Interface 精确相同。Semantic Order 精确为 Themes `neutra
 
 #### Appearance Workspace Theme Preview Projection
 
-当前六色 Preview 以 §1.2B.0G 和实际 Source 为准；§13.12 只冻结未来从相同 Resolved Theme Plane 增加状态 Summary，保持下列 Owner 与 Consumer Boundary。
+当前六色 Preview 以 §1.2B.0G 和实际 Source 为准；§13.12 只冻结未来从相同 Resolved Theme Plane 追加四个平铺 Default Status Swatch 的十字段目标，保持下列 Owner 与 Consumer Boundary。
 
 ```text
 OWNER=packages/design-system/src/console/appearance-workspace-theme-projection.ts
@@ -10465,20 +10465,21 @@ Contract 2 → 3 自动注入仅限十六个 Status Role。现有 Preference `sc
 
 唯一目标管线为 `PAVP Theme / Semantic Status Bank → validated resolved Plane → private Naive Theme Projection → admitted Naive components`。`packages/ui` 不解析 Theme JSON、不查询任意 DOM CSS Variable、不建立 Theme Registry、不读取 Build Manifest。Generated Built-in `definition.planes` 将含 Authored Alias，不能把它当成绝对色；解析依据是同一个 Registry Owner 的 `bank.records[].resolvedValue` 或等价已验证 Resolved Plane，Custom 使用同一 Validator 接受的 Absolute Plane。
 
-未来消费者切片在 `packages/design-system/src/runtime/ui-appearance-projection.ts` 增加纯 `projectUiAppearance`，并仅从 `@platform/design-system` 公共根提供该函数与 `UiAppearanceSnapshot` Type，供现有 Appearance 编排和 UI Provider 传输使用。形状冻结为：
+未来消费者切片在 `packages/design-system/src/runtime/ui-appearance-projection.ts` 增加纯 `projectUiAppearance`，并仅从 `@platform/design-system` 公共根提供该函数与 `UiAppearanceSnapshot` Type，供现有 Appearance 编排和 UI Provider 传输使用。`SemanticStatusAppearanceProjection` 只命名既有四族二十值传输结构，不增加公共根 Export。当前唯一目标形状冻结为：
 
 ```ts
-interface UiAppearanceSnapshot {
-  readonly appearance: Readonly<EffectiveAppearanceState>
-  readonly statusColors: {
-    readonly [Tone in 'info' | 'success' | 'warning' | 'error']: {
-      readonly default: string
-      readonly hover: string
-      readonly pressed: string
-      readonly supplementary: string
-      readonly onStatus: string
-    }
+type SemanticStatusAppearanceProjection = {
+  readonly [Tone in 'info' | 'success' | 'warning' | 'error']: {
+    readonly default: string
+    readonly hover: string
+    readonly pressed: string
+    readonly supplementary: string
+    readonly onStatus: string
   }
+}
+
+export interface UiAppearanceSnapshot extends EffectiveAppearanceState {
+  readonly statusColors: SemanticStatusAppearanceProjection
 }
 
 declare function projectUiAppearance(
@@ -10487,13 +10488,17 @@ declare function projectUiAppearance(
 ): Readonly<UiAppearanceSnapshot>
 ```
 
+`UiAppearanceSnapshot` 是既有 Atomic Appearance Read Snapshot 的兼容性追加扩展。`snapshot.value.colorMode`、`snapshot.value.theme`、`snapshot.value.contrast`、`snapshot.value.material`、`snapshot.value.density`、`snapshot.value.fontScale`、`snapshot.value.motion` 七条顶层访问路径与语义必须保持，恰好新增 `snapshot.value.statusColors`。不得把七轴移入 `.appearance.*` 或要求 Router、Page、App 与私有组件迁移既有轴访问；不重构既有 Appearance Axis API。
+
 该签名只接受现有 Resolution 已成功的 Entry；Theme Tuple 必须与 Appearance 精确相等，否则在提交前失败，不能生成默认颜色或空值。结果及嵌套对象只读，恰好一个活动 Plane 的二十个绝对值，不包含全 Theme 表、Source Path、CSS Property Name、Vendor Type、Writer 或 Storage。状态不是第八个可编辑 Appearance Axis；`EffectiveAppearanceState` 七轴和 Store 两字段不变。Supplementary 仅此 UI-internal 传输例外，不成为页面可选的公共应用 Token/API，也不增加公共 Bank Export 或 Deep Import。
 
 Design System 复用现有 Color.js，从已验证 sRGB 数值产生 vendor-parser-compatible 的逗号 `rgba(R, G, B, 1)` 传输值。已安装的 Naive 传递依赖 `seemly@0.3.10` 的 `es/color/index.js` 不支持 `oklch(...)` 或现代空格 RGB，且会将 RGB 通道取整；因此 R/G/B 按其语义明确为 `Math.round(channel × 255)` 的 0–255 整数。这是 UI 读投影的派生表示，不回写或替换 Authored/Custom/Stored Value，不执行 Gamut Remap、修色或另一套颜色算法；sRGB 不合法的源值必须先拒绝，不能借 Clamp 修复。
 
 原始 Plane 的 Named Contrast 通过后，还须用相同 WCAG 算法复核实际输出的整数通道状态值：On-status/Default/Hover/Pressed 使用真实投影值，Page/Panel 使用实际 PAVP Surface Endpoint，Standard/Enhanced 的最小值及严格增强关系均不变。量化后失守则在提交前拒绝并保持旧完整快照，不靠 Ratio 四舍五入或调整用户颜色通过。Supplementary 同样按此语法交付，不新增公共 Pair。Built-in 转换及验证优先在构建时完成并共享；Custom 只在既有验证/准备阶段转换，不增加 Runtime Color Engine 依赖。
 
-现有 `AppearanceReadBoundary.snapshot` 的唯一 Readonly Ref 目标改为这个传输 Shape；`appearance-bootstrap.ts` 仍持有唯一 Writer。`UiProvider` 及私有 Provider 的既有 required `appearance` Prop 传递 `UiAppearanceSnapshot`，现有 `locale` Prop、Default Slot、Overlay Root 和唯一 `NConfigProvider` 不变；私有 `createPavpNaiveThemeProjection`、`createPavpNaiveFormThemeProjection` 与 `pavp-naive-runtime-context.ts` 的既有注入类型链同步接受同一快照。App/私有组件既有 Effective State 消费显式取 `.appearance`，不得另设 palette Ref/Store/Provider/Media Listener。投影的缺失、内部不一致或上述量化对比度失败在既有 Appearance 操作失败/启动失败边界拒绝，不新增通用错误注册表。
+现有 `AppearanceReadBoundary.snapshot` 的唯一 Readonly Ref 目标扩展为这个传输 Shape；`appearance-bootstrap.ts` 仍持有唯一 Writer。`UiProvider` 及私有 Provider 的既有 required `appearance` Prop 传递 `UiAppearanceSnapshot`，现有 `locale` Prop、Default Slot、Overlay Root 和唯一 `NConfigProvider` 不变；私有 `createPavpNaiveThemeProjection`、`createPavpNaiveFormThemeProjection` 与 `pavp-naive-runtime-context.ts` 的既有注入类型链同步接受同一快照。App/私有组件既有 Effective State 消费继续读取快照顶层字段，不得另设 palette Ref/Store/Provider/Media Listener。投影的缺失、内部不一致或上述量化对比度失败在既有 Appearance 操作失败/启动失败边界拒绝，不新增通用错误注册表。
+
+每次成功 Appearance Mutation/Reapply 必须在既有同步 Commit Transaction 中以同一个不可变只读 Snapshot 原子发布七轴与 `statusColors`；不得拆成两个独立更新的 Reactive Ref，也不得有意暴露七轴已是新 Theme 而 `statusColors` 仍为旧 Theme、或反向错配的状态。Appearance Store 保持既有 Preference/Custom Theme 两字段权威，`statusColors` 不进入 Store State 或 Persistence；下文 CSS/Root Attributes 与 Snapshot 同步发布、失败保留旧完整状态的要求保持。
 
 Naive Common 映射精确为下表十六项，全部取 `statusColors` 已解析的绝对值：
 
@@ -10545,7 +10550,26 @@ interface StatusPropertyProjection {
 
 后续切换后的 PAVP 语义 UI 使用同一状态系统。`UiStatusBadge` 当前 Tone 是 `active,complete,deferred,inactive,not-started`，目前只用 Primary/Secondary Neutral Text 区分；真正成功完成含义的 `complete` 消费必须改用 Success Fill/On-status 或合格的 Success 标记。未来真实 Info/Warning/Error Tone 必须消费对应 Role，不能采用 Naive 默认色。`ACTIVE`、`DEFERRED`、`TARGET_INACTIVE` 等 Capability Lifecycle Label 不自动代表成功/错误；必须保留领域含义。本规格不改其 Public API、布局或设计，也不预建未来 Tone。
 
-Appearance Preview 当前恰好六个 Swatch：page、panel、action、control、border、focus。未来在既有 `AppearanceThemePreviewSwatches` 增加一个只读 `status` Summary，字段按 `info,success,warning,error` 顺序各取当前 Plane 的 Default 值。仍从同一 Theme Registry 的 Resolved Plane 生成，不能显示 Authored Alias 或另写展示 Palette；Compact Card 只需四个 Default 色。更丰富的真实 Inspector 可投影 Default/Hover/Pressed/On-status，但无真实需求时不新增页面、Inspector API 或 Supplementary 展示。本次不修改 Appearance UI。
+Appearance Preview 当前恰好六个平铺 Swatch：`surfacePage,surfacePanel,actionPrimary,controlPrimary,borderDefault,focusRing`。未来保留这些字段及其语义，仅追加同类的四个平铺 Default Status Swatch；兼容性与紧凑投影的一致结构是该扩展的依据，不增加嵌套 `status` 对象。`AppearanceThemePreviewSwatches` 的当前唯一目标形状为：
+
+```ts
+interface AppearanceThemePreviewSwatches {
+  readonly surfacePage: string
+  readonly surfacePanel: string
+  readonly actionPrimary: string
+  readonly controlPrimary: string
+  readonly borderDefault: string
+  readonly focusRing: string
+  readonly statusInfo: string
+  readonly statusSuccess: string
+  readonly statusWarning: string
+  readonly statusError: string
+}
+```
+
+四个新增字段按 `statusInfo,statusSuccess,statusWarning,statusError` 顺序，分别取当前 Plane 的 `color.status.info`、`color.status.success`、`color.status.warning`、`color.status.error` 已解析 Default 值。Built-in 使用同一 Theme Registry 的 Resolved Theme Bank 值，Custom 使用当前通过验证的 Absolute Plane 值；不能让 `{color.palette...}` 等 Authored Alias 到达 Preview，也不能另写展示 Palette。
+
+Compact Theme Card 的该十字段投影不增加 Hover、Pressed、Supplementary 或 On-status 字段；真实消费者需要更丰富值时使用上文 Resolved Semantic Status Projection，无真实需求时仍不新增页面、Inspector API 或 Supplementary 展示。本次只修订目标 Shape，不修改 Appearance UI。
 
 状态公共变量必须与现有颜色一起进入 `tokens.css`、`critical-theme.css`、Generated Theme Bank 和同步 `appearance-init.js`。保留当前 Built-in 与已准入 Custom 首屏恢复能力；Contract 1/2 → 3、Exact Allowlist、Alpha、Named Contrast 与失败语义同时进入其现有只读路径。依赖 UI 使用前就有完整 26-role 安全基线，禁止第二个 Post-mount Injector 或暂时回退到 Vendor Status。
 
@@ -10594,7 +10618,7 @@ Manifest 保留 §11.4 的八个 Record Families，JSON Family Key 精确依次�
 
 推荐的第一源码切片是一个原子基础：Bank、十六 Public Roles 与 Semantic Source、Role Contract 3、全部 Built-in Alias、Contract 1/2 兼容、Contrast、Generated Registry/Token/CSS/首屏/Manifest、Count Projection 与直接 Source/Checker 同步。它还必须为十六角色生成最小 UnoCSS 映射：Base/Hover/Pressed 各一个稳定 `bg-status-*`，On-status 一个 `text-on-status-*`，沿用现有单属性 `exact-rule`；Family/Key 用上文最终名称，不能引入临时类。当前 `A = R = T = N = U = M` 和 Source Coverage 使这些 Mapping/Generated Output 无法留到第二片；但现有一属性映射足以支持该稳定子集，因此不需要提前扩展多属性模型或消费者。
 
-推荐的第二独立消费者切片是：单一 Resolved-absolute UI Snapshot 与 Naive 四族映射；四个 Base Role 的 property-specific Mapping 扩展及四个 `border-status-*` Utility；真实 PAVP 状态组件切换；Appearance Status Preview；对应 UI/Consumer Governance Checks。第一片不包含 Naive 接线、UiStatusBadge 或 Appearance 视觉扩展；Status 整体能力在消费者未完成前不能声明端到端 Active。Owner 已明确授权并完成第一片源码的静态收口；第二片仍须独立源码授权，两片的 Git 操作均须独立授权，当前 Stage/Commit/Push/Release 权限为零。
+推荐的第二独立消费者切片是：保留七轴顶层字段并追加 `statusColors` 的单一 `UiAppearanceSnapshot` 与 Naive 四族映射；四个 Base Role 的 property-specific Mapping 扩展及四个 `border-status-*` Utility；真实 PAVP 状态组件切换；平铺十字段 `AppearanceThemePreviewSwatches`；对应 UI/Consumer Governance Checks。第一片不包含 Naive 接线、UiStatusBadge 或 Appearance 视觉扩展；Status 整体能力在消费者未完成前不能声明端到端 Active。Owner 已明确授权并完成第一片源码的静态收口；第二片仍须独立源码授权，两片的 Git 操作均须独立授权，本段不授予 Stage/Commit/Push/Release 权限。
 
 第一片生成闭包完成时就运行既有 Build/Bundle 测量；第二片在最小 Bank + Role Contract + Active Runtime Projection + Naive Mapping 接通后立即早测 Bundle，再进行剩余消费者工作。越界必须停止并报告，不能等全部 UI 做完再调预算。每次实际源码 Landing 还须完整 `mise exec -- pnpm verify`；其静态通过不代替真实 Theme 切换、视觉、Forced Colors、辅助功能或 Release 验收。原规格任务只交付合同；当前第一片源码静态结果与仍未开始的第二片按本节上述记录分别判断。
 
@@ -17552,6 +17576,24 @@ RELEASED=NO
 ```
 
 本次只完成已授权第一片；Current Work/Next/Successor 不自动推进，不增加 Capability Manifest Record，不授权第二片、Browser/Runtime Acceptance、依赖或预算变更及任何 Git 交付。
+
+#### Consumer interface compatibility correction
+
+第一片已提交于 `main@ae652d96ed4a11e1498c8140588c3c98350ebcf0`。随后的首次第二消费者源码实施尝试在 Mutation 前确认：请求保留七轴顶层访问与平铺 Preview，而当时 §13.12 冻结了嵌套 `appearance` 与 `status` 目标，因此按 Architecture Conflict 停止，未修改任何源码。旧嵌套形状仅是未实现的冻结目标，现由本次 Owner 明确选择的兼容性追加形状取代；不改写第一片历史实现、测量或验收事实，也不保留第二份当前形状权威。
+
+Owner 本次仅授权 `ARCHITECTURE.md` 内 §13.12 两项接口形状、直接引用与本准入记录的有界纠正：`UiAppearanceSnapshot` 保留七个既有顶层 Appearance 字段，仅追加 `statusColors`，保持单一不可变快照与原子发布；`AppearanceThemePreviewSwatches` 保留六个既有平铺字段，仅追加四个平铺 Default Status Swatch。完整当前 Shape 只由 §13.12 定义。其余 Semantic Status 颜色、角色、Contrast、Schema/Manifest、Compatibility、Naive/UnoCSS 语义、First Paint、Forced Colors、依赖和预算合同保持不变。
+
+本次从上述干净且同步的 `main` 基线开始，Fetch Without Prune 后 HEAD、origin/main 与 Remote Main 必须仍精确相等，Index 为空且无 Untracked/Unmerged。仅在合同与 Diff 审查、Focused Prettier、`git diff --check`、既有 `check:arch` / `check:policy` 及完整 `mise exec -- pnpm verify` 均通过后，才允许再次 Fetch 并核实原基线，显式 Stage `ARCHITECTURE.md`、完整审查 Staged Diff、创建一个简体中文 Commit 并正常 Push 至 `origin/main`；随后核查精确提交的 Static Verification 与 CodeQL 终态。不授权其他文件、消费者源码、Generator、Browser、Dev Server、依赖或预算变更、部署、Release 或自动恢复消费者实施。
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+CONTRACT_STATUS=FROZEN
+CONSUMER_SLICE=NOT_STARTED
+SOURCE_IMPLEMENTATION_AUTHORIZATION=NONE_FOR_THIS_CORRECTION
+RUNTIME_ACCEPTANCE=NOT_APPLICABLE_TO_DOCUMENT_ONLY_TASK
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
 
 ---
 
