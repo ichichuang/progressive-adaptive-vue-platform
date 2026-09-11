@@ -6698,11 +6698,9 @@ Vue SFC 固定顺序：
 <template>
   <!-- semantic structure -->
 </template>
-
-<style scoped>
-/* only when UnoCSS is insufficient */
-</style>
 ```
+
+普通组件按 §15.6 使用语义 UnoCSS，不新增 SFC Style Block。Vue 支持 Style、Scoped CSS 与 CSS Modules，并不构成 PAVP 作者准入；只有 §15.6 明确的私有 Vendor、Browser/Platform 或运行时责任可以保留必要 CSS。“UnoCSS 不足”必须先识别缺失权威或 Mapping，不能直接作为写 Style 的许可。
 
 不使用：
 
@@ -9013,7 +9011,7 @@ Material Token 是 `ui-internal`，只允许 `packages/ui` 在真实 Phase 2 消
 --sidebar-width
 ```
 
-所有变量必须有 `--ui-` 命名空间，避免与第三方库和业务变量冲突。
+所有 PAVP Design Token 变量必须有 `--ui-` 命名空间，避免与第三方库和业务变量冲突。以上为命名示意，不注册额外 Role 或 Literal；实际公共变量只取当前 PublicRoleRegistry。变量声明、直接消费与私有局部变量的作者边界见 §15.6；合法命名空间本身不授予新 Token 或绕过已有语义 Utility 的权限。
 
 `--ui-material-*` 与 Package 5 激活的 `--ui-theme-bank-*` 当前都存在于 Runtime CSS。两者都不属于应用公共 Token 表面，不得进入公共 `tokens.ts`、`token-names.ts`、UnoCSS Theme、Rule 或 Shortcut，也不得由 `apps/**` 和业务 Feature 直接引用。Private Theme Bank 只存在于 Runtime CSS 与 Manifest。
 
@@ -10839,9 +10837,9 @@ export default defineConfig({
 
 UnoCSS Vite Plugin 使用全局模式并在应用入口显式导入 `virtual:uno.css`。
 
-UnoCSS 是从 §11.4 的 36-record Public Role Registry 确定性生成的公共消费投影，不是 Token、Theme 或 Density Authority。`platformPreset` 的 Theme Entry、Exact Rule 和已准入 Semantic Shortcut 必须全部来自对应 Record 的 Mapping Metadata；本节不建立第二份 Mapping Authority。
+UnoCSS 是从 §11.4 及 §13.12 当前 Public Role Registry 确定性生成的公共消费投影，不是 Token、Theme 或 Density Authority。`platformPreset` 的 Theme Entry、Exact Rule 和已准入 Semantic Shortcut 必须全部来自对应 Record 的 Mapping Metadata；本节不建立第二份 Mapping Authority。普通作者边界以 §15.6 为准；上方配置描述当前接入，未来原生 Layer 输出目标另由 §26 冻结，不表示已经实施。
 
-Theme、Effective Color Mode、Contrast 和 Density 只能改变稳定 Public CSS Variable 的值；不得改变 Public UnoCSS Class Name。每个 Public Role 必须映射到一个属性范围明确的 Generator Kind、Family、Key、非空 Generated Class List 和 Allowed CSS Property Set。Color、Spacing、Dimension、Typography Size、Content Width 与 z-index 在 Generic Family 会暴露额外 Property 时必须使用 Exact Rule。一个无法安全映射的 Public Role 必须导致 Generation Failure。
+Theme、Effective Color Mode、Contrast 和 Density 只能改变稳定 Public CSS Variable 的值；不得改变 Public UnoCSS Class Name。每个 Public Role 只有一个范围明确的 Mapping Record：`exact-rule` / `theme-entry` 使用 Class List 与 Allowed CSS Property Set，§13.12 的 `property-specific-exact-rule` 从 Bindings 派生 Class/Property，§1.2B.1 的 `container-variant` 使用容器边界贡献而非虚构 Class List。Color、Spacing、Dimension、Typography Size、Content Width 与 z-index 在 Generic Family 会暴露额外 Property 时必须使用对应 Exact Rule。一个无法安全映射的 Public Role 必须导致 Generation Failure。
 
 Required Mapping Families：
 
@@ -10899,9 +10897,11 @@ layout.z.overlay            → z-overlay       → z-index
 * 封装完整视觉组件。
 * 保存用户自定义颜色。
 
-当前 UnoCSS 只消费 §11.4 已准入的 36 个 Public Variable。未来 Density Admission 接受后，UnoCSS 才消费新增 Density-conditioned Public Variable；它不拥有 Density Matrix 或 Preset Value。禁止用 Density Variant、运行时类名拼接或大规模 Safelist 切换外观。
+当前 UnoCSS 只消费 §11.4 及 §13.12 已准入的 Public Variable。未来 Density Admission 接受后，UnoCSS 才消费新增 Density-conditioned Public Variable；它不拥有 Density Matrix 或 Preset Value。禁止用 Density Variant、运行时类名拼接或大规模 Safelist 切换外观。
 
 ## 15.3 允许的 Shortcut
+
+以下是受限的语义命名候选，不是要求创建的清单或独立准入。新增 Shortcut 必须已有多个真实消费者，组合现有已准入的语义 Utility 与结构类，表达一个稳定明确的共同语义；不能包含新的设计 Literal、隐藏状态机或 Vendor Selector。一个组件的书写便利、单次重复或未来可能复用不足以准入，禁止预建 Shortcut Library。公共 Mapping 仍由原 Registry 拥有，不在配置中另造 Alias 权威。
 
 ```text
 ui-surface
@@ -10948,6 +10948,79 @@ transition-all
 页面自行使用 backdrop-filter / filter / blur / saturation / brightness
 无命名空间 Shortcut
 ```
+
+## 15.6 UnoCSS-First Styling Author Boundary
+
+本节冻结 **UnoCSS First, Semantic Authority First**。它是 §37.2.15 的目标合同，不宣称现有源码或 Checker 已完成迁移。正常作者链路唯一为：
+
+```text
+Canonical PAVP semantic authority
+→ generated CSS Variables / Registries
+→ generated semantic UnoCSS utilities
+→ ordinary PAVP template/component authoring
+```
+
+Public Roles、Design Tokens、Layout Registry、Interaction/Motion 合同及其他明确准入的 PAVP Registry 继续拥有语义与值；UnoCSS 是普通作者入口和消费投影，不是 Source of Truth。不得把 CSS Variables、Uno Theme/Rule/Shortcut、Vendor Theme Config 或未来 Sass 变成第二套颜色、Spacing、Dimension、Typography、Motion、Layer 或 Theme 权威。
+
+### Five author categories
+
+下面 A–E 是**作者责任分类**，与 §37.2.15 的审计迁移证据 A–E 是两个不同维度；不能按文件所在目录给整个文件授予例外。
+
+| 作者类别                                         | 责任与允许边界                                                                                                                                                                                                                                                         |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A — Ordinary PAVP UI Authoring                   | 应用页面、Public UI、Shell 自有普通 DOM、能力展示页面，以及未来 Control Center/User Dock 的普通 DOM。默认使用已生成语义 UnoCSS 与合法结构类；不新增 `<style>`、`<style scoped>`、`<style module>`、页面自有 CSS/SCSS、静态 Inline Style 或伪装成动态绑定的静态设计值。 |
+| B — Private Vendor Adapter Styling               | 仅处理 `.n-*`、`.os-*` 等 Vendor 内部 DOM、其伪元素/状态、无法从 PAVP Template 直接控制的 Selector/API。先使用已支持的 Vendor Theme/Configuration API；确实不足才允许私有 Selector Fallback。所有设计值仍来自 PAVP，现有 CSS 可继续使用，不要求 Sass。                 |
+| C — Browser / Platform / Accessibility Styling   | 浏览器伪元素、View Transition Pseudo-element、Forced Colors、Safe Area、Native Scrollbar Fallback、浏览器专属 Selector、无法避免的伪元素和可访问性兜底。按命名的平台责任消费既有权威；不是普通布局或视觉设计的 CSS 逃生口。                                            |
+| D — Generated / Runtime Style Authority          | Token/Theme Bank 生成、Critical First Paint、经过验证的 Runtime Variable、Custom Theme Apply/Rollback 与既有生成产物。继续由唯一 Generator/Runtime Owner 写入，不机械改为 UnoCSS；合法的 `style.setProperty` 受原输入验证与事务合同约束。                              |
+| E — Private Interaction / Motion Runtime Styling | 私有 Motion Owner 所需的 motion-v Transform、实际测量几何与动画运行时值。遵守 §24 的 Full/Reduced/None、生命周期和清理合同；不能借 Motion 文件位置隐藏普通静态设计。                                                                                                   |
+
+同一 SFC 可以包含普通 DOM 与平台/Vendor 责任，但每个责任分别适用规则。Vendor Theme API 输出、Browser Selector 与 Motion Runtime 都不能独立定义 Palette、Spacing、Dimension、Motion 或 z-index。公共 CSS Variable 只由已准入 Authority 声明；局部 Custom Property 只能传递命名私有算法/平台状态或组合已准入值，不能变成隐蔽公共 Token、全局默认值或第二可变权威。
+
+### Governed values and structural grammar
+
+必须由既有语义权威决定的设计值包括：颜色、Spacing、可复用 Padding/Inset、稳定 Width/Height、Shell Geometry、Typography、Radius、Border Width、Shadow、z-index/Layer、Duration/Easing、重复使用的 Scrollbar Dimension 和 Target Size。改变书写语法不改变其权威要求。
+
+`0`、`auto`、`inherit`、`none`、`100%`、`1fr`、`minmax(0, 1fr)`、Intrinsic Sizing、Grid/Flex Mechanics 和 Safe-area `env()` 的 `0px` Fallback 可以表达纯结构/平台语法，不自动要求新增 Token；不能把任意百分比、Viewport Unit 或每个数字一概视为已准入结构值，也不把所有结构常量 Token 化。
+
+`calc()`、`clamp()`、`min()`、`max()` 或 `minmax()` 外壳不授予其内部设计 Literal 权限。`calc(var(--ui-...) * 2)` 仅在“倍数关系本身”已由对应权威准入时合法；`calc(123px + 1rem)`、`clamp(13px, 2vw, 47px)` 仍是未经准入的设计值。结构数学与已批准设计值的组合须保留语义及 Property Compatibility，不能取一个方便但不相关的 Token 代替缺失设计决策。
+
+### Semantic utilities, variables and responsive profiles
+
+普通作者禁止通过 Governed Arbitrary Value 绕过 Registry，包括 `w-[237px]`、`h-[52px]`、`gap-[13px]`、`bg-[#123456]`、`[padding-inline:17px]`。已存在适用 Mapping 时，`[color:var(--ui-color-...)]` 同样是绕过公共消费边界；把 CSS Magic Value 搬进 UnoCSS 方括号不构成合规。Wind/Tailwind 原始 Palette、原始状态红绿黄蓝和不受控的视觉数值类也不成为 PAVP 权威。
+
+普通 UI 对已有适用 Property Mapping 的公共变量，必须使用该语义 Utility。直接 CSS Variable 消费仅限 Generated Authority、已准入 Selector Adapter、命名 Runtime Owner，或架构明确允许且有意不提供 Uno Mapping 的直接消费责任。缺少需要的 Role、Layout Record 或 Property-compatible Mapping 时停止，指出缺口与 Owner；按 `STATUS=BLOCKED`、`STOP_REASON=CANONICAL_CONTRACT_MISSING` 报告，不发明规则、Arbitrary Value 或局部 CSS。
+
+新语义 Mapping 必须先决定 Public Role / Layout Record 及 Property 边界，再由既有生成链导出。`h-admin-header`、`w-admin-sidebar-expanded`、`gap-content-gap`、`bg-surface-panel`、`border-status-error` 表达已准入语义；`h-56`、`w-256`、`gap-12` 不能作为新的公共语义命名。禁止在 `uno.config.ts` 添加单次 Alias 来跳过 Registry；稳定现有 Class Spelling 与 §13.12 的 Property-specific Binding 不变。
+
+Admin Workbench 的响应式作者必须复用 §1.2B.1 的 `layout-narrow:`、`layout-regular:`、`layout-wide:` Container Variant，消费同一个 Generated Layout Registry 与 `pavp-admin-shell` 容器边界。不准入第四 Profile，也不允许 `sm:`、`md:`、`lg:`、`xl:`、`2xl:` 为 Shell 建立平行 Breakpoint 系统。Browser/Platform Media Query 只有在处理不同责任（如 Forced Colors 或平台能力）时才保留，不能重写 Shell Profile Threshold。
+
+### Inline style and SFC debt policy
+
+普通 UI 禁止静态 `style` Attribute；静态尺寸、颜色或 Token 值包装成 `:style`、JS Object、Computed 或 Vendor `content-style`，仍不成为 Runtime 例外。动态 `:style` / JS Style Write 仅可属于命名的已验证 Theme Preview、实际 Layout Measurement、Motion Runtime，或静态 Class 确实无法表达的真实 Vendor Runtime Content Style。必须可从架构与 Owning Checker 识别其 Owner、输入及写入边界，没有“动态所以允许”的通用豁免。
+
+迁移采用 **No New Debt + Touch-and-Migrate**：新普通 UI 按本节编写；旧普通样式债务只在其 Owning Responsibility 被一个已授权任务实质修改时，迁移该任务直接触及且已有适用 Mapping 的普通责任。§37.2.15 审计 A/B 债务暂时保留，不能以既有存在为由新增同类债务，也不要求本次或任何局部任务清空整个仓库。缺少合法权威/Mapping 时停止并请求最小准入，不扩大任务。已冻结的跨文件合同与 Checker 要在未来对应源码任务中同步，不能借迁移擅改行为或解除既有约束。
+
+审计 C/D/E 的合法 Vendor、Browser/Platform、Interaction 和 Generated/Runtime 责任继续保留；只把其中普通作者责任迁移，不机械删除 CSS，不迁移运行时写值为静态类。新普通 SFC Style / Magic-value Authoring 的机器拒绝在未来 Enforcement 实施并接入 Gate 后生效，当前合同冻结不代表机器已覆盖。
+
+### Sass and upstream mechanism boundary
+
+**Sass remains NOT_ADMITTED**。当前项目 Manifest 没有直接准入 Sass；Lockfile 中 Vite 的可选 `sass` / `sass-embedded` Peer 声明不是项目 Admission。本任务不安装、不修改依赖。未来只有反复出现的真实私有 Selector Composition 问题与独立 Owner 决策才可评估 Sass；准入也只能限于命名的 Private Vendor / Browser Adapter，不能进入普通页面、业务组件或设计值权威。
+
+[Sass 官方变量说明](https://sass-lang.com/documentation/variables/)区分编译时 Sass 变量与浏览器中保留的 CSS Custom Properties；Sass 不能替代 PAVP Runtime Theme/Layout/Motion Authority。[Vue SFC CSS 文档](https://vuejs.org/api/sfc-css-features.html)提供 Scoped CSS/CSS Modules 能力，但它们不是自动的原生 Layer 归属或 PAVP 作者许可。
+
+[UnoCSS Rules](https://unocss.dev/config/rules)、[Theme](https://unocss.dev/config/theme)、[Variants](https://unocss.dev/config/variants)、[Preflights](https://unocss.dev/config/preflights)、[Shortcuts](https://unocss.dev/config/shortcuts)及[配置中的 Blocklist](https://unocss.dev/config/#blocklist)提供表达、组合、生成和排除机制，不能替代 PAVP 语义准入或证明完整语法覆盖。未来实现以已安装版本的实际 API 为准；原生层目标见 §26。
+
+## 15.7 Future styling enforcement target
+
+只演进现有 ESLint、UnoCSS Blocklist、Stylelint、Architecture/Repository Policy Checker 与 `pnpm verify`，不新增 Policy Registry、治理引擎或 Test Framework。未来对应 Owner 实施须覆盖：
+
+- 拒绝命名作者例外之外的新普通 SFC Style、普通静态 Inline Style 与无准入的 Dynamic Style Owner。
+- 拒绝受治理的 Arbitrary UnoCSS、Raw Semantic Status/Color Palette、平行 Shell Breakpoint、未注册公共变量声明及公共变量消费绕过。
+- 正确理解所有当前 Mapping Union：`exact-rule`、`theme-entry`、`property-specific-exact-rule`、`container-variant`；按各自 Shape 派生 Property/Class/Variant，不假设每条 Record 都有 `classes` 或 `allowedCssProperties`。
+- 区分结构 CSS Grammar 与藏在函数/表达式中的设计 Literal；识别私有 Vendor、Browser/Platform、Generated/Runtime 与 Motion 例外及 §26 的真实 Layer 输出。
+- 保护最小稳定公共/跨文件合同，不冻结未被架构规定的私有 Variable/Function Spelling、容器、循环或算法分解。
+
+本节仅冻结未来检测责任，不宣称 Checker 已存在或已修复；已确认缺陷与源码未开始状态见 §37.2.15。
 
 ---
 
@@ -11026,6 +11099,8 @@ packages/ui/
 ```
 
 不提交空目录或占位 README。目录由真实实现与其公共合同在同一变更中创建。
+
+`styles/` 与 Adapter 目录的存在或 Demand-created 标记不授予普通 CSS 作者权限；每个样式责任仍须符合 §15.6，普通 Public UI 的自有 DOM 优先使用语义 UnoCSS。
 
 ## 16.3 Component and Material Responsibility
 
@@ -11328,6 +11403,8 @@ CSS 负责：
 * 组件排列变化。
 
 Container Query 根据组件自身容器，而不是全局 Viewport 进行布局变化。
+
+以上列出 CSS 平台能力，不授权普通 SFC Selector 或任意设计 Literal。普通作者经 §15.6 的 UnoCSS 边界使用这些能力；Admin Shell 的响应式只消费 §1.2B.1 的三个 Layout Container Variant，Browser/Platform Media Query 不得建立第二套 Shell Threshold。
 
 JavaScript 负责：
 
@@ -14614,33 +14691,52 @@ Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、F
 
 # 26. CSS 层级
 
-统一 Cascade Layers：
+## 26.1 Real CSS Cascade target
+
+本节是 §37.2.15 冻结的目标，取代原 `reset, tokens, base, utilities, components, app, overrides` 顺序作为未来实施合同；旧源码和历史验收事实不被追写为已采用目标。唯一顶层 Native Cascade Layer 顺序为：
 
 ```css
-@layer reset;
-@layer tokens;
-@layer base;
-@layer utilities;
-@layer components;
-@layer app;
-@layer overrides;
+@layer reset, tokens, base, components, app, utilities, vendor-overrides;
 ```
 
-职责：
+| Native Layer       | 唯一责任边界                                                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------- |
+| `reset`            | Reset/Preflight 中的浏览器重置责任。                                                                                      |
+| `tokens`           | Generated PAVP Token/Theme Variables，以及兼容的 UnoCSS Theme/Property Infrastructure；后者不能声明第二套 PAVP 设计权威。 |
+| `base`             | 已准入的 HTML Element Defaults / 基础平台行为。                                                                           |
+| `components`       | 极少量符合 §15.6 的 PAVP Component Selector Exception。                                                                   |
+| `app`              | 极少量已准入的 Application-owned Platform Selector；不是普通页面 CSS 入口。                                               |
+| `utilities`        | 生成的语义与合法结构 UnoCSS，是普通 PAVP UI 的最高常规 Layer。                                                            |
+| `vendor-overrides` | 私有 Vendor Adapter 无法通过正式配置表达的必要 Selector Fallback，不对页面开放。                                          |
 
-| Layer      | 内容                  |
-| ---------- | ------------------- |
-| reset      | Wind4 Reset         |
-| tokens     | 生成 CSS Variables    |
-| base       | HTML 基础行为           |
-| utilities  | UnoCSS              |
-| components | `@platform/ui` 结构样式 |
-| app        | 应用专属样式              |
-| overrides  | 明确注册的例外             |
+依据 [CSS Cascade Level 5](https://www.w3.org/TR/css-cascade-5/#layer-order)：在相同 Origin/Context 的普通 Author Rule 之间，后声明的 Layer 优先，未分层规则优先于全部显式 Layer；不同 Layer 的优先关系先于 Selector Specificity。`!important` 的 Layer 优先级反转，较早 Layer 的 Important 声明优先于较晚 Layer，且 Layer 内 Important 高于未分层 Important。Inline Element-attached Style 还有自身 Cascade 优先关系，不能当作普通 Layer Rule 排序。仅声明 Layer 名称不会给规则自动归层；Vue Scoped Attribute 或 CSS Module 名称也不会改变这一点。
 
-禁止页面使用 `!important`。第三方组件覆盖必须留在 Adapter。
+目标实施必须在第一次相关 Layer 声明之前建立同一顺序，包括 Generated/Critical First-paint 入口；不能依赖后加载的一条顺序声明修正已建立的顺序。普通 PAVP 静态 CSS 的稳态必须明确归层，不能留下未分层 Selector 以获得更高优先级。
 
-`tokens` Layer 只由 Generator 输出。Cutover 前保持当前 Embedded-palette Conditional Output；Atomic Cutover 后才按 §13.7 的 Theme Bank → Effective Mode Bank → Contrast Public Binding → independent Density → independent Material 顺序排列。Material Selector 只写 `--ui-material-*`；应用和 Component Layer 不得复制 Theme Bank、Density 或 Material Condition Matrix。
+## 26.2 UnoCSS native output ownership
+
+[UnoCSS Layers 官方文档](https://unocss.dev/config/layers)区分内部生成顺序与浏览器原生 Cascade Layer。已安装的 `@unocss/core@66.7.5` 实际支持 `outputToCssLayers: boolean | OutputCssLayersOptions`，对象可用 `cssLayerName(internalLayer)` 与 `allLayers`；回调返回 String 映射原生名称，`undefined` 沿用内部名称，`null` 输出未分层内容。仅设置内部 `layers` 顺序不足以实现本合同。
+
+未来源码任务必须使用已验证的原生输出 API，并按实际产物责任映射，不猜测配置字段，也不能因 Internal Layer 名称相同就推定语义相同：
+
+- Wind4 `properties` / `theme` 的兼容性 Property、Theme Variable 基础输出归入 `tokens` 兼容责任，不能扩张公共 Palette 或公共 Token 集合。
+- Reset/Preflight 按内容归入 `reset`，Element Base 按责任归入 `base`。当前 Wind4 Reset Preflight 的内部名称为 `base`；这一实现名称不意味着应把 Reset 当作 PAVP Element Default。
+- PAVP/default Utility 输出归入 `utilities`；已准入 Shortcut 输出同属 `utilities`，不能借独立更高的 `shortcuts` 层产生隐藏优先权。
+- 实施时必须检查所有实际发出的内部层、Preflight 与 Property 输出，不能靠未映射层的 `undefined` 默认名称、`null` 或 Raw CSS 漏出另一个顶层层序。`allLayers` 只控制层声明输出，并不证明全部规则已正确归属。
+
+`tokens.css` 已由 Generator 写在 `@layer tokens` 内，目标是保持并同步其原生顺序，不能仅因导入语句未写 `layer(...)` 就误判它未分层，也不能重复包装为意外的 `tokens.tokens`。Generated PAVP Variable 的唯一 Writer 仍是 Design System；Theme Bank → Effective Mode Bank → Contrast Public Binding 与已准入 Density/Material 投影语义不变。应用与 Component Layer 不得复制 Theme Bank、Density 或 Material Condition Matrix。
+
+`tokens.css`、`critical-theme.css`、同步 First-paint Runtime、Custom Theme Bank Apply/Rollback 和 Generator-owned Artifacts 继续适用 §13 的所有验证、顺序、失败与无闪烁目标。本次不编辑或重生成它们。`route-transition.css` 是 Application-owned Browser/Platform 责任，现有 `app` Layer 是其明确目标归属；后续实施须核对整体输出，保留 View Transition、Forced Colors 与 Motion Policy，不强行改成普通 Utility 或改变交互。
+
+## 26.3 Vendor, important and unlayered boundary
+
+Vendor 适配顺序固定为：支持的 Theme/Configuration API → PAVP 自有 Element/Class 表达 → 私有不可避免的 Vendor Selector。每步都消费 PAVP 权威；`vendor-overrides` 中的普通声明**不会**自动压过未分层的第三方注入 CSS。必须按实际 Injection、Specificity、Importance 与 Inline 行为判断，不能虚构“放最后一层就一定覆盖”的保证。
+
+普通页面/组件禁止 `!important`，也禁止 Uno Important Modifier 绕过此边界。仅当具体 Vendor/Browser Injection 或 Specificity 约束确实需要，且命名 Owner、Architecture 与对应 Checker 明确准入时，私有 Vendor/Browser Adapter 才可使用最窄的 Important 例外；优先复用已有精确准入，不因此获得整个文件或整类样式的豁免。平台例外仍按其 `base` / `components` / `app` 责任归层，不另建通用 Override Layer。
+
+Intentional Unlayered Channels 仅限非 PAVP 自有的 Vendor CSS、已记录且无法归层的第三方 Runtime Injection，以及 §15.6 准入的 Runtime Inline Custom-property Writes。Motion/Measurement 的 Element-attached Runtime Style 按命名运行时责任处理，不是普通未分层 Stylesheet 的逃生口。官方 `overlayscrollbars/overlayscrollbars.css` 的现有私有导入保持，不能手改 Vendor 产物；PAVP 自有 `.os-*` 适配仍受 Vendor 作者规则约束。
+
+现有未分层的普通 SFC/全局样式属于 §15.6 的过渡债务，不是长期许可。§37.2.15 冻结目标时尚未迁移 Native Layer Config、普通 Style 或 Checker；当前 Gate 通过仅说明既有门槛通过，不说明目标 Cascade 已在浏览器生效。
 
 ---
 
@@ -15475,6 +15571,8 @@ Custom Theme Bank switch timing and visual atomicity
 静态检查不得宣称已经证明 Runtime-only Property。对于 Codex Task Completion，Owner 可以在仓库外选择手工观察这些行为并向 Codex 提供明确记录供只读审查；该观察可缺省、不是 Codex 门槛且不得被 Codex 执行。对于 Production Release，§32.3 的 Owner External Runtime Acceptance 是独立必需门禁。两种情形都不授权 Test、Browser Automation 或 Committed Evidence。
 
 未来规则只有在其负责 Work Package 实现、接入 `pnpm verify` 并通过后才是机器强制；本文声明本身不代表 Validator 已存在。
+
+§15.7 与 §26 的 Styling Author / Native Cascade 检测属于这一未来实施边界；§37.2.15 仅冻结合同，不激活新 Checker，也不把现有 Style Debt 误报为本次已迁移。
 
 ## 31.3 GitHub 托管门槛
 
@@ -17635,6 +17733,46 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ```
 
 Owner Runtime/Visual Acceptance 是下一可能阶段。当前授权明确禁止 Stage/Commit/Push，即使完整静态 Gate 通过也保持全部修改未暂存；本任务不操作 Browser/Dev Server，不创建 Tests/Evidence Artifact，不变更依赖/预算，不实施其他能力或部署/Release，在源码交接后等待 Owner 结果。
+
+---
+
+## 37.2.15 UnoCSS-First Styling Author Boundary and Real CSS Cascade Contract
+
+Owner 在干净且同步的 `main@5a44347bde2dfb7374bd4a00e33688e3637567f9` 上，基于已完成的 Repository-wide UI Foundation 只读审计，选择 §15.6–§15.7 与 §26 的样式作者及真实层级目标。该基线已包含 Semantic Status 基础与消费者切片的 Git 交付；本节不重新实施该能力，也不追写前两节的历史交接/验收记录。
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+OWNER_AUTHORIZATION=EXPLICIT_ARCHITECTURE_FREEZE_AND_SCOPED_GIT_DELIVERY
+CONTRACT_STATUS=FROZEN
+UI_FOUNDATION_READ_ONLY_AUDIT=COMPLETED
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_MIGRATION=NOT_STARTED
+CURRENT_SOURCE_TARGET_COMPLIANCE=NOT_ESTABLISHED
+WORKBENCH_REDESIGN=NOT_STARTED
+SASS_ADMISSION=NOT_ADMITTED
+DEBT_POLICY=NO_NEW_DEBT_AND_TOUCH_AND_MIGRATE
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+当前源码确认的系统性问题是：仅声明旧 Layer 顺序不能代替真实规则归层；UnoCSS 未开启原生 Layer 输出，普通 SFC 与部分全局规则未分层，可以高于显式 Layer；旧顺序又把 `utilities` 放在 `components/app` 之前。生成的 `tokens.css` 已有 `tokens` Layer，Route Transition 已有 `app` Layer，这些事实与首屏合同保留，不能把所有 CSS 一概描述为缺陷。
+
+审计迁移证据按当次统计共 **22** 项保留，以下 A–E 与 §15.6 的五类作者标签含义不同；它们是历史审计分组，不是永久文件 Allowlist、机器 Baseline Registry 或要求全仓同时迁移的清单：
+
+| 审计证据类别 | 数量 | 当次含义                                                          |
+| ------------ | ---- | ----------------------------------------------------------------- |
+| A            | 4    | 普通作者责任，可以用现有语义 UnoCSS 直接转换。                    |
+| B            | 4    | 普通作者责任，需要先完成真实缺失的 Token/Rule/Shortcut 最小准入。 |
+| C            | 6    | Vendor 内部 DOM 与私有 Adapter 责任。                             |
+| D            | 6    | Browser/Platform/Accessibility/Interaction Selector 责任。        |
+| E            | 2    | Generated/Runtime Style Authority。                               |
+
+代表性源码核对覆盖普通 `UiSection.vue`/页面 Style、`PavpNaiveConfigProvider.vue` 的 `.n-*` 适配、`UiScrollArea.vue` 的 Native/Forced-colors/`.os-*` 混合责任、私有 Motion Adapter、Route Transition 伪元素，以及 Generated Token/Runtime Variable Owner。分类针对责任，不把这些路径整体列为未来普通 CSS 豁免。
+
+现有 Uno/Blocklist Grammar 覆盖不完整；ESLint Property-authority 处理没有正确分支建模每个 Mapping Union；部分 Architecture Check 过度冻结私有实现拼写。这些审计缺陷已确认并继续延期，本次没有修复。未来既有 Checker 应按 §15.7 演进，普通新 SFC Style / Magic-value 作者方式在 Enforcement 落地后由机器拒绝；Selector CSS 继续作为明确的 Vendor/Browser/Platform 例外，旧普通债务按 §15.6 处理。
+
+未来 Workbench 必须消费这份样式合同。User Dock、User Panel、Bottom Context Bar、Control Center、未来 Theme Showcase、Shell Geometry 与能力页面不得建立各自样式模型。本次不准入 Shell Region 改动、Layout Registry 新记录、User Dock/User Panel 实现、Control Center Route、Breadcrumb 搬迁、Bottom Context Bar 或能力页面重设计；它们仍需后续独立决策。
+
+本次唯一允许修改为 `ARCHITECTURE.md`。不迁移 CSS/SFC，不改 UnoCSS Source/Config、Checker、Design System Source/Generated Output、Manifest/Lockfile、`project.config.ts`、Dependency 或 Budget，不安装 Sass，不启动后继工作，不操作 Browser/Dev Server，不部署或 Release。文档更正无需 Owner Runtime Acceptance；只在合同自洽、限定 Diff 与完整 `mise exec -- pnpm verify` 通过且远端仍安全同步后，按本次明确授权 Stage 此文件、创建一个中文 Commit、正常 Push，并按 §31.3 观察精确 Commit 的 CI 终态。本记录本身不预先宣称这些验证或 Git 动作已完成。
 
 ---
 
