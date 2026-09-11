@@ -7729,6 +7729,8 @@ Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 Ta
 
 Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 History Entry Marker 与导航提交协议；§18.9 唯一拥有 Router 内存中的 Region Record、内容有效性与恢复条件，Offset 不写入原生 History State。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争；缺失或重复的声明 DOM Owner 是呈现合同失败，不能伪装成 Cache Miss。
 
+Shell Modal 阻塞时的目标交接由 §18.14.4–§18.14.5 冻结：包括 Browser Pop 在内的真实导航必须在阻塞链关闭、背景 inert/模态临时锁释放及 Shell DOM Commit 后完成本节呈现，不能因为 `[inert]` 而跳过必要 Focus/Scroll/Presented Owner 后仍报告成功。该协调尚未实现；本节已有地址、History、初次/同页 Focus Policy 和 §1.2B.0N 的视觉范围保持，Browser History 的交互协调不准入其页面动画。
+
 当前首次导航保留浏览器焦点，后续按下表区分页面变化、同页地址更新与 History Traversal；这套输入/呈现机制已经落地，不能用 RouteName 相等阻止 URL 更新。Error/Cancel 保留或恢复原 Focus。每次 Navigation 的 Observability 目标记录 Privacy-safe `navigationId`、From/To Telemetry Name、Release SHA、Duration、Outcome 和 Failure Category，不记录完整 URL、敏感 Query 或用户输入；该记录/上报目标仍未激活。未来 Workspace Identity 变化的窄呈现扩展由 §18.11 拥有，不改变当前源行为。
 
 ### Address identity, result and presentation target
@@ -11734,6 +11736,8 @@ Owner 后续在保留 `main@99b0f31` 上已手动验收的未提交 Scroll Syste
 
 Owner 在干净同步 `main@187ba9c2c465e9c420607f90282753e0359ea21a` 上明确准入 `PAVP_WORKSPACE_TAB_CONTEXT_MENU_AND_LOCAL_REFRESH`，仅实施此处一个源码与静态验证任务。该记录在当前范围取代 §18.11.9 的 Context Menu/Tab Refresh 延期，不修改前序历史，不准入高级菜单、Global Breadcrumb、账号/API、业务页或后继任务。当前候选已有 Refresh/Close 菜单源码；完整 `mise exec -- pnpm verify` Exit 0 和冻结 Bundle Gate 才证明静态就绪。Owner Runtime Acceptance 是本次 Git 交付的必需前置条件；Stage/Commit/Push/Release 均未授权，不以一般 Optional Observation 条款替代此边界。
 
+本节原 Landing 的命令与刷新/删除事实保留；后续 §18.14.3、§18.14.6 冻结尚未实施的交互修正目标，取代未来实现中的“命令先回焦目标 Tab”顺序与仅由 Vendor Pending 表达当前项的方式。目标使用容器 DOM Focus + `aria-activedescendant`，关闭菜单后由实际命令/导航接管最终 Focus；不改变 Refresh/Close 命令集、普通 Tabs 键盘模型或以下 Cache/Router/Scroll 所有权。
+
 `UiWorkspaceTabs` 在原有 Props 上仅增加必需 `refreshLabel: string` / `closeLabel: string`，事件仅增加 `refresh(id: string)`；`UiWorkspaceTab` 仅增加必需 `refreshable: boolean`，Activate/Close 与 Slots 合同不变。Frame 用同一 `workspace.canDiscard(entry)` 投影 Refresh 可用性：dormant 为 true，live 服从现有 Discard Authority，UI 不读取策略或 Store。Frame 从同一 Common Catalog 传入 `workspace.refreshLabel`（刷新/Refresh）和既有 `shell.closeActionLabel`（关闭/Close）。私有 `adapters/naive/naive-dropdown.ts` 仅导出本地别名的公开 NDropdown 与 DropdownOption，不能从 `@platform/ui` 公共根导出 Vendor。私有 Workspace Surface 在 Motion 容器与 `role=tablist` 外只放一个菜单，使用 manual trigger、受控 show、client x/y、update:show、clickoutside、select 及现有 `#pavp-overlay-root`。右键阻止原生菜单，不激活目标；临时状态只含目标 Workspace ID 与屏幕坐标，不进入 Pinia/Storage。关闭清除目标但保留最后 x/y 至下次打开替换，避免退场动画期间坐标归零导致左上角闪跳。
 
 菜单精确包含 Refresh/Close；`refreshable=false` 的 Refresh 与 `closable=false` 的 Close 保持可见且禁用，执行边界再次拒绝。Close 使用同一 `close` Emit 和 Frame 原有 discard/相邻回退逻辑，唯一总览不变。ContextMenu/Shift+F10 从聚焦 Tab 完整条目的 PAVP-owned Bounding Rectangle 在逻辑起侧/底边定位，RTL 使用右侧，不读取 Vendor DOM；方向键/Home/End 只移焦、Enter/Space 原生激活的既有 Tab 模型保持。菜单取得键盘焦点；Refresh/Close 先用 preventScroll 聚焦仍有效的目标 Tab，再关闭菜单，最后 Emit，让原有删除焦点规则接续。Escape 通过 Naive update:show 关闭；Escape/外点仅在焦点仍属菜单或退回 Body 且未指向其他控件时返回目标，不能抢走用户外点控件的焦点。选择、外点、Escape、目标消失、活动 Workspace 的独立 Commit 与组件 Dispose 均关闭菜单。
@@ -11943,7 +11947,7 @@ Focus、Hover、Selected、Active 的视觉反馈只能通过 Outline、Inset、
 
 ### 18.13.9 几何以外的明确延期与源码事实
 
-Bottom Context Bar 只冻结持久单行、Leading Flexible Context、Trailing Compact System Slot、收缩及 Bottom Safe Area；Breadcrumb 搬迁、Version/Build/Environment 内容、可点击祖先呈现和 Control Center Linkage 延期。User Dock 只冻结 Region/几何与 Overlay Anchor；User Identity Source、Roles、Organization、Logout、Quick Settings、Time/Timezone、账户 Store/Auth 和 User Panel 内容均未定义。User Panel 的详细 Focus、Dismiss、嵌套 Overlay 交互属于后续独立 Overlay/Focus 决策。Control Center 只是未来普通 Route Content，当前不定义 Route Identity、Page Layout、Sections 或 Settings Ownership。`UiPageHeader` 留在 Route Content，最终 Breadcrumb Host 不在此冻结。
+Bottom Context Bar 只冻结持久单行、Leading Flexible Context、Trailing Compact System Slot、收缩及 Bottom Safe Area；Breadcrumb 搬迁、Version/Build/Environment 内容、可点击祖先呈现和 Control Center Linkage 延期。User Dock 只冻结 Region/几何与 Overlay Anchor；User Identity Source、Roles、Organization、Logout、Quick Settings、Time/Timezone、账户 Store/Auth 和 User Panel 内容均未定义。User Panel 的 Focus、Dismiss、嵌套 Overlay 目标由后续独立冻结的 §18.14 拥有，源码与内容仍未准入。Control Center 只是未来普通 Route Content，当前不定义 Route Identity、Page Layout、Sections 或 Settings Ownership。`UiPageHeader` 留在 Route Content，最终 Breadcrumb Host 不在此冻结。
 
 当前源码事实：Shell Region Registry 只有上述四个活动区域；Generated Layout Registry 仍为九条；没有 User Dock、Bottom Context Bar 或 User Panel 实现。`WorkspaceTabsSurface.vue` 的 Close 按 `closable` 插入，邻接 Tab Padding 随之变化；Labels 尚无该目标 Max-inline/截断策略，行高仍由内部内容与 Target 形成。`UiAdminShell.vue` 的 Header 长身份文本缺少目标收缩闭包，Route Content 无条件消费 `min-w-admin-content`，Narrow 可用空间约束尚未修复。Safe Area 目前在 Header/Content/Drawer 等既有结构消费；未来 Bottom 所有权尚未迁到不存在的 Dock/Context Bar。`UiScrollArea.vue` 的 Native Fallback/异步 Enhancement 并未建立本节要求的完整交接几何证明。当前 Root Font Size/ResizeObserver 事实支持沿用模型，不能当作新 Geometry Transaction 已完成的 Runtime 证据。
 
@@ -11967,6 +11971,159 @@ Bottom Context Bar 只冻结持久单行、Leading Flexible Context、Trailing C
 12. Profile/已准入折叠/Font Scale/Safe Area 变化形成一致的显式几何转换，首个可变内容呈现、异步完成与中间通知不制造级联跳动。
 
 未来沿用 `scripts/architecture/check-architecture-admin-console.ts` 的 Layout/Region 责任及现有 Public UI、Design System/Uno、Policy、Bundle 检查，最小扩展 Shell Region Exact Closure、Profile Required Regions、稳定 Layout Role/生成输出闭包、PublicRole/语义 Uno Mapping、唯一几何权威、无 Raw Shell Geometry、Narrow Minimum、Scroll/Safe Area Ownership 与持久 Region Presence 的跨文件合同。具体 Private Helper、变量、循环、Parser、容器或 DOM 算法不因本节成为规范；不新增第二治理引擎。静态检查可拒绝声明/接线/明显结构违约，不能证明真实字体、布局、Scrollbar、Focus、首屏或交互结果；本次不创建 Checker、Test/Browser Infrastructure 或 Evidence Artifact。
+
+## 18.14 Workbench Overlay, Focus, Dismissal, and Navigation Transaction Contract
+
+本节是 §37.2.17 授权的架构目标，依赖已提交的 §15.6–§15.7、§26 UnoCSS-first Styling Governance 与 §18.13 Workbench Geometry/Layout Stability。保留既有 Router/Workspace/Scroll 所有权、唯一 Overlay Root、Narrow/Regular/Wide 三种 Layout Profile 和 Motion Full/Reduced/None；不改变当前能力状态，不把目标写成已有源码行为。
+
+```text
+CONTRACT_STATUS=FROZEN
+CAPABILITY_STATUS=TARGET_INACTIVE
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_IMPLEMENTATION=NOT_STARTED
+WORKBENCH_REDESIGN=NOT_STARTED
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+### 18.14.1 最终事务权威与四类交互
+
+**One committed interaction owns final focus and presentation.** 打开、关闭、Profile 变化、Route 激活、Browser Back/Forward 或 Workspace 命令可以经过多个 Owner，但事务稳定后只能有一个最终交接结论：哪些 Overlay 仍活动、背景是否 inert、是否保留模态临时锁、最终 Keyboard Focus 在哪里，以及目标 Route Focus/Scroll/Presented Owner 是否已完成。后继 Owner 接管后，中间 Owner 不得自行回焦、滚动或重新开层。
+
+这不把所有状态移入一个总 Store：Shell 保持 Modal State、受保护背景和锁的唯一 Writer；Panel/Menu 所属组件或领域拥有自己的临时状态；Router 保持 Title、Route Focus、History/Workspace Scroll 与 Presentation Completion 的唯一 Writer；RouteTransitionCoordinator 只沿既有 Reservation 等待呈现并协调视觉。窄边界交接这些责任，不复制它们。
+
+| 交互类别                          | 本节实例与准入                                     | Focus、背景与几何合同                                                                                                                                                                              |
+| --------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Modal Shell Overlay               | 当前 Narrow Navigation Drawer                      | 有名的 modal dialog；阻断 Route Content，保护背景、模态临时锁、Focus Entry、Tab Containment、逻辑 Invoker 与导航交接由 Shell 拥有。不因存在此类别而准入破坏性 Dialog。                             |
+| Anchored Interactive Panel        | 未来 User Dock 打开的 User Panel，源码未准入       | 默认非模态，普通交互控件构成有名 Panel/Dialog；不是 ARIA menu，不 inert Route Content、不建立全局 Route Scroll Lock，锚定 Invoker，开关不改变 Shell Geometry。Drawer 内为该 Modal Chain 的子交互。 |
+| Command Menu                      | 当前 Workspace Tab 的 Refresh / Close Context Menu | 非模态临时命令面；允许 menu/menuitem，必须有真实 Composite Focus；容器 DOM Focus 与 `aria-activedescendant` 是本节唯一目标模型。                                                                   |
+| Non-interactive Transient Overlay | Tooltip                                            | 不取得 Keyboard Focus、不 inert 背景、不阻塞 Route Presentation；不能容纳需操作的控件而冒充通用 Panel。                                                                                            |
+
+WAI APG 的 Modal Dialog 要求进入后管理内部焦点、约束 Tab，并允许在 Invoker 消失或工作流已变化时选择合理返回位置；Menu/Menu Button 则要求复合键盘与焦点关系，不能由 popup 外观推出语义。这些是本节参考的交互模式；以下事务仲裁属于 PAVP 的 Owner 决策，不是照搬外部 Overlay 框架。[WAI Modal Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/)、[WAI Menu Button](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/)
+
+### 18.14.2 单一 Root、逻辑层级与 Layering
+
+`UiProvider.vue` 中先于 Private Provider/Default Slot 创建的唯一 `#pavp-overlay-root` 继续是应用 Overlay Mount Authority，位于 Routed/Shell Content Subtree 之外。不得新增 Root、Teleport 到 body 或把 Root/其祖先纳入受保护的 inert 背景。父子层由该 Root 内的 Overlay 呈现树组织，子交互可在父 Modal 内呈现；所有 Teleport 的精确目标仍保持既有 Root，不能新增子层 Portal Target，也不能把逻辑子关系误认为自动满足 DOM/Accessibility Containment。
+
+交互层级必须有可确定的逻辑 Parent、活动关系与 Topmost Dismissible Owner。子层高于父层；同级临时交互打开时，发起 Owner 先协调旧同级关闭并移交焦点，不能各自抢 Focus。只保留仲裁所需的最小生命周期信息；Open State 仍在各自 Owner，不能建立第二通用状态平台、持久化 Overlay Store 或 Generic DOM Registry。
+
+PAVP Token 是唯一语义 Layering Authority。当前 `packages/design-system/tokens/semantic/layout.tokens.json` 的 `layout.z.base` / `layout.z.overlay` 引用同 Package `tokens/primitive/z-index.tokens.json` 的既有值 `0` / `1000`，生成 `--ui-z-base` / `--ui-z-overlay`；这里只确认既有证据，不新增层级角色或数值。未来必须通过支持的 Vendor `zIndex` 等公开配置投影现有 PAVP 层级，或把 Vendor 浮层限制在 PAVP Overlay Root 的受控 Stacking Context 内；无论哪种方式，都要保证逻辑子层在父层之上且 Vendor Auto-z-index 无法成为第二产品层级。仅有 Teleport Target 并不保证已建立 Stacking Context，不能用散落的局部 z-index 字面量补救。
+
+### 18.14.3 关闭原因、逻辑 Invoker 与最终 Focus
+
+必须有 Typed Semantic Dismissal Reason，至少区分下列八个要求的原因；显式关闭按钮与已有菜单 Tab 退出另列两种真实交互，避免把它们伪装成按下 Escape。准确 TypeScript 名称/签名在后续源码任务按仓库约定确定，不能退化成不带原因的任意 Boolean Close。
+
+| 原因                         | 最终 Focus Ownership                                                                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `escape`                     | 仅关闭最上层可关闭交互，返回其有效逻辑 Invoker，否则使用该 Owner 的逻辑 Fallback。                                                      |
+| `outside-pointer`            | 保留用户指向/聚焦的新有效控件；不得先回旧 Invoker 再移到新控件。事件意图落定后确实没有有意义的 Focus，才使用 Invoker/Fallback。         |
+| `trigger-toggle`             | 回到仍有效的同一逻辑 Trigger；被替换时解析当前等价控件。                                                                                |
+| `command-selection`          | 先关闭菜单，实际命令/应用事务决定最终 Focus；有后继 Owner 时禁止提前回旧 Menu Trigger。                                                 |
+| `route-navigation`           | 最终目的地的 Router Presentation 决定 Focus，关闭链不抢先回旧 Trigger。                                                                 |
+| `browser-history-navigation` | 与 Route Navigation 相同，Browser Pop 也必须经过同一交接。                                                                              |
+| `profile-change`             | Router 已接管时服从其呈现；否则优先使用新 Profile 的等价 Shell/Navigation/Dock 控件，无等价控件才使用最近有效 Shell Workflow Fallback。 |
+| `owner-unmount`              | 不向卸载目标回焦；需要 Fallback 时由仍存活的上层 Owner 决定。                                                                           |
+| `explicit-close`             | 普通关闭按钮沿用 Escape 的返回策略；若该动作实际导航/执行命令，则采用相应交接原因。                                                     |
+| `sequential-focus-exit`      | 菜单 Tab/Shift+Tab 退出由正常顺序 Focus 接管，关闭时不拉回旧 Trigger。                                                                  |
+
+逻辑 Invoker 必须由最小 Owner-specific Handle 表达当前工作流中的控件身份与 Fallback；可以缓存 HTMLElement 加速正常回焦，不能只依赖其引用或 `isConnected`。返回前必须重新确认目标 Connected、Visible、可聚焦、未 Disabled、未处于 inert/退场树、仍属于当前工作流，并在已提交的新 Host 中解析等价控件；不得跨 Profile 或 Rerender 复用失效 DOM。
+
+Drawer 的正常返回是当前 Profile 对应的导航入口；入口消失时先找新持久导航中当前目的地/所属组的有效控件，再由 Shell 选择其有效导航/内容 Landmark。未来 Panel 返回同一逻辑 Dock Trigger；仍在 Drawer 内且 Trigger 已消失时使用父 Drawer 的有效关闭控件。Workspace Menu 返回被操作 Tab；目标已删除时沿现有 Workspace 相邻/总览回退结果解析幸存 Tab，再交给存活 Shell Workflow。Fallback 不创造新 Route、Registry 或存储，不以任意 body Focus 静默掩盖缺失目标。
+
+Focus 交接须携带当前操作/Owner 有效性；有更新的导航、命令、Profile 或同级打开接管时，旧回调失去最终 Focus 写权。没有后继应用操作的本地无操作/关闭才由原 Owner 结束回焦。Same-address Duplicate 不因此创建 Router Attempt 或额外 Title/Scroll/Focus 副作用；点击 Drawer 当前目的地仍可仅关闭 Drawer 并按本地返回策略结束。
+
+### 18.14.4 Modal Drawer、inert 与 Scroll Lock
+
+Narrow Drawer 是可被导航关闭的 Modal Shell Overlay。打开顺序为：捕获逻辑 Invoker → 建立当前 Modal Ownership → inert 适当背景 Shell Subtree → 建立模态临时滚动锁 → 等待 Shell DOM Commit → 聚焦既有 Close Button。Dialog 保持 Accessible Name、`aria-modal=true`，Tab/Shift+Tab 由该唯一 Modal Chain 约束；将来含普通输入/子 Panel 时不能仍把“所有可聚焦控件”假定为仅 button。
+
+普通非导航关闭依次关闭子 Overlay、移除 Modal State、释放背景 inert 与模态临时锁、等待 DOM Commit，再按实际原因回焦。整链关闭时子层不得先返回即将关闭的父层 Trigger；整个事务只产生一次最终有效 Focus 交接。父 Modal 存活时，单独关闭子 Panel 不解除父背景保护或锁。
+
+只有 Modal Interaction Owner 可以 inert 受保护背景 Shell Subtree；投影范围必须覆盖该 Modal 外仍可操作的背景，包括 Route Content 及相应 Shell 控件，排除活动 Modal Chain/Overlay Root。多个背景 DOM 节点可从同一 Shell Modal State 派生 inert，不代表多个状态权威。非模态 Panel/Menu/Tooltip 不得 inert Route Content；本限制不取消现有 Workspace 退场 Tab 自身的局部 inert 防交互。不得把 inert 用作纯视觉 Disabled，也不得在导航、Pop、Profile、Dispose 或异常后留下无 Owner 的保护。
+
+HTML inert 会使所作用平面树中的内容退出正常命中、聚焦和可访问交互；把子层画得更高不能使 inert 后代恢复可操作。因此保护范围与子层 Host 必须共同闭合，不能仅靠 CSS z-index 或 `aria-modal` 声明实现模态。[WHATWG HTML inert](https://html.spec.whatwg.org/multipage/interaction.html#the-inert-attribute)
+
+**基础 Shell 文档滚动模式与模态临时锁必须区分。** 当前 `UiAdminShell.updateDocumentScrollLock()` 实际按 `enabled` 对 html/body 设置 `overflow:hidden`，在 Shell 停用/卸载时恢复原值，并非随 Drawer Open 开关。目标由同一 Shell Owner 结合基础模式与 Modal Contribution 管理有效锁；Drawer 关闭只释放自身临时贡献/对目标呈现的阻塞，不可错误放开仍启用 Shell 的 Document Scroll，也不能创建第二 html/body Writer。释放必须使现有 Route Native Viewport 可供 Router 写入恢复位置；非模态层与 Drawer 子层均无独立全局锁。Router 继续通过原 PAVP Scroll Controller 写目标两轴位置，Overlay 不写 Route Offset。
+
+### 18.14.5 Route / History Presentation Gate 与失败安全
+
+**必要的目标 Route Presentation 仍被 Shell Modal 阻塞时，禁止宣告呈现成功。** 未来真实导航包括 Typed Activation、Workspace 导航、原生 Browser Back/Forward、Redirect/Error/Replace 的最终呈现，都必须在共同 Router Lifecycle 处理此边界；不能只接入会经过 RouteTransitionCoordinator 的点击路径。 Route/Pop 接管时，相关非模态临时层也按导航原因结束并抑制旧 Invoker 回焦，但不注册为 Modal Blocker，不增加 inert/全局锁或独立导航等待。
+
+1. 当前有效 Navigation Attempt/Browser Pop 识别是否存在阻塞目标呈现的 Shell Modal，并带 `route-navigation` 或 `browser-history-navigation` 请求关闭。
+2. Shell 按逻辑链先关闭子 Overlay，再关闭 Drawer，释放背景 inert 和模态临时锁，等待对应 Shell DOM 状态提交。
+3. 关闭链抑制旧 Trigger Focus Return；Router 复核 Attempt、最终目的地、Shell Owner 和目标 Content/Controller 均仍有效且阻塞已解除。
+4. Router 才执行目标 Title、已注册 Focus Policy、History/Workspace/Fragment Scroll Policy 与 Presented Owner/Context 绑定；全部完成后，才允许所属 Navigation Operation 和精确 Presentation Broker 报告成功。
+
+此交接保留 §9.11 的初次浏览器焦点、同页 Focus/Scroll 保留、不同页面 Heading、History Entry Identity 和恢复优先级；“保留”是有效 Policy 的完成，不要求无意义聚焦/写滚动。若原需保留的焦点属于已关闭层而已失效，最终 Router/工作流 Owner 必须选择有效合同目标，不能借“同页保留”把 Focus 留在卸载节点或退回 body。相同 URL 的不同 History Entry 仍执行真实 Pop 协议。Browser History 加入交互 Gate 不扩大 §1.2B.0N 的 View Transition 准入。
+
+未来只扩展一条窄 Shell ↔ Router Presentation Boundary：语义上能判定目标阻塞、请求并等待当前阻塞链释放、确认 inert/模态锁的 DOM Commit、在 Owner Dispose 时取消，并防止重复/过期完成。UI 公共边界不泄漏 Vendor，应用沿既有 Frame/Router Lifecycle 接线；具体 TS 名称、签名和最小源码位置留给独立源码任务，不准建立第二 Guard、导航队列、Generic Async Platform 或全局 Overlay Store。Router 不再以任意 CSS Selector/DOM 状态作为唯一 Overlay State API；`[inert]` 可保留为防御一致性检查，发现未释放必须取消/报告呈现失败，不能忽略后 Finish。
+
+Shell Release 的等待只依赖自身生命周期提交，不能反向等待正在等它的 Router Presentation 或装饰动画。RouteTransitionCoordinator 继续使用现有精确 normalized Destination/Attempt Reservation，不直接写 Focus/Scroll；没有视觉 Reservation 的导航也受共同 Gate 保护。沿用现有 Operation Identity、取消与 Dispose 方式，每个 await 后验证归属，旧操作不能释放新 Modal 的锁、重新 inert/锁滚动、回焦、重开 Overlay 或成功结算不再属于它的 Broker；旧 Reservation 仍必须按已有取消/拒绝合同终结。
+
+导航在 Modal 关闭前失败/取消，保留原 Overlay State；若另一个有效交互已接管则服从新 Owner。已为导航关闭后才失败，不自动重建 Overlay；现有 Router Failure Contract 保留/恢复当前仍有效的工作流焦点，原焦点已失效时由存活 Owner 解析逻辑 Fallback。Redirect 只由最终提交目的地呈现，原 Reservation 按既有 Redirect Policy 结算，不能回中间 Trigger。异常和卸载必须释放自己仍拥有的保护并取消等待，不能报告伪造的 Presentation Success。
+
+### 18.14.6 Workspace Command Menu Composite Focus
+
+Refresh/Close 命令集、Disabled/Discard 权威、普通 Workspace Tabs 的现有键盘模型、非活动目标激活和局部 Refresh/Close 路径保持 §18.11.12。右键本身不激活 Workspace；Shift+F10/ContextMenu 键打开同一个菜单，沿 PAVP-owned Tab 边界定位。打开后 Menu Container 持有 DOM Focus、`role=menu`、指向有效目标 Tab 名称的既有 `aria-labelledby` 关系和 `tabindex=-1`，每个命令有稳定且唯一的 DOM ID、menuitem 语义及真实 `aria-disabled`。
+
+唯一当前命令驱动容器 `aria-activedescendant`、可见 Current/Highlight 和执行判定。该 ID 必须指向当前已挂载的菜单后代，条目不建立第二套 roving tabindex；关闭/目标失效即清除该关系。当前两项为纵向顺序 Refresh → Close，打开时逻辑当前为第一项，ArrowDown/ArrowUp 在两项间前后循环，Pointer 移入命令也更新同一当前项。Disabled 项可成为当前 Descendant 并被理解，但 Enter/Space/Pointer 均不得执行；不能因禁用隐藏现有命令。Left/Right 不创造无关横向/子菜单行为。Home/End 仅在后续核实公开能力与此模型一致时可支持，不把未提供的 Vendor 行为写成已实现。
+
+Enter/Space 对当前 Enabled 命令只执行一次：关闭菜单、把最终 Focus 责任交给原应用命令，再执行该命令；菜单关闭的 DOM/交互状态必须在后继最终聚焦前提交，不等待装饰动画，不能先聚焦旧 Tab 再让 Router 聚焦 Heading。命令发生导航时服从 §18.14.5；活动页 Refresh 或非活动页 Close 等不导航路径由既有 Workspace/Frame 工作流在完成/拒绝后确定有效 Focus，只有没有后继 Owner 才按逻辑返回结束。Escape 关闭并返回目标 Tab/Fallback；Tab/Shift+Tab 离开菜单而非遍历命令或困在菜单中。Outside Pointer、目标被删除、活动 Route/Workspace 独立提交、Profile/定位 Owner 失效和 Dispose 都须安全关闭，不让旧异步打开重新聚焦。
+
+WAI 的 roving tabindex 通过移动实际 DOM Focus 管理复合控件；`aria-activedescendant` 则让容器保留 DOM Focus，并把当前项告知辅助技术，作者仍需同步可见焦点、有效 ID 关系和当前项可见性。只聚焦容器或只画 Pending 都不完整。本节选择后一种，不混用两个 Focus Owner；Escape/Tab 与禁用命令语义按 Menu Pattern，Space 是本节明确采用的可选执行键。[WAI Composite Keyboard Focus](https://www.w3.org/WAI/ARIA/apg/practices/keyboard-interface/#kbd_focus_activedescendant)、[WAI Menu and Menubar](https://www.w3.org/WAI/ARIA/apg/patterns/menubar/)
+
+已安装 Naive UI `2.45.2` 的公开 `Dropdown` 类型/实现提供 `keyboard`、`menuProps`、`nodeProps`、Option `props: HTMLAttributes`、`value`、`zIndex` 及受控 show/select；容器透传 Attributes，Option props 合并到实际命令 DOM，能承载上述 ID/ARIA/事件关系。其 `hoverKeyRef` / `keyboardKeyRef` / Pending 是内部状态，无公开受控 Pending API；`value` 的 Active Path 不等于 Pending，内建 Keyboard 没有 Space/Home/End 处理。不能假定直接绑定 `value` 已闭合模型，也不能读取内部 Injection 或查询 Vendor DOM 来追踪当前项。
+
+据公开通道与已安装 Render 实现，当前两命令目标存在最小可行路径：由 PAVP 局部当前命令拥有键盘/Pointer 状态，通过公开 `keyboard=false` 避免 Vendor 键盘路径竞争，使用容器与 Option 的公开属性/事件投影语义，并在既有私有 Vendor Styling Boundary 中让可见 Current 只消费同一状态、消除独立 Pending Paint 的竞争。这是源码可行性判断，不是已实现或 Runtime Acceptance；不另造菜单库/框架。后续若具体公开通道不能同时满足关系和视觉一致性，必须记录精确属性/行为 Blocker 并停止，禁止退回视觉-only Focus、私有 DOM Patch、依赖切换或扩大公开 API。
+
+### 18.14.7 未来 User Panel 的最小交互目标
+
+未来 Panel 是有 Accessible Name 的 Anchored Non-modal Dialog/Panel，包含普通控件和普通顺序 Tab；不得使用 `role=menu`、menuitem 或菜单 Arrow 模型。Keyboard 打开后在 DOM Commit 进入 Panel 的规范初始可操作控件；Pointer 打开默认采用同一确定性规则，除非后续公开交互证据支持另一个明确目标。无独立 Modal Focus Trap、Route inert 或全局 Scroll Lock；Escape、Outside Pointer、Trigger Toggle 与显式关闭按原因交接，普通 Tab 不在 Panel 内循环。
+
+在 Narrow Drawer 中，它是现有 Modal Chain 的子交互，打开不暂停父 Modal 保护，父层 Tab Containment 必须包含子层的可操作控件；Host 必须满足父 Dialog 的 DOM/可访问包含关系，不能仅因为 Teleport 就假定成立。Panel 独立关闭返回其有效 Dock Trigger/父层 Fallback；导航时先关闭 Panel 再关闭 Drawer，全链只让 Router 拥有最终 Focus。
+
+开关、定位与内部必要滚动遵守 §18.13，不改变 Shell 行列。Quick Appearance/Locale 仅说明普通控件语义，不准入 Settings 内容、身份、Auth/Session/Account；显式 Control Center 跳转将来使用 Typed Router 与 Route-navigation 原因，本节不定义其 Route Identity、页面或 Settings Owner。User Panel/User Dock 当前仍无源码授权。
+
+### 18.14.8 Persistent Navigation 的语义目标与限制
+
+Primary/Persistent Sidebar 及其 Collapsed Flyout 都是导航表面。首选目标为有名 `nav` Landmark、表达层级的导航结构、明确 `aria-expanded`/关联关系的 Disclosure Button、普通 Route Link/Button、顺序 Tab 与已有 Typed Router Activation/`aria-current`；popup 外观和 Vendor `Menu` 名称不能使其自动成为应用 Command Menu。没有另外有意准入完整 APG Menu Focus/Keyboard 模型时，不得保留不完整的 menu/menuitem 声明，也不因 Vendor 支持而添加 Arrow Menu 行为。[WAI Disclosure Navigation](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/examples/disclosure-navigation/)
+
+当前 §1.2B.0H/§1.2B.0L/§1.2B.0M 的 Naive 导航结构与验收历史保持；本节冻结未来语义修正目标，不替换 NMenu。已安装 `Menu.mjs` / `MenuOption.mjs` / `Submenu.mjs` 在公开 Attributes/Node Props 之后设置自身 menu/menuitem role，简单传入 role 不能覆盖；当前 Sequential Focus 与 Collapsed Dropdown Keyboard 也不等于整棵导航已符合完整 Composite Model。后续源码任务须先闭合公开渲染/Primitive 语义可行性与准入，不能假设 Node Props 可解决、查询/篡改 Vendor DOM 或自行切换 Library；目标与当前源码的差距保持明确。
+
+### 18.14.9 Escape、Outside Pointer 与 Profile 交接
+
+每次 Escape 只由 Topmost Dismissible Interactive Overlay 处理一次。Drawer 内 Panel 的第一次 Escape 关闭 Panel，第二次才关闭 Drawer；Workspace Menu 的 Escape 返回其目标 Tab。Tooltip 不以交互层身份截获 Escape，除非独立 Accessibility Contract 明确要求它自身可关闭；不得用互不知情的 document-level handlers 一次关闭多个交互层。这里采用 Dialog/Menu 的 Escape 模式约定，不宣称 HTML 统一规定所有 popup 的关闭传播。
+
+Outside Pointer 只由最上层相关 Owner 解释。点击父层内部控件，只关闭相关子层并保留该控件的 Focus 意图；命中父 Drawer Scrim 时，子层 Outside 先结算，再由同一关闭事务决定父层关闭，子层不得插入回焦。保留当前 primary/self-target Scrim 边界；事件 plumbing 留给最小源码实施，不新增全局监听平台。
+
+Narrow Host 不再活动时，Drawer 与子链关闭、释放自身 inert/模态锁并等待新 Profile DOM Commit；无 Router 接管则按 §18.14.3 解析等价持久导航/Shell 控件。Panel Anchor Host 改变时关闭，不跨 Owner 搬运正在交互的 Panel，除非另有后续 Continuity 准入；适用时返回等价 Dock Trigger。Context Menu 的几何/目标 Owner 失效时关闭。Profile 重算不持久化或自动重新打开任何旧层。
+
+### 18.14.10 Focus 可见性、Motion 与持久化
+
+Focus Movement 与 Focus Appearance 各守职责。所有 Programmatic Focus Target 及菜单 Active Descendant 必须通过既有 Focus Token 在普通 Theme 与 Forced Colors 下清晰可见；不得仅依赖 Forced Colors 可能移除的 box-shadow。Outline/预留 Border 等呈现遵守 §18.13 Geometry-neutral 约束，不改邻居布局。本节不修改 Focus CSS。
+
+Focus、inert 与模态锁以确定性生命周期/DOM Commit 为界；装饰 Motion 不拥有焦点时序。必要目标存在且可交互后可完成交接，不等待无关退场动画，不使用任意 Timeout，不聚焦 inert/退场 Owner。Full/Reduced/None 的最终 Focus、关闭与锁状态完全一致，沿用现有 Motion 值与视觉范围。
+
+Drawer/User Panel/Context Menu/Tooltip Open、Active Command Descendant、Invoker DOM 与关闭事务均为 Owner 生命周期内临时状态，不进入 Storage、Session、History、Preference 或全局持久化 Store。Profile/导航变化从当前有效应用状态建立交互，不恢复旧临时层；不改变既有 Workspace/Navigation Preference 的已准入数据格式。
+
+### 18.14.11 已提交源码事实与尚未满足的目标
+
+本次在干净同步 `main@3dd12ec349e4551331526b4bf9f09d7be352ef53` 核对实际 Source、Installed Vendor 与 Owning Checks；以下是源码证据，不冒充浏览器复现或 Accessibility Acceptance：
+
+- `UiAdminShell.vue` 本地 `navigationOpen` 派生 Drawer 与 Workspace/Route Content inert；初始 Focus 是 Close Button。关闭/打开 Watch 经 nextTick 后聚焦，返回只存 HTMLElement 并检查 `isConnected`，没有上述理由/逻辑 Fallback/操作交接。Document overflow 实际按 Shell enabled 管理，精确差异见 §18.14.4。
+- `router-lifecycle.ts` 的 `scrollBehavior` 已等待应用 Mount/DOM 并核对 Entry；写 Title 后从 Owner 的 `[inert]` 派生 `locked`。锁定时会跳过 Heading Focus、目标 Scroll 和 `entry.presented` 绑定，但仍可 `navigation.operation.finish(...)` 并 `resolveBoundRouterPresentationCommit(...)`。因此已有检查通过不能证明模态关闭与呈现成功闭合。
+- `route-transition-coordinator.ts` 已有单次导航、精确 Reservation、失效和 Dispose；`router-scroll-controller.ts` 已有 Controller/Refresh Boundary。本节复用这些领域边界，不建立第二导航或滚动系统。`App.vue` 的稳定未加 Key Route Host、单 RouterView/KeepAlive 与 Workspace Instance Key 保持。
+- `WorkspaceTabsSurface.vue` 聚焦 Menu Container，Option 目前无稳定命令 ID/`aria-activedescendant` 关系，选择时先 Focus Tab 再关闭/Emit；Vendor Pending 与 DOM Focus 未建立本节统一关系。已有目标/活动项失效关闭不能代替全部事务保护。
+- Persistent Navigation 当前使用 Naive Menu 语义；公开 role 覆盖限制与 Context Menu 的公开能力分别见 §18.14.8、§18.14.6。`UiProvider.vue` 唯一 Root 事实不等于 Vendor Layering 已闭合，当前 Drawer 消费 `--ui-z-overlay`，Vendor Overlay 仍有自身 z-index 路径。
+- Shell Region Registry 仍是四个 ACTIVE Region，Layout Registry 仍为九条记录；User Panel/User Dock/Bottom Context Bar 不存在。本节不修 Capability-status Drift，不改已有能力状态，不开始任何源码、Checker 或 Workbench 视觉修复。
+
+### 18.14.12 未来 Checker、预算与实施边界
+
+未来沿用 `scripts/architecture/check-router.ts` 的 Presentation/Operation/Broker 责任、`check-architecture-admin-console.ts` 的 Shell/Drawer/Navigation 责任、`check-ui-public-components.ts` 的 Root/公共 UI/Workspace Menu 责任，以及既有 Storage、Policy、Design System/Uno 与 Bundle Owners。当前 Shell Checker 还冻结 raw HTMLElement Watch 等私有写法，Router 检查也不能仅靠 Focus 在 Finish 前的源码位置证明条件路径闭合；后续应按 §15.7 保护最小稳定跨文件合同，不冻结私有变量、Helper、Parser 或 DOM 算法，不建立第二 Checker Engine。
+
+应保护的目标为：Modal-blocked Presentation 不成功；背景 inert 与模态锁各只有所属 Shell Writer；非模态不 inert Route；Menu 的稳定 ID/真实 Composite Relation/视觉当前一致且 Disabled 不执行；Panel 不为 menu；Transient State 不持久化；Navigation 不宣称不完整 Menu 语义；逻辑 Focus Fallback 存在；Route/Pop 关闭抑制旧 Invoker 回焦；Profile/Dispose/失效不遗留保护或旧 Completion。静态证据不能证明真实 Keyboard/Assistive Technology、Outside Pointer、Browser History、Forced Colors、Motion 或焦点不跳动；后续实现的 Owner Runtime Acceptance 独立报告，本次文档无需此验收。
+
+未来接线会进入 Startup Shell/Router，Initial JS 余量很窄；继续使用 `project.config.ts` 的硬预算 `262144`、最低预留 `8192`、有效上限 `253952` bytes gzip 与现有完整 Bundle Gate，不扩大预算或测量豁免。首次源码任务只可在独立授权后优先最小扩展现有边界；本合同不预准入依赖、通用 Overlay Library/Framework、Sass、新 UI 库或异步平台。
+
+本次只修改 `ARCHITECTURE.md` 及必要文内引用。不改 Router、Shell、Workspace Context Menu、Naive Adapter、UiProvider/Overlay Root、CSS、Registry、Token、Uno、Checker、Manifest/Lockfile、Project Config 或 Budget；不实施 User Dock/User Panel/Bottom Context Bar/Control Center，不搬迁 Breadcrumb，不定义 Auth/Session/Account，不开展 Workbench 视觉重设计，不创建 Test/Browser/Evidence，不启动 Dev Server，不部署或 Release。此冻结不授权自动续作。
 
 # 19. 状态管理
 
@@ -14859,6 +15016,8 @@ Accessible Name 优先级由 Component Contract 固定：Visible Label → expli
 Keyboard Contract 必须使用平台约定与原生行为：Tab 只移动全局 Focus，Arrow/Home/End/Enter/Space/Escape 由对应 Composite Pattern 定义。不得劫持浏览器、Screen Reader 或文本编辑快捷键。所有 Pointer/Drag Operation 必须有键盘和非拖动替代。
 
 Focus Indicator 只能消费 Focus Token，不能被 Outline Reset 移除。Route、Dialog、Popover、Sheet、Error Boundary、Deletion 和 Async Completion 必须定义 Focus Destination/Return；被删除或 Disabled Trigger 不存在时回到最近有效 Landmark。Programmatic Focus 必须等待 DOM Ready，但不能用任意 Timeout。
+
+Workbench Overlay 的 Focus Entry/Return 与关闭原因具体服从 §18.14：先解析有效逻辑 Invoker/Owner Fallback；导航或命令已接管时由最终工作流呈现，不无条件返回旧 Trigger。Menu Container Focus 必须具备真实 `aria-activedescendant` 关系，非模态普通控件 Panel 不使用 menu 语义；这些目标尚未实施，不能从本节要求推定当前 Runtime 合规。
 
 ## 25.3 Live Region and Adaptive Accessibility
 
@@ -17987,6 +18146,31 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 冻结内容包括目标 Region/Profile 责任、持久空间预算、四个确实缺少的语义 Role 与值选择约束、稳定 Action Slot、文本/Loading、Narrow Reachability、逐边 Safe Area、一致 Font Scale/Rem 事务、独立 Scroll Ownership、Geometry-neutral Enhancement、Focus/Motion 几何约束及未来静态/Runtime 证据边界。已确认的 Header/Sidebar/Drawer/Content/Profile/Target 数值沿用；四个新 Role 的字面量按 §18.13.4 明确延期到首次源码实施测量闭合，不从无固定行高或不存在的 UI 编造数值。Breadcrumb 最终 Host、身份/Auth、User Panel Focus/Dismiss 和 Control Center 内容继续独立延期。
 
 唯一允许变更为 `ARCHITECTURE.md` 及其必要直接引用。没有修改 Layout Registry、Token、UnoCSS、CSS/SFC、Router/Workspace/Scroll、Checker、Manifest/Lockfile、Dependency/Budget 或 Project Config，不实施 User Dock/User Panel/Bottom Context Bar/Control Center，不搬迁 Breadcrumb，不开展 Workbench 视觉重设计，不操作 Browser/Dev Server，不创建 Test/Evidence，不部署或 Release。本文档任务无需 Owner Runtime Acceptance；仅在合同完整、授权 Diff、Focused Prettier、`git diff --check`、`mise exec -- pnpm check:arch`、`mise exec -- pnpm check:policy` 与完整 `mise exec -- pnpm verify` 均通过，且再次 Fetch 后预期基线仍安全同步时，明确授权只 Stage 本文档、创建一个指定标题的中文 Commit 并正常 Push `origin/main`，再按 §31.3 检查精确 Commit 的 Static Verification/CodeQL 终态。本记录不预先宣称尚未执行的验证、Commit、Push 或 CI 成功；交付后停止。
+
+---
+
+## 37.2.17 Workbench Overlay, Focus, Dismissal, and Navigation Transaction Contract
+
+Owner 在干净同步的 `main@3dd12ec349e4551331526b4bf9f09d7be352ef53` 上授权本次一个限定架构冻结与 Git 交付。§15.6–§15.7、§26 的 UnoCSS-first Styling Governance 与 §18.13 Geometry/Layout Stability 均已提交；Repository-wide UI Foundation 只读审计识别出 Modal/Navigation/Focus 事务是 Workbench 的下一项基础依赖。Owner 要求在 Workbench 实施前获得可预测、不跳动、可访问的交互；本次据此冻结 §18.14 的最终 Focus/Presentation 单一交接原则，不启动路线图续作。
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+OWNER_AUTHORIZATION=EXPLICIT_OVERLAY_FOCUS_NAVIGATION_CONTRACT_FREEZE_AND_SCOPED_GIT_DELIVERY
+CONTRACT_STATUS=FROZEN
+STYLING_GOVERNANCE=FROZEN_AND_COMMITTED
+GEOMETRY_LAYOUT_STABILITY=FROZEN_AND_COMMITTED
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_IMPLEMENTATION=NOT_STARTED
+CURRENT_SOURCE_TARGET_COMPLIANCE=NOT_ESTABLISHED
+WORKBENCH_REDESIGN=NOT_STARTED
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+冻结范围为四类 Overlay、唯一 Root/语义 Layering、逻辑 Invoker/按原因返回、Modal inert/临时锁、Escape/Outside/嵌套/Profile 顺序、真实 Menu Composite Focus、普通 User Panel 与 Persistent Navigation 语义，以及覆盖 Browser Pop 的 Shell ↔ Router Presentation Gate、失败/取消/重定向和过期操作安全。当前实现差距、Shell enabled 文档滚动事实、Naive UI `2.45.2` 的公开能力与角色覆盖限制、官方交互依据、未来现有 Checker Ownership 和窄 Bundle Boundary 均记录于 §18.14；不抹去此前实施/验收历史，不把任何新目标标记 ACTIVE。
+
+唯一允许修改为 `ARCHITECTURE.md`，直接引用仅同步 §9.11、§18.11.12、§18.13.9、§25.2。Router/Shell/Workspace/Naive/Overlay Root/CSS/Registry/Checker/Dependency/Budget 源码均不修改；User Dock/User Panel/Bottom Context Bar/Control Center、Breadcrumb 搬迁、Auth/Session 与 Workbench 视觉重设计均未开始。本次不操作 Browser/Dev Server、不创建 Test/Evidence、不部署或 Release，也不需要 Owner Runtime Acceptance。
+
+只有合同完整且授权 Diff 通过 Focused Prettier、`git diff --check`、`mise exec -- pnpm check:arch`、`mise exec -- pnpm check:policy` 和完整 `mise exec -- pnpm verify`，再次 `git fetch --no-prune origin` 后 Local HEAD/origin/main/Remote main 仍为预期基线，才明确授权仅 Stage 本文档、检查完整 Staged Diff、创建一个标题为 `docs: 冻结 Overlay 焦点与导航事务合同` 的中文 Commit 并普通 Push `origin/main`，再按 §31.3 核对精确 Commit Static Verification/CodeQL 终态及三端 SHA。此记录不预先宣称验证、Commit、Push 或 CI 已成功；交付后停止。
 
 ---
 
