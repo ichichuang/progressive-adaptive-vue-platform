@@ -10788,6 +10788,8 @@ html {
 
 保留浏览器缩放能力，不阻止用户 Zoom。
 
+Workbench 的 `rem` 几何与有效 Root Font Size/Profile 解析继续沿用本模型。§18.13 的几何稳定目标允许已提交的字号变化形成一次一致的 Geometry Transaction；不把字体缩放等同于长文本自行撑高 Chrome，也不新增 Font Scale Store、档位或转换模型。
+
 ## 14.5 触控命中区域
 
 视觉紧凑不等于点击区域紧凑。
@@ -11474,11 +11476,15 @@ Layout Profile Threshold、Shell Region Size、Panel Minimum/Maximum、Content W
 
 唯一 Final `LayoutCapabilityRegistryRecord` Schema、Nullability、Current Reading Record、Target Console Record、Shell Region Registry、Threshold Policy、Safe-area Policy 与 Minimum-target Policy 由 §1.2B.1 精确拥有；本节不再建立第二份缩减 Schema。Profile 由应用容器 Inline Size、Input Capability 和 Route Capability 纯解析；不得读取 User Agent、设备品牌或屏幕营销分类。Threshold 使用命名 Container Token，CSS Container Query 与 JavaScript Resolver 从同一 Generated `layoutRegistry` 消费，避免两套 Breakpoint。Console Profile 精确为 `<48rem` Narrow、`>=48rem && <80rem` Regular、`>=80rem` Wide。
 
+§18.13 冻结后续 Workbench 的 Region/Geometry 目标，扩展路径仍归上述同一 Shell Region Registry 与 Generated Layout Registry。§1.2B.1 的当前四个活动 Region ID、九条 Layout Record 及已有语义保持；目标子区域与新增尺寸角色不因文档冻结而成为活动源码记录。
+
 ## 18.8 Safe Area and Dynamic Viewport
 
 Root App Viewport 使用 Dynamic Viewport Contract；`dvh` 不支持时使用已定义 Progressive Fallback。Safe-area Insets 只在 Shell Boundary 解析为内部 Layout Variable，Region 不直接读取 `env(safe-area-inset-*)`。Keyboard/Viewport Resize、Orientation、Zoom 和 Reflow 不得丢失 Focus、遮挡 Primary Action 或创建第二 Body Scroll。
 
 Fixed/Sticky Region 必须有 Route Capability、Stacking Token、Safe-area Policy 和 Scroll Owner Relationship。禁止页面任意 `100vh`、Fixed Fullscreen Layer、负 Safe-area Offset 或 Magic Header Height。
+
+Workbench 后续持久 Region 的逐边 Safe Area 归属与一次计入规则见 §18.13.6；它保留 Shell Browser/Platform Owner 的环境投影，不把 Inset 写入 Token 字面量或变成组件自有几何变量。
 
 ## 18.9 Nested Scroll Admission and Restoration
 
@@ -11569,6 +11575,8 @@ Menu Group 与祖先关系分别负责菜单组织和页面位置。当前十个
 Hidden/Detail Route 可以在自己的 Route Record 声明祖先，无需出现在 `consoleNavigationRegistry`，也不需要新增 Router Parent 或 Outlet。未来参数化祖先的 Params 来源须在该真实路由准入时逐字段明确为**当前已提交 `ValidatedRouteInput.params` 的选定字段**；若目标需要 Query，也只能显式选择已校验字段，缺省不继承当前 Query/Hash。字段类型、数组/可选性及到目标原生地址输入的表示必须闭合目标 Schema；Parsed Transform 不能直接冒充 Raw Address，缺少可验证的表示时保留非交互标签并报告合同缺口。首批现有路由全部为空输入，不创建通用映射引擎、表达式语言或任意 Callback 配置。Breadcrumb Label 只使用现有 Typed Message Key；不从原始 URL、Query 文本、Hash 或敏感实体值编造显示文字和导航。
 
 未来可把同一个 Breadcrumb 投影移到 Global Header；移动时删除原重复呈现，保留 `UiPageHeader` 的 `title`、`summary`、唯一 h1 和原焦点选择器。不得创建 `UiPageContainer` 或第二 Page Header Authority；`actions` Slot / Structured Metadata 只在真实页面消费者提出需求后单独收紧公共合同，不能把 `summary` 改造成并列的 `description` API。页内分区 Tabs 是独立组件需求，不拥有 Workspace 或 Router 状态。
+
+上述 Global Header 是前序可选放置方向，不是当前已实现或最终冻结的 Host。§18.13 只为 Bottom Context Bar 预留 Leading Context Slot，不据此裁决 Breadcrumb 最终归属；搬迁、呈现及可点击祖先的源码接线仍须独立架构决策，已有数据/地址验证目标和 Page Header h1/Focus 合同保持。
 
 ### 18.11.3 Route participation, identity policy and workspace state
 
@@ -11664,7 +11672,7 @@ Workspace Record 必须匹配当前 Router Lifetime、Workspace/实例关联、�
 
 Overflow 必须支持键盘与触摸，并能触达活动项和每一项 Close；不能只有拖拽、滚轮、Hover 或右键入口。只滚动页签条的局部横向溢出不构成页面内容滚动恢复，不能借 `scrollIntoView` 连带滚动外层内容。Narrow 可呈现紧凑 Overflow 列表，Workspace Identity、活动状态、关闭/Discard 和导航语义与 Wide/Regular 完全相同，不强制桌面条宽或改变 Sidebar Preference。
 
-所有外观、Material、Safe Area、Target Size 与 Motion 继续使用 §10–18、§24–26 的既有 PAVP Authority，支持 Reduced/None Motion 与 Forced Colors；不冻结颜色、像素高度、圆角、Chrome 形状或 Selection Lens 效果。
+所有外观、Material、Safe Area、Target Size 与 Motion 继续使用 §10–18、§24–26 的既有 PAVP Authority，支持 Reduced/None Motion 与 Forced Colors；本首片合同不冻结颜色、像素高度、圆角、Chrome 形状或 Selection Lens 效果。后续持久 Chrome 的几何稳定目标由 §18.13 单独拥有，不回写首片的历史实现与验收事实。
 
 Drag、Pin、中键关闭、Close Left/Right/Others/All、Context Menu、Tab Refresh、Search/Command Palette、Maximize、快捷键框架和其他 Header Widgets 均不是首片要求；以后分别准入并复用同一 Workspace Identity/Discard 合同。Global Search、语言/外观快捷入口等与 Breadcrumb/Tabs 核心分开；当前 Appearance 内语言控制与外观系统不动。不创建 Avatar、通知、Logout、Lock Screen 或账号/API/Auth Placeholder。
 
@@ -11780,6 +11788,185 @@ Owner 已在后续 Workspace 相邻激活控件请求中明确手动验收本节
 Router 仅在 pagehide 且 Preference 开启、当前 Console Region/Controller/Presentation/Content Ready 时写入本标签页唯一 Snapshot，不按 Scroll/Timer/rAF 写入。Context 复用 History/Workspace 的隐私安全 Build/Release、Committed Locale/Resource、Appearance、Layout/Owner、Content Revision 事实；不得持久化 URL/Params/Query/Hash、Scope/History Entry ID、任意 Selector、页面/表单/账号数据或时间戳。初次 Hard Refresh 的候选必须 Route/Owner Exact Match、有限 Offset、Context Exact Match、当前 Navigation/Presentation 与 Controller Ready；在已有 Mount/nextTick 边界执行。优先级唯一为 Pop History → Explicit Live Workspace Activation → Initial Hard Refresh → Same-workspace Address Policy → Fragment/Logical Start，失配走现有 Fallback，不引入第二 Writer。成功不立即删除 Snapshot；下次有效 pagehide 替换。原 History/Workspace Map 只驻内存，不持久化业务草稿。Development/HMR 继续保守不恢复；Appearance 使用现有 Workspace Content Ready/Revision，修订不匹配即拒绝，不能推断或保存 Form Values。Snapshot Context 不包含前四项仅属于内存 History 的 Scope/Name/地址输入，由同一 restoration validity 投影单独组合。
 
 原 NScrollbar Landing 无依赖/Lock/Patch/Vite/Budget/CI 变更，原始干净基线 JS 247944 / CSS 26845 bytes gzip；这些历史测量不代表当前替换结果。本次在干净 99b0f31 重新 Build/Bundle：Initial JS 250310、CSS 27032 bytes gzip。JS 硬预算精确 262144、强制预留 8192、有效上限 253952，可用增量 3642；所有预算、gzip 算法、Minifier 和 Vite Chunking 不变。最小 Native Viewport + Main Enhancement 接线后立即 Build/Bundle 通过，JS 250946 / CSS 27181；这是中间静态测量。当前动态根精确 27 = 17 Routes + 1 Motion domMax + 1 Scroll Enhancement + 1 I18n Runtime + 7 Catalogs，仅增加真实 Scroll Enhancement Root 清单及官方 CSS 保留检查；其增强闭包复用既有 Lazy JavaScript 预算，无新增阈值。最终必须通过完整 mise exec -- pnpm verify、Diff Review 和 git diff --check，实测超有效预算即停止并保留未暂存 Diff。无 Patch/CI/预算配置、Storage Schema、账号/API/Breadcrumb/Form Draft 变更，无测试、浏览器、证据工件、部署或 Release。
+
+## 18.13 Workbench Shell Geometry and Layout Stability Contract
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+CONTRACT_STATUS=FROZEN
+CANONICAL_PRINCIPLE=GEOMETRY_BEFORE_CONTENT
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_IMPLEMENTATION=NOT_STARTED
+CURRENT_SOURCE_TARGET_COMPLIANCE=NOT_ESTABLISHED
+WORKBENCH_REDESIGN=NOT_STARTED
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+本节冻结后续 Workbench Shell 的几何与职责，实施状态仍以当前源码和各自准入记录为准，不把任何新 Region/Role 标为 `ACTIVE`。适用范围是启用 Administration Shell 的工作区；现有非参与/独立 Document Error Route、`UiAdminShell.enabled=false` 与缓存保留合同不变。下文 Route Error 指参与工作区中的页面错误/反馈，不能据此把现有独立错误页迁入 Shell。本节不新增公共组件、账户模型、配置文件或第二 Registry。
+
+### 18.13.1 Geometry before Content 与显式几何状态
+
+**GEOMETRY BEFORE CONTENT。Content changes paint and internal flow; canonical geometry state changes layout.** 对每个持久 Chrome Region，Shell 必须在可变内容进入前确定其存在性、Owner、位置、Block/Inline 尺寸权威、空间预留、Min/Max、Scroll/Overflow、Safe Area、Profile 放置及长文本/Loading/Optional Content 策略。内容填充既有区域，不能定义该区域外层几何。
+
+稳定不要求每个像素永远不变。相同可用 Shell Box 与相同已提交几何状态必须得到同一外层布局；Viewport/容器可用空间的变化只按既有 Responsive/动态视口合同重新分配弹性余量，不构成另一个偏好、断点或内容测量权威。正常允许改变持久 Chrome 几何策略的原因仅为：
+
+- `narrow` / `regular` / `wide` Profile 转换。
+- 已准入且明确拥有几何的用户偏好，如 Wide Sidebar 展开/折叠；Regular/Narrow 不另造偏好副本。
+- 已提交的 `fontScale` 变化与有效 Root Font Size 更新，依当前 `rem` 模型一致重算。
+- 浏览器 Safe-area 环境变化。
+- 后续经独立明确准入的 Shell Geometry Preference。
+
+语言切换、字符串变长、用户名/组织/版本出现、Badge、Loading 完成、Close 插入、Hover/Focus、选中或状态信息变化，均不能单独改变持久行高、Sidebar 宽度或相邻 Action Slot。它们不是几何状态。Density、Theme 或其他偏好不因本节取得改变 Shell 几何的额外权限。禁止等待用户数据、测量标签长度或读取业务内容后再决定持久行是否存在及行高。
+
+### 18.13.2 唯一 Region Authority 与 Profile 放置
+
+```text
+Admin Shell
+├── Header
+├── Navigation
+│   ├── Navigation Menu Scroll Region
+│   └── User Dock
+└── Workspace
+    ├── Workspace Tabs
+    ├── Route Content
+    └── Bottom Context Bar
+
+Narrow Navigation Overlay → Navigation 的 Drawer Host
+User Panel → User Dock Anchor 的 Shell Overlay
+Global Overlay Root → 正常 Route/Shell 流以外的 Overlay Host
+```
+
+以上是职责模型，不是公共 Component/API 清单或新 Region ID 清单。`@platform/ui` 的既有 `admin-shell-region-registry.ts` 仍是唯一 Shell Region Authority；保留 `architecture-console-content`、`architecture-console-header`、`architecture-console-navigation`、`architecture-console-navigation-overlay` 的现有 ID、Profile、Overlay/Scroll 语义。Workspace Tabs、Menu、Dock、Context Bar 和 Panel 等后续职责只通过该 Registry 的最小子区域/新区域及必要 Schema 扩展闭合；不替换 Registry，不生成第二 Workbench Geometry Config。具体新增 Region ID/Schema 在独立源码准入时按最小消费闭包确定，不为了符合示意图重命名现有 ID。
+
+| 语义区域及 Owner                                          | Wide                                   | Regular                          | Narrow                                                   |
+| --------------------------------------------------------- | -------------------------------------- | -------------------------------- | -------------------------------------------------------- |
+| Header / UI Shell                                         | 持久顶行                               | 持久顶行                         | 持久顶行，保留 Drawer Trigger                            |
+| Navigation / UI Shell                                     | 持久 Sidebar；既有展开/折叠偏好        | 持久 Rail；既有强制收拢策略      | 打开时位于 Navigation Overlay，主 Workspace 不为其预留列 |
+| Navigation Menu / UI Shell 的导航呈现                     | Sidebar 的弹性余量与独立 Scrollport    | Rail 的弹性余量与独立 Scrollport | Drawer 内 Dock 以上的弹性余量与独立 Scrollport           |
+| User Dock / UI Shell                                      | Sidebar 底部稳定预留；随展开/Rail 放置 | Rail 底部稳定预留                | Drawer 底部稳定预留，关闭 Drawer 不保留主流列            |
+| Workspace Tabs / UI 受控 Chrome；应用保有 Workspace State | Workspace 顶行                         | Workspace 顶行                   | Workspace 顶行，局部水平 Overflow                        |
+| Route Content / UI Shell 分配，Router 拥有主 Scroll 写入  | Workspace 弹性余量                     | Workspace 弹性余量               | 可用 Narrow Box 内的弹性余量                             |
+| Bottom Context Bar / UI Shell                             | Workspace 底行                         | Workspace 底行                   | Workspace 底行，内部可收缩                               |
+| User Panel / UI Shell Overlay                             | Dock Anchor Overlay                    | Dock Anchor Overlay              | Drawer 内 Dock Anchor 所属 Overlay 场景                  |
+| Global Overlay Root / 既有 UI Provider Overlay Owner      | 流外 Host                              | 同一 Host 责任                   | 同一 Host 责任                                           |
+
+相同语义职责跨 Profile 保持同一 Owner。Narrow Overlay/Dock 的可用性不等于关闭时仍显示 DOM；Profile 合同预先确定打开后的结构，开关 Overlay 不重新分配主 Shell 的行列。User Panel 不能成为 Sidebar/Grid 的一行或一列，必须受可见视口与 Safe Area 约束；需要时只在 Panel 内建立独立 Scroll。其打开/关闭不得改变 Navigation/Workspace 大小。Global Overlay Root 不参与正常几何，Overlay 出现也不能通过 Document Scrollbar 的增减间接改变 Shell 可用宽度。
+
+### 18.13.3 空间预留、尺寸边界与 Workspace 分配
+
+所有持久行均由已准入 Layout Role 给定稳定 Block Budget，包含约定 Border/内部布局空间；Safe Area 作为独立环境贡献按 §18.13.6 计入，不在内容到达后追加。行不能因可选内容而插入/移除，不能由文本的 Intrinsic Block Size 撑高。尺寸选择须覆盖已准入的 Typography、Target、Zoom/Text-spacing 可达性；不能以截掉操作或有意义文本的唯一访问方式制造稳定。
+
+| 区域               | Block/Inline 权威与 Min/Max                                                                                 | 空间及 Overflow 合同                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Header             | 复用 `layout.admin.header.block-size`；Inline 为 Shell 可用宽度；Action Target 保底，文字区可缩至其可用余量 | 预留顶行，在 Route Scroll 外；身份文字单行截断，Action Slot 不被长文案挤出                       |
+| Navigation         | 复用 Sidebar expanded/rail 或 Drawer maximum Inline Role；Block 由 Header 以下可用高度或 Overlay Box 约束   | Regular/Wide 预留列，Narrow Overlay 不预留主流列；内容不能扩宽或撑高 Host                        |
+| Navigation Menu    | 不新增外层尺寸 Token；使用 Navigation 扣除稳定 Dock 与既有固定结构后的弹性余量，Min Block/Inline 可收缩     | 唯一导航菜单 Scrollport；菜单再长也只增加内部 Scroll Extent，不把 Dock 推离可见底部              |
+| User Dock          | 独立稳定 Block Role；Inline 跟随所属 expanded/Rail/Drawer 的可用宽度，不由身份文本决定                      | 在 Menu Scrollport 外固定预留底部；头像/文字/Badge 在内部槽位替换或截断；不跟随菜单滚动          |
+| Workspace Tabs     | 独立稳定 Block Role；Inline 受 Workspace 限制；每项受独立最大 Inline Role 与稳定 Target/Action Budget 约束  | 始终预留；只在中央 Tab Viewport 水平滚动，边缘前后控件保持流中固定槽；不换行增高                 |
+| Route Content      | `minmax(0, 1fr)` 等价的 Block 余量；Inline 可收缩并受实际可用 Box 限制；保留有条件的 Content Minimum        | 唯一应用 Route Block/Inline Primary Scroll Owner；内容可 Reflow/Scroll，外层不会反推 Chrome 几何 |
+| Bottom Context Bar | 独立稳定 Block Role；Inline 为 Workspace 可用宽度；Leading/Trailing 均有可收缩边界                          | 三 Profile 均预留单行及所属 Bottom Safe Area；处于 Route Scroll 外；没有数据也保留行             |
+
+Workspace 的分配语义固定为 **已准入 Tabs Row + `minmax(0, 1fr)` 等价 Route Content 余量 + 已准入 Context Bar Row**。只冻结分配结果与零最小余量约束，不强制某个 Grid/Flex 写法、DOM 层数或私有变量。Header、Navigation 与 Workspace 同属 Shell 的可用空间预算，不允许 Content 的默认 Min-content 尺寸突破该预算。
+
+`UiPageHeader`、Page Body、页面异步反馈/错误、Theme Card、Form、Table 和业务内容属于 Route Content；Paragraph、Form Section、Table 等可正常增高、换行并改变内部 Scroll Extent。Page Header 保留唯一 h1 与 Router Focus 合同。不得把普通文档统一改成固定高度，也不得通过隐藏不可达溢出来伪装 Shell 稳定。
+
+### 18.13.4 Canonical Layout Roles 与值的证据边界
+
+现有 Generated Layout Registry 的九条记录保持，以下已确认值继续复用原有语义；本节没有修改它们的源值或单位：
+
+| 现有角色                                                                                   | 已确认 Authored/Resolved 值 | 后续用途                                                |
+| ------------------------------------------------------------------------------------------ | --------------------------- | ------------------------------------------------------- |
+| `layout.admin.header.block-size`                                                           | `3.5rem`                    | Header 基础行，不含浏览器 Safe Area                     |
+| `layout.admin.sidebar.expanded-inline-size` / `layout.admin.sidebar.rail-inline-size`      | `16rem` / `4rem`            | Wide 展开/折叠及 Regular Rail                           |
+| `layout.admin.drawer.maximum-inline-size`                                                  | `20rem`                     | Narrow Drawer 上限，同时受可用 Overlay Box 约束         |
+| `layout.admin.content.minimum-inline-size`                                                 | `20rem`                     | 空间充足时的管理内容首选下限，按 §18.13.5 限制有效值    |
+| `layout.profile.regular.min-inline-size` / `layout.profile.wide.min-inline-size`           | `48rem` / `80rem`           | 同一三档 Profile Resolver/Container Threshold Authority |
+| `layout.target.enhanced.minimum-block-size` / `layout.target.enhanced.minimum-inline-size` | `44px` / `44px`             | Shell 交互 Target 的最小尺寸，不替代整行 Block Role     |
+
+未来确实缺少以下四个不同职责的 Layout Role。证明依据是 Shell/子区域双方必须共享的稳定空间分配，不是因为清单列出它们；值相同也不能借用语义不相同的 Header、Sidebar、Content Width 或 Target Role。
+
+| 待准入角色 / Kind                                               | 必要性与现有角色为何不能替代                                                                                      | Owner / Profile / 生成关系                                                                                                                             | 精确值状态与选择约束                                                                                                                                                                        |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `layout.admin.workspace-tabs.block-size` / `shell-size`         | Shell 预留 Workspace 行与 Tabs Surface 必须共享整行预算；`44px` Target 只是内部控件下限，Header 是另一行          | Design System 拥有值；UI Shell 与 Workspace Tabs 消费；三 Profile；生成 CSS Variable、Layout Record 与 Block-size 语义 Uno Mapping                     | 字面量待首次源码实施测量定案。当前 Tabs 无固定行高；源码可确认 Target 下限 `44px` 和现有 `1px` 下边框，不能把两者之和当成已接受的完整行高，仍须覆盖字体、内部盒模型与 Native 水平滚动条占位 |
+| `layout.admin.user-dock.block-size` / `shell-size`              | 导航可滚动余量与 Dock 必须共享底部预算；Header/Control Height 没有 Dock 的语义                                    | Design System 拥有值；UI Shell Navigation/Menu/Dock 消费；三 Profile；生成 CSS Variable、Layout Record 与 Block-size 语义 Uno Mapping                  | 字面量待首次源码实施测量定案。当前没有 Dock；以现有 Chrome 密度、`44px` 操作下限及同一 Profile 中 Loading/匿名/未来身份等态的共同包络选值，不由身份内容实测增高                             |
+| `layout.admin.context-bar.block-size` / `shell-size`            | Workspace 余量与持久 Context Bar 必须共享底行预算；Page Spacing/Header/Control Height 不是此行                    | Design System 拥有值；UI Shell Workspace/Context Bar 消费；三 Profile；生成 CSS Variable、Layout Record 与 Block-size 语义 Uno Mapping                 | 字面量待首次源码实施测量定案。当前没有 Bar、最终内容也未准入；按既有单行 Typography/Spacing、可达性及实际准入 Action Target 选稳定预算，不臆造版本或环境内容来定高                          |
+| `layout.admin.workspace-tab.maximum-inline-size` / `shell-size` | Tab Item/Label/Action Budget 与 Shell 水平溢出需共享上限；Page Content Max Width、Sidebar Width 没有 Tab 上限语义 | Design System 拥有值；UI Workspace Tabs 消费，Shell 分配须满足该上限；三 Profile；生成 CSS Variable、Layout Record 与 Max-inline-size 语义 Uno Mapping | 字面量待首次源码实施测量定案。当前没有 Tab Max；上限涵盖完整 Item 的标签、稳定 Close Slot、间距/边界，并与 Narrow 可用 Tab Viewport、固定边缘控件和 `44px` Target 同时成立                  |
+
+上述延期只针对证据不足的 Authored Literal；Region、Owner、尺寸语义、空间预留及选择约束已经冻结。首次源码实施的测量是作者确定 Canonical Value 的受控步骤，不能变成 Runtime 随内容测量并改变行高。实施交付前必须把精确源值、必要的字体/Target 下限组合及 Border 计入方式闭合到同一架构合同和生成链；不以占位数字先交付，不要求 Owner 选择可以由证据判断的外观尺寸。当前源码证据不足以证明四条新的整行/上限字面量，不能把未测量的视觉密度报告成 Runtime Accepted。
+
+每个未来公共 Role 必须具备稳定 ID、唯一 Canonical Token Source、Resolved Value、Kind、适用 Profile 语义、PublicRole/UnoCSS Mapping 与 Generated Output/现有 Checker 闭包。沿用现有 Layout Registry/Generator/`--ui-layout-*` 路径；普通作者使用生成的语义 UnoCSS Class，必要映射在同次最小准入闭合，不在此提前发明 Class 名或新增 Registry Schema。内部余量公式、零最小尺寸与一次性结构常量不是新 Token 的理由。§15.6–§15.7 的五类 Styling Author 和 §26 Cascade 合同强制适用；禁止 Raw px/rem、任意 Uno Bracket、组件局部几何变量、Sass 变量或 Vendor 尺寸成为第二权威。现有 Shell Safe-area 环境投影继续属于 Browser/Platform Owner 例外。
+
+### 18.13.5 Stable Action Slots、长文本与 Narrow Minimum
+
+Tab Item 的外层宽度可以按同一标签与已准入最大宽度策略确定，但其 Close 可用性、Hover、Active/Selected 状态不能使同一 Item 或相邻 Item 突然移动。未来须预留或以等价确定性布局分配 Close Target 与间距；非适用控件不保留可点击/可聚焦的假入口。是否使用非交互占位或其他等价结构是私有实现，不能冻结为某一个条件渲染算法。Tab 数量只改变中央水平 Scroll Extent，不改变整行 Block Size；前后激活控件始终位于 Tab Scrollport 外，按当前真实可用性保持准确语义，不因按钮消失让中央 Viewport 改宽。
+
+Tab Label 是单行 Chrome，过长视觉名称在 Item 的 Canonical Maximum Inline Budget 内截断；不得让一个长名无限扩张 Strip，也不得压缩 Close/Edge Target 来换取文本。完整 Accessible Name 保留，键盘、触摸与辅助技术必须能够使用现有 Tab/Close/Overflow 行为；Tooltip 不能成为唯一完整名称机制。RTL 使用等价的逻辑方向、截断、固定槽和水平 Scroll 语义，不改变 Workspace Identity/导航策略。
+
+Header 的身份/标题区先收缩和截断，已准入 Action Target/Slot 保留；长本地化文案、操作可用性或分组状态不改变顶行高度，也不能把操作挤出 Shell。User Dock 的用户名、组织及未来角色文字只填充其内部槽；头像、Badge、Loading、Signed-out 或未来 Authenticated 呈现共享该 Profile 下同一外层尺寸，完整名称可访问。折叠为 Rail 的内部呈现可以不同，几何变化只来自已准入 Profile/折叠事务，不来自登录结果。
+
+Bottom Context Bar 始终为单行：Leading Context 是弹性槽，先于 Trailing Compact Status 收缩/截断；空间继续不足时 Trailing 的文字也在剩余 Inline Budget 内收缩/截断，不维持无限 Min-content 宽度。若未来准入交互入口，其 Target Slot 最后保留，不能以缩小 Target 或把整行推宽解决溢出。有意义完整值须保有键盘/触摸/辅助技术可达的访问路径，具体呈现随内容准入闭合，不只依赖 Pointer Hover。空内容不制造假 Status，也不移除行或更改其 Block Budget；缺省 Trailing 内容不建立第二内容驱动 Shell 尺寸策略。
+
+`layout.admin.content.minimum-inline-size=20rem` 是**可用空间充足时的首选管理内容下限**。Narrow 的有效最小 Inline Size 必须钳制/适配到扣除所属 Safe Area、Chrome 与必要 Padding 后的实际可用 Content Box，不能强制 Shell 或 Route Content 比该 Box 更宽。Flex/Grid 祖先的 Min-content 限制也须允许同一收缩。合法的宽表格等仍可在已声明 Route Content/独立准入 Region 内滚动，所有内容和操作保持可达；不能由页面级 `overflow:hidden` 截掉不可到达区域来假装满足下限。禁止删除该角色、降低字号、增加第四 Profile 或全局打开 Document 横向滚动作为替代。
+
+### 18.13.6 Safe Area 与 Font Scale 的一致几何事务
+
+Safe Area 是浏览器环境贡献，不是 Theme/Layout Authored Literal。继续由唯一 Shell Browser/Platform Style Owner 读取 `env(safe-area-inset-*)` 并投影内部 Layout Variable；子 Region 只消费其分配结果，不再读取环境或累计相同边的 Insets。W3C 将四边 Inset 定义为相对 Viewport 的安全矩形边界；本节在其上冻结 PAVP 的一次计入策略。[CSS Environment Variables：Safe Area](https://www.w3.org/TR/css-env-1/#safe-area-insets)
+
+| 边与几何平面                   | 唯一分配责任                                                                                                                                                                                             |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 主 Shell Top                   | Header/顶层 Shell Boundary 计入一次。Header 基础 Block Role 不含 Inset；其实际预留外高为基础行加 Top 贡献，后续空间只扣该完整外高一次                                                                    |
+| Workspace Bottom               | 最低持久 Bottom Context Bar 计入一次；未来接线时 Route Content 不再额外承担同一 Bottom Safe Area，普通 Page Spacing 仍保留自身语义                                                                       |
+| Regular/Wide Navigation Bottom | 最低 Dock 负责其所在导航列的 Bottom 安全空间，Menu 余量不得再重复 Padding；与旁边 Workspace 属于并列边段，不在共同祖先重复扣除                                                                           |
+| Narrow Overlay Top/Bottom      | 独立覆盖平面的 Shell Overlay Boundary 负责 Top，Drawer 的最低 Dock 负责 Bottom；Menu 只获得已扣除的余量。主 Shell 已处理的 Inset 不能作为祖先再加到 Overlay，但不能因主流已处理而省略覆盖平面的保护      |
+| Left/Right                     | Shell Boundary 为主流及独立 Overlay 平面各分配一次可用 Inline Box/边段；Header、Tabs、Route Content、Context Bar、Drawer/Dock 不在已收窄的祖先内再次增加同边贡献。RTL 保持物理安全边到逻辑布局的正确映射 |
+| User Panel                     | 使用所属 Overlay 平面已经计算的可见 Safe Box 进行锚定和边界约束；不重复叠加 Dock/Drawer Padding，也不回写主 Shell 尺寸                                                                                   |
+
+“一次”按同一布局平面、边段与祖先链计算；主流与 Teleport Overlay 分别受安全边界保护，不等于把同一 Inset 在同一尺寸预算中重复相加。Padding 为已预留 Safe Area 提供内部布局时，不得再把它当作第二外高/外宽扣减；必须明确 Border-box 及基础行与 Safe 贡献的关系。
+
+`rem` 继续相对于有效 Root Font Size，不能把当前屏幕上的 `16px` 当作永恒换算常量。[CSS Values and Units：Font-relative Lengths](https://www.w3.org/TR/css-values-4/#font-relative-lengths) §14.4 的 `0.9 / 1 / 1.1 / 1.2` 与 Root 百分比模型不变，Profile Resolver 继续消费当前实际 Root Font Size。同一次已提交 Appearance 字号变化中，Header/Sidebar/Drawer、未来 Tabs/Dock/Context Bar、内容边界和 Profile 必须在同一有效几何状态下重算。现有 ResizeObserver/Profile 路径可以接收平台通知，但不能把内部混合新旧值的瞬间当作已提交最终几何供 Focus/Scroll Validity 使用；不准新增第二 Observer/Store/Router Scroll Writer 来维持副本。浏览器 Zoom/字体可达性保留，稳定不能成为阻止 Zoom 或削弱 §25 可达性的理由。
+
+### 18.13.7 Scroll Ownership 与增强交接
+
+Route Content 保持唯一应用 Route Block/Inline Primary Scroll Owner。Workspace Tabs 仅拥有独立水平 Scroll，Navigation Menu 独立处理菜单，Dock 不进入菜单 Scrollport，Context Bar 不进入 Route Scrollport；Panel 必要时只滚动自身内容。它们不是新的 Route Scroll Owner，不注册第二 Router Offset/Restoration Writer。既有稳定、未加 Key 的 Route Host、单 RouterView/KeepAlive、Workspace Identity、Controller、Ready/Validity、背景锁与恢复优先级均保持，§18.12 现有 Owner Accepted 实现不在本次修改。
+
+**Scroll Enhancement 必须 Geometry-neutral。** Native Fallback → OverlayScrollbars 成功接管，或增强失败/释放回退，不得有意改变 Shell 行列、Route Content 逻辑可用空间或 Tabs Row/Viewport 预算。Classic Native Scrollbar 会占布局空间时，在现有 PAVP Scroll Owner 内选择最窄、标准支持的稳定 Gutter/降级组合；不能全局隐藏滚动条、把文档设为另一个 Scroll Owner 或任由增强完成触发内容宽度跳动。
+
+`scrollbar-gutter: stable` 不是所有 Owner 的固定答案：CSS Overflow Level 3 的该属性控制 Inline 边 Gutter，Classic 与 Overlay Scrollbar 的占位语义不同，也不能用它直接保证水平 Tabs 的 Block 边占位。未来须按已有 Native Viewport/Enhancement 边界验证实际策略，保持同一几何预算，不能把平台或 Vendor Scrollbar 厚度硬编码成通用 Token。[CSS Overflow：Scrollbars and Layout](https://www.w3.org/TR/css-overflow-3/#scrollbars) 本次不修改 OverlayScrollbars、Lenis、Native Viewport、Router 恢复或其版本/API。
+
+### 18.13.8 Loading、存在性、Focus 与 Motion
+
+持久 Region/Slot 的几何必须在首个可变内容呈现前由 Canonical State 预留。未来用户、组织、Build/Version、System Status 的 Loading/Skeleton/Empty 与完成态只替换槽内呈现；不得等待异步完成后插入整行、挂载 Dock 后才缩短 Menu，或在缺少 Breadcrumb/Version 时移除 Context Bar。不要求内部每个像素一致；文字、图形与合法内容流可以变化。
+
+可选内容的 Visibility 与 Region 的 Existence 分开。省略某个 DOM 节点只有在预留几何仍由其 Owner 保持时才可行；不能因为数据为空而移除持久行的布局贡献。Profile 变更可以按该 Profile 合同改变放置；Overlay 打开状态仅控制流外呈现。不可见/非适用交互元素不得仍可点击或聚焦，可访问语义必须真实。
+
+Focus、Hover、Selected、Active 的视觉反馈只能通过 Outline、Inset、预留 Border Width 或既有允许的 Transform/Paint 等不移动邻居的方式表达；不能新增 Border/Padding 改变外层尺寸。这里只冻结几何结果，不重设计 Focus。Motion 只可在既有 §24 准入范围内呈现两个已提交几何状态间的转换，不能靠动画掩盖内容撑开/收回的错误。Profile/折叠事务允许的 Motion 仍用同一 Geometry Target；`reduced`/`none` 为一等路径且得到同一最终布局，不修改 Motion 库、数值或 CSS Transition。
+
+### 18.13.9 几何以外的明确延期与源码事实
+
+Bottom Context Bar 只冻结持久单行、Leading Flexible Context、Trailing Compact System Slot、收缩及 Bottom Safe Area；Breadcrumb 搬迁、Version/Build/Environment 内容、可点击祖先呈现和 Control Center Linkage 延期。User Dock 只冻结 Region/几何与 Overlay Anchor；User Identity Source、Roles、Organization、Logout、Quick Settings、Time/Timezone、账户 Store/Auth 和 User Panel 内容均未定义。User Panel 的详细 Focus、Dismiss、嵌套 Overlay 交互属于后续独立 Overlay/Focus 决策。Control Center 只是未来普通 Route Content，当前不定义 Route Identity、Page Layout、Sections 或 Settings Ownership。`UiPageHeader` 留在 Route Content，最终 Breadcrumb Host 不在此冻结。
+
+当前源码事实：Shell Region Registry 只有上述四个活动区域；Generated Layout Registry 仍为九条；没有 User Dock、Bottom Context Bar 或 User Panel 实现。`WorkspaceTabsSurface.vue` 的 Close 按 `closable` 插入，邻接 Tab Padding 随之变化；Labels 尚无该目标 Max-inline/截断策略，行高仍由内部内容与 Target 形成。`UiAdminShell.vue` 的 Header 长身份文本缺少目标收缩闭包，Route Content 无条件消费 `min-w-admin-content`，Narrow 可用空间约束尚未修复。Safe Area 目前在 Header/Content/Drawer 等既有结构消费；未来 Bottom 所有权尚未迁到不存在的 Dock/Context Bar。`UiScrollArea.vue` 的 Native Fallback/异步 Enhancement 并未建立本节要求的完整交接几何证明。当前 Root Font Size/ResizeObserver 事实支持沿用模型，不能当作新 Geometry Transaction 已完成的 Runtime 证据。
+
+这些是源码与目标的差距，不抹去已有功能的实施/验收历史，也不等同于本次已经复现浏览器缺陷。本节及 §37.2.16 不授权修复这些源码或其他 UI Foundation 审计项。
+
+### 18.13.10 后续验收不变量与现有 Checker Ownership
+
+后续源码实施至少必须分别给出以下目标的适当证据；源代码/静态/Build 与 Owner Runtime/Visual Acceptance 必须分开报告：
+
+1. 同一有效几何状态下，Header 文本与已准入 Action 可用性变化不改变外层 Block Size，操作始终可达。
+2. Dock 的 Loading/Empty/匿名/未来身份、头像与 Badge 不改变该 Profile 的外层 Block Size。
+3. Tabs 数量、Active、Closable、长名和 Close Visibility 不改变行高；Close 可用性不移动相邻 Item，边缘控件槽稳定。
+4. Context Bar Leading/Trailing 的缺失、存在、Loading 和长文案不改变行高或取消预留；内部收缩后完整有意义内容仍可访问。
+5. Route Content 是唯一 Route Primary Block/Inline Scroll Owner，页面 Reflow 不改变持久 Chrome。
+6. Navigation Menu Overflow 不移动 Dock，也不新增竞争的 Route Scroll Owner。
+7. User Panel 与其他 Overlay 的开关不改变 Sidebar/Workspace 行列及可用空间。
+8. Narrow 在所有已准入 Font Scale、Zoom/Reflow 条件下保持内容与操作可达，不由硬 `20rem` 最小值制造隐藏溢出。
+9. 语言与长文本变化不改变持久行高；RTL 的名称、Target、槽位及水平 Overflow 行为等价。
+10. Focus/Hover/Selection 不引起邻居布局移动；Reduced/None 与 Full 的最终几何一致。
+11. Native/Enhanced Scrollbar 交接与失败回退不有意改变 Shell/Route/Tabs 预算，Safe Area 不重复计入。
+12. Profile/已准入折叠/Font Scale/Safe Area 变化形成一致的显式几何转换，首个可变内容呈现、异步完成与中间通知不制造级联跳动。
+
+未来沿用 `scripts/architecture/check-architecture-admin-console.ts` 的 Layout/Region 责任及现有 Public UI、Design System/Uno、Policy、Bundle 检查，最小扩展 Shell Region Exact Closure、Profile Required Regions、稳定 Layout Role/生成输出闭包、PublicRole/语义 Uno Mapping、唯一几何权威、无 Raw Shell Geometry、Narrow Minimum、Scroll/Safe Area Ownership 与持久 Region Presence 的跨文件合同。具体 Private Helper、变量、循环、Parser、容器或 DOM 算法不因本节成为规范；不新增第二治理引擎。静态检查可拒绝声明/接线/明显结构违约，不能证明真实字体、布局、Scrollbar、Focus、首屏或交互结果；本次不创建 Checker、Test/Browser Infrastructure 或 Evidence Artifact。
 
 # 19. 状态管理
 
@@ -17773,6 +17960,33 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 未来 Workbench 必须消费这份样式合同。User Dock、User Panel、Bottom Context Bar、Control Center、未来 Theme Showcase、Shell Geometry 与能力页面不得建立各自样式模型。本次不准入 Shell Region 改动、Layout Registry 新记录、User Dock/User Panel 实现、Control Center Route、Breadcrumb 搬迁、Bottom Context Bar 或能力页面重设计；它们仍需后续独立决策。
 
 本次唯一允许修改为 `ARCHITECTURE.md`。不迁移 CSS/SFC，不改 UnoCSS Source/Config、Checker、Design System Source/Generated Output、Manifest/Lockfile、`project.config.ts`、Dependency 或 Budget，不安装 Sass，不启动后继工作，不操作 Browser/Dev Server，不部署或 Release。文档更正无需 Owner Runtime Acceptance；只在合同自洽、限定 Diff 与完整 `mise exec -- pnpm verify` 通过且远端仍安全同步后，按本次明确授权 Stage 此文件、创建一个中文 Commit、正常 Push，并按 §31.3 观察精确 Commit 的 CI 终态。本记录本身不预先宣称这些验证或 Git 动作已完成。
+
+---
+
+## 37.2.16 Workbench Shell Geometry and Layout Stability Contract
+
+Owner 在干净同步的 `main@57449256e2811b20ca7e3ae6172efb6152abff1c` 上授权本次限定架构冻结与 Git 交付。该基线已提交 §15.6–§15.7、§26 的 UnoCSS-first Styling Governance；前序 UI Foundation 只读审计识别出 Shell Geometry/Layout Stability 是 Workbench 内容和视觉实施前的下一项基础依赖。Owner 要求尺寸集中、可维护，拒绝由文本、身份、异步完成或可选控件造成 Shell 外层移动；本次据此冻结 §18.13 的 **Geometry before Content**，不启动自动路线图续作。
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+OWNER_AUTHORIZATION=EXPLICIT_GEOMETRY_CONTRACT_FREEZE_AND_SCOPED_GIT_DELIVERY
+CONTRACT_STATUS=FROZEN
+STYLING_GOVERNANCE=FROZEN_AND_COMMITTED
+CURRENT_ACTIVE_SHELL_REGION_COUNT=4
+CURRENT_LAYOUT_RECORD_COUNT=9
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_IMPLEMENTATION=NOT_STARTED
+CURRENT_SOURCE_TARGET_COMPLIANCE=NOT_ESTABLISHED
+NEW_GEOMETRY_ROLE_LITERALS=DEFERRED_TO_FIRST_SOURCE_IMPLEMENTATION_MEASUREMENT
+WORKBENCH_REDESIGN=NOT_STARTED
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+本次重新核对了 `UiAdminShell.vue`、唯一 Region Registry/Profile Resolver、Generated Layout Registry/Token/Uno 输出与其 Canonical Sources/Generator、`WorkspaceTabsSurface.vue`/`UiWorkspaceTabs.vue`、`UiScrollArea.vue`、App/ConsoleRouteFrame/Router Lifecycle 及直接 Owning Checks。四个现有 Region、九条现有 Layout Role、尚不存在的 Dock/Context Bar/Panel，以及 Narrow `20rem`、Close Slot、长名、Safe Area、Scrollbar 交接和 Font Scale 的实际源码证据归入 §18.13.9；没有以浏览器复现或未执行的 Runtime 测量冒充证据。
+
+冻结内容包括目标 Region/Profile 责任、持久空间预算、四个确实缺少的语义 Role 与值选择约束、稳定 Action Slot、文本/Loading、Narrow Reachability、逐边 Safe Area、一致 Font Scale/Rem 事务、独立 Scroll Ownership、Geometry-neutral Enhancement、Focus/Motion 几何约束及未来静态/Runtime 证据边界。已确认的 Header/Sidebar/Drawer/Content/Profile/Target 数值沿用；四个新 Role 的字面量按 §18.13.4 明确延期到首次源码实施测量闭合，不从无固定行高或不存在的 UI 编造数值。Breadcrumb 最终 Host、身份/Auth、User Panel Focus/Dismiss 和 Control Center 内容继续独立延期。
+
+唯一允许变更为 `ARCHITECTURE.md` 及其必要直接引用。没有修改 Layout Registry、Token、UnoCSS、CSS/SFC、Router/Workspace/Scroll、Checker、Manifest/Lockfile、Dependency/Budget 或 Project Config，不实施 User Dock/User Panel/Bottom Context Bar/Control Center，不搬迁 Breadcrumb，不开展 Workbench 视觉重设计，不操作 Browser/Dev Server，不创建 Test/Evidence，不部署或 Release。本文档任务无需 Owner Runtime Acceptance；仅在合同完整、授权 Diff、Focused Prettier、`git diff --check`、`mise exec -- pnpm check:arch`、`mise exec -- pnpm check:policy` 与完整 `mise exec -- pnpm verify` 均通过，且再次 Fetch 后预期基线仍安全同步时，明确授权只 Stage 本文档、创建一个指定标题的中文 Commit 并正常 Push `origin/main`，再按 §31.3 检查精确 Commit 的 Static Verification/CodeQL 终态。本记录不预先宣称尚未执行的验证、Commit、Push 或 CI 成功；交付后停止。
 
 ---
 
