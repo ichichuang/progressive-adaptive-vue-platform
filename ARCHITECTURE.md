@@ -4899,6 +4899,8 @@ ACTIVE_NAVIGATION_ITEM_ACTIVATION=no-op
 
 Appearance 是初次 Landing 唯一 Interactive Capability Page，只能调用现有真实 Appearance Mutation Contract。Active Read-only Page 只显示真实 Registry、Validated Configuration、Lifecycle 和 Governance Fact。`TARGET_INACTIVE` 与 `DEFERRED` 只作为 Capability Roadmap 的 Read-only Record，禁止 Switch、Form、Editable Control、Fake Provider、Fake Data、Sample API、Mock Backend 或 Pretend Activation。Page-authored Capability Status String 禁止。
 
+以上保留初次 Landing 与当前源码事实；后续产品归属由 §18.15 冻结为 Capability Showcase、Control Center 完整设置与 User Panel 快捷子集。该目标允许真实已准入能力的局部临时演示，不允许伪装未来能力已启用；全局控件迁移尚未实施，不改本表 Route Identity 或当前状态。
+
 ### 1.2B.3 Capability Manifest curated projection
 
 §1.3 继续是唯一完整 Human Capability Status Authority。Console Capability Manifest 是由它确定性生成的 21-record Curated Read-only Projection，不替换 §1.3、不要求 Equal Cardinality，也不成为 Mutable Status Authority。
@@ -5014,6 +5016,8 @@ Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGE
 本节当前七轴快照与 Provider API 保持已实现状态；§13.12 冻结未来同一快照保留七轴顶层访问路径、仅追加 `statusColors` 的最小 Type/Read Boundary 扩展，其源码授权仍为零，不创建第二 Appearance Authority。
 
 Appearance Preference、Environment Resolution、Effective State Derivation 与 DOM Application 的既有 Mutable Authority 保持不变。Console 新增恰好一个 App-internal Read Boundary，把成功解析后的 `EffectiveAppearanceState` 以真正 Readonly Vue Ref 交给 Root UI Provider；另有一个不持有 State/Environment 的 Mutation Facade 供 Appearance Page 调用 Existing Store Authority。二者都不是第二 Store、Resolver、Media Owner 或 Writer。
+
+§18.15 只冻结后续消费者归属：完整 Appearance 控件迁入 Control Center，User Panel 仅增加 Color Mode 快捷消费，Appearance 能力页转为展示。本节 Boundary/Store/Environment 的唯一权威与 API 保持，当前源码消费者及可见 Reset 语义不能因目标页面变更而被静默替换。
 
 ```text
 APPEARANCE_READ_BOUNDARY_OWNER=apps/web/src/app/appearance/appearance-read-boundary.ts
@@ -11551,7 +11555,7 @@ NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ```
 
-本节是 Global Breadcrumb 与应用内 Workspace Tabs 核心的唯一完整目标合同，§37.2.13 只记录规格任务准入。它以 §9 已落地路由核心为依赖，不把文档设计当作运行能力，也不自动修改任何 Source Registry、Public UI API 或 Generated Manifest。Workspace Tabs 是应用工作上下文能力，不能由一个 Vendor Tabs Wrapper 替代，也不建立第二个 Router。
+本节是 Global Breadcrumb 数据/地址语义与应用内 Workspace Tabs 核心的唯一目标合同；Breadcrumb 最终呈现 Host 和 Workbench 信息归属由 §18.15 拥有，§37.2.13 只记录前序规格任务准入。它以 §9 已落地路由核心为依赖，不把文档设计当作运行能力，也不自动修改任何 Source Registry、Public UI API 或 Generated Manifest。Workspace Tabs 是应用工作上下文能力，不能由一个 Vendor Tabs Wrapper 替代，也不建立第二个 Router。
 
 ### 18.11.1 Specification baseline and four distinct identities
 
@@ -11576,9 +11580,9 @@ Menu Group 与祖先关系分别负责菜单组织和页面位置。当前十个
 
 Hidden/Detail Route 可以在自己的 Route Record 声明祖先，无需出现在 `consoleNavigationRegistry`，也不需要新增 Router Parent 或 Outlet。未来参数化祖先的 Params 来源须在该真实路由准入时逐字段明确为**当前已提交 `ValidatedRouteInput.params` 的选定字段**；若目标需要 Query，也只能显式选择已校验字段，缺省不继承当前 Query/Hash。字段类型、数组/可选性及到目标原生地址输入的表示必须闭合目标 Schema；Parsed Transform 不能直接冒充 Raw Address，缺少可验证的表示时保留非交互标签并报告合同缺口。首批现有路由全部为空输入，不创建通用映射引擎、表达式语言或任意 Callback 配置。Breadcrumb Label 只使用现有 Typed Message Key；不从原始 URL、Query 文本、Hash 或敏感实体值编造显示文字和导航。
 
-未来可把同一个 Breadcrumb 投影移到 Global Header；移动时删除原重复呈现，保留 `UiPageHeader` 的 `title`、`summary`、唯一 h1 和原焦点选择器。不得创建 `UiPageContainer` 或第二 Page Header Authority；`actions` Slot / Structured Metadata 只在真实页面消费者提出需求后单独收紧公共合同，不能把 `summary` 改造成并列的 `description` API。页内分区 Tabs 是独立组件需求，不拥有 Workspace 或 Router 状态。
+未来按 §18.15 把同一个 Breadcrumb 投影移到 Bottom Context Bar Leading Slot；移动时删除原重复呈现，保留 `UiPageHeader` 的 `title`、`summary`、唯一 h1 和原焦点选择器。不得创建 `UiPageContainer` 或第二 Page Header Authority；`actions` Slot / Structured Metadata 只在真实页面消费者提出需求后单独收紧公共合同，不能把 `summary` 改造成并列的 `description` API。页内分区 Tabs 是独立组件需求，不拥有 Workspace 或 Router 状态。
 
-上述 Global Header 是前序可选放置方向，不是当前已实现或最终冻结的 Host。§18.13 只为 Bottom Context Bar 预留 Leading Context Slot，不据此裁决 Breadcrumb 最终归属；搬迁、呈现及可点击祖先的源码接线仍须独立架构决策，已有数据/地址验证目标和 Page Header h1/Focus 合同保持。
+前序 Global Header 只曾是可选放置方向；现在 §18.15 已闭合最终 Host 为 §18.13 预留的 Bottom Context Bar Leading Slot。本节继续拥有显式祖先与地址验证，§18.15 拥有产品呈现、收缩可达性和原子迁移边界；源码接线仍须独立授权，Page Header h1/Focus 合同保持。
 
 ### 18.11.3 Route participation, identity policy and workspace state
 
@@ -11947,7 +11951,7 @@ Focus、Hover、Selected、Active 的视觉反馈只能通过 Outline、Inset、
 
 ### 18.13.9 几何以外的明确延期与源码事实
 
-Bottom Context Bar 只冻结持久单行、Leading Flexible Context、Trailing Compact System Slot、收缩及 Bottom Safe Area；Breadcrumb 搬迁、Version/Build/Environment 内容、可点击祖先呈现和 Control Center Linkage 延期。User Dock 只冻结 Region/几何与 Overlay Anchor；User Identity Source、Roles、Organization、Logout、Quick Settings、Time/Timezone、账户 Store/Auth 和 User Panel 内容均未定义。User Panel 的 Focus、Dismiss、嵌套 Overlay 目标由后续独立冻结的 §18.14 拥有，源码与内容仍未准入。Control Center 只是未来普通 Route Content，当前不定义 Route Identity、Page Layout、Sections 或 Settings Ownership。`UiPageHeader` 留在 Route Content，最终 Breadcrumb Host 不在此冻结。
+本节继续只拥有 Bottom Context Bar 的持久单行、Leading/Trailing Slot、收缩和 Bottom Safe Area，以及 User Dock Region/几何与 Overlay Anchor。先前延期的信息归属现由 §18.15 冻结：Breadcrumb 位于 Bottom Leading，Trailing 精确构建信息、Panel 快捷项/设备时间和 Control Center Route/Sections/Settings Ownership 均以该节为准；Focus/Dismiss/嵌套事务仍归 §18.14。`UiPageHeader` 留在 Route Content；身份/Auth/Organization/Logout 仍未准入，所有上述新表面与搬迁源码均未开始。
 
 当前源码事实：Shell Region Registry 只有上述四个活动区域；Generated Layout Registry 仍为九条；没有 User Dock、Bottom Context Bar 或 User Panel 实现。`WorkspaceTabsSurface.vue` 的 Close 按 `closable` 插入，邻接 Tab Padding 随之变化；Labels 尚无该目标 Max-inline/截断策略，行高仍由内部内容与 Target 形成。`UiAdminShell.vue` 的 Header 长身份文本缺少目标收缩闭包，Route Content 无条件消费 `min-w-admin-content`，Narrow 可用空间约束尚未修复。Safe Area 目前在 Header/Content/Drawer 等既有结构消费；未来 Bottom 所有权尚未迁到不存在的 Dock/Context Bar。`UiScrollArea.vue` 的 Native Fallback/异步 Enhancement 并未建立本节要求的完整交接几何证明。当前 Root Font Size/ResizeObserver 事实支持沿用模型，不能当作新 Geometry Transaction 已完成的 Runtime 证据。
 
@@ -12080,7 +12084,7 @@ WAI 的 roving tabindex 通过移动实际 DOM Focus 管理复合控件；`aria-
 
 在 Narrow Drawer 中，它是现有 Modal Chain 的子交互，打开不暂停父 Modal 保护，父层 Tab Containment 必须包含子层的可操作控件；Host 必须满足父 Dialog 的 DOM/可访问包含关系，不能仅因为 Teleport 就假定成立。Panel 独立关闭返回其有效 Dock Trigger/父层 Fallback；导航时先关闭 Panel 再关闭 Drawer，全链只让 Router 拥有最终 Focus。
 
-开关、定位与内部必要滚动遵守 §18.13，不改变 Shell 行列。Quick Appearance/Locale 仅说明普通控件语义，不准入 Settings 内容、身份、Auth/Session/Account；显式 Control Center 跳转将来使用 Typed Router 与 Route-navigation 原因，本节不定义其 Route Identity、页面或 Settings Owner。User Panel/User Dock 当前仍无源码授权。
+开关、定位与内部必要滚动遵守 §18.13，不改变 Shell 行列。后续 §18.15 已冻结 Panel 的 Color Mode/Locale 快捷子集、设备时间信息及 Control Center 的 Route/Settings 归属；本节只拥有其交互事务。显式 Control Center 跳转使用既有 Typed Router 与 Route-navigation 原因，不回抢 Trigger Focus；身份/Auth/Session/Account 仍未准入，User Panel/User Dock 当前仍无源码授权。
 
 ### 18.14.8 Persistent Navigation 的语义目标与限制
 
@@ -12124,6 +12128,206 @@ Drawer/User Panel/Context Menu/Tooltip Open、Active Command Descendant、Invoke
 未来接线会进入 Startup Shell/Router，Initial JS 余量很窄；继续使用 `project.config.ts` 的硬预算 `262144`、最低预留 `8192`、有效上限 `253952` bytes gzip 与现有完整 Bundle Gate，不扩大预算或测量豁免。首次源码任务只可在独立授权后优先最小扩展现有边界；本合同不预准入依赖、通用 Overlay Library/Framework、Sass、新 UI 库或异步平台。
 
 本次只修改 `ARCHITECTURE.md` 及必要文内引用。不改 Router、Shell、Workspace Context Menu、Naive Adapter、UiProvider/Overlay Root、CSS、Registry、Token、Uno、Checker、Manifest/Lockfile、Project Config 或 Budget；不实施 User Dock/User Panel/Bottom Context Bar/Control Center，不搬迁 Breadcrumb，不定义 Auth/Session/Account，不开展 Workbench 视觉重设计，不创建 Test/Browser/Evidence，不启动 Dev Server，不部署或 Release。此冻结不授权自动续作。
+
+## 18.15 Workbench Information Architecture, Global Settings Ownership, User Surface, and Bottom Context Contract
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+CONTRACT_STATUS=FROZEN
+CAPABILITY_STATUS=TARGET_INACTIVE
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_IMPLEMENTATION=NOT_STARTED
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+本节是 Workbench 产品表面及信息归属的唯一合同；§18.13 继续拥有几何，§18.14 拥有 Overlay/Focus/Navigation 事务，§18.11 拥有 Breadcrumb 数据语义与 Workspace 生命周期，各设置域继续拥有自身状态。§37.2.18 只记录本次准入与交付边界。目标冻结不使新表面、Route、控件、Registry 或 Checker 自动 ACTIVE，也不改写既有实施/验收历史。
+
+### 18.15.1 Capability Surface 与 Settings Surface
+
+**Capability surfaces explain the platform. Settings surfaces mutate user/global preference state.**
+
+Capability Page 负责解释与展示平台能力，可消费真实只读投影、架构说明、视觉/组件示例以及局部临时 Preview、Replay、Selected Demo、Expanded Example 或明确标识的模拟呈现。局部操作不得静默提交全局用户/应用偏好，不得冒充持久化配置、Backend 数据或未准入的运行能力；需要修改全局设置时明确引导到 Settings Surface。真实已准入的能力自身操作，例如 Workspace Tab 的激活/关闭/刷新，仍服从自己的领域合同，不因位于 Control Center 外而被禁止。
+
+当前十个 Capability Page 的语义范围为 Overview、Theme/Appearance System、Design Tokens、Runtime Kernel、Router Governance、Storage/Persistence、UI System、Responsive Layout、Engineering、Capabilities。Overview 是能力/工作台概览、导航与摘要，不成为第二个 Settings Dashboard。Persistent Navigation 的主分组描述平台能力、检查/展示页面及以后独立准入的产品/业务工作区；不把真实业务 Route 移入 Control Center。
+
+Control Center 是完整 Settings Surface 的呈现与编排 Owner。User Panel 仅拥有下文显式准入的快捷子集，两处使用同一领域修改边界；不得在 Capability Page、User Panel、Control Center 各自实现一套完整设置。既有 Sidebar 的折叠/分组操作继续使用 Navigation Owner，不被此归属决策误删。
+
+### 18.15.2 全局状态与持久化的唯一领域 Owner
+
+**禁止新增全局 Settings Store。** Control Center 只编排既有领域，不拥有汇总的可变 Settings Object、持久化 Payload、默认值副本或直接 Storage Writer，不新增 Theme/Locale/Navigation/Scroll Schema。跨领域不能建立统一 Save Transaction、补偿队列或另一层状态平台。
+
+| 领域       | 唯一权威与后续消费边界                                                                                    | 保持的责任                                                                                                                                                                                                                                                 |
+| ---------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Appearance | `apps/web/src/app/appearance` 的 Store、Read Boundary、Mutation Boundary；§1.2B.4、§13                    | Theme Reference、Color Mode、Contrast、Material、已准入 Density、Font Scale、Motion；Custom Theme Registry 保持原 Owner。展示读取 Read Boundary/既有只读 Preference Projection，用户修改只经 Mutation Boundary，不取得 Environment 或直接调用 Store Writer |
+| Locale     | `apps/web/src/shared/i18n` 的现有 Runtime/Lifecycle、`useConsoleI18n` 与 Storage-owned Locale Port；§23.6 | 已提交 Locale、Pending Request、消息/方向提交及保存结果；不进入 Appearance Store                                                                                                                                                                           |
+| Navigation | `apps/web/src/app/navigation/navigation-preference.store.ts` 与既有 Preference Port；§19.5.2              | `wideNavigationCollapsed`、`expandedGroupIds`；Frame 保留 Preferred/Effective Expansion 的原有区分                                                                                                                                                         |
+| Scroll     | `apps/web/src/app/scroll/scroll-preference.store.ts` 与既有 Preference Port；§18.12                       | `restoreOnRefresh`；Router/Scroll System 继续独占 Offset、Snapshot 与恢复事务                                                                                                                                                                              |
+| Workspace  | `apps/web/src/app/workspace` 的 Store 与 Workspace Session；§18.11                                        | 开放 route-single 结构、实际活动/实例与现有 Session 行为；不为了填充 Settings Section 发明 Tab Preference                                                                                                                                                  |
+
+现有 Storage Registry、领域 Schema、Key、默认值、预挂载恢复、失败与 Dispose 语义均保留。Control Center、Panel 和 `@platform/ui` 不直接读写 localStorage/sessionStorage，不绕过领域 Port，不把有效派生状态回写为偏好。
+
+### 18.15.3 Appearance 能力页与现有控件的迁移归属
+
+现有 `appearance-management` / `/appearance` 的未来产品责任冻结为 **Theme / Appearance System capability showcase**。Route Name/Path 保持；标题/说明可在单独源码准入时调整，重命名路由身份需要独立迁移决定。本次不修改当前标题、文案或源码。
+
+展示主题家族、Built-in Themes、已校验且可访问的 Custom Theme 能力、Theme Planes/Surfaces、Light/Dark、Standard/Enhanced、Material、Semantic Roles/Status Colors、Default/Hover/Pressed、PAVP Design Token 与 UnoCSS/Naive UI 的关系，以及有用的 Motion/Material/Font Scale 示例。只在相应能力已有准入时提供真实效果；各能力的准入、源码和验收状态仍服从原权威，不因本节展示方向而变化，不发明 Custom Theme 编辑/导入/保存功能。可保留不提交全局偏好的本地 Preview/Replay，不冻结 Hero、卡片布局、列数或视觉风格。
+
+当前 `appearance.vue` 的实际全局控件未来归属精确为：
+
+| 当前操作/值                                | 完整 Settings 归属          | User Panel 快捷准入 |
+| ------------------------------------------ | --------------------------- | ------------------- |
+| 全局 Built-in / 合法 Custom Theme 选择     | Control Center / Appearance | 无                  |
+| Color Mode：`system / light / dark`        | Control Center / Appearance | 同一三值选择        |
+| Contrast：`standard / enhanced`            | Control Center / Appearance | 无                  |
+| Material：`adaptive / reduced / solid`     | Control Center / Appearance | 无                  |
+| Font Scale：`0.9 / 1 / 1.1 / 1.2`          | Control Center / Appearance | 无                  |
+| Motion：`full / reduced / none`            | Control Center / Appearance | 无                  |
+| Reset 当前可见 Appearance Axes             | Control Center / Appearance | 无                  |
+| Locale：`zh-CN / en`（简体中文 / English） | Control Center / General    | 同一两语言选择      |
+| 刷新滚动恢复：`restoreOnRefresh`           | Control Center / Workspace  | 无                  |
+
+当前可见 Reset 经 `commitPreference` 把 Theme、Color Mode、Contrast、Material、Font Scale、Motion 恢复既有 Product Default，**保留当前 Density**，不重置 Locale、Navigation、Scroll、Workspace 或 Custom Theme Registry。迁移必须保留该含义，不能无声改用会重置 Density 的完整 `resetPreference`。Density 继续由 Appearance Schema/Store 拥有，本合同不激活 Density 控件。迁移改变表面归属，不改变任何领域值域、默认值或校验规则。
+
+### 18.15.4 User Dock 与 User Panel
+
+User Dock 是 Navigation 底部持久预留的 Shell Trigger/身份展示区域，处于 Menu Scrollport 外，负责打开 User Panel，不承担完整设置表单。Wide/Regular 使用 Sidebar/Rail 底部，Narrow 使用 Drawer 底部；稳定尺寸、Safe Area、收缩、Anchor 及 Loading/Empty 的空间保留全部服从 §18.13。
+
+身份槽可以先存在。真实 Auth/Session/Account 未独立准入前，首批只使用中性的应用/个人设置入口，不表示存在已登录用户；禁止虚构 Username、Role、Organization、Tenant、头像持久化、Logout 或认证状态，不创建 User/Auth Store、账户设置 Route、权限或租户切换。未来真实身份只能在其准入后填充同一几何槽，Account 内容保持 RESERVED / NOT_ACTIVE。
+
+User Panel 使用 §18.14.7 有名 Anchored Non-modal Panel 的普通控件与顺序 Tab，不是 Command Menu 或小型 Control Center。首批功能**仅**为 Color Mode 三值快捷选择、Locale 两语言快捷选择和 Control Center 入口；可选信息仅为 §18.15.5 的当前设备本地时间及观察到的时区名称/偏移。Theme Gallery、Contrast、Material、Font Scale、Motion、Navigation、Scroll、Workspace 设置不放入 Panel。
+
+Color Mode 调用同一 Appearance Mutation Boundary；Locale 调用同一 `switchLocale`。控件读取领域真实已提交 Preference/Locale；`system` 仍是偏好，不被 Effective Light/Dark 覆盖。Pending Intent 必须与已提交状态明确区分，失败/未保存反馈服从 §18.15.7，不创建第二持久化选择或新通知系统。
+
+Panel 开关、Dismiss、初始 Focus、Outside、Escape、逻辑 Invoker、Profile 失效和 Drawer 子层关系全部继承 §18.14。选择 Control Center 时以 `route-navigation` 原因关闭 Panel，并通过现有 Typed Router/Workspace 激活边界导航；目标 Route Presentation 拥有最终 Focus，Dock Trigger 不插入回焦。Narrow 先关闭子 Panel，再由同一事务关闭 Drawer/释放阻塞，Router 依 §18.14.5 完成呈现；不能绕过共同 Gate 或新增导航 API。
+
+### 18.15.5 设备本地时间与时区观察
+
+若将来展示时间，唯一来源为浏览器/设备当前本地时钟；格式使用**当前已提交应用 Locale**对应的现有 `intlLocale`。时区只显示实际环境报告的名称或当前时刻偏移；缺少名称时可省略名称，不猜测地域、账户时区或 Product Zone，不从 Locale 推导时区。General 可展示同样来源的区域/时间环境信息，但不存在区域/时区选择偏好。
+
+这只是信息展示，不是可信网络校时、业务时间、账户设置或服务状态。无网络时间源、无持久化、无新增 Runtime Configuration 字段；不要求秒显示，更新不得改变 Shell 外层几何，不把时钟放入 Bottom Context Bar。
+
+格式策略由现有应用 I18n Owner 收拢，UI 接收已格式化信息，不在每个组件复制 Intl Options。此处仅冻结设备时钟这一窄消费者，明确区别于 §23.4 尚未准入的业务 Date/Account/Product-zone Formatter Target；不为时钟创建通用日期平台、Account Zone 或第二 Locale Authority。时钟更新资源属于实际呈现 Owner 生命周期，关闭/停用/Dispose 后不得保留无主更新，重新显示读取当前时间。本次不实现时钟或 Formatter。
+
+### 18.15.6 Control Center 的页面、分区与路由目标
+
+Control Center 是正常 PAVP Console Workspace Route；沿用 Route Content、UiPageHeader、Router Focus/Scroll、Workspace Tabs 和现有 KeepAlive 生命周期。它不是 Modal、Drawer、Overlay 或第二应用。初始分区为：
+
+| 分区       | 首批真实内容                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------ |
+| General    | Locale；需要时展示 §18.15.5 的真实区域/时间环境观察，不提供未准入的区域偏好                |
+| Appearance | §18.15.3 的完整 Appearance 控件与相同语义的可见轴 Reset                                    |
+| Workspace  | `restoreOnRefresh`；只有以后确实已准入且有真实 Owner 的工作区偏好才可增加，不发明 Tab 设置 |
+| Navigation | 既有 Wide 折叠偏好与合法 Group ID 的展开偏好；使用原 Store Actions 和 Frame 集成语义       |
+| Account    | RESERVED / NOT_ACTIVE；没有真实设置时省略，不显示假控件或假账户页面                        |
+
+未来唯一 Route 目标如下；当前 Registry 不增加 Record，不改变当前 `17 / 10 / 7` 的总计/Product/Error 数量：
+
+```text
+name=control-center
+pathPattern=/control-center
+sourcePath=apps/web/src/pages/control-center.vue
+componentName=ControlCenterPage
+paramsSchemaId=route-params.none
+querySchemaId=route-query.none
+hashPolicy=none
+workspaceIdentityPolicyId=workspace-identity.route-single
+layout=workspace
+layoutCapabilityId=route-layout.architecture-admin-console
+auth=public
+requiredPermissionIds=[]
+keepAlive=route-instance
+dataPrefetch=none
+errorPolicy=route-boundary
+unsavedChangesPolicy=none
+routeTransitionFamilyId=route-family.architecture-workspace
+blockScrollOwnerId=architecture-console-content-block
+inlineScrollOwnerId=architecture-console-content-inline
+focusContractId=route-focus.architecture-console-page-heading
+scrollRestorationPolicyId=route-scroll.architecture-console-content-history
+titleKey=route-title.control-center
+breadcrumbKey=route-breadcrumb.control-center
+messageKey=route-message.control-center-summary
+telemetryName=route.console.control-center
+```
+
+`messageKey` 继续属于现有 Route Message Registry，不新增 Meta Field；显示名为“控制中心 / Control Center”，摘要和控件 Copy 由既有 Typed I18n Owner 在源码准入时随真实消费者闭合。`componentName` 指页面显式唯一名称，不新增 Route Record Field 或名称映射 Registry。未来 Breadcrumb 在该 Route Record 显式声明根祖先 `console-overview`，形成 `PAVP → 控制中心` 的本地化投影；不借用 Capability Menu Group。
+
+该 Route 在当前无 Auth 的现实下 public/deep-linkable，非 Error Route，成功打开后正常进入 Workspace Tabs；重复进入使用同一个 route-single Workspace，关闭/重开/缓存/刷新服从既有合同。主入口是 User Panel，**首批不进入 `consoleNavigationRegistry` 的持久能力导航**，不增加重复 Sidebar 设置项；深链接仍合法。以后确需提升导航可发现性，须独立产品准入。各 Profile 使用相同 Route，不新增移动端设置路由或状态。
+
+### 18.15.7 已应用、已保存与失败的真实反馈
+
+设置没有统一的“Saved”成功含义。即时呈现必须从领域当前值派生；准备中的请求不是已提交值，控件发出事件也不是保存证据。Control Center 与快捷 Panel 使用同一真实结果，不建立通用 Settings Transaction Store 或新的 Toast/Notification 系统。
+
+| 领域当前源码结果                                                                                              | 后续 Settings 可作出的结论                                                                                                                                                                                       |
+| ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Appearance `commitPreference` 返回 `committed / rejected`                                                     | 此用户偏好提交路径按现有校验、DOM/Store、Storage 写入与失败补偿合同运行；只有 `committed` 才可报告本次提交成功，`rejected` 不显示成功。不把其他只做环境 Reapply 的内部 committed 结果解释为用户偏好已保存        |
+| Locale `switchLocale` 返回 `applied` 并携带 `persistence=saved / failed`，或 `unchanged / failed / cancelled` | 应用成功与保存成功分开；已应用但保存失败明确为未保存，不误报切换完全失败或已保存。`unchanged` 没有新写入，不作为新的保存确认；失败/取消不显示成功。Pending 通过现有 Boundary 表达，实际内容始终跟随已提交 Locale |
+| Navigation 的两个 Store Setter 返回 `void`；Port 有 `saved / failed`，Store 当前丢弃结果                      | UI 可观察真实内存偏好，**不能确认持久化成功**。未来需要强“已保存”反馈时，须先在既有 Navigation Owner 的最小结果边界补齐透传/可观察性；不能由 Control Center 猜测或直接访问 Port/Storage                          |
+| Scroll 的 `setRestoreOnRefresh` 返回 `void`；Port 有 `saved / failed`，Store 当前丢弃结果                     | 与 Navigation 相同：内存值变化不等于已保存。强保存确认前先补齐原 Scroll Owner 的结果边界，不新增 Settings Store 或第二恢复系统                                                                                   |
+| Workspace Session 的写入由既有结构 Watch 拥有                                                                 | 保持现有 Session 行为，不给它编造新的设置项、总保存按钮或强保存确认                                                                                                                                              |
+
+Navigation/Scroll 在 Port 尚未初始化时的 Setter 当前无操作；未来界面必须读实际领域状态，不能用乐观本地副本伪装应用成功。写入失败保留内存选择的既有语义不改。上述结果透传是已确认的未来源码缺口，本次不修改 Store/Port Signature，不发明尚未返回的成功标记。
+
+### 18.15.8 Bottom Context Bar 与精确构建信息
+
+Bottom Context Bar 是 §18.13 预留的持久单行 Chrome，Leading/物理 LTR 左侧承载 Global Breadcrumb / Current Location，Trailing/物理 LTR 右侧仅承载最小构建信息。它不包含 Clock、User Identity、Global Settings 控件、API/Backend Health、Network/Online/Offline 或账户 Badge。时间归 User Panel 的可选信息，不能占用底栏。
+
+本次从 `runtime-configuration-contract.ts`、`runtime-configuration.ts`、`apps/web/vite.config.ts`、根 `package.json`、`project.config.ts`、生成的 Engineering Manifest 及 §34.1 核对含义。首批 Trailing 字段**精确为两项**：
+
+| 字段           | 唯一来源、标签与含义                                                                                                                                                                                                                                          |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `buildVersion` | §34.1 明确以根 `package.json.version` 为 Build Version Authority，Vite Build Boundary 读取并同时注入 Compiled Build Identity / Emitted Runtime Configuration；当前为 `0.0.0`。本地化标签为“构建版本 / Build version”，不是已发布产品版本或 Release Acceptance |
+| `environment`  | Build Boundary 校验后的 Vite Mode，严格为 `development / staging / production`，注入相同两处并在启动时验证一致。标签为“构建环境 / Build environment”；表示这一构建及其匹配运行配置的环境身份，不证明真实生产部署、服务连接或健康                              |
+
+后续 App/Console 呈现可读取现有 `compiledBuildIdentity` 的这两个只读字段；正常 Shell Mount 已经过既有 Runtime Configuration 对 Compiled 三项身份及 Deployment Base 的一致性校验，不重 Fetch 配置，不创建 Provider/Store、第二 Metadata Registry 或另一个版本推导。UI 不直接读 package.json 或猜测 subpackage version。机器值保持原样、标签使用 I18n，不把 `production` 翻译/包装成“已上线”。
+
+`releaseSha` 是另一个独立权威：构建边界一次读取的完整 40 位 Git SHA，并由同一启动合同验证。它不是 Build Version；首批底栏**不显示**此第三项，既有诊断/构建用途保持，不为底栏生成短 SHA、Timestamp、CI Counter 或伪 Release ID。Engineering Manifest 只提供工具链坐标、静态阶段、预算和 Workflow 名称，不是当前 Product/Release/Environment Authority；不把这些近义/无关指标堆入底栏。
+
+两槽遵守既有稳定尺寸与收缩策略，信息缺失、Loading/Unavailable 也保留相同外层空间，不显示猜测值或伪健康状态。字段单行紧凑/截断时须可访问完整权威值，不能只靠颜色传意；装饰分隔符不被重复朗读。配置失败继续进入既有非 Vue Failure Boundary，不为了保留底栏伪造可运行 Shell。
+
+### 18.15.9 Breadcrumb 最终 Host、数据流与 Page Header
+
+**Global Route Breadcrumb 的最终目标 Host 是 Bottom Context Bar 的 Leading Slot，位于 Route Scrollport 外。** 这闭合 §18.11.2、§18.13.9 先前延期的产品放置决定；数据/祖先/地址语义仍唯一由 §18.11.2 拥有。
+
+App/Console Route Presentation 从**当前已提交 Router Destination**、Route Record 上显式 `breadcrumbAncestry` 和既有 I18n 生成只读模型，传给 Shell/UI。不得从 URL Segments、菜单嵌套、Sidebar 视觉层级或另一个 Current Path Store 推导祖先；`packages/ui` 不直接检查 Vue Router 或应用 Registry。UI 只接收语义呈现数据并发出祖先激活意图，由 App 的既有 Typed Registered Destination / Router / Coordinator 重新验证并导航；不暴露 Vendor 类型或建立第二 Navigation API。
+
+呈现为具有本地化 Accessible Name 的 `nav`；当前项为非链接并标记 `aria-current="page"`。只有真实已注册、可用且 Params/Query 完整并通过地址验证的祖先可点击；Canonical Ancestry 中没有目的地的 Group 仅显示文字。Hidden/Detail Route 通过自身显式声明参与，与 Persistent Navigation 可见性无关；禁止拼 Path、补假参数或点击当前页制造自导航。
+
+三种 Profile 均保持一行，不因长路径增高；当前页保持可见，空间允许时保留有意义的前部祖先，中间项可视觉折叠。完整语义路径及合法祖先操作必须通过键盘/触摸可达机制访问，不能只靠 Hover Tooltip；不冻结具体 Overflow Popover/Primitive。RTL 按逻辑 Leading/Trailing 镜像，路径顺序与分隔关系正确，不反转领域数据或制造另一导航序列。
+
+未来源码切换必须在同一个授权切片中把唯一 Breadcrumb Projection 接入 Shell，并原子移除/弃用 Page-level `breadcrumb` Prop 及其真实消费者/直接 Owning Checks；不能留下两个 Global Breadcrumb。当前 Prop 与源码本次不动。`UiPageHeader` 留在 Route Content，负责 `title`、既有 `summary`、唯一 h1 和原 Router Focus Target；说明语义不产生并行的 `description` API。Actions/Structured Metadata 仅在真实消费者提出需求后单独准入，不创建 `UiPageContainer`、第二 Page Header 或 Focus Owner。
+
+Overview 的现有 `<a :href="record.pathPattern">` 是普通文档导航，绕过应用 Typed Navigation；未来修正必须进入既有应用导航边界，不能以整页 Reload 达成工作区切换。本次只记录这个源码缺陷，不修改链接或 Router。
+
+### 18.15.10 响应式、语言与临时状态
+
+精确复用 Narrow / Regular / Wide 和 §18.13 的放置/几何，不新增断点、移动设置 Store 或另一套偏好。Control Center 同一路由；Panel 各 Profile 使用同一快捷动作，Narrow 服从 Drawer 子层事务；Bottom Context Bar 保持相同语义槽。语言、长名、Font Scale、Safe Area、Full/Reduced/None 与 Forced Colors 的目标沿用原合同，不改变 Token/CSS/Motion 机制。
+
+所有未来 Dock/Panel/Control Center/Bottom/Breadcrumb 用户可见 Copy、控件名称与反馈由现有应用 Typed I18n Owner 提供；`@platform/ui` 不硬编码中文/英文，不新增 Locale Authority。机器标识保持原值，时间格式只用已提交 Locale，Pending Language 不改变实际显示权威。
+
+Control Center 只可持有 Selected Section、Expand/Collapse、Pending Feedback 等局部呈现状态，不能复制可变权威偏好。Capability Preview/Replay/Selected Demo/Expanded Example 等临时状态服从正常 Route/Workspace 生命周期：KeepAlive 停用不等于销毁或每次激活强制 Reset；实际 Discard/Refresh/重开按原生命周期处理，不落 Storage，也不冒充持久配置。
+
+禁止为 Panel Open、Control Center Open、当前 Settings Section、Clock/Timezone、Breadcrumb 或 Build Display 增加 Storage Record/Schema/Key、History UI State 或持久化副本。未来 `control-center` 成为合法 route-single Route 后，其路由名可自然进入**既有** `workspace-session.openRouteNames`，这只是已准入开放工作区结构，不是另建 Control Center Open Preference；不保存 Section、完整地址、Clock、Overlay 或页面状态，不由恢复记录自动导航/打开 Panel。现有七条记录的领域格式与默认值不改。
+
+### 18.15.11 当前源码差距与未来静态责任
+
+在干净同步 `main@e594d608ce179b5a9d1d358fc513effc604ca49a` 核对源码的事实为：
+
+- `appearance.vue` 同时持有 Theme/Appearance、Locale、Scroll 全局修改控件与局部 Material/Motion Preview；其他能力页主要消费各自只读投影。目标职责尚未切换。
+- 当前 Route Registry 没有 Control Center；Shell/公共 UI 中没有 User Dock、User Panel 或 Bottom Context Bar。Shell Header 的 PAVP/Console 标题不构成已登录身份。
+- `App.vue` 经 `getRoutePresentation` 将简单 Breadcrumb String 传给页面；`UiPageHeader` 内仍显示 PAVP/当前页。没有本节的 Shell Breadcrumb Host 或 §18.11.2 显式祖先源码实现。
+- Overview 普通 href 路径、Navigation/Scroll 丢弃写入结果已分别记录；未在本次修复。Account/Auth/Organization 和 Backend/API 状态尚未实现，不提供假占位状态或控制。
+- 直接 Owning Checks 当前仍冻结 Appearance 的语言控件位置、Page-level Breadcrumb 传递、精确 Route/Menu Closure 和 Storage Owners；它们通过只能证明当前合同，不代表本节目标已实现。既有 Capability Status Drift 不在本次修正。
+
+未来最小扩展现有 `scripts/architecture/check-architecture-admin-console.ts`、`check-ui-public-components.ts`、`check-router.ts`、`check-i18n.ts`、`check-storage.ts` 及其现有 Policy/Build Owners，保护：①能力页不直接拥有完整全局修改控件，除非有明确例外；②Control Center 消费既有领域边界；③Panel 仅有准入子集；④没有第二 Settings Store/Persistence；⑤Bottom Breadcrumb 来自 Canonical Route Presentation；⑥切换后 Page Header 无重复 Global Breadcrumb；⑦Control Center 不被误加进主能力导航；⑧无虚构账户/API/系统健康；⑨临时 Panel/Settings UI 状态不被擅自持久化。
+
+检查只保护稳定公共/跨文件所有权和精确准入，不冻结私有函数、变量、循环、Parser 或 DOM 算法；不建立第二 Checker Engine。当前 Checker 不修改，未来迁移必须与真实消费者一起更新直接合同，不能削弱其他检查来过门槛。静态检查不能证明真实 Focus、键盘/触摸、截断可达性、几何或视觉结果。
+
+### 18.15.12 Bundle 与本次交付边界
+
+后续 User Dock Trigger、Panel 快捷集成、Bottom Context Bar/Breadcrumb 会进入 Startup Shell，Initial JS 余量很窄。唯一预算权威仍是 `project.config.ts`：硬上限 `262144`、最低预留 `8192`、最大允许实测值 `253952` bytes gzip；全部现有 CSS/Route/Closure 预算及测量规则保持。Control Center 的完整设置内容不属于首绘必需，是合法 Lazy Route；不得把 Shell-critical Dock/Context Bar 正确性藏入伪 Dynamic Import 规避 Initial JS 检查。没有新增依赖、预算扩大或测量豁免。
+
+本次只修改 `ARCHITECTURE.md` 和必要文内引用，不实施 Control Center、Route、Dock/Panel、Bottom/Breadcrumb、Appearance 迁移或 Store 结果透传；不改 Shell、UiPageHeader、Router/Workspace/Scroll/I18n、Layout Registry、Design System/UnoCSS/CSS、Checker、Manifest/Lockfile、Project Config。Auth/Session/Account/Organization、API、Backend 和业务页面继续独立延期。禁止 Browser、Dev Server、Test/Fixture/Mock/Storybook、截图/Trace/Evidence Artifact、部署或 Release。本合同不授权源码续作，文档工作不需要 Owner Runtime Acceptance。
 
 # 19. 状态管理
 
@@ -14199,6 +14403,8 @@ Locale Preference 通过 Storage Registry 持久化并按 Account/Anonymous Merg
 
 Formatter 只使用集中 Typed `Intl` Formatter Registry，不能在 Component 重复 `new Intl.*` Options Literal。Instant、Date-only、Local Date-time、Duration、Money 和 Decimal 遵守 §21.6。Time Zone 默认来自 Typed User/Account Preference；缺失时使用 Runtime Configuration 的 Product Zone Policy，不从 Locale 推导。
 
+上述是业务日期/时区的 Future Target；§18.15.5 独立冻结的设备本地时钟只作环境信息观察，格式仍归现有 I18n Owner，不引入账户时区、Product Zone、Runtime Configuration 字段或通用 Formatter 平台。它不激活本节其他目标，本次仍无时钟源码。
+
 如果 API 表示随 Locale 变化，Locale ID 必须进入 Request Header Registry 和 Query Key；不随 Locale 变化的数据不得因切换 Locale 重取。Server Message 不直接显示，仍映射到本地 Message Key。禁止 Moment/Day.js 基础依赖；Temporal 在明确 Stable/Polyfill Gate 前为 `DEFERRED`。
 
 ## 23.5 I18n Static Enforcement Targets
@@ -14232,7 +14438,9 @@ REAL_CONSUMER=existing ten-route administration console and seven preserved erro
 
 只支持 `zh-CN` 和 `en`，两者均为 `ltr`。默认与唯一 Fallback 都是 `zh-CN`；可恢复已验证的本地选择，`navigator.language`、URL、Runtime Configuration 和账号信息不参与语言选择。英文是用户显式选择或该选择的持久化恢复结果。Route Name、Path、Meta Identifier、Theme ID、Storage Schema、Code、Package Coordinate、Budget、真实 Capability/Implementation Status、用户输入和 Custom Theme Label 保持原值。内置 Theme 的 `Iris` 等名称也是现有源定义的专名；只翻译其周围的“内置”“当前主题”等说明。
 
-唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，复用 `UiSegmentedControl`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用 `pendingLocale.value ?? locale.value` 作为 `modelValue`，继续通过现有 `update:modelValue` 事件调用 `switchLocale`；加载期间选中项表达当前请求目标，实际内容仍使用最后已提交语言。该行以 `aria-busy` 和文本反馈明确“正在切换”，不能把请求选中态当作语言已应用，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
+本次 Localization Landing 的唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，复用 `UiSegmentedControl`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用 `pendingLocale.value ?? locale.value` 作为 `modelValue`，继续通过现有 `update:modelValue` 事件调用 `switchLocale`；加载期间选中项表达当前请求目标，实际内容仍使用最后已提交语言。该行以 `aria-busy` 和文本反馈明确“正在切换”，不能把请求选中态当作语言已应用，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
+
+未来 §18.15 把完整 Locale 控件归入 Control Center / General，并准入 User Panel 的同边界快捷选择；它取代单一 Appearance 页面入口这一未来限制，不改上述 Landing 历史与当前源码。Pending/Committed、保存结果、生命周期、资源/DOM 提交继续由本节拥有，迁移须随真实消费者和直接 Checker 原子接线。
 
 该行不是 Appearance Axis，不加入 `data-appearance-axis`、Appearance Schema、Pinia Appearance Store、Effective Appearance Snapshot 或外观 Reset。语言切换不得调用 Router Navigation、Reload、Mount/Unmount、Motion Replay 或 Appearance Mutation；不得把 Locale 加入 `RouterView`、Page、Shell、Provider 或 Preview 的 VNode Key。保留现有节点身份、输入/选择、外观、菜单展开状态、页内临时状态及当前仍有效的焦点；不创建第二 Page Tree、Focus/Scroll Owner 或语言专用 Shell。
 
@@ -18171,6 +18379,33 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 唯一允许修改为 `ARCHITECTURE.md`，直接引用仅同步 §9.11、§18.11.12、§18.13.9、§25.2。Router/Shell/Workspace/Naive/Overlay Root/CSS/Registry/Checker/Dependency/Budget 源码均不修改；User Dock/User Panel/Bottom Context Bar/Control Center、Breadcrumb 搬迁、Auth/Session 与 Workbench 视觉重设计均未开始。本次不操作 Browser/Dev Server、不创建 Test/Evidence、不部署或 Release，也不需要 Owner Runtime Acceptance。
 
 只有合同完整且授权 Diff 通过 Focused Prettier、`git diff --check`、`mise exec -- pnpm check:arch`、`mise exec -- pnpm check:policy` 和完整 `mise exec -- pnpm verify`，再次 `git fetch --no-prune origin` 后 Local HEAD/origin/main/Remote main 仍为预期基线，才明确授权仅 Stage 本文档、检查完整 Staged Diff、创建一个标题为 `docs: 冻结 Overlay 焦点与导航事务合同` 的中文 Commit 并普通 Push `origin/main`，再按 §31.3 核对精确 Commit Static Verification/CodeQL 终态及三端 SHA。此记录不预先宣称验证、Commit、Push 或 CI 已成功；交付后停止。
+
+---
+
+## 37.2.18 Workbench Information Architecture, Global Settings Ownership, User Surface, and Bottom Context Contract
+
+Owner 在干净同步的 `main@e594d608ce179b5a9d1d358fc513effc604ca49a` 上授权一个限定架构冻结与 Git 交付。Styling Governance（§15.6–§15.7、§26）、Geometry/Layout Stability（§18.13）、Overlay/Focus/Navigation Transaction（§18.14）均已提交；下一项待闭合的是产品/信息归属。当前 Appearance 的全局修改与能力展示混用、各领域真实独立 Owner、尚不存在的 Workbench 表面及无账号/后端事实，已按实际源码重新核对。
+
+```text
+WORK_PACKAGE_KIND=ARCHITECTURE_ONLY
+OWNER_AUTHORIZATION=EXPLICIT_INFORMATION_ARCHITECTURE_FREEZE_AND_SCOPED_GIT_DELIVERY
+CONTRACT_STATUS=FROZEN
+STYLING_GOVERNANCE=FROZEN_AND_COMMITTED
+GEOMETRY_LAYOUT_STABILITY=FROZEN_AND_COMMITTED
+OVERLAY_FOCUS_NAVIGATION_TRANSACTION=FROZEN_AND_COMMITTED
+WORKBENCH_INFORMATION_ARCHITECTURE=FROZEN
+SOURCE_IMPLEMENTATION=NOT_STARTED
+CHECKER_IMPLEMENTATION=NOT_STARTED
+CURRENT_SOURCE_TARGET_COMPLIANCE=NOT_ESTABLISHED
+ACCOUNT_AUTH_CONTENT=DEFERRED
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+§18.15 冻结 Owner 的 Workbench 产品方向：能力页解释/展示；Control Center 编排完整设置；User Dock 在 Navigation 底部打开只含准入快捷项及可选设备时间的 User Panel；Global Breadcrumb 最终属于 Bottom Context Bar Leading Slot，Trailing 首批精确展示权威 `buildVersion/environment`。Appearance 控件逐项迁移归属、可见 Reset 保留 Density、`control-center` / `/control-center` 的普通 route-single 目标与主导航不可见决定、领域应用/保存结果差异、正常 Workspace 生命周期、I18n/响应式/Storage/预算/Checker 责任均已冻结。账号/认证/组织/API/业务状态没有因此准入。
+
+唯一允许修改为 `ARCHITECTURE.md` 及必要直接引用；不改任何应用/公共 UI/领域 Store/Schema/Router/Workspace/Scroll/Style/Registry/Checker/Dependency/Budget 源码，不搬迁 Breadcrumb，不开始 Workbench 实施，不操作 Browser/Dev Server，不创建 Test/Evidence，不部署或 Release。此前所有实施/验收历史保持，不把新目标设为 ACTIVE。
+
+合同完整且授权 Diff 通过 Focused Prettier、`git diff --check`、`mise exec -- pnpm check:arch`、`mise exec -- pnpm check:policy` 和完整 `mise exec -- pnpm verify` 后，再次 `git fetch --no-prune origin`，要求 Local HEAD/origin/main/Remote main 仍精确为预期基线且无其他变更，才明确授权只 Stage 本文档、检查完整 Staged Diff、创建一个标题为 `docs: 冻结 Workbench 信息架构与设置归属` 的中文 Commit 并普通 Push `origin/main`。随后按 §31.3 核对精确 Commit 的 Static Verification/CodeQL 终态及三端 SHA；本记录不预先宣称这些操作成功。文档任务无需 Owner Runtime Acceptance，Git 交付后停止，不授权后继任务。
 
 ---
 
