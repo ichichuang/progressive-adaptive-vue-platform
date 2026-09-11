@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import type { UiLocale } from '../components/contracts'
-import type { EffectiveAppearanceState } from '@platform/design-system'
+import type { UiAppearanceSnapshot } from '@platform/design-system'
 
 import PavpNaiveConfigProvider from '../adapters/naive/PavpNaiveConfigProvider.vue'
 
 defineOptions({ name: 'UiProvider' })
 
 defineProps<{
-  readonly appearance: EffectiveAppearanceState
+  readonly appearance: UiAppearanceSnapshot
   readonly locale: UiLocale
 }>()
 

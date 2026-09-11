@@ -370,7 +370,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         Object.freeze({ name: 'locale', type: 'UiLocale', required: true, defaultValue: null }),
         Object.freeze({
           name: 'appearance',
-          type: 'EffectiveAppearanceState',
+          type: 'UiAppearanceSnapshot',
           required: true,
           defaultValue: null,
         }),

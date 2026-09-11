@@ -1,13 +1,13 @@
-import type { EffectiveAppearanceState } from '@platform/design-system'
+import type { UiAppearanceSnapshot } from '@platform/design-system'
 import { inject, readonly, shallowRef, type App, type InjectionKey, type ShallowRef } from 'vue'
 
 export interface AppearanceReadBoundary {
-  readonly snapshot: Readonly<ShallowRef<Readonly<EffectiveAppearanceState>>>
+  readonly snapshot: Readonly<ShallowRef<Readonly<UiAppearanceSnapshot>>>
 }
 
 interface AppearanceReadBoundaryProviderHandle {
   readonly boundary: AppearanceReadBoundary
-  update(next: Readonly<EffectiveAppearanceState>): void
+  update(next: Readonly<UiAppearanceSnapshot>): void
   dispose(): void
 }
 
@@ -26,9 +26,9 @@ const appearanceReadBoundaryKey: InjectionKey<AppearanceReadBoundary> = Symbol(
 )
 
 export function createAppearanceReadBoundary(
-  initialSnapshot: Readonly<EffectiveAppearanceState>,
+  initialSnapshot: Readonly<UiAppearanceSnapshot>,
 ): AppearanceReadBoundaryProviderHandle {
-  const snapshot = shallowRef<Readonly<EffectiveAppearanceState>>(readonly(initialSnapshot))
+  const snapshot = shallowRef<Readonly<UiAppearanceSnapshot>>(readonly(initialSnapshot))
   const boundary: AppearanceReadBoundary = Object.freeze({
     snapshot: readonly(snapshot),
   })

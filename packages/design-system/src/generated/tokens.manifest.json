@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 10,
+  "schemaVersion": 11,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -3563,11 +3563,19 @@
       "contrastEndpointId": "color.status.info",
       "alphaContractId": null,
       "unocss": {
-        "generatorKind": "exact-rule",
+        "generatorKind": "property-specific-exact-rule",
         "family": "color",
         "key": "status-info",
-        "classes": ["bg-status-info"],
-        "allowedCssProperties": ["background-color"]
+        "bindings": [
+          {
+            "className": "bg-status-info",
+            "cssProperty": "background-color"
+          },
+          {
+            "className": "border-status-info",
+            "cssProperty": "border-color"
+          }
+        ]
       }
     },
     {
@@ -3635,11 +3643,19 @@
       "contrastEndpointId": "color.status.success",
       "alphaContractId": null,
       "unocss": {
-        "generatorKind": "exact-rule",
+        "generatorKind": "property-specific-exact-rule",
         "family": "color",
         "key": "status-success",
-        "classes": ["bg-status-success"],
-        "allowedCssProperties": ["background-color"]
+        "bindings": [
+          {
+            "className": "bg-status-success",
+            "cssProperty": "background-color"
+          },
+          {
+            "className": "border-status-success",
+            "cssProperty": "border-color"
+          }
+        ]
       }
     },
     {
@@ -3707,11 +3723,19 @@
       "contrastEndpointId": "color.status.warning",
       "alphaContractId": null,
       "unocss": {
-        "generatorKind": "exact-rule",
+        "generatorKind": "property-specific-exact-rule",
         "family": "color",
         "key": "status-warning",
-        "classes": ["bg-status-warning"],
-        "allowedCssProperties": ["background-color"]
+        "bindings": [
+          {
+            "className": "bg-status-warning",
+            "cssProperty": "background-color"
+          },
+          {
+            "className": "border-status-warning",
+            "cssProperty": "border-color"
+          }
+        ]
       }
     },
     {
@@ -3779,11 +3803,19 @@
       "contrastEndpointId": "color.status.error",
       "alphaContractId": null,
       "unocss": {
-        "generatorKind": "exact-rule",
+        "generatorKind": "property-specific-exact-rule",
         "family": "color",
         "key": "status-error",
-        "classes": ["bg-status-error"],
-        "allowedCssProperties": ["background-color"]
+        "bindings": [
+          {
+            "className": "bg-status-error",
+            "cssProperty": "background-color"
+          },
+          {
+            "className": "border-status-error",
+            "cssProperty": "border-color"
+          }
+        ]
       }
     },
     {
@@ -4443,11 +4475,19 @@
     {
       "roleId": "color.status.info",
       "cssVariable": "--ui-color-status-info",
-      "generatorKind": "exact-rule",
+      "generatorKind": "property-specific-exact-rule",
       "family": "color",
       "key": "status-info",
-      "classes": ["bg-status-info"],
-      "allowedCssProperties": ["background-color"]
+      "bindings": [
+        {
+          "className": "bg-status-info",
+          "cssProperty": "background-color"
+        },
+        {
+          "className": "border-status-info",
+          "cssProperty": "border-color"
+        }
+      ]
     },
     {
       "roleId": "color.status.info.hover",
@@ -4479,11 +4519,19 @@
     {
       "roleId": "color.status.success",
       "cssVariable": "--ui-color-status-success",
-      "generatorKind": "exact-rule",
+      "generatorKind": "property-specific-exact-rule",
       "family": "color",
       "key": "status-success",
-      "classes": ["bg-status-success"],
-      "allowedCssProperties": ["background-color"]
+      "bindings": [
+        {
+          "className": "bg-status-success",
+          "cssProperty": "background-color"
+        },
+        {
+          "className": "border-status-success",
+          "cssProperty": "border-color"
+        }
+      ]
     },
     {
       "roleId": "color.status.success.hover",
@@ -4515,11 +4563,19 @@
     {
       "roleId": "color.status.warning",
       "cssVariable": "--ui-color-status-warning",
-      "generatorKind": "exact-rule",
+      "generatorKind": "property-specific-exact-rule",
       "family": "color",
       "key": "status-warning",
-      "classes": ["bg-status-warning"],
-      "allowedCssProperties": ["background-color"]
+      "bindings": [
+        {
+          "className": "bg-status-warning",
+          "cssProperty": "background-color"
+        },
+        {
+          "className": "border-status-warning",
+          "cssProperty": "border-color"
+        }
+      ]
     },
     {
       "roleId": "color.status.warning.hover",
@@ -4551,11 +4607,19 @@
     {
       "roleId": "color.status.error",
       "cssVariable": "--ui-color-status-error",
-      "generatorKind": "exact-rule",
+      "generatorKind": "property-specific-exact-rule",
       "family": "color",
       "key": "status-error",
-      "classes": ["bg-status-error"],
-      "allowedCssProperties": ["background-color"]
+      "bindings": [
+        {
+          "className": "bg-status-error",
+          "cssProperty": "background-color"
+        },
+        {
+          "className": "border-status-error",
+          "cssProperty": "border-color"
+        }
+      ]
     },
     {
       "roleId": "color.status.error.hover",

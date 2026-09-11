@@ -3,6 +3,7 @@ import {
   applyAppearance,
   explicitThemePreferenceSchema,
   installCustomThemeBank,
+  projectUiAppearance,
   resolveColorMode,
   resolveMaterial,
   resolveThemeReference,
@@ -10,6 +11,7 @@ import {
   type CustomThemeValidationResult,
   type EffectiveAppearanceState,
   type ExplicitThemePreference,
+  type UiAppearanceSnapshot,
 } from '@platform/design-system'
 import { defineStore } from 'pinia'
 
@@ -168,7 +170,7 @@ function restoreAppearanceDom(target: HTMLElement, capture: AppearanceDomCapture
 }
 
 function commitAppearanceTransition(
-  store: AppearanceStoreState,
+  store: AppearanceStoreState & { $patch(state: AppearanceStoreState): void },
   target: HTMLElement,
   candidatePreference: unknown,
   candidateCustomThemeRegistry: readonly CustomThemeRegistryEntry[] | null,
@@ -204,7 +206,16 @@ function commitAppearanceTransition(
     return { status: 'rejected' }
   }
 
-  const effectiveAppearance = deriveEffectiveAppearance(validatedPreference.data, environment)
+  let effectiveAppearance: Readonly<UiAppearanceSnapshot>
+
+  try {
+    effectiveAppearance = projectUiAppearance(
+      deriveEffectiveAppearance(validatedPreference.data, environment),
+      resolution.entry,
+    )
+  } catch {
+    return { status: 'rejected' }
+  }
   let preferenceCapture: CapturedPreferenceStorageValue | undefined
   let registryCapture: CapturedCustomThemeRegistryStorageValue | undefined
 
@@ -272,8 +283,10 @@ function commitAppearanceTransition(
       completedWrite = true
     }
 
-    store.preference = validatedPreference.data
-    store.customThemeRegistry = committedRegistry
+    store.$patch({
+      preference: validatedPreference.data,
+      customThemeRegistry: committedRegistry,
+    })
     return { status: 'committed' }
   } catch {
     try {
@@ -313,8 +326,7 @@ function commitAppearanceTransition(
       }
     }
 
-    store.preference = previousState.preference
-    store.customThemeRegistry = previousState.customThemeRegistry
+    store.$patch(previousState)
     return { status: 'rejected' }
   }
 }

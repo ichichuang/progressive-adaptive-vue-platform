@@ -662,7 +662,7 @@ export function validateCompleteBuiltInThemes({
     ActiveNamedContrastRegistry.schemaVersion,
   ]
 
-  if (activeContractVersions.join(',') !== '3,1,1,1') {
+  if (activeContractVersions.join(',') !== '3,2,1,1') {
     throw new Error('Complete Theme role-contract and registry schema versions are incomplete.')
   }
 

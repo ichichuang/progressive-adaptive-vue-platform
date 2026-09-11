@@ -64,7 +64,7 @@ const wind4ShadowModifierRepresentatives = ['50', '[50%]', '$opacity'] as const
 type PlatformUnoMapping = (typeof platformUnoMappings)[number]
 type PlatformClassMapping = Extract<
   PlatformUnoMapping,
-  { readonly generatorKind: 'exact-rule' | 'theme-entry' }
+  { readonly generatorKind: 'exact-rule' | 'theme-entry' | 'property-specific-exact-rule' }
 >
 
 function isClassMapping(mapping: PlatformUnoMapping): mapping is PlatformClassMapping {
@@ -73,7 +73,13 @@ function isClassMapping(mapping: PlatformUnoMapping): mapping is PlatformClassMa
 
 const classMappings = platformUnoMappings.filter(isClassMapping)
 const themeMappings = classMappings.filter((mapping) => mapping.generatorKind === 'theme-entry')
-const registeredPublicClasses = new Set<string>(classMappings.flatMap((mapping) => mapping.classes))
+const registeredPublicClasses = new Set<string>(
+  classMappings.flatMap((mapping) =>
+    mapping.generatorKind === 'property-specific-exact-rule'
+      ? mapping.bindings.map((binding) => binding.className)
+      : mapping.classes,
+  ),
+)
 
 function layoutThreshold(id: LayoutTokenId): string {
   const record = layoutRegistry.records.find((candidate) => candidate.id === id)
@@ -131,6 +137,10 @@ function escapeRegularExpression(value: string): string {
 function semanticCssProperty(mapping: PlatformUnoMapping): string {
   if (mapping.generatorKind === 'container-variant') {
     return 'width'
+  }
+
+  if (mapping.generatorKind === 'property-specific-exact-rule') {
+    return mapping.bindings[0].cssProperty
   }
 
   return (
@@ -286,10 +296,13 @@ export const wind4RestrictedThemeSafelistPaths = themeMappings.map(
 
 export const wind4PublicVariableBypassCandidates: readonly Wind4PublicVariableBypassCandidate[] =
   platformUnoMappings.flatMap((mapping) => {
-    const property = semanticCssProperty(mapping)
+    const properties =
+      mapping.generatorKind === 'property-specific-exact-rule'
+        ? mapping.bindings.map((binding) => binding.cssProperty)
+        : [semanticCssProperty(mapping)]
     const shorthandVariable = `$${mapping.cssVariable.slice(2)}`
 
-    return [
+    return properties.flatMap((property) => [
       {
         className: `[${property}:var(${mapping.cssVariable})]`,
         roleId: mapping.roleId,
@@ -305,7 +318,7 @@ export const wind4PublicVariableBypassCandidates: readonly Wind4PublicVariableBy
         roleId: mapping.roleId,
         template: 'public-variable:shortcut',
       },
-    ]
+    ])
   })
 
 const directThemeGrammarPatterns = themeMappings.flatMap((mapping) => {

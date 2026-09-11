@@ -1,6 +1,7 @@
 import type { Format } from 'style-dictionary/types'
 
 import { builtInThemeIds, type BuiltInThemeDefinition } from '../../schema/complete-theme.schema'
+import { formatOpaqueSrgbColor } from '../../schema/css-color'
 import { legacyBuiltInThemeIds } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
@@ -240,8 +241,36 @@ export function themeRegistryDocument(result: TokenBuildResult) {
   } as const
 }
 
+export function statusSupplementaryDocument(result: TokenBuildResult) {
+  return Object.fromEntries(
+    themeColorModes.map((mode) => [
+      mode,
+      Object.fromEntries(
+        themeContrasts.map((contrast) => [
+          contrast,
+          Object.fromEntries(
+            ['info', 'success', 'warning', 'error'].map((tone) => {
+              const path = `color.palette.status.${mode}.${contrast}.${tone}.supplementary`
+              const token = result.tokens.find((record) => record.path === path)
+
+              if (token?.type !== 'color' || token.visibility !== 'build-only') {
+                throw new Error(`${path}: canonical Status Supplementary source is missing.`)
+              }
+
+              return [tone, formatOpaqueSrgbColor(tokenValueToCss('color', token.resolvedValue))]
+            }),
+          ),
+        ]),
+      ),
+    ]),
+  )
+}
+
 export function formatThemeRegistryTypeScript(result: TokenBuildResult): string {
-  const document = themeRegistryDocument(result)
+  const document = {
+    ...themeRegistryDocument(result),
+    statusSupplementary: statusSupplementaryDocument(result),
+  }
   const representative = document.builtInEntries[0]
   if (representative === undefined)
     throw new Error('The shared Status Bank requires a Built-in Theme.')
@@ -480,6 +509,10 @@ const generatedThemeFamily = {
 } as const
 
 function mappingLine(mapping: UnoCssMappingRecord): string {
+  if (mapping.generatorKind === 'property-specific-exact-rule') {
+    return `  ${typeScriptLiteral(mapping, 2)},`
+  }
+
   if (mapping.generatorKind === 'container-variant') {
     return `  {
     roleId: ${stringLiteral(mapping.roleId)},
@@ -534,12 +567,28 @@ export function unoCssProjection(result: TokenBuildResult): UnoCssProjection {
       continue
     }
 
-    for (const className of mapping.classes) {
+    const mappingClasses =
+      mapping.generatorKind === 'property-specific-exact-rule'
+        ? mapping.bindings.map((binding) => binding.className)
+        : mapping.classes
+
+    for (const className of mappingClasses) {
       if (classes.has(className)) {
         throw new Error(`${mapping.roleId}: UnoCSS class "${className}" collides.`)
       }
 
       classes.add(className)
+    }
+
+    if (mapping.generatorKind === 'property-specific-exact-rule') {
+      for (const binding of mapping.bindings) {
+        rules.push({
+          className: binding.className,
+          declarations: { [binding.cssProperty]: `var(${mapping.cssVariable})` },
+          roleId: mapping.roleId,
+        })
+      }
+      continue
     }
 
     if (mapping.generatorKind === 'exact-rule') {

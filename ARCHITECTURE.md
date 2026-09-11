@@ -5186,7 +5186,7 @@ Field Order 与 Interface 精确相同。Semantic Order 精确为 Themes `neutra
 
 #### Appearance Workspace Theme Preview Projection
 
-当前六色 Preview 以 §1.2B.0G 和实际 Source 为准；§13.12 只冻结未来从相同 Resolved Theme Plane 追加四个平铺 Default Status Swatch 的十字段目标，保持下列 Owner 与 Consumer Boundary。
+下列五色接口保留早期投影历史，§1.2B.0G 的 Control 增量形成原六色 Preview；当前消费者切片已按 §13.12 从同一 Resolved Theme Plane 追加四个平铺 Default Status Swatch。唯一当前十字段形状由 §13.12 拥有，下列 Owner 与 Consumer Boundary 保持。
 
 ```text
 OWNER=packages/design-system/src/console/appearance-workspace-theme-projection.ts
@@ -5972,7 +5972,7 @@ type CapabilityStatus =
 | Complete Built-in Theme four-plane documents | `ACTIVE` | generated Built-in Registry and Theme Bank |
 | Reference-only Preference and Theme Registry | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
 | Standard and Enhanced Theme Plane projection | `ACTIVE` | generated Theme Bank and stable Public bindings |
-| Semantic Status Color System | `TARGET_INACTIVE` | §13.12 records the statically complete, unstaged first source slice and implemented schemaVersion-10 Manifest; §37.2.14 records the bounded Owner authorization and static evidence; the consumer slice remains not started and the complete capability is not end-to-end active |
+| Semantic Status Color System | `TARGET_INACTIVE` | §13.12 records the committed foundation and statically complete, unstaged consumer slice with Manifest schemaVersion 11; §37.2.14 records the bounded Owner authorization; runtime/visual Owner acceptance remains pending and the complete capability is not end-to-end active |
 | Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | future Public Role Admission |
 | Continuous Density Scale application | `DEFERRED` | independent personalization admission |
 | Pinia appearance orchestration | `ACTIVE` | `apps/web` exact two-field Appearance Store |
@@ -8076,7 +8076,7 @@ Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role 
 
 ### Public Output Completeness
 
-§13.12 是 Semantic Status Color System 的唯一增量合同。已获 Owner 授权并静态完成的第一源码切片采用 26 Color / 53 Public Roles、53 个 UnoCSS Mapping（新增十六个为单属性 `exact-rule`）与 Manifest schemaVersion 10；§1.2B.0G 的 10/37 及下列早期 Registry 和计数保留历史边界。第一片源码完成不激活第二消费者切片或完整 Semantic Status 能力。
+§13.12 是 Semantic Status Color System 的唯一增量合同。已提交第一源码切片采用 26 Color / 53 Public Roles、53 个 UnoCSS Mapping 与 Manifest schemaVersion 10；当前已获 Owner 授权并静态完成的消费者切片仅将四个 Base Status Mapping 扩展为 `property-specific-exact-rule`，实现精确二十个 Status Utility，并使用 Manifest schemaVersion 11。§1.2B.0G 的 10/37 及下列早期 Registry 和计数保留历史边界；完整能力仍等待 Owner Runtime/Visual Acceptance。
 
 下方精确 Registry 保留早期 36-role Baseline；其后 Control 与 Semantic Status 增量分别按 §1.2B.0G、§13.12 合并，当前 Public CSS、`tokens.ts`、`token-names.ts` 和 53 个 UnoCSS Mapping 保持同一完整角色集合。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
 
@@ -8911,7 +8911,7 @@ Primitive Palette、Private Theme Bank、`ui-internal` Material Token 和未来 
 
 本合同修订只作用于 `packages/design-system/src/generated/tokens.manifest.json`。Theme `planes` 是完整的 Canonical Authored Theme Contract 与审查面；Theme Bank Records 是这些作者值到 CSS/Runtime Bank Binding 的确定性生成投影。Manifest 必须直接保留作者数据，对可精确派生的投影使用紧凑描述，避免重复序列化；该区分不限于 Semantic Status。
 
-Generated Token Manifest 的当前 `schemaVersion` 已从 `9` 升至 `10`，原因是 Theme Record 的 `bank` 序列化 Shape 不兼容改变；该表示已在 §13.12 第一源码切片实现并通过完整静态验证。除 `bank` 的内部结构外，Theme Record 仍精确保持上列字段集合、Identity 和顺序。每个 Theme 继续直接序列化 `planes.light.standard`、`planes.light.enhanced`、`planes.dark.standard`、`planes.dark.enhanced`；§13.12 第一切片中每个 Plane 恰好包含全部 26 个 Public Color Role，不能缩为十角色，也不能把十六个 Status Binding 移入另一个必须外查的 Manifest 表或 Artifact。
+Generated Token Manifest 在 §13.12 第一源码切片从 `schemaVersion=9` 升至 `10`，原因是 Theme Record 的 `bank` 序列化 Shape 不兼容改变。当前消费者切片因 UnoCSS Property-specific Mapping Shape 升至 `11`，完整保留此 Bank 表示。除 `bank` 的内部结构外，Theme Record 仍精确保持上列字段集合、Identity 和顺序。每个 Theme 继续直接序列化 `planes.light.standard`、`planes.light.enhanced`、`planes.dark.standard`、`planes.dark.enhanced`；每个 Plane 恰好包含全部 26 个 Public Color Role，不能缩为十角色，也不能把十六个 Status Binding 移入另一个必须外查的 Manifest 表或 Artifact。
 
 每个 `themes[].bank` 按以下字段顺序恰好序列化两个字段：
 
@@ -8922,7 +8922,7 @@ Generated Token Manifest 的当前 `schemaVersion` 已从 `9` 升至 `10`，原�
 }
 ```
 
-schemaVersion 10 必须完全移除 `themes[].bank.records`，不能保留 Legacy Duplicate Field。Descriptor 不含 Resolved Value、Authored Value 副本、Public Binding Array、Bank Variable Array、逐主题 Status Table 或任何额外字段；这是 Canonical 去重要求，不是可选压缩策略。
+schemaVersion 10 引入、当前 11 继续保持的规则是完全移除 `themes[].bank.records`，不能保留 Legacy Duplicate Field。Descriptor 不含 Resolved Value、Authored Value 副本、Public Binding Array、Bank Variable Array、逐主题 Status Table 或任何额外字段；这是 Canonical 去重要求，不是可选压缩策略。
 
 逻辑 Bank 派生顺序精确为：先 `light` 后 `dark`；每个 Mode 先 `standard` 后 `enhanced`；每个 Plane 按顶层 `activePublicRoles` 的 Canonical Generated Order，筛选既有 `isActivePublicColorRole` 合同，即 `visibility=public`、`tokenType=color`、`themePlaneApplicability=target-required-after-atomic-cutover` 同时成立的记录。不能对筛选结果另行排序。
 
@@ -8940,7 +8940,7 @@ schemaVersion 10 必须完全移除 `themes[].bank.records`，不能保留 Legac
 
 `suffix` 只移除 `publicBinding` 开头恰好一次的 `--ui-color-`；必须先验证此前缀，缺失即拒绝，不能替换中间字符串、猜测另一命名或创建 Fallback。这沿用现有 Theme Bank Variable Contract，未创建新的 CSS Namespace。
 
-给定一个合法 schemaVersion-10 Theme Record 和顶层 `activePublicRoles`，上述七字段的旧逻辑 Bank Record 序列必须完整可重建：除 JSON 排版外，逐字段值与顺序均精确相同，Authored String 不归一化、不解引用、不修色。这是 Information-preserving Contract；它不把 Runtime 所需的 `resolvedValue` 伪称为旧 Manifest 字段，Runtime/CSS 仍通过既有 Token Resolver 获取已验证 Resolved Value。
+给定一个合法的当前 Theme Record 和顶层 `activePublicRoles`，上述七字段的旧逻辑 Bank Record 序列必须完整可重建：除 JSON 排版外，逐字段值与顺序均精确相同，Authored String 不归一化、不解引用、不修色。这是 Information-preserving Contract；它不把 Runtime 所需的 `resolvedValue` 伪称为旧 Manifest 字段，Runtime/CSS 仍通过既有 Token Resolver 获取已验证 Resolved Value。
 
 源码实现必须在既有 Design System build/generated Ownership 内维护一个 Canonical Derivation Helper；当前实现是 `packages/design-system/src/build/formats/typescript.ts` 中的 `deriveThemeBankRecords()`，复用该文件拥有的 Theme Bank Projection 规则。Helper 的私有名称或分解不是新公共合同；任何需要逻辑 Bank Records 的 Manifest Consumer/Validator 均复用该 Owner，不能在 UnoCSS Config、ESLint、Stylelint、Design System Console 或 Architecture Checks 各自复制派生算法或命名规则。只使用 Tokens、Public Roles、UnoCSS Mappings、Contrasts 的 Consumer 继续只读取所需 Family，不耦合 Theme Bank 表示；不为浏览器页面新暴露 Build Helper 或私有 Bank。
 
@@ -8948,9 +8948,9 @@ schemaVersion 10 必须完全移除 `themes[].bank.records`，不能保留 Legac
 
 Runtime/CSS Theme Bank 语义保持完整：每主题四个 26-role Plane 仍拥有 104 个 Binding；Generated Runtime Registry 可按既有 Consumer 需要提供其原有完整 Bank 结果并在模块内确定性物化 Records，Theme Bank CSS 继续发出全部必需变量和公共 Binding，Custom Installer 与同步 First Paint 仍安装完整适用 Bank。Manifest Descriptor 不进入这些运行流程，也不缩小 Allowlist。
 
-仅 Generated Token Manifest 发生本次结构版本变化。Complete Theme `schemaVersion=3`、Semantic Status Role Contract 目标 `3`、Token Source Schemas、Application Preference 与 Custom Theme Persistence Schemas、Generated Runtime Registry 公共语义全部保持。当前第一源码切片已原子生成并同步消费 schemaVersion 10，不同时输出 schemaVersion 9/10，不增加兼容 Artifact；schemaVersion-9 的历史 Shape、Count 与 Byte Evidence 保留为历史。
+Bank 规范化只改变 Generated Token Manifest 的结构版本。Complete Theme `schemaVersion=3`、Semantic Status Role Contract `3`、Token Source Schemas、Application Preference 与 Custom Theme Persistence Schemas、Generated Runtime Registry 公共语义全部保持。第一源码切片原子生成并同步消费 schemaVersion 10，当前消费者切片只生成并同步消费 11，不并行输出历史版本，不增加兼容 Artifact；历史 Shape、Count 与 Byte Evidence 保留为历史。消费者切片的 PublicRoleRegistry 结构 Schema 变化由 §13.12 单独拥有。
 
-八个顶层 Record Families 与 §13.12 的 400-record 方程保持；被移除的嵌套 Bank Objects 从来不是独立顶层 Family。不增加 `themeBankRecords`、`statusBank`、`themeBindings` 或其他 Family。`32768`-byte Manifest Hard Limit、`node-zlib-gzip-sync` 的全部参数、`stableJson`、UTF-8、Canonical Ordering 与单个末尾 LF 保持。当前完整生成结果为 400 Records、291696 raw UTF-8 bytes、14722 bytes gzip；相对原始 3366-byte Canonical Baseline 的实际 Delta 为 11356 bytes。相对受阻候选 46710 bytes 回收 31988 bytes，Hard Limit 余量 18046 bytes。该结果由既有 Generator、固定压缩 Profile 和完整静态 Gate 验证，不是预测值。
+八个顶层 Record Families 与 §13.12 的 400-record 方程保持；被移除的嵌套 Bank Objects 从来不是独立顶层 Family。不增加 `themeBankRecords`、`statusBank`、`themeBindings` 或其他 Family。`32768`-byte Manifest Hard Limit、`node-zlib-gzip-sync` 的全部参数、`stableJson`、UTF-8、Canonical Ordering 与单个末尾 LF 保持。第一片完整生成结果为 400 Records、291696 raw UTF-8 bytes、14722 bytes gzip；相对原始 3366-byte Canonical Baseline 的实际 Delta 为 11356 bytes，相对受阻候选 46710 bytes 回收 31988 bytes，Hard Limit 余量 18046 bytes。当前消费者切片仍为 400 Records，实测 293126 raw UTF-8 bytes、14874 bytes gzip；相对第一片增加 152 bytes，相对 Canonical Baseline 的 Delta 为 11508 bytes，Hard Limit 余量 17894 bytes。两次结果均由既有 Generator、固定压缩 Profile 和完整静态 Gate 验证，不是预测值。
 
 ## 11.5 Material Token Scope
 
@@ -10174,7 +10174,7 @@ Runtime-created Custom Theme 不生成用户可控 Selector、Class Name、CSS T
 
 Installer 不接受 CSS Property Name、Selector、Alias 或任意 Style Text；Custom Theme ID 永不进入 CSS Selector Construction。Built-in Selector 与 Custom Inline Bank 共享后续 Effective Mode Bank 和 Contrast Binding，因此 Public CSS Variable 与 UnoCSS Class 完全不变。
 
-Private Plane Bank 和 Effective Bank 都是 `ui-internal`：只进入 Runtime CSS 与 §11.4 冻结的 Active Built-in Theme Manifest Shape，不进入 Public TypeScript、Token Names 或 UnoCSS。§11.4 的 schemaVersion-10 Manifest 以 Complete Planes 与精确 Descriptor 表达可派生 Bank，取消序列化 `bank.records`，不取消本节完整 CSS/Runtime Bank。Runtime Custom Instance 只形成 Private Ephemeral Registration Metadata，不修改 Build Manifest、不成为 Public API，也不落入生成文件。
+Private Plane Bank 和 Effective Bank 都是 `ui-internal`：只进入 Runtime CSS 与 §11.4 冻结的 Active Built-in Theme Manifest Shape，不进入 Public TypeScript、Token Names 或 UnoCSS。§11.4 当前 schemaVersion-11 Manifest 保留 10 引入的 Complete Planes 与精确 Descriptor，以此表达可派生 Bank，取消序列化 `bank.records`，不取消本节完整 CSS/Runtime Bank。Runtime Custom Instance 只形成 Private Ephemeral Registration Metadata，不修改 Build Manifest、不成为 Public API，也不落入生成文件。
 
 禁止 Theme × Mode × Contrast Compound Selector、完整 Cartesian CSS、Value-diff 省略、相等值推断、Theme Inheritance 或运行时颜色合成。Density 与 Material 保持独立，只能使用各自的单轴 Selector；它们不得进入 Color Bank 或 Color Plane。Theme Bank Output 继续受 CSS Budget 和 Generated Drift Gate 约束。
 
@@ -10334,18 +10334,24 @@ Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置�
 
 ## 13.12 Semantic Status Color System
 
-本节是唯一完整的语义状态色合同，来自 Owner 确认的 Design System 核心基础缺口。它冻结语义、所有权、兼容性和生成边界，保留受阻候选及 Manifest 合同修订历史，并记录 Owner 后续授权的第一源码切片静态完成。§37.2.14 管理这次有界续接；第二消费者切片未开始，完整能力不因第一片完成而激活。
+本节是唯一完整的语义状态色合同，来自 Owner 确认的 Design System 核心基础缺口。它冻结语义、所有权、兼容性和生成边界，保留受阻候选、Manifest 及接口合同修订历史，并记录已提交的第一源码切片与 Owner 后续授权的消费者源码静态完成。§37.2.14 管理本次有界实施；消费者修改未暂存，完整能力仍等待 Owner Runtime/Visual Acceptance。
 
 ```text
 CAPABILITY=PAVP_SEMANTIC_STATUS_COLOR_SYSTEM
 CAPABILITY_STATUS=TARGET_INACTIVE
 CONTRACT_STATUS=FROZEN
-REPOSITORY_IMPLEMENTATION=FIRST_SOURCE_SLICE_IMPLEMENTED_UNSTAGED
+REPOSITORY_IMPLEMENTATION=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE
 SOURCE_STATIC_COMPLETION=PASS
 SOURCE_SLICE=STATICALLY_COMPLETE
-SOURCE_IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_FIRST_SLICE_ONLY
-CONSUMER_SLICE=NOT_STARTED
-NAIVE_SEMANTIC_STATUS_PROJECTION=NOT_IMPLEMENTED
+SOURCE_IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_CONSUMER_SLICE_ONLY
+CONSUMER_SLICE=STATICALLY_COMPLETE
+NAIVE_SEMANTIC_STATUS_PROJECTION=IMPLEMENTED
+RUNTIME_ACCEPTANCE=PENDING_OWNER_ACCEPTANCE
+VISUAL_ACCEPTANCE=PENDING_OWNER_ACCEPTANCE
+STAGED=NO
+COMMITTED=NO
+PUSHED=NO
+RELEASED=NO
 SPECIFICATION_BASELINE=f7ca671f1ec16516699ea82af941c7a3c24e2adf
 SPECIFICATION_ALLOWED_FILE=ARCHITECTURE.md
 NEXT_CANONICAL_WORK_PACKAGE=NONE
@@ -10354,19 +10360,19 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 
 ### Current source and approved target
 
-原规格及本次已提交基线实查：Complete Theme 外层 `schemaVersion=3`、`roleContractVersion=2`；十四个 Built-in Theme、四个 Plane、每 Plane 十个公共色，合计 560 个显式绝对值、0 个 Alias。十色由 §1.2B.0G 的 Action、Control、Page、Panel、Primary/Secondary/On-action Text、Border、Focus、Scrim 拥有；全部 Public Roles 为 37，UnoCSS Mapping Records 为 37，Named Contrast Records 为 14。该已提交基线的 `tokens/primitive/color.tokens.json` 只有十一条普通 Primitive Color，没有 Semantic Status Bank；以下两段保留第一源码候选受阻及随后的文档修订历史。
+原规格时的已提交基线实查：Complete Theme 外层 `schemaVersion=3`、`roleContractVersion=2`；十四个 Built-in Theme、四个 Plane、每 Plane 十个公共色，合计 560 个显式绝对值、0 个 Alias。十色由 §1.2B.0G 的 Action、Control、Page、Panel、Primary/Secondary/On-action Text、Border、Focus、Scrim 拥有；全部 Public Roles 为 37，UnoCSS Mapping Records 为 37，Named Contrast Records 为 14。该历史基线的 `tokens/primitive/color.tokens.json` 只有十一条普通 Primitive Color，没有 Semantic Status Bank；以下四段保留第一源码候选受阻、文档修订及第一片静态完成历史。
 
 Owner 后续授权的第一源码候选在 `main@efeede2b28622c6011511b940ccacc3f88274746` 之上形成 35 个未暂存 Source/Generated 修改，已写入本节预定的 Bank、Role、Theme、Compatibility、Contrast、生成链路及十六个最小 UnoCSS 映射语义，但没有取得静态完成。候选 Initial JS 为 `259337` bytes gzip；schemaVersion-9 Manifest 为 `46710` bytes gzip，超过 `32768` 上限 `13942` bytes。前次表示压缩续接在进一步修改前确认 `CANONICAL_CONTRACT_CONFLICT_MANIFEST_BUDGET` 并原样保留候选。
 
 冲突证据来自现有 Canonical Profile：`themes` 是主导 Family，逐 Theme `bank.records` 是主导重复表示；候选 `manifestDocument()` 与已提交基线相同，没有额外 Bank 字段。旧七字段完整可由 Planes、Public Roles、固定顺序与既有命名规则重建。当时仅冻结 §11.4 的无损 Manifest 去重合同，不改 80 个 Status 值、原有 560 个 Theme 值或任何候选文件，不把合同修订当成体积通过或源码完成。
 
-Owner 随后明确授权接续原 35-file 候选与该本地架构修订，完成第一源码切片。当前 Manifest schemaVersion 10、单一逻辑 Bank 派生、共享 Status Runtime Registry 与紧凑 First Paint 数据均已实现；十四主题全部 1456 条七字段逻辑 Bank 与实际生成 Runtime 完整投影逐字段、逐顺序相等。80 个 Status 原值、十六角色与映射、二十条新增 Contrast、原有 560 个 Theme 字符串、十四主题 ID/Label/顺序及 Default Iris 均保持；CSS 仍完整，Contract 1/2 → 3 和 Current Contract 3 的同步首屏/Runtime 正负探针通过，Storage 无迁移写入。完整 `mise exec -- pnpm verify` 已退出 0。
+Owner 随后明确授权接续原 35-file 候选与该本地架构修订，完成第一源码切片。当时 Manifest schemaVersion 10、单一逻辑 Bank 派生、共享 Status Runtime Registry 与紧凑 First Paint 数据均已实现；十四主题全部 1456 条七字段逻辑 Bank 与实际生成 Runtime 完整投影逐字段、逐顺序相等。80 个 Status 原值、十六角色与映射、二十条新增 Contrast、原有 560 个 Theme 字符串、十四主题 ID/Label/顺序及 Default Iris 均保持；CSS 仍完整，Contract 1/2 → 3 和 Current Contract 3 的同步首屏/Runtime 正负探针通过，Storage 无迁移写入。完整 `mise exec -- pnpm verify` 已退出 0。
 
-最终 Manifest 为 `14722` bytes gzip；Initial JS/CSS 为 `252146` / `33063` bytes gzip。Initial JS 比受阻 `259337` 回收 `7191` bytes，比干净 `252773` 基线减少 `627` bytes；Hard Budget `262144` 余量 `9998` bytes，扣除 `8192` 强制 Reserve 后可用 `1806` bytes。依赖、预算、压缩口径和 27 个 Dynamic Roots 均不变。Consumer Slice 仍 `NOT_STARTED`，Naive Status Projection、UiStatusBadge Semantic Status 消费与 Appearance Status Preview 均 `NOT_IMPLEMENTED`；整体能力仍 `TARGET_INACTIVE / NOT_END_TO_END_ACTIVE`，Runtime/Visual/Accessibility Acceptance 未执行，修改全部未暂存。
+第一片最终 Manifest 为 `14722` bytes gzip；Initial JS/CSS 为 `252146` / `33063` bytes gzip。Initial JS 比受阻 `259337` 回收 `7191` bytes，比干净 `252773` 基线减少 `627` bytes；Hard Budget `262144` 余量 `9998` bytes，扣除 `8192` 强制 Reserve 后可用 `1806` bytes。依赖、预算、压缩口径和 27 个 Dynamic Roots 均不变。该次源码交接时 Consumer Slice 为 `NOT_STARTED`，Naive Status Projection、UiStatusBadge Semantic Status 消费与 Appearance Status Preview 为 `NOT_IMPLEMENTED`；整体能力为 `TARGET_INACTIVE / NOT_END_TO_END_ACTIVE`，Runtime/Visual/Accessibility Acceptance 未执行，修改全部未暂存。第一片后续已提交，当前消费者交接事实见本节末尾。
 
 已安装 `naive-ui@2.45.2` 的 `es/_styles/common/{light,dark}.mjs` 定义 Primary、Info、Success、Warning、Error，每族有 Default、Hover、Pressed、Suppl。`es/button/styles/light.mjs` 与 `es/button/src/Button.mjs` 消费这些值并可调用 `changeColor`；`es/alert/styles/light.mjs` 对状态色调用 `changeColor` / `composite`。Alert 是核查依赖行为的例子，不因本规范获得 PAVP 组件准入。
 
-当前 `packages/ui/src/adapters/naive/pavp-naive-theme.ts` 用 PAVP 值覆盖已准入的表面、文字、边框、焦点和 Action/Control 消费，并覆盖 `primaryColorHover/Pressed/Suppl`；它有意没有覆盖 parser-sensitive `common.primaryColor`。Info / Success / Warning / Error 的全部十六个 Common 字段也没有覆盖，仍使用 Naive Light/Dark 默认色。因此当前切换 PAVP Theme 并不使全部语义状态色成为 PAVP-owned；不得把现有 Primary 组件覆盖误报为完整 Common 颜色所有权。
+`packages/ui/src/adapters/naive/pavp-naive-theme.ts` 继续用 PAVP 值覆盖已准入的表面、文字、边框、焦点和 Action/Control 消费，并覆盖 `primaryColorHover/Pressed/Suppl`；它仍不覆盖 parser-sensitive `common.primaryColor`。第一片交接时 Info / Success / Warning / Error 的十六个 Common 字段使用 Naive Light/Dark 默认色；当前消费者切片已全部接到同一 `UiAppearanceSnapshot.statusColors` 的绝对 RGBA 值，无 Vendor Status Fallback。该窄覆盖不扩大其他 Common 字段或 Vendor Component 的准入。
 
 已安装 `@unocss/core@66.7.5`、`@unocss/preset-wind4@66.7.5` 和 `unocss@66.7.5` 支持 Theme-driven 值、Static/Generated Rules 与 Variants。PAVP 有意在此机制上收窄为 PublicRoleRegistry 驱动的语义映射，未把普通 Wind 色阶作为应用设计权威。[UnoCSS Rules](https://unocss.dev/config/rules) 与 [Theme](https://unocss.dev/config/theme) 说明工具能力；当前精确行为以安装源码、`src/unocss/preset.ts` 和 `src/build/formats/typescript.ts` 为准。
 
@@ -10465,7 +10471,7 @@ Contract 2 → 3 自动注入仅限十六个 Status Role。现有 Preference `sc
 
 唯一目标管线为 `PAVP Theme / Semantic Status Bank → validated resolved Plane → private Naive Theme Projection → admitted Naive components`。`packages/ui` 不解析 Theme JSON、不查询任意 DOM CSS Variable、不建立 Theme Registry、不读取 Build Manifest。Generated Built-in `definition.planes` 将含 Authored Alias，不能把它当成绝对色；解析依据是同一个 Registry Owner 的 `bank.records[].resolvedValue` 或等价已验证 Resolved Plane，Custom 使用同一 Validator 接受的 Absolute Plane。
 
-未来消费者切片在 `packages/design-system/src/runtime/ui-appearance-projection.ts` 增加纯 `projectUiAppearance`，并仅从 `@platform/design-system` 公共根提供该函数与 `UiAppearanceSnapshot` Type，供现有 Appearance 编排和 UI Provider 传输使用。`SemanticStatusAppearanceProjection` 只命名既有四族二十值传输结构，不增加公共根 Export。当前唯一目标形状冻结为：
+消费者切片已在 `packages/design-system/src/runtime/ui-appearance-projection.ts` 实现纯 `projectUiAppearance`，并仅从 `@platform/design-system` 公共根提供该函数与 `UiAppearanceSnapshot` Type，供现有 Appearance 编排和 UI Provider 传输使用。`SemanticStatusAppearanceProjection` 只命名既有四族二十值传输结构，不增加公共根 Export。当前已实现形状冻结为：
 
 ```ts
 type SemanticStatusAppearanceProjection = {
@@ -10509,7 +10515,7 @@ Naive Common 映射精确为下表十六项，全部取 `statusColors` 已解析
 | Warning | `warningColor ← warning.default` | `warningColorHover ← warning.hover` | `warningColorPressed ← warning.pressed` | `warningColorSuppl ← warning.supplementary` |
 | Error | `errorColor ← error.default` | `errorColorHover ← error.hover` | `errorColorPressed ← error.pressed` | `errorColorSuppl ← error.supplementary` |
 
-Default/Hover/Pressed 对应本节公共 Role，Supplementary 对应共享 Bank 的同 Color Mode/Contrast 叶子；只有上文已获准的 Built-in 同 Tuple Supplementary Override 可以替代该私有值。新规则在消费者切片原子落地时，仅对这十六个绝对值字段优先于 §1.2B.6 的 parser-sensitive Common 全面禁写条款；当前文档任务保留其源码缺席检查。`primaryColor`、`tableHeaderColor`、`cardColor`、`modalColor`、`popoverColor`、`dividerColor` 等其余保护和既有 Action/Control 处理不随本准入改变。Checker 须验证四族完整覆盖、已验证 PAVP 来源和无 `var(...)`/Alias/Vendor Fallback，不能简单删除 Parser Guard。
+Default/Hover/Pressed 对应本节公共 Role，Supplementary 对应共享 Bank 的同 Color Mode/Contrast 叶子；只有上文已获准的 Built-in 同 Tuple Supplementary Override 可以替代该私有值。消费者切片仅对这十六个绝对值字段优先于 §1.2B.6 的 parser-sensitive Common 全面禁写条款，Owning Checker 已同步校验完整映射与 PAVP 来源。`primaryColor`、`tableHeaderColor`、`cardColor`、`modalColor`、`popoverColor`、`dividerColor` 等其余保护和既有 Action/Control 处理不随本准入改变。Checker 须验证四族完整覆盖、已验证 PAVP 来源和无 `var(...)`/Alias/Vendor Fallback，不能简单删除 Parser Guard。
 
 Common 映射不自动证明所有 Vendor Component/Variant 的最终颜色已正确。每个实际准入的语义消费者必须审查其 `self()` / Peer / 颜色合成，并通过组件级 Override 把 Filled 状态的 Text/Icon 接到对应 `onStatus`；尤其不能让 Warning 沿用全局白色 `baseColor`。不得为此改动其他 Primary/Neutral 白色含义。Vendor 生成的透明 Alert 背景等不是已验证的 Public Status Fill，必须在真实消费者准入时核对实际组合，不能宣称本节二十个 Pair 已证明任意合成对比度。
 
@@ -10517,7 +10523,7 @@ Common 映射不自动证明所有 Vendor Component/Variant 的最终颜色已�
 
 所有公共状态变量由既有 Token/CSS/Theme Bank 生成，Theme 切换只换值不换名。PAVP CSS 组件消费这些变量或 `tokens`，不能内联状态含义的红/绿/黄/蓝常量；AI 与应用源码表达语义状态时不得用 `text-red-*`、`bg-green-*`、`border-yellow-*`、`text-blue-*` 等绕过 Status Contract。Charts、Data Visualization、Illustration 和 Brand Artwork 可按其自身已准入颜色权威处理，不在本状态禁令中自动获得新权限。
 
-当前一个 Public Role 有且只有一个 UnoCSS Mapping Record，`classes` 中每个 Class 都写整份 `allowedCssProperties`。目标保留既有 `exact-rule`、`theme-entry`、`container-variant`，只为本节四个 Base Role 增加一个明确的 `property-specific-exact-rule` 分支：
+当前一个 Public Role 有且只有一个 UnoCSS Mapping Record，既有 `exact-rule` 的 `classes` 中每个 Class 都写整份 `allowedCssProperties`。消费者切片保留既有 `exact-rule`、`theme-entry`、`container-variant`，只为本节四个 Base Role 实现一个明确的 `property-specific-exact-rule` 分支：
 
 ```ts
 interface StatusUtilityBinding {
@@ -10548,9 +10554,9 @@ interface StatusPropertyProjection {
 
 ### PAVP components, preview, first paint and Forced Colors
 
-后续切换后的 PAVP 语义 UI 使用同一状态系统。`UiStatusBadge` 当前 Tone 是 `active,complete,deferred,inactive,not-started`，目前只用 Primary/Secondary Neutral Text 区分；真正成功完成含义的 `complete` 消费必须改用 Success Fill/On-status 或合格的 Success 标记。未来真实 Info/Warning/Error Tone 必须消费对应 Role，不能采用 Naive 默认色。`ACTIVE`、`DEFERRED`、`TARGET_INACTIVE` 等 Capability Lifecycle Label 不自动代表成功/错误；必须保留领域含义。本规格不改其 Public API、布局或设计，也不预建未来 Tone。
+PAVP 语义 UI 使用同一状态系统。`UiStatusBadge` 当前 Tone 仍为 `active,complete,deferred,inactive,not-started`；全部现有 Consumer 已按实际语义核查，仅真正成功完成含义的 `complete` 使用 Success Fill、On-status Foreground 与 Default Success Border，其余四个 Tone 保持原生命周期视觉权威。未来真实 Info/Warning/Error Tone 必须消费对应 Role，不能采用 Naive 默认色。`ACTIVE`、`DEFERRED`、`TARGET_INACTIVE` 等 Capability Lifecycle Label 不自动代表成功/错误；必须保留领域含义。本切片不改 Public API 或预建未来 Tone。
 
-Appearance Preview 当前恰好六个平铺 Swatch：`surfacePage,surfacePanel,actionPrimary,controlPrimary,borderDefault,focusRing`。未来保留这些字段及其语义，仅追加同类的四个平铺 Default Status Swatch；兼容性与紧凑投影的一致结构是该扩展的依据，不增加嵌套 `status` 对象。`AppearanceThemePreviewSwatches` 的当前唯一目标形状为：
+Appearance Preview 保留原六个平铺 Swatch：`surfacePage,surfacePanel,actionPrimary,controlPrimary,borderDefault,focusRing`，消费者切片仅追加同类的四个平铺 Default Status Swatch。兼容性与紧凑投影的一致结构是该扩展的依据，不增加嵌套 `status` 对象。`AppearanceThemePreviewSwatches` 的当前已实现形状为：
 
 ```ts
 interface AppearanceThemePreviewSwatches {
@@ -10569,7 +10575,7 @@ interface AppearanceThemePreviewSwatches {
 
 四个新增字段按 `statusInfo,statusSuccess,statusWarning,statusError` 顺序，分别取当前 Plane 的 `color.status.info`、`color.status.success`、`color.status.warning`、`color.status.error` 已解析 Default 值。Built-in 使用同一 Theme Registry 的 Resolved Theme Bank 值，Custom 使用当前通过验证的 Absolute Plane 值；不能让 `{color.palette...}` 等 Authored Alias 到达 Preview，也不能另写展示 Palette。
 
-Compact Theme Card 的该十字段投影不增加 Hover、Pressed、Supplementary 或 On-status 字段；真实消费者需要更丰富值时使用上文 Resolved Semantic Status Projection，无真实需求时仍不新增页面、Inspector API 或 Supplementary 展示。本次只修订目标 Shape，不修改 Appearance UI。
+Compact Theme Card 的该十字段投影不增加 Hover、Pressed、Supplementary 或 On-status 字段；真实消费者需要更丰富值时使用上文 Resolved Semantic Status Projection，无真实需求时仍不新增页面、Inspector API 或 Supplementary 展示。消费者切片只在既有 Appearance Theme Preview 中显示四个新增 Swatch，并由现有 zh-CN/en Catalog 提供标签，未重设计页面。
 
 状态公共变量必须与现有颜色一起进入 `tokens.css`、`critical-theme.css`、Generated Theme Bank 和同步 `appearance-init.js`。保留当前 Built-in 与已准入 Custom 首屏恢复能力；Contract 1/2 → 3、Exact Allowlist、Alpha、Named Contrast 与失败语义同时进入其现有只读路径。依赖 UI 使用前就有完整 26-role 安全基线，禁止第二个 Post-mount Injector 或暂时回退到 Vendor Status。
 
@@ -10579,7 +10585,7 @@ Forced Colors 独立于普通 Theme Palette。System Color Keyword 不写入 Com
 
 ### Synchronized outputs, budgets and implementation sequence
 
-未来源码需同步的精确既有 Owner / Surface 如下，不在本规格任务修改：
+两片源码对应的既有 Owner / Surface 如下；此表是所有权与同步约束，不能作为再次修改已完成基础的授权：
 
 | Owner / source surface | Required synchronization |
 | --- | --- |
@@ -10596,7 +10602,7 @@ Forced Colors 独立于普通 Theme Palette。System Color Keyword 不写入 Com
 
 表内 `src/` 与 `tokens/` 默认为 `packages/design-system/`，UI 名称沿用当前 `packages/ui/` Owners；应用边界沿用 `apps/web/src/app/appearance/`。不能以该清单为理由重写无关源码。
 
-| Exact count | Committed baseline | Current first-slice source |
+| Exact count | Pre-foundation baseline | Current foundation and consumer source |
 | --- | ---: | ---: |
 | Public Color Roles | 10 | 26 |
 | Total Public Roles / UnoCSS Mapping Records | 37 / 37 | 53 / 53 |
@@ -10610,7 +10616,7 @@ Forced Colors 独立于普通 Theme Palette。System Color Keyword 不写入 Com
 
 Manifest 保留 §11.4 的八个 Record Families，JSON Family Key 精确依次为 `tokens,activePublicRoles,unoCssMappings,namedContrasts,alphaContracts,densities,themes,firstPaint`；数量精确为 `241,53,53,34,1,3,14,1`，总计 `400`。Supplementary 已计在 Primitive Token Records 内，不另计 Public Role 或第九种 Family；删除嵌套 `themes[].bank.records` 不改变方程。
 
-本次修订取代原第一片保留 Manifest `schemaVersion=9` 的要求：第一片修复目标为 §11.4 的 `schemaVersion=10` Complete Planes + Derived Bank Descriptor Shape。第一片继续使用既有单属性 Mapping，PublicRoleRegistry 结构 Schema 保持 `1`；未来第二片引入新的 Mapping Record Shape 时须再按真实不兼容变化升级 Manifest 结构版本，不能复用本次 `10`，其 PublicRoleRegistry 结构 Schema 由 `1` 升至 `2`、Role Contract 不重复升级的合同保持。原已提交 `9 / 252 / 16198 bytes` 及受阻候选 `9 / 400 / 46710 bytes` 均保留为历史/候选证据；后续实际 Gzip 与 Expected Delta 必须从完整生成结果测量、记录并验证，不预填预测值。
+第一片修复以 §11.4 的 `schemaVersion=10` Complete Planes + Derived Bank Descriptor Shape 取代原 `9` 要求，保留单属性 Mapping 与 PublicRoleRegistry 结构 Schema `1`。当前消费者切片因新的 Property-specific Mapping Record Shape 实际升级 Manifest 至 `11`、PublicRoleRegistry 结构 Schema 至 `2`，Role Contract 保持 `3`。原已提交 `9 / 252 / 16198 bytes`、受阻候选 `9 / 400 / 46710 bytes` 及第一片 `10 / 400 / 14722 bytes` 均保留为历史证据；当前实测为 `11 / 400 / 14874 bytes`，相对第一片 Record Delta 为 `0`、Gzip Delta 为 `152` bytes，由原有精确 Expected Delta Gate 验证。
 
 当前 `project.config.ts` 的 Initial JS Hard Budget 为 262144 bytes，既有 `check-bundle.ts` 还要求至少保留 8192 bytes Headroom，有效最高 253952 bytes；§18.11.12 的历史测量 252562 bytes 仅余 1390 bytes 有效空间，不当成本任务的实时测量。Semantic Status 不授权增加任何 Bundle/Manifest Budget、降低 Headroom、改压缩规则或放宽 Gate。
 
@@ -10618,15 +10624,27 @@ Manifest 保留 §11.4 的八个 Record Families，JSON Family Key 精确依次�
 
 推荐的第一源码切片是一个原子基础：Bank、十六 Public Roles 与 Semantic Source、Role Contract 3、全部 Built-in Alias、Contract 1/2 兼容、Contrast、Generated Registry/Token/CSS/首屏/Manifest、Count Projection 与直接 Source/Checker 同步。它还必须为十六角色生成最小 UnoCSS 映射：Base/Hover/Pressed 各一个稳定 `bg-status-*`，On-status 一个 `text-on-status-*`，沿用现有单属性 `exact-rule`；Family/Key 用上文最终名称，不能引入临时类。当前 `A = R = T = N = U = M` 和 Source Coverage 使这些 Mapping/Generated Output 无法留到第二片；但现有一属性映射足以支持该稳定子集，因此不需要提前扩展多属性模型或消费者。
 
-推荐的第二独立消费者切片是：保留七轴顶层字段并追加 `statusColors` 的单一 `UiAppearanceSnapshot` 与 Naive 四族映射；四个 Base Role 的 property-specific Mapping 扩展及四个 `border-status-*` Utility；真实 PAVP 状态组件切换；平铺十字段 `AppearanceThemePreviewSwatches`；对应 UI/Consumer Governance Checks。第一片不包含 Naive 接线、UiStatusBadge 或 Appearance 视觉扩展；Status 整体能力在消费者未完成前不能声明端到端 Active。Owner 已明确授权并完成第一片源码的静态收口；第二片仍须独立源码授权，两片的 Git 操作均须独立授权，本段不授予 Stage/Commit/Push/Release 权限。
+第二独立消费者切片已按 Owner 明确授权静态完成：保留七轴顶层字段并追加 `statusColors` 的单一 `UiAppearanceSnapshot` 与 Naive 四族映射；四个 Base Role 的 property-specific Mapping 扩展及四个 `border-status-*` Utility；真实 PAVP 状态组件切换；平铺十字段 `AppearanceThemePreviewSwatches`；对应 UI/Consumer Governance Checks。第一片未包含这些消费者；当前 Status 整体能力仍须 Owner Runtime/Visual Acceptance 才能判断端到端激活。本次只授权源码与静态验证，全部消费者修改未暂存，本段不授予 Stage/Commit/Push/Release 或后继任务权限。
 
-第一片生成闭包完成时就运行既有 Build/Bundle 测量；第二片在最小 Bank + Role Contract + Active Runtime Projection + Naive Mapping 接通后立即早测 Bundle，再进行剩余消费者工作。越界必须停止并报告，不能等全部 UI 做完再调预算。每次实际源码 Landing 还须完整 `mise exec -- pnpm verify`；其静态通过不代替真实 Theme 切换、视觉、Forced Colors、辅助功能或 Release 验收。原规格任务只交付合同；当前第一片源码静态结果与仍未开始的第二片按本节上述记录分别判断。
+第一片生成闭包完成时就运行既有 Build/Bundle 测量；第二片在最小 Bank + Role Contract + Active Runtime Projection + Naive Mapping 接通后立即早测 Bundle，再进行剩余消费者工作。越界必须停止并报告，不能等全部 UI 做完再调预算。每次实际源码 Landing 还须完整 `mise exec -- pnpm verify`；其静态通过不代替真实 Theme 切换、视觉、Forced Colors、辅助功能或 Release 验收。原规格、第一片和当前消费者片的证据分别记录，不互相替代。
 
 ### Bounded source-repair completion
 
 以下修复边界已由 Owner 在当前续接中独立授权，并在原 35 文件候选上完成：实现 Manifest schemaVersion 10 的规范化 Bank 表示、无损派生 Validator 和直接 Consumer 同步；压缩同一 Generated Runtime Theme Registry 的共享 Status 表示；压缩既有 First Paint 的共享 Status/Compatibility 数据。First Paint 保持同步、Contract 1/2/3 验证与兼容、完整 Custom/Built-in Bank 安装、Safety Baseline、无 Storage Write/Delete 和唯一 Initializer，不通过删减正确性要求省体积。
 
 该独立源码任务再生成后必须先测完整 Manifest 与 Initial JS，分别满足 `Manifest <= 32768` bytes gzip、`Initial JS <= 253952` bytes gzip 且保留至少 `8192` bytes Headroom，再进行广泛 Owning Checker Closure；任一失败即停止，不改预算、压缩口径或 Dynamic-root Policy。后续源码完整静态 Gate 仍需 `mise exec -- pnpm verify` 成功。当前第一片已依次通过两个早期尺寸门槛和完整 `mise exec -- pnpm verify`；本段不授予 Git、第二消费者切片或自动后继任务执行权。
+
+### Consumer source and static completion
+
+本次从干净同步的 `main@69403862ac3900fa52e7454d672a3a891b954bca` 开始；Fetch Without Prune 后本地 HEAD、origin/main 与 Remote Main 精确相等，Ahead/Behind `0/0`、Index 为空，无 Untracked/Unmerged。源码修改前实测 Initial JS/CSS 为 `252146 / 33063` bytes gzip、Manifest 为 `14722` bytes gzip。最小 Runtime Projection、单一快照与 Naive Common 接通后立即执行 Build/Bundle，Initial JS 为 `253142` bytes gzip，较基线增加 `996` bytes，Hard Headroom `9002`、扣除强制 Reserve 后余 `810` bytes；该门槛通过后才继续 Badge、Preview 与 UnoCSS 消费者。
+
+当前单一不可变 `UiAppearanceSnapshot` 保留七轴顶层字段，仅追加四族各五个 RGBA 值；Store 仍只有 Preference/Custom Registry 两字段。Built-in 从同一 Generated Registry 的 Resolved Bank 读取公共状态值，Custom 从其已验证或 Rebound 的 Contract-3 Plane 读取；十六个 Supplementary 值由同一 Generator 从 Canonical Build-only Source 输出私有紧凑投影，不回写 Theme 或 Persistence。既有 Color.js Boundary 负责整数 RGBA 转换及拒绝非法输入，实际投影颜色通过全部二十条 Status Contrast 与十二条严格增强比较。App 在既有同步事务中先准备、再应用 CSS/Root Attributes、原子发布同一快照，未增加 Store、Ref、Listener 或 Provider。
+
+Naive Common 十六字段使用该快照；已核查的 Button 四族 Default/Hover/Pressed/Focus Foreground 使用各自 On-status，识别边界保留 Default Status Border，Focus/Disabled 合同保持。普通非错误 Form Field 省略 `validationStatus`，现有错误反馈使用 Error Fill/On-status 及 Error Border/Caret，不把普通有效输入标成 Success；Form Controller、Touched/Dirty 与 Submit 语义不变。Badge 只切换真实 `complete`，Preview 使用同一投影的四个 Default 值。Public Role/Mapping 仍为 `53/53`，精确二十个 Status Utility、正常 Hover/Active Variant 与原有绕过禁止均通过既有 Owning Checks。
+
+完成全部消费者与直接 Checker 同步后，完整 `mise exec -- pnpm verify` 退出 `0`，才更新本节交接状态。最终 Initial JS/CSS 为 `253410 / 33063` bytes gzip，较本次基线分别增加 `1264 / 0` bytes；Initial JS Hard Headroom 为 `8734` bytes，扣除 `8192` 强制 Reserve 后余 `542` bytes。Manifest `schemaVersion=11`、`14874` bytes gzip、400 Records，精确 Bank Descriptor、104 Bindings/Theme 和 1456 逻辑 Records 均保持；27 个 Dynamic Roots 不变。80 个 Canonical Status 值与原 560 个 Theme 字符串的修改前后确定性 Hash 相等，二十条 Status Named Contrast 定义未改，Complete Theme Schema 3、Role Contract 3、迁移、依赖、预算、Router/Workspace/Scroll 及 API/Auth 边界均未改变。
+
+`REPOSITORY_IMPLEMENTATION=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE`、`CONSUMER_SLICE=STATICALLY_COMPLETE`；Runtime/Visual Acceptance 为 `PENDING_OWNER_ACCEPTANCE`，Accessibility Acceptance 未执行，完整能力仍 `TARGET_INACTIVE / NOT_END_TO_END_ACTIVE`。Owner 手动验收须覆盖 Built-in/Custom、Light/Dark、Standard/Enhanced 切换，CSS/Naive 同步及无 Alias，真实完成与生命周期 Badge 区分，十字段 Theme Card 与 Custom Status 值，普通有效 Form 中性、Error 正确、Warning Foreground 可读及 Forced Colors。`STAGED=NO`、`COMMITTED=NO`、`PUSHED=NO`、`RELEASED=NO`；下一可能阶段仅是 Owner 验收，本任务在源码交接后停止。
 
 ---
 
@@ -10791,7 +10809,7 @@ Compact 模式允许视觉高度低于 44px，但外层命中区域仍应安全�
 
 # 15. UnoCSS 最终规范
 
-当前模型保持原样；Semantic Status 的唯一目标 Class、可用 Property、单 Role 多 Binding 小扩展及最小生成原子边界见 §13.12。本节不另列状态 Role/Palette，目标未实施时不把其 Class 当作当前可用能力。
+除 §13.12 已实现的四个 Base Status Property-specific Mapping 外，当前模型保持原样；其精确二十个 Class、可用 Property、单 Role 多 Binding 边界仅由该节拥有。本节不另列状态 Role/Palette，源码静态完成不代替 Owner Runtime Acceptance。
 
 配置：
 
@@ -17522,7 +17540,7 @@ COMPLETION_EVIDENCE=specification diff and actual static/Git/CI results in task 
 
 ### 37.2.14 `PAVP_SEMANTIC_STATUS_COLOR_SYSTEM_SPECIFICATION`
 
-Owner 确认语义状态色是 PAVP 必需的核心 Design System Foundation，由 §13.12 冻结唯一完整合同。以下原规格记录保留当时源码未变、`TARGET_INACTIVE / NOT_IMPLEMENTED` 及明确授权的文档 Git 交付历史；它不授予当前修订 Git 权限。受阻源码候选与当前 Manifest 合同修订按本节后续记录分别判断，不创建新的 Current Work、Next、Successor、Capability Manifest Source/Generated Record 或第二份 Roadmap。
+Owner 确认语义状态色是 PAVP 必需的核心 Design System Foundation，由 §13.12 冻结唯一完整合同。以下原规格记录保留当时源码未变、`TARGET_INACTIVE / NOT_IMPLEMENTED` 及明确授权的文档 Git 交付历史；它不授予当前任务 Git 权限。受阻候选、Manifest 修订、第一片、接口纠正与当前消费者交接按本节后续记录分别判断，不创建新的 Current Work、Next、Successor、Capability Manifest Source/Generated Record 或第二份 Roadmap。
 
 ```text
 ID=PAVP_SEMANTIC_STATUS_COLOR_SYSTEM_SPECIFICATION
@@ -17542,7 +17560,7 @@ COMPLETION_EVIDENCE=actual specification/static/Git/CI states in task response; 
 
 该文档任务的 Allowed Scope 仅为 §11.4 的 Manifest 规范化合同、§13.12 的目标/候选/后续授权边界，以及直接相关的 §1.3、§13.7 和本准入记录。只把 Generated Token Manifest 目标结构从 9 改为 10，Runtime/CSS Bank 语义、颜色、其他 Schema、依赖和预算保持；不改 Source/Checker/Runtime，不运行 Generator 或 Production Build，不执行 Runtime Registry/First Paint 压缩，不启动第二消费者切片。
 
-该次文档验证为 Focused Prettier Check、`git diff --check`、合同一致性审查及 35 个候选 Hash 前后比较；Architecture/Policy Check 仅在无需同步受阻源码且能有意义运行时执行。Owner 为保留已知受阻候选明确限定本次不运行完整 `pnpm verify`，报告 `FULL_VERIFY=NOT_RUN_DUE_TO_PRESERVED_BLOCKED_SOURCE_CANDIDATE`；这不豁免后续源码修复的完整 Static Gate，也不构成源码完成或 Runtime Acceptance。当前 `STAGED=NO`、`COMMITTED=NO`、`PUSHED=NO`、`RELEASED=NO`，所有文档修改留在同一未暂存工作区；该文档任务自身未授权下一源码修复。
+该次文档验证为 Focused Prettier Check、`git diff --check`、合同一致性审查及 35 个候选 Hash 前后比较；Architecture/Policy Check 仅在无需同步受阻源码且能有意义运行时执行。Owner 为保留已知受阻候选明确限定该次不运行完整 `pnpm verify`，报告 `FULL_VERIFY=NOT_RUN_DUE_TO_PRESERVED_BLOCKED_SOURCE_CANDIDATE`；这不豁免后续源码修复的完整 Static Gate，也不构成源码完成或 Runtime Acceptance。该次交接 `STAGED=NO`、`COMMITTED=NO`、`PUSHED=NO`、`RELEASED=NO`，所有文档修改留在同一未暂存工作区；该文档任务自身未授权下一源码修复。
 
 Owner 随后明确授权本次第一源码切片续接，以本地未提交的 §11.4 schemaVersion-10 合同为依据，保留起始 36 个未暂存路径、空 Index、无 Untracked/Unmerged。修改前已核实 `main`、`origin/main` 与 Remote Main 均为 `efeede2b28622c6011511b940ccacc3f88274746`，Fetch Without Prune 后 Ahead/Behind 为 `0/0`。实际实现范围为 Design System 的既有 Source/Generator/Generated、直接 Console 计数和两份 Owning Architecture Checker；先通过 Manifest 与 Initial JS 门槛，再完成 Checker/Compatibility Parity 与完整静态验证。原 80 个 Status 值、560 个历史 Theme 字符串和既有语义均保持，历史阻塞测量不重写。
 
@@ -17575,7 +17593,7 @@ PUSHED=NO
 RELEASED=NO
 ```
 
-本次只完成已授权第一片；Current Work/Next/Successor 不自动推进，不增加 Capability Manifest Record，不授权第二片、Browser/Runtime Acceptance、依赖或预算变更及任何 Git 交付。
+上述源码任务只完成当时已授权第一片；Current Work/Next/Successor 不自动推进，不增加 Capability Manifest Record，不授权第二片、Browser/Runtime Acceptance、依赖或预算变更及任何 Git 交付。该块保留当时未暂存交接事实，后续提交状态另见下文。
 
 #### Consumer interface compatibility correction
 
@@ -17594,6 +17612,29 @@ RUNTIME_ACCEPTANCE=NOT_APPLICABLE_TO_DOCUMENT_ONLY_TASK
 NEXT_CANONICAL_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ```
+
+#### Consumer source implementation handoff
+
+接口兼容性纠正已提交于 `main@69403862ac3900fa52e7454d672a3a891b954bca`。Owner 随后明确授权且仅授权 §13.12 的第二消费者源码切片和静态验证；修改前核实干净工作区、空 Index、无 Untracked/Unmerged，Fetch Without Prune 后 HEAD、origin/main、Remote Main 均精确等于该基线，Ahead/Behind `0/0`。实际范围为 Design System 纯投影与映射生成、既有 Appearance/Naive/UI/Preview 消费链和直接 Owning Checks；只在完整源码与 `mise exec -- pnpm verify` 成功后更新架构交接状态。源码前基线、强制早期 Bundle Gate、最终尺寸、Manifest 11、400-record 方程及基础值不变证据统一记录在 §13.12，不重写第一片历史测量。
+
+```text
+WORK_PACKAGE_KIND=SOURCE_IMPLEMENTATION
+SOURCE_IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_CONSUMER_SLICE_ONLY
+REPOSITORY_IMPLEMENTATION=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE
+CONSUMER_SLICE=STATICALLY_COMPLETE
+STATIC_VERIFICATION=mise exec -- pnpm verify exit 0
+CAPABILITY_STATUS=TARGET_INACTIVE / NOT_END_TO_END_ACTIVE
+RUNTIME_ACCEPTANCE=PENDING_OWNER_ACCEPTANCE
+VISUAL_ACCEPTANCE=PENDING_OWNER_ACCEPTANCE
+STAGED=NO
+COMMITTED=NO
+PUSHED=NO
+RELEASED=NO
+NEXT_CANONICAL_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+Owner Runtime/Visual Acceptance 是下一可能阶段。当前授权明确禁止 Stage/Commit/Push，即使完整静态 Gate 通过也保持全部修改未暂存；本任务不操作 Browser/Dev Server，不创建 Tests/Evidence Artifact，不变更依赖/预算，不实施其他能力或部署/Release，在源码交接后等待 Owner 结果。
 
 ---
 

@@ -93,11 +93,19 @@ export const platformUnoMappings = [
   {
     roleId: 'color.status.info',
     cssVariable: '--ui-color-status-info',
-    generatorKind: 'exact-rule',
+    generatorKind: 'property-specific-exact-rule',
     family: 'color',
     key: 'status-info',
-    classes: ['bg-status-info'],
-    allowedCssProperties: ['background-color'],
+    bindings: [
+      {
+        className: 'bg-status-info',
+        cssProperty: 'background-color',
+      },
+      {
+        className: 'border-status-info',
+        cssProperty: 'border-color',
+      },
+    ],
   },
   {
     roleId: 'color.status.info.hover',
@@ -129,11 +137,19 @@ export const platformUnoMappings = [
   {
     roleId: 'color.status.success',
     cssVariable: '--ui-color-status-success',
-    generatorKind: 'exact-rule',
+    generatorKind: 'property-specific-exact-rule',
     family: 'color',
     key: 'status-success',
-    classes: ['bg-status-success'],
-    allowedCssProperties: ['background-color'],
+    bindings: [
+      {
+        className: 'bg-status-success',
+        cssProperty: 'background-color',
+      },
+      {
+        className: 'border-status-success',
+        cssProperty: 'border-color',
+      },
+    ],
   },
   {
     roleId: 'color.status.success.hover',
@@ -165,11 +181,19 @@ export const platformUnoMappings = [
   {
     roleId: 'color.status.warning',
     cssVariable: '--ui-color-status-warning',
-    generatorKind: 'exact-rule',
+    generatorKind: 'property-specific-exact-rule',
     family: 'color',
     key: 'status-warning',
-    classes: ['bg-status-warning'],
-    allowedCssProperties: ['background-color'],
+    bindings: [
+      {
+        className: 'bg-status-warning',
+        cssProperty: 'background-color',
+      },
+      {
+        className: 'border-status-warning',
+        cssProperty: 'border-color',
+      },
+    ],
   },
   {
     roleId: 'color.status.warning.hover',
@@ -201,11 +225,19 @@ export const platformUnoMappings = [
   {
     roleId: 'color.status.error',
     cssVariable: '--ui-color-status-error',
-    generatorKind: 'exact-rule',
+    generatorKind: 'property-specific-exact-rule',
     family: 'color',
     key: 'status-error',
-    classes: ['bg-status-error'],
-    allowedCssProperties: ['background-color'],
+    bindings: [
+      {
+        className: 'bg-status-error',
+        cssProperty: 'background-color',
+      },
+      {
+        className: 'border-status-error',
+        cssProperty: 'border-color',
+      },
+    ],
   },
   {
     roleId: 'color.status.error.hover',
@@ -602,6 +634,30 @@ export const platformRules = [
     'border-border-default',
     {
       'border-color': 'var(--ui-color-border-default)',
+    },
+  ],
+  [
+    'border-status-error',
+    {
+      'border-color': 'var(--ui-color-status-error)',
+    },
+  ],
+  [
+    'border-status-info',
+    {
+      'border-color': 'var(--ui-color-status-info)',
+    },
+  ],
+  [
+    'border-status-success',
+    {
+      'border-color': 'var(--ui-color-status-success)',
+    },
+  ],
+  [
+    'border-status-warning',
+    {
+      'border-color': 'var(--ui-color-status-warning)',
     },
   ],
   [

@@ -47,7 +47,7 @@ const forbiddenManifestSizeGovernanceFields = new Set<string>([
 ])
 
 const manifestGovernanceContract = {
-  schemaVersion: 10,
+  schemaVersion: 11,
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
@@ -172,7 +172,7 @@ function requireRecords(value: unknown, description: string): Record<string, unk
 function validateActiveThemeManifest(document: ManifestDocument): void {
   const themes = requireRecords(document['themes'], 'Manifest Theme records')
   const activePublicRoles = validatePublicRoleRegistry({
-    schemaVersion: 1,
+    schemaVersion: 2,
     status: 'active-current-public-surface',
     records: document['activePublicRoles'],
   })
@@ -214,9 +214,7 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
       bank['visibility'] !== 'ui-internal' ||
       bank['derivation'] !== 'theme-planes-and-active-public-roles'
     ) {
-      throw new Error(
-        `${description}.bank: the schemaVersion-10 derivation descriptor is malformed.`,
-      )
+      throw new Error(`${description}.bank: the derived Theme Bank descriptor is malformed.`)
     }
 
     for (const colorMode of themeColorModes) {
@@ -352,11 +350,16 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
             ...record.unocss,
             boundaryContributions: [...record.unocss.boundaryContributions],
           }
-        : {
-            ...record.unocss,
-            classes: [...record.unocss.classes],
-            allowedCssProperties: [...record.unocss.allowedCssProperties],
-          },
+        : record.unocss.generatorKind === 'property-specific-exact-rule'
+          ? {
+              ...record.unocss,
+              bindings: record.unocss.bindings.map((binding) => ({ ...binding })),
+            }
+          : {
+              ...record.unocss,
+              classes: [...record.unocss.classes],
+              allowedCssProperties: [...record.unocss.allowedCssProperties],
+            },
   }))
   const unoCssMappings = result.unoCssMappings.map((record) =>
     record.generatorKind === 'container-variant'
@@ -364,11 +367,13 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
           ...record,
           boundaryContributions: [...record.boundaryContributions],
         }
-      : {
-          ...record,
-          classes: [...record.classes],
-          allowedCssProperties: [...record.allowedCssProperties],
-        },
+      : record.generatorKind === 'property-specific-exact-rule'
+        ? { ...record, bindings: record.bindings.map((binding) => ({ ...binding })) }
+        : {
+            ...record,
+            classes: [...record.classes],
+            allowedCssProperties: [...record.allowedCssProperties],
+          },
   )
   const namedContrasts = result.namedContrasts.map((record) => ({
     ...record,

@@ -1,3 +1,9 @@
+import {
+  projectUiAppearance,
+  resolveThemeReference,
+  type UiAppearanceSnapshot,
+} from '@platform/design-system'
+
 import { useAppearanceStore } from './appearance.store'
 import {
   createAppearanceMutationBoundary,
@@ -226,7 +232,23 @@ export function installAppearanceProvider(
     throw error
   }
 
-  const initialSnapshot = store.readEffectiveAppearance(currentEnvironment())
+  const readUiAppearance = (): Readonly<UiAppearanceSnapshot> | null => {
+    const appearance = store.readEffectiveAppearance(currentEnvironment())
+
+    if (appearance === null) return null
+
+    const resolution = resolveThemeReference({
+      reference: appearance.theme,
+      customThemeRegistry: store.customThemeRegistry,
+    })
+
+    if (resolution.status !== 'resolved') {
+      throw new Error('UI Appearance requires a resolved active Theme.')
+    }
+
+    return projectUiAppearance(appearance, resolution.entry)
+  }
+  const initialSnapshot = readUiAppearance()
 
   if (initialSnapshot === null) {
     handoffHandle.restoreSafetyForFailedStartup()
@@ -235,7 +257,7 @@ export function installAppearanceProvider(
 
   const appearanceReadBoundaryWriter = createAppearanceReadBoundary(initialSnapshot)
   const refreshSnapshot = (): void => {
-    const snapshot = store.readEffectiveAppearance(currentEnvironment())
+    const snapshot = readUiAppearance()
 
     if (snapshot === null) {
       throw new Error('Appearance reapplication produced no effective state.')

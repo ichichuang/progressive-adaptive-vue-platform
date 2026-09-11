@@ -22,6 +22,12 @@ function variablesForMappings(predicate) {
   ]
 }
 
+function mappingAllowsProperty(mapping, property) {
+  return mapping.generatorKind === 'property-specific-exact-rule'
+    ? mapping.bindings.some((binding) => binding.cssProperty === property)
+    : mapping.allowedCssProperties.includes(property)
+}
+
 function disallowOutsideAuthorities(variables, allowedValues = [], allowedPatterns = []) {
   const authorities = [
     ...variables.map((variable) => `var\\(${escapeRegularExpression(variable)}\\)`),
@@ -50,20 +56,18 @@ function disallowUnapprovedUiVariables(variables) {
 }
 
 const backgroundColorVariables = variablesForMappings((mapping) =>
-  mapping.allowedCssProperties.includes('background-color'),
+  mappingAllowsProperty(mapping, 'background-color'),
 )
 const borderColorVariables = variablesForMappings((mapping) =>
-  mapping.allowedCssProperties.includes('border-color'),
+  mappingAllowsProperty(mapping, 'border-color'),
 )
 const textColorVariables = variablesForMappings((mapping) =>
-  mapping.allowedCssProperties.includes('color'),
+  mappingAllowsProperty(mapping, 'color'),
 )
 const spacingVariables = variablesForMappings((mapping) => mapping.family === 'spacing')
-const heightVariables = variablesForMappings((mapping) =>
-  mapping.allowedCssProperties.includes('height'),
-)
+const heightVariables = variablesForMappings((mapping) => mappingAllowsProperty(mapping, 'height'))
 const maxWidthVariables = variablesForMappings((mapping) =>
-  mapping.allowedCssProperties.includes('max-width'),
+  mappingAllowsProperty(mapping, 'max-width'),
 )
 const radiusVariables = variablesForMappings((mapping) => mapping.family === 'radius')
 const shadowVariables = variablesForMappings((mapping) => mapping.family === 'shadow')

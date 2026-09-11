@@ -1072,6 +1072,17 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       violations.push(`${name}: native form boundary count diverged.`)
     if (/\.(?:restoreValidation|validate)\s*\(/u.test(scriptContent(source)))
       violations.push(`${name}: vendor validation methods are forbidden.`)
+    if (
+      name === 'PavpNaiveFormField' &&
+      (/['"]success['"]/u.test(source) ||
+        !source.includes("validationStatus: 'error'") ||
+        !source.includes('var(--ui-color-text-on-status-error)') ||
+        !source.includes('background-color: var(--ui-color-status-error)'))
+    ) {
+      violations.push(
+        'PavpNaiveFormField must keep ordinary validity neutral and pair Error feedback with its Status fill.',
+      )
+    }
   }
 
   if (

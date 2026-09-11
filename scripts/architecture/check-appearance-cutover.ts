@@ -41,7 +41,7 @@ const stableGeneratedHashes = {
   'packages/design-system/src/generated/tokens.ts':
     '3c2e3aef7b0a83536145cc920eceebabf46bed9b52fd375b2d5b2cb4d57ef6cf',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '32915881ff20670dfabd1806cd7a8d85d99ea138389f2b599bd8b414e6deafd8',
+    'debda75577194b49363086a9c29f73a1d49f610297f9ca71cb1b0a5b5cb65631',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -66,6 +66,8 @@ const expectedPublicRootSymbols = [
   'ProductPreferenceDefault',
   'applyAppearance',
   'EffectiveAppearanceState',
+  'projectUiAppearance',
+  'UiAppearanceSnapshot',
   'migrateToExplicitThemePreference',
   'PreferenceMigrationResult',
   'resolveColorMode',
@@ -236,6 +238,7 @@ function colorRuntimeEntryViolations(sources: ReadonlyMap<string, string>): read
     'ColorSpace',
     'parse',
     'inGamut',
+    'getAll',
     'contrastWCAG21',
     'sRGB',
     'sRGB_Linear',
@@ -835,6 +838,7 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
       if (
         [
           'resolveThemeReference',
+          'projectUiAppearance',
           'installCustomThemeBank',
           'applyAppearance',
           'writeStoredPreference',
@@ -868,12 +872,29 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
 
   inspectCalls(file)
 
-  for (const name of ['resolveThemeReference', 'installCustomThemeBank', 'applyAppearance']) {
+  for (const name of [
+    'resolveThemeReference',
+    'projectUiAppearance',
+    'installCustomThemeBank',
+    'applyAppearance',
+  ]) {
     if (
       !isDeepStrictEqual([...new Set(callOwners.get(name) ?? [])], ['commitAppearanceTransition'])
     ) {
       violations.push(`appearance.store.ts: ${name} may run only inside the transaction.`)
     }
+  }
+
+  const transactionSource = transaction?.getText(file) ?? ''
+  const projectionPosition = transactionSource.indexOf('projectUiAppearance(')
+  if (
+    projectionPosition < 0 ||
+    projectionPosition > transactionSource.indexOf('installCustomThemeBank(') ||
+    projectionPosition > transactionSource.indexOf('applyAppearance(')
+  ) {
+    violations.push(
+      'appearance.store.ts: the UI status projection must be prepared before any Bank or Appearance DOM write.',
+    )
   }
 
   const expectedTransactionIntents = new Map<string, readonly string[]>([
@@ -2377,8 +2398,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 10 || recordCount !== 400) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 10/400.')
+  if (manifest['schemaVersion'] !== 11 || recordCount !== 400) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 11/400.')
   }
 
   const themes = manifest['themes']
@@ -2429,7 +2450,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
         planes: value['planes'],
       })
       const publicRoles = validatePublicRoleRegistry({
-        schemaVersion: 1,
+        schemaVersion: 2,
         status: 'active-current-public-surface',
         records: manifest['activePublicRoles'],
       })

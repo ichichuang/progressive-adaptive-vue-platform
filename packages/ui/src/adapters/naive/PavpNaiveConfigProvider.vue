@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EffectiveAppearanceState } from '@platform/design-system'
+import type { UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiLocale } from '../../components/contracts'
 import zhCN from 'naive-ui/es/locales/common/zhCN'
 import enUS from 'naive-ui/es/locales/common/enUS'
@@ -14,7 +14,7 @@ import { createPavpNaiveThemeProjection } from './pavp-naive-theme'
 defineOptions({ name: 'PavpNaiveConfigProvider' })
 
 const props = defineProps<{
-  readonly appearance: Readonly<EffectiveAppearanceState>
+  readonly appearance: Readonly<UiAppearanceSnapshot>
   readonly locale: UiLocale
 }>()
 

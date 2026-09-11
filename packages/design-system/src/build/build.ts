@@ -15,9 +15,11 @@ import { migrateToExplicitThemePreference } from '../runtime/preference-migratio
 import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { validateCustomThemeDefinition } from '../runtime/theme-registry'
+import { projectUiAppearance } from '../runtime/ui-appearance-projection'
 import { fontScaleValues } from '../schema/appearance.schema'
 import { builtInThemeIds } from '../schema/complete-theme.schema'
 import { explicitThemePreferenceSchema } from '../schema/preference.schema'
+import { formatOpaqueSrgbColor } from '../schema/css-color'
 import { tokenPathFromReference } from '../schema/token.schema'
 import { validateCompleteBuiltInThemes } from './complete-themes'
 import { validateContrastAndMaterialContracts } from './contrast'
@@ -56,6 +58,7 @@ import {
   formatTokensTypeScript,
   formatUnoCssTheme,
   themeRegistryDocument,
+  statusSupplementaryDocument,
   unoCssProjection,
 } from './formats/typescript'
 import { compareCodePoints } from './order'
@@ -101,8 +104,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 14722,
-    expectedByteDelta: 11356,
+    expectedBytes: 14874,
+    expectedByteDelta: 11508,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -725,6 +728,18 @@ function validateUnoCssProjection(result: TokenBuildResult): string[] {
           projection.themeEntries.every((entry) => entry.roleId !== mapping.roleId),
         `${mapping.roleId} container boundary mapping must not generate a utility or Theme entry`,
       )
+    } else if (mapping.generatorKind === 'property-specific-exact-rule') {
+      assertInvariantEqual(
+        projection.rules.filter((rule) => rule.roleId === mapping.roleId),
+        mapping.bindings
+          .map((binding) => ({
+            className: binding.className,
+            declarations: { [binding.cssProperty]: `var(${mapping.cssVariable})` },
+            roleId: mapping.roleId,
+          }))
+          .sort((left, right) => compareCodePoints(left.className, right.className)),
+        `${mapping.roleId} must generate exactly its property-specific bindings`,
+      )
     } else if (mapping.generatorKind === 'exact-rule') {
       const rules = projection.rules.filter((rule) => rule.roleId === mapping.roleId)
 
@@ -768,7 +783,11 @@ function validateUnoCssProjection(result: TokenBuildResult): string[] {
     ),
   ]
   const registeredClasses = projection.mappings.flatMap((mapping) =>
-    mapping.generatorKind === 'container-variant' ? [] : mapping.classes,
+    mapping.generatorKind === 'container-variant'
+      ? []
+      : mapping.generatorKind === 'property-specific-exact-rule'
+        ? mapping.bindings.map((binding) => binding.className)
+        : mapping.classes,
   )
 
   assertInvariantEqual(
@@ -2379,6 +2398,17 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
 }
 
 function validateAppearanceContracts(result: TokenBuildResult): void {
+  for (const invalidColor of [
+    'color(display-p3 1 0 0)',
+    'rgba(0, 0, 0, 0.5)',
+    'var(--ui-color-status-info)',
+  ]) {
+    assertContractFailure(
+      () => formatOpaqueSrgbColor(invalidColor),
+      /./u,
+      'UI status conversion must reject gamut, alpha and unresolved color inputs',
+    )
+  }
   const defaultPreference = explicitThemePreferenceSchema.safeParse({
     schemaVersion: 3,
     appearance: ProductPreferenceDefault,
@@ -2454,9 +2484,66 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   )
   assertInvariantEqual(
     materializedRegistry,
-    registry,
+    { ...registry, statusSupplementary: statusSupplementaryDocument(result) },
     'compact generated Registry evaluation must preserve every complete definition, Bank field, order and compatibility record',
   )
+
+  for (const entry of registry.builtInEntries) {
+    for (const colorMode of ['light', 'dark'] as const) {
+      for (const contrast of ['standard', 'enhanced'] as const) {
+        const snapshot = projectUiAppearance(
+          {
+            ...ProductPreferenceDefault,
+            colorMode,
+            contrast,
+            density: ProductPreferenceDefault.density.preset,
+            material: 'solid',
+            theme: { registryKind: 'built-in', themeId: entry.themeId },
+          },
+          entry,
+        )
+
+        assertInvariantEqual(
+          Object.keys(snapshot).sort(compareCodePoints),
+          [
+            'colorMode',
+            'contrast',
+            'density',
+            'fontScale',
+            'material',
+            'motion',
+            'statusColors',
+            'theme',
+          ],
+          'UiAppearanceSnapshot must preserve seven top-level axes and add only statusColors',
+        )
+        assertInvariantEqual(
+          Object.keys(snapshot.statusColors),
+          ['info', 'success', 'warning', 'error'],
+          'UI status projection must contain exactly four semantic families',
+        )
+        assertInvariant(
+          Object.isFrozen(snapshot) &&
+            Object.isFrozen(snapshot.theme) &&
+            Object.isFrozen(snapshot.statusColors),
+          'UI Appearance projection must freeze every object boundary',
+        )
+
+        for (const tone of Object.values(snapshot.statusColors)) {
+          assertInvariantEqual(
+            Object.keys(tone),
+            ['default', 'hover', 'pressed', 'supplementary', 'onStatus'],
+            'each UI status family must contain exactly five transport values',
+          )
+          assertInvariant(
+            Object.isFrozen(tone) &&
+              Object.values(tone).every((value) => /^rgba\(\d+, \d+, \d+, 1\)$/u.test(value)),
+            'UI status transport must use immutable opaque integer RGBA values',
+          )
+        }
+      }
+    }
+  }
 
   assertInvariantEqual(
     [
@@ -3050,6 +3137,17 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     'Contract 1 must rebound before parity probes',
   )
   const currentCustomTheme = structuredClone(legacyRuntimeValidation.entry.definition)
+  for (const mode of ['light', 'dark'] as const) {
+    for (const contrast of ['standard', 'enhanced'] as const) {
+      const plane = currentCustomTheme.planes[mode][contrast]
+      const customInfo = plane['color.status.info.hover']
+      assertInvariant(
+        customInfo !== undefined,
+        'Current Custom Status override must use an existing validated color',
+      )
+      plane['color.status.info'] = customInfo
+    }
+  }
   for (const definition of [legacyCustomTheme, controlCustomTheme, currentCustomTheme]) {
     const original = stableJson(definition)
     const runtime = validateCustomThemeDefinition(definition)
@@ -3070,6 +3168,32 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     for (const mode of ['light', 'dark'] as const) {
       for (const contrast of ['standard', 'enhanced'] as const) {
         const plane = normalized.planes[mode][contrast]
+        const snapshot = projectUiAppearance(
+          {
+            ...ProductPreferenceDefault,
+            theme: { registryKind: 'custom', themeId: runtime.entry.themeId },
+            colorMode: mode,
+            contrast,
+            density: ProductPreferenceDefault.density.preset,
+            material: 'solid',
+          },
+          runtime.entry,
+        )
+        for (const tone of ['info', 'success', 'warning', 'error'] as const) {
+          const projection = snapshot.statusColors[tone]
+          for (const [value, role] of [
+            [projection.default, `color.status.${tone}`],
+            [projection.hover, `color.status.${tone}.hover`],
+            [projection.pressed, `color.status.${tone}.pressed`],
+            [projection.onStatus, `color.text.on-status.${tone}`],
+          ] as const) {
+            const authored = plane[role]
+            assertInvariant(
+              authored !== undefined && value === formatOpaqueSrgbColor(authored),
+              `Contract ${String(version)} UI projection must use its own validated ${role}`,
+            )
+          }
+        }
         for (const [role, value] of Object.entries(definition.planes[mode][contrast])) {
           assertInvariant(
             plane[role] === value,
@@ -3082,6 +3206,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         )
         for (const record of registry.builtInEntries[0]?.bank.records ?? []) {
           if (
+            version < 3 &&
             record.colorMode === mode &&
             record.contrast === contrast &&
             record.authoredValue.startsWith('{color.palette.status.')
@@ -3606,7 +3731,18 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
       continue
     }
 
-    for (const className of mapping.classes) {
+    const mappingClasses =
+      mapping.generatorKind === 'property-specific-exact-rule'
+        ? mapping.bindings.map((binding) => binding.className)
+        : mapping.classes
+
+    for (const className of mappingClasses) {
+      const properties =
+        mapping.generatorKind === 'property-specific-exact-rule'
+          ? mapping.bindings
+              .filter((binding) => binding.className === className)
+              .map((binding) => binding.cssProperty)
+          : mapping.allowedCssProperties
       const generated = await generator.generate(className, {
         preflights: false,
       })
@@ -3619,18 +3755,18 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
       )
       assertInvariantEqual(
         Object.keys(declarations).sort(compareCodePoints),
-        [...mapping.allowedCssProperties].sort(compareCodePoints),
+        [...properties].sort(compareCodePoints),
         `${className} actual UnoCSS output must remain within its allowed CSS property scope`,
       )
 
-      if (mapping.generatorKind === 'exact-rule') {
+      if (
+        mapping.generatorKind === 'exact-rule' ||
+        mapping.generatorKind === 'property-specific-exact-rule'
+      ) {
         assertInvariantEqual(
           declarations,
           Object.fromEntries(
-            mapping.allowedCssProperties.map((property) => [
-              property,
-              `var(${mapping.cssVariable})`,
-            ]),
+            properties.map((property) => [property, `var(${mapping.cssVariable})`]),
           ),
           `${className} actual exact rule must bind its canonical public CSS variable`,
         )
@@ -3666,10 +3802,78 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
   assertInvariantEqual(
     actualClasses.sort(compareCodePoints),
     result.unoCssMappings
-      .flatMap((mapping) => (mapping.generatorKind === 'container-variant' ? [] : mapping.classes))
+      .flatMap((mapping) =>
+        mapping.generatorKind === 'container-variant'
+          ? []
+          : mapping.generatorKind === 'property-specific-exact-rule'
+            ? mapping.bindings.map((binding) => binding.className)
+            : mapping.classes,
+      )
       .sort(compareCodePoints),
-    'the actual platformPreset must generate all 34 registered public classes',
+    'the actual platformPreset must generate all 55 registered public classes',
   )
+
+  const statusClasses = ['info', 'success', 'warning', 'error'].flatMap((tone) => [
+    `bg-status-${tone}`,
+    `border-status-${tone}`,
+    `bg-status-${tone}-hover`,
+    `bg-status-${tone}-pressed`,
+    `text-on-status-${tone}`,
+  ])
+  assertInvariantEqual(
+    actualClasses
+      .filter((name) => /^(?:(?:bg|border)-status-|text-on-status-)/u.test(name))
+      .sort(compareCodePoints),
+    statusClasses.sort(compareCodePoints),
+    'the Semantic Status utility closure must contain exactly twenty classes',
+  )
+  assertInvariant(
+    !('colors' in projection.theme),
+    'Semantic Status must not create an open UnoCSS color palette',
+  )
+
+  for (const [className, selector, variable] of [
+    [
+      'hover:bg-status-error-hover',
+      'hover\\:bg-status-error-hover:hover',
+      '--ui-color-status-error-hover',
+    ],
+    [
+      'active:bg-status-error-pressed',
+      'active\\:bg-status-error-pressed:active',
+      '--ui-color-status-error-pressed',
+    ],
+  ]) {
+    assertInvariant(
+      className !== undefined && selector !== undefined && variable !== undefined,
+      'Status variant contract must be complete',
+    )
+    const generated = await generator.generate(className, { preflights: false })
+    assertInvariantEqual(
+      generatedClassDeclarations(generated.css, selector),
+      {
+        'background-color': `var(${variable})`,
+      },
+      `${className} must use the normal UnoCSS variant mechanism`,
+    )
+  }
+  for (const tone of ['info', 'success', 'warning', 'error']) {
+    for (const className of [
+      ...['text', 'ring', 'outline', 'fill', 'stroke'].map((family) => `${family}-status-${tone}`),
+      `bg-status-${tone}-supplementary`,
+      `bg-status-${tone}-500`,
+      `bg-status-${tone}/50`,
+      `border-status-${tone}-hover`,
+      `border-status-${tone}-pressed`,
+    ]) {
+      const generated = await generator.generate(className, { preflights: false })
+      assertInvariantEqual(
+        [...generated.matched],
+        [],
+        `${className} must remain outside the semantic utility contract`,
+      )
+    }
+  }
 
   const preflight = await generator.generate(actualClasses.join(' '), {
     preflights: true,

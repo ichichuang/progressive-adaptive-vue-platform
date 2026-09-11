@@ -780,6 +780,22 @@ const scrollSystemThemeOverrideContract = {
 } as const
 const themeOverrideContract = {
   common: [
+    'infoColor',
+    'infoColorHover',
+    'infoColorPressed',
+    'infoColorSuppl',
+    'successColor',
+    'successColorHover',
+    'successColorPressed',
+    'successColorSuppl',
+    'warningColor',
+    'warningColorHover',
+    'warningColorPressed',
+    'warningColorSuppl',
+    'errorColor',
+    'errorColorHover',
+    'errorColorPressed',
+    'errorColorSuppl',
     'actionColor',
     'bodyColor',
     'borderColor',
@@ -831,6 +847,38 @@ const themeOverrideContract = {
     'separatorColor',
   ],
   Button: [
+    'textColorInfo',
+    'textColorHoverInfo',
+    'textColorPressedInfo',
+    'textColorFocusInfo',
+    'borderInfo',
+    'borderHoverInfo',
+    'borderPressedInfo',
+    'borderFocusInfo',
+    'textColorSuccess',
+    'textColorHoverSuccess',
+    'textColorPressedSuccess',
+    'textColorFocusSuccess',
+    'borderSuccess',
+    'borderHoverSuccess',
+    'borderPressedSuccess',
+    'borderFocusSuccess',
+    'textColorWarning',
+    'textColorHoverWarning',
+    'textColorPressedWarning',
+    'textColorFocusWarning',
+    'borderWarning',
+    'borderHoverWarning',
+    'borderPressedWarning',
+    'borderFocusWarning',
+    'textColorError',
+    'textColorHoverError',
+    'textColorPressedError',
+    'textColorFocusError',
+    'borderError',
+    'borderHoverError',
+    'borderPressedError',
+    'borderFocusError',
     'border',
     'borderDisabled',
     'borderDisabledPrimary',
@@ -968,6 +1016,165 @@ interface Naive2452SharedConsumptionRecord {
 }
 
 const naiveThemeSemanticGroups = [
+  {
+    component: 'common',
+    fields: ['infoColor'],
+    authority: 'status.info.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['infoColorHover'],
+    authority: 'status.info.hover',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['infoColorPressed'],
+    authority: 'status.info.pressed',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['infoColorSuppl'],
+    authority: 'status.info.supplementary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorInfo', 'textColorHoverInfo', 'textColorPressedInfo', 'textColorFocusInfo'],
+    authority: 'status.info.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderInfo', 'borderHoverInfo', 'borderPressedInfo', 'borderFocusInfo'],
+    authority: 'status.info.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'common',
+    fields: ['successColor'],
+    authority: 'status.success.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['successColorHover'],
+    authority: 'status.success.hover',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['successColorPressed'],
+    authority: 'status.success.pressed',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['successColorSuppl'],
+    authority: 'status.success.supplementary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: [
+      'textColorSuccess',
+      'textColorHoverSuccess',
+      'textColorPressedSuccess',
+      'textColorFocusSuccess',
+    ],
+    authority: 'status.success.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderSuccess', 'borderHoverSuccess', 'borderPressedSuccess', 'borderFocusSuccess'],
+    authority: 'status.success.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'common',
+    fields: ['warningColor'],
+    authority: 'status.warning.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['warningColorHover'],
+    authority: 'status.warning.hover',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['warningColorPressed'],
+    authority: 'status.warning.pressed',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['warningColorSuppl'],
+    authority: 'status.warning.supplementary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: [
+      'textColorWarning',
+      'textColorHoverWarning',
+      'textColorPressedWarning',
+      'textColorFocusWarning',
+    ],
+    authority: 'status.warning.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderWarning', 'borderHoverWarning', 'borderPressedWarning', 'borderFocusWarning'],
+    authority: 'status.warning.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'common',
+    fields: ['errorColor'],
+    authority: 'status.error.default',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['errorColorHover'],
+    authority: 'status.error.hover',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['errorColorPressed'],
+    authority: 'status.error.pressed',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['errorColorSuppl'],
+    authority: 'status.error.supplementary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: [
+      'textColorError',
+      'textColorHoverError',
+      'textColorPressedError',
+      'textColorFocusError',
+    ],
+    authority: 'status.error.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderError', 'borderHoverError', 'borderPressedError', 'borderFocusError'],
+    authority: 'status.error.border',
+    valueKind: 'border',
+  },
   {
     component: 'common',
     fields: [
@@ -1460,6 +1667,230 @@ const naive2452ConsumptionContract = [
   {
     component: 'Button',
     fields: [
+      [
+        'textColorInfo',
+        'self.textColorInfo via createKey("textColor", mergedType)',
+        ['--n-text-color'],
+        'info-filled-default',
+        '.n-button filled text info',
+      ],
+      [
+        'textColorHoverInfo',
+        'self.textColorHoverInfo via createKey("textColorHover", mergedType)',
+        ['--n-text-color-hover'],
+        'info-filled-hover',
+        '.n-button:hover filled text info',
+      ],
+      [
+        'textColorPressedInfo',
+        'self.textColorPressedInfo via createKey("textColorPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'info-filled-pressed',
+        '.n-button:active filled text info',
+      ],
+      [
+        'textColorFocusInfo',
+        'self.textColorFocusInfo via createKey("textColorFocus", mergedType)',
+        ['--n-text-color-focus'],
+        'info-filled-focus',
+        '.n-button:focus filled text info',
+      ],
+      [
+        'borderInfo',
+        'self.borderInfo via createKey("border", mergedType)',
+        ['--n-border'],
+        'info-filled-default',
+        '.n-button .n-button__border info',
+      ],
+      [
+        'borderHoverInfo',
+        'self.borderHoverInfo via createKey("borderHover", mergedType)',
+        ['--n-border-hover'],
+        'info-filled-hover',
+        '.n-button:hover .n-button__state-border info',
+      ],
+      [
+        'borderPressedInfo',
+        'self.borderPressedInfo via createKey("borderPressed", mergedType)',
+        ['--n-border-pressed'],
+        'info-filled-pressed',
+        '.n-button:active .n-button__state-border info',
+      ],
+      [
+        'borderFocusInfo',
+        'self.borderFocusInfo via createKey("borderFocus", mergedType)',
+        ['--n-border-focus'],
+        'info-filled-focus',
+        '.n-button:focus .n-button__state-border info',
+      ],
+      [
+        'textColorSuccess',
+        'self.textColorSuccess via createKey("textColor", mergedType)',
+        ['--n-text-color'],
+        'success-filled-default',
+        '.n-button filled text success',
+      ],
+      [
+        'textColorHoverSuccess',
+        'self.textColorHoverSuccess via createKey("textColorHover", mergedType)',
+        ['--n-text-color-hover'],
+        'success-filled-hover',
+        '.n-button:hover filled text success',
+      ],
+      [
+        'textColorPressedSuccess',
+        'self.textColorPressedSuccess via createKey("textColorPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'success-filled-pressed',
+        '.n-button:active filled text success',
+      ],
+      [
+        'textColorFocusSuccess',
+        'self.textColorFocusSuccess via createKey("textColorFocus", mergedType)',
+        ['--n-text-color-focus'],
+        'success-filled-focus',
+        '.n-button:focus filled text success',
+      ],
+      [
+        'borderSuccess',
+        'self.borderSuccess via createKey("border", mergedType)',
+        ['--n-border'],
+        'success-filled-default',
+        '.n-button .n-button__border success',
+      ],
+      [
+        'borderHoverSuccess',
+        'self.borderHoverSuccess via createKey("borderHover", mergedType)',
+        ['--n-border-hover'],
+        'success-filled-hover',
+        '.n-button:hover .n-button__state-border success',
+      ],
+      [
+        'borderPressedSuccess',
+        'self.borderPressedSuccess via createKey("borderPressed", mergedType)',
+        ['--n-border-pressed'],
+        'success-filled-pressed',
+        '.n-button:active .n-button__state-border success',
+      ],
+      [
+        'borderFocusSuccess',
+        'self.borderFocusSuccess via createKey("borderFocus", mergedType)',
+        ['--n-border-focus'],
+        'success-filled-focus',
+        '.n-button:focus .n-button__state-border success',
+      ],
+      [
+        'textColorWarning',
+        'self.textColorWarning via createKey("textColor", mergedType)',
+        ['--n-text-color'],
+        'warning-filled-default',
+        '.n-button filled text warning',
+      ],
+      [
+        'textColorHoverWarning',
+        'self.textColorHoverWarning via createKey("textColorHover", mergedType)',
+        ['--n-text-color-hover'],
+        'warning-filled-hover',
+        '.n-button:hover filled text warning',
+      ],
+      [
+        'textColorPressedWarning',
+        'self.textColorPressedWarning via createKey("textColorPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'warning-filled-pressed',
+        '.n-button:active filled text warning',
+      ],
+      [
+        'textColorFocusWarning',
+        'self.textColorFocusWarning via createKey("textColorFocus", mergedType)',
+        ['--n-text-color-focus'],
+        'warning-filled-focus',
+        '.n-button:focus filled text warning',
+      ],
+      [
+        'borderWarning',
+        'self.borderWarning via createKey("border", mergedType)',
+        ['--n-border'],
+        'warning-filled-default',
+        '.n-button .n-button__border warning',
+      ],
+      [
+        'borderHoverWarning',
+        'self.borderHoverWarning via createKey("borderHover", mergedType)',
+        ['--n-border-hover'],
+        'warning-filled-hover',
+        '.n-button:hover .n-button__state-border warning',
+      ],
+      [
+        'borderPressedWarning',
+        'self.borderPressedWarning via createKey("borderPressed", mergedType)',
+        ['--n-border-pressed'],
+        'warning-filled-pressed',
+        '.n-button:active .n-button__state-border warning',
+      ],
+      [
+        'borderFocusWarning',
+        'self.borderFocusWarning via createKey("borderFocus", mergedType)',
+        ['--n-border-focus'],
+        'warning-filled-focus',
+        '.n-button:focus .n-button__state-border warning',
+      ],
+      [
+        'textColorError',
+        'self.textColorError via createKey("textColor", mergedType)',
+        ['--n-text-color'],
+        'error-filled-default',
+        '.n-button filled text error',
+      ],
+      [
+        'textColorHoverError',
+        'self.textColorHoverError via createKey("textColorHover", mergedType)',
+        ['--n-text-color-hover'],
+        'error-filled-hover',
+        '.n-button:hover filled text error',
+      ],
+      [
+        'textColorPressedError',
+        'self.textColorPressedError via createKey("textColorPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'error-filled-pressed',
+        '.n-button:active filled text error',
+      ],
+      [
+        'textColorFocusError',
+        'self.textColorFocusError via createKey("textColorFocus", mergedType)',
+        ['--n-text-color-focus'],
+        'error-filled-focus',
+        '.n-button:focus filled text error',
+      ],
+      [
+        'borderError',
+        'self.borderError via createKey("border", mergedType)',
+        ['--n-border'],
+        'error-filled-default',
+        '.n-button .n-button__border error',
+      ],
+      [
+        'borderHoverError',
+        'self.borderHoverError via createKey("borderHover", mergedType)',
+        ['--n-border-hover'],
+        'error-filled-hover',
+        '.n-button:hover .n-button__state-border error',
+      ],
+      [
+        'borderPressedError',
+        'self.borderPressedError via createKey("borderPressed", mergedType)',
+        ['--n-border-pressed'],
+        'error-filled-pressed',
+        '.n-button:active .n-button__state-border error',
+      ],
+      [
+        'borderFocusError',
+        'self.borderFocusError via createKey("borderFocus", mergedType)',
+        ['--n-border-focus'],
+        'error-filled-focus',
+        '.n-button:focus .n-button__state-border error',
+      ],
       [
         'border',
         'self.border via createKey("border", mergedType)',
@@ -2797,13 +3228,41 @@ function naiveCommonParserSensitiveOverrides(source: string): readonly string[] 
   const commonProperties =
     commonOverride === undefined ? undefined : staticObjectPropertyNames(commonOverride)
 
-  if (commonProperties === undefined) {
+  if (commonOverride === undefined || commonProperties === undefined) {
     return []
   }
 
-  return commonProperties.filter((property) =>
-    naiveCommonParserSensitiveColorProperties.has(property),
-  )
+  const declarations = themeVariableInitializers(commonOverride.getSourceFile())
+  const statusFields = new Set<string>()
+  const invalidStatusFields: string[] = []
+
+  for (const tone of ['info', 'success', 'warning', 'error']) {
+    for (const [suffix, value] of [
+      ['', 'default'],
+      ['Hover', 'hover'],
+      ['Pressed', 'pressed'],
+      ['Suppl', 'supplementary'],
+    ] as const) {
+      const field = `${tone}Color${suffix}`
+      statusFields.add(field)
+      const authority = resolveThemeAuthority(
+        objectPropertyInitializer(commonOverride, field),
+        declarations,
+      )
+
+      if (authority.authority !== `status.${tone}.${value}` || authority.valueKind !== 'color') {
+        invalidStatusFields.push(field)
+      }
+    }
+  }
+
+  return [
+    ...commonProperties.filter(
+      (property) =>
+        naiveCommonParserSensitiveColorProperties.has(property) && !statusFields.has(property),
+    ),
+    ...invalidStatusFields,
+  ]
 }
 
 function themeVariableInitializers(sourceFile: ts.SourceFile): ReadonlyMap<string, ts.Expression> {
@@ -2877,6 +3336,46 @@ function cssVariableAuthority(cssVariable: string): NaiveThemeAuthority {
     : { authority: 'unresolved', valueKind: 'unknown' }
 }
 
+function statusProjectionPath(
+  expression: ts.Expression,
+  declarations: ReadonlyMap<string, ts.Expression>,
+  seen: ReadonlySet<string> = new Set(),
+): readonly string[] | undefined {
+  const value = unwrapExpression(expression)
+
+  if (
+    ts.isPropertyAccessExpression(value) ||
+    (ts.isElementAccessExpression(value) && ts.isStringLiteral(value.argumentExpression))
+  ) {
+    const parent = statusProjectionPath(value.expression, declarations, seen)
+    const key = ts.isPropertyAccessExpression(value)
+      ? value.name.text
+      : (value.argumentExpression as ts.StringLiteral).text
+    return parent === undefined ? undefined : [...parent, key]
+  }
+
+  if (!ts.isIdentifier(value) || seen.has(value.text)) return undefined
+
+  const isSnapshotParameter = value
+    .getSourceFile()
+    .statements.some(
+      (statement) =>
+        ts.isFunctionDeclaration(statement) &&
+        statement.parameters.some(
+          (parameter) =>
+            ts.isIdentifier(parameter.name) &&
+            parameter.name.text === value.text &&
+            /\bUiAppearanceSnapshot\b/u.test(parameter.type?.getText() ?? ''),
+        ),
+    )
+
+  if (isSnapshotParameter) return []
+  const initializer = declarations.get(value.text)
+  return initializer === undefined
+    ? undefined
+    : statusProjectionPath(initializer, declarations, new Set([...seen, value.text]))
+}
+
 function resolveThemeAuthority(
   expression: ts.Expression | undefined,
   declarations: ReadonlyMap<string, ts.Expression>,
@@ -2887,6 +3386,35 @@ function resolveThemeAuthority(
   }
 
   const value = unwrapExpression(expression)
+
+  const statusPath = statusProjectionPath(value, declarations)
+  if (
+    statusPath?.length === 3 &&
+    statusPath[0] === 'statusColors' &&
+    ['info', 'success', 'warning', 'error'].includes(statusPath[1] ?? '') &&
+    ['default', 'hover', 'pressed', 'supplementary', 'onStatus'].includes(statusPath[2] ?? '')
+  ) {
+    return { authority: `status.${statusPath.slice(1).join('.')}`, valueKind: 'color' }
+  }
+
+  if (
+    ts.isTemplateExpression(value) &&
+    value.head.text === 'var(--ui-admin-border-width) solid ' &&
+    value.templateSpans.length === 1
+  ) {
+    const span = value.templateSpans[0]
+    const color =
+      span === undefined ? undefined : statusProjectionPath(span.expression, declarations)
+    if (
+      span?.literal.text === '' &&
+      color?.length === 3 &&
+      color[0] === 'statusColors' &&
+      ['info', 'success', 'warning', 'error'].includes(color[1] ?? '') &&
+      color[2] === 'default'
+    ) {
+      return { authority: `status.${color[1] ?? ''}.border`, valueKind: 'border' }
+    }
+  }
 
   if (ts.isIdentifier(value)) {
     if (value.text === 'navigationHoverSurface') {
@@ -3281,9 +3809,30 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('NAIVE_FOCUS_PRESENTATION')
   }
 
+  const statusBorders: ts.TemplateExpression[] = []
+  const collectStatusBorders = (node: ts.Node): void => {
+    if (ts.isTemplateExpression(node)) {
+      const authority = resolveThemeAuthority(node, declarations)
+      if (
+        authority.valueKind === 'border' &&
+        /^status\.(?:info|success|warning|error)\.border$/u.test(authority.authority)
+      ) {
+        statusBorders.push(node)
+      }
+    }
+    ts.forEachChild(node, collectStatusBorders)
+  }
+  collectStatusBorders(sourceFile)
+  let rawVisualSource = snapshot.themeAdapterSource
+  for (const expression of statusBorders.sort(
+    (left, right) => right.getStart() - left.getStart(),
+  )) {
+    rawVisualSource = `${rawVisualSource.slice(0, expression.getStart())}''${rawVisualSource.slice(expression.getEnd())}`
+  }
+
   if (
     /#[\da-f]{3,8}\b|\b(?:hsl|hwb|lab|lch|oklab|oklch|rgb)\s*\(|['"][^'"]*\b\d+(?:\.\d+)?(?:ms|s|px|rem)\b[^'"]*['"]|['"][^'"]*(?:\binset\s+|\s+solid\b)[^'"]*['"]/iu.test(
-      snapshot.themeAdapterSource,
+      rawVisualSource,
     )
   ) {
     violations.push('NAIVE_RAW_VISUAL_AUTHORITY')
@@ -5325,6 +5874,11 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     'controlPrimary:',
     'borderDefault:',
     'focusRing:',
+    'statusInfo:',
+    'statusSuccess:',
+    'statusWarning:',
+    'statusError:',
+    'projectUiAppearance(',
     'Object.freeze(reference)',
   ] as const
 
@@ -5368,7 +5922,7 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
     !source.includes(':options="themeSelectionOptions"') ||
     !source.includes('@update:model-value="updateThemeSelection"') ||
     !source.includes(':label="t(\'appearance.current-theme\')"') ||
-    [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 6 ||
+    [...source.matchAll(/\['--pavp-appearance-swatch'\]/gu)].length !== 10 ||
     !source.includes('currentSwatches(themePreviewForValue(option.value))') ||
     !source.includes('builtInAppearanceThemePreviews') ||
     !source.includes('projectAccessibleCustomAppearanceThemePreviews') ||
@@ -11960,7 +12514,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_RUNTIME_CONTEXT_READONLY',
-      runtimeContextSource.includes('Readonly<Ref<Readonly<EffectiveAppearanceState>>>') &&
+      runtimeContextSource.includes('Readonly<Ref<Readonly<UiAppearanceSnapshot>>>') &&
         !/\b(?:localStorage|sessionStorage|setItem)\b/u.test(runtimeContextSource),
     ],
     [
@@ -16252,7 +16806,7 @@ async function validateTokensAndLayout(): Promise<string[]> {
   if (
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
-    tokenManifest.schemaVersion !== 10 ||
+    tokenManifest.schemaVersion !== 11 ||
     tokenManifest.tokens.length !== 241 ||
     tokenManifest.activePublicRoles.length !== 53 ||
     tokenManifest.unoCssMappings.length !== 53 ||
@@ -16531,6 +17085,8 @@ async function validateAppearanceAndPageFacts(): Promise<{
       'provideAppearanceReadBoundary',
       'useAppearanceReadBoundary',
     ]) ||
+    !readBoundarySource.includes('Readonly<ShallowRef<Readonly<UiAppearanceSnapshot>>>') ||
+    [...readBoundarySource.matchAll(/\bshallowRef\s*</gu)].length !== 1 ||
     !exactSet(exportNames(mutationBoundarySource), [
       'AppearanceMutationBoundary',
       'AppearanceMutationResult',
@@ -16739,6 +17295,8 @@ async function validateNaiveOverrides(): Promise<string[]> {
     !segmentedSource.includes('<PavpRadioButtonPrimitive') ||
     !statusBadgeSource.includes('<PavpTagPrimitive') ||
     !statusBadgeSource.includes('bordered') ||
+    !statusBadgeSource.includes('var(--ui-color-status-success)') ||
+    !statusBadgeSource.includes('var(--ui-color-text-on-status-success)') ||
     /\b(?:checkable|closable|strong)\b/u.test(templateContent(statusBadgeSource)) ||
     !descriptionListSource.includes('<PavpDescriptionsPrimitive') ||
     !descriptionListSource.includes('bordered') ||
@@ -16772,7 +17330,7 @@ function validateInspectorProjections(): string[] {
   if (
     runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 53 ||
     runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 26 ||
-    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 10 ||
+    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 11 ||
     runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 400 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',

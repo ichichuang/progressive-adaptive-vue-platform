@@ -1,4 +1,6 @@
 import { generatedThemeRegistry } from '../generated/theme-registry'
+import { ProductPreferenceDefault } from '../runtime/appearance-defaults'
+import { projectUiAppearance } from '../runtime/ui-appearance-projection'
 import {
   validateCustomThemeDefinition,
   type CustomThemeRegistryEntry,
@@ -17,6 +19,10 @@ export interface AppearanceThemePreviewSwatches {
   readonly controlPrimary: string
   readonly borderDefault: string
   readonly focusRing: string
+  readonly statusInfo: string
+  readonly statusSuccess: string
+  readonly statusWarning: string
+  readonly statusError: string
 }
 
 export interface AppearanceThemePreviewProjection {
@@ -56,10 +62,24 @@ function requiredSwatch(
 }
 
 function projectSwatches(
-  definition: ThemeDefinition,
+  entry: ThemeRegistryEntry,
+  reference: ThemeReference,
   colorMode: ThemeColorMode,
   contrast: ThemeContrast,
 ): AppearanceThemePreviewSwatches {
+  const definition = entry.definition
+  const { statusColors } = projectUiAppearance(
+    {
+      ...ProductPreferenceDefault,
+      theme: reference,
+      colorMode,
+      contrast,
+      density: ProductPreferenceDefault.density.preset,
+      material: 'solid',
+    },
+    entry,
+  )
+
   return Object.freeze({
     surfacePage: requiredSwatch(definition, colorMode, contrast, 'color.surface.page'),
     surfacePanel: requiredSwatch(definition, colorMode, contrast, 'color.surface.panel'),
@@ -67,6 +87,10 @@ function projectSwatches(
     controlPrimary: requiredSwatch(definition, colorMode, contrast, 'color.control.primary'),
     borderDefault: requiredSwatch(definition, colorMode, contrast, 'color.border.default'),
     focusRing: requiredSwatch(definition, colorMode, contrast, 'color.focus.ring'),
+    statusInfo: statusColors.info.default,
+    statusSuccess: statusColors.success.default,
+    statusWarning: statusColors.warning.default,
+    statusError: statusColors.error.default,
   })
 }
 
@@ -83,12 +107,12 @@ function projectTheme(entry: ThemeRegistryEntry): AppearanceThemePreviewProjecti
     reference: Object.freeze(reference),
     planes: Object.freeze({
       light: Object.freeze({
-        standard: projectSwatches(entry.definition, 'light', 'standard'),
-        enhanced: projectSwatches(entry.definition, 'light', 'enhanced'),
+        standard: projectSwatches(entry, reference, 'light', 'standard'),
+        enhanced: projectSwatches(entry, reference, 'light', 'enhanced'),
       }),
       dark: Object.freeze({
-        standard: projectSwatches(entry.definition, 'dark', 'standard'),
-        enhanced: projectSwatches(entry.definition, 'dark', 'enhanced'),
+        standard: projectSwatches(entry, reference, 'dark', 'standard'),
+        enhanced: projectSwatches(entry, reference, 'dark', 'enhanced'),
       }),
     }),
   })

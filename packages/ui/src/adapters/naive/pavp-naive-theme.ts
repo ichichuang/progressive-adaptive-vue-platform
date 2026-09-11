@@ -1,4 +1,8 @@
-import { tokens, type EffectiveAppearanceState } from '@platform/design-system'
+import {
+  tokens,
+  type EffectiveAppearanceState,
+  type UiAppearanceSnapshot,
+} from '@platform/design-system'
 import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
 import commonDark from 'naive-ui/es/_styles/common/dark'
 import breadcrumbDark from 'naive-ui/es/breadcrumb/styles/dark'
@@ -69,8 +73,9 @@ const darkTheme = {
 } as const satisfies GlobalTheme
 
 /** Form-only overrides are consumed by the form adapters, without eager control imports. */
-export function createPavpNaiveFormThemeProjection(appearance: Readonly<EffectiveAppearanceState>) {
+export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppearanceSnapshot>) {
   const shared = createPavpNaiveThemeProjection(appearance).themeOverrides
+  const errorBorder = `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`
   const scrollbar = { color: colorBorder, colorHover: colorTextSecondary, borderRadius: radius }
   const Input = {
     heightMedium: enhancedTargetHeight,
@@ -96,12 +101,12 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<Effectiv
     caretColor: colorControl,
     loadingColor: colorControl,
     loadingColorError: colorText,
-    borderError: borderControl,
-    borderHoverError: borderControl,
-    borderFocusError: borderFocus,
+    borderError: errorBorder,
+    borderHoverError: errorBorder,
+    borderFocusError: errorBorder,
     colorFocusError: colorPanel,
     boxShadowFocusError: shadowFocusRing,
-    caretColorError: colorControl,
+    caretColorError: appearance.statusColors.error.default,
     clearColor: colorTextSecondary,
     clearColorHover: colorText,
     clearColorPressed: colorText,
@@ -120,7 +125,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<Effectiv
     Form: {
       labelTextColor: colorText,
       asteriskColor: colorText,
-      feedbackTextColorError: colorText,
+      feedbackTextColorError: appearance.statusColors.error.onStatus,
       feedbackTextColorWarning: colorText,
       feedbackTextColor: colorTextSecondary,
       labelFontSizeTopMedium: fontSize,
@@ -175,15 +180,15 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<Effectiv
           clearColor: colorTextSecondary,
           clearColorHover: colorText,
           clearColorPressed: colorText,
-          borderError: borderControl,
-          borderHoverError: borderControl,
-          borderActiveError: borderFocus,
-          borderFocusError: borderFocus,
+          borderError: errorBorder,
+          borderHoverError: errorBorder,
+          borderActiveError: errorBorder,
+          borderFocusError: errorBorder,
           boxShadowHoverError: 'none',
           boxShadowActiveError: shadowFocusRing,
           boxShadowFocusError: shadowFocusRing,
           colorActiveError: colorPanel,
-          caretColorError: colorControl,
+          caretColorError: appearance.statusColors.error.default,
           peers: { Popover: { color: colorPanel, textColor: colorText, boxShadow: shadowOverlay } },
         },
         InternalSelectMenu: {
@@ -283,7 +288,7 @@ function resolveMotionDuration(motion: EffectiveAppearanceState['motion']): stri
 }
 
 export function createPavpNaiveThemeProjection(
-  appearance: Readonly<EffectiveAppearanceState>,
+  appearance: Readonly<UiAppearanceSnapshot>,
 ): Readonly<PavpNaiveThemeProjection> {
   const material = resolveMaterialSurface(appearance.material)
   const projectedMotionDuration = resolveMotionDuration(appearance.motion)
@@ -344,6 +349,22 @@ export function createPavpNaiveThemeProjection(
       buttonBorderRadiusMedium: radius,
     },
     common: {
+      infoColor: appearance.statusColors.info.default,
+      infoColorHover: appearance.statusColors.info.hover,
+      infoColorPressed: appearance.statusColors.info.pressed,
+      infoColorSuppl: appearance.statusColors.info.supplementary,
+      successColor: appearance.statusColors.success.default,
+      successColorHover: appearance.statusColors.success.hover,
+      successColorPressed: appearance.statusColors.success.pressed,
+      successColorSuppl: appearance.statusColors.success.supplementary,
+      warningColor: appearance.statusColors.warning.default,
+      warningColorHover: appearance.statusColors.warning.hover,
+      warningColorPressed: appearance.statusColors.warning.pressed,
+      warningColorSuppl: appearance.statusColors.warning.supplementary,
+      errorColor: appearance.statusColors.error.default,
+      errorColorHover: appearance.statusColors.error.hover,
+      errorColorPressed: appearance.statusColors.error.pressed,
+      errorColorSuppl: appearance.statusColors.error.supplementary,
       primaryColorHover: colorControl,
       primaryColorPressed: colorControl,
       primaryColorSuppl: colorControl,
@@ -395,6 +416,38 @@ export function createPavpNaiveThemeProjection(
       fontWeightActive: fontWeightStrong,
     },
     Button: {
+      textColorInfo: appearance.statusColors.info.onStatus,
+      textColorHoverInfo: appearance.statusColors.info.onStatus,
+      textColorPressedInfo: appearance.statusColors.info.onStatus,
+      textColorFocusInfo: appearance.statusColors.info.onStatus,
+      borderInfo: `var(--ui-admin-border-width) solid ${appearance.statusColors.info.default}`,
+      borderHoverInfo: `var(--ui-admin-border-width) solid ${appearance.statusColors.info.default}`,
+      borderPressedInfo: `var(--ui-admin-border-width) solid ${appearance.statusColors.info.default}`,
+      borderFocusInfo: `var(--ui-admin-border-width) solid ${appearance.statusColors.info.default}`,
+      textColorSuccess: appearance.statusColors.success.onStatus,
+      textColorHoverSuccess: appearance.statusColors.success.onStatus,
+      textColorPressedSuccess: appearance.statusColors.success.onStatus,
+      textColorFocusSuccess: appearance.statusColors.success.onStatus,
+      borderSuccess: `var(--ui-admin-border-width) solid ${appearance.statusColors.success.default}`,
+      borderHoverSuccess: `var(--ui-admin-border-width) solid ${appearance.statusColors.success.default}`,
+      borderPressedSuccess: `var(--ui-admin-border-width) solid ${appearance.statusColors.success.default}`,
+      borderFocusSuccess: `var(--ui-admin-border-width) solid ${appearance.statusColors.success.default}`,
+      textColorWarning: appearance.statusColors.warning.onStatus,
+      textColorHoverWarning: appearance.statusColors.warning.onStatus,
+      textColorPressedWarning: appearance.statusColors.warning.onStatus,
+      textColorFocusWarning: appearance.statusColors.warning.onStatus,
+      borderWarning: `var(--ui-admin-border-width) solid ${appearance.statusColors.warning.default}`,
+      borderHoverWarning: `var(--ui-admin-border-width) solid ${appearance.statusColors.warning.default}`,
+      borderPressedWarning: `var(--ui-admin-border-width) solid ${appearance.statusColors.warning.default}`,
+      borderFocusWarning: `var(--ui-admin-border-width) solid ${appearance.statusColors.warning.default}`,
+      textColorError: appearance.statusColors.error.onStatus,
+      textColorHoverError: appearance.statusColors.error.onStatus,
+      textColorPressedError: appearance.statusColors.error.onStatus,
+      textColorFocusError: appearance.statusColors.error.onStatus,
+      borderError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
+      borderHoverError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
+      borderPressedError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
+      borderFocusError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       heightMedium: enhancedTargetHeight,
       borderRadiusMedium: radius,
       fontSizeMedium: fontSize,

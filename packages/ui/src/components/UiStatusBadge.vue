@@ -12,11 +12,17 @@ const props = defineProps<{
 }>()
 
 const toneClass = computed(() => `pavp-status-badge--${props.tone}`)
+const completeColor = Object.freeze({
+  color: 'var(--ui-color-status-success)',
+  textColor: 'var(--ui-color-text-on-status-success)',
+  borderColor: 'var(--ui-color-status-success)',
+})
 </script>
 
 <template>
   <PavpTagPrimitive
     bordered
+    v-bind="tone === 'complete' ? { color: completeColor } : {}"
     :class="toneClass"
   >
     {{ label }}
@@ -24,8 +30,7 @@ const toneClass = computed(() => `pavp-status-badge--${props.tone}`)
 </template>
 
 <style scoped>
-.pavp-status-badge--active,
-.pavp-status-badge--complete {
+.pavp-status-badge--active {
   color: var(--ui-color-text-primary);
 }
 

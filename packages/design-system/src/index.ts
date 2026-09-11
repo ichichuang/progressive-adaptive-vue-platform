@@ -23,6 +23,7 @@ export {
 } from './schema/preference.schema'
 export { ProductPreferenceDefault } from './runtime/appearance-defaults'
 export { applyAppearance, type EffectiveAppearanceState } from './runtime/apply-appearance'
+export { projectUiAppearance, type UiAppearanceSnapshot } from './runtime/ui-appearance-projection'
 export {
   migrateToExplicitThemePreference,
   type PreferenceMigrationResult,

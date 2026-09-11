@@ -14,6 +14,16 @@ export interface UnoCssClassProjection {
   readonly allowedCssProperties: readonly [string, ...string[]]
 }
 
+interface UnoCssPropertySpecificProjection {
+  readonly generatorKind: 'property-specific-exact-rule'
+  readonly family: 'color'
+  readonly key: string
+  readonly bindings: readonly [
+    { readonly className: string; readonly cssProperty: 'background-color' | 'border-color' },
+    ...{ readonly className: string; readonly cssProperty: 'background-color' | 'border-color' }[],
+  ]
+}
+
 export interface UnoCssContainerBoundaryContribution {
   readonly variantName: LayoutContainerVariantId
   readonly edge: 'minimum-inclusive' | 'maximum-exclusive'
@@ -32,7 +42,8 @@ export interface UnoCssContainerVariantProjection {
   ]
 }
 
-export type PublicRoleUnoCssProjection = UnoCssClassProjection | UnoCssContainerVariantProjection
+export type PublicRoleUnoCssProjection =
+  UnoCssClassProjection | UnoCssPropertySpecificProjection | UnoCssContainerVariantProjection
 
 export interface PublicRoleRecord {
   readonly id: string
@@ -75,6 +86,10 @@ export interface NamedContrastRecord {
 }
 
 export type UnoCssMappingRecord =
+  | (UnoCssPropertySpecificProjection & {
+      readonly roleId: string
+      readonly cssVariable: `--ui-${string}`
+    })
   | {
       readonly roleId: string
       readonly cssVariable: `--ui-${string}`
@@ -112,7 +127,7 @@ export function isActivePublicColorRole(record: PublicRoleRecord): record is Pub
 }
 
 export const PublicRoleRegistry = {
-  schemaVersion: 1,
+  schemaVersion: 2,
   status: 'active-current-public-surface',
   records: [
     {
@@ -306,11 +321,13 @@ export const PublicRoleRegistry = {
       contrastEndpointId: 'color.status.info',
       alphaContractId: null,
       unocss: {
-        generatorKind: 'exact-rule',
+        generatorKind: 'property-specific-exact-rule',
         family: 'color',
         key: 'status-info',
-        classes: ['bg-status-info'],
-        allowedCssProperties: ['background-color'],
+        bindings: [
+          { className: 'bg-status-info', cssProperty: 'background-color' },
+          { className: 'border-status-info', cssProperty: 'border-color' },
+        ],
       },
     },
     {
@@ -378,11 +395,13 @@ export const PublicRoleRegistry = {
       contrastEndpointId: 'color.status.success',
       alphaContractId: null,
       unocss: {
-        generatorKind: 'exact-rule',
+        generatorKind: 'property-specific-exact-rule',
         family: 'color',
         key: 'status-success',
-        classes: ['bg-status-success'],
-        allowedCssProperties: ['background-color'],
+        bindings: [
+          { className: 'bg-status-success', cssProperty: 'background-color' },
+          { className: 'border-status-success', cssProperty: 'border-color' },
+        ],
       },
     },
     {
@@ -450,11 +469,13 @@ export const PublicRoleRegistry = {
       contrastEndpointId: 'color.status.warning',
       alphaContractId: null,
       unocss: {
-        generatorKind: 'exact-rule',
+        generatorKind: 'property-specific-exact-rule',
         family: 'color',
         key: 'status-warning',
-        classes: ['bg-status-warning'],
-        allowedCssProperties: ['background-color'],
+        bindings: [
+          { className: 'bg-status-warning', cssProperty: 'background-color' },
+          { className: 'border-status-warning', cssProperty: 'border-color' },
+        ],
       },
     },
     {
@@ -522,11 +543,13 @@ export const PublicRoleRegistry = {
       contrastEndpointId: 'color.status.error',
       alphaContractId: null,
       unocss: {
-        generatorKind: 'exact-rule',
+        generatorKind: 'property-specific-exact-rule',
         family: 'color',
         key: 'status-error',
-        classes: ['bg-status-error'],
-        allowedCssProperties: ['background-color'],
+        bindings: [
+          { className: 'bg-status-error', cssProperty: 'background-color' },
+          { className: 'border-status-error', cssProperty: 'border-color' },
+        ],
       },
     },
     {
@@ -1081,7 +1104,7 @@ export const PublicRoleRegistry = {
     },
   ],
 } as const satisfies {
-  readonly schemaVersion: 1
+  readonly schemaVersion: 2
   readonly status: 'active-current-public-surface'
   readonly records: readonly PublicRoleRecord[]
 }
@@ -1505,6 +1528,19 @@ const publicRoleRecordSchema = z.strictObject({
   alphaContractId: z.literal('alpha-scrim-viewport').nullable(),
   unocss: z.discriminatedUnion('generatorKind', [
     z.strictObject({
+      generatorKind: z.literal('property-specific-exact-rule'),
+      family: z.literal('color'),
+      key: z.string().regex(/^[a-z][a-z0-9-]*$/u),
+      bindings: z
+        .array(
+          z.strictObject({
+            className: z.string().regex(/^[a-z][a-z0-9-]*$/u),
+            cssProperty: z.enum(['background-color', 'border-color']),
+          }),
+        )
+        .min(1),
+    }),
+    z.strictObject({
       generatorKind: z.enum(['exact-rule', 'theme-entry']),
       family: z.string().regex(/^[a-z][a-z0-9-]*$/u),
       key: z.string().regex(/^[a-z][a-z0-9-]*$/u),
@@ -1642,7 +1678,7 @@ export function validatePublicRoleRegistry(
 ): readonly PublicRoleRecord[] {
   const parsed = z
     .strictObject({
-      schemaVersion: z.literal(1),
+      schemaVersion: z.literal(2),
       status: z.literal('active-current-public-surface'),
       records: z.array(publicRoleRecordSchema),
     })
@@ -1660,7 +1696,11 @@ export function validatePublicRoleRegistry(
   )
   assertUnique(
     records.flatMap((record) =>
-      record.unocss.generatorKind === 'container-variant' ? [] : record.unocss.classes,
+      record.unocss.generatorKind === 'container-variant'
+        ? []
+        : record.unocss.generatorKind === 'property-specific-exact-rule'
+          ? record.unocss.bindings.map((binding) => binding.className)
+          : record.unocss.classes,
     ),
     'Public Role Registry UnoCSS classes',
   )
@@ -1710,8 +1750,14 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    44,
+    40,
     'Exact UnoCSS rule count',
+  )
+  assertExactCount(
+    records.filter((record) => record.unocss.generatorKind === 'property-specific-exact-rule')
+      .length,
+    4,
+    'Property-specific UnoCSS mapping count',
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'theme-entry').length,
@@ -1773,7 +1819,26 @@ export function validatePublicRoleRegistry(
       continue
     }
 
-    if (record.unocss.generatorKind === 'theme-entry') {
+    if (record.unocss.generatorKind === 'property-specific-exact-rule') {
+      const tone = record.id.slice('color.status.'.length)
+
+      if (
+        !['info', 'success', 'warning', 'error'].includes(tone) ||
+        record.id !== `color.status.${tone}` ||
+        record.unocss.key !== `status-${tone}`
+      ) {
+        throw new Error(`${record.id}: property-specific rules require a base Status role.`)
+      }
+
+      assertExactRegistryRecords(
+        record.unocss.bindings,
+        [
+          { className: `bg-status-${tone}`, cssProperty: 'background-color' },
+          { className: `border-status-${tone}`, cssProperty: 'border-color' },
+        ],
+        `${record.id} property-specific UnoCSS bindings`,
+      )
+    } else if (record.unocss.generatorKind === 'theme-entry') {
       const contract = (
         themeEntryContracts as Readonly<
           Record<

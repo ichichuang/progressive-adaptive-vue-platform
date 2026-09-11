@@ -512,6 +512,10 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
       <span>{{ t('appearance.control-foreground') }}</span>
       <span>{{ t('appearance.border') }}</span>
       <span>{{ t('appearance.focus') }}</span>
+      <span>{{ t('appearance.status-info') }}</span>
+      <span>{{ t('appearance.status-success') }}</span>
+      <span>{{ t('appearance.status-warning') }}</span>
+      <span>{{ t('appearance.status-error') }}</span>
     </div>
 
     <UiRadioCardGroup
@@ -580,6 +584,34 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             :style="{
               ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
                 .focusRing,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .statusInfo,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .statusSuccess,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .statusWarning,
+            }"
+          />
+          <span
+            class="pavp-appearance-theme-swatch"
+            :style="{
+              ['--pavp-appearance-swatch']: currentSwatches(themePreviewForValue(option.value))
+                .statusError,
             }"
           />
         </span>
@@ -958,7 +990,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
 .pavp-appearance-theme-legend {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: var(--ui-space-content-gap);
   padding-inline: var(--ui-space-content-gap);
   font-size: var(--ui-font-size-body);
@@ -997,7 +1029,7 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
 
 .pavp-appearance-theme-swatches {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(10, 1fr);
   overflow: hidden;
   border-radius: var(--ui-radius-panel);
 }

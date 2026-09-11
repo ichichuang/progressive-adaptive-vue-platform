@@ -2581,4 +2581,34 @@ export const generatedThemeRegistry = {
       },
     ),
   ],
+  statusSupplementary: {
+    light: {
+      standard: {
+        info: 'rgba(44, 107, 155, 1)',
+        success: 'rgba(54, 118, 70, 1)',
+        warning: 'rgba(135, 93, 19, 1)',
+        error: 'rgba(151, 77, 72, 1)',
+      },
+      enhanced: {
+        info: 'rgba(30, 70, 101, 1)',
+        success: 'rgba(36, 77, 46, 1)',
+        warning: 'rgba(88, 60, 16, 1)',
+        error: 'rgba(98, 50, 47, 1)',
+      },
+    },
+    dark: {
+      standard: {
+        info: 'rgba(103, 165, 217, 1)',
+        success: 'rgba(111, 176, 125, 1)',
+        warning: 'rgba(195, 149, 83, 1)',
+        error: 'rgba(214, 133, 127, 1)',
+      },
+      enhanced: {
+        info: 'rgba(161, 201, 236, 1)',
+        success: 'rgba(167, 209, 174, 1)',
+        warning: 'rgba(221, 191, 149, 1)',
+        error: 'rgba(236, 180, 175, 1)',
+      },
+    },
+  },
 } as const

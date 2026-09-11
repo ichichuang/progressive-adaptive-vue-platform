@@ -26,8 +26,10 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
 
 <template>
   <NFormItem
-    v-bind="formNativeAttributes(attrs)"
-    :validation-status="binding.invalid ? 'error' : 'success'"
+    v-bind="{
+      ...formNativeAttributes(attrs),
+      ...(binding.invalid ? { validationStatus: 'error' as const } : {}),
+    }"
     class="pavp-form-field"
     :data-invalid="binding.invalid"
     :data-readonly="binding.readonly"
@@ -78,9 +80,12 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
   color: var(--ui-color-text-secondary);
 }
 .pavp-form-field__errors {
-  color: var(--ui-color-text-primary);
+  color: var(--ui-color-text-on-status-error);
   margin: 0;
   padding-inline-start: var(--ui-space-content-gap);
+}
+.pavp-form-field .n-form-item-feedback--error {
+  background-color: var(--ui-color-status-error);
 }
 .pavp-form-field .n-form-item-label {
   white-space: normal;
