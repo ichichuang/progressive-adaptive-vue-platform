@@ -1,4 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { dirname, extname, join, relative, resolve, sep } from 'node:path'
 import { TextDecoder } from 'node:util'
 
@@ -13,13 +14,23 @@ import { validateI18nArchitecture } from './check-i18n'
 import { validateRouterArchitecture } from './check-router'
 import { validateRuntimeKernelArchitecture } from './check-runtime-kernel'
 import { validateStorageArchitecture } from './check-storage'
+import { ordinaryStyleDebt } from './style-debt-baseline'
+import {
+  generatedStyleOwners,
+  scssFallbackOwners,
+  styleCompilerAdmission,
+  styleDeclarationKey,
+  styleSourceAdmission,
+  validateScssFallbackOutputContract,
+} from './style-ownership'
 
 type JsonObject = Record<string, unknown>
 
 const rootDirectory = process.cwd()
 const sourceExtensions = new Set(['.ts', '.vue'])
 const importSourceExtensions = new Set(['.cjs', '.js', '.mjs', '.ts', '.vue'])
-const excludedApplicationDirectories = new Set(['dist', 'node_modules'])
+const excludedDirectoryNames = new Set(['.git', 'node_modules'])
+const generatedOutputDirectories = new Set([resolve(rootDirectory, 'apps/web/dist')])
 const rootTypeScriptConfigurationSuffix = '.config.ts'
 const inactiveCapabilityPackages = [
   '@capacitor/core',
@@ -51,7 +62,6 @@ const inactiveCapabilityPackages = [
   'react',
   'react-dom',
   'reka-ui',
-  'sass',
   'tailwindcss',
   'turbo',
   'unplugin-vue-router',
@@ -115,17 +125,28 @@ function inactiveCapabilityPackage(specifier: string): string | undefined {
 
 async function validateManifestDependencies(): Promise<string[]> {
   const violations: string[] = []
-
-  for (const [description, manifestPath] of [
+  const manifestEntries = [
     ['root package', resolve(rootDirectory, 'package.json')],
     ...projectConfig.workspaces.map(
       (workspace) =>
         [workspace.name, resolve(rootDirectory, workspace.path, 'package.json')] as const,
     ),
-  ] as const) {
+  ] as const
+  const manifests = new Map<string, JsonObject>()
+
+  for (const [description, manifestPath] of manifestEntries) {
     const manifest = await readJsonObject(manifestPath)
+    manifests.set(relative(rootDirectory, manifestPath), manifest)
 
     for (const [dependency] of dependencyEntries(manifest)) {
+      if (
+        /^sass(?:-embedded)?$/u.test(dependency) &&
+        !styleCompilerAdmission(relative(rootDirectory, manifestPath), dependency)
+      ) {
+        violations.push(
+          `${description}: style compiler requires explicit support and an exact fallback owner.`,
+        )
+      }
       const inactivePackage = inactiveCapabilityPackage(dependency)
 
       if (
@@ -179,6 +200,37 @@ async function validateManifestDependencies(): Promise<string[]> {
       } else if (declarations.length !== 0) {
         violations.push(`${description}: ${dependency} belongs only to ${owner}.`)
       }
+    }
+  }
+
+  const compilerOwners = new Set<string>()
+  for (const owner of scssFallbackOwners) {
+    const compilerOwner = JSON.stringify([owner.manifestPath, owner.compiler])
+    if (compilerOwners.has(compilerOwner)) continue
+    compilerOwners.add(compilerOwner)
+    const manifest = manifests.get(owner.manifestPath)
+    if (manifest === undefined) {
+      violations.push(
+        `${owner.path}: SCSS fallback compiler manifest "${owner.manifestPath}" is not a workspace manifest.`,
+      )
+      continue
+    }
+    const declarations = dependencyEntries(manifest).filter(([name]) => name === owner.compiler)
+    const runtimeDependencies = manifest['dependencies']
+    const developmentDependencies = manifest['devDependencies']
+    const directDependency =
+      (isJsonObject(runtimeDependencies) &&
+        typeof runtimeDependencies[owner.compiler] === 'string') ||
+      (isJsonObject(developmentDependencies) &&
+        typeof developmentDependencies[owner.compiler] === 'string')
+    if (
+      declarations.length !== 1 ||
+      !directDependency ||
+      !styleCompilerAdmission(owner.manifestPath, owner.compiler)
+    ) {
+      violations.push(
+        `${owner.path}: SCSS fallback compiler requires one direct manifest dependency and explicit compiler support.`,
+      )
     }
   }
 
@@ -255,7 +307,11 @@ async function collectSourceFiles(
   for (const entry of entries) {
     const path = join(directory, entry.name)
 
-    if (entry.isDirectory()) {
+    if (
+      entry.isDirectory() &&
+      !excludedDirectoryNames.has(entry.name) &&
+      !generatedOutputDirectories.has(path)
+    ) {
       files.push(...(await collectSourceFiles(path, extensions)))
     } else if (entry.isFile() && extensions.has(extname(entry.name))) {
       files.push(path)
@@ -274,7 +330,11 @@ async function collectApplicationFiles(directory: string): Promise<string[]> {
   for (const entry of entries) {
     const path = join(directory, entry.name)
 
-    if (entry.isDirectory() && !excludedApplicationDirectories.has(entry.name)) {
+    if (
+      entry.isDirectory() &&
+      !excludedDirectoryNames.has(entry.name) &&
+      !generatedOutputDirectories.has(path)
+    ) {
       files.push(...(await collectApplicationFiles(path)))
     } else if (entry.isFile()) {
       files.push(path)
@@ -373,6 +433,18 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
   const normalizedDisplayPath = displayPath.split(sep).join('/')
   const fromLayer = sourceLayer(sourcePath)
   const inactivePackage = inactiveCapabilityPackage(specifier)
+
+  if (
+    /^sass(?:-embedded)?(?:\/|$)/u.test(specifier) &&
+    !(
+      normalizedDisplayPath === 'scripts/architecture/check-boundaries.ts' &&
+      styleCompilerAdmission('package.json', specifier)
+    )
+  ) {
+    violations.push(
+      `${displayPath}: style compiler imports require the explicit Node compiler owner.`,
+    )
+  }
 
   if (
     (specifier === '@intlify/message-compiler' ||
@@ -594,18 +666,11 @@ function cssLikeContent(path: string, sourceText: string): string {
     return sourceText
   }
 
-  if (extension === '.vue') {
-    return [...sourceText.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gu)]
-      .map((match) => match[1] ?? '')
-      .join('\n')
-  }
-
   return ''
 }
 
 async function validateNoApplicationOpticalEffects(): Promise<string[]> {
   const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
-  const appearancePagePath = resolve(rootDirectory, 'apps/web/src/pages/appearance.vue')
   const forbiddenOpticalSyntax =
     /\b(?:backdrop-filter|filter)\s*:|(?:blur|brightness|saturate)\s*\(/u
   const violations: string[] = []
@@ -614,7 +679,6 @@ async function validateNoApplicationOpticalEffects(): Promise<string[]> {
     const sourceText = decodeUtf8Text(await readFile(applicationFile))
 
     if (
-      applicationFile !== appearancePagePath &&
       sourceText !== undefined &&
       forbiddenOpticalSyntax.test(cssLikeContent(applicationFile, sourceText))
     ) {
@@ -627,26 +691,190 @@ async function validateNoApplicationOpticalEffects(): Promise<string[]> {
   return violations
 }
 
-function vueStyleBlocks(sourceText: string): readonly string[] {
-  return [...sourceText.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/gu)].map(
-    (match) => match[1] ?? '',
-  )
-}
-
 async function validateVueStyleGuardrails(): Promise<string[]> {
-  const roots = [resolve(rootDirectory, 'apps/web/src'), resolve(rootDirectory, 'packages/ui/src')]
-  const vueFiles = (
-    await Promise.all(roots.map((root) => collectSourceFiles(root, new Set(['.vue']))))
-  ).flat()
+  const styleFiles = await collectSourceFiles(
+    rootDirectory,
+    new Set(['.vue', '.css', '.scss', '.sass']),
+  )
   const violations: string[] = []
+  const styleFilePaths = new Set(styleFiles.map((path) => relative(rootDirectory, path)))
+  const baselineScopes = new Set<string>()
+  const baselineDeclarations = new Set<string>()
+  const scssSourceIdentity = (path: string, block: number, lang: string, scoped: boolean): string =>
+    JSON.stringify([path, block, lang, scoped])
+  const scssOwnerIdentities = new Set<string>()
+  const scssSourceIdentities = new Map<string, number>()
 
-  for (const path of vueFiles) {
+  for (const owner of scssFallbackOwners) {
+    const identity = scssSourceIdentity(owner.path, owner.block, owner.lang, owner.scoped)
+    if (scssOwnerIdentities.has(identity)) {
+      violations.push(`${owner.path}: SCSS fallback source identity has more than one owner.`)
+    }
+    scssOwnerIdentities.add(identity)
+  }
+
+  for (const group of ordinaryStyleDebt) {
+    const scope = styleDeclarationKey({
+      path: group.path,
+      block: group.block,
+      context: group.context,
+      selector: group.selector,
+      property: '',
+      value: '',
+      important: false,
+    })
+    if (!styleFilePaths.has(group.path)) {
+      violations.push(`${group.path}: ordinary style-debt baseline source is unavailable.`)
+    }
+    if (group.declarations.length === 0) {
+      violations.push(`${group.path}: ordinary style-debt baseline scope must own a declaration.`)
+    }
+    if (baselineScopes.has(scope)) {
+      violations.push(`${group.path}: ordinary style-debt baseline scope is duplicated.`)
+    }
+    baselineScopes.add(scope)
+    for (const [property, value, important] of group.declarations) {
+      const declaration = styleDeclarationKey({
+        path: group.path,
+        block: group.block,
+        context: group.context,
+        selector: group.selector,
+        property,
+        value,
+        important,
+      })
+      if (baselineDeclarations.has(declaration)) {
+        violations.push(`${group.path}: ordinary style-debt declaration identity is duplicated.`)
+      }
+      baselineDeclarations.add(declaration)
+    }
+  }
+  const compileStyle = (path: string, block: number, lang: string, source: string): string => {
+    if (lang === 'css') return source
+    const owner = scssFallbackOwners.find(
+      (entry) => entry.path === path && entry.block === block && entry.lang === lang,
+    )
+    if (owner === undefined) throw new Error('Admitted style compiler owner is unavailable.')
+    const requireCompiler = createRequire(resolve(rootDirectory, owner.manifestPath))
+    const compiler = requireCompiler(owner.compiler) as {
+      readonly compileString: (
+        source: string,
+        options: { readonly syntax: 'scss' | 'indented'; readonly style: 'expanded' },
+      ) => { readonly css: string }
+    }
+    return compiler.compileString(source, {
+      syntax: lang === 'sass' ? 'indented' : 'scss',
+      style: 'expanded',
+    }).css
+  }
+  const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
+  const compiler = requireFromWeb('vue/compiler-sfc') as {
+    readonly parse: (
+      source: string,
+      options: { readonly filename: string },
+    ) => {
+      readonly errors: readonly unknown[]
+      readonly descriptor: {
+        readonly styles: readonly {
+          readonly content: string
+          readonly scoped?: boolean
+          readonly module?: string | boolean
+          readonly lang?: string
+          readonly src?: string
+        }[]
+      }
+    }
+  }
+
+  for (const path of styleFiles) {
     const displayPath = relative(rootDirectory, path)
-    const blocks = vueStyleBlocks(await readFile(path, 'utf8'))
+    if (extname(path) !== '.vue') {
+      const source = await readFile(path, 'utf8')
+      const language = extname(path).slice(1)
+      if (language === 'scss' || language === 'sass') {
+        const identity = scssSourceIdentity(displayPath, 0, language, true)
+        scssSourceIdentities.set(identity, (scssSourceIdentities.get(identity) ?? 0) + 1)
+      }
+      const admission = styleSourceAdmission({
+        path: displayPath,
+        block: 0,
+        lang: language,
+        scoped: true,
+        content: source,
+      })
+      violations.push(...admission.map((message) => `${displayPath}: ${message}`))
+      if (admission.length === 0) {
+        if (language === 'css' && generatedStyleOwners.some((owner) => owner.path === displayPath))
+          continue
+        const compiledCss = compileStyle(
+          displayPath,
+          0,
+          extname(path).slice(1),
+          await readFile(path, 'utf8'),
+        )
+        if (language === 'scss' || language === 'sass') {
+          const owner = scssFallbackOwners.find(
+            (entry) => entry.path === displayPath && entry.block === 0 && entry.lang === language,
+          )
+          if (owner === undefined) throw new Error('Admitted SCSS fallback owner is unavailable.')
+          violations.push(...validateScssFallbackOutputContract(owner, compiledCss))
+        }
+        const result = await stylelint.lint({
+          code: compiledCss,
+          codeFilename: path,
+          configFile: resolve(rootDirectory, 'stylelint.config.mjs'),
+          cwd: rootDirectory,
+          quietDeprecationWarnings: true,
+        })
+        for (const entry of result.results)
+          for (const warning of entry.warnings) {
+            violations.push(`${displayPath}: ${warning.text} (${warning.rule}).`)
+          }
+      }
+      continue
+    }
+    const parsed = compiler.parse(await readFile(path, 'utf8'), { filename: path })
+    if (parsed.errors.length > 0) {
+      violations.push(`${displayPath}: invalid Vue SFC; style ownership could not be established.`)
+      continue
+    }
+    const blocks = parsed.descriptor.styles
 
-    for (const [index, code] of blocks.entries()) {
+    for (const [index, block] of blocks.entries()) {
+      const language = block.lang ?? 'css'
+      if (language === 'scss' || language === 'sass') {
+        const identity = scssSourceIdentity(displayPath, index, language, block.scoped === true)
+        scssSourceIdentities.set(identity, (scssSourceIdentities.get(identity) ?? 0) + 1)
+      }
+      const admission = styleSourceAdmission({
+        path: displayPath,
+        block: index,
+        lang: language,
+        scoped: block.scoped === true,
+        ...(block.module === undefined ? {} : { module: block.module }),
+        ...(block.src === undefined ? {} : { src: block.src }),
+        content: block.content,
+      })
+      if (admission.length > 0) {
+        violations.push(
+          ...admission.map((message) => `${displayPath} <style ${String(index + 1)}>: ${message}`),
+        )
+        continue
+      }
+      const compiledCss = compileStyle(displayPath, index, block.lang ?? 'css', block.content)
+      if (language === 'scss' || language === 'sass') {
+        const owner = scssFallbackOwners.find(
+          (entry) =>
+            entry.path === displayPath &&
+            entry.block === index &&
+            entry.lang === language &&
+            entry.scoped === (block.scoped === true),
+        )
+        if (owner === undefined) throw new Error('Admitted SCSS fallback owner is unavailable.')
+        violations.push(...validateScssFallbackOutputContract(owner, compiledCss))
+      }
       const result = await stylelint.lint({
-        code,
+        code: compiledCss,
         codeFilename: `${path}.style-${String(index + 1)}.css`,
         configFile: resolve(rootDirectory, 'stylelint.config.mjs'),
         cwd: rootDirectory,
@@ -660,6 +888,13 @@ async function validateVueStyleGuardrails(): Promise<string[]> {
           )
         }
       }
+    }
+  }
+
+  for (const owner of scssFallbackOwners) {
+    const identity = scssSourceIdentity(owner.path, owner.block, owner.lang, owner.scoped)
+    if (scssSourceIdentities.get(identity) !== 1) {
+      violations.push(`${owner.path}: SCSS fallback owner must match exactly one source block.`)
     }
   }
 
@@ -920,3 +1155,5 @@ if (process.argv[1]?.endsWith('check-boundaries.ts')) {
 
   console.log('Architecture boundaries: valid')
 }
+
+export { validateScssFallbackOutputContract } from './style-ownership'

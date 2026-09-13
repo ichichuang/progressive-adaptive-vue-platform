@@ -1,14 +1,77 @@
 import tokenManifest from './packages/design-system/src/generated/tokens.manifest.json' with { type: 'json' }
+import { structuralColorKeywords } from './scripts/architecture/style-ownership.ts'
+import { mappingCssProperties } from './scripts/eslint-rules/style-authority.ts'
 
-const rawColorFunction = /(?:color|hsl|hsla|hwb|lab|lch|oklab|oklch|rgb|rgba)\s*\(/iu
-const rawTime = /(?:^|[\s(,])[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:ms|s)(?=$|[\s),;/])/iu
+// color-mix() has current declaration-level owners. The owner-aware PAVP rule
+// rejects every other occurrence; this generic regexp cannot exempt an exact
+// declaration identity without granting a file-wide exception.
+const rawColorFunction =
+  /(?:color|color-contrast|contrast-color|device-cmyk|gray|hsl|hsla|hwb|lab|lch|light-dark|oklab|oklch|rgb|rgba)\s*\(/iu
+const rawTime =
+  /(?:^|[\s(,])(?!(?:[-+]?(?:0+(?:\.0*)?|\.0+)(?:e[-+]?\d+)?)(?:ms|s)(?=$|[\s),;/]))[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?(?:ms|s)(?=$|[\s),;/])/iu
 const rawTimingFunction =
-  /\b(?:ease|ease-in|ease-in-out|ease-out|linear|step-end|step-start)\b|(?:cubic-bezier|steps)\s*\(/iu
+  /\b(?:ease|ease-in|ease-in-out|ease-out|linear|step-end|step-start)\b(?!-)|(?:cubic-bezier|steps)\s*\(/iu
 const transitionPropertyAll = /(?:^|,)\s*all\s*(?=,|$)/iu
 const cssWideValues = ['inherit', 'initial', 'revert', 'revert-layer', 'unset']
 
 function escapeRegularExpression(value) {
   return value.replaceAll(/[.*+?^${}()|[\]\\]/gu, '\\$&')
+}
+
+function asciiCaseInsensitivePattern(value) {
+  return [...value]
+    .map((character) =>
+      /[a-z]/iu.test(character)
+        ? `[${character.toLowerCase()}${character.toUpperCase()}]`
+        : escapeRegularExpression(character),
+    )
+    .join('')
+}
+
+const cssVarFunction = asciiCaseInsensitivePattern('var')
+const cssCalcFunction = asciiCaseInsensitivePattern('calc')
+const cssMaxFunction = asciiCaseInsensitivePattern('max')
+const cssEnvFunction = asciiCaseInsensitivePattern('env')
+const cssTrivia = String.raw`(?:\s|\/\*[\s\S]*?\*\/)*`
+const cssWidePatterns = cssWideValues.map(asciiCaseInsensitivePattern)
+const structuralColorPatterns = structuralColorKeywords.map(asciiCaseInsensitivePattern)
+const zeroNumberPattern = String.raw`[-+]?(?:0+(?:\.0*)?|\.0+)(?:[eE][-+]?\d+)?`
+const cssLengthUnits = [
+  'cap',
+  'ch',
+  'cm',
+  'cqb',
+  'cqh',
+  'cqi',
+  'cqmax',
+  'cqmin',
+  'cqw',
+  'em',
+  'ex',
+  'ic',
+  'in',
+  'lh',
+  'mm',
+  'pc',
+  'pt',
+  'px',
+  'q',
+  'rcap',
+  'rch',
+  'rem',
+  'rex',
+  'ric',
+  'rlh',
+  ...['', 's', 'l', 'd'].flatMap((prefix) =>
+    ['vw', 'vh', 'vi', 'vb', 'vmin', 'vmax'].map((unit) => `${prefix}${unit}`),
+  ),
+]
+const cssLengthUnitPattern = cssLengthUnits.map(asciiCaseInsensitivePattern).join('|')
+const zeroLengthPattern = `${zeroNumberPattern}(?:%|${cssLengthUnitPattern})?`
+const zeroTimePattern = `${zeroNumberPattern}(?:[mM][sS]|[sS])`
+
+function cssVariablePattern(namePattern) {
+  return `${cssVarFunction}\\(${cssTrivia}${namePattern}${cssTrivia}\\)`
 }
 
 function variablesForMappings(predicate) {
@@ -23,36 +86,28 @@ function variablesForMappings(predicate) {
 }
 
 function mappingAllowsProperty(mapping, property) {
-  return mapping.generatorKind === 'property-specific-exact-rule'
-    ? mapping.bindings.some((binding) => binding.cssProperty === property)
-    : mapping.allowedCssProperties.includes(property)
+  return mappingCssProperties(mapping).includes(property)
 }
 
 function disallowOutsideAuthorities(variables, allowedValues = [], allowedPatterns = []) {
   const authorities = [
-    ...variables.map((variable) => `var\\(${escapeRegularExpression(variable)}\\)`),
-    ...allowedValues.map(escapeRegularExpression),
+    ...variables.map((variable) => cssVariablePattern(escapeRegularExpression(variable))),
+    ...allowedValues.map((value) =>
+      /[a-z]/iu.test(value) ? asciiCaseInsensitivePattern(value) : escapeRegularExpression(value),
+    ),
     ...allowedPatterns,
-    ...cssWideValues,
+    ...cssWidePatterns,
   ]
 
   return new RegExp(`^(?!(?:${authorities.join('|')})$).+`, 'u')
 }
 
-function disallowOutsideDimensionAuthorities(variables) {
-  const authorities = [
-    ...variables.map((variable) => `var\\(${escapeRegularExpression(variable)}\\)`),
-    ...cssWideValues,
-  ]
-  const structuralValues =
-    '(?:0|auto|fit-content|max-content|min-content|none|(?:calc|clamp|fit-content|max|min|minmax)\\(.+\\)|[-+]?(?:\\d+(?:\\.\\d+)?|\\.\\d+)(?:%|dvh|dvw|fr|lvh|lvw|svh|svw|vh|vw))'
-
-  return new RegExp(`^(?!(?:${authorities.join('|')}|${structuralValues})$).+`, 'u')
-}
-
 function disallowUnapprovedUiVariables(variables) {
   const authorities = variables.map(escapeRegularExpression).join('|')
-  return new RegExp(`var\\((?!(?:${authorities})\\))--ui-[a-z0-9-]+\\)`, 'u')
+  return new RegExp(
+    `${cssVarFunction}\\(${cssTrivia}(?!(?:${authorities})${cssTrivia}\\))--ui-[a-z0-9-]+${cssTrivia}\\)`,
+    'u',
+  )
 }
 
 const backgroundColorVariables = variablesForMappings((mapping) =>
@@ -65,10 +120,6 @@ const textColorVariables = variablesForMappings((mapping) =>
   mappingAllowsProperty(mapping, 'color'),
 )
 const spacingVariables = variablesForMappings((mapping) => mapping.family === 'spacing')
-const heightVariables = variablesForMappings((mapping) => mappingAllowsProperty(mapping, 'height'))
-const maxWidthVariables = variablesForMappings((mapping) =>
-  mappingAllowsProperty(mapping, 'max-width'),
-)
 const radiusVariables = variablesForMappings((mapping) => mapping.family === 'radius')
 const shadowVariables = variablesForMappings((mapping) => mapping.family === 'shadow')
 const zIndexVariables = variablesForMappings((mapping) => mapping.family === 'z-index')
@@ -112,11 +163,16 @@ const shellMaterialColorVariables = [
   ),
 ]
 const approvedSpacingPatterns = [
-  'var\\(--pavp-safe-area-(?:block|inline|bottom|left|right|top)[a-z-]*\\)',
-  'max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\)(?:\\s+max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\))?',
-  'var\\(--ui-space-[a-z-]+\\)\\s+max\\(var\\(--ui-space-[a-z-]+\\), var\\(--pavp-safe-area-[a-z-]+\\)\\)',
+  zeroLengthPattern,
+  cssVariablePattern('--pavp-safe-area-(?:block|inline|bottom|left|right|top)[a-z-]*'),
+  `${cssEnvFunction}\\(${cssTrivia}(?:safe-area-(?:max-)?inset-(?:top|right|bottom|left)|keyboard-inset-(?:top|right|bottom|left|width|height)|titlebar-area-(?:x|y|width|height)|viewport-segment-(?:width|height|top|right|bottom|left)\\s+\\d+\\s+\\d+)${cssTrivia}(?:,${cssTrivia}${zeroLengthPattern}${cssTrivia})?\\)`,
+  `${cssMaxFunction}\\(${cssTrivia}${cssVariablePattern('--ui-space-[a-z-]+')}${cssTrivia},${cssTrivia}${cssVariablePattern('--pavp-safe-area-[a-z-]+')}${cssTrivia}\\)(?:\\s+${cssMaxFunction}\\(${cssTrivia}${cssVariablePattern('--ui-space-[a-z-]+')}${cssTrivia},${cssTrivia}${cssVariablePattern('--pavp-safe-area-[a-z-]+')}${cssTrivia}\\))?`,
+  `${cssVariablePattern('--ui-space-[a-z-]+')}\\s+${cssMaxFunction}\\(${cssTrivia}${cssVariablePattern('--ui-space-[a-z-]+')}${cssTrivia},${cssTrivia}${cssVariablePattern('--pavp-safe-area-[a-z-]+')}${cssTrivia}\\)`,
 ]
-const approvedDurationPatterns = ['calc\\(var\\(--ui-motion-duration\\) / 2\\)']
+const approvedDurationPatterns = [
+  `${cssCalcFunction}\\(${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}/${cssTrivia}2${cssTrivia}\\)`,
+  zeroTimePattern,
+]
 const nonShorthandColorProperties =
   '/^(?:caret-color|fill|outline-color|stroke|text-decoration-color)$/'
 const borderShorthandProperties =
@@ -129,7 +185,6 @@ const motionShorthandProperties = '/^(?:animation|transition)$/'
 const motionDurationProperties =
   '/^(?:animation-delay|animation-duration|transition-delay|transition-duration)$/'
 const motionEasingProperties = '/^(?:animation-timing-function|transition-timing-function)$/'
-const cssColorWideValues = ['currentColor', 'currentcolor']
 const colorRulesWithoutExactAuthority = [rawColorFunction]
 const backgroundShorthandRules = [
   rawColorFunction,
@@ -151,7 +206,7 @@ const motionShorthandRules = [
 ]
 const colorAuthorityRules = (variables) => [
   rawColorFunction,
-  disallowOutsideAuthorities(variables, cssColorWideValues),
+  disallowOutsideAuthorities(variables, [], structuralColorPatterns),
 ]
 const transitionPropertyRules = [transitionPropertyAll]
 const transitionRules = [/(?:^|[,\s])all(?=[,\s]|$)/iu]
@@ -160,9 +215,9 @@ const transitionAuthorityProperties = 'transition-property'
 const transitionShorthandProperty = 'transition'
 const typographyAuthorities = {
   'font-family': [disallowOutsideAuthorities(fontFamilyVariables)],
-  'font-size': [disallowOutsideAuthorities(fontSizeVariables, ['0'])],
+  'font-size': [disallowOutsideAuthorities(fontSizeVariables, ['0'], [zeroLengthPattern])],
   'font-weight': [disallowOutsideAuthorities(fontWeightVariables)],
-  'line-height': [disallowOutsideAuthorities(lineHeightVariables, ['0'])],
+  'line-height': [disallowOutsideAuthorities(lineHeightVariables, ['0'], [zeroLengthPattern])],
 }
 const motionAuthorityRules = {
   [motionShorthandProperties]: motionShorthandRules,
@@ -181,17 +236,15 @@ const visualAuthorityRules = {
   color: colorAuthorityRules(textColorVariables),
   [nonShorthandColorProperties]: colorRulesWithoutExactAuthority,
   [spacingProperties]: [
-    disallowOutsideAuthorities(spacingVariables, ['0', 'auto'], approvedSpacingPatterns),
+    disallowOutsideAuthorities(spacingVariables, ['0', 'auto', 'normal'], approvedSpacingPatterns),
   ],
-  height: [disallowOutsideDimensionAuthorities(heightVariables)],
-  'max-width': [disallowOutsideDimensionAuthorities(maxWidthVariables)],
-  [radiusProperties]: [disallowOutsideAuthorities(radiusVariables, ['0'])],
+  [radiusProperties]: [disallowOutsideAuthorities(radiusVariables, ['0'], [zeroLengthPattern])],
   'box-shadow': [
     rawColorFunction,
     disallowOutsideAuthorities([...shadowVariables, ...adminShadowVariables], ['none']),
   ],
   'text-shadow': [rawColorFunction, disallowOutsideAuthorities([], ['none'])],
-  'z-index': [disallowOutsideAuthorities(zIndexVariables, ['auto'])],
+  'z-index': [disallowOutsideAuthorities(zIndexVariables, ['auto'], [zeroNumberPattern])],
   ...typographyAuthorities,
   ...motionAuthorityRules,
 }
@@ -205,8 +258,7 @@ const shellVisualAuthorityRules = {
   ]),
 }
 
-const routeTransitionFullDuration =
-  'calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)'
+const routeTransitionFullDurationPattern = `${cssCalcFunction}\\(${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}\\+${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}/${cssTrivia}2${cssTrivia}\\)`
 const routeTransitionVisualAuthorityRules = {
   ...Object.fromEntries(
     Object.entries(visualAuthorityRules).filter(
@@ -218,14 +270,15 @@ const routeTransitionVisualAuthorityRules = {
   'animation-duration': [
     disallowOutsideAuthorities(
       durationVariables,
-      [routeTransitionFullDuration],
-      approvedDurationPatterns,
+      [],
+      [...approvedDurationPatterns, routeTransitionFullDurationPattern],
     ),
   ],
-  animation: [new RegExp(escapeRegularExpression(routeTransitionFullDuration), 'u')],
+  animation: [new RegExp(routeTransitionFullDurationPattern, 'u')],
 }
 
 export default {
+  plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
     {
       files: ['apps/web/src/app/router/route-transition/route-transition.css'],
@@ -237,24 +290,17 @@ export default {
       files: ['**/apps/web/src/pages/appearance.vue.style-*.css'],
       rules: {
         'declaration-property-value-disallowed-list': shellVisualAuthorityRules,
-        'property-disallowed-list': ['filter'],
       },
     },
     {
       files: ['**/packages/ui/src/components/UiAdminShell.vue.style-*.css'],
       rules: {
         'declaration-property-value-disallowed-list': shellVisualAuthorityRules,
-        'property-disallowed-list': ['filter'],
-      },
-    },
-    {
-      files: ['**/packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue.style-*.css'],
-      rules: {
-        'declaration-no-important': null,
       },
     },
   ],
   rules: {
+    'pavp/style-authority': true,
     'annotation-no-unknown': true,
     'at-rule-no-unknown': true,
     'block-no-empty': true,
@@ -262,17 +308,18 @@ export default {
     'color-no-hex': true,
     'color-no-invalid-hex': true,
     'declaration-block-no-duplicate-properties': true,
-    'declaration-no-important': true,
+    // Exact !important and optical declarations are enforced by pavp/style-authority.
     'declaration-property-value-disallowed-list': visualAuthorityRules,
     'font-family-no-duplicate-names': true,
     'function-calc-no-unspaced-operator': true,
+    'keyframe-block-no-duplicate-selectors': true,
     'keyframe-declaration-no-important': true,
     'no-descending-specificity': true,
     'no-duplicate-at-import-rules': true,
     'no-duplicate-selectors': true,
     'no-empty-source': true,
     'property-no-unknown': true,
-    'property-disallowed-list': ['-webkit-backdrop-filter', 'backdrop-filter', 'filter'],
+    'property-disallowed-list': ['filter'],
     'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }],
     'selector-pseudo-element-no-unknown': true,
     'unit-no-unknown': true,

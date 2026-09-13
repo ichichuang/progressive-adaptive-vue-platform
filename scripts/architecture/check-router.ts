@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { extname, join, relative, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 
 import stylelint from 'stylelint'
@@ -3728,57 +3729,118 @@ function runRouteTransitionFullPaceNegativeProbes(
 }
 
 interface RouteTransitionStylelintPolicySnapshot {
-  readonly globalDurationPatterns: readonly string[]
-  readonly scopeFiles: readonly string[]
+  readonly globalConfig: stylelint.Config
   readonly routeConfig: stylelint.Config
   readonly otherConfigs: readonly stylelint.Config[]
+  readonly overrideScopes: readonly {
+    readonly files: readonly string[]
+    readonly ruleKeys: readonly string[]
+    readonly config: stylelint.Config
+  }[]
+}
+
+const declarationPolicyRule = 'declaration-property-value-disallowed-list'
+type DeclarationPolicy = Record<string, readonly (string | RegExp)[]>
+
+function stylelintDeclarationPolicy(config: stylelint.Config): DeclarationPolicy {
+  const setting: unknown = config.rules?.[declarationPolicyRule]
+  // resolveConfig normalizes rules to [primary, secondary]; direct config may be primary only.
+  const primary: unknown = Array.isArray(setting) ? setting[0] : setting
+  if (primary === null || typeof primary !== 'object' || Array.isArray(primary)) {
+    throw new Error('Stylelint declaration policy must have a property-value map.')
+  }
+  const policy: DeclarationPolicy = {}
+  for (const [property, values] of Object.entries(primary)) {
+    if (
+      !Array.isArray(values) ||
+      !values.every((value: unknown) => typeof value === 'string' || value instanceof RegExp)
+    ) {
+      throw new Error('Stylelint declaration policy must contain only string/RegExp value arrays.')
+    }
+    policy[property] = values
+  }
+  return policy
+}
+
+function withStylelintDeclarationPolicy(
+  config: stylelint.Config,
+  primary: DeclarationPolicy,
+): stylelint.Config {
+  const setting: unknown = config.rules?.[declarationPolicyRule]
+  const secondary: unknown = Array.isArray(setting) ? setting[1] : undefined
+  if (
+    (Array.isArray(setting) && setting.length > 2) ||
+    (secondary !== undefined &&
+      (secondary === null || typeof secondary !== 'object' || Array.isArray(secondary)))
+  ) {
+    throw new Error('Stylelint declaration policy has invalid secondary options.')
+  }
+  return {
+    ...config,
+    rules: {
+      ...config.rules,
+      [declarationPolicyRule]: secondary === undefined ? [primary] : [primary, secondary],
+    },
+  }
+}
+
+function declarationPolicyProbeConfig(config: stylelint.Config): stylelint.Config {
+  return {
+    ...config,
+    rules: {
+      ...config.rules,
+      // This checker exercises the independently scoped core declaration rule.
+      // Exact authoring ownership is verified by the architecture/style gate itself.
+      'pavp/style-authority': null,
+    },
+  }
 }
 
 async function routeTransitionStylelintPolicyGovernance(cssSource: string): Promise<{
   readonly proofs: readonly RouteTransitionSourceProofResult[]
   readonly probes: readonly RouteTransitionSourceNegativeProbeResult[]
 }> {
+  const globalPath = 'route-transition-stylelint-policy.css'
   const routePath = 'apps/web/src/app/router/route-transition/route-transition.css'
+  const appearanceScope = '**/apps/web/src/pages/appearance.vue.style-*.css'
+  const adminShellScope = '**/packages/ui/src/components/UiAdminShell.vue.style-*.css'
+  const expectedOverrideScopes = [[routePath], [appearanceScope], [adminShellScope]] as const
   const otherPaths = [
     'apps/web/src/app/styles/layers.css',
     'apps/web/src/app/router/route-transition/other.css',
     'packages/ui/src/other.css',
   ]
-  const source = await readFile(resolve(rootDirectory, 'stylelint.config.mjs'), 'utf8')
-  const parsed = ts.createSourceFile(
-    'stylelint.config.mjs',
-    source,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.JS,
+  const configModule: unknown = await import(
+    pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
   )
-  let globalDurationPatterns: readonly string[] = []
-  let scopeFiles: readonly string[] = []
-  const strings = (node: ts.Node): readonly string[] =>
-    ts.isArrayLiteralExpression(node)
-      ? node.elements.map((entry) => (ts.isStringLiteral(entry) ? entry.text : ''))
-      : []
-  const visit = (node: ts.Node): void => {
-    if (
-      ts.isVariableDeclaration(node) &&
-      ts.isIdentifier(node.name) &&
-      node.name.text === 'approvedDurationPatterns' &&
-      node.initializer !== undefined
-    ) {
-      globalDurationPatterns = strings(node.initializer)
-    }
-    if (
-      ts.isPropertyAssignment(node) &&
-      node.name.getText(parsed) === 'files' &&
-      strings(node.initializer).includes(routePath)
-    ) {
-      scopeFiles = [...scopeFiles, ...strings(node.initializer)]
-    }
-    ts.forEachChild(node, visit)
+  if (configModule === null || typeof configModule !== 'object' || !('default' in configModule)) {
+    throw new Error('Route Transition Stylelint configuration is unavailable.')
   }
-  visit(parsed)
+  const sourceConfig = configModule.default as stylelint.Config
+  const { overrides = [], ...baseConfig } = sourceConfig
+  // Enumerate the actual exported scopes, not private source variable names or
+  // representative paths. Inherited scopes need explicit admission before use.
+  if (baseConfig.extends !== undefined || overrides.some((scope) => scope.extends !== undefined)) {
+    throw new Error('Route Transition Stylelint inherited scopes are not admitted.')
+  }
+  const overrideScopes = await Promise.all(
+    overrides.map(async (scope) => {
+      const config = await stylelint.resolveConfig(resolve(rootDirectory, globalPath), {
+        config: { ...baseConfig, overrides: [{ ...scope, files: [globalPath] }] },
+        configBasedir: rootDirectory,
+        cwd: rootDirectory,
+      })
+      if (config === undefined)
+        throw new Error('Route Transition Stylelint override is unavailable.')
+      return {
+        files: typeof scope.files === 'string' ? [scope.files] : scope.files,
+        ruleKeys: Object.keys(scope.rules ?? {}).sort(),
+        config,
+      }
+    }),
+  )
   const configs = await Promise.all(
-    [routePath, ...otherPaths].map(async (path) => {
+    [globalPath, routePath, ...otherPaths].map(async (path) => {
       const config = await stylelint.resolveConfig(resolve(rootDirectory, path), {
         configFile: resolve(rootDirectory, 'stylelint.config.mjs'),
         cwd: rootDirectory,
@@ -3787,17 +3849,20 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
       return config
     }),
   )
-  const routeConfig = configs[0]
-  if (routeConfig === undefined) throw new Error('Route Transition Stylelint scope is unavailable.')
+  const [globalConfig, routeConfig] = configs
+  if (globalConfig === undefined || routeConfig === undefined) {
+    throw new Error('Route Transition Stylelint scope is unavailable.')
+  }
   const baseline: RouteTransitionStylelintPolicySnapshot = {
-    globalDurationPatterns,
-    scopeFiles,
+    globalConfig,
     routeConfig,
-    otherConfigs: configs.slice(1),
+    otherConfigs: configs.slice(2),
+    overrideScopes,
   }
   const full = 'calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)'
   const half = 'calc(var(--ui-motion-duration) / 2)'
-  const rule = 'declaration-property-value-disallowed-list'
+  const shellMaterial = 'var(--ui-material-chrome-background)'
+  const rule = declarationPolicyRule
   const check = async (
     config: stylelint.Config,
     path: string,
@@ -3808,7 +3873,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     const result = await stylelint.lint({
       code: `::view-transition-group(root) { ${property}: ${value}; }`,
       codeFilename: resolve(rootDirectory, path),
-      config,
+      config: declarationPolicyProbeConfig(config),
       cwd: rootDirectory,
     })
     const warnings = result.results.flatMap((entry) => entry.warnings)
@@ -3831,6 +3896,33 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         check(config, otherPaths[index] ?? '', 'animation-duration', half, false),
       ]),
     )
+    const overrideChecks = await Promise.all(
+      snapshot.overrideScopes.map(async ({ files, ruleKeys, config }) => {
+        const routeScope = isDeepStrictEqual(files, [routePath])
+        const shellScope =
+          isDeepStrictEqual(files, [appearanceScope]) || isDeepStrictEqual(files, [adminShellScope])
+        return (
+          (routeScope || shellScope) &&
+          isDeepStrictEqual(ruleKeys, [declarationPolicyRule]) &&
+          (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
+          (await check(config, globalPath, 'animation-duration', half, false)) &&
+          (await check(config, globalPath, 'transition-duration', full, true)) &&
+          (await check(config, globalPath, 'background', shellMaterial, routeScope))
+        )
+      }),
+    )
+    const globalDurationChecks = await Promise.all([
+      check(snapshot.globalConfig, globalPath, 'animation-duration', full, true),
+      check(snapshot.globalConfig, globalPath, 'animation-duration', '300ms', true),
+      check(
+        snapshot.globalConfig,
+        globalPath,
+        'animation-duration',
+        'var(--ui-motion-duration)',
+        false,
+      ),
+      check(snapshot.globalConfig, globalPath, 'animation-duration', half, false),
+    ])
     const invalidDurations = [
       '300ms',
       '0.3s',
@@ -3861,14 +3953,18 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     return [
       {
         id: 'ROUTE_TRANSITION_SOURCE_50_STYLELINT_GLOBAL_DURATION',
-        passed: isDeepStrictEqual(snapshot.globalDurationPatterns, [
-          'calc\\(var\\(--ui-motion-duration\\) / 2\\)',
-        ]),
+        passed: globalDurationChecks.every(Boolean),
       },
       {
         id: 'ROUTE_TRANSITION_SOURCE_51_STYLELINT_FILE_SCOPE',
         passed:
-          isDeepStrictEqual(snapshot.scopeFiles, [routePath]) &&
+          snapshot.overrideScopes.length === expectedOverrideScopes.length &&
+          expectedOverrideScopes.every(
+            (expected) =>
+              snapshot.overrideScopes.filter(({ files }) => isDeepStrictEqual(files, expected))
+                .length === 1,
+          ) &&
+          overrideChecks.every(Boolean) &&
           snapshot.otherConfigs.length === otherPaths.length &&
           scopeChecks.every(Boolean),
       },
@@ -3879,59 +3975,135 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     ]
   }
   const proofs = await proofResults(baseline)
-  const preservedBaseline = structuredClone(baseline)
-  const mutations: readonly (readonly [string, string, RouteTransitionStylelintPolicySnapshot])[] =
+  // Snapshot only the guarded rule data these probes replace. Plugins and optional
+  // secondary callbacks retain their executable references in the effective config.
+  const declarationPolicies = () =>
+    [...configs, ...overrideScopes.map(({ config }) => config)].map(stylelintDeclarationPolicy)
+  const preservedPolicies = structuredClone(declarationPolicies())
+  const mutations: readonly (readonly [
+    string,
+    string,
+    readonly RouteTransitionStylelintPolicySnapshot[],
+  ])[] = [
     [
+      'full-duration-added-to-global-policy',
+      'ROUTE_TRANSITION_SOURCE_50_STYLELINT_GLOBAL_DURATION',
       [
-        'full-duration-added-to-global-policy',
-        'ROUTE_TRANSITION_SOURCE_50_STYLELINT_GLOBAL_DURATION',
         {
           ...baseline,
-          globalDurationPatterns: [...baseline.globalDurationPatterns, full],
+          globalConfig: baseline.routeConfig,
         },
       ],
+    ],
+    [
+      'full-duration-scope-expanded-to-other-css',
+      'ROUTE_TRANSITION_SOURCE_51_STYLELINT_FILE_SCOPE',
       [
-        'full-duration-scope-expanded-to-other-css',
-        'ROUTE_TRANSITION_SOURCE_51_STYLELINT_FILE_SCOPE',
+        ...['**/*.css', 'apps/web/src/new-feature.css'].map((path) => ({
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            files: isDeepStrictEqual(scope.files, [routePath]) ? [routePath, path] : scope.files,
+          })),
+        })),
         {
           ...baseline,
-          scopeFiles: ['**/*.css'],
-          otherConfigs: baseline.otherConfigs.map(() => baseline.routeConfig),
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            files: isDeepStrictEqual(scope.files, [appearanceScope])
+              ? ['**/apps/web/src/pages/**/*.vue.style-*.css']
+              : scope.files,
+          })),
         },
-      ],
-      [
-        'full-duration-policy-accepts-raw-or-broad-values',
-        'ROUTE_TRANSITION_SOURCE_52_STYLELINT_EXACT_DECLARATION',
         {
           ...baseline,
-          routeConfig: {
-            ...baseline.routeConfig,
-            rules: {
-              ...baseline.routeConfig.rules,
-              [rule]: { 'animation-duration': [/^never$/u] },
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            files: isDeepStrictEqual(scope.files, [adminShellScope])
+              ? ['**/packages/ui/src/components/**/*.vue.style-*.css']
+              : scope.files,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [appearanceScope])
+              ? baseline.routeConfig
+              : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: [
+            ...baseline.overrideScopes,
+            {
+              files: ['apps/web/src/new-feature/**/*.css'],
+              ruleKeys: [declarationPolicyRule],
+              config: baseline.routeConfig,
             },
-          },
+          ],
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            ruleKeys: isDeepStrictEqual(scope.files, [routePath])
+              ? [...scope.ruleKeys, 'pavp/style-authority'].sort()
+              : scope.ruleKeys,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            ruleKeys: isDeepStrictEqual(scope.files, [appearanceScope])
+              ? [...scope.ruleKeys, 'color-no-hex'].sort()
+              : scope.ruleKeys,
+          })),
         },
       ],
-    ]
+    ],
+    [
+      'full-duration-policy-accepts-raw-or-broad-values',
+      'ROUTE_TRANSITION_SOURCE_52_STYLELINT_EXACT_DECLARATION',
+      [
+        {
+          ...baseline,
+          routeConfig: withStylelintDeclarationPolicy(baseline.routeConfig, {
+            'animation-duration': [/^never$/u],
+          }),
+        },
+      ],
+    ],
+  ]
   const probes = await Promise.all(
-    mutations.map(async ([id, expectedFailureCode, mutated]) => ({
+    mutations.map(async ([id, expectedFailureCode, variants]) => ({
       id,
       expectedFailureCode,
       passed:
         proofs.every((proof) => proof.passed) &&
-        !isDeepStrictEqual(mutated, baseline) &&
-        isDeepStrictEqual(
-          (await proofResults(mutated)).filter((proof) => !proof.passed).map((proof) => proof.id),
-          [expectedFailureCode],
-        ),
+        (
+          await Promise.all(
+            variants.map(
+              async (mutated) =>
+                !isDeepStrictEqual(mutated, baseline) &&
+                isDeepStrictEqual(
+                  (await proofResults(mutated))
+                    .filter((proof) => !proof.passed)
+                    .map((proof) => proof.id),
+                  [expectedFailureCode],
+                ),
+            ),
+          )
+        ).every(Boolean),
     })),
   )
   return {
     proofs,
     probes: probes.map((probe) => ({
       ...probe,
-      passed: probe.passed && isDeepStrictEqual(baseline, preservedBaseline),
+      passed: probe.passed && isDeepStrictEqual(declarationPolicies(), preservedPolicies),
     })),
   }
 }
@@ -4213,7 +4385,7 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
         ]
         return declarations.map(async ([property, value, rejected]) => {
           const result = await stylelint.lint({
-            config,
+            config: declarationPolicyProbeConfig(config),
             code: `::view-transition-group(root) { ${property}: ${value}; }`,
             codeFilename: resolve(rootDirectory, paths[index] ?? routePath),
           })
@@ -4239,32 +4411,26 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
     )
     return [...new Set(results.filter((result) => !result.passed).map((result) => result.code))]
   }
-  const policyBaseline = structuredClone(configs)
+  const declarationPolicies = () => configs.map(stylelintDeclarationPolicy)
+  const policyBaseline = structuredClone(declarationPolicies())
   const policyErrors = await policyFailures(configs)
   violations.push(...policyErrors)
   const routeConfig = configs[0]
   if (routeConfig === undefined) throw new Error('Divider Stylelint route config is unavailable.')
-  const restoredMarginException = (config: stylelint.Config): stylelint.Config => ({
-    ...config,
-    rules: {
-      ...config.rules,
-      'declaration-property-value-disallowed-list': {
-        ...Object.fromEntries(
-          Object.entries(
-            config.rules?.['declaration-property-value-disallowed-list'] as Record<string, unknown>,
-          ).map(([property, values]) => [
-            property.startsWith('/^') && property.includes('margin')
-              ? property.replace('/^', '/^(?!margin-inline-start$)')
-              : property,
-            values,
-          ]),
-        ),
-        'margin-inline-start': [
-          /^(?!(?:0|auto|var\(--ui-space-content-gap\)|calc\(-1 \* var\(--ui-admin-border-width\)\))$)/u,
-        ],
-      },
-    },
-  })
+  const restoredMarginException = (config: stylelint.Config): stylelint.Config =>
+    withStylelintDeclarationPolicy(config, {
+      ...Object.fromEntries(
+        Object.entries(stylelintDeclarationPolicy(config)).map(([property, values]) => [
+          property.startsWith('/^') && property.includes('margin')
+            ? property.replace('/^', '/^(?!margin-inline-start$)')
+            : property,
+          values,
+        ]),
+      ),
+      'margin-inline-start': [
+        /^(?!(?:0|auto|var\(--ui-space-content-gap\)|calc\(-1 \* var\(--ui-admin-border-width\)\))$)/u,
+      ],
+    })
   const policyMutations: readonly (readonly [string, readonly stylelint.Config[]])[] = [
     [
       'DIVIDER_POLICY_GLOBAL_SCOPE',
@@ -4274,13 +4440,7 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
     [
       'DIVIDER_POLICY_EXACT',
       [
-        {
-          ...routeConfig,
-          rules: {
-            ...routeConfig.rules,
-            'declaration-property-value-disallowed-list': { 'margin-inline-start': [/^never$/u] },
-          },
-        },
+        withStylelintDeclarationPolicy(routeConfig, { 'margin-inline-start': [/^never$/u] }),
         ...configs.slice(1),
       ],
     ],
@@ -4290,7 +4450,9 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
       violations.push(`${code}: divider policy in-memory negative probe failed.`)
     }
   }
-  if (!isDeepStrictEqual(configs, policyBaseline)) violations.push('DIVIDER_POLICY_PROBE_RESIDUE')
+  if (!isDeepStrictEqual(declarationPolicies(), policyBaseline)) {
+    violations.push('DIVIDER_POLICY_PROBE_RESIDUE')
+  }
   return violations
 }
 

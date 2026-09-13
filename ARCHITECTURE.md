@@ -10959,7 +10959,7 @@ transition-all
 
 ## 15.6 UnoCSS-First Styling Author Boundary
 
-本节冻结 **UnoCSS First, Semantic Authority First**。它是 §37.2.15 的目标合同，不宣称现有源码或 Checker 已完成迁移。正常作者链路唯一为：
+本节冻结 **UnoCSS First, Semantic Authority First**。它起源于 §37.2.15 的目标合同，并由其后的限定作者治理候选实现机器边界；这不宣称现有 Style Debt 已迁移，也不宣称 Size Authority、Density Projection 或 Native Cascade 已完成。正常作者链路唯一为：
 
 ```text
 Canonical PAVP semantic authority
@@ -10970,23 +10970,26 @@ Canonical PAVP semantic authority
 
 Public Roles、Design Tokens、Layout Registry、Interaction/Motion 合同及其他明确准入的 PAVP Registry 继续拥有语义与值；UnoCSS 是普通作者入口和消费投影，不是 Source of Truth。不得把 CSS Variables、Uno Theme/Rule/Shortcut、Vendor Theme Config 或未来 Sass 变成第二套颜色、Spacing、Dimension、Typography、Motion、Layer 或 Theme 权威。
 
-### Five author categories
+### Six author categories
 
-下面 A–E 是**作者责任分类**，与 §37.2.15 的审计迁移证据 A–E 是两个不同维度；不能按文件所在目录给整个文件授予例外。
+下面 A–F 是**作者责任分类**，与 §37.2.15 的审计迁移证据 A–E 是两个不同维度；不能按文件所在目录给整个文件授予例外。
 
 | 作者类别                                         | 责任与允许边界                                                                                                                                                                                                                                                         |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A — Ordinary PAVP UI Authoring                   | 应用页面、Public UI、Shell 自有普通 DOM、能力展示页面，以及未来 Control Center/User Dock 的普通 DOM。默认使用已生成语义 UnoCSS 与合法结构类；不新增 `<style>`、`<style scoped>`、`<style module>`、页面自有 CSS/SCSS、静态 Inline Style 或伪装成动态绑定的静态设计值。 |
-| B — Private Vendor Adapter Styling               | 仅处理 `.n-*`、`.os-*` 等 Vendor 内部 DOM、其伪元素/状态、无法从 PAVP Template 直接控制的 Selector/API。先使用已支持的 Vendor Theme/Configuration API；确实不足才允许私有 Selector Fallback。所有设计值仍来自 PAVP，现有 CSS 可继续使用，不要求 Sass。                 |
-| C — Browser / Platform / Accessibility Styling   | 浏览器伪元素、View Transition Pseudo-element、Forced Colors、Safe Area、Native Scrollbar Fallback、浏览器专属 Selector、无法避免的伪元素和可访问性兜底。按命名的平台责任消费既有权威；不是普通布局或视觉设计的 CSS 逃生口。                                            |
-| D — Generated / Runtime Style Authority          | Token/Theme Bank 生成、Critical First Paint、经过验证的 Runtime Variable、Custom Theme Apply/Rollback 与既有生成产物。继续由唯一 Generator/Runtime Owner 写入，不机械改为 UnoCSS；合法的 `style.setProperty` 受原输入验证与事务合同约束。                              |
-| E — Private Interaction / Motion Runtime Styling | 私有 Motion Owner 所需的 motion-v Transform、实际测量几何与动画运行时值。遵守 §24 的 Full/Reduced/None、生命周期和清理合同；不能借 Motion 文件位置隐藏普通静态设计。                                                                                                   |
+| A — Ordinary PAVP UI Authoring                   | 应用页面、Public UI、Shell 自有普通 DOM、能力展示页面，以及未来 Control Center/User Dock 的普通 DOM。先使用已生成语义 UnoCSS 与合法结构类；缺少可复用能力时扩展 Canonical Token/Mapping，不新增普通 `<style>`、页面自有 CSS、静态 Inline Style 或伪装成动态绑定的静态设计值。 |
+| B — Private Vendor Adapter Styling               | 仅处理 Vendor 内部 DOM、伪元素/状态或无法从 PAVP Template 控制的 Selector/API。先使用已支持的 Vendor Theme/Configuration API；不足时才由精确路径、Style Block、Selector、Property/Value 责任注册 Adapter，不因 `.n-*`、`.os-*` 或目录位置自动获得授权。               |
+| C — Browser / Platform / Accessibility Styling   | 浏览器伪元素、View Transition Pseudo-element、Forced Colors、Safe Area、Native Scrollbar Fallback、浏览器专属 Selector 和可访问性兜底。按精确 Selector、At-rule、Property/Value 与命名平台责任消费既有权威；不是普通布局或视觉设计的 CSS 逃生口。                  |
+| D — Generated / Runtime Style Authority          | Token/Theme Bank 生成、Critical First Paint、经过验证的 Runtime Variable、Custom Theme Apply/Rollback 与既有生成产物。继续由唯一 Generator/Runtime Owner 写入；合法 Style Sink 受精确 API、输入来源、Property、变量身份及事务合同约束。                         |
+| E — Private Interaction / Motion Runtime Styling | 私有 Motion Owner 所需的 motion-v Transform、实际测量几何、命名 Keyframe Family 与动画运行时值。遵守 §24 的 Full/Reduced/None、生命周期和清理合同；不能借 Motion 文件位置隐藏普通静态设计。                                                                      |
+| F — Legitimate Scoped SCSS Fallback              | 仅在 UnoCSS 无法可靠表达复杂伪元素、结构依赖 Selector、Keyframe、第三方内部 DOM 或浏览器/平台兼容责任时，作为最后手段注册 `LEGITIMATE_SCSS_FALLBACK`。Owner 必须精确到路径、Scoped Block、Selector/At-rule、Property/Value、私有变量与 Keyframe 身份；不能建立平行设计系统。 |
 
-同一 SFC 可以包含普通 DOM 与平台/Vendor 责任，但每个责任分别适用规则。Vendor Theme API 输出、Browser Selector 与 Motion Runtime 都不能独立定义 Palette、Spacing、Dimension、Motion 或 z-index。公共 CSS Variable 只由已准入 Authority 声明；局部 Custom Property 只能传递命名私有算法/平台状态或组合已准入值，不能变成隐蔽公共 Token、全局默认值或第二可变权威。
+同一 SFC 可以包含普通 DOM 与平台/Vendor 责任，但每个责任分别适用规则。Generated、Vendor、Browser、Platform、Runtime、Motion 与 Scoped SCSS 是不同 Owner Category；不能为了获得 SCSS Fallback 权限而改写分类。Vendor Theme API 输出、Browser Selector 与 Motion Runtime 都不能独立定义 Palette、Spacing、Dimension、Motion 或 z-index。
+
+公共 CSS Variable 只由已准入 Authority 声明。每个 Private Custom Property 必须登记精确身份、用途、Writer/Consumer、允许数据来源与 Property 责任；引用一个公共变量不自动授权新的局部设计变量链。当前源码只读取 `--pavp-scrollbar-color` 与 `--pavp-scrollbar-hover`，未证明项目内 Writer，二者归类为未解析 Fallback Input；Owner 提及的 `--pavp-scrollbar-color-hover` 在当前源码中不存在。不得据此虚构 Runtime Writer 或 Active Theme Fork。
 
 ### Governed values and structural grammar
 
-必须由既有语义权威决定的设计值包括：颜色、Spacing、可复用 Padding/Inset、稳定 Width/Height、Shell Geometry、Typography、Radius、Border Width、Shadow、z-index/Layer、Duration/Easing、重复使用的 Scrollbar Dimension 和 Target Size。改变书写语法不改变其权威要求。
+必须由既有语义权威决定的设计值包括：颜色、Spacing、可复用 Padding/Inset、稳定 Width/Height/Flex Basis、Shell Geometry、Typography Shorthand/Family/Size/Weight/Line Height/Tracking、Radius、Border/Outline/Focus Geometry、Shadow、z-index/Layer、Duration/Easing、静态视觉 Transform、重复使用的 Scrollbar Dimension 和 Target Size。改变书写语法不改变其权威要求。
 
 `0`、`auto`、`inherit`、`none`、`100%`、`1fr`、`minmax(0, 1fr)`、Intrinsic Sizing、Grid/Flex Mechanics 和 Safe-area `env()` 的 `0px` Fallback 可以表达纯结构/平台语法，不自动要求新增 Token；不能把任意百分比、Viewport Unit 或每个数字一概视为已准入结构值，也不把所有结构常量 Token 化。
 
@@ -11006,29 +11009,36 @@ Admin Workbench 的响应式作者必须复用 §1.2B.1 的 `layout-narrow:`、`
 
 普通 UI 禁止静态 `style` Attribute；静态尺寸、颜色或 Token 值包装成 `:style`、JS Object、Computed 或 Vendor `content-style`，仍不成为 Runtime 例外。动态 `:style` / JS Style Write 仅可属于命名的已验证 Theme Preview、实际 Layout Measurement、Motion Runtime，或静态 Class 确实无法表达的真实 Vendor Runtime Content Style。必须可从架构与 Owning Checker 识别其 Owner、输入及写入边界，没有“动态所以允许”的通用豁免。
 
-迁移采用 **No New Debt + Touch-and-Migrate**：新普通 UI 按本节编写；旧普通样式债务只在其 Owning Responsibility 被一个已授权任务实质修改时，迁移该任务直接触及且已有适用 Mapping 的普通责任。§37.2.15 审计 A/B 债务暂时保留，不能以既有存在为由新增同类债务，也不要求本次或任何局部任务清空整个仓库。缺少合法权威/Mapping 时停止并请求最小准入，不扩大任务。已冻结的跨文件合同与 Checker 要在未来对应源码任务中同步，不能借迁移擅改行为或解除既有约束。
+迁移采用 **No New Debt + Touch-and-Migrate**：新普通 UI 按本节编写；旧普通样式债务按 File、Style Block Identity、At-rule Context、Selector、Property、Normalized Value 与 Important State 冻结为声明级 Baseline。Baseline 声明可以删除或迁移；不得新增普通声明、Selector、Style Block、扩大值范围或通过同文件/Selector Prefix 取得新权限。旧普通责任被已授权任务实质修改时，迁移该任务直接触及且已有适用 Mapping 的部分；未触及债务继续按冻结 Baseline 保留。§37.2.15 审计 A/B 债务暂时保留，不要求本次或任何局部任务清空整个仓库。缺少合法权威/Mapping 时停止并请求最小准入，不扩大任务。
 
-审计 C/D/E 的合法 Vendor、Browser/Platform、Interaction 和 Generated/Runtime 责任继续保留；只把其中普通作者责任迁移，不机械删除 CSS，不迁移运行时写值为静态类。新普通 SFC Style / Magic-value Authoring 的机器拒绝在未来 Enforcement 实施并接入 Gate 后生效，当前合同冻结不代表机器已覆盖。
+审计 C/D/E 的合法 Vendor、Browser/Platform、Interaction 和 Generated/Runtime 责任继续保留；只把其中普通作者责任迁移，不机械删除 CSS，不迁移运行时写值为静态类。现有 Keyframe Family、Private Variable 与 `!important` 只由精确 Owner Identity 保留；At-rule 后代、Pseudo-selector、`.pavp-*`、`.n-*`、`@supports` 或整个文件本身都不授予权限。
 
 ### Sass and upstream mechanism boundary
 
-**Sass remains NOT_ADMITTED**。当前项目 Manifest 没有直接准入 Sass；Lockfile 中 Vite 的可选 `sass` / `sass-embedded` Peer 声明不是项目 Admission。本任务不安装、不修改依赖。未来只有反复出现的真实私有 Selector Composition 问题与独立 Owner 决策才可评估 Sass；准入也只能限于命名的 Private Vendor / Browser Adapter，不能进入普通页面、业务组件或设计值权威。
+Scoped SCSS 是条件准入的最后 Fallback，不是永久禁止，也不是普通作者入口。当前项目 Manifest 没有直接 Sass Compiler，注册的 `LEGITIMATE_SCSS_FALLBACK` Owner 集合为空；Lockfile 中 Vite 的可选 `sass` / `sass-embedded` Peer 声明不构成编译器准入。未来新增 `.scss`、`.sass` 或 `<style lang="scss" scoped>` 必须同时获得精确 Fallback Owner 与明确授权的 Compiler Support；缺少任一条件都由 Repository Policy 拒绝。
+
+已准入 SCSS Block 仍只能消费 Canonical Variable、注册的结构/平台输入和命名 Runtime 数据，必须拒绝 Raw Color、Raw Design Dimension、任意 Typography、隐藏设计 Literal、未注册 Custom Property 与应进入 Canonical Token/Mapping 的可复用值。普通 Plain SFC CSS 继续禁止；Generated、Vendor、Browser/Platform 与 Standalone Runtime CSS 按各自 Owner Category 管理，不能伪装为 SCSS Fallback。
 
 [Sass 官方变量说明](https://sass-lang.com/documentation/variables/)区分编译时 Sass 变量与浏览器中保留的 CSS Custom Properties；Sass 不能替代 PAVP Runtime Theme/Layout/Motion Authority。[Vue SFC CSS 文档](https://vuejs.org/api/sfc-css-features.html)提供 Scoped CSS/CSS Modules 能力，但它们不是自动的原生 Layer 归属或 PAVP 作者许可。
 
-[UnoCSS Rules](https://unocss.dev/config/rules)、[Theme](https://unocss.dev/config/theme)、[Variants](https://unocss.dev/config/variants)、[Preflights](https://unocss.dev/config/preflights)、[Shortcuts](https://unocss.dev/config/shortcuts)及[配置中的 Blocklist](https://unocss.dev/config/#blocklist)提供表达、组合、生成和排除机制，不能替代 PAVP 语义准入或证明完整语法覆盖。未来实现以已安装版本的实际 API 为准；原生层目标见 §26。
+[UnoCSS Rules](https://unocss.dev/config/rules)、[Theme](https://unocss.dev/config/theme)、[Variants](https://unocss.dev/config/variants)、[Preflights](https://unocss.dev/config/preflights)、[Shortcuts](https://unocss.dev/config/shortcuts)及[配置中的 Blocklist](https://unocss.dev/config/#blocklist)提供表达、组合、生成和排除机制，不能替代 PAVP 语义准入或证明完整语法覆盖。当前治理按仓库已安装 API 执行；原生层目标见 §26。
 
-## 15.7 Future styling enforcement target
+## 15.7 Styling enforcement responsibilities and current state
 
-只演进现有 ESLint、UnoCSS Blocklist、Stylelint、Architecture/Repository Policy Checker 与 `pnpm verify`，不新增 Policy Registry、治理引擎或 Test Framework。未来对应 Owner 实施须覆盖：
+只演进现有 ESLint、UnoCSS Blocklist、Stylelint、Architecture/Repository Policy Checker 与 `pnpm verify`，不新增通用治理引擎或 Test Framework。当前限定治理候选负责：
 
-- 拒绝命名作者例外之外的新普通 SFC Style、普通静态 Inline Style 与无准入的 Dynamic Style Owner。
+- 拒绝精确 Owner 之外的新普通 SFC Style；保持 SCSS Owner 集合为空，并要求未来 SCSS 同时满足 Exact Owner 与 Compiler Admission。
+- 以声明级 Normalized Baseline 允许旧普通债务删除但拒绝增长；Generated、Vendor、Browser/Platform、Runtime、Motion、Compatibility、Private Variable、Keyframe 与 Important 例外分别使用精确责任合同。
+- 产品作者语法只准入 Vue 与 TypeScript；JSX/TSX 不准入，须另行 Owner 决策。Repository Policy 从实际 Workspace 目录发现所有仓库自有 `apps/**/src/**` 与 `packages/**/src/**` 产品 Source Root，包括未列入 Project Registry 的目录以及目录/扩展名大小写变体；按真实目录包含关系拒绝 JSX/TSX，诊断包含 `NOT_ADMITTED` 和所发现的 Source Root。`src2`、外部 Tooling、Dependency、Build Output 与 Cache 不因此成为产品 Source Root，Symlink 不得绕过既有禁令。ESLint 不声称覆盖 JSX/TSX。
+- 在已准入语法中，对已证明的 Vue Binding、VNode、DOM、CSSStyleDeclaration、CSSStyleSheet、Adopted Stylesheet 与 Style Element Sink 解析 Class/Style 数据流。现有每个 SourceCode 的分析缓存使用 Lexical Binding、Reference 和 Source Range 追踪局部函数返回值、容器投影、解构及简单 Alias；仍引用原容器或其嵌套可变数据的 Pre-sink Mutation/Unknown Escape 失败关闭，Primitive-only Read 与可证明的后续 Mutation 不追溯污染先前 Sink。普通业务对象不因名为 `class`/`style` 的字段被误判。
+- HTML Markup Sink 使用已声明的 `eslint-plugin-vue` 所导出的现有 `vue-eslint-parser`，不再以正则抽取 Attribute。按解析后的真实 Start Tag、Attribute Boundary、Decoded Character Reference、Namespace 和首个有效重复 Attribute 检查 Class/Style；无法解析或无法静态确定的 Markup 在真实 Sink 失败关闭。
+- Shell Overflow Restore 必须证明 Capture Binding 在 Restore 点仍指向同一 Document Target 的原捕获值；覆写、Update、解构写入和不确定控制流写入不能沿用例外，稳定不可变 Primitive Alias 仍需有效到达定义。Shell Icon 例外只绑定 `packages/ui/src/components/UiAdminShell.vue` 中的模块级 `resolveNavigationIconClass` Lexical Function Binding，精确身份及输出集合由 `style-owner-contracts.ts` 声明；有限输出与输入校验均须证明，未知 Helper/Predicate 或其他 Binding 不继承权限。
 - 拒绝受治理的 Arbitrary UnoCSS、Raw Semantic Status/Color Palette、平行 Shell Breakpoint、未注册公共变量声明及公共变量消费绕过。
 - 正确理解所有当前 Mapping Union：`exact-rule`、`theme-entry`、`property-specific-exact-rule`、`container-variant`；按各自 Shape 派生 Property/Class/Variant，不假设每条 Record 都有 `classes` 或 `allowedCssProperties`。
-- 区分结构 CSS Grammar 与藏在函数/表达式中的设计 Literal；识别私有 Vendor、Browser/Platform、Generated/Runtime 与 Motion 例外及 §26 的真实 Layer 输出。
-- 保护最小稳定公共/跨文件合同，不冻结未被架构规定的私有 Variable/Function Spelling、容器、循环或算法分解。
+- 区分结构 CSS Grammar 与藏在函数/表达式中的设计 Literal；按 Owner、Property Semantics 与 Data Origin 判断，而不把任意数字、百分比或公共变量运算当成许可。
+- 读取可执行 Stylelint Config 时保留函数引用并采用 Copy-on-write；完整枚举并锁定授权 Override 文件集合，拒绝 Glob、额外路径或同值例外扩张。
 
-本节仅冻结未来检测责任，不宣称 Checker 已存在或已修复；已确认缺陷与源码未开始状态见 §37.2.15。
+这些 Checker 只证明其静态 Source/Policy 边界，不证明 Style Migration、完整 Size/Density Authority、Native Cascade、Browser Runtime、Visual Behavior 或 Vendor Injection Order。§37.2.15 的 `NOT_STARTED` 字段是当次 Architecture-only Freeze 的历史快照；当前候选状态以紧随其后的限定纠正记录为准。
 
 ---
 
@@ -11902,7 +11912,7 @@ Workspace 的分配语义固定为 **已准入 Tabs Row + `minmax(0, 1fr)` 等�
 
 上述延期只针对证据不足的 Authored Literal；Region、Owner、尺寸语义、空间预留及选择约束已经冻结。首次源码实施的测量是作者确定 Canonical Value 的受控步骤，不能变成 Runtime 随内容测量并改变行高。实施交付前必须把精确源值、必要的字体/Target 下限组合及 Border 计入方式闭合到同一架构合同和生成链；不以占位数字先交付，不要求 Owner 选择可以由证据判断的外观尺寸。当前源码证据不足以证明四条新的整行/上限字面量，不能把未测量的视觉密度报告成 Runtime Accepted。
 
-每个未来公共 Role 必须具备稳定 ID、唯一 Canonical Token Source、Resolved Value、Kind、适用 Profile 语义、PublicRole/UnoCSS Mapping 与 Generated Output/现有 Checker 闭包。沿用现有 Layout Registry/Generator/`--ui-layout-*` 路径；普通作者使用生成的语义 UnoCSS Class，必要映射在同次最小准入闭合，不在此提前发明 Class 名或新增 Registry Schema。内部余量公式、零最小尺寸与一次性结构常量不是新 Token 的理由。§15.6–§15.7 的五类 Styling Author 和 §26 Cascade 合同强制适用；禁止 Raw px/rem、任意 Uno Bracket、组件局部几何变量、Sass 变量或 Vendor 尺寸成为第二权威。现有 Shell Safe-area 环境投影继续属于 Browser/Platform Owner 例外。
+每个未来公共 Role 必须具备稳定 ID、唯一 Canonical Token Source、Resolved Value、Kind、适用 Profile 语义、PublicRole/UnoCSS Mapping 与 Generated Output/现有 Checker 闭包。沿用现有 Layout Registry/Generator/`--ui-layout-*` 路径；普通作者使用生成的语义 UnoCSS Class，必要映射在同次最小准入闭合，不在此提前发明 Class 名或新增 Registry Schema。内部余量公式、零最小尺寸与一次性结构常量不是新 Token 的理由。§15.6–§15.7 的当前 Styling Author 分类和 §26 Cascade 合同强制适用；禁止 Raw px/rem、任意 Uno Bracket、组件局部几何变量、Sass 变量或 Vendor 尺寸成为第二权威。现有 Shell Safe-area 环境投影继续属于 Browser/Platform Owner 例外。
 
 ### 18.13.5 Stable Action Slots、长文本与 Narrow Minimum
 
@@ -16126,7 +16136,7 @@ Custom Theme Bank switch timing and visual atomicity
 
 未来规则只有在其负责 Work Package 实现、接入 `pnpm verify` 并通过后才是机器强制；本文声明本身不代表 Validator 已存在。
 
-§15.7 与 §26 的 Styling Author / Native Cascade 检测属于这一未来实施边界；§37.2.15 仅冻结合同，不激活新 Checker，也不把现有 Style Debt 误报为本次已迁移。
+§15.7 的 Styling Author Checker 已在 §37.2.15 之后由限定 Owner 任务接入当前静态门槛；其结论限于精确 Sink、Owner 与冻结 Baseline，不能把现有 Style Debt 误报为已迁移。§26 的 Native Cascade Source/Cutover 与 Browser 结果仍属于未来实施边界。
 
 ## 31.3 GitHub 托管门槛
 
@@ -18300,17 +18310,17 @@ OWNER_AUTHORIZATION=EXPLICIT_ARCHITECTURE_FREEZE_AND_SCOPED_GIT_DELIVERY
 CONTRACT_STATUS=FROZEN
 UI_FOUNDATION_READ_ONLY_AUDIT=COMPLETED
 SOURCE_IMPLEMENTATION=NOT_STARTED
-CHECKER_MIGRATION=NOT_STARTED
+CHECKER_MIGRATION_AT_ARCHITECTURE_FREEZE=NOT_STARTED
 CURRENT_SOURCE_TARGET_COMPLIANCE=NOT_ESTABLISHED
 WORKBENCH_REDESIGN=NOT_STARTED
-SASS_ADMISSION=NOT_ADMITTED
+SASS_ADMISSION_AT_ARCHITECTURE_FREEZE=NOT_ADMITTED
 DEBT_POLICY=NO_NEW_DEBT_AND_TOUCH_AND_MIGRATE
 SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 ```
 
 当前源码确认的系统性问题是：仅声明旧 Layer 顺序不能代替真实规则归层；UnoCSS 未开启原生 Layer 输出，普通 SFC 与部分全局规则未分层，可以高于显式 Layer；旧顺序又把 `utilities` 放在 `components/app` 之前。生成的 `tokens.css` 已有 `tokens` Layer，Route Transition 已有 `app` Layer，这些事实与首屏合同保留，不能把所有 CSS 一概描述为缺陷。
 
-审计迁移证据按当次统计共 **22** 项保留，以下 A–E 与 §15.6 的五类作者标签含义不同；它们是历史审计分组，不是永久文件 Allowlist、机器 Baseline Registry 或要求全仓同时迁移的清单：
+审计迁移证据按当次统计共 **22** 项保留，以下历史 A–E 与 §15.6 当前 A–F 作者标签含义不同；它们是历史审计分组，不是永久文件 Allowlist、机器 Baseline Registry 或要求全仓同时迁移的清单：
 
 | 审计证据类别 | 数量 | 当次含义                                                          |
 | ------------ | ---- | ----------------------------------------------------------------- |
@@ -18322,11 +18332,45 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 
 代表性源码核对覆盖普通 `UiSection.vue`/页面 Style、`PavpNaiveConfigProvider.vue` 的 `.n-*` 适配、`UiScrollArea.vue` 的 Native/Forced-colors/`.os-*` 混合责任、私有 Motion Adapter、Route Transition 伪元素，以及 Generated Token/Runtime Variable Owner。分类针对责任，不把这些路径整体列为未来普通 CSS 豁免。
 
-现有 Uno/Blocklist Grammar 覆盖不完整；ESLint Property-authority 处理没有正确分支建模每个 Mapping Union；部分 Architecture Check 过度冻结私有实现拼写。这些审计缺陷已确认并继续延期，本次没有修复。未来既有 Checker 应按 §15.7 演进，普通新 SFC Style / Magic-value 作者方式在 Enforcement 落地后由机器拒绝；Selector CSS 继续作为明确的 Vendor/Browser/Platform 例外，旧普通债务按 §15.6 处理。
+在本次 Architecture-only Freeze 时，Uno/Blocklist Grammar 覆盖不完整；ESLint Property-authority 处理没有正确分支建模每个 Mapping Union；部分 Architecture Check 过度冻结私有实现拼写。当次没有修复这些审计缺陷；其后的限定治理实施与纠正记录才描述当前 Checker 状态。Selector CSS 继续作为精确命名的 Vendor/Browser/Platform 责任，旧普通债务按 §15.6 处理。
 
 未来 Workbench 必须消费这份样式合同。User Dock、User Panel、Bottom Context Bar、Control Center、未来 Theme Showcase、Shell Geometry 与能力页面不得建立各自样式模型。本次不准入 Shell Region 改动、Layout Registry 新记录、User Dock/User Panel 实现、Control Center Route、Breadcrumb 搬迁、Bottom Context Bar 或能力页面重设计；它们仍需后续独立决策。
 
 本次唯一允许修改为 `ARCHITECTURE.md`。不迁移 CSS/SFC，不改 UnoCSS Source/Config、Checker、Design System Source/Generated Output、Manifest/Lockfile、`project.config.ts`、Dependency 或 Budget，不安装 Sass，不启动后继工作，不操作 Browser/Dev Server，不部署或 Release。文档更正无需 Owner Runtime Acceptance；只在合同自洽、限定 Diff 与完整 `mise exec -- pnpm verify` 通过且远端仍安全同步后，按本次明确授权 Stage 此文件、创建一个中文 Commit、正常 Push，并按 §31.3 观察精确 Commit 的 CI 终态。本记录本身不预先宣称这些验证或 Git 动作已完成。
+
+---
+
+### 后续限定作者治理纠正实施记录
+
+Owner 在 `main@925fe4a8e9755ac7770eab6e21e5f3602c77cdb6` 上明确授权纠正现有 Unstaged Enforcement Draft。当前候选保持既有 Theme JSON、Token/Schema/Generator、Generated CSS/TypeScript/Theme Bank/Uno Mapping、Appearance Runtime 与 Centralized Naive Bridge 不变，只纠正作者治理。§37.2.15 的 Architecture-only 状态与审计数字保留为冻结时的历史；§15.6–§15.7 已同步为当前规范，§26 Native Cascade 目标仍未实施。
+
+```text
+UNOCSS_FIRST_AUTHOR_GOVERNANCE_ENFORCEMENT=CORRECTED_OWNER_REVIEW_CANDIDATE
+FINAL_OWNER_REVIEW_FINDINGS_CORRECTION=FIVE_IMPLEMENTED
+CANDIDATE_STATIC_VERIFICATION=PASS
+INDEPENDENT_OWNER_REVIEW=PENDING
+AUTHORING_PRIORITY=SEMANTIC_UNOCSS_THEN_CANONICAL_EXTENSION_THEN_EXACT_OWNER_SCOPED_SCSS
+SCSS_FALLBACK_OWNER_MODEL=IMPLEMENTED_WITH_ZERO_CURRENT_OWNERS
+SASS_COMPILER=ABSENT_AND_NOT_ADMITTED_BY_THIS_TASK
+LEGACY_DEBT_BASELINE=DECLARATION_IDENTITY_MONOTONIC
+DYNAMIC_CLASS_AND_STYLE_SINK_POLICY=FAIL_CLOSED_AT_PROVEN_SINKS
+OWNER_EXCEPTION_SCOPE=EXACT_PATH_BLOCK_SELECTOR_AT_RULE_PROPERTY_VALUE_IDENTITY
+MAPPING_UNION_ENFORCEMENT=FIXED
+OFFICIAL_AND_SOURCE_AWARE_UTILITY_GOVERNANCE=ACTIVE
+NATIVE_CASCADE_CUTOVER=NOT_STARTED
+STYLE_MIGRATION=NOT_STARTED
+SIZE_AUTHORITY_EXPANSION=NOT_STARTED
+DENSITY_PROJECTION=NOT_STARTED
+WORKBENCH_SOURCE_IMPLEMENTATION=NOT_STARTED
+DELIVERY_STATE=UNSTAGED_OWNER_REVIEW_CANDIDATE
+SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
+```
+
+治理职责按原有合同分离：`style-owner-contracts.ts` 仅保存精确 Owner 注册，`style-debt-baseline.ts` 保持声明式债务数据；`style-ownership.ts` 负责语义 Selector/Declaration 身份、一次性索引及匹配组合；`scss-fallback-analysis.ts` 独立解释 SCSS 源码和编译输出；`ui-source-analysis.mjs` 按 ESLint SourceCode 缓存 Vue/TypeScript Sink 分析；轻量 Mapping/Value Predicate 不依赖完整 Ownership Engine。Selector 顶层列表重排与等价 CSS Escape 不产生新债务，真实 Selector、作用域、声明或出现次数变化仍按原单调合同检查。
+
+本次限定纠正处理最终 Owner 只读审查返回的五项缺陷：返回可变引用、HTML Attribute 解析、Shell Overflow Capture 有效性、产品 Source Root 发现与精确 Shell Icon Resolver 授权。候选已通过实际 ESLint/Policy 路径的独立正负探针、相关回归、完整 `mise exec -- pnpm verify` 及隔离生产产物比较，保持 Unstaged 并等待独立 Owner Review。纠正前候选的历史 Gate 结果不代替本次证据；静态验证不构成 Owner Approval、Browser/Runtime Product Acceptance 或 Git 交付。
+
+当前候选不修改应用/组件/Design System/Router/Workspace/Scroll Runtime、Layout Registry、Dependency 或 Budget，不迁移 Style、Size/Density Authority 或 Native Layer，不安装 Sass，也不执行 Browser、Runtime Acceptance、Stage、Commit、Push 或 Release。
 
 ---
 

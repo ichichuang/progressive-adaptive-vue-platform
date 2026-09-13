@@ -1,7 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { readFile, readdir } from 'node:fs/promises'
-import { join, relative, sep } from 'node:path'
+import { readFile, readdir, realpath } from 'node:fs/promises'
+import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+
+import { styleCompilerAdmission, styleSourceAdmission } from '../architecture/style-ownership'
 
 type JsonObject = Record<string, unknown>
 
@@ -11,8 +13,9 @@ interface RepositoryInventory {
   symbolicLinks: string[]
 }
 
-const rootDirectory = process.cwd()
-const ignoredDirectories = new Set(['.git', 'dist', 'node_modules'])
+const rootDirectory = await realpath(process.cwd())
+const ignoredDirectoryNames = new Set(['.git', 'node_modules'])
+const generatedOutputDirectories = new Set([resolve(rootDirectory, 'apps/web/dist')])
 const requiredAiWorkflowFiles = new Set([
   '.ai/skills/pavp-ui/SKILL.md',
   '.ai/skills/pavp-ui/references/acceptance-report.md',
@@ -155,6 +158,25 @@ function isWithinPath(repositoryPath: string, parentPath: string): boolean {
   return repositoryPath === parentPath || repositoryPath.startsWith(`${parentPath}/`)
 }
 
+function isWithinDirectory(path: string, directory: string): boolean {
+  const descendant = relative(directory, path)
+  return !isAbsolute(descendant) && descendant !== '..' && !descendant.startsWith(`..${sep}`)
+}
+
+function isProductSourceRoot(path: string): boolean {
+  const segments = relative(rootDirectory, path)
+    .split(sep)
+    .map((segment) => segment.toLowerCase())
+  return (
+    segments.length >= 3 &&
+    (segments[0] === 'apps' || segments[0] === 'packages') &&
+    segments.at(-1) === 'src' &&
+    !segments.some((segment) =>
+      ['.git', 'node_modules', 'dist', '.cache', '.vite', '.turbo'].includes(segment),
+    )
+  )
+}
+
 function collectTrackedSymbolicLinks(): string[] {
   const indexEntries = execFileSync('git', ['ls-files', '--stage', '-z'], {
     cwd: rootDirectory,
@@ -180,7 +202,11 @@ async function collectRepositoryInventory(directory: string): Promise<Repository
   for (const entry of entries) {
     const path = join(directory, entry.name)
 
-    if (entry.isDirectory() && !ignoredDirectories.has(entry.name)) {
+    if (
+      entry.isDirectory() &&
+      !ignoredDirectoryNames.has(entry.name) &&
+      !generatedOutputDirectories.has(path)
+    ) {
       const childInventory = await collectRepositoryInventory(path)
 
       inventory.directories.push(path, ...childInventory.directories)
@@ -212,6 +238,9 @@ function packageDependencies(packageJson: JsonObject): string[] {
 }
 
 const inventory = await collectRepositoryInventory(rootDirectory)
+// Discover real source directories, including workspaces absent from the curated
+// project registry. Filesystem ancestry, not a string prefix, owns containment.
+const governedSourceRoots = inventory.directories.filter(isProductSourceRoot)
 const repositoryFiles = new Set(
   inventory.regularFiles.map((file) => normalizePath(relative(rootDirectory, file))),
 )
@@ -276,12 +305,45 @@ const symbolicLinks = new Set([
 
 for (const repositoryPath of symbolicLinks) {
   violations.push(`${repositoryPath}: symbolic links are forbidden repository infrastructure.`)
+  const path = resolve(rootDirectory, repositoryPath)
+  const sourceRoot = isProductSourceRoot(path)
+    ? path
+    : governedSourceRoots.find((root) => isWithinDirectory(path, root))
+  if (sourceRoot !== undefined) {
+    violations.push(
+      `${repositoryPath}: NOT_ADMITTED: symbolic product source cannot be inspected in governed source root ${normalizePath(relative(rootDirectory, sourceRoot))}.`,
+    )
+  }
 }
 
 for (const absolutePath of inventory.regularFiles) {
   const repositoryPath = normalizePath(relative(rootDirectory, absolutePath))
   const segments = repositoryPath.split('/')
   const fileName = segments.at(-1) ?? ''
+
+  const sourceRoot = governedSourceRoots.find((root) => isWithinDirectory(absolutePath, root))
+  if (sourceRoot !== undefined && /\.[jt]sx$/iu.test(fileName)) {
+    violations.push(
+      `${repositoryPath}: NOT_ADMITTED: product authoring is TypeScript and Vue in governed source root ${normalizePath(relative(rootDirectory, sourceRoot))}; JSX/TSX requires a separate Owner decision.`,
+    )
+  }
+  if (sourceRoot !== undefined && !isWithinDirectory(await realpath(absolutePath), sourceRoot)) {
+    violations.push(
+      `${repositoryPath}: NOT_ADMITTED: product source escapes governed source root ${normalizePath(relative(rootDirectory, sourceRoot))}.`,
+    )
+  }
+
+  if (/\.(?:scss|sass)$/iu.test(fileName)) {
+    violations.push(
+      ...styleSourceAdmission({
+        path: repositoryPath,
+        block: 0,
+        lang: fileName.toLowerCase().endsWith('.scss') ? 'scss' : 'sass',
+        scoped: true,
+        content: await readFile(absolutePath, 'utf8'),
+      }).map((message) => `${repositoryPath}: ${message}`),
+    )
+  }
 
   if (numericVersionStylePattern.test(repositoryPath)) {
     violations.push(`${repositoryPath}: numeric-version-style file naming is forbidden.`)
@@ -321,6 +383,14 @@ for (const absolutePath of inventory.regularFiles) {
     }
 
     for (const dependency of packageDependencies(parsed)) {
+      if (
+        /^sass(?:-embedded)?$/u.test(dependency) &&
+        !styleCompilerAdmission(repositoryPath, dependency)
+      ) {
+        violations.push(
+          `${repositoryPath}: style compiler requires explicit support and an exact fallback owner.`,
+        )
+      }
       if (forbiddenDependencyPatterns.some((pattern) => pattern.test(dependency.toLowerCase()))) {
         violations.push(`${repositoryPath}: forbidden dependency "${dependency}".`)
       }

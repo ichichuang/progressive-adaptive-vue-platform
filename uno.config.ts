@@ -1,344 +1,291 @@
 import { defineConfig } from 'unocss'
 import { presetIcons } from '@unocss/preset-icons'
 import { presetWind4 } from '@unocss/preset-wind4'
+import { colors } from '@unocss/preset-wind4/colors'
+import { theme as windTheme } from '@unocss/preset-wind4/theme'
+import { parseColor, valueHandlers } from '@unocss/preset-wind4/utils'
 import { platformPreset } from '@platform/design-system'
 
-import tokenManifest from './packages/design-system/src/generated/tokens.manifest.json' with { type: 'json' }
+import { platformUnoMappings } from './packages/design-system/src/generated/unocss-theme'
+import {
+  cssWideValue,
+  isStructuralDimensionValue,
+  mappingClasses,
+  mappingCssProperties,
+  physicalDimensionProperty,
+  structuralColor,
+} from './scripts/eslint-rules/style-authority'
 
-const presetColorClass =
-  /^(?:bg|border|fill|from|outline|ring|stroke|text|to|via)-(?:amber|black|blue|cyan|emerald|fuchsia|gray|green|indigo|lime|neutral|orange|pink|purple|red|rose|sky|slate|stone|teal|transparent|violet|white|yellow|zinc)(?:-\d+)?(?:\/\d+)?$/
-const rawSpacingClass =
-  /^-?(?:m[trblxy]?|p[trblxy]?|gap(?:-[xy])?|space-[xy])-(?!(?:0|auto)$)(?:px|\d|\[)/
-const ownedDimensionClass = /^(?:h|min-h|min-w|max-w|w)-(.+)$/
-const structuralDimensionClassValue =
-  /^(?:0|auto|dvh|dvw|fit|full|lvh|lvw|max|min|none|screen|svh|svw)$/
-const rawTypographyClass =
-  /^(?:text-(?:xs|sm|base|lg|xl|\d+xl|\[)|leading-(?:none|tight|snug|normal|relaxed|loose|\d|\[)|font-(?:thin|extralight|light|normal|medium|semibold|bold|extrabold|black|mono|sans|serif|\[))/
-const rawRadiusClass = /^(?:(?:b-|border-)?(?:rd|rounded))(?:$|-)/
-const rawShadowClass = /^(?:drop-)?shadow(?:$|-)/
-const rawZIndexClass = /^-?z-(?!auto$)/
-const rawMotionClass = /^(?:animate|delay|duration|ease|transition)(?:$|-)/
-const rawOpticalClass = /^(?:backdrop-)?(?:blur|brightness|saturate)(?:$|-)/
-const arbitraryOwnedUtilityClass =
-  /^(?:bg|fill|font|from|leading|rounded|shadow|stroke|text|to|via|z)-\[/
-const arbitraryDeclarationClass = /^\[([A-Za-z-]+):(.+)\]$/
-const arbitraryOwnedDimensionClass = /^(?:h|min-h|min-w|max-w|w)-\[(.+)\]$/
-const structuralDimensionValue =
-  /^(?:0|auto|fit-content|max-content|min-content|none|(?:calc|clamp|max|min|minmax)\(.+\)|[-+]?(?:\d+(?:\.\d+)?|\.\d+)(?:%|dvh|dvw|fr|lvh|lvw|svh|svw|vh|vw))$/
-const generatedSemanticClasses = new Set(
-  tokenManifest.unoCssMappings.flatMap((mapping) => mapping.classes ?? []),
-)
-const visualAuthorityMappings = tokenManifest.unoCssMappings.filter(
-  (
-    mapping,
-  ): mapping is typeof mapping & {
-    readonly allowedCssProperties: readonly string[]
-    readonly classes: readonly string[]
-  } => Array.isArray(mapping.allowedCssProperties) && Array.isArray(mapping.classes),
-)
-const allowedEmptyVisualUtilities = new Set([
-  'animate-none',
-  'delay-0',
-  'duration-0',
-  'rounded-none',
-  'shadow-none',
-  'transition-none',
-])
-const governedArbitraryProperties = new Set([
-  'animation',
-  'animation-delay',
-  'animation-duration',
-  'animation-timing-function',
-  'border-radius',
-  'box-shadow',
-  'column-gap',
-  'font-family',
-  'font-size',
-  'font-weight',
-  'gap',
-  'height',
-  'line-height',
-  'min-height',
-  'min-width',
-  'margin',
-  'margin-block',
-  'margin-block-end',
-  'margin-block-start',
-  'margin-bottom',
-  'margin-inline',
-  'margin-inline-end',
-  'margin-inline-start',
-  'margin-left',
-  'margin-right',
-  'margin-top',
-  'max-width',
-  'padding',
-  'padding-block',
-  'padding-block-end',
-  'padding-block-start',
-  'padding-bottom',
-  'padding-inline',
-  'padding-inline-end',
-  'padding-inline-start',
-  'padding-left',
-  'padding-right',
-  'padding-top',
-  'row-gap',
-  'text-shadow',
-  'transition',
-  'transition-delay',
-  'transition-duration',
-  'transition-timing-function',
-  'width',
-  'z-index',
-])
-const arbitraryColorProperties = new Set([
-  'background',
-  'background-color',
-  'border-color',
-  'caret-color',
-  'color',
-  'fill',
-  'outline-color',
-  'stroke',
-  'text-decoration-color',
-])
+const generatedSemanticClasses = new Set<string>(platformUnoMappings.flatMap(mappingClasses))
 
-function semanticColorProperty(property: string): string | undefined {
-  if (property === 'background') {
-    return 'background-color'
-  }
+// Wind4 66.7.5 rules own the grammar. Ambiguous bare/undelimited aliases need source-aware lint.
+const spacingUtility =
+  /^-?(?:(?:scroll-)?[mp](?:a|-?(?:[bi][se]|[rltbsexy])|-(?:block|inline))?|(?:flex-|grid-)?gap(?:-(?:col|row|x|y))?|space-[xy]|border-spacing(?:-[xy])?|(?:position-|pos-)?(?:inset(?:-(?:block|inline|[bi][se]|[rltbsexy]))?|top|right|bottom|left|start|end)|indent)-(.+)$/u
+const dimensionUtility =
+  /^(?:(?:size-)?(?:min-|max-)?(?:[wh]|inline|block)|(?:flex-)?basis)-(.+)$|^size-(?:min-|max-)?(.+)$/u
+const colorUtility =
+  /^(?:(?:filter-)?drop-shadow(?:-color)?|(?:inset-|text-)?shadow(?:-color)?|text-stroke|text(?:-color)?|bg|c|color|fill|stroke|accent|caret|divide|(?:\$ )?placeholder|(?:border|b)(?:-(?:block|inline|[xyrlbtse]|[bi][se]))?(?:-color)?|outline(?:-color)?|(?:inset-)?ring(?:-offset)?|from|via|to|stops|underline|decoration|rule(?:-(?:x|y|col|row))?(?:-color)?|mask-(?:linear|radial|conic|[xytrbl])-(?:from|to))-(.+)$/u
+const typographyUtility =
+  /^(?:(?:text|font)-size|font-stretch|(?:font-)?(?:leading|lh|line-height|tracking|word-spacing)|fw)-(.+)$/u
+const opticalUtility =
+  /^(?:(?:(?:backdrop-)|filter-)?(?:blur|brightness|contrast|drop-shadow|grayscale|hue-rotate|invert|saturate|sepia)-.+|(?:backdrop-filter|filter)-(?:\[.+\]|\$.+|--.+|none)|backdrop-op(?:acity)?-.+)$/u
+const radiusUtility =
+  /^(?:b-|border-)?(?:rd|rounded)-(?:[rltbse]|[rltb]{2}|[bise][se]|[bi][se]-[bi][se])?(.+)$/u
+const shadowUtility = /^(?:inset-|text-)?shadow-(.+)$/u
+const zUtility = /^(?:position-|pos-)?z-(.+)$/u
+const motionUtility =
+  /^(?:(?:animate-)?keyframes|animate|(?:transition-)?(?:delay|duration|ease)|transition)-(.+)$/u
+const borderWidthUtility =
+  /^(?:(?:border|b)(?:-(?:block|inline|[xyrlbtse]|[bi][se]))?(?:-(?:width|size))?|outline(?:-(?:width|size|offset))?|ring-offset(?:-(?:width|size))?|(?:inset-)?ring|text-stroke|stroke(?:-width)?|(?:underline|decoration)(?:-(?:offset|size|thickness))?|divide-[xy]|rule(?:-(?:x|y|col|row))?(?:-width)?)-(.+)$/u
+const transformUtility =
+  /^(?:transform-(?!none$).+|translate(?:-[xyz])?-.+|scale(?:-[xyz])?-.+|rotate(?:-[xyz])?-.+|skew(?:-[xy])?-.+|origin-.+|(?:perspective|perspect)(?:-origin)?-.+)$/u
+const emptyVisualUtility =
+  /^(?:animate-none|(?:transition-)?(?:duration|delay)-0|(?:b-|border-)?(?:rd|rounded)(?:-[a-z-]+)?-(?:none|0)|(?:inset-|text-)?shadow-none|transition-(?:none|normal|discrete)|(?:perspective|perspect)-none)$/u
+const colorOpacityUtility =
+  /^(?:(?:filter-)?drop-shadow(?:-color)?|(?:inset-|text-)?shadow(?:-color)?|text-stroke|text(?:-color)?|bg|c|color|fill|stroke|accent|caret|divide|placeholder|(?:border|b)(?:-(?:block|inline|[xyrlbtse]|[bi][se]))?(?:-color)?|outline(?:-color)?|(?:inset-)?ring(?:-offset)?|from|via|to|stops|underline|decoration|rule(?:-(?:x|y|col|row))?(?:-color)?)-(?:op|opacity)-(.+)$/u
 
-  if (property.startsWith('border-') && property.endsWith('-color')) {
-    return 'border-color'
-  }
-
-  return arbitraryColorProperties.has(property) ? property : undefined
+function unbracket(value: string): string {
+  return valueHandlers.bracket(value) ?? value
 }
 
-function authorityMappingsForProperty(property: string): typeof visualAuthorityMappings {
-  const colorProperty = semanticColorProperty(property)
-
-  return visualAuthorityMappings.filter((mapping) => {
-    if (/^(?:column-gap|gap|margin|padding|row-gap)/u.test(property)) {
-      return mapping.family === 'spacing'
-    }
-
-    if (property === 'border-radius') {
-      return mapping.family === 'radius'
-    }
-
-    if (property === 'box-shadow') {
-      return mapping.family === 'shadow'
-    }
-
-    if (
-      /^(?:animation|animation-delay|animation-duration|transition|transition-delay|transition-duration)$/u.test(
-        property,
-      ) &&
-      mapping.family === 'duration'
-    ) {
-      return true
-    }
-
-    if (
-      /^(?:animation|animation-timing-function|transition|transition-timing-function)$/u.test(
-        property,
-      ) &&
-      mapping.family === 'easing'
-    ) {
-      return true
-    }
-
-    if (colorProperty !== undefined) {
-      return mapping.allowedCssProperties.includes(colorProperty)
-    }
-
-    return mapping.allowedCssProperties.includes(property)
-  })
-}
-
-function isGeneratedSemanticVariable(property: string, value: string): boolean {
-  const match = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(value)
+function structuralOpacityUtilityValue(value: string): boolean {
+  const bracketed = valueHandlers.bracket(value)
   return (
-    match !== null &&
-    authorityMappingsForProperty(property).some((mapping) => mapping.cssVariable === match[1])
+    /^(?:0|100)$/u.test(value) ||
+    cssWideValue.test(value) ||
+    (bracketed !== undefined && /^(?:0|1|0%|100%)$/u.test(bracketed))
   )
 }
 
-function blocksRawRadiusUtility(selector: string): boolean {
-  return !generatedSemanticClasses.has(selector) && rawRadiusClass.test(selector)
+function rawUtilityValue(value: string): string | undefined {
+  if (/^(?:\$|--)/u.test(value)) return undefined
+  return valueHandlers.bracket(value)
 }
 
-function blocksRawMotionUtility(selector: string): boolean {
+function structuralSize(value: string, selector: string): boolean {
+  if (/^(?:0|auto|none|full|fit|max|min|stretch|screen|[sld]?v[whib]|vmin|vmax)$/u.test(value))
+    return true
+  const dimension = /^(?:size-)?(min-|max-)?(w|h|inline|block)-/u.exec(selector)
+  const property = dimension?.[2]
+  const propertyName = property === 'w' || property === 'inline' ? 'width' : 'height'
+  return dimension === null
+    ? isStructuralDimensionValue(unbracket(value))
+    : structuralDimensionComposition(`${dimension[1] ?? ''}${propertyName}`, unbracket(value))
+}
+
+function isWindSize(value: string): boolean {
   return (
-    !generatedSemanticClasses.has(selector) &&
-    !allowedEmptyVisualUtilities.has(selector) &&
-    rawMotionClass.test(selector)
+    Object.hasOwn(windTheme.container, value) ||
+    Object.hasOwn(windTheme.spacing, value) ||
+    /^(?:fit|max|min|stretch|screen(?:-.+)?)$/u.test(value) ||
+    [
+      valueHandlers.bracket,
+      valueHandlers.cssvar,
+      valueHandlers.global,
+      valueHandlers.auto,
+      valueHandlers.none,
+      valueHandlers.fraction,
+      valueHandlers.rem,
+    ].some((resolve) => resolve(value) !== undefined)
   )
 }
 
-function blocksRawOwnedUtility(selector: string): boolean {
-  if (generatedSemanticClasses.has(selector) || allowedEmptyVisualUtilities.has(selector)) {
-    return false
+function blocksColor(value: string): boolean {
+  // The official resolver understands palette keys, compact scales, alpha and color modifiers.
+  const color = parseColor(value, { colors })
+  if (color?.color !== undefined)
+    return !structuralColor.test(color.color) || color.alpha !== undefined
+  return /^(?:\$|--|\[)/u.test(value) && !structuralColor.test(unbracket(value))
+}
+
+function structuralDimensionComposition(property: string, value: string): boolean {
+  if (value.startsWith('var(')) return false
+  return isStructuralDimensionValue(value, (variable) =>
+    platformUnoMappings.some(
+      (mapping) =>
+        mapping.cssVariable === variable &&
+        mappingCssProperties(mapping).some(
+          (allowed) => physicalDimensionProperty(allowed) === physicalDimensionProperty(property),
+        ),
+    ),
+  )
+}
+
+function blocksArbitraryDeclaration(selector: string): boolean {
+  // Property/value utilities bypass semantic class ownership even when the
+  // embedded value looks structural. Authors must use a named utility or add
+  // the missing canonical mapping instead of opening an arbitrary declaration.
+  return /^\[(?:--[\w-]+|[a-z-]+):.+\]$/iu.test(selector)
+}
+
+function blocksUnapprovedUtility(selector: string): boolean {
+  if (generatedSemanticClasses.has(selector) || emptyVisualUtility.test(selector)) return false
+  if (/(?:\$[A-Za-z_][\w-]*|(?:^|[-[(,:])--[A-Za-z_][\w-]*)/u.test(selector)) return true
+  if (blocksArbitraryDeclaration(selector)) return true
+  if (/^will-change(?:-.+)?$/u.test(selector)) return true
+  if (selector === 'scroll-smooth' || /^view-transition-.+/u.test(selector)) return true
+  if (/^(?:color-)?scheme-.+/u.test(selector)) return true
+  const tabSize = /^tab-(.+)$/u.exec(selector)?.[1]
+  if (tabSize !== undefined) return !/^\[?(?:[-+]?0(?:\.0+)?)\]?$/u.test(tabSize)
+  const zoom = /^zoom-(.+)$/u.exec(selector)?.[1]
+  if (zoom !== undefined) {
+    const value = rawUtilityValue(zoom) ?? zoom
+    return !/^(?:1|100%?|normal)$/u.test(value)
   }
-
-  const arbitraryDimension = arbitraryOwnedDimensionClass.exec(selector)
-
-  if (arbitraryDimension !== null) {
-    const value = arbitraryDimension[2]?.replaceAll('_', ' ').trim()
-    return (
-      value !== undefined &&
-      !isGeneratedSemanticVariable(arbitraryDimension[1] ?? '', value) &&
-      !structuralDimensionValue.test(value)
+  const intrinsicSize = /^intrinsic(?:-(?:block|inline|w|h))?(?:-size)?-(.+)$/u.exec(selector)?.[1]
+  if (intrinsicSize !== undefined) {
+    const value = rawUtilityValue(intrinsicSize) ?? intrinsicSize
+    return !/^(?:0|none)$/u.test(value)
+  }
+  const verticalAlign = /^(?:align|v|vertical)-(.+)$/u.exec(selector)?.[1]
+  if (verticalAlign !== undefined) {
+    const value = rawUtilityValue(verticalAlign) ?? verticalAlign
+    if (/^(?:baseline|bottom|middle|sub|super|text-bottom|text-top|top)$/u.test(value)) return false
+    if (/^(?:\[|[-+]?\d)/u.test(verticalAlign)) return true
+  }
+  const strokeGeometry = /^stroke-(?:dash|offset)-(.+)$/u.exec(selector)?.[1]
+  if (strokeGeometry !== undefined) {
+    const value = rawUtilityValue(strokeGeometry) ?? strokeGeometry
+    return !/^(?:0|none)$/u.test(value)
+  }
+  if (/^bg-(?:conic|linear|radial)-\[.+\]$/u.test(selector)) return true
+  if (/^mask-(?:\[|\$|--)/u.test(selector)) return true
+  const maskEndpoint = /^mask-(?:conic|linear|radial|x|y)-(?:from|to)-(.+)$/u.exec(selector)?.[1]
+  if (maskEndpoint !== undefined) {
+    const value = rawUtilityValue(maskEndpoint) ?? maskEndpoint
+    return !/^(?:0|100)%?$/u.test(value)
+  }
+  if (/^mask-(?:conic|linear|radial|x|y)(?:-.+)?$/u.test(selector)) return true
+  const gradientStop = /^(?:from|to|via)-(.+)$/u.exec(selector)?.[1]
+  if (gradientStop !== undefined) {
+    const position = valueHandlers.bracket(gradientStop) ?? gradientStop
+    if (/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?%?$/iu.test(position))
+      return !/^(?:0|100)%?$/u.test(position)
+  }
+  const gradientAngle = /^bg-linear-(.+)$/u.exec(selector)?.[1]
+  if (gradientAngle !== undefined) {
+    const angle = valueHandlers.bracket(gradientAngle) ?? gradientAngle
+    if (/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[-+]?\d+)?(?:deg|grad|rad|turn)?$/iu.test(angle))
+      return true
+  }
+  const gridTrack = /^(?:auto|grid)-(?:cols|rows)-(.+)$/u.exec(selector)?.[1]
+  if (gridTrack !== undefined && /^(?:\[|\$|--)/u.test(gridTrack)) {
+    const track = rawUtilityValue(gridTrack)
+    return !/^(?:0|1fr|auto|max-content|min-content|minmax\(0,\s*1fr\)|none|subgrid)$/u.test(
+      track ?? '',
     )
   }
-
-  const ownedDimension = ownedDimensionClass.exec(selector)
-
-  if (ownedDimension !== null) {
-    const value = ownedDimension[2]
-    return value !== undefined && !structuralDimensionClassValue.test(value)
+  const visualGeometry = /^(?:bg|mask)-(pos|position|size)-(.+)$/u.exec(selector)
+  if (visualGeometry !== null && /^(?:\[|\$|--)/u.test(visualGeometry[2] ?? '')) {
+    const value = rawUtilityValue(visualGeometry[2] ?? '')
+    return visualGeometry[1] === 'size'
+      ? !/^(?:0|auto|contain|cover)$/u.test(value ?? '')
+      : !/^(?:0|bottom|center|left|right|top)(?:\s+(?:bottom|center|left|right|top))?$/u.test(
+          value ?? '',
+        )
   }
-
-  return (
-    rawShadowClass.test(selector) ||
-    rawZIndexClass.test(selector) ||
-    rawTypographyClass.test(selector) ||
-    rawOpticalClass.test(selector) ||
-    arbitraryOwnedUtilityClass.test(selector)
-  )
-}
-
-function blocksTransitionAllArbitraryDeclaration(selector: string): boolean {
-  const match = arbitraryDeclarationClass.exec(selector)
-
-  if (match === null) {
-    return false
+  const opacity =
+    /^(?:op|opacity)-(.+)$/u.exec(selector)?.[1] ?? colorOpacityUtility.exec(selector)?.[1]
+  if (opacity !== undefined) return !structuralOpacityUtilityValue(opacity)
+  if (/^divide-[xy]$/u.test(selector)) return true
+  const blend = /^(?:bg|mix)-blend-(.+)$/u.exec(selector)?.[1]
+  if (blend !== undefined) return blend !== 'normal' && !cssWideValue.test(blend)
+  const aspect = /^aspect-(.+)$/u.exec(selector)?.[1]
+  if (aspect !== undefined) {
+    const bracketed = valueHandlers.bracket(aspect)
+    return !(
+      aspect === 'auto' ||
+      cssWideValue.test(aspect) ||
+      (bracketed !== undefined && /^(?:0|auto)$/u.test(bracketed))
+    )
   }
-
-  const property = match[1]?.toLowerCase()
-  const value = match[2]?.replaceAll('_', ' ').trim().toLowerCase()
-
-  if (property === undefined || value === undefined) {
-    return false
+  if (/^object-(?:\[|\$|--)/u.test(selector)) return true
+  const columns = /^columns-(.+)$/u.exec(selector)?.[1]
+  if (columns !== undefined) {
+    const bracketed = valueHandlers.bracket(columns)
+    return !(
+      /^(?:1|auto)$/u.test(columns) ||
+      cssWideValue.test(columns) ||
+      (bracketed !== undefined && /^(?:1|auto)$/u.test(bracketed))
+    )
   }
-
-  if (property === 'transition-property') {
-    return value.split(',').some((item) => item.trim() === 'all')
+  const spacing = spacingUtility.exec(selector)
+  if (spacing !== null) {
+    const value = unbracket(spacing[1] ?? '')
+    if (
+      Object.hasOwn(windTheme.spacing, value) ||
+      [
+        valueHandlers.bracket,
+        valueHandlers.cssvar,
+        valueHandlers.global,
+        valueHandlers.auto,
+        valueHandlers.fraction,
+        valueHandlers.rem,
+      ].some((resolve) => resolve(spacing[1] ?? '') !== undefined)
+    )
+      return !/^(?:0|auto|none)$/u.test(value) && !cssWideValue.test(value)
   }
-
-  return property === 'transition' && /(?:^|[,\s])all(?=[,\s]|$)/u.test(value)
-}
-
-function blocksRawArbitraryDeclaration(selector: string): boolean {
-  const match = arbitraryDeclarationClass.exec(selector)
-
-  if (match === null) {
-    return false
+  const dimension = dimensionUtility.exec(selector)
+  if (dimension !== null) {
+    const value = dimension[1] ?? dimension[2] ?? ''
+    // Size patterns overlap structural display utilities such as inline-grid.
+    if (isWindSize(value)) return !structuralSize(value, selector)
   }
-
-  const property = match[1]?.toLowerCase()
-  const value = match[2]?.replaceAll('_', ' ').trim().toLowerCase()
-
-  if (property === undefined || value === undefined) {
-    return false
-  }
-
+  const color = colorUtility.exec(selector)?.[1]
+  if (color !== undefined && blocksColor(color)) return true
+  if (color !== undefined && structuralColor.test(unbracket(color))) return false
+  const borderWidth = borderWidthUtility.exec(selector)?.[1]
   if (
-    property === 'transition-property' ||
-    (property === 'transition' && /(?:^|[,\s])all(?=[,\s]|$)/u.test(value))
-  ) {
-    return false
-  }
-
-  if ((property === 'height' || property === 'max-width') && structuralDimensionValue.test(value)) {
-    return false
-  }
-
-  if (arbitraryColorProperties.has(property)) {
-    return (
-      !/^(?:currentcolor|inherit|unset)$/u.test(value) &&
-      !isGeneratedSemanticVariable(property, value)
+    borderWidth !== undefined &&
+    [valueHandlers.bracket, valueHandlers.cssvar, valueHandlers.global, valueHandlers.px].some(
+      (resolve) => resolve(borderWidth) !== undefined,
     )
+  )
+    return !/^(?:0|none)$/u.test(unbracket(borderWidth)) && !cssWideValue.test(borderWidth)
+  const flex = /^flex-(.+)$/u.exec(selector)?.[1]
+  if (
+    flex !== undefined &&
+    [
+      valueHandlers.bracket,
+      valueHandlers.cssvar,
+      valueHandlers.fraction,
+      valueHandlers.rem,
+      valueHandlers.number,
+    ].some((resolve) => resolve(flex) !== undefined)
+  )
+    return !/^(?:0|1|auto|initial|none)$/u.test(unbracket(flex))
+  const z = zUtility.exec(selector)?.[1]
+  if (z !== undefined && /^(?:[\d.-]|\[|\$|--|auto$|inherit$)/u.test(z)) {
+    return z !== 'auto' && z !== '0' && !cssWideValue.test(z)
   }
-
-  if (!governedArbitraryProperties.has(property)) {
-    return false
-  }
-
   return (
-    !/^(?:0|auto|inherit|none|unset)$/u.test(value) && !isGeneratedSemanticVariable(property, value)
+    typographyUtility.test(selector) ||
+    (/^text-(.+)$/u.test(selector) && /^(?:[\d.]+|\[|\$|--)/u.test(selector.slice(5))) ||
+    Object.keys(windTheme.text).some(
+      (name) => selector === `text-${name}` || selector.startsWith(`text-${name}/`),
+    ) ||
+    (/^font-(.+)$/u.test(selector) &&
+      (/^(?:[\d.]+|\[|\$|--)/u.test(selector.slice(5)) ||
+        Object.hasOwn(windTheme.font, selector.slice(5)) ||
+        Object.hasOwn(windTheme.fontWeight, selector.slice(5)))) ||
+    radiusUtility.test(selector) ||
+    shadowUtility.test(selector) ||
+    opticalUtility.test(selector) ||
+    transformUtility.test(selector) ||
+    motionUtility.test(selector) ||
+    /^(?:transition-)?property-all$/u.test(selector)
   )
 }
 
 export default defineConfig({
   blocklist: [
+    // Proven pipeline false positives: Vue tag arguments and admitted selector CSS property text.
+    ...['h1', 'h2', 'h3', 'h4', 'backdrop-filter', 'transition'],
     [
-      'transition-all',
-      {
-        message: 'Use an explicit transition property.',
-      },
-    ],
-    [
-      presetColorClass,
+      blocksUnapprovedUtility,
       {
         message:
-          'Use a generated semantic color authority such as bg-surface-page, text-text-primary, or border-border-default.',
-      },
-    ],
-    [
-      rawSpacingClass,
-      {
-        message:
-          'Use gap-content-gap, px-page-inline, or py-section-block instead of raw spacing values.',
-      },
-    ],
-    [
-      blocksRawRadiusUtility,
-      {
-        message: 'Use rounded-panel, backed by --ui-radius-panel.',
-      },
-    ],
-    [
-      blocksRawMotionUtility,
-      {
-        message: (selector) => {
-          if (selector.startsWith('duration-')) {
-            return 'Use duration-motion, backed by --ui-motion-duration.'
-          }
-
-          if (selector.startsWith('ease-')) {
-            return 'Use ease-motion, backed by --ui-motion-easing.'
-          }
-
-          if (selector.startsWith('transition')) {
-            return 'Use explicit transition properties with duration-motion and ease-motion.'
-          }
-
-          return 'This raw motion utility has no admitted semantic replacement.'
-        },
-      },
-    ],
-    [
-      blocksRawOwnedUtility,
-      {
-        message:
-          'Use h-control, max-w-content, shadow-panel, z-base/z-overlay, or the generated typography authority matching this property; optical filters remain prohibited.',
-      },
-    ],
-    [
-      blocksTransitionAllArbitraryDeclaration,
-      {
-        message:
-          'Declare the exact transitioned properties; transition: all and transition-property: all are prohibited without requiring a replacement authority.',
-      },
-    ],
-    [
-      blocksRawArbitraryDeclaration,
-      {
-        message:
-          'Use the exact generated PAVP variable for this property; transition-property: all remains prohibited independently of a replacement.',
+          'Use a registered PAVP semantic utility. A missing reusable capability requires a canonical token/UnoCSS mapping extension, not local CSS or a raw value.',
       },
     ],
   ],
