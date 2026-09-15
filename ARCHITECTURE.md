@@ -5739,6 +5739,8 @@ ADDITIONAL_RUNTIME_ICON_PACKAGE=PROHIBITED
 
 Pinned Coordinate 无须在未来持续等于 npm `latest`。本次 Admission 已通过 Exact Coordinate Availability、Integrity、License、Vue/TypeScript Compatibility、Canonical Strict Typecheck、Production Build、Bundle Gate 以及 Owner 外部实际渲染与视觉审查，因此顶层能力现为 `ACTIVE`。`apps/web`、Page 与 Feature 绝不 Direct-import `naive-ui`；只有 `packages/ui/src/adapters/naive/**` 可以 Import Vendor，且不得从 `@platform/ui` Public Root 泄漏 Vendor Type 或 Instance。
 
+以下 Import Ceiling、Theme Inventory、输入 Type 与 Provider 示例保留初次 Landing 基线；当前扩展分别由既有导航、Form、I18n 与 §13.12 精确修订拥有。尺寸和主题投影的一般消费边界见 §14、§16.3，不从历史示例推断当前完整映射范围。
+
 初次 Landing 的 Maximum Private Naive Import Ceiling 为：
 
 ```text
@@ -5779,9 +5781,9 @@ export function createPavpNaiveThemeProjection(
 
 Field Order 精确为 `theme,themeOverrides`。该 Type/Function 只可由同一 Private Import Root 下的 `PavpNaiveConfigProvider.vue` Import，不从 `@platform/ui` Public Root 导出；Vendor Types 只存在于 `packages/ui` Private Adapter Boundary。`theme` 在 Effective `colorMode='dark'` 时精确为 `{name:'dark',common:commonDark,Breadcrumb:breadcrumbDark,Button:buttonDark,Descriptions:descriptionsDark,Radio:radioDark,Tag:tagDark}`，在 `light` 时为 `null`；不存在 `system` 分支，因为输入已是 Resolved State。`themeOverrides` 的 Component Inventory 精确为 `common,Breadcrumb,Button,Descriptions,Radio,Tag`，必须为每个实际渲染的 Admitted Naive Component 提供 Complete PAVP-owned Mapping，不得包含 Page Input、Raw Optical Literal 或 Naive-default-as-authority。
 
-Naive UI `2.45.2` 会先把 Global `common` Override 合入 Component Common，再调用 Component `self(mergedCommon)`，最后才合并 Component-local Override。当前五个 Admitted Component Theme 中，以下 Common Color Field 会在该 Eager Derivation 阶段进入 `seemly` Color Parser，因此不得出现在 PAVP `themeOverrides.common` 中；CSS Custom Property、Token Alias、Identifier Alias、Concrete PAVP Color 或其他 Value 形式均不构成例外：
+Naive UI `2.45.2` 会先把 Global `common` Override 合入 Component Common，再调用 Component `self(mergedCommon)`，最后才合并 Component-local Override。原 Atomic Landing 的五个 Admitted Component Theme 中，以下 Common Color Field 会在该 Eager Derivation 阶段进入 `seemly` Color Parser，当时禁止所有 PAVP 输入形式，包括 CSS Custom Property、Token Alias、Identifier Alias 与 Concrete PAVP Color。
 
-该当前禁写合同保持到 §13.12 消费者切片实际落地；届时仅四族 Semantic Status 的精确绝对色映射取得该节规定的窄例外，同时同步 Owning Checker。其他 Parser-sensitive Field 与所有 `var(...)` 颜色运算限制继续有效，本次文档任务不改变 Adapter。
+§13.12 消费者切片现已落地，四族 Semantic Status 的精确绝对色映射已取得该节规定的窄例外并同步 Owning Checker；其他 Parser-sensitive Field 与所有 `var(...)` 颜色运算限制继续有效。以下字段保留 Atomic Landing 的禁写集合与兼容输入记录，不覆盖 §13.12 的当前例外，也不因 §16.3 的一般投影原则扩大准入。
 
 ```text
 NAIVE_COMMON_PARSER_SENSITIVE_COLOR_FIELDS=primaryColor;infoColor;successColor;warningColor;errorColor;tableHeaderColor;cardColor;modalColor;popoverColor;dividerColor
@@ -5790,7 +5792,7 @@ NAIVE_COMMON_PARSER_SENSITIVE_COLOR_INPUT_SOURCE=admitted Naive light/dark concr
 PAVP_THEME_OVERRIDES_COMMON_FOR_EXACT_FIELDS=PROHIBITED
 ```
 
-Naive Light/Dark Concrete Color 在这里仅是 Private、Parser-compatible、Eager-derivation Compatibility Input，不是 PAVP Visual Authority，也不授权 Page、Component 或 Public Contract 把 Vendor-derived Output 作为最终视觉值。现有 Complete PAVP-owned Override Map 要求保持不变；该 Parser-input 规则只证明当前精确 Admitted Component Set 的 `self()` 可以安全完成，不证明任何 Future Component、Variant 或 Context 已覆盖。任何新增 Naive Component、Variant、Context 或 Theme Common Color Mapping 必须先重新审计其 `self()` Derivation，并在同一 Admission 中更新 Exact Map 与 Owning Checker。Checker 必须用 TypeScript AST 证明十个字段在 `themeOverrides.common` 中全部缺席、Override Object 只有可静态命名的精确属性，并用不写磁盘的 Reversible Negative Probe 证明 Token Alias 注入会失败。
+Naive Light/Dark Concrete Color 在这里仅是 Private、Parser-compatible、Eager-derivation Compatibility Input，不是 PAVP Visual Authority，也不授权 Page、Component 或 Public Contract 把 Vendor-derived Output 作为最终视觉值。现有 Complete PAVP-owned Override Map 要求保持不变；该 Parser-input 规则只证明精确 Admitted Component Set 的 `self()` 可以安全完成，不证明任何 Future Component、Variant 或 Context 已覆盖。任何新增 Naive Component、Variant、Context 或 Theme Common Color Mapping 必须先重新审计其 `self()` Derivation，并在同一 Admission 中更新 Exact Map 与 Owning Checker。当前 Checker 必须用 TypeScript AST 证明上述集合中未获 §13.12 例外的字段仍缺席、四族 Status 只消费该节准入的已解析绝对色、Override Object 只有可静态命名的精确属性，并用既有不写磁盘的 Reversible Negative Probe 证明 Token Alias 注入会失败。
 
 Private Wrapper Contract 精确为：
 
@@ -5808,7 +5810,7 @@ defineSlots<{
 
 `PavpNaiveConfigProvider.vue` 无 Public-root Export、无 Emit、无 Fallback、无 Overlay Root；它调用 `createPavpNaiveThemeProjection`，在 Template 中渲染全仓唯一一个 `NConfigProvider`，只传 `theme`、`themeOverrides` 并透传唯一 Default Slot。`UiProvider.vue` 只 Import/Render 该 Private Wrapper 并传入 `appearance`；其 Template 顶层第一个 Concrete DOM Node 无条件创建唯一 `pavp-overlay-root`，随后才渲染 Private Wrapper，并在 Wrapper Slot 内渲染 Public Default Slot。Overlay Root 必须位于 Wrapper 与 Routed Default Slot Subtree 之外，确保任何 Descendant Teleport Mount 前 Target 已同步存在；`UiProvider.vue` 不 Import `naive-ui`、`pavp-naive-theme.ts` 或任何 Vendor Type。Checker 必须同时证明 Wrapper 不进入 Public Component Registry、`NConfigProvider` Count 精确为 `1`、Theme Adapter 对六个 Dark Theme ES Subpath Value 与两个 Vendor Type-only Import、Wrapper 对 `NConfigProvider` 的 Import Kind/Owner、UiProvider-to-wrapper Composition Closure，以及 Overlay Root 相对 Wrapper/Slot 的结构顺序精确。
 
-`pavp-naive-theme.ts` 只从 PAVP Semantic Color、Size、Radius、Typography、Shadow、z-index、Material 与 Motion Authority 构造 Light/Dark Projection 和 Component Overrides。Naive Default Visual Value 不能成为 PAVP Authority；每个被渲染的 Admitted Naive Component 必须有完整 PAVP-owned Override Map，Missing Required Token/Mapping 是 Static/Build Failure。Page-authored Naive Theme Override 禁止。
+`pavp-naive-theme.ts` 只从 PAVP Semantic Color、Size、Radius、Typography、Shadow、z-index、Material 与 Motion Authority 构造 Light/Dark Projection 和 Component Overrides。Naive Default Visual Value 不能成为 PAVP Authority；每个被渲染的 Admitted Naive Component 必须完整映射其已准入渲染合同中的必需字段，Missing Required Token/Mapping 是 Static/Build Failure。Complete Map 不要求预映射未使用的 Vendor Component/Size Variant，也不表示 §14 的完整尺寸语义已覆盖。Page-authored Naive Theme Override 禁止；集中桥接扩展、Typed Value Projection 与窄 Component-local Override 统一遵守 §16.3，不放宽本节的 Parser-sensitive Field、Private Import、Provider 或特定兼容输入合同。
 
 Overlay Contract 精确为：
 
@@ -5977,8 +5979,8 @@ type CapabilityStatus =
 | Reference-only Preference and Theme Registry | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
 | Standard and Enhanced Theme Plane projection | `ACTIVE` | generated Theme Bank and stable Public bindings |
 | Semantic Status Color System | `TARGET_INACTIVE` | §13.12 records the committed foundation and statically complete, unstaged consumer slice with Manifest schemaVersion 11; §37.2.14 records the bounded Owner authorization; runtime/visual Owner acceptance remains pending and the complete capability is not end-to-end active |
-| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | future Public Role Admission |
-| Continuous Density Scale application | `DEFERRED` | independent personalization admission |
+| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | §14.2 canonical density size projection target; current preset/schema and build-only sources do not complete the visual projection; consumer-backed Public Role Admission is still required |
+| Continuous Density Scale application | `DEFERRED` | §14.3 persisted field only; exact visual semantics and computation remain unresolved and require a separate Owner decision before application |
 | Pinia appearance orchestration | `ACTIVE` | `apps/web` exact two-field Appearance Store |
 | Appearance Preference and Custom Registry persistence | `ACTIVE` | two application-owned Local Storage boundaries |
 | Complete Custom Theme validation and fixed Bank installation | `ACTIVE` | Design System exact validator, resolver and installer |
@@ -6704,7 +6706,7 @@ Vue SFC 固定顺序：
 </template>
 ```
 
-普通组件按 §15.6 使用语义 UnoCSS，不新增 SFC Style Block。Vue 支持 Style、Scoped CSS 与 CSS Modules，并不构成 PAVP 作者准入；只有 §15.6 明确的私有 Vendor、Browser/Platform 或运行时责任可以保留必要 CSS。“UnoCSS 不足”必须先识别缺失权威或 Mapping，不能直接作为写 Style 的许可。
+普通组件按 §15.6 使用语义 UnoCSS，不新增普通 SFC Style Block。Vue 支持 Style、Scoped CSS 与 CSS Modules，并不构成 PAVP 作者准入；必要 Selector/Runtime 责任按各自现有 Owner 保留，未来受控 SCSS Fallback 还须满足该节的精确 Scope 与 Compiler 准入。“UnoCSS 不足”必须先区分缺失可复用权威/Mapping 与真实局部实现责任，不能直接作为写 Style 的许可。
 
 不使用：
 
@@ -8102,6 +8104,8 @@ A = R = T = N = U = M
 ```
 
 Conditional Role 可以在 Runtime CSS 和 Manifest 中有多个 Condition Record，但集合比较按唯一 Semantic Role Name 进行。同一 Public Role 在所有 Condition 下必须使用同一个规范 CSS Variable 和同一份 UnoCSS Mapping。`R` 必须从实际 Generated Runtime CSS 反向解析，且每个 Public Variable 只映射一个 `A` Role；`U` 只有在 Manifest Metadata 与实际 `platformPreset` Theme Entry、Rule 或 Shortcut 完全一致时才成立。Manifest 不得自证 Runtime 或 UnoCSS Output，Generated CSS 与 UnoCSS 也不得存在未登记的额外 Public Variable 或 Class Mapping。缺失、未知、重复、不可访问、CSS Variable Collision、UnoCSS Class Collision、无法映射或集合差异都必须导致 Generation Failure。Formatter 不得通过 `continue`、`undefined`、过滤或静默跳过绕过 Public Role。
+
+角色数值相等不表示语义可互换。一个 Semantic Role 可以在其语义确实兼容时拥有多个明确的 CSS Property Binding，但必须先在现有 Public Role Registry 与 Generator 中准入；不能把所有 Spacing、Dimension 或 Radius 当成通用数值池。当前 Mapping Union 的适用范围保持，§13.12 的状态色 Binding 不自动授权其他 Role 扩展。`U` 的完整性证明 Mapping 存在，不证明每个实际作者 Class 已被 Vite 提取；后者另须满足 §15.1 的 Extraction Contract。
 
 Public Role Registry 的记录结构固定为：
 
@@ -10671,6 +10675,29 @@ Layout Dimensions
 
 Starter 保留现有 Typography、Density、Sizing 和响应式表达基础，提供一致尺寸而不替各项目决定业务布局。可用空间变小不能自动减小阅读字号、修改用户 Font Scale 或通过整页缩放适配；排列、滚动与操作入口由项目在已有 Token、可访问性和页面能力边界内选择。既有 Density 候选、Scale 与准入状态保持，产品目标不宣称它们已全部实现。
 
+### Sizing authority and property meaning
+
+尺寸继续使用现有 Primitive → Semantic / 按需 Component Token → Public Role Registry → Generator 链，不新建 Size Token Tree、第二 Registry 或 Vendor Size Authority。以下区分的是责任，不是新增 Token ID、默认数值或要求整批实现的清单：
+
+| 尺寸责任 | 既有权威与消费边界 |
+| --- | --- |
+| Visual control size | `interaction.control.height` 是现有视觉高度语义；其他控件尺寸只能由真实消费者触发准入。 |
+| Control-internal spacing / padding | 控件内部 Inline/Block Padding 与内容间距属于明确的控件语义，不能借用数值相同的页面间距代替。 |
+| Icon size / icon-to-label spacing | 图标几何与图文间距各有语义；不能因数值合适就把 Font Size、Touch Target 或任意一半尺寸当成通用图标规则。 |
+| Page / section / content spacing | 现有 `spacing.page.inline`、`spacing.section.block`、`spacing.content.gap` 分别消费其已准入 Property；其他 Property Coverage 按需求扩展。 |
+| Typography / font scale | 字号、行高、字重和字体由 Typography Token 拥有；`fontScale` 是 §14.4 独立偏好。 |
+| Radius | 现有 `interaction.radius.panel` 拥有 Panel Radius；独立的控件圆角需求不能自动继承 Panel 语义。 |
+| Border / focus geometry | 边框宽度、Focus Width/Offset 与轮廓几何不同于颜色；保留既有 UI-internal Admin Owner，公共控件几何仍须按需闭合。 |
+| Minimum interaction target | §14.5 与 Generated Layout Registry 拥有 Pointer/Touch Target 下限，不是统一视觉高度。 |
+| Shell / layout geometry / content widths | §1.2B.1、§18 拥有 Shell 尺寸和内容宽度；Layout Registry 只是同一 Token Authority 的生成投影。 |
+| Responsive / container thresholds | Generated Layout Registry 的三档空间边界与 Container Variant 拥有响应式阈值，不能从 Density 或控件尺寸推导。 |
+| Overlay / z-index | 已准入 Layer Token 与 Overlay Owner 拥有堆叠顺序，不属于空间密度。 |
+| Motion geometry | §24 的命名 Motion Owner 拥有实际测量与动画几何；静态设计几何仍需 Canonical Token，不能顺带拥有控件或 Shell 尺寸。 |
+
+当前 Public Surface 有 Control Height、部分页面/内容间距、Typography、Panel Radius、Layout 与 Target Role，但尚未暴露完整 Control Padding、Icon Size、Icon Spacing、Control-specific Radius/Focus Geometry 或完整 Property-compatible Spacing Coverage。已有 Naive Adapter 中的特定 Alias/派生关系仅保留其现有消费者合同，不因本表成为新的通用尺寸规则。
+
+后续实施只能为已证明的消费者补齐最小 Canonical Role/Mapping，经现有 Generator 同步 CSS、TypeScript、UnoCSS 与 Manifest，并遵守 §11.4 的 Role Meaning 与多 Property Binding 边界。局部 Anatomy 按 §11.3 保持其适当 Visibility，不为一次性实现细节预建公共 API。
+
 ## 14.2 密度预设
 
 ```ts
@@ -10680,7 +10707,7 @@ type UiDensity =
   | 'spacious'
 ```
 
-当前 36-role Public Contract 中与 Density 相关的唯一 Active Role 是 `interaction.control.height`，且当前值不是三档完整 Public Projection。以下 `TargetDensityProjectionSet` 是未来候选集合，不是当前 Active Set：
+`density.preset` 使用上述现有 Schema Enum，目标是选择由 Design System 拥有的 Canonical Density Size Projection。当前 `tokens/density/**` 只有三档 Build-only Source；`interaction.control.height` 的公共输出仍是固定 `2.25rem`，`applyAppearance` 写入 `data-density` 不等于 Generated CSS 已完成三档视觉投影。以下既有 `TargetDensityProjectionSet` 保留为候选名称集合，不是当前 Active Set，也不是每次尺寸扩展必须整批准入的清单：
 
 ```text
 interaction.control.height
@@ -10696,7 +10723,7 @@ spacing.dialog.padding
 spacing.list-item.gap
 ```
 
-其中除 `interaction.control.height` 外的十个 ID 都是非 Public Candidate；它们不属于 §13.3 的 283 个 Reserved Color ID，也不属于当前 `A = R = T = N = U = M`。只有后续 Admission Amendment 显式更新 §11.4 Active Registry 后，`compact`、`comfortable` 和 `spacious` Source 才必须具有完全相同的 `TargetDensityProjectionSet`、结构和 Dimension Type。每个 Preset × Role 单元必须独立、明确地由作者策划；允许显式 Alias 固定 Primitive，但禁止：
+其中除 `interaction.control.height` 外的十个 ID 都是非 Public Candidate；它们不属于 §13.3 的 283 个 Reserved Color ID，也不属于当前 `A = R = T = N = U = M`。后续 Admission 必须按真实消费者确定最小 Density-owned Role Set 并显式更新 §11.4，不以候选清单代替需求。每个已准入 Density Role 必须在 `compact`、`comfortable`、`spacious` 三档具有相同语义、结构和 Dimension Type，逐 Preset × Role 独立、明确策划；允许显式 Alias 固定 Primitive，但禁止：
 
 ```text
 引用另一个 Density Preset
@@ -10706,18 +10733,18 @@ spacing.list-item.gap
 从一个 Preset 自动推导另外两个 Preset
 ```
 
-当前 Density Source 保持 `build-only`，不得因本修订新增 Public Output。未来 Admission Amendment 接受后，每个 Source Role 才投影为同名、`visibility=public` 的 Density-conditioned Semantic Alias；三个 Preset 构成 33 个完整 Condition Record 和 11 个唯一 Public Role。缺失、额外、重复或类型不一致必须使 Generation Failure。
+当前 Density Source 保持 `build-only`，不得因本修订新增 Public Output。未来 Admission 接受后，选定的 Density Source 才通过已准入 Semantic Role 投影为 `visibility=public` 的 Density-conditioned Alias。精确 Role/Source Mapping 和 Condition Record Set 由该次准入闭合；不预设必须一次生成 11 Role / 33 Condition Record。相对已准入集合的缺失、额外、重复或类型不一致必须使 Generation Failure。
 
 该未来 Admission 接受后，Generator 必须生成独立选择器：
 
 ```text
 :root                                        → comfortable safe baseline
-html[data-density='compact']                 → exactly eleven public density variables
-html[data-density='comfortable']             → exactly eleven public density variables
-html[data-density='spacious']                → exactly eleven public density variables
+html[data-density='compact']                 → exactly the admitted density-owned public variables
+html[data-density='comfortable']             → exactly the admitted density-owned public variables
+html[data-density='spacious']                → exactly the admitted density-owned public variables
 ```
 
-在 Admission 以前不得生成这 11-role Selector。Admission 以后 Density Selector 不得与 Theme、Color Mode、Contrast 或 Material 组合，只能写入这 11 个 Public Variable。公共 TypeScript、Token Names、UnoCSS 和 Manifest 使用唯一 Semantic Role；Condition Record 只在 Runtime CSS 与 Manifest 展开。
+在 Admission 以前不得生成新的 Density Selector。Admission 以后 Density Selector 不得与 Theme、Color Mode、Contrast 或 Material 组合，只能写入该次已准入的 Density-owned Public Variable。公共 TypeScript、Token Names、UnoCSS 和 Manifest 使用唯一 Semantic Role；Condition Record 只在 Runtime CSS 与 Manifest 展开。
 
 Reserved Target Projection（不是当前 Public API）：
 
@@ -10735,21 +10762,25 @@ Reserved Target Projection（不是当前 Public API）：
 | `spacing.dialog.padding` | `--ui-space-dialog-padding` | `p-dialog` |
 | `spacing.list-item.gap` | `--ui-space-list-item-gap` | `gap-list-item` |
 
-这些 Target Name 已经过 `PAVP_NAMING_NORMALIZATION` 的语义审查；后续 Admission Amendment 只能决定是否准入，不得借机重命名当前兼容 Role 或 Class。任何未来重命名必须通过独立、显式准入的 Compatibility Change。Toolbar Height、Navigation Item Height、Table Row Height 和 Dialog Padding 是候选 Spatial-density Metric，不授权 Density 控制一般 Layout Geometry。Density 不得修改：
+这些 Target Name 已经过 `PAVP_NAMING_NORMALIZATION` 的语义审查；后续 Admission 决定真实消费者需要的最小集合及兼容 Property Coverage，不得借机重命名当前兼容 Role 或 Class。任何未来重命名必须通过独立、显式准入的 Compatibility Change。Density 只能影响明确归其所有的维度，如已准入的视觉控件尺寸、组件内部间距，以及明确指定的 Section/Content Spacing；不能因某个值是 Dimension 就自动纳入。Toolbar Height、Navigation Item Height、Table Row Height 和 Dialog Padding 是候选 Spatial-density Metric，不授权 Density 控制一般 Layout Geometry。Density 不得修改：
 
 ```text
-fontScale
-touchTarget
+typography and fontScale
+minimum pointer/touch accessibility target
 radius
 contentWidth
-layoutGeometry
+Shell and layoutGeometry
+layout-profile and container thresholds
 layoutColumns
 z-index
+border and focus widths/offsets
 motion
 contrast
 color
 material
 ```
+
+未来 Density 实施必须保持 §13.11 现有首屏恢复与失败时保留安全基线的边界；成功解析的 Built-in/Custom Appearance 在 First Paint 与 Vue 后必须消费同一 Density Projection。实施还须复用 §13 的 Runtime Apply/Rollback 原子事务和持久化兼容合同，并同步 §16.3 的集中 Naive Projection。Schema、Attribute 或 UI 选项存在不构成 Density Projection 完成证据；不能先在局部组件应用新密度，再等待中心链路追上。
 
 ## 14.3 连续密度微调
 
@@ -10768,11 +10799,11 @@ maximum = 1.15
 step = 0.05
 ```
 
-`DensityPreference.scale` 暂时只作为经过 Schema 校验、可以无损 Round-trip 的 Stored Field，默认值为 `1`。在独立命名的 Personalization Work Package 通过 Admission Gate 并批准完整 Canonical Application Rule 前，Effective Runtime Density 只由 `preset` 决定。
+`DensityPreference.scale` 已存在于 Schema 和持久化偏好中，默认值为 `1`，当前只作为经过 Schema 校验、可以无损 Round-trip 的 Stored Field。其精确视觉含义和计算方式是尚未解决的 Canonical Implementation Contract，必须经独立 Owner 决策后才能应用；字段名、范围和默认值均不隐含缩放公式。在独立 Personalization Work Package 通过 Admission Gate 并批准完整 Application Rule 前，Effective Runtime Density 仅保存由 `preset` 选择的状态，三档视觉投影本身仍按 §14.2 未完成。
 
-当前 Runtime、First Paint、DOM Attribute、Generated CSS、Token Resolution、UnoCSS、Component 和 Layout 不得应用 `scale`。非 `1` 值不得触发计算、插值、自动缩放 11 个 Density Role 或改变其他独立轴，也不得被静默重写。
+当前 Runtime、First Paint、DOM Attribute、Generated CSS、Token Resolution、UnoCSS、Component 和 Layout 不得应用 `scale`。非 `1` 值不得触发计算、插值、自动缩放 Density Role 或改变其他独立轴，也不得被静默重写。本次不发明公式、CSS 乘法策略或插值系统，不以全局 `zoom`、`transform: scale` 或修改 Root Font Size 实现 Density，也不迁移或删除该字段。
 
-未来 Density Scale Application Contract 至少必须定义逐 Role Algorithm、Rounding、Clamp、Accessibility Minimum、Migration、First-paint Parity 和 Static Enforcement；`fontScale` 保持独立且不受该延迟影响。
+未来 Density Scale Application Contract 至少须闭合适用 Role、计算语义、精度/边界处理、Accessibility Minimum、既有持久化偏好兼容、First-paint Parity、Apply/Rollback 与集中 Naive Projection 的事务一致性和 Static Enforcement；是否需要 Migration 也必须由真实兼容性需求决定。本次不选择这些未决方案；`fontScale` 保持独立且不受该延迟影响。
 
 ## 14.4 字号缩放
 
@@ -10810,6 +10841,10 @@ Preferred coarse-pointer target = 44 × 44 CSS px
 ```
 
 Compact 模式允许视觉高度低于 44px，但外层命中区域仍应安全。
+
+现有 `layout.target.enhanced.minimum-block-size` / `minimum-inline-size` 共同来自唯一 `dimension.target.enhanced-min`，是已建立的增强交互下限，不自动规定每个控件的视觉高度。Density 不得静默降低该下限；视觉尺寸与命中区域由各自语义共同满足已准入组件的可访问性合同。
+
+当前 `UiButton` 使用 `min-h-target-enhanced min-w-target-enhanced`，集中 Naive `Button.heightMedium` 也消费 Enhanced Target Height。这是现有兼容行为，不是未来全部控件视觉尺寸的统一定义。后续尺寸消费纠正须保留当前公共 API、现有视觉行为和命中区域下限，不因重新区分语义就把按钮直接缩成 `h-control`。
 
 ---
 
@@ -10896,6 +10931,14 @@ layout.z.overlay            → z-overlay       → z-index
 * Property-scoped Exact Rule。
 * 真实复用触发的少量语义 Shortcut。
 
+### Extraction source and finite class output
+
+Semantic Class 合法性与实际 CSS 生成是两个独立保证：Registry/ESLint/Blocklist 证明允许使用什么，Extraction/Generation 证明实际消费者需要的 Class 被输出。当前 Vite Pipeline 覆盖 `.vue` 中静态完整类名；[UnoCSS Extraction 官方合同](https://unocss.dev/guide/extracting)与仓库安装的 `66.7.5` 默认配置均不保证提取普通 `.ts` / `.js` 模块。当前 `uno.config.ts` 没有为普通 TypeScript Class Owner 配置专用 Content Source；仅在 `.ts` 写出完整字符串或通过语义检查不等于 CSS 一定生成。
+
+未来实施必须为合法拥有完整 UI Class Token 的 TypeScript 文件配置精确的 Repository-owned Extraction Source，或从同一 Canonical Owner Data 生成/有限 Safelist 保证完整输出集合。选择及实际文件范围须随真实消费者闭合，不在本文猜测文件清单或配置实现。不得扫描全部仓库 TypeScript、Architecture Scripts、Documentation、Generated Evidence、`node_modules` 或任意字符串；现有工具源码中的 Class 字符串不是产品作者 Source。
+
+运行时字符串拼接默认禁止；只有完整、有限输出集合有明确 Owner，且生成独立得到保证时才可准入。有限静态映射也必须有提取/生成保证，不能用运行时拼接或大规模 Safelist 代替语义 Role、Density Variable 与 Extraction Contract。本次不修改 Content Source、Extractor、Safelist 或生产 CSS。
+
 ## 15.2 UnoCSS 不负责
 
 * 自己维护或推导颜色值。
@@ -10905,7 +10948,7 @@ layout.z.overlay            → z-overlay       → z-index
 * 封装完整视觉组件。
 * 保存用户自定义颜色。
 
-当前 UnoCSS 只消费 §11.4 及 §13.12 已准入的 Public Variable。未来 Density Admission 接受后，UnoCSS 才消费新增 Density-conditioned Public Variable；它不拥有 Density Matrix 或 Preset Value。禁止用 Density Variant、运行时类名拼接或大规模 Safelist 切换外观。
+当前 UnoCSS 只消费 §11.4 及 §13.12 已准入的 Public Variable。未来 Density Admission 接受后，UnoCSS 才消费新增 Density-conditioned Public Variable；它不拥有 Density Matrix 或 Preset Value。禁止用 Density Variant、运行时类名拼接或大规模 Safelist 切换外观；§15.1 的有限生成保证不授予第二套外观切换机制。
 
 ## 15.3 允许的 Shortcut
 
@@ -10946,7 +10989,7 @@ dashboard-card
 Attributify
 Tagify
 transition-all
-运行时动态类名
+没有有限 Owner 集合和独立生成保证的运行时动态类名
 字符串拼接颜色类
 大量 Safelist
 页面原始 Hex
@@ -10959,16 +11002,21 @@ transition-all
 
 ## 15.6 UnoCSS-First Styling Author Boundary
 
-本节冻结 **UnoCSS First, Semantic Authority First**。它起源于 §37.2.15 的目标合同，并由其后的限定作者治理候选实现机器边界；这不宣称现有 Style Debt 已迁移，也不宣称 Size Authority、Density Projection 或 Native Cascade 已完成。正常作者链路唯一为：
+本节冻结 **UnoCSS First, Semantic Authority First**，当前实现状态统一见 §15.7。同一 Canonical Authority 的生成与消费关系为：
 
 ```text
-Canonical PAVP semantic authority
-→ generated CSS Variables / Registries
-→ generated semantic UnoCSS utilities
-→ ordinary PAVP template/component authoring
+Canonical PAVP Design Tokens / Public Roles / Layout and Interaction contracts
+→ generated CSS Variables / TypeScript bindings / Registries
+  ├→ generated semantic UnoCSS mappings → ordinary PAVP DOM authoring
+  └→ runtime appearance projection → centralized Naive theme projection
+                                    → PAVP-owned vendor adapters and UI consumption
 ```
 
 Public Roles、Design Tokens、Layout Registry、Interaction/Motion 合同及其他明确准入的 PAVP Registry 继续拥有语义与值；UnoCSS 是普通作者入口和消费投影，不是 Source of Truth。不得把 CSS Variables、Uno Theme/Rule/Shortcut、Vendor Theme Config 或未来 Sass 变成第二套颜色、Spacing、Dimension、Typography、Motion、Layer 或 Theme 权威。
+
+普通应用与 Public Component 自有 DOM 先使用已注册语义 UnoCSS 和合法结构 Utility；缺少可复用能力时先扩展其 Canonical Token / Public Role / Mapping 合同，再允许作者消费。手写局部 Style 不是替代设计权威。只有已证明的局部结构、复杂 Selector、Pseudo-element、Keyframe、Browser/Platform 或 Vendor 内部 DOM 责任，且强行写成普通 Template Utility 会降低清晰度或错误公开私有细节时，才可把受控 SCSS 作为最后 Fallback；无需为了避免 SCSS 把每个私有机制注册成 Public Role。
+
+新的普通作者维护 Plain CSS 不是未来目标表面：普通视觉与布局责任进入语义 UnoCSS，获准手写 Fallback 使用 SCSS。现有 Plain CSS 普通债务在独立迁移前仍是受控迁移输入；Generated CSS、UnoCSS Output、Vendor-generated CSS、Theme Bank、Validated Runtime Style Writes 和 Browser/Runtime Style Machinery 不属于该普通作者限制，不能仅因浏览器最终接收 CSS 就禁止它们。
 
 ### Six author categories
 
@@ -10981,9 +11029,9 @@ Public Roles、Design Tokens、Layout Registry、Interaction/Motion 合同及其
 | C — Browser / Platform / Accessibility Styling   | 浏览器伪元素、View Transition Pseudo-element、Forced Colors、Safe Area、Native Scrollbar Fallback、浏览器专属 Selector 和可访问性兜底。按精确 Selector、At-rule、Property/Value 与命名平台责任消费既有权威；不是普通布局或视觉设计的 CSS 逃生口。                  |
 | D — Generated / Runtime Style Authority          | Token/Theme Bank 生成、Critical First Paint、经过验证的 Runtime Variable、Custom Theme Apply/Rollback 与既有生成产物。继续由唯一 Generator/Runtime Owner 写入；合法 Style Sink 受精确 API、输入来源、Property、变量身份及事务合同约束。                         |
 | E — Private Interaction / Motion Runtime Styling | 私有 Motion Owner 所需的 motion-v Transform、实际测量几何、命名 Keyframe Family 与动画运行时值。遵守 §24 的 Full/Reduced/None、生命周期和清理合同；不能借 Motion 文件位置隐藏普通静态设计。                                                                      |
-| F — Legitimate Scoped SCSS Fallback              | 仅在 UnoCSS 无法可靠表达复杂伪元素、结构依赖 Selector、Keyframe、第三方内部 DOM 或浏览器/平台兼容责任时，作为最后手段注册 `LEGITIMATE_SCSS_FALLBACK`。Owner 必须精确到路径、Scoped Block、Selector/At-rule、Property/Value、私有变量与 Keyframe 身份；不能建立平行设计系统。 |
+| F — Legitimate Controlled SCSS Fallback          | 仅处理已证明的局部结构、复杂 Selector/Pseudo-element、Keyframe、Vendor 内部 DOM 或 Browser/Platform 责任，且普通 Utility 会降低清晰度或错误公开私有细节。默认 Scoped；仅集中且天然全局的 Adapter Owner 可按下方未来准入边界使用 Non-scoped。路径、Block/Scope、Selector/At-rule、Property/Value、私有变量和 Keyframe 必须有精确 Owner。 |
 
-同一 SFC 可以包含普通 DOM 与平台/Vendor 责任，但每个责任分别适用规则。Generated、Vendor、Browser、Platform、Runtime、Motion 与 Scoped SCSS 是不同 Owner Category；不能为了获得 SCSS Fallback 权限而改写分类。Vendor Theme API 输出、Browser Selector 与 Motion Runtime 都不能独立定义 Palette、Spacing、Dimension、Motion 或 z-index。
+同一 SFC 可以包含普通 DOM 与平台/Vendor 责任，但每个责任分别适用规则。Generated、Vendor、Browser、Platform、Runtime、Motion 与 SCSS Fallback 的 Owner Category 不能为了获得权限而互换；SCSS 只是一种受控作者机制，不取代底层责任 Owner。Vendor Theme API 输出、Browser Selector 与 Motion Runtime 都不能独立定义 Palette、Spacing、Dimension、Motion 或 z-index。
 
 公共 CSS Variable 只由已准入 Authority 声明。每个 Private Custom Property 必须登记精确身份、用途、Writer/Consumer、允许数据来源与 Property 责任；引用一个公共变量不自动授权新的局部设计变量链。当前源码只读取 `--pavp-scrollbar-color` 与 `--pavp-scrollbar-hover`，未证明项目内 Writer，二者归类为未解析 Fallback Input；Owner 提及的 `--pavp-scrollbar-color-hover` 在当前源码中不存在。不得据此虚构 Runtime Writer 或 Active Theme Fork。
 
@@ -11009,23 +11057,31 @@ Admin Workbench 的响应式作者必须复用 §1.2B.1 的 `layout-narrow:`、`
 
 普通 UI 禁止静态 `style` Attribute；静态尺寸、颜色或 Token 值包装成 `:style`、JS Object、Computed 或 Vendor `content-style`，仍不成为 Runtime 例外。动态 `:style` / JS Style Write 仅可属于命名的已验证 Theme Preview、实际 Layout Measurement、Motion Runtime，或静态 Class 确实无法表达的真实 Vendor Runtime Content Style。必须可从架构与 Owning Checker 识别其 Owner、输入及写入边界，没有“动态所以允许”的通用豁免。
 
-迁移采用 **No New Debt + Touch-and-Migrate**：新普通 UI 按本节编写；旧普通样式债务按 File、Style Block Identity、At-rule Context、Selector、Property、Normalized Value 与 Important State 冻结为声明级 Baseline。Baseline 声明可以删除或迁移；不得新增普通声明、Selector、Style Block、扩大值范围或通过同文件/Selector Prefix 取得新权限。旧普通责任被已授权任务实质修改时，迁移该任务直接触及且已有适用 Mapping 的部分；未触及债务继续按冻结 Baseline 保留。§37.2.15 审计 A/B 债务暂时保留，不要求本次或任何局部任务清空整个仓库。缺少合法权威/Mapping 时停止并请求最小准入，不扩大任务。
+迁移采用 **No New Debt + Touch-and-Migrate**：新普通 UI 按本节编写；旧普通样式债务按 File、Style Block Identity、At-rule Context、Selector、Property、Normalized Value 与 Important State 冻结为声明级 Baseline。Baseline 声明可以删除或迁移；不得新增普通声明、Selector、Style Block、扩大值范围或通过同文件/Selector Prefix 取得新权限。只有已授权实施任务同时具有当前消费者与足够语义 UnoCSS 能力时，才迁移其直接触及的普通责任。简单且已可表达的债务移入 Template Utility，并从 Debt Baseline 删除；缺能力的债务先准入最小 Canonical Role/Mapping。未触及债务继续按冻结 Baseline 保留。§37.2.15 审计 A/B 不要求局部任务清空全仓；缺少合法权威/Mapping 时停止并请求最小准入，不扩大任务。
+
+例如当前 `UiPageHeader.vue` 的 Grid 与 `gap-content-gap` 已有表达能力，是后续授权迁移的输入，不是本次修改对象。把 `.css` 或 `<style>` 仅改为 `lang="scss"`，却不把普通责任移到 UnoCSS，不算迁移，也不能借换语言重置债务基线。
 
 审计 C/D/E 的合法 Vendor、Browser/Platform、Interaction 和 Generated/Runtime 责任继续保留；只把其中普通作者责任迁移，不机械删除 CSS，不迁移运行时写值为静态类。现有 Keyframe Family、Private Variable 与 `!important` 只由精确 Owner Identity 保留；At-rule 后代、Pseudo-selector、`.pavp-*`、`.n-*`、`@supports` 或整个文件本身都不授予权限。
 
 ### Sass and upstream mechanism boundary
 
-Scoped SCSS 是条件准入的最后 Fallback，不是永久禁止，也不是普通作者入口。当前项目 Manifest 没有直接 Sass Compiler，注册的 `LEGITIMATE_SCSS_FALLBACK` Owner 集合为空；Lockfile 中 Vite 的可选 `sass` / `sass-embedded` Peer 声明不构成编译器准入。未来新增 `.scss`、`.sass` 或 `<style lang="scss" scoped>` 必须同时获得精确 Fallback Owner 与明确授权的 Compiler Support；缺少任一条件都由 Repository Policy 拒绝。
+受控 SCSS 是条件准入的最后 Fallback，不是普通作者入口。普通组件的获准 Fallback 默认使用 `<style lang="scss" scoped>`；Non-scoped SCSS 只允许位于明确集中的 Vendor、Browser/Platform、Accessibility 或同等 Adapter Owner，且必须证明 Selector 因其责任天然需要全局 Scope。不能因为选择器复杂或组件放在 Adapter 目录就获得全局权限。
 
-已准入 SCSS Block 仍只能消费 Canonical Variable、注册的结构/平台输入和命名 Runtime 数据，必须拒绝 Raw Color、Raw Design Dimension、任意 Typography、隐藏设计 Literal、未注册 Custom Property 与应进入 Canonical Token/Mapping 的可复用值。普通 Plain SFC CSS 继续禁止；Generated、Vendor、Browser/Platform 与 Standalone Runtime CSS 按各自 Owner Category 管理，不能伪装为 SCSS Fallback。
+SCSS 可以消费 Canonical CSS Variable、精确拥有的私有实现变量、注册结构/平台输入与命名 Runtime 数据，但不得建立 `$primary`、`$spacing`、`$control-height` 或 Sass Map/Mixin/Function 驱动的另一套可复用 Palette、Size、Theme Authority。Sass 语言特性本身不被永久禁止；每个 Design-bearing Value、派生关系和输出仍须可追溯到唯一 Canonical Authority，不能隐藏 Raw Color、Raw Design Dimension 或绕过 Property Compatibility。模块使用 `@use` 和明确 Namespace，不创建全局 `@import` 设计变量系统。私有变量不因包了一层 Canonical Variable 就自动成为新的共享合同。
 
-[Sass 官方变量说明](https://sass-lang.com/documentation/variables/)区分编译时 Sass 变量与浏览器中保留的 CSS Custom Properties；Sass 不能替代 PAVP Runtime Theme/Layout/Motion Authority。[Vue SFC CSS 文档](https://vuejs.org/api/sfc-css-features.html)提供 Scoped CSS/CSS Modules 能力，但它们不是自动的原生 Layer 归属或 PAVP 作者许可。
+当前 `scssFallbackOwners` 与 `styleCompilerSupport` 的真实集合都为零，Manifest 没有直接 Sass Compiler；Lockfile 中可选 `sass` / `sass-embedded` Peer 声明不构成准入。现有 `ScssFallbackOwner` 仅建模 `scoped: true`，源码分析还拒绝多种 Sass 语法，因此不宣称已实现上述 Non-scoped 或语言特性目标。首次真实 SCSS Consumer 的独立准入必须同时闭合精确路径、Scope、语言、Selector/Declaration、私有变量/Keyframe、Compiler/Manifest 与所需的窄静态检查支持；本次不新增 Owner、不改变 Checker，也不提前允许任何 SCSS 源码。
 
-[UnoCSS Rules](https://unocss.dev/config/rules)、[Theme](https://unocss.dev/config/theme)、[Variants](https://unocss.dev/config/variants)、[Preflights](https://unocss.dev/config/preflights)、[Shortcuts](https://unocss.dev/config/shortcuts)及[配置中的 Blocklist](https://unocss.dev/config/#blocklist)提供表达、组合、生成和排除机制，不能替代 PAVP 语义准入或证明完整语法覆盖。当前治理按仓库已安装 API 执行；原生层目标见 §26。
+[Vite 的预处理器合同](https://vite.dev/guide/features#css-pre-processors)支持安装对应编译器后的 SCSS/Sass，无需另建 Vite 专用插件；[官方配置说明](https://vite.dev/config/shared-options#css-preprocessoroptions)基于性能推荐 `sass-embedded`。安装它或其他 Compiler 是与首个真实获准 SCSS Consumer 绑定的未来独立依赖决策，不是本次架构更正的授权或前置动作。
+
+[Sass 官方变量说明](https://sass-lang.com/documentation/variables/)区分编译时 Sass 变量与浏览器中保留的 CSS Custom Properties，[模块 `@use`](https://sass-lang.com/documentation/at-rules/use/)提供明确的成员 Scope；Sass 不能替代 PAVP Runtime Theme/Layout/Motion Authority。[Vue SFC CSS 文档](https://vuejs.org/api/sfc-css-features.html)提供 Scoped CSS/CSS Modules 能力，但它们不是自动的原生 Layer 归属或 PAVP 作者许可。
+
+[UnoCSS Rules](https://unocss.dev/config/rules)、[Theme](https://unocss.dev/config/theme)、[Variants](https://unocss.dev/config/variants)、[Extractors](https://unocss.dev/config/extractors)、[Content Sources / Safelist / Blocklist](https://unocss.dev/guide/extracting)、[Preflights](https://unocss.dev/config/preflights)与[Shortcuts](https://unocss.dev/config/shortcuts)提供表达、组合、提取、生成和排除机制，不能替代 PAVP 语义准入或证明完整语法覆盖。可选 Native CSS Layer 输出单独见 §26，API 存在不等于仓库可直接启用。
+
+当前仓库 UnoCSS 固定为 `66.7.5`；上游可能已有更新 Release，当前合同与治理按仓库已安装 API 验证。Dependency Modernization 是独立任务，本次没有升级授权；升级不能代替 Size Authority、Extraction Closure 或 Style Migration。
 
 ## 15.7 Styling enforcement responsibilities and current state
 
-只演进现有 ESLint、UnoCSS Blocklist、Stylelint、Architecture/Repository Policy Checker 与 `pnpm verify`，不新增通用治理引擎或 Test Framework。当前限定治理候选负责：
+只演进现有 ESLint、UnoCSS Blocklist、Stylelint、Architecture/Repository Policy Checker 与 `pnpm verify`，不新增通用治理引擎或 Test Framework。当前源码中的限定作者治理负责：
 
 - 拒绝精确 Owner 之外的新普通 SFC Style；保持 SCSS Owner 集合为空，并要求未来 SCSS 同时满足 Exact Owner 与 Compiler Admission。
 - 以声明级 Normalized Baseline 允许旧普通债务删除但拒绝增长；Generated、Vendor、Browser/Platform、Runtime、Motion、Compatibility、Private Variable、Keyframe 与 Important 例外分别使用精确责任合同。
@@ -11038,7 +11094,22 @@ Scoped SCSS 是条件准入的最后 Fallback，不是永久禁止，也不是�
 - 区分结构 CSS Grammar 与藏在函数/表达式中的设计 Literal；按 Owner、Property Semantics 与 Data Origin 判断，而不把任意数字、百分比或公共变量运算当成许可。
 - 读取可执行 Stylelint Config 时保留函数引用并采用 Copy-on-write；完整枚举并锁定授权 Override 文件集合，拒绝 Glob、额外路径或同值例外扩张。
 
-这些 Checker 只证明其静态 Source/Policy 边界，不证明 Style Migration、完整 Size/Density Authority、Native Cascade、Browser Runtime、Visual Behavior 或 Vendor Injection Order。§37.2.15 的 `NOT_STARTED` 字段是当次 Architecture-only Freeze 的历史快照；当前候选状态以紧随其后的限定纠正记录为准。
+这些 Checker 只证明其静态 Source/Policy 边界，不证明完整视觉能力或 Vendor Injection Order。当前源码与本次文档任务的状态区分如下；领域合同仍由所指章节拥有，不因本表获得实施授权：
+
+| 能力或边界 | 当前状态 |
+| --- | --- |
+| Canonical Theme Chain | Token / Public Role、Generated CSS / TypeScript / UnoCSS、Appearance Runtime 与集中 Naive Bridge 已实现；后续按真实消费者扩展。 |
+| UnoCSS-first Author Governance | 已实现当前限定作者治理；不等于债务已经迁移。 |
+| Size Authority Expansion | §14.1 的完整公共尺寸表面未完成。 |
+| Density Projection | §14.2 的三档视觉投影未实现。 |
+| `density.scale` | §14.3 的精确视觉语义和计算仍待独立 Owner 决策。 |
+| Style Migration | §15.6 的现有普通 Plain CSS 债务尚未完成迁移。 |
+| Real SCSS Consumer / Compiler Admission | 未实施；真实 Owner 与 Compiler 集合均为零。 |
+| TypeScript Class Extraction Closure | §15.1 的精确提取/生成保证尚未闭合。 |
+| Native Cascade Cutover | §26 的目标未实施。 |
+| Browser / Runtime / Visual Acceptance | 本次文档任务未执行或取得；既有历史验收范围不变。 |
+
+未来合同须由获准实施任务接入实际 Owner 与静态门槛；文档静态验证不把目标写成实现完成。§37.2.15 保留早期 Architecture-only 与治理候选的历史，不以其 Unstaged 描述推断当前 Git 状态；后续可能的消费者单元仅见 §16.3。
 
 ---
 
@@ -11124,6 +11195,18 @@ packages/ui/
 
 内容结构优先使用原生语义 HTML；可复用表单、表格、Dialog 和其他交互控件优先复用 Naive UI，经 PAVP-owned Private Adapter 适配已有 Token、主题、尺寸和可访问性边界。不得重做 Naive UI 的组件引擎或替换 UI Library 来实现 Starter。Console 的唯一 Styled Vendor 仍是 Private Naive Adapter；Reka 仍未准入。
 
+### Central Naive theme and sizing projection
+
+`PavpNaiveConfigProvider.vue` 与 `pavp-naive-theme.ts` 中的集中 PAVP Theme Projection 是现有主边界，后续工作是扩展并闭合该桥接，不重建主题系统。普通页面不得创建自己的 Naive Palette、Size Theme 或第二 Provider。Naive 支持通过 Typed `theme` / `themeOverrides` 自定义全局及组件主题；当支持的 Theme API 足够时，必须优先使用它，不用任意 DOM CSS Override 取代。参见 [Naive 官方主题定制文档源码](https://github.com/tusen-ai/naive-ui/blob/main/demo/pages/docs/customize-theme/enUS/index.md)。
+
+已使用组件按其实际渲染合同逐步补齐 PAVP Semantic Color、Visual Control Size、Padding、Icon Size/Spacing、Typography、Radius、Border/Focus、State（含 Disabled）与 Motion 输入。只闭合当前真实组件和已使用 Size Variant 所需字段，不预映射全部 Naive 组件或未使用变体。§14 的缺失尺寸能力先经过同一 Canonical Role/Mapping 准入，再进入 Vendor 投影；现有集中映射存在不表示尺寸扩展已完成。
+
+同一 PAVP Semantic Input 可投影为 Canonical CSS Variable String，也可在 Naive 的 JavaScript 运算不能消费未解析 `var(...)` 时，投影为从同一权威派生的具体 Typed Runtime Value。转换必须保持输入来源、单位、有效 Appearance 与事务一致性，不能复制 Palette/Size Literal 或自建设计计算规则；这种投影不是第二权威。具体 Parser-sensitive Field 仍遵守 §1.2B.6 及后续精确修订，不以本条绕过既有禁写项或扩大兼容输入范围。
+
+Component-local `themeOverrides` 只允许窄 PAVP-owned Private Adapter 责任，不得建立独立设计值；该责任不等于必须单独新建 Adapter 文件。当前 Form Adapter 消费 `createPavpNaiveFormThemeProjection` 的局部输出，`UiRadioCardGroup` 在其私有适配中以三项 `none` 关闭 Vendor Button Shadow、保留 PAVP 自有轮廓，均不创建新设计值。可复用能力优先留在集中 Projection，只有真实私有 Context/Peer 责任才采用局部投影；不向普通页面公开 Vendor Theme API。
+
+本合同经 Owner 审阅后，第一个适合另行授权的实现单元是现有 `UiButton` 尺寸消费链：以 §17 当前公共 API 和 §14.5 现有视觉行为、Enhanced Target 下限为兼容边界，只补齐该消费者证明需要的 Canonical Size Role/Mapping，经现有 Generator 的 CSS / TypeScript / UnoCSS Projection、集中 Naive Theme 到 Public Component 闭合一条完整链路，同时保持该集中 Button 映射已有 Shell/Form 消费者的兼容行为。本条仅提供信息，不授权实施、不设计 `size` prop；在该单元独立获准并闭合前，不扩展 Input/Form Control 或 Global Density。
+
 ```text
 Native semantic HTML
         ↓ when insufficient
@@ -11207,36 +11290,13 @@ generic Material Wrapper
 * 保留键盘和焦点合同。
 * 支持 Light/Dark。
 * 对相关 Chrome / Overlay 组件支持 Effective Material 和完整 Solid Fallback。
-* 支持三档密度。
+* 对已准入的 Density-owned 语义消费 §14.2 的三档投影；当前该投影未实现，不因本条宣称组件已支持密度。
 * 支持 Reduced Motion。
 * 提供简洁 JSDoc 或组件 README 文档。
 * 明确记录无障碍合同和无障碍名称要求。
 * 在成为共享组件前至少有一个真实生产消费者；仅 §21 本次明确批准的两项表单源码登记例外，保持 TARGET_INACTIVE。
 
-示例：
-
-```ts
-interface UiButtonProps {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
-  size?: 'sm' | 'md' | 'lg'
-  loading?: boolean
-  disabled?: boolean
-  type?: 'button' | 'submit' | 'reset'
-}
-
-const props = withDefaults(
-  defineProps<UiButtonProps>(),
-  {
-    variant: 'primary',
-    size: 'md',
-    type: 'button',
-  },
-)
-
-const emit = defineEmits<{
-  press: [event: MouseEvent]
-}>()
-```
+当前 `UiButton` 的公共 API 与源码一致：可选 `disabled: boolean`（默认 `false`）、`type: 'button' | 'submit'`（默认 `'button'`）、`variant: 'ghost' | 'primary' | 'secondary'`（默认 `'secondary'`），无参数 `press` Event，以及不提供 Slot Prop 的 Default Slot。当前没有 `size`、`loading`、`danger` Variant、`reset` Type 或 MouseEvent Payload；后续尺寸消费任务按 §16.3 保持该兼容边界，不从示例或 Primitive 的 `sm` / `md` / `lg` 名称推导公共 API。
 
 禁止创建没有语义价值的 Wrapper。
 
@@ -11248,7 +11308,7 @@ const emit = defineEmits<{
 
 在初次实现后扩大抽象、增加通用变体或形成跨页面模式，必须由实际复用证据触发；不得用假设中的第二个页面提前设计。
 
-允许的 Component Prop：
+允许的 Component Prop 语义类别如下，不是任一组件已准入的 Prop 清单；每个具体 API 仍须真实消费者和独立准入：
 
 ```text
 variant
@@ -15281,6 +15341,8 @@ Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、F
 
 [UnoCSS Layers 官方文档](https://unocss.dev/config/layers)区分内部生成顺序与浏览器原生 Cascade Layer。已安装的 `@unocss/core@66.7.5` 实际支持 `outputToCssLayers: boolean | OutputCssLayersOptions`，对象可用 `cssLayerName(internalLayer)` 与 `allLayers`；回调返回 String 映射原生名称，`undefined` 沿用内部名称，`null` 输出未分层内容。仅设置内部 `layers` 顺序不足以实现本合同。
 
+Native Cascade Cutover 与 Size Authority、Density、Style Migration、SCSS Compiler Admission 分开准入。当前未开启 `outputToCssLayers`，本次不改变现有 Layer Order，也不宣称该选项可直接启用；未来 Cutover 须独立闭合 §26.1、§26.3 的浏览器 Cascade、未分层 Vendor、PAVP Adapter CSS 与 `!important` 合同。
+
 未来源码任务必须使用已验证的原生输出 API，并按实际产物责任映射，不猜测配置字段，也不能因 Internal Layer 名称相同就推定语义相同：
 
 - Wind4 `properties` / `theme` 的兼容性 Property、Theme Variable 基础输出归入 `tokens` 兼容责任，不能扩张公共 Palette 或公共 Token 集合。
@@ -15847,7 +15909,7 @@ Public UnoCSS mapping metadata and fatal unmapped-role handling
 Private Theme Bank completeness and isolation
 Built-in/Custom Theme identity tuple and Custom Bank role-set/allowlist
 Theme / Mode / Contrast binding without Cartesian selectors
-future admitted 11 × 3 Density Matrix and independent Density selectors
+consumer-admitted Density Role coverage across all three presets and independent selectors
 density.scale stored-only and absent from runtime/generated projection
 Material adaptive / reduced / solid fallback completeness
 first-paint generated-output drift
@@ -16079,7 +16141,7 @@ Role/Alpha/Named Contrast Registry version equality and endpoint closure after v
 Named Contrast Registry endpoints, thresholds and Enhanced difference invariant
 Theme Bank isolation and stable Public binding
 Built-in/Custom identity isolation and Custom Bank role-set/allowlist
-future admitted 11 × 3 Density Matrix completeness and selector isolation
+consumer-admitted Density Role coverage across all three presets and selector isolation
 density.scale stored-only and absent from runtime/generated projection
 UnoCSS family / key / class metadata and class collision freedom
 forbidden page-authored Material and optical syntax
@@ -16879,7 +16941,7 @@ Preference Migration
 Phase 1 static governance
 ```
 
-§14.2 的十个额外 Density Candidate 不属于 Phase 1 Target 交付；它们只能在后续独立 Architecture Admission Amendment 后进入 11 × 3 Projection。
+§14.2 的十个额外 Density Candidate 不属于 Phase 1 Target 交付；后续独立 Admission 按真实消费者选择最小集合，并闭合所选 Role 的三档 Projection，不以候选清单强制整批扩展。
 
 Package 5 已完成 Phase 1 唯一 Pinia Admission，且只允许 `apps/web` 的 Appearance Preference 与 Theme Registry Orchestration；该 Admission 当前为 Active。Phase 1 不准入 Router、TanStack Query、OpenAPI Generator、Session Store 或 General Application Store。
 
@@ -18342,6 +18404,8 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 
 ### 后续限定作者治理纠正实施记录
 
+以下保留该次治理候选形成时的授权、验证与交接记录；它不是当前 Git Dirty State，也不授权本次修订执行其历史 Git 动作。当前能力状态统一见 §15.7。
+
 Owner 在 `main@925fe4a8e9755ac7770eab6e21e5f3602c77cdb6` 上明确授权纠正现有 Unstaged Enforcement Draft。当前候选保持既有 Theme JSON、Token/Schema/Generator、Generated CSS/TypeScript/Theme Bank/Uno Mapping、Appearance Runtime 与 Centralized Naive Bridge 不变，只纠正作者治理。§37.2.15 的 Architecture-only 状态与审计数字保留为冻结时的历史；§15.6–§15.7 已同步为当前规范，§26 Native Cascade 目标仍未实施。
 
 ```text
@@ -18371,6 +18435,10 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 本次限定纠正处理最终 Owner 只读审查返回的五项缺陷：返回可变引用、HTML Attribute 解析、Shell Overflow Capture 有效性、产品 Source Root 发现与精确 Shell Icon Resolver 授权。候选已通过实际 ESLint/Policy 路径的独立正负探针、相关回归、完整 `mise exec -- pnpm verify` 及隔离生产产物比较，保持 Unstaged 并等待独立 Owner Review。纠正前候选的历史 Gate 结果不代替本次证据；静态验证不构成 Owner Approval、Browser/Runtime Product Acceptance 或 Git 交付。
 
 当前候选不修改应用/组件/Design System/Router/Workspace/Scroll Runtime、Layout Registry、Dependency 或 Budget，不迁移 Style、Size/Density Authority 或 Native Layer，不安装 Sass，也不执行 Browser、Runtime Acceptance、Stage、Commit、Push 或 Release。
+
+### 当前尺寸与样式架构纠正边界
+
+Owner 在 `main@848a3c8900ab6ac4d834c21c985aca4ef5a853bb` 接纳现有 `ARCHITECTURE.md` 未暂存草稿，仅授权整合 §11.4、§14、§15、§16.3、§17、§26 及其直接引用。最终文档保持 Unstaged，不授权其他文件、产品实现、依赖变更、样式迁移、Stage、Commit、Push 或 Release。当前状态归 §15.7，后续可能的 `UiButton` 单元仅归 §16.3 的信息性边界；Current Work、Next 与 Successor 不因本文成为实施授权。
 
 ---
 
@@ -18879,7 +18947,7 @@ Node 24 LTS
 + Runtime CSS Variables
 + Reference-only Appearance Preference after Atomic Cutover
 + Stored / Effective Appearance Separation
-+ Current single-role Density behavior; future 11-role projection only after Admission Amendment
++ Current fixed control-height and stored density preset; visual projection remains inactive pending consumer-backed Admission
 + Complete Generated UnoCSS Public Semantics
 + Adaptive / Reduced / Solid Material
 + Adaptive Liquid Chrome over Stable Content
