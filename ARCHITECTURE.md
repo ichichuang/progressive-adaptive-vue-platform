@@ -8084,7 +8084,13 @@ Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role 
 
 §13.12 是 Semantic Status Color System 的唯一增量合同。已提交第一源码切片采用 26 Color / 53 Public Roles、53 个 UnoCSS Mapping 与 Manifest schemaVersion 10；当前已获 Owner 授权并静态完成的消费者切片仅将四个 Base Status Mapping 扩展为 `property-specific-exact-rule`，实现精确二十个 Status Utility，并使用 Manifest schemaVersion 11。§1.2B.0G 的 10/37 及下列早期 Registry 和计数保留历史边界；完整能力仍等待 Owner Runtime/Visual Acceptance。
 
-下方精确 Registry 保留早期 36-role Baseline；其后 Control 与 Semantic Status 增量分别按 §1.2B.0G、§13.12 合并，当前 Public CSS、`tokens.ts`、`token-names.ts` 和 53 个 UnoCSS Mapping 保持同一完整角色集合。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
+下方精确 Registry 保留早期 36-role Baseline；其后 Control 与 Semantic Status 增量分别按 §1.2B.0G、§13.12 合并，再加入本节 Normal Medium Button Padding Role 后，当前 Public CSS、`tokens.ts`、`token-names.ts` 和 54 个 UnoCSS Mapping 保持同一完整角色集合。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
+
+Owner 本次仅准入 `dimension.space.button-inline`：Build-only Dimension，唯一 Primitive Design Value 为 `{ value: 14, unit: "px" }`；Public Semantic `spacing.button.inline` 通过 `"{dimension.space.button-inline}"` 引用它。Public Role Registry 使用 `tokenType=dimension`、`category=spacing`、`visibility=public`、`admissionPhase=1`、`themePlaneApplicability=not-applicable`，Contrast/Alpha Endpoint 均为 `null`。现有 Generator 输出 `--ui-space-button-inline`、`tokens['spacing.button.inline']` 与唯一 UnoCSS Class `px-button-inline`；Mapping 精确为现有 `exact-rule`、`family=spacing`、`key=button-inline`，只拥有 `padding-inline`。不增加 Namespace、Schema Version、Mapping Kind 或 Generator Algorithm。
+
+该增量后的当前八族 Record Counts 精确为 `243,54,54,34,1,3,14,1`，总计 `404`，相对既有 `181`-record Baseline 的 Delta 为 `223`；Public Color Roles 仍为 `26`，Exact-rule Mapping 为 `41`，Class Projection 为 `52`。Manifest 保持 Schema `11`，PublicRoleRegistry 保持 Schema `2`，Theme Role Contract 保持 `3`。§13.12 的 `241 / 53 / 400` 及既有测量保留为 Semantic Status 切片的历史结果，不再充当此次增量后的当前总数。
+
+本次按 Node `24.15.0`、既有 `stableJson`、UTF-8、Canonical Ordering、末尾单个 LF 及 `node-zlib-gzip-sync` 全部参数独立测得 Manifest `294703` raw bytes、`14950` gzip bytes；相对前序 `14874` 增加 `76`，相对 `d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf` 的 `3366`-byte Baseline 为 `11584`。只同步 Build Contract 的当前 `expectedBytes` / `expectedByteDelta`，仍逐项精确比较；`32768`-byte Hard Limit、历史 Commit/Bytes/Accepted Result 和所有 Bundle Budget 不变。当前硬余量为 `17818` bytes；测量不构成 Runtime/Visual Acceptance。
 
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
 
@@ -8958,7 +8964,7 @@ Runtime/CSS Theme Bank 语义保持完整：每主题四个 26-role Plane 仍拥
 
 Bank 规范化只改变 Generated Token Manifest 的结构版本。Complete Theme `schemaVersion=3`、Semantic Status Role Contract `3`、Token Source Schemas、Application Preference 与 Custom Theme Persistence Schemas、Generated Runtime Registry 公共语义全部保持。第一源码切片原子生成并同步消费 schemaVersion 10，当前消费者切片只生成并同步消费 11，不并行输出历史版本，不增加兼容 Artifact；历史 Shape、Count 与 Byte Evidence 保留为历史。消费者切片的 PublicRoleRegistry 结构 Schema 变化由 §13.12 单独拥有。
 
-八个顶层 Record Families 与 §13.12 的 400-record 方程保持；被移除的嵌套 Bank Objects 从来不是独立顶层 Family。不增加 `themeBankRecords`、`statusBank`、`themeBindings` 或其他 Family。`32768`-byte Manifest Hard Limit、`node-zlib-gzip-sync` 的全部参数、`stableJson`、UTF-8、Canonical Ordering 与单个末尾 LF 保持。第一片完整生成结果为 400 Records、291696 raw UTF-8 bytes、14722 bytes gzip；相对原始 3366-byte Canonical Baseline 的实际 Delta 为 11356 bytes，相对受阻候选 46710 bytes 回收 31988 bytes，Hard Limit 余量 18046 bytes。当前消费者切片仍为 400 Records，实测 293126 raw UTF-8 bytes、14874 bytes gzip；相对第一片增加 152 bytes，相对 Canonical Baseline 的 Delta 为 11508 bytes，Hard Limit 余量 17894 bytes。两次结果均由既有 Generator、固定压缩 Profile 和完整静态 Gate 验证，不是预测值。
+八个顶层 Record Families 保持；§13.12 的 400-record 方程保留该切片的历史边界，当前 Button Padding 增量后的方程见本节 Public Output Completeness。被移除的嵌套 Bank Objects 从来不是独立顶层 Family。不增加 `themeBankRecords`、`statusBank`、`themeBindings` 或其他 Family。`32768`-byte Manifest Hard Limit、`node-zlib-gzip-sync` 的全部参数、`stableJson`、UTF-8、Canonical Ordering 与单个末尾 LF 保持。第一片完整生成结果为 400 Records、291696 raw UTF-8 bytes、14722 bytes gzip；相对原始 3366-byte Canonical Baseline 的实际 Delta 为 11356 bytes，相对受阻候选 46710 bytes 回收 31988 bytes，Hard Limit 余量 18046 bytes。该消费者切片当时仍为 400 Records，实测 293126 raw UTF-8 bytes、14874 bytes gzip；相对第一片增加 152 bytes，相对 Canonical Baseline 的 Delta 为 11508 bytes，Hard Limit 余量 17894 bytes。两次结果均由既有 Generator、固定压缩 Profile 和完整静态 Gate 验证，不是预测值。
 
 ## 11.5 Material Token Scope
 
@@ -10610,7 +10616,9 @@ Forced Colors 独立于普通 Theme Palette。System Color Keyword 不写入 Com
 
 表内 `src/` 与 `tokens/` 默认为 `packages/design-system/`，UI 名称沿用当前 `packages/ui/` Owners；应用边界沿用 `apps/web/src/app/appearance/`。不能以该清单为理由重写无关源码。
 
-| Exact count | Pre-foundation baseline | Current foundation and consumer source |
+下表及随后的计数、压缩测量保留 Semantic Status 两片源码完成时的结果；当前 Button Padding 增量后的总数与测量只由 §11.4 Public Output Completeness 更新，不改写本节历史结果。
+
+| Exact count | Pre-foundation baseline | Foundation and consumer slice result |
 | --- | ---: | ---: |
 | Public Color Roles | 10 | 26 |
 | Total Public Roles / UnoCSS Mapping Records | 37 / 37 | 53 / 53 |
@@ -11100,7 +11108,7 @@ SCSS 可以消费 Canonical CSS Variable、精确拥有的私有实现变量、�
 | --- | --- |
 | Canonical Theme Chain | Token / Public Role、Generated CSS / TypeScript / UnoCSS、Appearance Runtime 与集中 Naive Bridge 已实现；后续按真实消费者扩展。 |
 | UnoCSS-first Author Governance | 已实现当前限定作者治理；不等于债务已经迁移。 |
-| Size Authority Expansion | §14.1 的完整公共尺寸表面未完成。 |
+| Size Authority Expansion | 已实现 §16.3 的 Normal Medium Button Padding 单元，等待 Owner Review；§14.1 的完整公共尺寸表面仍未完成。 |
 | Density Projection | §14.2 的三档视觉投影未实现。 |
 | `density.scale` | §14.3 的精确视觉语义和计算仍待独立 Owner 决策。 |
 | Style Migration | §15.6 的现有普通 Plain CSS 债务尚未完成迁移。 |
@@ -11205,7 +11213,13 @@ packages/ui/
 
 Component-local `themeOverrides` 只允许窄 PAVP-owned Private Adapter 责任，不得建立独立设计值；该责任不等于必须单独新建 Adapter 文件。当前 Form Adapter 消费 `createPavpNaiveFormThemeProjection` 的局部输出，`UiRadioCardGroup` 在其私有适配中以三项 `none` 关闭 Vendor Button Shadow、保留 PAVP 自有轮廓，均不创建新设计值。可复用能力优先留在集中 Projection，只有真实私有 Context/Peer 责任才采用局部投影；不向普通页面公开 Vendor Theme API。
 
-本合同经 Owner 审阅后，第一个适合另行授权的实现单元是现有 `UiButton` 尺寸消费链：以 §17 当前公共 API 和 §14.5 现有视觉行为、Enhanced Target 下限为兼容边界，只补齐该消费者证明需要的 Canonical Size Role/Mapping，经现有 Generator 的 CSS / TypeScript / UnoCSS Projection、集中 Naive Theme 到 Public Component 闭合一条完整链路，同时保持该集中 Button 映射已有 Shell/Form 消费者的兼容行为。本条仅提供信息，不授权实施、不设计 `size` prop；在该单元独立获准并闭合前，不扩展 Input/Form Control 或 Global Density。
+Owner 在干净同步的 `main@6b6a279803eb07f3dc13ebaa382f2c42ab60f838` 上另行明确授权现有 `UiButton` 尺寸消费链中的 Normal Medium Padding 单元，以及同一字段的 Owning Checker 与独立实测 Manifest 当前期望值同步。唯一设计来源为 §11.4 的 `spacing.button.inline`，集中 `Button.paddingMedium` 精确消费 `` `0 ${tokens['spacing.button.inline']}` `` 或可证明等价的 Immutable Alias，保持纵向 `0`、横向 `14px`，不随 Root Font Size 或当前 Density 变化。
+
+已安装 Naive UI `2.45.2` 的 `self.paddingMedium via createKey("padding", size)` 进入 `--n-padding`；仅 Normal Medium 选用此输入，Round Medium 继续选 `paddingRoundMedium`，Circle/Text 继续为 `initial`，其他 Size 保持原值。`UiButton.vue` 和 `naive-button.ts` 不变，不增加 Class、Wrapper、Local Override 或 `size` Prop。Shell 两个 Circle Action 保持原选择；共享 Form 的 InputNumber Text Button 保持 `initial`，当前 DatePicker 的 Tiny Action 保持原 Tiny Padding。Form Peer 可继承该字段，但不改变这些已核对的选择分支。
+
+`check-architecture-admin-console.ts` 的 Override Inventory、Semantic Expectation 与 Pinned Consumption Record 必须精确包含 `Button.paddingMedium` 并保持三者相等。字段专用 AST Proof 同时验证结构零值、唯一 Canonical Token 和无额外后缀；仅解析现有表达式及可见 `const` Alias，不冻结私有变量名。裸 Token、Raw Dimension、非零首项、错误 Role、缺项/反序/额外项、未知 Variable/Helper、未解析或可变 Alias 均不得通过。该许可仅作用于 `Button.paddingMedium`；现有其他 Template Expression、Parser-sensitive Color 与负向保护保持。
+
+该源码候选只实现这一 Padding 权威链，完整 `mise exec -- pnpm verify` 是静态交接门槛，Runtime/Visual 未验收，修改保持 Unstaged 等待 Owner Review。§17 公共 Props/Events/Slots、§14.5 Height/Enhanced Target、Icon Size/Margin、Font、Color/State、Radius、Focus 与 Motion 保持。不将本单元报告为完整 `UiButton` Sizing 或 UnoCSS Migration 完成，不扩展其他控件、Global Density、Schema、Dependency 或 Budget；Current Work/Next/Successor 不自动推进，不授权任何 Git 交付。
 
 ```text
 Native semantic HTML

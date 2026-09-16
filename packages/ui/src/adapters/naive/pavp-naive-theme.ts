@@ -449,6 +449,7 @@ export function createPavpNaiveThemeProjection(
       borderPressedError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       borderFocusError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       heightMedium: enhancedTargetHeight,
+      paddingMedium: `0 ${tokens['spacing.button.inline']}`,
       borderRadiusMedium: radius,
       fontSizeMedium: fontSize,
       iconSizeMedium: headerActionIconSize,

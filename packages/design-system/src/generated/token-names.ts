@@ -43,6 +43,7 @@ export const tokenNames = [
   'layout.target.enhanced.minimum-inline-size',
   'layout.z.base',
   'layout.z.overlay',
+  'spacing.button.inline',
   'spacing.content.gap',
   'spacing.page.inline',
   'spacing.section.block',

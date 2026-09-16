@@ -923,6 +923,24 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'spacing.button.inline',
+      tokenType: 'dimension',
+      category: 'spacing',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-space-button-inline',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'spacing',
+        key: 'button-inline',
+        classes: ['px-button-inline'],
+        allowedCssProperties: ['padding-inline'],
+      },
+    },
+    {
       id: 'spacing.content.gap',
       tokenType: 'dimension',
       category: 'spacing',
@@ -1685,7 +1703,7 @@ export function validatePublicRoleRegistry(
     .parse(registry)
   const records = parsed.records as unknown as readonly PublicRoleRecord[]
 
-  assertExactCount(records.length, 53, 'Public Role Registry record count')
+  assertExactCount(records.length, 54, 'Public Role Registry record count')
   assertUnique(
     records.map((record) => record.id),
     'Public Role Registry IDs',
@@ -1750,7 +1768,7 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    40,
+    41,
     'Exact UnoCSS rule count',
   )
   assertExactCount(

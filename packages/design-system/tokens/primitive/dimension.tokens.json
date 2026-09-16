@@ -42,6 +42,13 @@
           "value": 2,
           "unit": "rem"
         }
+      },
+      "button-inline": {
+        "$type": "dimension",
+        "$value": {
+          "value": 14,
+          "unit": "px"
+        }
       }
     },
     "control": {

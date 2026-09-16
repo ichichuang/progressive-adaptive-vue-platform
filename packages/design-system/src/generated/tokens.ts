@@ -48,6 +48,7 @@ export const tokens = {
     'var(--ui-layout-target-enhanced-minimum-inline-size)',
   'layout.z.base': 'var(--ui-z-base)',
   'layout.z.overlay': 'var(--ui-z-overlay)',
+  'spacing.button.inline': 'var(--ui-space-button-inline)',
   'spacing.content.gap': 'var(--ui-space-content-gap)',
   'spacing.page.inline': 'var(--ui-space-page-inline)',
   'spacing.section.block': 'var(--ui-space-section-block)',

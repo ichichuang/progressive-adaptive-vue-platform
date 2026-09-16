@@ -442,6 +442,15 @@ export const platformUnoMappings = [
     allowedCssProperties: ['z-index'],
   },
   {
+    roleId: 'spacing.button.inline',
+    cssVariable: '--ui-space-button-inline',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'button-inline',
+    classes: ['px-button-inline'],
+    allowedCssProperties: ['padding-inline'],
+  },
+  {
     roleId: 'spacing.content.gap',
     cssVariable: '--ui-space-content-gap',
     generatorKind: 'exact-rule',
@@ -720,6 +729,12 @@ export const platformRules = [
     'min-w-target-enhanced',
     {
       'min-width': 'var(--ui-layout-target-enhanced-minimum-inline-size)',
+    },
+  ],
+  [
+    'px-button-inline',
+    {
+      'padding-inline': 'var(--ui-space-button-inline)',
     },
   ],
   [

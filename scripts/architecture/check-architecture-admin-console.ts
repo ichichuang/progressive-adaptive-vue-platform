@@ -267,7 +267,7 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedMotionVueVersion = '2.4.0'
 const expectedVueUseCoreVersion = '14.4.0'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 59
+const expectedArchitectureAdminConsoleNegativeProbeCount = 73
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
@@ -906,6 +906,7 @@ const themeOverrideContract = {
     'fontSizeMedium',
     'heightMedium',
     'iconSizeMedium',
+    'paddingMedium',
     'rippleColor',
     'rippleColorPrimary',
     'rippleDuration',
@@ -1257,6 +1258,12 @@ const naiveThemeSemanticGroups = [
     component: 'Button',
     fields: ['heightMedium'],
     authority: 'layout.target.enhanced.minimum-block-size',
+    valueKind: 'length',
+  },
+  {
+    component: 'Button',
+    fields: ['paddingMedium'],
+    authority: 'spacing.button.inline',
     valueKind: 'length',
   },
   {
@@ -2079,6 +2086,13 @@ const naive2452ConsumptionContract = [
         ['--n-icon-size'],
         'medium',
         '.n-button .n-button__icon medium geometry',
+      ],
+      [
+        'paddingMedium',
+        'self.paddingMedium via createKey("padding", size)',
+        ['--n-padding'],
+        'normal-medium-without-round-circle-or-text',
+        '.n-button normal medium padding',
       ],
       [
         'rippleColor',
@@ -3494,6 +3508,94 @@ function resolveThemeAuthority(
   return { authority: 'unresolved', valueKind: 'unknown' }
 }
 
+function buttonPaddingAuthority(expression: ts.Expression | undefined): NaiveThemeAuthority {
+  const invalid = { authority: 'invalid-button-padding-shape', valueKind: 'unknown' } as const
+  if (expression === undefined) return invalid
+
+  // Bind the exact tree owning this field; other theme fields keep their existing resolver.
+  const sourceFile = expression.getSourceFile()
+  const options: ts.CompilerOptions = { noEmit: true, noLib: true, noResolve: true }
+  const host = ts.createCompilerHost(options)
+  host.getSourceFile = (name) => (name === sourceFile.fileName ? sourceFile : undefined)
+  host.fileExists = (name) => name === sourceFile.fileName
+  host.readFile = (name) => (name === sourceFile.fileName ? sourceFile.text : undefined)
+  const program = ts.createProgram([sourceFile.fileName], options, host)
+  const checker = program.getTypeChecker()
+  const diagnostics = program.getSemanticDiagnostics(sourceFile)
+
+  function binding(identifier: ts.Identifier): ts.Declaration | undefined {
+    const declarations = checker.getSymbolAtLocation(identifier)?.getDeclarations()
+    const declaration = declarations?.length === 1 ? declarations[0] : undefined
+    if (
+      declaration?.getSourceFile() !== sourceFile ||
+      diagnostics.some(
+        (diagnostic) =>
+          diagnostic.file === sourceFile &&
+          diagnostic.start !== undefined &&
+          diagnostic.start >= declaration.getStart() &&
+          diagnostic.start < declaration.end,
+      )
+    ) {
+      return undefined
+    }
+    return declaration
+  }
+
+  function immutableValue(
+    candidate: ts.Expression | undefined,
+    seen: ReadonlySet<ts.Declaration> = new Set(),
+  ): ts.Expression | undefined {
+    if (candidate === undefined) return undefined
+    const value = unwrapExpression(candidate)
+    if (!ts.isIdentifier(value)) return value
+    const declaration = binding(value)
+    if (
+      declaration === undefined ||
+      seen.has(declaration) ||
+      !ts.isVariableDeclaration(declaration) ||
+      !ts.isIdentifier(declaration.name) ||
+      !ts.isVariableDeclarationList(declaration.parent) ||
+      (declaration.parent.flags & ts.NodeFlags.Const) === 0 ||
+      !ts.isVariableStatement(declaration.parent.parent)
+    ) {
+      return undefined
+    }
+    return immutableValue(declaration.initializer, new Set([...seen, declaration]))
+  }
+
+  const value = immutableValue(expression)
+  if (value !== undefined && ts.isTemplateExpression(value) && value.head.text === '0 ') {
+    const span = value.templateSpans[0]
+    const inline = immutableValue(span?.expression)
+    if (
+      value.templateSpans.length === 1 &&
+      span?.literal.text === '' &&
+      inline !== undefined &&
+      ts.isElementAccessExpression(inline) &&
+      ts.isIdentifier(inline.expression) &&
+      ts.isStringLiteral(inline.argumentExpression) &&
+      inline.argumentExpression.text === 'spacing.button.inline'
+    ) {
+      const imported = binding(inline.expression)
+      if (imported !== undefined && ts.isImportSpecifier(imported)) {
+        const clause = imported.parent.parent
+        const declaration = clause.parent
+        if (
+          !imported.isTypeOnly &&
+          clause.phaseModifier === undefined &&
+          (imported.propertyName ?? imported.name).text === 'tokens' &&
+          ts.isImportDeclaration(declaration) &&
+          ts.isStringLiteral(declaration.moduleSpecifier) &&
+          declaration.moduleSpecifier.text === '@platform/design-system'
+        ) {
+          return tokenAuthority('spacing.button.inline')
+        }
+      }
+    }
+  }
+  return invalid
+}
+
 function resolveThemeExpressionText(
   expression: ts.Expression | undefined,
   declarations: ReadonlyMap<string, ts.Expression>,
@@ -3584,12 +3686,17 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
         continue
       }
 
-      const authority = resolveThemeAuthority(
+      const expression =
         componentOverride === undefined
           ? undefined
-          : objectPropertyInitializer(componentOverride, field),
-        declarations,
-      )
+          : objectPropertyInitializer(componentOverride, field)
+      const authority =
+        component === 'Button' && field === 'paddingMedium'
+          ? buttonPaddingAuthority(expression)
+          : resolveThemeAuthority(expression, declarations)
+      if (authority.authority === 'invalid-button-padding-shape') {
+        violations.push('NAIVE_BUTTON_PADDING_SHAPE')
+      }
       authorities.set(key, authority)
 
       if (authority.authority === 'visible-vendor-default') {
@@ -11724,10 +11831,209 @@ function runRuntime005NegativeProbes(
   )
 }
 
+function buttonPaddingLexicalViolations(baseline: MaterialGateSnapshot): string[] {
+  const source = baseline.themeAdapterSource
+  const overrides = themeOverrideObject(source)
+  const button = overrides === undefined ? undefined : objectPropertyObject(overrides, 'Button')
+  const padding =
+    button === undefined ? undefined : objectPropertyInitializer(button, 'paddingMedium')
+  if (padding === undefined) return ['Button padding lexical probes require the existing field.']
+  let projection: ts.Node = padding
+  while (!ts.isFunctionDeclaration(projection) && !ts.isSourceFile(projection)) {
+    projection = projection.parent
+  }
+  if (
+    !ts.isFunctionDeclaration(projection) ||
+    projection.body === undefined ||
+    projection.parameters[0] === undefined
+  ) {
+    return ['Button padding lexical probes require the existing projection function.']
+  }
+
+  const paddingStart = padding.getStart()
+  const paddingEnd = padding.end
+  const body = projection.body.getStart() + 1
+  const moduleStart = projection.getStart()
+  const parameter = projection.parameters[0].getStart()
+  const canonical = "`0 ${tokens['spacing.button.inline']}`"
+  const alias = `\nconst paddingAlias = ${canonical}\n`
+  const unrelated =
+    "\nfunction unrelatedPaddingScope() { const paddingAlias = 'unrelated'; return paddingAlias }\n"
+  function changedSource(
+    expression: string,
+    ...insertions: readonly (readonly [number, string])[]
+  ): string {
+    const edits: [number, number, string][] = [
+      [paddingStart, paddingEnd, expression],
+      ...insertions.map(([position, text]): [number, number, string] => [position, position, text]),
+    ]
+    return edits
+      .sort(([left], [right]) => right - left)
+      .reduce(
+        (text, [start, end, replacement]) => text.slice(0, start) + replacement + text.slice(end),
+        source,
+      )
+  }
+
+  const cases: readonly [string, string, boolean][] = [
+    ['direct', changedSource(canonical), true],
+    ['local-alias', changedSource('paddingAlias', [body, alias]), true],
+    [
+      'unrelated-before',
+      changedSource('paddingAlias', [body, alias], [moduleStart, unrelated]),
+      true,
+    ],
+    [
+      'unrelated-after',
+      changedSource('paddingAlias', [body, alias], [projection.end, unrelated]),
+      true,
+    ],
+    ['module-alias', changedSource('paddingAlias', [moduleStart, alias]), true],
+    [
+      'block-alias',
+      changedSource('paddingAlias', [body, `\n{${alias}`], [projection.body.end - 1, '}\n']),
+      true,
+    ],
+    [
+      'alias-chain-parentheses',
+      changedSource(
+        '(paddingAlias)',
+        [moduleStart, "const inlineAlias = tokens['spacing.button.inline']\n"],
+        [
+          body,
+          '\nconst secondAlias = (inlineAlias)\nconst paddingAlias = (`0 ${(secondAlias)}`)\n',
+        ],
+      ),
+      true,
+    ],
+    [
+      'nearest-constant-shadow',
+      changedSource(
+        'paddingAlias',
+        [moduleStart, alias],
+        [body, "\nconst paddingAlias = 'unrelated'\n"],
+      ),
+      false,
+    ],
+    [
+      'nearest-mutable-shadow',
+      changedSource(
+        'paddingAlias',
+        [moduleStart, alias],
+        [body, "\nlet paddingAlias = 'unrelated'\n"],
+      ),
+      false,
+    ],
+    [
+      'parameter-shadow',
+      changedSource('paddingAlias', [moduleStart, alias], [parameter, 'paddingAlias: string, ']),
+      false,
+    ],
+    [
+      'local-tokens-object',
+      changedSource(canonical, [
+        body,
+        "\nconst tokens = { 'spacing.button.inline': 'unrelated' }\n",
+      ]),
+      false,
+    ],
+    [
+      'tokens-parameter',
+      changedSource(canonical, [parameter, 'tokens: Record<string, string>, ']),
+      false,
+    ],
+    [
+      'wrong-token-import',
+      changedSource(canonical).replace(
+        "} from '@platform/design-system'",
+        "} from 'unrelated-package'",
+      ),
+      false,
+    ],
+    [
+      'type-only-token-import',
+      changedSource(canonical).replace('  tokens,', '  type tokens,'),
+      false,
+    ],
+    [
+      'circular-alias-chain',
+      changedSource('paddingAlias', [
+        body,
+        '\nconst paddingAlias = otherAlias\nconst otherAlias = paddingAlias\n',
+      ]),
+      false,
+    ],
+    ['ambiguous-alias', changedSource('paddingAlias', [body, alias + alias]), false],
+    [
+      'unsupported-binding',
+      changedSource('paddingAlias', [body, '\nconst { paddingAlias } = unknownSource\n']),
+      false,
+    ],
+  ]
+  return cases.flatMap(([id, themeAdapterSource, valid]) => {
+    const actual = materialGateViolations(modifiedSnapshot(baseline, { themeAdapterSource }))
+    const expected = valid
+      ? []
+      : ['NAIVE_BUTTON_PADDING_SHAPE', 'NAIVE_OVERRIDE_VALUE_KIND', 'NAIVE_OVERRIDE_SEMANTIC_ROLE']
+    return isDeepStrictEqual(actual, expected)
+      ? []
+      : [
+          `naive-button-padding-${id}: expected ${expected.join(', ') || 'no diagnostics'}; received ${actual.join(', ') || 'no diagnostics'}.`,
+        ]
+  })
+}
+
 function runArchitectureAdminConsoleNegativeProbes(
   baseline: MaterialGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const overrides = themeOverrideObject(baseline.themeAdapterSource)
+  const button = overrides === undefined ? undefined : objectPropertyObject(overrides, 'Button')
+  const padding =
+    button === undefined ? undefined : objectPropertyInitializer(button, 'paddingMedium')
+  const paddingProbes: readonly [string, string, string][] = [
+    ['raw', "'0 14px'", ''],
+    ['nonzero', "`1 ${tokens['spacing.button.inline']}`", ''],
+    ['wrong-role', "`0 ${tokens['spacing.page.inline']}`", ''],
+    ['missing-zero', "`${tokens['spacing.button.inline']}`", ''],
+    ['naked-token', "tokens['spacing.button.inline']", ''],
+    ['reversed', "`${tokens['spacing.button.inline']} 0`", ''],
+    ['extra-component', "`0 ${tokens['spacing.button.inline']} 0`", ''],
+    [
+      'extra-expression',
+      "`0 ${tokens['spacing.button.inline']} ${tokens['spacing.button.inline']}`",
+      '',
+    ],
+    ['unregistered-variable', "'0 var(--ui-unregistered-button-inline)'", ''],
+    ['unknown-helper', "unknownPadding(tokens['spacing.button.inline'])", ''],
+    ['unresolved-alias', 'missingPadding', ''],
+    [
+      'mutable-alias',
+      'mutablePadding',
+      "let mutablePadding = `0 ${tokens['spacing.button.inline']}`\n",
+    ],
+    ['circular-alias', 'circularPadding', 'const circularPadding = circularPadding\n'],
+    [
+      'mutable-token-alias',
+      '`0 ${mutableInline}`',
+      "let mutableInline = tokens['spacing.button.inline']\n",
+    ],
+  ]
   const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
+    ...paddingProbes.map(
+      ([id, expression, declarations]): [string, string, Partial<MaterialGateSnapshot>] => [
+        `naive-button-padding-${id}`,
+        'NAIVE_BUTTON_PADDING_SHAPE',
+        {
+          themeAdapterSource:
+            padding === undefined
+              ? baseline.themeAdapterSource
+              : declarations +
+                baseline.themeAdapterSource.slice(0, padding.getStart()) +
+                expression +
+                baseline.themeAdapterSource.slice(padding.end),
+        },
+      ],
+    ),
     [
       'direct-naive-app-import',
       'DIRECT_NAIVE_IMPORT',
@@ -16807,14 +17113,14 @@ async function validateTokensAndLayout(): Promise<string[]> {
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
     tokenManifest.schemaVersion !== 11 ||
-    tokenManifest.tokens.length !== 241 ||
-    tokenManifest.activePublicRoles.length !== 53 ||
-    tokenManifest.unoCssMappings.length !== 53 ||
+    tokenManifest.tokens.length !== 243 ||
+    tokenManifest.activePublicRoles.length !== 54 ||
+    tokenManifest.unoCssMappings.length !== 54 ||
     tokenManifest.namedContrasts.length !== 34 ||
-    tokenManifest.governance.recordCount !== 400 ||
+    tokenManifest.governance.recordCount !== 404 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 219 ||
-    classProjections.length !== 51 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 223 ||
+    classProjections.length !== 52 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -17328,10 +17634,10 @@ function validateInspectorProjections(): string[] {
     engineeringManifest.bundleBudgets
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 53 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 54 ||
     runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 26 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 11 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 400 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 404 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',
       'cobalt',
@@ -18007,6 +18313,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   )
 
   const baselineViolations = materialGateViolations(baseline)
+  violations.push(...buttonPaddingLexicalViolations(baseline))
   if (baselineViolations.length > 0) {
     violations.push(
       `Admin Console material gate baseline failed: ${baselineViolations.join(', ')}.`,

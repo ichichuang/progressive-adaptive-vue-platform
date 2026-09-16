@@ -1,5 +1,11 @@
 {
   "spacing": {
+    "button": {
+      "inline": {
+        "$type": "dimension",
+        "$value": "{dimension.space.button-inline}"
+      }
+    },
     "page": {
       "inline": {
         "$type": "dimension",

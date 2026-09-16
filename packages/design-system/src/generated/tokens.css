@@ -58,6 +58,7 @@
     --ui-motion-easing: cubic-bezier(0.2, 0, 0, 1);
     --ui-radius-panel: 0.75rem;
     --ui-shadow-panel: 0px 8px 24px 0px oklch(14.5% 0.01 247 / 0.12);
+    --ui-space-button-inline: 14px;
     --ui-space-content-gap: 0.75rem;
     --ui-space-page-inline: 1.5rem;
     --ui-space-section-block: 2rem;
