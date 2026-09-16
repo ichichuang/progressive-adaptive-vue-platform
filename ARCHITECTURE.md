@@ -11108,7 +11108,7 @@ SCSS 可以消费 Canonical CSS Variable、精确拥有的私有实现变量、�
 | --- | --- |
 | Canonical Theme Chain | Token / Public Role、Generated CSS / TypeScript / UnoCSS、Appearance Runtime 与集中 Naive Bridge 已实现；后续按真实消费者扩展。 |
 | UnoCSS-first Author Governance | 已实现当前限定作者治理；不等于债务已经迁移。 |
-| Size Authority Expansion | 已实现 §16.3 的 Normal Medium Button Padding 单元，等待 Owner Review；§14.1 的完整公共尺寸表面仍未完成。 |
+| Size Authority Expansion | 已实现 §16.3 的 Normal Medium Button Padding 单元，该限定单元已完成 Owner Review 与 Git 交付，精确 Commit 及 CI 结果见 §16.3；§14.1 的完整公共尺寸表面仍未完成。 |
 | Density Projection | §14.2 的三档视觉投影未实现。 |
 | `density.scale` | §14.3 的精确视觉语义和计算仍待独立 Owner 决策。 |
 | Style Migration | §15.6 的现有普通 Plain CSS 债务尚未完成迁移。 |
@@ -11219,7 +11219,7 @@ Owner 在干净同步的 `main@6b6a279803eb07f3dc13ebaa382f2c42ab60f838` 上另�
 
 `check-architecture-admin-console.ts` 的 Override Inventory、Semantic Expectation 与 Pinned Consumption Record 必须精确包含 `Button.paddingMedium` 并保持三者相等。字段专用 AST Proof 同时验证结构零值、唯一 Canonical Token 和无额外后缀；仅解析现有表达式及可见 `const` Alias，不冻结私有变量名。裸 Token、Raw Dimension、非零首项、错误 Role、缺项/反序/额外项、未知 Variable/Helper、未解析或可变 Alias 均不得通过。该许可仅作用于 `Button.paddingMedium`；现有其他 Template Expression、Parser-sensitive Color 与负向保护保持。
 
-该源码候选只实现这一 Padding 权威链，完整 `mise exec -- pnpm verify` 是静态交接门槛，Runtime/Visual 未验收，修改保持 Unstaged 等待 Owner Review。§17 公共 Props/Events/Slots、§14.5 Height/Enhanced Target、Icon Size/Margin、Font、Color/State、Radius、Focus 与 Motion 保持。不将本单元报告为完整 `UiButton` Sizing 或 UnoCSS Migration 完成，不扩展其他控件、Global Density、Schema、Dependency 或 Budget；Current Work/Next/Successor 不自动推进，不授权任何 Git 交付。
+该 Normal Medium Button Padding 单元已实现这一 Padding 权威链并完成 Owner Review，已通过 Commit `bc444283aac01840cd8888069e1352b729bd2e7d` 完成 Git 交付；该精确 Commit 的 Static Verification / Production static gates 与 CodeQL / JavaScript and TypeScript analysis 均为 `completed / success`。Normal Medium Padding 仍为 `0 14px`，唯一设计来源仍为 `spacing.button.inline`；Runtime / Browser / Visual Acceptance 未执行。§17 公共 Props/Events/Slots、§14.5 Height/Enhanced Target、Icon Size/Margin、Font、Color/State、Radius、Focus 与 Motion 保持；Button Visual-height Authority 与 Icon Size / Icon-to-label Spacing Authority 仍未完成纠正，完整 `UiButton` Sizing 仍未完成。不将本单元报告为完整 `UiButton` Sizing 或 UnoCSS Migration 完成，不扩展其他控件、Global Density、Schema、Dependency 或 Budget；Current Work/Next/Successor 不自动推进，本状态同步不授权任何后续 Git 交付。
 
 ```text
 Native semantic HTML
