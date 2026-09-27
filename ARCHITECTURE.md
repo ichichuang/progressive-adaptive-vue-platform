@@ -11312,6 +11312,20 @@ generic Material Wrapper
 
 当前 `UiButton` 的公共 API 与源码一致：可选 `disabled: boolean`（默认 `false`）、`type: 'button' | 'submit'`（默认 `'button'`）、`variant: 'ghost' | 'primary' | 'secondary'`（默认 `'secondary'`），无参数 `press` Event，以及不提供 Slot Prop 的 Default Slot。当前没有 `size`、`loading`、`danger` Variant、`reset` Type 或 MouseEvent Payload；后续尺寸消费任务按 §16.3 保持该兼容边界，不从示例或 Primitive 的 `sm` / `md` / `lg` 名称推导公共 API。
 
+**UiButton fallthrough-attribute boundary（Owner Review 候选）**
+
+本条仅定义待审阅的 `UiButton` 目标合同，不授予实现授权。当前源码仍自动继承未声明 Attributes，根为 `PavpButtonPrimitive`，由 `naive-button.ts` 直接重导出私有 `NButton`；本次文档修改没有关闭该运行时入口。[Vue 官方 Fallthrough Attributes 合同](https://vuejs.org/guide/components/attrs.html)及已安装 Vue `3.5.40` 的实现确认：未被 Props/Emits 消费的 Attributes 可进入根组件并成为其 Props；Vue 3 的 `class` 也属于 attrs，`inheritAttrs: false` 才关闭自动继承。
+
+本节“支持 `class` 和必要的原生 Attributes”要求保持；“必要”须由具体组件按真实用途、精确目标及准入决定，不自动准入全部 HTML Attributes、Listeners 或 Vendor Props。当前 `appearance.vue` 五处和 `UiForm.vue` 两处 `UiButton` 使用中，唯一额外输入是 `class="pavp-material-stage__focus-example"`；没有其他额外 Attributes 或 Native Listeners。Form 两处仅是现存源码消费者，不激活其 `TARGET_INACTIVE` 状态或新增 Active Route。
+
+* 保留上文 Props、默认值、无参数 `press` 和 Default Slot，以及现有私有根。内部映射保持：`type → attrType`、`disabled → disabled`、`variant === 'ghost' → ghost`、`variant === 'secondary' → secondary`、`variant === 'primary' ? 'primary' : 'default' → NButton.type`，私有 click 继续触发 `press`。保留当前可访问按钮文字、原生 button 语义、键盘激活、Disabled 行为及已声明 `type` 提供的表单提交。
+* 额外 Fallthrough 准入集合精确为 `class`。它必须到达现有按钮根，与 `min-h-target-enhanced min-w-target-enhanced` 合并而非替换，保留 Vue 兼容的字符串/数组/对象 Class 归一化，并反映父级后续 Class 的新增、替换与移除；不将 `class` 新增为语义 Prop，不复制到本地 State。Class 作者继续受 §15 的 UnoCSS、提取及样式权威规则约束；可转发不授权 Raw Design Class 或 Vendor-internal Styling。
+* 未来实现须在 `UiButton` 公开层关闭自动继承（`inheritAttrs: false`），在首个私有组件 Prop 解析边界之前只选择获准的 `class`。禁止转发整个 `$attrs`/`useAttrs()` 对象、只靠 Binding Order 覆盖或只靠 Vendor Denylist；值已成为私有 Props 后再过滤不满足本合同。
+* 其余未声明 Fallthrough 输入一律不转发，包括 `id`、`title`、`aria-*`、`data-*`、`style`、Native Listeners 和 Vendor Props/Theme Inputs；它们不得进入私有 Prop 解析，也不得经另一通道改变 Tag、`attrType`、Visual Variant、Size、Loading、Theme、Inline Style、Keyboard 或 Event Handling。未准入输入只是不转发，不要求新增 Runtime Exception、日志系统、Sanitizer 或通用 Validator。
+* 已声明的 `press` Listener 属于语义事件合同，与未声明 Native Listener 区分；不增加第二公共激活事件 `click`，不转发任意 Listener Bag。Vue 保留的 `key`/`ref` 等 VNode 输入不属于普通 Fallthrough Attributes，继续遵循 Vue 自身语义；本属性边界不是 Security Sandbox。
+* Native Identity 与 Accessibility Attributes 不在 PAVP 全局永久禁止，只是本次未为 `UiButton` 新增准入；未来须有真实用途与精确目标再决定。其他十一项 ACTIVE 组件不套用本条 Class-only 政策，也不因本条被视为已修正。Inactive `UiFormField` 的私有 Prop 碰撞另属范围，不修改 Form，也不复制其 Attribute Allowlist。
+* 后续获准实施仅通过现有 Owning Checks 证明此 `UiButton` 边界和当前消费者兼容性，包括 Class 合并及后续更新；不创建通用 Dataflow Framework、整文件 Lint 豁免、全局 Unknown-prop 配置变更或新 Registry Schema，不冻结私有 Helper 名称。本次不实现组件或检查，不改 §16.3 已交付 Padding、Visual Height、Target Minimum、Icon Geometry、Density/`density.scale`、Token/Generated Output、Naive Projection、UnoCSS Extraction、SCSS Admission、Native Cascade、Public Registry、Dependency/Lockfile 或 Budget；尺寸工作保持独立。
+
 禁止创建没有语义价值的 Wrapper。
 
 初次共享组件准入必须同时满足：
