@@ -10,7 +10,7 @@ export interface UiSystemConsoleProjection {
   readonly publicComponentIds: readonly string[]
   readonly inactivePublicComponentIds: readonly string[]
   readonly styledVendor: UiSystemConsoleStyledVendor
-  readonly privateAdapterPolicyId: 'ui-vendor-imports.private-naive-adapter-only'
+  readonly importPolicyId: 'ui-vendor-imports.native-naive-ui-owners'
 }
 
 export const uiSystemConsoleProjection = Object.freeze({
@@ -25,5 +25,5 @@ export const uiSystemConsoleProjection = Object.freeze({
     packageName: 'naive-ui',
     coordinate: 'naive-ui@2.45.2',
   }),
-  privateAdapterPolicyId: 'ui-vendor-imports.private-naive-adapter-only',
+  importPolicyId: 'ui-vendor-imports.native-naive-ui-owners',
 } as const satisfies UiSystemConsoleProjection)

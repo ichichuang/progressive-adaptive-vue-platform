@@ -40,8 +40,8 @@ only by `ARCHITECTURE.md`; this entry is not a second roadmap.
 ## Delivery Direction
 
 1. First complete the reusable platform foundations.
-2. Then admit third-party UI primitives only through PAVP-owned boundaries and only when the
-   architecture allows them.
+2. Then admit UI libraries when the architecture allows them; consume Naive UI directly by its
+   official names and APIs in UI owners.
 3. Then build Shared UI from real consumer demand.
 4. Deliver the complete administration starter defined in `ARCHITECTURE.md`, including reusable
    forms and configuration-driven data management, login/session/permissions, standard management
@@ -51,8 +51,8 @@ The current architecture console is an implemented consumer, not proof that the 
 has been delivered. Required future capabilities still need their own contracts and implementation
 authorization. Standard pages consume shared capabilities within the production application.
 PAVP Design Tokens remain the sole visual authority. UnoCSS is an expression
-layer, not a design authority. UI vendors remain private implementation details behind
-PAVP-owned public boundaries.
+layer, not a design authority. Naive UI uses its official API in UI owners with the shared PAVP theme. Other vendors retain
+their architecture-admitted boundaries.
 
 ## Task Discipline
 
@@ -92,7 +92,7 @@ state. Do not ask the Owner to repeat a decision already resolved in the current
 - Preserve unrelated behavior and user changes.
 - PAVP Design Tokens are the sole visual authority.
 - UnoCSS is an expression layer, not a design authority.
-- UI vendors remain private behind PAVP boundaries.
+- Use official Naive UI names and APIs in UI owners; retain only substantive PAVP composites.
 
 ## Prohibited Work
 

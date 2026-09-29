@@ -1,8 +1,5 @@
 <script setup lang="ts">
-import {
-  PavpBreadcrumbItemPrimitive,
-  PavpBreadcrumbPrimitive,
-} from '../adapters/naive/naive-breadcrumb'
+import { NBreadcrumbItem, NBreadcrumb } from 'naive-ui/es/breadcrumb'
 
 defineOptions({ name: 'UiPageHeader' })
 
@@ -15,10 +12,10 @@ defineProps<{
 
 <template>
   <header class="pavp-page-header">
-    <PavpBreadcrumbPrimitive>
-      <PavpBreadcrumbItemPrimitive>PAVP</PavpBreadcrumbItemPrimitive>
-      <PavpBreadcrumbItemPrimitive>{{ breadcrumb }}</PavpBreadcrumbItemPrimitive>
-    </PavpBreadcrumbPrimitive>
+    <NBreadcrumb>
+      <NBreadcrumbItem>PAVP</NBreadcrumbItem>
+      <NBreadcrumbItem>{{ breadcrumb }}</NBreadcrumbItem>
+    </NBreadcrumb>
     <div class="pavp-page-header__copy">
       <h1
         class="leading-title font-title-weight m-0 text-text-primary text-title"

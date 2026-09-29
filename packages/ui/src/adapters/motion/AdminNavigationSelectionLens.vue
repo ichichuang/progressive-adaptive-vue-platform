@@ -12,7 +12,7 @@ import {
   type VNodeProps,
 } from 'vue'
 
-import type { PavpMenuOption } from '../naive/naive-menu'
+import type { MenuOption } from 'naive-ui/es/menu'
 import {
   createMotionFeatureRuntime,
   LayoutGroup,
@@ -23,15 +23,15 @@ import {
 defineOptions({ name: 'AdminNavigationSelectionLens' })
 
 const props = defineProps<{
-  readonly isOwner: (option: PavpMenuOption) => boolean
+  readonly isOwner: (option: MenuOption) => boolean
   readonly motion: EffectiveAppearanceState['motion']
-  readonly renderBaseIcon: (option: PavpMenuOption) => VNodeChild
+  readonly renderBaseIcon: (option: MenuOption) => VNodeChild
 }>()
 
 defineSlots<{
   default: (props: {
     readonly featureReady: boolean
-    readonly renderIcon: (option: PavpMenuOption) => VNodeChild
+    readonly renderIcon: (option: MenuOption) => VNodeChild
   }) => unknown
 }>()
 
@@ -67,7 +67,7 @@ function renderSelectionLens(): VNodeChild {
   })
 }
 
-function renderIcon(option: PavpMenuOption): VNodeChild {
+function renderIcon(option: MenuOption): VNodeChild {
   return h(Fragment, null, [
     featureReady.value && props.motion === 'full' && props.isOwner(option)
       ? renderSelectionLens()

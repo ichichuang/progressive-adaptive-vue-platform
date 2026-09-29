@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { NButton } from 'naive-ui/es/button'
+import { NRadioGroup, NRadioButton } from 'naive-ui/es/radio'
+import { NSwitch } from 'naive-ui/es/switch'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
 import {
   builtInAppearanceThemePreviews,
   colorModePreferenceSchema,
@@ -14,16 +18,11 @@ import {
   type ThemeReference,
 } from '@platform/design-system'
 import {
-  UiButton,
-  UiDescriptionList,
   UiPageHeader,
   UiRadioCardGroup,
   UiSection,
-  UiSegmentedControl,
   UiStatusBadge,
-  UiSwitch,
-  type UiDescriptionItem,
-  type UiSegmentedOption,
+  type UiRadioCardOption,
 } from '@platform/ui'
 import { computed, ref } from 'vue'
 
@@ -88,7 +87,7 @@ const colorModeOptions = computed(() =>
       value: colorModePreferenceSchema.parse('light'),
     }),
     Object.freeze({ label: t('appearance.dark'), value: colorModePreferenceSchema.parse('dark') }),
-  ] as const satisfies readonly UiSegmentedOption[]),
+  ] as const),
 )
 const contrastOptions = computed(() =>
   Object.freeze([
@@ -100,7 +99,7 @@ const contrastOptions = computed(() =>
       label: t('appearance.enhanced'),
       value: contrastPreferenceSchema.parse('enhanced'),
     }),
-  ] as const satisfies readonly UiSegmentedOption[]),
+  ] as const),
 )
 const materialOptions = computed(() =>
   Object.freeze([
@@ -113,7 +112,7 @@ const materialOptions = computed(() =>
       value: materialPreferenceSchema.parse('reduced'),
     }),
     Object.freeze({ label: t('appearance.solid'), value: materialPreferenceSchema.parse('solid') }),
-  ] as const satisfies readonly UiSegmentedOption[]),
+  ] as const),
 )
 const fontScaleLabels = Object.freeze({
   '0.9': '90%',
@@ -128,7 +127,7 @@ const fontScaleOptions = Object.freeze(
       value: String(value),
     }),
   ),
-) satisfies readonly UiSegmentedOption[]
+)
 const motionOptions = computed(() =>
   Object.freeze([
     Object.freeze({
@@ -143,13 +142,13 @@ const motionOptions = computed(() =>
       label: t('appearance.no-motion'),
       value: motionPreferenceSchema.parse('none'),
     }),
-  ] as const satisfies readonly UiSegmentedOption[]),
+  ] as const),
 )
 const previewViewOptions = computed(() =>
   Object.freeze([
     Object.freeze({ label: t('appearance.overview'), value: 'overview' }),
     Object.freeze({ label: t('appearance.details'), value: 'details' }),
-  ] as const satisfies readonly UiSegmentedOption[]),
+  ] as const),
 )
 
 const effective = useAppearanceReadBoundary()
@@ -196,7 +195,7 @@ const themePreviewByValue = computed(
       themePreviews.value.map((theme) => [themeReferenceKey(theme.reference), theme] as const),
     ),
 )
-const themeSelectionOptions = computed<readonly UiSegmentedOption[]>(() =>
+const themeSelectionOptions = computed<readonly UiRadioCardOption[]>(() =>
   themePreviews.value.map((theme) =>
     Object.freeze({
       label: theme.displayLabel,
@@ -463,7 +462,9 @@ const currentThemeLabel = computed(
 const currentPlaneLabel = computed(
   () => `${effectiveColorModeLabel()} · ${effectiveContrastLabel()}`,
 )
-const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
+const previewDescriptionItems = computed<
+  readonly { readonly label: string; readonly value: string }[]
+>(() => [
   { label: t('appearance.theme'), value: currentThemeLabel.value },
   { label: t('appearance.display'), value: currentPlaneLabel.value },
   { label: t('appearance.material'), value: effectiveMaterialLabel() },
@@ -643,12 +644,21 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             <strong>{{ t('appearance.color-mode') }}</strong>
             <span class="text-text-secondary">{{ t('appearance.color-mode-description') }}</span>
           </span>
-          <UiSegmentedControl
-            :accessible-label="t('appearance.color-mode')"
-            :model-value="preference?.appearance.colorMode ?? ''"
-            :options="colorModeOptions"
-            @update:model-value="updateColorMode"
-          />
+          <NRadioGroup
+            :aria-label="t('appearance.color-mode')"
+            :value="preference?.appearance.colorMode ?? ''"
+            @update:value="updateColorMode(String($event))"
+          >
+            <NRadioButton
+              v-for="option in colorModeOptions"
+              :key="option.value"
+              class="min-h-target-enhanced"
+              :label="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </NRadioButton>
+          </NRadioGroup>
         </div>
         <div
           class="pavp-appearance-control"
@@ -658,12 +668,21 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             <strong>{{ t('appearance.contrast') }}</strong>
             <span class="text-text-secondary">{{ t('appearance.contrast-description') }}</span>
           </span>
-          <UiSegmentedControl
-            :accessible-label="t('appearance.contrast')"
-            :model-value="preference?.appearance.contrast ?? ''"
-            :options="contrastOptions"
-            @update:model-value="updateContrast"
-          />
+          <NRadioGroup
+            :aria-label="t('appearance.contrast')"
+            :value="preference?.appearance.contrast ?? ''"
+            @update:value="updateContrast(String($event))"
+          >
+            <NRadioButton
+              v-for="option in contrastOptions"
+              :key="option.value"
+              class="min-h-target-enhanced"
+              :label="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </NRadioButton>
+          </NRadioGroup>
         </div>
         <div
           class="pavp-appearance-control"
@@ -673,12 +692,21 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             <strong>{{ t('appearance.material') }}</strong>
             <span class="text-text-secondary">{{ t('appearance.material-description') }}</span>
           </span>
-          <UiSegmentedControl
-            :accessible-label="t('appearance.material')"
-            :model-value="preference?.appearance.material ?? ''"
-            :options="materialOptions"
-            @update:model-value="updateMaterial"
-          />
+          <NRadioGroup
+            :aria-label="t('appearance.material')"
+            :value="preference?.appearance.material ?? ''"
+            @update:value="updateMaterial(String($event))"
+          >
+            <NRadioButton
+              v-for="option in materialOptions"
+              :key="option.value"
+              class="min-h-target-enhanced"
+              :label="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </NRadioButton>
+          </NRadioGroup>
         </div>
         <div
           class="pavp-appearance-control"
@@ -688,12 +716,21 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             <strong>{{ t('appearance.font-size') }}</strong>
             <span class="text-text-secondary">{{ t('appearance.font-size-description') }}</span>
           </span>
-          <UiSegmentedControl
-            :accessible-label="t('appearance.font-size')"
-            :model-value="preference === null ? '' : String(preference.appearance.fontScale)"
-            :options="fontScaleOptions"
-            @update:model-value="updateFontScale"
-          />
+          <NRadioGroup
+            :aria-label="t('appearance.font-size')"
+            :value="preference === null ? '' : String(preference.appearance.fontScale)"
+            @update:value="updateFontScale(String($event))"
+          >
+            <NRadioButton
+              v-for="option in fontScaleOptions"
+              :key="option.value"
+              class="min-h-target-enhanced"
+              :label="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </NRadioButton>
+          </NRadioGroup>
         </div>
         <div
           class="pavp-appearance-control"
@@ -703,12 +740,21 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
             <strong>{{ t('appearance.motion') }}</strong>
             <span class="text-text-secondary">{{ t('appearance.motion-description') }}</span>
           </span>
-          <UiSegmentedControl
-            :accessible-label="t('appearance.motion')"
-            :model-value="preference?.appearance.motion ?? ''"
-            :options="motionOptions"
-            @update:model-value="updateMotion"
-          />
+          <NRadioGroup
+            :aria-label="t('appearance.motion')"
+            :value="preference?.appearance.motion ?? ''"
+            @update:value="updateMotion(String($event))"
+          >
+            <NRadioButton
+              v-for="option in motionOptions"
+              :key="option.value"
+              class="min-h-target-enhanced"
+              :label="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </NRadioButton>
+          </NRadioGroup>
         </div>
 
         <div
@@ -721,10 +767,11 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
               t('appearance.restore-scroll-description')
             }}</span>
           </span>
-          <UiSwitch
-            :accessible-label="t('appearance.restore-scroll')"
-            :model-value="scrollPreference.restoreOnRefresh"
-            @update:model-value="scrollPreference.setRestoreOnRefresh"
+          <NSwitch
+            class="pavp-switch min-h-target-enhanced min-w-target-enhanced"
+            :aria-label="t('appearance.restore-scroll')"
+            :value="scrollPreference.restoreOnRefresh"
+            @update:value="scrollPreference.setRestoreOnRefresh($event === true)"
           />
         </div>
 
@@ -744,20 +791,30 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
               {{ t(languageNoticeKeys[notice]) }}
             </span>
           </span>
-          <UiSegmentedControl
-            :accessible-label="t('i18n.language-label')"
-            :model-value="pendingLocale ?? locale"
-            :options="languageOptions"
-            @update:model-value="language.switchLocale($event)"
-          />
+          <NRadioGroup
+            :aria-label="t('i18n.language-label')"
+            :value="pendingLocale ?? locale"
+            @update:value="language.switchLocale(String($event))"
+          >
+            <NRadioButton
+              v-for="option in languageOptions"
+              :key="option.value"
+              class="min-h-target-enhanced"
+              :label="option.value"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </NRadioButton>
+          </NRadioGroup>
         </div>
         <div class="pavp-appearance-actions">
-          <UiButton
-            variant="ghost"
-            @press="resetVisibleAppearanceAxes"
+          <NButton
+            ghost
+            class="min-h-target-enhanced min-w-target-enhanced"
+            @click="resetVisibleAppearanceAxes()"
           >
             {{ t('appearance.reset') }}
-          </UiButton>
+          </NButton>
         </div>
         <div
           aria-atomic="true"
@@ -836,12 +893,21 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                     class="pavp-material-stage__navigation"
                     :data-preview-view="previewView"
                   >
-                    <UiSegmentedControl
-                      :accessible-label="t('appearance.preview.switch')"
-                      :model-value="previewView"
-                      :options="previewViewOptions"
-                      @update:model-value="updatePreviewView"
-                    />
+                    <NRadioGroup
+                      :aria-label="t('appearance.preview.switch')"
+                      :value="previewView"
+                      @update:value="updatePreviewView(String($event))"
+                    >
+                      <NRadioButton
+                        v-for="option in previewViewOptions"
+                        :key="option.value"
+                        class="min-h-target-enhanced"
+                        :label="option.value"
+                        :value="option.value"
+                      >
+                        {{ option.label }}
+                      </NRadioButton>
+                    </NRadioGroup>
                     <span
                       :key="`navigation-${previewView}-${String(motionSequence)}`"
                       aria-hidden="true"
@@ -869,22 +935,35 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                       </p>
                     </div>
 
-                    <UiDescriptionList :items="previewDescriptionItems" />
+                    <NDescriptions
+                      bordered
+                      :column="1"
+                      label-placement="left"
+                    >
+                      <NDescriptionsItem
+                        v-for="item in previewDescriptionItems"
+                        :key="item.label"
+                        :label="item.label"
+                      >
+                        {{ item.value }}
+                      </NDescriptionsItem>
+                    </NDescriptions>
 
                     <div class="pavp-material-stage__actions">
-                      <UiButton
-                        variant="primary"
-                        @press="replayMotion"
+                      <NButton
+                        type="primary"
+                        class="min-h-target-enhanced min-w-target-enhanced"
+                        @click="replayMotion()"
                       >
                         {{ t('appearance.preview.run') }}
-                      </UiButton>
-                      <UiButton
-                        class="pavp-material-stage__focus-example"
-                        variant="secondary"
-                        @press="replayMotion"
+                      </NButton>
+                      <NButton
+                        class="pavp-material-stage__focus-example min-h-target-enhanced min-w-target-enhanced"
+                        secondary
+                        @click="replayMotion()"
                       >
                         {{ t('appearance.preview.keyboard') }}
-                      </UiButton>
+                      </NButton>
                     </div>
                   </div>
 
@@ -918,12 +997,13 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
                   {{ t('appearance.preview.motion-description') }}
                 </p>
               </div>
-              <UiButton
-                variant="secondary"
-                @press="replayMotion"
+              <NButton
+                secondary
+                class="min-h-target-enhanced min-w-target-enhanced"
+                @click="replayMotion()"
               >
                 {{ t('appearance.preview.replay') }}
-              </UiButton>
+              </NButton>
             </div>
             <div
               :key="`motion-${String(motionSequence)}`"
@@ -935,12 +1015,13 @@ const previewDescriptionItems = computed<readonly UiDescriptionItem[]>(() => [
               <span class="pavp-motion-stage__content text-text-secondary">{{
                 t('appearance.preview.entered')
               }}</span>
-              <UiButton
-                variant="ghost"
-                @press="replayMotion"
+              <NButton
+                ghost
+                class="min-h-target-enhanced min-w-target-enhanced"
+                @click="replayMotion()"
               >
                 {{ t('appearance.preview.button') }}
-              </UiButton>
+              </NButton>
             </div>
           </section>
         </div>

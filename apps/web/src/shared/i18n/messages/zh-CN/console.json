@@ -39,7 +39,7 @@
   "console.import-policy": "Import Policy",
   "console.component-count": "公共组件数",
   "console.components": "公共组件",
-  "console.ui.description": "供应商组件和类型保留在 {'@'}platform/ui 私有适配目录。",
+  "console.ui.description": "UI 层直接使用 Naive UI 官方组件和 API；PAVP 复合组件承担应用职责，并使用统一主题。",
   "console.ui.title": "组件边界",
   "console.responsive.profiles": "布局 Profile",
   "console.responsive.sizes": "尺寸权威",

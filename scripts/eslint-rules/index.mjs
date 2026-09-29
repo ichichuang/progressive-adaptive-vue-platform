@@ -1323,11 +1323,7 @@ const noUnapprovedVisualLiterals = {
       ) {
         const tag = node.parent.parent.rawName
         const expected =
-          tag === 'PavpLayoutPrimitive'
-            ? 'visible'
-            : tag === 'PavpLayoutSiderPrimitive'
-              ? 'hidden'
-              : undefined
+          tag === 'NLayout' ? 'visible' : tag === 'NLayoutSider' ? 'hidden' : undefined
         return (
           name === 'overflow' &&
           expected !== undefined &&

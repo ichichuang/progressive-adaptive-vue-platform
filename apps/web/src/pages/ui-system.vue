@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import {
-  UiDescriptionList,
-  UiPageHeader,
-  UiSection,
-  UiStatusBadge,
-  uiSystemConsoleProjection,
-  type UiDescriptionItem,
-} from '@platform/ui'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
+import { UiPageHeader, UiSection, UiStatusBadge, uiSystemConsoleProjection } from '@platform/ui'
 import { computed } from 'vue'
 import { useConsoleI18n } from '../shared/i18n'
 
@@ -20,9 +14,9 @@ defineProps<{
   readonly message: string
 }>()
 
-const uiItems = computed<readonly UiDescriptionItem[]>(() => [
+const uiItems = computed<readonly { readonly label: string; readonly value: string }[]>(() => [
   { label: t('console.styled-vendor'), value: uiSystemConsoleProjection.styledVendor.coordinate },
-  { label: t('console.import-policy'), value: uiSystemConsoleProjection.privateAdapterPolicyId },
+  { label: t('console.import-policy'), value: uiSystemConsoleProjection.importPolicyId },
   {
     label: t('console.component-count'),
     value: String(uiSystemConsoleProjection.publicComponentIds.length),
@@ -54,6 +48,18 @@ const uiItems = computed<readonly UiDescriptionItem[]>(() => [
       label="ACTIVE"
       tone="active"
     />
-    <UiDescriptionList :items="uiItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in uiItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
 </template>

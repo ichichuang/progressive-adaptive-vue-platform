@@ -641,7 +641,7 @@ PUBLICATION_AUTHORIZATION_FOR_REWORK=GRANTED_BY_OWNER
 HISTORICAL_IMPLEMENTATION_COMMIT=864aa8b661814389739a5d1ec08b90ca505e1948
 HISTORICAL_IMPLEMENTATION_COMMIT_DISPOSITION=PRESERVED_AS_TECHNICAL_HISTORY_NOT_CURRENT_VISUAL_ACCEPTANCE
 COMPLETED_AUTHORIZED_SCOPE=PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT only under PAVP_APPEARANCE_NAIVE_CONTROL_AND_VISUAL_REFINEMENT_ADMISSION_AMENDMENT: one bounded /appearance Naive-backed interaction replacement and token-owned visual refinement; one consumer-backed UiRadioCardGroup; exact owning Architecture, UI registry and checker synchronization; all prior Runtime repairs preserved
-CURRENT_PROHIBITED_SCOPE=redesign of the other nine product-page content models; PAVP-RUNTIME-003; PAVP-RUNTIME-004; First Paint authority change; Router lifecycle or route identity change; eager route imports; Loading, Skeleton, placeholder, duplicate Shell or second Router outlet; local-motion removal; arbitrary custom-theme editing/import/export/deletion or color authoring; automatic Storage mutation or Registry cleanup; removal of general validated Custom Theme capability; Motion-bearing Shell or Route geometry; route-level content concealment; persistent-owner animation fill-mode forwards or both; second scroll owner, Appearance Store, Material resolver, UI provider, styled vendor, dependency or successor work package; direct application Naive import; removal of native semantic structure
+CURRENT_PROHIBITED_SCOPE=redesign of the other nine product-page content models; PAVP-RUNTIME-003; PAVP-RUNTIME-004; First Paint authority change; Router lifecycle or route identity change; eager route imports; Loading, Skeleton, placeholder, duplicate Shell or second Router outlet; local-motion removal; arbitrary custom-theme editing/import/export/deletion or color authoring; automatic Storage mutation or Registry cleanup; removal of general validated Custom Theme capability; Motion-bearing Shell or Route geometry; route-level content concealment; persistent-owner animation fill-mode forwards or both; second scroll owner, Appearance Store, Material resolver, UI provider, styled vendor, dependency or successor work package; Naive import from non-UI domains; removal of native semantic structure
 OWNER_RUNTIME_AND_VISUAL_ACCEPTANCE=CORRECTED_REVISION_PENDING_OWNER_REVIEW
 OWNER_EXTERNAL_REVIEW=FAILED_PREVIOUS_REVISION_CORRECTION_IMPLEMENTED_PENDING_REVIEW
 RELEASE_BEFORE_OWNER_VISUAL_ACCEPTANCE=PROHIBITED
@@ -738,11 +738,11 @@ NEXT_PAGE_REWORK_AUTHORIZATION=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ```
 
-该 Repair 只修复当前 PAVP Public Wrapper 已实际渲染的 Naive 2.45.2 状态。Radio hover 以 `buttonBoxShadowHover` 为真实消费字段，focus 以 `buttonBoxShadowFocus` 为真实消费字段；未投影到 Radio Group CSS Variable 的 `buttonBorderColorHover` 不得再作为完成证据。Button 只闭合 `UiButton` 已公开的 `primary`、`secondary`、`ghost`，Tag 只闭合 `UiStatusBadge` 当前 bordered/default 状态；不得为未渲染的 Naive variant 扩张映射。
+当前主题映射覆盖已实际使用的 Naive 2.45.2 组件和 Peer 状态。Radio hover 以 `buttonBoxShadowHover` 为真实消费字段，focus 以 `buttonBoxShadowFocus` 为真实消费字段；未投影到 Radio Group CSS Variable 的 `buttonBorderColorHover` 不得再作为完成证据。Button 保留现有 Primary、Secondary、Ghost、Shell Circle 和 Form Text/Tiny 消费，并补齐对应官方状态字段；Tag 同时覆盖 StatusBadge 的 Bordered/Default 与 Select 内部可关闭 Tag。映射以已使用组件族及其实际 Peer 为范围，不宣称覆盖整个 Naive Library。
 
 新增 UI-internal Token 能力精确采用 DTCG 2025.10 兼容稳定子集：Border Composite 为 `nonnegative width + solid + color`，Shadow 为单层或非空有序 Shadow List，每层允许 `inset`，其中 `blur` 必须 nonnegative，`offsetX`、`offsetY` 与 `spread` 保持 CSS 允许的 signed Dimension 语义。Composite Nested Reference 由 Resolver 验证 exact referenced type，并在消费字段解析后复验 Border width 与 Shadow blur 的 nonnegative 约束；Runtime-exposed Nested Reference 在生成 CSS 中保留 `var(--ui-*)`，build-only Nested Reference 压平为 literal。`ResolvedTokenRecord.authoredValue` 只属于 build-memory，不进入 Token Manifest Record。该能力不创建第二 Focus System、Public Token、UnoCSS Mapping 或 Component Token Source。
 
-Owning Checker 冻结 exact installed `naive-ui@2.45.2` 的 `useTheme()` key、component self field、emitted `--n-*` variable 与 selector/state 消费合同；版本变化先被 dependency gate 阻断并要求重新审计。它同时证明 override 值类型与 PAVP semantic authority、wrapper variant/consumer closure、parser safety、private-adapter exclusivity、Forced Colors focus fallback，并运行精确 `50/50` 个可逆 in-memory negative probes。Static Gate 通过不构成 Owner Visual Acceptance；amber/cobalt/coral/graphite/iris/jade/lagoon × light/dark × standard/enhanced hover/selected/focus、adaptive/reduced/solid focus visibility、Primary disabled 与 Status Badge border 已由 Owner 独立确认验收。
+Owning Checker 冻结 exact installed `naive-ui@2.45.2` 的 `useTheme()` key、component self field、emitted `--n-*` variable 与 selector/state 消费合同；版本变化先被 dependency gate 阻断并要求重新审计。它同时证明 override 值类型与 PAVP semantic authority、native variant/consumer closure、parser safety、UI import ownership、Forced Colors focus fallback，并保留对应的可逆 in-memory negative probes。Static Gate 通过不构成 Owner Visual Acceptance；amber/cobalt/coral/graphite/iris/jade/lagoon × light/dark × standard/enhanced hover/selected/focus、adaptive/reduced/solid focus visibility、Primary disabled 与 Status Badge border 已由 Owner 独立确认验收。
 
 ### 1.2B.0C `PAVP_CURATED_CUSTOM_THEME_CATALOG`
 
@@ -1060,7 +1060,7 @@ NEW_PUBLIC_UI_COMPONENT=UiRadioCardGroup
 NEW_DEPENDENCY=NONE
 NEW_STYLED_VENDOR=NONE
 NAIVE_RUNTIME_IMPORT_SET_CHANGE=NONE
-APPLICATION_DIRECT_NAIVE_IMPORT=PROHIBITED
+APPLICATION_DIRECT_NAIVE_IMPORT=ADMITTED_IN_VIEW_UI_OWNERS
 NATIVE_INTERACTIVE_CONTROL_SOURCE_COUNT_IN_APPEARANCE_PAGE=0
 NATIVE_SEMANTIC_STRUCTURE=PRESERVED
 EDITABLE_APPEARANCE_AXES=theme;color-mode;contrast;material;font-scale;motion
@@ -1083,12 +1083,12 @@ RELEASE_AUTHORIZATION=NONE
 
 ```text
 ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE; PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK=COMPLETE; PAVP_ADDITIONAL_BUILTIN_THEME_EXPANSION=COMPLETE; PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE; PAVP_RUNTIME_005_STATIC_VERIFICATION=PASS; explicit Owner demand requests /appearance Naive-backed control replacement and visual refinement; one named real consumer=appearance-management; exact naive-ui@2.45.2 dependency remains admitted; no overlapping dirty work
-ALLOWED=one bounded /appearance visual refinement; replace page-authored interactive controls with Naive-backed @platform/ui components; add exactly one consumer-backed UiRadioCardGroup public component; reuse existing NRadioGroup and NRadioButton private primitives; update the public root, component registry, safe projection, Architecture and smallest owning checkers; token-only responsive styling; preserve fourteen canonical theme previews, six editable axes, Density, read/mutation boundaries and real effective preview
-PROHIBITED=direct naive-ui import in apps/web; new dependency; NCard, NRadio or another Naive runtime import; second styled vendor; second theme, material, store, provider, resolver or writer authority; theme IDs, Product Default, persistence schema or first-paint changes; custom-theme editing, import, export, deletion or color authoring; Density control or mutation; modification of another product page; removal of semantic section, header, nav or aside structure; raw color, spacing, radius, shadow or motion literals; speculative public component variants; tests, browser operation, screenshots, traces or evidence artifacts
-OUTPUT=one refined /appearance workspace; one accessible Naive-backed theme-card radio group; exact nine-component PAVP public component closure; zero page-authored button, input, select, textarea or label interactive elements; existing UiButton and UiSegmentedControl used for remaining interactions; clear selected, hover and focus states using PAVP token authority; all fourteen canonical themes and all existing appearance behavior preserved
-MACHINE_GATES=exact public-root, component-registry and consumer closure; exact unchanged Naive runtime import set; page direct-vendor-import prohibition; appearance native-interactive-control absence; six-axis and Density-preservation closure; canonical theme projection closure; token, literal, style and accessibility checks; owning Architecture Admin Console checker; UI public component checker; boundary checker; typecheck; build; bundle; one final pnpm verify
+ALLOWED=one bounded /appearance visual refinement; use official Naive components and substantive @platform/ui composites; add exactly one consumer-backed UiRadioCardGroup public component; reuse official NRadioGroup and NRadioButton; update the public root, component registry, safe projection, Architecture and smallest owning checkers; token-only responsive styling; preserve fourteen canonical theme previews, six editable axes, Density, read/mutation boundaries and real effective preview
+PROHIBITED=Naive import from non-UI domains; unapproved dependency; NCard, NRadio or another Naive runtime import; second styled vendor; second theme, material, store, provider, resolver or writer authority; theme IDs, Product Default, persistence schema or first-paint changes; custom-theme editing, import, export, deletion or color authoring; Density control or mutation; modification of another product page; removal of semantic section, header, nav or aside structure; raw color, spacing, radius, shadow or motion literals; speculative public component variants; tests, browser operation, screenshots, traces or evidence artifacts
+OUTPUT=one refined /appearance workspace; one accessible Naive-backed theme-card radio group; current public composite registry closure; zero page-authored button, input, select, textarea or label interactive elements; official NButton and NRadioGroup/NRadioButton used for remaining interactions; clear selected, hover and focus states using PAVP token authority; all fourteen canonical themes and all existing appearance behavior preserved
+MACHINE_GATES=exact public-root, component-registry and consumer closure; exact unchanged Naive runtime import set; official on-demand Naive imports within UI owners; appearance native-interactive-control absence; six-axis and Density-preservation closure; canonical theme projection closure; token, literal, style and accessibility checks; owning Architecture Admin Console checker; UI public component checker; boundary checker; typecheck; build; bundle; one final pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_EXTERNAL_FOR_VISUAL_INTERACTION_AND_RELEASE
-COMPLETION_EVIDENCE=one real appearance-management consumer; one uniquely named Architecture-admitted work package; one narrow public component; vendor isolation preserved; page source contains no native interactive form or button controls; canonical static gate passes; exact implementation commit is published to origin/main; prior Owner runtime and visual observation failed the previous revision; corrected revision Owner review remains pending and is not claimed
+COMPLETION_EVIDENCE=one real appearance-management consumer; one uniquely named Architecture-admitted work package; one narrow public component; UI domain import boundaries preserved; page source contains no native interactive form or button controls; canonical static gate passes; exact implementation commit is published to origin/main; prior Owner runtime and visual observation failed the previous revision; corrected revision Owner review remains pending and is not claimed
 ```
 
 `UiRadioCardGroup` 的 Public Contract 精确为：
@@ -1097,16 +1097,16 @@ COMPLETION_EVIDENCE=one real appearance-management consumer; one uniquely named 
 id=ui-radio-card-group
 exportName=UiRadioCardGroup
 sourcePath=packages/ui/src/components/UiRadioCardGroup.vue
-props=[{name:accessibleLabel,type:string,required:true,defaultValue:null},{name:modelValue,type:string,required:true,defaultValue:null},{name:options,type:readonly UiSegmentedOption[],required:true,defaultValue:null}]
+props=[{name:accessibleLabel,type:string,required:true,defaultValue:null},{name:modelValue,type:string,required:true,defaultValue:null},{name:options,type:readonly UiRadioCardOption[],required:true,defaultValue:null}]
 emits=[{name:update:modelValue,payloadType:string}]
-slots=[{name:option,slotPropsType:Readonly<{ option: UiSegmentedOption; selected: boolean }>,required:false}]
+slots=[{name:option,slotPropsType:Readonly<{ option: UiRadioCardOption; selected: boolean }>,required:false}]
 semanticVariants=[card-grid]
 accessibilityContractIds=[a11y.enhanced-target,a11y.named-control-group]
 consumerRouteNames=[appearance-management]
 capabilityStatus=ACTIVE
 ```
 
-该组件只在 `packages/ui` 内部复用已准入的 `NRadioGroup` 与 `NRadioButton`；Naive 的 Group Name、Radio Input、Selected 与 Focus 语义由包装层封装，应用页不接触 Vendor Import、Vendor Class 或 Vendor Type。Theme Option Value 只作为 Map Key 返回 Canonical `ThemeReference`，禁止拆分字符串重建身份。页面继续保留 `section`、`header`、`nav`、`aside`、Heading 与 Description 等原生语义结构；“替换原生标签”的实施边界只针对页面直接书写的交互控件。
+该组件只在 `packages/ui` 内部复用已准入的 `NRadioGroup` 与 `NRadioButton`；该组合组件拥有主题卡片布局、Group Name、Selected 与 Focus 可访问关系；应用页的普通控件直接使用 Naive 官方 Import 和 Type。Theme Option Value 只作为 Map Key 返回 Canonical `ThemeReference`，禁止拆分字符串重建身份。页面继续保留 `section`、`header`、`nav`、`aside`、Heading 与 Description 等原生语义结构；“替换原生标签”的实施边界只针对页面直接书写的交互控件。
 
 ### 1.2B.0G `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT`
 
@@ -1502,7 +1502,7 @@ Profile 合同：
 
 PAVP Appearance 写入 `--ui-font-scale`，基础 CSS 使用 `html { font-size: calc(100% * var(--ui-font-scale)); }`，所以 Font Scale 会改变 computed root font size。私有 bridge 必须从 `getComputedStyle(document.documentElement).fontSize` 读取当前实际 root px，将权威 rail rem 转成一个 finite positive numeric CSS-pixel output，并让 `NLayoutSider.collapsedWidth` 与 `NMenu.collapsedWidth` 共同消费该同一数字。
 
-`PavpNaiveConfigProvider` 继续是接收 effective PAVP Appearance snapshot 的既有私有 owner。允许一个 `packages/ui` 私有只读 context，首选 `packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts`，只提供现有 `EffectiveAppearanceState` 的 readonly reactive view；它不拥有、复制、派生、修改或持久化 Appearance。Shell 只把它作为 root-font-dependent navigation metrics 的 invalidation signal。
+`UiProvider` 是接收 effective PAVP Appearance snapshot 的唯一主题组合 Owner。允许一个 `packages/ui` 私有只读 context，首选 `packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts`，只提供现有 `EffectiveAppearanceState` 的 readonly reactive view；它不拥有、复制、派生、修改或持久化 Appearance。Shell 只把它作为 root-font-dependent navigation metrics 的 invalidation signal。
 
 初次 Shell mount 及每次 effective `appearance.fontScale` 变化后，必须在当前 Appearance DOM projection 已提交后通过 Vue post-render reactive lifecycle 重算 root font 与 collapsed px；同一次 invalidation 使用当前 Shell inline size 和新 root font 重跑既有 Admin Shell profile resolution。既有 ResizeObserver 继续独占 container-inline-size invalidation；不得为该 bridge 新建第二 ResizeObserver、MutationObserver、`matchMedia`、Storage listener、Pinia store、global event listener、timeout、polling 或 `requestAnimationFrame` 同步。
 
@@ -1661,7 +1661,7 @@ Narrow 必须继续保留 accepted full-viewport Scrim、bounded inner Panel、p
 - `packages/ui/src/adapters/naive/naive-menu.ts`
 - `packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts`
 - `packages/ui/src/adapters/naive/pavp-naive-theme.ts`
-- `packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue`
+- `packages/ui/src/providers/UiProvider.vue`
 - `scripts/architecture/check-architecture-admin-console.ts`
 - `scripts/architecture/check-boundaries.ts`
 
@@ -2033,7 +2033,7 @@ pnpm-lock.yaml
 project.config.ts
 packages/ui/src/components/UiAdminShell.vue
 packages/ui/src/adapters/gsap/admin-navigation-motion.ts
-packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue
+packages/ui/src/providers/UiProvider.vue
 packages/ui/src/adapters/naive/pavp-naive-theme.ts
 packages/ui/src/adapters/naive/naive-menu.ts
 scripts/architecture/check-architecture-admin-console.ts
@@ -2397,12 +2397,12 @@ ARCHITECTURE.md
 apps/web/src/pages/appearance.vue
 packages/ui/src/components/UiAdminShell.vue
 packages/ui/src/adapters/gsap/admin-navigation-motion.ts
-packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue
+packages/ui/src/providers/UiProvider.vue
 packages/ui/src/adapters/naive/pavp-naive-theme.ts
 scripts/architecture/check-architecture-admin-console.ts
 ```
 
-`PavpNaiveConfigProvider.vue` 只允许拥有 Namespaced Vendor Transition Suppression；`appearance.vue` 只允许固定 Wide Theme Gallery 四列。`pnpm-workspace.yaml`、Package Manifest、Lockfile、`project.config.ts`、Bundle Checker、Engineering Manifest、Design System Token Source/Generated Output、Built-in Theme、Public UI Root/Registry、Router、Runtime Kernel、Storage、Appearance Store/Persistence、其他页面、Vite、Workflow、Test 与 Browser Infrastructure 均禁止。GSAP 继续使用 §1.2B.0I 已安装的精确 `3.15.0`、唯一 Private Lazy Root 和既有 Budget，不新增 Dependency、Dynamic Root、Plugin 或 Public API。
+`UiProvider.vue` 只允许拥有 Namespaced Vendor Transition Suppression；`appearance.vue` 只允许固定 Wide Theme Gallery 四列。`pnpm-workspace.yaml`、Package Manifest、Lockfile、`project.config.ts`、Bundle Checker、Engineering Manifest、Design System Token Source/Generated Output、Built-in Theme、Public UI Root/Registry、Router、Runtime Kernel、Storage、Appearance Store/Persistence、其他页面、Vite、Workflow、Test 与 Browser Infrastructure 均禁止。GSAP 继续使用 §1.2B.0I 已安装的精确 `3.15.0`、唯一 Private Lazy Root 和既有 Budget，不新增 Dependency、Dynamic Root、Plugin 或 Public API。
 
 #### Architecture Admission Gate
 
@@ -2660,11 +2660,11 @@ ARCHITECTURE.md
 packages/ui/src/components/UiAdminShell.vue
 packages/ui/src/adapters/gsap/admin-navigation-motion.ts
 packages/ui/src/adapters/naive/pavp-naive-theme.ts
-packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue
+packages/ui/src/providers/UiProvider.vue
 scripts/architecture/check-architecture-admin-console.ts
 ```
 
-`PavpNaiveConfigProvider.vue` 只允许拥有既有 Namespace 下的 Motion / Transition Handoff；不得成为第二 Visual 或 Motion Authority。`appearance.vue`、Design System Token Source / Generated Output、Built-in Theme、Public Role Registry、Package Manifest、Lockfile、`project.config.ts`、Bundle Checker、Engineering Manifest、Router、Runtime Kernel、Storage、Appearance Store / Persistence、其他页面、Vite、Workflow、Test 与 Browser Infrastructure 均禁止。GSAP 继续使用精确 `3.15.0`、唯一 Private Lazy Root、既有两个 Named Interaction 和既有 Bundle Budget，不新增 Dependency、Dynamic Root、Plugin 或 Public API。
+`UiProvider.vue` 只允许拥有既有 Namespace 下的 Motion / Transition Handoff；不得成为第二 Visual 或 Motion Authority。`appearance.vue`、Design System Token Source / Generated Output、Built-in Theme、Public Role Registry、Package Manifest、Lockfile、`project.config.ts`、Bundle Checker、Engineering Manifest、Router、Runtime Kernel、Storage、Appearance Store / Persistence、其他页面、Vite、Workflow、Test 与 Browser Infrastructure 均禁止。GSAP 继续使用精确 `3.15.0`、唯一 Private Lazy Root、既有两个 Named Interaction 和既有 Bundle Budget，不新增 Dependency、Dynamic Root、Plugin 或 Public API。
 
 #### Architecture Admission Gate
 
@@ -3613,7 +3613,7 @@ ROUTE_TRANSITION_ARCHITECTURE_ONLY_MUTATION_PATHS=ARCHITECTURE.md;scripts/archit
 
 #### Source Implementation Closure
 
-本节保留实施阶段的清单、技术合同与测量历史；其中 Owner 未执行状态属于验收前历史，当前验收与发布事实以下方 Owner Acceptance and Publication Closure 及 Active Mirrors 为准。
+本节保留实施阶段的清单、技术合同与测量历史；其中 Owner 未执行状态属于验收前历史，当前验收与发布事实以下方 Owner Acceptance and Publication Closure 及 Active Mirrors 为准。原 Provider 文件退役后，分隔线样式由 `UiProvider.vue` 继承，历史 Changed Files 不改写为本次迁移路径。
 
 ```text
 ROUTE_TRANSITION_IMPLEMENTATION_CHANGED_FILES=ARCHITECTURE.md;apps/web/src/app/console/ConsoleRouteFrame.vue;apps/web/src/app/router/route-registry.ts;apps/web/src/app/router/router-lifecycle.ts;apps/web/src/app/router/route-transition/route-transition-types.ts;apps/web/src/app/router/route-transition/route-transition-preset-registry.ts;apps/web/src/app/router/route-transition/route-transition-rule-registry.ts;apps/web/src/app/router/route-transition/route-transition-boundary-registry.ts;apps/web/src/app/router/route-transition/resolve-route-transition.ts;apps/web/src/app/router/route-transition/route-transition-coordinator.ts;apps/web/src/app/router/route-transition/route-transition.css;apps/web/src/app/styles/layers.css;packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue;scripts/architecture/check-router.ts;scripts/architecture/check-architecture-admin-console.ts;scripts/architecture/check-boundaries.ts;stylelint.config.mjs
@@ -4784,7 +4784,7 @@ Atomic Landing 前的 Committed Baseline Route Registry 精确为 `8`：一个 `
 | 4 | `runtime-kernel-inspector` | `/runtime-kernel` | `apps/web/src/pages/runtime-kernel.vue` | `运行时内核` | `route-title.runtime-kernel-inspector` | `route-message.runtime-kernel-inspector-summary` | `查看当前十五阶段启动流程、Provider 与生命周期边界。` | `route-breadcrumb.runtime-kernel-inspector` | `route.console.runtime-kernel` |
 | 5 | `router-governance-inspector` | `/router` | `apps/web/src/pages/router.vue` | `路由治理` | `route-title.router-governance-inspector` | `route-message.router-governance-inspector-summary` | `查看路由、布局、滚动、焦点与错误页治理。` | `route-breadcrumb.router-governance-inspector` | `route.console.router` |
 | 6 | `storage-persistence-inspector` | `/storage` | `apps/web/src/pages/storage.vue` | `存储与持久化` | `route-title.storage-persistence-inspector` | `route-message.storage-persistence-inspector-summary` | `查看当前存储记录、分区、错误与生命周期边界。` | `route-breadcrumb.storage-persistence-inspector` | `route.console.storage` |
-| 7 | `ui-system-inspector` | `/ui-system` | `apps/web/src/pages/ui-system.vue` | `UI 组件` | `route-title.ui-system-inspector` | `route-message.ui-system-inspector-summary` | `查看已准入的 PAVP UI 组件与供应商隔离边界。` | `route-breadcrumb.ui-system-inspector` | `route.console.ui-system` |
+| 7 | `ui-system-inspector` | `/ui-system` | `apps/web/src/pages/ui-system.vue` | `UI 组件` | `route-title.ui-system-inspector` | `route-message.ui-system-inspector-summary` | `查看 PAVP 复合组件与共享主题下的 Naive UI 原生使用。` | `route-breadcrumb.ui-system-inspector` | `route.console.ui-system` |
 | 8 | `responsive-layout-inspector` | `/responsive-layout` | `apps/web/src/pages/responsive-layout.vue` | `响应式布局` | `route-title.responsive-layout-inspector` | `route-message.responsive-layout-inspector-summary` | `查看 narrow、regular 与 wide 的布局投影与尺寸权威。` | `route-breadcrumb.responsive-layout-inspector` | `route.console.responsive-layout` |
 | 9 | `engineering-quality-inspector` | `/engineering` | `apps/web/src/pages/engineering.vue` | `工程与质量` | `route-title.engineering-quality-inspector` | `route-message.engineering-quality-inspector-summary` | `查看工具链、静态门禁、构建预算与托管工作流。` | `route-breadcrumb.engineering-quality-inspector` | `route.console.engineering` |
 | 10 | `capability-roadmap` | `/capabilities` | `apps/web/src/pages/capabilities.vue` | `能力路线图` | `route-title.capability-roadmap` | `route-message.capability-roadmap-summary` | `查看尚未启用能力的状态、前置条件与准入要求。` | `route-breadcrumb.capability-roadmap` | `route.console.capabilities` |
@@ -5333,8 +5333,9 @@ interface UiSystemConsoleStyledVendor {
 interface UiSystemConsoleProjection {
   readonly schemaVersion: 1
   readonly publicComponentIds: readonly string[]
+  readonly inactivePublicComponentIds: readonly string[]
   readonly styledVendor: UiSystemConsoleStyledVendor
-  readonly privateAdapterPolicyId: 'ui-vendor-imports.private-naive-adapter-only'
+  readonly importPolicyId: 'ui-vendor-imports.native-naive-ui-owners'
 }
 ```
 
@@ -5529,11 +5530,11 @@ apps/web/src/app/appearance/appearance-mutation-boundary.ts:
   ThemeReference (type-only)
 ```
 
-Page 只能从 `useAppearanceMutationBoundary` 的 Deep-readonly `preference` 与 `customThemeRegistry` Computed Projection 读取 Stored Preference/Registry；Import `appearance.store.ts`、调用任一 Store Action、`$patch`、Assignment 或取得 Environment Reader 必须失败。所有 Preference Commit/Reset 只经同一 Mutation Boundary；Effective Preview 只经 `useAppearanceReadBoundary`。Theme Gallery 的 Built-in Swatch 只读投影来自 `builtInAppearanceThemePreviews`，Custom Swatch 只通过 `projectAccessibleCustomAppearanceThemePreviews` 对现有已验证 Registry Entry 产生同一窄 Shape。Vue Core Imports 与 Registry-closed `@platform/ui` Rendered Components 不计入 Fact Allowlist，但 Vendor/Deep Import 仍禁止。
+Page 只能从 `useAppearanceMutationBoundary` 的 Deep-readonly `preference` 与 `customThemeRegistry` Computed Projection 读取 Stored Preference/Registry；Import `appearance.store.ts`、调用任一 Store Action、`$patch`、Assignment 或取得 Environment Reader 必须失败。所有 Preference Commit/Reset 只经同一 Mutation Boundary；Effective Preview 只经 `useAppearanceReadBoundary`。Theme Gallery 的 Built-in Swatch 只读投影来自 `builtInAppearanceThemePreviews`，Custom Swatch 只通过 `projectAccessibleCustomAppearanceThemePreviews` 对现有已验证 Registry Entry 产生同一窄 Shape。Vue Core Imports 与 Registry-closed `@platform/ui` Rendered Components 不计入 Fact Allowlist，Naive 的官方按需组件 Import 不计入 Fact Allowlist；Workspace Deep Import 与非 UI Vendor Import 仍禁止。
 
 ### 1.2B.6 Public UI closure and styled-vendor admission
 
-Atomic Landing 前的 Committed Baseline `packages/ui` 是 Dependency-free、Zero-runtime `src/index.ts` Stub；Owner-rejected Local Draft 中的三个 `Ui*` Export、两个 Reka Adapter 与 `reka-ui@2.10.3` Manifest/Lockfile Change 已从工作树永久退役，没有进入当前实现。当前 Implementation 只准入 `naive-ui@2.45.2` 作为唯一 Styled Vendor，并在 `@platform/ui` Public Boundary 后实现下方精确九个 Consumer-backed Component Export。Reka UI 只保留为未来独立需求触发的 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`。
+Atomic Landing 前的 Committed Baseline `packages/ui` 是 Dependency-free、Zero-runtime `src/index.ts` Stub；Owner-rejected Local Draft 中的三个 `Ui*` Export、两个 Reka Adapter 与 `reka-ui@2.10.3` Manifest/Lockfile Change 已从工作树永久退役，没有进入当前实现。当前 Implementation 只准入 `naive-ui@2.45.2` 作为唯一 Styled Vendor，使用官方名称和 API，并仅为实质组合职责保留 PAVP Component Export。Reka UI 只保留为未来独立需求触发的 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`。
 
 UI Public Component Registry 的 Current Implementation Contract 为：
 
@@ -5584,9 +5585,9 @@ interface UiPublicComponentRegistry {
 }
 ```
 
-Top-level Field Order 精确为 `schemaVersion,records`；Nested Field Order 与各 Interface 声明精确相同。`uiPublicComponentRegistry` 是 Deep-readonly `UiPublicComponentRegistry`，不得退化为 Bare Array；`records` Cardinality 精确等于当前实际 `@platform/ui` Public-root Component Export Set `9`。Component Records 和所有 Set-like Arrays 按 Unicode Code-point 排序；Props、Emits、Slots 按 `name` 排序。Checker 使用 AST 闭合 `@platform/ui` Public-root Component Exports、Source Paths、`defineProps`、`defineEmits`、`defineSlots` 与实际 App Route Coverage；非 Component Type/Value/Projection Export 不计入 Component Registry。Unknown/Missing/Duplicate、Vendor Public Type、Optical Prop、Unregistered Export、Unused Record、Unused Public Component 或虚假 Consumer 必须失败。UI Inspector 只能消费 Safe Public Projection，不得公开 Package-internal Registry Source Path。
+Top-level Field Order 精确为 `schemaVersion,records`；Nested Field Order 与各 Interface 声明精确相同。`uiPublicComponentRegistry` 是 Deep-readonly `UiPublicComponentRegistry`，不得退化为 Bare Array；`records` Cardinality 精确等于当前实际 `@platform/ui` Public-root Component Export Set `10`。Component Records 和所有 Set-like Arrays 按 Unicode Code-point 排序；Props、Emits、Slots 按 `name` 排序。Checker 使用 AST 闭合 `@platform/ui` Public-root Component Exports、Source Paths、`defineProps`、`defineEmits`、`defineSlots` 与实际 App Route Coverage；非 Component Type/Value/Projection Export 不计入 Component Registry。Unknown/Missing/Duplicate、Optical Prop、Unregistered Export、Unused Record、Unused Public Component 或虚假 Consumer 必须失败。UI Inspector 只能消费 Safe Public Projection，不得公开 Package-internal Registry Source Path。
 
-`@platform/ui` Current Public-root Component Export Set 与 Registry Records 精确为：
+下列核心 Composite Records 与既有 Form、Workspace、Scroll 章节共同约束当前 Registry；完整当前十组件集合见本节末尾：
 
 ```text
 id=ui-admin-shell
@@ -5600,27 +5601,6 @@ accessibilityContractIds=[a11y.enhanced-target,a11y.named-navigation]
 consumerRouteNames=[appearance-management,capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
 capabilityStatus=ACTIVE
 
-id=ui-button
-exportName=UiButton
-sourcePath=packages/ui/src/components/UiButton.vue
-props=[{name:disabled,type:boolean,required:false,defaultValue:false},{name:type,type:'button' | 'submit',required:false,defaultValue:'button'},{name:variant,type:'ghost' | 'primary' | 'secondary',required:false,defaultValue:'secondary'}]
-emits=[{name:press,payloadType:void}]
-slots=[{name:default,slotPropsType:Readonly<Record<string, never>>,required:true}]
-semanticVariants=[ghost,primary,secondary]
-accessibilityContractIds=[a11y.enhanced-target]
-consumerRouteNames=[appearance-management]
-capabilityStatus=ACTIVE
-
-id=ui-description-list
-exportName=UiDescriptionList
-sourcePath=packages/ui/src/components/UiDescriptionList.vue
-props=[{name:items,type:readonly UiDescriptionItem[],required:true,defaultValue:null}]
-emits=[]
-slots=[]
-semanticVariants=[]
-accessibilityContractIds=[a11y.semantic-description-list]
-consumerRouteNames=[appearance-management,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
-capabilityStatus=ACTIVE
 
 id=ui-page-header
 exportName=UiPageHeader
@@ -5647,9 +5627,9 @@ capabilityStatus=ACTIVE
 id=ui-radio-card-group
 exportName=UiRadioCardGroup
 sourcePath=packages/ui/src/components/UiRadioCardGroup.vue
-props=[{name:accessibleLabel,type:string,required:true,defaultValue:null},{name:modelValue,type:string,required:true,defaultValue:null},{name:options,type:readonly UiSegmentedOption[],required:true,defaultValue:null}]
+props=[{name:accessibleLabel,type:string,required:true,defaultValue:null},{name:modelValue,type:string,required:true,defaultValue:null},{name:options,type:readonly UiRadioCardOption[],required:true,defaultValue:null}]
 emits=[{name:update:modelValue,payloadType:string}]
-slots=[{name:option,slotPropsType:Readonly<{ option: UiSegmentedOption; selected: boolean }>,required:false}]
+slots=[{name:option,slotPropsType:Readonly<{ option: UiRadioCardOption; selected: boolean }>,required:false}]
 semanticVariants=[card-grid]
 accessibilityContractIds=[a11y.enhanced-target,a11y.named-control-group]
 consumerRouteNames=[appearance-management]
@@ -5666,17 +5646,6 @@ accessibilityContractIds=[a11y.semantic-section-heading]
 consumerRouteNames=[appearance-management,capability-roadmap,console-overview,design-token-inspector,engineering-quality-inspector,responsive-layout-inspector,router-governance-inspector,runtime-kernel-inspector,storage-persistence-inspector,ui-system-inspector]
 capabilityStatus=ACTIVE
 
-id=ui-segmented-control
-exportName=UiSegmentedControl
-sourcePath=packages/ui/src/components/UiSegmentedControl.vue
-props=[{name:accessibleLabel,type:string,required:true,defaultValue:null},{name:modelValue,type:string,required:true,defaultValue:null},{name:options,type:readonly UiSegmentedOption[],required:true,defaultValue:null}]
-emits=[{name:update:modelValue,payloadType:string}]
-slots=[]
-semanticVariants=[]
-accessibilityContractIds=[a11y.enhanced-target,a11y.named-control-group]
-consumerRouteNames=[appearance-management]
-capabilityStatus=ACTIVE
-
 id=ui-status-badge
 exportName=UiStatusBadge
 sourcePath=packages/ui/src/components/UiStatusBadge.vue
@@ -5691,126 +5660,21 @@ capabilityStatus=ACTIVE
 
 `UiProvider` 的唯一 Direct Import/Render Consumer 是 `apps/web/src/App.vue`，实例数精确为 `1`，禁止 Nested 或 Route-local Provider。其 `consumerRouteNames` 不是 Direct-import List，而是该 Root Provider 包裹的十个 Product Route Coverage Set；七个既有 Error Route 也通过同一 Root Provider 渲染，但作为 Preserved Error Infrastructure 不计入 Consumer-derived Product API Set。Checker 对 `UiProvider` 特判为：一个 `App.vue` Direct Consumer + Exact Ten Product Route Coverage + Same Provider Covers Seven Error Routes；其他 Public Component 的 `consumerRouteNames` 仍表示实际 Direct Route Consumer Set。Provider 自身非 Interactive，故 Accessibility ID 为空；Overlay Ownership 由独立 Policy 约束。当前 Record 已与真实 Export、Root Composition、十个 Product Route Coverage 和 Checker 同时落地并转为 Registry-local `ACTIVE`；顶层 Console Capability 保持技术 `ACTIVE`，当前返工的 Product Experience Acceptance 已由 Owner 接受。
 
-当前 Atomic Implementation 已从十个真实 Route Consumer 派生并闭合上述最小额外 Public API。原 Ceiling 中没有真实独立消费者的 `UiAdminSidebar`、`UiAdminHeader` 与 `UiAdminNavigation` 没有被创建；它们仍不构成 Public API Admission。任何额外 Public Component 均要求新的显式 Architecture Admission。
+Naive UI 使用官方组件名、Props、Events、Slots 和 Types。应用 View/UI Owner、PAVP 复合组件及其呈现实现直接显式导入已安装的 `naive-ui/es/<component>` 公共组件入口，保留按需加载；禁止仅重命名的导出、转发 Facade、通用组件工厂、Namespace Import 或全库注册。非 UI Domain、Design System、Router/Storage/Backend 状态层不得依赖 UI Vendor。其他 Vendor 的私有准入与 Workspace Public-root 边界保持。
 
-```text
-UiAdminShell
-UiAdminSidebar
-UiAdminHeader
-UiAdminNavigation
-UiPageHeader
-UiStatusBadge
-UiSection
-UiButton
-UiRadioCardGroup
-UiSegmentedControl
-UiDescriptionList
-```
+`apps/web` 与 `packages/ui` 均直接通过现有 Catalog 依赖 `naive-ui@2.45.2`，只新增 Web Importer，复用当前锁定的唯一 Version/Resolution。不准入第二组件库、升级、Patch 变化或全量 Theme Import。
 
-Naive UI Current Implementation Admission 精确为：
+`UiProvider.vue` 是唯一 `NConfigProvider` Owner：无条件先创建唯一 `pavp-overlay-root`，随后渲染 Config Provider 和 Default Slot。它从同一个只读 `UiAppearanceSnapshot` 响应式调用 `createPavpNaiveThemeProjection`、提供 `pavpNaiveAppearanceKey`，并根据已提交 Locale 同步 Common/Date Locale。原全局 Naive 集成样式、Full/Reduced/None、Forced Colors 和 Overlay Target 责任归此 Owner；不保留另一层 Pass-through Provider。
 
-```text
-STYLED_UI_LIBRARY=naive-ui@2.45.2
-CAPABILITY_STATUS=ACTIVE
-IMPLEMENTATION_STATUS=COMPLETE
-WORKSPACE_CATALOG_OWNER=root pnpm-workspace catalog
-DIRECT_DEPENDENCY_OWNER=packages/ui
-APPLICATION_DIRECT_DEPENDENCY=PROHIBITED
-PRIVATE_IMPORT_ROOT=packages/ui/src/adapters/naive/**
-PUBLIC_PROVIDER=packages/ui/src/providers/UiProvider.vue
-PRIVATE_THEME_ADAPTER=packages/ui/src/adapters/naive/pavp-naive-theme.ts
-PRIVATE_THEME_ADAPTER_VALUE_EXPORT=createPavpNaiveThemeProjection
-PRIVATE_THEME_ADAPTER_TYPE_EXPORT=PavpNaiveThemeProjection
-PRIVATE_CONFIG_PROVIDER_ADAPTER_PATH=packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue
-PRIVATE_CONFIG_PROVIDER_ADAPTER_COMPONENT_NAME=PavpNaiveConfigProvider
-PRIVATE_CONFIG_PROVIDER_ADAPTER_VISIBILITY=PACKAGE_PRIVATE
-PRIVATE_CONFIG_PROVIDER=NConfigProvider
-PRIVATE_CONFIG_PROVIDER_COUNT=1
-PRIVATE_NAIVE_RUNTIME_COMPONENT_IMPORTS=NBreadcrumb; NBreadcrumbItem; NButton; NConfigProvider; NDescriptions; NDescriptionsItem; NRadioButton; NRadioGroup; NTag
-PRIVATE_NAIVE_RUNTIME_DARK_THEME_IMPORTS=commonDark; breadcrumbDark; buttonDark; descriptionsDark; radioDark; tagDark
-PRIVATE_NAIVE_TYPE_ONLY_IMPORTS=GlobalTheme; GlobalThemeOverrides
-IMPORT_MODE=explicit tree-shaken naive-ui ES subpath imports
-AUTO_IMPORT_PLUGIN=PROHIBITED
-GLOBAL_LIBRARY_REGISTRATION=PROHIBITED
-SECOND_STYLED_COMPONENT_FRAMEWORK=PROHIBITED
-ACTIVE_REKA_NAIVE_DUAL_STATE=PROHIBITED
-ADDITIONAL_RUNTIME_ICON_PACKAGE=PROHIBITED
-```
+`pavp-naive-theme.ts` 继续是唯一 Naive Theme Conversion Owner，`theme` 和 `themeOverrides` 来自现有 Appearance 与 Token Authority。仅导入实际组件的 Dark Theme；禁止全库 `darkTheme`。普通 DOM 的 UnoCSS/CSS Variable 与组件内部 Overrides 消费同一 Design Data，页面不得新建 Palette/Size Theme 或 Provider。官方 Props/Attributes/Listeners/Slots 不因主题一致性而被裁剪。
 
-Pinned Coordinate 无须在未来持续等于 npm `latest`。本次 Admission 已通过 Exact Coordinate Availability、Integrity、License、Vue/TypeScript Compatibility、Canonical Strict Typecheck、Production Build、Bundle Gate 以及 Owner 外部实际渲染与视觉审查，因此顶层能力现为 `ACTIVE`。`apps/web`、Page 与 Feature 绝不 Direct-import `naive-ui`；只有 `packages/ui/src/adapters/naive/**` 可以 Import Vendor，且不得从 `@platform/ui` Public Root 泄漏 Vendor Type 或 Instance。
+Parser-sensitive Common Fields（primaryColor、tableHeaderColor、cardColor、modalColor、popoverColor、dividerColor）不得接收未解析 CSS Variable；维持当前具体 Vendor Intermediate，实际渲染字段由 PAVP Component Overrides 覆盖。四族 Status 的绝对色继续只来自 §13.12 的同一已验证 Snapshot；不能另造 Palette 或让所有语义色退化为 Primary。
 
-以下 Import Ceiling、Theme Inventory、输入 Type 与 Provider 示例保留初次 Landing 基线；当前扩展分别由既有导航、Form、I18n 与 §13.12 精确修订拥有。尺寸和主题投影的一般消费边界见 §14、§16.3，不从历史示例推断当前完整映射范围。
+Registry 只登记有实质职责的 PAVP 复合组件，不登记官方 Naive 组件。当前十个公共组件为 UiAdminShell、UiForm、UiFormField、UiPageHeader、UiProvider、UiRadioCardGroup、UiScrollArea、UiSection、UiStatusBadge、UiWorkspaceTabs；其中八条 ACTIVE，两个 Form Record 保持 TARGET_INACTIVE 和空消费者。实际 Props/Emits/Slots、Source 和 Route Consumer Set 仍由同一 Registry 与现有 Checker 闭合。
 
-初次 Landing 的 Maximum Private Naive Import Ceiling 为：
+保留职责：Shell 拥有响应式导航和焦点事务；Workspace Tabs 拥有页签呈现、命令菜单和 Scroll/Lifecycle 接线；ScrollArea 拥有原生 Viewport 与增强生命周期；PageHeader 拥有面包屑、主标题和 Router Focus Target；Section 组合语义标题、描述与内容；StatusBadge 把应用状态映射为文字/视觉语义；RadioCardGroup 拥有主题卡片网格、稳定选择轮廓、分组名称和可访问关系；Form/Field 及私有 Form 呈现拥有控制器绑定、提交、验证反馈、输入暂存、字段关联和本地化。它们内部同样使用官方 N* 名称。仅改名、转发 Slot、限制官方 API 或提供普通默认样式不能作为保留 Wrapper 的理由。
 
-```text
-NConfigProvider
-NLayout
-NLayoutSider
-NMenu
-NButton
-NDrawer
-NTag
-NDescriptions
-NDescriptionsItem
-NRadioGroup
-NRadioButton
-NTooltip
-NBreadcrumb
-NBreadcrumbItem
-```
-
-当前实现只使用 Ceiling 内九个具有真实 Consumer 的 Component Import：`NBreadcrumb`、`NBreadcrumbItem`、`NButton`、`NConfigProvider`、`NDescriptions`、`NDescriptionsItem`、`NRadioButton`、`NRadioGroup` 与 `NTag`。Shell 的 Layout、Menu、Tooltip 与 Overlay Drawer 由 `UiAdminShell` 使用 Native Semantic HTML、PAVP Token 和 Vue Teleport/Transition 实现，因此没有导入无真实 Consumer 的 `NLayout`、`NLayoutSider`、`NMenu`、`NTooltip` 或 `NDrawer`。任何额外 Naive Import 需要新的显式 Admission。
-
-全库 `darkTheme` 会把未渲染组件的主题集合引入初始 Bundle，因此当前 Private Theme Adapter 只从 Naive ES Subpath 导入 `commonDark` 及五个真实渲染 Component Theme：`breadcrumbDark`、`buttonDark`、`descriptionsDark`、`radioDark`、`tagDark`，并组合一个不公开的 `GlobalTheme`。这不是第二 Theme Authority：全部产品视觉字段仍由下方 PAVP `themeOverrides` 覆盖，Naive Dark Theme 只提供当前五个 Vendor Component 的必要结构。`GlobalTheme` 与 `GlobalThemeOverrides` 仅允许 `import type`；`PavpNaiveConfigProvider.vue` 是 `NConfigProvider` 的唯一 Import Owner。任何其他 Vendor Runtime Value、Type Value-import、Owner 交换或从 `UiProvider.vue` 直接导入 `naive-ui` 均失败。
-
-Private Adapter 的 Exact Cross-file Contract 为：
-
-```ts
-import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
-
-export interface PavpNaiveThemeProjection {
-  readonly theme: GlobalTheme | null
-  readonly themeOverrides: GlobalThemeOverrides
-}
-
-export function createPavpNaiveThemeProjection(
-  appearance: Readonly<EffectiveAppearanceState>,
-): Readonly<PavpNaiveThemeProjection>
-```
-
-Field Order 精确为 `theme,themeOverrides`。该 Type/Function 只可由同一 Private Import Root 下的 `PavpNaiveConfigProvider.vue` Import，不从 `@platform/ui` Public Root 导出；Vendor Types 只存在于 `packages/ui` Private Adapter Boundary。`theme` 在 Effective `colorMode='dark'` 时精确为 `{name:'dark',common:commonDark,Breadcrumb:breadcrumbDark,Button:buttonDark,Descriptions:descriptionsDark,Radio:radioDark,Tag:tagDark}`，在 `light` 时为 `null`；不存在 `system` 分支，因为输入已是 Resolved State。`themeOverrides` 的 Component Inventory 精确为 `common,Breadcrumb,Button,Descriptions,Radio,Tag`，必须为每个实际渲染的 Admitted Naive Component 提供 Complete PAVP-owned Mapping，不得包含 Page Input、Raw Optical Literal 或 Naive-default-as-authority。
-
-Naive UI `2.45.2` 会先把 Global `common` Override 合入 Component Common，再调用 Component `self(mergedCommon)`，最后才合并 Component-local Override。原 Atomic Landing 的五个 Admitted Component Theme 中，以下 Common Color Field 会在该 Eager Derivation 阶段进入 `seemly` Color Parser，当时禁止所有 PAVP 输入形式，包括 CSS Custom Property、Token Alias、Identifier Alias 与 Concrete PAVP Color。
-
-§13.12 消费者切片现已落地，四族 Semantic Status 的精确绝对色映射已取得该节规定的窄例外并同步 Owning Checker；其他 Parser-sensitive Field 与所有 `var(...)` 颜色运算限制继续有效。以下字段保留 Atomic Landing 的禁写集合与兼容输入记录，不覆盖 §13.12 的当前例外，也不因 §16.3 的一般投影原则扩大准入。
-
-```text
-NAIVE_COMMON_PARSER_SENSITIVE_COLOR_FIELDS=primaryColor;infoColor;successColor;warningColor;errorColor;tableHeaderColor;cardColor;modalColor;popoverColor;dividerColor
-CURRENT_REMOVED_PAVP_COMMON_OVERRIDES=primaryColor;cardColor;modalColor;popoverColor;dividerColor
-NAIVE_COMMON_PARSER_SENSITIVE_COLOR_INPUT_SOURCE=admitted Naive light/dark concrete common theme only
-PAVP_THEME_OVERRIDES_COMMON_FOR_EXACT_FIELDS=PROHIBITED
-```
-
-Naive Light/Dark Concrete Color 在这里仅是 Private、Parser-compatible、Eager-derivation Compatibility Input，不是 PAVP Visual Authority，也不授权 Page、Component 或 Public Contract 把 Vendor-derived Output 作为最终视觉值。现有 Complete PAVP-owned Override Map 要求保持不变；该 Parser-input 规则只证明精确 Admitted Component Set 的 `self()` 可以安全完成，不证明任何 Future Component、Variant 或 Context 已覆盖。任何新增 Naive Component、Variant、Context 或 Theme Common Color Mapping 必须先重新审计其 `self()` Derivation，并在同一 Admission 中更新 Exact Map 与 Owning Checker。当前 Checker 必须用 TypeScript AST 证明上述集合中未获 §13.12 例外的字段仍缺席、四族 Status 只消费该节准入的已解析绝对色、Override Object 只有可静态命名的精确属性，并用既有不写磁盘的 Reversible Negative Probe 证明 Token Alias 注入会失败。
-
-Private Wrapper Contract 精确为：
-
-```ts
-defineOptions({ name: 'PavpNaiveConfigProvider' })
-
-defineProps<{
-  readonly appearance: Readonly<EffectiveAppearanceState>
-}>()
-
-defineSlots<{
-  default: (props: Readonly<Record<string, never>>) => unknown
-}>()
-```
-
-`PavpNaiveConfigProvider.vue` 无 Public-root Export、无 Emit、无 Fallback、无 Overlay Root；它调用 `createPavpNaiveThemeProjection`，在 Template 中渲染全仓唯一一个 `NConfigProvider`，只传 `theme`、`themeOverrides` 并透传唯一 Default Slot。`UiProvider.vue` 只 Import/Render 该 Private Wrapper 并传入 `appearance`；其 Template 顶层第一个 Concrete DOM Node 无条件创建唯一 `pavp-overlay-root`，随后才渲染 Private Wrapper，并在 Wrapper Slot 内渲染 Public Default Slot。Overlay Root 必须位于 Wrapper 与 Routed Default Slot Subtree 之外，确保任何 Descendant Teleport Mount 前 Target 已同步存在；`UiProvider.vue` 不 Import `naive-ui`、`pavp-naive-theme.ts` 或任何 Vendor Type。Checker 必须同时证明 Wrapper 不进入 Public Component Registry、`NConfigProvider` Count 精确为 `1`、Theme Adapter 对六个 Dark Theme ES Subpath Value 与两个 Vendor Type-only Import、Wrapper 对 `NConfigProvider` 的 Import Kind/Owner、UiProvider-to-wrapper Composition Closure，以及 Overlay Root 相对 Wrapper/Slot 的结构顺序精确。
-
-`pavp-naive-theme.ts` 只从 PAVP Semantic Color、Size、Radius、Typography、Shadow、z-index、Material 与 Motion Authority 构造 Light/Dark Projection 和 Component Overrides。Naive Default Visual Value 不能成为 PAVP Authority；每个被渲染的 Admitted Naive Component 必须完整映射其已准入渲染合同中的必需字段，Missing Required Token/Mapping 是 Static/Build Failure。Complete Map 不要求预映射未使用的 Vendor Component/Size Variant，也不表示 §14 的完整尺寸语义已覆盖。Page-authored Naive Theme Override 禁止；集中桥接扩展、Typed Value Projection 与窄 Component-local Override 统一遵守 §16.3，不放宽本节的 Parser-sensitive Field、Private Import、Provider 或特定兼容输入合同。
+当前 Owner 授权在同一任务中纠正这些冲突规则和既有实现；删除 UiButton、UiDescriptionList、UiSegmentedControl、UiSwitch、全部别名模块与多余 Provider 后迁移所有现有及 Inactive Source 引用。此授权不激活 Form/后继能力，不授权 Git 写入或运行验收。
 
 Overlay Contract 精确为：
 
@@ -5827,7 +5691,7 @@ NEW_ACTIVE_PROVIDER_ID=NONE
 ACTIVE_PROVIDER_SET=pinia,appearance
 ```
 
-Narrow Navigation Drawer 与所有 Admitted Overlay 只 Target 该 Root；Root 是 `UiProvider` Template 顶层第一个 Concrete DOM Node，必须同步且无条件创建，不得携带 `aria-hidden`，并先于 Private Wrapper、Public Default Slot 与任何 Descendant Teleport Mount。Root 的创建、唯一性和 Dispose 由 `UiProvider` Lifecycle 拥有。Owning Checker 使用 Vue SFC/AST 证明 Root 顺序、唯一 Owner、无条件性、所有 Teleport 的精确 Target、Body Portal 禁止，以及 Conditional Teleport Subtree 中 Template Ref 的 Nullable/Guarded Dereference；并运行 Root 移至 Slot 之后、第二 Root、Body Teleport、Conditional Root、Drawer Ref 无条件解引用五个可逆 In-memory Negative Probes。不得把 `UiProvider` 计为 Runtime Kernel Provider ID。
+Narrow Navigation Drawer 与所有 Admitted Overlay 只 Target 该 Root；Root 是 `UiProvider` Template 顶层第一个 Concrete DOM Node，必须同步且无条件创建，不得携带 `aria-hidden`，并先于 NConfigProvider、Public Default Slot 与任何 Descendant Teleport Mount。Root 的创建、唯一性和 Dispose 由 `UiProvider` Lifecycle 拥有。Owning Checker 使用 Vue SFC/AST 证明 Root 顺序、唯一 Owner、无条件性、所有 Teleport 的精确 Target、Body Portal 禁止，以及 Conditional Teleport Subtree 中 Template Ref 的 Nullable/Guarded Dereference；并运行 Root 移至 Slot 之后、第二 Root、Body Teleport、Conditional Root、Drawer Ref 无条件解引用五个可逆 In-memory Negative Probes。不得把 `UiProvider` 计为 Runtime Kernel Provider ID。
 
 ### 1.2B.7 Visual identity, motion, page responsibility and data boundary
 
@@ -5874,7 +5738,7 @@ Table Order 是 Role ID Unicode Code-point Order。每个 Source Leaf 的 Canoni
 
 Ambient Canvas 是 Environmental Background，不是 Full-viewport Material Surface。Adaptive Material 只允许在上述精确 Functional Chrome Consumer 使用 tokenized Backdrop；Reduced Material 使用更不透明的 Existing Material Color Projection、无 Backdrop且减少 Shadow；Solid Material 使用不透明 Existing Material Color Projection、无 Backdrop 或其他 Transparency-dependent Effect。Appearance Material Preview 的 Stable Content 必须始终直接使用 `--ui-color-surface-panel`，不得继承 Chrome/Overlay Transparency。Reduced Transparency 与 Forced Colors 必须把该 Preview 的 Backdrop 全部降为 `none`。除这一 exact consumer-closed Preview 外，Page-authored Material Variable、Backdrop 或 Optical Effect 仍禁止。Content 与 Settings Surface 必须 Stable、Readable、Opaque、Non-glass。禁止 Glass-on-glass、Generic Glass Component、Dead-flat Canvas、Fieldset-card Matrix、Generic SaaS Dashboard、Fake Metrics、Decorative Data Charts、Neon Cyberpunk、Purple-dominant Gradient、Page-authored Optical Literal，以及把 Naive Default Visual Value 提升为 PAVP Authority。
 
-明暗切换保留 `UiAdminShell.vue` 的 `.pavp-admin-shell__content` 直接绑定 `color: var(--ui-color-text-primary)`，使继承色正文与 Stable Content 背景共同跟随根 Theme Bank；Owner 确认该声明未解决全部文字闪动。后续限定观察定位到 `NRadioButton` 内部 `.n-radio__label`：它继承父级颜色，却被 `PavpNaiveConfigProvider.vue` 的 Full/Reduced 时长列表启用了默认 `transition-property: all`，自身过渡结束时重新接回父级中间色，产生颜色回跳。修正仅从这两个时长列表移除该选择器，保留父级按钮的颜色与交互过渡、None 防护、导航、Appearance 提交/快照顺序、保存反馈和显式预览动画。临时单项覆盖已消除双向回跳，移除覆盖后原现象再次出现；持久源码经 HMR 生效后，同场景双向观察未再出现该回跳。Owner 已接受 `2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f` 后该明暗文字闪动修正；此限定确认不代表未观察的 Accessibility、Failure Recovery、更广 Runtime 或 Release Acceptance，也不激活新能力或延续该缺陷任务已结束的浏览器例外。
+明暗切换保留 `UiAdminShell.vue` 的 `.pavp-admin-shell__content` 直接绑定 `color: var(--ui-color-text-primary)`，使继承色正文与 Stable Content 背景共同跟随根 Theme Bank；Owner 确认该声明未解决全部文字闪动。后续限定观察定位到 `NRadioButton` 内部 `.n-radio__label`：它继承父级颜色，却被 `UiProvider.vue` 的 Full/Reduced 时长列表启用了默认 `transition-property: all`，自身过渡结束时重新接回父级中间色，产生颜色回跳。修正仅从这两个时长列表移除该选择器，保留父级按钮的颜色与交互过渡、None 防护、导航、Appearance 提交/快照顺序、保存反馈和显式预览动画。临时单项覆盖已消除双向回跳，移除覆盖后原现象再次出现；持久源码经 HMR 生效后，同场景双向观察未再出现该回跳。Owner 已接受 `2e5b6e3f79ca0bc9577ede2aaa0f4b4e2e088a3f` 后该明暗文字闪动修正；此限定确认不代表未观察的 Accessibility、Failure Recovery、更广 Runtime 或 Release Acceptance，也不激活新能力或延续该缺陷任务已结束的浏览器例外。
 
 Motion 继续只由 Existing PAVP Motion Preference 与 Existing PAVP CSS Motion Tokens 控制，初次 Landing 不准入 Motion Library。允许的 Named Interaction 精确为：
 
@@ -5904,7 +5768,7 @@ Theme interpolation only where existing Appearance contract permits
 | `运行时内核` | Safe Read-only Exact Eleven-step Lifecycle、Provider 与 Error-count Summary |
 | `路由治理` | Safe Read-only Route、Layout、Scroll、Focus、Restoration 与 Error-route Summary |
 | `存储与持久化` | Safe Read-only Two-record Storage Registry 与 Lifecycle Summary |
-| `UI 组件` | Safe Read-only Admitted PAVP UI Inventory、Styled Vendor 与 Private-adapter Boundary |
+| `UI 组件` | Safe Read-only PAVP Composite Inventory、Official Naive UI Usage 与 Shared Theme Ownership |
 | `响应式布局` | Safe Read-only Profile、Threshold、Shell Region、Size、Target 与 Safe-area Projection |
 | `工程与质量` | Safe Read-only Toolchain、Verify Stage、Bundle Budget 与 Hosted Workflow Manifest |
 | `能力路线图` | Safe Read-only Target-inactive/Deferred Capability、Prerequisite 与 Admission Condition |
@@ -6541,7 +6405,7 @@ FUTURE_UI_DIRECTORIES=DEMAND_CREATED_ONLY
 
 `.ai/skills/pavp-ui/**`、未来 UI 目录和未来应用目录出现在本节，仅用于固定合法位置和引入门槛。本架构工作包本身不创建这些文件或目录。
 
-原 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 首个消费者准入已被 Owner 拒绝并由 §1.2B Supersede；其本地三个 `Ui*` Component、两个 Reka Adapter 和 Dependency Change 不得提交，也不改变本节 Baseline。首个有效 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 按 §1.2B 的 Atomic Consumer Derivation、Naive Private Adapter 与 Registry Closure 完成；任何后续 Public Component 扩展仍需要真实消费者与独立准入。
+原 `PAVP_LAYOUT_ADMIN_FRONTEND_SURFACE` 首个消费者准入已被 Owner 拒绝并由 §1.2B Supersede；其本地三个 `Ui*` Component、两个 Reka Adapter 和 Dependency Change 不得提交，也不改变本节 Baseline。首个有效 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 按 §1.2B 的 Atomic Consumer Derivation、Native Naive UI Import 与 Composite Registry Closure 完成；任何后续 Public Component 扩展仍需要真实消费者与独立准入。
 
 ---
 
@@ -6612,7 +6476,7 @@ packages/ui implementation sources = src/index.ts only
 Naive UI / Reka UI / Motion / specialist adapters = not admitted in the Phase 1 initial baseline
 ```
 
-依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。§1.2B.0M 已冻结并实现一个 Motion for Vue Shared-selection-lens 的私有限定准入，精确依赖已安装且 Source Implementation 为 `COMPLETE`；这不激活一般 Motion Capability。第三方 UI 依赖仍只能由 `packages/ui` 的私有 Adapter 导入；应用和业务层仍只从 `@platform/ui` 公共根出口导入语义组件。
+依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。§1.2B.0M 已冻结并实现一个 Motion for Vue Shared-selection-lens 的私有限定准入，精确依赖已安装且 Source Implementation 为 `COMPLETE`；这不激活一般 Motion Capability。Naive UI 允许由应用 View/UI Owner 和 packages/ui 呈现实现直接以官方名称导入；其他第三方 Vendor 保持原私有 Adapter 准入。
 
 Atomic Landing 前的 Committed Baseline `apps/web` 尚未准入 `@platform/ui`，且 `packages/ui` Runtime Dependency 为零。当前 Console Atomic Implementation 精确加入：`apps/web` 通过 `workspace:*` 直接依赖 `@platform/ui`；`packages/ui` 通过 `workspace:*` 直接依赖 `@platform/design-system`，并通过 Catalog 直接依赖 `vue@3.5.40` 与 `naive-ui@2.45.2`。Reka Draft Dependency 无 Admission；除此之外没有加入第二 Styled UI Framework、Motion 或 Specialist Vendor。
 
@@ -6641,7 +6505,7 @@ shared
 * 跨 Feature 编排由 Page 或 App 完成。
 * Feature 外部只能访问其 `index.ts`。
 * 禁止 Workspace 深层导入。
-* Naive UI 在当前 Console Implementation 中只允许由 `packages/ui/src/adapters/naive/**` 私有实现导入。
+* Naive UI 只允许应用 View/UI Owner、packages/ui 组件/Provider/呈现实现导入；非 UI Domain 禁止导入。
 * Reka UI 只有未来独立 Headless Consumer Gate 才可由 `packages/ui/src/adapters/reka/**` 私有实现导入，并且不得与 Naive 形成 Active Dual State。
 * Motion、GSAP、专业 Grid、Editor、Charts 只允许由各自已批准的私有 Adapter 导入。
 * 应用不得导入 `@platform/ui/adapters/*`；每个 Package 只有一个公共根出口。
@@ -10852,7 +10716,7 @@ Compact 模式允许视觉高度低于 44px，但外层命中区域仍应安全�
 
 现有 `layout.target.enhanced.minimum-block-size` / `minimum-inline-size` 共同来自唯一 `dimension.target.enhanced-min`，是已建立的增强交互下限，不自动规定每个控件的视觉高度。Density 不得静默降低该下限；视觉尺寸与命中区域由各自语义共同满足已准入组件的可访问性合同。
 
-当前 `UiButton` 使用 `min-h-target-enhanced min-w-target-enhanced`，集中 Naive `Button.heightMedium` 也消费 Enhanced Target Height。这是现有兼容行为，不是未来全部控件视觉尺寸的统一定义。后续尺寸消费纠正须保留当前公共 API、现有视觉行为和命中区域下限，不因重新区分语义就把按钮直接缩成 `h-control`。
+原按钮消费者迁移为 `NButton` 后，仍在原调用处保留 `min-h-target-enhanced min-w-target-enhanced`；集中 `Button.heightMedium` 继续消费 Enhanced Target Height。此兼容映射不强加于所有官方 Size：Small/Tiny 保留独立尺寸分支，Circle/Text 和 DatePicker Tiny Action 保留原有 Padding 分支。现有视觉行为和命中区域下限保持，不另造尺寸比例或重复应用 Density。
 
 ---
 
@@ -11148,11 +11012,11 @@ REKA_UI_ACTIVE_RUNTIME_ADMISSION=NONE
 首个 Consumer Gate 已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 满足。它按 §1.2B `PUBLIC_UI_API_CLOSURE_MODE=ATOMIC_CONSUMER_DERIVATION` 在同一 Landing 准入 `UiProvider`、十个真实 Routes 实际消费的最小额外 Public Components、`@platform/design-system` Public Contracts 和 Private `naive-ui@2.45.2` Adapter。它不授权 Reka、Motion Library、Grid、Editor、Charts、GSAP、第二 Styled Framework、通用 Shared UI 扩建或任何 Unused Component。
 
 ```text
-CURRENT_PUBLIC_COMPONENT_EXPORTS=14
+CURRENT_PUBLIC_COMPONENT_EXPORTS=10
 CURRENT_STYLED_VENDOR=naive-ui@2.45.2
 ```
 
-原九条 ACTIVE 组件经 §18.11 Workspace Tabs 与 §18.12 Scroll System 窄范围准入后，当前十二条 ACTIVE 组件保留真实消费者；仅 §21 的 UiForm/UiFormField 共享源码准入允许两条 TARGET_INACTIVE Record 暂无消费者。
+移除四个无实质职责的 Facade 后，当前八条 ACTIVE 复合组件保留真实消费者；仅 §21 的 UiForm/UiFormField 共享源码准入允许两条 TARGET_INACTIVE Record 暂无消费者。
 
 ## 16.2 Demand-created Target Locations
 
@@ -11201,32 +11065,32 @@ packages/ui/
 
 ## 16.3 Component and Material Responsibility
 
-内容结构优先使用原生语义 HTML；可复用表单、表格、Dialog 和其他交互控件优先复用 Naive UI，经 PAVP-owned Private Adapter 适配已有 Token、主题、尺寸和可访问性边界。不得重做 Naive UI 的组件引擎或替换 UI Library 来实现 Starter。Console 的唯一 Styled Vendor 仍是 Private Naive Adapter；Reka 仍未准入。
+内容结构优先使用原生语义 HTML；表单、表格、Dialog 和其他交互控件直接复用 Naive UI 官方 API，通过唯一 UiProvider 适配已有 Token、主题和尺寸；PAVP 只封装实质组合责任。不得重做 Naive UI 的组件引擎或替换 UI Library 来实现 Starter。Console 的唯一 Styled Vendor 仍是 Naive UI；Reka 仍未准入。
 
 ### Central Naive theme and sizing projection
 
-`PavpNaiveConfigProvider.vue` 与 `pavp-naive-theme.ts` 中的集中 PAVP Theme Projection 是现有主边界，后续工作是扩展并闭合该桥接，不重建主题系统。普通页面不得创建自己的 Naive Palette、Size Theme 或第二 Provider。Naive 支持通过 Typed `theme` / `themeOverrides` 自定义全局及组件主题；当支持的 Theme API 足够时，必须优先使用它，不用任意 DOM CSS Override 取代。参见 [Naive 官方主题定制文档源码](https://github.com/tusen-ai/naive-ui/blob/main/demo/pages/docs/customize-theme/enUS/index.md)。
+`UiProvider.vue` 与 `pavp-naive-theme.ts` 中的集中 PAVP Theme Projection 是现有主边界，后续工作是扩展并闭合该桥接，不重建主题系统。普通页面不得创建自己的 Naive Palette、Size Theme 或第二 Provider。Naive 支持通过 Typed `theme` / `themeOverrides` 自定义全局及组件主题；当支持的 Theme API 足够时，必须优先使用它，不用任意 DOM CSS Override 取代。参见 [Naive 官方主题定制文档源码](https://github.com/tusen-ai/naive-ui/blob/main/demo/pages/docs/customize-theme/enUS/index.md)。
 
 已使用组件按其实际渲染合同逐步补齐 PAVP Semantic Color、Visual Control Size、Padding、Icon Size/Spacing、Typography、Radius、Border/Focus、State（含 Disabled）与 Motion 输入。只闭合当前真实组件和已使用 Size Variant 所需字段，不预映射全部 Naive 组件或未使用变体。§14 的缺失尺寸能力先经过同一 Canonical Role/Mapping 准入，再进入 Vendor 投影；现有集中映射存在不表示尺寸扩展已完成。
 
 同一 PAVP Semantic Input 可投影为 Canonical CSS Variable String，也可在 Naive 的 JavaScript 运算不能消费未解析 `var(...)` 时，投影为从同一权威派生的具体 Typed Runtime Value。转换必须保持输入来源、单位、有效 Appearance 与事务一致性，不能复制 Palette/Size Literal 或自建设计计算规则；这种投影不是第二权威。具体 Parser-sensitive Field 仍遵守 §1.2B.6 及后续精确修订，不以本条绕过既有禁写项或扩大兼容输入范围。
 
-Component-local `themeOverrides` 只允许窄 PAVP-owned Private Adapter 责任，不得建立独立设计值；该责任不等于必须单独新建 Adapter 文件。当前 Form Adapter 消费 `createPavpNaiveFormThemeProjection` 的局部输出，`UiRadioCardGroup` 在其私有适配中以三项 `none` 关闭 Vendor Button Shadow、保留 PAVP 自有轮廓，均不创建新设计值。可复用能力优先留在集中 Projection，只有真实私有 Context/Peer 责任才采用局部投影；不向普通页面公开 Vendor Theme API。
+Component-local `themeOverrides` 只允许窄 PAVP-owned Private Adapter 责任，不得建立独立设计值；该责任不等于必须单独新建 Adapter 文件。当前 Form Adapter 消费 `createPavpNaiveFormThemeProjection` 的局部输出，`UiRadioCardGroup` 在其私有适配中以三项 `none` 关闭 Vendor Button Shadow、保留 PAVP 自有轮廓，均不创建新设计值。可复用能力优先留在集中 Projection，只有真实私有 Context/Peer 责任才采用局部投影；官方组件 API 保持可用；普通页面仍不得利用局部 Theme API 建立第二视觉权威。
 
-Owner 在干净同步的 `main@6b6a279803eb07f3dc13ebaa382f2c42ab60f838` 上另行明确授权现有 `UiButton` 尺寸消费链中的 Normal Medium Padding 单元，以及同一字段的 Owning Checker 与独立实测 Manifest 当前期望值同步。唯一设计来源为 §11.4 的 `spacing.button.inline`，集中 `Button.paddingMedium` 精确消费 `` `0 ${tokens['spacing.button.inline']}` `` 或可证明等价的 Immutable Alias，保持纵向 `0`、横向 `14px`，不随 Root Font Size 或当前 Density 变化。
+Normal Medium Button Padding 的唯一设计来源为 §11.4 的 `spacing.button.inline`，集中 `Button.paddingMedium` 精确消费 `` `0 ${tokens['spacing.button.inline']}` `` 或可证明等价的 Immutable Alias，保持纵向 `0`、横向 `14px`，不随 Root Font Size 或当前 Density 变化。
 
-已安装 Naive UI `2.45.2` 的 `self.paddingMedium via createKey("padding", size)` 进入 `--n-padding`；仅 Normal Medium 选用此输入，Round Medium 继续选 `paddingRoundMedium`，Circle/Text 继续为 `initial`，其他 Size 保持原值。`UiButton.vue` 和 `naive-button.ts` 不变，不增加 Class、Wrapper、Local Override 或 `size` Prop。Shell 两个 Circle Action 保持原选择；共享 Form 的 InputNumber Text Button 保持 `initial`，当前 DatePicker 的 Tiny Action 保持原 Tiny Padding。Form Peer 可继承该字段，但不改变这些已核对的选择分支。
+已安装 Naive UI `2.45.2` 的 `self.paddingMedium via createKey("padding", size)` 进入 `--n-padding`；仅 Normal Medium 选用此输入，Round Medium 继续选 `paddingRoundMedium`，Circle/Text 继续为 `initial`，其他 Size 保留各自分支。所有消费者使用官方 `size` 与其他 API；不再保留 UiButton 或别名 Adapter。Form Peer 复用同一 Button 映射，不改变 Shell Circle、InputNumber Text 和 DatePicker Tiny 的选择分支。
 
 `check-architecture-admin-console.ts` 的 Override Inventory、Semantic Expectation 与 Pinned Consumption Record 必须精确包含 `Button.paddingMedium` 并保持三者相等。字段专用 AST Proof 同时验证结构零值、唯一 Canonical Token 和无额外后缀；仅解析现有表达式及可见 `const` Alias，不冻结私有变量名。裸 Token、Raw Dimension、非零首项、错误 Role、缺项/反序/额外项、未知 Variable/Helper、未解析或可变 Alias 均不得通过。该许可仅作用于 `Button.paddingMedium`；现有其他 Template Expression、Parser-sensitive Color 与负向保护保持。
 
-该 Normal Medium Button Padding 单元已实现这一 Padding 权威链并完成 Owner Review，已通过 Commit `bc444283aac01840cd8888069e1352b729bd2e7d` 完成 Git 交付；该精确 Commit 的 Static Verification / Production static gates 与 CodeQL / JavaScript and TypeScript analysis 均为 `completed / success`。Normal Medium Padding 仍为 `0 14px`，唯一设计来源仍为 `spacing.button.inline`；Runtime / Browser / Visual Acceptance 未执行。§17 公共 Props/Events/Slots、§14.5 Height/Enhanced Target、Icon Size/Margin、Font、Color/State、Radius、Focus 与 Motion 保持；Button Visual-height Authority 与 Icon Size / Icon-to-label Spacing Authority 仍未完成纠正，完整 `UiButton` Sizing 仍未完成。不将本单元报告为完整 `UiButton` Sizing 或 UnoCSS Migration 完成，不扩展其他控件、Global Density、Schema、Dependency 或 Budget；Current Work/Next/Successor 不自动推进，本状态同步不授权任何后续 Git 交付。
+该映射与 UnoCSS 同源：CSS Variable、Body Typography、Control/Enhanced Target、Content Gap、Radius 和已有 Icon 几何均来自当前 Design Data。Tiny/Small 的官方分支可用；当前 Density 仍为已保存设置，未准入的 Density Visual Projection 不在此任务激活。集中 Form Peers 复用 Switch/Scrollbar，Tag Close、Text/Ghost Button、Select Popover 和 Disabled State 使用已有语义角色。运行和视觉验收独立于静态门槛。
 
 ```text
-Native semantic HTML
-        ↓ when insufficient
-private admitted vendor adapter
-        ↓
-semantic @platform/ui component
+Native semantic HTML / official Naive components
+        ↓ when composition is substantive
+application view or semantic @platform/ui composite
+        ↓ shared visual inputs
+UiProvider + PAVP Design Tokens
 ```
 
 `internal/material/` 在被允许后只负责：
@@ -11259,13 +11123,12 @@ import {
 
 ```ts
 import { DialogRoot } from 'reka-ui'
-import { NButton } from 'naive-ui'
 import Grid from 'ag-grid-vue'
 import Component from '@platform/ui/src/internal/component'
 import GridAdapter from '@platform/ui/adapters/grid'
 ```
 
-Adapter 是私有、可替换并按需 Lazy Load 的实现边界。业务代码不直接导入 Adapter 或 Vendor；`@platform/ui` 公共根出口只暴露语义组件和公共类型。
+Adapter 是私有、可替换并按需 Lazy Load 的实现边界。业务代码不直接导入私有 Adapter；UI Owner 可直接导入已准入的 Naive 官方组件；`@platform/ui` 公共根出口只暴露语义组件和公共类型。
 
 首期与未触发前继续禁止：
 
@@ -11299,7 +11162,7 @@ generic Material Wrapper
 * 使用类型化 Emits。
 * 使用类型化 Slots。
 * 支持 `class` 和必要的原生 Attributes。
-* 不暴露任何 Vendor UI 内部类型。
+* PAVP 领域合同不依赖 Vendor 内部类型；UI Owner 可直接使用 Naive 官方公共类型。
 * 使用 `data-*` 表达状态。
 * 保留键盘和焦点合同。
 * 支持 Light/Dark。
@@ -11310,28 +11173,18 @@ generic Material Wrapper
 * 明确记录无障碍合同和无障碍名称要求。
 * 在成为共享组件前至少有一个真实生产消费者；仅 §21 本次明确批准的两项表单源码登记例外，保持 TARGET_INACTIVE。
 
-当前 `UiButton` 的公共 API 与源码一致：可选 `disabled: boolean`（默认 `false`）、`type: 'button' | 'submit'`（默认 `'button'`）、`variant: 'ghost' | 'primary' | 'secondary'`（默认 `'secondary'`），无参数 `press` Event，以及不提供 Slot Prop 的 Default Slot。当前没有 `size`、`loading`、`danger` Variant、`reset` Type 或 MouseEvent Payload；后续尺寸消费任务按 §16.3 保持该兼容边界，不从示例或 Primitive 的 `sm` / `md` / `lg` 名称推导公共 API。
+Naive 控件直接使用官方 N* 名称和完整官方 API，不创建一对一 Ui* Wrapper、别名导出、替代 Props/Events 或 Attribute Allowlist。普通原生属性、ARIA、Listeners、Slots 和官方 Size Variant 保持可用。原 UiButton 的 Class-only 提案退役。
 
-**UiButton fallthrough-attribute boundary（Owner Review 候选）**
+现有按钮迁移规则：省略/secondary Variant 使用 NButton.secondary，primary 使用 type="primary"，ghost 使用 ghost；原 HTML type 迁移到 attr-type（尤其 submit），press 迁移到 click。原无参数回调显式调用以免传入 MouseEvent；保留 Disabled、文字、Slot、Focus-example Class 和局部 min-h-target-enhanced/min-w-target-enhanced。最低命中区域属于实际调用点，不全局强制所有 NButton Size。
 
-本条仅定义待审阅的 `UiButton` 目标合同，不授予实现授权。当前源码仍自动继承未声明 Attributes，根为 `PavpButtonPrimitive`，由 `naive-button.ts` 直接重导出私有 `NButton`；本次文档修改没有关闭该运行时入口。[Vue 官方 Fallthrough Attributes 合同](https://vuejs.org/guide/components/attrs.html)及已安装 Vue `3.5.40` 的实现确认：未被 Props/Emits 消费的 Attributes 可进入根组件并成为其 Props；Vue 3 的 `class` 也属于 attrs，`inheritAttrs: false` 才关闭自动继承。
-
-本节“支持 `class` 和必要的原生 Attributes”要求保持；“必要”须由具体组件按真实用途、精确目标及准入决定，不自动准入全部 HTML Attributes、Listeners 或 Vendor Props。当前 `appearance.vue` 五处和 `UiForm.vue` 两处 `UiButton` 使用中，唯一额外输入是 `class="pavp-material-stage__focus-example"`；没有其他额外 Attributes 或 Native Listeners。Form 两处仅是现存源码消费者，不激活其 `TARGET_INACTIVE` 状态或新增 Active Route。
-
-* 保留上文 Props、默认值、无参数 `press` 和 Default Slot，以及现有私有根。内部映射保持：`type → attrType`、`disabled → disabled`、`variant === 'ghost' → ghost`、`variant === 'secondary' → secondary`、`variant === 'primary' ? 'primary' : 'default' → NButton.type`，私有 click 继续触发 `press`。保留当前可访问按钮文字、原生 button 语义、键盘激活、Disabled 行为及已声明 `type` 提供的表单提交。
-* 额外 Fallthrough 准入集合精确为 `class`。它必须到达现有按钮根，与 `min-h-target-enhanced min-w-target-enhanced` 合并而非替换，保留 Vue 兼容的字符串/数组/对象 Class 归一化，并反映父级后续 Class 的新增、替换与移除；不将 `class` 新增为语义 Prop，不复制到本地 State。Class 作者继续受 §15 的 UnoCSS、提取及样式权威规则约束；可转发不授权 Raw Design Class 或 Vendor-internal Styling。
-* 未来实现须在 `UiButton` 公开层关闭自动继承（`inheritAttrs: false`），在首个私有组件 Prop 解析边界之前只选择获准的 `class`。禁止转发整个 `$attrs`/`useAttrs()` 对象、只靠 Binding Order 覆盖或只靠 Vendor Denylist；值已成为私有 Props 后再过滤不满足本合同。
-* 其余未声明 Fallthrough 输入一律不转发，包括 `id`、`title`、`aria-*`、`data-*`、`style`、Native Listeners 和 Vendor Props/Theme Inputs；它们不得进入私有 Prop 解析，也不得经另一通道改变 Tag、`attrType`、Visual Variant、Size、Loading、Theme、Inline Style、Keyboard 或 Event Handling。未准入输入只是不转发，不要求新增 Runtime Exception、日志系统、Sanitizer 或通用 Validator。
-* 已声明的 `press` Listener 属于语义事件合同，与未声明 Native Listener 区分；不增加第二公共激活事件 `click`，不转发任意 Listener Bag。Vue 保留的 `key`/`ref` 等 VNode 输入不属于普通 Fallthrough Attributes，继续遵循 Vue 自身语义；本属性边界不是 Security Sandbox。
-* Native Identity 与 Accessibility Attributes 不在 PAVP 全局永久禁止，只是本次未为 `UiButton` 新增准入；未来须有真实用途与精确目标再决定。其他十一项 ACTIVE 组件不套用本条 Class-only 政策，也不因本条被视为已修正。Inactive `UiFormField` 的私有 Prop 碰撞另属范围，不修改 Form，也不复制其 Attribute Allowlist。
-* 后续获准实施仅通过现有 Owning Checks 证明此 `UiButton` 边界和当前消费者兼容性，包括 Class 合并及后续更新；不创建通用 Dataflow Framework、整文件 Lint 豁免、全局 Unknown-prop 配置变更或新 Registry Schema，不冻结私有 Helper 名称。本次不实现组件或检查，不改 §16.3 已交付 Padding、Visual Height、Target Minimum、Icon Geometry、Density/`density.scale`、Token/Generated Output、Naive Projection、UnoCSS Extraction、SCSS Admission、Native Cascade、Public Registry、Dependency/Lockfile 或 Budget；尺寸工作保持独立。
+现有描述列表直接以 NDescriptions bordered、column=1、label-placement="left" 和 NDescriptionsItem 渲染同一条目；分段选择直接以 NRadioGroup/NRadioButton 的 value/update:value 渲染原 Label/Value；开关直接使用 NSwitch.value/update:value，保留 Boolean 状态、可访问名称和既有 Motion/Target 责任。
 
 禁止创建没有语义价值的 Wrapper。
 
 初次共享组件准入必须同时满足：
 
 1. 至少一个真实生产消费者。
-2. 存在明确的语义、A11y 或 Vendor Isolation 理由。
+2. 存在超出改名或 API 隐藏的实质组合、状态、生命周期或 A11y 责任。
 3. 公共 API 只表达业务和交互语义。
 
 在初次实现后扩大抽象、增加通用变体或形成跨页面模式，必须由实际复用证据触发；不得用假设中的第二个页面提前设计。
@@ -11889,7 +11742,7 @@ Owner 已在后续 Workspace 相邻激活控件请求中明确手动验收本节
 
 本任务已接线的两个 Storage Record：`scroll-preference` 的 local-storage Key `pavp:web:scroll-preference`，严格 Payload `{schemaVersion:1,restoreOnRefresh:boolean}`，默认 true；`scroll-refresh-session` 的 session-storage Key `pavp:web:scroll-refresh-session`，严格 Payload `{schemaVersion:1,routeName:string,ownerId:string,left:number,top:number,context:readonly (string|number)[]}`。两者均为 direct-compatibility、Current/Minimum Version 1、Partition none、非敏感、preserve-in-place-reject-read。当前 Registry 精确七条、Kernel 精确十五步；前序五条/十四步的 Landing 历史计数不改写。不得增加 Migration、IndexedDB、Memory Record、Cross-tab Event；session-storage 不参与 localStorage Storage Event。`applicationConfig.scroll` 独占两个 Key；`scroll-preference-contract.ts` 与 `scroll-refresh-contract.ts` 拥有严格 Zod Schema，Zod 4 的 number 已拒绝非有限值。独立 `scroll-preference-storage.ts` / `scroll-refresh-storage.ts` 仅由 Storage Lifecycle 创建，经 `owner.scrollPreference` / `owner.scrollRefresh` 暴露。Read 为 missing/unusable(invalid|unavailable|disposed)/found，Write/Clear 为 saved/failed（Disposed 可辨识）；所有 Parse/Version/Schema/Serialize/Quota/Write/Readback 异常归现有安全 Error Adapter。Store 与 Router 不读写浏览器 Storage。
 
-私有 Scroll Preference Store 仅拥有 restoreOnRefresh，不拥有 Offset；显式 Setter 持久化失败保留当前内存值。Appearance 使用新增公共 `UiSwitch`，仅接受必需的 `modelValue:boolean` 与 `accessibleLabel:string`，仅 Emit `update:modelValue(boolean)`，无 Slot；公共 Naive `NSwitch` 保持私有。中英文 Control 关闭时清除 Snapshot 并禁止 Capture，开启时不跳动当前页面。当前 Public Registry 精确十四条，其中十二条 ACTIVE 与两条既有 TARGET_INACTIVE Form Record。新 `initialize-scroll-system` 位于 Router/Storage/I18n/Navigation Preference/Workspace Session 就绪后、Mount 前；读取 Preference/Snapshot，仅 Prime Router Pending 候选，不提前滚动。对应 Disposal 在 Unmount 后、Storage/Router/Pinia 前解除 Watch 和 pagehide Listener。当前十五步和七条记录与源码及直接 Owning Check 同步。
+私有 Scroll Preference Store 仅拥有 restoreOnRefresh，不拥有 Offset；显式 Setter 持久化失败保留当前内存值。Appearance 直接使用官方 `NSwitch`、`value`、`update:value` 与 `aria-label`，保留原消费者目标尺寸、Focus 与 Motion 规则。中英文 Control 关闭时清除 Snapshot 并禁止 Capture，开启时不跳动当前页面。当前 Public Registry 精确十条，其中八条 ACTIVE 与两条既有 TARGET_INACTIVE Form Record。新 `initialize-scroll-system` 位于 Router/Storage/I18n/Navigation Preference/Workspace Session 就绪后、Mount 前；读取 Preference/Snapshot，仅 Prime Router Pending 候选，不提前滚动。对应 Disposal 在 Unmount 后、Storage/Router/Pinia 前解除 Watch 和 pagehide Listener。当前十五步和七条记录与源码及直接 Owning Check 同步。
 
 Router 仅在 pagehide 且 Preference 开启、当前 Console Region/Controller/Presentation/Content Ready 时写入本标签页唯一 Snapshot，不按 Scroll/Timer/rAF 写入。Context 复用 History/Workspace 的隐私安全 Build/Release、Committed Locale/Resource、Appearance、Layout/Owner、Content Revision 事实；不得持久化 URL/Params/Query/Hash、Scope/History Entry ID、任意 Selector、页面/表单/账号数据或时间戳。初次 Hard Refresh 的候选必须 Route/Owner Exact Match、有限 Offset、Context Exact Match、当前 Navigation/Presentation 与 Controller Ready；在已有 Mount/nextTick 边界执行。优先级唯一为 Pop History → Explicit Live Workspace Activation → Initial Hard Refresh → Same-workspace Address Policy → Fragment/Logical Start，失配走现有 Fallback，不引入第二 Writer。成功不立即删除 Snapshot；下次有效 pagehide 替换。原 History/Workspace Map 只驻内存，不持久化业务草稿。Development/HMR 继续保守不恢复；Appearance 使用现有 Workspace Content Ready/Revision，修订不匹配即拒绝，不能推断或保存 Form Values。Snapshot Context 不包含前四项仅属于内存 History 的 Scope/Name/地址输入，由同一 restoration validity 投影单独组合。
 
@@ -14277,7 +14130,7 @@ Form Field 提供稳定 formId+field 派生 Control/Label/Description/Error ID�
 
 实际 PublicRoleRegistry 有十个活动 Color Role，尚无专用 invalid/danger 色。首期选择清楚的文字/错误标记和现有语义边框反馈：错误和 required 文字/图标使用 `color.text.primary`，说明使用 `color.text.secondary`，边框使用 `color.border.default`，Focus 使用 `color.focus.ring`。私有 Adapter 必须覆盖 Form 的 `feedbackTextColorError/asteriskColor`、所有初始控件与其内部 Peer 的 Error Text/Border/Focus Shadow 等实际字段，避免 Naive 默认红色或另立 Vendor Palette；普通、禁用、只读、loading、error 均保持可读。此决定不准入新 Role；若后续明确需要专用错误色，最小候选是现有 Reserved `color.status.danger.text` / `color.status.danger.border`，须先通过 §37.1 Public-role Admission，不能顺带激活全部状态颜色或重做主题。Light/Dark、Standard/Enhanced、字号、Forced Colors、Full/Reduced/None 与真实 Focus/Contrast 的验收仍属适用外部 Release Gate。
 
-Date 首期只含 date-only，NDatePicker 使用受控 formattedValue/valueFormat 的私有 `yyyy-MM-dd` 映射；不把日期值当 UTC instant 或经 `toISOString()` 做日历日转换，内部 timestamp 只属于 Vendor 日历选择。日期显示必须在同一 `PavpNaiveConfigProvider.vue` 增加 `dateZhCN` 从 `naive-ui/es/locales/date/zhCN`、`dateEnUS` 从 `naive-ui/es/locales/date/enUS` 的私有 Default Import，并按已提交 `locale` 同步绑定 `date-locale`；完整 Common Locale 保留。§23.6.4 的 no-date-consumer 例外到此不再适用；不能显示默认英文日历、另存 Locale 或在包内手写翻译。仅复用安装包的 date-fns 传递依赖，不从应用直接导入，不新增日期库或全局 Product Zone。
+Date 首期只含 date-only，NDatePicker 使用受控 formattedValue/valueFormat 的私有 `yyyy-MM-dd` 映射；不把日期值当 UTC instant 或经 `toISOString()` 做日历日转换，内部 timestamp 只属于 Vendor 日历选择。日期显示必须在同一 `UiProvider.vue` 增加 `dateZhCN` 从 `naive-ui/es/locales/date/zhCN`、`dateEnUS` 从 `naive-ui/es/locales/date/enUS` 的私有 Default Import，并按已提交 `locale` 同步绑定 `date-locale`；完整 Common Locale 保留。§23.6.4 的 no-date-consumer 例外到此不再适用；不能显示默认英文日历、另存 Locale 或在包内手写翻译。仅复用安装包的 date-fns 传递依赖，不从应用直接导入，不新增日期库或全局 Product Zone。
 
 最终扩展仍保留：instant 在 API 边界为 UTC ISO 8601；local date-time 必须有独立 timeZone/歧义时间政策；duration 有命名单位；money 用最小货币单位整数或验证过的 decimal string，不能把普通 Number 控件当精确金额模型。Locale 不推导 timeZone，Intl 格式按 §23.4，Temporal 仍 Deferred。File、Upload、Rich Text、任意嵌套数组、公式和时间范围等不进入初始实现，不预建 Adapter。未来 File Consumer 仍需数量/MIME/扩展/大小/Filename 规则，替换/dispose 撤销 Object URL，禁止内容入 Log/Pinia Persistence/Local Storage，进度与续传等待真实 Endpoint。
 
@@ -14315,7 +14168,7 @@ const form = useUiForm<Draft, Payload>({
 | 职责 | 现有集成文件 / 必要未来源码 |
 | --- | --- |
 | 公共 Form 与实例状态 | 新 `packages/ui/src/components/UiForm.vue`、`UiFormField.vue`、`packages/ui/src/components/form-contracts.ts`、`packages/ui/src/composables/use-ui-form.ts`；现有 `packages/ui/src/index.ts` 和 `registry/ui-public-component-registry.ts` 闭合两组件与 Composable/类型，不为每个控件预建公开 Wrapper |
-| Vendor 呈现 | 在现有 `packages/ui/src/adapters/naive/` 增加仅本 Form 消费的 `PavpNaiveForm.vue`、`PavpNaiveFormField.vue`、`PavpNaiveFormControl.vue`；现有 `pavp-naive-theme.ts` 和 `PavpNaiveConfigProvider.vue` 扩展实际 Form/Control/Peer Overrides 与日期语言；`providers/UiProvider.vue` 的 locale/appearance 公共 Props 保持 |
+| Vendor 呈现 | 在现有 `packages/ui/src/adapters/naive/` 增加仅本 Form 消费的 `PavpNaiveForm.vue`、`PavpNaiveFormField.vue`、`PavpNaiveFormControl.vue`；现有 `pavp-naive-theme.ts` 和 `UiProvider.vue` 扩展实际 Form/Control/Peer Overrides 与日期语言；`providers/UiProvider.vue` 的 locale/appearance 公共 Props 保持 |
 | Zod 适配与业务接入 | 未来新 `apps/web/src/shared/forms/index.ts`、`zod-form-validation.ts` 只实现上述桥，本次不创建；将来的用户/角色 Feature 拥有自己的 schemas、fields、initial mapper 与 business callback，确切业务文件/路由在真实 Consumer Admission 冻结，本次不发明它们 |
 | 文案 | 现有 `apps/web/src/shared/i18n/message-schema.ts`、两语言 `messages/*/common.json` 按实际 FormCopy 消费扩展；原 `boundary.ts`/`runtime.ts`/`resource-loaders.ts` 保持唯一语言与加载所有权，新增业务 scope 只在真实接入时补齐 |
 
@@ -14324,7 +14177,7 @@ const form = useUiForm<Draft, Payload>({
 | Owning file | 实施时必须同步的最小合同 |
 | --- | --- |
 | `scripts/architecture/check-boundaries.ts`；`scripts/verify/check-project-config.ts` | 继续禁止 `vee-validate`、第二 Schema/未准入 Vendor 和反向导入；已有 Web/Design System Zod、UI Vue/Naive 的 Exact Catalog/Manifest/Lock Set 不需变化。源码导入只放行此处职责；不得向 UI 加 Zod，或为通过 Gate 修改依赖 |
-| `scripts/architecture/check-ui-public-components.ts` | 当前 Public Exports=Registry，Macro Props/Emits/Slots 与 direct route consumers 严格相等；Private Adapter Inventory 与 `expectedRuntimeImports` 是精确集合。实现时只增加上述实际文件、Form/Control/必要 Peer Styles 与 Date Locale Imports；为 Form 的泛型 Props/Slot 及真实 Feature 消费链提供窄解析支持，保留直接 Vendor Import、Overlay、Motion 与全部已有消费者校验 |
+| `scripts/architecture/check-ui-public-components.ts` | 当前 Public Exports=Registry，Macro Props/Emits/Slots 与 direct route consumers 严格相等；实质呈现 Adapter Inventory 与 `expectedRuntimeImports` 是精确集合；官方组件可由多个合法 UI Consumer 直接导入。实现时只增加上述实际文件、Form/Control/必要 Peer Styles 与 Date Locale Imports；为 Form 的泛型 Props/Slot 及真实 Feature 消费链提供窄解析支持，保留直接 Vendor Import、Overlay、Motion 与全部已有消费者校验 |
 | `scripts/architecture/check-i18n.ts` | 已将原两个 Common Locale Imports/no-date 断言替换为同一 Provider 四个 Locale Imports 和同源 date-locale 投影。沿用既有 scope/key/parameter/资源 AST 校验；真实 common 文案和参数仍待应用消费者，禁止用放宽全部文本/Imports 的方式绕过 |
 | `scripts/architecture/check-architecture-admin-console.ts` | 既有 `validateDependencies`、`validateInspectorProjections`、`validateRoutesShellAndMotion`、Naive Theme/Public UI Counts 与 pageFactImportContract 只对真实消费增量同步；保护现有十页面/Appearance、导航、Kernel/Storage 和历史验收，不为表单另造 console 展示页 |
 | `scripts/architecture/generate-capability-manifest.ts`；`check-capability-manifest.ts` | 当前 Canonical JSON/生成器严格为 21 Record，仅 appearance/i18n 可交互。本次不改 JSON 或生成物；真实 Form 激活时才冻结独立生产 Record/Consumer、同步生成/检查，不能把 forms-i18n-tables 聚合或整个 Starter 标为完成。`generate-engineering-manifest.ts`/`check-engineering-manifest.ts` 仍从真实依赖/命令生成；本方案无新依赖 |
@@ -14536,7 +14389,7 @@ REAL_CONSUMER=existing ten-route administration console and seven preserved erro
 
 只支持 `zh-CN` 和 `en`，两者均为 `ltr`。默认与唯一 Fallback 都是 `zh-CN`；可恢复已验证的本地选择，`navigator.language`、URL、Runtime Configuration 和账号信息不参与语言选择。英文是用户显式选择或该选择的持久化恢复结果。Route Name、Path、Meta Identifier、Theme ID、Storage Schema、Code、Package Coordinate、Budget、真实 Capability/Implementation Status、用户输入和 Custom Theme Label 保持原值。内置 Theme 的 `Iris` 等名称也是现有源定义的专名；只翻译其周围的“内置”“当前主题”等说明。
 
-本次 Localization Landing 的唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，复用 `UiSegmentedControl`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用 `pendingLocale.value ?? locale.value` 作为 `modelValue`，继续通过现有 `update:modelValue` 事件调用 `switchLocale`；加载期间选中项表达当前请求目标，实际内容仍使用最后已提交语言。该行以 `aria-busy` 和文本反馈明确“正在切换”，不能把请求选中态当作语言已应用，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
+本次 Localization Landing 的唯一切换入口在 `apps/web/src/pages/appearance.vue` 现有“显示偏好”区：动效控件之后、恢复默认设置操作之前，使用官方 `NRadioGroup/NRadioButton`、现有 Control Row 和反馈样式。Option Value 精确为 `zh-CN/en`，可见 Autonym 为 `简体中文/English`；Accessible Label 的两种文案均包含 `语言` 和 `Language`。使用 `pendingLocale.value ?? locale.value` 作为官方 `value`，通过 `update:value` 事件调用 `switchLocale`；加载期间选中项表达当前请求目标，实际内容仍使用最后已提交语言。该行以 `aria-busy` 和文本反馈明确“正在切换”，不能把请求选中态当作语言已应用，允许新的选择取代旧请求。反馈通过该行唯一 `role=status`、`aria-live=polite` 区域宣布，不移动焦点。
 
 未来 §18.15 把完整 Locale 控件归入 Control Center / General，并准入 User Panel 的同边界快捷选择；它取代单一 Appearance 页面入口这一未来限制，不改上述 Landing 历史与当前源码。Pending/Committed、保存结果、生命周期、资源/DOM 提交继续由本节拥有，迁移须随真实消费者和直接 Checker 原子接线。
 
@@ -14743,9 +14596,9 @@ export interface UiAdminShellCopy {
 }
 ```
 
-`UiProvider` 在原 Required `appearance` 之外新增 Required `locale: UiLocale`，无 Default/Emit；Private `PavpNaiveConfigProvider` 同样接收 `locale`。`UiAdminShell` 在原 Props 之外新增 Required `copy: UiAdminShellCopy`，没有 Copy Fallback。Application 的 Locale Schema 与 `UiLocale` 必须双向类型相等；UI 类型只描述 Prop 可接受值，不拥有默认值、选择、持久化或 Locale Store。由 `ConsoleRouteFrame` 通过 Computed `t` 产生全部 Shell Copy，不引入新的全局 Context。
+`UiProvider` 在原 Required `appearance` 之外新增 Required `locale: UiLocale`，无 Default/Emit；同一组件直接拥有 `NConfigProvider` 的主题与 Locale 配置。`UiAdminShell` 在原 Props 之外新增 Required `copy: UiAdminShellCopy`，没有 Copy Fallback。Application 的 Locale Schema 与 `UiLocale` 必须双向类型相等；UI 类型只描述 Prop 可接受值，不拥有默认值、选择、持久化或 Locale Store。由 `ConsoleRouteFrame` 通过 Computed `t` 产生全部 Shell Copy，不引入新的全局 Context。
 
-Private Naive Provider 是唯一新增 Vendor Locale Import Owner，精确使用两个 ES Subpath Default Import：`zhCN` 从 `naive-ui/es/locales/common/zhCN`，`enUS` 从 `naive-ui/es/locales/common/enUS`。`zh-CN -> zhCN`、`en -> enUS` 为静态映射，直接传给原唯一 `NConfigProvider` 的 `locale` Prop；不经全语言 Barrel，不新增 Vendor Public Type。两个完整 Common Locale 保持静态可用以同步投影，仍计入实际 Initial Budget；不能让 Private Provider 在应用语言 Commit 后再独立异步切换。现有 Appearance Context、Theme Overrides、Overlay Root、Motion 和 Import Owners 保持。
+`UiProvider` 是唯一 Vendor Locale Import Owner，精确使用两个 ES Subpath Default Import：`zhCN` 从 `naive-ui/es/locales/common/zhCN`，`enUS` 从 `naive-ui/es/locales/common/enUS`。`zh-CN -> zhCN`、`en -> enUS` 为静态映射，直接传给原唯一 `NConfigProvider` 的 `locale` Prop；不经全语言 Barrel，不新增 Vendor Public Type。两个完整 Common Locale 保持静态可用以同步投影，仍计入实际 Initial Budget；不能让 Provider 在应用语言 Commit 后再独立异步切换。现有 Appearance Context、Theme Overrides、Overlay Root、Motion 和 Import Owners 保持。
 
 Owner 已明确准入本实例的日期适用性修正：该本地化 Landing 当时九个公共组件及其真实生产依赖图中的内部组件不消费本地化日期，生产图没有保留日期组件或 `useLocale` 消费者；只由此前显式 `dateZhCN/dateEnUS` 配置保留的日期数据不属于必需行为。因此该本地化 Landing 当时省略 `naive-ui/es/locales/date/zhCN`、`naive-ui/es/locales/date/enUS` 与 `date-locale` 绑定；当前 §21 共享表单源码准入已在原同一 Provider 恢复这两项日期 Locale 与同源绑定。Naive 源码中 `useLocale` 的默认 `dateEnUS` 引用仍保持原样，是否消除其传递字节须由实际产物验证；不修改 Vendor Runtime、不手抄 Locale Dictionary、不创建异步 Vendor Locale 系统。未来真实日期组件的独立准入必须在同一 UI-owned Provider 先提供与当前应用语言一致的正确 Date Locale；本次不实现该未来能力。
 
@@ -14845,7 +14698,7 @@ interactive=true
 | `apps/web/src/app/router/route-registry.ts`; `apps/web/src/app/router/router-lifecycle.ts`; `apps/web/src/app/router/router-console-projection.ts` | 保留 Keys/机器身份的文案源替换与明确的 Presentation/Scope/Title 接口 |
 | `apps/web/src/app/errors/core-error-messages.ts`; `apps/web/src/app/errors/AppErrorBoundary.vue`; `apps/web/src/app/errors/fatal-boundary.ts` | 同源中文安全表、Ready 后翻译及独立 Fatal Language 标注；Recovery 不变 |
 | `apps/web/src/pages/index.vue`; `apps/web/src/pages/appearance.vue`; `apps/web/src/pages/design-tokens.vue`; `apps/web/src/pages/runtime-kernel.vue`; `apps/web/src/pages/router.vue`; `apps/web/src/pages/storage.vue`; `apps/web/src/pages/ui-system.vue`; `apps/web/src/pages/responsive-layout.vue`; `apps/web/src/pages/engineering.vue`; `apps/web/src/pages/capabilities.vue` | 十个真实 Page 的文案消费；仅 Appearance 增加语言操作；Overview/Router 使用 Router-owned Label Function |
-| `packages/ui/src/index.ts`; `packages/ui/src/components/contracts.ts`; `packages/ui/src/components/UiAdminShell.vue`; `packages/ui/src/providers/UiProvider.vue`; `packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue`; `packages/ui/src/registry/ui-public-component-registry.ts` | 两个语义 Type、两个现有 Public Component 的 Required Prop 增量、两个 Private Common Locale Imports 与同源投影；Component Set 仍为九 |
+| `packages/ui/src/index.ts`; `packages/ui/src/components/contracts.ts`; `packages/ui/src/components/UiAdminShell.vue`; `packages/ui/src/providers/UiProvider.vue`; `packages/ui/src/registry/ui-public-component-registry.ts` | 两个语义 Type、两个现有 Public Component 的 Required Prop 增量、Common Locale Imports 与同源投影；当前 Component Set 由 §1.2B.6 的 Registry 闭合 |
 | `scripts/architecture/generate-capability-manifest.ts`; `apps/web/src/generated/capability-manifest.ts` | 现有 Generator 新增文案/Key Map Projection 与真实 21 Record；TS Output 只由 Generator 重生成 |
 
 必要新文件精确为：
@@ -14881,7 +14734,7 @@ scripts/architecture/check-i18n.ts
 | `scripts/architecture/check-runtime-kernel.ts` | `bootstrapStepIds/bootstrapDependencies/disposalStepIds`、`validateBootstrapRegistry/validateBootstrapExecution` 当前精确 11 Step；按上述一项插入闭合 12 Step/取消/释放。`validateNoFutureCapabilities` 仅承认指定 I18n Owner；`validateCoreErrorMessages` 继续证明四个安全 Key 与不依赖服务的文本来源；`validateProviders` 仍只接受 Pinia/Appearance，所有 Configuration/Retry/Listener/HMR 保护保留 |
 | `scripts/architecture/check-router.ts` | `expectedRouteTitles` 与 `expectedMessages` 当前比较 Literal Text；保留 Exact Key/Route 集合并校验同源中文与英文资源。当前 `useI18n` Future-scope 文本禁令由精确公共 Boundary Import 规则承接，Page 不直接 Import Vendor。Lifecycle Handle Closure、第四阶段 Preparation 与 Title Commit Proof 承认新绑定/刷新接口；17/10/7、五阶段、三个 Guard Remover、错误路由、Same-location、Focus/Scroll、Route Transition 和旧 Navigation 拒绝保持 |
 | `scripts/architecture/check-storage.ts` | `expectedStorageRegistryRecords`/`validateStorageRegistryRecords` 当前只接受两条；追加唯一 Locale Direct Record。Raw Key 扫描承认新 Key 仅在 `app.config.ts` 的新字段声明；增加该 Port 的 Schema/Read/Write/Failure/Disposed Closure。零 Envelope/Migration/Memory/IndexedDB/Event、11 Error ID/Safe Context、现有 Storage Lifecycle/敏感字段/直接访问保护不变；ESLint 已允许 `app/storage` 的 localStorage，无需放宽规则 |
-| `scripts/architecture/check-ui-public-components.ts` | SFC Props/Registry Closure 仅增 `UiProvider.locale` 与 `UiAdminShell.copy`；`expectedRuntimeImports` 仅增上述两个私有 Common Locale Import。保留九个 Component、现有 Private Adapter Inventory、Overlay 顺序/唯一性和全部 Motion/Theme Import 保护 |
+| `scripts/architecture/check-ui-public-components.ts` | SFC Props/Registry Closure 仅增 `UiProvider.locale` 与 `UiAdminShell.copy`；`expectedRuntimeImports` 仅增上述两个私有 Common Locale Import。保留当前 Composite Registry、实质 Adapter Inventory、Overlay 顺序/唯一性和全部 Motion/Theme Import 保护 |
 | `scripts/architecture/check-architecture-admin-console.ts` | `validateDependencies` 的 Root/Web Exact Manifest 与 Lock Importer Object 接受上述两项依赖；`pageFactImportContract` 只给十页增加公共语言入口及 Overview/Router 的指定 Label Function。`validateRoutesShellAndMotion`、`validateAppearanceAndPageFacts`、Naive Provider Closure 与 Shell/A11y Literal Proof 改为 Typed Copy 来源校验，不能删除相应保护。`validateInspectorProjections` 及 Runtime/Native/Route-transition Snapshot 中当前 `stepCount=11/storageCount=2/capabilityCount=20` 的实时事实断言改为 `12/3/21`，相关 Existing Negative Probe 仍须证明错误值被拒绝。`navigationBudgetViolations` 对 Bundle Source 的原 `17+1` 字面结构断言改为下述完整 Dynamic Root 集合；历史结果、预算、Appearance 六轴、Theme/Token/Motion 与视觉数值不变 |
 | `scripts/verify/check-project-config.ts` | 在既有 Catalog/Manifest/Lockfile/Runtime 校验中闭合两个选定坐标及 Owner、单一 Vue 与 Composer Build Flags；原 TS Strict、Runtime Preflight、官方 Router DTS/Patch、Naive/Motion Patch、Integrity、部署身份和无自动 Import Policy 保留；无需改 TS 配置 |
 | `scripts/architecture/generate-capability-manifest.ts`; `scripts/architecture/check-capability-manifest.ts` | 原 20 Record Literal、Header Validation 与仅 Appearance 可交互判断调整为真实 21 Record 和 `appearance/i18n`。从同一原 JSON Source 生成 TS Manifest、`capabilityMessageKeys` 和中文 Capabilities JSON；Checker 对两个 Output 做完整再生成相等及 Key Map/资源覆盖检查，禁止手改 Generated Output |
@@ -15630,7 +15483,7 @@ FIRST
 complete reusable platform foundations
 
 THEN
-admit third-party UI primitives only through PAVP-owned boundaries and only when architecture allows
+admit UI libraries only when architecture allows; consume Naive UI directly in UI owners
 
 THEN
 build Shared UI from real consumer demand
@@ -15639,7 +15492,7 @@ FINALLY
 deliver the independently copyable administration starter defined in Section 1 through separately admitted capabilities and real standard management pages
 ```
 
-当前 Active Mainline Surface 是 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`：一个真实、Full-viewport、Pure-frontend、无 Backend/Auth/Server-state/Mock Dependency 的 PAVP 管理台。它用于消费 Active Architecture 并以只读 Roadmap 呈现 Target/Deferred Capability，不创建第二 Business Platform，也不建立 Appearance-only Page、Demo、Showcase、Component Gallery、Marketing Page、Architecture Evidence Page、Test Page 或 Sample Application。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；`naive-ui@2.45.2` 是 §1.2B 已精确准入并保持在 `@platform/ui` 边界内的 Active Private Styled Implementation。
+当前 Active Mainline Surface 是 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`：一个真实、Full-viewport、Pure-frontend、无 Backend/Auth/Server-state/Mock Dependency 的 PAVP 管理台。它用于消费 Active Architecture 并以只读 Roadmap 呈现 Target/Deferred Capability，不创建第二 Business Platform，也不建立 Appearance-only Page、Demo、Showcase、Component Gallery、Marketing Page、Architecture Evidence Page、Test Page 或 Sample Application。Third-party UI Library 不得成为 Color、Theme、Size、Density、Spacing、Typography、Radius、Motion、Layout 或 Responsive Behavior Authority。PAVP Design Tokens 和 Architecture-owned Contract 始终权威；UnoCSS 只是 Expression Engine；`naive-ui@2.45.2` 是 §1.2B 已精确准入允许在 UI Owner 直接使用的 Active Styled Implementation。
 
 当前 Console 完成不等于最终 Starter 完成。API 集成、登录/Session/角色权限、用户/角色/菜单与操作权限管理、共享 Form 与配置驱动数据管理、中文/可选英文、应用内页签属于必需交付范围；§37.2 只管理它们未来逐项准入，不提前激活 Runtime 或 Dependency。可独立完成的 Frontend-only 工作不等待未约定后端；依赖后端的工作必须先取得真实合同，不得通过 Mock、Sample、Public Third-party API 或 Placeholder 提前激活。Chart、Map、专业 Grid、复杂展示特效仍按需引入。
 
@@ -15724,7 +15577,7 @@ Detailed Contract 继续由本文件各 Domain Section 定义；`AGENTS.md` 必�
 * 保留 Unrelated Behavior 与 User Change。
 * PAVP Design Tokens 是 Sole Visual Authority。
 * UnoCSS 是 Expression Layer，不是 Design Authority。
-* UI Vendor 必须保持 PAVP Boundary 后的 Private Detail。
+* Naive UI 在 UI Owner 内使用官方 API；其他 UI Vendor 保持各自准入边界。
 
 ### Prohibited Work and Validation Boundary
 
@@ -15912,7 +15765,7 @@ ADR 只解释历史原因，不承担规范权威。
 ```text
 no-raw-ui-colors
 no-dynamic-unocss-classes
-no-vendor-ui-outside-adapters
+no-vendor-ui-outside-admitted-ui-owners
 no-direct-storage-access
 no-user-agent-layout-branching
 no-workspace-deep-import
@@ -15930,7 +15783,7 @@ Generator 和 Verify Script 还必须在对应 Owning Work Package 被准入后�
 ```text
 Phase-specific packages/ui dependency set
 root-only @platform/ui imports
-private adapter vendor imports
+official Naive imports in admitted UI owners; other vendor private imports
 Token tier / visibility / namespace / output filtering
 Public Role set equality across CSS / TS / Names / UnoCSS / Manifest
 Public UnoCSS mapping metadata and fatal unmapped-role handling
@@ -16160,7 +16013,7 @@ bundle budget
 
 ```text
 Phase-specific dependency sets
-root-only imports and private adapter paths
+root-only workspace imports and admitted UI vendor paths
 Token tier / visibility / namespace / output filtering
 Public Output Completeness set equality
 Target Explicit Theme exact fields and four explicit planes after Atomic Cutover
@@ -17313,7 +17166,7 @@ PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION=GRANTED_BY_OWNER
 CURRENT_ROUTE_REGISTRY_RECORDS=17
 CURRENT_PRODUCT_ROUTE_RECORDS=10
 CURRENT_ERROR_ROUTE_RECORDS=7
-CURRENT_PUBLIC_COMPONENT_EXPORTS=14
+CURRENT_PUBLIC_COMPONENT_EXPORTS=10
 ACTIVE_PUBLIC_COLOR_ROLES=10
 ACTIVE_PUBLIC_ROLES_TOTAL=37
 PUBLIC_ROLE_REGISTRY=EXACT
@@ -18420,7 +18273,7 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 | D            | 6    | Browser/Platform/Accessibility/Interaction Selector 责任。        |
 | E            | 2    | Generated/Runtime Style Authority。                               |
 
-代表性源码核对覆盖普通 `UiSection.vue`/页面 Style、`PavpNaiveConfigProvider.vue` 的 `.n-*` 适配、`UiScrollArea.vue` 的 Native/Forced-colors/`.os-*` 混合责任、私有 Motion Adapter、Route Transition 伪元素，以及 Generated Token/Runtime Variable Owner。分类针对责任，不把这些路径整体列为未来普通 CSS 豁免。
+代表性源码核对覆盖普通 `UiSection.vue`/页面 Style、`UiProvider.vue` 的 `.n-*` 适配、`UiScrollArea.vue` 的 Native/Forced-colors/`.os-*` 混合责任、私有 Motion Adapter、Route Transition 伪元素，以及 Generated Token/Runtime Variable Owner。分类针对责任，不把这些路径整体列为未来普通 CSS 豁免。
 
 在本次 Architecture-only Freeze 时，Uno/Blocklist Grammar 覆盖不完整；ESLint Property-authority 处理没有正确分支建模每个 Mapping Union；部分 Architecture Check 过度冻结私有实现拼写。当次没有修复这些审计缺陷；其后的限定治理实施与纠正记录才描述当前 Checker 状态。Selector CSS 继续作为精确命名的 Vendor/Browser/Platform 责任，旧普通债务按 §15.6 处理。
 
@@ -18647,8 +18500,8 @@ Current admitted `PAVP_ARCHITECTURE_ADMIN_CONSOLE` implementation：
 
 ```text
 direct dependencies = @platform/design-system workspace:*; vue catalog:; naive-ui catalog exact 2.45.2
-public component exports = UiAdminShell; UiButton; UiDescriptionList; UiPageHeader; UiProvider; UiSection; UiSegmentedControl; UiStatusBadge
-private vendor imports = packages/ui/src/adapters/naive/** only
+public component exports = UiAdminShell; UiForm; UiFormField; UiPageHeader; UiProvider; UiRadioCardGroup; UiScrollArea; UiSection; UiStatusBadge; UiWorkspaceTabs
+naive imports = official on-demand component entrypoints in application View/UI owners and packages/ui rendering owners
 ```
 
 未来按需准入：
@@ -18656,7 +18509,7 @@ private vendor imports = packages/ui/src/adapters/naive/** only
 | Dependency                | Admission |
 | ------------------------- | --------- |
 | `vue`, `@platform/design-system` | `PAVP_ARCHITECTURE_ADMIN_CONSOLE` Atomic Consumer Gate |
-| `naive-ui@2.45.2`         | Console Styled-vendor Gate；只允许 Private Naive Adapter 导入 |
+| `naive-ui@2.45.2`         | Console Styled-vendor Gate；应用 View/UI Owner 与复合组件直接使用官方按需入口 |
 | `reka-ui`                 | Deferred Independent Headless Gate；不得与 Naive Dual-active |
 | `clsx`                    | 已准入实现证明存在真实组合需求 |
 | `motion-v`                | 命名 Interaction 通过 §24.1；只允许 Private Motion Adapter 导入 |
@@ -18885,7 +18738,7 @@ ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE_IS_REVOKED_BY_EXACT_COMMIT_RUNTIM
 ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE_IS_REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 PREVIOUS_VISUAL_ACCEPTANCE_IS_REVOKED
 PAVP_ARCHITECTURE_ADMIN_CONSOLE_PUBLICATION_AUTHORIZATION_IS_GRANTED_BY_OWNER
-NAIVE_UI_2_45_2_IMPLEMENTATION_IS_PRIVATE_TO_PLATFORM_UI_AND_ACTIVE
+NAIVE_UI_2_45_2_OFFICIAL_API_IS_ACTIVE_IN_ADMITTED_UI_OWNERS
 REKA_UI_ACTIVE_RUNTIME_ADMISSION_IS_NONE
 PAVP_API_TRANSPORT_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
 PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION_IS_DEFERRED_AND_NOT_STARTED
@@ -18899,7 +18752,7 @@ NEW_ABSTRACTIONS_REQUIRE_REAL_CONSUMERS
 
 ROOT_ONLY_UI_PUBLIC_IMPORTS
 ADAPTERS_AND_INTERNALS_ARE_PRIVATE
-VENDOR_IMPORTS_EXIST_ONLY_IN_PRIVATE_ADAPTERS
+NAIVE_IMPORTS_USE_OFFICIAL_NAMES_IN_UI_OWNERS_AND_OTHER_VENDOR_IMPORTS_REMAIN_PRIVATE
 SPECIALIST_COMPONENTS_USE_REPLACEABLE_ADAPTERS
 EVERY_SHARED_BOUNDARY_HAS_A_PUBLIC_ROOT_EXPORT
 
@@ -18979,7 +18832,7 @@ Node 24 LTS
 + Complete Generated UnoCSS Public Semantics
 + Adaptive / Reduced / Solid Material
 + Adaptive Liquid Chrome over Stable Content
-+ naive-ui@2.45.2 active only inside the PAVP-owned private adapter boundary admitted by PAVP_ARCHITECTURE_ADMIN_CONSOLE
++ naive-ui@2.45.2 official on-demand imports in application View/UI owners and substantive PAVP composites, sharing the sole PAVP theme projection
 + Reka UI only as a deferred independent headless-primitive candidate
 + Progressive Demand-driven Project UI
 + PAVP 管理台 as the current active real full-viewport pure-frontend product; no automatic next product is admitted

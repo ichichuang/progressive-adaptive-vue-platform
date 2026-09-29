@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { PavpTagPrimitive } from '../adapters/naive/naive-tag'
+import { NTag } from 'naive-ui/es/tag'
 import type { UiStatusTone } from './contracts'
 
 defineOptions({ name: 'UiStatusBadge' })
@@ -20,13 +20,13 @@ const completeColor = Object.freeze({
 </script>
 
 <template>
-  <PavpTagPrimitive
+  <NTag
     bordered
     v-bind="tone === 'complete' ? { color: completeColor } : {}"
     :class="toneClass"
   >
     {{ label }}
-  </PavpTagPrimitive>
+  </NTag>
 </template>
 
 <style scoped>

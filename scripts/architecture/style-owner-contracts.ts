@@ -158,7 +158,7 @@ export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>
       lang: 'css',
     },
   ],
-  'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue': [
+  'packages/ui/src/providers/UiProvider.vue': [
     {
       scoped: false,
       lang: 'css',
@@ -665,7 +665,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -674,7 +674,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['width', 'var(--ui-admin-border-width)', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -686,7 +686,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: 'html[data-motion] .n-radio__dot::before',
@@ -697,7 +697,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: 'html[data-motion] .n-button .n-icon-slot',
@@ -708,7 +708,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: 'html[data-motion] .n-button .n-base-wave',
@@ -719,7 +719,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: '.n-button:focus-visible',
@@ -727,7 +727,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['box-shadow', 'var(--ui-admin-shadow-focus-ring)', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: '.pavp-admin-shell__header-action-tooltip.n-popover',
@@ -740,7 +740,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: ['@media (forced-colors: active)'],
     selector: '.pavp-admin-shell__header-action.n-button',
@@ -748,7 +748,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['outline', 'var(--ui-admin-border-control)', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: ['@media (forced-colors: active)'],
     selector: '.n-button:focus-visible,\n  .n-radio-button--focus',
@@ -759,7 +759,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -768,7 +768,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-duration', 'calc(var(--ui-motion-duration) / 2)', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='reduced'] .n-radio__dot::before",
@@ -776,7 +776,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-duration', 'calc(var(--ui-motion-duration) / 2)', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='reduced'] .n-button .n-icon-slot",
@@ -784,7 +784,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-duration', 'calc(var(--ui-motion-duration) / 2)', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='reduced'] .n-button .n-base-wave",
@@ -792,7 +792,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['animation-duration', 'calc(var(--ui-motion-duration) / 2)', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -804,7 +804,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -816,7 +816,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -829,7 +829,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='none'] .pavp-admin-navigation-dropdown",
@@ -841,7 +841,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -853,7 +853,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='full'] .pavp-admin-shell__header-action.n-button",
@@ -865,7 +865,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='full'] .pavp-admin-shell__header-action-icon-state",
@@ -873,7 +873,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'opacity, transform', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -885,7 +885,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -898,7 +898,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -910,7 +910,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='reduced'] .pavp-admin-shell__header-action-tooltip",
@@ -918,7 +918,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'background-color, color, opacity', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -927,7 +927,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transform', 'none', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -939,7 +939,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -951,7 +951,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -960,7 +960,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'background-color, color, opacity', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='full'] .pavp-admin-navigation-dropdown",
@@ -968,7 +968,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'background-color, opacity, transform', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -977,7 +977,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'color, opacity', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -986,7 +986,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'color, opacity, transform', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -998,7 +998,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1007,7 +1007,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'background-color, color, opacity', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: "html[data-motion='reduced'] .pavp-admin-navigation-dropdown",
@@ -1018,7 +1018,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1027,7 +1027,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transition-property', 'color', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1036,7 +1036,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['transform', 'none', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1048,7 +1048,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1057,7 +1057,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['opacity', '1', true]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1069,7 +1069,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: ['@media (forced-colors: active)'],
     selector: '.pavp-form-control :focus-visible',
@@ -1080,7 +1080,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: '.pavp-switch *',
@@ -1091,23 +1091,23 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
-    selector: ".pavp-switch:not([data-motion='full']) *",
+    selector: "html:not([data-motion='full']) .pavp-switch *",
     responsibility: 'VENDOR_ADAPTER_OWNER',
     declarations: [['transition', 'none', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: ['@media (forced-colors: active)'],
-    selector: ".pavp-switch [role='switch']",
+    selector: ".pavp-switch[role='switch']",
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
     declarations: [['outline', 'var(--ui-admin-border-width) solid ButtonText', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: '.pavp-workspace-context-menu',
@@ -1119,7 +1119,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector: '.pavp-workspace-context-menu:focus-visible',
@@ -1127,7 +1127,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['outline', 'var(--ui-admin-border-focus)', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1139,7 +1139,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1151,7 +1151,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     selector:
@@ -1164,7 +1164,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     ],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: ['@media (forced-colors: active)'],
     selector: '.pavp-workspace-context-menu.n-dropdown-menu',
@@ -1172,7 +1172,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [['background', 'Canvas', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: ['@media (forced-colors: active)'],
     selector: '.pavp-workspace-context-menu .n-dropdown-option-body--pending',
@@ -3017,7 +3017,7 @@ export const styleAtRuleOwners: readonly {
     params: '(forced-colors: active)',
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
+    path: 'packages/ui/src/providers/UiProvider.vue',
     block: 0,
     context: [],
     name: 'media',

@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { useId } from 'vue'
 
-import { PavpRadioButtonPrimitive, PavpRadioGroupPrimitive } from '../adapters/naive/naive-radio'
-import type { UiSegmentedOption } from './contracts'
+import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
+import type { UiRadioCardOption } from './contracts'
 
 defineOptions({ name: 'UiRadioCardGroup' })
 
 defineProps<{
   readonly accessibleLabel: string
   readonly modelValue: string
-  readonly options: readonly UiSegmentedOption[]
+  readonly options: readonly UiRadioCardOption[]
 }>()
 
 const emit = defineEmits<{
@@ -17,7 +17,7 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
-  option?: (props: Readonly<{ option: UiSegmentedOption; selected: boolean }>) => unknown
+  option?: (props: Readonly<{ option: UiRadioCardOption; selected: boolean }>) => unknown
 }>()
 
 const groupName = `pavp-radio-card-group-${useId()}`
@@ -29,7 +29,7 @@ const radioCardThemeOverrides = Object.freeze({
 </script>
 
 <template>
-  <PavpRadioGroupPrimitive
+  <NRadioGroup
     :aria-label="accessibleLabel"
     class="pavp-radio-card-group"
     data-ui-radio-card-group
@@ -38,7 +38,7 @@ const radioCardThemeOverrides = Object.freeze({
     :value="modelValue"
     @update:value="emit('update:modelValue', String($event))"
   >
-    <PavpRadioButtonPrimitive
+    <NRadioButton
       v-for="option in options"
       :key="option.value"
       class="pavp-radio-card-group__option min-h-target-enhanced"
@@ -56,8 +56,8 @@ const radioCardThemeOverrides = Object.freeze({
           {{ option.label }}
         </slot>
       </div>
-    </PavpRadioButtonPrimitive>
-  </PavpRadioGroupPrimitive>
+    </NRadioButton>
+  </NRadioGroup>
 </template>
 
 <style scoped>

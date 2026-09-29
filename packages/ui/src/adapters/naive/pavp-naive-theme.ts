@@ -15,7 +15,7 @@ import radioDark from 'naive-ui/es/radio/styles/dark'
 import tagDark from 'naive-ui/es/tag/styles/dark'
 import tooltipDark from 'naive-ui/es/tooltip/styles/dark'
 
-export interface PavpNaiveThemeProjection {
+interface PavpNaiveThemeProjection {
   readonly theme: GlobalTheme | null
   readonly themeOverrides: GlobalThemeOverrides
 }
@@ -76,7 +76,7 @@ const darkTheme = {
 export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppearanceSnapshot>) {
   const shared = createPavpNaiveThemeProjection(appearance).themeOverrides
   const errorBorder = `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`
-  const scrollbar = { color: colorBorder, colorHover: colorTextSecondary, borderRadius: radius }
+  const scrollbar = shared.Scrollbar
   const Input = {
     heightMedium: enhancedTargetHeight,
     fontSizeMedium: fontSize,
@@ -141,15 +141,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       // concrete; its rendered text-button colors/opacity are overridden here.
       peers: {
         Input,
-        Button: {
-          ...shared.Button,
-          textColorText: colorText,
-          textColorTextHover: colorControl,
-          textColorTextPressed: colorControl,
-          textColorTextFocus: colorControl,
-          textColorTextDisabled: colorTextSecondary,
-          opacityDisabled: disabledOpacity,
-        },
+        Button: shared.Button,
       },
     },
     Select: {
@@ -189,7 +181,16 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
           boxShadowFocusError: shadowFocusRing,
           colorActiveError: colorPanel,
           caretColorError: appearance.statusColors.error.default,
-          peers: { Popover: { color: colorPanel, textColor: colorText, boxShadow: shadowOverlay } },
+          peers: {
+            Popover: {
+              color: colorPanel,
+              textColor: colorText,
+              boxShadow: shadowOverlay,
+              borderRadius: radius,
+              fontSize,
+              dividerColor: colorBorder,
+            },
+          },
         },
         InternalSelectMenu: {
           optionFontSizeMedium: fontSize,
@@ -213,17 +214,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
         },
       },
     },
-    Switch: {
-      textColor: colorText,
-      iconColor: colorText,
-      loadingColor: colorText,
-      opacityDisabled: disabledOpacity,
-      railColor: colorBorder,
-      railColorActive: colorControl,
-      buttonColor: colorPanel,
-      buttonBoxShadow: shadowControl,
-      boxShadowFocus: shadowFocusRing,
-    },
+    Switch: shared.Switch,
     DatePicker: {
       itemFontSize: fontSize,
       calendarDaysFontSize: fontSize,
@@ -287,9 +278,7 @@ function resolveMotionDuration(motion: EffectiveAppearanceState['motion']): stri
   }
 }
 
-export function createPavpNaiveThemeProjection(
-  appearance: Readonly<UiAppearanceSnapshot>,
-): Readonly<PavpNaiveThemeProjection> {
+export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearanceSnapshot>) {
   const material = resolveMaterialSurface(appearance.material)
   const projectedMotionDuration = resolveMotionDuration(appearance.motion)
   const dropdown = {
@@ -349,6 +338,11 @@ export function createPavpNaiveThemeProjection(
       buttonBorderRadiusMedium: radius,
     },
     common: {
+      fontSizeTiny: fontSize,
+      fontSizeMini: fontSize,
+      textColorDisabled: colorTextSecondary,
+      placeholderColor: colorTextSecondary,
+      placeholderColorDisabled: colorTextSecondary,
       infoColor: appearance.statusColors.info.default,
       infoColorHover: appearance.statusColors.info.hover,
       infoColorPressed: appearance.statusColors.info.pressed,
@@ -416,6 +410,18 @@ export function createPavpNaiveThemeProjection(
       fontWeightActive: fontWeightStrong,
     },
     Button: {
+      textColorText: colorText,
+      textColorTextHover: colorControl,
+      textColorTextPressed: colorControl,
+      textColorTextDisabled: colorTextSecondary,
+      textColorDisabledInfo: appearance.statusColors.info.onStatus,
+      borderDisabledInfo: `var(--ui-admin-border-width) solid ${appearance.statusColors.info.default}`,
+      textColorDisabledSuccess: appearance.statusColors.success.onStatus,
+      borderDisabledSuccess: `var(--ui-admin-border-width) solid ${appearance.statusColors.success.default}`,
+      textColorDisabledWarning: appearance.statusColors.warning.onStatus,
+      borderDisabledWarning: `var(--ui-admin-border-width) solid ${appearance.statusColors.warning.default}`,
+      textColorDisabledError: appearance.statusColors.error.onStatus,
+      borderDisabledError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       textColorInfo: appearance.statusColors.info.onStatus,
       textColorHoverInfo: appearance.statusColors.info.onStatus,
       textColorPressedInfo: appearance.statusColors.info.onStatus,
@@ -567,6 +573,13 @@ export function createPavpNaiveThemeProjection(
       buttonBorderRadius: radius,
     },
     Tag: {
+      color: material.chrome,
+      closeIconColor: colorTextSecondary,
+      closeIconColorHover: colorText,
+      closeIconColorPressed: colorText,
+      closeColorHover: colorPage,
+      closeColorPressed: colorPage,
+      closeBorderRadius: radius,
       heightMedium: controlHeight,
       borderRadius: radius,
       fontSizeMedium: fontSize,
@@ -598,5 +611,5 @@ export function createPavpNaiveThemeProjection(
   return Object.freeze({
     theme: appearance.colorMode === 'dark' ? darkTheme : null,
     themeOverrides,
-  })
+  } satisfies PavpNaiveThemeProjection)
 }

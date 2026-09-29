@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import {
-  UiDescriptionList,
-  UiPageHeader,
-  UiSection,
-  UiStatusBadge,
-  type UiDescriptionItem,
-} from '@platform/ui'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
+import { UiPageHeader, UiSection, UiStatusBadge } from '@platform/ui'
 
 import { engineeringManifest } from '../generated/engineering-manifest'
 import { useConsoleI18n } from '../shared/i18n'
@@ -20,15 +15,14 @@ defineProps<{
   readonly message: string
 }>()
 
-const coordinateItems: readonly UiDescriptionItem[] = Object.entries(
-  engineeringManifest.coordinates,
-).map(([label, value]) => ({ label, value }))
-const budgetItems: readonly UiDescriptionItem[] = engineeringManifest.bundleBudgets.map(
-  (record) => ({
-    label: record.id,
-    value: `${String(record.limit)} ${record.unit}`,
-  }),
-)
+const coordinateItems = Object.entries(engineeringManifest.coordinates).map(([label, value]) => ({
+  label,
+  value,
+}))
+const budgetItems = engineeringManifest.bundleBudgets.map((record) => ({
+  label: record.id,
+  value: `${String(record.limit)} ${record.unit}`,
+}))
 </script>
 
 <template>
@@ -45,12 +39,36 @@ const budgetItems: readonly UiDescriptionItem[] = engineeringManifest.bundleBudg
       :label="t('console.engineering.generated')"
       tone="complete"
     />
-    <UiDescriptionList :items="coordinateItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in coordinateItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
   <UiSection
     :description="engineeringManifest.verifyStageIds.join(' → ')"
     :title="t('console.engineering.gates')"
   >
-    <UiDescriptionList :items="budgetItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in budgetItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
 </template>

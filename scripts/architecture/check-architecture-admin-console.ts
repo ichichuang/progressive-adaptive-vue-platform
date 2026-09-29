@@ -129,8 +129,6 @@ interface ArchitectureAdminConsoleNegativeProbeResult {
 
 interface NavigationReworkSourceSnapshot {
   readonly applicationSource: string
-  readonly layoutAdapterSource: string
-  readonly menuAdapterSource: string
   readonly providerSource: string
   readonly runtimeContextSource: string
   readonly shellSource: string
@@ -144,11 +142,9 @@ interface AdminNavigationNativeSourceSnapshot {
   readonly applicationSource: string
   readonly architectureSource: string
   readonly appearancePageSource: string
-  readonly buttonAdapterSource: string
   readonly checkBundleSource: string
   readonly consoleFrameSource: string
   readonly engineeringManifestSource: string
-  readonly iconAdapterSource: string
   readonly lockSource: string
   readonly motionDomMaxSource: string
   readonly motionRuntimeSource: string
@@ -169,7 +165,6 @@ interface AdminNavigationNativeSourceSnapshot {
   readonly storageRecordCount: number
   readonly shellSource: string
   readonly themeSource: string
-  readonly tooltipAdapterSource: string
   readonly uiManifestSource: string
   readonly workspaceSource: string
 }
@@ -267,7 +262,7 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedMotionVueVersion = '2.4.0'
 const expectedVueUseCoreVersion = '14.4.0'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 73
+const expectedArchitectureAdminConsoleNegativeProbeCount = 71
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
@@ -287,15 +282,15 @@ const expectedAdminNavigationCollapsedPopupSourceInvariantCount = 15
 const expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount = 8
 const expectedAdminNavigationHeaderPlacementSourceInvariantCount = 13
 const expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount = 5
-const expectedAdminNavigationNaiveActionsMotionInvariantCount = 24
+const expectedAdminNavigationNaiveActionsMotionInvariantCount = 22
 const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 10
 const expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount = 12
 const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 22
 const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 16
 const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
 const expectedRouteTransitionAdmissionNegativeProbeCount = 12
-const expectedNavigationReworkSourceInvariantCount = 59
-const expectedNavigationReworkSourceNegativeProbeCount = 23
+const expectedNavigationReworkSourceInvariantCount = 56
+const expectedNavigationReworkSourceNegativeProbeCount = 22
 const expectedNavigationBudgetNegativeProbeCount = 6
 const expectedRuntime003ActiveMirrorCount = 13
 const expectedRuntime003SourceNegativeProbeCount = 10
@@ -697,6 +692,7 @@ const pageFactImportContract = new Map<string, readonly string[]>([
   [
     'apps/web/src/pages/index.vue',
     [
+      'naive-ui/es/descriptions',
       '@platform/ui',
       'vue',
       '../app/appearance/appearance-read-boundary',
@@ -708,6 +704,10 @@ const pageFactImportContract = new Map<string, readonly string[]>([
   [
     'apps/web/src/pages/appearance.vue',
     [
+      'naive-ui/es/button',
+      'naive-ui/es/radio',
+      'naive-ui/es/switch',
+      'naive-ui/es/descriptions',
       '@platform/design-system',
       '@platform/ui',
       'vue',
@@ -720,25 +720,59 @@ const pageFactImportContract = new Map<string, readonly string[]>([
   ],
   [
     'apps/web/src/pages/design-tokens.vue',
-    ['@platform/design-system', '@platform/ui', 'vue', '../shared/i18n'],
+    [
+      'naive-ui/es/descriptions',
+      '@platform/design-system',
+      '@platform/ui',
+      'vue',
+      '../shared/i18n',
+    ],
   ],
   [
     'apps/web/src/pages/runtime-kernel.vue',
-    ['@platform/ui', 'vue', '../app/bootstrap/runtime-kernel-console-projection', '../shared/i18n'],
+    [
+      'naive-ui/es/descriptions',
+      '@platform/ui',
+      'vue',
+      '../app/bootstrap/runtime-kernel-console-projection',
+      '../shared/i18n',
+    ],
   ],
   [
     'apps/web/src/pages/router.vue',
-    ['@platform/ui', 'vue', '../app/router/router-console-projection', '../shared/i18n'],
+    [
+      'naive-ui/es/descriptions',
+      '@platform/ui',
+      'vue',
+      '../app/router/router-console-projection',
+      '../shared/i18n',
+    ],
   ],
   [
     'apps/web/src/pages/storage.vue',
-    ['@platform/ui', '../app/storage/storage-console-projection', '../shared/i18n'],
+    [
+      'naive-ui/es/descriptions',
+      '@platform/ui',
+      '../app/storage/storage-console-projection',
+      '../shared/i18n',
+    ],
   ],
-  ['apps/web/src/pages/ui-system.vue', ['@platform/ui', 'vue', '../shared/i18n']],
-  ['apps/web/src/pages/responsive-layout.vue', ['@platform/ui', '../shared/i18n']],
+  [
+    'apps/web/src/pages/ui-system.vue',
+    ['naive-ui/es/descriptions', '@platform/ui', 'vue', '../shared/i18n'],
+  ],
+  [
+    'apps/web/src/pages/responsive-layout.vue',
+    ['naive-ui/es/descriptions', '@platform/ui', '../shared/i18n'],
+  ],
   [
     'apps/web/src/pages/engineering.vue',
-    ['@platform/ui', '../generated/engineering-manifest', '../shared/i18n'],
+    [
+      'naive-ui/es/descriptions',
+      '@platform/ui',
+      '../generated/engineering-manifest',
+      '../shared/i18n',
+    ],
   ],
   [
     'apps/web/src/pages/capabilities.vue',
@@ -780,6 +814,11 @@ const scrollSystemThemeOverrideContract = {
 } as const
 const themeOverrideContract = {
   common: [
+    'fontSizeTiny',
+    'fontSizeMini',
+    'textColorDisabled',
+    'placeholderColor',
+    'placeholderColorDisabled',
     'infoColor',
     'infoColorHover',
     'infoColorPressed',
@@ -847,6 +886,18 @@ const themeOverrideContract = {
     'separatorColor',
   ],
   Button: [
+    'textColorText',
+    'textColorTextHover',
+    'textColorTextPressed',
+    'textColorTextDisabled',
+    'textColorDisabledInfo',
+    'borderDisabledInfo',
+    'textColorDisabledSuccess',
+    'borderDisabledSuccess',
+    'textColorDisabledWarning',
+    'borderDisabledWarning',
+    'textColorDisabledError',
+    'borderDisabledError',
     'textColorInfo',
     'textColorHoverInfo',
     'textColorPressedInfo',
@@ -954,7 +1005,21 @@ const themeOverrideContract = {
     'buttonTextColorHover',
     'fontSizeMedium',
   ],
-  Tag: ['border', 'borderRadius', 'colorBordered', 'fontSizeMedium', 'heightMedium', 'textColor'],
+  Tag: [
+    'color',
+    'closeIconColor',
+    'closeIconColorHover',
+    'closeIconColorPressed',
+    'closeColorHover',
+    'closeColorPressed',
+    'closeBorderRadius',
+    'border',
+    'borderRadius',
+    'colorBordered',
+    'fontSizeMedium',
+    'heightMedium',
+    'textColor',
+  ],
   Tooltip: ['borderRadius', 'boxShadow', 'color', 'padding', 'peers', 'textColor'],
 } as const
 
@@ -1017,6 +1082,150 @@ interface Naive2452SharedConsumptionRecord {
 }
 
 const naiveThemeSemanticGroups = [
+  {
+    component: 'common',
+    fields: ['fontSizeTiny'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'common',
+    fields: ['fontSizeMini'],
+    authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'common',
+    fields: ['textColorDisabled'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['placeholderColor'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'common',
+    fields: ['placeholderColorDisabled'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorText'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorTextHover'],
+    authority: 'color.control.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorTextPressed'],
+    authority: 'color.control.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorTextDisabled'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorDisabledInfo'],
+    authority: 'status.info.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderDisabledInfo'],
+    authority: 'status.info.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorDisabledSuccess'],
+    authority: 'status.success.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderDisabledSuccess'],
+    authority: 'status.success.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorDisabledWarning'],
+    authority: 'status.warning.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderDisabledWarning'],
+    authority: 'status.warning.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'Button',
+    fields: ['textColorDisabledError'],
+    authority: 'status.error.onStatus',
+    valueKind: 'color',
+  },
+  {
+    component: 'Button',
+    fields: ['borderDisabledError'],
+    authority: 'status.error.border',
+    valueKind: 'border',
+  },
+  {
+    component: 'Tag',
+    fields: ['color'],
+    authority: 'appearance.material.chrome',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['closeIconColor'],
+    authority: 'color.text.secondary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['closeIconColorHover'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['closeIconColorPressed'],
+    authority: 'color.text.primary',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['closeColorHover'],
+    authority: 'color.surface.page',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['closeColorPressed'],
+    authority: 'color.surface.page',
+    valueKind: 'color',
+  },
+  {
+    component: 'Tag',
+    fields: ['closeBorderRadius'],
+    authority: 'interaction.radius.panel',
+    valueKind: 'length',
+  },
   {
     component: 'common',
     fields: ['infoColor'],
@@ -1674,6 +1883,90 @@ const naive2452ConsumptionContract = [
   {
     component: 'Button',
     fields: [
+      [
+        'textColorText',
+        'self.textColorText via createKey("textColorText", mergedType)',
+        ['--n-text-color'],
+        'text-default',
+        '.n-button--text default',
+      ],
+      [
+        'textColorTextHover',
+        'self.textColorTextHover via createKey("textColorTextHover", mergedType)',
+        ['--n-text-color-hover', '--n-text-color-focus'],
+        'text-hover/focus',
+        '.n-button--text hover/focus',
+      ],
+      [
+        'textColorTextPressed',
+        'self.textColorTextPressed via createKey("textColorTextPressed", mergedType)',
+        ['--n-text-color-pressed'],
+        'text-pressed',
+        '.n-button--text pressed',
+      ],
+      [
+        'textColorTextDisabled',
+        'self.textColorTextDisabled via createKey("textColorTextDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'disabled',
+        '.n-button--text disabled',
+      ],
+      [
+        'textColorDisabledInfo',
+        'self.textColorDisabledInfo via createKey("textColorDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'info-filled-disabled',
+        '.n-button--disabled text info',
+      ],
+      [
+        'borderDisabledInfo',
+        'self.borderDisabledInfo via createKey("borderDisabled", mergedType)',
+        ['--n-border-disabled'],
+        'info-filled-disabled',
+        '.n-button--disabled border info',
+      ],
+      [
+        'textColorDisabledSuccess',
+        'self.textColorDisabledSuccess via createKey("textColorDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'success-filled-disabled',
+        '.n-button--disabled text success',
+      ],
+      [
+        'borderDisabledSuccess',
+        'self.borderDisabledSuccess via createKey("borderDisabled", mergedType)',
+        ['--n-border-disabled'],
+        'success-filled-disabled',
+        '.n-button--disabled border success',
+      ],
+      [
+        'textColorDisabledWarning',
+        'self.textColorDisabledWarning via createKey("textColorDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'warning-filled-disabled',
+        '.n-button--disabled text warning',
+      ],
+      [
+        'borderDisabledWarning',
+        'self.borderDisabledWarning via createKey("borderDisabled", mergedType)',
+        ['--n-border-disabled'],
+        'warning-filled-disabled',
+        '.n-button--disabled border warning',
+      ],
+      [
+        'textColorDisabledError',
+        'self.textColorDisabledError via createKey("textColorDisabled", mergedType)',
+        ['--n-text-color-disabled'],
+        'error-filled-disabled',
+        '.n-button--disabled text error',
+      ],
+      [
+        'borderDisabledError',
+        'self.borderDisabledError via createKey("borderDisabled", mergedType)',
+        ['--n-border-disabled'],
+        'error-filled-disabled',
+        '.n-button--disabled border error',
+      ],
       [
         'textColorInfo',
         'self.textColorInfo via createKey("textColor", mergedType)',
@@ -2418,6 +2711,55 @@ const naive2452ConsumptionContract = [
   {
     component: 'Tag',
     fields: [
+      [
+        'color',
+        'self.color via createKey("color", type)',
+        ['--n-color'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
+      [
+        'closeIconColor',
+        'self.closeIconColor via createKey("closeIconColor", type)',
+        ['--n-close-icon-color'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
+      [
+        'closeIconColorHover',
+        'self.closeIconColorHover via createKey("closeIconColorHover", type)',
+        ['--n-close-icon-color-hover'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
+      [
+        'closeIconColorPressed',
+        'self.closeIconColorPressed via createKey("closeIconColorPressed", type)',
+        ['--n-close-icon-color-pressed'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
+      [
+        'closeColorHover',
+        'self.closeColorHover via createKey("closeColorHover", type)',
+        ['--n-close-color-hover'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
+      [
+        'closeColorPressed',
+        'self.closeColorPressed via createKey("closeColorPressed", type)',
+        ['--n-close-color-pressed'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
+      [
+        'closeBorderRadius',
+        'self.closeBorderRadius',
+        ['--n-close-border-radius'],
+        'native',
+        '.n-tag default tag or its close button',
+      ],
       [
         'border',
         'self.border via createKey("border", type)',
@@ -3945,7 +4287,9 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('NAIVE_RAW_VISUAL_AUTHORITY')
   }
 
-  const nonShellUiSource = snapshot.nonAdapterUiSource.replace(snapshot.shellSource, '')
+  const nonShellUiSource = snapshot.nonAdapterUiSource
+    .replace(snapshot.shellSource, '')
+    .replace(snapshot.uiProviderSource, '')
   if (/\.n-[a-z0-9_-]+/iu.test(nonShellUiSource) || /\bthemeOverrides\b/u.test(nonShellUiSource)) {
     violations.push('NAIVE_OVERRIDE_OUTSIDE_PRIVATE_ADAPTER')
   }
@@ -4243,8 +4587,8 @@ function adminNavigationHeaderCollapseControlProjection(
     control !== undefined &&
     !control.ancestors.some(
       (ancestor) =>
-        ancestor.tag === 'PavpLayoutSiderPrimitive' ||
-        ancestor.tag === 'PavpMenuPrimitive' ||
+        ancestor.tag === 'NLayoutSider' ||
+        ancestor.tag === 'NMenu' ||
         hasStaticTemplateClass(ancestor, 'pavp-admin-shell__drawer-navigation') ||
         (ancestor.tag === 'nav' && staticTemplateAttribute(ancestor, 'aria-label') === '架构导航'),
     )
@@ -4820,7 +5164,7 @@ function runtime002NavigationViolations(shellSource: string): string[] {
 
   if (
     drawerButtons.length !== 1 ||
-    !shellSource.includes('<PavpMenuPrimitive') ||
+    !shellSource.includes('<NMenu') ||
     !shellSource.includes(':node-props="persistentNavigationNodeProps"') ||
     !shellSource.includes(':dropdown-props="persistentNavigationDropdownProps"')
   ) {
@@ -5569,7 +5913,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   if (
     runtime002NavigationViolations(snapshot.shellSource).length > 0 ||
     !snapshot.shellSource.includes('v-if="enabled && profile !== \'narrow\'"') ||
-    !snapshot.shellSource.includes('<PavpMenuPrimitive') ||
+    !snapshot.shellSource.includes('<NMenu') ||
     !snapshot.shellSource.includes(':collapsed="persistentNavigationCollapsed"')
   ) {
     violations.push('PAVP_RUNTIME_003_PERSISTENT_NAVIGATION')
@@ -6058,10 +6402,10 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   if (
     !source.includes(':data-material-preview="effective.snapshot.value.material"') ||
     !source.includes(':data-motion-preview="effective.snapshot.value.motion"') ||
-    !source.includes('<UiButton') ||
+    !source.includes('<NButton') ||
     !source.includes('<UiStatusBadge') ||
-    !source.includes('<UiDescriptionList') ||
-    !source.includes('<UiSegmentedControl') ||
+    !source.includes('<NDescriptions') ||
+    !source.includes('<NRadioGroup') ||
     !source.includes('pavp-material-stage__header') ||
     !source.includes('pavp-material-stage__navigation') ||
     !source.includes('pavp-material-stage__content') ||
@@ -6091,9 +6435,6 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   }
   if (/\b(?:matchMedia|CSS\.supports)\s*\(/u.test(source)) {
     violations.push('DUPLICATE_APPEARANCE_ENVIRONMENT')
-  }
-  if (/\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]/u.test(source)) {
-    violations.push('DIRECT_NAIVE_IMPORT')
   }
   if (/<UiProvider\b/u.test(template)) {
     violations.push('SECOND_UI_PROVIDER')
@@ -10107,13 +10448,13 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           opacity: '1',
           transform: 'none',
         }) &&
-        exactOccurrenceCount(shellTemplate, '<PavpMenuPrimitive') === 1 &&
+        exactOccurrenceCount(shellTemplate, '<NMenu') === 1 &&
         shellTemplate.includes(':options="navigationMenuOptions"') &&
         shellTemplate.includes(':value="activeRouteName"') &&
-        !/<PavpMenuPrimitive[\s\S]*?:key=/u.test(
+        !/<NMenu[\s\S]*?:key=/u.test(
           shellTemplate.slice(
-            shellTemplate.indexOf('<PavpMenuPrimitive'),
-            shellTemplate.indexOf('/>', shellTemplate.indexOf('<PavpMenuPrimitive')),
+            shellTemplate.indexOf('<NMenu'),
+            shellTemplate.indexOf('/>', shellTemplate.indexOf('<NMenu')),
           ),
         ),
     },
@@ -10157,8 +10498,8 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
     {
       code: 'ADMIN_NAV_MOTION_VUE_SINGLE_NATIVE_NAVIGATION',
       passed:
-        exactOccurrenceCount(shellTemplate, '<PavpLayoutSiderPrimitive') === 1 &&
-        exactOccurrenceCount(shellTemplate, '<PavpMenuPrimitive') === 1 &&
+        exactOccurrenceCount(shellTemplate, '<NLayoutSider') === 1 &&
+        exactOccurrenceCount(shellTemplate, '<NMenu') === 1 &&
         exactOccurrenceCount(shellScript, 'const persistentNavigationCollapsed = computed(') === 1,
     },
     {
@@ -11002,14 +11343,6 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     snapshot.appearancePageSource,
     '',
   )
-
-  if (
-    /\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]|\bimport\s*\(\s*['"]naive-ui(?:\/[^'"]+)?['"]/u.test(
-      snapshot.applicationImportSource,
-    )
-  ) {
-    violations.push('DIRECT_NAIVE_IMPORT')
-  }
   if (/\breka-ui\b/u.test(snapshot.manifestAndLockSource + snapshot.applicationImportSource)) {
     violations.push('ACTIVE_REKA')
   }
@@ -11063,7 +11396,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('DUPLICATE_APPEARANCE_ENVIRONMENT')
   }
   if (
-    /<(?:UiButton|UiSegmentedControl|button|input|select|textarea)\b[\s\S]*?\b(?:API|Auth|认证|接口)/iu.test(
+    /<(?:NButton|NRadioGroup|button|input|select|textarea)\b[\s\S]*?\b(?:API|Auth|认证|接口)/iu.test(
       snapshot.capabilityPageTemplateSource,
     )
   ) {
@@ -12035,13 +12368,6 @@ function runArchitectureAdminConsoleNegativeProbes(
       ],
     ),
     [
-      'direct-naive-app-import',
-      'DIRECT_NAIVE_IMPORT',
-      {
-        applicationImportSource: `${baseline.applicationImportSource}\nimport { NButton } from 'naive-ui'`,
-      },
-    ],
-    [
       'reintroduced-reka',
       'ACTIVE_REKA',
       { manifestAndLockSource: `${baseline.manifestAndLockSource}\n"reka-ui": "2.10.3"` },
@@ -12219,7 +12545,7 @@ function runArchitectureAdminConsoleNegativeProbes(
       'inactive-api-auth-control',
       'INACTIVE_CAPABILITY_CONTROL',
       {
-        capabilityPageTemplateSource: `${baseline.capabilityPageTemplateSource}\n<UiButton>API 设置</UiButton>`,
+        capabilityPageTemplateSource: `${baseline.capabilityPageTemplateSource}\n<NButton>API 设置</NButton>`,
       },
     ],
     [
@@ -12505,13 +12831,6 @@ function runArchitectureAdminConsoleNegativeProbes(
       },
     ],
     [
-      'appearance-direct-naive-import',
-      'DIRECT_NAIVE_IMPORT',
-      {
-        appearancePageSource: `${baseline.appearancePageSource}\nimport { NButton } from 'naive-ui'`,
-      },
-    ],
-    [
       'appearance-english-primary-label',
       'ENGLISH_PRIMARY_LABEL',
       {
@@ -12720,19 +13039,12 @@ function runRuntime003SourceNegativeProbes(
 }
 
 function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapshot): string[] {
-  const {
-    applicationSource,
-    layoutAdapterSource,
-    menuAdapterSource,
-    providerSource,
-    runtimeContextSource,
-    shellSource,
-    themeSource,
-  } = snapshot
-  const layoutStart = shellSource.indexOf('<PavpLayoutPrimitive')
-  const siderStart = shellSource.indexOf('<PavpLayoutSiderPrimitive')
-  const siderEnd = shellSource.indexOf('</PavpLayoutSiderPrimitive>')
-  const layoutEnd = shellSource.indexOf('</PavpLayoutPrimitive>')
+  const { applicationSource, providerSource, runtimeContextSource, shellSource, themeSource } =
+    snapshot
+  const layoutStart = shellSource.indexOf('<NLayout')
+  const siderStart = shellSource.indexOf('<NLayoutSider')
+  const siderEnd = shellSource.indexOf('</NLayoutSider>')
+  const layoutEnd = shellSource.indexOf('</NLayout>')
   const normalNodeStart = shellSource.indexOf('const persistentNavigationNodeProps')
   const dropdownNodeStart = shellSource.indexOf('const persistentNavigationDropdownNodeProps')
   const dropdownPropsStart = shellSource.indexOf('const persistentNavigationDropdownProps')
@@ -12801,18 +13113,6 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       ? undefined
       : objectPropertyInitializer(layoutCommonOverrides, 'bodyColor')
   const invariants: readonly (readonly [string, boolean])[] = [
-    ['NAV_VENDOR_IMPORT_OWNER', !/\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]/u.test(applicationSource)],
-    [
-      'NAV_LAYOUT_ADAPTER_LAYOUT',
-      layoutAdapterSource.includes('NLayout as PavpLayoutPrimitive') &&
-        layoutAdapterSource.includes('NLayoutSider as PavpLayoutSiderPrimitive') &&
-        layoutAdapterSource.includes("from 'naive-ui/es/layout'"),
-    ],
-    [
-      'NAV_MENU_ADAPTER',
-      menuAdapterSource.includes('NMenu as PavpMenuPrimitive') &&
-        menuAdapterSource.includes("from 'naive-ui/es/menu'"),
-    ],
     [
       'NAV_RUNTIME_CONTEXT_KEY',
       runtimeContextSource.includes('InjectionKey<PavpNaiveAppearanceReference>') &&
@@ -12899,8 +13199,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_STABLE_LAYOUT',
-      occurrences(shellSource, '<PavpLayoutPrimitive\n') === 1 &&
-        !/<PavpLayoutPrimitive[^>]*\bv-if\b/u.test(shellSource),
+      occurrences(shellSource, '<NLayout\n') === 1 && !/<NLayout\b[^>]*\bv-if\b/u.test(shellSource),
     ],
     [
       'NAV_LAYOUT_PROFILE',
@@ -13174,21 +13473,13 @@ function runNavigationReworkSourceNegativeProbes(
   const fontScaleWatch = `watch(\n  () => appearance.value.fontScale,\n  () => {\n    updateResponsiveNavigationMetrics()\n  },\n  { flush: 'post' },\n)`
   const probes: readonly (readonly [string, string, NavigationReworkSourceSnapshot])[] = [
     [
-      'navigation-source-app-direct-naive-import',
-      'NAV_VENDOR_IMPORT_OWNER',
-      {
-        ...baseline,
-        applicationSource: `${baseline.applicationSource}\nimport { NMenu } from 'naive-ui'`,
-      },
-    ],
-    [
       'navigation-source-sider-outside-layout',
       'NAV_LAYOUT_NESTING',
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '<PavpLayoutSiderPrimitive',
-        '</PavpLayoutPrimitive>\n      <PavpLayoutSiderPrimitive',
+        '<NLayoutSider',
+        '</NLayout>\n      <NLayoutSider',
       ),
     ],
     [
@@ -13824,7 +14115,7 @@ function adminNavigationMenuNodes(shellSource: string): readonly VueTemplateNode
 
   return collectShellTemplateElements(templateAst)
     .map((element) => element.node)
-    .filter((node) => node.tag === 'PavpMenuPrimitive')
+    .filter((node) => node.tag === 'NMenu')
 }
 
 function singleBoundExpression(node: VueTemplateNode, argument: string): string | undefined {
@@ -14164,7 +14455,7 @@ function adminNavigationNativeSourceInvariantResults(
     shellTemplate.includes('v-if="profile === \'wide\'"') &&
     shellTemplate.includes(':aria-label="wideNavigationCollapseLabel"') &&
     shellTemplate.includes('@click="toggleWideNavigation"') &&
-    shellTemplate.includes('<PavpButtonPrimitive') &&
+    shellTemplate.includes('<NButton') &&
     shellTemplate.includes('attr-type="button"') &&
     shellTemplate.includes(':bordered="false"') &&
     shellTemplate.includes('type="tertiary"') &&
@@ -14204,11 +14495,11 @@ function adminNavigationNativeSourceInvariantResults(
   return Object.freeze([
     {
       code: 'ADMIN_NAV_NATIVE_SINGLE_SIDER',
-      passed: [...shellTemplate.matchAll(/<PavpLayoutSiderPrimitive(?=[\s>])/gu)].length === 1,
+      passed: [...shellTemplate.matchAll(/<NLayoutSider(?=[\s>])/gu)].length === 1,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SINGLE_MENU',
-      passed: [...shellTemplate.matchAll(/<PavpMenuPrimitive(?=[\s>])/gu)].length === 1,
+      passed: [...shellTemplate.matchAll(/<NMenu(?=[\s>])/gu)].length === 1,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SHARED_COLLAPSED_AUTHORITY',
@@ -14761,10 +15052,8 @@ function adminNavigationHeaderPlacementInvariantResults(
   )
   const soleTemplateStateWriter =
     stateWritingTemplateEvents.length === 1 ? stateWritingTemplateEvents[0] : undefined
-  const siderNodes = templateElements.filter(
-    (element) => element.node.tag === 'PavpLayoutSiderPrimitive',
-  )
-  const menuNodes = templateElements.filter((element) => element.node.tag === 'PavpMenuPrimitive')
+  const siderNodes = templateElements.filter((element) => element.node.tag === 'NLayoutSider')
+  const menuNodes = templateElements.filter((element) => element.node.tag === 'NMenu')
   const runtimeSingleSiderMenu =
     siderNodes.length === 1 &&
     menuNodes.length === 1 &&
@@ -14843,7 +15132,7 @@ function adminNavigationHeaderPlacementInvariantResults(
       code: 'ADMIN_NAV_HEADER_COLLAPSE_SINGLE_CONTROL',
       passed:
         projection.controlElements.length === 1 &&
-        controlNode?.tag === 'PavpButtonPrimitive' &&
+        controlNode?.tag === 'NButton' &&
         staticTemplateAttribute(controlNode, 'attr-type') === 'button',
     },
     {
@@ -14875,7 +15164,7 @@ function adminNavigationHeaderPlacementInvariantResults(
         controlAriaLabelBindings.length === 1 &&
         normalizeTemplateExpression(controlAriaLabelBindings[0]?.exp?.content) ===
           'wideNavigationCollapseLabel' &&
-        controlNode?.tag === 'PavpButtonPrimitive' &&
+        controlNode?.tag === 'NButton' &&
         staticTemplateAttribute(controlNode, 'attr-type') === 'button',
     },
     {
@@ -14956,7 +15245,7 @@ function replaceExactOnce(source: string, search: string, replacement: string): 
 }
 
 function insertBeforePersistentNavigationEnd(source: string, insertion: string): string {
-  const menuStart = source.indexOf('<PavpMenuPrimitive')
+  const menuStart = source.indexOf('<NMenu')
   const persistentNavigationEnd = menuStart === -1 ? -1 : source.indexOf('</nav>', menuStart)
 
   if (persistentNavigationEnd === -1) {
@@ -15052,10 +15341,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       'ADMIN_NAV_NATIVE_SINGLE_SIDER',
       {
         ...baseline,
-        shellSource: baseline.shellSource.replace(
-          '<PavpLayoutSiderPrimitive',
-          '<PavpLayoutSiderPrimitive><PavpLayoutSiderPrimitive',
-        ),
+        shellSource: baseline.shellSource.replace('<NLayoutSider', '<NLayoutSider><NLayoutSider'),
       },
     ],
     [
@@ -15063,10 +15349,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       'ADMIN_NAV_NATIVE_SINGLE_MENU',
       {
         ...baseline,
-        shellSource: baseline.shellSource.replace(
-          '<PavpMenuPrimitive',
-          '<PavpMenuPrimitive><PavpMenuPrimitive',
-        ),
+        shellSource: baseline.shellSource.replace('<NMenu', '<NMenu><NMenu'),
       },
     ],
     [
@@ -15296,7 +15579,7 @@ function adminNavigationExpansionMotionInvariantResults(
   )
   const shellInitializers = topLevelVariableInitializers(shellSourceFile)
   const shellCallables = topLevelCallables(shellSourceFile)
-  const menuNodes = shellElements.filter((element) => element.node.tag === 'PavpMenuPrimitive')
+  const menuNodes = shellElements.filter((element) => element.node.tag === 'NMenu')
   const menuNode = menuNodes.length === 1 ? menuNodes[0]?.node : undefined
   const expandedKeysBinding =
     menuNode === undefined ? undefined : singleBoundExpression(menuNode, 'expanded-keys')
@@ -15372,8 +15655,8 @@ function adminNavigationExpansionMotionInvariantResults(
     groupControl !== undefined &&
     !groupControl.ancestors.some(
       (ancestor) =>
-        ancestor.tag === 'PavpLayoutSiderPrimitive' ||
-        ancestor.tag === 'PavpMenuPrimitive' ||
+        ancestor.tag === 'NLayoutSider' ||
+        ancestor.tag === 'NMenu' ||
         hasStaticTemplateClass(ancestor, 'pavp-admin-shell__drawer-navigation') ||
         (ancestor.tag === 'nav' && staticTemplateAttribute(ancestor, 'aria-label') === '架构导航'),
     )
@@ -15415,7 +15698,7 @@ function adminNavigationExpansionMotionInvariantResults(
     exactOccurrenceCount(shellTemplate, '{{ navigationGroupsToggleLabel }}') === 1 &&
     !groupControlSource.includes('title=')
   const groupControlNaiveButton =
-    groupControlNode?.tag === 'PavpButtonPrimitive' &&
+    groupControlNode?.tag === 'NButton' &&
     staticTemplateAttribute(groupControlNode, 'attr-type') === 'button' &&
     staticTemplateAttribute(groupControlNode, 'type') === 'tertiary' &&
     singleBoundExpression(groupControlNode, 'bordered') === 'false' &&
@@ -15736,8 +16019,8 @@ function adminNavigationExpansionMotionInvariantResults(
     {
       code: 'ADMIN_NAV_EXPANSION_SINGLE_SIDER_MENU',
       passed:
-        [...shellTemplate.matchAll(/<PavpLayoutSiderPrimitive(?=[\s>])/gu)].length === 1 &&
-        [...shellTemplate.matchAll(/<PavpMenuPrimitive(?=[\s>])/gu)].length === 1,
+        [...shellTemplate.matchAll(/<NLayoutSider(?=[\s>])/gu)].length === 1 &&
+        [...shellTemplate.matchAll(/<NMenu(?=[\s>])/gu)].length === 1,
     },
     {
       code: 'ADMIN_NAV_EXPANSION_NARROW_DRAWER_PRESERVED',
@@ -15888,7 +16171,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       'header-trailing',
   )
   const actionTooltips = actionElements.map((action) =>
-    [...action.ancestors].reverse().find((ancestor) => ancestor.tag === 'PavpTooltipPrimitive'),
+    [...action.ancestors].reverse().find((ancestor) => ancestor.tag === 'NTooltip'),
   )
   const actionDescendants = (action: ShellTemplateElement | undefined): ShellTemplateElement[] =>
     action === undefined
@@ -15909,7 +16192,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     ),
   )
   const iconPrimitives = actionElements.flatMap((action) =>
-    actionDescendants(action).filter((element) => element.node.tag === 'PavpIconPrimitive'),
+    actionDescendants(action).filter((element) => element.node.tag === 'NIcon'),
   )
   const iconSlotTemplates = actionElements.flatMap((action) =>
     actionDescendants(action).filter(
@@ -15928,15 +16211,11 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const exactPublicComponents = [
     'UiScrollArea',
-    'UiSwitch',
     'UiAdminShell',
-    'UiButton',
-    'UiDescriptionList',
     'UiPageHeader',
     'UiProvider',
     'UiRadioCardGroup',
     'UiSection',
-    'UiSegmentedControl',
     'UiStatusBadge',
     'UiForm',
     'UiFormField',
@@ -16014,7 +16293,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
         ownerIndex === -1 ? [] : [...element.ancestors.slice(ownerIndex + 1), element.node]
 
       return (
-        element.node.tag === 'PavpIconPrimitive' &&
+        element.node.tag === 'NIcon' &&
         hasStaticTemplateClass(element.node, 'pavp-admin-shell__header-action-icon-state') &&
         hasStaticTemplateClass(element.node, 'col-start-1') &&
         hasStaticTemplateClass(element.node, 'row-start-1') &&
@@ -16216,7 +16495,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
         actionElements.length === 2 &&
         actionElements.every(
           (element) =>
-            element.node.tag === 'PavpButtonPrimitive' &&
+            element.node.tag === 'NButton' &&
             staticTemplateAttribute(element.node, 'attr-type') === 'button' &&
             templateAttributes(element.node, 'circle').length === 1 &&
             staticTemplateAttribute(element.node, 'type') === 'tertiary' &&
@@ -16229,26 +16508,19 @@ function adminNavigationNaiveActionsMotionInvariantResults(
             ).length === 1,
         ) &&
         iconSlotTemplates.length === 2 &&
-        headerActionVisualProjection &&
-        snapshot.buttonAdapterSource.trim() ===
-          "export { NButton as PavpButtonPrimitive } from 'naive-ui/es/button'",
+        headerActionVisualProjection,
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_ICONS',
       passed:
-        iconPrimitives.length === 4 &&
-        iconStates.every((element) => element.node.tag === 'PavpIconPrimitive') &&
-        snapshot.iconAdapterSource.trim() ===
-          "export { NIcon as PavpIconPrimitive } from 'naive-ui/es/icon'",
+        iconPrimitives.length === 4 && iconStates.every((element) => element.node.tag === 'NIcon'),
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_TOOLTIPS',
       passed:
         actionTooltips.length === 2 &&
-        actionTooltips.every((tooltip) => tooltip?.tag === 'PavpTooltipPrimitive') &&
-        compactTooltipProjection &&
-        snapshot.tooltipAdapterSource.trim() ===
-          "export { NTooltip as PavpTooltipPrimitive } from 'naive-ui/es/tooltip'",
+        actionTooltips.every((tooltip) => tooltip?.tag === 'NTooltip') &&
+        compactTooltipProjection,
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_NO_NATIVE_BUTTON',
@@ -16286,18 +16558,6 @@ function adminNavigationNaiveActionsMotionInvariantResults(
         !actionTooltips.some(
           (tooltip) => staticTemplateAttribute(tooltip ?? { type: 0 }, 'to') === 'body',
         ),
-    },
-    {
-      code: 'ADMIN_NAV_NAIVE_ACTIONS_PRIVATE_ADAPTER_BOUNDARY',
-      passed:
-        shellScript.includes("from '../adapters/naive/naive-button'") &&
-        shellScript.includes("from '../adapters/naive/naive-icon'") &&
-        shellScript.includes("from '../adapters/naive/naive-tooltip'") &&
-        !/\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]/u.test(shellScript),
-    },
-    {
-      code: 'ADMIN_NAV_NAIVE_ACTIONS_NO_APP_VENDOR_IMPORT',
-      passed: !/\bfrom\s+['"]naive-ui(?:\/[^'"]+)?['"]/u.test(snapshot.nonAdapterSource),
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_PUBLIC_REGISTRY_UNCHANGED',
@@ -16413,8 +16673,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
         !/\bgsap\b|Aura|movingPill|moving-pill|left-selection|hard-route-dot/iu.test(
           `${snapshot.shellSource}\n${snapshot.providerSource}`,
         ) &&
-        exactOccurrenceCount(shellTemplate, '<PavpLayoutSiderPrimitive') === 1 &&
-        exactOccurrenceCount(shellTemplate, '<PavpMenuPrimitive') === 1,
+        exactOccurrenceCount(shellTemplate, '<NLayoutSider') === 1 &&
+        exactOccurrenceCount(shellTemplate, '<NMenu') === 1,
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_FOCUS_VISIBLE_ONLY',
@@ -16463,7 +16723,7 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   )
   const groupTooltip = [...(groupAction?.ancestors ?? [])]
     .reverse()
-    .find((ancestor) => ancestor.tag === 'PavpTooltipPrimitive')
+    .find((ancestor) => ancestor.tag === 'NTooltip')
   const firstIconState = elements.find(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-icon-state') ===
@@ -16471,8 +16731,8 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   )
   const groupActionSource = groupAction?.node.loc?.source ?? ''
   const nativeButtonActionSource = groupActionSource
-    .replace('<PavpButtonPrimitive', '<button')
-    .replace('</PavpButtonPrimitive>', '</button>')
+    .replace('<NButton', '<button')
+    .replace('</NButton>', '</button>')
   const nativeButtonSource = replaceExactOnce(
     baseline.shellSource,
     groupActionSource,
@@ -16486,7 +16746,7 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   const withoutTooltipPrimitive = replaceExactOnce(
     baseline.shellSource,
     tooltipSource,
-    tooltipSource.replaceAll('PavpTooltipPrimitive', 'div'),
+    tooltipSource.replaceAll('NTooltip', 'div'),
   )
   const bodyTooltipTarget = baseline.shellSource.replace('to="#pavp-overlay-root"', 'to="body"')
   const withoutIconState = replaceExactOnce(
@@ -16934,6 +17194,7 @@ async function validateDependencies(): Promise<string[]> {
       yaml: 'catalog:',
     }) ||
     !isDeepStrictEqual(webDependencies, {
+      'naive-ui': 'catalog:',
       'vue-i18n': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@platform/ui': 'workspace:*',
@@ -16990,7 +17251,7 @@ async function validateDependencies(): Promise<string[]> {
       vue: 'catalog:',
     }) ||
     webDependencies['@platform/ui'] !== 'workspace:*' ||
-    Object.hasOwn(webDependencies, 'naive-ui') ||
+    webDependencies['naive-ui'] !== 'catalog:' ||
     naiveImporter['specifier'] !== 'catalog:' ||
     typeof naiveImporter['version'] !== 'string' ||
     !naiveImporter['version'].startsWith('2.45.2(vue@3.5.40') ||
@@ -17221,7 +17482,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     'utf8',
   )
   const naiveProviderSource = await readFile(
-    resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
+    resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'),
     'utf8',
   )
 
@@ -17423,7 +17684,7 @@ async function validateAppearanceAndPageFacts(): Promise<{
   }
 
   if (
-    /<(?:UiButton|UiSegmentedControl|button|input|select|textarea)\b/u.test(capabilityTemplate) ||
+    /<(?:NButton|NRadioGroup|button|input|select|textarea)\b/u.test(capabilityTemplate) ||
     /\b(?:mock|placeholder|fake metric)\b/iu.test(joinedPages)
   ) {
     violations.push('Inactive capability controls or placeholder data are forbidden.')
@@ -17440,28 +17701,17 @@ async function validateAppearanceAndPageFacts(): Promise<{
 
 async function validateNaiveOverrides(): Promise<string[]> {
   const violations: string[] = []
-  const [
-    themeSource,
-    providerSource,
-    buttonSource,
-    radioCardSource,
-    segmentedSource,
-    statusBadgeSource,
-    descriptionListSource,
-    pageHeaderSource,
-  ] = await Promise.all([
-    readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
-    readFile(
-      resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
-      'utf8',
-    ),
-    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiButton.vue'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiRadioCardGroup.vue'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiSegmentedControl.vue'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiStatusBadge.vue'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiDescriptionList.vue'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/components/UiPageHeader.vue'), 'utf8'),
-  ])
+  const [themeSource, providerSource, radioCardSource, statusBadgeSource, pageHeaderSource] =
+    await Promise.all([
+      readFile(
+        resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'),
+        'utf8',
+      ),
+      readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
+      readFile(resolve(rootDirectory, 'packages/ui/src/components/UiRadioCardGroup.vue'), 'utf8'),
+      readFile(resolve(rootDirectory, 'packages/ui/src/components/UiStatusBadge.vue'), 'utf8'),
+      readFile(resolve(rootDirectory, 'packages/ui/src/components/UiPageHeader.vue'), 'utf8'),
+    ])
   const overrides = themeOverrideObject(themeSource)
 
   if (overrides === undefined) {
@@ -17587,31 +17837,20 @@ async function validateNaiveOverrides(): Promise<string[]> {
   }
 
   if (
-    !buttonSource.includes("readonly variant?: 'ghost' | 'primary' | 'secondary'") ||
-    !buttonSource.includes(':ghost="variant === \'ghost\'"') ||
-    !buttonSource.includes(':secondary="variant === \'secondary\'"') ||
-    !buttonSource.includes(":type=\"variant === 'primary' ? 'primary' : 'default'\"") ||
-    !buttonSource.includes(':disabled="disabled"') ||
-    !radioCardSource.includes('<PavpRadioGroupPrimitive') ||
-    !radioCardSource.includes('<PavpRadioButtonPrimitive') ||
+    !radioCardSource.includes('<NRadioGroup') ||
+    !radioCardSource.includes('<NRadioButton') ||
     !radioCardSource.includes(':name="groupName"') ||
     !radioCardSource.includes(':data-selected="option.value === modelValue"') ||
     !radioCardSource.includes('pavp-radio-card-group__option:focus-within') ||
-    !segmentedSource.includes('<PavpRadioGroupPrimitive') ||
-    !segmentedSource.includes('<PavpRadioButtonPrimitive') ||
-    !statusBadgeSource.includes('<PavpTagPrimitive') ||
+    !statusBadgeSource.includes('<NTag') ||
     !statusBadgeSource.includes('bordered') ||
     !statusBadgeSource.includes('var(--ui-color-status-success)') ||
     !statusBadgeSource.includes('var(--ui-color-text-on-status-success)') ||
     /\b(?:checkable|closable|strong)\b/u.test(templateContent(statusBadgeSource)) ||
-    !descriptionListSource.includes('<PavpDescriptionsPrimitive') ||
-    !descriptionListSource.includes('bordered') ||
-    !descriptionListSource.includes(':column="1"') ||
-    !descriptionListSource.includes('label-placement="left"') ||
-    !pageHeaderSource.includes('<PavpBreadcrumbPrimitive') ||
-    !pageHeaderSource.includes('<PavpBreadcrumbItemPrimitive')
+    !pageHeaderSource.includes('<NBreadcrumb') ||
+    !pageHeaderSource.includes('<NBreadcrumbItem')
   ) {
-    violations.push('Current public Naive wrapper variants or rendered-state contract drifted.')
+    violations.push('Retained UI composite rendered-state contract drifted.')
   }
 
   return violations
@@ -17663,7 +17902,7 @@ function validateInspectorProjections(): string[] {
     runtimeCount(routerRecords) !== 17 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
     runtimeCount(storageRecords) !== 7 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 14 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 10 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
       'ui-form',
       'ui-form-field',
@@ -17781,10 +18020,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     architectureSource,
     appearancePageSource,
     appearanceThemeProjectionSource,
-    buttonAdapterSource,
-    iconAdapterSource,
-    layoutAdapterSource,
-    menuAdapterSource,
     runtimeContextSource,
     projectConfigSource,
     checkBundleSource,
@@ -17793,7 +18028,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     motionRuntimeSource,
     motionSelectionLensSource,
     publicUiRootSource,
-    tooltipAdapterSource,
   ] = await Promise.all([
     readFile(resolve(rootDirectory, 'pnpm-workspace.yaml'), 'utf8'),
     readFile(resolve(rootDirectory, 'pnpm-lock.yaml'), 'utf8'),
@@ -17801,10 +18035,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
-    readFile(
-      resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
-      'utf8',
-    ),
+    readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiAdminShell.vue'), 'utf8'),
     readFile(
@@ -17821,14 +18052,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       ),
       'utf8',
     ),
-    readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-button.ts'), 'utf8'),
-    access(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-icon.ts'))
-      .then(() =>
-        readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-icon.ts'), 'utf8'),
-      )
-      .catch(() => ''),
-    readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-layout.ts'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-menu.ts'), 'utf8'),
     readFile(
       resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts'),
       'utf8',
@@ -17849,11 +18072,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       'utf8',
     ),
     readFile(resolve(rootDirectory, 'packages/ui/src/index.ts'), 'utf8'),
-    access(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-tooltip.ts'))
-      .then(() =>
-        readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/naive-tooltip.ts'), 'utf8'),
-      )
-      .catch(() => ''),
   ])
   const [naiveDropdownSource, naiveMenuChildSource, naivePopoverSource, naiveSubmenuSource] =
     await Promise.all([
@@ -17926,8 +18144,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   }
   const navigationReworkBaseline: NavigationReworkSourceSnapshot = {
     applicationSource: applicationSources.join('\n'),
-    layoutAdapterSource,
-    menuAdapterSource,
     providerSource: naiveProviderSource,
     runtimeContextSource,
     shellSource,
@@ -17940,11 +18156,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     applicationSource: [...applicationSources, ...allUiSources].join('\n'),
     architectureSource,
     appearancePageSource,
-    buttonAdapterSource,
     checkBundleSource,
     consoleFrameSource,
     engineeringManifestSource,
-    iconAdapterSource,
     lockSource,
     motionDomMaxSource,
     motionRuntimeSource,
@@ -17967,7 +18181,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     storageRecordCount: runtimeNumber(storageConsoleProjection.recordCount),
     shellSource,
     themeSource,
-    tooltipAdapterSource,
     uiManifestSource,
     workspaceSource,
   }
@@ -17975,14 +18188,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     architectureSource,
     checkBundleSource,
     engineeringManifestSource,
-    navigationSource: [
-      layoutAdapterSource,
-      menuAdapterSource,
-      naiveProviderSource,
-      runtimeContextSource,
-      shellSource,
-      themeSource,
-    ].join('\n'),
+    navigationSource: [naiveProviderSource, runtimeContextSource, shellSource, themeSource].join(
+      '\n',
+    ),
     projectConfigSource,
     routeCount: routeRegistry.length,
   }

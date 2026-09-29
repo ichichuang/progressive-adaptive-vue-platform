@@ -540,12 +540,12 @@ export async function validateI18nArchitecture(): Promise<string[]> {
   )
   const appearance = textAt('apps/web/src/pages/appearance.vue')
   report(
-    appearance.includes(':model-value="pendingLocale ?? locale"') &&
+    appearance.includes(':value="pendingLocale ?? locale"') &&
       appearance.includes(':aria-busy="pendingLocale !== null"') &&
       switchConsumers.get('apps/web/src/pages/appearance.vue') === 1 &&
       appearance.indexOf('data-appearance-axis="motion"') <
-        appearance.indexOf(':model-value="pendingLocale ?? locale"') &&
-      appearance.indexOf(':model-value="pendingLocale ?? locale"') <
+        appearance.indexOf(':value="pendingLocale ?? locale"') &&
+      appearance.indexOf(':value="pendingLocale ?? locale"') <
         appearance.indexOf("t('appearance.reset')"),
     'the one language control must expose pending intent in its admitted position.',
   )
@@ -556,7 +556,7 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       ),
     'App and the actual reactive Shell consumer must retain checked semantic inputs.',
   )
-  const privateProviderPath = 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'
+  const privateProviderPath = 'packages/ui/src/providers/UiProvider.vue'
   const privateProvider = await readFile(resolve(root, privateProviderPath), 'utf8')
   const providerSfc = compiler.parse(privateProvider, { filename: privateProviderPath })
   const providerScript = parseSource(
@@ -605,7 +605,7 @@ export async function validateI18nArchitecture(): Promise<string[]> {
   )
   report(
     uiProvider.includes('readonly locale: UiLocale') &&
-      uiProvider.includes(':locale="locale"') &&
+      uiProvider.includes(':locale="locale === \'zh-CN\' ? zhCN : enUS"') &&
       uiShell.includes('readonly copy: UiAdminShellCopy'),
     'locale and translated Shell copy remain required semantic UI props.',
   )

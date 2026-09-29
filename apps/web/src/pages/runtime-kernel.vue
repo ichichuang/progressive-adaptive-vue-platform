@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { UiDescriptionList, UiPageHeader, UiSection, type UiDescriptionItem } from '@platform/ui'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
+import { UiPageHeader, UiSection } from '@platform/ui'
 
 import { runtimeKernelConsoleProjection } from '../app/bootstrap/runtime-kernel-console-projection'
 import { computed } from 'vue'
@@ -15,7 +16,7 @@ defineProps<{
   readonly message: string
 }>()
 
-const kernelItems = computed<readonly UiDescriptionItem[]>(() => [
+const kernelItems = computed<readonly { readonly label: string; readonly value: string }[]>(() => [
   { label: t('console.startup-count'), value: String(runtimeKernelConsoleProjection.stepCount) },
   {
     label: t('console.provider'),
@@ -50,7 +51,19 @@ const kernelItems = computed<readonly UiDescriptionItem[]>(() => [
     :description="t('console.kernel.description')"
     :title="t('console.kernel.title')"
   >
-    <UiDescriptionList :items="kernelItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in kernelItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
     <ol class="pavp-id-list text-text-secondary">
       <li
         v-for="stepId in runtimeKernelConsoleProjection.stepIds"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { UiDescriptionList, UiPageHeader, UiSection, type UiDescriptionItem } from '@platform/ui'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
+import { UiPageHeader, UiSection } from '@platform/ui'
 
 import { storageConsoleProjection } from '../app/storage/storage-console-projection'
 import { useConsoleI18n } from '../shared/i18n'
@@ -14,17 +15,12 @@ defineProps<{
   readonly message: string
 }>()
 
-const storageItems: readonly UiDescriptionItem[] = storageConsoleProjection.records.map(
-  (record) => ({
-    label: record.id,
-    value: [
-      record.schemaId,
-      record.medium,
-      record.persistenceShape,
-      record.principalPartition,
-    ].join(' · '),
-  }),
-)
+const storageItems = storageConsoleProjection.records.map((record) => ({
+  label: record.id,
+  value: [record.schemaId, record.medium, record.persistenceShape, record.principalPartition].join(
+    ' · ',
+  ),
+}))
 </script>
 
 <template>
@@ -39,6 +35,18 @@ const storageItems: readonly UiDescriptionItem[] = storageConsoleProjection.reco
     "
     :title="t('console.storage.title')"
   >
-    <UiDescriptionList :items="storageItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in storageItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
 </template>

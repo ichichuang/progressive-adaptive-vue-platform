@@ -1448,7 +1448,7 @@ function buildStyleSinkResolver(context) {
     }
     if (
       filename === 'packages/ui/src/components/UiAdminShell.vue' &&
-      tag === 'PavpMenuPrimitive' &&
+      tag === 'NMenu' &&
       argument.name === 'dropdown-props'
     ) {
       props(

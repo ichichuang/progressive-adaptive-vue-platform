@@ -32,7 +32,7 @@
   "route-message.runtime-kernel-inspector-summary": "查看当前十五阶段启动流程、Provider 与生命周期边界。",
   "route-message.router-governance-inspector-summary": "查看路由、布局、滚动、焦点与错误页治理。",
   "route-message.storage-persistence-inspector-summary": "查看当前存储记录、分区、错误与生命周期边界。",
-  "route-message.ui-system-inspector-summary": "查看已准入的 PAVP UI 组件与供应商隔离边界。",
+  "route-message.ui-system-inspector-summary": "查看 PAVP 复合组件与共享主题下的 Naive UI 原生使用。",
   "route-message.responsive-layout-inspector-summary": "查看 narrow、regular 与 wide 的布局投影与尺寸权威。",
   "route-message.engineering-quality-inspector-summary": "查看工具链、静态门禁、构建预算与托管工作流。",
   "route-message.capability-roadmap-summary": "查看尚未启用能力的状态、前置条件与准入要求。",

@@ -330,7 +330,7 @@ const expectedMessages = [
   [
     'ui-system-inspector',
     'route-message.ui-system-inspector-summary',
-    '查看已准入的 PAVP UI 组件与供应商隔离边界。',
+    '查看 PAVP 复合组件与共享主题下的 Naive UI 原生使用。',
   ],
   [
     'responsive-layout-inspector',
@@ -4223,10 +4223,7 @@ export function routeTransitionDividerFailures(
 async function validateRouteTransitionDividerGovernance(): Promise<readonly string[]> {
   const source = await loadRouteTransitionSourceSnapshot()
   const [providerSource, themeSource] = await Promise.all([
-    readFile(
-      resolve(rootDirectory, 'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue'),
-      'utf8',
-    ),
+    readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
   ])
   const baseline: RouteTransitionDividerSnapshot = {

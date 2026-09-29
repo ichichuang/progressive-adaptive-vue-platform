@@ -10,7 +10,7 @@ import {
 } from './motion-feature-runtime'
 
 import type { UiWorkspaceTab } from '../../components/contracts'
-import { PavpDropdownPrimitive, type PavpDropdownOption } from '../naive/naive-dropdown'
+import { NDropdown, type DropdownOption } from 'naive-ui/es/dropdown'
 import UiScrollArea from '../../components/UiScrollArea.vue'
 import type { UiScrollController } from '../../components/scroll-contracts'
 
@@ -55,7 +55,7 @@ const contextMenu = ref<{ readonly id: string | null; readonly x: number; readon
   y: 0,
 })
 const contextItem = computed(() => props.items.find((item) => item.id === contextMenu.value.id))
-const contextOptions = computed<PavpDropdownOption[]>(() => [
+const contextOptions = computed<DropdownOption[]>(() => [
   {
     key: 'refresh',
     label: props.refreshLabel,
@@ -476,7 +476,7 @@ watch(
       </LayoutGroup>
     </MotionConfig>
   </LazyMotion>
-  <PavpDropdownPrimitive
+  <NDropdown
     :id="menuId"
     class="pavp-workspace-context-menu"
     role="menu"

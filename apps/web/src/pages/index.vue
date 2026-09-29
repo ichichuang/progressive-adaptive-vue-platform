@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import {
-  UiDescriptionList,
-  UiPageHeader,
-  UiSection,
-  UiStatusBadge,
-  type UiDescriptionItem,
-} from '@platform/ui'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
+import { UiPageHeader, UiSection, UiStatusBadge } from '@platform/ui'
 import { computed } from 'vue'
 
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
@@ -24,30 +19,37 @@ defineProps<{
 }>()
 
 const appearance = useAppearanceReadBoundary()
-const foundationItems = computed<readonly UiDescriptionItem[]>(() => [
-  {
-    label: t('console.public-roles'),
-    value: String(overviewProjection.designSystem.publicRoleCount),
-  },
-  {
-    label: t('console.product-routes'),
-    value: String(overviewProjection.router.productRouteCount),
-  },
-  { label: t('console.startup-stages'), value: String(overviewProjection.runtimeKernel.stepCount) },
-  { label: t('console.storage-records'), value: String(overviewProjection.storage.recordCount) },
-  {
-    label: t('console.public-ui'),
-    value: String(overviewProjection.uiSystem.publicComponentIds.length),
-  },
-])
-const appearanceItems = computed<readonly UiDescriptionItem[]>(() => [
-  { label: t('console.color-mode'), value: appearance.snapshot.value.colorMode },
-  { label: t('console.theme'), value: appearance.snapshot.value.theme.themeId },
-  { label: t('console.contrast'), value: appearance.snapshot.value.contrast },
-  { label: t('console.material'), value: appearance.snapshot.value.material },
-  { label: t('console.density'), value: appearance.snapshot.value.density },
-  { label: t('console.motion'), value: appearance.snapshot.value.motion },
-])
+const foundationItems = computed<readonly { readonly label: string; readonly value: string }[]>(
+  () => [
+    {
+      label: t('console.public-roles'),
+      value: String(overviewProjection.designSystem.publicRoleCount),
+    },
+    {
+      label: t('console.product-routes'),
+      value: String(overviewProjection.router.productRouteCount),
+    },
+    {
+      label: t('console.startup-stages'),
+      value: String(overviewProjection.runtimeKernel.stepCount),
+    },
+    { label: t('console.storage-records'), value: String(overviewProjection.storage.recordCount) },
+    {
+      label: t('console.public-ui'),
+      value: String(overviewProjection.uiSystem.publicComponentIds.length),
+    },
+  ],
+)
+const appearanceItems = computed<readonly { readonly label: string; readonly value: string }[]>(
+  () => [
+    { label: t('console.color-mode'), value: appearance.snapshot.value.colorMode },
+    { label: t('console.theme'), value: appearance.snapshot.value.theme.themeId },
+    { label: t('console.contrast'), value: appearance.snapshot.value.contrast },
+    { label: t('console.material'), value: appearance.snapshot.value.material },
+    { label: t('console.density'), value: appearance.snapshot.value.density },
+    { label: t('console.motion'), value: appearance.snapshot.value.motion },
+  ],
+)
 const capabilityNavigation = overviewProjection.router.productRoutes.filter(
   (record) => record.name !== 'console-overview',
 )
@@ -70,7 +72,19 @@ const capabilityNavigation = overviewProjection.router.productRoutes.filter(
       />
       <span>{{ t('console.overview.active-summary') }}</span>
     </div>
-    <UiDescriptionList :items="foundationItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in foundationItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
   <UiSection
     :description="t('console.overview.navigation-description')"
@@ -94,7 +108,19 @@ const capabilityNavigation = overviewProjection.router.productRoutes.filter(
     :description="t('console.overview.appearance-description')"
     :title="t('console.overview.appearance-title')"
   >
-    <UiDescriptionList :items="appearanceItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in appearanceItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
 </template>
 

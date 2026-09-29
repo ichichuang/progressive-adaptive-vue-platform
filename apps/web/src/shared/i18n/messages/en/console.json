@@ -39,7 +39,7 @@
   "console.import-policy": "Import policy",
   "console.component-count": "Public component count",
   "console.components": "Public components",
-  "console.ui.description": "Vendor components and types remain in the private {'@'}platform/ui adapter directory.",
+  "console.ui.description": "UI owners use official Naive UI components and APIs. PAVP composites own application behavior and share one theme.",
   "console.ui.title": "Component boundary",
   "console.responsive.profiles": "Layout profiles",
   "console.responsive.sizes": "Size authority",

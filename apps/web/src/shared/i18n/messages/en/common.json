@@ -32,7 +32,7 @@
   "route-message.runtime-kernel-inspector-summary": "View the fifteen-stage startup sequence, providers and lifecycle boundaries.",
   "route-message.router-governance-inspector-summary": "View route, layout, scroll, focus and error-page governance.",
   "route-message.storage-persistence-inspector-summary": "View storage records, partitions, errors and lifecycle boundaries.",
-  "route-message.ui-system-inspector-summary": "View admitted PAVP UI components and vendor isolation boundaries.",
+  "route-message.ui-system-inspector-summary": "View PAVP composites and direct Naive UI usage with the shared theme.",
   "route-message.responsive-layout-inspector-summary": "View narrow, regular and wide layout projections and size authorities.",
   "route-message.engineering-quality-inspector-summary": "View the toolchain, static gates, build budgets and hosted workflows.",
   "route-message.capability-roadmap-summary": "View capability status, prerequisites and admission requirements.",

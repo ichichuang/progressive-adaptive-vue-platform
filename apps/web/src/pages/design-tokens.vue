@@ -1,12 +1,7 @@
 <script setup lang="ts">
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
 import { designSystemConsoleProjection } from '@platform/design-system'
-import {
-  UiDescriptionList,
-  UiPageHeader,
-  UiSection,
-  UiStatusBadge,
-  type UiDescriptionItem,
-} from '@platform/ui'
+import { UiPageHeader, UiSection, UiStatusBadge } from '@platform/ui'
 import { computed } from 'vue'
 import { useConsoleI18n } from '../shared/i18n'
 
@@ -20,28 +15,36 @@ defineProps<{
   readonly message: string
 }>()
 
-const manifestItems = computed<readonly UiDescriptionItem[]>(() => [
-  {
-    label: t('console.manifest-schema'),
-    value: String(designSystemConsoleProjection.manifestSchemaVersion),
-  },
-  {
-    label: t('console.manifest-records'),
-    value: String(designSystemConsoleProjection.manifestRecordCount),
-  },
-  { label: t('console.roles'), value: String(designSystemConsoleProjection.publicRoleCount) },
-  {
-    label: t('console.color-roles'),
-    value: String(designSystemConsoleProjection.publicColorRoleCount),
-  },
-  {
-    label: t('console.built-in-themes'),
-    value: designSystemConsoleProjection.builtInThemeIds.join(', '),
-  },
-  { label: t('console.theme-planes'), value: designSystemConsoleProjection.planeIds.join(', ') },
-  { label: t('console.contrast'), value: designSystemConsoleProjection.contrastValues.join(', ') },
-  { label: t('console.material'), value: designSystemConsoleProjection.materialValues.join(', ') },
-])
+const manifestItems = computed<readonly { readonly label: string; readonly value: string }[]>(
+  () => [
+    {
+      label: t('console.manifest-schema'),
+      value: String(designSystemConsoleProjection.manifestSchemaVersion),
+    },
+    {
+      label: t('console.manifest-records'),
+      value: String(designSystemConsoleProjection.manifestRecordCount),
+    },
+    { label: t('console.roles'), value: String(designSystemConsoleProjection.publicRoleCount) },
+    {
+      label: t('console.color-roles'),
+      value: String(designSystemConsoleProjection.publicColorRoleCount),
+    },
+    {
+      label: t('console.built-in-themes'),
+      value: designSystemConsoleProjection.builtInThemeIds.join(', '),
+    },
+    { label: t('console.theme-planes'), value: designSystemConsoleProjection.planeIds.join(', ') },
+    {
+      label: t('console.contrast'),
+      value: designSystemConsoleProjection.contrastValues.join(', '),
+    },
+    {
+      label: t('console.material'),
+      value: designSystemConsoleProjection.materialValues.join(', '),
+    },
+  ],
+)
 </script>
 
 <template>
@@ -58,6 +61,18 @@ const manifestItems = computed<readonly UiDescriptionItem[]>(() => [
       label="ACTIVE"
       tone="active"
     />
-    <UiDescriptionList :items="manifestItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in manifestItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
   </UiSection>
 </template>

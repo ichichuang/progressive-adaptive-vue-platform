@@ -438,11 +438,11 @@ function overlayContractViolations(sources: ReadonlyMap<string, string>): string
       rootElement === undefined ||
       resolvedAttribute(rootElement, 'id') !== overlayRootId ||
       staticAttribute(rootElement, 'id') !== overlayRootId ||
-      privateProvider?.tag !== 'PavpNaiveConfigProvider' ||
+      privateProvider?.tag !== 'NConfigProvider' ||
       !containsElementTag(privateProvider, 'slot')
     ) {
       violations.push(
-        'OVERLAY_ROOT_ORDER: UiProvider must render the static overlay root first, then PavpNaiveConfigProvider with its slot.',
+        'OVERLAY_ROOT_ORDER: UiProvider must render the static overlay root first, then NConfigProvider with its slot.',
       )
     }
 
@@ -529,14 +529,11 @@ function changedOverlaySource(
 function runOverlayNegativeProbes(
   baseline: ReadonlyMap<string, string>,
 ): readonly OverlayNegativeProbeResult[] {
-  const providerTemplate = `<template>\n  <div id="${overlayRootId}" />\n  <PavpNaiveConfigProvider
-    :appearance="appearance"
-    :locale="locale"
-  >\n    <slot />\n  </PavpNaiveConfigProvider>\n</template>`
-  const rootAfterSlotTemplate = `<template>\n  <PavpNaiveConfigProvider
-    :appearance="appearance"
-    :locale="locale"
-  >\n    <slot />\n    <div id="${overlayRootId}" />\n  </PavpNaiveConfigProvider>\n</template>`
+  const providerTemplate =
+    baseline.get(uiProviderPath)?.match(/<template>[\s\S]*?<\/template>/u)?.[0] ?? ''
+  const rootAfterSlotTemplate = providerTemplate
+    .replace(`  <div id="${overlayRootId}" />\n`, '')
+    .replace('<slot />', `<slot />\n    <div id="${overlayRootId}" />`)
   const probes: readonly {
     readonly id: string
     readonly expectedFailureCode: string
@@ -808,10 +805,10 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   else {
     const menus: (VueTemplateNode & { readonly props: readonly VueTemplateProperty[] })[] = []
     walkVueElements(workspaceTemplate.root, (element) => {
-      if (element.tag === 'PavpDropdownPrimitive') menus.push(element)
+      if (element.tag === 'NDropdown') menus.push(element)
       if (
         (staticAttribute(element, 'role') === 'tablist' || element.tag === 'LazyMotion') &&
-        containsElementTag(element, 'PavpDropdownPrimitive')
+        containsElementTag(element, 'NDropdown')
       )
         violations.push(
           'Workspace context menu must remain outside the tablist and Motion wrapper.',
@@ -1216,31 +1213,13 @@ export async function validateUiPublicComponents(): Promise<string[]> {
         `${record.exportName}: actual product-route consumers diverged from Registry.`,
       )
     }
-
-    if (/\b(?:GlobalTheme|GlobalThemeOverrides|N[A-Z][A-Za-z]+)\b/u.test(source)) {
-      violations.push(
-        `${record.exportName}: public component source leaks a Naive UI type or value.`,
-      )
-    }
   }
 
   const adapterFiles = [
-    'packages/ui/src/adapters/naive/PavpNaiveConfigProvider.vue',
     'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     'packages/ui/src/adapters/naive/use-form-control.ts',
-    'packages/ui/src/adapters/naive/naive-breadcrumb.ts',
-    'packages/ui/src/adapters/naive/naive-button.ts',
-    'packages/ui/src/adapters/naive/naive-descriptions.ts',
-    'packages/ui/src/adapters/naive/naive-dropdown.ts',
-    'packages/ui/src/adapters/naive/naive-icon.ts',
-    'packages/ui/src/adapters/naive/naive-layout.ts',
-    'packages/ui/src/adapters/naive/naive-menu.ts',
-    'packages/ui/src/adapters/naive/naive-radio.ts',
-    'packages/ui/src/adapters/naive/naive-switch.ts',
-    'packages/ui/src/adapters/naive/naive-tag.ts',
-    'packages/ui/src/adapters/naive/naive-tooltip.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
   ] as const
@@ -1266,7 +1245,6 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     violations.push('Private Motion adapter file inventory diverged from the exact owned set.')
   }
 
-  const adapterFileSet = new Set<string>(adapterFiles)
   const boundaryFiles = (
     await Promise.all([
       collectUiBoundarySourceFiles(resolve(rootDirectory, 'apps')),
@@ -1274,28 +1252,14 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     ])
   ).flat()
 
-  for (const path of boundaryFiles) {
-    const relativePath = relative(rootDirectory, path)
-
-    if (adapterFileSet.has(relativePath)) {
-      continue
-    }
-
-    const rawSource = await readFile(path, 'utf8')
-    const source = relativePath.endsWith('.vue') ? scriptContent(rawSource) : rawSource
-
-    if (/\b(?:from\s+|import\s*\()['"]naive-ui(?:\/[^'"]*)?['"]/u.test(source)) {
-      violations.push(`${relativePath}: direct Naive import escaped the private adapter boundary.`)
-    }
-  }
-
   const runtimeImports: string[] = []
 
-  for (const relativePath of adapterFiles) {
+  for (const absolutePath of boundaryFiles) {
+    const relativePath = relative(rootDirectory, absolutePath)
     const rawSource = await readFile(resolve(rootDirectory, relativePath), 'utf8').catch(() => '')
 
     if (rawSource.length === 0) {
-      violations.push(`${relativePath}: required private Naive adapter is missing.`)
+      violations.push(`${relativePath}: UI source is empty.`)
       continue
     }
 
@@ -1308,18 +1272,10 @@ export async function validateUiPublicComponents(): Promise<string[]> {
         statement.moduleSpecifier !== undefined &&
         ts.isStringLiteral(statement.moduleSpecifier) &&
         (statement.moduleSpecifier.text === 'naive-ui' ||
-          statement.moduleSpecifier.text.startsWith('naive-ui/')) &&
-        statement.exportClause !== undefined &&
-        ts.isNamedExports(statement.exportClause)
+          statement.moduleSpecifier.text.startsWith('naive-ui/'))
       ) {
-        if (statement.isTypeOnly) continue
-        const specifier = statement.moduleSpecifier.text
-        runtimeImports.push(
-          ...statement.exportClause.elements.flatMap((element) =>
-            element.isTypeOnly
-              ? []
-              : [`${element.propertyName?.text ?? element.name.text}@${specifier}`],
-          ),
+        violations.push(
+          `${relativePath}: Naive re-exports are forbidden; import official names at the consumer.`,
         )
         continue
       }
@@ -1339,6 +1295,24 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       }
 
       if (
+        importClause.namedBindings !== undefined &&
+        ts.isNamespaceImport(importClause.namedBindings)
+      ) {
+        violations.push(`${relativePath}: Naive namespace imports are forbidden.`)
+      }
+      if (
+        importClause.phaseModifier !== ts.SyntaxKind.TypeKeyword &&
+        statement.moduleSpecifier.text === 'naive-ui' &&
+        (importClause.name !== undefined ||
+          (importClause.namedBindings !== undefined &&
+            ts.isNamedImports(importClause.namedBindings) &&
+            importClause.namedBindings.elements.some((element) => !element.isTypeOnly)))
+      ) {
+        violations.push(
+          `${relativePath}: use on-demand Naive component entrypoints for runtime imports.`,
+        )
+      }
+      if (
         importClause.name !== undefined &&
         importClause.phaseModifier !== ts.SyntaxKind.TypeKeyword
       ) {
@@ -1353,6 +1327,12 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       }
 
       for (const element of importClause.namedBindings.elements) {
+        if (element.propertyName !== undefined && element.propertyName.text !== element.name.text) {
+          violations.push(`${relativePath}: use the official Naive import name.`)
+        }
+        if (element.name.text === 'NConfigProvider' && relativePath !== uiProviderPath) {
+          violations.push(relativePath + ': NConfigProvider is owned exclusively by UiProvider.')
+        }
         const clauseTypeOnly = importClause.phaseModifier === ts.SyntaxKind.TypeKeyword
         const elementTypeOnly = element.getText(parsed).startsWith('type ')
         if (!clauseTypeOnly && !elementTypeOnly) {
@@ -1375,7 +1355,6 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NInputNumber@naive-ui/es/input-number',
     'NSelect@naive-ui/es/select',
     'NSwitch@naive-ui/es/switch',
-    'NSwitch@naive-ui/es/switch', // The admitted Form Control and UiSwitch private adapters.
     'NDatePicker@naive-ui/es/date-picker',
     'NBreadcrumb@naive-ui/es/breadcrumb',
     'NBreadcrumbItem@naive-ui/es/breadcrumb',
@@ -1404,8 +1383,14 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'tooltipDark@naive-ui/es/tooltip/styles/dark',
   ]
 
-  if (!exactSet(runtimeImports, expectedRuntimeImports)) {
-    violations.push('Private Naive runtime imports diverged from the admitted exact set.')
+  if (
+    runtimeImports.filter((entry) => entry === 'NConfigProvider@naive-ui/es/config-provider')
+      .length !== 1
+  ) {
+    violations.push('UiProvider must own the single NConfigProvider import.')
+  }
+  if (!exactSet([...new Set(runtimeImports)], expectedRuntimeImports)) {
+    violations.push('Direct Naive runtime imports diverged from the admitted exact set.')
   }
 
   const themeSource = await readFile(

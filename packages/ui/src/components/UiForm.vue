@@ -1,7 +1,7 @@
 <script setup lang="ts" generic="I">
 import PavpNaiveForm from '../adapters/naive/PavpNaiveForm.vue'
 import UiFormField from './UiFormField.vue'
-import UiButton from './UiButton.vue'
+import { NButton } from 'naive-ui/es/button'
 import type { UiFormProps, UiFormSlots } from './form-contracts'
 
 /** A single native submit boundary; draft and mutation ownership stay in useUiForm. */
@@ -39,19 +39,22 @@ const slots = defineSlots<UiFormSlots<I>>()
         name="actions"
         :form="form"
       >
-        <UiButton
-          type="submit"
-          variant="primary"
+        <NButton
+          class="min-h-target-enhanced min-w-target-enhanced"
+          attr-type="submit"
+          type="primary"
           :disabled="form.submitting.value || form.phase.value === 'disposed'"
         >
           {{ form.copy.submit() }}
-        </UiButton>
-        <UiButton
+        </NButton>
+        <NButton
+          class="min-h-target-enhanced min-w-target-enhanced"
           :disabled="form.submitting.value || form.phase.value === 'disposed'"
-          @press="form.reset()"
+          secondary
+          @click="form.reset()"
         >
           {{ form.copy.reset() }}
-        </UiButton>
+        </NButton>
       </slot>
     </template>
   </PavpNaiveForm>

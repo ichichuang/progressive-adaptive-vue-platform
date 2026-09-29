@@ -1,14 +1,10 @@
 export { default as UiScrollArea } from './components/UiScrollArea.vue'
-export { default as UiSwitch } from './components/UiSwitch.vue'
 export type * from './components/scroll-contracts'
 export { default as UiWorkspaceTabs } from './components/UiWorkspaceTabs.vue'
 export { default as UiAdminShell } from './components/UiAdminShell.vue'
-export { default as UiButton } from './components/UiButton.vue'
-export { default as UiDescriptionList } from './components/UiDescriptionList.vue'
 export { default as UiPageHeader } from './components/UiPageHeader.vue'
 export { default as UiRadioCardGroup } from './components/UiRadioCardGroup.vue'
 export { default as UiSection } from './components/UiSection.vue'
-export { default as UiSegmentedControl } from './components/UiSegmentedControl.vue'
 export { default as UiStatusBadge } from './components/UiStatusBadge.vue'
 export type {
   UiWorkspaceTab,
@@ -17,8 +13,7 @@ export type {
   UiAdminNavigationExpansionUpdate,
   UiAdminNavigationGroup,
   UiAdminNavigationItem,
-  UiDescriptionItem,
-  UiSegmentedOption,
+  UiRadioCardOption,
   UiStatusTone,
 } from './components/contracts'
 export {

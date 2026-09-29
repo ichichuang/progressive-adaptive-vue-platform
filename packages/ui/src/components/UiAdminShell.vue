@@ -14,21 +14,18 @@ import {
   onMounted,
   ref,
   watch,
+  type HTMLAttributes,
   type VNodeChild,
 } from 'vue'
 
 import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'
-import { PavpButtonPrimitive } from '../adapters/naive/naive-button'
-import { PavpIconPrimitive } from '../adapters/naive/naive-icon'
-import { PavpLayoutPrimitive, PavpLayoutSiderPrimitive } from '../adapters/naive/naive-layout'
-import {
-  definePavpMenuNodeProps,
-  PavpMenuPrimitive,
-  type PavpMenuDropdownProps,
-  type PavpMenuOption,
-} from '../adapters/naive/naive-menu'
+import { NButton } from 'naive-ui/es/button'
+import { NIcon } from 'naive-ui/es/icon'
+import { NLayout, NLayoutSider } from 'naive-ui/es/layout'
+import { NMenu, type MenuNodeProps, type MenuOption } from 'naive-ui/es/menu'
+import type { DropdownProps } from 'naive-ui/es/dropdown'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
-import { PavpTooltipPrimitive } from '../adapters/naive/naive-tooltip'
+import { NTooltip } from 'naive-ui/es/tooltip'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
 import UiScrollArea from './UiScrollArea.vue'
 import type { UiScrollController } from './scroll-contracts'
@@ -225,13 +222,13 @@ function navigationGroupKey(groupId: string): string {
   return `navigation-group:${groupId}`
 }
 
-function navigationOptionKind(option: PavpMenuOption): 'group' | 'route' | undefined {
+function navigationOptionKind(option: MenuOption): 'group' | 'route' | undefined {
   return option['pavpNavigationKind'] === 'group' || option['pavpNavigationKind'] === 'route'
     ? option['pavpNavigationKind']
     : undefined
 }
 
-function navigationOptionRouteName(option: PavpMenuOption): string | undefined {
+function navigationOptionRouteName(option: MenuOption): string | undefined {
   return typeof option['pavpRouteName'] === 'string' ? option['pavpRouteName'] : undefined
 }
 
@@ -245,7 +242,7 @@ function renderNavigationIcon(iconClass: string): () => ReturnType<typeof h> {
     })
 }
 
-const navigationMenuOptions = computed<PavpMenuOption[]>(() =>
+const navigationMenuOptions = computed<MenuOption[]>(() =>
   props.navigation.map((group) => {
     const firstItem = group.items[0]
 
@@ -265,7 +262,7 @@ const navigationMenuOptions = computed<PavpMenuOption[]>(() =>
         pavpNavigationKind: 'route',
         pavpRouteName: item.routeName,
       })),
-    } satisfies PavpMenuOption
+    } satisfies MenuOption
   }),
 )
 
@@ -277,11 +274,11 @@ const activeNavigationGroupKey = computed(() => {
   return activeGroup === undefined ? undefined : navigationGroupKey(activeGroup.id)
 })
 
-function renderNavigationMenuIcon(option: PavpMenuOption): VNodeChild {
+function renderNavigationMenuIcon(option: MenuOption): VNodeChild {
   return typeof option.icon === 'function' ? option.icon() : null
 }
 
-function isPersistentNavigationSelectionLensOwner(option: PavpMenuOption): boolean {
+function isPersistentNavigationSelectionLensOwner(option: MenuOption): boolean {
   if (profile.value === 'narrow') {
     return false
   }
@@ -343,7 +340,9 @@ function collapsedNavigationGroupRouteName(groupKey: string): string | undefined
     ?.routeName
 }
 
-const persistentNavigationNodeProps = definePavpMenuNodeProps((option) => {
+// Naive 2.45.2 intersects HTMLAttributes with a string/number record. Keep
+// HTML event handlers checked before bridging that incompatible index signature.
+const persistentNavigationNodeProps = ((option: Parameters<MenuNodeProps>[0]): HTMLAttributes => {
   const optionKind = navigationOptionKind(option)
 
   if (optionKind === 'group' && typeof option.key === 'string') {
@@ -391,9 +390,11 @@ const persistentNavigationNodeProps = definePavpMenuNodeProps((option) => {
       preserveCurrentPersistentNavigationFocus(event, routeName)
     },
   }
-})
+}) as MenuNodeProps
 
-const persistentNavigationDropdownNodeProps = definePavpMenuNodeProps((option) => {
+const persistentNavigationDropdownNodeProps = ((
+  option: Parameters<MenuNodeProps>[0],
+): HTMLAttributes => {
   const routeName = navigationOptionRouteName(option)
 
   if (routeName === undefined) {
@@ -406,7 +407,7 @@ const persistentNavigationDropdownNodeProps = definePavpMenuNodeProps((option) =
       preserveCurrentPersistentNavigationFocus(event, routeName)
     },
   }
-})
+}) as MenuNodeProps
 
 const persistentNavigationDropdownProps = Object.freeze({
   keyboard: true,
@@ -414,7 +415,7 @@ const persistentNavigationDropdownProps = Object.freeze({
   nodeProps: persistentNavigationDropdownNodeProps,
   to: '#pavp-overlay-root',
   trigger: 'hover',
-}) satisfies PavpMenuDropdownProps
+}) satisfies DropdownProps
 
 function handleNavigationValueUpdate(value: string | number): void {
   if (typeof value === 'string') {
@@ -586,7 +587,7 @@ watch(
         v-if="profile === 'wide'"
         class="pavp-admin-shell__header-actions flex items-center gap-content-gap"
       >
-        <PavpTooltipPrimitive
+        <NTooltip
           v-if="!persistentNavigationCollapsed"
           class="pavp-admin-shell__header-action-tooltip"
           placement="bottom-end"
@@ -594,7 +595,7 @@ watch(
           to="#pavp-overlay-root"
         >
           <template #trigger>
-            <PavpButtonPrimitive
+            <NButton
               :aria-label="navigationGroupsToggleLabel"
               :bordered="false"
               attr-type="button"
@@ -609,7 +610,7 @@ watch(
                   class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
                   data-pavp-admin-navigation-icon-stack="groups"
                 >
-                  <PavpIconPrimitive
+                  <NIcon
                     :class="{
                       'pavp-admin-shell__header-action-icon-state--active':
                         allNavigationGroupsExpanded,
@@ -618,7 +619,7 @@ watch(
                     class="pavp-admin-shell__header-action-icon-state i-lucide-list-collapse col-start-1 row-start-1"
                     data-pavp-admin-navigation-icon-state="groups-expanded"
                   />
-                  <PavpIconPrimitive
+                  <NIcon
                     :class="{
                       'pavp-admin-shell__header-action-icon-state--active':
                         !allNavigationGroupsExpanded,
@@ -629,18 +630,18 @@ watch(
                   />
                 </span>
               </template>
-            </PavpButtonPrimitive>
+            </NButton>
           </template>
           {{ navigationGroupsToggleLabel }}
-        </PavpTooltipPrimitive>
-        <PavpTooltipPrimitive
+        </NTooltip>
+        <NTooltip
           class="pavp-admin-shell__header-action-tooltip"
           placement="bottom-end"
           :show-arrow="false"
           to="#pavp-overlay-root"
         >
           <template #trigger>
-            <PavpButtonPrimitive
+            <NButton
               :aria-label="wideNavigationCollapseLabel"
               :bordered="false"
               attr-type="button"
@@ -655,7 +656,7 @@ watch(
                   class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
                   data-pavp-admin-navigation-icon-stack="sidebar"
                 >
-                  <PavpIconPrimitive
+                  <NIcon
                     :class="{
                       'pavp-admin-shell__header-action-icon-state--active':
                         !wideNavigationCollapsed,
@@ -664,7 +665,7 @@ watch(
                     class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-close col-start-1 row-start-1"
                     data-pavp-admin-navigation-icon-state="sidebar-expanded"
                   />
-                  <PavpIconPrimitive
+                  <NIcon
                     :class="{
                       'pavp-admin-shell__header-action-icon-state--active': wideNavigationCollapsed,
                     }"
@@ -674,21 +675,21 @@ watch(
                   />
                 </span>
               </template>
-            </PavpButtonPrimitive>
+            </NButton>
           </template>
           {{ wideNavigationCollapseLabel }}
-        </PavpTooltipPrimitive>
+        </NTooltip>
       </div>
     </header>
 
-    <PavpLayoutPrimitive
+    <NLayout
       :class="enabled ? 'pavp-admin-shell__layout' : 'pavp-admin-shell__document-layout'"
       :content-style="persistentLayoutContentStyle"
       data-pavp-admin-navigation="persistent"
       :has-sider="enabled && profile !== 'narrow'"
       :native-scrollbar="true"
     >
-      <PavpLayoutSiderPrimitive
+      <NLayoutSider
         v-if="enabled && profile !== 'narrow'"
         bordered
         class="pavp-admin-shell__sidebar"
@@ -715,7 +716,7 @@ watch(
                 featureReady && appearance.motion === 'full' ? 'true' : 'false'
               "
             >
-              <PavpMenuPrimitive
+              <NMenu
                 :accordion="false"
                 class="pavp-admin-shell__menu"
                 :collapsed="persistentNavigationCollapsed"
@@ -734,7 +735,7 @@ watch(
             </nav>
           </AdminNavigationSelectionLens>
         </UiScrollArea>
-      </PavpLayoutSiderPrimitive>
+      </NLayoutSider>
 
       <div
         :class="enabled ? 'pavp-admin-shell__workspace' : undefined"
@@ -762,7 +763,7 @@ watch(
           </UiScrollArea>
         </div>
       </div>
-    </PavpLayoutPrimitive>
+    </NLayout>
 
     <Teleport to="#pavp-overlay-root">
       <Transition name="pavp-admin-drawer">

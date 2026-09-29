@@ -472,10 +472,15 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
 
   if (
     (specifier === 'naive-ui' || specifier.startsWith('naive-ui/')) &&
-    !normalizedDisplayPath.startsWith('packages/ui/src/adapters/naive/')
+    !(
+      ['components', 'providers', 'adapters'].some((owner) =>
+        normalizedDisplayPath.startsWith(`packages/ui/src/${owner}/`),
+      ) ||
+      (normalizedDisplayPath.startsWith('apps/web/src/') && normalizedDisplayPath.endsWith('.vue'))
+    )
   ) {
     violations.push(
-      `${displayPath}: "naive-ui" may only be imported by the private @platform/ui Naive adapter.`,
+      `${displayPath}: "naive-ui" may only be imported by UI view, component, provider or presentation owners.`,
     )
   }
 

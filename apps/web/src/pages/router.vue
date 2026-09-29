@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { UiDescriptionList, UiPageHeader, UiSection, type UiDescriptionItem } from '@platform/ui'
+import { NDescriptions, NDescriptionsItem } from 'naive-ui/es/descriptions'
+import { UiPageHeader, UiSection } from '@platform/ui'
 
 import { computed } from 'vue'
 import {
@@ -18,7 +19,7 @@ defineProps<{
   readonly message: string
 }>()
 
-const routerItems = computed<readonly UiDescriptionItem[]>(() => [
+const routerItems = computed<readonly { readonly label: string; readonly value: string }[]>(() => [
   { label: t('console.all-routes'), value: String(routerConsoleProjection.routeCount) },
   { label: t('console.product-routes'), value: String(routerConsoleProjection.productRouteCount) },
   { label: t('console.error-routes'), value: String(routerConsoleProjection.errorRouteCount) },
@@ -48,7 +49,19 @@ const routerItems = computed<readonly UiDescriptionItem[]>(() => [
     :description="t('console.router.description')"
     :title="t('console.router.title')"
   >
-    <UiDescriptionList :items="routerItems" />
+    <NDescriptions
+      bordered
+      :column="1"
+      label-placement="left"
+    >
+      <NDescriptionsItem
+        v-for="item in routerItems"
+        :key="item.label"
+        :label="item.label"
+      >
+        {{ item.value }}
+      </NDescriptionsItem>
+    </NDescriptions>
     <ul class="pavp-route-list">
       <li
         v-for="route in routerConsoleProjection.routes"

@@ -11,12 +11,7 @@ export interface UiAdminNavigationGroup {
   readonly items: readonly UiAdminNavigationItem[]
 }
 
-export interface UiDescriptionItem {
-  readonly label: string
-  readonly value: string
-}
-
-export interface UiSegmentedOption {
+export interface UiRadioCardOption {
   readonly label: string
   readonly value: string
 }

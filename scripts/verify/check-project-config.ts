@@ -3005,6 +3005,11 @@ expectStructuredEqual(
   'Naive UI lockfile catalog coordinate',
 )
 expectStructuredEqual(lockedNaiveUiPackageKeys, ['naive-ui@2.45.2'], 'Naive UI package set')
+expectStructuredEqual(
+  isJsonObject(webLockfileDependencies) ? webLockfileDependencies['naive-ui'] : undefined,
+  lockedUiNaiveDependency,
+  'Web and UI must share the same catalog Naive UI importer resolution',
+)
 if (
   !isJsonObject(lockedUiNaiveDependency) ||
   lockedUiNaiveDependency['specifier'] !== 'catalog:' ||
@@ -3093,6 +3098,7 @@ expectEqual(
 expectStructuredEqual(
   webManifest['dependencies'],
   {
+    'naive-ui': 'catalog:',
     '@platform/design-system': 'workspace:*',
     '@platform/ui': 'workspace:*',
     pinia: 'catalog:',
