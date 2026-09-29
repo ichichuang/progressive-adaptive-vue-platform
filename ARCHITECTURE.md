@@ -5148,7 +5148,7 @@ interface UiProviderSlots {
 
 Prop 是 Required 且无 Default；Slot 精确一个 Required Default Slot；无 Emit、Naive Public Type、Page-authored Theme Override、Optional Theme Fallback 或第二 Provider State。`UiProvider` 只读 Snapshot，不拥有 Appearance Preference Mutation。
 
-“`apps/web` consumes only `@platform/ui`”精确限定为 Styled Component 与 Vendor UI 消费边界：Application/Feature 只能通过 `@platform/ui` 使用 Styled Components，绝不 Import `naive-ui`。`apps/web` 仍可通过 `@platform/design-system` Public Root 消费非 Vendor 的 Public Contract 与 Safe Projection；这不是第二 Styled UI Boundary。
+Application/Feature 中已准入的 UI Owner 按 §1.2B.6 直接按需导入 Naive UI 官方组件和公共类型，使用官方名称、Props、Events 与 Slots；`@platform/ui` 保留实质应用组合组件，通过其 Public Root 消费。`apps/web` 仍通过 `@platform/design-system` Public Root 消费 Public Contract 与 Safe Projection；非 UI Domain 隔离、其他 Vendor 边界及唯一 PAVP 主题与尺寸数据权威保持。
 
 ### 1.2B.5 Browser-safe Inspector projections
 
@@ -5489,12 +5489,12 @@ interface OverviewProjection {
 
 Overview 只 Reference 七个 Safe Projection 与 Generated Capability Manifest，不复制 Mutable State、Private Registry 或 Source Fact。总览的“Current Appearance Summary”是唯一 Live Exception：`index.vue` 额外调用 `useAppearanceReadBoundary` 读取当前 Snapshot，但不得把该 Snapshot 写入 Static `overviewProjection`。
 
-Page Import Ownership 精确为：
+Page Fact/Projection Import Ownership 精确为下表；已准入 UI Owner 的 Naive 官方按需组件/类型导入与 `@platform/ui` Public-root 组合组件导入不计入 Fact Allowlist，仍遵守 §1.2B.6：
 
 | Page | only admitted fact imports |
 | --- | --- |
-| `index.vue` | `overviewProjection`; `useAppearanceReadBoundary`; rendered components only from `@platform/ui` |
-| `appearance.vue` | exact Appearance/Design-System allowlist below; rendered components only from `@platform/ui` |
+| `index.vue` | `overviewProjection`; `useAppearanceReadBoundary` |
+| `appearance.vue` | exact Appearance/Design-System allowlist below |
 | `design-tokens.vue` | `designSystemConsoleProjection` |
 | `runtime-kernel.vue` | `runtimeKernelConsoleProjection` |
 | `router.vue` | `routerConsoleProjection` |
@@ -5504,7 +5504,7 @@ Page Import Ownership 精确为：
 | `engineering.vue` | `engineeringManifest` |
 | `capabilities.vue` | `capabilityManifest` |
 
-Cross-package Design System 与 UI Projection 必须由各自 Public Root Export；App-local Projection 保持 App-internal。`scripts/architecture/check-architecture-admin-console.ts` 必须拒绝 Page Deep/Private Import、错误 Projection Owner、Page-authored Static Fact、Raw Registry Bypass 与 Vendor Import。
+Cross-package Design System 与 UI Projection 必须由各自 Public Root Export；App-local Projection 保持 App-internal。`scripts/architecture/check-architecture-admin-console.ts` 必须拒绝 PAVP Package Deep/Private Import、错误 Projection Owner、Page-authored Static Fact、Raw Registry Bypass 与未准入的 Vendor Import；当前 Naive 例外仅限既有 UI Owner 的官方按需入口，不扩张 Fact/Projection Ownership、其他 Vendor 或依赖准入。
 
 `appearance.vue` 的 Application/Design-system Fact Import Allowlist 精确为：
 
@@ -6138,7 +6138,7 @@ Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 
 | 颜色处理            | Color.js                             |
 | 颜色解析与对比计算       | Color.js；只校验显式值，不生成或修正主题             |
 | 运行时主题           | CSS Custom Properties                |
-| Styled UI 组件库     | `naive-ui@2.45.2`，已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` Atomic Landing 激活并保持 `@platform/ui` 私有 |
+| Styled UI 组件库     | `naive-ui@2.45.2`，已由 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` Atomic Landing 激活；既有 UI Owner 直接使用官方按需入口，`@platform/ui` 保留实质组合组件 |
 | Headless 交互原语    | Reka UI，仅保留为未来独立 Consumer Gate 的 Deferred Candidate |
 | 内容结构            | 原生语义 HTML；交互控件遵守 §16 的 Naive UI 复用边界 |
 | 项目 UI 公共层       | `@platform/ui`                       |
@@ -6150,7 +6150,7 @@ UnoCSS `presetWind4` 是官方 Tailwind 4 风格 Preset，包含内部 Reset、�
 
 DTCG 2025.10 是稳定技术报告，但不是 W3C Standards Track 标准；Style Dictionary 5 已支持 DTCG 格式，但官方说明对 2025.10 的完整支持仍在推进。因此架构采用“稳定子集 + 显式 Schema”，不绑定尚未完整实现的边缘能力。
 
-Atomic Landing 前的 Committed Baseline `packages/ui` 没有 Runtime Dependency。当前 Atomic Console Implementation 已按精确 Admission 由 `packages/ui` Direct-own `naive-ui@2.45.2`，Vendor 仍是 PAVP-owned Public Boundary 后的 Private Implementation Detail。Reka UI 不在当前 Active Set；它仅保留为未来真实 Headless Consumer 触发的 Deferred Candidate，且不得与 Naive 形成 Dual Active State。
+Atomic Landing 前的 Committed Baseline `packages/ui` 没有 Runtime Dependency。当前 `apps/web` 与 `packages/ui` 按 §1.2B.6 通过现有 Catalog 直接依赖同一 `naive-ui@2.45.2`；既有 UI Owner 使用官方按需组件入口，共享唯一 PAVP Theme Projection 与 UnoCSS 同源设计数据。Reka UI 不在当前 Active Set；它仅保留为未来真实 Headless Consumer 触发的 Deferred Candidate，且不得与 Naive 形成 Dual Active State。
 
 ## 3.3 工程质量层
 
@@ -11109,7 +11109,7 @@ internal DOM markers
 
 ## 16.4 Public Import Boundary
 
-业务代码只允许公共根出口：
+业务代码消费 PAVP Package 时只允许公共根出口；Naive 官方入口遵守 §1.2B.6 的 UI Owner 与按需导入边界：
 
 ```ts
 import {
@@ -11693,7 +11693,7 @@ Owner 在干净同步 `main@187ba9c2c465e9c420607f90282753e0359ea21a` 上明确�
 
 本节原 Landing 的命令与刷新/删除事实保留；后续 §18.14.3、§18.14.6 冻结尚未实施的交互修正目标，取代未来实现中的“命令先回焦目标 Tab”顺序与仅由 Vendor Pending 表达当前项的方式。目标使用容器 DOM Focus + `aria-activedescendant`，关闭菜单后由实际命令/导航接管最终 Focus；不改变 Refresh/Close 命令集、普通 Tabs 键盘模型或以下 Cache/Router/Scroll 所有权。
 
-`UiWorkspaceTabs` 在原有 Props 上仅增加必需 `refreshLabel: string` / `closeLabel: string`，事件仅增加 `refresh(id: string)`；`UiWorkspaceTab` 仅增加必需 `refreshable: boolean`，Activate/Close 与 Slots 合同不变。Frame 用同一 `workspace.canDiscard(entry)` 投影 Refresh 可用性：dormant 为 true，live 服从现有 Discard Authority，UI 不读取策略或 Store。Frame 从同一 Common Catalog 传入 `workspace.refreshLabel`（刷新/Refresh）和既有 `shell.closeActionLabel`（关闭/Close）。私有 `adapters/naive/naive-dropdown.ts` 仅导出本地别名的公开 NDropdown 与 DropdownOption，不能从 `@platform/ui` 公共根导出 Vendor。私有 Workspace Surface 在 Motion 容器与 `role=tablist` 外只放一个菜单，使用 manual trigger、受控 show、client x/y、update:show、clickoutside、select 及现有 `#pavp-overlay-root`。右键阻止原生菜单，不激活目标；临时状态只含目标 Workspace ID 与屏幕坐标，不进入 Pinia/Storage。关闭清除目标但保留最后 x/y 至下次打开替换，避免退场动画期间坐标归零导致左上角闪跳。
+`UiWorkspaceTabs` 在原有 Props 上仅增加必需 `refreshLabel: string` / `closeLabel: string`，事件仅增加 `refresh(id: string)`；`UiWorkspaceTab` 仅增加必需 `refreshable: boolean`，Activate/Close 与 Slots 合同不变。Frame 用同一 `workspace.canDiscard(entry)` 投影 Refresh 可用性：dormant 为 true，live 服从现有 Discard Authority，UI 不读取策略或 Store。Frame 从同一 Common Catalog 传入 `workspace.refreshLabel`（刷新/Refresh）和既有 `shell.closeActionLabel`（关闭/Close）。私有 Workspace Surface 直接从 `naive-ui/es/dropdown` 按需导入官方 `NDropdown` 与公共类型 `DropdownOption`，不经别名 Adapter 或 `@platform/ui` 公共根转导 Vendor。私有 Workspace Surface 在 Motion 容器与 `role=tablist` 外只放一个菜单，使用 manual trigger、受控 show、client x/y、update:show、clickoutside、select 及现有 `#pavp-overlay-root`。右键阻止原生菜单，不激活目标；临时状态只含目标 Workspace ID 与屏幕坐标，不进入 Pinia/Storage。关闭清除目标但保留最后 x/y 至下次打开替换，避免退场动画期间坐标归零导致左上角闪跳。
 
 菜单精确包含 Refresh/Close；`refreshable=false` 的 Refresh 与 `closable=false` 的 Close 保持可见且禁用，执行边界再次拒绝。Close 使用同一 `close` Emit 和 Frame 原有 discard/相邻回退逻辑，唯一总览不变。ContextMenu/Shift+F10 从聚焦 Tab 完整条目的 PAVP-owned Bounding Rectangle 在逻辑起侧/底边定位，RTL 使用右侧，不读取 Vendor DOM；方向键/Home/End 只移焦、Enter/Space 原生激活的既有 Tab 模型保持。菜单取得键盘焦点；Refresh/Close 先用 preventScroll 聚焦仍有效的目标 Tab，再关闭菜单，最后 Emit，让原有删除焦点规则接续。Escape 通过 Naive update:show 关闭；Escape/外点仅在焦点仍属菜单或退回 Body 且未指向其他控件时返回目标，不能抢走用户外点控件的焦点。选择、外点、Escape、目标消失、活动 Workspace 的独立 Commit 与组件 Dispose 均关闭菜单。
 
@@ -18467,7 +18467,7 @@ vue-i18n
 @platform/ui
 ```
 
-这是各独立 Gate 全部满足后的条件式 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 获得真实 Backend/Service Contract，且可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。Atomic Landing 前的 Committed Baseline `apps/web` Direct Dependency Set 精确为 `vue@3.5.40`、`@platform/design-system`、Package 5 窄范围准入的 `pinia@3.0.4`、Runtime Kernel 准入的 `zod@4.4.3` 与 Router Landing 准入并通过 Catalog 消费的 patched `vue-router@5.2.0`；当前 Console Implementation 只把 `@platform/ui` 加入 `apps/web`，并由 `packages/ui` 私有拥有 `naive-ui@2.45.2`。当前没有 `reka-ui`、`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios、Alova 或其他 Backend-dependent/Unrelated Runtime Dependency 被准入。
+这是各独立 Gate 全部满足后的条件式 Target Set。`openapi-typescript` 仅在 `PAVP_API_TRANSPORT_IMPLEMENTATION` 获得真实 Backend/Service Contract，且可靠 Schema Owner、Input Digest、Drift 和 Generator Gate 通过后作为 Root Build Tool 准入，不是 Runtime Dependency。Atomic Landing 前的 Committed Baseline `apps/web` Direct Dependency Set 精确为 `vue@3.5.40`、`@platform/design-system`、Package 5 窄范围准入的 `pinia@3.0.4`、Runtime Kernel 准入的 `zod@4.4.3` 与 Router Landing 准入并通过 Catalog 消费的 patched `vue-router@5.2.0`；当前 `apps/web` 消费 `@platform/ui` 实质组合组件，并与 `packages/ui` 通过现有 Catalog 直接依赖同一 `naive-ui@2.45.2`，仅在既有 UI Owner 使用官方按需入口。当前没有 `reka-ui`、`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios、Alova 或其他 Backend-dependent/Unrelated Runtime Dependency 被准入。
 
 ## `packages/design-system`
 
