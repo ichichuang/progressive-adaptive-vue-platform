@@ -1,6 +1,6 @@
 # Progressive Adaptive Vue Platform
 
-## 个人自有、可独立复制的 Vue 后台起始项目
+## 个人自有、可独立复制的 Vue 应用基础
 
 ```text
 STATUS=CANONICAL_ARCHITECTURE_BASELINE
@@ -202,11 +202,13 @@ PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 
 它是一套：
 
-> **由 Owner 自有、以 TypeScript、Vue 和 Vite 为基础、可复制后独立演进的 AI-friendly 后台起始项目：以项目自有 Design Token 为唯一视觉与尺寸权威，以 UnoCSS 为表达层，通过 PAVP 自有边界复用 Naive UI，并提供可组合的表单、完整数据管理页面、登录权限和标准管理页面。**
+> **由 Owner 自有、以 TypeScript、Vue 和 Vite 为基础、可复制后独立演进的 AI-friendly Vue 应用基础，以后台管理为主要场景：以项目自有 Design Token 为唯一视觉与尺寸权威，以 UnoCSS 为表达层，直接使用 Naive UI 官方 API 并保留实质 PAVP 组合，提供可组合的表单、完整数据管理页面、登录权限和标准管理页面。**
 
-最终交付模型为 `INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER`，主要用于后台管理系统，也能支持交互式数据展示大屏。新项目复制代码后独立维护；共享组件在各项目内部集中维护，不要求共享包分发服务、跨项目自动升级或持续同步母仓库。当前仓库仍是无真实 Backend/API/Auth 的前端实现，`PAVP 管理台` 是已落地的架构消费者，不能据此宣称完整 Starter 已交付。
+最终交付模型为 `INDEPENDENTLY_COPYABLE_VUE_ADMIN_STARTER`，主要用于后台管理系统，也支持独立内容、预览、编辑器和交互式数据展示页面。新项目复制代码后独立维护；共享组件在各项目内部集中维护，不要求共享包分发服务、跨项目自动升级或持续同步母仓库。当前仓库仍是无真实 Backend/API/Auth 的前端实现，`PAVP 管理台` 是已落地的架构消费者，不能据此宣称完整 Starter 已交付。
 
 最终必需能力与当前实现准入分开：配置驱动的数据管理、可复用表单、登录/会话/角色权限、用户/角色/菜单与操作权限分配页面、简体中文默认与可选英文、应用内页签状态保留均属于交付目标；尚未实现的能力继续按 §1.3 的状态和独立 Gate 管理。Backend 未约定不阻塞可独立完成的前端工作，但缺失上述必需集成时不能宣称 Starter 完整。图表、地图、专业 Grid 和复杂展示特效按具体项目需求集成，不是 Starter 完成的前置条件。
+
+产品目标、实施顺序和执行授权分别判断。§9、§18 与 §19.5 补充的布局、导航、复用和状态隔离要求只表达最终行为，不修改当前 Runtime Contract、Capability Status、历史验收或 Current Work/Next/Successor，不冻结新的 Helper/Option 名称、默认值、身份算法或存储协议，也不授权实现。API/Auth 或用户、角色、菜单管理的完成不是独立前端布局、主题、导航和 Workspace 改进的前置条件；各项仍须各自获得授权。
 
 正式名称：
 
@@ -247,6 +249,8 @@ ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
 * 组件只公开语义变体，不公开 Blur、Backdrop、Opacity、Glow、Saturation、Brightness 或 Material Role 等光学实现参数。
 * 不建立 `UiGlass`、Glass Card、通用 Material Wrapper 或页面级光学样式系统。
 * 不复制任何平台或厂商的专有视觉外观；PAVP Design Token 始终是唯一视觉权威。
+
+§10–17 的主题、Light/Dark/System、Contrast、Material、Typography、Font Scale、Density、Spacing、Size、Border、Radius、Shadow、Layer 与 Motion 应在桌面、平板和移动 H5 的受支持呈现中形成统一视觉行为，覆盖背景、文字、交互及语义状态。Naive UI、PAVP 组合、UnoCSS、Overlay 和页面消费同一视觉来源；Font Scale、Density、原生 Size Variant 与可用命中范围保持不同职责。用户可见偏好必须有真实消费者和可辨认效果，不能以 Schema、存储字段、代码或 CI 成功代替效果与视觉验收；现有未完成投影状态保持。
 
 ## 1.2 Architecture Foundation Freeze
 
@@ -6604,6 +6608,12 @@ ACTIVATION_GATE=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION
 
 尚未实现的扩展继续为 `TARGET_INACTIVE`：§9.5 的外部 Access Decision Source、权限菜单过滤及对应接入；§9.6 的 Return Destination 流程；非空业务 Params/Query/Fragment 的真实消费者。当前十个 Product Route 仍显式使用空 Params/Query 与 `hashPolicy='none'`，七个 Error Route 的身份与边界不变，Redirect/Dynamic Registry 仍为空，Auth/Session/Permission/Prefetch 不激活。§9.1、§9.4、§9.11 中已经落地的机制与这些未来消费者分别判断；§9.0 的历史清单、冻结时限制和测量不重写为当前状态。
 
+最终导航体验需要小型、Typed、便于业务调用的应用入口：描述目的地及参数，明确选择当前浏览器页或新浏览器页、适用的 Push/Replace，以及是否跟踪并复用合格的已打开页面。它协调既有 Router 的解析、验证、取消、错误与呈现提交，不建立第二 Router，不要求普通调用者拼 URL、查询缓存或管理 Window Reference。内部 Route 与外部目的地分别处理；真实 href、复制链接、原生上下文菜单、键盘、修饰键及中键行为保持，Link 组合只为实际协调责任存在。布局、应用 Workspace Tabs、浏览器页和 History 各有职责，不能互相代替。
+
+页面身份应区分有意义的业务记录和有意创建的独立实例，同一组件的不同记录可各自保留状态，同一合格记录再次打开通常激活原实例，不重载或覆盖未保存工作。普通列表筛选、排序、分页和锚点变化不应意外新增页签；查看/编辑或独立草稿是否分开由真实业务身份要求决定。激活、更新参数导航、当前实例刷新与另开实例分别表达，约定的成组关闭同样遵守 §18.11 的逐实例丢弃保护与资源生命周期。业务返回与 Browser Back、关闭页签分别处理，应有明确来源或安全回退，并恢复来源列表的筛选、排序、分页、选择和滚动上下文；真实路由的菜单归属与 Breadcrumb 信息沿用现有路由配置权威，不在页面复制，详情可不列入菜单而保留正确的父级选中和祖先上下文。
+
+显式请求浏览器页复用时，应记录本应用实际可关联和管理的合格存活目标，后续优先请求激活该页并保留其状态；已知关闭可重新打开，关联丢失须如实处理。未请求复用的新页操作不得暗中复用无关页面，存过 URL 不证明页面存活，也不承诺发现任意标签页、强制前台聚焦或刷新后找回所有关联。结果须区分实际内部导航、重复、已有实例激活、取消、被新操作取代、重定向、失败和结果不可观测的浏览器打开/聚焦请求，旧操作不得覆盖最新呈现。保留用户激活与外部链接隔离约束，新页请求受阻不得暗中替换当前页；来源页刷新后的重新发现和跨页协调仍是单独设计选择。本段不指定 Window 命名、隔离实现、返回值协议或公共 API。
+
 ## 9.0 `PAVP_ROUTER_PROTOCOL_FREEZE_AMENDMENT`
 
 ```text
@@ -11067,6 +11077,8 @@ packages/ui/
 
 内容结构优先使用原生语义 HTML；表单、表格、Dialog 和其他交互控件直接复用 Naive UI 官方 API，通过唯一 UiProvider 适配已有 Token、主题和尺寸；PAVP 只封装实质组合责任。不得重做 Naive UI 的组件引擎或替换 UI Library 来实现 Starter。Console 的唯一 Styled Vendor 仍是 Naive UI；Reka 仍未准入。
 
+Dialog、Drawer、确认、反馈、复制、下载、文件处理和浏览器 Fullscreen 等共用交互按真实消费者需求提供，优先使用现有原生或已准入 Library 能力，保持共享语言、键盘、焦点、状态与生命周期责任，不预建通用 Helper 集合。文件与下载继续遵守 §20.8、§21.6 和 §34.10 的真实合同与准入边界。
+
 ### Central Naive theme and sizing projection
 
 `UiProvider.vue` 与 `pavp-naive-theme.ts` 中的集中 PAVP Theme Projection 是现有主边界，后续工作是扩展并闭合该桥接，不重建主题系统。普通页面不得创建自己的 Naive Palette、Size Theme 或第二 Provider。Naive 支持通过 Typed `theme` / `themeOverrides` 自定义全局及组件主题；当支持的 Theme API 足够时，必须优先使用它，不用任意 DOM CSS Override 取代。参见 [Naive 官方主题定制文档源码](https://github.com/tusen-ai/naive-ui/blob/main/demo/pages/docs/customize-theme/enUS/index.md)。
@@ -11244,6 +11256,18 @@ CSS_LAYOUT_FUTURE_CAPABILITY=TARGET_INACTIVE
 通用 Layout Preference Persistence、Layout Store、Panel Drag/Resize、Movable Panel 与 Generic Resolver 仍为 `TARGET_INACTIVE`；§9.0.6 的 Reading Document Core 和 §1.2B 的 `UiAdminShell`、三档 Responsive Profile、Console Region/Scroll/Focus/Restoration 子集均已激活。任何更广的 Generic Shell Platform、Panel 或 Persistence 示例均不构成当前 Behavior。
 
 当前 `UiAdminShell` 是已落地 Console 的布局，不是所有复制项目必须采用的固定外壳。后台和交互式数据展示屏可以选择不同布局与操作范围，沿用现有空间能力、Token、Safe Area、Dynamic Viewport 和 Scroll Ownership 基础。下方 Future Layout Preference、拖动和面板方案仍按需准入，不是复制 Starter 或完成基本响应式支持的前置条件。
+
+最终支持的可选页面组合包括：
+
+* Header、Sidebar、应用 Tabs 与 Content 组成的管理 Workspace，可选 Footer。
+* Header 与 Content。
+* Header、Content 与 Footer。
+* Content 与 Footer。
+* Content-only，用于独立内容、预览、编辑或数据展示。
+
+这些是组合要求，不是五套重复 Shell。复用公共 Region 与业务内容，由既有 Route 配置权威决定布局；同一内容确有不同呈现需求时才限定其可选范围。直接进入、刷新、书签、复制链接与站内导航应得到正确布局，不依赖调用方临时记忆。布局选择与 §9 当前页/新浏览器页的打开方式独立，Content-only 或填满视口不等于请求 Browser Fullscreen。共享 Appearance/I18n Provider 保持稳定，隐藏 Tabs Strip 本身不关闭工作区或销毁页面状态。
+
+每种布局明确各轴 Scroll Owner，避免意外双重滚动、内容遮挡和恢复位置丢失；多布局需求不引入一律禁止 Document Scroll 的规则。§9.0.6 的 `reading-document` 文档滚动与 §18.6 各布局滚动规则保持原有范围，不因本次产品目标补充被判定为缺陷或改变政策；变化须另经授权设计。Safe Area、Dynamic Viewport、键盘与响应式要求继续适用，不扩张为可视拖拽布局设计器。
 
 ## 18.1 不使用设备名称
 
@@ -12759,6 +12783,8 @@ DIRECT_STORAGE_OUTSIDE_OWNER=PROHIBITED
 
 §23.6.6 已实现第三条 `locale-preference` Direct Record 及其窄 Port；本节原 Storage Landing 的两条记录、十一阶段及 Disposal 插入描述保留为该 Landing 历史，当前十五阶段与七条 Registry 由 §19.4、§23.6、§19.5.2、§18.11.11 和 §18.12 拥有。原两条 Appearance Payload、零 Envelope/Migration/Cross-tab Event 与敏感数据边界保持。
 
+最终存储行为须区分有意共享的外观/语言偏好、独立浏览器页的 Workspace 状态、可恢复浏览上下文、缓存与另行批准的业务草稿，避免独立工作相互覆盖；复制应用须使用适当命名空间，只恢复明确支持的数据，并如实处理不可用、无效值和写入失败，保留敏感数据限制。§18.11.11 当前 Workspace 结构通过同一配置键读写 Local Storage 是实现事实，跨窗口覆盖仅是未复现的潜在风险，不能记录为已确认数据丢失；本次不改变该合同，也不选择 Session Storage、窗口标识、迁移或跨页消息方案。存活实例缓存、页签结构恢复、浏览上下文恢复和业务草稿持久化分别判断，不能互相证明。
+
 ### Storage Registry and Envelope
 
 Storage Key 只能来自 Exact Storage Registry：
@@ -14241,6 +14267,8 @@ Naive UI 的 Table、分页、选择和控件引擎经现有 PAVP-owned 边界�
 大数据支持指使用服务端筛选、排序、分页或有界增量加载查询和操作大数据集，在确有必要时采用虚拟化。不得承诺把百万记录一次下载到浏览器并全部渲染也能普遍工作；数据集总量不等于浏览器内存和 DOM 的同时承载量，也不单独构成专业 Grid 的准入理由。
 
 Pagination 使用 Cursor 或 Page Contract，不能混用。URL State 经 Route Query Schema 验证；Table、Route 和 Query Key 共用同一 Canonical State，不复制到第二个 Pinia Store。Background Refetch 保留稳定 Row Selection，但删除/权限变化的 Row 必须移除并通知。
+
+筛选条件或删除结果改变有效页范围时，应保持分页与实际结果一致，不滞留无效页；具体行为仍由真实列表合同确定。
 
 ## 22.4 Level 3: Professional Grid
 
@@ -18404,6 +18432,8 @@ SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 
 # 38. 延迟引入的能力
 
+下列能力及 §20B 的监控集成、§30 的生成器、可视布局设计器、跨设备同步和高级主题编辑产品均以明确真实需求与单独授权为前提，不是完成 §1 基础的自动前置条件。既有主题校验/应用、普通布局组合和受支持交互不因此被扩展为专业产品；整合常见经验只要求受支持场景行为清楚、可复用，不承诺实现所有可能功能。
+
 | 能力               | 引入门槛                    |
 | ---------------- | ----------------------- |
 | Turbo            | Package 或 CI 时间出现真实瓶颈   |
@@ -18798,7 +18828,9 @@ NO_FUTURE_RULE_IS_CLAIMED_ENFORCED_BEFORE_ITS_GATE
 
 # 41. 最终架构摘要
 
-最终产品是 §1 定义的可独立复制 Vue 后台 Starter。必需范围包括可组合表单、完整配置驱动数据管理、登录/Session/角色权限、用户/角色/菜单与操作权限管理、简体中文默认/可选英文和保留工作状态的应用内页签；当前 Console 不代表这些已经完成。Chart、Map、专业 Grid 和复杂展示特效仍按需集成；跨刷新、关闭或重开浏览器的 Form Draft 恢复不在 Starter 范围内。
+最终产品是 §1 定义的可独立复制 Vue 应用基础，以后台 Starter 为主要用途；可选布局及显式导航/复用目标分别见 §18 与 §9。必需范围包括可组合表单、完整配置驱动数据管理、登录/Session/角色权限、用户/角色/菜单与操作权限管理、简体中文默认/可选英文和保留工作状态的应用内页签；当前 Console 不代表这些已经完成。Chart、Map、专业 Grid 和复杂展示特效仍按需集成；跨刷新、关闭或重开浏览器的 Form Draft 恢复不在 Starter 范围内。
+
+代表性最终体验是：从列表打开两个不同记录而不混淆状态，再次进入同一记录时激活已有实例；在受管理浏览器页打开独立呈现，直接刷新仍正确，显式请求复用时不作不必要重载，并如实反馈浏览器限制；返回原列表时保留浏览上下文，Appearance、语言、可访问性与生命周期行为保持一致。该场景说明产品目标，不创建 Demo、测试资产、实施计划或新工作包。
 
 下方技术清单仍是各独立 Named Gate 通过后的条件式 Target Inventory，不是当前 Active Implementation Inventory，也不要求安装每项候选依赖。当前 Authority 以文首 Status Block、§1.3 Capability Status、§11.4 Active Registry、§13.4 Preference Transition 和 §37.1 Work-package Order 为准；未准入能力保持原 Inactive/Deferred 状态。最终必需能力尚未实现时，前端基础工作可以完成，完整 Starter 仍不能宣称交付；本任务没有后继实施授权。
 
