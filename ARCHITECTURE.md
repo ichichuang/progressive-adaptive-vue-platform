@@ -4377,6 +4377,8 @@ Repository Implementation 与完整 Canonical Static Gate 已完成时，Codex T
 
 ### 1.2B.1 Layout value and responsive authority
 
+本节保留当前可执行 Layout/Region 合同；路由选择的有限组合扩展仅由 §18.16 定义为未实现目标候选，不替换下方当前接口或激活记录。
+
 全部 Threshold、Shell Dimension、Target Size、Spacing、Radius、Typography、z-index 和 Motion Numeric Value 的唯一权威是 PAVP Design Token Source。Primitive Dimension Token 持有 Numeric Literal；Semantic Layout Token 只 Alias Primitive；Generated Typed Layout Registry 只是九条 Semantic Role 的确定性只读投影，不是第二 Numeric Authority。
 
 ```text
@@ -5537,6 +5539,8 @@ apps/web/src/app/appearance/appearance-mutation-boundary.ts:
 Page 只能从 `useAppearanceMutationBoundary` 的 Deep-readonly `preference` 与 `customThemeRegistry` Computed Projection 读取 Stored Preference/Registry；Import `appearance.store.ts`、调用任一 Store Action、`$patch`、Assignment 或取得 Environment Reader 必须失败。所有 Preference Commit/Reset 只经同一 Mutation Boundary；Effective Preview 只经 `useAppearanceReadBoundary`。Theme Gallery 的 Built-in Swatch 只读投影来自 `builtInAppearanceThemePreviews`，Custom Swatch 只通过 `projectAccessibleCustomAppearanceThemePreviews` 对现有已验证 Registry Entry 产生同一窄 Shape。Vue Core Imports 与 Registry-closed `@platform/ui` Rendered Components 不计入 Fact Allowlist，Naive 的官方按需组件 Import 不计入 Fact Allowlist；Workspace Deep Import 与非 UI Vendor Import 仍禁止。
 
 ### 1.2B.6 Public UI closure and styled-vendor admission
+
+`UiAdminShell` 组合输入与 Footer Slot 的目标变更只由 §18.16.2 拥有；本节及当前 Public Component Registry 的已实现接口保持有效，文档候选不构成公共 API 已切换的证据。
 
 Atomic Landing 前的 Committed Baseline `packages/ui` 是 Dependency-free、Zero-runtime `src/index.ts` Stub；Owner-rejected Local Draft 中的三个 `Ui*` Export、两个 Reka Adapter 与 `reka-ui@2.10.3` Manifest/Lockfile Change 已从工作树永久退役，没有进入当前实现。当前 Implementation 只准入 `naive-ui@2.45.2` 作为唯一 Styled Vendor，使用官方名称和 API，并仅为实质组合职责保留 PAVP Component Export。Reka UI 只保留为未来独立需求触发的 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`。
 
@@ -7234,6 +7238,8 @@ Router Implementation 必须通过 Existing Static Owners 的最小 Domain-owned
 这些 Enforcement Target 在 Documentation Amendment Freeze 时保持 `TARGET_INACTIVE`；本 Documentation Amendment 自身不实现或激活 Checker。它们现已由 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 通过 Existing Static Owners 和 `check:arch` 原子激活。
 
 ## 9.1 File Routes and Exact Route Registry
+
+§18.16.1、§18.16.4 分别拥有未实现的组合字段与独立阅读入口目标；它们不改变本节当前两种布局、十七条 Route 及 Generated Map 的可执行合同。
 
 当前实现使用 §9.0.1 冻结的 Vue Router `5.2.0` File Routes。当前 Source Set 是 §1.2B.2 的十个 Product Source 加七个 Error Source；§9.0.2 的八条是历史清单。当前页面清单是这个应用的配置，不是可复用导航执行器的永久上限；新增真实页面仍需其任务授权。
 
@@ -12303,6 +12309,110 @@ Control Center 只可持有 Selected Section、Expand/Collapse、Pending Feedbac
 后续 User Dock Trigger、Panel 快捷集成、Bottom Context Bar/Breadcrumb 会进入 Startup Shell，Initial JS 余量很窄。唯一预算权威仍是 `project.config.ts`：硬上限 `262144`、最低预留 `8192`、最大允许实测值 `253952` bytes gzip；全部现有 CSS/Route/Closure 预算及测量规则保持。Control Center 的完整设置内容不属于首绘必需，是合法 Lazy Route；不得把 Shell-critical Dock/Context Bar 正确性藏入伪 Dynamic Import 规避 Initial JS 检查。没有新增依赖、预算扩大或测量豁免。
 
 本次只修改 `ARCHITECTURE.md` 和必要文内引用，不实施 Control Center、Route、Dock/Panel、Bottom/Breadcrumb、Appearance 迁移或 Store 结果透传；不改 Shell、UiPageHeader、Router/Workspace/Scroll/I18n、Layout Registry、Design System/UnoCSS/CSS、Checker、Manifest/Lockfile、Project Config。Auth/Session/Account/Organization、API、Backend 和业务页面继续独立延期。禁止 Browser、Dev Server、Test/Fixture/Mock/Storybook、截图/Trace/Evidence Artifact、部署或 Release。本合同不授权源码续作，文档工作不需要 Owner Runtime Acceptance。
+
+## 18.16 Route-selected Layout Composition Target
+
+本节是 Owner 已选择设计的实现合同候选，沿用 §18 的 `CAPABILITY_STATUS=TARGET_INACTIVE`，尚待评审及独立源码实施授权。当前基线只有原管理台与 Reading Document 两种布局，仍使用 `UiAdminShell.enabled`；本节不替换当前接口声明，不修改 §1.3 完成状态、历史证据或 Generated Manifest，不激活工作包，也不指定 Next/Successor。下文新增字段、区域、入口及检查责任全部是目标，不是现有源码事实。
+
+### 18.16.1 唯一路由权威与有限组合
+
+只扩展既有 `UiAdminShell`，不复制多套 Shell 或创建通用布局引擎。目标公共类型由 `packages/ui/src/components/contracts.ts` 唯一定义，经 `packages/ui/src/index.ts` 从 `@platform/ui` 导出；应用只通过公共根导入：
+
+```ts
+export type UiShellComposition =
+  | 'admin-workspace'
+  | 'admin-workspace-footer'
+  | 'header-content'
+  | 'header-content-footer'
+  | 'content-footer'
+  | 'content-only'
+```
+
+目标只在 `apps/web/src/app/router/route-registry.ts` 的既有 `LayoutCapabilityRegistryRecord` 中、`layout` 之后增加 `readonly composition: UiShellComposition | null`；其余字段继续由当前合同拥有。`null` 仅对应原文档直通呈现。下表是该字段与 Layout/Region 的唯一目标映射；H/C/N/D/F 分别指同一 Region Registry 中的 `architecture-console-header`、`architecture-console-content`、`architecture-console-navigation`、`architecture-console-navigation-overlay`、目标 `architecture-console-footer`；T 仅指既有 `workspace` Slot 中的 Tabs，不新增 Tabs Region ID。
+
+| Layout Capability ID | composition | layout / allowedPresets / narrowProjection | 支持的区域与 Tabs |
+| --- | --- | --- | --- |
+| `route-layout.architecture-admin-console`（保留） | `admin-workspace` | `workspace` / `[workspace]` / `sheet` | H、C、T；regular/wide 为 N，narrow 为 D |
+| `route-layout.architecture-admin-console-footer`（新增） | `admin-workspace-footer` | `workspace` / `[workspace]` / `sheet` | 同上并支持 F |
+| `route-layout.header-content`（新增） | `header-content` | `focused-task` / `[focus]` / `null` | H、C |
+| `route-layout.header-content-footer`（新增） | `header-content-footer` | `focused-task` / `[focus]` / `null` | H、C、F |
+| `route-layout.content-footer`（新增） | `content-footer` | `focused-task` / `[focus]` / `null` | C、F |
+| `route-layout.content-only`（新增） | `content-only` | `focused-task` / `[focus]` / `null` | C |
+| `route-layout.reading-document`（保留） | `null` | 原 `reading` / `[]` / `null` | 原文档呈现，无 Shell 注册区域 |
+
+六个应用组合的 `shellRequired=true`、`renderOwner='@platform/ui'`、`allowedProfiles=[narrow,regular,wide]`，`movablePanelIds`/`resizableRegionIds` 均为空；`regionIdsByProfile` 是上表各 Profile 支持的 Region ID 集合，不含 T，数组沿用既有排序合同。共同复用 `architecture-console-content-block` / `architecture-console-content-inline`、`route-focus.architecture-console-page-heading`、`route-scroll.architecture-console-content-history`、`target-size.enhanced-44`、`layout-profile.architecture-admin-console` 和 `safe-area.viewport-insets`。Reading Document 除增加 `composition=null` 外，全部现有字段、Document Owner、Focus/Restoration 引用保持。`shellRequired` 必须与 `composition !== null` 一致，不成为第二呈现开关。
+
+Route 作者继续只选 `layoutCapabilityId`，由同一个 Capability Record 展开现有 Layout/Scroll/Focus/Restoration Meta；不把 `composition` 再复制进 Route Meta。记录按 ID 解析，拒绝未知/重复 ID，不按数组位置选择 Reading/Admin 默认。所有现有管理台 Route 保留原 ID、无 Footer 的默认外观；所有现有文档/错误 Route 保留原 ID。组合只决定区域呈现，不推导或重写 Route 的 Workspace Identity、KeepAlive、Auth 或 Unsaved Policy。不得增加可变显示布尔值、Layout Store、Query Override、第二 Router 或配置权威。直接进入、刷新和复制链接均由注册地址确定布局；浏览器打开方式继续独立，Content-only 不调用 Fullscreen API。
+
+### 18.16.2 Shell、Footer 与滚动几何
+
+目标 Public API 原子替换如下，不要求旧、新输入并存：
+
+| Owner | 精确目标变更 |
+| --- | --- |
+| `packages/ui/src/components/UiAdminShell.vue` | 删除公共 `enabled`；增加必需、无缺省值的 `composition: UiShellComposition \| null`。其余现有 Props、Emits、必需 `workspace`/`default` Slots 保持。 |
+| 同一 Shell 的 `footer` Slot | 唯一新增可选 Slot：`footer?: (props: Readonly<Record<string, never>>) => unknown`；Registry 为 `name=footer`、`slotPropsType=Readonly<Record<string, never>>`、`required=false`。不增加 Footer Props、Slot 状态或 Events。 |
+| `apps/web/src/app/console/ConsoleRouteFrame.vue` | 以同型必需 `composition` 替换 `shellRequired` 输入，保留 `activeRouteName`；以同型可选 `footer` Slot 透传应用内容给 Shell，原默认 Slot 与导航/工作区/Controller 接线不迁移。 |
+| `apps/web/src/App.vue` | 从当前已提交 Route 的 Capability 解析组合，传给 Frame；移除管理台 ID 等值判断，不创建另一份 Layout 状态。 |
+
+Footer 内容由应用提供，UI 不读取 Router、Store、构建配置或应用状态来填充。只有上表支持 F 的组合且 Slot 提供真实可见或可访问内容时才渲染 Footer；未提供 Slot、空返回或只有注释/空白/空片段都视为空。应用负责将不可用内容表达为空 Slot，不以最终渲染为空的占位组件冒充内容。不渲染空 Footer Region、占位文案、人工保留高度或重复 Safe-area Padding；其他组合忽略 Footer 内容。空内容判定只冻结结果，不冻结私有 VNode 遍历算法。
+
+仍只扩展 `packages/ui/src/internal/layout/admin-shell-region-registry.ts`：目标 F 的 `owner='@platform/ui'`、`profileAvailability=[narrow,regular,wide]`、`requiredProfiles=[]`、`overlayRelationship='background-locked-by-navigation-overlay'`、`scrollRelationship='inside-route-primary-scroll-owner'`。后一个值是既有 Scroll Relationship Union 的唯一新增值。现有四个 Region 的 ID、字段和值保持；目标有效区域按 Capability 成员与 Profile 求交集，只有 F 允许上述空 required 集合和 Slot 内容条件。支持集合不等于当前 DOM 必须出现的集合；Header/Content 不因在 Region Registry 中登记就强制出现在每种组合。Overlay 关系还须与实际可用 D 求交集，非管理台不存在孤立 Drawer Trigger、Sidebar Action、背景锁或 Overlay 引用。Footer 没有独立 Scroll Owner/Controller，随 C 的祖先背景锁生效。
+
+应用组合使用既有视口基础：Shell 以 `100dvh`、不支持时 `100vh` 回退获得高度；H 复用 `layout.admin.header.block-size` 加所属顶部 Safe Area，H 与 T 占用主内容 Scrollport 外的空间，C 获取剩余可收缩高度。管理台 N/D 与 T 保持既有独立滚动；非管理台不创建它们。Footer 是 C 内的自然高度内容，短内容时靠底、长内容时排在页面之后随 C 滚动，不从视口另扣固定底行，不覆盖内容。它不承担 §18.13/§18.15 的固定 Bottom Context Bar、Global Breadcrumb 或构建信息职责，不激活那些未来合同。
+
+最小填充只作用于 Shell 内既有 `ownerId='architecture-console-content'` 的启用实例及其内容包装，使这一内容流至少填满自己的 Viewport；默认 Slot 及缓存父链保持稳定，Footer 作为同一内容流的后续兄弟区域。`composition=null` 时撤销该填充、视口约束和 Shell 文档锁，继续自然 Document Scroll。不得全局改变所有 `UiScrollArea`、Navigation、Drawer 或 Tabs Scrollport 的高度/布局，不新增公共 fill 开关、观察器、尺寸 Store 或第二 Scroll Writer；`UiScrollArea` 现有 Props/Controller 不变。具体 Flex/Grid 写法不构成公共合同。
+
+中间容器保持 `min-block-size:0`、`min-inline-size:0` 的可收缩语义；消费者须重排/换行，保留有意义内容的访问，不靠裁切隐藏溢出来制造稳定。本片不声称支持任意超宽 Editor/Grid，不增加横向滚动系统。Profile 仍由唯一 Shell Observer 和 Generated Layout Token 解析，无新断点或 UA 分支；非管理台 H 只保留适用的现有身份呈现，不显示导航操作。
+
+Safe Area 仍只在 Shell 解析：有 H 时 Top 归 H，否则归 C；Bottom 由 C 内容流末端消费一次，无论 F 是否实际存在；Inline 按既有主流/Overlay 平面和祖先链规则消费一次。Footer 自身不再叠加 inset，普通页面间距继续来自 Token。Narrow、字号/语言变化和视口变化使用现有响应式与 Ready 路径，不改变 Theme、Density、Material 或 Motion 数值。上述区域滚动政策仅限这六个应用组合，不把 Reading Document 判为缺陷或推广为全局禁止 Document Scroll。
+
+### 18.16.3 Provider、缓存、焦点与导航交接
+
+保留外层共享 Appearance/I18n 与 `UiProvider`/`NConfigProvider`、一个 RouterView、一个 KeepAlive，以及稳定无 Key 的 `.pavp-route-content`、Shell/default Slot/ScrollArea 父链。不得按组合替换外层组件类型、条件销毁宿主、增加 Layout Key、清空 Workspace 条目/include 或改变现有实际 Component 的 instance Key。T 仅在两个管理台组合显示；`tabpanel`、`tabindex` 与 `aria-labelledby` 仅在对应 T 真实存在且有活动工作区时投影。C 在应用组合提供唯一 main，文档直通不与错误页自己的 main 竞争。
+
+离开管理台组合须关闭其 Drawer，释放失效 Invoker、inert 和导航背景锁；若目的地仍为应用组合，主内容的文档滚动锁仍成立，进入文档组合才恢复原锁状态。禁止向已隐藏/移除的控件回焦；最终 Focus 与 Scroll 继续由现有 Router 呈现事务拥有。§18.9、§18.11、§18.12 的 Ready、语言/外观/布局/尺寸/Revision 比较、失配回退、历史/工作区/刷新恢复优先级保持；存在缓存组件不表示所有导航恢复同一个 Offset。不改 Workspace Identity、多记录缓存、Dirty Protection、Storage Format 或浏览器窗口隔离。
+
+在既有 `apps/web/src/app/router/route-transition/route-transition-coordinator.ts` 中，来源与目的 `layoutCapabilityId` 不同时仅绕过可选内容 View Transition 增强，沿用该 Coordinator 已接受的同一 Router Operation 和普通导航路径。取消、资源准备、Presentation Commit、Focus、Scroll、失败结算及真实重复导航语义不变；同 Layout ID 保留 §1.2B.0N 的现有 Motion 决策，不新增 Transition Family、动画系统或导航 API。
+
+### 18.16.4 唯一新增真实消费者
+
+保留 `apps/web/src/pages/capabilities.vue` 对应的 `/capabilities`、`capability-roadmap`、其管理台布局、菜单及组件名 `CapabilityRoadmapPage`。目标新增入口只是同一真实能力路线图的独立阅读地址，不添加菜单产品、打开新浏览器页控件或示范页面。精确跨文件合同如下：
+
+| 目标字段/Owner | 值与责任 |
+| --- | --- |
+| Route Name / Path | `capability-roadmap-standalone` / `/capabilities/standalone` |
+| Source / Component name | 平面文件 `apps/web/src/pages/capabilities-standalone.vue` / 显式 `CapabilityRoadmapStandalonePage`；不生成隐式 Parent 或第二 Outlet |
+| Params / Query / Hash | `paramsSchemaId='route-params.none'`、`querySchemaId='route-query.none'`、`hashPolicy='none'` |
+| 布局 Meta | 选择 `route-layout.content-only`；`layout`、两轴 Owner、Focus/Restoration 引用仅由 §18.16.1 对应 Capability 展开，不在新页面重复定义 |
+| 工作区与数据 | `workspaceIdentityPolicyId=null`、`keepAlive='never'`、`dataPrefetch='none'`、`unsavedChangesPolicy='none'` |
+| 访问与错误 | `auth='public'`、`requiredPermissionIds=[]`、`errorPolicy='route-boundary'` |
+| 标题与 Breadcrumb | `titleKey='route-title.capability-roadmap'`、`breadcrumbKey=null`；保留现有 `getRoutePresentation` 对 null 回退标题的页面 Prop 语义，不实施 Global Breadcrumb 迁移 |
+| Message / Scope | 为新 Route Name 增加 Message 关联，复用 `route-message.capability-roadmap-summary`；`getRouteMessageScope` 明确返回现有 `capabilities`，继续使用同一中英文资源，不复制文字或新增资源根 |
+| Telemetry / Transition | `telemetryName='route.console.capabilities-standalone'`、`routeTransitionFamilyId='route-family.architecture-workspace'`；跨布局仍按 §18.16.3 绕过增强 |
+| 共享内容 | 新增应用私有 `apps/web/src/app/console/CapabilityRoadmapContent.vue`；原页面与新薄入口共同消费，仅承接原 `breadcrumb`、`title`、`message` Props、既有 UiPageHeader/UiSection/UiStatusBadge 与 Generated Capability Manifest/Message Keys，不复制 Manifest 或创建假数据 |
+
+新入口的唯一 h1 继续由现有 UiPageHeader 提供，满足 Capability 引用的 `route-focus.architecture-console-page-heading`；路由自己的组件名与所有缓存入口不同。非工作区提交只取消活动标识，不删除已有条目，因此进入独立入口再返回不会因隐藏 T 丢弃现有实例。组件私有实现不读取/改写其他工作区状态。
+
+`apps/web/src/app/router/router-lifecycle.ts` 的现有只读内容恢复准入增加此名称：Content Identity 为该 Route Name 与已验证空输入，Revision 来源仍为已验证构建身份、真实 Manifest/模板及现有语言资源。按 §18.9 的全部有效性条件在正常提交边界读取；development/HMR、Pending Locale、未 Ready、inert、布局或呈现值失配均不复用。历史返回和受既有 restoreOnRefresh 偏好控制的刷新使用同一恢复 Owner；无有效记录按既有正常导航策略回退，不新增持久化记录或把 KeepAlive 当恢复依据。
+
+该入口仍按既有官方生成链懒加载，`apps/web/src/route-map.d.ts` 只由原 Generator 更新，不手写 DTS 或另一张路由表。新增 Route/Capability/Region 只有在单独获批的实际实现与 Owning Gate 闭合后才能成为活动源码记录；本轮不写入当前 Registry。六种组合的可复用支持与实际消费分别报告：原管理台有既有消费者，新增真实消费者只覆盖 Content-only；其余新增组合没有因此获得消费者或 Runtime/Visual Acceptance。Footer 的实际应用内容和消费页面仍未选择，可选空 Slot 的结果已明确，不用占位消费者阻塞或伪造布局支持。
+
+### 18.16.5 后续静态责任与本轮边界
+
+以下仅指定未来原子实现所需的现有检查所有权，本轮不修改 Checker：
+
+| 现有 Owner | 窄范围协调变化 |
+| --- | --- |
+| `scripts/architecture/check-router.ts` | 保持严格 Route/Source/Meta/Schema/Generated Set 闭合；增加上述入口与 Capability 目标，按明确的 Route Workspace Policy 检查，不能用是否显示 T 或 `layout==='workspace'` 代替参与合同；允许明确复用已有 Title/Message Key，保留错误页精确集合。 |
+| `scripts/architecture/check-architecture-admin-console.ts` | 检查组合/区域/Profile 与 Footer 唯一可选例外、稳定 Provider/Outlet/KeepAlive 父链、真实 Tab 关联、主内容填充范围、Controller/锁/恢复所有权和跨布局增强绕过；只保护公开或稳定跨文件不变量，不冻结私有 CSS/Slot 算法。 |
+| `packages/ui/src/registry/ui-public-component-registry.ts` 与 `scripts/architecture/check-ui-public-components.ts` | 原子闭合 composition 替换、公共根类型导出和可选 Footer Slot；实际消费者集合按真实使用更新，不把未消费组合填成页面覆盖，不弱化 Naive 官方 API 与 Package Public Root 边界。 |
+| `scripts/architecture/style-owner-contracts.ts` 与 `scripts/architecture/style-debt-baseline.ts` | 只处理 Shell 主内容几何和共享内容提取直接涉及的归属；普通新声明遵守 §15.6 UnoCSS，实际删除的旧债务同步移除，不扩大债务数/豁免或把新文件登记为历史债务。 |
+| `scripts/verify/check-bundle.ts` 及上述检查的当前产物约束 | 当前期望仍为 17 Route Roots、27 Dynamic Roots；一个新增 Lazy Route 且无其他新增动态根的目标期望是 18/28。按完整注册入口集合核对，不把该期望当实测值或保证恰好输出 18/28 个 JavaScript 文件；共享静态 Chunk 与 Entry Root 区分，既有 Lazy Closure/Byte Budget/强制余量与生成所有权保持。历史测量和接受记录不改写。 |
+
+本轮只形成 `ARCHITECTURE.md` 的待评审候选，使用已声明 mise/Node/pnpm 环境运行现有相关非写入检查、`git diff --check` 与最终一次 `pnpm verify`；仅直接相关修正才重跑。Document Gate 不证明布局功能、真实滚动、Footer 外观、键盘/焦点或运行验收。后续 Owner 观察仍按 §32 区分可选任务观察与发布验收；不创建浏览器、自动化测试、Demo、Fixture 或证据资产。正常忽略的现有检查产物不是交付物，Tracked Generated Source 不得产生任务外修改。
+
+本候选不授权源码、依赖、主题/密度、API/Auth、浏览器页复用/跟踪、Cross-tab Messaging、Storage Migration、多记录 Workspace、部署或其他规格续作。当前工作/Authority、Next 与 Successor 保持 `NONE`；文档留作未暂存候选，不授权 Git 交付或后继实现。
 
 # 19. 状态管理
 
