@@ -5,6 +5,10 @@ import { computed } from 'vue'
 
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
 import { overviewProjection } from '../app/console/overview-projection'
+import {
+  useApplicationLinkActivation,
+  useApplicationNavigation,
+} from '../app/router/application-navigation'
 import { getRouterConsoleRouteLabel } from '../app/router/router-console-projection'
 import { useConsoleI18n } from '../shared/i18n'
 
@@ -19,6 +23,8 @@ defineProps<{
 }>()
 
 const appearance = useAppearanceReadBoundary()
+const navigation = useApplicationNavigation()
+const activateLink = useApplicationLinkActivation()
 const foundationItems = computed<readonly { readonly label: string; readonly value: string }[]>(
   () => [
     {
@@ -50,9 +56,12 @@ const appearanceItems = computed<readonly { readonly label: string; readonly val
     { label: t('console.motion'), value: appearance.snapshot.value.motion },
   ],
 )
-const capabilityNavigation = overviewProjection.router.productRoutes.filter(
-  (record) => record.name !== 'console-overview',
-)
+const capabilityNavigation = overviewProjection.router.productRoutes
+  .filter((record) => record.name !== 'console-overview')
+  .map((record) => {
+    const destination = { name: record.name }
+    return { ...record, destination, href: navigation.resolveHref(destination) }
+  })
 </script>
 
 <template>
@@ -98,7 +107,8 @@ const capabilityNavigation = overviewProjection.router.productRoutes.filter(
         v-for="record in capabilityNavigation"
         :key="record.name"
         class="border rounded-panel border-border-default min-h-target-enhanced text-text-primary"
-        :href="record.pathPattern"
+        :href="record.href"
+        @click="activateLink($event, record.destination)"
       >
         {{ getRouterConsoleRouteLabel(record.name, t) }}
       </a>

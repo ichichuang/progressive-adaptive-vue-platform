@@ -8,7 +8,10 @@ import {
   routeTitleRegistry,
   scrollOwnerRegistry,
   scrollRestorationPolicyRegistry,
+  type RouteName,
 } from './route-registry'
+
+type ProductRouteName = Exclude<RouteName, (typeof errorRouteRegistry)[number]['routeName']>
 
 export interface RouterConsoleRouteRecord {
   readonly name: string
@@ -22,7 +25,9 @@ export interface RouterConsoleProjection {
   readonly productRouteCount: number
   readonly errorRouteCount: number
   readonly routes: readonly RouterConsoleRouteRecord[]
-  readonly productRoutes: readonly RouterConsoleRouteRecord[]
+  readonly productRoutes: readonly (RouterConsoleRouteRecord & {
+    readonly name: ProductRouteName
+  })[]
   readonly layoutCapabilityIds: readonly string[]
   readonly scrollOwnerIds: readonly string[]
   readonly focusContractIds: readonly string[]
@@ -53,7 +58,10 @@ export const routerConsoleProjection = Object.freeze({
   errorRouteCount: errorRouteRegistry.length,
   routes: routeProjection,
   productRoutes: Object.freeze(
-    routeProjection.filter((record) => !errorRouteNames.has(record.name)),
+    routeProjection.filter(
+      (record): record is typeof record & { readonly name: ProductRouteName } =>
+        !errorRouteNames.has(record.name),
+    ),
   ),
   layoutCapabilityIds: Object.freeze(
     routeLayoutCapabilityRegistry.map((record) => record.id).sort(compareIds),

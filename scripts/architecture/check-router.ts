@@ -467,6 +467,7 @@ interface RouterInteractionNegativeProbeResult {
 interface RouteTransitionSourceSnapshot {
   readonly appSource: string
   readonly applicationSource: string
+  readonly applicationNavigationSource: string
   readonly boundarySource: string
   readonly checkBundleSource: string
   readonly coordinatorSource: string
@@ -526,6 +527,77 @@ function count(source: string, pattern: RegExp): number {
   return [...source.matchAll(pattern)].length
 }
 
+function frameMenuNavigation(source: string): ts.CallExpression | undefined {
+  const handlerName = /@navigate="([\w$]+)"/u.exec(source)?.[1]
+  const script = ts.createSourceFile(
+    'ConsoleRouteFrame.ts',
+    /<script[^>]*>([\s\S]*?)<\/script>/u.exec(source)?.[1] ?? '',
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const handler = nodesOf(script, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === handlerName,
+  )
+  const statement = handler?.body?.statements.at(-1)
+  if (
+    statement === undefined ||
+    !ts.isExpressionStatement(statement) ||
+    !ts.isAwaitExpression(statement.expression) ||
+    !ts.isCallExpression(statement.expression.expression)
+  )
+    return undefined
+  const call = statement.expression.expression
+  const entry = nodesOf(script, ts.isCallExpression).find(
+    (candidate) =>
+      callMemberName(candidate) ===
+      namedImportLocalName(script, '../router/application-navigation', 'useApplicationNavigation'),
+  )
+  return entry !== undefined &&
+    isDeepStrictEqual(memberPath(call.expression), [...storedValuePath(entry), 'navigate'])
+    ? call
+    : undefined
+}
+
+function frameWorkspaceNavigationValid(source: string): boolean {
+  const script = ts.createSourceFile(
+    'ConsoleRouteFrame.ts',
+    /<script[^>]*>([\s\S]*?)<\/script>/u.exec(source)?.[1] ?? '',
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const privateEntry = nodesOf(script, ts.isCallExpression).find(
+    (call) =>
+      callMemberName(call) ===
+      namedImportLocalName(script, '../router/application-navigation', 'useWorkspaceNavigation'),
+  )
+  if (privateEntry === undefined) return false
+  return ['activate', 'close'].every((event) => {
+    const handlerName = new RegExp(`@${event}="([\\w$]+)"`, 'u').exec(source)?.[1]
+    const handler = nodesOf(script, ts.isFunctionDeclaration).find(
+      (node) => node.name?.text === handlerName,
+    )
+    if (handler === undefined) return false
+    const calls = nodesOf(handler, ts.isCallExpression)
+    const navigations = calls.filter((call) => callMemberName(call) === 'navigate')
+    const navigation = navigations[0]
+    return (
+      navigation !== undefined &&
+      navigations.length === 1 &&
+      isDeepStrictEqual(memberPath(navigation.expression), [
+        ...storedValuePath(privateEntry),
+        'navigate',
+      ]) &&
+      nodesOf(navigation, ts.isPropertyAssignment).some(
+        (property) => property.name.getText() === 'workspaceActivation',
+      ) &&
+      (event !== 'close' ||
+        ['canDiscard', 'isRouterNavigationCurrent', 'sameRouteAddress'].every((name) =>
+          calls.some((call) => callMemberName(call) === name),
+        ))
+    )
+  })
+}
+
 function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot): string[] {
   const violations: string[] = []
   const duplicateConditionPattern = /if\s*\(\s*to\s*===\s*from\s*\)\s*return false/u
@@ -559,18 +631,20 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
     /isCurrentDestination:\s*resolved !== undefined && sameRouteAddress\(router.currentRoute.value, resolved\)/u.exec(
       snapshot.frameSource,
     )
-  const pushIndex = snapshot.frameSource.indexOf('routeTransitionCoordinator.navigate(')
+  const navigationCall = frameMenuNavigation(snapshot.frameSource)
+  const pushIndex =
+    navigationCall === undefined ? -1 : snapshot.frameSource.indexOf(navigationCall.getText())
   if (currentRouteGuard === null || pushIndex === -1 || currentRouteGuard.index > pushIndex) {
     violations.push('FRAME_CURRENT_ROUTE_NOOP')
   }
 
   // The frame consumes the typed operation without adding result-dependent side effects.
-  const duplicatedNoop =
-    /await routeTransitionCoordinator\.navigate\(item\.destination\)\s*\}/u.test(
-      snapshot.frameSource,
-    )
+  const duplicatedNoop = navigationCall !== undefined
   if (!duplicatedNoop) {
     violations.push('FRAME_DUPLICATED_RESULT_NOOP')
+  }
+  if (!frameWorkspaceNavigationValid(snapshot.frameSource)) {
+    violations.push('FRAME_WORKSPACE_NAVIGATION_PORT')
   }
   if (
     /error-application-route-failure|\/error\/500|router\.replace\s*\(/u.test(
@@ -589,7 +663,7 @@ function runRouterInteractionNegativeProbes(
 ): readonly RouterInteractionNegativeProbeResult[] {
   const duplicateGuard = 'if (to === from) return false'
   const currentRouteGuard = 'sameRouteAddress(router.currentRoute.value, resolved)'
-  const duplicatedResultGuard = 'await routeTransitionCoordinator.navigate(item.destination)'
+  const duplicatedResultGuard = `await ${frameMenuNavigation(baseline.frameSource)?.getText() ?? ''}`
   const probes: readonly [
     string,
     string,
@@ -645,7 +719,7 @@ function runRouterInteractionNegativeProbes(
         ...snapshot,
         frameSource: snapshot.frameSource.replace(
           duplicatedResultGuard,
-          `const result = await routeTransitionCoordinator.navigate(item.destination)
+          `const result = ${duplicatedResultGuard}
   if (result.kind === 'duplicated') {
     await router.replace({ name: 'error-application-route-failure' })
     return
@@ -846,6 +920,282 @@ function exactSet(values: readonly string[], expected: readonly string[]): boole
     new Set(values).size === values.length &&
     expected.every((value) => values.includes(value))
   )
+}
+
+function applicationCoordinatorOwnershipValid(snapshot: RouteTransitionSourceSnapshot): boolean {
+  const app = ts.createSourceFile(
+    'App.ts',
+    /<script[^>]*>([\s\S]*?)<\/script>/u.exec(snapshot.appSource)?.[1] ?? '',
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const calls = nodesOf(app, ts.isCallExpression)
+  const creators = calls.filter(
+    (call) =>
+      callMemberName(call) ===
+      namedImportLocalName(
+        app,
+        './app/router/route-transition/route-transition-coordinator',
+        'createRouteTransitionCoordinator',
+      ),
+  )
+  const creator = creators[0]
+  if (creator === undefined || creators.length !== 1) return false
+  const owner = storedValuePath(creator)
+  const disposers = calls.filter((call) =>
+    isDeepStrictEqual(memberPath(call.expression), [...owner, 'dispose']),
+  )
+  const scope = calls.find(
+    (call) =>
+      callMemberName(call) === namedImportLocalName(app, 'vue', 'onScopeDispose') &&
+      nodesOf(call, ts.isCallExpression).some((nested) => nested === disposers[0]),
+  )
+  const providers = calls.filter(
+    (call) =>
+      callMemberName(call) ===
+      namedImportLocalName(
+        app,
+        './app/router/application-navigation',
+        'provideApplicationNavigation',
+      ),
+  )
+  const provider = providers[0]
+  const input = creator.arguments[0]
+  return (
+    owner.length === 1 &&
+    disposers.length === 1 &&
+    scope !== undefined &&
+    provider !== undefined &&
+    providers.length === 1 &&
+    input !== undefined &&
+    ts.isObjectLiteralExpression(input) &&
+    isDeepStrictEqual(memberPath(provider.arguments[1]), owner) &&
+    isDeepStrictEqual(
+      memberPath(provider.arguments[0]),
+      memberPath(objectPropertyValue(input, 'router')),
+    ) &&
+    app.statements.findIndex((statement) =>
+      nodesOf(statement, ts.isCallExpression).includes(scope),
+    ) ===
+      app.statements.findIndex((statement) =>
+        nodesOf(statement, ts.isCallExpression).includes(creator),
+      ) +
+        1 &&
+    scope.end < provider.getStart() &&
+    !snapshot.frameSource.includes('createRouteTransitionCoordinator')
+  )
+}
+
+function applicationNavigationContractViolations(source: string): string[] {
+  const violations: string[] = []
+  const parsed = ts.createSourceFile(
+    'application-navigation.ts',
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const functions = nodesOf(parsed, ts.isFunctionDeclaration)
+  const provider = functions.find((node) => node.name?.text === 'provideApplicationNavigation')
+  const views = provider === undefined ? [] : nodesOf(provider, ts.isObjectLiteralExpression)
+  const publicView = views.find((object) =>
+    object.properties.some((property) => property.name?.getText() === 'resolveHref'),
+  )
+  const methods = publicView?.properties.filter(ts.isMethodDeclaration) ?? []
+  const navigate = methods.find((method) => method.name.getText() === 'navigate')
+  const href = methods.find((method) => method.name.getText() === 'resolveHref')
+  const contract = nodesOf(parsed, ts.isInterfaceDeclaration).find(
+    (node) => node.name.text === 'ApplicationNavigation',
+  )
+  const options = nodesOf(parsed, ts.isTypeAliasDeclaration).find(
+    (node) => node.name.text === 'ApplicationNavigationOptions',
+  )
+  if (
+    !exactSet(contract?.members.map((member) => member.name?.getText() ?? '') ?? [], [
+      'navigate',
+      'resolveHref',
+    ]) ||
+    options?.type.getText().replaceAll(/\s/gu, '') !== "Pick<RouterNavigationOptions,'replace'>"
+  )
+    violations.push(
+      'Application Navigation must expose only navigate/resolveHref and the existing replace-only options type.',
+    )
+
+  const returnedNavigation = navigate?.body?.statements[0]
+  const navigationCall =
+    returnedNavigation !== undefined &&
+    ts.isReturnStatement(returnedNavigation) &&
+    returnedNavigation.expression !== undefined &&
+    ts.isCallExpression(returnedNavigation.expression)
+      ? returnedNavigation.expression
+      : undefined
+  const forwarded = navigationCall?.arguments[1]
+  const optionObjects =
+    forwarded === undefined ? [] : nodesOf(forwarded, ts.isObjectLiteralExpression)
+  if (
+    navigate?.body?.statements.length !== 1 ||
+    navigationCall === undefined ||
+    !isDeepStrictEqual(memberPath(navigationCall.expression), [
+      provider?.parameters[1]?.name.getText(),
+      'navigate',
+    ]) ||
+    navigationCall.arguments[0]?.getText() !== navigate.parameters[0]?.name.getText() ||
+    navigate.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) === true ||
+    nodesOf(navigate, ts.isCallExpression).length !== 1 ||
+    optionObjects.length !== 1 ||
+    !exactSet(
+      optionObjects[0]?.properties.map((property) => property.name?.getText() ?? '') ?? [],
+      ['replace'],
+    ) ||
+    !isDeepStrictEqual(
+      memberPath(
+        optionObjects[0] === undefined
+          ? undefined
+          : objectPropertyValue(optionObjects[0], 'replace'),
+      ),
+      [navigate.parameters[1]?.name.getText(), 'replace'],
+    ) ||
+    optionObjects[0]?.properties.some(ts.isSpreadAssignment) === true ||
+    (forwarded !== undefined &&
+      (ts.isIdentifier(forwarded) ||
+        nodesOf(forwarded, ts.isPropertyAccessExpression).some(
+          (property) => property.name.text !== 'replace',
+        )))
+  )
+    violations.push(
+      'Application Navigation must return the original coordinator Promise and project only replace, without preliminary work.',
+    )
+
+  const returnedHref = href?.body?.statements[0]
+  const hrefExpression =
+    returnedHref !== undefined && ts.isReturnStatement(returnedHref)
+      ? returnedHref.expression
+      : undefined
+  if (
+    href?.body?.statements.length !== 1 ||
+    hrefExpression === undefined ||
+    !ts.isPropertyAccessExpression(hrefExpression) ||
+    hrefExpression.name.text !== 'href' ||
+    hrefExpression.questionDotToken === undefined ||
+    !ts.isCallExpression(hrefExpression.expression) ||
+    callMemberName(hrefExpression.expression) !==
+      namedImportLocalName(parsed, './route-input', 'resolveRegisteredDestination') ||
+    !isDeepStrictEqual(
+      hrefExpression.expression.arguments.map((argument) => argument.getText()),
+      [provider?.parameters[0]?.name.getText(), href.parameters[0]?.name.getText()],
+    )
+  )
+    violations.push(
+      'Application Navigation href resolution must remain the pure existing resolver projection with undefined on invalid input.',
+    )
+
+  const privateView = views.filter(
+    (object) =>
+      object !== publicView &&
+      object.properties.some((property) => property.name?.getText() === 'navigate'),
+  )
+  const privateNavigate = privateView[0]?.properties.find(ts.isMethodDeclaration)
+  const privateReturn = privateNavigate?.body?.statements[0]
+  const privateCall =
+    privateReturn !== undefined &&
+    ts.isReturnStatement(privateReturn) &&
+    privateReturn.expression !== undefined &&
+    ts.isCallExpression(privateReturn.expression)
+      ? privateReturn.expression
+      : undefined
+  const accessors = functions.filter((node) =>
+    ['useApplicationNavigation', 'useWorkspaceNavigation'].includes(node.name?.text ?? ''),
+  )
+  if (
+    privateView.length !== 1 ||
+    privateView[0]?.properties.length !== 1 ||
+    privateNavigate?.body?.statements.length !== 1 ||
+    privateCall === undefined ||
+    !isDeepStrictEqual(memberPath(privateCall.expression), [
+      provider?.parameters[1]?.name.getText(),
+      'navigate',
+    ]) ||
+    !isDeepStrictEqual(
+      privateCall.arguments.map((argument) => argument.getText()),
+      privateNavigate.parameters.map((parameter) => parameter.name.getText()),
+    ) ||
+    accessors.length !== 2 ||
+    accessors.some(
+      (node) =>
+        nodesOf(node, ts.isThrowStatement).length !== 1 ||
+        nodesOf(node, ts.isCallExpression).some(
+          (call) => callMemberName(call) === 'createRouteTransitionCoordinator',
+        ),
+    ) ||
+    count(source, /InjectionKey\s*</gu) !== 2
+  )
+    violations.push(
+      'Application Navigation public and Frame-only views must share the coordinator and reject missing typed contexts.',
+    )
+
+  const link = functions.find((node) => node.name?.text === 'useApplicationLinkActivation')
+  const handler = link === undefined ? undefined : nodesOf(link, ts.isArrowFunction)[0]
+  const publicEntry =
+    link === undefined
+      ? undefined
+      : nodesOf(link, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'useApplicationNavigation',
+        )
+  const linkCalls = handler === undefined ? [] : nodesOf(handler, ts.isCallExpression)
+  const prevent = linkCalls.filter((call) => callMemberName(call) === 'preventDefault')
+  const activation = linkCalls.filter((call) => callMemberName(call) === 'navigate')
+  const guards =
+    handler === undefined
+      ? ''
+      : nodesOf(handler, ts.isIfStatement)
+          .filter(
+            (guard) =>
+              guard.end < (prevent[0]?.getStart() ?? -1) &&
+              nodesOf(guard.thenStatement, ts.isReturnStatement).some(
+                (statement) => statement.expression === undefined,
+              ),
+          )
+          .map((guard) => guard.expression.getText())
+          .join('\n')
+  if (
+    handler === undefined ||
+    prevent.length !== 1 ||
+    activation.length !== 1 ||
+    publicEntry === undefined ||
+    !isDeepStrictEqual(memberPath(activation[0]?.expression), [
+      ...storedValuePath(publicEntry),
+      'navigate',
+    ]) ||
+    !ts.isReturnStatement(activation[0]?.parent ?? parsed) ||
+    (prevent[0]?.end ?? 0) >= (activation[0]?.pos ?? -1) ||
+    nodesOf(handler, ts.isAwaitExpression).length !== 0 ||
+    handler.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) === true ||
+    ![
+      /\.defaultPrevented/u,
+      /!\s*[\w$]+\.cancelable/u,
+      /\.button\s*!==\s*0/u,
+      /\.ctrlKey/u,
+      /\.metaKey/u,
+      /\.shiftKey/u,
+      /\.altKey/u,
+      /instanceof HTMLAnchorElement/u,
+      /\.hasAttribute\(['"]download['"]\)/u,
+      /!==\s*['"]_self['"]/u,
+      /===\s*null/u,
+      /===\s*''/u,
+      /!==\s*[\w$]+\.resolveHref\(/u,
+    ].every((pattern) => pattern.test(guards)) ||
+    !handler.getText().includes('.currentTarget') ||
+    /\.target\b/u.test(handler.getText()) ||
+    !/\.ownerDocument\.querySelector\(['"]base\[target\]['"]\)/u.test(handler.getText()) ||
+    !/getAttribute\(['"]href['"]\)/u.test(handler.getText()) ||
+    /\bvoid\b|\.catch\s*\(|\buseLink\b|RouterLink|\.(?:push|replace|assign)\s*\(|window\.open/u.test(
+      handler.getText(),
+    )
+  )
+    violations.push(
+      'Application links must synchronously exclude native activations, validate their real anchor href and return exactly one coordinated navigation.',
+    )
+  return violations
 }
 
 function guardStageProgressViolations(): string[] {
@@ -2047,6 +2397,47 @@ async function lifecycleViolations(): Promise<string[]> {
       normalized === 'apps/web/src/route-map.d.ts' ||
       normalized.startsWith('apps/web/src/app/router/')
 
+    for (const statement of candidate.sourceFile.statements) {
+      if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
+        continue
+      const specifier = statement.moduleSpecifier.text
+      const bindings = statement.importClause?.namedBindings
+      const names =
+        bindings !== undefined && ts.isNamedImports(bindings)
+          ? bindings.elements.map((element) => element.propertyName?.text ?? element.name.text)
+          : []
+      if (
+        specifier.endsWith('/application-navigation') &&
+        ((names.includes('provideApplicationNavigation') &&
+          normalized !== 'apps/web/src/App.vue') ||
+          (names.includes('useWorkspaceNavigation') &&
+            normalized !== 'apps/web/src/app/console/ConsoleRouteFrame.vue') ||
+          bindings === undefined ||
+          !ts.isNamedImports(bindings) ||
+          normalized.startsWith('apps/web/src/app/router/'))
+      )
+        violations.push(
+          normalized + ' bypasses the public/private Application Navigation consumption boundary.',
+        )
+      const importsCoordinatorRuntime =
+        /\/route-transition-coordinator(?:\.ts)?$/u.test(specifier) &&
+        statement.importClause?.phaseModifier !== ts.SyntaxKind.TypeKeyword &&
+        (statement.importClause?.name !== undefined ||
+          bindings === undefined ||
+          !ts.isNamedImports(bindings) ||
+          bindings.elements.some((element) => !element.isTypeOnly))
+      if (importsCoordinatorRuntime && normalized !== 'apps/web/src/App.vue')
+        violations.push(normalized + ' competes with the App-owned Route Transition coordinator.')
+      if (
+        normalized.startsWith('apps/web/src/pages/') &&
+        /\/(?:router-lifecycle|route-transition\/route-transition-coordinator)$/u.test(specifier)
+      )
+        violations.push(
+          normalized +
+            ' imports internal navigation coordination instead of Application Navigation.',
+        )
+    }
+
     if (usesExperimental && normalized !== 'apps/web/src/route-map.d.ts') {
       violations.push(normalized + ' contains a forbidden experimental Router import.')
     }
@@ -2102,6 +2493,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
   const transitionDirectory = resolve(routerDirectory, 'route-transition')
   const [
     appSource,
+    applicationNavigationSource,
     boundarySource,
     checkBundleSource,
     coordinatorSource,
@@ -2123,6 +2515,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     typesSource,
   ] = await Promise.all([
     readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8'),
+    readFile(resolve(routerDirectory, 'application-navigation.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-boundary-registry.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'scripts/verify/check-bundle.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-coordinator.ts'), 'utf8'),
@@ -2146,6 +2539,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
 
   return Object.freeze({
     appSource,
+    applicationNavigationSource,
     applicationSource: applicationSources.join('\n'),
     boundarySource,
     checkBundleSource,
@@ -2445,10 +2839,7 @@ function routeTransitionSourceProofResults(
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_12_COORDINATOR_INSTANCE',
-      passed:
-        count(snapshot.frameSource, /createRouteTransitionCoordinator\s*\(\s*\{/gu) === 1 &&
-        count(snapshot.frameSource, /routeTransitionCoordinator\.navigate\s*\(/gu) === 3 &&
-        snapshot.frameSource.includes('routeTransitionCoordinator.dispose()'),
+      passed: applicationCoordinatorOwnershipValid(snapshot),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_13_NATIVE_CALL_OWNER',
@@ -2466,7 +2857,7 @@ function routeTransitionSourceProofResults(
         snapshot.frameSource.includes('isCurrentDestination:') &&
         snapshot.frameSource.includes('sameRouteAddress(router.currentRoute.value, resolved)') &&
         snapshot.frameSource.includes('resolveRegisteredDestination(router, item.destination)') &&
-        snapshot.frameSource.includes('routeTransitionCoordinator.navigate(item.destination)') &&
+        frameMenuNavigation(snapshot.frameSource) !== undefined &&
         snapshot.routeInputSource.includes(
           'stringifyQuery(left.query) === stringifyQuery(right.query)',
         ) &&
@@ -4730,7 +5121,7 @@ export async function validateRouteTransitionSourceGovernance(): Promise<readonl
   const presentationCommitProbes = runRouterPresentationCommitNegativeProbes(snapshot)
   const presetSelectionProbes =
     runRouteTransitionPresetSelectionNegativeProbes(presetSelectionSnapshot)
-  const violations: string[] = []
+  const violations = applicationNavigationContractViolations(snapshot.applicationNavigationSource)
 
   if (stylelintPolicy.probes.length !== expectedRouteTransitionStylelintPolicyNegativeProbeCount) {
     violations.push('Route Transition Stylelint policy negative-probe count drifted.')

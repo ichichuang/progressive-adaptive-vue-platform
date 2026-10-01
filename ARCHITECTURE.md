@@ -114,8 +114,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -385,7 +385,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=NOT_APPLICABLE_ARCHITECTURE_ONLY_NO_RUNTIME_ARTIFA
 
 本修订依据 Owner 已批准的产品要求原位调整 §1、§3、§9、§14、§16、§18–23、§28、§30、§34、§37–41 的相关范围，不重写完整架构，不另建规范或 Roadmap。§1 定义最终产品定位；各既有能力章节细化产品要求；§1.3 与既有 Manifest 继续只声明当前能力状态；§37 保持逐项独立准入。必需交付不等于已实现，也不等于已具备完整实施合同。
 
-已落地 Design Tokens、主题、Light/Dark/System、Typography、Density/Size、UnoCSS、响应式基础、Runtime Kernel、Router、Storage、Naive UI 边界及现有功能保持。当前工作实现授权仅限 §18.16，Next 与 Successor 仍为 `NONE`；不变更历史验收、撤销记录或生成清单，不发明后端 Endpoint、认证机制、凭据存储策略、Tenant Model 或服务端行为。现有 Console 的限定禁止项继续约束它的当前实施阶段，不能扩张为对新最终目标的永久禁止。
+已落地 Design Tokens、主题、Light/Dark/System、Typography、Density/Size、UnoCSS、响应式基础、Runtime Kernel、Router、Storage、Naive UI 边界及现有功能保持。当前工作实现授权仅限 §9.4 的应用当前页导航入口，Next 与 Successor 仍为 `NONE`；不变更历史验收、撤销记录或生成清单，不发明后端 Endpoint、认证机制、凭据存储策略、Tenant Model 或服务端行为。现有 Console 的限定禁止项继续约束它的当前实施阶段，不能扩张为对新最终目标的永久禁止。
 
 ## 1.2B `PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT`
 
@@ -459,8 +459,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -574,8 +574,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -654,7 +654,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001`、`PAVP-RUNTIME-003`、Dark Action 和其他已验收窄范围状态保持，`PAVP-RUNTIME-002`、`PAVP-RUNTIME-004` 与 `PAVP-RUNTIME-005` 的既有状态不变。§1.2B.0H–0K 只保留精确历史状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。 当前 Bounded Work 与 Authority 由 §18.16 拥有，Next 与 Successor 保持 `NONE`。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001`、`PAVP-RUNTIME-003`、Dark Action 和其他已验收窄范围状态保持，`PAVP-RUNTIME-002`、`PAVP-RUNTIME-004` 与 `PAVP-RUNTIME-005` 的既有状态不变。§1.2B.0H–0K 只保留精确历史状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。 当前 Bounded Work 与 Authority 由 §9.4 的应用当前页导航入口拥有，Next 与 Successor 保持 `NONE`。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -1023,8 +1023,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1157,8 +1157,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1355,7 +1355,7 @@ IMPLEMENTATION_COMPLETION_EVIDENCE=one scoped source and generated diff limited 
 
 每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
 
-该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后保留导航方案历史，§1.2B.0L 形成已验收 Native Naive 前序，§1.2B.0M 再按精确 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收收口 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。 当前 Bounded Work 与 Authority 由 §18.16 拥有，Next 与 Successor 保持 `NONE`。
+该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后保留导航方案历史，§1.2B.0L 形成已验收 Native Naive 前序，§1.2B.0M 再按精确 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收收口 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。 当前 Bounded Work 与 Authority 由 §9.4 的应用当前页导航入口拥有，Next 与 Successor 保持 `NONE`。
 
 Owner 对已发布实现的后续复核最初观察到一个 obsolete Vite config error；仓库源码与当前 Vite 配置当时已经正确，错误来自早于该发布实施且仍在长期运行的 PAVP Vite 进程。仅替换该陈旧 PAVP Vite 进程后加载了当前配置，没有改变任何仓库文件；随后十四主题 Dark Standard / Dark Enhanced、Action Fill、On-action Content、Control Foreground、First Paint 恢复以及 Theme、Color-mode、Contrast 切换的 Owner Runtime 与 Visual Review 均通过。该操作历史不是 Repository Capability、Verification Gate 或永久 Runtime Dependency。
 
@@ -1411,8 +1411,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3486,8 +3486,8 @@ Pure Resolver 只接收 Validated From/To RouteName、Navigation Kind、Effectiv
 #### Initial Navigation Scope、Router Coordinator 与 Presentation Commit
 
 ```text
-ROUTE_TRANSITION_INITIAL_NAVIGATION_OWNER=ConsoleRouteFrame.navigate()
-ROUTE_TRANSITION_INITIAL_SCOPE=USER_INITIATED_ADMIN_PRODUCT_NAVIGATION_ONLY
+ROUTE_TRANSITION_INITIAL_NAVIGATION_OWNER=APP_OWNED_SHARED_COORDINATOR_SECTION_9_4
+ROUTE_TRANSITION_INITIAL_SCOPE=USER_INITIATED_CURRENT_PAGE_REGISTERED_NAVIGATION
 ROUTE_TRANSITION_ELIGIBLE_EDGE=DIFFERENT_PRODUCT_ROUTE_TO_DIFFERENT_PRODUCT_ROUTE
 ROUTE_TRANSITION_ELIGIBLE_MOTION=FULL_OR_REDUCED
 ROUTE_TRANSITION_ELIGIBLE_API=CALLABLE_START_VIEW_TRANSITION_ON_ACTUAL_CONTENT_ELEMENT
@@ -3538,7 +3538,7 @@ ROUTE_TRANSITION_BEFORE_RESOLVE_DEFERRED_GUARD_IMPLEMENTATION=NOT_FROZEN
 ROUTE_TRANSITION_IMPLEMENTATION_PATH=EXISTING_PROGRAMMATIC_NAVIGATION_PATH_ONLY
 ```
 
-第一源码实施只允许 `ConsoleRouteFrame.navigate()` 拥有的用户发起 Admin Product Navigation。只有不同 Product Route 到不同 Product Route、Motion Full/Reduced、API Supported、Document Visible 且 Boundary Valid/Unique 时才 Eligible。Initial Application Navigation、Hard Reload、Current-route No-op、Browser Back/Forward、`router.replace`、Redirect、Product/Error 之间或 Error/Error Edge、Chunk-load Error、Recovery Navigation、Motion None、Unsupported Browser、Hidden Document、Missing/Duplicate Boundary 全部 Bypass。Back/Forward 显式 Deferred，第一实施不建立第二 History Model。
+第一源码实施的 Frame-only 发起限制现由 §9.4 的应用当前页入口取代；Frame 与 Overview 链接共享 App 创建的同一 Coordinator。只有不同 Product Route 到不同 Product Route、Motion Full/Reduced、API Supported、Document Visible 且 Boundary Valid/Unique 时才 Eligible。Initial Application Navigation、Hard Reload、Current-route No-op、Browser Back/Forward、`router.replace`、Redirect、Product/Error 之间或 Error/Error Edge、Chunk-load Error、Recovery Navigation、Motion None、Unsupported Browser、Hidden Document、Missing/Duplicate Boundary 全部 Bypass。Back/Forward 显式 Deferred，第一实施不建立第二 History Model。
 
 私有 Router-domain Coordinator 必须在任何 Preload 或 Transition 之前保留 Current-route No-op，用现有 Router Resolve Target，先 `loadRouteLocation()`，只在 Target Loading 成功后启动 Snapshot。先前实现已正确在 Update Callback 内执行唯一一次既有 `router.push` 并等待 Router Result 与 Vue `nextTick`，但本机精确安装的 Vue Router 5.2.0 在 `finalizeNavigation()` 中只启动 `handleScroll()` 而不 Await 或返回该 Promise，因此 `router.push()` 可以早于 PAVP 异步 `scrollBehavior()` 完成。PAVP 的 Document Title、H1 Focus、Block Scroll 和 Inline Scroll Commit 全部仍由该 `scrollBehavior()` 唯一拥有，额外通用 `nextTick()` 不能证明这些写入已经结束。
 
@@ -3732,8 +3732,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3815,8 +3815,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -4088,7 +4088,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；它不恢复整体 Console Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和 Checker 兼容证据。`PAVP-RUNTIME-002` 保持 `OPEN / COMPLETE / PASS`，`PAVP-RUNTIME-004` 保持 Open 且未启动；§1.2B.0H–0K 保留历史导航证据，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已按精确发布提交和 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。 当前 Bounded Work 与 Authority 由 §18.16 拥有，Next 与 Successor 保持 `NONE`。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；它不恢复整体 Console Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和 Checker 兼容证据。`PAVP-RUNTIME-002` 保持 `OPEN / COMPLETE / PASS`，`PAVP-RUNTIME-004` 保持 Open 且未启动；§1.2B.0H–0K 保留历史导航证据，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已按精确发布提交和 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。 当前 Bounded Work 与 Authority 由 §9.4 的应用当前页导航入口拥有，Next 与 Successor 保持 `NONE`。
 
 ##### Defect identity and implemented source behavior
 
@@ -5868,7 +5868,7 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work and authority are `NONE`; next and successor remain `NONE` |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` under §9.4; next and successor remain `NONE` |
 | TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12; seven current records |
 | API Transport | `DEFERRED` | required starter integration; `PAVP_API_TRANSPORT_IMPLEMENTATION` still requires exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -7354,6 +7354,44 @@ caller address / direct URL
 
 不安装自定义 `parseQuery` / `stringifyQuery`，不通过 `URLSearchParams` 覆盖重复值，不手写百分号编码或拼接 Path。Vue Router `5.2.0` 的普通 Named Routes、`RouteNamedMap`、`RouteRecordInfo.paramsRaw` / `.params`、`router.resolve` / `push` / `replace` 足够；当前官方文档中的 Experimental Resolver、Param Parser、Data Loader 不因此准入，§9.0.1 的唯一生成声明例外与依赖补丁保持不变。
 
+### Application current-page navigation entry
+
+Owner 在干净的 `main@dd4d749bdf0c2e2342174cb535de3ee92ba0590f` 上明确授权 `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` 的一次有界源码实施与本节必要原位修订；本节拥有当前任务，取代 §18.16 的 Current Work 标记。该授权不包含 Git 交付、新规格文件或后继能力，Next/Successor 保持 `NONE`。
+
+```text
+WORK_PACKAGE=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+```
+
+唯一新增应用私有模块为 `apps/web/src/app/router/application-navigation.ts`。`RegisteredRouteDestination` 与 `TypedNavigationResult` 继续由 `route-input.ts` 拥有；`RouterNavigationOptions` 继续由 `router-lifecycle.ts` 拥有。公共消费函数为 `useApplicationNavigation()`，只提供以下视图，不导出 Router、Dispose 或工作区内部对象：
+
+```ts
+type ApplicationNavigationOptions = Pick<RouterNavigationOptions, 'replace'>
+interface ApplicationNavigation {
+  navigate(
+    destination: RegisteredRouteDestination,
+    options?: ApplicationNavigationOptions,
+  ): Promise<TypedNavigationResult>
+  resolveHref(destination: RegisteredRouteDestination): string | undefined
+}
+```
+
+普通调用者直接传入名称与该 Route 已允许的 Params/Query/Hash，无需手动调用冻结辅助函数。`navigate` 只投影可选 `replace`，不能传播调用对象上的其他结构字段；默认 Push、显式 `replace: true` 替换当前 History Entry。直接返回同一 Coordinator 的原 Promise，不加 Async Wrapper、预解析、重复判定、预约、取消、第二次操作或结果转换。§9.11 的 Duplicate、Failure、Redirect、Cancel、Presentation、Focus/Scroll 与真实 Promise Rejection 完全保留。`resolveHref` 只返回 `resolveRegisteredDestination(router, destination)?.href`；无效为 `undefined`，无导航、Preload、Reservation、ID 分配、状态/History 写入或伪造 URL/导航结果。
+
+`App.vue` setup 在既有 Router/Appearance 可用后创建恰好一个现有 `RouteTransitionCoordinator`，立即登记 App Scope Dispose，再调用同模块的 `provideApplicationNavigation` 提供上下文。Typed Injection Keys 只标识上下文，不持有全局 Runtime 实例。Frame 通过 `useWorkspaceNavigation()` 获取同实例的私有 `Pick<RouteTransitionCoordinator, 'navigate'>` 视图；普通页面只能消费公共视图及下述链接适配。缺失上下文明确失败，不静默创建实例。Frame 菜单使用公共入口，Activate/Close Fallback 保留原 `workspaceActivation` 与 Operation/目的地/实例/列表稳定性复核；其 Refresh、Scroll Controller Cleanup、Appearance/Motion 和非导航操作仍归 Frame。只迁移 Coordinator 创建/释放，不改 Kernel Stage、Provider Hierarchy、RouterView、KeepAlive、Layout Key 或缓存父链。Bootstrap、Guard、Recovery、History Back/Forward 和实现导航的底层 Push/Replace 留在原生命周期内，不能回调新入口。§1.2B.0N 的过渡与 §18.16.3 的跨布局 Bypass 继续作用于同一操作。
+
+首个页面消费者只改现有 Overview 能力链接，包括已显示的 `capability-roadmap-standalone`；保留 Nav/Anchor、标签、顺序、Class、Style 和地址集合。`router-console-projection.ts` 从既有 `RouteName` 和 `errorRouteRegistry` 派生产品 Route Name，并用真实错误路由排除谓词收窄；类型继续通过 `overviewProjection` 保留，不改变运行数据、不复制名称表、不强制断言目的地。当前产品路由仍只有既定空输入，不创造参数化示例。
+
+同一新模块的 `useApplicationLinkActivation()` 只返回消费公共入口的 Click Handler，不创建公共 UI Wrapper。同步读取 `event.currentTarget` 的真实 Anchor；已处理、不可取消、非主键、任一 Ctrl/Command/Shift/Alt、存在 Download 属性（含空值）、非 Self 的有效 Target 均保留原生行为。有效 Target 尊重 Anchor 的显式值及现有 Document Base Target，不新增 Document 配置。缺失/空 Href 或与当前纯解析地址不符时不接管；不从嵌套 `event.target` 推导 Anchor。合格普通激活（含原生 Enter）同步 PreventDefault，且只返回一次公共 Navigate 的原 Promise。只绑定 Click，不使用无条件 `.prevent`，不接管 Auxclick/Contextmenu/复制/中键/修饰键，不同时调用 RouterLink/useLink.navigate、原始 Router、Location 或回退导航。原生新页行为不代表托管浏览器页能力。
+
+现有 Router/Admin Console Owning Checks 同步保护唯一创建/释放、共享公共/私有视图、Replace 隔离、纯解析、合格链接的一次导航与原生排除，以及未变的内部导航边界；保留有意义的现有 Negative Probes，不冻结私有变量名或固定调用点数。§9.12 仍拥有静态责任。Route Registry、Capability JSON、版本、脚本、预算和生成输入不变，不新增 Capability Record；只有实际获准输入变化时才由原生成器同步必要投影。显式新页/窗口管理、跨页通信、访问持久化、多记录工作区、返回栈、Auth、Storage Migration 与一般 Loading/Error Infrastructure 不在本任务内。保留既定依赖、18 Route Roots、28 Dynamic Roots、270336-byte Initial JavaScript 预算与原测量/余量规则；完整 `pnpm verify` 与新集成的 Owner 观察分别报告，所有候选留作未暂存。
+
 ### Typed address and parsed input
 
 以下签名表达已落地的应用层地址/输入合同，具体声明由 `route-input.ts`、`navigation-contract.ts` 和 `RouteTransitionCoordinator` 拥有；示例中的业务路由仍不是现有消费者。辅助类型仅表达派生关系，不增加可手写的 Route Type Map。`RouteNamedMap` 来自官方 `vue-router/auto-routes`，`RouteLocationNormalized` 来自稳定公共根，`z` 来自已安装 Zod `4.4.3`。
@@ -7616,7 +7654,7 @@ Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 Ta
 
 ## 9.11 Scroll, Focus and Observability
 
-Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 History Entry Marker 与导航提交协议；§18.9 唯一拥有 Router 内存中的 Region Record、内容有效性与恢复条件，Offset 不写入原生 History State。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争；缺失或重复的声明 DOM Owner 是呈现合同失败，不能伪装成 Cache Miss。
+§9.4 应用入口原样返回本节既有结果，不改变 Operation/Presentation Settlement；纯 Href 解析不进入导航生命周期。Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 History Entry Marker 与导航提交协议；§18.9 唯一拥有 Router 内存中的 Region Record、内容有效性与恢复条件，Offset 不写入原生 History State。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争；缺失或重复的声明 DOM Owner 是呈现合同失败，不能伪装成 Cache Miss。
 
 Shell Modal 阻塞时的目标交接由 §18.14.4–§18.14.5 冻结：包括 Browser Pop 在内的真实导航必须在阻塞链关闭、背景 inert/模态临时锁释放及 Shell DOM Commit 后完成本节呈现，不能因为 `[inert]` 而跳过必要 Focus/Scroll/Presented Owner 后仍报告成功。该协调尚未实现；本节已有地址、History、初次/同页 Focus Policy 和 §1.2B.0N 的视觉范围保持，Browser History 的交互协调不准入其页面动画。
 
@@ -11540,7 +11578,7 @@ CAPABILITY_STATUS=TARGET_INACTIVE
 REPOSITORY_IMPLEMENTATION=WORKSPACE_ROUTE_SINGLE_SOURCE_ONLY
 IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_SECTION_18_11_10_AND_18_11_11_AND_18_11_12
 WORKSPACE_ROUTE_SINGLE_CAPABILITY_STATUS=ACTIVE
-WORKSPACE_OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+WORKSPACE_OWNER_RUNTIME_ACCEPTANCE=PASS
 GLOBAL_BREADCRUMB_REPOSITORY_IMPLEMENTATION=NOT_STARTED
 SPECIFICATION_ADMISSION=PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION
 WORKSPACE_OWNER=apps/web/src/app/workspace
@@ -11550,6 +11588,8 @@ WORKSPACE_UX_IMPLEMENTATION_STATUS=SOURCE_IMPLEMENTED_DELIVERY_REQUIRES_STATIC_A
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
 SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 ```
+
+当前 Workspace Runtime Acceptance 的 PASS 仅覆盖 Owner 已接受的最终已提交页签交互；未观察的缓存内部行为与完整刷新/无障碍/发布矩阵不在该接受范围。历史候选与当时授权记录保留，不授权 §9.4 新导航集成的 Git 交付或运行验收。
 
 本节是 Global Breadcrumb 数据/地址语义与应用内 Workspace Tabs 核心的唯一目标合同；Breadcrumb 最终呈现 Host 和 Workbench 信息归属由 §18.15 拥有，§37.2.13 只记录前序规格任务准入。它以 §9 已落地路由核心为依赖，不把文档设计当作运行能力，也不自动修改任何 Source Registry、Public UI API 或 Generated Manifest。Workspace Tabs 是应用工作上下文能力，不能由一个 Vendor Tabs Wrapper 替代，也不建立第二个 Router。
 
@@ -11692,7 +11732,7 @@ Global Breadcrumb 源码放在后续独立切片：现有 `UiPageHeader` 与简�
 | `route-registry.ts` | `workspaceIdentityPolicyRegistry` 仅有 `workspace-identity.route-single`；十个产品 Route 显式选择该 Policy 且 `keepAlive='route-instance'`，七个错误 Route 缺省归一 `null`，仍不缓存。所有现有 Params/Query/Hash、Auth、Permission、Unsaved Policy 均不扩展。 |
 | `apps/web/src/app/workspace/workspace.store.ts` | 沿用 Kernel 的同一个 Pinia，Store ID 为 `workspace`；`entries` 只保存 `identity`、`instance`、`componentName`、最近成功提交的 `destination`，另有由 Router Commit 写入的 `activeIdentity`；`active`、`includedComponentNames` 为派生值。`WorkspaceIdentity` 是应用私有 Branded String，`WorkspaceInstanceIdentity` 是每次真实新开产生的 Branded Symbol；两者均不借用地址或 History Marker。`commit` 仅由 Router 成功 `afterEach` 调用，`canDiscard`/`discard` 仅允许当前 `none` 策略；当前没有 Dirty Form 注册者。 |
 | `App.vue` / `ConsoleRouteFrame.vue` | 保持单一 RouterView、稳定无 Key 的 `.pavp-route-content`；其内单一 KeepAlive 只包 Slot 的实际 `Component`，Key 为当前 Workspace 的 `instance`，公开 `include` 来自开放项的 `componentName`。名称读取真实已加载 Route Component，并由 Owning Checker 校验十页显式且唯一的组件名，不建立名称映射 Registry。关闭后从 `include` 移除，Vue 完成公开 Prune/Scope Dispose 后才结束该操作；无 `max`、私有 Cache API 或多实例同名缓存。 |
-| 激活与单项关闭 | Frame 把 Activate 与 Close Fallback 交给同一 RouteTransitionCoordinator。非活动项关闭不导航；活动项按右邻、左邻、总览选择一次目标，等待原 Router Operation 的成功呈现结果，并再次核对 Operation、实际地址、实例与列表未受外部变更后删除原项。唯一总览不提供关闭操作，重复地址无副作用。失败、取消、异常或外部变更保留待关闭项。当前保护策略只允许 `none`；未来声明保护却没有 Page Authority 时关闭失败封闭，不导出未使用的通用 Discard/Form 框架。 |
+| 激活与单项关闭 | Frame 按 §9.4 通过私有端口把 Activate 与 Close Fallback 交给 App 创建的同一 RouteTransitionCoordinator。非活动项关闭不导航；活动项按右邻、左邻、总览选择一次目标，等待原 Router Operation 的成功呈现结果，并再次核对 Operation、实际地址、实例与列表未受外部变更后删除原项。唯一总览不提供关闭操作，重复地址无副作用。失败、取消、异常或外部变更保留待关闭项。当前保护策略只允许 `none`；未来声明保护却没有 Page Authority 时关闭失败封闭，不导出未使用的通用 Discard/Form 框架。 |
 | `UiAdminShell.composition` / `workspace` Slot | Shell 实例及 default Slot 的父链持续存在；`composition=null` 时解除文档滚动锁、移除注册区域和 Shell 呈现、关闭抽屉并清除失效焦点回归目标，保持缓存。稳定内容元素仅在启用时投影 `role=main`，避免与错误页自身 main 重叠。工作区列占用既有可用高度，标签条位于内容滚动 Owner 外；窄屏抽屉打开时标签条与内容共同 inert。其余 Sidebar Preference、Hover、Selection Lens 与全局 Owner 不改变。 |
 | `UiWorkspaceTabs` | 新增受控 PAVP 公共组件，必需 Props 为 `items: readonly UiWorkspaceTab[]`、`activeId: string|null`、`label`、`panelId`；Emits 仅为 `activate(id: string)`、`close(id: string)`，无 Slots。Item 仅含 `id`、`label`、`closeLabel`、`closable`。标签来自当前 i18n Route Title，关闭名称复用现有本地化关闭文案并包含该标题；不保存翻译。Tablist/Tab 与活动 Panel 关联，方向键和 Home/End 仅移焦，Enter/Space 用原生按钮激活；Close 独立且不冒泡激活。原生横向溢出支持触摸，程序焦点使用 preventScroll 并只显露标签条局部水平位置；无 Wheel/Drag/Timer/Motion 实现。公开 Registry 为十二项：十项 Active、两个未消费 Form Target。 |
 | `router-lifecycle.ts` / Coordinator | `RouterNavigationOptions.workspaceActivation` 仅携带目标 `identity`/`instance`，经已有 Operation 传递并按真实提交核验。History Region Map 保持原合同；另有 Router 私有 Workspace Region Map，每个开放 Identity 最多一项且绑定确切实例。Capture 在既有 `beforeResolve` 尾部，恢复在挂载/更新后的既有 Scroll/Focus 呈现边界；只选择 History、显式 Workspace、同工作区普通地址更新、正常导航中的一个策略，保留原生 RTL Clamp。关闭/实例变化/Router Dispose 清理记录，不持久化。 |
@@ -11708,7 +11748,7 @@ Owning Checks 只同步上述 Route Policy、唯一组件名、Pinia/公开 UI �
 
 ### 18.11.11 Workspace structure restoration and surface motion
 
-Owner 在干净同步 `main@d6ebecb3be389830db54b2784096edd7f9d851a9` 上明确授权一个 Workspace UX 任务：route-single 页签结构预挂载恢复与现有页签的 Motion Surface 改造。首片源码/静态交付历史保持，Owner 拒绝首片页签视觉；此次 Runtime/Visual/Refresh Acceptance 尚未执行。此准入仅取代所有 Workspace 持久化和第二个私有 Motion 消费者均延期的旧限制，不激活一般 Motion、账号 Session 或后继工作。源码接线、完整静态门槛、冻结 Bundle Gate、Git 与 CI 状态必须分别报告；门槛未过不得宣称本任务完成。
+Owner 在干净同步 `main@d6ebecb3be389830db54b2784096edd7f9d851a9` 上明确授权一个 Workspace UX 任务：route-single 页签结构预挂载恢复与现有页签的 Motion Surface 改造。首片源码/静态交付与 Owner 当时拒绝首片页签视觉的历史保持。Owner 已接受最终已提交版本的页签交互；该接受只覆盖实际执行场景，不外推未观察的缓存内部行为或完整 Refresh Matrix。此准入仅取代所有 Workspace 持久化和第二个私有 Motion 消费者均延期的旧限制，不激活一般 Motion、账号 Session 或后继工作。源码接线、完整静态门槛、冻结 Bundle Gate、Git 与 CI 状态必须分别报告；门槛未过不得宣称本任务完成。
 
 唯一新记录为 `workspace-session`，Owner `apps/web/src/app/workspace`，Key 唯一来自 `applicationConfig.workspace.sessionStorageKey='pavp:web:workspace-session'`。`workspace-session-contract.ts` 拥有严格 Zod Payload `{ schemaVersion: 1, openRouteNames: readonly string[] }`，拒绝额外字段、错误版本及空名称。Schema 不复制 RouteName Enum；读取成功后按当前 Route Registry 的 `workspaceIdentityPolicyId='workspace-identity.route-single'` 过滤、去重并保留存储顺序。删除/未知/错误路由只从投影移除，不让同一有效旧记录的其他项失效。Registry 追加第五条 `local-storage / direct-compatibility` Record，`schemaId=workspace-session`，当前与最低版本均为 1，Partition `none`，`containsSensitiveData=false`，Corruption Policy `preserve-in-place-reject-read`。原四条记录、零 Migration/Envelope/IndexedDB/Cross-tab Event 和历史四记录事实保持。
 
@@ -11730,7 +11770,7 @@ Workspace 使用严格 LazyMotion 下的 `m`、独立 LayoutGroup Namespace 和�
 
 Owner 后续在保留 `main@99b0f31` 上已手动验收的未提交 Scroll System 候选时，仅授权 Workspace 两侧固定相邻激活按钮。`UiWorkspaceTabs` 增加必需 `previousLabel: string` / `nextLabel: string`，由现有 Frame/i18n 投影“上一个标签 / 下一个标签”和“Previous tab / Next tab”，其余公共 Props、Item、Activate/Close 事件不变。结构为相邻按钮、可收缩中央 Scroll Viewport、相邻按钮；按钮是 `role=tablist` 外的普通 `type=button`，始终可见，按当前 `items` 顺序和实际 `activeId` 取 index−1/index+1；首尾不循环，空列表、null/无效活动项及单项两侧均按无目标原生 disabled。按钮复用同一个 `activate(id)` → Frame → Typed Coordinator/Router → 成功 Commit 链，不乐观写活动项；原 activeId Watch 通过 UiScrollArea 显露中央视口外的活动标签，Full 平滑、Reduced/None 即时。原手动键盘模型、Tab/Close Motion、缓存和持久化保持。
 
-仅移除 Strip 的页面级 inline padding，真实 Safe Area 移至固定 Region 两侧；三种 Profile 均保留增强最小命中尺寸与既有标签高度，滚动条留在中央视口。LTR 的物理左/右分别为 previous/next；RTL 随逻辑行排列镜像为 next/previous，方向图标同步镜像，始终表示视觉相邻方向且不反转存储顺序。使用已安装 Lucide Chevron 与既有 Foreground、Disabled Opacity、Selected Surface、Border、Focus Token；Full 为图标轻微 Hover/Press Scale 和 Surface/Color 反馈，Reduced 仅短 Opacity/Color，None 即时，禁用态无 Gesture。此为基本激活入口的局部扩展，不准入其他增强命令。既有 Scroll System 和 OverlayScrollbars/Lenis 配置保持；本次箭头仍待 Owner Visual/Runtime Acceptance，完整静态 Gate 后保持全部 Diff 未暂存，Stage/Commit/Push/Release 均未授权。
+仅移除 Strip 的页面级 inline padding，真实 Safe Area 移至固定 Region 两侧；三种 Profile 均保留增强最小命中尺寸与既有标签高度，滚动条留在中央视口。LTR 的物理左/右分别为 previous/next；RTL 随逻辑行排列镜像为 next/previous，方向图标同步镜像，始终表示视觉相邻方向且不反转存储顺序。使用已安装 Lucide Chevron 与既有 Foreground、Disabled Opacity、Selected Surface、Border、Focus Token；Full 为图标轻微 Hover/Press Scale 和 Surface/Color 反馈，Reduced 仅短 Opacity/Color，None 即时，禁用态无 Gesture。此为基本激活入口的局部扩展，不准入其他增强命令。既有 Scroll System 和 OverlayScrollbars/Lenis 配置保持；该候选当时在完整静态 Gate 后保持未暂存且未获 Git 交付授权；当前最终已提交页签交互已获 Owner 接受，不再作为待确认事项，未观察行为与 Release 仍不据此通过。
 
 ### 18.11.12 Workspace Tab context menu and local page refresh
 
@@ -12293,7 +12333,7 @@ App/Console Route Presentation 从**当前已提交 Router Destination**、Route
 
 未来源码切换必须在同一个授权切片中把唯一 Breadcrumb Projection 接入 Shell，并原子移除/弃用 Page-level `breadcrumb` Prop 及其真实消费者/直接 Owning Checks；不能留下两个 Global Breadcrumb。当前 Prop 与源码本次不动。`UiPageHeader` 留在 Route Content，负责 `title`、既有 `summary`、唯一 h1 和原 Router Focus Target；说明语义不产生并行的 `description` API。Actions/Structured Metadata 仅在真实消费者提出需求后单独准入，不创建 `UiPageContainer`、第二 Page Header 或 Focus Owner。
 
-Overview 的现有 `<a :href="record.pathPattern">` 是普通文档导航，绕过应用 Typed Navigation；未来修正必须进入既有应用导航边界，不能以整页 Reload 达成工作区切换。本次只记录这个源码缺陷，不修改链接或 Router。
+Overview 原 `<a :href="record.pathPattern">` 普通文档导航缺口由 §9.4 本次授权的统一入口实施修正；保留真实 Anchor 与原生链接分流，不以整页 Reload 达成普通工作区切换。本段不授权 Breadcrumb 或其他 Workbench 实施。
 
 ### 18.15.10 响应式、语言与临时状态
 
@@ -12327,17 +12367,17 @@ Control Center 只可持有 Selected Section、Expand/Collapse、Pending Feedbac
 
 ## 18.16 Route-selected Layout Composition Target
 
-Owner 已在 `76b8b83132aff6b663066e883409c9d02a8ca931` 基线上明确授权本节的有限源码实现及 §15 的 Page Inline Padding Mapping 修正。本节现在拥有该有界工作及其直接相关当前合同；取代此前仅文档候选的限制，不扩大 §18 的其他目标，不变更 §1.3 既有能力状态、历史证据、Next/Successor 或无关工作包。实现候选必须保留未暂存；静态验证、Owner Runtime/Visual Acceptance 与 Git 交付分别记录，不能由源码授权推定完成。
+Owner 已在 `76b8b83132aff6b663066e883409c9d02a8ca931` 基线上明确授权本节的有限源码实现及 §15 的 Page Inline Padding Mapping 修正。本节现在拥有该有界工作及其直接相关当前合同；取代此前仅文档候选的限制，不扩大 §18 的其他目标，不变更 §1.3 既有能力状态、历史证据、Next/Successor 或无关工作包。原实施候选的未暂存与 Git 分步授权要求保留历史含义；当前已交付基线为 `dd4d749bdf0c2e2342174cb535de3ee92ba0590f`，本地 `main` 与 `origin/main` 同 SHA，既有 Static Verification/CodeQL 成功按 Owner 提供的交付事实记录，本次未重新查询远端。静态验证、限定 Owner Acceptance 与 Git 交付分别判断。
 
 ```text
-PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_STATUS=PENDING_OWNER_REVIEW
+PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_STATUS=ACCEPTED
 PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_STATIC_VERIFICATION=PASS
-PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_RUNTIME_ACCEPTANCE=PENDING_OWNER_RETEST
-PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_VISUAL_ACCEPTANCE=PENDING_OWNER_RETEST
-PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_GIT_DELIVERY=NOT_AUTHORIZED
+PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_RUNTIME_ACCEPTANCE=PASS
+PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_VISUAL_ACCEPTANCE=PASS
+PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS_GIT_DELIVERY=COMPLETE
 ```
 
-Owner 此前提供实际页面观察：访问 Appearance 并在既有路由/页签间切换后，Header 居中收窄、侧栏与内容宽度异常，缩窄视口可使内容越过左边界；该已执行场景当时的 Runtime/Visual Acceptance 为失败。此前完整 `pnpm verify` 退出 0 的静态记录保留，不解释为页面通过。修复仅修正 `appearance.vue` 中祖先 `:global(...)` 加局部后代在已安装 Vue `3.5.40` 下丢失后代目标的问题，并同步同声明的路径专属 Style Record 与现有 Admin Console 编译目标检查；不修改布局、声明值、预算或生命周期。Owner 后续复验确认上述路由切换布局失真已恢复正常，该接受仅限已执行场景；Footer、未消费组合及未观察的缓存实例行为未获验收。本次 §18.11.11 标签整项交互协调修复仍待 Owner 视觉评审。
+Owner 此前提供实际页面观察：访问 Appearance 并在既有路由/页签间切换后，Header 居中收窄、侧栏与内容宽度异常，缩窄视口可使内容越过左边界；该已执行场景当时的 Runtime/Visual Acceptance 为失败。此前完整 `pnpm verify` 退出 0 的静态记录保留，不解释为页面通过。修复仅修正 `appearance.vue` 中祖先 `:global(...)` 加局部后代在已安装 Vue `3.5.40` 下丢失后代目标的问题，并同步同声明的路径专属 Style Record 与现有 Admin Console 编译目标检查；不修改布局、声明值、预算或生命周期。Owner 后续复验确认上述路由切换布局失真已恢复正常，该接受仅限已执行场景；Footer、未消费组合及未观察的缓存实例行为未获验收。Owner 现已明确接受最终已提交的 §18.11.11 页签交互，以及 `/capabilities/standalone` 的直接打开、刷新、窄窗口阅读与滚动。上方 PASS/ACCEPTED 仅指这些已执行场景与既有布局修复；Footer、未消费组合、未观察缓存内部行为、Accessibility/Release Matrix 不因此获得验收。§9.4 新导航集成的 Owner 观察尚未执行。
 
 ### 18.16.1 唯一路由权威与有限组合
 
@@ -12377,7 +12417,7 @@ Route 作者继续只选 `layoutCapabilityId`，由同一个 Capability Record �
 | --- | --- |
 | `packages/ui/src/components/UiAdminShell.vue` | 删除公共 `enabled`；增加必需、无缺省值的 `composition: UiShellComposition \| null`。其余现有 Props、Emits、必需 `workspace`/`default` Slots 保持。 |
 | 同一 Shell 的 `footer` Slot | 唯一新增可选 Slot：`footer?: (props: Readonly<Record<string, never>>) => unknown`；Registry 为 `name=footer`、`slotPropsType=Readonly<Record<string, never>>`、`required=false`。不增加 Footer Props、Slot 状态或 Events。 |
-| `apps/web/src/app/console/ConsoleRouteFrame.vue` | 以同型必需 `composition` 替换 `shellRequired` 输入，保留 `activeRouteName`；以同型可选 `footer` Slot 透传应用内容给 Shell，原默认 Slot 与导航/工作区/Controller 接线不迁移。 |
+| `apps/web/src/app/console/ConsoleRouteFrame.vue` | 以同型必需 `composition` 替换 `shellRequired` 输入，保留 `activeRouteName`；以同型可选 `footer` Slot 透传应用内容给 Shell，原默认 Slot 与工作区/Controller 接线不迁移；§9.4 仅将 Coordinator 创建/释放提升到 App，并通过共享端口保留 Frame 导航职责。 |
 | `apps/web/src/App.vue` | 从当前已提交 Route 的 Capability 解析组合，传给 Frame；移除管理台 ID 等值判断，不创建另一份 Layout 状态。 |
 
 Footer 内容由应用提供，UI 不读取 Router、Store、构建配置或应用状态来填充。只有上表支持 F 的组合且 Slot 提供真实可见或可访问内容时才渲染 Footer；未提供 Slot、空返回或只有注释/空白/空片段都视为空。应用负责将不可用内容表达为空 Slot，不以最终渲染为空的占位组件冒充内容。不渲染空 Footer Region、占位文案、人工保留高度或重复 Safe-area Padding；其他组合忽略 Footer 内容。空内容判定只冻结结果，不冻结私有 VNode 遍历算法。
@@ -12439,9 +12479,9 @@ Owner 后续明确批准本候选的一次性 Initial JavaScript 预算调整：
 | `scripts/architecture/style-owner-contracts.ts` 与 `scripts/architecture/style-debt-baseline.ts` | 只处理 Shell 主内容几何和共享内容提取直接涉及的归属；普通新声明遵守 §15.6 UnoCSS，实际删除的旧债务同步移除，不扩大债务数/豁免或把新文件登记为历史债务。 |
 | `scripts/verify/check-bundle.ts` 及上述检查的当前产物约束 | 前序期望为 17 Route Roots、27 Dynamic Roots；本轮一个新增 Lazy Route 且无其他新增动态根，当前精确集合要求为 18/28。按完整注册入口集合核对，不把该期望当实测值或保证恰好输出 18/28 个 JavaScript 文件；共享静态 Chunk 与 Entry Root 区分，既有 Lazy Closure/Byte Budget/强制余量与生成所有权保持。历史测量和接受记录不改写。 |
 
-本轮形成源码待评审候选，使用已声明 mise/Node/pnpm 环境运行相关现有窄检查、Canonical Generator、`git diff --check` 与最终 `pnpm verify`；仅直接相关修正才重跑。静态 Gate 不证明真实滚动、Footer 外观、键盘/焦点或运行验收。后续 Owner 观察仍按 §32 区分可选任务观察与发布验收；不创建浏览器、自动化测试、Demo、Fixture 或证据资产。正常忽略的现有检查产物不是交付物，Tracked Generated Source 不得产生任务外修改。
+该次布局实施形成候选时使用已声明 mise/Node/pnpm 环境运行相关现有窄检查、Canonical Generator、`git diff --check` 与最终 `pnpm verify`；此处保留历史实施规则，当前限定验收/交付事实见本节开头。静态 Gate 不证明真实滚动、Footer 外观、键盘/焦点或运行验收。后续 Owner 观察仍按 §32 区分可选任务观察与发布验收；不创建浏览器、自动化测试、Demo、Fixture 或证据资产。正常忽略的现有检查产物不是交付物，Tracked Generated Source 不得产生任务外修改。
 
-本轮不授权依赖、主题/密度、API/Auth、浏览器页复用/跟踪、Cross-tab Messaging、Storage Migration、多记录 Workspace、部署或其他规格续作。当前有界工作为 `PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS`，Authority 为本节；Next 与 Successor 保持 `NONE`。所有改动留作未暂存候选，不授权 Git 交付或后继实现。
+本轮不授权依赖、主题/密度、API/Auth、浏览器页复用/跟踪、Cross-tab Messaging、Storage Migration、多记录 Workspace、部署或其他规格续作。本节为已交付布局前序；当前有界工作与源码授权由 §9.4 拥有，Next 与 Successor 保持 `NONE`。原布局候选的 Git 限制是历史记录，不授权当前导航任务 Git 交付。
 
 # 19. 状态管理
 
@@ -16901,8 +16941,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17069,7 +17109,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；API/Auth 等必需 Starter 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不表示可省略最终必需范围。 当前 Bounded Work 与 Authority 由 §18.16 拥有，Next 与 Successor 保持 `NONE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；API/Auth 等必需 Starter 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不表示可省略最终必需范围。 当前 Bounded Work 与 Authority 由 §9.4 的应用当前页导航入口拥有，Next 与 Successor 保持 `NONE`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -17140,8 +17180,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17216,7 +17256,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4、Package 5、Package 6、Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 的完成事实保持。精确提交真实 Chrome 审计撤销的整体 Product Experience 与 Motion Geometry Runtime Acceptance 仍不恢复。Dark Action、`PAVP-RUNTIME-003` 与既有 Runtime Repair 状态保持；§1.2B.0H–0K 只保留历史导航状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime/Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。已验收工作包为 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-004` 保持 Open 且未启动；Optional Backend-dependent Lane、Successor Capability 与 Canonical Product Package 均未自动准入。 当前 Bounded Work 与 Authority 由 §18.16 拥有，Next 与 Successor 保持 `NONE`。
+Package 4、Package 5、Package 6、Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 的完成事实保持。精确提交真实 Chrome 审计撤销的整体 Product Experience 与 Motion Geometry Runtime Acceptance 仍不恢复。Dark Action、`PAVP-RUNTIME-003` 与既有 Runtime Repair 状态保持；§1.2B.0H–0K 只保留历史导航状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime/Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。已验收工作包为 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-004` 保持 Open 且未启动；Optional Backend-dependent Lane、Successor Capability 与 Canonical Product Package 均未自动准入。 当前 Bounded Work 与 Authority 由 §9.4 的应用当前页导航入口拥有，Next 与 Successor 保持 `NONE`。
 
 当前精确 Acceptance Contract：
 
@@ -17272,8 +17312,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17724,8 +17764,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18088,8 +18128,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16
-CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18164,7 +18204,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 COMPLETION_EVIDENCE=technical infrastructure and prior repository implementations remain complete; exact-commit audit keeps overall runtime, visual, accessibility and release acceptance revoked; prior Runtime repair states remain preserved; accepted Dark Action and PAVP-RUNTIME-003 facts remain unchanged; §1.2B.0H–0K retain historical state and measurements; PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION remains accepted; PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS is accepted at FROZEN / ACCEPTED / COMPLETE / PASS for exact published implementation commit b6efbb608b309f601217a2765150bd9ec217cf78 and Owner statement 效果还可以 可以接受, with scoped runtime and visual acceptance PASS, accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY is accepted at FROZEN / ACCEPTED / COMPLETE / PASS with Owner Runtime and Visual acceptance PASS, Accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; its exact 12 reversible Architecture-admission probes, 52 source proofs, 16 retained reversible source probes, 8 Router Presentation Commit reversible probes, 7 preset-selection reversible probes, 9 Full pace reversible probes and 3 Stylelint policy reversible probes are active; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact; current work and authority are NONE; next and successor remain NONE
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0N 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。既有 Theme、Runtime、Router、Storage 和 Admin Console 事实保持，整体 Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销。§1.2B.0H–0K 只保留历史事实，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已在精确提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。已验收工作包是 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Owner Runtime/Visual Acceptance 为 `PASS`，Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰；其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。 当前 Bounded Work 与 Authority 由 §18.16 拥有，Next 与 Successor 保持 `NONE`。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0N 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。既有 Theme、Runtime、Router、Storage 和 Admin Console 事实保持，整体 Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销。§1.2B.0H–0K 只保留历史事实，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已在精确提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。已验收工作包是 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Owner Runtime/Visual Acceptance 为 `PASS`，Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰；其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。 当前 Bounded Work 与 Authority 由 §9.4 的应用当前页导航入口拥有，Next 与 Successor 保持 `NONE`。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 

@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { UiProvider } from '@platform/ui'
-import { computed } from 'vue'
+import { computed, onScopeDispose } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
 import { useConsoleI18n } from './shared/i18n'
 import { useAppearanceReadBoundary } from './app/appearance/appearance-read-boundary'
 import { useWorkspaceStore } from './app/workspace/workspace.store'
 import ConsoleRouteFrame from './app/console/ConsoleRouteFrame.vue'
+import { provideApplicationNavigation } from './app/router/application-navigation'
 import { committedRouteInputProps } from './app/router/router-lifecycle'
+import { createRouteTransitionCoordinator } from './app/router/route-transition/route-transition-coordinator'
 import {
   getRouteLayoutCapability,
   getRoutePresentation,
@@ -20,6 +22,11 @@ const router = useRouter()
 const workspace = useWorkspaceStore()
 const routeInputProps = computed(() => committedRouteInputProps(router))
 const appearance = useAppearanceReadBoundary()
+const routeTransitionCoordinator = createRouteTransitionCoordinator({ router, appearance })
+onScopeDispose(() => {
+  routeTransitionCoordinator.dispose()
+})
+provideApplicationNavigation(router, routeTransitionCoordinator)
 const routeRecord = computed(() => getRouteRecord(route.name))
 const composition = computed(
   () => getRouteLayoutCapability(routeRecord.value.meta.layoutCapabilityId).composition,

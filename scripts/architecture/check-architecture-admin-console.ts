@@ -698,6 +698,7 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       'vue',
       '../app/appearance/appearance-read-boundary',
       '../app/console/overview-projection',
+      '../app/router/application-navigation',
       '../app/router/router-console-projection',
       '../shared/i18n',
     ],
@@ -6716,8 +6717,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   if (
-    canonicalWork !== 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS' ||
-    canonicalAuthority !== 'ARCHITECTURE_SECTION_18_16'
+    canonicalWork !== 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION' ||
+    canonicalAuthority !== 'ARCHITECTURE_SECTION_9_4'
   ) {
     recordCurrentWorkViolation()
   }
@@ -6809,8 +6810,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_STATUS=OPEN`,
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
-    'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
-    'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+    'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
+    'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -7692,8 +7693,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS' ||
-      authorityValues[0] !== 'ARCHITECTURE_SECTION_18_16'
+      workValues[0] !== 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION' ||
+      authorityValues[0] !== 'ARCHITECTURE_SECTION_9_4'
     ) {
       recordCurrentWorkViolation()
     }
@@ -7711,8 +7712,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
     allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
-    allCurrentWorkMarkers.some((value) => value !== 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS') ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== 'ARCHITECTURE_SECTION_18_16')
+    allCurrentWorkMarkers.some((value) => value !== 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION') ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== 'ARCHITECTURE_SECTION_9_4')
   ) {
     recordCurrentWorkViolation()
   }
@@ -8371,7 +8372,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -8489,7 +8490,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -9322,8 +9323,8 @@ function routeTransitionAcceptanceViolations(
         (match) =>
           match[1] !==
           (field === 'CURRENT_BOUNDED_WORK'
-            ? 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS'
-            : 'ARCHITECTURE_SECTION_18_16'),
+            ? 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION'
+            : 'ARCHITECTURE_SECTION_9_4'),
       )
     ) {
       failures.push('ROUTE_TRANSITION_ACCEPTED_' + field)
@@ -9403,12 +9404,12 @@ function validateRouteTransitionAcceptanceGovernance(
   ])
   for (const [field, replacement, code] of [
     [
-      'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+      'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
       'CURRENT_BOUNDED_WORK=' + routeTransitionWorkPackage,
       'CURRENT_BOUNDED_WORK',
     ],
     [
-      'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
+      'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
       'CURRENT_BOUNDED_WORK_AUTHORITY=' + routeTransitionAdmissionAmendment,
       'CURRENT_BOUNDED_WORK_AUTHORITY',
     ],
@@ -9700,8 +9701,8 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
   }
 
   const navigationMarkers = [
-    'ROUTE_TRANSITION_INITIAL_NAVIGATION_OWNER=ConsoleRouteFrame.navigate()',
-    'ROUTE_TRANSITION_INITIAL_SCOPE=USER_INITIATED_ADMIN_PRODUCT_NAVIGATION_ONLY',
+    'ROUTE_TRANSITION_INITIAL_NAVIGATION_OWNER=APP_OWNED_SHARED_COORDINATOR_SECTION_9_4',
+    'ROUTE_TRANSITION_INITIAL_SCOPE=USER_INITIATED_CURRENT_PAGE_REGISTERED_NAVIGATION',
     'ROUTE_TRANSITION_ELIGIBLE_EDGE=DIFFERENT_PRODUCT_ROUTE_TO_DIFFERENT_PRODUCT_ROUTE',
     'ROUTE_TRANSITION_ELIGIBLE_MOTION=FULL_OR_REDUCED',
     'ROUTE_TRANSITION_ELIGIBLE_API=CALLABLE_START_VIEW_TRANSITION_ON_ACTUAL_CONTENT_ELEMENT',
@@ -9865,11 +9866,11 @@ function runRouteTransitionAdmissionNegativeProbes(
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource
         .replace(
-          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
           `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
         ),
     ],
@@ -10036,11 +10037,11 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_CURRENT_WORK',
       architectureSource
         .replace(
-          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
           `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
         ),
     ],
@@ -10951,7 +10952,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
@@ -10959,7 +10960,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
         'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
@@ -17677,6 +17678,102 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   return violations
 }
 
+function overviewNavigationValid(source: string): boolean {
+  const parsed = vueSfcCompiler.parse(source, { filename: 'index.vue' })
+  const template = parsed.descriptor.template?.ast
+  if (parsed.errors.length !== 0 || template === undefined) return false
+  const script = ts.createSourceFile(
+    'index.ts',
+    scriptContent(source),
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const imports = new Map<string, string>()
+  for (const statement of script.statements) {
+    if (
+      ts.isImportDeclaration(statement) &&
+      ts.isStringLiteral(statement.moduleSpecifier) &&
+      statement.moduleSpecifier.text === '../app/router/application-navigation' &&
+      statement.importClause?.namedBindings !== undefined &&
+      ts.isNamedImports(statement.importClause.namedBindings)
+    ) {
+      for (const binding of statement.importClause.namedBindings.elements)
+        imports.set(binding.propertyName?.text ?? binding.name.text, binding.name.text)
+    }
+  }
+  const initializers = topLevelVariableInitializers(script)
+  const entryName = (importName: string): string | undefined =>
+    [...initializers].find(
+      ([, value]) =>
+        ts.isCallExpression(value) && value.expression.getText() === imports.get(importName),
+    )?.[0]
+  const navigation = entryName('useApplicationNavigation')
+  const activate = entryName('useApplicationLinkActivation')
+  const anchors = collectShellTemplateElements(template).filter(
+    (element) => element.node.tag === 'a' && element.ancestors.some((node) => node.tag === 'nav'),
+  )
+  const anchor = anchors[0]?.node
+  if (
+    navigation === undefined ||
+    activate === undefined ||
+    anchors.length !== 1 ||
+    anchor === undefined
+  )
+    return false
+  const href = singleBoundExpression(anchor, 'href')?.split('.')
+  const events = templateDirectives(anchor, 'on')
+  const click = events[0]
+  const iteration = templateDirectives(anchor, 'for')[0]?.exp?.content
+  const projection = iteration?.match(/^\s*([\w$]+)\s+(?:in|of)\s+([\w$]+)\s*$/u)
+  const collection = initializers.get(projection?.[2] ?? '')
+  const resolutionExpression = `${navigation}.resolveHref`
+  const destinationProperties: string[] = []
+  function inspectProjection(node: ts.Node): void {
+    if (ts.isObjectLiteralExpression(node)) {
+      const property = node.properties.find(
+        (candidate) => objectPropertyName(candidate) === href?.[1],
+      )
+      if (property !== undefined && ts.isPropertyAssignment(property)) {
+        const value = property.initializer
+        if (
+          ts.isCallExpression(value) &&
+          value.expression.getText() === resolutionExpression &&
+          value.arguments.length === 1
+        ) {
+          const destinationProperty = node.properties
+            .find(
+              (candidate) =>
+                (ts.isShorthandPropertyAssignment(candidate) &&
+                  candidate.name.getText() === value.arguments[0]?.getText()) ||
+                (ts.isPropertyAssignment(candidate) &&
+                  candidate.initializer.getText() === value.arguments[0]?.getText()),
+            )
+            ?.name?.getText()
+          if (destinationProperty !== undefined) destinationProperties.push(destinationProperty)
+        }
+      }
+    }
+    ts.forEachChild(node, inspectProjection)
+  }
+  if (collection !== undefined) inspectProjection(collection)
+  const destinationProperty = destinationProperties[0]
+  const itemName = href?.[0]
+  return (
+    destinationProperty !== undefined &&
+    href?.length === 2 &&
+    itemName !== undefined &&
+    itemName === projection?.[1] &&
+    events.length === 1 &&
+    click?.arg?.content === 'click' &&
+    click.modifiers?.length === 0 &&
+    normalizeTemplateExpression(click.exp?.content).replaceAll(/\s/gu, '') ===
+      `${activate}($event,${itemName}.${destinationProperty})` &&
+    !/\bRouterLink\b|\buseLink\b|\.(?:navigate|push|replace|assign)\s*\(/u.test(
+      scriptContent(source),
+    )
+  )
+}
+
 async function validateAppearanceAndPageFacts(): Promise<{
   readonly violations: string[]
   readonly factImportViolation: boolean
@@ -17696,6 +17793,11 @@ async function validateAppearanceAndPageFacts(): Promise<{
     if (!exactSet(imports, expectedImports)) {
       factImportViolation = true
       violations.push(`${path}: safe Inspector fact-import contract drifted.`)
+    }
+    if (path === 'apps/web/src/pages/index.vue' && !overviewNavigationValid(source)) {
+      violations.push(
+        'Overview links must bind resolved href and only the shared activation handler to native anchors.',
+      )
     }
     if (path.endsWith('/CapabilityRoadmapContent.vue')) {
       capabilityTemplate = templateContent(source)

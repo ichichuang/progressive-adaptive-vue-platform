@@ -16,6 +16,7 @@ import {
   type WorkspaceIdentity,
 } from '../workspace/workspace.store'
 import { isRouterNavigationCurrent } from '../router/router-lifecycle'
+import { useApplicationNavigation, useWorkspaceNavigation } from '../router/application-navigation'
 import {
   routerScrollControllerKey,
   routerWorkspaceRefreshKey,
@@ -31,7 +32,6 @@ import {
   type TypedNavigationResult,
 } from '../router/route-input'
 import { consoleNavigationRegistry, getRouteRecord } from '../router/route-registry'
-import { createRouteTransitionCoordinator } from '../router/route-transition/route-transition-coordinator'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
 
@@ -86,6 +86,8 @@ const copy = computed(() => ({
   collapseAllMenusLabel: t('shell.collapseAllMenusLabel'),
 }))
 const router = useRouter()
+const applicationNavigation = useApplicationNavigation()
+const workspaceNavigation = useWorkspaceNavigation()
 const registerScrollController = inject(routerScrollControllerKey)
 const prepareWorkspaceRefresh = inject(routerWorkspaceRefreshKey)
 if (prepareWorkspaceRefresh === undefined)
@@ -121,7 +123,7 @@ const workspaceTabs = computed(() =>
 async function activateWorkspace(id: string): Promise<TypedNavigationResult | undefined> {
   const entry = workspace.entries.find((candidate) => candidate.identity === id)
   if (entry !== undefined)
-    return routeTransitionCoordinator.navigate(
+    return workspaceNavigation.navigate(
       entry.destination,
       isLiveWorkspace(entry) ? { workspaceActivation: entry } : undefined,
     )
@@ -193,7 +195,7 @@ async function closeWorkspace(id: string): Promise<void> {
     fallback?.destination ?? registeredRouteDestination({ name: 'console-overview' })
   closing.add(entry.identity)
   try {
-    const result = await routeTransitionCoordinator.navigate(
+    const result = await workspaceNavigation.navigate(
       destination,
       fallback !== undefined && isLiveWorkspace(fallback)
         ? { workspaceActivation: fallback }
@@ -276,15 +278,10 @@ function updateExpandedNavigationGroups(update: UiAdminNavigationExpansionUpdate
 }
 
 const appearance = useAppearanceReadBoundary()
-const routeTransitionCoordinator = createRouteTransitionCoordinator({
-  router,
-  appearance,
-})
 
 onScopeDispose(() => {
   refreshTarget = undefined
   unregisterScrollController?.()
-  routeTransitionCoordinator.dispose()
 })
 
 async function navigate(routeName: string): Promise<void> {
@@ -292,7 +289,7 @@ async function navigate(routeName: string): Promise<void> {
     .flatMap((group) => group.items)
     .find((candidate) => candidate.routeName === routeName)
   if (item === undefined) return
-  await routeTransitionCoordinator.navigate(item.destination)
+  await applicationNavigation.navigate(item.destination)
 }
 </script>
 
