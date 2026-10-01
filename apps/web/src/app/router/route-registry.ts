@@ -1,3 +1,4 @@
+import type { UiShellComposition } from '@platform/ui'
 import type { ConsoleMessageScope, ConsoleTranslate } from '../../shared/i18n/message-schema'
 import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
 import type { RouteParamsSchemaId, RouteQuerySchemaId } from './route-schemas'
@@ -54,6 +55,7 @@ export type LayoutPresetId =
 export interface LayoutCapabilityRegistryRecord {
   readonly id: string
   readonly layout: 'reading' | 'workspace' | 'focused-task'
+  readonly composition: UiShellComposition | null
   readonly shellRequired: boolean
   readonly focusContractId: string
   readonly scrollRestorationPolicyId: string
@@ -87,46 +89,68 @@ export interface ScrollOwnerRegistryRecord {
   readonly capabilityStatus: 'ACTIVE'
 }
 
-export const routeLayoutCapabilityRegistry = Object.freeze([
-  Object.freeze({
-    id: 'route-layout.architecture-admin-console',
-    layout: 'workspace',
-    focusContractId: 'route-focus.architecture-console-page-heading',
-    scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
-    shellRequired: true,
-    renderOwner: '@platform/ui',
-    allowedProfiles: Object.freeze(['narrow', 'regular', 'wide'] as const),
-    allowedPresets: Object.freeze(['workspace'] as const),
+const applicationLayout = Object.freeze({
+  shellRequired: true,
+  focusContractId: 'route-focus.architecture-console-page-heading',
+  scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
+  renderOwner: '@platform/ui',
+  allowedProfiles: Object.freeze(['narrow', 'regular', 'wide'] as const),
+  movablePanelIds: Object.freeze([] as const),
+  resizableRegionIds: Object.freeze([] as const),
+  blockScrollOwnerId: 'architecture-console-content-block',
+  inlineScrollOwnerId: 'architecture-console-content-inline',
+  minimumTargetPolicyId: 'target-size.enhanced-44',
+  profileThresholdPolicyId: 'layout-profile.architecture-admin-console',
+  safeAreaPolicyId: 'safe-area.viewport-insets',
+  capabilityStatus: 'ACTIVE',
+} as const)
+
+function defineApplicationLayout(
+  composition: UiShellComposition,
+  id = `route-layout.${composition}`,
+) {
+  const administration = composition.startsWith('admin-')
+  const regions = [
+    'architecture-console-content',
+    ...(composition.endsWith('-footer') ? ['architecture-console-footer'] : []),
+    ...(administration || composition.startsWith('header-') ? ['architecture-console-header'] : []),
+  ]
+  const persistentRegions = Object.freeze([
+    ...regions,
+    ...(administration ? ['architecture-console-navigation'] : []),
+  ])
+  return Object.freeze({
+    ...applicationLayout,
+    id,
+    composition,
+    layout: administration ? ('workspace' as const) : ('focused-task' as const),
+    allowedPresets: Object.freeze(administration ? (['workspace'] as const) : (['focus'] as const)),
+    narrowProjection: administration ? ('sheet' as const) : null,
     regionIdsByProfile: Object.freeze({
       narrow: Object.freeze([
-        'architecture-console-content',
-        'architecture-console-header',
-        'architecture-console-navigation-overlay',
+        ...regions,
+        ...(administration ? ['architecture-console-navigation-overlay'] : []),
       ]),
-      regular: Object.freeze([
-        'architecture-console-content',
-        'architecture-console-header',
-        'architecture-console-navigation',
-      ]),
-      wide: Object.freeze([
-        'architecture-console-content',
-        'architecture-console-header',
-        'architecture-console-navigation',
-      ]),
+      regular: persistentRegions,
+      wide: persistentRegions,
     }),
-    movablePanelIds: Object.freeze([] as const),
-    resizableRegionIds: Object.freeze([] as const),
-    narrowProjection: 'sheet',
-    blockScrollOwnerId: 'architecture-console-content-block',
-    inlineScrollOwnerId: 'architecture-console-content-inline',
-    minimumTargetPolicyId: 'target-size.enhanced-44',
-    profileThresholdPolicyId: 'layout-profile.architecture-admin-console',
-    safeAreaPolicyId: 'safe-area.viewport-insets',
-    capabilityStatus: 'ACTIVE',
-  }),
+  })
+}
+
+export const routeLayoutCapabilityRegistry = Object.freeze([
+  defineApplicationLayout('admin-workspace', 'route-layout.architecture-admin-console'),
+  defineApplicationLayout(
+    'admin-workspace-footer',
+    'route-layout.architecture-admin-console-footer',
+  ),
+  defineApplicationLayout('header-content'),
+  defineApplicationLayout('header-content-footer'),
+  defineApplicationLayout('content-footer'),
+  defineApplicationLayout('content-only'),
   Object.freeze({
     id: 'route-layout.reading-document',
     layout: 'reading',
+    composition: null,
     focusContractId: 'route-focus.primary-heading',
     scrollRestorationPolicyId: 'route-scroll.document-history',
     shellRequired: false,
@@ -146,7 +170,17 @@ export const routeLayoutCapabilityRegistry = Object.freeze([
   }),
 ] as const satisfies readonly LayoutCapabilityRegistryRecord[])
 
-function layoutMeta(capability: (typeof routeLayoutCapabilityRegistry)[number]) {
+export function getRouteLayoutCapability(id: string): LayoutCapabilityRegistryRecord {
+  const matches = routeLayoutCapabilityRegistry.filter((record) => record.id === id)
+  const capability = matches[0]
+  if (matches.length !== 1 || capability === undefined) {
+    throw new Error(`Unknown or duplicate layout: ${id}`)
+  }
+  return capability
+}
+
+function layoutMeta(id: string) {
+  const capability = getRouteLayoutCapability(id)
   return {
     layoutCapabilityId: capability.id,
     layout: capability.layout,
@@ -160,7 +194,7 @@ function layoutMeta(capability: (typeof routeLayoutCapabilityRegistry)[number]) 
 const emptyPermissionIds = Object.freeze([] as const)
 const commonRouteMeta = Object.freeze({
   breadcrumbKey: null,
-  ...layoutMeta(routeLayoutCapabilityRegistry[1]),
+  ...layoutMeta('route-layout.reading-document'),
   auth: 'public',
   requiredPermissionIds: emptyPermissionIds,
   keepAlive: 'never',
@@ -170,7 +204,7 @@ const commonRouteMeta = Object.freeze({
 } as const)
 
 const consoleRouteMeta = Object.freeze({
-  ...layoutMeta(routeLayoutCapabilityRegistry[0]),
+  ...layoutMeta('route-layout.architecture-admin-console'),
   auth: 'public',
   requiredPermissionIds: emptyPermissionIds,
   keepAlive: 'route-instance',
@@ -345,6 +379,24 @@ export const routeRegistry = Object.freeze([
       titleKey: 'route-title.capability-roadmap',
       breadcrumbKey: 'route-breadcrumb.capability-roadmap',
       telemetryName: 'route.console.capabilities',
+    }),
+  }),
+  defineRoute({
+    name: 'capability-roadmap-standalone',
+    pathPattern: '/capabilities/standalone',
+    sourcePath: 'apps/web/src/pages/capabilities-standalone.vue',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    hashPolicy: 'none',
+    workspaceIdentityPolicyId: null,
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      ...layoutMeta('route-layout.content-only'),
+      keepAlive: 'never',
+      titleKey: 'route-title.capability-roadmap',
+      breadcrumbKey: null,
+      telemetryName: 'route.console.capabilities-standalone',
     }),
   }),
   defineRoute({
@@ -584,6 +636,11 @@ export const routeMessageRegistry = Object.freeze([
   }),
   Object.freeze({
     routeName: 'capability-roadmap',
+    key: 'route-message.capability-roadmap-summary',
+    text: getDefaultConsoleMessage('route-message.capability-roadmap-summary'),
+  }),
+  Object.freeze({
+    routeName: 'capability-roadmap-standalone',
     key: 'route-message.capability-roadmap-summary',
     text: getDefaultConsoleMessage('route-message.capability-roadmap-summary'),
   }),
@@ -915,6 +972,7 @@ import type { LayoutProfileId } from '@platform/design-system'
 export function getRouteMessageScope(name: unknown): ConsoleMessageScope {
   const record = getRouteRecord(name)
   if (record.name === 'appearance-management') return 'appearance'
-  if (record.name === 'capability-roadmap') return 'capabilities'
+  if (record.name === 'capability-roadmap' || record.name === 'capability-roadmap-standalone')
+    return 'capabilities'
   return record.meta.breadcrumbKey === null ? 'common' : 'console'
 }

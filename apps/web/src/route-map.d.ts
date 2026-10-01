@@ -59,6 +59,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'capability-roadmap-standalone': RouteRecordInfo<
+      'capability-roadmap-standalone',
+      '/capabilities/standalone',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'design-token-inspector': RouteRecordInfo<
       'design-token-inspector',
       '/design-tokens',
@@ -190,6 +197,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/capabilities.vue': {
       routes:
         | 'capability-roadmap'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/capabilities-standalone.vue': {
+      routes:
+        | 'capability-roadmap-standalone'
       views:
         | never
       pathParamNames:

@@ -7,6 +7,7 @@ export { default as UiRadioCardGroup } from './components/UiRadioCardGroup.vue'
 export { default as UiSection } from './components/UiSection.vue'
 export { default as UiStatusBadge } from './components/UiStatusBadge.vue'
 export type {
+  UiShellComposition,
   UiWorkspaceTab,
   UiLocale,
   UiAdminShellCopy,

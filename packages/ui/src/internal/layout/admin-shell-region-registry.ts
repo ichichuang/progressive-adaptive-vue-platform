@@ -12,6 +12,7 @@ export interface AdminShellRegionRegistryRecord {
     | 'navigation-overlay'
   readonly scrollRelationship:
     | 'outside-route-primary-scroll-owner'
+    | 'inside-route-primary-scroll-owner'
     | 'route-primary-block-and-inline-scroll-owner'
     | 'independent-native-overlay-scroll-with-route-primary-background-lock'
   readonly capabilityStatus: 'ACTIVE'
@@ -36,6 +37,15 @@ export const adminShellRegionRegistry = Object.freeze({
       requiredProfiles: allProfiles,
       overlayRelationship: 'background-locked-by-navigation-overlay',
       scrollRelationship: 'route-primary-block-and-inline-scroll-owner',
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'architecture-console-footer',
+      owner: '@platform/ui',
+      profileAvailability: allProfiles,
+      requiredProfiles: Object.freeze([] as const),
+      overlayRelationship: 'background-locked-by-navigation-overlay',
+      scrollRelationship: 'inside-route-primary-scroll-owner',
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({

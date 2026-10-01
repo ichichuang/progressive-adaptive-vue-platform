@@ -37,11 +37,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    'c6c455342e6a32ad7e21ff4a045806fd65c57874213ccf7eeddb011b606003db',
+    '6805ad0d13d40203d743b9a13758d0f4e0454678bf24c00954298773e641d5b4',
   'packages/design-system/src/generated/tokens.ts':
-    '2c4596a3f9c1e219ea8ff4d99cce4820accbc6b62232f567b637b950d9a7eb1d',
+    'aa15e27db5519f315edc2d57a8b011750bd934373c4274e6524c3a78a033ed03',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '5642556fb6688bd685b8cc7f1b1b1446a43fb7cd7b24847967835f6fda58e237',
+    'fa1f6ec2ebae839e0008aaab2f5a2e4fc2dec757651d9d4635a4b7873ef4467b',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -2398,8 +2398,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 11 || recordCount !== 404) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 11/404.')
+  if (manifest['schemaVersion'] !== 11 || recordCount !== 408) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 11/408.')
   }
 
   const themes = manifest['themes']

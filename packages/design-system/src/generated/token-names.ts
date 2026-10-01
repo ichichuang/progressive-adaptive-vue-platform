@@ -26,6 +26,7 @@ export const tokenNames = [
   'color.text.on-status.warning',
   'color.text.primary',
   'color.text.secondary',
+  'interaction.border.width',
   'interaction.control.height',
   'interaction.motion.duration',
   'interaction.motion.easing',

@@ -37,8 +37,20 @@ interface UnoCssContentSizePropertySpecificProjection {
   ]
 }
 
+interface UnoCssPageSpacingPropertySpecificProjection {
+  readonly generatorKind: 'property-specific-exact-rule'
+  readonly family: 'spacing'
+  readonly key: 'page-inline'
+  readonly bindings: readonly [
+    { readonly className: 'px-page-inline'; readonly cssProperty: 'padding-inline' },
+    { readonly className: 'p-page-inline'; readonly cssProperty: 'padding' },
+  ]
+}
+
 type UnoCssPropertySpecificProjection =
-  UnoCssColorPropertySpecificProjection | UnoCssContentSizePropertySpecificProjection
+  | UnoCssColorPropertySpecificProjection
+  | UnoCssContentSizePropertySpecificProjection
+  | UnoCssPageSpacingPropertySpecificProjection
 
 export interface UnoCssContainerBoundaryContribution {
   readonly variantName: LayoutContainerVariantId
@@ -623,6 +635,24 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'interaction.border.width',
+      tokenType: 'dimension',
+      category: 'interaction',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-border-width',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'border-width',
+        key: 'default',
+        classes: ['border-width-default'],
+        allowedCssProperties: ['border-width'],
+      },
+    },
+    {
       id: 'interaction.control.height',
       tokenType: 'dimension',
       category: 'interaction',
@@ -990,11 +1020,13 @@ export const PublicRoleRegistry = {
       contrastEndpointId: null,
       alphaContractId: null,
       unocss: {
-        generatorKind: 'exact-rule',
+        generatorKind: 'property-specific-exact-rule',
         family: 'spacing',
         key: 'page-inline',
-        classes: ['px-page-inline'],
-        allowedCssProperties: ['padding-inline'],
+        bindings: [
+          { className: 'px-page-inline', cssProperty: 'padding-inline' },
+          { className: 'p-page-inline', cssProperty: 'padding' },
+        ],
       },
     },
     {
@@ -1595,6 +1627,21 @@ const publicRoleRecordSchema = z.strictObject({
       ]),
     }),
     z.strictObject({
+      generatorKind: z.literal('property-specific-exact-rule'),
+      family: z.literal('spacing'),
+      key: z.literal('page-inline'),
+      bindings: z.tuple([
+        z.strictObject({
+          className: z.literal('px-page-inline'),
+          cssProperty: z.literal('padding-inline'),
+        }),
+        z.strictObject({
+          className: z.literal('p-page-inline'),
+          cssProperty: z.literal('padding'),
+        }),
+      ]),
+    }),
+    z.strictObject({
       generatorKind: z.enum(['exact-rule', 'theme-entry']),
       family: z.string().regex(/^[a-z][a-z0-9-]*$/u),
       key: z.string().regex(/^[a-z][a-z0-9-]*$/u),
@@ -1663,6 +1710,7 @@ const themeEntryContracts = {
 } as const
 
 const exactRuleContracts = {
+  'border-width|border-width': 'border-width',
   'color|background-color': 'bg',
   'color|border-color': 'border',
   'color|--un-ring-color': 'ring',
@@ -1738,7 +1786,7 @@ export function validatePublicRoleRegistry(
     .parse(registry)
   const records = parsed.records as unknown as readonly PublicRoleRecord[]
 
-  assertExactCount(records.length, 54, 'Public Role Registry record count')
+  assertExactCount(records.length, 55, 'Public Role Registry record count')
   assertUnique(
     records.map((record) => record.id),
     'Public Role Registry IDs',
@@ -1809,7 +1857,7 @@ export function validatePublicRoleRegistry(
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'property-specific-exact-rule')
       .length,
-    5,
+    6,
     'Property-specific UnoCSS mapping count',
   )
   assertExactCount(
@@ -1873,6 +1921,14 @@ export function validatePublicRoleRegistry(
     }
 
     if (record.unocss.generatorKind === 'property-specific-exact-rule') {
+      if (record.unocss.family === 'spacing') {
+        if (record.id !== 'spacing.page.inline') {
+          throw new Error(`${record.id}: spacing bindings require the Page Inline role.`)
+        }
+
+        continue
+      }
+
       if (record.unocss.family === 'content-size') {
         if (record.id !== 'layout.admin.content.minimum-inline-size') {
           throw new Error(`${record.id}: content-size bindings require the Admin content role.`)

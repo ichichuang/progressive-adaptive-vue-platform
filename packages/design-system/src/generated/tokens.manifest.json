@@ -53,18 +53,18 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 243,
-      "activePublicRoles": 54,
-      "unoCssMappings": 54,
+      "tokens": 245,
+      "activePublicRoles": 55,
+      "unoCssMappings": 55,
       "namedContrasts": 34,
       "alphaContracts": 1,
       "densities": 3,
       "themes": 14,
       "firstPaint": 1
     },
-    "recordCount": 404,
+    "recordCount": 408,
     "baselineRecordCount": 181,
-    "expectedRecordCountDelta": 223,
+    "expectedRecordCountDelta": 227,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
@@ -2347,6 +2347,19 @@
       "resolvedValue": "2rem"
     },
     {
+      "name": "dimension.border.width",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.border.width"
+      },
+      "resolvedValue": "1px"
+    },
+    {
       "name": "dimension.control.lg",
       "type": "dimension",
       "tier": "primitive",
@@ -2696,6 +2709,20 @@
         "name": "font.weight.regular"
       },
       "resolvedValue": "400"
+    },
+    {
+      "name": "interaction.border.width",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.border.width"
+      },
+      "resolvedValue": "1px",
+      "cssVariable": "--ui-border-width"
     },
     {
       "name": "interaction.control.height",
@@ -3900,6 +3927,24 @@
       }
     },
     {
+      "id": "interaction.border.width",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-border-width",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "border-width",
+        "key": "default",
+        "classes": ["border-width-default"],
+        "allowedCssProperties": ["border-width"]
+      }
+    },
+    {
       "id": "interaction.control.height",
       "tokenType": "dimension",
       "category": "interaction",
@@ -4282,11 +4327,19 @@
       "contrastEndpointId": null,
       "alphaContractId": null,
       "unocss": {
-        "generatorKind": "exact-rule",
+        "generatorKind": "property-specific-exact-rule",
         "family": "spacing",
         "key": "page-inline",
-        "classes": ["px-page-inline"],
-        "allowedCssProperties": ["padding-inline"]
+        "bindings": [
+          {
+            "className": "px-page-inline",
+            "cssProperty": "padding-inline"
+          },
+          {
+            "className": "p-page-inline",
+            "cssProperty": "padding"
+          }
+        ]
       }
     },
     {
@@ -4702,6 +4755,15 @@
       "allowedCssProperties": ["color"]
     },
     {
+      "roleId": "interaction.border.width",
+      "cssVariable": "--ui-border-width",
+      "generatorKind": "exact-rule",
+      "family": "border-width",
+      "key": "default",
+      "classes": ["border-width-default"],
+      "allowedCssProperties": ["border-width"]
+    },
+    {
       "roleId": "interaction.control.height",
       "cssVariable": "--ui-control-height",
       "generatorKind": "exact-rule",
@@ -4905,11 +4967,19 @@
     {
       "roleId": "spacing.page.inline",
       "cssVariable": "--ui-space-page-inline",
-      "generatorKind": "exact-rule",
+      "generatorKind": "property-specific-exact-rule",
       "family": "spacing",
       "key": "page-inline",
-      "classes": ["px-page-inline"],
-      "allowedCssProperties": ["padding-inline"]
+      "bindings": [
+        {
+          "className": "px-page-inline",
+          "cssProperty": "padding-inline"
+        },
+        {
+          "className": "p-page-inline",
+          "cssProperty": "padding"
+        }
+      ]
     },
     {
       "roleId": "spacing.section.block",

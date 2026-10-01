@@ -230,6 +230,7 @@ onBeforeUnmount(controller.dispose)
       <div
         ref="content"
         class="pavp-scroll-area__content"
+        :data-main-content="enabled && ownerId === 'architecture-console-content'"
       >
         <slot />
       </div>
@@ -271,6 +272,13 @@ onBeforeUnmount(controller.dispose)
 .pavp-scroll-area__content {
   display: flow-root;
   min-inline-size: 100%;
+}
+
+.pavp-scroll-area__content[data-main-content='true'] {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100%;
+  min-inline-size: 0;
 }
 
 @media (forced-colors: active) {

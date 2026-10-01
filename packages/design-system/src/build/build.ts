@@ -104,8 +104,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 15030,
-    expectedByteDelta: 11664,
+    expectedBytes: 15208,
+    expectedByteDelta: 11842,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -1503,7 +1503,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     result.unoCssMappings,
     unoCssMappingRecords(publicRoleRecords),
-    'Token preprocessing must carry exactly 54 UnoCSS mapping records',
+    'Token preprocessing must carry exactly 55 UnoCSS mapping records',
   )
   assertInvariantEqual(
     result.namedContrasts.map((record) =>
@@ -3704,7 +3704,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
       compareCodePoints,
     ),
     projection.mappings.map((mapping) => mapping.roleId).sort(compareCodePoints),
-    'arbitrary public-variable bypass validation must cover all 54 mappings',
+    'arbitrary public-variable bypass validation must cover all 55 mappings',
   )
   assertInvariant(
     new Set(forbiddenCandidates.map((candidate) => candidate.className)).size ===
@@ -3822,7 +3822,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
             : mapping.classes,
       )
       .sort(compareCodePoints),
-    'the actual platformPreset must generate all 57 registered public classes',
+    'the actual platformPreset must generate all 59 registered public classes',
   )
 
   const statusClasses = ['info', 'success', 'warning', 'error'].flatMap((tone) => [

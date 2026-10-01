@@ -47,6 +47,8 @@ const allProductRoutes = Object.freeze([
   'ui-system-inspector',
 ] as const)
 
+const contentRoutes = Object.freeze([...allProductRoutes, 'capability-roadmap-standalone'] as const)
+
 export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
   records: Object.freeze([
@@ -76,7 +78,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze([]),
-      consumerRouteNames: allProductRoutes,
+      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -199,7 +201,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       exportName: 'UiAdminShell',
       sourcePath: 'packages/ui/src/components/UiAdminShell.vue',
       props: Object.freeze([
-        Object.freeze({ name: 'enabled', type: 'boolean', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'composition',
+          type: 'UiShellComposition | null',
+          required: true,
+          defaultValue: null,
+        }),
         Object.freeze({
           name: 'copy',
           type: 'UiAdminShellCopy',
@@ -245,6 +252,11 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       slots: Object.freeze([
         Object.freeze({
+          name: 'footer',
+          slotPropsType: 'Readonly<Record<string, never>>',
+          required: false,
+        }),
+        Object.freeze({
           name: 'workspace',
           slotPropsType: 'Readonly<Record<string, never>>',
           required: true,
@@ -257,7 +269,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze(['narrow', 'regular', 'wide']),
       accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-navigation']),
-      consumerRouteNames: allProductRoutes,
+      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -273,7 +285,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       slots: Object.freeze([]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.route-focus-primary-heading']),
-      consumerRouteNames: allProductRoutes,
+      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -299,7 +311,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze([]),
-      consumerRouteNames: allProductRoutes,
+      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -352,7 +364,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.semantic-section-heading']),
-      consumerRouteNames: allProductRoutes,
+      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -376,6 +388,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       consumerRouteNames: Object.freeze([
         'appearance-management',
         'capability-roadmap',
+        'capability-roadmap-standalone',
         'console-overview',
         'design-token-inspector',
         'engineering-quality-inspector',

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CapabilityRoadmapContent from '../app/console/CapabilityRoadmapContent.vue'
 
-defineOptions({ name: 'CapabilityRoadmapPage' })
+defineOptions({ name: 'CapabilityRoadmapStandalonePage' })
 defineProps<{
   readonly breadcrumb: string
   readonly title: string

@@ -132,23 +132,9 @@ const leaving = computed(() => ({
   scale: full.value ? 0.98 : 1,
 }))
 const entering = computed(() => ({ ...leaving.value, y: full.value ? 3 : 0 }))
-const buttonVariants = computed(() => ({
-  rest: resting,
-  hover: resting,
-  focus: resting,
-  press: { scale: full.value ? 0.985 : 1, opacity: 0.86 },
-}))
-// Gesture variants propagate from the real button to its token-painted surface.
-// Animate opacity so theme colors (including color-mix) stay entirely CSS-owned.
-const surfaceVariants = Object.freeze({
-  rest: { opacity: 0 },
-  hover: { opacity: 1 },
-  focus: { opacity: 1 },
-  press: { opacity: 1 },
-})
 const closeMarkVariants = computed(() => ({
   rest: { opacity: 0.68, scale: 1 },
-  hover: { opacity: 1, scale: full.value ? 1.04 : 1 },
+  hover: { opacity: 1, scale: full.value ? 1.12 : 1 },
   focus: resting,
   press: { opacity: 0.86, scale: full.value ? 0.985 : 1 },
 }))
@@ -357,7 +343,8 @@ watch(
                   <m.div
                     v-for="item in items"
                     :key="item.id"
-                    class="pavp-workspace-tabs__item"
+                    class="pavp-workspace-tabs__item focus-within:text-text-primary hover:text-text-primary"
+                    :class="{ 'text-text-primary': item.id === activeId }"
                     role="presentation"
                     :data-active="item.id === activeId"
                     :data-closable="item.closable"
@@ -381,18 +368,15 @@ watch(
                       class="pavp-workspace-tabs__lens"
                       aria-hidden="true"
                     />
-                    <m.button
+                    <span
+                      class="pavp-workspace-tabs__hover"
+                      aria-hidden="true"
+                    />
+                    <button
                       :id="`${item.id}-tab`"
                       type="button"
                       role="tab"
                       class="pavp-workspace-tabs__tab"
-                      :initial="false"
-                      animate="rest"
-                      while-hover="hover"
-                      while-focus="focus"
-                      while-press="press"
-                      :variants="buttonVariants"
-                      :transition="transition"
                       :aria-selected="item.id === activeId"
                       :aria-controls="panelId"
                       aria-haspopup="menu"
@@ -401,15 +385,8 @@ watch(
                       @focus="focusedId = item.id"
                       @click="emit('activate', item.id)"
                     >
-                      <m.span
-                        class="pavp-workspace-tabs__hover"
-                        aria-hidden="true"
-                        :initial="false"
-                        :variants="surfaceVariants"
-                        :transition="transition"
-                      />
                       <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
-                    </m.button>
+                    </button>
                     <m.button
                       v-if="item.closable"
                       type="button"
@@ -424,13 +401,6 @@ watch(
                       @focus="focusedId = item.id"
                       @click.stop="emit('close', item.id)"
                     >
-                      <m.span
-                        class="pavp-workspace-tabs__hover"
-                        aria-hidden="true"
-                        :initial="false"
-                        :variants="surfaceVariants"
-                        :transition="transition"
-                      />
                       <m.span
                         class="pavp-workspace-tabs__close-mark"
                         aria-hidden="true"
@@ -592,7 +562,7 @@ watch(
 .pavp-workspace-tabs {
   --workspace-hover-surface: color-mix(
     in srgb,
-    var(--ui-admin-navigation-selected) 6%,
+    var(--ui-admin-navigation-selected) 12%,
     transparent
   );
 
@@ -647,6 +617,19 @@ watch(
   opacity: 0;
   pointer-events: none;
 }
+.pavp-workspace-tabs:not([data-motion='none']) .pavp-workspace-tabs__hover {
+  transition: opacity var(--ui-motion-duration) var(--ui-motion-easing);
+}
+.pavp-workspace-tabs[data-motion='reduced'] .pavp-workspace-tabs__hover {
+  transition-duration: calc(var(--ui-motion-duration) / 2);
+}
+.pavp-workspace-tabs__item:hover > .pavp-workspace-tabs__hover,
+.pavp-workspace-tabs__item:focus-within > .pavp-workspace-tabs__hover {
+  opacity: 0.6;
+}
+.pavp-workspace-tabs__item:has(> button:active) > .pavp-workspace-tabs__hover {
+  opacity: 1;
+}
 .pavp-workspace-tabs__label {
   position: relative;
   z-index: var(--ui-z-base);
@@ -657,11 +640,6 @@ watch(
     var(--ui-admin-navigation-selected) 8%,
     transparent
   );
-
-  color: var(--ui-color-text-primary);
-}
-.pavp-workspace-tabs__tab:hover {
-  color: var(--ui-color-text-primary);
 }
 .pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab {
   padding-inline-end: 0;
@@ -698,13 +676,6 @@ watch(
 }
 .pavp-workspace-tabs .pavp-workspace-tabs__close {
   padding-inline: 0;
-  color: var(--ui-color-text-secondary);
-}
-/* Paint one tab surface across adjacent targets without extending either hit box. */
-.pavp-workspace-tabs__item[data-closable='true']
-  .pavp-workspace-tabs__tab
-  .pavp-workspace-tabs__hover {
-  inset-inline-end: calc(var(--ui-layout-target-enhanced-minimum-inline-size) * -1);
 }
 /* Center the small mark inside the full close target, keeping the rail geometry stable. */
 .pavp-workspace-tabs__close-mark {
@@ -729,11 +700,6 @@ watch(
 }
 .pavp-workspace-tabs__close-mark::after {
   transform: rotate(-45deg);
-}
-.pavp-workspace-tabs__item:hover .pavp-workspace-tabs__close,
-.pavp-workspace-tabs__item:focus-within .pavp-workspace-tabs__close,
-.pavp-workspace-tabs__item[data-active='true'] .pavp-workspace-tabs__close {
-  color: var(--ui-color-text-primary);
 }
 .pavp-workspace-tabs:not([data-motion='none']) button {
   transition: color var(--ui-motion-duration) var(--ui-motion-easing);

@@ -227,6 +227,7 @@ interface VueSfcCompiler {
   readonly compileStyle: (options: {
     readonly filename: string
     readonly id: string
+    readonly isProd?: boolean
     readonly preprocessLang?: string
     readonly scoped: boolean
     readonly source: string
@@ -559,7 +560,7 @@ const expectedAdminTokens = [
   {
     name: 'admin.border.width',
     type: 'dimension',
-    value: { value: 1, unit: 'px' },
+    value: '{dimension.border.width}',
     cssVariable: '--ui-admin-border-width',
     resolvedValue: '1px',
   },
@@ -774,9 +775,14 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       '../shared/i18n',
     ],
   ],
+  ['apps/web/src/pages/capabilities.vue', ['../app/console/CapabilityRoadmapContent.vue']],
   [
-    'apps/web/src/pages/capabilities.vue',
-    ['@platform/ui', '../generated/capability-manifest', '../shared/i18n'],
+    'apps/web/src/pages/capabilities-standalone.vue',
+    ['../app/console/CapabilityRoadmapContent.vue'],
+  ],
+  [
+    'apps/web/src/app/console/CapabilityRoadmapContent.vue',
+    ['@platform/ui', '../../generated/capability-manifest', '../../shared/i18n'],
   ],
 ])
 const naiveCommonParserSensitiveColorProperties: ReadonlySet<string> = new Set([
@@ -3083,6 +3089,62 @@ function normalizedCssSelector(selector: string): string {
   return selector.replaceAll(/\s+/gu, ' ').trim()
 }
 
+function appearanceCompiledStyleViolations(source: string): string[] {
+  const violations: string[] = []
+  const filename = 'apps/web/src/pages/appearance.vue'
+  const scopeId = 'data-v-pavp-appearance'
+  const parsed = vueSfcCompiler.parse(source, { filename })
+
+  if (parsed.errors.length > 0 || parsed.descriptor.styles.some((block) => !block.scoped)) {
+    return ['Appearance styles must parse and retain page-local scoping.']
+  }
+
+  for (const isProd of [false, true]) {
+    for (const block of parsed.descriptor.styles) {
+      const compiled = vueSfcCompiler.compileStyle({
+        filename,
+        id: scopeId,
+        isProd,
+        ...(block.lang === undefined ? {} : { preprocessLang: block.lang }),
+        scoped: true,
+        source: block.content,
+      })
+
+      if (compiled.errors.length > 0) {
+        violations.push('Appearance styles must compile in development and production modes.')
+        continue
+      }
+
+      // Existing style records own declarations and media conditions; inspect emitted targets here.
+      for (const rule of cssRuleBlocks(compiled.code)) {
+        if (
+          !cssDeclarationNames(rule.declarations).some((property) =>
+            /^(?:grid(?:-|$)|align-|animation(?:-|$))/u.test(property),
+          )
+        ) {
+          continue
+        }
+
+        for (const candidate of splitCssSelectorList(rule.selector)) {
+          const selector = normalizedCssSelector(candidate)
+          if (!/^(?:\.pavp-admin-shell|html)(?:\[|\s|$)/u.test(selector)) continue
+
+          const localTarget = /^(.*?)\s+\.pavp-appearance-[\w-]+\[data-v-pavp-appearance\]$/u.exec(
+            selector,
+          )
+          if (localTarget === null || localTarget[1]?.includes('[data-v-')) {
+            violations.push(
+              `Appearance compiled styles escape their page-local target: ${selector}`,
+            )
+          }
+        }
+      }
+    }
+  }
+
+  return violations
+}
+
 function selectorDeclarationValues(
   rules: readonly CssRuleBlock[],
   selector: string,
@@ -4514,7 +4576,7 @@ function adminNavigationHeaderCollapseControlProjection(
     header.ancestors.every(isStableOwnershipPathNode) &&
     templateDirectives(header.node, 'if').length === 1 &&
     normalizeTemplateExpression(templateDirectives(header.node, 'if')[0]?.exp?.content) ===
-      'enabled' &&
+      'hasHeader' &&
     ['else-if', 'else', 'show', 'for'].every(
       (name) => templateDirectives(header.node, name).length === 0,
     )
@@ -4545,7 +4607,7 @@ function adminNavigationHeaderCollapseControlProjection(
     narrowTriggerAncestorPathIndependent &&
     narrowTriggerConditions.length === 1 &&
     normalizeTemplateExpression(narrowTriggerConditions[0]?.exp?.content) ===
-      "profile === 'narrow'" &&
+      "administration && profile === 'narrow'" &&
     ['else-if', 'else', 'show', 'for'].every(
       (directiveName) => templateDirectives(narrowTrigger.node, directiveName).length === 0,
     )
@@ -4600,7 +4662,9 @@ function adminNavigationHeaderCollapseControlProjection(
   )
   const wideConditions = visibilityNodes.flatMap((node) =>
     templateDirectives(node, 'if').filter(
-      (directive) => normalizeTemplateExpression(directive.exp?.content) === "profile === 'wide'",
+      (directive) =>
+        normalizeTemplateExpression(directive.exp?.content) ===
+        "administration && profile === 'wide'",
     ),
   )
   const wideCondition = wideConditions.length === 1 ? wideConditions[0] : undefined
@@ -5881,7 +5945,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
     mainElements.length !== 1 ||
     mainInertBindings.length !== 1 ||
     normalizeTemplateExpression(mainInertBindings[0]?.exp?.content) !==
-      "enabled && profile === 'narrow' && navigationOpen"
+      "administration && profile === 'narrow' && navigationOpen"
   ) {
     violations.push('PAVP_RUNTIME_003_MAIN_INERT')
   }
@@ -5912,7 +5976,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   if (
     runtime002NavigationViolations(snapshot.shellSource).length > 0 ||
-    !snapshot.shellSource.includes('v-if="enabled && profile !== \'narrow\'"') ||
+    !snapshot.shellSource.includes('v-if="administration && profile !== \'narrow\'"') ||
     !snapshot.shellSource.includes('<NMenu') ||
     !snapshot.shellSource.includes(':collapsed="persistentNavigationCollapsed"')
   ) {
@@ -6107,7 +6171,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 17 ||
+    runtimeNumber(routeRegistry.length) !== 18 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
@@ -6651,7 +6715,10 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_ROUTE_TRANSITION_CURRENT_WORK')
   }
 
-  if (canonicalWork !== 'NONE' || canonicalAuthority !== 'NONE') {
+  if (
+    canonicalWork !== 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS' ||
+    canonicalAuthority !== 'ARCHITECTURE_SECTION_18_16'
+  ) {
     recordCurrentWorkViolation()
   }
 
@@ -6742,8 +6809,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_STATUS=OPEN`,
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
-    'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
-    'CURRENT_BOUNDED_WORK=NONE',
+    'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
+    'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -7625,8 +7692,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'NONE' ||
-      authorityValues[0] !== 'NONE'
+      workValues[0] !== 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS' ||
+      authorityValues[0] !== 'ARCHITECTURE_SECTION_18_16'
     ) {
       recordCurrentWorkViolation()
     }
@@ -7644,8 +7711,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
     allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
-    allCurrentWorkMarkers.some((value) => value !== 'NONE') ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== 'NONE')
+    allCurrentWorkMarkers.some((value) => value !== 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS') ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== 'ARCHITECTURE_SECTION_18_16')
   ) {
     recordCurrentWorkViolation()
   }
@@ -8304,7 +8371,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -8422,7 +8489,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -9251,7 +9318,13 @@ function routeTransitionAcceptanceViolations(
     const values = [...source.matchAll(new RegExp('^' + field + '=(.*)$', 'gmu'))]
     if (
       values.length !== expectedRouteTransitionActiveMirrorCount ||
-      values.some((match) => match[1] !== 'NONE')
+      values.some(
+        (match) =>
+          match[1] !==
+          (field === 'CURRENT_BOUNDED_WORK'
+            ? 'PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS'
+            : 'ARCHITECTURE_SECTION_18_16'),
+      )
     ) {
       failures.push('ROUTE_TRANSITION_ACCEPTED_' + field)
     }
@@ -9330,12 +9403,12 @@ function validateRouteTransitionAcceptanceGovernance(
   ])
   for (const [field, replacement, code] of [
     [
-      'CURRENT_BOUNDED_WORK=NONE',
+      'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
       'CURRENT_BOUNDED_WORK=' + routeTransitionWorkPackage,
       'CURRENT_BOUNDED_WORK',
     ],
     [
-      'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+      'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
       'CURRENT_BOUNDED_WORK_AUTHORITY=' + routeTransitionAdmissionAmendment,
       'CURRENT_BOUNDED_WORK_AUTHORITY',
     ],
@@ -9792,11 +9865,11 @@ function runRouteTransitionAdmissionNegativeProbes(
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource
         .replace(
-          'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=NONE',
+          'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
           `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
         ),
     ],
@@ -9963,11 +10036,11 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_CURRENT_WORK',
       architectureSource
         .replace(
-          'CURRENT_BOUNDED_WORK_AUTHORITY=NONE',
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_16',
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=NONE',
+          'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
           `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
         ),
     ],
@@ -10533,9 +10606,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 28') &&
         snapshot.architectureSource.includes('FINAL_DYNAMIC_ROOT_COUNT=18') &&
-        snapshot.routeCount === 17 &&
+        snapshot.routeCount === 18 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 7,
@@ -10878,7 +10951,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
@@ -10886,7 +10959,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=NONE',
+        'CURRENT_BOUNDED_WORK=PAVP_ROUTE_SELECTED_LAYOUT_COMPOSITIONS',
         'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
@@ -11383,7 +11456,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 17) {
+  if (snapshot.routeCount !== 18) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -11550,7 +11623,7 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       (element) =>
         hasRouteConditional(element.node) ||
         element.ancestors.some(hasRouteConditional) ||
-        boundTemplateExpression(element.node, 'enabled') !== 'shellRequired',
+        boundTemplateExpression(element.node, 'composition') !== 'composition',
     ) ||
     [...uiProviders, ...consoleFrames, ...adminShells].some((element) =>
       hasTemplateKey(element.node),
@@ -12527,7 +12600,7 @@ function runArchitectureAdminConsoleNegativeProbes(
       'ROUTER_OUTLET_COUNT',
       { appTemplateSource: `${baseline.appTemplateSource}\n<RouterView />` },
     ],
-    ['eighteenth-route', 'ROUTE_COUNT', { routeCount: 18 }],
+    ['nineteenth-route', 'ROUTE_COUNT', { routeCount: 19 }],
     ['page-safe-projection-bypass', 'PAGE_FACT_BOUNDARY', { factImportViolation: true }],
     [
       'direct-page-local-storage',
@@ -13019,7 +13092,7 @@ function runRuntime003SourceNegativeProbes(
       'runtime-003-main-inert-removed',
       'PAVP_RUNTIME_003_MAIN_INERT',
       baseline.shellSource.replace(
-        '          :inert="enabled && profile === \'narrow\' && navigationOpen"\n',
+        '          :inert="administration && profile === \'narrow\' && navigationOpen"\n',
         '',
       ),
     ],
@@ -13203,8 +13276,8 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_LAYOUT_PROFILE',
-      shellSource.includes(':has-sider="enabled && profile !== \'narrow\'"') &&
-        shellSource.includes('v-if="enabled && profile !== \'narrow\'"'),
+      shellSource.includes(':has-sider="administration && profile !== \'narrow\'"') &&
+        shellSource.includes('v-if="administration && profile !== \'narrow\'"'),
     ],
     [
       'NAV_LAYOUT_NESTING',
@@ -13222,7 +13295,8 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       'NAV_STABLE_MAIN',
       shellSource.includes(
         ':data-shell-region="enabled ? \'architecture-console-content\' : undefined"',
-      ) && shellSource.includes(':inert="enabled && profile === \'narrow\' && navigationOpen"'),
+      ) &&
+        shellSource.includes(':inert="administration && profile === \'narrow\' && navigationOpen"'),
     ],
     ['NAV_NO_LAYOUT_CONTENT', !shellSource.includes('PavpLayoutContent')],
     [
@@ -13434,12 +13508,12 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       'NAV_NARROW_DRAWER_PRESERVATION',
       [
         '<Teleport to="#pavp-overlay-root">',
-        'v-if="enabled && profile === \'narrow\' && navigationOpen"',
+        'v-if="administration && profile === \'narrow\' && navigationOpen"',
         '@pointerdown="handleDrawerScrimPointerDown($event)"',
         'aria-modal="true"',
         'role="dialog"',
         '@keydown="handleDrawerKeydown"',
-        ':inert="enabled && profile === \'narrow\' && navigationOpen"',
+        ':inert="administration && profile === \'narrow\' && navigationOpen"',
       ].every((marker) => shellSource.includes(marker)),
     ],
   ]
@@ -13488,7 +13562,7 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '      :has-sider="enabled && profile !== \'narrow\'"\n',
+        '      :has-sider="administration && profile !== \'narrow\'"\n',
         '',
       ),
     ],
@@ -14452,7 +14526,7 @@ function adminNavigationNativeSourceInvariantResults(
   const wideCollapseControlOwned =
     controlledWideNavigationToggle(shellScript) &&
     shellTemplate.includes('data-pavp-admin-navigation-collapse-control="header-trailing"') &&
-    shellTemplate.includes('v-if="profile === \'wide\'"') &&
+    shellTemplate.includes('v-if="administration && profile === \'wide\'"') &&
     shellTemplate.includes(':aria-label="wideNavigationCollapseLabel"') &&
     shellTemplate.includes('@click="toggleWideNavigation"') &&
     shellTemplate.includes('<NButton') &&
@@ -14481,9 +14555,9 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void') &&
     snapshot.appearancePageSource.includes('grid-template-columns: repeat(4, minmax(0, 1fr));')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 18') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 28') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max') &&
     snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:') &&
@@ -14588,7 +14662,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 17,
+      passed: snapshot.routeCount === 18,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -15114,17 +15188,17 @@ function adminNavigationHeaderPlacementInvariantResults(
     ]),
   )
   const narrowTriggerPreserved =
-    /<button\s+[\s\S]*?v-if="profile === 'narrow'"[\s\S]*?ref="navigationTrigger"[\s\S]*?:aria-label="copy\.openNavigationLabel"[\s\S]*?@click="openNavigation"[\s\S]*?>\s*\{\{ copy\.navigationActionLabel \}\}\s*<\/button>/u.test(
+    /<button\s+[\s\S]*?v-if="administration && profile === 'narrow'"[\s\S]*?ref="navigationTrigger"[\s\S]*?:aria-label="copy\.openNavigationLabel"[\s\S]*?@click="openNavigation"[\s\S]*?>\s*\{\{ copy\.navigationActionLabel \}\}\s*<\/button>/u.test(
       shellTemplate,
     )
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
-    'v-if="enabled && profile === \'narrow\' && navigationOpen"',
+    'v-if="administration && profile === \'narrow\' && navigationOpen"',
     '@pointerdown="handleDrawerScrimPointerDown($event)"',
     'aria-modal="true"',
     'role="dialog"',
     '@keydown="handleDrawerKeydown"',
-    ':inert="enabled && profile === \'narrow\' && navigationOpen"',
+    ':inert="administration && profile === \'narrow\' && navigationOpen"',
   ].every((marker) => shellTemplate.includes(marker))
 
   return Object.freeze([
@@ -15222,8 +15296,8 @@ function adminNavigationHeaderPlacementInvariantResults(
         projection.identityProfileIndependent &&
         projection.narrowTriggerProfileIndependent &&
         projection.wideOnly &&
-        shellTemplate.includes(':has-sider="enabled && profile !== \'narrow\'"') &&
-        shellTemplate.includes('v-if="enabled && profile !== \'narrow\'"') &&
+        shellTemplate.includes(':has-sider="administration && profile !== \'narrow\'"') &&
+        shellTemplate.includes('v-if="administration && profile !== \'narrow\'"') &&
         narrowTriggerPreserved &&
         narrowDrawerPreserved,
     },
@@ -15500,7 +15574,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
     [
       'admin-navigation-native-route-count-drift',
       'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      { ...baseline, routeCount: 18 },
+      { ...baseline, routeCount: 19 },
     ],
     [
       'admin-navigation-native-kernel-count-drift',
@@ -15534,8 +15608,8 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 17',
           'const expectedLazyRouteCount = 18',
+          'const expectedLazyRouteCount = 19',
         ),
       },
     ],
@@ -15887,12 +15961,12 @@ function adminNavigationExpansionMotionInvariantResults(
   ].every((marker) => snapshot.architectureSource.includes(marker))
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
-    'v-if="enabled && profile === \'narrow\' && navigationOpen"',
+    'v-if="administration && profile === \'narrow\' && navigationOpen"',
     '@pointerdown="handleDrawerScrimPointerDown($event)"',
     'aria-modal="true"',
     'role="dialog"',
     '@keydown="handleDrawerKeydown"',
-    ':inert="enabled && profile === \'narrow\' && navigationOpen"',
+    ':inert="administration && profile === \'narrow\' && navigationOpen"',
   ].every((marker) => shellTemplate.includes(marker))
 
   return Object.freeze([
@@ -15960,7 +16034,7 @@ function adminNavigationExpansionMotionInvariantResults(
       passed:
         isDeepStrictEqual([...groupControlVisibilityExpressions].sort(), [
           '!persistentNavigationCollapsed',
-          "profile === 'wide'",
+          "administration && profile === 'wide'",
         ]) && groupControlPath.every((node) => templateDirectives(node, 'for').length === 0),
     },
     {
@@ -16480,12 +16554,12 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   ].every((marker) => snapshot.architectureSource.includes(marker))
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
-    'v-if="enabled && profile === \'narrow\' && navigationOpen"',
+    'v-if="administration && profile === \'narrow\' && navigationOpen"',
     '@pointerdown="handleDrawerScrimPointerDown($event)"',
     'aria-modal="true"',
     'role="dialog"',
     '@keydown="handleDrawerKeydown"',
-    ':inert="enabled && profile === \'narrow\' && navigationOpen"',
+    ':inert="administration && profile === \'narrow\' && navigationOpen"',
   ].every((marker) => shellTemplate.includes(marker))
 
   return Object.freeze([
@@ -16881,9 +16955,9 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     'INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192',
   ] as const
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 17',
+    'const expectedLazyRouteCount = 18',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 27',
+    'const expectedDynamicRootCount = 28',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -16962,10 +17036,10 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 17 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') ||
+    snapshot.routeCount !== 18 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 18') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 28') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -17029,7 +17103,7 @@ function runNavigationBudgetNegativeProbes(
     [
       'navigation-budget-changes-route-lazy-count',
       'NAV_BUDGET_ROUTE_LAZY_COUNT',
-      { ...baseline, routeCount: 18 },
+      { ...baseline, routeCount: 19 },
     ],
     [
       'navigation-budget-leaves-motion-generated-mirror-at-wrong-limit',
@@ -17374,14 +17448,14 @@ async function validateTokensAndLayout(): Promise<string[]> {
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
     tokenManifest.schemaVersion !== 11 ||
-    tokenManifest.tokens.length !== 243 ||
-    tokenManifest.activePublicRoles.length !== 54 ||
-    tokenManifest.unoCssMappings.length !== 54 ||
+    tokenManifest.tokens.length !== 245 ||
+    tokenManifest.activePublicRoles.length !== 55 ||
+    tokenManifest.unoCssMappings.length !== 55 ||
     tokenManifest.namedContrasts.length !== 34 ||
-    tokenManifest.governance.recordCount !== 404 ||
+    tokenManifest.governance.recordCount !== 408 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 223 ||
-    classProjections.length !== 52 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 227 ||
+    classProjections.length !== 53 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -17453,7 +17527,7 @@ async function validateTokensAndLayout(): Promise<string[]> {
 
 async function validateRoutesShellAndMotion(): Promise<string[]> {
   const violations: string[] = []
-  const productRoutes = routeRegistry.filter((record) => record.meta.layout === 'workspace')
+  const productRoutes = routeRegistry.filter((record) => record.workspaceIdentityPolicyId !== null)
   const breadcrumbRegistry: Readonly<Record<RouteBreadcrumbKey, string>> = routeBreadcrumbRegistry
   const layoutPresets: readonly LayoutPresetId[] = [
     ...new Set(
@@ -17487,7 +17561,7 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 17 ||
+    runtimeCount(routeRegistry) !== 18 ||
     runtimeCount(productRoutes) !== 10 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
     Object.keys(breadcrumbRegistry).length !== 10 ||
@@ -17505,10 +17579,10 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
       ':data-scroll-owner="enabled ? \'architecture-console-content\' : undefined"',
     ) ||
     !shellSource.includes(
-      "document.documentElement.style.overflow = props.enabled ? 'hidden' : rootOverflow",
+      "document.documentElement.style.overflow = enabled.value ? 'hidden' : rootOverflow",
     ) ||
     !shellSource.includes(
-      "document.body.style.overflow = props.enabled ? 'hidden' : bodyOverflow",
+      "document.body.style.overflow = enabled.value ? 'hidden' : bodyOverflow",
     ) ||
     [...shellSource.matchAll(/env\(safe-area-inset-/gu)].length !== 8 ||
     /(?:48rem|80rem|3\.5rem|4rem|16rem|20rem|44px)/u.test(shellSource)
@@ -17527,11 +17601,12 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     adminShellLayoutPolicyRegistry.safeAreaPolicies
 
   if (
-    shellRegions.length !== 4 ||
+    shellRegions.length !== 5 ||
     !exactSet(
       shellRegions.map((record) => record.id),
       [
         'architecture-console-content',
+        'architecture-console-footer',
         'architecture-console-header',
         'architecture-console-navigation',
         'architecture-console-navigation-overlay',
@@ -17542,6 +17617,27 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
     safeAreaPolicies.length !== 1
   ) {
     violations.push('Admin Shell Region or Layout Policy Registry drifted.')
+  }
+
+  const footer = shellRegions.find((record) => record.id === 'architecture-console-footer')
+  if (
+    !isDeepStrictEqual(footer, {
+      id: 'architecture-console-footer',
+      owner: '@platform/ui',
+      profileAvailability: ['narrow', 'regular', 'wide'],
+      requiredProfiles: [],
+      overlayRelationship: 'background-locked-by-navigation-overlay',
+      scrollRelationship: 'inside-route-primary-scroll-owner',
+      capabilityStatus: 'ACTIVE',
+    }) ||
+    shellRegions.some(
+      (record) =>
+        record.id !== 'architecture-console-footer' && record.requiredProfiles.length === 0,
+    )
+  ) {
+    violations.push(
+      'Footer must be the only optional region and remain inside the route primary scroll owner.',
+    )
   }
 
   const requiredMotionMarkers = [
@@ -17601,7 +17697,7 @@ async function validateAppearanceAndPageFacts(): Promise<{
       factImportViolation = true
       violations.push(`${path}: safe Inspector fact-import contract drifted.`)
     }
-    if (path.endsWith('/capabilities.vue')) {
+    if (path.endsWith('/CapabilityRoadmapContent.vue')) {
       capabilityTemplate = templateContent(source)
     }
   }
@@ -17873,10 +17969,10 @@ function validateInspectorProjections(): string[] {
     engineeringManifest.bundleBudgets
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 54 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 55 ||
     runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 26 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 11 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 404 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 408 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',
       'cobalt',
@@ -17896,10 +17992,10 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 17 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 10 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 18 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 11 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 17 ||
+    runtimeCount(routerRecords) !== 18 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
     runtimeCount(storageRecords) !== 7 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 10 ||
@@ -17909,7 +18005,7 @@ function validateInspectorProjections(): string[] {
     ]) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
-    runtimeCount(responsiveLayoutConsoleProjection.shellRegionIds) !== 4 ||
+    runtimeCount(responsiveLayoutConsoleProjection.shellRegionIds) !== 5 ||
     runtimeCount(responsiveLayoutConsoleProjection.sizeTokens) !== 7 ||
     runtimeNumber(engineeringManifest.schemaVersion) !== 1 ||
     runtimeCount(engineeringManifest.verifyStageIds) !== 14 ||
@@ -18499,6 +18595,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...(await validateDependencies()),
     ...(await validateTokensAndLayout()),
     ...(await validateRoutesShellAndMotion()),
+    ...appearanceCompiledStyleViolations(baseline.appearancePageSource),
     ...appearanceAndFacts.violations,
     ...(await validateNaiveOverrides()),
     ...validateInspectorProjections(),

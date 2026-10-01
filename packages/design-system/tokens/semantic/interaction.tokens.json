@@ -1,5 +1,11 @@
 {
   "interaction": {
+    "border": {
+      "width": {
+        "$type": "dimension",
+        "$value": "{dimension.border.width}"
+      }
+    },
     "control": {
       "height": {
         "$type": "dimension",

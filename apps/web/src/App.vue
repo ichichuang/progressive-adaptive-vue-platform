@@ -8,7 +8,11 @@ import { useAppearanceReadBoundary } from './app/appearance/appearance-read-boun
 import { useWorkspaceStore } from './app/workspace/workspace.store'
 import ConsoleRouteFrame from './app/console/ConsoleRouteFrame.vue'
 import { committedRouteInputProps } from './app/router/router-lifecycle'
-import { getRoutePresentation, getRouteRecord } from './app/router/route-registry'
+import {
+  getRouteLayoutCapability,
+  getRoutePresentation,
+  getRouteRecord,
+} from './app/router/route-registry'
 
 const { t, locale } = useConsoleI18n()
 const route = useRoute()
@@ -17,6 +21,12 @@ const workspace = useWorkspaceStore()
 const routeInputProps = computed(() => committedRouteInputProps(router))
 const appearance = useAppearanceReadBoundary()
 const routeRecord = computed(() => getRouteRecord(route.name))
+const composition = computed(
+  () => getRouteLayoutCapability(routeRecord.value.meta.layoutCapabilityId).composition,
+)
+const tabpanel = computed(
+  () => composition.value?.startsWith('admin-') === true && workspace.activeIdentity !== null,
+)
 const presentation = computed(() => getRoutePresentation(route.name, t))
 </script>
 
@@ -27,19 +37,15 @@ const presentation = computed(() => getRoutePresentation(route.name, t))
   >
     <ConsoleRouteFrame
       :active-route-name="routeRecord.name"
-      :shell-required="
-        routeRecord.meta.layoutCapabilityId === 'route-layout.architecture-admin-console'
-      "
+      :composition="composition"
     >
       <RouterView v-slot="{ Component }">
         <div
           id="pavp-workspace-panel"
           class="pavp-route-content"
-          :role="workspace.activeIdentity === null ? undefined : 'tabpanel'"
-          :tabindex="workspace.activeIdentity === null ? undefined : 0"
-          :aria-labelledby="
-            workspace.activeIdentity === null ? undefined : `${workspace.activeIdentity}-tab`
-          "
+          :role="tabpanel ? 'tabpanel' : undefined"
+          :tabindex="tabpanel ? 0 : undefined"
+          :aria-labelledby="tabpanel ? `${workspace.activeIdentity}-tab` : undefined"
         >
           <KeepAlive :include="workspace.includedComponentNames">
             <component

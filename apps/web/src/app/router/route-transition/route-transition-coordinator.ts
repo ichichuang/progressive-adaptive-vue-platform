@@ -227,6 +227,9 @@ export function createRouteTransitionCoordinator(input: {
     if (resolvedTarget === undefined) return navigateDirectly(request)
     const fromRoute = getRouteRecord(input.router.currentRoute.value.name)
     const toRoute = getRouteRecord(resolvedTarget.name)
+    if (fromRoute.meta.layoutCapabilityId !== toRoute.meta.layoutCapabilityId) {
+      return navigateDirectly(request)
+    }
     const motion = input.appearance.snapshot.value.motion
     const boundaryState = readBoundaryState()
     const decision = resolveRouteTransition({

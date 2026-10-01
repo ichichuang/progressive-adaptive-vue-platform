@@ -68,6 +68,7 @@ const expectedPageSources = [
   'apps/web/src/pages/responsive-layout.vue',
   'apps/web/src/pages/engineering.vue',
   'apps/web/src/pages/capabilities.vue',
+  'apps/web/src/pages/capabilities-standalone.vue',
   'apps/web/src/pages/error/400.vue',
   'apps/web/src/pages/error/401.vue',
   'apps/web/src/pages/error/403.vue',
@@ -76,7 +77,7 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 10)
+const expectedProductPageSources = expectedPageSources.slice(0, 11)
 const expectedRouteRecords = [
   [
     'apps/web/src/pages/index.vue',
@@ -176,6 +177,16 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.capability-roadmap',
     'route.console.capabilities',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/capabilities-standalone.vue',
+    'capability-roadmap-standalone',
+    '/capabilities/standalone',
+    'route-params.none',
+    'route-query.none',
+    'route-title.capability-roadmap',
+    'route.console.capabilities-standalone',
     'route-boundary',
   ],
   [
@@ -344,6 +355,11 @@ const expectedMessages = [
   ],
   [
     'capability-roadmap',
+    'route-message.capability-roadmap-summary',
+    '查看尚未启用能力的状态、前置条件与准入要求。',
+  ],
+  [
+    'capability-roadmap-standalone',
     'route-message.capability-roadmap-summary',
     '查看尚未启用能力的状态、前置条件与准入要求。',
   ],
@@ -889,7 +905,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact seventeen-record authority.')
+    violations.push('Router Route Registry diverged from the exact eighteen-record authority.')
   }
 
   if (
@@ -902,9 +918,18 @@ function registryViolations(): string[] {
   for (const record of routeRegistry) {
     const { titleKey, breadcrumbKey, telemetryName, errorPolicy, ...commonMeta } = record.meta
     const expectedCommonMeta =
-      record.meta.layout === 'workspace' ? expectedConsoleCommonMeta : expectedReadingCommonMeta
+      record.workspaceIdentityPolicyId !== null
+        ? expectedConsoleCommonMeta
+        : record.name === 'capability-roadmap-standalone'
+          ? {
+              ...expectedConsoleCommonMeta,
+              layout: 'focused-task',
+              layoutCapabilityId: 'route-layout.content-only',
+              keepAlive: 'never',
+            }
+          : expectedReadingCommonMeta
     const expectedBreadcrumbKey =
-      record.meta.layout === 'workspace' ? `route-breadcrumb.${record.name}` : null
+      record.workspaceIdentityPolicyId !== null ? `route-breadcrumb.${record.name}` : null
     if (
       !isDeepStrictEqual(commonMeta, expectedCommonMeta) ||
       !isDeepStrictEqual(record.capabilityStatus, 'ACTIVE') ||
@@ -913,7 +938,7 @@ function registryViolations(): string[] {
       telemetryName.length === 0 ||
       errorPolicy.length === 0 ||
       record.workspaceIdentityPolicyId !==
-        (record.meta.layout === 'workspace' ? 'workspace-identity.route-single' : null)
+        (record.workspaceIdentityPolicyId !== null ? 'workspace-identity.route-single' : null)
     ) {
       violations.push(`Route ${record.name} diverged from the exact active Common Meta contract.`)
     }
@@ -927,7 +952,7 @@ function registryViolations(): string[] {
   }
 
   if (!isDeepStrictEqual(routeTitleRegistry, expectedRouteTitles)) {
-    violations.push('Router Title Registry diverged from its exact seventeen records.')
+    violations.push('Router Title Registry diverged from its exact registered records.')
   }
 
   if (
@@ -936,7 +961,7 @@ function registryViolations(): string[] {
       expectedMessages,
     )
   ) {
-    violations.push('Router Message Registry diverged from its exact seventeen records.')
+    violations.push('Router Message Registry diverged from its exact registered records.')
   }
 
   if (
@@ -975,13 +1000,21 @@ function registryViolations(): string[] {
       routeRegistry.map((record) => record.meta.telemetryName),
     )
   ) {
-    violations.push('Telemetry-name Registry must project the exact seventeen Route records.')
+    violations.push('Telemetry-name Registry must project the exact eighteen Route records.')
   }
 
   if (
     !exactSet(
       layouts.map((record) => record.id),
-      ['route-layout.architecture-admin-console', 'route-layout.reading-document'],
+      [
+        'route-layout.architecture-admin-console',
+        'route-layout.architecture-admin-console-footer',
+        'route-layout.header-content',
+        'route-layout.header-content-footer',
+        'route-layout.content-footer',
+        'route-layout.content-only',
+        'route-layout.reading-document',
+      ],
     ) ||
     !exactSet(
       scrollOwners.map((record) => record.id),
@@ -1003,6 +1036,72 @@ function registryViolations(): string[] {
   ) {
     violations.push('Router Layout, native Scroll or Focus reference registries drifted.')
   }
+
+  const applicationLayouts = [
+    ['architecture-admin-console', 'admin-workspace', true, true, false],
+    ['architecture-admin-console-footer', 'admin-workspace-footer', true, true, true],
+    ['header-content', 'header-content', false, true, false],
+    ['header-content-footer', 'header-content-footer', false, true, true],
+    ['content-footer', 'content-footer', false, false, true],
+    ['content-only', 'content-only', false, false, false],
+  ] as const
+  for (const [id, composition, administration, header, footer] of applicationLayouts) {
+    const regions = [
+      'architecture-console-content',
+      ...(footer ? ['architecture-console-footer'] : []),
+      ...(header ? ['architecture-console-header'] : []),
+    ]
+    const expected = {
+      id: `route-layout.${id}`,
+      layout: administration ? 'workspace' : 'focused-task',
+      composition,
+      shellRequired: true,
+      focusContractId: 'route-focus.architecture-console-page-heading',
+      scrollRestorationPolicyId: 'route-scroll.architecture-console-content-history',
+      renderOwner: '@platform/ui',
+      allowedProfiles: ['narrow', 'regular', 'wide'],
+      allowedPresets: administration ? ['workspace'] : ['focus'],
+      regionIdsByProfile: {
+        narrow: [
+          ...regions,
+          ...(administration ? ['architecture-console-navigation-overlay'] : []),
+        ],
+        regular: [...regions, ...(administration ? ['architecture-console-navigation'] : [])],
+        wide: [...regions, ...(administration ? ['architecture-console-navigation'] : [])],
+      },
+      movablePanelIds: [],
+      resizableRegionIds: [],
+      narrowProjection: administration ? 'sheet' : null,
+      blockScrollOwnerId: 'architecture-console-content-block',
+      inlineScrollOwnerId: 'architecture-console-content-inline',
+      minimumTargetPolicyId: 'target-size.enhanced-44',
+      profileThresholdPolicyId: 'layout-profile.architecture-admin-console',
+      safeAreaPolicyId: 'safe-area.viewport-insets',
+      capabilityStatus: 'ACTIVE',
+    }
+    if (
+      !isDeepStrictEqual(
+        layouts.find((record) => record.id === expected.id),
+        expected,
+      )
+    )
+      violations.push(
+        `${expected.id}: composition, profiles, regions and shared layout references must be exact.`,
+      )
+  }
+  const documentLayout = layouts.find((record) => record.id === 'route-layout.reading-document')
+  if (
+    !isDeepStrictEqual(
+      documentLayout && [
+        documentLayout.composition,
+        documentLayout.shellRequired,
+        documentLayout.regionIdsByProfile,
+        documentLayout.renderOwner,
+      ],
+      [null, false, null, 'route-component'],
+    )
+  )
+    violations.push('Reading Document must retain document pass-through without Shell regions.')
 
   if (
     !isDeepStrictEqual(
@@ -1132,7 +1231,9 @@ async function pageViolations(): Promise<string[]> {
     .map((path) => relative(rootDirectory, path).split('\\').join('/'))
 
   if (!exactSet(pageFiles, expectedPageSources)) {
-    return ['Official Router page source root must contain exactly the eight admitted Vue files.']
+    return [
+      'Official Router page source root must contain exactly the eighteen admitted Vue files.',
+    ]
   }
 
   const workspaceComponentNames = new Set<string>()
@@ -1155,9 +1256,24 @@ async function pageViolations(): Promise<string[]> {
         )
       if (name !== undefined) workspaceComponentNames.add(name)
     }
+    const sharedCapability =
+      sourcePath === 'apps/web/src/pages/capabilities.vue' ||
+      sourcePath === 'apps/web/src/pages/capabilities-standalone.vue'
+    const contentSource = sharedCapability
+      ? await readFile(
+          resolve(rootDirectory, 'apps/web/src/app/console/CapabilityRoadmapContent.vue'),
+          'utf8',
+        )
+      : source
+    if (
+      sharedCapability &&
+      (count(source, /<CapabilityRoadmapContent\b/gu) !== 1 ||
+        !source.includes("from '../app/console/CapabilityRoadmapContent.vue'"))
+    )
+      violations.push(`${sourcePath}: capability content must have one shared owner.`)
     const productPageInvalid =
       productPage &&
-      (count(source, /<UiPageHeader\b/gu) !== 1 ||
+      (count(contentSource, /<UiPageHeader\b/gu) !== 1 ||
         count(source, /<main\b/gu) !== 0 ||
         count(source, /<h1\b/gu) !== 0)
     const errorPageInvalid =
@@ -2251,7 +2367,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 10 &&
+        productRoutes.length === 11 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -2593,7 +2709,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 256 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         snapshot.engineeringManifestSource.includes(
           "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
@@ -2603,9 +2719,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 18') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 27') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 28') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -2739,13 +2855,13 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 17') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 18') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         snapshot.projectConfigSource.includes(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 256 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])

@@ -1,5 +1,11 @@
 {
   "dimension": {
+    "border": {
+      "width": {
+        "$type": "dimension",
+        "$value": { "value": 1, "unit": "px" }
+      }
+    },
     "space": {
       "0": {
         "$type": "dimension",

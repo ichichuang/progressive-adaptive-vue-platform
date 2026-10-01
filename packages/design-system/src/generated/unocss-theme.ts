@@ -267,6 +267,15 @@ export const platformUnoMappings = [
     allowedCssProperties: ['color'],
   },
   {
+    roleId: 'interaction.border.width',
+    cssVariable: '--ui-border-width',
+    generatorKind: 'exact-rule',
+    family: 'border-width',
+    key: 'default',
+    classes: ['border-width-default'],
+    allowedCssProperties: ['border-width'],
+  },
+  {
     roleId: 'interaction.control.height',
     cssVariable: '--ui-control-height',
     generatorKind: 'exact-rule',
@@ -470,11 +479,19 @@ export const platformUnoMappings = [
   {
     roleId: 'spacing.page.inline',
     cssVariable: '--ui-space-page-inline',
-    generatorKind: 'exact-rule',
+    generatorKind: 'property-specific-exact-rule',
     family: 'spacing',
     key: 'page-inline',
-    classes: ['px-page-inline'],
-    allowedCssProperties: ['padding-inline'],
+    bindings: [
+      {
+        className: 'px-page-inline',
+        cssProperty: 'padding-inline',
+      },
+      {
+        className: 'p-page-inline',
+        cssProperty: 'padding',
+      },
+    ],
   },
   {
     roleId: 'spacing.section.block',
@@ -678,6 +695,12 @@ export const platformRules = [
     },
   ],
   [
+    'border-width-default',
+    {
+      'border-width': 'var(--ui-border-width)',
+    },
+  ],
+  [
     'duration-motion',
     {
       '--un-duration': 'var(--ui-motion-duration)',
@@ -744,6 +767,12 @@ export const platformRules = [
     'min-w-target-enhanced',
     {
       'min-width': 'var(--ui-layout-target-enhanced-minimum-inline-size)',
+    },
+  ],
+  [
+    'p-page-inline',
+    {
+      padding: 'var(--ui-space-page-inline)',
     },
   ],
   [

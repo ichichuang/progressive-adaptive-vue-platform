@@ -470,7 +470,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     block: 0,
     context: [],
     selector:
-      ":global(.pavp-admin-shell[data-layout-profile='regular']) .pavp-appearance-workspace,\n:global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-workspace",
+      ".pavp-admin-shell[data-layout-profile='regular'] .pavp-appearance-workspace,\n.pavp-admin-shell[data-layout-profile='wide'] .pavp-appearance-workspace",
     declarations: [
       [
         'grid-template-columns',
@@ -485,7 +485,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     block: 0,
     context: [],
     selector:
-      ":global(.pavp-admin-shell[data-layout-profile='regular']) .pavp-appearance-control,\n:global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-control",
+      ".pavp-admin-shell[data-layout-profile='regular'] .pavp-appearance-control,\n.pavp-admin-shell[data-layout-profile='wide'] .pavp-appearance-control",
     declarations: [
       ['grid-template-columns', 'minmax(0, 1fr) auto', false],
       ['align-items', 'center', false],
@@ -495,42 +495,8 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     path: 'apps/web/src/pages/appearance.vue',
     block: 0,
     context: [],
-    selector:
-      ":global(.pavp-admin-shell[data-layout-profile='wide']) .pavp-appearance-theme-gallery",
+    selector: ".pavp-admin-shell[data-layout-profile='wide'] .pavp-appearance-theme-gallery",
     declarations: [['grid-template-columns', 'repeat(4, minmax(0, 1fr))', false]],
-  },
-  {
-    path: 'apps/web/src/pages/capabilities.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-capability-grid',
-    declarations: [
-      ['display', 'grid', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/capabilities.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-capability-card',
-    declarations: [
-      ['display', 'grid', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-      ['padding', 'var(--ui-space-page-inline)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/capabilities.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-capability-card__heading',
-    declarations: [
-      ['display', 'flex', false],
-      ['align-items', 'center', false],
-      ['justify-content', 'space-between', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
   },
   {
     path: 'apps/web/src/pages/index.vue',
@@ -809,7 +775,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     selector: '.pavp-admin-shell',
     declarations: [
       ['position', 'relative', false],
-      ['min-block-size', '100dvh', false],
       ['overflow', 'hidden', false],
       ['color', 'var(--ui-color-text-primary)', false],
       ['background-color', 'var(--ui-admin-ambient-canvas)', false],
@@ -875,11 +840,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     selector: '.pavp-admin-shell__layout',
     declarations: [
       ['min-inline-size', '0', false],
-      [
-        'block-size',
-        'calc(100dvh - var(--ui-layout-admin-header-block-size) - var(--pavp-safe-area-top))',
-        false,
-      ],
       ['background', 'transparent', false],
     ],
   },
@@ -1074,7 +1034,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     context: [],
     selector: '.pavp-admin-shell__content-inner',
     declarations: [
-      ['display', 'grid', false],
       ['gap', 'var(--ui-space-section-block)', false],
       ['inline-size', '100%', false],
       [
@@ -1338,20 +1297,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
     context: [],
-    selector: ".pavp-workspace-tabs__item[data-active='true']",
-    declarations: [['color', 'var(--ui-color-text-primary)', false]],
-  },
-  {
-    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-workspace-tabs__tab:hover',
-    declarations: [['color', 'var(--ui-color-text-primary)', false]],
-  },
-  {
-    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
-    block: 0,
-    context: [],
     selector: ".pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab",
     declarations: [
       ['padding-inline-end', '0', false],
@@ -1363,18 +1308,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     block: 0,
     context: [],
     selector: '.pavp-workspace-tabs .pavp-workspace-tabs__close',
-    declarations: [
-      ['padding-inline', '0', false],
-      ['color', 'var(--ui-color-text-secondary)', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
-    block: 0,
-    context: [],
-    selector:
-      ".pavp-workspace-tabs__item:hover .pavp-workspace-tabs__close,\n.pavp-workspace-tabs__item:focus-within .pavp-workspace-tabs__close,\n.pavp-workspace-tabs__item[data-active='true'] .pavp-workspace-tabs__close",
-    declarations: [['color', 'var(--ui-color-text-primary)', false]],
+    declarations: [['padding-inline', '0', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',

@@ -30,6 +30,7 @@
     --ui-admin-state-disabled-opacity: 0.5;
     --ui-admin-surface-content: var(--ui-color-surface-panel);
     --ui-admin-surface-settings: var(--ui-color-surface-panel);
+    --ui-border-width: 1px;
     --ui-color-material-support-chrome-adaptive: oklch(100% 0 0 / 0.94);
     --ui-color-material-support-chrome-reduced: oklch(100% 0 0 / 0.98);
     --ui-color-material-support-modal-adaptive: oklch(100% 0 0 / 0.98);

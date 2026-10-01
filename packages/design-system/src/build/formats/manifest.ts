@@ -51,11 +51,11 @@ const manifestGovernanceContract = {
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 223,
+    expectedCountDelta: 227,
     expectedCounts: {
-      tokens: 243,
-      activePublicRoles: 54,
-      unoCssMappings: 54,
+      tokens: 245,
+      activePublicRoles: 55,
+      unoCssMappings: 55,
       namedContrasts: 34,
       alphaContracts: 1,
       densities: 3,

@@ -100,7 +100,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 17
+const expectedLazyRouteCount = 18
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -116,7 +116,7 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/appearance.json',
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
-const expectedDynamicRootCount = 27
+const expectedDynamicRootCount = 28
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
@@ -976,7 +976,7 @@ if (
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected 17 routes, one motion root, one scroll enhancement, one i18n runtime and seven catalog roots.`,
+    `Canonical dynamic root authority drifted: expected 18 routes, one motion root, one scroll enhancement, one i18n runtime and seven catalog roots.`,
   )
 }
 

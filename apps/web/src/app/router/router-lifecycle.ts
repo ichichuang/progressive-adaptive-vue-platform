@@ -825,6 +825,7 @@ export async function createAndReadyRouter(input: {
       case 'responsive-layout-inspector':
       case 'engineering-quality-inspector':
       case 'capability-roadmap':
+      case 'capability-roadmap-standalone':
         break
       default:
         return undefined

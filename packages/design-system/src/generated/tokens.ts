@@ -28,6 +28,7 @@ export const tokens = {
   'color.text.on-status.warning': 'var(--ui-color-text-on-status-warning)',
   'color.text.primary': 'var(--ui-color-text-primary)',
   'color.text.secondary': 'var(--ui-color-text-secondary)',
+  'interaction.border.width': 'var(--ui-border-width)',
   'interaction.control.height': 'var(--ui-control-height)',
   'interaction.motion.duration': 'var(--ui-motion-duration)',
   'interaction.motion.easing': 'var(--ui-motion-easing)',

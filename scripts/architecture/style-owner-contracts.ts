@@ -92,12 +92,6 @@ export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>
       lang: 'css',
     },
   ],
-  'apps/web/src/pages/capabilities.vue': [
-    {
-      scoped: true,
-      lang: 'css',
-    },
-  ],
   'apps/web/src/pages/index.vue': [
     {
       scoped: true,
@@ -441,7 +435,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/pages/appearance.vue',
     block: 0,
     context: [],
-    selector: ":global(html[data-motion='reduced']) .pavp-appearance-feedback__message",
+    selector: "html[data-motion='reduced'] .pavp-appearance-feedback__message",
     responsibility: 'PRIVATE_INTERACTION_MOTION',
     declarations: [
       ['animation-name', 'pavp-setting-commit-reduced', false],
@@ -452,7 +446,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/pages/appearance.vue',
     block: 0,
     context: [],
-    selector: ":global(html[data-motion='none']) .pavp-appearance-feedback__message",
+    selector: "html[data-motion='none'] .pavp-appearance-feedback__message",
     responsibility: 'PRIVATE_INTERACTION_MOTION',
     declarations: [['animation', 'none', false]],
   },
@@ -460,7 +454,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/pages/appearance.vue',
     block: 0,
     context: ['@media (prefers-reduced-motion: reduce)'],
-    selector: ":global(html[data-motion='full']) .pavp-appearance-feedback__message",
+    selector: "html[data-motion='full'] .pavp-appearance-feedback__message",
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
     declarations: [
       ['animation-name', 'pavp-setting-commit-reduced', false],
@@ -1186,6 +1180,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     selector: '.pavp-admin-shell',
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
     declarations: [
+      ['block-size', '100vh', false],
       ['--pavp-safe-area-top', 'env(safe-area-inset-top, 0px)', false],
       ['--pavp-safe-area-right', 'env(safe-area-inset-right, 0px)', false],
       ['--pavp-safe-area-bottom', 'env(safe-area-inset-bottom, 0px)', false],
@@ -1193,6 +1188,14 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['container-name', 'pavp-admin-shell', false],
       ['container-type', 'inline-size', false],
     ],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: ['@supports (height: 100dvh)'],
+    selector: '.pavp-admin-shell',
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+    declarations: [['block-size', '100dvh', false]],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
@@ -1255,6 +1258,34 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [
       ['opacity', '1', false],
       ['transform', 'translateY(-50%) scale(1)', false],
+    ],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-admin-shell__header',
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+    declarations: [
+      [
+        'min-block-size',
+        'calc(var(--ui-layout-admin-header-block-size) + var(--pavp-safe-area-top))',
+        false,
+      ],
+    ],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: [],
+    selector: ".pavp-admin-shell[data-header='false'] .pavp-admin-shell__content-inner",
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+    declarations: [
+      [
+        'padding-block-start',
+        'max(var(--ui-space-section-block), var(--pavp-safe-area-top))',
+        false,
+      ],
     ],
   },
   {
@@ -1781,6 +1812,19 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'packages/ui/src/components/UiScrollArea.vue',
     block: 0,
     context: [],
+    selector: ".pavp-scroll-area__content[data-main-content='true']",
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+    declarations: [
+      ['display', 'flex', false],
+      ['flex-direction', 'column', false],
+      ['min-block-size', '100%', false],
+      ['min-inline-size', '0', false],
+    ],
+  },
+  {
+    path: 'packages/ui/src/components/UiScrollArea.vue',
+    block: 0,
+    context: [],
     selector: '.pavp-scroll-area__content',
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
     declarations: [
@@ -1928,7 +1972,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     declarations: [
       [
         '--workspace-hover-surface',
-        'color-mix(\n    in srgb,\n    var(--ui-admin-navigation-selected) 6%,\n    transparent\n  )',
+        'color-mix(\n    in srgb,\n    var(--ui-admin-navigation-selected) 12%,\n    transparent\n  )',
         false,
       ],
     ],
@@ -1968,6 +2012,41 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['opacity', '0', false],
       ['pointer-events', 'none', false],
     ],
+  },
+  {
+    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
+    block: 0,
+    context: [],
+    selector:
+      '.pavp-workspace-tabs__item:hover > .pavp-workspace-tabs__hover,\n.pavp-workspace-tabs__item:focus-within > .pavp-workspace-tabs__hover',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['opacity', '0.6', false]],
+  },
+  {
+    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-workspace-tabs__item:has(> button:active) > .pavp-workspace-tabs__hover',
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['opacity', '1', false]],
+  },
+  {
+    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
+    block: 0,
+    context: [],
+    selector: ".pavp-workspace-tabs:not([data-motion='none']) .pavp-workspace-tabs__hover",
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [
+      ['transition', 'opacity var(--ui-motion-duration) var(--ui-motion-easing)', false],
+    ],
+  },
+  {
+    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
+    block: 0,
+    context: [],
+    selector: ".pavp-workspace-tabs[data-motion='reduced'] .pavp-workspace-tabs__hover",
+    responsibility: 'PRIVATE_INTERACTION_MOTION',
+    declarations: [['transition-duration', 'calc(var(--ui-motion-duration) / 2)', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
@@ -2031,21 +2110,6 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['block-size', 'var(--ui-admin-focus-width)', false],
       ['background', 'var(--ui-admin-navigation-selected)', false],
       ['pointer-events', 'none', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
-    block: 0,
-    context: [],
-    selector:
-      ".pavp-workspace-tabs__item[data-closable='true']\n  .pavp-workspace-tabs__tab\n  .pavp-workspace-tabs__hover",
-    responsibility: 'PRIVATE_INTERACTION_MOTION',
-    declarations: [
-      [
-        'inset-inline-end',
-        'calc(var(--ui-layout-target-enhanced-minimum-inline-size) * -1)',
-        false,
-      ],
     ],
   },
   {
@@ -2988,6 +3052,13 @@ export const styleAtRuleOwners: readonly {
   readonly params: string
   readonly occurrences?: number
 }[] = [
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: [],
+    name: 'supports',
+    params: '(height: 100dvh)',
+  },
   {
     path: 'apps/web/src/pages/appearance.vue',
     block: 0,

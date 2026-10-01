@@ -6,6 +6,10 @@ import {
   type LayoutRegistryRecord,
 } from '@platform/design-system'
 import {
+  Comment,
+  Fragment,
+  Text,
+  isVNode,
   computed,
   h,
   inject,
@@ -14,6 +18,8 @@ import {
   onMounted,
   ref,
   watch,
+  type FunctionalComponent,
+  type Slot,
   type HTMLAttributes,
   type VNodeChild,
 } from 'vue'
@@ -33,12 +39,13 @@ import type {
   UiAdminNavigationExpansionUpdate,
   UiAdminNavigationGroup,
   UiAdminShellCopy,
+  UiShellComposition,
 } from './contracts'
 
 defineOptions({ name: 'UiAdminShell' })
 
 const props = defineProps<{
-  readonly enabled: boolean
+  readonly composition: UiShellComposition | null
   readonly wideNavigationCollapsed: boolean
   readonly expandedNavigationGroupIds: readonly string[]
   readonly copy: UiAdminShellCopy
@@ -54,9 +61,37 @@ const emit = defineEmits<{
 }>()
 
 defineSlots<{
+  footer?: (props: Readonly<Record<string, never>>) => unknown
   workspace: (props: Readonly<Record<string, never>>) => unknown
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
+
+const enabled = computed(() => props.composition !== null)
+const administration = computed(() => props.composition?.startsWith('admin-') === true)
+const hasHeader = computed(
+  () => administration.value || props.composition?.startsWith('header-') === true,
+)
+
+function hasFooterContent(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(hasFooterContent)
+  if (!isVNode(value)) return typeof value === 'string' && value.trim().length > 0
+  if (value.type === Comment) return false
+  if (value.type === Fragment || value.type === Text) return hasFooterContent(value.children)
+  return true
+}
+
+// Invoke the application slot during render; components own whether their output is meaningful.
+const ShellFooter: FunctionalComponent<{ content: Slot | undefined }> = ({ content: render }) => {
+  if (props.composition?.endsWith('-footer') !== true) return null
+  const content = render?.({})
+  return hasFooterContent(content)
+    ? h(
+        'footer',
+        { class: 'mt-auto shrink-0', 'data-shell-region': 'architecture-console-footer' },
+        content,
+      )
+    : null
+}
 
 const injectedAppearance = inject(pavpNaiveAppearanceKey)
 
@@ -496,15 +531,21 @@ function updateResponsiveNavigationMetrics(inlineSize = currentShellInlineSize):
 }
 
 function updateDocumentScrollLock(): void {
-  document.documentElement.style.overflow = props.enabled ? 'hidden' : rootOverflow
-  document.body.style.overflow = props.enabled ? 'hidden' : bodyOverflow
-  if (!props.enabled) {
-    focusReturnTarget = null
-    navigationOpen.value = false
-  }
+  document.documentElement.style.overflow = enabled.value ? 'hidden' : rootOverflow
+  document.body.style.overflow = enabled.value ? 'hidden' : bodyOverflow
 }
 
-watch(() => props.enabled, updateDocumentScrollLock, { flush: 'post' })
+watch(enabled, updateDocumentScrollLock, { flush: 'post' })
+watch(
+  administration,
+  (active) => {
+    if (!active) {
+      focusReturnTarget = null
+      navigationOpen.value = false
+    }
+  },
+  { flush: 'sync' },
+)
 
 onMounted(() => {
   const target = shell.value
@@ -539,6 +580,7 @@ onBeforeUnmount(() => {
 
 watch(navigationOpen, async (isOpen) => {
   await nextTick()
+  if (!administration.value || isOpen !== navigationOpen.value) return
 
   if (isOpen) {
     drawerClose.value?.focus()
@@ -560,17 +602,18 @@ watch(
 <template>
   <div
     ref="shell"
-    :class="enabled ? 'pavp-admin-shell' : 'pavp-admin-shell-document'"
+    :class="enabled ? 'pavp-admin-shell flex flex-col min-w-0' : 'pavp-admin-shell-document'"
+    :data-header="hasHeader"
     :data-layout-profile="enabled ? profile : undefined"
     :data-navigation-collapsed="persistentNavigationCollapsed ? 'true' : 'false'"
   >
     <header
-      v-if="enabled"
-      class="pavp-admin-shell__header h-admin-header"
+      v-if="hasHeader"
+      class="pavp-admin-shell__header shrink-0 h-admin-header"
       data-shell-region="architecture-console-header"
     >
       <button
-        v-if="profile === 'narrow'"
+        v-if="administration && profile === 'narrow'"
         ref="navigationTrigger"
         :aria-label="copy.openNavigationLabel"
         class="pavp-admin-shell__action min-h-target-enhanced min-w-target-enhanced"
@@ -584,7 +627,7 @@ watch(
         <strong>{{ copy.consoleTitle }}</strong>
       </div>
       <div
-        v-if="profile === 'wide'"
+        v-if="administration && profile === 'wide'"
         class="pavp-admin-shell__header-actions flex items-center gap-content-gap"
       >
         <NTooltip
@@ -683,14 +726,16 @@ watch(
     </header>
 
     <NLayout
-      :class="enabled ? 'pavp-admin-shell__layout' : 'pavp-admin-shell__document-layout'"
+      :class="
+        enabled ? 'pavp-admin-shell__layout flex-1 min-h-0' : 'pavp-admin-shell__document-layout'
+      "
       :content-style="persistentLayoutContentStyle"
       data-pavp-admin-navigation="persistent"
-      :has-sider="enabled && profile !== 'narrow'"
+      :has-sider="administration && profile !== 'narrow'"
       :native-scrollbar="true"
     >
       <NLayoutSider
-        v-if="enabled && profile !== 'narrow'"
+        v-if="administration && profile !== 'narrow'"
         bordered
         class="pavp-admin-shell__sidebar"
         :collapsed="persistentNavigationCollapsed"
@@ -739,26 +784,31 @@ watch(
 
       <div
         :class="enabled ? 'pavp-admin-shell__workspace' : undefined"
-        :inert="enabled && profile === 'narrow' && navigationOpen"
+        :inert="administration && profile === 'narrow' && navigationOpen"
       >
         <slot
-          v-if="enabled"
+          v-if="administration"
           name="workspace"
         />
         <div
           :role="enabled ? 'main' : undefined"
-          :class="enabled ? 'pavp-admin-shell__content min-w-admin-content' : undefined"
+          :class="enabled ? 'pavp-admin-shell__content min-w-0' : undefined"
           :data-scroll-owner="enabled ? 'architecture-console-content' : undefined"
           :data-shell-region="enabled ? 'architecture-console-content' : undefined"
-          :inert="enabled && profile === 'narrow' && navigationOpen"
+          :inert="administration && profile === 'narrow' && navigationOpen"
         >
           <UiScrollArea
             owner-id="architecture-console-content"
             :enabled="enabled"
             @controller="emit('content-scroll-controller', $event)"
           >
-            <div :class="enabled ? 'pavp-admin-shell__content-inner' : undefined">
+            <div
+              :class="
+                enabled ? 'pavp-admin-shell__content-inner flex flex-col flex-1 min-w-0' : undefined
+              "
+            >
               <slot />
+              <ShellFooter :content="$slots['footer']" />
             </div>
           </UiScrollArea>
         </div>
@@ -768,7 +818,7 @@ watch(
     <Teleport to="#pavp-overlay-root">
       <Transition name="pavp-admin-drawer">
         <div
-          v-if="enabled && profile === 'narrow' && navigationOpen"
+          v-if="administration && profile === 'narrow' && navigationOpen"
           class="pavp-admin-shell__drawer-layer"
           data-shell-region="architecture-console-navigation-overlay"
           @pointerdown="handleDrawerScrimPointerDown($event)"
@@ -837,13 +887,19 @@ watch(
   --pavp-safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --pavp-safe-area-left: env(safe-area-inset-left, 0px);
   position: relative;
-  min-block-size: 100dvh;
+  block-size: 100vh;
   overflow: hidden;
   color: var(--ui-color-text-primary);
   background-color: var(--ui-admin-ambient-canvas);
   container-name: pavp-admin-shell;
   container-type: inline-size;
   isolation: isolate;
+}
+
+@supports (height: 100dvh) {
+  .pavp-admin-shell {
+    block-size: 100dvh;
+  }
 }
 
 .pavp-admin-shell::before {
@@ -888,6 +944,7 @@ watch(
 }
 
 .pavp-admin-shell__header {
+  min-block-size: calc(var(--ui-layout-admin-header-block-size) + var(--pavp-safe-area-top));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -913,7 +970,6 @@ watch(
 
 .pavp-admin-shell__layout {
   min-inline-size: 0;
-  block-size: calc(100dvh - var(--ui-layout-admin-header-block-size) - var(--pavp-safe-area-top));
   background: transparent;
 }
 
@@ -1056,13 +1112,16 @@ watch(
 }
 
 .pavp-admin-shell__content-inner {
-  display: grid;
   gap: var(--ui-space-section-block);
   inline-size: 100%;
   padding-block: var(--ui-space-section-block)
     max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
   padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
     max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
+}
+
+.pavp-admin-shell[data-header='false'] .pavp-admin-shell__content-inner {
+  padding-block-start: max(var(--ui-space-section-block), var(--pavp-safe-area-top));
 }
 
 .pavp-admin-shell__drawer-navigation {

@@ -5,6 +5,7 @@ import {
   type UiAdminNavigationExpansionUpdate,
   type UiAdminNavigationGroup,
   type UiScrollController,
+  type UiShellComposition,
 } from '@platform/ui'
 import { computed, inject, nextTick, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
@@ -36,10 +37,11 @@ defineOptions({ name: 'ConsoleRouteFrame' })
 
 defineProps<{
   readonly activeRouteName: string
-  readonly shellRequired: boolean
+  readonly composition: UiShellComposition | null
 }>()
 
 defineSlots<{
+  footer?: (props: Readonly<Record<string, never>>) => unknown
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
 
@@ -296,7 +298,7 @@ async function navigate(routeName: string): Promise<void> {
 
 <template>
   <UiAdminShell
-    :enabled="shellRequired"
+    :composition="composition"
     :active-route-name="activeRouteName"
     :navigation="navigation"
     :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
@@ -322,6 +324,9 @@ async function navigate(routeName: string): Promise<void> {
         @close="closeWorkspace"
         @refresh="refreshWorkspace"
       />
+    </template>
+    <template #footer>
+      <slot name="footer" />
     </template>
     <slot />
   </UiAdminShell>

@@ -123,6 +123,7 @@ export function cssVariableForRole(role: TokenRoleMetadata): string {
   if (root === 'interaction') {
     const family = segments.shift()
     const namespace = {
+      border: 'border',
       control: 'control',
       motion: 'motion',
       radius: 'radius',

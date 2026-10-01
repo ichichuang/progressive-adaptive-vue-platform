@@ -1,4 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises'
+import { isDeepStrictEqual } from 'node:util'
 import { createRequire } from 'node:module'
 import { join, relative, resolve } from 'node:path'
 
@@ -723,6 +724,28 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     resolve(uiSourceDirectory, 'components/UiScrollArea.vue'),
     'utf8',
   )
+  const scrollTemplate = parseVueTemplate('UiScrollArea.vue', scrollSource)
+  if (typeof scrollTemplate === 'string') violations.push(scrollTemplate)
+  else {
+    const mainContentOwners: VueTemplateNode[] = []
+    walkVueElements(scrollTemplate.root, (element) => {
+      if (!hasAttributeOrBinding(element, 'data-main-content')) return
+      mainContentOwners.push(element)
+      const marker = element.props.find((property) =>
+        propertyTargetsName(property, 'data-main-content'),
+      )
+      if (
+        element.tag !== 'div' ||
+        staticAttribute(element, 'ref') !== 'content' ||
+        staticAttribute(element, 'class') !== 'pavp-scroll-area__content' ||
+        marker?.type !== 7 ||
+        marker.exp?.content !== "enabled && ownerId === 'architecture-console-content'"
+      )
+        violations.push('Main-content fill must bind directly to its enabled content owner.')
+    })
+    if (mainContentOwners.length !== 1)
+      violations.push('Scroll Area requires exactly one instance-local main-content marker.')
+  }
   const scrollContracts = sourceFile(
     'scroll-contracts.ts',
     await readFile(resolve(uiSourceDirectory, 'components/scroll-contracts.ts'), 'utf8'),
@@ -1145,7 +1168,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     )
   }
 
-  const productRoutes = routeRegistry.filter((record) => record.meta.layout === 'workspace')
+  const productRoutes = routeRegistry.filter((record) => record.meta.layout !== 'reading')
   const routeNameBySource = new Map(productRoutes.map((record) => [record.sourcePath, record.name]))
   const directConsumers = new Map<string, string[]>()
   const workspaceFrame = await readFile(
@@ -1153,6 +1176,53 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'utf8',
   )
   const shellScrollSource = await readFile(resolve(rootDirectory, uiAdminShellPath), 'utf8')
+  const shellContracts = sourceFile(
+    'contracts.ts',
+    await readFile(resolve(uiSourceDirectory, 'components/contracts.ts'), 'utf8'),
+  )
+  const compositionType = shellContracts.statements.find(
+    (node): node is ts.TypeAliasDeclaration =>
+      ts.isTypeAliasDeclaration(node) && node.name.text === 'UiShellComposition',
+  )
+  const compositionNames =
+    compositionType !== undefined && ts.isUnionTypeNode(compositionType.type)
+      ? compositionType.type.types.flatMap((node) =>
+          ts.isLiteralTypeNode(node) && ts.isStringLiteral(node.literal) ? [node.literal.text] : [],
+        )
+      : []
+  const shellRecord = registryRecords.find((record) => record.exportName === 'UiAdminShell')
+  if (
+    !exactSet(compositionNames, [
+      'admin-workspace',
+      'admin-workspace-footer',
+      'header-content',
+      'header-content-footer',
+      'content-footer',
+      'content-only',
+    ]) ||
+    !indexSource.includes('UiShellComposition,') ||
+    !isDeepStrictEqual(
+      shellRecord?.props.find((prop) => prop.name === 'composition'),
+      {
+        name: 'composition',
+        type: 'UiShellComposition | null',
+        required: true,
+        defaultValue: null,
+      },
+    ) ||
+    !isDeepStrictEqual(
+      shellRecord?.slots.find((slot) => slot.name === 'footer'),
+      {
+        name: 'footer',
+        slotPropsType: 'Readonly<Record<string, never>>',
+        required: false,
+      },
+    )
+  )
+    violations.push(
+      'UiAdminShell must expose the exact six compositions, required nullable input and optional application Footer through @platform/ui.',
+    )
+
   if (
     shellScrollSource.includes("import UiScrollArea from './UiScrollArea.vue'") &&
     shellScrollSource.includes('owner-id="architecture-console-content"')
@@ -1167,11 +1237,22 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   )
     directConsumers.set(
       'UiWorkspaceTabs',
-      productRoutes.map((route) => route.name),
+      productRoutes
+        .filter((route) => route.workspaceIdentityPolicyId !== null)
+        .map((route) => route.name),
     )
 
   for (const [sourcePath, routeName] of routeNameBySource) {
-    const pageSource = scriptContent(await readFile(resolve(rootDirectory, sourcePath), 'utf8'))
+    const pageSource =
+      scriptContent(await readFile(resolve(rootDirectory, sourcePath), 'utf8')) +
+      (['capability-roadmap', 'capability-roadmap-standalone'].includes(routeName)
+        ? scriptContent(
+            await readFile(
+              resolve(rootDirectory, 'apps/web/src/app/console/CapabilityRoadmapContent.vue'),
+              'utf8',
+            ),
+          )
+        : '')
 
     for (const importedName of importedNames(pageSource, '@platform/ui')) {
       const consumers = directConsumers.get(importedName) ?? []

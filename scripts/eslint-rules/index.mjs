@@ -109,7 +109,6 @@ const legacyErrorPages = new Set([
 const legacyBorderOwners = new Map([
   ...[...legacyErrorPages].map((path) => [path, 'section']),
   ['apps/web/src/app/errors/AppErrorBoundary.vue', 'section'],
-  ['apps/web/src/pages/capabilities.vue', 'article'],
   ['apps/web/src/pages/index.vue', 'a'],
   ['packages/ui/src/components/UiSection.vue', 'section'],
 ])

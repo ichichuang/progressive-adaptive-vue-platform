@@ -1,3 +1,11 @@
+export type UiShellComposition =
+  | 'admin-workspace'
+  | 'admin-workspace-footer'
+  | 'header-content'
+  | 'header-content-footer'
+  | 'content-footer'
+  | 'content-only'
+
 export interface UiAdminNavigationItem {
   readonly iconClass: string
   readonly label: string

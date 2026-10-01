@@ -4,5 +4,11 @@
     "lib": ["ES2022"],
     "types": ["node"]
   },
-  "include": ["project.config.ts", "uno.config.ts", "apps/*/vite.config.ts", "scripts/**/*.ts"]
+  "include": [
+    "project.config.ts",
+    "uno.config.ts",
+    "apps/*/vite.config.ts",
+    "apps/web/src/vite-env.d.ts",
+    "scripts/**/*.ts"
+  ]
 }
