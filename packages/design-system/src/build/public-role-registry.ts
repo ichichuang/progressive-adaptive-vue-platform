@@ -14,7 +14,7 @@ export interface UnoCssClassProjection {
   readonly allowedCssProperties: readonly [string, ...string[]]
 }
 
-interface UnoCssPropertySpecificProjection {
+interface UnoCssColorPropertySpecificProjection {
   readonly generatorKind: 'property-specific-exact-rule'
   readonly family: 'color'
   readonly key: string
@@ -23,6 +23,22 @@ interface UnoCssPropertySpecificProjection {
     ...{ readonly className: string; readonly cssProperty: 'background-color' | 'border-color' }[],
   ]
 }
+
+interface UnoCssContentSizePropertySpecificProjection {
+  readonly generatorKind: 'property-specific-exact-rule'
+  readonly family: 'content-size'
+  readonly key: 'admin-content'
+  readonly bindings: readonly [
+    { readonly className: 'min-w-admin-content'; readonly cssProperty: 'min-width' },
+    {
+      readonly className: 'grid-cols-auto-fit-admin-content'
+      readonly cssProperty: 'grid-template-columns'
+    },
+  ]
+}
+
+type UnoCssPropertySpecificProjection =
+  UnoCssColorPropertySpecificProjection | UnoCssContentSizePropertySpecificProjection
 
 export interface UnoCssContainerBoundaryContribution {
   readonly variantName: LayoutContainerVariantId
@@ -707,11 +723,16 @@ export const PublicRoleRegistry = {
       contrastEndpointId: null,
       alphaContractId: null,
       unocss: {
-        generatorKind: 'exact-rule',
+        generatorKind: 'property-specific-exact-rule',
         family: 'content-size',
         key: 'admin-content',
-        classes: ['min-w-admin-content'],
-        allowedCssProperties: ['min-width'],
+        bindings: [
+          { className: 'min-w-admin-content', cssProperty: 'min-width' },
+          {
+            className: 'grid-cols-auto-fit-admin-content',
+            cssProperty: 'grid-template-columns',
+          },
+        ],
       },
     },
     {
@@ -1544,7 +1565,7 @@ const publicRoleRecordSchema = z.strictObject({
   themePlaneApplicability: z.enum(['target-required-after-atomic-cutover', 'not-applicable']),
   contrastEndpointId: z.string().nullable(),
   alphaContractId: z.literal('alpha-scrim-viewport').nullable(),
-  unocss: z.discriminatedUnion('generatorKind', [
+  unocss: z.union([
     z.strictObject({
       generatorKind: z.literal('property-specific-exact-rule'),
       family: z.literal('color'),
@@ -1557,6 +1578,21 @@ const publicRoleRecordSchema = z.strictObject({
           }),
         )
         .min(1),
+    }),
+    z.strictObject({
+      generatorKind: z.literal('property-specific-exact-rule'),
+      family: z.literal('content-size'),
+      key: z.literal('admin-content'),
+      bindings: z.tuple([
+        z.strictObject({
+          className: z.literal('min-w-admin-content'),
+          cssProperty: z.literal('min-width'),
+        }),
+        z.strictObject({
+          className: z.literal('grid-cols-auto-fit-admin-content'),
+          cssProperty: z.literal('grid-template-columns'),
+        }),
+      ]),
     }),
     z.strictObject({
       generatorKind: z.enum(['exact-rule', 'theme-entry']),
@@ -1632,7 +1668,6 @@ const exactRuleContracts = {
   'color|--un-ring-color': 'ring',
   'color|color': 'text',
   'dimension|height': 'h',
-  'content-size|min-width': 'min-w',
   'shell-size|max-width': 'max-w',
   'shell-size|height': 'h',
   'shell-size|width': 'w',
@@ -1768,13 +1803,13 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    41,
+    40,
     'Exact UnoCSS rule count',
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'property-specific-exact-rule')
       .length,
-    4,
+    5,
     'Property-specific UnoCSS mapping count',
   )
   assertExactCount(
@@ -1838,6 +1873,14 @@ export function validatePublicRoleRegistry(
     }
 
     if (record.unocss.generatorKind === 'property-specific-exact-rule') {
+      if (record.unocss.family === 'content-size') {
+        if (record.id !== 'layout.admin.content.minimum-inline-size') {
+          throw new Error(`${record.id}: content-size bindings require the Admin content role.`)
+        }
+
+        continue
+      }
+
       const tone = record.id.slice('color.status.'.length)
 
       if (

@@ -506,11 +506,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     selector: '.pavp-capability-grid',
     declarations: [
       ['display', 'grid', false],
-      [
-        'grid-template-columns',
-        'repeat(\n    auto-fit,\n    minmax(var(--ui-layout-admin-content-minimum-inline-size), 1fr)\n  )',
-        false,
-      ],
       ['gap', 'var(--ui-space-content-gap)', false],
     ],
   },

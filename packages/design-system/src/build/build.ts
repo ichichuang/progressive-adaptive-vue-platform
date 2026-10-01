@@ -104,8 +104,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 14950,
-    expectedByteDelta: 11584,
+    expectedBytes: 15030,
+    expectedByteDelta: 11664,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -734,7 +734,12 @@ function validateUnoCssProjection(result: TokenBuildResult): string[] {
         mapping.bindings
           .map((binding) => ({
             className: binding.className,
-            declarations: { [binding.cssProperty]: `var(${mapping.cssVariable})` },
+            declarations: {
+              [binding.cssProperty]:
+                mapping.family === 'content-size' && binding.cssProperty === 'grid-template-columns'
+                  ? `repeat(auto-fit, minmax(var(${mapping.cssVariable}), 1fr))`
+                  : `var(${mapping.cssVariable})`,
+            },
             roleId: mapping.roleId,
           }))
           .sort((left, right) => compareCodePoints(left.className, right.className)),
@@ -3766,7 +3771,14 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
         assertInvariantEqual(
           declarations,
           Object.fromEntries(
-            properties.map((property) => [property, `var(${mapping.cssVariable})`]),
+            properties.map((property) => [
+              property,
+              mapping.generatorKind === 'property-specific-exact-rule' &&
+              mapping.family === 'content-size' &&
+              property === 'grid-template-columns'
+                ? `repeat(auto-fit, minmax(var(${mapping.cssVariable}), 1fr))`
+                : `var(${mapping.cssVariable})`,
+            ]),
           ),
           `${className} actual exact rule must bind its canonical public CSS variable`,
         )
@@ -3810,7 +3822,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
             : mapping.classes,
       )
       .sort(compareCodePoints),
-    'the actual platformPreset must generate all 55 registered public classes',
+    'the actual platformPreset must generate all 57 registered public classes',
   )
 
   const statusClasses = ['info', 'success', 'warning', 'error'].flatMap((tone) => [

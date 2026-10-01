@@ -584,7 +584,12 @@ export function unoCssProjection(result: TokenBuildResult): UnoCssProjection {
       for (const binding of mapping.bindings) {
         rules.push({
           className: binding.className,
-          declarations: { [binding.cssProperty]: `var(${mapping.cssVariable})` },
+          declarations: {
+            [binding.cssProperty]:
+              mapping.family === 'content-size' && binding.cssProperty === 'grid-template-columns'
+                ? `repeat(auto-fit, minmax(var(${mapping.cssVariable}), 1fr))`
+                : `var(${mapping.cssVariable})`,
+          },
           roleId: mapping.roleId,
         })
       }
@@ -672,7 +677,13 @@ export function formatUnoCssTheme(result: TokenBuildResult): string {
     .map((rule) => {
       const declarations = Object.entries(rule.declarations)
         .sort(([left], [right]) => compareCodePoints(left, right))
-        .map(([property, value]) => `      ${propertyName(property)}: ${stringLiteral(value)},`)
+        .map(([property, value]) => {
+          const declaration = `      ${propertyName(property)}: ${stringLiteral(value)},`
+
+          return declaration.length <= 100
+            ? declaration
+            : `      ${propertyName(property)}:\n        ${stringLiteral(value)},`
+        })
         .join('\n')
 
       return `  [

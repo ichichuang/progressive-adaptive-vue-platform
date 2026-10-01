@@ -41,7 +41,7 @@ const stableGeneratedHashes = {
   'packages/design-system/src/generated/tokens.ts':
     '2c4596a3f9c1e219ea8ff4d99cce4820accbc6b62232f567b637b950d9a7eb1d',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '6f15cd9b07d8e01d7625b88c40a188b58d9312b951be5474cb61b92dee75bb85',
+    '5642556fb6688bd685b8cc7f1b1b1446a43fb7cd7b24847967835f6fda58e237',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',

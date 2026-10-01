@@ -4517,7 +4517,7 @@ type UnoCssMappingRecord =
 
 | `id` | `kind` | `resolvedValue` | `cssVariable` | exact Uno projection |
 | --- | --- | --- | --- | --- |
-| `layout.admin.content.minimum-inline-size` | `content-size` | `20rem` | `--ui-layout-admin-content-minimum-inline-size` | `min-w-admin-content` / `min-width` |
+| `layout.admin.content.minimum-inline-size` | `content-size` | `20rem` | `--ui-layout-admin-content-minimum-inline-size` | `min-w-admin-content` / `min-width`; `grid-cols-auto-fit-admin-content` / `grid-template-columns`，逐属性合同见 §15 |
 | `layout.admin.drawer.maximum-inline-size` | `shell-size` | `20rem` | `--ui-layout-admin-drawer-maximum-inline-size` | `max-w-admin-drawer` / `max-width` |
 | `layout.admin.header.block-size` | `shell-size` | `3.5rem` | `--ui-layout-admin-header-block-size` | `h-admin-header` / `height` |
 | `layout.admin.sidebar.expanded-inline-size` | `shell-size` | `16rem` | `--ui-layout-admin-sidebar-expanded-inline-size` | `w-admin-sidebar-expanded` / `width` |
@@ -7972,6 +7972,8 @@ Owner 本次仅准入 `dimension.space.button-inline`：Build-only Dimension，�
 
 本次按 Node `24.15.0`、既有 `stableJson`、UTF-8、Canonical Ordering、末尾单个 LF 及 `node-zlib-gzip-sync` 全部参数独立测得 Manifest `294703` raw bytes、`14950` gzip bytes；相对前序 `14874` 增加 `76`，相对 `d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf` 的 `3366`-byte Baseline 为 `11584`。只同步 Build Contract 的当前 `expectedBytes` / `expectedByteDelta`，仍逐项精确比较；`32768`-byte Hard Limit、历史 Commit/Bytes/Accepted Result 和所有 Bundle Budget 不变。当前硬余量为 `17818` bytes；测量不构成 Runtime/Visual Acceptance。
 
+以上 Mapping 分类与字节测量保留为 Button Padding 增量的历史结果。§15 能力路线图网格前置修正后，当前 Exact / Property-specific Mapping 为 `40 / 5`，Class Projection 仍为 `52`，八族 Record Counts 与版本均不变；相同压缩参数下实测 Manifest 为 `295103` raw bytes、`15030` gzip bytes，比前序增加 `80` gzip bytes，相对 Canonical Baseline 的 Delta 为 `11664`，Hard Limit 余量为 `17738` bytes。
+
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
 
 ```text
@@ -10770,7 +10772,9 @@ UnoCSS Vite Plugin 使用全局模式并在应用入口显式导入 `virtual:uno
 
 UnoCSS 是从 §11.4 及 §13.12 当前 Public Role Registry 确定性生成的公共消费投影，不是 Token、Theme 或 Density Authority。`platformPreset` 的 Theme Entry、Exact Rule 和已准入 Semantic Shortcut 必须全部来自对应 Record 的 Mapping Metadata；本节不建立第二份 Mapping Authority。普通作者边界以 §15.6 为准；上方配置描述当前接入，未来原生 Layer 输出目标另由 §26 冻结，不表示已经实施。
 
-Theme、Effective Color Mode、Contrast 和 Density 只能改变稳定 Public CSS Variable 的值；不得改变 Public UnoCSS Class Name。每个 Public Role 只有一个范围明确的 Mapping Record：`exact-rule` / `theme-entry` 使用 Class List 与 Allowed CSS Property Set，§13.12 的 `property-specific-exact-rule` 从 Bindings 派生 Class/Property，§1.2B.1 的 `container-variant` 使用容器边界贡献而非虚构 Class List。Color、Spacing、Dimension、Typography Size、Content Width 与 z-index 在 Generic Family 会暴露额外 Property 时必须使用对应 Exact Rule。一个无法安全映射的 Public Role 必须导致 Generation Failure。
+Theme、Effective Color Mode、Contrast 和 Density 只能改变稳定 Public CSS Variable 的值；不得改变 Public UnoCSS Class Name。每个 Public Role 只有一个范围明确的 Mapping Record：`exact-rule` / `theme-entry` 使用 Class List 与 Allowed CSS Property Set，§13.12 与本节的 `property-specific-exact-rule` 从 Bindings 派生 Class/Property，§1.2B.1 的 `container-variant` 使用容器边界贡献而非虚构 Class List。Color、Spacing、Dimension、Typography Size、Content Width 与 z-index 在 Generic Family 会暴露额外 Property 时必须使用对应 Exact Rule。一个无法安全映射的 Public Role 必须导致 Generation Failure。
+
+Owner 本次只授权能力路线图网格的前置映射修正：既有 `layout.admin.content.minimum-inline-size` 保持唯一 Role、CSS Variable `--ui-layout-admin-content-minimum-inline-size`、Token 值和 Layout Record；其唯一 Mapping 改为 `property-specific-exact-rule`，Family 精确为 `content-size`，Key 精确为 `admin-content`。Bindings 按序且仅为 `min-w-admin-content` → `min-width`、`grid-cols-auto-fit-admin-content` → `grid-template-columns`；前者只输出 `var(--ui-layout-admin-content-minimum-inline-size)`，后者只输出 `repeat(auto-fit, minmax(var(--ui-layout-admin-content-minimum-inline-size), 1fr))`。该分支无可填写 Expression，不附带其他 CSS Property；§13.12 四个 Color-family Base Status Mapping 及其限制保持。分类计数由 41 Exact / 4 Property-specific 改为 40 / 5，7 Theme / 2 Container、54 Roles / 54 Mappings 不变，共 57 个公共 Class。生成、Manifest、Preset 与现有静态断言必须一致；当前 Manifest 精确压缩字节及 Delta 仅随该确定性映射变化重测，Hard Limit 不变。消费者只在现有 `/capabilities` 网格追加新 Class，删除原列定义及对应声明级 Debt，保留 `display:grid`、Gap、Padding、DOM 与其他行为。此授权仅覆盖该前置修正及静态验证，完成后保持未暂存；不激活后继工作，也不恢复或完成 §18.16 布局实施。
 
 Required Mapping Families：
 

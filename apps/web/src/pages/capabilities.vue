@@ -33,7 +33,7 @@ function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatus
     :description="t('capabilities.description')"
     :title="t('capabilities.title')"
   >
-    <div class="pavp-capability-grid">
+    <div class="pavp-capability-grid grid-cols-auto-fit-admin-content">
       <article
         v-for="record in capabilityManifest.records"
         :key="record.id"
@@ -63,10 +63,6 @@ function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatus
 <style scoped>
 .pavp-capability-grid {
   display: grid;
-  grid-template-columns: repeat(
-    auto-fit,
-    minmax(var(--ui-layout-admin-content-minimum-inline-size), 1fr)
-  );
   gap: var(--ui-space-content-gap);
 }
 

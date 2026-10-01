@@ -314,11 +314,19 @@ export const platformUnoMappings = [
   {
     roleId: 'layout.admin.content.minimum-inline-size',
     cssVariable: '--ui-layout-admin-content-minimum-inline-size',
-    generatorKind: 'exact-rule',
+    generatorKind: 'property-specific-exact-rule',
     family: 'content-size',
     key: 'admin-content',
-    classes: ['min-w-admin-content'],
-    allowedCssProperties: ['min-width'],
+    bindings: [
+      {
+        className: 'min-w-admin-content',
+        cssProperty: 'min-width',
+      },
+      {
+        className: 'grid-cols-auto-fit-admin-content',
+        cssProperty: 'grid-template-columns',
+      },
+    ],
   },
   {
     roleId: 'layout.admin.drawer.maximum-inline-size',
@@ -687,6 +695,13 @@ export const platformRules = [
     'gap-content-gap',
     {
       gap: 'var(--ui-space-content-gap)',
+    },
+  ],
+  [
+    'grid-cols-auto-fit-admin-content',
+    {
+      'grid-template-columns':
+        'repeat(auto-fit, minmax(var(--ui-layout-admin-content-minimum-inline-size), 1fr))',
     },
   ],
   [
