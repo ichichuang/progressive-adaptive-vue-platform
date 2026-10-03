@@ -76,6 +76,7 @@
   "i18n.message-load-failed": "无法加载语言资源，已保留原语言。",
   "i18n.commit-failed": "无法应用语言，已恢复原语言。",
   "capabilities.title": "能力状态",
+  "capabilities.openStandalone": "在新浏览器页打开独立视图",
   "capabilities.description": "状态与准入条件由生成清单只读投影提供。",
   "core-error.runtime-configuration-failure.title": "应用配置不可用",
   "core-error.runtime-configuration-failure.description": "无法验证安全启动所需的应用配置。",

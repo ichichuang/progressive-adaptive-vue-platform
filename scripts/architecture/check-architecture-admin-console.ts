@@ -776,7 +776,15 @@ const pageFactImportContract = new Map<string, readonly string[]>([
       '../shared/i18n',
     ],
   ],
-  ['apps/web/src/pages/capabilities.vue', ['../app/console/CapabilityRoadmapContent.vue']],
+  [
+    'apps/web/src/pages/capabilities.vue',
+    [
+      'vue',
+      '../app/console/CapabilityRoadmapContent.vue',
+      '../app/router/application-navigation',
+      '../shared/i18n',
+    ],
+  ],
   [
     'apps/web/src/pages/capabilities-standalone.vue',
     ['../app/console/CapabilityRoadmapContent.vue'],
@@ -6717,7 +6725,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   if (
-    canonicalWork !== 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION' ||
+    canonicalWork !== 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION' ||
     canonicalAuthority !== 'ARCHITECTURE_SECTION_9_4'
   ) {
     recordCurrentWorkViolation()
@@ -6811,7 +6819,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
     'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
-    'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+    'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -7693,7 +7701,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION' ||
+      workValues[0] !== 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION' ||
       authorityValues[0] !== 'ARCHITECTURE_SECTION_9_4'
     ) {
       recordCurrentWorkViolation()
@@ -7712,7 +7720,9 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
     allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
-    allCurrentWorkMarkers.some((value) => value !== 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION') ||
+    allCurrentWorkMarkers.some(
+      (value) => value !== 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+    ) ||
     allCurrentWorkAuthorityMarkers.some((value) => value !== 'ARCHITECTURE_SECTION_9_4')
   ) {
     recordCurrentWorkViolation()
@@ -8372,7 +8382,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -8490,7 +8500,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -9323,7 +9333,7 @@ function routeTransitionAcceptanceViolations(
         (match) =>
           match[1] !==
           (field === 'CURRENT_BOUNDED_WORK'
-            ? 'PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION'
+            ? 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION'
             : 'ARCHITECTURE_SECTION_9_4'),
       )
     ) {
@@ -9404,7 +9414,7 @@ function validateRouteTransitionAcceptanceGovernance(
   ])
   for (const [field, replacement, code] of [
     [
-      'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+      'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
       'CURRENT_BOUNDED_WORK=' + routeTransitionWorkPackage,
       'CURRENT_BOUNDED_WORK',
     ],
@@ -9870,7 +9880,7 @@ function runRouteTransitionAdmissionNegativeProbes(
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
           `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
         ),
     ],
@@ -10041,7 +10051,7 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
           `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
         ),
     ],
@@ -10952,7 +10962,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
@@ -10960,7 +10970,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
         'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
@@ -17774,6 +17784,422 @@ function overviewNavigationValid(source: string): boolean {
   )
 }
 
+function capabilityOpeningViolations(
+  pageSource: string,
+  contentSource: string,
+  standaloneSource: string,
+  probeSources?: Map<string, string>,
+): string[] {
+  const violations: string[] = []
+  const pageTemplate = vueSfcCompiler.parse(pageSource, { filename: 'capabilities.vue' }).descriptor
+    .template?.ast
+  const contentTemplate = vueSfcCompiler.parse(contentSource, {
+    filename: 'CapabilityRoadmapContent.vue',
+  }).descriptor.template?.ast
+  const standaloneTemplate = vueSfcCompiler.parse(standaloneSource, {
+    filename: 'capabilities-standalone.vue',
+  }).descriptor.template?.ast
+  if (
+    pageTemplate === undefined ||
+    contentTemplate === undefined ||
+    standaloneTemplate === undefined
+  )
+    return ['CAPABILITY_OPENING_TEMPLATE']
+  const scriptSource = scriptContent(pageSource)
+  const script = ts.createSourceFile('capabilities.ts', scriptSource, ts.ScriptTarget.Latest, true)
+  function recordOpeningProbe(id: string, node: ts.Node, replacement: string): void {
+    if (probeSources === undefined) return
+    const offset = pageSource.indexOf(scriptSource)
+    probeSources.set(
+      id,
+      pageSource.slice(0, offset + node.getStart()) +
+        replacement +
+        pageSource.slice(offset + node.getEnd()),
+    )
+  }
+  const initializers = topLevelVariableInitializers(script)
+  const importedNames = new Map<string, string>()
+  for (const statement of script.statements) {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      statement.importClause?.namedBindings === undefined ||
+      !ts.isNamedImports(statement.importClause.namedBindings)
+    )
+      continue
+    for (const binding of statement.importClause.namedBindings.elements)
+      importedNames.set(binding.propertyName?.text ?? binding.name.text, binding.name.text)
+  }
+  const entry = (name: string) =>
+    [...initializers].find(
+      ([, value]) =>
+        ts.isCallExpression(value) && value.expression.getText() === importedNames.get(name),
+    )
+  const navigation = entry('useApplicationNavigation')?.[0]
+  const activation = entry('useApplicationLinkActivation')
+  const activationOptions =
+    activation !== undefined && ts.isCallExpression(activation[1])
+      ? activation[1].arguments[0]
+      : undefined
+  const elements = collectShellTemplateElements(pageTemplate)
+  const anchors = elements.filter(({ node }) => node.tag === 'a')
+  const anchor = anchors[0]
+  const href =
+    anchor === undefined
+      ? undefined
+      : initializers.get(singleBoundExpression(anchor.node, 'href') ?? '')
+  const destination =
+    href !== undefined && ts.isCallExpression(href) ? href.arguments[0]?.getText() : undefined
+  const destinationValue = initializers.get(destination ?? '')
+  const destinationObject =
+    destinationValue === undefined ? undefined : unwrapExpression(destinationValue)
+  const click = anchor === undefined ? undefined : templateDirectives(anchor.node, 'on')[0]
+  const handler = topLevelCallables(script).get(
+    normalizeTemplateExpression(click?.exp?.content).replace(/\(\$event\)$/u, ''),
+  )
+  const handlerSource = handler?.getText() ?? ''
+  const callable =
+    handler !== undefined &&
+    (ts.isFunctionDeclaration(handler) ||
+      ts.isFunctionExpression(handler) ||
+      ts.isArrowFunction(handler))
+      ? handler
+      : undefined
+  const calls: ts.CallExpression[] = []
+  const awaits: ts.AwaitExpression[] = []
+  const returns: ts.ReturnStatement[] = []
+  function inspectActivation(node: ts.Node): void {
+    if (
+      node !== callable &&
+      (ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node))
+    )
+      return
+    if (ts.isCallExpression(node)) calls.push(node)
+    if (ts.isAwaitExpression(node)) awaits.push(node)
+    if (ts.isReturnStatement(node)) returns.push(node)
+    ts.forEachChild(node, inspectActivation)
+  }
+  if (callable !== undefined) inspectActivation(callable)
+  const activations = calls.filter((call) => call.expression.getText() === activation?.[0])
+  const activationCall = activations[0]
+  const resultName =
+    activationCall !== undefined && ts.isVariableDeclaration(activationCall.parent)
+      ? activationCall.parent.name.getText()
+      : activationCall?.getText()
+  const resultHandling = calls.find(
+    (call) =>
+      ts.isPropertyAccessExpression(call.expression) &&
+      call.expression.name.text === 'then' &&
+      call.expression.expression.getText() === resultName,
+  )
+  const handlingName =
+    resultHandling !== undefined && ts.isVariableDeclaration(resultHandling.parent)
+      ? resultHandling.parent.name.getText()
+      : resultHandling?.getText()
+  const returnedHandling =
+    resultHandling !== undefined &&
+    (returns.some((statement) => statement.expression?.getText() === handlingName) ||
+      (callable !== undefined &&
+        ts.isArrowFunction(callable) &&
+        callable.body.getText() === handlingName))
+  const awaitedHandling =
+    callable?.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) ===
+      true && awaits.some((expression) => expression.expression.getText() === resultName)
+  const translator = script.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])
+    .filter(
+      (declaration) =>
+        declaration.initializer !== undefined &&
+        ts.isCallExpression(declaration.initializer) &&
+        declaration.initializer.expression.getText() === importedNames.get('useConsoleI18n'),
+    )
+    .flatMap((declaration) =>
+      ts.isObjectBindingPattern(declaration.name) ? [...declaration.name.elements] : [],
+    )
+    .find((binding) => (binding.propertyName ?? binding.name).getText() === 't')
+    ?.name.getText()
+  if (
+    navigation === undefined ||
+    activation === undefined ||
+    activationOptions === undefined ||
+    !ts.isObjectLiteralExpression(activationOptions) ||
+    objectPropertyInitializer(activationOptions, 'openIn')?.getText() !== "'new-page'" ||
+    anchors.length !== 1 ||
+    anchor === undefined ||
+    !anchor.ancestors.some((node) => templateDirectives(node, 'slot', 'actions').length === 1) ||
+    staticTemplateAttribute(anchor.node, 'target') !== '_blank' ||
+    staticTemplateAttribute(anchor.node, 'rel') !== 'noopener' ||
+    translator === undefined ||
+    !anchor.node.loc?.source.includes(`${translator}('capabilities.openStandalone')`) ||
+    href === undefined ||
+    !ts.isCallExpression(href) ||
+    href.expression.getText() !== `${navigation}.resolveHref` ||
+    destinationObject === undefined ||
+    !ts.isObjectLiteralExpression(destinationObject) ||
+    objectPropertyInitializer(destinationObject, 'name')?.getText() !==
+      "'capability-roadmap-standalone'" ||
+    templateDirectives(anchor.node, 'on').length !== 1 ||
+    click?.arg?.content !== 'click' ||
+    click.modifiers?.length !== 0 ||
+    activationCall === undefined ||
+    activations.length !== 1 ||
+    activationCall.arguments[0]?.getText() !== callable?.parameters[0]?.name.getText() ||
+    activationCall.arguments[1]?.getText() !== destination ||
+    (!returnedHandling && !awaitedHandling) ||
+    awaits.some(
+      (expression) =>
+        expression.getStart() < activationCall.getStart() &&
+        expression.expression !== activationCall,
+    ) ||
+    /\b(?:window|RouterLink|useLink)\b|\.(?:navigate|push|replace|assign|open)\s*\(/u.test(
+      scriptContent(pageSource),
+    )
+  )
+    violations.push('CAPABILITY_OPENING_ANCHOR')
+
+  const status = elements.filter(({ node }) => staticTemplateAttribute(node, 'role') === 'status')
+  const feedbackArgument = status[0]?.node.loc?.source
+    .split(`${translator ?? ''}(`)[1]
+    ?.split(')')[0]
+    ?.trim()
+  const resultCallback = resultHandling?.arguments[0]
+  const feedbackCallback =
+    resultCallback !== undefined && ts.isIdentifier(resultCallback)
+      ? topLevelCallables(script).get(resultCallback.text)
+      : resultCallback
+  const awaitedResult = awaits.find((expression) => expression.expression.getText() === resultName)
+  const returnedResult = returns.find(
+    (statement) => statement.expression?.getText() === handlingName,
+  )
+  if (returnedResult?.expression !== undefined)
+    recordOpeningProbe(
+      'detached-result',
+      returnedResult,
+      `void (${returnedResult.expression.getText()})`,
+    )
+  else if (returnedHandling && callable !== undefined && ts.isArrowFunction(callable))
+    recordOpeningProbe('detached-result', callable.body, `void (${callable.body.getText()})`)
+  else if (awaitedHandling && awaitedResult !== undefined)
+    recordOpeningProbe(
+      'detached-result',
+      awaitedResult,
+      `void (${awaitedResult.expression.getText()})`,
+    )
+  const feedbackFunction =
+    feedbackCallback !== undefined &&
+    (ts.isFunctionDeclaration(feedbackCallback) ||
+      ts.isFunctionExpression(feedbackCallback) ||
+      ts.isArrowFunction(feedbackCallback))
+      ? feedbackCallback
+      : undefined
+  const outcomeName =
+    feedbackFunction?.parameters[0]?.name.getText() ??
+    (awaitedResult !== undefined && ts.isVariableDeclaration(awaitedResult.parent)
+      ? awaitedResult.parent.name.getText()
+      : undefined)
+  const feedbackRoot = feedbackFunction?.body ?? (awaitedHandling ? callable.body : undefined)
+  const outcomes = [
+    {
+      kind: 'invalid-input',
+      reason: 'destination',
+      message: 'route-message.error-invalid-route-input',
+    },
+    {
+      kind: 'invalid-input',
+      reason: 'options',
+      message: 'route-message.error-application-route-failure',
+    },
+    {
+      kind: 'invocation-error',
+      reason: undefined,
+      message: 'route-message.error-application-route-failure',
+    },
+    { kind: 'requested', reason: undefined, message: undefined },
+  ] as const
+  const feedbackByOutcome = outcomes.map(() => new Set<string>())
+  let feedbackDispatchSupported = feedbackRoot !== undefined && outcomeName !== undefined
+  // This four-outcome proof only follows the public discriminants and message-key sink.
+  function feedbackCondition(
+    expression: ts.Expression,
+    outcome: (typeof outcomes)[number],
+  ): boolean | undefined {
+    const condition = unwrapExpression(expression)
+    if (
+      ts.isPrefixUnaryExpression(condition) &&
+      condition.operator === ts.SyntaxKind.ExclamationToken
+    ) {
+      const operand = feedbackCondition(condition.operand, outcome)
+      return operand === undefined ? undefined : !operand
+    }
+    if (!ts.isBinaryExpression(condition)) return undefined
+    if (
+      condition.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+      condition.operatorToken.kind === ts.SyntaxKind.BarBarToken
+    ) {
+      const left = feedbackCondition(condition.left, outcome)
+      const right = feedbackCondition(condition.right, outcome)
+      if (left === undefined || right === undefined) return undefined
+      return condition.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+        ? left && right
+        : left || right
+    }
+    const property = ts.isPropertyAccessExpression(condition.left)
+      ? condition.left
+      : condition.right
+    const literal = property === condition.left ? condition.right : condition.left
+    if (
+      !ts.isPropertyAccessExpression(property) ||
+      property.expression.getText() !== outcomeName ||
+      !ts.isStringLiteral(literal) ||
+      (property.name.text !== 'kind' && property.name.text !== 'reason')
+    )
+      return undefined
+    if (property.name.text === 'reason' && literal.text === 'destination') {
+      recordOpeningProbe(
+        'collapsed-invalid-input',
+        condition,
+        `${property.expression.getText()}.kind === 'invalid-input'`,
+      )
+      recordOpeningProbe('wrong-options-message', literal, "'options'")
+    }
+    if (property.name.text === 'kind' && literal.text === 'invocation-error') {
+      recordOpeningProbe('missing-invocation-message', literal, "'invalid-input'")
+      recordOpeningProbe(
+        'requested-message',
+        condition,
+        `(${condition.getText()} || ${property.expression.getText()}.kind === 'requested')`,
+      )
+    }
+    const equal = outcome[property.name.text] === literal.text
+    return condition.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+      ? equal
+      : condition.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken
+        ? !equal
+        : undefined
+  }
+  function inspectFeedbackDispatch(
+    node: ts.Node,
+    applicable: readonly number[],
+    sink = false,
+  ): void {
+    if (
+      applicable.length === 0 ||
+      (feedbackFunction === undefined &&
+        awaitedResult !== undefined &&
+        node.getEnd() <= awaitedResult.getEnd())
+    )
+      return
+    if (ts.isIfStatement(node) || ts.isConditionalExpression(node)) {
+      const condition = ts.isIfStatement(node) ? node.expression : node.condition
+      const matches = applicable.map((index) =>
+        feedbackCondition(condition, outcomes[index] ?? outcomes[0]),
+      )
+      if (matches.includes(undefined)) {
+        feedbackDispatchSupported = false
+        return
+      }
+      const yes = ts.isIfStatement(node) ? node.thenStatement : node.whenTrue
+      const no = ts.isIfStatement(node) ? node.elseStatement : node.whenFalse
+      inspectFeedbackDispatch(
+        yes,
+        applicable.filter((_, index) => matches[index] === true),
+        sink,
+      )
+      if (no !== undefined)
+        inspectFeedbackDispatch(
+          no,
+          applicable.filter((_, index) => matches[index] === false),
+          sink,
+        )
+      return
+    }
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      (node.left.getText() === feedbackArgument ||
+        node.left.getText() === `${feedbackArgument ?? ''}.value`)
+    ) {
+      inspectFeedbackDispatch(node.right, applicable, true)
+      return
+    }
+    if (sink) {
+      if (ts.isIdentifier(node) && node.text === 'undefined') return
+      if (!ts.isStringLiteral(node)) {
+        feedbackDispatchSupported = false
+        return
+      }
+      for (const index of applicable) feedbackByOutcome[index]?.add(node.text)
+      return
+    }
+    ts.forEachChild(node, (child) => {
+      inspectFeedbackDispatch(child, applicable)
+    })
+  }
+  if (feedbackRoot !== undefined)
+    inspectFeedbackDispatch(
+      feedbackRoot,
+      outcomes.map((_, index) => index),
+    )
+  if (
+    status.length !== 1 ||
+    translator === undefined ||
+    feedbackArgument === undefined ||
+    feedbackArgument.length === 0 ||
+    handlerSource.includes(`${translator}(`) ||
+    !feedbackDispatchSupported ||
+    outcomes.some(
+      (outcome, index) =>
+        !exactSet(
+          [...(feedbackByOutcome[index] ?? [])],
+          outcome.message === undefined ? [] : [outcome.message],
+        ),
+    )
+  )
+    violations.push('CAPABILITY_OPENING_FEEDBACK')
+
+  const contentChildren = (contentTemplate.children ?? []).filter((node) => node.type === 1)
+  const contentScript = ts.createSourceFile(
+    'content.ts',
+    scriptContent(contentSource),
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const slots = contentScript.statements
+    .filter(ts.isExpressionStatement)
+    .map((statement) => statement.expression)
+    .find(
+      (expression) =>
+        ts.isCallExpression(expression) && expression.expression.getText() === 'defineSlots',
+    )
+  const slotType =
+    slots !== undefined && ts.isCallExpression(slots) ? slots.typeArguments?.[0] : undefined
+  const action =
+    slotType !== undefined && ts.isTypeLiteralNode(slotType) ? slotType.members[0] : undefined
+  const standaloneElements = collectShellTemplateElements(standaloneTemplate)
+  if (
+    contentChildren[0]?.tag !== 'UiPageHeader' ||
+    contentChildren[1]?.tag !== 'slot' ||
+    staticTemplateAttribute(contentChildren[1], 'name') !== 'actions' ||
+    contentChildren[1].props?.length !== 1 ||
+    (contentChildren[1].children?.length ?? 0) !== 0 ||
+    contentChildren[2]?.tag !== 'UiSection' ||
+    action === undefined ||
+    !ts.isMethodSignature(action) ||
+    action.name.getText() !== 'actions' ||
+    (slotType !== undefined && ts.isTypeLiteralNode(slotType) && slotType.members.length !== 1) ||
+    action.questionToken === undefined ||
+    action.parameters.length !== 0 ||
+    standaloneElements.some(
+      ({ node }) => node.tag === 'a' || templateDirectives(node, 'slot').length !== 0,
+    ) ||
+    standaloneElements
+      .find(({ node }) => node.tag === 'CapabilityRoadmapContent')
+      ?.node.children?.some((node) => node.type === 1)
+  )
+    violations.push('CAPABILITY_OPENING_SLOT')
+  return violations
+}
+
 async function validateAppearanceAndPageFacts(): Promise<{
   readonly violations: string[]
   readonly factImportViolation: boolean
@@ -17783,12 +18209,14 @@ async function validateAppearanceAndPageFacts(): Promise<{
 }> {
   const violations: string[] = []
   const pageSources: string[] = []
+  const capabilitySources = new Map<string, string>()
   let factImportViolation = false
   let capabilityTemplate = ''
 
   for (const [path, expectedImports] of pageFactImportContract) {
     const source = await readFile(resolve(rootDirectory, path), 'utf8')
     const imports = importedModules(path, source)
+    capabilitySources.set(path, source)
     pageSources.push(source)
     if (!exactSet(imports, expectedImports)) {
       factImportViolation = true
@@ -17802,6 +18230,78 @@ async function validateAppearanceAndPageFacts(): Promise<{
     if (path.endsWith('/CapabilityRoadmapContent.vue')) {
       capabilityTemplate = templateContent(source)
     }
+  }
+
+  const capabilityPage = capabilitySources.get('apps/web/src/pages/capabilities.vue') ?? ''
+  const capabilityContent =
+    capabilitySources.get('apps/web/src/app/console/CapabilityRoadmapContent.vue') ?? ''
+  const standalonePage =
+    capabilitySources.get('apps/web/src/pages/capabilities-standalone.vue') ?? ''
+  const openingProbeSources = new Map<string, string>()
+  violations.push(
+    ...capabilityOpeningViolations(
+      capabilityPage,
+      capabilityContent,
+      standalonePage,
+      openingProbeSources,
+    ),
+  )
+  for (const [original, replacement, expected] of [
+    ['target="_blank"', 'target="_self"', 'CAPABILITY_OPENING_ANCHOR'],
+    ['rel="noopener"', 'rel="opener"', 'CAPABILITY_OPENING_ANCHOR'],
+    ['@click=', '@click.prevent=', 'CAPABILITY_OPENING_ANCHOR'],
+    ['role="status"', 'role="alert"', 'CAPABILITY_OPENING_FEEDBACK'],
+  ] as const) {
+    const changed = capabilityPage.replace(original, replacement)
+    if (
+      changed === capabilityPage ||
+      !capabilityOpeningViolations(changed, capabilityContent, standalonePage).includes(expected)
+    )
+      violations.push(`Capability opening ${original} negative probe did not fail for ${expected}.`)
+  }
+  for (const id of [
+    'detached-result',
+    'collapsed-invalid-input',
+    'wrong-options-message',
+    'missing-invocation-message',
+    'requested-message',
+  ]) {
+    const changedPage = openingProbeSources.get(id)
+    const expected =
+      id === 'detached-result' ? 'CAPABILITY_OPENING_ANCHOR' : 'CAPABILITY_OPENING_FEEDBACK'
+    if (
+      changedPage === undefined ||
+      changedPage === capabilityPage ||
+      !capabilityOpeningViolations(changedPage, capabilityContent, standalonePage).includes(
+        expected,
+      )
+    )
+      violations.push(`Capability opening ${id} negative probe did not fail for ${expected}.`)
+  }
+  for (const changedContent of [
+    capabilityContent.replace('actions?()', 'actions()'),
+    capabilityContent.replace('<slot name="actions" />', '<div><slot name="actions" /></div>'),
+  ]) {
+    if (
+      changedContent === capabilityContent ||
+      !capabilityOpeningViolations(capabilityPage, changedContent, standalonePage).includes(
+        'CAPABILITY_OPENING_SLOT',
+      )
+    )
+      violations.push('Capability opening optional unwrapped slot negative probe did not fail.')
+  }
+  for (const [locale, label] of [
+    ['zh-CN', '在新浏览器页打开独立视图'],
+    ['en', 'Open standalone view in a new browser page'],
+  ] as const) {
+    const catalog: unknown = JSON.parse(
+      await readFile(
+        resolve(rootDirectory, `apps/web/src/shared/i18n/messages/${locale}/common.json`),
+        'utf8',
+      ),
+    )
+    if (!isJsonObject(catalog) || catalog['capabilities.openStandalone'] !== label)
+      violations.push(`${locale}: capability standalone action label drifted.`)
   }
 
   const readBoundarySource = await readFile(

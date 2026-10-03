@@ -14,6 +14,10 @@ defineProps<{
   readonly message: string
 }>()
 
+defineSlots<{
+  actions?(): unknown
+}>()
+
 function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatusTone {
   if (status === 'ACTIVE') {
     return 'active'
@@ -29,6 +33,7 @@ function statusTone(status: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'): UiStatus
     :summary="message"
     :title="title"
   />
+  <slot name="actions" />
   <UiSection
     :description="t('capabilities.description')"
     :title="t('capabilities.title')"

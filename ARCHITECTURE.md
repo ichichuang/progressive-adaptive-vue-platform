@@ -115,7 +115,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -460,7 +460,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -575,7 +575,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1024,7 +1024,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1158,7 +1158,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1412,7 +1412,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3733,7 +3733,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3816,7 +3816,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -5446,7 +5446,7 @@ build
 check-bundle
 ```
 
-当前 Initial JS 预算由 §18.16 的 Owner 一次性调整授权更新为 `270336`（264 KiB）bytes gzip，最低预留仍为 `8192`，最大允许实测值为 `262144`；重定预算还须满足既有对齐公式及余量小于 `16384` 的条件。下方预算表为当前镜像；§18.11.11 的 `262144` 批准及各旧测量保持历史含义。
+当前 Initial JS 预算由 §9.4 的 Owner 一次性调整授权更新为 `278528`（272 KiB）bytes gzip，最低预留仍为 `8192`，最大允许实测值为 `270336`；重定预算还须满足既有对齐公式及余量小于 `16384` 的条件。下方预算表为当前镜像；§18.11.11 的 `262144`、§18.16.5 的 `270336` 批准及各旧测量保持历史含义。
 
 Active Bundle Budget Records 按 Canonical Generator 固定顺序：
 
@@ -5455,7 +5455,7 @@ Active Bundle Budget Records 按 Canonical Generator 固定顺序：
 | `generated-token-manifest-gzip` | `32768` | `bytes-gzip` |
 | `admin-navigation-motion-feature-javascript-gzip` | `49152` | `bytes-gzip` |
 | `initial-css-gzip` | `40960` | `bytes-gzip` |
-| `initial-javascript-gzip` | `270336` | `bytes-gzip` |
+| `initial-javascript-gzip` | `278528` | `bytes-gzip` |
 | `lazy-route-javascript-gzip` | `122880` | `bytes-gzip` |
 
 历史上 Owner 单独批准将 Initial JavaScript 预算从 `245760`（240 KiB）调整为 `253952`（248 KiB）gzip bytes；唯一配置权威仍为 `project.config.ts.bundleBudgets.initialJavaScriptGzipBytes`。最低 Headroom 保持 `8192`（8 KiB），因此最大允许实测 Initial JavaScript 为 `245760` bytes gzip。其他预算、既有 gzip/SHA 归一化、闭包计数、对齐公式与失败语义不变；§1.2B 各已完成导航包及 §23.6.9 的旧预算、批准和测量记录保留历史含义。当时预算同步授权只覆盖预算及其既有生成镜像和预算常量断言，不构成路由候选的实施或运行验收授权。当前已提交的路由核心源码事实另见 §9，当时的 Workspace 规格任务未修改任何预算、测量、配置或生成镜像，不改变 Current Work、Next、Successor 或 Release 状态。
@@ -5868,7 +5868,7 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` under §9.4; next and successor remain `NONE` |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` under §9.4; next and successor remain `NONE` |
 | TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12; seven current records |
 | API Transport | `DEFERRED` | required starter integration; `PAVP_API_TRANSPORT_IMPLEMENTATION` still requires exact real endpoint/origin/schema/policy/consumer/server-owner admission |
@@ -7354,12 +7354,14 @@ caller address / direct URL
 
 不安装自定义 `parseQuery` / `stringifyQuery`，不通过 `URLSearchParams` 覆盖重复值，不手写百分号编码或拼接 Path。Vue Router `5.2.0` 的普通 Named Routes、`RouteNamedMap`、`RouteRecordInfo.paramsRaw` / `.params`、`router.resolve` / `push` / `replace` 足够；当前官方文档中的 Experimental Resolver、Param Parser、Data Loader 不因此准入，§9.0.1 的唯一生成声明例外与依赖补丁保持不变。
 
-### Application current-page navigation entry
+### Application current-page and new-browser-page navigation entry
 
-Owner 在干净的 `main@dd4d749bdf0c2e2342174cb535de3ee92ba0590f` 上明确授权 `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` 的一次有界源码实施与本节必要原位修订；本节拥有当前任务，取代 §18.16 的 Current Work 标记。该授权不包含 Git 交付、新规格文件或后继能力，Next/Successor 保持 `NONE`。
+前序 `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` 已完成源码实施、静态验证、源码审查、限定 Owner 验收及 Git 交付，提交为 `001800c5d982cf28740e147c25f51c47460ef674`，发布到 `origin/main`。Owner 已接受总览普通链接、原生修饰键点击与复制链接，以及总览/侧栏/页签/独立页/浏览器返回交错时已观察的目的地与呈现一致性；不扩展为未观察缓存内部行为、任意输入、完整无障碍或发布验收。此前实施时的未验收与未授权 Git 状态是历史阶段，不能阻塞本次授权。
+
+Owner 在该提交的干净 `main` 上授权 `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` 的一次有界源码实施及本节原位合同更新。本节继续拥有当前任务；不另建规格，不授权 Git 交付或后继工作，Next/Successor 保持 `NONE`。
 
 ```text
-WORK_PACKAGE=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+WORK_PACKAGE=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED
 REPOSITORY_IMPLEMENTATION=COMPLETE
 STATIC_VERIFICATION=PASS
@@ -7369,28 +7371,58 @@ GIT_DELIVERY=NOT_AUTHORIZED
 RELEASE_STATUS=NOT_RELEASED
 ```
 
-唯一新增应用私有模块为 `apps/web/src/app/router/application-navigation.ts`。`RegisteredRouteDestination` 与 `TypedNavigationResult` 继续由 `route-input.ts` 拥有；`RouterNavigationOptions` 继续由 `router-lifecycle.ts` 拥有。公共消费函数为 `useApplicationNavigation()`，只提供以下视图，不导出 Router、Dispose 或工作区内部对象：
+预算修订前的候选已通过受影响源码 Lint、Vue 类型检查与 Canonical Build；当时 Initial JavaScript 为 `262204` bytes gzip，在不变的 `270336` bytes 预算下仅余 `8132` bytes，比 `8192` bytes 最低余量少 `60` bytes，`check:bundle` 因既有对齐/余量规则退出 `1`。同一产物的 Initial CSS 为 `33245` bytes gzip，预算 `40960`、余量 `7715` bytes；18 Route Roots 与 28 Dynamic Roots 集合保持。该候选因此未通过完整静态门槛；当时未运行已知无法通过的完整 `pnpm verify`，未提高预算、调整计量/Chunk、做压缩优化或删除必需行为。Tracked Generated Source 当时未变化；候选保持未暂存，容量处理等待 Owner 独立批准。
+
+Owner 随后明确批准本轮一次性预算修订：唯一配置 `project.config.ts.bundleBudgets.initialJavaScriptGzipBytes` 从 `264 * 1024`（`270336`）改为 `272 * 1024`（`278528`）；由原 `scripts/architecture/generate-engineering-manifest.ts` 同步 `apps/web/src/generated/engineering-manifest.ts` 的 `initial-javascript-gzip.limit`，同步既有两处当前预算固定断言及本文件当前镜像。该批准是预算增加，不是性能优化；不授权以后自动增加预算。`exactAlignedBundleBudget` 继续为 `ceil((measuredBytes + 8192) / 8192) * 8192`，保留 `currentInitialJavaScriptHardBudgetBytes=224 * 1024`、最低余量 `8192`、重定预算余量 `<16384`、原 gzip/SHA 归一化、计入范围及全部后续检查，不改生成器或生成一致性检查。
+
+同轮修正消费者的既有错误反馈分流并补准直接检查。修复后、预算同步前的实测为 `262203` bytes gzip，旧预算余量 `8133` bytes、缺口 `59` bytes；该次 Bundle 仍退出 `1`。预算同步后，最终候选已通过相关窄检查、真实 `pnpm check:arch`、新构建、完整 Bundle 检查与 `mise exec -- pnpm verify`（退出 `0`）。最终 Initial JavaScript 为 `262203` bytes gzip，预算 `278528`、余量 `16325` bytes，满足 `8192 <= headroom < 16384`；Initial CSS 为 `33245` bytes gzip，预算 `40960`、余量 `7715` bytes，18 Route Roots 与 28 Dynamic Roots 精确集合通过检查。Tracked Generated Source 仅有获批预算镜像变化；新入口的 Owner Runtime/Visual Acceptance 尚未执行，所有候选保持未暂存，Git Delivery 未授权。此前 `261829` 到 `262204` 的 `375` bytes 报告差值，与前序尚未完整归因的 `7765` bytes 差值分别保留，不混为本轮预算调整的性能收益。
+
+唯一应用导航入口仍为现有应用私有模块 `apps/web/src/app/router/application-navigation.ts`。`RegisteredRouteDestination` 与 `TypedNavigationResult` 继续由 `route-input.ts` 拥有；`RouterNavigationOptions` 继续由 `router-lifecycle.ts` 拥有。公共消费函数为 `useApplicationNavigation()`，只提供以下视图，不导出 Router、Dispose 或工作区内部对象：
 
 ```ts
-type ApplicationNavigationOptions = Pick<RouterNavigationOptions, 'replace'>
+type ApplicationNavigationOptions = Pick<RouterNavigationOptions, 'replace'> & {
+  readonly openIn?: 'current-page'
+}
+interface NewBrowserPageOptions {
+  readonly openIn: 'new-page'
+  readonly replace?: never
+}
+type BrowserPageOpenResult =
+  | { readonly kind: 'invalid-input'; readonly reason: 'destination' | 'options' }
+  | { readonly kind: 'invocation-error' }
+  | { readonly kind: 'requested'; readonly completion: 'unobservable' }
 interface ApplicationNavigation {
   navigate(
     destination: RegisteredRouteDestination,
     options?: ApplicationNavigationOptions,
   ): Promise<TypedNavigationResult>
+  navigate(
+    destination: RegisteredRouteDestination,
+    options: NewBrowserPageOptions,
+  ): Promise<BrowserPageOpenResult>
+  navigate(
+    destination: RegisteredRouteDestination,
+    options: ApplicationNavigationOptions | NewBrowserPageOptions,
+  ): Promise<TypedNavigationResult | BrowserPageOpenResult>
   resolveHref(destination: RegisteredRouteDestination): string | undefined
 }
 ```
 
-普通调用者直接传入名称与该 Route 已允许的 Params/Query/Hash，无需手动调用冻结辅助函数。`navigate` 只投影可选 `replace`，不能传播调用对象上的其他结构字段；默认 Push、显式 `replace: true` 替换当前 History Entry。直接返回同一 Coordinator 的原 Promise，不加 Async Wrapper、预解析、重复判定、预约、取消、第二次操作或结果转换。§9.11 的 Duplicate、Failure、Redirect、Cancel、Presentation、Focus/Scroll 与真实 Promise Rejection 完全保留。`resolveHref` 只返回 `resolveRegisteredDestination(router, destination)?.href`；无效为 `undefined`，无导航、Preload、Reservation、ID 分配、状态/History 写入或伪造 URL/导航结果。
+普通调用者直接传入名称与该 Route 已允许的 Params/Query/Hash，无需手动调用冻结辅助函数。省略 `openIn` 或显式 `current-page` 的 `navigate` 只投影可选 `replace`，不能传播调用对象上的其他结构字段；默认 Push、显式 `replace: true` 替换当前 History Entry。直接返回同一 Coordinator 的原 Promise，不加 Async Wrapper、预解析、重复判定、预约、取消、第二次操作或结果转换。§9.11 的 Duplicate、Failure、Redirect、Cancel、Presentation、Focus/Scroll 与真实 Promise Rejection 完全保留。`resolveHref` 只返回 `resolveRegisteredDestination(router, destination)?.href`；无效为 `undefined`，无导航、Preload、Reservation、ID 分配、状态/History 写入或伪造 URL/导航结果。
+
+`TypedNavigationResult` 保持原样；上述 Options/新页 Result 默认仅在模块内使用，真实消费者需要时才导出。实现使用真实 TypeScript Overload，不以类型断言掩盖返回类型。未知 Runtime `openIn` 返回 `invalid-input/options`；`new-page` 上只要存在 `replace`（包括 `false` 或 `undefined`）即在任何副作用前拒绝。新页分支不调用 Coordinator、Raw Router 导航、History、Workspace、源页 Focus/Presentation。它只经 `resolveRegisteredDestination` 获取 href，无效为 `invalid-input/destination`，不跳转错误页；有效输入在本次同步调用栈恰好执行一次 `window.open(href, '_blank', 'noopener')`，随后返回已解决 Promise。Catch 仅包围该 Browser Invocation；同步异常为 `invocation-error`，正常返回（含 null）均为 `requested/unobservable`。不保存/检查 Window，不推断拦截、加载完成、前台焦点或 tab/window 形式；不加 async wrapper、await/then 延迟、预载、动态导入、定时器、确认、空页预约、自动重试、原页 fallback、尺寸或窗口跟踪。
 
 `App.vue` setup 在既有 Router/Appearance 可用后创建恰好一个现有 `RouteTransitionCoordinator`，立即登记 App Scope Dispose，再调用同模块的 `provideApplicationNavigation` 提供上下文。Typed Injection Keys 只标识上下文，不持有全局 Runtime 实例。Frame 通过 `useWorkspaceNavigation()` 获取同实例的私有 `Pick<RouteTransitionCoordinator, 'navigate'>` 视图；普通页面只能消费公共视图及下述链接适配。缺失上下文明确失败，不静默创建实例。Frame 菜单使用公共入口，Activate/Close Fallback 保留原 `workspaceActivation` 与 Operation/目的地/实例/列表稳定性复核；其 Refresh、Scroll Controller Cleanup、Appearance/Motion 和非导航操作仍归 Frame。只迁移 Coordinator 创建/释放，不改 Kernel Stage、Provider Hierarchy、RouterView、KeepAlive、Layout Key 或缓存父链。Bootstrap、Guard、Recovery、History Back/Forward 和实现导航的底层 Push/Replace 留在原生命周期内，不能回调新入口。§1.2B.0N 的过渡与 §18.16.3 的跨布局 Bypass 继续作用于同一操作。
 
-首个页面消费者只改现有 Overview 能力链接，包括已显示的 `capability-roadmap-standalone`；保留 Nav/Anchor、标签、顺序、Class、Style 和地址集合。`router-console-projection.ts` 从既有 `RouteName` 和 `errorRouteRegistry` 派生产品 Route Name，并用真实错误路由排除谓词收窄；类型继续通过 `overviewProjection` 保留，不改变运行数据、不复制名称表、不强制断言目的地。当前产品路由仍只有既定空输入，不创造参数化示例。
+前序首个页面消费者为现有 Overview 能力链接，包括已显示的 `capability-roadmap-standalone`；保留 Nav/Anchor、标签、顺序、Class、Style 和地址集合。`router-console-projection.ts` 从既有 `RouteName` 和 `errorRouteRegistry` 派生产品 Route Name，并用真实错误路由排除谓词收窄；类型继续通过 `overviewProjection` 保留，不改变运行数据、不复制名称表、不强制断言目的地。当前产品路由仍只有既定空输入，不创造参数化示例。
 
-同一新模块的 `useApplicationLinkActivation()` 只返回消费公共入口的 Click Handler，不创建公共 UI Wrapper。同步读取 `event.currentTarget` 的真实 Anchor；已处理、不可取消、非主键、任一 Ctrl/Command/Shift/Alt、存在 Download 属性（含空值）、非 Self 的有效 Target 均保留原生行为。有效 Target 尊重 Anchor 的显式值及现有 Document Base Target，不新增 Document 配置。缺失/空 Href 或与当前纯解析地址不符时不接管；不从嵌套 `event.target` 推导 Anchor。合格普通激活（含原生 Enter）同步 PreventDefault，且只返回一次公共 Navigate 的原 Promise。只绑定 Click，不使用无条件 `.prevent`，不接管 Auxclick/Contextmenu/复制/中键/修饰键，不同时调用 RouterLink/useLink.navigate、原始 Router、Location 或回退导航。原生新页行为不代表托管浏览器页能力。
+同一模块的无参数 `useApplicationLinkActivation()` 只返回消费公共入口的 Click Handler，不创建公共 UI Wrapper。同步读取 `event.currentTarget` 的真实 Anchor；已处理、不可取消、非主键、任一 Ctrl/Command/Shift/Alt、存在 Download 属性（含空值）、非 Self 的有效 Target 均保留原生行为。有效 Target 尊重 Anchor 的显式值及现有 Document Base Target，不新增 Document 配置。缺失/空 Href 或与当前纯解析地址不符时不接管；不从嵌套 `event.target` 推导 Anchor。合格普通激活（含原生 Enter）同步 PreventDefault，且只返回一次公共 Navigate 的原 Promise。只绑定 Click，不使用无条件 `.prevent`，不接管 Auxclick/Contextmenu/复制/中键/修饰键，不同时调用 RouterLink/useLink.navigate、原始 Router、Location 或回退导航。原生新页行为不代表托管浏览器页能力。
 
-现有 Router/Admin Console Owning Checks 同步保护唯一创建/释放、共享公共/私有视图、Replace 隔离、纯解析、合格链接的一次导航与原生排除，以及未变的内部导航边界；保留有意义的现有 Negative Probes，不冻结私有变量名或固定调用点数。§9.12 仍拥有静态责任。Route Registry、Capability JSON、版本、脚本、预算和生成输入不变，不新增 Capability Record；只有实际获准输入变化时才由原生成器同步必要投影。显式新页/窗口管理、跨页通信、访问持久化、多记录工作区、返回栈、Auth、Storage Migration 与一般 Loading/Error Infrastructure 不在本任务内。保留既定依赖、18 Route Roots、28 Dynamic Roots、270336-byte Initial JavaScript 预算与原测量/余量规则；完整 `pnpm verify` 与新集成的 Owner 观察分别报告，所有候选留作未暂存。
+本次新增 `useApplicationLinkActivation({ openIn: 'new-page' })` 显式模式，返回 `Promise<BrowserPageOpenResult> | undefined` 的 Handler；无参数签名及 Overview 源码/绑定完全保留。两种模式共用已处理、不可取消、非主键、Ctrl/Command/Shift/Alt、非 Anchor、Download 属性的早期原生排除。显式新页模式在这些排除之后、检查 Managed Anchor 合同之前同步 PreventDefault，拒绝时不得漏回原生打开。真实 Anchor 必须显式声明 HTML ASCII 大小写不敏感的 `_blank` Target、含 `noopener` 的 ASCII 空白分隔且 ASCII 大小写不敏感 Rel Token，以及非空且与 Registered Destination 解析值完全一致的 Href；Target/Isolation 错误为 `invalid-input/options`，地址/Href 错误为 `invalid-input/destination`。有效时只调用一次公共 `navigate(destination, { openIn: 'new-page' })`；同步读取 currentTarget，不读嵌套 target 或 Await 后的 Event。原生复制、Contextmenu、Auxclick、中键与修饰键保持，不使用无条件 `.prevent` 或第二 opening API。
+
+唯一真实新页消费者为 `apps/web/src/pages/capabilities.vue`，地址是现有 `capability-roadmap-standalone` 并由公共 `resolveHref` 解析。`CapabilityRoadmapContent.vue` 仅在现有 UiPageHeader 后加入可选、typed、无参数 `actions` Slot；普通页提供一个 `target="_blank" rel="noopener"` Anchor 和本地 `role="status"` 反馈，独立页不提供 Slot、不产生空 Wrapper/留白或第二控件。保留 Props、组件名、标题、Manifest、Cards 与原 DOM 语义，不改 UiPageHeader 或创建公共 Wrapper。既有 zh-CN/en Common Catalog 新增 `capabilities.openStandalone`，分别为“在新浏览器页打开独立视图”与“Open standalone view in a new browser page”；`invalid-input/destination` 复用 `route-message.error-invalid-route-input`，`invalid-input/options` 与 `invocation-error` 复用 `route-message.error-application-route-failure`。状态只存 Message Key，渲染时翻译；每次接管的新尝试清除旧反馈，`requested/unobservable` 不宣告成功或拦截。消费者同步调用激活 Handler 后再处理结果，并返回结果处理 Promise，不能分离/吞掉错误。样式仅消费现有属性兼容语义 Utility 与结构 Utility，无新 Token、Mapping、Motion 或样式豁免。
+
+现有 Router/Admin Console Owning Checks 同步保护唯一创建/释放、共享公共/私有视图、Replace 隔离、纯解析、合格链接的一次导航与原生排除，以及未变的内部导航边界；同时保护 Overload、两个执行分支、同步一次隔离打开、准确 Outcome、无 Fallback、Managed Anchor 拒绝与真实消费者；保留有意义的现有 Negative Probes，不冻结私有变量名或固定调用点数。§9.12 仍拥有静态责任。Route Registry、Capability JSON、版本与脚本不变，不新增 Capability Record；本轮生成输入变化仅限上述明确批准的 Initial JavaScript 预算，由原生成器同步必要投影。除本节精确新页打开外，窗口复用/管理、任意外链、跨页通信、访问持久化、多记录工作区、返回栈、Auth、Storage Migration 与一般 Loading/Error Infrastructure 不在本任务内。共享 Workspace Storage 的跨页限制仍为已记录但未复现的风险，不宣称事故或隐式授权迁移。保留既定依赖、18 Route Roots、28 Dynamic Roots，Initial JavaScript 预算仅按本节独立批准调整为 278528 bytes，原测量/余量规则不变；完整 `pnpm verify` 与新集成的 Owner 观察分别报告，所有候选留作未暂存。
 
 ### Typed address and parsed input
 
@@ -12161,7 +12193,7 @@ Drawer/User Panel/Context Menu/Tooltip Open、Active Command Descendant、Invoke
 
 应保护的目标为：Modal-blocked Presentation 不成功；背景 inert 与模态锁各只有所属 Shell Writer；非模态不 inert Route；Menu 的稳定 ID/真实 Composite Relation/视觉当前一致且 Disabled 不执行；Panel 不为 menu；Transient State 不持久化；Navigation 不宣称不完整 Menu 语义；逻辑 Focus Fallback 存在；Route/Pop 关闭抑制旧 Invoker 回焦；Profile/Dispose/失效不遗留保护或旧 Completion。静态证据不能证明真实 Keyboard/Assistive Technology、Outside Pointer、Browser History、Forced Colors、Motion 或焦点不跳动；后续实现的 Owner Runtime Acceptance 独立报告，本次文档无需此验收。
 
-未来接线会进入 Startup Shell/Router，Initial JS 余量很窄；继续使用 `project.config.ts` 的§18.16 一次性批准后的硬预算 `270336`、最低预留 `8192`、有效上限 `262144` bytes gzip 与现有完整 Bundle Gate，不扩大预算或测量豁免。首次源码任务只可在独立授权后优先最小扩展现有边界；本合同不预准入依赖、通用 Overlay Library/Framework、Sass、新 UI 库或异步平台。
+未来接线会进入 Startup Shell/Router，Initial JS 余量很窄；继续使用 `project.config.ts` 的 §9.4 一次性批准后的硬预算 `278528`、最低预留 `8192`、有效上限 `270336` bytes gzip 与现有完整 Bundle Gate，不扩大预算或测量豁免。首次源码任务只可在独立授权后优先最小扩展现有边界；本合同不预准入依赖、通用 Overlay Library/Framework、Sass、新 UI 库或异步平台。
 
 本次只修改 `ARCHITECTURE.md` 及必要文内引用。不改 Router、Shell、Workspace Context Menu、Naive Adapter、UiProvider/Overlay Root、CSS、Registry、Token、Uno、Checker、Manifest/Lockfile、Project Config 或 Budget；不实施 User Dock/User Panel/Bottom Context Bar/Control Center，不搬迁 Breadcrumb，不定义 Auth/Session/Account，不开展 Workbench 视觉重设计，不创建 Test/Browser/Evidence，不启动 Dev Server，不部署或 Release。此冻结不授权自动续作。
 
@@ -12361,7 +12393,7 @@ Control Center 只可持有 Selected Section、Expand/Collapse、Pending Feedbac
 
 ### 18.15.12 Bundle 与本次交付边界
 
-后续 User Dock Trigger、Panel 快捷集成、Bottom Context Bar/Breadcrumb 会进入 Startup Shell，Initial JS 余量很窄。唯一预算权威仍是 `project.config.ts`：§18.16 一次性批准后的硬上限 `270336`、最低预留 `8192`、最大允许实测值 `262144` bytes gzip；全部现有 CSS/Route/Closure 预算及测量规则保持。Control Center 的完整设置内容不属于首绘必需，是合法 Lazy Route；不得把 Shell-critical Dock/Context Bar 正确性藏入伪 Dynamic Import 规避 Initial JS 检查。没有新增依赖、预算扩大或测量豁免。
+后续 User Dock Trigger、Panel 快捷集成、Bottom Context Bar/Breadcrumb 会进入 Startup Shell，Initial JS 余量很窄。唯一预算权威仍是 `project.config.ts`：§9.4 一次性批准后的硬上限 `278528`、最低预留 `8192`、最大允许实测值 `270336` bytes gzip；全部现有 CSS/Route/Closure 预算及测量规则保持。Control Center 的完整设置内容不属于首绘必需，是合法 Lazy Route；不得把 Shell-critical Dock/Context Bar 正确性藏入伪 Dynamic Import 规避 Initial JS 检查。没有新增依赖、预算扩大或测量豁免。
 
 本次只修改 `ARCHITECTURE.md` 和必要文内引用，不实施 Control Center、Route、Dock/Panel、Bottom/Breadcrumb、Appearance 迁移或 Store 结果透传；不改 Shell、UiPageHeader、Router/Workspace/Scroll/I18n、Layout Registry、Design System/UnoCSS/CSS、Checker、Manifest/Lockfile、Project Config。Auth/Session/Account/Organization、API、Backend 和业务页面继续独立延期。禁止 Browser、Dev Server、Test/Fixture/Mock/Storybook、截图/Trace/Evidence Artifact、部署或 Release。本合同不授权源码续作，文档工作不需要 Owner Runtime Acceptance。
 
@@ -12442,7 +12474,7 @@ Safe Area 仍只在 Shell 解析：有 H 时 Top 归 H，否则归 C；Bottom �
 
 ### 18.16.4 唯一新增真实消费者
 
-保留 `apps/web/src/pages/capabilities.vue` 对应的 `/capabilities`、`capability-roadmap`、其管理台布局、菜单及组件名 `CapabilityRoadmapPage`。目标新增入口只是同一真实能力路线图的独立阅读地址，不添加菜单产品、打开新浏览器页控件或示范页面。精确跨文件合同如下：
+保留 `apps/web/src/pages/capabilities.vue` 对应的 `/capabilities`、`capability-roadmap`、其管理台布局、菜单及组件名 `CapabilityRoadmapPage`。目标新增入口只是同一真实能力路线图的独立阅读地址，不添加菜单产品或示范页面；当时未包含新页控件，本次普通页的精确新页动作仅由 §9.4 另行准入。精确跨文件合同如下：
 
 | 目标字段/Owner | 值与责任 |
 | --- | --- |
@@ -16942,7 +16974,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17181,7 +17213,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17313,7 +17345,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17765,7 +17797,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18129,7 +18161,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS

@@ -1001,7 +1001,11 @@ function applicationNavigationContractViolations(source: string): string[] {
     object.properties.some((property) => property.name?.getText() === 'resolveHref'),
   )
   const methods = publicView?.properties.filter(ts.isMethodDeclaration) ?? []
-  const navigate = methods.find((method) => method.name.getText() === 'navigate')
+  const navigateBinding =
+    publicView === undefined ? undefined : objectPropertyValue(publicView, 'navigate')
+  const navigate = functions.find(
+    (node) => node.name?.text === navigateBinding?.getText() && node.body !== undefined,
+  )
   const href = methods.find((method) => method.name.getText() === 'resolveHref')
   const contract = nodesOf(parsed, ts.isInterfaceDeclaration).find(
     (node) => node.name.text === 'ApplicationNavigation',
@@ -1009,18 +1013,54 @@ function applicationNavigationContractViolations(source: string): string[] {
   const options = nodesOf(parsed, ts.isTypeAliasDeclaration).find(
     (node) => node.name.text === 'ApplicationNavigationOptions',
   )
+  const newPageOptions = nodesOf(parsed, ts.isInterfaceDeclaration).find(
+    (node) => node.name.text === 'NewBrowserPageOptions',
+  )
+  const openResult = nodesOf(parsed, ts.isTypeAliasDeclaration).find(
+    (node) => node.name.text === 'BrowserPageOpenResult',
+  )
+  const compact = (node: ts.Node | undefined): string =>
+    node?.getText().replaceAll(/\s/gu, '') ?? ''
+  const signature = (node: ts.SignatureDeclaration): string =>
+    `${node.parameters.map((parameter) => `${parameter.questionToken === undefined ? '' : '?'}:${compact(parameter.type)}`).join(',')}=>${node.type !== undefined && ts.isFunctionTypeNode(node.type) ? signature(node.type) : compact(node.type)}`
+  const expectedOverloads = [
+    ':RegisteredRouteDestination,?:ApplicationNavigationOptions=>Promise<TypedNavigationResult>',
+    ':RegisteredRouteDestination,:NewBrowserPageOptions=>Promise<BrowserPageOpenResult>',
+    ':RegisteredRouteDestination,:ApplicationNavigationOptions|NewBrowserPageOptions=>Promise<TypedNavigationResult|BrowserPageOpenResult>',
+  ]
   if (
-    !exactSet(contract?.members.map((member) => member.name?.getText() ?? '') ?? [], [
-      'navigate',
-      'resolveHref',
-    ]) ||
-    options?.type.getText().replaceAll(/\s/gu, '') !== "Pick<RouterNavigationOptions,'replace'>"
+    !exactSet(
+      [...new Set(contract?.members.map((member) => member.name?.getText() ?? '') ?? [])],
+      ['navigate', 'resolveHref'],
+    ) ||
+    compact(options?.type) !==
+      "Pick<RouterNavigationOptions,'replace'>&{readonlyopenIn?:'current-page'}" ||
+    compact(newPageOptions).replace(/^interfaceNewBrowserPageOptions/u, '') !==
+      "{readonlyopenIn:'new-page'readonlyreplace?:never}" ||
+    compact(openResult?.type) !==
+      "|{readonlykind:'invalid-input';readonlyreason:'destination'|'options'}|{readonlykind:'invocation-error'}|{readonlykind:'requested';readonlycompletion:'unobservable'}" ||
+    !isDeepStrictEqual(
+      contract?.members
+        .filter(ts.isMethodSignature)
+        .filter((member) => member.name.getText() === 'navigate')
+        .map(signature),
+      expectedOverloads,
+    ) ||
+    !isDeepStrictEqual(
+      functions
+        .filter((node) => node.name?.text === navigate?.name?.text && node.body === undefined)
+        .map(signature),
+      expectedOverloads,
+    ) ||
+    (navigate !== undefined && nodesOf(navigate, ts.isAsExpression).length !== 0)
   )
     violations.push(
-      'Application Navigation must expose only navigate/resolveHref and the existing replace-only options type.',
+      'Application Navigation must preserve the three typed overloads, replace-based discriminator options and exact browser outcomes.',
     )
 
-  const returnedNavigation = navigate?.body?.statements[0]
+  const returnedNavigation = [...(navigate?.body?.statements ?? [])]
+    .reverse()
+    .find(ts.isReturnStatement)
   const navigationCall =
     returnedNavigation !== undefined &&
     ts.isReturnStatement(returnedNavigation) &&
@@ -1032,7 +1072,7 @@ function applicationNavigationContractViolations(source: string): string[] {
   const optionObjects =
     forwarded === undefined ? [] : nodesOf(forwarded, ts.isObjectLiteralExpression)
   if (
-    navigate?.body?.statements.length !== 1 ||
+    navigate === undefined ||
     navigationCall === undefined ||
     !isDeepStrictEqual(memberPath(navigationCall.expression), [
       provider?.parameters[1]?.name.getText(),
@@ -1040,7 +1080,10 @@ function applicationNavigationContractViolations(source: string): string[] {
     ]) ||
     navigationCall.arguments[0]?.getText() !== navigate.parameters[0]?.name.getText() ||
     navigate.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) === true ||
-    nodesOf(navigate, ts.isCallExpression).length !== 1 ||
+    nodesOf(navigate, ts.isAwaitExpression).length !== 0 ||
+    nodesOf(navigate, ts.isCallExpression).filter((call) => callMemberName(call) === 'navigate')
+      .length !== 1 ||
+    returnedNavigation?.parent !== navigate.body ||
     optionObjects.length !== 1 ||
     !exactSet(
       optionObjects[0]?.properties.map((property) => property.name?.getText() ?? '') ?? [],
@@ -1063,6 +1106,138 @@ function applicationNavigationContractViolations(source: string): string[] {
   )
     violations.push(
       'Application Navigation must return the original coordinator Promise and project only replace, without preliminary work.',
+    )
+
+  const newPage = navigate?.body?.statements.find(
+    (statement): statement is ts.IfStatement =>
+      ts.isIfStatement(statement) &&
+      /\.openIn\s*===\s*['"]new-page['"]/u.test(statement.expression.getText()),
+  )
+  const newPageCalls =
+    newPage === undefined ? [] : nodesOf(newPage.thenStatement, ts.isCallExpression)
+  const open = newPageCalls.filter((call) =>
+    isDeepStrictEqual(memberPath(call.expression), ['window', 'open']),
+  )
+  const invocation = newPage === undefined ? undefined : nodesOf(newPage, ts.isTryStatement)[0]
+  const resolution = newPageCalls.find(
+    (call) =>
+      callMemberName(call) ===
+      namedImportLocalName(parsed, './route-input', 'resolveRegisteredDestination'),
+  )
+  const hrefName =
+    resolution !== undefined && ts.isPropertyAccessExpression(resolution.parent)
+      ? storedValuePath(resolution.parent)[0]
+      : undefined
+  const resultObjects =
+    newPage === undefined
+      ? []
+      : nodesOf(newPage, ts.isObjectLiteralExpression).map((object) => compact(object))
+  const outsideNewPageCalls =
+    navigate === undefined
+      ? []
+      : nodesOf(navigate, ts.isCallExpression).filter(
+          (call) =>
+            newPage === undefined || call.getStart() < newPage.getStart() || call.end > newPage.end,
+        )
+  const invalidMode = navigate?.body?.statements.find(
+    (statement): statement is ts.IfStatement =>
+      ts.isIfStatement(statement) && statement !== newPage,
+  )
+  const runtimeMode =
+    navigate === undefined
+      ? undefined
+      : nodesOf(navigate, ts.isVariableDeclaration).find(
+          (node) =>
+            compact(node.initializer) === `${navigate.parameters[1]?.name.getText() ?? ''}?.openIn`,
+        )
+  const modeExpression =
+    runtimeMode?.name.getText() ?? `${navigate?.parameters[1]?.name.getText() ?? ''}?.openIn`
+  const newPageGuards =
+    newPage === undefined ? [] : nodesOf(newPage.thenStatement, ts.isIfStatement)
+  const optionsGuard = newPageGuards.find((guard) =>
+    /['"]replace['"]\s+in\s+/u.test(guard.expression.getText()),
+  )
+  const destinationGuard = newPageGuards.find(
+    (guard) => compact(guard.expression) === `${hrefName ?? ''}===undefined`,
+  )
+  if (
+    newPage === undefined ||
+    resolution === undefined ||
+    !isDeepStrictEqual(
+      resolution.arguments.map((argument) => argument.getText()),
+      [provider?.parameters[0]?.name.getText(), navigate?.parameters[0]?.name.getText()],
+    ) ||
+    open.length !== 1 ||
+    !isDeepStrictEqual(
+      open[0]?.arguments.map((argument) => argument.getText()),
+      [hrefName, "'_blank'", "'noopener'"],
+    ) ||
+    invocation?.tryBlock.statements.length !== 1 ||
+    invocation.parent !== newPage.thenStatement ||
+    invocation.catchClause?.block.statements.length !== 1 ||
+    !ts.isExpressionStatement(open[0]?.parent ?? parsed) ||
+    open[0]?.parent.parent !== invocation.tryBlock ||
+    invocation.finallyBlock !== undefined ||
+    !compact(invocation.catchClause).includes("returnPromise.resolve({kind:'invocation-error'})") ||
+    ![
+      "{kind:'invalid-input',reason:'options'}",
+      "{kind:'invalid-input',reason:'destination'}",
+      "{kind:'invocation-error'}",
+      "{kind:'requested',completion:'unobservable'}",
+    ].every((result) => resultObjects.includes(result)) ||
+    optionsGuard === undefined ||
+    optionsGuard.end >= resolution.getStart() ||
+    !compact(optionsGuard).includes(
+      "returnPromise.resolve({kind:'invalid-input',reason:'options'})",
+    ) ||
+    destinationGuard === undefined ||
+    destinationGuard.end >= open[0].getStart() ||
+    !compact(destinationGuard).includes(
+      "returnPromise.resolve({kind:'invalid-input',reason:'destination'})",
+    ) ||
+    nodesOf(newPage, ts.isReturnStatement).some(
+      (statement) =>
+        statement.expression === undefined ||
+        !ts.isCallExpression(statement.expression) ||
+        !isDeepStrictEqual(memberPath(statement.expression.expression), ['Promise', 'resolve']),
+    ) ||
+    !ts.isBlock(newPage.thenStatement) ||
+    compact(newPage.thenStatement.statements.at(-1)) !==
+      "returnPromise.resolve({kind:'requested',completion:'unobservable'})" ||
+    navigate?.body?.statements.some(
+      (statement) =>
+        statement !== newPage &&
+        statement !== invalidMode &&
+        statement !== returnedNavigation &&
+        !(
+          ts.isVariableStatement(statement) &&
+          runtimeMode !== undefined &&
+          statement.declarationList.declarations.includes(runtimeMode)
+        ),
+    ) === true ||
+    newPageCalls.some(
+      (call) =>
+        call !== resolution &&
+        call !== open[0] &&
+        !isDeepStrictEqual(memberPath(call.expression), ['Promise', 'resolve']),
+    ) ||
+    outsideNewPageCalls.some(
+      (call) =>
+        call !== navigationCall &&
+        !isDeepStrictEqual(memberPath(call.expression), ['Promise', 'resolve']),
+    ) ||
+    invalidMode === undefined ||
+    compact(invalidMode.expression) !==
+      `${modeExpression}!==undefined&&${modeExpression}!=='current-page'` ||
+    !compact(invalidMode).includes(
+      "returnPromise.resolve({kind:'invalid-input',reason:'options'})",
+    ) ||
+    /\bawait\b|\.then\s*\(|\.catch\s*\(|\bsetTimeout\b|\bsetInterval\b|\brequestAnimationFrame\b|\.(?:focus|push|replace|assign|reload)\s*\(/u.test(
+      newPage.getText(),
+    )
+  )
+    violations.push(
+      'New browser pages must reject invalid options/destinations, synchronously invoke one isolated open and return only accurate unobservable outcomes without fallback.',
     )
 
   const returnedHref = href?.body?.statements[0]
@@ -1132,7 +1307,9 @@ function applicationNavigationContractViolations(source: string): string[] {
       'Application Navigation public and Frame-only views must share the coordinator and reject missing typed contexts.',
     )
 
-  const link = functions.find((node) => node.name?.text === 'useApplicationLinkActivation')
+  const link = functions.find(
+    (node) => node.name?.text === 'useApplicationLinkActivation' && node.body !== undefined,
+  )
   const handler = link === undefined ? undefined : nodesOf(link, ts.isArrowFunction)[0]
   const publicEntry =
     link === undefined
@@ -1143,13 +1320,27 @@ function applicationNavigationContractViolations(source: string): string[] {
   const linkCalls = handler === undefined ? [] : nodesOf(handler, ts.isCallExpression)
   const prevent = linkCalls.filter((call) => callMemberName(call) === 'preventDefault')
   const activation = linkCalls.filter((call) => callMemberName(call) === 'navigate')
+  const managed =
+    handler === undefined
+      ? undefined
+      : nodesOf(handler, ts.isIfStatement).find((statement) =>
+          /\.openIn\s*===\s*['"]new-page['"]/u.test(statement.expression.getText()),
+        )
+  const managedActivation =
+    managed === undefined
+      ? undefined
+      : nodesOf(managed, ts.isCallExpression).find((call) => callMemberName(call) === 'navigate')
+  const currentActivation = activation.find((call) => call !== managedActivation)
+  const currentPrevent = [...prevent]
+    .reverse()
+    .find((call) => managed === undefined || call.getStart() > managed.end)
   const guards =
     handler === undefined
       ? ''
       : nodesOf(handler, ts.isIfStatement)
           .filter(
             (guard) =>
-              guard.end < (prevent[0]?.getStart() ?? -1) &&
+              guard.end < (currentPrevent?.getStart() ?? -1) &&
               nodesOf(guard.thenStatement, ts.isReturnStatement).some(
                 (statement) => statement.expression === undefined,
               ),
@@ -1158,15 +1349,16 @@ function applicationNavigationContractViolations(source: string): string[] {
           .join('\n')
   if (
     handler === undefined ||
-    prevent.length !== 1 ||
-    activation.length !== 1 ||
+    prevent.length !== 2 ||
+    activation.length !== 2 ||
     publicEntry === undefined ||
-    !isDeepStrictEqual(memberPath(activation[0]?.expression), [
+    !isDeepStrictEqual(memberPath(currentActivation?.expression), [
       ...storedValuePath(publicEntry),
       'navigate',
     ]) ||
-    !ts.isReturnStatement(activation[0]?.parent ?? parsed) ||
-    (prevent[0]?.end ?? 0) >= (activation[0]?.pos ?? -1) ||
+    !ts.isReturnStatement(currentActivation?.parent ?? parsed) ||
+    currentActivation?.arguments.length !== 1 ||
+    (currentPrevent?.end ?? 0) >= currentActivation.pos ||
     nodesOf(handler, ts.isAwaitExpression).length !== 0 ||
     handler.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) === true ||
     ![
@@ -1186,6 +1378,7 @@ function applicationNavigationContractViolations(source: string): string[] {
     ].every((pattern) => pattern.test(guards)) ||
     !handler.getText().includes('.currentTarget') ||
     /\.target\b/u.test(handler.getText()) ||
+    !/getAttribute\(['"]target['"]\)\s*\?\?/u.test(handler.getText()) ||
     !/\.ownerDocument\.querySelector\(['"]base\[target\]['"]\)/u.test(handler.getText()) ||
     !/getAttribute\(['"]href['"]\)/u.test(handler.getText()) ||
     /\bvoid\b|\.catch\s*\(|\buseLink\b|RouterLink|\.(?:push|replace|assign)\s*\(|window\.open/u.test(
@@ -1195,7 +1388,145 @@ function applicationNavigationContractViolations(source: string): string[] {
     violations.push(
       'Application links must synchronously exclude native activations, validate their real anchor href and return exactly one coordinated navigation.',
     )
+  const nativeGuard = handler === undefined ? undefined : nodesOf(handler, ts.isIfStatement)[0]
+  const managedCalls =
+    managed === undefined ? [] : nodesOf(managed.thenStatement, ts.isCallExpression)
+  const managedFirst =
+    managed !== undefined && ts.isBlock(managed.thenStatement)
+      ? managed.thenStatement.statements[0]
+      : undefined
+  const managedPrevent = managedCalls.find((call) => callMemberName(call) === 'preventDefault')
+  const managedGuards =
+    managed === undefined ? [] : nodesOf(managed.thenStatement, ts.isIfStatement)
+  const managedSource = managed?.getText() ?? ''
+  const linkOverloads = functions.filter(
+    (node) => node.name?.text === 'useApplicationLinkActivation' && node.body === undefined,
+  )
+  const managedPatterns =
+    managed === undefined
+      ? []
+      : nodesOf(managed, ts.isRegularExpressionLiteral).map((node) => {
+          const literal = node.getText()
+          const slash = literal.lastIndexOf('/')
+          return { node, expression: new RegExp(literal.slice(1, slash), literal.slice(slash + 1)) }
+        })
+  const targetPattern = managedPatterns.find(
+    ({ node }) => ts.isPropertyAccessExpression(node.parent) && node.parent.name.text === 'test',
+  )?.expression
+  const relSeparator = managedPatterns.find(
+    ({ node }) => ts.isCallExpression(node.parent) && callMemberName(node.parent) === 'split',
+  )?.expression
+  if (
+    !isDeepStrictEqual(linkOverloads.map(signature), [
+      '=>:MouseEvent,:RegisteredRouteDestination=>Promise<TypedNavigationResult>|undefined',
+      ':NewBrowserPageOptions=>:MouseEvent,:RegisteredRouteDestination=>Promise<BrowserPageOpenResult>|undefined',
+    ]) ||
+    managed === undefined ||
+    managedPrevent === undefined ||
+    managedActivation === undefined ||
+    nativeGuard === undefined ||
+    nativeGuard.end >= managed.getStart() ||
+    managedFirst === undefined ||
+    !ts.isExpressionStatement(managedFirst) ||
+    managedFirst.expression !== managedPrevent ||
+    ![
+      /\.defaultPrevented/u,
+      /!\s*[\w$]+\.cancelable/u,
+      /\.button\s*!==\s*0/u,
+      /\.ctrlKey/u,
+      /\.metaKey/u,
+      /\.shiftKey/u,
+      /\.altKey/u,
+      /instanceof HTMLAnchorElement/u,
+      /\.hasAttribute\(['"]download['"]\)/u,
+    ].every((pattern) => pattern.test(nativeGuard.expression.getText())) ||
+    managedGuards.some((guard) => guard.getStart() < managedPrevent.end) ||
+    !isDeepStrictEqual(memberPath(managedActivation.expression), [
+      ...storedValuePath(publicEntry),
+      'navigate',
+    ]) ||
+    !ts.isReturnStatement(managedActivation.parent) ||
+    managedActivation.arguments[0]?.getText() !== handler?.parameters[1]?.name.getText() ||
+    compact(managedActivation.arguments[1]) !== "{openIn:'new-page'}" ||
+    targetPattern === undefined ||
+    !['_blank', '_BLANK', '_bLaNk'].every((value) => targetPattern.test(value)) ||
+    ['_self', 'named_blank', '_blank_suffix', ' _blank', '_blank ', '_blan\u212a'].some((value) =>
+      targetPattern.test(value),
+    ) ||
+    relSeparator === undefined ||
+    !isDeepStrictEqual('noopener NOOPENER\tvalue\nvalue\fvalue\rvalue'.split(relSeparator), [
+      'noopener',
+      'NOOPENER',
+      'value',
+      'value',
+      'value',
+      'value',
+    ]) ||
+    'noopener\u00a0value'.split(relSeparator).length !== 1 ||
+    !/\.toLowerCase\(\)\s*===\s*['"]noopener['"]/u.test(managedSource) ||
+    !/getAttribute\(['"]target['"]\)/u.test(managedSource) ||
+    !/getAttribute\(['"]rel['"]\)/u.test(managedSource) ||
+    !/getAttribute\(['"]href['"]\)/u.test(managedSource) ||
+    !/===\s*null/u.test(managedSource) ||
+    !/===\s*''/u.test(managedSource) ||
+    !/!==\s*[\w$]+\.resolveHref\(/u.test(managedSource) ||
+    !compact(managed).includes("returnPromise.resolve({kind:'invalid-input',reason:'options'})") ||
+    !compact(managed).includes("returnPromise.resolve({kind:'invalid-input',reason:'destination'})")
+  )
+    violations.push(
+      'Managed new-page links must preserve native exclusions, cancel before anchor validation and return one public new-page activation with exact target/rel/href semantics.',
+    )
   return violations
+}
+
+function applicationNavigationNegativeProbeViolations(source: string): string[] {
+  const browserFailure = 'New browser pages must reject'
+  const managedFailure = 'Managed new-page links must preserve'
+  const probes: readonly (readonly [string, RegExp, string])[] = [
+    [
+      'Application Navigation must preserve the three typed overloads',
+      /readonly replace\?: never/u,
+      'readonly replace?: boolean',
+    ],
+    [
+      'Application Navigation must return the original coordinator Promise',
+      /: \{ replace: ([\w$]+)\.replace \}/u,
+      ': $1',
+    ],
+    [
+      'Application Navigation href resolution must remain the pure',
+      /return resolveRegisteredDestination\([^\n]+\)\?\.href/u,
+      'return undefined',
+    ],
+    [browserFailure, /if \('replace' in ([\w$]+)\)/u, 'if ($1.replace)'],
+    [browserFailure, /!== 'current-page'/u, "=== 'current-page'"],
+    [browserFailure, /window\.open\(([^\n]+)\)/u, 'window.open($1)\n        window.open($1)'],
+    [browserFailure, /window\.open\(([^,]+), '_blank', 'noopener'\)/u, "window.open($1, '_blank')"],
+    [browserFailure, /window\.open\(([^\n]+)\)/u, 'const opened = window.open($1)'],
+    [browserFailure, /completion: 'unobservable'/gu, "completion: 'blocked'"],
+    [
+      'Application links must synchronously exclude native activations',
+      /[\w$]+\.ctrlKey \|\|/u,
+      '',
+    ],
+    [
+      managedFailure,
+      /(if \([^\n]+\.openIn === 'new-page'\) \{)\n\s+[\w$]+\.preventDefault\(\)/u,
+      '$1',
+    ],
+    [managedFailure, /=== 'noopener'/u, "=== 'noreferrer'"],
+  ]
+  return probes.flatMap(([expected, pattern, replacement], index) => {
+    const mutated = source.replace(pattern, replacement)
+    return mutated !== source &&
+      applicationNavigationContractViolations(mutated).some((failure) =>
+        failure.startsWith(expected),
+      )
+      ? []
+      : [
+          `Application Navigation in-memory probe ${String(index + 1)} did not reject its targeted contract regression.`,
+        ]
+  })
 }
 
 function guardStageProgressViolations(): string[] {
@@ -3100,7 +3431,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 272 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         snapshot.engineeringManifestSource.includes(
           "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
@@ -3252,7 +3583,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 272 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])
@@ -5121,7 +5452,10 @@ export async function validateRouteTransitionSourceGovernance(): Promise<readonl
   const presentationCommitProbes = runRouterPresentationCommitNegativeProbes(snapshot)
   const presetSelectionProbes =
     runRouteTransitionPresetSelectionNegativeProbes(presetSelectionSnapshot)
-  const violations = applicationNavigationContractViolations(snapshot.applicationNavigationSource)
+  const violations = [
+    ...applicationNavigationContractViolations(snapshot.applicationNavigationSource),
+    ...applicationNavigationNegativeProbeViolations(snapshot.applicationNavigationSource),
+  ]
 
   if (stylelintPolicy.probes.length !== expectedRouteTransitionStylelintPolicyNegativeProbeCount) {
     violations.push('Route Transition Stylelint policy negative-probe count drifted.')

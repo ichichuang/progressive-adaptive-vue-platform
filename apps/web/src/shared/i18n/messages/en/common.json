@@ -76,6 +76,7 @@
   "i18n.message-load-failed": "Language resources could not be loaded. The previous language is retained.",
   "i18n.commit-failed": "The language could not be applied. The previous language is restored.",
   "capabilities.title": "Capability status",
+  "capabilities.openStandalone": "Open standalone view in a new browser page",
   "capabilities.description": "Status and admission conditions are read-only projections of the generated manifest.",
   "core-error.runtime-configuration-failure.title": "Application configuration unavailable",
   "core-error.runtime-configuration-failure.description": "The application could not verify the configuration required to start safely.",
