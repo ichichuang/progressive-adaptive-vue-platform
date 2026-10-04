@@ -122,4 +122,18 @@ export const storageRegistry = Object.freeze([
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   }),
+  Object.freeze({
+    id: 'browser-page-session',
+    ownerDomain: 'apps/web/src/app/router',
+    key: applicationConfig.browserPage.sessionStorageKey,
+    medium: 'session-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'browser-page-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
 ] as const satisfies readonly StorageRegistryRecord[])

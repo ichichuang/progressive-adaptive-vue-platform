@@ -7,6 +7,13 @@ import ts from 'typescript'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { coreErrorRegistry } from '../../apps/web/src/app/errors/core-error-registry'
 import { routerErrorRegistry } from '../../apps/web/src/app/router/router-error-registry'
+import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
+import {
+  browserPageBindingSchema,
+  browserPageDiscoveryChannelName,
+  browserPageDiscoverySchema,
+  browserPageSessionSchema,
+} from '../../apps/web/src/app/router/browser-page-session-contract'
 import {
   storageChangeChannelName,
   storageCrossTabEventAllowlist,
@@ -120,6 +127,20 @@ const expectedStorageRegistryRecords = [
     corruptionPolicy: 'preserve-in-place-reject-read',
     capabilityStatus: 'ACTIVE',
   },
+  {
+    id: 'browser-page-session',
+    ownerDomain: 'apps/web/src/app/router',
+    key: applicationConfig.browserPage.sessionStorageKey,
+    medium: 'session-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'browser-page-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
 ] as const
 
 const expectedStorageErrors = [
@@ -218,6 +239,7 @@ const rawStorageKeyLiterals = [
   'pavp:web:workspace-session',
   'pavp:web:scroll-preference',
   'pavp:web:scroll-refresh-session',
+  'pavp:web:browser-page-session',
 ] as const
 
 const approvedRawStorageKeyPaths = new Set([
@@ -342,7 +364,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain exactly the seven admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the eight admitted direct-compatibility records.',
     )
   }
 
@@ -429,7 +451,8 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
       keyLiteral === 'pavp:web:navigation-preference' ||
       keyLiteral === 'pavp:web:workspace-session' ||
       keyLiteral === 'pavp:web:scroll-preference' ||
-      keyLiteral === 'pavp:web:scroll-refresh-session'
+      keyLiteral === 'pavp:web:scroll-refresh-session' ||
+      keyLiteral === 'pavp:web:browser-page-session'
         ? displayPath !== 'apps/web/src/app/config/app.config.ts'
         : !approvedRawStorageKeyPaths.has(displayPath))
     ) {
@@ -484,6 +507,7 @@ function sensitivePersistenceFileViolation(displayPath: string, sourceText: stri
     if (
       token === 'sessionstorage'
         ? displayPath !== 'apps/web/src/app/storage/scroll-refresh-storage.ts' &&
+          displayPath !== 'apps/web/src/app/storage/browser-page-session-storage.ts' &&
           /\bsessionStorage\b/iu.test(sourceText)
         : normalized.includes(token)
     ) {
@@ -700,6 +724,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
     ) &&
       isDeepStrictEqual(Object.keys(applicationConfig).sort(), [
         'appearance',
+        'browserPage',
         'localization',
         'navigation',
         'scroll',
@@ -988,7 +1013,7 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain exactly the seven admitted direct-compatibility records.',
+      'Storage Registry must contain exactly the eight admitted direct-compatibility records.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
@@ -1128,6 +1153,212 @@ async function scrollStorageViolations(): Promise<string[]> {
   return violations
 }
 
+function browserPageSessionAdapterViolations(sourceText: string): string[] {
+  const source = scriptSource('browser-page-session-storage.ts', sourceText)
+  const calls = nodesOf(source, ts.isCallExpression)
+  const methods = nodesOf(source, ts.isMethodDeclaration)
+  const initialization = methods.find(
+    (method) => method.name.getText(source) === 'initializeTarget',
+  )
+  const compactInitialization = initialization?.getText(source).replaceAll(/\s+/gu, '') ?? ''
+  const target = initialization?.parameters[0]?.name.getText(source)
+  const constructors = nodesOf(source, ts.isNewExpression).filter(
+    (expression) =>
+      ts.isIdentifier(expression.expression) && expression.expression.text === 'BroadcastChannel',
+  )
+  const nameImport = namedImportLocalName(
+    source,
+    '../router/browser-page-session-contract',
+    'browserPageDiscoveryChannelName',
+  )
+  const eventCalls = (methodName: string) =>
+    calls.filter(
+      (call) =>
+        callMemberName(call) === methodName && call.arguments[0]?.getText(source) === "'message'",
+    )
+  const additions = eventCalls('addEventListener')
+  const removals = eventCalls('removeEventListener')
+  const key = nodesOf(source, ts.isVariableDeclaration)
+    .find(
+      (declaration) =>
+        declaration.initializer?.getText(source) ===
+        'applicationConfig.browserPage.sessionStorageKey',
+    )
+    ?.name.getText(source)
+  const discoverySchema = namedImportLocalName(
+    source,
+    '../router/browser-page-session-contract',
+    'browserPageDiscoverySchema',
+  )
+  const valid =
+    target !== undefined &&
+    compactInitialization.includes(`${target}.closed`) &&
+    compactInitialization.includes(`${target}.opener!==window`) &&
+    compactInitialization.includes(`${target}.document.URL!=='about:blank'`) &&
+    compactInitialization.includes('sourceId:crypto.randomUUID()') &&
+    compactInitialization.includes('associations:[]') &&
+    constructors.length === 1 &&
+    constructors[0]?.arguments?.[0]?.getText(source) === nameImport &&
+    additions.length === 1 &&
+    removals.length === 1 &&
+    additions[0]?.arguments[1]?.getText(source) === removals[0]?.arguments[1]?.getText(source) &&
+    calls.some((call) => callMemberName(call) === 'close') &&
+    calls.some(
+      (call) =>
+        ts.isPropertyAccessExpression(call.expression) &&
+        callMemberName(call) === 'safeParse' &&
+        call.expression.expression.getText(source) === discoverySchema &&
+        call.arguments[0] !== undefined &&
+        ts.isPropertyAccessExpression(call.arguments[0]) &&
+        call.arguments[0].name.text === 'data',
+    ) &&
+    key !== undefined &&
+    calls.filter((call) => callMemberName(call) === 'setItem').length === 1 &&
+    calls
+      .filter((call) => ['setItem', 'getItem'].includes(callMemberName(call) ?? ''))
+      .every((call) => call.arguments[0]?.getText(source) === key) &&
+    !calls.some((call) => callMemberName(call) === 'removeItem') &&
+    !/\b(?:localStorage|setTimeout|setInterval|requestAnimationFrame)\b|window\.(?:open|postMessage)|\.location\s*(?:=|\.)/u.test(
+      sourceText,
+    ) &&
+    sourceText.includes('applicationConfig.browserPage.sessionStorageKey') &&
+    sourceText.includes("reason: 'disposed'") &&
+    [
+      'storage-unavailable',
+      'storage-read-denied',
+      'storage-parse-failed',
+      'storage-unsupported-version',
+      'storage-schema-rejected',
+      'storage-serialization-failed',
+      'storage-quota-exceeded',
+      'storage-write-denied',
+      'storage-readback-mismatch',
+    ].every((id) => sourceText.includes(id))
+  return valid
+    ? []
+    : [
+        'Browser page Storage must preserve its narrow target, data and discovery lifecycle boundaries.',
+      ]
+}
+
+async function browserPageSessionViolations(): Promise<string[]> {
+  const [adapter, lifecycle, kernel] = await Promise.all([
+    readFile(resolve(storageDirectory, 'browser-page-session-storage.ts'), 'utf8'),
+    readFile(resolve(storageDirectory, 'storage-lifecycle.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/bootstrap/runtime-kernel.ts'), 'utf8'),
+  ])
+  const violations = browserPageSessionAdapterViolations(adapter)
+  const lifecycleSource = scriptSource('storage-lifecycle.ts', lifecycle)
+  const kernelSource = scriptSource('runtime-kernel.ts', kernel)
+  const factoryImport = namedImportLocalName(
+    lifecycleSource,
+    './browser-page-session-storage',
+    'createBrowserPageSessionStorage',
+  )
+  const handles = nodesOf(lifecycleSource, ts.isVariableDeclaration).filter(
+    (declaration) =>
+      declaration.initializer !== undefined &&
+      ts.isCallExpression(declaration.initializer) &&
+      declaration.initializer.expression.getText(lifecycleSource) === factoryImport,
+  )
+  const handleName = handles[0]?.name.getText(lifecycleSource)
+  const injectionKey = namedImportLocalName(
+    kernelSource,
+    '../router/browser-page-session-contract',
+    'browserPageSessionKey',
+  )
+  const provisions = nodesOf(kernelSource, ts.isCallExpression).filter(
+    (call) =>
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText(kernelSource) === injectionKey,
+  )
+  const channelName: string = browserPageDiscoveryChannelName
+  const binding = {
+    sourceId: '11111111-1111-4111-8111-111111111111',
+    associationId: '22222222-2222-4222-8222-222222222222',
+    routeName: 'capability-roadmap-standalone',
+    deploymentBase: '/',
+  }
+  const snapshot = {
+    schemaVersion: 1,
+    sourceId: binding.sourceId,
+    associations: [binding],
+    target: null,
+  }
+  const discovery = { kind: 'discover', binding, requestId: '33333333-3333-4333-8333-333333333333' }
+  if (
+    !browserPageBindingSchema.safeParse(binding).success ||
+    !browserPageSessionSchema.safeParse(snapshot).success ||
+    !browserPageDiscoverySchema.safeParse(discovery).success ||
+    [
+      { ...binding, sourceId: 'not-a-uuid' },
+      { ...binding, associationId: 'not-a-uuid' },
+      { ...binding, deploymentBase: '/other/' },
+      { ...binding, routeName: '' },
+      { ...binding, extra: true },
+    ].some((value) => browserPageBindingSchema.safeParse(value).success) ||
+    [
+      { ...snapshot, schemaVersion: 2 },
+      { ...snapshot, sourceId: binding.associationId },
+      { ...snapshot, associations: [binding, { ...binding, associationId: binding.sourceId }] },
+      { ...snapshot, associations: [binding, { ...binding, routeName: 'console-overview' }] },
+      {
+        ...snapshot,
+        associations: Array.from({ length: routeRegistry.length + 1 }, (_, index) => ({
+          ...binding,
+          associationId: `22222222-2222-4222-8222-${String(index).padStart(12, '0')}`,
+          routeName: String(index),
+        })),
+      },
+      { ...snapshot, target: { ...binding, extra: true } },
+      { ...snapshot, extra: true },
+    ].some((value) => browserPageSessionSchema.safeParse(value).success) ||
+    [
+      { ...discovery, kind: 'reply' },
+      { ...discovery, requestId: 'invalid' },
+      { ...discovery, extra: true },
+    ].some((value) => browserPageDiscoverySchema.safeParse(value).success)
+  )
+    violations.push(
+      'Browser page metadata and discovery must retain their strict identities and source-owned unique associations.',
+    )
+  if (
+    !isDeepStrictEqual(applicationConfig.browserPage, {
+      sessionStorageKey: 'pavp:web:browser-page-session',
+    }) ||
+    channelName !== 'pavp:browser-page:discovery' ||
+    !lifecycle.includes('readonly browserPageSession: BrowserPageSessionPort') ||
+    handles.length !== 1 ||
+    !nodesOf(lifecycleSource, ts.isPropertyAssignment).some(
+      (property) =>
+        handleName !== undefined &&
+        property.name.getText(lifecycleSource) === 'browserPageSession' &&
+        property.initializer.getText(lifecycleSource) === `${handleName}.port`,
+    ) ||
+    !nodesOf(lifecycleSource, ts.isCallExpression).some(
+      (call) =>
+        handleName !== undefined &&
+        call.expression.getText(lifecycleSource) === `${handleName}.dispose`,
+    ) ||
+    provisions.length !== 1 ||
+    !provisions[0]?.arguments[1]?.getText(kernelSource).endsWith('.owner.browserPageSession')
+  )
+    violations.push(
+      'Browser page session must retain one Storage-owned port, private discovery name and Kernel injection.',
+    )
+  for (const invalid of [
+    adapter.replace('target.opener !== window', 'target.opener === window'),
+    adapter.replaceAll('channel.close()', 'channel.toString()'),
+    adapter.replace('safeParse(event.data)', 'safeParse({})'),
+  ]) {
+    if (invalid === adapter || browserPageSessionAdapterViolations(invalid).length === 0)
+      violations.push(
+        'Negative probe failed: browser page target, discovery validation or disposal drift was accepted.',
+      )
+  }
+  return violations
+}
+
 export async function validateStorageArchitecture(): Promise<readonly string[]> {
   const violations = [
     ...validateStorageRegistryRecords(storageRegistry),
@@ -1144,6 +1375,7 @@ export async function validateStorageArchitecture(): Promise<readonly string[]> 
     ...(await navigationPreferenceViolations()),
     ...(await workspaceSessionViolations()),
     ...(await scrollStorageViolations()),
+    ...(await browserPageSessionViolations()),
     ...focusedNegativeProbes(),
   ]
 

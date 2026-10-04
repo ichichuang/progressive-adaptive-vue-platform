@@ -14,8 +14,11 @@ import { storageErrorRegistry, type StorageErrorRegistryRecord } from './storage
 import { storageMigrationRegistry, type StorageMigrationRecord } from './storage-migration-registry'
 import { nonePrincipalPartitionId, type PrincipalPartitionId } from './storage-partition'
 import { storageRegistry, type StorageRegistryRecord } from './storage-registry'
+import type { BrowserPageSessionPort } from '../router/browser-page-session-contract'
+import { createBrowserPageSessionStorage } from './browser-page-session-storage'
 
 interface StorageOwner {
+  readonly browserPageSession: BrowserPageSessionPort
   readonly scrollPreference: ScrollPreferencePort
   readonly scrollRefresh: ScrollRefreshPort
   readonly workspaceSession: WorkspaceSessionPort
@@ -46,7 +49,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 7 ||
+    records.length !== 8 ||
     envelopeRecords.length !== 0 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -74,7 +77,9 @@ export function createAndReadyStorage(input: {
   })
 
   let disposed = false
+  const browserPageSession = createBrowserPageSessionStorage(errorAdapter, () => disposed)
   const owner = Object.freeze({
+    browserPageSession: browserPageSession.port,
     scrollPreference: createScrollPreferenceStorage(errorAdapter, () => disposed),
     scrollRefresh: createScrollRefreshStorage(errorAdapter, () => disposed),
     workspaceSession: createWorkspaceSessionStorage(errorAdapter, () => disposed),
@@ -101,6 +106,7 @@ export function createAndReadyStorage(input: {
       }
 
       disposed = true
+      browserPageSession.dispose()
       crossTabHandle.dispose()
     },
   }

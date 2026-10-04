@@ -6183,7 +6183,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
     runtimeNumber(routeRegistry.length) !== 18 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 8 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 14
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -6725,7 +6725,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   }
 
   if (
-    canonicalWork !== 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION' ||
+    canonicalWork !== 'PAVP_APPLICATION_BROWSER_PAGE_REUSE' ||
     canonicalAuthority !== 'ARCHITECTURE_SECTION_9_4'
   ) {
     recordCurrentWorkViolation()
@@ -6819,7 +6819,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
     'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
-    'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+    'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -7701,7 +7701,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION' ||
+      workValues[0] !== 'PAVP_APPLICATION_BROWSER_PAGE_REUSE' ||
       authorityValues[0] !== 'ARCHITECTURE_SECTION_9_4'
     ) {
       recordCurrentWorkViolation()
@@ -7720,9 +7720,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
     allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
-    allCurrentWorkMarkers.some(
-      (value) => value !== 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
-    ) ||
+    allCurrentWorkMarkers.some((value) => value !== 'PAVP_APPLICATION_BROWSER_PAGE_REUSE') ||
     allCurrentWorkAuthorityMarkers.some((value) => value !== 'ARCHITECTURE_SECTION_9_4')
   ) {
     recordCurrentWorkViolation()
@@ -8382,7 +8380,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -8500,7 +8498,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
         `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
       ),
     ],
@@ -9333,7 +9331,7 @@ function routeTransitionAcceptanceViolations(
         (match) =>
           match[1] !==
           (field === 'CURRENT_BOUNDED_WORK'
-            ? 'PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION'
+            ? 'PAVP_APPLICATION_BROWSER_PAGE_REUSE'
             : 'ARCHITECTURE_SECTION_9_4'),
       )
     ) {
@@ -9414,7 +9412,7 @@ function validateRouteTransitionAcceptanceGovernance(
   ])
   for (const [field, replacement, code] of [
     [
-      'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+      'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
       'CURRENT_BOUNDED_WORK=' + routeTransitionWorkPackage,
       'CURRENT_BOUNDED_WORK',
     ],
@@ -9880,7 +9878,7 @@ function runRouteTransitionAdmissionNegativeProbes(
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
           `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
         ),
     ],
@@ -10051,7 +10049,7 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
           `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
         ),
     ],
@@ -10622,7 +10620,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.routeCount === 18 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 7,
+        snapshot.storageRecordCount === 8,
     },
   ])
 }
@@ -10962,7 +10960,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
@@ -10970,7 +10968,7 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION',
+        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
         'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
       ),
     ],
@@ -14685,7 +14683,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 7,
+      passed: snapshot.storageRecordCount === 8,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -17808,7 +17806,7 @@ function capabilityOpeningViolations(
   const scriptSource = scriptContent(pageSource)
   const script = ts.createSourceFile('capabilities.ts', scriptSource, ts.ScriptTarget.Latest, true)
   function recordOpeningProbe(id: string, node: ts.Node, replacement: string): void {
-    if (probeSources === undefined) return
+    if (probeSources === undefined || probeSources.has(id)) return
     const offset = pageSource.indexOf(scriptSource)
     probeSources.set(
       id,
@@ -17835,327 +17833,680 @@ function capabilityOpeningViolations(
         ts.isCallExpression(value) && value.expression.getText() === importedNames.get(name),
     )
   const navigation = entry('useApplicationNavigation')?.[0]
-  const activation = entry('useApplicationLinkActivation')
-  const activationOptions =
-    activation !== undefined && ts.isCallExpression(activation[1])
-      ? activation[1].arguments[0]
-      : undefined
   const elements = collectShellTemplateElements(pageTemplate)
   const anchors = elements.filter(({ node }) => node.tag === 'a')
-  const anchor = anchors[0]
-  const href =
-    anchor === undefined
-      ? undefined
-      : initializers.get(singleBoundExpression(anchor.node, 'href') ?? '')
-  const destination =
-    href !== undefined && ts.isCallExpression(href) ? href.arguments[0]?.getText() : undefined
-  const destinationValue = initializers.get(destination ?? '')
-  const destinationObject =
-    destinationValue === undefined ? undefined : unwrapExpression(destinationValue)
-  const click = anchor === undefined ? undefined : templateDirectives(anchor.node, 'on')[0]
-  const handler = topLevelCallables(script).get(
-    normalizeTemplateExpression(click?.exp?.content).replace(/\(\$event\)$/u, ''),
-  )
-  const handlerSource = handler?.getText() ?? ''
-  const callable =
-    handler !== undefined &&
-    (ts.isFunctionDeclaration(handler) ||
-      ts.isFunctionExpression(handler) ||
-      ts.isArrowFunction(handler))
-      ? handler
-      : undefined
-  const calls: ts.CallExpression[] = []
-  const awaits: ts.AwaitExpression[] = []
-  const returns: ts.ReturnStatement[] = []
-  function inspectActivation(node: ts.Node): void {
+  const statuses = elements.filter(({ node }) => staticTemplateAttribute(node, 'role') === 'status')
+  const feedbackBindings = new Set<string>()
+  let recoveryCall: ts.CallExpression | undefined
+  if (anchors.length !== 2 || statuses.length !== 2) violations.push('CAPABILITY_OPENING_ANCHOR')
+  for (const mode of ['fresh', 'tracked', 'recovery'] as const) {
+    const label =
+      mode === 'fresh'
+        ? 'capabilities.openStandalone'
+        : mode === 'tracked'
+          ? 'capabilities.reuseStandalone'
+          : 'capabilities.reopenStandalone'
+    const anchor = elements.find(
+      ({ node }) =>
+        node.tag === (mode === 'recovery' ? 'button' : 'a') &&
+        node.loc?.source.includes(`('${label}')`),
+    )
+    const activation = [...initializers].find(([, value]) => {
+      if (
+        !ts.isCallExpression(value) ||
+        value.expression.getText() !== importedNames.get('useApplicationLinkActivation')
+      )
+        return false
+      const options = value.arguments[0]
+      return (
+        options !== undefined &&
+        ts.isObjectLiteralExpression(options) &&
+        (mode === 'fresh'
+          ? objectPropertyInitializer(options, 'reuse') === undefined
+          : objectPropertyInitializer(options, 'reuse')?.getText() === "'same-destination'")
+      )
+    })
+    const activationOptions =
+      activation !== undefined && ts.isCallExpression(activation[1])
+        ? activation[1].arguments[0]
+        : undefined
+    const hrefAnchor = mode === 'recovery' ? anchors[0] : anchor
+    const href =
+      hrefAnchor === undefined
+        ? undefined
+        : initializers.get(singleBoundExpression(hrefAnchor.node, 'href') ?? '')
+    const destination =
+      href !== undefined && ts.isCallExpression(href) ? href.arguments[0]?.getText() : undefined
+    const destinationValue = initializers.get(destination ?? '')
+    const destinationObject =
+      destinationValue === undefined ? undefined : unwrapExpression(destinationValue)
+    const click = anchor === undefined ? undefined : templateDirectives(anchor.node, 'on')[0]
+    const handler = topLevelCallables(script).get(
+      normalizeTemplateExpression(click?.exp?.content).replace(/\((?:\$event)?\)$/u, ''),
+    )
+    const handlerSource = handler?.getText() ?? ''
+    const callable =
+      handler !== undefined &&
+      (ts.isFunctionDeclaration(handler) ||
+        ts.isFunctionExpression(handler) ||
+        ts.isArrowFunction(handler))
+        ? handler
+        : undefined
+    const calls: ts.CallExpression[] = []
+    const awaits: ts.AwaitExpression[] = []
+    const returns: ts.ReturnStatement[] = []
+    const handlerAssignments: ts.BinaryExpression[] = []
+    function inspectActivation(node: ts.Node): void {
+      if (
+        node !== callable &&
+        (ts.isFunctionDeclaration(node) ||
+          ts.isFunctionExpression(node) ||
+          ts.isArrowFunction(node))
+      )
+        return
+      if (ts.isCallExpression(node)) calls.push(node)
+      if (ts.isAwaitExpression(node)) awaits.push(node)
+      if (ts.isReturnStatement(node)) returns.push(node)
+      if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken)
+        handlerAssignments.push(node)
+      ts.forEachChild(node, inspectActivation)
+    }
+    if (callable !== undefined) inspectActivation(callable)
+    const activations = calls.filter(
+      (call) =>
+        call.expression.getText() ===
+        (mode === 'recovery' ? `${navigation ?? ''}.navigate` : activation?.[0]),
+    )
+    const activationCall = activations[0]
+    if (mode === 'recovery') recoveryCall = activationCall
+    const resultName =
+      activationCall !== undefined && ts.isVariableDeclaration(activationCall.parent)
+        ? activationCall.parent.name.getText()
+        : activationCall?.getText()
+    const resultHandling = calls.find(
+      (call) =>
+        ts.isPropertyAccessExpression(call.expression) &&
+        call.expression.name.text === 'then' &&
+        call.expression.expression.getText() === resultName,
+    )
+    const handlingName =
+      resultHandling !== undefined && ts.isVariableDeclaration(resultHandling.parent)
+        ? resultHandling.parent.name.getText()
+        : resultHandling?.getText()
+    const returnedHandling =
+      resultHandling !== undefined &&
+      (returns.some((statement) => statement.expression?.getText() === handlingName) ||
+        (callable !== undefined &&
+          ts.isArrowFunction(callable) &&
+          callable.body.getText() === handlingName))
+    const awaitedHandling =
+      callable?.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) ===
+        true && awaits.some((expression) => expression.expression.getText() === resultName)
+    const translator = script.statements
+      .filter(ts.isVariableStatement)
+      .flatMap((statement) => [...statement.declarationList.declarations])
+      .filter(
+        (declaration) =>
+          declaration.initializer !== undefined &&
+          ts.isCallExpression(declaration.initializer) &&
+          declaration.initializer.expression.getText() === importedNames.get('useConsoleI18n'),
+      )
+      .flatMap((declaration) =>
+        ts.isObjectBindingPattern(declaration.name) ? [...declaration.name.elements] : [],
+      )
+      .find((binding) => (binding.propertyName ?? binding.name).getText() === 't')
+      ?.name.getText()
     if (
-      node !== callable &&
-      (ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node))
+      navigation === undefined ||
+      activation === undefined ||
+      activationOptions === undefined ||
+      !ts.isObjectLiteralExpression(activationOptions) ||
+      objectPropertyInitializer(activationOptions, 'openIn')?.getText() !== "'new-page'" ||
+      activationOptions.properties.length !== (mode === 'fresh' ? 1 : 2) ||
+      anchor === undefined ||
+      !anchor.ancestors.some((node) => templateDirectives(node, 'slot', 'actions').length === 1) ||
+      (mode === 'recovery'
+        ? staticTemplateAttribute(anchor.node, 'type') !== 'button'
+        : staticTemplateAttribute(anchor.node, 'target') !== '_blank' ||
+          staticTemplateAttribute(anchor.node, 'rel') !== 'noopener') ||
+      translator === undefined ||
+      !anchor.node.loc?.source.includes(`${translator}('${label}')`) ||
+      href === undefined ||
+      !ts.isCallExpression(href) ||
+      href.expression.getText() !== `${navigation}.resolveHref` ||
+      destinationObject === undefined ||
+      !ts.isObjectLiteralExpression(destinationObject) ||
+      objectPropertyInitializer(destinationObject, 'name')?.getText() !==
+        "'capability-roadmap-standalone'" ||
+      templateDirectives(anchor.node, 'on').length !== 1 ||
+      click?.arg?.content !== 'click' ||
+      click.modifiers?.length !== 0 ||
+      activationCall === undefined ||
+      activations.length !== 1 ||
+      activationCall.arguments.length !== 2 ||
+      (mode === 'recovery'
+        ? activationCall.arguments[0]?.getText() !== destination
+        : activationCall.arguments[0]?.getText() !== callable?.parameters[0]?.name.getText() ||
+          activationCall.arguments[1]?.getText() !== destination) ||
+      (!returnedHandling && !awaitedHandling) ||
+      awaits.some(
+        (expression) =>
+          expression.getStart() < activationCall.getStart() &&
+          expression.expression !== activationCall,
+      )
     )
-      return
-    if (ts.isCallExpression(node)) calls.push(node)
-    if (ts.isAwaitExpression(node)) awaits.push(node)
-    if (ts.isReturnStatement(node)) returns.push(node)
-    ts.forEachChild(node, inspectActivation)
+      violations.push('CAPABILITY_OPENING_ANCHOR')
+
+    const recoveryOptions = mode === 'recovery' ? activationCall?.arguments[1] : undefined
+    if (
+      mode === 'recovery' &&
+      (recoveryOptions === undefined ||
+        !ts.isObjectLiteralExpression(recoveryOptions) ||
+        recoveryOptions.properties.length !== 3 ||
+        objectPropertyInitializer(recoveryOptions, 'openIn')?.getText() !== "'new-page'" ||
+        objectPropertyInitializer(recoveryOptions, 'reuse')?.getText() !== "'same-destination'" ||
+        objectPropertyInitializer(recoveryOptions, 'recovery')?.getText() !== "'reopen'")
+    )
+      violations.push('CAPABILITY_OPENING_RECOVERY')
+    if (recoveryOptions !== undefined && ts.isObjectLiteralExpression(recoveryOptions)) {
+      const command = objectPropertyInitializer(recoveryOptions, 'recovery')
+      if (command !== undefined) recordOpeningProbe('recovery-command', command, "'unknown'")
+    }
+    const resultCallback = resultHandling?.arguments[0]
+    const feedbackCallback =
+      resultCallback !== undefined && ts.isIdentifier(resultCallback)
+        ? topLevelCallables(script).get(resultCallback.text)
+        : resultCallback
+    const awaitedResult = awaits.find(
+      (expression) => expression.expression.getText() === resultName,
+    )
+    const returnedResult = returns.find(
+      (statement) => statement.expression?.getText() === handlingName,
+    )
+    const probePrefix = mode === 'fresh' ? '' : `${mode}-`
+    if (returnedResult?.expression !== undefined)
+      recordOpeningProbe(
+        `${probePrefix}detached-result`,
+        returnedResult,
+        `void (${returnedResult.expression.getText()})`,
+      )
+    else if (returnedHandling && callable !== undefined && ts.isArrowFunction(callable))
+      recordOpeningProbe(
+        `${probePrefix}detached-result`,
+        callable.body,
+        `void (${callable.body.getText()})`,
+      )
+    else if (awaitedHandling && awaitedResult !== undefined)
+      recordOpeningProbe(
+        `${probePrefix}detached-result`,
+        awaitedResult,
+        `void (${awaitedResult.expression.getText()})`,
+      )
+    const feedbackFunction =
+      feedbackCallback !== undefined &&
+      (ts.isFunctionDeclaration(feedbackCallback) ||
+        ts.isFunctionExpression(feedbackCallback) ||
+        ts.isArrowFunction(feedbackCallback))
+        ? feedbackCallback
+        : undefined
+    const outcomeName =
+      feedbackFunction?.parameters[0]?.name.getText() ??
+      (awaitedResult !== undefined && ts.isVariableDeclaration(awaitedResult.parent)
+        ? awaitedResult.parent.name.getText()
+        : undefined)
+    const feedbackRoot = feedbackFunction?.body ?? (awaitedHandling ? callable.body : undefined)
+    const feedbackWrites = new Set<string>()
+    const feedbackAssignments: ts.BinaryExpression[] = []
+    function inspectFeedbackWrites(node: ts.Node): void {
+      if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+        feedbackAssignments.push(node)
+        const left = node.left
+        feedbackWrites.add(
+          ts.isPropertyAccessExpression(left) && left.name.text === 'value'
+            ? left.expression.getText()
+            : left.getText(),
+        )
+      }
+      ts.forEachChild(node, inspectFeedbackWrites)
+    }
+    if (feedbackRoot !== undefined) inspectFeedbackWrites(feedbackRoot)
+    const status = statuses.filter(({ node }) => {
+      const argument = node.loc?.source
+        .split(`${translator ?? ''}(`)[1]
+        ?.split(')')[0]
+        ?.trim()
+      return argument !== undefined && feedbackWrites.has(argument)
+    })
+    const feedbackArgument = status[0]?.node.loc?.source
+      .split(`${translator ?? ''}(`)[1]
+      ?.split(')')[0]
+      ?.trim()
+    if (feedbackArgument !== undefined) feedbackBindings.add(feedbackArgument)
+    const recoveryButton = elements.find(
+      ({ node }) =>
+        node.tag === 'button' && node.loc?.source.includes("('capabilities.reopenStandalone')"),
+    )
+    const recoveryCondition =
+      recoveryButton === undefined
+        ? undefined
+        : [...recoveryButton.ancestors, recoveryButton.node]
+            .flatMap((node) => templateDirectives(node, 'if'))
+            .at(-1)
+            ?.exp?.content.trim()
+    const outcomes: readonly {
+      readonly kind: string
+      readonly reason?: string
+      readonly phase?: string
+      readonly action?: string
+      readonly message?: string
+      readonly recovery?: boolean
+    }[] =
+      mode === 'fresh'
+        ? [
+            {
+              kind: 'invalid-input',
+              reason: 'destination',
+              message: 'route-message.error-invalid-route-input',
+            },
+            {
+              kind: 'invalid-input',
+              reason: 'options',
+              message: 'route-message.error-application-route-failure',
+            },
+            {
+              kind: 'invocation-error',
+              message: 'route-message.error-application-route-failure',
+            },
+            { kind: 'requested' },
+          ]
+        : [
+            {
+              kind: 'invalid-input',
+              reason: 'destination',
+              message: 'route-message.error-invalid-route-input',
+              recovery: false,
+            },
+            {
+              kind: 'invalid-input',
+              reason: 'options',
+              message: 'route-message.error-application-route-failure',
+              recovery: false,
+            },
+            ...['open', 'associate', 'initial-navigation'].map((phase) => ({
+              kind: 'invocation-error',
+              phase,
+              message: 'route-message.error-application-route-failure',
+              recovery: true,
+            })),
+            {
+              kind: 'invocation-error',
+              phase: 'activate',
+              message: 'capabilities.pageActivationFailure',
+              recovery: false,
+            },
+            {
+              kind: 'open-unavailable',
+              reason: 'no-reference',
+              message: 'capabilities.pageAssociationUnavailable',
+              recovery: true,
+            },
+            { kind: 'requested', action: 'open', recovery: false },
+            {
+              kind: 'requested',
+              action: 'activate',
+              message: 'capabilities.pageActivationRequested',
+              recovery: false,
+            },
+            {
+              kind: 'association-pending',
+              message: 'capabilities.pageAssociationUnconfirmed',
+              recovery: false,
+            },
+            {
+              kind: 'association-unavailable',
+              reason: 'unconfirmed',
+              message: 'capabilities.pageAssociationUnconfirmed',
+              recovery: true,
+            },
+            {
+              kind: 'association-unavailable',
+              reason: 'restoring',
+              message: 'capabilities.browserPageAssociationRestoring',
+              recovery: true,
+            },
+            {
+              kind: 'association-unavailable',
+              reason: 'recovery-unavailable',
+              message: 'capabilities.browserPageRecoveryUnavailable',
+              recovery: false,
+            },
+            ...['changed-destination', 'reference-lost'].map((reason) => ({
+              kind: 'association-unavailable',
+              reason,
+              message: 'capabilities.pageAssociationUnavailable',
+              recovery: true,
+            })),
+          ]
+    const unchangedFeedback = Symbol('unchanged capability feedback')
+    const feedbackResets = [...new Set([...handlerAssignments, ...feedbackAssignments])].filter(
+      (assignment) =>
+        (assignment.left.getText() === feedbackArgument ||
+          assignment.left.getText() === `${feedbackArgument ?? ''}.value`) &&
+        ts.isIdentifier(assignment.right) &&
+        assignment.right.text === 'undefined',
+    )
+    const synchronouslyCleared = feedbackResets.some(
+      (assignment) =>
+        assignment.parent.parent === callable?.body &&
+        ts.isExpressionStatement(assignment.parent) &&
+        activationCall !== undefined &&
+        assignment.getStart() > activationCall.end &&
+        assignment.end < (resultHandling?.getStart() ?? awaitedResult?.getStart() ?? 0),
+    )
+    const feedbackByOutcome: (string | undefined | typeof unchangedFeedback)[] = outcomes.map(() =>
+      synchronouslyCleared ? undefined : unchangedFeedback,
+    )
+    if (mode === 'tracked' && feedbackResets.length > 0 && probeSources !== undefined) {
+      const offset = pageSource.indexOf(scriptSource)
+      let withoutResets = pageSource
+      for (const assignment of feedbackResets.sort(
+        (left, right) => right.getStart() - left.getStart(),
+      ))
+        withoutResets =
+          withoutResets.slice(0, offset + assignment.getStart()) +
+          'void 0' +
+          withoutResets.slice(offset + assignment.end)
+      probeSources.set('tracked-requested-stale', withoutResets)
+    }
+    const recoveryByOutcome: (boolean | undefined)[] = outcomes.map(() => undefined)
+    let feedbackDispatchSupported = feedbackRoot !== undefined && outcomeName !== undefined
+    // This finite consumer proof follows only the admitted outcomes and local feedback/recovery sinks.
+    function feedbackCondition(
+      expression: ts.Expression,
+      outcome: (typeof outcomes)[number],
+    ): boolean | undefined {
+      const condition = unwrapExpression(expression)
+      if (condition.kind === ts.SyntaxKind.TrueKeyword) return true
+      if (condition.kind === ts.SyntaxKind.FalseKeyword) return false
+      if (
+        ts.isPrefixUnaryExpression(condition) &&
+        condition.operator === ts.SyntaxKind.ExclamationToken
+      ) {
+        const operand = feedbackCondition(condition.operand, outcome)
+        return operand === undefined ? undefined : !operand
+      }
+      if (!ts.isBinaryExpression(condition)) return undefined
+      if (
+        condition.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+        condition.operatorToken.kind === ts.SyntaxKind.BarBarToken
+      ) {
+        const left = feedbackCondition(condition.left, outcome)
+        const right = feedbackCondition(condition.right, outcome)
+        if (left === undefined || right === undefined) return undefined
+        return condition.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+          ? left && right
+          : left || right
+      }
+      const property = ts.isPropertyAccessExpression(condition.left)
+        ? condition.left
+        : condition.right
+      const literal = property === condition.left ? condition.right : condition.left
+      if (
+        !ts.isPropertyAccessExpression(property) ||
+        property.expression.getText() !== outcomeName ||
+        !ts.isStringLiteral(literal) ||
+        !['kind', 'reason', 'phase', 'action'].includes(property.name.text)
+      )
+        return undefined
+      if (property.name.text === 'reason' && literal.text === 'destination') {
+        recordOpeningProbe(
+          `${probePrefix}collapsed-invalid-input`,
+          condition,
+          `${property.expression.getText()}.kind === 'invalid-input'`,
+        )
+        recordOpeningProbe(`${probePrefix}wrong-options-message`, literal, "'options'")
+      }
+      if (property.name.text === 'kind' && literal.text === 'invocation-error') {
+        recordOpeningProbe(`${probePrefix}missing-invocation-message`, literal, "'invalid-input'")
+        recordOpeningProbe(
+          `${probePrefix}requested-message`,
+          condition,
+          `(${condition.getText()} || ${property.expression.getText()}.kind === 'requested')`,
+        )
+      }
+      if (property.name.text === 'phase' && literal.text === 'activate')
+        recordOpeningProbe(`${probePrefix}activation-message`, literal, "'open'")
+      if (property.name.text === 'action' && literal.text === 'activate')
+        recordOpeningProbe(`${probePrefix}requested-open-message`, condition, 'true')
+      const equal =
+        (property.name.text === 'kind'
+          ? outcome.kind
+          : property.name.text === 'reason'
+            ? outcome.reason
+            : property.name.text === 'phase'
+              ? outcome.phase
+              : outcome.action) === literal.text
+      return condition.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
+        ? equal
+        : condition.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken
+          ? !equal
+          : undefined
+    }
+    function inspectFeedbackDispatch(
+      node: ts.Node,
+      applicable: readonly number[],
+      sink = false,
+    ): void {
+      if (
+        applicable.length === 0 ||
+        (feedbackFunction === undefined &&
+          awaitedResult !== undefined &&
+          node.getEnd() <= awaitedResult.getEnd())
+      )
+        return
+      if (ts.isIfStatement(node) || ts.isConditionalExpression(node)) {
+        const condition = ts.isIfStatement(node) ? node.expression : node.condition
+        const matches = applicable.map((index) => {
+          const outcome = outcomes[index]
+          return outcome === undefined ? undefined : feedbackCondition(condition, outcome)
+        })
+        if (matches.includes(undefined)) {
+          feedbackDispatchSupported = false
+          return
+        }
+        const yes = ts.isIfStatement(node) ? node.thenStatement : node.whenTrue
+        const no = ts.isIfStatement(node) ? node.elseStatement : node.whenFalse
+        inspectFeedbackDispatch(
+          yes,
+          applicable.filter((_, index) => matches[index] === true),
+          sink,
+        )
+        if (no !== undefined)
+          inspectFeedbackDispatch(
+            no,
+            applicable.filter((_, index) => matches[index] === false),
+            sink,
+          )
+        return
+      }
+      if (
+        ts.isBinaryExpression(node) &&
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        mode !== 'fresh' &&
+        (node.left.getText() === recoveryCondition ||
+          node.left.getText() === `${recoveryCondition ?? ''}.value`)
+      ) {
+        for (const index of applicable) {
+          const outcome = outcomes[index]
+          recoveryByOutcome[index] =
+            outcome === undefined ? undefined : feedbackCondition(node.right, outcome)
+        }
+        if (node.right.kind !== ts.SyntaxKind.FalseKeyword && outcomeName !== undefined) {
+          recordOpeningProbe(
+            `${probePrefix}pending-recovery`,
+            node.right,
+            `(${node.right.getText()} || ${outcomeName}.kind === 'association-pending')`,
+          )
+          recordOpeningProbe(
+            `${probePrefix}activation-recovery`,
+            node.right,
+            `(${node.right.getText()} || (${outcomeName}.kind === 'invocation-error' && ${outcomeName}.phase === 'activate'))`,
+          )
+          recordOpeningProbe(
+            `${probePrefix}unavailable-storage-recovery`,
+            node.right,
+            `(${node.right.getText()} || (${outcomeName}.kind === 'association-unavailable' && ${outcomeName}.reason === 'recovery-unavailable'))`,
+          )
+        }
+        return
+      }
+      if (
+        ts.isBinaryExpression(node) &&
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        (node.left.getText() === feedbackArgument ||
+          node.left.getText() === `${feedbackArgument ?? ''}.value`)
+      ) {
+        if (mode === 'tracked' && ts.isStringLiteral(node.right))
+          recordOpeningProbe(
+            'tracked-cleared-error',
+            node,
+            `(${node.getText()}, ${node.left.getText()} = undefined)`,
+          )
+        if (
+          mode === 'tracked' &&
+          ts.isStringLiteral(node.right) &&
+          node.right.text === 'capabilities.pageActivationRequested'
+        )
+          recordOpeningProbe('tracked-requested-missing', node.right, 'undefined')
+        if (
+          mode === 'tracked' &&
+          ts.isStringLiteral(node.right) &&
+          [
+            'capabilities.browserPageAssociationRestoring',
+            'capabilities.browserPageRecoveryUnavailable',
+          ].includes(node.right.text)
+        )
+          recordOpeningProbe(
+            `tracked-${node.right.text}-message`,
+            node.right,
+            "'capabilities.pageAssociationUnavailable'",
+          )
+        inspectFeedbackDispatch(node.right, applicable, true)
+        return
+      }
+      if (sink) {
+        if (ts.isIdentifier(node) && node.text === 'undefined') {
+          for (const index of applicable) feedbackByOutcome[index] = undefined
+          return
+        }
+        if (!ts.isStringLiteral(node)) {
+          feedbackDispatchSupported = false
+          return
+        }
+        for (const index of applicable) feedbackByOutcome[index] = node.text
+        return
+      }
+      ts.forEachChild(node, (child) => {
+        inspectFeedbackDispatch(child, applicable)
+      })
+    }
+    if (feedbackRoot !== undefined)
+      inspectFeedbackDispatch(
+        feedbackRoot,
+        outcomes.map((_, index) => index),
+      )
+    if (
+      status.length !== 1 ||
+      translator === undefined ||
+      feedbackArgument === undefined ||
+      feedbackArgument.length === 0 ||
+      handlerSource.includes(`${translator}(`) ||
+      !feedbackDispatchSupported ||
+      outcomes.some((outcome, index) => feedbackByOutcome[index] !== outcome.message)
+    )
+      violations.push('CAPABILITY_OPENING_FEEDBACK')
+    if (mode !== 'fresh') {
+      const warning = elements.find(({ node }) =>
+        node.children?.some(
+          (child) =>
+            child.type === 5 &&
+            child.loc?.source.includes(
+              `${translator ?? ''}('capabilities.reopenStandaloneWarning')`,
+            ),
+        ),
+      )
+      const warningCondition =
+        warning === undefined
+          ? undefined
+          : [...warning.ancestors, warning.node]
+              .flatMap((node) => templateDirectives(node, 'if'))
+              .at(-1)
+              ?.exp?.content.trim()
+      if (
+        recoveryCondition === undefined ||
+        warningCondition !== recoveryCondition ||
+        outcomes.some((outcome, index) => recoveryByOutcome[index] !== outcome.recovery) ||
+        warning === undefined ||
+        recoveryButton === undefined ||
+        staticTemplateAttribute(recoveryButton.node, 'aria-describedby') !==
+          staticTemplateAttribute(warning.node, 'id')
+      )
+        violations.push('CAPABILITY_OPENING_RECOVERY')
+      const hint = elements.find(({ node }) =>
+        node.children?.some(
+          (child) =>
+            child.type === 5 &&
+            child.loc?.source.includes(`${translator ?? ''}('capabilities.reuseStandaloneHint')`),
+        ),
+      )
+      if (
+        mode === 'tracked' &&
+        (hint === undefined ||
+          anchor === undefined ||
+          staticTemplateAttribute(anchor.node, 'aria-describedby') !==
+            staticTemplateAttribute(hint.node, 'id'))
+      )
+        violations.push('CAPABILITY_OPENING_ANCHOR')
+      if (warning?.node.loc?.source !== undefined && probeSources !== undefined)
+        probeSources.set(
+          'recovery-warning',
+          pageSource.replace(
+            warning.node.loc.source,
+            warning.node.loc.source.replace(
+              'capabilities.reopenStandaloneWarning',
+              'capabilities.title',
+            ),
+          ),
+        )
+    }
+    if (mode !== 'fresh' && anchor?.node.loc?.source !== undefined && probeSources !== undefined) {
+      const original = anchor.node.loc.source
+      for (const [id, from, to] of mode === 'tracked'
+        ? [
+            ['target', 'target="_blank"', 'target="_self"'],
+            ['isolation', 'rel="noopener"', 'rel="opener"'],
+            ['native-click', '@click=', '@click.prevent='],
+          ]
+        : [['button-type', 'type="button"', 'type="submit"']]) {
+        if (id !== undefined && from !== undefined && to !== undefined)
+          probeSources.set(
+            `${probePrefix}${id}`,
+            pageSource.replace(original, original.replace(from, to)),
+          )
+      }
+    }
   }
-  if (callable !== undefined) inspectActivation(callable)
-  const activations = calls.filter((call) => call.expression.getText() === activation?.[0])
-  const activationCall = activations[0]
-  const resultName =
-    activationCall !== undefined && ts.isVariableDeclaration(activationCall.parent)
-      ? activationCall.parent.name.getText()
-      : activationCall?.getText()
-  const resultHandling = calls.find(
-    (call) =>
-      ts.isPropertyAccessExpression(call.expression) &&
-      call.expression.name.text === 'then' &&
-      call.expression.expression.getText() === resultName,
-  )
-  const handlingName =
-    resultHandling !== undefined && ts.isVariableDeclaration(resultHandling.parent)
-      ? resultHandling.parent.name.getText()
-      : resultHandling?.getText()
-  const returnedHandling =
-    resultHandling !== undefined &&
-    (returns.some((statement) => statement.expression?.getText() === handlingName) ||
-      (callable !== undefined &&
-        ts.isArrowFunction(callable) &&
-        callable.body.getText() === handlingName))
-  const awaitedHandling =
-    callable?.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) ===
-      true && awaits.some((expression) => expression.expression.getText() === resultName)
-  const translator = script.statements
-    .filter(ts.isVariableStatement)
-    .flatMap((statement) => [...statement.declarationList.declarations])
-    .filter(
-      (declaration) =>
-        declaration.initializer !== undefined &&
-        ts.isCallExpression(declaration.initializer) &&
-        declaration.initializer.expression.getText() === importedNames.get('useConsoleI18n'),
-    )
-    .flatMap((declaration) =>
-      ts.isObjectBindingPattern(declaration.name) ? [...declaration.name.elements] : [],
-    )
-    .find((binding) => (binding.propertyName ?? binding.name).getText() === 't')
-    ?.name.getText()
+  const withoutRecovery =
+    recoveryCall === undefined
+      ? scriptSource
+      : scriptSource.slice(0, recoveryCall.getStart()) + scriptSource.slice(recoveryCall.end)
   if (
-    navigation === undefined ||
-    activation === undefined ||
-    activationOptions === undefined ||
-    !ts.isObjectLiteralExpression(activationOptions) ||
-    objectPropertyInitializer(activationOptions, 'openIn')?.getText() !== "'new-page'" ||
-    anchors.length !== 1 ||
-    anchor === undefined ||
-    !anchor.ancestors.some((node) => templateDirectives(node, 'slot', 'actions').length === 1) ||
-    staticTemplateAttribute(anchor.node, 'target') !== '_blank' ||
-    staticTemplateAttribute(anchor.node, 'rel') !== 'noopener' ||
-    translator === undefined ||
-    !anchor.node.loc?.source.includes(`${translator}('capabilities.openStandalone')`) ||
-    href === undefined ||
-    !ts.isCallExpression(href) ||
-    href.expression.getText() !== `${navigation}.resolveHref` ||
-    destinationObject === undefined ||
-    !ts.isObjectLiteralExpression(destinationObject) ||
-    objectPropertyInitializer(destinationObject, 'name')?.getText() !==
-      "'capability-roadmap-standalone'" ||
-    templateDirectives(anchor.node, 'on').length !== 1 ||
-    click?.arg?.content !== 'click' ||
-    click.modifiers?.length !== 0 ||
-    activationCall === undefined ||
-    activations.length !== 1 ||
-    activationCall.arguments[0]?.getText() !== callable?.parameters[0]?.name.getText() ||
-    activationCall.arguments[1]?.getText() !== destination ||
-    (!returnedHandling && !awaitedHandling) ||
-    awaits.some(
-      (expression) =>
-        expression.getStart() < activationCall.getStart() &&
-        expression.expression !== activationCall,
-    ) ||
-    /\b(?:window|RouterLink|useLink)\b|\.(?:navigate|push|replace|assign|open)\s*\(/u.test(
-      scriptContent(pageSource),
+    feedbackBindings.size !== 2 ||
+    /\b(?:window|RouterLink|useLink)\b|\.(?:navigate|push|replace|assign|open|focus|close)\s*\(/u.test(
+      withoutRecovery,
     )
   )
     violations.push('CAPABILITY_OPENING_ANCHOR')
-
-  const status = elements.filter(({ node }) => staticTemplateAttribute(node, 'role') === 'status')
-  const feedbackArgument = status[0]?.node.loc?.source
-    .split(`${translator ?? ''}(`)[1]
-    ?.split(')')[0]
-    ?.trim()
-  const resultCallback = resultHandling?.arguments[0]
-  const feedbackCallback =
-    resultCallback !== undefined && ts.isIdentifier(resultCallback)
-      ? topLevelCallables(script).get(resultCallback.text)
-      : resultCallback
-  const awaitedResult = awaits.find((expression) => expression.expression.getText() === resultName)
-  const returnedResult = returns.find(
-    (statement) => statement.expression?.getText() === handlingName,
-  )
-  if (returnedResult?.expression !== undefined)
-    recordOpeningProbe(
-      'detached-result',
-      returnedResult,
-      `void (${returnedResult.expression.getText()})`,
-    )
-  else if (returnedHandling && callable !== undefined && ts.isArrowFunction(callable))
-    recordOpeningProbe('detached-result', callable.body, `void (${callable.body.getText()})`)
-  else if (awaitedHandling && awaitedResult !== undefined)
-    recordOpeningProbe(
-      'detached-result',
-      awaitedResult,
-      `void (${awaitedResult.expression.getText()})`,
-    )
-  const feedbackFunction =
-    feedbackCallback !== undefined &&
-    (ts.isFunctionDeclaration(feedbackCallback) ||
-      ts.isFunctionExpression(feedbackCallback) ||
-      ts.isArrowFunction(feedbackCallback))
-      ? feedbackCallback
-      : undefined
-  const outcomeName =
-    feedbackFunction?.parameters[0]?.name.getText() ??
-    (awaitedResult !== undefined && ts.isVariableDeclaration(awaitedResult.parent)
-      ? awaitedResult.parent.name.getText()
-      : undefined)
-  const feedbackRoot = feedbackFunction?.body ?? (awaitedHandling ? callable.body : undefined)
-  const outcomes = [
-    {
-      kind: 'invalid-input',
-      reason: 'destination',
-      message: 'route-message.error-invalid-route-input',
-    },
-    {
-      kind: 'invalid-input',
-      reason: 'options',
-      message: 'route-message.error-application-route-failure',
-    },
-    {
-      kind: 'invocation-error',
-      reason: undefined,
-      message: 'route-message.error-application-route-failure',
-    },
-    { kind: 'requested', reason: undefined, message: undefined },
-  ] as const
-  const feedbackByOutcome = outcomes.map(() => new Set<string>())
-  let feedbackDispatchSupported = feedbackRoot !== undefined && outcomeName !== undefined
-  // This four-outcome proof only follows the public discriminants and message-key sink.
-  function feedbackCondition(
-    expression: ts.Expression,
-    outcome: (typeof outcomes)[number],
-  ): boolean | undefined {
-    const condition = unwrapExpression(expression)
-    if (
-      ts.isPrefixUnaryExpression(condition) &&
-      condition.operator === ts.SyntaxKind.ExclamationToken
-    ) {
-      const operand = feedbackCondition(condition.operand, outcome)
-      return operand === undefined ? undefined : !operand
-    }
-    if (!ts.isBinaryExpression(condition)) return undefined
-    if (
-      condition.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
-      condition.operatorToken.kind === ts.SyntaxKind.BarBarToken
-    ) {
-      const left = feedbackCondition(condition.left, outcome)
-      const right = feedbackCondition(condition.right, outcome)
-      if (left === undefined || right === undefined) return undefined
-      return condition.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
-        ? left && right
-        : left || right
-    }
-    const property = ts.isPropertyAccessExpression(condition.left)
-      ? condition.left
-      : condition.right
-    const literal = property === condition.left ? condition.right : condition.left
-    if (
-      !ts.isPropertyAccessExpression(property) ||
-      property.expression.getText() !== outcomeName ||
-      !ts.isStringLiteral(literal) ||
-      (property.name.text !== 'kind' && property.name.text !== 'reason')
-    )
-      return undefined
-    if (property.name.text === 'reason' && literal.text === 'destination') {
-      recordOpeningProbe(
-        'collapsed-invalid-input',
-        condition,
-        `${property.expression.getText()}.kind === 'invalid-input'`,
-      )
-      recordOpeningProbe('wrong-options-message', literal, "'options'")
-    }
-    if (property.name.text === 'kind' && literal.text === 'invocation-error') {
-      recordOpeningProbe('missing-invocation-message', literal, "'invalid-input'")
-      recordOpeningProbe(
-        'requested-message',
-        condition,
-        `(${condition.getText()} || ${property.expression.getText()}.kind === 'requested')`,
-      )
-    }
-    const equal = outcome[property.name.text] === literal.text
-    return condition.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
-      ? equal
-      : condition.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken
-        ? !equal
-        : undefined
-  }
-  function inspectFeedbackDispatch(
-    node: ts.Node,
-    applicable: readonly number[],
-    sink = false,
-  ): void {
-    if (
-      applicable.length === 0 ||
-      (feedbackFunction === undefined &&
-        awaitedResult !== undefined &&
-        node.getEnd() <= awaitedResult.getEnd())
-    )
-      return
-    if (ts.isIfStatement(node) || ts.isConditionalExpression(node)) {
-      const condition = ts.isIfStatement(node) ? node.expression : node.condition
-      const matches = applicable.map((index) =>
-        feedbackCondition(condition, outcomes[index] ?? outcomes[0]),
-      )
-      if (matches.includes(undefined)) {
-        feedbackDispatchSupported = false
-        return
-      }
-      const yes = ts.isIfStatement(node) ? node.thenStatement : node.whenTrue
-      const no = ts.isIfStatement(node) ? node.elseStatement : node.whenFalse
-      inspectFeedbackDispatch(
-        yes,
-        applicable.filter((_, index) => matches[index] === true),
-        sink,
-      )
-      if (no !== undefined)
-        inspectFeedbackDispatch(
-          no,
-          applicable.filter((_, index) => matches[index] === false),
-          sink,
-        )
-      return
-    }
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      (node.left.getText() === feedbackArgument ||
-        node.left.getText() === `${feedbackArgument ?? ''}.value`)
-    ) {
-      inspectFeedbackDispatch(node.right, applicable, true)
-      return
-    }
-    if (sink) {
-      if (ts.isIdentifier(node) && node.text === 'undefined') return
-      if (!ts.isStringLiteral(node)) {
-        feedbackDispatchSupported = false
-        return
-      }
-      for (const index of applicable) feedbackByOutcome[index]?.add(node.text)
-      return
-    }
-    ts.forEachChild(node, (child) => {
-      inspectFeedbackDispatch(child, applicable)
-    })
-  }
-  if (feedbackRoot !== undefined)
-    inspectFeedbackDispatch(
-      feedbackRoot,
-      outcomes.map((_, index) => index),
-    )
-  if (
-    status.length !== 1 ||
-    translator === undefined ||
-    feedbackArgument === undefined ||
-    feedbackArgument.length === 0 ||
-    handlerSource.includes(`${translator}(`) ||
-    !feedbackDispatchSupported ||
-    outcomes.some(
-      (outcome, index) =>
-        !exactSet(
-          [...(feedbackByOutcome[index] ?? [])],
-          outcome.message === undefined ? [] : [outcome.message],
-        ),
-    )
-  )
-    violations.push('CAPABILITY_OPENING_FEEDBACK')
 
   const contentChildren = (contentTemplate.children ?? []).filter((node) => node.type === 1)
   const contentScript = ts.createSourceFile(
@@ -18265,10 +18616,39 @@ async function validateAppearanceAndPageFacts(): Promise<{
     'wrong-options-message',
     'missing-invocation-message',
     'requested-message',
+    'tracked-detached-result',
+    'tracked-target',
+    'tracked-isolation',
+    'tracked-native-click',
+    'tracked-collapsed-invalid-input',
+    'tracked-activation-message',
+    'tracked-requested-open-message',
+    'tracked-requested-missing',
+    'tracked-requested-stale',
+    'tracked-cleared-error',
+    'tracked-pending-recovery',
+    'tracked-activation-recovery',
+    'tracked-unavailable-storage-recovery',
+    'tracked-capabilities.browserPageAssociationRestoring-message',
+    'tracked-capabilities.browserPageRecoveryUnavailable-message',
+    'recovery-detached-result',
+    'recovery-button-type',
+    'recovery-command',
+    'recovery-warning',
   ]) {
     const changedPage = openingProbeSources.get(id)
     const expected =
-      id === 'detached-result' ? 'CAPABILITY_OPENING_ANCHOR' : 'CAPABILITY_OPENING_FEEDBACK'
+      id.endsWith('detached-result') ||
+      [
+        'tracked-target',
+        'tracked-isolation',
+        'tracked-native-click',
+        'recovery-button-type',
+      ].includes(id)
+        ? 'CAPABILITY_OPENING_ANCHOR'
+        : id.endsWith('-recovery') || ['recovery-command', 'recovery-warning'].includes(id)
+          ? 'CAPABILITY_OPENING_RECOVERY'
+          : 'CAPABILITY_OPENING_FEEDBACK'
     if (
       changedPage === undefined ||
       changedPage === capabilityPage ||
@@ -18290,9 +18670,14 @@ async function validateAppearanceAndPageFacts(): Promise<{
     )
       violations.push('Capability opening optional unwrapped slot negative probe did not fail.')
   }
-  for (const [locale, label] of [
-    ['zh-CN', '在新浏览器页打开独立视图'],
-    ['en', 'Open standalone view in a new browser page'],
+  for (const [locale, label, trackedLabel, recoveryLabel] of [
+    ['zh-CN', '在新浏览器页打开独立视图', '打开或切换到关联的独立浏览器页', '重新打开并关联'],
+    [
+      'en',
+      'Open standalone view in a new browser page',
+      'Open or switch to the associated standalone browser page',
+      'Reopen and associate',
+    ],
   ] as const) {
     const catalog: unknown = JSON.parse(
       await readFile(
@@ -18300,7 +18685,22 @@ async function validateAppearanceAndPageFacts(): Promise<{
         'utf8',
       ),
     )
-    if (!isJsonObject(catalog) || catalog['capabilities.openStandalone'] !== label)
+    if (
+      !isJsonObject(catalog) ||
+      catalog['capabilities.openStandalone'] !== label ||
+      catalog['capabilities.reuseStandalone'] !== trackedLabel ||
+      catalog['capabilities.reopenStandalone'] !== recoveryLabel ||
+      [
+        'capabilities.reuseStandaloneHint',
+        'capabilities.pageAssociationUnconfirmed',
+        'capabilities.pageAssociationUnavailable',
+        'capabilities.pageActivationFailure',
+        'capabilities.pageActivationRequested',
+        'capabilities.browserPageAssociationRestoring',
+        'capabilities.browserPageRecoveryUnavailable',
+        'capabilities.reopenStandaloneWarning',
+      ].some((key) => typeof catalog[key] !== 'string' || catalog[key].trim().length === 0)
+    )
       violations.push(`${locale}: capability standalone action label drifted.`)
   }
 
@@ -18598,8 +18998,8 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(routerConsoleProjection.productRouteCount) !== 11 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
     runtimeCount(routerRecords) !== 18 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 7 ||
-    runtimeCount(storageRecords) !== 7 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 8 ||
+    runtimeCount(storageRecords) !== 8 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 10 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
       'ui-form',

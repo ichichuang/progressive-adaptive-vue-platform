@@ -1228,9 +1228,10 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
 
     if (
       sessionStorageReferences > 0 &&
-      displayPath !== 'apps/web/src/app/storage/scroll-refresh-storage.ts'
+      displayPath !== 'apps/web/src/app/storage/scroll-refresh-storage.ts' &&
+      displayPath !== 'apps/web/src/app/storage/browser-page-session-storage.ts'
     ) {
-      violations.push(`${displayPath}: sessionStorage requires the exact scroll-refresh adapter.`)
+      violations.push(`${displayPath}: sessionStorage requires an exact admitted record adapter.`)
     }
   }
 

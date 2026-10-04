@@ -444,7 +444,8 @@ const noDirectStorageAccess = {
     function storageAccessIsAllowed(storageName) {
       return (
         (ownsLocalStorage && storageName === 'localStorage') ||
-        (filename === 'apps/web/src/app/storage/scroll-refresh-storage.ts' &&
+        ((filename === 'apps/web/src/app/storage/scroll-refresh-storage.ts' ||
+          filename === 'apps/web/src/app/storage/browser-page-session-storage.ts') &&
           storageName === 'sessionStorage')
       )
     }

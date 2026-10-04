@@ -115,7 +115,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -460,7 +460,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -575,7 +575,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1024,7 +1024,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1158,7 +1158,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1412,7 +1412,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3733,7 +3733,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3816,7 +3816,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -5011,7 +5011,7 @@ Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGE
     { "id": "runtime-kernel", "visibleLabel": "运行时内核", "summary": "当前十五阶段启动、Provider、错误与释放流程。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "runtime-kernel-inspector", "owner": "runtime-kernel", "prerequisiteIds": ["appearance"], "admissionCondition": "已激活。", "interactive": false },
     { "id": "shared-ui-expansion", "visibleLabel": "共享 UI 扩展", "summary": "在更多真实消费者出现后扩展 PAVP UI。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "pavp-ui", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要额外真实消费者和独立准入。", "interactive": false },
     { "id": "specialist-capabilities", "visibleLabel": "专业能力", "summary": "Grid、Editor、Chart 等专业能力的条件式准入。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "specialist-admission", "prerequisiteIds": [], "admissionCondition": "需要真实专业产品需求和替换边界。", "interactive": false },
-    { "id": "storage-persistence", "visibleLabel": "存储与持久化", "summary": "当前七条非敏感浏览器存储记录及其生命周期。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "storage-persistence-inspector", "owner": "storage", "prerequisiteIds": ["router-governance"], "admissionCondition": "已激活。", "interactive": false },
+    { "id": "storage-persistence", "visibleLabel": "存储与持久化", "summary": "当前八条非敏感浏览器存储记录及其生命周期。", "capabilityStatus": "ACTIVE", "implementationStatus": "complete", "presentationMode": "active-read-only", "routeName": "storage-persistence-inspector", "owner": "storage", "prerequisiteIds": ["router-governance"], "admissionCondition": "已激活。", "interactive": false },
     { "id": "tanstack-query", "visibleLabel": "服务端状态缓存", "summary": "仅随真实 API Transport 准入的服务端状态能力。", "capabilityStatus": "DEFERRED", "implementationStatus": "deferred", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "server-state", "prerequisiteIds": ["api-transport"], "admissionCondition": "需要真实 API Transport 与服务端状态消费者。", "interactive": false },
     { "id": "view-transition-motion", "visibleLabel": "页面与交互动效", "summary": "由真实交互需求触发的 View Transition 和 Motion 能力。", "capabilityStatus": "TARGET_INACTIVE", "implementationStatus": "not-started", "presentationMode": "roadmap-only", "routeName": "capability-roadmap", "owner": "motion", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要命名交互需求和独立动效准入。", "interactive": false }
   ]
@@ -5868,9 +5868,9 @@ type CapabilityStatus =
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` under §9.4; next and successor remain `NONE` |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is `PAVP_APPLICATION_BROWSER_PAGE_REUSE` under §9.4; next and successor remain `NONE` |
 | TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
-| Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12; seven current records |
+| Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12 and the browser-page-session record in §9.4; eight current records |
 | API Transport | `DEFERRED` | required starter integration; `PAVP_API_TRANSPORT_IMPLEMENTATION` still requires exact real endpoint/origin/schema/policy/consumer/server-owner admission |
 | Auth, Session and Permission | `DEFERRED` | required starter integration; `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` still requires active API Transport and real server security contracts |
 | Observability reporting and Runtime Performance collection | `DEFERRED` | optional demand-driven admission; backend/auth-dependent reporting cannot precede its real producers and provider contract |
@@ -7358,7 +7358,7 @@ caller address / direct URL
 
 前序 `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` 已完成源码实施、静态验证、源码审查、限定 Owner 验收及 Git 交付，提交为 `001800c5d982cf28740e147c25f51c47460ef674`，发布到 `origin/main`。Owner 已接受总览普通链接、原生修饰键点击与复制链接，以及总览/侧栏/页签/独立页/浏览器返回交错时已观察的目的地与呈现一致性；不扩展为未观察缓存内部行为、任意输入、完整无障碍或发布验收。此前实施时的未验收与未授权 Git 状态是历史阶段，不能阻塞本次授权。
 
-Owner 在该提交的干净 `main` 上授权 `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` 的一次有界源码实施及本节原位合同更新。本节继续拥有当前任务；不另建规格，不授权 Git 交付或后继工作，Next/Successor 保持 `NONE`。
+Owner 在该提交的干净 `main` 上授权 `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` 的一次有界源码实施及本节原位合同更新。该记录保留前序任务的实施阶段；本节继续拥有应用导航合同，当前有界任务见下方复用准入，Next/Successor 保持 `NONE`。
 
 ```text
 WORK_PACKAGE=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
@@ -7377,20 +7377,72 @@ Owner 随后明确批准本轮一次性预算修订：唯一配置 `project.conf
 
 同轮修正消费者的既有错误反馈分流并补准直接检查。修复后、预算同步前的实测为 `262203` bytes gzip，旧预算余量 `8133` bytes、缺口 `59` bytes；该次 Bundle 仍退出 `1`。预算同步后，最终候选已通过相关窄检查、真实 `pnpm check:arch`、新构建、完整 Bundle 检查与 `mise exec -- pnpm verify`（退出 `0`）。最终 Initial JavaScript 为 `262203` bytes gzip，预算 `278528`、余量 `16325` bytes，满足 `8192 <= headroom < 16384`；Initial CSS 为 `33245` bytes gzip，预算 `40960`、余量 `7715` bytes，18 Route Roots 与 28 Dynamic Roots 精确集合通过检查。Tracked Generated Source 仅有获批预算镜像变化；新入口的 Owner Runtime/Visual Acceptance 尚未执行，所有候选保持未暂存，Git Delivery 未授权。此前 `261829` 到 `262204` 的 `375` bytes 报告差值，与前序尚未完整归因的 `7765` bytes 差值分别保留，不混为本轮预算调整的性能收益。
 
+前序新页能力随后已完成源码审查、限定 Owner 普通点击与所提供页面表现验收，以及 Git 交付和精确提交 CI；提交为 `88b1bc01127c0ca08d0e1be30b4384a2f5d9baa0`，已推送 `origin/main`。上方未验收、未暂存及 Git 未授权描述保留当时阶段含义，不外推为当前交付状态，也不扩展到未观察行为或 Release Acceptance。
+
+Owner 在该干净基线上明确批准 `PAVP_APPLICATION_BROWSER_PAGE_REUSE` 的实施及直接 Canonical 更新，包含同目的地跟踪、仅该分支的引用/隔离例外、最小目标文档查询和显式手动重新关联。Owner 随后授权本包兼容性修复，以保留浏览器创建的源 Opener 关系替代仅 Tracked 分支的清 Opener 规则；Fresh 与原生外链隔离不变。不另建规格，不授权 Git 交付或后继任务。
+
+```text
+WORK_PACKAGE=PAVP_APPLICATION_BROWSER_PAGE_REUSE
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=FAIL
+REPAIR_RUNTIME_ACCEPTANCE=PENDING_OWNER_RETEST
+REFRESH_RECOVERY_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+```
+
+修复前候选的历史静态执行已通过受影响源码 Lint、Vue/TypeScript 检查、真实 `check:arch` 及其内存反例，以及完整 `mise exec -- pnpm verify`（退出 `0`）。该次构建的 Initial JavaScript 为 `263678` bytes gzip，原预算 `278528`、余量 `14850` bytes；Initial CSS 为 `33245` bytes gzip，预算 `40960`、余量 `7715` bytes；18 Route Roots 与 28 Dynamic Roots 精确集合通过。预算和计量规则未改，Tracked Generated Source 无差异。当时最后一次检查器收窄后已重新完整执行同一 Gate 并通过；该次 Gate 后仅同步验证记录，并单独以 Diff Whitespace 与 Owning Architecture Check 验证该文档差异。这是保留的历史证据，不证明前台激活生效，也不是本次修复后的新构建结果。七个候选文件全部未暂存，未执行 Git Delivery 或 Release。
+
+Owner 已实际操作复用场景并报告失败：首次点击打开目标页，返回源页再次点击没有可见切换，刷新源页仅允许再次新开。该场景的 Runtime Acceptance 为 FAIL，不能记为未测试或已接受；没有分支观测，不能据此断言当时到达了 eligible、initialDocument Pending 或某个异常分支。源码确认旧实现清空 target.opener，eligible 分支调用 focus 后清除反馈。Chromium 当前上游 [DOMWindow 实现](https://raw.githubusercontent.com/chromium/chromium/main/third_party/blink/renderer/core/frame/dom_window.cc) 的 setOpenerForBindings(null) 会清除 Frame 原生 Opener，focus 的一条前台激活许可路径读取该原生关系；非 null JavaScript 属性赋值不恢复该关系。这支持本包修复，不证明上游修订等于 Owner 已安装的浏览器二进制，也不构成浏览器复现。
+
+本次修复候选保留新建目标的原生 Opener，并拒绝丢失源关系的旧关联；Runtime Acceptance 保持失败，修复候选等待 Owner 重新验证新关联能够激活原目标而不刷新或新开。旧清 Opener 代码创建的页面需要显式重新关联，不能用其结果证明修复后的创建路径。该前序修复尚未恢复源页刷新后丢失的内存引用，本次恢复扩展见下节；中性请求反馈、无异常和静态检查均不证明切页成功。
+
+本次最终修复源码与检查器已通过受影响文件 Lint、Vue/TypeScript、真实 `check:arch` 及现有机制内的针对性反例、新 Canonical Build/Bundle，以及完整 `mise exec -- pnpm verify`（退出 `0`）。完整 Gate 的新构建 Initial JavaScript 为 `263750` bytes gzip，预算仍为 `278528`、余量 `14778` bytes；Initial CSS 为 `33245` bytes gzip，预算 `40960`、余量 `7715` bytes。最低余量 `8192`、重定预算余量上界、计量规则、CSS/Route 预算及 18 Route Roots/28 Dynamic Roots 精确集合保持；Tracked Generated Source 无差异。全量 Gate 后仅同步本段与 Static Verification 状态，另以 Markdown 格式、Diff Whitespace 和真实 `check:arch` 窄验证检查该文档更新；源码与检查器未再变化。该静态结果不改变上述失败的 Runtime Acceptance 或修复待复验状态，七文件仍全部未暂存，Git Delivery 与 Release 均未执行。
+
 唯一应用导航入口仍为现有应用私有模块 `apps/web/src/app/router/application-navigation.ts`。`RegisteredRouteDestination` 与 `TypedNavigationResult` 继续由 `route-input.ts` 拥有；`RouterNavigationOptions` 继续由 `router-lifecycle.ts` 拥有。公共消费函数为 `useApplicationNavigation()`，只提供以下视图，不导出 Router、Dispose 或工作区内部对象：
 
 ```ts
 type ApplicationNavigationOptions = Pick<RouterNavigationOptions, 'replace'> & {
   readonly openIn?: 'current-page'
+  readonly reuse?: never
+  readonly recovery?: never
 }
 interface NewBrowserPageOptions {
   readonly openIn: 'new-page'
+  readonly reuse?: never
+  readonly recovery?: never
+  readonly replace?: never
+}
+interface TrackedNewBrowserPageOptions {
+  readonly openIn: 'new-page'
+  readonly reuse: 'same-destination'
+  readonly recovery?: 'reopen'
   readonly replace?: never
 }
 type BrowserPageOpenResult =
   | { readonly kind: 'invalid-input'; readonly reason: 'destination' | 'options' }
   | { readonly kind: 'invocation-error' }
   | { readonly kind: 'requested'; readonly completion: 'unobservable' }
+type TrackedBrowserPageResult =
+  | { readonly kind: 'invalid-input'; readonly reason: 'destination' | 'options' }
+  | {
+      readonly kind: 'invocation-error'
+      readonly phase: 'open' | 'associate' | 'initial-navigation' | 'activate'
+    }
+  | { readonly kind: 'open-unavailable'; readonly reason: 'no-reference' }
+  | {
+      readonly kind: 'requested'
+      readonly action: 'open' | 'activate'
+      readonly completion: 'unobservable'
+    }
+  | { readonly kind: 'association-pending' }
+  | {
+      readonly kind: 'association-unavailable'
+      readonly reason: 'changed-destination' | 'unconfirmed' | 'reference-lost' | 'restoring' | 'recovery-unavailable'
+    }
 interface ApplicationNavigation {
   navigate(
     destination: RegisteredRouteDestination,
@@ -7404,13 +7456,21 @@ interface ApplicationNavigation {
     destination: RegisteredRouteDestination,
     options: ApplicationNavigationOptions | NewBrowserPageOptions,
   ): Promise<TypedNavigationResult | BrowserPageOpenResult>
+  navigate(
+    destination: RegisteredRouteDestination,
+    options: TrackedNewBrowserPageOptions,
+  ): Promise<TrackedBrowserPageResult>
+  navigate(
+    destination: RegisteredRouteDestination,
+    options: ApplicationNavigationOptions | NewBrowserPageOptions | TrackedNewBrowserPageOptions,
+  ): Promise<TypedNavigationResult | BrowserPageOpenResult | TrackedBrowserPageResult>
   resolveHref(destination: RegisteredRouteDestination): string | undefined
 }
 ```
 
 普通调用者直接传入名称与该 Route 已允许的 Params/Query/Hash，无需手动调用冻结辅助函数。省略 `openIn` 或显式 `current-page` 的 `navigate` 只投影可选 `replace`，不能传播调用对象上的其他结构字段；默认 Push、显式 `replace: true` 替换当前 History Entry。直接返回同一 Coordinator 的原 Promise，不加 Async Wrapper、预解析、重复判定、预约、取消、第二次操作或结果转换。§9.11 的 Duplicate、Failure、Redirect、Cancel、Presentation、Focus/Scroll 与真实 Promise Rejection 完全保留。`resolveHref` 只返回 `resolveRegisteredDestination(router, destination)?.href`；无效为 `undefined`，无导航、Preload、Reservation、ID 分配、状态/History 写入或伪造 URL/导航结果。
 
-`TypedNavigationResult` 保持原样；上述 Options/新页 Result 默认仅在模块内使用，真实消费者需要时才导出。实现使用真实 TypeScript Overload，不以类型断言掩盖返回类型。未知 Runtime `openIn` 返回 `invalid-input/options`；`new-page` 上只要存在 `replace`（包括 `false` 或 `undefined`）即在任何副作用前拒绝。新页分支不调用 Coordinator、Raw Router 导航、History、Workspace、源页 Focus/Presentation。它只经 `resolveRegisteredDestination` 获取 href，无效为 `invalid-input/destination`，不跳转错误页；有效输入在本次同步调用栈恰好执行一次 `window.open(href, '_blank', 'noopener')`，随后返回已解决 Promise。Catch 仅包围该 Browser Invocation；同步异常为 `invocation-error`，正常返回（含 null）均为 `requested/unobservable`。不保存/检查 Window，不推断拦截、加载完成、前台焦点或 tab/window 形式；不加 async wrapper、await/then 延迟、预载、动态导入、定时器、确认、空页预约、自动重试、原页 fallback、尺寸或窗口跟踪。
+`TypedNavigationResult` 保持原样；上述 Options/新页 Result 默认仅在模块内使用，真实消费者需要时才导出。实现使用真实 TypeScript Overload，不以类型断言掩盖返回类型。未知 Runtime `openIn` 返回 `invalid-input/options`；`new-page` 上只要存在 `replace`（包括 `false` 或 `undefined`）即在任何副作用前拒绝。两种新页分支均不调用 Coordinator、Raw Router 导航、History、Workspace、源页 Focus/Presentation。未携带复用选项的 Fresh 分支只经 `resolveRegisteredDestination` 获取 href，无效为 `invalid-input/destination`，不跳转错误页；有效输入在本次同步调用栈恰好执行一次 `window.open(href, '_blank', 'noopener')`，随后返回已解决 Promise。Catch 仅包围该 Browser Invocation；同步异常为 `invocation-error`，正常返回（含 null）均为 `requested/unobservable`。不保存/检查 Window，不推断拦截、加载完成、前台焦点或 tab/window 形式；不加 async wrapper、await/then 延迟、预载、动态导入、定时器、确认、空页预约、自动重试、原页 fallback、尺寸或窗口跟踪。
 
 `App.vue` setup 在既有 Router/Appearance 可用后创建恰好一个现有 `RouteTransitionCoordinator`，立即登记 App Scope Dispose，再调用同模块的 `provideApplicationNavigation` 提供上下文。Typed Injection Keys 只标识上下文，不持有全局 Runtime 实例。Frame 通过 `useWorkspaceNavigation()` 获取同实例的私有 `Pick<RouteTransitionCoordinator, 'navigate'>` 视图；普通页面只能消费公共视图及下述链接适配。缺失上下文明确失败，不静默创建实例。Frame 菜单使用公共入口，Activate/Close Fallback 保留原 `workspaceActivation` 与 Operation/目的地/实例/列表稳定性复核；其 Refresh、Scroll Controller Cleanup、Appearance/Motion 和非导航操作仍归 Frame。只迁移 Coordinator 创建/释放，不改 Kernel Stage、Provider Hierarchy、RouterView、KeepAlive、Layout Key 或缓存父链。Bootstrap、Guard、Recovery、History Back/Forward 和实现导航的底层 Push/Replace 留在原生命周期内，不能回调新入口。§1.2B.0N 的过渡与 §18.16.3 的跨布局 Bypass 继续作用于同一操作。
 
@@ -7418,11 +7478,53 @@ interface ApplicationNavigation {
 
 同一模块的无参数 `useApplicationLinkActivation()` 只返回消费公共入口的 Click Handler，不创建公共 UI Wrapper。同步读取 `event.currentTarget` 的真实 Anchor；已处理、不可取消、非主键、任一 Ctrl/Command/Shift/Alt、存在 Download 属性（含空值）、非 Self 的有效 Target 均保留原生行为。有效 Target 尊重 Anchor 的显式值及现有 Document Base Target，不新增 Document 配置。缺失/空 Href 或与当前纯解析地址不符时不接管；不从嵌套 `event.target` 推导 Anchor。合格普通激活（含原生 Enter）同步 PreventDefault，且只返回一次公共 Navigate 的原 Promise。只绑定 Click，不使用无条件 `.prevent`，不接管 Auxclick/Contextmenu/复制/中键/修饰键，不同时调用 RouterLink/useLink.navigate、原始 Router、Location 或回退导航。原生新页行为不代表托管浏览器页能力。
 
-本次新增 `useApplicationLinkActivation({ openIn: 'new-page' })` 显式模式，返回 `Promise<BrowserPageOpenResult> | undefined` 的 Handler；无参数签名及 Overview 源码/绑定完全保留。两种模式共用已处理、不可取消、非主键、Ctrl/Command/Shift/Alt、非 Anchor、Download 属性的早期原生排除。显式新页模式在这些排除之后、检查 Managed Anchor 合同之前同步 PreventDefault，拒绝时不得漏回原生打开。真实 Anchor 必须显式声明 HTML ASCII 大小写不敏感的 `_blank` Target、含 `noopener` 的 ASCII 空白分隔且 ASCII 大小写不敏感 Rel Token，以及非空且与 Registered Destination 解析值完全一致的 Href；Target/Isolation 错误为 `invalid-input/options`，地址/Href 错误为 `invalid-input/destination`。有效时只调用一次公共 `navigate(destination, { openIn: 'new-page' })`；同步读取 currentTarget，不读嵌套 target 或 Await 后的 Event。原生复制、Contextmenu、Auxclick、中键与修饰键保持，不使用无条件 `.prevent` 或第二 opening API。
+前序新增 `useApplicationLinkActivation({ openIn: 'new-page' })` 显式模式，返回 `Promise<BrowserPageOpenResult> | undefined` 的 Handler；无参数签名及 Overview 源码/绑定完全保留。两种模式共用已处理、不可取消、非主键、Ctrl/Command/Shift/Alt、非 Anchor、Download 属性的早期原生排除。显式新页模式在这些排除之后、检查 Managed Anchor 合同之前同步 PreventDefault，拒绝时不得漏回原生打开。真实 Anchor 必须显式声明 HTML ASCII 大小写不敏感的 `_blank` Target、含 `noopener` 的 ASCII 空白分隔且 ASCII 大小写不敏感 Rel Token，以及非空且与 Registered Destination 解析值完全一致的 Href；Target/Isolation 错误为 `invalid-input/options`，地址/Href 错误为 `invalid-input/destination`。有效时只调用一次公共 `navigate(destination, { openIn: 'new-page' })`；同步读取 currentTarget，不读嵌套 target 或 Await 后的 Event。原生复制、Contextmenu、Auxclick、中键与修饰键保持，不使用无条件 `.prevent` 或第二 opening API。
 
-唯一真实新页消费者为 `apps/web/src/pages/capabilities.vue`，地址是现有 `capability-roadmap-standalone` 并由公共 `resolveHref` 解析。`CapabilityRoadmapContent.vue` 仅在现有 UiPageHeader 后加入可选、typed、无参数 `actions` Slot；普通页提供一个 `target="_blank" rel="noopener"` Anchor 和本地 `role="status"` 反馈，独立页不提供 Slot、不产生空 Wrapper/留白或第二控件。保留 Props、组件名、标题、Manifest、Cards 与原 DOM 语义，不改 UiPageHeader 或创建公共 Wrapper。既有 zh-CN/en Common Catalog 新增 `capabilities.openStandalone`，分别为“在新浏览器页打开独立视图”与“Open standalone view in a new browser page”；`invalid-input/destination` 复用 `route-message.error-invalid-route-input`，`invalid-input/options` 与 `invocation-error` 复用 `route-message.error-application-route-failure`。状态只存 Message Key，渲染时翻译；每次接管的新尝试清除旧反馈，`requested/unobservable` 不宣告成功或拦截。消费者同步调用激活 Handler 后再处理结果，并返回结果处理 Promise，不能分离/吞掉错误。样式仅消费现有属性兼容语义 Utility 与结构 Utility，无新 Token、Mapping、Motion 或样式豁免。
+前序 Fresh 新页消费者为 `apps/web/src/pages/capabilities.vue`，地址是现有 `capability-roadmap-standalone` 并由公共 `resolveHref` 解析。`CapabilityRoadmapContent.vue` 仅在现有 UiPageHeader 后加入可选、typed、无参数 `actions` Slot；普通页提供一个 `target="_blank" rel="noopener"` Anchor 和本地 `role="status"` 反馈，独立页不提供 Slot、不产生空 Wrapper/留白或第二控件。保留 Props、组件名、标题、Manifest、Cards 与原 DOM 语义，不改 UiPageHeader 或创建公共 Wrapper。既有 zh-CN/en Common Catalog 新增 `capabilities.openStandalone`，分别为“在新浏览器页打开独立视图”与“Open standalone view in a new browser page”；`invalid-input/destination` 复用 `route-message.error-invalid-route-input`，`invalid-input/options` 与 `invocation-error` 复用 `route-message.error-application-route-failure`。状态只存 Message Key，渲染时翻译；每次接管的新尝试清除旧反馈，`requested/unobservable` 不宣告成功或拦截。消费者同步调用激活 Handler 后再处理结果，并返回结果处理 Promise，不能分离/吞掉错误。样式仅消费现有属性兼容语义 Utility 与结构 Utility，无新 Token、Mapping、Motion 或样式豁免。
 
 现有 Router/Admin Console Owning Checks 同步保护唯一创建/释放、共享公共/私有视图、Replace 隔离、纯解析、合格链接的一次导航与原生排除，以及未变的内部导航边界；同时保护 Overload、两个执行分支、同步一次隔离打开、准确 Outcome、无 Fallback、Managed Anchor 拒绝与真实消费者；保留有意义的现有 Negative Probes，不冻结私有变量名或固定调用点数。§9.12 仍拥有静态责任。Route Registry、Capability JSON、版本与脚本不变，不新增 Capability Record；本轮生成输入变化仅限上述明确批准的 Initial JavaScript 预算，由原生成器同步必要投影。除本节精确新页打开外，窗口复用/管理、任意外链、跨页通信、访问持久化、多记录工作区、返回栈、Auth、Storage Migration 与一般 Loading/Error Infrastructure 不在本任务内。共享 Workspace Storage 的跨页限制仍为已记录但未复现的风险，不宣称事故或隐式授权迁移。保留既定依赖、18 Route Roots、28 Dynamic Roots，Initial JavaScript 预算仅按本节独立批准调整为 278528 bytes，原测量/余量规则不变；完整 `pnpm verify` 与新集成的 Owner 观察分别报告，所有候选留作未暂存。
+
+### Tracked browser-page reuse and explicit reassociation
+
+本修订只替代上方 Fresh 实施范围中与显式跟踪直接冲突的禁令；Fresh 仍原样执行隔离新开且不保留引用。当前页/Fresh 的三个既有 Navigate Overload 及结果不宽化，新增 Tracked 与 All-options Union Overload；Link Activation 保留无参/Fresh 签名并增加 Tracked 签名。新类型默认模块私有。Runtime 不支持的 openIn/reuse/recovery 及不兼容组合在副作用前返回 invalid-input/options；只有 new-page + same-destination 可携带 recovery:'reopen'，新页只要存在 replace 就拒绝。不存在公共 forget/enumerate/close/focus API。
+
+关联的可操作引用只归 provideApplicationNavigation 的 App Scope，普通 SPA 路由变化保留；每个经 resolveRegisteredDestination 校验的稳定解析身份只有一个当前记录，比较使用 sameRouteAddress，保留记录、normalized Params、既有 Query 序列化与 Hash。不得保存可变 Caller Object 作身份，不排序 Query，不另建 Registry/业务示例。初始绝对地址从验证 Href、当前 Origin 和既有 Router History 所承载的 Deployment Base 派生，打开前检查同源/同 Base；当前 Runtime Schema 仅支持根部署，不宣称新增子目录或 Hash Router 支持。同一来源标签页刷新后的有限恢复由下节拥有；浏览器重启、关闭来源后恢复及独立来源页认领均无保证。Fresh/原生打开不被发现或追认，无 Pinia Store、第二 Coordinator、轮询、心跳、Worker 或通用跨页设施。
+
+唯一目标协作是 Mounted App 的实际 Document 上的自有属性 `__pavpApplicationPageEligibility`：不可枚举、只读、可由 Owner 清理配置，不能覆盖其他 Owner。Callable 只接受 expectedFullPath/expectedDeploymentBase 两个字符串，返回 eligible/different-destination/unconfirmed；本地结构类型和 Runtime 验证保护访问，不添加全局 any、Native Prototype 或继承属性例外。Query 检查 Mounted、未 Dispose、未 pagehide、仍为 Active Document、相同 Base，并用目标自己的 router.resolve、validateRouteInput、sameRouteAddress 核对注册地址及实际 Document URL。只传 Primitive，不传源 Window/Callback/Object，不暴露 Router、工作区、表单或身份数据；不把同源协作当作安全认证。后台或无焦点不失去资格。初始 Blank 不安装或复制 Query；每次调用重新读取当前 target.document 和其自有 Query，拒绝异常/未知结果，不缓存旧文档证明。readyState 只区分可观察加载，不能证明 App 身份。
+
+首次跟踪在同步用户激活栈中先预留 Pending 记录，再恰好调用一次 window.open('about:blank', '_blank')；只对此分支准许保留引用且不传 noopener。null 返回 open-unavailable/no-reference 并留下不可用记录，不推断拦截。取得可访问、未关闭的新空白页后，同步确认浏览器创建的 target.opener 等于实际源 window，之后才对该 Blank 执行唯一一次 target.location.replace(validatedAbsoluteHref)。不得清空、回写、Shadow 或临时切换 Opener，不尝试用 JavaScript 属性恢复已断开的原生关系。Open/Associate/Initial-navigation 抛错按各 Phase 返回 invocation-error；Associate 验证失败禁止初始导航，失败终止假 Pending、释放引用并保留可恢复失败记录。允许残留空白页，不自动关闭、重试或回退。所有操作在 await/then/动态导入/定时器/确认之前，随后返回已结算 Promise。Tracked 页面保持关联，并可按浏览器同源规则访问源页；目标导航到其他地址或应用标记关联不可用，并不自行撤销全部浏览器级访问能力。这不等同 noopener 隔离；COOP 可以断开引用，不改 COOP/CSP/Headers。
+
+普通后续复用重新核对当前文档及 target.opener 仍等于实际源 window；null、不同、不可访问或丢失的源关系均终止为 association-unavailable/reference-lost，不得继续请求激活或伪造恢复。关系、实际注册地址和目标本地 Query 验证通过后，eligible 在原始合格用户激活的同步栈内只调用一次 focus，返回 requested/activate/unobservable，不再次 Open/Location/Reload，也不延迟到 Promise Continuation/nextTick/Timer/requestAnimationFrame。当前仍是本次初始 Blank 或无 Eligibility 的可观察 Loading 时立即返回 association-pending；initialDocument 早返保留，不用超时伪造就绪。地址匹配但 Query 缺失/异常/无效返回 unconfirmed，保留可检查引用供下次显式重试；确认不同地址终止为 changed-destination；不可访问、closed===true 或引用断开终止为 reference-lost，不宣称用户已关闭。终止记录释放 Window/Document 引用但保留轻量身份/不可用状态。focus 异常返回 invocation-error/activate 并保留可检查关联。目标刷新后的新 Document 可重新证明资格，及时释放无用的初始 Document 引用。资格只证明检查瞬间，不能保证后续地址不变、加载完成或前台聚焦；不以即时 hasFocus/visibilityState 采样作为完成确认。两种新页分支均不接受/取消源 Router Operation、不改变源 History/Workspace。
+
+显式 recovery:'reopen' 仅通过真实手动恢复动作调用，不由失败处理自动触发；未知身份返回 invalid-input/options。Provider 同步复查仍可访问的关联：已恢复 eligible 则激活，确定 Pending 则等待；仍 unavailable/unconfirmed 才准许替换。替换先同步预留新 Pending、释放旧引用，再复用完全相同的首次 Blank 创建路径一次，不关闭或修改旧页面。失败留下新的可恢复记录；重复恢复在 Pending/Eligible 时不得新建。页面反馈或按钮可见性不拥有丢弃关联权威。无需额外确认框、持久化计数器或 Recovery Framework。
+
+Provider 注册最小 pagehide/pageshow 与 App Scope Cleanup：pagehide 只暂停本 Document Query，pageshow 只恢复同一 Mounted、未 Dispose 的 App；BFCache 暂停不清源关联，也不证明页面关闭。Scope Dispose 仅移除本 Owner 的属性与监听器、释放引用并清记录，绝不关闭目标。不注册 unload、不改 beforeunload/HMR/Kernel；释放后旧 Service 引用不能再创建或激活 Tracked 关联。
+
+/capabilities 保留原 Fresh Anchor/四结果反馈，在已有 actions Slot 增加单独 Tracked Anchor，目的地仍为 capability-roadmap-standalone，标签“打开或切换到关联的独立浏览器页”及准确英文。两种 Managed 新页 Anchor 均保留真实 Href、_blank、noopener、Click-only；原生排除/Enter 语义保持，接管后先 preventDefault 再校验 Target/Rel/Href，再恰好一次公共 Navigate。只有取消的普通 Tracked 激活使用上述 Script 例外；浏览器菜单/修饰键仍隔离新开且不记关联。
+
+Tracked 独立 role=status 只存 Message Key、渲染时翻译，同步调用后返回结果处理 Promise。Destination 错误沿用地址消息，Options/Open/Associate/Initial-navigation 错误沿用无法打开消息；Activate 异常使用 capabilities.pageActivationFailure；Pending/Unconfirmed 使用 capabilities.pageAssociationUnconfirmed；Lost/Changed/No-reference 使用 capabilities.pageAssociationUnavailable。每次接管尝试清旧反馈；Requested/Open 保持空反馈，仅正常返回 Requested/Activate 使用新增双语 capabilities.pageActivationRequested，说明已请求切换、浏览器未置前时可手动选择既有页，不宣称成功聚焦、拦截或加载完成。原有 Common Key 为 capabilities.reuseStandalone、capabilities.reuseStandaloneHint 及上述三条错误/关联反馈键。保留实际消费的 capabilities.reopenStandalone 与 capabilities.reopenStandaloneWarning：原生 type=button“重新打开并关联”仅在 Unavailable/Unconfirmed/No-reference 或 Open/Associate/Initial-navigation 失败后显示，并可见警告旧页可能仍在，重开不关闭或覆盖它；Pending/仅 Focus 异常不显示恢复依据。按钮同步调用公共 Tracked Navigate(recovery:'reopen') 并返回处理 Promise，Provider 复查保护过期可见性。中英文完整，使用既有语义/结构 Utility 保留焦点、命中面积、换行与几何；无 Modal/Wrapper/Token/Motion。
+
+前序本包仅改 Navigation Module、capabilities.vue、两份 Common Catalog、Router/Admin Console Owning Checks 与本文件；后续本次刷新恢复的必要准入见下节。共享 Workspace Snapshot 的跨页限制仍是已记录未复现风险，不授权迁移。预算保持 278528 bytes、最低余量 8192 及既有对齐/重定预算余量上界、gzip/SHA 归一化与 18/28 Roots；262203 和修复前 263678 bytes 均是历史值，不证明本次修复适配。先运行窄 Lint/类型检查、新 Build/Bundle 和真实 check:arch，再完成最终 mise exec -- pnpm verify；禁止浏览器操作和测试资产。Owning Checks 必须保护 Tracked 浏览器创建的源关系、拒绝清 Opener 及已丢源关系的激活，并保留 Fresh noopener、当前文档资格、Pending 去重、同步一次激活及禁止自动替换；有限反馈检查区分中性激活请求和错误/恢复条件。当前候选保持未暂存，已操作的复用场景 Runtime 验收失败，修复等待 Owner 复验，Visual 未单独执行，Git Delivery 未授权。
+
+### Same-source refresh recovery
+
+Owner 明确授权在当前未暂存修复候选上补齐同一来源标签页刷新的关联恢复；该有界扩展仍属于 `PAVP_APPLICATION_BROWSER_PAGE_REUSE`，Next/Successor 为 NONE，不提升前序 Opener 修复的 Runtime Acceptance。仅限仍存活、保留原生 Opener 且当前符合应用资格的目标，不承诺关闭来源页或重启浏览器后的恢复。持久化记录不是存活或激活证明；不扫描任意标签页，不恢复 Fresh/原生打开，不改目标地址/内容，不新增窗口命名、自动重开、关闭页面、定时重试、心跳、后台或通用消息框架。
+
+`app/router/browser-page-session-contract.ts` 拥有应用私有严格 Schema、类型和 `browserPageSessionKey` InjectionKey。Binding 精确为 `{sourceId:UUID,associationId:UUID,routeName:nonempty string,deploymentBase:'/'}`；Snapshot 精确为 `{schemaVersion:1,sourceId:UUID,associations:readonly Binding[],target:Binding|null}`。来源列表的 Source ID 必须与 Snapshot 相同，Route Name 与 Association ID 各不重复。UUID 只是匿名关联标识，不是身份认证。仅持久化无页面输入的已注册 Route Name；读回时仍通过当前 Registry、`routeHasPageInput`、`resolveRegisteredDestination` 逐条验证，拒绝未知/带输入地址。不保存 Window/Document、任意 URL/Query/Hash、业务数据、焦点或成功状态；Route Registry 仍为唯一地址权威。
+
+第八条 `browser-page-session` Record 归 Storage Owner，Key 唯一来自 `applicationConfig.browserPage.sessionStorageKey='pavp:web:browser-page-session'`，Medium=session-storage、Shape=direct-compatibility、SchemaId=browser-page-session、Current/Minimum=1、Partition=none、Sensitive=false、Corruption=preserve-in-place-reject-read。唯一新 Adapter 为 `app/storage/browser-page-session-storage.ts`。Read 返回 missing/unusable(invalid|unavailable|disposed)/found，Write 与 initializeTarget 返回 saved/failed；访问、读取、JSON、版本、Schema、序列化、Quota、写入和 Readback 走既有安全 Storage Error Adapter。无效原值保留拒读，不自动清空或把错误当 Missing。来源先成功写入新的关联身份，才允许一次受控 Blank 创建；目标初始化先验证未关闭、about:blank 和原生 opener===window，再只覆写新目标的这一条复制记录为独立 Source ID、空 associations 和目标 Binding。其他 Session Storage 记录不动，初始化成功后才允许唯一初始 location.replace。初始化失败停止初始导航；源写入失败不打开，当前旧内存引用仍可检查，但不能承诺刷新恢复。
+
+Storage Port 只暴露 read/write/initializeTarget/available/subscribe/discover；Storage Lifecycle 创建 `owner.browserPageSession`，Kernel 在既有 create-and-ready-storage 阶段完成后通过 Vue App.provide 提供窄 Port。不增加启动阶段或 Provider Registry。Adapter 独占固定 `pavp:browser-page:discovery` 原生 BroadcastChannel，Strict Discovery Payload 为 `{kind:'discover',binding:Binding,requestId:UUID}`，仅负责发现，不广播持久化变更；无 storage-event fallback。旧 `pavp:storage:change`、空 Cross-tab Event Allowlist、七条旧记录、零 Envelope/Migration/IndexedDB/Memory Record 不变。新通道由 Storage Lifecycle 幂等 Dispose 关闭，App Scope 解除自身订阅和 window message Listener；不暴露原生 Channel。
+
+App Mounted 安装当前文档资格和 window message Listener 后读取 Snapshot；有记录先创建 restoring 关联，再发本 Document 新 Request ID 的发现消息。真实目标仅在自己的目标 Binding 匹配、本地 Mounted/Active Document 且当前目的地合格时，使用仍有效的原生 window.opener.postMessage 回复同 Origin。Window 消息精确区分 `{kind:'ready',binding}` 与 `{kind:'reply',binding,requestId}`。目标 Mounted/pageshow 的 ready 只使源重发发现，不能直接恢复；解决发现早于目标监听就绪的竞态。源从回复的 event.source 获取真实引用，严格验证 Origin、全部 Binding、本轮 Request ID、非自身且实际 Window、原生 opener===window、未关闭、当前 Document 实际已验证地址及本地 Eligibility；不得把 BroadcastChannel 的 source 或字符串标识当引用。不同 Window 对同一有效请求作出合格回复不得后写覆盖，终止为 unconfirmed 并交给手动恢复。复制来源标签页即使有相同存储身份，回复仍只送往目标真正的原生 opener；旧请求及旧关联回复全部忽略。
+
+消息处理只恢复引用，不执行 open/focus/location。后续真实点击经过同一同步资格检查，只调用 focus 请求激活。刷新后首次点击遇 restoring 仅再发有限发现并返回 association-unavailable/restoring，显示 `capabilities.browserPageAssociationRestoring`（请稍后再次点击或手动重新关联）；无回复、不可用通道不证明目标关闭，不补开。Storage/Schema/发现能力无法支持新建或恢复时返回 association-unavailable/recovery-unavailable，显示 `capabilities.browserPageRecoveryUnavailable`，可使用保留的每次新开入口，不提供失效的重新关联动作。已有内存中的合格引用仍能同步请求激活。真正 Pending 初始 Blank/Loading 保持原结果和去重规则。
+
+手动 recovery:'reopen' 先复查现有引用，eligible 则仅激活；仍 restoring/unavailable 时生成并成功保存新的 Association ID，随后复用同一创建路径。存储失败不能用旧身份开新目标。旧回复即使迟到也不再匹配。pagehide 暂停资格并使待恢复 Request ID 失效，pageshow 为同一 Mounted App 重新发起有限发现并通知自己的 Opener；Scope Dispose 释放引用/监听/订阅，不删除会话元数据、不关闭目标。无 unload/Timer，后台本身不使页面失格。
+
+本次必要变更限于上述合同/Adapter、现有导航和消费者文案、Config/Storage Registry/Lifecycle/Kernel 注入点、Storage/Router/Admin Console Owning Checks、原生存储访问的 ESLint/Appearance Cutover 精确 Adapter 例外，以及当前八条记录的 Capability Manifest 投影。由现有 Generator 同步生成中文 Manifest/Catalog，英文 Catalog 原位同步；不新增 Capability Record、依赖、路由、预算、App/Frame、Workspace Storage 迁移或测试资产。原静态生产门完整执行后才记录本候选 Static PASS；新恢复与前序激活修复均等待 Owner 独立操作验收，Git Delivery 未授权。
+
+刷新恢复候选现已通过受影响 Lint、Vue/TypeScript、真实 `check:arch`、Storage/Router/Admin Console 有限静态反例、新 Build/Bundle 及完整 `mise exec -- pnpm verify`（退出 0）。该完整 Gate 的 Initial JavaScript 为 `265851` bytes gzip，预算保持 `278528`，余量 `12677`，满足既有最低 `8192` 及上界规则；Initial CSS 为 `33245` / `40960` bytes gzip，余量 `7715`，精确 18 Route Roots / 28 Dynamic Roots 保持。全门后只原位同步本段及状态记录，再以 Markdown 格式、Diff Whitespace 和真实 `check:arch` 验证文档；源码及检查器未再变化。原七文件候选保持并扩展为十七个已跟踪修改和两个新增生产模块，全部未暂存；本次静态证据不提升原失败场景的 Runtime Acceptance，新恢复未执行浏览器验收，未执行 Git Delivery 或 Release。升级前目标没有新会话身份，不被追认；Owner 应使用本候选新建关联，分别验证不刷新复用及来源刷新后的恢复。
 
 ### Typed address and parsed input
 
@@ -7781,6 +7883,7 @@ Owning Implementation Package 必须把以下检查接入 `pnpm verify`：
 * Guard Order、Error Route Set、Dynamic Route Disposal 与 Query Ownership 具有静态合同。
 * Vite Base、Router History Base 和 Deployment Base 使用同一 Runtime Configuration Authority。
 * 不存在页面直接 Fetch、页面 Session 恢复、Query Data 复制或任意 Scroll Owner。
+* §9.4 的 Current/Fresh 合同原样保护；Tracked 检查选项隔离、同应用身份、同步单次 Blank 创建及验证并保留浏览器创建的源 Opener 先于初始导航、激活前拒绝丢失源关系、Pending 去重、目标本地 Query、只 Focus 激活、普通失败不补开、手动 Recovery 复查、Scope 清理不关页、原生排除和精确反馈/恢复可见性。刷新恢复还保护 Storage 窄 Port、存储成功先于打开/初始导航、Request/Binding/Event Source/Origin/Opener/当前资格、恢复消息不激活或打开，以及旧回复和歧义回复不能覆盖关联。复用现有窄 AST 检查与有意义的内存 Negative Probes，不复制完整分析器或冻结私有名称/容器。
 
 这些检查已由 `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` 接入 Existing `check:arch`、Project Configuration、Runtime Kernel 和 Bundle Owners。它们只证明本节冻结的静态合同；不证明 Navigation、Scroll、Focus、History Teardown、HMR 或 Chunk Recovery 的真实浏览器行为。
 
@@ -11857,9 +11960,9 @@ Owner 后续明确要求进一步收细标签容器横向滚动条，并为标�
 
 Owner 已在后续 Workspace 相邻激活控件请求中明确手动验收本节当前 Scroll System Runtime 行为；这不代表新箭头已通过 Visual/Runtime Acceptance，也不授权 Git 交付。当前完整未提交候选继续保持未暂存，新增箭头按 §18.11.11 经过 Owner 手动验收前禁止 Stage/Commit/Push/Release；该明确边界优先于 §31/§32/§35 与从属 Workflow 的一般 Optional/Non-gating 描述，不自动开始后继工作。
 
-本任务已接线的两个 Storage Record：`scroll-preference` 的 local-storage Key `pavp:web:scroll-preference`，严格 Payload `{schemaVersion:1,restoreOnRefresh:boolean}`，默认 true；`scroll-refresh-session` 的 session-storage Key `pavp:web:scroll-refresh-session`，严格 Payload `{schemaVersion:1,routeName:string,ownerId:string,left:number,top:number,context:readonly (string|number)[]}`。两者均为 direct-compatibility、Current/Minimum Version 1、Partition none、非敏感、preserve-in-place-reject-read。当前 Registry 精确七条、Kernel 精确十五步；前序五条/十四步的 Landing 历史计数不改写。不得增加 Migration、IndexedDB、Memory Record、Cross-tab Event；session-storage 不参与 localStorage Storage Event。`applicationConfig.scroll` 独占两个 Key；`scroll-preference-contract.ts` 与 `scroll-refresh-contract.ts` 拥有严格 Zod Schema，Zod 4 的 number 已拒绝非有限值。独立 `scroll-preference-storage.ts` / `scroll-refresh-storage.ts` 仅由 Storage Lifecycle 创建，经 `owner.scrollPreference` / `owner.scrollRefresh` 暴露。Read 为 missing/unusable(invalid|unavailable|disposed)/found，Write/Clear 为 saved/failed（Disposed 可辨识）；所有 Parse/Version/Schema/Serialize/Quota/Write/Readback 异常归现有安全 Error Adapter。Store 与 Router 不读写浏览器 Storage。
+本任务已接线的两个 Storage Record：`scroll-preference` 的 local-storage Key `pavp:web:scroll-preference`，严格 Payload `{schemaVersion:1,restoreOnRefresh:boolean}`，默认 true；`scroll-refresh-session` 的 session-storage Key `pavp:web:scroll-refresh-session`，严格 Payload `{schemaVersion:1,routeName:string,ownerId:string,left:number,top:number,context:readonly (string|number)[]}`。两者均为 direct-compatibility、Current/Minimum Version 1、Partition none、非敏感、preserve-in-place-reject-read。该 Scroll Landing 的 Registry 精确七条、Kernel 精确十五步；当前 §9.4 再增加一条浏览器页会话记录，阶段数不变；前序五条/十四步的 Landing 历史计数不改写。不得增加 Migration、IndexedDB、Memory Record、Cross-tab Event；session-storage 不参与 localStorage Storage Event。`applicationConfig.scroll` 独占两个 Key；`scroll-preference-contract.ts` 与 `scroll-refresh-contract.ts` 拥有严格 Zod Schema，Zod 4 的 number 已拒绝非有限值。独立 `scroll-preference-storage.ts` / `scroll-refresh-storage.ts` 仅由 Storage Lifecycle 创建，经 `owner.scrollPreference` / `owner.scrollRefresh` 暴露。Read 为 missing/unusable(invalid|unavailable|disposed)/found，Write/Clear 为 saved/failed（Disposed 可辨识）；所有 Parse/Version/Schema/Serialize/Quota/Write/Readback 异常归现有安全 Error Adapter。Store 与 Router 不读写浏览器 Storage。
 
-私有 Scroll Preference Store 仅拥有 restoreOnRefresh，不拥有 Offset；显式 Setter 持久化失败保留当前内存值。Appearance 直接使用官方 `NSwitch`、`value`、`update:value` 与 `aria-label`，保留原消费者目标尺寸、Focus 与 Motion 规则。中英文 Control 关闭时清除 Snapshot 并禁止 Capture，开启时不跳动当前页面。当前 Public Registry 精确十条，其中八条 ACTIVE 与两条既有 TARGET_INACTIVE Form Record。新 `initialize-scroll-system` 位于 Router/Storage/I18n/Navigation Preference/Workspace Session 就绪后、Mount 前；读取 Preference/Snapshot，仅 Prime Router Pending 候选，不提前滚动。对应 Disposal 在 Unmount 后、Storage/Router/Pinia 前解除 Watch 和 pagehide Listener。当前十五步和七条记录与源码及直接 Owning Check 同步。
+私有 Scroll Preference Store 仅拥有 restoreOnRefresh，不拥有 Offset；显式 Setter 持久化失败保留当前内存值。Appearance 直接使用官方 `NSwitch`、`value`、`update:value` 与 `aria-label`，保留原消费者目标尺寸、Focus 与 Motion 规则。中英文 Control 关闭时清除 Snapshot 并禁止 Capture，开启时不跳动当前页面。当前 Public Registry 精确十条，其中八条 ACTIVE 与两条既有 TARGET_INACTIVE Form Record。新 `initialize-scroll-system` 位于 Router/Storage/I18n/Navigation Preference/Workspace Session 就绪后、Mount 前；读取 Preference/Snapshot，仅 Prime Router Pending 候选，不提前滚动。对应 Disposal 在 Unmount 后、Storage/Router/Pinia 前解除 Watch 和 pagehide Listener。当前十五步和八条记录（含 §9.4 刷新恢复记录）与源码及直接 Owning Check 同步。
 
 Router 仅在 pagehide 且 Preference 开启、当前 Console Region/Controller/Presentation/Content Ready 时写入本标签页唯一 Snapshot，不按 Scroll/Timer/rAF 写入。Context 复用 History/Workspace 的隐私安全 Build/Release、Committed Locale/Resource、Appearance、Layout/Owner、Content Revision 事实；不得持久化 URL/Params/Query/Hash、Scope/History Entry ID、任意 Selector、页面/表单/账号数据或时间戳。初次 Hard Refresh 的候选必须 Route/Owner Exact Match、有限 Offset、Context Exact Match、当前 Navigation/Presentation 与 Controller Ready；在已有 Mount/nextTick 边界执行。优先级唯一为 Pop History → Explicit Live Workspace Activation → Initial Hard Refresh → Same-workspace Address Policy → Fragment/Logical Start，失配走现有 Fallback，不引入第二 Writer。成功不立即删除 Snapshot；下次有效 pagehide 替换。原 History/Workspace Map 只驻内存，不持久化业务草稿。Development/HMR 继续保守不恢复；Appearance 使用现有 Workspace Content Ready/Revision，修订不匹配即拒绝，不能推断或保存 Form Values。Snapshot Context 不包含前四项仅属于内存 History 的 Scope/Name/地址输入，由同一 restoration validity 投影单独组合。
 
@@ -12375,7 +12478,7 @@ Overview 原 `<a :href="record.pathPattern">` 普通文档导航缺口由 §9.4 
 
 Control Center 只可持有 Selected Section、Expand/Collapse、Pending Feedback 等局部呈现状态，不能复制可变权威偏好。Capability Preview/Replay/Selected Demo/Expanded Example 等临时状态服从正常 Route/Workspace 生命周期：KeepAlive 停用不等于销毁或每次激活强制 Reset；实际 Discard/Refresh/重开按原生命周期处理，不落 Storage，也不冒充持久配置。
 
-禁止为 Panel Open、Control Center Open、当前 Settings Section、Clock/Timezone、Breadcrumb 或 Build Display 增加 Storage Record/Schema/Key、History UI State 或持久化副本。未来 `control-center` 成为合法 route-single Route 后，其路由名可自然进入**既有** `workspace-session.openRouteNames`，这只是已准入开放工作区结构，不是另建 Control Center Open Preference；不保存 Section、完整地址、Clock、Overlay 或页面状态，不由恢复记录自动导航/打开 Panel。现有七条记录的领域格式与默认值不改。
+禁止为 Panel Open、Control Center Open、当前 Settings Section、Clock/Timezone、Breadcrumb 或 Build Display 增加 Storage Record/Schema/Key、History UI State 或持久化副本。未来 `control-center` 成为合法 route-single Route 后，其路由名可自然进入**既有** `workspace-session.openRouteNames`，这只是已准入开放工作区结构，不是另建 Control Center Open Preference；不保存 Section、完整地址、Clock、Overlay 或页面状态，不由恢复记录自动导航/打开 Panel。既有七条记录的领域格式与默认值不改；§9.4 的第八条记录不归 Control Center。
 
 ### 18.15.11 当前源码差距与未来静态责任
 
@@ -12682,7 +12785,7 @@ type ApplicationStartupState =
 | Pinia | `app/providers/pinia` | client-state container | Server State cache |
 | Provider installation | `app/bootstrap/install-providers` | Pinia plus Appearance provider handles | Future Provider construction |
 | Router and History lifecycle | `app/router` through the Runtime Kernel step | one ready Router lifecycle handle with one Router and one History authority | DOM Mount, Server State, Session or top-level HMR ownership |
-| Storage lifecycle | `app/storage` through the Runtime Kernel step | one ready Storage lifecycle handle for the exact seven-record Registry | DOM Mount, Provider identity, active Workspace or account Session state, or top-level HMR ownership |
+| Storage lifecycle | `app/storage` through the Runtime Kernel step | one ready Storage lifecycle handle for the exact eight-record Registry | DOM Mount, Provider identity, active Workspace or account Session state, or top-level HMR ownership |
 | Console I18n lifecycle | `shared/i18n` through the Runtime Kernel step | one ready Console I18n handle with Storage port and Router title connection | Router navigation, Appearance state or top-level HMR ownership |
 | Navigation preference initialization | `app/navigation` through the Runtime Kernel step | one initialized private Store and preference-port disposer under §19.5.2 | Route/highlight, responsive profile, drawer or Provider identity |
 | Workspace structure restoration | `app/workspace` through the Runtime Kernel step | one initialized Workspace Session controller and disposer under §18.11.11 | active route, component cache, Form Draft, Scroll or Focus persistence |
@@ -12992,7 +13095,9 @@ ACTIVATION_GATE=PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION
 DIRECT_STORAGE_OUTSIDE_OWNER=PROHIBITED
 ```
 
-§23.6.6 已实现第三条 `locale-preference` Direct Record 及其窄 Port；本节原 Storage Landing 的两条记录、十一阶段及 Disposal 插入描述保留为该 Landing 历史，当前十五阶段与七条 Registry 由 §19.4、§23.6、§19.5.2、§18.11.11 和 §18.12 拥有。原两条 Appearance Payload、零 Envelope/Migration/Cross-tab Event 与敏感数据边界保持。
+§23.6.6 已实现第三条 `locale-preference` Direct Record 及其窄 Port；本节原 Storage Landing 的两条记录、十一阶段及 Disposal 插入描述保留为该 Landing 历史，当前十五阶段与八条 Registry 由 §19.4、§23.6、§19.5.2、§18.11.11、§18.12 和 §9.4 的 browser-page-session Record 拥有。原两条 Appearance Payload、零 Envelope/Migration/Cross-tab Event 与敏感数据边界保持。
+
+§9.4 的 browser-page-session 精确准入一条会话元数据记录及 `pavp:browser-page:discovery` 临时发现通道；其 Schema、Key、消息形状、Port 和生命周期以该节为准。该通道不属于下方 Frozen Landing 的存储变更协议，不改变 `storageCrossTabEventAllowlist` 或原 Channel/Fallback；它的存在不能作为准入 Envelope/Revision/CAS/通用同步的依据。Storage Owning Check 精确保护八条 Registry、新 Adapter 的 Session Storage 权限、Strict Schema/失败分类、目标 Blank 初始化和通道释放。
 
 最终存储行为须区分有意共享的外观/语言偏好、独立浏览器页的 Workspace 状态、可恢复浏览上下文、缓存与另行批准的业务草稿，避免独立工作相互覆盖；复制应用须使用适当命名空间，只恢复明确支持的数据，并如实处理不可用、无效值和写入失败，保留敏感数据限制。§18.11.11 当前 Workspace 结构通过同一配置键读写 Local Storage 是实现事实，跨窗口覆盖仅是未复现的潜在风险，不能记录为已确认数据丢失；本次不改变该合同，也不选择 Session Storage、窗口标识、迁移或跨页消息方案。存活实例缓存、页签结构恢复、浏览上下文恢复和业务草稿持久化分别判断，不能互相证明。
 
@@ -13503,7 +13608,7 @@ NO_AUTOMATIC_ROADMAP_CONTINUATION=ENFORCED
 
 Owner 明确授权本次限定架构修订、实现、直接归属检查及通过完整静态门槛后的 main 提交/推送。本合同扩展已 Active 的 Storage 与 Administration Shell，不新增 Top-level Capability Record，不激活 General Pinia Workflow、通用 Layout Persistence、Auth、Session、Role、Permission Provider、API 或 Backend Route。后续工作仍须单独授权。
 
-本合同取代 §1.2B.0H/0L 中导航偏好仅限 Shell-local ref、不得进入 Pinia/Storage 的旧所有权约束，以及原十二阶段/三条记录的当前投影；其余导航行为和历史实施、测量、验收事实保留。本导航偏好 Landing 的 Registry 四条、Kernel 十三阶段是历史事实；§18.11.11 随后扩展为五条、十四阶段，§18.12 当前再扩展为七条、十五阶段，Provider Set 仍为 `pinia,appearance`。
+本合同取代 §1.2B.0H/0L 中导航偏好仅限 Shell-local ref、不得进入 Pinia/Storage 的旧所有权约束，以及原十二阶段/三条记录的当前投影；其余导航行为和历史实施、测量、验收事实保留。本导航偏好 Landing 的 Registry 四条、Kernel 十三阶段是历史事实；§18.11.11 随后扩展为五条、十四阶段，§18.12 随后扩展为七条、十五阶段，§9.4 再增加第八条浏览器页会话记录且仍为十五阶段，Provider Set 仍为 `pinia,appearance`。
 
 ```text
 NAVIGATION_PREFERENCE_OWNER=apps/web/src/app/navigation
@@ -16140,7 +16245,7 @@ scripts/verify/check-bundle.ts
   → exact production artifact identity and canonical measurement profile; eight lazy-route chunks; hard initial and lazy-route budgets
 ```
 
-当前 §23.6 Localization 扩展沿用上述 Owners，并由 `scripts/architecture/check-i18n.ts` 接入同一 `check:arch`：当前增加 §19.5.2 导航偏好与 §18.11.11 Workspace 结构恢复后，再经 §18.12 Scroll System 扩展，十五阶段 Kernel、七条 Storage Record、二十一条 Capability、十七条 Route 与二十六个 Dynamic Root 均由既有生产 Gate 闭合，导航偏好扩展只由原 Storage、Kernel 和 Admin Console Owners 检查。上方 Router Landing 的原始计数不改写为该 Landing 的历史结果。
+当前 §23.6 Localization 扩展沿用上述 Owners，并由 `scripts/architecture/check-i18n.ts` 接入同一 `check:arch`：当前增加 §19.5.2 导航偏好与 §18.11.11 Workspace 结构恢复后，再经 §18.12 Scroll System 扩展，十五阶段 Kernel、八条 Storage Record（含 §9.4 浏览器页会话）、二十一条 Capability、十七条 Route 与二十六个 Dynamic Root 均由既有生产 Gate 闭合，导航偏好扩展只由原 Storage、Kernel 和 Admin Console Owners 检查。上方 Router Landing 的原始计数不改写为该 Landing 的历史结果。
 
 Runtime Kernel Checker Logic 的 Physical Split 是 Non-protocol Implementation Detail；Root `check:arch` 保持 Sole Architecture Governance Entry。
 
@@ -16779,7 +16884,7 @@ Rollout 使用不可变 Release。Rollback 只切换 HTML/Runtime Config/Asset M
 
 ## 34.10 External URL, File and Supply-chain Boundary
 
-External URL 必须通过 Protocol/Origin Registry；`javascript:`、`data:` Navigation、Credential URL、Protocol-relative URL 和 Unicode Confusable Host 默认拒绝。新窗口使用 `noopener`/`noreferrer` Policy。文件上传/下载遵守 §20.8。
+External URL 必须通过 Protocol/Origin Registry；`javascript:`、`data:` Navigation、Credential URL、Protocol-relative URL 和 Unicode Confusable Host 默认拒绝。新窗口使用 `noopener`/`noreferrer` Policy；唯一例外为 §9.4 已获 Owner 批准的同应用显式 Tracked Blank 创建、同步验证并保留浏览器创建的源 Opener 关系后首次导航及引用保留。Tracked 页按同源规则可访问源页，目标离开应用或关联标记不可用不会自行撤销全部浏览器级访问，不得称为 noopener 等价隔离；原 Fresh/原生外链隔离不变，不放宽 COOP/CSP/Headers。文件上传/下载遵守 §20.8。
 
 依赖继续由 Frozen Lockfile、CodeQL、Dependency Graph 和 Dependabot Alert 提供信号；Alert 需要 Owner Review，不自动修改依赖。Production Artifact 必须可追溯到 Commit、Lockfile 和 CI Run。
 
@@ -16974,7 +17079,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17213,7 +17318,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17345,7 +17450,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17797,7 +17902,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18161,7 +18266,7 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
 CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4
-CURRENT_BOUNDED_WORK=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
+CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS

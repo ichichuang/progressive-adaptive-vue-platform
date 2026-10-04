@@ -1,4 +1,5 @@
 export const applicationConfig = {
+  browserPage: { sessionStorageKey: 'pavp:web:browser-page-session' },
   scroll: {
     preferenceStorageKey: 'pavp:web:scroll-preference',
     refreshSessionStorageKey: 'pavp:web:scroll-refresh-session',

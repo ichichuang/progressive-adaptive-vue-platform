@@ -276,7 +276,7 @@ export const capabilityManifest = {
     {
       id: 'storage-persistence',
       visibleLabel: '存储与持久化',
-      summary: '当前七条非敏感浏览器存储记录及其生命周期。',
+      summary: '当前八条非敏感浏览器存储记录及其生命周期。',
       capabilityStatus: 'ACTIVE',
       implementationStatus: 'complete',
       presentationMode: 'active-read-only',

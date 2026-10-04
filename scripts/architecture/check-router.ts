@@ -1016,29 +1016,62 @@ function applicationNavigationContractViolations(source: string): string[] {
   const newPageOptions = nodesOf(parsed, ts.isInterfaceDeclaration).find(
     (node) => node.name.text === 'NewBrowserPageOptions',
   )
+  const trackedOptions = nodesOf(parsed, ts.isInterfaceDeclaration).find(
+    (node) => node.name.text === 'TrackedNewBrowserPageOptions',
+  )
   const openResult = nodesOf(parsed, ts.isTypeAliasDeclaration).find(
     (node) => node.name.text === 'BrowserPageOpenResult',
+  )
+  const trackedResult = nodesOf(parsed, ts.isTypeAliasDeclaration).find(
+    (node) => node.name.text === 'TrackedBrowserPageResult',
   )
   const compact = (node: ts.Node | undefined): string =>
     node?.getText().replaceAll(/\s/gu, '') ?? ''
   const signature = (node: ts.SignatureDeclaration): string =>
     `${node.parameters.map((parameter) => `${parameter.questionToken === undefined ? '' : '?'}:${compact(parameter.type)}`).join(',')}=>${node.type !== undefined && ts.isFunctionTypeNode(node.type) ? signature(node.type) : compact(node.type)}`
+  const optionMembers = (members: readonly ts.TypeElement[] | undefined): string[] =>
+    members?.map((member) => compact(member).replace(/;$/u, '')).sort() ?? []
+  const currentOptionFields =
+    options !== undefined && ts.isIntersectionTypeNode(options.type)
+      ? options.type.types.find(ts.isTypeLiteralNode)
+      : undefined
   const expectedOverloads = [
     ':RegisteredRouteDestination,?:ApplicationNavigationOptions=>Promise<TypedNavigationResult>',
     ':RegisteredRouteDestination,:NewBrowserPageOptions=>Promise<BrowserPageOpenResult>',
     ':RegisteredRouteDestination,:ApplicationNavigationOptions|NewBrowserPageOptions=>Promise<TypedNavigationResult|BrowserPageOpenResult>',
+    ':RegisteredRouteDestination,:TrackedNewBrowserPageOptions=>Promise<TrackedBrowserPageResult>',
+    ':RegisteredRouteDestination,:ApplicationNavigationOptions|NewBrowserPageOptions|TrackedNewBrowserPageOptions=>Promise<TypedNavigationResult|BrowserPageOpenResult|TrackedBrowserPageResult>',
   ]
   if (
     !exactSet(
       [...new Set(contract?.members.map((member) => member.name?.getText() ?? '') ?? [])],
       ['navigate', 'resolveHref'],
     ) ||
-    compact(options?.type) !==
-      "Pick<RouterNavigationOptions,'replace'>&{readonlyopenIn?:'current-page'}" ||
-    compact(newPageOptions).replace(/^interfaceNewBrowserPageOptions/u, '') !==
-      "{readonlyopenIn:'new-page'readonlyreplace?:never}" ||
+    options === undefined ||
+    !ts.isIntersectionTypeNode(options.type) ||
+    options.type.types.length !== 2 ||
+    compact(options.type.types[0]) !== "Pick<RouterNavigationOptions,'replace'>" ||
+    !isDeepStrictEqual(optionMembers(currentOptionFields?.members), [
+      "readonlyopenIn?:'current-page'",
+      'readonlyrecovery?:never',
+      'readonlyreuse?:never',
+    ]) ||
+    !isDeepStrictEqual(optionMembers(newPageOptions?.members), [
+      "readonlyopenIn:'new-page'",
+      'readonlyrecovery?:never',
+      'readonlyreplace?:never',
+      'readonlyreuse?:never',
+    ]) ||
+    !isDeepStrictEqual(optionMembers(trackedOptions?.members), [
+      "readonlyopenIn:'new-page'",
+      "readonlyrecovery?:'reopen'",
+      'readonlyreplace?:never',
+      "readonlyreuse:'same-destination'",
+    ]) ||
     compact(openResult?.type) !==
       "|{readonlykind:'invalid-input';readonlyreason:'destination'|'options'}|{readonlykind:'invocation-error'}|{readonlykind:'requested';readonlycompletion:'unobservable'}" ||
+    compact(trackedResult?.type).replaceAll(';', '').replaceAll(':|', ':') !==
+      "|{readonlykind:'invalid-input'readonlyreason:'destination'|'options'}|{readonlykind:'invocation-error'readonlyphase:'open'|'associate'|'initial-navigation'|'activate'}|{readonlykind:'open-unavailable'readonlyreason:'no-reference'}|{readonlykind:'requested'readonlyaction:'open'|'activate'readonlycompletion:'unobservable'}|{readonlykind:'association-pending'}|{readonlykind:'association-unavailable'readonlyreason:'changed-destination'|'unconfirmed'|'reference-lost'|'restoring'|'recovery-unavailable'}" ||
     !isDeepStrictEqual(
       contract?.members
         .filter(ts.isMethodSignature)
@@ -1055,7 +1088,7 @@ function applicationNavigationContractViolations(source: string): string[] {
     (navigate !== undefined && nodesOf(navigate, ts.isAsExpression).length !== 0)
   )
     violations.push(
-      'Application Navigation must preserve the three typed overloads, replace-based discriminator options and exact browser outcomes.',
+      'Application Navigation must preserve the three typed overloads and add separate tracked/recovery overloads with exact browser outcomes.',
     )
 
   const returnedNavigation = [...(navigate?.body?.statements ?? [])]
@@ -1111,8 +1144,24 @@ function applicationNavigationContractViolations(source: string): string[] {
   const newPage = navigate?.body?.statements.find(
     (statement): statement is ts.IfStatement =>
       ts.isIfStatement(statement) &&
-      /\.openIn\s*===\s*['"]new-page['"]/u.test(statement.expression.getText()),
+      compact(statement.expression) ===
+        `${navigate.parameters[1]?.name.getText() ?? ''}?.openIn==='new-page'`,
   )
+  const trackedBranch = navigate?.body?.statements.find(
+    (statement): statement is ts.IfStatement =>
+      ts.isIfStatement(statement) &&
+      /\.reuse\s*===\s*['"]same-destination['"]/u.test(statement.expression.getText()),
+  )
+  const commonOptionsGuard = navigate?.body?.statements.find(
+    (statement): statement is ts.IfStatement =>
+      ts.isIfStatement(statement) && /'recovery'\s+in\s+/u.test(statement.expression.getText()),
+  )
+  const trackedCall =
+    trackedBranch === undefined
+      ? undefined
+      : nodesOf(trackedBranch, ts.isCallExpression).find(
+          (call) => !isDeepStrictEqual(memberPath(call.expression), ['Promise', 'resolve']),
+        )
   const newPageCalls =
     newPage === undefined ? [] : nodesOf(newPage.thenStatement, ts.isCallExpression)
   const open = newPageCalls.filter((call) =>
@@ -1141,15 +1190,24 @@ function applicationNavigationContractViolations(source: string): string[] {
         )
   const invalidMode = navigate?.body?.statements.find(
     (statement): statement is ts.IfStatement =>
-      ts.isIfStatement(statement) && statement !== newPage,
+      ts.isIfStatement(statement) &&
+      /!==\s*['"]current-page['"]/u.test(statement.expression.getText()),
   )
-  const runtimeMode =
+  const runtimeOptions =
     navigate === undefined
-      ? undefined
-      : nodesOf(navigate, ts.isVariableDeclaration).find(
-          (node) =>
-            compact(node.initializer) === `${navigate.parameters[1]?.name.getText() ?? ''}?.openIn`,
+      ? []
+      : nodesOf(navigate, ts.isVariableDeclaration).filter((node) =>
+          ['openIn', 'reuse', 'recovery'].some(
+            (property) =>
+              compact(node.initializer) ===
+              `${navigate.parameters[1]?.name.getText() ?? ''}?.${property}`,
+          ),
         )
+  const runtimeMode = runtimeOptions.find((node) => compact(node.initializer).endsWith('?.openIn'))
+  const runtimeReuse = runtimeOptions.find((node) => compact(node.initializer).endsWith('?.reuse'))
+  const runtimeRecovery = runtimeOptions.find((node) =>
+    compact(node.initializer).endsWith('?.recovery'),
+  )
   const modeExpression =
     runtimeMode?.name.getText() ?? `${navigate?.parameters[1]?.name.getText() ?? ''}?.openIn`
   const newPageGuards =
@@ -1207,12 +1265,15 @@ function applicationNavigationContractViolations(source: string): string[] {
     navigate?.body?.statements.some(
       (statement) =>
         statement !== newPage &&
+        statement !== trackedBranch &&
+        statement !== commonOptionsGuard &&
         statement !== invalidMode &&
         statement !== returnedNavigation &&
         !(
           ts.isVariableStatement(statement) &&
-          runtimeMode !== undefined &&
-          statement.declarationList.declarations.includes(runtimeMode)
+          statement.declarationList.declarations.every((declaration) =>
+            runtimeOptions.includes(declaration),
+          )
         ),
     ) === true ||
     newPageCalls.some(
@@ -1224,6 +1285,7 @@ function applicationNavigationContractViolations(source: string): string[] {
     outsideNewPageCalls.some(
       (call) =>
         call !== navigationCall &&
+        call !== trackedCall &&
         !isDeepStrictEqual(memberPath(call.expression), ['Promise', 'resolve']),
     ) ||
     invalidMode === undefined ||
@@ -1239,6 +1301,45 @@ function applicationNavigationContractViolations(source: string): string[] {
     violations.push(
       'New browser pages must reject invalid options/destinations, synchronously invoke one isolated open and return only accurate unobservable outcomes without fallback.',
     )
+
+  if (
+    commonOptionsGuard === undefined ||
+    trackedBranch === undefined ||
+    trackedCall === undefined ||
+    commonOptionsGuard.end >= trackedBranch.getStart() ||
+    trackedBranch.end >= (newPage?.getStart() ?? -1) ||
+    ![/'reuse'\s+in\s+/u, /'recovery'\s+in\s+/u, /\.openIn\s*!==\s*'new-page'/u].every((pattern) =>
+      pattern.test(commonOptionsGuard.expression.getText()),
+    ) ||
+    !compact(commonOptionsGuard.expression).includes(
+      `${runtimeReuse?.name.getText() ?? `${navigate?.parameters[1]?.name.getText() ?? ''}.reuse`}!=='same-destination'`,
+    ) ||
+    !compact(commonOptionsGuard.expression).includes(
+      `${runtimeRecovery?.name.getText() ?? `${navigate?.parameters[1]?.name.getText() ?? ''}.recovery`}!=='reopen'`,
+    ) ||
+    !compact(commonOptionsGuard.thenStatement).includes(
+      "returnPromise.resolve({kind:'invalid-input',reason:'options'})",
+    ) ||
+    !/\.openIn\s*===\s*'new-page'\s*&&/u.test(trackedBranch.expression.getText()) ||
+    !compact(trackedBranch).includes(
+      "returnPromise.resolve({kind:'invalid-input',reason:'options'})",
+    ) ||
+    !nodesOf(trackedBranch, ts.isIfStatement).some(
+      (guard) =>
+        /'replace'\s+in\s+/u.test(guard.expression.getText()) && guard.end < trackedCall.pos,
+    ) ||
+    !isDeepStrictEqual(
+      trackedCall.arguments.map((argument) => argument.getText()),
+      navigate?.parameters.map((parameter) => parameter.name.getText()),
+    ) ||
+    !ts.isCallExpression(trackedCall.parent) ||
+    !isDeepStrictEqual(memberPath(trackedCall.parent.expression), ['Promise', 'resolve']) ||
+    !ts.isReturnStatement(trackedCall.parent.parent)
+  )
+    violations.push(
+      'Tracked browser pages must reject incompatible runtime options before effects and settle the synchronous tracked operation without widening current/fresh behavior.',
+    )
+  violations.push(...trackedBrowserPageContractViolations(parsed, provider, trackedCall))
 
   const returnedHref = href?.body?.statements[0]
   const hrefExpression =
@@ -1420,6 +1521,7 @@ function applicationNavigationContractViolations(source: string): string[] {
     !isDeepStrictEqual(linkOverloads.map(signature), [
       '=>:MouseEvent,:RegisteredRouteDestination=>Promise<TypedNavigationResult>|undefined',
       ':NewBrowserPageOptions=>:MouseEvent,:RegisteredRouteDestination=>Promise<BrowserPageOpenResult>|undefined',
+      ':TrackedNewBrowserPageOptions=>:MouseEvent,:RegisteredRouteDestination=>Promise<TrackedBrowserPageResult>|undefined',
     ]) ||
     managed === undefined ||
     managedPrevent === undefined ||
@@ -1447,7 +1549,7 @@ function applicationNavigationContractViolations(source: string): string[] {
     ]) ||
     !ts.isReturnStatement(managedActivation.parent) ||
     managedActivation.arguments[0]?.getText() !== handler?.parameters[1]?.name.getText() ||
-    compact(managedActivation.arguments[1]) !== "{openIn:'new-page'}" ||
+    compact(managedActivation.arguments[1]) !== link?.parameters[0]?.name.getText() ||
     targetPattern === undefined ||
     !['_blank', '_BLANK', '_bLaNk'].every((value) => targetPattern.test(value)) ||
     ['_self', 'named_blank', '_blank_suffix', ' _blank', '_blank ', '_blan\u212a'].some((value) =>
@@ -1479,9 +1581,612 @@ function applicationNavigationContractViolations(source: string): string[] {
   return violations
 }
 
+function trackedBrowserPageContractViolations(
+  parsed: ts.SourceFile,
+  provider: ts.FunctionDeclaration | undefined,
+  trackedCall: ts.CallExpression | undefined,
+): string[] {
+  const violations: string[] = []
+  const compact = (node: ts.Node | undefined): string =>
+    node?.getText().replaceAll(/\s/gu, '') ?? ''
+  const functions = nodesOf(parsed, ts.isFunctionDeclaration)
+  const calls = provider === undefined ? [] : nodesOf(provider, ts.isCallExpression)
+  const opens = calls.filter((call) =>
+    isDeepStrictEqual(memberPath(call.expression), ['window', 'open']),
+  )
+  const blankOpen = opens.find((call) => compact(call.arguments[0]) === "'about:blank'")
+  const creation = functions
+    .filter(
+      (node) => blankOpen !== undefined && node.pos < blankOpen.pos && node.end > blankOpen.end,
+    )
+    .at(-1)
+  const focus = calls.filter((call) => callMemberName(call) === 'focus')
+  const activation = functions
+    .filter((node) => focus[0] !== undefined && node.pos < focus[0].pos && node.end > focus[0].end)
+    .at(-1)
+  const tracked = functions.find((node) => node.name?.text === trackedCall?.expression.getText())
+  const replaces = calls.filter((call) => callMemberName(call) === 'replace')
+  const target = storedValuePath(blankOpen)[0]
+  const creationSource = compact(creation)
+  const creationAssignments = creation === undefined ? [] : nodesOf(creation, ts.isBinaryExpression)
+  const openerWrites = (
+    provider === undefined ? [] : nodesOf(provider, ts.isBinaryExpression)
+  ).filter(
+    (node) =>
+      memberPath(node.left).at(-1) === 'opener' &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken,
+  )
+  const openerGuard =
+    creation === undefined
+      ? undefined
+      : nodesOf(creation, ts.isIfStatement).find(
+          (node) => compact(node.expression) === `${target ?? ''}.opener!==window`,
+        )
+  const openingReservation = creationAssignments.find(
+    (node) =>
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      memberPath(node.left)[0] === creation?.parameters[0]?.name.getText() &&
+      node.end < (blankOpen?.getStart() ?? -1),
+  )
+  const creationTries = creation === undefined ? [] : nodesOf(creation, ts.isTryStatement)
+  if (
+    provider === undefined ||
+    creation === undefined ||
+    creation === provider ||
+    blankOpen === undefined ||
+    opens.length !== 2 ||
+    !isDeepStrictEqual(blankOpen.arguments.map(compact), ["'about:blank'", "'_blank'"]) ||
+    target === undefined ||
+    openingReservation === undefined ||
+    openerWrites.length !== 0 ||
+    calls.some(
+      (call) =>
+        isDeepStrictEqual(memberPath(call.expression), ['Object', 'defineProperty']) &&
+        compact(call.arguments[1]) === "'opener'",
+    ) ||
+    openerGuard === undefined ||
+    nodesOf(openerGuard.thenStatement, ts.isThrowStatement).length === 0 ||
+    replaces.length !== 1 ||
+    !isDeepStrictEqual(memberPath(replaces[0]?.expression), [target, 'location', 'replace']) ||
+    compact(replaces[0]?.arguments[0]) !== creation.parameters[1]?.name.getText() ||
+    openerGuard.end >= (replaces[0]?.pos ?? -1) ||
+    !creationSource.includes(`${target}===null`) ||
+    !creationSource.includes("{kind:'open-unavailable',reason:'no-reference'}") ||
+    !creationSource.includes(".URL!=='about:blank'") ||
+    !creationSource.includes("{kind:'requested',action:'open',completion:'unobservable'}") ||
+    !['open', 'associate', 'initial-navigation'].every((phase) =>
+      creationTries.some((attempt) =>
+        compact(attempt.catchClause).includes(`{kind:'invocation-error',phase:'${phase}'}`),
+      ),
+    ) ||
+    /\bawait\b|\basync\b|\.then\s*\(|\.catch\s*\(|\bsetTimeout\b|\bsetInterval\b|\brequestAnimationFrame\b|\bimport\s*\(/u.test(
+      provider.getText(),
+    ) ||
+    /\.(?:close|assign|reload|pushState|replaceState)\s*\(|\b(?:localStorage|sessionStorage|BroadcastChannel|SharedWorker|Worker)\b/u.test(
+      provider.getText(),
+    )
+  )
+    violations.push(
+      'Tracked creation must reserve synchronously, open one blank target, verify its browser-created source opener without writing or shadowing it before one initial navigation and retain accurate failures without fallback.',
+    )
+
+  const trackedCalls = tracked === undefined ? [] : nodesOf(tracked, ts.isCallExpression)
+  const resolution = trackedCalls.find(
+    (call) =>
+      callMemberName(call) ===
+      namedImportLocalName(parsed, './route-input', 'resolveRegisteredDestination'),
+  )
+  const resolvedName = storedValuePath(resolution)[0]
+  const recheck = trackedCalls.find((call) => callMemberName(call) === activation?.name?.text)
+  const openCall = trackedCalls.find((call) => callMemberName(call) === creation?.name?.text)
+  const outcomeName = storedValuePath(recheck)[0]
+  const recoveryGuard =
+    tracked === undefined
+      ? undefined
+      : nodesOf(tracked, ts.isIfStatement).find((node) =>
+          /\.recovery\s*!==\s*'reopen'/u.test(node.expression.getText()),
+        )
+  const unknownRecovery =
+    tracked === undefined
+      ? undefined
+      : nodesOf(tracked, ts.isIfStatement).find((node) =>
+          /\.recovery\s*===\s*'reopen'/u.test(node.expression.getText()),
+        )
+  const stableIdentity =
+    tracked === undefined
+      ? undefined
+      : nodesOf(tracked, ts.isObjectLiteralExpression).find((node) =>
+          node.properties.some(
+            (property) =>
+              ts.isPropertyAssignment(property) && compact(property.initializer) === resolvedName,
+          ),
+        )
+  if (
+    tracked === undefined ||
+    tracked.parent !== provider?.body ||
+    resolution === undefined ||
+    !isDeepStrictEqual(resolution.arguments.map(compact), [
+      provider.parameters[0]?.name.getText(),
+      tracked.parameters[0]?.name.getText(),
+    ]) ||
+    !trackedCalls.some(
+      (call) =>
+        callMemberName(call) ===
+          namedImportLocalName(parsed, './route-input', 'sameRouteAddress') &&
+        call.arguments.some((argument) => compact(argument) === resolvedName),
+    ) ||
+    stableIdentity === undefined ||
+    recheck === undefined ||
+    openCall === undefined ||
+    recoveryGuard === undefined ||
+    unknownRecovery === undefined ||
+    recheck.end >= recoveryGuard.getStart() ||
+    recoveryGuard.end >= openCall.pos ||
+    !compact(recoveryGuard.expression).includes(
+      `${outcomeName ?? ''}.kind!=='association-unavailable'`,
+    ) ||
+    !compact(recoveryGuard.expression).includes(
+      `${outcomeName ?? ''}.reason==='recovery-unavailable'`,
+    ) ||
+    !nodesOf(recoveryGuard.thenStatement, ts.isReturnStatement).some(
+      (statement) => compact(statement.expression) === outcomeName,
+    ) ||
+    !compact(unknownRecovery.thenStatement).includes(
+      "return{kind:'invalid-input',reason:'options'}",
+    ) ||
+    trackedCalls.filter((call) => callMemberName(call) === creation?.name?.text).length !== 1 ||
+    !ts.isReturnStatement(openCall.parent) ||
+    /\.(?:open|focus|replace|assign|reload|navigate)\s*\(/u.test(tracked.getText())
+  )
+    violations.push(
+      'Tracked recovery must retain resolved identity, recheck the existing association, preserve pending/eligible outcomes and only reopen unavailable records on explicit recovery.',
+    )
+
+  const defines = calls.filter((call) =>
+    isDeepStrictEqual(memberPath(call.expression), ['Object', 'defineProperty']),
+  )
+  const define = defines[0]
+  const descriptor = define?.arguments[2]
+  const queryValue =
+    descriptor !== undefined && ts.isObjectLiteralExpression(descriptor)
+      ? objectPropertyValue(descriptor, 'value')
+      : undefined
+  const query = functions.find((node) => node.name?.text === queryValue?.getText())
+  const querySource = compact(query)
+  const urlOwner = functions
+    .filter(
+      (node) =>
+        node !== provider &&
+        nodesOf(node, ts.isNewExpression).some(
+          (expression) => expression.expression.getText() === 'URL',
+        ),
+    )
+    .at(-1)
+  const urlSource = compact(urlOwner)
+  const queryCalls = query === undefined ? [] : nodesOf(query, ts.isCallExpression)
+  const queryAddress = queryCalls.find(
+    (call) =>
+      callMemberName(call) === namedImportLocalName(parsed, './route-input', 'sameRouteAddress'),
+  )
+  if (
+    defines.length !== 1 ||
+    compact(define?.arguments[1]) !== "'__pavpApplicationPageEligibility'" ||
+    descriptor === undefined ||
+    !ts.isObjectLiteralExpression(descriptor) ||
+    compact(objectPropertyValue(descriptor, 'enumerable')) !== 'false' ||
+    compact(objectPropertyValue(descriptor, 'writable')) !== 'false' ||
+    compact(objectPropertyValue(descriptor, 'configurable')) !== 'true' ||
+    query === undefined ||
+    query.parent !== provider?.body ||
+    !isDeepStrictEqual(
+      query.parameters.map((parameter) => compact(parameter.type)),
+      ['string', 'string'],
+    ) ||
+    queryAddress === undefined ||
+    queryCalls.filter(
+      (call) =>
+        callMemberName(call) ===
+        namedImportLocalName(parsed, './route-input', 'validateRouteInput'),
+    ).length !== 2 ||
+    !queryCalls.some(
+      (call) =>
+        isDeepStrictEqual(memberPath(call.expression), [
+          provider.parameters[0]?.name.getText(),
+          'resolve',
+        ]) && compact(call.arguments[0]) === query.parameters[0]?.name.getText(),
+    ) ||
+    !querySource.includes('.currentRoute.value') ||
+    !querySource.includes("'eligible'") ||
+    !querySource.includes("return'different-destination'") ||
+    !querySource.includes('.URL') ||
+    urlOwner === undefined ||
+    !urlSource.includes('newURL(') ||
+    !urlSource.includes('.origin!==window.location.origin') ||
+    !urlSource.includes("!=='/'") ||
+    !calls.some(
+      (call) =>
+        isDeepStrictEqual(memberPath(call.expression), [
+          provider.parameters[0]?.name.getText(),
+          'options',
+          'history',
+          'createHref',
+        ]) && compact(call.arguments[0]) === "'/'",
+    ) ||
+    /visibilityState|hasFocus|readyState/u.test(query.getText())
+  )
+    violations.push(
+      'Tracked eligibility must be an own readonly document query using primitive inputs, target-local validated route identity and the existing origin/deployment base without readiness or focus claims.',
+    )
+
+  const activationCalls = activation === undefined ? [] : nodesOf(activation, ts.isCallExpression)
+  const inspection = functions.find(
+    (node) =>
+      activationCalls.some((call) => callMemberName(call) === node.name?.text) &&
+      nodesOf(node, ts.isCallExpression).some(
+        (call) =>
+          isDeepStrictEqual(memberPath(call.expression), ['Object', 'getOwnPropertyDescriptor']) &&
+          compact(call.arguments[1]) === "'__pavpApplicationPageEligibility'",
+      ),
+  )
+  const inspectionCalls = inspection === undefined ? [] : nodesOf(inspection, ts.isCallExpression)
+  const inspectionCall = activationCalls.find(
+    (call) => callMemberName(call) === inspection?.name?.text,
+  )
+  const inspectionOutcome = storedValuePath(inspectionCall)[0]
+  const focusGuard =
+    activation === undefined
+      ? undefined
+      : nodesOf(activation, ts.isIfStatement).find(
+          (node) => compact(node.expression) === `${inspectionOutcome ?? ''}.kind!=='eligible'`,
+        )
+  const readQuery = inspectionCalls.find(
+    (call) =>
+      isDeepStrictEqual(memberPath(call.expression), ['Object', 'getOwnPropertyDescriptor']) &&
+      compact(call.arguments[1]) === "'__pavpApplicationPageEligibility'",
+  )
+  const candidate =
+    readQuery !== undefined && ts.isPropertyAccessExpression(readQuery.parent)
+      ? storedValuePath(readQuery.parent)[0]
+      : undefined
+  const askQuery = inspectionCalls.find((call) => callMemberName(call) === candidate)
+  const confirmed = storedValuePath(askQuery)[0]
+  const eligibleGuard =
+    inspection === undefined
+      ? undefined
+      : nodesOf(inspection, ts.isIfStatement).find(
+          (node) => compact(node.expression) === `${confirmed ?? ''}==='eligible'`,
+        )
+  const eligibleResult =
+    eligibleGuard === undefined
+      ? undefined
+      : nodesOf(eligibleGuard.thenStatement, ts.isObjectLiteralExpression).find(
+          (node) => compact(objectPropertyValue(node, 'kind')) === "'eligible'",
+        )
+  const inspectedTarget =
+    eligibleResult === undefined ? '' : compact(objectPropertyValue(eligibleResult, 'target'))
+  const associationGuard =
+    inspection === undefined
+      ? undefined
+      : nodesOf(inspection, ts.isIfStatement).find((node) => {
+          const condition = unwrapExpression(node.expression)
+          const alternatives =
+            ts.isBinaryExpression(condition) &&
+            condition.operatorToken.kind === ts.SyntaxKind.BarBarToken
+              ? [condition.left, condition.right]
+              : [condition]
+          return alternatives.some(
+            (alternative) =>
+              compact(unwrapExpression(alternative)) === `${inspectedTarget}.opener!==window`,
+          )
+        })
+  const lostReturn =
+    associationGuard === undefined
+      ? undefined
+      : nodesOf(associationGuard.thenStatement, ts.isReturnStatement)[0]?.expression
+  const documentRead =
+    inspection === undefined
+      ? undefined
+      : nodesOf(inspection, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            compact(node.left) === compact(readQuery?.arguments[0]) &&
+            compact(node.right) === `${inspectedTarget}.document`,
+        )
+  const activationSource = compact(activation)
+  const inspectionSource = compact(inspection)
+  if (
+    activation === undefined ||
+    activation.parent !== provider?.body ||
+    inspection === undefined ||
+    inspectionCall === undefined ||
+    focus.length !== 1 ||
+    readQuery === undefined ||
+    askQuery?.arguments.length !== 2 ||
+    !ts.isPropertyAccessExpression(askQuery.arguments[0] ?? parsed) ||
+    !compact(askQuery.arguments[0]).endsWith('.fullPath') ||
+    !ts.isIdentifier(askQuery.arguments[1] ?? parsed) ||
+    eligibleGuard === undefined ||
+    eligibleResult === undefined ||
+    focusGuard === undefined ||
+    !nodesOf(focusGuard.thenStatement, ts.isReturnStatement).some(
+      (statement) => compact(statement.expression) === inspectionOutcome,
+    ) ||
+    focus[0] === undefined ||
+    focusGuard.end >= focus[0].getStart() ||
+    compact(focus[0].expression) !== `${inspectionOutcome ?? ''}.target.focus` ||
+    associationGuard === undefined ||
+    documentRead === undefined ||
+    associationGuard.end >= documentRead.getStart() ||
+    documentRead.end >= readQuery.pos ||
+    lostReturn === undefined ||
+    !ts.isCallExpression(lostReturn) ||
+    !isDeepStrictEqual(lostReturn.arguments.map(compact), [
+      inspection.parameters[0]?.name.getText(),
+      "'reference-lost'",
+    ]) ||
+    !inspectionSource.includes(`${inspectedTarget}.closed`) ||
+    !inspectionSource.includes("'reference-lost'") ||
+    !inspectionSource.includes("'changed-destination'") ||
+    !inspectionSource.includes(".readyState==='loading'") ||
+    !inspectionSource.includes("{kind:'association-pending'}") ||
+    !inspectionSource.includes("{kind:'association-unavailable',reason:'unconfirmed'}") ||
+    !activationSource.includes("{kind:'invocation-error',phase:'activate'}") ||
+    !activationSource.includes("{kind:'requested',action:'activate',completion:'unobservable'}") ||
+    !inspectionCalls.some(
+      (call) =>
+        callMemberName(call) === namedImportLocalName(parsed, './route-input', 'sameRouteAddress'),
+    ) ||
+    [...activationCalls, ...inspectionCalls].some((call) =>
+      ['open', 'replace', 'assign', 'reload', 'navigate', creation?.name?.text].includes(
+        callMemberName(call),
+      ),
+    )
+  )
+    violations.push(
+      'Tracked activation must reacquire and validate the current own document query, reject a lost source opener before document readiness/eligibility, distinguish pending/lost/changed/unconfirmed and request focus only after eligibility without reopening.',
+    )
+
+  const mount = calls.find(
+    (call) => callMemberName(call) === namedImportLocalName(parsed, 'vue', 'onMounted'),
+  )
+  const dispose = calls.find(
+    (call) => callMemberName(call) === namedImportLocalName(parsed, 'vue', 'onScopeDispose'),
+  )
+  const mountSource = compact(mount)
+  const disposeSource = compact(dispose)
+  const listeners = calls.filter((call) => callMemberName(call) === 'addEventListener')
+  const removedListeners = calls.filter((call) => callMemberName(call) === 'removeEventListener')
+  const hidden = functions.find(
+    (node) =>
+      node.name?.text ===
+      listeners
+        .find((call) => compact(call.arguments[0]) === "'pagehide'")
+        ?.arguments[1]?.getText(),
+  )
+  const shown = functions.find(
+    (node) =>
+      node.name?.text ===
+      listeners
+        .find((call) => compact(call.arguments[0]) === "'pageshow'")
+        ?.arguments[1]?.getText(),
+  )
+  const disposedFlag =
+    dispose === undefined
+      ? undefined
+      : nodesOf(dispose, ts.isBinaryExpression)
+          .find(
+            (node) =>
+              ts.isIdentifier(node.left) &&
+              node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+              node.right.kind === ts.SyntaxKind.TrueKeyword,
+          )
+          ?.left.getText()
+  const disposedGuard =
+    tracked === undefined || disposedFlag === undefined
+      ? undefined
+      : nodesOf(tracked, ts.isIfStatement).find(
+          (guard) =>
+            nodesOf(guard.expression, ts.isIdentifier).some((node) => node.text === disposedFlag) &&
+            guard.end < (recheck?.getStart() ?? -1) &&
+            guard.end < (openCall?.getStart() ?? -1) &&
+            nodesOf(guard.thenStatement, ts.isReturnStatement).some((statement) =>
+              compact(statement.expression).includes("kind:'association-unavailable'"),
+            ),
+        )
+  if (
+    mount === undefined ||
+    dispose === undefined ||
+    define === undefined ||
+    define.pos <= mount.pos ||
+    define.end >= mount.end ||
+    !mountSource.includes('Object.hasOwn(') ||
+    !disposeSource.includes('Object.getOwnPropertyDescriptor(') ||
+    !disposeSource.includes(`===${query?.name?.text ?? ''}`) ||
+    !disposeSource.includes('Reflect.deleteProperty(') ||
+    !listeners.every((added) =>
+      removedListeners.some((removed) =>
+        isDeepStrictEqual(added.arguments.map(compact), removed.arguments.map(compact)),
+      ),
+    ) ||
+    !exactSet(
+      listeners.map((call) => compact(call.arguments[0])),
+      ["'pagehide'", "'pageshow'", "'message'"],
+    ) ||
+    hidden === undefined ||
+    shown === undefined ||
+    !compact(shown).includes('document') ||
+    disposedFlag === undefined ||
+    !querySource.includes(disposedFlag) ||
+    disposedGuard === undefined ||
+    /unload|beforeunload|\.close\(/u.test(`${mountSource}${disposeSource}`)
+  )
+    violations.push(
+      'Tracked page lifetime must remain provider-owned, mounted and pagehide/pageshow aware, preserve suspended associations and remove only owned query/listeners/references on disposal.',
+    )
+
+  const sessionInjection = calls.find(
+    (call) =>
+      callMemberName(call) === namedImportLocalName(parsed, 'vue', 'inject') &&
+      compact(call.arguments[0]) ===
+        namedImportLocalName(parsed, './browser-page-session-contract', 'browserPageSessionKey'),
+  )
+  const injectedPort = storedValuePath(sessionInjection)[0]
+  const portNames = new Set([
+    injectedPort,
+    ...(provider === undefined ? [] : nodesOf(provider, ts.isVariableDeclaration))
+      .filter((node) => compact(node.initializer) === injectedPort)
+      .map((node) => node.name.getText()),
+  ])
+  const portCalls = calls.filter((call) => portNames.has(memberPath(call.expression)[0]))
+  const savedWriteGuard =
+    tracked === undefined
+      ? undefined
+      : nodesOf(tracked, ts.isIfStatement).find((node) =>
+          nodesOf(node.expression, ts.isCallExpression).some(
+            (call) => portCalls.includes(call) && callMemberName(call) === 'write',
+          ),
+        )
+  const initializedGuard =
+    creation === undefined
+      ? undefined
+      : nodesOf(creation, ts.isIfStatement).find((node) =>
+          nodesOf(node.expression, ts.isCallExpression).some(
+            (call) =>
+              portCalls.includes(call) &&
+              callMemberName(call) === 'initializeTarget' &&
+              compact(call.arguments[0]) === target,
+          ),
+        )
+  const discovery = portCalls.find((call) => callMemberName(call) === 'discover')
+  const discoveryOwner = functions.find(
+    (node) =>
+      node !== provider &&
+      discovery !== undefined &&
+      nodesOf(node, ts.isCallExpression).includes(discovery),
+  )
+  const messageListener = listeners.find((call) => compact(call.arguments[0]) === "'message'")
+  const receiver = functions.find(
+    (node) => node.name?.text === messageListener?.arguments[1]?.getText(),
+  )
+  const receiverCalls = receiver === undefined ? [] : nodesOf(receiver, ts.isCallExpression)
+  const receivedInspection = receiverCalls.find(
+    (call) => callMemberName(call) === inspection?.name?.text,
+  )
+  const receiverSource = compact(receiver)
+  const eventName = receiver?.parameters[0]?.name.getText() ?? ''
+  const bindingComparison = functions.find(
+    (node) =>
+      node.parameters.length === 2 &&
+      node.parameters.every((parameter) => compact(parameter.type) === 'BrowserPageBinding') &&
+      receiverCalls.some((call) => callMemberName(call) === node.name?.text),
+  )
+  const bindingComparisons =
+    bindingComparison === undefined
+      ? []
+      : nodesOf(bindingComparison, ts.isReturnStatement)
+          .flatMap((statement) =>
+            compact(statement.expression).replaceAll(/[()]/gu, '').split('&&'),
+          )
+          .sort()
+  const receiverAssignments = receiver === undefined ? [] : nodesOf(receiver, ts.isBinaryExpression)
+  const referenceAssignment = receiverAssignments.find(
+    (node) =>
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      memberPath(node.left).at(-1) === 'state' &&
+      memberPath(node.right).at(-1) === 'state',
+  )
+  const restoredIdentity = memberPath(referenceAssignment?.left)[0] ?? ''
+  const restoredCandidate = memberPath(referenceAssignment?.right)[0] ?? ''
+  const restoringGuard =
+    receiver === undefined
+      ? undefined
+      : nodesOf(receiver, ts.isIfStatement).find(
+          (node) =>
+            compact(node.expression) === `${restoredIdentity}.state.kind==='restoring'` &&
+            referenceAssignment !== undefined &&
+            node.thenStatement.pos <= referenceAssignment.pos &&
+            node.thenStatement.end >= referenceAssignment.end,
+        )
+  const receivedMessage =
+    receiver === undefined
+      ? undefined
+      : nodesOf(receiver, ts.isVariableDeclaration)
+          .find(
+            (node) =>
+              ts.isPropertyAccessExpression(node.initializer ?? parsed) &&
+              compact(node.initializer).endsWith('.data'),
+          )
+          ?.name.getText()
+  const asyncOwners = [receiver, discoveryOwner, inspection, hidden, shown]
+  if (
+    sessionInjection === undefined ||
+    !['read', 'write', 'initializeTarget', 'available', 'subscribe', 'discover'].every((method) =>
+      portCalls.some((call) => callMemberName(call) === method),
+    ) ||
+    savedWriteGuard === undefined ||
+    !compact(savedWriteGuard.expression).endsWith(".status!=='saved'") ||
+    !compact(savedWriteGuard.thenStatement).includes("reason:'recovery-unavailable'") ||
+    savedWriteGuard.end >= (openCall?.getStart() ?? -1) ||
+    initializedGuard === undefined ||
+    !compact(initializedGuard.expression).endsWith(".status!=='saved'") ||
+    !nodesOf(initializedGuard.thenStatement, ts.isReturnStatement).some((statement) =>
+      compact(statement.expression).includes("'recovery-unavailable'"),
+    ) ||
+    initializedGuard.end >= (replaces[0]?.getStart() ?? -1) ||
+    discoveryOwner === undefined ||
+    !compact(discoveryOwner).includes('crypto.randomUUID()') ||
+    !compact(discoveryOwner).includes('.requestId=') ||
+    !compact(hidden).includes('.requestId=undefined') ||
+    receiver === undefined ||
+    receivedMessage === undefined ||
+    !receiverSource.includes(`${eventName}.origin!==window.location.origin`) ||
+    !receiverSource.includes(`.safeParse(${eventName}.data)`) ||
+    !receiverSource.includes(`${receivedMessage}.requestId!==${restoredIdentity}.requestId`) ||
+    !receiverSource.includes(`target:${eventName}.source`) ||
+    !isDeepStrictEqual(
+      bindingComparisons,
+      ['sourceId', 'associationId', 'routeName']
+        .map(
+          (field) =>
+            `${bindingComparison?.parameters[0]?.name.getText() ?? ''}.${field}===${bindingComparison?.parameters[1]?.name.getText() ?? ''}.${field}`,
+        )
+        .sort(),
+    ) ||
+    receivedInspection === undefined ||
+    compact(receivedInspection.arguments[0]) !== restoredCandidate ||
+    referenceAssignment === undefined ||
+    receivedInspection.end >= referenceAssignment.getStart() ||
+    !receiverSource.includes(`${compact(receivedInspection)}.kind!=='eligible')return`) ||
+    restoringGuard === undefined ||
+    !receiverSource.includes(`${restoredIdentity}.state.target!==${eventName}.source`) ||
+    !receiverSource.includes("'unconfirmed'") ||
+    asyncOwners.some(
+      (owner) =>
+        owner !== undefined &&
+        nodesOf(owner, ts.isCallExpression).some((call) =>
+          [
+            'open',
+            'focus',
+            'replace',
+            'assign',
+            'reload',
+            creation?.name?.text,
+            activation?.name?.text,
+            tracked?.name?.text,
+          ].includes(callMemberName(call)),
+        ),
+    )
+  )
+    violations.push(
+      'Tracked session recovery must preserve saved identity before opening, correlate current nonce and full binding, inspect only the replying native source relation and recover references without asynchronous opening or focus.',
+    )
+  return violations
+}
+
 function applicationNavigationNegativeProbeViolations(source: string): string[] {
   const browserFailure = 'New browser pages must reject'
   const managedFailure = 'Managed new-page links must preserve'
+  const sessionFailure = 'Tracked session recovery must preserve'
   const probes: readonly (readonly [string, RegExp, string])[] = [
     [
       'Application Navigation must preserve the three typed overloads',
@@ -1498,11 +2203,19 @@ function applicationNavigationNegativeProbeViolations(source: string): string[] 
       /return resolveRegisteredDestination\([^\n]+\)\?\.href/u,
       'return undefined',
     ],
-    [browserFailure, /if \('replace' in ([\w$]+)\)/u, 'if ($1.replace)'],
+    [browserFailure, /if \('replace' in ([\w$]+)\)/gu, 'if ($1.replace)'],
     [browserFailure, /!== 'current-page'/u, "=== 'current-page'"],
-    [browserFailure, /window\.open\(([^\n]+)\)/u, 'window.open($1)\n        window.open($1)'],
+    [
+      browserFailure,
+      /window\.open\(([^\n]+, '_blank', 'noopener')\)/u,
+      'window.open($1)\n        window.open($1)',
+    ],
     [browserFailure, /window\.open\(([^,]+), '_blank', 'noopener'\)/u, "window.open($1, '_blank')"],
-    [browserFailure, /window\.open\(([^\n]+)\)/u, 'const opened = window.open($1)'],
+    [
+      browserFailure,
+      /window\.open\(([^\n]+, '_blank', 'noopener')\)/u,
+      'const opened = window.open($1)',
+    ],
     [browserFailure, /completion: 'unobservable'/gu, "completion: 'blocked'"],
     [
       'Application links must synchronously exclude native activations',
@@ -1515,6 +2228,77 @@ function applicationNavigationNegativeProbeViolations(source: string): string[] 
       '$1',
     ],
     [managedFailure, /=== 'noopener'/u, "=== 'noreferrer'"],
+    ['Tracked browser pages must reject', /!== 'same-destination'/gu, "=== 'same-destination'"],
+    [
+      'Tracked creation must reserve',
+      /window\.open\('about:blank', '_blank'\)/u,
+      "window.open('about:blank', '_blank', 'noopener')",
+    ],
+    [
+      'Tracked creation must reserve',
+      /(if \(([\w$]+)\.opener !== window\))/u,
+      '$2.opener = null\n      $1',
+    ],
+    [
+      'Tracked creation must reserve',
+      /(if \(([\w$]+)\.opener !== window\))/u,
+      '$2.opener = window\n      $1',
+    ],
+    [
+      'Tracked creation must reserve',
+      /(if \(([\w$]+)\.opener !== window\))/u,
+      "Object.defineProperty($2, 'opener', { value: window })\n      $1",
+    ],
+    [
+      'Tracked creation must reserve',
+      /if \(([\w$]+)\.opener !== window\)/u,
+      'if ($1.opener === window)',
+    ],
+    ['Tracked creation must reserve', /([\w$]+\.location\.replace\([^\n]+\))/u, '$1\n      $1'],
+    ['Tracked recovery must retain', /\.recovery !== 'reopen'/u, ".recovery === 'reopen'"],
+    [
+      'Tracked recovery must retain',
+      /\.reason === 'recovery-unavailable'/u,
+      ".reason === 'restoring'",
+    ],
+    ['Tracked eligibility must be', /writable: false/u, 'writable: true'],
+    [
+      'Tracked eligibility must be',
+      /\.origin !== window\.location\.origin/u,
+      '.origin === window.location.origin',
+    ],
+    ['Tracked activation must reacquire', /=== 'eligible'\)/u, "!== 'eligible')"],
+    ['Tracked activation must reacquire', / \|\| [\w$]+\.target\.opener !== window/u, ''],
+    [
+      'Tracked activation must reacquire',
+      /\.readyState === 'loading'/u,
+      ".readyState === 'complete'",
+    ],
+    ['Tracked page lifetime must remain', /window\.removeEventListener\('pageshow', [\w$]+\)/u, ''],
+    [sessionFailure, /(\.write\([^\n]+\)\.status) !== 'saved'/u, "$1 === 'saved'"],
+    [sessionFailure, /(\.initializeTarget\([^\n]+\)\.status) !== 'saved'/u, "$1 === 'saved'"],
+    [sessionFailure, /\.requestId !== ([\w$]+)\.requestId/u, '.requestId === $1.requestId'],
+    [sessionFailure, /\.sourceId === ([\w$]+)\.sourceId/u, '.sourceId !== $1.sourceId'],
+    [
+      sessionFailure,
+      /([\w$]+)\.origin !== window\.location\.origin \|\|(\n\s+![\w$]+\(\1\.source\))/u,
+      '$1.origin === window.location.origin ||$2',
+    ],
+    [
+      sessionFailure,
+      /if \(([\w$]+\([\w$]+\))\.kind !== 'eligible'\) return/u,
+      "if ($1.kind === 'eligible') return",
+    ],
+    [
+      sessionFailure,
+      /(function [\w$]+\(([\w$]+): MessageEvent<unknown>\): void \{)/u,
+      '$1\n    $2.source?.focus()',
+    ],
+    [
+      sessionFailure,
+      /\.state\.kind === 'restoring'\) ([\w$]+\.state = [\w$]+\.state)/u,
+      ".state.kind !== 'restoring') $1",
+    ],
   ]
   return probes.flatMap(([expected, pattern, replacement], index) => {
     const mutated = source.replace(pattern, replacement)

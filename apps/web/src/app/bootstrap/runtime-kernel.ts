@@ -40,6 +40,7 @@ import {
 import { createPiniaProvider, type PiniaProviderHandle } from '../providers/pinia'
 import { createAndReadyRouter, type RouterLifecycleHandle } from '../router/router-lifecycle'
 import { createAndReadyStorage, type StorageLifecycleHandle } from '../storage/storage-lifecycle'
+import { browserPageSessionKey } from '../router/browser-page-session-contract'
 import { bootstrapStepRegistry, type BootstrapStepId } from './bootstrap-registry'
 import {
   createVueApplication,
@@ -487,6 +488,10 @@ async function startAttempt(input: {
       configuration: resources.configuration,
       startupAttemptId: input.startupAttemptId,
     })
+    resources.vueApplication.application.provide(
+      browserPageSessionKey,
+      resources.storage.owner.browserPageSession,
+    )
     throwClaimedStartupFailure()
 
     enterBootstrapStep('create-and-ready-i18n')

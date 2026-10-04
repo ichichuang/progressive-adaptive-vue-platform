@@ -51,7 +51,7 @@
   "capability.specialist-capabilities.summary": "Conditional admission for specialist grids, editors and charts.",
   "capability.specialist-capabilities.admission-condition": "Requires a real specialist product need and a replacement boundary.",
   "capability.storage-persistence.visible-label": "Storage and persistence",
-  "capability.storage-persistence.summary": "The seven current non-sensitive browser storage records and their lifecycle.",
+  "capability.storage-persistence.summary": "The eight current non-sensitive browser storage records and their lifecycle.",
   "capability.storage-persistence.admission-condition": "Active.",
   "capability.tanstack-query.visible-label": "Server-state caching",
   "capability.tanstack-query.summary": "Server-state capabilities admitted only with real API transport.",
