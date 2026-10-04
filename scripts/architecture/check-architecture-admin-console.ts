@@ -267,7 +267,7 @@ const expectedArchitectureAdminConsoleNegativeProbeCount = 71
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
-const expectedAcceptanceClosureNegativeProbeCount = 5
+const expectedAcceptanceClosureNegativeProbeCount = 18
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
 const expectedAdminNavigationGsapAdmissionNegativeProbeCount = 12
@@ -333,6 +333,10 @@ const routeTransitionWorkPackage = 'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY'
 const routeTransitionAdmissionAmendment =
   'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT'
 const expectedRouteTransitionActiveMirrorCount = 13
+const currentWork = 'PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE'
+const currentWorkAuthority = 'ARCHITECTURE_SECTION_18_11'
+const currentWorkMarker = `CURRENT_BOUNDED_WORK=${currentWork}`
+const currentWorkAuthorityMarker = `CURRENT_BOUNDED_WORK_AUTHORITY=${currentWorkAuthority}`
 const adminNavigationNativeImplementationCommit = '70cc43995512994b4155df04ddb7896047d8ad3a'
 const adminNavigationNativeAcceptanceStatement = '没问题 通过'
 const expectedAdminNavigationNativeImplementationPaths = [
@@ -6587,6 +6591,18 @@ function appearanceWorkspaceViolations(snapshot: MaterialGateSnapshot): string[]
   return violations
 }
 
+function multiRecordWorkspaceAmendment(architectureSource: string): string {
+  const heading = '## 18.11 Administration Workspace Chrome Target Contract'
+  const start = architectureSource.indexOf(heading)
+  const end = architectureSource.indexOf('\n## ', start + heading.length)
+  const section = start === -1 || end === -1 ? '' : architectureSource.slice(start, end)
+  const amendmentHeading = '#### Multi-record architecture-only amendment\n\n```text\n'
+  const amendmentStart = section.indexOf(amendmentHeading)
+  const contentStart = amendmentStart + amendmentHeading.length
+  const contentEnd = section.indexOf('\n```', contentStart)
+  return amendmentStart === -1 || contentEnd === -1 ? '' : section.slice(contentStart, contentEnd)
+}
+
 function currentWorkStatusViolations(architectureSource: string): string[] {
   const violations: string[] = []
   const valuesForMarker = (marker: string): readonly string[] =>
@@ -6724,11 +6740,33 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_ROUTE_TRANSITION_CURRENT_WORK')
   }
 
-  if (
-    canonicalWork !== 'PAVP_APPLICATION_BROWSER_PAGE_REUSE' ||
-    canonicalAuthority !== 'ARCHITECTURE_SECTION_9_4'
-  ) {
+  if (canonicalWork !== currentWork || canonicalAuthority !== currentWorkAuthority) {
     recordCurrentWorkViolation()
+  }
+
+  const workspaceAmendment = multiRecordWorkspaceAmendment(architectureSource)
+  const workspaceTargetFields = {
+    WORK_PACKAGE: currentWork,
+    WORK_PACKAGE_KIND: 'ARCHITECTURE_ONLY',
+    CONTRACT_STATUS: 'FROZEN',
+    OWNER_APPROVAL_SCOPE: 'ARCHITECTURE_TARGET_ONLY',
+    CAPABILITY_STATUS: 'TARGET_INACTIVE',
+    CURRENT_IMPLEMENTATION: 'WORKSPACE_ROUTE_SINGLE_AND_SCHEMA_VERSION_1_ONLY',
+    REPOSITORY_IMPLEMENTATION: 'NOT_STARTED',
+    IMPLEMENTATION_AUTHORIZATION: 'NONE',
+    OWNER_RUNTIME_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_VISUAL_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_ACCESSIBILITY_ACCEPTANCE: 'NOT_PERFORMED',
+    GIT_DELIVERY: 'NOT_AUTHORIZED',
+    RELEASE_STATUS: 'NOT_RELEASED',
+    NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE: 'NONE',
+    SUCCESSOR_PACKAGE_AUTHORIZATION: 'NONE',
+  }
+  for (const [field, expected] of Object.entries(workspaceTargetFields)) {
+    const values = [...workspaceAmendment.matchAll(new RegExp('^' + field + '=(.*)$', 'gmu'))]
+    if (values.length !== 1 || values[0]?.[1] !== expected) {
+      violations.push('PAVP_MULTI_RECORD_WORKSPACE_ARCHITECTURE_BOUNDARY')
+    }
   }
 
   const amendmentHeading = `### 1.2B.0G \`${acceptedDarkActionWorkPackage}\``
@@ -6818,8 +6856,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     `${navigationReworkWorkPackage}_STATUS=OPEN`,
     `${navigationReworkWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
     `${navigationReworkWorkPackage}_STATIC_VERIFICATION=PASS`,
-    'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
-    'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
+    currentWorkAuthorityMarker,
+    currentWorkMarker,
     `${adminNavigationGsapAdmissionAmendment}=FROZEN`,
     `${adminNavigationGsapWorkPackage}_STATUS=OPEN`,
     `${adminNavigationGsapWorkPackage}_REPOSITORY_IMPLEMENTATION=COMPLETE`,
@@ -7701,8 +7739,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (
       workValues.length !== 1 ||
       authorityValues.length !== 1 ||
-      workValues[0] !== 'PAVP_APPLICATION_BROWSER_PAGE_REUSE' ||
-      authorityValues[0] !== 'ARCHITECTURE_SECTION_9_4'
+      workValues[0] !== currentWork ||
+      authorityValues[0] !== currentWorkAuthority
     ) {
       recordCurrentWorkViolation()
     }
@@ -7720,8 +7758,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   if (
     allCurrentWorkMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
     allCurrentWorkAuthorityMarkers.length !== expectedRouteTransitionActiveMirrorCount ||
-    allCurrentWorkMarkers.some((value) => value !== 'PAVP_APPLICATION_BROWSER_PAGE_REUSE') ||
-    allCurrentWorkAuthorityMarkers.some((value) => value !== 'ARCHITECTURE_SECTION_9_4')
+    allCurrentWorkMarkers.some((value) => value !== currentWork) ||
+    allCurrentWorkAuthorityMarkers.some((value) => value !== currentWorkAuthority)
   ) {
     recordCurrentWorkViolation()
   }
@@ -8367,7 +8405,11 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
 function runAcceptanceClosureNegativeProbes(
   architectureSource: string,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
-  const probes: readonly [string, string, string][] = [
+  const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
+  const firstMirrorEnd = architectureSource.indexOf(currentWorkMarker) + currentWorkMarker.length
+  const canonicalPrefix = architectureSource.slice(0, firstMirrorEnd)
+  const laterMirrors = architectureSource.slice(firstMirrorEnd)
+  const probes: [string, string, string][] = [
     [
       'dark-action-status-reopened',
       'DARK_ACTION_ACCEPTANCE_STATUS',
@@ -8380,7 +8422,7 @@ function runAcceptanceClosureNegativeProbes(
       'dark-action-retained-as-current-work',
       'PAVP_RUNTIME_003_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
+        currentWorkMarker,
         `CURRENT_BOUNDED_WORK=${acceptedDarkActionWorkPackage}`,
       ),
     ],
@@ -8408,7 +8450,62 @@ function runAcceptanceClosureNegativeProbes(
         'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=PASS',
       ),
     ],
+    [
+      'current-work-stale-browser-page-task',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource
+        .replaceAll(currentWorkMarker, 'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE')
+        .replaceAll(
+          currentWorkAuthorityMarker,
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
+        ),
+    ],
+    [
+      'current-work-authority-mismatched',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource.replace(
+        currentWorkAuthorityMarker,
+        'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
+      ),
+    ],
+    [
+      'current-work-later-mirror-inconsistent',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      canonicalPrefix +
+        laterMirrors.replace(currentWorkMarker, 'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK'),
+    ],
+    [
+      'current-work-later-mirror-missing',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      canonicalPrefix + laterMirrors.replace(currentWorkMarker + '\n', ''),
+    ],
+    [
+      'current-work-mirror-duplicated',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource.replace(currentWorkMarker, currentWorkMarker + '\n' + currentWorkMarker),
+    ],
   ]
+
+  const amendment = multiRecordWorkspaceAmendment(architectureSource)
+  for (const [field, current, invalid] of [
+    ['CAPABILITY_STATUS', 'TARGET_INACTIVE', 'ACTIVE'],
+    ['REPOSITORY_IMPLEMENTATION', 'NOT_STARTED', 'COMPLETE'],
+    ['IMPLEMENTATION_AUTHORIZATION', 'NONE', 'OWNER_APPROVED'],
+    ['NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE', 'NONE', 'PAVP-UNAUTHORIZED-WORK'],
+    ['SUCCESSOR_PACKAGE_AUTHORIZATION', 'NONE', 'OWNER_APPROVED'],
+    ['OWNER_RUNTIME_ACCEPTANCE', 'NOT_PERFORMED', 'PASS'],
+    ['OWNER_VISUAL_ACCEPTANCE', 'NOT_PERFORMED', 'PASS'],
+    ['OWNER_ACCESSIBILITY_ACCEPTANCE', 'NOT_PERFORMED', 'PASS'],
+  ] as const) {
+    probes.push([
+      'multi-record-architecture-only-' + field,
+      'PAVP_MULTI_RECORD_WORKSPACE_ARCHITECTURE_BOUNDARY',
+      architectureSource.replace(
+        amendment,
+        amendment.replace(field + '=' + current, field + '=' + invalid),
+      ),
+    ])
+  }
 
   return Object.freeze(
     probes.map(([id, expectedFailureCode, mutatedSource]) => {
@@ -8417,7 +8514,10 @@ function runAcceptanceClosureNegativeProbes(
       return Object.freeze({
         id,
         expectedFailureCode,
-        passed: mutatedSource !== architectureSource && failureCodes.includes(expectedFailureCode),
+        passed:
+          baselineFailureCodes.length === 0 &&
+          mutatedSource !== architectureSource &&
+          failureCodes.includes(expectedFailureCode),
       })
     }),
   )
@@ -8485,6 +8585,7 @@ function runRuntime003AdmissionNegativeProbes(
 function runRuntime003AcceptanceClosureNegativeProbes(
   architectureSource: string,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
+  const baselineFailureCodes = currentWorkStatusViolations(architectureSource)
   const probes: readonly [string, string, string][] = [
     [
       'runtime-003-status-reopened-after-acceptance',
@@ -8497,10 +8598,7 @@ function runRuntime003AcceptanceClosureNegativeProbes(
     [
       'runtime-003-retained-as-current-work-after-acceptance',
       'PAVP_RUNTIME_003_CURRENT_WORK',
-      architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
-        `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`,
-      ),
+      architectureSource.replace(currentWorkMarker, `CURRENT_BOUNDED_WORK=${runtime003WorkItem}`),
     ],
     [
       'runtime-003-owner-runtime-acceptance-removed',
@@ -8534,7 +8632,10 @@ function runRuntime003AcceptanceClosureNegativeProbes(
       return Object.freeze({
         id,
         expectedFailureCode,
-        passed: mutatedSource !== architectureSource && failureCodes.includes(expectedFailureCode),
+        passed:
+          baselineFailureCodes.length === 0 &&
+          mutatedSource !== architectureSource &&
+          failureCodes.includes(expectedFailureCode),
       })
     }),
   )
@@ -9329,10 +9430,7 @@ function routeTransitionAcceptanceViolations(
       values.length !== expectedRouteTransitionActiveMirrorCount ||
       values.some(
         (match) =>
-          match[1] !==
-          (field === 'CURRENT_BOUNDED_WORK'
-            ? 'PAVP_APPLICATION_BROWSER_PAGE_REUSE'
-            : 'ARCHITECTURE_SECTION_9_4'),
+          match[1] !== (field === 'CURRENT_BOUNDED_WORK' ? currentWork : currentWorkAuthority),
       )
     ) {
       failures.push('ROUTE_TRANSITION_ACCEPTED_' + field)
@@ -9412,12 +9510,12 @@ function validateRouteTransitionAcceptanceGovernance(
   ])
   for (const [field, replacement, code] of [
     [
-      'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
+      currentWorkMarker,
       'CURRENT_BOUNDED_WORK=' + routeTransitionWorkPackage,
       'CURRENT_BOUNDED_WORK',
     ],
     [
-      'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
+      currentWorkAuthorityMarker,
       'CURRENT_BOUNDED_WORK_AUTHORITY=' + routeTransitionAdmissionAmendment,
       'CURRENT_BOUNDED_WORK_AUTHORITY',
     ],
@@ -9874,11 +9972,11 @@ function runRouteTransitionAdmissionNegativeProbes(
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource
         .replace(
-          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
+          currentWorkAuthorityMarker,
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationMotionVueSelectionLensAdmissionAmendment}`,
         )
         .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
+          currentWorkMarker,
           `CURRENT_BOUNDED_WORK=${adminNavigationMotionVueSelectionLensWorkPackage}`,
         ),
     ],
@@ -10045,13 +10143,10 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_CURRENT_WORK',
       architectureSource
         .replace(
-          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_9_4',
+          currentWorkAuthorityMarker,
           `CURRENT_BOUNDED_WORK_AUTHORITY=${adminNavigationNativeAdmissionAmendment}`,
         )
-        .replace(
-          'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
-          `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`,
-        ),
+        .replace(currentWorkMarker, `CURRENT_BOUNDED_WORK=${adminNavigationNativeWorkPackage}`),
     ],
     [
       'admin-navigation-motion-vue-selection-lens-amendment-unfrozen',
@@ -10960,17 +11055,14 @@ function runAdminNavigationNativeAdmissionNegativeProbes(
       'admin-navigation-native-current-work-left-as-rejected-reveal',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
       architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
+        currentWorkMarker,
         `CURRENT_BOUNDED_WORK=${adminNavigationHighlightRevealWorkPackage}`,
       ),
     ],
     [
       'admin-navigation-native-current-work-id-unauthorized',
       'PAVP_ADMIN_NAVIGATION_NATIVE_CURRENT_WORK',
-      architectureSource.replace(
-        'CURRENT_BOUNDED_WORK=PAVP_APPLICATION_BROWSER_PAGE_REUSE',
-        'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK',
-      ),
+      architectureSource.replace(currentWorkMarker, 'CURRENT_BOUNDED_WORK=PAVP-UNAUTHORIZED-WORK'),
     ],
     [
       'admin-navigation-native-amendment-unfrozen',
