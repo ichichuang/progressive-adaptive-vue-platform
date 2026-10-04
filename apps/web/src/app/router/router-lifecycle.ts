@@ -1,11 +1,14 @@
 import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
-import { nextTick, watch, type App } from 'vue'
+import { nextTick, shallowReactive, watch, type App } from 'vue'
 import type { UiScrollController } from '@platform/ui'
 import type { ScrollRefreshSnapshot } from '../scroll/scroll-refresh-contract'
 import {
   createRouterScrollControllers,
   routerScrollControllerKey,
   routerWorkspaceRefreshKey,
+  routerWorkspaceRetentionKey,
+  type WorkspaceRenderSnapshot,
+  type WorkspaceRetentionBinding,
 } from './router-scroll-controller'
 import {
   createRouter,
@@ -375,6 +378,7 @@ interface RouteEntryMarker {
 }
 
 interface NavigationOperation {
+  readonly presentationAbort: AbortController
   workspaceActivation?: RouterNavigationOptions['workspaceActivation']
   readonly navigationId: string
   kind: 'initial' | 'push' | 'replace' | 'pop'
@@ -401,7 +405,7 @@ interface WorkspaceRegionRecord {
 }
 
 interface CommittedEntry {
-  readonly workspace: LiveWorkspaceEntry | undefined
+  workspace: LiveWorkspaceEntry | undefined
   readonly to: RouteLocationNormalized
   readonly navigation: NavigationAttemptState
   readonly marker: RouteEntryMarker | undefined
@@ -409,15 +413,14 @@ interface CommittedEntry {
     | {
         readonly owner: HTMLElement
         readonly controller: UiScrollController
+        readonly workspace: LiveWorkspaceEntry | undefined
         readonly context: readonly (string | number)[] | undefined
         readonly workspaceContext: readonly (string | number)[] | undefined
       }
     | undefined
 }
 
-export function committedRouteInputProps(
-  router: Router,
-): Readonly<{ routeInput?: ValidatedRouteInput }> {
+function committedRouteInputProps(router: Router): Readonly<{ routeInput?: ValidatedRouteInput }> {
   return routerPresentationCommitBrokers.get(router)?.routeInput?.() ?? {}
 }
 
@@ -580,13 +583,59 @@ export async function createAndReadyRouter(input: {
   let operation: NavigationOperation | undefined
   let nativeOperation: NavigationOperation | undefined
   let committedEntry: CommittedEntry | undefined
+  let retentionBinding: WorkspaceRetentionBinding | undefined
+  let renderSnapshot: WorkspaceRenderSnapshot | undefined
+  let refreshLease: AbortController | undefined
   const scopeId = crypto.randomUUID()
   const regionRecords = new Map<string, RegionRecord>()
   const scrollControllers = createRouterScrollControllers()
   input.application.provide(routerScrollControllerKey, scrollControllers.register)
   const workspace = input.application.runWithContext(useWorkspaceStore)
   const workspaceRecords = new Map<WorkspaceIdentity, WorkspaceRegionRecord>()
-  const workspaceContents = new Map<WorkspaceInstanceIdentity, () => WorkspaceContentState>()
+  const workspaceContents = shallowReactive(
+    new Map<WorkspaceInstanceIdentity, () => WorkspaceContentState>(),
+  )
+
+  function publishWorkspaceSnapshot(entry: CommittedEntry): void {
+    renderSnapshot = Object.freeze({
+      commit: entry,
+      routeName: entry.navigation.routeName,
+      inputProps: Object.freeze(committedRouteInputProps(router)),
+      workspace: entry.workspace,
+    })
+    retentionBinding?.acceptCommitted(renderSnapshot)
+  }
+
+  input.application.provide(routerWorkspaceRetentionKey, {
+    connect(binding) {
+      if (disposed) throw new Error('The Router Workspace Retention owner is disposed.')
+      const previous = retentionBinding
+      retentionBinding = undefined
+      refreshLease?.abort()
+      previous?.dispose()
+      retentionBinding = binding
+      try {
+        if (renderSnapshot !== undefined) binding.acceptCommitted(renderSnapshot)
+      } catch (source: unknown) {
+        retentionBinding = undefined
+        binding.dispose()
+        throw source
+      }
+      return () => {
+        if (retentionBinding !== binding) return
+        retentionBinding = undefined
+        refreshLease?.abort()
+        binding.dispose()
+      }
+    },
+    read() {
+      return !disposed &&
+        committedEntry?.to === router.currentRoute.value &&
+        renderSnapshot?.commit === committedEntry
+        ? renderSnapshot
+        : undefined
+    },
+  })
   input.application.provide(workspaceContentKey, (instance, read) => {
     if (
       disposed ||
@@ -644,6 +693,8 @@ export async function createAndReadyRouter(input: {
     kind: NavigationOperation['kind'],
     expectedFullPath: string,
   ): NavigationOperation {
+    operation?.presentationAbort.abort()
+    refreshLease?.abort()
     // The presented source owns any inertia before route-transition presentation begins.
     committedEntry?.presented?.controller.cancelMotion()
     operation?.finish({
@@ -660,6 +711,7 @@ export async function createAndReadyRouter(input: {
       resolveCompletion = resolve
     })
     const next: NavigationOperation = {
+      presentationAbort: new AbortController(),
       navigationId: crypto.randomUUID(),
       kind,
       expectedFullPath,
@@ -711,16 +763,34 @@ export async function createAndReadyRouter(input: {
 
   input.application.provide(routerWorkspaceRefreshKey, (target) => {
     const entry = committedEntry
+    const snapshot = renderSnapshot
+    const retention = retentionBinding
     const resolved = resolveRegisteredDestination(router, target.destination)
     if (
       entry?.workspace !== target ||
+      snapshot?.commit !== entry ||
+      retention === undefined ||
       entry.presented === undefined ||
+      (refreshLease !== undefined && !refreshLease.signal.aborted) ||
       resolved === undefined ||
       !sameRouteAddress(entry.to, resolved)
     )
       return undefined
     const presented = entry.presented
+    const lease = new AbortController()
+    const operationSignal = entry.navigation.operation.presentationAbort.signal
+    const cancel = (): void => {
+      lease.abort()
+    }
+    const release = (): void => {
+      lease.abort()
+      operationSignal.removeEventListener('abort', cancel)
+      if (refreshLease === lease) refreshLease = undefined
+    }
     const isCurrent = (): boolean =>
+      !lease.signal.aborted &&
+      !operationSignal.aborted &&
+      retentionBinding === retention &&
       entryIsCurrent(entry) &&
       entry.navigation.operation.result?.kind === 'allow' &&
       regionOwner(entry.navigation.routeName) === presented.owner &&
@@ -728,37 +798,111 @@ export async function createAndReadyRouter(input: {
       presented.controller.readState().ready &&
       presented.owner.closest('[inert]') === null
     if (!isCurrent()) return undefined
+    operationSignal.addEventListener('abort', cancel, { once: true })
+    refreshLease = lease
+    let resetStarted = false
     return {
+      signal: lease.signal,
       isCurrent,
-      reset(replacement) {
+      release,
+      replace(prepare) {
+        if (!isCurrent() || entry.workspace !== target || workspace.active !== target)
+          return undefined
+        const replacement = workspace.replaceInstance(target)
+        if (replacement === undefined) return undefined
+        // Identity adoption is independent of rendering and optional scroll settlement.
+        entry.workspace = replacement
+        try {
+          prepare(replacement)
+        } finally {
+          if (!disposed && committedEntry === entry) publishWorkspaceSnapshot(entry)
+        }
+        return replacement
+      },
+      async reset(replacement) {
         if (
+          resetStarted ||
           !isCurrent() ||
+          entry.workspace !== replacement ||
+          renderSnapshot?.workspace !== replacement ||
           workspace.active !== replacement ||
           replacement.identity !== target.identity ||
           replacement.instance === target.instance ||
           replacement.destination !== target.destination ||
           replacement.componentName !== target.componentName
         )
-          return
+          return false
+        resetStarted = true
+        const replacementSnapshot = { ...snapshot, workspace: replacement }
+        const failure = retention.readFailure(replacementSnapshot)
+        if (failure !== undefined)
+          throw failure.cause instanceof Error
+            ? failure.cause
+            : new Error('The refreshed Workspace rendering failed.', { cause: failure.cause })
+        if (entry.navigation.routeName === 'appearance-management') {
+          const ready = await new Promise<boolean>((resolve, reject) => {
+            let settled = false
+            let stop: () => void = () => undefined
+            const finish = (value: boolean, failure?: { readonly cause: unknown }): void => {
+              if (settled) return
+              settled = true
+              stop()
+              lease.signal.removeEventListener('abort', cancelReadiness)
+              if (failure === undefined) resolve(value)
+              else
+                reject(
+                  failure.cause instanceof Error
+                    ? failure.cause
+                    : new Error('The refreshed Workspace rendering failed.', {
+                        cause: failure.cause,
+                      }),
+                )
+            }
+            const cancelReadiness = (): void => {
+              finish(false)
+            }
+            if (lease.signal.aborted) {
+              finish(false)
+              return
+            }
+            lease.signal.addEventListener('abort', cancelReadiness, { once: true })
+            const readContent = () => {
+              const read = workspaceContents.get(replacement.instance)
+              return {
+                active: workspace.active,
+                read,
+                ready: read?.().ready,
+                failure: retention.readFailure(replacementSnapshot),
+              }
+            }
+            const settleContent = (content: ReturnType<typeof readContent>): void => {
+              if (content.failure !== undefined) finish(false, content.failure)
+              else if (!isCurrent() || content.active !== replacement) finish(false)
+              else if (content.read === undefined)
+                finish(false, {
+                  cause: new TypeError('The refreshed Workspace content owner is unavailable.'),
+                })
+              else if (content.ready === true) finish(true)
+            }
+            stop = watch(readContent, settleContent, { flush: 'sync' })
+            settleContent(readContent())
+          })
+          if (!ready) return false
+        }
+        // DOM readiness is sampled again after content settles; it is not a reactive promise.
+        if (!isCurrent() || workspace.active !== replacement) return false
         workspaceRecords.delete(target.identity)
         if (entry.marker !== undefined) regionRecords.delete(entry.marker.entryId)
         presented.controller.cancelMotion()
         if (!writeRegionPosition(presented.controller, { left: 0, top: 0 }))
           throw new TypeError('The locally refreshed Workspace scroll owner is unavailable.')
-        committedEntry = {
-          ...entry,
+        entry.presented = {
+          ...presented,
           workspace: replacement,
-          presented: {
-            ...presented,
-            context: regionContext(entry.to, entry.navigation, presented.owner),
-            workspaceContext: regionContext(
-              entry.to,
-              entry.navigation,
-              presented.owner,
-              replacement,
-            ),
-          },
+          context: regionContext(entry.to, entry.navigation, presented.owner),
+          workspaceContext: regionContext(entry.to, entry.navigation, presented.owner, replacement),
         }
+        return true
       },
     }
   })
@@ -901,6 +1045,7 @@ export async function createAndReadyRouter(input: {
       disposed ||
       binding?.readEnabled() !== true ||
       entry?.presented === undefined ||
+      entry.presented.workspace !== entry.workspace ||
       !entryIsCurrent(entry)
     )
       return
@@ -941,7 +1086,12 @@ export async function createAndReadyRouter(input: {
 
   function captureSource(from: RouteLocationNormalized): void {
     const source = committedEntry
-    if (source?.to !== from || router.currentRoute.value !== from || source.presented === undefined)
+    if (
+      source?.to !== from ||
+      router.currentRoute.value !== from ||
+      source.presented === undefined ||
+      source.presented.workspace !== source.workspace
+    )
       return
     const owner = regionOwner(source.navigation.routeName)
     if (owner === undefined) return
@@ -1000,6 +1150,21 @@ export async function createAndReadyRouter(input: {
           cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
           return false
         }
+        const binding = retentionBinding
+        const snapshot = renderSnapshot
+        if (binding === undefined || snapshot?.commit !== entry)
+          throw new TypeError('The committed Workspace rendering boundary is unavailable.')
+        if (
+          !(await binding.whenRendered(
+            snapshot,
+            entry.navigation.operation.presentationAbort.signal,
+          )) ||
+          retentionBinding !== binding ||
+          !entryIsCurrent(entry)
+        ) {
+          cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+          return false
+        }
         const navigation = entry.navigation
         const routeRecord = getRouteRecord(navigation.routeName)
         const samePage = from.name === to.name
@@ -1026,11 +1191,12 @@ export async function createAndReadyRouter(input: {
           cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
           return false
         }
+        const workspaceEntry = entry.workspace
         const workspaceActivation =
           navigation.operation.kind !== 'pop' &&
-          entry.workspace !== undefined &&
-          navigation.operation.workspaceActivation?.identity === entry.workspace.identity &&
-          navigation.operation.workspaceActivation.instance === entry.workspace.instance
+          workspaceEntry !== undefined &&
+          navigation.operation.workspaceActivation?.identity === workspaceEntry.identity &&
+          navigation.operation.workspaceActivation.instance === workspaceEntry.instance
         const preserve = samePage && navigation.operation.kind !== 'pop' && !workspaceActivation
         let documentPosition: { readonly left: number; readonly top: number } | false = false
         if (!locked && entryIsCurrent(entry)) {
@@ -1063,19 +1229,19 @@ export async function createAndReadyRouter(input: {
               } else regionRecords.delete(record.marker.entryId)
             }
             const workspaceContext =
-              entry.workspace === undefined
+              workspaceEntry === undefined
                 ? undefined
-                : regionContext(to, navigation, owner, entry.workspace)
+                : regionContext(to, navigation, owner, workspaceEntry)
             if (workspaceActivation) {
-              const record = workspaceRecords.get(entry.workspace.identity)
+              const record = workspaceRecords.get(workspaceEntry.identity)
               if (record !== undefined) {
                 if (
-                  record.instance === entry.workspace.instance &&
+                  record.instance === workspaceEntry.instance &&
                   sameContext(record.context, workspaceContext) &&
                   entryIsCurrent(entry)
                 )
                   restored = writeRegionPosition(controller, record)
-                else workspaceRecords.delete(entry.workspace.identity)
+                else workspaceRecords.delete(workspaceEntry.identity)
               }
             }
             const refresh = pendingRefresh
@@ -1098,7 +1264,13 @@ export async function createAndReadyRouter(input: {
               if (!writeRegionFragment(controller, hash) && !preserve)
                 writeRegionPosition(controller, { left: 0, top: 0 })
             }
-            entry.presented = { owner, controller, context, workspaceContext }
+            entry.presented = {
+              owner,
+              controller,
+              workspace: workspaceEntry,
+              context,
+              workspaceContext,
+            }
           }
         }
         pendingRefresh = undefined
@@ -1239,6 +1411,7 @@ export async function createAndReadyRouter(input: {
       },
       cancelBeforeStart() {
         if (navigationStarted || operation !== request) return
+        request.presentationAbort.abort()
         request.finish(cancelledRouterNavigationResult(request.navigationId))
         for (const reservation of [...presentationCommitBroker.reservations.values()]) {
           settleRouterPresentationCommit(presentationCommitBroker, reservation, 'cancelled')
@@ -1361,6 +1534,7 @@ export async function createAndReadyRouter(input: {
         to.matched.at(-1)?.components?.['default'],
       )
       committedEntry = { to, navigation, marker, workspace: entry, presented: undefined }
+      publishWorkspaceSnapshot(committedEntry)
       if (navigation.operation.result === undefined && to.redirectedFrom !== undefined)
         navigation.operation.result = {
           kind: 'redirect',
@@ -1414,6 +1588,13 @@ export async function createAndReadyRouter(input: {
   const dispose = (): void => {
     if (disposed) return
     disposed = true
+    operation?.presentationAbort.abort()
+    refreshLease?.abort()
+    refreshLease = undefined
+    const retained = retentionBinding
+    retentionBinding = undefined
+    renderSnapshot = undefined
+    retained?.dispose()
     operation?.finish({
       kind: 'cancel',
       navigationId: operation.navigationId,

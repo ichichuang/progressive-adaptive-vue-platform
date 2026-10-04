@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { UiProvider } from '@platform/ui'
-import { computed, onScopeDispose } from 'vue'
+import { computed, inject, onScopeDispose, provide } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
 import { useConsoleI18n } from './shared/i18n'
@@ -8,19 +8,28 @@ import { useAppearanceReadBoundary } from './app/appearance/appearance-read-boun
 import { useWorkspaceStore } from './app/workspace/workspace.store'
 import ConsoleRouteFrame from './app/console/ConsoleRouteFrame.vue'
 import { provideApplicationNavigation } from './app/router/application-navigation'
-import { committedRouteInputProps } from './app/router/router-lifecycle'
-import { createRouteTransitionCoordinator } from './app/router/route-transition/route-transition-coordinator'
+import { routerWorkspaceRetentionKey } from './app/router/router-scroll-controller'
 import {
-  getRouteLayoutCapability,
-  getRoutePresentation,
-  getRouteRecord,
-} from './app/router/route-registry'
+  createWorkspaceRetention,
+  WorkspaceRetentionHost,
+  workspaceRetentionKey,
+} from './app/workspace/workspace-retention'
+import { createRouteTransitionCoordinator } from './app/router/route-transition/route-transition-coordinator'
+import { getRouteLayoutCapability, getRouteRecord } from './app/router/route-registry'
 
 const { t, locale } = useConsoleI18n()
 const route = useRoute()
 const router = useRouter()
 const workspace = useWorkspaceStore()
-const routeInputProps = computed(() => committedRouteInputProps(router))
+const retention = createWorkspaceRetention(workspace, t)
+onScopeDispose(() => {
+  retention.dispose()
+})
+provide(workspaceRetentionKey, retention.commands)
+const retentionPort = inject(routerWorkspaceRetentionKey)
+if (retentionPort === undefined)
+  throw new TypeError('The Router retention boundary is unavailable.')
+onScopeDispose(retentionPort.connect(retention))
 const appearance = useAppearanceReadBoundary()
 const routeTransitionCoordinator = createRouteTransitionCoordinator({ router, appearance })
 onScopeDispose(() => {
@@ -34,7 +43,6 @@ const composition = computed(
 const tabpanel = computed(
   () => composition.value?.startsWith('admin-') === true && workspace.activeIdentity !== null,
 )
-const presentation = computed(() => getRoutePresentation(route.name, t))
 </script>
 
 <template>
@@ -54,16 +62,11 @@ const presentation = computed(() => getRoutePresentation(route.name, t))
           :tabindex="tabpanel ? 0 : undefined"
           :aria-labelledby="tabpanel ? `${workspace.activeIdentity}-tab` : undefined"
         >
-          <KeepAlive :include="workspace.includedComponentNames">
-            <component
-              :is="Component"
-              :key="workspace.active?.instance"
-              v-bind="routeInputProps"
-              :breadcrumb="presentation.breadcrumb"
-              :message="presentation.message"
-              :title="presentation.title"
-            />
-          </KeepAlive>
+          <WorkspaceRetentionHost
+            :component="Component"
+            :snapshot="retentionPort.read()"
+            :controller="retention"
+          />
         </div>
       </RouterView>
     </ConsoleRouteFrame>

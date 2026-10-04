@@ -2701,7 +2701,6 @@ async function pageViolations(): Promise<string[]> {
     ]
   }
 
-  const workspaceComponentNames = new Set<string>()
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
     const productPage = expectedProductPageSources.includes(sourcePath)
@@ -2710,16 +2709,10 @@ async function pageViolations(): Promise<string[]> {
         ...source.matchAll(/\bdefineOptions\(\{\s*name:\s*['"]([^'"]+)['"]\s*\}\)/gu),
       ]
       const name = options[0]?.[1]
-      if (
-        options.length !== 1 ||
-        name === undefined ||
-        name.length === 0 ||
-        workspaceComponentNames.has(name)
-      )
+      if (options.length !== 1 || name === undefined || name.length === 0)
         violations.push(
-          `${sourcePath}: route-single KeepAlive requires an explicit unique page component name.`,
+          `${sourcePath}: Workspace pages require an explicit component-definition name.`,
         )
-      if (name !== undefined) workspaceComponentNames.add(name)
     }
     const sharedCapability =
       sourcePath === 'apps/web/src/pages/capabilities.vue' ||
@@ -4197,11 +4190,9 @@ function routeTransitionSourceProofResults(
       passed:
         count(snapshot.appSource, /<RouterView\b/gu) === 1 &&
         count(snapshot.appSource, /class="pavp-route-content"/gu) === 1 &&
-        count(snapshot.appSource, /<KeepAlive\b/gu) === 1 &&
+        count(snapshot.appSource, /<WorkspaceRetentionHost\b/gu) === 1 &&
         !/:key=|<Transition\b|<TransitionGroup\b|AnimatePresence|<KeepAlive\b|<Suspense\b|v-if=|v-show=/u.test(
-          snapshot.appSource
-            .replace(/<KeepAlive\s+:include="[\w$]+\.includedComponentNames"\s*>/gu, '')
-            .replace(/(<component\b[^>]*):key="[\w$]+\.active\?\.instance"/gu, '$1'),
+          snapshot.appSource,
         ),
     }),
     Object.freeze({
@@ -4215,7 +4206,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 272 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         snapshot.engineeringManifestSource.includes(
           "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
@@ -4367,7 +4358,7 @@ function routeTransitionSourceProofResults(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 272 * 1024') &&
+        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])
@@ -6316,39 +6307,41 @@ export async function validateRouteTransitionSourceGovernance(): Promise<readonl
   ]
 }
 
-async function workspaceRefreshViolations(): Promise<string[]> {
+interface WorkspaceRetentionSourceSnapshot {
+  readonly store: string
+  readonly frame: string
+  readonly lifecycle: string
+  readonly port: string
+  readonly retention: string
+  readonly content: string
+}
+
+function workspaceRefreshContractViolations({
+  store,
+  frame,
+  lifecycle,
+  port,
+  retention,
+  content,
+}: WorkspaceRetentionSourceSnapshot): string[] {
   const violations: string[] = []
-  const [store, frame, lifecycle, port] = await Promise.all([
-    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace.store.ts'), 'utf8'),
-    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
-    readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'),
-    readFile(resolve(routerDirectory, 'router-scroll-controller.ts'), 'utf8'),
-  ])
   const parsedStore = ts.createSourceFile('workspace.store.ts', store, ts.ScriptTarget.Latest, true)
-  const refresh = nodesOf(parsedStore, ts.isFunctionDeclaration).find(
-    (node) => node.name?.text === 'refresh',
+  const replacement = nodesOf(parsedStore, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === 'replaceInstance',
   )
-  const transaction = refresh === undefined ? undefined : nodesOf(refresh, ts.isTryStatement)[0]
-  const ticks =
-    transaction?.tryBlock.statements.filter(
-      (node) =>
-        ts.isExpressionStatement(node) &&
-        ts.isAwaitExpression(node.expression) &&
-        ts.isCallExpression(node.expression.expression) &&
-        callMemberName(node.expression.expression) ===
-          namedImportLocalName(parsedStore, 'vue', 'nextTick'),
-    ) ?? []
-  const calls = refresh === undefined ? [] : nodesOf(refresh, ts.isCallExpression)
+  const calls = replacement === undefined ? [] : nodesOf(replacement, ts.isCallExpression)
   if (
-    refresh?.parameters.length !== 2 ||
-    transaction?.finallyBlock === undefined ||
-    ticks.length !== 3 ||
+    replacement?.parameters.length !== 1 ||
+    nodesOf(replacement, ts.isAwaitExpression).length !== 0 ||
     !calls.some((call) => callMemberName(call) === 'canDiscard') ||
-    !calls.some((call) => callMemberName(call) === 'Symbol') ||
-    /\b(?:localStorage|sessionStorage|workspaceSession|router)\b/u.test(refresh.getText())
+    calls.filter((call) => callMemberName(call) === 'Symbol').length !== 1 ||
+    /\b(?:localStorage|sessionStorage|workspaceSession|router|nextTick)\b/u.test(
+      replacement.getText(),
+    ) ||
+    /includedComponentNames|Workspace route component names must be unique/u.test(store)
   )
     violations.push(
-      'Workspace refresh requires discard authority and three separate public KeepAlive flush phases with cleanup.',
+      'Workspace replacement must synchronously replace one permitted live instance without name pruning or persistence changes.',
     )
 
   const parsedFrame = ts.createSourceFile(
@@ -6374,6 +6367,14 @@ async function workspaceRefreshViolations(): Promise<string[]> {
   const handlerCalls = handler === undefined ? [] : nodesOf(handler, ts.isCallExpression)
   const activateCall = handlerCalls.find((call) => callMemberName(call) === activateHandler)
   const refreshCall = handlerCalls.find((call) => callMemberName(call) === 'refresh')
+  const refreshPort = nodesOf(parsedFrame, ts.isCallExpression).find(
+    (call) =>
+      callMemberName(call) === 'inject' &&
+      call.arguments[0]?.getText() === 'routerWorkspaceRefreshKey',
+  )
+  const refreshLeaseCall = handlerCalls.find(
+    (call) => callMemberName(call) === storedValuePath(refreshPort)[0],
+  )
   if (
     handler === undefined ||
     activateCall === undefined ||
@@ -6382,8 +6383,11 @@ async function workspaceRefreshViolations(): Promise<string[]> {
     !handlerCalls.some((call) => callMemberName(call) === 'isRouterNavigationCurrent') ||
     !handlerCalls.some((call) => callMemberName(call) === 'isLiveWorkspace') ||
     !handlerCalls.some((call) => callMemberName(call) === 'sameRouteAddress') ||
-    handlerCalls.some((call) =>
-      ['navigate', 'push', 'replace', 'go'].includes(callMemberName(call) ?? ''),
+    handlerCalls.some(
+      (call) =>
+        ['navigate', 'push', 'go'].includes(callMemberName(call) ?? '') ||
+        (callMemberName(call) === 'replace' &&
+          memberPath(call.expression)[0] !== storedValuePath(refreshLeaseCall)[0]),
     )
   )
     violations.push(
@@ -6395,17 +6399,367 @@ async function workspaceRefreshViolations(): Promise<string[]> {
     ts.ScriptTarget.Latest,
     true,
   )
-  const registrations = nodesOf(parsedLifecycle, ts.isCallExpression).filter(
+  const lifecycleCalls = nodesOf(parsedLifecycle, ts.isCallExpression)
+  const renderedCalls = lifecycleCalls.filter((call) => callMemberName(call) === 'whenRendered')
+  const scrollBehavior = nodesOf(parsedLifecycle, ts.isMethodDeclaration).find(
+    (node) => node.name.getText() === 'scrollBehavior',
+  )
+  const mountedWait =
+    scrollBehavior === undefined
+      ? undefined
+      : nodesOf(scrollBehavior, ts.isAwaitExpression).find(
+          (node) => node.expression.getText() === 'applicationMountedPromise',
+        )
+  if (
+    renderedCalls.length !== 1 ||
+    mountedWait === undefined ||
+    renderedCalls[0] === undefined ||
+    mountedWait.end >= renderedCalls[0].getStart() ||
+    scrollBehavior === undefined ||
+    !nodesOf(scrollBehavior, ts.isCallExpression).includes(renderedCalls[0]) ||
+    renderedCalls[0].arguments.length !== 2 ||
+    !renderedCalls[0].arguments[1]?.getText().endsWith('.presentationAbort.signal')
+  )
+    violations.push('WORKSPACE_RETENTION_POST_MOUNT_SETTLEMENT')
+
+  const snapshotInterface = ts.createSourceFile(
+    'router-scroll-controller.ts',
+    port,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const snapshotFields = nodesOf(snapshotInterface, ts.isInterfaceDeclaration).find(
+    (node) => node.name.text === 'WorkspaceRenderSnapshot',
+  )?.members
+  const commitField = snapshotFields?.find((field) => field.name?.getText() === 'commit')
+  if (
+    commitField === undefined ||
+    !ts.isPropertySignature(commitField) ||
+    commitField.type?.kind !== ts.SyntaxKind.ObjectKeyword ||
+    commitField.questionToken !== undefined ||
+    !/commit:\s*entry[\s,]/u.test(lifecycle) ||
+    !/snapshot\?\.commit\s*!==\s*entry/u.test(lifecycle)
+  )
+    violations.push('WORKSPACE_RETENTION_EXACT_COMMIT')
+
+  const parsedContent = ts.createSourceFile(
+    'workspace-content.ts',
+    content,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const revisionCurrentness = nodesOf(parsedContent, ts.isBinaryExpression).some((comparison) => {
+    if (comparison.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken) return false
+    const revision =
+      memberPath(comparison.left).at(-1) === 'revision' ? comparison.left : comparison.right
+    const captured = revision === comparison.left ? comparison.right : comparison.left
+    let scope: ts.Node = comparison.parent
+    while (!ts.isBlock(scope) && !ts.isSourceFile(scope)) scope = scope.parent
+    return (
+      ts.isBlock(scope) &&
+      memberPath(revision).at(-1) === 'revision' &&
+      ts.isIdentifier(captured) &&
+      nodesOf(scope, ts.isVariableDeclaration).some(
+        (declaration) =>
+          declaration.parent.parent.parent === scope &&
+          declaration.name.getText() === captured.text &&
+          declaration.initializer !== undefined &&
+          nodesOf(declaration.initializer, ts.isPropertyAccessExpression).some((read) =>
+            isDeepStrictEqual(memberPath(read), memberPath(revision)),
+          ),
+      )
+    )
+  })
+  if (
+    !content.includes('inject(workspaceInstanceKey)') ||
+    /useWorkspaceStore|\.active\??\.instance/u.test(content) ||
+    !content.includes('shallowRef<WorkspaceContentState>') ||
+    !revisionCurrentness
+  )
+    violations.push('WORKSPACE_RETENTION_CONTENT_INSTANCE')
+
+  const parsedRetention = ts.createSourceFile(
+    'workspace-retention.ts',
+    retention,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const retentionCalls = nodesOf(parsedRetention, ts.isCallExpression)
+  const retentionMethods = nodesOf(parsedRetention, ts.isMethodDeclaration)
+  const comparisons = nodesOf(parsedRetention, ts.isBinaryExpression)
+  const commitComparison = comparisons.some(
+    (node) =>
+      node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+      memberPath(node.left).at(-1) === 'commit' &&
+      memberPath(node.right).at(-1) === 'commit',
+  )
+  if (!commitComparison) violations.push('WORKSPACE_RETENTION_EXACT_COMMIT')
+
+  const ownershipChecks = nodesOf(parsedRetention, ts.isFunctionDeclaration).filter((node) =>
+    nodesOf(node, ts.isBinaryExpression).some(
+      (comparison) =>
+        comparison.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+        memberPath(comparison.left).at(-1) === 'active' &&
+        memberPath(comparison.right).at(-1) === 'workspace',
+    ),
+  )
+  const acknowledgementGuard = retentionMethods.flatMap((method) =>
+    nodesOf(method, ts.isIfStatement).filter(
+      (guard) =>
+        nodesOf(guard.expression, ts.isCallExpression).some((call) =>
+          ownershipChecks.some((check) => check.name?.text === callMemberName(call)),
+        ) &&
+        nodesOf(guard.thenStatement, ts.isBinaryExpression).some(
+          (assignment) =>
+            assignment.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            memberPath(assignment.left).at(-1) === 'value' &&
+            method.parameters.some(
+              (parameter) => parameter.name.getText() === assignment.right.getText(),
+            ),
+        ),
+    ),
+  )[0]
+  const acknowledgementCalls =
+    acknowledgementGuard === undefined
+      ? []
+      : nodesOf(acknowledgementGuard.expression, ts.isCallExpression)
+  if (
+    acknowledgementGuard === undefined ||
+    !acknowledgementCalls.some((call) =>
+      ownershipChecks.some((check) => check.name?.text === callMemberName(call)),
+    ) ||
+    !acknowledgementCalls.some((call) =>
+      call.arguments.some((argument) => memberPath(argument).at(-1) === 'value'),
+    )
+  )
+    violations.push('WORKSPACE_RETENTION_CURRENT_DELIVERY_ACK')
+
+  const close = retentionMethods.find((node) => node.name.getText() === 'close')
+  const closeCalls = close === undefined ? [] : nodesOf(close, ts.isCallExpression)
+  const discard = closeCalls.find((call) => callMemberName(call) === 'discard')
+  const refusedClose =
+    close === undefined
+      ? undefined
+      : nodesOf(close, ts.isIfStatement).find(
+          (node) =>
+            nodesOf(node.expression, ts.isCallExpression).some(
+              (call) => callMemberName(call) === 'canDiscard',
+            ) &&
+            nodesOf(node.thenStatement, ts.isReturnStatement).some(
+              (statement) => statement.expression?.kind === ts.SyntaxKind.FalseKeyword,
+            ),
+        )
+  if (discard === undefined || refusedClose === undefined || refusedClose.end >= discard.getStart())
+    violations.push('WORKSPACE_RETENTION_REFUSED_CLOSE')
+
+  const refreshMethod = retentionMethods.find((node) => node.name.getText() === 'refresh')
+  const refreshCalls =
+    refreshMethod === undefined ? [] : nodesOf(refreshMethod, ts.isCallExpression)
+  const registrations = lifecycleCalls.filter(
     (call) =>
       callMemberName(call) === 'provide' &&
       call.arguments[0]?.getText() === 'routerWorkspaceRefreshKey',
   )
   const resetOwner = registrations[0]?.arguments[1]
   const resetCalls = resetOwner === undefined ? [] : nodesOf(resetOwner, ts.isCallExpression)
+  const leaseMethods = resetOwner === undefined ? [] : nodesOf(resetOwner, ts.isMethodDeclaration)
+  const leaseReplace = leaseMethods.find((method) => method.name.getText() === 'replace')
+  const leaseReset = leaseMethods.find((method) => method.name.getText() === 'reset')
+  const storeReplacements = resetCalls.filter((call) => callMemberName(call) === 'replaceInstance')
+  const storeReplacement = storeReplacements[0]
+  const storeReplacementName = storedValuePath(storeReplacement)[0]
+  const adoption =
+    leaseReplace === undefined
+      ? undefined
+      : nodesOf(leaseReplace, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            memberPath(node.left).at(-1) === 'workspace' &&
+            node.right.getText() === storeReplacementName,
+        )
+  const preparation =
+    leaseReplace === undefined
+      ? undefined
+      : nodesOf(leaseReplace, ts.isCallExpression).find(
+          (call) => callMemberName(call) === leaseReplace.parameters[0]?.name.getText(),
+        )
+  const replaceCalls = refreshCalls.filter((call) => callMemberName(call) === 'replace')
+  const replacedName =
+    replaceCalls[0] === undefined ? undefined : storedValuePath(replaceCalls[0])[0]
+  if (
+    storeReplacements.length !== 1 ||
+    leaseReplace === undefined ||
+    nodesOf(leaseReplace, ts.isAwaitExpression).length !== 0 ||
+    storeReplacement === undefined ||
+    adoption === undefined ||
+    preparation === undefined ||
+    storeReplacement.end >= adoption.getStart() ||
+    adoption.end >= preparation.getStart() ||
+    preparation.arguments[0]?.getText() !== storeReplacementName ||
+    (leaseReset !== undefined &&
+      nodesOf(leaseReset, ts.isBinaryExpression).some(
+        (node) =>
+          node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+          memberPath(node.left).at(-1) === 'workspace',
+      ))
+  )
+    violations.push('WORKSPACE_REFRESH_OWNERSHIP_BEFORE_SETTLEMENT')
+
+  const publicationOwner = nodesOf(parsedLifecycle, ts.isFunctionDeclaration).find(
+    (node) =>
+      nodesOf(node, ts.isCallExpression).some(
+        (call) => callMemberName(call) === 'acceptCommitted',
+      ) &&
+      nodesOf(node, ts.isPropertyAssignment).some(
+        (property) =>
+          property.name.getText() === 'commit' &&
+          property.initializer.getText() === node.parameters[0]?.name.getText(),
+      ),
+  )
+  const publicationCalls = resetCalls.filter(
+    (call) => callMemberName(call) === publicationOwner?.name?.text,
+  )
+  const publication = publicationCalls[0]
+  const adoptedEntry =
+    leaseReplace === undefined
+      ? undefined
+      : memberPath(
+          nodesOf(leaseReplace, ts.isBinaryExpression).find(
+            (node) =>
+              node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken &&
+              memberPath(node.left).at(-1) === 'workspace' &&
+              node.right.getText() === storeReplacement?.arguments[0]?.getText(),
+          )?.left,
+        )[0]
+  const committedSource =
+    resetOwner === undefined
+      ? undefined
+      : nodesOf(resetOwner, ts.isVariableDeclaration)
+          .find((node) => node.name.getText() === adoptedEntry)
+          ?.initializer?.getText()
+  const publicationGuard =
+    leaseReplace === undefined || publication === undefined
+      ? undefined
+      : nodesOf(leaseReplace, ts.isIfStatement).find(
+          (guard) =>
+            guard.thenStatement.pos <= publication.pos &&
+            publication.end <= guard.thenStatement.end &&
+            nodesOf(guard.expression, ts.isBinaryExpression).some(
+              (comparison) =>
+                comparison.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+                comparison.left.getText() === committedSource &&
+                comparison.right.getText() === adoptedEntry,
+            ),
+        )
+  if (
+    publicationCalls.length !== 1 ||
+    publicationGuard === undefined ||
+    publication?.arguments[0]?.getText() !== adoptedEntry ||
+    preparation === undefined ||
+    publication === undefined ||
+    preparation.end >= publication.getStart()
+  )
+    violations.push('WORKSPACE_REFRESH_CURRENT_COMMIT_PUBLICATION')
+
+  // Cancellation may settle waits, but cannot put the replaced instance back into Router.
+  if (
+    resetOwner !== undefined &&
+    nodesOf(resetOwner, ts.isBinaryExpression).some(
+      (node) =>
+        node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+        memberPath(node.left).at(-1) === 'workspace' &&
+        node.right.getText() === storeReplacement?.arguments[0]?.getText(),
+    )
+  )
+    violations.push('WORKSPACE_REFRESH_OWNERSHIP_SURVIVES_CANCELLATION')
+  if (
+    replaceCalls.length !== 1 ||
+    replacedName === undefined ||
+    refreshCalls.some(
+      (call) =>
+        ['discard', 'dispose'].includes(callMemberName(call) ?? '') &&
+        call.arguments.some((argument) => memberPath(argument)[0] === replacedName),
+    ) ||
+    resetCalls.some(
+      (call) =>
+        ['discard', 'dispose'].includes(callMemberName(call) ?? '') &&
+        call.arguments.some((argument) => memberPath(argument)[0] === storeReplacementName),
+    ) ||
+    (refreshMethod !== undefined &&
+      nodesOf(refreshMethod, ts.isBinaryExpression).some(
+        (node) =>
+          node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+          ['instance', 'entries'].includes(memberPath(node.left).at(-1) ?? ''),
+      ))
+  )
+    violations.push('WORKSPACE_RETENTION_REPLACEMENT_SURVIVES_CANCELLATION')
+
+  const disposeMethod = retentionMethods.find((node) => node.name.getText() === 'dispose')
+  const disposalSignal =
+    disposeMethod === undefined
+      ? undefined
+      : nodesOf(disposeMethod, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            node.right.kind === ts.SyntaxKind.TrueKeyword,
+        )
+  const signalPath = disposalSignal === undefined ? [] : memberPath(disposalSignal.left)
+  const watchEffects = retentionCalls.filter((call) =>
+    ['watchEffect', 'watch'].some(
+      (name) => callMemberName(call) === namedImportLocalName(parsedRetention, 'vue', name),
+    ),
+  )
+  if (
+    signalPath.length === 0 ||
+    !watchEffects.some((call) =>
+      nodesOf(call, ts.isConditionalExpression).some(
+        (conditional) =>
+          conditional.whenTrue.kind === ts.SyntaxKind.FalseKeyword &&
+          nodesOf(conditional.condition, ts.isPropertyAccessExpression).some((node) =>
+            isDeepStrictEqual(memberPath(node), signalPath),
+          ),
+      ),
+    ) ||
+    !retentionCalls.some(
+      (call) =>
+        callMemberName(call) === 'removeEventListener' &&
+        call.arguments[0]?.getText() === "'abort'",
+    )
+  )
+    violations.push('WORKSPACE_RETENTION_PENDING_DISPOSAL')
+
+  if (
+    !retentionCalls.some(
+      (call) =>
+        callMemberName(call) === namedImportLocalName(parsedRetention, 'vue', 'onUnmounted'),
+    ) ||
+    !retentionCalls.some(
+      (call) =>
+        callMemberName(call) === 'provide' &&
+        call.arguments[0]?.getText() === 'workspaceInstanceKey',
+    ) ||
+    /\.instances\s*(?:\[|\.)|\.ref\b|v-show|\b(?:include|exclude|max):/u.test(retention)
+  )
+    violations.push('WORKSPACE_RETENTION_PUBLIC_INSTANCE_LIFETIME')
+
+  if (
+    !nodesOf(parsedRetention, ts.isPropertyAccessExpression).some(
+      (node) => node.name.text === 'inputProps',
+    ) ||
+    !retentionCalls.some(
+      (call) =>
+        callMemberName(call) === 'getRoutePresentation' &&
+        memberPath(call.arguments[0]).at(-1) === 'routeName',
+    ) ||
+    /\.vnode\.props|\bvnode\.props|\bComponent\.props|useRoute\(|useRouter\(/u.test(retention)
+  )
+    violations.push('WORKSPACE_RETENTION_OWNED_INPUT')
   if (
     registrations.length !== 1 ||
     !port.includes('InjectionKey<') ||
-    !port.includes('reset(replacement: LiveWorkspaceEntry): void') ||
+    !port.includes('reset(replacement: LiveWorkspaceEntry): Promise<boolean>') ||
+    !port.includes('readonly signal: AbortSignal') ||
+    !port.includes('release(): void') ||
     !frame.includes('inject(routerWorkspaceRefreshKey)') ||
     !resetCalls.some((call) => callMemberName(call) === 'cancelMotion') ||
     !resetCalls.some((call) => callMemberName(call) === 'isCurrent')
@@ -6416,12 +6770,265 @@ async function workspaceRefreshViolations(): Promise<string[]> {
   if (
     /scrollTo|scrollTop\s*=|scrollLeft\s*=|scrollIntoView/u.test(frame) ||
     /__v_cache|__keepAliveStorageContainer|pruneCache|rendererInternals|\$forceUpdate|location\.reload|router\.go\(0\)/u.test(
-      `${store}\n${frame}\n${lifecycle}`,
+      `${store}\n${frame}\n${lifecycle}\n${retention}`,
     )
   )
     violations.push(
       'Workspace refresh must not access private KeepAlive internals, reload the application or write scroll from the Frame.',
     )
+  return violations
+}
+
+async function workspaceRefreshViolations(): Promise<string[]> {
+  const [store, frame, lifecycle, port, retention, content] = await Promise.all([
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace.store.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
+    readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'),
+    readFile(resolve(routerDirectory, 'router-scroll-controller.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-retention.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-content.ts'), 'utf8'),
+  ])
+  const snapshot = { store, frame, lifecycle, port, retention, content }
+  const violations = workspaceRefreshContractViolations(snapshot)
+  const baselineValid = violations.length === 0
+  const parsedLifecycle = ts.createSourceFile(
+    'router-lifecycle.ts',
+    lifecycle,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const leaseOwner = nodesOf(parsedLifecycle, ts.isCallExpression).find(
+    (call) =>
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText() === 'routerWorkspaceRefreshKey',
+  )?.arguments[1]
+  const leaseMethods = leaseOwner === undefined ? [] : nodesOf(leaseOwner, ts.isMethodDeclaration)
+  const replace = leaseMethods.find((method) => method.name.getText() === 'replace')
+  const reset = leaseMethods.find((method) => method.name.getText() === 'reset')
+  const adoption =
+    replace === undefined
+      ? undefined
+      : nodesOf(replace, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            memberPath(node.left).at(-1) === 'workspace',
+        )
+  const publicationGuard =
+    replace === undefined
+      ? undefined
+      : nodesOf(replace, ts.isIfStatement).find((guard) =>
+          nodesOf(guard.thenStatement, ts.isCallExpression).some(
+            (call) =>
+              call.arguments[0]?.getText() ===
+              (adoption === undefined ? undefined : memberPath(adoption.left)[0]),
+          ),
+        )
+  const publication =
+    publicationGuard === undefined
+      ? undefined
+      : nodesOf(publicationGuard.thenStatement, ts.isCallExpression)[0]
+  const storeReplacement =
+    replace === undefined
+      ? undefined
+      : nodesOf(replace, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'replaceInstance',
+        )
+  const replacedTarget = storeReplacement?.arguments[0]?.getText()
+  const releaseProperty =
+    replace !== undefined && ts.isObjectLiteralExpression(replace.parent)
+      ? replace.parent.properties.find((property) => property.name?.getText() === 'release')
+      : undefined
+  const releaseName =
+    releaseProperty !== undefined && ts.isPropertyAssignment(releaseProperty)
+      ? releaseProperty.initializer.getText()
+      : releaseProperty?.name?.getText()
+  const release =
+    leaseOwner === undefined
+      ? undefined
+      : nodesOf(leaseOwner, ts.isVariableDeclaration).find(
+          (declaration) => declaration.name.getText() === releaseName,
+        )?.initializer
+  const releaseBody =
+    release !== undefined && ts.isArrowFunction(release) ? release.body : undefined
+  const resetSuccess =
+    reset === undefined
+      ? undefined
+      : nodesOf(reset, ts.isReturnStatement).find(
+          (statement) => statement.expression?.kind === ts.SyntaxKind.TrueKeyword,
+        )
+  const parsedRetention = ts.createSourceFile(
+    'workspace-retention.ts',
+    retention,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const retentionRefresh = nodesOf(parsedRetention, ts.isMethodDeclaration).find(
+    (method) => method.name.getText() === 'refresh',
+  )
+  const retainedReplacement =
+    retentionRefresh === undefined
+      ? undefined
+      : nodesOf(retentionRefresh, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'replace',
+        )
+  const retainedName = storedValuePath(retainedReplacement)[0]
+  const retainedReturn =
+    retentionRefresh === undefined
+      ? undefined
+      : nodesOf(retentionRefresh, ts.isReturnStatement).find(
+          (statement) => statement.expression?.getText() === retainedName,
+        )
+  const probes: readonly [string, string, WorkspaceRetentionSourceSnapshot][] = [
+    [
+      'workspace-host-wait-without-mount-boundary',
+      'WORKSPACE_RETENTION_POST_MOUNT_SETTLEMENT',
+      {
+        ...snapshot,
+        lifecycle: lifecycle.replace('await applicationMountedPromise', 'await Promise.resolve()'),
+      },
+    ],
+    [
+      'workspace-non-workspace-commits-aliased',
+      'WORKSPACE_RETENTION_EXACT_COMMIT',
+      {
+        ...snapshot,
+        retention: retention.replace(
+          'left?.commit === right.commit',
+          'left?.workspace === right.workspace',
+        ),
+      },
+    ],
+    [
+      'workspace-stale-delivery-acknowledged',
+      'WORKSPACE_RETENTION_CURRENT_DELIVERY_ACK',
+      {
+        ...snapshot,
+        retention: retention.replace(
+          /owns\(snapshot\)\s*&&\s*sameDelivery\(active\.value, snapshot\)/u,
+          'sameDelivery(active.value, snapshot)',
+        ),
+      },
+    ],
+    [
+      'workspace-refused-close-starts-release',
+      'WORKSPACE_RETENTION_REFUSED_CLOSE',
+      { ...snapshot, retention: retention.replace('!workspace.canDiscard(entry)', 'false') },
+    ],
+    [
+      'workspace-replacement-discarded-after-cas',
+      'WORKSPACE_RETENTION_REPLACEMENT_SURVIVES_CANCELLATION',
+      {
+        ...snapshot,
+        retention:
+          retainedReturn === undefined || retainedName === undefined
+            ? retention
+            : retention.replace(
+                retainedReturn.getText(),
+                `workspace.discard(${retainedName})\n${retainedReturn.getText()}`,
+              ),
+      },
+    ],
+    [
+      'workspace-adoption-delayed-until-successful-reset',
+      'WORKSPACE_REFRESH_OWNERSHIP_BEFORE_SETTLEMENT',
+      {
+        ...snapshot,
+        lifecycle:
+          adoption === undefined || resetSuccess === undefined || reset === undefined
+            ? lifecycle
+            : lifecycle
+                .replace(adoption.getText(), '')
+                .replace(
+                  reset.getText(),
+                  reset
+                    .getText()
+                    .replace(
+                      resetSuccess.getText(),
+                      `${adoption.getText()}\n${resetSuccess.getText()}`,
+                    ),
+                ),
+      },
+    ],
+    [
+      'workspace-cancellation-restores-replaced-instance',
+      'WORKSPACE_REFRESH_OWNERSHIP_SURVIVES_CANCELLATION',
+      {
+        ...snapshot,
+        lifecycle:
+          releaseBody === undefined || adoption === undefined || replacedTarget === undefined
+            ? lifecycle
+            : lifecycle.replace(
+                releaseBody.getText(),
+                releaseBody
+                  .getText()
+                  .replace('{', `{\n${adoption.left.getText()} = ${replacedTarget}`),
+              ),
+      },
+    ],
+    [
+      'workspace-old-replacement-publishes-after-newer-commit',
+      'WORKSPACE_REFRESH_CURRENT_COMMIT_PUBLICATION',
+      {
+        ...snapshot,
+        lifecycle:
+          publicationGuard === undefined
+            ? lifecycle
+            : lifecycle.replace(publicationGuard.expression.getText(), 'true'),
+      },
+    ],
+    [
+      'workspace-old-reset-republishes-after-newer-commit',
+      'WORKSPACE_REFRESH_CURRENT_COMMIT_PUBLICATION',
+      {
+        ...snapshot,
+        lifecycle:
+          resetSuccess === undefined || publication === undefined || reset === undefined
+            ? lifecycle
+            : lifecycle.replace(
+                reset.getText(),
+                reset
+                  .getText()
+                  .replace(
+                    resetSuccess.getText(),
+                    `${publication.getText()}\n${resetSuccess.getText()}`,
+                  ),
+              ),
+      },
+    ],
+    [
+      'workspace-old-release-republishes-after-newer-commit',
+      'WORKSPACE_REFRESH_CURRENT_COMMIT_PUBLICATION',
+      {
+        ...snapshot,
+        lifecycle:
+          releaseBody === undefined || publication === undefined
+            ? lifecycle
+            : lifecycle.replace(
+                releaseBody.getText(),
+                releaseBody.getText().replace('{', `{\n${publication.getText()}`),
+              ),
+      },
+    ],
+    [
+      'workspace-disposal-leaves-waits-pending',
+      'WORKSPACE_RETENTION_PENDING_DISPOSAL',
+      {
+        ...snapshot,
+        retention: retention.replace('disposed.value = true', 'disposed.value = false'),
+      },
+    ],
+  ]
+  for (const [id, expected, mutated] of probes) {
+    const failures = workspaceRefreshContractViolations(mutated)
+    if (
+      !baselineValid ||
+      isDeepStrictEqual(mutated, snapshot) ||
+      !isDeepStrictEqual(failures, [expected])
+    )
+      violations.push(
+        `${id}: reversible in-memory retention probe did not fail exclusively for ${expected}; received ${failures.join(', ') || 'none'}, changed=${String(!isDeepStrictEqual(mutated, snapshot))}, baselineValid=${String(baselineValid)}.`,
+      )
+  }
   return violations
 }
 

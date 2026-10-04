@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, nextTick, shallowRef } from 'vue'
+import { computed, shallowRef } from 'vue'
 
 import {
   registeredRouteDestination,
@@ -40,18 +40,11 @@ export function isLiveWorkspace(entry: WorkspaceEntry): entry is LiveWorkspaceEn
 export const useWorkspaceStore = defineStore('workspace', () => {
   const entries = shallowRef<readonly WorkspaceEntry[]>([])
   const activeIdentity = shallowRef<WorkspaceIdentity | null>(null)
-  const refreshing = shallowRef<LiveWorkspaceEntry>()
   const active = computed(() =>
     entries.value.find(
       (entry): entry is LiveWorkspaceEntry =>
         isLiveWorkspace(entry) && entry.identity === activeIdentity.value,
     ),
-  )
-  const includedComponentNames = computed(() =>
-    entries.value
-      .filter(isLiveWorkspace)
-      .filter((entry) => entry.identity !== refreshing.value?.identity)
-      .map((entry) => entry.componentName),
   )
   let restored = false
 
@@ -109,15 +102,6 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     )
       throw new TypeError('The Workspace route component contract is unavailable.')
     const previous = entries.value.find((entry) => entry.identity === identity)
-    if (
-      entries.value.some(
-        (entry) =>
-          isLiveWorkspace(entry) &&
-          entry.identity !== identity &&
-          entry.componentName === component.name,
-      )
-    )
-      throw new TypeError('Workspace route component names must be unique.')
     const entry: LiveWorkspaceEntry = Object.freeze({
       state: 'live',
       identity,
@@ -154,54 +138,29 @@ export const useWorkspaceStore = defineStore('workspace', () => {
   }
 
   function dispose(): void {
-    refreshing.value = undefined
     activeIdentity.value = null
     entries.value = []
   }
 
-  async function refresh(
-    entry: LiveWorkspaceEntry,
-    isCurrent: () => boolean,
-  ): Promise<LiveWorkspaceEntry | undefined> {
-    const owns = (expected: LiveWorkspaceEntry): boolean =>
-      isCurrent() && active.value === expected && canDiscard(expected)
-    if (refreshing.value !== undefined || !owns(entry)) return undefined
-    refreshing.value = entry
-    try {
-      // Public include pruning must finish before changing the current VNode key.
-      await nextTick()
-      if (!owns(entry)) return undefined
-      const replacement = Object.freeze({
-        ...entry,
-        instance: Symbol(entry.identity) as WorkspaceInstanceIdentity,
-      })
-      entries.value = entries.value.map((candidate) =>
-        candidate === entry ? replacement : candidate,
-      )
-      // Exclusion stays in force until the old keyed page is actually unmounted.
-      await nextTick()
-      if (!owns(replacement)) return undefined
-      refreshing.value = undefined
-      await nextTick()
-      return owns(replacement) ? replacement : undefined
-    } finally {
-      if (refreshing.value !== undefined) {
-        refreshing.value = undefined
-        await nextTick()
-      }
-    }
+  function replaceInstance(expected: LiveWorkspaceEntry): LiveWorkspaceEntry | undefined {
+    if (active.value !== expected || !canDiscard(expected)) return undefined
+    const replacement = Object.freeze({
+      ...expected,
+      instance: Symbol(expected.identity) as WorkspaceInstanceIdentity,
+    })
+    entries.value = entries.value.map((entry) => (entry === expected ? replacement : entry))
+    return replacement
   }
 
   return {
     entries,
     activeIdentity,
     active,
-    includedComponentNames,
     restore,
     commit,
     canDiscard,
     discard,
-    refresh,
+    replaceInstance,
     dispose,
   }
 })

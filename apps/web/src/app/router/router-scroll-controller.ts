@@ -1,6 +1,8 @@
 import type { UiScrollController } from '@platform/ui'
 import type { InjectionKey } from 'vue'
 import type { LiveWorkspaceEntry } from '../workspace/workspace.store'
+import type { ValidatedRouteInput } from './route-input'
+import type { RouteName } from './route-registry'
 
 type RegisterScrollController = (controller: UiScrollController) => () => void
 
@@ -8,11 +10,33 @@ export const routerScrollControllerKey: InjectionKey<RegisterScrollController> =
   'PAVP Router Scroll Controller',
 )
 
+export interface WorkspaceRenderSnapshot {
+  readonly commit: object
+  readonly routeName: RouteName
+  readonly inputProps: Readonly<{ routeInput?: ValidatedRouteInput }>
+  readonly workspace: LiveWorkspaceEntry | undefined
+}
+
+export interface WorkspaceRetentionBinding {
+  acceptCommitted(snapshot: WorkspaceRenderSnapshot): void
+  whenRendered(snapshot: WorkspaceRenderSnapshot, signal: AbortSignal): Promise<boolean>
+  readFailure(snapshot: WorkspaceRenderSnapshot): { readonly cause: unknown } | undefined
+  dispose(): void
+}
+
+export const routerWorkspaceRetentionKey: InjectionKey<{
+  connect(binding: WorkspaceRetentionBinding): () => void
+  read(): WorkspaceRenderSnapshot | undefined
+}> = Symbol('PAVP Router Workspace Retention')
+
 export const routerWorkspaceRefreshKey: InjectionKey<
   (entry: LiveWorkspaceEntry) =>
     | {
+        readonly signal: AbortSignal
         isCurrent(): boolean
-        reset(replacement: LiveWorkspaceEntry): void
+        replace(prepare: (replacement: LiveWorkspaceEntry) => void): LiveWorkspaceEntry | undefined
+        reset(replacement: LiveWorkspaceEntry): Promise<boolean>
+        release(): void
       }
     | undefined
 > = Symbol('PAVP Router Workspace Refresh')

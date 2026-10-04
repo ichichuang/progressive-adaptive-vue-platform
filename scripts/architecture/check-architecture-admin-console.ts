@@ -98,6 +98,7 @@ interface MaterialGateSnapshot {
   readonly appearanceThemeProjectionSource: string
   readonly appearanceMutationSource: string
   readonly appTemplateSource: string
+  readonly workspaceRetentionSource: string
   readonly consoleFrameSource: string
   readonly factImportViolation: boolean
   readonly pageStorageSource: string
@@ -267,7 +268,7 @@ const expectedArchitectureAdminConsoleNegativeProbeCount = 71
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
-const expectedAcceptanceClosureNegativeProbeCount = 18
+const expectedAcceptanceClosureNegativeProbeCount = 21
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
 const expectedAdminNavigationGsapAdmissionNegativeProbeCount = 12
@@ -333,7 +334,8 @@ const routeTransitionWorkPackage = 'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY'
 const routeTransitionAdmissionAmendment =
   'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT'
 const expectedRouteTransitionActiveMirrorCount = 13
-const currentWork = 'PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE'
+const multiRecordArchitectureWork = 'PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE'
+const currentWork = 'PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION'
 const currentWorkAuthority = 'ARCHITECTURE_SECTION_18_11'
 const currentWorkMarker = `CURRENT_BOUNDED_WORK=${currentWork}`
 const currentWorkAuthorityMarker = `CURRENT_BOUNDED_WORK_AUTHORITY=${currentWorkAuthority}`
@@ -6603,6 +6605,21 @@ function multiRecordWorkspaceAmendment(architectureSource: string): string {
   return amendmentStart === -1 || contentEnd === -1 ? '' : section.slice(contentStart, contentEnd)
 }
 
+function workspaceRetentionAdmission(architectureSource: string): string {
+  const sectionHeading = '## 18.11 Administration Workspace Chrome Target Contract'
+  const sectionStart = architectureSource.indexOf(sectionHeading)
+  const sectionEnd = architectureSource.indexOf('\n## ', sectionStart + sectionHeading.length)
+  const section =
+    sectionStart === -1 || sectionEnd === -1
+      ? ''
+      : architectureSource.slice(sectionStart, sectionEnd)
+  const heading = '#### Instance-owned route-single retention implementation admission\n\n```text\n'
+  const start = section.indexOf(heading)
+  const contentStart = start + heading.length
+  const end = section.indexOf('\n```', contentStart)
+  return start === -1 || end === -1 ? '' : section.slice(contentStart, end)
+}
+
 function currentWorkStatusViolations(architectureSource: string): string[] {
   const violations: string[] = []
   const valuesForMarker = (marker: string): readonly string[] =>
@@ -6746,7 +6763,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
 
   const workspaceAmendment = multiRecordWorkspaceAmendment(architectureSource)
   const workspaceTargetFields = {
-    WORK_PACKAGE: currentWork,
+    WORK_PACKAGE: multiRecordArchitectureWork,
     WORK_PACKAGE_KIND: 'ARCHITECTURE_ONLY',
     CONTRACT_STATUS: 'FROZEN',
     OWNER_APPROVAL_SCOPE: 'ARCHITECTURE_TARGET_ONLY',
@@ -6767,6 +6784,27 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     if (values.length !== 1 || values[0]?.[1] !== expected) {
       violations.push('PAVP_MULTI_RECORD_WORKSPACE_ARCHITECTURE_BOUNDARY')
     }
+  }
+
+  const retentionAdmission = workspaceRetentionAdmission(architectureSource)
+  for (const [field, expected] of Object.entries({
+    WORK_PACKAGE: currentWork,
+    WORK_PACKAGE_KIND: 'BOUNDED_SOURCE_IMPLEMENTATION',
+    CONTRACT_STATUS: 'FROZEN',
+    OWNER_APPROVAL_SCOPE: 'ROUTE_SINGLE_INSTANCE_RETENTION_ONLY',
+    IMPLEMENTATION_AUTHORIZATION: 'OWNER_APPROVED',
+    INDEPENDENT_SOURCE_REVIEW: 'PENDING',
+    OWNER_RUNTIME_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_VISUAL_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_ACCESSIBILITY_ACCEPTANCE: 'NOT_PERFORMED',
+    GIT_DELIVERY: 'NOT_AUTHORIZED',
+    RELEASE_STATUS: 'NOT_RELEASED',
+    NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE: 'NONE',
+    SUCCESSOR_PACKAGE_AUTHORIZATION: 'NONE',
+  })) {
+    const values = [...retentionAdmission.matchAll(new RegExp('^' + field + '=(.*)$', 'gmu'))]
+    if (values.length !== 1 || values[0]?.[1] !== expected)
+      violations.push('PAVP_WORKSPACE_INSTANCE_RETENTION_ADMISSION')
   }
 
   const amendmentHeading = `### 1.2B.0G \`${acceptedDarkActionWorkPackage}\``
@@ -8461,6 +8499,14 @@ function runAcceptanceClosureNegativeProbes(
         ),
     ],
     [
+      'current-work-historical-architecture-task',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource.replaceAll(
+        currentWorkMarker,
+        'CURRENT_BOUNDED_WORK=' + multiRecordArchitectureWork,
+      ),
+    ],
+    [
       'current-work-authority-mismatched',
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource.replace(
@@ -8487,6 +8533,29 @@ function runAcceptanceClosureNegativeProbes(
   ]
 
   const amendment = multiRecordWorkspaceAmendment(architectureSource)
+  probes.push([
+    'historical-architecture-amendment-rebound-to-current-task',
+    'PAVP_MULTI_RECORD_WORKSPACE_ARCHITECTURE_BOUNDARY',
+    architectureSource.replace(
+      amendment,
+      amendment.replace(
+        'WORK_PACKAGE=' + multiRecordArchitectureWork,
+        'WORK_PACKAGE=' + currentWork,
+      ),
+    ),
+  ])
+  const retentionAdmission = workspaceRetentionAdmission(architectureSource)
+  probes.push([
+    'retention-admission-expands-to-multi-record',
+    'PAVP_WORKSPACE_INSTANCE_RETENTION_ADMISSION',
+    architectureSource.replace(
+      retentionAdmission,
+      retentionAdmission.replace(
+        'OWNER_APPROVAL_SCOPE=ROUTE_SINGLE_INSTANCE_RETENTION_ONLY',
+        'OWNER_APPROVAL_SCOPE=FULL_MULTI_RECORD_IMPLEMENTATION',
+      ),
+    ),
+  ])
   for (const [field, current, invalid] of [
     ['CAPABILITY_STATUS', 'TARGET_INACTIVE', 'ACTIVE'],
     ['REPOSITORY_IMPLEMENTATION', 'NOT_STARTED', 'COMPLETE'],
@@ -11684,12 +11753,12 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   const routeHosts = appElements.filter((element) =>
     hasStaticTemplateClass(element.node, 'pavp-route-content'),
   )
-  const routedComponents = appElements.filter((element) => element.node.tag === 'component')
+  const routedComponents = appElements.filter(
+    (element) => element.node.tag === 'WorkspaceRetentionHost',
+  )
   const uiProviders = appElements.filter((element) => element.node.tag === 'UiProvider')
   const consoleFrames = appElements.filter((element) => element.node.tag === 'ConsoleRouteFrame')
   const adminShells = consoleFrameElements.filter((element) => element.node.tag === 'UiAdminShell')
-  const caches = appElements.filter((element) => element.node.tag === 'KeepAlive')
-  const cache = caches[0]
   const routerView = routerViews[0]
   const routeHost = routeHosts[0]
   const routedComponent = routedComponents[0]
@@ -11707,13 +11776,7 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   if (routeHost !== undefined && hasTemplateKey(routeHost.node)) {
     violations.push('PAVP_RUNTIME_005_ROUTE_HOST_KEY')
   }
-  if (
-    routedComponent !== undefined &&
-    (!/^[\w$]+\.active\?\.instance$/u.test(
-      boundTemplateExpression(routedComponent.node, 'key') ?? '',
-    ) ||
-      templateAttributes(routedComponent.node, 'key').length !== 0)
-  ) {
+  if (routedComponent !== undefined && hasTemplateKey(routedComponent.node)) {
     violations.push('PAVP_RUNTIME_005_COMPONENT_KEY')
   }
   if (
@@ -11744,35 +11807,19 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
     const routeSlotExpressions = templateDirectives(routerView.node, 'slot').map((directive) =>
       normalizeTemplateExpression(directive.exp?.content),
     )
-    const componentContract = {
-      breadcrumb: boundTemplateExpression(routedComponent.node, 'breadcrumb'),
-      is: boundTemplateExpression(routedComponent.node, 'is'),
-      message: boundTemplateExpression(routedComponent.node, 'message'),
-      title: boundTemplateExpression(routedComponent.node, 'title'),
-    }
-
     if (
       !routeHost.ancestors.includes(routerView.node) ||
       !routedComponent.ancestors.includes(routeHost.node) ||
       routerElementChildren.length !== 1 ||
       routerElementChildren[0] !== routeHost.node ||
       hostElementChildren.length !== 1 ||
-      caches.length !== 1 ||
-      cache === undefined ||
-      hostElementChildren[0] !== cache.node ||
-      (cache.node.children ?? []).filter((node) => node.type === 1).length !== 1 ||
-      !(cache.node.children ?? []).includes(routedComponent.node) ||
-      !/^[\w$]+\.includedComponentNames$/u.test(
-        boundTemplateExpression(cache.node, 'include') ?? '',
-      ) ||
-      (cache.node.props ?? []).length !== 1 ||
-      !isDeepStrictEqual(routeSlotExpressions, ['{ Component }']) ||
-      !isDeepStrictEqual(componentContract, {
-        breadcrumb: 'presentation.breadcrumb',
-        is: 'Component',
-        message: 'presentation.message',
-        title: 'presentation.title',
-      })
+      hostElementChildren[0] !== routedComponent.node ||
+      routeSlotExpressions.length !== 1 ||
+      !/\bComponent\b/u.test(routeSlotExpressions[0] ?? '') ||
+      boundTemplateExpression(routedComponent.node, 'component') !== 'Component' ||
+      boundTemplateExpression(routedComponent.node, 'controller') === undefined ||
+      boundTemplateExpression(routedComponent.node, 'snapshot') === undefined ||
+      appElements.some((element) => ['KeepAlive', 'component'].includes(element.node.tag ?? ''))
     ) {
       violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
     }
@@ -11792,6 +11839,45 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   } else {
     violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
   }
+
+  const retention = ts.createSourceFile(
+    'workspace-retention.ts',
+    snapshot.workspaceRetentionSource,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  let addsOutletOrLayout = false
+  let addsRouteTransition = false
+  const vueRenderImports = new Set<string>()
+  for (const statement of retention.statements) {
+    if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
+      continue
+    const bindings = statement.importClause?.namedBindings
+    if (bindings === undefined || !ts.isNamedImports(bindings)) continue
+    for (const binding of bindings.elements) {
+      const imported = binding.propertyName?.text ?? binding.name.text
+      if (statement.moduleSpecifier.text === 'vue' && imported === 'h')
+        vueRenderImports.add(binding.name.text)
+      if (statement.moduleSpecifier.text === 'vue-router' && imported === 'RouterView')
+        addsOutletOrLayout = true
+      if (['Transition', 'TransitionGroup', 'Suspense'].includes(imported))
+        addsRouteTransition = true
+    }
+  }
+  function inspectRetentionBoundary(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      vueRenderImports.has(node.expression.text) &&
+      node.arguments[0] !== undefined &&
+      ts.isStringLiteral(node.arguments[0])
+    )
+      addsOutletOrLayout = true
+    ts.forEachChild(node, inspectRetentionBoundary)
+  }
+  inspectRetentionBoundary(retention)
+  if (addsOutletOrLayout) violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
+  if (addsRouteTransition) violations.push('PAVP_RUNTIME_005_REMOUNT_WRAPPER')
 
   const appStyleRules = cssRuleBlocks(snapshot.appStylesSource)
   const hostOpacityValues = selectorDeclarationValues(
@@ -12236,7 +12322,7 @@ function runRuntime005NegativeProbes(
   baseline: MaterialGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
   const routedComponentBlock =
-    /<component\b[\s\S]*?\/>/u.exec(baseline.appTemplateSource)?.[0] ?? ''
+    /<WorkspaceRetentionHost\b[\s\S]*?\/>/u.exec(baseline.appTemplateSource)?.[0] ?? ''
   const transitionWrappedComponentBlock = `<Transition mode="out-in">${routedComponentBlock}</Transition>`
   const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
     [
@@ -12254,8 +12340,8 @@ function runRuntime005NegativeProbes(
       'PAVP_RUNTIME_005_COMPONENT_KEY',
       {
         appTemplateSource: baseline.appTemplateSource.replace(
-          ':key="workspace.active?.instance"',
-          ':key="routeRecord.name"',
+          '<WorkspaceRetentionHost',
+          '<WorkspaceRetentionHost :key="routeRecord.name"',
         ),
       },
     ],
@@ -19201,6 +19287,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     uiManifestSource,
     webManifestSource,
     appSource,
+    workspaceRetentionSource,
     themeSource,
     naiveProviderSource,
     uiProviderSource,
@@ -19224,6 +19311,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     readFile(resolve(rootDirectory, 'packages/ui/package.json'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-retention.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
@@ -19309,6 +19397,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       appearanceBootstrapSource,
     ].join('\n'),
     appTemplateSource: appSource,
+    workspaceRetentionSource,
     consoleFrameSource,
     factImportViolation: appearanceAndFacts.factImportViolation,
     pageStorageSource: appearanceAndFacts.pageSource,

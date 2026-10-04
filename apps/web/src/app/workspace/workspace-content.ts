@@ -1,6 +1,17 @@
-import { inject, nextTick, onScopeDispose, watch, type InjectionKey, type WatchSource } from 'vue'
+import {
+  inject,
+  nextTick,
+  onScopeDispose,
+  shallowRef,
+  watch,
+  type InjectionKey,
+  type WatchSource,
+} from 'vue'
 
-import { useWorkspaceStore, type WorkspaceInstanceIdentity } from './workspace.store'
+import type { WorkspaceInstanceIdentity } from './workspace.store'
+
+export const workspaceInstanceKey: InjectionKey<WorkspaceInstanceIdentity> =
+  Symbol('workspace-instance')
 
 export interface WorkspaceContentState {
   readonly revision: number
@@ -15,19 +26,19 @@ export const workspaceContentKey: InjectionKey<
 // never activations or mount counts; the Router owns the associated scroll record.
 export function useWorkspaceContentRevision(source: WatchSource): void {
   const register = inject(workspaceContentKey)
-  const instance = useWorkspaceStore().active?.instance
+  const instance = inject(workspaceInstanceKey)
   if (register === undefined || instance === undefined)
     throw new TypeError('The Workspace content boundary is unavailable.')
-  let state: WorkspaceContentState = { revision: 0, ready: false }
+  const state = shallowRef<WorkspaceContentState>({ revision: 0, ready: false })
   let disposed = false
-  const release = register(instance, () => state)
+  const release = register(instance, () => state.value)
   watch(
     source,
     async () => {
-      const revision = state.revision + 1
-      state = { revision, ready: false }
+      const revision = state.value.revision + 1
+      state.value = { revision, ready: false }
       await nextTick()
-      if (!disposed && state.revision === revision) state = { revision, ready: true }
+      if (!disposed && state.value.revision === revision) state.value = { revision, ready: true }
     },
     { flush: 'sync', immediate: true, deep: true },
   )

@@ -75,6 +75,13 @@ export default typescriptEslint.config(
   })),
   ...vue.configs['flat/recommended-error'],
   {
+    files: ['apps/web/src/app/workspace/workspace-retention.ts'],
+    rules: {
+      // One private lifetime owner contains its DOM-free internal boundaries.
+      'vue/one-component-per-file': 'off',
+    },
+  },
+  {
     files: typedFiles,
     languageOptions: {
       parserOptions: {

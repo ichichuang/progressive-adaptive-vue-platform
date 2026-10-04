@@ -639,7 +639,7 @@ function buildStyleSinkResolver(context) {
     const tsNode = services.esTreeNodeToTSNodeMap?.get(node)
     if (!checker || !tsNode) return false
     const component = (type) =>
-      type.isUnion?.()
+      type.isUnion?.() || type.isIntersection?.()
         ? type.types.every(component)
         : (type.flags & (ts.TypeFlags.Object | ts.TypeFlags.ESSymbolLike)) !== 0
     return component(checker.getTypeAtLocation(tsNode))

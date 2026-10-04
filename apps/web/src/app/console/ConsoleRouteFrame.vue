@@ -7,7 +7,7 @@ import {
   type UiScrollController,
   type UiShellComposition,
 } from '@platform/ui'
-import { computed, inject, nextTick, onScopeDispose, ref, watch } from 'vue'
+import { computed, inject, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import {
@@ -16,6 +16,7 @@ import {
   type WorkspaceIdentity,
 } from '../workspace/workspace.store'
 import { isRouterNavigationCurrent } from '../router/router-lifecycle'
+import { workspaceRetentionKey } from '../workspace/workspace-retention'
 import { useApplicationNavigation, useWorkspaceNavigation } from '../router/application-navigation'
 import {
   routerScrollControllerKey,
@@ -90,6 +91,10 @@ const applicationNavigation = useApplicationNavigation()
 const workspaceNavigation = useWorkspaceNavigation()
 const registerScrollController = inject(routerScrollControllerKey)
 const prepareWorkspaceRefresh = inject(routerWorkspaceRefreshKey)
+const retentionCommands = inject(workspaceRetentionKey)
+if (retentionCommands === undefined)
+  throw new TypeError('The Workspace retention commands are unavailable.')
+const retention = retentionCommands
 if (prepareWorkspaceRefresh === undefined)
   throw new Error('The Console requires the Router Workspace Refresh port.')
 if (registerScrollController === undefined)
@@ -164,14 +169,19 @@ async function refreshWorkspace(id: string): Promise<void> {
     if (active.instance !== target.instance) return
     const presentation = prepareWorkspaceRefresh?.(active)
     if (presentation === undefined) return
-    const replacement = await workspace.refresh(
-      active,
-      () =>
-        refreshTarget === target.identity &&
-        !closing.has(target.identity) &&
-        presentation.isCurrent(),
-    )
-    if (replacement !== undefined) presentation.reset(replacement)
+    try {
+      const replacement = await retention.refresh(active, {
+        signal: presentation.signal,
+        replace: (prepare) => presentation.replace(prepare),
+        isCurrent: () =>
+          refreshTarget === target.identity &&
+          !closing.has(target.identity) &&
+          presentation.isCurrent(),
+      })
+      if (replacement !== undefined) await presentation.reset(replacement)
+    } finally {
+      presentation.release()
+    }
   } finally {
     refreshTarget = undefined
   }
@@ -183,8 +193,7 @@ async function closeWorkspace(id: string): Promise<void> {
   const entry = entries[index]
   if (entry === undefined || closing.has(entry.identity)) return
   if (entry.identity !== workspace.activeIdentity) {
-    workspace.discard(entry)
-    await nextTick() // KeepAlive's public include pruning disposes the inactive instance.
+    await retention.close(entry)
     return
   }
   if (entries.length === 1 && entry.destination.name === 'console-overview') return
@@ -227,8 +236,7 @@ async function closeWorkspace(id: string): Promise<void> {
       workspace.entries.length !== entries.length + (fallback === undefined ? 1 : 0)
     )
       return
-    workspace.discard(entry)
-    await nextTick()
+    await retention.close(entry)
   } finally {
     closing.delete(entry.identity)
   }
