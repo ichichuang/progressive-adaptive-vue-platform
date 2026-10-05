@@ -507,86 +507,24 @@ export type RouteBreadcrumbKey = Exclude<
 >
 type ErrorRouteCode = (typeof errorRouteRegistry)[number]['code']
 
-export const routeTitleRegistry = Object.freeze({
-  'route-title.console-overview': getDefaultConsoleMessage('route-title.console-overview'),
-  'route-title.appearance-management': getDefaultConsoleMessage(
-    'route-title.appearance-management',
-  ),
-  'route-title.design-token-inspector': getDefaultConsoleMessage(
-    'route-title.design-token-inspector',
-  ),
-  'route-title.runtime-kernel-inspector': getDefaultConsoleMessage(
-    'route-title.runtime-kernel-inspector',
-  ),
-  'route-title.router-governance-inspector': getDefaultConsoleMessage(
-    'route-title.router-governance-inspector',
-  ),
-  'route-title.storage-persistence-inspector': getDefaultConsoleMessage(
-    'route-title.storage-persistence-inspector',
-  ),
-  'route-title.ui-system-inspector': getDefaultConsoleMessage('route-title.ui-system-inspector'),
-  'route-title.responsive-layout-inspector': getDefaultConsoleMessage(
-    'route-title.responsive-layout-inspector',
-  ),
-  'route-title.engineering-quality-inspector': getDefaultConsoleMessage(
-    'route-title.engineering-quality-inspector',
-  ),
-  'route-title.capability-roadmap': getDefaultConsoleMessage('route-title.capability-roadmap'),
-  'route-title.error-invalid-route-input': getDefaultConsoleMessage(
-    'route-title.error-invalid-route-input',
-  ),
-  'route-title.error-authentication-required': getDefaultConsoleMessage(
-    'route-title.error-authentication-required',
-  ),
-  'route-title.error-permission-denied': getDefaultConsoleMessage(
-    'route-title.error-permission-denied',
-  ),
-  'route-title.error-route-not-found': getDefaultConsoleMessage(
-    'route-title.error-route-not-found',
-  ),
-  'route-title.error-application-route-failure': getDefaultConsoleMessage(
-    'route-title.error-application-route-failure',
-  ),
-  'route-title.error-network-unavailable': getDefaultConsoleMessage(
-    'route-title.error-network-unavailable',
-  ),
-  'route-title.error-service-unavailable': getDefaultConsoleMessage(
-    'route-title.error-service-unavailable',
-  ),
-} as const satisfies Readonly<Record<RouteTitleKey, string>>)
+function getDefaultRouteMessages<Key extends RouteTitleKey | RouteBreadcrumbKey>(
+  keys: readonly Key[],
+): Readonly<Record<Key, string>> {
+  // Object.fromEntries widens keys; every supplied route key receives its default message.
+  return Object.freeze(
+    Object.fromEntries(
+      [...new Set(keys)].map((key) => [key, getDefaultConsoleMessage(key)]),
+    ) as Record<Key, string>,
+  )
+}
 
-export const routeBreadcrumbRegistry = Object.freeze({
-  'route-breadcrumb.console-overview': getDefaultConsoleMessage(
-    'route-breadcrumb.console-overview',
-  ),
-  'route-breadcrumb.appearance-management': getDefaultConsoleMessage(
-    'route-breadcrumb.appearance-management',
-  ),
-  'route-breadcrumb.design-token-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.design-token-inspector',
-  ),
-  'route-breadcrumb.runtime-kernel-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.runtime-kernel-inspector',
-  ),
-  'route-breadcrumb.router-governance-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.router-governance-inspector',
-  ),
-  'route-breadcrumb.storage-persistence-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.storage-persistence-inspector',
-  ),
-  'route-breadcrumb.ui-system-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.ui-system-inspector',
-  ),
-  'route-breadcrumb.responsive-layout-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.responsive-layout-inspector',
-  ),
-  'route-breadcrumb.engineering-quality-inspector': getDefaultConsoleMessage(
-    'route-breadcrumb.engineering-quality-inspector',
-  ),
-  'route-breadcrumb.capability-roadmap': getDefaultConsoleMessage(
-    'route-breadcrumb.capability-roadmap',
-  ),
-} as const satisfies Readonly<Record<RouteBreadcrumbKey, string>>)
+export const routeTitleRegistry = getDefaultRouteMessages(
+  routeRegistry.map((record) => record.meta.titleKey),
+)
+
+export const routeBreadcrumbRegistry = getDefaultRouteMessages(
+  routeRegistry.map((record) => record.meta.breadcrumbKey).filter((key) => key !== null),
+)
 
 export const routeMessageRegistry = Object.freeze([
   Object.freeze({

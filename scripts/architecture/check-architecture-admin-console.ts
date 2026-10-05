@@ -110,6 +110,7 @@ interface MaterialGateSnapshot {
   readonly shellSource: string
   readonly adminTokenSource: string
   readonly routeRegistrySource: string
+  readonly errorTitles: readonly (readonly [key: string, text: string])[]
   readonly generatedManifestsEqual: boolean
   readonly generatedTokensCssSource: string
   readonly expectedTokensCssSource: string
@@ -6342,15 +6343,16 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   if (/\.n-[a-z0-9_-]+/iu.test(snapshot.pageVisualSource)) {
     violations.push('VENDOR_SELECTOR_IN_PAGE')
   }
-  const errorTitles = [
-    ...snapshot.routeRegistrySource.matchAll(
-      /'route-title\.error-([^']+)'\s*:\s*getDefaultConsoleMessage\(\s*'route-title\.error-([^']+)'\s*,?\s*\)/gu,
-    ),
-  ]
   if (
-    errorTitles.length !== 7 ||
-    errorTitles.some((match) => match[1] !== match[2]) ||
-    /'route-title\.error-[^']+'\s*:\s*'[^']*'/u.test(snapshot.routeRegistrySource)
+    !isDeepStrictEqual(snapshot.errorTitles, [
+      ['route-title.error-invalid-route-input', '地址无效'],
+      ['route-title.error-authentication-required', '需要身份认证'],
+      ['route-title.error-permission-denied', '访问被拒绝'],
+      ['route-title.error-route-not-found', '未找到页面'],
+      ['route-title.error-application-route-failure', '页面不可用'],
+      ['route-title.error-network-unavailable', '当前离线'],
+      ['route-title.error-service-unavailable', '服务不可用'],
+    ])
   ) {
     violations.push('ENGLISH_ERROR_TITLE')
   }
@@ -12975,7 +12977,10 @@ function runArchitectureAdminConsoleNegativeProbes(
       'english-error-title',
       'ENGLISH_ERROR_TITLE',
       {
-        routeRegistrySource: `${baseline.routeRegistrySource}\n'route-title.error-probe': 'Bad Request',`,
+        errorTitles: baseline.errorTitles.map(([key, text]) => [
+          key,
+          key === 'route-title.error-invalid-route-input' ? 'Bad Request' : text,
+        ]),
       },
     ],
     [
@@ -19409,6 +19414,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     shellSource,
     adminTokenSource,
     routeRegistrySource,
+    errorTitles: Object.entries(routeTitleRegistry).filter(([key]) =>
+      key.startsWith('route-title.error-'),
+    ),
     generatedManifestsEqual:
       engineeringViolations.length === 0 && capabilityViolations.length === 0,
     generatedTokensCssSource,
