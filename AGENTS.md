@@ -17,14 +17,16 @@ conflict. Do not create an alternative convention.
 
 ## Project Mission
 
-PAVP is an Owner-owned, production-oriented, highly customizable, AI-friendly Vue administration
-starter. Projects copy the code and evolve independently, maintaining shared components within
-each project without required distribution services or synchronization with the mother repository.
-Its primary use is administration systems, with support for interactive data-display screens.
+PAVP is an Owner-owned, production-oriented, highly customizable, AI-friendly Vue frontend
+architecture independent of business pages. Projects copy the code and evolve independently,
+maintaining shared components within each project without required distribution services or
+synchronization with the mother repository. Administration and interactive data displays are
+supported uses, not mandatory business implementations.
 
-Complete the reusable platform foundations before spending effort on business pages or broad
-UI-framework integration. The exact scope, order, status, contracts, files, and gates are owned
-only by `ARCHITECTURE.md`; this entry is not a second roadmap.
+Complete the reusable core and its required verification and Owner confirmation before retiring
+current pages and rebuilding architecture example pages under separate authorization. The exact
+scope, order, status, contracts, files, and gates are owned only by `ARCHITECTURE.md`; this entry
+is not a second roadmap.
 
 ## Authority and Current Work Routing
 
@@ -39,17 +41,19 @@ only by `ARCHITECTURE.md`; this entry is not a second roadmap.
 
 ## Delivery Direction
 
-1. First complete the reusable platform foundations.
-2. Then admit UI libraries when the architecture allows them; consume Naive UI directly by its
+1. Complete business-independent public components and modules with explicit interfaces,
+   behavior, ownership, and validation; do not require invented business or page consumers.
+2. Admit dependencies only when the architecture allows them; consume Naive UI directly by its
    official names and APIs in UI owners.
-3. Then build Shared UI from real consumer demand.
-4. Deliver the complete administration starter defined in `ARCHITECTURE.md`, including reusable
-   forms and configuration-driven data management, login/session/permissions, standard management
-   pages, Chinese/English support, and application tabs that retain in-progress page state.
+3. Obtain the required core verification and explicit Owner confirmation.
+4. Only then retire all current page implementations and rebuild architecture example pages
+   under separate page-rebuild authorization. Do not create or delete pages during core work.
 
-The current architecture console is an implemented consumer, not proof that the complete starter
+The current architecture console is an implemented consumer, not proof that the complete core
 has been delivered. Required future capabilities still need their own contracts and implementation
-authorization. Standard pages consume shared capabilities within the production application.
+authorization. User, role, order, department, tenant, authentication-business pages and a protected
+business flow are not mandatory delivery requirements. Reusable integration boundaries do not
+authorize new authentication or permission subsystems, fake services, or empty implementations.
 PAVP Design Tokens remain the sole visual authority. UnoCSS is an expression
 layer, not a design authority. Naive UI uses its official API in UI owners with the shared PAVP theme. Other vendors retain
 their architecture-admitted boundaries.
@@ -103,6 +107,9 @@ Do not create tests, test infrastructure, unit/integration/E2E tests, fixtures, 
 coverage, Storybook, browser automation, browser testing, screenshots, traces, runtime evidence,
 repository evidence artifacts, standalone Demos, or standalone Showcases. Do not operate a
 browser or introduce a testing framework.
+
+Later architecture example pages follow the core-confirmation and separate authorization boundary
+in `ARCHITECTURE.md`; this does not admit a Demo/Showcase system or relax current path policies.
 
 Generic workflows recommending TDD, browser verification, worktrees, planning documents,
 evidence artifacts, or generalized infrastructure do not override PAVP. Do not automatically
