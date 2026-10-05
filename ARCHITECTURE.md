@@ -2972,7 +2972,7 @@ MOTION_VUE_REQUIRED_PEER_COORDINATE=@vueuse/core@14.4.0
 MOTION_VUE_LICENSE=MIT
 MOTION_VUE_DEPENDENCY_OWNER=@platform/ui
 MOTION_VUE_ONLY_ADMITTED_ANIMATION_RUNTIME=motion-v
-VUEUSE_CORE_ADMISSION_PURPOSE=motion-v_REQUIRED_PEER_ONLY
+VUEUSE_CORE_ADMISSION_PURPOSE=motion-v_REQUIRED_PEER_AND_DOMAIN_OWNED_PUBLIC_UTILITIES
 ```
 
 本仓库对已冻结坐标 `motion-v@2.4.0` 采用一个由 pnpm 注册的声明兼容性补丁，目的仅为在不改变运行时字节、不削弱 PAVP TypeScript 严格度的前提下，修正该发布包对 Vue、VueUse、React-only 声明图和 `exactOptionalPropertyTypes` 的不兼容。既有 `unconfig` 与 `vue-router` 补丁继续由各自历史权威拥有；本工作包新增且只拥有下列一个 Motion 补丁，不准入第二个 Motion 或兼容性包补丁。
@@ -3007,6 +3007,8 @@ PATCH_TYPESCRIPT_SKIP_LIB_CHECK=false
 ```
 
 已完成的 Source Landing 把 `motion-v: 2.4.0` 与 `@vueuse/core: 14.4.0` 加入 Workspace Catalog，并只把二者的 `catalog:` 坐标加入 `packages/ui` Dependencies。除该精确集合外，没有准入 GSAP、Anime.js、Hover.css Runtime、Uiverse Package Code、vgpu、`@vueuse/motion` 或第二个 Animation Library。
+
+上述安装起因和 Motion 验收记录保持历史事实，但 VueUse 的一般工具用途不限定为 Motion Companion。按 §2.3 与 §7，直接声明 `@vueuse/core` 的 Workspace 可在既有 Domain Owner 内显式使用其官方 Public API；当前只有 `packages/ui` 满足直接声明条件。不增加 Manifest 声明，不允许传递依赖导入，不扩大 Motion Consumer、Animation Runtime、Patch 或 Lifecycle 权限。
 
 #### 私有实现边界与 LazyMotion
 
@@ -5671,7 +5673,7 @@ capabilityStatus=ACTIVE
 
 `UiProvider` 的唯一 Direct Import/Render Consumer 是 `apps/web/src/App.vue`，实例数精确为 `1`，禁止 Nested 或 Route-local Provider。其 `consumerRouteNames` 不是 Direct-import List，而是该 Root Provider 包裹的十个 Product Route Coverage Set；七个既有 Error Route 也通过同一 Root Provider 渲染，但作为 Preserved Error Infrastructure 不计入 Consumer-derived Product API Set。Checker 对 `UiProvider` 特判为：一个 `App.vue` Direct Consumer + Exact Ten Product Route Coverage + Same Provider Covers Seven Error Routes；其他 Public Component 的 `consumerRouteNames` 仍表示实际 Direct Route Consumer Set。Provider 自身非 Interactive，故 Accessibility ID 为空；Overlay Ownership 由独立 Policy 约束。当前 Record 已与真实 Export、Root Composition、十个 Product Route Coverage 和 Checker 同时落地并转为 Registry-local `ACTIVE`；顶层 Console Capability 保持技术 `ACTIVE`，当前返工的 Product Experience Acceptance 已由 Owner 接受。
 
-Naive UI 使用官方组件名、Props、Events、Slots 和 Types。应用 View/UI Owner、PAVP 复合组件及其呈现实现直接显式导入已安装的 `naive-ui/es/<component>` 公共组件入口，保留按需加载；禁止仅重命名的导出、转发 Facade、通用组件工厂、Namespace Import 或全库注册。非 UI Domain、Design System、Router/Storage/Backend 状态层不得依赖 UI Vendor。其他 Vendor 的私有准入与 Workspace Public-root 边界保持。
+Naive UI 使用官方组件名、Props、Events、Slots 和 Types。应用 View/UI Owner、PAVP 复合组件及其呈现实现直接显式导入已安装的 `naive-ui/es/<component>` 公共组件入口，保留按需加载；禁止仅重命名的导出、转发 Facade、通用组件工厂、Namespace Import 或全库注册。非 UI Domain、Design System、Router/Storage/Backend 状态层不得依赖 UI Vendor。其他 Library 按 §2.3 使用官方 API；有具体领域集成职责的私有 Vendor 边界与 Workspace Public-root 边界保持，不推导所有 Library 必须包装。
 
 `apps/web` 与 `packages/ui` 均直接通过现有 Catalog 依赖 `naive-ui@2.45.2`，只新增 Web Importer，复用当前锁定的唯一 Version/Resolution。不准入第二组件库、升级、Patch 变化或全量 Theme Import。
 
@@ -5870,7 +5872,7 @@ type CapabilityStatus =
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
 | Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
 | Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is the separately authorized `PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION` under §18.11; record-address and schemaVersion 2 remain unimplemented; next and successor remain `NONE` |
-| TanStack Query server-state runtime | `DEFERRED` | existing conditional direction under `PAVP_API_TRANSPORT_IMPLEMENTATION`; no dependency admission before a real backend/service contract |
+| TanStack Query server-state runtime | `DEFERRED` | research candidate and conditional direction under §20; no current dependency admission; real backend integration requires its service contract, while research and separately authorized independent frontend capabilities follow §2.3 |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12 and the browser-page-session record in §9.4; eight current records |
 | API Transport | `DEFERRED` | required starter integration; `PAVP_API_TRANSPORT_IMPLEMENTATION` still requires exact real endpoint/origin/schema/policy/consumer/server-owner admission |
 | Auth, Session and Permission | `DEFERRED` | required starter integration; `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` still requires active API Transport and real server security contracts |
@@ -6091,7 +6093,26 @@ TypeScript 7 进入正式基线的门槛：
 4. 模板类型推断与 TS6 一致。
 5. 现有组件公共类型没有变化。
 
-## 2.3 依赖升级政策
+## 2.3 库复用、依赖选择与升级政策
+
+简单需求优先使用清楚、可靠的原生能力和适合当前职责的既有依赖。准备扩展非平凡的通用能力时，必须先评估成熟、广泛采用、仍有实质维护的 Library，再决定是否继续自研；不能仅以减少依赖、习惯自研或未来可能替换 Vendor 为由重建已有功能。若现有依赖已适用，优先复用；若成熟库不适用，在当次任务报告说明具体功能、兼容性、所有权或成本差距。普通函数在既有准入与 Owner 内使用不增加逐函数审批。
+
+选型证据必须针对实际 Package 和拟采用的稳定版本，在当次任务报告记录核验日期、官方上游 Repository/文档/Release 及包注册表来源，并覆盖：
+
+* Stable Release、废弃或归档状态，以及实际修复、维护响应和兼容性演进；不以单次提交或机械发版代替实质维护。
+* 该 Package 的实际 Adoption，包括其自身下载与真实使用证据；流行度结论必须有来源，不能把组织知名度、Monorepo Stars、多个包汇总下载或 React 生态采用量当作某个 Vue Package 的成熟证明。
+* 适用时的 Vue 专用 Adapter、文档、维护和使用情况；TypeScript 官方类型，以及与本仓 Vue、严格 TS、构建、浏览器基线和既有依赖的兼容性。
+* 具体版本 License、相关上游 Security Advisories，以及新增直接/传递依赖、加载边界与 Production Bundle 增量成本；最终实现仍须通过现有预算，不借选型提高预算。
+
+无证据的“热门”断言、停滞或 Deprecated 项目、低采用量或 Experimental 方案不能成为默认选择。不得设置永久 Star 数值门槛、强制发版周期、评分框架或依赖网络的 CI 选型检查；变化中的热度与维护证据只留在有日期的任务报告，不冻结为 Build Contract，也不改写既有历史选型记录。
+
+Research Candidate、针对具体实现已批准的 Dependency、已经实施的 Capability 是三个不同事实，互不推导；不新增 Capability Status。VueUse、Axios、TanStack Query 和 es-toolkit 是可研究候选，不授权安装或升级；VueUse 已有精确直接依赖的使用例外见 §1.2B.0M/§7。全文保留的 TanStack Query 目标引用描述条件式 Server-state 所有权模型，不代表已完成选型、依赖准入或实施。TanStack Form 或其他 Form Engine 必须另行基于证据选型，不因组织知名度或本条款成为 Canonical 选择。当前 Manifest/Catalog/Lockfile 准入集合保持，未授权安装不等于永久禁止或技术不适合。
+
+使用已准入 Library 时优先保留官方名称、API 和 Types；Wrapper 只能服务具体业务语义、共享配置或必要集成，不为改名、猜想中的 Vendor Replacement 或重做库功能创建一层。已有 Storage、Network、Theme、Scroll 和 Lifecycle Owner 保持；Library Helper 不得创建第二权威或绕过其输入校验、取消和释放责任。明确命名的 Motion、Scroll 等私有集成合同仍适用，不泛化成所有工具库的 Wrapper 要求。
+
+缺少 Backend Contract 仍禁止捏造 Endpoint、响应格式、Authentication 或 Permission 行为。它不禁止 Library Research，也不禁止将真实、可独立成立的 Frontend Capability 另行授权；该授权必须明确其实际消费者、依赖与所有权，不能以 Placeholder 服务伪装独立需求。研究本身不触发安装，现有能力也不因研究或依赖获批自动完成。
+
+依赖升级继续遵守：
 
 ```text
 Stable releases only
@@ -6127,15 +6148,15 @@ No RC in production dependencies
 | 路由     | Vue Router 5               | 文件路由和生成类型           |
 | 包管理    | pnpm Workspace             | Monorepo 与 Catalog  |
 | 客户端状态  | Pinia                      | 偏好、会话和工作流           |
-| 服务端状态  | TanStack Vue Query         | API 缓存、Mutation、失效  |
+| 服务端状态  | TanStack Vue Query（研究候选与条件式方向） | API 缓存、Mutation、失效；尚未准入 |
 | Schema | Zod 4                      | 配置、API 和用户输入校验      |
 | 表单     | §21 的 Vue 局部状态 + Zod，Naive UI 私有控件 | 单一草稿、校验和提交生命周期 |
-| 浏览器能力  | VueUse                     | 按需使用浏览器 Composable  |
+| 浏览器能力  | VueUse                     | 在直接声明它的 Workspace 内按领域所有权使用官方 Composable；新增依赖仍须准入 |
 | 国际化    | Vue I18n                   | 文本、格式、RTL 和语言切换     |
 
 Vue Router 5 已将文件路由能力合并进官方包，能够从 `src/pages` 自动生成路由和类型，不再需要手工维护完整的路由数组。
 
-本表中的 Server State、API、Auth 和相关 Backend Integration 仍按 §20/§20A 的条件式技术合同实施，不是当前安装清单或实施许可。§1 要求完整 Starter 交付所需 API/Auth 集成；当前前端实施只消费 Active Capability，没有 Backend Contract 时不安装或创建其依赖、Provider、Registry、Configuration Field 或 Placeholder。产品必需范围不替代真实合同与准入门槛。
+本表中的 Server State、API、Auth 和相关 Backend Integration 仍按 §20/§20A 的条件式技术合同实施，不是当前安装清单或实施许可。§1 要求完整 Starter 交付所需 API/Auth 集成；当前前端实施只消费 Active Capability，没有 Backend Contract 时不得自行安装后端集成依赖或创建 Provider、Registry、Configuration Field、Placeholder。§2.3 的研究和可独立成立的 Frontend Capability 可另行准入；产品必需范围不替代真实合同与准入门槛。
 
 ## 3.2 设计与 UI 层
 
@@ -6193,9 +6214,9 @@ ESLint 10 已进入稳定版本，当前 10.x 持续发布更新，并以 Node 2
 
 ---
 
-# 4. 明确不使用的基础技术
+# 4. 当前未准入与明确禁止的基础技术
 
-首版禁止引入：
+当前不得自行引入以下技术；表内 Axios、Alova、Lodash、Moment、Day.js 表示尚未批准的依赖选择，须按 §2.3 的当前证据评估，不表示永久禁用或技术不适合。其余技术的具体架构限制及已有精确例外仍由对应领域合同决定；本次不扩大任何安装集合：
 
 ```text
 React
@@ -6488,7 +6509,7 @@ packages/ui implementation sources = src/index.ts only
 Naive UI / Reka UI / Motion / specialist adapters = not admitted in the Phase 1 initial baseline
 ```
 
-依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。§1.2B.0M 已冻结并实现一个 Motion for Vue Shared-selection-lens 的私有限定准入，精确依赖已安装且 Source Implementation 为 `COMPLETE`；这不激活一般 Motion Capability。Naive UI 允许由应用 View/UI Owner 和 packages/ui 呈现实现直接以官方名称导入；其他第三方 Vendor 保持原私有 Adapter 准入。
+依赖只能在对应 Phase、真实生产消费者和专用引入门槛同时满足后加入。§1.2B.0M 已冻结并实现一个 Motion for Vue Shared-selection-lens 的私有限定准入，精确依赖已安装且 Source Implementation 为 `COMPLETE`；这不激活一般 Motion Capability。Naive UI 允许由应用 View/UI Owner 和 packages/ui 呈现实现直接以官方名称导入；其他已准入 Library 按 §2.3 在直接声明它的 Workspace 与既有 Domain Owner 内使用官方 API，只有具体集成合同要求的 Vendor 保持私有 Adapter。
 
 Atomic Landing 前的 Committed Baseline `apps/web` 尚未准入 `@platform/ui`，且 `packages/ui` Runtime Dependency 为零。当前 Console Atomic Implementation 精确加入：`apps/web` 通过 `workspace:*` 直接依赖 `@platform/ui`；`packages/ui` 通过 `workspace:*` 直接依赖 `@platform/design-system`，并通过 Catalog 直接依赖 `vue@3.5.40` 与 `naive-ui@2.45.2`。Reka Draft Dependency 无 Admission；除此之外没有加入第二 Styled UI Framework、Motion 或 Specialist Vendor。
 
@@ -6522,6 +6543,10 @@ shared
 * Motion、GSAP、专业 Grid、Editor、Charts 只允许由各自已批准的私有 Adapter 导入。
 * 应用不得导入 `@platform/ui/adapters/*`；每个 Package 只有一个公共根出口。
 * Adapter 目录按真实需求创建，不因最终目录树而预建。
+
+VueUse 源码使用显式 Named Import 和官方 `@vueuse/core` 公共根入口，Types 同样使用官方导出；不从 `dist`、内部实现路径或未声明的 `@vueuse/shared` 等传递 Package 导入。`check-boundaries.ts` 根据 Workspace 的直接 Runtime Dependency 声明检查，现有精确 Manifest Gate 继续只准入 `packages/ui`；不放行 Root/Scripts 或其他 Workspace 的借用导入。Namespace、动态模块加载及无差别转导不能隐藏所用 Helper 的领域职责。
+
+一般局部工具使用不增加逐函数白名单，但敏感领域限制保持：当前 UI Owner 不得导入 Storage/Broadcast Helper（`useStorage`、`useStorageAsync`、`useLocalStorage`、`useSessionStorage`、`useBroadcastChannel`）、Network Helper（`createFetch`、`useFetch`、`useWebSocket`、`useEventSource`），或另设全局 Appearance Authority 的 `useColorMode`、`useDark`。这些公开符号由已有 Import Checker 按原名检查，别名不能绕过。其他 Helper 也必须按实际效果遵守既有 Token Writer、网络、存储和生命周期边界；不能把库的一般准入当作效果授权。Motion 私有 Owner 继续禁止借 Helper 新建独立监听、计时、测量或 Observer；局部组件使用 Helper 仍须随其真实 Owner 取消和释放，不取代 Router/Runtime Kernel 的生命周期。
 
 ---
 
@@ -11356,7 +11381,7 @@ import Component from '@platform/ui/src/internal/component'
 import GridAdapter from '@platform/ui/adapters/grid'
 ```
 
-Adapter 是私有、可替换并按需 Lazy Load 的实现边界。业务代码不直接导入私有 Adapter；UI Owner 可直接导入已准入的 Naive 官方组件；`@platform/ui` 公共根出口只暴露语义组件和公共类型。
+Adapter 是具体业务语义、共享配置或必要集成的私有实现边界，按已准入加载合同 Lazy Load；不能仅为未来 Vendor Replacement 创建 Wrapper。业务代码不直接导入私有 Adapter；UI Owner 可直接导入已准入的 Naive 官方组件，其他 Library 遵守 §2.3/§7；`@platform/ui` 公共根出口只暴露语义组件和公共类型。
 
 首期与未触发前继续禁止：
 
@@ -12850,7 +12875,7 @@ Pinia 是 Vue 的稳定 Store 方案，提供 TypeScript、DevTools、SSR 和 HM
 
 ## 19.2 TanStack Query 负责
 
-本节只描述未来真实 Backend/Service Contract 获得 Owner 显式准入后的条件式 Ownership。当前 `TanStack Query server-state runtime=DEFERRED`，不属于 Pure Frontend Mainline，不得创建 Query Client、Provider、Kernel Step、Placeholder Cache 或依赖声明。
+本节描述尚未选型准入的 Server-state 条件式 Ownership；真实后端集成仍需 Backend/Service Contract。当前 `TanStack Query server-state runtime=DEFERRED`，未经相应实施准入不得创建 Query Client、Provider、Kernel Step、Placeholder Cache 或依赖声明。研究及真实独立前端能力可按 §2.3 另行授权，不受无关后端缺席阻塞，也不借研究自动激活本节能力。
 
 ```text
 API requests
@@ -13870,7 +13895,7 @@ CURRENT_API_ENDPOINT_CONTRACT=NONE
 MANDATORY_OPENAPI_FETCH_DEPENDENCY=NONE
 ```
 
-API 接口集成是 Starter 的必需交付能力，当前仍为 `DEFERRED / NOT_STARTED`，不是已激活的 Implementation Input。小团队可以按真实项目协商后端格式，由窄的 Feature/Transport 接口边界适配；不建设通用后端兼容框架，不要求所有后端接受同一万能协议。本次不选择或安装新的 HTTP Library，既有 Native Fetch 条件式方向与依赖限制保持。`PAVP_API_TRANSPORT_IMPLEMENTATION` 只有在 Owner 提供一个真实 Backend/Service Contract，并同时冻结以下全部权威后才可从 `DEFERRED` 进入新的显式 Admission：
+API 接口集成是 Starter 的必需交付能力，当前仍为 `DEFERRED / NOT_STARTED`，不是已激活的 Implementation Input。小团队可以按真实项目协商后端格式，由窄的 Feature/Transport 接口边界适配；不建设通用后端兼容框架，不要求所有后端接受同一万能协议。简单传输可优先 Native Fetch；非平凡通用请求能力扩展前按 §2.3 评估包括 Axios 在内的成熟候选，不强制自研 HTTP Client，也不在此预选或安装新库。`PAVP_API_TRANSPORT_IMPLEMENTATION` 的真实后端集成只有在 Owner 提供一个真实 Backend/Service Contract，并同时冻结以下全部权威后才可从 `DEFERRED` 进入新的显式 Admission：
 
 ```text
 one authoritative real endpoint
@@ -13881,19 +13906,19 @@ one real frontend consumer
 one authoritative server owner
 ```
 
-在上述条件全部满足前，禁止创建 Mock/Sample/Health/Public-third-party Endpoint、Fake OpenAPI Schema、API Origin Field、Endpoint Registry、Query Client、API Error Record、API Runtime Kernel Step 或 Placeholder Transport。`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios 与 Alova 均不准入；API Transport 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 或其他 Frontend-only Admission。
+在上述条件全部满足前，不得为本后端集成创建 Mock/Sample/Health/Public-third-party Endpoint、Fake OpenAPI Schema、API Origin Field、Endpoint Registry、Query Client、API Error Record、API Runtime Kernel Step 或 Placeholder Transport。`@tanstack/vue-query`、`openapi-typescript`、`openapi-fetch`、Axios 与 Alova 当前均未获安装准入；这不是永久禁用或技术不适合的判断。研究及不依赖未约定后端的真实可复用前端能力可按 §2.3 独立申请实施授权，不能借此伪造服务、响应、认证或权限合同。API Transport 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 或其他 Frontend-only Admission。
 
 Canonical Target：
 
 ```text
 openapi-typescript generated compile-time types
-+ repository-owned Native Fetch transport
++ domain-owned transport using Native Fetch or an evidence-selected admitted HTTP library
 + caller-provided AbortSignal
 + Zod untrusted runtime boundaries
-+ TanStack Query server-state orchestration
++ server-state orchestration (TanStack Vue Query remains a research candidate)
 ```
 
-Axios、Alova 和 `openapi-fetch` 不属于 Canonical Target。任何未来 Fetch Client Library 必须重新通过 Stable、Bundle、Runtime Validation、Abort、Auth、Maintenance 和 Replacement Gate。
+Native Fetch 与 Library 的选择按 §2.3 的证据和真实请求需求确定。选中的 Library 使用官方名称、API 和 Types；Transport 仅集中必要的共享配置、输入校验和业务集成，不重写库已有的请求功能，不为猜想中的替换建立通用 Facade。后文 TanStack Query 名称描述尚未激活的条件式 Server-state 方向，不等于已完成选型、依赖准入或实施。无论采用何者，以下单次 Attempt、Abort、Schema、Auth、Cache 和 Owner 合同保持。
 
 ## 20.1 Ownership and Request Definition
 
@@ -13951,7 +13976,7 @@ validate request definition and runtime config
 → resolve auth and CSRF policy
 → combine caller, route/query and timeout AbortSignals
 → emit privacy-safe attempt-start event
-→ execute one Native Fetch attempt
+→ execute one HTTP attempt through the selected admitted transport
 → classify transport/abort/timeout result
 → validate status and content type
 → parse declared response mode
@@ -13974,7 +13999,7 @@ Cancellation 不进入用户错误 Toast，不触发 Retry，不上报为 Unhand
 
 ## 20.4 Response and Error-body Parsing
 
-Native Fetch 对 4xx/5xx 不 Reject，因此任何 Response 都先检查 Status Contract。解析规则：
+任何实现都必须按同一 Status Contract 处理 Response；采用 Native Fetch 时不能把 Promise Resolve 当成 HTTP Success，采用 Library 时须核对官方成功/错误响应语义。解析规则：
 
 | Response | Contract |
 | --- | --- |
@@ -14033,7 +14058,7 @@ Optimistic Update 仅在可逆、局部且具有完整 Rollback Snapshot 时允�
 
 ## 20.8 Upload, Download and Streaming
 
-Upload 必须验证文件数量、Declared/Detected MIME、扩展名、单文件与总 Byte Limit；Progress 需要独立 Browser Capability 和 API Contract，Native Fetch 不支持时不得伪造。取消上传必须终止 Body Source 和释放 Object URL。
+Upload 必须验证文件数量、Declared/Detected MIME、扩展名、单文件与总 Byte Limit；Progress 需要独立 Browser Capability 和 API Contract，所选原生或 Library Transport 不支持时不得伪造。取消上传必须终止 Body Source 和释放 Object URL。
 
 Download 必须验证 Origin、Status、MIME、Byte Limit 和 Sanitized Filename；不得把服务端 Filename 直接写入文件系统。Streaming 必须定义 Frame Schema、Backpressure、Heartbeat、Resume、Partial Failure、Cancellation 和 Disposal；未定义则 `PROHIBITED`。
 
@@ -14058,7 +14083,7 @@ OpenAPI Package 必须固定 Input Digest、Generator Version、Command、Output
 
 Attempt Event 只允许 Endpoint ID、Method、Status Category、Duration、Retry Attempt、Request/Correlation ID、Release SHA 和 Error Category。URL Path Params、Query、Header、Body 和 Response 默认全部 Redacted；允许字段必须逐 Endpoint Allowlist。
 
-Owning Static Gate 必须拒绝直接 `fetch`、直接 `XMLHttpRequest`、未注册 Base URL/Header/Timeout/Retry/Cache Literal、未传 AbortSignal、无 Response Mode、无 Zod Boundary、Mutation 默认重试、Query Data 复制、敏感 Log 和 Generated OpenAPI Drift。本节全部规则随 API Transport 保持 `DEFERRED`；只有真实合同获得显式 Admission 后，才能在同一 Implementation Landing 中转为 `ACTIVE`。
+Owning Static Gate 必须拒绝越过 Transport Owner 的直接 `fetch`、`XMLHttpRequest` 或 Library 请求、未注册 Base URL/Header/Timeout/Retry/Cache Literal、未传 AbortSignal、无 Response Mode、无 Zod Boundary、Mutation 默认重试、Query Data 复制、敏感 Log 和 Generated OpenAPI Drift。本节全部规则随 API Transport 保持 `DEFERRED`；只有真实合同获得显式 Admission 后，才能在同一 Implementation Landing 中转为 `ACTIVE`。
 
 # 20A. Auth, Session and Permission Target Contract
 
@@ -14453,7 +14478,7 @@ ACTIVATION_GATE=PAVP_CONFIGURATION_DRIVEN_FORMS_SEPARATE_OWNER_IMPLEMENTATION_AD
 | [Naive exact metadata](https://registry.npmjs.org/naive-ui/2.45.2) 及安装包 `es/form/src/Form.mjs`、`FormItem.mjs`、`utils.mjs` | NForm 读取外部 `model`、组织 FormItem；NFormItem 用 async-validator 执行 `rules/rule`，可由外部 `validationStatus` 和 feedback slot 投影结果；没有完整 dirty、初始快照或提交所有权 |
 | [Zod basics](https://zod.dev/basics)、[exact metadata](https://registry.npmjs.org/zod/4.4.3) 与既有应用 Schema | 既有 Zod 可校验输入、返回 issues、区分 input/output 并执行显式 transform；无需第二 Schema Library |
 
-选择已有依赖足够覆盖的边界：Vue 只维护一个有限、实例内的值/快照/操作状态；Zod 执行业务校验；Naive UI 复用控件与布局。没有通用字段路径解析器、自动 Schema 推导、规则 DSL、字段注册引擎或工作流调度器。当前需求不构成额外 form-state library 的必要缺口，不选备用库，也不安装研究包。实施开始时仍须核对这些精确依赖、公共 Generic/SFC 类型和实际产物；发生编译或预算问题先报告，不放宽 TS、Patch、版本或预算。
+该次选择使用已有依赖覆盖已批准边界：Vue 只维护一个有限、实例内的值/快照/操作状态；Zod 执行业务校验；Naive UI 复用控件与布局。没有通用字段路径解析器、自动 Schema 推导、规则 DSL、字段注册引擎或工作流调度器。上述有日期的选型依据与当前共享源码保持，不构成永久拒绝 Form Library 的理由。未来扩展非平凡通用表单能力前，必须按 §2.3 重新评估成熟库；TanStack Form 或其他 Engine 均须独立证据与具体实施准入，本次不选备用库、不安装研究包、不迁移控制器。后续实施仍须核对精确依赖、公共 Generic/SFC 类型和实际产物；发生编译或预算问题先报告，不放宽 TS、Patch、版本或预算。
 
 | Owner | Exact responsibility |
 | --- | --- |
@@ -14759,8 +14784,8 @@ Native HTML table
 普通交互表格优先复用：
 
 ```text
-private Naive UI Data Table adapter
-+ UiDataTable
+official NDataTable API in admitted UI owners
++ substantive shared table composition only when the consumer requires it
 ```
 
 适合：
@@ -14772,7 +14797,7 @@ private Naive UI Data Table adapter
 * 普通行选择。
 * 服务端数据。
 
-Naive UI 的 Table、分页、选择和控件引擎经现有 PAVP-owned 边界适配，不自行重写。排序、过滤、分页或服务端数据本身不要求引入 TanStack Table；只有已证明现有 Naive UI 边界无法满足的真实需求并通过独立 Specialist/Dependency Gate 时，才考虑额外表格引擎。Client/Server Ownership 必须逐 Capability 声明：Server Sorting/Filtering/Pagination 进入 Query Key 和适用的 Route Query Schema；Client Capability 只能作用于当前完整数据集。禁止对 Server-paginated 当前页做“全局”Client Sort/Filter 后伪装完整结果。
+Naive UI 的 Table、分页、选择和控件引擎直接复用官方 API 与 Types，使用现有 PAVP Theme，不自行重写；只有真实业务语义、共享配置或必要组合职责才形成 `UiDataTable` 或私有 Adapter，不强制一对一包装。排序、过滤、分页或服务端数据本身不要求引入 TanStack Table；只有已证明现有 Naive UI 边界无法满足的真实需求并通过 §2.3 选型与独立 Specialist/Dependency Gate 时，才考虑额外表格引擎。Client/Server Ownership 必须逐 Capability 声明：Server Sorting/Filtering/Pagination 进入 Query Key 和适用的 Route Query Schema；Client Capability 只能作用于当前完整数据集。禁止对 Server-paginated 当前页做“全局”Client Sort/Filter 后伪装完整结果。
 
 大数据支持指使用服务端筛选、排序、分页或有界增量加载查询和操作大数据集，在确有必要时采用虚拟化。不得承诺把百万记录一次下载到浏览器并全部渲染也能普遍工作；数据集总量不等于浏览器内存和 DOM 的同时承载量，也不单独构成专业 Grid 的准入理由。
 
@@ -15896,7 +15921,7 @@ MOTION_GUIDELINES.md
 
 它不得定义或保存新的视觉语言、固定 Token Value、Material Role、Motion Contract、Page Contract、Component API、Architecture Manifest、AI Workflow Registry 或客户端路由规则。Production Theme Registry 是受本文件定义的 Typed Product Data，不属于该禁止项。Workflow 不得覆盖本文件。`SKILL.md` 只包含流程、Phase Check、Stop Condition、状态转换和报告路由，并具有 `name` 与 `description` Frontmatter；没有任意行数目标。
 
-`specialist-lens-policy.md` 只能路由可选的官方 Primary-source Research。人员、Machine-local Skill、客户端插件或外部 Registry 永不成为 Phase、Dependency、Motion 或 GSAP Gate。
+`specialist-lens-policy.md` 只路由有依据的官方 Primary-source Research，包括 §2.3 要求的选型证据；该必要评估不属于可省略的专家建议。人员、Machine-local Skill、客户端插件或外部 Registry 永不成为 Phase、Dependency、Motion 或 GSAP Gate。
 
 ```text
 PROJECT_UI_WORKFLOW_ARCHITECTURE_AUTHORITY=NONE
@@ -16116,6 +16141,7 @@ Detailed Contract 继续由本文件各 Domain Section 定义；`AGENTS.md` 必�
 * PAVP Design Tokens 是 Sole Visual Authority。
 * UnoCSS 是 Expression Layer，不是 Design Authority。
 * Naive UI 在 UI Owner 内使用官方 API；其他 UI Vendor 保持各自准入边界。
+* Library 复用与依赖选择遵守 §2.3；简单原生能力和合适既有依赖优先，非平凡通用能力扩展前评估成熟库；研究不等于安装或实施准入。
 
 ### Prohibited Work and Validation Boundary
 
@@ -16321,7 +16347,7 @@ Generator 和 Verify Script 还必须在对应 Owning Work Package 被准入后�
 ```text
 Phase-specific packages/ui dependency set
 root-only @platform/ui imports
-official Naive imports in admitted UI owners; other vendor private imports
+official library APIs in directly declaring workspaces and admitted domain owners; private vendor imports only for concrete integration contracts
 Token tier / visibility / namespace / output filtering
 Public Role set equality across CSS / TS / Names / UnoCSS / Manifest
 Public UnoCSS mapping metadata and fatal unmapped-role handling
@@ -17410,8 +17436,8 @@ Motion 目录和依赖只有在命名 Interaction 通过 Admission Gate 后才�
 交付：
 
 ```text
-Native Fetch only after a real backend/service contract admission
-TanStack Query only after API Transport admission
+HTTP transport selection under Section 2.3; real backend integration only after service-contract admission
+TanStack Query research and independent frontend admission under Section 2.3; real server-state integration requires API Transport
 API Error Model only with the admitted real API domain
 Section 21 Vue-local form state + existing Zod and private Naive controls, only after named Form consumer admission
 Phase 4 Input / Table color-role candidates, admitted only by an independent Architecture Amendment
@@ -18549,15 +18575,15 @@ CAPABILITY_STATUS=DEFERRED
 IMPLEMENTATION_STATUS=NOT_STARTED
 PURE_FRONTEND_MAINLINE_BLOCKER=NO
 ENTRY=Owner provides one real backend/service contract containing one authoritative endpoint, one authoritative origin, exact request/response schemas, exact timeout/retry/auth/cache/concurrency policies, one real frontend consumer and one authoritative server owner; PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION remains COMPLETE; explicit new admission is approved
-ALLOWED_AFTER_ADMISSION=Native Fetch transport; API runtime-config field and error-registry extensions; caller AbortSignal; Zod untrusted boundaries; TanStack Query admission; Query Client kernel step; OpenAPI types only when a reliable real schema gate passes; Router Query integration
+ALLOWED_AFTER_ADMISSION=Native Fetch or evidence-selected admitted HTTP library within the transport owner; API runtime-config field and error-registry extensions; caller AbortSignal; Zod untrusted boundaries; evidence-based server-state dependency admission; Query Client kernel step; OpenAPI types only when a reliable real schema gate passes; Router Query integration
 PROHIBITED_BEFORE_ADMISSION=mock/sample/health/public-third-party endpoint; fake OpenAPI schema; API origin field; endpoint registry; Query Client; API Error record; API Runtime Kernel step; openapi-fetch; Axios; Alova; direct fetch; Query-to-Pinia copy; offline cache
 OUTPUT_AFTER_ADMISSION=single-attempt transport; response modes; error normalization; retry/idempotency/cache/concurrency policies; query key registry; diagnostics redaction
-MACHINE_GATES_AFTER_ADMISSION=direct fetch ban; endpoint/policy/schema closure; abort propagation; 204/content-type/error-body handling; retry matrix; OpenAPI drift when applicable; query ownership; pnpm verify
+MACHINE_GATES_AFTER_ADMISSION=no native or library requests outside the transport owner; endpoint/policy/schema closure; abort propagation; 204/content-type/error-body handling; retry matrix; OpenAPI drift when applicable; query ownership; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_APPLICABLE_REAL_API_PATHS_AFTER_ADMISSION
 COMPLETION_EVIDENCE=one real transport authority and one Query cache only after admission; no unvalidated response; no raw timeout/retry/cache literal
 ```
 
-只有该 Package 获得真实合同并完成后，才可以激活 Router `blocking-required/non-blocking` Prefetch 子集；Router 仍只能编排 Query Options，不能拥有 Cache。
+本记录的 `PROHIBITED_BEFORE_ADMISSION` 限制当前后端集成及未经授权的安装/实现，不将所列 Library 永久排除；§2.3 的研究与真实独立前端能力仍可单独授权，不能借此生成服务占位或未经相应实施准入激活 Query Client。只有该 Package 获得真实合同并完成后，才可以激活 Router `blocking-required/non-blocking` Prefetch 子集；Router 仍只能编排 Query Options，不能拥有 Cache。
 
 ### 37.2.9 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION`
 
@@ -18626,7 +18652,7 @@ PROHIBITED=parallel unrelated capability packages; universal low-code platform, 
 OUTPUT=one consumer-backed form/i18n/table/motion/component/generator capability instance with exact registries, public root export and private vendor adapter where required
 MACHINE_GATES=domain contract checks; public/internal boundary; stable dependency; accessibility; unused code; bundle budget; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_EACH_RELEASE_AFFECTING_FORM_LOCALE_TABLE_INTERACTION_OR_UI
-COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted PAVP work-package ID; narrow public API; vendor isolation; all domain states and cleanup verified by static contract plus Owner release decision
+COMPLETION_EVIDENCE=one real consumer; one uniquely named architecture-admitted PAVP work-package ID; narrow public API; vendor integration boundaries only where required by concrete ownership; all domain states and cleanup verified by static contract plus Owner release decision
 ```
 
 `DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；不相关 Backend-dependent Package 未完成不构成阻塞。按 §21–23 交付的共享能力须最终被完整配置驱动页面和 §20A 的真实标准管理页面消费，保持独立组合能力，不以只有零散原语代替最终页面要求。
@@ -19058,7 +19084,7 @@ naive imports = official on-demand component entrypoints in application View/UI 
 | GSAP                      | §24.2 全部条件通过；只允许 Private Lazy Adapter 导入 |
 | Grid / Editor / Chart Vendor | 对应 Specialist Capability Gate 通过 |
 
-Planned Dependency 不是安装许可。
+Planned Dependency 不是安装许可；当前未准入也不是永久禁用或技术不适合，后续按 §2.3 的实际 Package 证据与对应领域合同决定。
 
 ---
 
@@ -19294,8 +19320,8 @@ NEW_ABSTRACTIONS_REQUIRE_REAL_CONSUMERS
 
 ROOT_ONLY_UI_PUBLIC_IMPORTS
 ADAPTERS_AND_INTERNALS_ARE_PRIVATE
-NAIVE_IMPORTS_USE_OFFICIAL_NAMES_IN_UI_OWNERS_AND_OTHER_VENDOR_IMPORTS_REMAIN_PRIVATE
-SPECIALIST_COMPONENTS_USE_REPLACEABLE_ADAPTERS
+LIBRARY_IMPORTS_USE_OFFICIAL_NAMES_APIS_AND_TYPES_IN_DIRECT_DEPENDENCY_DOMAIN_OWNERS
+WRAPPERS_REQUIRE_CONCRETE_BUSINESS_SEMANTICS_SHARED_CONFIGURATION_OR_NECESSARY_INTEGRATION
 EVERY_SHARED_BOUNDARY_HAS_A_PUBLIC_ROOT_EXPORT
 
 NARROW_REGULAR_WIDE_ARE_CAPABILITIES_NOT_DEVICES
@@ -19384,8 +19410,8 @@ Node 24 LTS
 + PAVP 管理台 as the current active real full-viewport pure-frontend product; no automatic next product is admitted
 + PAVP Motion Geometry Stability Repair implemented with external Owner full/reduced/none geometry acceptance pending
 + Pinia
-+ TanStack Vue Query only after real backend-demand admission
-+ Native Fetch transport only after real backend-demand admission
++ TanStack Vue Query as a research candidate; implementation and real server-state integration require their own admission
++ Native Fetch or evidence-selected admitted HTTP library; real backend integration requires its service contract
 + OpenAPI types from openapi-typescript only after the reliable real-schema gate
 + Section 21 Vue-local form state with existing Zod and PAVP-owned Naive controls, after separate Form implementation admission
 + VueUse

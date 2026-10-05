@@ -32,7 +32,7 @@ REQUIRED_CAPABILITY_UNAVAILABLE
 - Use `PHASE_DISALLOWED` when the active phase does not admit the requested work.
 - Use `CANONICAL_CONTRACT_MISSING` when required canonical direction is absent or indeterminate.
 - Use `WORKTREE_SCOPE_CONFLICT` only when an existing dirty change overlaps the task scope.
-- Use `UNINTRODUCED_DEPENDENCY` when the work requires a dependency that has not passed its canonical gate.
+- Use `UNINTRODUCED_DEPENDENCY` when the work requires installing or using a dependency that has not passed its canonical gate. Researching a candidate under `ARCHITECTURE.md` §2.3 does not require installation admission and does not authorize installation, upgrades, or capability implementation.
 - Use `PUBLIC_BOUNDARY_CONFLICT` when the requested work would violate a canonical public boundary.
 - Use `AUTHORIZATION_REQUIRED` when a required state-changing action exceeds current authorization.
 - Use `REQUIRED_CAPABILITY_UNAVAILABLE` when an applicable required capability cannot be used.

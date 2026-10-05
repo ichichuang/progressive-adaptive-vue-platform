@@ -1,10 +1,12 @@
 # Specialist Lens Policy
 
-Specialist research is optional and non-authoritative. Use it only when the task requires a current external fact, an official platform behavior, or an upstream technical contract that repository evidence does not supply.
+Specialist research is non-authoritative. Use it when the task requires a current external fact, an official platform behavior, or an upstream technical contract that repository evidence does not supply. Library selection follows the evidence requirements in `ARCHITECTURE.md` §2.3; that required evaluation is not optional specialist advice. Simple native capabilities and suitable existing dependencies do not require a new approval ceremony for ordinary function use.
 
 ## Source boundary
 
 Use primary sources such as an official specification, official vendor documentation, or the authoritative upstream project source. Record only the finding and source needed for the current task response.
+
+For library selection, report dated, package-specific evidence required by §2.3, including Vue-specific evidence where applicable. Do not substitute organization or monorepo popularity, aggregate downloads, or React adoption for evidence about the actual Vue package. Distinguish research candidates, dependencies admitted for a specific implementation, and implemented capabilities; none establishes either of the other states. Keep changing metrics in the task report, not a build contract or network-dependent CI check.
 
 Never make correctness depend on:
 

@@ -93,6 +93,9 @@ state. Do not ask the Owner to repeat a decision already resolved in the current
 - PAVP Design Tokens are the sole visual authority.
 - UnoCSS is an expression layer, not a design authority.
 - Use official Naive UI names and APIs in UI owners; retain only substantive PAVP composites.
+- Follow `ARCHITECTURE.md` §2.3 for library reuse and dependency selection: prefer simple native
+  capabilities and suitable existing dependencies; evaluate mature libraries before expanding
+  nontrivial generic implementations. Research is not installation or implementation admission.
 
 ## Prohibited Work
 

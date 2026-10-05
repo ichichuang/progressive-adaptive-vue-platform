@@ -14,7 +14,7 @@ Act as a client-neutral, subordinate execution workflow. Treat `ARCHITECTURE.md`
 3. Read `project.config.ts`.
 4. Read [task-routing.md](references/task-routing.md) and select one task mode.
 5. Read [execution-contract.md](references/execution-contract.md) and hold the task contract in memory.
-6. Read [specialist-lens-policy.md](references/specialist-lens-policy.md) only when optional external research is justified.
+6. Read [specialist-lens-policy.md](references/specialist-lens-policy.md) when external research is justified, including the library-selection evidence required by `ARCHITECTURE.md` §2.3 before expanding nontrivial generic capabilities.
 7. Read [acceptance-report.md](references/acceptance-report.md) before reporting.
 
 ## Workflow

@@ -121,11 +121,11 @@ const subordinateBrowserRuleSyncFiles = [
   'scripts/verify/check-repository-policy.ts',
 ] as const
 const subordinateBrowserRuleContentHashes = new Map<string, string>([
-  ['AGENTS.md', '1d17cd60b8ae5e7c10dbd6729c9a4c6971b42449fdc18bcf1e3425f9955507b6'],
+  ['AGENTS.md', '1223796cdc0d488a0b0d7b8c1a201ddff7c7f27b844ce3eddc092a8c3c659955'],
   ['README.md', 'a9b2a2ebd911a694af71cb5af53d48516f34ca4339800ecda740a58f9ae1f277'],
   [
     '.ai/skills/pavp-ui/SKILL.md',
-    '2f4b04d4232c814d1b9be910d99f17130c24602e6a66fd2afa2e2df5f500a3ae',
+    '8302fcf9cb044e7a4e36fab3764486999266091fe53344761c60d584bdf1cc5d',
   ],
   [
     '.ai/skills/pavp-ui/references/task-routing.md',
@@ -133,7 +133,7 @@ const subordinateBrowserRuleContentHashes = new Map<string, string>([
   ],
   [
     '.ai/skills/pavp-ui/references/execution-contract.md',
-    'a31adaef88aab5bc6beb09a71483209bb8fa9d853d28315313387e92a2bb8acd',
+    'a9a01a84c74a5d928ec9f84b1f0f78a11f31befb7d149d578a8c63bb6e13311b',
   ],
   [
     '.ai/skills/pavp-ui/references/acceptance-report.md',

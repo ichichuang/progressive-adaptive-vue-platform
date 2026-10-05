@@ -32,6 +32,7 @@ const importSourceExtensions = new Set(['.cjs', '.js', '.mjs', '.ts', '.vue'])
 const excludedDirectoryNames = new Set(['.git', 'node_modules'])
 const generatedOutputDirectories = new Set([resolve(rootDirectory, 'apps/web/dist')])
 const rootTypeScriptConfigurationSuffix = '.config.ts'
+// Current implementation admission, not a permanent judgment of library suitability.
 const inactiveCapabilityPackages = [
   '@capacitor/core',
   '@tanstack/query-core',
@@ -78,6 +79,7 @@ const allowedWorkspaceDependencies = new Map<string, ReadonlySet<string>>(
     new Set<string>(workspace.mayDependOn),
   ]),
 )
+// Preserve the exact installed set; VueUse also supports domain-owned public utility use.
 const adminNavigationMotionPackages = ['@vueuse/core', 'motion-v'] as const
 const adminNavigationMotionOwner = '@platform/ui'
 const adminNavigationMotionPrivateDirectory = 'packages/ui/src/adapters/motion/'
@@ -154,7 +156,7 @@ async function validateManifestDependencies(): Promise<string[]> {
         !(inactivePackage === 'vue-i18n' && description === '@platform/web')
       ) {
         violations.push(
-          `${description}: Phase 1 may not declare inactive capability package "${inactivePackage}".`,
+          `${description}: package "${inactivePackage}" has no current dependency admission; research does not authorize installation.`,
         )
       }
     }
@@ -427,7 +429,11 @@ function workspaceLayer(specifier: string): string | undefined {
   return undefined
 }
 
-function inspectImport(sourcePath: string, specifier: string): string[] {
+function inspectImport(
+  sourcePath: string,
+  specifier: string,
+  directDependencies: ReadonlySet<string>,
+): string[] {
   const violations: string[] = []
   const displayPath = relative(rootDirectory, sourcePath)
   const normalizedDisplayPath = displayPath.split(sep).join('/')
@@ -462,7 +468,7 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
     !(specifier === 'vue-i18n' && normalizedDisplayPath === 'apps/web/src/shared/i18n/runtime.ts')
   ) {
     violations.push(
-      `${displayPath}: Phase 1 import of inactive capability package "${inactivePackage}" is forbidden.`,
+      `${displayPath}: package "${inactivePackage}" has no current implementation admission.`,
     )
   }
 
@@ -507,10 +513,18 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
     }
   }
 
-  if (specifier === '@vueuse/core' || specifier.startsWith('@vueuse/core/')) {
-    violations.push(
-      `${displayPath}: "@vueuse/core" is admitted only as the Motion Vue peer and may not be imported by repository source.`,
-    )
+  if (specifier.startsWith('@vueuse/')) {
+    const packageName = specifier.split('/').slice(0, 2).join('/')
+    if (!directDependencies.has(packageName)) {
+      violations.push(
+        `${displayPath}: "${packageName}" requires a direct runtime dependency in the owning workspace; transitive imports are forbidden.`,
+      )
+    }
+    if (specifier !== '@vueuse/core') {
+      violations.push(
+        `${displayPath}: VueUse imports must use the admitted "@vueuse/core" public root.`,
+      )
+    }
   }
 
   if ((specifier === 'reka-ui' || specifier === 'clsx') && fromLayer !== 'ui') {
@@ -551,7 +565,95 @@ function inspectImport(sourcePath: string, specifier: string): string[] {
   return violations
 }
 
+function inspectVueUseOwnership(sourcePath: string, sourceText: string): string[] {
+  const violations: string[] = []
+  const displayPath = relative(rootDirectory, sourcePath).split(sep).join('/')
+  const source = ts.createSourceFile(sourcePath, sourceText, ts.ScriptTarget.Latest, true)
+  const domainOwnedHelpers = new Set([
+    'useStorage',
+    'useStorageAsync',
+    'useLocalStorage',
+    'useSessionStorage',
+    'useBroadcastChannel',
+    'createFetch',
+    'useFetch',
+    'useWebSocket',
+    'useEventSource',
+    'useColorMode',
+    'useDark',
+  ])
+  const motionEffectHelpers =
+    /^(?:use(?:EventListener|Timeout.*|Interval.*|RafFn|Now|Timestamp|Countdown|Fps|Idle|ResizeObserver|MutationObserver|IntersectionObserver|PerformanceObserver|Element.*|Window.*|Mouse.*|Pointer.*|Scroll|Draggable|Swipe)|onClickOutside|onKey(?:Stroke|Down|Up|Pressed))$/u
+
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === '@vueuse/core'
+    ) {
+      const clause = node.importClause
+      const bindings = clause?.namedBindings
+      if (clause?.name !== undefined || bindings === undefined || !ts.isNamedImports(bindings)) {
+        violations.push(`${displayPath}: VueUse requires explicit named public imports.`)
+      } else if (clause?.phaseModifier !== ts.SyntaxKind.TypeKeyword) {
+        for (const element of bindings.elements) {
+          if (element.isTypeOnly) continue
+          const importedName = (element.propertyName ?? element.name).text
+          if (domainOwnedHelpers.has(importedName)) {
+            violations.push(
+              `${displayPath}: VueUse ${importedName} may not bypass the existing Storage, Network or Appearance owner; UI utility admission does not admit those effects.`,
+            )
+          }
+          if (
+            displayPath.startsWith(adminNavigationMotionPrivateDirectory) &&
+            motionEffectHelpers.test(importedName)
+          ) {
+            violations.push(
+              `${displayPath}: VueUse ${importedName} may not add independent listeners, timing, measurement or observers to the admitted Motion owner.`,
+            )
+          }
+        }
+      }
+    }
+    if (
+      ts.isExportDeclaration(node) &&
+      node.moduleSpecifier !== undefined &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      node.moduleSpecifier.text === '@vueuse/core' &&
+      !node.isTypeOnly &&
+      (node.exportClause === undefined ||
+        !ts.isNamedExports(node.exportClause) ||
+        node.exportClause.elements.some((element) => !element.isTypeOnly))
+    ) {
+      violations.push(`${displayPath}: VueUse runtime re-exports may not hide utility ownership.`)
+    }
+    if (
+      ts.isCallExpression(node) &&
+      (node.expression.kind === ts.SyntaxKind.ImportKeyword ||
+        (ts.isIdentifier(node.expression) && node.expression.text === 'require')) &&
+      node.arguments.some(
+        (argument) => ts.isStringLiteral(argument) && argument.text === '@vueuse/core',
+      )
+    ) {
+      violations.push(`${displayPath}: VueUse runtime loading requires explicit named imports.`)
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(source)
+  return violations
+}
+
 async function validateSourceImports(): Promise<string[]> {
+  const workspaceDependencies = await Promise.all(
+    projectConfig.workspaces.map(async (workspace) => {
+      const manifest = await readJsonObject(resolve(rootDirectory, workspace.path, 'package.json'))
+      const dependencies = manifest['dependencies']
+      return {
+        directory: `${resolve(rootDirectory, workspace.path)}${sep}`,
+        dependencies: new Set(isJsonObject(dependencies) ? Object.keys(dependencies) : []),
+      }
+    }),
+  )
   const roots = [
     resolve(rootDirectory, 'apps/web/src'),
     resolve(rootDirectory, 'packages/design-system/src'),
@@ -580,9 +682,15 @@ async function validateSourceImports(): Promise<string[]> {
   for (const sourceFile of sourceFiles) {
     const sourceText = sourceTextForImports(sourceFile, await readFile(sourceFile, 'utf8'))
     const imports = ts.preProcessFile(sourceText, true, true).importedFiles
+    const directDependencies =
+      workspaceDependencies.find((workspace) => sourceFile.startsWith(workspace.directory))
+        ?.dependencies ?? new Set<string>()
 
     for (const importedFile of imports) {
-      violations.push(...inspectImport(sourceFile, importedFile.fileName))
+      violations.push(...inspectImport(sourceFile, importedFile.fileName, directDependencies))
+    }
+    if (imports.some((importedFile) => importedFile.fileName === '@vueuse/core')) {
+      violations.push(...inspectVueUseOwnership(sourceFile, sourceText))
     }
   }
 
