@@ -1264,6 +1264,14 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
     context: [],
+    selector: '.pavp-admin-shell__layout',
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+    declarations: [['flex', '1 1 0%', false]],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 0,
+    context: [],
     selector: '.pavp-admin-shell__header',
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
     declarations: [

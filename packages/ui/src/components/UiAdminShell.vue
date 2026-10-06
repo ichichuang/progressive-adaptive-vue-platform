@@ -726,9 +726,7 @@ watch(
     </header>
 
     <NLayout
-      :class="
-        enabled ? 'pavp-admin-shell__layout flex-1 min-h-0' : 'pavp-admin-shell__document-layout'
-      "
+      :class="enabled ? 'pavp-admin-shell__layout min-h-0' : 'pavp-admin-shell__document-layout'"
       :content-style="persistentLayoutContentStyle"
       data-pavp-admin-navigation="persistent"
       :has-sider="administration && profile !== 'narrow'"
@@ -969,6 +967,7 @@ watch(
 }
 
 .pavp-admin-shell__layout {
+  flex: 1 1 0%;
   min-inline-size: 0;
   background: transparent;
 }
