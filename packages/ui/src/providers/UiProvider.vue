@@ -31,6 +31,7 @@ provide(pavpNaiveAppearanceKey, appearance)
 <template>
   <div id="pavp-overlay-root" />
   <NConfigProvider
+    :preflight-style-disabled="true"
     :locale="locale === 'zh-CN' ? zhCN : enUS"
     :date-locale="locale === 'zh-CN' ? dateZhCN : dateEnUS"
     :theme="projection.theme"
