@@ -600,21 +600,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     ],
   },
   {
-    path: 'packages/ui/src/components/UiStatusBadge.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-status-badge--active',
-    declarations: [['color', 'var(--ui-color-text-primary)', false]],
-  },
-  {
-    path: 'packages/ui/src/components/UiStatusBadge.vue',
-    block: 0,
-    context: [],
-    selector:
-      '.pavp-status-badge--deferred,\n.pavp-status-badge--inactive,\n.pavp-status-badge--not-started',
-    declarations: [['color', 'var(--ui-color-text-secondary)', false]],
-  },
-  {
     path: 'packages/ui/src/components/UiRadioCardGroup.vue',
     block: 0,
     context: [],

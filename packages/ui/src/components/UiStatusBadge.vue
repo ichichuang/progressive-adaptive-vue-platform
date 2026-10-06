@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-import { NTag } from 'naive-ui/es/tag'
+import { NTag, type TagProps } from 'naive-ui/es/tag'
 import type { UiStatusTone } from './contracts'
 
 defineOptions({ name: 'UiStatusBadge' })
@@ -17,26 +17,24 @@ const completeColor = Object.freeze({
   textColor: 'var(--ui-color-text-on-status-success)',
   borderColor: 'var(--ui-color-status-success)',
 })
+const toneColor = computed<NonNullable<TagProps['color']>>(() => {
+  if (props.tone === 'complete') {
+    return completeColor
+  }
+
+  return {
+    textColor:
+      props.tone === 'active' ? 'var(--ui-color-text-primary)' : 'var(--ui-color-text-secondary)',
+  }
+})
 </script>
 
 <template>
   <NTag
     bordered
-    v-bind="tone === 'complete' ? { color: completeColor } : {}"
+    :color="toneColor"
     :class="toneClass"
   >
     {{ label }}
   </NTag>
 </template>
-
-<style scoped>
-.pavp-status-badge--active {
-  color: var(--ui-color-text-primary);
-}
-
-.pavp-status-badge--deferred,
-.pavp-status-badge--inactive,
-.pavp-status-badge--not-started {
-  color: var(--ui-color-text-secondary);
-}
-</style>

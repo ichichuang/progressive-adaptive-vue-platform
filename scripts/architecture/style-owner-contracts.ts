@@ -122,12 +122,6 @@ export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>
       lang: 'css',
     },
   ],
-  'packages/ui/src/components/UiStatusBadge.vue': [
-    {
-      scoped: true,
-      lang: 'css',
-    },
-  ],
   'packages/ui/src/components/UiRadioCardGroup.vue': [
     {
       scoped: true,
