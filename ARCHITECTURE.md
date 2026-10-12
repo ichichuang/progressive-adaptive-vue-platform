@@ -5835,6 +5835,8 @@ Landing 不得先创建 Target-only Stub、Placeholder Provider、Unused Public 
 
 ## 1.3 Capability Status Registry
 
+本节是当前能力状态与当前计数的唯一人类权威。全仓的当前计数（Route、Runtime Kernel Step、Public Role/Color、UI Component、Storage Record、Shell Region、Capability Manifest Record 等）以文首 Status Block、本节与对应 Current 源码 Registry 为准；散落在工作包、Landing、Admission 与维护记录中的 `Current` / `current-worktree` / `exact count` 只表示该任务收口时的历史快照，不覆盖这些当前入口。任何计数变化必须先同步当前源码 Registry、本当前入口与直接 Owning Checker，再保留或添加对应工作包历史记录。
+
 所有能力只允许以下四种状态：
 
 ```ts
@@ -11680,6 +11682,8 @@ NO_PAGE_AND_GRID_VERTICAL_COMPETITION
 NATIVE_SCROLL_ONLY
 ```
 
+`NATIVE_SCROLL_ONLY` 表示每个滚动轴的 Document/Native Viewport 是唯一真实滚动 Owner 与几何权威；它不禁止 §18.12 明确准入、且复用同一 Native Viewport 的 OverlayScrollbars 呈现增强与 Lenis Full-motion 平滑增强。未准入的自定义滚动条框架、Transform Scrolling、第二滚动 Owner、全局 Smooth CSS 或其他滚动增强仍被禁止。
+
 每个解析后的 Route Layout 必须为 Block Axis 和 Inline Axis 分别声明一个精确的 Primary Scroll Owner。Owner 必须是具体的 Document 或 Region Identity，不能保留为 `page or grid`、`page or list` 等未解析联合值。
 
 Phase 3 页面类型合同：
@@ -11726,7 +11730,7 @@ Layout Profile Threshold、Shell Region Size、Panel Minimum/Maximum、Content W
 
 唯一 Final `LayoutCapabilityRegistryRecord` Schema、Nullability、Current Reading Record、Target Console Record、Shell Region Registry、Threshold Policy、Safe-area Policy 与 Minimum-target Policy 由 §1.2B.1 精确拥有；本节不再建立第二份缩减 Schema。Profile 由应用容器 Inline Size、Input Capability 和 Route Capability 纯解析；不得读取 User Agent、设备品牌或屏幕营销分类。Threshold 使用命名 Container Token，CSS Container Query 与 JavaScript Resolver 从同一 Generated `layoutRegistry` 消费，避免两套 Breakpoint。Console Profile 精确为 `<48rem` Narrow、`>=48rem && <80rem` Regular、`>=80rem` Wide。
 
-§18.13 冻结后续 Workbench 的 Region/Geometry 目标，扩展路径仍归上述同一 Shell Region Registry 与 Generated Layout Registry。§1.2B.1 的当前四个活动 Region ID、九条 Layout Record 及已有语义保持；目标子区域与新增尺寸角色不因文档冻结而成为活动源码记录。
+§18.13 冻结后续 Workbench 的 Region/Geometry 目标，扩展路径仍归上述同一 Shell Region Registry 与 Generated Layout Registry。§1.2B.1 的当前五个活动 Region ID、九条 Layout Record 及已有语义保持；目标子区域与新增尺寸角色不因文档冻结而成为活动源码记录。
 
 ## 18.8 Safe Area and Dynamic Viewport
 
@@ -12256,7 +12260,7 @@ User Panel → User Dock Anchor 的 Shell Overlay
 Global Overlay Root → 正常 Route/Shell 流以外的 Overlay Host
 ```
 
-以上是职责模型，不是公共 Component/API 清单或新 Region ID 清单。`@platform/ui` 的既有 `admin-shell-region-registry.ts` 仍是唯一 Shell Region Authority；保留 `architecture-console-content`、`architecture-console-header`、`architecture-console-navigation`、`architecture-console-navigation-overlay` 的现有 ID、Profile、Overlay/Scroll 语义。Workspace Tabs、Menu、Dock、Context Bar 和 Panel 等后续职责只通过该 Registry 的最小子区域/新区域及必要 Schema 扩展闭合；不替换 Registry，不生成第二 Workbench Geometry Config。具体新增 Region ID/Schema 在独立源码准入时按最小消费闭包确定，不为了符合示意图重命名现有 ID。
+以上是职责模型，不是公共 Component/API 清单或新 Region ID 清单。`@platform/ui` 的既有 `admin-shell-region-registry.ts` 仍是唯一 Shell Region Authority；保留 `architecture-console-content`、`architecture-console-footer`、`architecture-console-header`、`architecture-console-navigation`、`architecture-console-navigation-overlay` 的现有 ID、Profile、Overlay/Scroll 语义。Workspace Tabs、Menu、Dock、Context Bar 和 Panel 等后续职责只通过该 Registry 的最小子区域/新区域及必要 Schema 扩展闭合；不替换 Registry，不生成第二 Workbench Geometry Config。具体新增 Region ID/Schema 在独立源码准入时按最小消费闭包确定，不为了符合示意图重命名现有 ID。
 
 | 语义区域及 Owner                                          | Wide                                   | Regular                          | Narrow                                                   |
 | --------------------------------------------------------- | -------------------------------------- | -------------------------------- | -------------------------------------------------------- |
@@ -12365,7 +12369,7 @@ Focus、Hover、Selected、Active 的视觉反馈只能通过 Outline、Inset、
 
 本节继续只拥有 Bottom Context Bar 的持久单行、Leading/Trailing Slot、收缩和 Bottom Safe Area，以及 User Dock Region/几何与 Overlay Anchor。先前延期的信息归属现由 §18.15 冻结：Breadcrumb 位于 Bottom Leading，Trailing 精确构建信息、Panel 快捷项/设备时间和 Control Center Route/Sections/Settings Ownership 均以该节为准；Focus/Dismiss/嵌套事务仍归 §18.14。`UiPageHeader` 留在 Route Content；身份/Auth/Organization/Logout 仍未准入，所有上述新表面与搬迁源码均未开始。
 
-当前源码事实：Shell Region Registry 只有上述四个活动区域；Generated Layout Registry 仍为九条；没有 User Dock、Bottom Context Bar 或 User Panel 实现。`WorkspaceTabsSurface.vue` 的 Close 按 `closable` 插入，邻接 Tab Padding 随之变化；Labels 尚无该目标 Max-inline/截断策略，行高仍由内部内容与 Target 形成。`UiAdminShell.vue` 的 Header 长身份文本缺少目标收缩闭包，Route Content 无条件消费 `min-w-admin-content`，Narrow 可用空间约束尚未修复。Safe Area 目前在 Header/Content/Drawer 等既有结构消费；未来 Bottom 所有权尚未迁到不存在的 Dock/Context Bar。`UiScrollArea.vue` 的 Native Fallback/异步 Enhancement 并未建立本节要求的完整交接几何证明。当前 Root Font Size/ResizeObserver 事实支持沿用模型，不能当作新 Geometry Transaction 已完成的 Runtime 证据。
+当前源码事实：Shell Region Registry 精确为五个 ACTIVE Region：`architecture-console-content`、`architecture-console-footer`、`architecture-console-header`、`architecture-console-navigation`、`architecture-console-navigation-overlay`；Generated Layout Registry 仍为九条；没有 User Dock、Bottom Context Bar 或 User Panel 实现。`WorkspaceTabsSurface.vue` 的 Close 按 `closable` 插入，邻接 Tab Padding 随之变化；Labels 尚无该目标 Max-inline/截断策略，行高仍由内部内容与 Target 形成。`UiAdminShell.vue` 的 Header 长身份文本缺少目标收缩闭包，Route Content 无条件消费 `min-w-admin-content`，Narrow 可用空间约束尚未修复。Safe Area 目前在 Header/Content/Drawer 等既有结构消费；未来 Bottom 所有权尚未迁到不存在的 Dock/Context Bar。`UiScrollArea.vue` 的 Native Fallback/异步 Enhancement 并未建立本节要求的完整交接几何证明。当前 Root Font Size/ResizeObserver 事实支持沿用模型，不能当作新 Geometry Transaction 已完成的 Runtime 证据。
 
 这些是源码与目标的差距，不抹去已有功能的实施/验收历史，也不等同于本次已经复现浏览器缺陷。本节及 §37.2.16 不授权修复这些源码或其他 UI Foundation 审计项。
 
@@ -12529,7 +12533,7 @@ Drawer/User Panel/Context Menu/Tooltip Open、Active Command Descendant、Invoke
 - `route-transition-coordinator.ts` 已有单次导航、精确 Reservation、失效和 Dispose；`router-scroll-controller.ts` 已有 Controller/Refresh Boundary。本节复用这些领域边界，不建立第二导航或滚动系统。`App.vue` 的稳定未加 Key Route Host、单 RouterView/KeepAlive 与 Workspace Instance Key 保持。
 - `WorkspaceTabsSurface.vue` 聚焦 Menu Container，Option 目前无稳定命令 ID/`aria-activedescendant` 关系，选择时先 Focus Tab 再关闭/Emit；Vendor Pending 与 DOM Focus 未建立本节统一关系。已有目标/活动项失效关闭不能代替全部事务保护。
 - Persistent Navigation 当前使用 Naive Menu 语义；公开 role 覆盖限制与 Context Menu 的公开能力分别见 §18.14.8、§18.14.6。`UiProvider.vue` 唯一 Root 事实不等于 Vendor Layering 已闭合，当前 Drawer 消费 `--ui-z-overlay`，Vendor Overlay 仍有自身 z-index 路径。
-- Shell Region Registry 仍是四个 ACTIVE Region，Layout Registry 仍为九条记录；User Panel/User Dock/Bottom Context Bar 不存在。本节不修 Capability-status Drift，不改已有能力状态，不开始任何源码、Checker 或 Workbench 视觉修复。
+- Shell Region Registry 仍是五个 ACTIVE Region，Layout Registry 仍为九条记录；User Panel/User Dock/Bottom Context Bar 不存在。本节不修 Capability-status Drift，不改已有能力状态，不开始任何源码、Checker 或 Workbench 视觉修复。
 
 ### 18.14.12 未来 Checker、预算与实施边界
 
@@ -12798,7 +12802,7 @@ Route 作者继续只选 `layoutCapabilityId`，由同一个 Capability Record �
 
 Footer 内容由应用提供，UI 不读取 Router、Store、构建配置或应用状态来填充。只有上表支持 F 的组合且 Slot 提供真实可见或可访问内容时才渲染 Footer；未提供 Slot、空返回或只有注释/空白/空片段都视为空。应用负责将不可用内容表达为空 Slot，不以最终渲染为空的占位组件冒充内容。不渲染空 Footer Region、占位文案、人工保留高度或重复 Safe-area Padding；其他组合忽略 Footer 内容。空内容判定只冻结结果，不冻结私有 VNode 遍历算法。
 
-仍只扩展 `packages/ui/src/internal/layout/admin-shell-region-registry.ts`：目标 F 的 `owner='@platform/ui'`、`profileAvailability=[narrow,regular,wide]`、`requiredProfiles=[]`、`overlayRelationship='background-locked-by-navigation-overlay'`、`scrollRelationship='inside-route-primary-scroll-owner'`。后一个值是既有 Scroll Relationship Union 的唯一新增值。现有四个 Region 的 ID、字段和值保持；目标有效区域按 Capability 成员与 Profile 求交集，只有 F 允许上述空 required 集合和 Slot 内容条件。支持集合不等于当前 DOM 必须出现的集合；Header/Content 不因在 Region Registry 中登记就强制出现在每种组合。Overlay 关系还须与实际可用 D 求交集，非管理台不存在孤立 Drawer Trigger、Sidebar Action、背景锁或 Overlay 引用。Footer 没有独立 Scroll Owner/Controller，随 C 的祖先背景锁生效。
+仍只扩展 `packages/ui/src/internal/layout/admin-shell-region-registry.ts`：目标 F 的 `owner='@platform/ui'`、`profileAvailability=[narrow,regular,wide]`、`requiredProfiles=[]`、`overlayRelationship='background-locked-by-navigation-overlay'`、`scrollRelationship='inside-route-primary-scroll-owner'`。后一个值是既有 Scroll Relationship Union 的唯一新增值。现有四个 Region 的 ID、字段和值保持（该目标段冻结于 `architecture-console-footer` 成为第五个 ACTIVE Region 之前；footer 现已是 Registry 中实际的第五个 Region，本段保留为历史扩展记录，不构成新增第六 Region 的授权）；目标有效区域按 Capability 成员与 Profile 求交集，只有 F 允许上述空 required 集合和 Slot 内容条件。支持集合不等于当前 DOM 必须出现的集合；Header/Content 不因在 Region Registry 中登记就强制出现在每种组合。Overlay 关系还须与实际可用 D 求交集，非管理台不存在孤立 Drawer Trigger、Sidebar Action、背景锁或 Overlay 引用。Footer 没有独立 Scroll Owner/Controller，随 C 的祖先背景锁生效。
 
 应用组合使用既有视口基础：Shell 以 `100dvh`、不支持时 `100vh` 回退获得高度；H 复用 `layout.admin.header.block-size` 加所属顶部 Safe Area，H 与 T 占用主内容 Scrollport 外的空间，C 获取剩余可收缩高度。管理台 N/D 与 T 保持既有独立滚动；非管理台不创建它们。Footer 是 C 内的自然高度内容，短内容时靠底、长内容时排在页面之后随 C 滚动，不从视口另扣固定底行，不覆盖内容。它不承担 §18.13/§18.15 的固定 Bottom Context Bar、Global Breadcrumb 或构建信息职责，不激活那些未来合同。
 
@@ -16389,14 +16393,7 @@ FINAL_WORKTREE_STATE
 
 ## 28.5 ADR
 
-```text
-docs/decisions/
-├── ADR-0001-vue-vite.md
-├── ADR-0002-unocss.md
-├── ADR-0003-reka-ui.md
-├── ADR-0004-design-tokens.md
-└── ADR-0005-server-state.md
-```
+当前仓库不包含 ADR 文件。历史决策、实施边界与验收事实继续由本文件的各工作包记录保存；未来只有在 Owner 明确授权后才能创建 `docs/decisions/`。
 
 ADR 只解释历史原因，不承担规范权威。
 
@@ -19023,7 +19020,7 @@ WORKBENCH_REDESIGN=NOT_STARTED
 SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 ```
 
-本次重新核对了 `UiAdminShell.vue`、唯一 Region Registry/Profile Resolver、Generated Layout Registry/Token/Uno 输出与其 Canonical Sources/Generator、`WorkspaceTabsSurface.vue`/`UiWorkspaceTabs.vue`、`UiScrollArea.vue`、App/ConsoleRouteFrame/Router Lifecycle 及直接 Owning Checks。四个现有 Region、九条现有 Layout Role、尚不存在的 Dock/Context Bar/Panel，以及 Narrow `20rem`、Close Slot、长名、Safe Area、Scrollbar 交接和 Font Scale 的实际源码证据归入 §18.13.9；没有以浏览器复现或未执行的 Runtime 测量冒充证据。
+本次重新核对了 `UiAdminShell.vue`、唯一 Region Registry/Profile Resolver、Generated Layout Registry/Token/Uno 输出与其 Canonical Sources/Generator、`WorkspaceTabsSurface.vue`/`UiWorkspaceTabs.vue`、`UiScrollArea.vue`、App/ConsoleRouteFrame/Router Lifecycle 及直接 Owning Checks。五个现有 Region、九条现有 Layout Role、尚不存在的 Dock/Context Bar/Panel，以及 Narrow `20rem`、Close Slot、长名、Safe Area、Scrollbar 交接和 Font Scale 的实际源码证据归入 §18.13.9；没有以浏览器复现或未执行的 Runtime 测量冒充证据。
 
 冻结内容包括目标 Region/Profile 责任、持久空间预算、四个确实缺少的语义 Role 与值选择约束、稳定 Action Slot、文本/Loading、Narrow Reachability、逐边 Safe Area、一致 Font Scale/Rem 事务、独立 Scroll Ownership、Geometry-neutral Enhancement、Focus/Motion 几何约束及未来静态/Runtime 证据边界。已确认的 Header/Sidebar/Drawer/Content/Profile/Target 数值沿用；四个新 Role 的字面量按 §18.13.4 明确延期到首次源码实施测量闭合，不从无固定行高或不存在的 UI 编造数值。Breadcrumb 最终 Host、身份/Auth、User Panel Focus/Dismiss 和 Control Center 内容继续独立延期。
 
@@ -19322,7 +19319,7 @@ ROUTER_GOVERNANCE_IMPLEMENTATION_IS_COMPLETE
 ROUTER_CAPABILITY_IS_ACTIVE
 STORAGE_PERSISTENCE_IMPLEMENTATION_IS_COMPLETE
 APPLICATION_PERSISTENCE_CAPABILITY_IS_ACTIVE
-CURRENT_RUNTIME_KERNEL_STEP_COUNT_IS_12
+CURRENT_RUNTIME_KERNEL_STEP_COUNT_IS_15
 ROUTER_PRODUCTION_RUNTIME_ACCEPTANCE_REMAINS_PENDING_OWNER_EXTERNAL_RUNTIME_MATRIX
 NEXT_CANONICAL_WORK_PACKAGE_IS_NONE
 NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE_IS_NONE
@@ -19478,6 +19475,8 @@ NO_RUNTIME_EVIDENCE_COMMITTED
 EACH_STATIC_RULE_IS_ENFORCED_BY_COMPLETION_OF_ITS_OWNING_WORK_PACKAGE
 NO_FUTURE_RULE_IS_CLAIMED_ENFORCED_BEFORE_ITS_GATE
 ```
+
+上述 `NATIVE_SCROLL_ONLY` 与 `NO_CUSTOM_SCROLLBAR_FRAMEWORK` 按 §18.12 的 Owner-accepted 窄范围例外解释：Document/Native Viewport 仍是唯一滚动 Owner；OverlayScrollbars 只拥有轨道与呈现，Lenis 只在 Full-motion 下做平滑；除 §18.12 明确准入外，禁止自定义滚动条框架与第二滚动 Owner。
 
 ---
 
