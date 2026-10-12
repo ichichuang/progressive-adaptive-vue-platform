@@ -8,14 +8,49 @@ const repositoryRoot = resolve(fileURLToPath(new URL('../..', import.meta.url)))
 const architecturePath = resolve(repositoryRoot, 'ARCHITECTURE.md')
 const outputPath = resolve(repositoryRoot, 'apps/web/src/generated/capability-manifest.ts')
 const sourceMarker = '下方唯一 JSON Fenced Block 是 Post-landing Manifest Source。'
+const section13TableHeader = '| Capability | Status | Current authority |'
+const mappingTableHeader = '| Manifest ID | Exact mapped §1.3 Capability records |'
+
+type CapabilityStatus = 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'
+type SourceCapabilityStatus = CapabilityStatus | 'PROHIBITED'
+type CapabilityImplementationStatus = 'complete' | 'not-started' | 'deferred'
+type CapabilityPresentationMode = 'active-interactive' | 'active-read-only' | 'roadmap-only'
+
+const implementationStatusByCapability: Record<CapabilityStatus, CapabilityImplementationStatus> = {
+  ACTIVE: 'complete',
+  TARGET_INACTIVE: 'not-started',
+  DEFERRED: 'deferred',
+}
+
+const statusRank: Record<CapabilityStatus, number> = {
+  ACTIVE: 0,
+  TARGET_INACTIVE: 1,
+  DEFERRED: 2,
+}
 
 interface CapabilityManifestRecordSource {
   readonly id: string
   readonly visibleLabel: string
   readonly summary: string
-  readonly capabilityStatus: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'
-  readonly implementationStatus: 'complete' | 'not-started' | 'deferred'
-  readonly presentationMode: 'active-interactive' | 'active-read-only' | 'roadmap-only'
+  readonly routeName: string
+  readonly owner: string
+  readonly prerequisiteIds: readonly string[]
+  readonly admissionCondition: string
+}
+
+interface CapabilityManifestSource {
+  readonly schemaVersion: 1
+  readonly recordCount: 21
+  readonly records: readonly CapabilityManifestRecordSource[]
+}
+
+interface CapabilityManifestRecord {
+  readonly id: string
+  readonly visibleLabel: string
+  readonly summary: string
+  readonly capabilityStatus: CapabilityStatus
+  readonly implementationStatus: CapabilityImplementationStatus
+  readonly presentationMode: CapabilityPresentationMode
   readonly routeName: string
   readonly owner: string
   readonly prerequisiteIds: readonly string[]
@@ -23,10 +58,88 @@ interface CapabilityManifestRecordSource {
   readonly interactive: boolean
 }
 
-interface CapabilityManifestSource {
+interface CapabilityManifest {
   readonly schemaVersion: 1
   readonly recordCount: 21
-  readonly records: readonly CapabilityManifestRecordSource[]
+  readonly records: readonly CapabilityManifestRecord[]
+}
+
+function parseMarkdownTable(architecture: string, header: string): string[][] {
+  const lines = architecture.split('\n')
+  const headerIndex = lines.findIndex((line) => line.trim() === header)
+
+  if (headerIndex < 0) {
+    throw new TypeError(`The canonical table is missing: ${header}`)
+  }
+
+  const rows: string[][] = []
+
+  for (let index = headerIndex + 2; index < lines.length; index += 1) {
+    const line = lines[index]
+
+    if (!line?.startsWith('|')) break
+
+    rows.push(
+      line
+        .split('|')
+        .slice(1, -1)
+        .map((cell) => cell.trim()),
+    )
+  }
+
+  return rows
+}
+
+function readSection13Statuses(architecture: string): Map<string, SourceCapabilityStatus> {
+  const statuses = new Map<string, SourceCapabilityStatus>()
+  const known: readonly SourceCapabilityStatus[] = [
+    'ACTIVE',
+    'TARGET_INACTIVE',
+    'DEFERRED',
+    'PROHIBITED',
+  ]
+
+  for (const row of parseMarkdownTable(architecture, section13TableHeader)) {
+    const name = row[0]
+    const status = row[1]?.replaceAll('`', '')
+
+    if (name === undefined || status === undefined) continue
+    if (!(known as readonly string[]).includes(status)) {
+      throw new TypeError(`§1.3 has an unknown Capability status: ${status}`)
+    }
+
+    statuses.set(name, status as SourceCapabilityStatus)
+  }
+
+  if (statuses.size === 0) {
+    throw new TypeError('§1.3 Capability Status Registry is empty.')
+  }
+
+  return statuses
+}
+
+function readManifestMapping(architecture: string): Map<string, readonly string[]> {
+  const mapping = new Map<string, readonly string[]>()
+
+  for (const row of parseMarkdownTable(architecture, mappingTableHeader)) {
+    const id = row[0]?.replaceAll('`', '')
+    const sources = (row[1] ?? '')
+      .split(';')
+      .map((source) => source.trim().replaceAll('`', ''))
+      .filter((source) => source.length > 0)
+
+    if (id === undefined || sources.length === 0) {
+      throw new TypeError('A Manifest mapping row is incomplete.')
+    }
+
+    mapping.set(id, sources)
+  }
+
+  if (mapping.size === 0) {
+    throw new TypeError('The Capability Manifest mapping table is empty.')
+  }
+
+  return mapping
 }
 
 function validateSource(source: unknown): CapabilityManifestSource {
@@ -53,28 +166,9 @@ function validateSource(source: unknown): CapabilityManifestSource {
   if (
     new Set(ids).size !== ids.length ||
     ids.some((id, index) => id !== sortedIds[index]) ||
-    typedRecords.some((record) => {
-      const expectedImplementation = {
-        ACTIVE: 'complete',
-        TARGET_INACTIVE: 'not-started',
-        DEFERRED: 'deferred',
-      }[record.capabilityStatus]
-      const expectedPresentation =
-        record.capabilityStatus === 'ACTIVE'
-          ? record.id === 'appearance' || record.id === 'i18n'
-            ? 'active-interactive'
-            : 'active-read-only'
-          : 'roadmap-only'
-
-      return (
-        record.implementationStatus !== expectedImplementation ||
-        record.presentationMode !== expectedPresentation ||
-        record.interactive !==
-          ((record.id === 'appearance' || record.id === 'i18n') &&
-            record.capabilityStatus === 'ACTIVE') ||
-        record.prerequisiteIds.some((id, index) => id !== [...record.prerequisiteIds].sort()[index])
-      )
-    })
+    typedRecords.some((record) =>
+      record.prerequisiteIds.some((id, index) => id !== [...record.prerequisiteIds].sort()[index]),
+    )
   ) {
     throw new TypeError('Capability Manifest source records are invalid.')
   }
@@ -88,7 +182,48 @@ function validateSource(source: unknown): CapabilityManifestSource {
   return document as CapabilityManifestSource
 }
 
-async function readManifest(): Promise<CapabilityManifestSource> {
+function deriveStatus(
+  id: string,
+  sources: readonly string[],
+  section13: Map<string, SourceCapabilityStatus>,
+): Pick<
+  CapabilityManifestRecord,
+  'capabilityStatus' | 'implementationStatus' | 'presentationMode' | 'interactive'
+> {
+  let capabilityStatus: CapabilityStatus = 'ACTIVE'
+
+  for (const source of sources) {
+    const status = section13.get(source)
+
+    if (status === undefined) {
+      throw new TypeError(`Manifest mapping references an unknown §1.3 capability: ${source}`)
+    }
+
+    if (status === 'PROHIBITED') {
+      throw new TypeError(`Manifest mapping maps a PROHIBITED §1.3 capability: ${source}`)
+    }
+
+    if (statusRank[status] > statusRank[capabilityStatus]) {
+      capabilityStatus = status
+    }
+  }
+
+  const interactive = (id === 'appearance' || id === 'i18n') && capabilityStatus === 'ACTIVE'
+
+  return {
+    capabilityStatus,
+    implementationStatus: implementationStatusByCapability[capabilityStatus],
+    presentationMode:
+      capabilityStatus === 'ACTIVE'
+        ? interactive
+          ? 'active-interactive'
+          : 'active-read-only'
+        : 'roadmap-only',
+    interactive,
+  }
+}
+
+async function readManifest(): Promise<CapabilityManifest> {
   const architecture = await readFile(architecturePath, 'utf8')
   const markerIndex = architecture.indexOf(sourceMarker)
   const fenceStart = architecture.indexOf('```json\n', markerIndex)
@@ -99,8 +234,35 @@ async function readManifest(): Promise<CapabilityManifestSource> {
     throw new TypeError('The canonical Capability Manifest source block is missing.')
   }
 
-  const source: unknown = JSON.parse(architecture.slice(contentStart, fenceEnd))
-  return validateSource(source)
+  const source = validateSource(JSON.parse(architecture.slice(contentStart, fenceEnd)) as unknown)
+  const section13 = readSection13Statuses(architecture)
+  const mapping = readManifestMapping(architecture)
+
+  const records: CapabilityManifestRecord[] = source.records.map((record) => {
+    const sources = mapping.get(record.id)
+
+    if (sources === undefined) {
+      throw new TypeError(`The Manifest record has no §1.3 mapping: ${record.id}`)
+    }
+
+    const derived = deriveStatus(record.id, sources, section13)
+
+    return {
+      id: record.id,
+      visibleLabel: record.visibleLabel,
+      summary: record.summary,
+      capabilityStatus: derived.capabilityStatus,
+      implementationStatus: derived.implementationStatus,
+      presentationMode: derived.presentationMode,
+      routeName: record.routeName,
+      owner: record.owner,
+      prerequisiteIds: record.prerequisiteIds,
+      admissionCondition: record.admissionCondition,
+      interactive: derived.interactive,
+    }
+  })
+
+  return { schemaVersion: source.schemaVersion, recordCount: source.recordCount, records }
 }
 
 function messageKeys(id: string) {
