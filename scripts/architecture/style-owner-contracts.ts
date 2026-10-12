@@ -1473,7 +1473,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 1,
     context: [],
     selector:
-      "[data-pavp-admin-navigation='persistent']\n  .n-menu-item-content:active\n  :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
+      "[data-pavp-admin-navigation='persistent']\n  .n-menu-item-content:not(.n-menu-item-content--selected):not(.n-menu-item-content--child-active):active\n  :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
     responsibility: 'VENDOR_ADAPTER_OWNER',
     declarations: [['color', 'var(--ui-color-control-primary)', false]],
   },
@@ -1603,7 +1603,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 1,
     context: [],
     selector:
-      '.pavp-admin-navigation-dropdown\n  .n-dropdown-option-body:active\n  :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)',
+      '.pavp-admin-navigation-dropdown\n  .n-dropdown-option-body:not(.n-dropdown-option-body--active:not(.n-dropdown-option-body--disabled)):active\n  :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)',
     responsibility: 'VENDOR_ADAPTER_OWNER',
     declarations: [['color', 'var(--ui-color-control-primary)', false]],
   },
@@ -1720,25 +1720,49 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: ['@media (forced-colors: active)'],
     selector: '.pavp-admin-navigation-selection-lens',
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
-    declarations: [['background', 'var(--ui-color-action-primary)', false]],
+    declarations: [['visibility', 'hidden', false]],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 1,
     context: ['@media (forced-colors: active)'],
     selector:
-      "[data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected::before,\n  .pavp-admin-shell[data-navigation-collapsed='true']\n    [data-pavp-admin-navigation='persistent']\n    .n-menu-item-content--child-active::before,\n  .pavp-admin-navigation-dropdown.n-dropdown-menu\n    .n-dropdown-option[aria-current='page']\n    .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)::before",
+      ".pavp-admin-shell[data-navigation-collapsed='false']\n  [data-pavp-admin-navigation-motion-ready='true']\n  .n-menu-item-content--selected::before,\n.pavp-admin-shell[data-navigation-collapsed='true']\n  [data-pavp-admin-navigation-motion-ready='true']\n  .n-menu-item-content.n-menu-item-content--child-active::before",
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
-    declarations: [['background-color', 'var(--ui-color-action-primary)', false]],
+    declarations: [['visibility', 'visible', false]],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: ['@media (forced-colors: active)'],
+    selector: "[data-pavp-admin-navigation='persistent'] .n-menu",
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+    declarations: [
+      ['--pavp-navigation-selected-surface', 'var(--ui-color-action-primary)', false],
+      ['--pavp-navigation-selected-foreground', 'var(--ui-color-text-on-action)', false],
+    ],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 1,
     context: ['@media (forced-colors: active)'],
     selector:
-      "[data-pavp-admin-navigation='persistent']\n    .n-menu-item-content--selected\n    :is(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header),\n  .pavp-admin-shell[data-navigation-collapsed='true']\n    [data-pavp-admin-navigation='persistent']\n    .n-menu-item-content--child-active\n    :is(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header),\n  .pavp-admin-navigation-dropdown.n-dropdown-menu\n    .n-dropdown-option[aria-current='page']\n    .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)\n    :is(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)",
+      ".pavp-admin-navigation-dropdown.n-dropdown-menu:has(\n    .n-dropdown-option[aria-current='page']\n      > .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)\n  )",
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
-    declarations: [['color', 'var(--ui-color-text-on-action)', false]],
+    declarations: [
+      ['--pavp-navigation-selected-surface', 'var(--ui-color-action-primary)', false],
+      ['--pavp-navigation-selected-foreground', 'var(--ui-color-text-on-action)', false],
+    ],
+  },
+  {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    context: ['@media (forced-colors: active)'],
+    selector: "[data-pavp-admin-navigation='persistent'] .n-menu.n-menu--collapsed",
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+    declarations: [
+      ['--pavp-navigation-child-active-foreground', 'var(--ui-color-text-on-action)', false],
+    ],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
@@ -3191,6 +3215,24 @@ export const styleAtRuleOwners: readonly {
 ]
 
 export const privateStyleVariables = [
+  {
+    name: '--pavp-navigation-selected-surface',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiAdminShell.vue',
+  },
+  {
+    name: '--pavp-navigation-selected-foreground',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiAdminShell.vue',
+  },
+  {
+    name: '--pavp-navigation-child-active-foreground',
+    source: 'naive-theme-bridge',
+    valueKind: 'color',
+    writer: 'packages/ui/src/components/UiAdminShell.vue',
+  },
   {
     name: '--n-label-padding',
     source: 'vendor-adapter',

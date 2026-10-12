@@ -199,7 +199,7 @@ export function formatAppearanceBaseCss(): string {
 export function formatForcedColorsCss(): string {
   return `@media (forced-colors: active) {
   @layer tokens {
-    :root {
+    html:root {
       --ui-color-action-primary: Highlight;
       --ui-color-control-primary: Highlight;
       --ui-color-border-default: GrayText;

@@ -1,12 +1,23 @@
-import { access, readFile, readdir } from 'node:fs/promises'
+import { access, mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { tmpdir } from 'node:os'
 import { extname, join, relative, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 
 import ts from 'typescript'
+import { build } from 'vite'
 import { parse as parseYaml } from 'yaml'
 
 import { projectConfig } from '../../project.config'
+import {
+  ProductPreferenceDefault,
+  projectUiAppearance,
+  resolveColorMode,
+  resolveMaterial,
+  resolveThemeReference,
+  type UiAppearanceSnapshot,
+} from '@platform/design-system'
 import { getDefaultConsoleMessage } from '../../apps/web/src/shared/i18n/default-messages'
 import {
   PublicRoleRegistry,
@@ -85,6 +96,7 @@ import {
   workspaceAxisDefaultFailures,
 } from './check-router'
 import { validateUiPublicComponents } from './check-ui-public-components'
+import { styleDeclarationKey, type StyleDeclarationIdentity } from './style-ownership'
 
 type JsonObject = Record<string, unknown>
 
@@ -135,6 +147,7 @@ interface NavigationReworkSourceSnapshot {
   readonly runtimeContextSource: string
   readonly shellSource: string
   readonly themeSource: string
+  readonly navigationColors: NavigationThemeColorSnapshot
 }
 
 interface AdminNavigationNativeSourceSnapshot {
@@ -167,8 +180,38 @@ interface AdminNavigationNativeSourceSnapshot {
   readonly storageRecordCount: number
   readonly shellSource: string
   readonly themeSource: string
+  readonly navigationColors: NavigationThemeColorSnapshot
   readonly uiManifestSource: string
   readonly workspaceSource: string
+}
+
+interface NavigationThemeColorSnapshot {
+  readonly menu: Readonly<{
+    itemColorHover: string
+    itemColorActive: string
+    itemColorActiveHover: string
+    itemColorActiveCollapsed: string
+    itemTextColorActive: string
+    itemTextColorActiveHover: string
+    itemIconColorActive: string
+    itemIconColorActiveHover: string
+    arrowColorActive: string
+    arrowColorActiveHover: string
+    itemTextColorChildActive: string
+    itemTextColorChildActiveHover: string
+    itemIconColorChildActive: string
+    itemIconColorChildActiveHover: string
+    arrowColorChildActive: string
+    arrowColorChildActiveHover: string
+  }>
+  readonly dropdown: Readonly<{
+    optionColorHover: string
+    optionColorActive: string
+    optionTextColorActive: string
+  }>
+  readonly childActiveFillPresent: boolean
+  readonly childActiveHoverFillPresent: boolean
+  readonly sharedDropdownPeer: boolean
 }
 
 interface NavigationBudgetGateSnapshot {
@@ -184,6 +227,20 @@ interface VueSfcStyleBlock {
   readonly content: string
   readonly lang?: string
   readonly scoped?: boolean
+}
+
+interface NavigationStyleNode {
+  readonly type: string
+  readonly name?: string
+  readonly params?: string
+  readonly selector?: string
+  readonly parent?: NavigationStyleNode
+}
+
+interface NavigationStyleDeclaration extends NavigationStyleNode {
+  readonly prop: string
+  readonly value: string
+  readonly important?: boolean
 }
 
 interface VueTemplateLocation {
@@ -236,6 +293,11 @@ interface VueSfcCompiler {
   }) => {
     readonly code: string
     readonly errors: readonly unknown[]
+    readonly rawResult?: {
+      readonly root: {
+        readonly walkDecls: (visitor: (declaration: NavigationStyleDeclaration) => void) => void
+      }
+    }
   }
   readonly parse: (
     source: string,
@@ -278,7 +340,7 @@ const expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount = 10
 const expectedAdminNavigationNativeAdmissionNegativeProbeCount = 12
 const expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount = 5
 const expectedAdminNavigationNativeSourceInvariantCount = 24
-const expectedAdminNavigationNativeSourceNegativeProbeCount = 24
+const expectedAdminNavigationNativeSourceNegativeProbeCount = 26
 const expectedAdminNavigationExpansionMotionInvariantCount = 21
 const expectedAdminNavigationExpansionMotionNegativeProbeCount = 8
 const expectedAdminNavigationCollapsedPopupSourceInvariantCount = 15
@@ -4040,6 +4102,319 @@ function resolveThemeExpressionText(
   }
 
   return value.getText()
+}
+
+function isNavigationThemeProjection(
+  value: unknown,
+): value is (appearance: Readonly<UiAppearanceSnapshot>) => unknown {
+  return typeof value === 'function'
+}
+
+function requiredNavigationColor(owner: JsonObject, field: string): string {
+  const value = owner[field]
+  if (typeof value !== 'string') {
+    throw new TypeError(`The Naive navigation theme projection is missing ${field}.`)
+  }
+  return value
+}
+
+async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapshot> {
+  const temporaryDirectory = await mkdtemp(join(tmpdir(), 'pavp-naive-theme-check-'))
+  const previousNodeEnv = process.env['NODE_ENV']
+  try {
+    const outputDirectory = join(temporaryDirectory, 'output')
+    await build({
+      root: rootDirectory,
+      configFile: false,
+      envDir: false,
+      publicDir: false,
+      cacheDir: join(temporaryDirectory, 'cache'),
+      plugins: [],
+      ssr: { target: 'node', noExternal: true },
+      build: {
+        ssr: resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'),
+        target: 'node24',
+        outDir: outputDirectory,
+        emptyOutDir: false,
+        copyPublicDir: false,
+        watch: null,
+        manifest: false,
+        ssrManifest: false,
+        emitAssets: false,
+        sourcemap: false,
+        reportCompressedSize: false,
+        rolldownOptions: { output: { entryFileNames: 'theme.mjs' } },
+      },
+    })
+    const loaded: unknown = await import(pathToFileURL(join(outputDirectory, 'theme.mjs')).href)
+    if (!isJsonObject(loaded)) {
+      throw new TypeError('The compiled Naive theme module has no exports.')
+    }
+    const projection = loaded['createPavpNaiveThemeProjection']
+    if (!isNavigationThemeProjection(projection)) {
+      throw new TypeError('The compiled Naive theme projection export is not callable.')
+    }
+
+    const preference = ProductPreferenceDefault
+    const resolution = resolveThemeReference({
+      reference: preference.theme,
+      customThemeRegistry: null,
+    })
+    if (resolution.status !== 'resolved') {
+      throw new TypeError('The canonical default Appearance Theme is unavailable.')
+    }
+    const appearance = projectUiAppearance(
+      {
+        colorMode: resolveColorMode({
+          storedColorMode: preference.colorMode,
+          prefersDark: false,
+        }),
+        contrast: preference.contrast,
+        density: preference.density.preset,
+        fontScale: preference.fontScale,
+        material: resolveMaterial({
+          storedMaterial: preference.material,
+          forcedColorsActive: false,
+          reducedTransparencyRequested: false,
+          backdropFilterSupported: true,
+        }),
+        motion: preference.motion,
+        theme: preference.theme,
+      },
+      resolution.entry,
+    )
+    const projected: unknown = projection(appearance)
+    if (!isJsonObject(projected) || !isJsonObject(projected['themeOverrides'])) {
+      throw new TypeError('The compiled Naive theme projection has no overrides.')
+    }
+    const overrides = projected['themeOverrides']
+    const menu = overrides['Menu']
+    const dropdown = overrides['Dropdown']
+    if (!isJsonObject(menu) || !isJsonObject(dropdown) || !isJsonObject(menu['peers'])) {
+      throw new TypeError('The compiled Naive navigation overrides are incomplete.')
+    }
+    const childActiveFillPresent = Object.hasOwn(menu, 'itemColorChildActive')
+    const childActiveHoverFillPresent = Object.hasOwn(menu, 'itemColorChildActiveHover')
+    if (childActiveFillPresent) requiredNavigationColor(menu, 'itemColorChildActive')
+    if (childActiveHoverFillPresent) requiredNavigationColor(menu, 'itemColorChildActiveHover')
+
+    return Object.freeze({
+      menu: Object.freeze({
+        itemColorHover: requiredNavigationColor(menu, 'itemColorHover'),
+        itemColorActive: requiredNavigationColor(menu, 'itemColorActive'),
+        itemColorActiveHover: requiredNavigationColor(menu, 'itemColorActiveHover'),
+        itemColorActiveCollapsed: requiredNavigationColor(menu, 'itemColorActiveCollapsed'),
+        itemTextColorActive: requiredNavigationColor(menu, 'itemTextColorActive'),
+        itemTextColorActiveHover: requiredNavigationColor(menu, 'itemTextColorActiveHover'),
+        itemIconColorActive: requiredNavigationColor(menu, 'itemIconColorActive'),
+        itemIconColorActiveHover: requiredNavigationColor(menu, 'itemIconColorActiveHover'),
+        arrowColorActive: requiredNavigationColor(menu, 'arrowColorActive'),
+        arrowColorActiveHover: requiredNavigationColor(menu, 'arrowColorActiveHover'),
+        itemTextColorChildActive: requiredNavigationColor(menu, 'itemTextColorChildActive'),
+        itemTextColorChildActiveHover: requiredNavigationColor(
+          menu,
+          'itemTextColorChildActiveHover',
+        ),
+        itemIconColorChildActive: requiredNavigationColor(menu, 'itemIconColorChildActive'),
+        itemIconColorChildActiveHover: requiredNavigationColor(
+          menu,
+          'itemIconColorChildActiveHover',
+        ),
+        arrowColorChildActive: requiredNavigationColor(menu, 'arrowColorChildActive'),
+        arrowColorChildActiveHover: requiredNavigationColor(menu, 'arrowColorChildActiveHover'),
+      }),
+      dropdown: Object.freeze({
+        optionColorHover: requiredNavigationColor(dropdown, 'optionColorHover'),
+        optionColorActive: requiredNavigationColor(dropdown, 'optionColorActive'),
+        optionTextColorActive: requiredNavigationColor(dropdown, 'optionTextColorActive'),
+      }),
+      childActiveFillPresent,
+      childActiveHoverFillPresent,
+      sharedDropdownPeer: menu['peers']['Dropdown'] === dropdown,
+    })
+  } finally {
+    if (previousNodeEnv === undefined) delete process.env['NODE_ENV']
+    else process.env['NODE_ENV'] = previousNodeEnv
+    await rm(temporaryDirectory, { recursive: true, force: true })
+  }
+}
+
+function navigationSelectedColorProjection(colors: NavigationThemeColorSnapshot) {
+  const { menu, dropdown } = colors
+  const surface =
+    'var(--pavp-navigation-selected-surface, color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background)))'
+  const foreground = 'var(--pavp-navigation-selected-foreground, var(--ui-color-control-primary))'
+  const childForeground =
+    'var(--pavp-navigation-child-active-foreground, var(--ui-color-control-primary))'
+  const hover =
+    'color-mix(in srgb, var(--ui-admin-navigation-selected) 6%, var(--ui-material-chrome-background))'
+  return {
+    hover: menu.itemColorHover === hover && dropdown.optionColorHover === hover,
+    surface:
+      menu.itemColorActive === surface &&
+      menu.itemColorActiveHover === surface &&
+      menu.itemColorActiveCollapsed === surface &&
+      dropdown.optionColorActive === surface &&
+      colors.sharedDropdownPeer,
+    foreground:
+      menu.itemTextColorActive === foreground &&
+      menu.itemTextColorActiveHover === foreground &&
+      menu.itemIconColorActive === foreground &&
+      menu.itemIconColorActiveHover === foreground &&
+      menu.arrowColorActive === foreground &&
+      menu.arrowColorActiveHover === foreground &&
+      dropdown.optionTextColorActive === foreground &&
+      menu.itemTextColorChildActive === childForeground &&
+      menu.itemTextColorChildActiveHover === childForeground &&
+      menu.itemIconColorChildActive === childForeground &&
+      menu.itemIconColorChildActiveHover === childForeground &&
+      menu.arrowColorChildActive === childForeground &&
+      menu.arrowColorChildActiveHover === childForeground,
+    expandedUnfilled: !colors.childActiveFillPresent && !colors.childActiveHoverFillPresent,
+  }
+}
+
+function navigationSelectedColorStylesValid(source: string): boolean {
+  const parsed = vueSfcCompiler.parse(source, { filename: shellSfcPath })
+  if (parsed.errors.length !== 0) return false
+  const base = {
+    path: 'packages/ui/src/components/UiAdminShell.vue',
+    block: 1,
+    important: false,
+  }
+  const menuSelector = "[data-pavp-admin-navigation='persistent'] .n-menu"
+  const dropdownSelector =
+    ".pavp-admin-navigation-dropdown.n-dropdown-menu:has(.n-dropdown-option[aria-current='page'] > .n-dropdown-option-body:not(.n-dropdown-option-body--disabled))"
+  const lensSelector = '.pavp-admin-navigation-selection-lens'
+  const motionReadySelectedSelector =
+    ".pavp-admin-shell[data-navigation-collapsed='false']\n  [data-pavp-admin-navigation-motion-ready='true']\n  .n-menu-item-content--selected::before,\n.pavp-admin-shell[data-navigation-collapsed='true']\n  [data-pavp-admin-navigation-motion-ready='true']\n  .n-menu-item-content.n-menu-item-content--child-active::before"
+  const expected: readonly StyleDeclarationIdentity[] = [
+    {
+      ...base,
+      context: [],
+      selector: motionReadySelectedSelector,
+      property: 'visibility',
+      value: 'hidden',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: lensSelector,
+      property: 'visibility',
+      value: 'hidden',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: motionReadySelectedSelector,
+      property: 'visibility',
+      value: 'visible',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: menuSelector,
+      property: '--pavp-navigation-selected-surface',
+      value: 'var(--ui-color-action-primary)',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: menuSelector,
+      property: '--pavp-navigation-selected-foreground',
+      value: 'var(--ui-color-text-on-action)',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: dropdownSelector,
+      property: '--pavp-navigation-selected-surface',
+      value: 'var(--ui-color-action-primary)',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: dropdownSelector,
+      property: '--pavp-navigation-selected-foreground',
+      value: 'var(--ui-color-text-on-action)',
+    },
+    {
+      ...base,
+      context: ['@media (forced-colors: active)'],
+      selector: "[data-pavp-admin-navigation='persistent'] .n-menu.n-menu--collapsed",
+      property: '--pavp-navigation-child-active-foreground',
+      value: 'var(--ui-color-text-on-action)',
+    },
+    {
+      ...base,
+      context: [],
+      selector:
+        "[data-pavp-admin-navigation='persistent'] .n-menu-item-content:not(.n-menu-item-content--selected):not(.n-menu-item-content--child-active):active :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header)",
+      property: 'color',
+      value: 'var(--ui-color-control-primary)',
+    },
+    {
+      ...base,
+      context: [],
+      selector:
+        '.pavp-admin-navigation-dropdown .n-dropdown-option-body:not(.n-dropdown-option-body--active:not(.n-dropdown-option-body--disabled)):active :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label)',
+      property: 'color',
+      value: 'var(--ui-color-control-primary)',
+    },
+  ]
+  const actual: StyleDeclarationIdentity[] = []
+  for (const [block, style] of parsed.descriptor.styles.entries()) {
+    const compiled = vueSfcCompiler.compileStyle({
+      filename: shellSfcPath,
+      id: shellSfcScopeId,
+      scoped: style.scoped === true,
+      source: style.content,
+    })
+    if (compiled.errors.length !== 0 || compiled.rawResult === undefined) return false
+    compiled.rawResult.root.walkDecls((declaration) => {
+      const selector = declaration.parent?.selector ?? ''
+      const indicatorVisibility =
+        declaration.prop === 'visibility' &&
+        (normalizedCssSelector(selector) === normalizedCssSelector(lensSelector) ||
+          normalizedCssSelector(selector) === normalizedCssSelector(motionReadySelectedSelector))
+      if (
+        !expected.some(
+          (entry) =>
+            entry.property !== 'color' &&
+            entry.property !== 'visibility' &&
+            entry.property === declaration.prop,
+        ) &&
+        !indicatorVisibility &&
+        !(
+          declaration.prop === 'color' &&
+          selector.includes(':active') &&
+          (selector.includes('.n-menu-item-content') ||
+            selector.includes('.n-dropdown-option-body'))
+        )
+      )
+        return
+      const context: string[] = []
+      let ancestor = declaration.parent?.parent
+      while (ancestor !== undefined) {
+        if (ancestor.type === 'atrule')
+          context.unshift(`@${ancestor.name ?? ''} ${ancestor.params ?? ''}`)
+        ancestor = ancestor.parent
+      }
+      actual.push({
+        ...base,
+        block,
+        context,
+        selector,
+        property: declaration.prop,
+        value: declaration.value,
+        important: Boolean(declaration.important),
+      })
+    })
+  }
+  return isDeepStrictEqual(
+    actual.map(styleDeclarationKey).sort(compareCodePoints),
+    expected.map(styleDeclarationKey).sort(compareCodePoints),
+  )
 }
 
 function naiveSemanticExpectations(): ReadonlyMap<
@@ -10718,11 +11093,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))',
         ) === 1 &&
         snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('itemColorActive: navigationSelectedSurface') &&
-        snapshot.themeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
-        snapshot.themeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
         snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorActive: navigationSelectedSurface'),
+        navigationSelectedColorProjection(snapshot.navigationColors).hover &&
+        navigationSelectedColorProjection(snapshot.navigationColors).surface,
     },
     {
       code: 'ADMIN_NAV_MOTION_VUE_FALLBACK_EXCLUSIVITY',
@@ -13330,21 +13703,12 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     'groupTextColor: colorTextSecondary',
     'itemTextColor: colorText',
     'itemTextColorHover: colorControl',
-    'itemTextColorActive: colorControl',
-    'itemTextColorChildActive: colorControl',
     'itemIconColor: colorTextSecondary',
     'itemIconColorHover: colorControl',
-    'itemIconColorActive: colorControl',
-    'itemIconColorChildActive: colorControl',
     'itemIconColorCollapsed: colorTextSecondary',
     'arrowColor: colorTextSecondary',
     'arrowColorHover: colorControl',
-    'arrowColorActive: colorControl',
-    'arrowColorChildActive: colorControl',
     'itemColorHover: navigationHover',
-    'itemColorActive: navigationSelectedSurface',
-    'itemColorActiveHover: navigationSelectedSurface',
-    'itemColorActiveCollapsed: navigationSelectedSurface',
     'itemHeight: enhancedTargetHeight',
     'borderRadius: radius',
     'fontSize',
@@ -13356,9 +13720,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     'prefixColor: colorTextSecondary',
     'suffixColor: colorTextSecondary',
     'optionTextColorHover: colorControl',
-    'optionTextColorActive: colorControl',
     'optionColorHover: navigationHover',
-    'optionColorActive: navigationSelectedSurface',
     'borderRadius: radius',
     'boxShadow: shadowOverlay',
   ] as const
@@ -13661,6 +14023,8 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
         themeSource.includes('Menu: menuDark') &&
         themeSource.includes('siderColor: material.chrome') &&
         themeSource.includes('siderBorderColor: colorBorder') &&
+        navigationSelectedColorProjection(snapshot.navigationColors).surface &&
+        navigationSelectedColorProjection(snapshot.navigationColors).foreground &&
         requiredMenuThemeFields.every((field) => themeSource.includes(field)),
     ],
     [
@@ -13721,7 +14085,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
 
 function changedNavigationReworkSource(
   baseline: NavigationReworkSourceSnapshot,
-  sourceKey: keyof NavigationReworkSourceSnapshot,
+  sourceKey: Exclude<keyof NavigationReworkSourceSnapshot, 'navigationColors'>,
   search: string,
   replacement: string,
 ): NavigationReworkSourceSnapshot {
@@ -14705,11 +15069,10 @@ function adminNavigationNativeSourceInvariantResults(
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const selectedProjection =
     snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-    snapshot.themeSource.includes('itemColorActive: navigationSelectedSurface') &&
-    snapshot.themeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
-    snapshot.themeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
     snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
-    snapshot.themeSource.includes('optionColorActive: navigationSelectedSurface')
+    navigationSelectedColorProjection(snapshot.navigationColors).surface &&
+    navigationSelectedColorProjection(snapshot.navigationColors).foreground &&
+    navigationSelectedColorStylesValid(snapshot.shellSource)
   const pressedSurfaceOverrideAbsent = !cssRuleBlocks(shellStyles).some(
     (rule) =>
       rule.selector.includes(':active::before') &&
@@ -14807,7 +15170,8 @@ function adminNavigationNativeSourceInvariantResults(
       passed:
         exactOccurrenceCount(snapshot.themeSource, hoverFormula) === 1 &&
         snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface'),
+        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+        navigationSelectedColorProjection(snapshot.navigationColors).hover,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SELECTED_SURFACE',
@@ -14839,7 +15203,7 @@ function adminNavigationNativeSourceInvariantResults(
     {
       code: 'ADMIN_NAV_NATIVE_EXPANDED_ROOT_FOREGROUND_ONLY',
       passed:
-        !snapshot.themeSource.includes('itemColorChildActive: navigationSelectedSurface') &&
+        navigationSelectedColorProjection(snapshot.navigationColors).expandedUnfilled &&
         shellStyles.includes(
           ".pavp-admin-shell[data-navigation-collapsed='true']\n  [data-pavp-admin-navigation='persistent']\n  .n-menu-item-content--child-active::before",
         ),
@@ -15067,9 +15431,7 @@ function adminNavigationCollapsedPopupInvariantResults(
       code: 'ADMIN_NAV_COLLAPSED_POPUP_SELECTED_FORMULA',
       passed:
         nativeSourceResults.get('ADMIN_NAV_NATIVE_SELECTED_SURFACE') === true &&
-        snapshot.themeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
-        snapshot.themeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
-        snapshot.themeSource.includes('optionColorActive: navigationSelectedSurface'),
+        navigationSelectedColorProjection(snapshot.navigationColors).surface,
     },
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_FOCUS_VISIBLE_ONLY',
@@ -15200,10 +15562,13 @@ function runAdminNavigationCollapsedPopupNegativeProbes(
       'ADMIN_NAV_COLLAPSED_POPUP_SELECTED_FORMULA',
       {
         ...baseline,
-        themeSource: baseline.themeSource.replace(
-          'itemColorActiveHover: navigationSelectedSurface',
-          'itemColorActiveHover: navigationHoverSurface',
-        ),
+        navigationColors: {
+          ...baseline.navigationColors,
+          menu: {
+            ...baseline.navigationColors.menu,
+            itemColorActiveHover: baseline.navigationColors.menu.itemColorHover,
+          },
+        },
       },
     ],
   ]
@@ -15601,6 +15966,9 @@ function runAdminNavigationNativeSourceNegativeProbes(
   baseline: AdminNavigationNativeSourceSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
   const baselineFailureCodes = adminNavigationNativeSourceViolations(baseline)
+  const forcedLensRule = '  .pavp-admin-navigation-selection-lens {\n    visibility: hidden;\n  }'
+  const forcedSelectedRule =
+    "  .pavp-admin-shell[data-navigation-collapsed='false']\n    [data-pavp-admin-navigation-motion-ready='true']\n    .n-menu-item-content--selected::before,\n  .pavp-admin-shell[data-navigation-collapsed='true']\n    [data-pavp-admin-navigation-motion-ready='true']\n    .n-menu-item-content.n-menu-item-content--child-active::before {\n    visibility: visible;\n  }"
   const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
     [
       'admin-navigation-native-adds-second-sider',
@@ -15680,6 +16048,30 @@ function runAdminNavigationNativeSourceNegativeProbes(
       { ...baseline, themeSource: baseline.themeSource.replace(' 16%,', ' 15%,') },
     ],
     [
+      'admin-navigation-native-forced-lens-visible',
+      'ADMIN_NAV_NATIVE_SELECTED_SURFACE',
+      {
+        ...baseline,
+        shellSource: replaceExactOnce(
+          baseline.shellSource,
+          forcedLensRule,
+          forcedLensRule.replace('visibility: hidden', 'visibility: visible'),
+        ),
+      },
+    ],
+    [
+      'admin-navigation-native-forced-selected-pseudo-hidden',
+      'ADMIN_NAV_NATIVE_SELECTED_SURFACE',
+      {
+        ...baseline,
+        shellSource: replaceExactOnce(
+          baseline.shellSource,
+          forcedSelectedRule,
+          forcedSelectedRule.replace('visibility: visible', 'visibility: hidden'),
+        ),
+      },
+    ],
+    [
       'admin-navigation-native-expands-full-motion-properties',
       'ADMIN_NAV_NATIVE_FULL_MOTION',
       {
@@ -15738,7 +16130,10 @@ function runAdminNavigationNativeSourceNegativeProbes(
       'ADMIN_NAV_NATIVE_EXPANDED_ROOT_FOREGROUND_ONLY',
       {
         ...baseline,
-        themeSource: baseline.themeSource + '\nitemColorChildActive: navigationSelectedSurface,',
+        navigationColors: {
+          ...baseline.navigationColors,
+          childActiveFillPresent: true,
+        },
       },
     ],
     [
@@ -16646,11 +17041,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     exactOccurrenceCount(snapshot.themeSource, hoverFormula) === 1 &&
     exactOccurrenceCount(snapshot.themeSource, selectedFormula) === 1 &&
     snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-    snapshot.themeSource.includes('itemColorActive: navigationSelectedSurface') &&
-    snapshot.themeSource.includes('itemColorActiveHover: navigationSelectedSurface') &&
-    snapshot.themeSource.includes('itemColorActiveCollapsed: navigationSelectedSurface') &&
     snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
-    snapshot.themeSource.includes('optionColorActive: navigationSelectedSurface')
+    navigationSelectedColorProjection(snapshot.navigationColors).surface
   const selectedSurfaceBaseRule = cssRuleBlocks(shellStyles).find(
     (rule) =>
       rule.selector.includes(
@@ -16897,14 +17289,14 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       passed:
         exactOccurrenceCount(snapshot.themeSource, hoverFormula) === 1 &&
         snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface'),
+        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+        navigationSelectedColorProjection(snapshot.navigationColors).hover,
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_SELECTED_SIXTEEN_PERCENT',
       passed:
         exactOccurrenceCount(snapshot.themeSource, selectedFormula) === 1 &&
-        snapshot.themeSource.includes('itemColorActive: navigationSelectedSurface') &&
-        snapshot.themeSource.includes('optionColorActive: navigationSelectedSurface'),
+        navigationSelectedColorProjection(snapshot.navigationColors).surface,
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_SELECTED_HOVER_PRESSED_RETENTION',
@@ -17031,10 +17423,6 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
       'transition-property: background-color, opacity, transform;',
       'transition-property: opacity, transform;',
     )
-  const stackedSelectedHover = baseline.themeSource.replace(
-    'itemColorActiveHover: navigationSelectedSurface',
-    'itemColorActiveHover: navigationHoverSurface',
-  )
   const routeKeySource = baseline.appSource.replace(
     'class="pavp-route-content"',
     ':key="route.fullPath" class="pavp-route-content"',
@@ -17083,7 +17471,16 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
     [
       'admin-navigation-naive-actions-stacks-hover-over-selected',
       'ADMIN_NAV_NAIVE_ACTIONS_SELECTED_HOVER_PRESSED_RETENTION',
-      { ...baseline, themeSource: stackedSelectedHover },
+      {
+        ...baseline,
+        navigationColors: {
+          ...baseline.navigationColors,
+          menu: {
+            ...baseline.navigationColors.menu,
+            itemColorActiveHover: baseline.navigationColors.menu.itemColorHover,
+          },
+        },
+      },
     ],
     [
       'admin-navigation-naive-actions-adds-route-derived-key',
@@ -19429,12 +19826,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       capabilityStatus: record.capabilityStatus,
     })),
   }
+  const navigationColors = await actualNavigationThemeColors()
   const navigationReworkBaseline: NavigationReworkSourceSnapshot = {
     applicationSource: applicationSources.join('\n'),
     providerSource: naiveProviderSource,
     runtimeContextSource,
     shellSource,
     themeSource,
+    navigationColors,
   }
   const adminNavigationNativeSourceBaseline: AdminNavigationNativeSourceSnapshot = {
     adminNavigationMotionAdapterPresent,
@@ -19468,6 +19867,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     storageRecordCount: runtimeNumber(storageConsoleProjection.recordCount),
     shellSource,
     themeSource,
+    navigationColors,
     uiManifestSource,
     workspaceSource,
   }

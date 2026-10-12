@@ -2831,11 +2831,143 @@ function executeAppearanceMigration(script: string, input: unknown): unknown {
   return JSON.parse(JSON.stringify((migration as (value: unknown) => unknown)(input))) as unknown
 }
 
+function validateForcedColorsOutput(css: string, artifact: string): number {
+  const media = '@media (forced-colors: active)'
+  const mediaStart = css.indexOf(media)
+
+  assertInvariant(
+    mediaStart >= 0 && !css.includes(media, mediaStart + media.length),
+    `${artifact}: forced-colors must retain one active media block`,
+  )
+
+  const block =
+    /^@media \(forced-colors: active\) \{\s*@layer tokens \{\s*([^{}]+)\{([^{}]*)\}\s*\}\s*\}/u.exec(
+      css.slice(mediaStart),
+    )
+  const selector = block?.[1]?.trim()
+  const body = block?.[2]
+
+  assertInvariant(
+    block !== null && body !== undefined,
+    `${artifact}: forced-colors must retain its single tokens-layer root block`,
+  )
+  assertInvariant(
+    selector === 'html:root',
+    `${artifact}: forced-colors root writer must be html:root`,
+  )
+
+  const declarations = body
+    .split(';')
+    .map((declaration) => declaration.trim())
+    .filter((declaration) => declaration.length > 0)
+    .map((declaration) => {
+      const separator = declaration.indexOf(':')
+
+      assertInvariant(separator > 0, `${artifact}: forced-colors declaration must be complete`)
+      return [
+        declaration.slice(0, separator).trim(),
+        declaration.slice(separator + 1).trim(),
+      ] as const
+    })
+
+  assertInvariant(
+    new Set(declarations.map(([property]) => property)).size === declarations.length,
+    `${artifact}: forced-colors must not emit duplicate properties`,
+  )
+
+  const expectedDeclarations = {
+    '--ui-color-action-primary': 'Highlight',
+    '--ui-color-control-primary': 'Highlight',
+    '--ui-color-border-default': 'GrayText',
+    '--ui-color-focus-ring': 'Highlight',
+    '--ui-color-scrim-viewport': 'CanvasText',
+    '--ui-color-surface-page': 'Canvas',
+    '--ui-color-surface-panel': 'Canvas',
+    '--ui-color-text-on-action': 'HighlightText',
+    '--ui-color-text-primary': 'CanvasText',
+    '--ui-color-text-secondary': 'CanvasText',
+    '--ui-color-status-info': 'Highlight',
+    '--ui-color-status-info-hover': 'Highlight',
+    '--ui-color-status-info-pressed': 'Highlight',
+    '--ui-color-text-on-status-info': 'HighlightText',
+    '--ui-color-status-success': 'Highlight',
+    '--ui-color-status-success-hover': 'Highlight',
+    '--ui-color-status-success-pressed': 'Highlight',
+    '--ui-color-text-on-status-success': 'HighlightText',
+    '--ui-color-status-warning': 'Highlight',
+    '--ui-color-status-warning-hover': 'Highlight',
+    '--ui-color-status-warning-pressed': 'Highlight',
+    '--ui-color-text-on-status-warning': 'HighlightText',
+    '--ui-color-status-error': 'Highlight',
+    '--ui-color-status-error-hover': 'Highlight',
+    '--ui-color-status-error-pressed': 'Highlight',
+    '--ui-color-text-on-status-error': 'HighlightText',
+    '--ui-material-chrome-background': 'Canvas',
+    '--ui-material-modal-background': 'Canvas',
+    '--ui-material-overlay-background': 'Canvas',
+    '--ui-material-scrim-background': 'CanvasText',
+  }
+
+  assertInvariantEqual(
+    Object.fromEntries(declarations),
+    expectedDeclarations,
+    `${artifact}: forced-colors must retain the exact system-color declarations`,
+  )
+
+  const writerStart = mediaStart + block[0].indexOf(selector)
+  const mappedProperties = new Set(Object.keys(expectedDeclarations))
+
+  for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/gu)) {
+    const ruleSelector = rule[1]?.trim()
+    const ruleBody = rule[2]
+
+    if (
+      ruleBody === undefined ||
+      (rule.index >= mediaStart && rule.index < mediaStart + block[0].length)
+    )
+      continue
+
+    const mappedDeclarations = ruleBody
+      .split(';')
+      .filter((declaration) => mappedProperties.has(declaration.split(':')[0]?.trim() ?? ''))
+
+    if (mappedDeclarations.length === 0) continue
+
+    assertInvariant(
+      ruleSelector !== undefined &&
+        /^(?::root|html\[data-contrast='(?:standard|enhanced)'\]|html\[data-material='(?:adaptive|reduced|solid)'\])$/u.test(
+          ruleSelector,
+        ) &&
+        rule.index < mediaStart &&
+        mappedDeclarations.every((declaration) => !/!\s*important\b/iu.test(declaration)),
+      `${artifact}: ordinary mapped-property writers must remain weaker or equal and precede forced-colors`,
+    )
+  }
+
+  return writerStart
+}
+
 function validateFirstPaintContracts(result: TokenBuildResult): void {
   const registry = themeRegistryDocument(result)
   const criticalTheme = formatCriticalThemeCss(result)
   const runtimeCss = formatRuntimeCss(result)
   const appearanceInit = formatAppearanceInitScript(result)
+
+  for (const [artifact, css] of [
+    ['tokens.css', runtimeCss],
+    ['critical-theme.css', criticalTheme],
+  ] as const) {
+    const writerStart = validateForcedColorsOutput(css, artifact)
+    const weakerWriterCss =
+      css.slice(0, writerStart) + ':root' + css.slice(writerStart + 'html:root'.length)
+
+    assertContractFailure(
+      () => validateForcedColorsOutput(weakerWriterCss, artifact),
+      /forced-colors root writer must be html:root/u,
+      `${artifact}: restoring the weaker forced-colors root writer must be rejected`,
+    )
+  }
+
   const canonicalAttributes = new Set([
     'data-color-mode',
     'data-theme-kind',

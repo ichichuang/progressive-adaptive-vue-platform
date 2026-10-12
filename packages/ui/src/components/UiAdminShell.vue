@@ -1258,7 +1258,9 @@ watch(
 }
 
 [data-pavp-admin-navigation='persistent']
-  .n-menu-item-content:active
+  .n-menu-item-content:not(.n-menu-item-content--selected):not(
+    .n-menu-item-content--child-active
+  ):active
   :where(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header) {
   color: var(--ui-color-control-primary);
 }
@@ -1359,7 +1361,9 @@ html[data-motion='none']
 }
 
 .pavp-admin-navigation-dropdown
-  .n-dropdown-option-body:active
+  .n-dropdown-option-body:not(
+    .n-dropdown-option-body--active:not(.n-dropdown-option-body--disabled)
+  ):active
   :where(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label) {
   color: var(--ui-color-control-primary);
 }
@@ -1460,31 +1464,33 @@ html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
   }
 
   .pavp-admin-navigation-selection-lens {
-    background: var(--ui-color-action-primary);
+    visibility: hidden;
   }
 
-  [data-pavp-admin-navigation='persistent'] .n-menu-item-content--selected::before,
+  .pavp-admin-shell[data-navigation-collapsed='false']
+    [data-pavp-admin-navigation-motion-ready='true']
+    .n-menu-item-content--selected::before,
   .pavp-admin-shell[data-navigation-collapsed='true']
-    [data-pavp-admin-navigation='persistent']
-    .n-menu-item-content--child-active::before,
-  .pavp-admin-navigation-dropdown.n-dropdown-menu
-    .n-dropdown-option[aria-current='page']
-    .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)::before {
-    background-color: var(--ui-color-action-primary);
+    [data-pavp-admin-navigation-motion-ready='true']
+    .n-menu-item-content.n-menu-item-content--child-active::before {
+    visibility: visible;
   }
 
-  [data-pavp-admin-navigation='persistent']
-    .n-menu-item-content--selected
-    :is(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header),
-  .pavp-admin-shell[data-navigation-collapsed='true']
-    [data-pavp-admin-navigation='persistent']
-    .n-menu-item-content--child-active
-    :is(.n-menu-item-content__icon, .n-menu-item-content__arrow, .n-menu-item-content-header),
-  .pavp-admin-navigation-dropdown.n-dropdown-menu
-    .n-dropdown-option[aria-current='page']
-    .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)
-    :is(.n-dropdown-option-body__prefix, .n-dropdown-option-body__label) {
-    color: var(--ui-color-text-on-action);
+  [data-pavp-admin-navigation='persistent'] .n-menu {
+    --pavp-navigation-selected-surface: var(--ui-color-action-primary);
+    --pavp-navigation-selected-foreground: var(--ui-color-text-on-action);
+  }
+
+  .pavp-admin-navigation-dropdown.n-dropdown-menu:has(
+      .n-dropdown-option[aria-current='page']
+        > .n-dropdown-option-body:not(.n-dropdown-option-body--disabled)
+    ) {
+    --pavp-navigation-selected-surface: var(--ui-color-action-primary);
+    --pavp-navigation-selected-foreground: var(--ui-color-text-on-action);
+  }
+
+  [data-pavp-admin-navigation='persistent'] .n-menu.n-menu--collapsed {
+    --pavp-navigation-child-active-foreground: var(--ui-color-text-on-action);
   }
 }
 
