@@ -10,6 +10,7 @@ const outputPath = resolve(repositoryRoot, 'apps/web/src/generated/capability-ma
 const sourceMarker = '下方唯一 JSON Fenced Block 是 Post-landing Manifest Source。'
 const section13TableHeader = '| Capability | Status | Current authority |'
 const mappingTableHeader = '| Manifest ID | Exact mapped §1.3 Capability records |'
+const unmappedGapTableHeader = '| Known unmapped §1.3 Capability (frozen deferred projection gap) |'
 
 type CapabilityStatus = 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'
 type SourceCapabilityStatus = CapabilityStatus | 'PROHIBITED'
@@ -142,6 +143,58 @@ function readManifestMapping(architecture: string): Map<string, readonly string[
   return mapping
 }
 
+function readUnmappedExceptions(architecture: string): readonly string[] {
+  const names: string[] = []
+
+  for (const row of parseMarkdownTable(architecture, unmappedGapTableHeader)) {
+    const name = row[0]?.replaceAll('`', '')
+
+    if (name === undefined || name.length === 0) {
+      throw new TypeError('A Frozen Unmapped Gap row is incomplete.')
+    }
+
+    names.push(name)
+  }
+
+  return names
+}
+
+function validateReverseCoverage(
+  section13: Map<string, SourceCapabilityStatus>,
+  mapping: Map<string, readonly string[]>,
+  exceptions: readonly string[],
+): void {
+  const mappedSources = new Set<string>()
+
+  for (const sources of mapping.values()) {
+    for (const source of sources) {
+      mappedSources.add(source)
+    }
+  }
+
+  for (const name of exceptions) {
+    const status = section13.get(name)
+
+    if (status === undefined || status === 'PROHIBITED') {
+      throw new TypeError(
+        `Frozen Unmapped Gap references an unknown or PROHIBITED §1.3 capability: ${name}`,
+      )
+    }
+
+    if (mappedSources.has(name)) {
+      throw new TypeError(`Frozen Unmapped Gap lists a now-mapped §1.3 capability: ${name}`)
+    }
+  }
+
+  for (const [name, status] of section13) {
+    if (status === 'PROHIBITED' || mappedSources.has(name) || exceptions.includes(name)) {
+      continue
+    }
+
+    throw new TypeError(`§1.3 capability is neither mapped nor a Frozen Unmapped Gap: ${name}`)
+  }
+}
+
 function validateSource(source: unknown): CapabilityManifestSource {
   if (typeof source !== 'object' || source === null || Array.isArray(source)) {
     throw new TypeError('Capability Manifest source must be an object.')
@@ -237,6 +290,8 @@ async function readManifest(): Promise<CapabilityManifest> {
   const source = validateSource(JSON.parse(architecture.slice(contentStart, fenceEnd)) as unknown)
   const section13 = readSection13Statuses(architecture)
   const mapping = readManifestMapping(architecture)
+  const exceptions = readUnmappedExceptions(architecture)
+  validateReverseCoverage(section13, mapping, exceptions)
 
   const records: CapabilityManifestRecord[] = source.records.map((record) => {
     const sources = mapping.get(record.id)

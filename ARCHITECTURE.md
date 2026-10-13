@@ -4970,9 +4970,9 @@ interface CapabilityManifest {
 
 Top-level Field Order 精确为 `schemaVersion`、`recordCount`、`records`；Record Field Order 与 Interface 完全一致。`routeName` 在 Schema 1 中不可 Null，Roadmap Record 使用 `capability-roadmap`。Records 和 `prerequisiteIds` 按 Unicode Code-point 排序；UTF-8、LF、Exactly One Final Newline。Unknown/Missing Field、Duplicate ID、Dangling Prerequisite/Route、Manual Edit、Non-deterministic Output 或 Regeneration Inequality 必须失败。
 
-Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGET_INACTIVE=1`、`DEFERRED=2`，Mapped Source 取最大 Rank；任何 `PROHIBITED` Source 被 Mapping 时直接失败。Derived `implementationStatus` 精确为 `ACTIVE → complete`、`TARGET_INACTIVE → not-started`、`DEFERRED → deferred`。Appearance 或本实例 I18n 且 Active 才是 `active-interactive`；其他 Active 为 `active-read-only`；非 Active 为 `roadmap-only`。每条非 `PROHIBITED` §1.3 Record 必须至少出现在以下一个 Mapping 中；重复 Source 只允许表中显式列出的 `Architecture Admin Console frontend surface`。
+Status Aggregation 是 Conservative Least-ready Projection：`ACTIVE=0`、`TARGET_INACTIVE=1`、`DEFERRED=2`，Mapped Source 取最大 Rank；任何 `PROHIBITED` Source 被 Mapping 时直接失败。Derived `implementationStatus` 精确为 `ACTIVE → complete`、`TARGET_INACTIVE → not-started`、`DEFERRED → deferred`。Appearance 或本实例 I18n 且 Active 才是 `active-interactive`；其他 Active 为 `active-read-only`；非 Active 为 `roadmap-only`。每条非 `PROHIBITED` §1.3 Record 必须至少出现在以下一个 Mapping 中，除非该 Record 精确出现在 Mapping 表后方的 Frozen Unmapped Gap 表中；重复 Source 只允许表中显式列出的 `Architecture Admin Console frontend surface`。
 
-Generator 不从 JSON Block 读取任何状态字段（该 Block 已不含这些字段）：它读取 §1.3 Capability Status Registry 与上方 Mapping Table，按上述 Conservative Least-ready Projection 派生每条 Manifest Record 的 `capabilityStatus`、`implementationStatus`、`presentationMode` 与 `interactive`；映射引用未知或 `PROHIBITED` 的 §1.3 Capability 时直接失败。JSON Block 只保存 `id`、`visibleLabel`、`summary`、`routeName`、`owner`、`prerequisiteIds` 与 `admissionCondition`；`capabilityStatus`、`implementationStatus`、`presentationMode` 与 `interactive` 是派生输出，不是第二 Status Authority。
+Generator 不从 JSON Block 读取任何状态字段（该 Block 已不含这些字段）：它读取 §1.3 Capability Status Registry 与上方 Mapping Table，按上述 Conservative Least-ready Projection 派生每条 Manifest Record 的 `capabilityStatus`、`implementationStatus`、`presentationMode` 与 `interactive`；映射引用未知或 `PROHIBITED` 的 §1.3 Capability 时直接失败。JSON Block 只保存 `id`、`visibleLabel`、`summary`、`routeName`、`owner`、`prerequisiteIds` 与 `admissionCondition`；`capabilityStatus`、`implementationStatus`、`presentationMode` 与 `interactive` 是派生输出，不是第二 Status Authority。Generator 反向强制覆盖：任何既未出现在任何 Mapping、又不在 Frozen Unmapped Gap 表中的非 `PROHIBITED` §1.3 Record 直接失败；Frozen Unmapped Gap 表引用未知、`PROHIBITED` 或已被映射的 Record 同样失败。
 
 | Manifest ID | Exact mapped §1.3 Capability records |
 | --- | --- |
@@ -4997,6 +4997,14 @@ Generator 不从 JSON Block 读取任何状态字段（该 Block 已不含这些
 | `storage-persistence` | `Application persistence architecture` |
 | `tanstack-query` | `TanStack Query server-state runtime` |
 | `view-transition-motion` | `View Transition progressive enhancement` |
+
+下方 Frozen Unmapped Gap 表精确列出当前未被任何 Mapping 覆盖的 known deferred projection gap；它是反向覆盖检查的唯一例外来源，新增漏映射必须显式登记于此。
+
+| Known unmapped §1.3 Capability (frozen deferred projection gap) |
+| --- |
+| `Semantic Status Color System` |
+| `Administration Global Breadcrumb and in-session Workspace Tabs core` |
+| `Multi-record Workspace identity` |
 
 下方唯一 JSON Fenced Block 是 Post-landing Manifest Source。当前 Atomic Implementation 已从该 Block 确定性生成并验证 Runtime Artifact；`architecture-admin-console`、`pavp-ui-system` 与 `responsive-layout` 的页面投影、UI Boundary 与响应式 Artifact 保持技术 `ACTIVE`。历史 Owner 实际渲染与视觉验收曾由 §1.2B.0 撤销；当前返工的 Product Experience Acceptance 已由 Owner 重新确认。该 Manifest 仍是只读投影，不替代 §1.3 Human Status Authority。
 
