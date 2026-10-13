@@ -1,6 +1,6 @@
 # Acceptance Report
 
-Emit the report only in the current task response. Do not commit it or any runtime evidence.
+Emit the report only in the current task response. Do not commit it.
 
 ## Allowed values
 
@@ -56,5 +56,3 @@ Use `CHANGED_FILES=NONE` for a read-only task. Keep findings scoped to the task 
 - Use `FAILED` when required static verification fails. Set `STATIC_VERIFICATION=FAIL` and include evidence.
 
 For `READ_ONLY_COMPLETE`, `STATIC_VERIFICATION` must be `PASS`, `NOT_RUN`, or `NOT_APPLICABLE` with a result reason. Do not use a successful status to hide required static verification that failed.
-
-Owner manual browser observation is optional, external, owner-operated, and non-gating. It is not a report field, status transition, verification result, or completion requirement. When the owner explicitly supplies an observation, Codex may analyze it only in read-only `review` mode and must not reproduce it or commit observation evidence.

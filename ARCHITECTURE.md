@@ -185,11 +185,8 @@ PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
 PHASE_1_ROUTER_ADMISSION=PROHIBITED
 PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
 PHASE_1_OPENAPI_GENERATOR_ADMISSION=PROHIBITED
-CODEX_BROWSER_OPERATION=PROHIBITED
 CODEX_VERIFICATION_MODEL=STATIC_PRODUCTION_GATES_ONLY
-OWNER_MANUAL_RUNTIME_INSPECTION_FOR_CODEX_TASKS=OPTIONAL_EXTERNAL_NON_GATING
 OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE=REQUIRED_EXTERNAL_NON_REPOSITORY
-SUBORDINATE_OPTIONAL_OBSERVATION_SCOPE=CODEX_TASK_COMPLETION_ONLY
 SUPPORTING_FILE_PRODUCTION_RELEASE_AUTHORITY=NONE
 PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 ```
@@ -210,7 +207,7 @@ PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
 
 实施顺序为：完成核心 → 完成适用静态验证与核心行为确认 → Owner 明确确认核心 → 另行授权退役全部当前页面实现并重建架构示例页面。后置示例消费已确认的核心，不是核心准入的前置消费者，也不能倒推核心已完成。当前不创建、删除或重设计页面，不增加独立 Demo/Showcase 系统，不放宽现有路径政策。旧页面退役不等于删除其所消费的活动核心模块。
 
-Implemented Source、Public Integration、Static Verification、Runtime/Visual Acceptance 与后置 Example 分别报告；源码存在、准入条件改变或静态 Gate 成功均不单独证明完整核心可用。核心确认是后续页面退役/重建的明确边界，不把 §32 的可选 Codex Task Observation 改成所有任务的运行门槛，也不免除 Production Release Acceptance。本次 Owner 仅授权交付合同和直接耦合治理纠正，不实施或激活任何能力，不变更历史验收、Current Work/Next/Successor、依赖、预算或持久化协议。
+Implemented Source、Public Integration、Static Verification、Runtime/Visual Acceptance 与后置 Example 分别报告；源码存在、准入条件改变或静态 Gate 成功均不单独证明完整核心可用。核心确认是后续页面退役/重建的明确边界，不把可选手工观察改成所有任务的运行门槛，也不免除 Production Release Acceptance。本次 Owner 仅授权交付合同和直接耦合治理纠正，不实施或激活任何能力，不变更历史验收、Current Work/Next/Successor、依赖、预算或持久化协议。
 
 本节当前决定显式取代历史 `PAVP_ADMIN_STARTER_PRODUCT_SCOPE_ALIGNMENT` 中业务管理页面、登录权限及真实受保护业务流的必需交付要求，以及通用核心必须先有业务/页面消费者的前提。它不撤销历史源码准入、实施结果、安全合同或验收证据；其他独立架构合同仍有效，未来每个有界实施仍须闭合其实际公共边界、依赖、Owner 和适用 Gate。
 
@@ -5916,7 +5913,6 @@ type CapabilityStatus =
 | Optional backend-dependent capability lane | `DEFERRED` | retained lane identity for conditional real-service integration and specialist/reporting demand; no mandatory protected business flow or automatic admission |
 | Demand-driven Forms/I18n/Tables/UI admission stage | `TARGET_INACTIVE` | repeatable serial stage for explicitly scoped public core components/modules or real integrations; independent core delivery does not require a business/page consumer |
 | Router Experimental Data Loaders | `PROHIBITED` | future stable-dependency decision required |
-| Browser automation, automated test infrastructure and Codex browser operation | `PROHIBITED` | production-only repository policy |
 | Seed-generated, partial or auto-corrected themes | `PROHIBITED` | explicit complete Theme contract |
 | Page-authored visual authority and public optical props | `PROHIBITED` | Design Token and UI boundary |
 
@@ -6235,8 +6231,6 @@ Atomic Landing 前的 Committed Baseline `packages/ui` 没有 Runtime Dependency
 | 安全扫描 | CodeQL |
 | 依赖风险信号 | GitHub Dependency Graph + Dependabot alerts |
 | Codex Verification | `pnpm verify` 静态生产门槛 |
-
-Codex 不得打开或操作浏览器、Chrome DevTools 或任何浏览器自动化能力。Owner 可以在仓库外自行进行可选手工观察，并把明确记录的观察结果提供给 Codex 做只读审查；该观察不是 Codex 完成任务的门槛，也不产生仓库证据。
 
 ESLint 10 已进入稳定版本，当前 10.x 持续发布更新，并以 Node 24 LTS 作为主要运行环境之一。
 
@@ -15764,15 +15758,13 @@ TypeScript typed component contracts
 Stylelint production CSS rules
 ```
 
-Owner 可以选择在仓库外手工观察：
+运行时行为可以手工观察：
 
 * 键盘操作与焦点行为。
 * 语义结构与 Accessible Name。
 * Named Contrast Pair、Adaptive 合成对比度、Reduced Motion、Reduced Transparency 与 Forced Colors。
 * Touch Target 与触控行为。
 * Responsive Reading Order。
-
-Codex 不得打开或操作浏览器来执行这些观察。Codex 只能审查 Owner 明确提供的观察记录；这些记录不进入仓库，也不改变 `pnpm verify` 作为唯一 Codex Verification Gate 的合同。
 
 ## 25.2 Semantic, Name, Keyboard and Focus Contract
 
@@ -16017,7 +16009,7 @@ MOTION_GUIDELINES.md
 
 每个任务必须先完整读取 `AGENTS.md` 和本指南，核对当前仓库身份、Git 状态与请求范围，再读取文首当前 Status Block、§1.3 Capability Status Registry，以及 §37.1 Post-amendment Work-package Order 和 §37.2 Current Frontend Mainline and Future Capability Admission 中适用的当前工作与准入记录，确认本次 Owner 授权。产品目标、当前能力状态和本次实施授权必须分别判断；导航到 Inactive/Deferred 合同不激活能力，也不指定 Next 或 Successor。
 
-每个任务均须遵守 §7 Workspace 依赖方向、§8 TypeScript 规范、§28.3A PAVP Mission and Execution Contract、§31 统一命令、§32 Codex Browser Prohibition and Owner Release Acceptance 和 §35 生产专用仓库政策中的全局边界。源码所有权、依赖准入、禁止工作、静态验证、Git 分步授权与停止条件不因阅读范围缩小而改变。
+每个任务均须遵守 §7 Workspace 依赖方向、§8 TypeScript 规范、§28.3A PAVP Mission and Execution Contract、§31 统一命令、§32 Owner Release Acceptance 和 §35 生产专用仓库政策中的全局边界。源码所有权、依赖准入、禁止工作、静态验证、Git 分步授权与停止条件不因阅读范围缩小而改变。
 
 下表是领域定位入口，不是每个任务的固定全读清单。按实际受影响合同完整读取相关领域章节及当前修订，并读取对应公共接口、实际源文件和已有检查；不得只读标题、摘要或关键词命中来代替周围规范上下文。
 
@@ -16028,7 +16020,7 @@ MOTION_GUIDELINES.md
 | 语言 | §23 Internationalization Target Contract；§37.2.12 Demand-driven Forms, I18n, Tables and UI Admissions |
 | Router 与页面生命周期 | §9 Router Governance Contract；§18 布局系统；§19.4 Production Runtime Kernel Contract；§1.2B.2 Product routes, navigation and presentation |
 | API、认证与存储 | §19 状态管理，含 §19.5 Application Persistence Target Contract；§20 API Transport Target Contract；§20A Auth, Session and Permission Target Contract；§37.2 中对应能力的准入记录 |
-| 仓库治理 | §27 代码结构规范；§28 AI 编程治理；§29 本地架构规则；§31 统一命令；§32 Codex Browser Prohibition and Owner Release Acceptance；§35 生产专用仓库政策；§37.1 与 §37.2 工作包及准入记录 |
+| 仓库治理 | §27 代码结构规范；§28 AI 编程治理；§29 本地架构规则；§31 统一命令；§32 Owner Release Acceptance；§35 生产专用仓库政策；§37.1 与 §37.2 工作包及准入记录 |
 
 必须跟进适用的交叉引用，并在本文件中检查影响同一合同或标识符的后续 Amendment；涉及现有 Console 时，须同时读取 §1.2B 中相关的当前合同与修订。关键词搜索只用于发现位置，不能证明已理解规范上下文或替代优先级判断。历史记录保持原样；当其定义或修订受影响合同、迁移或验收边界时必须读取，不相关的建设历史不再是每个日常任务的必读背景。跨领域任务可以读取多个领域，但读取范围不扩展实施范围。
 
@@ -16041,7 +16033,6 @@ MOTION_GUIDELINES.md
 * 分类 Task Mode。
 * 生成不落盘的临时 Execution Contract。
 * 组织实现、审查和静态验证。
-* 只读审查 Owner 明确提供的外部手工观察。
 * 在当前任务报告中输出证据、状态、延期项和最终 Worktree 状态。
 
 它不得定义或保存新的视觉语言、固定 Token Value、Material Role、Motion Contract、Page Contract、Component API、Architecture Manifest、AI Workflow Registry 或客户端路由规则。Production Theme Registry 是受本文件定义的 Typed Product Data，不属于该禁止项。Workflow 不得覆盖本文件。`SKILL.md` 只包含流程、Phase Check、Stop Condition、状态转换和报告路由，并具有 `name` 与 `description` Frontmatter；没有任意行数目标。
@@ -16114,7 +16105,7 @@ absolute user-home path dependencies
 network-fetched normative Markdown
 ```
 
-Owner 自己操作的浏览器或其他 Operator Capability 是非权威、可选、外部的手工观察能力，不是仓库依赖或项目规范来源。Codex 即使具有该能力也不得调用。
+Owner 自己操作的手工观察是非权威、可选、外部的观察能力，不是仓库依赖或项目规范来源。
 
 ## 28.3A PAVP Mission and Execution Contract
 
@@ -16268,9 +16259,7 @@ Detailed Contract 继续由本文件各 Domain Section 定义；`AGENTS.md` 必�
 
 ### Prohibited Work and Validation Boundary
 
-Production-only Policy 禁止 Test File、Test Infrastructure、Unit/Integration/E2E Test、Fixture、Mock、Snapshot、Coverage、Storybook、Browser Automation、Browser Testing、Screenshot、Trace、Runtime Evidence File、Repository Evidence Artifact、Standalone Demo 和 Standalone Showcase。Codex 不得执行 Browser Operation，也不得引入 Testing Framework。
-
-Generic Skill 或 Workflow 推荐的 TDD、Browser Verification、Worktree、Planning Document、Evidence Artifact 或 Generalized Infrastructure 不覆盖 PAVP Authority。Dependabot Alert、CodeQL Finding、Dependency Upgrade、Security Cleanup、Toolchain Modernization 或 Unrelated Warning 只有在 Owner 明确请求该 Exact Task，或其直接阻塞 Current Authorized Work Package 时才允许处理；即使阻塞，也必须先报告，不得自动扩 Scope。
+Generic Skill 或 Workflow 推荐的 Worktree、Planning Document 或 Generalized Infrastructure 不覆盖 PAVP Authority。Dependabot Alert、CodeQL Finding、Dependency Upgrade、Security Cleanup、Toolchain Modernization 或 Unrelated Warning 只有在 Owner 明确请求该 Exact Task，或其直接阻塞 Current Authorized Work Package 时才允许处理；即使阻塞，也必须先报告，不得自动扩 Scope。
 
 Implementation 中只在有用时运行 Existing Narrow Relevant Check。Repository-changing Implementation Task 报告 Static Completion 前运行一次最终 Stable State 的完整 Canonical Gate：
 
@@ -16278,7 +16267,7 @@ Implementation 中只在有用时运行 Existing Narrow Relevant Check。Reposit
 pnpm verify
 ```
 
-不得在每个小 Edit 后重复运行 Full Gate，不得为了 Ceremony 运行 Unrelated Check，不得创建 Test/Browser Infrastructure，也不得削弱 Validation 制造 Pass。没有 Repository Mutation 的 Read-only Analysis/Planning 不需要 Unrelated Build 或 Verification。
+不得在每个小 Edit 后重复运行 Full Gate，不得为了 Ceremony 运行 Unrelated Check，也不得削弱 Validation 制造 Pass。没有 Repository Mutation 的 Read-only Analysis/Planning 不需要 Unrelated Build 或 Verification。
 
 ### Git Authorization Boundary
 
@@ -16350,7 +16339,7 @@ REQUIRED_CAPABILITY_UNAVAILABLE
 
 `STOP_REASON` 在 `BLOCKED` 时必填；其他 Status 报告 `NOT_APPLICABLE`。
 
-只有与任务范围重叠的 Dirty Change 构成 `WORKTREE_SCOPE_CONFLICT`；无关用户变更必须保留。Architecture-review、Plan 和纯 Read-only Review 可以以 `READ_ONLY_COMPLETE` 结束。Owner 提供的 Runtime Observation 只能路由为 `review`。Codex Browser Operation Request 构成 `ARCHITECTURE_CONFLICT`，而不是 `REQUIRED_CAPABILITY_UNAVAILABLE`；Browser 从来不是 Codex Required Capability。
+只有与任务范围重叠的 Dirty Change 构成 `WORKTREE_SCOPE_CONFLICT`；无关用户变更必须保留。Architecture-review、Plan 和纯 Read-only Review 可以以 `READ_ONLY_COMPLETE` 结束。
 
 Canonical Verification Field：
 
@@ -16685,7 +16674,7 @@ production build
 bundle budget
 ```
 
-`pnpm verify` 只执行静态生产门槛，不启动浏览器自动化或生成验证专用资产。
+`pnpm verify` 只执行静态生产门槛。
 
 ## 31.2 Static Enforcement Boundary
 
@@ -16757,7 +16746,7 @@ runtime console and network correctness
 Custom Theme Bank switch timing and visual atomicity
 ```
 
-静态检查不得宣称已经证明 Runtime-only Property。对于 Codex Task Completion，Owner 可以在仓库外选择手工观察这些行为并向 Codex 提供明确记录供只读审查；该观察可缺省、不是 Codex 门槛且不得被 Codex 执行。对于 Production Release，§32.3 的 Owner External Runtime Acceptance 是独立必需门禁。两种情形都不授权 Test、Browser Automation 或 Committed Evidence。
+静态检查不得宣称已经证明 Runtime-only Property。对于 Codex Task Completion，Owner 可以选择手工观察这些行为；该观察可缺省、不是 Codex 门槛。对于 Production Release，§32.3 的 Owner External Runtime Acceptance 是独立必需门禁。
 
 未来规则只有在其负责 Work Package 实现、接入 `pnpm verify` 并通过后才是机器强制；本文声明本身不代表 Validator 已存在。
 
@@ -16786,26 +16775,20 @@ Dependabot alerts
 
 ---
 
-# 32. Codex Browser Prohibition and Owner Release Acceptance
+# 32. Owner Release Acceptance
 
 ## 32.1 Codex Verification Boundary
 
-Codex Browser Operation、Chrome DevTools、ChromeDev、Browser Testing 和 Browser Automation 全部禁止。Codex 不得打开、操作、驱动或配置浏览器，不得生成 Screenshot、Recording、Trace、Runtime Probe、Baseline、Fixture 或 Evidence File。
-
 ```text
 CODEX_VERIFICATION_MODEL=pnpm verify
-CODEX_BROWSER_OPERATION=PROHIBITED
-OWNER_MANUAL_RUNTIME_INSPECTION_FOR_CODEX_TASKS=OPTIONAL_EXTERNAL_NON_GATING
 OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE=REQUIRED_EXTERNAL_NON_REPOSITORY
 ```
 
-即使当前客户端提供浏览器能力，也不构成授权。请求 Codex 执行浏览器操作必须以 `ARCHITECTURE_CONFLICT` 停止该部分；其余合法静态工作可以继续。仓库不得包含 Browser Configuration、Automation、Evidence 或专用 Tooling。
-
-`AGENTS.md`、README 和从属 Workflow 中的“Owner Observation Optional/Non-gating”只描述 Codex Task Completion，不得解释为免除 Product Release Gate。Supporting File 不承载 Release 规范；本节是唯一规范权威。
+Supporting File 不承载 Release 规范；本节是唯一规范权威。
 
 ## 32.2 Owner-operated Observation Matrix
 
-Owner 完全在仓库外自行操作浏览器。非发布任务可以选择观察；Production Release 必须按 §32.3 选择当前 Release 涉及的全部适用项：
+非发布任务可以选择观察；Production Release 必须按 §32.3 选择当前 Release 涉及的全部适用项：
 
 Appearance：
 
@@ -16830,7 +16813,7 @@ Shell, Layout and Scroll：
 * 每个 Axis 的精确 Scroll Owner、Background Lock、Focus Return 和 Scroll Restoration。
 * Paint、Layer 和 Performance Observation。
 
-Owner Observation 不是 Codex Completion Gate。Owner 明确提供观察结果时，Codex 只能以 `review` 模式分析，不得自行复现。观察记录不提交到仓库。
+Owner Observation 不是 Codex Completion Gate。
 
 ## 32.3 Required External Production Release Acceptance
 
@@ -16842,7 +16825,7 @@ RELEASE_ID=<releaseSha + buildVersion>
 APPLICABLE_RUNTIME_DOMAINS=<named matrix domains>
 ```
 
-该 Decision 由 Owner/Deployment Process 保持在仓库外；不得创建 Evidence、Screenshot、Trace、Checklist File、Test 或 Browser Automation。`REJECT` 必须阻止部署或触发 Rollback；`ACCEPT` 只授权该精确 Release，不成为未来 Release 证据。
+该 Decision 由 Owner/Deployment Process 保持在仓库外。`REJECT` 必须阻止部署或触发 Rollback；`ACCEPT` 只授权该精确 Release，不成为未来 Release 证据。
 
 Minimum Matrix 只覆盖该精确 Release 实际改变或消费的 `ACTIVE` Domain：Startup/Runtime Config、Appearance First Paint and Atomic Theme、关键 Route、Storage、Keyboard/Focus/Name、Layout/Scroll、Reduced/Forced Modes 与适用 Performance。Auth/Permission、API/Mutation/Conflict、Backend-dependent Observability 和 Protected Flow 只有在未来显式准入并实际 `ACTIVE` 后才进入适用 Matrix；它们不得阻塞 Frontend-only Release。只发布静态架构文档且没有 Runtime Artifact 变化时，Product Release Gate 不适用；Codex 仍运行 `pnpm verify`。
 
@@ -16929,7 +16912,7 @@ Interaction Owner 必须定义测量起点、完成点和取消结果。Animatio
 
 Build Gate 测量 Production Output Gzip，不用 Source Map 或 Dev Bundle 代替。Runtime Metric 只来自 Production-like Release，带 Release SHA、Route Telemetry Name 和匿名环境维度；Field 与 Lab 数据分开，不相互冒充。少量样本不自动阻止 Release，但超过 Block-release Budget 或已知交互回归必须由 Owner 明确处理。
 
-Production Release 的 Owner External Runtime Acceptance 必须覆盖首次加载、一次 Route Lazy Load、关键 Interaction、Material Paint/Layer、长列表/表格和 Cleanup；不向仓库提交 Trace/Screenshot/Evidence。Codex 只验证静态 Bundle 与合同，不操作浏览器。
+Production Release 的 Owner External Runtime Acceptance 必须覆盖首次加载、一次 Route Lazy Load、关键 Interaction、Material Paint/Layer、长列表/表格和 Cleanup。
 
 ## 33.5 Performance Static Enforcement Targets
 
@@ -17216,7 +17199,7 @@ Polyfill 只有目标浏览器缺失生产必需能力、Progressive Fallback �
 
 ## 34.9 Deployment Verification and Rollback
 
-Deployment Pipeline 必须验证 Build Artifact Digest、Release Manifest、Runtime Config Schema/Base/Release 一致、CSP Header、Cache Header、SPA Fallback/Asset 404 分离和 Source Map 非公开。该验证由部署平台/Owner 执行，不创建仓库浏览器自动化。
+Deployment Pipeline 必须验证 Build Artifact Digest、Release Manifest、Runtime Config Schema/Base/Release 一致、CSP Header、Cache Header、SPA Fallback/Asset 404 分离和 Source Map 非公开。该验证由部署平台/Owner 执行。
 
 Rollout 使用不可变 Release。Rollback 只切换 HTML/Runtime Config/Asset Manifest 到一个完整已知 Release；不得混合单个旧 Chunk。Runtime Config Schema 必须声明向后兼容窗口；不兼容时与应用 Release 原子切换。Failed `main`/Production Release 使用显式 Revert 或部署回滚，不改写 Git History。
 
@@ -17234,19 +17217,17 @@ Core Runtime Configuration Gate 当前为 `ACTIVE`，拒绝未验证 Env、Consu
 
 # 35. 生产专用仓库政策
 
-The repository contains production architecture only.
-
-No automated test files or test-only infrastructure are permitted.
+The repository contains production architecture.
 
 Codex verification consists only of static production gates.
 
-Owner manual runtime inspection is optional and non-gating for Codex task completion. Production release runtime acceptance is required, external, owner-operated, release-specific, and never committed to the repository.
+Production release runtime acceptance is required, external, owner-operated, release-specific, and never committed to the repository.
 
-仓库不提交验证专用代码、测试专用目录或依赖、演示与展示系统、浏览器自动化基础设施或验证证据资产。§1 的后置架构示例页仅在核心验证与 Owner 确认后，经独立页面重建授权进入生产应用；它不是独立 Demo/Showcase 系统，不放宽下方路径禁令，本次不创建或删除页面。
+§1 的后置架构示例页仅在核心验证与 Owner 确认后，经独立页面重建授权进入生产应用；它不是独立 Demo/Showcase 系统，不放宽下方路径禁令，本次不创建或删除页面。
 
 项目规范、执行合同和必需资源必须来自当前 Repository。Machine-local Rule、Global Skill、Client Registry、Absolute Home Path、External Symlink 或实时下载的规范文件不得成为项目正确执行的前提。
 
-唯一例外是 §28.3 声明的五个 `.ai/skills/pavp-ui` Markdown 文件。它们是现有 Production Execution Workflow，不是 Test、Demo、Evidence 或第二份 Architecture。Exact Allowlist、最短 `AGENTS.md` Route 和 Policy Enforcement 必须保持同步；已完成的 `PAVP_SUBORDINATE_BROWSER_RULE_SYNC` 已移除失效的从属 Browser/Runtime-acceptance 文字并锁定 Regression Gate，后续 Package 只能保持该边界。
+唯一例外是 §28.3 声明的五个 `.ai/skills/pavp-ui` Markdown 文件。它们是现有 Production Execution Workflow，不是第二份 Architecture。Exact Allowlist、最短 `AGENTS.md` Route 和 Policy Enforcement 必须保持同步。
 
 Tracked Symlink 与客户端专属 Project Authority 目录保持禁止。`patches/unconfig@7.5.0.patch` 是现有、经过审查并由 Workspace 使用的 Production Build Input，必须保留。
 
@@ -18193,7 +18174,7 @@ Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须�
 
 §14.2 的十个新增 Density Candidate、§13.3 的 283 个 Reserved Color Candidate 均受此 Gate。Component-internal Token 继续 Demand-created。该 Gate 不阻塞当前六包 Immediate Chain 的完成，也不允许 Final Governance 预先宣称未来 Candidate 已准入。
 
-每个 Work Package 必须在进入下一包前通过适用的 Static Production Gate。所有 Package 都必须保持 Demand-created Directory、No-test Policy、Codex Browser Prohibition、No Browser Evidence 和 Public/Internal Isolation。Owner 手工观察不阻塞 Codex Package Completion；包含 Runtime Artifact 的 Production Release 仍受 §32.3 Owner External Runtime Acceptance 约束。每个 Package 必须实现自己的 Owning Validator，不得把 Enforcement 推迟到 Final Governance。
+每个 Work Package 必须在进入下一包前通过适用的 Static Production Gate。所有 Package 都必须保持 Demand-created Directory 和 Public/Internal Isolation。包含 Runtime Artifact 的 Production Release 仍受 §32.3 Owner External Runtime Acceptance 约束。每个 Package 必须实现自己的 Owning Validator，不得把 Enforcement 推迟到 Final Governance。
 
 所有未来目录继续遵守 Demand-created Rule。Grid、Editor、Charts、Clear-media Material、Spring Family 和 Component Token Tree 保持在后续 Gate。
 
@@ -18732,7 +18713,7 @@ PURE_FRONTEND_MAINLINE_BLOCKER=NO
 BACKEND_AUTH_DEPENDENT_SCOPE_STATUS=DEFERRED
 ENTRY=real observability producer/provider and hosting contracts are accepted; every backend/auth-dependent producer capability is already ACTIVE; deployment/runtime config/event/error/performance registries are frozen; explicit new admission is approved
 ALLOWED_AFTER_ADMISSION=observability registry/reporting activation; privacy-safe structured capture; private source-map upload; admitted delivery-config extension; base/subpath; CSP/cache/release/rollback integration
-PROHIBITED_BEFORE_ADMISSION=No-op reporter; placeholder provider; Backend/Auth event invention; PII/raw body logs; recursive reporter; public source maps; unsafe CSP; browser automation; repository evidence artifact
+PROHIBITED_BEFORE_ADMISSION=No-op reporter; placeholder provider; Backend/Auth event invention; PII/raw body logs; recursive reporter; public source maps; unsafe CSP
 OUTPUT_AFTER_ADMISSION=release-aware error/trace/performance pipeline and immutable deploy/rollback contract for the admitted real provider and hosting environment
 MACHINE_GATES_AFTER_ADMISSION=registry/schema closure; redaction scan; source-map public exclusion; CSP/cache/base/release manifest checks; bundle budget; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_APPLICABLE_REAL_REPORTING_AND_DELIVERY_PATHS_AFTER_ADMISSION
@@ -19552,8 +19533,6 @@ Node 24 LTS
 + Prettier
 + Knip
 + Static Production Gates
-+ Codex Browser Prohibition
-+ Optional External Owner-operated Manual Inspection for Codex Tasks
 + Required External Owner-operated Runtime Acceptance for Production Releases
 + GitHub Actions
 ```
@@ -19572,11 +19551,6 @@ Node 24 LTS
 0 Phase 1 packages/ui runtime dependencies
 0 placeholder future directories
 0 branch-based maintenance workflows
-0 automated test files
-0 test-only directories
-0 test-only dependencies
-0 demo or showcase systems
-0 automated browser-test infrastructure
 ```
 
 # Foundational Architecture Values

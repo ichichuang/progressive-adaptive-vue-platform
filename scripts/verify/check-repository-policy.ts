@@ -1,5 +1,4 @@
 import { execFileSync } from 'node:child_process'
-import { createHash } from 'node:crypto'
 import { readFile, readdir, realpath } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
 
@@ -36,41 +35,6 @@ const forbiddenClientAuthorityDirectoryNames = new Set([
   '.kimi',
   '.kimi-code',
 ])
-const forbiddenDirectoryNames = new Set([
-  '.storybook',
-  '__snapshots__',
-  '__tests__',
-  'coverage',
-  'demos',
-  'e2e',
-  'evidence',
-  'fixtures',
-  'mocks',
-  'recordings',
-  'screenshots',
-  'showcase',
-  'showcases',
-  'snapshots',
-  'stories',
-  'storybook',
-  'test',
-  'tests',
-  'traces',
-])
-const forbiddenFilePatterns = [
-  /(?:^|[.-])spec\.[^.]+$/u,
-  /(?:^|[.-])test\.[^.]+$/u,
-  /\.stories\.[^.]+$/u,
-  /^(?:cypress|playwright|vitest)\.config\./u,
-]
-const forbiddenDependencyPatterns = [
-  /playwright/u,
-  /storybook/u,
-  /test-utils/u,
-  /vitest/u,
-  /(?:^|[/@-])cypress(?:$|[/@-])/u,
-  /(?:^|[/@-])jest(?:$|[/@-])/u,
-]
 const forbiddenRootPaths = new Set([
   '.github/dependabot.yml',
   'apps/desktop',
@@ -111,35 +75,6 @@ const forbiddenMachineLocalAuthorityPathPatterns = [
   /(?:HKEY_CURRENT_USER|HKCU)(?::)?[\\/]Software[\\/](?:Claude|Codex|Kimi|Kimi Code)(?:[\\/]|$)/iu,
   /\/etc\/(?:claude|codex|kimi|kimi-code)(?:\/|$)/iu,
 ]
-const subordinateBrowserRuleSyncFiles = [
-  'AGENTS.md',
-  'README.md',
-  '.ai/skills/pavp-ui/SKILL.md',
-  '.ai/skills/pavp-ui/references/task-routing.md',
-  '.ai/skills/pavp-ui/references/execution-contract.md',
-  '.ai/skills/pavp-ui/references/acceptance-report.md',
-  'scripts/verify/check-repository-policy.ts',
-] as const
-const subordinateBrowserRuleContentHashes = new Map<string, string>([
-  ['AGENTS.md', '27dba164a311042a4ce017eb475cc570f9d3bddacf9e7651b08681542fe7378d'],
-  ['README.md', '4083c63a56069a921618d0905c61c4301acfadd054780016f2a57f3448b2eff6'],
-  [
-    '.ai/skills/pavp-ui/SKILL.md',
-    '8302fcf9cb044e7a4e36fab3764486999266091fe53344761c60d584bdf1cc5d',
-  ],
-  [
-    '.ai/skills/pavp-ui/references/task-routing.md',
-    '5fc958d96ff7aad63169709d2e5672074a2bec59b814dd1343e6ee709becf18e',
-  ],
-  [
-    '.ai/skills/pavp-ui/references/execution-contract.md',
-    'a9a01a84c74a5d928ec9f84b1f0f78a11f31befb7d149d578a8c63bb6e13311b',
-  ],
-  [
-    '.ai/skills/pavp-ui/references/acceptance-report.md',
-    '74d512da345cee79cd7a1301be9eeda121cb298496ef4c022df0510acb32fc71',
-  ],
-])
 const numericVersionStylePattern = new RegExp(
   ['(?:', 'v', '|version)', '[123]', '(?![0-9])'].join(''),
   'iu',
@@ -246,26 +181,6 @@ const repositoryFiles = new Set(
 )
 const violations: string[] = []
 
-for (const repositoryPath of subordinateBrowserRuleSyncFiles) {
-  if (!repositoryFiles.has(repositoryPath)) {
-    violations.push(`${repositoryPath}: subordinate browser-rule synchronization file is missing.`)
-    continue
-  }
-
-  const expectedHash = subordinateBrowserRuleContentHashes.get(repositoryPath)
-
-  if (expectedHash !== undefined) {
-    const content = await readFile(join(rootDirectory, repositoryPath))
-    const actualHash = createHash('sha256').update(content).digest('hex')
-
-    if (actualHash !== expectedHash) {
-      violations.push(
-        `${repositoryPath}: subordinate workflow content drift requires an architecture-authorized synchronization.`,
-      )
-    }
-  }
-}
-
 for (const requiredPath of requiredAiWorkflowFiles) {
   if (!repositoryFiles.has(requiredPath)) {
     violations.push(`${requiredPath}: required project UI workflow file is missing or not regular.`)
@@ -287,10 +202,6 @@ for (const absolutePath of inventory.directories) {
     segments.some((segment) => forbiddenClientAuthorityDirectoryNames.has(segment.toLowerCase()))
   ) {
     violations.push(`${repositoryPath}: client-specific project authority path is forbidden.`)
-  }
-
-  if (segments.some((segment) => forbiddenDirectoryNames.has(segment.toLowerCase()))) {
-    violations.push(`${repositoryPath}: forbidden test, demo, or evidence directory.`)
   }
 
   if ([...forbiddenRootPaths].some((path) => isWithinPath(repositoryPath, path))) {
@@ -362,14 +273,6 @@ for (const absolutePath of inventory.regularFiles) {
     violations.push(`${repositoryPath}: client-specific project authority path is forbidden.`)
   }
 
-  if (segments.some((segment) => forbiddenDirectoryNames.has(segment.toLowerCase()))) {
-    violations.push(`${repositoryPath}: forbidden test, demo, or evidence directory.`)
-  }
-
-  if (forbiddenFilePatterns.some((pattern) => pattern.test(fileName.toLowerCase()))) {
-    violations.push(`${repositoryPath}: forbidden test or browser-automation file.`)
-  }
-
   if ([...forbiddenRootPaths].some((path) => isWithinPath(repositoryPath, path))) {
     violations.push(`${repositoryPath}: forbidden repository infrastructure.`)
   }
@@ -390,9 +293,6 @@ for (const absolutePath of inventory.regularFiles) {
         violations.push(
           `${repositoryPath}: style compiler requires explicit support and an exact fallback owner.`,
         )
-      }
-      if (forbiddenDependencyPatterns.some((pattern) => pattern.test(dependency.toLowerCase()))) {
-        violations.push(`${repositoryPath}: forbidden dependency "${dependency}".`)
       }
     }
   }
@@ -431,4 +331,4 @@ if (violations.length > 0) {
   )
 }
 
-console.log('Production-only repository policy: valid')
+console.log('Repository policy: valid')

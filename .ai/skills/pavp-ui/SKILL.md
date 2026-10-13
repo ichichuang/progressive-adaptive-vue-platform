@@ -25,9 +25,7 @@ Act as a client-neutral, subordinate execution workflow. Treat `ARCHITECTURE.md`
 4. Build the in-memory execution contract, including its static verification requirements.
 5. Evaluate every canonical stop condition before mutation and whenever new evidence changes scope.
 6. Perform only work authorized by the current phase and task. Keep public boundaries and repository authority intact.
-7. Run the applicable static gate. Treat any request for Codex browser operation, Chrome DevTools, or browser testing as `ARCHITECTURE_CONFLICT`.
+7. Run the applicable static gate.
 8. Review the final diff and worktree, then emit the canonical acceptance report in the current task response.
-
-Owner-provided manual browser observation is optional, external, owner-operated, and non-gating. Route explicitly supplied observations only to read-only `review`; Codex must not reproduce them or commit observation evidence.
 
 Do not create a repository copy of the execution contract or acceptance evidence. Do not depend on native skill discovery, a particular client, or machine-local authority.

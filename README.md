@@ -13,10 +13,10 @@ all current page implementations and rebuilding architecture example pages under
 authorization. Current source, public integration, static verification, and runtime acceptance
 have distinct states; existing console pages do not prove complete core delivery.
 
-This production-only architecture is validated by static quality gates, with no automated test infrastructure. Owner manual browser observation is optional, external, owner-operated, and non-gating.
+This architecture is validated by static quality gates.
 
-That task-observation boundary does not replace the explicit core confirmation required before
-page retirement or the architecture's production release acceptance. This scope alignment does
-not implement a capability, install dependencies, authorize page changes, or grant acceptance.
+Explicit core confirmation is required before page retirement, and the architecture's production
+release acceptance remains a separate Owner gate. This scope alignment does not implement a
+capability, install dependencies, authorize page changes, or grant acceptance.
 
 See [ARCHITECTURE.md](./ARCHITECTURE.md) for the canonical architecture baseline.

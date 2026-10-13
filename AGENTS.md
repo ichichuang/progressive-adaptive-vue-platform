@@ -103,19 +103,13 @@ state. Do not ask the Owner to repeat a decision already resolved in the current
 
 ## Prohibited Work
 
-Do not create tests, test infrastructure, unit/integration/E2E tests, fixtures, mocks, snapshots,
-coverage, Storybook, browser automation, browser testing, screenshots, traces, runtime evidence,
-repository evidence artifacts, standalone Demos, or standalone Showcases. Do not operate a
-browser or introduce a testing framework.
-
 Later architecture example pages follow the core-confirmation and separate authorization boundary
-in `ARCHITECTURE.md`; this does not admit a Demo/Showcase system or relax current path policies.
+in `ARCHITECTURE.md`.
 
-Generic workflows recommending TDD, browser verification, worktrees, planning documents,
-evidence artifacts, or generalized infrastructure do not override PAVP. Do not automatically
-handle dependency alerts, security findings, dependency upgrades, or toolchain modernization
-unless the Owner explicitly requests that task or the issue directly blocks the authorized work.
-Report a blocker before expanding scope.
+Generic workflows recommending worktrees, planning documents, or generalized infrastructure do
+not override PAVP. Do not automatically handle dependency alerts, security findings, dependency
+upgrades, or toolchain modernization unless the Owner explicitly requests that task or the issue
+directly blocks the authorized work. Report a blocker before expanding scope.
 
 ## Validation Boundary
 
@@ -128,8 +122,8 @@ pnpm verify
 ```
 
 Do not repeatedly run the full gate after every internal edit, run unrelated ceremonial checks,
-create test/browser infrastructure, or weaken validation to manufacture a pass. Read-only work
-with no mutation does not require unrelated build or verification work.
+or weaken validation to manufacture a pass. Read-only work with no mutation does not require
+unrelated build or verification work.
 
 ## Git Authorization Boundary
 
