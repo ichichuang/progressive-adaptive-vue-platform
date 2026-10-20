@@ -13,22 +13,15 @@
 
 ---
 
-## 第 0 项 — 收口 `PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION` 状态漂移（最近一步）
+## 第 0 项 — 核对 `PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION` 的 Git 事实与历史架构快照
 
-**事实**：route-single Workspace 实例保留源码已在提交 `1684149` 落地（14 files，+1650/−238：新增 `apps/web/src/app/workspace/workspace-retention.ts` +469、`router-lifecycle.ts` +241、`check-router.ts` +699），commit 记录完整 `pnpm verify` exit 0 + Owner「验收通过没问题」。
+**Git 事实**：提交 `1684149` 交付 route-single Workspace 实例保留的完整候选及后续刷新归属修复（14 files，+1650/−238），提交说明记录完整 `mise exec -- pnpm verify` exit 0，并明确保留架构候选阶段状态块和 Current Work 镜像原文。该提交已包含在本次核对的干净 `main@76670b7` 中；后续历史未修改 Workspace 实例保留与 Router 生命周期源码，当前不存在另一个未提交的十四路径候选。
 
-**漂移**：`ARCHITECTURE.md` §18.11.12 块（L11845–11861）仍写 `REPOSITORY_IMPLEMENTATION=SOURCE_CANDIDATE` / `INDEPENDENT_SOURCE_REVIEW=PENDING` / `OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED` / `OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED` / `OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED` / `GIT_DELIVERY=NOT_AUTHORIZED`，尾段 prose（L11889 / L11891 / L11895）仍写「未暂存 / 未提交」——与「已提交且验收通过」的事实矛盾。
+**限定验收记录**：`1684149` 的提交说明记录 Owner「验收通过没问题」，范围为已操作的 route-single 页签切换、重复局部刷新、刷新中切走再返回、活动与非活动标签关闭及既有回退。§18.11 当前 `WORKSPACE_OWNER_RUNTIME_ACCEPTANCE=PASS` 也仅覆盖已接受的最终已提交页签交互；不能推断未观察的缓存内部行为、完整刷新 / 无障碍 / 发布矩阵、多记录能力或新的 Owner 验收。
 
-**⚠ 执行前置**：存在两种解释（`1684149` 是已落地早切片 vs §18.11.12 描述的「十四路径」是更新未暂存切片）。**必须由 Owner 先确认真实状态**，不可盲目翻字段。
+**历史快照**：§18.11 下 `Instance-owned route-single retention implementation admission` 块（L11845–11861）的 `REPOSITORY_IMPLEMENTATION=SOURCE_CANDIDATE` / `INDEPENDENT_SOURCE_REVIEW=PENDING` / 三类 `OWNER_*_ACCEPTANCE=NOT_PERFORMED` / `GIT_DELIVERY=NOT_AUTHORIZED`，以及候选过程段落（L11889 / L11891 / L11895）的「未暂存 / 未提交」，是保留的候选阶段记录，不是当前 Git 工作树状态的证据。它们不能代替 §18.11 的限定接受记录，也不能由本指南自动改写。
 
-**动作**（确认后）：
-
-1. 推进 §18.11.12 状态块字段（L11845–11861）至与事实一致。
-2. 同步十三对 Current Work 镜像（`CURRENT_BOUNDED_WORK_AUTHORITY` / `CURRENT_BOUNDED_WORK`，首对 L117–118，共 13 处）。
-3. 修正 stale prose（L11889 / 11891 / 11895）。
-4. 之后方可考虑放开 `NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE` / `SUCCESSOR_PACKAGE_AUTHORIZATION`（当前 `NONE`）。
-
-**授权**：编辑 `ARCHITECTURE.md` 需 Owner 单独授权；按 §28.3A Git 阶梯逐级执行。
+**执行边界**：后续会话仍须核对实际 Git 状态，并从 `ARCHITECTURE.md` 读取 Current Work 与授权。不得因已有 Git 交付而批量推进验收字段、十三对 Current Work 镜像或后继授权；`NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE` / `SUCCESSOR_PACKAGE_AUTHORIZATION` 仍为 `NONE`。编辑 `ARCHITECTURE.md` 需 Owner 单独授权，Git 交付按 §28.3A 授权阶梯逐级执行。
 
 ---
 
@@ -113,7 +106,7 @@
 
 §1 L208 / §28.3A L16156–16170：完成核心 → 静态验证 + 核心行为确认 → **Owner 明确确认核心** → 另行授权退役全部当前页面并重建架构示例页（L16174：图表 / 地图 / 专业 Grid / 复杂特效仍按需独立准入）。
 
-- **前置**：阶段 A–D 的 TARGET_INACTIVE 全部翻 `ACTIVE` 且 Owner 确认核心。
+- **前置**：按 §1 / §28.3A 完成业务无关核心、适用静态验证与核心行为确认，并由 Owner 明确确认核心；不以阶段 A–D 的九项 TARGET_INACTIVE 全部翻 `ACTIVE` 为统一条件。§1.3 / §37.2 的按需准入、真实服务合同和独立授权边界继续有效；Project generators 仍待重复真实需求，未来 hosting / release 准入仍为非阻塞项。
 - **授权**：退役 / 重建需独立页面重建授权（§1 L208、§28.3A L16174）。
 
 ---
@@ -135,13 +128,15 @@
 
 ---
 
-## PROHIBITED（3 条，永不实现）
+## PROHIBITED（3 条，当前与目标架构明确禁止）
 
 | #   | 能力                                                    | §1.3  | 禁止依据                                   |
 | --- | ------------------------------------------------------- | ----- | ------------------------------------------ |
 | 1   | Router Experimental Data Loaders                        | L5915 | future stable-dependency decision required |
 | 2   | Seed-generated, partial or auto-corrected themes        | L5916 | explicit complete Theme contract           |
 | 3   | Page-authored visual authority and public optical props | L5917 | Design Token and UI boundary               |
+
+§1.3 对 Router Experimental Data Loaders 显式保留未来稳定依赖决策条件，§9.10 的当前禁令仍有效；未来条件不等于当前准入或实施授权。其余两项继续遵守完整 Theme 合同及 Design Token / UI 权威边界，不从本指南推导例外或能力激活。
 
 ---
 
@@ -154,6 +149,7 @@
 
 ## 执行与验证约定
 
-- **每项能力准入**：静态 Gate（`mise exec -- pnpm verify` exit 0）+ Owner Runtime / Visual / Accessibility 验收 + Git 授权阶梯，三者齐备才算 `ACTIVE`。
+- **能力状态**：按 §1.3，`ACTIVE` 表示当前仓库已有真实 Artifact、Owning Gate 与静态证据，只能按当前合同使用；不统一要求 Runtime / Visual / Accessibility 验收及 Git 交付全部完成后才能认定 `ACTIVE`，也不单独证明完整核心或发布已获接受。
+- **实施与验收**：按 §1、§28.4、§37.2，分别报告源码实现、公共集成、静态验证、Owner 接受与包完成；完成实施任务须通过完整 `mise exec -- pnpm verify`，并满足该包实际合同与 Owning Gate。§32.2 的非发布手工观察不是统一完成门槛；核心确认及各包明确要求的验收仍须按其合同执行。
+- **Git 与发布**：§28.3A 的 staging / commit / push / release 各需相应明确授权，Git 交付不能替代 Owner 验收。Production Release 仍须 §32.3 的适用 Runtime Matrix 与精确 Release 的 Owner Decision；纯静态文档且无 Runtime Artifact 变化时 Product Release Gate 不适用，仍须 `pnpm verify`。
 - **编辑 `ARCHITECTURE.md` 后**：`mise exec -- pnpm verify` 必须 exit 0（覆盖 `check:arch` / `check:policy` / `check:capability-manifest` / `check:i18n` 等），并确认十三对 Current Work 镜像与状态块一致。
-- **文档本文件**：仅新增本文件，不触碰源码与 `ARCHITECTURE.md`；`git status` 应只显示本文件未跟踪。
