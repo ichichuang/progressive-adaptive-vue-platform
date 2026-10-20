@@ -22,6 +22,7 @@
 **⚠ 执行前置**：存在两种解释（`1684149` 是已落地早切片 vs §18.11.12 描述的「十四路径」是更新未暂存切片）。**必须由 Owner 先确认真实状态**，不可盲目翻字段。
 
 **动作**（确认后）：
+
 1. 推进 §18.11.12 状态块字段（L11845–11861）至与事实一致。
 2. 同步十三对 Current Work 镜像（`CURRENT_BOUNDED_WORK_AUTHORITY` / `CURRENT_BOUNDED_WORK`，首对 L117–118，共 13 处）。
 3. 修正 stale prose（L11889 / 11891 / 11895）。
@@ -119,16 +120,16 @@
 
 ## DEFERRED（8 条，等真实后端 / 消费者合同，非落后）
 
-| # | 能力 | §1.3 | 准入条件（何时可推进） |
-|---|------|------|------------------------|
-| 1 | Continuous Density Scale application | L5881 | §14.3 persisted 字段；语义 / 计算需 Owner 决策 |
-| 2 | Session state | L5889 | 需真实 server Session 合同 |
-| 3 | TanStack Query server-state runtime | L5896 | 需 API Transport + 服务端状态消费者（admissionCondition L5034） |
-| 4 | API Transport | L5898 | 需真实端点 / Origin / Schema / 策略 / 消费者 / 服务端 Owner（L5015） |
-| 5 | Auth, Session and Permission | L5899 | 需真实认证 / Cookie / CSRF / Session / Principal / Tenant / Capability（L5018） |
-| 6 | Observability reporting and Runtime Performance | L5900 | 需真实事件生产者 / 报告 Provider / 隐私审查（L5024） |
-| 7 | Motion for Vue, GSAP and specialist adapters | L5907 | 通用 deferred；§1.2B.0M 已 INSTALLED 一个 scoped 私有 Motion runtime |
-| 8 | Optional backend-dependent capability lane | L5913 | 保留 lane 身份，conditional real-service integration |
+| #   | 能力                                            | §1.3  | 准入条件（何时可推进）                                                          |
+| --- | ----------------------------------------------- | ----- | ------------------------------------------------------------------------------- |
+| 1   | Continuous Density Scale application            | L5881 | §14.3 persisted 字段；语义 / 计算需 Owner 决策                                  |
+| 2   | Session state                                   | L5889 | 需真实 server Session 合同                                                      |
+| 3   | TanStack Query server-state runtime             | L5896 | 需 API Transport + 服务端状态消费者（admissionCondition L5034）                 |
+| 4   | API Transport                                   | L5898 | 需真实端点 / Origin / Schema / 策略 / 消费者 / 服务端 Owner（L5015）            |
+| 5   | Auth, Session and Permission                    | L5899 | 需真实认证 / Cookie / CSRF / Session / Principal / Tenant / Capability（L5018） |
+| 6   | Observability reporting and Runtime Performance | L5900 | 需真实事件生产者 / 报告 Provider / 隐私审查（L5024）                            |
+| 7   | Motion for Vue, GSAP and specialist adapters    | L5907 | 通用 deferred；§1.2B.0M 已 INSTALLED 一个 scoped 私有 Motion runtime            |
+| 8   | Optional backend-dependent capability lane      | L5913 | 保留 lane 身份，conditional real-service integration                            |
 
 > 这批不是「差进度」，而是「缺真实合同」。当前纯前端主线不依赖它们；不要凭空补代码，禁止 Fake Service / 空实现 / 伪造成功（§1 L206）。
 
@@ -136,11 +137,11 @@
 
 ## PROHIBITED（3 条，永不实现）
 
-| # | 能力 | §1.3 | 禁止依据 |
-|---|------|------|----------|
-| 1 | Router Experimental Data Loaders | L5915 | future stable-dependency decision required |
-| 2 | Seed-generated, partial or auto-corrected themes | L5916 | explicit complete Theme contract |
-| 3 | Page-authored visual authority and public optical props | L5917 | Design Token and UI boundary |
+| #   | 能力                                                    | §1.3  | 禁止依据                                   |
+| --- | ------------------------------------------------------- | ----- | ------------------------------------------ |
+| 1   | Router Experimental Data Loaders                        | L5915 | future stable-dependency decision required |
+| 2   | Seed-generated, partial or auto-corrected themes        | L5916 | explicit complete Theme contract           |
+| 3   | Page-authored visual authority and public optical props | L5917 | Design Token and UI boundary               |
 
 ---
 

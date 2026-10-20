@@ -19661,16 +19661,18 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
   const allUiFiles = (await collectFiles(resolve(rootDirectory, 'packages/ui/src'))).filter(
     (path) => ['.ts', '.vue'].includes(extname(path)),
   )
-  const nonAdapterUiFiles = (await collectFiles(resolve(rootDirectory, 'packages/ui/src'))).filter(
+  const nonAdapterUiFiles = allUiFiles.filter(
     (path) =>
       ['.ts', '.vue'].includes(extname(path)) &&
       !relative(rootDirectory, path).startsWith('packages/ui/src/adapters/naive/'),
   )
-  const [applicationSources, allUiSources, nonAdapterUiSources] = await Promise.all([
+  const [applicationSources, allUiSources] = await Promise.all([
     Promise.all(applicationFiles.map((path) => readFile(path, 'utf8'))),
     Promise.all(allUiFiles.map((path) => readFile(path, 'utf8'))),
-    Promise.all(nonAdapterUiFiles.map((path) => readFile(path, 'utf8'))),
   ])
+  const nonAdapterUiSources = allUiSources.filter((_source, index) =>
+    nonAdapterUiFiles.includes(allUiFiles[index] ?? ''),
+  )
   const outsideMotionPrivateUiSources = allUiSources.filter(
     (_source, index) =>
       !relative(rootDirectory, allUiFiles[index] ?? '').startsWith(
@@ -19692,7 +19694,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     workspaceRetentionSource,
     themeSource,
     naiveProviderSource,
-    uiProviderSource,
     shellSource,
     adminTokenSource,
     routeRegistrySource,
@@ -19715,7 +19716,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-retention.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'), 'utf8'),
-    readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/providers/UiProvider.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/src/components/UiAdminShell.vue'), 'utf8'),
     readFile(
@@ -19753,6 +19753,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ),
     readFile(resolve(rootDirectory, 'packages/ui/src/index.ts'), 'utf8'),
   ])
+  const uiProviderSource = naiveProviderSource
   const [naiveDropdownSource, naiveMenuChildSource, naivePopoverSource, naiveSubmenuSource] =
     await Promise.all([
       readFile(requireFromUi.resolve('naive-ui/es/dropdown/src/Dropdown.mjs'), 'utf8'),
