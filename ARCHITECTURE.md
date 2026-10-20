@@ -8201,6 +8201,8 @@ cssVariable?
 | `ui-internal` | Yes         | No                 | No          | No               | Yes      |
 | `build-only`  | No          | No                 | No          | No               | Yes      |
 
+§14.2 仅冻结一个后续实施用的窄内部例外：Semantic `interaction.control.height-baseline` 以 `ui-internal` Visibility 引用 Build-only `density.comfortable.control.height`，供集中 Naive Common Size 保持兼容基线。它遵守上表的内部输出过滤，不扩大 Density Tier Visibility，不进入 Public Role Registry 或公共输出集合，也不准入其他 Density 内部输出；精确合同与实施授权边界仅见 §14.2。
+
 Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role Metadata；只有 Runtime CSS 中真实存在的 Token 才记录 `cssVariable`。Manifest 是生成和治理输入，不是应用公共 API。
 
 加入这些字段时必须提升 Manifest Schema Version。Generator 必须在 Material Source 进入前支持 `material` Namespace → `--ui-material-*` 映射。Package 5 Atomic Cutover 后，Theme、Mode 与 Contrast 的当前 Public Color Projection 只遵守 §13.7 的 Private Theme Bank 和 Stable Public Binding；先前 Embedded-palette Conditional Projection 已退休。其他 Conditional Semantic Alias 必须保留 CSS `var(...)` 关系与独立单轴 Selector，不得一律压平为 Literal 或复制组合矩阵。
@@ -10882,7 +10884,7 @@ spacing.list-item.gap
 从一个 Preset 自动推导另外两个 Preset
 ```
 
-当前 Density Source 保持 `build-only`，不得因本修订新增 Public Output。未来 Admission 接受后，选定的 Density Source 才通过已准入 Semantic Role 投影为 `visibility=public` 的 Density-conditioned Alias。精确 Role/Source Mapping 和 Condition Record Set 由该次准入闭合；不预设必须一次生成 11 Role / 33 Condition Record。相对已准入集合的缺失、额外、重复或类型不一致必须使 Generation Failure。
+当前 Density Source 保持 `build-only`，不得因本修订新增 Public Output。未来实施经独立 Admission 与 Owner 授权后，选定的 Density Source 才通过已准入 Semantic Role 投影为 `visibility=public` 的 Density-conditioned Alias；唯一额外许可是下文精确定义的 `ui-internal` 无条件兼容基线。下文只冻结现有 `interaction.control.height` 的最小 Role/Source Mapping 和 Condition Record Set；其他候选仍须各自准入，不预设必须一次生成 11 Role / 33 Condition Record。相对该集合的缺失、额外、重复或类型不一致必须使 Generation Failure。
 
 该未来 Admission 接受后，Generator 必须生成独立选择器：
 
@@ -10930,6 +10932,60 @@ material
 ```
 
 未来 Density 实施必须保持 §13.11 现有首屏恢复与失败时保留安全基线的边界；成功解析的 Built-in/Custom Appearance 在 First Paint 与 Vue 后必须消费同一 Density Projection。实施还须复用 §13 的 Runtime Apply/Rollback 原子事务和持久化兼容合同，并同步 §16.3 的集中 Naive Projection。Schema、Attribute 或 UI 选项存在不构成 Density Projection 完成证据；不能先在局部组件应用新密度，再等待中心链路追上。
+
+### Single-role projection and invariant Naive baseline
+
+Owner 本次仅授权本节及必要交叉引用的架构冻结。后续 Density-owned Public Role Set 精确为 `{ interaction.control.height }`，复用已存在的公共 Role，不增加公共 Token 名称、CSS Variable、UnoCSS Class、Package API 或其他尺寸/间距 Role。另仅允许下述一个内部 Alias；这不是新的 Preference、公共 Density Role 或通用 Projection Framework。本次没有源码实施授权，不创建实施工作包，不生成任何 Artifact，不激活三档 Density，不改变 §1.3、Current Work、Next/Successor、历史记录或验收。
+
+#### Exact source and condition records
+
+未来 Semantic Alias 的 Source Owner 为现有 `packages/design-system/tokens/semantic/interaction.tokens.json`，通过现有 `org.pavp.role` / `conditions` / `visibility` 机制复用 Generator。公共输出的 Role、Type、Visibility、CSS Variable 与 UnoCSS Mapping 继续为 `interaction.control.height`、`dimension`、`public`、`--ui-control-height` 和仅写 `height` 的 `h-control`；`PublicRoleRegistry` 中其余 Metadata 保持。Record Set 精确如下，值必须由 `$value` Source Reference 解析，不能在 UI 代码或第二份配置中手写副本：
+
+| Record | Role / Alias | Conditions | Exact Source Reference | Resolved Value | CSS Selector |
+| --- | --- | --- | --- | --- | --- |
+| Public default | `interaction.control.height` | `{}` | `{density.comfortable.control.height}` | `2.25rem` | `:root` |
+| Public Compact | `interaction.control.height` | `{ density: 'compact' }` | `{density.compact.control.height}` | `2rem` | `html[data-density='compact']` |
+| Public Comfortable | `interaction.control.height` | `{ density: 'comfortable' }` | `{density.comfortable.control.height}` | `2.25rem` | `html[data-density='comfortable']` |
+| Public Spacious | `interaction.control.height` | `{ density: 'spacious' }` | `{density.spacious.control.height}` | `2.75rem` | `html[data-density='spacious']` |
+| Internal baseline | `interaction.control.height-baseline` | `{}` | `{density.comfortable.control.height}` | `2.25rem` | `:root` |
+
+三个 Public Conditional Record 只能各有一个 Density Axis，分别引用本档既有 Source；三个 Density Source 继续逐档显式 Alias 既有 `dimension.control.sm / md / lg`，并保持 `build-only`。Public Default 保留 Comfortable 的现有默认值和无 Attribute 时的安全基线；它不替代三个完整 Conditional Record，也不能掩盖合法 Preset 缺失。禁止比例派生、跨 Preset Fallback、继承或 Compound Axis。固定 Default 与内部 Baseline 引用 Comfortable 是本节明示的无条件基线，不表示 Compact/Spacious 从 Comfortable 推导。
+
+`interaction.control.height-baseline` 的唯一合同为 `tier=semantic`、`type=dimension`、`visibility=ui-internal`、`conditions={}`、`cssVariable=--ui-control-height-baseline`，精确引用上表 Source；它在三档中均不变，不形成另一份 Preset Matrix。这里 Invariant 只指独立于 Density Preset；仍保留 `rem` 单位及现有 Root Font Size / `fontScale` 行为，不转换或冻结为 `36px`。其唯一运行时消费责任是 `pavp-naive-theme.ts` 的 Common Size 兼容投影；不得由页面、UnoCSS Utility、公共 `tokens` / `TokenName` / Token Names、Package API 或新 Generated File 暴露或消费。既有 Runtime CSS、为首屏一致性所需的 Critical CSS 和 Manifest 可记录它；Manifest 必须保留真实 Source、Tier、Visibility、Conditions 与值，不能把它混入 Public Role/Mappings。
+
+公共唯一 Role 集合继续满足 §11.4 的 `A = R = T = N = U = M`，不增加 Public Role 数量或改变其 Mapping。该 Role 的一个 Default 与三个 Condition Record 只在 Generated CSS / Manifest 展开；额外一个无条件内部 Record 按内部 Visibility 单独计入 Manifest Token Records。Density Source 的 Build-only Record 不因此成为运行时输出。未来实际 Record Counts、压缩测量和直接 Owning Gate 必须随源码同步，当前 §1.3 的计数与版本保持，不以本次文档预写实施结果。
+
+#### Direct consumers and preserved geometry
+
+以下是当前源码已经存在的直接消费，后续单 Role 投影只允许它们按原 Property/Anatomy 响应；不增加消费者或把单一数值扩展为通用几何规则：
+
+| Existing Consumer | Admitted Behavior |
+| --- | --- |
+| `pavp-naive-theme.ts` 的 `Tag.heightMedium`，含 `UiStatusBadge` 所用 Medium Tag | 消费公共 `var(--ui-control-height)`，随本档值变化；不修改 Typography、Padding、Radius、Close 或其他 Size 分支。 |
+| 同文件的 Switch Medium；既有 Form Theme 复用的同一 Switch Projection | `railWidthMedium` 保留公共高度值；`railHeightMedium`、`buttonHeightMedium`、`buttonWidthMedium`、`buttonWidthPressedMedium` 保留既有 `calc(var(--ui-control-height) / 2)`。这是已存在的 Switch Anatomy，不是三档 Preset 派生公式；不改变 Form 能力状态或准入消费者。 |
+| `h-control`，当前用于 `apps/web/src/app/errors/fatal-boundary.ts` 的原生 Action Button | 仍只把公共变量映射到 `height`；不把该 Error Action 当作所有按钮/命中区域已获验证的证据，也不新增 Utility Property。 |
+| `apps/web/src/pages/appearance.vue` 的既有直接几何 | Theme Swatch 的 `block-size` 保留高度 `/ 2`；Feedback 的 `min-block-size` 保留完整高度；Material Environment 子项的 `block-size` 保留高度 `/ 4`；Navigation Indicator 的 `inline-size` 保留完整高度。这些是已有页面消费，不授权新的页面尺寸/布局 Role 或样式迁移。 |
+
+集中 Naive 的未来唯一必要兼容调整是：`common.heightSmall` 和 `common.heightMedium` 均消费 `var(--ui-control-height-baseline)`；`common.heightLarge` 继续消费既有 Enhanced Target Height。已安装 Naive UI `2.45.2` 的 Button `self` 从 Common 取得 `heightSmall`，而集中桥只显式覆盖 `Button.heightMedium`；因此保留 Common 基线即可保护继承的 Small 分支，不新增 Button-specific Workaround。其余显式 Component Override 全部保持当前合同，只有上表已存在的 Tag/Switch 公共 Role 输入随 Preset 响应。
+
+由 Common 继承尺寸的其他组件与 Size 不因此取得 Density 响应。Button Small 保留 Comfortable 基线及 `rem` 行为；Tiny 保留官方既有分支；Button Medium 继续为 Enhanced Target 的 `44px`，Normal Medium Padding 继续精确为 `0` / `14px`。Large、Round、Circle、Text、InputNumber Text、DatePicker Tiny Action 和其他未列 Size/Peer 均保留各自现有合同。Radio、Form Input/Selection 及其他显式消费 Enhanced Target 的几何不切换到公共 Control Height；Tag 的非 Medium、Switch 的非 Medium、Section/Page/Content Spacing、Shell/Navigation/Workspace/Overlay Geometry 均不由本单 Role 追加投影。
+
+§14.5 的 `layout.target.enhanced.minimum-block-size` / `minimum-inline-size`、唯一 `dimension.target.enhanced-min`、现有 `min-h-target-enhanced min-w-target-enhanced` 和 Shell/Settings 的 `44px × 44px` 要求保持。密度视觉尺寸不能替代或缩小外层命中范围；不能删除 Min Target 以暴露 Compact 差异，也不能用该值改变 Radius、Focus/Border、字体或布局阈值。公共高度与内部基线均随既有 `fontScale` 的 Root Font Size 产生正常 `rem` 几何，44px 独立下限与浏览器 Zoom 合同保持。
+
+#### First paint, transactions and later evidence
+
+未来 Generated `tokens.css` 与 `critical-theme.css` 必须从同一上表记录生成一致的公共 Default、三个单轴 Conditional Output 和内部无条件基线。每个 Density Selector 只写 `--ui-control-height`，不得写 Baseline、其他 Role 或组合其他 Appearance Axis；Baseline 只在无条件根基线声明。§13.11 的同步 Built-in/合法 Custom First Paint、失败保留完整安全基线与 Post-Vue 恢复保持同源；无有效恢复时两项高度均为 Comfortable 基线，不改写非法 Preference。现有 `data-density`、只读 Snapshot、集中 Naive 与直接 CSS/UnoCSS 消费同一有效 Preset，Common 始终消费独立 Baseline，不另存 Effective State。
+
+复用现有 Appearance Apply/Rollback 原子事务、Schema、Storage Key 与持久化格式。新增 CSS 投影必须在首屏及 Vue 后一致，不增加挂载后补丁、第二 Writer、独立订阅或 Naive Size Store。保留当前 Reset 对 Density 的保留语义，不添加 Density 控件，不应用、迁移、删除或重写 `density.scale`；公共高度和 Baseline 均不读取该字段。
+
+后续实施的最小证据由既有 Generator/Token Checks、Appearance Cutover Checker、Architecture Admin Console 的 Naive/消费者检查及完整 `mise exec -- pnpm verify` 承担，不创建 Test Framework 或通用治理机制：
+
+1. 验证 Alias 的确切 Source Provenance、Dimension/Unit、一个 Public Default、三个完整且唯一的单轴 Preset Record，以及一个无条件内部 Baseline；缺失、额外、重复、错误来源/值/类型、跨档推导或 Compound 必须失败。
+2. 从实际 Generated Runtime/Critical CSS、Public Metadata、TypeScript/Token Names、UnoCSS 与 Manifest 核对单 Role Parity、Selector/Declaration 集合及禁止导出；内部 Record 在所有 Preset 下保持相同来源和值，不进入公共集合或页面。保持 Build-only 输出过滤和 Generated-output Drift Check，同步实际 Manifest 计数与测量，不能削弱现有 Gate。
+3. 精确核对 Common Small/Medium 的 Baseline 输入、Large 的 Enhanced Target 输入、Tag/Switch 直接字段和现有公式；证明 Button Small 继承基线、Tiny 分支、Medium Height、Normal Medium Padding、其他已冻结 Override 与独立命中下限保持。覆盖 Built-in/Custom 的三档 First Paint/Post-Vue、失败恢复、Apply/Rollback、既有 Font Scale 档位及非 `1` Density Scale 的无应用/无损保留。
+4. 源码存在、Public Integration、Static Gate 结果与 Owner Runtime/Visual Evidence 分别报告。只有实现及上述静态证据闭合后才能报告本单 Role 的静态完成；视觉差异、继承分支渲染、命中区域、Font Scale/Zoom 与首屏无跳变的实际观察不能由静态检查推定，适用发布仍服从 §32。本次不新增任何 Runtime/Visual Acceptance。
+
+这是局部控件高度投影；即使后续单 Role 完成，也不代表完整 Compact/Comfortable/Spacious 系统、所有组件 Size 或间距投影已完成，不自动改变三档能力状态。源码、Generated、Checker 或 UI 的任何修改仍须独立实施准入与 Owner 授权；本架构修订不授予该授权，也不授予后继或 Git 交付。
 
 ## 14.3 连续密度微调
 
@@ -11359,6 +11415,8 @@ Dialog、Drawer、确认、反馈、复制、下载、文件处理和浏览器 F
 `UiProvider.vue` 与 `pavp-naive-theme.ts` 中的集中 PAVP Theme Projection 是现有主边界，后续工作是扩展并闭合该桥接，不重建主题系统。普通页面不得创建自己的 Naive Palette、Size Theme 或第二 Provider。Naive 支持通过 Typed `theme` / `themeOverrides` 自定义全局及组件主题；当支持的 Theme API 足够时，必须优先使用它，不用任意 DOM CSS Override 取代。参见 [Naive 官方主题定制文档源码](https://github.com/tusen-ai/naive-ui/blob/main/demo/pages/docs/customize-theme/enUS/index.md)。
 
 已准入组件按实际渲染合同逐步补齐 PAVP Semantic Color、Visual Control Size、Padding、Icon Size/Spacing、Typography、Radius、Border/Focus、State（含 Disabled）与 Motion 输入。当前源码只闭合已有组件和已使用 Size Variant，尚无完整组件/Size/程序式反馈覆盖；这是现状，不把它冻结为最终覆盖上限。后续按受支持核心组件公共合同扩展集中桥，无需业务页面先出现，不创建只有映射而无明确行为的空实现。§14 的缺失尺寸能力先经过同一 Canonical Role/Mapping 准入，再进入 Vendor 投影；现有集中映射不证明尺寸扩展已完成。
+
+§14.2 的单 Role 架构冻结仅允许未来把 Common `heightSmall` / `heightMedium` 的输入分离为无条件 `var(--ui-control-height-baseline)`，以保护既有 Naive 尺寸继承；该 UI-internal Alias 的来源、Visibility、唯一消费与禁止公共导出均由该节定义。它不改变本节 Button Height/Padding、Enhanced Target、其他显式 Override 或官方 Size 分支合同，不激活 Density，也不授权本次修改集中桥源码。
 
 同一 PAVP Semantic Input 可投影为 Canonical CSS Variable String，也可在 Naive 的 JavaScript 运算不能消费未解析 `var(...)` 时，投影为从同一权威派生的具体 Typed Runtime Value。转换必须保持输入来源、单位、有效 Appearance 与事务一致性，不能复制 Palette/Size Literal 或自建设计计算规则；这种投影不是第二权威。具体 Parser-sensitive Field 仍遵守 §1.2B.6 及后续精确修订，不以本条绕过既有禁写项或扩大兼容输入范围。
 
