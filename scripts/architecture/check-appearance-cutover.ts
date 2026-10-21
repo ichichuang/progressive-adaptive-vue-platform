@@ -8,6 +8,7 @@ import {
   applyAppearance,
   builtInThemeIds,
   explicitThemePreferenceSchema,
+  fontScaleValues,
   installCustomThemeBank,
   migrateToExplicitThemePreference,
   resolveThemeReference,
@@ -31,6 +32,7 @@ import { deriveThemeBankRecords } from '../../packages/design-system/src/build/f
 import { validatePublicRoleRegistry } from '../../packages/design-system/src/build/public-role-registry'
 import { generatedThemeRegistry } from '../../packages/design-system/src/generated/theme-registry'
 import { completeBuiltInThemeDefinitionSchema } from '../../packages/design-system/src/schema/complete-theme.schema'
+import { uiDensityValues } from '../../packages/design-system/src/schema/appearance.schema'
 
 type JsonObject = Record<string, unknown>
 
@@ -382,6 +384,11 @@ function objectKeys(object: ts.ObjectLiteralExpression): readonly string[] {
 
 function scanConsumerAppearanceAuthorities(path: string, sourceText: string): readonly string[] {
   const violations: string[] = []
+  if (
+    sourceText.includes('--ui-control-height-baseline') &&
+    !path.endsWith('/packages/ui/src/adapters/naive/pavp-naive-theme.ts')
+  )
+    violations.push(`density-internal-baseline-owner:${path}`)
   const file = sourceFile(path, sourceText)
 
   function inspect(node: ts.Node): void {
@@ -502,7 +509,8 @@ async function validatePackageFiveStaticAuthorities(): Promise<readonly string[]
   ].filter((path) => ['.css', '.ts', '.vue'].includes(extname(path)))
 
   for (const path of consumerFiles) {
-    violations.push(...scanConsumerAppearanceAuthorities(path, await readFile(path, 'utf8')))
+    const source = await readFile(path, 'utf8')
+    violations.push(...scanConsumerAppearanceAuthorities(path, source))
   }
 
   const designSystemFiles = (
@@ -559,6 +567,13 @@ async function validatePackageFiveStaticAuthorities(): Promise<readonly string[]
     }
     target.setAttribute('data-theme', 'neutral')`,
   )
+  if (
+    !scanConsumerAppearanceAuthorities(
+      '<density-page-negative-probe>',
+      "const height = 'var(--ui-control-height-baseline)'",
+    ).some((violation) => violation.startsWith('density-internal-baseline-owner:'))
+  )
+    violations.push('density-internal-baseline-owner: negative probe did not fail.')
   const safetyNegativeProbe = scanDesignSystemAppearanceAuthorities(
     '<package-five-safety-negative-probe>',
     `const duplicateSafety = {
@@ -1892,6 +1907,38 @@ function validatePersistenceContracts(): readonly string[] {
       violations.push('A different rejected Entry must expose no diagnostic or Registry Entry.')
     }
 
+    for (const theme of [defaultPreference.appearance.theme, firstValidation.entry] as const) {
+      for (const preset of uiDensityValues) {
+        for (const fontScale of fontScaleValues) {
+          for (const scale of [0.9, 1.1, 1.15]) {
+            const preference = explicitThemePreferenceSchema.parse({
+              schemaVersion: 3,
+              appearance: {
+                ...ProductPreferenceDefault,
+                theme: { registryKind: theme.registryKind, themeId: theme.themeId },
+                density: { preset, scale },
+                fontScale,
+              },
+            })
+            const written = writeStoredPreference(preference)
+            const raw = storage.values.get(preferenceKey)
+            const writes = storage.setCalls
+            const restored = readStoredPreference()
+            if (
+              written.status !== 'written' ||
+              restored.status !== 'restored' ||
+              !isDeepStrictEqual(restored.preference, preference) ||
+              raw !== JSON.stringify(preference) ||
+              storage.setCalls !== writes
+            )
+              violations.push(
+                'Density preset/non-1 scale/fontScale must round-trip losslessly without Reader writes.',
+              )
+          }
+        }
+      }
+    }
+
     return violations
   })
 }
@@ -2225,6 +2272,49 @@ function validateRuntimeContracts(): readonly string[] {
     violations.push('Built-in Appearance application did not clear the Custom Theme Bank.')
   }
 
+  for (const theme of [
+    defaultPreference.data.appearance.theme,
+    { registryKind: 'custom', themeId: validation.entry.themeId },
+  ] as const) {
+    for (const preset of uiDensityValues) {
+      for (const fontScale of fontScaleValues) {
+        for (const scale of [0.9, 1, 1.1]) {
+          const preference = explicitThemePreferenceSchema.parse({
+            schemaVersion: 3,
+            appearance: {
+              ...ProductPreferenceDefault,
+              theme,
+              density: { preset, scale },
+              fontScale,
+            },
+          })
+          const before = JSON.stringify(preference)
+          if (theme.registryKind === 'custom') installCustomThemeBank(target, validation.entry)
+          applyAppearance(target, {
+            ...preference.appearance,
+            colorMode: 'light',
+            material: 'solid',
+            density: preset,
+          })
+          const migrated = migrateToExplicitThemePreference(preference)
+          if (
+            attributes.get('data-density') !== preset ||
+            properties.get('--ui-font-scale')?.value !== String(fontScale) ||
+            [...properties.keys()].some(
+              (name) => name.includes('control-height') || name.includes('density'),
+            ) ||
+            migrated.status !== 'success' ||
+            !isDeepStrictEqual(migrated.preference, preference) ||
+            JSON.stringify(preference) !== before
+          )
+            violations.push(
+              'Density runtime application must preserve non-1 scale without applying it or writing height overrides.',
+            )
+        }
+      }
+    }
+  }
+
   let partialMutationStarted = false
   const rollbackTarget = {
     style: {
@@ -2399,8 +2489,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 11 || recordCount !== 408) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 11/408.')
+  if (manifest['schemaVersion'] !== 11 || recordCount !== 412) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 11/412.')
   }
 
   const themes = manifest['themes']

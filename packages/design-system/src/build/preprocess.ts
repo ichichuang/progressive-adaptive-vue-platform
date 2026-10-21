@@ -313,6 +313,95 @@ function compareRecords(left: ResolvedTokenRecord, right: ResolvedTokenRecord): 
   )
 }
 
+export function validateDensityControlHeightSources(records: readonly ResolvedTokenRecord[]): void {
+  const publicRole = 'interaction.control.height'
+  const baselineRole = 'interaction.control.height-baseline'
+  const aliases = records.filter(
+    (record) => record.role.name === publicRole || record.role.name === baselineRole,
+  )
+  const expected = [
+    [publicRole, undefined, 'comfortable'],
+    [publicRole, 'compact', 'compact'],
+    [publicRole, 'comfortable', 'comfortable'],
+    [publicRole, 'spacious', 'spacious'],
+    [baselineRole, undefined, 'comfortable'],
+  ] as const
+  function fail(detail: string): never {
+    throw new Error(`Density control-height contract: ${detail}.`)
+  }
+  if (aliases.length !== expected.length) fail('exactly five semantic aliases are required')
+  for (const [role, preset, sourcePreset] of expected) {
+    const matches = aliases.filter(
+      (record) =>
+        record.role.name === role &&
+        conditionKey(record.conditions) ===
+          conditionKey(preset === undefined ? {} : { density: preset }),
+    )
+    const record = matches[0]
+    const source = `density.${sourcePreset}.control.height`
+    if (matches.length !== 1 || record === undefined)
+      fail(`${role}/${preset ?? 'default'} must occur exactly once`)
+    if (
+      record.source !== 'semantic/interaction.tokens.json' ||
+      record.tier !== 'semantic' ||
+      record.type !== 'dimension' ||
+      record.visibility !== (role === publicRole ? 'public' : 'ui-internal') ||
+      record.cssVariable !== cssVariableForRole(record.role) ||
+      record.compound !== undefined ||
+      record.authoredValue !== `{${source}}` ||
+      record.reference !== source ||
+      (preset === undefined && record.path !== role)
+    )
+      fail(`${role}/${preset ?? 'default'} has incorrect source or metadata`)
+  }
+  for (const record of records) {
+    if (
+      ((record.conditions.density !== undefined ||
+        record.reference?.startsWith('density.') === true ||
+        aliases.some((alias) => alias.path === record.reference)) &&
+        record.tier !== 'density' &&
+        !aliases.includes(record)) ||
+      (record.tier === 'density' &&
+        (record.visibility !== 'build-only' || record.cssVariable !== undefined))
+    )
+      fail('density selectors and source visibility must remain isolated')
+  }
+  for (const [preset, primitive, cssValue] of [
+    ['compact', 'sm', '2rem'],
+    ['comfortable', 'md', '2.25rem'],
+    ['spacious', 'lg', '2.75rem'],
+  ] as const) {
+    const path = `density.${preset}.control.height`
+    const sources = records.filter((record) => record.path === path)
+    const record = sources[0]
+    const primitivePath = `dimension.control.${primitive}`
+    const target = records.find((candidate) => candidate.path === primitivePath)
+    if (
+      sources.length !== 1 ||
+      record?.source !== `density/${preset}.tokens.json` ||
+      record.tier !== 'density' ||
+      record.type !== 'dimension' ||
+      record.visibility !== 'build-only' ||
+      Object.keys(record.conditions).length !== 0 ||
+      record.compound !== undefined ||
+      record.authoredValue !== `{${primitivePath}}` ||
+      record.reference !== primitivePath ||
+      tokenValueToCss(record.type, record.resolvedValue) !== cssValue ||
+      target?.source !== 'primitive/dimension.tokens.json' ||
+      target.tier !== 'primitive' ||
+      target.visibility !== 'build-only' ||
+      target.type !== 'dimension' ||
+      target.reference !== undefined ||
+      tokenValueToCss(target.type, target.resolvedValue) !== cssValue
+    )
+      fail(`${path} must explicitly alias its own rem primitive`)
+    for (const alias of aliases.filter((candidate) => candidate.reference === path)) {
+      if (tokenValueToCss(alias.type, alias.resolvedValue) !== cssValue)
+        fail(`${alias.path} resolved value drifted`)
+    }
+  }
+}
+
 export function validateTokenRecords(
   records: readonly ResolvedTokenRecord[],
   themeIds: ReadonlySet<string>,
@@ -668,6 +757,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
 
   const resolver = createTokenResolver(tokenRecords)
   validateSemanticStatusSources(resolver.records)
+  validateDensityControlHeightSources(resolver.records)
   const resolvedThemes = themes
     .sort((left, right) => compareCodePoints(left.id, right.id))
     .map((theme): ResolvedLegacySeedThemeDefinition => ({

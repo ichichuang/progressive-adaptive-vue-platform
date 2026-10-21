@@ -35,6 +35,7 @@ import {
   formatAppearanceBaseCss,
   formatForcedColorsCss,
   formatThemeBankCss,
+  formatTokenCssRules,
 } from './css'
 import { generatedNotice, requireBuildResult, resolvedCssValue, type FormatContext } from './shared'
 import { themeRegistryDocument } from './typescript'
@@ -119,6 +120,15 @@ ${canonicalLayerOrder}
   :root {
 ${criticalDeclarations(result)}
   }
+
+${formatTokenCssRules(
+  result,
+  result.tokens.filter(
+    (token) =>
+      token.role.name === 'interaction.control.height' ||
+      token.role.name === 'interaction.control.height-baseline',
+  ),
+)}
 
 ${formatThemeBankCss(result)}
 }

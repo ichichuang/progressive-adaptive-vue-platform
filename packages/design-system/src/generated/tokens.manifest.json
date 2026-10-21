@@ -53,7 +53,7 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 245,
+      "tokens": 249,
       "activePublicRoles": 55,
       "unoCssMappings": 55,
       "namedContrasts": 34,
@@ -62,9 +62,9 @@
       "themes": 14,
       "firstPaint": 1
     },
-    "recordCount": 408,
+    "recordCount": 412,
     "baselineRecordCount": 181,
-    "expectedRecordCountDelta": 227,
+    "expectedRecordCountDelta": 231,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
@@ -2737,6 +2737,68 @@
       },
       "resolvedValue": "2.25rem",
       "cssVariable": "--ui-control-height"
+    },
+    {
+      "name": "interaction.control.height-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-control-height"
+    },
+    {
+      "name": "interaction.control.height-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height"
+      },
+      "resolvedValue": "2rem",
+      "cssVariable": "--ui-control-height"
+    },
+    {
+      "name": "interaction.control.height-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height"
+      },
+      "resolvedValue": "2.75rem",
+      "cssVariable": "--ui-control-height"
+    },
+    {
+      "name": "interaction.control.height-baseline",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "ui-internal",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-baseline"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-control-height-baseline"
     },
     {
       "name": "interaction.motion.duration",

@@ -9,7 +9,52 @@
     "control": {
       "height": {
         "$type": "dimension",
-        "$value": "{dimension.control.md}"
+        "$value": "{density.comfortable.control.height}"
+      },
+      "height-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.control.height}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "height-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.control.height}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "height-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.control.height}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height",
+            "conditions": {
+              "density": "spacious"
+            }
+          }
+        }
+      },
+      "height-baseline": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.control.height}",
+        "$extensions": {
+          "org.pavp": {
+            "visibility": "ui-internal"
+          }
+        }
       }
     },
     "radius": {

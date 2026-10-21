@@ -327,11 +327,11 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedMotionVueVersion = '2.4.0'
 const expectedVueUseCoreVersion = '14.4.0'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 71
+const expectedArchitectureAdminConsoleNegativeProbeCount = 77
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
-const expectedAcceptanceClosureNegativeProbeCount = 21
+const expectedAcceptanceClosureNegativeProbeCount = 24
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
 const expectedAdminNavigationGsapAdmissionNegativeProbeCount = 12
@@ -398,8 +398,8 @@ const routeTransitionAdmissionAmendment =
   'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT'
 const expectedRouteTransitionActiveMirrorCount = 13
 const multiRecordArchitectureWork = 'PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE'
-const currentWork = 'PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION'
-const currentWorkAuthority = 'ARCHITECTURE_SECTION_18_11'
+const currentWork = 'PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION'
+const currentWorkAuthority = 'ARCHITECTURE_SECTION_14_2'
 const currentWorkMarker = `CURRENT_BOUNDED_WORK=${currentWork}`
 const currentWorkAuthorityMarker = `CURRENT_BOUNDED_WORK_AUTHORITY=${currentWorkAuthority}`
 const adminNavigationNativeImplementationCommit = '70cc43995512994b4155df04ddb7896047d8ad3a'
@@ -1166,6 +1166,18 @@ interface Naive2452SharedConsumptionRecord {
 }
 
 const naiveThemeSemanticGroups = [
+  {
+    component: 'common',
+    fields: ['heightSmall', 'heightMedium'],
+    authority: 'interaction.control.height-baseline',
+    valueKind: 'length',
+  },
+  {
+    component: 'common',
+    fields: ['heightLarge'],
+    authority: 'layout.target.enhanced.minimum-block-size',
+    valueKind: 'length',
+  },
   {
     component: 'common',
     fields: ['fontSizeTiny'],
@@ -2928,6 +2940,14 @@ const naive2452ConsumptionContract = [
 
 const naive2452SharedConsumptionContract = [
   {
+    consumingComponent: 'Button',
+    overrideKey: 'heightSmall',
+    selfLookup: 'self.heightSmall inherited from common.heightSmall via createKey("height", size)',
+    emittedCssVariable: '--n-height',
+    selectorState: '.n-button--small-type normal height',
+    useThemeKey: 'Button/-button',
+  },
+  {
     consumingComponent: 'Breadcrumb',
     overrideKey: 'cubicBezierEaseInOut',
     selfLookup: 'common.cubicBezierEaseInOut',
@@ -4188,6 +4208,45 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
       throw new TypeError('The compiled Naive theme projection has no overrides.')
     }
     const overrides = projected['themeOverrides']
+    const common = overrides['common']
+    const button = overrides['Button']
+    if (
+      !isJsonObject(common) ||
+      !isJsonObject(button) ||
+      common['heightSmall'] !== 'var(--ui-control-height-baseline)' ||
+      common['heightMedium'] !== 'var(--ui-control-height-baseline)' ||
+      common['heightLarge'] !== 'var(--ui-layout-target-enhanced-minimum-block-size)' ||
+      Object.hasOwn(button, 'heightSmall') ||
+      Object.hasOwn(button, 'heightTiny') ||
+      button['heightMedium'] !== 'var(--ui-layout-target-enhanced-minimum-block-size)' ||
+      button['paddingMedium'] !== '0 var(--ui-space-button-inline)'
+    )
+      throw new TypeError(
+        'The compiled Naive density baseline or preserved Button geometry drifted.',
+      )
+    const tag = overrides['Tag']
+    const switchTheme = overrides['Switch']
+    const formProjection = loaded['createPavpNaiveFormThemeProjection']
+    if (!isNavigationThemeProjection(formProjection))
+      throw new TypeError('The existing Form theme projection is unavailable.')
+    const formTheme: unknown = formProjection(appearance)
+    if (
+      !isJsonObject(tag) ||
+      tag['heightMedium'] !== 'var(--ui-control-height)' ||
+      !isJsonObject(switchTheme) ||
+      switchTheme['railWidthMedium'] !== 'var(--ui-control-height)' ||
+      ![
+        'railHeightMedium',
+        'buttonHeightMedium',
+        'buttonWidthMedium',
+        'buttonWidthPressedMedium',
+      ].every((field) => switchTheme[field] === 'calc(var(--ui-control-height) / 2)') ||
+      !isJsonObject(formTheme) ||
+      !isDeepStrictEqual(formTheme['Switch'], switchTheme)
+    )
+      throw new TypeError(
+        'Existing Tag/Switch density consumers and shared Form Switch geometry must remain exact.',
+      )
     const menu = overrides['Menu']
     const dropdown = overrides['Dropdown']
     if (!isJsonObject(menu) || !isJsonObject(dropdown) || !isJsonObject(menu['peers'])) {
@@ -4477,10 +4536,6 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
       const key = `${component}.${field}`
       const expectation = expectations.get(key)
 
-      if (expectation === undefined) {
-        continue
-      }
-
       const expression =
         componentOverride === undefined
           ? undefined
@@ -4494,6 +4549,8 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
       }
       authorities.set(key, authority)
 
+      if (expectation === undefined) continue
+
       if (authority.authority === 'visible-vendor-default') {
         violations.push('NAIVE_VISIBLE_VENDOR_DEFAULT')
       }
@@ -4504,6 +4561,15 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
         violations.push('NAIVE_OVERRIDE_SEMANTIC_ROLE')
       }
     }
+  }
+
+  for (const [field, authority] of authorities) {
+    if (
+      authority.authority === 'interaction.control.height-baseline' &&
+      field !== 'common.heightSmall' &&
+      field !== 'common.heightMedium'
+    )
+      violations.push('NAIVE_DENSITY_BASELINE_CONSUMER')
   }
 
   for (const component of Object.keys(themeOverrideContract).filter(
@@ -4598,6 +4664,16 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
       }
     }
   }
+
+  if (
+    !naive2452SharedConsumptionContract.some(
+      (record) =>
+        record.consumingComponent === 'Button' &&
+        record.overrideKey === 'heightSmall' &&
+        runtimeString(record.emittedCssVariable) === '--n-height',
+    )
+  )
+    violations.push('NAIVE_2452_CONSUMPTION_CONTRACT')
 
   const sharedConsumptionIdentities = new Set<string>()
   const commonOverrideKeys = new Set<string>(themeOverrideContract.common)
@@ -7138,6 +7214,41 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     recordCurrentWorkViolation()
   }
 
+  const densityHeading = '#### `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` scoped admission record'
+  const densityStart = architectureSource.indexOf(densityHeading)
+  const densityEnd = architectureSource.indexOf('\n#### ', densityStart + densityHeading.length)
+  const densityAdmission =
+    densityStart === -1
+      ? ''
+      : architectureSource.slice(densityStart, densityEnd === -1 ? undefined : densityEnd)
+  const densityFields = [...densityAdmission.matchAll(/^([A-Z_]+)=(.*)$/gmu)]
+  const requiredDensityFields = [
+    'ID',
+    'ENTRY_CONDITIONS',
+    'ALLOWED_SCOPE',
+    'PROHIBITED_SCOPE',
+    'OUTPUTS',
+    'MACHINE_GATES',
+    'PRODUCTION_RELEASE_ACCEPTANCE',
+    'COMPLETION_EVIDENCE',
+  ]
+  if (
+    !exactSet(
+      densityFields.map((match) => match[1] ?? ''),
+      requiredDensityFields,
+    ) ||
+    densityFields.length !== requiredDensityFields.length ||
+    !densityFields.every((match) => (match[2]?.length ?? 0) > 0) ||
+    !densityAdmission.includes('ID=' + currentWork) ||
+    !densityAdmission.includes('sole technical authority Section 14.2') ||
+    !densityAdmission.includes('NONE_FIRST_DENSITY_PROJECTION_IMPLEMENTATION') ||
+    !densityAdmission.includes('separate explicit Owner implementation-only authorization') ||
+    !densityAdmission.includes('Git mutation or delivery') ||
+    !densityAdmission.includes('PRODUCTION_RELEASE_ACCEPTANCE=NOT_PERFORMED')
+  ) {
+    violations.push('PAVP_DENSITY_CONTROL_HEIGHT_ADMISSION')
+  }
+
   const workspaceAmendment = multiRecordWorkspaceAmendment(architectureSource)
   const workspaceTargetFields = {
     WORK_PACKAGE: multiRecordArchitectureWork,
@@ -7165,7 +7276,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
 
   const retentionAdmission = workspaceRetentionAdmission(architectureSource)
   for (const [field, expected] of Object.entries({
-    WORK_PACKAGE: currentWork,
+    WORK_PACKAGE: 'PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION',
     WORK_PACKAGE_KIND: 'BOUNDED_SOURCE_IMPLEMENTATION',
     CONTRACT_STATUS: 'FROZEN',
     OWNER_APPROVAL_SCOPE: 'ROUTE_SINGLE_INSTANCE_RETENTION_ONLY',
@@ -8908,6 +9019,40 @@ function runAcceptanceClosureNegativeProbes(
       architectureSource.replace(currentWorkMarker, currentWorkMarker + '\n' + currentWorkMarker),
     ],
   ]
+
+  for (const [name, mutated] of [
+    [
+      'density-current-work-stale-workspace',
+      architectureSource
+        .replaceAll(
+          currentWorkMarker,
+          'CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION',
+        )
+        .replaceAll(
+          currentWorkAuthorityMarker,
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11',
+        ),
+    ],
+    [
+      'density-admission-wrong-authority',
+      architectureSource.replace(
+        'sole technical authority Section 14.2',
+        'sole technical authority Section 18.11',
+      ),
+    ],
+    [
+      'density-admission-git-permission-expanded',
+      architectureSource.replace('Git mutation or delivery', 'Git delivery permitted'),
+    ],
+  ] as const) {
+    probes.push([
+      name,
+      name === 'density-current-work-stale-workspace'
+        ? 'PAVP_ROUTE_TRANSITION_CURRENT_WORK'
+        : 'PAVP_DENSITY_CONTROL_HEIGHT_ADMISSION',
+      mutated,
+    ])
+  }
 
   const amendment = multiRecordWorkspaceAmendment(architectureSource)
   probes.push([
@@ -12987,6 +13132,55 @@ function runArchitectureAdminConsoleNegativeProbes(
     ],
   ]
   const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
+    ...(['heightSmall', 'heightMedium'] as const).flatMap(
+      (field): readonly [string, string, Partial<MaterialGateSnapshot>][] => {
+        const common =
+          overrides === undefined ? undefined : objectPropertyObject(overrides, 'common')
+        const value = common === undefined ? undefined : objectPropertyInitializer(common, field)
+        const change = (replacement: string): string =>
+          value === undefined
+            ? baseline.themeAdapterSource
+            : baseline.themeAdapterSource.slice(0, value.getStart()) +
+              replacement +
+              baseline.themeAdapterSource.slice(value.end)
+        return [
+          [
+            'density-common-' + field + '-public-role',
+            'NAIVE_OVERRIDE_SEMANTIC_ROLE',
+            { themeAdapterSource: change("tokens['interaction.control.height']") },
+          ],
+          [
+            'density-common-' + field + '-raw-pixels',
+            'NAIVE_OVERRIDE_SEMANTIC_ROLE',
+            { themeAdapterSource: change("'36px'") },
+          ],
+        ]
+      },
+    ),
+    ...(['Button', 'Tag'] as const).map(
+      (component): [string, string, Partial<MaterialGateSnapshot>] => {
+        const owner =
+          overrides === undefined ? undefined : objectPropertyObject(overrides, component)
+        const value =
+          owner === undefined ? undefined : objectPropertyInitializer(owner, 'heightMedium')
+        const replacement =
+          component === 'Button'
+            ? "tokens['interaction.control.height']"
+            : "'var(--ui-control-height-baseline)'"
+        return [
+          'density-' + component + '-height-source',
+          'NAIVE_OVERRIDE_SEMANTIC_ROLE',
+          {
+            themeAdapterSource:
+              value === undefined
+                ? baseline.themeAdapterSource
+                : baseline.themeAdapterSource.slice(0, value.getStart()) +
+                  replacement +
+                  baseline.themeAdapterSource.slice(value.end),
+          },
+        ]
+      },
+    ),
     ...paddingProbes.map(
       ([id, expression, declarations]): [string, string, Partial<MaterialGateSnapshot>] => [
         `naive-button-padding-${id}`,
@@ -18037,13 +18231,13 @@ async function validateTokensAndLayout(): Promise<string[]> {
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
     tokenManifest.schemaVersion !== 11 ||
-    tokenManifest.tokens.length !== 245 ||
+    tokenManifest.tokens.length !== 249 ||
     tokenManifest.activePublicRoles.length !== 55 ||
     tokenManifest.unoCssMappings.length !== 55 ||
     tokenManifest.namedContrasts.length !== 34 ||
-    tokenManifest.governance.recordCount !== 408 ||
+    tokenManifest.governance.recordCount !== 412 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 227 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 231 ||
     classProjections.length !== 53 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
@@ -19396,6 +19590,21 @@ async function validateNaiveOverrides(): Promise<string[]> {
     return ['The PAVP-to-Naive theme override object is unavailable.']
   }
 
+  const [buttonTheme, buttonRender, nativeCommon] = await Promise.all([
+    readFile(resolve(rootDirectory, 'node_modules/naive-ui/es/button/styles/light.mjs'), 'utf8'),
+    readFile(resolve(rootDirectory, 'node_modules/naive-ui/es/button/src/Button.mjs'), 'utf8'),
+    readFile(resolve(rootDirectory, 'node_modules/naive-ui/es/_styles/common/_common.mjs'), 'utf8'),
+  ])
+  if (
+    !/const\s*\{[^}]*heightSmall[^}]*\}\s*=\s*[\w$]+/u.test(buttonTheme) ||
+    !/return\s*\{[^}]*heightTiny,[^}]*heightSmall,/u.test(buttonTheme) ||
+    !buttonRender.includes('[createKey("height", size)]: height') ||
+    !buttonRender.includes('"--n-height": text ? "initial" : height') ||
+    !nativeCommon.includes('heightTiny: "22px"')
+  )
+    violations.push(
+      'Naive Button Common-to-Small inheritance, Tiny branch or height consumption drifted.',
+    )
   const overrideNames = staticObjectPropertyNames(overrides)
   const menuOverrides = objectPropertyObject(overrides, 'Menu')
   const menuPeers =
@@ -19554,7 +19763,7 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 55 ||
     runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 26 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 11 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 408 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 412 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'amber',
       'cobalt',

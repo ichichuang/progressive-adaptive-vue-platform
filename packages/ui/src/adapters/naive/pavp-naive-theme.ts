@@ -34,6 +34,7 @@ const borderAction = 'var(--ui-admin-border-action)'
 const borderControl = 'var(--ui-admin-border-control)'
 const borderFocus = 'var(--ui-admin-border-focus)'
 const controlHeight = tokens['interaction.control.height']
+const controlHeightBaseline = 'var(--ui-control-height-baseline)'
 const disabledOpacity = 'var(--ui-admin-state-disabled-opacity)'
 const enhancedTargetHeight = tokens['layout.target.enhanced.minimum-block-size']
 const headerActionIconSize = `calc(${enhancedTargetHeight} / 2)`
@@ -395,8 +396,8 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       fontSizeLarge: tokens['typography.size.title'],
       lineHeight,
       opacityDisabled: disabledOpacity,
-      heightSmall: controlHeight,
-      heightMedium: controlHeight,
+      heightSmall: controlHeightBaseline,
+      heightMedium: controlHeightBaseline,
       heightLarge: enhancedTargetHeight,
     },
     Breadcrumb: {

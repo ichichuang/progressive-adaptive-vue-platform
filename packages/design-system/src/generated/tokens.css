@@ -38,6 +38,7 @@
     --ui-color-material-support-overlay-adaptive: oklch(98.5% 0.002 247 / 0.96);
     --ui-color-material-support-overlay-reduced: oklch(98.5% 0.002 247 / 0.985);
     --ui-control-height: 2.25rem;
+    --ui-control-height-baseline: 2.25rem;
     --ui-font-family-body: ui-sans-serif, system-ui, sans-serif;
     --ui-font-line-height-body: 1.5;
     --ui-font-line-height-title: 1.2;
@@ -1948,6 +1949,18 @@
     );
     --ui-color-text-primary: var(--ui-theme-bank-effective-standard-text-primary);
     --ui-color-text-secondary: var(--ui-theme-bank-effective-standard-text-secondary);
+  }
+
+  html[data-density='comfortable'] {
+    --ui-control-height: 2.25rem;
+  }
+
+  html[data-density='compact'] {
+    --ui-control-height: 2rem;
+  }
+
+  html[data-density='spacious'] {
+    --ui-control-height: 2.75rem;
   }
 
   html[data-material='adaptive'] {

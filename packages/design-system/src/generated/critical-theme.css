@@ -10,6 +10,23 @@
     --ui-font-scale: 1;
   }
 
+  :root {
+    --ui-control-height: 2.25rem;
+    --ui-control-height-baseline: 2.25rem;
+  }
+
+  html[data-density='comfortable'] {
+    --ui-control-height: 2.25rem;
+  }
+
+  html[data-density='compact'] {
+    --ui-control-height: 2rem;
+  }
+
+  html[data-density='spacious'] {
+    --ui-control-height: 2.75rem;
+  }
+
   html[data-theme-kind='built-in'][data-theme='amber'] {
     --ui-theme-bank-dark-enhanced-action-primary: oklch(37% 0.0735 78);
     --ui-theme-bank-dark-enhanced-border-default: oklch(64% 0.0605 78);

@@ -66,6 +66,7 @@ import {
   parseTokenSourceRecords,
   preprocessTokenSources,
   validateActivePublicRoleTokens,
+  validateDensityControlHeightSources,
   validateTokenRecords,
   type TokenBuildResult,
 } from './preprocess'
@@ -104,8 +105,8 @@ const manifestCompressionContract = {
     bytes: 3366,
   },
   current: {
-    expectedBytes: 15208,
-    expectedByteDelta: 11842,
+    expectedBytes: 15283,
+    expectedByteDelta: 11917,
   },
   completeThemePlanes: {
     baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
@@ -1520,6 +1521,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   )
 
   validateCompleteThemeContracts(result)
+  validateDensityProjectionContracts(result)
   validateActivePublicRoleTokens(result.tokens, publicRoleRecords)
   validatePublicOutputCompleteness(result)
   validateManifestGovernance(result)
@@ -2947,6 +2949,171 @@ function validateForcedColorsOutput(css: string, artifact: string): number {
   return writerStart
 }
 
+function validateDensityCss(css: string): void {
+  const projections: string[][] = []
+  for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/gu)) {
+    const selector = rule[1]?.trim() ?? ''
+    const body = rule[2] ?? ''
+    const declarations = [...body.matchAll(/(--ui-control-height(?:-baseline)?)\s*:\s*([^;]+);/gu)]
+    if (selector.includes('data-density')) {
+      assertInvariant(
+        declarations.length === 1 &&
+          body.trim() === `--ui-control-height: ${declarations[0]?.[2] ?? ''};`,
+        'Density CSS selectors may write only the public control height',
+      )
+    }
+    for (const declaration of declarations)
+      projections.push([selector, declaration[1] ?? '', declaration[2] ?? ''])
+  }
+  assertInvariantEqual(
+    projections.sort((a, b) => compareCodePoints(a.join('/'), b.join('/'))),
+    [
+      [':root', '--ui-control-height', '2.25rem'],
+      [':root', '--ui-control-height-baseline', '2.25rem'],
+      ["html[data-density='compact']", '--ui-control-height', '2rem'],
+      ["html[data-density='comfortable']", '--ui-control-height', '2.25rem'],
+      ["html[data-density='spacious']", '--ui-control-height', '2.75rem'],
+    ].sort((a, b) => compareCodePoints(a.join('/'), b.join('/'))),
+    'Density CSS must contain exactly the five frozen rem projections',
+  )
+}
+
+function validateDensityProjectionContracts(result: TokenBuildResult): void {
+  validateDensityControlHeightSources(result.tokens)
+  for (const css of [formatRuntimeCss(result), formatCriticalThemeCss(result)]) {
+    validateDensityCss(css)
+    for (const invalid of [
+      css.replace('--ui-control-height: 2rem;', '--ui-control-height: 2.25rem;'),
+      css.replace(
+        "html[data-density='compact']",
+        "html[data-density='compact'][data-color-mode='dark']",
+      ),
+      css.replace('--ui-control-height: 2rem;', '--ui-control-height-baseline: 2rem;'),
+      css.replace('--ui-control-height-baseline: 2.25rem;', '--ui-control-height-baseline: 36px;'),
+      css.replace(
+        '--ui-control-height: 2rem;',
+        '--ui-control-height: 2rem; --ui-unapproved: 1rem;',
+      ),
+    ])
+      assertContractFailure(
+        () => {
+          validateDensityCss(invalid)
+        },
+        /Density CSS/u,
+        'Density CSS mutation must be rejected',
+      )
+  }
+  const aliases = result.tokens.filter(
+    (token) =>
+      token.role.name === 'interaction.control.height' ||
+      token.role.name === 'interaction.control.height-baseline',
+  )
+  const compact = aliases.find((token) => token.conditions.density === 'compact')
+  const baseline = aliases.find(
+    (token) => token.role.name === 'interaction.control.height-baseline',
+  )
+  const densitySource = result.tokens.find(
+    (token) => token.path === 'density.compact.control.height',
+  )
+  assertInvariant(
+    compact !== undefined && baseline !== undefined && densitySource !== undefined,
+    'Density negative probe sources must exist',
+  )
+  const replace = (
+    target: ResolvedTokenRecord,
+    changes: Partial<ResolvedTokenRecord>,
+  ): ResolvedTokenRecord[] =>
+    result.tokens.map((token) => (token === target ? { ...token, ...changes } : token))
+  const privateAliasProbe = {
+    ...result,
+    tokens: replace(compact, { path: 'interaction.control.h' }),
+  }
+  validateDensityControlHeightSources(privateAliasProbe.tokens)
+  validateTokenRecords(privateAliasProbe.tokens, new Set(result.themes.map((theme) => theme.id)))
+  const publicRoleIds = PublicRoleRegistry.records.map((record) => record.id)
+  for (const candidate of [result, privateAliasProbe]) {
+    const outputs = [
+      formatTokensTypeScript(candidate),
+      formatTokenNames(candidate),
+      formatUnoCssTheme(candidate),
+    ] as const
+    for (const ids of [
+      publicTypeScriptTokenEntries(outputs[0]).map((entry) => entry.id),
+      [...outputs[1].matchAll(/^  '([^']+)',$/gmu)].map((match) => match[1] ?? ''),
+      [...outputs[2].matchAll(/^    roleId: '([^']+)',$/gmu)].map((match) => match[1] ?? ''),
+    ]) {
+      exactRoleIdSet(ids, publicRoleIds, 'Density public output role IDs')
+      if (candidate === privateAliasProbe)
+        assertContractFailure(
+          () =>
+            exactRoleIdSet(
+              [...ids, 'interaction.control.h'],
+              publicRoleIds,
+              'Density public output role IDs',
+            ),
+          /Density public output role IDs must equal the active public role set/u,
+          'A private density alias added to a public identifier collection must fail',
+        )
+    }
+    for (const output of outputs) {
+      assertInvariant(
+        !output.includes('interaction.control.height-baseline') &&
+          !output.includes('--ui-control-height-baseline'),
+        'Density private aliases must not enter public outputs',
+      )
+    }
+    assertInvariantEqual(
+      outputs,
+      [formatTokensTypeScript(result), formatTokenNames(result), formatUnoCssTheme(result)],
+      'Density private-alias renaming must preserve public outputs',
+    )
+  }
+  const invalidRecords: readonly (readonly ResolvedTokenRecord[])[] = [
+    result.tokens.filter((token) => token !== compact),
+    result.tokens.filter((token) => token !== baseline),
+    [...result.tokens, { ...compact, path: 'interaction.control.extra' }],
+    replace(compact, {
+      authoredValue: '{density.comfortable.control.height}',
+      reference: 'density.comfortable.control.height',
+    }),
+    replace(compact, { resolvedValue: { value: 2.25, unit: 'rem' } }),
+    replace(compact, { type: 'number' }),
+    replace(compact, { visibility: 'ui-internal' }),
+    replace(compact, { source: 'semantic/other.tokens.json' }),
+    replace(compact, {
+      conditions: { density: 'compact', colorMode: 'dark' },
+      compound: 'density-dark',
+    }),
+    replace(baseline, { visibility: 'public' }),
+    replace(baseline, { conditions: { density: 'comfortable' } }),
+    replace(baseline, { resolvedValue: { value: 36, unit: 'px' } }),
+    replace(densitySource, {
+      authoredValue: '{density.comfortable.control.height}',
+      reference: 'density.comfortable.control.height',
+    }),
+    replace(densitySource, {
+      visibility: 'public',
+      cssVariable: '--ui-density-compact-control-height',
+    }),
+    [
+      ...result.tokens,
+      {
+        ...baseline,
+        path: 'interaction.extra',
+        role: { ...baseline.role, name: 'interaction.extra' },
+      },
+    ],
+  ]
+  for (const records of invalidRecords)
+    assertContractFailure(
+      () => {
+        validateDensityControlHeightSources(records)
+      },
+      /Density control-height contract/u,
+      'Invalid density provenance, record set or visibility must fail',
+    )
+}
+
 function validateFirstPaintContracts(result: TokenBuildResult): void {
   const registry = themeRegistryDocument(result)
   const criticalTheme = formatCriticalThemeCss(result)
@@ -3285,6 +3452,74 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       plane['color.status.info'] = customInfo
     }
   }
+  for (const theme of [
+    builtInPreference.appearance.theme,
+    { registryKind: 'custom', themeId: currentCustomTheme.id },
+  ] as const) {
+    for (const preset of ['compact', 'comfortable', 'spacious'] as const) {
+      for (const fontScale of fontScaleValues) {
+        for (const scale of [0.9, 1, 1.1]) {
+          const preference = explicitThemePreferenceSchema.parse({
+            schemaVersion: 3,
+            appearance: {
+              ...ProductPreferenceDefault,
+              theme,
+              density: { preset, scale },
+              fontScale,
+            },
+          })
+          const rawPreference = JSON.stringify(preference)
+          const rawThemeRegistry = JSON.stringify({
+            schemaVersion: 1,
+            entries: [
+              {
+                registryKind: 'custom',
+                themeId: currentCustomTheme.id,
+                definition: currentCustomTheme,
+              },
+            ],
+          })
+          const execution = executeAppearanceInit(appearanceInit, {
+            rawPreference,
+            rawThemeRegistry,
+          })
+          assertInvariant(
+            execution.attributes['data-density'] === preset &&
+              execution.attributes['data-theme-kind'] === theme.registryKind &&
+              execution.customProperties['--ui-font-scale'] === String(fontScale) &&
+              execution.storageWrites === 0 &&
+              execution.networkRequests === 0 &&
+              !Object.keys(execution.customProperties).some(
+                (name) => name.includes('control-height') || name.includes('density'),
+              ),
+            'First Paint must select every validated density/fontScale without applying density.scale or writing height overrides',
+          )
+          assertInvariantEqual(
+            migrateToExplicitThemePreference(preference),
+            { status: 'success', preference },
+            'Density scale must survive current Preference migration losslessly',
+          )
+          const failed = executeAppearanceInit(appearanceInit, {
+            rawPreference,
+            rawThemeRegistry,
+            fontScaleWriteFailure: true,
+            storageReadFailure: fontScale === 1,
+          })
+          assertInvariantEqual(
+            failed.attributes,
+            safetyAttributes,
+            'Failed density First Paint must restore every safety attribute',
+          )
+          assertInvariantEqual(
+            failed.customProperties,
+            safetyCustomProperties,
+            'Failed density First Paint must restore safety properties',
+          )
+        }
+      }
+    }
+  }
+
   for (const definition of [legacyCustomTheme, controlCustomTheme, currentCustomTheme]) {
     const original = stableJson(definition)
     const runtime = validateCustomThemeDefinition(definition)

@@ -114,8 +114,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -464,8 +464,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -579,8 +579,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -659,7 +659,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001`、`PAVP-RUNTIME-003`、Dark Action 和其他已验收窄范围状态保持，`PAVP-RUNTIME-002`、`PAVP-RUNTIME-004` 与 `PAVP-RUNTIME-005` 的既有状态不变。§1.2B.0H–0K 只保留精确历史状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。 当前 Bounded Work 与 Authority 由 §18.11 的 route-single 实例保留与释放实施准入拥有；多记录身份及持久化目标仍未实施，Next 与 Successor 保持 `NONE`。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001`、`PAVP-RUNTIME-003`、Dark Action 和其他已验收窄范围状态保持，`PAVP-RUNTIME-002`、`PAVP-RUNTIME-004` 与 `PAVP-RUNTIME-005` 的既有状态不变。§1.2B.0H–0K 只保留精确历史状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。 当前 Bounded Work 为 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`，唯一技术 Authority 为 §14.2，独立源码准入见 §37.2.12；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -1028,8 +1028,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1162,8 +1162,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1360,7 +1360,7 @@ IMPLEMENTATION_COMPLETION_EVIDENCE=one scoped source and generated diff limited 
 
 每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
 
-该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后保留导航方案历史，§1.2B.0L 形成已验收 Native Naive 前序，§1.2B.0M 再按精确 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收收口 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。 当前 Bounded Work 与 Authority 由 §18.11 的 route-single 实例保留与释放实施准入拥有；多记录身份及持久化目标仍未实施，Next 与 Successor 保持 `NONE`。
+该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后保留导航方案历史，§1.2B.0L 形成已验收 Native Naive 前序，§1.2B.0M 再按精确 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收收口 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。 当前 Bounded Work 为 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`，唯一技术 Authority 为 §14.2，独立源码准入见 §37.2.12；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
 
 Owner 对已发布实现的后续复核最初观察到一个 obsolete Vite config error；仓库源码与当前 Vite 配置当时已经正确，错误来自早于该发布实施且仍在长期运行的 PAVP Vite 进程。仅替换该陈旧 PAVP Vite 进程后加载了当前配置，没有改变任何仓库文件；随后十四主题 Dark Standard / Dark Enhanced、Action Fill、On-action Content、Control Foreground、First Paint 恢复以及 Theme、Color-mode、Contrast 切换的 Owner Runtime 与 Visual Review 均通过。该操作历史不是 Repository Capability、Verification Gate 或永久 Runtime Dependency。
 
@@ -1416,8 +1416,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3739,8 +3739,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3822,8 +3822,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -4095,7 +4095,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；它不恢复整体 Console Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和 Checker 兼容证据。`PAVP-RUNTIME-002` 保持 `OPEN / COMPLETE / PASS`，`PAVP-RUNTIME-004` 保持 Open 且未启动；§1.2B.0H–0K 保留历史导航证据，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已按精确发布提交和 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。 当前 Bounded Work 与 Authority 由 §18.11 的 route-single 实例保留与释放实施准入拥有；多记录身份及持久化目标仍未实施，Next 与 Successor 保持 `NONE`。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；它不恢复整体 Console Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和 Checker 兼容证据。`PAVP-RUNTIME-002` 保持 `OPEN / COMPLETE / PASS`，`PAVP-RUNTIME-004` 保持 Open 且未启动；§1.2B.0H–0K 保留历史导航证据，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已按精确发布提交和 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。 当前 Bounded Work 为 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`，唯一技术 Authority 为 §14.2，独立源码准入见 §37.2.12；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
 
 ##### Defect identity and implemented source behavior
 
@@ -5877,7 +5877,7 @@ type CapabilityStatus =
 | Reference-only Preference and Theme Registry | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
 | Standard and Enhanced Theme Plane projection | `ACTIVE` | generated Theme Bank and stable Public bindings |
 | Semantic Status Color System | `TARGET_INACTIVE` | foundation and consumer source are present in the committed baseline with Manifest schemaVersion 11; §13.12 and §37.2.14 preserve their historical handoffs; no new runtime/visual Owner acceptance is inferred, and the end-to-end status remains unchanged |
-| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | §14.2 canonical density size projection target; current preset/schema and build-only sources do not complete the visual projection; an independently admitted core Role/Projection contract is still required |
+| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | §14.2 single-control-height source projection implemented under PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION; this bounded candidate does not activate full three-tier density, other sizes/spacing or Owner runtime/visual acceptance |
 | Continuous Density Scale application | `DEFERRED` | §14.3 persisted field only; exact visual semantics and computation remain unresolved and require a separate Owner decision before application |
 | Pinia appearance orchestration | `ACTIVE` | `apps/web` exact two-field Appearance Store |
 | Appearance Preference and Custom Registry persistence | `ACTIVE` | two application-owned Local Storage boundaries |
@@ -5920,7 +5920,7 @@ type CapabilityStatus =
 
 核心范围由 §1 定义，不是第五种 Capability Status。现有 route-single Workspace 与其从路由声明派生的会话恢复保持；多记录身份、Global Breadcrumb 和完整实例丢弃保护仍按 §18.11 区分。Router 当前仍对 Appearance 内容就绪、旧产品页面的滚动恢复有效性和语言资源范围作页面名判断；这是页面可替换性缺口，不宣称当前运行失败。本次不增加源码 Registry、Manifest Source 或 Generated Artifact，不改变任何 Capability 的状态或历史验收。
 
-当前计数以 `PublicRoleRegistry`、`tokens.manifest.json`、`ui-public-component-registry.ts` 和包根出口核对：Public Roles/Mappings 为 `55/55`，其中 Color Roles 为 `26`；Token Records 为 `245`、Named Contrasts 为 `34`、Alpha 为 `1`、Density 为 `3`、Theme 为 `14`、First Paint 为 `1`，Manifest schemaVersion 为 `11`，八类方程为 `245 + 55 + 55 + 34 + 1 + 3 + 14 + 1 = 408`。Source Files 是 provenance metadata，56 个 Plane 和 1456 个逻辑 Bank Binding 不重复计入 Manifest Records。十个 PAVP SFC 公共导出与十条组件登记一致，其中 `8 ACTIVE + 2 TARGET_INACTIVE`；官方 Naive 组件、`useUiForm`、Types 和 Console Projection 不是额外 PAVP Composite。各历史 Landing/源码切片的旧数量和实测字节仍按当时范围保留，不冒充本次测量。
+当前计数以 `PublicRoleRegistry`、`tokens.manifest.json`、`ui-public-component-registry.ts` 和包根出口核对：Public Roles/Mappings 为 `55/55`，其中 Color Roles 为 `26`；Token Records 为 `249`、Named Contrasts 为 `34`、Alpha 为 `1`、Density 为 `3`、Theme 为 `14`、First Paint 为 `1`，Manifest schemaVersion 为 `11`，八类方程为 `249 + 55 + 55 + 34 + 1 + 3 + 14 + 1 = 412`。Source Files 是 provenance metadata，56 个 Plane 和 1456 个逻辑 Bank Binding 不重复计入 Manifest Records。十个 PAVP SFC 公共导出与十条组件登记一致，其中 `8 ACTIVE + 2 TARGET_INACTIVE`；官方 Naive 组件、`useUiForm`、Types 和 Console Projection 不是额外 PAVP Composite。各历史 Landing/源码切片的旧数量和实测字节仍按当时范围保留，不冒充本次测量。
 
 §1.2B 的唯一 Capability JSON Source、生成清单及两语言能力文案在本次保持原样；其中 API、Query、受保护切片、Forms 聚合和 Shared UI 的旧准入/完成描述尚未同步新的核心目标。它们是现有 Console 的运行投影，不覆盖 §1 当前交付范围，也不能否认已存在的共享 Form 源码。同步这些运行投影需要后续独立授权；本次不更改 Source JSON、生成器或其一致性门槛。
 
@@ -8209,7 +8209,7 @@ Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role 
 
 ### Public Output Completeness
 
-当前公共输出数量已由 Registry/Manifest 核对为 55 Roles/Mappings、26 Color Roles、schemaVersion 11 和 408 Records；下文按各增量 Landing 保留历史数量及测量，最新完整方程见本节末与 §1.3。
+当前公共输出数量已由 Registry/Manifest 核对为 55 Roles/Mappings、26 Color Roles、schemaVersion 11 和 412 Records；下文按各增量 Landing 保留历史数量及测量，最新完整方程见本节末与 §1.3。
 
 §13.12 是 Semantic Status Color System 的唯一增量合同。已提交第一源码切片采用 26 Color / 53 Public Roles、53 个 UnoCSS Mapping 与 Manifest schemaVersion 10；当前已获 Owner 授权并静态完成的消费者切片仅将四个 Base Status Mapping 扩展为 `property-specific-exact-rule`，实现精确二十个 Status Utility，并使用 Manifest schemaVersion 11。§1.2B.0G 的 10/37 及下列早期 Registry 和计数保留历史边界；完整能力仍等待 Owner Runtime/Visual Acceptance。
 
@@ -8225,7 +8225,9 @@ Owner 本次仅准入 `dimension.space.button-inline`：Build-only Dimension，�
 
 §15 Page Inline Padding 增量保留以上前序测量；该阶段 Exact / Property-specific 为 `39 / 6`、52 个 Class Projection、58 个公共 Class，八族 Counts 与版本保持。相同 Node/压缩参数实测 Manifest 为 `295437` raw bytes、`15083` gzip bytes，较前序增加 `53` gzip bytes，相对 Canonical Baseline 的 Delta 为 `11717`，`32768` Hard Limit 的余量为 `17685` bytes。
 
-§15 Border Width 修复后的当前八族 Counts 为 `245,55,55,34,1,3,14,1`，总数 `408`，相对 `181` Baseline 的 Delta 为 `227`；53 个 Class Projection、59 个公共 Class。当前实测 Manifest 为 `297003` raw bytes、`15208` gzip bytes，较 Padding 阶段增加 `125` gzip bytes，相对 Canonical Baseline 的 Delta 为 `11842`，`32768` Hard Limit 余量 `17560` bytes；历史测量不变。
+§15 Border Width 修复当时的八族 Counts 为 `245,55,55,34,1,3,14,1`，总数 `408`，相对 `181` Baseline 的 Delta 为 `227`；53 个 Class Projection、59 个公共 Class。当时实测 Manifest 为 `297003` raw bytes、`15208` gzip bytes，较 Padding 阶段增加 `125` gzip bytes，相对 Canonical Baseline 的 Delta 为 `11842`，`32768` Hard Limit 余量 `17560` bytes；历史测量不变。
+
+§14.2 单高度候选由 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` 独立准入后，当前八族 Counts 为 `249,55,55,34,1,3,14,1`，总数 `412`，相对 `181` Baseline 的 Delta 为 `231`；Public Roles/Mappings、53 个 Class Projection、59 个公共 Class 与所有版本保持。Node `24.15.0` 既有 Canonical Profile 实测 Manifest 为 `298766` raw bytes、`15283` gzip bytes，比前序增加 `75` gzip bytes，相对 `3366` Baseline 的 Delta 为 `11917`，`32768` Hard Limit 余量 `17485` bytes。这里只更新当前候选事实，不改历史测量、预算或完整 Density 能力状态。
 
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
 
@@ -8840,7 +8842,7 @@ PACKAGE_3_BASELINE_RELATION=DIRECT_PREDECESSOR
 PACKAGE_3_STATUS=COMPLETE
 ```
 
-这些数值描述 Package 3 Landing 的历史完成证据。Package 3 已把当时的 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。当前 Record Authority 由 Generated Manifest 与已准入 Registry 拥有：245 个 Token、55 个 Active Public Role、55 个 UnoCSS Mapping、34 个 Named Contrast、1 个 Alpha、3 个 Density、14 个 Theme、1 个 First Paint，共 408 个 Manifest Record，schemaVersion 为 11；历史 Package 方程和字节证据保持原范围。
+这些数值描述 Package 3 Landing 的历史完成证据。Package 3 已把当时的 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。当前 Record Authority 由 Generated Manifest 与已准入 Registry 拥有：249 个 Token、55 个 Active Public Role、55 个 UnoCSS Mapping、34 个 Named Contrast、1 个 Alpha、3 个 Density、14 个 Theme、1 个 First Paint，共 412 个 Manifest Record，schemaVersion 为 11；历史 Package 方程和字节证据保持原范围。
 
 Manifest 唯一规范压缩配置：
 
@@ -10858,7 +10860,7 @@ type UiDensity =
   | 'spacious'
 ```
 
-`density.preset` 使用上述现有 Schema Enum，目标是选择由 Design System 拥有的 Canonical Density Size Projection。当前 `tokens/density/**` 只有三档 Build-only Source；`interaction.control.height` 的公共输出仍是固定 `2.25rem`，`applyAppearance` 写入 `data-density` 不等于 Generated CSS 已完成三档视觉投影。以下既有 `TargetDensityProjectionSet` 保留为候选名称集合，不是当前 Active Set，也不是每次尺寸扩展必须整批准入的清单：
+`density.preset` 使用上述现有 Schema Enum，目标是选择由 Design System 拥有的 Canonical Density Size Projection。本节架构冻结时 `tokens/density/**` 只有三档 Build-only Source；`interaction.control.height` 的公共输出仍是固定 `2.25rem`，`applyAppearance` 写入 `data-density` 不等于 Generated CSS 已完成三档视觉投影。以下既有 `TargetDensityProjectionSet` 保留为候选名称集合，不是当前 Active Set，也不是每次尺寸扩展必须整批准入的清单：
 
 ```text
 interaction.control.height
@@ -10932,6 +10934,8 @@ material
 ```
 
 未来 Density 实施必须保持 §13.11 现有首屏恢复与失败时保留安全基线的边界；成功解析的 Built-in/Custom Appearance 在 First Paint 与 Vue 后必须消费同一 Density Projection。实施还须复用 §13 的 Runtime Apply/Rollback 原子事务和持久化兼容合同，并同步 §16.3 的集中 Naive Projection。Schema、Attribute 或 UI 选项存在不构成 Density Projection 完成证据；不能先在局部组件应用新密度，再等待中心链路追上。
+
+当前独立实施候选为 §37.2.12 的 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`：五条记录、Runtime/Critical CSS 与 Common 兼容输入已接线；本节下方的架构冻结及无源码授权措辞保留当时含义，新的源码授权仅来自该独立准入。当前计数与测量见 §1.3/§11.4，完整静态结果由本次任务报告给出，不续接任何 Runtime/Visual Acceptance。
 
 ### Single-role projection and invariant Naive baseline
 
@@ -17455,8 +17459,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17623,7 +17627,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；按需真实 API/Auth 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不作为业务无关核心的统一业务前置。 当前 Bounded Work 与 Authority 由 §18.11 的 route-single 实例保留与释放实施准入拥有；多记录身份及持久化目标仍未实施，Next 与 Successor 保持 `NONE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；按需真实 API/Auth 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不作为业务无关核心的统一业务前置。 当前 Bounded Work 为 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`，唯一技术 Authority 为 §14.2，独立源码准入见 §37.2.12；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -17694,8 +17698,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17770,7 +17774,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4、Package 5、Package 6、Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 的完成事实保持。精确提交真实 Chrome 审计撤销的整体 Product Experience 与 Motion Geometry Runtime Acceptance 仍不恢复。Dark Action、`PAVP-RUNTIME-003` 与既有 Runtime Repair 状态保持；§1.2B.0H–0K 只保留历史导航状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime/Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。已验收工作包为 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-004` 保持 Open 且未启动；Optional Backend-dependent Lane、Successor Capability 与 Canonical Product Package 均未自动准入。 当前 Bounded Work 与 Authority 由 §18.11 的 route-single 实例保留与释放实施准入拥有；多记录身份及持久化目标仍未实施，Next 与 Successor 保持 `NONE`。
+Package 4、Package 5、Package 6、Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 的完成事实保持。精确提交真实 Chrome 审计撤销的整体 Product Experience 与 Motion Geometry Runtime Acceptance 仍不恢复。Dark Action、`PAVP-RUNTIME-003` 与既有 Runtime Repair 状态保持；§1.2B.0H–0K 只保留历史导航状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime/Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。已验收工作包为 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-004` 保持 Open 且未启动；Optional Backend-dependent Lane、Successor Capability 与 Canonical Product Package 均未自动准入。 当前 Bounded Work 为 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`，唯一技术 Authority 为 §14.2，独立源码准入见 §37.2.12；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
 
 当前状态镜像如下；Registry/Manifest/Export 的当前数量与历史测量已区分。既有 Acceptance 字段仍是各自范围的历史或当前验收状态，不因本次描述纠正获得新的 Acceptance：
 
@@ -17826,8 +17830,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17903,7 +17907,7 @@ MANIFEST_COMPRESSION_PROFILE_ID=node-zlib-gzip-sync
 MANIFEST_COMPRESSION_PROFILE_STATUS=ACTIVE
 MANIFEST_PAYLOAD_SIZE_SELF_GOVERNANCE=ABSENT
 MANIFEST_SCHEMA_VERSION=11
-MANIFEST_RECORD_COUNT=408
+MANIFEST_RECORD_COUNT=412
 HISTORICAL_ADDITIONAL_THEME_EXPANSION_MANIFEST_GZIP_BYTES=15452
 COMPLETE_BUILTIN_THEME_DOCUMENTS=14
 COMPLETE_BUILTIN_THEME_PLANES=56
@@ -18282,8 +18286,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18646,8 +18650,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11
-CURRENT_BOUNDED_WORK=PAVP_WORKSPACE_INSTANCE_RETENTION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2
+CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18722,7 +18726,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
 COMPLETION_EVIDENCE=technical infrastructure and prior repository implementations remain complete; exact-commit audit keeps overall runtime, visual, accessibility and release acceptance revoked; prior Runtime repair states remain preserved; accepted Dark Action and PAVP-RUNTIME-003 facts remain unchanged; §1.2B.0H–0K retain historical state and measurements; PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION remains accepted; PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS is accepted at FROZEN / ACCEPTED / COMPLETE / PASS for exact published implementation commit b6efbb608b309f601217a2765150bd9ec217cf78 and Owner statement 效果还可以 可以接受, with scoped runtime and visual acceptance PASS, accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY is accepted at FROZEN / ACCEPTED / COMPLETE / PASS with Owner Runtime and Visual acceptance PASS, Accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; its exact 12 reversible Architecture-admission probes, 52 source proofs, 16 retained reversible source probes, 8 Router Presentation Commit reversible probes, 7 preset-selection reversible probes, 9 Full pace reversible probes and 3 Stylelint policy reversible probes are active; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact; current work and authority are NONE; next and successor remain NONE
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0N 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。既有 Theme、Runtime、Router、Storage 和 Admin Console 事实保持，整体 Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销。§1.2B.0H–0K 只保留历史事实，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已在精确提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。已验收工作包是 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Owner Runtime/Visual Acceptance 为 `PASS`，Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰；其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。 当前 Bounded Work 与 Authority 由 §18.11 的 route-single 实例保留与释放实施准入拥有；多记录身份及持久化目标仍未实施，Next 与 Successor 保持 `NONE`。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0N 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。既有 Theme、Runtime、Router、Storage 和 Admin Console 事实保持，整体 Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销。§1.2B.0H–0K 只保留历史事实，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已在精确提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。已验收工作包是 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Owner Runtime/Visual Acceptance 为 `PASS`，Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰；其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。 当前 Bounded Work 为 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION`，唯一技术 Authority 为 §14.2，独立源码准入见 §37.2.12；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -18817,6 +18821,23 @@ COMPLETION_EVIDENCE=explicit core interfaces, behavior, ownership and validation
 ```
 
 `DEMAND_DRIVEN_FORMS_I18N_TABLES_AND_UI_ADMISSIONS` 是 Future Frontend Admission Template，不是一个大爆炸 Landing。每个 Instance 必须先由 Architecture Amendment 分配唯一、描述性 `PAVP_*` ID，并继承本记录的七字段；其 Entry 还必须引用上一个修改同一 Authority 的 Instance 的精确 ID/Complete Status。一个 Instance 只准入一个 Capability，并在完成前阻塞下一个会修改同一 Authority 的 Instance。Stage 本身不得安装依赖或产生 Runtime Artifact；不相关 Backend-dependent Package 未完成不构成阻塞。按 §21–23 交付的共享能力以完整公共接口、行为、所有权和适用验证独立交付；后置架构示例仅在核心确认与独立页面重建授权后消费，不以业务页面作为完成前提，也不以空实现或零散占位原语冒充完整能力。
+
+#### `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` scoped admission record
+
+Owner 在本次任务中独立授权一个 implementation-only 候选；§14.2 是唯一技术权威，先前架构冻结及其无源码授权声明保留历史含义。本次是 Density Projection Authority 的首次实施，`SAME_AUTHORITY_IMPLEMENTATION_PREDECESSOR=NONE_FIRST_DENSITY_PROJECTION_IMPLEMENTATION`：Canonical §14.2 和 Git `3e103f0` / `dd4d749` 的既有源仅有 Build-only Density 与固定公共高度，`41c3782cab7ae2cf637161834834242d86b561e9` 只冻结技术设计；不把 Token 基础、Workspace 候选或其他 UI 验收冒充同权威已完成前序。能力状态保持，当前不声称完整三档 Density 完成。
+
+```text
+ID=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
+ENTRY_CONDITIONS=separate explicit Owner implementation-only authorization on clean synchronized main@41c3782cab7ae2cf637161834834242d86b561e9; sole technical authority Section 14.2; same-authority implementation predecessor NONE_FIRST_DENSITY_PROJECTION_IMPLEMENTATION; existing token generation and central Naive bridge reused; no unrelated runtime acceptance prerequisite
+ALLOWED_SCOPE=ARCHITECTURE.md admission/current mirrors/current count facts; semantic/interaction.tokens.json; existing preprocess, css, first-paint, manifest and build owners; central pavp-naive-theme common.heightSmall/common.heightMedium only; design-system-console-projection count; existing appearance-cutover and architecture-admin-console owning checks; generator-produced tokens.css, critical-theme.css and tokens.manifest.json
+PROHIBITED_SCOPE=capability activation; new design or public API/Role/UnoCSS mapping; component/page source; density controls, reset/persistence/schema/default changes, density.scale application or spacing projections; dependencies/lockfiles/CI/budgets; unrelated cleanup; browser/test/evidence infrastructure; Git mutation or delivery; deployment/release; automatic successor
+OUTPUTS=one coherent Section 14.2 five-record source/runtime/critical CSS/Manifest projection with invariant Naive Common baseline and existing direct consumers; exact provenance/output/compatibility checks; six other generated files byte-identical; all changes unstaged with HEAD preserved
+MACHINE_GATES=existing mise toolchain; tokens:build, tokens:schema, tokens:check, check:arch and typecheck:ts as relevant; exact actual counts and canonical gzip measurement under unchanged historical baselines/hard budgets; complete diff review and git diff --check; one final mise exec -- pnpm verify, with any repair reruns reported
+PRODUCTION_RELEASE_ACCEPTANCE=NOT_PERFORMED; separate applicable Section 32 Owner computed-style/first-paint/fontScale/zoom/hit-area/rendering and release decision required; static evidence is not runtime or visual acceptance; no release authorized
+COMPLETION_EVIDENCE=actual implementation and static results reported separately from runtime acceptance/staged/committed/pushed/released; source plus first-paint plus Naive plus owning checks remain one candidate; no full-density completion or successor inferred
+```
+
+当前源码候选已完成五条记录及中心投影接线；已核对 `249 / 412 / 231`、`55 / 55`、Schema `11` 和上述 `15283` gzip bytes。其余六个生成文件已与起始 HEAD 逐字节比较相等；源码与拥有检查的窄门槛已通过。完整 Canonical Gate、最终 Git 状态在本次任务报告中独立给出，不把这些源码事实写成 Runtime/Visual Acceptance、Git Delivery 或完整 Density Activation。
 
 #### `PAVP_CONFIGURATION_DRIVEN_FORMS` scoped admission record
 

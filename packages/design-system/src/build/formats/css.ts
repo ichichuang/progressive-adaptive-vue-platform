@@ -274,20 +274,16 @@ function selectorForToken(token: ResolvedTokenRecord): {
   }
 }
 
-export function formatRuntimeCss(result: TokenBuildResult): string {
+function tokenSelectorGroups(
+  result: TokenBuildResult,
+  tokens: readonly ResolvedTokenRecord[],
+): SelectorGroup[] {
   const groups = new Map<string, SelectorGroup>()
-  const activePublicColorRoles = new Set(
-    result.activePublicRoles.filter(isActivePublicColorRole).map((record) => record.id),
-  )
   let sequence = 0
 
-  for (const token of selectTokensForOutput(result, 'runtime-css')) {
+  for (const token of tokens) {
     if (token.cssVariable === undefined) {
       throw new Error(`${token.path}: Runtime CSS token is missing its CSS variable.`)
-    }
-
-    if (activePublicColorRoles.has(token.role.name)) {
-      continue
     }
 
     const target = selectorForToken(token)
@@ -305,7 +301,11 @@ export function formatRuntimeCss(result: TokenBuildResult): string {
     groups.set(target.selector, group)
   }
 
-  const blocks = [...groups.values(), ...themeBankSelectorGroups(result, sequence)]
+  return [...groups.values()]
+}
+
+function formatSelectorGroups(groups: readonly SelectorGroup[]): string {
+  return [...groups]
     .sort(
       (left, right) =>
         left.rank - right.rank ||
@@ -321,6 +321,29 @@ export function formatRuntimeCss(result: TokenBuildResult): string {
       return `  ${group.selector} {\n${declarations}\n  }`
     })
     .join('\n\n')
+}
+
+export function formatTokenCssRules(
+  result: TokenBuildResult,
+  tokens: readonly ResolvedTokenRecord[],
+): string {
+  return formatSelectorGroups(tokenSelectorGroups(result, tokens))
+}
+
+export function formatRuntimeCss(result: TokenBuildResult): string {
+  const activePublicColorRoles = new Set(
+    result.activePublicRoles.filter(isActivePublicColorRole).map((record) => record.id),
+  )
+  const groups = tokenSelectorGroups(
+    result,
+    selectTokensForOutput(result, 'runtime-css').filter(
+      (token) => !activePublicColorRoles.has(token.role.name),
+    ),
+  )
+  const blocks = formatSelectorGroups([
+    ...groups,
+    ...themeBankSelectorGroups(result, groups.length),
+  ])
 
   return `/* ${generatedNotice} */
 ${canonicalLayerOrder}
