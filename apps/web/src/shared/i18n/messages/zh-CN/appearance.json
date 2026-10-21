@@ -1,6 +1,6 @@
 {
   "appearance.restore-scroll": "刷新后恢复滚动位置",
-  "appearance.restore-scroll-description": "刷新当前页面后，返回上次阅读的位置。",
+  "appearance.restore-scroll-description": "完整刷新当前页面后尝试恢复阅读位置；临时预览和未保存的输入不会恢复。此开关不影响工作区页签切换的位置保留。",
   "appearance.material-stage-title": "材质效果",
   "appearance.material-stage-summary": "功能区域使用当前材质，内容区域保持稳定清晰。",
   "appearance.motion-stage-title": "动效效果",

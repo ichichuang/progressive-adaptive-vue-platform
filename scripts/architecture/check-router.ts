@@ -7032,6 +7032,240 @@ async function workspaceRefreshViolations(): Promise<string[]> {
   return violations
 }
 
+function scrollRestorationContractViolations(sourceText: string): string[] {
+  const source = ts.createSourceFile(
+    'router-lifecycle.ts',
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const calls = nodesOf(source, ts.isCallExpression)
+  const functions = nodesOf(source, ts.isFunctionDeclaration)
+  const compact = (node: ts.Node | undefined) => node?.getText(source).replaceAll(/\s+/gu, '') ?? ''
+  const snapshotReader = functions.find((node) =>
+    node.type?.getText(source).includes('ScrollRefreshSnapshot'),
+  )
+  const reloadCall =
+    snapshotReader === undefined
+      ? undefined
+      : nodesOf(snapshotReader, ts.isCallExpression).find(
+          (call) => call.arguments[2] !== undefined && ts.isStringLiteral(call.arguments[2]),
+        )
+  const validity = functions.find(
+    (node) =>
+      node.name?.text === (reloadCall === undefined ? undefined : callMemberName(reloadCall)),
+  )
+  const contextCall =
+    validity === undefined
+      ? undefined
+      : calls.find(
+          (call) =>
+            callMemberName(call) === validity.name?.text &&
+            call.arguments[2] !== undefined &&
+            ts.isConditionalExpression(call.arguments[2]),
+        )
+  const policy = validity?.parameters[2]?.name.getText(source) ?? ''
+  const selection = contextCall?.arguments[2]
+  const historyPolicy =
+    selection !== undefined && ts.isConditionalExpression(selection)
+      ? compact(selection.whenTrue)
+      : ''
+  const workspacePolicy =
+    selection !== undefined && ts.isConditionalExpression(selection)
+      ? compact(selection.whenFalse)
+      : ''
+  const development =
+    validity === undefined
+      ? undefined
+      : nodesOf(validity, ts.isBinaryExpression).find(
+          (node) =>
+            memberPath(node.left).at(-1) === 'environment' &&
+            compact(node.right) === "'development'",
+        )
+  const revision =
+    validity === undefined
+      ? undefined
+      : nodesOf(validity, ts.isConditionalExpression).find((node) =>
+          nodesOf(node.whenTrue, ts.isPropertyAccessExpression).some(
+            (read) => read.name.text === 'revision',
+          ),
+        )
+  const violations: string[] = []
+  if (
+    development === undefined ||
+    !ts.isBinaryExpression(development.parent) ||
+    development.parent.operatorToken.kind !== ts.SyntaxKind.AmpersandAmpersandToken ||
+    compact(development.parent.left) !== `${policy}===${historyPolicy}` ||
+    historyPolicy === workspacePolicy ||
+    historyPolicy === compact(reloadCall?.arguments[2]) ||
+    workspacePolicy === compact(reloadCall?.arguments[2]) ||
+    revision === undefined ||
+    compact(revision.condition) !== `${policy}===${workspacePolicy}` ||
+    compact(revision.whenFalse) !== '[]'
+  )
+    violations.push('SCROLL_RESTORATION_POLICY_ISOLATION')
+  const behavior = nodesOf(source, ts.isMethodDeclaration).find(
+    (node) => node.name.getText(source) === 'scrollBehavior',
+  )
+  const generationRead =
+    behavior === undefined
+      ? undefined
+      : nodesOf(behavior, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'readWorkspaceGeneration',
+        )
+  const generation = storedValuePath(generationRead)[0]
+  const capture = functions
+    .filter(
+      (node) =>
+        nodesOf(node, ts.isCallExpression).some(
+          (call) => callMemberName(call) === 'readWorkspaceGeneration',
+        ) &&
+        nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readOffset'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  if (
+    generation === undefined ||
+    behavior === undefined ||
+    !nodesOf(behavior, ts.isBinaryExpression).some(
+      (node) =>
+        node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+        ts.isPropertyAccessExpression(node.left) &&
+        compact(node.right) === generation,
+    ) ||
+    !nodesOf(behavior, ts.isBinaryExpression).some(
+      (node) =>
+        node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+        memberPath(node.left).at(-1) === 'instance' &&
+        memberPath(node.right).at(-1) === 'instance',
+    ) ||
+    capture === undefined ||
+    nodesOf(capture, ts.isCallExpression).some((call) =>
+      ['readEnabled', 'readReloadEligible'].includes(callMemberName(call) ?? ''),
+    )
+  )
+    violations.push('SCROLL_WORKSPACE_INSTANCE_AND_GENERATION')
+  if (
+    snapshotReader === undefined ||
+    reloadCall === undefined ||
+    nodesOf(snapshotReader, ts.isCallExpression).some((call) =>
+      ['cancelMotion', 'scrollTo', 'scrollToAnchor', 'scrollToStart'].includes(
+        callMemberName(call) ?? '',
+      ),
+    ) ||
+    nodesOf(snapshotReader, ts.isCallExpression).filter(
+      (call) => callMemberName(call) === 'readReloadEligible',
+    ).length < 2 ||
+    !nodesOf(snapshotReader, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'readOffset',
+    ) ||
+    !nodesOf(snapshotReader, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'isFinite',
+    )
+  )
+    violations.push('SCROLL_RELOAD_READ_ONLY_CAPTURE')
+  const connection = nodesOf(source, ts.isMethodDeclaration).find(
+    (node) => node.name.getText(source) === 'connectRefreshScroll',
+  )
+  const connectionCalls = connection === undefined ? [] : nodesOf(connection, ts.isCallExpression)
+  const listener = (member: string, event: string) =>
+    connectionCalls.filter(
+      (call) => callMemberName(call) === member && compact(call.arguments[0]) === `'${event}'`,
+    )
+  const callback = (event: string) => {
+    const name = listener('addEventListener', event)[0]?.arguments[1]?.getText(source)
+    return connection === undefined
+      ? undefined
+      : nodesOf(connection, ts.isVariableDeclaration).find(
+          (node) => node.name.getText(source) === name,
+        )?.initializer
+  }
+  const hide = callback('pagehide')
+  const show = callback('pageshow')
+  if (
+    ['pagehide', 'pageshow'].some(
+      (event) =>
+        listener('addEventListener', event).length !== 1 ||
+        listener('removeEventListener', event).length !== 1 ||
+        compact(listener('addEventListener', event)[0]?.arguments[1]) !==
+          compact(listener('removeEventListener', event)[0]?.arguments[1]),
+    ) ||
+    hide === undefined ||
+    !nodesOf(hide, ts.isIfStatement).some(
+      (guard) =>
+        memberPath(guard.expression).at(-1) === 'persisted' &&
+        nodesOf(guard.thenStatement, ts.isCallExpression).some(
+          (call) => callMemberName(call) === 'invalidate',
+        ) &&
+        guard.elseStatement !== undefined,
+    ) ||
+    show === undefined ||
+    !nodesOf(show, ts.isPrefixUnaryExpression).some(
+      (node) =>
+        node.operator === ts.SyntaxKind.ExclamationToken &&
+        memberPath(node.operand).at(-1) === 'persisted',
+    ) ||
+    !nodesOf(show, ts.isCallExpression).some((call) => callMemberName(call) === 'invalidate')
+  )
+    violations.push('SCROLL_RELOAD_BFCACHE_BINDING_LIFETIME')
+  return violations
+}
+
+async function scrollRestorationViolations(): Promise<string[]> {
+  const source = await readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8')
+  const baseline = scrollRestorationContractViolations(source)
+  const parsed = ts.createSourceFile('router-lifecycle.ts', source, ts.ScriptTarget.Latest, true)
+  const behavior = nodesOf(parsed, ts.isMethodDeclaration).find(
+    (node) => node.name.getText() === 'scrollBehavior',
+  )
+  const generationCall =
+    behavior === undefined
+      ? undefined
+      : nodesOf(behavior, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'readWorkspaceGeneration',
+        )
+  const generation = storedValuePath(generationCall)[0]
+  const comparison =
+    behavior === undefined
+      ? undefined
+      : nodesOf(behavior, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+            node.right.getText() === generation,
+        )
+  const probes = [
+    [
+      'SCROLL_RESTORATION_POLICY_ISOLATION',
+      source.replace(/\([^()]+ === '[^']+' && ([\w$.]+\.environment === 'development')\)/u, '($1)'),
+    ],
+    [
+      'SCROLL_WORKSPACE_INSTANCE_AND_GENERATION',
+      comparison === undefined
+        ? source
+        : source.slice(0, comparison.getStart()) + 'true' + source.slice(comparison.end),
+    ],
+    [
+      'SCROLL_RELOAD_BFCACHE_BINDING_LIFETIME',
+      source.replace(/if \(([\w$]+\.persisted)\) ([\w$]+\.invalidate\(\))/u, 'if (!$1) $2'),
+    ],
+    [
+      'SCROLL_RELOAD_READ_ONLY_CAPTURE',
+      source.replace(
+        /(const [\w$]+ = [\w$]+\.readOffset\(\))/u,
+        '$1\n      controller.cancelMotion()',
+      ),
+    ],
+  ] as const
+  for (const [expected, mutated] of probes) {
+    if (
+      baseline.length !== 0 ||
+      mutated === source ||
+      !isDeepStrictEqual(scrollRestorationContractViolations(mutated), [expected])
+    )
+      baseline.push(`${expected}: Scroll restoration in-memory negative probe failed.`)
+  }
+  return baseline
+}
+
 export async function validateRouterArchitecture(): Promise<readonly string[]> {
   const routerSources = await collectFiles(routerDirectory)
   const routeIdOwners = await Promise.all(
@@ -7056,6 +7290,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...(await routerErrorContractViolations()),
     ...(await lifecycleViolations()),
     ...(await workspaceRefreshViolations()),
+    ...(await scrollRestorationViolations()),
     ...(await validateRouteTransitionSourceGovernance()),
     ...routeIdViolations,
   ]

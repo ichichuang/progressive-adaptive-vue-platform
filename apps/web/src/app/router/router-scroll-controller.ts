@@ -57,7 +57,7 @@ export function createRouterScrollControllers() {
     read(boundary: HTMLElement): UiScrollController {
       const id = boundary.dataset['scrollOwner']
       const controller = id === undefined ? undefined : controllers.get(id)
-      if (disposed || controller?.ownsBoundary(boundary) !== true)
+      if (disposed || controller?.ownerId !== id || controller?.ownsBoundary(boundary) !== true)
         throw new TypeError('The Router scroll controller is unavailable.')
       return controller
     },

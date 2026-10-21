@@ -1417,6 +1417,216 @@ function validateHmr(main: ParsedSource, allSources: readonly ParsedSource[]): s
   return violations
 }
 
+function validateScrollDocumentLifecycle(
+  main: ParsedSource,
+  kernel: ParsedSource,
+  system: ParsedSource,
+): string[] {
+  const violations: string[] = []
+  const calls = nodesOf(main.sourceFile, ts.isCallExpression)
+  const events = ['vite:beforeUpdate', 'vite:beforeFullReload', 'vite:afterUpdate']
+  const listeners = (member: string, event: string) =>
+    calls.filter(
+      (call) => callMemberName(call) === member && literalValue(call.arguments[0]) === event,
+    )
+  const callback = (event: string) => {
+    const name = listeners('on', event)[0]?.arguments[1]?.getText(main.sourceFile)
+    return nodesOf(main.sourceFile, ts.isVariableDeclaration).find(
+      (node) => node.name.getText(main.sourceFile) === name,
+    )?.initializer
+  }
+  const start = calls.find((call) => callMemberName(call) === 'startRuntimeKernel')
+  const getters = start?.arguments[1]
+  const getter = (name: string) =>
+    getters !== undefined && ts.isObjectLiteralExpression(getters)
+      ? getters.properties.find((property) => property.name?.getText(main.sourceFile) === name)
+      : undefined
+  const reload = getter('readReloadEligible')
+  const workspace = getter('readWorkspaceGeneration')
+  const reloadPath =
+    reload === undefined
+      ? []
+      : (nodesOf(reload, ts.isPropertyAccessExpression)
+          .map((node) => memberPath(node))
+          .sort((a, b) => b.length - a.length)[0] ?? [])
+  const generation =
+    workspace === undefined ? undefined : nodesOf(workspace, ts.isConditionalExpression)[0]
+  const generationPath = memberPath(generation?.whenTrue)
+  const readinessPath = memberPath(generation?.condition)
+  const update = callback('vite:afterUpdate')
+  if (
+    events.some((event) => {
+      const add = listeners('on', event)
+      const remove = listeners('off', event)
+      return (
+        add.length !== 1 ||
+        remove.length !== 1 ||
+        add[0]?.arguments[1]?.getText(main.sourceFile) !==
+          remove[0]?.arguments[1]?.getText(main.sourceFile) ||
+        !calls.some(
+          (call) =>
+            callMemberName(call) === 'dispose' &&
+            remove[0] !== undefined &&
+            call.pos < remove[0].pos &&
+            call.end > remove[0].end,
+        )
+      )
+    })
+  )
+    violations.push('SCROLL_HMR_LISTENER_LIFETIME')
+  if (
+    reloadPath.length === 0 ||
+    generationPath.length === 0 ||
+    readinessPath.length === 0 ||
+    generation?.whenFalse.getText(main.sourceFile) !== 'undefined' ||
+    ['vite:beforeUpdate', 'vite:beforeFullReload'].some((event) => {
+      const invalidation = callback(event)
+      const assignments =
+        invalidation === undefined ? [] : nodesOf(invalidation, ts.isPropertyAssignment)
+      const assigned = (path: readonly string[]) =>
+        assignments.find((node) => node.name.getText(main.sourceFile) === path.at(-1))?.initializer
+      return (
+        assigned(reloadPath)?.kind !== ts.SyntaxKind.FalseKeyword ||
+        assigned(readinessPath)?.kind !== ts.SyntaxKind.FalseKeyword ||
+        assigned(generationPath) === undefined ||
+        equalArray(memberPath(assigned(generationPath)), generationPath)
+      )
+    })
+  )
+    violations.push('SCROLL_HMR_PRE_UPDATE_INVALIDATION')
+  const guards = update === undefined ? [] : nodesOf(update, ts.isIfStatement)
+  if (
+    update === undefined ||
+    !nodesOf(update, ts.isCallExpression).some((call) => callMemberName(call) === 'nextTick') ||
+    !guards.some(
+      (guard) =>
+        nodesOf(guard.expression, ts.isBinaryExpression).some(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+            equalArray(memberPath(node.left), generationPath) &&
+            ts.isIdentifier(node.right),
+        ) &&
+        nodesOf(guard.thenStatement, ts.isPropertyAssignment).some(
+          (node) =>
+            node.name.getText(main.sourceFile) === readinessPath.at(-1) &&
+            node.initializer.kind === ts.SyntaxKind.TrueKeyword,
+        ),
+    ) ||
+    nodesOf(update, ts.isPropertyAssignment).some(
+      (node) =>
+        node.name.getText(main.sourceFile) === reloadPath.at(-1) &&
+        node.initializer.kind !== ts.SyntaxKind.FalseKeyword,
+    )
+  )
+    violations.push('SCROLL_HMR_SETTLED_FRESH_WORKSPACE')
+  const kernelStart = nodesOf(kernel.sourceFile, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === 'startRuntimeKernel',
+  )
+  const lifecycleParameter = kernelStart?.parameters.find(
+    (node) => node.type?.getText(kernel.sourceFile) === 'ScrollDocumentLifecycle',
+  )
+  const initialize = nodesOf(kernel.sourceFile, ts.isCallExpression).find(
+    (call) => callMemberName(call) === 'initializeScrollSystem',
+  )
+  const attempt = nodesOf(kernel.sourceFile, ts.isFunctionDeclaration).find(
+    (node) =>
+      node !== kernelStart &&
+      initialize !== undefined &&
+      node.pos < initialize.pos &&
+      node.end > initialize.end,
+  )
+  const forwarding = nodesOf(kernel.sourceFile, ts.isCallExpression).find(
+    (call) => callMemberName(call) === attempt?.name?.text,
+  )?.arguments[0]
+  const forwarded = initialize?.arguments[4]
+  const systemInitializer = nodesOf(system.sourceFile, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === 'initializeScrollSystem',
+  )
+  const systemParameter = systemInitializer?.parameters.find(
+    (node) => node.type?.getText(system.sourceFile) === 'ScrollDocumentLifecycle',
+  )
+  const binding = nodesOf(system.sourceFile, ts.isCallExpression).find(
+    (call) => callMemberName(call) === 'connectRefreshScroll',
+  )?.arguments[0]
+  if (
+    lifecycleParameter === undefined ||
+    reload === undefined ||
+    workspace === undefined ||
+    forwarded === undefined ||
+    !ts.isPropertyAccessExpression(forwarded) ||
+    forwarding === undefined ||
+    !ts.isObjectLiteralExpression(forwarding) ||
+    !forwarding.properties.some(
+      (property) =>
+        property.name?.getText(kernel.sourceFile) === forwarded.name.text &&
+        (ts.isShorthandPropertyAssignment(property)
+          ? property.name.getText(kernel.sourceFile)
+          : ts.isPropertyAssignment(property)
+            ? property.initializer.getText(kernel.sourceFile)
+            : '') === lifecycleParameter.name.getText(kernel.sourceFile),
+    ) ||
+    systemParameter === undefined ||
+    binding === undefined ||
+    !ts.isObjectLiteralExpression(binding) ||
+    !binding.properties.some(
+      (property) =>
+        ts.isSpreadAssignment(property) &&
+        property.expression.getText(system.sourceFile) ===
+          systemParameter.name.getText(system.sourceFile),
+    )
+  )
+    violations.push('SCROLL_DOCUMENT_LIFECYCLE_FORWARDING')
+  return violations
+}
+
+function scrollDocumentLifecycleNegativeProbes(
+  main: ParsedSource,
+  kernel: ParsedSource,
+  system: ParsedSource,
+): string[] {
+  const baselineValid = validateScrollDocumentLifecycle(main, kernel, system).length === 0
+  const eventRemoval = main.text.replace(/[^\n]*\.off\('vite:afterUpdate', [\w$]+\)\n/u, '')
+  const getter = nodesOf(main.sourceFile, ts.isPropertyAssignment).find(
+    (node) => node.name.getText(main.sourceFile) === 'readReloadEligible',
+  )
+  const reloadName =
+    getter === undefined ? undefined : nodesOf(getter, ts.isPropertyAccessExpression)[0]?.name.text
+  const invalidation = nodesOf(main.sourceFile, ts.isPropertyAssignment).find(
+    (node) =>
+      node.name.getText(main.sourceFile) === reloadName &&
+      node.initializer.kind === ts.SyntaxKind.FalseKeyword,
+  )?.initializer
+  const generationGuard = nodesOf(main.sourceFile, ts.isIfStatement).find(
+    (node) =>
+      ts.isBinaryExpression(node.expression) &&
+      node.expression.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken,
+  )
+  const forwarded = nodesOf(kernel.sourceFile, ts.isCallExpression).find(
+    (call) => callMemberName(call) === 'initializeScrollSystem',
+  )?.arguments[4]
+  const replace = (source: ParsedSource, node: ts.Node | undefined, text: string) =>
+    node === undefined
+      ? source.text
+      : source.text.slice(0, node.getStart(source.sourceFile)) + text + source.text.slice(node.end)
+  const update = replace(main, invalidation, 'true')
+  const readiness = replace(main, generationGuard?.expression, 'true')
+  const forwarding = replace(kernel, forwarded, 'undefined')
+  const probes = [
+    ['SCROLL_HMR_LISTENER_LIFETIME', parseSource(main.path, eventRemoval), kernel],
+    ['SCROLL_HMR_PRE_UPDATE_INVALIDATION', parseSource(main.path, update), kernel],
+    ['SCROLL_HMR_SETTLED_FRESH_WORKSPACE', parseSource(main.path, readiness), kernel],
+    ['SCROLL_DOCUMENT_LIFECYCLE_FORWARDING', main, parseSource(kernel.path, forwarding)],
+  ] as const
+  return probes.flatMap(([expected, changedMain, changedKernel]) => {
+    const actual = validateScrollDocumentLifecycle(changedMain, changedKernel, system)
+    return baselineValid &&
+      (changedMain.text !== main.text || changedKernel.text !== kernel.text) &&
+      equalArray(actual, [expected])
+      ? []
+      : [`${expected}: Scroll HMR in-memory negative probe failed.`]
+  })
+}
+
 function validateNoFutureCapabilities(sources: readonly ParsedSource[]): string[] {
   const violations: string[] = []
   const prohibitedPackages = ['@tanstack/vue-query', 'axios', 'openapi-fetch', 'vue-i18n']
@@ -1588,6 +1798,7 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
   ])
 
   const providerFiles = (await readdir(resolve(webSourceDirectory, 'app/providers'))).sort()
+  const scrollSystem = await readSource(resolve(webSourceDirectory, 'app/scroll/scroll-system.ts'))
   const providerFileViolations = equalArray(providerFiles, ['pinia.ts'])
     ? []
     : [
@@ -1608,6 +1819,8 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     ...validateRetry(retryPolicy, runtimeKernel, fatalBoundary),
     ...validateAppearance(appearance),
     ...validateHmr(main, applicationSources),
+    ...validateScrollDocumentLifecycle(main, runtimeKernel, scrollSystem),
+    ...scrollDocumentLifecycleNegativeProbes(main, runtimeKernel, scrollSystem),
     ...validateNoFutureCapabilities(applicationSources),
     ...providerFileViolations,
     ...focusedNegativeProbes({

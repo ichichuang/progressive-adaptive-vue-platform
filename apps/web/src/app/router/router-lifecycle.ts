@@ -2,6 +2,7 @@ import type { ConsoleI18nBoundary, ConsoleTranslate } from '../../shared/i18n'
 import { nextTick, shallowReactive, watch, type App } from 'vue'
 import type { UiScrollController } from '@platform/ui'
 import type { ScrollRefreshSnapshot } from '../scroll/scroll-refresh-contract'
+import type { ScrollDocumentLifecycle } from '../scroll/scroll-system'
 import {
   createRouterScrollControllers,
   routerScrollControllerKey,
@@ -280,17 +281,18 @@ export interface RouterLifecycleHandle {
   readonly guardRemovers: readonly [() => void, () => void, () => void]
   readonly errorHandlerRemover: () => void
   connectLocalization(boundary: ConsoleI18nBoundary): () => void
-  connectRefreshScroll(binding: RefreshScrollBinding): () => void
+  connectRefreshScroll(binding: RefreshScrollBinding): { discardPending(): void; dispose(): void }
   refreshCurrentRouteTitle(translate: ConsoleTranslate): void
   markApplicationMounted(): void
   getLatestNavigationResult(): TypedNavigationResult | undefined
   dispose(): void
 }
 
-interface RefreshScrollBinding {
+interface RefreshScrollBinding extends ScrollDocumentLifecycle {
   readEnabled(): boolean
   readonly pending: ScrollRefreshSnapshot | undefined
   capture(snapshot: ScrollRefreshSnapshot): void
+  invalidate(): void
 }
 
 function generatedRouteRecords(records: readonly RouteRecordRaw[]): RouteRecordRaw[] {
@@ -399,6 +401,7 @@ interface RegionRecord {
 
 interface WorkspaceRegionRecord {
   readonly instance: WorkspaceInstanceIdentity
+  readonly generation: number
   readonly context: readonly (string | number)[]
   readonly left: number
   readonly top: number
@@ -416,6 +419,7 @@ interface CommittedEntry {
         readonly workspace: LiveWorkspaceEntry | undefined
         readonly context: readonly (string | number)[] | undefined
         readonly workspaceContext: readonly (string | number)[] | undefined
+        readonly workspaceGeneration: number | undefined
       }
     | undefined
 }
@@ -579,6 +583,7 @@ export async function createAndReadyRouter(input: {
   let localization: ConsoleI18nBoundary | undefined
   let refreshScroll: RefreshScrollBinding | undefined
   let pendingRefresh: ScrollRefreshSnapshot | undefined
+  let disconnectRefreshScroll: (() => void) | undefined
   let latestNavigationResult: TypedNavigationResult | undefined
   let operation: NavigationOperation | undefined
   let nativeOperation: NavigationOperation | undefined
@@ -693,6 +698,7 @@ export async function createAndReadyRouter(input: {
     kind: NavigationOperation['kind'],
     expectedFullPath: string,
   ): NavigationOperation {
+    if (kind !== 'initial') pendingRefresh = undefined
     operation?.presentationAbort.abort()
     refreshLease?.abort()
     // The presented source owns any inertia before route-transition presentation begins.
@@ -722,6 +728,7 @@ export async function createAndReadyRouter(input: {
       finish(result) {
         if (settled) return
         settled = true
+        if (operation === next && result.kind !== 'allow') pendingRefresh = undefined
         next.result = result
         if (operation === next && result.kind !== 'duplicated') latestNavigationResult = result
         resolveCompletion(result)
@@ -901,6 +908,7 @@ export async function createAndReadyRouter(input: {
           workspace: replacement,
           context: regionContext(entry.to, entry.navigation, presented.owner),
           workspaceContext: regionContext(entry.to, entry.navigation, presented.owner, replacement),
+          workspaceGeneration: refreshScroll?.readWorkspaceGeneration(),
         }
         return true
       },
@@ -946,12 +954,23 @@ export async function createAndReadyRouter(input: {
   function restorationValidity(
     navigation: NavigationAttemptState,
     owner: HTMLElement,
+    policy: 'history' | 'workspace' | 'reload',
     workspaceEntry?: LiveWorkspaceEntry,
+    captureInert = false,
   ): readonly (string | number)[] | undefined {
     if (
-      input.configuration.environment === 'development' ||
+      (policy === 'history' && input.configuration.environment === 'development') ||
       localization?.pendingLocale.value !== null ||
-      owner.closest('[inert]') !== null
+      (!captureInert && owner.closest('[inert]') !== null) ||
+      (policy === 'workspace' && refreshScroll?.readWorkspaceGeneration() === undefined) ||
+      (workspaceEntry !== undefined &&
+        (!workspace.entries.some(
+          (entry) =>
+            isLiveWorkspace(entry) &&
+            entry.identity === workspaceEntry.identity &&
+            entry.instance === workspaceEntry.instance,
+        ) ||
+          workspace.active?.instance !== workspaceEntry.instance))
     )
       return undefined
     const content =
@@ -988,7 +1007,11 @@ export async function createAndReadyRouter(input: {
       !capability.allowedProfiles.some((value) => value === profile) ||
       !Number.isFinite(rootFontSize) ||
       rootFontSize <= 0 ||
-      !viewport.ready ||
+      (!viewport.ready && !(captureInert && owner.closest('[inert]') !== null)) ||
+      (policy === 'reload' &&
+        ![viewport.width, viewport.height, viewport.contentWidth, viewport.contentHeight].every(
+          (value) => Number.isFinite(value) && value > 0,
+        )) ||
       style.writingMode !== 'horizontal-tb' ||
       (style.direction !== 'ltr' && style.direction !== 'rtl')
     )
@@ -1016,7 +1039,7 @@ export async function createAndReadyRouter(input: {
       rootFontSize,
       style.writingMode,
       style.direction,
-      ...(workspaceEntry === undefined ? [] : [content?.revision ?? 0]),
+      ...(policy === 'workspace' ? [content?.revision ?? 0] : []),
     ]
   }
 
@@ -1026,7 +1049,12 @@ export async function createAndReadyRouter(input: {
     owner: HTMLElement,
     workspaceEntry?: LiveWorkspaceEntry,
   ): readonly (string | number)[] | undefined {
-    const validity = restorationValidity(navigation, owner, workspaceEntry)
+    const validity = restorationValidity(
+      navigation,
+      owner,
+      workspaceEntry === undefined ? 'history' : 'workspace',
+      workspaceEntry,
+    )
     return validity === undefined
       ? undefined
       : [
@@ -1038,14 +1066,16 @@ export async function createAndReadyRouter(input: {
         ]
   }
 
-  function captureRefreshScroll(): void {
+  function readRefreshSnapshot(): ScrollRefreshSnapshot | undefined {
     const binding = refreshScroll
     const entry = committedEntry
     if (
       disposed ||
       binding?.readEnabled() !== true ||
+      !binding.readReloadEligible() ||
       entry?.presented === undefined ||
       entry.presented.workspace !== entry.workspace ||
+      workspace.active !== entry.workspace ||
       !entryIsCurrent(entry)
     )
       return
@@ -1053,26 +1083,45 @@ export async function createAndReadyRouter(input: {
       const owner = regionOwner(entry.navigation.routeName)
       if (owner === undefined || owner !== entry.presented.owner) return
       const controller = scrollControllers.read(owner)
-      if (controller !== entry.presented.controller || !controller.readState().ready) return
-      const context = restorationValidity(entry.navigation, owner, entry.workspace)
+      if (controller !== entry.presented.controller) return
+      const context = restorationValidity(entry.navigation, owner, 'reload', entry.workspace, true)
       const offset = controller.readOffset()
       if (
         context === undefined ||
         !Number.isFinite(offset.left) ||
         !Number.isFinite(offset.top) ||
-        !entryIsCurrent(entry)
+        !entryIsCurrent(entry) ||
+        refreshScroll !== binding ||
+        !binding.readEnabled() ||
+        !binding.readReloadEligible() ||
+        entry.presented.workspace !== entry.workspace ||
+        workspace.active !== entry.workspace ||
+        regionOwner(entry.navigation.routeName) !== owner ||
+        scrollControllers.read(owner) !== controller ||
+        !sameContext(
+          context,
+          restorationValidity(entry.navigation, owner, 'reload', entry.workspace, true),
+        )
       )
         return
-      binding.capture({
+      return {
         schemaVersion: 1,
         routeName: entry.navigation.routeName,
         ownerId: controller.ownerId,
         ...offset,
         context,
-      })
+      }
     } catch {
       // A withdrawn or nonunique presentation is ineligible; never capture a replacement owner.
     }
+  }
+
+  function captureRefreshScroll(): void {
+    const binding = refreshScroll
+    if (binding === undefined || disposed) return
+    const snapshot = readRefreshSnapshot()
+    if (snapshot === undefined) binding.invalidate()
+    else binding.capture(snapshot)
   }
 
   function retainRecord(record: RegionRecord): void {
@@ -1093,11 +1142,32 @@ export async function createAndReadyRouter(input: {
       source.presented.workspace !== source.workspace
     )
       return
+    const generation = refreshScroll?.readWorkspaceGeneration()
+    if (source.workspace !== undefined && generation === undefined) {
+      workspaceRecords.delete(source.workspace.identity)
+      return
+    }
     const owner = regionOwner(source.navigation.routeName)
     if (owner === undefined) return
+    const controller = scrollControllers.read(owner)
+    if (source.workspace !== undefined && generation !== source.presented.workspaceGeneration) {
+      // A settled hot update may have replaced the controller. Adopt only the same
+      // live source's current ready presentation before sampling fresh coordinates.
+      const context = regionContext(from, source.navigation, owner, source.workspace)
+      if (context === undefined) {
+        workspaceRecords.delete(source.workspace.identity)
+        return
+      }
+      source.presented = {
+        ...source.presented,
+        owner,
+        controller,
+        workspaceContext: context,
+        workspaceGeneration: generation,
+      }
+    }
     if (owner !== source.presented.owner)
       throw new TypeError('The presented source scroll owner changed.')
-    const controller = scrollControllers.read(owner)
     if (controller !== source.presented.controller)
       throw new TypeError('The presented source scroll controller changed.')
     if (!controller.readState().ready) return
@@ -1110,12 +1180,15 @@ export async function createAndReadyRouter(input: {
       // signals must still match the presented source; offsets never come from a detached page.
       if (
         context !== undefined &&
+        generation !== undefined &&
         sameContext(context.slice(0, -1), source.presented.workspaceContext?.slice(0, -1)) &&
+        workspace.active?.instance === source.workspace.instance &&
         Number.isFinite(offset.left) &&
         Number.isFinite(offset.top)
       )
         workspaceRecords.set(source.workspace.identity, {
           instance: source.workspace.instance,
+          generation,
           context,
           left: offset.left,
           top: offset.top,
@@ -1232,11 +1305,13 @@ export async function createAndReadyRouter(input: {
               workspaceEntry === undefined
                 ? undefined
                 : regionContext(to, navigation, owner, workspaceEntry)
+            const workspaceGeneration = refreshScroll?.readWorkspaceGeneration()
             if (workspaceActivation) {
               const record = workspaceRecords.get(workspaceEntry.identity)
               if (record !== undefined) {
                 if (
                   record.instance === workspaceEntry.instance &&
+                  record.generation === workspaceGeneration &&
                   sameContext(record.context, workspaceContext) &&
                   entryIsCurrent(entry)
                 )
@@ -1245,16 +1320,18 @@ export async function createAndReadyRouter(input: {
               }
             }
             const refresh = pendingRefresh
+            pendingRefresh = undefined
             if (
               !restored &&
               navigation.operation.kind === 'initial' &&
               !workspaceActivation &&
               refreshScroll?.readEnabled() === true &&
+              refreshScroll.readReloadEligible() &&
               refresh?.routeName === navigation.routeName &&
               refresh.ownerId === controller.ownerId &&
               sameContext(
                 refresh.context,
-                restorationValidity(navigation, owner, entry.workspace),
+                restorationValidity(navigation, owner, 'reload', entry.workspace),
               ) &&
               entryIsCurrent(entry)
             )
@@ -1270,6 +1347,7 @@ export async function createAndReadyRouter(input: {
               workspace: workspaceEntry,
               context,
               workspaceContext,
+              workspaceGeneration,
             }
           }
         }
@@ -1284,6 +1362,7 @@ export async function createAndReadyRouter(input: {
         resolveBoundRouterPresentationCommit(presentationCommitBroker, to)
         return documentPosition
       } catch (source: unknown) {
+        pendingRefresh = undefined
         rejectBoundRouterPresentationCommit(presentationCommitBroker, to, source)
         throw source
       }
@@ -1610,9 +1689,9 @@ export async function createAndReadyRouter(input: {
     workspaceContents.clear()
     workspace.dispose()
     localization = undefined
+    disconnectRefreshScroll?.()
     refreshScroll = undefined
     pendingRefresh = undefined
-    window.removeEventListener('pagehide', captureRefreshScroll)
     disposeRouterPresentationCommitBroker(router, presentationCommitBroker)
     resolveApplicationMounted?.()
     resolveApplicationMounted = undefined
@@ -1660,17 +1739,46 @@ export async function createAndReadyRouter(input: {
       const navigation = performance.getEntriesByType('navigation')[0]
       pendingRefresh =
         binding.readEnabled() &&
+        binding.readReloadEligible() &&
         navigation instanceof PerformanceNavigationTiming &&
         navigation.type === 'reload'
           ? binding.pending
           : undefined
-      window.addEventListener('pagehide', captureRefreshScroll)
-      return () => {
-        if (refreshScroll !== binding) return
-        refreshScroll = undefined
-        pendingRefresh = undefined
-        window.removeEventListener('pagehide', captureRefreshScroll)
+      const discardPending = (): void => {
+        if (refreshScroll === binding) pendingRefresh = undefined
       }
+      const stopDocument = watch(
+        [() => binding.readWorkspaceGeneration(), () => binding.readReloadEligible()],
+        ([generation, reloadEligible], [previousGeneration]) => {
+          if (generation !== previousGeneration) workspaceRecords.clear()
+          if (!reloadEligible) discardPending()
+        },
+        { flush: 'sync' },
+      )
+      const pagehide = (event: PageTransitionEvent): void => {
+        if (refreshScroll !== binding || disposed) return
+        discardPending()
+        if (event.persisted) binding.invalidate()
+        else captureRefreshScroll()
+      }
+      const pageshow = (event: PageTransitionEvent): void => {
+        if (refreshScroll !== binding || disposed || !event.persisted) return
+        discardPending()
+        binding.invalidate()
+      }
+      window.addEventListener('pagehide', pagehide)
+      window.addEventListener('pageshow', pageshow)
+      const dispose = (): void => {
+        if (refreshScroll !== binding) return
+        discardPending()
+        refreshScroll = undefined
+        stopDocument()
+        window.removeEventListener('pagehide', pagehide)
+        window.removeEventListener('pageshow', pageshow)
+        disconnectRefreshScroll = undefined
+      }
+      disconnectRefreshScroll = dispose
+      return { discardPending, dispose }
     },
     connectLocalization(boundary) {
       if (disposed || localization !== undefined)

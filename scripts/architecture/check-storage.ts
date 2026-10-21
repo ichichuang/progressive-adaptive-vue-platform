@@ -1085,6 +1085,154 @@ function focusedNegativeProbes(): string[] {
   return failures
 }
 
+function scrollResultOrchestrationViolations(sourceText: string): string[] {
+  const source = scriptSource('scroll-system.ts', sourceText)
+  const calls = nodesOf(source, ts.isCallExpression)
+  const initializer = nodesOf(source, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === 'initializeScrollSystem',
+  )
+  const storage = initializer?.parameters
+    .find((parameter) => parameter.type?.getText(source) === 'ScrollRefreshPort')
+    ?.name.getText(source)
+  const storageCalls = (member: string) =>
+    calls.filter(
+      (call) =>
+        ts.isPropertyAccessExpression(call.expression) &&
+        call.expression.expression.getText(source) === storage &&
+        callMemberName(call) === member,
+    )
+  const clear = storageCalls('clear')[0]
+  const clearOwner = nodesOf(
+    source,
+    (node): node is ts.FunctionDeclaration | ts.FunctionExpression | ts.ArrowFunction =>
+      ts.isFunctionDeclaration(node) || ts.isFunctionExpression(node) || ts.isArrowFunction(node),
+  )
+    .filter(
+      (node) =>
+        node !== initializer && clear !== undefined && node.pos < clear.pos && node.end > clear.end,
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const clearName =
+    clearOwner === undefined
+      ? undefined
+      : ts.isVariableDeclaration(clearOwner.parent)
+        ? clearOwner.parent.name.getText(source)
+        : !ts.isArrowFunction(clearOwner)
+          ? clearOwner.name?.text
+          : undefined
+  const compact = (node: ts.Node | undefined) => node?.getText(source).replaceAll(/\s+/gu, '') ?? ''
+  const clears = (node: ts.Node | undefined) =>
+    node !== undefined &&
+    nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === clearName)
+  const connection = calls.find((call) => callMemberName(call) === 'connectRefreshScroll')
+  const binding = connection?.arguments[0]
+  const field = (name: string) =>
+    binding !== undefined && ts.isObjectLiteralExpression(binding)
+      ? binding.properties.find((property) => property.name?.getText(source) === name)
+      : undefined
+  const read = storageCalls('read')[0]
+  const readName =
+    read !== undefined && ts.isVariableDeclaration(read.parent)
+      ? read.parent.name.getText(source)
+      : undefined
+  const pendingField = field('pending')
+  const clearResult =
+    clear !== undefined && ts.isVariableDeclaration(clear.parent)
+      ? clear.parent.name.getText(source)
+      : undefined
+  const violations: string[] = []
+  if (
+    storageCalls('read').length !== 1 ||
+    storageCalls('clear').length !== 1 ||
+    clearOwner === undefined ||
+    clearResult === undefined ||
+    !nodesOf(clearOwner, ts.isIfStatement).some(
+      (guard) =>
+        compact(guard.expression) === `${clearResult}.status==='saved'` &&
+        nodesOf(guard.thenStatement, ts.isReturnStatement).some(
+          (node) => node.expression?.kind === ts.SyntaxKind.TrueKeyword,
+        ),
+    ) ||
+    !nodesOf(clearOwner, ts.isReturnStatement).some(
+      (node) => node.expression?.kind === ts.SyntaxKind.FalseKeyword,
+    ) ||
+    readName === undefined ||
+    pendingField === undefined ||
+    connection === undefined ||
+    !nodesOf(source, ts.isBinaryExpression).some(
+      (comparison) =>
+        comparison.end < connection.pos && compact(comparison) === `${readName}.status==='found'`,
+    ) ||
+    !calls.some((call) => call.end < connection.pos && callMemberName(call) === clearName)
+  )
+    violations.push('SCROLL_RELOAD_CONFIRMED_CONSUMPTION')
+  const capture = field('capture')
+  const failedWrite =
+    capture === undefined
+      ? undefined
+      : nodesOf(capture, ts.isIfStatement).find((guard) =>
+          nodesOf(guard.expression, ts.isCallExpression).some((call) =>
+            storageCalls('write').includes(call),
+          ),
+        )
+  if (
+    storageCalls('write').length !== 1 ||
+    failedWrite === undefined ||
+    !compact(failedWrite.expression).endsWith(".status==='failed'") ||
+    !clears(failedWrite.thenStatement)
+  )
+    violations.push('SCROLL_RELOAD_FAILED_WRITE_INVALIDATION')
+  if (!clears(field('invalidate'))) violations.push('SCROLL_RELOAD_INVALID_CAPTURE_INVALIDATION')
+  const preferenceWatch = calls.find((call) => callMemberName(call) === 'watch')
+  const watcher = preferenceWatch?.arguments[1]
+  const enabled =
+    watcher !== undefined && ts.isArrowFunction(watcher)
+      ? watcher.parameters[0]?.name.getText(source)
+      : undefined
+  const disabled =
+    watcher === undefined
+      ? undefined
+      : nodesOf(watcher, ts.isIfStatement).find(
+          (guard) => enabled !== undefined && compact(guard.expression) === `!${enabled}`,
+        )
+  if (
+    disabled === undefined ||
+    !clears(disabled.thenStatement) ||
+    !nodesOf(disabled.thenStatement, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'discardPending',
+    ) ||
+    !compact(preferenceWatch?.arguments[2]).includes("flush:'sync'")
+  )
+    violations.push('SCROLL_RELOAD_DISABLED_PENDING_DISCARD')
+  return violations
+}
+
+function scrollResultOrchestrationNegativeProbes(source: string): string[] {
+  const probes = [
+    ['SCROLL_RELOAD_CONFIRMED_CONSUMPTION', /\.status === 'saved'/u, ".status === 'failed'"],
+    [
+      'SCROLL_RELOAD_FAILED_WRITE_INVALIDATION',
+      /\.status === 'failed'\) [\w$]+\(\)/u,
+      ".status === 'failed') undefined",
+    ],
+    [
+      'SCROLL_RELOAD_INVALID_CAPTURE_INVALIDATION',
+      /invalidate: \(\) => \{\s*[\w$]+\(\)/u,
+      'invalidate: () => { undefined',
+    ],
+    ['SCROLL_RELOAD_DISABLED_PENDING_DISCARD', /[\w$]+\?\.discardPending\(\)/u, 'undefined'],
+  ] as const
+  const baselineValid = scrollResultOrchestrationViolations(source).length === 0
+  return probes.flatMap(([expected, pattern, replacement]) => {
+    const mutated = source.replace(pattern, replacement)
+    return baselineValid &&
+      mutated !== source &&
+      isDeepStrictEqual(scrollResultOrchestrationViolations(mutated), [expected])
+      ? []
+      : [`${expected}: reload Storage result in-memory negative probe failed.`]
+  })
+}
+
 async function scrollStorageViolations(): Promise<string[]> {
   const violations: string[] = []
   const contracts = [
@@ -1150,6 +1298,14 @@ async function scrollStorageViolations(): Promise<string[]> {
   const crossTab = await readFile(resolve(storageDirectory, 'storage-cross-tab.ts'), 'utf8')
   if (!/\.medium\s*===\s*'local-storage'/u.test(crossTab))
     violations.push('Session Storage must not participate in localStorage event routing.')
+  const system = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/scroll/scroll-system.ts'),
+    'utf8',
+  )
+  violations.push(
+    ...scrollResultOrchestrationViolations(system),
+    ...scrollResultOrchestrationNegativeProbes(system),
+  )
   return violations
 }
 

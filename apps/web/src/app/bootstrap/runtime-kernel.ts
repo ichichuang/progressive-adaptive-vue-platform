@@ -297,6 +297,7 @@ async function startAttempt(input: {
   ) => void
   readonly rootComponent: Component
   readonly startupAttemptId: StartupAttemptId
+  readonly scrollDocumentLifecycle: ScrollDocumentLifecycle
   readonly retainedAppearanceSafetyRestorationAuthority:
     AppearanceSafetyRestorationAuthority | undefined
   readonly retainAppearanceSafetyRestorationAuthority: (
@@ -533,6 +534,7 @@ async function startAttempt(input: {
       resources.router,
       resources.storage.owner.scrollPreference,
       resources.storage.owner.scrollRefresh,
+      input.scrollDocumentLifecycle,
     )
     throwClaimedStartupFailure()
 
@@ -600,6 +602,7 @@ async function startAttempt(input: {
 
 export function startRuntimeKernel(
   rootComponent: Component,
+  scrollDocumentLifecycle: ScrollDocumentLifecycle,
   retainedConfigurationRetriesUsed = 0,
   retainedAppearanceSafetyRestorationAuthority?: AppearanceSafetyRestorationAuthority,
 ): RunningApplicationHandle {
@@ -635,6 +638,7 @@ export function startRuntimeKernel(
         currentAttemptDisposer = dispose
       },
       rootComponent,
+      scrollDocumentLifecycle,
       startupAttemptId: createStartupAttemptId(),
       retainedAppearanceSafetyRestorationAuthority: appearanceSafetyRestorationAuthority,
       retainAppearanceSafetyRestorationAuthority(authority) {
@@ -770,4 +774,4 @@ export function startRuntimeKernel(
     },
   }
 }
-import { initializeScrollSystem } from '../scroll/scroll-system'
+import { initializeScrollSystem, type ScrollDocumentLifecycle } from '../scroll/scroll-system'

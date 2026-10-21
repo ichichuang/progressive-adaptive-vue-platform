@@ -331,7 +331,7 @@ const expectedArchitectureAdminConsoleNegativeProbeCount = 77
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 10
-const expectedAcceptanceClosureNegativeProbeCount = 24
+const expectedAcceptanceClosureNegativeProbeCount = 33
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
 const expectedAdminNavigationGsapAdmissionNegativeProbeCount = 12
@@ -398,8 +398,9 @@ const routeTransitionAdmissionAmendment =
   'PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT'
 const expectedRouteTransitionActiveMirrorCount = 13
 const multiRecordArchitectureWork = 'PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE'
-const currentWork = 'PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION'
-const currentWorkAuthority = 'ARCHITECTURE_SECTION_14_2'
+const browserReloadArchitectureWork = 'PAVP_BROWSER_RELOAD_SCROLL_RESTORATION_CONTRACT_AMENDMENT'
+const currentWork = 'PAVP_SCROLL_POSITION_RESTORATION_IMPLEMENTATION'
+const currentWorkAuthority = 'ARCHITECTURE_SECTION_18_12'
 const currentWorkMarker = `CURRENT_BOUNDED_WORK=${currentWork}`
 const currentWorkAuthorityMarker = `CURRENT_BOUNDED_WORK_AUTHORITY=${currentWorkAuthority}`
 const adminNavigationNativeImplementationCommit = '70cc43995512994b4155df04ddb7896047d8ad3a'
@@ -7239,7 +7240,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     ) ||
     densityFields.length !== requiredDensityFields.length ||
     !densityFields.every((match) => (match[2]?.length ?? 0) > 0) ||
-    !densityAdmission.includes('ID=' + currentWork) ||
+    densityFields.find((match) => match[1] === 'ID')?.[2] !==
+      'PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION' ||
     !densityAdmission.includes('sole technical authority Section 14.2') ||
     !densityAdmission.includes('NONE_FIRST_DENSITY_PROJECTION_IMPLEMENTATION') ||
     !densityAdmission.includes('separate explicit Owner implementation-only authorization') ||
@@ -7247,6 +7249,74 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     !densityAdmission.includes('PRODUCTION_RELEASE_ACCEPTANCE=NOT_PERFORMED')
   ) {
     violations.push('PAVP_DENSITY_CONTROL_HEIGHT_ADMISSION')
+  }
+
+  const scrollRestorationHeading = '### `' + currentWork + '` scoped admission record'
+  const scrollRestorationStart = architectureSource.indexOf(scrollRestorationHeading)
+  const scrollRestorationEnd = architectureSource.indexOf(
+    '\n#### ',
+    scrollRestorationStart + scrollRestorationHeading.length,
+  )
+  const scrollRestorationAdmission =
+    scrollRestorationStart === -1
+      ? ''
+      : architectureSource.slice(
+          scrollRestorationStart,
+          scrollRestorationEnd === -1 ? undefined : scrollRestorationEnd,
+        )
+  const scrollRestorationFields = [...scrollRestorationAdmission.matchAll(/^([A-Z_]+)=(.*)$/gmu)]
+  const requiredScrollRestorationValues = {
+    ID: currentWork,
+    AUTHORITY: currentWorkAuthority,
+    LIVE_WORKSPACE_AUTHORITY: 'ARCHITECTURE_SECTION_18_11_7',
+    IMPLEMENTATION_AUTHORIZATION: 'OWNER_APPROVED_BOUNDED_REPAIR',
+    OWNER_RUNTIME_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_VISUAL_ACCEPTANCE: 'NOT_PERFORMED',
+    GIT_DELIVERY: 'NOT_AUTHORIZED',
+    RELEASE_STATUS: 'NOT_RELEASED',
+  }
+  const requiredScrollRestorationFields = [
+    ...Object.keys(requiredScrollRestorationValues),
+    'ENTRY_CONDITIONS',
+    'ALLOWED_SCOPE',
+    'PROHIBITED_SCOPE',
+    'OUTPUTS',
+    'MACHINE_GATES',
+    'PRODUCTION_RELEASE_ACCEPTANCE',
+    'COMPLETION_EVIDENCE',
+  ]
+  if (
+    !exactSet(
+      scrollRestorationFields.map((match) => match[1] ?? ''),
+      requiredScrollRestorationFields,
+    ) ||
+    scrollRestorationFields.length !== requiredScrollRestorationFields.length ||
+    !scrollRestorationFields.every((match) => (match[2]?.length ?? 0) > 0) ||
+    Object.entries(requiredScrollRestorationValues).some(
+      ([field, expected]) =>
+        scrollRestorationFields.find((match) => match[1] === field)?.[2] !== expected,
+    ) ||
+    !scrollRestorationAdmission.includes('History policy relaxation') ||
+    !scrollRestorationAdmission.includes('public Storage or UiScrollController contract changes') ||
+    !scrollRestorationAdmission.includes('PRODUCTION_RELEASE_ACCEPTANCE=NOT_PERFORMED')
+  ) {
+    violations.push('PAVP_SCROLL_POSITION_RESTORATION_ADMISSION')
+  }
+
+  const reloadAmendmentStart = architectureSource.indexOf(
+    '### Browser-reload scroll restoration contract amendment',
+  )
+  const reloadAmendment =
+    reloadAmendmentStart === -1 || scrollRestorationStart <= reloadAmendmentStart
+      ? ''
+      : architectureSource.slice(reloadAmendmentStart, scrollRestorationStart)
+  if (
+    !reloadAmendment.includes('ID=' + browserReloadArchitectureWork + '\n') ||
+    !reloadAmendment.includes('ALLOWED_SCOPE=ARCHITECTURE.md only;') ||
+    !reloadAmendment.includes('PROHIBITED_SCOPE=application or checker implementation;') ||
+    !reloadAmendment.includes('`IMPLEMENTATION_AUTHORIZATION=NONE`')
+  ) {
+    violations.push('PAVP_BROWSER_RELOAD_ARCHITECTURE_STAGE')
   }
 
   const workspaceAmendment = multiRecordWorkspaceAmendment(architectureSource)
@@ -8711,8 +8781,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
   ] as const
   const requiredRouteTransitionFinalInvariantMarkers = [
     `${routeTransitionAdmissionAmendment}_IS_FROZEN`,
-    'CURRENT_BOUNDED_WORK_AUTHORITY_IS_NONE',
-    'CURRENT_BOUNDED_WORK_IS_NONE',
+    `CURRENT_BOUNDED_WORK_AUTHORITY_IS_${currentWorkAuthority}`,
+    `CURRENT_BOUNDED_WORK_IS_${currentWork}`,
     `${routeTransitionWorkPackage}_STATUS_IS_ACCEPTED`,
     `${routeTransitionWorkPackage}_REPOSITORY_IMPLEMENTATION_IS_COMPLETE`,
     `${routeTransitionWorkPackage}_STATIC_VERIFICATION_IS_PASS`,
@@ -8987,6 +9057,27 @@ function runAcceptanceClosureNegativeProbes(
         ),
     ],
     [
+      'current-work-stale-density',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource
+        .replaceAll(
+          currentWorkMarker,
+          'CURRENT_BOUNDED_WORK=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION',
+        )
+        .replaceAll(
+          currentWorkAuthorityMarker,
+          'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_14_2',
+        ),
+    ],
+    [
+      'current-work-stale-reload-amendment',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource.replaceAll(
+        currentWorkMarker,
+        'CURRENT_BOUNDED_WORK=' + browserReloadArchitectureWork,
+      ),
+    ],
+    [
       'current-work-historical-architecture-task',
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource.replaceAll(
@@ -9022,7 +9113,7 @@ function runAcceptanceClosureNegativeProbes(
 
   for (const [name, mutated] of [
     [
-      'density-current-work-stale-workspace',
+      'current-work-stale-workspace',
       architectureSource
         .replaceAll(
           currentWorkMarker,
@@ -9032,6 +9123,13 @@ function runAcceptanceClosureNegativeProbes(
           currentWorkAuthorityMarker,
           'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_11',
         ),
+    ],
+    [
+      'density-admission-rebound-to-current-task',
+      architectureSource.replace(
+        'ID=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION\n',
+        'ID=' + currentWork + '\n',
+      ),
     ],
     [
       'density-admission-wrong-authority',
@@ -9047,12 +9145,57 @@ function runAcceptanceClosureNegativeProbes(
   ] as const) {
     probes.push([
       name,
-      name === 'density-current-work-stale-workspace'
+      name === 'current-work-stale-workspace'
         ? 'PAVP_ROUTE_TRANSITION_CURRENT_WORK'
         : 'PAVP_DENSITY_CONTROL_HEIGHT_ADMISSION',
       mutated,
     ])
   }
+
+  const scrollRestorationStart = architectureSource.indexOf(
+    '### `' + currentWork + '` scoped admission record',
+  )
+  const scrollRestorationEnd = architectureSource.indexOf('\n#### ', scrollRestorationStart)
+  const scrollRestorationAdmission = architectureSource.slice(
+    scrollRestorationStart,
+    scrollRestorationEnd,
+  )
+  for (const [name, marker, invalid] of [
+    ['authority', 'AUTHORITY=' + currentWorkAuthority, 'AUTHORITY=ARCHITECTURE_SECTION_14_2'],
+    [
+      'live-workspace-authority',
+      'LIVE_WORKSPACE_AUTHORITY=ARCHITECTURE_SECTION_18_11_7',
+      'LIVE_WORKSPACE_AUTHORITY=NONE',
+    ],
+    [
+      'implementation-authorization',
+      'IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_BOUNDED_REPAIR',
+      'IMPLEMENTATION_AUTHORIZATION=NONE',
+    ],
+    [
+      'runtime-acceptance',
+      'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
+      'OWNER_RUNTIME_ACCEPTANCE=PASS',
+    ],
+    ['git-authorization', 'GIT_DELIVERY=NOT_AUTHORIZED', 'GIT_DELIVERY=OWNER_APPROVED'],
+  ] as const) {
+    probes.push([
+      'scroll-restoration-admission-' + name,
+      'PAVP_SCROLL_POSITION_RESTORATION_ADMISSION',
+      architectureSource.replace(
+        scrollRestorationAdmission,
+        scrollRestorationAdmission.replace(marker, invalid),
+      ),
+    ])
+  }
+  probes.push([
+    'reload-architecture-stage-rebound-to-implementation',
+    'PAVP_BROWSER_RELOAD_ARCHITECTURE_STAGE',
+    architectureSource.replace(
+      'ID=' + browserReloadArchitectureWork + '\n',
+      'ID=' + currentWork + '\n',
+    ),
+  ])
 
   const amendment = multiRecordWorkspaceAmendment(architectureSource)
   probes.push([

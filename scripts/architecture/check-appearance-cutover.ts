@@ -1407,31 +1407,55 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
   collectRuntimeKernelDelegations(mainFile)
   const runtimeKernelRootArgument = runtimeKernelDelegations[0]?.arguments[0]
   const rootComponentBinding = rootComponentImport?.importClause?.name
-  const prohibitedMainValueImports = mainFile.statements.filter(
-    (statement): statement is ts.ImportDeclaration => {
-      if (
-        !ts.isImportDeclaration(statement) ||
-        statement.importClause === undefined ||
-        statement.importClause.phaseModifier === ts.SyntaxKind.TypeKeyword ||
-        !ts.isStringLiteral(statement.moduleSpecifier)
-      ) {
-        return false
-      }
+  const prohibitsMainValueImport = (statement: ts.Statement): statement is ts.ImportDeclaration => {
+    if (
+      !ts.isImportDeclaration(statement) ||
+      statement.importClause === undefined ||
+      statement.importClause.phaseModifier === ts.SyntaxKind.TypeKeyword ||
+      !ts.isStringLiteral(statement.moduleSpecifier)
+    ) {
+      return false
+    }
 
-      const modulePath = statement.moduleSpecifier.text
-      return (
-        modulePath === 'vue' ||
-        modulePath === 'pinia' ||
-        (modulePath.startsWith('./app/appearance/') &&
-          (statement.importClause.name !== undefined ||
-            (statement.importClause.namedBindings !== undefined &&
-              (!ts.isNamedImports(statement.importClause.namedBindings) ||
-                statement.importClause.namedBindings.elements.some(
-                  (element) => !element.isTypeOnly,
-                )))))
-      )
-    },
+    const modulePath = statement.moduleSpecifier.text
+    const bindings = statement.importClause.namedBindings
+    return (
+      (modulePath === 'vue' &&
+        (statement.importClause.name !== undefined ||
+          bindings === undefined ||
+          !ts.isNamedImports(bindings) ||
+          bindings.elements.some(
+            (element) =>
+              !element.isTypeOnly &&
+              !['nextTick', 'shallowRef'].includes((element.propertyName ?? element.name).text),
+          ))) ||
+      modulePath === 'pinia' ||
+      (modulePath.startsWith('./app/appearance/') &&
+        (statement.importClause.name !== undefined ||
+          (statement.importClause.namedBindings !== undefined &&
+            (!ts.isNamedImports(statement.importClause.namedBindings) ||
+              statement.importClause.namedBindings.elements.some(
+                (element) => !element.isTypeOnly,
+              )))))
+    )
+  }
+  const prohibitedMainValueImports = mainFile.statements.filter(prohibitsMainValueImport)
+  for (const imported of [
+    "import { createApp } from 'vue'",
+    "import * as Vue from 'vue'",
+    "import { nextTick, shallowRef, createApp } from 'vue'",
+    "import { initializeAppearance } from './app/appearance/appearance-bootstrap'",
+  ]) {
+    if (!sourceFile('main.ts', imported).statements.some(prohibitsMainValueImport))
+      violations.push('Main lifecycle ownership import in-memory negative probe did not fail.')
+  }
+  if (
+    sourceFile(
+      'main.ts',
+      "import { nextTick as flush, shallowRef as state, type ShallowRef } from 'vue'",
+    ).statements.some(prohibitsMainValueImport)
   )
+    violations.push('Main scroll document lifecycle named imports must allow local aliases.')
 
   if (
     rootComponentBinding === undefined ||

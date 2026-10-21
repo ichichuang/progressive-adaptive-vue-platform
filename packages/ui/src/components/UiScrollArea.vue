@@ -108,7 +108,19 @@ const controller = Object.freeze<UiScrollController>({
     return props.ownerId
   },
   readState,
-  ownsBoundary: (boundary) => viewport.value !== undefined && boundary.contains(viewport.value),
+  ownsBoundary: (boundary) => {
+    const view = viewport.value
+    const body = content.value
+    return (
+      mounted &&
+      !disposed &&
+      props.enabled &&
+      view?.isConnected === true &&
+      body?.isConnected === true &&
+      boundary.contains(view) &&
+      view.contains(body)
+    )
+  },
   readOffset,
   cancelMotion() {
     if (disposed) return
