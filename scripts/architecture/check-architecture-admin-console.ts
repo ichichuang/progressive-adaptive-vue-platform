@@ -19591,9 +19591,9 @@ async function validateNaiveOverrides(): Promise<string[]> {
   }
 
   const [buttonTheme, buttonRender, nativeCommon] = await Promise.all([
-    readFile(resolve(rootDirectory, 'node_modules/naive-ui/es/button/styles/light.mjs'), 'utf8'),
-    readFile(resolve(rootDirectory, 'node_modules/naive-ui/es/button/src/Button.mjs'), 'utf8'),
-    readFile(resolve(rootDirectory, 'node_modules/naive-ui/es/_styles/common/_common.mjs'), 'utf8'),
+    readFile(requireFromUi.resolve('naive-ui/es/button/styles/light.mjs'), 'utf8'),
+    readFile(requireFromUi.resolve('naive-ui/es/button/src/Button.mjs'), 'utf8'),
+    readFile(requireFromUi.resolve('naive-ui/es/_styles/common/_common.mjs'), 'utf8'),
   ])
   if (
     !/const\s*\{[^}]*heightSmall[^}]*\}\s*=\s*[\w$]+/u.test(buttonTheme) ||
