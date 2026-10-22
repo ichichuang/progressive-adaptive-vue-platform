@@ -1,5 +1,6 @@
 import type { UiScrollController } from '@platform/ui'
 import type { InjectionKey } from 'vue'
+import type { NormalizedCoreError } from '../errors/core-error'
 import type { LiveWorkspaceEntry } from '../workspace/workspace.store'
 import type { ValidatedRouteInput } from './route-input'
 import type { RouteName } from './route-registry'
@@ -19,8 +20,11 @@ export interface WorkspaceRenderSnapshot {
 
 export interface WorkspaceRetentionBinding {
   acceptCommitted(snapshot: WorkspaceRenderSnapshot): void
-  whenRendered(snapshot: WorkspaceRenderSnapshot, signal: AbortSignal): Promise<boolean>
-  readFailure(snapshot: WorkspaceRenderSnapshot): { readonly cause: unknown } | undefined
+  whenRendered(
+    snapshot: WorkspaceRenderSnapshot,
+    signal: AbortSignal,
+  ): Promise<'page' | 'component-fallback' | 'cancelled'>
+  readFailure(snapshot: WorkspaceRenderSnapshot): NormalizedCoreError | undefined
   dispose(): void
 }
 

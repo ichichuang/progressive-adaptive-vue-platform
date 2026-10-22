@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { extname, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
+import { runInNewContext } from 'node:vm'
 
 import ts from 'typescript'
 import { build } from 'vite'
@@ -330,8 +331,8 @@ const expectedVueUseCoreVersion = '14.4.0'
 const expectedArchitectureAdminConsoleNegativeProbeCount = 77
 const expectedMotionGeometryNegativeProbeCount = 12
 const expectedRuntime002NegativeProbeCount = 10
-const expectedRuntime005NegativeProbeCount = 10
-const expectedAcceptanceClosureNegativeProbeCount = 33
+const expectedRuntime005NegativeProbeCount = 14
+const expectedAcceptanceClosureNegativeProbeCount = 40
 const expectedRuntime003AdmissionNegativeProbeCount = 5
 const expectedRuntime003AcceptanceClosureNegativeProbeCount = 6
 const expectedAdminNavigationGsapAdmissionNegativeProbeCount = 12
@@ -356,7 +357,7 @@ const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
 const expectedRouteTransitionAdmissionNegativeProbeCount = 12
 const expectedNavigationReworkSourceInvariantCount = 56
 const expectedNavigationReworkSourceNegativeProbeCount = 22
-const expectedNavigationBudgetNegativeProbeCount = 6
+const expectedNavigationBudgetProbeCount = 18
 const expectedRuntime003ActiveMirrorCount = 13
 const expectedRuntime003SourceNegativeProbeCount = 10
 const acceptedDarkActionWorkPackage = 'PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT'
@@ -399,8 +400,10 @@ const routeTransitionAdmissionAmendment =
 const expectedRouteTransitionActiveMirrorCount = 13
 const multiRecordArchitectureWork = 'PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE'
 const browserReloadArchitectureWork = 'PAVP_BROWSER_RELOAD_SCROLL_RESTORATION_CONTRACT_AMENDMENT'
-const currentWork = 'PAVP_SCROLL_POSITION_RESTORATION_IMPLEMENTATION'
-const currentWorkAuthority = 'ARCHITECTURE_SECTION_18_12'
+const scrollRestorationWork = 'PAVP_SCROLL_POSITION_RESTORATION_IMPLEMENTATION'
+const scrollRestorationAuthority = 'ARCHITECTURE_SECTION_18_12'
+const currentWork = 'PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION'
+const currentWorkAuthority = 'ARCHITECTURE_SECTION_20B_2'
 const currentWorkMarker = `CURRENT_BOUNDED_WORK=${currentWork}`
 const currentWorkAuthorityMarker = `CURRENT_BOUNDED_WORK_AUTHORITY=${currentWorkAuthority}`
 const adminNavigationNativeImplementationCommit = '70cc43995512994b4155df04ddb7896047d8ad3a'
@@ -427,10 +430,7 @@ const expectedAdminNavigationNativeImplementationPaths = [
 ] as const
 const expectedAdminNavigationNativeImplementationPathInventory =
   expectedAdminNavigationNativeImplementationPaths.join(';')
-const currentInitialJavaScriptBudgetBytes = 224 * 1024
 const expectedInitialJavaScriptBudgetBytes = projectConfig.bundleBudgets.initialJavaScriptGzipBytes
-const expectedMinimumInitialJavaScriptHeadroomBytes = 8 * 1024
-const expectedBundleBudgetAlignmentBytes = 8 * 1024
 const historicalAdminNavigationGsapCheckBundleSha256 =
   '30e618541feb287a82a88076045d232091fb3eabaeb499fb2aae8da3fb1fd372'
 const runtime003WorkItem = 'PAVP-RUNTIME-003'
@@ -7215,6 +7215,43 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     recordCurrentWorkViolation()
   }
 
+  const isolationHeading = '### `' + currentWork + '` scoped admission record'
+  const isolationStart = architectureSource.indexOf(isolationHeading)
+  const isolationEnd = architectureSource.indexOf('\n## ', isolationStart + isolationHeading.length)
+  const isolationAdmission =
+    isolationStart === -1 || isolationEnd === -1
+      ? ''
+      : architectureSource.slice(isolationStart, isolationEnd)
+  const isolationFields = [...isolationAdmission.matchAll(/^([A-Z_]+)=(.*)$/gmu)]
+  const isolationValues = {
+    ID: currentWork,
+    AUTHORITY: currentWorkAuthority,
+    ROUTER_PRESENTATION_AUTHORITY: 'ARCHITECTURE_SECTION_9_11',
+    WORKSPACE_LIFETIME_AUTHORITY: 'ARCHITECTURE_SECTION_18_11',
+    IMPLEMENTATION_AUTHORIZATION: 'OWNER_APPROVED_BOUNDED_REPAIR',
+    OWNER_RUNTIME_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_VISUAL_ACCEPTANCE: 'NOT_PERFORMED',
+    OWNER_ACCESSIBILITY_ACCEPTANCE: 'NOT_PERFORMED',
+    GIT_DELIVERY: 'NOT_AUTHORIZED',
+    RELEASE_STATUS: 'NOT_RELEASED',
+    NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE: 'NONE',
+    SUCCESSOR_PACKAGE_AUTHORIZATION: 'NONE',
+  }
+  if (
+    Object.entries(isolationValues).some(
+      ([field, expected]) =>
+        isolationFields.filter((match) => match[1] === field).length !== 1 ||
+        isolationFields.find((match) => match[1] === field)?.[2] !== expected,
+    ) ||
+    !isolationAdmission.includes("Promise<'page' | 'component-fallback' | 'cancelled'>") ||
+    !isolationAdmission.includes('NormalizedCoreError | undefined') ||
+    !isolationAdmission.includes("presentation: 'page' | 'component-fallback'") ||
+    !isolationAdmission.includes('presentation-unavailable') ||
+    !isolationAdmission.includes('4bd65676b98fceb1d0db4a8a1d81f11097e4f427')
+  ) {
+    violations.push('PAVP_PAGE_COMPONENT_ERROR_ISOLATION_ADMISSION')
+  }
+
   const densityHeading = '#### `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` scoped admission record'
   const densityStart = architectureSource.indexOf(densityHeading)
   const densityEnd = architectureSource.indexOf('\n#### ', densityStart + densityHeading.length)
@@ -7251,7 +7288,7 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
     violations.push('PAVP_DENSITY_CONTROL_HEIGHT_ADMISSION')
   }
 
-  const scrollRestorationHeading = '### `' + currentWork + '` scoped admission record'
+  const scrollRestorationHeading = '### `' + scrollRestorationWork + '` scoped admission record'
   const scrollRestorationStart = architectureSource.indexOf(scrollRestorationHeading)
   const scrollRestorationEnd = architectureSource.indexOf(
     '\n#### ',
@@ -7266,8 +7303,8 @@ function currentWorkStatusViolations(architectureSource: string): string[] {
         )
   const scrollRestorationFields = [...scrollRestorationAdmission.matchAll(/^([A-Z_]+)=(.*)$/gmu)]
   const requiredScrollRestorationValues = {
-    ID: currentWork,
-    AUTHORITY: currentWorkAuthority,
+    ID: scrollRestorationWork,
+    AUTHORITY: scrollRestorationAuthority,
     LIVE_WORKSPACE_AUTHORITY: 'ARCHITECTURE_SECTION_18_11_7',
     IMPLEMENTATION_AUTHORIZATION: 'OWNER_APPROVED_BOUNDED_REPAIR',
     OWNER_RUNTIME_ACCEPTANCE: 'NOT_PERFORMED',
@@ -9047,6 +9084,16 @@ function runAcceptanceClosureNegativeProbes(
       ),
     ],
     [
+      'current-work-stale-scroll-restoration',
+      'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
+      architectureSource
+        .replaceAll(currentWorkMarker, 'CURRENT_BOUNDED_WORK=' + scrollRestorationWork)
+        .replaceAll(
+          currentWorkAuthorityMarker,
+          'CURRENT_BOUNDED_WORK_AUTHORITY=' + scrollRestorationAuthority,
+        ),
+    ],
+    [
       'current-work-stale-browser-page-task',
       'PAVP_ROUTE_TRANSITION_CURRENT_WORK',
       architectureSource
@@ -9111,6 +9158,41 @@ function runAcceptanceClosureNegativeProbes(
     ],
   ]
 
+  const isolationHeading = '### `' + currentWork + '` scoped admission record'
+  const isolationStart = architectureSource.indexOf(isolationHeading)
+  const isolationEnd = architectureSource.indexOf('\n## ', isolationStart + isolationHeading.length)
+  const isolationAdmission = architectureSource.slice(isolationStart, isolationEnd)
+  for (const [name, marker, invalid] of [
+    ['authority', 'AUTHORITY=' + currentWorkAuthority, 'AUTHORITY=ARCHITECTURE_SECTION_18_12'],
+    [
+      'router-authority',
+      'ROUTER_PRESENTATION_AUTHORITY=ARCHITECTURE_SECTION_9_11',
+      'ROUTER_PRESENTATION_AUTHORITY=NONE',
+    ],
+    [
+      'lifetime-authority',
+      'WORKSPACE_LIFETIME_AUTHORITY=ARCHITECTURE_SECTION_18_11',
+      'WORKSPACE_LIFETIME_AUTHORITY=NONE',
+    ],
+    [
+      'implementation-authorization',
+      'IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_BOUNDED_REPAIR',
+      'IMPLEMENTATION_AUTHORIZATION=NONE',
+    ],
+    [
+      'runtime-acceptance',
+      'OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED',
+      'OWNER_RUNTIME_ACCEPTANCE=PASS',
+    ],
+    ['git-authorization', 'GIT_DELIVERY=NOT_AUTHORIZED', 'GIT_DELIVERY=OWNER_APPROVED'],
+  ] as const) {
+    probes.push([
+      'page-component-isolation-admission-' + name,
+      'PAVP_PAGE_COMPONENT_ERROR_ISOLATION_ADMISSION',
+      architectureSource.replace(isolationAdmission, isolationAdmission.replace(marker, invalid)),
+    ])
+  }
+
   for (const [name, mutated] of [
     [
       'current-work-stale-workspace',
@@ -9153,7 +9235,7 @@ function runAcceptanceClosureNegativeProbes(
   }
 
   const scrollRestorationStart = architectureSource.indexOf(
-    '### `' + currentWork + '` scoped admission record',
+    '### `' + scrollRestorationWork + '` scoped admission record',
   )
   const scrollRestorationEnd = architectureSource.indexOf('\n#### ', scrollRestorationStart)
   const scrollRestorationAdmission = architectureSource.slice(
@@ -9161,7 +9243,7 @@ function runAcceptanceClosureNegativeProbes(
     scrollRestorationEnd,
   )
   for (const [name, marker, invalid] of [
-    ['authority', 'AUTHORITY=' + currentWorkAuthority, 'AUTHORITY=ARCHITECTURE_SECTION_14_2'],
+    ['authority', 'AUTHORITY=' + scrollRestorationAuthority, 'AUTHORITY=ARCHITECTURE_SECTION_14_2'],
     [
       'live-workspace-authority',
       'LIVE_WORKSPACE_AUTHORITY=ARCHITECTURE_SECTION_18_11_7',
@@ -9906,10 +9988,10 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_FEATURE_CLOSURE_MEASUREMENT')
   }
 
-  const budgetFormulaMarkers = [
-    'MOTION_FEATURE_BUDGET_FORMULA=ceil((MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES + 8192) / 8192) * 8192',
-    'MOTION_FEATURE_BUDGET_HEADROOM >= 8192',
-    'MOTION_FEATURE_BUDGET_HEADROOM < 16384',
+  const budgetLimitMarkers = [
+    'MOTION_FEATURE_BUDGET_FAILURE=MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES > projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
+    'MOTION_FEATURE_BUDGET_EQUALITY=PASS',
+    'MOTION_FEATURE_REMAINING_BYTES=INFORMATIONAL_ONLY',
     'MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648',
     'MOTION_FEATURE_HARD_BUDGET_BYTES=49152',
     'MOTION_FEATURE_HEADROOM_BYTES=15504',
@@ -9917,14 +9999,10 @@ function adminNavigationMotionVueSelectionLensAdmissionViolations(
     'FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
     'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14260',
     'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568',
-    'INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192',
-    'INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192',
-    'INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=8192',
-    'INITIAL_JAVASCRIPT_REBASE_MAXIMUM_HEADROOM_EXCLUSIVE_BYTES=16384',
     'INITIAL_JAVASCRIPT_PRESELECTED_INCREASE=PROHIBITED',
   ] as const
-  if (!hasEveryMarker(budgetFormulaMarkers)) {
-    violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_BUDGET_ROUNDING')
+  if (!hasEveryMarker(budgetLimitMarkers)) {
+    violations.push('PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_BUDGET_LIMIT')
   }
 
   const selectionLensMarkers = [
@@ -10613,7 +10691,7 @@ function routeTransitionAdmissionViolations(architectureSource: string): string[
     'ROUTE_TRANSITION_LAZY_RUNTIME=PROHIBITED',
     'ROUTE_TRANSITION_FIRST_NAVIGATION_ANIMATION_LOSS=PROHIBITED',
     'ROUTE_TRANSITION_BUNDLE_BUDGET_CHANGE=NONE',
-    'ROUTE_TRANSITION_BUDGET_HEADROOM_FAILURE=STOP_AND_REQUEST_SEPARATE_AMENDMENT',
+    'ROUTE_TRANSITION_BUDGET_HARD_LIMIT_FAILURE=STOP_AND_REPORT',
   ] as const
   if (!hasEveryMarker(dynamicRootMarkers)) {
     violations.push('PAVP_ROUTE_TRANSITION_DYNAMIC_ROOT_BOUNDARY')
@@ -10974,17 +11052,12 @@ function runAdminNavigationMotionVueSelectionLensAdmissionNegativeProbes(
       ),
     ],
     [
-      'admin-navigation-motion-vue-selection-lens-budget-rounding-drift',
-      'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_BUDGET_ROUNDING',
-      architectureSource
-        .replace(
-          'MOTION_FEATURE_BUDGET_FORMULA=ceil((MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES + 8192) / 8192) * 8192',
-          'MOTION_FEATURE_BUDGET_FORMULA=ceil(MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES * 1.1)',
-        )
-        .replace(
-          'MOTION_FEATURE_BUDGET_HEADROOM >= 8192',
-          'MOTION_FEATURE_BUDGET_HEADROOM >= 4096',
-        ),
+      'admin-navigation-motion-vue-selection-lens-budget-rejects-equality',
+      'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SELECTION_LENS_BUDGET_LIMIT',
+      architectureSource.replace(
+        'MOTION_FEATURE_BUDGET_FAILURE=MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES > projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
+        'MOTION_FEATURE_BUDGET_FAILURE=MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES >= projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
+      ),
     ],
     [
       'admin-navigation-motion-vue-selection-lens-general-motion-or-route-activated',
@@ -12512,6 +12585,9 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
   let addsOutletOrLayout = false
   let addsRouteTransition = false
   const vueRenderImports = new Set<string>()
+  const vueComponentImports = new Set<string>()
+  const nativeRenderCalls: ts.CallExpression[] = []
+  const retentionCalls: ts.CallExpression[] = []
   for (const statement of retention.statements) {
     if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier))
       continue
@@ -12521,6 +12597,8 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       const imported = binding.propertyName?.text ?? binding.name.text
       if (statement.moduleSpecifier.text === 'vue' && imported === 'h')
         vueRenderImports.add(binding.name.text)
+      if (statement.moduleSpecifier.text === 'vue' && imported === 'defineComponent')
+        vueComponentImports.add(binding.name.text)
       if (statement.moduleSpecifier.text === 'vue-router' && imported === 'RouterView')
         addsOutletOrLayout = true
       if (['Transition', 'TransitionGroup', 'Suspense'].includes(imported))
@@ -12528,6 +12606,7 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
     }
   }
   function inspectRetentionBoundary(node: ts.Node): void {
+    if (ts.isCallExpression(node)) retentionCalls.push(node)
     if (
       ts.isCallExpression(node) &&
       ts.isIdentifier(node.expression) &&
@@ -12535,10 +12614,117 @@ function runtime005RouteContentViolations(snapshot: MaterialGateSnapshot): strin
       node.arguments[0] !== undefined &&
       ts.isStringLiteral(node.arguments[0])
     )
-      addsOutletOrLayout = true
+      nativeRenderCalls.push(node)
     ts.forEachChild(node, inspectRetentionBoundary)
   }
   inspectRetentionBoundary(retention)
+
+  // Only the admitted section/h1/p fallback is native DOM in this otherwise hostless owner.
+  // Inline and shared render functions are equivalent; no private helper name is normative.
+  const isNativeCall = (node: ts.Node | undefined, tag: string): node is ts.CallExpression =>
+    node !== undefined &&
+    ts.isCallExpression(node) &&
+    nativeRenderCalls.includes(node) &&
+    node.arguments[0] !== undefined &&
+    ts.isStringLiteral(node.arguments[0]) &&
+    node.arguments[0].text === tag
+  const isOwnRenderCall = (call: ts.CallExpression): boolean => {
+    for (let node: ts.Node = call.parent; !ts.isSourceFile(node); node = node.parent) {
+      if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+        if (!ts.isReturnStatement(node.parent)) return false
+        for (let owner: ts.Node = node.parent; !ts.isSourceFile(owner); owner = owner.parent) {
+          if (
+            ts.isCallExpression(owner) &&
+            ts.isIdentifier(owner.expression) &&
+            vueComponentImports.has(owner.expression.text)
+          )
+            return true
+        }
+        return false
+      }
+      if (ts.isFunctionDeclaration(node)) return false
+    }
+    return false
+  }
+  const fallbackRoots = nativeRenderCalls.filter((call) => isNativeCall(call, 'section'))
+  const allowedFallbackCalls = new Set<ts.CallExpression>()
+  const boundaryRenderCalls = new Set<ts.CallExpression>()
+  let fallbackStructureValid = fallbackRoots.length > 0
+  for (const root of fallbackRoots) {
+    const children = root.arguments[2]
+    const props = root.arguments[1]
+    const heading =
+      children !== undefined && ts.isArrayLiteralExpression(children)
+        ? children.elements[0]
+        : undefined
+    const description =
+      children !== undefined && ts.isArrayLiteralExpression(children)
+        ? children.elements[1]
+        : undefined
+    const headingProps =
+      heading !== undefined && ts.isCallExpression(heading) ? heading.arguments[1] : undefined
+    const headingTabIndex =
+      headingProps !== undefined && ts.isObjectLiteralExpression(headingProps)
+        ? objectPropertyInitializer(headingProps, 'tabindex')
+        : undefined
+    const structureValid =
+      children !== undefined &&
+      ts.isArrayLiteralExpression(children) &&
+      children.elements.length === 2 &&
+      props !== undefined &&
+      ts.isObjectLiteralExpression(props) &&
+      objectPropertyInitializer(props, 'role')?.getText() === "'alert'" &&
+      objectPropertyInitializer(props, 'aria-live')?.getText() === "'assertive'" &&
+      !props.properties.some((property) =>
+        ['id', 'style', 'data-scroll-owner'].includes(objectPropertyName(property) ?? ''),
+      ) &&
+      isNativeCall(heading, 'h1') &&
+      isNativeCall(description, 'p') &&
+      headingProps !== undefined &&
+      ts.isObjectLiteralExpression(headingProps) &&
+      objectPropertyInitializer(headingProps, 'data-route-focus') !== undefined &&
+      headingTabIndex !== undefined &&
+      ts.isPropertyAccessExpression(headingTabIndex) &&
+      headingTabIndex.name.text === 'targetTabIndex'
+    if (!structureValid || !ts.isCallExpression(heading) || !ts.isCallExpression(description)) {
+      fallbackStructureValid = false
+      continue
+    }
+    allowedFallbackCalls.add(root)
+    allowedFallbackCalls.add(heading)
+    allowedFallbackCalls.add(description)
+    if (isOwnRenderCall(root)) {
+      boundaryRenderCalls.add(root)
+      continue
+    }
+    let owner: ts.Node = root.parent
+    while (
+      !ts.isSourceFile(owner) &&
+      !ts.isFunctionDeclaration(owner) &&
+      !ts.isArrowFunction(owner) &&
+      !ts.isFunctionExpression(owner)
+    )
+      owner = owner.parent
+    const ownerName = ts.isFunctionDeclaration(owner)
+      ? owner.name
+      : !ts.isSourceFile(owner) &&
+          ts.isVariableDeclaration(owner.parent) &&
+          ts.isIdentifier(owner.parent.name)
+        ? owner.parent.name
+        : undefined
+    const calls = retentionCalls.filter(
+      (call) =>
+        ownerName !== undefined &&
+        ts.isIdentifier(call.expression) &&
+        call.expression.text === ownerName.text,
+    )
+    if (calls.length === 0 || !calls.every(isOwnRenderCall)) fallbackStructureValid = false
+    for (const call of calls) boundaryRenderCalls.add(call)
+  }
+  if (boundaryRenderCalls.size !== 2) fallbackStructureValid = false
+  if (!fallbackStructureValid) violations.push('PAGE_COMPONENT_FALLBACK_STRUCTURE')
+  if (nativeRenderCalls.some((call) => !fallbackStructureValid || !allowedFallbackCalls.has(call)))
+    addsOutletOrLayout = true
   if (addsOutletOrLayout) violations.push('PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT')
   if (addsRouteTransition) violations.push('PAVP_RUNTIME_005_REMOUNT_WRAPPER')
 
@@ -12988,6 +13174,43 @@ function runRuntime005NegativeProbes(
     /<WorkspaceRetentionHost\b[\s\S]*?\/>/u.exec(baseline.appTemplateSource)?.[0] ?? ''
   const transitionWrappedComponentBlock = `<Transition mode="out-in">${routedComponentBlock}</Transition>`
   const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
+    [
+      'page-fallback-adds-second-main',
+      'PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT',
+      {
+        workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
+          /h\(\s*'section'/u,
+          "h('main'",
+        ),
+      },
+    ],
+    [
+      'page-fallback-adds-retry-button',
+      'PAGE_COMPONENT_FALLBACK_STRUCTURE',
+      {
+        workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
+          /h\(\s*'p'/u,
+          "h('button'",
+        ),
+      },
+    ],
+    [
+      'page-fallback-removes-route-heading',
+      'PAGE_COMPONENT_FALLBACK_STRUCTURE',
+      {
+        workspaceRetentionSource: baseline.workspaceRetentionSource.replace(
+          "'data-route-focus':",
+          "'data-unowned-heading':",
+        ),
+      },
+    ],
+    [
+      'retention-adds-native-layout-outside-fallback',
+      'PAVP_RUNTIME_005_ROUTE_COMPONENT_CONTRACT',
+      {
+        workspaceRetentionSource: `${baseline.workspaceRetentionSource}\nh('div', { 'data-scroll-owner': 'unowned' })`,
+      },
+    ],
     [
       'runtime-005-route-host-key-restored',
       'PAVP_RUNTIME_005_ROUTE_HOST_KEY',
@@ -17846,7 +18069,6 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   const violations: string[] = []
   const motionFeatureBudgetBytes =
     projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
-  const expectedInitialProjectConfigBudget = `initialJavaScriptGzipBytes: ${String(expectedInitialJavaScriptBudgetBytes / 1024)} * 1024`
   const expectedInitialEngineeringManifestBudget = `{ id: 'initial-javascript-gzip', limit: ${String(expectedInitialJavaScriptBudgetBytes)}, unit: 'bytes-gzip' }`
   const expectedMotionEngineeringManifestBudget = `{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: ${String(motionFeatureBudgetBytes)}, unit: 'bytes-gzip' }`
   const requiredArchitectureMarkers = [
@@ -17864,21 +18086,17 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     'MOTION_FEATURE_PROJECT_CONFIG_BUDGET_PROPERTY=projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
     'MOTION_FEATURE_ENGINEERING_MANIFEST_RECORD_ID=admin-navigation-motion-feature-javascript-gzip',
     'MOTION_FEATURE_ENGINEERING_MANIFEST_UNIT=bytes-gzip',
-    'MOTION_FEATURE_BUDGET_FORMULA=ceil((MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES + 8192) / 8192) * 8192',
-    'MOTION_FEATURE_BUDGET_HEADROOM >= 8192',
-    'MOTION_FEATURE_BUDGET_HEADROOM < 16384',
+    'MOTION_FEATURE_BUDGET_FAILURE=MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES > projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
+    'MOTION_FEATURE_BUDGET_EQUALITY=PASS',
+    'MOTION_FEATURE_REMAINING_BYTES=INFORMATIONAL_ONLY',
     'MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648',
-    `MOTION_FEATURE_HARD_BUDGET_BYTES=${String(motionFeatureBudgetBytes)}`,
-    `MOTION_FEATURE_HEADROOM_BYTES=${String(motionFeatureBudgetBytes - 33648)}`,
+    'MOTION_FEATURE_HARD_BUDGET_BYTES=49152',
+    'MOTION_FEATURE_HEADROOM_BYTES=15504',
     'MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILE_COUNT=1',
     'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223308',
     'FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
     'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14260',
     'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568',
-    `INITIAL_JAVASCRIPT_PRE_REBASE_HARD_BUDGET_BYTES=${String(currentInitialJavaScriptBudgetBytes)}`,
-    `INITIAL_JAVASCRIPT_REBASE_MINIMUM_HEADROOM_BYTES=${String(expectedMinimumInitialJavaScriptHeadroomBytes)}`,
-    'INITIAL_JAVASCRIPT_RETAIN_CONDITION=229376 - measuredInitialJavaScript >= 8192',
-    'INITIAL_JAVASCRIPT_REBASE_FORMULA=ceil((measuredInitialJavaScript + 8192) / 8192) * 8192',
   ] as const
   const requiredBundleMeasurementMarkers = [
     'const expectedLazyRouteCount = 18',
@@ -17888,21 +18106,14 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
     'differenceValues(motionFeatureStaticClosure, initialChunkKeys)',
-    'const expectedMotionFeatureJavaScriptHardBudgetBytes = exactAlignedBundleBudget(',
-    'motionFeatureJavaScriptBytes,',
-    'projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes !==',
-    'motionFeatureJavaScriptHeadroomBytes < minimumMotionFeatureJavaScriptHeadroomBytes',
-    'motionFeatureJavaScriptHeadroomBytes >= maximumAlignedBudgetHeadroomBytes',
   ] as const
 
   if (
-    projectConfig.bundleBudgets.initialJavaScriptGzipBytes !==
-      expectedInitialJavaScriptBudgetBytes ||
-    expectedInitialJavaScriptBudgetBytes < expectedMinimumInitialJavaScriptHeadroomBytes ||
-    expectedInitialJavaScriptBudgetBytes % expectedBundleBudgetAlignmentBytes !== 0 ||
-    motionFeatureBudgetBytes < expectedMinimumInitialJavaScriptHeadroomBytes ||
-    motionFeatureBudgetBytes % expectedBundleBudgetAlignmentBytes !== 0 ||
-    exactOccurrenceCount(snapshot.projectConfigSource, expectedInitialProjectConfigBudget) !== 1 ||
+    !Number.isSafeInteger(expectedInitialJavaScriptBudgetBytes) ||
+    expectedInitialJavaScriptBudgetBytes <= 0 ||
+    !Number.isSafeInteger(motionFeatureBudgetBytes) ||
+    motionFeatureBudgetBytes <= 0 ||
+    exactOccurrenceCount(snapshot.projectConfigSource, 'initialJavaScriptGzipBytes:') !== 1 ||
     exactOccurrenceCount(
       snapshot.projectConfigSource,
       'adminNavigationMotionFeatureJavaScriptGzipBytes:',
@@ -17913,23 +18124,6 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
 
   if (requiredArchitectureMarkers.some((marker) => !snapshot.architectureSource.includes(marker))) {
     violations.push('NAV_BUDGET_ARCHITECTURE')
-  }
-
-  if (
-    exactOccurrenceCount(
-      snapshot.checkBundleSource,
-      'const minimumInitialJavaScriptHeadroomBytes = 8 * 1024',
-    ) !== 1 ||
-    exactOccurrenceCount(
-      snapshot.checkBundleSource,
-      'const minimumMotionFeatureJavaScriptHeadroomBytes = 8 * 1024',
-    ) !== 1 ||
-    exactOccurrenceCount(
-      snapshot.checkBundleSource,
-      'const maximumAlignedBudgetHeadroomBytes = 16 * 1024',
-    ) !== 1
-  ) {
-    violations.push('NAV_BUDGET_MINIMUM_HEADROOM')
   }
 
   if (
@@ -17980,41 +18174,41 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   return violations
 }
 
-function runNavigationBudgetNegativeProbes(
+function runNavigationBudgetProbes(
   baseline: NavigationBudgetGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
   const baselineFailureCodes = navigationBudgetViolations(baseline)
   const probes: readonly [string, string, NavigationBudgetGateSnapshot][] = [
     [
-      'navigation-budget-restores-previous-hard-limit',
+      'navigation-budget-duplicates-initial-hard-limit-authority',
       'NAV_BUDGET_HARD_LIMIT',
       {
         ...baseline,
         projectConfigSource: baseline.projectConfigSource.replace(
-          `initialJavaScriptGzipBytes: ${String(expectedInitialJavaScriptBudgetBytes / 1024)} * 1024`,
-          'initialJavaScriptGzipBytes: 180 * 1024',
+          'initialJavaScriptGzipBytes:',
+          'initialJavaScriptGzipBytes: 1, initialJavaScriptGzipBytes:',
         ),
       },
     ],
     [
-      'navigation-budget-lowers-minimum-headroom',
-      'NAV_BUDGET_MINIMUM_HEADROOM',
+      'navigation-budget-rejects-limit-equality',
+      'NAV_BUDGET_ARCHITECTURE',
       {
         ...baseline,
-        checkBundleSource: baseline.checkBundleSource.replace(
-          'const minimumInitialJavaScriptHeadroomBytes = 8 * 1024',
-          'const minimumInitialJavaScriptHeadroomBytes = 4 * 1024',
+        architectureSource: baseline.architectureSource.replace(
+          'MOTION_FEATURE_BUDGET_EQUALITY=PASS',
+          'MOTION_FEATURE_BUDGET_EQUALITY=FAIL',
         ),
       },
     ],
     [
-      'navigation-budget-breaks-motion-exclusive-formula',
+      'navigation-budget-breaks-motion-exclusive-closure',
       'NAV_BUDGET_MEASUREMENT_INTEGRITY',
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedMotionFeatureJavaScriptHardBudgetBytes = exactAlignedBundleBudget(',
-          'const expectedMotionFeatureJavaScriptHardBudgetBytes = Math.ceil(',
+          'differenceValues(motionFeatureStaticClosure, initialChunkKeys)',
+          'motionFeatureStaticClosure',
         ),
       },
     ],
@@ -18044,8 +18238,73 @@ function runNavigationBudgetNegativeProbes(
     ],
   ]
 
-  return Object.freeze(
-    probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
+  const sourceFile = ts.createSourceFile(
+    'check-bundle.ts',
+    baseline.checkBundleSource,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  const limitProbes = [
+    {
+      property: 'initialJavaScriptGzipBytes',
+      measurement: 'initialJavaScriptBytes',
+      cases: [
+        ['below-limit', 270335, 270336, true],
+        ['exact-limit', 270336, 270336, true],
+        ['one-byte-above-limit', 270337, 270336, false],
+        ['non-aligned-limit', 8193, 8193, true],
+        ['recorded-measurement', 263391, 270336, true],
+        ['smaller-bundle', 1, 270336, true],
+      ],
+    },
+    {
+      property: 'adminNavigationMotionFeatureJavaScriptGzipBytes',
+      measurement: 'motionFeatureJavaScriptBytes',
+      cases: [
+        ['below-limit', 49151, 49152, true],
+        ['exact-limit', 49152, 49152, true],
+        ['one-byte-above-limit', 49153, 49152, false],
+        ['non-aligned-limit', 8193, 8193, true],
+        ['recorded-measurement', 33648, 49152, true],
+        ['smaller-bundle', 1, 49152, true],
+      ],
+    },
+  ] as const
+  const limitProbeResults = limitProbes.flatMap(({ property, measurement, cases }) => {
+    const branches = sourceFile.statements.filter(
+      (statement): statement is ts.IfStatement =>
+        ts.isIfStatement(statement) &&
+        statement.expression
+          .getText(sourceFile)
+          .includes(`projectConfig.bundleBudgets.${property}`),
+    )
+    const branch = branches.length === 1 ? branches[0] : undefined
+
+    return cases.map(([id, measuredBytes, configuredBudget, expectedAcceptance]) => {
+      const result: unknown =
+        branch === undefined
+          ? undefined
+          : runInNewContext(
+              `(() => { try { ${branch.getText(sourceFile)}; return 'accepted' } catch (error) { return error instanceof Error && error.name === 'Error' ? 'rejected' : 'invalid' } })()`,
+              {
+                [measurement]: measuredBytes,
+                motionFeatureRootId: 'admin-navigation-motion-dom-max',
+                projectConfig: { bundleBudgets: { [property]: configuredBudget } },
+              },
+              { timeout: 1000 },
+            )
+
+      return Object.freeze({
+        id: `navigation-budget-${property}-${id}`,
+        expectedFailureCode: 'NAV_BUDGET_LIMIT_COMPARISON',
+        passed: result === (expectedAcceptance ? 'accepted' : 'rejected'),
+      })
+    })
+  })
+
+  return Object.freeze([
+    ...probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
       const failureCodes = navigationBudgetViolations(mutatedSnapshot)
 
       return Object.freeze({
@@ -18057,7 +18316,8 @@ function runNavigationBudgetNegativeProbes(
           failureCodes.includes(expectedFailureCode),
       })
     }),
-  )
+    ...limitProbeResults,
+  ])
 }
 
 async function validateDependencies(): Promise<string[]> {
@@ -20310,8 +20570,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAdminNavigationNaiveActionsMotionNegativeProbes(adminNavigationNativeSourceBaseline)
   const navigationReworkSourceNegativeProbeResults =
     runNavigationReworkSourceNegativeProbes(navigationReworkBaseline)
-  const navigationBudgetNegativeProbeResults =
-    runNavigationBudgetNegativeProbes(navigationBudgetBaseline)
+  const navigationBudgetProbeResults = runNavigationBudgetProbes(navigationBudgetBaseline)
   const runtime003SourceNegativeProbeResults = runRuntime003SourceNegativeProbes(baseline)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
@@ -20529,9 +20788,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       `Naive collapsible multilevel navigation source negative-probe count drifted: expected ${String(expectedNavigationReworkSourceNegativeProbeCount)}, received ${String(navigationReworkSourceNegativeProbeResults.length)}.`,
     )
   }
-  if (navigationBudgetNegativeProbeResults.length !== expectedNavigationBudgetNegativeProbeCount) {
+  if (navigationBudgetProbeResults.length !== expectedNavigationBudgetProbeCount) {
     violations.push(
-      `Naive navigation budget negative-probe count drifted: expected ${String(expectedNavigationBudgetNegativeProbeCount)}, received ${String(navigationBudgetNegativeProbeResults.length)}.`,
+      `Naive navigation budget probe count drifted: expected ${String(expectedNavigationBudgetProbeCount)}, received ${String(navigationBudgetProbeResults.length)}.`,
     )
   }
 
@@ -20725,10 +20984,10 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
-  for (const result of navigationBudgetNegativeProbeResults) {
+  for (const result of navigationBudgetProbeResults) {
     if (!result.passed) {
       violations.push(
-        `${result.id}: reversible in-memory Naive navigation budget negative probe did not fail.`,
+        `${result.id}: in-memory Naive navigation budget probe did not match its expected result.`,
       )
     }
   }
@@ -20744,7 +21003,7 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
   }
 
   console.log(
-    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)} historical Admin navigation GSAP admission negative probes; ${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)} historical Admin navigation theme/reflow admission negative probes; ${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)} historical Admin navigation highlight/reveal admission negative probes; ${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)} Admin navigation Native Naive admission negative probes; ${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)}/${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)} Admin navigation Native Naive acceptance-closure negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} Motion Vue shared-selection-lens admission negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)} Motion Vue shared-selection-lens source invariants; ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)} Motion Vue shared-selection-lens source negative probes; ${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)}/${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)} Reduced crossfade negative probes; ${String(expectedAdminNavigationNativeSourceInvariantCount)}/${String(expectedAdminNavigationNativeSourceInvariantCount)} Admin navigation Native Naive source invariants; ${String(expectedAdminNavigationNativeSourceNegativeProbeCount)}/${String(expectedAdminNavigationNativeSourceNegativeProbeCount)} Admin navigation Native Naive source negative probes; ${String(expectedAdminNavigationExpansionMotionInvariantCount)}/${String(expectedAdminNavigationExpansionMotionInvariantCount)} Admin navigation expansion/motion source invariants; ${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)}/${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)} Admin navigation expansion/motion negative probes; ${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)}/${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)} Admin navigation collapsed-popup source invariants; ${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)}/${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)} Admin navigation collapsed-popup negative probes; ${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)}/${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)} Admin navigation Header placement source invariants; ${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)}/${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)} Admin navigation Header placement negative probes; ${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)}/${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)} Admin navigation Naive actions/motion source invariants; ${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)}/${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)} Admin navigation Naive actions/motion negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes; ${String(expectedNavigationReworkSourceNegativeProbeCount)}/${String(expectedNavigationReworkSourceNegativeProbeCount)} Naive collapsible multilevel navigation source negative probes; ${String(expectedNavigationBudgetNegativeProbeCount)}/${String(expectedNavigationBudgetNegativeProbeCount)} Naive navigation budget negative probes)`,
+    `Architecture Admin Console check: passed (${String(expectedArchitectureAdminConsoleNegativeProbeCount)}/${String(expectedArchitectureAdminConsoleNegativeProbeCount)} Admin/Naive negative probes; ${String(expectedMotionGeometryNegativeProbeCount)}/${String(expectedMotionGeometryNegativeProbeCount)} Motion geometry negative probes; ${String(expectedRuntime002NegativeProbeCount)}/${String(expectedRuntime002NegativeProbeCount)} PAVP-RUNTIME-002 negative probes; ${String(expectedRuntime005NegativeProbeCount)}/${String(expectedRuntime005NegativeProbeCount)} PAVP-RUNTIME-005 negative probes; ${String(expectedAcceptanceClosureNegativeProbeCount)}/${String(expectedAcceptanceClosureNegativeProbeCount)} acceptance-closure negative probes; ${String(expectedRuntime003AdmissionNegativeProbeCount)}/${String(expectedRuntime003AdmissionNegativeProbeCount)} PAVP-RUNTIME-003 admission negative probes; ${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)}/${String(expectedRuntime003AcceptanceClosureNegativeProbeCount)} PAVP-RUNTIME-003 acceptance-closure negative probes; ${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationGsapAdmissionNegativeProbeCount)} historical Admin navigation GSAP admission negative probes; ${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationThemeReflowAdmissionNegativeProbeCount)} historical Admin navigation theme/reflow admission negative probes; ${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationHighlightRevealAdmissionNegativeProbeCount)} historical Admin navigation highlight/reveal admission negative probes; ${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationNativeAdmissionNegativeProbeCount)} Admin navigation Native Naive admission negative probes; ${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)}/${String(expectedAdminNavigationNativeAcceptanceClosureNegativeProbeCount)} Admin navigation Native Naive acceptance-closure negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} Motion Vue shared-selection-lens admission negative probes; ${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount)} Motion Vue shared-selection-lens source invariants; ${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount)} Motion Vue shared-selection-lens source negative probes; ${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)}/${String(expectedAdminNavigationReducedCrossfadeNegativeProbeCount)} Reduced crossfade negative probes; ${String(expectedAdminNavigationNativeSourceInvariantCount)}/${String(expectedAdminNavigationNativeSourceInvariantCount)} Admin navigation Native Naive source invariants; ${String(expectedAdminNavigationNativeSourceNegativeProbeCount)}/${String(expectedAdminNavigationNativeSourceNegativeProbeCount)} Admin navigation Native Naive source negative probes; ${String(expectedAdminNavigationExpansionMotionInvariantCount)}/${String(expectedAdminNavigationExpansionMotionInvariantCount)} Admin navigation expansion/motion source invariants; ${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)}/${String(expectedAdminNavigationExpansionMotionNegativeProbeCount)} Admin navigation expansion/motion negative probes; ${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)}/${String(expectedAdminNavigationCollapsedPopupSourceInvariantCount)} Admin navigation collapsed-popup source invariants; ${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)}/${String(expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount)} Admin navigation collapsed-popup negative probes; ${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)}/${String(expectedAdminNavigationHeaderPlacementSourceInvariantCount)} Admin navigation Header placement source invariants; ${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)}/${String(expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount)} Admin navigation Header placement negative probes; ${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)}/${String(expectedAdminNavigationNaiveActionsMotionInvariantCount)} Admin navigation Naive actions/motion source invariants; ${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)}/${String(expectedAdminNavigationNaiveActionsMotionNegativeProbeCount)} Admin navigation Naive actions/motion negative probes; ${String(expectedRuntime003SourceNegativeProbeCount)}/${String(expectedRuntime003SourceNegativeProbeCount)} PAVP-RUNTIME-003 negative probes; ${String(expectedNavigationReworkSourceNegativeProbeCount)}/${String(expectedNavigationReworkSourceNegativeProbeCount)} Naive collapsible multilevel navigation source negative probes; ${String(expectedNavigationBudgetProbeCount)}/${String(expectedNavigationBudgetProbeCount)} Naive navigation budget probes)`,
   )
   console.log(
     `Admin navigation Motion Vue shared-selection-lens admission check: passed (${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)}/${String(expectedAdminNavigationMotionVueSelectionLensAdmissionNegativeProbeCount)} reversible in-memory Architecture admission negative probes)`,

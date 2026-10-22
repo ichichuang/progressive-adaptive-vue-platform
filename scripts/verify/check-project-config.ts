@@ -1442,13 +1442,9 @@ async function validateMotionTypeScriptStrictness(): Promise<void> {
   }
 }
 
-function validateMotionFeatureBudgetAuthority(): void {
-  const budget = projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
-
-  if (!Number.isSafeInteger(budget) || budget <= 0 || budget % 8192 !== 0) {
-    throw new Error(
-      'Admin Navigation Motion feature budget must be a positive 8 KiB-aligned integer.',
-    )
+function validateMotionFeatureBudgetAuthority(budget: number): void {
+  if (!Number.isSafeInteger(budget) || budget <= 0) {
+    throw new Error('Admin Navigation Motion feature budget must be a positive safe integer.')
   }
 }
 
@@ -2563,7 +2559,23 @@ await validateMotionVDeclarationGraph(motionVPackageDirectory, motionVPatchMetad
 await validateMotionTypeScriptStrictness()
 await validateMotionCompatibilityBypassAbsence()
 validateMotionPatchCompatibilityProbes()
-validateMotionFeatureBudgetAuthority()
+validateMotionFeatureBudgetAuthority(
+  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes,
+)
+for (const budget of [1, 8193, 49152]) {
+  validateMotionFeatureBudgetAuthority(budget)
+}
+for (const budget of [0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
+  let rejected = false
+  try {
+    validateMotionFeatureBudgetAuthority(budget)
+  } catch {
+    rejected = true
+  }
+  if (!rejected) {
+    throw new Error('Motion feature budget invalid-limit probe must fail.')
+  }
+}
 
 const vueRouterPatch = await readFile(resolve(rootDirectory, vueRouterPatchPath), 'utf8')
 const vueRouterPatchLines = vueRouterPatch.split('\n')

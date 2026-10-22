@@ -218,10 +218,12 @@ async function closeWorkspace(id: string): Promise<void> {
     )
     if (
       result.kind !== 'allow' ||
+      result.presentation !== 'page' ||
       !isRouterNavigationCurrent(router, result.navigationId) ||
       resolved === undefined ||
       !sameRouteAddress(router.currentRoute.value, resolved) ||
       active === undefined ||
+      !retention.isHealthy(active) ||
       (fallback !== undefined &&
         (active.identity !== fallback.identity ||
           (isLiveWorkspace(fallback) && active.instance !== fallback.instance))) ||

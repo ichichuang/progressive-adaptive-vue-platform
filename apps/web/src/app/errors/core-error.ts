@@ -1,3 +1,5 @@
+import type { InjectionKey } from 'vue'
+
 import type { ApplicationStartupState, StartupAttemptId } from '../bootstrap/lifecycle'
 import type { BootstrapStepId } from '../bootstrap/bootstrap-registry'
 import type { RuntimeConfigurationFailureCause } from '../config/runtime-configuration-contract'
@@ -15,6 +17,10 @@ export interface AppErrorBoundaryHooks extends CoreBuildIdentity {
   readonly getStartupState: () => ApplicationStartupState
   readonly capture: (error: NormalizedCoreError) => boolean
 }
+
+export const appErrorBoundaryHooksKey: InjectionKey<AppErrorBoundaryHooks> = Symbol(
+  'app-error-boundary-hooks',
+)
 
 interface RuntimeConfigurationFailureSafeContext extends CoreBuildIdentity {
   readonly startupAttemptId: StartupAttemptId

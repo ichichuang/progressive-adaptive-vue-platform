@@ -414,6 +414,7 @@ interface CommittedEntry {
   readonly marker: RouteEntryMarker | undefined
   presented:
     | {
+        readonly kind: 'page' | 'component-fallback'
         readonly owner: HTMLElement
         readonly controller: UiScrollController
         readonly workspace: LiveWorkspaceEntry | undefined
@@ -611,25 +612,51 @@ export async function createAndReadyRouter(input: {
     retentionBinding?.acceptCommitted(renderSnapshot)
   }
 
+  function finishWithoutPresentation(): void {
+    operation?.presentationAbort.abort()
+    refreshLease?.abort()
+    operation?.finish({
+      kind: 'cancel',
+      navigationId: operation.navigationId,
+      reason: 'presentation-unavailable',
+    })
+    for (const reservation of [...presentationCommitBroker.reservations.values()])
+      settleRouterPresentationCommit(presentationCommitBroker, reservation, 'cancelled')
+  }
+
+  function hasComponentFailure(entry: CommittedEntry): boolean {
+    if (
+      renderSnapshot?.commit !== entry ||
+      renderSnapshot.workspace !== entry.workspace ||
+      retentionBinding?.readFailure(renderSnapshot) === undefined
+    )
+      return false
+    if (entry.workspace !== undefined) workspaceRecords.delete(entry.workspace.identity)
+    if (entry.marker !== undefined) regionRecords.delete(entry.marker.entryId)
+    if (pendingRefresh?.routeName === entry.navigation.routeName) pendingRefresh = undefined
+    return true
+  }
+
   input.application.provide(routerWorkspaceRetentionKey, {
     connect(binding) {
       if (disposed) throw new Error('The Router Workspace Retention owner is disposed.')
       const previous = retentionBinding
       retentionBinding = undefined
       refreshLease?.abort()
-      previous?.dispose()
-      retentionBinding = binding
       try {
+        previous?.dispose()
+        retentionBinding = binding
         if (renderSnapshot !== undefined) binding.acceptCommitted(renderSnapshot)
       } catch (source: unknown) {
         retentionBinding = undefined
+        finishWithoutPresentation()
         binding.dispose()
         throw source
       }
       return () => {
         if (retentionBinding !== binding) return
         retentionBinding = undefined
-        refreshLease?.abort()
+        finishWithoutPresentation()
         binding.dispose()
       }
     },
@@ -762,6 +789,7 @@ export async function createAndReadyRouter(input: {
   function entryIsCurrent(entry: CommittedEntry): boolean {
     return (
       committedEntry === entry &&
+      !entry.navigation.operation.presentationAbort.signal.aborted &&
       ownsNavigation(entry.to, entry.navigation) &&
       currentLocationMatches(entry.to) &&
       (entry.marker === undefined || readMarker()?.entryId === entry.marker.entryId)
@@ -841,11 +869,7 @@ export async function createAndReadyRouter(input: {
           return false
         resetStarted = true
         const replacementSnapshot = { ...snapshot, workspace: replacement }
-        const failure = retention.readFailure(replacementSnapshot)
-        if (failure !== undefined)
-          throw failure.cause instanceof Error
-            ? failure.cause
-            : new Error('The refreshed Workspace rendering failed.', { cause: failure.cause })
+        if (hasComponentFailure(entry)) return false
         if (entry.navigation.routeName === 'appearance-management') {
           const ready = await new Promise<boolean>((resolve, reject) => {
             let settled = false
@@ -883,7 +907,7 @@ export async function createAndReadyRouter(input: {
               }
             }
             const settleContent = (content: ReturnType<typeof readContent>): void => {
-              if (content.failure !== undefined) finish(false, content.failure)
+              if (content.failure !== undefined) finish(false)
               else if (!isCurrent() || content.active !== replacement) finish(false)
               else if (content.read === undefined)
                 finish(false, {
@@ -897,14 +921,18 @@ export async function createAndReadyRouter(input: {
           if (!ready) return false
         }
         // DOM readiness is sampled again after content settles; it is not a reactive promise.
-        if (!isCurrent() || workspace.active !== replacement) return false
+        if (!isCurrent() || workspace.active !== replacement || hasComponentFailure(entry))
+          return false
         workspaceRecords.delete(target.identity)
         if (entry.marker !== undefined) regionRecords.delete(entry.marker.entryId)
         presented.controller.cancelMotion()
+        if (!isCurrent() || hasComponentFailure(entry)) return false
         if (!writeRegionPosition(presented.controller, { left: 0, top: 0 }))
           throw new TypeError('The locally refreshed Workspace scroll owner is unavailable.')
+        if (!isCurrent() || hasComponentFailure(entry)) return false
         entry.presented = {
           ...presented,
+          kind: 'page',
           workspace: replacement,
           context: regionContext(entry.to, entry.navigation, presented.owner),
           workspaceContext: regionContext(entry.to, entry.navigation, presented.owner, replacement),
@@ -959,6 +987,7 @@ export async function createAndReadyRouter(input: {
     captureInert = false,
   ): readonly (string | number)[] | undefined {
     if (
+      (committedEntry?.navigation === navigation && hasComponentFailure(committedEntry)) ||
       (policy === 'history' && input.configuration.environment === 'development') ||
       localization?.pendingLocale.value !== null ||
       (!captureInert && owner.closest('[inert]') !== null) ||
@@ -1074,6 +1103,8 @@ export async function createAndReadyRouter(input: {
       binding?.readEnabled() !== true ||
       !binding.readReloadEligible() ||
       entry?.presented === undefined ||
+      hasComponentFailure(entry) ||
+      entry.presented.kind !== 'page' ||
       entry.presented.workspace !== entry.workspace ||
       workspace.active !== entry.workspace ||
       !entryIsCurrent(entry)
@@ -1091,6 +1122,7 @@ export async function createAndReadyRouter(input: {
         !Number.isFinite(offset.left) ||
         !Number.isFinite(offset.top) ||
         !entryIsCurrent(entry) ||
+        hasComponentFailure(entry) ||
         refreshScroll !== binding ||
         !binding.readEnabled() ||
         !binding.readReloadEligible() ||
@@ -1139,6 +1171,8 @@ export async function createAndReadyRouter(input: {
       source?.to !== from ||
       router.currentRoute.value !== from ||
       source.presented === undefined ||
+      hasComponentFailure(source) ||
+      source.presented.kind !== 'page' ||
       source.presented.workspace !== source.workspace
     )
       return
@@ -1223,21 +1257,6 @@ export async function createAndReadyRouter(input: {
           cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
           return false
         }
-        const binding = retentionBinding
-        const snapshot = renderSnapshot
-        if (binding === undefined || snapshot?.commit !== entry)
-          throw new TypeError('The committed Workspace rendering boundary is unavailable.')
-        if (
-          !(await binding.whenRendered(
-            snapshot,
-            entry.navigation.operation.presentationAbort.signal,
-          )) ||
-          retentionBinding !== binding ||
-          !entryIsCurrent(entry)
-        ) {
-          cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
-          return false
-        }
         const navigation = entry.navigation
         const routeRecord = getRouteRecord(navigation.routeName)
         const samePage = from.name === to.name
@@ -1246,122 +1265,203 @@ export async function createAndReadyRouter(input: {
         )
         if (focusContract === undefined)
           throw new TypeError('The routed focus contract is unavailable.')
-        const focusTargets = document.querySelectorAll<HTMLElement>(focusContract.target)
-        const heading = focusTargets[0]
-        if (
-          focusTargets.length !== 1 ||
-          heading?.tagName !== 'H1' ||
-          !heading.isConnected ||
-          heading.tabIndex !== focusContract.targetTabIndex
-        )
-          throw new TypeError('The routed document focus or scroll owner is unavailable.')
-        const owner = regionOwner(navigation.routeName)
-        advanceActiveGuardStage(navigation.guardStageProgress, 'commit-focus-and-scroll')
-        document.title = getRoutePresentation(navigation.routeName, localization?.t).title
-        const locked = owner?.closest('[inert]') !== null && owner !== undefined
-        if (from !== START_LOCATION && !samePage && !locked) heading.focus({ preventScroll: true })
-        if (!entryIsCurrent(entry)) {
-          cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
-          return false
-        }
-        const workspaceEntry = entry.workspace
-        const workspaceActivation =
-          navigation.operation.kind !== 'pop' &&
-          workspaceEntry !== undefined &&
-          navigation.operation.workspaceActivation?.identity === workspaceEntry.identity &&
-          navigation.operation.workspaceActivation.instance === workspaceEntry.instance
-        const preserve = samePage && navigation.operation.kind !== 'pop' && !workspaceActivation
-        let documentPosition: { readonly left: number; readonly top: number } | false = false
-        if (!locked && entryIsCurrent(entry)) {
-          if (owner === undefined) {
-            const documentOwner = document.scrollingElement
-            if (documentOwner === null)
-              throw new TypeError('The document scroll owner is unavailable.')
-            documentPosition =
-              navigation.operation.kind === 'pop' && savedPosition !== null
-                ? finiteNativeScrollPosition(savedPosition)
-                : (fragmentPosition(
-                    documentOwner,
-                    preserve && from.hash === to.hash ? '' : navigation.input.hash,
-                  ) ?? (preserve ? false : { left: 0, top: 0 }))
-          } else {
-            const controller = scrollControllers.read(owner)
-            const context = regionContext(to, navigation, owner)
-            const record =
-              entry.marker === undefined ? undefined : regionRecords.get(entry.marker.entryId)
-            let restored = false
-            if (record !== undefined) {
-              if (
-                navigation.operation.kind === 'pop' &&
-                record.marker.scopeId === scopeId &&
-                sameContext(record.context, context) &&
-                writeRegionPosition(controller, record)
-              ) {
-                retainRecord(record)
-                restored = true
-              } else regionRecords.delete(record.marker.entryId)
-            }
-            const workspaceContext =
-              workspaceEntry === undefined
-                ? undefined
-                : regionContext(to, navigation, owner, workspaceEntry)
-            const workspaceGeneration = refreshScroll?.readWorkspaceGeneration()
-            if (workspaceActivation) {
-              const record = workspaceRecords.get(workspaceEntry.identity)
+        let settlementStarted = false
+        // A healthy ACK can become obsolete once, when this lifetime latches failure.
+        // Await that fallback's own ACK; this is not a retry of the failed page.
+        for (;;) {
+          const binding = retentionBinding
+          const snapshot = renderSnapshot
+          if (binding === undefined) {
+            finishWithoutPresentation()
+            return false
+          }
+          if (snapshot?.commit !== entry)
+            throw new TypeError('The committed Workspace rendering boundary is unavailable.')
+          const presentation = await binding.whenRendered(
+            snapshot,
+            entry.navigation.operation.presentationAbort.signal,
+          )
+          if (
+            entryIsCurrent(entry) &&
+            retentionBinding !== undefined &&
+            retentionBinding !== binding
+          )
+            continue
+          if (
+            presentation === 'cancelled' ||
+            retentionBinding !== binding ||
+            !entryIsCurrent(entry)
+          ) {
+            cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+            return false
+          }
+          if (presentation === 'page' && hasComponentFailure(entry)) continue
+          const focusTargets = document.querySelectorAll<HTMLElement>(focusContract.target)
+          const heading = focusTargets[0]
+          if (
+            focusTargets.length !== 1 ||
+            heading?.tagName !== 'H1' ||
+            !heading.isConnected ||
+            heading.tabIndex !== focusContract.targetTabIndex
+          )
+            throw new TypeError('The routed document focus or scroll owner is unavailable.')
+          const owner = regionOwner(navigation.routeName)
+          if (!settlementStarted) {
+            advanceActiveGuardStage(navigation.guardStageProgress, 'commit-focus-and-scroll')
+            settlementStarted = true
+          }
+          document.title = getRoutePresentation(navigation.routeName, localization?.t).title
+          const locked = owner?.closest('[inert]') !== null && owner !== undefined
+          if (from !== START_LOCATION && !samePage && !locked)
+            heading.focus({ preventScroll: true })
+          if (!entryIsCurrent(entry)) {
+            cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+            return false
+          }
+          if (presentation === 'page' && hasComponentFailure(entry)) continue
+          const workspaceEntry = entry.workspace
+          const workspaceActivation =
+            navigation.operation.kind !== 'pop' &&
+            workspaceEntry !== undefined &&
+            navigation.operation.workspaceActivation?.identity === workspaceEntry.identity &&
+            navigation.operation.workspaceActivation.instance === workspaceEntry.instance
+          const preserve = samePage && navigation.operation.kind !== 'pop' && !workspaceActivation
+          let documentPosition: { readonly left: number; readonly top: number } | false = false
+          if (!locked && entryIsCurrent(entry)) {
+            if (presentation === 'component-fallback') {
+              hasComponentFailure(entry)
+              if (owner === undefined) documentPosition = { left: 0, top: 0 }
+              else {
+                const controller = scrollControllers.read(owner)
+                if (entryIsCurrent(entry)) writeRegionPosition(controller, { left: 0, top: 0 })
+                entry.presented = {
+                  kind: 'component-fallback',
+                  owner,
+                  controller,
+                  workspace: workspaceEntry,
+                  context: undefined,
+                  workspaceContext: undefined,
+                  workspaceGeneration: undefined,
+                }
+              }
+            } else if (owner === undefined) {
+              const documentOwner = document.scrollingElement
+              if (documentOwner === null)
+                throw new TypeError('The document scroll owner is unavailable.')
+              documentPosition =
+                navigation.operation.kind === 'pop' && savedPosition !== null
+                  ? finiteNativeScrollPosition(savedPosition)
+                  : (fragmentPosition(
+                      documentOwner,
+                      preserve && from.hash === to.hash ? '' : navigation.input.hash,
+                    ) ?? (preserve ? false : { left: 0, top: 0 }))
+            } else {
+              const controller = scrollControllers.read(owner)
+              const context = regionContext(to, navigation, owner)
+              const record =
+                entry.marker === undefined ? undefined : regionRecords.get(entry.marker.entryId)
+              let restored = false
               if (record !== undefined) {
                 if (
-                  record.instance === workspaceEntry.instance &&
-                  record.generation === workspaceGeneration &&
-                  sameContext(record.context, workspaceContext) &&
-                  entryIsCurrent(entry)
+                  navigation.operation.kind === 'pop' &&
+                  record.marker.scopeId === scopeId &&
+                  sameContext(record.context, context) &&
+                  entryIsCurrent(entry) &&
+                  !hasComponentFailure(entry) &&
+                  writeRegionPosition(controller, record)
+                ) {
+                  retainRecord(record)
+                  restored = true
+                } else regionRecords.delete(record.marker.entryId)
+              }
+              const workspaceContext =
+                workspaceEntry === undefined
+                  ? undefined
+                  : regionContext(to, navigation, owner, workspaceEntry)
+              const workspaceGeneration = refreshScroll?.readWorkspaceGeneration()
+              if (workspaceActivation) {
+                const record = workspaceRecords.get(workspaceEntry.identity)
+                if (record !== undefined) {
+                  if (
+                    record.instance === workspaceEntry.instance &&
+                    record.generation === workspaceGeneration &&
+                    sameContext(record.context, workspaceContext) &&
+                    entryIsCurrent(entry) &&
+                    !hasComponentFailure(entry)
+                  )
+                    restored = writeRegionPosition(controller, record)
+                  else workspaceRecords.delete(workspaceEntry.identity)
+                }
+              }
+              const refresh = pendingRefresh
+              pendingRefresh = undefined
+              if (
+                !restored &&
+                navigation.operation.kind === 'initial' &&
+                !workspaceActivation &&
+                refreshScroll?.readEnabled() === true &&
+                refreshScroll.readReloadEligible() &&
+                refresh?.routeName === navigation.routeName &&
+                refresh.ownerId === controller.ownerId &&
+                sameContext(
+                  refresh.context,
+                  restorationValidity(navigation, owner, 'reload', entry.workspace),
+                ) &&
+                entryIsCurrent(entry) &&
+                !hasComponentFailure(entry)
+              )
+                restored = writeRegionPosition(controller, refresh)
+              if (!entryIsCurrent(entry)) {
+                cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+                return false
+              }
+              if (hasComponentFailure(entry)) continue
+              if (!restored) {
+                const hash = preserve && from.hash === to.hash ? '' : navigation.input.hash
+                if (
+                  !writeRegionFragment(controller, hash) &&
+                  !preserve &&
+                  entryIsCurrent(entry) &&
+                  !hasComponentFailure(entry)
                 )
-                  restored = writeRegionPosition(controller, record)
-                else workspaceRecords.delete(workspaceEntry.identity)
+                  writeRegionPosition(controller, { left: 0, top: 0 })
+              }
+              if (hasComponentFailure(entry)) continue
+              entry.presented = {
+                kind: 'page',
+                owner,
+                controller,
+                workspace: workspaceEntry,
+                context,
+                workspaceContext,
+                workspaceGeneration,
               }
             }
-            const refresh = pendingRefresh
-            pendingRefresh = undefined
-            if (
-              !restored &&
-              navigation.operation.kind === 'initial' &&
-              !workspaceActivation &&
-              refreshScroll?.readEnabled() === true &&
-              refreshScroll.readReloadEligible() &&
-              refresh?.routeName === navigation.routeName &&
-              refresh.ownerId === controller.ownerId &&
-              sameContext(
-                refresh.context,
-                restorationValidity(navigation, owner, 'reload', entry.workspace),
-              ) &&
-              entryIsCurrent(entry)
-            )
-              restored = writeRegionPosition(controller, refresh)
-            if (!restored) {
-              const hash = preserve && from.hash === to.hash ? '' : navigation.input.hash
-              if (!writeRegionFragment(controller, hash) && !preserve)
-                writeRegionPosition(controller, { left: 0, top: 0 })
-            }
-            entry.presented = {
-              owner,
-              controller,
-              workspace: workspaceEntry,
-              context,
-              workspaceContext,
-              workspaceGeneration,
-            }
           }
+          if (presentation === 'page' && hasComponentFailure(entry)) continue
+          if (!entryIsCurrent(entry)) {
+            cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+            return false
+          }
+          pendingRefresh = undefined
+          completeActiveGuardStages(navigation.guardStageProgress)
+          const result = navigation.operation.result ?? {
+            kind: 'allow',
+            navigationId: navigation.navigationId,
+            destination: routeDestination(to),
+            presentation,
+          }
+          navigation.operation.finish(result)
+          if (presentation === 'page')
+            resolveBoundRouterPresentationCommit(presentationCommitBroker, to)
+          else cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
+          return documentPosition
         }
-        pendingRefresh = undefined
-        completeActiveGuardStages(navigation.guardStageProgress)
-        const result = navigation.operation.result ?? {
-          kind: 'allow',
-          navigationId: navigation.navigationId,
-          destination: routeDestination(to),
-        }
-        navigation.operation.finish(result)
-        resolveBoundRouterPresentationCommit(presentationCommitBroker, to)
-        return documentPosition
       } catch (source: unknown) {
+        if (retentionBinding === undefined) {
+          finishWithoutPresentation()
+          return false
+        }
         pendingRefresh = undefined
         rejectBoundRouterPresentationCommit(presentationCommitBroker, to, source)
         throw source
@@ -1630,6 +1730,10 @@ export async function createAndReadyRouter(input: {
   })
 
   const errorHandlerRemover = router.onError((source, to) => {
+    if (applicationMounted && retentionBinding === undefined) {
+      finishWithoutPresentation()
+      return
+    }
     rejectBoundRouterPresentationCommit(presentationCommitBroker, to, source)
     const navigation = navigationAttempts.get(to)
     if (!routerReady || !ownsNavigation(to, navigation)) return

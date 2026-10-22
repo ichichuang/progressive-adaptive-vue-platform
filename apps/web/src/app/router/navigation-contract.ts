@@ -46,6 +46,7 @@ export function completeActiveGuardStages(progress: ActiveGuardStageProgress): v
 export const activeNavigationOutcomeRegistry = Object.freeze([
   'duplicated',
   'cancelled-by-new-navigation',
+  'presentation-unavailable',
   'redirected',
   'invalid-input',
   'chunk-load-failed',

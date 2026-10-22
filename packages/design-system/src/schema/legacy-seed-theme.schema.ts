@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-import { tokenReferenceSchema } from './token.schema'
+import { tokenReferenceSchema } from './token-reference.schema'
 
 export const legacySeedThemeIdPattern = /^[a-z][a-z0-9-]*$/u
 export const legacySeedThemeIdSchema = z.string().regex(legacySeedThemeIdPattern)

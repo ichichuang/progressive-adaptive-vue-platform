@@ -1,16 +1,15 @@
 import { z } from 'zod'
 
+import { tokenReferenceSchema } from './token-reference.schema'
+
+export { isTokenReference, tokenPathFromReference } from './token-reference.schema'
+
 const tokenPathSegmentPattern = /^(?:[a-z][a-z0-9-]*|\d+)$/u
-const tokenReferencePattern = /^\{[a-z][a-z0-9-]*(?:\.(?:[a-z][a-z0-9-]*|\d+))+\}$/u
 
 const finiteNumberSchema = z.number()
 const normalizedNumberSchema = finiteNumberSchema.min(0).max(1)
 const hueSchema = finiteNumberSchema.min(0).lt(360)
 const metadataNameSchema = z.string().regex(/^[a-z][a-z0-9-]*$/u)
-
-export const tokenReferenceSchema = z
-  .string()
-  .regex(tokenReferencePattern, 'Token references must use the complete {token.path} syntax.')
 
 const tokenVisibilitySchema = z.enum(['public', 'ui-internal', 'build-only'])
 
@@ -270,11 +269,3 @@ export const tokenSourceSchema = z
   .superRefine((source, context) => {
     validateTokenGroup(source, context, [])
   })
-
-export function isTokenReference(value: unknown): value is string {
-  return typeof value === 'string' && tokenReferencePattern.test(value)
-}
-
-export function tokenPathFromReference(reference: string): string {
-  return reference.slice(1, -1)
-}

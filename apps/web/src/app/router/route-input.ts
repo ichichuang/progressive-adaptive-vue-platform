@@ -77,6 +77,7 @@ export type TypedNavigationResult =
       readonly kind: 'allow'
       readonly navigationId: string
       readonly destination: RegisteredRouteDestination
+      readonly presentation: 'page' | 'component-fallback'
     }
   | {
       readonly kind: 'redirect'
@@ -88,7 +89,8 @@ export type TypedNavigationResult =
   | {
       readonly kind: 'cancel'
       readonly navigationId: string
-      readonly reason: 'cancelled-by-new-navigation' | 'access-invalidated'
+      readonly reason:
+        'cancelled-by-new-navigation' | 'access-invalidated' | 'presentation-unavailable'
     }
   | {
       readonly kind: 'failure'

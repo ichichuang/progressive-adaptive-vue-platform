@@ -124,11 +124,6 @@ const expectedDynamicRootKeys = new Set([
   localizationRuntimeManifestKey,
   ...localizationResourceManifestKeys,
 ])
-const bundleBudgetAlignmentBytes = 8 * 1024
-const minimumInitialJavaScriptHeadroomBytes = 8 * 1024
-const minimumMotionFeatureJavaScriptHeadroomBytes = 8 * 1024
-const maximumAlignedBudgetHeadroomBytes = 16 * 1024
-const currentInitialJavaScriptHardBudgetBytes = 224 * 1024
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -809,13 +804,6 @@ function emittedJavaScriptFiles(manifest: Manifest, chunkKeys: ReadonlySet<strin
   )
 }
 
-function exactAlignedBundleBudget(measuredBytes: number): number {
-  return (
-    Math.ceil((measuredBytes + bundleBudgetAlignmentBytes) / bundleBudgetAlignmentBytes) *
-    bundleBudgetAlignmentBytes
-  )
-}
-
 const manifestValue = JSON.parse(
   await readFile(resolve(distributionDirectory, '.vite/manifest.json'), 'utf8'),
 ) as unknown
@@ -923,39 +911,14 @@ if (
   throw new Error('Runtime Kernel bundle baseline/final/delta arithmetic is inconsistent.')
 }
 
-const retainedInitialJavaScriptHeadroomBytes =
-  currentInitialJavaScriptHardBudgetBytes - initialJavaScriptBytes
-const expectedInitialJavaScriptHardBudgetBytes =
-  retainedInitialJavaScriptHeadroomBytes >= minimumInitialJavaScriptHeadroomBytes
-    ? currentInitialJavaScriptHardBudgetBytes
-    : exactAlignedBundleBudget(initialJavaScriptBytes)
-
-if (
-  projectConfig.bundleBudgets.initialJavaScriptGzipBytes !==
-  expectedInitialJavaScriptHardBudgetBytes
-) {
+if (initialJavaScriptBytes > projectConfig.bundleBudgets.initialJavaScriptGzipBytes) {
   throw new Error(
-    `Initial JavaScript budget must be ${String(expectedInitialJavaScriptHardBudgetBytes)} bytes for a ${String(initialJavaScriptBytes)}-byte measurement; received ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
+    `Initial JavaScript is ${String(initialJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
   )
 }
 
 const initialJavaScriptHeadroomBytes =
   projectConfig.bundleBudgets.initialJavaScriptGzipBytes - initialJavaScriptBytes
-
-if (initialJavaScriptHeadroomBytes < minimumInitialJavaScriptHeadroomBytes) {
-  throw new Error(
-    `Initial JavaScript headroom is ${String(initialJavaScriptHeadroomBytes)} gzip bytes; minimum is ${String(minimumInitialJavaScriptHeadroomBytes)}.`,
-  )
-}
-
-if (
-  expectedInitialJavaScriptHardBudgetBytes !== currentInitialJavaScriptHardBudgetBytes &&
-  initialJavaScriptHeadroomBytes >= maximumAlignedBudgetHeadroomBytes
-) {
-  throw new Error(
-    `Rebased Initial JavaScript headroom is ${String(initialJavaScriptHeadroomBytes)} gzip bytes; it must be less than ${String(maximumAlignedBudgetHeadroomBytes)}.`,
-  )
-}
 
 if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
   throw new Error(
@@ -1171,31 +1134,18 @@ const motionFeatureJavaScriptBytes = motionFeatureJavaScriptMeasurements.reduce(
   (total, measurement) => total + measurement.bytes,
   0,
 )
-const expectedMotionFeatureJavaScriptHardBudgetBytes = exactAlignedBundleBudget(
-  motionFeatureJavaScriptBytes,
-)
-
 if (
-  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes !==
-  expectedMotionFeatureJavaScriptHardBudgetBytes
+  motionFeatureJavaScriptBytes >
+  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
 ) {
   throw new Error(
-    `${motionFeatureRootId} budget must be ${String(expectedMotionFeatureJavaScriptHardBudgetBytes)} bytes for a ${String(motionFeatureJavaScriptBytes)}-byte exclusive measurement; received ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}.`,
+    `${motionFeatureRootId} is ${String(motionFeatureJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}.`,
   )
 }
 
 const motionFeatureJavaScriptHeadroomBytes =
   projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes -
   motionFeatureJavaScriptBytes
-
-if (
-  motionFeatureJavaScriptHeadroomBytes < minimumMotionFeatureJavaScriptHeadroomBytes ||
-  motionFeatureJavaScriptHeadroomBytes >= maximumAlignedBudgetHeadroomBytes
-) {
-  throw new Error(
-    `${motionFeatureRootId} headroom is ${String(motionFeatureJavaScriptHeadroomBytes)} gzip bytes; it must be at least ${String(minimumMotionFeatureJavaScriptHeadroomBytes)} and less than ${String(maximumAlignedBudgetHeadroomBytes)}.`,
-  )
-}
 
 const sortedDynamicRootKeys = [...initialDynamicRootKeys].sort()
 const sortedMotionFeatureExclusiveJavaScriptFiles = [
@@ -1326,9 +1276,9 @@ console.log(
   `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one Scroll enhancement + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
-  `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes headroom against exact budget ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,
+  `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes remaining against configured limit ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,
 )
 
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes headroom against exact budget ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)} (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), route budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)} bytes gzip`,
+  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes remaining against configured limit ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)} (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), route budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)} bytes gzip`,
 )

@@ -79,7 +79,7 @@ type CoreErrorRegistryRecord =
       readonly id: 'vue-component-failure'
       readonly owner: 'apps/web/src/app/errors capture and normalizer'
       readonly producer: 'app.config.errorHandler or admitted component boundary'
-      readonly presentationOwner: 'AppErrorBoundary'
+      readonly presentationOwner: 'admitted page boundary or AppErrorBoundary'
       readonly allowedVueLifecyclePhase: readonly ['render', 'setup', 'lifecycle', 'watcher']
     })
   | (CoreErrorRegistryRecordBase & {
@@ -142,7 +142,7 @@ export const coreErrorRegistry = Object.freeze([
     id: 'vue-component-failure',
     owner: 'apps/web/src/app/errors capture and normalizer',
     producer: 'app.config.errorHandler or admitted component boundary',
-    presentationOwner: 'AppErrorBoundary',
+    presentationOwner: 'admitted page boundary or AppErrorBoundary',
     category: 'component',
     userMessageKey: 'core-error.vue-component-failure',
     recoverability: 'none',

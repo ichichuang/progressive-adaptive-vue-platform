@@ -174,6 +174,7 @@ export function createRouteTransitionCoordinator(input: {
         const currentRoute = input.router.currentRoute.value
         if (
           result.kind !== 'allow' ||
+          result.presentation !== 'page' ||
           !requestIsCurrent(request) ||
           currentRoute.name !== resolvedTarget.name ||
           currentRoute.fullPath !== resolvedTarget.fullPath ||
@@ -209,7 +210,8 @@ export function createRouteTransitionCoordinator(input: {
     activeTransition = ownedTransition
     void transition.ready.catch(() => undefined)
     void request.completion.then((result) => {
-      if (result.kind !== 'allow') skipVisualTransition(ownedTransition)
+      if (result.kind !== 'allow' || result.presentation !== 'page')
+        skipVisualTransition(ownedTransition)
     })
     const finishVisual = (): void => {
       if (activeTransition === ownedTransition) activeTransition = undefined

@@ -196,7 +196,7 @@ const expectedRegistryRecords: Readonly<Record<(typeof coreErrorIds)[number], Co
     id: 'vue-component-failure',
     owner: 'apps/web/src/app/errors capture and normalizer',
     producer: 'app.config.errorHandler or admitted component boundary',
-    presentationOwner: 'AppErrorBoundary',
+    presentationOwner: 'admitted page boundary or AppErrorBoundary',
     category: 'component',
     userMessageKey: 'core-error.vue-component-failure',
     recoverability: 'none',
@@ -235,10 +235,13 @@ const expectedRegistryRecords: Readonly<Record<(typeof coreErrorIds)[number], Co
 }
 
 function parseSource(path: string, text: string): ParsedSource {
+  const script = path.endsWith('.vue')
+    ? (/<script\b[^>]*>([\s\S]*?)<\/script>/u.exec(text)?.[1] ?? text)
+    : text
   return {
     path,
-    text,
-    sourceFile: ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS),
+    text: script,
+    sourceFile: ts.createSourceFile(path, script, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS),
   }
 }
 
@@ -1149,6 +1152,319 @@ function validateNormalizersAndLedger(normalizer: ParsedSource, coreError: Parse
   return violations
 }
 
+function validatePageBoundaryInjection(
+  coreError: ParsedSource,
+  rootBoundary: ParsedSource,
+  retention: ParsedSource,
+): string[] {
+  const violations: string[] = []
+  const injectionKey = namedImportLocalName(coreError.sourceFile, 'vue', 'InjectionKey')
+  const keys = nodesOf(coreError.sourceFile, ts.isVariableDeclaration).filter((declaration) => {
+    const type = declaration.type
+    return (
+      type !== undefined &&
+      ts.isTypeReferenceNode(type) &&
+      ts.isIdentifier(type.typeName) &&
+      type.typeName.text === injectionKey &&
+      type.typeArguments?.length === 1 &&
+      type.typeArguments[0]?.getText(coreError.sourceFile) === 'AppErrorBoundaryHooks'
+    )
+  })
+  const key = keys[0]
+  if (
+    keys.length !== 1 ||
+    key === undefined ||
+    !ts.isIdentifier(key.name) ||
+    key.initializer === undefined ||
+    !ts.isCallExpression(key.initializer) ||
+    callMemberName(key.initializer) !== 'Symbol'
+  ) {
+    return ['Page boundaries must share one typed AppErrorBoundaryHooks key in the Error owner.']
+  }
+  const rootKey = namedImportLocalName(rootBoundary.sourceFile, './core-error', key.name.text)
+  const provide = namedImportLocalName(rootBoundary.sourceFile, 'vue', 'provide')
+  const providers = nodesOf(rootBoundary.sourceFile, ts.isCallExpression).filter(
+    (call) => callMemberName(call) === provide && memberPath(call.arguments[0])[0] === rootKey,
+  )
+  if (
+    rootKey === undefined ||
+    providers.length !== 1 ||
+    memberPath(providers[0]?.arguments[1]).at(-1) !== 'errorHooks'
+  ) {
+    violations.push('AppErrorBoundary must provide its existing errorHooks through the typed key.')
+  }
+  const localKey = namedImportLocalName(retention.sourceFile, '../errors/core-error', key.name.text)
+  const inject = namedImportLocalName(retention.sourceFile, 'vue', 'inject')
+  if (
+    localKey === undefined ||
+    nodesOf(retention.sourceFile, ts.isCallExpression).filter(
+      (call) => callMemberName(call) === inject && memberPath(call.arguments[0])[0] === localKey,
+    ).length === 0
+  ) {
+    violations.push('Local page capture must consume the same application-owned errorHooks key.')
+  }
+  return violations
+}
+
+function validateVueBoundaryCapture(source: ParsedSource): string[] {
+  const violations: string[] = []
+  const hook = namedImportLocalName(source.sourceFile, 'vue', 'onErrorCaptured')
+  const normalizer =
+    namedImportLocalName(source.sourceFile, './error-normalizer', 'normalizeVueComponentFailure') ??
+    namedImportLocalName(
+      source.sourceFile,
+      '../errors/error-normalizer',
+      'normalizeVueComponentFailure',
+    )
+  const registrations = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) => callMemberName(call) === hook,
+  )
+  if (hook === undefined || registrations.length === 0) {
+    return ['Component boundaries must register Vue descendant error capture.']
+  }
+  for (const registration of registrations) {
+    const callback = registration.arguments[0]
+    if (
+      callback === undefined ||
+      (!ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback)) ||
+      callback.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.AsyncKeyword) ||
+      !ts.isBlock(callback.body)
+    ) {
+      violations.push('Component capture must synchronously stop handled-error propagation.')
+      continue
+    }
+    const calls = nodesOf(callback.body, ts.isCallExpression)
+    const normalized = calls.find((call) => callMemberName(call) === normalizer)
+    const captured = calls.find(
+      (call) =>
+        callMemberName(call) === 'capture' &&
+        equalArray(memberPath(call.arguments[0]), storedValuePath(normalized)),
+    )
+    const startup = nodesOf(callback.body, ts.isIfStatement).find(
+      (statement) =>
+        nodesOf(statement.expression, ts.isCallExpression).some(
+          (call) => callMemberName(call) === 'getStartupState',
+        ) &&
+        nodesOf(statement.expression, ts.isStringLiteral).some(
+          (literal) => literal.text === 'starting',
+        ),
+    )
+    const startupReturns =
+      startup === undefined ? [] : nodesOf(startup.thenStatement, ts.isReturnStatement)
+    if (
+      startup === undefined ||
+      normalized === undefined ||
+      startup.end > normalized.pos ||
+      startupReturns.length === 0 ||
+      startupReturns.some(
+        (statement) =>
+          statement.expression !== undefined &&
+          !(ts.isIdentifier(statement.expression) && statement.expression.text === 'undefined'),
+      )
+    ) {
+      violations.push('Component capture must propagate startup failures before normalization.')
+    }
+    const returns = nodesOf(callback.body, ts.isReturnStatement)
+    if (
+      normalized === undefined ||
+      captured === undefined ||
+      captured.pos < normalized.end ||
+      !returns.some(
+        (statement) => statement.pos > captured.end && literalValue(statement.expression) === false,
+      ) ||
+      returns.some(
+        (statement) =>
+          statement.pos > normalized.end && literalValue(statement.expression) !== false,
+      )
+    ) {
+      violations.push(
+        'Handled component failures must normalize and capture once before returning false.',
+      )
+    }
+    if (captured !== undefined) {
+      const captureResult = storedValuePath(captured)
+      const decisions = nodesOf(callback.body, ts.isIfStatement).map(
+        (statement) => statement.expression,
+      )
+      if (
+        decisions.some(
+          (condition) =>
+            nodesOf(condition, ts.isCallExpression).includes(captured) ||
+            (captureResult.length === 1 &&
+              nodesOf(condition, ts.isIdentifier).some(
+                (identifier) => identifier.text === captureResult[0],
+              )),
+        )
+      ) {
+        violations.push(
+          'Duplicate component capture must not decide whether propagation is stopped.',
+        )
+      }
+    }
+    const swallowed = nodesOf(callback.body, ts.isTryStatement).some((statement) => {
+      if (statement.catchClause === undefined) return false
+      const protectedCalls = nodesOf(statement.tryBlock, ts.isCallExpression)
+      return (
+        ((normalized !== undefined && protectedCalls.includes(normalized)) ||
+          (captured !== undefined && protectedCalls.includes(captured))) &&
+        (nodesOf(statement.catchClause.block, ts.isReturnStatement).length > 0 ||
+          !ts.isThrowStatement(
+            statement.catchClause.block.statements.at(-1) ?? statement.catchClause,
+          ))
+      )
+    })
+    if (swallowed) {
+      violations.push('Component normalization and capture machinery failures must propagate.')
+    }
+  }
+  return violations
+}
+
+function pageBoundaryConnections(source: ParsedSource): readonly {
+  readonly name: string
+  readonly calls: readonly ts.CallExpression[]
+}[] {
+  const hook = namedImportLocalName(source.sourceFile, 'vue', 'onErrorCaptured')
+  const registrations = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) => callMemberName(call) === hook,
+  )
+  const helpers = registrations.flatMap((registration) => {
+    let owner: ts.Node = registration.parent
+    while (!ts.isSourceFile(owner)) {
+      if (ts.isFunctionDeclaration(owner) && owner.name !== undefined) return [owner.name.text]
+      if (ts.isVariableDeclaration(owner) && ts.isIdentifier(owner.name)) return [owner.name.text]
+      if (ts.isMethodDeclaration(owner)) return []
+      owner = owner.parent
+    }
+    return []
+  })
+  return ['InstanceBoundary', 'OrdinaryBoundary'].map((name) => {
+    const boundary = variableInitializer(source, name)
+    const setup =
+      boundary === undefined
+        ? undefined
+        : nodesOf(boundary, ts.isMethodDeclaration).find(
+            (method) => propertyName(method.name) === 'setup',
+          )
+    const calls =
+      setup === undefined
+        ? []
+        : nodesOf(setup, ts.isCallExpression).filter(
+            (call) => registrations.includes(call) || helpers.includes(callMemberName(call) ?? ''),
+          )
+    return { name, calls }
+  })
+}
+
+function validatePageBoundaryConnections(source: ParsedSource): string[] {
+  return pageBoundaryConnections(source).flatMap(({ name, calls }) =>
+    calls.length === 0
+      ? [`${name} must install the existing local Vue capture responsibility.`]
+      : [],
+  )
+}
+
+function validatePageFallbackAcknowledgment(source: ParsedSource): string[] {
+  const violations: string[] = []
+  const nativeFallback = nodesOf(source.sourceFile, ts.isFunctionDeclaration).find((declaration) =>
+    nodesOf(declaration, ts.isCallExpression).some((call) => {
+      if (typeof literalValue(call.arguments[0]) !== 'string') return false
+      const props = objectLiteral(call.arguments[1])
+      const hook = props === undefined ? undefined : propertyExpression(props, 'onVnodeMounted')
+      return (
+        hook !== undefined &&
+        ts.isIdentifier(hook) &&
+        declaration.parameters.some(
+          (parameter) => ts.isIdentifier(parameter.name) && parameter.name.text === hook.text,
+        )
+      )
+    }),
+  )
+  if (nativeFallback?.name === undefined)
+    return ['Local fallback must acknowledge its actual native DOM mount.']
+  const nativeProps = nodesOf(nativeFallback, ts.isObjectLiteralExpression).find(
+    (object) => propertyExpression(object, 'onVnodeMounted') !== undefined,
+  )
+  const mountHook =
+    nativeProps === undefined ? undefined : propertyExpression(nativeProps, 'onVnodeMounted')
+  const mountIndex = nativeFallback.parameters.findIndex(
+    (parameter) =>
+      mountHook !== undefined &&
+      ts.isIdentifier(mountHook) &&
+      ts.isIdentifier(parameter.name) &&
+      parameter.name.text === mountHook.text,
+  )
+  const keepAlive = namedImportLocalName(source.sourceFile, 'vue', 'KeepAlive')
+  for (const name of ['InstanceBoundary', 'OrdinaryBoundary']) {
+    const boundary = variableInitializer(source, name)
+    const fallback =
+      boundary === undefined
+        ? undefined
+        : nodesOf(boundary, ts.isCallExpression).find(
+            (call) => callMemberName(call) === nativeFallback.name?.text,
+          )
+    const mounted = fallback?.arguments[mountIndex]
+    if (
+      fallback === undefined ||
+      mounted === undefined ||
+      !nodesOf(mounted, ts.isCallExpression).some(
+        (call) =>
+          callMemberName(call) === 'rendered' &&
+          literalValue(call.arguments[1]) === 'component-fallback',
+      )
+    ) {
+      violations.push(`${name} must acknowledge fallback only from its actual native mount.`)
+      continue
+    }
+    if (name === 'InstanceBoundary') {
+      let branch: ts.Node = fallback.parent
+      while (!ts.isSourceFile(branch) && !ts.isIfStatement(branch)) branch = branch.parent
+      if (
+        !ts.isIfStatement(branch) ||
+        nodesOf(branch, ts.isCallExpression).some(
+          (call) => memberPath(call.arguments[0])[0] === keepAlive,
+        )
+      )
+        violations.push(
+          'Failed Workspace content must replace its entire internal KeepAlive subtree.',
+        )
+    } else if (boundary !== undefined) {
+      const witness = nodesOf(mounted, ts.isBinaryExpression).find(
+        (binary) =>
+          literalValue(binary.right) === 'component-fallback' && ts.isIdentifier(binary.left),
+      )?.left
+      const mount = namedImportLocalName(source.sourceFile, 'vue', 'onMounted')
+      const update = namedImportLocalName(source.sourceFile, 'vue', 'onUpdated')
+      for (const hook of nodesOf(boundary, ts.isCallExpression).filter(
+        (call) => callMemberName(call) === mount || callMemberName(call) === update,
+      )) {
+        const argument = hook.arguments[0]
+        const callback =
+          argument !== undefined && ts.isIdentifier(argument)
+            ? variableInitializer(source, argument.text)
+            : argument
+        if (
+          callback === undefined ||
+          witness === undefined ||
+          !ts.isIdentifier(witness) ||
+          !nodesOf(callback, ts.isIfStatement).some((statement) =>
+            nodesOf(statement.expression, ts.isBinaryExpression).some(
+              (binary) =>
+                ts.isIdentifier(binary.left) &&
+                binary.left.text === witness.text &&
+                literalValue(binary.right) === 'component-fallback',
+            ),
+          )
+        )
+          violations.push(
+            'Ordinary fallback updates must require an actual native-mount acknowledgment.',
+          )
+      }
+    }
+  }
+  return violations
+}
+
 function validateGlobalCapture(
   source: ParsedSource,
   allSources: readonly ParsedSource[],
@@ -1736,6 +2052,185 @@ function focusedNegativeProbes(input: {
   return failures
 }
 
+function pageBoundaryCaptureProbes(
+  coreError: ParsedSource,
+  rootBoundary: ParsedSource,
+  retention: ParsedSource,
+): string[] {
+  const replace = (source: ParsedSource, node: ts.Node, replacement: string): ParsedSource =>
+    parseSource(
+      source.path,
+      source.text.slice(0, node.getStart(source.sourceFile)) +
+        replacement +
+        source.text.slice(node.end),
+    )
+  const failures: string[] = []
+  const hookName = namedImportLocalName(retention.sourceFile, 'vue', 'onErrorCaptured')
+  const registration = nodesOf(retention.sourceFile, ts.isCallExpression).find(
+    (call) => callMemberName(call) === hookName,
+  )
+  const callback = registration?.arguments[0]
+  if (callback === undefined || !ts.isArrowFunction(callback) || !ts.isBlock(callback.body)) {
+    return ['Page capture in-memory probes could not locate the existing Vue capture boundary.']
+  }
+  const startup = nodesOf(callback.body, ts.isIfStatement).find((statement) =>
+    nodesOf(statement.expression, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'getStartupState',
+    ),
+  )
+  const capture = nodesOf(callback.body, ts.isCallExpression).find(
+    (call) => callMemberName(call) === 'capture',
+  )
+  const normalizeName = namedImportLocalName(
+    retention.sourceFile,
+    '../errors/error-normalizer',
+    'normalizeVueComponentFailure',
+  )
+  const normalize = nodesOf(callback.body, ts.isCallExpression).find(
+    (call) => callMemberName(call) === normalizeName,
+  )
+  if (startup === undefined || capture === undefined || normalize === undefined) {
+    return ['Page capture in-memory probes require the real startup, normalizer and ledger path.']
+  }
+  const probes: readonly (readonly [string, ParsedSource])[] = [
+    [
+      'Component capture must synchronously stop handled-error propagation.',
+      replace(retention, callback, `async ${callback.getText(retention.sourceFile)}`),
+    ],
+    [
+      'Component capture must propagate startup failures before normalization.',
+      replace(retention, startup.thenStatement, '{ return false }'),
+    ],
+    [
+      'Handled component failures must normalize and capture once before returning false.',
+      replace(retention, normalize, 'undefined'),
+    ],
+    [
+      'Duplicate component capture must not decide whether propagation is stopped.',
+      replace(
+        retention,
+        capture.parent,
+        `if (!${capture.getText(retention.sourceFile)}) return undefined`,
+      ),
+    ],
+    [
+      'Component normalization and capture machinery failures must propagate.',
+      replace(
+        retention,
+        capture.parent,
+        `try { ${capture.getText(retention.sourceFile)} } catch { return false }`,
+      ),
+    ],
+  ]
+  for (const [expected, changed] of probes) {
+    if (!validateVueBoundaryCapture(changed).includes(expected))
+      failures.push(`Page capture in-memory negative probe failed: ${expected}`)
+  }
+  for (const { name, calls } of pageBoundaryConnections(retention)) {
+    const call = calls[0]
+    if (
+      call === undefined ||
+      !validatePageBoundaryConnections(replace(retention, call, 'undefined')).includes(
+        `${name} must install the existing local Vue capture responsibility.`,
+      )
+    )
+      failures.push(`Page capture in-memory negative probe failed: ${name} disconnected.`)
+  }
+  const provideName = namedImportLocalName(rootBoundary.sourceFile, 'vue', 'provide')
+  const provide = nodesOf(rootBoundary.sourceFile, ts.isCallExpression).find(
+    (call) => callMemberName(call) === provideName,
+  )
+  if (
+    provide === undefined ||
+    !validatePageBoundaryInjection(
+      coreError,
+      replace(rootBoundary, provide, 'undefined'),
+      retention,
+    ).includes('AppErrorBoundary must provide its existing errorHooks through the typed key.')
+  )
+    failures.push('Page capture in-memory negative probe failed: missing root errorHooks provider.')
+
+  for (const name of ['InstanceBoundary', 'OrdinaryBoundary']) {
+    const boundary = variableInitializer(retention, name)
+    const ack =
+      boundary === undefined
+        ? undefined
+        : nodesOf(boundary, ts.isCallExpression).find(
+            (call) =>
+              callMemberName(call) === 'rendered' &&
+              literalValue(call.arguments[1]) === 'component-fallback',
+          )
+    let mounted: ts.Node | undefined = ack
+    while (mounted !== undefined && !ts.isArrowFunction(mounted) && !ts.isSourceFile(mounted))
+      mounted = mounted.parent
+    if (mounted === undefined || !ts.isArrowFunction(mounted)) {
+      failures.push(`Page fallback in-memory probes could not locate ${name}'s native ACK.`)
+      continue
+    }
+    if (
+      !validatePageFallbackAcknowledgment(replace(retention, mounted, 'undefined')).includes(
+        `${name} must acknowledge fallback only from its actual native mount.`,
+      )
+    )
+      failures.push(`Page fallback in-memory negative probe failed: ${name}'s native ACK removed.`)
+    if (name === 'InstanceBoundary' && ts.isCallExpression(mounted.parent)) {
+      const fallback = mounted.parent
+      const h = namedImportLocalName(retention.sourceFile, 'vue', 'h')
+      const keepAlive = namedImportLocalName(retention.sourceFile, 'vue', 'KeepAlive')
+      if (h === undefined || keepAlive === undefined) {
+        failures.push('Page fallback in-memory probe requires the existing Vue render imports.')
+        continue
+      }
+      const changed = replace(
+        retention,
+        fallback,
+        `${h}( ${keepAlive}, null, { default: () => ${fallback.getText(retention.sourceFile)} } )`,
+      )
+      if (
+        !validatePageFallbackAcknowledgment(changed).includes(
+          'Failed Workspace content must replace its entire internal KeepAlive subtree.',
+        )
+      )
+        failures.push(
+          'Page fallback in-memory negative probe failed: failed content remains cached.',
+        )
+    }
+    if (name === 'OrdinaryBoundary' && boundary !== undefined) {
+      const guard = nodesOf(boundary, ts.isIfStatement).find(
+        (statement) =>
+          nodesOf(statement.expression, ts.isStringLiteral).some(
+            (literal) => literal.text === 'component-fallback',
+          ) &&
+          nodesOf(statement.thenStatement, ts.isCallExpression).some(
+            (call) => callMemberName(call) === 'rendered',
+          ),
+      )
+      if (
+        guard === undefined ||
+        !validatePageFallbackAcknowledgment(replace(retention, guard.expression, 'true')).includes(
+          'Ordinary fallback updates must require an actual native-mount acknowledgment.',
+        )
+      )
+        failures.push(
+          'Page fallback in-memory negative probe failed: queued ordinary mounted ACK accepted.',
+        )
+    }
+  }
+
+  // A private helper rename preserves the same capture contract.
+  let owner: ts.Node = callback
+  while (!ts.isFunctionDeclaration(owner) && !ts.isSourceFile(owner)) owner = owner.parent
+  if (ts.isFunctionDeclaration(owner) && owner.name !== undefined) {
+    const renamed = parseSource(
+      retention.path,
+      retention.text.replaceAll(new RegExp(`\\b${owner.name.text}\\b`, 'gu'), 'renamedPageCapture'),
+    )
+    if (validateVueBoundaryCapture(renamed).length !== 0)
+      failures.push('Page capture in-memory positive probe froze a private helper name.')
+  }
+  return failures
+}
+
 export async function validateRuntimeKernelArchitecture(): Promise<readonly string[]> {
   const paths = {
     bootstrapRegistry: resolve(webSourceDirectory, 'app/bootstrap/bootstrap-registry.ts'),
@@ -1751,6 +2246,8 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     errorRegistry: resolve(webSourceDirectory, 'app/errors/core-error-registry.ts'),
     errorMessages: resolve(webSourceDirectory, 'app/errors/core-error-messages.ts'),
     coreError: resolve(webSourceDirectory, 'app/errors/core-error.ts'),
+    rootBoundary: resolve(webSourceDirectory, 'app/errors/AppErrorBoundary.vue'),
+    retention: resolve(webSourceDirectory, 'app/workspace/workspace-retention.ts'),
     errorNormalizer: resolve(webSourceDirectory, 'app/errors/error-normalizer.ts'),
     globalCapture: resolve(webSourceDirectory, 'app/errors/global-failure-capture.ts'),
     fatalBoundary: resolve(webSourceDirectory, 'app/errors/fatal-boundary.ts'),
@@ -1770,6 +2267,8 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     errorRegistry,
     errorMessages,
     coreError,
+    rootBoundary,
+    retention,
     errorNormalizer,
     globalCapture,
     fatalBoundary,
@@ -1788,6 +2287,8 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     readSource(paths.errorRegistry),
     readSource(paths.errorMessages),
     readSource(paths.coreError),
+    readSource(paths.rootBoundary),
+    readSource(paths.retention),
     readSource(paths.errorNormalizer),
     readSource(paths.globalCapture),
     readSource(paths.fatalBoundary),
@@ -1813,6 +2314,12 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     ...validateCoreErrorRegistry(errorRegistry),
     ...validateCoreErrorMessages(errorMessages),
     ...validateNormalizersAndLedger(errorNormalizer, coreError),
+    ...validatePageBoundaryInjection(coreError, rootBoundary, retention),
+    ...validateVueBoundaryCapture(rootBoundary),
+    ...validateVueBoundaryCapture(retention),
+    ...validatePageBoundaryConnections(retention),
+    ...validatePageFallbackAcknowledgment(retention),
+    ...pageBoundaryCaptureProbes(coreError, rootBoundary, retention),
     ...validateGlobalCapture(globalCapture, applicationSources),
     ...validateVueMount(createApplication, applicationSources),
     ...validateProviders(installProviders, pinia),

@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { isInSrgbGamut, parseCssColor } from './css-color'
-import { tokenReferenceSchema } from './token.schema'
+import { tokenReferenceSchema } from './token-reference.schema'
 
 export const builtInThemeIds = [
   'amber',

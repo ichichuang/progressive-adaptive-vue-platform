@@ -2624,6 +2624,7 @@ function registryViolations(): string[] {
     !isDeepStrictEqual(activeNavigationOutcomeRegistry, [
       'duplicated',
       'cancelled-by-new-navigation',
+      'presentation-unavailable',
       'redirected',
       'invalid-input',
       'chunk-load-failed',
@@ -2832,6 +2833,7 @@ async function navigationContractViolations(): Promise<string[]> {
       kind: "'allow'",
       navigationId: 'string',
       destination: 'RegisteredRouteDestination',
+      presentation: "'page' | 'component-fallback'",
     },
     redirect: {
       kind: "'redirect'",
@@ -2843,7 +2845,7 @@ async function navigationContractViolations(): Promise<string[]> {
     cancel: {
       kind: "'cancel'",
       navigationId: 'string',
-      reason: "'cancelled-by-new-navigation' | 'access-invalidated'",
+      reason: "'cancelled-by-new-navigation' | 'access-invalidated' | 'presentation-unavailable'",
     },
     failure: {
       kind: "'failure'",
@@ -4596,7 +4598,7 @@ function runRouterPresentationCommitNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'if (from !== START_LOCATION && !samePage && !locked) heading.focus({ preventScroll: true })',
+          /if \(from !== START_LOCATION && !samePage && !locked\)\s*heading\.focus\(\{ preventScroll: true \}\)/u,
           'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)\n        if (from !== START_LOCATION && !samePage && !locked) heading.focus({ preventScroll: true })',
         ),
       }),
@@ -6514,7 +6516,12 @@ function workspaceRefreshContractViolations({
             assignment.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
             memberPath(assignment.left).at(-1) === 'value' &&
             method.parameters.some(
-              (parameter) => parameter.name.getText() === assignment.right.getText(),
+              (parameter) =>
+                parameter.name.getText() === assignment.right.getText() ||
+                (ts.isObjectLiteralExpression(assignment.right) &&
+                  nodesOf(assignment.right, ts.isIdentifier).some(
+                    (node) => node.text === parameter.name.getText(),
+                  )),
             ),
         ),
     ),
@@ -6903,8 +6910,8 @@ async function workspaceRefreshViolations(): Promise<string[]> {
       'WORKSPACE_RETENTION_CURRENT_DELIVERY_ACK',
       {
         ...snapshot,
-        retention: retention.replace(
-          /owns\(snapshot\)\s*&&\s*sameDelivery\(active\.value, snapshot\)/u,
+        retention: retention.replaceAll(
+          /owns\(snapshot\)\s*&&\s*sameDelivery\(active\.value, snapshot\)/gu,
           'sameDelivery(active.value, snapshot)',
         ),
       },
@@ -7029,6 +7036,1041 @@ async function workspaceRefreshViolations(): Promise<string[]> {
         `${id}: reversible in-memory retention probe did not fail exclusively for ${expected}; received ${failures.join(', ') || 'none'}, changed=${String(!isDeepStrictEqual(mutated, snapshot))}, baselineValid=${String(baselineValid)}.`,
       )
   }
+  return violations
+}
+
+function componentPresentationContractViolations(
+  snapshot: Pick<WorkspaceRetentionSourceSnapshot, 'frame' | 'lifecycle' | 'port' | 'retention'> & {
+    readonly coordinator: string
+  },
+): string[] {
+  const parse = (source: string) =>
+    ts.createSourceFile('component-presentation.ts', source, ts.ScriptTarget.Latest, true)
+  const port = parse(snapshot.port)
+  const binding = nodesOf(port, ts.isInterfaceDeclaration).find(
+    (node) => node.name.text === 'WorkspaceRetentionBinding',
+  )
+  const methodType = (name: string) =>
+    binding?.members
+      .filter(ts.isMethodSignature)
+      .find((node) => node.name.getText() === name)
+      ?.type?.getText()
+      .replaceAll(/\s+/gu, '')
+  const violations: string[] = []
+  if (
+    methodType('whenRendered') !== "Promise<'page'|'component-fallback'|'cancelled'>" ||
+    methodType('readFailure') !== 'NormalizedCoreError|undefined'
+  )
+    violations.push('COMPONENT_PRESENTATION_PORT')
+
+  const retention = parse(snapshot.retention)
+  const retentionFunctions = nodesOf(retention, ts.isFunctionDeclaration)
+  const localFunction = (expression: ts.Expression | undefined) => {
+    if (expression === undefined || !ts.isCallExpression(expression)) return undefined
+    const callee = unwrapExpression(expression.expression)
+    return ts.isIdentifier(callee)
+      ? retentionFunctions.find((node) => node.name?.text === callee.text)
+      : undefined
+  }
+  const returned = (owner: ts.FunctionDeclaration | undefined) =>
+    owner?.body?.statements.find(ts.isReturnStatement)?.expression
+  const path = (expression: ts.Expression | undefined) => memberPath(expression).join('.')
+  const terms = (expression: ts.Expression, operator: ts.SyntaxKind): ts.Expression[] => {
+    const value = unwrapExpression(expression)
+    return ts.isBinaryExpression(value) && value.operatorToken.kind === operator
+      ? [...terms(value.left, operator), ...terms(value.right, operator)]
+      : [value]
+  }
+  const comparison = (
+    expression: ts.Expression,
+    left: string,
+    operator: ts.SyntaxKind,
+    right: string,
+  ) => {
+    const value = unwrapExpression(expression)
+    return (
+      ts.isBinaryExpression(value) &&
+      value.operatorToken.kind === operator &&
+      path(value.left) === left &&
+      value.right.getText() === right
+    )
+  }
+  const equals = ts.SyntaxKind.EqualsEqualsEqualsToken
+  const differs = ts.SyntaxKind.ExclamationEqualsEqualsToken
+  const parameter = (owner: ts.FunctionDeclaration | undefined) =>
+    owner?.parameters[0]?.name.getText()
+  const readFailure = retentionFunctions.find((node) => node.name?.text === 'readFailure')
+  const failureReturn = returned(readFailure)
+  const failureRead =
+    failureReturn !== undefined && ts.isConditionalExpression(failureReturn)
+      ? failureReturn.whenTrue
+      : failureReturn
+  const failureField = memberPath(failureRead).at(-1)
+  const readerParameter = parameter(readFailure)
+  const guardClause = readFailure?.body?.statements.find(ts.isIfStatement)
+  const clauseCondition =
+    guardClause === undefined ? undefined : unwrapExpression(guardClause.expression)
+  const guardExpression =
+    failureReturn !== undefined && ts.isConditionalExpression(failureReturn)
+      ? failureReturn.condition
+      : clauseCondition !== undefined &&
+          ts.isPrefixUnaryExpression(clauseCondition) &&
+          clauseCondition.operator === ts.SyntaxKind.ExclamationToken
+        ? clauseCondition.operand
+        : undefined
+  const guardCall = guardExpression === undefined ? undefined : unwrapExpression(guardExpression)
+  const clauseExit =
+    guardClause === undefined
+      ? undefined
+      : ts.isBlock(guardClause.thenStatement)
+        ? guardClause.thenStatement.statements[0]
+        : guardClause.thenStatement
+  const guarded =
+    failureReturn !== undefined && ts.isConditionalExpression(failureReturn)
+      ? readFailure?.body?.statements.length === 1 &&
+        failureReturn.whenFalse.getText() === 'undefined'
+      : guardClause !== undefined &&
+        guardClause.elseStatement === undefined &&
+        clauseExit !== undefined &&
+        ts.isReturnStatement(clauseExit) &&
+        clauseExit.expression?.getText() === 'undefined' &&
+        (!ts.isBlock(guardClause.thenStatement) ||
+          guardClause.thenStatement.statements.length === 1) &&
+        readFailure?.body?.statements.length === 2 &&
+        readFailure.body.statements[0] === guardClause &&
+        readFailure.body.statements[1]?.getStart() === failureReturn?.parent.getStart()
+  const lifetimeCall =
+    failureRead !== undefined && ts.isPropertyAccessExpression(failureRead)
+      ? unwrapExpression(failureRead.expression)
+      : undefined
+  const lifetimeOwner = localFunction(lifetimeCall)
+  const lifetimeTypes =
+    lifetimeOwner?.type === undefined
+      ? []
+      : nodesOf(lifetimeOwner.type, ts.isTypeReferenceNode).map((node) => node.typeName.getText())
+  const lifetimeType = nodesOf(retention, ts.isInterfaceDeclaration).find((node) =>
+    lifetimeTypes.includes(node.name.text),
+  )
+  const errorField = lifetimeType?.members
+    .find(
+      (node) =>
+        ts.isPropertySignature(node) &&
+        node.type?.getText().replaceAll(/\s+/gu, '') === 'NormalizedCoreError|undefined',
+    )
+    ?.name?.getText()
+  const lifetimeParameter = parameter(lifetimeOwner)
+  const selection = returned(lifetimeOwner)
+  const controller = retentionFunctions.find(
+    (node) => node.name?.text === 'createWorkspaceRetention',
+  )
+  const controllerReturn = returned(controller)
+  const retainedCollection =
+    controllerReturn !== undefined && ts.isObjectLiteralExpression(controllerReturn)
+      ? controllerReturn.properties
+          .find((node) => ts.isShorthandPropertyAssignment(node) && node.name.text === 'pages')
+          ?.name?.getText()
+      : undefined
+  const lookup = (expression: ts.Expression, key: string) => {
+    const value = unwrapExpression(expression)
+    return (
+      ts.isCallExpression(value) &&
+      path(value.expression) === `${retainedCollection ?? ''}.get` &&
+      value.arguments.length === 1 &&
+      path(value.arguments[0]) === key
+    )
+  }
+  const workspaceRead =
+    selection !== undefined && ts.isConditionalExpression(selection)
+      ? unwrapExpression(selection.whenFalse)
+      : undefined
+  const lookupHelper = localFunction(workspaceRead)
+  const helperRead = returned(lookupHelper)
+  const workspaceLookup =
+    workspaceRead !== undefined &&
+    (lookup(workspaceRead, `${lifetimeParameter ?? ''}.workspace.instance`) ||
+      (ts.isCallExpression(workspaceRead) &&
+        workspaceRead.arguments.length === 1 &&
+        path(workspaceRead.arguments[0]) === `${lifetimeParameter ?? ''}.workspace.instance` &&
+        lookupHelper?.body?.statements.length === 1 &&
+        helperRead !== undefined &&
+        lookup(helperRead, parameter(lookupHelper) ?? '')))
+  const ordinaryRead =
+    selection !== undefined && ts.isConditionalExpression(selection)
+      ? unwrapExpression(selection.whenTrue)
+      : undefined
+  const ordinaryLifetime =
+    ordinaryRead !== undefined && ts.isConditionalExpression(ordinaryRead)
+      ? path(ordinaryRead.whenTrue)
+      : undefined
+  const renderedOwner = retentionFunctions.find((node) => node.name?.text === 'whenRendered')
+  const ownership = localFunction(guardCall)
+  const ownershipReturn = returned(ownership)
+  const ownershipTerms =
+    ownershipReturn === undefined
+      ? []
+      : terms(ownershipReturn, ts.SyntaxKind.AmpersandAmpersandToken)
+  const ownerParameter = parameter(ownership)
+  const deliveryCall = ownershipTerms.find(ts.isCallExpression)
+  const deliveryOwner = localFunction(deliveryCall)
+  const deliveryReturn = returned(deliveryOwner)
+  const deliveryParameters = deliveryOwner?.parameters.map((node) => node.name.getText()) ?? []
+  const deliveryMatches =
+    deliveryReturn !== undefined &&
+    ['commit', 'workspace'].every((field) =>
+      terms(deliveryReturn, ts.SyntaxKind.AmpersandAmpersandToken).some((term) =>
+        comparison(
+          term,
+          `${deliveryParameters[0] ?? ''}.${field}`,
+          equals,
+          `${deliveryParameters[1] ?? ''}.${field}`,
+        ),
+      ),
+    )
+  const dispose =
+    controllerReturn === undefined
+      ? undefined
+      : nodesOf(controllerReturn, ts.isMethodDeclaration).find(
+          (node) => node.name.getText() === 'dispose',
+        )
+  const disposedState =
+    dispose === undefined
+      ? undefined
+      : nodesOf(dispose, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            node.right.kind === ts.SyntaxKind.TrueKeyword,
+        )?.left
+  const workspaceOwner = controller?.parameters[0]?.name.getText()
+  const ordinaryFactory =
+    controllerReturn === undefined
+      ? undefined
+      : nodesOf(controllerReturn, ts.isMethodDeclaration).find(
+          (node) => node.name.getText() === 'ordinary',
+        )
+  const ordinaryResult = ordinaryFactory?.body?.statements.find(ts.isReturnStatement)?.expression
+  const ordinaryStorage =
+    ordinaryFactory === undefined
+      ? undefined
+      : nodesOf(ordinaryFactory, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            path(node.right) === path(ordinaryResult),
+        )?.left
+  const accept = retentionFunctions.find((node) => node.name?.text === 'acceptCommitted')
+  const requestedStorage =
+    accept === undefined
+      ? undefined
+      : nodesOf(accept, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+            path(node.right) === parameter(accept),
+        )?.left
+  if (
+    !guarded ||
+    errorField === undefined ||
+    failureField !== errorField ||
+    readerParameter === undefined ||
+    guardCall === undefined ||
+    !ts.isCallExpression(guardCall) ||
+    path(guardCall.arguments[0]) !== readerParameter ||
+    lifetimeCall === undefined ||
+    !ts.isCallExpression(lifetimeCall) ||
+    path(lifetimeCall.arguments[0]) !== readerParameter ||
+    selection === undefined ||
+    !ts.isConditionalExpression(selection) ||
+    !comparison(selection.condition, `${lifetimeParameter ?? ''}.workspace`, equals, 'undefined') ||
+    !workspaceLookup ||
+    ordinaryRead === undefined ||
+    !ts.isConditionalExpression(ordinaryRead) ||
+    ordinaryStorage === undefined ||
+    ordinaryLifetime !== path(ordinaryStorage) ||
+    ordinaryRead.whenFalse.getText() !== 'undefined' ||
+    !terms(ordinaryRead.condition, ts.SyntaxKind.AmpersandAmpersandToken).some((term) =>
+      comparison(term, ordinaryLifetime, differs, 'undefined'),
+    ) ||
+    !terms(ordinaryRead.condition, ts.SyntaxKind.AmpersandAmpersandToken).some(
+      (term) =>
+        ts.isCallExpression(term) &&
+        localFunction(term) === deliveryOwner &&
+        path(term.arguments[0]) === `${ordinaryLifetime}.snapshot` &&
+        path(term.arguments[1]) === lifetimeParameter,
+    ) ||
+    !deliveryMatches ||
+    requestedStorage === undefined ||
+    path(deliveryCall?.arguments[0]) !== path(requestedStorage) ||
+    path(deliveryCall?.arguments[1]) !== ownerParameter ||
+    !ownershipTerms.some(
+      (term) =>
+        ts.isPrefixUnaryExpression(term) &&
+        term.operator === ts.SyntaxKind.ExclamationToken &&
+        disposedState !== undefined &&
+        path(term.operand) === path(disposedState),
+    ) ||
+    !ownershipTerms.some(
+      (term) =>
+        ts.isConditionalExpression(term) &&
+        comparison(term.condition, `${ownerParameter}.workspace`, equals, 'undefined') &&
+        comparison(term.whenTrue, `${workspaceOwner ?? ''}.active`, equals, 'undefined') &&
+        comparison(
+          term.whenFalse,
+          `${workspaceOwner ?? ''}.active`,
+          equals,
+          `${ownerParameter}.workspace`,
+        ),
+    ) ||
+    renderedOwner === undefined ||
+    !nodesOf(renderedOwner, ts.isCallExpression).some(
+      (call) =>
+        localFunction(call) === ownership && path(call.arguments[0]) === parameter(renderedOwner),
+    )
+  )
+    violations.push('COMPONENT_FAILURE_LIFETIME_PROJECTION')
+  const renderedWait =
+    renderedOwner === undefined ? undefined : nodesOf(renderedOwner, ts.isAwaitExpression)[0]
+  const presentationComparison = (node: ts.BinaryExpression) =>
+    node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+    memberPath(node.left).at(-1) === 'presentation'
+  if (
+    renderedOwner === undefined ||
+    renderedWait === undefined ||
+    !nodesOf(renderedOwner, ts.isBinaryExpression).some(
+      (node) => presentationComparison(node) && node.getStart() > renderedWait.end,
+    ) ||
+    !nodesOf(renderedWait, ts.isBinaryExpression).some(presentationComparison)
+  )
+    violations.push('COMPONENT_FALLBACK_ACK_CURRENTNESS')
+  const releaseWait = retentionFunctions
+    .filter((node) =>
+      nodesOf(node, ts.isPropertyAccessExpression).some((read) => read.name.text === 'released'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  if (
+    releaseWait === undefined ||
+    failureField === undefined ||
+    nodesOf(releaseWait, ts.isPropertyAccessExpression).some(
+      (read) => read.name.text === failureField,
+    ) ||
+    !nodesOf(releaseWait, ts.isThrowStatement).some(
+      (node) => memberPath(node.expression).at(-1) === 'cause',
+    )
+  )
+    violations.push('COMPONENT_RELEASE_ERROR_SEPARATION')
+
+  const frame = parse(/<script[^>]*>([\s\S]*?)<\/script>/u.exec(snapshot.frame)?.[1] ?? '')
+  const close = nodesOf(frame, ts.isFunctionDeclaration).find(
+    (node) => node.name?.text === /@close="([\w$]+)"/u.exec(snapshot.frame)?.[1],
+  )
+  const closeGuard =
+    close === undefined
+      ? undefined
+      : nodesOf(close, ts.isIfStatement).find((node) =>
+          nodesOf(node.expression, ts.isCallExpression).some(
+            (call) => callMemberName(call) === 'isHealthy',
+          ),
+        )
+  const isPageComparison = (node: ts.BinaryExpression) =>
+    memberPath(node.left).at(-1) === 'presentation' && node.right.getText() === "'page'"
+  if (
+    close === undefined ||
+    closeGuard === undefined ||
+    !nodesOf(closeGuard.expression, ts.isBinaryExpression).some(
+      (node) =>
+        isPageComparison(node) &&
+        node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken,
+    ) ||
+    !nodesOf(closeGuard.thenStatement, ts.isReturnStatement).length ||
+    !nodesOf(close, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'close' && call.getStart() > closeGuard.end,
+    )
+  )
+    violations.push('COMPONENT_CLOSE_HEALTH')
+
+  const lifecycle = parse(snapshot.lifecycle)
+  const functions = nodesOf(lifecycle, ts.isFunctionDeclaration)
+  const behavior = nodesOf(lifecycle, ts.isMethodDeclaration).find(
+    (node) => node.name.getText() === 'scrollBehavior',
+  )
+  const rendered =
+    behavior === undefined
+      ? undefined
+      : nodesOf(behavior, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'whenRendered',
+        )
+  const presentation = storedValuePath(rendered)[0]
+  const resolution =
+    behavior === undefined
+      ? undefined
+      : nodesOf(behavior, ts.isIfStatement).find(
+          (node) =>
+            node.expression.getText().replaceAll(/\s+/gu, '') ===
+              `${presentation ?? ''}==='page'` &&
+            nodesOf(node.thenStatement, ts.isCallExpression).some(
+              (call) => callMemberName(call) === 'resolveBoundRouterPresentationCommit',
+            ),
+        )
+  const coordinator = parse(snapshot.coordinator)
+  const rejectsPresentation = (condition: ts.Expression, result: string) => {
+    const alternatives = terms(condition, ts.SyntaxKind.BarBarToken)
+    return (
+      alternatives.some((term) => comparison(term, `${result}.kind`, differs, "'allow'")) &&
+      alternatives.some((term) => comparison(term, `${result}.presentation`, differs, "'page'"))
+    )
+  }
+  const directCalls = (statement: ts.Statement) =>
+    (ts.isBlock(statement) ? statement.statements : [statement]).flatMap((child) =>
+      ts.isExpressionStatement(child) && ts.isCallExpression(child.expression)
+        ? [child.expression]
+        : [],
+    )
+  const reservations = nodesOf(coordinator, ts.isCallExpression).filter(
+    (call) => callMemberName(call) === 'reserveRouterPresentationCommit',
+  )
+  const visualSkip = nodesOf(coordinator, ts.isFunctionDeclaration).find((node) =>
+    nodesOf(node, ts.isCallExpression).some(
+      (call) => path(call.expression) === `${parameter(node) ?? ''}.handle.skipTransition`,
+    ),
+  )?.name?.text
+  const coordinatorSettlesPresentation = reservations.some((reserve) => {
+    const reservation = storedValuePath(reserve)[0]
+    const update = reserve.parent.parent.parent.parent
+    if (reservation === undefined || !ts.isBlock(update)) return false
+    const visualScope = update.parent.parent.parent.parent.parent
+    if (!ts.isBlock(visualScope)) return false
+    const attempt = update.statements.find(ts.isTryStatement)?.tryBlock
+    if (attempt === undefined) return false
+    const navigation = nodesOf(attempt, ts.isAwaitExpression).find(
+      (node) => ts.isCallExpression(node.expression) && node.expression.arguments.length === 1,
+    )
+    if (navigation === undefined || !ts.isCallExpression(navigation.expression)) return false
+    const navigationCall = navigation.expression
+    if (!ts.isIdentifier(unwrapExpression(navigationCall.expression))) return false
+    const result = storedValuePath(navigation)[0]
+    const request = path(navigationCall.arguments[0])
+    const navigate = nodesOf(coordinator, ts.isVariableDeclaration).find(
+      (node) => node.name.getText() === callMemberName(navigationCall),
+    )?.initializer
+    const navigateParameter =
+      navigate !== undefined && ts.isArrowFunction(navigate)
+        ? navigate.parameters[0]?.name.getText()
+        : undefined
+    const navigatesRequest =
+      navigate !== undefined &&
+      ts.isArrowFunction(navigate) &&
+      ts.isBlock(navigate.body) &&
+      navigate.body.statements.some(
+        (node) =>
+          ts.isReturnStatement(node) &&
+          node.expression !== undefined &&
+          ts.isCallExpression(node.expression) &&
+          path(node.expression.expression) === `${navigateParameter ?? ''}.navigate`,
+      )
+    const reservedRequest = nodesOf(reserve, ts.isPropertyAssignment).find(
+      (node) => node.name.getText() === 'navigationId',
+    )?.initializer
+    const completion = nodesOf(attempt, ts.isAwaitExpression).find(
+      (node) => path(node.expression) === `${reservation}.completion`,
+    )
+    const guard = attempt.statements.find(
+      (node): node is ts.IfStatement =>
+        ts.isIfStatement(node) &&
+        result !== undefined &&
+        rejectsPresentation(node.expression, result) &&
+        node.getStart() > navigation.end &&
+        completion !== undefined &&
+        node.end < completion.getStart(),
+    )
+    if (
+      !navigatesRequest ||
+      path(reservedRequest) !== `${request}.navigationId` ||
+      guard === undefined ||
+      !ts.isBlock(guard.thenStatement)
+    )
+      return false
+    const actions = directCalls(guard.thenStatement)
+    const cancel = actions.find((call) => path(call.expression) === `${reservation}.cancel`)
+    const skip = actions.find((call) => path(call.expression) === visualSkip)
+    const exit = guard.thenStatement.statements.find(ts.isReturnStatement)
+    if (
+      cancel === undefined ||
+      skip === undefined ||
+      exit === undefined ||
+      exit.expression !== undefined ||
+      cancel.end > skip.getStart() ||
+      skip.end > exit.getStart()
+    )
+      return false
+    const visual = path(skip.arguments[0])
+    const visualBinding = visualScope.statements
+      .filter(ts.isVariableStatement)
+      .flatMap((node) => [...node.declarationList.declarations])
+      .find((node) => node.name.getText() === memberPath(skip.arguments[0])[0])
+    const visualOwner = visualScope.statements
+      .filter(ts.isExpressionStatement)
+      .map((node) => unwrapExpression(node.expression))
+      .find(
+        (node): node is ts.BinaryExpression =>
+          ts.isBinaryExpression(node) &&
+          node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+          path(node.left) === visual,
+      )
+    return (
+      visualBinding?.initializer !== undefined &&
+      ts.isObjectLiteralExpression(visualBinding.initializer) &&
+      visualOwner !== undefined &&
+      nodesOf(visualScope, ts.isCallExpression).some((call) => {
+        if (path(call.expression) !== `${request}.completion.then`) return false
+        const callback = call.arguments[0]
+        if (callback === undefined || !ts.isArrowFunction(callback) || !ts.isBlock(callback.body))
+          return false
+        const completedResult = callback.parameters[0]?.name.getText()
+        return callback.body.statements.some(
+          (node) =>
+            ts.isIfStatement(node) &&
+            completedResult !== undefined &&
+            rejectsPresentation(node.expression, completedResult) &&
+            directCalls(node.thenStatement).some(
+              (action) =>
+                path(action.expression) === visualSkip &&
+                path(action.arguments[0]) === path(visualOwner.right),
+            ),
+        )
+      })
+    )
+  })
+  if (
+    behavior === undefined ||
+    presentation === undefined ||
+    resolution?.elseStatement === undefined ||
+    !nodesOf(resolution.elseStatement, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'cancelBoundRouterPresentationCommit',
+    ) ||
+    !nodesOf(behavior, ts.isShorthandPropertyAssignment).some(
+      (node) => node.name.text === presentation,
+    ) ||
+    !coordinatorSettlesPresentation
+  )
+    violations.push('COMPONENT_PRESENTATION_SETTLEMENT')
+
+  const disconnectSettlement = functions
+    .filter((node) =>
+      nodesOf(node, ts.isPropertyAssignment).some(
+        (property) =>
+          property.name.getText() === 'reason' &&
+          property.initializer.getText() === "'presentation-unavailable'",
+      ),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const retentionPort = nodesOf(lifecycle, ts.isCallExpression).find(
+    (call) =>
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText() === 'routerWorkspaceRetentionKey',
+  )?.arguments[1]
+  const connection =
+    retentionPort === undefined
+      ? undefined
+      : nodesOf(retentionPort, ts.isMethodDeclaration).find(
+          (node) => node.name.getText() === 'connect',
+        )
+  const disconnect =
+    connection === undefined
+      ? undefined
+      : nodesOf(connection, ts.isReturnStatement).find(
+          (node) => node.expression !== undefined && ts.isArrowFunction(node.expression),
+        )?.expression
+  if (
+    disconnectSettlement === undefined ||
+    !nodesOf(disconnectSettlement, ts.isCallExpression).some(
+      (call) => callMemberName(call) === 'abort',
+    ) ||
+    !nodesOf(disconnectSettlement, ts.isCallExpression).some(
+      (call) =>
+        callMemberName(call) === 'settleRouterPresentationCommit' &&
+        call.arguments.at(-1)?.getText() === "'cancelled'",
+    ) ||
+    disconnect === undefined ||
+    !nodesOf(disconnect, ts.isCallExpression).some(
+      (call) => callMemberName(call) === disconnectSettlement.name?.text,
+    )
+  )
+    violations.push('COMPONENT_PRESENTATION_HOST_DISCONNECT')
+
+  const failureGuard = functions
+    .filter((node) =>
+      nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readFailure'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const capture = functions
+    .filter(
+      (node) =>
+        nodesOf(node, ts.isCallExpression).some(
+          (call) => callMemberName(call) === 'readWorkspaceGeneration',
+        ) &&
+        nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readOffset'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const reload = functions.find((node) => node.type?.getText().includes('ScrollRefreshSnapshot'))
+  const refreshPort = nodesOf(lifecycle, ts.isCallExpression).find(
+    (call) =>
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText() === 'routerWorkspaceRefreshKey',
+  )?.arguments[1]
+  const reset =
+    refreshPort === undefined
+      ? undefined
+      : nodesOf(refreshPort, ts.isMethodDeclaration).find((node) => node.name.getText() === 'reset')
+  if (
+    failureGuard === undefined ||
+    !['identity', 'entryId'].every((key) =>
+      nodesOf(failureGuard, ts.isCallExpression).some(
+        (call) => callMemberName(call) === 'delete' && memberPath(call.arguments[0]).at(-1) === key,
+      ),
+    ) ||
+    [behavior, capture, reload, reset].some(
+      (scope) =>
+        scope === undefined ||
+        !nodesOf(scope, ts.isCallExpression).some(
+          (call) => callMemberName(call) === failureGuard.name?.text,
+        ),
+    )
+  )
+    violations.push('COMPONENT_SCROLL_FAILURE_ISOLATION')
+  return violations
+}
+
+async function componentPresentationViolations(): Promise<string[]> {
+  const [frame, lifecycle, port, coordinator, retention] = await Promise.all([
+    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
+    readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'),
+    readFile(resolve(routerDirectory, 'router-scroll-controller.ts'), 'utf8'),
+    readFile(resolve(routerDirectory, 'route-transition/route-transition-coordinator.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-retention.ts'), 'utf8'),
+  ])
+  const snapshot = Object.freeze({ frame, lifecycle, port, coordinator, retention })
+  const original = { ...snapshot }
+  const baseline = componentPresentationContractViolations(snapshot)
+  const parsed = ts.createSourceFile('router-lifecycle.ts', lifecycle, ts.ScriptTarget.Latest, true)
+  const functions = nodesOf(parsed, ts.isFunctionDeclaration)
+  const failureGuard = functions
+    .filter((node) =>
+      nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readFailure'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const failureRead =
+    failureGuard === undefined
+      ? undefined
+      : nodesOf(failureGuard, ts.isCallExpression).find((call) => callMemberName(call) === 'delete')
+  const retained = ts.createSourceFile(
+    'workspace-retention.ts',
+    retention,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const retentionFunctions = nodesOf(retained, ts.isFunctionDeclaration)
+  const reader = retentionFunctions.find((node) => node.name?.text === 'readFailure')
+  const readerReturn = reader?.body?.statements.find(ts.isReturnStatement)
+  const readResult = readerReturn?.expression
+  const readerValue =
+    readResult !== undefined && ts.isConditionalExpression(readResult)
+      ? readResult.whenTrue
+      : readResult
+  const readerCall =
+    readerValue === undefined ? undefined : nodesOf(readerValue, ts.isCallExpression)[0]
+  const selector = retentionFunctions.find(
+    (node) => node.name?.text === readerCall?.expression.getText(),
+  )
+  const selection = selector?.body?.statements.find(ts.isReturnStatement)?.expression
+  const workspaceRead =
+    selection !== undefined && ts.isConditionalExpression(selection)
+      ? selection.whenFalse
+      : undefined
+  const ordinaryRead =
+    selection !== undefined &&
+    ts.isConditionalExpression(selection) &&
+    ts.isConditionalExpression(selection.whenTrue)
+      ? selection.whenTrue
+      : undefined
+  const replaceRetention = (node: ts.Node | undefined, replacement: string) =>
+    node === undefined
+      ? retention
+      : retention.slice(0, node.getStart()) + replacement + retention.slice(node.end)
+  const guard =
+    readResult !== undefined && ts.isConditionalExpression(readResult)
+      ? readResult.condition.getText()
+      : reader?.body?.statements
+          .filter(ts.isIfStatement)
+          .map((node) => unwrapExpression(node.expression))
+          .find(ts.isPrefixUnaryExpression)
+          ?.operand.getText()
+  const guardedReturn =
+    guard === undefined || readerValue === undefined
+      ? undefined
+      : `if (!${guard}) return undefined\nreturn ${readerValue.getText()}`
+  const guardRetention =
+    guardedReturn === undefined
+      ? retention
+      : replaceRetention(reader?.body, `{\n${guardedReturn}\n}`)
+  const lookupHelper =
+    workspaceRead !== undefined &&
+    ts.isCallExpression(workspaceRead) &&
+    ts.isIdentifier(workspaceRead.expression)
+      ? retentionFunctions.find((node) => node.name?.text === workspaceRead.expression.getText())
+      : undefined
+  const helperLookup = lookupHelper?.body?.statements.find(ts.isReturnStatement)?.expression
+  const lookup = helperLookup ?? workspaceRead
+  const lookupTarget =
+    lookup !== undefined && ts.isCallExpression(lookup) ? lookup.expression.getText() : undefined
+  const helperKey = lookupHelper?.parameters[0]?.name.getText() ?? 'instance'
+  const helperLookupText =
+    lookupHelper === undefined ? `${lookupTarget ?? ''}(${helperKey})` : helperLookup?.getText()
+  const helperRetention =
+    lookupHelper !== undefined
+      ? `${retention}\n`
+      : workspaceRead === undefined ||
+          !ts.isCallExpression(workspaceRead) ||
+          lookupTarget === undefined ||
+          selector === undefined
+        ? retention
+        : replaceRetention(
+            workspaceRead,
+            `retainedLifetimeForProbe(${workspaceRead.arguments[0]?.getText() ?? ''})`,
+          ).replace(
+            selector.getText().split('{')[0] ?? '',
+            `function retainedLifetimeForProbe(instance: WorkspaceInstanceIdentity) { return ${lookupTarget}(instance) }\n${selector.getText().split('{')[0] ?? ''}`,
+          )
+  const coordinated = ts.createSourceFile(
+    'coordinator.ts',
+    coordinator,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const updateGuard = nodesOf(coordinated, ts.isIfStatement).find(
+    (node) =>
+      ts.isBlock(node.thenStatement) &&
+      node.thenStatement.statements.some(
+        (statement) =>
+          ts.isExpressionStatement(statement) &&
+          ts.isCallExpression(statement.expression) &&
+          callMemberName(statement.expression) === 'cancel',
+      ),
+  )
+  const completionCallback = nodesOf(coordinated, ts.isCallExpression).find(
+    (call) => memberPath(call.expression).slice(-2).join('.') === 'completion.then',
+  )?.arguments[0]
+  const completionGuard =
+    completionCallback === undefined ? undefined : nodesOf(completionCallback, ts.isIfStatement)[0]
+  const pageComparison = (guard: ts.IfStatement | undefined) =>
+    guard === undefined
+      ? undefined
+      : nodesOf(guard.expression, ts.isBinaryExpression).find(
+          (node) =>
+            node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken &&
+            memberPath(node.left).at(-1) === 'presentation' &&
+            node.right.getText() === "'page'",
+        )
+  const updateComparison = pageComparison(updateGuard)
+  const completionComparison = pageComparison(completionGuard)
+  const extraComparison =
+    updateComparison === undefined ? '' : `void (${updateComparison.getText()});\n`
+  const navigationResult = nodesOf(coordinated, ts.isVariableStatement).find(
+    (node) =>
+      nodesOf(node, ts.isAwaitExpression).some((awaited) =>
+        ts.isCallExpression(awaited.expression),
+      ) &&
+      node.declarationList.declarations.some(
+        (declaration) => declaration.name.getText() === memberPath(updateComparison?.left)[0],
+      ),
+  )
+  const addComparison = (source: string) =>
+    navigationResult === undefined
+      ? source
+      : source.replace(
+          navigationResult.getText(),
+          `${navigationResult.getText()}\n${extraComparison}`,
+        )
+  const withoutComparison = (node: ts.Node | undefined) =>
+    node === undefined
+      ? coordinator
+      : coordinator.slice(0, node.getStart()) + 'false' + coordinator.slice(node.end)
+  const updateCancel =
+    updateGuard === undefined
+      ? undefined
+      : nodesOf(updateGuard.thenStatement, ts.isCallExpression).find(
+          (call) => callMemberName(call) === 'cancel',
+        )
+  const completionSkip =
+    completionGuard === undefined
+      ? undefined
+      : nodesOf(completionGuard.thenStatement, ts.isCallExpression)[0]
+  const positives = [
+    [
+      'ternary',
+      {
+        ...snapshot,
+        retention:
+          guard === undefined || readerValue === undefined
+            ? retention
+            : replaceRetention(
+                reader?.body,
+                `{\nreturn ${guard} ? ${readerValue.getText()} : undefined\n\n}`,
+              ),
+      },
+    ],
+    ['ownership guard return', { ...snapshot, retention: guardRetention }],
+    ['private instance lookup helper', { ...snapshot, retention: helperRetention }],
+    [
+      'additional harmless coordinator comparison',
+      { ...snapshot, coordinator: addComparison(coordinator) },
+    ],
+  ] as const
+  const rendered = retentionFunctions.find((node) => node.name?.text === 'whenRendered')
+  const ack =
+    rendered === undefined
+      ? undefined
+      : nodesOf(rendered, ts.isBinaryExpression)
+          .filter(
+            (node) =>
+              node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+              memberPath(node.left).at(-1) === 'presentation',
+          )
+          .at(-1)
+  const releaseWait = retentionFunctions
+    .filter((node) =>
+      nodesOf(node, ts.isPropertyAccessExpression).some((read) => read.name.text === 'released'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const teardownError =
+    releaseWait === undefined ? undefined : nodesOf(releaseWait, ts.isThrowStatement)[0]?.expression
+  const teardownField = teardownError === undefined ? undefined : memberPath(teardownError).at(-2)
+  const failureField = readerValue === undefined ? undefined : memberPath(readerValue).at(-1)
+  const probes = [
+    [
+      'COMPONENT_PRESENTATION_PORT',
+      { ...snapshot, port: port.replace("'component-fallback'", "'page'") },
+    ],
+    [
+      'COMPONENT_CLOSE_HEALTH',
+      { ...snapshot, frame: frame.replace(/!\w+\.isHealthy\([^)]*\)/u, 'false') },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      {
+        ...snapshot,
+        coordinator: coordinator.replaceAll("result.presentation !== 'page'", 'false'),
+      },
+    ],
+    [
+      'COMPONENT_PRESENTATION_HOST_DISCONNECT',
+      {
+        ...snapshot,
+        lifecycle: lifecycle.replace(
+          "reason: 'presentation-unavailable'",
+          "reason: 'cancelled-by-new-navigation'",
+        ),
+      },
+    ],
+    [
+      'COMPONENT_SCROLL_FAILURE_ISOLATION',
+      {
+        ...snapshot,
+        lifecycle:
+          failureRead === undefined
+            ? lifecycle
+            : lifecycle.replace(failureRead.getText(), 'void 0'),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          readerCall === undefined
+            ? retention
+            : retention.replace(readerCall.getText(), 'globalFailureSlot'),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          guardedReturn === undefined
+            ? retention
+            : replaceRetention(
+                reader?.body,
+                `{\n${guardedReturn.replace('return undefined', '{}')}\n}`,
+              ),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          guardedReturn === undefined || guard === undefined
+            ? retention
+            : replaceRetention(
+                reader?.body,
+                `{\n${guardedReturn.replace(`!${guard}`, `!${guard} && false`)}\n}`,
+              ),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          readerCall === undefined
+            ? retention
+            : replaceRetention(readerCall, `${readerCall.expression.getText()}(active.value!)`),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          readerCall === undefined
+            ? retention
+            : replaceRetention(
+                readerCall,
+                `({ ${readerCall.expression.getText()}: (_snapshot: WorkspaceRenderSnapshot) => ordinary.value }).${readerCall.expression.getText()}(${readerCall.arguments[0]?.getText() ?? ''})`,
+              ),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          workspaceRead === undefined || !ts.isCallExpression(workspaceRead)
+            ? retention
+            : replaceRetention(workspaceRead.arguments[0], 'workspace.active!.instance'),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          ordinaryRead === undefined ? retention : replaceRetention(ordinaryRead, 'ordinary.value'),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          lookupTarget === undefined || helperLookupText === undefined
+            ? retention
+            : helperRetention.replace(
+                helperLookupText,
+                `${lookupTarget}(workspace.active!.instance)`,
+              ),
+      },
+    ],
+    [
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention:
+          helperLookupText === undefined
+            ? retention
+            : helperRetention.replace(helperLookupText, `globalLifetimes.get(${helperKey})`),
+      },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      { ...snapshot, coordinator: addComparison(withoutComparison(updateComparison)) },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      { ...snapshot, coordinator: addComparison(withoutComparison(completionComparison)) },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      {
+        ...snapshot,
+        coordinator:
+          updateCancel === undefined
+            ? coordinator
+            : coordinator.slice(0, updateCancel.getStart()) +
+              'void 0' +
+              coordinator.slice(updateCancel.end),
+      },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      {
+        ...snapshot,
+        coordinator:
+          completionSkip === undefined
+            ? coordinator
+            : coordinator.slice(0, completionSkip.getStart()) +
+              'void 0' +
+              coordinator.slice(completionSkip.end),
+      },
+    ],
+    [
+      'COMPONENT_FALLBACK_ACK_CURRENTNESS',
+      {
+        ...snapshot,
+        retention:
+          ack === undefined
+            ? retention
+            : retention.slice(0, ack.getStart()) + 'true' + retention.slice(ack.end),
+      },
+    ],
+    [
+      'COMPONENT_RELEASE_ERROR_SEPARATION',
+      {
+        ...snapshot,
+        retention:
+          releaseWait === undefined || teardownField === undefined || failureField === undefined
+            ? retention
+            : retention.replace(
+                releaseWait.getText(),
+                releaseWait.getText().replaceAll(`.${teardownField}`, `.${failureField}`),
+              ),
+      },
+    ],
+  ] as const
+  const violations = [...baseline]
+  const validMutation = (mutated: typeof snapshot) => {
+    const changed = (Object.keys(snapshot) as (keyof typeof snapshot)[]).filter(
+      (key) => mutated[key] !== snapshot[key],
+    )
+    const key = changed[0]
+    if (changed.length !== 1 || key === undefined) return false
+    const source =
+      key === 'frame'
+        ? (/<script[^>]*>([\s\S]*?)<\/script>/u.exec(mutated[key])?.[1] ?? '')
+        : mutated[key]
+    return !ts
+      .transpileModule(source, { reportDiagnostics: true })
+      .diagnostics?.some((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error)
+  }
+  for (const [name, mutated] of positives) {
+    if (
+      baseline.length !== 0 ||
+      !validMutation(mutated) ||
+      componentPresentationContractViolations(mutated).length !== 0 ||
+      !isDeepStrictEqual(snapshot, original)
+    )
+      violations.push(`Component presentation in-memory positive probe failed: ${name}.`)
+  }
+  for (const [expected, mutated] of probes) {
+    if (
+      baseline.length !== 0 ||
+      !validMutation(mutated) ||
+      !isDeepStrictEqual(componentPresentationContractViolations(mutated), [expected]) ||
+      !isDeepStrictEqual(snapshot, original)
+    )
+      violations.push(`${expected}: Component presentation in-memory negative probe failed.`)
+  }
+  if (violations.length === 0)
+    console.log(
+      `Component presentation probes passed: ${String(positives.length)} positive, ${String(probes.length)} negative; source snapshot preserved.`,
+    )
   return violations
 }
 
@@ -7290,6 +8332,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...(await routerErrorContractViolations()),
     ...(await lifecycleViolations()),
     ...(await workspaceRefreshViolations()),
+    ...(await componentPresentationViolations()),
     ...(await scrollRestorationViolations()),
     ...(await validateRouteTransitionSourceGovernance()),
     ...routeIdViolations,

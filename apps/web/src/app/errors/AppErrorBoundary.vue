@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { computed, onErrorCaptured, shallowRef, type Component } from 'vue'
+import { computed, onErrorCaptured, provide, shallowRef, type Component } from 'vue'
 
 import { useConsoleI18n } from '../../shared/i18n'
 
-import type { AppErrorBoundaryHooks, NormalizedCoreError } from './core-error'
+import {
+  appErrorBoundaryHooksKey,
+  type AppErrorBoundaryHooks,
+  type NormalizedCoreError,
+} from './core-error'
 import { getCoreErrorMessage } from './core-error-messages'
 import { getCoreErrorRecord } from './core-error-registry'
 import { normalizeVueComponentFailure, resolveVueLifecyclePhase } from './error-normalizer'
@@ -14,6 +18,7 @@ const props = defineProps<{
 }>()
 
 const { t } = useConsoleI18n()
+provide(appErrorBoundaryHooksKey, props.errorHooks)
 const capturedError = shallowRef<NormalizedCoreError | null>(null)
 const message = computed(() => {
   if (capturedError.value === null) {
