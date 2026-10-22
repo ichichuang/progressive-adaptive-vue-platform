@@ -836,11 +836,50 @@ export async function createAndReadyRouter(input: {
     operationSignal.addEventListener('abort', cancel, { once: true })
     refreshLease = lease
     let resetStarted = false
+    const scrollBinding = refreshScroll
+    let refreshPosition: WorkspaceRegionRecord | undefined
+
+    const captureRefreshPosition = (): WorkspaceRegionRecord | undefined => {
+      if (
+        scrollBinding?.readEnabled() !== true ||
+        refreshScroll !== scrollBinding ||
+        !isCurrent() ||
+        entry.workspace !== target ||
+        presented.workspace !== target ||
+        workspace.active !== target ||
+        presented.kind !== 'page' ||
+        hasComponentFailure(entry)
+      )
+        return undefined
+      presented.controller.cancelMotion()
+      const generation = scrollBinding.readWorkspaceGeneration()
+      // This explicit replacement transfers coordinates, not the old instance's content revision.
+      const context = regionContext(entry.to, entry.navigation, presented.owner, target)?.slice(
+        0,
+        -1,
+      )
+      const offset = presented.controller.readOffset()
+      if (
+        generation === undefined ||
+        generation !== presented.workspaceGeneration ||
+        context === undefined ||
+        !sameContext(context, presented.workspaceContext?.slice(0, -1)) ||
+        !Number.isFinite(offset.left) ||
+        !Number.isFinite(offset.top) ||
+        !isCurrent() ||
+        hasComponentFailure(entry)
+      )
+        return undefined
+      return { instance: target.instance, generation, context, ...offset }
+    }
     return {
       signal: lease.signal,
       isCurrent,
       release,
       replace(prepare) {
+        if (!isCurrent() || entry.workspace !== target || workspace.active !== target)
+          return undefined
+        refreshPosition = captureRefreshPosition()
         if (!isCurrent() || entry.workspace !== target || workspace.active !== target)
           return undefined
         const replacement = workspace.replaceInstance(target)
@@ -927,7 +966,26 @@ export async function createAndReadyRouter(input: {
         if (entry.marker !== undefined) regionRecords.delete(entry.marker.entryId)
         presented.controller.cancelMotion()
         if (!isCurrent() || hasComponentFailure(entry)) return false
-        if (!writeRegionPosition(presented.controller, { left: 0, top: 0 }))
+        const position =
+          refreshPosition?.instance === target.instance &&
+          refreshScroll === scrollBinding &&
+          scrollBinding?.readEnabled() === true &&
+          refreshPosition.generation === scrollBinding.readWorkspaceGeneration() &&
+          sameContext(
+            refreshPosition.context,
+            regionContext(entry.to, entry.navigation, presented.owner, replacement)?.slice(0, -1),
+          )
+            ? refreshPosition
+            : { left: 0, top: 0 }
+        if (
+          !isCurrent() ||
+          entry.workspace !== replacement ||
+          renderSnapshot.workspace !== replacement ||
+          workspace.active !== replacement ||
+          hasComponentFailure(entry)
+        )
+          return false
+        if (!writeRegionPosition(presented.controller, position))
           throw new TypeError('The locally refreshed Workspace scroll owner is unavailable.')
         if (!isCurrent() || hasComponentFailure(entry)) return false
         entry.presented = {

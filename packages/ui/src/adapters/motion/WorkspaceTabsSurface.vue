@@ -84,6 +84,24 @@ function updateContextMenu(show: boolean): void {
 }
 function dismissContextMenu(event?: MouseEvent): void {
   const item = contextItem.value
+  // evtd reports outside mouseup after contextmenu has retargeted this controlled menu.
+  // Only the current, live tab inside this strip owns that right-button gesture.
+  if (
+    event?.type === 'mouseup' &&
+    event.button === 2 &&
+    item !== undefined &&
+    event
+      .composedPath()
+      .some(
+        (target) =>
+          target instanceof HTMLElement &&
+          target.matches('.pavp-workspace-tabs__item') &&
+          strip.value?.contains(target) === true &&
+          target.closest('[inert]') === null &&
+          target.querySelector('[role="tab"]')?.id === `${item.id}-tab`,
+      )
+  )
+    return
   const focused = document.activeElement
   // Native pointer focus may complete after clickoutside (notably labels and touch).
   const targetsControl = event

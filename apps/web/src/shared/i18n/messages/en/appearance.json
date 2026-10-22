@@ -1,6 +1,6 @@
 {
   "appearance.restore-scroll": "Restore scroll position after refresh",
-  "appearance.restore-scroll-description": "Try to restore your reading position after a full page reload. Temporary previews and unsaved input are not restored. This setting does not affect position retention when switching workspace tabs.",
+  "appearance.restore-scroll-description": "Try to restore your reading position after a full page reload or a workspace tab refresh. Temporary previews and unsaved input are not restored. This setting does not affect position retention when switching workspace tabs.",
   "appearance.material-stage-title": "Material effect",
   "appearance.material-stage-summary": "Functional areas use the current material while content stays stable and clear.",
   "appearance.motion-stage-title": "Motion effect",

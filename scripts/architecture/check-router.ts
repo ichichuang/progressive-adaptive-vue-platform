@@ -6786,6 +6786,62 @@ function workspaceRefreshContractViolations({
   return violations
 }
 
+function workspaceRefreshPositionViolations(lifecycle: string): string[] {
+  const source = ts.createSourceFile('router-lifecycle.ts', lifecycle, ts.ScriptTarget.Latest, true)
+  const calls = nodesOf(source, ts.isCallExpression)
+  const lease = calls.find(
+    (call) =>
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText() === 'routerWorkspaceRefreshKey',
+  )?.arguments[1]
+  if (lease === undefined) return ['WORKSPACE_REFRESH_POSITION_HANDOFF']
+  const leaseCalls = nodesOf(lease, ts.isCallExpression)
+  const sample = leaseCalls.find((call) => callMemberName(call) === 'readOffset')
+  const replacement = leaseCalls.find((call) => callMemberName(call) === 'replaceInstance')
+  const reset = nodesOf(lease, ts.isMethodDeclaration).find(
+    (node) => node.name.getText() === 'reset',
+  )
+  const resetCalls = reset === undefined ? [] : nodesOf(reset, ts.isCallExpression)
+  // Follow the existing instant writer; do not freeze its private name or candidate shape.
+  const writer = nodesOf(source, ts.isFunctionDeclaration)
+    .filter((node) =>
+      nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'scrollTo'),
+    )
+    .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
+  const writes = resetCalls.filter((call) => callMemberName(call) === writer?.name?.text)
+  const position = writes[0]?.arguments[1]
+  const violations: string[] = []
+  if (
+    sample === undefined ||
+    replacement === undefined ||
+    sample.end >= replacement.pos ||
+    !leaseCalls.some((call) => callMemberName(call) === 'cancelMotion' && call.end < sample.pos) ||
+    !leaseCalls.some(
+      (call) => callMemberName(call) === 'readEnabled' && call.end < replacement.pos,
+    ) ||
+    leaseCalls.filter((call) => callMemberName(call) === 'isFinite' && call.end < replacement.pos)
+      .length < 2
+  )
+    violations.push('WORKSPACE_REFRESH_POSITION_CAPTURE')
+  if (
+    !['readEnabled', 'readWorkspaceGeneration'].every((name) =>
+      resetCalls.some((call) => callMemberName(call) === name && call.end < (writes[0]?.pos ?? 0)),
+    ) ||
+    writes.length !== 1 ||
+    position === undefined ||
+    (ts.isObjectLiteralExpression(position) &&
+      position.properties.length === 2 &&
+      position.properties.every(
+        (property) =>
+          ts.isPropertyAssignment(property) &&
+          ['left', 'top'].includes(property.name.getText()) &&
+          property.initializer.getText() === '0',
+      ))
+  )
+    violations.push('WORKSPACE_REFRESH_POSITION_HANDOFF')
+  return violations
+}
+
 async function workspaceRefreshViolations(): Promise<string[]> {
   const [store, frame, lifecycle, port, retention, content] = await Promise.all([
     readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace.store.ts'), 'utf8'),
@@ -7036,6 +7092,34 @@ async function workspaceRefreshViolations(): Promise<string[]> {
         `${id}: reversible in-memory retention probe did not fail exclusively for ${expected}; received ${failures.join(', ') || 'none'}, changed=${String(!isDeepStrictEqual(mutated, snapshot))}, baselineValid=${String(baselineValid)}.`,
       )
   }
+  const positionViolations = workspaceRefreshPositionViolations(lifecycle)
+  const positionCalls = leaseOwner === undefined ? [] : nodesOf(leaseOwner, ts.isCallExpression)
+  const resetPositionCalls = reset === undefined ? [] : nodesOf(reset, ts.isCallExpression)
+  const positionSample = positionCalls.find((call) => callMemberName(call) === 'readOffset')
+  const finiteOffset = positionCalls.find((call) => callMemberName(call) === 'isFinite')
+  const enabled = resetPositionCalls.find((call) => callMemberName(call) === 'readEnabled')
+  const generation = resetPositionCalls.find(
+    (call) => callMemberName(call) === 'readWorkspaceGeneration',
+  )
+  const positionProbes = [
+    ['WORKSPACE_REFRESH_POSITION_CAPTURE', positionSample],
+    ['WORKSPACE_REFRESH_POSITION_CAPTURE', finiteOffset],
+    ['WORKSPACE_REFRESH_POSITION_HANDOFF', enabled],
+    ['WORKSPACE_REFRESH_POSITION_HANDOFF', generation],
+  ] as const
+  for (const [expected, node] of positionProbes) {
+    const mutated =
+      node === undefined
+        ? lifecycle
+        : lifecycle.slice(0, node.getStart()) + 'undefined' + lifecycle.slice(node.end)
+    if (
+      positionViolations.length !== 0 ||
+      mutated === lifecycle ||
+      !isDeepStrictEqual(workspaceRefreshPositionViolations(mutated), [expected])
+    )
+      violations.push(expected + ': Workspace refresh position in-memory negative probe failed.')
+  }
+  violations.push(...positionViolations)
   return violations
 }
 
@@ -7613,7 +7697,15 @@ function componentPresentationContractViolations(
         nodesOf(node, ts.isCallExpression).some(
           (call) => callMemberName(call) === 'readWorkspaceGeneration',
         ) &&
-        nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readOffset'),
+        nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readOffset') &&
+        // Identify ordinary source capture by its Router hook, not the smallest reader.
+        nodesOf(lifecycle, ts.isCallExpression).some(
+          (hook) =>
+            callMemberName(hook) === 'beforeResolve' &&
+            nodesOf(hook, ts.isCallExpression).some(
+              (call) => callMemberName(call) === node.name?.text,
+            ),
+        ),
     )
     .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
   const reload = functions.find((node) => node.type?.getText().includes('ScrollRefreshSnapshot'))
@@ -8293,7 +8385,14 @@ function scrollRestorationContractViolations(sourceText: string): string[] {
         nodesOf(node, ts.isCallExpression).some(
           (call) => callMemberName(call) === 'readWorkspaceGeneration',
         ) &&
-        nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readOffset'),
+        nodesOf(node, ts.isCallExpression).some((call) => callMemberName(call) === 'readOffset') &&
+        calls.some(
+          (hook) =>
+            callMemberName(hook) === 'beforeResolve' &&
+            nodesOf(hook, ts.isCallExpression).some(
+              (call) => callMemberName(call) === node.name?.text,
+            ),
+        ),
     )
     .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
   if (
@@ -8387,6 +8486,9 @@ async function scrollRestorationViolations(): Promise<string[]> {
   const source = await readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8')
   const baseline = scrollRestorationContractViolations(source)
   const parsed = ts.createSourceFile('router-lifecycle.ts', source, ts.ScriptTarget.Latest, true)
+  const snapshotReader = nodesOf(parsed, ts.isFunctionDeclaration).find((node) =>
+    node.type?.getText().includes('ScrollRefreshSnapshot'),
+  )
   const behavior = nodesOf(parsed, ts.isMethodDeclaration).find(
     (node) => node.name.getText() === 'scrollBehavior',
   )
@@ -8422,10 +8524,14 @@ async function scrollRestorationViolations(): Promise<string[]> {
     ],
     [
       'SCROLL_RELOAD_READ_ONLY_CAPTURE',
-      source.replace(
-        /(const [\w$]+ = [\w$]+\.readOffset\(\))/u,
-        '$1\n      controller.cancelMotion()',
-      ),
+      snapshotReader === undefined
+        ? source
+        : source.replace(
+            snapshotReader.getText(),
+            snapshotReader
+              .getText()
+              .replace(/(const [\w$]+ = ([\w$]+)\.readOffset\(\))/u, '$1\n      $2.cancelMotion()'),
+          ),
     ],
   ] as const
   for (const [expected, mutated] of probes) {

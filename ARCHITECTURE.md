@@ -12100,7 +12100,7 @@ Workspace Record 必须匹配当前 Router Lifetime、Workspace/实例关联、�
 
 现有九个只读页继续使用 §18.9 的真实 Build/Content Revision。当前有界修复允许 development、staging、production 中符合本节条件的活 Workspace 分别保存和恢复位置；§18.9 的 History Development/HMR 排除与 Appearance History 排除保持。对仍存活的交互页，未来首片接线须提供页面拥有的**内容变化通知和呈现就绪状态**，只让 Router 失效/确认所属记录，不输出值副本或 Offset；真实编辑、预览、反馈等导致内容变化就失效，未发生内容变化的 Deactivate/Activate 不伪造新 Revision。`appearance-management` 的 Workspace 恢复接线必须覆盖现有 `previewView`、`motionSequence`、`feedbackSequence`、Notice/Pending Locale 与实际 Theme Preview 等状态变化；缺少可靠通知/就绪关系时放弃该次位置恢复。此窄活实例合同不解除它在现有 History Region Record 中的排除，也不让跨销毁内容用 Mount Counter、时间戳或 DOM Hash 冒充 Revision。
 
-活 Workspace 的记录按确切身份及实例分别保存，切换前采集最后完成呈现的来源真实 Offset；不能仅以共享 Owner ID 索引、把目标当来源，或让关闭、替换、Dispose 后的过期回调重建记录。刷新恢复偏好仅控制跨文档 Reload，不控制活 Workspace 的保留与恢复。
+活 Workspace 的记录按确切身份及实例分别保存，切换前采集最后完成呈现的来源真实 Offset；不能仅以共享 Owner ID 索引、把目标当来源，或让关闭、替换、Dispose 后的过期回调重建记录。刷新恢复偏好控制跨文档 Reload 和 §18.11.12 的显式局部 Refresh，不控制普通活 Workspace 切换的保留与恢复。
 
 实际 HMR 更新使更新前的 Workspace Record、Presented Validity 和待恢复工作失效。沿用 §18.12 的 main.ts 唯一 HMR Owner，经既有 Kernel、Scroll System、Router 内部接线传递只读的同文档失效事实；允许私有 document-local Generation 区分更新前后，不持久化、不充当跨文档 Content Identity。更新后的当前实例及内容就绪后，允许在既有 Vue Flush/Presentation 边界确认当前有效性并重新采集新位置；不能永久拿更新前的 Presented Generation 拒绝新采集，也不能永久关闭 Workspace 保留。仍须核对相同实例、地址、Content Revision/Ready、Owner/Controller、几何及操作取消；不新增 HMR Controller、强制 Reload/Remount、Timer 或轮询。
 
@@ -12245,7 +12245,11 @@ Store 的 `refresh(entry, isCurrent)` 使用公开 Vue KeepAlive include 与 VNo
 
 `App.vue` 的单一 RouterView、稳定无 Key 的 `pavp-route-content` 和原单一 KeepAlive 不改；实际页面 Key 继续是 `workspace.active?.instance`。新页面通过原 `workspace-content.ts` 机制注册自身 Revision/Ready，不使用时间戳、刷新计数或伪造 Content Revision。
 
-`router-scroll-controller.ts` 的应用私有 `routerWorkspaceRefreshKey` 提供 `(entry) => { isCurrent(); reset(replacement) } | undefined`；实现只在 `router-lifecycle.ts`，绑定当前成功 Operation、Committed Entry、实际 URL/History Marker 与原 Controller/Boundary。Store 各 Flush 用该 predicate 复核，成功重挂载后 Frame 请求 reset；Router 再核对新实例，删除旧 Workspace Scroll Record 与当前 History Entry Region Record，通过原 Controller cancelMotion + instant Logical Start 写入，并把原 Committed Entry 的 Workspace/呈现上下文更新为新实例，后续来源采集不再引用旧实例。Frame/Store/UI 均不写页面 Offset，不暴露 Lenis/OverlayScrollbars，不改 Scroll System 架构或 sessionStorage Hard-refresh Snapshot；下次正常 pagehide 仍按既有规则采集。活动 Refresh 无 push/replace/History Entry/URL 变化；非活动 Refresh 仅初次激活的一次正常导航，不追加刷新导航。
+`router-scroll-controller.ts` 的应用私有 `routerWorkspaceRefreshKey` 继续拥有现有 `isCurrent`、同步 `replace(prepare)`、`reset(replacement)`、Signal 与 Release；实现只在 `router-lifecycle.ts`，绑定当前成功 Operation、Committed Entry、实际 URL/History Marker 与原 Controller/Boundary。Replacement 的同步接纳独立于可选 Scroll Settlement，旧实例实际 Release 与确切新 Page ACK 保持既有 Retention 顺序。Router 删除旧 Workspace Scroll Record 与当前 History Entry Region Record，并在健康结算后更新 Presented Workspace/Context，后续来源采集不再引用旧实例。Frame/Store/UI 均不写页面 Offset，不暴露 Lenis/OverlayScrollbars，不改 Scroll System 架构或 sessionStorage Hard-refresh Snapshot；下次正常 pagehide 仍按既有规则采集。活动 Refresh 无 push/replace/History Entry/URL 变化；非活动 Refresh 仅初次激活的一次正常导航，不追加刷新导航。
+
+Owner 在参考 `main@774db332d6a4f614046c873e7ac70d47cf7980f3` 上明确授权这两个 Workspace 交互缺陷的有界修复及本节、§18.11.7、§18.12 和既有双语描述的直接纠正。Local Refresh 从无条件 Logical Start 改为现有 `refreshScroll.readEnabled` 控制：在替换或释放确切健康来源前，Router 租约通过原 Controller cancelMotion 后采集有限原生 left/top 与当时有效的地址、实例、Owner/Controller、Context 和 Workspace Generation，候选只属于该次操作。失败 Fallback 不采集；无位置不拒绝合法显式 Refresh。保持原 Content Ready 等待；写入前重新验证 Operation/Lease、地址、活动 Replacement、确切 Page ACK、Owner/Controller、Ready、适用 Context/Generation 与偏好。显式旧实例到 Replacement 的坐标交接不要求新旧 Instance 相同，也不以实例局部 Content Revision 比较跨实例内容；其余 Build/Locale/Appearance/Layout/Owner/Geometry 有效性比较保持。有效候选只经原 instant Writer 尝试并接受 Native Clamp，成功后不得再写零；健康 Replacement 无候选、候选失效或偏好关闭时保持 Logical Start。失败 Replacement 不写 Scroll、不回滚已接纳身份、不自动重试；普通切换、Dormant 激活与 Browser Reload 各自原路径保持，不新增偏好、Storage、全局位置缓存、服务或任意等待。
+
+菜单修复只属于 `WorkspaceTabsSurface` 现有 open/dismiss 边界：当前 Surface 内仍有效且非 inert 的 Tab 的 Context Menu 手势可重定向同一个受控菜单，同一手势后到的 Vendor outside-dismiss 不得关闭新目标。仅豁免该有效目标所属手势，不忽略 Surface 外右键或普通外点；同 Tab/跨 Tab 连续打开、最新目标命令与 Disabled 检查、坐标/RTL、右键不激活、左键激活、外部控件 Focus、Escape/Tab、ContextMenu/Shift+F10、目标删除、活动页变化和 Dispose 清理保持。不新增 Timer、全局 Tab Selector、依赖或菜单系统。直接 Owning Check 和可逆内存 Probe 覆盖这两项修复，不扩大组件错误隔离 Checker；Current Work/Next/Successor、历史证据与未观察的 Runtime/Visual/Accessibility/Owner Acceptance 不推进。补丁保留未暂存、未提交供 Owner 验收。
 
 Dropdown 复用同一个 PAVP Naive Theme：现有 Menu Peer Dropdown Override 与顶层 Dropdown 共用一个私有对象，增加 Dropdown Dark Theme 的真实准入，不复制颜色/材质权威。菜单的局部 Vendor CSS 仅将现有 Motion Token 投影到 Naive Popover Transition：Full 使用正常时长，Reduced 半时长且无 Transform，None 无过渡且即时可见；保留 Light/Dark/Custom、Enhanced 与 Forced Colors 的 Token/System Color 边界。不使用 motion-v 包装菜单，不新增依赖或图标。
 
@@ -12341,7 +12345,7 @@ TARGET 支持同一浏览器标签页中 development、staging、production 的�
 | Direct entry / ordinary new navigation | 不回放 Reload 候选；启动时仍消费读到的有效旧 Snapshot，防止其继续滞留。 |
 | History Back/Forward | 保持 §9.11/§18.9 的 Entry、内存 Region Record 与 Document 原生策略，不用 Reload Snapshot 替代 History。 |
 | Explicit live Workspace activation | 依 §18.11.7 在 development、staging、production 保留各活实例的位置；独立于 Reload 偏好和本 Document 的 Reload 资格。 |
-| Application-local Workspace refresh | 保持确切实例替换、呈现 ACK、失效与 Router Reset，不使用 Reload Snapshot，不添加 Remount。 |
+| Application-local Workspace refresh | 保持确切实例替换、呈现 ACK、失效与 Router Reset；按 §18.11.12 使用现有偏好和操作私有位置候选，不使用 Reload Snapshot，不添加额外 Remount。 |
 | HMR-affected document / Vite-triggered full reload | 当前文档的 Reload 采集与回放资格保守失效；不声称能跨任意源码变化恢复原语义内容。 |
 | BFCache return | 原文档延续，不重新读取/Prime/回放 Reload Snapshot；保持原生位置和仍存活的 Router/Workspace 状态。 |
 

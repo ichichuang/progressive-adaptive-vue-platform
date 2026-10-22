@@ -713,6 +713,32 @@ function registeredContractNames(
   return records.map((contract) => contract.name)
 }
 
+function workspaceMenuDismissalViolations(source: string): string[] {
+  const handler = /@clickoutside="([\w$]+)"/u.exec(source)?.[1]
+  const parsed = sourceFile('WorkspaceTabsSurface.vue', scriptContent(source))
+  const dismiss = parsed.statements.find(
+    (node): node is ts.FunctionDeclaration =>
+      ts.isFunctionDeclaration(node) && node.name?.text === handler,
+  )
+  const event = dismiss?.parameters[0]?.name.getText()
+  const guards = dismiss?.body?.statements.filter(ts.isIfStatement) ?? []
+  const gesture = guards.find((guard) => guard.thenStatement.kind === ts.SyntaxKind.ReturnStatement)
+  const condition = gesture?.expression.getText().replaceAll(/\s+/gu, '') ?? ''
+  // The exemption belongs to an owned, live target and a right-button release, never all outside input.
+  if (
+    event === undefined ||
+    !condition.includes(`${event}?.type==='mouseup'`) ||
+    !condition.includes(`${event}.button===2`) ||
+    !condition.includes(`${event}.composedPath()`) ||
+    !/\.contains\([\w$]+\)===true/u.test(condition) ||
+    !condition.includes(".closest('[inert]')===null") ||
+    !condition.includes('.querySelector(\'[role="tab"]\')?.id===') ||
+    condition.includes('document.querySelector')
+  )
+    return ['WORKSPACE_MENU_OWNED_CONTEXT_GESTURE']
+  return []
+}
+
 export async function validateUiPublicComponents(): Promise<string[]> {
   const violations: string[] = []
   const overlaySources = await loadOverlaySourceMap()
@@ -887,6 +913,23 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       violations.push(
         'Workspace menu must preserve the two intents, keyboard opening and UI-only ownership.',
       )
+    const dismissal = workspaceMenuDismissalViolations(workspaceScrollSource)
+    const dismissalProbes = [
+      workspaceScrollSource.replace(/([\w$]+)\.button === 2/u, 'true'),
+      workspaceScrollSource.replace(/([\w$]+)\?\.type === 'mouseup'/u, 'true'),
+      workspaceScrollSource.replace(/([\w$.]+)\?\.contains\([\w$]+\) === true/u, 'true'),
+      workspaceScrollSource.replace(/([\w$]+)\.closest\('\[inert\]'\) === null/u, 'true'),
+    ]
+    for (const mutated of dismissalProbes)
+      if (
+        dismissal.length !== 0 ||
+        mutated === workspaceScrollSource ||
+        !isDeepStrictEqual(workspaceMenuDismissalViolations(mutated), [
+          'WORKSPACE_MENU_OWNED_CONTEXT_GESTURE',
+        ])
+      )
+        violations.push('Workspace menu gesture in-memory negative probe failed.')
+    violations.push(...dismissal)
     const controls: VueTemplateNode[] = []
     const tablists: VueTemplateNode[] = []
     const labels = new Set<string>()
