@@ -7164,12 +7164,20 @@ function componentPresentationContractViolations(
     (node) => node.name?.text === 'createWorkspaceRetention',
   )
   const controllerReturn = returned(controller)
-  const retainedCollection =
+  const pagesProperty =
     controllerReturn !== undefined && ts.isObjectLiteralExpression(controllerReturn)
-      ? controllerReturn.properties
-          .find((node) => ts.isShorthandPropertyAssignment(node) && node.name.text === 'pages')
-          ?.name?.getText()
+      ? controllerReturn.properties.find(
+          (node) =>
+            (ts.isShorthandPropertyAssignment(node) || ts.isPropertyAssignment(node)) &&
+            node.name.getText() === 'pages',
+        )
       : undefined
+  const collection =
+    pagesProperty !== undefined && ts.isPropertyAssignment(pagesProperty)
+      ? pagesProperty.initializer
+      : pagesProperty?.name
+  const retainedCollection =
+    collection !== undefined && ts.isIdentifier(collection) ? collection.text : undefined
   const lookup = (expression: ts.Expression, key: string) => {
     const value = unwrapExpression(expression)
     return (
@@ -7637,14 +7645,34 @@ function componentPresentationContractViolations(
   return violations
 }
 
-async function componentPresentationViolations(): Promise<string[]> {
-  const [frame, lifecycle, port, coordinator, retention] = await Promise.all([
-    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
-    readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'),
-    readFile(resolve(routerDirectory, 'router-scroll-controller.ts'), 'utf8'),
-    readFile(resolve(routerDirectory, 'route-transition/route-transition-coordinator.ts'), 'utf8'),
-    readFile(resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-retention.ts'), 'utf8'),
-  ])
+async function componentPresentationViolations(
+  sourceSnapshot?: Parameters<typeof componentPresentationContractViolations>[0],
+): Promise<string[]> {
+  const [frame, lifecycle, port, coordinator, retention] =
+    sourceSnapshot === undefined
+      ? await Promise.all([
+          readFile(
+            resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'),
+            'utf8',
+          ),
+          readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'),
+          readFile(resolve(routerDirectory, 'router-scroll-controller.ts'), 'utf8'),
+          readFile(
+            resolve(routerDirectory, 'route-transition/route-transition-coordinator.ts'),
+            'utf8',
+          ),
+          readFile(
+            resolve(rootDirectory, 'apps/web/src/app/workspace/workspace-retention.ts'),
+            'utf8',
+          ),
+        ])
+      : [
+          sourceSnapshot.frame,
+          sourceSnapshot.lifecycle,
+          sourceSnapshot.port,
+          sourceSnapshot.coordinator,
+          sourceSnapshot.retention,
+        ]
   const snapshot = Object.freeze({ frame, lifecycle, port, coordinator, retention })
   const original = { ...snapshot }
   const baseline = componentPresentationContractViolations(snapshot)
@@ -7787,10 +7815,16 @@ async function componentPresentationViolations(): Promise<string[]> {
           navigationResult.getText(),
           `${navigationResult.getText()}\n${extraComparison}`,
         )
-  const withoutComparison = (node: ts.Node | undefined) =>
-    node === undefined
+  const withoutComparisons = (...comparisons: (ts.Node | undefined)[]) =>
+    comparisons.some((node) => node === undefined)
       ? coordinator
-      : coordinator.slice(0, node.getStart()) + 'false' + coordinator.slice(node.end)
+      : comparisons
+          .filter((node) => node !== undefined)
+          .sort((left, right) => right.getStart() - left.getStart())
+          .reduce(
+            (source, node) => source.slice(0, node.getStart()) + 'false' + source.slice(node.end),
+            coordinator,
+          )
   const updateCancel =
     updateGuard === undefined
       ? undefined
@@ -7801,6 +7835,73 @@ async function componentPresentationViolations(): Promise<string[]> {
     completionGuard === undefined
       ? undefined
       : nodesOf(completionGuard.thenStatement, ts.isCallExpression)[0]
+  const updateSkip =
+    updateGuard === undefined || completionSkip === undefined
+      ? undefined
+      : nodesOf(updateGuard.thenStatement, ts.isCallExpression).find(
+          (call) => call.expression.getText() === completionSkip.expression.getText(),
+        )
+  const renamedCoordinator = (
+    [
+      [navigationResult?.parent, memberPath(updateComparison?.left)[0], 'ForUpdateProbe'],
+      [completionCallback, memberPath(completionComparison?.left)[0], 'ForCompletionProbe'],
+    ] as const
+  )
+    .flatMap(([scope, name, suffix]) =>
+      scope === undefined || name === undefined
+        ? []
+        : nodesOf(scope, ts.isIdentifier)
+            .filter((node) => node.text === name)
+            .map((node) => ({ node, replacement: `${name}${suffix}` })),
+    )
+    .sort((left, right) => right.node.getStart() - left.node.getStart())
+    .reduce(
+      (source, { node, replacement }) =>
+        source.slice(0, node.getStart()) + replacement + source.slice(node.end),
+      coordinator,
+    )
+  const controller = retentionFunctions.find(
+    (node) => node.name?.text === 'createWorkspaceRetention',
+  )
+  const controllerReturn = controller?.body?.statements.find(ts.isReturnStatement)?.expression
+  const pagesProperty =
+    controllerReturn !== undefined && ts.isObjectLiteralExpression(controllerReturn)
+      ? controllerReturn.properties.find(
+          (node) =>
+            (ts.isShorthandPropertyAssignment(node) || ts.isPropertyAssignment(node)) &&
+            node.name.getText() === 'pages',
+        )
+      : undefined
+  const collection =
+    pagesProperty !== undefined && ts.isPropertyAssignment(pagesProperty)
+      ? pagesProperty.initializer
+      : pagesProperty?.name
+  const renamedCollection =
+    collection?.getText() === 'retainedPages' ? 'retainedPagesForProbe' : 'retainedPages'
+  const renamedRetention =
+    controller === undefined || collection === undefined || !ts.isIdentifier(collection)
+      ? retention
+      : nodesOf(controller, ts.isIdentifier)
+          .filter(
+            (node) =>
+              node.text === collection.text &&
+              !(ts.isPropertyAssignment(node.parent) && node.parent.name === node),
+          )
+          .sort((left, right) => right.getStart() - left.getStart())
+          .reduce(
+            (source, node) =>
+              source.slice(0, node.getStart()) +
+              (node === pagesProperty?.name ? `pages: ${renamedCollection}` : renamedCollection) +
+              source.slice(node.end),
+            retention,
+          )
+  const equivalents =
+    sourceSnapshot === undefined
+      ? ([
+          ['renamed coordinator result bindings', { ...snapshot, coordinator: renamedCoordinator }],
+          ['explicit retained pages property', { ...snapshot, retention: renamedRetention }],
+        ] as const)
+      : []
   const positives = [
     [
       'ternary',
@@ -7821,6 +7922,7 @@ async function componentPresentationViolations(): Promise<string[]> {
       'additional harmless coordinator comparison',
       { ...snapshot, coordinator: addComparison(coordinator) },
     ],
+    ...equivalents,
   ] as const
   const rendered = retentionFunctions.find((node) => node.name?.text === 'whenRendered')
   const ack =
@@ -7855,7 +7957,7 @@ async function componentPresentationViolations(): Promise<string[]> {
       'COMPONENT_PRESENTATION_SETTLEMENT',
       {
         ...snapshot,
-        coordinator: coordinator.replaceAll("result.presentation !== 'page'", 'false'),
+        coordinator: withoutComparisons(updateComparison, completionComparison),
       },
     ],
     [
@@ -7979,12 +8081,19 @@ async function componentPresentationViolations(): Promise<string[]> {
       },
     ],
     [
-      'COMPONENT_PRESENTATION_SETTLEMENT',
-      { ...snapshot, coordinator: addComparison(withoutComparison(updateComparison)) },
+      'COMPONENT_FAILURE_LIFETIME_PROJECTION',
+      {
+        ...snapshot,
+        retention: replaceRetention(pagesProperty, 'pages: unrelatedPages'),
+      },
     ],
     [
       'COMPONENT_PRESENTATION_SETTLEMENT',
-      { ...snapshot, coordinator: addComparison(withoutComparison(completionComparison)) },
+      { ...snapshot, coordinator: addComparison(withoutComparisons(updateComparison)) },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      { ...snapshot, coordinator: addComparison(withoutComparisons(completionComparison)) },
     ],
     [
       'COMPONENT_PRESENTATION_SETTLEMENT',
@@ -7996,6 +8105,18 @@ async function componentPresentationViolations(): Promise<string[]> {
             : coordinator.slice(0, updateCancel.getStart()) +
               'void 0' +
               coordinator.slice(updateCancel.end),
+      },
+    ],
+    [
+      'COMPONENT_PRESENTATION_SETTLEMENT',
+      {
+        ...snapshot,
+        coordinator:
+          updateSkip === undefined
+            ? coordinator
+            : coordinator.slice(0, updateSkip.getStart()) +
+              'void 0' +
+              coordinator.slice(updateSkip.end),
       },
     ],
     [
@@ -8066,6 +8187,16 @@ async function componentPresentationViolations(): Promise<string[]> {
       !isDeepStrictEqual(snapshot, original)
     )
       violations.push(`${expected}: Component presentation in-memory negative probe failed.`)
+  }
+  for (const [name, mutated] of equivalents) {
+    if (
+      baseline.length === 0 &&
+      validMutation(mutated) &&
+      componentPresentationContractViolations(mutated).length === 0
+    )
+      violations.push(
+        ...(await componentPresentationViolations(mutated)).map((failure) => `${name}: ${failure}`),
+      )
   }
   if (violations.length === 0)
     console.log(
