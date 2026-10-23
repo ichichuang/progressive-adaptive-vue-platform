@@ -2373,6 +2373,35 @@ function routeContentDeclarationViolations(records: readonly RouteContentDeclara
   })
 }
 
+function routeContentRefresh(source: ts.SourceFile):
+  | {
+      readonly owner: ts.Block
+      readonly reset: ts.MethodDeclaration
+    }
+  | undefined {
+  const key = namedImportLocalName(
+    source,
+    './router-scroll-controller',
+    'routerWorkspaceRefreshKey',
+  )
+  const owner = nodesOf(source, ts.isCallExpression).find(
+    (call) =>
+      key !== undefined &&
+      callMemberName(call) === 'provide' &&
+      call.arguments[0]?.getText(source) === key,
+  )?.arguments[1]
+  if (
+    owner === undefined ||
+    !(ts.isArrowFunction(owner) || ts.isFunctionExpression(owner)) ||
+    !ts.isBlock(owner.body)
+  )
+    return undefined
+  const reset = nodesOf(owner.body, ts.isMethodDeclaration).find(
+    (method) => method.name.getText(source) === 'reset',
+  )
+  return reset?.body === undefined ? undefined : { owner: owner.body, reset }
+}
+
 function routeContentConsumerViolations(sourceText: string): string[] {
   const source = ts.createSourceFile(
     'router-lifecycle.ts',
@@ -2380,7 +2409,107 @@ function routeContentConsumerViolations(sourceText: string): string[] {
     ts.ScriptTarget.Latest,
     true,
   )
-  // Only the declared cross-file fields and route identities are normative here.
+  // Check the refresh consumer at its public port, independently of restoration reads.
+  const consumesRefreshReadiness = (): boolean => {
+    const refresh = routeContentRefresh(source)
+    const reset = refresh?.reset
+    if (refresh === undefined || reset?.body === undefined) return false
+    const replacement = reset.parameters[0]?.name.getText(source)
+    const currentWorkspace = nodesOf(reset, ts.isBinaryExpression).find(
+      (node) =>
+        node.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken &&
+        memberPath(node.left).at(-1) === 'workspace' &&
+        node.right.getText(source) === replacement,
+    )
+    if (currentWorkspace === undefined) return false
+    const currentEntry = memberPath(currentWorkspace.left).slice(0, -1)
+    // Follow only direct const extractions in these two scopes, not arbitrary helpers or flow.
+    const bindings = [reset.body, refresh.owner].flatMap((scope) =>
+      scope.statements
+        .filter(ts.isVariableStatement)
+        .filter((statement) => (statement.declarationList.flags & ts.NodeFlags.Const) !== 0)
+        .flatMap((statement) => [...statement.declarationList.declarations]),
+    )
+    const localValue = (expression: ts.Expression): ts.Expression => {
+      const value = unwrapExpression(expression)
+      const initializer = ts.isIdentifier(value)
+        ? bindings.find(
+            (binding) =>
+              ts.isIdentifier(binding.name) &&
+              binding.name.text === value.text &&
+              binding.end < value.getStart(source),
+          )?.initializer
+        : undefined
+      return unwrapExpression(initializer ?? value)
+    }
+    const selectsContent = (expression: ts.Expression, whenTrue: boolean): boolean => {
+      let predicate = localValue(expression)
+      if (
+        ts.isPrefixUnaryExpression(predicate) &&
+        predicate.operator === ts.SyntaxKind.ExclamationToken
+      ) {
+        predicate = localValue(predicate.operand)
+        whenTrue = !whenTrue
+      }
+      if (
+        !ts.isBinaryExpression(predicate) ||
+        ![
+          ts.SyntaxKind.EqualsEqualsEqualsToken,
+          ts.SyntaxKind.ExclamationEqualsEqualsToken,
+        ].includes(predicate.operatorToken.kind)
+      )
+        return false
+      const left = localValue(predicate.left)
+      const right = localValue(predicate.right)
+      const literal = ts.isStringLiteralLike(left) ? left : right
+      const readiness = ts.isStringLiteralLike(left) ? right : left
+      if (
+        !ts.isStringLiteralLike(literal) ||
+        !['route-dom', 'workspace-content'].includes(literal.text) ||
+        !(ts.isPropertyAccessExpression(readiness) && readiness.name.text === 'contentReadiness')
+      )
+        return false
+      const route = localValue(readiness.expression)
+      return (
+        ts.isCallExpression(route) &&
+        callMemberName(route) ===
+          namedImportLocalName(source, './route-registry', 'getRouteRecord') &&
+        isDeepStrictEqual(memberPath(route.arguments[0]), [
+          ...currentEntry,
+          'navigation',
+          'routeName',
+        ]) &&
+        ((literal.text === 'workspace-content') ===
+          (predicate.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken)) ===
+          whenTrue
+      )
+    }
+    const waits = nodesOf(reset, ts.isAwaitExpression).filter(
+      (wait) =>
+        nodesOf(wait, ts.isCallExpression).some(
+          (call) => callMemberName(call) === namedImportLocalName(source, 'vue', 'watch'),
+        ) &&
+        nodesOf(wait, ts.isPropertyAccessExpression).some((read) => read.name.text === 'ready'),
+    )
+    return (
+      waits.length > 0 &&
+      waits.every((wait) => {
+        for (let child: ts.Node = wait; child.parent !== reset; child = child.parent) {
+          const parent = child.parent
+          if (
+            (ts.isIfStatement(parent) &&
+              ((child === parent.thenStatement && selectsContent(parent.expression, true)) ||
+                (child === parent.elseStatement && selectsContent(parent.expression, false)))) ||
+            (ts.isConditionalExpression(parent) &&
+              ((child === parent.whenTrue && selectsContent(parent.condition, true)) ||
+                (child === parent.whenFalse && selectsContent(parent.condition, false))))
+          )
+            return true
+        }
+        return false
+      })
+    )
+  }
   const reads = new Set([
     ...nodesOf(source, ts.isPropertyAccessExpression).map((node) => node.name.text),
     ...nodesOf(source, ts.isElementAccessExpression).flatMap((node) =>
@@ -2392,7 +2521,7 @@ function routeContentConsumerViolations(sourceText: string): string[] {
   ])
   const names = new Set<string>(routeRegistry.map((record) => record.name))
   return [
-    ...(!reads.has('contentReadiness') ? ['ROUTE_CONTENT_READINESS_CONSUMER'] : []),
+    ...(!consumesRefreshReadiness() ? ['ROUTE_CONTENT_READINESS_CONSUMER'] : []),
     ...(!reads.has('scrollRestoration') ? ['ROUTE_SCROLL_ELIGIBILITY_CONSUMER'] : []),
     ...(nodesOf(source, ts.isStringLiteralLike).some(
       (node) =>
@@ -2407,6 +2536,7 @@ function routeContentConsumerViolations(sourceText: string): string[] {
 async function routeContentViolations(): Promise<string[]> {
   const source = await readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8')
   const records: readonly RouteContentDeclaration[] = routeRegistry
+  const original = { source, records: structuredClone(records) }
   const violations = [
     ...routeContentDeclarationViolations(records),
     ...routeContentConsumerViolations(source),
@@ -2448,29 +2578,134 @@ async function routeContentViolations(): Promise<string[]> {
   ]
   if (routeContentDeclarationViolations(positives).length !== 0)
     violations.push('Route content declaration must be independent of page names.')
+  const parsed = ts.createSourceFile('router-lifecycle.ts', source, ts.ScriptTarget.Latest, true)
+  const refresh = routeContentRefresh(parsed)
+  const selection =
+    refresh === undefined
+      ? undefined
+      : nodesOf(refresh.reset, ts.isIfStatement).find((node) =>
+          nodesOf(node.expression, ts.isPropertyAccessExpression).some(
+            (read) => read.name.text === 'contentReadiness',
+          ),
+        )
+  const comparison =
+    selection === undefined
+      ? undefined
+      : nodesOf(selection.expression, ts.isBinaryExpression).find(
+          (node) => ts.isStringLiteralLike(node.right) && node.right.text === 'workspace-content',
+        )
+  const lookup =
+    comparison === undefined
+      ? undefined
+      : nodesOf(comparison.left, ts.isCallExpression).find(
+          (call) =>
+            callMemberName(call) ===
+            namedImportLocalName(parsed, './route-registry', 'getRouteRecord'),
+        )
+  const wait =
+    selection === undefined ? undefined : nodesOf(selection.thenStatement, ts.isAwaitExpression)[0]
+  const restoration = nodesOf(parsed, ts.isIfStatement).find(
+    (node) =>
+      nodesOf(node.expression, ts.isPropertyAccessExpression).some(
+        (read) => read.name.text === 'contentReadiness',
+      ) &&
+      nodesOf(node.expression, ts.isPropertyAccessExpression).some(
+        (read) => read.name.text === 'scrollRestoration',
+      ),
+  )
+  const replace = (node: ts.Node | undefined, replacement: string): string =>
+    node === undefined
+      ? source
+      : source.slice(0, node.getStart(parsed)) + replacement + source.slice(node.end)
+  const extract = (node: ts.Expression | undefined, name: string): string =>
+    node === undefined || selection === undefined
+      ? source
+      : replace(
+          selection,
+          `const ${name} = ${node.getText(parsed)}\n${source.slice(selection.getStart(parsed), node.getStart(parsed))}${name}${source.slice(node.end, selection.end)}`,
+        )
+  const checkProbe = (name: string, mutated: string, expected: readonly string[]): void => {
+    const failures = routeContentConsumerViolations(mutated)
+    if (
+      mutated === source ||
+      ts
+        .transpileModule(mutated, { reportDiagnostics: true })
+        .diagnostics?.some((diagnostic) => diagnostic.category === ts.DiagnosticCategory.Error) ||
+      !isDeepStrictEqual(failures, expected) ||
+      !isDeepStrictEqual({ source, records }, original)
+    )
+      violations.push(
+        `Route content in-memory probe failed: ${name}; received ${failures.join(',')}.`,
+      )
+  }
   for (const [field, expected] of [
     ['contentReadiness', 'ROUTE_CONTENT_READINESS_CONSUMER'],
     ['scrollRestoration', 'ROUTE_SCROLL_ELIGIBILITY_CONSUMER'],
   ] as const) {
     const mutated = source.replaceAll(field, `${field}ForProbe`)
-    if (
-      mutated === source ||
-      !isDeepStrictEqual(routeContentConsumerViolations(mutated), [expected])
-    )
-      violations.push(`${expected}: route content consumer negative probe failed.`)
+    checkProbe(`missing ${field} consumer`, mutated, [expected])
   }
   const renamed = source.replaceAll(/\bworkspaceContents\b/gu, 'contentReadersForProbe')
-  if (routeContentConsumerViolations(renamed).length !== 0)
-    violations.push('Route content checks must accept private reader renaming.')
+  checkProbe('private reader renaming', renamed, [])
+  checkProbe(
+    'page-name coupling',
+    `${source}\nfunction selectContentForProbe(name: string) { return name === '${candidate.name}' }`,
+    ['ROUTE_CONTENT_PAGE_NAME_COUPLING'],
+  )
+  for (const [name, mutated] of [
+    ['reversed refresh comparison', replace(comparison?.right, "'route-dom'")],
+    ['bypassed refresh selection', replace(selection?.expression, 'false')],
+  ] as const) {
+    if (restoration === undefined || !mutated.includes(restoration.getText(parsed)))
+      violations.push(`Route content probe must preserve the restoration consumer: ${name}.`)
+    checkProbe(name, mutated, ['ROUTE_CONTENT_READINESS_CONSUMER'])
+  }
+  const parameter = refresh?.reset.parameters[0]?.name.getText(parsed)
+  const currentEntry = memberPath(lookup?.arguments[0])[0]
+  const renamedRefresh =
+    refresh === undefined
+      ? source
+      : nodesOf(refresh.owner, ts.isIdentifier)
+          .filter((node) => node.text === parameter || node.text === currentEntry)
+          .sort((left, right) => right.getStart(parsed) - left.getStart(parsed))
+          .reduce(
+            (text, node) =>
+              text.slice(0, node.getStart(parsed)) +
+              (node.text === parameter ? 'refreshedForProbe' : 'commitForProbe') +
+              text.slice(node.end),
+            source,
+          )
+  for (const [name, mutated] of [
+    ['private refresh bindings renaming', renamedRefresh],
+    ['local route lookup', extract(lookup, 'routeForProbe')],
+    ['local readiness predicate', extract(selection?.expression, 'needsContentForProbe')],
+    [
+      'complementary readiness comparison',
+      replace(comparison, `${comparison?.left.getText(parsed) ?? ''} !== 'route-dom'`),
+    ],
+    [
+      'readiness else branch',
+      replace(
+        selection,
+        `if (!(${selection?.expression.getText(parsed) ?? ''})) {} else ${selection?.thenStatement.getText(parsed) ?? ''}`,
+      ),
+    ],
+    [
+      'readiness conditional expression',
+      replace(
+        selection,
+        `const readyForProbe = ${selection?.expression.getText(parsed) ?? ''} ? ${wait?.getText(parsed) ?? ''} : true\nif (!readyForProbe) return false`,
+      ),
+    ],
+  ] as const)
+    checkProbe(name, mutated, [])
   if (
     !isDeepStrictEqual(
-      routeContentConsumerViolations(
-        `${source}\nfunction selectContentForProbe(name: string) { return name === '${candidate.name}' }`,
-      ),
-      ['ROUTE_CONTENT_PAGE_NAME_COUPLING'],
+      { source: await readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8'), records },
+      original,
     )
   )
-    violations.push('Route content page-name coupling negative probe failed.')
+    violations.push('Route content probes changed the original source snapshot.')
   return violations
 }
 
