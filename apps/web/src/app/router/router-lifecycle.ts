@@ -909,7 +909,7 @@ export async function createAndReadyRouter(input: {
         resetStarted = true
         const replacementSnapshot = { ...snapshot, workspace: replacement }
         if (hasComponentFailure(entry)) return false
-        if (entry.navigation.routeName === 'appearance-management') {
+        if (getRouteRecord(entry.navigation.routeName).contentReadiness === 'workspace-content') {
           const ready = await new Promise<boolean>((resolve, reject) => {
             let settled = false
             let stop: () => void = () => undefined
@@ -1062,25 +1062,14 @@ export async function createAndReadyRouter(input: {
       return undefined
     const content =
       workspaceEntry === undefined ? undefined : workspaceContents.get(workspaceEntry.instance)?.()
-    switch (navigation.routeName) {
-      case 'appearance-management':
-        if (workspaceEntry === undefined || content?.ready !== true) return undefined
-        break
-      case 'console-overview':
-      case 'design-token-inspector':
-      case 'runtime-kernel-inspector':
-      case 'router-governance-inspector':
-      case 'storage-persistence-inspector':
-      case 'ui-system-inspector':
-      case 'responsive-layout-inspector':
-      case 'engineering-quality-inspector':
-      case 'capability-roadmap':
-      case 'capability-roadmap-standalone':
-        break
-      default:
-        return undefined
-    }
     const route = getRouteRecord(navigation.routeName)
+    if (
+      route.scrollRestoration === 'none' ||
+      (route.scrollRestoration === 'workspace-content' && policy === 'history') ||
+      (route.contentReadiness === 'workspace-content' &&
+        (workspaceEntry === undefined || content?.ready !== true))
+    )
+      return undefined
     const capability = routeLayoutCapabilityRegistry.find(
       (candidate) => candidate.id === route.meta.layoutCapabilityId,
     )

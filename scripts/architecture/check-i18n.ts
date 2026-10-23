@@ -1,5 +1,6 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { runInNewContext } from 'node:vm'
 import { dirname, relative, resolve } from 'node:path'
 import { isDeepStrictEqual, TextDecoder } from 'node:util'
 
@@ -462,6 +463,60 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       `Kernel must uniquely connect ${name}.`,
     )
   const router = sources.get('apps/web/src/app/router/router-lifecycle.ts')
+  const registry = sources.get('apps/web/src/app/router/route-registry.ts')
+  const recordReader =
+    registry === undefined
+      ? undefined
+      : nodesOf(registry, ts.isFunctionDeclaration).find(
+          (node) => node.name?.text === 'getRouteRecord',
+        )
+  for (const record of routeRegistry) {
+    const declaration: { readonly messageScope?: string } = record
+    report(
+      scopes.some((scope) => scope === declaration.messageScope) &&
+        getRouteMessageScope(record.name) === declaration.messageScope,
+      `${record.sourcePath}: route message scope must project its typed declaration.`,
+    )
+  }
+  // Execute the existing public projection against changed declarations, without loading
+  // another Router or any browser runtime. Neither names nor breadcrumbs select a scope.
+  if (recordReader?.body === undefined || registry === undefined)
+    report(false, 'the registered route lookup is unavailable.')
+  else {
+    // Replace only the public lookup port; retain the whole module so private helpers,
+    // names and decomposition remain free to change.
+    const text = registry.getFullText()
+    const withDeclaration =
+      text.slice(0, recordReader.body.getStart(registry)) +
+      '{ return scopeRecordForProbe }' +
+      text.slice(recordReader.body.end)
+    const projection = ts.transpileModule(withDeclaration, {
+      compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS },
+    }).outputText
+    const context = {
+      exports: {},
+      require: createRequire(resolve(root, 'apps/web/src/app/router/route-registry.ts')),
+      scopeRecordForProbe: {},
+    }
+    const readScope: unknown = runInNewContext(
+      `${projection}\nexports.getRouteMessageScope`,
+      context,
+      { timeout: 1000 },
+    )
+    const projectScope =
+      typeof readScope === 'function' ? (readScope as (name: unknown) => unknown) : undefined
+    for (const scope of scopes) {
+      for (const record of routeRegistry) {
+        for (const breadcrumbKey of [null, 'unchanged-breadcrumb']) {
+          context.scopeRecordForProbe = { ...record, messageScope: scope, meta: { breadcrumbKey } }
+          report(
+            projectScope?.('renamed-route') === scope,
+            'route scope selection must follow declarations independently of page identity or breadcrumb.',
+          )
+        }
+      }
+    }
+  }
   const guards =
     router === undefined
       ? []

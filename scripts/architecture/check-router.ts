@@ -2345,6 +2345,135 @@ function guardStageProgressViolations(): string[] {
     : ['The active Router Guard progress authority accepted incomplete or out-of-order execution.']
 }
 
+type RouteContentDeclaration = Pick<
+  (typeof routeRegistry)[number],
+  'workspaceIdentityPolicyId' | 'meta'
+> & {
+  readonly name: string
+  readonly contentReadiness?: string
+  readonly scrollRestoration?: string
+}
+
+function routeContentDeclarationViolations(records: readonly RouteContentDeclaration[]): string[] {
+  return records.flatMap((record) => {
+    const region =
+      scrollOwnerRegistry.find((owner) => owner.id === record.meta.blockScrollOwnerId)
+        ?.ownerKind === 'region'
+    return !['route-dom', 'workspace-content'].includes(record.contentReadiness ?? '') ||
+      !['none', 'build-static', 'workspace-content'].includes(record.scrollRestoration ?? '') ||
+      (record.contentReadiness === 'workspace-content' &&
+        (record.workspaceIdentityPolicyId === null ||
+          record.meta.keepAlive !== 'route-instance')) ||
+      (record.scrollRestoration !== 'none' && !region) ||
+      (record.scrollRestoration === 'build-static' && record.contentReadiness !== 'route-dom') ||
+      (record.scrollRestoration === 'workspace-content' &&
+        record.contentReadiness !== 'workspace-content')
+      ? [`ROUTE_CONTENT_DECLARATION: ${record.name}`]
+      : []
+  })
+}
+
+function routeContentConsumerViolations(sourceText: string): string[] {
+  const source = ts.createSourceFile(
+    'router-lifecycle.ts',
+    sourceText,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  // Only the declared cross-file fields and route identities are normative here.
+  const reads = new Set([
+    ...nodesOf(source, ts.isPropertyAccessExpression).map((node) => node.name.text),
+    ...nodesOf(source, ts.isElementAccessExpression).flatMap((node) =>
+      ts.isStringLiteralLike(node.argumentExpression) ? [node.argumentExpression.text] : [],
+    ),
+    ...nodesOf(source, ts.isBindingElement).map(
+      (node) => node.propertyName?.getText(source) ?? node.name.getText(source),
+    ),
+  ])
+  const names = new Set<string>(routeRegistry.map((record) => record.name))
+  return [
+    ...(!reads.has('contentReadiness') ? ['ROUTE_CONTENT_READINESS_CONSUMER'] : []),
+    ...(!reads.has('scrollRestoration') ? ['ROUTE_SCROLL_ELIGIBILITY_CONSUMER'] : []),
+    ...(nodesOf(source, ts.isStringLiteralLike).some(
+      (node) =>
+        names.has(node.text) &&
+        (ts.isCaseClause(node.parent) || ts.isBinaryExpression(node.parent)),
+    )
+      ? ['ROUTE_CONTENT_PAGE_NAME_COUPLING']
+      : []),
+  ]
+}
+
+async function routeContentViolations(): Promise<string[]> {
+  const source = await readFile(resolve(routerDirectory, 'router-lifecycle.ts'), 'utf8')
+  const records: readonly RouteContentDeclaration[] = routeRegistry
+  const violations = [
+    ...routeContentDeclarationViolations(records),
+    ...routeContentConsumerViolations(source),
+  ]
+  for (const record of routeRegistry) {
+    const page = await readFile(resolve(rootDirectory, record.sourcePath), 'utf8')
+    const script = /<script[^>]*>([\s\S]*?)<\/script>/u.exec(page)?.[1] ?? ''
+    const parsed = ts.createSourceFile(record.sourcePath, script, ts.ScriptTarget.Latest, true)
+    const contentImports = new Set(
+      nodesOf(parsed, ts.isImportSpecifier)
+        .filter(
+          (node) => (node.propertyName?.text ?? node.name.text) === 'useWorkspaceContentRevision',
+        )
+        .map((node) => node.name.text),
+    )
+    const registersContent = nodesOf(parsed, ts.isCallExpression).some((call) =>
+      contentImports.has(callMemberName(call) ?? ''),
+    )
+    const declaration: RouteContentDeclaration = record
+    if (registersContent !== (declaration.contentReadiness === 'workspace-content'))
+      violations.push(`ROUTE_CONTENT_LIFETIME_DECLARATION: ${record.sourcePath}`)
+  }
+  const candidate = records.find((record) => record.scrollRestoration === 'build-static')
+  const mutable = records.find((record) => record.contentReadiness === 'workspace-content')
+  if (candidate === undefined || mutable === undefined) return violations
+  const declarations: readonly RouteContentDeclaration[] = [
+    { ...candidate, contentReadiness: 'unknown', name: 'renamed-content' },
+    { ...candidate, scrollRestoration: 'unknown', name: 'renamed-content' },
+    { ...candidate, contentReadiness: 'workspace-content', name: 'renamed-content' },
+    { ...mutable, workspaceIdentityPolicyId: null, name: 'renamed-content' },
+  ]
+  for (const record of declarations)
+    if (routeContentDeclarationViolations([record]).length !== 1)
+      violations.push('Route content declaration negative probe failed.')
+  const positives = [
+    { ...candidate, name: 'renamed-static-content' },
+    { ...mutable, name: 'renamed-mutable-content' },
+    { ...candidate, scrollRestoration: 'none' },
+  ]
+  if (routeContentDeclarationViolations(positives).length !== 0)
+    violations.push('Route content declaration must be independent of page names.')
+  for (const [field, expected] of [
+    ['contentReadiness', 'ROUTE_CONTENT_READINESS_CONSUMER'],
+    ['scrollRestoration', 'ROUTE_SCROLL_ELIGIBILITY_CONSUMER'],
+  ] as const) {
+    const mutated = source.replaceAll(field, `${field}ForProbe`)
+    if (
+      mutated === source ||
+      !isDeepStrictEqual(routeContentConsumerViolations(mutated), [expected])
+    )
+      violations.push(`${expected}: route content consumer negative probe failed.`)
+  }
+  const renamed = source.replaceAll(/\bworkspaceContents\b/gu, 'contentReadersForProbe')
+  if (routeContentConsumerViolations(renamed).length !== 0)
+    violations.push('Route content checks must accept private reader renaming.')
+  if (
+    !isDeepStrictEqual(
+      routeContentConsumerViolations(
+        `${source}\nfunction selectContentForProbe(name: string) { return name === '${candidate.name}' }`,
+      ),
+      ['ROUTE_CONTENT_PAGE_NAME_COUPLING'],
+    )
+  )
+    violations.push('Route content page-name coupling negative probe failed.')
+  return violations
+}
+
 function registryViolations(): string[] {
   const violations: string[] = []
   const coreErrors: readonly unknown[] = coreErrorRegistry
@@ -8571,6 +8700,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...(await workspaceRefreshViolations()),
     ...(await componentPresentationViolations()),
     ...(await scrollRestorationViolations()),
+    ...(await routeContentViolations()),
     ...(await validateRouteTransitionSourceGovernance()),
     ...routeIdViolations,
   ]

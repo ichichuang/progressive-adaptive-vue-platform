@@ -42,6 +42,9 @@ export interface RouteRegistryRecord {
   readonly name: string
   readonly pathPattern: string
   readonly sourcePath: string
+  readonly contentReadiness: 'route-dom' | 'workspace-content'
+  readonly scrollRestoration: 'none' | 'build-static' | 'workspace-content'
+  readonly messageScope: ConsoleMessageScope
   readonly meta: ValidatedRouteMeta
   readonly paramsSchemaId: RouteParamsSchemaId
   readonly querySchemaId: RouteQuerySchemaId
@@ -233,6 +236,9 @@ function defineRoute(record: RouteRegistryRecord) {
 export const routeRegistry = Object.freeze([
   defineRoute({
     name: 'console-overview',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/',
     sourcePath: 'apps/web/src/pages/index.vue',
     paramsSchemaId: 'route-params.none',
@@ -248,6 +254,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'appearance-management',
+    contentReadiness: 'workspace-content',
+    scrollRestoration: 'workspace-content',
+    messageScope: 'appearance',
     pathPattern: '/appearance',
     sourcePath: 'apps/web/src/pages/appearance.vue',
     paramsSchemaId: 'route-params.none',
@@ -263,6 +272,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'design-token-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/design-tokens',
     sourcePath: 'apps/web/src/pages/design-tokens.vue',
     paramsSchemaId: 'route-params.none',
@@ -278,6 +290,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'runtime-kernel-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/runtime-kernel',
     sourcePath: 'apps/web/src/pages/runtime-kernel.vue',
     paramsSchemaId: 'route-params.none',
@@ -293,6 +308,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'router-governance-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/router',
     sourcePath: 'apps/web/src/pages/router.vue',
     paramsSchemaId: 'route-params.none',
@@ -308,6 +326,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'storage-persistence-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/storage',
     sourcePath: 'apps/web/src/pages/storage.vue',
     paramsSchemaId: 'route-params.none',
@@ -323,6 +344,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'ui-system-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/ui-system',
     sourcePath: 'apps/web/src/pages/ui-system.vue',
     paramsSchemaId: 'route-params.none',
@@ -338,6 +362,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'responsive-layout-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/responsive-layout',
     sourcePath: 'apps/web/src/pages/responsive-layout.vue',
     paramsSchemaId: 'route-params.none',
@@ -353,6 +380,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'engineering-quality-inspector',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'console',
     pathPattern: '/engineering',
     sourcePath: 'apps/web/src/pages/engineering.vue',
     paramsSchemaId: 'route-params.none',
@@ -368,6 +398,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'capability-roadmap',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'capabilities',
     pathPattern: '/capabilities',
     sourcePath: 'apps/web/src/pages/capabilities.vue',
     paramsSchemaId: 'route-params.none',
@@ -383,6 +416,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'capability-roadmap-standalone',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'build-static',
+    messageScope: 'capabilities',
     pathPattern: '/capabilities/standalone',
     sourcePath: 'apps/web/src/pages/capabilities-standalone.vue',
     paramsSchemaId: 'route-params.none',
@@ -401,6 +437,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-invalid-route-input',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/error/400',
     sourcePath: 'apps/web/src/pages/error/400.vue',
     paramsSchemaId: 'route-params.none',
@@ -415,6 +454,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-authentication-required',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/error/401',
     sourcePath: 'apps/web/src/pages/error/401.vue',
     paramsSchemaId: 'route-params.none',
@@ -429,6 +471,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-permission-denied',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/error/403',
     sourcePath: 'apps/web/src/pages/error/403.vue',
     paramsSchemaId: 'route-params.none',
@@ -443,6 +488,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-route-not-found',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/:path(.*)',
     sourcePath: 'apps/web/src/pages/[...path].vue',
     paramsSchemaId: 'route-params.not-found-path',
@@ -457,6 +505,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-application-route-failure',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/error/500',
     sourcePath: 'apps/web/src/pages/error/500.vue',
     paramsSchemaId: 'route-params.none',
@@ -471,6 +522,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-network-unavailable',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/error/offline',
     sourcePath: 'apps/web/src/pages/error/offline.vue',
     paramsSchemaId: 'route-params.none',
@@ -485,6 +539,9 @@ export const routeRegistry = Object.freeze([
   }),
   defineRoute({
     name: 'error-service-unavailable',
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
     pathPattern: '/error/maintenance',
     sourcePath: 'apps/web/src/pages/error/maintenance.vue',
     paramsSchemaId: 'route-params.none',
@@ -908,9 +965,5 @@ export function getRoutePresentation(
 import type { LayoutProfileId } from '@platform/design-system'
 
 export function getRouteMessageScope(name: unknown): ConsoleMessageScope {
-  const record = getRouteRecord(name)
-  if (record.name === 'appearance-management') return 'appearance'
-  if (record.name === 'capability-roadmap' || record.name === 'capability-roadmap-standalone')
-    return 'capabilities'
-  return record.meta.breadcrumbKey === null ? 'common' : 'console'
+  return getRouteRecord(name).messageScope
 }

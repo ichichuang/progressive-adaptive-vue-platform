@@ -5918,7 +5918,7 @@ type CapabilityStatus =
 
 本表是 Status Authority。其他章节可以解释合同，不得创建另一份状态枚举。具有完整、当前可实施 Target Contract 的章节必须显式写出 `CAPABILITY_STATUS=TARGET_INACTIVE`；只有准入条件或候选方向、且缺少真实产品输入的能力必须写出 `CAPABILITY_STATUS=DEFERRED`。未出现 `ACTIVE` 证据的 Target 或 Deferred Capability 不得被 README、Page、Package Manifest 或 Generated Output 描述为现有能力。
 
-核心范围由 §1 定义，不是第五种 Capability Status。现有 route-single Workspace 与其从路由声明派生的会话恢复保持；多记录身份、Global Breadcrumb 和完整实例丢弃保护仍按 §18.11 区分。Router 当前仍对 Appearance 内容就绪、旧产品页面的滚动恢复有效性和语言资源范围作页面名判断；这是页面可替换性缺口，不宣称当前运行失败。本次不增加源码 Registry、Manifest Source 或 Generated Artifact，不改变任何 Capability 的状态或历史验收。
+核心范围由 §1 定义，不是第五种 Capability Status。现有 route-single Workspace 与其从路由声明派生的会话恢复保持；多记录身份、Global Breadcrumb 和完整实例丢弃保护仍按 §18.11 区分。内容就绪、滚动恢复资格和语言资源范围由 §9.11 的现有 Route Registry 声明合同闭合，核心不再按当前页面名称选择；这项有界修正不代表完整核心已交付，不增加源码 Registry、Manifest Source 或 Generated Artifact，不改变任何 Capability 的状态或历史验收。
 
 当前计数以 `PublicRoleRegistry`、`tokens.manifest.json`、`ui-public-component-registry.ts` 和包根出口核对：Public Roles/Mappings 为 `55/55`，其中 Color Roles 为 `26`；Token Records 为 `249`、Named Contrasts 为 `34`、Alpha 为 `1`、Density 为 `3`、Theme 为 `14`、First Paint 为 `1`，Manifest schemaVersion 为 `11`，八类方程为 `249 + 55 + 55 + 34 + 1 + 3 + 14 + 1 = 412`。Source Files 是 provenance metadata，56 个 Plane 和 1456 个逻辑 Bank Binding 不重复计入 Manifest Records。十个 PAVP SFC 公共导出与十条组件登记一致，其中 `8 ACTIVE + 2 TARGET_INACTIVE`；官方 Naive 组件、`useUiForm`、Types 和 Console Projection 不是额外 PAVP Composite。各历史 Landing/源码切片的旧数量和实测字节仍按当时范围保留，不冒充本次测量。
 
@@ -7841,6 +7841,28 @@ Blocking Prefetch 只调用 Feature 提供的 Typed Query Options，并传递 Ta
 ## 9.11 Scroll, Focus and Observability
 
 §9.4 应用入口原样返回本节既有结果，不改变 Operation/Presentation Settlement；纯 Href 解析不进入导航生命周期。Scroll Restoration 使用 §18.6 的 Exact Per-axis Owner。本节唯一拥有 History Entry Marker 与导航提交协议；§18.9 唯一拥有 Router 内存中的 Region Record、内容有效性与恢复条件，Offset 不写入原生 History State。Dialog/Sheet Background Lock 与 Route Restoration 不得竞争；缺失或重复的声明 DOM Owner 是呈现合同失败，不能伪装成 Cache Miss。
+
+### Declarative route content requirements
+
+Owner 在核对 `main@df71400bed7a94917e1bb3addd03c245db1afb33` 的实际仓库后，授权一次现有 Router、Scroll、I18n 边界内的页面名解耦修正。只修改本合同、`route-registry.ts`、`router-lifecycle.ts` 及既有 Router/I18n Owning Checks；不重建或删除页面，不添加消费者、通用注册框架、依赖、预算、Form/Table/HTTP 工作或生成产物。现有 Current Work/Next/Successor 和全部未执行的 Runtime/Owner/Git/Release 状态保持；补丁未暂存、未提交。本次实施与最终 `mise exec -- pnpm verify` 由本任务明确授权，不沿用历史任务的源码或 Git 许可。
+
+`RouteRegistryRecord` 是以下三个必需只读字段的唯一声明权威；它们不进入 `ValidatedRouteMeta`，不创建另一份名称映射或 Registry：
+
+```ts
+readonly contentReadiness: 'route-dom' | 'workspace-content'
+readonly scrollRestoration: 'none' | 'build-static' | 'workspace-content'
+readonly messageScope: ConsoleMessageScope
+```
+
+`route-dom` 沿用 Mount、Vue DOM Commit 和确切 Retention Presentation ACK。`workspace-content` 在该边界之上要求现有 `WorkspaceContentState.ready`，且只允许声明现有 Workspace Identity Policy、`keepAlive='route-instance'` 的页面使用；内容读取器缺失或未就绪不得退回静态内容假设。局部刷新在既有可取消 Watch 内等待其就绪，仍核对确切实例、Operation 与 Failure；恢复资格仅在既有呈现边界采样，不新增导航等待、轮询或延迟回放。页面继续经 `useWorkspaceContentRevision` 声明真实变化，不另建 Lifecycle Interface。
+
+`none` 不采集或复用 Router Region/Workspace/Reload Snapshot，原生 Document Policy 仍有效。`build-static` 只适用于已确认由构建决定内容、使用 Region Owner 且声明 `route-dom` 的页面，保留 Build/Release、Locale、Appearance、Layout、地址与 Owner 的全部现有比较。`workspace-content` 必须同时声明同名 Readiness，要求当前确切实例的内容读取器；History Region 仍不接受它，活 Workspace 使用实际 Revision，普通 Reload 按 §18.12 的独立坐标尝试语义不比较跨文档 Revision。未有可信 Revision 的动态内容须声明 `none`；声明本身不制造内容版本。资格与 Readiness 不从 RouteName、Path、SourcePath、Title 或 Breadcrumb 推导。
+
+当前九个只读 Workspace 页面及独立 Capabilities Region 声明 `route-dom / build-static`；Appearance 声明 `workspace-content / workspace-content`；七个 Error Route 声明 `route-dom / none`。这些是现有消费者的显式声明，不是核心分支或固定名单。Typed Route Identity、地址校验、Workspace Lifetime/Failure/Fallback、唯一 Scroll Writer、刷新快照格式及 Pop → Workspace → Reload → 同实例地址策略 → Fragment/Logical Start 优先级保持。
+
+`messageScope` 引用 §23.6 现有四个 Typed Scope；Common 继续隐式必备，Router 的 `getRouteMessageScope` 只投影声明，初始 I18n 与导航 `prepareScope` 继续消费它。当前 Appearance 选择 `appearance`、两条 Capabilities 选择 `capabilities`、其他产品页选择 `console`、Error Route 选择 `common`；语言 Owner 不导入 Router，不从 Breadcrumb 是否存在推断语言资源。Locale Pending、资源失败、取消和提交时序保持。
+
+既有 Owning Checks 保护声明值及组合、真实内容读取器与声明的对应、恢复与刷新消费者对声明的依赖、Message Scope 到真实资源引用的闭合，并拒绝这些核心选择中的页面名分支。反例只在内存中变更合同；允许私有名称、循环、容器、Helper 和等价语法变化，不建立分析框架或测试文件。最终完整静态 Gate 必须成功；源码/静态证据不外推新的 Runtime、Visual、Accessibility、Owner 或 Release Acceptance。
 
 Shell Modal 阻塞时的目标交接由 §18.14.4–§18.14.5 冻结：包括 Browser Pop 在内的真实导航必须在阻塞链关闭、背景 inert/模态临时锁释放及 Shell DOM Commit 后完成本节呈现，不能因为 `[inert]` 而跳过必要 Focus/Scroll/Presented Owner 后仍报告成功。该协调尚未实现；本节已有地址、History、初次/同页 Focus Policy 和 §1.2B.0N 的视觉范围保持，Browser History 的交互协调不准入其页面动画。
 
