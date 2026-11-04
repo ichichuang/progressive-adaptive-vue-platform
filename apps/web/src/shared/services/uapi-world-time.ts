@@ -12,7 +12,11 @@ const worldTimeSchema = z.object({
   timezone: z.string().min(1),
   weekday: z.string().min(1),
 })
-const errorSchema = z.object({ code: z.string().regex(/^[A-Z][A-Z0-9_]{0,63}$/u) })
+const errorCodeSchema = z.string().regex(/^[A-Z][A-Z0-9_]{0,63}$/u)
+const errorSchema = z.union([
+  z.object({ code: errorCodeSchema }),
+  z.object({ error: errorCodeSchema }),
+])
 const citySchema = z
   .string()
   .min(1)

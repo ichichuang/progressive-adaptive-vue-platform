@@ -13371,6 +13371,8 @@ Owner 最新明确要求继续“所有实例页面需要完全删除重做、�
 
 Owner 后续已选择 Library 设计参考 libfile_6b017c33f81c8191a0442330c86fdcde 的第 2 个设置方案，并授权以其布局和视觉语言继续当前重建：分区说明与控件双栏、宽松的模式预览、独立主题圆点、少量分区线；正式控件优先消费现有 Naive UI NSwitch / NButton 及现有 UiRadioCardGroup 的官方 Radio 组合（Select 和圆角数字输入的最新退休要求以下文为准），模式卡直接复用已有 UiRadioCardGroup 的 option Slot 和官方 Radio 语义，不照搬图片中的无功能装饰或新增能力。保留全部既有设置、下方 Workspace 分区、左下入口、即时保存与失败反馈、预留空间内的右侧居中 Anchor 和 Done 返回语义；窄屏改为同页顶部导航，不与 Header/反馈重叠。所有五主题及 Light/Dark/Contrast 由既有语义 Source 投影，不使用图片颜色作为第二视觉权威。参考文件已按当前 Library 流程在执行器验证可读并视觉检查；SHA256 为 874ed654122a983e97f206ac6427ff1faea3798b74e0906bc5d1c96393a8ecf8。Dashboard 与图册同步去除无意义的盒线、修正排版和可读宽度；动态主题和 token 标本仍为真实交互而非静态图片。此段替代本节早期原生控件候选的呈现选择及其只为 native input 增加的格式例外。
 
+Owner 最新要求重新设计设置页的主题色选择，并去除可见主题名称。本次以既有 NButton 和各主题已验证 Preview 投影呈现紧凑的无名称色卡，当前选择以对勾区分，并在支持时配合选中底色；辅助技术名称继续使用现有主题 Label，不新增主题名称、色值或配置权威。色卡按可用空间自动换行，沿用既有 Token、Naive 交互和全局动效策略；五个内置主题、合法 Custom、即时应用与持久化边界不变。此决定替代本节此前的主题圆点、可见名称及其换行对齐要求；无名称布局不再需要主题选项 Content 的 Profile 专用排列规则。
+
 ### `PAVP_DEVELOPER_WORKBENCH_RECONSTRUCTION` scoped admission record
 
 ```text

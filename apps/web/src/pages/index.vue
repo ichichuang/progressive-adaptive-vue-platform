@@ -26,6 +26,7 @@ const client = createApiClient({
 const appearance = useAppearanceReadBoundary()
 const navigation = useApplicationNavigation()
 const activate = useApplicationLinkActivation()
+const worldTimeZone = 'Asia/Shanghai'
 const state = ref<
   'unconfigured' | 'idle' | 'loading' | 'success' | 'accepted' | 'cancelled' | 'error'
 >(api.configured ? 'idle' : 'unconfigured')
@@ -46,7 +47,7 @@ async function load(): Promise<void> {
   state.value = 'loading'
   detail.value = ''
   try {
-    const result = await readUapiWorldTime(client, '北京', attempt.signal)
+    const result = await readUapiWorldTime(client, worldTimeZone, attempt.signal)
     if (request !== attempt) return
     request = null
     if (result.status === 'failure') {
@@ -184,7 +185,7 @@ const settings = registeredRouteDestination({ name: 'control-center' })
             :label="t(apiCopy[state].label)"
           />
         </div>
-        <code class="text-text-secondary"> GET /v1/misc/worldtime?city=北京 </code>
+        <code class="text-text-secondary"> GET /v1/misc/worldtime?city={{ worldTimeZone }} </code>
         <p
           class="wb-feedback m-0 flex flex-wrap items-center gap-content-gap text-text-secondary"
           role="status"

@@ -126,7 +126,7 @@ const colorModes = [
 ] as const
 const themeChoiceLayout = computed(() => ({
   heightMedium: 'auto',
-  paddingMedium: '0',
+  paddingMedium: 'var(--ui-space-content-gap)',
   ...(effective.snapshot.value.colorPalette === null
     ? {
         color: 'var(--ui-color-surface-panel)',
@@ -501,7 +501,13 @@ onScopeDispose(() => {
               <NButton
                 v-for="theme in themePreviews"
                 :key="`${theme.registryKind}:${theme.themeId}`"
-                :quaternary="effective.snapshot.value.colorPalette !== null"
+                :quaternary="
+                  effective.snapshot.value.colorPalette !== null && !selectedTheme(theme.reference)
+                "
+                :tertiary="
+                  effective.snapshot.value.colorPalette !== null && selectedTheme(theme.reference)
+                "
+                :type="selectedTheme(theme.reference) ? 'primary' : 'default'"
                 :bordered="false"
                 :theme-overrides="themeChoiceLayout"
                 class="wb-theme-option"
@@ -512,13 +518,13 @@ onScopeDispose(() => {
                 @click="chooseTheme(theme.reference)"
               >
                 <span
-                  class="wb-theme-swatch grid place-items-center min-h-target-enhanced min-w-target-enhanced"
+                  class="wb-theme-swatch grid w-full place-items-center min-h-target-enhanced min-w-target-enhanced"
                   aria-hidden="true"
                 >
-                  {{ selectedTheme(theme.reference) ? '✓' : '' }}
-                </span>
-                <span class="wb-theme-name text-inherit block">
-                  {{ theme.label }}
+                  <span
+                    v-if="selectedTheme(theme.reference)"
+                    class="i-lucide-check text-title"
+                  />
                 </span>
               </NButton>
             </div>

@@ -199,7 +199,18 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .wb-theme-options {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(
+        min(
+          100%,
+          calc(
+            var(--ui-layout-target-enhanced-minimum-inline-size) + 2 * var(--ui-space-content-gap)
+          )
+        ),
+        1fr
+      )
+    );
   }
   .wb-theme-option.n-button {
     block-size: auto;
@@ -213,28 +224,15 @@
     gap: var(--ui-space-content-gap);
     inline-size: 100%;
   }
-  .wb-theme-name {
-    white-space: normal;
-    overflow-wrap: normal;
-    word-break: normal;
-  }
   .wb-theme-swatch {
     flex-shrink: 0;
-    border-radius: 50%;
+    border-radius: var(--ui-radius-control);
     background: var(--pavp-settings-theme-color);
     color: var(--pavp-settings-theme-on-color);
   }
   [data-layout-profile='regular'] .wb-settings-field,
   [data-layout-profile='wide'] .wb-settings-field {
     grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-  }
-  [data-layout-profile='regular'] .wb-theme-options,
-  [data-layout-profile='wide'] .wb-theme-options {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-  }
-  [data-layout-profile='regular'] .wb-theme-option .n-button__content,
-  [data-layout-profile='wide'] .wb-theme-option .n-button__content {
-    flex-direction: column;
   }
   [data-layout-profile='regular'] .wb-settings,
   [data-layout-profile='wide'] .wb-settings {

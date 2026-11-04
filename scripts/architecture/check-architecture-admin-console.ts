@@ -6997,7 +6997,6 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     '.wb-settings-dock.n-button',
     ".wb-settings-dock.n-button[data-collapsed='true']",
     "[data-layout-profile='regular'] .wb-section-link.n-button, [data-layout-profile='wide'] .wb-section-link.n-button",
-    "[data-layout-profile='regular'] .wb-theme-option .n-button__content, [data-layout-profile='wide'] .wb-theme-option .n-button__content",
   ])
   const ordinaryPageSource = snapshot.pageVisualSource.replace(
     /<style data-pavp-owner="workbench">([\s\S]*?)<\/style>/gu,

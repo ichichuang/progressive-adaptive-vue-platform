@@ -2411,7 +2411,13 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 0,
     context: ['@layer components'],
     selector: '.wb-theme-options',
-    declarations: [['grid-template-columns', 'minmax(0, 1fr)', false]],
+    declarations: [
+      [
+        'grid-template-columns',
+        'repeat( auto-fit, minmax( min(100%, calc(var(--ui-layout-target-enhanced-minimum-inline-size) + 2 * var(--ui-space-content-gap))), 1fr ) )',
+        false,
+      ],
+    ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {
@@ -2444,22 +2450,10 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
-    selector: '.wb-theme-name',
-    declarations: [
-      ['white-space', 'normal', false],
-      ['overflow-wrap', 'normal', false],
-      ['word-break', 'normal', false],
-    ],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
     selector: '.wb-theme-swatch',
     declarations: [
       ['flex-shrink', '0', false],
-      ['border-radius', '50%', false],
+      ['border-radius', 'var(--ui-radius-control)', false],
       ['background', 'var(--pavp-settings-theme-color)', false],
       ['color', 'var(--pavp-settings-theme-on-color)', false],
     ],
@@ -2473,24 +2467,6 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       "[data-layout-profile='regular'] .wb-settings-field,\n  [data-layout-profile='wide'] .wb-settings-field",
     declarations: [['grid-template-columns', 'minmax(0, 1fr) minmax(0, 2fr)', false]],
     responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector:
-      "[data-layout-profile='regular'] .wb-theme-options,\n  [data-layout-profile='wide'] .wb-theme-options",
-    declarations: [['grid-template-columns', 'repeat(5, minmax(0, 1fr))', false]],
-    responsibility: 'RUNTIME_STYLE_OWNER',
-  },
-  {
-    path: 'apps/web/src/app/workbench/workbench.css',
-    block: 0,
-    context: ['@layer components'],
-    selector:
-      "[data-layout-profile='regular'] .wb-theme-option .n-button__content,\n  [data-layout-profile='wide'] .wb-theme-option .n-button__content",
-    declarations: [['flex-direction', 'column', false]],
-    responsibility: 'VENDOR_ADAPTER_OWNER',
   },
   {
     path: 'apps/web/src/app/workbench/workbench.css',
