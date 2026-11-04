@@ -6,6 +6,7 @@ import {
   completeThemeRoleContractVersion,
   completeThemeSchemaVersion,
 } from '../../schema/complete-theme.schema'
+import { themeColorPalettesSchema } from '../../schema/theme-color-palette.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import { isActivePublicColorRole, validatePublicRoleRegistry } from '../public-role-registry'
@@ -47,19 +48,19 @@ const forbiddenManifestSizeGovernanceFields = new Set<string>([
 ])
 
 const manifestGovernanceContract = {
-  schemaVersion: 11,
+  schemaVersion: 12,
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 231,
+    expectedCountDelta: 257,
     expectedCounts: {
-      tokens: 249,
-      activePublicRoles: 55,
-      unoCssMappings: 55,
+      tokens: 274,
+      activePublicRoles: 60,
+      unoCssMappings: 60,
       namedContrasts: 34,
       alphaContracts: 1,
       densities: 3,
-      themes: 14,
+      themes: 5,
       firstPaint: 1,
     },
   },
@@ -81,13 +82,13 @@ const themeRecordKeys = [
   'schemaVersion',
   'roleContractVersion',
   'planes',
+  'uiPalette',
   'bank',
 ] as const
 const firstPaintCapabilities = {
   preferenceStorageKeyAttribute: true,
   preferenceStorageRead: true,
   explicitThemePreferenceValidation: true,
-  legacyPreferenceMigration: true,
   builtInThemeResolution: true,
   atomicAppearanceApplication: true,
   synchronousCustomThemeResolution: true,
@@ -204,6 +205,7 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
       throw new Error(`${description}: active Built-in Theme identity/metadata is malformed.`)
     }
 
+    themeColorPalettesSchema.parse(theme['uiPalette'])
     const planes = requireRecord(theme['planes'], `${description}.planes`)
     const bank = requireRecord(theme['bank'], `${description}.bank`)
 
@@ -245,9 +247,9 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
       planes,
     })
     const logicalRecords = deriveThemeBankRecords(definition.planes, activePublicRoles)
-    if (logicalRecords.length !== 104) {
+    if (logicalRecords.length !== 120) {
       throw new Error(
-        `${description}: the compact Theme must derive exactly 104 logical Bank records.`,
+        `${description}: the compact Theme must derive exactly 120 logical Bank records.`,
       )
     }
   }
@@ -390,6 +392,7 @@ export function manifestDocument(result: TokenBuildResult): ManifestDocument {
     schemaVersion: entry.definition.schemaVersion,
     roleContractVersion: entry.definition.roleContractVersion,
     planes: entry.definition.planes,
+    uiPalette: entry.uiPalette,
     bank: {
       visibility: entry.bank.visibility,
       derivation: 'theme-planes-and-active-public-roles',

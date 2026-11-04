@@ -7,6 +7,9 @@ import {
   type UiScrollController,
   type UiShellComposition,
 } from '@platform/ui'
+import { NButton } from 'naive-ui/es/button'
+import { NIcon } from 'naive-ui/es/icon'
+import { NTooltip } from 'naive-ui/es/tooltip'
 import { computed, inject, onScopeDispose, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -33,10 +36,11 @@ import {
   type TypedNavigationResult,
 } from '../router/route-input'
 import { consoleNavigationRegistry, getRouteRecord } from '../router/route-registry'
+import { provideSettingsReturn } from '../router/settings-return'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
 
-defineProps<{
+const props = defineProps<{
   readonly activeRouteName: string
   readonly composition: UiShellComposition | null
 }>()
@@ -83,12 +87,13 @@ const copy = computed(() => ({
   closeActionLabel: t('shell.closeActionLabel'),
   expandNavigationLabel: t('shell.expandNavigationLabel'),
   collapseNavigationLabel: t('shell.collapseNavigationLabel'),
-  expandAllMenusLabel: t('shell.expandAllMenusLabel'),
-  collapseAllMenusLabel: t('shell.collapseAllMenusLabel'),
+  freeNavigationModeLabel: t('shell.freeNavigationModeLabel'),
+  accordionNavigationModeLabel: t('shell.accordionNavigationModeLabel'),
 }))
 const router = useRouter()
 const applicationNavigation = useApplicationNavigation()
 const workspaceNavigation = useWorkspaceNavigation()
+provideSettingsReturn()
 const registerScrollController = inject(routerScrollControllerKey)
 const prepareWorkspaceRefresh = inject(routerWorkspaceRefreshKey)
 const retentionCommands = inject(workspaceRetentionKey)
@@ -100,6 +105,15 @@ if (prepareWorkspaceRefresh === undefined)
 if (registerScrollController === undefined)
   throw new Error('The Console requires the Router Scroll Controller port.')
 let unregisterScrollController: (() => void) | undefined
+watch(
+  () => props.activeRouteName,
+  (name) => {
+    if (name !== 'control-center') return
+    unregisterScrollController?.()
+    unregisterScrollController = undefined
+  },
+  { flush: 'sync' },
+)
 function connectContentScrollController(controller: UiScrollController | null): void {
   if (controller === null) {
     unregisterScrollController?.()
@@ -119,7 +133,9 @@ const workspaceTabs = computed(() =>
       id: entry.identity,
       label,
       closeLabel: `${t('shell.closeActionLabel')} ${label}`,
-      closable: !(workspace.entries.length === 1 && entry.destination.name === 'console-overview'),
+      closable: !(
+        workspace.entries.length === 1 && entry.destination.name === 'workbench-dashboard'
+      ),
       refreshable: workspace.canDiscard(entry),
     }
   }),
@@ -196,12 +212,12 @@ async function closeWorkspace(id: string): Promise<void> {
     await retention.close(entry)
     return
   }
-  if (entries.length === 1 && entry.destination.name === 'console-overview') return
+  if (entries.length === 1 && entry.destination.name === 'workbench-dashboard') return
   if (!isLiveWorkspace(entry)) return
   if (!workspace.canDiscard(entry)) return
   const fallback = entries[index + 1] ?? entries[index - 1]
   const destination =
-    fallback?.destination ?? registeredRouteDestination({ name: 'console-overview' })
+    fallback?.destination ?? registeredRouteDestination({ name: 'workbench-dashboard' })
   closing.add(entry.identity)
   try {
     const result = await workspaceNavigation.navigate(
@@ -256,7 +272,9 @@ const effectiveExpandedGroupIds = computed(() =>
   reconcileNavigationGroupIds(
     activeGroupExplicitlyCollapsed.value || activeGroupId.value === undefined
       ? preferredExpandedGroupIds.value
-      : [...preferredExpandedGroupIds.value, activeGroupId.value],
+      : navigationPreference.accordion
+        ? [activeGroupId.value]
+        : [...preferredExpandedGroupIds.value, activeGroupId.value],
     currentGroupIds.value,
   ),
 )
@@ -269,19 +287,31 @@ watch(
   { flush: 'sync' },
 )
 
+watch(
+  () => navigationPreference.accordion,
+  () => {
+    activeGroupExplicitlyCollapsed.value = false
+  },
+  { flush: 'sync' },
+)
+
 function updateExpandedNavigationGroups(update: UiAdminNavigationExpansionUpdate): void {
   const requested = reconcileNavigationGroupIds(update.expandedGroupIds, currentGroupIds.value)
+  if (update.intent === 'mode') {
+    activeGroupExplicitlyCollapsed.value = false
+    navigationPreference.setNavigationAccordion(update.accordion, requested)
+    return
+  }
   const previousEffective = new Set(effectiveExpandedGroupIds.value)
   const nextEffective = new Set(requested)
   const preferred = new Set(preferredExpandedGroupIds.value)
-  const nextPreferred =
-    update.intent === 'all'
-      ? requested
-      : currentGroupIds.value.filter((id) =>
-          previousEffective.has(id) !== nextEffective.has(id)
-            ? nextEffective.has(id)
-            : preferred.has(id),
-        )
+  const nextPreferred = navigationPreference.accordion
+    ? requested
+    : currentGroupIds.value.filter((id) =>
+        previousEffective.has(id) !== nextEffective.has(id)
+          ? nextEffective.has(id)
+          : preferred.has(id),
+      )
   activeGroupExplicitlyCollapsed.value =
     activeGroupId.value !== undefined && !nextEffective.has(activeGroupId.value)
   navigationPreference.setExpandedGroupIds(nextPreferred)
@@ -295,6 +325,11 @@ onScopeDispose(() => {
 })
 
 async function navigate(routeName: string): Promise<void> {
+  if (routeName === 'control-center') {
+    if (props.activeRouteName !== 'control-center')
+      await applicationNavigation.navigate(registeredRouteDestination({ name: 'control-center' }))
+    return
+  }
   const item = projectedNavigation.value
     .flatMap((group) => group.items)
     .find((candidate) => candidate.routeName === routeName)
@@ -306,9 +341,11 @@ async function navigate(routeName: string): Promise<void> {
 <template>
   <UiAdminShell
     :composition="composition"
+    :content-layout="activeRouteName === 'control-center' ? 'contained' : 'scroll'"
     :active-route-name="activeRouteName"
     :navigation="navigation"
     :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
+    :navigation-accordion="navigationPreference.accordion"
     :expanded-navigation-group-ids="effectiveExpandedGroupIds"
     :copy="copy"
     @navigate="navigate"
@@ -318,6 +355,7 @@ async function navigate(routeName: string): Promise<void> {
   >
     <template #workspace>
       <UiWorkspaceTabs
+        v-if="activeRouteName !== 'control-center'"
         :items="workspaceTabs"
         :active-id="workspace.activeIdentity"
         :motion="appearance.snapshot.value.motion"
@@ -331,6 +369,49 @@ async function navigate(routeName: string): Promise<void> {
         @close="closeWorkspace"
         @refresh="refreshWorkspace"
       />
+    </template>
+    <template #navigation-bottom="{ collapsed, navigate: navigateFromDock }">
+      <div
+        class="flex w-full justify-center"
+        :class="{ 'px-page-inline': !collapsed }"
+      >
+        <NTooltip
+          :disabled="!collapsed"
+          placement="right"
+          to="#pavp-overlay-root"
+        >
+          <template #trigger>
+            <NButton
+              :aria-current="activeRouteName === 'control-center' ? 'page' : undefined"
+              :aria-label="t('shell.systemSettings')"
+              :block="!collapsed"
+              :square="collapsed"
+              class="wb-settings-dock min-h-target-enhanced min-w-target-enhanced"
+              :data-collapsed="collapsed"
+              :quaternary="activeRouteName !== 'control-center'"
+              :tertiary="activeRouteName === 'control-center'"
+              :bordered="false"
+              @click="navigateFromDock('control-center')"
+            >
+              <span class="flex min-w-0 items-center gap-content-gap">
+                <NIcon>
+                  <span
+                    aria-hidden="true"
+                    class="i-lucide-settings block"
+                  />
+                </NIcon>
+                <span
+                  v-if="!collapsed"
+                  class="font-title-weight"
+                >
+                  {{ t('shell.systemSettings') }}
+                </span>
+              </span>
+            </NButton>
+          </template>
+          {{ t('shell.systemSettings') }}
+        </NTooltip>
+      </div>
     </template>
     <template #footer>
       <slot name="footer" />

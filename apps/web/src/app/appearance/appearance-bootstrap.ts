@@ -1,3 +1,5 @@
+import { applicationConfig } from '../config/app.config'
+import { subscribeSharedPreferenceChanges } from '../storage/shared-preference-events'
 import {
   projectUiAppearance,
   resolveThemeReference,
@@ -32,6 +34,7 @@ interface AppearanceEnvironment {
   readonly backdropFilterSupported: boolean
   readonly forcedColorsActive: boolean
   readonly prefersDark: boolean
+  readonly prefersReducedMotion: boolean
   readonly reducedTransparencyRequested: boolean
 }
 
@@ -39,6 +42,7 @@ interface AppearanceMediaQueries {
   readonly darkMode: MediaQueryList
   readonly forcedColors: MediaQueryList
   readonly reducedTransparency: MediaQueryList
+  readonly reducedMotion: MediaQueryList
 }
 
 type AppearanceStore = ReturnType<typeof useAppearanceStore>
@@ -193,6 +197,7 @@ function createAppearanceMediaQueries(): AppearanceMediaQueries {
     darkMode: matchMedia('(prefers-color-scheme: dark)'),
     forcedColors: matchMedia('(forced-colors: active)'),
     reducedTransparency: matchMedia('(prefers-reduced-transparency: reduce)'),
+    reducedMotion: matchMedia('(prefers-reduced-motion: reduce)'),
   }
 }
 
@@ -205,12 +210,18 @@ function appearanceEnvironment(mediaQueries: AppearanceMediaQueries): Appearance
       CSS.supports('-webkit-backdrop-filter', 'blur(0)'),
     forcedColorsActive: mediaQueries.forcedColors.matches,
     prefersDark: mediaQueries.darkMode.matches,
+    prefersReducedMotion: mediaQueries.reducedMotion.matches,
     reducedTransparencyRequested: mediaQueries.reducedTransparency.matches,
   }
 }
 
 function orderedMediaQueries(mediaQueries: AppearanceMediaQueries): readonly MediaQueryList[] {
-  return [mediaQueries.darkMode, mediaQueries.forcedColors, mediaQueries.reducedTransparency]
+  return [
+    mediaQueries.darkMode,
+    mediaQueries.forcedColors,
+    mediaQueries.reducedTransparency,
+    mediaQueries.reducedMotion,
+  ]
 }
 
 export function installAppearanceProvider(
@@ -304,6 +315,22 @@ export function installAppearanceProvider(
   const reapply = (): void => {
     commitBoundaryMutation(() => store.reapplyAppearance(currentEnvironment()))
   }
+  let unsubscribePreferences: () => void
+  try {
+    unsubscribePreferences = subscribeSharedPreferenceChanges(
+      [
+        applicationConfig.appearance.preferenceStorageKey,
+        applicationConfig.appearance.customThemeRegistryStorageKey,
+      ],
+      () => {
+        commitBoundaryMutation(() => store.synchronizeAppearance(currentEnvironment()))
+      },
+    )
+  } catch (source: unknown) {
+    unsubscribeStore()
+    appearanceReadBoundaryWriter.dispose()
+    throw source
+  }
   let disposed = false
 
   return {
@@ -322,6 +349,7 @@ export function installAppearanceProvider(
         handoffHandle.restoreSafetyForFailedStartup()
       }
 
+      unsubscribePreferences()
       unsubscribeStore()
       appearanceReadBoundaryWriter.dispose()
       disposed = true

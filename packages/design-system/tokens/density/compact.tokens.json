@@ -11,6 +11,12 @@
           "$value": "{dimension.space.2}"
         }
       },
+      "button": {
+        "padding-inline": {
+          "$type": "dimension",
+          "$value": "{dimension.space.button-inline-compact}"
+        }
+      },
       "section": {
         "gap": {
           "$type": "dimension",

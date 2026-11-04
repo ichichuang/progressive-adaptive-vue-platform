@@ -1,5 +1,7 @@
+import { subscribeSharedPreferenceChanges } from './shared-preference-events'
 import {
   navigationPreferenceSchema,
+  parseNavigationPreference,
   type NavigationPreference,
   type NavigationPreferencePort,
   type NavigationPreferenceReadResult,
@@ -31,6 +33,11 @@ export function createNavigationPreferenceStorage(
     }
   }
   return {
+    subscribe(invalidate) {
+      return subscribeSharedPreferenceChanges([key], () => {
+        if (!isDisposed()) invalidate()
+      })
+    },
     read(): NavigationPreferenceReadResult {
       if (isDisposed()) return { status: 'unusable', reason: 'unavailable' }
       const storage = access()
@@ -50,13 +57,14 @@ export function createNavigationPreferenceStorage(
         failure('storage-parse-failed', source)
         return { status: 'unusable', reason: 'invalid' }
       }
-      const parsed = navigationPreferenceSchema.safeParse(value)
+      const parsed = parseNavigationPreference(value)
       if (!parsed.success) {
         const unsupportedVersion =
           typeof value === 'object' &&
           value !== null &&
           'schemaVersion' in value &&
-          value.schemaVersion !== 1
+          value.schemaVersion !== 1 &&
+          value.schemaVersion !== 2
         failure(
           unsupportedVersion ? 'storage-unsupported-version' : 'storage-schema-rejected',
           parsed.error,
@@ -105,6 +113,7 @@ export function createNavigationPreferenceStorage(
         if (
           confirmed.success &&
           confirmed.data.wideNavigationCollapsed === parsed.data.wideNavigationCollapsed &&
+          confirmed.data.accordion === parsed.data.accordion &&
           confirmed.data.expandedGroupIds.length === parsed.data.expandedGroupIds.length &&
           confirmed.data.expandedGroupIds.every(
             (id, index) => id === parsed.data.expandedGroupIds[index],

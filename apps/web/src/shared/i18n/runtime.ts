@@ -21,6 +21,10 @@ import {
 
 type Messages = ConsoleScopeMessages[ConsoleMessageScope]
 type LoadResource = (locale: ConsoleLocale, scope: ConsoleMessageScope) => Promise<Messages>
+type LocaleSynchronizationResult =
+  | Exclude<ConsoleLocaleSwitchResult, { readonly status: 'applied' }>
+  | { readonly status: 'applied'; readonly locale: ConsoleLocale }
+
 interface SwitchRequest {
   readonly identity: symbol
   readonly target: ConsoleLocale
@@ -56,6 +60,7 @@ export function createConsoleI18nRuntime(
   let disposed = false
   const isDisposed = (): boolean => disposed
   let ownsDocument = false
+  const hasDocumentPresentation = (): boolean => ownsDocument
   let cancelReady: (() => void) | undefined
   const cancelled = new Promise<{ readonly status: 'cancelled' }>((resolve) => {
     cancelReady = () => {
@@ -63,12 +68,14 @@ export function createConsoleI18nRuntime(
     }
   })
 
+  const parameterKinds: Readonly<Record<string, Readonly<Record<string, 'string' | 'number'>>>> =
+    messageParameterKinds
   const t: ConsoleTranslate = (key, ...args) => {
     // Reading the Composer ref also tracks callers when the safe fallback is used.
     const locale = composer.locale.value
     try {
-      const params = args[0]
-      const expected = Object.entries(messageParameterKinds).find(([name]) => name === key)?.[1]
+      const params = (args as readonly Readonly<Record<string, string | number>>[])[0]
+      const expected = Object.entries(parameterKinds).find(([name]) => name === key)?.[1]
       if (
         expected !== undefined &&
         (params === undefined ||
@@ -157,7 +164,51 @@ export function createConsoleI18nRuntime(
     return !isDisposed() && request.value?.identity === operation.identity
   }
 
-  function switchLocale(candidate: unknown): Promise<ConsoleLocaleSwitchResult> {
+  function storedLocale(): ConsoleLocale | undefined {
+    const latest = input.preference.read()
+    return latest.status === 'found'
+      ? latest.locale
+      : latest.status === 'missing'
+        ? defaultConsoleLocale
+        : undefined
+  }
+
+  let preferencesReady = false
+  let preferenceCompletion: Promise<
+    | {
+        readonly selection: ConsoleLocale
+        readonly result: LocaleSynchronizationResult
+      }
+    | undefined
+  > = Promise.resolve(undefined)
+  const synchronizePreference = (): void => {
+    if (!preferencesReady || isDisposed()) return
+    const latest = storedLocale()
+    if (latest === undefined) {
+      request.value?.cancel('superseded')
+      request.value = null
+      notice.value = 'preference-unavailable'
+      preferenceCompletion = Promise.resolve(undefined)
+      return
+    }
+    preferenceCompletion = switchLocale(latest, false).then((result) => ({
+      selection: latest,
+      result,
+    }))
+  }
+
+  function switchLocale(
+    candidate: unknown,
+    persistPreference?: true,
+  ): Promise<ConsoleLocaleSwitchResult>
+  function switchLocale(
+    candidate: unknown,
+    persistPreference: false,
+  ): Promise<LocaleSynchronizationResult>
+  function switchLocale(
+    candidate: unknown,
+    persistPreference = true,
+  ): Promise<ConsoleLocaleSwitchResult | LocaleSynchronizationResult> {
     const parsed = consoleLocaleSchema.safeParse(candidate)
     if (isDisposed())
       return Promise.resolve({
@@ -180,6 +231,7 @@ export function createConsoleI18nRuntime(
         request.value = null
         notice.value = 'none'
       }
+      if (!persistPreference) notice.value = 'none'
       return Promise.resolve({ status: 'unchanged', locale: target })
     }
     request.value?.cancel('superseded')
@@ -196,9 +248,11 @@ export function createConsoleI18nRuntime(
       cancel: cancelOperation,
     }
     request.value = operation
-    notice.value = 'loading'
+    notice.value = persistPreference ? 'loading' : 'none'
 
-    const completion = (async (): Promise<ConsoleLocaleSwitchResult> => {
+    const completion = (async (): Promise<
+      ConsoleLocaleSwitchResult | LocaleSynchronizationResult
+    > => {
       let committing = false
       try {
         let batch: ConsoleMessageScope[]
@@ -218,18 +272,28 @@ export function createConsoleI18nRuntime(
             locale: target,
             reason: isDisposed() ? 'disposed' : 'superseded',
           }
+        if (!persistPreference && storedLocale() !== target) {
+          synchronizePreference()
+          return { status: 'cancelled', locale: target, reason: 'superseded' }
+        }
         committing = true
         registerResources(target, batch)
         commitPresentation(target)
         request.value = { ...operation, phase: 'committed' }
-        let persistence: 'saved' | 'failed' = 'failed'
-        try {
-          persistence = input.preference.write(target).status
-        } catch {
-          /* A port failure must not undo the applied presentation. */
+        let result: ConsoleLocaleSwitchResult | LocaleSynchronizationResult
+        if (persistPreference) {
+          let persistence: 'saved' | 'failed' = 'failed'
+          try {
+            persistence = input.preference.write(target).status
+          } catch {
+            /* A port failure must not undo the applied presentation. */
+          }
+          notice.value = persistence === 'saved' ? 'applied' : 'not-saved'
+          result = { status: 'applied', locale: target, persistence }
+        } else {
+          notice.value = 'none'
+          result = { status: 'applied', locale: target }
         }
-        notice.value = persistence === 'saved' ? 'applied' : 'not-saved'
-        const result = { status: 'applied', locale: target, persistence } as const
         await nextTick()
         if (!ownsRequest(operation))
           return {
@@ -246,6 +310,10 @@ export function createConsoleI18nRuntime(
             locale: target,
             reason: isDisposed() ? 'disposed' : 'superseded',
           }
+        if (!persistPreference && storedLocale() !== target) {
+          synchronizePreference()
+          return { status: 'cancelled', locale: target, reason: 'superseded' }
+        }
         const reason = committing ? 'commit-failed' : 'message-load-failed'
         request.value = null
         notice.value = reason
@@ -289,26 +357,15 @@ export function createConsoleI18nRuntime(
     prepareScope,
   })
 
+  const unsubscribePreference = input.preference.subscribe(synchronizePreference)
+
   const ready = Promise.race([
     cancelled,
     (async () => {
-      const preference = input.preference.read()
       const initial = [...scopes]
       if (!(await prepareResources(defaultConsoleLocale, initial, () => !isDisposed())))
         return { status: 'cancelled' } as const
-      let locale = defaultConsoleLocale
-      if (preference.status === 'found' && preference.locale !== defaultConsoleLocale) {
-        try {
-          if (!(await prepareResources(preference.locale, initial, () => !isDisposed())))
-            return { status: 'cancelled' } as const
-          locale = preference.locale
-        } catch {
-          if (isDisposed()) return { status: 'cancelled' } as const
-          notice.value = 'saved-choice-unavailable'
-        }
-      } else if (preference.status === 'unusable') notice.value = 'preference-unavailable'
-      if (isDisposed()) return { status: 'cancelled' } as const
-      registerResources(locale, initial)
+      registerResources(defaultConsoleLocale, initial)
       // Vue's unmount and the Kernel share one effective official scope cleanup.
       const disposeInstance = instance.dispose.bind(instance)
       let released = false
@@ -340,7 +397,27 @@ export function createConsoleI18nRuntime(
         instance.dispose()
         return { status: 'cancelled' } as const
       }
-      commitPresentation(locale)
+      // Start restored selection only after the cancellable switch owner is available.
+      // Notifications during base-resource preparation are covered by this fresh read.
+      preferencesReady = true
+      synchronizePreference()
+      for (;;) {
+        const pending = preferenceCompletion
+        const settled = await pending
+        if (isDisposed()) return { status: 'cancelled' } as const
+        if (pending !== preferenceCompletion) continue
+        if (storedLocale() !== settled?.selection) {
+          synchronizePreference()
+          continue
+        }
+        if (settled?.result.status === 'failed') {
+          if (settled.result.reason !== 'message-load-failed')
+            throw new Error('The initial language presentation could not be committed.')
+          notice.value = 'saved-choice-unavailable'
+        }
+        break
+      }
+      if (!hasDocumentPresentation()) commitPresentation(composer.locale.value)
       provideConsoleI18n(input.application, boundary)
       return { status: 'ready', boundary } as const
     })(),
@@ -351,6 +428,7 @@ export function createConsoleI18nRuntime(
     dispose() {
       if (isDisposed()) return
       disposed = true
+      unsubscribePreference()
       cancelReady?.()
       request.value?.cancel('disposed')
       request.value = null

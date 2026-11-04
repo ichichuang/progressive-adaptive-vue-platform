@@ -2,6 +2,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { isDeepStrictEqual } from 'node:util'
 import { createRequire } from 'node:module'
 import { join, relative, resolve } from 'node:path'
+import { runInNewContext } from 'node:vm'
 
 import ts from 'typescript'
 
@@ -24,6 +25,7 @@ const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/AdminNavigationSelectionLens.vue',
   'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
   'packages/ui/src/adapters/motion/motion-feature-runtime.ts',
+  'packages/ui/src/adapters/motion/motion-policy.ts',
   'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
   'packages/ui/src/adapters/motion/ScrollViewport.vue',
 ] as const
@@ -586,8 +588,8 @@ function runOverlayNegativeProbes(
       sources: changedOverlaySource(
         baseline,
         uiAdminShellPath,
-        'drawerClose.value?.focus()',
-        'drawerClose.value.focus()',
+        'const drawerClose = ref<HTMLButtonElement>()',
+        'const drawerClose = ref<HTMLButtonElement>()\ndrawerClose.value.focus()',
       ),
     },
   ]
@@ -713,6 +715,45 @@ function registeredContractNames(
   return records.map((contract) => contract.name)
 }
 
+function uiCondition(expression: ts.Expression): ts.Expression {
+  while (ts.isParenthesizedExpression(expression)) expression = expression.expression
+  return expression
+}
+
+function conditionTerms(expression: ts.Expression): readonly ts.Expression[] {
+  const value = uiCondition(expression)
+  return ts.isBinaryExpression(value) &&
+    value.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+    ? [...conditionTerms(value.left), ...conditionTerms(value.right)]
+    : [value]
+}
+
+function conditionEquality(
+  expression: ts.Expression,
+  matches: (value: ts.Expression) => boolean,
+  expected: string | number | boolean | null,
+): boolean {
+  const value = uiCondition(expression)
+  if (
+    !ts.isBinaryExpression(value) ||
+    value.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken
+  )
+    return false
+  const literalMatches = (expression: ts.Expression): boolean => {
+    const candidate = uiCondition(expression)
+    return (
+      (ts.isStringLiteral(candidate) && candidate.text === expected) ||
+      (ts.isNumericLiteral(candidate) && Number(candidate.text) === expected) ||
+      (candidate.kind === ts.SyntaxKind.TrueKeyword && expected === true) ||
+      (candidate.kind === ts.SyntaxKind.NullKeyword && expected === null)
+    )
+  }
+  return (
+    (matches(uiCondition(value.left)) && literalMatches(value.right)) ||
+    (literalMatches(value.left) && matches(uiCondition(value.right)))
+  )
+}
+
 function workspaceMenuDismissalViolations(source: string): string[] {
   const handler = /@clickoutside="([\w$]+)"/u.exec(source)?.[1]
   const parsed = sourceFile('WorkspaceTabsSurface.vue', scriptContent(source))
@@ -722,25 +763,437 @@ function workspaceMenuDismissalViolations(source: string): string[] {
   )
   const event = dismiss?.parameters[0]?.name.getText()
   const guards = dismiss?.body?.statements.filter(ts.isIfStatement) ?? []
-  const gesture = guards.find((guard) => guard.thenStatement.kind === ts.SyntaxKind.ReturnStatement)
-  const condition = gesture?.expression.getText().replaceAll(/\s+/gu, '') ?? ''
+  const gesture = guards.find((guard) => {
+    const then = guard.thenStatement
+    if (ts.isReturnStatement(then)) return true
+    if (!ts.isBlock(then) || then.statements.length !== 1) return false
+    const statement = then.statements[0]
+    return statement !== undefined && ts.isReturnStatement(statement)
+  })
+  const terms = gesture === undefined ? [] : conditionTerms(gesture.expression)
+  const eventProperty = (value: ts.Expression, name: string): boolean =>
+    ts.isPropertyAccessExpression(value) &&
+    ts.isIdentifier(value.expression) &&
+    value.expression.text === event &&
+    value.name.text === name
+  const path = terms.find(
+    (term) =>
+      ts.isCallExpression(term) &&
+      ts.isPropertyAccessExpression(term.expression) &&
+      term.expression.name.text === 'some' &&
+      ts.isCallExpression(term.expression.expression) &&
+      ts.isPropertyAccessExpression(term.expression.expression.expression) &&
+      term.expression.expression.expression.name.text === 'composedPath' &&
+      ts.isIdentifier(term.expression.expression.expression.expression) &&
+      term.expression.expression.expression.expression.text === event,
+  )
+  const callback = path !== undefined && ts.isCallExpression(path) ? path.arguments[0] : undefined
+  const target =
+    callback !== undefined && ts.isArrowFunction(callback)
+      ? callback.parameters[0]?.name.getText()
+      : undefined
+  const callbackExpression =
+    callback !== undefined && ts.isArrowFunction(callback)
+      ? ts.isBlock(callback.body)
+        ? callback.body.statements.find(ts.isReturnStatement)?.expression
+        : callback.body
+      : undefined
+  const targetTerms = callbackExpression === undefined ? [] : conditionTerms(callbackExpression)
+  const targetCall = (value: ts.Expression, name: string, argument?: string): boolean =>
+    ts.isCallExpression(value) &&
+    ts.isPropertyAccessExpression(value.expression) &&
+    value.expression.name.text === name &&
+    ts.isIdentifier(value.expression.expression) &&
+    value.expression.expression.text === target &&
+    (argument === undefined ||
+      (value.arguments[0] !== undefined &&
+        ts.isStringLiteral(value.arguments[0]) &&
+        value.arguments[0].text === argument))
+  const localRefs = nullableRefDeclarations(source)
+  const currentItems = new Set(
+    dismiss?.body?.statements.flatMap((statement) =>
+      ts.isVariableStatement(statement)
+        ? statement.declarationList.declarations.flatMap((declaration) =>
+            ts.isIdentifier(declaration.name) &&
+            declaration.initializer !== undefined &&
+            ts.isPropertyAccessExpression(declaration.initializer) &&
+            declaration.initializer.name.text === 'value'
+              ? [declaration.name.text]
+              : [],
+          )
+        : [],
+    ) ?? [],
+  )
+  const containsTarget = (value: ts.Expression): boolean => {
+    if (
+      !ts.isCallExpression(value) ||
+      !ts.isPropertyAccessExpression(value.expression) ||
+      value.expression.name.text !== 'contains'
+    )
+      return false
+    const owner = value.expression.expression
+    const argument = value.arguments[0]
+    return (
+      ts.isPropertyAccessExpression(owner) &&
+      owner.name.text === 'value' &&
+      ts.isIdentifier(owner.expression) &&
+      localRefs.has(owner.expression.text) &&
+      argument !== undefined &&
+      ts.isIdentifier(argument) &&
+      argument.text === target
+    )
+  }
+  const liveTarget = (value: ts.Expression): boolean => targetCall(value, 'closest', '[inert]')
+  const currentTab = targetTerms.some((term) => {
+    if (
+      !ts.isBinaryExpression(term) ||
+      term.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken
+    )
+      return false
+    const queryId = (value: ts.Expression): boolean =>
+      ts.isPropertyAccessExpression(value) &&
+      value.name.text === 'id' &&
+      targetCall(uiCondition(value.expression), 'querySelector', '[role="tab"]')
+    const currentId = (value: ts.Expression): boolean =>
+      ts.isTemplateExpression(value) &&
+      value.head.text === '' &&
+      value.templateSpans.length === 1 &&
+      value.templateSpans[0]?.literal.text === '-tab' &&
+      ts.isPropertyAccessExpression(value.templateSpans[0].expression) &&
+      value.templateSpans[0].expression.name.text === 'id' &&
+      ts.isIdentifier(value.templateSpans[0].expression.expression) &&
+      currentItems.has(value.templateSpans[0].expression.expression.text)
+    return (
+      (queryId(uiCondition(term.left)) && currentId(uiCondition(term.right))) ||
+      (currentId(uiCondition(term.left)) && queryId(uiCondition(term.right)))
+    )
+  })
   // The exemption belongs to an owned, live target and a right-button release, never all outside input.
   if (
     event === undefined ||
-    !condition.includes(`${event}?.type==='mouseup'`) ||
-    !condition.includes(`${event}.button===2`) ||
-    !condition.includes(`${event}.composedPath()`) ||
-    !/\.contains\([\w$]+\)===true/u.test(condition) ||
-    !condition.includes(".closest('[inert]')===null") ||
-    !condition.includes('.querySelector(\'[role="tab"]\')?.id===') ||
-    condition.includes('document.querySelector')
+    !terms.some((term) =>
+      conditionEquality(term, (value) => eventProperty(value, 'type'), 'mouseup'),
+    ) ||
+    !terms.some((term) => conditionEquality(term, (value) => eventProperty(value, 'button'), 2)) ||
+    !targetTerms.some(
+      (term) => containsTarget(term) || conditionEquality(term, containsTarget, true),
+    ) ||
+    !targetTerms.some(
+      (term) =>
+        conditionEquality(term, liveTarget, null) ||
+        (ts.isPrefixUnaryExpression(term) &&
+          term.operator === ts.SyntaxKind.ExclamationToken &&
+          liveTarget(uiCondition(term.operand))),
+    ) ||
+    !currentTab
   )
     return ['WORKSPACE_MENU_OWNED_CONTEXT_GESTURE']
   return []
 }
 
-export async function validateUiPublicComponents(): Promise<string[]> {
+function mainContentFillViolations(source: string): string[] {
+  const template = parseVueTemplate('UiScrollArea.vue', source)
+  if (typeof template === 'string') return [template]
   const violations: string[] = []
+  const localRefs = nullableRefDeclarations(source)
+  const parsed = sourceFile('UiScrollArea.vue.ts', scriptContent(source))
+  const enhancementContentRefs = new Set<string>()
+  function contentRefRead(expression: ts.Expression): string | undefined {
+    const value = uiCondition(expression)
+    return ts.isPropertyAccessExpression(value) &&
+      value.name.text === 'value' &&
+      ts.isIdentifier(value.expression)
+      ? value.expression.text
+      : undefined
+  }
+  function inspectEnhancement(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'createScrollEnhancement'
+    ) {
+      const options = node.arguments[0]
+      const content =
+        options !== undefined && ts.isObjectLiteralExpression(options)
+          ? options.properties.find(
+              (property): property is ts.PropertyAssignment =>
+                ts.isPropertyAssignment(property) &&
+                (ts.isIdentifier(property.name) || ts.isStringLiteral(property.name)) &&
+                property.name.text === 'content',
+            )?.initializer
+          : undefined
+      let reference = content === undefined ? undefined : contentRefRead(content)
+      if (content !== undefined && ts.isIdentifier(content)) {
+        // Resolve the one local DOM alias passed to the public enhancement API.
+        // The nearest lexical declaration owns it; no private identifier is prescribed.
+        for (let scope: ts.Node = node.parent; !ts.isSourceFile(scope); scope = scope.parent) {
+          if (ts.isBlock(scope)) {
+            const binding = scope.statements
+              .flatMap((statement) =>
+                ts.isVariableStatement(statement)
+                  ? [...statement.declarationList.declarations]
+                  : [],
+              )
+              .find(
+                (declaration) =>
+                  declaration.pos < node.pos &&
+                  ts.isIdentifier(declaration.name) &&
+                  declaration.name.text === content.text,
+              )
+            if (binding !== undefined) {
+              reference =
+                binding.initializer === undefined ? undefined : contentRefRead(binding.initializer)
+              break
+            }
+          }
+          if (
+            ts.isFunctionDeclaration(scope) ||
+            ts.isFunctionExpression(scope) ||
+            ts.isArrowFunction(scope) ||
+            ts.isMethodDeclaration(scope)
+          )
+            break
+        }
+      }
+      enhancementContentRefs.add(reference ?? '')
+    }
+    ts.forEachChild(node, inspectEnhancement)
+  }
+  inspectEnhancement(parsed)
+  const contentRef = enhancementContentRefs.size === 1 ? [...enhancementContentRefs][0] : undefined
+  const mainContentOwners: VueTemplateNode[] = []
+  walkVueElements(template.root, (element) => {
+    if (!hasAttributeOrBinding(element, 'data-main-content')) return
+    mainContentOwners.push(element)
+    const marker = element.props.find((property) =>
+      propertyTargetsName(property, 'data-main-content'),
+    )
+    if (
+      element.tag !== 'div' ||
+      contentRef === undefined ||
+      !localRefs.has(contentRef) ||
+      staticAttribute(element, 'ref') !== contentRef ||
+      staticAttribute(element, 'class') !== 'pavp-scroll-area__content' ||
+      marker?.type !== 7 ||
+      marker.exp?.content !== "enabled && ownerId === 'architecture-console-content'"
+    )
+      violations.push('Main-content fill must bind directly to its enabled content owner.')
+  })
+  if (mainContentOwners.length !== 1)
+    violations.push('Scroll Area requires exactly one instance-local main-content marker.')
+  return violations
+}
+
+async function keyboardFocusPolicyViolations(): Promise<string[]> {
+  const violations: string[] = []
+  const source = await readFile(
+    resolve(uiSourceDirectory, 'providers/keyboard-focus-policy.ts'),
+    'utf8',
+  )
+  const provider = await readFile(resolve(rootDirectory, uiProviderPath), 'utf8')
+  const script = scriptContent(provider)
+  if (
+    !script.includes("from './keyboard-focus-policy'") ||
+    !/onBeforeMount\s*\(/u.test(script) ||
+    !/onBeforeUnmount\s*\(/u.test(script)
+  )
+    violations.push('KEYBOARD_FOCUS_PROVIDER_LIFECYCLE')
+
+  const fatal = sourceFile(
+    'fatal-boundary.ts',
+    await readFile(resolve(rootDirectory, 'apps/web/src/app/errors/fatal-boundary.ts'), 'utf8'),
+  )
+  const fatalButtons = new Set<string>()
+  const fatalExcluded = new Set<string>()
+  function inspectFatal(node: ts.Node): void {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer !== undefined &&
+      ts.isCallExpression(node.initializer) &&
+      ts.isPropertyAccessExpression(node.initializer.expression) &&
+      node.initializer.expression.name.text === 'createElement' &&
+      node.initializer.arguments[0]?.getText(fatal).replaceAll(/['"]/gu, '') === 'button'
+    )
+      fatalButtons.add(node.name.text)
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      ts.isIdentifier(node.left.expression) &&
+      node.left.name.text === 'tabIndex' &&
+      node.right.getText(fatal).replaceAll(/\s/gu, '') === '-1'
+    )
+      fatalExcluded.add(node.left.expression.text)
+    ts.forEachChild(node, inspectFatal)
+  }
+  inspectFatal(fatal)
+  if (fatalButtons.size !== 1 || [...fatalButtons].some((name) => !fatalExcluded.has(name)))
+    violations.push('KEYBOARD_FOCUS_FATAL_BOUNDARY_EXCLUSION')
+
+  class Control {
+    isContentEditable = false
+    type = 'text'
+    control = true
+    blurred = 0
+    blur(): void {
+      this.blurred += 1
+    }
+    closest(): Control | null {
+      return this.control ? this : null
+    }
+  }
+  class Html extends Control {}
+  class Svg extends Control {}
+  class Input extends Html {}
+  class Textarea extends Html {}
+  const exports: { installKeyboardFocusPolicy?: (host: EventTarget) => () => void } = {}
+  runInNewContext(
+    ts.transpileModule(source, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    }).outputText,
+    {
+      exports,
+      HTMLElement: Html,
+      SVGElement: Svg,
+      HTMLInputElement: Input,
+      HTMLTextAreaElement: Textarea,
+    },
+    { timeout: 1000 },
+  )
+  if (typeof exports.installKeyboardFocusPolicy !== 'function')
+    return [...violations, 'KEYBOARD_FOCUS_POLICY_MISSING']
+  const host = new EventTarget()
+  const captures: boolean[] = []
+  const add = host.addEventListener.bind(host)
+  host.addEventListener = (type, listener, options) => {
+    captures.push(options === true || (typeof options === 'object' && options.capture === true))
+    add(type, listener, options)
+  }
+  const dispose = exports.installKeyboardFocusPolicy(host)
+  if (captures.length !== 4 || captures.some((capture) => !capture))
+    violations.push('KEYBOARD_FOCUS_CAPTURE')
+  function dispatch(
+    type: string,
+    target: Control,
+    key = '',
+    modifiers: Readonly<Record<string, boolean>> = {},
+  ): Event {
+    const event = new Event(type, { cancelable: true })
+    Object.defineProperties(event, {
+      target: { value: target },
+      composedPath: { value: () => [target, host] },
+      key: { value: key },
+      altKey: { value: modifiers['altKey'] ?? false },
+      ctrlKey: { value: modifiers['ctrlKey'] ?? false },
+      metaKey: { value: modifiers['metaKey'] ?? false },
+      shiftKey: { value: modifiers['shiftKey'] ?? false },
+    })
+    host.dispatchEvent(event)
+    return event
+  }
+  let vendorEvents = 0
+  const vendor = () => {
+    vendorEvents += 1
+  }
+  add('keydown', vendor)
+  const control = new Html()
+  for (const type of ['keydown', 'keyup']) {
+    for (const key of [
+      'Tab',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+      'Enter',
+      ' ',
+      'ContextMenu',
+    ]) {
+      const before = vendorEvents
+      if (!dispatch(type, control, key).defaultPrevented || vendorEvents !== before)
+        violations.push('KEYBOARD_FOCUS_NAVIGATION_BLOCK')
+    }
+    for (const key of ['Tab', 'F10']) {
+      if (!dispatch(type, control, key, { shiftKey: true }).defaultPrevented)
+        violations.push('KEYBOARD_FOCUS_SHIFT_NAVIGATION_BLOCK')
+    }
+  }
+  if (control.blurred === 0) violations.push('KEYBOARD_FOCUS_EXISTING_CONTROL_RELEASE')
+  for (const input of [
+    new Input(),
+    new Textarea(),
+    Object.assign(new Html(), { isContentEditable: true }),
+  ]) {
+    dispatch('pointerdown', input)
+    dispatch('focusin', input)
+    for (const key of [
+      'a',
+      'Backspace',
+      'Delete',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End',
+      'Enter',
+      ' ',
+      'Process',
+    ]) {
+      if (dispatch('keydown', input, key).defaultPrevented)
+        violations.push('KEYBOARD_FOCUS_TEXT_EDITING_PRESERVATION')
+    }
+    for (const modifiers of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+      if (dispatch('keydown', input, 'a', modifiers).defaultPrevented)
+        violations.push('KEYBOARD_FOCUS_BROWSER_SHORTCUT_PRESERVATION')
+    }
+    if (input.blurred !== 0) violations.push('KEYBOARD_FOCUS_POINTER_EDITING_PRESERVATION')
+    if (!dispatch('keydown', input, 'Tab').defaultPrevented || input.blurred !== 0)
+      violations.push('KEYBOARD_FOCUS_EDITING_TAB_BLOCK')
+    const requested = new Input()
+    dispatch('focusin', requested)
+    if (requested.blurred !== 1) violations.push('KEYBOARD_FOCUS_TRANSFER_BLOCK')
+    dispatch('pointerdown', requested)
+    dispatch('focusin', requested)
+    if (requested.blurred !== 1) violations.push('KEYBOARD_FOCUS_POINTER_REENTRY')
+  }
+  for (const type of ['checkbox', 'radio', 'range', 'button']) {
+    const input = Object.assign(new Input(), { type })
+    if (!dispatch('keydown', input, 'ArrowRight').defaultPrevented || input.blurred === 0)
+      violations.push('KEYBOARD_FOCUS_NATIVE_CONTROL_BLOCK')
+  }
+  const svg = new Svg()
+  if (!dispatch('keydown', svg, 'Tab').defaultPrevented || svg.blurred === 0)
+    violations.push('KEYBOARD_FOCUS_SVG_BLOCK')
+  dispatch('focusin', svg)
+  if (svg.blurred < 2) violations.push('KEYBOARD_FOCUS_SVG_BLOCK')
+  const pointerInput = new Input()
+  dispatch('pointerdown', pointerInput)
+  dispatch('keyup', pointerInput, 'Shift')
+  dispatch('focusin', pointerInput)
+  if (pointerInput.blurred !== 0) violations.push('KEYBOARD_FOCUS_POINTER_KEYUP_ORDER')
+  const body = Object.assign(new Html(), { control: false })
+  if (
+    dispatch('keydown', body, 'ArrowDown').defaultPrevented ||
+    dispatch('keydown', control, 'Escape').defaultPrevented
+  )
+    violations.push('KEYBOARD_FOCUS_SCROLL_AND_DISMISSAL_PRESERVATION')
+  dispose()
+  const after = new Html()
+  if (dispatch('keydown', after, 'Tab').defaultPrevented || after.blurred !== 0)
+    violations.push('KEYBOARD_FOCUS_LISTENER_DISPOSAL')
+  dispatch('focusin', after)
+  if (after.blurred !== 0) violations.push('KEYBOARD_FOCUS_LISTENER_DISPOSAL')
+  const disposeAgain = exports.installKeyboardFocusPolicy(host)
+  if (!dispatch('keydown', control, 'Tab').defaultPrevented)
+    violations.push('KEYBOARD_FOCUS_REMOUNT')
+  disposeAgain()
+  host.removeEventListener('keydown', vendor)
+  return [...new Set(violations)]
+}
+
+export async function validateUiPublicComponents(): Promise<string[]> {
+  const violations: string[] = await keyboardFocusPolicyViolations()
   const overlaySources = await loadOverlaySourceMap()
   const overlayNegativeProbeResults = runOverlayNegativeProbes(overlaySources)
   const registry: UiPublicComponentRegistry = uiPublicComponentRegistry
@@ -750,27 +1203,30 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     resolve(uiSourceDirectory, 'components/UiScrollArea.vue'),
     'utf8',
   )
-  const scrollTemplate = parseVueTemplate('UiScrollArea.vue', scrollSource)
-  if (typeof scrollTemplate === 'string') violations.push(scrollTemplate)
-  else {
-    const mainContentOwners: VueTemplateNode[] = []
-    walkVueElements(scrollTemplate.root, (element) => {
-      if (!hasAttributeOrBinding(element, 'data-main-content')) return
-      mainContentOwners.push(element)
-      const marker = element.props.find((property) =>
-        propertyTargetsName(property, 'data-main-content'),
-      )
-      if (
-        element.tag !== 'div' ||
-        staticAttribute(element, 'ref') !== 'content' ||
-        staticAttribute(element, 'class') !== 'pavp-scroll-area__content' ||
-        marker?.type !== 7 ||
-        marker.exp?.content !== "enabled && ownerId === 'architecture-console-content'"
-      )
-        violations.push('Main-content fill must bind directly to its enabled content owner.')
-    })
-    if (mainContentOwners.length !== 1)
-      violations.push('Scroll Area requires exactly one instance-local main-content marker.')
+  violations.push(...mainContentFillViolations(scrollSource))
+  const contentProbe = `<script setup lang="ts">
+const localContent = ref<HTMLElement>()
+const host = ref<HTMLElement>()
+const viewport = ref<HTMLElement>()
+function enhance() {
+  const body = localContent.value
+  runtime.createScrollEnhancement({ content: body })
+}
+</script>
+<template><div ref="localContent" class="pavp-scroll-area__content"
+:data-main-content="enabled && ownerId === 'architecture-console-content'" /></template>`
+  const renamedContentRef = contentProbe.replaceAll('localContent', 'renamedContent')
+  if (mainContentFillViolations(renamedContentRef).length !== 0)
+    violations.push('Main-content in-memory positive probe froze a private ref name.')
+  if (
+    mainContentFillViolations(contentProbe.replace('ref="localContent"', 'ref="unboundContent"'))
+      .length === 0
+  )
+    violations.push('Main-content in-memory negative probe accepted an unbound ref.')
+  for (const wrongRef of ['host', 'viewport']) {
+    const disconnected = contentProbe.replace('ref="localContent"', `ref="${wrongRef}"`)
+    if (mainContentFillViolations(disconnected).length === 0)
+      violations.push('Main-content in-memory negative probe accepted a disconnected content ref.')
   }
   const scrollContracts = sourceFile(
     'scroll-contracts.ts',
@@ -869,6 +1325,10 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       menu === undefined ||
       staticAttribute(menu, 'trigger') !== 'manual' ||
       staticAttribute(menu, 'to') !== overlayTarget ||
+      !menu.props.some(
+        (prop) =>
+          prop.name === 'bind' && prop.arg?.content === 'keyboard' && prop.exp?.content === 'false',
+      ) ||
       !['show', 'x', 'y', 'options'].every((name) => hasAttributeOrBinding(menu, name)) ||
       !['update:show', 'clickoutside', 'select'].every((name) =>
         menu.props.some((prop) => prop.name === 'on' && prop.arg?.content === name),
@@ -903,32 +1363,56 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       !exactSet(actionKeys, ['refresh', 'close']) ||
       !exactSet(disabledActionKeys, ['refresh', 'close']) ||
       !workspaceScrollSource.includes('@contextmenu.prevent=') ||
-      !workspaceScrollSource.includes("'ContextMenu'") ||
-      !workspaceScrollSource.includes("'F10'") ||
+      /\.focus\s*\(|@keydown|while-focus/u.test(workspaceScrollSource) ||
       !workspaceScrollSource.includes('getBoundingClientRect()') ||
       /\b(?:useRouter|useWorkspaceStore|KeepAlive|localStorage|sessionStorage)\b/u.test(
         workspaceScrollSource,
       )
     )
       violations.push(
-        'Workspace menu must preserve the two intents, keyboard opening and UI-only ownership.',
+        'Workspace menu must preserve pointer intents, disable keyboard focus and retain UI ownership.',
       )
     const dismissal = workspaceMenuDismissalViolations(workspaceScrollSource)
+    const menuProbe = `<script setup lang="ts">
+const strip = ref<HTMLElement>()
+function dismiss(event?: MouseEvent): void {
+  const item = contextItem.value
+  if (event?.type === 'mouseup' && event.button === 2 && item !== undefined &&
+    event.composedPath().some((target) => target instanceof HTMLElement &&
+      strip.value?.contains(target) === true && target.closest('[inert]') === null &&
+      target.querySelector('[role="tab"]')?.id === \`\${item.id}-tab\`)) return
+}
+</script><template><NDropdown @clickoutside="dismiss" /></template>`
     const dismissalProbes = [
-      workspaceScrollSource.replace(/([\w$]+)\.button === 2/u, 'true'),
-      workspaceScrollSource.replace(/([\w$]+)\?\.type === 'mouseup'/u, 'true'),
-      workspaceScrollSource.replace(/([\w$.]+)\?\.contains\([\w$]+\) === true/u, 'true'),
-      workspaceScrollSource.replace(/([\w$]+)\.closest\('\[inert\]'\) === null/u, 'true'),
+      menuProbe.replace(/([\w$]+)\.button === 2/u, 'true'),
+      menuProbe.replace(/([\w$]+)\?\.type === 'mouseup'/u, 'true'),
+      menuProbe.replace(/([\w$.]+)\?\.contains\([\w$]+\) === true/u, 'true'),
+      menuProbe.replace(/([\w$]+)\.closest\('\[inert\]'\) === null/u, 'true'),
+      menuProbe.replace(
+        /([\w$]+)\.querySelector\('\[role="tab"\]'\)\?\.id === `\$\{[\w$]+\.id\}-tab`/u,
+        'true',
+      ),
     ]
     for (const mutated of dismissalProbes)
       if (
         dismissal.length !== 0 ||
-        mutated === workspaceScrollSource ||
+        mutated === menuProbe ||
         !isDeepStrictEqual(workspaceMenuDismissalViolations(mutated), [
           'WORKSPACE_MENU_OWNED_CONTEXT_GESTURE',
         ])
       )
         violations.push('Workspace menu gesture in-memory negative probe failed.')
+    const dismissalPositiveProbes = [
+      menuProbe.replace(/([\w$]+)\.button === 2/u, '(2 === $1.button)'),
+      menuProbe.replace(/([\w$]+)\?\.type === 'mouseup'/u, "'mouseup' === $1?.type"),
+      menuProbe.replace(/([\w$.]+)\?\.contains\(([\w$]+)\) === true/u, '$1?.contains($2)'),
+      menuProbe.replace(/([\w$]+)\.closest\('\[inert\]'\) === null/u, "!$1.closest('[inert]')"),
+    ]
+    for (const changed of dismissalPositiveProbes)
+      if (changed === menuProbe || workspaceMenuDismissalViolations(changed).length !== 0)
+        violations.push(
+          'Workspace menu gesture in-memory positive probe froze an equivalent private expression.',
+        )
     violations.push(...dismissal)
     const controls: VueTemplateNode[] = []
     const tablists: VueTemplateNode[] = []
@@ -1272,7 +1756,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   )
     directConsumers.set(
       'UiScrollArea',
-      productRoutes.map((route) => route.name),
+      productRoutes.filter((route) => route.name !== 'control-center').map((route) => route.name),
     )
   if (
     importedNames(scriptContent(workspaceFrame), '@platform/ui').includes('UiWorkspaceTabs') &&
@@ -1286,12 +1770,16 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     )
 
   for (const [sourcePath, routeName] of routeNameBySource) {
+    const pageScript = scriptContent(await readFile(resolve(rootDirectory, sourcePath), 'utf8'))
+    const usesWorkbenchPage = ts
+      .preProcessFile(pageScript, true, true)
+      .importedFiles.some(({ fileName }) => fileName === '../app/workbench/WorkbenchPage.vue')
     const pageSource =
-      scriptContent(await readFile(resolve(rootDirectory, sourcePath), 'utf8')) +
-      (['capability-roadmap', 'capability-roadmap-standalone'].includes(routeName)
+      pageScript +
+      (usesWorkbenchPage
         ? scriptContent(
             await readFile(
-              resolve(rootDirectory, 'apps/web/src/app/console/CapabilityRoadmapContent.vue'),
+              resolve(rootDirectory, 'apps/web/src/app/workbench/WorkbenchPage.vue'),
               'utf8',
             ),
           )
@@ -1299,7 +1787,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
 
     for (const importedName of importedNames(pageSource, '@platform/ui')) {
       const consumers = directConsumers.get(importedName) ?? []
-      consumers.push(routeName)
+      if (!consumers.includes(routeName)) consumers.push(routeName)
       directConsumers.set(importedName, consumers)
     }
   }
@@ -1327,6 +1815,60 @@ export async function validateUiPublicComponents(): Promise<string[]> {
       violations.push(`${record.exportName}: public macro contract leaks private Motion API.`)
     }
 
+    if (record.exportName === 'UiRadioCardGroup') {
+      const parsed = sourceFile(record.sourcePath, scriptContent(source))
+      const disabledContract = { optional: false, default: false }
+      function visitRadioContract(node: ts.Node): void {
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+          const contract = node.typeArguments?.[0]
+          if (
+            node.expression.text === 'defineProps' &&
+            contract !== undefined &&
+            ts.isTypeLiteralNode(contract)
+          ) {
+            disabledContract.optional = contract.members.some(
+              (member) =>
+                ts.isPropertySignature(member) &&
+                member.name.getText(parsed) === 'disabled' &&
+                member.questionToken !== undefined &&
+                member.type?.kind === ts.SyntaxKind.BooleanKeyword,
+            )
+          }
+          const defaults = node.arguments[1]
+          if (
+            node.expression.text === 'withDefaults' &&
+            defaults !== undefined &&
+            ts.isObjectLiteralExpression(defaults)
+          ) {
+            disabledContract.default = defaults.properties.some(
+              (property) =>
+                ts.isPropertyAssignment(property) &&
+                property.name.getText(parsed) === 'disabled' &&
+                property.initializer.kind === ts.SyntaxKind.FalseKeyword,
+            )
+          }
+        }
+        ts.forEachChild(node, visitRadioContract)
+      }
+      visitRadioContract(parsed)
+      if (
+        !disabledContract.optional ||
+        !disabledContract.default ||
+        !isDeepStrictEqual(
+          record.props.find((prop) => prop.name === 'disabled'),
+          {
+            name: 'disabled',
+            type: 'boolean',
+            required: false,
+            defaultValue: 'false',
+          },
+        )
+      )
+        violations.push(
+          'UiRadioCardGroup must retain its optional boolean disabled input with false default.',
+        )
+    }
+
     const actualConsumers =
       record.exportName === 'UiProvider' || record.exportName === 'UiAdminShell'
         ? productRoutes.map((route) => route.name)
@@ -1346,6 +1888,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'packages/ui/src/adapters/naive/use-form-control.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
+    'packages/ui/src/adapters/naive/semantic-naive-theme.ts',
   ] as const
   const actualAdapterFiles = (await readdir(resolve(uiSourceDirectory, 'adapters/naive')))
     .filter((name) => name.endsWith('.ts') || name.endsWith('.vue'))
@@ -1483,9 +2026,8 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     'NBreadcrumb@naive-ui/es/breadcrumb',
     'NBreadcrumbItem@naive-ui/es/breadcrumb',
     'NButton@naive-ui/es/button',
+    'NCard@naive-ui/es/card',
     'NConfigProvider@naive-ui/es/config-provider',
-    'NDescriptions@naive-ui/es/descriptions',
-    'NDescriptionsItem@naive-ui/es/descriptions',
     'NDropdown@naive-ui/es/dropdown',
     'NIcon@naive-ui/es/icon',
     'NLayout@naive-ui/es/layout',
@@ -1525,6 +2067,7 @@ export async function validateUiPublicComponents(): Promise<string[]> {
   for (const override of [
     'Breadcrumb',
     'Button',
+    'Card',
     'Descriptions',
     'Layout',
     'Menu',

@@ -6,10 +6,11 @@ import enUS from 'naive-ui/es/locales/common/enUS'
 import dateZhCN from 'naive-ui/es/locales/date/zhCN'
 import dateEnUS from 'naive-ui/es/locales/date/enUS'
 import { NConfigProvider } from 'naive-ui/es/config-provider'
-import { computed, provide, toRef } from 'vue'
+import { computed, onBeforeMount, onBeforeUnmount, provide, toRef } from 'vue'
 
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
+import { installKeyboardFocusPolicy } from './keyboard-focus-policy'
 
 defineOptions({ name: 'UiProvider' })
 
@@ -26,6 +27,14 @@ const projection = computed(() => createPavpNaiveThemeProjection(props.appearanc
 const appearance = toRef(() => props.appearance)
 
 provide(pavpNaiveAppearanceKey, appearance)
+
+let disposeKeyboardFocus: (() => void) | undefined
+onBeforeMount(() => {
+  disposeKeyboardFocus = installKeyboardFocusPolicy(window)
+})
+onBeforeUnmount(() => {
+  disposeKeyboardFocus?.()
+})
 </script>
 
 <template>
@@ -42,6 +51,111 @@ provide(pavpNaiveAppearanceKey, appearance)
 </template>
 
 <style>
+@layer vendor-overrides {
+  html[data-motion] :where(.n-button .n-base-wave, .n-button .n-icon-slot) {
+    transition-duration: var(--ui-motion-duration);
+  }
+
+  html[data-motion]
+    :where(
+      .n-button,
+      .n-button__border,
+      .n-button__state-border,
+      .n-button .n-base-wave,
+      .n-button .n-icon-slot,
+      .n-breadcrumb-item,
+      .n-breadcrumb-item .n-icon,
+      .n-breadcrumb-item__link,
+      .n-breadcrumb-item__separator,
+      .n-descriptions-header,
+      .n-descriptions-table-wrapper,
+      .n-descriptions-table-row,
+      .n-descriptions-table-header,
+      .n-descriptions-table-content,
+      .n-descriptions-table-content__content,
+      .n-descriptions__label,
+      .n-radio-group__splitor,
+      .n-radio__dot,
+      .n-radio-button,
+      .n-radio-button__state-border,
+      .n-tag,
+      .n-tag__border,
+      .n-tag__icon,
+      .n-tag__close
+    ) {
+    transition-timing-function: var(--ui-motion-easing);
+  }
+
+  html[data-motion] .n-radio__dot::before {
+    transition-timing-function: var(--ui-motion-easing);
+  }
+
+  html[data-motion] .n-button .n-base-wave {
+    animation-duration: var(--ui-motion-duration);
+    animation-timing-function: var(--ui-motion-easing);
+  }
+
+  .n-button:focus-visible {
+    box-shadow: var(--ui-admin-shadow-focus-ring);
+  }
+
+  .pavp-admin-shell__header-action-tooltip.n-popover {
+    box-sizing: border-box;
+    border-color: var(--ui-color-border-default);
+    border-style: solid;
+    border-width: var(--ui-admin-border-width);
+  }
+
+  @media (forced-colors: active) {
+    .n-button:focus-visible {
+      outline-offset: var(--ui-admin-focus-outline-offset);
+    }
+  }
+
+  @media (forced-colors: active) {
+    .pavp-form-control
+      :focus-visible:not(
+        :is(
+          .n-input__input-el,
+          .n-input__textarea-el,
+          .n-base-selection-label,
+          .n-base-selection-tags,
+          .n-switch[role='switch']
+        )
+      ) {
+      outline: var(--ui-admin-border-focus);
+    }
+    .pavp-form-control :focus-visible {
+      outline-offset: var(--ui-admin-focus-outline-offset);
+    }
+  }
+  .pavp-switch :not(:is(.n-switch__rail, .n-switch__button)) {
+    transition-duration: var(--ui-motion-duration);
+  }
+  .pavp-switch * {
+    transition-timing-function: var(--ui-motion-easing);
+  }
+  html:not([data-motion='full']) .pavp-switch :not(:is(.n-switch__rail, .n-switch__button)) {
+    transition: none;
+  }
+
+  .pavp-workspace-context-menu {
+    border-width: var(--ui-admin-border-width);
+    border-style: solid;
+    border-color: var(--ui-color-border-default);
+  }
+  .pavp-workspace-context-menu:focus-visible {
+    outline: var(--ui-admin-border-focus);
+  }
+  @media (forced-colors: active) {
+    .pavp-workspace-context-menu.n-dropdown-menu {
+      background: Canvas;
+    }
+    .pavp-workspace-context-menu .n-dropdown-option-body--pending {
+      outline: var(--ui-admin-border-width) solid Highlight;
+    }
+  }
+}
 [data-pavp-admin-navigation='persistent']
   .pavp-admin-shell__sidebar.n-layout-sider
   > .n-layout-sider__border {
@@ -53,8 +167,6 @@ html[data-motion]
     .n-button,
     .n-button__border,
     .n-button__state-border,
-    .n-button .n-base-wave,
-    .n-button .n-icon-slot,
     .n-breadcrumb-item,
     .n-breadcrumb-item .n-icon,
     .n-breadcrumb-item__link,
@@ -76,12 +188,10 @@ html[data-motion]
     .n-tag__close
   ) {
   transition-duration: var(--ui-motion-duration);
-  transition-timing-function: var(--ui-motion-easing);
 }
 
 html[data-motion] .n-radio__dot::before {
   transition-duration: var(--ui-motion-duration);
-  transition-timing-function: var(--ui-motion-easing);
 }
 
 html[data-motion] .n-button .n-icon-slot {
@@ -89,31 +199,13 @@ html[data-motion] .n-button .n-icon-slot {
   transition-timing-function: var(--ui-motion-easing) !important;
 }
 
-html[data-motion] .n-button .n-base-wave {
-  animation-duration: var(--ui-motion-duration);
-  animation-timing-function: var(--ui-motion-easing);
-}
-
-.n-button:focus-visible {
-  box-shadow: var(--ui-admin-shadow-focus-ring);
-}
-
-.pavp-admin-shell__header-action-tooltip.n-popover {
-  box-sizing: border-box;
-  border-color: var(--ui-color-border-default);
-  border-style: solid;
-  border-width: var(--ui-admin-border-width);
-}
-
 @media (forced-colors: active) {
   .pavp-admin-shell__header-action.n-button {
     outline: var(--ui-admin-border-control);
   }
 
-  .n-button:focus-visible,
-  .n-radio-button--focus {
+  .n-button:focus-visible {
     outline: var(--ui-admin-border-focus);
-    outline-offset: var(--ui-admin-focus-outline-offset);
   }
 }
 
@@ -186,6 +278,25 @@ html[data-motion='none']
     .n-tag__border,
     .n-tag__icon,
     .n-tag__close,
+    .n-card,
+    .n-input,
+    .n-input__input,
+    .n-input__border,
+    .n-input__state-border,
+    .n-input__suffix,
+    .n-base-selection,
+    .n-base-selection__border,
+    .n-base-selection__state-border,
+    .n-base-selection-label,
+    .n-base-selection-input,
+    .n-base-selection-overlay,
+    .n-base-selection .n-base-suffix__arrow,
+    .n-switch__rail,
+    .n-switch__button,
+    .n-base-select-menu,
+    .n-base-select-menu .n-base-select-option,
+    .n-base-select-menu .n-base-select-option::before,
+    .n-base-select-menu .n-base-select-option__check,
     .pavp-form-control,
     .pavp-form-control *,
     .pavp-form-field .n-form-item-feedback,
@@ -220,16 +331,26 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown {
 
 html[data-motion='full'] .pavp-admin-shell__header-action-icon-state,
 html[data-motion='full'] .pavp-admin-shell__header-action-tooltip,
-html[data-motion='full'] .pavp-form-control .n-input,
-html[data-motion='full'] .pavp-form-control .n-input__border,
-html[data-motion='full'] .pavp-form-control .n-input__state-border,
-html[data-motion='full'] .pavp-form-control .n-base-selection,
-html[data-motion='full'] .pavp-form-control .n-base-selection__border,
-html[data-motion='full'] .pavp-form-control .n-base-selection__state-border,
-html[data-motion='full'] .pavp-form-control .n-switch__rail,
-html[data-motion='full'] .pavp-form-control .n-switch__button,
+html[data-motion='full'] .n-card,
+html[data-motion='full'] .n-input,
+html[data-motion='full'] .n-input__input,
+html[data-motion='full'] .n-input__suffix,
+html[data-motion='full'] .n-input__border,
+html[data-motion='full'] .n-input__state-border,
+html[data-motion='full'] .n-base-selection,
+html[data-motion='full'] .n-base-selection__border,
+html[data-motion='full'] .n-base-selection__state-border,
+html[data-motion='full'] .n-base-selection-label,
+html[data-motion='full'] .n-base-selection-input,
+html[data-motion='full'] .n-base-selection-overlay,
+html[data-motion='full'] .n-base-selection .n-base-suffix__arrow,
+html[data-motion='full'] .n-switch__rail,
+html[data-motion='full'] .n-switch__button,
 html[data-motion='full'] .pavp-form-field .n-form-item-feedback,
-html[data-motion='full'] .pavp-form-select-menu,
+html[data-motion='full'] .n-base-select-menu,
+html[data-motion='full'] .n-base-select-menu .n-base-select-option,
+html[data-motion='full'] .n-base-select-menu .n-base-select-option::before,
+html[data-motion='full'] .n-base-select-menu .n-base-select-option__check,
 html[data-motion='full'] .n-date-panel,
 html[data-motion='full'] .n-date-panel-date,
 html[data-motion='full'] .n-date-panel-calendar__title,
@@ -250,16 +371,26 @@ html[data-motion='full'] .pavp-admin-shell__header-action-icon-state {
 
 html[data-motion='reduced'] .pavp-admin-shell__header-action-icon-state,
 html[data-motion='reduced'] .pavp-admin-shell__header-action-tooltip,
-html[data-motion='reduced'] .pavp-form-control .n-input,
-html[data-motion='reduced'] .pavp-form-control .n-input__border,
-html[data-motion='reduced'] .pavp-form-control .n-input__state-border,
-html[data-motion='reduced'] .pavp-form-control .n-base-selection,
-html[data-motion='reduced'] .pavp-form-control .n-base-selection__border,
-html[data-motion='reduced'] .pavp-form-control .n-base-selection__state-border,
-html[data-motion='reduced'] .pavp-form-control .n-switch__rail,
-html[data-motion='reduced'] .pavp-form-control .n-switch__button,
+html[data-motion='reduced'] .n-card,
+html[data-motion='reduced'] .n-input,
+html[data-motion='reduced'] .n-input__input,
+html[data-motion='reduced'] .n-input__suffix,
+html[data-motion='reduced'] .n-input__border,
+html[data-motion='reduced'] .n-input__state-border,
+html[data-motion='reduced'] .n-base-selection,
+html[data-motion='reduced'] .n-base-selection__border,
+html[data-motion='reduced'] .n-base-selection__state-border,
+html[data-motion='reduced'] .n-base-selection-label,
+html[data-motion='reduced'] .n-base-selection-input,
+html[data-motion='reduced'] .n-base-selection-overlay,
+html[data-motion='reduced'] .n-base-selection .n-base-suffix__arrow,
+html[data-motion='reduced'] .n-switch__rail,
+html[data-motion='reduced'] .n-switch__button,
 html[data-motion='reduced'] .pavp-form-field .n-form-item-feedback,
-html[data-motion='reduced'] .pavp-form-select-menu,
+html[data-motion='reduced'] .n-base-select-menu,
+html[data-motion='reduced'] .n-base-select-menu .n-base-select-option,
+html[data-motion='reduced'] .n-base-select-menu .n-base-select-option::before,
+html[data-motion='reduced'] .n-base-select-menu .n-base-select-option__check,
 html[data-motion='reduced'] .n-date-panel,
 html[data-motion='reduced'] .n-date-panel-date,
 html[data-motion='reduced'] .n-date-panel-calendar__title,
@@ -269,15 +400,24 @@ html[data-motion='reduced'] .n-date-panel-month {
 }
 
 html[data-motion='reduced'] .pavp-admin-shell__header-action.n-button,
-html[data-motion='reduced'] .pavp-form-control .n-input,
-html[data-motion='reduced'] .pavp-form-control .n-input__border,
-html[data-motion='reduced'] .pavp-form-control .n-input__state-border,
-html[data-motion='reduced'] .pavp-form-control .n-base-selection,
-html[data-motion='reduced'] .pavp-form-control .n-base-selection__border,
-html[data-motion='reduced'] .pavp-form-control .n-base-selection__state-border,
-html[data-motion='reduced'] .pavp-form-control .n-switch__rail,
-html[data-motion='reduced'] .pavp-form-control .n-switch__button,
-html[data-motion='reduced'] .pavp-form-select-menu,
+html[data-motion='reduced'] .n-input,
+html[data-motion='reduced'] .n-input__input,
+html[data-motion='reduced'] .n-input__suffix,
+html[data-motion='reduced'] .n-input__border,
+html[data-motion='reduced'] .n-input__state-border,
+html[data-motion='reduced'] .n-base-selection,
+html[data-motion='reduced'] .n-base-selection__border,
+html[data-motion='reduced'] .n-base-selection__state-border,
+html[data-motion='reduced'] .n-base-selection-label,
+html[data-motion='reduced'] .n-base-selection-input,
+html[data-motion='reduced'] .n-base-selection-overlay,
+html[data-motion='reduced'] .n-base-selection .n-base-suffix__arrow,
+html[data-motion='reduced'] .n-switch__rail,
+html[data-motion='reduced'] .n-switch__button,
+html[data-motion='reduced'] .n-base-select-menu,
+html[data-motion='reduced'] .n-base-select-menu .n-base-select-option,
+html[data-motion='reduced'] .n-base-select-menu .n-base-select-option::before,
+html[data-motion='reduced'] .n-base-select-menu .n-base-select-option__check,
 html[data-motion='reduced'] .n-date-panel,
 html[data-motion='reduced'] .n-date-panel-date,
 html[data-motion='reduced'] .n-date-panel-calendar__title,
@@ -303,7 +443,7 @@ html[data-motion='reduced']
     .popover-transition-leave-to
   ),
 html[data-motion='reduced']
-  .pavp-form-select-menu:is(
+  :is(.n-base-select-menu, .n-base-select-menu .n-base-select-option__check):is(
     .fade-in-scale-up-transition-enter-from,
     .fade-in-scale-up-transition-leave-to
   ),
@@ -318,7 +458,7 @@ html[data-motion='none']
     .popover-transition-leave-to
   ),
 html[data-motion='none']
-  .pavp-form-select-menu:is(
+  :is(.n-base-select-menu, .n-base-select-menu .n-base-select-option__check):is(
     .fade-in-scale-up-transition-enter-from,
     .fade-in-scale-up-transition-leave-to
   ),
@@ -469,31 +609,24 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
 }
 
 @media (forced-colors: active) {
-  .pavp-form-control :focus-visible {
+  .pavp-form-control .n-input__input-el:focus-visible,
+  .pavp-form-control .n-input__textarea-el:focus-visible,
+  .pavp-form-control .n-base-selection-label:focus-visible,
+  .pavp-form-control .n-base-selection-tags:focus-visible,
+  .pavp-form-control .n-switch[role='switch']:focus-visible {
     outline: var(--ui-admin-border-focus);
-    outline-offset: var(--ui-admin-focus-outline-offset);
   }
 }
-.pavp-switch * {
+.pavp-switch :is(.n-switch__rail, .n-switch__button) {
   transition-duration: var(--ui-motion-duration);
-  transition-timing-function: var(--ui-motion-easing);
 }
-html:not([data-motion='full']) .pavp-switch * {
+html:not([data-motion='full']) .pavp-switch :is(.n-switch__rail, .n-switch__button) {
   transition: none;
 }
 @media (forced-colors: active) {
   .pavp-switch[role='switch'] {
     outline: var(--ui-admin-border-width) solid ButtonText;
   }
-}
-
-.pavp-workspace-context-menu {
-  border-width: var(--ui-admin-border-width);
-  border-style: solid;
-  border-color: var(--ui-color-border-default);
-}
-.pavp-workspace-context-menu:focus-visible {
-  outline: var(--ui-admin-border-focus);
 }
 html[data-motion] .pavp-workspace-context-menu,
 html[data-motion] .pavp-workspace-context-menu .n-dropdown-option-body {
@@ -510,13 +643,5 @@ html[data-motion='none'] .pavp-workspace-context-menu .n-dropdown-option-body {
   transition: none !important;
   transform: none !important;
   opacity: 1 !important;
-}
-@media (forced-colors: active) {
-  .pavp-workspace-context-menu.n-dropdown-menu {
-    background: Canvas;
-  }
-  .pavp-workspace-context-menu .n-dropdown-option-body--pending {
-    outline: var(--ui-admin-border-width) solid Highlight;
-  }
 }
 </style>

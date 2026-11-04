@@ -1,0 +1,77 @@
+{
+  "workbench": {
+    "$extensions": {
+      "org.pavp": {
+        "visibility": "ui-internal"
+      }
+    },
+    "display": {
+      "font-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 4,
+          "unit": "rem"
+        }
+      }
+    },
+    "specimen": {
+      "minimum-inline-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 13,
+          "unit": "rem"
+        }
+      },
+      "preview-block-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 6,
+          "unit": "rem"
+        }
+      }
+    },
+    "api": {
+      "content-block-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 16,
+          "unit": "rem"
+        }
+      },
+      "payload-block-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 12,
+          "unit": "rem"
+        }
+      }
+    },
+    "feedback": {
+      "minimum-block-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 3,
+          "unit": "rem"
+        }
+      }
+    },
+    "motion": {
+      "travel": {
+        "$type": "dimension",
+        "$value": {
+          "value": 6,
+          "unit": "rem"
+        }
+      }
+    },
+    "settings": {
+      "navigator-inline-size": {
+        "$type": "dimension",
+        "$value": {
+          "value": 10,
+          "unit": "rem"
+        }
+      }
+    }
+  }
+}

@@ -172,7 +172,7 @@
     "surface": {
       "content": {
         "$type": "color",
-        "$value": "{color.surface.panel}",
+        "$value": "{color.surface.page}",
         "$extensions": { "org.pavp": { "role": "admin.surface.content" } }
       },
       "settings": {

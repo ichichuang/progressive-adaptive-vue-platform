@@ -120,7 +120,17 @@ const textColorVariables = variablesForMappings((mapping) =>
   mappingAllowsProperty(mapping, 'color'),
 )
 const spacingVariables = variablesForMappings((mapping) => mapping.family === 'spacing')
-const radiusVariables = variablesForMappings((mapping) => mapping.family === 'radius')
+const radiusVariables = [
+  ...variablesForMappings((mapping) => mapping.family === 'radius'),
+  ...tokenManifest.tokens
+    .filter(
+      (token) =>
+        token.name === 'interaction.radius.small' &&
+        token.visibility === 'ui-internal' &&
+        token.type === 'dimension',
+    )
+    .map((token) => token.cssVariable),
+]
 const shadowVariables = variablesForMappings((mapping) => mapping.family === 'shadow')
 const zIndexVariables = variablesForMappings((mapping) => mapping.family === 'z-index')
 const fontFamilyVariables = variablesForMappings((mapping) => mapping.family === 'font-family')
@@ -238,7 +248,17 @@ const visualAuthorityRules = {
   [spacingProperties]: [
     disallowOutsideAuthorities(spacingVariables, ['0', 'auto', 'normal'], approvedSpacingPatterns),
   ],
-  [radiusProperties]: [disallowOutsideAuthorities(radiusVariables, ['0'], [zeroLengthPattern])],
+  [radiusProperties]: [
+    disallowOutsideAuthorities(
+      radiusVariables,
+      ['0'],
+      [
+        zeroLengthPattern,
+        // Exact declaration ownership confines this connected Tab shape to its existing owner.
+        `${cssVariablePattern('--ui-radius-control')}\\s+${cssVariablePattern('--ui-radius-control')}\\s+${zeroLengthPattern}\\s+${zeroLengthPattern}`,
+      ],
+    ),
+  ],
   'box-shadow': [
     rawColorFunction,
     disallowOutsideAuthorities([...shadowVariables, ...adminShadowVariables], ['none']),
@@ -277,9 +297,87 @@ const routeTransitionVisualAuthorityRules = {
   animation: [new RegExp(routeTransitionFullDurationPattern, 'u')],
 }
 
+// Named live specimens, component adapters and settings layout owners. The owner-aware rule still
+// requires exact selector/property/input contracts; this is no file-wide grant.
+const specimenVariable = '--pavp-specimen-value'
+const settingsActionClearancePattern = String.raw`calc\(\s*var\(--ui-layout-target-enhanced-minimum-block-size\)\s*\+\s*max\(\s*var\(--ui-space-page-inline\)\s*,\s*env\(safe-area-inset-bottom\)\s*\)\s*\+\s*var\(--ui-space-section-block\)\s*\)`
+const workbenchVisualAuthorityRules = {
+  ...visualAuthorityRules,
+  color: colorAuthorityRules([
+    ...textColorVariables,
+    specimenVariable,
+    '--pavp-settings-theme-on-color',
+  ]),
+  [borderColorProperties]: colorAuthorityRules([...borderColorVariables, '--ui-color-focus-ring']),
+  [borderShorthandProperties]: [
+    rawColorFunction,
+    disallowUnapprovedUiVariables([...borderColorVariables, '--ui-border-width']),
+  ],
+  [radiusProperties]: [
+    disallowOutsideAuthorities([...radiusVariables, specimenVariable], ['0'], ['50%']),
+  ],
+  'font-family': [disallowOutsideAuthorities([...fontFamilyVariables, specimenVariable])],
+  'font-size': [
+    disallowOutsideAuthorities(
+      [...fontSizeVariables, specimenVariable, '--ui-workbench-display-font-size'],
+      ['0'],
+      [zeroLengthPattern],
+    ),
+  ],
+  'font-weight': [disallowOutsideAuthorities([...fontWeightVariables, specimenVariable])],
+  'line-height': [
+    disallowOutsideAuthorities(
+      [...lineHeightVariables, specimenVariable],
+      ['0'],
+      [zeroLengthPattern],
+    ),
+  ],
+  'box-shadow': [
+    rawColorFunction,
+    disallowOutsideAuthorities(
+      [...shadowVariables, ...adminShadowVariables, specimenVariable],
+      ['none'],
+      [
+        String.raw`inset\s+0\s+calc\(-1\s*\*\s*var\(--ui-border-width\)\)\s+0\s+var\(--ui-color-focus-ring\)`,
+      ],
+    ),
+  ],
+  'z-index': [
+    disallowOutsideAuthorities(
+      [...zIndexVariables, specimenVariable],
+      ['auto'],
+      [zeroNumberPattern],
+    ),
+  ],
+  [spacingProperties]: [
+    disallowOutsideAuthorities(
+      spacingVariables,
+      ['0', 'auto', 'normal'],
+      [
+        ...approvedSpacingPatterns,
+        settingsActionClearancePattern,
+        String.raw`calc\(\s*-1\s*\*\s*var\(--ui-space-content-gap\)\s*\)`,
+        String.raw`calc\(\s*var\(--ui-workbench-settings-navigator-inline-size\)\s*\+\s*var\(--ui-space-page-inline\)\s*\)`,
+      ],
+    ),
+  ],
+}
+
 export default {
   plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
+    {
+      files: ['**/packages/ui/src/components/UiRadioCardGroup.vue.style-*.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': {
+          ...visualAuthorityRules,
+          color: colorAuthorityRules([
+            ...textColorVariables,
+            '--pavp-radio-card-selected-hover-foreground',
+          ]),
+        },
+      },
+    },
     {
       files: ['apps/web/src/app/router/route-transition/route-transition.css'],
       rules: {
@@ -287,9 +385,9 @@ export default {
       },
     },
     {
-      files: ['**/apps/web/src/pages/appearance.vue.style-*.css'],
+      files: ['apps/web/src/app/workbench/workbench.css'],
       rules: {
-        'declaration-property-value-disallowed-list': shellVisualAuthorityRules,
+        'declaration-property-value-disallowed-list': workbenchVisualAuthorityRules,
       },
     },
     {
@@ -320,7 +418,8 @@ export default {
     'no-empty-source': true,
     'property-no-unknown': true,
     'property-disallowed-list': ['filter'],
-    'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global'] }],
+    // Vue scoped syntax remains subject to exact declaration/context ownership.
+    'selector-pseudo-class-no-unknown': [true, { ignorePseudoClasses: ['global', 'deep'] }],
     'selector-pseudo-element-no-unknown': true,
     'unit-no-unknown': true,
   },

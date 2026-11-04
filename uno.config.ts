@@ -278,6 +278,25 @@ function blocksUnapprovedUtility(selector: string): boolean {
 }
 
 export default defineConfig({
+  // Internal generation order also keeps Uno's native prelude in canonical order.
+  layers: { base: -200, properties: -190, theme: -180, icons: -10, shortcuts: -5, default: 0 },
+  outputToCssLayers: {
+    cssLayerName(layer) {
+      switch (layer) {
+        case 'base':
+          return 'reset'
+        case 'properties':
+        case 'theme':
+          return 'tokens'
+        case 'icons':
+        case 'shortcuts':
+        case 'default':
+          return 'utilities'
+        default:
+          throw new Error(`UnoCSS layer has no PAVP cascade owner: ${layer}`)
+      }
+    },
+  },
   blocklist: [
     // Proven pipeline false positives: Vue tag arguments and admitted selector CSS property text.
     ...['h1', 'h2', 'h3', 'h4', 'backdrop-filter', 'transition'],

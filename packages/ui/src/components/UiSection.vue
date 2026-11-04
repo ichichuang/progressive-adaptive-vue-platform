@@ -12,9 +12,9 @@ defineSlots<{
 </script>
 
 <template>
-  <section class="pavp-section border rounded-panel bg-surface-panel border-border-default">
+  <section class="pavp-section">
     <div class="pavp-section__heading">
-      <h2 class="leading-title font-title-weight m-0 text-text-primary text-title">
+      <h2 class="leading-body font-title-weight m-0 text-body text-text-primary">
         {{ title }}
       </h2>
       <p
@@ -29,13 +29,11 @@ defineSlots<{
 </template>
 
 <style scoped>
-.pavp-section,
-.pavp-section__heading {
-  display: grid;
-  gap: var(--ui-space-content-gap);
-}
-
-.pavp-section {
-  padding: var(--ui-space-page-inline);
+@layer components {
+  .pavp-section,
+  .pavp-section__heading {
+    display: grid;
+    gap: var(--ui-space-content-gap);
+  }
 }
 </style>

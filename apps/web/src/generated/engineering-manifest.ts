@@ -35,7 +35,6 @@ export const engineeringManifest = {
     'format-check',
     'lint',
     'lint-css',
-    'lint-uno',
     'typecheck-vue',
     'typecheck-ts',
     'check-arch',

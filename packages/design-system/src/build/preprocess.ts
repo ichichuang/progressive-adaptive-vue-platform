@@ -3,15 +3,9 @@ import { z } from 'zod'
 
 import { isInSrgbGamut, parseCssColor } from '../schema/css-color'
 import {
-  legacyBuiltInThemeIds,
-  legacySeedThemeDefinitionSchema,
-  type LegacySeedThemeDefinition,
-} from '../schema/legacy-seed-theme.schema'
-import {
   tokenDefinitionSchema,
   tokenGroupExtensionsSchema,
   tokenSourceSchema,
-  type ColorValue,
   type TokenConditions,
   type TokenDefinition,
   type TokenPavpExtension,
@@ -74,14 +68,6 @@ const sourceDictionarySchema = z.strictObject({
 const requiredDensityPresets = ['comfortable', 'compact', 'spacious'] as const
 const colorCompoundAxes = ['theme', 'colorMode', 'contrast'] as const
 
-interface ResolvedLegacySeedThemeDefinition extends Omit<LegacySeedThemeDefinition, 'palette'> {
-  palette: {
-    accent: ColorValue
-    brand: ColorValue
-    neutral: LegacySeedThemeDefinition['palette']['neutral']
-  }
-}
-
 export interface ColorCompound {
   conditions: TokenConditions
   name: string
@@ -97,7 +83,6 @@ export interface TokenBuildResult {
   materialRoles: readonly MaterialRoleValidation[]
   namedContrasts: readonly NamedContrastValidation[]
   sourceFiles: readonly string[]
-  themes: readonly ResolvedLegacySeedThemeDefinition[]
   tokens: readonly ResolvedTokenRecord[]
   unoCssMappings: readonly UnoCssMappingRecord[]
 }
@@ -313,11 +298,15 @@ function compareRecords(left: ResolvedTokenRecord, right: ResolvedTokenRecord): 
   )
 }
 
-export function validateDensityControlHeightSources(records: readonly ResolvedTokenRecord[]): void {
+export function validateDensitySources(records: readonly ResolvedTokenRecord[]): void {
   const publicRole = 'interaction.control.height'
   const baselineRole = 'interaction.control.height-baseline'
+  const buttonRole = 'spacing.button.inline'
   const aliases = records.filter(
-    (record) => record.role.name === publicRole || record.role.name === baselineRole,
+    (record) =>
+      record.role.name === publicRole ||
+      record.role.name === baselineRole ||
+      record.role.name === buttonRole,
   )
   const expected = [
     [publicRole, undefined, 'comfortable'],
@@ -325,11 +314,15 @@ export function validateDensityControlHeightSources(records: readonly ResolvedTo
     [publicRole, 'comfortable', 'comfortable'],
     [publicRole, 'spacious', 'spacious'],
     [baselineRole, undefined, 'comfortable'],
+    [buttonRole, undefined, 'comfortable'],
+    [buttonRole, 'compact', 'compact'],
+    [buttonRole, 'comfortable', 'comfortable'],
+    [buttonRole, 'spacious', 'spacious'],
   ] as const
   function fail(detail: string): never {
-    throw new Error(`Density control-height contract: ${detail}.`)
+    throw new Error(`Density source contract: ${detail}.`)
   }
-  if (aliases.length !== expected.length) fail('exactly five semantic aliases are required')
+  if (aliases.length !== expected.length) fail('exactly nine semantic aliases are required')
   for (const [role, preset, sourcePreset] of expected) {
     const matches = aliases.filter(
       (record) =>
@@ -338,14 +331,16 @@ export function validateDensityControlHeightSources(records: readonly ResolvedTo
           conditionKey(preset === undefined ? {} : { density: preset }),
     )
     const record = matches[0]
-    const source = `density.${sourcePreset}.control.height`
+    const button = role === buttonRole
+    const source = `density.${sourcePreset}.${button ? 'button.padding-inline' : 'control.height'}`
     if (matches.length !== 1 || record === undefined)
       fail(`${role}/${preset ?? 'default'} must occur exactly once`)
     if (
-      record.source !== 'semantic/interaction.tokens.json' ||
+      record.source !==
+        (button ? 'semantic/spacing.tokens.json' : 'semantic/interaction.tokens.json') ||
       record.tier !== 'semantic' ||
       record.type !== 'dimension' ||
-      record.visibility !== (role === publicRole ? 'public' : 'ui-internal') ||
+      record.visibility !== (role === baselineRole ? 'ui-internal' : 'public') ||
       record.cssVariable !== cssVariableForRole(record.role) ||
       record.compound !== undefined ||
       record.authoredValue !== `{${source}}` ||
@@ -366,38 +361,45 @@ export function validateDensityControlHeightSources(records: readonly ResolvedTo
     )
       fail('density selectors and source visibility must remain isolated')
   }
-  for (const [preset, primitive, cssValue] of [
-    ['compact', 'sm', '2rem'],
-    ['comfortable', 'md', '2.25rem'],
-    ['spacious', 'lg', '2.75rem'],
+  for (const [preset, heightPrimitive, heightValue, buttonPrimitive, buttonValue] of [
+    ['compact', 'sm', '2rem', 'button-inline-compact', '12px'],
+    ['comfortable', 'md', '2.25rem', 'button-inline', '14px'],
+    ['spacious', 'lg', '2.75rem', 'button-inline-spacious', '16px'],
   ] as const) {
-    const path = `density.${preset}.control.height`
-    const sources = records.filter((record) => record.path === path)
-    const record = sources[0]
-    const primitivePath = `dimension.control.${primitive}`
-    const target = records.find((candidate) => candidate.path === primitivePath)
-    if (
-      sources.length !== 1 ||
-      record?.source !== `density/${preset}.tokens.json` ||
-      record.tier !== 'density' ||
-      record.type !== 'dimension' ||
-      record.visibility !== 'build-only' ||
-      Object.keys(record.conditions).length !== 0 ||
-      record.compound !== undefined ||
-      record.authoredValue !== `{${primitivePath}}` ||
-      record.reference !== primitivePath ||
-      tokenValueToCss(record.type, record.resolvedValue) !== cssValue ||
-      target?.source !== 'primitive/dimension.tokens.json' ||
-      target.tier !== 'primitive' ||
-      target.visibility !== 'build-only' ||
-      target.type !== 'dimension' ||
-      target.reference !== undefined ||
-      tokenValueToCss(target.type, target.resolvedValue) !== cssValue
-    )
-      fail(`${path} must explicitly alias its own rem primitive`)
-    for (const alias of aliases.filter((candidate) => candidate.reference === path)) {
-      if (tokenValueToCss(alias.type, alias.resolvedValue) !== cssValue)
-        fail(`${alias.path} resolved value drifted`)
+    for (const [path, primitivePath, cssValue] of [
+      [`density.${preset}.control.height`, `dimension.control.${heightPrimitive}`, heightValue],
+      [
+        `density.${preset}.button.padding-inline`,
+        `dimension.space.${buttonPrimitive}`,
+        buttonValue,
+      ],
+    ] as const) {
+      const sources = records.filter((record) => record.path === path)
+      const record = sources[0]
+      const target = records.find((candidate) => candidate.path === primitivePath)
+      if (
+        sources.length !== 1 ||
+        record?.source !== `density/${preset}.tokens.json` ||
+        record.tier !== 'density' ||
+        record.type !== 'dimension' ||
+        record.visibility !== 'build-only' ||
+        Object.keys(record.conditions).length !== 0 ||
+        record.compound !== undefined ||
+        record.authoredValue !== `{${primitivePath}}` ||
+        record.reference !== primitivePath ||
+        tokenValueToCss(record.type, record.resolvedValue) !== cssValue ||
+        target?.source !== 'primitive/dimension.tokens.json' ||
+        target.tier !== 'primitive' ||
+        target.visibility !== 'build-only' ||
+        target.type !== 'dimension' ||
+        target.reference !== undefined ||
+        tokenValueToCss(target.type, target.resolvedValue) !== cssValue
+      )
+        fail(`${path} must explicitly alias its own primitive and unit`)
+      for (const alias of aliases.filter((candidate) => candidate.reference === path)) {
+        if (tokenValueToCss(alias.type, alias.resolvedValue) !== cssValue)
+          fail(`${alias.path} resolved value drifted`)
+      }
     }
   }
 }
@@ -679,24 +681,6 @@ function validateSemanticStatusSources(records: readonly ResolvedTokenRecord[]):
   }
 }
 
-function parseLegacySeedThemeSource(bundle: {
-  contents: string
-  path: string
-}): LegacySeedThemeDefinition {
-  if (!/^themes\/[a-z][a-z0-9-]*\.theme\.json$/u.test(bundle.path)) {
-    throw new Error(`${bundle.path}: unsupported theme source path.`)
-  }
-
-  const parsed = parseJsonSource(bundle.contents, bundle.path)
-  const theme = legacySeedThemeDefinitionSchema.safeParse(parsed)
-
-  if (!theme.success) {
-    throw formatIssues(bundle.path, theme.error)
-  }
-
-  return theme.data
-}
-
 export function preprocessTokenSources(dictionary: PreprocessedTokens): {
   result: TokenBuildResult
   tokens: PreprocessedTokens
@@ -713,27 +697,10 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
   const tokenRecords: TokenRecord[] = []
   const tokenPaths = new Map<string, string>()
   const completeThemeBundles: { contents: string; path: string }[] = []
-  const themes: LegacySeedThemeDefinition[] = []
-  const themeIds = new Map<string, string>()
 
   for (const bundle of bundles) {
     if (bundle.path.startsWith('themes/complete/') && bundle.path.endsWith('.theme.json')) {
       completeThemeBundles.push(bundle)
-      continue
-    }
-
-    if (bundle.path.endsWith('.theme.json')) {
-      const theme = parseLegacySeedThemeSource(bundle)
-      const existingThemeSource = themeIds.get(theme.id)
-
-      if (existingThemeSource !== undefined) {
-        throw new Error(
-          `${bundle.path}: duplicate theme id "${theme.id}" also declared by ${existingThemeSource}.`,
-        )
-      }
-
-      themeIds.set(theme.id, bundle.path)
-      themes.push(theme)
       continue
     }
 
@@ -757,26 +724,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
 
   const resolver = createTokenResolver(tokenRecords)
   validateSemanticStatusSources(resolver.records)
-  validateDensityControlHeightSources(resolver.records)
-  const resolvedThemes = themes
-    .sort((left, right) => compareCodePoints(left.id, right.id))
-    .map((theme): ResolvedLegacySeedThemeDefinition => ({
-      id: theme.id,
-      label: theme.label,
-      palette: {
-        brand: resolver.resolveReference(
-          theme.palette.brand,
-          'color',
-          `theme.${theme.id}.palette.brand`,
-        ) as ColorValue,
-        accent: resolver.resolveReference(
-          theme.palette.accent,
-          'color',
-          `theme.${theme.id}.palette.accent`,
-        ) as ColorValue,
-        neutral: theme.palette.neutral,
-      },
-    }))
+  validateDensitySources(resolver.records)
   const completeThemes = validateCompleteBuiltInThemes({
     bundles: completeThemeBundles,
     resolver,
@@ -787,14 +735,8 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
     .filter((value): value is string => value !== undefined)
 
   assertExactSet(densityPresets, requiredDensityPresets, 'Density preset contract')
-  assertExactSet(
-    resolvedThemes.map((theme) => theme.id),
-    legacyBuiltInThemeIds,
-    'Legacy Theme migration preset contract',
-  )
-
   const records = [...resolver.records].sort(compareRecords)
-  const compounds = validateTokenRecords(records, new Set(themeIds.keys()))
+  const compounds = validateTokenRecords(records, new Set(completeThemes.map((theme) => theme.id)))
   const activePublicRoles = validatePublicRoleRegistry(PublicRoleRegistry)
   const alphaContracts = validateAlphaContractRegistry(
     ActiveAlphaContractRegistry,
@@ -810,7 +752,7 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
 
   const validation = validateContrastAndMaterialContracts(
     records,
-    resolvedThemes.map((theme) => theme.id),
+    completeThemes.map((theme) => theme.id),
     namedContrastRegistry,
     completeThemes,
   )
@@ -831,7 +773,6 @@ export function preprocessTokenSources(dictionary: PreprocessedTokens): {
       materialRoles: validation.materialRoles,
       namedContrasts: validation.namedContrasts,
       sourceFiles: bundles.map((bundle) => bundle.path),
-      themes: resolvedThemes,
       tokens: records,
       unoCssMappings: unoCssMappingRecords(activePublicRoles),
     },

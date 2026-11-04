@@ -71,24 +71,30 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
 </template>
 
 <style>
-.pavp-form-field,
-.pavp-form-field__content {
-  min-inline-size: 0;
-  inline-size: 100%;
+@layer components {
+  .pavp-form-field,
+  .pavp-form-field__content {
+    min-inline-size: 0;
+    inline-size: 100%;
+  }
+  .pavp-form-field__description {
+    color: var(--ui-color-text-secondary);
+  }
+  .pavp-form-field__errors {
+    color: var(--ui-color-text-on-status-error);
+    margin: 0;
+    padding-inline-start: var(--ui-space-content-gap);
+  }
 }
-.pavp-form-field__description {
-  color: var(--ui-color-text-secondary);
-}
-.pavp-form-field__errors {
-  color: var(--ui-color-text-on-status-error);
-  margin: 0;
-  padding-inline-start: var(--ui-space-content-gap);
-}
-.pavp-form-field .n-form-item-feedback--error {
-  background-color: var(--ui-color-status-error);
+@layer vendor-overrides {
+  .pavp-form-field .n-form-item-feedback--error {
+    background-color: var(--ui-color-status-error);
+  }
+  .pavp-form-field .n-form-item-label {
+    white-space: normal;
+  }
 }
 .pavp-form-field .n-form-item-label {
-  white-space: normal;
   transition: none;
 }
 </style>

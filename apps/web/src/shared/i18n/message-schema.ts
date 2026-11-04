@@ -40,23 +40,8 @@ export type ConsoleMessageSchema = typeof common &
   typeof capabilities
 export type ConsoleMessageKey = keyof ConsoleMessageSchema
 export type ConsoleCommonMessageKey = keyof typeof common
-export interface ConsoleMessageParams {
-  readonly 'console.storage.active-records': Readonly<{ count: number }>
-  readonly 'appearance.gallery.description': Readonly<{ count: number }>
-  readonly 'appearance.preview.current-material': Readonly<{ material: string }>
-}
-
-export const messageParameterKinds = {
-  'console.storage.active-records': { count: 'number' },
-  'appearance.gallery.description': { count: 'number' },
-  'appearance.preview.current-material': { material: 'string' },
-} as const satisfies {
-  [Key in keyof ConsoleMessageParams]: {
-    [Name in keyof ConsoleMessageParams[Key]]: ConsoleMessageParams[Key][Name] extends number
-      ? 'number'
-      : 'string'
-  }
-}
+export type ConsoleMessageParams = Record<never, never>
+export const messageParameterKinds = {} as const
 
 export type ConsoleTranslate = <Key extends ConsoleMessageKey>(
   key: Key,

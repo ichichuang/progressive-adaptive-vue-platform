@@ -109,7 +109,6 @@ const legacyErrorPages = new Set([
 const legacyBorderOwners = new Map([
   ...[...legacyErrorPages].map((path) => [path, 'section']),
   ['apps/web/src/app/errors/AppErrorBoundary.vue', 'section'],
-  ['apps/web/src/pages/index.vue', 'a'],
   ['packages/ui/src/components/UiSection.vue', 'section'],
 ])
 const exactDynamicClassOwners = new Map([
@@ -1287,7 +1286,157 @@ const noUnapprovedVisualLiterals = {
       return attribute?.value?.value
     }
 
+    function publicTokenValue(expression, seen = new Set()) {
+      if (!expression || seen.has(expression)) return false
+      const next = new Set([...seen, expression])
+      const value = resolveLocalExpression(expression)
+      if (value?.type === 'Identifier') {
+        // A readonly computed string also feeds Clipboard. Inspect its const
+        // getter directly rather than treating that primitive read as an escape.
+        const binding = sinks.variable(value)
+        const definition = binding?.defs[0]
+        if (
+          definition?.type !== 'Variable' ||
+          definition.parent.kind !== 'const' ||
+          binding.references.some((reference) => reference.isWrite() && !reference.init)
+        )
+          return false
+        const initializer = definition.node.init
+        return (
+          initializer?.type === 'CallExpression' &&
+          sinks.imported(initializer.callee, 'vue', ['computed']) &&
+          publicTokenValue(initializer, next)
+        )
+      }
+      if (value?.type === 'MemberExpression')
+        return sinks.imported(value.object, '@platform/design-system', ['tokens'])
+      if (value?.type !== 'CallExpression' || !sinks.imported(value.callee, 'vue', ['computed']))
+        return false
+      const callback = value.arguments[0]
+      if (callback?.type !== 'ArrowFunctionExpression') return false
+      if (callback.body.type !== 'BlockStatement') return publicTokenValue(callback.body, next)
+      const returns = []
+      const visit = (node) => {
+        if (node.type === 'ReturnStatement') returns.push(node.argument)
+        else
+          for (const key of context.sourceCode.visitorKeys[node.type] ?? []) {
+            const children = node[key]
+            if (Array.isArray(children)) children.forEach((child) => child && visit(child))
+            else if (children?.type) visit(children)
+          }
+      }
+      visit(callback.body)
+      return returns.length > 0 && returns.every((result) => publicTokenValue(result, next))
+    }
+
     function admittedTemplateStyle(node, attribute) {
+      const expression = resolveLocalExpression(node.value?.expression)
+      const element = node.parent?.parent
+      if (attribute === 'style' && filename === 'packages/ui/src/components/UiRadioCardGroup.vue') {
+        const importedGroup = context.sourceCode.ast.body.some(
+          (statement) =>
+            statement.type === 'ImportDeclaration' &&
+            statement.source.value === 'naive-ui/es/radio' &&
+            statement.specifiers.some(
+              (specifier) =>
+                specifier.type === 'ImportSpecifier' &&
+                specifier.imported.name === 'NRadioGroup' &&
+                specifier.local.name === element?.rawName,
+            ),
+        )
+        const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
+        const pairs = {
+          '--pavp-radio-card-hover-surface': [
+            'soft.background.hover',
+            'var(--ui-color-text-primary)',
+          ],
+          '--pavp-radio-card-selected-hover-surface': [
+            'solid.background.hover',
+            'var(--ui-color-text-on-action)',
+          ],
+          '--pavp-radio-card-selected-hover-foreground': [
+            'solid.foreground',
+            'var(--ui-color-action-primary)',
+          ],
+        }
+        return (
+          importedGroup &&
+          fields.length === Object.keys(pairs).length &&
+          fields.every((field) => {
+            if (field.type !== 'Property') return false
+            const expected = pairs[getStaticPropertyName(field.key, field.computed)]
+            const value = field.value
+            if (!expected || value.type !== 'LogicalExpression' || value.operator !== '??')
+              return false
+            const path = []
+            let target = value.left.type === 'ChainExpression' ? value.left.expression : value.left
+            while (target?.type === 'MemberExpression') {
+              path.unshift(getStaticPropertyName(target.property, target.computed))
+              target = target.object
+            }
+            const injection = target?.type === 'Identifier' ? sinks.initializer(target) : undefined
+            return (
+              path.join('.') === `value.colorPalette.roles.primary.${expected[0]}` &&
+              staticNodeValue(value.right) === expected[1] &&
+              injection?.type === 'CallExpression' &&
+              sinks.imported(injection.callee, 'vue', ['inject']) &&
+              sinks.imported(
+                injection.arguments[0],
+                '../adapters/naive/pavp-naive-runtime-context',
+                ['pavpNaiveAppearanceKey'],
+              )
+            )
+          }) &&
+          new Set(fields.map((field) => getStaticPropertyName(field.key, field.computed))).size ===
+            Object.keys(pairs).length &&
+          claimStyleSink('radio-card-hover-palette')
+        )
+      }
+      if (attribute === 'style' && filename === 'apps/web/src/app/workbench/TokenSpecimen.vue') {
+        const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
+        return (
+          element?.rawName === 'button' &&
+          staticTemplateClass(element)?.split(/\s+/u).includes('wb-specimen') &&
+          fields.length === 2 &&
+          fields.every(
+            (field) =>
+              field.type === 'Property' &&
+              ['--pavp-specimen-value', '--pavp-specimen-background'].includes(
+                getStaticPropertyName(field.key, field.computed),
+              ) &&
+              publicTokenValue(field.value),
+          ) &&
+          new Set(fields.map((field) => getStaticPropertyName(field.key, field.computed))).size ===
+            2 &&
+          claimStyleSink('token-specimen')
+        )
+      }
+      if (attribute === 'style' && filename === 'apps/web/src/pages/control-center.vue')
+        return (
+          element?.rawName === 'NButton' &&
+          staticTemplateClass(element)?.split(/\s+/u).includes('wb-theme-option') &&
+          expression?.type === 'CallExpression' &&
+          expression.arguments.length === 1 &&
+          expression.callee.type === 'Identifier' &&
+          previewProjectionFunctions.has(sinks.variable(expression.callee)) &&
+          claimStyleSink('settings-theme-preview')
+        )
+      if (attribute === 'style' && filename === 'apps/web/src/app/workbench/ColorModePreview.vue') {
+        const plane =
+          expression?.type === 'CallExpression'
+            ? staticNodeValue(expression.arguments[1])
+            : undefined
+        return (
+          element?.rawName === 'span' &&
+          staticTemplateClass(element)?.split(/\s+/u).includes('wb-mode-scene') &&
+          expression?.type === 'CallExpression' &&
+          expression.arguments.length === 3 &&
+          ['light', 'dark'].includes(plane) &&
+          expression.callee.type === 'Identifier' &&
+          previewProjectionFunctions.has(sinks.variable(expression.callee)) &&
+          claimStyleSink(`color-mode-${plane}`)
+        )
+      }
       const property = singleStyleProperty(node.value?.expression)
       if (property === undefined) return false
       const name = getStaticPropertyName(property.key, property.computed)
@@ -1331,58 +1480,7 @@ const noUnapprovedVisualLiterals = {
           claimStyleSink(tag)
         )
       }
-      if (
-        filename !== 'apps/web/src/pages/appearance.vue' ||
-        attribute !== 'style' ||
-        name !== '--pavp-appearance-swatch'
-      )
-        return false
-      const swatch =
-        value?.type === 'MemberExpression'
-          ? getStaticPropertyName(value.property, value.computed)
-          : undefined
-      const element = node.parent?.parent
-      const parent = element?.parent?.type === 'VElement' ? element.parent : undefined
-      const projectionCall = value?.type === 'MemberExpression' ? value.object : undefined
-      const previewCall =
-        projectionCall?.type === 'CallExpression'
-          ? resolveLocalExpression(projectionCall.arguments[0])
-          : undefined
-      const optionValue =
-        previewCall?.type === 'CallExpression'
-          ? resolveLocalExpression(previewCall.arguments[0])
-          : undefined
-      return (
-        element?.rawName === 'span' &&
-        staticTemplateClass(element) === 'pavp-appearance-theme-swatch' &&
-        parent?.rawName === 'span' &&
-        staticTemplateClass(parent) === 'pavp-appearance-theme-swatches' &&
-        [
-          'surfacePage',
-          'surfacePanel',
-          'actionPrimary',
-          'controlPrimary',
-          'borderDefault',
-          'focusRing',
-          'statusInfo',
-          'statusSuccess',
-          'statusWarning',
-          'statusError',
-        ].includes(swatch) &&
-        projectionCall?.type === 'CallExpression' &&
-        projectionCall.callee.type === 'Identifier' &&
-        previewProjectionFunctions.has(sinks.variable(projectionCall.callee)) &&
-        projectionCall.arguments.length === 1 &&
-        previewCall?.type === 'CallExpression' &&
-        previewCall.callee.type === 'Identifier' &&
-        previewCall.callee.name === 'themePreviewForValue' &&
-        previewCall.arguments.length === 1 &&
-        optionValue?.type === 'MemberExpression' &&
-        optionValue.object.type === 'Identifier' &&
-        optionValue.object.name === 'option' &&
-        getStaticPropertyName(optionValue.property, optionValue.computed) === 'value' &&
-        claimStyleSink(swatch)
-      )
+      return false
     }
 
     function reportUnresolved(node) {
@@ -1697,16 +1795,41 @@ const noUnapprovedVisualLiterals = {
             .map((parameter) => sinks.variable(parameter)),
         )
         const returns = node.body.body.filter((statement) => statement.type === 'ReturnStatement')
+        const returned = returns[0]?.argument
+        const modePreview = filename === 'apps/web/src/app/workbench/ColorModePreview.vue'
+        const pairs = modePreview
+          ? {
+              '--pavp-mode-preview-page': 'surfacePage',
+              '--pavp-mode-preview-panel': 'surfacePanel',
+              '--pavp-mode-preview-action': 'actionPrimary',
+              '--pavp-mode-preview-control': 'controlPrimary',
+              '--pavp-mode-preview-border': 'borderDefault',
+            }
+          : {
+              '--pavp-settings-theme-color': 'controlPrimary',
+              '--pavp-settings-theme-on-color': 'surfacePanel',
+            }
+        const fields = returned?.type === 'ObjectExpression' ? returned.properties : []
         if (
+          (filename === 'apps/web/src/pages/control-center.vue' || modePreview) &&
           node.id !== null &&
-          sinks.imported(node.returnType?.typeAnnotation?.typeName, '@platform/design-system', [
-            'AppearanceThemePreviewSwatches',
-          ]) &&
           returns.length === 1 &&
-          isPreviewPlaneReturn(returns[0].argument, parameters)
-        ) {
+          fields.length === Object.keys(pairs).length &&
+          fields.every((field) => {
+            if (field.type !== 'Property') return false
+            const role = pairs[getStaticPropertyName(field.key, field.computed)]
+            const value = resolveLocalExpression(field.value)
+            return (
+              role !== undefined &&
+              value?.type === 'MemberExpression' &&
+              getStaticPropertyName(value.property, value.computed) === role &&
+              isPreviewPlaneReturn(value.object, parameters)
+            )
+          }) &&
+          new Set(fields.map((field) => getStaticPropertyName(field.key, field.computed))).size ===
+            Object.keys(pairs).length
+        )
           previewProjectionFunctions.add(sinks.variable(node.id))
-        }
       },
       AssignmentExpression(node) {
         if (node.left.type !== 'MemberExpression') {

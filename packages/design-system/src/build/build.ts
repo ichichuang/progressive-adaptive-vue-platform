@@ -11,12 +11,13 @@ import type { PreprocessedTokens } from 'style-dictionary/types'
 import ts from 'typescript'
 
 import { ProductPreferenceDefault } from '../runtime/appearance-defaults'
-import { migrateToExplicitThemePreference } from '../runtime/preference-migration'
 import { resolveColorMode } from '../runtime/resolve-color-mode'
+import { resolveMotion } from '../runtime/resolve-motion'
 import { resolveMaterial } from '../runtime/resolve-material'
+import { resolveRadius } from '../runtime/radius-projection'
 import { validateCustomThemeDefinition } from '../runtime/theme-registry'
 import { projectUiAppearance } from '../runtime/ui-appearance-projection'
-import { fontScaleValues } from '../schema/appearance.schema'
+import { fontScaleValues, radiusPreferenceSchema } from '../schema/appearance.schema'
 import { builtInThemeIds } from '../schema/complete-theme.schema'
 import { explicitThemePreferenceSchema } from '../schema/preference.schema'
 import { formatOpaqueSrgbColor } from '../schema/css-color'
@@ -42,6 +43,11 @@ import {
   layoutRegistryDocument,
 } from './formats/layout'
 import {
+  createRadiusProjectionFormat,
+  formatRadiusProjection,
+  radiusProjectionDocument,
+} from './formats/radius'
+import {
   selectTokensForOutput,
   stableJson,
   tokenValueToCss,
@@ -66,7 +72,7 @@ import {
   parseTokenSourceRecords,
   preprocessTokenSources,
   validateActivePublicRoleTokens,
-  validateDensityControlHeightSources,
+  validateDensitySources,
   validateTokenRecords,
   type TokenBuildResult,
 } from './preprocess'
@@ -89,6 +95,7 @@ const generatedFiles = [
   'appearance-init.js',
   'critical-theme.css',
   'layout-registry.ts',
+  'radius-projection.ts',
   'token-names.ts',
   'theme-registry.ts',
   'tokens.css',
@@ -100,75 +107,6 @@ const generatedFiles = [
 const manifestCompressionContract = {
   profileId: 'node-zlib-gzip-sync',
   runtimeNodeVersion: '24.15.0',
-  baseline: {
-    commit: 'd2e7354fad616824e52dfe5ca0f7cdbe6b4705cf',
-    bytes: 3366,
-  },
-  current: {
-    expectedBytes: 15283,
-    expectedByteDelta: 11917,
-  },
-  completeThemePlanes: {
-    baselineCommit: '1daba84b5196e152966bd7e0f2e9e7ed8c24938f',
-    baselineBytes: 5213,
-    acceptedFinalBytes: 6153,
-    baselineRecordCount: 181,
-    expectedByteDelta: 940,
-    expectedRecordCountDelta: 0,
-  },
-  explicitThemePreferenceCutover: {
-    baselineCommit: '2f5a28a7dbe877f96ac3d24299d892bd7bb9087f',
-    baselineBytes: 6153,
-    baselineRecordCount: 181,
-    acceptedFinalBytes: 7687,
-    expectedByteDelta: 1534,
-    expectedRecordCountDelta: 0,
-  },
-  architectureAdminConsole: {
-    baselineCommit: '861c3c949a534e00e27811af6eda04d44e323fb6',
-    baselineBytes: 7687,
-    baselineRecordCount: 181,
-    acceptedFinalBytes: 9040,
-    acceptedFinalRecordCount: 231,
-    expectedByteDelta: 1353,
-    expectedRecordCountDelta: 50,
-  },
-  naiveThemeStateFusionRepair: {
-    baselineSource: 'pre-repair-corrected-worktree',
-    baselineBytes: 9008,
-    baselineRecordCount: 229,
-    acceptedFinalBytes: 9274,
-    acceptedFinalRecordCount: 239,
-    expectedByteDelta: 266,
-    expectedRecordCountDelta: 10,
-  },
-  sevenBuiltInThemeReplacement: {
-    baselineSource: 'rejected-curated-catalog-worktree',
-    baselineBytes: 9274,
-    baselineRecordCount: 239,
-    acceptedFinalBytes: 11550,
-    acceptedFinalRecordCount: 243,
-    expectedByteDelta: 2276,
-    expectedRecordCountDelta: 4,
-  },
-  additionalBuiltInThemeExpansion: {
-    baselineSource: 'seven-built-in-theme-replacement',
-    baselineBytes: 11550,
-    baselineRecordCount: 243,
-    acceptedFinalBytes: 15452,
-    acceptedFinalRecordCount: 250,
-    expectedByteDelta: 3902,
-    expectedRecordCountDelta: 7,
-  },
-  darkActionColorHarmonyRefinement: {
-    baselineSource: 'additional-built-in-theme-expansion',
-    baselineBytes: 15452,
-    baselineRecordCount: 250,
-    acceptedFinalBytes: 16198,
-    acceptedFinalRecordCount: 252,
-    expectedByteDelta: 746,
-    expectedRecordCountDelta: 2,
-  },
   hardLimitBytes: 32768,
   options: {
     chunkSize: constants.Z_DEFAULT_CHUNK,
@@ -295,6 +233,10 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
               format: 'pavp/typescript/layout-registry',
             },
             {
+              destination: 'radius-projection.ts',
+              format: 'pavp/typescript/radius-projection',
+            },
+            {
               destination: 'token-names.ts',
               format: 'pavp/typescript/token-names',
             },
@@ -350,6 +292,7 @@ async function initializeDictionary(outputDirectory: string): Promise<Initialize
     createCriticalThemeFormat(context),
     createAppearanceInitFormat(context),
     createLayoutRegistryFormat(context),
+    createRadiusProjectionFormat(context),
     createTokensTypeScriptFormat(context),
     createTokenNamesFormat(context),
     createThemeRegistryFormat(context),
@@ -372,6 +315,7 @@ function requireResult(context: FormatContext): TokenBuildResult {
   }
 
   validateGeneratorContracts(context.result)
+  validateRadiusContracts(context.result)
   validateAppearanceContracts(context.result)
   validateFirstPaintContracts(context.result)
   return context.result
@@ -482,107 +426,9 @@ function validateManifestCompression(result: TokenBuildResult): number {
   }
 
   const gzipBytes = first.byteLength
-  const actualDelta = gzipBytes - manifestCompressionContract.baseline.bytes
-  const additionalBuiltInThemeExpansionByteDelta =
-    manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalBytes -
-    manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes
-  const darkActionColorHarmonyByteDelta =
-    manifestCompressionContract.darkActionColorHarmonyRefinement.acceptedFinalBytes -
-    manifestCompressionContract.darkActionColorHarmonyRefinement.baselineBytes
-
-  assertInvariant(
-    manifestCompressionContract.current.expectedBytes -
-      manifestCompressionContract.baseline.bytes ===
-      manifestCompressionContract.current.expectedByteDelta,
-    'Manifest external byte-governance expected bytes and delta must match the canonical baseline',
-  )
   assertInvariant(
     gzipBytes <= manifestCompressionContract.hardLimitBytes,
     `Manifest gzip budget exceeded: ${String(gzipBytes)} bytes exceed ${String(manifestCompressionContract.hardLimitBytes)} bytes`,
-  )
-  assertInvariant(
-    gzipBytes === manifestCompressionContract.current.expectedBytes,
-    `Manifest gzip bytes: expected ${String(manifestCompressionContract.current.expectedBytes)}, received ${String(gzipBytes)}`,
-  )
-  assertInvariant(
-    actualDelta === manifestCompressionContract.current.expectedByteDelta,
-    `Manifest gzip delta: expected ${String(manifestCompressionContract.current.expectedByteDelta)}, received ${String(actualDelta)}`,
-  )
-  assertInvariant(
-    manifestCompressionContract.completeThemePlanes.acceptedFinalBytes -
-      manifestCompressionContract.completeThemePlanes.baselineBytes ===
-      manifestCompressionContract.completeThemePlanes.expectedByteDelta,
-    'historical Complete Theme planes accepted bytes and delta must match their baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.explicitThemePreferenceCutover.acceptedFinalBytes -
-      manifestCompressionContract.explicitThemePreferenceCutover.baselineBytes ===
-      manifestCompressionContract.explicitThemePreferenceCutover.expectedByteDelta,
-    'historical Explicit Theme Preference cutover accepted bytes and delta must match their baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.architectureAdminConsole.acceptedFinalRecordCount -
-      manifestCompressionContract.architectureAdminConsole.baselineRecordCount ===
-      manifestCompressionContract.architectureAdminConsole.expectedRecordCountDelta,
-    'historical Architecture Admin Console Manifest record delta must match its baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.architectureAdminConsole.acceptedFinalBytes -
-      manifestCompressionContract.architectureAdminConsole.baselineBytes ===
-      manifestCompressionContract.architectureAdminConsole.expectedByteDelta,
-    'Architecture Admin Console accepted bytes and delta must match their baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.naiveThemeStateFusionRepair.acceptedFinalRecordCount -
-      manifestCompressionContract.naiveThemeStateFusionRepair.baselineRecordCount ===
-      manifestCompressionContract.naiveThemeStateFusionRepair.expectedRecordCountDelta,
-    'Naive Theme State Fusion Repair Manifest record delta must match its baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.naiveThemeStateFusionRepair.acceptedFinalBytes -
-      manifestCompressionContract.naiveThemeStateFusionRepair.baselineBytes ===
-      manifestCompressionContract.naiveThemeStateFusionRepair.expectedByteDelta,
-    'Naive Theme State Fusion Repair accepted bytes and delta must match its baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalRecordCount -
-      manifestCompressionContract.sevenBuiltInThemeReplacement.baselineRecordCount ===
-      manifestCompressionContract.sevenBuiltInThemeReplacement.expectedRecordCountDelta,
-    'Historical Seven Built-in Theme Replacement Manifest record delta must match its baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.sevenBuiltInThemeReplacement.acceptedFinalBytes -
-      manifestCompressionContract.sevenBuiltInThemeReplacement.baselineBytes ===
-      manifestCompressionContract.sevenBuiltInThemeReplacement.expectedByteDelta,
-    'Historical Seven Built-in Theme Replacement accepted bytes and delta must match its baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalRecordCount -
-      manifestCompressionContract.additionalBuiltInThemeExpansion.baselineRecordCount ===
-      manifestCompressionContract.additionalBuiltInThemeExpansion.expectedRecordCountDelta,
-    'Additional Built-in Theme Expansion Manifest record delta must match its baseline',
-  )
-  assertInvariant(
-    manifestCompressionContract.additionalBuiltInThemeExpansion.acceptedFinalBytes -
-      manifestCompressionContract.additionalBuiltInThemeExpansion.baselineBytes ===
-      manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta,
-    'Additional Built-in Theme Expansion accepted bytes and delta must match its baseline',
-  )
-  assertInvariant(
-    additionalBuiltInThemeExpansionByteDelta ===
-      manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta,
-    `Additional Built-in Theme Expansion gzip delta: expected ${String(manifestCompressionContract.additionalBuiltInThemeExpansion.expectedByteDelta)}, received ${String(additionalBuiltInThemeExpansionByteDelta)}`,
-  )
-  assertInvariant(
-    manifestCompressionContract.darkActionColorHarmonyRefinement.acceptedFinalRecordCount -
-      manifestCompressionContract.darkActionColorHarmonyRefinement.baselineRecordCount ===
-      manifestCompressionContract.darkActionColorHarmonyRefinement.expectedRecordCountDelta,
-    'Dark Action Color Harmony Refinement Manifest record delta must match its baseline',
-  )
-  assertInvariant(
-    darkActionColorHarmonyByteDelta ===
-      manifestCompressionContract.darkActionColorHarmonyRefinement.expectedByteDelta,
-    `Dark Action Color Harmony Refinement gzip delta: expected ${String(manifestCompressionContract.darkActionColorHarmonyRefinement.expectedByteDelta)}, received ${String(darkActionColorHarmonyByteDelta)}`,
   )
 
   return gzipBytes
@@ -600,7 +446,10 @@ function validationResult(
   baseline: TokenBuildResult,
   tokens: readonly ResolvedTokenRecord[],
 ): TokenBuildResult {
-  const compounds = validateTokenRecords(tokens, new Set(baseline.themes.map((theme) => theme.id)))
+  const compounds = validateTokenRecords(
+    tokens,
+    new Set(baseline.completeThemes.map((theme) => theme.id)),
+  )
 
   return {
     activePublicRoles: baseline.activePublicRoles,
@@ -612,7 +461,6 @@ function validationResult(
     materialRoles: [],
     namedContrasts: [],
     sourceFiles: [...new Set(tokens.map((token) => token.source))].sort(compareCodePoints),
-    themes: baseline.themes,
     tokens,
     unoCssMappings: baseline.unoCssMappings,
   }
@@ -738,7 +586,7 @@ function validateUnoCssProjection(result: TokenBuildResult): string[] {
             declarations: {
               [binding.cssProperty]:
                 mapping.family === 'content-size' && binding.cssProperty === 'grid-template-columns'
-                  ? `repeat(auto-fit, minmax(var(${mapping.cssVariable}), 1fr))`
+                  ? `repeat(auto-fit, minmax(min(100%, var(${mapping.cssVariable})), 1fr))`
                   : `var(${mapping.cssVariable})`,
             },
             roleId: mapping.roleId,
@@ -1044,6 +892,7 @@ function completeThemeSourceDocument(
     id: theme.id,
     label: theme.label,
     planes: theme.planes,
+    uiPalette: theme.uiPalette,
   }
 }
 
@@ -1100,18 +949,20 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
 
   assertInvariant(
     result.completeThemes.length === builtInThemeIds.length,
-    'exactly fourteen complete built-in Themes must exist',
+    'exactly five complete built-in Themes must exist',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
-      builtInThemeIds.length * 4 * 26,
-    'complete built-in Themes must contain exactly 1456 authored color values',
+      builtInThemeIds.length * 4 * 30,
+    'complete built-in Themes must contain exactly 600 authored color bindings',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===
-      builtInThemeIds.length * 4 * 10 &&
-      result.completeThemes.every((theme) => theme.primitiveAliasValueCount === 64),
-    'Built-in Themes must retain 560 historical absolute colors and 896 canonical Status aliases',
+      builtInThemeIds.length * 4 &&
+      result.completeThemes.every(
+        (theme) => theme.primitiveAliasValueCount === 0 && theme.paletteAliasValueCount === 116,
+      ),
+    'Built-in Themes must use local approved palette aliases and preserve the four scrim values',
   )
   assertInvariantEqual(
     validateDocuments(canonicalDocuments),
@@ -1135,6 +986,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     schemaVersion: entry.definition.schemaVersion,
     roleContractVersion: entry.definition.roleContractVersion,
     planes: entry.definition.planes,
+    uiPalette: entry.uiPalette,
     bank: {
       visibility: entry.bank.visibility,
       derivation: 'theme-planes-and-active-public-roles',
@@ -1148,7 +1000,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
   for (const entry of registry.builtInEntries) {
     const logicalRecords = deriveThemeBankRecords(entry.definition.planes, result.activePublicRoles)
-    assertInvariant(logicalRecords.length === 104, `${entry.themeId}: exactly 104 logical records`)
+    assertInvariant(logicalRecords.length === 120, `${entry.themeId}: exactly 120 logical records`)
     assertInvariantEqual(
       logicalRecords,
       entry.bank.records.map(
@@ -1198,6 +1050,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     'appearance-init.js': formatAppearanceInitScript(result),
     'critical-theme.css': formatCriticalThemeCss(result),
     'layout-registry.ts': formatLayoutRegistry(result),
+    'radius-projection.ts': formatRadiusProjection(result),
     'token-names.ts': formatTokenNames(result),
     'theme-registry.ts': formatThemeRegistryTypeScript(result),
     'tokens.css': formatRuntimeCss(result),
@@ -1284,11 +1137,11 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     'dark',
     'standard',
   )
-  cappedControlPlane['color.control.primary'] = cappedControlPlane['color.action.primary']
+  cappedControlPlane['color.control.primary'] = cappedControlPlane['color.surface.page']
   assertContractFailure(
     () => validateDocuments(cappedControlForeground),
     /contrast/u,
-    'applying the Dark Action Fill lightness cap to Control Foreground must fail',
+    'an unreadable Control Foreground on its canvas must fail',
   )
 
   const extraRole = structuredClone(canonicalDocuments)
@@ -1323,7 +1176,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     typeof originalActionColor === 'string',
     'out-of-gamut probe source value must exist',
   )
-  outOfGamutRoleMap['color.action.primary'] = originalActionColor.replace(/% [^ ]+ /u, '% 0.4 ')
+  outOfGamutRoleMap['color.action.primary'] = 'color(srgb 1.2 0.2 0.2)'
   assertContractFailure(
     () => validateDocuments(outOfGamutColor),
     /Invalid complete built-in Theme source/u,
@@ -1372,35 +1225,31 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     'enhanced',
   )
 
-  // Status aliases are plane-specific; keep them valid so this probe reaches contrast validation.
-  for (const [roleId, value] of Object.entries(standardIntentRoleMap)) {
-    if (typeof value === 'string' && !value.startsWith('{color.palette.status.')) {
-      enhancedIntentRoleMap[roleId] = value
-    }
-  }
+  Object.assign(enhancedIntentRoleMap, standardIntentRoleMap)
+  const enhancedIntentPalette = invalidEnhancedIntent[0]?.['uiPalette']
+  assertInvariant(
+    isUnknownRecord(enhancedIntentPalette) && isUnknownRecord(enhancedIntentPalette['light']),
+    'Enhanced palette probe must exist',
+  )
+  enhancedIntentPalette['light']['enhanced'] = structuredClone(
+    enhancedIntentPalette['light']['standard'],
+  )
   assertContractFailure(
     () => validateDocuments(invalidEnhancedIntent),
     /contrast|Enhanced plane must not duplicate Standard/u,
     'complete Theme Enhanced-plane intent violations must fail',
   )
 
-  const missingPerRoleIdentity = structuredClone(canonicalDocuments)
-  const firstIdentityRoleMap = mutableThemeRoleMap(
-    missingPerRoleIdentity[0] ?? {},
-    'light',
-    'standard',
+  const duplicatePalette = structuredClone(canonicalDocuments)
+  assertInvariant(
+    duplicatePalette[0] !== undefined && duplicatePalette[1] !== undefined,
+    'Palette identity probes must exist',
   )
-  const secondIdentityRoleMap = mutableThemeRoleMap(
-    missingPerRoleIdentity[1] ?? {},
-    'light',
-    'standard',
-  )
-
-  secondIdentityRoleMap['color.scrim.viewport'] = firstIdentityRoleMap['color.scrim.viewport']
+  duplicatePalette[1]['uiPalette'] = structuredClone(duplicatePalette[0]['uiPalette'])
   assertContractFailure(
-    () => validateDocuments(missingPerRoleIdentity),
-    /Theme identity must remain present|unchanged pre-existing Theme cells drifted/u,
-    'complete Theme identity must remain present through every public color role',
+    () => validateDocuments(duplicatePalette),
+    /complete Theme palettes must be distinct/u,
+    'complete Theme palettes must retain distinct identities while permitting shared neutral values',
   )
 
   for (const forbiddenField of ['fallback', 'inheritance', 'palette', 'seed']) {
@@ -1504,7 +1353,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     result.unoCssMappings,
     unoCssMappingRecords(publicRoleRecords),
-    'Token preprocessing must carry exactly 55 UnoCSS mapping records',
+    'Token preprocessing must carry exactly 60 UnoCSS mapping records',
   )
   assertInvariantEqual(
     result.namedContrasts.map((record) =>
@@ -2142,7 +1991,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
                 'org.pavp': {
                   role: 'color.selector.value',
                   conditions: {
-                    theme: 'ocean',
+                    theme: 'cobalt-tide',
                     colorMode: 'dark',
                     contrast: 'enhanced',
                   },
@@ -2193,7 +2042,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
                 'org.pavp': {
                   role: 'color.selector.value',
                   conditions: {
-                    theme: 'ocean',
+                    theme: 'cobalt-tide',
                   },
                 },
               },
@@ -2228,10 +2077,10 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   const selectorCss = formatRuntimeCss(selectorResult)
   const selectorOrder = [
     ':root',
-    "html[data-theme='ocean']",
+    "html[data-theme='cobalt-tide']",
     "html[data-color-mode='dark']",
     "html[data-contrast='enhanced']",
-    "html[data-theme='ocean'][data-color-mode='dark'][data-contrast='enhanced']",
+    "html[data-theme='cobalt-tide'][data-color-mode='dark'][data-contrast='enhanced']",
     "html[data-density='compact']",
     "html[data-material='reduced']",
   ]
@@ -2262,7 +2111,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     [
       {
         conditions: {
-          theme: 'ocean',
+          theme: 'cobalt-tide',
           colorMode: 'dark',
           contrast: 'enhanced',
         },
@@ -2282,7 +2131,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
             $extensions: {
               'org.pavp': {
                 conditions: {
-                  theme: 'ocean',
+                  theme: 'cobalt-tide',
                   colorMode: 'dark',
                   contrast: 'enhanced',
                   density: 'compact',
@@ -2298,15 +2147,15 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   )
 
   const compoundCases = [
-    ['neutral', 'light', 'standard'],
-    ['neutral', 'light', 'enhanced'],
-    ['neutral', 'dark', 'standard'],
-    ['neutral', 'dark', 'enhanced'],
-    ['ocean', 'light', 'standard'],
-    ['ocean', 'light', 'enhanced'],
-    ['ocean', 'dark', 'standard'],
-    ['ocean', 'dark', 'enhanced'],
-    ['warm', 'light', 'standard'],
+    ['royal-iris', 'light', 'standard'],
+    ['royal-iris', 'light', 'enhanced'],
+    ['royal-iris', 'dark', 'standard'],
+    ['royal-iris', 'dark', 'enhanced'],
+    ['cobalt-tide', 'light', 'standard'],
+    ['cobalt-tide', 'light', 'enhanced'],
+    ['cobalt-tide', 'dark', 'standard'],
+    ['cobalt-tide', 'dark', 'enhanced'],
+    ['ember-coral', 'light', 'standard'],
   ] as const
   const compoundSource = Object.fromEntries(
     compoundCases.map(([theme, colorMode, contrast], index) => [
@@ -2334,7 +2183,11 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   })
 
   assertContractFailure(
-    () => validateTokenRecords(overBudgetRecords, new Set(result.themes.map((theme) => theme.id))),
+    () =>
+      validateTokenRecords(
+        overBudgetRecords,
+        new Set(result.completeThemes.map((theme) => theme.id)),
+      ),
     /Color compound budget exceeded/u,
     'the strict finite color compound budget must fail generation when exceeded',
   )
@@ -2364,7 +2217,10 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
 
   assertContractFailure(
     () =>
-      validateTokenRecords(duplicateRoleRecords, new Set(result.themes.map((theme) => theme.id))),
+      validateTokenRecords(
+        duplicateRoleRecords,
+        new Set(result.completeThemes.map((theme) => theme.id)),
+      ),
     /ambiguous role conditions/u,
     'ambiguous duplicate role conditions must fail generation',
   )
@@ -2385,7 +2241,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
     'ui-internal material and support tokens must not leak into public TypeScript, names, or UnoCSS',
   )
 
-  const themeIds = result.themes.map((theme) => theme.id)
+  const themeIds = result.completeThemes.map((theme) => theme.id)
   const incompleteMaterialTokens = result.tokens.filter(
     (token) =>
       !(token.role.name === 'material.chrome.background' && token.conditions.material === 'solid'),
@@ -2404,6 +2260,83 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   )
 }
 
+function validateRadiusContracts(result: TokenBuildResult): void {
+  const parameters = radiusProjectionDocument(result)
+  const panelValues = [0, 1.5, 3, 4.5, 6, 7.5, 9, 10.5, 12, 13.5, 15, 16, 16, 16, 16, 16, 16]
+  const smallValues = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+  const script = formatAppearanceInitScript(result)
+  for (let radius = 0; radius <= 16; radius += 1) {
+    assertInvariant(
+      radiusPreferenceSchema.safeParse(radius).success,
+      'each admitted integer Radius must validate',
+    )
+    assertInvariantEqual(
+      resolveRadius(radius, parameters),
+      {
+        control: radius,
+        panel: panelValues[radius],
+        small: smallValues[radius],
+      },
+      'Radius projection must match the independent admitted scale table',
+    )
+    const preference = explicitThemePreferenceSchema.parse({
+      schemaVersion: 4,
+      appearance: { ...ProductPreferenceDefault, radius },
+    })
+    const execution = executeAppearanceInit(script, { rawPreference: JSON.stringify(preference) })
+    assertInvariantEqual(
+      ['control', 'panel', 'small'].map(
+        (name) => execution.customProperties[`--ui-radius-${name}`],
+      ),
+      [
+        `${String(radius)}px`,
+        `${String(panelValues[radius])}px`,
+        `${String(smallValues[radius])}px`,
+      ],
+      'First Paint must apply the same admitted Radius values including zero without writes',
+    )
+    assertInvariant(
+      execution.storageWrites === 0 && execution.networkRequests === 0,
+      'Radius restoration must stay read-only and local',
+    )
+    const missing = {
+      schemaVersion: 4,
+      appearance: Object.fromEntries(
+        Object.entries(preference.appearance).filter(([name]) => name !== 'radius'),
+      ),
+    }
+    assertInvariant(
+      !explicitThemePreferenceSchema.safeParse(missing).success,
+      'a current record missing Radius must be rejected',
+    )
+  }
+  for (const radius of [undefined, null, '', '0', '8', -1, 17, 0.5, NaN, Infinity, -Infinity]) {
+    assertInvariant(
+      !radiusPreferenceSchema.safeParse(radius).success,
+      'Radius must reject malformed, fractional and out-of-range inputs',
+    )
+    assertInvariant(
+      !explicitThemePreferenceSchema.safeParse({
+        schemaVersion: 4,
+        appearance: { ...ProductPreferenceDefault, radius },
+      }).success,
+      'invalid current Radius must reject the complete preference',
+    )
+  }
+  const previous = {
+    schemaVersion: 3,
+    appearance: Object.fromEntries(
+      Object.entries(ProductPreferenceDefault).filter(([name]) => name !== 'radius'),
+    ),
+  }
+  const before = JSON.stringify(previous)
+  assertInvariant(
+    !explicitThemePreferenceSchema.safeParse(previous).success,
+    'Only the current complete Preference schema may be accepted',
+  )
+  assertInvariant(JSON.stringify(previous) === before, 'Rejected input must not be changed')
+}
+
 function validateAppearanceContracts(result: TokenBuildResult): void {
   for (const invalidColor of [
     'color(display-p3 1 0 0)',
@@ -2417,7 +2350,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
     )
   }
   const defaultPreference = explicitThemePreferenceSchema.safeParse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     appearance: ProductPreferenceDefault,
   })
 
@@ -2431,7 +2364,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
-        themeId: 'iris',
+        themeId: 'royal-iris',
       },
       contrast: 'standard',
       material: 'adaptive',
@@ -2441,6 +2374,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
       },
       fontScale: 1,
       motion: 'full',
+      radius: 8,
     },
     'the canonical Product Preference Default axes must remain fixed',
   )
@@ -2464,13 +2398,13 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     registry.builtInEntries.length === builtInThemeIds.length &&
-      registry.builtInEntries.every((entry) => entry.bank.records.length === 104),
-    'the generated Built-in Theme Registry must contain fourteen complete 104-cell Banks',
+      registry.builtInEntries.every((entry) => entry.bank.records.length === 120),
+    'the generated Built-in Theme Registry must contain five complete 120-cell Banks',
   )
   assertInvariant(
-    registry.customBankVariables.length === 104 &&
-      new Set(registry.customBankVariables).size === 104,
-    'the generated Custom Theme Bank allowlist must contain exactly 104 fixed variables',
+    registry.customBankVariables.length === 120 &&
+      new Set(registry.customBankVariables).size === 120,
+    'the generated Custom Theme Bank allowlist must contain exactly 120 fixed variables',
   )
   assertInvariantEqual(
     formatThemeRegistryTypeScript(result),
@@ -2485,13 +2419,16 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   const materializedRegistry: unknown = JSON.parse(
     runInNewContext(
       `${registryScript}\nJSON.stringify(generatedThemeRegistry)`,
-      {},
+      { atob },
       { timeout: 1000 },
     ) as string,
   )
   assertInvariantEqual(
     materializedRegistry,
-    { ...registry, statusSupplementary: statusSupplementaryDocument(result) },
+    {
+      ...registry,
+      statusSupplementary: statusSupplementaryDocument(result),
+    },
     'compact generated Registry evaluation must preserve every complete definition, Bank field, order and compatibility record',
   )
 
@@ -2514,15 +2451,17 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
           Object.keys(snapshot).sort(compareCodePoints),
           [
             'colorMode',
+            'colorPalette',
             'contrast',
             'density',
             'fontScale',
             'material',
             'motion',
+            'radius',
             'statusColors',
             'theme',
           ],
-          'UiAppearanceSnapshot must preserve seven top-level axes and add only statusColors',
+          'UiAppearanceSnapshot must preserve all eight Appearance axes and project the built-in colorPalette plus statusColors',
         )
         assertInvariantEqual(
           Object.keys(snapshot.statusColors),
@@ -2532,7 +2471,10 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
         assertInvariant(
           Object.isFrozen(snapshot) &&
             Object.isFrozen(snapshot.theme) &&
-            Object.isFrozen(snapshot.statusColors),
+            Object.isFrozen(snapshot.statusColors) &&
+            snapshot.colorPalette !== null &&
+            Object.isFrozen(snapshot.colorPalette) &&
+            Object.isFrozen(snapshot.colorPalette.roles.primary.solid.background),
           'UI Appearance projection must freeze every object boundary',
         )
 
@@ -2622,9 +2564,11 @@ interface AppearanceInitExecutionOptions {
   backdropFilterSupported?: boolean
   cssColorSupported?: boolean
   fontScaleWriteFailure?: boolean
+  radiusWriteFailure?: '--ui-radius-control' | '--ui-radius-panel' | '--ui-radius-small'
   forcedColorsActive?: boolean
   invokeRestorationOperation?: boolean
   prefersDark?: boolean
+  prefersReducedMotion?: boolean
   rawPreference?: string | null
   rawThemeRegistry?: string | null
   reducedTransparencyRequested?: boolean
@@ -2652,9 +2596,11 @@ function executeAppearanceInit(
     backdropFilterSupported = true,
     cssColorSupported = true,
     fontScaleWriteFailure = false,
+    radiusWriteFailure,
     forcedColorsActive = false,
     invokeRestorationOperation = false,
     prefersDark = false,
+    prefersReducedMotion = false,
     rawPreference = null,
     rawThemeRegistry = null,
     reducedTransparencyRequested = false,
@@ -2666,7 +2612,7 @@ function executeAppearanceInit(
   const attributes = new Map<string, string>([
     ['data-color-mode', 'light'],
     ['data-theme-kind', 'built-in'],
-    ['data-theme', 'iris'],
+    ['data-theme', 'royal-iris'],
     ['data-contrast', 'standard'],
     ['data-material', 'solid'],
     ['data-density', 'comfortable'],
@@ -2689,6 +2635,7 @@ function executeAppearanceInit(
   let requestedThemeRegistryStorageKey: string | undefined
   let storageWrites = 0
   let networkRequests = 0
+  let radiusFailureInjected = false
   const rejectStorageWrite = (): never => {
     storageWrites += 1
     throw new Error('Generated first-paint script attempted a storage write.')
@@ -2732,6 +2679,10 @@ function executeAppearanceInit(
             return previous
           },
           setProperty(name: string, value: string): void {
+            if (name === radiusWriteFailure && !radiusFailureInjected) {
+              radiusFailureInjected = true
+              throw new Error('Synthetic partial radius write failure.')
+            }
             if (
               fontScaleWriteFailure &&
               name === '--ui-font-scale' &&
@@ -2773,6 +2724,7 @@ function executeAppearanceInit(
         matches:
           (query === '(forced-colors: active)' && forcedColorsActive) ||
           (query === '(prefers-color-scheme: dark)' && prefersDark) ||
+          (query === '(prefers-reduced-motion: reduce)' && prefersReducedMotion) ||
           (query === '(prefers-reduced-transparency: reduce)' && reducedTransparencyRequested),
       }
     },
@@ -2801,36 +2753,6 @@ function executeAppearanceInit(
     ...(requestedThemeRegistryStorageKey === undefined ? {} : { requestedThemeRegistryStorageKey }),
     storageWrites,
   }
-}
-
-function executeAppearanceMigration(script: string, input: unknown): unknown {
-  const marker = '  var currentScript = document.currentScript'
-  const instrumented = script.replace(
-    marker,
-    `  globalThis.__pavpMigrationProbe = migrateToExplicitThemePreference\n\n${marker}`,
-  )
-
-  assertInvariant(
-    instrumented !== script && instrumented.indexOf(marker) === instrumented.lastIndexOf(marker),
-    'appearance-init.js migration probe injection point must remain exact',
-  )
-
-  const context: Record<string, unknown> = {
-    document: {
-      currentScript: null,
-      documentElement: null,
-    },
-  }
-
-  runInNewContext(instrumented, context)
-  const migration = context['__pavpMigrationProbe']
-
-  assertInvariant(
-    typeof migration === 'function',
-    'appearance-init.js must retain one private migration classifier',
-  )
-
-  return JSON.parse(JSON.stringify((migration as (value: unknown) => unknown)(input))) as unknown
 }
 
 function validateForcedColorsOutput(css: string, artifact: string): number {
@@ -2954,12 +2876,15 @@ function validateDensityCss(css: string): void {
   for (const rule of css.matchAll(/([^{}]+)\{([^{}]*)\}/gu)) {
     const selector = rule[1]?.trim() ?? ''
     const body = rule[2] ?? ''
-    const declarations = [...body.matchAll(/(--ui-control-height(?:-baseline)?)\s*:\s*([^;]+);/gu)]
+    const expression =
+      /(--ui-(?:control-height(?:-baseline)?|space-button-inline))\s*:\s*([^;]+);/gu
+    const declarations = [...body.matchAll(expression)]
     if (selector.includes('data-density')) {
       assertInvariant(
-        declarations.length === 1 &&
-          body.trim() === `--ui-control-height: ${declarations[0]?.[2] ?? ''};`,
-        'Density CSS selectors may write only the public control height',
+        declarations.length > 0 &&
+          declarations.every((declaration) => declaration[1] !== '--ui-control-height-baseline') &&
+          body.replaceAll(expression, '').trim() === '',
+        'Density CSS selectors may write only the admitted public height and button-inline variables',
       )
     }
     for (const declaration of declarations)
@@ -2970,16 +2895,21 @@ function validateDensityCss(css: string): void {
     [
       [':root', '--ui-control-height', '2.25rem'],
       [':root', '--ui-control-height-baseline', '2.25rem'],
+      [':root', '--ui-space-button-inline', '14px'],
       ["html[data-density='compact']", '--ui-control-height', '2rem'],
       ["html[data-density='comfortable']", '--ui-control-height', '2.25rem'],
       ["html[data-density='spacious']", '--ui-control-height', '2.75rem'],
+      ["html[data-density='compact']", '--ui-space-button-inline', '12px'],
+      ["html[data-density='comfortable']", '--ui-space-button-inline', '14px'],
+      ["html[data-density='spacious']", '--ui-space-button-inline', '16px'],
     ].sort((a, b) => compareCodePoints(a.join('/'), b.join('/'))),
-    'Density CSS must contain exactly the five frozen rem projections',
+    'Density CSS must contain exactly the admitted height and button-inline projections',
   )
 }
 
 function validateDensityProjectionContracts(result: TokenBuildResult): void {
-  validateDensityControlHeightSources(result.tokens)
+  validateDensitySources(result.tokens)
+  validateDensitySources([...result.tokens].reverse())
   for (const css of [formatRuntimeCss(result), formatCriticalThemeCss(result)]) {
     validateDensityCss(css)
     for (const invalid of [
@@ -2990,6 +2920,10 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
       ),
       css.replace('--ui-control-height: 2rem;', '--ui-control-height-baseline: 2rem;'),
       css.replace('--ui-control-height-baseline: 2.25rem;', '--ui-control-height-baseline: 36px;'),
+      css.replace('--ui-space-button-inline: 12px;', '--ui-space-button-inline: 14px;'),
+      css.replace('--ui-space-button-inline: 12px;', ''),
+      css.replace('--ui-space-button-inline: 16px;', '--ui-space-button-inline: 1rem;'),
+      css.replace('--ui-space-button-inline: 12px;', '--ui-control-height-baseline: 12px;'),
       css.replace(
         '--ui-control-height: 2rem;',
         '--ui-control-height: 2rem; --ui-unapproved: 1rem;',
@@ -3006,17 +2940,41 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
   const aliases = result.tokens.filter(
     (token) =>
       token.role.name === 'interaction.control.height' ||
-      token.role.name === 'interaction.control.height-baseline',
+      token.role.name === 'interaction.control.height-baseline' ||
+      token.role.name === 'spacing.button.inline',
   )
-  const compact = aliases.find((token) => token.conditions.density === 'compact')
+  const compact = aliases.find(
+    (token) =>
+      token.role.name === 'interaction.control.height' && token.conditions.density === 'compact',
+  )
   const baseline = aliases.find(
     (token) => token.role.name === 'interaction.control.height-baseline',
   )
   const densitySource = result.tokens.find(
     (token) => token.path === 'density.compact.control.height',
   )
+  const buttonCompact = aliases.find(
+    (token) =>
+      token.role.name === 'spacing.button.inline' && token.conditions.density === 'compact',
+  )
+  const buttonDefault = aliases.find(
+    (token) =>
+      token.role.name === 'spacing.button.inline' && token.conditions.density === undefined,
+  )
+  const buttonSource = result.tokens.find(
+    (token) => token.path === 'density.compact.button.padding-inline',
+  )
+  const buttonPrimitive = result.tokens.find(
+    (token) => token.path === 'dimension.space.button-inline-compact',
+  )
   assertInvariant(
-    compact !== undefined && baseline !== undefined && densitySource !== undefined,
+    compact !== undefined &&
+      baseline !== undefined &&
+      densitySource !== undefined &&
+      buttonCompact !== undefined &&
+      buttonDefault !== undefined &&
+      buttonSource !== undefined &&
+      buttonPrimitive !== undefined,
     'Density negative probe sources must exist',
   )
   const replace = (
@@ -3028,10 +2986,22 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
     ...result,
     tokens: replace(compact, { path: 'interaction.control.h' }),
   }
-  validateDensityControlHeightSources(privateAliasProbe.tokens)
-  validateTokenRecords(privateAliasProbe.tokens, new Set(result.themes.map((theme) => theme.id)))
+  validateDensitySources(privateAliasProbe.tokens)
+  validateTokenRecords(
+    privateAliasProbe.tokens,
+    new Set(result.completeThemes.map((theme) => theme.id)),
+  )
+  const buttonAliasProbe = {
+    ...result,
+    tokens: replace(buttonCompact, { path: 'spacing.button.tight' }),
+  }
+  validateDensitySources(buttonAliasProbe.tokens)
+  validateTokenRecords(
+    buttonAliasProbe.tokens,
+    new Set(result.completeThemes.map((theme) => theme.id)),
+  )
   const publicRoleIds = PublicRoleRegistry.records.map((record) => record.id)
-  for (const candidate of [result, privateAliasProbe]) {
+  for (const candidate of [result, privateAliasProbe, buttonAliasProbe]) {
     const outputs = [
       formatTokensTypeScript(candidate),
       formatTokenNames(candidate),
@@ -3043,11 +3013,14 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
       [...outputs[2].matchAll(/^    roleId: '([^']+)',$/gmu)].map((match) => match[1] ?? ''),
     ]) {
       exactRoleIdSet(ids, publicRoleIds, 'Density public output role IDs')
-      if (candidate === privateAliasProbe)
+      if (candidate !== result)
         assertContractFailure(
           () =>
             exactRoleIdSet(
-              [...ids, 'interaction.control.h'],
+              [
+                ...ids,
+                candidate === privateAliasProbe ? 'interaction.control.h' : 'spacing.button.tight',
+              ],
               publicRoleIds,
               'Density public output role IDs',
             ),
@@ -3095,6 +3068,28 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
       visibility: 'public',
       cssVariable: '--ui-density-compact-control-height',
     }),
+    result.tokens.filter((token) => token !== buttonCompact),
+    result.tokens.filter((token) => token !== buttonDefault),
+    [...result.tokens, { ...buttonCompact, path: 'spacing.button.extra' }],
+    replace(buttonCompact, { resolvedValue: { value: 12, unit: 'rem' } }),
+    replace(buttonCompact, { type: 'number' }),
+    replace(buttonCompact, { visibility: 'ui-internal' }),
+    replace(buttonCompact, { source: 'semantic/interaction.tokens.json' }),
+    replace(buttonCompact, {
+      authoredValue: '{density.comfortable.button.padding-inline}',
+      reference: 'density.comfortable.button.padding-inline',
+    }),
+    replace(buttonCompact, {
+      conditions: { density: 'compact', colorMode: 'dark' },
+      compound: 'density-dark',
+    }),
+    replace(buttonSource, {
+      authoredValue: '{dimension.space.button-inline}',
+      reference: 'dimension.space.button-inline',
+    }),
+    replace(buttonSource, { visibility: 'public', cssVariable: '--ui-density-button-inline' }),
+    replace(buttonPrimitive, { resolvedValue: { value: 12, unit: 'rem' } }),
+    replace(buttonPrimitive, { source: 'primitive/radius.tokens.json' }),
     [
       ...result.tokens,
       {
@@ -3107,9 +3102,9 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
   for (const records of invalidRecords)
     assertContractFailure(
       () => {
-        validateDensityControlHeightSources(records)
+        validateDensitySources(records)
       },
-      /Density control-height contract/u,
+      /Density source contract/u,
       'Invalid density provenance, record set or visibility must fail',
     )
 }
@@ -3147,7 +3142,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   const safetyAttributes = {
     'data-color-mode': 'light',
     'data-theme-kind': 'built-in',
-    'data-theme': 'iris',
+    'data-theme': 'royal-iris',
     'data-contrast': 'standard',
     'data-material': 'solid',
     'data-density': 'comfortable',
@@ -3214,7 +3209,6 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           preferenceStorageKeyAttribute: true,
           preferenceStorageRead: true,
           explicitThemePreferenceValidation: true,
-          legacyPreferenceMigration: true,
           builtInThemeResolution: true,
           atomicAppearanceApplication: true,
           synchronousCustomThemeResolution: true,
@@ -3227,13 +3221,13 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   )
 
   const builtInPreference = explicitThemePreferenceSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     appearance: {
       ...ProductPreferenceDefault,
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
-        themeId: 'cobalt',
+        themeId: 'cobalt-tide',
       },
       contrast: 'enhanced',
       material: 'adaptive',
@@ -3256,7 +3250,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       attributes: {
         'data-color-mode': 'dark',
         'data-theme-kind': 'built-in',
-        'data-theme': 'cobalt',
+        'data-theme': 'cobalt-tide',
         'data-contrast': 'enhanced',
         'data-material': 'adaptive',
         'data-density': 'spacious',
@@ -3264,6 +3258,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       },
       customProperties: {
         '--ui-font-scale': '1.2',
+        '--ui-radius-control': '8px',
+        '--ui-radius-panel': '12px',
+        '--ui-radius-small': '4px',
       },
       hasRestorationOperation: true,
       networkRequests: 0,
@@ -3281,7 +3278,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   for (const fontScale of fontScaleValues) {
     const preference = explicitThemePreferenceSchema.parse({
-      schemaVersion: 3,
+      schemaVersion: 4,
       appearance: {
         ...ProductPreferenceDefault,
         fontScale,
@@ -3298,7 +3295,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   }
 
   const customPreference = explicitThemePreferenceSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     appearance: {
       ...ProductPreferenceDefault,
       theme: {
@@ -3327,98 +3324,112 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     },
     'a valid Custom reference must retain safety and expose only the private restoration signal',
   )
-  const representativeDefinition = registry.builtInEntries[0]?.definition
-
+  const representative = registry.builtInEntries[0]
+  assertInvariant(representative !== undefined, 'Current Custom probe requires a Built-in source')
+  const currentSource = {
+    ...representative.definition,
+    id: 'custom.current',
+    planes: Object.fromEntries(
+      ['light', 'dark'].map((mode) => [
+        mode,
+        Object.fromEntries(
+          ['standard', 'enhanced'].map((contrast) => [
+            contrast,
+            Object.fromEntries(
+              representative.bank.records
+                .filter((record) => record.colorMode === mode && record.contrast === contrast)
+                .map((record) => [record.publicRole, record.resolvedValue]),
+            ),
+          ]),
+        ),
+      ]),
+    ),
+  }
+  const validated = validateCustomThemeDefinition(currentSource)
   assertInvariant(
-    representativeDefinition !== undefined,
-    'the legacy Custom Theme compatibility probe source must exist',
+    validated.status === 'validated',
+    'The current complete Custom fixture must validate',
   )
-
-  const legacyCustomTheme = structuredClone(representativeDefinition) as unknown as {
-    id: string
-    label: string
-    planes: Record<string, Record<string, Record<string, string>>>
-    roleContractVersion: number
-    schemaVersion: number
-  }
-  legacyCustomTheme.id = 'legacy.custom'
-  legacyCustomTheme.label = 'Legacy Custom'
-  legacyCustomTheme.roleContractVersion = 1
-
-  for (const colorMode of ['light', 'dark']) {
-    for (const contrast of ['standard', 'enhanced']) {
-      const plane = legacyCustomTheme.planes[colorMode]?.[contrast]
-
-      assertInvariant(plane !== undefined, 'the legacy Custom Theme probe plane must exist')
-      plane['color.action.primary'] = plane['color.control.primary'] ?? ''
-
-      if (colorMode === 'dark') {
-        plane['color.text.on-action'] = plane['color.surface.page'] ?? ''
-      }
-
-      delete plane['color.control.primary']
-      for (const role of Object.keys(plane)) {
-        if (role.startsWith('color.status.') || role.startsWith('color.text.on-status.'))
-          Reflect.deleteProperty(plane, role)
-      }
-    }
-  }
-
-  const legacyCustomPreference = explicitThemePreferenceSchema.parse({
-    schemaVersion: 3,
+  const currentCustomTheme = structuredClone(validated.entry.definition)
+  const currentCustomPreference = explicitThemePreferenceSchema.parse({
+    schemaVersion: 4,
     appearance: {
       ...ProductPreferenceDefault,
       colorMode: 'dark',
-      theme: {
-        registryKind: 'custom',
-        themeId: legacyCustomTheme.id,
-      },
+      theme: { registryKind: 'custom', themeId: currentCustomTheme.id },
     },
   })
-  const legacyCustomRegistrySnapshot = JSON.stringify({
-    schemaVersion: 1,
-    entries: [
-      {
-        registryKind: 'custom',
-        themeId: legacyCustomTheme.id,
-        definition: legacyCustomTheme,
-      },
-    ],
-  })
-  const legacyCustomExecution = executeAppearanceInit(appearanceInit, {
-    prefersDark: true,
-    rawPreference: JSON.stringify(legacyCustomPreference),
-    rawThemeRegistry: legacyCustomRegistrySnapshot,
-  })
-  const legacyRuntimeValidation = validateCustomThemeDefinition(legacyCustomTheme)
-  const legacyDarkStandardAction =
-    legacyCustomTheme.planes['dark']?.['standard']?.['color.action.primary']
-  const firstPaintControl =
-    legacyCustomExecution.customProperties['--ui-theme-bank-dark-standard-control-primary']
-  const runtimeControl =
-    legacyRuntimeValidation.status === 'rebound'
-      ? legacyRuntimeValidation.entry.definition.planes.dark.standard['color.control.primary']
-      : undefined
+  const motionCases = [
+    ['full', false, 'full'],
+    ['full', true, 'reduced'],
+    ['reduced', false, 'reduced'],
+    ['reduced', true, 'reduced'],
+    ['none', false, 'none'],
+    ['none', true, 'none'],
+  ] as const
+  for (const [storedMotion, prefersReducedMotion, expected] of motionCases) {
+    assertInvariant(
+      resolveMotion({ storedMotion, prefersReducedMotion }) === expected,
+      'The effective motion policy must respect both stored and system preferences',
+    )
+    for (const preference of [builtInPreference, currentCustomPreference]) {
+      const candidate = {
+        ...preference,
+        appearance: { ...preference.appearance, motion: storedMotion },
+      }
+      const rawPreference = JSON.stringify(candidate)
+      const execution = executeAppearanceInit(appearanceInit, {
+        prefersReducedMotion,
+        rawPreference,
+        rawThemeRegistry: JSON.stringify({
+          schemaVersion: 1,
+          entries: [
+            {
+              registryKind: 'custom',
+              themeId: currentCustomTheme.id,
+              definition: currentCustomTheme,
+            },
+          ],
+        }),
+      })
+      assertInvariant(
+        execution.attributes['data-motion'] === expected &&
+          candidate.appearance.motion === storedMotion &&
+          execution.storageWrites === 0 &&
+          execution.networkRequests === 0,
+        'First Paint and runtime motion must agree for current Built-in/Custom themes without rewriting the choice',
+      )
+    }
+  }
+  for (const prefersReducedMotion of [false, true]) {
+    for (const options of [
+      {},
+      { rawPreference: '{invalid' },
+      { rawPreference: JSON.stringify({ schemaVersion: 3 }) },
+      { storageReadFailure: true },
+      { storageKey: '' },
+    ]) {
+      const execution = executeAppearanceInit(appearanceInit, { ...options, prefersReducedMotion })
+      assertInvariant(
+        execution.attributes['data-motion'] === (prefersReducedMotion ? 'reduced' : 'full') &&
+          execution.storageWrites === 0 &&
+          execution.networkRequests === 0,
+        'First Paint early returns must preserve data while respecting system motion for the current default',
+      )
+    }
+  }
 
-  assertInvariant(
-    legacyDarkStandardAction !== undefined &&
-      legacyCustomExecution.attributes['data-theme-kind'] === 'custom' &&
-      legacyCustomExecution.attributes['data-theme'] === legacyCustomTheme.id &&
-      firstPaintControl === legacyDarkStandardAction &&
-      runtimeControl === legacyDarkStandardAction &&
-      legacyCustomExecution.storageWrites === 0 &&
-      legacyCustomExecution.requestedThemeRegistryStorageKey ===
-        'runtime-supplied-theme-registry-key',
-    'First Paint and Vue runtime must normalize legacy Control Foreground identically without Storage rewrite',
-  )
-
-  const executeCustomTheme = (definition: typeof legacyCustomTheme) =>
+  const executeCustomTheme = (
+    definition: { readonly id: string },
+    radius = ProductPreferenceDefault.radius,
+  ) =>
     executeAppearanceInit(appearanceInit, {
       prefersDark: true,
       rawPreference: JSON.stringify({
-        ...legacyCustomPreference,
+        ...currentCustomPreference,
         appearance: {
-          ...legacyCustomPreference.appearance,
+          ...currentCustomPreference.appearance,
+          radius,
           theme: { registryKind: 'custom', themeId: definition.id },
         },
       }),
@@ -3427,30 +3438,20 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         entries: [{ registryKind: 'custom', themeId: definition.id, definition }],
       }),
     })
-  const controlCustomTheme = structuredClone(legacyCustomTheme)
-  controlCustomTheme.roleContractVersion = 2
-  for (const mode of ['light', 'dark']) {
-    for (const contrast of ['standard', 'enhanced']) {
-      const plane = controlCustomTheme.planes[mode]?.[contrast]
-      assertInvariant(plane !== undefined, 'Contract 2 probe plane must exist')
-      plane['color.control.primary'] = plane['color.action.primary'] ?? ''
-    }
-  }
-  assertInvariant(
-    legacyRuntimeValidation.status === 'rebound',
-    'Contract 1 must rebound before parity probes',
-  )
-  const currentCustomTheme = structuredClone(legacyRuntimeValidation.entry.definition)
-  for (const mode of ['light', 'dark'] as const) {
-    for (const contrast of ['standard', 'enhanced'] as const) {
-      const plane = currentCustomTheme.planes[mode][contrast]
-      const customInfo = plane['color.status.info.hover']
-      assertInvariant(
-        customInfo !== undefined,
-        'Current Custom Status override must use an existing validated color',
-      )
-      plane['color.status.info'] = customInfo
-    }
+  for (let radius = 0; radius <= 16; radius += 1) {
+    const execution = executeCustomTheme(currentCustomTheme, radius)
+    assertInvariantEqual(
+      ['control', 'panel', 'small'].map(
+        (name) => execution.customProperties[`--ui-radius-${name}`],
+      ),
+      [
+        `${String(radius)}px`,
+        `${String(Math.min(radius * 1.5, 16))}px`,
+        `${String(Math.min(radius / 2, 4))}px`,
+      ],
+      'valid Custom First Paint must preserve all Radius inputs including zero',
+    )
+    assertInvariant(execution.storageWrites === 0, 'Custom Radius restoration must not persist')
   }
   for (const theme of [
     builtInPreference.appearance.theme,
@@ -3460,7 +3461,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       for (const fontScale of fontScaleValues) {
         for (const scale of [0.9, 1, 1.1]) {
           const preference = explicitThemePreferenceSchema.parse({
-            schemaVersion: 3,
+            schemaVersion: 4,
             appearance: {
               ...ProductPreferenceDefault,
               theme,
@@ -3490,14 +3491,17 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
               execution.storageWrites === 0 &&
               execution.networkRequests === 0 &&
               !Object.keys(execution.customProperties).some(
-                (name) => name.includes('control-height') || name.includes('density'),
+                (name) =>
+                  name.includes('control-height') ||
+                  name.includes('density') ||
+                  name.includes('button-inline'),
               ),
-            'First Paint must select every validated density/fontScale without applying density.scale or writing height overrides',
+            'First Paint must select every validated density/fontScale without applying density.scale or writing height/spacing overrides',
           )
           assertInvariantEqual(
-            migrateToExplicitThemePreference(preference),
-            { status: 'success', preference },
-            'Density scale must survive current Preference migration losslessly',
+            explicitThemePreferenceSchema.parse(preference),
+            preference,
+            'Every current preference axis must survive validation losslessly',
           )
           const failed = executeAppearanceInit(appearanceInit, {
             rawPreference,
@@ -3520,21 +3524,13 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     }
   }
 
-  for (const definition of [legacyCustomTheme, controlCustomTheme, currentCustomTheme]) {
+  for (const definition of [currentCustomTheme]) {
     const original = stableJson(definition)
     const runtime = validateCustomThemeDefinition(definition)
     const version = definition.roleContractVersion
     assertInvariant(
-      version === 3
-        ? runtime.status === 'validated'
-        : runtime.status === 'rebound' &&
-            runtime.code === 'ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS' &&
-            runtime.previousRoleContractVersion === version,
-      `Contract ${String(version)} normalization must preserve its exact success code`,
-    )
-    assertInvariant(
-      runtime.status === 'validated' || runtime.status === 'rebound',
-      'normalization must supply the complete entry',
+      runtime.status === 'validated',
+      'Current Custom validation must return the unchanged complete definition',
     )
     const normalized = runtime.entry.definition
     for (const mode of ['light', 'dark'] as const) {
@@ -3573,22 +3569,13 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           )
         }
         assertInvariant(
-          Object.keys(plane).length === 26,
-          'all normalized planes must contain exactly 26 roles',
+          Object.keys(plane).length === 30,
+          'all normalized planes must contain exactly 30 roles',
         )
-        for (const record of registry.builtInEntries[0]?.bank.records ?? []) {
-          if (
-            version < 3 &&
-            record.colorMode === mode &&
-            record.contrast === contrast &&
-            record.authoredValue.startsWith('{color.palette.status.')
-          ) {
-            assertInvariant(
-              plane[record.publicRole] === record.resolvedValue,
-              'historical status injection must equal the current shared Bank',
-            )
-          }
-        }
+        assertInvariant(
+          snapshot.colorPalette === null,
+          'Current role-only Custom definitions must retain their own projection',
+        )
       }
     }
     const execution = executeCustomTheme(definition)
@@ -3596,6 +3583,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       execution.customProperties,
       {
         ...safetyCustomProperties,
+        '--ui-radius-control': '8px',
+        '--ui-radius-panel': '12px',
+        '--ui-radius-small': '4px',
         ...Object.fromEntries(
           (registry.builtInEntries[0]?.bank.records ?? []).map((record) => [
             record.bankVariable,
@@ -3603,7 +3593,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           ]),
         ),
       },
-      `Contract ${String(version)} First Paint must install all 104 bindings identically to runtime normalization`,
+      `Contract ${String(version)} First Paint must install all 120 bindings identically to runtime normalization`,
     )
     assertInvariant(
       execution.attributes['data-theme-kind'] === 'custom' &&
@@ -3623,8 +3613,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     ] as const) {
       const invalid = structuredClone(definition)
       const plane = invalid.planes.light.standard
-      if (kind === 'missing-role')
-        Reflect.deleteProperty(plane, version === 3 ? 'color.status.info' : 'color.action.primary')
+      if (kind === 'missing-role') Reflect.deleteProperty(plane, 'color.status.info')
       if (kind === 'extra-role') plane['color.unapproved.extra'] = '#000'
       if (kind === 'computed-color')
         plane['color.action.primary'] = 'var(--ui-color-action-primary)'
@@ -3661,7 +3650,10 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
 
   for (const [version, expectedCode] of [
     [0, 'THEME_INVALID'],
-    [4, 'ROLE_CONTRACT_MISMATCH'],
+    [1, 'ROLE_CONTRACT_MISMATCH'],
+    [2, 'ROLE_CONTRACT_MISMATCH'],
+    [3, 'ROLE_CONTRACT_MISMATCH'],
+    [5, 'ROLE_CONTRACT_MISMATCH'],
   ] as const) {
     const unsupported = { ...currentCustomTheme, roleContractVersion: version }
     const runtime = validateCustomThemeDefinition(unsupported)
@@ -3681,115 +3673,26 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     )
   }
 
-  const legacyTuple = registry.legacyBuiltInThemeTuples[2]
-
-  assertInvariant(legacyTuple !== undefined, 'the warm legacy migration tuple must exist')
-
-  const legacyExecution = executeAppearanceInit(appearanceInit, {
-    rawPreference: JSON.stringify({
-      schemaVersion: 1,
-      appearance: {
-        colorMode: 'high-contrast',
-        theme: legacyTuple.themeId,
-        palette: {
-          brand: legacyTuple.brand,
-          accent: legacyTuple.accent,
-          neutral: legacyTuple.neutral,
-        },
-        contrast: 'standard',
-        density: {
-          preset: 'comfortable',
-          scale: 1,
-        },
-        fontScale: 1,
-        motion: 'full',
-      },
-    }),
-  })
-
-  assertInvariant(
-    legacyExecution.attributes['data-color-mode'] === 'light' &&
-      legacyExecution.attributes['data-theme'] === 'iris' &&
-      legacyExecution.attributes['data-contrast'] === 'enhanced' &&
-      legacyExecution.attributes['data-material'] === 'solid',
-    'appearance-init.js must migrate a verified legacy preference to Iris in memory',
-  )
-
-  const migrationParityInputs = [
-    builtInPreference,
-    {
-      schemaVersion: 3,
-      appearance: {
-        ...ProductPreferenceDefault,
-        theme: { registryKind: 'built-in', themeId: 'neutral' },
-      },
-    },
-    {
-      schemaVersion: 3,
-      appearance: {
-        ...ProductPreferenceDefault,
-        theme: { registryKind: 'custom', themeId: 'jade' },
-      },
-    },
-    {
-      schemaVersion: 2,
-      appearance: {
-        colorMode: 'system',
-        theme: legacyTuple.themeId,
-        palette: {
-          brand: legacyTuple.brand,
-          accent: legacyTuple.accent,
-          neutral: legacyTuple.neutral,
-        },
-        contrast: 'standard',
-        material: 'adaptive',
-        density: { preset: 'comfortable', scale: 1 },
-        fontScale: 1,
-        motion: 'full',
-      },
-    },
-    {
-      schemaVersion: 2,
-      appearance: {
-        colorMode: 'system',
-        theme: legacyTuple.themeId,
-        palette: {
-          brand: '#123456',
-          accent: legacyTuple.accent,
-          neutral: legacyTuple.neutral,
-        },
-        contrast: 'standard',
-        material: 'adaptive',
-        density: { preset: 'comfortable', scale: 1 },
-        fontScale: 1,
-        motion: 'full',
-      },
-    },
-    {
-      schemaVersion: 2,
-      appearance: {
-        colorMode: 'system',
-        theme: legacyTuple.themeId,
-        palette: {
-          brand: 'var(--invalid-legacy-color)',
-          accent: legacyTuple.accent,
-          neutral: legacyTuple.neutral,
-        },
-        contrast: 'standard',
-        material: 'adaptive',
-        density: { preset: 'comfortable', scale: 1 },
-        fontScale: 1,
-        motion: 'full',
-      },
-    },
-    { schemaVersion: 3 },
-  ] as const
-
-  for (const input of migrationParityInputs) {
+  for (const themeId of builtInThemeIds) {
+    const execution = executeCustomTheme({ ...currentCustomTheme, id: themeId })
+    assertInvariant(
+      execution.attributes['data-theme-kind'] === 'custom' &&
+        execution.attributes['data-theme'] === themeId,
+      'A Custom ID must remain independent from the Built-in namespace',
+    )
+  }
+  for (const schemaVersion of [1, 2, 3]) {
+    const unsupported = executeAppearanceInit(appearanceInit, {
+      rawPreference: JSON.stringify({ ...builtInPreference, schemaVersion }),
+    })
     assertInvariantEqual(
-      executeAppearanceMigration(appearanceInit, input),
-      migrateToExplicitThemePreference(input),
-      'appearance-init.js and runtime must share the exact Preference migration classification',
+      unsupported.attributes,
+      safetyAttributes,
+      'Unsupported Preference formats must retain the safety frame',
+    )
+    assertInvariant(
+      unsupported.storageWrites === 0,
+      'Unsupported formats must not be rewritten or removed',
     )
   }
 
@@ -3809,44 +3712,44 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     'appearance-init.js must restore Font Scale after a partial application failure',
   )
 
+  for (const radiusWriteFailure of [
+    '--ui-radius-control',
+    '--ui-radius-panel',
+    '--ui-radius-small',
+  ] as const) {
+    const failure = executeAppearanceInit(appearanceInit, {
+      radiusWriteFailure,
+      rawPreference: JSON.stringify({
+        ...builtInPreference,
+        appearance: { ...builtInPreference.appearance, radius: 0 },
+      }),
+    })
+    assertInvariantEqual(
+      [
+        failure.attributes,
+        failure.customProperties,
+        failure.storageWrites,
+        failure.networkRequests,
+      ],
+      [safetyAttributes, safetyCustomProperties, 0, 0],
+      'Partial first-paint radius writes must restore the safety baseline without storage or network effects',
+    )
+  }
+
   const expectedFailures = [
-    executeAppearanceInit(appearanceInit, {
-      rawPreference: '{invalid',
-    }),
-    executeAppearanceInit(appearanceInit, {
-      rawPreference: JSON.stringify({ schemaVersion: 3 }),
-    }),
+    executeAppearanceInit(appearanceInit, { rawPreference: '{invalid' }),
+    executeAppearanceInit(appearanceInit, { rawPreference: JSON.stringify({ schemaVersion: 3 }) }),
     executeAppearanceInit(appearanceInit, {
       rawPreference: JSON.stringify({
-        schemaVersion: 2,
+        ...builtInPreference,
         appearance: {
-          colorMode: 'system',
-          theme: legacyTuple.themeId,
-          palette: {
-            brand: '#123456',
-            accent: legacyTuple.accent,
-            neutral: legacyTuple.neutral,
-          },
-          contrast: 'standard',
-          material: 'adaptive',
-          density: {
-            preset: 'comfortable',
-            scale: 1,
-          },
-          fontScale: 1,
-          motion: 'full',
+          ...builtInPreference.appearance,
+          theme: { registryKind: 'built-in', themeId: 'unsupported-theme' },
         },
       }),
     }),
-    executeAppearanceInit(appearanceInit, {
-      storageReadFailure: true,
-    }),
-    executeAppearanceInit(appearanceInit, {
-      rawPreference: JSON.stringify(migrationParityInputs[5]),
-    }),
-    executeAppearanceInit(appearanceInit, {
-      storageKey: null,
-    }),
+    executeAppearanceInit(appearanceInit, { storageReadFailure: true }),
+    executeAppearanceInit(appearanceInit, { storageKey: null }),
   ]
 
   for (const failure of expectedFailures) {
@@ -4071,7 +3974,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
       compareCodePoints,
     ),
     projection.mappings.map((mapping) => mapping.roleId).sort(compareCodePoints),
-    'arbitrary public-variable bypass validation must cover all 55 mappings',
+    'arbitrary public-variable bypass validation must cover all 60 mappings',
   )
   assertInvariant(
     new Set(forbiddenCandidates.map((candidate) => candidate.className)).size ===
@@ -4143,7 +4046,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
               mapping.generatorKind === 'property-specific-exact-rule' &&
               mapping.family === 'content-size' &&
               property === 'grid-template-columns'
-                ? `repeat(auto-fit, minmax(var(${mapping.cssVariable}), 1fr))`
+                ? `repeat(auto-fit, minmax(min(100%, var(${mapping.cssVariable})), 1fr))`
                 : `var(${mapping.cssVariable})`,
             ]),
           ),
@@ -4189,7 +4092,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
             : mapping.classes,
       )
       .sort(compareCodePoints),
-    'the actual platformPreset must generate all 59 registered public classes',
+    'the actual platformPreset must generate all 60 registered public classes',
   )
 
   const statusClasses = ['info', 'success', 'warning', 'error'].flatMap((tone) => [

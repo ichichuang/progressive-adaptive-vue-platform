@@ -9,6 +9,8 @@ import { provideAppearanceMutationBoundary } from '../appearance/appearance-muta
 import { provideAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
 import type { AttemptDisposalReason } from './lifecycle'
 import type { PiniaProviderHandle } from '../providers/pinia'
+import type { ApiConfiguration } from '../../shared/api'
+import { provideApiReadBoundary } from '../api/api-read-boundary'
 
 export const activeProviderIds = ['pinia', 'appearance'] as const
 
@@ -22,8 +24,10 @@ export function installPlatformProviders(input: {
   readonly application: VueApplication
   readonly handoff: AppearanceFirstPaintHandoffHandle
   readonly pinia: PiniaProviderHandle['pinia']
+  readonly api: ApiConfiguration
 }): InstalledPlatformProvidersHandle {
   input.application.use(input.pinia)
+  provideApiReadBoundary(input.application, input.api)
   const appearance = installAppearanceProvider(input.pinia, input.handoff)
   provideAppearanceReadBoundary(input.application, appearance.appearanceReadBoundary)
   provideAppearanceMutationBoundary(input.application, appearance.appearanceMutationBoundary)

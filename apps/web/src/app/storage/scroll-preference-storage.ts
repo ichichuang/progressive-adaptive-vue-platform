@@ -1,3 +1,4 @@
+import { subscribeSharedPreferenceChanges } from './shared-preference-events'
 import {
   scrollPreferenceSchema,
   type ScrollPreference,
@@ -30,6 +31,11 @@ export function createScrollPreferenceStorage(
     }
   }
   return {
+    subscribe(invalidate) {
+      return subscribeSharedPreferenceChanges([key], () => {
+        if (!isDisposed()) invalidate()
+      })
+    },
     read(): ReturnType<ScrollPreferencePort['read']> {
       if (isDisposed()) return { status: 'unusable', reason: 'disposed' }
       const storage = access()

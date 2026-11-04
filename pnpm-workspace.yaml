@@ -23,6 +23,7 @@ allowBuilds:
   esbuild@0.28.1: true
   '@bundled-es-modules/glob': false
   style-dictionary: false
+  vue-demi: false
 
 patchedDependencies:
   motion-v@2.4.0: patches/motion-v@2.4.0.patch
@@ -33,6 +34,7 @@ patchedDependencies:
 catalog:
   '@iconify-json/lucide': 1.2.120
   '@intlify/message-compiler': 11.4.10
+  '@tanstack/vue-query': 5.105.1
   '@types/node': 24.13.3
   '@unocss/core': 66.7.5
   '@unocss/eslint-plugin': 66.7.5

@@ -142,17 +142,16 @@ export const bootstrapStepRegistry = [
     createInput:
       'validated Runtime Configuration, exact Storage Registry, Storage error normalization boundary, startupAttemptId',
     createOutput:
-      'one Storage lifecycle handle with the sole Storage owner, exact BroadcastChannel handle, storage-event fallback listener and one idempotent disposer',
+      'one Storage lifecycle handle with the sole Storage owner and one idempotent disposer',
     readyCondition:
-      'Storage Registry exact-equality validation succeeds; cross-tab handles created; storage error adapter installed; zero envelope/migration/memory-only records admitted',
+      'Storage Registry exact-equality validation succeeds; storage error adapter installed; zero envelope/migration/memory-only records; only five-record shared preference invalidation admitted',
     disposeResponsibility:
-      'close the BroadcastChannel, remove the storage-event fallback listener idempotently and release Storage owner references',
+      'dispose browser-page discovery, revoke Storage ports and release Storage owner references',
     domMountOwner: false,
     failureClassification: 'application-startup-failure',
     retryParticipant: true,
     ownFailureEligibleForConfigurationRetry: false,
-    hmrBehavior:
-      'dispose and recreate the Storage owner and cross-tab handles through the sole Runtime Kernel',
+    hmrBehavior: 'dispose and recreate the Storage owner through the sole Runtime Kernel',
   },
   {
     id: 'create-and-ready-i18n',
@@ -161,9 +160,9 @@ export const bootstrapStepRegistry = [
       'Vue application, Storage locale preference port, initial route scope and Router title callback',
     createOutput: 'synchronously registered ConsoleI18nHandle and ready readonly language boundary',
     readyCondition:
-      'default and restored locale resources ready, one instance installed, document language and route title committed',
+      'default and latest selected/fallback locale ready without obsolete-load waiting; one instance installed, document language and route title committed',
     disposeResponsibility:
-      'cancel locale work, detach Router, release the official instance and restore document language',
+      'unsubscribe preference changes, cancel locale work, detach Router, release the official instance and restore document language',
     domMountOwner: false,
     failureClassification: 'application-startup-failure',
     retryParticipant: true,

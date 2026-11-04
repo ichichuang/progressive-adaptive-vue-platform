@@ -13,9 +13,10 @@ const props = withDefaults(
   defineProps<{
     readonly ownerId: string
     readonly enabled?: boolean
+    readonly contained?: boolean
     readonly xScrollable?: boolean
   }>(),
-  { enabled: true, xScrollable: false },
+  { enabled: true, contained: false, xScrollable: false },
 )
 const emit = defineEmits<{ controller: [controller: UiScrollController | null] }>()
 defineSlots<{ default: (props: Readonly<Record<string, never>>) => unknown }>()
@@ -232,6 +233,7 @@ onBeforeUnmount(controller.dispose)
     ref="host"
     class="pavp-scroll-area"
     :data-enabled="enabled"
+    :data-contained="contained"
     :data-horizontal="xScrollable"
   >
     <ScrollViewport
@@ -251,69 +253,87 @@ onBeforeUnmount(controller.dispose)
 </template>
 
 <style scoped>
-.pavp-scroll-area {
-  position: relative;
-  block-size: 100%;
-  min-block-size: 0;
-  min-inline-size: 0;
-  overflow: hidden;
-  overscroll-behavior: contain;
-}
+@layer components {
+  .pavp-scroll-area {
+    position: relative;
+    block-size: 100%;
+    min-block-size: 0;
+    min-inline-size: 0;
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
 
-.pavp-scroll-area[data-enabled='false'] {
-  block-size: auto;
-  overflow: visible;
-}
+  .pavp-scroll-area[data-enabled='false'] {
+    block-size: auto;
+    overflow: visible;
+  }
 
-.pavp-scroll-area__viewport {
-  block-size: 100%;
-  min-block-size: 0;
-  min-inline-size: 0;
-  overscroll-behavior: contain;
-}
-
-.pavp-scroll-area[data-horizontal='true'] .pavp-scroll-area__viewport {
-  overflow: auto hidden;
-}
-
-.pavp-scroll-area[data-enabled='false'] .pavp-scroll-area__viewport {
-  block-size: auto;
-  overflow: visible;
-}
-
-.pavp-scroll-area__content {
-  display: flow-root;
-  min-inline-size: 100%;
-}
-
-.pavp-scroll-area__content[data-main-content='true'] {
-  display: flex;
-  flex-direction: column;
-  min-block-size: 100%;
-  min-inline-size: 0;
-}
-
-@media (forced-colors: active) {
   .pavp-scroll-area__viewport {
-    scrollbar-color: ButtonText Canvas;
+    block-size: 100%;
+    min-block-size: 0;
+    min-inline-size: 0;
+    overscroll-behavior: contain;
+  }
+
+  .pavp-scroll-area[data-horizontal='true'] > .pavp-scroll-area__viewport {
+    overflow: auto hidden;
+  }
+
+  .pavp-scroll-area[data-enabled='false'] > .pavp-scroll-area__viewport {
+    block-size: auto;
+    overflow: visible;
+  }
+
+  .pavp-scroll-area__content {
+    display: flow-root;
+    min-inline-size: 100%;
+  }
+
+  .pavp-scroll-area__content[data-main-content='true'] {
+    display: flex;
+    flex-direction: column;
+    min-block-size: 100%;
+    min-inline-size: 0;
+  }
+
+  .pavp-scroll-area[data-enabled='false'][data-contained='true'],
+  .pavp-scroll-area[data-enabled='false'][data-contained='true'] > .pavp-scroll-area__viewport,
+  .pavp-scroll-area[data-enabled='false'][data-contained='true']
+    > .pavp-scroll-area__viewport
+    > .pavp-scroll-area__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    block-size: 100%;
+    min-block-size: 0;
+    min-inline-size: 0;
+    overflow: hidden;
+  }
+
+  @media (forced-colors: active) {
+    .pavp-scroll-area__viewport {
+      scrollbar-color: ButtonText Canvas;
+    }
   }
 }
 </style>
 
 <style>
-:where(.pavp-scroll-area__viewport) {
-  overflow: hidden auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--ui-color-text-secondary) var(--ui-color-surface-panel);
+@layer components {
+  :where(.pavp-scroll-area__viewport) {
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ui-color-text-secondary) var(--ui-color-surface-panel);
+  }
 }
 
 .pavp-scroll-area .os-theme-pavp {
   --os-size: calc(var(--ui-space-content-gap) / 2);
-  --os-track-border-radius: var(--ui-radius-panel);
+  --os-track-border-radius: var(--ui-radius-small);
   --os-track-bg: var(--ui-color-surface-panel);
   --os-track-bg-hover: var(--ui-color-surface-panel);
   --os-track-bg-active: var(--ui-color-surface-panel);
-  --os-handle-border-radius: var(--ui-radius-panel);
+  --os-handle-border-radius: var(--ui-radius-small);
   --os-handle-bg: var(--ui-color-text-secondary);
   --os-handle-bg-hover: var(--ui-color-text-primary);
   --os-handle-bg-active: var(--ui-color-text-primary);

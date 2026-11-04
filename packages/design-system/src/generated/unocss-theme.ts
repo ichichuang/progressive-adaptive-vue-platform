@@ -267,6 +267,42 @@ export const platformUnoMappings = [
     allowedCssProperties: ['color'],
   },
   {
+    roleId: 'color.control.info',
+    cssVariable: '--ui-color-control-info',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'control-info',
+    classes: ['text-control-info'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.control.success',
+    cssVariable: '--ui-color-control-success',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'control-success',
+    classes: ['text-control-success'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.control.warning',
+    cssVariable: '--ui-color-control-warning',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'control-warning',
+    classes: ['text-control-warning'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.control.error',
+    cssVariable: '--ui-color-control-error',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'control-error',
+    classes: ['text-control-error'],
+    allowedCssProperties: ['color'],
+  },
+  {
     roleId: 'interaction.border.width',
     cssVariable: '--ui-border-width',
     generatorKind: 'exact-rule',
@@ -301,6 +337,15 @@ export const platformUnoMappings = [
     key: 'motion',
     classes: ['ease-motion'],
     allowedCssProperties: ['--un-ease', 'transition-timing-function'],
+  },
+  {
+    roleId: 'interaction.radius.control',
+    cssVariable: '--ui-radius-control',
+    generatorKind: 'theme-entry',
+    family: 'radius',
+    key: 'control',
+    classes: ['rounded-control'],
+    allowedCssProperties: ['border-radius'],
   },
   {
     roleId: 'interaction.radius.panel',
@@ -724,7 +769,7 @@ export const platformRules = [
     'grid-cols-auto-fit-admin-content',
     {
       'grid-template-columns':
-        'repeat(auto-fit, minmax(var(--ui-layout-admin-content-minimum-inline-size), 1fr))',
+        'repeat(auto-fit, minmax(min(100%, var(--ui-layout-admin-content-minimum-inline-size)), 1fr))',
     },
   ],
   [
@@ -806,9 +851,33 @@ export const platformRules = [
     },
   ],
   [
+    'text-control-error',
+    {
+      color: 'var(--ui-color-control-error)',
+    },
+  ],
+  [
+    'text-control-info',
+    {
+      color: 'var(--ui-color-control-info)',
+    },
+  ],
+  [
     'text-control-primary',
     {
       color: 'var(--ui-color-control-primary)',
+    },
+  ],
+  [
+    'text-control-success',
+    {
+      color: 'var(--ui-color-control-success)',
+    },
+  ],
+  [
+    'text-control-warning',
+    {
+      color: 'var(--ui-color-control-warning)',
     },
   ],
   [
@@ -898,6 +967,7 @@ export const platformTheme = {
     title: 'var(--ui-font-line-height-title)',
   },
   radius: {
+    control: 'var(--ui-radius-control)',
     panel: 'var(--ui-radius-panel)',
   },
   shadow: {

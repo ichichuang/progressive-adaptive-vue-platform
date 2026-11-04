@@ -9,6 +9,7 @@ export type LocalePreferenceReadResult =
   | { readonly status: 'unusable'; readonly reason: 'invalid' | 'unavailable' }
 
 export interface LocalePreferencePort {
+  subscribe(invalidate: () => void): () => void
   read(): LocalePreferenceReadResult
   write(locale: ConsoleLocale): { readonly status: 'saved' | 'failed' }
 }

@@ -3,22 +3,43 @@
     "sm": {
       "$type": "dimension",
       "$value": {
-        "value": 0.375,
-        "unit": "rem"
+        "value": 4,
+        "unit": "px"
       }
     },
     "md": {
       "$type": "dimension",
       "$value": {
-        "value": 0.75,
-        "unit": "rem"
+        "value": 12,
+        "unit": "px"
       }
     },
     "lg": {
       "$type": "dimension",
       "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "control": {
+      "$type": "dimension",
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "minimum": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      }
+    },
+    "step": {
+      "$type": "dimension",
+      "$value": {
         "value": 1,
-        "unit": "rem"
+        "unit": "px"
       }
     }
   }

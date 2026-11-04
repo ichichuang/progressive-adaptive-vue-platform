@@ -4,48 +4,14 @@ import { isInSrgbGamut, parseCssColor } from './css-color'
 import { tokenReferenceSchema } from './token-reference.schema'
 
 export const builtInThemeIds = [
-  'amber',
-  'cobalt',
-  'coral',
-  'graphite',
-  'iris',
-  'jade',
-  'lagoon',
-  'stone-blue-ash',
-  'misty-rose-blue',
-  'honey-apricot-cream',
-  'cerulean-sky-navy',
-  'lavender-ivory',
-  'denim-cocoa',
-  'burgundy-snow',
+  'royal-iris',
+  'cobalt-tide',
+  'emerald-grove',
+  'ember-coral',
+  'berry-bloom',
 ] as const
 export const completeThemeSchemaVersion = 3 as const
-export const completeThemeRoleContractVersion = 3 as const
-export const legacyCustomThemeRoleContractVersion = 1 as const
-export const controlCustomThemeRoleContractVersion = 2 as const
-export const legacyCustomThemeRoleIds = [
-  'color.action.primary',
-  'color.border.default',
-  'color.focus.ring',
-  'color.scrim.viewport',
-  'color.surface.page',
-  'color.surface.panel',
-  'color.text.on-action',
-  'color.text.primary',
-  'color.text.secondary',
-] as const
-export const controlCustomThemeRoleIds = [
-  'color.action.primary',
-  'color.control.primary',
-  'color.border.default',
-  'color.focus.ring',
-  'color.scrim.viewport',
-  'color.surface.page',
-  'color.surface.panel',
-  'color.text.on-action',
-  'color.text.primary',
-  'color.text.secondary',
-] as const
+export const completeThemeRoleContractVersion = 4 as const
 export const builtInThemeIdSchema = z.enum(builtInThemeIds)
 export const customThemeIdSchema = z.string().min(1).brand<'CustomThemeId'>()
 
@@ -166,20 +132,6 @@ export const customThemeDefinitionSchema = z.strictObject({
   ...completeThemeContractShape,
   id: customThemeIdSchema,
   planes: customPlanesSchema(absoluteColorRoleMapSchema),
-})
-
-export const legacyCustomThemeDefinitionSchema = z.strictObject({
-  ...completeThemeContractShape,
-  roleContractVersion: z.literal(legacyCustomThemeRoleContractVersion),
-  id: customThemeIdSchema,
-  planes: customPlanesSchema(z.record(z.enum(legacyCustomThemeRoleIds), absoluteCssColorSchema)),
-})
-
-export const controlCustomThemeDefinitionSchema = z.strictObject({
-  ...completeThemeContractShape,
-  roleContractVersion: z.literal(controlCustomThemeRoleContractVersion),
-  id: customThemeIdSchema,
-  planes: customPlanesSchema(z.record(z.enum(controlCustomThemeRoleIds), absoluteCssColorSchema)),
 })
 
 export type BuiltInThemeId = z.infer<typeof builtInThemeIdSchema>

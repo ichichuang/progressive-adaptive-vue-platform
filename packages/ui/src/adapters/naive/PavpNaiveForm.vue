@@ -70,34 +70,36 @@ const { announcement, presentation, canFocus, label } = useFormPresentation(prop
 </template>
 
 <style scoped>
-.pavp-form__fields {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--ui-space-content-gap);
-}
-.pavp-form__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ui-space-content-gap);
-}
-:global([data-layout-profile='regular']) .pavp-form[data-columns='2'] > .pavp-form__fields,
-:global([data-layout-profile='wide']) .pavp-form[data-columns='2'] > .pavp-form__fields {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-.pavp-form__summary {
-  color: var(--ui-color-text-primary);
-  border-color: var(--ui-color-border-default);
-  border-style: solid;
-  border-width: var(--ui-admin-border-width);
-  padding: var(--ui-space-content-gap);
-  margin-block-end: var(--ui-space-content-gap);
-}
-.pavp-form__summary a {
-  color: inherit;
-}
-.pavp-form__summary:focus-visible,
-.pavp-form__summary a:focus-visible {
-  outline: var(--ui-admin-border-focus);
-  outline-offset: var(--ui-admin-focus-outline-offset);
+@layer components {
+  .pavp-form__fields {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ui-space-content-gap);
+  }
+  .pavp-form__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui-space-content-gap);
+  }
+  :global([data-layout-profile='regular']) .pavp-form[data-columns='2'] > .pavp-form__fields,
+  :global([data-layout-profile='wide']) .pavp-form[data-columns='2'] > .pavp-form__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pavp-form__summary {
+    color: var(--ui-color-text-primary);
+    border-color: var(--ui-color-border-default);
+    border-style: solid;
+    border-width: var(--ui-admin-border-width);
+    padding: var(--ui-space-content-gap);
+    margin-block-end: var(--ui-space-content-gap);
+  }
+  .pavp-form__summary a {
+    color: inherit;
+  }
+  .pavp-form__summary:focus-visible,
+  .pavp-form__summary a:focus-visible {
+    outline: var(--ui-admin-border-focus);
+    outline-offset: var(--ui-admin-focus-outline-offset);
+  }
 }
 </style>

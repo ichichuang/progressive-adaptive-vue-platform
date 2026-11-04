@@ -3,7 +3,7 @@ import {
   type EffectiveAppearanceState,
   type UiAppearanceSnapshot,
 } from '@platform/design-system'
-import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
+import type { ButtonProps, GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
 import commonDark from 'naive-ui/es/_styles/common/dark'
 import breadcrumbDark from 'naive-ui/es/breadcrumb/styles/dark'
 import buttonDark from 'naive-ui/es/button/styles/dark'
@@ -14,6 +14,8 @@ import menuDark from 'naive-ui/es/menu/styles/dark'
 import radioDark from 'naive-ui/es/radio/styles/dark'
 import tagDark from 'naive-ui/es/tag/styles/dark'
 import tooltipDark from 'naive-ui/es/tooltip/styles/dark'
+
+import { projectSemanticNaiveTheme } from './semantic-naive-theme'
 
 interface PavpNaiveThemeProjection {
   readonly theme: GlobalTheme | null
@@ -54,7 +56,9 @@ const navigationSelectedSurface =
 const navigationSelectedBackground = `var(--pavp-navigation-selected-surface, ${navigationSelectedSurface})`
 const navigationSelectedForeground = `var(--pavp-navigation-selected-foreground, ${colorControl})`
 const navigationChildActiveForeground = `var(--pavp-navigation-child-active-foreground, ${colorControl})`
-const radius = tokens['interaction.radius.panel']
+const panelRadius = tokens['interaction.radius.panel']
+const controlRadius = tokens['interaction.radius.control']
+const smallRadius = 'var(--ui-radius-small)'
 const shadow = tokens['interaction.shadow.panel']
 const shadowControl = 'var(--ui-admin-shadow-control)'
 const shadowControlHover = 'var(--ui-admin-shadow-control-hover)'
@@ -62,6 +66,7 @@ const shadowFocusRing = 'var(--ui-admin-shadow-focus-ring)'
 const shadowOverlay = 'var(--ui-admin-shadow-overlay)'
 const spacingContentGap = tokens['spacing.content.gap']
 const compactOverlaySpacing = `calc(${spacingContentGap} / 2)`
+const cardPadding = tokens['spacing.page.inline']
 const darkTheme = {
   name: 'dark',
   common: commonDark,
@@ -76,6 +81,43 @@ const darkTheme = {
   Tooltip: tooltipDark,
 } as const satisfies GlobalTheme
 
+const softButtonSuffixes = {
+  default: '',
+  primary: 'Primary',
+  info: 'Info',
+  success: 'Success',
+  warning: 'Warning',
+  error: 'Error',
+} as const
+
+/** Official per-component props keep soft text separate from the filled Button color. */
+export function createPavpNaiveSoftButtonProps(
+  appearance: Readonly<UiAppearanceSnapshot>,
+  type: keyof typeof softButtonSuffixes = 'default',
+): Pick<ButtonProps, 'type' | 'secondary' | 'bordered' | 'themeOverrides'> {
+  const palette = appearance.colorPalette
+  if (palette === null) {
+    if (type !== 'default')
+      throw new TypeError('Role-only Custom themes do not define colored soft Button pairs.')
+    return { type, secondary: true, bordered: false }
+  }
+  const family = palette.roles[type === 'default' ? 'neutral' : type]
+  const suffix = softButtonSuffixes[type]
+  const overrides: NonNullable<GlobalThemeOverrides['Button']> = {}
+  overrides[`color${suffix}`] = family.soft.background.default
+  overrides[`colorHover${suffix}`] = family.soft.background.hover
+  overrides[`colorPressed${suffix}`] = family.soft.background.pressed
+  overrides[`colorFocus${suffix}`] = family.soft.background.hover
+  overrides[`colorDisabled${suffix}`] = family.disabled.background
+  overrides[`textColor${suffix}`] = family.soft.foreground
+  overrides[`textColorHover${suffix}`] = family.soft.foreground
+  overrides[`textColorPressed${suffix}`] = family.soft.foreground
+  overrides[`textColorFocus${suffix}`] = family.soft.foreground
+  overrides[`textColorDisabled${suffix}`] = family.disabled.foreground
+  overrides[`rippleColor${suffix}`] = family.focus
+  return { type, secondary: false, bordered: false, themeOverrides: overrides }
+}
+
 /** Form-only overrides are consumed by the form adapters, without eager control imports. */
 export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppearanceSnapshot>) {
   const shared = createPavpNaiveThemeProjection(appearance).themeOverrides
@@ -87,7 +129,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
     fontWeight,
     lineHeight,
     lineHeightTextarea: lineHeight,
-    borderRadius: radius,
+    borderRadius: controlRadius,
     textColor: colorText,
     textColorDisabled: colorTextSecondary,
     textDecorationColor: colorText,
@@ -125,7 +167,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
     countTextColorDisabled: colorTextSecondary,
     peers: { Scrollbar: scrollbar },
   } satisfies NonNullable<GlobalThemeOverrides['Input']>
-  return {
+  const themeOverrides = {
     Form: {
       labelTextColor: colorText,
       asteriskColor: colorText,
@@ -154,7 +196,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
         InternalSelection: {
           heightMedium: enhancedTargetHeight,
           fontSizeMedium: fontSize,
-          borderRadius: radius,
+          borderRadius: controlRadius,
           textColor: colorText,
           textColorDisabled: colorTextSecondary,
           placeholderColor: colorTextSecondary,
@@ -190,7 +232,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
               color: colorPanel,
               textColor: colorText,
               boxShadow: shadowOverlay,
-              borderRadius: radius,
+              borderRadius: panelRadius,
               fontSize,
               dividerColor: colorBorder,
             },
@@ -199,7 +241,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
         InternalSelectMenu: {
           optionFontSizeMedium: fontSize,
           optionHeightMedium: enhancedTargetHeight,
-          borderRadius: radius,
+          borderRadius: panelRadius,
           color: colorPanel,
           groupHeaderTextColor: colorTextSecondary,
           actionDividerColor: colorBorder,
@@ -231,7 +273,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       itemColorHover: colorPage,
       itemColorDisabled: colorPanel,
       itemColorActive: colorAction,
-      itemBorderRadius: radius,
+      itemBorderRadius: smallRadius,
       panelColor: colorPanel,
       panelTextColor: colorText,
       arrowColor: colorTextSecondary,
@@ -243,7 +285,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       calendarDividerColor: colorBorder,
       panelActionDividerColor: colorBorder,
       panelBoxShadow: shadowOverlay,
-      panelBorderRadius: radius,
+      panelBorderRadius: panelRadius,
       calendarTitleFontWeight: fontWeightStrong,
       iconColor: colorTextSecondary,
       iconColorDisabled: colorTextSecondary,
@@ -255,6 +297,12 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       peers: { Input, Button: { ...shared.Button }, Scrollbar: scrollbar },
     },
   } satisfies GlobalThemeOverrides
+  if (appearance.colorPalette === null) return themeOverrides
+  const projected = projectSemanticNaiveTheme(appearance.colorPalette, themeOverrides)
+  return {
+    ...projected,
+    Form: { ...projected.Form, feedbackTextColorError: appearance.statusColors.error.onStatus },
+  }
 }
 
 function resolveMaterialSurface(material: EffectiveAppearanceState['material']): {
@@ -302,7 +350,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
     optionSuffixWidthLarge: fontSize,
     optionIconPrefixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
     optionIconSuffixWidthLarge: `calc(${fontSize} + ${spacingContentGap} + ${spacingContentGap})`,
-    borderRadius: radius,
+    borderRadius: controlRadius,
     padding: `calc(${spacingContentGap} / 2) 0`,
     dividerColor: colorBorder,
     optionOpacityDisabled: disabledOpacity,
@@ -310,6 +358,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       Popover: {
         color: materialOverlay,
         boxShadow: shadowOverlay,
+        borderRadius: panelRadius,
       },
     },
   } satisfies NonNullable<GlobalThemeOverrides['Dropdown']>
@@ -321,25 +370,32 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       color: `var(--pavp-scrollbar-color, ${colorBorder})`,
       colorHover: `var(--pavp-scrollbar-hover, ${colorTextSecondary})`,
       railColor: 'transparent',
-      borderRadius: radius,
+      borderRadius: smallRadius,
+    },
+    Form: {
+      // Role-only Custom themes guarantee body text on surfaces, not status fills as text.
+      feedbackTextColorError: colorText,
+      feedbackTextColorWarning: colorText,
+      asteriskColor: colorText,
     },
     Switch: {
-      railColor: colorBorder,
-      railColorActive: colorControl,
+      // The Custom body/surface pair guarantees the track boundary and inverse content contrast.
+      railColor: colorText,
+      railColorActive: colorText,
       buttonColor: colorPanel,
       buttonBoxShadow: shadowControl,
       boxShadowFocus: shadowFocusRing,
-      textColor: colorOnAction,
+      textColor: colorPanel,
       iconColor: colorText,
-      loadingColor: colorControl,
+      loadingColor: colorText,
       opacityDisabled: disabledOpacity,
       railHeightMedium: `calc(${controlHeight} / 2)`,
       railWidthMedium: controlHeight,
       buttonHeightMedium: `calc(${controlHeight} / 2)`,
       buttonWidthMedium: `calc(${controlHeight} / 2)`,
       buttonWidthPressedMedium: `calc(${controlHeight} / 2)`,
-      railBorderRadiusMedium: radius,
-      buttonBorderRadiusMedium: radius,
+      railBorderRadiusMedium: `calc(${controlHeight} / 4)`,
+      buttonBorderRadiusMedium: `calc(${controlHeight} / 4)`,
     },
     common: {
       fontSizeTiny: fontSize,
@@ -388,8 +444,8 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       cubicBezierEaseInOut: motionEasing,
       cubicBezierEaseOut: motionEasing,
       cubicBezierEaseIn: motionEasing,
-      borderRadius: radius,
-      borderRadiusSmall: radius,
+      borderRadius: controlRadius,
+      borderRadiusSmall: smallRadius,
       fontSize,
       fontSizeSmall: fontSize,
       fontSizeMedium: fontSize,
@@ -407,7 +463,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       itemTextColorHover: colorControl,
       itemTextColorPressed: colorControl,
       itemTextColorActive: colorText,
-      itemBorderRadius: radius,
+      itemBorderRadius: smallRadius,
       itemColorHover: material.chrome,
       itemColorPressed: material.chrome,
       separatorColor: colorBorder,
@@ -460,7 +516,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       borderFocusError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       heightMedium: enhancedTargetHeight,
       paddingMedium: `0 ${tokens['spacing.button.inline']}`,
-      borderRadiusMedium: radius,
+      borderRadiusMedium: controlRadius,
       fontSizeMedium: fontSize,
       iconSizeMedium: headerActionIconSize,
       border: borderControl,
@@ -516,7 +572,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       tdColor: colorPanel,
       tdPaddingBorderedMedium: spacingContentGap,
       borderColor: colorBorder,
-      borderRadius: radius,
+      borderRadius: panelRadius,
     },
     Layout: {
       common: {
@@ -554,7 +610,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       itemColorActiveHover: navigationSelectedBackground,
       itemColorActiveCollapsed: navigationSelectedBackground,
       itemHeight: enhancedTargetHeight,
-      borderRadius: radius,
+      borderRadius: controlRadius,
       fontSize,
       dividerColor: colorBorder,
       peers: {
@@ -574,7 +630,26 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       buttonTextColor: colorText,
       buttonTextColorActive: colorOnAction,
       buttonTextColorHover: colorControl,
-      buttonBorderRadius: radius,
+      buttonBorderRadius: controlRadius,
+    },
+    Card: {
+      color: colorPanel,
+      textColor: colorText,
+      titleTextColor: colorText,
+      borderRadius: panelRadius,
+      paddingSmall: spacingContentGap,
+      paddingMedium: cardPadding,
+      paddingLarge: cardPadding,
+      paddingHuge: cardPadding,
+      fontSizeSmall: fontSize,
+      fontSizeMedium: fontSize,
+      fontSizeLarge: fontSize,
+      fontSizeHuge: fontSize,
+      titleFontSizeSmall: fontSize,
+      titleFontSizeMedium: fontSize,
+      titleFontSizeLarge: fontSize,
+      titleFontSizeHuge: fontSize,
+      titleFontWeight: fontWeightStrong,
     },
     Tag: {
       color: material.chrome,
@@ -583,16 +658,16 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       closeIconColorPressed: colorText,
       closeColorHover: colorPage,
       closeColorPressed: colorPage,
-      closeBorderRadius: radius,
+      closeBorderRadius: smallRadius,
       heightMedium: controlHeight,
-      borderRadius: radius,
+      borderRadius: controlRadius,
       fontSizeMedium: fontSize,
       border: borderControl,
       textColor: colorText,
       colorBordered: material.chrome,
     },
     Tooltip: {
-      borderRadius: radius,
+      borderRadius: panelRadius,
       boxShadow: shadowOverlay,
       color: materialOverlay,
       textColor: colorText,
@@ -600,7 +675,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       peers: {
         Popover: {
           fontSize,
-          borderRadius: radius,
+          borderRadius: panelRadius,
           color: materialOverlay,
           dividerColor: colorBorder,
           textColor: colorText,
@@ -614,6 +689,9 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
 
   return Object.freeze({
     theme: appearance.colorMode === 'dark' ? darkTheme : null,
-    themeOverrides,
+    themeOverrides:
+      appearance.colorPalette === null
+        ? themeOverrides
+        : projectSemanticNaiveTheme(appearance.colorPalette, themeOverrides),
   } satisfies PavpNaiveThemeProjection)
 }

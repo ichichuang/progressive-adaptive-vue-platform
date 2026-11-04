@@ -5,6 +5,7 @@ export {
   fontScaleSchema,
   materialPreferenceSchema,
   motionPreferenceSchema,
+  radiusPreferenceSchema,
   uiDensitySchema,
   fontScaleValues,
   type ColorModePreference,
@@ -22,13 +23,14 @@ export {
   type ThemeReference,
 } from './schema/preference.schema'
 export { ProductPreferenceDefault } from './runtime/appearance-defaults'
-export { applyAppearance, type EffectiveAppearanceState } from './runtime/apply-appearance'
-export { projectUiAppearance, type UiAppearanceSnapshot } from './runtime/ui-appearance-projection'
 export {
-  migrateToExplicitThemePreference,
-  type PreferenceMigrationResult,
-} from './runtime/preference-migration'
+  applyAppearance,
+  captureRadius,
+  type EffectiveAppearanceState,
+} from './runtime/apply-appearance'
+export { projectUiAppearance, type UiAppearanceSnapshot } from './runtime/ui-appearance-projection'
 export { resolveColorMode, type EffectiveColorMode } from './runtime/resolve-color-mode'
+export { resolveMotion, type ResolveMotionInput } from './runtime/resolve-motion'
 export { resolveMaterial, type EffectiveMaterial } from './runtime/resolve-material'
 export {
   installCustomThemeBank,

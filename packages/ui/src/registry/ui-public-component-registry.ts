@@ -35,19 +35,14 @@ export interface UiPublicComponentRegistry {
 }
 
 const allProductRoutes = Object.freeze([
-  'appearance-management',
-  'capability-roadmap',
-  'console-overview',
-  'design-token-inspector',
-  'engineering-quality-inspector',
-  'responsive-layout-inspector',
-  'router-governance-inspector',
-  'runtime-kernel-inspector',
-  'storage-persistence-inspector',
-  'ui-system-inspector',
+  'workbench-dashboard',
+  'workbench-colors',
+  'workbench-sizes',
+  'workbench-typography',
+  'workbench-interactions',
 ] as const)
 
-const contentRoutes = Object.freeze([...allProductRoutes, 'capability-roadmap-standalone'] as const)
+const contentRoutes = Object.freeze([...allProductRoutes, 'control-center'] as const)
 
 export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
@@ -59,6 +54,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       props: Object.freeze([
         Object.freeze({ name: 'ownerId', type: 'string', required: true, defaultValue: null }),
         Object.freeze({ name: 'enabled', type: 'boolean', required: false, defaultValue: 'true' }),
+        Object.freeze({
+          name: 'contained',
+          type: 'boolean',
+          required: false,
+          defaultValue: 'false',
+        }),
         Object.freeze({
           name: 'xScrollable',
           type: 'boolean',
@@ -208,6 +209,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           defaultValue: null,
         }),
         Object.freeze({
+          name: 'contentLayout',
+          type: "'scroll' | 'contained'",
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'copy',
           type: 'UiAdminShellCopy',
           required: true,
@@ -222,6 +229,12 @@ export const uiPublicComponentRegistry = Object.freeze({
         Object.freeze({
           name: 'expandedNavigationGroupIds',
           type: 'readonly string[]',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'navigationAccordion',
+          type: 'boolean',
           required: true,
           defaultValue: null,
         }),
@@ -257,6 +270,11 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: false,
         }),
         Object.freeze({
+          name: 'navigation-bottom',
+          slotPropsType: 'Readonly<{ collapsed: boolean; navigate: (routeName: string) => void }>',
+          required: false,
+        }),
+        Object.freeze({
           name: 'workspace',
           slotPropsType: 'Readonly<Record<string, never>>',
           required: true,
@@ -285,7 +303,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       slots: Object.freeze([]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.route-focus-primary-heading']),
-      consumerRouteNames: contentRoutes,
+      consumerRouteNames: allProductRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -332,6 +350,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: true,
           defaultValue: null,
         }),
+        Object.freeze({
+          name: 'disabled',
+          type: 'boolean',
+          required: false,
+          defaultValue: 'false',
+        }),
       ]),
       emits: Object.freeze([Object.freeze({ name: 'update:modelValue', payloadType: 'string' })]),
       slots: Object.freeze([
@@ -343,7 +367,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze(['card-grid']),
       accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
-      consumerRouteNames: Object.freeze(['appearance-management']),
+      consumerRouteNames: Object.freeze(['workbench-interactions', 'control-center']),
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -364,7 +388,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.semantic-section-heading']),
-      consumerRouteNames: contentRoutes,
+      consumerRouteNames: Object.freeze(['workbench-interactions']),
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -385,15 +409,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         'not-started',
       ]),
       accessibilityContractIds: Object.freeze(['a11y.text-status-equivalent']),
-      consumerRouteNames: Object.freeze([
-        'appearance-management',
-        'capability-roadmap',
-        'capability-roadmap-standalone',
-        'console-overview',
-        'design-token-inspector',
-        'engineering-quality-inspector',
-        'ui-system-inspector',
-      ]),
+      consumerRouteNames: Object.freeze(['workbench-dashboard']),
       capabilityStatus: 'ACTIVE',
     }),
   ]),

@@ -153,6 +153,28 @@ export default typescriptEslint.config(
     },
   },
   {
+    files: ['apps/web/src/**/*.{ts,vue}', 'packages/*/src/**/*.{ts,vue}'],
+    ignores: [
+      'apps/web/src/shared/api/client.ts',
+      'apps/web/src/app/config/runtime-configuration.ts',
+      'apps/web/src/app/bootstrap/runtime-kernel.ts',
+      '**/*.d.ts',
+    ],
+    languageOptions: { globals: { window: 'readonly', self: 'readonly' } },
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          globals: [
+            { name: 'fetch', message: 'Use the shared API client.' },
+            { name: 'XMLHttpRequest', message: 'Use the shared API client.' },
+          ],
+          checkGlobalObject: true,
+        },
+      ],
+    },
+  },
+  {
     files: ['apps/web/src/**/*.ts', 'packages/*/src/**/*.ts', 'scripts/**/*.ts'],
     ignores: ['**/*.d.ts'],
     rules: {

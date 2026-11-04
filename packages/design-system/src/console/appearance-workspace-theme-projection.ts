@@ -47,15 +47,25 @@ type ThemeColorMode = keyof ThemeDefinition['planes']
 type ThemeContrast = keyof ThemeDefinition['planes']['light']
 
 function requiredSwatch(
-  definition: ThemeDefinition,
+  entry: ThemeRegistryEntry,
   colorMode: ThemeColorMode,
   contrast: ThemeContrast,
   role: string,
 ): string {
-  const value = definition.planes[colorMode][contrast][role]
+  const value =
+    entry.registryKind === 'built-in'
+      ? generatedThemeRegistry.builtInEntries
+          .find((theme) => theme.themeId === entry.themeId)
+          ?.bank.records.find(
+            (record) =>
+              record.colorMode === colorMode &&
+              record.contrast === contrast &&
+              record.publicRole === role,
+          )?.resolvedValue
+      : entry.definition.planes[colorMode][contrast][role]
 
   if (value === undefined) {
-    throw new TypeError(`${definition.id}: the Appearance theme preview projection is incomplete.`)
+    throw new TypeError(`${entry.themeId}: the Appearance theme preview projection is incomplete.`)
   }
 
   return value
@@ -67,7 +77,6 @@ function projectSwatches(
   colorMode: ThemeColorMode,
   contrast: ThemeContrast,
 ): AppearanceThemePreviewSwatches {
-  const definition = entry.definition
   const { statusColors } = projectUiAppearance(
     {
       ...ProductPreferenceDefault,
@@ -81,12 +90,12 @@ function projectSwatches(
   )
 
   return Object.freeze({
-    surfacePage: requiredSwatch(definition, colorMode, contrast, 'color.surface.page'),
-    surfacePanel: requiredSwatch(definition, colorMode, contrast, 'color.surface.panel'),
-    actionPrimary: requiredSwatch(definition, colorMode, contrast, 'color.action.primary'),
-    controlPrimary: requiredSwatch(definition, colorMode, contrast, 'color.control.primary'),
-    borderDefault: requiredSwatch(definition, colorMode, contrast, 'color.border.default'),
-    focusRing: requiredSwatch(definition, colorMode, contrast, 'color.focus.ring'),
+    surfacePage: requiredSwatch(entry, colorMode, contrast, 'color.surface.page'),
+    surfacePanel: requiredSwatch(entry, colorMode, contrast, 'color.surface.panel'),
+    actionPrimary: requiredSwatch(entry, colorMode, contrast, 'color.action.primary'),
+    controlPrimary: requiredSwatch(entry, colorMode, contrast, 'color.control.primary'),
+    borderDefault: requiredSwatch(entry, colorMode, contrast, 'color.border.default'),
+    focusRing: requiredSwatch(entry, colorMode, contrast, 'color.focus.ring'),
     statusInfo: statusColors.info.default,
     statusSuccess: statusColors.success.default,
     statusWarning: statusColors.warning.default,
@@ -140,19 +149,14 @@ export function projectAccessibleCustomAppearanceThemePreviews(
   entries: readonly CustomThemeRegistryEntry[],
 ): readonly AppearanceThemePreviewProjection[] {
   return Object.freeze(
-    entries
-      .filter((entry) => !builtInThemeIds.some((themeId) => themeId === entry.themeId))
-      .map((entry) => {
-        const validation = validateCustomThemeDefinition(entry.definition)
+    entries.map((entry) => {
+      const validation = validateCustomThemeDefinition(entry.definition)
 
-        if (
-          (validation.status !== 'validated' && validation.status !== 'rebound') ||
-          validation.entry.themeId !== entry.themeId
-        ) {
-          throw new TypeError(`${entry.themeId}: the Custom Theme preview projection was rejected.`)
-        }
+      if (validation.status !== 'validated' || validation.entry.themeId !== entry.themeId) {
+        throw new TypeError(`${entry.themeId}: the Custom Theme preview projection was rejected.`)
+      }
 
-        return projectTheme(validation.entry)
-      }),
+      return projectTheme(validation.entry)
+    }),
   )
 }

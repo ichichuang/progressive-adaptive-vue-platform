@@ -55,6 +55,7 @@ function renderFatalBoundary(input: {
   const action = document.createElement('button')
   action.className = 'h-control bg-action-primary text-text-on-action'
   action.type = 'button'
+  action.tabIndex = -1
   action.textContent = actionLabel
 
   let actionStarted = false

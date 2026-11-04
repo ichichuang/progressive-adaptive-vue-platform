@@ -163,35 +163,37 @@ const {
 </template>
 
 <style>
-.pavp-form-control {
-  inline-size: 100%;
-  min-inline-size: 0;
-}
-.pavp-form-control .n-switch,
-.pavp-form-control [data-form-readonly],
-.pavp-form-control button {
-  min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
-  min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
-}
-.pavp-form-control [data-form-readonly] {
-  display: inline-flex;
-  align-items: center;
-  white-space: pre-wrap;
-  color: var(--ui-color-text-primary);
-}
-.pavp-form-control p {
-  color: var(--ui-color-text-secondary);
-}
-.pavp-form-control button {
-  color: var(--ui-color-text-primary);
-  background: var(--ui-color-surface-panel);
-  border-color: var(--ui-color-border-default);
-  border-style: solid;
-  border-width: var(--ui-admin-border-width);
-}
-.pavp-form-control [data-form-readonly]:focus-visible,
-.pavp-form-control button:focus-visible {
-  outline: var(--ui-admin-border-focus);
-  outline-offset: var(--ui-admin-focus-outline-offset);
+@layer components {
+  .pavp-form-control {
+    inline-size: 100%;
+    min-inline-size: 0;
+  }
+  .pavp-form-control .n-switch,
+  .pavp-form-control [data-form-readonly],
+  .pavp-form-control button {
+    min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+    min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+  }
+  .pavp-form-control [data-form-readonly] {
+    display: inline-flex;
+    align-items: center;
+    white-space: pre-wrap;
+    color: var(--ui-color-text-primary);
+  }
+  .pavp-form-control p {
+    color: var(--ui-color-text-secondary);
+  }
+  .pavp-form-control button {
+    color: var(--ui-color-text-primary);
+    background: var(--ui-color-surface-panel);
+    border-color: var(--ui-color-border-default);
+    border-style: solid;
+    border-width: var(--ui-admin-border-width);
+  }
+  .pavp-form-control [data-form-readonly]:focus-visible,
+  .pavp-form-control button:focus-visible {
+    outline: var(--ui-admin-border-focus);
+    outline-offset: var(--ui-admin-focus-outline-offset);
+  }
 }
 </style>

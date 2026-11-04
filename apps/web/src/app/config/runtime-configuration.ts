@@ -76,6 +76,7 @@ function immutableConfiguration(configuration: CoreRuntimeConfiguration): CoreRu
     deploymentBase: configuration.deploymentBase,
     releaseSha: configuration.releaseSha,
     buildVersion: configuration.buildVersion,
+    api: Object.freeze(configuration.api),
   })
 }
 

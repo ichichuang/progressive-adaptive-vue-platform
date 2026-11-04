@@ -20,6 +20,7 @@ import {
   messageParameterKinds,
   messageScopeCoverage,
 } from '../../apps/web/src/shared/i18n/message-schema'
+import type { createConsoleI18nRuntime } from '../../apps/web/src/shared/i18n/runtime'
 import type { UiLocale } from '../../packages/ui/src/components/contracts'
 
 const messageNodeType: NodeTypes.Message = 2
@@ -31,11 +32,7 @@ const root = process.cwd()
 const owner = 'apps/web/src/shared/i18n'
 const scopes = ['common', 'console', 'appearance', 'capabilities'] as const
 const locales = ['zh-CN', 'en'] as const
-const expectedParameters = {
-  'console.storage.active-records': { count: 'number' },
-  'appearance.gallery.description': { count: 'number' },
-  'appearance.preview.current-material': { material: 'string' },
-} as const
+const expectedParameters = {} as const
 const localeTypeCoverage = {
   application: true,
   ui: true,
@@ -121,6 +118,248 @@ function equalSet(actual: readonly string[], expected: readonly string[]): boole
     new Set(actual).size === actual.length &&
     isDeepStrictEqual([...actual].sort(), [...expected].sort())
   )
+}
+
+async function sharedLocalePreferenceProbes(source: string, root: string): Promise<string[]> {
+  type RuntimeFactory = typeof createConsoleI18nRuntime
+  type Input = Parameters<RuntimeFactory>[0]
+  type Loader = Parameters<RuntimeFactory>[1]
+  const path = resolve(root, 'apps/web/src/shared/i18n/runtime.ts')
+  const requireOwner = createRequire(path)
+  const compiled = ts.transpileModule(source.replaceAll('import.meta.env', '({ DEV: false })'), {
+    compilerOptions: { target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.CommonJS },
+  }).outputText
+  const factory: unknown = runInNewContext(
+    compiled + '\nexports.createConsoleI18nRuntime',
+    {
+      exports: {},
+      require: requireOwner,
+    },
+    { timeout: 1000 },
+  )
+  if (typeof factory !== 'function') return ['Shared locale runtime is unavailable.']
+  const createRuntime = factory as RuntimeFactory
+  const vue = requireOwner('vue') as { createApp(root: object): Input['application'] }
+  const resources = new Map<string, Awaited<ReturnType<Loader>>>()
+  for (const locale of ['zh-CN', 'en'])
+    for (const scope of ['common', 'console'])
+      resources.set(
+        locale + '/' + scope,
+        JSON.parse(
+          await readFile(
+            resolve(root, `apps/web/src/shared/i18n/messages/${locale}/${scope}.json`),
+            'utf8',
+          ),
+        ) as Awaited<ReturnType<Loader>>,
+      )
+  const nextTask = () => new Promise<undefined>((resolve) => setTimeout(resolve, 0))
+  const failures: string[] = []
+  for (const [phase, outcome, replacement] of [
+    ['startup', 'resolve', 'zh-CN'],
+    ['startup', 'reject', 'zh-CN'],
+    ['ready', 'resolve', 'zh-CN'],
+    ['ready', 'reject', 'zh-CN'],
+    ['startup', 'resolve', 'en'],
+    ['startup', 'reject', 'en'],
+  ] as const) {
+    const label = `${phase}/${outcome}/${replacement}`
+    let preference: ReturnType<Input['preference']['read']> = {
+      status: 'found',
+      locale: phase === 'startup' ? 'en' : 'zh-CN',
+    }
+    let invalidate: () => void = () => undefined
+    let writes = 0
+    let failWrite = false
+    let removals = 0
+    let announceEnglish: () => void = () => undefined
+    const englishStarted = new Promise<void>((resolve) => {
+      announceEnglish = resolve
+    })
+    let releaseEnglish: () => void = () => undefined
+    let rejectEnglish: (reason: Error) => void = () => undefined
+    const english = new Promise<void>((resolve, reject) => {
+      releaseEnglish = resolve
+      rejectEnglish = reject
+    })
+    const attributes = new Map<string, string>()
+    const commits: string[] = []
+    const documentTarget = {
+      documentElement: {
+        get lang() {
+          return attributes.get('lang') ?? ''
+        },
+        set lang(value: string) {
+          attributes.set('lang', value)
+          commits.push(value)
+        },
+        get dir() {
+          return attributes.get('dir') ?? ''
+        },
+        set dir(value: string) {
+          attributes.set('dir', value)
+        },
+        getAttribute: (key: string) => attributes.get(key) ?? null,
+        setAttribute(key: string, value: string) {
+          attributes.set(key, value)
+          if (key === 'lang') commits.push(value)
+        },
+        removeAttribute: (key: string) => {
+          attributes.delete(key)
+        },
+      },
+    } as unknown as Document
+    const handle = createRuntime(
+      {
+        application: vue.createApp({ render: () => null }),
+        document: documentTarget,
+        initialScope: 'console',
+        preference: {
+          read: () => preference,
+          write(locale) {
+            writes += 1
+            if (failWrite) return { status: 'failed' }
+            preference = { status: 'found', locale }
+            return { status: 'saved' }
+          },
+          subscribe(listener) {
+            invalidate = listener
+            listener()
+            return () => {
+              removals += 1
+              invalidate = () => undefined
+            }
+          },
+        },
+        onLocaleCommitted: () => undefined,
+      },
+      async (locale, scope) => {
+        if (locale === 'en') {
+          announceEnglish()
+          await english
+        }
+        const messages = resources.get(locale + '/' + scope)
+        if (messages === undefined) throw new Error('The isolated message fixture is unavailable.')
+        return messages
+      },
+    )
+    try {
+      if (phase === 'ready') {
+        await handle.ready
+        preference = { status: 'found', locale: 'en' }
+        invalidate()
+      }
+      const started = await Promise.race([englishStarted.then(() => true), nextTask()])
+      if (started !== true) {
+        failures.push(`${label}: the pending English choice was not exercised.`)
+        continue
+      }
+      if (replacement === 'zh-CN') {
+        preference = { status: 'found', locale: replacement }
+        invalidate()
+      }
+      const early = await Promise.race([handle.ready, nextTask()])
+      if (replacement === 'en' && early !== undefined)
+        failures.push(
+          `${label}: current English selection skipped its required resource readiness.`,
+        )
+      if (replacement === 'zh-CN' && early?.status !== 'ready')
+        failures.push(`${label}: latest Chinese readiness waited for obsolete English loading.`)
+      if (outcome === 'resolve') releaseEnglish()
+      else rejectEnglish(new Error('Isolated obsolete resource failure.'))
+      const final = await handle.ready
+      await nextTask()
+      if (
+        final.status !== 'ready' ||
+        final.boundary.locale.value !==
+          (replacement === 'en' && outcome === 'resolve' ? 'en' : 'zh-CN') ||
+        final.boundary.pendingLocale.value !== null ||
+        commits.includes('en') !== (replacement === 'en' && outcome === 'resolve') ||
+        (replacement === 'en' && outcome === 'reject'
+          ? final.boundary.notice.value !== 'saved-choice-unavailable'
+          : ['saved-choice-unavailable', 'message-load-failed'].includes(
+              final.boundary.notice.value,
+            )) ||
+        writes !== 0
+      )
+        failures.push(
+          `${label}: stale locale completion/failure changed presentation, notice or persisted preference.`,
+        )
+      if (
+        phase === 'startup' &&
+        outcome === 'resolve' &&
+        replacement === 'en' &&
+        final.status === 'ready'
+      ) {
+        const boundary = final.boundary
+        if (boundary.notice.value !== 'none')
+          failures.push('Remote restoration must be silent and must not claim a local save.')
+        preference = { status: 'missing' }
+        invalidate()
+        await nextTask()
+        if (boundary.locale.value !== 'zh-CN' || boundary.notice.value !== 'none' || writes !== 0)
+          failures.push('Remote clear must apply the default without a save notice or write.')
+        preference = { status: 'found', locale: 'en' }
+        invalidate()
+        await nextTask()
+        preference = { status: 'unusable', reason: 'invalid' }
+        invalidate()
+        if (
+          boundary.locale.value !== 'en' ||
+          boundary.notice.value !== 'preference-unavailable' ||
+          !boundary.t('i18n.preference-unavailable').includes('last valid') ||
+          writes !== 0
+        )
+          failures.push(
+            'Invalid remote preference must accurately report retaining the last valid English locale.',
+          )
+        preference = { status: 'found', locale: 'en' }
+        invalidate()
+        await nextTask()
+        if (boundary.notice.value !== 'none' || writes !== 0)
+          failures.push(
+            'A valid remote no-op must clear stale synchronization feedback without saving.',
+          )
+        const saved = await boundary.switchLocale('zh-CN')
+        if (
+          saved.status !== 'applied' ||
+          saved.persistence !== 'saved' ||
+          boundary.notice.value !== 'applied' ||
+          writes !== 1
+        )
+          failures.push('Explicit local save must retain its applied/saved result and notice.')
+        preference = { status: 'unusable', reason: 'invalid' }
+        invalidate()
+        if (
+          boundary.locale.value !== 'zh-CN' ||
+          !boundary.t('i18n.preference-unavailable').includes('保留')
+        )
+          failures.push(
+            'Invalid preference copy must also describe retaining the valid Chinese locale.',
+          )
+        failWrite = true
+        const failed = await boundary.switchLocale('en')
+        if (
+          failed.status !== 'applied' ||
+          failed.persistence !== 'failed' ||
+          boundary.notice.value !== 'not-saved' ||
+          writes !== 2
+        )
+          failures.push(
+            'Explicit local persistence failure must retain its applied/not-saved feedback.',
+          )
+      }
+    } finally {
+      releaseEnglish()
+      handle.dispose()
+    }
+    if (removals !== 1) failures.push(`${label}: locale preference listener was not released.`)
+  }
+  return failures
+}
+
+// flatJson merges scopes into one message tree: a text leaf cannot also be a namespace.
+function flatMessageParentKeys(keys: readonly string[]): readonly string[] {
+  return keys.filter((parent) => keys.some((key) => key.startsWith(`${parent}.`)))
 }
 
 export async function validateI18nArchitecture(): Promise<string[]> {
@@ -215,6 +454,18 @@ export async function validateI18nArchitecture(): Promise<string[]> {
     }
     catalogs.set(path, messages)
   }
+  report(
+    flatMessageParentKeys(['preview.motionLabel', 'preview.motion.full']).length === 0 &&
+      flatMessageParentKeys(['preview.motion.full', 'preview.motion']).includes('preview.motion'),
+    'flatJson prefix probes must distinguish text leaves from namespaces regardless of key order.',
+  )
+  for (const locale of locales) {
+    const mergedKeys = scopes.flatMap((scope) =>
+      Object.keys(catalogs.get(`${owner}/messages/${locale}/${scope}.json`) ?? {}),
+    )
+    for (const parent of flatMessageParentKeys(mergedKeys))
+      report(false, `${locale}: ${parent} is both message text and a flatJson namespace.`)
+  }
   for (const scope of scopes) {
     report(
       equalSet(
@@ -236,7 +487,7 @@ export async function validateI18nArchitecture(): Promise<string[]> {
   }
   report(
     isDeepStrictEqual(messageParameterKinds, expectedParameters),
-    'the three named-parameter contracts must remain exact.',
+    'the current workbench catalogs do not declare named parameters.',
   )
   report(
     defaultConsoleLocale === 'zh-CN' &&
@@ -411,7 +662,7 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       [...usedKeys].filter((key) => keyScopes.has(key)),
       [...keyScopes.keys()],
     ),
-    'all catalog messages must have an actual production reference.',
+    `all catalog messages must have an actual production reference. Unused: ${[...keyScopes.keys()].filter((key) => !usedKeys.has(key)).join(', ')}`,
   )
 
   const textAt = (path: string): string => sourceText.get(path) ?? ''
@@ -593,16 +844,68 @@ export async function validateI18nArchitecture(): Promise<string[]> {
     /<html\b[^>]*\blang="zh-CN"[^>]*\bdir="ltr"/u.test(html),
     'HTML must use the safe Chinese default and ltr direction.',
   )
-  const appearance = textAt('apps/web/src/pages/appearance.vue')
+  const settingsPath = 'apps/web/src/pages/control-center.vue'
   report(
-    appearance.includes(':value="pendingLocale ?? locale"') &&
-      appearance.includes(':aria-busy="pendingLocale !== null"') &&
-      switchConsumers.get('apps/web/src/pages/appearance.vue') === 1 &&
-      appearance.indexOf('data-appearance-axis="motion"') <
-        appearance.indexOf(':value="pendingLocale ?? locale"') &&
-      appearance.indexOf(':value="pendingLocale ?? locale"') <
-        appearance.indexOf("t('appearance.reset')"),
-    'the one language control must expose pending intent in its admitted position.',
+    equalSet(
+      [...switchConsumers.keys()].filter((path) => path.startsWith('apps/web/src/pages/')),
+      [settingsPath],
+    ) && switchConsumers.get(settingsPath) === 1,
+    'the standalone Control Center must own the single page-level language switch.',
+  )
+  const settings = compiler.parse(textAt(settingsPath), { filename: settingsPath })
+  const settingsScript = parseSource(
+    settingsPath,
+    [settings.descriptor.script?.content, settings.descriptor.scriptSetup?.content].join('\n'),
+  )
+  const radioOwnerImport = settingsScript.statements
+    .filter(
+      (node): node is ts.ImportDeclaration =>
+        ts.isImportDeclaration(node) &&
+        ts.isStringLiteral(node.moduleSpecifier) &&
+        node.moduleSpecifier.text === '@platform/ui',
+    )
+    .flatMap((node) => {
+      const bindings = node.importClause?.namedBindings
+      return bindings !== undefined && ts.isNamedImports(bindings) ? [...bindings.elements] : []
+    })
+    .find((node) => (node.propertyName?.text ?? node.name.text) === 'UiRadioCardGroup')?.name.text
+  const languageControls: TemplateNode[] = []
+  function collectLanguageControls(node: TemplateNode): void {
+    if (
+      radioOwnerImport !== undefined &&
+      node.tag === radioOwnerImport &&
+      node.props?.some((prop) => prop.name === 'bind' && prop.arg?.content === 'aria-busy')
+    )
+      languageControls.push(node)
+    for (const child of node.children ?? []) collectLanguageControls(child)
+  }
+  if (settings.descriptor.template?.ast !== undefined)
+    collectLanguageControls(settings.descriptor.template.ast)
+  const languageControl = languageControls[0]
+  const languageBindings = new Map(
+    (languageControl?.props ?? [])
+      .filter((prop) => prop.name === 'bind')
+      .map((prop) => [prop.arg?.content, prop.exp?.content]),
+  )
+  report(
+    settings.errors.length === 0 &&
+      languageControls.length === 1 &&
+      [
+        'model-value',
+        'options',
+        'accessible-label',
+        'aria-labelledby',
+        'aria-describedby',
+        'aria-busy',
+        'disabled',
+      ].every((name) => (languageBindings.get(name)?.trim().length ?? 0) > 0) &&
+      ['model-value', 'aria-busy', 'disabled'].every((name) =>
+        /\.pendingLocale\b/u.test(languageBindings.get(name) ?? ''),
+      ) &&
+      languageControl?.props?.some(
+        (prop) => prop.name === 'on' && prop.arg?.content === 'update:model-value',
+      ) === true,
+    'the standalone language radio group must expose its controlled pending choice, visible options, accessible name/description, busy/disabled state and update action through the existing public component.',
   )
   report(
     textAt('apps/web/src/App.vue').includes(':locale="locale"') &&
@@ -665,12 +968,18 @@ export async function validateI18nArchitecture(): Promise<string[]> {
     'locale and translated Shell copy remain required semantic UI props.',
   )
   for (const locale of locales) {
-    const label =
-      catalogs.get(`${owner}/messages/${locale}/common.json`)?.['i18n.language-label'] ?? ''
+    const settingsCopy = catalogs.get(`${owner}/messages/${locale}/appearance.json`)
     report(
-      label.includes('语言') && label.includes('Language'),
-      `${locale}: language accessible label must identify both languages.`,
+      settingsCopy !== undefined &&
+        Object.keys(settingsCopy).every((key) => key.startsWith('settings.')) &&
+        ['settings.language', 'settings.chinese', 'settings.english'].every(
+          (key) => (settingsCopy[key]?.trim().length ?? 0) > 0,
+        ),
+      `${locale}: the settings catalog must contain its real language label and options.`,
     )
   }
+  violations.push(
+    ...(await sharedLocalePreferenceProbes(sourceText.get(`${owner}/runtime.ts`) ?? '', root)),
+  )
   return violations
 }

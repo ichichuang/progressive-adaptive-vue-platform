@@ -9,4 +9,4 @@ export type {
 export { createConsoleI18n } from './lifecycle'
 export { consoleLocaleRegistry, localePreferenceSchema } from './locale-contract'
 export type { LocalePreference } from './locale-contract'
-export type { ConsoleMessageKey, ConsoleTranslate } from './message-schema'
+export type { ConsoleMessageKey, ConsoleMessageParams, ConsoleTranslate } from './message-schema'

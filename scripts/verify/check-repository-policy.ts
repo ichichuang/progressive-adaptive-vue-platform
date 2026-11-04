@@ -1,6 +1,9 @@
 import { execFileSync } from 'node:child_process'
 import { readFile, readdir, realpath } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { isAbsolute, join, relative, resolve, sep } from 'node:path'
+
+import ts from 'typescript'
 
 import { styleCompilerAdmission, styleSourceAdmission } from '../architecture/style-ownership'
 
@@ -79,7 +82,92 @@ const numericVersionStylePattern = new RegExp(
   ['(?:', 'v', '|version)', '[123]', '(?![0-9])'].join(''),
   'iu',
 )
-const namingContentScanExcludedPaths = new Set(['pnpm-lock.yaml'])
+const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
+const vueSfcCompiler = requireFromWeb('vue/compiler-sfc') as {
+  readonly parse: (
+    source: string,
+    options: Readonly<{ filename: string }>,
+  ) => {
+    readonly descriptor: {
+      readonly script: { readonly content: string } | null
+      readonly scriptSetup: { readonly content: string } | null
+    }
+    readonly errors: readonly unknown[]
+  }
+}
+
+function numericVersionDeclarationNames(path: string, text: string): string[] {
+  if (path.endsWith('.vue')) {
+    const parsed = vueSfcCompiler.parse(text, { filename: path })
+    if (parsed.errors.length > 0) throw new Error(`${path}: invalid Vue source.`)
+    text = [parsed.descriptor.script?.content, parsed.descriptor.scriptSetup?.content]
+      .filter((content): content is string => content !== undefined)
+      .join('\n')
+  } else if (!/\.[cm]?[jt]sx?$/iu.test(path)) {
+    return []
+  }
+
+  const parsed = ts.createSourceFile(path, text, ts.ScriptTarget.Latest, true)
+  const names = new Set<string>()
+  function inspectBinding(name: ts.BindingName | ts.PropertyName | undefined): void {
+    if (name === undefined) return
+    if (ts.isStringLiteral(name)) {
+      let first = true
+      for (const character of name.text) {
+        const codePoint = character.codePointAt(0) ?? 0
+        if (
+          first
+            ? !ts.isIdentifierStart(codePoint, ts.ScriptTarget.Latest)
+            : !ts.isIdentifierPart(codePoint, ts.ScriptTarget.Latest)
+        )
+          return // Punctuation-bearing keys are data, not owned identifier names.
+        first = false
+      }
+      if (first) return
+    }
+    if (
+      (ts.isIdentifier(name) || ts.isStringLiteral(name)) &&
+      numericVersionStylePattern.test(name.text)
+    )
+      names.add(name.text)
+    if (ts.isComputedPropertyName(name) && ts.isStringLiteral(name.expression))
+      inspectBinding(name.expression)
+    if (ts.isObjectBindingPattern(name) || ts.isArrayBindingPattern(name)) {
+      for (const element of name.elements) {
+        if (ts.isBindingElement(element)) inspectBinding(element.name)
+      }
+    }
+  }
+  function visit(node: ts.Node): void {
+    if (
+      ts.isVariableDeclaration(node) ||
+      ts.isParameter(node) ||
+      ts.isFunctionDeclaration(node) ||
+      ts.isFunctionExpression(node) ||
+      ts.isClassDeclaration(node) ||
+      ts.isClassExpression(node) ||
+      ts.isInterfaceDeclaration(node) ||
+      ts.isTypeAliasDeclaration(node) ||
+      ts.isTypeParameterDeclaration(node) ||
+      ts.isMethodDeclaration(node) ||
+      ts.isMethodSignature(node) ||
+      ts.isPropertyDeclaration(node) ||
+      ts.isPropertySignature(node) ||
+      ts.isPropertyAssignment(node) ||
+      ts.isShorthandPropertyAssignment(node) ||
+      ts.isGetAccessorDeclaration(node) ||
+      ts.isSetAccessorDeclaration(node)
+    )
+      inspectBinding(node.name)
+    // Upstream exported names are external contracts; an explicit local alias is ours.
+    if (ts.isImportSpecifier(node) && node.propertyName !== undefined) inspectBinding(node.name)
+    if (ts.isImportClause(node) || ts.isNamespaceImport(node)) inspectBinding(node.name)
+    if (ts.isExportSpecifier(node) && node.propertyName !== undefined) inspectBinding(node.name)
+    ts.forEachChild(node, visit)
+  }
+  visit(parsed)
+  return [...names]
+}
 
 function normalizePath(path: string): string {
   return path.split(sep).join('/')
@@ -305,13 +393,8 @@ for (const absolutePath of inventory.regularFiles) {
 
   const text = content.toString('utf8')
 
-  if (
-    !namingContentScanExcludedPaths.has(repositoryPath) &&
-    !repositoryPath.startsWith('patches/') &&
-    !repositoryPath.endsWith('.svg') &&
-    numericVersionStylePattern.test(text)
-  ) {
-    violations.push(`${repositoryPath}: numeric-version-style naming is forbidden.`)
+  for (const name of numericVersionDeclarationNames(repositoryPath, text)) {
+    violations.push(`${repositoryPath}: numeric-version-style declaration ${name} is forbidden.`)
   }
 
   for (const { label, pattern } of forbiddenHomePathPatterns) {
@@ -323,6 +406,49 @@ for (const absolutePath of inventory.regularFiles) {
   if (forbiddenMachineLocalAuthorityPathPatterns.some((pattern) => pattern.test(text))) {
     violations.push(`${repositoryPath}: machine-local authority or registry path is forbidden.`)
   }
+}
+
+const namingProbes: readonly (readonly [string, string, readonly string[]])[] = [
+  [
+    'naming-probe.ts',
+    `import { externalV1 } from 'vendor'
+const endpoint = 'https://example.invalid/api/v1'
+const release = 'v2.0.0'
+const label = 'Version3 migration'
+// Protocol v1 is an external contract.
+export { externalV1 }`,
+    [],
+  ],
+  [
+    'naming-probe.ts',
+    'const layoutV2 = {}; function loadVersion3() {}',
+    ['layoutV2', 'loadVersion3'],
+  ],
+  [
+    'naming-probe.ts',
+    `const layout = { layoutV2: true, 'panelV1': true, ['surfaceV3']: true }
+const endpoint = { path: '/api/v1' }
+const handlers = { get layoutVersion2() { return true } }`,
+    ['layoutV2', 'panelV1', 'surfaceV3', 'layoutVersion2'],
+  ],
+  [
+    'naming-probe.ts',
+    `const external = { '/api/v1': true, 'api/v1': true, 'v2.0': true, 'v2.0.0': true,
+  ['v3.1.0-beta.1']: true, 'application/vnd.example.v2+json': true,
+  'https://example.invalid/api/v1': true }
+const owned = { 'layoutV2': true, ['layoutVersion3']: true, '布局V2': true }`,
+    ['layoutV2', 'layoutVersion3', '布局V2'],
+  ],
+  [
+    'NamingProbe.vue',
+    '<script setup lang="ts">const layoutV2 = 1</script><template><span>v1</span></template>',
+    ['layoutV2'],
+  ],
+]
+for (const [path, text, expected] of namingProbes) {
+  const actual = numericVersionDeclarationNames(path, text)
+  if (actual.length !== expected.length || actual.some((name, index) => name !== expected[index]))
+    violations.push('Repository naming in-memory probe failed.')
 }
 
 if (violations.length > 0) {

@@ -7,14 +7,18 @@ import {
   h,
   onBeforeUnmount,
   onMounted,
+  watch,
   type HTMLAttributes,
   type VNodeChild,
   type VNodeProps,
 } from 'vue'
 
+import { projectMotionPolicy } from './motion-policy'
+
 import type { MenuOption } from 'naive-ui/es/menu'
 import {
   createMotionFeatureRuntime,
+  createMotionInterruptionOwner,
   LayoutGroup,
   LazyMotion,
   MotionConfig,
@@ -39,17 +43,17 @@ const selectionLensLayoutId = 'pavp-admin-navigation-selection-lens'
 const selectionLensStyle = Object.freeze({
   zIndex: 'calc(var(--ui-z-base) - 1)',
 })
-const fullLayoutTransition = Object.freeze({
-  layout: Object.freeze({
-    bounce: 0.16,
-    delay: 0,
-    type: 'spring',
-    visualDuration: 0.26,
-  }),
-})
 const { dispose, featureReady, features, startAfterStableMount } = createMotionFeatureRuntime()
-const reducedMotion = computed(() => (props.motion === 'full' ? 'never' : 'always'))
-const skipAnimations = computed(() => props.motion === 'none')
+const policy = computed(() => projectMotionPolicy(props.motion, featureReady.value))
+const navigationTransition = projectMotionPolicy('full').navigationTransition
+const interruption = createMotionInterruptionOwner(() => policy.value)
+watch(
+  () => props.motion,
+  () => {
+    interruption.settle(policy.value)
+  },
+  { flush: 'sync' },
+)
 
 function renderSelectionLens(): VNodeChild {
   const lensProps = {
@@ -63,15 +67,16 @@ function renderSelectionLens(): VNodeChild {
     ...lensProps,
     initial: false,
     layoutId: selectionLensLayoutId,
-    transition: fullLayoutTransition,
+    transition: navigationTransition,
+    ref: (element: unknown) => {
+      interruption.bind('selection', element)
+    },
   })
 }
 
 function renderIcon(option: MenuOption): VNodeChild {
   return h(Fragment, null, [
-    featureReady.value && props.motion === 'full' && props.isOwner(option)
-      ? renderSelectionLens()
-      : null,
+    policy.value.movement && props.isOwner(option) ? renderSelectionLens() : null,
     props.renderBaseIcon(option),
   ])
 }
@@ -80,7 +85,10 @@ onMounted(() => {
   void startAfterStableMount()
 })
 
-onBeforeUnmount(dispose)
+onBeforeUnmount(() => {
+  interruption.dispose(projectMotionPolicy('none'))
+  dispose()
+})
 </script>
 
 <template>
@@ -89,8 +97,8 @@ onBeforeUnmount(dispose)
     strict
   >
     <MotionConfig
-      :reduced-motion="reducedMotion"
-      :skip-animations="skipAnimations"
+      :reduced-motion="policy.reducedMotion"
+      :skip-animations="policy.skipAnimations"
     >
       <LayoutGroup>
         <slot

@@ -1,5 +1,6 @@
 import { generatedThemeRegistry } from '../generated/theme-registry'
 import { calculateWcag21Contrast, formatOpaqueSrgbColor, parseCssColor } from '../schema/css-color'
+import type { ThemeColorPalette } from '../schema/theme-color-palette.schema'
 import type { EffectiveAppearanceState } from './apply-appearance'
 import type { ThemeRegistryEntry } from './theme-registry'
 
@@ -17,11 +18,16 @@ type SemanticStatusAppearanceProjection = Readonly<
 >
 
 export interface UiAppearanceSnapshot extends EffectiveAppearanceState {
+  readonly colorPalette: ThemeColorPalette | null
   readonly statusColors: SemanticStatusAppearanceProjection
 }
 
 function isStatusRole(role: string): boolean {
-  return role.startsWith('color.status.') || role.startsWith('color.text.on-status.')
+  return (
+    role.startsWith('color.status.') ||
+    role.startsWith('color.text.on-status.') ||
+    /^color\.control\.(info|success|warning|error)$/u.test(role)
+  )
 }
 
 function requiredColor(plane: Readonly<Record<string, string>>, role: string): string {
@@ -32,6 +38,18 @@ function requiredColor(plane: Readonly<Record<string, string>>, role: string): s
   }
 
   return value
+}
+
+function frozenPalette(palette: ThemeColorPalette): ThemeColorPalette {
+  function project(value: unknown): unknown {
+    if (typeof value === 'string') return formatOpaqueSrgbColor(value)
+    if (value === null || typeof value !== 'object' || Array.isArray(value))
+      throw new Error('Invalid generated UI color palette.')
+    return Object.freeze(
+      Object.fromEntries(Object.entries(value).map(([key, item]) => [key, project(item)])),
+    )
+  }
+  return project(palette) as ThemeColorPalette
 }
 
 export function projectUiAppearance(
@@ -111,12 +129,18 @@ export function projectUiAppearance(
     throw new Error('The active UI status plane is unavailable.')
   }
 
+  const colorPalette =
+    builtIn === undefined
+      ? null
+      : frozenPalette(builtIn.uiPalette[appearance.colorMode][appearance.contrast])
+
   const projectTone = (tone: keyof SemanticStatusAppearanceProjection) =>
     Object.freeze({
       default: requiredColor(plane, `color.status.${tone}`),
       hover: requiredColor(plane, `color.status.${tone}.hover`),
       pressed: requiredColor(plane, `color.status.${tone}.pressed`),
       supplementary:
+        colorPalette?.roles[tone].foreground.suppl ??
         generatedThemeRegistry.statusSupplementary[appearance.colorMode][appearance.contrast][tone],
       onStatus: requiredColor(plane, `color.text.on-status.${tone}`),
     })
@@ -124,6 +148,7 @@ export function projectUiAppearance(
   return Object.freeze({
     ...appearance,
     theme: Object.freeze({ ...appearance.theme }),
+    colorPalette,
     statusColors: Object.freeze({
       info: projectTone('info'),
       success: projectTone('success'),

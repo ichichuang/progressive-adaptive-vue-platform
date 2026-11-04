@@ -40,14 +40,6 @@ export type CustomThemeRegistryReadResult =
       readonly rejectedCustomTheme?: RejectedCustomThemeValidation
     }
 
-export interface CapturedCustomThemeRegistryStorageValue {
-  readonly status: 'captured'
-  readonly rawValue: string | null
-}
-
-export type CustomThemeRegistryStorageCaptureResult =
-  CapturedCustomThemeRegistryStorageValue | { readonly status: 'unavailable' }
-
 export type CustomThemeRegistryStorageWriteResult =
   | {
       readonly status: 'written'
@@ -55,9 +47,6 @@ export type CustomThemeRegistryStorageWriteResult =
     }
   | { readonly status: 'rejected' }
   | { readonly status: 'unavailable' }
-
-export type CustomThemeRegistryStorageRestoreResult =
-  { readonly status: 'restored' } | { readonly status: 'unavailable' }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -466,17 +455,6 @@ export function readCustomThemeRegistry(
   return parseCustomThemeRegistrySnapshot(rawValue, requestedReference)
 }
 
-export function captureCustomThemeRegistry(): CustomThemeRegistryStorageCaptureResult {
-  try {
-    return {
-      status: 'captured',
-      rawValue: localStorage.getItem(applicationConfig.appearance.customThemeRegistryStorageKey),
-    }
-  } catch {
-    return { status: 'unavailable' }
-  }
-}
-
 export function writeCustomThemeRegistry(
   entries: readonly CustomThemeRegistryEntry[],
 ): CustomThemeRegistryStorageWriteResult {
@@ -504,25 +482,6 @@ export function writeCustomThemeRegistry(
       status: 'written',
       entries: validation.entries,
     }
-  } catch {
-    return { status: 'unavailable' }
-  }
-}
-
-export function restoreCustomThemeRegistry(
-  capture: CapturedCustomThemeRegistryStorageValue,
-): CustomThemeRegistryStorageRestoreResult {
-  try {
-    if (capture.rawValue === null) {
-      localStorage.removeItem(applicationConfig.appearance.customThemeRegistryStorageKey)
-    } else {
-      localStorage.setItem(
-        applicationConfig.appearance.customThemeRegistryStorageKey,
-        capture.rawValue,
-      )
-    }
-
-    return { status: 'restored' }
   } catch {
     return { status: 'unavailable' }
   }

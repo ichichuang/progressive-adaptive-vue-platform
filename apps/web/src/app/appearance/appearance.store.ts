@@ -1,11 +1,13 @@
 import {
   ProductPreferenceDefault,
   applyAppearance,
+  captureRadius,
   explicitThemePreferenceSchema,
   installCustomThemeBank,
   projectUiAppearance,
   resolveColorMode,
   resolveMaterial,
+  resolveMotion,
   resolveThemeReference,
   type CustomThemeRegistryEntry,
   type CustomThemeValidationResult,
@@ -16,20 +18,11 @@ import {
 import { defineStore } from 'pinia'
 
 import {
-  captureCustomThemeRegistry,
   readCustomThemeRegistry,
-  restoreCustomThemeRegistry,
   validateCustomThemeRegistryEntries,
   writeCustomThemeRegistry,
-  type CapturedCustomThemeRegistryStorageValue,
 } from './custom-theme-registry-storage'
-import {
-  captureStoredPreference,
-  readStoredPreference,
-  restoreStoredPreference,
-  writeStoredPreference,
-  type CapturedPreferenceStorageValue,
-} from './preference-storage'
+import { readStoredPreference, writeStoredPreference } from './preference-storage'
 
 interface AppearanceStoreState {
   preference: ExplicitThemePreference | null
@@ -40,6 +33,7 @@ interface AppearanceEnvironment {
   readonly backdropFilterSupported: boolean
   readonly forcedColorsActive: boolean
   readonly prefersDark: boolean
+  readonly prefersReducedMotion: boolean
   readonly reducedTransparencyRequested: boolean
 }
 
@@ -55,6 +49,7 @@ interface AppearanceAttributeCapture {
 
 interface AppearanceDomCapture {
   readonly attributes: readonly AppearanceAttributeCapture[]
+  readonly restoreRadius: () => void
   readonly fontScale: {
     readonly present: boolean
     readonly priority: string
@@ -74,7 +69,7 @@ const appearanceAttributeNames = [
 
 function productDefaultPreference(): ExplicitThemePreference {
   return explicitThemePreferenceSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     appearance: ProductPreferenceDefault,
   })
 }
@@ -131,24 +126,28 @@ function deriveEffectiveAppearance(
     }),
     density: preference.appearance.density.preset,
     fontScale: preference.appearance.fontScale,
-    motion: preference.appearance.motion,
+    motion: resolveMotion({
+      storedMotion: preference.appearance.motion,
+      prefersReducedMotion: environment.prefersReducedMotion,
+    }),
+    radius: preference.appearance.radius,
   }
 }
 
 function captureAppearanceDom(target: HTMLElement): AppearanceDomCapture {
   const fontScaleValue = target.style.getPropertyValue('--ui-font-scale')
   const fontScalePriority = target.style.getPropertyPriority('--ui-font-scale')
-
   return {
     attributes: appearanceAttributeNames.map((name) => ({
       name,
       present: target.hasAttribute(name),
       value: target.getAttribute(name),
     })),
+    restoreRadius: captureRadius(target),
     fontScale: {
       present: fontScaleValue !== '' || fontScalePriority !== '',
-      priority: fontScalePriority,
       value: fontScaleValue,
+      priority: fontScalePriority,
     },
   }
 }
@@ -167,10 +166,11 @@ function restoreAppearanceDom(target: HTMLElement, capture: AppearanceDomCapture
   } else {
     target.style.removeProperty('--ui-font-scale')
   }
+  capture.restoreRadius()
 }
 
 function commitAppearanceTransition(
-  store: AppearanceStoreState & { $patch(state: AppearanceStoreState): void },
+  store: AppearanceStoreState & { $patch(mutate: (state: AppearanceStoreState) => void): void },
   target: HTMLElement,
   candidatePreference: unknown,
   candidateCustomThemeRegistry: readonly CustomThemeRegistryEntry[] | null,
@@ -216,38 +216,11 @@ function commitAppearanceTransition(
   } catch {
     return { status: 'rejected' }
   }
-  let preferenceCapture: CapturedPreferenceStorageValue | undefined
-  let registryCapture: CapturedCustomThemeRegistryStorageValue | undefined
-
-  if (persistenceIntent === 'preference') {
-    const capture = captureStoredPreference()
-
-    if (capture.status !== 'captured') {
-      return { status: 'rejected' }
-    }
-
-    preferenceCapture = capture
-  } else if (persistenceIntent === 'registry') {
-    if (validatedRegistry === null) {
-      return { status: 'rejected' }
-    }
-
-    const capture = captureCustomThemeRegistry()
-
-    if (capture.status !== 'captured') {
-      return { status: 'rejected' }
-    }
-
-    registryCapture = capture
-  }
-
   const previousState: AppearanceStoreState = {
     preference: store.preference,
     customThemeRegistry: store.customThemeRegistry,
   }
   const domCapture = captureAppearanceDom(target)
-  let completedWrite = false
-  let committedRegistry = validatedRegistry
 
   try {
     if (resolution.entry.registryKind === 'custom') {
@@ -259,6 +232,11 @@ function commitAppearanceTransition(
     }
 
     applyAppearance(target, effectiveAppearance)
+    store.$patch((state) => {
+      state.preference = validatedPreference.data
+      state.customThemeRegistry = validatedRegistry
+    })
+    // Persist last: once setItem succeeds there is no fallible local commit or stale compensation.
 
     if (persistenceIntent === 'preference') {
       const write = writeStoredPreference(validatedPreference.data)
@@ -266,8 +244,6 @@ function commitAppearanceTransition(
       if (write.status !== 'written') {
         throw new Error('Preference persistence was rejected.')
       }
-
-      completedWrite = true
     } else if (persistenceIntent === 'registry') {
       if (validatedRegistry === null) {
         throw new Error('Registry persistence requires an accessible candidate.')
@@ -278,15 +254,8 @@ function commitAppearanceTransition(
       if (write.status !== 'written') {
         throw new Error('Custom Theme Registry persistence was rejected.')
       }
-
-      committedRegistry = write.entries
-      completedWrite = true
     }
 
-    store.$patch({
-      preference: validatedPreference.data,
-      customThemeRegistry: committedRegistry,
-    })
     return { status: 'committed' }
   } catch {
     try {
@@ -315,18 +284,13 @@ function commitAppearanceTransition(
     try {
       restoreAppearanceDom(target, domCapture)
     } catch {
-      // A hostile host object cannot prevent state and selected-key compensation attempts.
+      // A hostile host object cannot prevent the local state restoration attempt.
     }
 
-    if (completedWrite) {
-      if (persistenceIntent === 'preference' && preferenceCapture !== undefined) {
-        restoreStoredPreference(preferenceCapture)
-      } else if (persistenceIntent === 'registry' && registryCapture !== undefined) {
-        restoreCustomThemeRegistry(registryCapture)
-      }
-    }
-
-    store.$patch(previousState)
+    store.$patch((state) => {
+      state.preference = previousState.preference
+      state.customThemeRegistry = previousState.customThemeRegistry
+    })
     return { status: 'rejected' }
   }
 }
@@ -342,19 +306,11 @@ export const useAppearanceStore = defineStore('appearance', {
       const candidatePreference =
         preferenceRead.status === 'restored'
           ? preferenceRead.preference
-          : preferenceRead.status === 'missing'
-            ? productDefaultPreference()
-            : null
-      const registryRead = readCustomThemeRegistry(candidatePreference?.appearance.theme)
+          : productDefaultPreference()
+      const registryRead = readCustomThemeRegistry(candidatePreference.appearance.theme)
       const candidateRegistry = registryRead.status === 'accessible' ? registryRead.entries : null
 
-      if (candidatePreference === null) {
-        this.preference = null
-        this.customThemeRegistry = candidateRegistry
-        return { status: 'rejected' }
-      }
-
-      const result = commitAppearanceTransition(
+      let result = commitAppearanceTransition(
         this,
         document.documentElement,
         candidatePreference,
@@ -364,12 +320,50 @@ export const useAppearanceStore = defineStore('appearance', {
         registryRead.status === 'inaccessible' ? registryRead.rejectedCustomTheme : undefined,
       )
 
+      if (
+        result.status === 'rejected' &&
+        candidatePreference.appearance.theme.registryKind === 'custom'
+      ) {
+        // Recovery is memory-only. Existing explicit preference actions are the only replacement writers.
+        result = commitAppearanceTransition(
+          this,
+          document.documentElement,
+          productDefaultPreference(),
+          candidateRegistry,
+          environment,
+          'none',
+        )
+      }
+
       if (result.status === 'rejected') {
         this.preference = null
         this.customThemeRegistry = candidateRegistry
       }
 
       return result
+    },
+
+    synchronizeAppearance(environment: AppearanceEnvironment): AppearanceTransitionResult {
+      const preference = readStoredPreference()
+      if (preference.status !== 'restored' && preference.status !== 'missing')
+        return { status: 'rejected' }
+      const candidate =
+        preference.status === 'restored' ? preference.preference : productDefaultPreference()
+      const registry = readCustomThemeRegistry(candidate.appearance.theme)
+      const entries = registry.status === 'accessible' ? registry.entries : null
+      if (
+        jsonValuesEqual(candidate, this.preference) &&
+        jsonValuesEqual(entries, this.customThemeRegistry)
+      )
+        return { status: 'committed' }
+      return commitAppearanceTransition(
+        this,
+        document.documentElement,
+        candidate,
+        entries,
+        environment,
+        'none',
+      )
     },
 
     readEffectiveAppearance(
@@ -384,22 +378,24 @@ export const useAppearanceStore = defineStore('appearance', {
       preference: unknown,
       environment: AppearanceEnvironment,
     ): AppearanceTransitionResult {
+      const registry = readCustomThemeRegistry()
       return commitAppearanceTransition(
         this,
         document.documentElement,
         preference,
-        this.customThemeRegistry,
+        registry.status === 'accessible' ? registry.entries : null,
         environment,
         'preference',
       )
     },
 
     resetAppearancePreference(environment: AppearanceEnvironment): AppearanceTransitionResult {
+      const registry = readCustomThemeRegistry()
       return commitAppearanceTransition(
         this,
         document.documentElement,
         productDefaultPreference(),
-        this.customThemeRegistry,
+        registry.status === 'accessible' ? registry.entries : null,
         environment,
         'preference',
       )
@@ -451,7 +447,11 @@ export const useAppearanceStore = defineStore('appearance', {
     },
 
     deleteCustomTheme(themeId: CustomThemeRegistryEntry['themeId']): AppearanceTransitionResult {
-      if (this.customThemeRegistry === null) {
+      const activeReference = this.preference?.appearance.theme
+      if (
+        this.customThemeRegistry === null ||
+        (activeReference?.registryKind === 'custom' && activeReference.themeId === themeId)
+      ) {
         return { status: 'rejected' }
       }
 
@@ -472,20 +472,13 @@ export const useAppearanceStore = defineStore('appearance', {
         return { status: 'rejected' }
       }
 
-      const capture = captureCustomThemeRegistry()
-
-      if (capture.status !== 'captured') {
-        return { status: 'rejected' }
-      }
-
+      const previous = this.customThemeRegistry
+      this.customThemeRegistry = validation.entries
       const write = writeCustomThemeRegistry(validation.entries)
-
       if (write.status !== 'written') {
-        restoreCustomThemeRegistry(capture)
+        this.customThemeRegistry = previous
         return { status: 'rejected' }
       }
-
-      this.customThemeRegistry = write.entries
       return { status: 'committed' }
     },
 

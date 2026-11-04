@@ -33,7 +33,7 @@ interface CapabilityManifestRecordSource {
   readonly id: string
   readonly visibleLabel: string
   readonly summary: string
-  readonly routeName: string
+  readonly routeName: string | null
   readonly owner: string
   readonly prerequisiteIds: readonly string[]
   readonly admissionCondition: string
@@ -52,7 +52,7 @@ interface CapabilityManifestRecord {
   readonly capabilityStatus: CapabilityStatus
   readonly implementationStatus: CapabilityImplementationStatus
   readonly presentationMode: CapabilityPresentationMode
-  readonly routeName: string
+  readonly routeName: string | null
   readonly owner: string
   readonly prerequisiteIds: readonly string[]
   readonly admissionCondition: string
@@ -362,7 +362,7 @@ export interface CapabilityManifestRecord {
   readonly capabilityStatus: 'ACTIVE' | 'TARGET_INACTIVE' | 'DEFERRED'
   readonly implementationStatus: CapabilityImplementationStatus
   readonly presentationMode: CapabilityPresentationMode
-  readonly routeName: string
+  readonly routeName: string | null
   readonly owner: string
   readonly prerequisiteIds: readonly string[]
   readonly admissionCondition: string

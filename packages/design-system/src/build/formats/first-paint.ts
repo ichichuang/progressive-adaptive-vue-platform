@@ -10,24 +10,16 @@ import {
   colorModePreferenceValues,
   contrastPreferenceValues,
   fontScaleValues,
-  legacyColorModePreferenceValues,
   materialPreferenceValues,
   motionPreferenceValues,
   uiDensityValues,
 } from '../../schema/appearance.schema'
 import {
-  controlCustomThemeRoleContractVersion,
-  controlCustomThemeRoleIds,
   cssWideKeywords,
   forbiddenComputedColorSyntax,
-  legacyCustomThemeRoleIds,
   supportedAbsoluteColorSyntax,
   systemColorKeywords,
 } from '../../schema/complete-theme.schema'
-import {
-  legacyBuiltInThemeIds,
-  legacySeedThemeIdPattern,
-} from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import {
@@ -39,12 +31,13 @@ import {
 } from './css'
 import { generatedNotice, requireBuildResult, resolvedCssValue, type FormatContext } from './shared'
 import { themeRegistryDocument } from './typescript'
+import { radiusProjectionDocument } from './radius'
 
 export const preInitializationSafetyBaseline = {
   effectiveColorMode: 'light',
   effectiveTheme: {
     registryKind: 'built-in',
-    themeId: 'iris',
+    themeId: 'royal-iris',
   },
   effectiveContrast: 'standard',
   effectiveMaterial: 'solid',
@@ -71,6 +64,20 @@ const duplicateAwareJsonRuntime = ts
     },
   })
   .outputText.replace('export function parseJsonSource', 'function parseJsonSource')
+
+const radiusProjectionRuntime = ts
+  .transpileModule(
+    readFileSync(new URL('../../runtime/radius-projection.ts', import.meta.url), 'utf8'),
+    { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
+  )
+  .outputText.replace('export function resolveRadius', 'function resolveRadius')
+
+const motionResolutionRuntime = ts
+  .transpileModule(
+    readFileSync(new URL('../../runtime/resolve-motion.ts', import.meta.url), 'utf8'),
+    { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
+  )
+  .outputText.replace('export function resolveMotion', 'function resolveMotion')
 
 if (
   !embeddedColorJsRuntime.startsWith('var Color=') ||
@@ -109,6 +116,18 @@ function criticalDeclarations(result: TokenBuildResult): string {
   })
 
   declarations.push(`    --ui-font-scale: ${String(ProductPreferenceDefault.fontScale)};`)
+  for (const name of [
+    'interaction.radius.control',
+    'interaction.radius.panel',
+    'interaction.radius.small',
+  ]) {
+    const token = result.tokens.find(
+      (record) => record.role.name === name && Object.keys(record.conditions).length === 0,
+    )
+    if (token?.cssVariable === undefined)
+      throw new Error(`${name}: critical radius baseline is unavailable.`)
+    declarations.push(`    ${token.cssVariable}: ${resolvedCssValue(token, result)};`)
+  }
   return declarations.join('\n')
 }
 
@@ -126,7 +145,8 @@ ${formatTokenCssRules(
   result.tokens.filter(
     (token) =>
       token.role.name === 'interaction.control.height' ||
-      token.role.name === 'interaction.control.height-baseline',
+      token.role.name === 'interaction.control.height-baseline' ||
+      token.role.name === 'spacing.button.inline',
   ),
 )}
 
@@ -191,56 +211,19 @@ function safetyBaselineRestorationLines(): string {
 
 export function formatAppearanceInitScript(result: TokenBuildResult): string {
   const registry = themeRegistryDocument(result)
-  const roleIndices = (roles: readonly string[]) =>
-    roles.map((role) => {
-      const index = registry.activePublicColorRoles.findIndex(
-        (record) => record.publicRole === role,
-      )
-      if (index < 0) throw new Error(`${role}: First Paint compatibility role is missing.`)
-      return index
-    })
-  const statusRoleIndices = roleIndices(
-    (registry.builtInEntries[0]?.bank.records ?? [])
-      .filter(
-        (record) =>
-          record.colorMode === 'light' &&
-          record.contrast === 'standard' &&
-          record.authoredValue.startsWith('{color.palette.status.'),
-      )
-      .map((record) => record.publicRole),
-  )
-  const statusPlanes = Object.fromEntries(
-    ['light', 'dark'].map((mode) => [
-      mode,
-      Object.fromEntries(
-        ['standard', 'enhanced'].map((contrast) => [
-          contrast,
-          (registry.builtInEntries[0]?.bank.records ?? [])
-            .filter(
-              (record) =>
-                record.colorMode === mode &&
-                record.contrast === contrast &&
-                record.authoredValue.startsWith('{color.palette.status.'),
-            )
-            .map((record) => record.resolvedValue),
-        ]),
-      ),
-    ]),
-  )
 
   return `/* ${generatedNotice} */
 // prettier-ignore
 ;(function () {
   'use strict'
 
-  /* Embedded from the declared Color.js dependency for exact legacy-schema parity. */
+  /* Embedded from the declared Color.js dependency for exact current Custom color validation. */
   ${embeddedColorJsRuntime}
 
   ${duplicateAwareJsonRuntime}
 
   var colorModes = ${javascriptLiteral(colorModePreferenceValues)}
   var themeColorModes = ['light', 'dark']
-  var legacyColorModes = ${javascriptLiteral(legacyColorModePreferenceValues)}
   var contrasts = ${javascriptLiteral(contrastPreferenceValues)}
   var materials = ${javascriptLiteral(materialPreferenceValues)}
   var densities = ${javascriptLiteral(uiDensityValues)}
@@ -248,31 +231,17 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   var motions = ${javascriptLiteral(motionPreferenceValues)}
   var builtInThemeIds = ${javascriptLiteral(registry.builtInRegistryOrder)}
   var roleContractVersion = ${javascriptLiteral(registry.roleContractVersion)}
-  var legacyCustomThemeRoleContractVersion = 1
-  var controlCustomThemeRoleContractVersion = ${String(controlCustomThemeRoleContractVersion)}
   var publicColorBindings = ${javascriptLiteral(
     registry.activePublicColorRoles.map((record) => [record.publicRole, record.publicBinding]),
   )}
   var activePublicColorRoles = publicColorBindings.map(function (record) { return record[0] })
-  // Version membership comes from the canonical historical role sets, not a current-list prefix.
-  var legacyPublicColorRoles = ${javascriptLiteral(roleIndices(legacyCustomThemeRoleIds))}.map(function (index) { return activePublicColorRoles[index] })
-  var controlPublicColorRoles = ${javascriptLiteral(roleIndices(controlCustomThemeRoleIds))}.map(function (index) { return activePublicColorRoles[index] })
-  var statusRoleIndices = ${javascriptLiteral(statusRoleIndices)}
-  var statusPlanes = ${javascriptLiteral(statusPlanes, 2)}
-  themeColorModes.forEach(function (mode) {
-    contrasts.forEach(function (contrast) {
-      statusPlanes[mode][contrast] = Object.fromEntries(statusRoleIndices.map(function (roleIndex, valueIndex) {
-        return [activePublicColorRoles[roleIndex], statusPlanes[mode][contrast][valueIndex]]
-      }))
-    })
-  })
   var namedContrasts = ${javascriptLiteral(registry.namedContrasts.filter((pair) => pair.staticMaterialProjections.length === 0).map((pair) => [pair.foregroundRole, pair.backgroundRole, pair.standardMinimum, pair.enhancedMinimum, pair.enhancedDifferenceRequired]))}
   var forbiddenColorKeywords = ${javascriptLiteral([...cssWideKeywords, ...systemColorKeywords])}
   var supportedColorSyntax = new RegExp(${javascriptString(supportedAbsoluteColorSyntax.source)}, 'iu')
   var forbiddenColorSyntax = new RegExp(${javascriptString(forbiddenComputedColorSyntax.source)}, 'iu')
-  var retiredBuiltInThemeIds = ${javascriptLiteral(legacyBuiltInThemeIds)}
-  var defaultBuiltInThemeId = ${javascriptString(ProductPreferenceDefault.theme.themeId)}
-  var legacyBuiltInThemeTuples = ${javascriptLiteral(registry.legacyBuiltInThemeTuples, 2)}
+  var radiusContract = ${javascriptLiteral(radiusProjectionDocument(result))}
+${radiusProjectionRuntime}
+${motionResolutionRuntime}
   var customBankRecords = themeColorModes.flatMap(function (colorMode) {
     return contrasts.flatMap(function (contrast) {
       return publicColorBindings.map(function (binding) {
@@ -295,7 +264,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     'data-density',
     'data-motion',
   ])}
-  var legacySeedThemeIdPattern = new RegExp(${javascriptString(legacySeedThemeIdPattern.source)}, 'u')
+  var appearanceStylePropertyNames = ['--ui-font-scale', '--ui-radius-control', '--ui-radius-panel', '--ui-radius-small']
   var colorModeContract = ${javascriptLiteral(colorModeResolutionContract, 2)}
   var materialContract = ${javascriptLiteral(materialResolutionContract, 2)}
 
@@ -350,7 +319,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     }
   }
 
-  function normalizeCustomThemeDefinition(value) {
+  function validatedCustomThemeDefinition(value) {
     if (
       !hasOnlyKeys(value, ['id', 'label', 'planes', 'roleContractVersion', 'schemaVersion']) ||
       value.schemaVersion !== 3 ||
@@ -358,19 +327,13 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
       value.id.length === 0 ||
       typeof value.label !== 'string' ||
       value.label.length === 0 ||
-      (value.roleContractVersion !== roleContractVersion &&
-        value.roleContractVersion !== legacyCustomThemeRoleContractVersion &&
-        value.roleContractVersion !== controlCustomThemeRoleContractVersion) ||
+      value.roleContractVersion !== roleContractVersion ||
       !hasOnlyKeys(value.planes, ['dark', 'light'])
     ) {
       return null
     }
 
-    var sourceRoles =
-      value.roleContractVersion === legacyCustomThemeRoleContractVersion
-        ? legacyPublicColorRoles
-        : value.roleContractVersion === controlCustomThemeRoleContractVersion
-          ? controlPublicColorRoles : activePublicColorRoles
+    var sourceRoles = activePublicColorRoles
     var normalizedPlanes = {}
 
     for (var colorModeIndex = 0; colorModeIndex < themeColorModes.length; colorModeIndex += 1) {
@@ -403,16 +366,6 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
 
           normalizedPlane[roleId] = authoredValue
 
-          if (
-            value.roleContractVersion === legacyCustomThemeRoleContractVersion &&
-            roleId === 'color.action.primary'
-          ) {
-            normalizedPlane['color.control.primary'] = authoredValue
-          }
-        }
-
-        if (value.roleContractVersion !== roleContractVersion) {
-          Object.assign(normalizedPlane, statusPlanes[colorMode][contrast])
         }
 
         if (!hasOnlyKeys(normalizedPlane, activePublicColorRoles)) {
@@ -487,21 +440,12 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
       if (!hasOnlyKeys(entry, ['definition', 'registryKind', 'themeId']) ||
         entry.registryKind !== 'custom' || !isRecord(entry.definition) ||
         entry.definition.id !== entry.themeId || themeIds.has(entry.themeId)) return null
-      var definition = normalizeCustomThemeDefinition(entry.definition)
+      var definition = validatedCustomThemeDefinition(entry.definition)
       if (definition === null) return null
       themeIds.add(entry.themeId)
       if (entry.themeId === themeId) selected = definition
     }
     return selected
-  }
-
-  function isPalette(value) {
-    return (
-      hasOnlyKeys(value, ['accent', 'brand', 'neutral']) &&
-      isCssColor(value.accent) &&
-      isCssColor(value.brand) &&
-      includes(['cool', 'neutral', 'warm'], value.neutral)
-    )
   }
 
   function isDensity(value) {
@@ -528,7 +472,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     return value.registryKind === 'custom' && typeof value.themeId === 'string' && value.themeId.length > 0
   }
 
-  function isExplicitAppearance(value, themeReferenceValidator) {
+  function isExplicitAppearance(value) {
     return (
       hasOnlyKeys(value, [
         'colorMode',
@@ -538,6 +482,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
         'material',
         'motion',
         'theme',
+        'radius',
       ]) &&
       includes(colorModes, value.colorMode) &&
       includes(contrasts, value.contrast) &&
@@ -545,178 +490,18 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
       includes(fontScales, value.fontScale) &&
       includes(materials, value.material) &&
       includes(motions, value.motion) &&
-      themeReferenceValidator(value.theme)
+      isThemeReference(value.theme) &&
+      (typeof value.radius === 'number' && Number.isInteger(value.radius) &&
+        value.radius >= radiusContract.minimum && value.radius <= radiusContract.maximum)
     )
   }
 
   function isExplicitThemePreference(value) {
     return (
       hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
-      value.schemaVersion === 3 &&
-      isExplicitAppearance(value.appearance, isThemeReference)
+      value.schemaVersion === 4 &&
+      isExplicitAppearance(value.appearance)
     )
-  }
-
-  function isRetiredBuiltInThemeReference(value) {
-    return (
-      hasOnlyKeys(value, ['registryKind', 'themeId']) &&
-      value.registryKind === 'built-in' &&
-      includes(retiredBuiltInThemeIds, value.themeId)
-    )
-  }
-
-  function isRetiredBuiltInPreference(value) {
-    return (
-      hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
-      value.schemaVersion === 3 &&
-      isExplicitAppearance(value.appearance, isRetiredBuiltInThemeReference)
-    )
-  }
-
-  function isLegacyAppearance(value, acceptedColorModes, requiresMaterial) {
-    var expectedKeys = [
-      'colorMode',
-      'contrast',
-      'density',
-      'fontScale',
-      'motion',
-      'palette',
-      'theme',
-    ]
-
-    if (requiresMaterial) {
-      expectedKeys.push('material')
-    }
-
-    return (
-      hasOnlyKeys(value, expectedKeys) &&
-      includes(acceptedColorModes, value.colorMode) &&
-      includes(contrasts, value.contrast) &&
-      isDensity(value.density) &&
-      includes(fontScales, value.fontScale) &&
-      includes(motions, value.motion) &&
-      isPalette(value.palette) &&
-      typeof value.theme === 'string' &&
-      legacySeedThemeIdPattern.test(value.theme) &&
-      (!requiresMaterial || includes(materials, value.material))
-    )
-  }
-
-  function isLegacySeedPreference(value) {
-    return (
-      hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
-      value.schemaVersion === 2 &&
-      isLegacyAppearance(value.appearance, colorModes, true)
-    )
-  }
-
-  function isLegacyPreferenceInput(value) {
-    return (
-      hasOnlyKeys(value, ['appearance', 'schemaVersion']) &&
-      value.schemaVersion === 1 &&
-      isLegacyAppearance(value.appearance, legacyColorModes, false)
-    )
-  }
-
-  function migrateLegacySeedPreference(value) {
-    var appearance = value.appearance
-    var tuple = legacyBuiltInThemeTuples.find(function (candidate) {
-      return candidate.themeId === appearance.theme
-    })
-
-    if (
-      !tuple ||
-      tuple.brand !== appearance.palette.brand ||
-      tuple.accent !== appearance.palette.accent ||
-      tuple.neutral !== appearance.palette.neutral
-    ) {
-      return { status: 'failure', code: 'MIGRATION_REQUIRES_THEME_COMPLETION' }
-    }
-
-    return {
-      status: 'success',
-      preference: {
-        schemaVersion: 3,
-        appearance: {
-          colorMode: appearance.colorMode,
-          theme: { registryKind: 'built-in', themeId: defaultBuiltInThemeId },
-          contrast: appearance.contrast,
-          material: appearance.material,
-          density: { preset: appearance.density.preset, scale: appearance.density.scale },
-          fontScale: appearance.fontScale,
-          motion: appearance.motion,
-        },
-      },
-    }
-  }
-
-  function migrateReferenceToBuiltIn(value, themeId) {
-    var appearance = value.appearance
-
-    return {
-      status: 'success',
-      preference: {
-        schemaVersion: 3,
-        appearance: {
-          colorMode: appearance.colorMode,
-          theme: { registryKind: 'built-in', themeId: themeId },
-          contrast: appearance.contrast,
-          material: appearance.material,
-          density: { preset: appearance.density.preset, scale: appearance.density.scale },
-          fontScale: appearance.fontScale,
-          motion: appearance.motion,
-        },
-      },
-    }
-  }
-
-  function migrateToExplicitThemePreference(value) {
-    if (isExplicitThemePreference(value)) {
-      if (
-        value.appearance.theme.registryKind === 'custom' &&
-        includes(builtInThemeIds, value.appearance.theme.themeId)
-      ) {
-        return migrateReferenceToBuiltIn(value, value.appearance.theme.themeId)
-      }
-
-      return { status: 'success', preference: value }
-    }
-
-    if (isRetiredBuiltInPreference(value)) {
-      return migrateReferenceToBuiltIn(value, defaultBuiltInThemeId)
-    }
-
-    if (isLegacySeedPreference(value)) {
-      return migrateLegacySeedPreference(value)
-    }
-
-    if (isLegacyPreferenceInput(value)) {
-      var legacyAppearance = value.appearance
-      var wasHighContrast = legacyAppearance.colorMode === 'high-contrast'
-
-      return migrateLegacySeedPreference({
-        schemaVersion: 2,
-        appearance: {
-          colorMode: wasHighContrast ? colorModeContract.system : legacyAppearance.colorMode,
-          theme: legacyAppearance.theme,
-          palette: {
-            brand: legacyAppearance.palette.brand,
-            accent: legacyAppearance.palette.accent,
-            neutral: legacyAppearance.palette.neutral,
-          },
-          contrast: wasHighContrast ? 'enhanced' : legacyAppearance.contrast,
-          material: materialContract.solid,
-          density: {
-            preset: legacyAppearance.density.preset,
-            scale: legacyAppearance.density.scale,
-          },
-          fontScale: legacyAppearance.fontScale,
-          motion: legacyAppearance.motion,
-        },
-      })
-    }
-
-    return { status: 'failure', code: 'PREFERENCE_INPUT_INVALID' }
   }
 
   function resolveColorMode(storedColorMode, prefersDark) {
@@ -767,6 +552,19 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
     return
   }
 
+  var motionMediaQuery
+  try {
+    if (typeof matchMedia === 'function') motionMediaQuery = matchMedia('(prefers-reduced-motion: reduce)')
+  } catch { /* Keep the explicit preference when the platform query is unavailable. */ }
+
+  function readEffectiveMotion(storedMotion) {
+    var prefersReducedMotion = false
+    try { prefersReducedMotion = Boolean(motionMediaQuery && motionMediaQuery.matches) } catch {}
+    return resolveMotion({ storedMotion: storedMotion, prefersReducedMotion: prefersReducedMotion })
+  }
+
+  root.setAttribute('data-motion', readEffectiveMotion(${javascriptString(ProductPreferenceDefault.motion)}))
+
   function clearCustomBankVariables() {
     customBankVariables.forEach(function (variable) {
       root.style.removeProperty(variable)
@@ -775,13 +573,14 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
 
   function restoreAppearanceSafety() {
     clearCustomBankVariables()
+    root.style.removeProperty('--ui-radius-control')
+    root.style.removeProperty('--ui-radius-panel')
+    root.style.removeProperty('--ui-radius-small')
+    root.setAttribute('data-motion', readEffectiveMotion(${javascriptString(ProductPreferenceDefault.motion)}))
 ${safetyBaselineRestorationLines()}
   }
 
   function captureAppearanceState() {
-    var fontScaleValue = root.style.getPropertyValue('--ui-font-scale')
-    var fontScalePriority = root.style.getPropertyPriority('--ui-font-scale')
-
     return {
       attributes: appearanceAttributeNames.map(function (name) {
         return {
@@ -790,11 +589,11 @@ ${safetyBaselineRestorationLines()}
           value: root.getAttribute(name),
         }
       }),
-      fontScale: {
-        present: fontScaleValue !== '' || fontScalePriority !== '',
-        priority: fontScalePriority,
-        value: fontScaleValue,
-      },
+      styles: appearanceStylePropertyNames.map(function (name) {
+        var value = root.style.getPropertyValue(name)
+        var priority = root.style.getPropertyPriority(name)
+        return { name: name, present: value !== '' || priority !== '', value: value, priority: priority }
+      }),
     }
   }
 
@@ -807,15 +606,17 @@ ${safetyBaselineRestorationLines()}
       }
     })
 
-    if (capture.fontScale.present) {
-      root.style.setProperty(
-        '--ui-font-scale',
-        capture.fontScale.value,
-        capture.fontScale.priority,
-      )
-    } else {
-      root.style.removeProperty('--ui-font-scale')
-    }
+    capture.styles.forEach(function (style) {
+      if (style.present) root.style.setProperty(style.name, style.value, style.priority)
+      else root.style.removeProperty(style.name)
+    })
+  }
+
+  function applyRadius(value) {
+    var projected = resolveRadius(value, radiusContract)
+    root.style.setProperty('--ui-radius-control', String(projected.control) + 'px')
+    root.style.setProperty('--ui-radius-panel', String(projected.panel) + 'px')
+    root.style.setProperty('--ui-radius-small', String(projected.small) + 'px')
   }
 
   currentScript.__pavpRestoreAppearanceSafety = restoreAppearanceSafety
@@ -849,13 +650,9 @@ ${safetyBaselineRestorationLines()}
     return
   }
 
-  var migration = migrateToExplicitThemePreference(parsedPreference)
+  if (!isExplicitThemePreference(parsedPreference)) return
 
-  if (migration.status !== 'success') {
-    return
-  }
-
-  var storedAppearance = migration.preference.appearance
+  var storedAppearance = parsedPreference.appearance
 
   var forcedColorsActive
   var prefersDark
@@ -921,8 +718,9 @@ ${safetyBaselineRestorationLines()}
       root.setAttribute('data-contrast', storedAppearance.contrast)
       root.setAttribute('data-material', effectiveMaterial)
       root.setAttribute('data-density', storedAppearance.density.preset)
-      root.setAttribute('data-motion', storedAppearance.motion)
+      root.setAttribute('data-motion', readEffectiveMotion(storedAppearance.motion))
       root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
+      applyRadius(storedAppearance.radius)
       currentScript.__pavpAppearanceHandoff = { restoration: 'custom-theme-reference' }
       return
     }
@@ -934,8 +732,9 @@ ${safetyBaselineRestorationLines()}
     root.setAttribute('data-contrast', storedAppearance.contrast)
     root.setAttribute('data-material', effectiveMaterial)
     root.setAttribute('data-density', storedAppearance.density.preset)
-    root.setAttribute('data-motion', storedAppearance.motion)
+    root.setAttribute('data-motion', readEffectiveMotion(storedAppearance.motion))
     root.style.setProperty('--ui-font-scale', String(storedAppearance.fontScale))
+    applyRadius(storedAppearance.radius)
   } catch {
     restoreAppearanceState(previousAppearanceState)
     clearCustomBankVariables()

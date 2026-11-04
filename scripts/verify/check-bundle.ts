@@ -1,9 +1,12 @@
 import { execFileSync } from 'node:child_process'
+import { createRequire } from 'node:module'
 import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 import { projectConfig } from '../../project.config'
+import { rootDeploymentBase } from '../../apps/web/config'
+import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/runtime-configuration-contract'
 import { getRouteMessageScope, routeRegistry } from '../../apps/web/src/app/router/route-registry'
 import ts from 'typescript'
 
@@ -48,7 +51,7 @@ const distributionDirectory = resolve(webRootDirectory, 'dist')
 const generatedSourceDirectory = resolve(rootDirectory, 'packages/design-system/src/generated')
 const rootPackageManifestPath = resolve(rootDirectory, 'package.json')
 const runtimeConfigurationArtifactName = 'runtime-configuration.json'
-const deploymentBase: string = projectConfig.deployment.deploymentBase
+const deploymentBase: string = rootDeploymentBase
 const releaseShaOutputPattern = /^([0-9a-f]{40})(?:\r?\n)?$/u
 const explicitThemePreferenceBundleContract = {
   baselineCommit: '2f5a28a7dbe877f96ac3d24299d892bd7bb9087f',
@@ -100,7 +103,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 18
+const expectedLazyRouteCount = 13
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -116,7 +119,7 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/appearance.json',
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
-const expectedDynamicRootCount = 28
+const expectedDynamicRootCount = 23
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
@@ -484,6 +487,13 @@ function productionHtmlViolations(
     if (matchingLinks.length !== 1) {
       violations.push(`Production HTML must contain the exact stylesheet path ${expectedPath}.`)
     }
+    if (
+      expectedPath !== expectation.criticalThemePath &&
+      criticalThemeTag !== undefined &&
+      matchingLinks[0] !== undefined &&
+      matchingLinks[0].index <= criticalThemeTag.index
+    )
+      violations.push('Critical theme must establish the native layer order before initial CSS.')
   }
 
   return violations
@@ -506,6 +516,15 @@ function validateProductionHtmlNegativeProbes(): void {
   if (productionHtmlViolations(validHtml, expectation).length !== 0) {
     throw new Error('Production HTML validator rejected its exact in-memory control model.')
   }
+
+  const appCss = '<link rel="stylesheet" href="/assets/app.css">'
+  const cssExpectation = { ...expectation, initialCssPaths: new Set(['/assets/app.css']) }
+  if (
+    productionHtmlViolations(`${criticalTheme}${appearance}${appCss}${carrier}`, cssExpectation)
+      .length !== 0 ||
+    productionHtmlViolations(`${appCss}${validHtml}`, cssExpectation).length === 0
+  )
+    throw new Error('Critical-before-application CSS order probes failed.')
 
   const commentSpoof = `${criticalTheme}${appearance}<!--${carrier}-->`
   const rawTextSpoof = `${criticalTheme}${appearance}<script>const decoy = ${JSON.stringify(carrier)}</script>`
@@ -557,24 +576,13 @@ function validateRuntimeConfiguration(
     throw new Error('runtime-configuration.json must contain one object.')
   }
 
-  const expectedKeys = [
-    'buildVersion',
-    'deploymentBase',
-    'environment',
-    'releaseSha',
-    'schemaVersion',
-  ] as const
-  const receivedKeys = Object.keys(value).sort()
+  if (!coreRuntimeConfigurationSchema.safeParse(value).success)
+    throw new Error(
+      'runtime-configuration.json must satisfy the strict runtime configuration schema.',
+    )
 
   if (
-    receivedKeys.length !== expectedKeys.length ||
-    receivedKeys.some((key, index) => key !== expectedKeys[index])
-  ) {
-    throw new Error('runtime-configuration.json must contain the exact five-field record.')
-  }
-
-  if (
-    value['schemaVersion'] !== 1 ||
+    value['schemaVersion'] !== 2 ||
     value['environment'] !== 'production' ||
     value['deploymentBase'] !== deploymentBase ||
     value['releaseSha'] !== expectedReleaseSha ||
@@ -732,6 +740,53 @@ async function validateRuntimeKernelBuildOutput(
   }
 }
 
+async function validateProductionCssLayers(cssFiles: ReadonlySet<string>): Promise<void> {
+  interface CssNode {
+    readonly type: string
+    readonly name?: string
+    readonly params?: string
+    readonly nodes?: readonly CssNode[]
+  }
+  const { parse } = createRequire(import.meta.resolve('stylelint'))('postcss') as {
+    readonly parse: (css: string) => CssNode
+  }
+  const names = ['reset', 'tokens', 'base', 'components', 'app', 'utilities', 'vendor-overrides']
+  for (const path of cssFiles) {
+    const root = parse(await readFile(resolve(distributionDirectory, path), 'utf8'))
+    const layerNodes: CssNode[] = []
+    const visit = (node: CssNode, inLayer = false): void => {
+      const isLayer = node.type === 'atrule' && node.name === 'layer'
+      if (isLayer) {
+        layerNodes.push(node)
+        const declared = [...new Set(node.params?.split(',').map((name) => name.trim()))]
+        const ranks = declared.map((name) => names.indexOf(name))
+        if (
+          inLayer ||
+          ranks.length === 0 ||
+          ranks.some((rank, index) => rank < 0 || rank < (ranks[index - 1] ?? 0)) ||
+          (node.nodes !== undefined && declared.length !== 1)
+        )
+          throw new Error(`${path}: unknown, nested or inconsistent native CSS layer.`)
+      }
+      for (const child of node.nodes ?? []) visit(child, inLayer || isLayer)
+    }
+    visit(root)
+    // The minifier may consolidate application CSS into ordered layer blocks.
+    // The earlier critical stylesheet establishes the complete document order.
+    if (path === 'generated/critical-theme.css') {
+      const first = layerNodes[0]
+      if (
+        first?.nodes !== undefined ||
+        first?.params
+          ?.split(',')
+          .map((name) => name.trim())
+          .join(',') !== names.join(',')
+      )
+        throw new Error(`${path}: critical CSS must establish the complete native layer order.`)
+    }
+  }
+}
+
 async function validateCompiledBuildIdentity(
   manifest: Manifest,
   initialChunkKeys: ReadonlySet<string>,
@@ -840,6 +895,9 @@ const expectedBuildVersion = await readBuildVersion()
 const expectedReleaseSha = readReleaseSha()
 
 await Promise.all([
+  validateProductionCssLayers(
+    new Set([...initialCssFiles, ...Object.values(manifest).flatMap((chunk) => chunk.css ?? [])]),
+  ),
   validateRuntimeKernelBuildOutput(
     entry[1].file,
     initialCssFiles,
@@ -939,7 +997,7 @@ if (
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected 18 routes, one motion root, one scroll enhancement, one i18n runtime and seven catalog roots.`,
+    `Canonical dynamic root authority drifted: expected 13 routes, one motion root, one scroll enhancement, one i18n runtime and seven catalog roots.`,
   )
 }
 

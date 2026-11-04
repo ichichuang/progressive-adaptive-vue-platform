@@ -3,7 +3,37 @@
     "button": {
       "inline": {
         "$type": "dimension",
-        "$value": "{dimension.space.button-inline}"
+        "$value": "{density.comfortable.button.padding-inline}"
+      },
+      "inline-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.button.padding-inline}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.button.inline",
+            "conditions": { "density": "compact" }
+          }
+        }
+      },
+      "inline-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.button.padding-inline}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.button.inline",
+            "conditions": { "density": "comfortable" }
+          }
+        }
+      },
+      "inline-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.button.padding-inline}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.button.inline",
+            "conditions": { "density": "spacious" }
+          }
+        }
       }
     },
     "page": {

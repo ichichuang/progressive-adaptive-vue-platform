@@ -21,7 +21,7 @@
 
 **历史快照**：§18.11 下 `Instance-owned route-single retention implementation admission` 块（L11845–11861）的 `REPOSITORY_IMPLEMENTATION=SOURCE_CANDIDATE` / `INDEPENDENT_SOURCE_REVIEW=PENDING` / 三类 `OWNER_*_ACCEPTANCE=NOT_PERFORMED` / `GIT_DELIVERY=NOT_AUTHORIZED`，以及候选过程段落（L11889 / L11891 / L11895）的「未暂存 / 未提交」，是保留的候选阶段记录，不是当前 Git 工作树状态的证据。它们不能代替 §18.11 的限定接受记录，也不能由本指南自动改写。
 
-**执行边界**：后续会话仍须核对实际 Git 状态，并从 `ARCHITECTURE.md` 读取 Current Work 与授权。不得因已有 Git 交付而批量推进验收字段、十三对 Current Work 镜像或后继授权；`NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE` / `SUCCESSOR_PACKAGE_AUTHORIZATION` 仍为 `NONE`。编辑 `ARCHITECTURE.md` 需 Owner 单独授权，Git 交付按 §28.3A 授权阶梯逐级执行。
+**执行边界**：后续会话仍须核对实际 Git 状态，并从 `ARCHITECTURE.md` 读取 Current Work 与授权。不得因已有 Git 交付而批量推进验收字段、文首 Current Work 入口或后继授权；`NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE` / `SUCCESSOR_PACKAGE_AUTHORIZATION` 仍为 `NONE`。编辑 `ARCHITECTURE.md` 需 Owner 单独授权，Git 交付按 §28.3A 授权阶梯逐级执行。
 
 ---
 
@@ -37,7 +37,7 @@
 ### A2. Compact / Comfortable / Spacious 三档密度投影 — §1.3 L5880（§14.2 目标）
 
 - **现状（有）**：token JSON（`packages/design-system/tokens/density/{compact,comfortable,spacious}.tokens.json`）；schema（`packages/design-system/src/schema/appearance.schema.ts` `uiDensityValues`）；build-only tier（`src/build/token-contract.ts`）；`data-density` 轴 selector 定义（`src/build/formats/css.ts:162–176`）；运行时属性写入（`src/runtime/apply-appearance.ts:50`、`apps/web/src/app/appearance/appearance.store.ts`）。
-- **缺**：生成 `packages/design-system/src/generated/tokens.css` 零 `[data-density]` 选择器；零 CSS/Vue/Uno 消费 `data-density`；无密度切换 UI。→ 三档**无视觉差异**。
+- **当前源码**：三档 `interaction.control.height` 已生成对应 `[data-density]` 选择器，并保留 Naive Common 兼容基线；该单 Role 的 Source/Static Delivery 已收口。完整尺寸/间距投影和 Runtime/Visual Acceptance 仍未完成，详见 `ARCHITECTURE.md` §14.2、§37.2.12。
 - **准入条件**：独立准入的核心 Role/Projection 合同 + 真实视觉投影 → 翻 `ACTIVE`。
 - **授权**：需独立准入。
 
@@ -152,4 +152,4 @@
 - **能力状态**：按 §1.3，`ACTIVE` 表示当前仓库已有真实 Artifact、Owning Gate 与静态证据，只能按当前合同使用；不统一要求 Runtime / Visual / Accessibility 验收及 Git 交付全部完成后才能认定 `ACTIVE`，也不单独证明完整核心或发布已获接受。
 - **实施与验收**：按 §1、§28.4、§37.2，分别报告源码实现、公共集成、静态验证、Owner 接受与包完成；完成实施任务须通过完整 `mise exec -- pnpm verify`，并满足该包实际合同与 Owning Gate。§32.2 的非发布手工观察不是统一完成门槛；核心确认及各包明确要求的验收仍须按其合同执行。
 - **Git 与发布**：§28.3A 的 staging / commit / push / release 各需相应明确授权，Git 交付不能替代 Owner 验收。Production Release 仍须 §32.3 的适用 Runtime Matrix 与精确 Release 的 Owner Decision；纯静态文档且无 Runtime Artifact 变化时 Product Release Gate 不适用，仍须 `pnpm verify`。
-- **编辑 `ARCHITECTURE.md` 后**：`mise exec -- pnpm verify` 必须 exit 0（覆盖 `check:arch` / `check:policy` / `check:capability-manifest` / `check:i18n` 等），并确认十三对 Current Work 镜像与状态块一致。
+- **编辑 `ARCHITECTURE.md` 后**：`mise exec -- pnpm verify` 必须 exit 0（覆盖 `check:arch` / `check:policy` / `check:capability-manifest` / `check:i18n` 等），并确认文首 Current Work 入口与状态块一致。

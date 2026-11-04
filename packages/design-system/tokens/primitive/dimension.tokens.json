@@ -55,6 +55,14 @@
           "value": 14,
           "unit": "px"
         }
+      },
+      "button-inline-compact": {
+        "$type": "dimension",
+        "$value": { "value": 12, "unit": "px" }
+      },
+      "button-inline-spacious": {
+        "$type": "dimension",
+        "$value": { "value": 16, "unit": "px" }
       }
     },
     "control": {

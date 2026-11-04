@@ -176,7 +176,7 @@ const axisRank = {
 } as const
 
 export const canonicalLayerOrder =
-  '@layer reset, tokens, base, utilities, components, app, overrides;'
+  '@layer reset, tokens, base, components, app, utilities, vendor-overrides;'
 
 export function formatAppearanceBaseCss(): string {
   return `@layer base {
@@ -369,7 +369,9 @@ function effectiveBankVariable(bankVariable: string, colorMode: 'dark' | 'light'
 }
 
 export function formatThemeBankCssValue(value: string): string {
-  return value.replaceAll(/\d+\.\d+/gu, (numericLexeme) => String(Number(numericLexeme)))
+  return value.startsWith('#')
+    ? value.toLowerCase()
+    : value.replaceAll(/\d+\.\d+/gu, (numericLexeme) => String(Number(numericLexeme)))
 }
 
 function themeBankSelectorGroups(result: TokenBuildResult, initialSequence = 0): SelectorGroup[] {

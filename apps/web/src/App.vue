@@ -41,7 +41,10 @@ const composition = computed(
   () => getRouteLayoutCapability(routeRecord.value.meta.layoutCapabilityId).composition,
 )
 const tabpanel = computed(
-  () => composition.value?.startsWith('admin-') === true && workspace.activeIdentity !== null,
+  () =>
+    composition.value?.startsWith('admin-') === true &&
+    routeRecord.value.workspaceIdentityPolicyId !== null &&
+    workspace.activeIdentity !== null,
 )
 </script>
 
@@ -58,8 +61,9 @@ const tabpanel = computed(
         <div
           id="pavp-workspace-panel"
           class="pavp-route-content"
+          :class="{ 'flex flex-1 min-h-0 h-full': routeRecord.name === 'control-center' }"
           :role="tabpanel ? 'tabpanel' : undefined"
-          :tabindex="tabpanel ? 0 : undefined"
+          :tabindex="tabpanel ? -1 : undefined"
           :aria-labelledby="tabpanel ? `${workspace.activeIdentity}-tab` : undefined"
         >
           <WorkspaceRetentionHost

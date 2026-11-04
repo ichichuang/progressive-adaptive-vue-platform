@@ -635,6 +635,78 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'color.control.info',
+      tokenType: 'color',
+      category: 'color',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-color-control-info',
+      themePlaneApplicability: 'target-required-after-atomic-cutover',
+      contrastEndpointId: 'color.control.info',
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'color',
+        key: 'control-info',
+        classes: ['text-control-info'],
+        allowedCssProperties: ['color'],
+      },
+    },
+    {
+      id: 'color.control.success',
+      tokenType: 'color',
+      category: 'color',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-color-control-success',
+      themePlaneApplicability: 'target-required-after-atomic-cutover',
+      contrastEndpointId: 'color.control.success',
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'color',
+        key: 'control-success',
+        classes: ['text-control-success'],
+        allowedCssProperties: ['color'],
+      },
+    },
+    {
+      id: 'color.control.warning',
+      tokenType: 'color',
+      category: 'color',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-color-control-warning',
+      themePlaneApplicability: 'target-required-after-atomic-cutover',
+      contrastEndpointId: 'color.control.warning',
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'color',
+        key: 'control-warning',
+        classes: ['text-control-warning'],
+        allowedCssProperties: ['color'],
+      },
+    },
+    {
+      id: 'color.control.error',
+      tokenType: 'color',
+      category: 'color',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-color-control-error',
+      themePlaneApplicability: 'target-required-after-atomic-cutover',
+      contrastEndpointId: 'color.control.error',
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'color',
+        key: 'control-error',
+        classes: ['text-control-error'],
+        allowedCssProperties: ['color'],
+      },
+    },
+    {
       id: 'interaction.border.width',
       tokenType: 'dimension',
       category: 'interaction',
@@ -704,6 +776,24 @@ export const PublicRoleRegistry = {
         key: 'motion',
         classes: ['ease-motion'],
         allowedCssProperties: ['--un-ease', 'transition-timing-function'],
+      },
+    },
+    {
+      id: 'interaction.radius.control',
+      tokenType: 'dimension',
+      category: 'interaction',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-radius-control',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'theme-entry',
+        family: 'radius',
+        key: 'control',
+        classes: ['rounded-control'],
+        allowedCssProperties: ['border-radius'],
       },
     },
     {
@@ -1354,7 +1444,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-info-on-page',
-      foregroundRole: 'color.status.info',
+      foregroundRole: 'color.control.info',
       backgroundRole: 'color.surface.page',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1365,7 +1455,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-success-on-page',
-      foregroundRole: 'color.status.success',
+      foregroundRole: 'color.control.success',
       backgroundRole: 'color.surface.page',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1376,7 +1466,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-warning-on-page',
-      foregroundRole: 'color.status.warning',
+      foregroundRole: 'color.control.warning',
       backgroundRole: 'color.surface.page',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1387,7 +1477,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-error-on-page',
-      foregroundRole: 'color.status.error',
+      foregroundRole: 'color.control.error',
       backgroundRole: 'color.surface.page',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1398,7 +1488,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-info-on-panel',
-      foregroundRole: 'color.status.info',
+      foregroundRole: 'color.control.info',
       backgroundRole: 'color.surface.panel',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1409,7 +1499,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-success-on-panel',
-      foregroundRole: 'color.status.success',
+      foregroundRole: 'color.control.success',
       backgroundRole: 'color.surface.panel',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1420,7 +1510,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-warning-on-panel',
-      foregroundRole: 'color.status.warning',
+      foregroundRole: 'color.control.warning',
       backgroundRole: 'color.surface.panel',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1431,7 +1521,7 @@ export const ActiveNamedContrastRegistry = {
     },
     {
       id: 'status-error-on-panel',
-      foregroundRole: 'color.status.error',
+      foregroundRole: 'color.control.error',
       backgroundRole: 'color.surface.panel',
       kind: 'non-text',
       standardMinimum: 3,
@@ -1786,7 +1876,7 @@ export function validatePublicRoleRegistry(
     .parse(registry)
   const records = parsed.records as unknown as readonly PublicRoleRecord[]
 
-  assertExactCount(records.length, 55, 'Public Role Registry record count')
+  assertExactCount(records.length, 60, 'Public Role Registry record count')
   assertUnique(
     records.map((record) => record.id),
     'Public Role Registry IDs',
@@ -1823,6 +1913,10 @@ export function validatePublicRoleRegistry(
     'color.status.error.hover',
     'color.status.error.pressed',
     'color.text.on-status.error',
+    'color.control.info',
+    'color.control.success',
+    'color.control.warning',
+    'color.control.error',
   ]
   const sortedIds = records
     .map((record) => record.id)
@@ -1846,12 +1940,12 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.tokenType === 'color').length,
-    26,
+    30,
     'Active public color role count',
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    40,
+    44,
     'Exact UnoCSS rule count',
   )
   assertExactCount(
@@ -1862,7 +1956,7 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'theme-entry').length,
-    7,
+    8,
     'UnoCSS theme-entry count',
   )
   assertExactCount(

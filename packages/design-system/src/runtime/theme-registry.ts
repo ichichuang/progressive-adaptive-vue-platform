@@ -1,10 +1,6 @@
 import { generatedThemeRegistry } from '../generated/theme-registry'
 import {
-  controlCustomThemeDefinitionSchema,
-  controlCustomThemeRoleContractVersion,
   customThemeDefinitionSchema,
-  legacyCustomThemeDefinitionSchema,
-  legacyCustomThemeRoleContractVersion,
   type BuiltInThemeDefinition,
   type BuiltInThemeId,
   type CustomThemeDefinition,
@@ -59,20 +55,6 @@ export type CustomThemeValidationResult =
   | {
       readonly status: 'validated'
       readonly entry: CustomThemeRegistryEntry
-    }
-  | {
-      readonly status: 'rebound'
-      readonly code: 'ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY'
-      readonly entry: CustomThemeRegistryEntry
-      readonly previousRoleContractVersion: number
-      readonly currentRoleContractVersion: number
-    }
-  | {
-      readonly status: 'rebound'
-      readonly code: 'ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS'
-      readonly entry: CustomThemeRegistryEntry
-      readonly previousRoleContractVersion: 1 | 2
-      readonly currentRoleContractVersion: 3
     }
   | {
       readonly status: 'rejected'
@@ -175,50 +157,6 @@ function parsedColor(value: string): ParsedCssColor | null {
   } catch {
     return null
   }
-}
-
-function normalizeLegacyCustomThemeDefinition(input: unknown): CustomThemeDefinition | null {
-  const schema =
-    isRecord(input) && input['roleContractVersion'] === legacyCustomThemeRoleContractVersion
-      ? legacyCustomThemeDefinitionSchema
-      : controlCustomThemeDefinitionSchema
-  const legacy = schema.safeParse(input)
-
-  if (!legacy.success) {
-    return null
-  }
-
-  const normalizedPlanes = Object.fromEntries(
-    themeColorModes.map((colorMode) => [
-      colorMode,
-      Object.fromEntries(
-        themeContrasts.map((contrast) => {
-          const plane = legacy.data.planes[colorMode][contrast]
-          const normalizedPlane: Record<string, string> = { ...plane }
-          if (legacy.data.roleContractVersion === legacyCustomThemeRoleContractVersion) {
-            normalizedPlane['color.control.primary'] = plane['color.action.primary'] ?? ''
-          }
-          for (const record of generatedThemeRegistry.builtInEntries[0].bank.records) {
-            if (
-              record.colorMode === colorMode &&
-              record.contrast === contrast &&
-              record.authoredValue.startsWith('{color.palette.status.')
-            ) {
-              normalizedPlane[record.publicRole] = record.resolvedValue
-            }
-          }
-
-          return [contrast, normalizedPlane]
-        }),
-      ),
-    ]),
-  )
-
-  return customThemeDefinitionSchema.parse({
-    ...legacy.data,
-    roleContractVersion: generatedThemeRegistry.roleContractVersion,
-    planes: normalizedPlanes,
-  })
 }
 
 function validateCustomThemePlanes(
@@ -367,57 +305,6 @@ function validateCustomThemePlanes(
 export function validateCustomThemeDefinition(input: unknown): CustomThemeValidationResult {
   const themeId = submittedThemeId(input)
   const receivedRoleContractVersion = isRecord(input) ? input['roleContractVersion'] : undefined
-
-  if (
-    receivedRoleContractVersion === legacyCustomThemeRoleContractVersion ||
-    receivedRoleContractVersion === controlCustomThemeRoleContractVersion
-  ) {
-    const normalized = normalizeLegacyCustomThemeDefinition(input)
-
-    if (normalized === null) {
-      const parsed = (
-        receivedRoleContractVersion === legacyCustomThemeRoleContractVersion
-          ? legacyCustomThemeDefinitionSchema
-          : controlCustomThemeDefinitionSchema
-      ).safeParse(input)
-
-      return {
-        status: 'rejected',
-        code: 'THEME_INVALID',
-        registryKind: 'custom',
-        themeId,
-        evidence: parsed.success
-          ? [validationEvidence('<root>', themeId)]
-          : parsed.error.issues.map((issue) =>
-              validationEvidence(issue.path.map(String).join('.') || '<root>', themeId),
-            ),
-      }
-    }
-
-    const evidence = validateCustomThemePlanes(normalized)
-
-    if (evidence.length !== 0) {
-      return {
-        status: 'rejected',
-        code: 'THEME_INVALID',
-        registryKind: 'custom',
-        themeId: normalized.id,
-        evidence,
-      }
-    }
-
-    return {
-      status: 'rebound',
-      code: 'ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS',
-      entry: {
-        registryKind: 'custom',
-        themeId: normalized.id,
-        definition: normalized,
-      },
-      previousRoleContractVersion: receivedRoleContractVersion,
-      currentRoleContractVersion: generatedThemeRegistry.roleContractVersion,
-    }
-  }
 
   if (
     themeId !== null &&
@@ -684,10 +571,7 @@ export function installCustomThemeBank(
 ): ThemeBankInstallationResult {
   const validation = validateCustomThemeDefinition(entry.definition)
 
-  if (
-    (validation.status !== 'validated' && validation.status !== 'rebound') ||
-    validation.entry.themeId !== entry.themeId
-  ) {
+  if (validation.status !== 'validated' || validation.entry.themeId !== entry.themeId) {
     return { status: 'rejected' }
   }
 

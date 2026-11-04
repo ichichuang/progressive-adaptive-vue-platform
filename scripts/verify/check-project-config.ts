@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto'
-import { access, lstat, mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
+import { access, lstat, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { extname, join, relative, resolve } from 'node:path'
@@ -7,8 +7,16 @@ import { isDeepStrictEqual } from 'node:util'
 
 import { projectConfig } from '../../project.config'
 import ts from 'typescript'
+import { resolveConfig } from 'vite'
 import { parse as parseYaml } from 'yaml'
 
+import {
+  parseDeploymentConfig,
+  generateRuntimeConfiguration,
+  readDeploymentConfig,
+  rootDeploymentBase,
+} from '../../apps/web/config'
+import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/runtime-configuration-contract'
 import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
 import { routerFileGenerationOptions } from '../../apps/web/vite.config'
 import { runtimePreflightAuthority } from './check-runtime'
@@ -35,6 +43,7 @@ const expectedRuntime = {
 const expectedPackageManager = `pnpm@${expectedRuntime.pnpm}`
 const expectedBuildVersion = '0.0.0'
 const expectedZodVersion = '4.4.3'
+const expectedVueQueryVersion = '5.105.1'
 const expectedVueVersion = '3.5.40'
 const expectedVueRouterVersion = '5.2.0'
 const expectedVueRouterIntegrity =
@@ -881,13 +890,13 @@ interface BuildAuthorityFlowModel {
   readonly artifactDescriptorConsumers: number
   readonly buildVersionProducerCalls: number
   readonly compiledIdentityConsumers: number
-  readonly projectConfigImportResolved: boolean
+  readonly deploymentConfigImportResolved: boolean
   readonly releaseShaProducerCalls: number
   readonly runtimeDescriptorProducers: number
 }
 
 function validateBuildAuthorityFlowModel(model: BuildAuthorityFlowModel): readonly string[] {
-  return model.projectConfigImportResolved &&
+  return model.deploymentConfigImportResolved &&
     model.releaseShaProducerCalls === 1 &&
     model.buildVersionProducerCalls === 1 &&
     model.runtimeDescriptorProducers === 1 &&
@@ -963,7 +972,7 @@ function validateSemanticFlowNegativeProbes(): void {
     artifactDescriptorConsumers: 1,
     buildVersionProducerCalls: 1,
     compiledIdentityConsumers: 3,
-    projectConfigImportResolved: true,
+    deploymentConfigImportResolved: true,
     releaseShaProducerCalls: 1,
     runtimeDescriptorProducers: 1,
   }
@@ -977,7 +986,7 @@ function validateSemanticFlowNegativeProbes(): void {
     { artifactDescriptorConsumers: 0 },
     { buildVersionProducerCalls: 2 },
     { compiledIdentityConsumers: 2 },
-    { projectConfigImportResolved: false },
+    { deploymentConfigImportResolved: false },
     { releaseShaProducerCalls: 0 },
     { runtimeDescriptorProducers: 2 },
   ] satisfies readonly Partial<BuildAuthorityFlowModel>[]) {
@@ -1448,6 +1457,399 @@ function validateMotionFeatureBudgetAuthority(budget: number): void {
   }
 }
 
+async function validateDeploymentConfigurationInputs(): Promise<void> {
+  const valid = 'PAVP_DEPLOYMENT_BASE=/\n'
+  expectEqual(
+    parseDeploymentConfig(valid, undefined).deploymentBase,
+    rootDeploymentBase,
+    'Environment file input',
+  )
+  expectEqual(
+    parseDeploymentConfig('PAVP_DEPLOYMENT_BASE=/other/\n', '/').deploymentBase,
+    rootDeploymentBase,
+    'Process value takes precedence over file value',
+  )
+  expectEqual(
+    Object.isFrozen(parseDeploymentConfig(valid, undefined)),
+    true,
+    'Deployment configuration immutability',
+  )
+  for (const [source, override] of [
+    ['', undefined],
+    ['PAVP_DEPLOYMENT_BASE=/other/\n', undefined],
+    ['PAVP_DEPLOYMENT_BASE="/\n', undefined],
+    ['PAVP_DEPLOYMENT_BASE=/\nmalformed\n', undefined],
+    ['PAVP_DEPLOYMENT_BASE=/\nPAVP_DEPLOYMENT_BASE=/\n', undefined],
+    ['UNADMITTED_FIELD=private-value\n', '/'],
+    [valid, ''],
+    [valid, '/other/'],
+    [valid, 0],
+  ] as const) {
+    let rejected = false
+    try {
+      parseDeploymentConfig(source, override)
+    } catch {
+      rejected = true
+    }
+    expectEqual(
+      rejected,
+      true,
+      'Malformed, missing or unadmitted deployment input must be rejected',
+    )
+  }
+  const previousDeploymentBase = process.env['PAVP_DEPLOYMENT_BASE']
+  const previousApiBaseUrl = process.env['PAVP_API_BASE_URL']
+  const previousProxyPrefix = process.env['PAVP_DEV_PROXY_PREFIX']
+  try {
+    delete process.env['PAVP_DEPLOYMENT_BASE']
+    delete process.env['PAVP_API_BASE_URL']
+    delete process.env['PAVP_DEV_PROXY_PREFIX']
+    for (const mode of ['development', 'production']) {
+      expectEqual(
+        (await readDeploymentConfig(mode)).deploymentBase,
+        rootDeploymentBase,
+        'Actual selected environment file',
+      )
+    }
+    process.env['PAVP_DEPLOYMENT_BASE'] = '/'
+    expectEqual(
+      (await readDeploymentConfig('production')).deploymentBase,
+      rootDeploymentBase,
+      'Actual process override',
+    )
+    expectEqual(
+      (await readDeploymentConfig('production')).api.status,
+      'unconfigured',
+      'Production has no third-party default',
+    )
+    const development = await readDeploymentConfig('development', true)
+    expectStructuredEqual(
+      development.api,
+      { status: 'configured', baseUrl: '/api/', upstreamOrigin: 'https://uapis.cn' },
+      'The development server publishes the prefix and actual authentication recipient',
+    )
+    expectStructuredEqual(
+      development.developmentProxy,
+      { prefix: '/api/', target: 'https://uapis.cn/api/' },
+      'One centralized source assembles the dev proxy',
+    )
+    const artifactDeployment = await readDeploymentConfig('development')
+    expectStructuredEqual(
+      artifactDeployment.api,
+      { status: 'configured', baseUrl: 'https://uapis.cn/api/' },
+      'Build, preview and generation retain the real API base without a dev-server-only route',
+    )
+    expectEqual(artifactDeployment.developmentProxy, undefined, 'Artifact context has no dev proxy')
+    process.env['PAVP_API_BASE_URL'] = '/backend/'
+    const gateway = await readDeploymentConfig('development', true)
+    expectStructuredEqual(
+      gateway.api,
+      { status: 'configured', baseUrl: '/backend/' },
+      'An existing same-origin development gateway is a valid API configuration',
+    )
+    expectEqual(gateway.developmentProxy, undefined, 'A same-origin API needs no second proxy')
+    delete process.env['PAVP_API_BASE_URL']
+    expectStructuredEqual(
+      parseDeploymentConfig(valid, undefined, 'https://transport.invalid/').api,
+      { status: 'configured', baseUrl: 'https://transport.invalid/' },
+      'Development inputs do not require a proxy for every HTTPS backend',
+    )
+    for (const environment of ['development', 'production']) {
+      expectEqual(
+        coreRuntimeConfigurationSchema.safeParse({
+          schemaVersion: 2,
+          environment,
+          deploymentBase: '/',
+          releaseSha: 'a'.repeat(40),
+          buildVersion: '1.2.3',
+          api: development.api,
+        }).success,
+        environment === 'development',
+        'Actual proxy upstream metadata is development-only',
+      )
+      expectEqual(
+        coreRuntimeConfigurationSchema.safeParse({
+          schemaVersion: 2,
+          environment,
+          deploymentBase: '/',
+          releaseSha: 'a'.repeat(40),
+          buildVersion: '1.2.3',
+          api: { status: 'unconfigured' },
+          unexpected: true,
+        }).success,
+        false,
+        'Cross-field validation retains strict rejection of unknown runtime fields',
+      )
+    }
+    process.env['PAVP_DEV_PROXY_PREFIX'] = '/api/'
+    expectEqual(
+      await readDeploymentConfig('production').then(
+        () => false,
+        () => true,
+      ),
+      true,
+      'Production rejects proxy inputs',
+    )
+    delete process.env['PAVP_DEV_PROXY_PREFIX']
+    expectEqual(
+      development.api.status,
+      'configured',
+      'Development uses its actual service configuration',
+    )
+    expectEqual(
+      parseDeploymentConfig(valid, undefined, 'https://uapis.cn/').api.status,
+      'configured',
+      'API process value supplies a missing file value',
+    )
+    const artifactDirectory = await mkdtemp(join(tmpdir(), 'pavp-runtime-api-'))
+    try {
+      const artifact = {
+        schemaVersion: 2,
+        environment: 'production',
+        deploymentBase: '/',
+        releaseSha: 'a'.repeat(40),
+        buildVersion: '1.2.3',
+        api: { status: 'unconfigured' },
+      }
+      const target = join(artifactDirectory, 'runtime-configuration.json')
+      await writeFile(target, JSON.stringify(artifact))
+      process.env['PAVP_API_BASE_URL'] = 'https://uapis.cn/'
+      const generated = await generateRuntimeConfiguration(artifactDirectory)
+      expectStructuredEqual(
+        { ...generated, api: artifact.api },
+        artifact,
+        'Generation preserves artifact identity instead of reading current Git',
+      )
+      expectStructuredEqual(
+        generated.api,
+        { status: 'configured', baseUrl: 'https://uapis.cn/' },
+        'Generation uses the actual API override',
+      )
+      expectEqual(
+        Object.isFrozen(generated) && Object.isFrozen(generated.api),
+        true,
+        'Generated configuration is immutable',
+      )
+      const saved = await readFile(target, 'utf8')
+      for (const value of [
+        '',
+        'http://uapis.cn/',
+        'https://user:key@uapis.cn/',
+        'https://uapis.cn/?key=private',
+        'https://uapis.cn/#part',
+      ]) {
+        process.env['PAVP_API_BASE_URL'] = value
+        expectEqual(
+          await generateRuntimeConfiguration(artifactDirectory).then(
+            () => false,
+            () => true,
+          ),
+          true,
+          'Invalid API input rejects generation',
+        )
+        expectEqual(
+          await readFile(target, 'utf8'),
+          saved,
+          'Failed generation preserves the existing artifact',
+        )
+      }
+      delete process.env['PAVP_API_BASE_URL']
+      expectEqual(
+        (await generateRuntimeConfiguration(artifactDirectory)).api.status,
+        'unconfigured',
+        'Removing API input explicitly unconfigures it',
+      )
+      await writeFile(target, JSON.stringify({ ...artifact, schemaVersion: 1 }))
+      expectEqual(
+        await generateRuntimeConfiguration(artifactDirectory).then(
+          () => false,
+          () => true,
+        ),
+        true,
+        'Old protocol artifacts cannot be reinterpreted',
+      )
+      expectEqual(
+        (await readdir(artifactDirectory)).length,
+        1,
+        'Generation leaves no temporary files',
+      )
+    } finally {
+      await rm(artifactDirectory, { recursive: true, force: true })
+    }
+    for (const override of ['', '/other/']) {
+      process.env['PAVP_DEPLOYMENT_BASE'] = override
+      const rejected = await readDeploymentConfig('production').then(
+        () => false,
+        () => true,
+      )
+      expectEqual(rejected, true, 'Invalid process override must not fall back to file input')
+    }
+  } finally {
+    if (previousDeploymentBase === undefined) delete process.env['PAVP_DEPLOYMENT_BASE']
+    else process.env['PAVP_DEPLOYMENT_BASE'] = previousDeploymentBase
+    if (previousApiBaseUrl === undefined) delete process.env['PAVP_API_BASE_URL']
+    else process.env['PAVP_API_BASE_URL'] = previousApiBaseUrl
+    if (previousProxyPrefix === undefined) delete process.env['PAVP_DEV_PROXY_PREFIX']
+    else process.env['PAVP_DEV_PROXY_PREFIX'] = previousProxyPrefix
+  }
+  for (const mode of ['staging', '', '0', 0]) {
+    const rejected = await readDeploymentConfig(mode).then(
+      () => false,
+      () => true,
+    )
+    expectEqual(rejected, true, 'Deployment entry must reject an invalid file selector')
+  }
+}
+
+async function validateConfigurationEnvironments(): Promise<void> {
+  const supported = ['development', 'production'] as const
+  // Numeric zero was independently observed as a parsed falsy CLI mode.
+  const candidates = [
+    ...supported,
+    'staging',
+    'unknown',
+    'Development',
+    'production ',
+    '',
+    ' ',
+    '0',
+    0,
+  ]
+  const input = {
+    root: resolve(rootDirectory, 'apps/web'),
+    configLoader: 'runner' as const,
+    logLevel: 'silent' as const,
+  }
+  const previousNodeEnvironment = process.env['NODE_ENV']
+  try {
+    for (const mode of candidates) {
+      const accepted = supported.some((environment) => environment === mode)
+      const parsed = coreRuntimeConfigurationSchema.safeParse({
+        schemaVersion: 2,
+        environment: mode,
+        deploymentBase: rootDeploymentBase,
+        releaseSha: '0'.repeat(40),
+        buildVersion: expectedBuildVersion,
+        api: { status: 'unconfigured' },
+      })
+      expectEqual(
+        parsed.success,
+        accepted,
+        `Runtime environment acceptance: ${JSON.stringify(mode)}`,
+      )
+      if (parsed.success) {
+        expectEqual(parsed.data.environment, mode, 'Runtime environment must not be remapped')
+      }
+      const inline = { ...input }
+      // Exercise the public loading boundary with the untyped value unchanged.
+      Object.assign(inline, { mode })
+      const configured = await resolveConfig(inline, 'build', 'production', 'production').then(
+        (value) => ({ status: 'resolved', value }) as const,
+        () => ({ status: 'rejected' }) as const,
+      )
+      expectEqual(
+        configured.status,
+        accepted ? 'resolved' : 'rejected',
+        `Vite explicit mode acceptance: ${JSON.stringify(mode)}`,
+      )
+      if (configured.status === 'resolved') {
+        expectEqual(
+          configured.value.server.proxy,
+          undefined,
+          'Build configuration never enables the development proxy',
+        )
+        expectEqual(
+          configured.value.base,
+          rootDeploymentBase,
+          'Vite must consume the validated deployment base',
+        )
+        expectStructuredEqual(
+          configured.value.envPrefix,
+          [],
+          'Only the explicit runtime artifact exposes public deployment values',
+        )
+        expectEqual(
+          configured.value.envDir,
+          false,
+          'Only the central entry reads deployment environment files',
+        )
+        expectEqual(configured.value.mode, mode, 'Explicit Vite mode must not be remapped')
+        expectEqual(
+          configured.value.define?.['__PAVP_COMPILED_ENVIRONMENT__'],
+          JSON.stringify(mode),
+          'Compiled environment must retain the accepted explicit mode',
+        )
+      }
+    }
+    for (const mode of supported) {
+      for (const base of [rootDeploymentBase, '/other/', '', './']) {
+        const configured = await resolveConfig(
+          { ...input, mode, base },
+          'build',
+          'production',
+          'production',
+        ).then(
+          (value) => ({ status: 'resolved', value }) as const,
+          () => ({ status: 'rejected' }) as const,
+        )
+        expectEqual(
+          configured.status,
+          base === rootDeploymentBase ? 'resolved' : 'rejected',
+          `Vite merged deployment base acceptance: ${JSON.stringify({ mode, base })}`,
+        )
+        if (configured.status === 'resolved') {
+          expectEqual(configured.value.base, rootDeploymentBase, 'Resolved deployment base')
+          expectEqual(
+            configured.value.env['BASE_URL'],
+            rootDeploymentBase,
+            'Compiled BASE_URL must match the runtime deployment base',
+          )
+        }
+      }
+    }
+    const developmentPreview = await resolveConfig(
+      { ...input, mode: 'development' },
+      'serve',
+      'production',
+      'production',
+      true,
+    )
+    expectEqual(
+      developmentPreview.server.proxy,
+      undefined,
+      'Preview never runs the development proxy even in development mode',
+    )
+    // Preview uses serve with isPreview=true; neither case enters dev-server port discovery.
+    for (const preview of [false, true]) {
+      const configured = await resolveConfig(
+        { ...input },
+        preview ? 'serve' : 'build',
+        'production',
+        'production',
+        preview,
+      )
+      expectEqual(
+        configured.mode,
+        'production',
+        'Omitted build/preview mode must retain its default',
+      )
+      expectEqual(
+        configured.server.proxy,
+        undefined,
+        'Production build/preview never enables the development proxy',
+      )
+      expectEqual(
+        configured.define?.['__PAVP_COMPILED_ENVIRONMENT__'],
+        JSON.stringify('production'),
+        'Omitted build/preview mode must retain matching compiled identity',
+      )
+    }
+  } finally {
+    if (previousNodeEnvironment === undefined) delete process.env['NODE_ENV']
+    else process.env['NODE_ENV'] = previousNodeEnvironment
+  }
+}
+
 async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
   validateBuildAuthoritySyntaxNegativeProbes()
   validateSemanticFlowNegativeProbes()
@@ -1462,51 +1864,19 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
       viteEnvironmentPath,
     })
 
-  const projectConfigImport = importSpecifier(
-    viteSourceFile,
-    '../../project.config',
-    'projectConfig',
+  const rootBaseImport = importSpecifier(viteSourceFile, './config', 'rootDeploymentBase')
+  const deploymentReaderImport = importSpecifier(viteSourceFile, './config', 'readDeploymentConfig')
+  const deploymentConfigPath = resolve(webDirectory, 'config.ts')
+  const deploymentConfigImportResolved = [rootBaseImport, deploymentReaderImport].every(
+    (binding) =>
+      binding !== undefined &&
+      symbolDeclaredInPath(resolveAliasedSymbol(checker, binding.name), deploymentConfigPath),
   )
-  const projectConfigImportResolved =
-    projectConfigImport !== undefined &&
-    symbolDeclaredInPath(
-      resolveAliasedSymbol(checker, projectConfigImport.name),
-      resolve(rootDirectory, 'project.config.ts'),
-    )
-
   expectEqual(
-    projectConfigImportResolved,
+    deploymentConfigImportResolved,
     true,
-    'Compiler-resolved Vite projectConfig import authority',
+    'Compiler-resolved deployment configuration entry',
   )
-
-  const projectConfigSymbol =
-    projectConfigImport === undefined ? undefined : symbolAt(checker, projectConfigImport.name)
-  const projectConfigReferences = collectNodes(viteSourceFile, ts.isIdentifier).filter(
-    (identifier) => symbolAt(checker, identifier) === projectConfigSymbol,
-  )
-  const deploymentBaseAccesses = collectNodes(viteSourceFile, ts.isPropertyAccessExpression).filter(
-    (access) => {
-      if (access.name.text !== 'deploymentBase') {
-        return false
-      }
-
-      const deploymentAccess = memberAccess(access.expression)
-      return (
-        deploymentAccess?.key === 'deployment' &&
-        sameSymbol(checker, deploymentAccess.owner, projectConfigImport?.name)
-      )
-    },
-  )
-
-  expectExactCount(deploymentBaseAccesses.length, 1, 'Vite deployment-base authority')
-  expectExactCount(projectConfigReferences.length, 2, 'Vite projectConfig reference closure')
-
-  const deploymentBaseAuthority = deploymentBaseAccesses[0]
-
-  if (deploymentBaseAuthority === undefined) {
-    throw new Error('Vite deployment-base authority is missing.')
-  }
 
   const execFileSyncImport = importSpecifier(viteSourceFile, 'node:child_process', 'execFileSync')
   const readFileImport = importSpecifier(viteSourceFile, 'node:fs/promises', 'readFile')
@@ -1757,6 +2127,10 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
   const releaseShaProducerCalls = callExpressions(defineConfigBody).filter(
     (call) => functionImplementationForCall(checker, call) === releaseShaReader,
   )
+  const deploymentReaderCalls = callExpressions(defineConfigBody).filter((call) =>
+    callTargetsSymbol(checker, call, deploymentReaderImport?.name),
+  )
+  const deploymentReaderCall = deploymentReaderCalls[0]
   const buildVersionProducerCall = buildVersionProducerCalls[0]
   const releaseShaProducerCall = releaseShaProducerCalls[0]
   const runtimeParseCalls = callExpressions(defineConfigBody).filter(
@@ -1783,6 +2157,8 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     runtimeRecord === undefined
       ? undefined
       : objectPropertyExpression(runtimeRecord, 'deploymentBase')
+  const apiExpression =
+    runtimeRecord === undefined ? undefined : objectPropertyExpression(runtimeRecord, 'api')
   const releaseShaExpression =
     runtimeRecord === undefined ? undefined : objectPropertyExpression(runtimeRecord, 'releaseSha')
   const buildVersionExpression =
@@ -1813,12 +2189,13 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
           'deploymentBase',
           'releaseSha',
           'buildVersion',
+          'api',
         ]),
     ],
     [
       'Runtime Configuration schema version',
       runtimeRecord !== undefined &&
-        isNumericLiteral(objectPropertyExpression(runtimeRecord, 'schemaVersion'), 1),
+        isNumericLiteral(objectPropertyExpression(runtimeRecord, 'schemaVersion'), 2),
     ],
     [
       'Runtime Configuration environment binding',
@@ -1826,12 +2203,31 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     ],
     [
       'Runtime Configuration deployment-base binding',
-      expressionDerivesFrom(checker, deploymentBaseExpression, deploymentBaseAuthority),
+      deploymentReaderCalls.length === 1 &&
+        deploymentReaderCall !== undefined &&
+        isCallbackInputPropertyFlow(
+          checker,
+          deploymentReaderCall.arguments[0],
+          defineConfigCallback,
+          'mode',
+        ) &&
+        memberAccess(deploymentBaseExpression)?.key === 'deploymentBase' &&
+        expressionDerivesFrom(
+          checker,
+          memberAccess(deploymentBaseExpression)?.owner,
+          deploymentReaderCall,
+        ),
     ],
     [
       'Runtime Configuration Release SHA binding',
       releaseShaProducerCall !== undefined &&
         expressionDerivesFrom(checker, releaseShaExpression, releaseShaProducerCall),
+    ],
+    [
+      'Runtime API configuration binding',
+      deploymentReaderCall !== undefined &&
+        memberAccess(apiExpression)?.key === 'api' &&
+        expressionDerivesFrom(checker, memberAccess(apiExpression)?.owner, deploymentReaderCall),
     ],
     [
       'Runtime Configuration Build Version binding',
@@ -1872,7 +2268,7 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     !expressionDerivesFrom(
       checker,
       objectPropertyExpression(returnedConfiguration, 'base'),
-      deploymentBaseAuthority,
+      deploymentBaseExpression ?? runtimeDescriptorExpression,
     ) ||
     defineRecord === undefined ||
     !hasExactObjectPropertySet(defineRecord, [
@@ -2089,8 +2485,7 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     if (
       declaration?.type === undefined ||
       (field === 'environment'
-        ? declaration.type.getText(viteEnvironmentSourceFile) !==
-          "'development' | 'staging' | 'production'"
+        ? declaration.type.getText(viteEnvironmentSourceFile) !== "'development' | 'production'"
         : declaration.type.getText(viteEnvironmentSourceFile) !== 'string') ||
       consumer === undefined ||
       !sameSymbol(checker, consumer, declaration.name)
@@ -2197,7 +2592,7 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
     artifactDescriptorConsumers: artifactEmitCalls.length,
     buildVersionProducerCalls: buildVersionProducerCalls.length,
     compiledIdentityConsumers,
-    projectConfigImportResolved,
+    deploymentConfigImportResolved,
     releaseShaProducerCalls: execFileSyncCalls.length,
     runtimeDescriptorProducers,
   }
@@ -2489,6 +2884,11 @@ expectEqual(
 )
 expectEqual(workspaceCatalog['motion-v'], expectedMotionVVersion, 'Motion for Vue catalog version')
 expectEqual(workspaceCatalog['pinia'], '3.0.4', 'Pinia catalog version')
+expectEqual(
+  workspaceCatalog['@tanstack/vue-query'],
+  expectedVueQueryVersion,
+  'Vue Query catalog version',
+)
 expectEqual(workspaceCatalog['vue'], expectedVueVersion, 'Vue catalog version')
 expectEqual(workspaceCatalog['zod'], expectedZodVersion, 'Zod catalog version')
 expectEqual(workspaceCatalog['vue-router'], expectedVueRouterVersion, 'Vue Router catalog version')
@@ -2707,6 +3107,52 @@ const lockedDesignSystemZodDependency = isJsonObject(designSystemLockfileDepende
   ? designSystemLockfileDependencies['zod']
   : undefined
 const lockfileSnapshots = lockfile['snapshots']
+expectStructuredEqual(
+  isJsonObject(defaultLockfileCatalog) ? defaultLockfileCatalog['@tanstack/vue-query'] : undefined,
+  { specifier: expectedVueQueryVersion, version: expectedVueQueryVersion },
+  'Vue Query lockfile catalog',
+)
+expectStructuredEqual(
+  isJsonObject(webLockfileDependencies)
+    ? webLockfileDependencies['@tanstack/vue-query']
+    : undefined,
+  {
+    specifier: 'catalog:',
+    version: `${expectedVueQueryVersion}(vue@${expectedVueVersion}(typescript@${expectedRuntime.typescript}))`,
+  },
+  'Vue Query application-only lockfile edge',
+)
+for (const [name, version] of [
+  ['@tanstack/vue-query', expectedVueQueryVersion],
+  ['@tanstack/query-core', expectedVueQueryVersion],
+  ['vue-demi', '0.14.10'],
+  ['@tanstack/match-sorter-utils', '9.2.6'],
+  ['remove-accents', '0.5.0'],
+] as const) {
+  expectStructuredEqual(
+    isJsonObject(lockfilePackages)
+      ? Object.keys(lockfilePackages).filter((key) => key.startsWith(`${name}@`))
+      : [],
+    [`${name}@${version}`],
+    `${name} reviewed Query package set`,
+  )
+}
+const queryApplicationRequire = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
+const queryPackageRequire = createRequire(
+  queryApplicationRequire.resolve('@tanstack/vue-query/package.json'),
+)
+const selectedVueAdapter = queryPackageRequire('vue-demi') as {
+  readonly isVue3: boolean
+  readonly isVue2: boolean
+  readonly version: string
+}
+expectEqual(selectedVueAdapter.isVue3, true, 'Query dependency uses the published Vue 3 adapter')
+expectEqual(selectedVueAdapter.isVue2, false, 'Query dependency does not use Vue 2')
+expectEqual(
+  selectedVueAdapter.version,
+  expectedVueVersion,
+  'Query adapter shares the admitted Vue instance',
+)
 for (const dependency of scrollDependencies) {
   const { name, version, resolution, snapshot } = dependency
   expectEqual(workspaceCatalog[name], version, `${name} exact catalog version`)
@@ -3111,6 +3557,7 @@ expectStructuredEqual(
   webManifest['dependencies'],
   {
     'naive-ui': 'catalog:',
+    '@tanstack/vue-query': 'catalog:',
     '@platform/design-system': 'workspace:*',
     '@platform/ui': 'workspace:*',
     pinia: 'catalog:',
@@ -3172,6 +3619,7 @@ expectStructuredEqual(
     'esbuild@0.28.1': true,
     '@bundled-es-modules/glob': false,
     'style-dictionary': false,
+    'vue-demi': false,
   },
   'Reviewed dependency build decisions',
 )
@@ -3335,12 +3783,10 @@ expectEqual(
   'Architecture authority',
 )
 expectEqual(projectConfig.governance.defaultBranch, 'main', 'Default branch governance')
-expectStructuredEqual(
-  projectConfig.deployment,
-  { deploymentBase: '/' },
-  'Exact root-only deployment configuration',
-)
+expectEqual(rootDeploymentBase, '/', 'Exact root-only deployment compatibility constraint')
 
+await validateDeploymentConfigurationInputs()
+await validateConfigurationEnvironments()
 await validateRuntimeKernelBuildConfiguration()
 await validateOfficialRouteDtsRegeneration()
 await validateVueRouterCompatibilityProbe()

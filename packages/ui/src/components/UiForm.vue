@@ -3,11 +3,17 @@ import PavpNaiveForm from '../adapters/naive/PavpNaiveForm.vue'
 import UiFormField from './UiFormField.vue'
 import { NButton } from 'naive-ui/es/button'
 import type { UiFormProps, UiFormSlots } from './form-contracts'
+import { computed, inject } from 'vue'
+import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
+import { createPavpNaiveSoftButtonProps } from '../adapters/naive/pavp-naive-theme'
 
 /** A single native submit boundary; draft and mutation ownership stay in useUiForm. */
 defineOptions({ name: 'UiForm', inheritAttrs: false })
 withDefaults(defineProps<UiFormProps<I>>(), { columns: 1 })
 const slots = defineSlots<UiFormSlots<I>>()
+const appearance = inject(pavpNaiveAppearanceKey)
+if (appearance === undefined) throw new TypeError('UiForm requires UiProvider.')
+const resetButtonProps = computed(() => createPavpNaiveSoftButtonProps(appearance.value))
 </script>
 
 <template>
@@ -50,7 +56,7 @@ const slots = defineSlots<UiFormSlots<I>>()
         <NButton
           class="min-h-target-enhanced min-w-target-enhanced"
           :disabled="form.submitting.value || form.phase.value === 'disposed'"
-          secondary
+          v-bind="resetButtonProps"
           @click="form.reset()"
         >
           {{ form.copy.reset() }}

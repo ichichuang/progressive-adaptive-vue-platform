@@ -25,7 +25,11 @@ export async function validateCapabilityManifest(): Promise<string[]> {
     violations.push('Capability Manifest regeneration equality failed.')
   }
 
-  if (capabilityManifest.records.some((record) => !routeNames.has(record.routeName))) {
+  if (
+    capabilityManifest.records.some(
+      (record) => record.routeName !== null && !routeNames.has(record.routeName),
+    )
+  ) {
     violations.push('Capability Manifest contains a dangling route reference.')
   }
 

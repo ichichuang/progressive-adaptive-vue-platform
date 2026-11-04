@@ -2,7 +2,6 @@ import type { Format } from 'style-dictionary/types'
 
 import { builtInThemeIds, type BuiltInThemeDefinition } from '../../schema/complete-theme.schema'
 import { formatOpaqueSrgbColor } from '../../schema/css-color'
-import { legacyBuiltInThemeIds } from '../../schema/legacy-seed-theme.schema'
 import { compareCodePoints } from '../order'
 import type { TokenBuildResult } from '../preprocess'
 import {
@@ -175,6 +174,7 @@ export function themeRegistryDocument(result: TokenBuildResult) {
         planes: theme.planes,
       },
       source: theme.source,
+      uiPalette: theme.uiPalette,
       bank: {
         visibility: 'ui-internal' as const,
         records,
@@ -185,8 +185,11 @@ export function themeRegistryDocument(result: TokenBuildResult) {
     ...new Set(builtInEntries[0]?.bank.records.map((record) => record.bankVariable) ?? []),
   ]
 
-  if (customBankVariables.length !== themeColorModes.length * themeContrasts.length * 26) {
-    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 104 variables.')
+  if (
+    customBankVariables.length !==
+    themeColorModes.length * themeContrasts.length * publicColors.length
+  ) {
+    throw new Error('Generated Custom Theme Bank allowlist must contain exactly 120 variables.')
   }
 
   for (const entry of builtInEntries) {
@@ -199,22 +202,6 @@ export function themeRegistryDocument(result: TokenBuildResult) {
       throw new Error(`${entry.themeId}: Built-in Theme Bank allowlist/order must remain exact.`)
     }
   }
-
-  const legacyThemesById = new Map(result.themes.map((theme) => [theme.id, theme]))
-  const legacyBuiltInThemeTuples = legacyBuiltInThemeIds.map((themeId) => {
-    const legacyTheme = legacyThemesById.get(themeId)
-
-    if (legacyTheme === undefined) {
-      throw new Error(`${themeId}: Legacy Built-in Theme migration tuple is missing.`)
-    }
-
-    return {
-      themeId,
-      brand: tokenValueToCss('color', legacyTheme.palette.brand),
-      accent: tokenValueToCss('color', legacyTheme.palette.accent),
-      neutral: legacyTheme.palette.neutral,
-    }
-  })
 
   return {
     roleContractVersion: result.completeThemes[0]?.roleContractVersion,
@@ -235,7 +222,6 @@ export function themeRegistryDocument(result: TokenBuildResult) {
       enhancedDifferenceRequired: record.enhancedDifferenceRequired,
       staticMaterialProjections: record.staticMaterialProjections,
     })),
-    legacyBuiltInThemeTuples,
     customBankVariables,
     builtInEntries,
   } as const
@@ -272,159 +258,149 @@ export function formatThemeRegistryTypeScript(result: TokenBuildResult): string 
     statusSupplementary: statusSupplementaryDocument(result),
   }
   const representative = document.builtInEntries[0]
-  if (representative === undefined)
-    throw new Error('The shared Status Bank requires a Built-in Theme.')
-  const isStatus = (value: string) => value.startsWith('{color.palette.status.')
-  const statusRecords = representative.bank.records.filter((record) =>
-    isStatus(record.authoredValue),
-  )
-  const bankTemplates = representative.bank.records.map((record) => ({
-    colorMode: record.colorMode,
-    contrast: record.contrast,
-    publicRole: record.publicRole,
-    sourceField: record.sourceField,
-    bankVariable: record.bankVariable,
-    publicBinding: record.publicBinding,
-  }))
-  const sharedStatus = Object.fromEntries(
-    themeColorModes.map((mode) => [
-      mode,
-      Object.fromEntries(
-        themeContrasts.map((contrast) => [
-          contrast,
-          statusRecords
-            .filter((record) => record.colorMode === mode && record.contrast === contrast)
-            .map((record) => [record.publicRole, record.authoredValue, record.resolvedValue]),
-        ]),
-      ),
-    ]),
-  )
+  if (representative === undefined) throw new Error('The Built-in Theme Registry is empty.')
   const references = new Map<unknown, string>([
     [document.activePublicColorRoles, 'activePublicColorRoles'],
+    [document.customBankVariables, 'bankTemplates.map((record) => record.bankVariable)'],
     [
-      document.customBankVariables,
-      '[\n    bankTemplates[0].bankVariable,\n    ...bankTemplates.slice(1).map((record) => record.bankVariable),\n  ]',
+      document.builtInRegistryOrder,
+      `[\n${document.builtInRegistryOrder.map((id) => `    ${stringLiteral(id)},`).join('\n')}\n  ]`,
     ],
   ])
-
-  for (const entry of document.builtInEntries) {
-    if (
-      JSON.stringify(entry.bank.records.filter((record) => isStatus(record.authoredValue))) !==
-        JSON.stringify(statusRecords) ||
-      entry.bank.records.some(
-        (record) =>
-          !isStatus(record.authoredValue) && record.authoredValue !== record.resolvedValue,
-      )
-    ) {
-      throw new Error(
-        `${entry.themeId}: compact Registry requires shared Status and absolute historical values.`,
-      )
-    }
-    const historicalPlanes = Object.fromEntries(
-      themeColorModes.map((mode) => [
-        mode,
-        Object.fromEntries(
-          themeContrasts.map((contrast) => [
-            contrast,
-            Object.fromEntries(
-              Object.entries(entry.definition.planes[mode][contrast]).filter(
-                ([, value]) => !isStatus(value),
-              ),
-            ),
+  const sharedPlanes = representative.definition.planes
+  let paletteColorCount = 0
+  const paletteShape = (value: unknown): unknown =>
+    typeof value === 'string'
+      ? paletteColorCount++
+      : Object.fromEntries(
+          Object.entries(value as Readonly<Record<string, unknown>>).map(([key, item]) => [
+            key,
+            paletteShape(item),
           ]),
-        ),
-      ]),
-    )
-    const argumentsSource = [entry.themeId, entry.definition.label, entry.source].map(stringLiteral)
-    const callStart = `createBuiltInTheme(${argumentsSource.join(', ')}, {`
+        )
+  const planeShape = paletteShape(representative.uiPalette.light.standard)
+  const packedPalette = (value: unknown): string =>
+    typeof value === 'string'
+      ? value.slice(1)
+      : Object.values(value as Readonly<Record<string, unknown>>)
+          .map(packedPalette)
+          .join('')
+  const encodePalette = (value: unknown): string => {
+    const colors = packedPalette(value)
+    if (colors.length !== paletteColorCount * 4 * 6 || !/^[0-9A-F]+$/u.test(colors)) {
+      throw new Error('The Built-in Theme Registry palette is incomplete or invalid.')
+    }
+    return Buffer.from(colors, 'hex').toString('base64')
+  }
+  for (const entry of document.builtInEntries) {
+    const planes =
+      JSON.stringify(entry.definition.planes) === JSON.stringify(sharedPlanes)
+        ? 'authoredPlanes'
+        : typeScriptLiteral(entry.definition.planes, 6)
     references.set(
       entry,
-      callStart.length + 4 <= 100
-        ? `createBuiltInTheme(${argumentsSource.join(', ')}, ${typeScriptLiteral(historicalPlanes, 4)})`
-        : `createBuiltInTheme(\n${argumentsSource.map((argument) => `      ${argument},`).join('\n')}\n      ${typeScriptLiteral(historicalPlanes, 6)},\n    )`,
+      `createBuiltInTheme(\n      ${stringLiteral(entry.themeId)},\n      ${stringLiteral(entry.definition.label)},\n      ${stringLiteral(entry.source)},\n      ${planes},\n      ${stringLiteral(encodePalette(entry.uiPalette))},\n    )`,
     )
   }
-
   return `/* ${generatedNotice} */
+import type { ThemeColorPalettes } from '../schema/theme-color-palette.schema'
+
 const activePublicColorRoles = ${typeScriptLiteral(document.activePublicColorRoles)} as const
-const bankTemplates = ${typeScriptLiteral(bankTemplates)} as const
-const sharedStatus = ${typeScriptLiteral(sharedStatus)} as const
-
-type PublicColorRole = (typeof activePublicColorRoles)[number]['publicRole']
-type StatusRole = (typeof sharedStatus.light.standard)[number][0]
-type ThemePlane = Readonly<Record<PublicColorRole, string>>
-type StatusPlane = Readonly<Record<StatusRole, string>>
-type HistoricalPlane = Omit<ThemePlane, StatusRole>
-interface ThemePlanes<Plane> {
-  readonly light: { readonly standard: Plane; readonly enhanced: Plane }
-  readonly dark: { readonly standard: Plane; readonly enhanced: Plane }
-}
-
-function statusPlane(
-  records: readonly (readonly [StatusRole, string, string])[],
-  valueIndex: 1 | 2,
-): StatusPlane {
-  return Object.fromEntries(records.map((record) => [record[0], record[valueIndex]])) as StatusPlane
-}
-
-const statusAuthoredPlanes = {
-  light: {
-    standard: statusPlane(sharedStatus.light.standard, 1),
-    enhanced: statusPlane(sharedStatus.light.enhanced, 1),
-  },
-  dark: {
-    standard: statusPlane(sharedStatus.dark.standard, 1),
-    enhanced: statusPlane(sharedStatus.dark.enhanced, 1),
-  },
-} as const
-const statusResolvedValues = new Map<string, string>(
-  [
-    ...sharedStatus.light.standard,
-    ...sharedStatus.light.enhanced,
-    ...sharedStatus.dark.standard,
-    ...sharedStatus.dark.enhanced,
-  ].map((record) => [record[1], record[2]]),
+const bankTemplates = (['light', 'dark'] as const).flatMap((colorMode) =>
+  (['standard', 'enhanced'] as const).flatMap((contrast) =>
+    activePublicColorRoles.map((role) => ({
+      colorMode,
+      contrast,
+      publicRole: role.publicRole,
+      sourceField: 'planes.' + colorMode + '.' + contrast + '.' + role.publicRole,
+      bankVariable:
+        '--ui-theme-bank-' +
+        colorMode +
+        '-' +
+        contrast +
+        '-' +
+        role.publicBinding.slice('--ui-color-'.length),
+      publicBinding: role.publicBinding,
+    })),
+  ),
 )
+const authoredPlanes = ${typeScriptLiteral(sharedPlanes)} as const
+const paletteShape = ${typeScriptLiteral(planeShape)} as const
 
-type BuiltInThemeId =
-${builtInThemeIds.map((id) => `  | ${stringLiteral(id)}`).join('\n')}
+type ThemeId = ${builtInThemeIds.map(stringLiteral).join(' | ')}
+type PublicColorRole = (typeof activePublicColorRoles)[number]['publicRole']
+type ThemePlane = Readonly<Record<PublicColorRole, string>>
+interface ThemePlanes {
+  readonly light: { readonly standard: ThemePlane; readonly enhanced: ThemePlane }
+  readonly dark: { readonly standard: ThemePlane; readonly enhanced: ThemePlane }
+}
 
-function createBuiltInTheme<const Id extends BuiltInThemeId>(
-  themeId: Id,
+function resolvePaletteValue(value: string, palette: unknown): string {
+  if (!value.startsWith('{palette.')) return value
+  let resolved: unknown = palette
+  for (const key of value.slice('{palette.'.length, -1).split('.')) {
+    if (resolved === null || typeof resolved !== 'object')
+      throw new Error('Invalid generated palette path.')
+    resolved = (resolved as Readonly<Record<string, unknown>>)[key]
+  }
+  if (typeof resolved !== 'string') throw new Error('Missing generated palette color.')
+  return resolved
+}
+
+function decodePalette(packed: string): ThemeColorPalettes {
+  const bytes = atob(packed)
+  if (bytes.length !== ${String(paletteColorCount * 4 * 3)}) throw new Error('Incomplete generated palette.')
+  const digits = '0123456789ABCDEF'
+  const hex = (offset: number) =>
+    digits.charAt(bytes.charCodeAt(offset) >> 4) + digits.charAt(bytes.charCodeAt(offset) & 15)
+  function plane(offset: number): ThemeColorPalettes['light']['standard'] {
+    function decode(shape: unknown): unknown {
+      if (typeof shape === 'number') {
+        const index = (offset + shape) * 3
+        if (!Number.isInteger(index) || index < 0 || index + 2 >= bytes.length)
+          throw new Error('Missing generated palette value.')
+        return '#' + hex(index) + hex(index + 1) + hex(index + 2)
+      }
+      return Object.fromEntries(
+        Object.entries(shape as Readonly<Record<string, unknown>>).map(([key, value]) => [
+          key,
+          decode(value),
+        ]),
+      )
+    }
+    return decode(paletteShape) as ThemeColorPalettes['light']['standard']
+  }
+  return {
+    light: { standard: plane(0), enhanced: plane(${String(paletteColorCount)}) },
+    dark: { standard: plane(${String(paletteColorCount * 2)}), enhanced: plane(${String(paletteColorCount * 3)}) },
+  }
+}
+
+function createBuiltInTheme(
+  themeId: ThemeId,
   label: string,
   source: string,
-  historicalPlanes: ThemePlanes<HistoricalPlane>,
+  planes: ThemePlanes,
+  packedPalette: string,
 ) {
-  const planes = {
-    light: {
-      standard: { ...historicalPlanes.light.standard, ...statusAuthoredPlanes.light.standard },
-      enhanced: { ...historicalPlanes.light.enhanced, ...statusAuthoredPlanes.light.enhanced },
-    },
-    dark: {
-      standard: { ...historicalPlanes.dark.standard, ...statusAuthoredPlanes.dark.standard },
-      enhanced: { ...historicalPlanes.dark.enhanced, ...statusAuthoredPlanes.dark.enhanced },
-    },
-  } satisfies ThemePlanes<ThemePlane>
-  const records = bankTemplates.map((record) => {
-    const authoredValue = planes[record.colorMode][record.contrast][record.publicRole]
-    // The generator proves historical cells are absolute and every shared Status alias resolves.
-    const resolvedValue = statusResolvedValues.get(authoredValue) ?? authoredValue
+  const uiPalette = decodePalette(packedPalette)
+  const records = bankTemplates.map((template) => {
+    const authoredValue = planes[template.colorMode][template.contrast][template.publicRole]
     return {
-      colorMode: record.colorMode,
-      contrast: record.contrast,
-      publicRole: record.publicRole,
-      sourceField: record.sourceField,
+      ...template,
       authoredValue,
-      resolvedValue,
-      bankVariable: record.bankVariable,
-      publicBinding: record.publicBinding,
-    } as const
+      resolvedValue: resolvePaletteValue(
+        authoredValue,
+        uiPalette[template.colorMode][template.contrast],
+      ),
+    }
   })
   return {
     registryKind: 'built-in',
     themeId,
     definition: { schemaVersion: ${String(representative.definition.schemaVersion)}, roleContractVersion: ${String(representative.definition.roleContractVersion)}, id: themeId, label, planes },
     source,
+    uiPalette,
     bank: { visibility: 'ui-internal', records },
   } as const
 }
@@ -587,7 +563,7 @@ export function unoCssProjection(result: TokenBuildResult): UnoCssProjection {
           declarations: {
             [binding.cssProperty]:
               mapping.family === 'content-size' && binding.cssProperty === 'grid-template-columns'
-                ? `repeat(auto-fit, minmax(var(${mapping.cssVariable}), 1fr))`
+                ? `repeat(auto-fit, minmax(min(100%, var(${mapping.cssVariable})), 1fr))`
                 : `var(${mapping.cssVariable})`,
           },
           roleId: mapping.roleId,

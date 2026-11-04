@@ -468,6 +468,7 @@ async function startAttempt(input: {
       application: resources.vueApplication.application,
       pinia: resources.pinia.pinia,
       handoff: resources.appearanceHandoff,
+      api: resources.configuration.api,
     })
     throwClaimedStartupFailure()
 

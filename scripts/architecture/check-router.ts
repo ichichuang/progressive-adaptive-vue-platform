@@ -7,6 +7,7 @@ import stylelint from 'stylelint'
 import ts from 'typescript'
 
 import { coreErrorRegistry } from '../../apps/web/src/app/errors/core-error-registry'
+import { getDefaultConsoleMessage } from '../../apps/web/src/shared/i18n/default-messages'
 import {
   advanceActiveGuardStage,
   activeGuardStageRegistry,
@@ -59,16 +60,11 @@ const pagesDirectory = resolve(rootDirectory, 'apps/web/src/pages')
 const generatedRouteMapPath = resolve(rootDirectory, 'apps/web/src/route-map.d.ts')
 const expectedPageSources = [
   'apps/web/src/pages/index.vue',
-  'apps/web/src/pages/appearance.vue',
-  'apps/web/src/pages/design-tokens.vue',
-  'apps/web/src/pages/runtime-kernel.vue',
-  'apps/web/src/pages/router.vue',
-  'apps/web/src/pages/storage.vue',
-  'apps/web/src/pages/ui-system.vue',
-  'apps/web/src/pages/responsive-layout.vue',
-  'apps/web/src/pages/engineering.vue',
-  'apps/web/src/pages/capabilities.vue',
-  'apps/web/src/pages/capabilities-standalone.vue',
+  'apps/web/src/pages/colors.vue',
+  'apps/web/src/pages/sizes.vue',
+  'apps/web/src/pages/typography.vue',
+  'apps/web/src/pages/interactions.vue',
+  'apps/web/src/pages/control-center.vue',
   'apps/web/src/pages/error/400.vue',
   'apps/web/src/pages/error/401.vue',
   'apps/web/src/pages/error/403.vue',
@@ -77,116 +73,66 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 11)
+const expectedProductPageSources = expectedPageSources.slice(0, 6)
 const expectedRouteRecords = [
   [
     'apps/web/src/pages/index.vue',
-    'console-overview',
+    'workbench-dashboard',
     '/',
     'route-params.none',
     'route-query.none',
-    'route-title.console-overview',
-    'route.console.overview',
+    'route-title.workbench-dashboard',
+    'route.workbench.dashboard',
     'route-boundary',
   ],
   [
-    'apps/web/src/pages/appearance.vue',
-    'appearance-management',
-    '/appearance',
+    'apps/web/src/pages/colors.vue',
+    'workbench-colors',
+    '/colors',
     'route-params.none',
     'route-query.none',
-    'route-title.appearance-management',
-    'route.console.appearance',
+    'route-title.workbench-colors',
+    'route.workbench.colors',
     'route-boundary',
   ],
   [
-    'apps/web/src/pages/design-tokens.vue',
-    'design-token-inspector',
-    '/design-tokens',
+    'apps/web/src/pages/sizes.vue',
+    'workbench-sizes',
+    '/sizes',
     'route-params.none',
     'route-query.none',
-    'route-title.design-token-inspector',
-    'route.console.design-tokens',
+    'route-title.workbench-sizes',
+    'route.workbench.sizes',
     'route-boundary',
   ],
   [
-    'apps/web/src/pages/runtime-kernel.vue',
-    'runtime-kernel-inspector',
-    '/runtime-kernel',
+    'apps/web/src/pages/typography.vue',
+    'workbench-typography',
+    '/typography',
     'route-params.none',
     'route-query.none',
-    'route-title.runtime-kernel-inspector',
-    'route.console.runtime-kernel',
+    'route-title.workbench-typography',
+    'route.workbench.typography',
     'route-boundary',
   ],
   [
-    'apps/web/src/pages/router.vue',
-    'router-governance-inspector',
-    '/router',
+    'apps/web/src/pages/interactions.vue',
+    'workbench-interactions',
+    '/interactions',
     'route-params.none',
     'route-query.none',
-    'route-title.router-governance-inspector',
-    'route.console.router',
+    'route-title.workbench-interactions',
+    'route.workbench.interactions',
     'route-boundary',
   ],
   [
-    'apps/web/src/pages/storage.vue',
-    'storage-persistence-inspector',
-    '/storage',
+    'apps/web/src/pages/control-center.vue',
+    'control-center',
+    '/control-center',
     'route-params.none',
     'route-query.none',
-    'route-title.storage-persistence-inspector',
-    'route.console.storage',
-    'route-boundary',
-  ],
-  [
-    'apps/web/src/pages/ui-system.vue',
-    'ui-system-inspector',
-    '/ui-system',
-    'route-params.none',
-    'route-query.none',
-    'route-title.ui-system-inspector',
-    'route.console.ui-system',
-    'route-boundary',
-  ],
-  [
-    'apps/web/src/pages/responsive-layout.vue',
-    'responsive-layout-inspector',
-    '/responsive-layout',
-    'route-params.none',
-    'route-query.none',
-    'route-title.responsive-layout-inspector',
-    'route.console.responsive-layout',
-    'route-boundary',
-  ],
-  [
-    'apps/web/src/pages/engineering.vue',
-    'engineering-quality-inspector',
-    '/engineering',
-    'route-params.none',
-    'route-query.none',
-    'route-title.engineering-quality-inspector',
-    'route.console.engineering',
-    'route-boundary',
-  ],
-  [
-    'apps/web/src/pages/capabilities.vue',
-    'capability-roadmap',
-    '/capabilities',
-    'route-params.none',
-    'route-query.none',
-    'route-title.capability-roadmap',
-    'route.console.capabilities',
-    'route-boundary',
-  ],
-  [
-    'apps/web/src/pages/capabilities-standalone.vue',
-    'capability-roadmap-standalone',
-    '/capabilities/standalone',
-    'route-params.none',
-    'route-query.none',
-    'route-title.capability-roadmap',
-    'route.console.capabilities-standalone',
+    'route-title.control-center',
+    'route.console.control-center',
     'route-boundary',
   ],
   [
@@ -289,16 +235,14 @@ const expectedConsoleCommonMeta = {
   routeTransitionFamilyId: 'route-family.architecture-workspace',
 } as const
 const expectedRouteTitles = {
-  'route-title.console-overview': '总览',
-  'route-title.appearance-management': '主题与外观',
-  'route-title.design-token-inspector': '设计令牌',
-  'route-title.runtime-kernel-inspector': '运行时内核',
-  'route-title.router-governance-inspector': '路由治理',
-  'route-title.storage-persistence-inspector': '存储与持久化',
-  'route-title.ui-system-inspector': 'UI 组件',
-  'route-title.responsive-layout-inspector': '响应式布局',
-  'route-title.engineering-quality-inspector': '工程与质量',
-  'route-title.capability-roadmap': '能力路线图',
+  'route-title.workbench-dashboard': getDefaultConsoleMessage('route-title.workbench-dashboard'),
+  'route-title.workbench-colors': getDefaultConsoleMessage('route-title.workbench-colors'),
+  'route-title.workbench-sizes': getDefaultConsoleMessage('route-title.workbench-sizes'),
+  'route-title.workbench-typography': getDefaultConsoleMessage('route-title.workbench-typography'),
+  'route-title.workbench-interactions': getDefaultConsoleMessage(
+    'route-title.workbench-interactions',
+  ),
+  'route-title.control-center': getDefaultConsoleMessage('route-title.control-center'),
   'route-title.error-invalid-route-input': '地址无效',
   'route-title.error-authentication-required': '需要身份认证',
   'route-title.error-permission-denied': '访问被拒绝',
@@ -309,59 +253,34 @@ const expectedRouteTitles = {
 } as const
 const expectedMessages = [
   [
-    'console-overview',
-    'route-message.console-overview-summary',
-    '查看当前已启用的前端架构能力与运行状态。',
+    'workbench-dashboard',
+    'route-message.workbench-dashboard-summary',
+    getDefaultConsoleMessage('route-message.workbench-dashboard-summary'),
   ],
   [
-    'appearance-management',
-    'route-message.appearance-management-summary',
-    '统一管理主题、颜色模式、对比度、材质、字号与动效，并实时查看界面效果。',
+    'workbench-colors',
+    'route-message.workbench-colors-summary',
+    getDefaultConsoleMessage('route-message.workbench-colors-summary'),
   ],
   [
-    'design-token-inspector',
-    'route-message.design-token-inspector-summary',
-    '查看当前公开角色、主题平面、对比度、材质与清单摘要。',
+    'workbench-sizes',
+    'route-message.workbench-sizes-summary',
+    getDefaultConsoleMessage('route-message.workbench-sizes-summary'),
   ],
   [
-    'runtime-kernel-inspector',
-    'route-message.runtime-kernel-inspector-summary',
-    '查看当前十五阶段启动流程、Provider 与生命周期边界。',
+    'workbench-typography',
+    'route-message.workbench-typography-summary',
+    getDefaultConsoleMessage('route-message.workbench-typography-summary'),
   ],
   [
-    'router-governance-inspector',
-    'route-message.router-governance-inspector-summary',
-    '查看路由、布局、滚动、焦点与错误页治理。',
+    'workbench-interactions',
+    'route-message.workbench-interactions-summary',
+    getDefaultConsoleMessage('route-message.workbench-interactions-summary'),
   ],
   [
-    'storage-persistence-inspector',
-    'route-message.storage-persistence-inspector-summary',
-    '查看当前存储记录、分区、错误与生命周期边界。',
-  ],
-  [
-    'ui-system-inspector',
-    'route-message.ui-system-inspector-summary',
-    '查看 PAVP 复合组件与共享主题下的 Naive UI 原生使用。',
-  ],
-  [
-    'responsive-layout-inspector',
-    'route-message.responsive-layout-inspector-summary',
-    '查看 narrow、regular 与 wide 的布局投影与尺寸权威。',
-  ],
-  [
-    'engineering-quality-inspector',
-    'route-message.engineering-quality-inspector-summary',
-    '查看工具链、静态门禁、构建预算与托管工作流。',
-  ],
-  [
-    'capability-roadmap',
-    'route-message.capability-roadmap-summary',
-    '查看尚未启用能力的状态、前置条件与准入要求。',
-  ],
-  [
-    'capability-roadmap-standalone',
-    'route-message.capability-roadmap-summary',
-    '查看尚未启用能力的状态、前置条件与准入要求。',
+    'control-center',
+    'route-message.control-center-summary',
+    getDefaultConsoleMessage('route-message.control-center-summary'),
   ],
   [
     'error-invalid-route-input',
@@ -615,16 +534,8 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
     violations.push('DUPLICATED_NAVIGATION_ERROR_ROUTE')
   }
 
-  const headingFocusCalls = [...snapshot.lifecycleSource.matchAll(/heading\.focus\s*\(/gu)]
-  const guardedHeadingFocus =
-    /if\s*\(\s*from\s*!==\s*START_LOCATION\s*&&\s*!samePage\s*&&\s*!locked\s*\)\s*heading\.focus\(\{ preventScroll: true \}\)/u.test(
-      snapshot.lifecycleSource,
-    )
-  if (!/\bSTART_LOCATION\b/u.test(snapshot.lifecycleSource) || !guardedHeadingFocus) {
-    violations.push('INITIAL_NAVIGATION_FOCUS_PRESERVATION')
-  }
-  if (headingFocusCalls.length !== 1 || !guardedHeadingFocus) {
-    violations.push('SUBSEQUENT_NAVIGATION_HEADING_FOCUS')
+  if (/\.focus\s*\(/u.test(snapshot.lifecycleSource)) {
+    violations.push('ROUTER_PROGRAMMATIC_FOCUS_FORBIDDEN')
   }
 
   const currentRouteGuard =
@@ -670,24 +581,24 @@ function runRouterInteractionNegativeProbes(
     (snapshot: RouterInteractionSnapshot) => RouterInteractionSnapshot,
   ][] = [
     [
-      'initial-navigation-unconditional-heading-focus',
-      'INITIAL_NAVIGATION_FOCUS_PRESERVATION',
+      'initial-navigation-heading-focus-restored',
+      'ROUTER_PROGRAMMATIC_FOCUS_FORBIDDEN',
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'from !== START_LOCATION && !samePage && !locked',
-          '!samePage && !locked',
+          'document.title = getRoutePresentation(',
+          'document.body.focus(); document.title = getRoutePresentation(',
         ),
       }),
     ],
     [
-      'subsequent-navigation-heading-focus-removed',
-      'SUBSEQUENT_NAVIGATION_HEADING_FOCUS',
+      'subsequent-navigation-heading-focus-restored',
+      'ROUTER_PROGRAMMATIC_FOCUS_FORBIDDEN',
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'heading.focus({ preventScroll: true })',
-          '',
+          'document.title = getRoutePresentation(',
+          'heading.focus({ preventScroll: true }); document.title = getRoutePresentation(',
         ),
       }),
     ],
@@ -2559,9 +2470,20 @@ async function routeContentViolations(): Promise<string[]> {
     if (registersContent !== (declaration.contentReadiness === 'workspace-content'))
       violations.push(`ROUTE_CONTENT_LIFETIME_DECLARATION: ${record.sourcePath}`)
   }
-  const candidate = records.find((record) => record.scrollRestoration === 'build-static')
-  const mutable = records.find((record) => record.contentReadiness === 'workspace-content')
-  if (candidate === undefined || mutable === undefined) return violations
+  const candidate = records.find(
+    (record) =>
+      record.scrollRestoration === 'build-static' &&
+      record.workspaceIdentityPolicyId === 'workspace-identity.route-single',
+  )
+  if (candidate === undefined)
+    return [...violations, 'Route content probes require an admitted retained static route.']
+  // No current workbench page needs mutable-content readiness. Keep the reusable
+  // readiness/refresh contract covered by an in-memory declaration, not a demo route.
+  const mutable: RouteContentDeclaration = {
+    ...candidate,
+    contentReadiness: 'workspace-content',
+    scrollRestoration: 'workspace-content',
+  }
   const declarations: readonly RouteContentDeclaration[] = [
     { ...candidate, contentReadiness: 'unknown', name: 'renamed-content' },
     { ...candidate, scrollRestoration: 'unknown', name: 'renamed-content' },
@@ -2597,7 +2519,17 @@ async function routeContentViolations(): Promise<string[]> {
   const lookup =
     comparison === undefined
       ? undefined
-      : nodesOf(comparison.left, ts.isCallExpression).find(
+      : nodesOf(
+          ts.isPropertyAccessExpression(comparison.left) &&
+            ts.isIdentifier(comparison.left.expression)
+            ? (nodesOf(refresh?.reset ?? parsed, ts.isVariableDeclaration).find(
+                (node) =>
+                  node.name.getText(parsed) ===
+                  comparison.left.getChildAt(0, parsed).getText(parsed),
+              )?.initializer ?? comparison.left)
+            : comparison.left,
+          ts.isCallExpression,
+        ).find(
           (call) =>
             callMemberName(call) ===
             namedImportLocalName(parsed, './route-registry', 'getRouteRecord'),
@@ -2677,7 +2609,15 @@ async function routeContentViolations(): Promise<string[]> {
           )
   for (const [name, mutated] of [
     ['private refresh bindings renaming', renamedRefresh],
-    ['local route lookup', extract(lookup, 'routeForProbe')],
+    [
+      'equivalent route lookup binding',
+      lookup === undefined || comparison === undefined
+        ? source
+        : lookup.getStart(parsed) < (selection?.getStart(parsed) ?? -1) &&
+            ts.isPropertyAccessExpression(comparison.left)
+          ? replace(comparison.left.expression, lookup.getText(parsed))
+          : extract(lookup, 'routeForProbe'),
+    ],
     ['local readiness predicate', extract(selection?.expression, 'needsContentForProbe')],
     [
       'complementary readiness comparison',
@@ -2734,7 +2674,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact eighteen-record authority.')
+    violations.push('Router Route Registry diverged from the exact thirteen-record authority.')
   }
 
   if (
@@ -2749,16 +2689,21 @@ function registryViolations(): string[] {
     const expectedCommonMeta =
       record.workspaceIdentityPolicyId !== null
         ? expectedConsoleCommonMeta
-        : record.name === 'capability-roadmap-standalone'
+        : record.name === 'control-center'
           ? {
               ...expectedConsoleCommonMeta,
-              layout: 'focused-task',
-              layoutCapabilityId: 'route-layout.content-only',
               keepAlive: 'never',
             }
           : expectedReadingCommonMeta
     const expectedBreadcrumbKey =
-      record.workspaceIdentityPolicyId !== null ? `route-breadcrumb.${record.name}` : null
+      record.meta.routeTransitionFamilyId === 'route-family.architecture-workspace'
+        ? `route-breadcrumb.${record.name}`
+        : null
+    const expectedWorkspace = expectedRouteRecords
+      .slice(0, 5)
+      .some((expected) => expected[1] === record.name)
+    const expectedMessageScope =
+      record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
     if (
       !isDeepStrictEqual(commonMeta, expectedCommonMeta) ||
       !isDeepStrictEqual(record.capabilityStatus, 'ACTIVE') ||
@@ -2766,8 +2711,9 @@ function registryViolations(): string[] {
       breadcrumbKey !== expectedBreadcrumbKey ||
       telemetryName.length === 0 ||
       errorPolicy.length === 0 ||
+      record.messageScope !== expectedMessageScope ||
       record.workspaceIdentityPolicyId !==
-        (record.workspaceIdentityPolicyId !== null ? 'workspace-identity.route-single' : null)
+        (expectedWorkspace ? 'workspace-identity.route-single' : null)
     ) {
       violations.push(`Route ${record.name} diverged from the exact active Common Meta contract.`)
     }
@@ -2829,7 +2775,7 @@ function registryViolations(): string[] {
       routeRegistry.map((record) => record.meta.telemetryName),
     )
   ) {
-    violations.push('Telemetry-name Registry must project the exact eighteen Route records.')
+    violations.push('Telemetry-name Registry must project the exact thirteen Route records.')
   }
 
   if (
@@ -2952,9 +2898,9 @@ function registryViolations(): string[] {
           'h1[data-route-focus="architecture-console-page-heading"]',
           -1,
           'after-admin-shell-and-routed-dom-commit-without-arbitrary-timeout',
-          'initial-preserve-browser-focus;subsequent-prevent-scroll-then-registered-scroll-restoration',
-          'initial-preserve-browser-focus;subsequent-location-change-transfer-focus-to-target',
-          'preserve-or-restore-previous-valid-focus',
+          'no-programmatic-focus',
+          'preserve-browser-focus',
+          'preserve-browser-focus',
           'typed-navigation-failure',
           'existing-semantic-focus-tokens',
           'ACTIVE',
@@ -2964,9 +2910,9 @@ function registryViolations(): string[] {
           'h1[data-route-focus="primary-heading"]',
           -1,
           'after-routed-dom-commit-without-arbitrary-timeout',
-          'initial-preserve-browser-focus;subsequent-prevent-scroll-then-registered-scroll-restoration',
-          'initial-preserve-browser-focus;subsequent-location-change-transfer-focus-to-target',
-          'preserve-or-restore-previous-valid-focus',
+          'no-programmatic-focus',
+          'preserve-browser-focus',
+          'preserve-browser-focus',
           'typed-navigation-failure',
           'existing-semantic-focus-tokens',
           'ACTIVE',
@@ -2974,7 +2920,7 @@ function registryViolations(): string[] {
       ],
     )
   ) {
-    violations.push('Router Focus Registry diverged from the initial/subsequent focus contract.')
+    violations.push('Router landmark Registry diverged from the disabled keyboard focus contract.')
   }
 
   if (
@@ -3062,9 +3008,20 @@ async function pageViolations(): Promise<string[]> {
 
   if (!exactSet(pageFiles, expectedPageSources)) {
     return [
-      'Official Router page source root must contain exactly the eighteen admitted Vue files.',
+      'Official Router page source root must contain exactly the thirteen admitted Vue files.',
     ]
   }
+
+  const workbenchOwner = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/workbench/WorkbenchPage.vue'),
+    'utf8',
+  )
+  if (
+    count(workbenchOwner, /<UiPageHeader\b/gu) !== 1 ||
+    count(workbenchOwner, /<(?:main|h1)\b/gu) !== 0 ||
+    !workbenchOwner.includes("from '@platform/ui'")
+  )
+    violations.push('WorkbenchPage must delegate its one route heading to UiPageHeader.')
 
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
@@ -3079,26 +3036,17 @@ async function pageViolations(): Promise<string[]> {
           `${sourcePath}: Workspace pages require an explicit component-definition name.`,
         )
     }
-    const sharedCapability =
-      sourcePath === 'apps/web/src/pages/capabilities.vue' ||
-      sourcePath === 'apps/web/src/pages/capabilities-standalone.vue'
-    const contentSource = sharedCapability
-      ? await readFile(
-          resolve(rootDirectory, 'apps/web/src/app/console/CapabilityRoadmapContent.vue'),
-          'utf8',
-        )
-      : source
-    if (
-      sharedCapability &&
-      (count(source, /<CapabilityRoadmapContent\b/gu) !== 1 ||
-        !source.includes("from '../app/console/CapabilityRoadmapContent.vue'"))
-    )
-      violations.push(`${sourcePath}: capability content must have one shared owner.`)
+    const settingsPage = sourcePath === 'apps/web/src/pages/control-center.vue'
     const productPageInvalid =
       productPage &&
-      (count(contentSource, /<UiPageHeader\b/gu) !== 1 ||
-        count(source, /<main\b/gu) !== 0 ||
-        count(source, /<h1\b/gu) !== 0)
+      (count(source, /<main\b/gu) !== 0 ||
+        (settingsPage
+          ? count(source, /<h1\b/gu) !== 1 ||
+            count(source, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
+            !/<h1\b[^>]*\btabindex="-1"[^>]*>/u.test(source)
+          : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+            !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+            count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
     const errorPageInvalid =
       !productPage &&
       (count(source, /<main\b/gu) !== 1 ||
@@ -3258,6 +3206,80 @@ async function navigationContractViolations(): Promise<string[]> {
   }
 
   return []
+}
+
+async function settingsReturnViolations(): Promise<string[]> {
+  const [source, frame, page] = await Promise.all([
+    readFile(resolve(routerDirectory, 'settings-return.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/pages/control-center.vue'), 'utf8'),
+  ])
+  const parsed = ts.createSourceFile('settings-return.ts', source, ts.ScriptTarget.Latest, true)
+  const functions = nodesOf(parsed, ts.isFunctionDeclaration)
+  const accessor = functions.find((node) => node.name?.text === 'useSettingsReturn')
+  const provider = functions.find((node) => node.name?.text === 'provideSettingsReturn')
+  const boundary = ts.isTypeReferenceNode(accessor?.type ?? parsed)
+    ? accessor?.type?.getText(parsed)
+    : undefined
+  const contract = nodesOf(parsed, ts.isInterfaceDeclaration).find(
+    (node) => node.name.text === boundary,
+  )
+  const finish = contract?.members.find(
+    (node) => ts.isMethodSignature(node) && node.name.getText(parsed) === 'finish',
+  )
+  const violations: string[] = []
+  if (
+    accessor === undefined ||
+    provider === undefined ||
+    ![accessor, provider].every((node) =>
+      node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword),
+    ) ||
+    finish === undefined ||
+    !ts.isMethodSignature(finish) ||
+    finish.parameters.length !== 0 ||
+    finish.type?.getText(parsed) !== 'Promise<TypedNavigationResult>'
+  )
+    violations.push('Settings Done must expose the existing typed navigation result.')
+
+  for (const [text, path, imported, label] of [
+    [frame, '../router/settings-return', 'provideSettingsReturn', 'provider'],
+    [page, '../app/router/settings-return', 'useSettingsReturn', 'consumer'],
+  ] as const) {
+    const script = ts.createSourceFile(
+      label,
+      /<script[^>]*>([\s\S]*?)<\/script>/u.exec(text)?.[1] ?? '',
+      ts.ScriptTarget.Latest,
+      true,
+    )
+    const local = namedImportLocalName(script, path, imported)
+    const calls = nodesOf(script, ts.isCallExpression).filter(
+      (call) => local !== undefined && callMemberName(call) === local,
+    )
+    const usage = calls[0]
+    if (
+      calls.length !== 1 ||
+      usage === undefined ||
+      (label === 'consumer' &&
+        !nodesOf(script, ts.isAwaitExpression).some(
+          (wait) =>
+            ts.isCallExpression(wait.expression) &&
+            isDeepStrictEqual(memberPath(wait.expression.expression), [
+              ...storedValuePath(usage),
+              'finish',
+            ]),
+        ))
+    )
+      violations.push(`Settings return ${label} must use the one admitted boundary.`)
+  }
+
+  if (
+    /\b(?:localStorage|sessionStorage|scrollTo|scrollIntoView|scrollTop|scrollLeft)\b|\bhistory\s*\.|\.back\s*\(|\.go\s*\(/u.test(
+      source,
+    ) ||
+    /\.(?:push|replace)\s*\(/u.test(source)
+  )
+    violations.push('Settings return must delegate navigation without storing or forcing context.')
+  return violations
 }
 
 async function routerErrorContractViolations(): Promise<string[]> {
@@ -3740,15 +3762,7 @@ async function lifecycleViolations(): Promise<string[]> {
     violations.push('Router lifecycle input, ownership or future-scope contract drifted.')
   }
 
-  const focusCalls = calls.filter((call) => {
-    const focusOptions = call.arguments[0]
-    return (
-      callMemberName(call) === 'focus' &&
-      focusOptions !== undefined &&
-      ts.isObjectLiteralExpression(focusOptions) &&
-      objectPropertyValue(focusOptions, 'preventScroll')?.kind === ts.SyntaxKind.TrueKeyword
-    )
-  })
+  const focusCalls = calls.filter((call) => callMemberName(call) === 'focus')
   const titleAssignments = nodesOf(lifecycleSource, ts.isBinaryExpression).filter(
     (expression) =>
       expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
@@ -3765,11 +3779,13 @@ async function lifecycleViolations(): Promise<string[]> {
   )
 
   if (
-    focusCalls.length === 0 ||
+    focusCalls.length !== 0 ||
     titleAssignments.length === 0 ||
     documentScrollOwnerReferences.length === 0
   ) {
-    violations.push('Router title, native scroll-restoration or focus-transfer contract drifted.')
+    violations.push(
+      'Router title, native scroll-restoration or prohibited focus-transfer contract drifted.',
+    )
   }
 
   const hookMembers = new Set(['beforeEach', 'beforeResolve', 'afterEach', 'onError'])
@@ -3844,7 +3860,14 @@ async function lifecycleViolations(): Promise<string[]> {
         hookMembers.has(call.expression.name.text),
     )
 
-    if (importsRouter && competingHooks.length !== 0) {
+    const settingsObservation =
+      relative(rootDirectory, candidate.path).split('\\').join('/') ===
+        'apps/web/src/app/router/settings-return.ts' &&
+      competingHooks.length === 1 &&
+      competingHooks[0] !== undefined &&
+      ts.isPropertyAccessExpression(competingHooks[0].expression) &&
+      competingHooks[0].expression.name.text === 'afterEach'
+    if (importsRouter && competingHooks.length !== 0 && !settingsObservation) {
       violations.push(
         relative(rootDirectory, candidate.path) + ' competes for global Router hooks.',
       )
@@ -3885,14 +3908,27 @@ async function lifecycleViolations(): Promise<string[]> {
         ((names.includes('provideApplicationNavigation') &&
           normalized !== 'apps/web/src/App.vue') ||
           (names.includes('useWorkspaceNavigation') &&
-            normalized !== 'apps/web/src/app/console/ConsoleRouteFrame.vue') ||
+            normalized !== 'apps/web/src/app/console/ConsoleRouteFrame.vue' &&
+            normalized !== 'apps/web/src/app/router/settings-return.ts') ||
           bindings === undefined ||
           !ts.isNamedImports(bindings) ||
-          normalized.startsWith('apps/web/src/app/router/'))
+          (normalized.startsWith('apps/web/src/app/router/') &&
+            (normalized !== 'apps/web/src/app/router/settings-return.ts' ||
+              !isDeepStrictEqual(names, ['useWorkspaceNavigation']))))
       )
         violations.push(
           normalized + ' bypasses the public/private Application Navigation consumption boundary.',
         )
+      if (
+        specifier.endsWith('/settings-return') &&
+        !(
+          (normalized === 'apps/web/src/app/console/ConsoleRouteFrame.vue' &&
+            isDeepStrictEqual(names, ['provideSettingsReturn'])) ||
+          (normalized === 'apps/web/src/pages/control-center.vue' &&
+            isDeepStrictEqual(names, ['useSettingsReturn']))
+        )
+      )
+        violations.push(normalized + ' bypasses the bounded Settings return boundary.')
       const importsCoordinatorRuntime =
         /\/route-transition-coordinator(?:\.ts)?$/u.test(specifier) &&
         statement.importClause?.phaseModifier !== ts.SyntaxKind.TypeKeyword &&
@@ -4068,8 +4104,8 @@ function routeTransitionSourceProofResults(
   const nonePreset = presetRecords[0]
   const contentBoundary = boundaryRecords[0]
   const fullWorkspaceInput = {
-    fromRouteName: 'console-overview',
-    toRouteName: 'appearance-management',
+    fromRouteName: 'workbench-dashboard',
+    toRouteName: 'workbench-colors',
     navigationKind: 'push',
     fromFamilyId: 'route-family.architecture-workspace',
     toFamilyId: 'route-family.architecture-workspace',
@@ -4235,7 +4271,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 11 &&
+        productRoutes.length === 6 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -4549,7 +4585,7 @@ function routeTransitionSourceProofResults(
       passed:
         snapshot.cssSource.includes(
           '.pavp-route-content {\n    visibility: visible;\n    opacity: 1;\n    transform: none;\n    translate: none;',
-        ) && snapshot.layersSource.includes('.pavp-route-content {\n  opacity: 1;'),
+        ) && /\.pavp-route-content\s*\{\s*opacity:\s*1\s*;/u.test(snapshot.layersSource),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_34_RUNTIME_005_PRESERVED',
@@ -4582,9 +4618,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 18') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 13') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 28') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 23') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -4612,7 +4648,7 @@ function routeTransitionSourceProofResults(
         !/\bnextTick\b/u.test(snapshot.coordinatorSource),
     }),
     Object.freeze({
-      id: 'ROUTE_TRANSITION_SOURCE_38_EXACT_BINDING_AND_FOCUS_COMMIT',
+      id: 'ROUTE_TRANSITION_SOURCE_38_EXACT_BINDING_WITHOUT_FOCUS_TRANSFER',
       passed:
         presentationCommitBrokerSource.includes('readonly expectedRouteName: RouteName') &&
         presentationCommitBrokerSource.includes('readonly expectedFullPath: string') &&
@@ -4629,9 +4665,8 @@ function routeTransitionSourceProofResults(
           beforeEachSource.lastIndexOf(
             'bindRouterPresentationCommit(presentationCommitBroker, to, routeName, navigationId)',
           ) &&
+        !/\.focus\s*\(/u.test(scrollBehaviorSource) &&
         scrollBehaviorSource.indexOf('document.title = getRoutePresentation(') <
-          scrollBehaviorSource.indexOf('heading.focus({ preventScroll: true })') &&
-        scrollBehaviorSource.indexOf('heading.focus({ preventScroll: true })') <
           scrollBehaviorSource.indexOf(
             'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)',
           ),
@@ -4718,7 +4753,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 18') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 13') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         snapshot.projectConfigSource.includes(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
@@ -4957,13 +4992,13 @@ function runRouterPresentationCommitNegativeProbes(
       }),
     ],
     [
-      'router-presentation-commit-resolves-before-h1-focus',
-      'ROUTE_TRANSITION_SOURCE_38_EXACT_BINDING_AND_FOCUS_COMMIT',
+      'router-presentation-commit-restores-h1-focus',
+      'ROUTE_TRANSITION_SOURCE_38_EXACT_BINDING_WITHOUT_FOCUS_TRANSFER',
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          /if \(from !== START_LOCATION && !samePage && !locked\)\s*heading\.focus\(\{ preventScroll: true \}\)/u,
-          'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)\n        if (from !== START_LOCATION && !samePage && !locked) heading.focus({ preventScroll: true })',
+          'document.title = getRoutePresentation(',
+          'heading.focus({ preventScroll: true }); document.title = getRoutePresentation(',
         ),
       }),
     ],
@@ -5056,8 +5091,8 @@ interface RouteTransitionPresetSelectionSnapshot {
 }
 
 const routeTransitionSelectionInput = {
-  fromRouteName: 'console-overview',
-  toRouteName: 'appearance-management',
+  fromRouteName: 'workbench-dashboard',
+  toRouteName: 'workbench-colors',
   navigationKind: 'push',
   fromFamilyId: 'route-family.architecture-workspace',
   toFamilyId: 'route-family.architecture-workspace',
@@ -5094,12 +5129,12 @@ function routeTransitionPresetSelectionSnapshot(
       ...(presetId === 'route-transition.axis-inline-soft'
         ? {
             kind: 'ordered-routes',
-            routeNames: ['console-overview', 'appearance-management'],
+            routeNames: ['workbench-dashboard', 'workbench-colors'],
           }
         : {
             kind: 'exact-route-pair',
-            fromRouteName: 'console-overview',
-            toRouteName: 'appearance-management',
+            fromRouteName: 'workbench-dashboard',
+            toRouteName: 'workbench-colors',
           }),
     })),
   }
@@ -5781,13 +5816,21 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
 }> {
   const globalPath = 'route-transition-stylelint-policy.css'
   const routePath = 'apps/web/src/app/router/route-transition/route-transition.css'
-  const appearanceScope = '**/apps/web/src/pages/appearance.vue.style-*.css'
+  const workbenchScope = 'apps/web/src/app/workbench/workbench.css'
   const adminShellScope = '**/packages/ui/src/components/UiAdminShell.vue.style-*.css'
-  const expectedOverrideScopes = [[routePath], [appearanceScope], [adminShellScope]] as const
+  const radioCardScope = '**/packages/ui/src/components/UiRadioCardGroup.vue.style-*.css'
+  const radioCardPath = 'packages/ui/src/components/UiRadioCardGroup.vue.style-0.css'
+  const expectedOverrideScopes = [
+    [routePath],
+    [workbenchScope],
+    [adminShellScope],
+    [radioCardScope],
+  ] as const
   const otherPaths = [
     'apps/web/src/app/styles/layers.css',
     'apps/web/src/app/router/route-transition/other.css',
     'packages/ui/src/other.css',
+    radioCardPath,
   ]
   const configModule: unknown = await import(
     pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
@@ -5841,6 +5884,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const full = 'calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)'
   const half = 'calc(var(--ui-motion-duration) / 2)'
   const shellMaterial = 'var(--ui-material-chrome-background)'
+  const radioCardForeground = 'var(--pavp-radio-card-selected-hover-foreground)'
   const rule = declarationPolicyRule
   const check = async (
     config: stylelint.Config,
@@ -5873,20 +5917,38 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
       snapshot.otherConfigs.flatMap((config, index) => [
         check(config, otherPaths[index] ?? '', 'animation-duration', full, true),
         check(config, otherPaths[index] ?? '', 'animation-duration', half, false),
+        check(
+          config,
+          otherPaths[index] ?? '',
+          'color',
+          radioCardForeground,
+          otherPaths[index] !== radioCardPath,
+        ),
       ]),
     )
     const overrideChecks = await Promise.all(
       snapshot.overrideScopes.map(async ({ files, ruleKeys, config }) => {
         const routeScope = isDeepStrictEqual(files, [routePath])
-        const shellScope =
-          isDeepStrictEqual(files, [appearanceScope]) || isDeepStrictEqual(files, [adminShellScope])
+        const shellScope = isDeepStrictEqual(files, [adminShellScope])
+        const workbenchStyleScope = isDeepStrictEqual(files, [workbenchScope])
+        const radioScope = isDeepStrictEqual(files, [radioCardScope])
         return (
-          (routeScope || shellScope) &&
+          (routeScope || shellScope || workbenchStyleScope || radioScope) &&
           isDeepStrictEqual(ruleKeys, [declarationPolicyRule]) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&
           (await check(config, globalPath, 'transition-duration', full, true)) &&
-          (await check(config, globalPath, 'background', shellMaterial, routeScope))
+          (await check(config, globalPath, 'color', radioCardForeground, !radioScope)) &&
+          (!radioScope ||
+            (await check(config, globalPath, 'color', 'var(--pavp-unrelated-foreground)', true))) &&
+          (workbenchStyleScope ||
+            (await check(
+              config,
+              globalPath,
+              'background',
+              shellMaterial,
+              routeScope || radioScope,
+            )))
         )
       }),
     )
@@ -5989,8 +6051,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           ...baseline,
           overrideScopes: baseline.overrideScopes.map((scope) => ({
             ...scope,
-            files: isDeepStrictEqual(scope.files, [appearanceScope])
-              ? ['**/apps/web/src/pages/**/*.vue.style-*.css']
+            files: isDeepStrictEqual(scope.files, [workbenchScope])
+              ? ['apps/web/src/app/**/*.css']
               : scope.files,
           })),
         },
@@ -6007,7 +6069,25 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           ...baseline,
           overrideScopes: baseline.overrideScopes.map((scope) => ({
             ...scope,
-            config: isDeepStrictEqual(scope.files, [appearanceScope])
+            files: isDeepStrictEqual(scope.files, [radioCardScope])
+              ? ['**/packages/ui/src/components/**/*.vue.style-*.css']
+              : scope.files,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [adminShellScope])
+              ? baseline.routeConfig
+              : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [radioCardScope])
               ? baseline.routeConfig
               : scope.config,
           })),
@@ -6036,7 +6116,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           ...baseline,
           overrideScopes: baseline.overrideScopes.map((scope) => ({
             ...scope,
-            ruleKeys: isDeepStrictEqual(scope.files, [appearanceScope])
+            ruleKeys: isDeepStrictEqual(scope.files, [adminShellScope])
               ? [...scope.ruleKeys, 'color-no-hex'].sort()
               : scope.ruleKeys,
           })),
@@ -6094,7 +6174,7 @@ interface RouteTransitionDividerSnapshot {
   readonly scriptSource: string
 }
 
-export function routeTransitionDividerFailures(
+function routeTransitionDividerFailures(
   snapshot: RouteTransitionDividerSnapshot,
 ): readonly string[] {
   const rules = (source: string) =>
@@ -6225,7 +6305,10 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
       ['DIVIDER_LIVE_AUTHORITY'],
       {
         ...baseline,
-        providerSource: providerSource.replace('width: var(--ui-admin-border-width)', 'width: 1px'),
+        providerSource: providerSource.replace(
+          /(?<![\w-])width:\s*var\(--ui-admin-border-width\)/u,
+          'width: 1px',
+        ),
       },
     ],
     [
@@ -6434,19 +6517,14 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
 
 // Owner-confirmed order is a production direction contract, not declaration-order precedence.
 const workspaceAxisRouteNames = [
-  'console-overview',
-  'appearance-management',
-  'design-token-inspector',
-  'runtime-kernel-inspector',
-  'router-governance-inspector',
-  'storage-persistence-inspector',
-  'ui-system-inspector',
-  'responsive-layout-inspector',
-  'engineering-quality-inspector',
-  'capability-roadmap',
+  'workbench-dashboard',
+  'workbench-colors',
+  'workbench-sizes',
+  'workbench-typography',
+  'workbench-interactions',
 ] as const
 
-export function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {
+function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {
   const expectedIds = [
     'route-transition-rule.global-default',
     'route-transition-rule.architecture-workspace',
@@ -6553,8 +6631,8 @@ function validateRouteTransitionWorkspaceDefaultGovernance(): readonly string[] 
           ruleId: 'route-transition-rule.owner-preview-drill',
           kind: 'exact-route-pair',
           priority: 110,
-          fromRouteName: 'console-overview',
-          toRouteName: 'storage-persistence-inspector',
+          fromRouteName: 'workbench-dashboard',
+          toRouteName: 'workbench-sizes',
           forwardPresetId: 'route-transition.drill-soft',
           reversePresetId: 'route-transition.drill-soft',
           fallbackPresetId: 'route-transition.content-crossfade',
@@ -8930,6 +9008,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...(await pageViolations()),
     ...(await generatedTypeViolations()),
     ...(await navigationContractViolations()),
+    ...(await settingsReturnViolations()),
     ...(await routerErrorContractViolations()),
     ...(await lifecycleViolations()),
     ...(await workspaceRefreshViolations()),

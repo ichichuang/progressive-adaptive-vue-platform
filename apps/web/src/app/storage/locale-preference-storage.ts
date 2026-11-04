@@ -1,3 +1,4 @@
+import { subscribeSharedPreferenceChanges } from './shared-preference-events'
 import {
   localePreferenceSchema,
   type LocalePreference,
@@ -31,6 +32,11 @@ export function createLocalePreferenceStorage(
     }
   }
   return {
+    subscribe(invalidate) {
+      return subscribeSharedPreferenceChanges([key], () => {
+        if (!isDisposed()) invalidate()
+      })
+    },
     read(): LocalePreferenceReadResult {
       if (isDisposed()) return { status: 'unusable', reason: 'unavailable' }
       const storage = access()

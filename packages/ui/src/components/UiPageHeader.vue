@@ -13,8 +13,12 @@ defineProps<{
 <template>
   <header class="pavp-page-header">
     <NBreadcrumb>
-      <NBreadcrumbItem>PAVP</NBreadcrumbItem>
-      <NBreadcrumbItem>{{ breadcrumb }}</NBreadcrumbItem>
+      <NBreadcrumbItem :clickable="false">
+        <span class="text-text-secondary">PAVP</span>
+      </NBreadcrumbItem>
+      <NBreadcrumbItem :clickable="false">
+        <span class="text-text-primary">{{ breadcrumb }}</span>
+      </NBreadcrumbItem>
     </NBreadcrumb>
     <div class="pavp-page-header__copy">
       <h1
@@ -32,9 +36,11 @@ defineProps<{
 </template>
 
 <style scoped>
-.pavp-page-header,
-.pavp-page-header__copy {
-  display: grid;
-  gap: var(--ui-space-content-gap);
+@layer components {
+  .pavp-page-header,
+  .pavp-page-header__copy {
+    display: grid;
+    gap: var(--ui-space-content-gap);
+  }
 }
 </style>

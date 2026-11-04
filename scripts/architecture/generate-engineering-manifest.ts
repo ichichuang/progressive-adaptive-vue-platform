@@ -14,7 +14,6 @@ const verifyStageByCommand = new Map([
   ['pnpm format:check', 'format-check'],
   ['pnpm lint', 'lint'],
   ['pnpm lint:css', 'lint-css'],
-  ['pnpm lint:uno', 'lint-uno'],
   ['pnpm typecheck:vue', 'typecheck-vue'],
   ['pnpm typecheck:ts', 'typecheck-ts'],
   ['pnpm check:arch', 'check-arch'],
@@ -80,7 +79,8 @@ export async function engineeringManifestSource(): Promise<string> {
     vue === undefined ||
     vite === undefined ||
     manifestLimit === undefined ||
-    verifyStageIds.length !== 14 ||
+    verifyStageIds.length !== verifyStageByCommand.size ||
+    new Set(verifyStageIds).size !== verifyStageByCommand.size ||
     workflowNames.length !== 2
   ) {
     throw new TypeError('Engineering Manifest source authorities are incomplete.')

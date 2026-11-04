@@ -30,9 +30,8 @@ PROJECT_UI_WORKFLOW_CONFLICT_ACTION=STOP
 PROJECT_UI_WORKFLOW_DISCOVERY=EXPLICIT_REPOSITORY_ROUTING
 NATIVE_CLIENT_DISCOVERY=OPTIONAL_NOT_REQUIRED
 UI_DIRECTION=ADAPTIVE_LIQUID_CHROME_OVER_STABLE_CONTENT
-TEST_POLICY=NO_TEST_FILES
-ACTIVE_PUBLIC_COLOR_ROLES=26
-ACTIVE_PUBLIC_ROLES_TOTAL=55
+ACTIVE_PUBLIC_COLOR_ROLES=30
+ACTIVE_PUBLIC_ROLES_TOTAL=60
 ACTIVE_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
 TARGET_THEME_DEFINITION_CONTRACT=EXPLICIT_COMPLETE_THEME
 TARGET_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
@@ -62,7 +61,7 @@ PAVP_PURE_FRONTEND_MAINLINE_ALIGNMENT=FROZEN
 PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN
 PROJECT_DELIVERY_MODEL=INDEPENDENTLY_COPYABLE_VUE_FRONTEND_ARCHITECTURE
 CURRENT_BACKEND_CONTRACT=NONE
-CURRENT_API_ENDPOINT_CONTRACT=NONE
+CURRENT_API_ENDPOINT_CONTRACT=UAPI_WORLD_TIME_VERIFICATION_ONLY
 CORE_DELIVERY_REQUIRES_BUSINESS_IMPLEMENTATION=NO
 CURRENT_FRONTEND_ONLY_WORK_IS_NOT_BLOCKED_BY_UNAGREED_BACKEND_CONTRACTS
 NEXT_CANONICAL_WORK_PACKAGE=NONE
@@ -114,8 +113,8 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
+CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_18_17
+CURRENT_BOUNDED_WORK=PAVP_DEVELOPER_WORKBENCH_RECONSTRUCTION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -185,7 +184,6 @@ PHASE_1_PINIA_SCOPE=APPEARANCE_PREFERENCE_AND_THEME_REGISTRY_ORCHESTRATION_ONLY
 PHASE_1_ROUTER_ADMISSION=PROHIBITED
 PHASE_1_TANSTACK_QUERY_ADMISSION=PROHIBITED
 PHASE_1_OPENAPI_GENERATOR_ADMISSION=PROHIBITED
-CODEX_VERIFICATION_MODEL=STATIC_PRODUCTION_GATES_ONLY
 OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE=REQUIRED_EXTERNAL_NON_REPOSITORY
 SUPPORTING_FILE_PRODUCTION_RELEASE_AUTHORITY=NONE
 PROJECT_SCOPE=PRODUCTION_ARCHITECTURE_ONLY
@@ -390,7 +388,7 @@ PRODUCTION_RELEASE_ACCEPTANCE=NOT_APPLICABLE_ARCHITECTURE_ONLY_NO_RUNTIME_ARTIFA
 
 本修订依据 Owner 已批准的产品要求原位调整 §1、§3、§9、§14、§16、§18–23、§28、§30、§34、§37–41 的相关范围，不重写完整架构，不另建规范或 Roadmap。§1 定义最终产品定位；各既有能力章节细化产品要求；§1.3 与既有 Manifest 继续只声明当前能力状态；§37 保持逐项独立准入。必需交付不等于已实现，也不等于已具备完整实施合同。
 
-已落地 Design Tokens、主题、Light/Dark/System、Typography、Density/Size、UnoCSS、响应式基础、Runtime Kernel、Router、Storage、Naive UI 边界及现有功能保持。当前工作为 §20B.2 的 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION` 有界实施，只隔离 Vue 捕获的页面错误并闭合呈现/释放结算；§18.12 已交付滚动修复及普通 Reload/活 Workspace 切换的有限验收保持；§18.11 的 route-single 实例保留与释放交付及有限验收保持，多记录身份及持久化目标仍未实施，Next 与 Successor 仍为 `NONE`；不变更历史验收、撤销记录或生成清单，不发明后端 Endpoint、认证机制、凭据存储策略、Tenant Model 或服务端行为。现有 Console 的限定禁止项继续约束它的当前实施阶段，不能扩张为对新最终目标的永久禁止。
+已落地 Design Tokens、主题、Light/Dark/System、Typography、Density/Size、UnoCSS、响应式基础、Runtime Kernel、Router、Storage、Naive UI 边界及现有功能保持。当前任务与实施准入只引用文首 Current Work 及其 scoped admission record；§18.12 已交付滚动修复及普通 Reload/活 Workspace 切换的有限验收保持；§18.11 的 route-single 实例保留与释放交付及有限验收保持，多记录身份及持久化目标仍未实施，Next 与 Successor 仍为 `NONE`；不变更历史验收、撤销记录或生成清单，不发明后端 Endpoint、认证机制、凭据存储策略、Tenant Model 或服务端行为。现有 Console 的限定禁止项继续约束它的当前实施阶段，不能扩张为对新最终目标的永久禁止。
 
 ## 1.2B `PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT`
 
@@ -464,8 +462,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -579,8 +575,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -659,7 +653,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001`、`PAVP-RUNTIME-003`、Dark Action 和其他已验收窄范围状态保持，`PAVP-RUNTIME-002`、`PAVP-RUNTIME-004` 与 `PAVP-RUNTIME-005` 的既有状态不变。§1.2B.0H–0K 只保留精确历史状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。 当前 Bounded Work 为 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，唯一有界实施准入为 §20B.2，并引用 §9.11 的呈现与 §18.11 的实例寿命合同；已交付滚动修复及其有限验收按 §20B.2 保留；Density 有界源码与静态交付已按 §37.2.12 的 Owner 决定收口；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
+该记录是 Product Experience Rework 的父级状态权威。技术 Console Infrastructure 与 Capability 保持 `COMPLETE / ACTIVE`，各既有实现包的 Repository Implementation 记录保持完成；精确提交 `7dd7ceed11ce0643ac4aa507eac49e243081ec79` 的真实 Chrome 审计证明 scoped/global 编译缺陷并撤销此前整体 Runtime、Visual、Accessibility 与 Release Acceptance。`PAVP-RUNTIME-001`、`PAVP-RUNTIME-003`、Dark Action 和其他已验收窄范围状态保持，`PAVP-RUNTIME-002`、`PAVP-RUNTIME-004` 与 `PAVP-RUNTIME-005` 的既有状态不变。§1.2B.0H–0K 只保留精确历史状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。整体 Product Experience、Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销；其他九个产品页面内容模型保持不变，没有 Successor Capability 或 Canonical Product Package 获得准入。 当前实施范围由文首 Current Work 及其直接准入记录统一指向；本节保留各能力的历史交付与限定验收，不维护可变工作包镜像。
 
 ### 1.2B.0A `PAVP_APPEARANCE_CAPABILITY_WORKSPACE_REWORK`
 
@@ -1028,8 +1022,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1162,8 +1154,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1360,7 +1350,7 @@ IMPLEMENTATION_COMPLETION_EVIDENCE=one scoped source and generated diff limited 
 
 每套 Built-in Theme 的未来值迁移都从当前 Role-contract Version 1 Source 确定性开始：四个 Plane 的现有 `color.action.primary` 原值逐字复制到新 `color.control.primary`；Light Standard/Enhanced 的现有 Action Fill 与 On-action Content 保持不变；Dark Standard/Enhanced 保留原亮色 Action/Accent 为 Control Foreground，再独立人工提交较暗 Action Fill 与亮色 On-action Content。Page、Panel、Border、Focus、Primary Text、Secondary Text 与 Scrim 不因本分离改变，除非未削弱的既有 Gate 独立证明某个当前值本身无效。所有值继续保持 sRGB、Theme Hue Identity、Alpha、Determinism、Theme ID/Order、Iris Default 与 First Paint Contract。
 
-该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后保留导航方案历史，§1.2B.0L 形成已验收 Native Naive 前序，§1.2B.0M 再按精确 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收收口 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。 当前 Bounded Work 为 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，唯一有界实施准入为 §20B.2，并引用 §9.11 的呈现与 §18.11 的实例寿命合同；已交付滚动修复及其有限验收按 §20B.2 保留；Density 有界源码与静态交付已按 §37.2.12 的 Owner 决定收口；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
+该 Architecture-only Landing 的历史动作只准入 Work Package；原子源码实施已同步 Version-2 Theme Source、Public Role Registry、Named Contrast Registry、Custom Theme Runtime、Generated Output、Naive/PAVP Consumer 与既有页面投影，并保持 `COMPLETE / PASS`。Owner 已对精确发布实施提交 `5673236868737f42f3470307b5f5d6c8d4e8639e` 给出 `验收通过`，Owner Runtime 与 Visual Acceptance 均为 `PASS`，包状态现为 `ACCEPTED`；后续准入的 `PAVP-RUNTIME-003` 也已完成窄范围验收。该验收收口时 Current Work 的历史快照为 `NONE`；§1.2B.0H–0K 随后保留导航方案历史，§1.2B.0L 形成已验收 Native Naive 前序，§1.2B.0M 再按精确 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 已验收收口 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。实施前基线 `36 / 9 / 36 / 504 / 250 / role-contract 1` 与当前 `37 / 10 / 37 / 560 / 252 / role-contract 2` 保持明确区分；这些窄范围接受和新准入均不恢复整体 Admin Console Runtime、Visual、Accessibility、Product Experience 或 Release Acceptance。 当前实施范围由文首 Current Work 及其直接准入记录统一指向；本节保留各能力的历史交付与限定验收，不维护可变工作包镜像。
 
 Owner 对已发布实现的后续复核最初观察到一个 obsolete Vite config error；仓库源码与当前 Vite 配置当时已经正确，错误来自早于该发布实施且仍在长期运行的 PAVP Vite 进程。仅替换该陈旧 PAVP Vite 进程后加载了当前配置，没有改变任何仓库文件；随后十四主题 Dark Standard / Dark Enhanced、Action Fill、On-action Content、Control Foreground、First Paint 恢复以及 Theme、Color-mode、Contrast 切换的 Owner Runtime 与 Visual Review 均通过。该操作历史不是 Repository Capability、Verification Gate 或永久 Runtime Dependency。
 
@@ -1416,8 +1406,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -1805,7 +1793,7 @@ Budget Rebaseline 与 deterministic Engineering Manifest mirror 另由以下精�
 
 #### Admission Checker 与状态转换
 
-本 Amendment 的 owning checker 同步 current-work、Navigation source、Budget Rebaseline 与 generated-mirror governance，继续拒绝 unknown ID、missing/mixed mirror、RUNTIME-003 regression、overall acceptance restoration 与 successor authorization。它保留 6 个 Architecture admission-state reversible in-memory probes：Current Work 留为 `NONE`、unauthorized Current Work ID、Repository Implementation 从 `COMPLETE` 回退、Static Verification 从 `PASS` 回退、RUNTIME-003 从 `ACCEPTED` 回退、overall Admin Console acceptance 伪恢复；每个 probe 只修改内存文本、因目标原因失败并零落盘。
+该 Amendment 实施时的 owning checker 曾同步 current-work、Navigation source、Budget Rebaseline 与 generated-mirror governance，并拒绝当时的 unknown ID、missing/mixed mirror、RUNTIME-003 regression、overall acceptance restoration 与 successor authorization。以下为当时 6 个 Architecture admission-state reversible in-memory probes 的历史执行记录，文档快照探针现已退役（§1.3）：Current Work 留为 `NONE`、unauthorized Current Work ID、Repository Implementation 从 `COMPLETE` 回退、Static Verification 从 `PASS` 回退、RUNTIME-003 从 `ACCEPTED` 回退、overall Admin Console acceptance 伪恢复；每个 probe 只修改内存文本、因目标原因失败并零落盘。
 
 源码实施前，本 Work Package 精确保持 `OPEN / NOT_STARTED / NOT_RUN`。本次原子源码实现、显式 Budget Rebaseline、Engineering Manifest 确定性同步和完整 canonical static gate 成功后，Work Package 仍为 `OPEN`，Repository Implementation 为 `COMPLETE`、Static Verification 为 `PASS`；不引入 pending-owner status。Runtime/Visual/Accessibility Owner acceptance 仍是后续明确 external decision。
 
@@ -2058,7 +2046,7 @@ apps/web/src/generated/engineering-manifest.ts
 
 #### Architecture Admission Gate
 
-Owning Checker 保持旧导航包 13 份 `FROZEN / OPEN / COMPLETE / PASS` 历史证据，并把 13 份 Current Work Mirror 精确收口到新包的 `FROZEN / OPEN / COMPLETE / PASS`。既有 12 个 admission-state 可逆 in-memory probe 保持：
+该次 Landing 的 Owning Checker 曾保持旧导航包 13 份 `FROZEN / OPEN / COMPLETE / PASS` 历史证据，并同步 13 份 Current Work Mirror。以下 12 个 admission-state 可逆 in-memory probe 是历史执行记录，镜像与文档快照探针现已退役（§1.3）：
 
 1. Current Work 留在旧导航包。
 2. Current Work 改为 Unauthorized ID。
@@ -2073,7 +2061,7 @@ Owning Checker 保持旧导航包 13 份 `FROZEN / OPEN / COMPLETE / PASS` 历�
 11. 允许 Application direct GSAP import。
 12. 把旧导航 Repository Implementation 从 `COMPLETE` 回退。
 
-每个 admission-state probe 只修改内存 Source、因目标 Failure Code 失败、完整恢复且零落盘 Artifact。旧导航的 59 项 Source Invariant、23 个 Source Probe 与 6 个 Budget Probe 继续保护已实现基线；其中旧 Budget Gate 只允许精确一个 `../adapters/gsap/admin-navigation-motion` Lazy Root，并继续拒绝任何额外 Dynamic Root。
+当时每个 admission-state probe 只修改内存 Source、因目标 Failure Code 失败、完整恢复且零落盘 Artifact。该历史导航实现当时另有 59 项 Source Invariant、23 个 Source Probe 与 6 个 Budget Probe 保护基线；其中旧 Budget Gate 只允许精确一个 `../adapters/gsap/admin-navigation-motion` Lazy Root，并继续拒绝任何额外 Dynamic Root。
 
 本包另增加精确 12 项稳定 Source Invariant：唯一 Shell Lazy Import 与 Adapter static `gsap` owner，并保持 Private/Public/Application Boundary；底部 Utility Dock 结构；Route Dot 装饰语义；Expanded Root foreground-only 与 Naive-owned Level-2 Overlay；Collapsed/Dropdown pseudo-dot 及 Reduced/None `scale(1)`；显式 HTMLElement target 且零 Vendor DOM query；GSAP 仅写 opacity/visibility 与 Full-only scale；Full/Reduced/None 结果同态；新输入中断并从当前 rendered state 继续；唯一 Visibility listener 与对称 cleanup；Unmount/disposal 与 lazy fallback 清理；零 Timer/RAF/Plugin/Pointer/Keyboard Global Side Effect。对应 12 个可逆 Source Probe 精确移除或破坏上述每一类稳定合同，不冻结 private helper 名、循环、局部容器或 easing parser decomposition。
 
@@ -2128,7 +2116,7 @@ SOURCE_OVERLAP_DISPOSITION=NEW_WORK_PACKAGE_OWNS_THE_FINAL_NAVIGATION_AND_APPEAR
 PREVIOUS_IMPLEMENTATION_ROLLBACK=PROHIBITED
 ```
 
-§1.2B.0I 的 `OPEN / COMPLETE / PASS` 继续是已完成 Repository Implementation 与 Canonical Static Gate 的历史事实，不等于 Owner Visual Acceptance，也不得回退为 `NOT_STARTED / NOT_RUN`。两条 Historical Literal 只把 §1.2B.0I 获准成为 Current Work 时的 Authority 与 Work ID 固定为可逆 Probe 输入，不恢复其 Current 状态，也不修改 §1.2B.0I 历史合同。新包只串行接管最终 Navigation Visual State、Wide Collapse Reflow 与 `/appearance` Wide Gallery Column Stability；既有 Route、Drawer、Focus、Scroll、Keyboard、Preference、Storage、Theme Registry 和其他九个页面内容模型保持不变。
+§1.2B.0I 的 `OPEN / COMPLETE / PASS` 继续是已完成 Repository Implementation 与 Canonical Static Gate 的历史事实，不等于 Owner Visual Acceptance，也不得回退为 `NOT_STARTED / NOT_RUN`。两条 Historical Literal 曾把 §1.2B.0I 获准成为 Current Work 时的 Authority 与 Work ID 作为可逆 Probe 输入；现只保留历史记录，不再作为生产 Gate 输入，不恢复其 Current 状态，也不修改 §1.2B.0I 历史合同。新包只串行接管最终 Navigation Visual State、Wide Collapse Reflow 与 `/appearance` Wide Gallery Column Stability；既有 Route、Drawer、Focus、Scroll、Keyboard、Preference、Storage、Theme Registry 和其他九个页面内容模型保持不变。
 
 #### 方向 2 Selected、Hover 与 Decoration 合同
 
@@ -2415,7 +2403,7 @@ scripts/architecture/check-architecture-admin-console.ts
 
 #### Architecture Admission Gate
 
-Owning Checker 必须保持 §1.2B.0H 与 §1.2B.0I 的 `FROZEN / OPEN / COMPLETE / PASS` 历史证据，并把全部 13 份 Current Work Mirror 保持为本 Amendment 与新包的 `FROZEN / OPEN / COMPLETE / PASS`。原 Architecture-only Landing 的精确 12 个可逆 Admission Probe 继续保留，并在源码 Landing 后改为阻止状态回退及合同漂移：
+该次源码 Landing 的 Owning Checker 当时保持 §1.2B.0H 与 §1.2B.0I 的 `FROZEN / OPEN / COMPLETE / PASS` 历史证据，并同步 13 份 Current Work Mirror。以下 12 个可逆 Admission Probe 是当时防止状态回退和合同漂移的历史记录；镜像与文档快照探针现已退役（§1.3）：
 
 1. Current Work 留在 §1.2B.0I 旧包。
 2. Current Work 改为 Unauthorized ID。
@@ -2677,7 +2665,7 @@ scripts/architecture/check-architecture-admin-console.ts
 
 #### Architecture Admission Gate
 
-Owning Checker 必须保持 §1.2B.0H、§1.2B.0I 与 §1.2B.0J 的全部历史状态证据，并把全部 13 份 Current Work Mirror 精确切换为本 Amendment 与新包的 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`。Architecture-only Gate 至少必须使用只修改内存 Architecture Source、目标失败后完整恢复且零落盘 Artifact 的可逆 Probe 保护：Current Work 未切换或改为 Unauthorized ID；Amendment 回退为 `DRAFT`；Repository Implementation 或 Static Verification 被提前提升；Hover `6%`、Selected `16%`、方向 2、无左条或完整 Inset Reveal Plane 漂移；Solid Reveal 重新允许 `display:none`；Full / Reduced / None 属性白名单漂移；GSAP 获得 Background、Filter 或 Layout Ownership；空 Target 或 Lazy Replay 合同被删除；Architecture-only Allowed Path 扩张到源码或 Token。
+该次 Architecture-only Landing 的 Owning Checker 曾保持 §1.2B.0H、§1.2B.0I 与 §1.2B.0J 的历史状态证据，并把 13 份 Current Work Mirror 切换为本 Amendment 与新包的 `FROZEN / OPEN / NOT_STARTED / NOT_RUN`。以下只修改内存 Architecture Source、目标失败后完整恢复且零落盘 Artifact 的可逆 Probe 属于历史文档快照检查，现已退役（§1.3）：Current Work 未切换或改为 Unauthorized ID；Amendment 回退为 `DRAFT`；Repository Implementation 或 Static Verification 被提前提升；Hover `6%`、Selected `16%`、方向 2、无左条或完整 Inset Reveal Plane 漂移；Solid Reveal 重新允许 `display:none`；Full / Reduced / None 属性白名单漂移；GSAP 获得 Background、Filter 或 Layout Ownership；空 Target 或 Lazy Replay 合同被删除；Architecture-only Allowed Path 扩张到源码或 Token。
 
 本 Architecture-only Landing 只准入 0K 并建立 Current Work Authority，不证明任何源码、Static、Runtime、Visual、Accessibility 或 Release Completion。后续若获得独立 Owner 源码授权，Repository Implementation 与 Static Verification 必须在允许路径的原子源码 Landing 及完整 Canonical Static Gate 后才能从 `NOT_STARTED / NOT_RUN` 推进；Owner Runtime、Visual 与 Accessibility Acceptance 继续是外部明确决定。
 
@@ -2913,7 +2901,7 @@ Owning Checker 必须拒绝多于一个 Persistent Sider/Menu、不同 Collapsed
 
 Repository Implementation 与 Canonical Static Verification 在本原子 Landing 通过后为 `COMPLETE / PASS`。当前 Collapsed Hover/Popup 以及展开状态/Motion Correction 不改变该状态，不创建新 Work Package 或 Amendment；Header Trailing Placement、Collapsed Rail Hover Presentation、Native Hover Popup、单一 Rail State Surface、单一 Popup Panel Surface、Active Parent Manual Collapse、Header Root Submenu Control 与 Full/Reduced/None Coverage 按上方合同收口。原实现任务不得代报 Owner Runtime、Visual 或 Accessibility Acceptance，也不授权 Staging、Commit、Push 或 Release；Owner 随后在独立且显式授权的验收与 Git 收口任务中给出上方精确陈述，使本包按既有转移权威收口为 `ACCEPTED / COMPLETE / PASS`，Scoped Runtime 与 Visual Acceptance 为 `PASS`，Accessibility Acceptance 独立保持 `NOT_PERFORMED`。这不恢复 Admin Console 整体 Runtime、Visual、Accessibility 或 Release Acceptance，不构成 Production Release，也不准入 Successor Work。
 
-Owning Checker 在原有全部不变量与 Probe Suite 之外只增加五个可逆 In-memory Acceptance-closure Probes：把 Runtime Acceptance 回退为 `NOT_PERFORMED`；把 Visual Acceptance 回退为 `NOT_PERFORMED`；把 Accessibility Acceptance 错设为 `PASS`；错误恢复整体 Admin Console Acceptance；改变精确 Owner 陈述。五个 Probe 只修改内存文本，必须因各自目标原因失败并完整恢复，不创建 Test、Fixture、Screenshot、Trace 或 Evidence Artifact。
+该次验收收口的 Owning Checker 曾在原有不变量与 Probe Suite 外增加以下五个可逆 In-memory Acceptance-closure Probes；它们只记录历史文档快照校验，现已退役（§1.3）：把 Runtime Acceptance 回退为 `NOT_PERFORMED`；把 Visual Acceptance 回退为 `NOT_PERFORMED`；把 Accessibility Acceptance 错设为 `PASS`；错误恢复整体 Admin Console Acceptance；改变精确 Owner 陈述。当时五个 Probe 只修改内存文本，因各自目标原因失败并完整恢复，没有创建 Test、Fixture、Screenshot、Trace 或 Evidence Artifact。
 
 ### 1.2B.0M `PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS`
 
@@ -3228,7 +3216,7 @@ ARCHITECTURE_ADMISSION_OWNING_CHECKER=scripts/architecture/check-architecture-ad
 
 PAVP-RUNTIME-005 精确保留一个 RouterView、Stable Unkeyed Route-content Host、无 Route-derived Key、无 Route-level Transition、无 Route Opacity Entry、无 Main Transform，以及无 Router Focus/Scroll Change。
 
-Owning Checker 只更新既有 Admin Console Checker，没有创建第二个 Checker。它已删除或历史化要求 Directional Reveal、One-shot Bloom、`SelectionFeedbackPhase`、Alternating Bloom Keyframes 或 Menu `::after` Bloom 的活动 Source Invariant/Probe，并保留精确 12 个只修改 In-memory Architecture Source 的可逆 Admission Probes。当前 Motion Source Closure 由精确 22 项稳定 Source Invariant 与原有 16 个可逆 Source Probe 保护，覆盖 Private Import Boundary、LazyMotion Strict/Async Feature Lifecycle、Full-only 单 Lens Owner Projection、Naive Reduced/None Ownership、Fallback Cutover、失败与 Unmount Cleanup、零 Popup/Narrow Consumer、零 Vendor DOM Patch、零 Timer/RAF、无 AnimatePresence、无 Route Motion 和无 Public Motion Contract；本 Reduced Correction 另增加恰好 8 个可逆 In-memory Probe，逐一拒绝 Reduced Motion Lens、`0.1s`、Half Duration、Transform/Scale、Feature-ready Fallback 禁用、Lens/Fallback Stacking、None Transition 与 Route Motion/PAVP-RUNTIME-005 漂移。每个 Probe 只因精确目标失败、完整恢复且不留下 Repository Artifact；所有无关既有 Checker Suite 保持。
+Owning Checker 只更新既有 Admin Console Checker，没有创建第二个 Checker。它已删除或历史化要求 Directional Reveal、One-shot Bloom、`SelectionFeedbackPhase`、Alternating Bloom Keyframes 或 Menu `::after` Bloom 的活动 Source Invariant/Probe，当时另保留精确 12 个只修改 In-memory Architecture Source 的可逆 Admission Probes；这些历史文档探针现已退役（§1.3）。当前 Motion Source Closure 由精确 22 项稳定 Source Invariant 与原有 16 个可逆 Source Probe 保护，覆盖 Private Import Boundary、LazyMotion Strict/Async Feature Lifecycle、Full-only 单 Lens Owner Projection、Naive Reduced/None Ownership、Fallback Cutover、失败与 Unmount Cleanup、零 Popup/Narrow Consumer、零 Vendor DOM Patch、零 Timer/RAF、无 AnimatePresence、无 Route Motion 和无 Public Motion Contract；本 Reduced Correction 另增加恰好 8 个可逆 In-memory Probe，逐一拒绝 Reduced Motion Lens、`0.1s`、Half Duration、Transform/Scale、Feature-ready Fallback 禁用、Lens/Fallback Stacking、None Transition 与 Route Motion/PAVP-RUNTIME-005 漂移。每个 Probe 只因精确目标失败、完整恢复且不留下 Repository Artifact；所有无关既有 Checker Suite 保持。
 
 历史 Architecture-only Landing 的唯一写入路径是 `ARCHITECTURE.md` 与 `scripts/architecture/check-architecture-admin-console.ts`；它没有修改 Dependency、Lockfile、Project Configuration、Engineering Manifest、Bundle Checker、Application/UI Source、Router、Runtime Kernel、Storage、Appearance、Design System、Generated Artifact、Vite 或 Workflow。后续独立授权的 Source Landing 已在本节冻结的允许边界内完成并发布到 `origin/main`；Owner 已对该精确提交完成 Scoped Runtime 与 Visual Acceptance，Accessibility 仍未执行，Production Release 仍为 `NOT_RELEASED`。
 
@@ -3620,7 +3608,7 @@ ROUTE_TRANSITION_ARCHITECTURE_ADMISSION_PROBE_RESIDUE=ZERO
 ROUTE_TRANSITION_ARCHITECTURE_ONLY_MUTATION_PATHS=ARCHITECTURE.md;scripts/architecture/check-architecture-admin-console.ts
 ```
 
-既有十二个可逆 In-memory Architecture-admission Probe 继续保护 Current Work、前序 Publication/Owner Statement、Frozen Admission、已由实施期 `OPEN / COMPLETE / PASS` 收口为 `ACCEPTED / COMPLETE / PASS` 的状态、Technology、PAVP-RUNTIME-005、Preset、Route Meta、Rule Precedence、Initial Navigation Scope、Dynamic Root 与 Successor Boundary。源码 Landing 现由既有 Router、Admin Console 与 Boundary Checker 内精确 52 项 Source Proof、12 个保留的可逆 Source Probe，8 个只修改 In-memory Source Snapshot 的 Router Presentation Commit Probe，7 个 Preset Selection Probe，9 个 Full Pace Probe，以及 3 个 Stylelint Policy Probe 保护，覆盖 Route Meta、Preset/Default、Rule Ambiguity、Error Edge、Motion None、Preload Order、Single Push、Active Interruption、Name Ownership、Reduced Spatial Ban、Live DOM/Root Snapshot Ban、精确 Reservation/normalized `to` Binding、Title/H1/最终 Region Scroll 后 Resolution、Failure/Redirect/Supersession/Disposal Settlement，以及 Dependency/Dynamic-root/Budget/Focus/Scroll/Timer/Observer/RAF/Geometry Boundary。新增 Proof 直接调用真实 Pure Resolver 验证 Ordered/Exact 的双向 Full、Reduced、None、Typed-support Fallback 与 Neutral 字段拒绝，并检查有效 Typed Selector、Animation-name Specificity/Source Order 和 Reduced/None 优先级。每个 Probe 只因精确目标 Failure Code 失败、完整恢复并保持零 Artifact；所有无关既有 Checker Suite 保持不变。 Stylelint Policy Proof 使用真实配置与内存 CSS 检查精确路径、精确 Property/Value、其他路径拒绝、半时长兼容、裸时长/近似公式/Shorthand 拒绝；精确三个 Policy Probe 分别拒绝 Global Allowlist 扩张、File Scope 扩张和 Raw/Broad Declaration 准入，不写临时文件。
+该次 Architecture Landing 的十二个可逆 In-memory Architecture-admission Probe 曾保护 Current Work、前序 Publication/Owner Statement、Frozen Admission、已由实施期 `OPEN / COMPLETE / PASS` 收口为 `ACCEPTED / COMPLETE / PASS` 的状态、Technology、PAVP-RUNTIME-005、Preset、Route Meta、Rule Precedence、Initial Navigation Scope、Dynamic Root 与 Successor Boundary；这十二个文档快照探针现已退役（§1.3）。源码 Landing 现由既有 Router、Admin Console 与 Boundary Checker 内精确 52 项 Source Proof、12 个保留的可逆 Source Probe，8 个只修改 In-memory Source Snapshot 的 Router Presentation Commit Probe，7 个 Preset Selection Probe，9 个 Full Pace Probe，以及 3 个 Stylelint Policy Probe 保护，覆盖 Route Meta、Preset/Default、Rule Ambiguity、Error Edge、Motion None、Preload Order、Single Push、Active Interruption、Name Ownership、Reduced Spatial Ban、Live DOM/Root Snapshot Ban、精确 Reservation/normalized `to` Binding、Title/H1/最终 Region Scroll 后 Resolution、Failure/Redirect/Supersession/Disposal Settlement，以及 Dependency/Dynamic-root/Budget/Focus/Scroll/Timer/Observer/RAF/Geometry Boundary。新增 Proof 直接调用真实 Pure Resolver 验证 Ordered/Exact 的双向 Full、Reduced、None、Typed-support Fallback 与 Neutral 字段拒绝，并检查有效 Typed Selector、Animation-name Specificity/Source Order 和 Reduced/None 优先级。每个 Probe 只因精确目标 Failure Code 失败、完整恢复并保持零 Artifact；所有无关既有 Checker Suite 保持不变。 Stylelint Policy Proof 使用真实配置与内存 CSS 检查精确路径、精确 Property/Value、其他路径拒绝、半时长兼容、裸时长/近似公式/Shorthand 拒绝；精确三个 Policy Probe 分别拒绝 Global Allowlist 扩张、File Scope 扩张和 Raw/Broad Declaration 准入，不写临时文件。
 
 #### Source Implementation Closure
 
@@ -3684,7 +3672,7 @@ ROUTE_TRANSITION_UNACCEPTED_SCOPE=ACCESSIBILITY;BROWSER_BACK_FORWARD_TRANSITION;
 ROUTE_TRANSITION_ACCEPTANCE_CLOSURE_PROBES=REVERSIBLE_IN_MEMORY_ONLY
 ```
 
-十个工作区 Full Axis Forward/Reverse 按已确认 Sidebar 顺序运行；Reduced 仅作 Opacity Crossfade，None 立即正常 Router Navigation。Owner 接受 Image-pair Overflow Containment 和永久 Naive 分隔线 Token Width；仅在 Owner 观察范围内确认无闪烁、变细、变暗、双线或位移。Accessibility 保持 `NOT_PERFORMED`，不推导 Back/Forward、Error Route、未来 Drill/Sheet 生产使用或 Production Release 验收。整体 Admin Console Runtime、Visual、Accessibility、Product Experience 与 Release Acceptance 保持撤销。所有 Current Work 已清空为 `NONE`，没有后继工作获得授权。
+十个工作区 Full Axis Forward/Reverse 按已确认 Sidebar 顺序运行；Reduced 仅作 Opacity Crossfade，None 立即正常 Router Navigation。Owner 接受 Image-pair Overflow Containment 和永久 Naive 分隔线 Token Width；仅在 Owner 观察范围内确认无闪烁、变细、变暗、双线或位移。Accessibility 保持 `NOT_PERFORMED`，不推导 Back/Forward、Error Route、未来 Drill/Sheet 生产使用或 Production Release 验收。整体 Admin Console Runtime、Visual、Accessibility、Product Experience 与 Release Acceptance 保持撤销。精确验收提交 `083b527b567287544b3786cd4350ee713f6a59f3` 收口时 Current Work 为 `NONE`，当时没有后继工作获得授权；当前入口以文首为准。
 
 ### Completed production-bundle maintenance: `PAVP_INITIAL_JAVASCRIPT_HEADROOM_RECOVERY`
 
@@ -3739,8 +3727,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3822,8 +3808,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -3991,11 +3975,11 @@ Current Implementation Owning Gate 证明：Exactly One Full-viewport Outer Over
 
 Current Owning Gate 执行并完全恢复下列十个可逆 In-memory Source Probes：限制 Outer 为 Drawer Maximum Width；移除 Full-viewport Inset；移除 Scrim Token；移除 Self-target Guard；移除 Primary-button Guard；加入 Document-level Pointer Listener；允许 Inner Pointer Close；把 Drawer Transform 移回 Outer；移除 `aria-modal`；移除 Main `inert`。十个 Probe 均在内存快照中运行并保持零 Repository Artifact。
 
-本 Amendment 的五个既有 Admission-state In-memory Probes 继续保持：把明确标记为 Historical 的 Admission-time `CURRENT_BOUNDED_WORK` Literal 从 `PAVP-RUNTIME-003` 改为 `NONE`；替换该 Historical Literal 中的 Authorized Work ID；把已完成的 003 Repository Implementation 回退为 `NOT_STARTED`；把已通过的 003 Static Verification 回退为 `NOT_RUN`；恢复整体 Admin Console Acceptance。每个 Probe 都因预期原因失败、完全恢复且保持零 Artifact。
+本 Amendment 当时执行了以下五个 Admission-state In-memory Probes；这些文档快照探针现已退役（§1.3）：把明确标记为 Historical 的 Admission-time `CURRENT_BOUNDED_WORK` Literal 从 `PAVP-RUNTIME-003` 改为 `NONE`；替换该 Historical Literal 中的 Authorized Work ID；把已完成的 003 Repository Implementation 回退为 `NOT_STARTED`；把已通过的 003 Static Verification 回退为 `NOT_RUN`；恢复整体 Admin Console Acceptance。每个 Probe 都因预期原因失败、完全恢复且保持零 Artifact。
 
-本次验收收口另增加且只增加六个可逆 In-memory Acceptance-closure Probes：把 003 状态改回 `OPEN`；验收后仍把 003 保留为 Current Bounded Work；移除 Runtime Acceptance；移除 Visual Acceptance；移除 Accessibility Acceptance；错误恢复整体 Admin Console Acceptance。六个 Probe 都必须因各自精确原因失败、完整恢复且保持零 Artifact；既有 `10/10` 个 PAVP-RUNTIME-003 Source Probes 与其 Implementation Checks 保持不变。
+该次验收收口曾增加以下六个可逆 In-memory Acceptance-closure Probes；这些文档快照探针现已退役（§1.3）：把 003 状态改回 `OPEN`；验收后仍把 003 保留为 Current Bounded Work；移除 Runtime Acceptance；移除 Visual Acceptance；移除 Accessibility Acceptance；错误恢复整体 Admin Console Acceptance。当时六个 Probe 因各自精确原因失败、完整恢复且保持零 Artifact；既有 `10/10` 个 PAVP-RUNTIME-003 Source Probes 与其 Implementation Checks 保持不变。
 
-Current-work Validation 要求本次 003 验收收口的历史快照全部 Active Mirrors 一致为 `NONE / NONE`，但这不是未来永远不得存在 Current Work 的永久规则；§1.2B.0H 已通过新的 Frozen Admission Amendment 在独立任务中同步 Owning Checker、Authority、Work Package 与全部 Active Mirrors，合法迁移到 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`。Unknown、Conflicting 或重新把已验收 `PAVP-RUNTIME-003` 设为 Current Work 仍被拒绝。
+该次 003 验收收口曾要求历史快照中的 Active Mirrors 一致为 `NONE / NONE`；§1.2B.0H 随后在独立任务中迁移到 `PAVP_NAIVE_COLLAPSIBLE_MULTILEVEL_NAVIGATION_REWORK`。这是前序验证历史，不是现行 Current Work 规则；现行检查只绑定文首唯一入口、对应 scoped admission record 与明确 Owner 实施授权（§1.3）。
 
 ##### Implemented source and owning static gate
 
@@ -4095,7 +4079,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 NEW_CAPABILITY_STATUS_ENUM=PROHIBITED
 ```
 
-`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；它不恢复整体 Console Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和 Checker 兼容证据。`PAVP-RUNTIME-002` 保持 `OPEN / COMPLETE / PASS`，`PAVP-RUNTIME-004` 保持 Open 且未启动；§1.2B.0H–0K 保留历史导航证据，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已按精确发布提交和 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。 当前 Bounded Work 为 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，唯一有界实施准入为 §20B.2，并引用 §9.11 的呈现与 §18.11 的实例寿命合同；已交付滚动修复及其有限验收按 §20B.2 保留；Density 有界源码与静态交付已按 §37.2.12 的 Owner 决定收口；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
+`PAVP-RUNTIME-001` 只修复已经证明的 Shell SFC Selector Compilation 缺陷，并保持技术 Console Capability 为 `ACTIVE`。其 Repository Implementation、授权 Runtime Verification 以及 Owner Runtime/Visual Acceptance 均已完成，状态为 `ACCEPTED`；它不恢复整体 Console Acceptance。`HISTORICAL_BOUNDED_WORK`、`HISTORICAL_PRE_AMENDMENT_CURRENT_BOUNDED_WORK_LITERAL`、`HISTORICAL_PAVP_RUNTIME_002_CURRENT_BOUNDED_WORK_LITERAL` 与 `HISTORICAL_PAVP_RUNTIME_001_STATUS` 只保存相应 Amendment 时点的历史识别和 Checker 兼容证据。`PAVP-RUNTIME-002` 保持 `OPEN / COMPLETE / PASS`，`PAVP-RUNTIME-004` 保持 Open 且未启动；§1.2B.0H–0K 保留历史导航证据，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已按精确发布提交和 Owner 陈述收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`。§1.2B.0N 已验收工作包为 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。本记录不选择 Successor Capability 或 Canonical Product Package，也不增加第五种 Capability Status。 当前实施范围由文首 Current Work 及其直接准入记录统一指向；本节保留各能力的历史交付与限定验收，不维护可变工作包镜像。
 
 ##### Defect identity and implemented source behavior
 
@@ -4384,7 +4368,7 @@ Repository Implementation 与完整 Canonical Static Gate 已完成时，Codex T
 
 ### 1.2B.1 Layout value and responsive authority
 
-本节保留当前可执行 Layout/Region 合同；路由选择的有限组合扩展仅由 §18.16 定义为未实现目标候选，不替换下方当前接口或激活记录。
+本节保留 Layout/Region 的值与责任合同；路由选择的有限组合已按 §18.16 交付并取得限定接受，实际接口与当前 Registry 以该节及源码为准，不把早期 Landing 快照当作未实施状态。
 
 全部 Threshold、Shell Dimension、Target Size、Spacing、Radius、Typography、z-index 和 Motion Numeric Value 的唯一权威是 PAVP Design Token Source。Primitive Dimension Token 持有 Numeric Literal；Semantic Layout Token 只 Alias Primitive；Generated Typed Layout Registry 只是九条 Semantic Role 的确定性只读投影，不是第二 Numeric Authority。
 
@@ -4807,7 +4791,7 @@ Atomic Landing 前的 Committed Baseline Route Registry 精确为 `8`：一个 `
 | 9 | `engineering-quality-inspector` | `/engineering` | `apps/web/src/pages/engineering.vue` | `工程与质量` | `route-title.engineering-quality-inspector` | `route-message.engineering-quality-inspector-summary` | `查看工具链、静态门禁、构建预算与托管工作流。` | `route-breadcrumb.engineering-quality-inspector` | `route.console.engineering` |
 | 10 | `capability-roadmap` | `/capabilities` | `apps/web/src/pages/capabilities.vue` | `能力路线图` | `route-title.capability-roadmap` | `route-message.capability-roadmap-summary` | `查看尚未启用能力的状态、前置条件与准入要求。` | `route-breadcrumb.capability-roadmap` | `route.console.capabilities` |
 
-`capabilityStatus` 继续只属于 `RouteRegistryRecord`，不得进入或复制到 `ValidatedRouteMeta`。`titleKey`、`breadcrumbKey` 与 `telemetryName` 进入现有 `ValidatedRouteMeta`；`messageKey` 只引用现有 Route Message Registry，不增加 Meta Field。当前十条 Product Record 已与 Routes、Registry、Official Generated Route Types 和 Owning Gate 同时落地并转为 Route-registry-local `ACTIVE`；历史 Landing 的 Owner 验收曾由 §1.2B.0 撤销，当前 Product Experience Acceptance 已由 Owner 重新确认。每条 Product Route 的 Shared Projection 精确为：
+`capabilityStatus` 继续只属于 `RouteRegistryRecord`，不得进入或复制到 `ValidatedRouteMeta`。`titleKey`、`breadcrumbKey` 与 `telemetryName` 进入现有 `ValidatedRouteMeta`；`messageKey` 只引用现有 Route Message Registry，不增加 Meta Field。当前十条 Product Record 已与 Routes、Registry、Official Generated Route Types 和 Owning Gate 同时落地并转为 Route-registry-local `ACTIVE`；历史 Landing 的 Owner 验收曾由 §1.2B.0 撤销，后续窄范围 Owner 接受分别记录于各准入；整体 Product Experience Acceptance 仍以文首撤销状态为准。每条 Product Route 的 Shared Projection 精确为：
 
 ```text
 layout=workspace
@@ -4978,7 +4962,7 @@ Generator 不从 JSON Block 读取任何状态字段（该 Block 已不含这些
 | `architecture-admin-console` | `Architecture Admin Console frontend surface` |
 | `auth-session-permission` | `Session state`; `Auth, Session and Permission` |
 | `deployment-delivery` | `Deployment delivery, CSP, cache, private source maps and rollback` |
-| `design-system` | `Token source, schema, generation, visibility and public-output completeness`; `Legacy embedded-palette preference compatibility format`; `Adaptive, Reduced and Solid Material token projection`; `Complete Built-in Theme four-plane documents`; `Standard and Enhanced Theme Plane projection`; `Complete Custom Theme validation and fixed Bank installation`; `CSS Motion Token baseline` |
+| `design-system` | `Token source, schema, generation, visibility and public-output completeness`; `Adaptive, Reduced and Solid Material token projection`; `Complete Built-in Theme four-plane documents`; `Standard and Enhanced Theme Plane projection`; `Complete Custom Theme validation and fixed Bank installation`; `CSS Motion Token baseline` |
 | `first-protected-vertical-slice` | `Optional backend-dependent capability lane` |
 | `forms-i18n-tables` | `General Pinia state and workflow state`; `Forms, I18n, Tables and Mutations` |
 | `i18n` | `Existing Admin Console Chinese/English localization` |
@@ -5012,27 +4996,236 @@ Generator 不从 JSON Block 读取任何状态字段（该 Block 已不含这些
   "schemaVersion": 1,
   "recordCount": 21,
   "records": [
-    { "id": "api-transport", "visibleLabel": "API 传输", "summary": "真实后端合同出现后才可准入的传输能力。", "routeName": "capability-roadmap", "owner": "api-transport", "prerequisiteIds": ["storage-persistence"], "admissionCondition": "需要真实端点、Origin、Schema、策略、消费者与服务端 Owner。" },
-    { "id": "appearance", "visibleLabel": "主题与外观", "summary": "当前主题、颜色模式、对比度、材质、字号与动效能力。", "routeName": "appearance-management", "owner": "appearance", "prerequisiteIds": ["design-system"], "admissionCondition": "已激活。" },
-    { "id": "architecture-admin-console", "visibleLabel": "PAVP 管理台", "summary": "统一浏览和管理 PAVP 前端架构能力的纯前端管理台。", "routeName": "console-overview", "owner": "architecture-admin-console", "prerequisiteIds": ["appearance", "design-system", "router-governance", "runtime-kernel", "storage-persistence"], "admissionCondition": "已激活。" },
-    { "id": "auth-session-permission", "visibleLabel": "认证、会话与权限", "summary": "依赖真实服务端安全合同的身份与权限能力。", "routeName": "capability-roadmap", "owner": "auth-session-permission", "prerequisiteIds": ["api-transport", "tanstack-query"], "admissionCondition": "需要真实认证、Cookie、CSRF、Session、Principal、Tenant 与 Capability 合同。" },
-    { "id": "deployment-delivery", "visibleLabel": "部署与交付", "summary": "面向真实托管环境的 CSP、缓存、发布与回滚能力。", "routeName": "capability-roadmap", "owner": "deployment", "prerequisiteIds": [], "admissionCondition": "需要真实托管与发布合同。" },
-    { "id": "design-system", "visibleLabel": "设计系统", "summary": "PAVP 设计令牌、主题平面、对比度、材质与生成清单。", "routeName": "design-token-inspector", "owner": "design-system", "prerequisiteIds": [], "admissionCondition": "已激活。" },
-    { "id": "first-protected-vertical-slice", "visibleLabel": "首个受保护业务切片", "summary": "真实 API 与认证能力完成后才能准入的端到端业务流。", "routeName": "capability-roadmap", "owner": "protected-slice", "prerequisiteIds": ["api-transport", "auth-session-permission"], "admissionCondition": "需要真实受保护业务流和后端合同。" },
-    { "id": "forms-i18n-tables", "visibleLabel": "表单、国际化与表格", "summary": "管理台双语已由独立 i18n Record 表示；表单、表格与通用工作流仍未实现。", "routeName": "capability-roadmap", "owner": "demand-driven-frontend", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要一个真实消费者并一次只准入一个能力。" },
-    {"id": "i18n", "visibleLabel": "管理台中英文", "summary": "现有管理台的中文与英文展示、语言切换和本地选择恢复。", "routeName": "appearance-management", "owner": "apps/web/src/shared/i18n", "prerequisiteIds": ["architecture-admin-console", "router-governance", "runtime-kernel", "storage-persistence"], "admissionCondition": "仅限已实现的管理台双语范围；其他语言、账号同步及业务格式须另行准入。"},
-    { "id": "observability-reporting", "visibleLabel": "可观测性", "summary": "依赖真实 Producer、Provider 与隐私合同的报告能力。", "routeName": "capability-roadmap", "owner": "observability", "prerequisiteIds": [], "admissionCondition": "需要真实事件生产者、报告 Provider 与隐私审查。" },
-    { "id": "pavp-ui-system", "visibleLabel": "PAVP UI 系统", "summary": "由真实管理台消费者驱动的 PAVP 自有组件边界。", "routeName": "ui-system-inspector", "owner": "pavp-ui", "prerequisiteIds": ["architecture-admin-console", "design-system"], "admissionCondition": "已激活。" },
-    { "id": "project-generators", "visibleLabel": "项目生成器", "summary": "只有重复出现的真实脚手架需求才能准入。", "routeName": "capability-roadmap", "owner": "repository-governance", "prerequisiteIds": [], "admissionCondition": "需要重复且稳定的真实生成需求。" },
-    { "id": "repository-governance", "visibleLabel": "仓库治理", "summary": "静态生产门、仓库政策和主线维护规则。", "routeName": "engineering-quality-inspector", "owner": "repository-governance", "prerequisiteIds": [], "admissionCondition": "已激活。" },
-    { "id": "responsive-layout", "visibleLabel": "响应式布局", "summary": "narrow、regular 与 wide 的空间投影和 Shell 权威。", "routeName": "responsive-layout-inspector", "owner": "layout-system", "prerequisiteIds": ["architecture-admin-console", "router-governance"], "admissionCondition": "已激活。" },
-    { "id": "router-governance", "visibleLabel": "路由治理", "summary": "当前路由、布局、滚动、焦点与错误页治理。", "routeName": "router-governance-inspector", "owner": "router", "prerequisiteIds": ["runtime-kernel"], "admissionCondition": "已激活。" },
-    { "id": "runtime-kernel", "visibleLabel": "运行时内核", "summary": "当前十五阶段启动、Provider、错误与释放流程。", "routeName": "runtime-kernel-inspector", "owner": "runtime-kernel", "prerequisiteIds": ["appearance"], "admissionCondition": "已激活。" },
-    { "id": "shared-ui-expansion", "visibleLabel": "共享 UI 扩展", "summary": "在更多真实消费者出现后扩展 PAVP UI。", "routeName": "capability-roadmap", "owner": "pavp-ui", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要额外真实消费者和独立准入。" },
-    { "id": "specialist-capabilities", "visibleLabel": "专业能力", "summary": "Grid、Editor、Chart 等专业能力的条件式准入。", "routeName": "capability-roadmap", "owner": "specialist-admission", "prerequisiteIds": [], "admissionCondition": "需要真实专业产品需求和替换边界。" },
-    { "id": "storage-persistence", "visibleLabel": "存储与持久化", "summary": "当前八条非敏感浏览器存储记录及其生命周期。", "routeName": "storage-persistence-inspector", "owner": "storage", "prerequisiteIds": ["router-governance"], "admissionCondition": "已激活。" },
-    { "id": "tanstack-query", "visibleLabel": "服务端状态缓存", "summary": "仅随真实 API Transport 准入的服务端状态能力。", "routeName": "capability-roadmap", "owner": "server-state", "prerequisiteIds": ["api-transport"], "admissionCondition": "需要真实 API Transport 与服务端状态消费者。" },
-    { "id": "view-transition-motion", "visibleLabel": "页面与交互动效", "summary": "由真实交互需求触发的 View Transition 和 Motion 能力。", "routeName": "capability-roadmap", "owner": "motion", "prerequisiteIds": ["architecture-admin-console"], "admissionCondition": "需要命名交互需求和独立动效准入。" }
+    {
+      "id": "api-transport",
+      "visibleLabel": "API 传输",
+      "summary": "真实后端合同出现后才可准入的传输能力。",
+      "routeName": "workbench-dashboard",
+      "owner": "api-transport",
+      "prerequisiteIds": [
+        "storage-persistence"
+      ],
+      "admissionCondition": "需要真实端点、Origin、Schema、策略、消费者与服务端 Owner。"
+    },
+    {
+      "id": "appearance",
+      "visibleLabel": "主题与外观",
+      "summary": "当前主题、颜色模式、对比度、材质、字号与动效能力。",
+      "routeName": "control-center",
+      "owner": "appearance",
+      "prerequisiteIds": [
+        "design-system"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "architecture-admin-console",
+      "visibleLabel": "PAVP 管理台",
+      "summary": "统一浏览和管理 PAVP 前端架构能力的纯前端管理台。",
+      "routeName": "workbench-dashboard",
+      "owner": "architecture-admin-console",
+      "prerequisiteIds": [
+        "appearance",
+        "design-system",
+        "router-governance",
+        "runtime-kernel",
+        "storage-persistence"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "auth-session-permission",
+      "visibleLabel": "认证、会话与权限",
+      "summary": "依赖真实服务端安全合同的身份与权限能力。",
+      "routeName": null,
+      "owner": "auth-session-permission",
+      "prerequisiteIds": [
+        "api-transport",
+        "tanstack-query"
+      ],
+      "admissionCondition": "需要真实认证、Cookie、CSRF、Session、Principal、Tenant 与 Capability 合同。"
+    },
+    {
+      "id": "deployment-delivery",
+      "visibleLabel": "部署与交付",
+      "summary": "面向真实托管环境的 CSP、缓存、发布与回滚能力。",
+      "routeName": null,
+      "owner": "deployment",
+      "prerequisiteIds": [],
+      "admissionCondition": "需要真实托管与发布合同。"
+    },
+    {
+      "id": "design-system",
+      "visibleLabel": "设计系统",
+      "summary": "PAVP 设计令牌、主题平面、对比度、材质与生成清单。",
+      "routeName": "workbench-colors",
+      "owner": "design-system",
+      "prerequisiteIds": [],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "first-protected-vertical-slice",
+      "visibleLabel": "首个受保护业务切片",
+      "summary": "真实 API 与认证能力完成后才能准入的端到端业务流。",
+      "routeName": null,
+      "owner": "protected-slice",
+      "prerequisiteIds": [
+        "api-transport",
+        "auth-session-permission"
+      ],
+      "admissionCondition": "需要真实受保护业务流和后端合同。"
+    },
+    {
+      "id": "forms-i18n-tables",
+      "visibleLabel": "表单、国际化与表格",
+      "summary": "管理台双语已由独立 i18n Record 表示；表单、表格与通用工作流仍未实现。",
+      "routeName": null,
+      "owner": "demand-driven-frontend",
+      "prerequisiteIds": [
+        "architecture-admin-console"
+      ],
+      "admissionCondition": "需要一个真实消费者并一次只准入一个能力。"
+    },
+    {
+      "id": "i18n",
+      "visibleLabel": "管理台中英文",
+      "summary": "现有管理台的中文与英文展示、语言切换和本地选择恢复。",
+      "routeName": "control-center",
+      "owner": "apps/web/src/shared/i18n",
+      "prerequisiteIds": [
+        "architecture-admin-console",
+        "router-governance",
+        "runtime-kernel",
+        "storage-persistence"
+      ],
+      "admissionCondition": "仅限已实现的管理台双语范围；其他语言、账号同步及业务格式须另行准入。"
+    },
+    {
+      "id": "observability-reporting",
+      "visibleLabel": "可观测性",
+      "summary": "依赖真实 Producer、Provider 与隐私合同的报告能力。",
+      "routeName": null,
+      "owner": "observability",
+      "prerequisiteIds": [],
+      "admissionCondition": "需要真实事件生产者、报告 Provider 与隐私审查。"
+    },
+    {
+      "id": "pavp-ui-system",
+      "visibleLabel": "PAVP UI 系统",
+      "summary": "由真实管理台消费者驱动的 PAVP 自有组件边界。",
+      "routeName": "workbench-interactions",
+      "owner": "pavp-ui",
+      "prerequisiteIds": [
+        "architecture-admin-console",
+        "design-system"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "project-generators",
+      "visibleLabel": "项目生成器",
+      "summary": "只有重复出现的真实脚手架需求才能准入。",
+      "routeName": null,
+      "owner": "repository-governance",
+      "prerequisiteIds": [],
+      "admissionCondition": "需要重复且稳定的真实生成需求。"
+    },
+    {
+      "id": "repository-governance",
+      "visibleLabel": "仓库治理",
+      "summary": "静态生产门、仓库政策和主线维护规则。",
+      "routeName": null,
+      "owner": "repository-governance",
+      "prerequisiteIds": [],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "responsive-layout",
+      "visibleLabel": "响应式布局",
+      "summary": "narrow、regular 与 wide 的空间投影和 Shell 权威。",
+      "routeName": "workbench-dashboard",
+      "owner": "layout-system",
+      "prerequisiteIds": [
+        "architecture-admin-console",
+        "router-governance"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "router-governance",
+      "visibleLabel": "路由治理",
+      "summary": "当前路由、布局、滚动、焦点与错误页治理。",
+      "routeName": null,
+      "owner": "router",
+      "prerequisiteIds": [
+        "runtime-kernel"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "runtime-kernel",
+      "visibleLabel": "运行时内核",
+      "summary": "当前十五阶段启动、Provider、错误与释放流程。",
+      "routeName": null,
+      "owner": "runtime-kernel",
+      "prerequisiteIds": [
+        "appearance"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "shared-ui-expansion",
+      "visibleLabel": "共享 UI 扩展",
+      "summary": "在更多真实消费者出现后扩展 PAVP UI。",
+      "routeName": null,
+      "owner": "pavp-ui",
+      "prerequisiteIds": [
+        "architecture-admin-console"
+      ],
+      "admissionCondition": "需要额外真实消费者和独立准入。"
+    },
+    {
+      "id": "specialist-capabilities",
+      "visibleLabel": "专业能力",
+      "summary": "Grid、Editor、Chart 等专业能力的条件式准入。",
+      "routeName": null,
+      "owner": "specialist-admission",
+      "prerequisiteIds": [],
+      "admissionCondition": "需要真实专业产品需求和替换边界。"
+    },
+    {
+      "id": "storage-persistence",
+      "visibleLabel": "存储与持久化",
+      "summary": "当前八条非敏感浏览器存储记录及其生命周期。",
+      "routeName": "control-center",
+      "owner": "storage",
+      "prerequisiteIds": [
+        "router-governance"
+      ],
+      "admissionCondition": "已激活。"
+    },
+    {
+      "id": "tanstack-query",
+      "visibleLabel": "服务端状态缓存",
+      "summary": "仅随真实 API Transport 准入的服务端状态能力。",
+      "routeName": null,
+      "owner": "server-state",
+      "prerequisiteIds": [
+        "api-transport"
+      ],
+      "admissionCondition": "需要真实 API Transport 与服务端状态消费者。"
+    },
+    {
+      "id": "view-transition-motion",
+      "visibleLabel": "页面与交互动效",
+      "summary": "由真实交互需求触发的 View Transition 和 Motion 能力。",
+      "routeName": null,
+      "owner": "motion",
+      "prerequisiteIds": [
+        "architecture-admin-console"
+      ],
+      "admissionCondition": "需要命名交互需求和独立动效准入。"
+    }
   ]
 }
 ```
@@ -5455,7 +5648,6 @@ runtime-preflight
 format-check
 lint
 lint-css
-lint-uno
 typecheck-vue
 typecheck-ts
 check-arch
@@ -5842,7 +6034,11 @@ Landing 不得先创建 Target-only Stub、Placeholder Provider、Unused Public 
 
 ## 1.3 Capability Status Registry
 
+文首 Status Block 是 `CURRENT_BOUNDED_WORK` 与 `CURRENT_BOUNDED_WORK_AUTHORITY` 唯一可变入口，指向实际章节中的 scoped admission record；其他章节引用该入口，不复制当前工作包字段。历史准入与接受记录保留各自时点的事实，不通过镜像数量、原话次数或固定行距决定生产 Gate。 2026-11-02 治理清理已退役文档快照的 Admission/Acceptance 探针；下方数量与执行描述保留为清理前基线 `58ef3b1c68d1a11c061fca84165680862dc3434e` 的历史记录，不声称仍在运行，真实源码合同检查继续保留。非 `NONE` 的当前实施入口须在其准入记录中使用明确的 `OWNER_APPROVED` 授权，或以 `OWNER_APPROVED_` 开头的范围限定授权值；非空、待定或未授权状态不能准入实施，具体范围仍由同一记录拥有。
+
 本节是当前能力状态与当前计数的唯一人类权威。全仓的当前计数（Route、Runtime Kernel Step、Public Role/Color、UI Component、Storage Record、Shell Region、Capability Manifest Record 等）以文首 Status Block、本节与对应 Current 源码 Registry 为准；散落在工作包、Landing、Admission 与维护记录中的 `Current` / `current-worktree` / `exact count` 只表示该任务收口时的历史快照，不覆盖这些当前入口。任何计数变化必须先同步当前源码 Registry、本当前入口与直接 Owning Checker，再保留或添加对应工作包历史记录。
+
+§13.13 五主题实施候选的当前源码计数为：5 Built-in Themes、20 Planes、30 Public Color Roles、60 Public Roles/Mappings、600 Public Theme Bank Bindings；§18.17 工作台呈现 Source 后，Manifest schemaVersion 12 的八族 Counts 为 `274,60,60,34,1,3,5,1`，总数 438、相对 181 Baseline 的 Delta 为 257；当前 Routes 为 13（6 Product、7 Error），其中 5 个工作区。Complete Theme Definition 仍为 schemaVersion 3，Color Role Contract 为 4；只接受当前 Role Contract 4 Custom，旧主题兼容已按本次 Owner 决定退役。配色设计已获 Owner 接受，新的真实 Naive Component/Visual Acceptance 未执行；Semantic Status 的整体能力状态仍保持本表原值。
 
 所有能力只允许以下四种状态：
 
@@ -5869,7 +6065,7 @@ type CapabilityStatus =
 | --- | --- | --- |
 | Repository governance and static production gate | `ACTIVE` | Phase 0 artifacts and `pnpm verify` |
 | Token source, schema, generation, visibility and public-output completeness | `ACTIVE` | `@platform/design-system` current generated contract |
-| Legacy embedded-palette preference compatibility format | `ACTIVE` | read-only migration input only |
+| Legacy theme/preference/custom compatibility | `PROHIBITED` | §13.13 current-only replacement removes migration, old theme definitions and old Custom role contracts; stored bytes are not erased |
 | Light, Dark and System color-mode resolution | `ACTIVE` | current First Paint and pure resolver |
 | Font Scale projection | `ACTIVE` | current `--ui-font-scale` contract |
 | Adaptive, Reduced and Solid Material token projection | `ACTIVE` | current UI-internal Material contract |
@@ -5877,7 +6073,7 @@ type CapabilityStatus =
 | Reference-only Preference and Theme Registry | `ACTIVE` | `PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER` |
 | Standard and Enhanced Theme Plane projection | `ACTIVE` | generated Theme Bank and stable Public bindings |
 | Semantic Status Color System | `TARGET_INACTIVE` | foundation and consumer source are present in the committed baseline with Manifest schemaVersion 11; §13.12 and §37.2.14 preserve their historical handoffs; no new runtime/visual Owner acceptance is inferred, and the end-to-end status remains unchanged |
-| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | §14.2 single-control-height source projection implemented under PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION; this bounded source/static delivery is closed by the Owner under §37.2.12 and does not activate full three-tier density, other sizes/spacing or Owner runtime/visual acceptance |
+| Compact, Comfortable and Spacious visual density projection | `TARGET_INACTIVE` | §14.2 single-control-height source/static delivery is closed under PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION; PAVP_DENSITY_BUTTON_INLINE_SPACING separately completes source/static delivery for the existing button-inline role only; complete density, other sizes/spacing and Owner runtime/visual acceptance remain incomplete |
 | Continuous Density Scale application | `DEFERRED` | §14.3 persisted field only; exact visual semantics and computation remain unresolved and require a separate Owner decision before application |
 | Pinia appearance orchestration | `ACTIVE` | `apps/web` exact two-field Appearance Store |
 | Appearance Preference and Custom Registry persistence | `ACTIVE` | two application-owned Local Storage boundaries |
@@ -5891,11 +6087,11 @@ type CapabilityStatus =
 | Core Error Registry, normalization and current global capture | `ACTIVE` | Runtime Kernel exact four-record Core Error contract plus the active, separate exact six-record Router Error extension and exact eleven-record Storage Error extension |
 | Core validated Runtime Configuration | `ACTIVE` | Runtime Kernel exact five-field configuration contract; exact field extension by each consuming package |
 | Vue Router file routes and route lifecycle | `ACTIVE` | `PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION` plus the implemented typed-address/input/result/history core in §9; external access integration and real parameterized consumers remain inactive; §37.2.5 preserves historical specification authorization separately from later source evidence |
-| Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer |
-| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work is the bounded `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION` under §20B.2 with Router presentation in §9.11 and Workspace lifetime in §18.11; delivered §18.12 scroll repair and its limited acceptance remain preserved; Density bounded source/static delivery remains closed under §37.2.12; source/static readiness and new Owner runtime acceptance remain separate; record-address and schemaVersion 2 remain unimplemented; next and successor remain `NONE` |
-| TanStack Query server-state runtime | `DEFERRED` | research candidate and conditional direction under §20; no current dependency admission; real backend integration requires its service contract, while research and separately authorized independent frontend capabilities follow §2.3 |
+| Router reading-document Layout, native Scroll and Focus core | `ACTIVE` | Router exact narrow registries plus the active `PAVP_ARCHITECTURE_ADMIN_CONSOLE` full-product consumer; this stable capability name does not reactivate focus: §25.2 disables keyboard and programmatic route focus |
+| Architecture Admin Console frontend surface | `ACTIVE` | technically completed and active `PAVP_ARCHITECTURE_ADMIN_CONSOLE`; exact-commit Runtime Audit keeps overall Product Experience acceptance revoked; §1.2B.0H–0K preserve historical navigation records; §1.2B.0L keeps the accepted Native Naive predecessor; §1.2B.0M is accepted at `FROZEN / ACCEPTED / COMPLETE / PASS` for exact published commit `b6efbb608b309f601217a2765150bd9ec217cf78`, with scoped Runtime and Visual `PASS` and Accessibility `NOT_PERFORMED`; §1.2B.0N records `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` as an accepted package at `FROZEN / ACCEPTED / COMPLETE / PASS`; `PAVP-RUNTIME-004` remains open and untouched; rejected Layout Admin draft is not current evidence; current work follows the canonical header and its scoped admission record; delivered §18.12 scroll repair and its limited acceptance remain preserved; Density bounded source/static delivery remains closed under §37.2.12; source/static readiness and new Owner runtime acceptance remain separate; record-address and schemaVersion 2 remain unimplemented; next and successor remain `NONE` |
+| TanStack Query server-state runtime | `DEFERRED` | this mapped record represents the full backend/server-state integration target; §20 `PAVP_READ_QUERY_FOUNDATION` separately admits the independent anonymous read core and exact Vue Query dependency, without activating that combined target or a new Manifest record |
 | Application persistence architecture | `ACTIVE` | `PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` plus the one locale-preference record admitted by `PAVP_ADMIN_CONSOLE_LOCALIZATION` plus the navigation-preference record in §19.5.2 and Workspace Session record in §18.11.11 plus the two Scroll System records in §18.12 and the browser-page-session record in §9.4; eight current records |
-| API Transport | `DEFERRED` | independent HTTP/query foundations are core targets with no implementation or dependency admission here; real-service integration under `PAVP_API_TRANSPORT_IMPLEMENTATION` retains exact endpoint/origin/schema/policy/server-owner contracts |
+| API Transport | `DEFERRED` | this mapped record represents the full backend/Query integration target under `PAVP_API_TRANSPORT_IMPLEMENTATION`; the independent reusable HTTP core is separately admitted and tracked by §20 `PAVP_REUSABLE_HTTP_REQUEST_LAYER`, without activating that combined target or a new page/Manifest record |
 | Auth, Session and Permission | `DEFERRED` | conditional real-service integration, not a mandatory business subsystem or core prerequisite; existing API and server-security admission remains |
 | Observability reporting and Runtime Performance collection | `DEFERRED` | optional demand-driven admission; backend/auth-dependent reporting cannot precede its real producers and provider contract |
 | Deployment delivery, CSP, cache, private source maps and rollback | `TARGET_INACTIVE` | non-blocking future hosting/release admission; backend-dependent portions remain in the optional lane |
@@ -5920,7 +6116,7 @@ type CapabilityStatus =
 
 核心范围由 §1 定义，不是第五种 Capability Status。现有 route-single Workspace 与其从路由声明派生的会话恢复保持；多记录身份、Global Breadcrumb 和完整实例丢弃保护仍按 §18.11 区分。内容就绪、滚动恢复资格和语言资源范围由 §9.11 的现有 Route Registry 声明合同闭合，核心不再按当前页面名称选择；这项有界修正不代表完整核心已交付，不增加源码 Registry、Manifest Source 或 Generated Artifact，不改变任何 Capability 的状态或历史验收。
 
-当前计数以 `PublicRoleRegistry`、`tokens.manifest.json`、`ui-public-component-registry.ts` 和包根出口核对：Public Roles/Mappings 为 `55/55`，其中 Color Roles 为 `26`；Token Records 为 `249`、Named Contrasts 为 `34`、Alpha 为 `1`、Density 为 `3`、Theme 为 `14`、First Paint 为 `1`，Manifest schemaVersion 为 `11`，八类方程为 `249 + 55 + 55 + 34 + 1 + 3 + 14 + 1 = 412`。Source Files 是 provenance metadata，56 个 Plane 和 1456 个逻辑 Bank Binding 不重复计入 Manifest Records。十个 PAVP SFC 公共导出与十条组件登记一致，其中 `8 ACTIVE + 2 TARGET_INACTIVE`；官方 Naive 组件、`useUiForm`、Types 和 Console Projection 不是额外 PAVP Composite。各历史 Landing/源码切片的旧数量和实测字节仍按当时范围保留，不冒充本次测量。
+当前计数以 `PublicRoleRegistry`、`tokens.manifest.json`、`ui-public-component-registry.ts` 和包根出口核对：Public Roles/Mappings 为 `56/56`，其中 Color Roles 为 `26`；Token Records 为 `262`、Named Contrasts 为 `34`、Alpha 为 `1`、Density 为 `3`、Theme 为 `14`、First Paint 为 `1`，Manifest schemaVersion 为 `11`，八类方程为 `262 + 56 + 56 + 34 + 1 + 3 + 14 + 1 = 427`。Source Files 是 provenance metadata，56 个 Plane 和 1456 个逻辑 Bank Binding 不重复计入 Manifest Records。十个 PAVP SFC 公共导出与十条组件登记一致，其中 `8 ACTIVE + 2 TARGET_INACTIVE`；官方 Naive 组件、`useUiForm`、Types 和 Console Projection 不是额外 PAVP Composite。各历史 Landing/源码切片的旧数量和实测字节仍按当时范围保留，不冒充本次测量。
 
 §1.2B 的唯一 Capability JSON Source、生成清单及两语言能力文案在本次保持原样；其中 API、Query、受保护切片、Forms 聚合和 Shared UI 的旧准入/完成描述尚未同步新的核心目标。它们是现有 Console 的运行投影，不覆盖 §1 当前交付范围，也不能否认已存在的共享 Form 源码。同步这些运行投影需要后续独立授权；本次不更改 Source JSON、生成器或其一致性门槛。
 
@@ -5935,7 +6131,7 @@ const ProductPreferenceDefault = {
   colorMode: 'system',
   theme: {
     registryKind: 'built-in',
-    themeId: 'iris',
+    themeId: 'royal-iris',
   },
   contrast: 'standard',
   material: 'adaptive',
@@ -5945,6 +6141,7 @@ const ProductPreferenceDefault = {
   },
   fontScale: 1,
   motion: 'full',
+  radius: 8,
 } as const
 ```
 
@@ -5953,8 +6150,8 @@ AUTHORITY_ID=product-preference-default
 OWNER=@platform/design-system preference contract
 CAPABILITY_STATUS=ACTIVE
 ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
-CURRENT_COMPATIBILITY_ENCODING=LegacyPreferenceInput_AND_LegacySeedPreference
-CURRENT_COMPATIBILITY_ENCODING_STATUS=READ_ONLY_MIGRATION_INPUT
+CURRENT_PREFERENCE_ENCODING=EXPLICIT_THEME_PREFERENCE_SCHEMA_4_ONLY
+OLD_THEME_COMPATIBILITY_STATUS=REMOVED_BY_OWNER
 FALLBACK=NONE
 PERSISTED_AS=ExplicitThemePreference direct Local Storage value
 PERSISTENCE_CONTRACT=Current-to-target Preference Transition
@@ -5962,7 +6159,7 @@ CONSUMERS=AUTHORIZED_PACKAGE_5_CONSUMER only
 STATIC_ENFORCEMENT=duplicate-default and semantic-equivalence checks
 ```
 
-Package 5 完成后，唯一持久化 Default 是上方 Reference-only Tuple。`defaultCurrentPreference` 已从 Public Runtime 和 Writer 移除；Legacy Embedded-palette Shape 只作为内部 Read-only Migration Input，永不成为第二份产品默认或写回格式。
+Package 5 完成后，唯一持久化 Default 是上方 Reference-only Tuple。`defaultCurrentPreference` 已从 Public Runtime 和 Writer 移除；旧 Embedded-palette 与旧 Theme Reference 格式已由 §13.13 的 Owner 决定移除，不再作为读取、迁移或写回格式。
 
 `CONSUMERS` 只引用 §13.6 定义且已由 Package 5 落地的 `AUTHORIZED_PACKAGE_5_CONSUMER`。`ProductPreferenceDefault` 只供该 Boundary 构造新偏好或执行显式 Reset，不得由 First Paint、Pinia、页面、Feature 或持久化 Writer 复制成第二份默认对象。
 
@@ -5975,7 +6172,7 @@ const PreInitializationSafetyBaseline = {
   effectiveColorMode: 'light',
   effectiveTheme: {
     registryKind: 'built-in',
-    themeId: 'iris',
+    themeId: 'royal-iris',
   },
   effectiveContrast: 'standard',
   effectiveMaterial: 'solid',
@@ -6076,7 +6273,7 @@ Generated Artifact 中的派生 Literal、Schema Enum Discriminant、HTTP 标准
 | Vue Router         | `5.x`         |
 | Vite               | `8.1.x`       |
 | UnoCSS             | 当前稳定版本        |
-| Naive UI           | future exact target `2.45.2`; currently inactive |
+| Naive UI           | `2.45.2`；已在准入的 UI Owner 中 ACTIVE |
 | Reka UI            | deferred headless-primitive candidate only |
 | Pinia              | `3.x`         |
 | TanStack Vue Query | `5.x`         |
@@ -6130,7 +6327,7 @@ TypeScript 7 进入正式基线的门槛：
 
 无证据的“热门”断言、停滞或 Deprecated 项目、低采用量或 Experimental 方案不能成为默认选择。不得设置永久 Star 数值门槛、强制发版周期、评分框架或依赖网络的 CI 选型检查；变化中的热度与维护证据只留在有日期的任务报告，不冻结为 Build Contract，也不改写既有历史选型记录。
 
-Research Candidate、针对具体实现已批准的 Dependency、已经实施的 Capability 是三个不同事实，互不推导；不新增 Capability Status。VueUse、Axios、TanStack Query 和 es-toolkit 是可研究候选，不授权安装或升级；VueUse 已有精确直接依赖的使用例外见 §1.2B.0M/§7。全文保留的 TanStack Query 目标引用描述条件式 Server-state 所有权模型，不代表已完成选型、依赖准入或实施。TanStack Form 或其他 Form Engine 必须另行基于证据选型，不因组织知名度或本条款成为 Canonical 选择。当前 Manifest/Catalog/Lockfile 准入集合保持，未授权安装不等于永久禁止或技术不适合。
+Research Candidate、针对具体实现已批准的 Dependency、已经实施的 Capability 是三个不同事实，互不推导；不新增 Capability Status。VueUse、Axios、TanStack Query 和 es-toolkit 可按需求研究，研究本身不授权安装或升级；VueUse 已有精确直接依赖的使用例外见 §1.2B.0M/§7，Vue Query 的只读核心准入见 §20 `PAVP_READ_QUERY_FOUNDATION`。其他 TanStack Query 目标引用仍描述条件式 Server-state 所有权模型，不代表完整后端、Mutation 或认证集成已准入或完成。TanStack Form 或其他 Form Engine 必须另行基于证据选型，不因组织知名度或本条款成为 Canonical 选择。未授权安装不等于永久禁止或技术不适合。
 
 使用已准入 Library 时优先保留官方名称、API 和 Types；Wrapper 只能服务具体业务语义、共享配置或必要集成，不为改名、猜想中的 Vendor Replacement 或重做库功能创建一层。已有 Storage、Network、Theme、Scroll 和 Lifecycle Owner 保持；Library Helper 不得创建第二权威或绕过其输入校验、取消和释放责任。明确命名的 Motion、Scroll 等私有集成合同仍适用，不泛化成所有工具库的 Wrapper 要求。
 
@@ -6172,7 +6369,7 @@ No RC in production dependencies
 | 路由     | Vue Router 5               | 文件路由和生成类型           |
 | 包管理    | pnpm Workspace             | Monorepo 与 Catalog  |
 | 客户端状态  | Pinia                      | 偏好、会话和工作流           |
-| 服务端状态  | TanStack Vue Query（研究候选与条件式方向） | API 缓存、Mutation、失效；尚未准入 |
+| 服务端状态  | TanStack Vue Query | §20 已准入匿名只读核心；完整后端、Mutation 与认证集成仍为条件式目标 |
 | Schema | Zod 4                      | 配置、API 和用户输入校验      |
 | 表单     | §21 的 Vue 局部状态 + Zod，Naive UI 私有控件 | 单一草稿、校验和提交生命周期 |
 | 浏览器能力  | VueUse                     | 在直接声明它的 Workspace 内按领域所有权使用官方 Composable；新增依赖仍须准入 |
@@ -7408,7 +7605,7 @@ caller address / direct URL
 
 前序 `PAVP_APPLICATION_CURRENT_PAGE_NAVIGATION` 已完成源码实施、静态验证、源码审查、限定 Owner 验收及 Git 交付，提交为 `001800c5d982cf28740e147c25f51c47460ef674`，发布到 `origin/main`。Owner 已接受总览普通链接、原生修饰键点击与复制链接，以及总览/侧栏/页签/独立页/浏览器返回交错时已观察的目的地与呈现一致性；不扩展为未观察缓存内部行为、任意输入、完整无障碍或发布验收。此前实施时的未验收与未授权 Git 状态是历史阶段，不能阻塞本次授权。
 
-Owner 在该提交的干净 `main` 上授权 `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` 的一次有界源码实施及本节原位合同更新。该记录保留前序任务的实施阶段；本节继续拥有应用导航合同，下方复用准入及交付属于已完成前序；当前有界任务由 §20B.2 的 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION` 实施准入拥有，Next/Successor 保持 `NONE`。
+Owner 在该提交的干净 `main` 上授权 `PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION` 的一次有界源码实施及本节原位合同更新。该记录保留前序任务的实施阶段；本节继续拥有应用导航合同，下方复用准入及交付属于已完成前序；本节不另行指定当前任务，执行入口为文首 Current Work 及其 scoped admission record。
 
 ```text
 WORK_PACKAGE=PAVP_APPLICATION_NEW_BROWSER_PAGE_NAVIGATION
@@ -7564,7 +7761,7 @@ Owner 明确授权在当前未暂存修复候选上补齐同一来源标签页�
 
 第八条 `browser-page-session` Record 归 Storage Owner，Key 唯一来自 `applicationConfig.browserPage.sessionStorageKey='pavp:web:browser-page-session'`，Medium=session-storage、Shape=direct-compatibility、SchemaId=browser-page-session、Current/Minimum=1、Partition=none、Sensitive=false、Corruption=preserve-in-place-reject-read。唯一新 Adapter 为 `app/storage/browser-page-session-storage.ts`。Read 返回 missing/unusable(invalid|unavailable|disposed)/found，Write 与 initializeTarget 返回 saved/failed；访问、读取、JSON、版本、Schema、序列化、Quota、写入和 Readback 走既有安全 Storage Error Adapter。无效原值保留拒读，不自动清空或把错误当 Missing。来源先成功写入新的关联身份，才允许一次受控 Blank 创建；目标初始化先验证未关闭、about:blank 和原生 opener===window，再只覆写新目标的这一条复制记录为独立 Source ID、空 associations 和目标 Binding。其他 Session Storage 记录不动，初始化成功后才允许唯一初始 location.replace。初始化失败停止初始导航；源写入失败不打开，当前旧内存引用仍可检查，但不能承诺刷新恢复。
 
-Storage Port 只暴露 read/write/initializeTarget/available/subscribe/discover；Storage Lifecycle 创建 `owner.browserPageSession`，Kernel 在既有 create-and-ready-storage 阶段完成后通过 Vue App.provide 提供窄 Port。不增加启动阶段或 Provider Registry。Adapter 独占固定 `pavp:browser-page:discovery` 原生 BroadcastChannel，Strict Discovery Payload 为 `{kind:'discover',binding:Binding,requestId:UUID}`，仅负责发现，不广播持久化变更；无 storage-event fallback。旧 `pavp:storage:change`、空 Cross-tab Event Allowlist、七条旧记录、零 Envelope/Migration/IndexedDB/Memory Record 不变。新通道由 Storage Lifecycle 幂等 Dispose 关闭，App Scope 解除自身订阅和 window message Listener；不暴露原生 Channel。
+Storage Port 只暴露 read/write/initializeTarget/available/subscribe/discover；Storage Lifecycle 创建 `owner.browserPageSession`，Kernel 在既有 create-and-ready-storage 阶段完成后通过 Vue App.provide 提供窄 Port。不增加启动阶段或 Provider Registry。Adapter 独占固定 `pavp:browser-page:discovery` 原生 BroadcastChannel，Strict Discovery Payload 为 `{kind:'discover',binding:Binding,requestId:UUID}`，仅负责发现，不广播持久化变更；无 storage-event fallback。通用 Storage 变更通信保持未准入；七条旧记录及零 Envelope/Migration/IndexedDB/Memory Record 保持。新通道由 Storage Lifecycle 幂等 Dispose 关闭，App Scope 解除自身订阅和 window message Listener；不暴露原生 Channel。
 
 App Mounted 安装当前文档资格和 window message Listener 后读取 Snapshot；有记录先创建 restoring 关联，再发本 Document 新 Request ID 的发现消息。真实目标仅在自己的目标 Binding 匹配、本地 Mounted/Active Document 且当前目的地合格时，使用仍有效的原生 window.opener.postMessage 回复同 Origin。Window 消息精确区分 `{kind:'ready',binding}` 与 `{kind:'reply',binding,requestId}`。目标 Mounted/pageshow 的 ready 只使源重发发现，不能直接恢复；解决发现早于目标监听就绪的竞态。源从回复的 event.source 获取真实引用，严格验证 Origin、全部 Binding、本轮 Request ID、非自身且实际 Window、原生 opener===window、未关闭、当前 Document 实际已验证地址及本地 Eligibility；不得把 BroadcastChannel 的 source 或字符串标识当引用。不同 Window 对同一有效请求作出合格回复不得后写覆盖，终止为 unconfirmed 并交给手动恢复。复制来源标签页即使有相同存储身份，回复仍只送往目标真正的原生 opener；旧请求及旧关联回复全部忽略。
 
@@ -8034,13 +8231,12 @@ packages/design-system/
 │   │   └── spacious.tokens.json
 │   │
 │   ├── themes/
-│   │   ├── neutral.theme.json                 [read-only legacy migration evidence]
-│   │   ├── ocean.theme.json                   [read-only legacy migration evidence]
-│   │   ├── warm.theme.json                    [read-only legacy migration evidence]
-│   │   └── complete/                          [active Built-in Theme sources]
-│   │       ├── neutral.theme.json
-│   │       ├── ocean.theme.json
-│   │       └── warm.theme.json
+│   │   └── complete/                          [sole active Built-in Theme sources]
+│   │       ├── royal-iris.theme.json
+│   │       ├── cobalt-tide.theme.json
+│   │       ├── emerald-grove.theme.json
+│   │       ├── ember-coral.theme.json
+│   │       └── berry-bloom.theme.json
 │   │
 │   └── component/
 │       └── README.md
@@ -8048,7 +8244,6 @@ packages/design-system/
 ├── src/
 │   ├── schema/
 │   │   ├── token.schema.ts
-│   │   ├── legacy-seed-theme.schema.ts
 │   │   ├── appearance.schema.ts
 │   │   ├── complete-theme.schema.ts
 │   │   └── preference.schema.ts
@@ -8234,17 +8429,17 @@ Manifest 包含所有 Token 的 Tier、Visibility、Source、Condition 和 Role 
 
 ### Public Output Completeness
 
-当前公共输出数量已由 Registry/Manifest 核对为 55 Roles/Mappings、26 Color Roles、schemaVersion 11 和 412 Records；下文按各增量 Landing 保留历史数量及测量，最新完整方程见本节末与 §1.3。
+当前公共输出数量已由 Registry/Manifest 核对为 60 Roles/Mappings、30 Color Roles、schemaVersion 12 和 430 Records；下文按各增量 Landing 保留历史数量及测量，最新完整方程见本节末与 §1.3。
 
-§13.12 是 Semantic Status Color System 的唯一增量合同。已提交第一源码切片采用 26 Color / 53 Public Roles、53 个 UnoCSS Mapping 与 Manifest schemaVersion 10；当前已获 Owner 授权并静态完成的消费者切片仅将四个 Base Status Mapping 扩展为 `property-specific-exact-rule`，实现精确二十个 Status Utility，并使用 Manifest schemaVersion 11。§1.2B.0G 的 10/37 及下列早期 Registry 和计数保留历史边界；完整能力仍等待 Owner Runtime/Visual Acceptance。
+§13.12 保留 Semantic Status Color System 前序两片合同；§13.13 是当前五主题语义配色实施的增量合同。已提交第一源码切片采用 26 Color / 53 Public Roles、53 个 UnoCSS Mapping 与 Manifest schemaVersion 10；当前已获 Owner 授权并静态完成的消费者切片仅将四个 Base Status Mapping 扩展为 `property-specific-exact-rule`，实现精确二十个 Status Utility，并使用 Manifest schemaVersion 11。§1.2B.0G 的 10/37 及下列早期 Registry 和计数保留历史边界；完整能力仍等待 Owner Runtime/Visual Acceptance。
 
-下方精确 Registry 保留早期 36-role Baseline；其后 Control 与 Semantic Status 增量分别按 §1.2B.0G、§13.12 合并，再加入本节 Normal Medium Button Padding Role 后，当前 Public CSS、`tokens.ts`、`token-names.ts` 和 54 个 UnoCSS Mapping 保持同一完整角色集合。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
+下方精确 Registry 保留早期 36-role Baseline；其后 Control、Semantic Status、Button Padding/Border Width 与 §14.1 Control Radius 增量合并后，当前 Public CSS、`tokens.ts`、`token-names.ts` 和 60 个 UnoCSS Mapping 保持同一完整角色集合。`roleContractVersion` 是已激活的 Explicit-theme Contract 版本机制，并与 Theme Definition、Registry、Manifest 和 Generated Output 保持精确一致。
 
 Owner 本次仅准入 `dimension.space.button-inline`：Build-only Dimension，唯一 Primitive Design Value 为 `{ value: 14, unit: "px" }`；Public Semantic `spacing.button.inline` 通过 `"{dimension.space.button-inline}"` 引用它。Public Role Registry 使用 `tokenType=dimension`、`category=spacing`、`visibility=public`、`admissionPhase=1`、`themePlaneApplicability=not-applicable`，Contrast/Alpha Endpoint 均为 `null`。现有 Generator 输出 `--ui-space-button-inline`、`tokens['spacing.button.inline']` 与唯一 UnoCSS Class `px-button-inline`；Mapping 精确为现有 `exact-rule`、`family=spacing`、`key=button-inline`，只拥有 `padding-inline`。不增加 Namespace、Schema Version、Mapping Kind 或 Generator Algorithm。
 
 该增量后的当前八族 Record Counts 精确为 `243,54,54,34,1,3,14,1`，总计 `404`，相对既有 `181`-record Baseline 的 Delta 为 `223`；Public Color Roles 仍为 `26`，Exact-rule Mapping 为 `41`，Class Projection 为 `52`。Manifest 保持 Schema `11`，PublicRoleRegistry 保持 Schema `2`，Theme Role Contract 保持 `3`。§13.12 的 `241 / 53 / 400` 及既有测量保留为 Semantic Status 切片的历史结果，不再充当此次增量后的当前总数。
 
-本次按 Node `24.15.0`、既有 `stableJson`、UTF-8、Canonical Ordering、末尾单个 LF 及 `node-zlib-gzip-sync` 全部参数独立测得 Manifest `294703` raw bytes、`14950` gzip bytes；相对前序 `14874` 增加 `76`，相对 `d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf` 的 `3366`-byte Baseline 为 `11584`。只同步 Build Contract 的当前 `expectedBytes` / `expectedByteDelta`，仍逐项精确比较；`32768`-byte Hard Limit、历史 Commit/Bytes/Accepted Result 和所有 Bundle Budget 不变。当前硬余量为 `17818` bytes；测量不构成 Runtime/Visual Acceptance。
+本次按 Node `24.15.0`、既有 `stableJson`、UTF-8、Canonical Ordering、末尾单个 LF 及 `node-zlib-gzip-sync` 全部参数独立测得 Manifest `294703` raw bytes、`14950` gzip bytes；相对前序 `14874` 增加 `76`，相对 `d2e7354fad616824e52dfe5ca0f7cdbe6b4705cf` 的 `3366`-byte Baseline 为 `11584`。当时同步 Build Contract 的 `expectedBytes` / `expectedByteDelta` 并精确比较；这些历史字节断言现已退役，当前按本节结构、确定性和硬预算验证；`32768`-byte Hard Limit、历史 Commit/Bytes/Accepted Result 和所有 Bundle Budget 不变。当前硬余量为 `17818` bytes；测量不构成 Runtime/Visual Acceptance。
 
 以上 Mapping 分类与字节测量保留为 Button Padding 增量的历史结果。§15 能力路线图网格前置修正后，当前 Exact / Property-specific Mapping 为 `40 / 5`，Class Projection 仍为 `52`，八族 Record Counts 与版本均不变；相同压缩参数下实测 Manifest 为 `295103` raw bytes、`15030` gzip bytes，比前序增加 `80` gzip bytes，相对 Canonical Baseline 的 Delta 为 `11664`，Hard Limit 余量为 `17738` bytes。
 
@@ -8252,7 +8447,13 @@ Owner 本次仅准入 `dimension.space.button-inline`：Build-only Dimension，�
 
 §15 Border Width 修复当时的八族 Counts 为 `245,55,55,34,1,3,14,1`，总数 `408`，相对 `181` Baseline 的 Delta 为 `227`；53 个 Class Projection、59 个公共 Class。当时实测 Manifest 为 `297003` raw bytes、`15208` gzip bytes，较 Padding 阶段增加 `125` gzip bytes，相对 Canonical Baseline 的 Delta 为 `11842`，`32768` Hard Limit 余量 `17560` bytes；历史测量不变。
 
-§14.2 单高度候选由 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` 独立准入后，当前八族 Counts 为 `249,55,55,34,1,3,14,1`，总数 `412`，相对 `181` Baseline 的 Delta 为 `231`；Public Roles/Mappings、53 个 Class Projection、59 个公共 Class 与所有版本保持。Node `24.15.0` 既有 Canonical Profile 实测 Manifest 为 `298766` raw bytes、`15283` gzip bytes，比前序增加 `75` gzip bytes，相对 `3366` Baseline 的 Delta 为 `11917`，`32768` Hard Limit 余量 `17485` bytes。这里只更新当前候选事实，不改历史测量、预算或完整 Density 能力状态。
+§14.2 单高度候选由 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` 独立准入后，该单高度收口时的八族 Counts 为 `249,55,55,34,1,3,14,1`，总数 `412`，相对 `181` Baseline 的 Delta 为 `231`；Public Roles/Mappings、53 个 Class Projection、59 个公共 Class 与所有版本保持。Node `24.15.0` 既有 Canonical Profile 实测 Manifest 为 `298766` raw bytes、`15283` gzip bytes，比前序增加 `75` gzip bytes，相对 `3366` Baseline 的 Delta 为 `11917`，`32768` Hard Limit 余量 `17485` bytes。此处保留该 Density 单高度候选的历史测量，不改预算或完整 Density 能力状态；最新完整方程见 §1.3。
+
+§14.1 圆角核心候选收口时的八族 Counts 为 `254,56,56,34,1,3,14,1`，总数 `419`、相对 `181` Baseline 的 Delta 为 `238`；54 个 Class Projection 输出 60 个公共 Class。新 Control Role 与内部 Small Role、三个 Primitive 源增量沿用既有 Namespace、Visibility、Registry 与版本。该候选按 Node `24.15.0` Canonical Profile 实测 Manifest 为 `301326` raw bytes、`15426` gzip bytes，较前序增加 `143` gzip bytes，`32768` Hard Limit 余量 `17342` bytes。此为圆角交付历史，不构成浏览器或 Owner Acceptance。
+
+§14.2 按钮横向内边距密度候选生成后的八族 Counts 为 `262,56,56,34,1,3,14,1`，总数 `427`、Delta 为 `246`。新增八条 Token Record 来自两个 Primitive、三个 Build-only Density Source 及三个 Conditional Semantic Alias；Public Role/Mapping/Class 和各版本保持。相同 Node/Canonical Profile 实测 Manifest 为 `304482` raw bytes、`15539` gzip bytes，较圆角前序增加 `113` gzip bytes，`32768` Hard Limit 余量 `17229` bytes。其余静态与验收状态以该限定包记录为准。
+
+§13.13 五主题候选的八族 Counts 为 `266,60,60,34,1,3,5,1`，总数 430、Delta 为 249；公共颜色为 30，完整 Public Role/Mapping 为 60。新版本是 Manifest 12 / Color Role Contract 4，原 PublicRole/Alpha/Named Contrast 的结构 Schema 保持。内部 Palette 属于既有 Theme Record，不是新增顶层 Family；生成运行数据可无损紧凑编码，现有验证须逐字段比较解码结果与 canonical 完整 Registry。所有旧压缩测量保留历史含义；最终实测随本限定包交接。
 
 对当前 Active Baseline 以及 Atomic Cutover 后的任一 `roleContractVersion` 定义：
 
@@ -8867,7 +9068,7 @@ PACKAGE_3_BASELINE_RELATION=DIRECT_PREDECESSOR
 PACKAGE_3_STATUS=COMPLETE
 ```
 
-这些数值描述 Package 3 Landing 的历史完成证据。Package 3 已把当时的 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。当前 Record Authority 由 Generated Manifest 与已准入 Registry 拥有：249 个 Token、55 个 Active Public Role、55 个 UnoCSS Mapping、34 个 Named Contrast、1 个 Alpha、3 个 Density、14 个 Theme、1 个 First Paint，共 412 个 Manifest Record，schemaVersion 为 11；历史 Package 方程和字节证据保持原范围。
+这些数值描述 Package 3 Landing 的历史完成证据。Package 3 已把当时的 27 个 Public Role、27 个 UnoCSS Mapping、14 个统一 Named Contrast Record 和 1 个 Alpha Record 接入精确方程，并实现 Record、Byte 和 Growth Enforcement；Package 3A 已完成压缩标签、Canonical Baseline、外部 Byte Governance 和 Generated Manifest Payload 自我治理闭包，因此 Package 3 与 3A 均为 `COMPLETE`。当前 Record Authority 由 Generated Manifest 与已准入 Registry 拥有：266 个 Token、60 个 Active Public Role、60 个 UnoCSS Mapping、34 个 Named Contrast、1 个 Alpha、3 个 Density、5 个 Theme、1 个 First Paint，共 430 个 Manifest Record，schemaVersion 为 12；历史 Package 方程和字节证据保持原范围。
 
 Manifest 唯一规范压缩配置：
 
@@ -9066,13 +9267,13 @@ actual final bytes
 hard limit
 ```
 
-Baseline 同时绑定 Exact Commit 和 `node-zlib-gzip-sync`。Package 3 的 Baseline Commit 已由 Git History 证明为其 Implementation Commit 的 Direct Predecessor。Package 3A 先冻结上述完整 Metadata Shape，再使用同一序列化器、Pinned Node 和 Profile 测得 Final Payload 为 `5213` Bytes；相对 `3366`-Byte Baseline 的 Expected Delta 为 `1847` Bytes，并通过 `32768`-Byte Hard Limit。Repository-owned Build Verification Code 和本架构共同冻结这些值；Generated Payload 不包含它们。
+Baseline 同时绑定 Exact Commit 和 `node-zlib-gzip-sync`。Package 3 的 Baseline Commit 已由 Git History 证明为其 Implementation Commit 的 Direct Predecessor。Package 3A 先冻结上述完整 Metadata Shape，再使用同一序列化器、Pinned Node 和 Profile 测得 Final Payload 为 `5213` Bytes；相对 `3366`-Byte Baseline 的 Expected Delta 为 `1847` Bytes，并通过 `32768`-Byte Hard Limit。本架构保留这些历史测量；现行 Build Verification Code 只检查真实结构、确定性与硬上限，Generated Payload 不包含测量自引用。
 
-Package 4 以 `main@1daba84b5196e152966bd7e0f2e9e7ed8c24938f` 的 `181` Records / `5213` Bytes 作为独立增量 Baseline。最终仍为 `181` Records，Expected Record Delta 为 `0`；同一 Canonical Profile 下最终 Payload 为 `6153` Bytes，Package 4 Expected Byte Delta 为 `940` Bytes。相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `2787` Bytes，且继续通过 `32768`-Byte Hard Limit。两组 Delta 都由 Build Verification Code 在压缩 Payload 外精确比较。
+Package 4 以 `main@1daba84b5196e152966bd7e0f2e9e7ed8c24938f` 的 `181` Records / `5213` Bytes 作为独立增量 Baseline。最终仍为 `181` Records，Expected Record Delta 为 `0`；同一 Canonical Profile 下最终 Payload 为 `6153` Bytes，Package 4 Expected Byte Delta 为 `940` Bytes。相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `2787` Bytes，且继续通过 `32768`-Byte Hard Limit。两组 Delta 为该 Landing 的历史测量证据，当前不再作为生产精确相等断言。
 
-Package 5 以 `main@2f5a28a7dbe877f96ac3d24299d892bd7bb9087f` 的 `181` Records / `6153` Bytes 作为独立增量 Baseline。最终为 `181` Records / `7687` Bytes，Expected Record Delta 为 `0`，Expected Byte Delta 为 `1534` Bytes；相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `4321` Bytes，并继续通过 `32768`-Byte Hard Limit。Build Verification Code 在压缩 Payload 外精确比较上述 Entry、Final 和 Delta。
+Package 5 以 `main@2f5a28a7dbe877f96ac3d24299d892bd7bb9087f` 的 `181` Records / `6153` Bytes 作为独立增量 Baseline。最终为 `181` Records / `7687` Bytes，Expected Record Delta 为 `0`，Expected Byte Delta 为 `1534` Bytes；相对原始 `3366`-Byte Canonical Baseline 的当前总 Delta 为 `4321` Bytes，并继续通过 `32768`-Byte Hard Limit。该 Landing 当时在压缩 Payload 外精确比较 Entry、Final 和 Delta；现行生产 Gate 不再执行历史测量常量断言。
 
-每个后续 Implementation Package 必须声明 `expectedRecordCountDelta` 与 Canonical Compressed-byte Delta，由 Owning Static Gate 对实际值逐项比较；未声明或非预期增长必须失败。即使总大小仍低于 32 KiB，Delta Mismatch 也不得通过。
+当前 Manifest Gate 保留实际 Schema、Role、Record 与输出集合完整性、固定序列化与压缩参数、确定性和 `32768`-Byte 硬上限。实际压缩大小与增量是报告信息，不要求等于某次测量，不以历史字节、增量或只对历史常量的算术比较阻断当前生成。上方各 Landing 的测量及批准值是历史证据，不再是生产断言；后续结构变化仍须同步其真实合同与生成输出。
 
 Primitive Palette、Private Theme Bank、`ui-internal` Material Token 和未来 Component-internal Token 不得为了补齐 Public Output 或 UnoCSS Coverage 而扩大 Visibility。
 
@@ -9755,77 +9956,15 @@ ACTIVE_PREFERENCE_AUTHORITY=THEME_REGISTRY_REFERENCE
 ACTIVE_SCHEMA=ExplicitThemePreference
 ACTIVE_DEFAULT=ProductPreferenceDefault
 ACTIVE_PUBLIC_EXPORTS=EXPLICIT_THEME_SCHEMA_TYPES_DEFAULT_AND_RUNTIME_HELPERS
-ACTIVE_FIRST_PAINT=EXPLICIT_THEME_AND_READ_ONLY_LEGACY_MIGRATION_READER
+ACTIVE_FIRST_PAINT=CURRENT_EXPLICIT_THEME_VALIDATION_READER
 ACTIVE_RUNTIME_APPLICATION=REGISTRY_KIND_AND_THEME_ID_TUPLE
 ACTIVE_PERSISTENCE_FORMAT=EXPLICIT_THEME_PREFERENCE_DIRECT_VALUE
-LEGACY_PREFERENCE_STATUS=READ_ONLY_MIGRATION_INPUT
+LEGACY_PREFERENCE_STATUS=REMOVED_BY_OWNER_CURRENT_ONLY_REPLACEMENT
 TARGET_PREFERENCE_STATUS=ACTIVE
 TARGET_PREFERENCE_ACTIVATION_GATE=PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER
 ```
 
-Active Direct Value 精确包含外层 `schemaVersion: 3` 与 `appearance.{colorMode,theme,contrast,material,density,fontScale,motion}`；`theme` 精确包含独立的 `registryKind` 与 `themeId`。Legacy `schemaVersion: 1|2` Embedded Palette、Schema 3 Retired Built-in Reference，以及 Schema 3 Same-ID Former Catalog Custom Reference 只允许由 Reader/Migration 读取，不得由 Default、Public Root、Pinia、First Paint Writer 或应用 Persistence Writer 输出。
-
-### Legacy Built-in Theme Tuple Registry
-
-在任何 Built-in Theme Source 替换前，以下 Registry 冻结当前 `neutral`、`ocean`、`warm` Source 和 `CurrentPreference` 持久化比较值：
-
-```ts
-const LegacyBuiltInThemeTupleRegistry = {
-  schemaVersion: 1,
-  comparisonFields: [
-    'theme',
-    'palette.brand',
-    'palette.accent',
-    'palette.neutral',
-  ],
-  records: [
-    {
-      themeId: 'neutral',
-      label: 'Neutral',
-      sourcePath: 'tokens/themes/neutral.theme.json',
-      brand: {
-        sourceAlias: '{color.palette.neutral.700}',
-        resolvedCss: 'oklch(37% 0.014 247)',
-      },
-      accent: {
-        sourceAlias: '{color.palette.neutral.500}',
-        resolvedCss: 'oklch(55% 0.012 247)',
-      },
-      neutral: 'neutral',
-    },
-    {
-      themeId: 'ocean',
-      label: 'Ocean',
-      sourcePath: 'tokens/themes/ocean.theme.json',
-      brand: {
-        sourceAlias: '{color.palette.blue.600}',
-        resolvedCss: 'oklch(54% 0.15 250)',
-      },
-      accent: {
-        sourceAlias: '{color.palette.blue.500}',
-        resolvedCss: 'oklch(62% 0.17 250)',
-      },
-      neutral: 'cool',
-    },
-    {
-      themeId: 'warm',
-      label: 'Warm',
-      sourcePath: 'tokens/themes/warm.theme.json',
-      brand: {
-        sourceAlias: '{color.palette.orange.600}',
-        resolvedCss: 'oklch(58% 0.14 45)',
-      },
-      accent: {
-        sourceAlias: '{color.palette.orange.500}',
-        resolvedCss: 'oklch(67% 0.15 50)',
-      },
-      neutral: 'warm',
-    },
-  ],
-} as const
-```
-
-Migration Equality 只对 `comparisonFields` 中的 Theme ID 和三个 `CurrentPreference` Persisted String 执行 Code-point Exact Equality。`label`、`sourcePath` 与 `sourceAlias` 是不可变 Provenance，不参与 Equality。早期 Public Role Registry 和完整 Theme-plane Package 必须把新结构 Side-by-side 加入，并保留上述三个 Legacy Source Document；不得在 Migration Registry 可用和 Atomic Cutover 被接受前删除或改写 Legacy Tuple Evidence。
+Active Direct Value 按 §14.1 圆角准入精确包含外层 `schemaVersion: 4` 与 `appearance.{colorMode,theme,contrast,material,density,fontScale,motion,radius}`；`theme` 精确包含独立的 `registryKind` 与 `themeId`。按 §13.13 只接受此当前严格格式；旧格式、缺失当前字段与退役 Built-in ID 直接拒绝，不迁移、映射、补值或删除/改写已保存记录。Default、Public Root、Pinia、First Paint 与应用 Persistence Writer 共用当前格式。
 
 ### Active Explicit-theme Contract
 
@@ -9877,10 +10016,10 @@ PREFERENCE_STORAGE_KEY=pavp:web:user-preference
 PREFERENCE_STORAGE_VALUE=ExplicitThemePreference
 ADDITIONAL_PREFERENCE_ENVELOPE=PROHIBITED
 LEGACY_PREFERENCE_WRITE=PROHIBITED_AFTER_CUTOVER
-LEGACY_PREFERENCE_READ=READ_ONLY_MIGRATION_INPUT
+LEGACY_PREFERENCE_READ=REJECT_UNSUPPORTED_FORMAT_WITHOUT_WRITE
 ```
 
-应用在该 Local Storage Key 下直接保存 Repository-defined `ExplicitThemePreference`，不增加应用外层对象、`payload` Wrapper、Revision Wrapper 或 §19.5 的 General Storage Envelope。现有 Application-owned Key 保持不变。Legacy Preference Format、Embedded Palette Value 和 Legacy Default 只允许由 Migration Boundary 读取；Atomic Cutover 后的 Writer、First Paint、Pinia Store、应用 Persistence Boundary 和 Public Runtime 均不得输出 Legacy Format。
+应用在该 Local Storage Key 下直接保存 Repository-defined `ExplicitThemePreference`，不增加应用外层对象、`payload` Wrapper、Revision Wrapper 或 §19.5 的 General Storage Envelope。现有 Application-owned Key 保持不变。Legacy Preference Format、Embedded Palette Value、Legacy Default 与对应迁移已删除；Reader、First Paint、Pinia、Writer 和 Public Runtime 只接受当前格式，不输出旧格式。
 
 Preference 只保存 Theme Registry Reference，不嵌入 `brand`、`accent`、`neutral` 或 Theme Plane。Built-in Theme ID 必须来自已验证 Built-in Theme Document 生成的 Exact Literal Registry，不得只通过不受限正则。Custom Reference 只有在 Exact Application-owned Local Registry Entry 存在且 Complete Design System Validation 成功时才可解析；Package 5 不引入 Account、Principal、Permission、Session、Tenant 或 Auth Access Semantics。
 
@@ -9910,7 +10049,7 @@ type ThemeRegistryEntry =
     }
 ```
 
-Atomic Cutover 接受后的 Target `ExplicitThemePreference` Default 只引用 §1.4 的 `ProductPreferenceDefault`。本节不得复制完整默认对象；其 Theme Reference 字段精确采用 `registryKind/themeId`，并且只引用 Built-in `neutral`，不复制任何颜色值：
+Atomic Cutover 接受后的 Target `ExplicitThemePreference` Default 只引用 §1.4 的 `ProductPreferenceDefault`。本节不得复制完整默认对象；其 Theme Reference 字段精确采用 `registryKind/themeId`，并且只引用当前 Built-in `royal-iris`，不复制任何颜色值：
 
 ```text
 DEFAULT_AUTHORITY=ProductPreferenceDefault
@@ -9923,23 +10062,7 @@ Theme Registry 是 Typed Product Data，不是 AI Workflow Registry、Machine-lo
 
 Custom Theme Document 存储在 Preference 之外的 Application-owned Theme Registry。Package 5 只允许在 Vue Bootstrap 后由应用持久化边界读取 Registry，并把原始完整 Theme Definition 送入 Design System Exact Validator；不得向 Pre-Vue First Paint 提供 Custom Registry Storage Key。Preference 始终只保存 Reference，不复制 Theme Plane。
 
-Application-owned Preference Reader 负责读取 Storage 和解析 Raw JSON。Malformed JSON 必须由 Reader 私有拒绝，不得调用 Migration，也不产生 Cross-package Migration Result。Migration Boundary 只接收已经完成 JSON Parse 的 JavaScript Value，并按 §13.6 冻结的 Exact Result 分类：Valid `ExplicitThemePreference` 返回未经改写的同一 Validated Preference；Valid `LegacyPreferenceInput` 或 `LegacySeedPreference` 只有在能够无损转换时返回确定性的 `ExplicitThemePreference`；JSON-parsed Value 不符合上述任一 Schema 时返回 `PREFERENCE_INPUT_INVALID`。
-
-`LegacySeedPreference` → `ExplicitThemePreference` Migration 必须确定、幂等、无损并返回结构化结果。`MIGRATION_REQUIRES_THEME_COMPLETION` 只保留给已经通过 Legacy Schema、但必须取得完整 Authored Theme 才能无损转换的输入：
-
-```text
-LegacySeedPreference theme ∈ { neutral, ocean, warm }
-+ embedded palette exactly equals that versioned legacy built-in seed tuple
-→ same-ID complete Built-in Theme Reference
-
-LegacySeedPreference built-in ID + modified embedded palette
-→ MIGRATION_REQUIRES_THEME_COMPLETION
-
-LegacySeedPreference custom theme or custom seed palette
-→ MIGRATION_REQUIRES_THEME_COMPLETION
-```
-
-`LegacyPreferenceInput` Payload 可以先执行历史确定的 `high-contrast → system + enhanced` 和 `material=solid` 转换，再进入同一 `LegacySeedPreference` → `ExplicitThemePreference` 判定。Migration 不得从 Legacy Seed 扩展颜色、丢弃已修改的 Palette、回退到默认 `ExplicitThemePreference`、回退到 Pre-initialization Safety Baseline 或写入 Storage。任一 Failure Result 都不得删除、覆盖、修复或规范化原 Stored Value。
+Application-owned Preference Reader 负责读取 Storage、解析 Raw JSON，并调用公共根的 `explicitThemePreferenceSchema` 严格验证当前输入。Malformed JSON 和 Schema-invalid Parsed Input 都由 Reader 私有拒绝；后者使用现有 `PREFERENCE_INPUT_INVALID`，不建立 Cross-package Migration Result。失败不得替换为 Product Default、补齐旧字段，或删除、覆盖、修复、规范化原 Stored Value。当前合法输入保持全部八轴原值；缺失记录和无效记录沿用各自既有不同恢复边界。
 
 ### Custom Theme Registry Persistence Contract
 
@@ -9999,7 +10122,7 @@ Package 5 中 Custom Theme Accessibility 的唯一含义是：Application-owned 
 
 ### Atomic Cutover Boundary
 
-Semantic Status Role Contract 3 的兼容迁移是 §13.12 明确冻结并在第一源码切片实现的第二个窄例外：它在下文既有 Contract 1 → 2 规则之后执行，并优先于下文对新增颜色一律拒绝 Rebound 的一般限制。当前 Contract 1/2 均以 `ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS` 在内存中归一化到 3；Contract 3 保持精确 26-role 输入，不自动补齐，不改写 Storage。
+本节原 Atomic Cutover 已完成；当前格式按 §13.13 收束为 Preference 4 / Custom Role Contract 4。先前 Contract 1/2 → 3 兼容路径已删除，不再构成现行例外或新增实现要求。
 
 Target Explicit-theme Format 只允许通过一个不可拆分的 Production Landing 激活。该 Cutover 必须同时切换：
 
@@ -10015,22 +10138,9 @@ Manifest first-paint metadata
 owning static enforcement
 ```
 
-Schema 包括 Appearance、Preference、Theme 与只读 Legacy Migration Schema；Runtime 切换包括 `(registryKind, themeId)`、`data-theme-kind`、Theme Bank 安装和无效引用结果；Persistence 切换包括所有 Reader、Writer、Snapshot 和 Application-owned Key Contract。上述任一 Surface 仍使用 `CurrentPreference` Authority 时，Target Format 不得报告 Active。
+Schema 包括当前 Appearance、Preference 与 Theme；Runtime 切换包括 `(registryKind, themeId)`、`data-theme-kind`、Theme Bank 安装和无效引用结果；Persistence 切换包括所有 Reader、Writer、Snapshot 和 Application-owned Key Contract。上述任一 Surface 仍使用 `CurrentPreference` Authority 时，Target Format 不得报告 Active。
 
-Cutover 之前，新 Public Role Registry 和 Theme Plane 只能作为 Inert Side-by-side Structure 存在，不得删除 Legacy Tuple Source 或改变 `CurrentPreference` Output。Cutover 之后，`LegacyPreferenceInput` 与 `LegacySeedPreference` Format 只允许作为 Read-only Migration Input；任何 First Paint、Runtime、Application Store 或 Persistence Writer 都不得再次写出这些 Legacy Payload。`main` 上不得存在 New Reader + Legacy Writer、New Default + Legacy First Paint、New Schema + Legacy Runtime 或任何其他 Mixed-authority Intermediate Commit。
-
-```text
-PREFERENCE_CUTOVER=ATOMIC
-LEGACY_BUILTIN_THEME_TUPLE_REGISTRY=EXACT_IMMUTABLE_MIGRATION_INPUT
-NO_MIXED_AUTHORITATIVE_FORMAT_ON_MAIN
-LEGACY_FORMAT_AFTER_CUTOVER=READ_ONLY_NEVER_WRITTEN
-```
-
-未来 `roleContractVersion` 提升时，默认只允许一种不要求重填颜色的确定性 Rebound：两个 Historical/Current Public Color Role Set、Alpha Contract Registry 和 Named Contrast Registry 必须逐记录完全相等，差异只来自非颜色 Public Role Admission。`PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 是唯一已冻结例外：Role-contract Version 1 Custom Theme 可以在现有兼容边界内把其 `color.action.primary` 原值逐字复制为 Version 2 的 `color.control.primary`，其余 Historical Authored Color String 全部保持不变，再按 Current Named Contrast Registry 完整验证。此时 `validateCustomThemeDefinition` 可以在内存中把完整 Historical Theme 重新验证为 Current Contract，并返回 §13.6 的既有 `rebound` Branch 与 Previous/Current Role Contract Evidence；不得写回 Storage，是否保存 Current Contract Document 由应用边界显式决定。Package 5 不得为了使该分支可达而制造通用 Historical Role Contract Registry。
-
-除上段冻结的 Version 1 `color.action.primary` → Version 2 `color.control.primary` 单值复制例外外，只要 Public Color Role、Alpha Policy、Named Pair、Endpoint、Kind、Threshold 或 Maximum Useful Ratio 有任何变化，Historical Custom Theme 就不得自动补齐新增 Role、只改 Numeric Discriminator 或沿用 Historical Validation。它必须以 `ROLE_CONTRACT_MISMATCH` 保持不可应用，直到用户或开发者为全部 Current Field 提供显式值、重新通过完整 Validation，并保存为 Current Contract Document；原文档不得被静默覆盖。
-
-Migration、Custom Theme Validation、Theme Reference Resolution 与 Custom Theme Bank Installation 只能返回 §13.6 冻结的 Exact Discriminated Union，不得增加 Generic Optional Evidence 或通用 Error Platform。无效引用可以暂时保留 Safe First-paint Baseline，但该 App Runtime State 不进入 Public Result，也不得导致 Stored Preference 被替换、删除或重写。
+当前只允许同源 Current Preference、Theme Registry、First Paint、Runtime 和 Writer，不保留 Legacy Tuple、Legacy Preference Schema、旧 ID Mapping 或 Custom Role Rebound。Historical Custom 的 Role Contract 不等于当前 4 时，返回 `ROLE_CONTRACT_MISMATCH` 并保留原文档；只能由显式提供全部 Current Field 的新文档重新验证，不补色或仅改版本号。Custom Theme Validation、Theme Reference Resolution 与 Custom Theme Bank Installation 只返回 §13.6 的 Exact Discriminated Union，不建立 Generic Optional Evidence 或通用 Error Platform。无效引用可以保留 Safe First-paint Baseline，但不授权替换、删除或重写 Stored Preference。
 
 ## 13.5 Pure Material Resolver
 
@@ -10064,7 +10174,7 @@ Capability 或 Media Query 状态改变时重新执行纯 Resolver，只更新 E
 
 ## 13.6 Ownership Boundary
 
-以下 Ownership 是 Atomic Cutover 后的 Active Boundary。Package 5 已原子退休 §13.4 的 `CurrentPreference` Schema、Default、Public Export、First Paint、Runtime 和 Persistence Authority；Legacy Shape 只保留为内部 Read-only Migration Input。
+以下 Ownership 是 Atomic Cutover 后并经 §13.13 当前格式替换修订的 Active Boundary。`CurrentPreference` 与所有旧主题 Preference/Custom 兼容入口均已退休，不再保留内部 Migration Input。
 
 `@platform/design-system` 负责机制：
 
@@ -10076,7 +10186,7 @@ versioned Alpha Contract Registry
 versioned Named Contrast Registry
 Built-in Theme Registry contract
 one reference-only ExplicitThemePreference default
-parsed Preference classification and LegacyPreferenceInput / LegacySeedPreference → ExplicitThemePreference structured migration
+strict current ExplicitThemePreference validation without migration
 Theme Reference resolution result
 typed Custom Theme Bank Installer
 pure color-mode and material resolvers
@@ -10100,7 +10210,7 @@ index.html inclusion
 runtime re-resolution orchestration
 ```
 
-Design System 不得硬编码应用 Storage Key，也不得拥有 Pinia 或直接选择应用持久化策略。应用通过 `appearance-init.js` Script Element 的显式 `data-preference-storage-key` 提供 Preference Storage Key，并由静态治理验证 HTML 与应用配置一致。Package 5 原始 Landing 不提供 `data-theme-registry-storage-key`；当前 `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已原子准入同一 Script Element 上的 `data-theme-registry-storage-key`，其值必须精确来自现有 Application-owned `customThemeRegistryStorageKey`。Generated First Paint 只读所选 Custom Theme Entry 并执行 Version 1 内存归一化，不写 Storage；Vue Bootstrap 后继续由同一个 Application-owned Persistence Boundary 使用 `pavp:web:custom-theme-registry`。Registry Snapshot 与 Preference 仍是两个直接持久化的独立 Schema Boundary，不得互相包裹，也不得把 Theme Plane 嵌入 Preference。
+Design System 不得硬编码应用 Storage Key，也不得拥有 Pinia 或直接选择应用持久化策略。应用通过 `appearance-init.js` Script Element 的显式 `data-preference-storage-key` 提供 Preference Storage Key，并由静态治理验证 HTML 与应用配置一致。Package 5 原始 Landing 不提供 `data-theme-registry-storage-key`；当前 `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 已原子准入同一 Script Element 上的 `data-theme-registry-storage-key`，其值必须精确来自现有 Application-owned `customThemeRegistryStorageKey`。Generated First Paint 只读所选当前 Role Contract 4 Custom Theme Entry 并严格验证，不升级旧格式、不写 Storage；Vue Bootstrap 后继续由同一个 Application-owned Persistence Boundary 使用 `pavp:web:custom-theme-registry`。Registry Snapshot 与 Preference 仍是两个直接持久化的独立 Schema Boundary，不得互相包裹，也不得把 Theme Plane 嵌入 Preference。
 
 ### Public Design System Boundary
 
@@ -10115,8 +10225,6 @@ ProductPreferenceDefault
 ThemeReference
 CustomThemeRegistryEntry
 ThemeRegistryEntry
-migrateToExplicitThemePreference
-PreferenceMigrationResult
 validateCustomThemeDefinition
 CustomThemeValidationResult
 resolveThemeReference
@@ -10148,10 +10256,9 @@ platformPreset
 
 | Public symbol | Authorized use and boundary reason |
 | --- | --- |
-| `explicitThemePreferenceSchema`; `ExplicitThemePreference` | 应用 Preference Read、Migration Output、Pinia Stored State 与 Direct Persistence 共用一份 Exact Contract，防止应用复制 Schema。 |
+| `explicitThemePreferenceSchema`; `ExplicitThemePreference` | 当前 Preference Read、Pinia Stored State 与 Direct Persistence 共用一份严格合同，防止应用复制 Schema 或接受旧格式。 |
 | `ProductPreferenceDefault` | 应用创建新 Preference 和显式 Reset 使用唯一 Default Authority，防止 Consumer-authored Default。 |
 | `ThemeReference`; `CustomThemeRegistryEntry`; `ThemeRegistryEntry` | 应用 Registry、Resolver 与 Appearance Orchestration 共享 Exact Tuple/Entry Contract，防止重复 Theme Identity Authority。 |
-| `migrateToExplicitThemePreference`; `PreferenceMigrationResult` | Generated First Paint 与应用 Bootstrap 共享 Pure Parsed-preference Migration Boundary，防止第二份输入分类或 Legacy Migration 实现。 |
 | `validateCustomThemeDefinition`; `CustomThemeValidationResult` | 应用 Registry Ingestion 通过公共根调用完整 Design System Validation，防止 Deep Import 或应用自建 Validation。 |
 | `resolveThemeReference`; `ThemeReferenceResolutionResult` | 应用根据可访问 Registry 解析 Exact Reference，防止应用复制 Resolution Code 或 Error Mapping。 |
 | `installCustomThemeBank`; `ThemeBankInstallationResult` | 应用只把已验证 Custom Entry 交给 Typed Installer，防止直接操作 Private Bank Variable 或 DOM Helper。 |
@@ -10184,33 +10291,11 @@ ResolveColorModeInput
 ResolveMaterialInput
 ```
 
-`LegacyPreferenceInput`、`LegacySeedPreference`、Legacy Built-in Theme Tuple Registry、Legacy Theme Source Documents、Historical High-contrast Interpretation 与 Historical Material Interpretation 仅在 Design System 内部保留为 Read-only Migration Evidence。当前 Repository 不存在 Legacy Preference Writer；Package 5 不得创建任何输出 Legacy Format、Embedded Palette 或 Legacy Default 的 Writer。
+旧 Preference Migration API、Legacy Preference/Seed Schema、Tuple Registry、Seed Theme Source 与历史解释分支均按 §13.13 删除；Public Root 和内部实现不保留对应兼容入口。当前 Reader/Writer 只消费当前格式，失败保留存储原值。
 
 ### Cross-package Structured Results
 
-Package 5 只冻结下列 Migration、Custom Theme Validation、Theme Reference Resolution 与 Custom Theme Bank Installation Result；不得建立 Generic Result、Error Platform、Public Storage Result 或私有 Helper Error Registry。
-
-```ts
-type PreferenceMigrationResult =
-  | {
-      status: 'success'
-      preference: ExplicitThemePreference
-    }
-  | {
-      status: 'failure'
-      code: 'MIGRATION_REQUIRES_THEME_COMPLETION'
-    }
-  | {
-      status: 'failure'
-      code: 'PREFERENCE_INPUT_INVALID'
-    }
-```
-
-`PreferenceMigrationResult` 的语义分类精确为：Valid `ExplicitThemePreference` 返回 `success` 和未经改写的 Validated Preference；能够无损转换的 Valid `LegacyPreferenceInput` 或 `LegacySeedPreference` 返回 `success` 和确定性的 `ExplicitThemePreference`；只有 Valid Legacy Preference 含有修改过的 Built-in Embedded Palette、Legacy Custom Theme 或需要完整 Authored Theme 的 Seed-based Theme 时返回 `MIGRATION_REQUIRES_THEME_COMPLETION`；JSON-parsed Input 不符合 `ExplicitThemePreference`、`LegacyPreferenceInput` 或 `LegacySeedPreference` 任一 Schema 时返回 `PREFERENCE_INPUT_INVALID`。Malformed JSON 不进入 Migration，由 Application-owned Preference Reader 私有拒绝，不产生 Cross-package Migration Result。
-
-`PREFERENCE_INPUT_INVALID` 只是 Package 5 Preference Migration Domain Result，不是 General Error Registry Entry、Storage Error、JSON Parser Error、Custom Theme Validation Issue、Permission、Authentication、Session、Transport 或 Runtime-kernel State。它不授权返回 `ProductPreferenceDefault` 或 Pre-initialization Safety Baseline，也不授权删除、覆盖、修复或规范化 Stored Value。
-
-`migrateToExplicitThemePreference` 必须 Pure，只负责分类已经解析的 JavaScript Value：不读写 Storage、不替换为 Default 或 Safety Baseline、不丢失或改写 Embedded Legacy Palette、不构造缺失的 Custom Theme Color、不合成 Complete Theme，也不删除 Original Input。Public Result 不包含 Parser Exception、Raw Input、Storage Cause、Stack、Field Path、Source Label 或 Optional Generic Evidence。Application-owned Preference Reader 继续独立负责 Malformed Raw JSON 和 Storage Accessibility Failure。
+当前只冻结下列 Custom Theme Validation、Theme Reference Resolution 与 Custom Theme Bank Installation Result；不得保留 Preference Migration Result，或建立 Generic Result、Error Platform、Public Storage Result、私有 Helper Error Registry。应用 Reader 私有 `PREFERENCE_INPUT_INVALID` 仅表示当前 Schema 拒绝，不授权 Default、Safety Baseline 替换或 Stored Value 改写。
 
 §13.4 已冻结的 `CustomThemeRegistryEntry` 在语义上精确等价于 `Extract<ThemeRegistryEntry, { registryKind: 'custom' }>`；不得定义第二个不同 Shape。Public Validator 只返回该 Custom Entry：
 
@@ -10219,13 +10304,6 @@ type CustomThemeValidationResult =
   | {
       status: 'validated'
       entry: CustomThemeRegistryEntry
-    }
-  | {
-      status: 'rebound'
-      code: 'ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY'
-      entry: CustomThemeRegistryEntry
-      previousRoleContractVersion: number
-      currentRoleContractVersion: number
     }
   | {
       status: 'rejected'
@@ -10244,7 +10322,7 @@ type CustomThemeValidationResult =
     }
 ```
 
-`ThemeValidationEvidence` 是上述 Result Shape 的非 Root-exported Internal Type。每条 Evidence 只允许在适用时包含 Existing Architecture 已要求的 Theme ID、Role Contract Evidence、Field Path、Role、Plane、Safe Submitted Value、Alpha Evidence 与 Contrast Evidence；禁止 Parser Exception、Storage Cause、Stack、DOM Error、App Presentation State 或 Persistence State。`ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY` 保持合法 Frozen Domain Result，但 Package 5 不得仅为使该分支可达而制造 Historical Role Contract Registry。
+`ThemeValidationEvidence` 是上述 Result Shape 的非 Root-exported Internal Type。每条 Evidence 只允许在适用时包含 Existing Architecture 已要求的 Theme ID、Role Contract Evidence、Field Path、Role、Plane、Safe Submitted Value、Alpha Evidence 与 Contrast Evidence；禁止 Parser Exception、Storage Cause、Stack、DOM Error、App Presentation State 或 Persistence State。当前只接受 Role Contract 4，旧版本和未知版本不自动 Rebound；不得制造 Historical Role Contract Registry。
 
 ```ts
 type ThemeReferenceResolutionResult =
@@ -10459,7 +10537,7 @@ Cutover 前，用户只可修改当前 `AppearancePreference` Schema 已公开�
 
 当前同步 Custom First Paint 以 §1.2B.0G、现有 `formats/first-paint.ts` 和 Manifest 的 `synchronousCustomThemeResolution=true` 为准；下文 Built-in-only / Post-Vue-only 限制是 Package 5 的历史边界。§13.12 的未来迁移须同步覆盖现有只读 Custom 首屏路径，不退回旧路径或增加挂载后状态色注入。
 
-本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Explicit-theme Validation 已在 §13.4 Atomic Cutover 中共同激活。`LegacyPreferenceInput` / `LegacySeedPreference` 只保留为只读 Migration Input；`data-preference-storage-key` 继续由应用拥有。
+本节的 Tuple-aware Registry Snapshot、`data-theme-kind` 和 Explicit-theme Validation 已在 §13.4 Atomic Cutover 中共同激活。按 §13.13 只验证当前 Preference/Custom，不保留旧格式 Migration Input；`data-preference-storage-key` 继续由应用拥有。
 
 构建输出：
 
@@ -10504,9 +10582,9 @@ effective material
 
 Stored Preference 引用 Custom Theme 时，First Paint 必须保留完整 Safety Baseline，并通过 Private Implementation Handoff 让 Vue Bootstrap 后的应用边界重新处理该 Reference；Handoff 不是 Public API、Manifest Field 或 Persistence Shape。Vue Bootstrap 后，应用才能读取并完整验证 Application-owned Custom Registry Snapshot；只有 Exact Entry 存在且 Design System Validation 成功时，才可 Resolve、Install Bank 并原子应用 Custom Appearance。Registry 不可用、整个 Snapshot 不可接受、Entry 缺失或 Theme 无效时不得改成 `neutral`、删除或改写 Preference、合成颜色、恢复部分 Registry 或安装 Partial Bank。
 
-First Paint 与 Post-Vue Restoration 必须使用同一 §13.6 Result Classification。`MIGRATION_REQUIRES_THEME_COMPLETION` 与 `PREFERENCE_INPUT_INVALID` 都保留完整 Safety Baseline、不继续 Theme Resolution 且不写 Storage，但两者不得互相替代：前者只表示 Valid Legacy Preference 需要 Complete Theme Reconstruction，后者只表示已经解析的 Input 不属于任何允许的 Preference Schema。任一分支都不得静默返回 Product Default。
+First Paint 与 Post-Vue Restoration 必须使用同一当前 Preference/Custom 严格合同。无效或旧格式输入保留完整 Safety Baseline、不继续 Theme Resolution 且不写 Storage；应用 Reader 对 Schema-invalid Parsed Input 使用私有 `PREFERENCE_INPUT_INVALID`。已删除旧 Migration Result，不静默替换为 Product Default。
 
-Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、Custom Registry Snapshot、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。它不得写入任何 Storage。Preference 读取、解析、Migration、Built-in Resolution、Atomic Appearance Application 或能力检测失败时必须保留完整 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 Canonical Contract 生成并接受 Drift Check。
+Atomic Cutover 后，初始化脚本不得读取未经校验的字段、内置应用 Storage Key、Custom Registry Snapshot、初始化 Pinia、请求网络、加载完整主题编辑器或把 Effective State 写回 Stored Preference。它不得写入任何 Storage。Preference 读取、解析、当前合同验证、Built-in Resolution、Atomic Appearance Application 或能力检测失败时必须保留完整 Solid Critical Baseline。它与 Runtime Resolver、Custom Theme Bank Installer 必须从同一 Canonical Contract 生成并接受 Drift Check。
 
 ---
 
@@ -10619,31 +10697,11 @@ Non-text `3:1` 沿用现有边界最小值；Normal Text 的 `4.5:1` / `7:1` 沿
 
 On-status 不默认等于白色；每族同一个 Foreground 必须对 Default、Hover、Pressed 三种背景分别通过。尤其 Warning 必须根据 Contrast 选择深色或浅色内容，不能沿用 Naive 白字默认。状态 Accent 的 `3:1` 不证明它是 Page/Panel 上的普通文字色；本目标不准入 `text-status-*`、状态 Accent 普通文字或以 Accent `currentColor` 绘制的信息图标。On-status Text/Icon 只用于对应的已验证 Status Fill。Hover/Pressed Fill 不单独取得 Page/Panel Non-text Boundary 证明；有边界识别要求的交互组件须保留通过验证的 Default Status Border 或其他既有合格边界，不能只靠 Hover/Pressed Fill 识别控件。
 
-### Role Contract and Custom Theme compatibility
+### Role Contract and Custom Theme validation
 
-目标 `roleContractVersion=3`，因为 Exact Required Public Color Set 从 10 变成 26。Complete Theme 根字段仍精确为 `schemaVersion,roleContractVersion,id,label,planes`，业务结构仍为 `id,label,planes` 和四个完整 Plane；外层 `schemaVersion` 保持现有 3。共享 Role Contract Authority 及已有 Generated Registry/Manifest 引用同步为 3，各 Registry 按此同一成员合同校验；不要求向目前只有结构 `schemaVersion` 的 PublicRole/Alpha/Named Source Registry 新增独立版本字段。Alpha/Named 结构 Schema 仍为 1，PublicRole 结构 Schema 只在下述多 Binding Shape 变化时升级，不用结构版本代替角色成员版本。
+当前合同由 §13.13 取代前序自动升级规则：Complete Theme Definition 保持 schemaVersion 3，Color Role Contract 为 4，Custom 必须自己提交四 Plane 精确 30-role Absolute Set，并通过当前 Alpha、Named Contrast、Enhanced Difference 与整数通道投影检查。合法输入仅返回 `validated`；不保留 Contract 1/2/3 Schema、补色、Normalizer、历史注入 Bank 或 Rebound Result。Built-in 私有完整 uiPalette 不扩展 Custom 文档格式。
 
-兼容转换由现有 `validateCustomThemeDefinition` / Design System 私有 Normalizer 拥有，依次执行，失败拒绝整个文档：
-
-1. Contract 2 输入先通过其十色 Exact Shape 和历史颜色合法性检查；保留 `id`、`label`、全部四 Plane 的十色字符串逐字不变。只为每个 Plane 注入本节十六个 Public Status 值，取相应 Bank 已解析的 Absolute Color，然后规范为 Role Contract 3 并执行全部当前颜色、Alpha、Named Contrast 和 Enhanced Difference 检查。
-2. Contract 1 输入先验证历史严格 Shape、每 Plane 恰好原九角色和历史颜色合法性；额外 Control/Status、Unknown/Missing Role 必须在归一化前拒绝，不能被对象覆盖吞掉。通过后按现有兼容规则将 `color.action.primary` 原值逐字复制成 `color.control.primary`，保留原九色，再执行同一 Contract 2 → 3 步骤。只有两步和完整验证成功后才输出当前 Contract，不允许部分成功或直接跳过 Control。
-3. 新 Contract 3 Custom Theme 必须自己提交四 Plane 的精确 26-role Absolute Set；不能利用兼容入口补齐缺失 Role，不能接受 Alias、计算色、额外字段或 Naive Palette。合法输入返回现有 `validated` 分支，保留作者的原始颜色字符串。
-
-迁移成功返回既有 `rebound` Shape，并为此转换精确新增 code `ROLE_CONTRACT_REBOUND_SEMANTIC_STATUS`；`previousRoleContractVersion` 为原输入的 1 或 2，`currentRoleContractVersion=3`，`entry.definition` 是完整通过验证的结果。原 `ROLE_CONTRACT_REBOUND_NON_COLOR_ONLY` 名称不得用于本次新增颜色；它只保留原本适用的非颜色迁移含义。本目标不新增通用 Migration Registry、Optional Evidence 或 Result Platform。
-
-失败语义精确如下：
-
-| Condition | Existing result / evidence |
-| --- | --- |
-| Malformed JSON、重复 Key | 原 Duplicate-aware Import/Snapshot Reader 拒绝整个输入，不调用丢失重复键的普通 Parse 来冒充验证；坏 Storage 原值保留 |
-| Parsed Theme malformed、错误/缺失 Role、额外字段、无效版本类型或 Identity | `rejected / THEME_INVALID`，使用现有安全 `fieldPath`、可用 Theme ID 等 Evidence；不部分恢复 |
-| 结构可识别、具有有效 ID 和正整数未来 Role Contract（大于 3），或非受支持的历史版本 | `rejected / ROLE_CONTRACT_MISMATCH`，保留 `receivedRoleContractVersion` / `requiredRoleContractVersion=3`；不尝试按当前成员集合重填未来格式 |
-| Invalid Status Color、非 Absolute、非 sRGB、错误 Alpha | `rejected / THEME_INVALID`，Evidence 指向具体 Role / Plane / Field，Alpha 失败携带现有 Alpha Evidence；不自动修色 |
-| Status Named Contrast 或 Enhanced Difference 失败 | `rejected / THEME_INVALID`，携带 `contrastPairId`、`actualRatio`、`requiredRatio` 与 Plane/Role；Difference 失败的 `requiredRatio` 是同 Color Mode 的 Standard 实测值，Pair 的 `enhancedDifferenceRequired=true` 明确比较为严格大于 |
-
-当前历史 Custom Theme 没有“Light/Dark 背景亮度区间”约束，不能承诺固定 Bank 对任意历史背景都满足新 Pair。迁移消除的是所有旧主题因版本号变化被直接判无效的问题；若保留原十色后确有 Contrast 失败，必须按上表返回定位证据并保留原文档，等待显式完整 Current Theme 输入，禁止偷偷改 Surface/Primary/Text、选择另一主题或退回 Naive 默认色。
-
-Contract 2 → 3 自动注入仅限十六个 Status Role。现有 Preference `schemaVersion=3`、Custom Registry Snapshot `schemaVersion=1`、Storage Keys、完整 Snapshot 替换、无自动 Write/Delete 和 Identity Tuple 全部不变。Reader 在内存中接受成功 Rebound 的完整 Entry，任一 Entry 失败仍拒绝整个 Snapshot；不增加新持久化格式。迁移本身不写回，后续显式保存才可由现有应用边界写出完整 Contract 3 文档。
+失败语义保持 §13.6 的当前结构：Malformed JSON/重复 Key 由现有 Duplicate-aware Reader 拒绝；结构、Identity、成员、绝对色、sRGB、Alpha、Contrast 或 Enhanced Difference 不合法返回 `rejected / THEME_INVALID` 并提供既有安全 Evidence；具有可识别 ID 和正整数非当前 Role Contract 的文档返回 `rejected / ROLE_CONTRACT_MISMATCH`，保留 received/required Version。任何失败都不得删除或改写原记录，任何 Entry 失败仍拒绝整个 Snapshot。Preference schemaVersion 4、Registry Snapshot schemaVersion 1、两个 Storage Key、完整 Snapshot 替换和 Identity Tuple 保持。
 
 ### Resolved UI read boundary and private Naive projection
 
@@ -10828,6 +10886,76 @@ Naive Common 十六字段使用该快照；已核查的 Button 四族 Default/Ho
 
 ---
 
+## 13.13 Five-theme semantic color implementation
+
+Owner 在审阅五主题完整语义配色第二版后明确表示“满意 好！”，并授权先实施颜色系统、必要的本架构修订及现有 Naive UI 投影；页面重建仍独立延期。批准输入为 `pavp-color-v2-review.zip`，SHA-256 为 `0211af8c6c37a686becbc630f4e28f048f78729db52c754bd7a581ae518705b3`。其 `proposal.json` 的最终不透明 sRGB 值是本次导入依据；实施后唯一运行与构建颜色权威仍为仓库内 Design System Source，不依赖 Library、临时目录、图片或外部文件。
+
+### `PAVP_FIVE_THEME_SEMANTIC_COLOR_IMPLEMENTATION` scoped admission record
+
+```text
+ID=PAVP_FIVE_THEME_SEMANTIC_COLOR_IMPLEMENTATION
+AUTHORITY=ARCHITECTURE_SECTION_13_13
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_FIVE_THEME_CURRENT_ONLY
+ALLOWED_SCOPE=five canonical complete theme sources; theme-local UI-internal semantic palette and strict validation; existing public role, generator, registry, first-paint and current appearance/custom owners; remove old-theme sources, migrations and compatibility; correct Built-in and current Custom Naive Form/Switch contrast; isolate invalid Custom Registry from Built-in operations; bounded startup recovery in memory through existing explicit preference actions; private Naive projection and existing directly owning checks; necessary current architecture/count projections
+PROHIBITED_SCOPE=page creation/deletion/redesign; routes or settings surfaces; new dependencies/providers/stores/storage records; Form/Table/auth capability activation; budget increases; browser-denial bypass; Git staging/commit/push/release
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+PALETTE_DESIGN_OWNER_ACCEPTANCE=PASS
+NAIVE_COMPONENT_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+MACHINE_GATES=existing token/appearance/Naive owning checks; strict type checks; final pnpm verify; git diff --check
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+```
+
+本节在本包内取代十四主题 Exact Set、旧颜色字符串/448-cell Hash 的不可变要求、Built-in 必须共享全部 Status Alias、固定 Iris 默认和旧暗色 Action Lightness 上限；这些历史记录保留其原验收含义，不再约束新颜色。新的顺序精确为 `royal-iris,cobalt-tide,emerald-grove,ember-coral,berry-bloom`，标签来自批准稿。产品默认和预初始化安全主题均为 `royal-iris`。每套仍有四个独立完整 Plane，不修改 Density、Font Scale、Radius、Material、Motion 等其他轴。
+
+### Semantic ownership and complete source
+
+每套既有 Complete Theme Source 同时拥有一个 `uiPalette`：四 Plane 的 `surfaces`（canvas/surface/raised/sunken）、`text`、`borders`、`tooltip`，以及 primary/info/success/warning/error/neutral 六族。每族拥有 foreground 的 default/hover/pressed/suppl，solid 的四态背景/配对 foreground/border，soft 的三态背景/配对 foreground/icon/border，focus 和 disabled 配对。只保存批准的基础语义值；批准稿中重复的组件配对由这些字段直接投影，不复制第二份可变颜色表。该 Source-only 扩展经严格 Schema 验证，不进入 Custom Theme 文档形状，不形成页面或 Naive 自有颜色权威。
+
+现有 26 个公共颜色身份保持。新增 `color.control.info/success/warning/error` 四个公共前景角色，分别映射 `--ui-color-control-<tone>` 和 `text-control-<tone>`，只写 color。Status Default/Hover/Pressed 继续表示实色填充，On-status 表示该填充上的文字；不能把暗色模式的明亮文字色误作实色按钮背景。原八条 Status-on-page/panel 非文字对比度记录改为检查对应 Control Foreground，仍要求 3:1；十二条 On-status 对填充的 4.5/7:1 和严格增强关系保持。公共 Color Role Contract 升为 4，完整集合为 30 色/60 Public Roles；PublicRole/Alpha/Named Registry 的结构版本不变。
+
+Public Plane 可通过仅限同一 Theme/Plane 的 `{palette.<semantic.path>}` 显式引用自身 `uiPalette` 的最终值，禁止跨主题、跨平面、缺项、循环或运行时计算。现有通用 Status Primitive 只继续服务当前公共 Semantic Token 基础与当前 Custom Supplementary 投影，不保存或选择任何旧主题；新五主题的状态颜色只来自各自 uiPalette。旧 Custom Role 注入 Bank 必须删除。原有 viewport scrim 的 Source 与 0.56 Alpha 合同保留；本次不设计透明叠加。Manifest 新增 Theme 的 UI-internal Palette 投影并升为 schemaVersion 12，现有八 Family 与压缩/应用预算保持。
+
+所有批准颜色必须原样保持，不自动修色或降 Chroma。公开 Named Contrast、sRGB、Alpha 与 Enhanced 差异继续检查；新增内部完整 Palette 的文字、实色/淡色配对、输入、选择、Tooltip 和焦点/控件边界检查复用现有 Color.js/WCAG 算法与现有 Named Contrast 阈值权威。颜色对比度计算不等于真实组件、透明叠加、焦点几何或完整可访问性验收。
+
+### Current formats, persistence and projection
+
+Owner 随后明确推翻旧主题兼容要求：“不用做这种没用的！删掉这种，我要的是完全重构做新的 旧的完全删除 不用做什么兼容旧的处理”。本段取代本包此前的旧 ID 映射、Catalog Promotion、旧 Preference/Custom 格式升级合同；下方前次配色交接是其历史结果，不能要求恢复旧兼容。
+
+只保留新五主题的 Complete Source 与当前 Reference-only Preference schemaVersion 4 / Color Role Contract 4。删除三份旧 Seed Theme、对应 Schema/Parser/Tuple Metadata、全部退役 ID 映射与旧 Custom Reference 提升/隐藏规则、Preference 迁移公共 API/实现、Custom Role Contract 1/2/3 Schema/补色/Rebound、First Paint 对应兼容与已失效的 Owning Probes。旧格式、缺失当前字段或无效 Built-in ID 直接走现有 PREFERENCE_INPUT_INVALID/Theme Validation 拒绝路径，不猜测替代、不补旧数据、不自动 Reset 或删除/改写浏览器记录。后续复审明确要求避免旧数据造成永久启动陷阱：读取仍严格拒绝所有无效/旧格式，不解释或迁移；首次启动遇到 malformed、unsupported、invalid 或 unavailable Preference，或其 Custom Reference 无法恢复时，仅在内存通过同一事务应用 ProductPreferenceDefault，使应用和现有外观控件可用。恢复与环境重应用不写 Storage；只有用户在现有外观控件中明确选择设置或重置，才通过现有合法 Preference Writer 替换该条记录。没有自动清除、后台修复、新 Recovery Record、Provider、Store 字段或设置表面。正常运行期间收到无效跨标签记录仍保留最后有效呈现；默认恢复本身发生 DOM/投影失败时仍报告启动失败。合法当前偏好的所有轴、现有事务和持久化 Key 保持。
+
+当前 Custom 功能保持：其 schemaVersion 3 / Role Contract 4 必须显式提供四 Plane 全部 30 个绝对颜色并通过既有校验。同 ID 的 Built-in / Custom 按 registryKind 区分；不再把任意 Custom ID 当历史 Catalog，也不再隐藏其画廊记录。不删除已保存 Custom Registry 原文，不创建兼容修复入口。没有完整内部 uiPalette 的当前 Custom 仍走其现有 Role-only Naive 投影，不能据此保留旧格式兼容代码。
+
+无效、旧格式或不可读取的 Custom Registry 仍整份 inaccessible，原始字节保持，不恢复部分 Entry；但不能成为 Built-in 选择、重置、重应用或合法跨标签 Built-in 更新的前置条件。Built-in 操作可在 null Registry 下独立 Resolve/Apply，仅显式 Preference 操作写该 Preference Key。Custom 选择仍须通过最新存储的完整 Registry 验证，编辑和删除不增加绕过 inaccessible Registry 的恢复入口；本次 Built-in 隔离不授权改写坏 Registry。
+
+当前 Role-only Custom 没有 uiPalette，不借用 Naive 默认错误色，也不臆造六族 Palette：透明 NFormItem 错误/警告文字使用已验证的正文 Primary/Surface 配对；PAVP 局部实色反馈继续使用 Status/on-status。后续复审确认 Action Fill 可以合法等于 Panel，Action/on-action 只证明内部内容，不能证明轨道外轮廓。当前 Role-only Custom NSwitch 改用已有正文/Surface 的单色反相配对：两个 Rail 使用 color.text.primary，文字与 Thumb 使用 color.surface.panel，Thumb Icon/Loading 使用 color.text.primary。每个合法当前 Plane 已由 text-primary-on-page/panel 保证两条 Rail 相对 Page/Panel 至少 Standard 4.5:1、Enhanced 7:1，强于既有非文字边界 3:1；WCAG 比值对称，同一正文/Panel 配对也保证反向文字与 Thumb。此为当前私有控件的明确投影，不增加或重解释公共 Role、Schema、颜色值或 Palette，不给旧主题增加兼容。关闭/打开轨道同色且使用中性正文色，状态由实际 Thumb 位置、内容和原生 aria-checked 表达；不用不存在的 Naive Border 字段、调用方 railStyle、DOM Patch、透明度合成或自动修色。五 Built-in 的完整 Palette 投影保持独立且原值不变。保证限于当前 Custom 合同声明并验证的 Page/Panel 表面；任意其他背景、透明合成与完整 Focus/Disabled/Forced-colors 视觉行为仍需真实使用场景验收。
+
+Generated Registry、CSS、Critical CSS、同步 First Paint 与 Runtime 继续同源。Manifest 的 First Paint Capabilities 删除已退役 legacyPreferenceMigration 标记；其他八 Family、版本、记录计数与预算不因删除元数据而重编号。公开当前格式与 Custom APIs 保留，废弃的 Migration API 删除。
+
+真实 Naive NFormItem 的 Error Feedback 默认位于透明背景，全局 Form.feedbackTextColorError 使用 error.foreground.default；只有现有 PAVP Form 局部投影和实色错误背景配对使用 on-error。NSwitch 只有共享 textColor，故当前 Built-in 的关闭态采用 neutral.solid.background.default，打开态采用 primary.solid.background.default，并用同一 foreground 验证两条 Rail 的文字对比度；不得把白字放回浅色 Rail。此为官方 API 限制下的当前组件配对，不改批准的原始颜色、几何或状态逻辑。现有 PAVP 的 secondary Button 仅使用默认中性色。Owner 随后要求继续调查官方逐组件覆盖或有界适配；准入既有私有 Naive 颜色 Owner 中的 Soft Button Props Projection，返回官方 NButton 的 type、secondary=false、bordered=false 和逐组件 themeOverrides，将每族批准的 soft 三态/文字/disabled/focus 值完整配对，不使用 Naive 由 strong color 合成的 secondary 分支。既有 UiForm 的默认 Reset 是真实消费者；不增加公共组件、Wrapper、Provider、页面、自动注册或 DOM Patch。新五主题支持 default/primary/info/success/warning/error；无 uiPalette 的当前 Custom 只保留现有默认中性 secondary，拒绝请求缺少配对源的彩色 soft Variant，不猜测颜色。此私有适配不拦截任意调用方直接使用 NButton secondary + colored type；那些原生组合仍不满足当前对比度目标，必须区分报告。
+
+Naive 继续使用官方 2.45.2 API。投影可覆盖批准稿涉及且官方字段支持的现有控件、Button variants、Checkbox/Radio/Switch、Tag/Alert、反馈组件、Table/Menu/Tabs 和 Overlay 颜色；Theme Projection 不准入对应业务、Table 核心或 Message/Notification/Dialog Provider。没有官方字段的配对如实报告，不侵入 Vendor DOM。既有导航 Selection Lens 只消费当前固定 Naive Menu 已输出的 `--n-item-color-active`，使其与同一 Menu Theme Projection 同源；保留现有 Forced-colors 语义覆盖、几何和 Motion，不新增私有颜色变量或 Lens 状态。独立的 Action/On-action 与各族 On-solid 保持真实背景配对；不用普通正文色或全局 baseColor 冒充所有填充文字。当前 User/Runtime/Visual/Release 接受与其他未完成核心状态保持。Naive 2.45.2 的彩色 secondary Button 在组件内部从 strong color 按透明度合成背景，彩色 tertiary/quaternary 的文字也复用 strong color；官方主题无逐类型 soft-background 字段；Switch 也没有两条 Rail 独立的 textColor 或 disabled-color 字段，Notification 没有逐类型 Border 字段，Message 只有共享 Border。这里不伪造字段、接管 DOM 或改变组件 API，这些限制及透明度效果必须在真实组件验收中单独报告。
+
+前次保留兼容的五主题源码交接（下列体积仅为前次历史测量）：完整 `pnpm verify` 已通过（Node 24.15.0 / pnpm 10.34.5），覆盖格式、Lint、Vue/Node/Design System/UI Types、Architecture、Schema、生成一致性、Policy、Unused、Production Build 和 Bundle。实际编译的 Naive root/form 投影已核对五主题全部 20 Plane 的关键字段；这不是 Mounted Component 或 Browser Acceptance。批准稿与仓库 Source 的 2,640 个颜色逐值相等，批准稿 9,020 个不透明色对独立重算均通过。Manifest 为 383291 raw / 25439 gzip bytes，低于 32768 的既有上限；最终 Initial JS 为 269566 / 270336 gzip bytes，余量 770；Initial CSS 为 21317 / 40960，Motion Feature 为 33638 / 49152；18 Route / 28 Dynamic Roots 与全部配置预算保持。旧超预算测量 274660 和压缩中间值 271413 保留为本次实现过程的失败事实，不能称为通过；只通过本包内 Registry Palette/Bank 无损去重恢复预算，未改 Bundle 算法或加载分类。
+
+页面、依赖、Lock、预算与本任务外现存候选保持起始字节内容；只保留 Implementation Diff，未 Stage、Commit、Push 或 Release。配色板设计接受为 PASS，真实 Naive Component/Runtime/Visual/完整 Accessibility 接受仍未执行，既有浏览器访问拒绝未绕过。上方其他核心能力状态与页面重建前置确认保持。
+
+当前 Current-only 收束交接：完整 `pnpm verify` 在移除兼容与三项 Naive 修正后退出 `0`；现行 Preference/Custom 所有权、结果、持久化与 Radius 条款已同步移除旧格式要求，历史验收记录保持。删除三份 Legacy Seed Source、其 Schema 和 Preference Migration 模块；当前仍只有五份 Complete Built-in Source，批准稿的 2,640 个颜色未改。Manifest 为 383154 raw / 25413 gzip bytes，Initial JS 为 265408 / 270336，Initial CSS 为 21317 / 40960，Motion Feature 为 33639 / 49152；18 Route / 28 Dynamic Roots 和预算保持。
+
+实际安装的 Naive 2.45.2 已通过临时 SSR 渲染五主题全部 20 Plane：透明 Error Feedback 的 Standard/Enhanced 最低文字对比度为 5.5954/8.1537，两条 Switch Rail 的共享文字为 5.2597/8.1676；私有 Soft Button Props Projection 的 480 个 default/hover/pressed/focus 配对逐值等于批准 Palette，最低为 5.2698/8.1361，均达目标。现有 Owning Check 持续验证投影和对比度。原生彩色 secondary 的 100 个直接调用仍低于对应目标，Standard 的 Canvas 合成比值为 2.9641–4.2307；它们须由实际 UI Owner 使用已准入的官方逐组件 Props Projection，不能声称全局修复。当前无 Palette 的 Custom 不接受彩色 Soft 请求；默认中性色原行为保留。SSR 不构成 Mounted Browser、Focus Geometry、Disabled Opacity、Visual 或完整 Accessibility Acceptance。
+
+前次 Current-only 候选遇到旧 Preference 时恢复失败并保留安全帧，复审确认该行为会陷入启动错误页；此为已被本节后续修复取代的历史缺陷，不再是当前恢复合同。本包未访问或删除浏览器数据。已保存旧 Custom 原文也保留但拒绝应用。页面、五主题颜色 Source、依赖、Lock、预算及本任务外候选按起始字节保持。新增本次 Diff 全部未暂存，未 Commit、Push 或 Release；Runtime/Visual/完整 Accessibility 接受继续等待，浏览器访问拒绝未绕过。
+
+复审恢复与当前 Custom 修复交接：先由现有 Owning Check 重现无效旧数据导致启动不可用和 Built-in 操作锁定，再以实际 Store、Appearance Provider、只读快照和现有 Mutation Boundary 验证当前默认值可在内存完成初始化；七类无效输入、环境重应用、明确选择/重置、跨标签 Built-in 更新、Custom 拒绝和不可读取存储均覆盖，恢复本身不写入，显式操作只替换 Preference，坏 Registry 和无关记录保持。当前 Custom 的 Form/Switch 投影复用已有 Role，无新增文档字段、公共 API、颜色 Source 或派生 Palette。
+
+实际 Naive SSR 对从五份当前 Bank 显式构造并验证的 Role Contract 4 Custom 渲染全部 20 Plane，220 个文字/Thumb/Icon/Loading 配对全部达标。透明 Error Feedback 的 Standard/Enhanced 最低为 15.8938/15.8938，局部实色反馈为 5.2599/8.1472，两条 Switch Rail 的文字为 5.2592/8.1680；CSS Variable 按同一已验证当前 Plane 解析，不冒充 Browser Computed Style。关闭/打开轨道同色是当前 Role-only Custom 的明确边界。完整 `pnpm verify` 退出 0；Manifest 保持 383154 raw / 25413 gzip bytes，Initial JS 为 265404 / 270336，Initial CSS 为 21317 / 40960，Motion Feature 为 33638 / 49152，18 Route / 28 Dynamic Roots 不变。源码静态交付完成；Mounted Browser、Visual、Focus/Disabled/Forced-colors 与完整 Accessibility 接受未执行，既有浏览器限制保持，未进行 Git Delivery 或页面重建。
+
+当前 Custom Switch 外轮廓修复交接：复审确认前次 Action/on-action 检查只证明内部文字/Thumb，没有证明 Track 相对外表面。实际 Naive SSR 在全部严格验证为 Contract 4 的 15 个临时定义（五个当前 Bank 各自的原值、Action=Page、Action=Panel）/60 Plane 上重现 180 个失败，最小 Track 比值为 1:1。当前只改既有 Custom 私有 Switch 投影，以正文/Panel 的对称对比度配对同时保证 Page/Panel 轨道边界与内部文字/Thumb；合法当前 Theme 的普遍下界来自现有 Named Contrast 4.5/7，而非这些样本的高比值。修正后同一实际 SSR 的 900 个表面/文字/Thumb/Icon/Loading 检查全通过，Track 对 Page/Panel 实测最低 15.8938、内部配对最低 15.9009，Standard/Enhanced 均通过。现有 Owning Check 同时覆盖原值与两个合法同色反例，以及 Global/Form 两条投影。
+
+完整 `pnpm verify` 已退出 0；Initial JS 为 265407 / 270336 gzip bytes，Initial CSS 为 21317 / 40960，Motion Feature 为 33638 / 49152。所有五主题 Source、Design System Generated Artifacts、Page、Preference/Registry 恢复逻辑、依赖及预算按本次起始字节保持；无旧兼容恢复，无新 Token、Schema、公共组件或样式/DOM Patch。当前单色 Custom Track 的状态仍依靠原生 Thumb、内容与 aria-checked；SSR 不等于 Browser Computed Style、透明合成、Focus/Disabled/Forced-colors 或 Owner 视觉接受。未 Stage、Commit、Push 或 Release。
+
 # 14. 密度和尺寸系统
 
 ## 14.1 六个独立轴
@@ -10858,7 +10986,7 @@ Layout Dimensions
 | Icon size / icon-to-label spacing | 图标几何与图文间距各有语义；不能因数值合适就把 Font Size、Touch Target 或任意一半尺寸当成通用图标规则。 |
 | Page / section / content spacing | 现有 `spacing.page.inline`、`spacing.section.block`、`spacing.content.gap` 分别消费其已准入 Property；其他 Property Coverage 按需求扩展。 |
 | Typography / font scale | 字号、行高、字重和字体由 Typography Token 拥有；`fontScale` 是 §14.4 独立偏好。 |
-| Radius | 现有 `interaction.radius.panel` 拥有 Panel Radius；独立的控件圆角需求不能自动继承 Panel 语义。 |
+| Radius | `interaction.radius.control` 与 `interaction.radius.panel` 分别拥有 Control 与 Panel；§14.1 通过唯一 Radius 输入投影，Small 保持 UI-internal。 |
 | Border / focus geometry | 边框宽度、Focus Width/Offset 与轮廓几何不同于颜色；保留既有 UI-internal Admin Owner，公共控件几何仍须按需闭合。 |
 | Minimum interaction target | §14.5 与 Generated Layout Registry 拥有 Pointer/Touch Target 下限，不是统一视觉高度。 |
 | Shell / layout geometry / content widths | §1.2B.1、§18 拥有 Shell 尺寸和内容宽度；Layout Registry 只是同一 Token Authority 的生成投影。 |
@@ -10866,15 +10994,62 @@ Layout Dimensions
 | Overlay / z-index | 已准入 Layer Token 与 Overlay Owner 拥有堆叠顺序，不属于空间密度。 |
 | Motion geometry | §24 的命名 Motion Owner 拥有实际测量与动画几何；静态设计几何仍需 Canonical Token，不能顺带拥有控件或 Shell 尺寸。 |
 
-当前 Public Surface 有 Control Height、部分页面/内容间距、Typography、Panel Radius、Layout 与 Target Role，但尚未暴露完整 Control Padding、Icon Size、Icon Spacing、Control-specific Radius/Focus Geometry 或完整 Property-compatible Spacing Coverage。已有 Naive Adapter 中的特定 Alias/派生关系仅保留其现有消费者合同，不因本表成为新的通用尺寸规则。
+当前 Public Surface 有 Control Height、部分页面/内容间距、Typography、Control/Panel Radius、Layout 与 Target Role，但尚未暴露完整 Control Padding、Icon Size、Icon Spacing、Control-specific Focus Geometry 或完整 Property-compatible Spacing Coverage。已有 Naive Adapter 中的特定 Alias/派生关系仅保留其现有消费者合同，不因本表成为新的通用尺寸规则。
 
 后续实施按明确核心组件合同或真实集成需要补齐最小 Canonical Role/Mapping，经现有 Generator 同步 CSS、TypeScript、UnoCSS 与 Manifest，并遵守 §11.4 的 Role Meaning 与多 Property Binding 边界。局部 Anatomy 按 §11.3 保持其适当 Visibility，不为一次性实现细节预建公共 API。
 
 ### Adjustable global radius target
 
-全局可调圆角是 Owner 明确的未实施核心目标。基础值为 `0–16 CSS px`，初始默认 `8`、步长 `1`；这些是目标输入，尚未成为当前 Preference Default、Schema 或持久化字段。控件、容器和浮层通过同一 Design System 权威形成协调的派生尺度，覆盖导航项目、选中高亮、应用 Tabs、本体及动画底板；单选、圆形控件、拼接内角和小元素保留语义形状与必要限幅。精确派生比例和视觉上限尚未验证，不在本次发明。
+全局可调圆角是 Owner 明确的核心目标。基础值为 `0–16 CSS px`，初始默认 `8`、步长 `1`。控件、容器和浮层通过同一 Design System 权威形成协调的派生尺度，覆盖导航项目、选中高亮、应用 Tabs、本体及动画底板；单选、圆形控件、拼接内角和小元素保留语义形状与必要限幅。下方限定合同现准入其核心实施，源码与静态交付、实际视觉验证分别报告。
 
-应用 `fontScale` 不改变该 CSS-pixel 圆角基准，浏览器原生 Zoom 行为保持。`0` 是合法值，不能按 falsy 回退；未来须闭合非法输入拒绝、旧记录默认/迁移、单项重置、换主题不重置圆角、Built-in/Custom 与 First Paint 恢复、现有 Appearance 原子 Apply/Rollback。实时修改不能重建页面、重置 Workspace 或丢失输入。当前 Panel Radius 使用 `0.75rem`，会随应用根字号改变实际大小；这项现状与目标之间的差距未在本次修复。持久化字段和格式、公共 Role/API、精确投影与迁移合同仍待后续限定授权，不新增第二圆角系统，不以本方向描述宣称完整实现合同或视觉验收。
+应用 `fontScale` 不改变该 CSS-pixel 圆角基准，浏览器原生 Zoom 行为保持。`0` 是合法值，不能按 falsy 回退。实时修改不能重建页面、重置 Workspace 或丢失输入。实施前 Panel Radius 的 `0.75rem` 会随应用根字号改变实际大小；该基线事实保留，下方合同明确改为独立 CSS-pixel 投影，不把变化说成所有字号下的等值迁移。
+
+### Global radius core contract
+
+本限定合同依据 Owner 继续完善设计系统并完成圆角设计后实施的授权，准入一个 Appearance-owned 参数及其真实现有消费者；不准入密度、容器响应式或 Workbench 设置表面的并行实施。§26 Native Cascade 候选已通过限定独立复审，其静态完成与浏览器策略阻塞保留；本包不改写其 Runtime/Visual/Accessibility Acceptance。
+
+Stored 与 Effective Appearance 新增唯一标量 `radius`：有限整数，范围 `0–16`，步长 `1`，单位 CSS px，默认 `8`。字符串、分数、缺失的新格式字段、NaN/Infinity、越界及未知格式均拒绝，不强制转换、取整或夹到边界；合法 `0` 输出 `0px`。Derived Radius 不另存 Pinia、Storage、Theme Definition 或环境配置。输入默认与投影参数的唯一数值来源为现有 `tokens/primitive/radius.tokens.json`：`radius.control=8px`、`radius.sm=4px`、`radius.md=12px`、`radius.lg=16px`、`radius.minimum=0px`、`radius.step=1px`；它们保持 Build-only。`radius.control` 同时提供输入默认，`radius.lg` 同时提供输入与 Panel 上限，不能在 Schema、页面、Reader 或 Formatter 手写第二份默认。
+
+| Projection | Role / Visibility | CSS Variable / Public Class | Exact Value for input R | Existing Consumer Scope |
+| --- | --- | --- | --- | --- |
+| Control | `interaction.radius.control` / public | `--ui-radius-control` / `rounded-control`，仅 `border-radius` | `R px` | 普通 Button/Input/Selection/Tag/Radio Button、导航项及其 Focus/Selection Lens、原生 Action 与 Tabs 外露角。 |
+| Panel | `interaction.radius.panel` / public，保留原身份和映射 | `--ui-radius-panel` / `rounded-panel` | `min(R × 12 / 8, 16) px` | 卡片/Section、错误 Panel、Radio Card、Descriptions、Date/Select/Tooltip/Popover 等真实浮层面板与现有 Material/Motion Panel。 |
+| Small | `interaction.radius.small` / ui-internal | `--ui-radius-small`，无公共 Class/API/TokenName | `min(R × 4 / 8, 4) px` | Naive Common Small、Checkbox、小日期 Cell、Breadcrumb/Close 及 Scrollbar 的局部圆角。 |
+
+以上比例来自同一 Source 的默认尺度比；`R=0 / 8 / 16` 时三项分别为 `(0,0,0) / (8,12,4) / (16,16,4)`，中间半像素输出不再取整。新 Control Role 沿用现有 Public Role Registry/Generator/UnoCSS，Small 仅通过现有内部 Visibility 输出；不创建第二 Registry 或通用尺寸引擎。现有 Generator 新增一个真实只读投影产物 `src/generated/radius-projection.ts`，供 Schema、默认值和运行投影复用；同一构建的 First Paint 必须使用本次解析的 Source 参数，不读取上一代产物作为生成默认。Manifest 中静态 Dimension Record 记录默认输入的值与真实来源，不冒充全部运行输入的值。
+
+圆形 Radio Dot、官方 `circle` / `round` 分支及 Round Tag 保留形状，不随 `R=0` 变方；Switch Rail/Thumb 按自己的实际几何保持胶囊/圆形。拼接控件仅外露边角使用投影，内角保持 `0`。Tabs Item 顶部两角使用 Control，底部与内容拼接角保持 `0`，主体、Hover、Selection Lens 和装饰边线继承同一形状；结构性的 Edge Dock 内角仍为 `0`，Close 使用 Small。不能只改背景而留下 Focus、伪元素或动画底板不一致。小元素继续接受浏览器原生圆角重叠约束，不新增 JS 测量、Resize Observer、几何 Listener 或形状动画；既有 Motion、颜色、命中区域与尺寸保持。
+
+活动 `ExplicitThemePreference` 为 `schemaVersion=4`，`appearance.radius` 必填。§13.13 已移除 Schema 1/2/3 与退役主题的迁移；旧格式、缺失/非法 Radius 直接拒绝，不补 `8`、不重置或改写已保存记录。合法当前输入完整保留其余轴，包括非 `1` 的 `density.scale`。同一 `pavp:web:user-preference` Key 和 Storage Owner 保持，无新 Radius Record；只读恢复不回写，显式合法保存只写当前格式。不承诺不同前端协议版本之间的字段保持或合并，不建立跨版本兼容总线。
+
+圆角单项重置通过既有完整 Preference Commit 只恢复 `radius=8`；完整 `resetPreference` 包含它。现有外观页六轴 Reset 继续只重置其原六轴，须像 Density 一样保留 Radius；所有现有完整 Candidate 转发新字段。切换 Built-in/Custom Theme、Color Mode、Contrast、Material、Density、Font Scale、Motion、Locale 或路由均不重置 Radius。本包不增加外观页、Control Center 或快捷面板控件，不以占位 UI 代替核心投影；后续 Settings Surface 仍服从 §18.15。
+
+唯一正常运行写入者仍为 Design System `applyAppearance`，仅增加以上三条语义 CSS Variable；同一模块通过公共根 `captureRadius(target): () => void` 返回不透明恢复闭包，由既有 App 事务调用，准确恢复原值、存在性与 Priority，不向应用暴露 Small 内部变量名。First Paint 使用同一个纯投影，应用层不计算派生尺度。安全基线三项为 `8px/12px/4px`；Built-in 与有效 Custom 恢复在 Vue 前应用 Radius。保持先验证与应用、持久化最后、失败原子回滚及不补偿覆盖远端新保存值。Radius 不重建 Provider、Router 或 Workspace。Existing Storage Invalidation 对当前完整 Appearance Record 重新读取、严格验证和无回写应用；合法删除/缺失沿用领域默认，新格式非法/不可读保留最后有效状态。没有远端 UI 事件重放，普通导航、实际滚动、Focus 和草稿保持各自页面独立；并发遵守既有同 Record 最后成功保存收敛，不引入字段合并/CAS。
+
+现有 Owning Checks 验证全部 17 个合法输入、严格非法边界、当前默认/旧格式拒绝/零值/保留字段、Generated Role/Visibility/Source/产物一致性、First Paint 与 Runtime 同源、事务回滚及无回写跨标签恢复，并运行完整 `pnpm verify`。检查保护稳定数据和写入/生命周期合同，不建立模板求值器或固定私有名字。视觉矩阵另须覆盖 `0/8/16`、既有 Font Scale、三档 Density、Built-in/Custom、LTR/RTL、窄容器、Tabs 切换与 Full/Reduced/None、Focus/Forced Colors；当前浏览器 URL 策略拒绝未解除，不自动观察或记为验收。默认普通控件从原 Panel 借用值转为 8px、Panel 从 rem 转 px、Small/Tabs 的新形状均是本次设计变化，静态检查不能证明视觉接受。
+
+### `PAVP_GLOBAL_RADIUS_CORE_IMPLEMENTATION` scoped admission record
+
+```text
+ID=PAVP_GLOBAL_RADIUS_CORE_IMPLEMENTATION
+AUTHORITY=ARCHITECTURE_SECTION_14_1
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_GLOBAL_RADIUS_CORE
+ALLOWED_SCOPE=existing radius/interaction token sources; one Control public role and Small internal role; existing generator plus radius-projection output; appearance schema/default/pure migration/runtime projection/first-paint/transaction and directly necessary candidate preservation; direct-compatibility Storage Registry version metadata; existing Naive/PAVP/Tabs radius consumers and exact style owners; directly coupled checks, generated outputs and current count facts
+PROHIBITED_SCOPE=density/size/spacing changes; container responsiveness; Workbench/page creation/deletion/redesign or new settings controls; Form/Table/unsaved capability activation; dependencies/locks/budgets; generic projection/template/cascade analyzer; browser-denial bypass; Git delivery/release
+REPOSITORY_IMPLEMENTATION=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE
+STATIC_VERIFICATION=PASS
+BROWSER_VERIFICATION=BLOCKED_BY_BROWSER_URL_POLICY
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+MACHINE_GATES=existing focused owning checks and generation; strict types; final pnpm verify; git diff --check
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+本圆角核心候选已完成源码、生成和现有 Owning Checks 的静态交付；独立复审后补齐 Tabs 选中 Lens 内嵌边线伪元素的圆角继承，实际 Scoped CSS 编译检查确认修复，移除该声明的内存负例重现缺口。最终 `mise exec -- pnpm verify` 实际退出 `0`，验证前后全部 Source Hash 保持。全部 17 个输入的 Built-in/Custom 首屏、非法边界、旧格式纯迁移、零值保存/保留、远端无回写恢复、精确 Style Priority/缺失恢复以及竞争保存失败后收敛均由现有内存检查覆盖。Manifest 为 `15426 / 32768` bytes gzip；Initial JS 为 `263458 / 270336`、Initial CSS 为 `34170 / 40960` bytes gzip，Motion Feature 为 `33638 / 49152`，18 Route Roots / 28 Dynamic Roots 不变。浏览器访问拒绝未解除，本次未尝试绕过；Runtime/Visual/Accessibility Acceptance 均未执行，静态交付不等于完整能力或 Owner 接受。全部修改保持未暂存，未提交、推送或发布；Density、Container 与设置表面没有随本包实施。
 
 ## 14.2 密度预设
 
@@ -11014,7 +11189,53 @@ Owner 本次仅授权本节及必要交叉引用的架构冻结。后续 Density
 3. 精确核对 Common Small/Medium 的 Baseline 输入、Large 的 Enhanced Target 输入、Tag/Switch 直接字段和现有公式；证明 Button Small 继承基线、Tiny 分支、Medium Height、Normal Medium Padding、其他已冻结 Override 与独立命中下限保持。覆盖 Built-in/Custom 的三档 First Paint/Post-Vue、失败恢复、Apply/Rollback、既有 Font Scale 档位及非 `1` Density Scale 的无应用/无损保留。
 4. 源码存在、Public Integration、Static Gate 结果与 Owner Runtime/Visual Evidence 分别报告。只有实现及上述静态证据闭合后才能报告本单 Role 的静态完成；视觉差异、继承分支渲染、命中区域、Font Scale/Zoom 与首屏无跳变的实际观察不能由静态检查推定，适用发布仍服从 §32。本次不新增任何 Runtime/Visual Acceptance。
 
-这是局部控件高度投影；即使后续单 Role 完成，也不代表完整 Compact/Comfortable/Spacious 系统、所有组件 Size 或间距投影已完成，不自动改变三档能力状态。源码、Generated、Checker 或 UI 的任何修改仍须独立实施准入与 Owner 授权；本架构修订不授予该授权，也不授予后继或 Git 交付。
+这是局部控件高度投影；即使后续单 Role 完成，也不代表完整 Compact/Comfortable/Spacious 系统、所有组件 Size 或间距投影已完成，不自动改变三档能力状态。以上单 Role、只写高度、按钮固定 Padding 和原架构冻结的无源码授权措辞保留其首次高度实施边界；下方 Owner 单独准入仅追加现有按钮内边距 Role，不回退高度、Common Baseline 或其他尺寸合同。
+
+### Ordinary Medium Button inline-padding density contract
+
+Owner 在设计系统授权下明确采用 `compact=12px / comfortable=14px / spacious=16px`。本包复用现有 `spacing.button.inline`、`--ui-space-button-inline` 和只写 `padding-inline` 的 `px-button-inline`；不新增公共 Role、Class、Mapping Kind、Package API 或设置控件。默认和无有效恢复时保持 Comfortable `14px`。活动 Density-owned Public Role Set 仅由既有 `interaction.control.height` 加上本 Role 组成；不是准入 §14.2 的十个候选或通用 Size Engine。
+
+| Record | Conditions | Exact Density Source | Exact Primitive Source | Value |
+| --- | --- | --- | --- | --- |
+| Public Default | `{}` | `density.comfortable.button.padding-inline` | `dimension.space.button-inline` | `14px` |
+| Compact | `{ density: 'compact' }` | `density.compact.button.padding-inline` | `dimension.space.button-inline-compact` | `12px` |
+| Comfortable | `{ density: 'comfortable' }` | `density.comfortable.button.padding-inline` | `dimension.space.button-inline` | `14px` |
+| Spacious | `{ density: 'spacious' }` | `density.spacious.button.padding-inline` | `dimension.space.button-inline-spacious` | `16px` |
+
+Primitive 唯一数值位于现有 `tokens/primitive/dimension.tokens.json`，新增 Compact/Spacious 两条 Build-only Pixel Dimension，保留已有 Comfortable `14px`。三个现有 Density Source File 分别显式 Alias 自己的 Primitive，保持 Build-only；`tokens/semantic/spacing.tokens.json` 的同一 Public Role 有一个 Default 和三个完整、唯一的单轴 Condition Record。不得跨档引用、计算、继承、回退或复制到 UI/Config。条件节点的私有名称不是公共 API。原 `density.*.control.padding-inline` 与 `section.gap` 仍是未投影的 Build-only 数据，不因数值接近而替代本合同。
+
+Runtime 与 Critical CSS 必须从同一 Record Set 输出 `:root` 默认及三个独立 `html[data-density]` 投影；每个 Density Selector 仅能写已准入的高度与按钮内边距变量，禁止写内部 Height Baseline、其他 Role 或组合 Theme/Mode/Contrast/Material。Default 不替代缺失的合法 Preset。公共 Role/TypeScript/Token Names/UnoCSS 唯一身份与 `56/56` 的当前 Role/Mapping 数量保持；仅 Source/Condition Token Records 及直接计数随真实生成结果同步，无新产物或 Manifest Capability Record。
+
+集中 Naive 继续使用原 `Button.paddingMedium = 0 var(--ui-space-button-inline)`，只让普通 Medium（含既有 Ghost/Secondary 等状态）随 Preset 响应。当前五个外观页 NButton 与能力页三个 `px-button-inline` 原生 Action 是真实消费者；不新增或重建页面。Medium Height 保持 Enhanced Target `44px`，保留各调用处已有命中下限；不从 Padding 推导命中范围或改写 Native Button/Link 行为。Small/Tiny/Large、Round/Circle/Text、Shell Circle、InputNumber Text、DatePicker Tiny Action 均保持官方原分支与原值。其他控制间距、Form/Table、Page/Section/Content/Shell/Workspace/Overlay 几何、Font Scale、Radius、Focus、Motion、颜色、Material、容器阈值和布局不在本包。
+
+数据恢复仍使用现有 Schema 4 Preference、唯一 `data-density` Writer、只读 Snapshot 与原子 Apply/Rollback；Built-in/Custom 的首屏和 Vue 后 CSS 选择一致。现有五记录跨标签失效重读继续应用同一完整偏好，无新订阅、回写或事件重放。`density.scale` 保留而不应用；没有 Schema/Default/Storage Key/Migration 或 Reset 语义变化。正常 Density 修改可改变这些控件的固有宽度和排布，不承诺不同 Preset 像素等值；不新增 DOM 重建、Focus/Scroll Writer 或 Geometry Listener。
+
+Owning Checks 复用现有生成、Appearance 与 Naive 检查：精确 Source/Unit/Visibility、四个 Alias、Runtime/Critical Selector Parity、默认与三档值、缺失/额外/重复/跨档/类型/Compound 拒绝、Public Output 不变、私有 Alias 名不冻结；验证原高度/Common、普通 Medium 与特殊分支、原生 Mapping、Built-in/Custom 首屏、无效恢复/事务回滚、非 `1` Scale 无损保留及 Font Scale/Radius 不被改写。完整 `pnpm verify` 与实际 Manifest/Bundle 预算保持必需，不添加测试文件、示例、模板解释器或通用静态分析。CSS/Radius 前序的浏览器策略阻塞不被本包解除；真实宽度、换行、焦点、命中、Zoom、RTL 与 Owner Runtime/Visual/Accessibility 验收独立报告。
+
+### `PAVP_DENSITY_BUTTON_INLINE_SPACING` scoped admission record
+
+```text
+ID=PAVP_DENSITY_BUTTON_INLINE_SPACING
+AUTHORITY=ARCHITECTURE_SECTION_14_2
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_DENSITY_BUTTON_INLINE_SPACING
+SAME_AUTHORITY_IMPLEMENTATION_PREDECESSOR=PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION
+PREDECESSOR_SOURCE_STATIC_DELIVERY=COMPLETE
+ALLOWED_SCOPE=existing dimension/density/spacing token sources; existing density source guard and runtime/critical formatters; exact generated parity and directly coupled checks/count projections; generated outputs; current contract and measured handoff facts
+PROHIBITED_SCOPE=new public roles/classes/APIs/artifacts or dependencies; height/hit-target/other button size or shape changes; application/UI runtime or page redesign; settings controls; density.scale application; schema/storage/lifecycle/listener changes; Form/Table/containers; generic analyzer or examples/tests files; browser-denial bypass; Git delivery/release
+REPOSITORY_IMPLEMENTATION=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE
+STATIC_VERIFICATION=PASS
+BROWSER_VERIFICATION=BLOCKED_BY_BROWSER_URL_POLICY
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+MACHINE_GATES=existing focused source/generation/appearance/Naive checks; final pnpm verify; git diff --check
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+本限定包最终 `mise exec -- pnpm verify` 实际退出 `0`，验证前后 Source Hash 一致；初轮完整 Gate 已通过，随后仅明确检查取样 Role 并加入记录倒序正例，再完整复验通过。既有来源/CSS 负例、Built-in/Custom 首屏、三档远端无回写应用、非 `1` Scale 与 Radius/Font Scale 保留、保存失败恢复旧 Density 及再次读取新记录收敛均通过。Initial JS 为 `263466 / 270336`、Initial CSS 为 `34211 / 40960`、Motion Feature 为 `33638 / 49152` bytes gzip；Manifest 为 `15539 / 32768`，18 Route Roots / 28 Dynamic Roots 保持。仅三项 CSS/Manifest 生成物变化，其余七项生成物、公共包入口、Design System Runtime/Schema 以及 App/UI 源码与本包起点逐字节相同；Console 仅同步 Manifest 计数。源码静态交付不代表完整密度能力或浏览器/Owner 验收；上述策略阻塞与全部 `NOT_PERFORMED` 状态保留。未暂存、提交、推送或发布。
 
 ## 14.3 连续密度微调
 
@@ -11123,6 +11344,8 @@ Owner 本次只授权能力路线图网格的前置映射修正：既有 `layout
 Owner 本轮在 §18.16 源码实现内另行准入且仅准入 `spacing.page.inline` 的 Property-specific Mapping：保留原 Role、Token 值和 `--ui-space-page-inline`，使用 `property-specific-exact-rule`、`family=spacing`、`key=page-inline`，精确有序 Bindings 为 `px-page-inline` → `padding-inline`、`p-page-inline` → `padding`；两条 Rule 各自仅输出所绑定 Property 的 `var(--ui-space-page-inline)`。Schema 与 Role 校验约束该唯一 Spacing 分支，不增加 Expression、Role 或 Token；保留 Content-size、四个 Base Status Color 分支和 `px-button-inline` 所需 `spacing|padding-inline` Exact-rule Signature。当前分类目标为 39 Exact / 6 Property-specific / 7 Theme / 2 Container，54 Roles / 54 Mappings、58 个公共 Class；Generated Manifest 精确字节随真实产物重测，历史测量和 Hard Limit 保持。共享内容通过 `p-page-inline` 保留原卡片四边 Padding，不能以 `px-page-inline` 或数值偶合 Utility 替代。
 
 Owner 本轮修复另行准入公共边框宽度：Primitive `dimension.border.width` 唯一保存 `1px`；Semantic `interaction.border.width` 与既有 UI-internal `admin.border.width` 均别名该 Primitive，后者 ID、可见性、解析值及消费者不变。新增唯一公共 Role `interaction.border.width`，CSS Variable 为 `--ui-border-width`，Mapping 为 `exact-rule`、`family=border-width`、`key=default`、Class `border-width-default`，Allowed CSS Properties 仅 `border-width`，输出 `border-width: var(--ui-border-width)`。共享卡片用此宽度和结构性 `border-solid` 保留四边实线，颜色与圆角继续由 `border-border-default`、`rounded-panel` 拥有；只删除旧 capabilities.vue 的 Border 豁免，不迁移豁免或其他 Legacy 消费者。当前增量为 245 Tokens、55 Roles / 55 Mappings、40 Exact / 6 Property-specific / 7 Theme / 2 Container、59 个公共 Class；历史测量、Schema、视觉值与预算不变。
+
+上方能力路线图映射段落是前序落地合同与计数快照。当前 §18.5 的独立 Owner 授权只修订 `grid-cols-auto-fit-admin-content` 的自身容器列公式；`min-w-admin-content`、Token 值和其余 Mapping 边界保持。不得把原硬列下限继续解释为本次集合的容器溢出要求。
 
 Required Mapping Families：
 
@@ -11299,6 +11522,8 @@ Admin Workbench 的响应式作者必须复用 §1.2B.1 的 `layout-narrow:`、`
 
 迁移采用 **No New Debt + Touch-and-Migrate**：新普通 UI 按本节编写；旧普通样式债务按 File、Style Block Identity、At-rule Context、Selector、Property、Normalized Value 与 Important State 冻结为声明级 Baseline。Baseline 声明可以删除或迁移；不得新增普通声明、Selector、Style Block、扩大值范围或通过同文件/Selector Prefix 取得新权限。只有已授权实施任务同时具有当前消费者与足够语义 UnoCSS 能力时，才迁移其直接触及的普通责任。简单且已可表达的债务移入 Template Utility，并从 Debt Baseline 删除；缺能力的债务先准入最小 Canonical Role/Mapping。未触及债务继续按冻结 Baseline 保留。§37.2.15 审计 A/B 不要求局部任务清空全仓；缺少合法权威/Mapping 时停止并请求最小准入，不扩大任务。
 
+已授权的结构重构可以在同一 Diff 中一对一迁移既有 Debt Record 的文件路径或 Style Block 位置，并同步其精确 Owner：移除旧身份，保持 Lang/Scoped、Normalized Selector、At-rule Context、Property、Value、Important 和出现次数不变。这是已授权迁移时须经人工 Diff Review 核对的前后条件；现有 Exact Checker 只检查当前登记与源码，不自动证明旧记录到新记录的一对一等价。审查须对照同一 Diff 的旧/新记录逐项确认上述身份与声明不变量；无法确认时保留旧责任并报告。本次未进行样式债务迁移，也未修改 Baseline、Owner Registration 或 Checker。不新增 Alias/Prefix Allowlist、不重新捕获 Baseline。Selector 改名、层级或作用范围变化不自动视为等价，须按真实 DOM/Cascade 责任独立闭合；普通 Utility 迁移仍只删除债务。
+
 未来独立授权的 Native Cascade Cutover 可以仅对明确审定的声明重键 Layer Ancestry：保留 File、Style Block/Scope、其余 At-rule Context、Selector、Property、Normalized Value、Important State 与出现次数，未触及记录保持原样。确需 §26.3 兼容的声明保留其精确未分层 Context，不把整个 Block 重键为例外；不得剥离全部 Context、重新捕获 Baseline、扩张旧债或把仅归层报告为 UnoCSS/SCSS Migration。本次不修改 Debt Baseline、Owner Registration 或 Checker。
 
 例如当前 `UiPageHeader.vue` 的 Grid 与 `gap-content-gap` 已有表达能力，是后续授权迁移的输入，不是本次修改对象。把 `.css` 或 `<style>` 仅改为 `lang="scss"`，却不把普通责任移到 UnoCSS，不算迁移，也不能借换语言重置债务基线。
@@ -11343,7 +11568,7 @@ SCSS 可以消费 Canonical CSS Variable、精确拥有的私有实现变量、�
 | Canonical Theme Chain | Token / Public Role、Generated CSS / TypeScript / UnoCSS、Appearance Runtime 与集中 Naive Bridge 已实现；后续按真实消费者扩展。 |
 | UnoCSS-first Author Governance | 已实现当前限定作者治理；不等于债务已经迁移。 |
 | Size Authority Expansion | 已实现 §16.3 的 Normal Medium Button Padding 单元，该限定单元已完成 Owner Review 与 Git 交付，精确 Commit 及 CI 结果见 §16.3；§14.1 的完整公共尺寸表面仍未完成。 |
-| Density Projection | §14.2 的三档视觉投影未实现。 |
+| Density Projection | §14.2 的单 Role Control Height 已完成 Source/Static 交付；完整三档尺寸/间距及 Runtime/Visual 接受仍未完成。 |
 | `density.scale` | §14.3 的精确视觉语义和计算仍待独立 Owner 决策。 |
 | Style Migration | §15.6 的现有普通 Plain CSS 债务尚未完成迁移。 |
 | Real SCSS Consumer / Compiler Admission | 未实施；真实 Owner 与 Compiler 集合均为零。 |
@@ -11449,13 +11674,13 @@ Dialog、Drawer、确认、反馈、复制、下载、文件处理和浏览器 F
 
 同一 PAVP Semantic Input 可投影为 Canonical CSS Variable String，也可在 Naive 的 JavaScript 运算不能消费未解析 `var(...)` 时，投影为从同一权威派生的具体 Typed Runtime Value。转换必须保持输入来源、单位、有效 Appearance 与事务一致性，不能复制 Palette/Size Literal 或自建设计计算规则；这种投影不是第二权威。具体 Parser-sensitive Field 仍遵守 §1.2B.6 及后续精确修订，不以本条绕过既有禁写项或扩大兼容输入范围。
 
-Component-local `themeOverrides` 只允许窄 PAVP-owned Private Adapter 责任，不得建立独立设计值；该责任不等于必须单独新建 Adapter 文件。当前 Form Adapter 消费 `createPavpNaiveFormThemeProjection` 的局部输出，`UiRadioCardGroup` 在其私有适配中以三项 `none` 关闭 Vendor Button Shadow、保留 PAVP 自有轮廓，均不创建新设计值。可复用能力优先留在集中 Projection，只有真实私有 Context/Peer 责任才采用局部投影；官方组件 API 保持可用；普通页面仍不得利用局部 Theme API 建立第二视觉权威。
+Component-local `themeOverrides` 只允许窄 PAVP-owned Private Adapter 责任，不得建立独立设计值；该责任不等于必须单独新建 Adapter 文件。当前 Form Adapter 消费 `createPavpNaiveFormThemeProjection` 的局部输出；`UiRadioCardGroup` 在其私有适配中以三项 `none` 关闭 Vendor Button Shadow、保留 PAVP 自有轮廓，并在 §26 的 Native Cascade 包中承接既有卡片的同值 Color/Border/Radius 字段，不创建新设计值。可复用能力优先留在集中 Projection，只有真实私有 Context/Peer 责任才采用局部投影；官方组件 API 保持可用；普通页面仍不得利用局部 Theme API 建立第二视觉权威。
 
-Normal Medium Button Padding 的唯一设计来源为 §11.4 的 `spacing.button.inline`，集中 `Button.paddingMedium` 精确消费 `` `0 ${tokens['spacing.button.inline']}` `` 或可证明等价的 Immutable Alias，保持纵向 `0`、横向 `14px`，不随 Root Font Size 或当前 Density 变化。
+Normal Medium Button Padding 的唯一设计来源为 §11.4 的 `spacing.button.inline`，集中 `Button.paddingMedium` 精确消费 `` `0 ${tokens['spacing.button.inline']}` `` 或可证明等价的 Immutable Alias，保持纵向 `0`。§14.2 独立准入后横向按 Compact/Comfortable/Spacious 分别为 `12px/14px/16px`，无有效恢复时为 `14px`，不随 Root Font Size 缩放；原固定 `14px` 的前序范围保留于该节首次高度合同。
 
 已安装 Naive UI `2.45.2` 的 `self.paddingMedium via createKey("padding", size)` 进入 `--n-padding`；仅 Normal Medium 选用此输入，Round Medium 继续选 `paddingRoundMedium`，Circle/Text 继续为 `initial`，其他 Size 保留各自分支。所有消费者使用官方 `size` 与其他 API；不再保留 UiButton 或别名 Adapter。Form Peer 复用同一 Button 映射，不改变 Shell Circle、InputNumber Text 和 DatePicker Tiny 的选择分支。
 
-`check-architecture-admin-console.ts` 的 Override Inventory、Semantic Expectation 与 Pinned Consumption Record 必须精确包含 `Button.paddingMedium` 并保持三者相等。字段专用 AST Proof 同时验证结构零值、唯一 Canonical Token 和无额外后缀；仅解析现有表达式及可见 `const` Alias，不冻结私有变量名。裸 Token、Raw Dimension、非零首项、错误 Role、缺项/反序/额外项、未知 Variable/Helper、未解析或可变 Alias 均不得通过。该许可仅作用于 `Button.paddingMedium`；现有其他 Template Expression、Parser-sensitive Color 与负向保护保持。
+`check-architecture-admin-console.ts` 从唯一 Pinned Consumption Record 派生组件 Override Inventory，独立 Semantic Expectation 仍校验实际主题 AST 的 Authority 与 Value Kind；`Button.paddingMedium` 继续受到这三种责任的完整覆盖，不再手工维护重复字段清单或比较派生后的恒等视图。字段专用 AST Proof 同时验证结构零值、唯一 Canonical Token 和无额外后缀；仅解析现有表达式及可见 `const` Alias，不冻结私有变量名。裸 Token、Raw Dimension、非零首项、错误 Role、缺项/反序/额外项、未知 Variable/Helper、未解析或可变 Alias 均不得通过。该许可仅作用于 `Button.paddingMedium`；现有其他 Template Expression、Parser-sensitive Color 与负向保护保持。
 
 该映射与 UnoCSS 同源：CSS Variable、Body Typography、Control/Enhanced Target、Content Gap、Radius 和已有 Icon 几何均来自当前 Design Data。Tiny/Small 的官方分支可用；当前 Density 仍为已保存设置，未准入的 Density Visual Projection 不在此任务激活。集中 Form Peers 复用 Switch/Scrollbar，Tag Close、Text/Ghost Button、Select Popover 和 Disabled State 使用已有语义角色。运行和视觉验收独立于静态门槛。
 
@@ -11761,6 +11986,35 @@ JavaScript 负责：
 
 上方是完整 Future Layout Direction；`PAVP_ARCHITECTURE_ADMIN_CONSOLE` 初次 Landing 明确不激活 Layout Preference Persistence、Panel Drag/Resize 或 Layout Store。它只由 `@platform/ui` Shell-local Vue State、一个 owned `ResizeObserver` 与 §1.2B Generated `layoutRegistry` 解析 Profile。
 
+### `PAVP_NARROW_CONTAINER_CONTENT_COLLECTIONS` scoped admission record
+
+Owner 在设计系统授权下批准这一有界自身容器修订。现有 `layout.admin.content.minimum-inline-size=20rem`、公共 Role/Variable、Mapping Bindings、Layout Registry 和三档 Shell Profile 均保持；只有 `grid-cols-auto-fit-admin-content` 的列公式改为 `repeat(auto-fit, minmax(min(100%, var(--ui-layout-admin-content-minimum-inline-size)), 1fr))`。这里 `20rem` 是集合空间充足时的首选最小列宽，宽度不足时按自身容器收为一列；独立 `min-w-admin-content` 继续严格输出原 `min-width: var(...)`。不增加 Container Query、Observer、Breakpoint、运行时状态或通用引擎。
+
+本包只统一真实能力卡片集合（含既有独立阅读入口）、概览导航集合和 `UiRadioCardGroup` 的列权威，并通过合法结构 Utility 释放内容最小宽度、允许长文本和卡片标题行换行。保留 DOM/阅读顺序、内容、导航/路由、Radio 值/键盘/唯一组名、Focus/Forced-colors 保护、44px 命中下限及 Naive 内部节点兼容；不增加裁切来隐藏内容。既有 Badge 单行 Anatomy、固有 Padding 和命中下限保持，不承诺无限压缩到任意小的容器。只移除被公共 Utility 取代的具体列声明和债务，不扩大 Owner 豁免，不创建第二个数值或普通 Style Block。
+
+Form 保持研究/未激活边界：本轮只读发现其祖先 `:global(...)` 后代列规则在当前 Vue 编译后丢失局部目标，留待未来独立授权的 Form 包修正并验证自身容器语义。本包不修改 Form 源码、不激活能力，也不把编译证据当作当前页面的 Runtime Failure。完整 Density、连续 Scale、其他组件响应式与 §32 验收状态不因此完成。
+
+```text
+ID=PAVP_NARROW_CONTAINER_CONTENT_COLLECTIONS
+AUTHORITY=ARCHITECTURE_SECTION_18_5
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_NARROW_CONTAINER_CONTENT_COLLECTIONS
+ALLOWED_SCOPE=existing content-size grid projection and directly coupled checks/generated output; three existing card/nav/radio collection consumers including the real appearance theme-card slot heading and shrink/wrap utilities; superseded exact style records; scoped contract and measured handoff
+PROHIBITED_SCOPE=Form implementation or activation; new tokens/roles/public semantic classes/APIs/dependencies; density/radius/target/profile/route/state/lifecycle changes; new observers/breakpoint engines/pages/examples/test files/general analyzers; browser-denial bypass; Git delivery/release
+REPOSITORY_IMPLEMENTATION=IMPLEMENTED_PENDING_OWNER_ACCEPTANCE
+STATIC_VERIFICATION=PASS
+BROWSER_VERIFICATION=BLOCKED_BY_BROWSER_URL_POLICY
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+MACHINE_GATES=existing token generation/projection and owning architecture checks; focused actual-source compilation/output evidence; final pnpm verify; git diff --check
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+```
+
+初轮候选（本次标题行复核修正前）的 `mise exec -- pnpm verify` 实际退出 `0`，完整验证期间源码指纹不变。十项 Generated Artifact 中仅 `unocss-theme.ts` 的单一列公式变化，Token 值、Manifest、其他九项产物和全部公共入口保持本包起点内容；直接既有 Fingerprint Guard 只同步该真实生成物，其余 Guard 保持。三个实际模板的非 Class 内容和 Script 逐字保持；内存编译及实际 Uno 输出核对通过，旧硬列公式与错误放松独立 `min-width` 的两项内存负例均被拒绝。Radio 编译样式除移走的列声明外保持，生产 CSS 确认公共列规则、长文本/换行 Utility、原 Focus Ring、Separator 隐藏及命中下限输出存在。Initial JS 为 `263471 / 270336`、Initial CSS 为 `34235 / 40960`、Motion Feature 为 `33638 / 49152` bytes gzip；Manifest `15539 / 32768`、18 Route Roots / 28 Dynamic Roots 保持。以上仅是源码、编译和静态证据；窄容器、Zoom、RTL、真实长文本布局及焦点/键盘的浏览器观察仍受先前 URL Policy Denial 阻塞，Owner Runtime/Visual/Accessibility 均为 `NOT_PERFORMED`。Form 问题只登记未实施，未暂存、提交、推送或发布。
+
+独立复核随后确认外观页真实 Theme Card Slot 的标题行仍为默认不换行的 Flex，非收缩徽标会挤压标题。本次只给该标题行追加现有 `flex-wrap min-w-0`，保留徽标单行 Anatomy、未选中占位、可见性和 ARIA 绑定；Script、非 Class 模板和全部 Style 与复核起点逐字保持，不修改 Badge、Radio 或其他实现。实际标题行编译/Uno 核对通过，原始无换行和仅 Wide Shell 换行两项内存负例均失败；生产 Appearance Chunk 包含修正的标题行 Class，实际 CSS 同时保留无条件换行、零最小宽度、Scoped Flex 和徽标隐藏/显示规则。修正后完整 `mise exec -- pnpm verify` 实际退出 `0`，期间源码指纹不变，Initial JS 为 `263462 / 270336`、Initial CSS 为 `34235 / 40960` bytes gzip；本次未改变任何 Generated Artifact、预算或其他既有工作。浏览器拒绝与 Owner 全部 `NOT_PERFORMED` 状态保持，以上不代表实际窄宽度视觉验收。
+
 ## 18.6 滚动所有权
 
 Canonical Invariants：
@@ -11925,7 +12179,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 
 Owner 原先在干净 `main@fba0f33edf2323ff7f4c9792557815849f6fe77d` 上仅授权 `ARCHITECTURE.md` 有界落盘；随后明确追加本候选的非运行 Current Work/checker 一致性修复，不另建工作包。**CURRENT IMPLEMENTATION** 仍是现有 route-single Registry、按组件名 Include 的缓存及 schemaVersion 1 开放路由名恢复；**TARGET CONTRACT** 才是下文 record-address 身份、逐实例保留/释放和 schemaVersion 2 最小结构。所有新目标均未实施，本文件冻结不激活 Runtime、依赖、Route、Storage Registry 或多记录功能检查；上述 NOT_STARTED/NONE/NOT_PERFORMED 状态继续约束多记录能力。前序浏览器页复用的已交付和限定 Owner 接受按 §9.4 保留，不重开或重验该包；本包不授权源码后继。
 
-本次修复仅准入本文件的最小授权/静态结果记录与 `scripts/architecture/check-architecture-admin-console.ts` 的 Current Work/Authority 固定预期、13 对镜像数量/唯一性/配对、直接 Required Text、目标未实施状态保护及相关既有内存 Negative Probes；其他现有 Checker 仅在证明并报告同一直接陈旧断言依赖后可作同范围修正。保持原目标产品合同与历史事实，不修改应用、配置、依赖、锁文件、生成源码、运行不变量或预算，不创建消费者、测试或证据工件。先完成受影响 Checker 格式、ESLint、既有 TypeScript 与真实 `check:arch` 窄检查，再运行完整 `mise exec -- pnpm verify`；失败如实保留，源码/Checker 在全量成功后再变更须重新全量验证，仅最终文档结果记录可单独窄验。静态结果不证明未实施的多记录生命周期。候选保持未暂存、未提交；Git 交付、Release 和任何 API/Auth/Form/CRUD 工作均未授权。
+该历史修复当时只准入本文件及检查器的 Current Work/Authority 固定预期、13 对镜像和相关内存探针；这些镜像/历史文本生产断言已被本次治理简化取代，现行检查只验证文首入口与实际准入引用。原任务的直接 Required Text、目标未实施状态与静态结果仍作为历史记录；其他现有 Checker 仅在证明并报告同一直接陈旧断言依赖后可作同范围修正。保持原目标产品合同与历史事实，不修改应用、配置、依赖、锁文件、生成源码、运行不变量或预算，不创建消费者、测试或证据工件。先完成受影响 Checker 格式、ESLint、既有 TypeScript 与真实 `check:arch` 窄检查，再运行完整 `mise exec -- pnpm verify`；失败如实保留，源码/Checker 在全量成功后再变更须重新全量验证，仅最终文档结果记录可单独窄验。静态结果不证明未实施的多记录生命周期。候选保持未暂存、未提交；Git 交付、Release 和任何 API/Auth/Form/CRUD 工作均未授权。
 
 本次一致性修复已通过受影响 Checker 的 Prettier、ESLint、`mise exec -- pnpm typecheck:ts` 和真实 `mise exec -- pnpm check:arch`（均退出 0）；初次 Prettier 检查退出 1，仅对该 Checker 应用既有格式后复查通过。原 Acceptance Closure 5 个反例全部保留，增加 5 个 Current Work/镜像反例与 8 个架构状态反例，合计 18 个；既有 Route Transition Inventory 6/6 与 Acceptance Closure 17/17 反例通过。随后完整 `mise exec -- pnpm verify` 退出 0，实际执行 Runtime、格式、Lint、Vue/TypeScript、Architecture、Schema、Tokens、Policy、Unused、Production Build 与 Bundle 全部阶段。新构建 Initial JavaScript 为 `265851` bytes gzip，预算 `278528`、余量 `12677`；Initial CSS `33245` bytes gzip，18 Route Roots / 28 Dynamic Roots 保持。应用与生成源码无 Diff，预算和计量规则未变。全量成功后只追加本段文档结果记录，另以 `git diff --check` 和真实 `check:arch` 窄验；Checker 未再改动。此前因旧 Current Work 断言失败的两项 Gate 仍为历史失败，其当时未执行的下游阶段不追记通过。本次静态成功只收口架构文档/Checker 一致性，不改变多记录目标的 NOT_STARTED、未授权实施和三类 NOT_PERFORMED 验收状态；候选仍未暂存、未提交、未推送或发布。
 
@@ -11951,7 +12205,7 @@ SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
 
 Owner 在干净 `main@6aaf0ffaa905598b97c218c82cc2189d5193580f` 上单独授权本源码切片。上方 `PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE` Amendment、原身份/批准范围/未实施目标状态及候选阶段验证和 Git 限制均保留为历史记录；其后一次 Git 交付与该提交自身 Static Verification/CodeQL 成功不授权本片 Git 交付。本次只实现现有 route-single 页面的逐 `WorkspaceInstanceIdentity` 保留与释放前提，不激活 record-address、参数路由、业务记录标签、Form/CRUD/API/Auth 或 schemaVersion 2；Workspace Session 仍为原 key/localStorage/schemaVersion 1/openRouteNames、Dormant 顺序与结构写入触发规则。
 
-准入路径精确为 `apps/web/src/App.vue`、新应用私有 `apps/web/src/app/workspace/workspace-retention.ts`、现有 `workspace.store.ts`、`workspace-content.ts`、`ConsoleRouteFrame.vue`、`router-scroll-controller.ts`、`router-lifecycle.ts`、`scripts/architecture/check-router.ts`、`scripts/architecture/check-architecture-admin-console.ts` 与本文件。其他既有直接 Owning Check 仅在说明真实耦合后准入必要兼容修正；不修改其他运行文件、依赖/版本、配置、生成输入、预算或计量规则。十三对 Current Work 镜像和 live Checker 同步指向本独立任务，历史架构 Amendment 用自己的固定身份检查，不把旧块绑定到当前任务。
+准入路径精确为 `apps/web/src/App.vue`、新应用私有 `apps/web/src/app/workspace/workspace-retention.ts`、现有 `workspace.store.ts`、`workspace-content.ts`、`ConsoleRouteFrame.vue`、`router-scroll-controller.ts`、`router-lifecycle.ts`、`scripts/architecture/check-router.ts`、`scripts/architecture/check-architecture-admin-console.ts` 与本文件。其他既有直接 Owning Check 仅在说明真实耦合后准入必要兼容修正；不修改其他运行文件、依赖/版本、配置、生成输入、预算或计量规则。该历史阶段曾同步十三对 Current Work 镜像；当前工作包只由文首入口引用其实际准入，历史架构 Amendment 用自己的固定身份检查，不把旧块绑定到当前任务。
 
 实际受影响文件 ESLint 暴露两项与已授权单一私有模块的直接耦合，已按上述例外向 Owner 报告：`eslint.config.mjs` 仅对 `apps/web/src/app/workspace/workspace-retention.ts` 覆盖 `vue/one-component-per-file`，允许该已指定模块共同拥有 Host 与两个无 DOM 内边界，其他文件仍执行原规则；`scripts/eslint-rules/ui-source-analysis.mjs` 的既有 Component Tag 分类已支持 TypeScript Union，却未识别 Vue `DefineComponent` 的 Intersection，误将 `h(page.definition)` 及两个内边界的组件调用当作 DOM Style Sink。本片只让 Intersection 沿用 Union 的逐成员 Component 判定，原 Style Props/Sink 检查继续执行，不扩大 Vendor、视觉值或 DOM 权限。这两条既有 Owning Check 路径是本片必要兼容例外，应用配置、预算、依赖和其他规则不变；不建立新分析框架。
 
@@ -12120,7 +12374,7 @@ Workspace Store 不保存 DOM Offset。CURRENT 已由 `router-lifecycle.ts` 拥�
 
 Workspace Record 必须匹配当前 Router Lifetime、Workspace/实例关联、最近已提交地址与 Content Identity、已就绪内容，以及 §18.9 的 Locale/Appearance Snapshot、Layout Profile、Owner ID、原生尺寸、字体和 Writing Mode/Direction 条件。页面内容变化或未反映到 DOM 的异步更新须使旧记录失效；同 URL、同高度、同一活实例都不能单独证明 Revision 有效。Route Input 更新、替换、Reset、Close、实例销毁、Registry/内容/语言/外观/几何失配及 Router Dispose 均不得复用旧位置。
 
-现有九个只读页继续使用 §18.9 的真实 Build/Content Revision。当前有界修复允许 development、staging、production 中符合本节条件的活 Workspace 分别保存和恢复位置；§18.9 的 History Development/HMR 排除与 Appearance History 排除保持。对仍存活的交互页，未来首片接线须提供页面拥有的**内容变化通知和呈现就绪状态**，只让 Router 失效/确认所属记录，不输出值副本或 Offset；真实编辑、预览、反馈等导致内容变化就失效，未发生内容变化的 Deactivate/Activate 不伪造新 Revision。`appearance-management` 的 Workspace 恢复接线必须覆盖现有 `previewView`、`motionSequence`、`feedbackSequence`、Notice/Pending Locale 与实际 Theme Preview 等状态变化；缺少可靠通知/就绪关系时放弃该次位置恢复。此窄活实例合同不解除它在现有 History Region Record 中的排除，也不让跨销毁内容用 Mount Counter、时间戳或 DOM Hash 冒充 Revision。
+现有九个只读页继续使用 §18.9 的真实 Build/Content Revision。当前有界修复允许 development、production 中符合本节条件的活 Workspace 分别保存和恢复位置；§18.9 的 History Development/HMR 排除与 Appearance History 排除保持。对仍存活的交互页，未来首片接线须提供页面拥有的**内容变化通知和呈现就绪状态**，只让 Router 失效/确认所属记录，不输出值副本或 Offset；真实编辑、预览、反馈等导致内容变化就失效，未发生内容变化的 Deactivate/Activate 不伪造新 Revision。`appearance-management` 的 Workspace 恢复接线必须覆盖现有 `previewView`、`motionSequence`、`feedbackSequence`、Notice/Pending Locale 与实际 Theme Preview 等状态变化；缺少可靠通知/就绪关系时放弃该次位置恢复。此窄活实例合同不解除它在现有 History Region Record 中的排除，也不让跨销毁内容用 Mount Counter、时间戳或 DOM Hash 冒充 Revision。
 
 活 Workspace 的记录按确切身份及实例分别保存，切换前采集最后完成呈现的来源真实 Offset；不能仅以共享 Owner ID 索引、把目标当来源，或让关闭、替换、Dispose 后的过期回调重建记录。刷新恢复偏好控制跨文档 Reload 和 §18.11.12 的显式局部 Refresh，不控制普通活 Workspace 切换的保留与恢复。
 
@@ -12359,14 +12613,14 @@ COMPLETION_EVIDENCE=reviewable incremental unified diffs against the preserved i
 
 #### Navigation and development boundary
 
-TARGET 支持同一浏览器标签页中 development、staging、production 的普通完整 Reload：偏好开启，来源及目标均为现有已准入、已验证空内容输入的 Registered Content Region，并满足下述采集、存储与呈现合同。当前适用集合沿用 Router 已有的九个只读管理台页、`appearance-management` 和 `capability-roadmap-standalone`；不新增页面或 Registry。Document/Error Owner、Sidebar、Drawer、水平 Workspace Tab Strip 不进入该 Snapshot。当前 routeName-only Snapshot 不扩张到未知动态内容、record-address、多记录实例或任意页面输入。
+TARGET 支持同一浏览器标签页中 development、production 的普通完整 Reload：偏好开启，来源及目标均为现有已准入、已验证空内容输入的 Registered Content Region，并满足下述采集、存储与呈现合同。当前适用集合沿用 Router 已有的九个只读管理台页、`appearance-management` 和 `capability-roadmap-standalone`；不新增页面或 Registry。Document/Error Owner、Sidebar、Drawer、水平 Workspace Tab Strip 不进入该 Snapshot。当前 routeName-only Snapshot 不扩张到未知动态内容、record-address、多记录实例或任意页面输入。
 
 | Navigation / lifecycle | TARGET behavior |
 | --- | --- |
 | 新文档的 ordinary browser reload | 首次 Router Navigation 且 Navigation Timing `type === 'reload'` 时，按本节最多尝试一次已消费候选。 |
 | Direct entry / ordinary new navigation | 不回放 Reload 候选；启动时仍消费读到的有效旧 Snapshot，防止其继续滞留。 |
 | History Back/Forward | 保持 §9.11/§18.9 的 Entry、内存 Region Record 与 Document 原生策略，不用 Reload Snapshot 替代 History。 |
-| Explicit live Workspace activation | 依 §18.11.7 在 development、staging、production 保留各活实例的位置；独立于 Reload 偏好和本 Document 的 Reload 资格。 |
+| Explicit live Workspace activation | 依 §18.11.7 在 development、production 保留各活实例的位置；独立于 Reload 偏好和本 Document 的 Reload 资格。 |
 | Application-local Workspace refresh | 保持确切实例替换、呈现 ACK、失效与 Router Reset；按 §18.11.12 使用现有偏好和操作私有位置候选，不使用 Reload Snapshot，不添加额外 Remount。 |
 | HMR-affected document / Vite-triggered full reload | 当前文档的 Reload 采集与回放资格保守失效；不声称能跨任意源码变化恢复原语义内容。 |
 | BFCache return | 原文档延续，不重新读取/Prime/回放 Reload Snapshot；保持原生位置和仍存活的 Router/Workspace 状态。 |
@@ -12592,6 +12846,8 @@ Focus、Hover、Selected、Active 的视觉反馈只能通过 Outline、Inset、
 未来沿用 `scripts/architecture/check-architecture-admin-console.ts` 的 Layout/Region 责任及现有 Public UI、Design System/Uno、Policy、Bundle 检查，最小扩展 Shell Region Exact Closure、Profile Required Regions、稳定 Layout Role/生成输出闭包、PublicRole/语义 Uno Mapping、唯一几何权威、无 Raw Shell Geometry、Narrow Minimum、Scroll/Safe Area Ownership 与持久 Region Presence 的跨文件合同。具体 Private Helper、变量、循环、Parser、容器或 DOM 算法不因本节成为规范；不新增第二治理引擎。静态检查可拒绝声明/接线/明显结构违约，不能证明真实字体、布局、Scrollbar、Focus、首屏或交互结果；本次不创建 Checker、Test/Browser Infrastructure 或 Evidence Artifact。
 
 ## 18.14 Workbench Overlay, Focus, Dismissal, and Navigation Transaction Contract
+
+Owner 于 2026-11-04 明确删除键盘聚焦支持。本节原有 Keyboard Focus、Focus Trap、主动 Focus Entry/Return 和 Menu Keyboard Composite 要求由 §25.2 取代，不再是活动实现或未来准入目标；Overlay 关闭、背景 inert、滚动锁和导航事务安全要求继续有效。
 
 本节是 §37.2.17 授权的架构目标，依赖已提交的 §15.6–§15.7、§26 UnoCSS-first Styling Governance 与 §18.13 Workbench Geometry/Layout Stability。保留既有 Router/Workspace/Scroll 所有权、唯一 Overlay Root、Narrow/Regular/Wide 三种 Layout Profile 和 Motion Full/Reduced/None；不改变当前能力状态，不把目标写成已有源码行为。
 
@@ -12877,11 +13133,54 @@ telemetryName=route.console.control-center
 | ------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Appearance `commitPreference` 返回 `committed / rejected`                                                     | 此用户偏好提交路径按现有校验、DOM/Store、Storage 写入与失败补偿合同运行；只有 `committed` 才可报告本次提交成功，`rejected` 不显示成功。不把其他只做环境 Reapply 的内部 committed 结果解释为用户偏好已保存        |
 | Locale `switchLocale` 返回 `applied` 并携带 `persistence=saved / failed`，或 `unchanged / failed / cancelled` | 应用成功与保存成功分开；已应用但保存失败明确为未保存，不误报切换完全失败或已保存。`unchanged` 没有新写入，不作为新的保存确认；失败/取消不显示成功。Pending 通过现有 Boundary 表达，实际内容始终跟随已提交 Locale |
-| Navigation 的两个 Store Setter 返回 `void`；Port 有 `saved / failed`，Store 当前丢弃结果                      | UI 可观察真实内存偏好，**不能确认持久化成功**。未来需要强“已保存”反馈时，须先在既有 Navigation Owner 的最小结果边界补齐透传/可观察性；不能由 Control Center 猜测或直接访问 Port/Storage                          |
-| Scroll 的 `setRestoreOnRefresh` 返回 `void`；Port 有 `saved / failed`，Store 当前丢弃结果                     | 与 Navigation 相同：内存值变化不等于已保存。强保存确认前先补齐原 Scroll Owner 的结果边界，不新增 Settings Store 或第二恢复系统                                                                                   |
+| Navigation 三个 Store Setter 返回 `NavigationPreferenceMutationResult`，具体准入见下方 scoped record         | `applied` 与 `persistence=saved / failed` 分别表达本次内存设置和实际保存结果；`not-ready / busy` 均未执行设置。现有消费者可以忽略返回值，未来设置只能据真实结果反馈，不直接访问 Port/Storage                                            |
+| Scroll 的 `setRestoreOnRefresh` 返回 `ScrollPreferenceMutationResult`，具体准入见下方 scoped record          | 同样区分已应用、保存成功/失败、未就绪和同步重入；写入失败保留内存选择，不能把 `applied` 单独解释为已保存，不新增 Settings Store 或第二恢复系统                                                                                         |
 | Workspace Session 的写入由既有结构 Watch 拥有                                                                 | 保持现有 Session 行为，不给它编造新的设置项、总保存按钮或强保存确认                                                                                                                                              |
 
-Navigation/Scroll 在 Port 尚未初始化时的 Setter 当前无操作；未来界面必须读实际领域状态，不能用乐观本地副本伪装应用成功。写入失败保留内存选择的既有语义不改。上述结果透传是已确认的未来源码缺口，本次不修改 Store/Port Signature，不发明尚未返回的成功标记。
+Navigation/Scroll 在 Port 尚未初始化或 `initialize` 返回的释放句柄已执行时，Setter 保持不操作，未来界面必须读实际领域状态，不能用乐观本地副本伪装应用成功。写入失败保留内存选择的既有语义不改。前序规格冻结时 Setter 返回 `void` 并丢弃 Port 结果；下方 Owner 独立授权只闭合这一结果边界，不激活本节其余 Control Center、User Panel 或视觉目标。
+
+### `PAVP_NAVIGATION_SCROLL_PREFERENCE_RESULTS` scoped admission record
+
+本包作为已授权设计系统设置的领域前置，只修改现有 Navigation/Scroll Owner 的返回与同步设置边界。两个领域分别在自己现有 Contract Module 导出 `NavigationPreferenceMutationResult` 与 `ScrollPreferenceMutationResult`，无跨域总 Result/Store：
+
+```ts
+type NavigationPreferenceMutationResult =
+  | { readonly status: 'not-ready' }
+  | { readonly status: 'busy' }
+  | {
+      readonly status: 'applied'
+      readonly persistence: ReturnType<NavigationPreferencePort['write']>['status']
+    }
+```
+
+`ScrollPreferenceMutationResult` 具有相同结构，其 `persistence` 类型从 `ScrollPreferencePort['write']` 的返回 `status` 派生；既有 Port 状态仍只有 `saved / failed`，不复制持久化状态集合、Schema、默认值或 Payload。Navigation 的三个现有 Setter（Wide Collapse、Expanded Groups、Accordion Mode）与 Scroll 的 `setRestoreOnRefresh` 均返回自己的领域结果。
+
+`not-ready` 仅表示调用入口没有可用 Port 引用（初始化前或领域释放句柄执行后），不变更内存、不写入；它优先于下面的重入判断。`busy` 表示同一 Store 的一个同步 Setter 尚在准备、应用或写入，嵌套 Setter 被明确拒绝，不应用、不写入、不排队或重放。该控制状态只存在于当前 Store 的同步调用期间，不是 Pinia/Storage 状态；调用结束或抛出异常都释放它，不阻止另一个领域 Store 的调用，也不改变原生异步失效通知的重读路径。
+
+获准执行的 Setter 在发布任何响应式赋值前准备本次完整持久化候选，写入使用这份候选，不在观察者执行后重新拼装或混入另一请求的值。`applied` 表示本次准备的内存设置路径已执行，不承诺值与之前不同；同值请求仍保留原写入次数。`saved` 来自实际 Port 对本次候选的保存确认，不表示后续独立请求不能覆盖它；`failed` 保留已应用的内存选择，不回滚或补偿写入。手风琴候选的展开组使用请求的模式和发布前的合法组集合完成归一化，随后才发布模式及组，释放不能清空这份已准备的候选。若同步状态观察者在应用期间释放 Owner，仍完成该候选的内存设置，以 `applied/failed` 结算；不把它误报为从未应用的 `not-ready`，也不借保留已释放 Port 来写入。本包不吞噬异常，原 Port 仍负责既有存储/序列化/读回错误归一化。
+
+返回值仅属于这次调用，不存入 Pinia、Storage 或持久结果缓存；后续远端应用不改写旧返回值，也不获得本地“已保存”提示。除上述同步重入修正外，正常调用的初始化、默认值、ID 归一化、自由/手风琴行为、同值设置、存储格式/Key、读回确认、原生失效通知、远端重读/无回写及生命周期保持。现有 Frame 和 Appearance 回调仍可忽略返回值；不新增 UI/Toast/通知、设置面板、Store、记录、监听、依赖或通用框架。此前窄容器等视觉包的静态交付与未完成浏览器/Owner 验收保持。
+
+```text
+ID=PAVP_NAVIGATION_SCROLL_PREFERENCE_RESULTS
+AUTHORITY=ARCHITECTURE_SECTION_18_15_7
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_NAVIGATION_SCROLL_PREFERENCE_RESULTS
+ALLOWED_SCOPE=existing Navigation/Scroll contract modules and stores; per-call results and scoped synchronous setter reentry/disposal correction; directly owning in-memory storage checks; this result contract and factual handoff
+PROHIBITED_SCOPE=UI or visual changes; Form/Table; new stores/records/schemas/keys/defaults/listeners/ports/dependencies/frameworks or result caches; unrelated storage/state/cross-tab protocol changes; browser-policy bypass; installs/new test or sample files; Git delivery/release
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+RUNTIME_VERIFICATION=NOT_PERFORMED
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+MACHINE_GATES=existing owning in-memory storage checks; existing consumer/type checks; final pnpm verify; git diff --check
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+```
+
+首轮结果包（同步重入复核修正前）完成了当时的源码与静态交付，改动为两份领域 Contract、两个 Store、现有 Storage Checker 与本节。四个 Setter 的未就绪、成功、失败及同值请求结果通过实际 Store 的隔离内存检查；失败保留内存、原有组归一化、有效/非法/缺失远端记录的无回写应用、初始化/释放及同步观察者在应用中释放 Owner 均已覆盖，实际 Storage Adapter 的读回失配也正确透传为已应用/保存失败。Frame 与 Appearance 消费者源码保持，完整 Vue/TypeScript 检查接受它们继续忽略返回值；不新增或缓存结果状态。最终 `mise exec -- pnpm verify` 实际退出 `0`，完整验证期间源码指纹不变；Initial JS 为 `263529 / 270336`、Initial CSS 为 `34235 / 40960` bytes gzip，Motion Feature 为 `33638 / 49152`、18 Route Roots / 28 Dynamic Roots 保持。全部 Generated Source、Port 实现、Schema/Key/默认值、存储与失效通知代码及既有 UI 均与本包起点逐字保持。以上是本包源码、隔离内存和静态证据，未执行浏览器操作或 Owner 验收，未推进此前视觉包的接受、设置 UI 或 Git 交付。
+
+本次同步重入复核修正已完成源码与静态交付。同 Store 的嵌套 Setter 现在明确返回 `busy`、零状态变更/写入；正常外层调用保存发布前准备的本次候选，手风琴发布前完成展开组归一化，模式或组赋值期间释放都保留正确内存候选且不继续保存。实际 Navigation/Scroll Storage Adapter 的隔离内存复现确认：外层请求、内存、保存值一致，各一次写入，嵌套请求未被误报保存；手风琴模式发布时释放保留归一化后的组且零写入。新增 owning 回归在修正前实际拒绝四种嵌套 Setter 与模式发布时释放的缺口，修正后全部通过，另覆盖跨领域调用、Port 写入期间重入、异常后控制状态释放及原有失败/无回写/生命周期场景。直接旧检查不再冻结 `write` 参数必须为对象字面量，改为保留单参数 Port 边界并从实际调用验证完整严格 Schema、写入次数及内容，不固定私有候选构造方式。最终完整 `mise exec -- pnpm verify` 实际退出 `0`，期间全部源码指纹不变；Initial JS 为 `263634 / 270336`、Initial CSS 为 `34235 / 40960` bytes gzip，全部原预算、生成物、Port、存储协议和 UI 保持。未执行浏览器操作、Owner 验收或 Git 交付。
 
 ### 18.15.8 Bottom Context Bar 与精确构建信息
 
@@ -12892,7 +13191,7 @@ Bottom Context Bar 是 §18.13 预留的持久单行 Chrome，Leading/物理 LTR
 | 字段           | 唯一来源、标签与含义                                                                                                                                                                                                                                          |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `buildVersion` | §34.1 明确以根 `package.json.version` 为 Build Version Authority，Vite Build Boundary 读取并同时注入 Compiled Build Identity / Emitted Runtime Configuration；当前为 `0.0.0`。本地化标签为“构建版本 / Build version”，不是已发布产品版本或 Release Acceptance |
-| `environment`  | Build Boundary 校验后的 Vite Mode，严格为 `development / staging / production`，注入相同两处并在启动时验证一致。标签为“构建环境 / Build environment”；表示这一构建及其匹配运行配置的环境身份，不证明真实生产部署、服务连接或健康                              |
+| `environment`  | Build Boundary 校验后的 Vite Mode，严格为 `development / production`，注入相同两处并在启动时验证一致。标签为“构建环境 / Build environment”；表示这一构建及其匹配运行配置的环境身份，不证明真实生产部署、服务连接或健康                              |
 
 后续 App/Console 呈现可读取现有 `compiledBuildIdentity` 的这两个只读字段；正常 Shell Mount 已经过既有 Runtime Configuration 对 Compiled 三项身份及 Deployment Base 的一致性校验，不重 Fetch 配置，不创建 Provider/Store、第二 Metadata Registry 或另一个版本推导。UI 不直接读 package.json 或猜测 subpackage version。机器值保持原样、标签使用 I18n，不把 `production` 翻译/包装成“已上线”。
 
@@ -13064,7 +13363,85 @@ Owner 后续明确批准本候选的一次性 Initial JavaScript 预算调整：
 
 该次布局实施形成候选时使用已声明 mise/Node/pnpm 环境运行相关现有窄检查、Canonical Generator、`git diff --check` 与最终 `pnpm verify`；此处保留历史实施规则，当前限定验收/交付事实见本节开头。静态 Gate 不证明真实滚动、Footer 外观、键盘/焦点或运行验收。后续 Owner 观察仍按 §32 区分可选任务观察与发布验收；不创建浏览器、自动化测试、Demo、Fixture 或证据资产。正常忽略的现有检查产物不是交付物，Tracked Generated Source 不得产生任务外修改。
 
-原布局任务不授权依赖、主题/密度、API/Auth、浏览器页复用/跟踪、Cross-tab Messaging、Storage Migration、多记录 Workspace、部署或其他规格续作。本节为已交付布局前序；当前有界工作是 §20B.2 单独授权的 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION` 页面错误隔离修复，Next 与 Successor 保持 `NONE`。原布局候选的 Git 限制是历史记录，本次保留源码候选也未获 Git 交付授权。
+原布局任务不授权依赖、主题/密度、API/Auth、浏览器页复用/跟踪、Cross-tab Messaging、Storage Migration、多记录 Workspace、部署或其他规格续作。本节为已交付布局前序；当前任务与准入只引用文首 Current Work 及其 scoped admission record。原布局候选的 Git 限制是历史记录，本次保留源码候选也未获 Git 交付授权。
+
+## 18.17 Developer capability workbench reconstruction
+
+Owner 最新明确要求继续“所有实例页面需要完全删除重做、重新设计，以及侧栏左下角的系统设置入口”，并授权在现有仓库完成完整重建。本限定准入取代旧能力说明页面 Exact Set 与 §18.15 的 User Panel 中转、旧 Appearance 路由保留、Control Center 作为普通工作区 Tab 的呈现要求。它是 Owner 对本次页面顺序的显式例外，不把未完成核心标为完成、不取消其他后续能力准入，也不自动接受新的 Runtime/Visual/Accessibility。§18.16 已交付六种布局组合仍为核心能力，旧 standalone capabilities 消费者随页面退休，不删除布局能力。
+
+Owner 后续已选择 Library 设计参考 libfile_6b017c33f81c8191a0442330c86fdcde 的第 2 个设置方案，并授权以其布局和视觉语言继续当前重建：分区说明与控件双栏、宽松的模式预览、独立主题圆点、少量分区线；正式控件优先消费现有 Naive UI NSwitch / NButton 及现有 UiRadioCardGroup 的官方 Radio 组合（Select 和圆角数字输入的最新退休要求以下文为准），模式卡直接复用已有 UiRadioCardGroup 的 option Slot 和官方 Radio 语义，不照搬图片中的无功能装饰或新增能力。保留全部既有设置、下方 Workspace 分区、左下入口、即时保存与失败反馈、预留空间内的右侧居中 Anchor 和 Done 返回语义；窄屏改为同页顶部导航，不与 Header/反馈重叠。所有五主题及 Light/Dark/Contrast 由既有语义 Source 投影，不使用图片颜色作为第二视觉权威。参考文件已按当前 Library 流程在执行器验证可读并视觉检查；SHA256 为 874ed654122a983e97f206ac6427ff1faea3798b74e0906bc5d1c96393a8ecf8。Dashboard 与图册同步去除无意义的盒线、修正排版和可读宽度；动态主题和 token 标本仍为真实交互而非静态图片。此段替代本节早期原生控件候选的呈现选择及其只为 native input 增加的格式例外。
+
+### `PAVP_DEVELOPER_WORKBENCH_RECONSTRUCTION` scoped admission record
+
+```text
+ID=PAVP_DEVELOPER_WORKBENCH_RECONSTRUCTION
+AUTHORITY=ARCHITECTURE_SECTION_18_17
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_FULL_PAGE_RECONSTRUCTION
+MACHINE_GATES=pnpm verify
+ALLOWED_SCOPE=replace all old product/example page implementations and obsolete page-only modules, routes, menu entries and copy; developer dashboard and public token/verified capability galleries; standalone Control Center; existing shell bottom navigation slot and settings return integration; immutable API configuration read bridge and real anonymous UApi dashboard consumer; narrowly scoped workbench UI-internal design tokens and live specimen style owners; directly affected route/i18n/style/consumer/bundle checks and source projections
+PROHIBITED_SCOPE=legacy theme compatibility; invented data/business services; incomplete capability demos; new dependencies or global Query provider; new Settings Store/storage keys; error handling removal; unrelated core refactoring; budget increases; browser-denial bypass; Git push/release
+REPOSITORY_IMPLEMENTATION=IN_PROGRESS
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=LOCAL_COMMIT_OWNER_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+```
+
+Owner 于 2026-11-04 确认“删除支持键盘聚焦，禁止所有键盘聚焦功能”，明确授权在当前未提交工作基础上同步修订本架构、现有 UI/Router Owner 与直接相关检查。该纠正属于本工作包，不启动后继任务。§25.2 是当前键盘禁用合同；本节此前“保留键盘/Focus Ring”等要求仅保留历史上下文，不能重新准入键盘聚焦。当时 Git 暂存、提交、推送和发布均未授权。Owner 随后要求“先提交一版”，明确授权将当前经过验证的连贯版本暂存并创建一个本地提交；推送和发布仍未授权，Owner Runtime/Visual Acceptance 不因提交而通过。
+
+当前产品 Route Set 精确替换为以下六项，七个现有 System Error Route 原名/路径/源码及错误机制保持，总 Route 数为 13、Product 为 6。旧十个说明工作区、旧 standalone capabilities 及其菜单/页面专用引用全部退休，不建立旧地址重定向或路由迁移。当前 Workspace 默认与关闭最后标签的回落为 workbench-dashboard；旧 Session 条目仍由现有 Registry 校验过滤，不清除其他存储。
+
+| Route name | Path / source | 内容 / Scope |
+| --- | --- | --- |
+| workbench-dashboard | / / pages/index.vue | 真实 UApi 时间响应、当前主题与实际能力入口 / console |
+| workbench-colors | /colors / pages/colors.vue | 全部 30 个公共语义颜色、正确前景/填充与状态示例 / console |
+| workbench-sizes | /sizes / pages/sizes.vue | 已实现公共尺寸、Spacing、Radius、Target 与 Layout 变量的真实视觉标本 / console |
+| workbench-typography | /typography / pages/typography.vue | 已实现字体、Body/Title、字重与行高 / console |
+| workbench-interactions | /interactions / pages/interactions.vue | 已支持控件状态、可取消/可访问滚动、显式 Motion Replay、Shadow/Layer；不展示未完成 Form/Table/Auth / console |
+| control-center | /control-center / pages/control-center.vue | 独立系统设置；无工作区身份、keepAlive=never、仍使用 admin shell / appearance |
+
+前五项沿用既有 route-single 工作区、KeepAlive、Focus、Scroll 和 Transition Owner。导航为 workbench（Dashboard）、design（Colors/Sizes/Typography）、capabilities（Interactions）；Control Center 不进入普通菜单或工作区 Tabs。唯一左下角入口由 Shell 新增可选 navigation-bottom Slot 呈现，位于菜单滚动区外，兼容折叠栏与窄屏 Drawer；预留未来账户责任但不显示假用户。设置激活时仅该入口 current，普通菜单无选中项。主 Provider/Router/保留宿主保持稳定。
+
+设置只编排现有 Appearance、Locale、Navigation 与 Scroll 边界并即时生效/保存，不新增汇总状态或直接 Storage Writer。展示五主题与合法当前 Custom、Color Mode、Contrast、Material、Font Scale、Radius、Motion、已投影的控件密度、语言、导航折叠/手风琴、刷新滚动恢复；隐藏持续 Density Scale、Account 与未完成能力。Appearance 保存失败回滚，Locale/Navigation/Scroll 可已生效但未保存，反馈须区分。Done 通过一份临时 Settings Origin（合法目的地及现有 Live Workspace identity/instance）返回来源工作区；直接进入回 Dashboard，不使用无验证的外部 history.back，不新增 Offset Store、Storage 或 History Payload。Scroll/Focus 仍由 Router 生命周期决定，几何/语言变化失配时不强求旧像素位置。
+
+Owner 根据两张实际截图追加纠正：设置为固定可用高度内的左右布局，左侧容器内部滚动；右侧上区导航垂直居中，下区承载 Done，不覆盖左侧内容。此明确要求替代前述整页滚动、浮动 Done 和分区线候选。UiAdminShell 仅新增可选 contentLayout: 'scroll' | 'contained'（省略等同 scroll），当前仅 control-center 使用 contained；该模式保持 Shell→UiScrollArea→Content→保留宿主的祖先链，防止切换设置销毁既有 Workspace 实例。Shell UiScrollArea enabled=false / contained=true（新可选 boolean、默认 false，只约束 disabled 时的固定高度无滚动布局），页面唯一启用的 UiScrollArea 沿用 architecture-console-content ID 和现有 routerScrollControllerKey 注册/释放。Shell 保留同一个 main 和唯一 data-scroll-owner Boundary，contained 模式也不移动该标记；Router Controller 通过 ownsBoundary 确认 main 内当前唯一启用的 Viewport，Native Element View Transition 的目标在进入和返回设置时保持同一元素。Frame 在进入 contained 时同步释放外层 Controller，外层 post-flush null 不释放页面 Controller；返回时先释放页面，再恢复外层注册。其他 Route 的默认滚动及 Footer 不变；不出现两个主滚动 Controller、第二 Offset Store 或浏览器绕过。设置 Anchor 调用该 Controller 的公开 scrollToAnchor。右栏为两行 Grid，上区可在短视口内部溢出而不挤走 Done；narrow 只收起 Anchor/Done 的视觉文字、保留官方按钮名称和功能，仍预留独立右栏。左侧五组使用官方 NCard 的 tag=section / bordered=false / contentClass，保留可访问标题和全部控件。全工作台以语义页面画布和无边框卡片组织空间，去除装饰性分区线、Payload/列表边框；仅真实 Border/Focus Token 标本和键盘 Focus 等功能线保留。admin.surface.content 的唯一 Source 改为 color.surface.page，以与既有 Card 的 surface.panel 区分，不更改批准的五主题颜色。Naive Card 的正式 Padding、Radius、Typography 由共享主题投影现有 Token，不落入页面私有 Theme Override。底部 Settings 使用官方 quaternary/tertiary 的无边框交互，折叠为居中正方形图标、展开为单行图标及名称，当前态为语义柔和填充而非边框；不保留冗长副文案或底部装饰分隔线。
+
+Dashboard 只消费当前匿名 UApi world-time 服务，使用一个固定公开城市参数，不读取位置或账户数据，不轮询/自动重试。Core Runtime Configuration 仍由 Bootstrap 唯一验证；允许其既有 Provider 安装边界传递只读 ApiConfiguration 并提供一个只读配置/Origin Boundary；ApiClient 由真实页面消费者的局部生存期创建；不新增 Kernel Step/Provider Component、Global Query Plugin 或第二配置默认。Dashboard 自有 AbortController 在销毁/停用时取消，只把完成且通过现有 Schema 的响应显示为成功；202、unconfigured、loading、cancelled 与失败如实区分。未配置时不请求，不写入伪造时钟或统计；展示的是服务响应快照，不冒充持续网络校时。
+
+图册只枚举公共根 tokens/tokenNames 的 60 个可用 CSS 表达式，点击复制 var(--ui-...) 或直接可用的 tokens['...'] 表达式；拒绝复制 build-only/ui-internal Source 为公共 API。命名 token-specimen 预览 Owner 只接受 TokenName Exact Set，使用私有 --pavp-specimen-value 在对应 Color/Dimension/Typography/Shadow/Layer/Motion 视觉槽渲染；无任意用户 CSS、硬编码页面色或 Deep Import。当前五主题 Preview 仅来自已验证公共投影。Clipboard 不可用或失败必须诚实反馈，不自动伪称复制成功。
+
+视觉方向为主题彩色编程工作台：真实时间响应是 Dashboard 的主要视觉锚点，能力页以标本与可复制表达式为主体，少量操作文案，不做营销 Hero 或说明文档墙。使用现有 60 Public Role 与正式 Naive API；必要的应用专用尺度只在 semantic/workbench.tokens.json 中作为 ui-internal Source 增加八项：display.font-size=4rem、specimen.minimum-inline-size=13rem、specimen.preview-block-size=6rem、api.content-block-size=16rem、api.payload-block-size=12rem、feedback.minimum-block-size=3rem、motion.travel=6rem、settings.navigator-inline-size=10rem。它们由现有 Semantic Source 管线的 workbench.* Namespace 唯一投影为 --ui-workbench-*；不开放 Component Tier。只在上述 workbench.css 的命名应用预览/命名控制样式消费。沿用 Shell 已生成的 wide Profile，时钟显示尺度和设置右侧导航可据此切换，不增加 Breakpoint、Observer 或全局布局权威。它们不是公共变量或新核心能力，公共 Role/Color/Uno Mapping 数保持 60/30/60；Manifest Token 数 274、总 Record 数 438，其他 Family Counts 不变。所有新普通 UI 用现有语义 Utility；命名预览、原生控件和上述无公共 Mapping 的 UI-internal 尺度由应用私有 workbench 样式 Owner 明确消费，不扩大历史样式债务。旧页面 Debt/Style Owner 随真实删除同步退休。
+
+Owner 最新明确拒绝下拉选择，六个设置 Select 由现有 UiRadioCardGroup（官方 NRadioGroup / NRadioButton）替换：Contrast、Language、四档 Font Scale 为双列，三档 Density/Material/Motion 为三列，narrow 均为单列；标签在组上方。数字 Font Scale 和下述 Radius 只在正式已验证 Mutation Boundary 转回 number；没有第二默认/Schema/Writer。UiRadioCardGroup 新增可选 disabled:boolean、默认 false，直接传官方 Group；实际 Native Radio 的 Name、Label、Checked、Disabled 负责键盘和选择，保留原有 Focus Ring。语言切换待完成时显示当前 Pending Choice、aria-busy 并禁用组，成功/失败/未保存继续来自现有 Owner。页面私有 SettingsSelect 及其只为旧下拉候选提供的 Filterable/focusInput/Portal 契约退休，源字节保存在任务临时备份；不保留死组件。截图只证明原 Select 聚焦而未见 Popup，未获浏览器证据时不得声称已定位旧 Vendor 事件或 clipping 根因。真正交互与持久化须以实际官方 Radio Change→原 Store / Locale 边界验证。实际 Native Radio Change 复现了 Naive 2.45.2 的同步拒绝缺口：浏览器先取消同名旧 Input，Vendor 只恢复新目标，父值未变时旧 Input 不会重绘。UiRadioCardGroup 仅以一个临时请求值经官方 Group.value 完成一轮 Vue Render，再在 nextTick 回到唯一 modelValue；不新增持久化/默认权威，不查询 Vendor DOM、不重挂/改变 Name 或 Focus。序列与 Dispose Guard 防止快速后继选择被旧回调清除，disabled 不发出更新；接受、拒绝、快速中断、销毁与 Native Checked 状态均须实证。左侧始终复用已有 UiScrollArea 和其同名 Main Controller/Enhancement；没有独立原生整页 Overflow 实现。实际嵌套 SFC SSR 与编译后 Scoped CSS 已确认 disabled/contained 后代 Selector 会匹配内层启用实例；UiScrollArea 的 disabled、contained 和 horizontal 结构规则只能作用于自有直接 Viewport / Content 子级，不能覆盖嵌套实例。左右单行 Grid 显式使用 minmax(0, 1fr) Row；右侧原生导航区伸展到可用上区并使用 safe center，让内容适合时居中、短视口溢出时从首项正常滚动，overscroll containment 不把手势传播到其他区域。Done 始终位于其独立下区。右侧当前 Anchor 使用官方 primary Button，与普通 quaternary Hover 区分，保持唯一 aria-current；末尾以同一 Controller 的实际范围同步工作空间分区。通用 Radio 默认标签使用结构 Utility 居中，不改变自定义 option Slot、官方输入或相等列宽。Shell 的同一双语言 Title Owner 使用开发者工作台名称，与 PAVP 品牌各出现一次，避免重复品牌文案。右栏 regular/wide 以 max-content Track 和既有 10rem 最小值适应真实语言/字体，Anchor 不折字；主题点内容从上沿对齐，名字换行不得改变圆点基线。
+
+本次主题/Anchor/Dock 控件的真实布局，只准入 workbench.css 中命名的 View-namespaced Vendor Adapter Selector：.wb-theme-option.n-button、.wb-theme-option .n-button__content、.wb-section-link.n-button 及其 regular/wide Profile 分支、.wb-settings-dock.n-button 及其 data-collapsed 分支。模式预览直接消费已存在的 UiRadioCardGroup.option Slot，排列由现有 layout-regular/layout-wide 的三列 Utility 表达；不在页面重写 Radio Group 的分隔、尺寸和选中样式。它们只消费本次实际控件，精确 Declaration 由既有 style-owner-contracts.ts 的 VENDOR_ADAPTER_OWNER 记录拥有；允许 Anchor/Dock justify-content 与 Anchor white-space 的精确 !important，以覆盖已固定 Naive 2.45.2 的 unlayered 布局。不给页面任意 .n-* 规则、任意属性或颜色覆盖，不放宽全仓选择器/样式债务。共享 Token 和 UiProvider 仍是控件视觉权威。Owner 第三张实际截图的接缝、贴边与左偏纠正须落实到真实生成样式：现有 spacing.content.gap 只生成 gap-content-gap，spacing.section.block 只生成 py-section-block，不得使用不存在的 gap-section-block / p-content-gap / px-content-gap / gap-page-inline。私有工作台三个内容栅格直接以既有 spacing.section.block 表达分组 Gap（无对应 Uno Gap Mapping），Padding 使用已存在的 p-page-inline / px-page-inline。说明列在 wide 为 1:2、文本可 pretty 换行；模式标题及圆选标记居中。UiRadioCardGroup 在自身 Owner 通过现有 Appearance Context 与官方 NRadioGroup Theme API 映射已验证 primary.solid.background.default / foreground，当前 Role-only Custom 使用既有 action.primary / text.on-action 配对；不以填充色当文字、不新增公共 Prop/Token。官方 Border Color 为透明重置以去除实际 unlayered Naive 细边；键盘 Focus Ring 保持。该复合组件移除自身重复的默认/选中/悬停背景和文字 CSS，让官方 API 唯一绘制，仍以现有 Token Transition 和 UiProvider 的 effective Motion 覆盖 full/reduced/none，不为每张卡创建 Motion 实例。
+
+Owner 最新四项设置纠正明确准入：左侧最后一节之后增加无交互、无焦点且 aria-hidden 的尾部留白，使最后一节也能按 Anchor 对齐；该私有结构使用与 Shell 相同的 100vh / 支持时 100dvh 平台视口尺寸，不增加视觉 Token、第二滚动容器或首屏占位。Anchor 明确请求现有 UiScrollController 的 smooth 定位，由 UiScrollArea 的既有有效 Motion 策略在 reduced / none 时降为 instant，不增加页面动画器。通用文字 Radio 内容只消费现有 button-inline 横向内边距，保留 44px enhanced Target 下限、等宽列与居中标签；只有实际 option Preview Slot 保留 page-inline 展示内边距，选中态使用上述已验证主色实底配对。Radius 的 NInputNumber 与加减文案退休，改为四个页面私有文字选择：直角 0、微圆 4、圆润 8、大圆角 16；它们均在当前 0..16 整数 Radius 合同内，经原 Preference Mutation 验证，不改变 Schema、Default、Storage 或半径投影。已有其他合法 Radius 原值不被归整、不强制勾选预设，并显示保留自定义值的说明，只有用户选择后才提交对应数值。新的 Library 截图 libfile_6fbcad68e4e88191be2bbb669804cfc0 已实际查看，SHA256 为 6e38268da263e1a779734b1770289fc0cb537a23581e22513f82924941db8a15；截图不代替修复后的浏览器验收。
+
+旧页面退休使三个既有公共合同暂时没有页面消费者：§23.6.4 的 shared/i18n 公共根、§9 的 Router Console Projection、§18.11 的 useWorkspaceContentRevision 入口；Knip 只把这三个精确文件补为现有应用 Workspace Entry，与原 API / Query Entry 一致，不增加 Ignore 或新 API。ConsoleMessageParams 依其原有 I18n 公共合同从同一根重新导出；内容修订 Hook 继续保留，禁止为满足 Knip 虚构页面消费者或删除核心合同。
+
+Owner 追加要求恢复清晰的 Hover 反馈。UiRadioCardGroup 的默认/选中配色仍由官方 NRadioGroup Theme API 拥有；官方没有 buttonColorHover，禁止虚构该键。未选中 Hover 的文字使用官方 buttonTextColorHover 映射已验证 primary.soft.foreground；本组件仅以两个私有 Color 变量映射 primary.soft.background.hover 与 primary.solid.background.hover，Role-only Custom 分别回落到既有 Page/正文和 Action/On-action 配对。两个精确自有直接子级的 unlayered 状态规则覆盖 Naive 同样 unlayered 的默认/checked Background，不能仅依赖 components Layer 提高 Specificity。Hover 以现有 Border Width 和 currentColor 增加不占布局的内嵌 Outline（负 Border Width Offset），保证合法 Custom 的回落底色相同时仍有反馈；Focus 继续用原 Focus Ring，并在同一 unlayered Owner 中保留优先级。disabled 的 Group 标记与实际 Naive n-radio-button--disabled Label 类共同禁止两种 Hover 与 Focus 适配；不改变当前显式 false 的官方优先级，也不把 CSS 适配标为新增 Form 继承能力。实际禁用、Opacity 和 Native Input 语义仍由 Naive 拥有。现有 ESLint 只为本组件的官方 Group 增加该命名 Runtime/Vendor Inline Writer，逐字段验证准确两个变量、原 Appearance 注入来源及两个既有 Role Fallback，接受 Import Alias 与私有绑定改名；不豁免其他 Style Sink。无任意全局 Selector、important、布局移动、新公共 Prop/Token 或第二 Motion Authority；现有 Token Transition 继续消费 UiProvider 的 full/reduced/none 策略。默认、Hover、选中、选中 Hover、Focus、Disabled 的有效源码 Cascade 与颜色配对须验证，受控状态不冒充真实浏览器悬停验收。
+
+当前 Capability Manifest 的 21 项状态映射保持，页面重建只解除旧页面关联：Schema 1 的 routeName 放宽为 string | null；仅有真实当前演示或设置消费者的记录关联新路由，其余为 null，非 Active 记录不获得演示入口。生成器继续由同一 Canonical JSON Source 派生，不保留旧 Route ID、旧页面 Definitions 或第二 Registry。该范围包含现有 Capability Manifest Generator 与其 Owning Check。
+
+设置正式控件使用上述 Naive UI 官方 API；原生 HTML 保留结构、标题、标本与必要语义。已退休的 native input 格式例外随源码删除，不成为新全仓约定。
+
+两语言和错误文案保留，同一现有 I18n Owner 重写工作台/设置 Copy 并移除旧说明页专用资源；不借页面重建激活通用公共 I18n Target。保留完整 Router/Storage/Runtime/UI 核心行为检查；退休的旧页面快照/源码字串探针由新产品 Route/Consumer/Interaction 合同检查替代，禁止整体删除核心保护。新的 Lazy Route/Message Set 按实际 Source 逐项核对，现有预算、压缩/闭包算法不变。最终运行 pnpm verify，另做实际 Naive/Vue SSR 和支持的交互检查；无浏览器观察时只报告静态/SSR，不能记为 Owner 视觉验收。所有任务外未提交内容按起始字节保留；实施期间未进行 Git 交付，后续仅按上述 Owner 授权创建本地提交。
+
+本轮较早候选曾完整执行 pnpm verify：Runtime Profile、Format、ESLint、CSS、Vue/TypeScript、Architecture、Schema、Tokens、Repository Policy、Knip 与 Production Build 均通过，最后 Initial JavaScript Budget 失败。当时 Canonical gzip 实测为 274302 bytes，上限 270336 bytes，超出 3966 bytes；任务入口保存的基线为 272668 bytes，本轮相对增加 1634 bytes。预算、压缩与闭包算法未改，不因已有基线超限而豁免。受控实际 Vue/Naive、嵌套 Scoped CSS 与 Lenis 事件证据已通过；当时未获浏览器访问；后续 Owner 已授权同一 Chrome 入口，Cobalt Tide Light/Enhanced/90% 下已检查 Pointer Ring、Anchor/快速替换/Wheel 中断和三个视口的主题标签布局。该有限证据不代替其他主题/模式、物理 Trackpad、完整 Owner Runtime/Visual Acceptance。
+
+Owner 进一步指出设置右侧导航的点击波纹两侧被遮挡。实际 Naive Button Wave 向外扩展，原导航滚动边界与按钮左右重合；当前复用已有 Content Gap 留出四周绘制空间，窄屏导航列为已有目标宽度及页面内边距留足位置，保持右栏短视口滚动、左侧滚动所有权和既有 Motion 策略。两张参考截图已检查，SHA256 分别为 `5684724985353ae206096ac79e5ca86995a7133c1d379b36112ce9b312b0eae8` 和 `72ffbff277c1a984980c23b1cee73688f114c78a7f15c376110de4ecbdc4bebc`。现有 Chrome 中 Royal Iris / Dark / Enhanced / 90% 下，常规及 390px 宽视口测得按钮两侧均有约 10.8px 留白，实际点击产生 Naive Wave；390×320 短视口中右栏可滚动而左侧位置不变。这些观察不代替物理 Trackpad、其他主题或 Owner 视觉验收。
+
+此前交互候选的完整 Gate 曾在 Initial JavaScript `273548 / 270336` bytes gzip 失败。只读 API Boundary 的纯类型导入现不再意外载入 Dashboard 客户端；五主题 Registry 的内部 Palette 改为无损紧凑编码，四个 Plane、全部颜色、600 条 Bank 与引用关系保持。最终候选的完整 Gate 首轮通过，Initial JavaScript `270075 / 270336` bytes gzip、Initial CSS `24123 / 40960`、Motion Feature `33662 / 49152`，23 个 Dynamic Roots 保持；Generated First Paint 与其他 Token 产物未改变。预算与 Bundle 测量规则未调整，Owner Runtime/Visual/Release Acceptance 仍待完成。
+
+Owner 后续明确要求移除鼠标点击模式卡后遗留的环线，同时保留 Hover 与选中反馈。该纠正取代本节早期 Radio Focus Ring / Hover Outline 候选：UiRadioCardGroup 移除自有 focus-within Shadow 与 Hover Outline；UiProvider 只移除强制颜色下针对 n-radio-button--focus 的轮廓，保留其他按钮和编辑控件的 Focus 样式，键盘禁用实现不变。默认单选面在 Builtin 使用已验证 neutral.soft 配对，Role-only Custom 使用既有 Page/正文配对；选中沿用已验证实底，默认文字 Slot 增加不占读屏名称、预留对称空间的选中 Check，标签居中且状态切换不改变布局。Builtin Hover 使用原 soft / solid 对应前景；Role-only Custom 的未选中 Hover 使用 Panel/正文对比对的反向配对，选中 Hover 使用 Action/On-action 的反向配对，交换前后保持原已验证 Contrast，并覆盖合法 Page=Panel 的情况。第三个私有 Color 变量只承载选中 Hover 前景；Stylelint 仅在该 SFC Style 身份允许该一个变量的 color，实际精确 Selector/Declaration 仍由原 Style Owner 检查。Forced Colors 使用 Canvas/CanvasText、Highlight/HighlightText 成对正反向绘制与 Check 显示选择，不以轮廓表达焦点，不增加 forced-color-adjust:none 或焦点管理器。
+
+Owner 已要求在并行键盘任务完成后复核当前页面与已实现共享组件的类似交互问题。本轮只修实际复现/源码闭合的案例：TokenSpecimen 的 Clipboard Promise 采用私有请求序列、当前 Token 与 Dispose Guard，开始新请求或切换 Token 时清除旧成功文案，Card Padding 的实际点击区域使用既有 Pointer Utility；设置语言加载中仍显示同时发生的保存错误，语言完成不覆盖期间新增的错误，失败的 Locale Notice 合并到同一反馈 Owner，不创建第二 Store 或重复 Polite Region。独立设置页不再用保留来源 Workspace 的身份创建 Tabpanel；App 以当前 Route Record 的 workspaceIdentityPolicyId 判定面板语义，并沿用当前键盘禁用合同。静态 Breadcrumb 明确 clickable=false，正文子节点使用原静态前景，既不假装导航也不继承无操作的 Hover 色。
+
+Anchor 高亮不再依赖异步 IntersectionObserver 的旧可见集合：当前页面在既有 UiScrollArea 的 Native Scroll Capture 中，用同一 Controller 的 ownsBoundary 过滤真实主 Viewport，读取五个目标的当前几何；一份私有临时 Anchor 意图在平滑定位期间保留目标，抵达后由当前位置接管。只在左侧主区域的 Wheel/Pointer 输入中取消该意图并调用既有 cancelMotion，包含限位上无新 Scroll Event 的情况；右栏滚动不接管左栏。无第二滚动控制器、动画器、计时器、全局监听或焦点策略，Anchor 不主动 focus。
+
+主题按钮对 Builtin 使用官方 Quaternary，名称继承其安全前景；在本 View 的同一官方 Theme Override 中仅把 heightMedium 设为 auto、paddingMedium 设为 0，使圆点/可换行名称参加自然高度，防止 unlayered 固定高度导致下一行碰撞。对合法 Role-only Custom，Quaternary Vendor 半透明 Hover/Pressed 不能保证原 Contrast，因此这些按钮使用官方普通无边框 Variant 和同一已验证 Panel/正文对的正反向 Color/TextColor Hover、Pressed、Focus；Ripple Color 为 transparent，不绘制点击环。Builtin 配色不变，未引入新的公共 Role、Palette、Schema、Storage 或通用 Theme Authority。Radio 默认 Builtin 使用已验证 neutral.soft 配对，Role-only Custom 仍使用 Page/正文；显式两列 Font Scale 和现有间距合同保持，不以主观视觉判断改造其他页面。
 
 # 19. 状态管理
 
@@ -13551,7 +13928,7 @@ DIRECT_STORAGE_OUTSIDE_OWNER=PROHIBITED
 
 **CURRENT / TARGET 分界**：`workspace-session` 当前仍为 schemaVersion 1、current/minimum 均为 `1`。§18.11.11 唯一拥有已冻结但未实施的 schemaVersion 2：未来只将同一 Record 的 current 改为 `2`、minimum 保留 `1`，保持原 Key、localStorage、Owner、direct-compatibility、非敏感字段限制和 Lifecycle。严格 Root 拒读与有效集合内逐 Entry 丢弃、Route/Schema/身份版本重验、顺序/语义去重、Dormant 恢复及无读取即升级写入均按该节执行；Hash 永不持久化。仍是八条 Record、十五步 Kernel、零 Migration/Envelope；不引入跨页合并或改变其他 Record。本次未修改 Registry、Adapter 或 Storage 运行功能检查，现有 Storage ACTIVE 状态不代表多记录目标已激活。
 
-§9.4 的 browser-page-session 精确准入一条会话元数据记录及 `pavp:browser-page:discovery` 临时发现通道；其 Schema、Key、消息形状、Port 和生命周期以该节为准。该通道不属于下方 Frozen Landing 的存储变更协议，不改变 `storageCrossTabEventAllowlist` 或原 Channel/Fallback；它的存在不能作为准入 Envelope/Revision/CAS/通用同步的依据。Storage Owning Check 精确保护八条 Registry、新 Adapter 的 Session Storage 权限、Strict Schema/失败分类、目标 Blank 初始化和通道释放。
+§9.4 的 browser-page-session 精确准入一条会话元数据记录及 `pavp:browser-page:discovery` 临时发现通道；其 Schema、Key、消息形状、Port 和生命周期以该节为准。该通道不属于下方 Frozen Landing 的存储变更协议，不准入应用 Storage 变更事件或恢复已退役的空 Channel/Fallback；它的存在不能作为准入 Envelope/Revision/CAS/通用同步的依据。Storage Owning Check 精确保护八条 Registry、新 Adapter 的 Session Storage 权限、Strict Schema/失败分类、目标 Blank 初始化和通道释放。
 
 最终存储行为须区分有意共享的外观/语言偏好、独立浏览器页的 Workspace 状态、可恢复浏览上下文、缓存与另行批准的业务草稿，避免独立工作相互覆盖；复制应用须使用适当命名空间，只恢复明确支持的数据，并如实处理不可用、无效值和写入失败，保留敏感数据限制。§18.11.11 当前 Workspace 结构通过同一配置键读写 Local Storage 是实现事实，跨窗口覆盖仅是未复现的潜在风险，不能记录为已确认数据丢失；本次不改变该合同，也不选择 Session Storage、窗口标识、迁移或跨页消息方案。存活实例缓存、页签结构恢复、浏览上下文恢复和业务草稿持久化分别判断，不能互相证明。
 
@@ -13632,9 +14009,51 @@ Corruption Policy 必须避免每次启动重复解析同一坏值。`quarantine
 
 写入顺序固定为：Typed Payload Validation → Canonical Serialization → Serialized Round-trip Validation → Revision Conflict Check → 单 Key Atomic `setItem`/Transaction → Readback Validation → Publish Change Event。Quota、Unavailable、Serialization 或 Readback Failure 不得更新内存中的 Persisted Revision，也不得丢弃用户未保存状态。
 
+### `PAVP_SHARED_PREFERENCE_SYNCHRONIZATION_IMPLEMENTATION` scoped admission record
+
+```text
+ID=PAVP_SHARED_PREFERENCE_SYNCHRONIZATION_IMPLEMENTATION
+AUTHORITY=ARCHITECTURE_SECTION_19_5
+ALLOWED_SCOPE=existing Appearance/Storage/I18n/Navigation/Scroll owners and ports; one five-record native invalidation subscription; this contract and directly coupled owning checks/generated projections
+PROHIBITED_SCOPE=configuration/env; HTTP/Query; Form/unsaved; Table/multi-record Workspace; page rebuilding; runtime fault injection; owner acceptance changes; dependency installation; Git delivery/release
+MACHINE_GATES=existing owning checks and isolated in-memory scenarios; final pnpm verify; git diff --check; separate actual multi-tab observations
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_EXISTING_RECORD_SYNCHRONIZATION
+REPOSITORY_IMPLEMENTATION=IN_PROGRESS
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+Owner 已选择各浏览器标签页独立导航和工作现场，共享偏好与已保存数据变化。本包只准入现有 `appearance-preference`、`appearance-custom-theme-registry`、`locale-preference`、`navigation-preference`、`scroll-preference` 五条记录的原生 `storage` 失效通知与原 Owner 非持久化应用。现有八记录 Registry、Key、Schema、格式和 Principal `none` 不变；只有确切五条记录在本节获得事件消费者，不引入 Envelope、Revision、CAS、业务缓存、端点、账号协议或通用事件总线。此准入替代这些记录此前零 Cross-tab Consumer 的限制，不激活下方 Future General Storage Platform 的 Revision/Envelope 合同。
+
+允许范围为本节及直接冲突条款、现有 Appearance/Storage/I18n/Navigation/Scroll 所有者、一个仅服务五条记录的原生失效订阅函数、直接 Owning Checks 和必要生成投影。复用现有初始化/逆序释放句柄，不增加 Bootstrap Step、Provider、Store 或框架。配置/env、HTTP/Query、Form/未保存保护、Table、多记录 Workspace、页面重建、错误隔离行为验收、运行时故障注入和 Git 交付不在本包。错误隔离保持原 `IN_PROGRESS` 与未执行的 Owner Acceptance，仅由本包接管当前工作入口，不伪造前包完成。
+
+本地偏好保存须重新读取并校验实际持久化 Registry，不能以缓存重新授权已删除主题；读取不可用或引用无效时拒绝保存并保留有效状态。启动语言只先准备默认资源并安装同一官方实例，再复用可取消的切换 Owner 处理最新保存选择；过期加载不阻塞就绪，也不能提交旧语言或错误，只有仍然当前的选择真实失败才显示原安全降级提示。
+
+监听先于补读，通知只作为重新读取的信号，不消费或记录事件中的 Payload。各 Owner 严格验证并应用最新已保存记录，远端应用不重新持久化；同名 Custom Theme 内容更新也须生效。异步语言资源加载提交前重验最新选择，旧请求及已释放句柄不能提交。单记录以最后成功保存的值收敛，不承诺跨 Key 事务、字段合并或无并发更新丢失；不能通过旧快照补偿写覆盖其他标签的新值。Appearance 先完成可回滚的本地准备再持久化，持久化成功后没有需补偿的可失败提交步骤；失败只恢复本地 DOM/State，不写回旧 Storage。现有 capture/restore Storage 私有辅助和直接耦合检查随此退役。
+
+正常远端语言恢复、清空和同语言补读保持 `notice=none`，私有非持久化应用结果不含保存状态；只有显式本地保存返回原 `applied/saved` 或 `applied/not-saved` 反馈。非法或不可访问的语言偏好提示保留最近有效界面语言，不硬编码正在使用简体中文。
+
+合法缺失/清空按原领域默认值非持久化应用；非法、不可访问或 Theme 引用悬空时保留最后有效状态，不修复/删除用户记录。Preference 与 Custom Registry 仍分别校验，没有跨 Key 原子性。保存的 `system` 保持原值，各标签自行解析 OS Media；`density.scale` 仍不应用。导航只同步保存的 Wide 折叠/分组偏好，不复制 Active Group 派生展开、Profile 或 Drawer。滚动只同步恢复开关，关闭沿现有 Owner 清除待恢复记录，不写当前坐标。Workspace 活页签/实例、URL/History、焦点、滚动坐标与草稿保持各标签独立；`workspace-session` 的历史 Local Storage 启动快照不实时合并，也不迁移。
+
+本轮语言同步反馈修正候选已完成新的完整 `mise exec -- pnpm verify`，实际退出 `0`；Initial JavaScript `261982 / 270336` bytes gzip，Initial CSS `33418 / 40960`，Navigation Motion `33639 / 49152`，28 Dynamic Roots / 18 Route Roots 保持。实际 I18n Runtime 内存回归确认远端恢复、清空和同语言补读静默且零写入，非法偏好保留真实当前语言并准确提示，本地保存成功/失败仍返回原反馈。修正前同一探针复现五项反馈缺陷，修正后通过。全量之后仅补记结果，应用与校验器源码不再变更，并另执行直接 Owning Check 与 Diff Check；本轮未新增浏览器观察或故障注入，当前待独立复审，Owner 接受保持未执行。
+
+上一轮竞态修正候选的历史证据：该候选已完成一次新的完整 `mise exec -- pnpm verify`，实际退出 `0`；Initial JavaScript `261986 / 270336` bytes gzip，Initial CSS `33418 / 40960`，Navigation Motion `33638 / 49152`，28 Dynamic Roots / 18 Route Roots 保持。实际 Store 的顺序删除/旧缓存选择、全新恢复及 Registry 读取失败回归通过；实际 I18n Runtime 的六种隔离场景覆盖启动与运行时的过期成功/失败，以及仍当前英文选择的成功/真实资源失败。修正前探针已分别复现悬空引用和启动阻塞/旧语言或错误提交，修正后同一探针通过。该轮未进行真实浏览器复测或运行时故障注入；下方双标签观察仅是首轮历史。该轮全量之后只补记结果，应用及校验器源码未再变更，并运行直接 Owning Check 与 Diff Check；Owner 接受不变。
+
+首轮候选历史证据（独立复核前）：本包实现候选已在 Node `24.15.0` / pnpm `10.34.5` 完成新的完整 `mise exec -- pnpm verify`，退出 `0`。Initial JavaScript `261889 / 270336` bytes gzip，Initial CSS `33418 / 40960`，Navigation Motion `33636 / 49152`；28 Dynamic Roots / 18 Route Roots 不变。此前两次候选 Gate 分别停于准入标题/Authority 格式及新增探针的 Branded ID 类型错误，已修正后重跑通过，不改写失败历史。最终全量之后只补充本结果记录并运行直接 Owning Check 与 Diff Check，不再改应用或校验器源码。
+
+首轮候选的检查与观察历史：隔离内存检查执行实际 Appearance Store、Schema/Resolver/Theme Bank 与 Pinia，覆盖同 ID 主题内容变化、非法/悬空/缺失记录、无远端回写及本地失败不得补写覆盖其他已保存值；另以实际领域代码确认导航/滚动偏好与语言异步取消。应用内浏览器两个同源标签已实际观察双向主题/颜色模式/语言更新、Wide 导航偏好与滚动恢复开关同步，并确认页面及工作页签关闭独立；初始 UI 选项恢复，临时标签和服务已关闭，未注入浏览器故障。自定义主题、非法数据、并发失败与清空的实际浏览器场景未执行，不把内存探针写成这些运行验收。该轮独立审查随后指出缓存 Registry 准入、启动语言过期请求与陈旧说明缺陷；本轮在同包修正和补充回归，未把旧 Gate 写成新候选通过。Owner Runtime/Visual/Accessibility Acceptance 继续 `NOT_PERFORMED`；错误隔离接受和其他工作包不变。
+
+完成静态验证后单独报告真实多标签观察；浏览器不可用时不得用内存探针冒充运行或 Owner 接受。原有 15 步 Kernel、8 条 Storage Record、浏览器页面发现专用通道及其释放边界保持。必要生成只更新实际源码投影，不新增能力占位。
+
 ### Cross-tab Synchronization
 
-每个变更包含 `originId`、`operationId`、`revision` 和 `principalPartitionId`。当前 Tab 在成功写入后直接处理本地结果；其他 Context 通过 `BroadcastChannel`，不支持时使用 `storage` Event。接收方必须拒绝自己的 `originId`、重复 `operationId`、旧 Revision 和其他 Principal/Tenant 事件，防止 Echo Loop。
+以下是 Future General Storage Platform 的目标合同；当前五条直接兼容记录仅适用上方 Shared preference synchronization 准入，其余记录按下方 Exact Cross-tab Contract 执行。每个未来获准变更包含 `originId`、`operationId`、`revision` 和 `principalPartitionId`；届时当前 Tab 处理本地结果，其他 Context 的通信由独立准入的实际事件 Owner 创建与释放。接收方必须拒绝自己的 `originId`、重复 `operationId`、旧 Revision 和其他 Principal/Tenant 事件，防止 Echo Loop。
 
 同一 Revision 的竞争写入返回 `conflict-detected`，不按不可靠的墙上时钟静默覆盖。Domain Contract 必须显式选择 User Resolution、Latest Valid Revision Retry 或 Merge；Appearance Preference 与 Layout Preference 默认使用 Compare-and-swap Retry 一次，仍冲突则要求用户重新确认。
 
@@ -13664,6 +14083,8 @@ explicitly select and persist another valid theme reference
 ### Storage Static Enforcement Targets
 
 Owning Package 必须验证：所有 Storage/IndexedDB/BroadcastChannel 访问只在 Registry Owner；所有 Key 来自 Registry；Envelope、Migration、Partition、Write Result 和 Cleanup 完整；敏感字段、Session ID、Query Data 与 Server Authority 不可持久化；Preference/Registry Safe Ordering 可静态追踪。当前 `no-direct-storage-access`、`no-raw-storage-key`、`storage-owner-registry-closure` 与 `no-sensitive-persistence` 已由 Storage Landing 激活；Exact Two-record Registry、Eleven-record Error Extension、Empty Migration/Event Sets、One Storage Lifecycle 与 Disposal Closure 均为 `ACTIVE`。尚无真实 Record 消费的 Future Envelope、IndexedDB、Migration、CAS、Cross-tab Event 与 Principal-specific Policy 仍为 `TARGET_INACTIVE`。
+
+Storage 变更通信的禁令同时约束点访问、字符串下标与别名等价写法。当前 Owning Check 对直接全局名、静态字符串成员，以及同一源码词法作用域内可追溯的 `const` 全局接收者别名作有界检查；保留独立 browser-page discovery 的精确例外。动态计算成员名、可变/解构的调用别名、参数传递及跨函数/跨文件的数据流不声称穷尽分析，以免引入通用别名分析框架；这些形式仍受同一合同约束，Diff Review 必须核对实际访问与消费者，不能把未被静态识别当作准入。
 
 ### 19.5.1 `PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT`
 
@@ -13756,8 +14177,8 @@ STORAGE_INDEXED_DB_RECORDS=0
 | medium | `local-storage` | `local-storage` |
 | persistenceShape | `direct-compatibility` | `direct-compatibility` |
 | schemaId | `explicit-theme-preference` | `custom-theme-registry-snapshot` |
-| currentSchemaVersion | `3` | `1` |
-| minimumSupportedSchemaVersion | `3` | `1` |
+| currentSchemaVersion | `4` | `1` |
+| minimumSupportedSchemaVersion | `4` | `1` |
 | principalPartition | `none` | `none` |
 | containsSensitiveData | `false` | `false` |
 | corruptionPolicy | `preserve-in-place-reject-read` | `preserve-in-place-reject-read` |
@@ -13782,24 +14203,27 @@ FUTURE_ENVELOPE_KEY_GENERATION=STORAGE_REGISTRY_GENERATED (zero such keys admitt
 PACKAGE_5_PREFERENCE_FORMAT=REMAINS_DIRECT_COMPATIBILITY_BOUNDARY
 PACKAGE_5_CUSTOM_REGISTRY_FORMAT=REMAINS_DIRECT_COMPATIBILITY_BOUNDARY
 PACKAGE_5_ENVELOPE_MIGRATION=PROHIBITED
-PACKAGE_5_REVISION_CAS_CROSS_TAB_QUARANTINE_PRINCIPAL=PROHIBITED
+PACKAGE_5_REVISION_CAS_QUARANTINE_PRINCIPAL=PROHIBITED
+PACKAGE_5_CROSS_TAB=SHARED_PREFERENCE_SYNCHRONIZATION_ONLY
 PACKAGE_5_PREFERENCE_ENVELOPE=PROHIBITED (already frozen in §13.4 and §37.2.2)
 ```
 
-现有 `pavp:web:user-preference` 直接保存 `ExplicitThemePreference`（`schemaVersion: 3` + `appearance`），`pavp:web:custom-theme-registry` 直接保存 `CustomThemeRegistrySnapshot`（`schemaVersion: 1` + `entries`），均不被迁入 `PersistedEnvelope`。§13.4 的 `ADDITIONAL_PREFERENCE_ENVELOPE=PROHIBITED`、Custom Registry Snapshot 不含 `revision`/`timestamp`/`payload` Wrapper 与 `§19.5 Future General Storage Platform` 的禁令继续有效且被本 Amendment 继承；§19.5 的 `Preference 与 Custom Theme Registry 保持两个 Schema Boundary 和两个应用 Key` 因此精确实现为两条 `direct-compatibility` Record。未来任何把这两条 Payload 包进 Envelope、加入 Revision/CAS/Cross-tab/Quarantine/Principal 的改动都必须先经独立 Owner Amendment 显式改变 §13.4、§19.5 与 §37.2.2，不得由 Storage 实施包推断。
+现有 `pavp:web:user-preference` 直接保存 `ExplicitThemePreference`（按 §14.1 为 `schemaVersion: 4` + `appearance`），`pavp:web:custom-theme-registry` 直接保存 `CustomThemeRegistrySnapshot`（`schemaVersion: 1` + `entries`），均不被迁入 `PersistedEnvelope`。§13.4 的 `ADDITIONAL_PREFERENCE_ENVELOPE=PROHIBITED`、Custom Registry Snapshot 不含 `revision`/`timestamp`/`payload` Wrapper 与 `§19.5 Future General Storage Platform` 的禁令继续有效且被本 Amendment 继承；§19.5 的 `Preference 与 Custom Theme Registry 保持两个 Schema Boundary 和两个应用 Key` 因此精确实现为两条 `direct-compatibility` Record。未来任何把这两条 Payload 包进 Envelope、加入 Revision/CAS/Cross-tab/Quarantine/Principal 的改动都必须先经独立 Owner Amendment 显式改变 §13.4、§19.5 与 §37.2.2，不得由 Storage 实施包推断。
 
-Migration/Compatibility Rule：
+Current-only Preference/Custom Rule（§13.13）：
 
 ```text
-PREFERENCE_LEGACY_VERSIONS=1|2 read-only embedded-seed migration input owned by @platform/design-system migrateToExplicitThemePreference
-PREFERENCE_RETIRED_SCHEMA_3_BUILT_IN_IDENTITIES=neutral|ocean|warm read-only identity migration input owned by @platform/design-system migrateToExplicitThemePreference
-PREFERENCE_FORMER_CATALOG_SCHEMA_3_CUSTOM_IDENTITIES=amber|cobalt|coral|graphite|iris|jade|lagoon promoted in memory to same-id Built-in references
-PREFERENCE_STORAGE_MIGRATION=NOT_A_STORAGE_MIGRATION
+PREFERENCE_ACCEPTED_SCHEMA_VERSION=4
+PREFERENCE_OLD_FORMAT_MIGRATION=REMOVED
+RETIRED_BUILT_IN_ID_MAPPING=REMOVED
+FORMER_CATALOG_CUSTOM_PROMOTION=REMOVED
+CUSTOM_ACCEPTED_ROLE_CONTRACT_VERSION=4
+CUSTOM_OLD_ROLE_REBOUND=REMOVED
 STORAGE_MIGRATION_REGISTRY_INCLUDES_PREFERENCE=NO
 CUSTOM_REGISTRY_MIGRATION=NONE
 ```
 
-`migrateToExplicitThemePreference` 是 Design-system Read-only Migration Boundary：Schema 1/2 Embedded Seed Preference 先做完整 Legacy Tuple 验证后迁移到 Built-in Iris；Schema 3 的退役 Built-in Identity `neutral`/`ocean`/`warm` 迁移到 Built-in Iris；历史安装式 Catalog 的七个同 ID Custom Reference 提升为同 ID Built-in Reference；其他有效 Schema 3 Custom Reference 保持不变。该 Boundary 不属于 Storage Migration Registry，不进入 §19.5 Read/Validate/Migration Pipeline，不写 Storage、不清理 Custom Registry Snapshot，Storage Package 不接管、不复制、不注册它。两条 `direct-compatibility` Record 的 `minimumSupportedSchemaVersion` 精确等于其 `currentSchemaVersion`，因为外层 Persisted Payload Schema 仍为 3，Storage Package 不拥有任何版本迁移。
+两条 `direct-compatibility` Record 的名称只描述已冻结 Direct Payload 与 General Envelope 的边界，不表示旧主题兼容。`minimumSupportedSchemaVersion/currentSchemaVersion` 分别为 Preference `4/4`、Registry Snapshot `1/1`；Reader 严格验证当前 Payload 和当前 Custom 文档，拒绝旧格式并保留原记录。Storage Package 不接管或重建已删除的 Design System Migration，不新增 Migration Registry 项。
 
 #### Exact Migration Registry and Chain
 
@@ -13859,26 +14283,9 @@ AUTH_SPECIFIC_PRINCIPAL_TENANT_VALUE_INVENTION=PROHIBITED
 
 #### Exact Cross-tab Contract
 
-```text
-BROADCAST_CHANNEL_NAME=pavp:storage:change
-BROADCAST_CHANNEL_NAME_OWNER=Storage Registry generated named protocol constant
-FALLBACK_CONTRACT=window 'storage' event with event.key equal to an exact Storage Registry key
-CROSS_TAB_EVENT_ALLOWLIST_CARDINALITY=0
-```
+当前仅准入上方 Shared preference synchronization 的五条直接兼容记录与原生 `storage` 失效通知。其余跨页变更、通用 BroadcastChannel 和空 Handle 仍不准入；真实消费者由原领域 Owner 读取、验证、应用和释放。浏览器页面发现仍使用独立专用通道。
 
-本 Package 准入 Cross-tab Event Type 精确为 0（两条 `direct-compatibility` Record 不参与 Cross-tab，§13.4 已排除）。Storage Owner 创建 BroadcastChannel（`pavp:storage:change`）并在不支持时安装 `storage` Event Fallback，但当前不发布、不接收任何 Event。Event Shape 只为未来 `persisted-envelope` Record 冻结：
-
-```ts
-interface StorageChangeEvent {
-  readonly recordId: string
-  readonly originId: string
-  readonly operationId: string
-  readonly revision: number
-  readonly principalPartitionId: string
-}
-```
-
-接收方必须拒绝自己的 `originId`、重复 `operationId`、旧 `revision` 与其他 Principal/Tenant 事件，防止 Echo Loop。`originId` 与 `operationId` 是 Opaque Instance/Operation ID（只用于同一文档内安全关联，不携带 URL、配置、用户数据或 Raw Payload）；`revision` 是同一 Partition 内的顺序权威；`principalPartitionId` 在本 Landing 只能是 `none` Sentinel。未来 `PAVP_AUTH_SESSION_PERMISSION_IMPLEMENTATION` 的 Cross-tab Session Channel（`logout`/`revoked`/`session-changed`）是独立 Session Channel，不属于本 Storage Cross-tab Allowlist。
+前序 Storage Landing 曾在零事件白名单下创建 `pavp:storage:change` 及 Fallback；本次 Owner 治理简化退役该空资源要求，保留其历史交付事实。§9.4 的 browser-page discovery 拥有独立的实际消费者、协议和生命周期，不属于该退役范围；认证 Session 同样不因此准入。
 
 #### Exact Storage Error Registry Extension
 
@@ -13938,14 +14345,14 @@ stepId=create-and-ready-storage
 targetPosition=after create-and-ready-router and before mount-application
 dependencies=validate-build-and-runtime-configuration,install-platform-providers
 CreateInput=validated CoreRuntimeConfiguration, exact Storage Registry, Storage/Core error normalization boundary, startupAttemptId
-CreateOutput=one StorageLifecycleHandle containing the sole Storage owner, the exact BroadcastChannel handle, the exact storage-event fallback listener reference and one idempotent disposer
-Ready=Storage Registry exact-equality validation succeeds; BroadcastChannel created with the empty cross-tab allowlist; storage error adapter installed; zero envelope/migration/memory-only records admitted
-Dispose=close the BroadcastChannel and remove the storage-event fallback listener idempotently, then release Storage owner references
+CreateOutput=one StorageLifecycleHandle containing the sole Storage owner and one idempotent disposer; no empty cross-tab handles
+Ready=Storage Registry exact-equality validation succeeds; storage error adapter installed; zero envelope/migration/memory-only or generic cross-tab event records admitted
+Dispose=dispose actual browser-page discovery through its owner and release Storage owner references idempotently
 DOMMountOwner=NO
 Failure=application-startup-failure
-RetryParticipant=YES with a fresh Storage owner and fresh cross-tab handles
+RetryParticipant=YES with a fresh Storage owner
 OwnFailureEligibleForConfigurationRetry=NO
-HMR=Runtime Kernel remains the sole top-level HMR owner; every full HMR attempt disposes and recreates the Storage owner, BroadcastChannel and storage-event fallback listener; Storage registers no competing HMR hook
+HMR=Runtime Kernel remains the sole top-level HMR owner; every full HMR attempt disposes and recreates the Storage owner and its actual resources; Storage registers no competing HMR hook
 ```
 
 以下是 Freeze-time Target、并已由 Current Storage Landing 精确激活的十一阶段 Bootstrap Order：
@@ -14023,7 +14430,7 @@ Implementation Package 还必须在 Existing Static Owners 内增加最小 Domai
 Storage Registry exact-equality (2 direct-compatibility records; zero envelope/memory-only/indexed-db records)
 Storage Error Registry extension exact-equality (11 records; combined 21)
 Storage Migration Registry empty
-Cross-tab allowlist empty; BroadcastChannel only in apps/web/src/app/storage; IndexedDB still prohibited everywhere
+No generic Storage cross-tab events or empty handles; only admitted browser-page discovery owns a BroadcastChannel; IndexedDB remains inactive
 Package 5 Appearance source remains free of BroadcastChannel/IndexedDB/principal/tenant (check-appearance-cutover unchanged)
 Preference/Custom Registry safe ordering statically traceable (Package 5 behavior unchanged)
 Exact eleven-step Bootstrap Registry, acyclic dependency graph, one Storage lifecycle authority, disposal insertion point and sole HMR ownership
@@ -14072,16 +14479,16 @@ NAVIGATION_PREFERENCE_ADAPTER=apps/web/src/app/storage/navigation-preference-sto
 NAVIGATION_PREFERENCE_INTEGRATION=apps/web/src/app/console/ConsoleRouteFrame.vue
 NAVIGATION_PREFERENCE_RUNTIME_ACCEPTANCE=PENDING_OWNER
 NAVIGATION_PREFERENCE_INITIALIZATION_WRITE=PROHIBITED
-NAVIGATION_PREFERENCE_CROSS_TAB_FOLLOWING=PROHIBITED
+NAVIGATION_PREFERENCE_CROSS_TAB_FOLLOWING=SHARED_PREFERENCE_SYNCHRONIZATION_ONLY
 ```
 
 Raw Key 唯一声明为 `applicationConfig.navigation.preferenceStorageKey='pavp:web:navigation-preference'`。严格 Zod Schema `navigationPreferenceSchema` 与推导类型 `NavigationPreference` 是唯一 Payload Authority：
 
 ```ts
-{ schemaVersion: 1, wideNavigationCollapsed: boolean, expandedGroupIds: readonly string[] }
+{ schemaVersion: 2, wideNavigationCollapsed: boolean, accordion: boolean, expandedGroupIds: readonly string[] }
 ```
 
-三个字段均 Required，拒绝 Unknown Key、非 1 版本、错误类型、非 Array 与空 ID。`expandedGroupIds` 只保存 `consoleNavigationRegistry` 的稳定 Group ID，不含翻译 Label、数组下标、`navigation-group:<id>` 渲染 Key、Route/完整地址、身份、时间、Scroll、Focus、Viewport 或 Animation。`reconcileNavigationGroupIds` 将候选 ID 去重、过滤到当前有 Items 的投影分组，并保持 Registry 顺序；未知/移除 ID 不产生导航项。Schema 只负责结构，Group Admission 仍来自真实声明，不把任意 String 当作准入。
+当前四个字段均 Required，拒绝 Unknown Key、错误类型、非 Array 与空 ID。原三字段 schemaVersion 1 仅作为严格只读兼容输入，按原 Sidebar/分组值及统一的默认自由模式（accordion=false）投影为当前结构，不在恢复或远端读取时写回；首次显式用户动作才写 schemaVersion 2。其他版本拒绝，坏值原地保留。`expandedGroupIds` 只保存 `consoleNavigationRegistry` 的稳定 Group ID，不含翻译 Label、数组下标、`navigation-group:<id>` 渲染 Key、Route/完整地址、身份、时间、Scroll、Focus、Viewport 或 Animation。`reconcileNavigationGroupIds` 将候选 ID 去重、过滤到当前有 Items 的投影分组，并保持 Registry 顺序；未知/移除 ID 不产生导航项。Schema 只负责结构，Group Admission 仍来自真实声明，不把任意 String 当作准入。
 
 追加记录精确为：
 
@@ -14092,7 +14499,7 @@ key=applicationConfig.navigation.preferenceStorageKey
 medium=local-storage
 persistenceShape=direct-compatibility
 schemaId=navigation-preference
-currentSchemaVersion=1
+currentSchemaVersion=2
 minimumSupportedSchemaVersion=1
 principalPartition=none
 containsSensitiveData=false
@@ -14100,21 +14507,51 @@ corruptionPolicy=preserve-in-place-reject-read
 capabilityStatus=ACTIVE
 ```
 
-原三条记录及顺序不变；Envelope、Memory、IndexedDB、Migration、Cross-tab Event 均保持零，已有 Channel/Fallback Lifecycle 不变。多窗口的内存选择独立，最后完成的有效本地写入只供下一次启动恢复，不增加同步、CAS 或重试。
+导航偏好 Landing 时点原三条记录及零 Envelope/Memory/IndexedDB/Migration/Cross-tab Event 是历史事实。当前仅按上方 Shared preference synchronization 准入同步已保存的导航偏好，不创建通用通信资源、CAS 或重试。各窗口独立保留当前路由派生展开、Drawer/Profile 和工作现场；实际 browser-page discovery 的独立生命周期保持。
 
-`NavigationPreferencePort.read()` 返回 `missing`、`found/preference` 或 `unusable`（`invalid|unavailable`）；`write(preference)` 返回 `saved|failed`。仅 Storage Lifecycle 创建 Adapter，`StorageLifecycleHandle.owner.navigationPreference` 提供该窄 Port。Adapter 独占此记录的 `window.localStorage` 访问；读取遵循 `JSON.parse -> unknown -> strict Zod`，同名 JSON 成员沿用标准最后成员语义，不新增 Parser。读取、反序列化、版本、Schema、序列化、Quota、写入或读回失败均经原 `StorageErrorAdapter` 的既有分类安全规范化，绝不外传 Raw Payload/Cause。完整校验后序列化并一次 `setItem`；读回后重新校验 Schema、Boolean 与有序 ID 全量相等才确认 `saved`。Disposed Port 不读写；初始化中缺失/坏值/不可读只降级，不删除、修复或自动覆盖。
+`NavigationPreferencePort.read()` 返回 `missing`、`found/preference` 或 `unusable`（`invalid|unavailable`）；`write(preference)` 返回 `saved|failed`。仅 Storage Lifecycle 创建 Adapter，`StorageLifecycleHandle.owner.navigationPreference` 提供该窄 Port。Adapter 独占此记录的 `window.localStorage` 访问；读取遵循 `JSON.parse -> unknown -> strict Zod`，同名 JSON 成员沿用标准最后成员语义，不新增 Parser。读取、反序列化、版本、Schema、序列化、Quota、写入或读回失败均经原 `StorageErrorAdapter` 的既有分类安全规范化，绝不外传 Raw Payload/Cause。完整校验后序列化并一次 `setItem`；读回后重新校验 Schema、两个 Boolean 与有序 ID 全量相等才确认 `saved`。Disposed Port 不读写；初始化中缺失/坏值/不可读只降级，不删除、修复或自动覆盖。
 
-唯一应用私有 Pinia Store `useNavigationPreferenceStore` 的 ID 为 `navigation-preference`，State 仅为 `wideNavigationCollapsed` 与 `expandedGroupIds`。`initializeNavigationPreference(pinia, preference, groupIds)` 在现有 Pinia 实例上创建/初始化一次，返回 `{ dispose(): void }`。初始化只读一次，无可用记录时默认 `false` 与当前所有已准入分组，不写入。Port 与分组声明仅为 Attempt-local 私有依赖，不是另一份可变偏好或 Pinia State。`setWideNavigationCollapsed` / `setExpandedGroupIds` 是显式用户动作：先更新当前选择，再写完整 Snapshot；失败保留当前选择，通过原安全错误路径表示未保存，无 Toast、新文案、订阅持久化、队列或后台重试。Init/Dispose 只能由 Kernel 调用；组件只读 State 并调用两个偏好 Action，禁止 `$patch`、`$state`、直接赋值和整树持久化。
+唯一应用私有 Pinia Store `useNavigationPreferenceStore` 的 ID 为 `navigation-preference`，State 仅为 `wideNavigationCollapsed`、`accordion` 与 `expandedGroupIds`。`initializeNavigationPreference(pinia, preference, groupIds)` 在现有 Pinia 实例上创建/初始化一次，返回 `{ dispose(): void }`。初始化恢复后，`NavigationPreferencePort.subscribe` 在注册原生失效监听后补读；无可用记录时默认 Sidebar 展开、自由模式与当前所有已准入分组，不写入。后续合法变更同样由 Store 读取并应用，远端路径不调用持久化 Action。Port 与分组声明仅为 Attempt-local 私有依赖，不是另一份可变偏好或 Pinia State。`setWideNavigationCollapsed` / `setExpandedGroupIds` / `setNavigationAccordion(enabled, groupIds)` 是显式用户动作：先更新当前选择，再写完整 Snapshot；失败保留当前选择，通过原安全错误路径表示未保存，无 Toast、新文案、订阅持久化、队列或后台重试。模式切换同时更新 accordion 与该模式下的 Preferred IDs，并只写一次完整记录。手风琴模式的 Store 将有效 Preferred IDs 约束为一个当前 Root Group；若外部记录含多个有效 ID，按 Registry 顺序保留最后一个，避免第二份互斥状态。Init/Dispose 只能由 Kernel 调用；组件只读 State 并调用既有偏好 Action，禁止 `$patch`、`$state`、直接赋值和整树持久化。
 
-Kernel 第十步为 `initialize-navigation-preference`，位于已就绪 I18n 后、`mount-application` 前；Dependencies 精确为 `create-pinia,create-and-ready-storage`。Input 是当前 Pinia、Storage Port 和 `consoleNavigationRegistry` 中有 Items 的 Group IDs，Output 为已同步初始化的 Store 与释放 Handle；Ready 是完成一次安全恢复/降级及 ID Reconciliation。该 Step 无 DOM/Provider/Listener/异步资源，无配置 Retry 资格；结构性异常沿用 `application-startup-failure` 并停止 Mount，存储不可用属于非致命偏好降级。Mount 保留三条既有 Dependency 并新增该 Step。`dispose-navigation-preference` 插在 Vue Unmount 后、I18n Dispose 前，撤销写入资格、释放 Port 引用；Pinia 实例仍由原 `dispose-pinia` 统一释放。晚期启动失败与 HMR 同样按反序释放且不清理 Storage。
+Kernel 第十步为 `initialize-navigation-preference`，位于已就绪 I18n 后、`mount-application` 前；Dependencies 精确为 `create-pinia,create-and-ready-storage`。Input 是当前 Pinia、Storage Port 和 `consoleNavigationRegistry` 中有 Items 的 Group IDs，Output 为已同步初始化的 Store 与释放 Handle；Ready 是完成一次安全恢复/降级及 ID Reconciliation。该 Step 不创建 DOM/Provider 或异步加载资源；其既有释放 Handle 持有并撤销导航偏好失效订阅，无配置 Retry 资格；结构性异常沿用 `application-startup-failure` 并停止 Mount，存储不可用属于非致命偏好降级。Mount 保留三条既有 Dependency 并新增该 Step。`dispose-navigation-preference` 插在 Vue Unmount 后、I18n Dispose 前，撤销写入资格、释放 Port 引用；Pinia 实例仍由原 `dispose-pinia` 统一释放。晚期启动失败与 HMR 同样按反序释放且不清理 Storage。
 
-`UiAdminShell` 新增两个 Required 语义 Prop：`wideNavigationCollapsed: boolean`、`expandedNavigationGroupIds: readonly string[]`，新增 `update:wideNavigationCollapsed`（Boolean）和 `update:expandedNavigationGroupIds`（`UiAdminNavigationExpansionUpdate`）事件。后者精确为 `{ expandedGroupIds: readonly string[], intent: 'group' | 'all' }`：普通根分组点击/键盘/NMenu 更新为 `group`，展开全部/折叠全部为 `all`。Intent 只说明用户操作范围，不持久化。UI 从当前 Navigation 过滤 ID 并转换为 Vendor Key，保留单一 `persistentNavigationCollapsed`，不拥有偏好 ref、Storage、Pinia 或应用 Import。原 `copy`、`navigation`、`activeRouteName`、`navigate` 与 Slot 不变；契约类型、Public Registry、Consumer 和检查必须一致。
+`UiAdminShell` 使用 Required 语义 Prop：`wideNavigationCollapsed: boolean`、`navigationAccordion: boolean`、`expandedNavigationGroupIds: readonly string[]`，新增 `update:wideNavigationCollapsed`（Boolean）和 `update:expandedNavigationGroupIds`（`UiAdminNavigationExpansionUpdate`）事件。后者是判别联合：`{ expandedGroupIds: readonly string[], intent: 'group' }` 或 `{ expandedGroupIds: readonly string[], intent: 'mode', accordion: boolean }`。普通分组更新为 group；Header 模式切换为 mode，同时提供新模式和组选择。Intent 不持久化，模式仅由现有导航偏好 Store/记录拥有。UI 从当前 Navigation 过滤 ID 并转换为 Vendor Key，保留单一 `persistentNavigationCollapsed`，不拥有偏好 ref、Storage、Pinia 或应用 Import。原 `copy`、`navigation`、`activeRouteName`、`navigate` 与 Slot 不变；契约类型、Public Registry、Consumer 和检查必须一致。
 
-`ConsoleRouteFrame` 是唯一集成 Owner：读取 Store，按实际当前分组过滤 Preferred IDs，再将当前 Router 已提交完整目的地的 Group 合并为 Effective Expansion。首个 Render 即有该投影；只有小型临时布尔值记录用户在当前路由显式收起 Active Group，收起后保持至下一次 `router.currentRoute` 提交变化；语言变化不重置它或 Store。普通 Group 事件仅把 Effective 前后差异合并入 Preferred IDs，不能顺带保存自动补入的 Active Group；`all` 事件显式覆盖全部当前分组。投影、路由、语言、过滤、Responsive、Mount 和 Reconciliation 永不触发持久化。
+`ConsoleRouteFrame` 是唯一集成 Owner：读取 Store，按实际当前分组过滤 Preferred IDs，再将当前 Router 已提交完整目的地的 Group 合并为 Effective Expansion。首个 Render 即有该投影；只有小型临时布尔值记录用户在当前路由显式收起 Active Group，收起后保持至下一次 `router.currentRoute` 提交变化或模式变化；语言变化不重置它或 Store。自由模式将 Preferred 与 Active Group 合并；手风琴模式在未手动收起当前分组时只展开当前激活路径，否则使用唯一 Preferred Group。自由模式的 Group 事件仅把 Effective 前后差异合并入 Preferred IDs，不能顺带保存自动补入的 Active Group；手风琴模式的 Group 事件以本次选择的有效组（或空集合）替换 Preferred IDs，不合并被当前路由隐藏的旧偏好，避免注册顺序覆盖用户选择。`mode` 事件覆盖模式及 Preferred IDs，清除当前路由内的手动收起意图：进入手风琴时 Preferred IDs 清空，当前激活路径仍由各窗口自己的 Router 派生；进入自由模式时恢复全部分组。只有 group 操作可在当前路由暂时抑制 Active Group 的自动展开。模式变化经现有偏好同步，各窗口重置该局部意图后保留各自当前路径；不广播路由或重放用户操作。投影、路由、语言、过滤、Responsive、Mount 和 Reconciliation 永不触发持久化。
 
 Regular 永远结构性折叠；Wide 使用受控保存值；Narrow 临时 Drawer 刷新后关闭。跨 Profile 不修改 Wide 偏好，返回 Wide 恢复原选择。Route/Highlight/`isCurrentDestination` 继续仅从 Router 与现有完整地址比较派生；Store、Storage、Query、Hash、History 和 Region Scroll 不互相复制。原 Hover Popup、Root Icon 导航、子项选择、Keyboard/Escape/Focus Return、Selection Lens 与已验收元素级 Route Transition 保持。
 
 恢复完成后才 Mount，禁止在 Shell Mounted 中补读、定时器、RAF、强制 Reflow、Opacity Mask、Loading Overlay 或第二 Shell。现有 Profile/ResizeObserver 首次测量不变。静态门槛只证明所有权、严格结构、执行顺序、受控接入及包预算；实际刷新无默认态闪现、三档切换、Active Group 显式收起/路由后展开、语言切换和存储失败需 Owner 在仓库外验收，当前保持 Pending。无部署或 Release 授权。
+
+### `PAVP_NAVIGATION_FREE_AND_ACCORDION_MODES` scoped admission record
+
+```text
+ID=PAVP_NAVIGATION_FREE_AND_ACCORDION_MODES
+AUTHORITY=ARCHITECTURE_SECTION_19_5_2
+ALLOWED_SCOPE=free/accordion navigation preference and read-only legacy compatibility in existing owners; controlled UiAdminShell mode prop/expansion intent/copy and public registry; ConsoleRouteFrame integration; existing locale/check/documentation owners; ordinary browser verification
+PROHIBITED_SCOPE=new navigation levels, records or communication channels; generic menu/state/migration infrastructure; unrelated public API or behavior; cross-tab route/action replay; styling/motion changes; dependencies; pages; test/sample files; runtime fault injection; Git delivery/release
+MACHINE_GATES=existing relevant checks; final pnpm verify; git diff --check; scoped browser observation reported separately
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_FREE_AND_ACCORDION_NAVIGATION_MODES
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+Owner 随后明确以自由/手风琴模式取代一次性全部展开/折叠：自由模式允许多分支独立展开；进入手风琴时只保留当前激活路径，随后打开其他分支按同层互斥规则关闭其兄弟，不改变路由。复用安装版 NMenu 公开 accordion Prop，保留 PAVP 已有受控 Key 和键盘 Root 开合；公共导航仍只支持 Root Group → Route Leaf 两层，不扩展递归 Group。Header Button 的状态来自独立的受控模式而非展开数量，保留普通按钮语义，Accessible Name/Tooltip 明确描述切换目标（切换为手风琴模式 / 切换为自由模式，提供对应英文）；切回自由模式展开全部当前分组，此后手动开合不会切换模式。Sidebar Rail、Drawer、Focus、路由/工作页签与 Motion 不改。新模式归入原导航偏好同一记录和 Store，使用上述只读旧格式兼容，保留既有偏好与跨标签独立现场。此当前修订取代历史 Header 全展开/折叠语义；先前 HTTP/304 的静态交付及未执行 Owner 验收保持。
+
+2026-11-03 本包源码与静态结果：自由/手风琴模式已落地，既有检查覆盖严格旧格式兼容、恢复不写回、四字段原子保存、同层 Preferred 约束、远端模式读取不回写、坏值保留与模式读回相等校验，隔离探针释放 Pinia 并恢复原全局上下文。首轮完整 Gate 在 Knip 检出内部探针的多余导出后失败；改为私有函数后，最终 `mise exec -- pnpm verify` 实际退出 `0`。311 个候选路径在最终 Gate 期间摘要不变，初始 JS 为 `262454/270336` bytes gzip，CSS `33418/40960`，Motion `33638/49152`，28 Dynamic Roots / 18 Route Roots 保持。Gate 后只补记本交付事实及源码/静态状态。
+
+任务运行观察在独立临时 Origin 完成：旧导航记录恢复为自由模式；进入手风琴保留总览及其父组；鼠标与 Enter 打开同层兄弟时互斥；总览、设计令牌、路由治理间切换及刷新保留模式并展开新激活路径；自由模式手动开合不切换模式。双标签页分别位于不同路由时同步模式且保留各自激活路径，关闭工作页签不操控另一页；两页 Console Error 均为零。原生收起动画中的短暂中间状态在结束后复核，未修改 Motion。测试后恢复自由模式、全部分组展开及单一总览工作页签，关闭任务标签与服务；没有改动 Owner 的其他 Origin、清除存储或注入运行故障。此观察不代表完整多级树（当前接口只有两层）或 Owner Runtime/Visual/Accessibility Acceptance，后者及 Release 均未执行。
+
+2026-11-03 后续独立复审确认上述初次模式候选仍有一项 P2：手风琴下展开架构规划后，经工作页签或历史提交切到应用基础，再打开视觉系统，隐藏的旧 Preferred 与新选择合并，Registry 顺序归一化会重新保留旧组。本轮仅按上方当前合同修正 Frame：手风琴分组动作直接替换 Preferred，自由模式仍使用原差量合并；Store、Schema、UI 事件、跨标签通信与 304 实现不变。任务内存回归使用实际 Frame、Shell 处理函数和 Pinia，原鼠标回调、Enter、Space 三条反例由失败转为通过；300 个路由/旧组/目标组组合及自由模式、远端无回写、独立激活路径和空集合收起检查通过。这些是本次任务探针，不声称新增常驻测试框架或 Gate。
+
+同轮真实 IAB 在任务专用 Origin 验证了鼠标、Enter 与 Space 的上述切换顺序，结果均为新选择组可见、旧组关闭且路由不变；两个标签分别处于路由治理与设计令牌时，同步自由/手风琴模式并保留各自激活路径，关闭一页工作页签不改变另一页路由，两页 Console Error 均为零。恢复任务 Origin 的自由模式、全部分组与单一总览页签后关闭任务标签和服务，未清除 Owner 存储或注入故障。现有 Storage/Admin Console 检查与最终 `mise exec -- pnpm verify` 均实际退出 `0`，309 个实际候选文件在最终 Gate 期间摘要不变；初始 JS `262462/270336`、CSS `33418/40960`、Motion `33638/49152` bytes gzip，28 Dynamic Roots / 18 Route Roots 保持。Gate 后仅补记本文结果和源码/静态状态，独立再复审及 Owner Runtime/Visual/Accessibility Acceptance 仍待执行。
 
 # 20. API Transport Target Contract
 
@@ -14130,7 +14567,7 @@ CURRENT_API_ENDPOINT_CONTRACT=NONE
 MANDATORY_OPENAPI_FETCH_DEPENDENCY=NONE
 ```
 
-业务无关 HTTP 与 Query 基础属于核心交付目标，当前通用实现与依赖仍未准入。本阶段可以闭合调用者配置、输入/输出类型、取消、超时、错误、支持的响应类型和缓存生命周期，不要求虚构 Endpoint、业务响应包装、Token Storage 或 401 跳转；具体公共 API 和默认策略须在后续有界实施前明确，本任务不发明它们。简单传输优先适用的 Native Fetch；非平凡通用扩展前按 §2.3 评估包括 Axios 在内的成熟候选，不预选、安装或强制自研。
+业务无关 HTTP 与 Query 基础属于核心交付目标，通用 HTTP 核心已按下方 scoped admission 独立准入。本节首个状态块及 §20.1–20.11 保留完整后端/Query 集成目标，额外依赖尚未准入；它们不表示已获授权的请求核心仍未实现。不要求虚构 Endpoint、业务响应包装、Token Storage 或 401 跳转。简单传输优先适用的 Native Fetch；非平凡通用扩展前按 §2.3 评估包括 Axios 在内的成熟候选，不预选、安装或强制自研。
 
 下方 `PAVP_API_TRANSPORT_IMPLEMENTATION` 保留为真实服务集成的 `DEFERRED / NOT_STARTED` 记录，不能作为独立核心的统一前置。项目通过窄的领域接口适配真实后端，不建立万能兼容协议。只有实际服务集成才要求 Owner 提供真实 Backend/Service Contract，并冻结以下全部权威后进入显式 Admission：
 
@@ -14156,6 +14593,96 @@ openapi-typescript generated compile-time types
 ```
 
 Native Fetch 与 Library 的选择按 §2.3 的证据和真实请求需求确定。选中的 Library 使用官方名称、API 和 Types；Transport 仅集中必要的共享配置、输入校验和业务集成，不重写库已有的请求功能，不为猜想中的替换建立通用 Facade。后文 TanStack Query 名称描述尚未激活的条件式 Server-state 方向，不等于已完成选型、依赖准入或实施。无论采用何者，以下单次 Attempt、Abort、Schema、Auth、Cache 和 Owner 合同保持。
+
+### `PAVP_REUSABLE_HTTP_REQUEST_LAYER` scoped admission record
+
+```text
+ID=PAVP_REUSABLE_HTTP_REQUEST_LAYER
+AUTHORITY=ARCHITECTURE_SECTION_20
+ALLOWED_SCOPE=shared/api native single-attempt transport and public types; isolated shared/services UApi worldtime verification adapter; centralized deployment/API configuration and identity-preserving artifact generation; existing owning checks and directly coupled documentation
+PROHIBITED_SCOPE=dependency installation; application/example pages; production UApi default; secrets or credential persistence; auth/session implementation or refresh; automatic retry; Query/cache/Pinia copies; global notifications; API bootstrap provider or step; streaming/upload progress; runtime fault injection; test/sample files; Git delivery/release
+MACHINE_GATES=existing checks with actual in-memory request/response/cancellation/privacy and deployment-generation cases; final pnpm verify; git diff --check
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_REUSABLE_HTTP_AND_PUBLIC_UAPI_VALIDATION
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+2026-11-03 首次候选的历史静态证据：`mise exec -- pnpm verify` 实际退出 `0`；Gate 期间全部 311 个源码/配置路径摘要保持不变。初始 JS 为 `262154/270336` bytes gzip，CSS 为 `33418/40960`，Motion 为 `33638/49152`。后续独立复核发现异步请求定义、代理认证接收方、开发配置、HEAD 错误及二进制字符集五项缺陷，本记录不把该次通过当作修订候选的验证。实际 `pnpm config:generate --artifact-dir` 对真实生产产物的临时副本退出 `0`，只更新 api；另用不同于当前仓库的版本与 SHA 验证不会重新推导身份。
+
+同日复核修订：五项缺陷已分别独立复现并在既有检查中加入回归。请求定义与可变原生 Body 在首次异步等待前固定；认证使用中央推导的实际上游 origin；开发同源网关与直接 HTTPS 配置可用，只有实际 dev serve 组装代理。HEAD 非成功状态保留 http，二进制非 UTF-8 字节原样返回，文本的 UTF-8 限制保持。修订候选完整 `mise exec -- pnpm verify` 实际退出 `0`，期间全部 311 个候选路径摘要不变；初始 JS 为 `262228/270336` bytes gzip，CSS `33418/40960`，Motion `33638/49152`。真实 development `write:false` 构建产物已验证 API 为实际 HTTPS Base，不包含开发代理路由或 upstreamOrigin；该证据不代表上游允许浏览器跨域。
+
+随后独立复核确认上述五项修复，同时发现声明 errorSchema 的无主体 304 被误分为 protocol/parse。此边界已在实际客户端中独立复现，并按本节当前合同修正为 http/304；六组响应头与 errorSchema 组合均通过，普通 400 的 JSON 错误体解析对照保持。条件请求头、单次 Attempt、no-store 与清理行为有现有内存回归，不引入缓存。304 修订候选完整 `mise exec -- pnpm verify` 实际退出 `0`，全部 311 个候选路径在 Gate 期间摘要不变，JS/CSS/Motion 预算保持上次修订数值。本次不执行浏览器 304 故障注入或续接 Owner 验收。
+
+前述五项复核修订后的运行证据独立于 Owner 验收：Node 中的实际客户端再次经最终 Vite 开发代理调用 UApi worldtime 返回 HTTP 200 并通过七字段 Schema；IAB 浏览器显示同一代理的真实 JSON 及正常启动的应用，控制台 Error 为零，所建标签和服务均已关闭。代理隐私 Header 回调有独立内存验证；未发送凭据、清除 Owner 存储或注入运行故障。浏览器内直接执行客户端函数、正式环境直连 CORS 和 Owner Runtime/Visual/Accessibility Acceptance 均未验证，不能由上述服务端或浏览器导航证据替代；未作 Release 或 Git 交付。
+
+Owner 已明确授权完整、可替换项目 API 的请求封装，并允许 UApi 真实只读验证。本包独立准入业务无关 HTTP 核心，不激活下方完整后端/Query/Auth 目标包。Console 既有 api-transport Record 继续表示完整后端集成目标，本包不增加页面或 Generated Capability Record；独立公共模块不要求编造页面消费者。公共根 shared/api/index.ts 明确作为既有 Knip 的入口，内部代码继续接受未用检查，不忽略模块或成员。ESLint 复用原生 no-restricted-globals 保护 fetch/XMLHttpRequest 的直接及公开全局对象访问，并尊重词法遮蔽；只允许请求所有者和既有预 Vue 配置引导边界。该静态保护不声称覆盖所有动态别名或运行时反射，不新建通用分析框架。当前修订在本包范围内取代此前无准入的 API 字段、错误类型及公共第三方验证限制；既有配置/base 修正、共享偏好和错误隔离的交付与未执行验收保持。Native Fetch 的 URL、Headers、Request/Response、AbortController 与已有 Zod 足够完成单次请求，不安装库，不实现原生网络栈或一般拦截器框架。
+
+`apps/web/src/shared/api` 是唯一通用请求所有者；服务专属模块拥有 Endpoint、请求输入和响应 Zod Schema，UApi Schema 不进入通用客户端。公开客户端按已校验配置创建，无全局单例或 Store；每次请求必须带调用方 AbortSignal，并在首次异步等待前固定该次请求的 Method、Path、认证策略、响应模式、MIME、成功/错误 Schema 引用及已编码输入；外部随后替换定义不得改变本次 Attempt。Zod Schema 使用其不可变公共 API，不复制或修改内部定义。路径由原始段逐段编码，Query 由 URLSearchParams 编码；禁止绝对路径/URL、目录穿越和任意跨 Origin 覆盖。JSON、text、FormData、URLSearchParams、Blob/ArrayBuffer Body 使用原生能力；GET/HEAD 不带 Body。请求头经 Headers 校验；认证头仅由显式注入的认证边界提供，匿名请求不调用它、不携带 Cookie。认证提供者的 origin 表示实际接收方；开发代理时由中央配置从真实上游推导，不用本地页面 origin 冒充上游。提供者按实际接收方决定是否返回认证信息。认证边界不储存凭据，不实现登录、刷新或跨域 credentials include；重定向拒绝，防止认证信息转发到其他 Origin。
+
+本包公开响应模式为 json、text、blob、array-buffer、empty，均经声明的 MIME、Byte Limit 与端点 Schema；不开放 stream。204/205/HEAD 成功响应必须 empty，202 返回独立 accepted 结果。HEAD 的非成功状态及 304 均直接返回 http，不尝试解析协议禁止携带的错误 Body；保持实际 HTTP Status，是否声明 errorSchema、Content-Type 或表示长度都不改变该分类。模拟或注入的 Body 也不作为这些响应的错误数据。304 不合并缓存、不恢复旧数据、不重试，单次 Attempt 与 no-store 策略保持。UTF-8 限制只适用于实际解码的 JSON/text，blob/array-buffer 保留原始字节，不因字符集参数拒绝合法二进制数据。错误分别表示 configuration、request、authorization、network、http、protocol、parse、schema、timeout、caller-abort；返回安全请求标识/状态，不包含原始 URL、Header、Body、Response、异常或 Stack。错误 Body 只有声明的 Schema 校验结果可以返回。每次只执行一个 Attempt，默认不重试、不去重、不缓存、不通知 UI；调用者/超时在认证、网络和读取期间均可终止，结束后清理监听、计时器与 Reader。当前唯一 standard Policy 拥有 10 秒 Timeout 和 1 MiB Response Limit，调用点引用它，不散落值；未来流式、并发队列、Query、Mutation 协调和真实认证仍需自己的需求与准入。
+
+配置沿用 `apps/web/config.ts` 和原 Runtime JSON；协议升级为 schemaVersion 2，原五项身份字段保持所有权，新增必需的 `api` 严格联合：`{status:'unconfigured'}` 或 `{status:'configured',baseUrl:...,upstreamOrigin?:...}`。upstreamOrigin 仅用于真实开发代理，必须为规范 HTTPS origin 且 baseUrl 必须是同源路径前缀；production Runtime Schema 拒绝该字段。认证提供者收到此真实上游 origin，而非浏览器发请求时的本地 origin。仅发布无 Credential/Query/Fragment 的规范 HTTPS Base URL，或非 Root、无目录穿越的同源绝对路径前缀；二者保留末尾 `/`，不自动修复值。相对前缀由客户端创建者显式传入的当前网页 origin 解析，生产网页 HTTPS 仍由预 Vue 边界验证。`PAVP_API_BASE_URL` 缺失明确生成 unconfigured；显式空值或非法值必须失败，不回退。development 的 PAVP_API_BASE_URL 配置真实上游 https://uapis.cn/api/，PAVP_DEV_PROXY_PREFIX 配置 /api/；config.ts 只在实际 dev serve 上下文生成浏览器 API 前缀、派生的 upstreamOrigin 及 Node-only target，Vite 从同一结果创建代理并移除浏览器前缀后转发，上游地址不再复制。开发环境也接受已有网关的同源 API 前缀（所选代理前缀预设此时不启用），以及未配置代理前缀的直接 HTTPS API。production/preview/build 不创建该代理；构建、预览与产物配置生成使用实际 HTTPS API Base 或部署方配置的同源 API 前缀，不发布仅 dev serve 存在的代理路由。HTTPS 上游的直接访问仍受其 CORS 策略限制；production 文件不填第三方地址，应用仍可启动，未配置 API 的调用返回 configuration 结果。production 拒绝开发代理字段，配置生产同源 API 前缀不代表仓库提供生产网关。通用 `.env`/local 与 Vite 自动暴露保持关闭；Token、Key 与版本/SHA 不进入 env。
+
+公共根导出 createApiClient；输入为 configuration 与可选 origin/fetch/authorize，返回无全局状态的 ApiClient。request 接受 ApiEndpoint 与必需 signal、可选 query/headers/body；Endpoint 明确 id、method、原始 path 段、policy、authentication、response mode/MIME/Schema 和可选 errorSchema。成功/accepted 返回 data、httpStatus、requestId；failure 返回 category、endpointId、requestId 及适用的 httpStatus、经 Schema 验证的 data 和安全 Retry-After 秒数。接口的精确 TypeScript 声明由 shared/api/contracts.ts 与公共根投影拥有，不维护第二套字段注册表；服务模块先验证请求领域输入，通用客户端只验证表示与传输边界。
+
+开发代理移除 ambient Cookie、Referer、Proxy-Authorization 及上游 Set-Cookie；保留由显式认证边界提供的请求头，不创造 Cookie Session 代理或 Auth/CSRF 子系统。当前 public UApi Adapter 始终匿名；真实 Cookie Session 集成仍需自己的授权与合同。代理只存在于开发服务，浏览器运行时 JSON 只公开认证所需的实际 upstreamOrigin，不包含 Node-only target 路径、转发规则或凭据。代理不跟随上游重定向，客户端也拒绝重定向。
+
+`pnpm config:generate [--artifact-dir <directory>]` 复用同一入口与所选环境文件，环境只能来自已有产物。命令必须先验证已有 Runtime JSON，再只替换 api；Base、环境、版本和 Release SHA 原样保留，禁止调用部署机器的 Git 或重新编译。命令需要项目既有 Node/依赖，只写目标产物目录的 runtime-configuration.json，以同目录临时文件原子替换并清理；不部署、不修改源码、不改变 Asset/Router Base 或构建身份。
+
+UApi 只读适配器使用官方 GET /api/v1/misc/worldtime 与显式 city，不读取账号、位置或用户输入；无 Key/Cookie、自动轮询、密集并发或重试。实际浏览器 CORS、限流与服务器请求证据分别报告；服务端成功不证明浏览器成功。Owner 后续明确要求开发代理并允许只读参考指定 KaiSaiLe 项目的 env/config/Vite 结构；PAVP 复用按环境校验、服务地址单源和仅 dev serve 代理的原则，不复制其业务端点、域名限制、凭据或编译期浏览器配置。代理仅面向 env 明确的 HTTPS 上游和独立路径前缀，不成为任意 URL 转发、正式环境默认、生产服务器要求或生产 CORS 证明。此修订不新增页面、示例、测试文件或公共服务替代私有后端的产品假设。
+
+### `PAVP_READ_QUERY_FOUNDATION` scoped admission record
+
+```text
+ID=PAVP_READ_QUERY_FOUNDATION
+AUTHORITY=ARCHITECTURE_SECTION_20
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_READ_QUERY_AND_EXISTING_HTTP_INTEGRATION
+SAME_AUTHORITY_IMPLEMENTATION_PREDECESSOR=PAVP_REUSABLE_HTTP_REQUEST_LAYER_COMPLETE_STATIC_PASS
+ALLOWED_SCOPE=application-owned shared/query public core; exact @tanstack/vue-query dependency in apps/web; existing anonymous UApi service adapter; directly coupled dependency/import/unused/production checks and documentation
+PROHIBITED_SCOPE=business interfaces or pages; example/test/sample files; authenticated queries, mutation orchestration, automatic retry/polling, global notifications, persisted/broadcast cache, Query data copies in Pinia/Storage; global VueQueryPlugin or Kernel placeholder; design-system or steps2/3/5 implementation; unrelated dependency/toolchain changes; fault injection; Git delivery/release
+OUTPUT=typed official Query options bridging existing ApiClient; one explicit QueryClient per caller-owned runtime and idempotent disposal; validated-data cache and structured failure/cancellation/invalidation semantics
+MACHINE_GATES=existing focused checks with actual Query/HTTP/Vue in-memory cases; exact dependency/lock/integrity/build-script checks; actual production query-entry cost and unchanged application budgets; final pnpm verify; git diff --check
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+Owner 已明确要求补齐 Query 数据请求管理并连接现有 HTTP。此包只准入独立只读核心，不激活下方真实 Backend/Query/Auth 综合目标、Mutation、账号隔离或新 Capability Manifest Record。前一导航候选的独立复审已通过，Owner 各类验收不由此推定。§2.3 的研究候选/未准入措辞和前一 HTTP 包对 Query 的禁止，在本包精确范围内由本准入取代，其余范围保持。
+
+唯一直接依赖为 `apps/web` 的 `@tanstack/vue-query@5.105.1`，由 Catalog 与 Lockfile 精确拥有；仅从官方公共根使用 QueryClient、queryOptions、取消类型及消费者所需的官方 Vue Query API，不直接依赖 query-core，不向 UI/Design System/Root 加依赖，不引入 Query Devtools UI。允许本包实际新增且锁定的 MIT 间接依赖，不升级既有依赖。vue-demi 0.14.10 已审阅的发布文件默认支持 Vue 3；其安装脚本只选择包内适配文件，本仓固定 Vue 3，因此按包名 `allowBuilds: { vue-demi: false }` 禁止该脚本，精确版本由 Lockfile 与所属检查约束，并在既有检查中验证实际 Vue 3 选择。保留 strictDepBuilds 及其他精确构建决定，不开放其他脚本。
+
+公共入口为 `apps/web/src/shared/query/index.ts`，实现留在同目录责任命名模块。`createApiQueryRuntime(api: ApiClient)` 返回官方 `queryClient`、`queryOptions(endpoint, input?)` 与幂等 `dispose(): Promise<void>`；创建者必须先停止消费者并等待 Runtime 释放，不设模块单例、第二 Vue Provider 或 Bootstrap Step。官方 `useQuery(options, queryClient)` 可显式消费它，或使用同一 Client 的 query、cancelQueries、invalidateQueries；不为官方方法另造 Facade。每个 Runtime 只绑定一个 ApiClient，其配置由原 HTTP Owner 拥有；Client 与 Options 必须在所属 Runtime 内使用，释放后不得继续交给消费者。
+
+`ApiReadEndpoint<Response, ErrorData>` 通过既有 ApiEndpoint 的交集收窄为 GET、anonymous、json，不复制 Endpoint Schema/字段清单。输入仅为既有请求 query，拒绝 Header、Body、外部 Signal 或其他字段；Query 自己的 Signal 是这次共享查询的取消权威。Endpoint ID 和请求/响应 Schema 在所属 Runtime 中保持同一领域含义，不以同 ID 偷换响应合同。创建 Options 时同步捕获 Path、MIME、Schema 引用及合法原始 Query 的不可变快照；Key 精确为 `['api-read', endpoint.id, capturedPath, encodedQuery]`，encodedQuery 使用 URLSearchParams 生成与原 HTTP Query 相同的有序表示，避免非法值或可变输入导致 Key/请求错配。Key/响应仅适用于公开、非敏感只读数据，不保存凭据或草稿；业务 Schema 和 Endpoint 继续由服务模块拥有。
+
+唯一命名策略 `manual-read` 由 Query 模块集中拥有：staleTime=0、gcTime=300000ms、networkMode=always、retry=false、retryOnMount=false、refetchOnMount=false、refetchOnWindowFocus=false、refetchOnReconnect=false、refetchInterval=false、throwOnError=false。这使首次实际订阅/显式读取可运行，后续重读由调用方显式执行或失效；无离线等待队列、后台轮询或隐藏自动重试。有限 gcTime 用于释放未观察缓存，Runtime Dispose 在取消结算后清理；这些是运行策略，不进入部署 env。Query 库仍拥有去重、缓存状态与失效，HTTP 继续单次 Attempt/no-store，不重复实现缓存、重试器或查询引擎。
+
+桥只向完成数据缓存返回 ApiResult 的 success data；该 Schema 输出必须非 undefined，否则以安全 schema 错误拒绝。HTTP 202 的 accepted 不代表完成：通过独立的 `ApiQueryAccepted<Response>` 暴露只读的原 Typed Accepted Result（含已验证 data、httpStatus、requestId），不覆盖此前完成数据，也不把它归类为 ApiQueryError 或正常完成。该类型借用官方 Query 的 error 通道表示本次读取尚未完成，调用方须与 HTTP failure 区分；初次 Accepted 不产生完成数据，后续由显式重读或失效推进，不自动轮询。failure 抛出 `ApiQueryError<ErrorData>`，其安全 detail 保留原 ApiError 分类/标识/适用状态与 Schema 校验错误数据，message 不包含 URL、Query、Header、Body 或原异常。失败可以保留 Query 的错误状态及此前成功 data，但不能把 failure Result 缓存成成功数据。Query 取消和 Runtime Dispose 使用官方取消语义、Abort 现有 HTTP 并丢弃晚到结果，不把取消当成功、全局通知或服务端回滚。Dispose 同步阻止新读、解除挂载订阅并取消在途查询；等待官方取消结算后再清理缓存，避免晚到结算重建 GC 计时器。取消前先发布同一释放 Promise，确保同步 Abort 回调重入也只卸载与清理一次；该 Promise 结算时所属缓存与计时器已释放，旧在途结果不能重新填充它，其他 Runtime 不受影响。失效使用官方 invalidateQueries，领域调用方决定精确 Key 与是否立即重读，不在核心广播保存事件或重复服务端变更。
+
+UApi 仍只是现有匿名只读适配器；复用其同一 Endpoint、输入/响应 Schema 增加 Query Options 接口，不复制定义、不增加页面或生产默认。公共 Query 根作为既有 Knip 的真实核心入口，内部代码仍受未用检查。现有 SPA 没有此模块的消费者，本包不伪造一个：完整应用预算照常验证，另以实际公共入口生成内存中的压缩生产产物报告首次使用成本；不能用当前 Tree Shaking 的零增量冒充库本身零成本，或借此提高预算。未来消费者须按实际加载边界进入同一应用预算，不能把 Query 提前挂到所有启动中规避计量。
+
+本轮依赖验证中，5.105.3 的 Vue Query 声明在本仓严格 TypeScript 6 下出现 QueryClient.isMutating override 不兼容，既有 vue-tsc 实际退出 2；此失败保留，不关闭 skipLibCheck、不修改工具链或补丁。相邻官方稳定版 5.105.1 保留回归前的签名，本包改用该精确版本继续验证，源码范围与只读语义不变。首次 vue-demi 版本限定 false 未被本版 pnpm 识别，改为包名 false 后，使用官方定向 rebuild 结算先前未决元数据，随后 frozen install 退出 0；脚本未获执行许可，strictDepBuilds 与既有决定保持。
+
+2026-11-03 首轮静态验证快照：当轮生产代码经 `mise exec -- pnpm verify` 实际退出 0；既有内存检查覆盖真实 HTTP/Query/Vue 的去重、失效、失败缓存、输入快照、最后消费者取消、实例隔离及异步释放后的缓存/订阅/计时器回收。实际 Query 公共入口内存生产产物为 10,936 bytes gzip（共享 Vue 外置），当前 SPA 初始 JS/CSS 保持 262,462/33,418 bytes gzip，既有预算未变。实际 Node Query → HTTP → 中央开发代理 → UApi 只读链路中，两个并发读取只产生一次网络 Attempt，数据通过同一服务 Schema；任务创建的 Runtime 与服务均已关闭。该证据不代表浏览器中的 Query 页面消费、正式直连 CORS 或 Owner Runtime/Visual/Accessibility Acceptance；本包没有页面消费者，未作 Git 或 Release 交付。
+
+独立复审后的本轮修正限定为：保持 HTTP 202 的 Typed Accepted 语义、阻止 QueryClient 同名遮蔽削弱 Vue 挂载拥有权检查，以及同步 Abort 重入释放幂等。挂载例外识别官方 QueryClient 导入绑定直接构造的 const 句柄，以及同一声明容器内绑定到该句柄的 const Identifier 别名（可串联）；生命周期调用仍按实际词法符号识别，不以变量名或整文件放行，不声称穷尽动态数据流。既有无页面消费者、依赖、预算和 Owner 验收边界不变。
+
+三项缺陷修正时的静态结果快照（2026-11-03）：三项反例均先独立复现再修复。既有检查新增 202 初次受理、完成后受理不覆盖、显式完成重读、同步 Abort 重入同一 Promise 与一次卸载/清理，以及挂载例外的两项正例和四项词法遮蔽/额外生命周期反例。新的完整 `mise exec -- pnpm verify` 实际退出 0；Query 公共入口为 11,019 bytes gzip（共享 Vue 外置，比首轮增加 83 bytes），现有 SPA 初始 JS/CSS 保持 262,462/33,418 bytes gzip，预算未改。没有新增依赖、测试文件、页面或泛化分析框架；门禁期间候选哈希不变，之后只回填本状态与证据。本轮不重跑公网或浏览器验证，首轮真实代理读取证据保留为相应快照，不代替当前浏览器消费、独立复审或 Owner 验收。
+
+补充复核修正（2026-11-03）：同一局部声明容器内的 const 句柄别名及串联别名现按真实绑定识别，避免限制等价私有重排；新增别名正例及接收者遮蔽、目标遮蔽、可变别名反例，挂载探针合计四项正例、七项反例均通过。实际 Runtime 的 const 别名重排在内存中由误报两项恢复为零项，生产 Runtime 文件未改。所属 Runtime Kernel、Node 类型与 lint 检查，以及新的完整 `mise exec -- pnpm verify` 均实际退出 0，应用包体与预算保持。仅检查器与本契约说明发生变化，无新文件、依赖、通用数据流分析或 Git 交付；门禁期间候选不变，之后只回填本验证状态与证据。Owner 验收仍未执行。
 
 ## 20.1 Ownership and Request Definition
 
@@ -14199,7 +14726,7 @@ Endpoint、Timeout、Retry、Auth 和 Cache Policy 都必须引用 Exact Registr
 
 ## 20.2 Configuration, Identity and Headers
 
-Base URL 来自已验证 Runtime Configuration，只允许 Approved HTTPS Origin；Development 的 HTTP 例外由 Environment Schema 明确声明。URL 使用 `URL` API 和 Typed Path/Query Encoder 构造，禁止字符串拼接、双重编码、Credential URL 与任意 External Origin。
+Base URL 来自已验证 Runtime Configuration，当前独立 HTTP 核心允许规范 HTTPS 服务 Base 或同源非 Root 路径前缀；路径前缀必须由创建者提供的当前页面 origin 解析，生产网页仍受既有 HTTPS 启动校验。开发代理的 HTTPS target 与浏览器前缀由 config.ts 从所选 env 单源组装，仅 dev serve 启用。URL 使用 `URL` API 和 Typed Path/Query Encoder 构造，禁止双重编码、Credential URL、目录穿越与请求级任意 Origin 覆盖。
 
 每个 Attempt 生成内部 `requestId`，并传播已验证或新建的 `correlationId`。Header Registry 精确拥有 Content Negotiation、Locale、CSRF、Idempotency、Release 和 Correlation Header Name。禁止记录 Cookie、Authorization、CSRF Secret、Password、完整用户输入和 Raw Response Body。
 
@@ -14679,7 +15206,7 @@ interface ObservabilityEnvelope {
   eventName: string
   level: 'debug' | 'info' | 'warning' | 'error' | 'fatal'
   occurredAt: string
-  environment: 'development' | 'staging' | 'production'
+  environment: 'development' | 'production'
   releaseSha: string
   buildVersion: string
   routeTelemetryName: string | null
@@ -15386,7 +15913,7 @@ export function useConsoleI18n(): ConsoleI18nBoundary
 
 `Ref`/`App` 来自 Vue。`useConsoleI18n` 在 Root Mount 时必须取得已就绪 Boundary，缺失即 Existing Mount Startup Failure；不返回 Null/Placeholder。`locale` 是 Composer Locale 的 Runtime Readonly 投影，不创建第二 Mutable Locale；`notice` 只描述同一 Owner 的当前请求结果。Page 不自行保存选中语言，不从 `switchLocale` 的过期 Promise 回写状态。`t` 仅委托官方 Composer，收窄 Key/Parameter、执行安全 Fallback，不解释消息、生成代码或覆盖官方 Resolver/Compiler。
 
-`pendingLocale` 是同一语言 Owner 当前已接受、尚未提交的用户切换请求目标的只读投影，无待决请求时为 `null`；优先从该请求派生，不建立需要独立同步的选中语言 Store。它不是第二个生效 Locale，永不持久化，也不得驱动翻译、`html.lang/html.dir`、Naive `locale/dateLocale`、Route Title 或业务数据；初始化与已保存偏好恢复不属于待决用户请求，原有恢复流程保持。
+`pendingLocale` 是同一语言 Owner 当前已接受、尚未提交的语言切换请求目标的只读投影，无待决请求时为 `null`；优先从该请求派生，不建立需要独立同步的选中语言 Store。它不是第二个生效 Locale，永不持久化，也不得驱动翻译、`html.lang/html.dir`、Naive `locale/dateLocale`、Route Title 或业务数据；启动恢复与远端保存选择复用同一可取消请求机制；Boundary 只在启动就绪后提供，不建立第二个 Locale 或 Store。
 
 另有纯安全入口 `apps/web/src/shared/i18n/default-messages.ts`：`getDefaultConsoleMessage(key: ConsoleCommonMessageKey): string`，只做中文 Common Object 的按 Key 读取；不依赖 Vue、I18n、Zod、Storage 或任何初始化。只准入 Router Default Projection、Core/Storage Safe Message Table、Locale Owner 与静态检查消费该入口，普通页面仍使用 `useConsoleI18n`。这是同一 Application 内的安全子入口，不是跨 Package Deep Import。
 
@@ -15437,8 +15964,8 @@ export interface UiAdminShellCopy {
   readonly closeActionLabel: string
   readonly expandNavigationLabel: string
   readonly collapseNavigationLabel: string
-  readonly expandAllMenusLabel: string
-  readonly collapseAllMenusLabel: string
+  readonly freeNavigationModeLabel: string
+  readonly accordionNavigationModeLabel: string
 }
 ```
 
@@ -15456,7 +15983,7 @@ Owner 已明确准入本实例的日期适用性修正：该本地化 Landing �
 
 该 Step 由 Kernel 调用同步 `createConsoleI18n`，立即登记返回的 Handle，再等待 `ready`。Handle 在 Ready Promise 内显式加载 `runtime.ts`；该模块才从 `vue-i18n` Public Root 创建并安装唯一 Composition Instance。`resource-loaders.ts` 持有七个明确 JSON Dynamic Import，初始 Module Graph 只包含纯 Common 中文、安全读取、Boundary/Contract 和 Loader/生命周期外壳，不静态引入 Vue I18n Runtime 或其他语言资源。不得借用 Router Chunk Handler 来安装 Locale Provider。
 
-初始化顺序：读取 Storage Port → 验证已保存选择 → 保证中文 Common 与初始 Route Scope 可用 → 为有效英文选择加载对应英文资源 → 同步完成同一 Instance 的必需插件注册 → 同步提交 Locale/Document Projection 并调用 Router 标题回调 → 提供应用 Boundary → Ready。未找到、非法或无法读取 Preference 时使用中文且不修复/覆写 Storage；有效英文 Resource 加载失败时保留原 Preference，回到已就绪中文，并保留 `saved-choice-unavailable` Notice。中文初始必需资源、Instance 创建/必需注册或默认提交失败属于当前 Step 的 Startup Failure；由 Kernel 恰好一次归一化为现有 `application-startup-failure`，停止 Mount/Ready 并反向释放。Raw Import URL、异常文案或 Storage Payload 不进入用户提示。
+初始化顺序：注册 Locale Preference 失效订阅 → 准备中文 Common 与初始 Route Scope → 完成同一 Instance 必需插件注册 → 重新读取并验证最新保存选择 → 复用可取消切换 Owner 准备当前选择的资源 → 提交最新 Locale/Document Projection 并调用 Router 标题回调 → 提供 Boundary → Ready。加载期间的新选择使旧请求失效；Ready 不等待已过期的英文 Promise，旧成功或失败均不能提交语言或 Notice。未找到、非法或不可读 Preference 时使用中文且不修复/覆写 Storage；只有仍然当前的有效英文选择真实加载失败才保留原 Preference、使用已就绪中文并显示 `saved-choice-unavailable`。中文必需资源、Instance 创建/必需注册或默认提交失败仍由 Kernel 恰好一次归一化为 `application-startup-failure`，停止 Mount/Ready 并反向释放；Raw Import URL、异常文案或 Storage Payload 不进入用户提示。
 
 Owner 已授权修正把完整异步插件安装等同语言 Readiness 的旧解释。固定 `vue-i18n@11.4.10` 的浏览器安装实现先同步注册 Provider 与 Unmount Cleanup，随后才等待可选 DevTools；工具 Hook 不可用且未启用 Early Proxy 时，其回调可一直待决。每次 Attempt 仍恰好安装一次且先于 Mount，私有集成须确认必需同步注册完成，将此前的安装失败交回 Kernel；之后返回的可选 Promise 独立观察，不能进入 `ready` 或替代 Mount Barrier，失败仅在有效 Attempt 的 Development 中使用 Vue 现有 `warn` 诊断，不新增 Reporter、Error Registry 或重试。这个分界依据固定版本的实际实现，不将所有安装 Rejection 一概视为无害；版本改变须重新核对。保持正常 DevTools 接入；不修改 Vendor Runtime、Build Flags 或 Global Hook。Dispose 撤销应用后续提交资格，包括资源失败分支的 Notice；观察可选 Promise 不会取消上游排队回调或 Vendor Continuation。
 
@@ -15471,10 +15998,10 @@ Router 已在前一 Stage 完成 Initial Navigation；它在 Pre-I18n Preparatio
 3. 每个异步完成点（包括 Vue Render Flush 后）都检查当前请求与 Attempt 是否仍有效。完成、取消、失败清理或旧操作释放只能清理仍属于自身的待决状态，不能清空更新请求的 `pendingLocale` 或覆盖其 Notice。过期/Disposed Completion 不注册消息、不改选中态/Locale/HTML/Title/Notice、不持久化；不可取消的 `import()` 允许结束，但不得产生应用 Side Effect。只缓存当前 Build 的已验证资源，失败只可由新的显式操作再次请求，不自动重试或 Reload。
 4. 将完整资源交给同一 Composer 后，在一个不含 `await` 的提交段内更新其 Locale、`html.lang` 和 `html.dir=ltr`，并调用 Router Title 回调，成功后在该同步段清空匹配当前操作的待决目标；当前 Naive Component Locale 与所有 App Copy 从相同 Ref 在同一次 Vue Flush 投影。加载时仍渲染最后可用语言，不能显示一半新语言的树。Default Fallback 的单条安全中文是有意的缺译降级，不是允许异步混合语言。
 5. Resource Failure 返回 `failed/message-load-failed`，保留最后可用语言及其持久化值；提交异常在让出执行前恢复上一 Locale、Document Language/Direction 和 Router Title，返回 `failed/commit-failed`，不写 Preference。两类失败都只清空仍匹配该失败操作的待决目标，使控件返回已提交语言，不清空输入或其他页面状态；`notice` 用恢复后的语言解释失败，不能显示 Raw Key、Raw Exception 或空白。
-6. Presentation Commit 成功后，Storage Port 在同一同步边界尝试一次小型写入；失败不撤销已生效且可用的语言，而返回 `applied` 加 `persistence=failed`、Notice=`not-saved`，明确提示下次启动可能不能恢复。这是“语言已应用但未保存”，不能报告为“切换失败/已保存”。成功返回 `applied/saved`。过期 Promise 不能覆盖更新请求的反馈；Page 只读 Owner 的当前 Notice。
+6. 显式本地用户切换的 Presentation Commit 成功后，Storage Port 在同一同步边界尝试一次小型写入；启动恢复和远端补读只应用已有保存值，不再次持久化。失败不撤销已生效且可用的语言，而返回 `applied` 加 `persistence=failed`、Notice=`not-saved`，明确提示下次启动可能不能恢复。这是“语言已应用但未保存”，不能报告为“切换失败/已保存”。成功返回 `applied/saved`。过期 Promise 不能覆盖更新请求的反馈；Page 只读 Owner 的当前 Notice。
 7. 初始恢复不回写、同语言 No-op 不回写，失败资源不回写；所有 Promise 必须有可判定终态，Runtime `switchLocale/prepareScope` 不产生未处理 Rejection。`ready` 的真正 Startup Failure 则交回已有 Kernel Catch。语言操作不改变用户数据或其他 Lifecycle Owner。
 
-Kernel 的新增 Disposal Step 为 `dispose-i18n`，插在 `unmount-vue-application` 之后、`dispose-storage` 之前。它先撤销所有 Locale 操作资格、清空该 Owner 的待决目标及加载 Notice，使仍有效的待决切换操作以 `cancelled/disposed` 结束，所有晚到工作都不能再产生 Side Effect，解除 Router 连接，再释放官方 I18n Scope/插件资源与语言 Boundary，恢复该 Owner 接管前的 Document `lang/dir`。必须与 Vue I18n 官方 Unmount Cleanup 合并为幂等、一次有效释放；不得注册第二 HMR Hook、Media/Storage Listener 或 Global Error Listener。Factory 创建后但 Ready 前的 Dispose 同样阻止晚到的插件安装、挂载和状态提交；Kernel 对 `ready=cancelled` 不执行后续 Mount。
+Kernel 的新增 Disposal Step 为 `dispose-i18n`，插在 `unmount-vue-application` 之后、`dispose-storage` 之前。它先撤销所有 Locale 操作资格、清空该 Owner 的待决目标及加载 Notice，使仍有效的待决切换操作以 `cancelled/disposed` 结束，所有晚到工作都不能再产生 Side Effect，解除 Router 连接，再释放官方 I18n Scope/插件资源与语言 Boundary，恢复该 Owner 接管前的 Document `lang/dir`。必须与 Vue I18n 官方 Unmount Cleanup 合并为幂等、一次有效释放；不得新增 HMR Hook、Media Listener 或 Global Error Listener；唯一 Locale Storage 失效订阅由现有 Port 创建，在同一 Handle 中释放，不增加第二份订阅。Factory 创建后但 Ready 前的 Dispose 同样阻止晚到的插件安装、挂载和状态提交；Kernel 对 `ready=cancelled` 不执行后续 Mount。
 
 Pre-I18n Configuration/Startup Failure 永远可调用纯中文 Safe Message Table；Fatal Renderer 自身标明 `lang=zh-CN,dir=ltr`，不需要 `useConsoleI18n`、Router、Storage 或 UI Provider。Mounted `AppErrorBoundary` 可用同一 `t` 本地化安全消息，Translator 不可用/失败时读取同一中文源。Core 四条、Router 六条、Storage 十一条 Error Registry 及其 Combined Count 保持 `21`；Locale 操作结果是本节闭合的局部结果 Union，不扩展全局 Error/Observability 系统，也不增加 Startup Retry。
 
@@ -15503,7 +16030,7 @@ capabilityStatus=ACTIVE
 
 Read 缺失返回 `missing`；JSON Parse、Unsupported Version、额外字段或未知 Locale 拒绝整条并保留 Raw Value，返回 `unusable/invalid`；访问/读取失败返回 `unusable/unavailable`。解析沿用现有 `preference-storage.ts` 和 Runtime Configuration 的 `JSON.parse -> unknown -> strict Zod` 边界；同名 JSON 成员使用标准 JSON.parse 的最后成员语义，最终有效对象仍须精确符合两个字段的 Schema。这个非敏感小型偏好不新增 Duplicate-aware JSON Parser，不调用或抽取 Appearance Custom Registry 的私有解析器。Write 先用同一 Schema 校验，再序列化完整 Payload、执行一次 `setItem`、读取回传值并用同一 Schema 与目标 Locale 比较。Serialization、Quota、Denied、Readback Mismatch 等通过现有 Storage Error Adapter 映射已有对应 Error ID；Port 仅返回安全 `saved/failed`，不传出 Payload、Raw Error 或 Storage Key。
 
-本条不承诺跨窗口 CAS/事务：多个窗口的当前语言相互独立，Local Storage 中最后完成的有效写入供下一次启动恢复；读回不一致报告写入未确认，不覆盖其他窗口以“修复”。既有 `storageCrossTabEventAllowlist` 仍为零，`storageMigrationRegistry` 仍为零，不创建 Event Type、Revision、Operation ID、Channel、Account Merge 或迁移链。既有 Storage Channel/监听器原生命周期不变。Disposed Port 不读写并返回安全失败结果；正常退出不删除 Preference。该语义明确替代本实例对 §23.3 General Revision Target 的依赖，不削弱现有两条 Appearance Direct Record 或未来其他持久化能力的合同。
+本条不承诺跨窗口 CAS/事务：当前语言按 Shared preference synchronization 准入跟随 Local Storage 中最新有效选择，远端读取并应用不回写；读回不一致报告写入未确认，不覆盖其他窗口以“修复”。`LocalePreferencePort.subscribe` 由现有 I18n Handle 持有和释放，采用原生失效通知和补读；不增加自定义 Event Type、Revision、Operation ID、Channel、Account Merge 或迁移链，`storageMigrationRegistry` 保持零。独立 browser-page discovery 不受影响。Disposed Port 不读写并返回安全失败结果；正常退出不删除 Preference。该语义明确替代本实例对 §23.3 General Revision Target 的依赖，不削弱现有两条 Appearance Direct Record 或未来其他持久化能力的合同。
 
 ### 23.6.7 Missing messages and actual capability truth
 
@@ -15621,10 +16148,10 @@ VIEW_TRANSITION_ACTIVATION_GATE_CREATION=PAVP_ROUTE_TRANSITION_ROUTING_CAPABILIT
 MOTION_FOR_VUE_STATUS=DEFERRED
 MOTION_FOR_VUE_GENERAL_CAPABILITY_STATUS=DEFERRED
 RUNTIME_MOTION_GENERAL_CAPABILITY_STATUS=TARGET_INACTIVE
-MOTION_FOR_VUE_SCOPED_ADMISSION=PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_ONLY
+MOTION_FOR_VUE_SCOPED_ADMISSION=SECTION_24_7_UNIFIED_POLICY_PILOT_FOR_EXISTING_NAVIGATION_AND_WORKSPACE_LIST
 MOTION_FOR_VUE_SCOPED_RUNTIME_STATUS=INSTALLED
 MOTION_FOR_VUE_PUBLIC_PLATFORM_API=PROHIBITED
-MOTION_FOR_VUE_OTHER_CONSUMERS=ONLY_SECTION_18_11_11_WORKSPACE_SURFACE_ADMITTED
+MOTION_FOR_VUE_OTHER_CONSUMERS=ONLY_SECTION_24_7_EXISTING_WORKSPACE_LIST_PILOT
 MOTION_FOR_VUE_ROUTE_CONTENT_ANIMATION=PROHIBITED
 GSAP_STATUS=DEFERRED
 OWNER=packages/ui private motion boundary after admission
@@ -15639,7 +16166,7 @@ OWNER=packages/ui private motion boundary after admission
 4. GSAP after repository-defined admission
 ```
 
-这是技术路由优先级，不是当前依赖清单。Runtime Motion 一般能力与 GSAP 继续不激活；§1.2B.0M 已冻结并实现一个 Motion for Vue 私有 Shared-selection-lens 例外，其精确 scoped Runtime 为 `INSTALLED`，但不能扩张为 Public Platform API、其他 Consumer 或 Route-content Animation。§1.2B.0N 的 PAVP-owned Native Document View Transition Route Capability 仓库源码实施已完成，Canonical Static Verification 为 `PASS`；工作包现为 `ACCEPTED`，Publication 为 `COMPLETE`，已按精确 Owner 陈述登记 Runtime 与 Visual Acceptance 为 `PASS`，Accessibility 保持 `NOT_PERFORMED`；Current Work 为 `NONE`。它新增零依赖，不借用 Motion Vue、GSAP 或第二动画 Runtime 拥有 Route Content。第三方 Motion Vendor 只能由对应的 `packages/ui/src/adapters/**` 私有 Adapter 导入。
+这是技术路由优先级，不是当前依赖清单。Runtime Motion 一般能力与 GSAP 继续不激活；§1.2B.0M 已冻结并实现一个 Motion for Vue 私有 Shared-selection-lens 例外，其精确 scoped Runtime 为 `INSTALLED`，但不能扩张为 Public Platform API、其他 Consumer 或 Route-content Animation。§1.2B.0N 的 PAVP-owned Native Document View Transition Route Capability 仓库源码实施已完成，Canonical Static Verification 为 `PASS`；工作包现为 `ACCEPTED`，Publication 为 `COMPLETE`，已按精确 Owner 陈述登记 Runtime 与 Visual Acceptance 为 `PASS`，Accessibility 保持 `NOT_PERFORMED`；精确验收提交 `083b527b567287544b3786cd4350ee713f6a59f3` 收口时的 Current Work 为 `NONE`，这是历史快照，当前入口以文首为准。它新增零依赖，不借用 Motion Vue、GSAP 或第二动画 Runtime 拥有 Route Content。第三方 Motion Vendor 只能由对应的 `packages/ui/src/adapters/**` 私有 Adapter 导入。
 
 §1.2B.0E 只纠正当时的 CSS Motion Baseline Shell/Route Geometry，不激活 Runtime Motion、View Transition、Motion for Vue 或 GSAP；其中旧 Route Opacity 表述已由 PAVP-RUNTIME-005 的后续合同取代，不是当前 Authority。当前 `full`、`reduced` 与 `none` 保持相同的 Persistent Shell/Route Live DOM Geometry，Route Entry/Leave Live DOM Motion 与 Route Opacity Entry 均禁止；§1.2B.0N Admission Amendment 保留为准入实施的历史权威；Browser-created Static Pseudo-element Snapshot Transition 已完成仓库源码实施并通过 Canonical Static Verification，不再是 Future-only 或 Not-started 能力，现行工作包为 `ACCEPTED / COMPLETE / PASS`，精确实现已发布并登记限定 Owner Acceptance；先前 `OPEN / COMPLETE / PASS` 是发布前实施历史。
 
@@ -15762,13 +16289,40 @@ Static Gate 必须拒绝 `transition-all`、任意 Duration/Easing/Delay/Transfo
 
 ---
 
-# 25. 无障碍基线
+## 24.7 Unified Motion policy pilot within the developer workbench
 
-目标：
+Owner 明确批准“可以 统一”，授权 Motion for Vue 统一策略试用。本准入属于 §18.17 当前有界重建，不启动第二并行 Product Package，也不将一般 Runtime Motion / GSAP 或未验证能力标为完成。
 
 ```text
-WCAG 2.2 AA
+ID=PAVP_WORKBENCH_UNIFIED_MOTION_PILOT
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_UNIFIED_MOTION_TRIAL
+REPOSITORY_IMPLEMENTATION=IN_PROGRESS
+STATIC_VERIFICATION=NOT_RUN
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+DEPENDENCY=motion-v@2.4.0_FROM_EXISTING_CATALOG_AND_INSTALLED_REGISTRY_PACKAGE
+PUBLIC_VENDOR_API=PROHIBITED
+NEW_PUBLIC_COMPONENT=NONE
+PILOTS=existing_admin_navigation_selection_lens;existing_mutable_workspace_tab_list
+ROUTE_CONTENT_OWNER=EXISTING_NATIVE_VIEW_TRANSITION_ONLY
+NAIVE_OWNERSHIP=MODAL_DRAWER_FOCUS_OVERLAY_AND_VENDOR_TRANSITIONS_RETAINED
+BUDGET_INCREASE=PROHIBITED
 ```
+
+Design System 新增纯 resolveMotion({storedMotion,prefersReducedMotion})，仅 full + 系统 reduce 降为 reduced，显式 reduced / none 保持。Stored Preference Schema 4 与原始选择/存储字节不变。该纯 Source 是唯一判定 Authority，现有 First Paint Formatter 复用既有 Resolver Source 编译方式嵌入同一实现，覆盖默认、无效、不可读、Built-in 与 Custom 分支；不得在早退路径遗漏系统 Reduce。现有 Appearance Bootstrap 是唯一环境监听 Owner，增加一个 prefers-reduced-motion MediaQueryList 并沿现有订阅/释放生命周期处理，Store 派生同一 Effective Mode 到现有 Snapshot 和 data-motion；CSS、Naive Motion Suppression、Native Route Capability 与 Motion Adapter 消费同一 Effective Mode。
+
+私有 packages/ui/src/adapters/motion/motion-policy.ts 集中两个已准入 Interaction 的 Typed Semantic Permission、既有 Transition/Variant Profile；不在页面增加 Duration、Spring、Transform 或 Page-specific Motion Variables，不新建万能 AnimateWrapper。MotionConfig 必须显式 full→user、reduced/none→always；none 使用稳定终态和零时长。因当前 2.4.0 在 Visual Element 创建时捕获部分配置，不能只以 MotionConfig Prop 变更声称已停止动画；Private Adapter 须用已安装官方 API 验证中途策略切换与释放，保留原生 Tab Button/焦点目标，不通过重挂目标绕过。若支持的取消 API 无法实现，必须报告精确边界。
+
+UiProvider 将同一 effective data-motion 投影到已实际消费的 Naive Input、Selection、Switch Rail/Thumb、Select Menu/Option/Checkmark 的命名 CSS 表面，Naive 保留 Lifecycle、Focus、Positioning 和 Transition Hook；只对实际 Scale 动画状态取消 Scale，不重置 Follower 的定位 Transform。设置已用可见 Radio Choices 退休 Select/Spinner；Done 及 Dashboard Request 在 reduced/none 使用静态 busy 状态与真实可见进度文案，仅 full 传入 Vendor loading，避免 CSS 无法停止的 SVG SMIL Spinner；真实 disabled/aria-busy 不随该视觉选择消失。不声称未消费 Vendor Spinner 已获全局停止支持。
+
+§24 开头的 Scoped Admission / Other Consumers 限定由本节扩展到这两个现有真实试用者，不恢复 Motion Route-content Animation；Naive Vendor 与 Motion 不得同时拥有同一 Element Property。Version/Catalog/声明补丁保持现有固定状态，无需重复安装已存在的库；若实际需要改变依赖，须证明阻塞并依 §2.3 准入，不得借本授权升级无关依赖。当前已有 Production Baseline 272668 gzip-byte Initial JS 超过 270336 Budget；此事实不是通过，须在当前页面依赖闭包范围修正，不能抬预算。最终记录实际 Initial/CSS/Feature/Lazy Closure 和 Baseline Delta，运行现有完整 Gate，并区分静态/SSR/受控生命周期测试与尚未授权浏览器及 Owner 视觉接受。
+
+Required probes: 3×2 stored/OS policy matrix; default/invalid/custom/built-in First Paint parity; MediaQuery subscription/disposal; rapid add/close/select interruption; full→reduced/none mid-flight, restoration and pending lazy disposal; no orphan exits/inline transform/duplicate result; preserved focus targets and sole native route owner. No browser-denial bypass or Git delivery.
+
+
+# 25. 无障碍基线
+
+保留语义、名称、状态播报、对比度、触控目标与适配要求。Owner 已明确禁止键盘聚焦，因此当前产品不声明完整 WCAG 2.2 AA 合规，也不将键盘聚焦重新作为实施或验收要求。
 
 ```text
 CAPABILITY=ACCESSIBILITY_ARCHITECTURE_BASELINE
@@ -16013,17 +16567,19 @@ Stylelint production CSS rules
 * Touch Target 与触控行为。
 * Responsive Reading Order。
 
-## 25.2 Semantic, Name, Keyboard and Focus Contract
+## 25.2 Semantic, Name and Disabled Keyboard Focus Contract
 
-原生语义 HTML 是第一选择；只有原生元素无法满足复合交互，且未来独立、Owner-approved Headless Consumer Gate 已明确准入指定 Private Adapter 时，才可使用该 Gate 指定的 Adapter。Reka 当前仍是 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`，本条不自动准入 Reka，也不允许与 Naive Dual-active。每个交互必须声明 Role、Accessible Name Source、Description、Keyboard Map、Focus Entry、Focus Movement、Focus Exit、Focus Return、Disabled/Readonly State 和 Error/Loading Announcement。
+原生语义 HTML 是第一选择；只有原生元素无法满足复合交互，且未来独立、Owner-approved Headless Consumer Gate 已明确准入指定 Private Adapter 时，才可使用该 Gate 指定的 Adapter。Reka 当前仍是 `DEFERRED_HEADLESS_PRIMITIVE_CANDIDATE`，本条不自动准入 Reka，也不允许与 Naive Dual-active。每个交互仍须声明 Role、Accessible Name Source、Description、Disabled/Readonly State 和 Error/Loading Announcement。
 
 Accessible Name 优先级由 Component Contract 固定：Visible Label → explicit labelled-by ID → semantic `aria-label` only when no visible label is possible。Placeholder、Icon、Tooltip 和 Visual Position 不能单独构成 Name。重复 ID、空 Label、Name 与可见文本冲突、不可达 Description 必须失败。
 
-Keyboard Contract 必须使用平台约定与原生行为：Tab 只移动全局 Focus，Arrow/Home/End/Enter/Space/Escape 由对应 Composite Pattern 定义。不得劫持浏览器、Screen Reader 或文本编辑快捷键。所有 Pointer/Drag Operation 必须有键盘和非拖动替代。
+Owner 确认禁止所有应用内键盘聚焦功能：Tab/Shift+Tab 顺序聚焦、Arrow/Home/End 组件焦点导航、Enter/Space 键盘激活、ContextMenu/Shift+F10 键盘菜单入口、Roving Tabindex、Focus Trap 和主动 Focus Entry/Return 均不支持。鼠标/触控操作、文本编辑与非拖动替代保留；Escape 只可关闭已有浮层，不转移或恢复焦点。操作系统和浏览器界面不属于应用控制范围。
 
-Focus Indicator 只能消费 Focus Token，不能被 Outline Reset 移除。Route、Dialog、Popover、Sheet、Error Boundary、Deletion 和 Async Completion 必须定义 Focus Destination/Return；被删除或 Disabled Trigger 不存在时回到最近有效 Landmark。Programmatic Focus 必须等待 DOM Ready，但不能用任意 Timeout。
+`UiProvider` 是唯一应用级禁用 Owner，通过私有 `providers/keyboard-focus-policy.ts` 在子组件挂载前注册 Window Capture 的 keydown/keyup、pointerdown 与 focusin，并在 Provider 释放时完整移除。Tab/Shift+Tab 取消默认行为且不向组件传播；非文本控件的上述导航/激活键同样阻断，已有非编辑控件焦点在键盘事件到达时释放，键盘引起的后续 Native/Vendor/Programmatic Focus 转移也拒绝。Pointerdown 恢复鼠标/触控输入方式；已由鼠标/触控进入的 input/textarea/contenteditable 保留输入、光标移动、选择、删除、输入法和编辑快捷键。不得通过禁用整个 UI、覆盖 HTMLElement.focus、修改 Vendor DOM、Observer 扫描、轮询或任意 Timeout 实现。浏览器快捷键不被取消。
 
-Workbench Overlay 的 Focus Entry/Return 与关闭原因具体服从 §18.14：先解析有效逻辑 Invoker/Owner Fallback；导航或命令已接管时由最终工作流呈现，不无条件返回旧 Trigger。Menu Container Focus 必须具备真实 `aria-activedescendant` 关系，非模态普通控件 Panel 不使用 menu 语义；这些目标尚未实施，不能从本节要求推定当前 Runtime 合规。
+Shell、Workspace 和 Dropdown 删除自有键盘导航、自动聚焦与回焦，官方 Dropdown 明确 keyboard=false，显式导航节点与 Tab 使用 tabindex=-1；保留鼠标点击、Hover、右键菜单、正常关闭、inert、滚动锁及活动页签可见性。Provider 之前呈现的 Native Fatal Boundary，其唯一重试/刷新按钮同样使用 tabIndex=-1，不进入顺序聚焦，不新增 Focus Handler；原 Click、单次恢复、禁用和释放责任保留。Router 不主动 focus 标题，保留现有语义标题目标验证、Title、Scroll、Presentation 与生命周期事务。现有 route-focus Registry ID、targetTabIndex=-1 与 commit-focus-and-scroll Stage ID 仅保持跨文件标识兼容，其当前行为为 no-programmatic-focus/preserve-browser-focus，不再产生聚焦。表单错误保留摘要与播报，删除自动聚焦摘要；鼠标点击摘要到真实输入字段的编辑入口可保留。
+
+Focus Token、主题中的既有 Focus 字段和用于鼠标/编辑状态的样式保留其稳定视觉合同，不代表支持键盘聚焦；不能为本任务破坏主题 Schema 或删除公共 Token。此前章节中的 Keyboard/Focus Support、键盘替代、焦点环验收与 Focus Entry/Return 要求均由本节明确取代，历史验收不追写。现有 Owning Checks 改为保护键盘禁用、输入保留、监听释放和相关事务安全，不以恢复旧键盘功能制造通过。
 
 ## 25.3 Live Region and Adaptive Accessibility
 
@@ -16035,9 +16591,9 @@ Minimum Pointer Target 为注册的 24×24 CSS px AA Contract；Coarse Pointer P
 
 ## 25.4 Accessibility Enforcement and Release Acceptance
 
-Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、Forbidden Outline Removal、Token Consumption、Required Keyboard/Focus Metadata、Live Region Registry 和 Component Contract Closure；静态工具不得宣称已证明真实键盘、Screen Reader、Focus Return、Touch Target、合成 Contrast 或 Reading Order。
+Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、Token Consumption、Disabled Keyboard Focus Contract、Live Region Registry 和 Component Contract Closure；静态工具不得宣称已证明真实键盘禁用、Screen Reader、Touch Target、合成 Contrast 或 Reading Order。
 
-每个包含新/改变交互、Route、Layout、Material 或 Motion 的 Production Release 必须由 Owner 在仓库外按命名 Runtime Acceptance Matrix 检查 Keyboard、Focus、Name、Reading Order、Contrast、Forced Colors、Reduced Motion/Transparency、Touch Target 和 Zoom/Reflow。该 Release Gate 不由 Codex 执行、不改变 Codex `pnpm verify` Completion，也不提交 Screenshot、Recording、Trace 或 Evidence File。
+每个包含新/改变交互、Route、Layout、Material 或 Motion 的 Production Release 必须由 Owner 在仓库外按命名 Runtime Acceptance Matrix 检查键盘聚焦禁用、鼠标/触控与文本输入保留、Name、Reading Order、Contrast、Forced Colors、Reduced Motion/Transparency、Touch Target 和 Zoom/Reflow。该 Release Gate 不由 Codex 执行、不改变 Codex `pnpm verify` Completion，也不提交 Screenshot、Recording、Trace 或 Evidence File。
 
 ---
 
@@ -16045,7 +16601,7 @@ Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、F
 
 ## 26.1 Real CSS Cascade target
 
-本节是 §37.2.15 冻结的目标，取代原 `reset, tokens, base, utilities, components, app, overrides` 顺序作为未来实施合同；旧源码和历史验收事实不被追写为已采用目标。唯一顶层 Native Cascade Layer 顺序为：
+本节是 §37.2.15 冻结并由下方 scoped admission record 准入实施的目标，取代原 `reset, tokens, base, utilities, components, app, overrides` 顺序；旧源码和历史验收事实不被追写为已采用目标。唯一顶层 Native Cascade Layer 顺序为：
 
 ```css
 @layer reset, tokens, base, components, app, utilities, vendor-overrides;
@@ -16065,24 +16621,24 @@ Static Gate 负责 Semantic Rule、Typed Accessible-name Prop、ID Reference、F
 
 目标实施必须在第一次相关 Layer 声明之前建立同一顺序，包括 Generated/Critical First-paint 入口；不能依赖后加载的一条顺序声明修正已建立的顺序。普通 PAVP 静态 CSS 的稳态必须明确归层，不能留下未分层 Selector 以获得更高优先级；§26.3 只为无法以正式 API 表达的精确私有竞争声明保留兼容通道，不豁免普通页面、组件内容或 Utility 输出。
 
-本次兼容性更正只形成未暂存的 Architecture Review Candidate。Native Layer Target 仍未实施；候选不准入 Runtime Cutover、依赖变更、源码/Template 重写、Owner/Checker 登记或 Git 交付。§37.2.15 的历史记录、既有 Capability/Acceptance 与 Current/Next/Successor 状态保持原样。
+前序兼容性更正只形成 Architecture Review Candidate，当时未准入 Native Layer Cutover。当前实现范围及验证状态只由下方 scoped admission record 拥有；历史 Capability/Acceptance 不因本次实施扩大，Git 交付仍未授权。
 
 ## 26.2 UnoCSS native output ownership
 
 [UnoCSS Layers 官方文档](https://unocss.dev/config/layers)区分内部生成顺序与浏览器原生 Cascade Layer。已安装的 `@unocss/core@66.7.5` 实际支持 `outputToCssLayers: boolean | OutputCssLayersOptions`，对象可用 `cssLayerName(internalLayer)` 与 `allLayers`；回调返回 String 映射原生名称，`undefined` 沿用内部名称，`null` 输出未分层内容。仅设置内部 `layers` 顺序不足以实现本合同。
 
-Native Cascade Cutover 与 Size Authority、Density、Style Migration、SCSS Compiler Admission 分开准入。当前未开启 `outputToCssLayers`，本次不改变现有 Layer Order，也不宣称该选项可直接启用；未来 Cutover 须独立闭合 §26.1、§26.3 的浏览器 Cascade、未分层 Vendor、PAVP Adapter CSS 与 `!important` 合同。
+Native Cascade Cutover 与 Size Authority、Density、Style Migration、SCSS Compiler Admission 分开准入。本包开启 `outputToCssLayers.cssLayerName`，按下述责任映射实际内部层，未知内部层明确失败；首次顺序由 Runtime/Critical/应用入口的七层声明建立。浏览器 Cascade、未分层 Vendor、PAVP Adapter CSS 与 `!important` 仍受 §26.1/§26.3 约束，静态通过不代替真实浏览器验收。
 
-未来源码任务必须使用已验证的原生输出 API，并按实际产物责任映射，不猜测配置字段，也不能因 Internal Layer 名称相同就推定语义相同：
+源码使用已验证的原生输出 API，并按实际产物责任映射，不猜测配置字段，也不能因 Internal Layer 名称相同就推定语义相同：
 
 - Wind4 `properties` / `theme` 的兼容性 Property、Theme Variable 基础输出归入 `tokens` 兼容责任，不能扩张公共 Palette 或公共 Token 集合。
 - Reset/Preflight 按内容归入 `reset`，Element Base 按责任归入 `base`。当前 Wind4 Reset Preflight 的内部名称为 `base`；这一实现名称不意味着应把 Reset 当作 PAVP Element Default。
-- PAVP/default Utility 输出归入 `utilities`；已准入 Shortcut 输出同属 `utilities`，不能借独立更高的 `shortcuts` 层产生隐藏优先权。
+- PAVP/default、Icons 与已准入 Shortcut 输出同属 `utilities`，不能借独立更高的 `icons`/`shortcuts` 层产生隐藏优先权。
 - 实施时必须检查所有实际发出的内部层、Preflight 与 Property 输出，不能靠未映射层的 `undefined` 默认名称、`null` 或 Raw CSS 漏出另一个顶层层序。`allLayers` 只控制层声明输出，并不证明全部规则已正确归属。
 
 `tokens.css` 已由 Generator 写在 `@layer tokens` 内，目标是保持并同步其原生顺序，不能仅因导入语句未写 `layer(...)` 就误判它未分层，也不能重复包装为意外的 `tokens.tokens`。Generated PAVP Variable 的唯一 Writer 仍是 Design System；Theme Bank → Effective Mode Bank → Contrast Public Binding 与已准入 Density/Material 投影语义不变。应用与 Component Layer 不得复制 Theme Bank、Density 或 Material Condition Matrix。
 
-`tokens.css`、`critical-theme.css`、同步 First-paint Runtime、Custom Theme Bank Apply/Rollback 和 Generator-owned Artifacts 继续适用 §13 的所有验证、顺序、失败与无闪烁目标。本次不编辑或重生成它们。`route-transition.css` 是 Application-owned Browser/Platform 责任，现有 `app` Layer 是其明确目标归属；后续实施须核对整体输出，保留 View Transition、Forced Colors 与 Motion Policy，不强行改成普通 Utility 或改变交互。
+`tokens.css`、`critical-theme.css`、同步 First-paint Runtime、Custom Theme Bank Apply/Rollback 和 Generator-owned Artifacts 继续适用 §13 的所有验证、顺序、失败与无闪烁目标。本包只经既有生成器同步 CSS 头部层序，Token 值及其他生成输出不变。`route-transition.css` 是 Application-owned Browser/Platform 责任，现有 `app` Layer 保持，保留 View Transition、Forced Colors 与 Motion Policy，不强行改成普通 Utility 或改变交互。
 
 ## 26.3 Vendor, important and unlayered boundary
 
@@ -16090,7 +16646,7 @@ Vendor 适配顺序固定为：支持的 Theme/Prop/Configuration API → PAVP �
 
 仅当已安装 Vendor 的正式公开 API 无法表达现有必要行为时，未来获准实施可以保留精确私有普通声明未分层。每项必须闭合真实 Vendor Element/Root、PAVP 与 Vendor 的源码位置、竞争 Declaration、Property/State、正式 API 的不足，以及归层为何改变结果；同时记录 Scope/At-rule 与原 Importance。Path、Directory、整个 Style Block 或 `.n-*`、`.os-*`、`.pavp-*` Prefix 都不是许可。同一 Selector 中没有竞争的 Property、同一 SFC 中的自有内容仍按普通目标归层。未分层仅消除上述 Layer 劣势，不保证赢过 Vendor 的 Specificity、Source Order、Important、Inline 或实际 Injection。
 
-以下是本候选所需的精确处置边界，不是整仓迁移清单或当前 Checker 准入。源码位置以本任务 `4f3b542f3443b2369ed891c308a7f38c7feb9dd2` 为参照；Vendor 路径均指已安装的 `node_modules/naive-ui/es/`（`2.45.2`）或 `node_modules/overlayscrollbars/`（`2.16.0`），不是对其他版本的保证。
+下表保留前序兼容审查的精确边界快照，源码位置以当时 `4f3b542f3443b2369ed891c308a7f38c7feb9dd2` 为参照，不是当前行号或运行验收。当前逐声明责任登记仍仅由既有 `style-owner-contracts.ts` / `style-debt-baseline.ts` 承载；本包不把表中的整组 Selector 升为许可。Vendor 路径均指已安装的 `node_modules/naive-ui/es/`（`2.45.2`）或 `node_modules/overlayscrollbars/`（`2.16.0`），不是对其他版本的保证。
 
 | 现有责任及精确候选 | 已确认的竞争与 API 边界 | 归层风险及保留范围 |
 | --- | --- | --- |
@@ -16170,7 +16726,43 @@ FORCED_COLORS_CANDIDATE_GIT_DELIVERY=OWNER_AUTHORIZED
 FORCED_COLORS_CANDIDATE_RELEASE_STATUS=NOT_RELEASED
 ```
 
-现有未分层的普通 SFC/全局样式属于 §15.6 的过渡债务，不是长期许可。§37.2.15 冻结目标时尚未迁移 Native Layer Config、普通 Style 或 Checker；当前 Gate 通过仅说明既有门槛通过，不说明目标 Cascade 已在浏览器生效。
+§37.2.15 冻结目标时的未分层普通 SFC/全局样式属于 §15.6 过渡债务，当时尚未迁移 Native Layer Config、普通 Style 或 Checker。本包将保留的普通债务重键到 `components` / `app`；精确私有竞争声明与已有 Important 独立保留，静态通过仍不说明所有浏览器组合状态已验收。
+
+---
+
+### `PAVP_NATIVE_CSS_CASCADE_AND_VENDOR_COMPATIBILITY` scoped admission record
+
+```text
+ID=PAVP_NATIVE_CSS_CASCADE_AND_VENDOR_COMPATIBILITY
+AUTHORITY=ARCHITECTURE_SECTION_26_3
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_NATIVE_CASCADE_AND_EXISTING_VENDOR_COMPATIBILITY
+ALLOWED_SCOPE=existing UnoCSS native output mapping; shared generated/runtime/critical seven-layer order; existing PAVP stylesheet declarations and exact owner/debt layer rekey; necessary existing Naive/platform compatibility; directly coupled output/ownership checks and generation
+PROHIBITED_SCOPE=token/theme values or roles; preference/schema/configuration changes; density/radius behavior; new UI/features/pages/examples/tests/dependencies; Form/Table/unsaved/workspace-record implementation; generic analysis or governance framework; vendor/runtime-injection patching; new important or broader compatibility grants; Git delivery/release
+OUTPUT=actual native cascade under the frozen seven-layer contract with precisely retained vendor/platform compatibility and existing visual/interaction/accessibility behavior
+MACHINE_GATES=existing focused generation/style/production-output checks; reviewed declaration identity parity with admitted layer/selector/API transfers; final pnpm verify; git diff --check
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+BROWSER_VERIFICATION=BLOCKED_BY_BROWSER_URL_POLICY
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+Owner 已授权继续设计系统中本节已冻结的 Native Cascade 与现有 Naive 兼容目标。前一 Query 候选已通过独立复审，原 Owner 验收状态仍独立保留；本包不继续其他路线。§26.1 的七层顺序与 §26.2 的实际 UnoCSS 输出映射在同一候选切换，Runtime/Critical/应用入口须在首次相关声明前一致。Generated Token 值、Theme Bank、公共集合、偏好和运行身份不变，依赖与预算不提高。
+
+本包仅按 §15.6/§26.3 审定声明重键 Layer Ancestry，普通自有组件归 components、应用自有平台/既有页面债务归 app，保留其余 Context、Selector、Property、Value、Importance、Scope 与有效出现责任。不把这项归层称为普通 CSS→UnoCSS/SCSS 迁移，不重新捕获债务或整文件放行。现有 Important 保留原 Context；原普通未分层仅在当前 Vendor 源码确有竞争、正式 API 无法表达并精确登记时保留。混合 Selector 必要的窄分拆须证明实际 DOM 子集和原平台/Motion 保护关系，不因此添加设计值或新行为；信息不足时保留现场并报告，不盲目移入末层。只演进既有 Owner/检查机制，不另建声明或层级权威。能安全归层的 Naive 私有 Selector Fallback 使用 `vendor-overrides`：现有 Provider 的归层部分、Shell Unscoped Block 中精确 Naive Selector 及 Form Field 的两条 Naive Selector；普通自有内容仍在 components。对应同一 Naive Element 的 Forced-colors 可见性、Focus 和桥变量一并保持同层保护关系，不能让正常态末层规则压过媒体保护。该逐项重键不授予新 Vendor Selector、声明或文件级例外。
+
+Radio Card 的既有局部 Theme Overrides 承接原 `surface.panel` / `surface.page`、`text.primary`、`border.default`、`radius.panel` 的同值普通/Checked 绑定；原样式值保留并归层，没有新的 Token 或设计默认值。Naive Radio Theme 没有 Hover Background 字段，所以既有 Hover Background 与卡片几何/Transition 的精确竞争保留未分层。Radio Group 生成的直接 Splitor 子节点另受 Vendor `display: inline-block` 竞争，且无显隐 API；原「非 Option 子节点隐藏」按该 Splitor 与补集分拆，仅前者的 `display: none` 保留未分层。Shell 的 Layout/Sider Root Z-index 从普通债务转为现有 Vendor Owner 精确记录；Header 不获该例外。Motion 组只保留确有硬编码 Transition 对手的 Duration，Wave 使用现有 Ripple API，Easing 使用现有 Common Bezier；Switch 仅 Rail/Button 保留竞争声明。Form Forced-colors Outline 按实际 Input/Selection/Switch Element 与其补集分拆，Outline Offset 仍归层；选择器并集与原匹配范围相同。Navigation-only Reduced Dropdown Shadow 仍仅对该精确 Root 保留，避免改变共享 Popover Theme 的其他消费者；没有为文件、Prefix 或其他属性授予权限。
+
+独立复审确认两项当前候选回归，本包准入其精确修正：Radio Card 的内部 Splitor 不继承父 SFC 的 Scope Attribute，故只对该直接子节点采用 Vue 标准 `:deep()`，父级仍需原 PAVP Class、Marker 与 Scope；不扩展其他内部节点。Shell 的同一 NLayout 根在普通/文档模式均通过局部官方 Theme Overrides 绑定既有结构值 `color: transparent`，不改共享 Layout Theme 或其他消费者，移除对应两条冗余 Background 债务。文档 Root 的 `overflow: visible` 因 Theme API 不提供且 `content-style` 只作用于内部 Scroll Container，转为现有 Scoped Block 内精确一次的普通未分层 Vendor Owner；Enabled Root 的原 Overflow 保持。
+
+这两项修正已获得固定候选上的独立 Vue 编译、Naive 节点内存渲染及 CSSR 对照，保留为该次调查证据，不是完整组件运行测试或持续自动保证。持续静态 Gate 保留精确 Style Owner/债务声明、样式语法与编译、原 Naive Theme/Composite 合同、七层顺序、实际 UnoCSS/构建产物和预算检查；移除随后加入的手工模板投影与简化 Cascade 判定，其模型会漏检动态绑定覆盖并误拒绝等价私有表达。当前静态 Gate 不保证组件最终仍带有匹配标记/类名，也不证明实际节点匹配、最终 Cascade 或视效；这些仍需真实组件/浏览器验证，不把调查快照、声明守恒或 Gate 通过记为运行验收。
+
+保留现有 Root Flex、NTag Color、Naive Global Preflight 禁用、Navigation Forced Colors 桥及其已验收保护。Naive、OverlayScrollbars 与 Motion 的原注入/Inline 权威保持，不拦截、不改 Vendor 产物。原有 Form Adapter 如需归层只触及其既有 CSS 表达，不激活 Form 能力或改变控制器/校验/公共行为。浏览器验证使用本任务独立本地 Origin 和标签，保留/恢复偏好与临时 Emulation，仅关闭任务创建资源；不故障注入、不清除 Owner 数据，不把自动检查或实现者观察记为 Owner 验收。
 
 ---
 
@@ -16185,6 +16777,8 @@ Composables: use-*.ts
 Schemas: *.schema.ts
 Stores: *.store.ts
 ```
+
+数字版本风格限制针对仓库自有文件与声明名称，包括对象的静态属性名和访问器名，防止协议 Discriminator 变成另一套功能身份。静态字符串键只在具有 TypeScript 标识符形状时按自有名称检查；含标点的路径、媒体类型、版本等键作为数据处理，不维护外部字符串格式例外表。不扫描普通字符串值、注释、文档或上游导入原名，也不拒绝合法的外部 API 版本路径、Release Tag 和版本数据。
 
 ## 27.2 导出
 
@@ -16443,6 +17037,10 @@ Codex 完成当前 Task 后不得自动开始 Next Package。Narrow Task 不得�
 Static Checker 只冻结其 Owning Work Package 所需的最小 Stable Cross-file 或 Public Contract。除非 Architecture 明确声明为 Normative，Checker 不得冻结 Private Local Variable、Private Helper、Private Loop Structure、Private Parser Decomposition、Private Map/Array、Closure 或 Private Algorithm。Narrow Repository-specific Invariant 足够时，禁止构建 Generic Static-analysis Machinery。
 
 ### Contract-gap Stop Rule
+
+Owner 已在干净的 `main@58ef3b1c68d1a11c061fca84165680862dc3434e` 上授权一次有界治理简化：删除完整 Gate 的重复 ESLint 调用；以文首 Status Block 作为 Current Work 的唯一可变入口；解除历史验收叙事、固定位置和镜像数量对生产 Gate 的耦合；移除 Manifest 历史压缩字节与增量的精确相等断言；收窄私有源码写法与数字命名检查；在没有已准入事件时不获取 Storage 跨页资源；合并重复校验元数据，并在可证明不扩大样式债务时简化其维护；原位纠正旧 Naive、Density、Browser/Test 政策文字及直接生成投影。
+
+本次只修改上述既有治理 Owner、直接 Storage 空资源责任和必要文档/生成投影，不创建新治理框架、依赖、测试或示例文件，不改变类型安全、外部输入验证、公共/依赖边界、实例隔离与释放、语义 Token、可访问性、生成完整性或真实尺寸预算。该治理清理启动时文首指向 §20B.2，保留其错误隔离 `IN_PROGRESS` 与未验收事实；当前工作只读文首唯一入口及其 scoped admission record。此历史治理任务不拥有当前指针，也不推进 Next、Successor、任何历史验收或 Release。最终稳定候选须通过完整 `pnpm verify` 并接受独立复核；Stage、Commit、Push、安装、Worktree 和发布均未授权。
 
 当当前 Task 需要但 Canonical Architecture 未定义 Material Contract 时，Codex 必须在 Mutation 前停止。Material Contract 包括：
 
@@ -16712,7 +17310,7 @@ Material adaptive / reduced / solid fallback completeness
 first-paint generated-output drift
 Target Explicit Theme duplicate-aware parse and exact-set validation after Atomic Cutover
 Role/Alpha/Named Contrast Registry exact version and endpoint closure after version activation
-Reference-only Preference, exact parsed-input classification and legacy migration determinism after Atomic Cutover
+Current-only Reference Preference exact validation, unsupported format rejection and stored-byte preservation
 direct ExplicitThemePreference persistence, no additional envelope and no legacy writer after Atomic Cutover
 Custom Theme Registry Snapshot exact shape, code-point order, whole-Snapshot rejection and deletion safety
 Package 5 Design System public-root, private-boundary and structured-result exact equality
@@ -16720,7 +17318,7 @@ active Built-in Theme and First Paint Manifest exact shape after Atomic Cutover
 application-owned preference and Custom Registry storage-key consistency
 ```
 
-Package 5 Owning Static Enforcement 必须验证 §13.6 的 Three-branch `PreferenceMigrationResult` Exact Equality、Malformed JSON 由 Application-owned Reader 私有拒绝且不进入 Migration、Schema-invalid Parsed Input 精确返回 `PREFERENCE_INPUT_INVALID`，以及 `MIGRATION_REQUIRES_THEME_COMPLETION` 只用于 Valid Legacy Theme-completion Case。任意把 Arbitrary Invalid Parsed Input 映射为 `MIGRATION_REQUIRES_THEME_COMPLETION`、静默返回 Product Default 或自动修改 Storage 的实现都必须失败。
+Owning Static Enforcement 必须验证 §13.6 当前 Custom/Resolution/Installation Result Exact Equality、Malformed JSON 由 Application-owned Reader 私有拒绝、Schema-invalid Parsed Input 精确返回 `PREFERENCE_INPUT_INVALID`，以及旧 Preference/Custom Contract 拒绝后原存储内容不变。任意保留旧 ID 映射/迁移、静默返回 Product Default 或自动修改 Storage 的实现都必须失败。
 
 Optical CSS 检查必须覆盖 `apps/**/*.css` 与 Vue `<style>`，UI-internal CSS Variable 使用必须对照 Manifest。Direct Storage Rule 只允许应用所有的 `preference-storage.ts` 与按 Gate 创建的 `custom-theme-registry-storage.ts` 执行各自边界内的读写；Package 5 的 Custom Registry 持久化 Boundary 继续只在 Vue Bootstrap 后写入其 Application-owned Key。Generated `appearance-init.js` 有两个同步只读 First-paint 窄例外：使用应用通过 `data-preference-storage-key` 提供的 Key 读取 Preference，以及按 `PAVP_DARK_ACTION_COLOR_HARMONY_REFINEMENT` 使用 `data-theme-registry-storage-key` 读取被选中的现有 Custom Theme Entry。它不得写入 Storage；Design System 其他源文件和其他应用文件不得直接访问。
 
@@ -16872,6 +17470,7 @@ feature/
 pnpm dev
 pnpm build
 pnpm preview
+pnpm config:generate
 
 pnpm tokens:build
 pnpm tokens:check
@@ -16925,7 +17524,7 @@ bundle budget
 
 ## 31.2 Static Enforcement Boundary
 
-§18.11 的 `PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE` 仅冻结 TARGET；未来 Owning Checks 的责任清单见 §9.12。当前 Router/Workspace/Cache/Storage/Admin Console 检查仍面向已实施 route-single/schemaVersion 1；文档声明不能代替源码接线、静态证据或 Owner Runtime/Visual/Accessibility 验收。Owner 后续仅准入 §18.11 所列 Current Work/checker 一致性修复及直接内存反例，保护新任务与真实章节的固定配对、13 对镜像及架构目标未实施边界；不激活多记录功能检查，不改变运行不变量、预算或生成输出，不以冻结私有算法补足行为证明。前次 `check:arch` 和完整 `verify` 因旧 Current Work 断言退出 1 的结果保留为历史失败，当时未执行的下游阶段不算通过；本次新验证独立报告，不回退 Current Work、不同时接受新旧任务、不弱化门槛。
+§18.11 的 `PAVP_MULTI_RECORD_WORKSPACE_IDENTITY_ARCHITECTURE` 仅冻结 TARGET；未来 Owning Checks 的责任清单见 §9.12。当前 Router/Workspace/Cache/Storage/Admin Console 检查仍面向已实施 route-single/schemaVersion 1；文档声明不能代替源码接线、静态证据或 Owner Runtime/Visual/Accessibility 验收。Owner 后续仅准入 §18.11 所列 Current Work/checker 一致性修复及直接内存反例，当时保护新任务与真实章节的配对、13 对镜像及架构目标未实施边界；本次治理改为仅从文首读取一次 Current Work 并验证实际准入引用，退役镜像计数和历史叙事位置约束；不激活多记录功能检查，不改变运行不变量、预算或生成输出，不以冻结私有算法补足行为证明。前次 `check:arch` 和完整 `verify` 因旧 Current Work 断言退出 1 的结果保留为历史失败，当时未执行的下游阶段不算通过；本次新验证独立报告，不回退 Current Work、不同时接受新旧任务、不弱化门槛。
 
 仅在对应 Owning Work Package 或 Admission Gate 接受后，静态门槛可以验证：
 
@@ -16956,7 +17555,7 @@ bundle budgets
 ```text
 exact runtime-configuration.json artifact name, output and deployed URL
 exact existing module bootstrap-script carrier and one non-empty URL attribute
-exact strict five-field Runtime Configuration record and schema discriminator
+exact strict six-field Runtime Configuration record with explicit API configuration and schema discriminator
 root package Build Version authority and compiled/runtime equality
 single-read full Release SHA authority and compiled/runtime equality
 single deployment-base authority and current exact root-only compatibility
@@ -17027,11 +17626,13 @@ Dependabot alerts
 ## 32.1 Codex Verification Boundary
 
 ```text
-CODEX_VERIFICATION_MODEL=pnpm verify
+STATIC_COMPLETION_GATE=pnpm verify
 OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE=REQUIRED_EXTERNAL_NON_REPOSITORY
 ```
 
 Supporting File 不承载 Release 规范；本节是唯一规范权威。
+
+仓库变更的静态完成以完整 Gate 通过为准。任务授权范围内的运行观察可以提供补充证据，须单独报告，不能冒充静态验证或 Owner 的 Production Release Acceptance。
 
 ## 32.2 Owner-operated Observation Matrix
 
@@ -17048,7 +17649,7 @@ Appearance：
 
 Component and Interaction：
 
-* Semantic Structure、Accessible Name、Keyboard、Visible Focus 与 Focus Return。
+* Semantic Structure、Accessible Name、键盘聚焦禁用及鼠标/触控与文本输入保留。
 * Touch Target、非拖动替代、Interruption、Reversal、Cleanup 和 Route Disposal。
 * Full、Reduced、None Motion。
 
@@ -17057,7 +17658,7 @@ Shell, Layout and Scroll：
 * narrow、regular、wide Capability Projection。
 * Hover、Pointer 和 Input Capability 组合。
 * Zoom、Reflow、Safe Area、Dynamic Viewport 与 Responsive Reading Order。
-* 每个 Axis 的精确 Scroll Owner、Background Lock、Focus Return 和 Scroll Restoration。
+* 每个 Axis 的精确 Scroll Owner、Background Lock、无主动回焦和 Scroll Restoration。
 * Paint、Layer 和 Performance Observation。
 
 Owner Observation 不是 Codex Completion Gate。
@@ -17074,7 +17675,7 @@ APPLICABLE_RUNTIME_DOMAINS=<named matrix domains>
 
 该 Decision 由 Owner/Deployment Process 保持在仓库外。`REJECT` 必须阻止部署或触发 Rollback；`ACCEPT` 只授权该精确 Release，不成为未来 Release 证据。
 
-Minimum Matrix 只覆盖该精确 Release 实际改变或消费的 `ACTIVE` Domain：Startup/Runtime Config、Appearance First Paint and Atomic Theme、关键 Route、Storage、Keyboard/Focus/Name、Layout/Scroll、Reduced/Forced Modes 与适用 Performance。Auth/Permission、API/Mutation/Conflict、Backend-dependent Observability 和 Protected Flow 只有在未来显式准入并实际 `ACTIVE` 后才进入适用 Matrix；它们不得阻塞 Frontend-only Release。只发布静态架构文档且没有 Runtime Artifact 变化时，Product Release Gate 不适用；Codex 仍运行 `pnpm verify`。
+Minimum Matrix 只覆盖该精确 Release 实际改变或消费的 `ACTIVE` Domain：Startup/Runtime Config、Appearance First Paint and Atomic Theme、关键 Route、Storage、§25.2 键盘聚焦禁用与输入保留、Name、Layout/Scroll、Reduced/Forced Modes 与适用 Performance。Auth/Permission、API/Mutation/Conflict、Backend-dependent Observability 和 Protected Flow 只有在未来显式准入并实际 `ACTIVE` 后才进入适用 Matrix；它们不得阻塞 Frontend-only Release。只发布静态架构文档且没有 Runtime Artifact 变化时，Product Release Gate 不适用；Codex 仍运行 `pnpm verify`。
 
 Release Acceptance 不能覆盖失败的 Static Gate、降低 WCAG/安全合同或批准已知 Secret/数据损失风险。Codex 不得把未提供的 Owner Decision 推断为接受。
 
@@ -17193,7 +17794,7 @@ CURRENT_DEPLOYMENT_CONTRACT=ROOT_PATH_ONLY_ARCHITECTURE_FROZEN_IMPLEMENTATION_IN
 IMPLEMENTATION_STATUS=NOT_STARTED
 ```
 
-Core Runtime Configuration 的现有五字段 Active Contract 保持不变。API Origin、Observability Origin、Auth、Session、Provider 或 Backend Field 都不是当前 Mainline Input；对应 Field Extension Gate 只在其能力获得真实合同和 Owner 显式准入后适用。§1 的必需产品目标不自动扩展 Configuration 或激活 Provider。
+Core Runtime Configuration 按 §20 独立 HTTP 包扩展为 schemaVersion 2 的六字段记录，api 为 configured/unconfigured 严格联合。Observability、Auth、Session、Provider 或其他 Backend Field 仍未准入；其他 Field Extension Gate 只在其能力获得真实合同和 Owner 显式准入后适用。§1 的必需产品目标不自动扩展 Configuration 或激活 Provider。
 
 Deployment Delivery Target 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`。`PAVP_OBSERVABILITY_DEPLOYMENT_IMPLEMENTATION` 作为当前未准入的组合包整体保持未实现；其中 Backend/Auth-dependent Observability 进入 Optional Backend-dependent Lane。未来纯前端 Hosting/Release 需求若要独立准入，必须由 Owner 以真实 Hosting Contract 建立独立、明确的 Architecture Admission，不得在本次 Alignment 中拆分、激活或实现该组合包。
 
@@ -17212,7 +17813,41 @@ Deployment Delivery Target 不阻塞 `PAVP_ARCHITECTURE_ADMIN_CONSOLE`。`PAVP_O
 
 ## 34.1 Build-time and Runtime Configuration
 
-Build-time Environment 只允许决定无法在部署后改变的编译事实：Compiled Environment Identity、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Kernel 已准入本节冻结的 Exact Core Runtime Configuration Record；API、Observability、Public Feature Availability、Product Zone、Router、Auth、Session、Storage、Vendor、Secret、Credential 与 Private URL Field 均不存在，不能使用 Optional、Default、Empty String、`null`、False、Localhost 或 Placeholder Stub 提前保留。
+Build-time Environment 只允许决定无法在部署后改变的编译事实：Compiled Environment Identity、Release SHA、Build Version 和 Feature Compilation Boundary。Runtime Kernel 消费本节 Exact Core Runtime Configuration Record，§20 HTTP 包仅增加有实际消费者的 api 配置。Observability、Public Feature Availability、Product Zone、Auth、Session、Storage、Vendor、Secret、Credential 与 Private URL Field 均未准入，不能用 Optional、Default、Empty String、`null`、False、Localhost 或 Placeholder Stub 提前保留。
+
+### `PAVP_CENTRALIZED_DEPLOYMENT_CONFIGURATION` scoped admission record
+
+以下保留集中配置包交付时的范围、五字段结构及当时没有可变字段的快照。当前 API 字段、env 准入与生成命令由 §20 HTTP 包及本节现行记录取代；原验证与未执行验收不被重写。
+
+```text
+ID=PAVP_CENTRALIZED_DEPLOYMENT_CONFIGURATION
+AUTHORITY=ARCHITECTURE_SECTION_34_1
+ALLOWED_SCOPE=apps/web/config.ts; actual apps/web/.env.development and .env.production; existing Vite integration, root project config, Node compilation inputs, configuration/bundle owning checks, directly coupled import-boundary check and documentation
+PROHIBITED_SCOPE=API/HTTP client or endpoint; token/key placeholders or credentials; browser secrets; subpath deployment; runtime identity replacement; preferences/storage keys/tokens/budgets migration; new test/sample files; dependency installation; browser fault injection; Git delivery/release
+MACHINE_GATES=existing configuration checks with isolated input/precedence and actual valid development/production generation/consumption cases; preserved invalid-mode and public merged-base regressions; final pnpm verify; git diff --check
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_CENTRALIZED_DEPLOYMENT_CONFIGURATION
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+Owner 已委托技术取舍并同意 env 集中存值、`config.ts` 统一读取校验、浏览器消费生成的公开配置。本包串行接管 Current Work，保留前包全部交付及未执行的 Owner Acceptance，不关闭错误隔离或扩展其他能力。
+
+`apps/web/config.ts` 是应用部署输入的唯一 Node 入口；按严格 mode 选择同目录实际 `.env.development` 或 `.env.production`，采用 Node 原生 dotenv 解析。当前文件只声明一个实际公开字段 `PAVP_DEPLOYMENT_BASE`，不添加没有消费者的 API 地址、Token、Key、版本副本或占位值。文件必须存在，只允许单条已声明赋值及空白/注释；同名进程变量优先于文件值，显式空值无回退，合并后的值必须通过已有 Schema 的 Root `/` 规则。通用 `.env`、local 文件和其他进程变量不参与此入口；Vite 自动 dotenv 读取与自定义 env 暴露关闭，内置 DEV/PROD/MODE/BASE_URL 等保持官方行为。
+
+Root `/` 兼容约束直接来自现有 Runtime Configuration Schema，经 `config.ts` 的只读 `rootDeploymentBase` 提供给固定资源路径与 Bundle 工具；`project.config.ts` 退役该部署值副本，继续拥有工具链、Workspace、预算等原职责。env 经 `readDeploymentConfig` 生成不可变部署配置，Vite 的运行记录及 asset base 消费其 `deploymentBase`；已有 Runtime JSON 仍是唯一浏览器配置入口。`parseDeploymentConfig` 提供同一纯输入校验，不另建 Schema、默认值、Provider、Store 或 Window Global。
+
+环境仍由合法 Vite mode 选择并与构建身份一致；版本号仍从根 package.json、SHA 仍在 Vite 构建边界一次读取并向同一记录投影。本包不提供在部署机器重新读取 Git、手改身份或任意改变网站路径的途径。五个现有字段均为协议或构建绑定值，当前没有真正部署后可变的公开字段，因此不创建只会重写相同 JSON 的独立生成命令。现有 dev 中间件和 build 继续真实生成/交付五字段配置；以后真实 API 消费者准入时，服务根地址须与网站部署路径分开，并在同一 JSON 合同下扩展生成入口，以既有构建产物身份为输入，不能使用部署机器的 Git 状态。此说明不创建未来 API 字段或代码占位。
+
+本包静态结果（2026-11-03）：既有配置检查覆盖缺失、畸形、重复或未准入输入、纯合并优先级、两份实际 env 读取、真实进程覆盖及非法覆盖不得回退，并保留双环境 Schema/公开 `resolveConfig` 回归。实际 Vite 在 development 和 production 分别以 `write:false` 生成一个五字段 JSON；以各自实际编译身份运行现有启动配置加载器，隔离内存消费均成功且结果不可变。该证据不是浏览器或 Owner Acceptance。新的完整 `mise exec -- pnpm verify` 实际退出 `0`，Initial JavaScript `261980 / 270336` bytes gzip、Initial CSS `33418 / 40960`、Navigation Motion `33638 / 49152`，28 Dynamic Roots / 18 Route Roots 保持。Gate 期间全部 301 个已跟踪及未跟踪候选路径哈希不变；之后仅补记本结果与实现/静态状态，并执行当前准入 Owning Check 和 Diff Check。未执行浏览器故障注入、Owner Acceptance 或 Git 交付，先前包的实现与待验收状态不变。
+
+独立复核随后发现首轮未覆盖公共 `base` 覆盖：实际 `resolveConfig` 接受 `/other/`，使编译 `BASE_URL` 偏离 Runtime JSON 的 `/`。新增回归在修复前实际退出 `1`；修复复用既有配置产物插件的前置 `config` 钩子，拒绝合并后不等于已校验部署值的输入，不修改调用方值。development/production 的公开配置回归各覆盖 `/`、`/other/`、空串和 `./`，合法值同时验证 `base` 与 `BASE_URL`；既有 mode 与 build/preview 默认值用例保持，无普通 serve 端口探测或私有解析器依赖。修正后的配置检查及新的完整 `mise exec -- pnpm verify` 均实际退出 `0`，包体预算与 28 Dynamic Roots / 18 Route Roots 保持首轮数值，全部 301 个候选路径在 Gate 期间哈希不变。之后只补记本结果与状态，并执行准入 Owning Check 和 Diff Check；未开始 API/HTTP 实现或执行 Owner Acceptance、故障注入与 Git 交付。
 
 ### Build Version Authority
 
@@ -17249,11 +17884,12 @@ WINDOW_GLOBAL_CONFIGURATION=PROHIBITED
 ### Exact Core Runtime Configuration Record
 
 ```text
-schemaVersion=1
-environment=development | staging | production
+schemaVersion=2
+environment=development | production
 deploymentBase=/
 releaseSha=full lowercase forty-character hexadecimal Git commit SHA
 buildVersion=exact root package.json version
+api=explicit unconfigured state or configured HTTPS/same-origin-prefix Base URL
 ```
 
 Top-level Field Set 精确为：
@@ -17264,6 +17900,7 @@ environment
 deploymentBase
 releaseSha
 buildVersion
+api
 ```
 
 ```text
@@ -17282,22 +17919,18 @@ Runtime Kernel Implementation Package 已把 Existing Workspace Catalog Zod Coor
 ### Deployment Base Authority
 
 ```text
-DEPLOYMENT_BASE_AUTHORITY=projectConfig.deployment.deploymentBase
+DEPLOYMENT_VALUE_ENTRY=apps/web/config.ts
+DEPLOYMENT_VALUE_SOURCE=process PAVP_DEPLOYMENT_BASE > selected apps/web/.env.development or .env.production
 CURRENT_DEPLOYMENT_BASE=/
-VITE_BASE_SOURCE=projectConfig.deployment.deploymentBase
-RUNTIME_CONFIGURATION_DEPLOYMENT_BASE_SOURCE=projectConfig.deployment.deploymentBase
-HTML_RUNTIME_CONFIGURATION_URL_SOURCE=projectConfig.deployment.deploymentBase
-FIRST_PAINT_PATH_AUTHORITY=projectConfig.deployment.deploymentBase
+VITE_BASE_SOURCE=readDeploymentConfig(mode).deploymentBase
+RUNTIME_CONFIGURATION_DEPLOYMENT_BASE_SOURCE=readDeploymentConfig(mode).deploymentBase
+FIXED_RESOURCE_BASE_SOURCE=rootDeploymentBase from the existing Runtime Configuration schema via apps/web/config.ts
 SUBPATH_DEPLOYMENT_STATUS=TARGET_INACTIVE
 ```
 
-Runtime Kernel Implementation 已增加以下 Explicit Declaration：
+`PAVP_DEPLOYMENT_BASE` 是网站资源与 Router 的部署路径，不是 API 服务根地址。`config.ts` 严格读取实际选择的 env 文件及唯一同名进程覆盖，生成不可变配置供 Vite Asset Base 和 Runtime JSON 使用。`rootDeploymentBase` 只投影 Schema 的不可变 `/` 兼容约束，供固定 Runtime JSON/First Paint 路径和 Bundle 工具使用；两者必须满足同一 Schema。原 `projectConfig.deployment` 值副本已退役，不再是部署值来源。
 
-```ts
-projectConfig.deployment.deploymentBase='/'
-```
-
-Vite Base、Runtime Configuration URL、Generated First Paint Asset Path 与 Runtime Configuration `deploymentBase` 必须从该 Single Authority 派生。当前 Active Compatibility Contract 只接受 Exact `/`；禁止 Trimming、Normalization、Repair、Fallback 或 Subpath Acceptance。Subpath Deployment 保持延迟，只有 Future Deployment Gate 可以激活。本 Architecture-only Task 不修改 `project.config.ts`。
+当前只支持精确 Root `/`；不能靠改 env 或 JSON 改成 Subpath，也没有 Trimming、Repair 或 Fallback。Vite 合并 CLI/Inline Config 后的 `base` 必须精确等于同一已校验部署值；不兼容覆盖须在配置解析前拒绝，不能静默接受或覆写调用方输入。未来 Subpath 仍需独立原子更新 Build/HTML/First Paint/Router/Hosting 合同。本包不通过新增配置源绕过该边界。
 
 ### Release SHA Authority
 
@@ -17370,7 +18003,7 @@ Initial Attempt 后只允许一次 User-triggered、Whole-attempt Retry。Retry 
 
 ## 34.3 Deployment Base and SPA Fallback
 
-`projectConfig.deployment.deploymentBase` 是 Vite Asset Base、HTML Runtime Configuration URL、First Paint Artifact Path、Runtime Configuration `deploymentBase` 与 Router History Base 的当前 Single Authority。当前 Runtime Kernel 与 Router Landing 只支持 Exact Root `/`，不支持 Subpath。Router History Base 已由 Router Landing 在该 Exact Root Contract 下消费同一 Authority；Service Endpoint Relative URL、SPA Fallback 和 Subpath Delivery 仍只能在各自 Future Gate 激活后消费该 Authority。不得创建 Placeholder 或扩展 Runtime Configuration Field Set。
+`apps/web/config.ts` 是网站部署值的唯一读取/校验入口；Vite 与 Runtime JSON 消费所选 env 的已验证值，固定资源路径与 Bundle 工具消费其从原 Schema 导出的只读 Root 兼容约束。Router History 继续只消费预 Vue 校验后的 Runtime Configuration `deploymentBase`。当前 Runtime Kernel 与 Router Landing 只支持 Exact Root `/`，不支持 Subpath；Service Endpoint Relative URL、SPA Fallback 和 Subpath Delivery 仍只能在各自 Future Gate 激活后消费对应合同，不创建 Placeholder；API 字段仅按 §20 HTTP 包扩展，网站 Subpath 不因此激活。
 
 当前 Exact Root URL 与 First Paint Path 是 Architecture-frozen Compatibility Value，不构成 Page、Component 或 Feature 可以复制 Absolute Path Literal 的许可。Future Subpath Gate 必须原子更新 Deployment、Runtime Configuration、Vite、HTML、First Paint、Router 与 SPA Fallback Contract；在此之前任何 Subpath Value、Normalization、Repair 或 Fallback 都失败。
 
@@ -17381,10 +18014,47 @@ Future Deployment Server 对 Canonical Base 下的非 Asset、非 API、已允�
 | Environment | Purpose | Data and service rule |
 | --- | --- | --- |
 | Development | local implementation | local non-production service, relaxed diagnostics, no production secret |
-| Staging | production-like acceptance | isolated non-production data, production-equivalent CSP/cache/base |
 | Production | owner-approved release | production service and strict diagnostics/redaction |
 
-Environment 差异只通过 Runtime Configuration/Deployment Policy，不通过散落 `if (development)`。Staging 不能连接 Production Write Service；Development/Staging Telemetry 必须带明确 Environment 并隔离。
+Environment 差异只通过 Runtime Configuration/Deployment Policy，不通过散落 `if (development)`。Development 不连接 Production Write Service；未来获准的 Telemetry 必须带明确 Environment 并隔离。当前只接受精确的 `development` 与 `production`；`staging`、未知值、大小写或空白变体均拒绝，不映射、修复或回退到另一个环境。
+
+### `PAVP_DEVELOPMENT_PRODUCTION_ENVIRONMENT_CONTRACTION` scoped admission record
+
+```text
+ID=PAVP_DEVELOPMENT_PRODUCTION_ENVIRONMENT_CONTRACTION
+AUTHORITY=ARCHITECTURE_SECTION_34_4
+ALLOWED_SCOPE=ARCHITECTURE.md current-work entry and directly coupled environment contracts; existing runtime configuration schema, compile-time declaration, Vite mode validation/diagnostics and configuration/runtime owning checks
+PROHIBITED_SCOPE=env files; config.ts; API BASEURL; token/key fields; deployment-time generation; new configuration fields or value authorities; shared-preference behavior; dependency installation; new test/sample files; runtime fault injection; Git delivery/release
+MACHINE_GATES=existing configuration/runtime owning checks; actual-schema and network-free public resolveConfig cases; final pnpm verify; git diff --check
+IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED_TWO_ENVIRONMENT_CONTRACTION
+REPOSITORY_IMPLEMENTATION=COMPLETE
+STATIC_VERIFICATION=PASS
+OWNER_RUNTIME_ACCEPTANCE=NOT_PERFORMED
+OWNER_VISUAL_ACCEPTANCE=NOT_PERFORMED
+OWNER_ACCESSIBILITY_ACCEPTANCE=NOT_PERFORMED
+GIT_DELIVERY=NOT_AUTHORIZED
+RELEASE_STATUS=NOT_RELEASED
+NEXT_CANONICAL_IMPLEMENTATION_WORK_PACKAGE=NONE
+SUCCESSOR_PACKAGE_AUTHORIZATION=NONE
+```
+
+以下保留双环境收敛包交付时的范围与验证快照；其中 env/config.ts 未决状态和当时的部署值来源已由 §34.1 当前集中配置包取代，其余静态证据与未执行的 Owner Acceptance 不变。
+
+Owner 明确要求只保留开发和正式两个环境并授权开始；本包仅收敛现有环境集合，不启动当时仍待决的 env/config.ts、服务地址、凭据或部署方式设计。Runtime Configuration 保持原严格五字段、构建/运行环境与版本/SHA 一致性、Root `/` 和正式环境 HTTPS 边界。根 `package.json.version`、构建边界一次读取的 Git SHA 与当时的 `projectConfig.deployment.deploymentBase` 分别拥有原值；本次收敛未新增来源、默认值、别名或 Provider。
+
+合法省略 mode 时保留既有 Vite dev/build/preview 默认环境。显式 mode 同时经过配置回调与合并后原始配置边界校验；CLI 将空串、空白或 `0` 解析为数字 `0` 时仍须拒绝，不能把它当成省略。复用现有配置产物插件的 `config` 钩子，不新增命令入口或 CLI 解析器。
+
+本包串行接管文首 Current Work；前一 Shared Preference Synchronization 包的实现、静态证据、`IN_PROGRESS` 记录与未执行的 Owner Acceptance 原样保留，本包不关闭或验收它。其他错误隔离、未来能力、Next/Successor 与 Git/Release 授权不变。当前及目标合同引用同一双环境集合，不激活仍未准入的 Observability 或部署能力；既有历史交付证据不被重写为本包验证。
+
+首轮直接回调候选的历史证据：该候选完成限定源码与静态检查，配置检查直接执行实际 Schema 与 Vite 回调的七种输入，确认 development/production 原值接受，staging、未知值、大小写变体、尾随空白和空字符串拒绝；编译声明和 Runtime Kernel Owning Check 保持同一集合。新的完整 `mise exec -- pnpm verify` 实际退出 `0`，Initial JavaScript `261980 / 270336` bytes gzip、Initial CSS `33418 / 40960`、Navigation Motion `33638 / 49152`，28 Dynamic Roots / 18 Route Roots 不变。Gate 期间所有已跟踪及未跟踪生产候选路径哈希保持；全量之后仅补记本结果与本包完成状态，应用及校验器源码不再修改，并另执行当前准入 Owning Check 与 Diff Check。未执行浏览器观察、故障注入或 Owner Acceptance，前包状态、未决配置设计和 Git/Release 边界保持。
+
+独立复核随后确认：安装版 CLI 把显式空串、空白和 `0` 解析为数字 `0`，Vite 在调用配置工厂前将其回退到 production。首轮回调探针和完整 Gate 没有覆盖这条入口路径；当时在同包补充实际解析与配置加载检查，首轮结果不作为入口修正候选通过证据。
+
+上一轮入口修正候选的历史证据：该候选完成源码和静态检查，复用原严格校验及现有配置产物插件的前置 `config` 钩子，拒绝合并后仍保留的显式非法 mode；合法省略保持原默认值。既有检查在内存执行安装版 CLI 的解析与重复选项处理，禁用命令分发，将原值交给实际 `resolveConfig` 加载项目配置：9 个 Schema 输入、27 个显式 CLI 形式和 dev/build/preview 的 3 个省略默认值均通过。相同探针在修复前已复现显式空串错误加载成功。新的完整 `mise exec -- pnpm verify` 实际退出 `0`，Initial JavaScript `261980 / 270336` bytes gzip、Initial CSS `33418 / 40960`、Navigation Motion `33638 / 49152`，28 Dynamic Roots / 18 Route Roots 保持。Gate 期间生产候选路径哈希不变；全量后只补记本结果与状态，应用/校验器源码保持验证时版本，并另执行准入 Owning Check 与 Diff Check。Owner 接受、前包状态和所有原禁止范围保持，无浏览器故障注入或 Git 交付。
+
+后续复核确认生产入口修复有效，但永久检查不应依赖上游私有 CLI 源码或加载普通 serve 配置触发端口探测。本轮只简化既有检查和本记录，生产配置与开发服务器行为不变。永久回归直接使用公开 `resolveConfig` 验证明确字符串及调查中实际观察到的数字 `0`，保留严格 Schema/插件行为和 build/preview 的省略默认值；不加载普通 dev serve，不要求网络绑定权限或 IPv6。CLI 解析行为只作为此次调查已独立复现的历史证据，永久 Gate 不声称覆盖上游解析器，也不固定其源码文本或私有函数。
+
+简化后的既有配置检查在默认沙箱权限下通过：10 个 Schema 输入与 10 个显式配置输入，以及 build/preview 的 2 个省略默认值通过；回归函数从 122 行缩减为 84 行，移除 CLI 源码执行和普通 serve 用例。新的完整 `mise exec -- pnpm verify` 实际退出 `0`；Initial JavaScript `261980 / 270336` bytes gzip、Initial CSS `33418 / 40960`、Navigation Motion `33638 / 49152`，28 Dynamic Roots / 18 Route Roots 保持。除本检查文件及本记录外，起始候选的 296 个路径哈希不变；全量 Gate 期间无生产候选路径变化，之后只补记结果与完成状态并执行准入 Owning Check 和 Diff Check。Owner Acceptance、未决配置范围及前包状态不变，未执行 Git 交付。
 
 ## 34.5 CDN and Cache Policy
 
@@ -17470,11 +18140,11 @@ Core Runtime Configuration Gate 当前为 `ACTIVE`，拒绝未验证 Env、Consu
 
 The repository contains production architecture.
 
-Codex verification consists only of static production gates.
+Repository-changing implementation tasks require the complete canonical static production gate. Task-authorized runtime observation is reported separately.
 
 Production release runtime acceptance is required, external, owner-operated, release-specific, and never committed to the repository.
 
-§1 的后置架构示例页仅在核心验证与 Owner 确认后，经独立页面重建授权进入生产应用；它不是独立 Demo/Showcase 系统，不放宽下方路径禁令，本次不创建或删除页面。
+§1 的后置架构示例页仅在核心验证与 Owner 确认后，经独立页面重建授权进入生产应用；它不是独立 Demo/Showcase 系统，仍服从下方仓库权威与产物边界，本次不创建或删除页面。
 
 项目规范、执行合同和必需资源必须来自当前 Repository。Machine-local Rule、Global Skill、Client Registry、Absolute Home Path、External Symlink 或实时下载的规范文件不得成为项目正确执行的前提。
 
@@ -17482,23 +18152,7 @@ Production release runtime acceptance is required, external, owner-operated, rel
 
 Tracked Symlink 与客户端专属 Project Authority 目录保持禁止。`patches/unconfig@7.5.0.patch` 是现有、经过审查并由 Workspace 使用的 Production Build Input，必须保留。
 
-Repository Policy 必须继续拒绝：
-
-```text
-tests/**
-fixtures/**
-mocks/**
-snapshots/**
-coverage/**
-storybook/**
-stories/**
-demos/**
-showcases/**
-evidence/**
-screenshots/**
-traces/**
-recordings/**
-```
+验证工具、浏览器操作及相关文件不再仅因其类别而全局禁止；使用仍须服从当前任务授权、依赖准入、隐私、产物与发布边界。运行观察不取代静态 Gate，也不能代替 Owner 的 Release Decision。任何任务均不得借验证名义引入无关产品、伪服务或治理系统；本次清理不创建测试、示例或证据文件。
 
 ---
 
@@ -17648,8 +18302,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17816,7 +18468,7 @@ Phase 5 不接收 Brand/Accent Seed，不生成 Palette、不补齐 Partial Them
 
 ## 37.1 Post-amendment Work-package Order
 
-`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；按需真实 API/Auth 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不作为业务无关核心的统一业务前置。 当前 Bounded Work 为 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，唯一有界实施准入为 §20B.2，并引用 §9.11 的呈现与 §18.11 的实例寿命合同；已交付滚动修复及其有限验收按 §20B.2 保留；Density 有界源码与静态交付已按 §37.2.12 的 Owner 决定收口；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
+`PAVP_EXPLICIT_THEME_ARCHITECTURE_AMENDMENT`、`PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT_ARCHITECTURE_AMENDMENT`、编号为 `3A` 的 `PAVP_MANIFEST_GZIP_CANONICAL_ALIGNMENT`、Architecture-only `PAVP_ARCHITECTURE_FOUNDATION_FREEZE`、`PAVP_COMPLETE_BUILTIN_THEME_PLANES_SIDE_BY_SIDE`、`PAVP_EXPLICIT_THEME_PREFERENCE_ATOMIC_CUTOVER`、`PAVP_FINAL_STATIC_GOVERNANCE`、`PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION`、`PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION`、`PAVP_STORAGE_PERSISTENCE_IMPLEMENTATION` 与 `PAVP_ARCHITECTURE_ADMIN_CONSOLE` 均已完成。Runtime Kernel、Router、Storage 和 Admin Console 的既有激活状态保持。Dark Action 与 `PAVP-RUNTIME-003` 保持已验收精确状态；§1.2B.0H–0K 保留历史导航状态，§1.2B.0L 保持已验收 Native Naive 前序，§1.2B.0M 已在精确发布提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上按 Owner 陈述 `效果还可以 可以接受` 收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。§1.2B.0N 现准入 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY` 并完成限定验收，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。Next 和 Successor 仍为 `NONE`；按需真实 API/Auth 集成保持 Deferred，等待真实合同与独立实施准入；Backend-dependent Lane 不作为业务无关核心的统一业务前置。 当前实施范围由文首 Current Work 及其直接准入记录统一指向；本节保留各能力的历史交付与限定验收，不维护可变工作包镜像。
 
 ```text
 ARCHITECTURE_FOUNDATION_GATE=PAVP_ARCHITECTURE_FOUNDATION_FREEZE
@@ -17887,8 +18539,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -17963,7 +18613,7 @@ Phase 1 Chain 保留已接受的 Package 1–6 编号，只在 3 与 4 之间插
 6.  PAVP_FINAL_STATIC_GOVERNANCE                         COMPLETE
 ```
 
-Package 4、Package 5、Package 6、Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 的完成事实保持。精确提交真实 Chrome 审计撤销的整体 Product Experience 与 Motion Geometry Runtime Acceptance 仍不恢复。Dark Action、`PAVP-RUNTIME-003` 与既有 Runtime Repair 状态保持；§1.2B.0H–0K 只保留历史导航状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime/Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。已验收工作包为 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-004` 保持 Open 且未启动；Optional Backend-dependent Lane、Successor Capability 与 Canonical Product Package 均未自动准入。 当前 Bounded Work 为 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，唯一有界实施准入为 §20B.2，并引用 §9.11 的呈现与 §18.11 的实例寿命合同；已交付滚动修复及其有限验收按 §20B.2 保留；Density 有界源码与静态交付已按 §37.2.12 的 Owner 决定收口；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
+Package 4、Package 5、Package 6、Runtime Kernel、Router、Storage 与 Admin Console Technical Implementation 的完成事实保持。精确提交真实 Chrome 审计撤销的整体 Product Experience 与 Motion Geometry Runtime Acceptance 仍不恢复。Dark Action、`PAVP-RUNTIME-003` 与既有 Runtime Repair 状态保持；§1.2B.0H–0K 只保留历史导航状态，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime/Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`。已验收工作包为 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`。`PAVP-RUNTIME-004` 保持 Open 且未启动；Optional Backend-dependent Lane、Successor Capability 与 Canonical Product Package 均未自动准入。 当前实施范围由文首 Current Work 及其直接准入记录统一指向；本节保留各能力的历史交付与限定验收，不维护可变工作包镜像。
 
 当前状态镜像如下；Registry/Manifest/Export 的当前数量与历史测量已区分。既有 Acceptance 字段仍是各自范围的历史或当前验收状态，不因本次描述纠正获得新的 Acceptance：
 
@@ -18019,8 +18669,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18134,7 +18782,7 @@ README.md
 scripts/verify/check-repository-policy.ts
 ```
 
-该包已完成并持续由 Regression Enforcement 保护：
+该包当时完成了以下历史同步：
 
 1. 从从属 Workflow 和入口文字移除 `runtime-acceptance` Task Mode。
 2. 移除 Tier 0–3 Gate、`PENDING_OWNER_ACCEPTANCE` 和任何 Codex Browser/ChromeDev Capability Routing。
@@ -18143,7 +18791,7 @@ scripts/verify/check-repository-policy.ts
 5. 更新 Acceptance Report State/Field Contract。
 6. 在 Repository Policy Checker 增加 Regression Enforcement，拒绝上述已删除概念重新进入七文件范围。
 
-该包未修改 Token、Theme、Schema、Generator、Runtime、Dependency 或 Lockfile。后续 Package 不得回退其 Browser、State 或 Repository Policy 边界。
+该包未修改 Token、Theme、Schema、Generator、Runtime、Dependency 或 Lockfile。上述 Browser 禁令和对应 Regression/Hash Enforcement 已在后续 Owner 治理决定中退役；当前按 §28 和 §35 执行，不把历史同步项重新解释为活动禁令。
 
 ### 2. `PAVP_NAMING_NORMALIZATION`
 
@@ -18421,7 +19069,7 @@ NEXT_IMPLEMENTATION_PACKAGE=PAVP_PRODUCTION_RUNTIME_KERNEL_IMPLEMENTATION
 
 ### Future Admission Gate: `PAVP_FUTURE_PUBLIC_ROLE_ADMISSION_AMENDMENTS`
 
-Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须先通过独立 Architecture Admission Amendment。每次 Amendment 必须显式修改 Active Public Role Registry、Theme Plane Set、Alpha、Named Contrast、UnoCSS、固定 Manifest Equation 下的 Records 与 Expected Record/Canonical Compressed-byte Deltas、Migration 和全部 Generated Output；Reserved Catalog 本身不构成实现许可。
+Future Density、Foundation、Phase 2、Phase 3 和 Phase 4 Candidate 都必须先通过独立 Architecture Admission Amendment。每次 Amendment 必须显式修改 Active Public Role Registry、Theme Plane Set、Alpha、Named Contrast、UnoCSS、固定 Manifest Equation 下的真实 Records 与报告用压缩测量、Migration 和全部 Generated Output；Reserved Catalog 本身不构成实现许可。
 
 §14.2 的十个新增 Density Candidate、§13.3 的 283 个 Reserved Color Candidate 均受此 Gate。Component-internal Token 继续 Demand-created。该 Gate 不阻塞当前六包 Immediate Chain 的完成，也不允许 Final Governance 预先宣称未来 Candidate 已准入。
 
@@ -18475,8 +19123,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18781,10 +19427,10 @@ NEXT_CANONICAL_WORK_PACKAGE_AT_STORAGE_LANDING=PAVP_ARCHITECTURE_ADMIN_CONSOLE
 
 ```text
 ENTRY=PAVP_ROUTER_GOVERNANCE_IMPLEMENTATION=COMPLETE; PAVP_STORAGE_PERSISTENCE_PROTOCOL_FREEZE_AMENDMENT=FROZEN; storage/envelope/partition/migration registries frozen; sensitivity review complete
-ALLOWED=application storage owner; exact two-record direct-compatibility Registry; exact eleven-record Storage Error extension; zero envelope/memory/indexed-db/migration/cross-tab event records; empty-allowlist BroadcastChannel and storage-event lifecycle handles; preference/theme safe ordering preservation; one kernel storage step
+ALLOWED=application storage owner; exact two-record direct-compatibility Registry; exact eleven-record Storage Error extension; zero envelope/memory/indexed-db/migration/cross-tab event records; no generic cross-tab resources without an admitted event consumer; preference/theme safe ordering preservation; one kernel storage step
 PROHIBITED=credential/session/query persistence; IndexedDB without separate demand gate; feature direct storage; generic persistence plugin
-OUTPUT=one Storage lifecycle authority; two direct-compatibility Local Storage metadata records owned by existing Appearance boundaries; none-only partition; deterministic BroadcastChannel/storage-event cleanup handles; no payload format change
-MACHINE_GATES=direct-access ban; two-record key/metadata registry equality; empty migration/envelope/memory/indexed-db/event sets; eleven-record Error extension; sensitive-field scan; empty cross-tab allowlist; Package 5 safe-order preservation; exact eleven-step Kernel and dispose-storage insertion; pnpm verify
+OUTPUT=one Storage lifecycle authority; two direct-compatibility Local Storage metadata records owned by existing Appearance boundaries; none-only partition; idempotent disposal of actual admitted resources; no payload format change
+MACHINE_GATES=direct-access ban; two-record key/metadata registry equality; empty migration/envelope/memory/indexed-db/event sets; eleven-record Error extension; sensitive-field scan; zero admitted generic cross-tab events and no empty resource acquisition; Package 5 safe-order preservation; exact eleven-step Kernel and dispose-storage insertion; pnpm verify
 PRODUCTION_RELEASE_ACCEPTANCE=REQUIRED_FOR_MIGRATION_CORRUPTION_QUOTA_CROSS_TAB_AND_CLEANUP
 COMPLETION_EVIDENCE=no raw key outside existing owner/generated first paint; failures structured; exact zero-cardinality sets preserved; Package 5 payloads remain direct and unchanged; one idempotent Storage lifecycle disposer
 ```
@@ -18839,8 +19485,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET=origin
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS=COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS=NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT=FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK=PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS=ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION=COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION=PASS
@@ -18910,12 +19554,13 @@ ENTRY=PAVP_ARCHITECTURE_ADMIN_CONSOLE_ALIGNMENT=FROZEN; PAVP_STORAGE_PERSISTENCE
 ALLOWED=exact §1.2B.0 shared experience foundation and admitted bounded descendants; exact PAVP-RUNTIME-002 and PAVP-RUNTIME-005 repaired live-DOM contracts; §1.2B.0H–0K historical navigation evidence; §1.2B.0L accepted Native Naive predecessor; §1.2B.0M accepted Motion Vue Shared-selection-lens at FROZEN / ACCEPTED / COMPLETE / PASS for exact published implementation commit b6efbb608b309f601217a2765150bd9ec217cf78 with scoped Owner Runtime and Visual PASS and Accessibility NOT_PERFORMED; §1.2B.0N native document-scoped route-transition capability at FROZEN / OPEN / COMPLETE / PASS with Owner Runtime, Visual and Accessibility Acceptance NOT_PERFORMED; stable unkeyed live route host; browser-created static pseudo-element snapshots only; current bundle budgets, seventeen route roots, one navigation Motion root and eighteen total dynamic roots preserved; unchanged product page content models and Wide Appearance projection
 PROHIBITED=redesign of the other nine product-page content models; Density control or mutation; arbitrary custom-theme editing/import/export/deletion or color authoring; reintroduction of the rejected Catalog or its installation control; automatic Storage mutation or Custom Registry cleanup; Built-in Theme identity/default/migration changes outside §1.2B.0D and §1.2B.0D.1; removal of the general validated Custom Theme capability; backend; API Transport; Query Client; Auth; Session; Permission; mock/sample service or data; fake metrics; accepted Reka draft; active Reka/Naive dual state; second styled UI framework; auto-import/global vendor registration; duplicate Shell/Router outlet/scroll/appearance/material/provider/registry/writer authority; broad speculative Shared UI; inactive capability controls; tests; browser infrastructure; successor work; duplicate navigation Menu, GSAP navigation runtime, Chrome/FLIP bridge, main-content transform compensation, route Aura, moving Pill, transition suppression, navigation Timer/RAF/state store; persistent-owner animation fill-mode forwards or both; Motion Preference navigation, Shell/Route/workspace remount or scroll write; Route-keyed Routed Component remount; Route-level Transition, animation or conditional concealment; blanket Direct-child Route Content animation or delay; eager route conversion or new Loading Placeholder
 OUTPUT=one active PAVP 管理台 infrastructure with one Admin Shell, nine content-model-unchanged product routes plus one bounded Appearance Capability Workspace and seven translated error routes, one primary Router outlet, one stable unkeyed and continuously visible Route Content Host, one native primary content block-scroll owner, one Appearance-to-UiProvider read boundary, one browser-safe readonly Theme Preview Projection, exact fourteen-theme Built-in Gallery in the §1.2B.0D.1 ID order with Iris default, no installable Theme Catalog or install control, exact deterministic projections/manifests and only consumer-backed public UI APIs; stable persistent Shell/Route geometry and Route Content visibility across full/reduced/none with no Route-level animation, transition, concealment or Direct-child delay; current persistent Wide/Regular primary mousedown preserves the pre-event focus owner without changing keyboard, different-route or Narrow Drawer behavior; one native persistent Sider/Menu pair driven by one collapsed state, one implemented private Motion Vue Shared-selection-lens with static Naive fallback and Full/Reduced/None behavior, zero GSAP navigation runtime, exactly seventeen route dynamic roots plus one Motion feature root and exactly eighteen total dynamic roots
-MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; all retained Runtime and navigation suites; exact 12 reversible §1.2B.0M Architecture-admission probes plus 22 Motion source invariants, 16 retained source probes and 8 Reduced-crossfade probes; exact 12 reversible §1.2B.0N route-transition Architecture-admission probes plus 52 route-transition source proofs, 16 retained reversible source probes, 8 Router Presentation Commit reversible probes, 7 preset-selection reversible probes, 9 Full pace reversible probes and 3 Stylelint policy reversible probes; exact current Route 17, Runtime Kernel 11, Provider pinia/appearance, Storage 2 and Dynamic Root 18 implementation closure; current Motion feature exclusive closure 33650 / 49152 bytes gzip, Initial JavaScript 226638 / 237568 bytes gzip with 10930 bytes headroom, and Initial CSS 25854 / 40960 bytes gzip; generated Engineering Manifest regeneration equality; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
+HISTORICAL_LANDING_MACHINE_GATES=§1.2B exact dependency, token, public-role, UnoCSS, registry, route, layout, scroll, focus, appearance, projection, generated-manifest, UI/vendor, accessibility, visual, motion, production build and Bundle closure; all retained Runtime and navigation suites; exact 12 reversible §1.2B.0M Architecture-admission probes plus 22 Motion source invariants, 16 retained source probes and 8 Reduced-crossfade probes; exact 12 reversible §1.2B.0N route-transition Architecture-admission probes plus 52 route-transition source proofs, 16 retained reversible source probes, 8 Router Presentation Commit reversible probes, 7 preset-selection reversible probes, 9 Full pace reversible probes and 3 Stylelint policy reversible probes; exact current Route 17, Runtime Kernel 11, Provider pinia/appearance, Storage 2 and Dynamic Root 18 implementation closure; current Motion feature exclusive closure 33650 / 49152 bytes gzip, Initial JavaScript 226638 / 237568 bytes gzip with 10930 bytes headroom, and Initial CSS 25854 / 40960 bytes gzip; generated Engineering Manifest regeneration equality; generated tokens.css regeneration equality; check:arch; check:policy; pnpm verify
+MACHINE_GATES=retained source-owned Runtime, Router, Storage, UI, navigation and presentation checks; canonical generated-output equality; actual configured bundle budgets; single current-work admission and Owner authorization binding; complete pnpm verify; historical document snapshot probe counts are not active gates
 PRODUCTION_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT
-COMPLETION_EVIDENCE=technical infrastructure and prior repository implementations remain complete; exact-commit audit keeps overall runtime, visual, accessibility and release acceptance revoked; prior Runtime repair states remain preserved; accepted Dark Action and PAVP-RUNTIME-003 facts remain unchanged; §1.2B.0H–0K retain historical state and measurements; PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION remains accepted; PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS is accepted at FROZEN / ACCEPTED / COMPLETE / PASS for exact published implementation commit b6efbb608b309f601217a2765150bd9ec217cf78 and Owner statement 效果还可以 可以接受, with scoped runtime and visual acceptance PASS, accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY is accepted at FROZEN / ACCEPTED / COMPLETE / PASS with Owner Runtime and Visual acceptance PASS, Accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; its exact 12 reversible Architecture-admission probes, 52 source proofs, 16 retained reversible source probes, 8 Router Presentation Commit reversible probes, 7 preset-selection reversible probes, 9 Full pace reversible probes and 3 Stylelint policy reversible probes are active; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact; current work and authority were NONE at that historical closure; next and successor remained NONE
+COMPLETION_EVIDENCE=technical infrastructure and prior repository implementations remain complete; exact-commit audit keeps overall runtime, visual, accessibility and release acceptance revoked; prior Runtime repair states remain preserved; accepted Dark Action and PAVP-RUNTIME-003 facts remain unchanged; §1.2B.0H–0K retain historical state and measurements; PAVP_ADMIN_NAVIGATION_NATIVE_NAIVE_SIMPLIFICATION remains accepted; PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS is accepted at FROZEN / ACCEPTED / COMPLETE / PASS for exact published implementation commit b6efbb608b309f601217a2765150bd9ec217cf78 and Owner statement 效果还可以 可以接受, with scoped runtime and visual acceptance PASS, accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY is accepted at FROZEN / ACCEPTED / COMPLETE / PASS with Owner Runtime and Visual acceptance PASS, Accessibility NOT_PERFORMED, publication COMPLETE and release NOT_RELEASED; its historical landing recorded 12 reversible Architecture-admission probes, now retired under Section 1.3; the retained source proofs and Router Presentation Commit, preset-selection, Full pace and Stylelint policy probes continue to protect actual source contracts; PAVP-RUNTIME-004 remains open and untouched; overall acceptance remains revoked; next and successor remain NONE; no test, fixture, screenshot, trace or evidence artifact; current work and authority were NONE at that historical closure; next and successor remained NONE
 ```
 
-§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0N 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。既有 Theme、Runtime、Router、Storage 和 Admin Console 事实保持，整体 Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销。§1.2B.0H–0K 只保留历史事实，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已在精确提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。已验收工作包是 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Owner Runtime/Visual Acceptance 为 `PASS`，Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰；其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。 当前 Bounded Work 为 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，唯一有界实施准入为 §20B.2，并引用 §9.11 的呈现与 §18.11 的实例寿命合同；已交付滚动修复及其有限验收按 §20B.2 保留；Density 有界源码与静态交付已按 §37.2.12 的 Owner 决定收口；§18.11 的 route-single 候选及有限验收保持历史事实，多记录目标仍未实施，Next 与 Successor 保持 `NONE`。
+§1.2B、§1.2B.0、§1.2B.0A、§1.2B.0C、§1.2B.0D、§1.2B.0D.1、§1.2B.0E、§1.2B.0F、§1.2B.0H–0N 与当前 Runtime Defect Remediation Register 是本 Package 的 Detailed Material 与当前事实合同。既有 Theme、Runtime、Router、Storage 和 Admin Console 事实保持，整体 Runtime、Visual、Accessibility 与 Release Acceptance 仍被撤销。§1.2B.0H–0K 只保留历史事实，§1.2B.0L 保持 Native Naive 已验收前序，§1.2B.0M 已在精确提交 `b6efbb608b309f601217a2765150bd9ec217cf78` 上收口为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Scoped Runtime 和 Visual 为 `PASS`、Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。已验收工作包是 §1.2B.0N 的 `PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY`，状态为 `FROZEN / ACCEPTED / COMPLETE / PASS`，Owner Runtime/Visual Acceptance 为 `PASS`，Accessibility 为 `NOT_PERFORMED`，Publication/Release 为 `COMPLETE / NOT_RELEASED`。`PAVP-RUNTIME-004` 保持 Open 且未触碰；其他九个产品页面内容模型保持不变，Next、Successor Capability 与 Canonical Product Package 均未获准。 当前实施范围由文首 Current Work 及其直接准入记录统一指向；本节保留各能力的历史交付与限定验收，不维护可变工作包镜像。
 
 ### 37.2.8 `PAVP_API_TRANSPORT_IMPLEMENTATION`
 
@@ -19030,7 +19675,7 @@ COMPLETION_EVIDENCE=actual implementation and static results reported separately
 
 后续 Owner 明确批准以提交 `82aa8bdc047de21c74eb1f5cbe41aed2a07fc36a` 收口 `PAVP_DENSITY_CONTROL_HEIGHT_IMPLEMENTATION` 的有界 Source/Static Delivery，并解除其 Current Work 指定。该提交记录五条记录、Runtime/Critical CSS、Naive Common 基线和 Owning Checks 的同一源码交付，以及 Node `24.15.0` / pnpm `10.34.5` 下成功的 `mise exec -- pnpm verify` 历史证据；14 文件验证前后及提交候选哈希一致、暂存 Blob 与已审阅内容逐字节相同和 Diff Check 通过均为该提交记录，不能写成本次重跑结果。后继 `430c7fc00241fdd6a8ffeeb1a8168dd930d807dd` 仅修正 Naive Owning Checker 的依赖解析路径，不增加 Density 验收事实。
 
-该有界包现为 Source/Static Delivery `COMPLETE`、Current Work `CLOSED`；完整 Density Capability 继续 `TARGET_INACTIVE`，Runtime/Visual Acceptance 继续 `NOT_PERFORMED`，Accessibility 没有新增验收，Release 状态保持未发布。原实施时点的未暂存及 Git 禁止范围不改写；已有源码提交不由本次重新交付。前阶段串行移交仅准入 §18.12 的 `PAVP_BROWSER_RELOAD_SCROLL_RESTORATION_CONTRACT_AMENDMENT` 文档修订；其无源码授权保持历史含义。后续滚动修复已交付且仅获其实际观察流程的有限接受；当前独立准入为 §20B.2 的 `PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION`，不改变此 Density 收口、后继能力或 Git 授权。
+该有界包的 Source/Static Delivery 为 `COMPLETE`；完整 Density Capability 继续 `TARGET_INACTIVE`，Runtime/Visual Acceptance 继续 `NOT_PERFORMED`，Accessibility 没有新增验收，Release 状态保持未发布。原实施时点的未暂存及 Git 禁止范围不改写；已有源码提交不由本次重新交付。前阶段串行移交仅准入 §18.12 的 `PAVP_BROWSER_RELOAD_SCROLL_RESTORATION_CONTRACT_AMENDMENT` 文档修订；其无源码授权保持历史含义。后续滚动修复已交付且仅获其实际观察流程的有限接受；当前任务只引用文首 Current Work 及其 scoped admission record，不改变此 Density 收口、后继能力或 Git 授权。
 
 #### `PAVP_CONFIGURATION_DRIVEN_FORMS` scoped admission record
 
@@ -19066,7 +19711,7 @@ COMPLETION_EVIDENCE=authorized real implementation and exact generated outputs; 
 
 ### 37.2.13 `PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION`
 
-§18.11 是唯一完整合同，本记录只准入一次架构规格修订及安全的文档 Git 交付。`CONTRACT_STATUS=FROZEN`；Global Breadcrumb / Workspace Tabs 的 `REPOSITORY_IMPLEMENTATION=NOT_STARTED`、`CAPABILITY_STATUS=TARGET_INACTIVE`、源码 `IMPLEMENTATION_AUTHORIZATION=NONE`。本任务不续接任何历史 Runtime Acceptance，不增加 Capability Manifest Source/Generated Record；文首 Current Work、Next 和 Successor 保持 `NONE`。
+§18.11 是唯一完整合同，本记录只准入一次架构规格修订及安全的文档 Git 交付。`CONTRACT_STATUS=FROZEN`；Global Breadcrumb / Workspace Tabs 的 `REPOSITORY_IMPLEMENTATION=NOT_STARTED`、`CAPABILITY_STATUS=TARGET_INACTIVE`、源码 `IMPLEMENTATION_AUTHORIZATION=NONE`。该历史架构修订不续接任何 Runtime Acceptance，不增加 Capability Manifest Source/Generated Record；修订收口时 Current Work、Next 和 Successor 为 `NONE`。现行任务以文首 Current Work 及其 scoped admission record 为准。
 
 ```text
 ID=PAVP_ADMINISTRATION_WORKSPACE_CHROME_SPECIFICATION
@@ -19202,7 +19847,7 @@ DEBT_POLICY=NO_NEW_DEBT_AND_TOUCH_AND_MIGRATE
 SUCCESSOR_IMPLEMENTATION_AUTHORIZATION=NONE
 ```
 
-当前源码确认的系统性问题是：仅声明旧 Layer 顺序不能代替真实规则归层；UnoCSS 未开启原生 Layer 输出，普通 SFC 与部分全局规则未分层，可以高于显式 Layer；旧顺序又把 `utilities` 放在 `components/app` 之前。生成的 `tokens.css` 已有 `tokens` Layer，Route Transition 已有 `app` Layer，这些事实与首屏合同保留，不能把所有 CSS 一概描述为缺陷。
+冻结目标时的源码审查快照确认：仅声明旧 Layer 顺序不能代替真实规则归层；当时 UnoCSS 未开启原生 Layer 输出，普通 SFC 与部分全局规则未分层，可以高于显式 Layer；旧顺序又把 `utilities` 放在 `components/app` 之前。当前实施和待验收状态统一见 §26 的 scoped admission record。生成的 `tokens.css` 已有 `tokens` Layer，Route Transition 已有 `app` Layer，这些事实与首屏合同保留，不能把所有 CSS 一概描述为缺陷。
 
 审计迁移证据按当次统计共 **22** 项保留，以下历史 A–E 与 §15.6 当前 A–F 作者标签含义不同；它们是历史审计分组，不是永久文件 Allowlist、机器 Baseline Registry 或要求全仓同时迁移的清单：
 
@@ -19640,8 +20285,6 @@ PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_TARGET_IS_ORI
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_PUBLICATION_STATUS_IS_COMPLETE
 PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS_RELEASE_STATUS_IS_NOT_RELEASED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_ADMISSION_AMENDMENT_IS_FROZEN
-CURRENT_BOUNDED_WORK_AUTHORITY_IS_ARCHITECTURE_SECTION_20B_2
-CURRENT_BOUNDED_WORK_IS_PAVP_PAGE_COMPONENT_ERROR_ISOLATION_IMPLEMENTATION
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATUS_IS_ACCEPTED
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_REPOSITORY_IMPLEMENTATION_IS_COMPLETE
 PAVP_ROUTE_TRANSITION_ROUTING_CAPABILITY_STATIC_VERIFICATION_IS_PASS
@@ -19725,15 +20368,9 @@ CLIENT_STORED_STATE_BELONGS_TO_PINIA
 
 MAIN_ONLY_MAINTENANCE
 PRODUCTION_ONLY_REPOSITORY
-NO_TEST_DEMO_OR_BROWSER_EVIDENCE_INFRASTRUCTURE
-NO_SHOWCASE_OR_RUNTIME_EVIDENCE_INFRASTRUCTURE
 PNPM_VERIFY_IS_THE_COMPLETE_STATIC_PRODUCTION_GATE
 STATIC_GATES_DO_NOT_CLAIM_RUNTIME_PROOF
-CODEX_BROWSER_OPERATION_IS_PROHIBITED
-STATIC_GATES_ARE_THE_ONLY_CODEX_VERIFICATION
-OWNER_MANUAL_RUNTIME_INSPECTION_FOR_CODEX_TASKS_IS_OPTIONAL_EXTERNAL_AND_NON_GATING
 OWNER_PRODUCTION_RELEASE_RUNTIME_ACCEPTANCE_IS_REQUIRED_EXTERNAL_AND_NON_REPOSITORY
-NO_RUNTIME_EVIDENCE_COMMITTED
 
 EACH_STATIC_RULE_IS_ENFORCED_BY_COMPLETION_OF_ITS_OWNING_WORK_PACKAGE
 NO_FUTURE_RULE_IS_CLAIMED_ENFORCED_BEFORE_ITS_GATE
@@ -19779,8 +20416,8 @@ Node 24 LTS
 + Runtime CSS Variables
 + Reference-only Appearance Preference after Atomic Cutover
 + Stored / Effective Appearance Separation
-+ Current fixed control-height and stored density preset; visual projection remains inactive pending its own core contract and Admission
-+ Unimplemented adjustable global radius target under Section 14.1
++ Implemented single-role density control-height projection; complete density size/spacing and runtime acceptance remain inactive
++ Adjustable global-radius core under Section 14.1; runtime/visual/accessibility acceptance remains pending
 + Complete Generated UnoCSS Public Semantics
 + Adaptive / Reduced / Solid Material
 + Adaptive Liquid Chrome over Stable Content
@@ -19820,7 +20457,7 @@ Node 24 LTS
 0 universal native workflow-discovery requirements
 1 verification command
 1 protected main branch
-0 Phase 1 packages/ui runtime dependencies
+Phase 1 initial UI stub was dependency-free; current dependencies follow admitted Workspace manifests
 0 placeholder future directories
 0 branch-based maintenance workflows
 ```

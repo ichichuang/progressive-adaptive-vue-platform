@@ -6,11 +6,13 @@ import { isDeepStrictEqual } from 'node:util'
 import {
   ProductPreferenceDefault,
   applyAppearance,
+  captureRadius,
   builtInThemeIds,
+  builtInAppearanceThemePreviews,
+  projectAccessibleCustomAppearanceThemePreviews,
   explicitThemePreferenceSchema,
   fontScaleValues,
   installCustomThemeBank,
-  migrateToExplicitThemePreference,
   resolveThemeReference,
   validateCustomThemeDefinition,
 } from '@platform/design-system'
@@ -25,6 +27,13 @@ import {
   readStoredPreference,
   writeStoredPreference,
 } from '../../apps/web/src/app/appearance/preference-storage'
+import { useAppearanceStore } from '../../apps/web/src/app/appearance/appearance.store'
+import {
+  installAppearanceProvider,
+  registerPostMountAppearanceMediaSubscriptions,
+} from '../../apps/web/src/app/appearance/appearance-bootstrap'
+import { createStartupAttemptId } from '../../apps/web/src/app/bootstrap/lifecycle'
+import { createPiniaProvider } from '../../apps/web/src/app/providers/pinia'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { parseJsonSource } from '../../packages/design-system/src/build/parse-json'
 import { formatThemeBankCssValue } from '../../packages/design-system/src/build/formats/css'
@@ -39,11 +48,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    '6805ad0d13d40203d743b9a13758d0f4e0454678bf24c00954298773e641d5b4',
+    'ddcef4b185a05b368fba985e6e9bafbc19d868a80141db772fcdb2007746e531',
   'packages/design-system/src/generated/tokens.ts':
-    'aa15e27db5519f315edc2d57a8b011750bd934373c4274e6524c3a78a033ed03',
+    'ed6ccbc84bf0f8bd22ff1273eea4dd3ddc564a8cb9feabf8b719d872613c3136',
   'packages/design-system/src/generated/unocss-theme.ts':
-    'fa1f6ec2ebae839e0008aaab2f5a2e4fc2dec757651d9d4635a4b7873ef4467b',
+    '24c28d415451e6714ecb898d3bde2cb0b51358222dc243d1ed0b9c0b5bc48872',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -52,6 +61,7 @@ const expectedPublicRootSymbols = [
   'fontScaleSchema',
   'materialPreferenceSchema',
   'motionPreferenceSchema',
+  'radiusPreferenceSchema',
   'uiDensitySchema',
   'fontScaleValues',
   'ColorModePreference',
@@ -67,13 +77,14 @@ const expectedPublicRootSymbols = [
   'ThemeReference',
   'ProductPreferenceDefault',
   'applyAppearance',
+  'captureRadius',
   'EffectiveAppearanceState',
   'projectUiAppearance',
   'UiAppearanceSnapshot',
-  'migrateToExplicitThemePreference',
-  'PreferenceMigrationResult',
   'resolveColorMode',
   'EffectiveColorMode',
+  'resolveMotion',
+  'ResolveMotionInput',
   'resolveMaterial',
   'EffectiveMaterial',
   'installCustomThemeBank',
@@ -102,6 +113,7 @@ const expectedPublicRootSymbols = [
 ] as const
 const expectedStoreActions = [
   'restoreAppearance',
+  'synchronizeAppearance',
   'readEffectiveAppearance',
   'changeAppearancePreference',
   'resetAppearancePreference',
@@ -269,7 +281,6 @@ function colorRuntimeEntryViolations(sources: ReadonlyMap<string, string>): read
   }
 
   for (const [path, expectedImport] of [
-    ['packages/design-system/src/schema/appearance.schema.ts', "from './css-color'"],
     ['packages/design-system/src/schema/complete-theme.schema.ts', "from './css-color'"],
     ['packages/design-system/src/runtime/theme-registry.ts', "from '../schema/css-color'"],
   ] as const) {
@@ -558,7 +569,7 @@ async function validatePackageFiveStaticAuthorities(): Promise<readonly string[]
     '<package-five-consumer-negative-probe>',
     `const duplicate = {
       colorMode: 'system',
-      theme: { registryKind: 'built-in', themeId: 'iris' },
+      theme: { registryKind: 'built-in', themeId: 'royal-iris' },
       contrast: 'standard',
       material: 'adaptive',
       density: { preset: 'comfortable', scale: 1 },
@@ -578,7 +589,7 @@ async function validatePackageFiveStaticAuthorities(): Promise<readonly string[]
     '<package-five-safety-negative-probe>',
     `const duplicateSafety = {
       effectiveColorMode: 'light',
-      effectiveTheme: { registryKind: 'built-in', themeId: 'iris' },
+      effectiveTheme: { registryKind: 'built-in', themeId: 'royal-iris' },
       effectiveContrast: 'standard',
       effectiveMaterial: 'solid',
       effectiveDensity: 'comfortable',
@@ -640,23 +651,14 @@ async function validatePublicRoot(): Promise<readonly string[]> {
   return []
 }
 
-async function validateFourteenBuiltInThemes(): Promise<readonly string[]> {
+async function validateFiveBuiltInThemes(): Promise<readonly string[]> {
   const violations: string[] = []
   const expectedIdentities = [
-    ['amber', 'Amber'],
-    ['cobalt', 'Cobalt'],
-    ['coral', 'Coral'],
-    ['graphite', 'Graphite'],
-    ['iris', 'Iris'],
-    ['jade', 'Jade'],
-    ['lagoon', 'Lagoon'],
-    ['stone-blue-ash', 'Stone Blue & Ash'],
-    ['misty-rose-blue', 'Misty Rose & Blue'],
-    ['honey-apricot-cream', 'Honey Apricot & Cream'],
-    ['cerulean-sky-navy', 'Cerulean Sky & Navy'],
-    ['lavender-ivory', 'Lavender & Ivory'],
-    ['denim-cocoa', 'Denim & Cocoa'],
-    ['burgundy-snow', 'Burgundy & Snow'],
+    ['royal-iris', 'Royal Iris'],
+    ['cobalt-tide', 'Cobalt Tide'],
+    ['emerald-grove', 'Emerald Grove'],
+    ['ember-coral', 'Ember Coral'],
+    ['berry-bloom', 'Berry Bloom'],
   ] as const
   const generatedIdentities = generatedThemeRegistry.builtInEntries.map((entry) => [
     entry.themeId,
@@ -671,8 +673,44 @@ async function validateFourteenBuiltInThemes(): Promise<readonly string[]> {
     !isDeepStrictEqual(generatedIdentities, expectedIdentities)
   ) {
     violations.push(
-      'Fourteen Built-in Theme IDs, labels, or canonical order drifted from the Owner contract.',
+      'Five Built-in Theme IDs, labels, or canonical order drifted from the Owner contract.',
     )
+  }
+
+  for (const entry of generatedThemeRegistry.builtInEntries) {
+    const preview = builtInAppearanceThemePreviews.find(
+      (candidate) => candidate.themeId === entry.themeId,
+    )
+    for (const colorMode of ['light', 'dark'] as const)
+      for (const contrast of ['standard', 'enhanced'] as const)
+        for (const [field, role] of [
+          ['surfacePage', 'color.surface.page'],
+          ['surfacePanel', 'color.surface.panel'],
+          ['actionPrimary', 'color.action.primary'],
+          ['controlPrimary', 'color.control.primary'],
+          ['borderDefault', 'color.border.default'],
+          ['focusRing', 'color.focus.ring'],
+        ] as const) {
+          const expected = entry.bank.records.find(
+            (record) =>
+              record.colorMode === colorMode &&
+              record.contrast === contrast &&
+              record.publicRole === role,
+          )?.resolvedValue
+          if (preview?.planes[colorMode][contrast][field] !== expected)
+            violations.push(
+              `${entry.themeId}/${colorMode}/${contrast}: preview ${field} must resolve its local palette alias.`,
+            )
+        }
+    const validation = validateCustomThemeDefinition({
+      ...resolvedCustomThemeProbeDefinition(),
+      id: entry.themeId,
+    })
+    if (
+      validation.status !== 'validated' ||
+      projectAccessibleCustomAppearanceThemePreviews([validation.entry]).length !== 1
+    )
+      violations.push('New same-ID Custom themes must remain available in the preview gallery.')
   }
 
   const colorValues = generatedThemeRegistry.builtInEntries.flatMap((entry) => [
@@ -696,19 +734,18 @@ async function validateFourteenBuiltInThemes(): Promise<readonly string[]> {
   const appearanceFiles = await readdir(resolve(rootDirectory, 'apps/web/src/app/appearance'))
 
   if (
-    colorValues.length !== 1456 ||
-    colorValues.filter((value) => value.startsWith('oklch(')).length !== 560 ||
-    colorValues.filter((value) => value.startsWith('{color.palette.status.')).length !== 896 ||
-    scrimValues.length !== 56 ||
-    scrimValues.some((value) => typeof value !== 'string' || !value.endsWith('/ 0.56)'))
+    colorValues.length !== 600 ||
+    colorValues.filter((value) => value.startsWith('{palette.')).length !== 580 ||
+    scrimValues.length !== 20 ||
+    scrimValues.some((value) => typeof value !== 'string' || value !== 'rgba(0, 0, 0, 0.56)')
   ) {
     violations.push(
-      'Fourteen Built-in Themes must retain 560 absolute OKLCH colors, 896 Status aliases and 56 fixed-alpha scrims.',
+      'Five Built-in Themes must use 580 local palette aliases and 20 unchanged fixed-alpha scrims.',
     )
   }
 
   if (!isDeepStrictEqual(actualSourceFiles, expectedSourceFiles)) {
-    violations.push('Complete Built-in Theme source files must equal the exact fourteen-theme set.')
+    violations.push('Complete Built-in Theme source files must equal the exact five-theme set.')
   }
 
   if (
@@ -786,7 +823,9 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
     }
 
     if (!isDeepStrictEqual(actionNames, expectedStoreActions)) {
-      violations.push('appearance.store.ts: Store Actions must equal the frozen ordered seven.')
+      violations.push(
+        'appearance.store.ts: Store Actions must equal the admitted Appearance surface.',
+      )
     }
 
     const stateProperty = objectProperty(storeOptions, 'state')
@@ -914,6 +953,7 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
 
   const expectedTransactionIntents = new Map<string, readonly string[]>([
     ['restoreAppearance', ['none']],
+    ['synchronizeAppearance', ['none']],
     ['changeAppearancePreference', ['preference']],
     ['resetAppearancePreference', ['preference']],
     ['replaceCustomThemeRegistry', ['registry']],
@@ -921,7 +961,7 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
   ])
 
   for (const [owner, intents] of expectedTransactionIntents) {
-    if (!isDeepStrictEqual(transactionIntents.get(owner), intents)) {
+    if (!isDeepStrictEqual([...new Set(transactionIntents.get(owner) ?? [])], intents)) {
       violations.push(`appearance.store.ts: ${owner} persistence intent drifted.`)
     }
   }
@@ -952,10 +992,10 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
   }
 
   for (const [name, expectedOwners] of [
-    ['captureStoredPreference', ['commitAppearanceTransition']],
-    ['restoreStoredPreference', ['commitAppearanceTransition']],
-    ['captureCustomThemeRegistry', ['commitAppearanceTransition', 'deleteCustomTheme']],
-    ['restoreCustomThemeRegistry', ['commitAppearanceTransition', 'deleteCustomTheme']],
+    ['captureStoredPreference', []],
+    ['restoreStoredPreference', []],
+    ['captureCustomThemeRegistry', []],
+    ['restoreCustomThemeRegistry', []],
   ] as const) {
     const actualOwners = [...new Set(callOwners.get(name) ?? [])].sort(compareCodePoints)
     const canonicalExpectedOwners = [...expectedOwners].sort(compareCodePoints)
@@ -1045,7 +1085,7 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
     'readStoredPreference()',
     'validateCustomThemeRegistryEntries(remainingEntries)',
     'writeCustomThemeRegistry(validation.entries)',
-    'this.customThemeRegistry = write.entries',
+    'this.customThemeRegistry = validation.entries',
   ]) {
     if (!deletionSource.includes(required)) {
       violations.push(`appearance.store.ts: deleteCustomTheme is missing ${required}.`)
@@ -1278,18 +1318,18 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
       resolve(appearanceDirectory, 'preference-storage.ts'),
       preferenceStorage,
       {
-        getItem: ['captureStoredPreference', 'readStoredPreference'],
-        removeItem: ['restoreStoredPreference'],
-        setItem: ['restoreStoredPreference', 'writeStoredPreference'],
+        getItem: ['readStoredPreference'],
+        removeItem: [],
+        setItem: ['writeStoredPreference'],
       },
     ),
     ...validateStorageOwnerAst(
       resolve(appearanceDirectory, 'custom-theme-registry-storage.ts'),
       registryStorage,
       {
-        getItem: ['captureCustomThemeRegistry', 'readCustomThemeRegistry'],
-        removeItem: ['restoreCustomThemeRegistry'],
-        setItem: ['restoreCustomThemeRegistry', 'writeCustomThemeRegistry'],
+        getItem: ['readCustomThemeRegistry'],
+        removeItem: [],
+        setItem: ['writeCustomThemeRegistry'],
       },
     ),
   )
@@ -1643,43 +1683,35 @@ function validatePersistenceContracts(): readonly string[] {
     const preferenceKey = applicationConfig.appearance.preferenceStorageKey
     const registryKey = applicationConfig.appearance.customThemeRegistryStorageKey
     const defaultPreference = explicitThemePreferenceSchema.parse({
-      schemaVersion: 3,
+      schemaVersion: 4,
       appearance: ProductPreferenceDefault,
     })
-    const tuple = generatedThemeRegistry.legacyBuiltInThemeTuples[0]
-    const legacyPreference = {
-      schemaVersion: 2,
-      appearance: {
-        colorMode: 'system',
-        theme: tuple.themeId,
-        palette: {
-          brand: tuple.brand,
-          accent: tuple.accent,
-          neutral: tuple.neutral,
-        },
-        contrast: 'standard',
-        material: 'adaptive',
-        density: { preset: 'comfortable', scale: 1 },
-        fontScale: 1,
-        motion: 'full',
-      },
-    } as const
-
     if (readStoredPreference().status !== 'missing' || storage.setCalls !== 0) {
       violations.push('Preference Reader must not write when the key is absent.')
     }
 
-    const legacyRaw = JSON.stringify(legacyPreference)
-    storage.values.set(preferenceKey, legacyRaw)
-    const legacyRead = readStoredPreference()
-
-    if (
-      legacyRead.status !== 'restored' ||
-      storage.values.get(preferenceKey) !== legacyRaw ||
-      storage.setCalls !== 0
-    ) {
-      violations.push('Successful startup migration must remain in memory without writeback.')
+    for (const schemaVersion of [1, 2, 3]) {
+      const raw = JSON.stringify({ ...defaultPreference, schemaVersion })
+      storage.values.set(preferenceKey, raw)
+      const rejected = readStoredPreference()
+      if (
+        rejected.status !== 'rejected' ||
+        storage.values.get(preferenceKey) !== raw ||
+        storage.setCalls !== 0 ||
+        storage.removeCalls !== 0
+      )
+        violations.push(
+          'Unsupported Preference formats must be rejected without rewriting or erasing stored data.',
+        )
     }
+    storage.values.set(preferenceKey, JSON.stringify(defaultPreference))
+    const currentRead = readStoredPreference()
+    if (
+      currentRead.status !== 'restored' ||
+      !isDeepStrictEqual(currentRead.preference, defaultPreference) ||
+      storage.setCalls !== 0
+    )
+      violations.push('Current Preference reads must preserve every axis without writeback.')
 
     storage.values.set(preferenceKey, '{malformed')
 
@@ -1690,23 +1722,16 @@ function validatePersistenceContracts(): readonly string[] {
     storage.values.set(
       preferenceKey,
       JSON.stringify({
-        ...legacyPreference,
+        ...defaultPreference,
         appearance: {
-          ...legacyPreference.appearance,
-          palette: {
-            ...legacyPreference.appearance.palette,
-            brand: 'var(--invalid-legacy-color)',
-          },
+          ...defaultPreference.appearance,
+          theme: { registryKind: 'built-in', themeId: 'unsupported-theme' },
         },
       }),
     )
     const invalidParsedPreference = readStoredPreference()
 
-    if (
-      invalidParsedPreference.status !== 'rejected' ||
-      invalidParsedPreference.code !== 'PREFERENCE_INPUT_INVALID' ||
-      storage.setCalls !== 0
-    ) {
+    if (invalidParsedPreference.status !== 'rejected' || storage.setCalls !== 0) {
       violations.push(
         'Schema-invalid parsed Preference input must map to PREFERENCE_INPUT_INVALID.',
       )
@@ -1724,7 +1749,6 @@ function validatePersistenceContracts(): readonly string[] {
       violations.push('Preference Writer must persist one direct Explicit Preference value.')
     }
 
-    const representativeTheme = generatedThemeRegistry.builtInEntries[0]
     const firstValidation = validateCustomThemeDefinition({
       ...resolvedCustomThemeProbeDefinition(),
       id: 'z.registry',
@@ -1738,81 +1762,28 @@ function validatePersistenceContracts(): readonly string[] {
       return [...violations, 'Persistence probe Custom Themes must validate.']
     }
 
-    const legacyDefinition = structuredClone(representativeTheme.definition) as unknown as {
-      id: string
-      label: string
-      planes: Record<string, Record<string, Record<string, string>>>
-      roleContractVersion: number
-      schemaVersion: number
-    }
-    legacyDefinition.id = 'legacy.registry'
-    legacyDefinition.label = 'Legacy Registry'
-    legacyDefinition.roleContractVersion = 1
-
-    for (const colorMode of ['light', 'dark']) {
-      for (const contrast of ['standard', 'enhanced']) {
-        const plane = legacyDefinition.planes[colorMode]?.[contrast]
-
-        if (plane === undefined) {
-          return [...violations, 'Legacy Registry probe plane must exist.']
-        }
-
-        plane['color.action.primary'] = plane['color.control.primary'] ?? ''
-
-        if (colorMode === 'dark') {
-          plane['color.text.on-action'] = plane['color.surface.page'] ?? ''
-        }
-
-        delete plane['color.control.primary']
-        for (const role of Object.keys(plane)) {
-          if (role.startsWith('color.status.') || role.startsWith('color.text.on-status.'))
-            Reflect.deleteProperty(plane, role)
-        }
+    for (const roleContractVersion of [1, 2, 3]) {
+      const definition = {
+        ...resolvedCustomThemeProbeDefinition(),
+        id: 'unsupported.contract',
+        roleContractVersion,
       }
-    }
-
-    const legacySnapshot = JSON.stringify({
-      schemaVersion: 1,
-      entries: [
-        {
-          registryKind: 'custom',
-          themeId: legacyDefinition.id,
-          definition: legacyDefinition,
-        },
-      ],
-    })
-    storage.values.set(registryKey, legacySnapshot)
-    const writesBeforeLegacyRead = storage.setCalls
-    const legacyRegistryRead = readCustomThemeRegistry()
-    const normalizedLegacyEntry =
-      legacyRegistryRead.status === 'accessible' ? legacyRegistryRead.entries[0] : undefined
-    const legacyAction = legacyDefinition.planes['dark']?.['standard']?.['color.action.primary']
-    const normalizedControl =
-      normalizedLegacyEntry?.definition.planes.dark.standard['color.control.primary']
-
-    if (
-      normalizedLegacyEntry?.themeId !== legacyDefinition.id ||
-      normalizedControl !== legacyAction ||
-      storage.values.get(registryKey) !== legacySnapshot ||
-      storage.setCalls !== writesBeforeLegacyRead
-    ) {
-      violations.push('Legacy Custom Theme normalization must be read-only and copy Action Fill.')
-    }
-
-    storage.storage.setItem(
-      registryKey,
-      JSON.stringify({ schemaVersion: 1, entries: legacyRegistryRead }),
-    )
-    const legacyRewriteProbeFailed =
-      storage.setCalls !== writesBeforeLegacyRead ||
-      storage.values.get(registryKey) !== legacySnapshot
-    storage.values.set(registryKey, legacySnapshot)
-    storage.setCalls = writesBeforeLegacyRead
-
-    if (!legacyRewriteProbeFailed) {
-      violations.push(
-        'Legacy Custom Theme Snapshot rewrite reversible negative probe did not fail.',
+      const raw = JSON.stringify({
+        schemaVersion: 1,
+        entries: [{ registryKind: 'custom', themeId: definition.id, definition }],
+      })
+      storage.values.set(registryKey, raw)
+      const writes = storage.setCalls
+      const removals = storage.removeCalls
+      if (
+        readCustomThemeRegistry().status !== 'inaccessible' ||
+        storage.setCalls !== writes ||
+        storage.removeCalls !== removals ||
+        storage.values.get(registryKey) !== raw
       )
+        violations.push(
+          'Unsupported Custom role contracts must be rejected without changing stored definitions.',
+        )
     }
 
     const unsortedSnapshot = JSON.stringify({
@@ -1936,7 +1907,7 @@ function validatePersistenceContracts(): readonly string[] {
         for (const fontScale of fontScaleValues) {
           for (const scale of [0.9, 1.1, 1.15]) {
             const preference = explicitThemePreferenceSchema.parse({
-              schemaVersion: 3,
+              schemaVersion: 4,
               appearance: {
                 ...ProductPreferenceDefault,
                 theme: { registryKind: theme.registryKind, themeId: theme.themeId },
@@ -1967,33 +1938,633 @@ function validatePersistenceContracts(): readonly string[] {
   })
 }
 
-function resolvedCustomThemeProbeDefinition() {
-  const entry = generatedThemeRegistry.builtInEntries[0]
-  const definition = structuredClone(entry.definition)
+function resolvedCustomThemeProbeDefinition(index = 0) {
+  const entry = generatedThemeRegistry.builtInEntries[index]
+  if (entry === undefined) throw new Error('The canonical theme fixture is unavailable.')
+  const definition = completeBuiltInThemeDefinitionSchema.parse(structuredClone(entry.definition))
   for (const record of entry.bank.records) {
     definition.planes[record.colorMode][record.contrast][record.publicRole] = record.resolvedValue
   }
   return definition
 }
 
+function validateSharedAppearanceSynchronization(): readonly string[] {
+  return withInMemoryLocalStorage((storage) => {
+    const failures: string[] = []
+    const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'document')
+    const properties = new Map<string, { value: string; priority: string }>()
+    const attributes = new Map<string, string>()
+    const target = {
+      hasAttribute: (name: string) => attributes.has(name),
+      getAttribute: (name: string) => attributes.get(name) ?? null,
+      setAttribute: (name: string, value: string) => {
+        attributes.set(name, value)
+      },
+      removeAttribute: (name: string) => {
+        attributes.delete(name)
+      },
+      style: {
+        getPropertyValue: (name: string) => properties.get(name)?.value ?? '',
+        getPropertyPriority: (name: string) => properties.get(name)?.priority ?? '',
+        setProperty: (name: string, value: string, priority = '') => {
+          properties.set(name, { value, priority })
+        },
+        removeProperty: (name: string) => {
+          const previous = properties.get(name)?.value ?? ''
+          properties.delete(name)
+          return previous
+        },
+      },
+    }
+    Object.defineProperty(globalThis, 'document', {
+      configurable: true,
+      value: { documentElement: target },
+    })
+    const provider = createPiniaProvider(createStartupAttemptId())
+    const store = useAppearanceStore(provider.pinia)
+    const environment = {
+      backdropFilterSupported: true,
+      forcedColorsActive: false,
+      prefersDark: false,
+      prefersReducedMotion: false,
+      reducedTransparencyRequested: false,
+    }
+    const preferenceKey = applicationConfig.appearance.preferenceStorageKey
+    const registryKey = applicationConfig.appearance.customThemeRegistryStorageKey
+    const defaults = explicitThemePreferenceSchema.parse({
+      schemaVersion: 4,
+      appearance: ProductPreferenceDefault,
+    })
+    try {
+      if (store.synchronizeAppearance(environment).status !== 'committed')
+        failures.push('Missing shared Appearance records must use the product default.')
+      const unrelatedKey = 'appearance-recovery-unrelated-probe'
+      const unrelatedValue = '{"preserved":true}'
+      storage.values.set(unrelatedKey, unrelatedValue)
+      const inaccessibleCustom = validateCustomThemeDefinition({
+        ...resolvedCustomThemeProbeDefinition(),
+        id: 'unsupported-contract-probe',
+      })
+      if (inaccessibleCustom.status !== 'validated')
+        throw new TypeError(
+          'The current Custom fixture must validate before changing its contract.',
+        )
+      const invalidRegistry = JSON.stringify({
+        schemaVersion: 1,
+        entries: [
+          {
+            registryKind: 'custom',
+            themeId: 'unsupported-contract-probe',
+            definition: {
+              ...resolvedCustomThemeProbeDefinition(),
+              id: 'unsupported-contract-probe',
+              roleContractVersion: 3,
+            },
+          },
+        ],
+      })
+      storage.values.set(registryKey, invalidRegistry)
+      const recoveryInputs = [
+        '{malformed',
+        ...[1, 2, 3, 5].map((schemaVersion) =>
+          JSON.stringify({ schemaVersion, appearance: defaults.appearance }),
+        ),
+        JSON.stringify({
+          ...defaults,
+          appearance: {
+            ...defaults.appearance,
+            theme: { registryKind: 'built-in', themeId: 'retired-theme-probe' },
+          },
+        }),
+        JSON.stringify({
+          ...defaults,
+          appearance: {
+            ...defaults.appearance,
+            theme: { registryKind: 'custom', themeId: 'unsupported-contract-probe' },
+          },
+        }),
+      ]
+      const startupGlobals = ['window', 'matchMedia', 'CSS'] as const
+      const startupDescriptors = startupGlobals.map(
+        (name) => [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const,
+      )
+      let startup: ReturnType<typeof installAppearanceProvider> | undefined
+      let safetyRestores = 0
+      let stopMedia: (() => void) | undefined
+      try {
+        const windowTarget = new EventTarget()
+        Object.defineProperty(windowTarget, 'localStorage', { value: storage.storage })
+        Object.defineProperty(globalThis, 'window', { configurable: true, value: windowTarget })
+        const media = new Map<
+          string,
+          {
+            matches: boolean
+            listeners: Set<() => void>
+            addEventListener(type: string, listener: () => void): void
+            removeEventListener(type: string, listener: () => void): void
+          }
+        >()
+        Object.defineProperty(globalThis, 'matchMedia', {
+          configurable: true,
+          value: (query: string) => {
+            let item = media.get(query)
+            if (item === undefined) {
+              const listeners = new Set<() => void>()
+              item = {
+                matches: false,
+                listeners,
+                addEventListener: (_type, listener) => {
+                  listeners.add(listener)
+                },
+                removeEventListener: (_type, listener) => {
+                  listeners.delete(listener)
+                },
+              }
+              media.set(query, item)
+            }
+            return item
+          },
+        })
+        Object.defineProperty(globalThis, 'CSS', {
+          configurable: true,
+          value: { supports: () => false },
+        })
+        storage.values.set(preferenceKey, JSON.stringify({ schemaVersion: 3 }))
+        const beforeStartup = new Map(storage.values)
+        startup = installAppearanceProvider(provider.pinia, {
+          handoff: undefined,
+          safetyRestorationAuthority: undefined,
+          restoreSafetyForFailedStartup: () => {
+            safetyRestores += 1
+          },
+          dispose: () => undefined,
+        })
+        startup.reapply()
+        if (
+          !isDeepStrictEqual(startup.appearanceMutationBoundary.preference.value, defaults) ||
+          startup.appearanceReadBoundary.snapshot.value.theme.themeId !==
+            ProductPreferenceDefault.theme.themeId ||
+          startup.appearanceReadBoundary.snapshot.value.colorPalette === null ||
+          !isDeepStrictEqual(storage.values, beforeStartup) ||
+          storage.setCalls !== 0 ||
+          safetyRestores !== 0
+        )
+          failures.push(
+            'The actual Appearance provider must finish startup with readable defaults and writable explicit controls without replacing saved data.',
+          )
+        stopMedia = registerPostMountAppearanceMediaSubscriptions(startup, () => undefined)
+        const motionQuery = media.get('(prefers-reduced-motion: reduce)')
+        if (
+          motionQuery === undefined ||
+          media.size !== 4 ||
+          [...media.values()].some((item) => item.listeners.size !== 1)
+        )
+          failures.push(
+            'The one Appearance owner must subscribe to the four existing environment axes exactly once.',
+          )
+        else {
+          motionQuery.matches = true
+          for (const listener of motionQuery.listeners) listener()
+          if (
+            startup.appearanceReadBoundary.snapshot.value.motion !== 'reduced' ||
+            attributes.get('data-motion') !== 'reduced' ||
+            startup.appearanceMutationBoundary.preference.value?.appearance.motion !== 'full' ||
+            !isDeepStrictEqual(storage.values, beforeStartup)
+          )
+            failures.push(
+              'OS reduction must reach snapshot and CSS without overwriting the stored explicit motion choice.',
+            )
+          motionQuery.matches = false
+          for (const listener of motionQuery.listeners) listener()
+          if (
+            startup.appearanceReadBoundary.snapshot.value.motion !== 'full' ||
+            attributes.get('data-motion') !== 'full'
+          )
+            failures.push(
+              'Clearing OS reduction must restore the explicit full choice without persisting.',
+            )
+        }
+        stopMedia()
+        stopMedia = undefined
+        if ([...media.values()].some((item) => item.listeners.size !== 0))
+          failures.push(
+            'Appearance environment subscriptions must all be removed by the existing owner lifetime.',
+          )
+        const choice = {
+          ...defaults,
+          appearance: {
+            ...defaults.appearance,
+            theme: { registryKind: 'built-in', themeId: 'emerald-grove' },
+          },
+        }
+        if (
+          startup.appearanceMutationBoundary.commitPreference(choice).status !== 'committed' ||
+          startup.appearanceReadBoundary.snapshot.value.theme.themeId !== 'emerald-grove' ||
+          storage.values.get(preferenceKey) !== JSON.stringify(choice) ||
+          storage.values.get(registryKey) !== invalidRegistry ||
+          storage.values.get(unrelatedKey) !== unrelatedValue ||
+          storage.setCalls !== 1
+        )
+          failures.push(
+            'Recovery must leave the explicit commit control usable and replace only Preference after the chosen action.',
+          )
+        if (
+          startup.appearanceMutationBoundary.resetPreference().status !== 'committed' ||
+          !isDeepStrictEqual(startup.appearanceMutationBoundary.preference.value, defaults) ||
+          storage.values.get(preferenceKey) !== JSON.stringify(defaults) ||
+          storage.values.get(registryKey) !== invalidRegistry ||
+          storage.setCalls !== 2
+        )
+          failures.push(
+            'Recovery must leave the explicit reset control usable and preserve invalid Registry bytes.',
+          )
+        storage.setCalls = 0
+      } finally {
+        stopMedia?.()
+        startup?.dispose('normal-or-hmr')
+        for (const [name, descriptor] of startupDescriptors) {
+          if (descriptor === undefined) Reflect.deleteProperty(globalThis, name)
+          else Object.defineProperty(globalThis, name, descriptor)
+        }
+      }
+      for (const saved of recoveryInputs) {
+        storage.values.set(preferenceKey, saved)
+        store.$reset()
+        const before = new Map(storage.values)
+        if (
+          store.restoreAppearance(environment).status !== 'committed' ||
+          !isDeepStrictEqual(store.preference, defaults) ||
+          store.readEffectiveAppearance(environment) === null ||
+          attributes.get('data-theme') !== ProductPreferenceDefault.theme.themeId ||
+          store.customThemeRegistry !== null ||
+          !isDeepStrictEqual(storage.values, before) ||
+          storage.setCalls !== 0 ||
+          store.reapplyAppearance({ ...environment, prefersDark: true }).status !== 'committed' ||
+          !isDeepStrictEqual(storage.values, before)
+        )
+          failures.push(
+            'Invalid saved data must start with usable in-memory defaults and preserve every stored byte until an explicit choice.',
+          )
+      }
+      const selected = {
+        ...defaults,
+        appearance: {
+          ...defaults.appearance,
+          theme: { registryKind: 'built-in', themeId: 'emerald-grove' },
+          radius: 0,
+        },
+      }
+      if (
+        store.changeAppearancePreference(selected, environment).status !== 'committed' ||
+        storage.values.get(preferenceKey) !== JSON.stringify(selected) ||
+        storage.values.get(registryKey) !== invalidRegistry ||
+        storage.values.get(unrelatedKey) !== unrelatedValue ||
+        storage.setCalls !== 1
+      )
+        failures.push(
+          'Explicit Built-in selection must replace only Preference despite an invalid Custom Registry.',
+        )
+      const savedBeforeCustom = new Map(storage.values)
+      if (
+        store.changeAppearancePreference(
+          {
+            ...defaults,
+            appearance: {
+              ...defaults.appearance,
+              theme: { registryKind: 'custom', themeId: 'unsupported-contract-probe' },
+            },
+          },
+          environment,
+        ).status !== 'rejected' ||
+        store.deleteCustomTheme(inaccessibleCustom.entry.themeId).status !== 'rejected' ||
+        !isDeepStrictEqual(storage.values, savedBeforeCustom) ||
+        !isDeepStrictEqual(store.preference, selected)
+      )
+        failures.push(
+          'An invalid Registry must remain inaccessible to Custom selection and deletion.',
+        )
+      if (
+        store.resetAppearancePreference(environment).status !== 'committed' ||
+        !isDeepStrictEqual(store.preference, defaults) ||
+        storage.values.get(registryKey) !== invalidRegistry ||
+        storage.values.get(unrelatedKey) !== unrelatedValue ||
+        storage.setCalls !== 2
+      )
+        failures.push(
+          'Explicit reset must write only current Preference and preserve invalid Registry bytes.',
+        )
+      storage.values.set(preferenceKey, JSON.stringify(selected))
+      const writesBeforeSync = storage.setCalls
+      if (
+        store.synchronizeAppearance(environment).status !== 'committed' ||
+        !isDeepStrictEqual(store.preference, selected) ||
+        store.customThemeRegistry !== null ||
+        storage.setCalls !== writesBeforeSync ||
+        storage.values.get(registryKey) !== invalidRegistry
+      )
+        failures.push(
+          'A valid remote Built-in preference must apply without repairing an invalid Registry.',
+        )
+      const getItem = storage.storage.getItem.bind(storage.storage)
+      storage.storage.getItem = () => {
+        throw new Error('Isolated storage read failure.')
+      }
+      try {
+        store.$reset()
+        if (
+          store.restoreAppearance(environment).status !== 'committed' ||
+          !isDeepStrictEqual(store.preference, defaults) ||
+          storage.setCalls !== writesBeforeSync
+        )
+          failures.push(
+            'Unavailable persistence must leave startup usable without writing defaults.',
+          )
+      } finally {
+        storage.storage.getItem = getItem
+      }
+      storage.values.clear()
+      storage.setCalls = 0
+      store.$reset()
+      store.restoreAppearance(environment)
+      for (const radius of [0, 1, 8, 16]) {
+        const shared = { ...defaults, appearance: { ...defaults.appearance, radius } }
+        storage.values.set(preferenceKey, JSON.stringify(shared))
+        if (
+          store.synchronizeAppearance(environment).status !== 'committed' ||
+          store.preference?.appearance.radius !== radius ||
+          properties.get('--ui-radius-control')?.value !== `${String(radius)}px` ||
+          storage.values.get(preferenceKey) !== JSON.stringify(shared) ||
+          storage.setCalls !== 0
+        )
+          failures.push('Remote radius application must preserve zero and never re-persist.')
+      }
+      for (const preset of uiDensityValues) {
+        const shared = {
+          ...defaults,
+          appearance: {
+            ...defaults.appearance,
+            radius: 0,
+            fontScale: 1.1,
+            density: { preset, scale: 1.1 },
+          },
+        }
+        storage.values.set(preferenceKey, JSON.stringify(shared))
+        if (
+          store.synchronizeAppearance(environment).status !== 'committed' ||
+          attributes.get('data-density') !== preset ||
+          store.preference?.appearance.density.scale !== 1.1 ||
+          store.preference.appearance.radius !== 0 ||
+          properties.get('--ui-font-scale')?.value !== '1.1' ||
+          [...properties.keys()].some((name) => name.includes('button-inline')) ||
+          storage.values.get(preferenceKey) !== JSON.stringify(shared) ||
+          storage.setCalls !== 0
+        )
+          failures.push(
+            'Each shared density preset must select generated CSS without inline spacing, scale application or preference writes.',
+          )
+      }
+      const validRadiusState = JSON.stringify(store.$state)
+      const validRadiusDom = JSON.stringify([...properties])
+      for (const radius of [undefined, -1, 17, 0.5, '0']) {
+        storage.values.set(
+          preferenceKey,
+          JSON.stringify({ ...defaults, appearance: { ...defaults.appearance, radius } }),
+        )
+        if (
+          store.synchronizeAppearance(environment).status !== 'rejected' ||
+          JSON.stringify(store.$state) !== validRadiusState ||
+          JSON.stringify([...properties]) !== validRadiusDom ||
+          storage.setCalls !== 0
+        )
+          failures.push('Invalid current shared radius must retain the last valid state and DOM.')
+      }
+      const unsupportedRecord = JSON.stringify({
+        schemaVersion: 3,
+        appearance: defaults.appearance,
+      })
+      const beforeUnsupported = JSON.stringify(store.$state)
+      storage.values.set(preferenceKey, unsupportedRecord)
+      if (
+        store.synchronizeAppearance(environment).status !== 'rejected' ||
+        JSON.stringify(store.$state) !== beforeUnsupported ||
+        storage.values.get(preferenceKey) !== unsupportedRecord ||
+        storage.setCalls !== 0
+      )
+        failures.push(
+          'Unsupported shared records must preserve the last valid presentation and saved bytes.',
+        )
+      const themeId = 'shared-preference-probe'
+      const preference = {
+        ...defaults,
+        appearance: {
+          ...defaults.appearance,
+          radius: 0,
+          theme: { registryKind: 'custom', themeId },
+        },
+      }
+      storage.values.set(preferenceKey, JSON.stringify(preference))
+      const saveFixture = (index: number) => {
+        const definition = { ...resolvedCustomThemeProbeDefinition(index), id: themeId }
+        storage.values.set(
+          registryKey,
+          JSON.stringify({
+            schemaVersion: 1,
+            entries: [{ registryKind: 'custom', themeId, definition }],
+          }),
+        )
+        return definition
+      }
+      saveFixture(0)
+      if (store.synchronizeAppearance(environment).status !== 'committed')
+        failures.push('A valid shared custom theme must resolve and apply.')
+      const before = JSON.stringify([...properties])
+      const replacement = saveFixture(1)
+      if (
+        store.synchronizeAppearance(environment).status !== 'committed' ||
+        store.customThemeRegistry?.[0]?.definition.label !== replacement.label ||
+        store.preference?.appearance.radius !== 0 ||
+        JSON.stringify([...properties]) === before
+      )
+        failures.push('Same-ID saved theme changes must replace the actual Theme Bank.')
+      const valid = JSON.stringify([...properties])
+      storage.values.set(preferenceKey, JSON.stringify(defaults))
+      const visibleThemeId = store.customThemeRegistry?.[0]?.themeId
+      if (
+        visibleThemeId === undefined ||
+        store.deleteCustomTheme(visibleThemeId).status !== 'rejected' ||
+        storage.setCalls !== 0
+      )
+        failures.push(
+          'A pending remote selection must not allow deletion of the still-visible local theme.',
+        )
+      storage.values.set(preferenceKey, JSON.stringify(preference))
+      storage.values.set(registryKey, '{invalid')
+      if (
+        store.synchronizeAppearance(environment).status !== 'rejected' ||
+        JSON.stringify([...properties]) !== valid
+      )
+        failures.push('Invalid shared theme data must preserve the last valid presentation.')
+      storage.values.delete(registryKey)
+      if (store.synchronizeAppearance(environment).status !== 'rejected')
+        failures.push('A dangling custom reference must not replace valid Appearance state.')
+      storage.values.delete(preferenceKey)
+      if (store.synchronizeAppearance(environment).status !== 'committed' || storage.setCalls !== 0)
+        failures.push('Shared missing/reset and remote application must not persist defaults.')
+      // Deletion finishes before selection starts: this is not a cross-key transaction race.
+      storage.values.set(preferenceKey, JSON.stringify(defaults))
+      saveFixture(0)
+      store.synchronizeAppearance(environment)
+      const peerProvider = createPiniaProvider(createStartupAttemptId())
+      try {
+        const peer = useAppearanceStore(peerProvider.pinia)
+        peer.synchronizeAppearance(environment)
+        const deletedId = peer.customThemeRegistry?.[0]?.themeId
+        if (deletedId === undefined || peer.deleteCustomTheme(deletedId).status !== 'committed')
+          failures.push(
+            'The peer must finish deleting the unreferenced saved theme before selection.',
+          )
+        const writesAfterDeletion = storage.setCalls
+        if (
+          store.changeAppearancePreference(preference, environment).status !== 'rejected' ||
+          storage.setCalls !== writesAfterDeletion
+        )
+          failures.push(
+            'A stale local registry must not authorize selecting a theme already deleted by a peer.',
+          )
+        peer.$reset()
+        if (peer.restoreAppearance(environment).status !== 'committed')
+          failures.push(
+            'Refused stale selection must leave persisted preferences restorable by a fresh store.',
+          )
+        const stateBeforeUnavailableRead = JSON.stringify(store.$state)
+        const read = storage.storage.getItem.bind(storage.storage)
+        storage.storage.getItem = (key) => {
+          if (key === registryKey) throw new Error('Isolated registry read failure.')
+          return read(key)
+        }
+        try {
+          if (
+            store.changeAppearancePreference(preference, environment).status !== 'rejected' ||
+            JSON.stringify(store.$state) !== stateBeforeUnavailableRead ||
+            storage.setCalls !== writesAfterDeletion
+          )
+            failures.push(
+              'A failed persisted-registry read must reject local selection without changing valid state or preferences.',
+            )
+        } finally {
+          storage.storage.getItem = read
+        }
+      } finally {
+        peerProvider.dispose()
+      }
+      const zeroRadius = {
+        ...defaults,
+        appearance: {
+          ...defaults.appearance,
+          radius: 0,
+          fontScale: 1.1,
+          motion: 'reduced',
+          density: { preset: 'compact', scale: 1.1 },
+        },
+      }
+      if (store.changeAppearancePreference(zeroRadius, environment).status !== 'committed')
+        failures.push('An explicit zero-radius save must remain a valid local preference.')
+      const otherTheme = {
+        ...zeroRadius,
+        appearance: {
+          ...zeroRadius.appearance,
+          theme: { registryKind: 'built-in', themeId: 'emerald-grove' },
+        },
+      }
+      if (
+        store.changeAppearancePreference(otherTheme, environment).status !== 'committed' ||
+        store.preference?.appearance.radius !== 0
+      )
+        failures.push('Theme changes must not reset a saved zero radius.')
+      const radiusReset = {
+        ...otherTheme,
+        appearance: { ...otherTheme.appearance, radius: ProductPreferenceDefault.radius },
+      }
+      if (
+        store.changeAppearancePreference(radiusReset, environment).status !== 'committed' ||
+        !isDeepStrictEqual(store.preference, radiusReset)
+      )
+        failures.push('A radius-only reset must preserve every unrelated preference axis.')
+      storage.values.set(preferenceKey, JSON.stringify(zeroRadius))
+      storage.values.delete(registryKey)
+      store.synchronizeAppearance(environment)
+      const previousMode = store.preference?.appearance.colorMode
+      properties.set('--ui-radius-control', { value: '0px', priority: 'important' })
+      properties.delete('--ui-radius-small')
+      const beforeFailure = new Map(properties)
+      const remote = {
+        ...defaults,
+        appearance: {
+          ...defaults.appearance,
+          radius: 16,
+          colorMode: 'dark',
+          density: { preset: 'spacious', scale: 1.1 },
+        },
+      }
+      storage.storage.setItem = () => {
+        storage.values.set(preferenceKey, JSON.stringify(remote))
+        throw new Error('Isolated storage-port failure after a competing write.')
+      }
+      const result = store.changeAppearancePreference(
+        { ...defaults, appearance: { ...defaults.appearance, colorMode: 'light' } },
+        environment,
+      )
+      if (
+        result.status !== 'rejected' ||
+        store.preference?.appearance.colorMode !== previousMode ||
+        store.preference?.appearance.radius !== 0 ||
+        attributes.get('data-density') !== 'compact' ||
+        store.preference.appearance.density.scale !== 1.1 ||
+        !isDeepStrictEqual(properties, beforeFailure) ||
+        storage.values.get(preferenceKey) !== JSON.stringify(remote)
+      )
+        failures.push(
+          'Failed local persistence must restore local state without compensating over a newer saved value.',
+        )
+      if (
+        store.synchronizeAppearance(environment).status !== 'committed' ||
+        store.preference?.appearance.colorMode !== 'dark' ||
+        store.preference.appearance.radius !== 16 ||
+        attributes.get('data-density') !== 'spacious' ||
+        store.preference.appearance.density.scale !== 1.1 ||
+        properties.get('--ui-radius-control')?.value !== '16px'
+      )
+        failures.push(
+          'Appearance must converge on the latest valid persisted record after a local failure.',
+        )
+      return failures
+    } finally {
+      provider.dispose()
+      if (descriptor === undefined) Reflect.deleteProperty(globalThis, 'document')
+      else Object.defineProperty(globalThis, 'document', descriptor)
+    }
+  })
+}
+
 function validateRuntimeContracts(): readonly string[] {
   const violations: string[] = []
   const expectedProductDefault = {
     colorMode: 'system',
-    theme: { registryKind: 'built-in', themeId: 'iris' },
+    theme: { registryKind: 'built-in', themeId: 'royal-iris' },
     contrast: 'standard',
     material: 'adaptive',
     density: { preset: 'comfortable', scale: 1 },
     fontScale: 1,
     motion: 'full',
+    radius: 8,
   }
 
   if (!isDeepStrictEqual(ProductPreferenceDefault, expectedProductDefault)) {
-    violations.push('ProductPreferenceDefault drifted from the frozen seven-axis authority.')
+    violations.push('ProductPreferenceDefault drifted from the current eight-axis authority.')
   }
 
   const defaultPreference = explicitThemePreferenceSchema.safeParse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     appearance: ProductPreferenceDefault,
   })
 
@@ -2032,111 +2603,6 @@ function validateRuntimeContracts(): readonly string[] {
     customReferencePreference.data.appearance.theme.themeId !== opaqueCustomId
   ) {
     violations.push('Custom Theme IDs must remain opaque and byte-for-byte unchanged.')
-  }
-
-  const explicitMigration = migrateToExplicitThemePreference(defaultPreference.data)
-
-  if (
-    explicitMigration.status !== 'success' ||
-    !isDeepStrictEqual(explicitMigration.preference, defaultPreference.data)
-  ) {
-    violations.push('Valid Explicit Theme Preference migration must be an identity operation.')
-  }
-
-  const tuple = generatedThemeRegistry.legacyBuiltInThemeTuples[0]
-
-  const legacyPreference = {
-    schemaVersion: 2,
-    appearance: {
-      colorMode: 'system',
-      theme: tuple.themeId,
-      palette: {
-        brand: tuple.brand,
-        accent: tuple.accent,
-        neutral: tuple.neutral,
-      },
-      contrast: 'standard',
-      material: 'adaptive',
-      density: { preset: 'comfortable', scale: 1 },
-      fontScale: 1,
-      motion: 'full',
-    },
-  } as const
-  const legacyMigration = migrateToExplicitThemePreference(legacyPreference)
-  const lossyMigration = migrateToExplicitThemePreference({
-    ...legacyPreference,
-    appearance: {
-      ...legacyPreference.appearance,
-      palette: {
-        ...legacyPreference.appearance.palette,
-        brand: '#123456',
-      },
-    },
-  })
-
-  if (
-    legacyMigration.status !== 'success' ||
-    legacyMigration.preference.appearance.theme.themeId !== 'iris'
-  ) {
-    violations.push('Verified Legacy Preference migration to Iris is not deterministic.')
-  }
-
-  const retiredBuiltInMigration = migrateToExplicitThemePreference({
-    ...defaultPreference.data,
-    appearance: {
-      ...defaultPreference.data.appearance,
-      theme: { registryKind: 'built-in', themeId: 'neutral' },
-    },
-  })
-  const formerCatalogMigration = migrateToExplicitThemePreference({
-    ...defaultPreference.data,
-    appearance: {
-      ...defaultPreference.data.appearance,
-      theme: { registryKind: 'custom', themeId: 'jade' },
-    },
-  })
-
-  if (
-    retiredBuiltInMigration.status !== 'success' ||
-    retiredBuiltInMigration.preference.appearance.theme.registryKind !== 'built-in' ||
-    retiredBuiltInMigration.preference.appearance.theme.themeId !== 'iris'
-  ) {
-    violations.push('Retired Schema 3 Built-in references must migrate deterministically to Iris.')
-  }
-
-  if (
-    formerCatalogMigration.status !== 'success' ||
-    formerCatalogMigration.preference.appearance.theme.registryKind !== 'built-in' ||
-    formerCatalogMigration.preference.appearance.theme.themeId !== 'jade'
-  ) {
-    violations.push('Former Catalog Custom references must promote to the same Built-in ID.')
-  }
-
-  if (
-    lossyMigration.status !== 'failure' ||
-    lossyMigration.code !== 'MIGRATION_REQUIRES_THEME_COMPLETION'
-  ) {
-    violations.push('Lossy Legacy Preference migration must require Theme completion.')
-  }
-
-  for (const invalidInput of [
-    { schemaVersion: 3 },
-    {
-      ...legacyPreference,
-      appearance: {
-        ...legacyPreference.appearance,
-        palette: {
-          ...legacyPreference.appearance.palette,
-          brand: 'var(--invalid-legacy-color)',
-        },
-      },
-    },
-  ]) {
-    const migration = migrateToExplicitThemePreference(invalidInput)
-
-    if (migration.status !== 'failure' || migration.code !== 'PREFERENCE_INPUT_INVALID') {
-      violations.push('Arbitrary parsed invalid input must map to PREFERENCE_INPUT_INVALID.')
-    }
   }
 
   const customDefinition = {
@@ -2212,10 +2678,12 @@ function validateRuntimeContracts(): readonly string[] {
       [...generatedThemeRegistry.customBankVariables].sort(compareCodePoints),
     )
   ) {
-    violations.push('Custom Theme Bank installation escaped its fixed 104-variable allowlist.')
+    violations.push('Custom Theme Bank installation escaped its fixed 120-variable allowlist.')
   }
 
   const firstBankVariable = generatedThemeRegistry.customBankVariables[0]
+  if (firstBankVariable === undefined)
+    return [...violations, 'Custom Bank allowlist must be non-empty.']
   const rollbackProperties = new Map<string, { priority: string; value: string }>([
     [firstBankVariable, { priority: 'important', value: 'rgb(1 2 3)' }],
   ])
@@ -2280,21 +2748,78 @@ function validateRuntimeContracts(): readonly string[] {
 
   applyAppearance(target, {
     colorMode: 'light',
-    theme: { registryKind: 'built-in', themeId: 'iris' },
+    theme: { registryKind: 'built-in', themeId: 'royal-iris' },
     contrast: 'standard',
     material: 'solid',
     density: 'comfortable',
     fontScale: 1,
     motion: 'full',
+    radius: ProductPreferenceDefault.radius,
   })
 
   if (
-    properties.size !== 1 ||
+    properties.size !== 4 ||
     properties.get('--ui-font-scale')?.value !== '1' ||
     attributes.get('data-theme-kind') !== 'built-in'
   ) {
     violations.push('Built-in Appearance application did not clear the Custom Theme Bank.')
   }
+
+  const radiusState = {
+    colorMode: 'light',
+    theme: { registryKind: 'built-in', themeId: 'royal-iris' },
+    contrast: 'standard',
+    material: 'solid',
+    density: 'comfortable',
+    fontScale: 1,
+    motion: 'full',
+    radius: 8,
+  } as const
+  for (const [radius, control, panel, small] of [
+    [0, '0px', '0px', '0px'],
+    [1, '1px', '1.5px', '0.5px'],
+    [8, '8px', '12px', '4px'],
+    [16, '16px', '16px', '4px'],
+  ] as const) {
+    applyAppearance(target, { ...radiusState, radius })
+    if (
+      properties.get('--ui-radius-control')?.value !== control ||
+      properties.get('--ui-radius-panel')?.value !== panel ||
+      properties.get('--ui-radius-small')?.value !== small
+    )
+      violations.push(
+        'The public Appearance writer must project zero, fractional derived radii and caps.',
+      )
+  }
+  for (const radius of [-1, 17, 0.5, NaN, Infinity, -Infinity]) {
+    const previousProperties = new Map(properties)
+    const previousAttributes = new Map(attributes)
+    let rejected = false
+    try {
+      applyAppearance(target, { ...radiusState, radius })
+    } catch {
+      rejected = true
+    }
+    if (
+      !rejected ||
+      !isDeepStrictEqual(properties, previousProperties) ||
+      !isDeepStrictEqual(attributes, previousAttributes)
+    )
+      violations.push(
+        'Invalid radius at the public writer must fail before any DOM or Theme Bank mutation.',
+      )
+  }
+  properties.set('--ui-radius-control', { value: '0px', priority: 'important' })
+  properties.set('--ui-radius-panel', { value: '1.5px', priority: '' })
+  properties.delete('--ui-radius-small')
+  const capturedProperties = new Map(properties)
+  const restoreRadius = captureRadius(target)
+  applyAppearance(target, radiusState)
+  restoreRadius()
+  if (!isDeepStrictEqual(properties, capturedProperties))
+    violations.push(
+      'Opaque radius restoration must preserve raw zero, priority and absence exactly.',
+    )
 
   for (const theme of [
     defaultPreference.data.appearance.theme,
@@ -2304,7 +2829,7 @@ function validateRuntimeContracts(): readonly string[] {
       for (const fontScale of fontScaleValues) {
         for (const scale of [0.9, 1, 1.1]) {
           const preference = explicitThemePreferenceSchema.parse({
-            schemaVersion: 3,
+            schemaVersion: 4,
             appearance: {
               ...ProductPreferenceDefault,
               theme,
@@ -2320,15 +2845,18 @@ function validateRuntimeContracts(): readonly string[] {
             material: 'solid',
             density: preset,
           })
-          const migrated = migrateToExplicitThemePreference(preference)
+          const validatedPreference = explicitThemePreferenceSchema.safeParse(preference)
           if (
             attributes.get('data-density') !== preset ||
             properties.get('--ui-font-scale')?.value !== String(fontScale) ||
             [...properties.keys()].some(
-              (name) => name.includes('control-height') || name.includes('density'),
+              (name) =>
+                name.includes('control-height') ||
+                name.includes('density') ||
+                name.includes('button-inline'),
             ) ||
-            migrated.status !== 'success' ||
-            !isDeepStrictEqual(migrated.preference, preference) ||
+            !validatedPreference.success ||
+            !isDeepStrictEqual(validatedPreference.data, preference) ||
             JSON.stringify(preference) !== before
           )
             violations.push(
@@ -2440,7 +2968,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       const declarations = selectorDeclarations(css, selector)
 
       if (
-        declarations?.size !== 104 ||
+        declarations?.size !== 120 ||
         entry.bank.records.some(
           (record) =>
             declarations.get(record.bankVariable) !== formatThemeBankCssValue(record.resolvedValue),
@@ -2478,7 +3006,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     !initializer.includes('new Color(value)')
   ) {
     violations.push(
-      'appearance-init.js: legacy Preference colors must use the declared Color.js classifier.',
+      'appearance-init.js: current Custom colors must use the declared Color.js classifier.',
     )
   }
 
@@ -2513,14 +3041,14 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 11 || recordCount !== 412) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 11/412.')
+  if (manifest['schemaVersion'] !== 12 || recordCount !== 438) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 12/438.')
   }
 
   const themes = manifest['themes']
 
   if (!Array.isArray(themes) || themes.length !== builtInThemeIds.length) {
-    violations.push('tokens.manifest.json: exactly fourteen active Built-in Themes are required.')
+    violations.push('tokens.manifest.json: exactly five active Built-in Themes are required.')
   } else {
     for (const [index, value] of themes.entries()) {
       const expectedEntry = generatedThemeRegistry.builtInEntries[index]
@@ -2537,6 +3065,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
           'schemaVersion',
           'roleContractVersion',
           'planes',
+          'uiPalette',
           'bank',
         ]) ||
         value['activationStatus'] !== 'ACTIVE' ||
@@ -2547,6 +3076,10 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
         continue
       }
 
+      if (!isDeepStrictEqual(value['uiPalette'], expectedEntry.uiPalette))
+        violations.push(
+          `tokens.manifest.json: ${expectedEntry.themeId} approved palette projection drifted.`,
+        )
       const bank = value['bank']
 
       if (
@@ -2589,7 +3122,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
           publicBinding,
         }),
       )
-      if (records.length !== 104 || !isDeepStrictEqual(records, expectedRecords)) {
+      if (records.length !== 120 || !isDeepStrictEqual(records, expectedRecords)) {
         violations.push(
           `tokens.manifest.json: ${expectedEntry.themeId} logical Bank records lost information or order.`,
         )
@@ -2603,7 +3136,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       applicationKeyAgnostic: true,
       safetyBaseline: {
         effectiveColorMode: 'light',
-        effectiveTheme: { registryKind: 'built-in', themeId: 'iris' },
+        effectiveTheme: { registryKind: 'built-in', themeId: 'royal-iris' },
         effectiveContrast: 'standard',
         effectiveMaterial: 'solid',
         effectiveDensity: 'comfortable',
@@ -2615,7 +3148,6 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
         preferenceStorageKeyAttribute: true,
         preferenceStorageRead: true,
         explicitThemePreferenceValidation: true,
-        legacyPreferenceMigration: true,
         builtInThemeResolution: true,
         atomicAppearanceApplication: true,
         synchronousCustomThemeResolution: true,
@@ -2638,12 +3170,13 @@ export async function validateAppearanceCutover(): Promise<readonly string[]> {
     validateStableGeneratedOutputs,
     validatePublicRoot,
     validateColorRuntimeEntryOwnership,
-    validateFourteenBuiltInThemes,
+    validateFiveBuiltInThemes,
     validateApplicationOrchestration,
     validatePackageFiveStaticAuthorities,
     validateParserCorpus,
     validatePersistenceContracts,
     validateRuntimeContracts,
+    validateSharedAppearanceSynchronization,
     validateGeneratedThemeBankAndManifest,
   ]
 

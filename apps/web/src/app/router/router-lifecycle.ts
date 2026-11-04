@@ -16,7 +16,6 @@ import {
   createWebHistory,
   isNavigationFailure,
   NavigationFailureType,
-  START_LOCATION,
   type RouteLocationNormalized,
   type RouteLocationResolved,
   type NavigationFailure,
@@ -52,6 +51,7 @@ import {
   scrollOwnerRegistry,
   routeLayoutCapabilityRegistry,
   type RouteName,
+  type RouteRegistryRecord,
 } from './route-registry'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
 import {
@@ -909,7 +909,8 @@ export async function createAndReadyRouter(input: {
         resetStarted = true
         const replacementSnapshot = { ...snapshot, workspace: replacement }
         if (hasComponentFailure(entry)) return false
-        if (getRouteRecord(entry.navigation.routeName).contentReadiness === 'workspace-content') {
+        const refreshedRoute: RouteRegistryRecord = getRouteRecord(entry.navigation.routeName)
+        if (refreshedRoute.contentReadiness === 'workspace-content') {
           const ready = await new Promise<boolean>((resolve, reject) => {
             let settled = false
             let stop: () => void = () => undefined
@@ -1062,7 +1063,7 @@ export async function createAndReadyRouter(input: {
       return undefined
     const content =
       workspaceEntry === undefined ? undefined : workspaceContents.get(workspaceEntry.instance)?.()
-    const route = getRouteRecord(navigation.routeName)
+    const route: RouteRegistryRecord = getRouteRecord(navigation.routeName)
     if (
       route.scrollRestoration === 'none' ||
       (route.scrollRestoration === 'workspace-content' && policy === 'history') ||
@@ -1359,8 +1360,6 @@ export async function createAndReadyRouter(input: {
           }
           document.title = getRoutePresentation(navigation.routeName, localization?.t).title
           const locked = owner?.closest('[inert]') !== null && owner !== undefined
-          if (from !== START_LOCATION && !samePage && !locked)
-            heading.focus({ preventScroll: true })
           if (!entryIsCurrent(entry)) {
             cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
             return false

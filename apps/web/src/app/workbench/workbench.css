@@ -1,0 +1,284 @@
+@layer components {
+  .wb-page,
+  .wb-settings-content,
+  .wb-settings-section-body {
+    gap: var(--ui-space-section-block);
+  }
+  .wb-mode-scene-sidebar > span {
+    block-size: var(--ui-border-width);
+    background: var(--pavp-mode-preview-border);
+  }
+  .wb-mode-scene-tiles > span {
+    block-size: var(--ui-control-height);
+    background: var(--pavp-mode-preview-action);
+    border-radius: var(--ui-radius-control);
+  }
+  .wb-border-sample,
+  .wb-radius-sample,
+  .wb-shadow-sample,
+  .wb-layer-sample {
+    inline-size: 50%;
+    block-size: 50%;
+  }
+  .wb-layer-sample > span {
+    inline-size: 75%;
+    block-size: 75%;
+  }
+  .wb-api {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--ui-workbench-api-content-block-size)), 1fr)
+    );
+  }
+  .wb-clock-plane {
+    grid-template-rows: auto 1fr auto;
+    min-block-size: var(--ui-workbench-api-content-block-size);
+  }
+  .wb-clock {
+    font-size: var(--ui-workbench-display-font-size);
+  }
+  .wb-payload {
+    block-size: var(--ui-workbench-api-payload-block-size);
+  }
+  .wb-feedback {
+    block-size: var(--ui-workbench-feedback-minimum-block-size);
+    overflow: auto;
+  }
+  .wb-capability-content {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+  }
+  .wb-capability-links {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--ui-workbench-specimen-minimum-inline-size)), 1fr)
+    );
+  }
+  .wb-specimen-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--ui-workbench-specimen-minimum-inline-size)), 1fr)
+    );
+  }
+  .wb-specimen {
+    grid-template-rows: var(--ui-workbench-specimen-preview-block-size) 1fr auto;
+  }
+  .wb-specimen-copy {
+    block-size: var(--ui-workbench-feedback-minimum-block-size);
+    overflow: auto;
+  }
+  .wb-color-sample {
+    background: var(--pavp-specimen-value);
+  }
+  .wb-foreground-sample {
+    color: var(--pavp-specimen-value);
+    background: var(--pavp-specimen-background);
+  }
+  [data-kind='border'] .wb-border-sample {
+    border: var(--ui-border-width) solid var(--pavp-specimen-value);
+  }
+  [data-kind='focus'] .wb-border-sample {
+    outline: var(--ui-border-width) solid var(--pavp-specimen-value);
+  }
+  .wb-radius-sample {
+    border-radius: var(--pavp-specimen-value);
+  }
+  .wb-shadow-sample {
+    box-shadow: var(--pavp-specimen-value);
+  }
+  [data-kind='inline-size'] .wb-size-sample > span {
+    inline-size: min(100%, var(--pavp-specimen-value));
+    block-size: var(--ui-space-content-gap);
+  }
+  [data-kind='block-size'] .wb-size-sample > span {
+    block-size: min(100%, var(--pavp-specimen-value));
+    inline-size: var(--ui-space-content-gap);
+  }
+  [data-kind='family'] .wb-type-sample {
+    font-family: var(--pavp-specimen-value);
+  }
+  [data-kind='size'] .wb-type-sample {
+    font-size: var(--pavp-specimen-value);
+  }
+  [data-kind='weight'] .wb-type-sample {
+    font-weight: var(--pavp-specimen-value);
+  }
+  [data-kind='line-height'] .wb-type-sample {
+    line-height: var(--pavp-specimen-value);
+  }
+  .wb-layer-sample > span:last-child {
+    inset-inline-end: 0;
+    inset-block-end: 0;
+    z-index: var(--pavp-specimen-value);
+  }
+  .wb-motion-dot {
+    transition: none;
+  }
+  .wb-specimen:hover .wb-motion-dot {
+    transform: translateX(var(--ui-workbench-motion-travel));
+  }
+  .wb-interaction-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--ui-workbench-specimen-minimum-inline-size)), 1fr)
+    );
+  }
+  .wb-motion-stage {
+    min-block-size: var(--ui-workbench-specimen-preview-block-size);
+  }
+  .wb-motion-stage[data-replayed='true'] .wb-motion-object {
+    transform: translateX(var(--ui-workbench-motion-travel));
+  }
+  .wb-scroll-example {
+    block-size: var(--ui-workbench-specimen-preview-block-size);
+  }
+  .wb-settings {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) calc(
+        var(--ui-layout-target-enhanced-minimum-inline-size) + var(--ui-space-page-inline) * 2
+      );
+  }
+  .wb-settings-save {
+    block-size: var(--ui-workbench-feedback-minimum-block-size);
+    overflow: auto;
+  }
+  .wb-settings-tail {
+    block-size: 100vh;
+  }
+  @supports (height: 100dvh) {
+    .wb-settings-tail {
+      block-size: 100dvh;
+    }
+  }
+  .wb-settings-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wb-settings-navigation {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+  .wb-section-nav {
+    justify-content: safe center;
+    margin-inline: calc(-1 * var(--ui-space-content-gap));
+    padding: var(--ui-space-content-gap);
+    overscroll-behavior: contain;
+  }
+  .wb-section-link.n-button {
+    flex: none;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+  }
+  .wb-settings-dock.n-button {
+    justify-content: start !important;
+  }
+  .wb-settings-dock.n-button[data-collapsed='true'] {
+    justify-content: center !important;
+  }
+  .wb-mode-preview {
+    block-size: var(--ui-workbench-specimen-preview-block-size);
+  }
+  .wb-mode-scene {
+    background: var(--pavp-mode-preview-page);
+    padding: var(--ui-space-content-gap);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
+    grid-template-rows: auto 1fr;
+  }
+  .wb-mode-scene-toolbar {
+    grid-column: 1 / -1;
+    block-size: var(--ui-space-content-gap);
+    background: var(--pavp-mode-preview-panel);
+  }
+  .wb-mode-scene-sidebar {
+    background: var(--pavp-mode-preview-panel);
+  }
+  .wb-mode-scene-title {
+    inline-size: 50%;
+    block-size: var(--ui-space-content-gap);
+    background: var(--pavp-mode-preview-control);
+  }
+  .wb-mode-scene-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .wb-theme-options {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .wb-theme-option.n-button {
+    block-size: auto;
+    min-inline-size: 0;
+  }
+  .wb-theme-option .n-button__content {
+    display: flex;
+    flex-direction: row;
+    justify-content: start;
+    block-size: 100%;
+    gap: var(--ui-space-content-gap);
+    inline-size: 100%;
+  }
+  .wb-theme-name {
+    white-space: normal;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .wb-theme-swatch {
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--pavp-settings-theme-color);
+    color: var(--pavp-settings-theme-on-color);
+  }
+  [data-layout-profile='regular'] .wb-settings-field,
+  [data-layout-profile='wide'] .wb-settings-field {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+  [data-layout-profile='regular'] .wb-theme-options,
+  [data-layout-profile='wide'] .wb-theme-options {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+  [data-layout-profile='regular'] .wb-theme-option .n-button__content,
+  [data-layout-profile='wide'] .wb-theme-option .n-button__content {
+    flex-direction: column;
+  }
+  [data-layout-profile='regular'] .wb-settings,
+  [data-layout-profile='wide'] .wb-settings {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+  [data-layout-profile='regular'] .wb-settings-navigation,
+  [data-layout-profile='wide'] .wb-settings-navigation {
+    min-inline-size: var(--ui-workbench-settings-navigator-inline-size);
+  }
+  .wb-settings-field.wb-settings-choice-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-layout-profile='wide'] .wb-settings-section-body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+  [data-layout-profile='regular'] .wb-section-link.n-button,
+  [data-layout-profile='wide'] .wb-section-link.n-button {
+    justify-content: start !important;
+  }
+  .wb-specimen:focus-visible,
+  .wb-link:focus-visible,
+  .wb-done:focus-visible,
+  .wb-section-link:focus-visible {
+    outline: var(--ui-admin-border-focus);
+    outline-offset: var(--ui-admin-focus-outline-offset);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html[data-motion='full'] .wb-motion-object,
+    html[data-motion='full'] .wb-motion-dot {
+      transition: transform var(--ui-motion-duration) var(--ui-motion-easing);
+    }
+    html[data-motion='full'] .wb-specimen[data-kind='motion']:hover .wb-motion-dot {
+      transition-duration: var(--ui-motion-duration);
+    }
+  }
+  @media (forced-colors: active) {
+    .wb-specimen,
+    .wb-theme-option,
+    .wb-section-nav,
+    .wb-done {
+      border-color: CanvasText;
+    }
+    .wb-clock-plane {
+      outline: var(--ui-border-width) solid CanvasText;
+    }
+  }
+}

@@ -4,10 +4,13 @@ import { AnimatePresence, m } from 'motion-v'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import {
   createMotionFeatureRuntime,
+  createMotionInterruptionOwner,
   LayoutGroup,
   LazyMotion,
   MotionConfig,
 } from './motion-feature-runtime'
+
+import { projectMotionPolicy } from './motion-policy'
 
 import type { UiWorkspaceTab } from '../../components/contracts'
 import { NDropdown, type DropdownOption } from 'naive-ui/es/dropdown'
@@ -73,11 +76,9 @@ function closeContextMenu(): void {
   // Keep the anchor stable while the dropdown finishes its leave transition.
   if (contextMenu.value.id !== null) contextMenu.value = { ...contextMenu.value, id: null }
 }
-async function openContextMenu(id: string, x: number, y: number): Promise<void> {
+function openContextMenu(id: string, x: number, y: number): void {
   if (!props.items.some((item) => item.id === id)) return
   contextMenu.value = { id, x, y }
-  await nextTick()
-  if (contextItem.value?.id === id) document.getElementById(menuId)?.focus({ preventScroll: true })
 }
 function updateContextMenu(show: boolean): void {
   if (!show) dismissContextMenu()
@@ -102,28 +103,10 @@ function dismissContextMenu(event?: MouseEvent): void {
       )
   )
     return
-  const focused = document.activeElement
-  // Native pointer focus may complete after clickoutside (notably labels and touch).
-  const targetsControl = event
-    ?.composedPath()
-    .some(
-      (target) =>
-        target instanceof Element &&
-        target.matches(
-          'a[href], button, input, select, textarea, label, summary, [tabindex], [contenteditable]',
-        ),
-    )
-  if (
-    item !== undefined &&
-    targetsControl !== true &&
-    (focused === document.body || document.getElementById(menuId)?.contains(focused) === true)
-  )
-    focusTab(document.getElementById(`${item.id}-tab`) ?? undefined)
   closeContextMenu()
 }
 function selectContextAction(key: string | number): void {
   const item = contextItem.value
-  if (item !== undefined) focusTab(document.getElementById(`${item.id}-tab`) ?? undefined)
   closeContextMenu()
   if (item === undefined) return
   if (key === 'refresh' && item.refreshable) emit('refresh', item.id)
@@ -139,44 +122,27 @@ watch(
 watch(() => props.activeId, closeContextMenu, { flush: 'sync' })
 onBeforeUnmount(closeContextMenu)
 const { dispose, features, featureReady, startAfterStableMount } = createMotionFeatureRuntime()
-const full = computed(() => featureReady.value && props.motion === 'full')
-const transition = computed(() => ({
-  duration: !featureReady.value || props.motion === 'none' ? 0 : full.value ? 0.16 : 0.08,
-  ...(full.value ? { layout: { type: 'spring' as const, visualDuration: 0.26, bounce: 0 } } : {}),
-}))
-const resting = Object.freeze({ opacity: 1, scale: 1 })
-const leaving = computed(() => ({
-  opacity: props.motion === 'none' ? 1 : 0,
-  scale: full.value ? 0.98 : 1,
-}))
-const entering = computed(() => ({ ...leaving.value, y: full.value ? 3 : 0 }))
-const closeMarkVariants = computed(() => ({
-  rest: { opacity: 0.68, scale: 1 },
-  hover: { opacity: 1, scale: full.value ? 1.12 : 1 },
-  focus: resting,
-  press: { opacity: 0.86, scale: full.value ? 0.985 : 1 },
-}))
-const edgeSurfaceVariants = Object.freeze({
-  rest: { opacity: 0 },
-  hover: { opacity: 0.6 },
-  focus: { opacity: 0.6 },
-  press: { opacity: 1 },
-  disabled: { opacity: 0, transition: { duration: 0 } },
-})
-const edgeGestures = Object.freeze({
-  whileHover: 'hover',
-  whileFocus: 'focus',
-  whilePress: 'press',
-})
-// Only the mark scales; the button keeps its full minimum interactive target.
-const edgeMarkVariants = computed(() => ({
-  rest: resting,
-  hover: { opacity: 1, scale: full.value ? 1.04 : 1 },
-  focus: resting,
-  press: { opacity: 0.86, scale: full.value ? 0.96 : 1 },
-  disabled: { ...resting, transition: { duration: 0 } },
-}))
+const policy = computed(() => projectMotionPolicy(props.motion, featureReady.value))
+const full = computed(() => policy.value.movement)
+const transition = computed(() => policy.value.workspace.transition)
+const resting = projectMotionPolicy('none').workspace.resting
+const leaving = computed(() => policy.value.workspace.leaving)
+const entering = computed(() => policy.value.workspace.entering)
+const closeMarkVariants = computed(() => policy.value.workspace.closeMarkVariants)
+const edgeSurfaceVariants = projectMotionPolicy('none').workspace.edgeSurfaceVariants
+const edgeGestures = projectMotionPolicy('none').workspace.edgeGestures
+const edgeMarkVariants = computed(() => policy.value.workspace.edgeMarkVariants)
+const interruption = createMotionInterruptionOwner(() => policy.value)
+watch(
+  () => props.motion,
+  () => {
+    interruption.settle(policy.value)
+  },
+  { flush: 'sync' },
+)
+
 function setStrip(value: unknown): void {
+  interruption.bind('strip', value)
   strip.value =
     value !== null &&
     typeof value === 'object' &&
@@ -194,8 +160,10 @@ function revealEnteringTab(element: Element): void {
 onMounted(() => {
   void startAfterStableMount()
 })
-onBeforeUnmount(dispose)
-const focusedId = ref<string | null>(null)
+onBeforeUnmount(() => {
+  interruption.dispose(projectMotionPolicy('none'))
+  dispose()
+})
 
 function revealTab(button: HTMLElement): void {
   const owner = viewport.value
@@ -213,76 +181,14 @@ function revealTab(button: HTMLElement): void {
   if (offset !== 0) scrollController?.scrollBy({ left: offset, behavior: 'smooth' })
 }
 
-function focusTab(button: HTMLElement | undefined): void {
-  if (button === undefined || strip.value?.contains(button) !== true) return
-  button.focus({ preventScroll: true })
-  revealTab(button)
-}
-
 watch(
   () => props.activeId,
   async (id) => {
     await nextTick()
-    if (strip.value?.contains(document.activeElement) !== true) focusedId.value = id
     const button = id === null ? null : document.getElementById(`${id}-tab`)
     if (button !== null) revealTab(button)
   },
   { immediate: true },
-)
-
-function moveFocus(event: KeyboardEvent): void {
-  const buttons = [
-    ...(strip.value?.querySelectorAll<HTMLButtonElement>('[role="tab"]') ?? []),
-  ].filter((button) => button.closest('[inert]') === null)
-  const current = buttons.findIndex((button) => button === event.target)
-  if (current < 0) return
-  const direction =
-    strip.value !== undefined && getComputedStyle(strip.value).direction === 'rtl' ? -1 : 1
-  if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
-    const button = buttons[current]
-    const item = props.items.find((candidate) => `${candidate.id}-tab` === button?.id)
-    if (button === undefined || item === undefined) return
-    event.preventDefault()
-    const bounds = button.closest('.pavp-workspace-tabs__item')?.getBoundingClientRect()
-    if (bounds === undefined) return
-    void openContextMenu(item.id, direction === -1 ? bounds.right : bounds.left, bounds.bottom)
-    return
-  }
-  const offset = event.key === 'ArrowRight' ? direction : event.key === 'ArrowLeft' ? -direction : 0
-  const next =
-    event.key === 'Home'
-      ? 0
-      : event.key === 'End'
-        ? buttons.length - 1
-        : offset === 0
-          ? undefined
-          : (current + offset + buttons.length) % buttons.length
-  if (next === undefined) return
-  event.preventDefault()
-  // Only the strip scrolls; Enter/Space keep native button activation.
-  focusTab(buttons[next])
-}
-
-watch(
-  () => props.items,
-  async (items, previous) => {
-    const element = document.activeElement
-    const index = previous.findIndex((item) => item.id === focusedId.value)
-    if (index < 0 || items.some((item) => item.id === focusedId.value)) return
-    const hadFocus = element !== null && strip.value?.contains(element) === true
-    const next = items[Math.min(index, items.length - 1)]
-    focusedId.value = next?.id ?? null
-    await nextTick()
-    if (
-      hadFocus &&
-      (!element.isConnected || element.closest('[inert]') !== null) &&
-      (document.activeElement === document.body || document.activeElement === element)
-    )
-      focusTab(
-        next === undefined ? strip.value : (document.getElementById(`${next.id}-tab`) ?? undefined),
-      )
-  },
-  { flush: 'pre' },
 )
 </script>
 
@@ -292,8 +198,8 @@ watch(
     strict
   >
     <MotionConfig
-      :reduced-motion="motion === 'full' ? 'never' : 'always'"
-      :skip-animations="motion === 'none' || !featureReady"
+      :reduced-motion="policy.reducedMotion"
+      :skip-animations="policy.skipAnimations"
     >
       <LayoutGroup
         :id="groupId"
@@ -304,6 +210,7 @@ watch(
           :data-motion="motion"
         >
           <m.button
+            :ref="(element) => interruption.bind('previous', element)"
             type="button"
             class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--previous"
             :aria-label="previousLabel"
@@ -350,7 +257,6 @@ watch(
                 role="tablist"
                 tabindex="-1"
                 aria-orientation="horizontal"
-                @keydown="moveFocus"
               >
                 <AnimatePresence
                   :initial="false"
@@ -361,7 +267,7 @@ watch(
                   <m.div
                     v-for="item in items"
                     :key="item.id"
-                    class="pavp-workspace-tabs__item focus-within:text-text-primary hover:text-text-primary"
+                    class="pavp-workspace-tabs__item hover:text-text-primary"
                     :class="{ 'text-text-primary': item.id === activeId }"
                     role="presentation"
                     :data-active="item.id === activeId"
@@ -399,8 +305,7 @@ watch(
                       :aria-controls="panelId"
                       aria-haspopup="menu"
                       :aria-expanded="contextMenu.id === item.id"
-                      :tabindex="item.id === (focusedId ?? activeId) ? 0 : -1"
-                      @focus="focusedId = item.id"
+                      tabindex="-1"
                       @click="emit('activate', item.id)"
                     >
                       <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
@@ -412,11 +317,9 @@ watch(
                       :initial="false"
                       animate="rest"
                       while-hover="hover"
-                      while-focus="focus"
                       while-press="press"
                       :transition="transition"
                       :aria-label="item.closeLabel"
-                      @focus="focusedId = item.id"
                       @click.stop="emit('close', item.id)"
                     >
                       <m.span
@@ -433,6 +336,7 @@ watch(
             </UiScrollArea>
           </div>
           <m.button
+            :ref="(element) => interruption.bind('next', element)"
             type="button"
             class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--next"
             :aria-label="nextLabel"
@@ -471,6 +375,7 @@ watch(
     tabindex="-1"
     :aria-labelledby="contextMenu.id === null ? undefined : `${contextMenu.id}-tab`"
     trigger="manual"
+    :keyboard="false"
     size="large"
     to="#pavp-overlay-root"
     :show="contextMenu.id !== null"
@@ -480,263 +385,272 @@ watch(
     @update:show="updateContextMenu"
     @clickoutside="dismissContextMenu"
     @select="selectContextAction"
-    @keydown.tab="closeContextMenu"
   />
 </template>
 
 <style scoped>
-.pavp-workspace-tabs-region {
-  display: flex;
-  min-inline-size: 0;
-  flex: 0 0 auto;
-  padding-inline-start: var(--pavp-safe-area-left);
-  padding-inline-end: var(--pavp-safe-area-right);
-  background-color: var(--ui-color-surface-panel);
-  border-block-end-width: var(--ui-admin-border-width);
-  border-block-end-style: solid;
-  border-block-end-color: var(--ui-color-border-default);
-}
-.pavp-workspace-tabs-region:dir(rtl) {
-  padding-inline-start: var(--pavp-safe-area-right);
-  padding-inline-end: var(--pavp-safe-area-left);
-}
-.pavp-workspace-tabs-viewport {
-  min-inline-size: 0;
-  flex: 1 1 0;
-}
-.pavp-workspace-tabs-edge {
-  position: relative;
-  isolation: isolate;
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
-  inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
-  min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--ui-color-text-secondary);
-  cursor: pointer;
-}
-.pavp-workspace-tabs-edge--previous {
-  border-inline-end-width: var(--ui-admin-border-width);
-  border-inline-end-style: solid;
-  border-inline-end-color: var(--ui-color-border-default);
-}
-.pavp-workspace-tabs-edge--next {
-  border-inline-start-width: var(--ui-admin-border-width);
-  border-inline-start-style: solid;
-  border-inline-start-color: var(--ui-color-border-default);
-}
-.pavp-workspace-tabs-edge__surface {
-  position: absolute;
-  inset: 0;
-  background: color-mix(in srgb, var(--ui-admin-navigation-selected) 10%, transparent);
-  opacity: 0;
-  pointer-events: none;
-}
-.pavp-workspace-tabs-edge__mark {
-  position: relative;
-  display: grid;
-  place-items: center;
-  inline-size: var(--ui-font-size-body);
-  block-size: var(--ui-font-size-body);
-  pointer-events: none;
-}
-.pavp-workspace-tabs-edge__icon {
-  inline-size: 100%;
-  block-size: 100%;
-}
-.pavp-workspace-tabs-edge__icon:dir(rtl) {
-  transform: scaleX(-1);
-}
-.pavp-workspace-tabs-edge:focus-visible {
-  color: var(--ui-color-text-primary);
-  outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
-  outline-offset: calc(var(--ui-admin-focus-width) * -1);
-}
-.pavp-workspace-tabs-edge:disabled {
-  cursor: not-allowed;
-}
-.pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__icon {
-  opacity: var(--ui-admin-state-disabled-opacity);
-}
-.pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__surface {
-  visibility: hidden;
-}
-.pavp-workspace-tabs-edge:enabled:hover,
-.pavp-workspace-tabs-edge:enabled:active {
-  color: var(--ui-color-text-primary);
-}
-.pavp-workspace-tabs-region:not([data-motion='none']) .pavp-workspace-tabs-edge:enabled {
-  transition: color var(--ui-motion-duration) var(--ui-motion-easing);
-}
-.pavp-workspace-tabs-region[data-motion='reduced'] .pavp-workspace-tabs-edge:enabled {
-  transition-duration: calc(var(--ui-motion-duration) / 2);
-}
-
-.pavp-workspace-tabs {
-  --workspace-hover-surface: color-mix(
-    in srgb,
-    var(--ui-admin-navigation-selected) 12%,
-    transparent
-  );
-
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex: 0 0 auto;
-  gap: 0;
-  color: var(--ui-color-text-secondary);
-}
-.pavp-workspace-tabs__item {
-  position: relative;
-  isolation: isolate;
-  display: flex;
-  flex: 0 0 auto;
-  align-items: center;
-}
-.pavp-workspace-tabs__item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-block-start-width: var(--ui-admin-border-width);
-  border-block-start-style: solid;
-  border-block-start-color: var(--ui-color-border-default);
-  border-inline-end-width: var(--ui-admin-border-width);
-  border-inline-end-style: solid;
-  border-inline-end-color: var(--ui-color-border-default);
-  opacity: 0.4;
-  pointer-events: none;
-}
-.pavp-workspace-tabs button {
-  position: relative;
-  isolation: isolate;
-  z-index: var(--ui-z-base);
-  min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
-  min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
-  padding-inline: var(--ui-space-content-gap);
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.pavp-workspace-tabs__hover {
-  position: absolute;
-  inset: 0;
-  z-index: var(--ui-z-base);
-  border-radius: inherit;
-  background: var(--workspace-hover-surface);
-  opacity: 0;
-  pointer-events: none;
-}
-.pavp-workspace-tabs:not([data-motion='none']) .pavp-workspace-tabs__hover {
-  transition: opacity var(--ui-motion-duration) var(--ui-motion-easing);
-}
-.pavp-workspace-tabs[data-motion='reduced'] .pavp-workspace-tabs__hover {
-  transition-duration: calc(var(--ui-motion-duration) / 2);
-}
-.pavp-workspace-tabs__item:hover > .pavp-workspace-tabs__hover,
-.pavp-workspace-tabs__item:focus-within > .pavp-workspace-tabs__hover {
-  opacity: 0.6;
-}
-.pavp-workspace-tabs__item:has(> button:active) > .pavp-workspace-tabs__hover {
-  opacity: 1;
-}
-.pavp-workspace-tabs__label {
-  position: relative;
-  z-index: var(--ui-z-base);
-}
-.pavp-workspace-tabs__item[data-active='true'] {
-  --workspace-hover-surface: color-mix(
-    in srgb,
-    var(--ui-admin-navigation-selected) 8%,
-    transparent
-  );
-}
-.pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab {
-  padding-inline-end: 0;
-  text-align: end;
-}
-.pavp-workspace-tabs__lens {
-  position: absolute;
-  inset: 0;
-  z-index: var(--ui-z-base);
-  border-radius: inherit;
-  background: color-mix(
-    in srgb,
-    var(--ui-admin-navigation-selected) 12%,
-    var(--ui-color-surface-panel)
-  );
-  pointer-events: none;
-}
-.pavp-workspace-tabs__lens::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  box-shadow: var(--ui-admin-shadow-control);
-  opacity: 0.4;
-  pointer-events: none;
-}
-.pavp-workspace-tabs__lens::after {
-  content: '';
-  position: absolute;
-  inset-inline: 0;
-  inset-block-end: 0;
-  block-size: var(--ui-admin-focus-width);
-  background: var(--ui-admin-navigation-selected);
-  pointer-events: none;
-}
-.pavp-workspace-tabs .pavp-workspace-tabs__close {
-  padding-inline: 0;
-}
-/* Center the small mark inside the full close target, keeping the rail geometry stable. */
-.pavp-workspace-tabs__close-mark {
-  position: absolute;
-  inset-block: 0;
-  inset-inline-start: calc((100% - var(--ui-font-size-body)) / 2);
-  margin-block: auto;
-  inline-size: var(--ui-font-size-body);
-  block-size: var(--ui-font-size-body);
-  pointer-events: none;
-}
-.pavp-workspace-tabs__close-mark::before,
-.pavp-workspace-tabs__close-mark::after {
-  content: '';
-  position: absolute;
-  inset-block-start: calc(50% - var(--ui-admin-border-width) / 2);
-  inset-inline: 0;
-  border-block-start-width: var(--ui-admin-border-width);
-  border-block-start-style: solid;
-  border-block-start-color: currentColor;
-  transform: rotate(45deg);
-}
-.pavp-workspace-tabs__close-mark::after {
-  transform: rotate(-45deg);
-}
-.pavp-workspace-tabs:not([data-motion='none']) button {
-  transition: color var(--ui-motion-duration) var(--ui-motion-easing);
-}
-.pavp-workspace-tabs[data-motion='reduced'] button {
-  transition-duration: calc(var(--ui-motion-duration) / 2);
-}
-.pavp-workspace-tabs button:focus-visible {
-  outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
-  outline-offset: calc(var(--ui-admin-focus-width) * -1);
-}
-@media (forced-colors: active) {
-  .pavp-workspace-tabs [aria-selected='true'] {
-    outline: var(--ui-admin-border-width) solid Highlight;
-    outline-offset: calc(var(--ui-admin-border-width) * -1);
+@layer components {
+  .pavp-workspace-tabs-region {
+    display: flex;
+    min-inline-size: 0;
+    flex: 0 0 auto;
+    padding-inline-start: var(--pavp-safe-area-left);
+    padding-inline-end: var(--pavp-safe-area-right);
+    background-color: var(--ui-color-surface-panel);
+    border-block-end-width: var(--ui-admin-border-width);
+    border-block-end-style: solid;
+    border-block-end-color: var(--ui-color-border-default);
   }
-  .pavp-workspace-tabs button:focus-visible,
+  .pavp-workspace-tabs-region:dir(rtl) {
+    padding-inline-start: var(--pavp-safe-area-right);
+    padding-inline-end: var(--pavp-safe-area-left);
+  }
+  .pavp-workspace-tabs-viewport {
+    min-inline-size: 0;
+    flex: 1 1 0;
+  }
+  .pavp-workspace-tabs-edge {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+    inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+    min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--ui-color-text-secondary);
+    cursor: pointer;
+  }
+  .pavp-workspace-tabs-edge--previous {
+    border-inline-end-width: var(--ui-admin-border-width);
+    border-inline-end-style: solid;
+    border-inline-end-color: var(--ui-color-border-default);
+  }
+  .pavp-workspace-tabs-edge--next {
+    border-inline-start-width: var(--ui-admin-border-width);
+    border-inline-start-style: solid;
+    border-inline-start-color: var(--ui-color-border-default);
+  }
+  .pavp-workspace-tabs-edge__surface {
+    position: absolute;
+    inset: 0;
+    background: color-mix(in srgb, var(--ui-admin-navigation-selected) 10%, transparent);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs-edge__mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    inline-size: var(--ui-font-size-body);
+    block-size: var(--ui-font-size-body);
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs-edge__icon {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+  .pavp-workspace-tabs-edge__icon:dir(rtl) {
+    transform: scaleX(-1);
+  }
   .pavp-workspace-tabs-edge:focus-visible {
-    outline-color: Highlight;
+    color: var(--ui-color-text-primary);
+    outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
+    outline-offset: calc(var(--ui-admin-focus-width) * -1);
+  }
+  .pavp-workspace-tabs-edge:disabled {
+    cursor: not-allowed;
+  }
+  .pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__icon {
+    opacity: var(--ui-admin-state-disabled-opacity);
+  }
+  .pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__surface {
+    visibility: hidden;
+  }
+  .pavp-workspace-tabs-edge:enabled:hover,
+  .pavp-workspace-tabs-edge:enabled:active {
+    color: var(--ui-color-text-primary);
+  }
+  .pavp-workspace-tabs-region:not([data-motion='none']) .pavp-workspace-tabs-edge:enabled {
+    transition: color var(--ui-motion-duration) var(--ui-motion-easing);
+  }
+  .pavp-workspace-tabs-region[data-motion='reduced'] .pavp-workspace-tabs-edge:enabled {
+    transition-duration: calc(var(--ui-motion-duration) / 2);
+  }
+
+  .pavp-workspace-tabs {
+    --workspace-hover-surface: color-mix(
+      in srgb,
+      var(--ui-admin-navigation-selected) 12%,
+      transparent
+    );
+
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0;
+    color: var(--ui-color-text-secondary);
+  }
+  .pavp-workspace-tabs__item {
+    border-radius: var(--ui-radius-control) var(--ui-radius-control) 0 0;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+  .pavp-workspace-tabs__item::before {
+    border-radius: inherit;
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-block-start-width: var(--ui-admin-border-width);
+    border-block-start-style: solid;
+    border-block-start-color: var(--ui-color-border-default);
+    border-inline-end-width: var(--ui-admin-border-width);
+    border-inline-end-style: solid;
+    border-inline-end-color: var(--ui-color-border-default);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs button {
+    position: relative;
+    isolation: isolate;
+    z-index: var(--ui-z-base);
+    min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+    min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+    padding-inline: var(--ui-space-content-gap);
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .pavp-workspace-tabs__hover {
+    position: absolute;
+    inset: 0;
+    z-index: var(--ui-z-base);
+    border-radius: inherit;
+    background: var(--workspace-hover-surface);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs:not([data-motion='none']) .pavp-workspace-tabs__hover {
+    transition: opacity var(--ui-motion-duration) var(--ui-motion-easing);
+  }
+  .pavp-workspace-tabs[data-motion='reduced'] .pavp-workspace-tabs__hover {
+    transition-duration: calc(var(--ui-motion-duration) / 2);
+  }
+  .pavp-workspace-tabs__item:hover > .pavp-workspace-tabs__hover,
+  .pavp-workspace-tabs__item:focus-within > .pavp-workspace-tabs__hover {
+    opacity: 0.6;
+  }
+  .pavp-workspace-tabs__item:has(> button:active) > .pavp-workspace-tabs__hover {
+    opacity: 1;
+  }
+  .pavp-workspace-tabs__label {
+    position: relative;
+    z-index: var(--ui-z-base);
+  }
+  .pavp-workspace-tabs__item[data-active='true'] {
+    --workspace-hover-surface: color-mix(
+      in srgb,
+      var(--ui-admin-navigation-selected) 8%,
+      transparent
+    );
+  }
+  .pavp-workspace-tabs .pavp-workspace-tabs__tab {
+    border-radius: inherit;
+  }
+  .pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab {
+    border-start-end-radius: 0;
+    padding-inline-end: 0;
+    text-align: end;
+  }
+  .pavp-workspace-tabs__lens {
+    position: absolute;
+    inset: 0;
+    z-index: var(--ui-z-base);
+    border-radius: inherit;
+    background: color-mix(
+      in srgb,
+      var(--ui-admin-navigation-selected) 12%,
+      var(--ui-color-surface-panel)
+    );
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs__lens::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: var(--ui-admin-shadow-control);
+    opacity: 0.4;
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs__lens::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    inset-block-end: 0;
+    block-size: var(--ui-admin-focus-width);
+    background: var(--ui-admin-navigation-selected);
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs .pavp-workspace-tabs__close {
+    border-radius: var(--ui-radius-small);
+    padding-inline: 0;
+  }
+  /* Center the small mark inside the full close target, keeping the rail geometry stable. */
+  .pavp-workspace-tabs__close-mark {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc((100% - var(--ui-font-size-body)) / 2);
+    margin-block: auto;
+    inline-size: var(--ui-font-size-body);
+    block-size: var(--ui-font-size-body);
+    pointer-events: none;
+  }
+  .pavp-workspace-tabs__close-mark::before,
+  .pavp-workspace-tabs__close-mark::after {
+    content: '';
+    position: absolute;
+    inset-block-start: calc(50% - var(--ui-admin-border-width) / 2);
+    inset-inline: 0;
+    border-block-start-width: var(--ui-admin-border-width);
+    border-block-start-style: solid;
+    border-block-start-color: currentColor;
+    transform: rotate(45deg);
+  }
+  .pavp-workspace-tabs__close-mark::after {
+    transform: rotate(-45deg);
+  }
+  .pavp-workspace-tabs:not([data-motion='none']) button {
+    transition: color var(--ui-motion-duration) var(--ui-motion-easing);
+  }
+  .pavp-workspace-tabs[data-motion='reduced'] button {
+    transition-duration: calc(var(--ui-motion-duration) / 2);
+  }
+  .pavp-workspace-tabs button:focus-visible {
+    outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
+    outline-offset: calc(var(--ui-admin-focus-width) * -1);
+  }
+  @media (forced-colors: active) {
+    .pavp-workspace-tabs [aria-selected='true'] {
+      outline: var(--ui-admin-border-width) solid Highlight;
+      outline-offset: calc(var(--ui-admin-border-width) * -1);
+    }
+    .pavp-workspace-tabs button:focus-visible,
+    .pavp-workspace-tabs-edge:focus-visible {
+      outline-color: Highlight;
+    }
   }
 }
 </style>

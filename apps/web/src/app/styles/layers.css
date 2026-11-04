@@ -1,7 +1,8 @@
-@layer reset, tokens, base, utilities, components, app, overrides;
+@layer reset, tokens, base, components, app, utilities, vendor-overrides;
 
 @import '@platform/design-system/tokens.css';
 @import '../router/route-transition/route-transition.css';
+@import '../workbench/workbench.css';
 
 @layer reset {
   *,
@@ -39,22 +40,22 @@
   }
 }
 
-html,
-body,
-#app,
-#pavp-overlay-root,
-.pavp-route-content,
-.pavp-route-content > *,
-.pavp-admin-shell,
-.pavp-admin-shell__header,
-.pavp-admin-shell__sidebar,
-.pavp-admin-shell__content,
-.pavp-appearance-workspace,
-.pavp-appearance-preview-column {
-  transform: none;
-  translate: none;
-}
+@layer app {
+  html,
+  body,
+  #app,
+  #pavp-overlay-root,
+  .pavp-route-content,
+  .pavp-route-content > *,
+  .pavp-admin-shell,
+  .pavp-admin-shell__header,
+  .pavp-admin-shell__sidebar,
+  .pavp-admin-shell__content {
+    transform: none;
+    translate: none;
+  }
 
-.pavp-route-content {
-  opacity: 1;
+  .pavp-route-content {
+    opacity: 1;
+  }
 }

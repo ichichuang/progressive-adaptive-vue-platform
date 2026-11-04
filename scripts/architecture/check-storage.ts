@@ -1,4 +1,6 @@
+import { runInNewContext } from 'node:vm'
 import { readFile, readdir } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { extname, join, relative, resolve, sep } from 'node:path'
 import { isDeepStrictEqual } from 'node:util'
 
@@ -7,17 +9,30 @@ import ts from 'typescript'
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
 import { coreErrorRegistry } from '../../apps/web/src/app/errors/core-error-registry'
 import { routerErrorRegistry } from '../../apps/web/src/app/router/router-error-registry'
-import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
+import {
+  consoleNavigationRegistry,
+  routeRegistry,
+} from '../../apps/web/src/app/router/route-registry'
+import {
+  navigationPreferenceSchema,
+  parseNavigationPreference,
+  type NavigationPreferencePort,
+} from '../../apps/web/src/app/navigation/navigation-preference-contract'
+import {
+  useNavigationPreferenceStore,
+  type initializeNavigationPreference,
+} from '../../apps/web/src/app/navigation/navigation-preference.store'
+import { createNavigationPreferenceStorage } from '../../apps/web/src/app/storage/navigation-preference-storage'
+import type { ScrollPreferencePort } from '../../apps/web/src/app/scroll/scroll-preference-contract'
+import { useScrollPreferenceStore } from '../../apps/web/src/app/scroll/scroll-preference.store'
+import { createStorageErrorAdapter } from '../../apps/web/src/app/storage/storage-error'
+import { createStartupAttemptId } from '../../apps/web/src/app/bootstrap/lifecycle'
 import {
   browserPageBindingSchema,
   browserPageDiscoveryChannelName,
   browserPageDiscoverySchema,
   browserPageSessionSchema,
 } from '../../apps/web/src/app/router/browser-page-session-contract'
-import {
-  storageChangeChannelName,
-  storageCrossTabEventAllowlist,
-} from '../../apps/web/src/app/storage/storage-cross-tab-contract'
 import { storageErrorMessageTable } from '../../apps/web/src/app/storage/storage-error-messages'
 import { storageErrorRegistry } from '../../apps/web/src/app/storage/storage-error-registry'
 import { storageMigrationRegistry } from '../../apps/web/src/app/storage/storage-migration-registry'
@@ -36,8 +51,8 @@ const expectedStorageRegistryRecords = [
     medium: 'local-storage',
     persistenceShape: 'direct-compatibility',
     schemaId: 'explicit-theme-preference',
-    currentSchemaVersion: 3,
-    minimumSupportedSchemaVersion: 3,
+    currentSchemaVersion: 4,
+    minimumSupportedSchemaVersion: 4,
     principalPartition: 'none',
     containsSensitiveData: false,
     corruptionPolicy: 'preserve-in-place-reject-read',
@@ -78,7 +93,7 @@ const expectedStorageRegistryRecords = [
     medium: 'local-storage',
     persistenceShape: 'direct-compatibility',
     schemaId: 'navigation-preference',
-    currentSchemaVersion: 1,
+    currentSchemaVersion: 2,
     minimumSupportedSchemaVersion: 1,
     principalPartition: 'none',
     containsSensitiveData: false,
@@ -463,10 +478,131 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
   return violations
 }
 
+function storageBrowserAccess(source: ts.SourceFile) {
+  const browserGlobals = new Set(['window', 'globalThis', 'self'])
+  const unwrap = (expression: ts.Expression): ts.Expression => {
+    while (ts.isParenthesizedExpression(expression)) expression = expression.expression
+    return expression
+  }
+  const ownsName = (binding: ts.BindingName, name: string): boolean =>
+    ts.isIdentifier(binding)
+      ? binding.text === name
+      : binding.elements.some(
+          (element) => ts.isBindingElement(element) && ownsName(element.name, name),
+        )
+  // Follow lexical const receiver aliases only; this is not interprocedural alias analysis.
+  function resolvesBrowserValue(
+    expression: ts.Expression,
+    kind: 'global' | 'channel',
+    seen = new Set<ts.Node>(),
+  ): boolean {
+    const value = unwrap(expression)
+    if (!ts.isIdentifier(value))
+      return kind === 'channel' && browserMember(value, 'BroadcastChannel', seen)
+    for (let scope: ts.Node = value.parent; ; scope = scope.parent) {
+      if (
+        ts.isFunctionLike(scope) &&
+        (scope.parameters.some((parameter) => ownsName(parameter.name, value.text)) ||
+          ((ts.isFunctionExpression(scope) || ts.isFunctionDeclaration(scope)) &&
+            scope.name?.text === value.text))
+      )
+        return false
+      const loopInitializer =
+        ts.isForStatement(scope) || ts.isForInStatement(scope) || ts.isForOfStatement(scope)
+          ? scope.initializer
+          : undefined
+      const declarations =
+        ts.isBlock(scope) || ts.isSourceFile(scope)
+          ? scope.statements.flatMap((statement) =>
+              ts.isVariableStatement(statement) ? [...statement.declarationList.declarations] : [],
+            )
+          : ts.isCatchClause(scope) && scope.variableDeclaration !== undefined
+            ? [scope.variableDeclaration]
+            : loopInitializer !== undefined &&
+                ts.isVariableDeclarationList(loopInitializer) &&
+                (loopInitializer.flags & ts.NodeFlags.BlockScoped) !== 0
+              ? [...loopInitializer.declarations]
+              : []
+      const binding = declarations.find((declaration) => ownsName(declaration.name, value.text))
+      if (binding !== undefined) {
+        if (
+          !ts.isIdentifier(binding.name) ||
+          binding.initializer === undefined ||
+          !ts.isVariableDeclarationList(binding.parent) ||
+          !(binding.parent.flags & ts.NodeFlags.Const) ||
+          binding.pos >= value.pos ||
+          seen.has(binding)
+        )
+          return false
+        seen.add(binding)
+        return resolvesBrowserValue(binding.initializer, kind, seen)
+      }
+      if (
+        (ts.isBlock(scope) || ts.isSourceFile(scope)) &&
+        scope.statements.some(
+          (statement) =>
+            (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement)) &&
+            statement.name?.text === value.text,
+        )
+      )
+        return false
+      if (ts.isSourceFile(scope)) break
+    }
+    return kind === 'global' ? browserGlobals.has(value.text) : value.text === 'BroadcastChannel'
+  }
+  const browserMember = (
+    expression: ts.Expression,
+    name: string,
+    seen = new Set<ts.Node>(),
+  ): boolean => {
+    const value = unwrap(expression)
+    if (ts.isPropertyAccessExpression(value))
+      return value.name.text === name && resolvesBrowserValue(value.expression, 'global', seen)
+    if (!ts.isElementAccessExpression(value)) return false
+    const key = unwrap(value.argumentExpression)
+    return (
+      ts.isStringLiteralLike(key) &&
+      key.text === name &&
+      resolvesBrowserValue(value.expression, 'global', seen)
+    )
+  }
+  const channelReference = (expression: ts.Expression): boolean => {
+    if (ts.isIdentifier(expression)) {
+      const parent = expression.parent
+      // A property/declaration name is not a read of the global constructor.
+      if (
+        ('name' in parent &&
+          parent.name === expression &&
+          !ts.isShorthandPropertyAssignment(parent)) ||
+        (ts.isQualifiedName(parent) && parent.right === expression)
+      )
+        return false
+    }
+    return resolvesBrowserValue(expression, 'channel')
+  }
+  return {
+    browserMember,
+    unwrap,
+    channelReferences: nodesOf(
+      source,
+      (node): node is ts.Identifier | ts.PropertyAccessExpression | ts.ElementAccessExpression =>
+        ts.isIdentifier(node) ||
+        ts.isPropertyAccessExpression(node) ||
+        ts.isElementAccessExpression(node),
+    ).filter(channelReference),
+    channelConstructors: nodesOf(source, ts.isNewExpression).filter((expression) =>
+      resolvesBrowserValue(expression.expression, 'channel'),
+    ),
+  }
+}
+
 function storageOwnerClosureFileViolation(displayPath: string, source: ts.SourceFile): string[] {
   const violations: string[] = []
+  const { browserMember, unwrap, channelReferences, channelConstructors } =
+    storageBrowserAccess(source)
 
   const localStorageOwners = new Set([
+    'apps/web/src/app/storage/shared-preference-events.ts',
     'apps/web/src/app/appearance/preference-storage.ts',
     'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
     'apps/web/src/app/storage/locale-preference-storage.ts',
@@ -489,11 +625,39 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     }
   }
 
+  const discoveryName = namedImportLocalName(
+    source,
+    '../router/browser-page-session-contract',
+    'browserPageDiscoveryChannelName',
+  )
+  const admittedDiscovery =
+    displayPath === 'apps/web/src/app/storage/browser-page-session-storage.ts' &&
+    discoveryName !== undefined &&
+    channelConstructors.length === 1 &&
+    channelConstructors[0]?.arguments?.[0]?.getText(source) === discoveryName
+  if (channelReferences.length > 0 && !admittedDiscovery) {
+    violations.push(displayPath + ': BroadcastChannel is only admitted for browser-page discovery.')
+  }
+
+  const storageEventRegistration = nodesOf(source, ts.isCallExpression).some(
+    (call) =>
+      ((ts.isIdentifier(call.expression) && call.expression.text === 'addEventListener') ||
+        browserMember(call.expression, 'addEventListener')) &&
+      call.arguments[0] !== undefined &&
+      ts.isStringLiteralLike(call.arguments[0]) &&
+      call.arguments[0].text === 'storage',
+  )
+  const storageEventHandler = nodesOf(source, ts.isBinaryExpression).some(
+    (expression) =>
+      expression.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      browserMember(expression.left, 'onstorage') &&
+      unwrap(expression.right).kind !== ts.SyntaxKind.NullKeyword,
+  )
   if (
-    nodesOf(source, ts.isIdentifier).some((identifier) => identifier.text === 'BroadcastChannel') &&
-    !displayPath.startsWith('apps/web/src/app/storage/')
+    (storageEventRegistration || storageEventHandler) &&
+    displayPath !== 'apps/web/src/app/storage/shared-preference-events.ts'
   ) {
-    violations.push(displayPath + ': BroadcastChannel is only admitted in the Storage owner.')
+    violations.push(displayPath + ': Storage change events have no admitted consumer.')
   }
 
   return violations
@@ -586,15 +750,12 @@ async function sensitivePersistenceViolations(): Promise<string[]> {
 async function storageLifecycleViolations(): Promise<string[]> {
   const violations: string[] = []
   const lifecyclePath = resolve(storageDirectory, 'storage-lifecycle.ts')
-  const crossTabPath = resolve(storageDirectory, 'storage-cross-tab.ts')
   const kernelPath = resolve(rootDirectory, 'apps/web/src/app/bootstrap/runtime-kernel.ts')
-  const [lifecycleText, crossTabText, kernelText] = await Promise.all([
+  const [lifecycleText, kernelText] = await Promise.all([
     readFile(lifecyclePath, 'utf8'),
-    readFile(crossTabPath, 'utf8'),
     readFile(kernelPath, 'utf8'),
   ])
   const lifecycleSource = scriptSource(lifecyclePath, lifecycleText)
-  const crossTabSource = scriptSource(crossTabPath, crossTabText)
   const kernelSource = scriptSource(kernelPath, kernelText)
 
   const lifecycleFactories = nodesOf(lifecycleSource, ts.isFunctionDeclaration).filter(
@@ -604,21 +765,6 @@ async function storageLifecycleViolations(): Promise<string[]> {
   )
   if (lifecycleFactories.length !== 1) {
     violations.push('Storage lifecycle must own exactly one createAndReadyStorage factory.')
-  }
-
-  const crossTabFactoryImport = namedImportLocalName(
-    lifecycleSource,
-    './storage-cross-tab',
-    'createStorageCrossTabHandle',
-  )
-  const crossTabCalls = nodesOf(lifecycleSource, ts.isCallExpression).filter(
-    (call) =>
-      crossTabFactoryImport !== undefined &&
-      ts.isIdentifier(call.expression) &&
-      call.expression.text === crossTabFactoryImport,
-  )
-  if (crossTabFactoryImport === undefined || crossTabCalls.length !== 1) {
-    violations.push('Storage lifecycle must create exactly one cross-tab handle.')
   }
 
   const storageFactoryImport = namedImportLocalName(
@@ -634,47 +780,6 @@ async function storageLifecycleViolations(): Promise<string[]> {
   )
   if (storageFactoryImport === undefined || storageCalls.length !== 1) {
     violations.push('Runtime Kernel must own exactly one create-and-ready-storage call.')
-  }
-
-  const broadcastCalls = nodesOf(crossTabSource, ts.isNewExpression).filter(
-    (expression) =>
-      ts.isIdentifier(expression.expression) && expression.expression.text === 'BroadcastChannel',
-  )
-  if (broadcastCalls.length !== 1) {
-    violations.push('Storage cross-tab handle must construct exactly one BroadcastChannel.')
-  }
-
-  if (!crossTabText.includes('storageChangeChannelName')) {
-    violations.push('Storage cross-tab handle must use the frozen channel-name constant.')
-  }
-
-  const addStorageEvents = nodesOf(crossTabSource, ts.isCallExpression).filter(
-    (call) =>
-      callMemberName(call) === 'addEventListener' &&
-      call.arguments[0] !== undefined &&
-      ts.isStringLiteral(call.arguments[0]) &&
-      call.arguments[0].text === 'storage',
-  )
-  const removeStorageEvents = nodesOf(crossTabSource, ts.isCallExpression).filter(
-    (call) =>
-      callMemberName(call) === 'removeEventListener' &&
-      call.arguments[0] !== undefined &&
-      ts.isStringLiteral(call.arguments[0]) &&
-      call.arguments[0].text === 'storage',
-  )
-  if (addStorageEvents.length !== 1 || removeStorageEvents.length !== 1) {
-    violations.push('Storage fallback must pair one storage add/remove listener operation.')
-  }
-
-  if (!crossTabText.includes('event.key')) {
-    violations.push('Storage fallback must match event.key against the exact Registry keys.')
-  }
-
-  const closeCalls = nodesOf(crossTabSource, ts.isCallExpression).filter(
-    (call) => callMemberName(call) === 'close',
-  )
-  if (closeCalls.length !== 1) {
-    violations.push('Storage BroadcastChannel must be closed on disposal.')
   }
 
   return violations
@@ -738,7 +843,12 @@ async function navigationPreferenceViolations(): Promise<string[]> {
   )?.initializer
   const schemaArgument =
     schema !== undefined && ts.isCallExpression(schema) ? schema.arguments[0] : undefined
-  const payloadFields = ['schemaVersion', 'wideNavigationCollapsed', 'expandedGroupIds']
+  const payloadFields = [
+    'schemaVersion',
+    'wideNavigationCollapsed',
+    'accordion',
+    'expandedGroupIds',
+  ]
   report(
     schema !== undefined &&
       ts.isCallExpression(schema) &&
@@ -749,7 +859,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         schemaArgument.properties.map((field) => field.name?.getText(contract)),
         payloadFields,
       ),
-    'the payload must be the exact strict three-field schema.',
+    'the payload must be the strict current four-field navigation schema.',
   )
   // These are persisted schema types and constraints, not private parser implementation details.
   const fieldSchemas =
@@ -764,8 +874,9 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         )
       : new Map<string, string>()
   report(
-    fieldSchemas.get('schemaVersion') === 'z.literal(1)' &&
+    fieldSchemas.get('schemaVersion') === 'z.literal(2)' &&
       fieldSchemas.get('wideNavigationCollapsed') === 'z.boolean()' &&
+      fieldSchemas.get('accordion') === 'z.boolean()' &&
       fieldSchemas.get('expandedGroupIds') === 'z.array(z.string().min(1)).readonly()',
     'version, Boolean, nonempty string IDs and readonly array constraints must remain exact.',
   )
@@ -777,12 +888,13 @@ async function navigationPreferenceViolations(): Promise<string[]> {
   )
   report(
     schemaImport !== undefined &&
+      adapter.text.includes('parseNavigationPreference(value)') &&
       adapterCalls.filter(
         (call) =>
           ts.isPropertyAccessExpression(call.expression) &&
           call.expression.expression.getText(adapter) === schemaImport &&
           call.expression.name.text === 'safeParse',
-      ).length === 3 &&
+      ).length === 2 &&
       adapterCalls.filter((call) => callMemberName(call) === 'getItem').length === 2 &&
       adapterCalls.filter((call) => callMemberName(call) === 'setItem').length === 1 &&
       !adapterCalls.some((call) => ['clear', 'removeItem'].includes(callMemberName(call) ?? '')),
@@ -852,30 +964,26 @@ async function navigationPreferenceViolations(): Promise<string[]> {
   report(
     definitions.length === 1 &&
       definitions[0]?.arguments[0]?.getText(store) === "'navigation-preference'" &&
-      isDeepStrictEqual(stateRefs.sort(), ['expandedGroupIds', 'wideNavigationCollapsed']),
-    'Pinia must contain exactly the two runtime preference fields in one private Store.',
+      isDeepStrictEqual(stateRefs.sort(), [
+        'accordion',
+        'expandedGroupIds',
+        'wideNavigationCollapsed',
+      ]),
+    'Pinia must contain exactly the three runtime preference fields in one private Store.',
   )
   const writes = nodesOf(store, ts.isCallExpression).filter(
     (call) => callMemberName(call) === 'write',
   )
-  const snapshot = writes[0]?.arguments[0]
   report(
-    writes.length === 1 &&
-      snapshot !== undefined &&
-      ts.isObjectLiteralExpression(snapshot) &&
-      isDeepStrictEqual(
-        snapshot.properties.map((field) => field.name?.getText(store)),
-        payloadFields,
-      ),
-    'explicit actions must write one complete preference snapshot.',
+    writes.length > 0 && writes.every((call) => call.arguments.length === 1),
+    'explicit actions must use the one-argument preference port; runtime probes verify payload and per-call writes.',
   )
   report(
-    nodesOf(store, ts.isCallExpression).filter((call) => callMemberName(call) === 'read').length ===
-      1 &&
+    nodesOf(store, ts.isCallExpression).some((call) => callMemberName(call) === 'read') &&
       !/\b(?:watch|watchEffect|localStorage|sessionStorage|setTimeout|setInterval|requestAnimationFrame|useRouter|useRoute)\b|\$subscribe|\$patch|\$state/u.test(
         store.text,
       ),
-    'one initialization read must remain separate from routing and automatic persistence.',
+    'initialization and shared-preference reads must remain separate from routing and automatic persistence.',
   )
   for (const source of [contract, store]) {
     violations.push(...sensitivePersistenceFileViolation(source.fileName, source.text))
@@ -1060,7 +1168,88 @@ function focusedNegativeProbes(): string[] {
   if (
     storageOwnerClosureFileViolation('apps/web/src/pages/probe.ts', unownedBroadcast).length !== 1
   ) {
-    failures.push('Negative probe failed: BroadcastChannel outside the Storage owner was accepted.')
+    failures.push(
+      'Negative probe failed: BroadcastChannel outside browser-page discovery was accepted.',
+    )
+  }
+
+  const unadmittedStorageCommunication = [
+    'const channel = new BroadcastChannel("pavp:storage:change")',
+    "window.addEventListener('storage', () => undefined)",
+    'window.onstorage = () => undefined',
+    "window['onstorage'] = () => undefined",
+    "const channel = new window['BroadcastChannel']('unowned')",
+    "window['addEventListener']('storage', () => undefined)",
+    'const browser = window; browser.onstorage = () => undefined',
+    "const browser = globalThis; const target = browser; target['addEventListener']('storage', () => undefined)",
+    "const browser = self; const channel = new browser['BroadcastChannel']('unowned')",
+    "function connect() { const browser = window; browser['onstorage'] = () => undefined }",
+    "const browser = window; for (const target of []) { browser.addEventListener('storage', () => undefined) }",
+    'const browser = window; for (const browser of []) {} browser.onstorage = () => undefined',
+    'for (const browser = window; false;) { browser.onstorage = () => undefined }',
+    'const browser = window; try {} catch (error) { browser.onstorage = () => undefined }',
+    'const browser = window; function local() { browser.onstorage = () => undefined }',
+  ]
+  for (const source of unadmittedStorageCommunication) {
+    if (
+      storageOwnerClosureFileViolation(
+        'apps/web/src/app/storage/storage-lifecycle.ts',
+        scriptSource('storage-lifecycle.ts', source),
+      ).length !== 1
+    )
+      failures.push('Negative probe failed: unadmitted Storage communication was accepted.')
+  }
+  if (
+    storageOwnerClosureFileViolation(
+      'apps/web/src/app/storage/browser-page-session-storage.ts',
+      scriptSource(
+        'browser-page-session-storage.ts',
+        "import { browserPageDiscoveryChannelName } from '../router/browser-page-session-contract'; new BroadcastChannel(browserPageDiscoveryChannelName)",
+      ),
+    ).length !== 0
+  ) {
+    failures.push('Positive probe failed: admitted browser-page discovery was rejected.')
+  }
+  if (
+    storageOwnerClosureFileViolation(
+      'apps/web/src/app/storage/storage-lifecycle.ts',
+      scriptSource(
+        'storage-lifecycle.ts',
+        "const record = { onstorage: null }; record.onstorage = null; const target = new EventTarget(); target.addEventListener('storage', () => undefined); window.onstorage = null; window['onstorage'] = null",
+      ),
+    ).length !== 0
+  ) {
+    failures.push(
+      'Positive probe failed: local data was mistaken for browser Storage communication.',
+    )
+  }
+  for (const source of [
+    "const browser = new EventTarget(); browser['addEventListener']('storage', () => undefined)",
+    "const record = {}; record['onstorage'] = () => undefined; record['BroadcastChannel'] = 'data'",
+    "const record = { BroadcastChannel: 'data' }; record.BroadcastChannel; record['BroadcastChannel']",
+    'const record = { BroadcastChannel: class {} }; new record.BroadcastChannel()',
+    'class BroadcastChannel {}; new BroadcastChannel() ',
+    "function local(window) { new window.BroadcastChannel('local') }",
+    "const browser = window; function local(browser) { browser.addEventListener('storage', () => undefined) }",
+    "const browser = window; { const browser = new EventTarget(); browser.addEventListener('storage', () => undefined) }",
+    "const browser = window; for (const browser of []) { browser.addEventListener('storage', () => undefined) }",
+    'const browser = window; for (const browser of []) browser.onstorage = () => undefined',
+    'const browser = window; for (const browser in {}) { browser.onstorage = () => undefined }',
+    "const browser = window; for (const browser = new EventTarget(); false;) { browser.addEventListener('storage', () => undefined) }",
+    'const browser = window; for (let browser of []) { browser.onstorage = () => undefined }',
+    'const browser = window; try {} catch (browser) { browser.onstorage = () => undefined }',
+    'const browser = window; try {} catch ({ browser }) { browser.onstorage = () => undefined }',
+    'const browser = window; const local = function browser() { browser.onstorage = () => undefined }',
+  ]) {
+    if (
+      storageOwnerClosureFileViolation(
+        'apps/web/src/app/storage/storage-lifecycle.ts',
+        scriptSource('storage-lifecycle.ts', source),
+      ).length !== 0
+    )
+      failures.push(
+        'Positive probe failed: local or shadowed receiver was treated as a browser global.',
+      )
   }
 
   const indexedDbAccess = scriptSource(
@@ -1295,9 +1484,6 @@ async function scrollStorageViolations(): Promise<string[]> {
         `${adapterName}: scroll Storage validation, error or disposal ownership drifted.`,
       )
   }
-  const crossTab = await readFile(resolve(storageDirectory, 'storage-cross-tab.ts'), 'utf8')
-  if (!/\.medium\s*===\s*'local-storage'/u.test(crossTab))
-    violations.push('Session Storage must not participate in localStorage event routing.')
   const system = await readFile(
     resolve(rootDirectory, 'apps/web/src/app/scroll/scroll-system.ts'),
     'utf8',
@@ -1318,10 +1504,7 @@ function browserPageSessionAdapterViolations(sourceText: string): string[] {
   )
   const compactInitialization = initialization?.getText(source).replaceAll(/\s+/gu, '') ?? ''
   const target = initialization?.parameters[0]?.name.getText(source)
-  const constructors = nodesOf(source, ts.isNewExpression).filter(
-    (expression) =>
-      ts.isIdentifier(expression.expression) && expression.expression.text === 'BroadcastChannel',
-  )
+  const constructors = storageBrowserAccess(source).channelConstructors
   const nameImport = namedImportLocalName(
     source,
     '../router/browser-page-session-contract',
@@ -1432,7 +1615,7 @@ async function browserPageSessionViolations(): Promise<string[]> {
   const binding = {
     sourceId: '11111111-1111-4111-8111-111111111111',
     associationId: '22222222-2222-4222-8222-222222222222',
-    routeName: 'capability-roadmap-standalone',
+    routeName: 'control-center',
     deploymentBase: '/',
   }
   const snapshot = {
@@ -1457,7 +1640,7 @@ async function browserPageSessionViolations(): Promise<string[]> {
       { ...snapshot, schemaVersion: 2 },
       { ...snapshot, sourceId: binding.associationId },
       { ...snapshot, associations: [binding, { ...binding, associationId: binding.sourceId }] },
-      { ...snapshot, associations: [binding, { ...binding, routeName: 'console-overview' }] },
+      { ...snapshot, associations: [binding, { ...binding, routeName: 'workbench-dashboard' }] },
       {
         ...snapshot,
         associations: Array.from({ length: routeRegistry.length + 1 }, (_, index) => ({
@@ -1512,6 +1695,682 @@ async function browserPageSessionViolations(): Promise<string[]> {
         'Negative probe failed: browser page target, discovery validation or disposal drift was accepted.',
       )
   }
+  const discoveryAdapterPath = 'apps/web/src/app/storage/browser-page-session-storage.ts'
+  for (const extra of [
+    "new BroadcastChannel('pavp:storage:change')",
+    "new window['BroadcastChannel']('pavp:storage:change')",
+    "new window.BroadcastChannel('pavp:storage:change')",
+    "const browser = window; new browser['BroadcastChannel']('pavp:storage:change')",
+    "const Channel = window['BroadcastChannel']; new Channel('pavp:storage:change')",
+  ]) {
+    const invalid = adapter + '\n{\n' + extra + '\n}'
+    if (
+      browserPageSessionAdapterViolations(invalid).length === 0 ||
+      storageOwnerClosureFileViolation(
+        discoveryAdapterPath,
+        scriptSource(discoveryAdapterPath, invalid),
+      ).length === 0
+    )
+      violations.push(
+        'Negative probe failed: extra discovery-adapter channel acquisition was accepted.',
+      )
+  }
+  const adapterSource = scriptSource(discoveryAdapterPath, adapter)
+  const constructorExpression =
+    storageBrowserAccess(adapterSource).channelConstructors[0]?.expression
+  const bracketConstructor =
+    constructorExpression === undefined
+      ? adapter
+      : adapter.slice(0, constructorExpression.getStart(adapterSource)) +
+        "window['BroadcastChannel']" +
+        adapter.slice(constructorExpression.end)
+  if (
+    constructorExpression === undefined ||
+    browserPageSessionAdapterViolations(bracketConstructor).length !== 0 ||
+    storageOwnerClosureFileViolation(
+      discoveryAdapterPath,
+      scriptSource(discoveryAdapterPath, bracketConstructor),
+    ).length !== 0
+  )
+    violations.push('Positive probe failed: equivalent discovery constructor syntax was rejected.')
+  return violations
+}
+
+async function sharedPreferenceEventViolations(): Promise<string[]> {
+  const path = 'apps/web/src/app/storage/shared-preference-events.ts'
+  const source = await readFile(resolve(rootDirectory, path), 'utf8')
+  const listeners = new Set<
+    (event: { key: string | null; storageArea: unknown; readonly newValue?: unknown }) => void
+  >()
+  const area = {}
+  const host = {
+    localStorage: area,
+    addEventListener(
+      _name: string,
+      listener: (event: {
+        key: string | null
+        storageArea: unknown
+        readonly newValue?: unknown
+      }) => void,
+    ) {
+      listeners.add(listener)
+    },
+    removeEventListener(
+      _name: string,
+      listener: (event: {
+        key: string | null
+        storageArea: unknown
+        readonly newValue?: unknown
+      }) => void,
+    ) {
+      listeners.delete(listener)
+    },
+  }
+  const compiled = ts.transpileModule(source, {
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ESNext },
+  }).outputText
+  const operation: unknown = runInNewContext(
+    compiled + '\nexports.subscribeSharedPreferenceChanges',
+    { exports: {}, window: host },
+    { timeout: 1000 },
+  )
+  if (typeof operation !== 'function') return ['Shared preference subscription is unavailable.']
+  const subscribe = operation as (keys: readonly string[], invalidate: () => void) => () => void
+  const failures: string[] = []
+  const key = applicationConfig.appearance.preferenceStorageKey
+  const state = { reads: 0, listenedBeforeRead: true }
+  const stop = subscribe([key], () => {
+    state.reads += 1
+    state.listenedBeforeRead &&= listeners.size === 1
+  })
+  const receive = [...listeners][0]
+  if (receive === undefined) return ['Shared preference subscription did not retain its listener.']
+  receive({ key: applicationConfig.workspace.sessionStorageKey, storageArea: area })
+  receive({ key, storageArea: {} })
+  if (state.reads !== 1 || !state.listenedBeforeRead)
+    failures.push('Shared preference subscription must listen before catch-up and filter key/area.')
+  receive({
+    key,
+    storageArea: area,
+    get newValue() {
+      throw new Error('Payload must not be read.')
+    },
+  })
+  receive({ key: null, storageArea: area })
+  if (state.reads !== 3)
+    failures.push(
+      'Shared preference invalidation must handle selected keys and clear without reading payload.',
+    )
+  stop()
+  stop()
+  receive({ key, storageArea: area })
+  if (listeners.size !== 0 || state.reads !== 3)
+    failures.push('Shared preference disposal must remove the listener and ignore late callbacks.')
+  try {
+    subscribe([key], () => {
+      throw new Error('In-memory catch-up cancellation.')
+    })
+  } catch {
+    /* Only the isolated fixture throws; no application or browser fault is injected. */
+  }
+  if (listeners.size !== 0) failures.push('Failed preference catch-up leaked its listener.')
+  const calls = nodesOf(scriptSource(path, source), ts.isCallExpression)
+  if (
+    calls.some((call) =>
+      ['setItem', 'removeItem', 'clear', 'dispatchEvent'].includes(callMemberName(call) ?? ''),
+    )
+  )
+    failures.push('Shared preference invalidation must not write Storage or replay events.')
+  return failures
+}
+
+function validateNavigationModePreferences(): readonly string[] {
+  const violations: string[] = []
+  const expect = (valid: boolean, detail: string): void => {
+    if (!valid) violations.push('Navigation modes: ' + detail)
+  }
+  const ids = consoleNavigationRegistry.map((group) => group.id)
+  const legacy = {
+    schemaVersion: 1,
+    wideNavigationCollapsed: true,
+    expandedGroupIds: ids.slice(0, 2),
+  }
+  const parsed = parseNavigationPreference(legacy)
+  expect(
+    parsed.success &&
+      !parsed.data.accordion &&
+      parsed.data.wideNavigationCollapsed &&
+      isDeepStrictEqual(parsed.data.expandedGroupIds, legacy.expandedGroupIds),
+    'strict legacy input preserves sidebar/group choices and defaults to free mode',
+  )
+  for (const invalid of [
+    { ...legacy, extra: true },
+    { ...legacy, schemaVersion: 2 },
+    { ...legacy, schemaVersion: 2, accordion: 'true' },
+    { ...legacy, schemaVersion: 3, accordion: false },
+  ])
+    expect(
+      !parseNavigationPreference(invalid).success,
+      'unknown, incomplete or unsupported records fail validation',
+    )
+
+  type ApplicationPinia = Parameters<typeof initializeNavigationPreference>[0]
+  const piniaLibrary = createRequire(resolve(rootDirectory, 'apps/web/package.json'))('pinia') as {
+    createPinia(): ApplicationPinia
+    disposePinia(pinia: ApplicationPinia): void
+    getActivePinia(): ApplicationPinia | undefined
+    setActivePinia(pinia: ApplicationPinia | undefined): void
+  }
+  const originalPinia = piniaLibrary.getActivePinia()
+  const pinia = piniaLibrary.createPinia()
+  const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window')
+  const key = applicationConfig.navigation.preferenceStorageKey
+  const values = new Map<string, string>([[key, JSON.stringify(legacy)]])
+  let writes = 0
+  let mismatch = false
+  const errors: string[] = []
+  const errorAdapter = createStorageErrorAdapter({
+    startupAttemptId: createStartupAttemptId(),
+    releaseSha: '0'.repeat(40),
+    buildVersion: '0.0.0',
+  })
+  Object.defineProperty(globalThis, 'window', {
+    configurable: true,
+    value: {
+      localStorage: {
+        getItem(name: string) {
+          return values.get(name) ?? null
+        },
+        setItem(name: string, value: string) {
+          writes += 1
+          if (mismatch) {
+            const parsedValue = navigationPreferenceSchema.parse(JSON.parse(value) as unknown)
+            value = JSON.stringify({ ...parsedValue, accordion: !parsedValue.accordion })
+          }
+          values.set(name, value)
+        },
+      },
+    },
+  })
+  let stop: (() => void) | undefined
+  try {
+    const adapter = createNavigationPreferenceStorage(
+      {
+        normalize(id, input) {
+          errors.push(id)
+          return errorAdapter.normalize(id, input)
+        },
+      },
+      () => false,
+    )
+    let invalidate = (): void => undefined
+    const port: NavigationPreferencePort = {
+      ...adapter,
+      subscribe(listener) {
+        invalidate = listener
+        listener()
+        return () => {
+          invalidate = () => undefined
+        }
+      },
+    }
+    const store = useNavigationPreferenceStore(pinia)
+    stop = store.initialize(port, ids)
+    expect(
+      writes === 0 && !store.accordion && store.wideNavigationCollapsed,
+      'legacy restore and catch-up do not rewrite storage',
+    )
+    store.setNavigationAccordion(true, [])
+    const saved = navigationPreferenceSchema.parse(JSON.parse(values.get(key) ?? 'null') as unknown)
+    expect(
+      writes === 1 &&
+        saved.accordion &&
+        saved.expandedGroupIds.length === 0 &&
+        saved.wideNavigationCollapsed,
+      'mode and branch choice save atomically without persisting an active route',
+    )
+    store.setExpandedGroupIds(ids)
+    expect(store.expandedGroupIds.length === 1, 'accordion keeps one admitted preferred root')
+    store.setNavigationAccordion(false, ids)
+    expect(
+      !store.accordion && isDeepStrictEqual(store.expandedGroupIds, ids),
+      'free mode restores all branches and permits independent expansion',
+    )
+    const beforeRemote = writes
+    values.set(
+      key,
+      JSON.stringify({ ...saved, accordion: true, expandedGroupIds: ids.slice(1, 2) }),
+    )
+    invalidate()
+    expect(
+      store.accordion &&
+        isDeepStrictEqual(store.expandedGroupIds, ids.slice(1, 2)) &&
+        writes === beforeRemote,
+      'remote mode/branch preferences apply without writeback or action replay',
+    )
+    values.set(key, '{}')
+    invalidate()
+    expect(
+      store.accordion &&
+        isDeepStrictEqual(store.expandedGroupIds, ids.slice(1, 2)) &&
+        writes === beforeRemote,
+      'invalid remote records preserve the last valid mode',
+    )
+    mismatch = true
+    expect(
+      adapter.write(saved).status === 'failed' && errors.includes('storage-readback-mismatch'),
+      'readback validates the persisted mode as well as the other preference fields',
+    )
+    expect(
+      isDeepStrictEqual(store.setNavigationAccordion(false, ids), {
+        status: 'applied',
+        persistence: 'failed',
+      }) && !store.accordion,
+      'the real storage readback failure reaches the caller without rolling back the applied mode',
+    )
+    stop()
+    const beforeDisposed = writes
+    store.setNavigationAccordion(false, ids)
+    expect(writes === beforeDisposed, 'disposed preferences cannot save mode changes')
+  } finally {
+    stop?.()
+    piniaLibrary.disposePinia(pinia)
+    piniaLibrary.setActivePinia(originalPinia)
+    if (originalWindow === undefined) Reflect.deleteProperty(globalThis, 'window')
+    else Object.defineProperty(globalThis, 'window', originalWindow)
+  }
+  return violations
+}
+
+function validatePreferenceMutationResults(): readonly string[] {
+  const violations: string[] = []
+  const expect = (valid: boolean, detail: string): void => {
+    if (!valid) violations.push('Preference mutation results: ' + detail)
+  }
+  type ApplicationPinia = Parameters<typeof initializeNavigationPreference>[0]
+  const piniaLibrary = createRequire(resolve(rootDirectory, 'apps/web/package.json'))('pinia') as {
+    createPinia(): ApplicationPinia
+    disposePinia(pinia: ApplicationPinia): void
+    getActivePinia(): ApplicationPinia | undefined
+    setActivePinia(pinia: ApplicationPinia | undefined): void
+  }
+  const originalPinia = piniaLibrary.getActivePinia()
+  const pinia = piniaLibrary.createPinia()
+  const ids = consoleNavigationRegistry.map((group) => group.id)
+  let navigationRead: ReturnType<NavigationPreferencePort['read']> = { status: 'missing' }
+  let scrollRead: ReturnType<ScrollPreferencePort['read']> = { status: 'missing' }
+  const readNavigation: NavigationPreferencePort['read'] = () => navigationRead
+  const readScroll: ScrollPreferencePort['read'] = () => scrollRead
+  let navigationWrites = 0
+  let scrollWrites = 0
+  let writable = true
+  let duringScrollWrite: (() => void) | undefined
+  let invalidateNavigation = (): void => undefined
+  let invalidateScroll = (): void => undefined
+  let stopNavigation: (() => void) | undefined
+  let stopScroll: (() => void) | undefined
+  let stopNavigationWatch: (() => void) | undefined
+  let stopScrollWatch: (() => void) | undefined
+  const saved = { status: 'applied', persistence: 'saved' }
+  const failed = { status: 'applied', persistence: 'failed' }
+  const notReady = { status: 'not-ready' }
+  try {
+    const navigation = useNavigationPreferenceStore(pinia)
+    const scroll = useScrollPreferenceStore(pinia)
+    const unavailableResults = [
+      navigation.setWideNavigationCollapsed(true),
+      navigation.setExpandedGroupIds(ids),
+      navigation.setNavigationAccordion(true, ids),
+      scroll.setRestoreOnRefresh(false),
+    ]
+    expect(
+      unavailableResults.every((result) => isDeepStrictEqual(result, notReady)) &&
+        !navigation.wideNavigationCollapsed &&
+        !navigation.accordion &&
+        navigation.expandedGroupIds.length === 0 &&
+        scroll.restoreOnRefresh &&
+        navigationWrites === 0 &&
+        scrollWrites === 0,
+      'uninitialized calls report not-ready without applying or writing',
+    )
+    stopNavigation = navigation.initialize(
+      {
+        read: () => navigationRead,
+        write(preference) {
+          navigationWrites += 1
+          if (!navigationPreferenceSchema.safeParse(preference).success) {
+            expect(
+              false,
+              'each actual navigation write must contain the complete strict preference',
+            )
+            return { status: 'failed' }
+          }
+          if (!writable) return { status: 'failed' }
+          navigationRead = { status: 'found', preference }
+          return { status: 'saved' }
+        },
+        subscribe(listener) {
+          invalidateNavigation = listener
+          listener()
+          return () => {
+            invalidateNavigation = () => undefined
+          }
+        },
+      },
+      ids,
+    )
+    stopScroll = scroll.initialize({
+      read: () => scrollRead,
+      write(preference) {
+        scrollWrites += 1
+        if (!writable) return { status: 'failed' }
+        duringScrollWrite?.()
+        scrollRead = { status: 'found', preference }
+        return { status: 'saved' }
+      },
+      subscribe(listener) {
+        invalidateScroll = listener
+        listener()
+        return () => {
+          invalidateScroll = () => undefined
+        }
+      },
+    })
+    expect(navigationWrites === 0 && scrollWrites === 0, 'restore/catch-up never saves')
+    for (const mutate of [
+      () => navigation.setWideNavigationCollapsed(true),
+      () => navigation.setExpandedGroupIds(ids.slice(0, 1)),
+      () => navigation.setNavigationAccordion(true, ids),
+      () => navigation.setWideNavigationCollapsed(true),
+    ]) {
+      const before = navigationWrites
+      expect(
+        isDeepStrictEqual(mutate(), saved) && navigationWrites === before + 1,
+        'all navigation actions, including a same-value request, expose one real save',
+      )
+    }
+    expect(
+      navigation.accordion &&
+        navigation.wideNavigationCollapsed &&
+        isDeepStrictEqual(navigation.expandedGroupIds, ids.slice(-1)),
+      'result reporting preserves accordion normalization and applied state',
+    )
+    for (let index = 0; index < 2; index += 1) {
+      const before = scrollWrites
+      expect(
+        isDeepStrictEqual(scroll.setRestoreOnRefresh(false), saved) && scrollWrites === before + 1,
+        'scroll reports each real save, including a same-value request',
+      )
+    }
+    writable = false
+    for (const mutate of [
+      () => navigation.setWideNavigationCollapsed(false),
+      () => navigation.setExpandedGroupIds(ids.slice(0, 1)),
+      () => navigation.setNavigationAccordion(false, ids),
+    ]) {
+      const before = navigationWrites
+      expect(
+        isDeepStrictEqual(mutate(), failed) && navigationWrites === before + 1,
+        'all navigation actions expose actual write failure',
+      )
+    }
+    const beforeScrollFailure = scrollWrites
+    expect(
+      isDeepStrictEqual(scroll.setRestoreOnRefresh(true), failed) &&
+        scrollWrites === beforeScrollFailure + 1 &&
+        scroll.restoreOnRefresh &&
+        !navigation.wideNavigationCollapsed &&
+        !navigation.accordion &&
+        isDeepStrictEqual(navigation.expandedGroupIds, ids),
+      'write failure preserves each applied memory choice without rollback or retry',
+    )
+    const beforeRemote = [navigationWrites, scrollWrites]
+    navigationRead = {
+      status: 'found',
+      preference: {
+        schemaVersion: 2,
+        wideNavigationCollapsed: true,
+        accordion: true,
+        expandedGroupIds: ids.slice(-1),
+      },
+    }
+    scrollRead = { status: 'found', preference: { schemaVersion: 1, restoreOnRefresh: false } }
+    invalidateNavigation()
+    invalidateScroll()
+    expect(
+      navigation.accordion && navigation.wideNavigationCollapsed && !scroll.restoreOnRefresh,
+      'remote records still apply through the original owners',
+    )
+    navigationRead = { status: 'unusable', reason: 'invalid' }
+    scrollRead = { status: 'unusable', reason: 'invalid' }
+    invalidateNavigation()
+    invalidateScroll()
+    expect(
+      navigation.accordion && navigation.wideNavigationCollapsed && !scroll.restoreOnRefresh,
+      'invalid remote input retains the last valid choices',
+    )
+    navigationRead = { status: 'missing' }
+    scrollRead = { status: 'missing' }
+    invalidateNavigation()
+    invalidateScroll()
+    expect(
+      !navigation.accordion &&
+        !navigation.wideNavigationCollapsed &&
+        scroll.restoreOnRefresh &&
+        isDeepStrictEqual(navigation.expandedGroupIds, ids) &&
+        isDeepStrictEqual([navigationWrites, scrollWrites], beforeRemote),
+      'missing remote records restore defaults with zero writeback',
+    )
+    writable = true
+    for (const scenario of ['collapse', 'groups', 'accordion', 'scroll', 'cross-domain'] as const) {
+      navigation.setNavigationAccordion(false, ids)
+      navigation.setWideNavigationCollapsed(false)
+      scroll.setRestoreOnRefresh(true)
+      const before = [navigationWrites, scrollWrites]
+      const calls = { entered: false }
+      let nested: ReturnType<typeof navigation.setWideNavigationCollapsed> | undefined
+      const onChange = (): void => {
+        if (calls.entered) return
+        calls.entered = true
+        switch (scenario) {
+          case 'collapse':
+            nested = navigation.setWideNavigationCollapsed(false)
+            break
+          case 'groups':
+            nested = navigation.setExpandedGroupIds(ids.slice(0, 1))
+            break
+          case 'accordion':
+            nested = navigation.setNavigationAccordion(false, ids.slice(0, 1))
+            break
+          case 'scroll':
+            nested = scroll.setRestoreOnRefresh(true)
+            break
+          case 'cross-domain':
+            nested = navigation.setWideNavigationCollapsed(true)
+            break
+        }
+      }
+      const stopWatch =
+        scenario === 'scroll' || scenario === 'cross-domain'
+          ? scroll.$subscribe(onChange, { flush: 'sync' })
+          : navigation.$subscribe(onChange, { flush: 'sync' })
+      try {
+        const outer =
+          scenario === 'collapse'
+            ? navigation.setWideNavigationCollapsed(true)
+            : scenario === 'groups'
+              ? navigation.setExpandedGroupIds(ids.slice(-1))
+              : scenario === 'accordion'
+                ? navigation.setNavigationAccordion(true, ids)
+                : scroll.setRestoreOnRefresh(false)
+        const storedNavigation = readNavigation()
+        const storedScroll = readScroll()
+        const scrollAction = scenario === 'scroll' || scenario === 'cross-domain'
+        const expectedGroups =
+          scenario === 'groups' || scenario === 'accordion' ? ids.slice(-1) : ids
+        expect(
+          calls.entered &&
+            isDeepStrictEqual(outer, saved) &&
+            isDeepStrictEqual(nested, scenario === 'cross-domain' ? saved : { status: 'busy' }) &&
+            navigationWrites ===
+              (before[0] ?? 0) + (scrollAction && scenario !== 'cross-domain' ? 0 : 1) &&
+            scrollWrites === (before[1] ?? 0) + (scrollAction ? 1 : 0) &&
+            navigation.wideNavigationCollapsed ===
+              (scenario === 'collapse' || scenario === 'cross-domain') &&
+            navigation.accordion === (scenario === 'accordion') &&
+            isDeepStrictEqual(navigation.expandedGroupIds, expectedGroups) &&
+            storedNavigation.status === 'found' &&
+            storedNavigation.preference.wideNavigationCollapsed ===
+              navigation.wideNavigationCollapsed &&
+            storedNavigation.preference.accordion === navigation.accordion &&
+            isDeepStrictEqual(storedNavigation.preference.expandedGroupIds, expectedGroups) &&
+            (!scrollAction ||
+              (storedScroll.status === 'found' &&
+                !storedScroll.preference.restoreOnRefresh &&
+                !scroll.restoreOnRefresh)),
+          `${scenario}: nested calls have truthful results and memory matches the single saved candidate`,
+        )
+      } finally {
+        stopWatch()
+      }
+    }
+    const writeReentry = { entered: false }
+    let nestedWrite: ReturnType<typeof scroll.setRestoreOnRefresh> | undefined
+    duringScrollWrite = () => {
+      if (writeReentry.entered) return
+      writeReentry.entered = true
+      nestedWrite = scroll.setRestoreOnRefresh(true)
+    }
+    const beforeWriteReentry = scrollWrites
+    expect(
+      isDeepStrictEqual(scroll.setRestoreOnRefresh(false), saved) &&
+        writeReentry.entered &&
+        isDeepStrictEqual(nestedWrite, { status: 'busy' }) &&
+        scrollWrites === beforeWriteReentry + 1 &&
+        !scroll.restoreOnRefresh,
+      'the same-store guard also covers synchronous reentry during the actual port write',
+    )
+    const unexpected = new Error('Isolated preference port failure')
+    duringScrollWrite = () => {
+      throw unexpected
+    }
+    let propagated = false
+    try {
+      scroll.setRestoreOnRefresh(false)
+    } catch (source: unknown) {
+      propagated = source === unexpected
+    } finally {
+      duringScrollWrite = undefined
+    }
+    expect(
+      propagated && isDeepStrictEqual(scroll.setRestoreOnRefresh(false), saved),
+      'unexpected port errors propagate while finally releases the same-store guard',
+    )
+    navigation.setNavigationAccordion(false, ids)
+    navigation.setWideNavigationCollapsed(false)
+    scroll.setRestoreOnRefresh(true)
+    const beforeDisposal = [navigationWrites, scrollWrites]
+    stopNavigationWatch = navigation.$subscribe(
+      () => {
+        const stop = stopNavigation
+        stopNavigation = undefined
+        stop?.()
+      },
+      { flush: 'sync' },
+    )
+    stopScrollWatch = scroll.$subscribe(
+      () => {
+        const stop = stopScroll
+        stopScroll = undefined
+        stop?.()
+      },
+      { flush: 'sync' },
+    )
+    expect(
+      isDeepStrictEqual(navigation.setWideNavigationCollapsed(true), failed) &&
+        isDeepStrictEqual(scroll.setRestoreOnRefresh(false), failed) &&
+        navigation.wideNavigationCollapsed &&
+        !scroll.restoreOnRefresh &&
+        isDeepStrictEqual([navigationWrites, scrollWrites], beforeDisposal),
+      'synchronous disposal during apply reports applied/failed and never writes through a released owner',
+    )
+    expect(
+      [
+        navigation.setWideNavigationCollapsed(false),
+        navigation.setExpandedGroupIds([]),
+        navigation.setNavigationAccordion(true, []),
+        scroll.setRestoreOnRefresh(true),
+      ].every((result) => isDeepStrictEqual(result, notReady)) &&
+        navigation.wideNavigationCollapsed &&
+        !navigation.accordion &&
+        !scroll.restoreOnRefresh &&
+        isDeepStrictEqual(navigation.expandedGroupIds, ids) &&
+        isDeepStrictEqual([navigationWrites, scrollWrites], beforeDisposal),
+      'calls after disposal are accurately not-ready without state or write changes',
+    )
+  } finally {
+    stopNavigationWatch?.()
+    stopScrollWatch?.()
+    stopNavigation?.()
+    stopScroll?.()
+    piniaLibrary.disposePinia(pinia)
+    piniaLibrary.setActivePinia(originalPinia)
+  }
+  for (const timing of ['mode', 'groups'] as const) {
+    const casePinia = piniaLibrary.createPinia()
+    const admitted = ['primary', 'secondary']
+    const expectedGroups = admitted.slice(-1)
+    let writes = 0
+    let stop: (() => void) | undefined
+    let stopWatch: (() => void) | undefined
+    const lifecycle = { released: false }
+    let nested:
+      ReturnType<ReturnType<typeof useNavigationPreferenceStore>['setExpandedGroupIds']> | undefined
+    try {
+      const navigation = useNavigationPreferenceStore(casePinia)
+      stop = navigation.initialize(
+        {
+          read: () => ({ status: 'missing' }),
+          write() {
+            writes += 1
+            return { status: 'saved' }
+          },
+          subscribe: () => () => undefined,
+        },
+        admitted,
+      )
+      stopWatch = navigation.$subscribe(
+        () => {
+          if (
+            lifecycle.released ||
+            !navigation.accordion ||
+            (timing === 'groups' && !isDeepStrictEqual(navigation.expandedGroupIds, expectedGroups))
+          )
+            return
+          lifecycle.released = true
+          const dispose = stop
+          stop = undefined
+          dispose?.()
+          nested = navigation.setExpandedGroupIds(admitted)
+        },
+        { flush: 'sync' },
+      )
+      expect(
+        isDeepStrictEqual(navigation.setNavigationAccordion(true, admitted), failed) &&
+          lifecycle.released &&
+          isDeepStrictEqual(nested, notReady) &&
+          navigation.accordion &&
+          isDeepStrictEqual(navigation.expandedGroupIds, expectedGroups) &&
+          writes === 0,
+        `${timing}: accordion disposal retains the prepared normalized groups and cannot write`,
+      )
+    } finally {
+      stopWatch?.()
+      stop?.()
+      piniaLibrary.disposePinia(casePinia)
+      piniaLibrary.setActivePinia(originalPinia)
+    }
+  }
   return violations
 }
 
@@ -1525,27 +2384,21 @@ export async function validateStorageArchitecture(): Promise<readonly string[]> 
       storageErrorMessageTable,
     ),
     ...(await storageOwnerClosureViolations()),
+    ...(await sharedPreferenceEventViolations()),
     ...(await rawStorageKeyViolations()),
     ...(await sensitivePersistenceViolations()),
     ...(await storageLifecycleViolations()),
     ...(await navigationPreferenceViolations()),
+    ...validateNavigationModePreferences(),
+    ...validatePreferenceMutationResults(),
     ...(await workspaceSessionViolations()),
     ...(await scrollStorageViolations()),
     ...(await browserPageSessionViolations()),
     ...focusedNegativeProbes(),
   ]
 
-  const channelName: string = storageChangeChannelName
-
-  if (
-    storageMigrationRegistry.length !== 0 ||
-    storageCrossTabEventAllowlist.length !== 0 ||
-    channelName !== 'pavp:storage:change' ||
-    nonePrincipalPartitionId !== 'none'
-  ) {
-    violations.push(
-      'Storage migration registry, cross-tab allowlist, channel identity and partition sentinel must remain frozen.',
-    )
+  if (storageMigrationRegistry.length !== 0 || nonePrincipalPartitionId !== 'none') {
+    violations.push('Storage migration registry and partition sentinel must remain frozen.')
   }
 
   return [...new Set(violations)]

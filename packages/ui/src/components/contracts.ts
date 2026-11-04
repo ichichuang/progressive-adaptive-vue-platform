@@ -36,14 +36,17 @@ export interface UiAdminShellCopy {
   readonly closeActionLabel: string
   readonly expandNavigationLabel: string
   readonly collapseNavigationLabel: string
-  readonly expandAllMenusLabel: string
-  readonly collapseAllMenusLabel: string
+  readonly freeNavigationModeLabel: string
+  readonly accordionNavigationModeLabel: string
 }
 
-export interface UiAdminNavigationExpansionUpdate {
-  readonly expandedGroupIds: readonly string[]
-  readonly intent: 'group' | 'all'
-}
+export type UiAdminNavigationExpansionUpdate =
+  | { readonly expandedGroupIds: readonly string[]; readonly intent: 'group' }
+  | {
+      readonly expandedGroupIds: readonly string[]
+      readonly intent: 'mode'
+      readonly accordion: boolean
+    }
 
 export interface UiWorkspaceTab {
   readonly id: string

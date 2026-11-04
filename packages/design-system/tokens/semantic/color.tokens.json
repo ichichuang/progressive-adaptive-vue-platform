@@ -78,6 +78,42 @@
       "primary": {
         "$type": "color",
         "$value": "{color.palette.neutral.900}"
+      },
+      "info": {
+        "$type": "color",
+        "$value": "{color.palette.status.light.standard.info.default}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.control.info"
+          }
+        }
+      },
+      "success": {
+        "$type": "color",
+        "$value": "{color.palette.status.light.standard.success.default}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.control.success"
+          }
+        }
+      },
+      "warning": {
+        "$type": "color",
+        "$value": "{color.palette.status.light.standard.warning.default}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.control.warning"
+          }
+        }
+      },
+      "error": {
+        "$type": "color",
+        "$value": "{color.palette.status.light.standard.error.default}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "color.control.error"
+          }
+        }
       }
     },
     "focus": {

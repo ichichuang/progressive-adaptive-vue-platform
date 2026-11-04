@@ -8,6 +8,7 @@ export const defaultRestoreOnRefresh = true
 export type ScrollPreference = z.infer<typeof scrollPreferenceSchema>
 
 export interface ScrollPreferencePort {
+  subscribe(invalidate: () => void): () => void
   read():
     | { readonly status: 'missing' }
     | { readonly status: 'unusable'; readonly reason: 'invalid' | 'unavailable' | 'disposed' }
@@ -17,3 +18,11 @@ export interface ScrollPreferencePort {
     readonly reason?: 'disposed'
   }
 }
+
+export type ScrollPreferenceMutationResult =
+  | { readonly status: 'not-ready' }
+  | { readonly status: 'busy' }
+  | {
+      readonly status: 'applied'
+      readonly persistence: ReturnType<ScrollPreferencePort['write']>['status']
+    }

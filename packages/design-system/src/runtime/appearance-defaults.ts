@@ -2,6 +2,7 @@ import {
   explicitThemePreferenceSchema,
   type ExplicitThemePreference,
 } from '../schema/preference.schema'
+import { radiusProjection } from '../generated/radius-projection'
 
 type ProductPreference = ExplicitThemePreference['appearance']
 
@@ -13,12 +14,12 @@ function freezeProductPreferenceDefault(preference: ProductPreference): ProductP
 
 export const ProductPreferenceDefault = freezeProductPreferenceDefault(
   explicitThemePreferenceSchema.parse({
-    schemaVersion: 3,
+    schemaVersion: 4,
     appearance: {
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
-        themeId: 'iris',
+        themeId: 'royal-iris',
       },
       contrast: 'standard',
       material: 'adaptive',
@@ -28,6 +29,7 @@ export const ProductPreferenceDefault = freezeProductPreferenceDefault(
       },
       fontScale: 1,
       motion: 'full',
+      radius: radiusProjection.defaultValue,
     },
   }).appearance,
 )

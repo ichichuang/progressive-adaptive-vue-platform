@@ -679,6 +679,30 @@ function validateBootstrapExecution(source: ParsedSource): string[] {
     violations.push('Runtime Configuration must execute before Vue or Pinia creation.')
   }
 
+  const providersImport = namedImportLocalName(
+    source.sourceFile,
+    './install-providers',
+    'installPlatformProviders',
+  )
+  const providersCalls = nodesOf(source.sourceFile, ts.isCallExpression).filter(
+    (call) =>
+      providersImport !== undefined &&
+      ts.isIdentifier(call.expression) &&
+      call.expression.text === providersImport,
+  )
+  const providersInput = objectLiteral(providersCalls[0]?.arguments[0])
+  if (
+    providersCalls.length !== 1 ||
+    providersInput === undefined ||
+    !equalArray(memberPath(propertyExpression(providersInput, 'api')).slice(-2), [
+      'configuration',
+      'api',
+    ])
+  )
+    violations.push(
+      'The API read boundary must receive the existing validated Runtime Configuration API through provider installation.',
+    )
+
   const routerFactoryImport = namedImportLocalName(
     source.sourceFile,
     '../router/router-lifecycle',
@@ -839,13 +863,10 @@ function validateConfigurationContract(source: ParsedSource): string[] {
   if (
     !equalArray(stringArray(variableInitializer(source, 'compiledEnvironmentValues')), [
       'development',
-      'staging',
       'production',
     ])
   ) {
-    violations.push(
-      'Compiled Environment authority must contain exactly development/staging/production.',
-    )
+    violations.push('Compiled Environment authority must contain exactly development/production.')
   }
   if (
     !equalArray(
@@ -863,7 +884,14 @@ function validateConfigurationContract(source: ParsedSource): string[] {
     violations.push('Core Runtime Configuration strict schema authority is missing.')
     return violations
   }
-  const schema = unwrapExpression(schemaInitializer)
+  let schema = unwrapExpression(schemaInitializer)
+  while (
+    ts.isCallExpression(schema) &&
+    ts.isPropertyAccessExpression(schema.expression) &&
+    schema.expression.name.text !== 'strictObject'
+  ) {
+    schema = unwrapExpression(schema.expression.expression)
+  }
   if (
     !ts.isCallExpression(schema) ||
     !ts.isPropertyAccessExpression(schema.expression) ||
@@ -882,9 +910,10 @@ function validateConfigurationContract(source: ParsedSource): string[] {
       'deploymentBase',
       'releaseSha',
       'buildVersion',
+      'api',
     ])
   ) {
-    violations.push('Core Runtime Configuration schema must contain exactly five fields.')
+    violations.push('Core Runtime Configuration schema must contain exactly six fields.')
     return violations
   }
 
@@ -897,12 +926,13 @@ function validateConfigurationContract(source: ParsedSource): string[] {
     }),
   )
   const expectedFields = {
-    schemaVersion: 'z.literal(1)',
+    schemaVersion: 'z.literal(2)',
     environment: 'z.enum(compiledEnvironmentValues)',
     deploymentBase: "z.literal('/')",
     releaseSha: 'z.string().regex(/^[0-9a-f]{40}$/u)',
     buildVersion:
       'z.string().regex(/^(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)\\.(?:0|[1-9][0-9]*)$/u)',
+    api: 'apiConfigurationSchema',
   }
   for (const [field, expected] of Object.entries(expectedFields)) {
     if (fieldTexts[field] !== expected) {
@@ -1504,15 +1534,82 @@ function validateVueMount(
   allSources: readonly ParsedSource[],
 ): string[] {
   const violations: string[] = []
-  const mountCalls = allSources.flatMap((source) =>
-    nodesOf(source.sourceFile, ts.isCallExpression)
-      .filter((call) => callMemberName(call) === 'mount')
-      .map((call) => ({ call, source })),
+  const sourcesByPath = new Map(allSources.map((source) => [resolve(source.path), source]))
+  const compilerOptions: ts.CompilerOptions = { noResolve: true, noLib: true }
+  const host = ts.createCompilerHost(compilerOptions)
+  host.getSourceFile = (fileName) => sourcesByPath.get(resolve(fileName))?.sourceFile
+  host.fileExists = (fileName) => sourcesByPath.has(resolve(fileName))
+  host.readFile = (fileName) => sourcesByPath.get(resolve(fileName))?.text
+  const checker = ts
+    .createProgram({
+      rootNames: [...sourcesByPath.keys()],
+      options: compilerOptions,
+      host,
+    })
+    .getTypeChecker()
+  const applicationLifecycleCalls = allSources.flatMap((source) => {
+    const queryConstructors = new Set<ts.Symbol>()
+    for (const declaration of source.sourceFile.statements) {
+      if (
+        !ts.isImportDeclaration(declaration) ||
+        !ts.isStringLiteral(declaration.moduleSpecifier) ||
+        declaration.moduleSpecifier.text !== '@tanstack/vue-query' ||
+        declaration.importClause?.phaseModifier === ts.SyntaxKind.TypeKeyword
+      )
+        continue
+      const bindings = declaration.importClause?.namedBindings
+      if (bindings === undefined || !ts.isNamedImports(bindings)) continue
+      for (const specifier of bindings.elements) {
+        if (
+          specifier.isTypeOnly ||
+          (specifier.propertyName?.text ?? specifier.name.text) !== 'QueryClient'
+        )
+          continue
+        const symbol = checker.getSymbolAtLocation(specifier.name)
+        if (symbol !== undefined) queryConstructors.add(symbol)
+      }
+    }
+    const queryClients = new Map<ts.Symbol, ts.Node>()
+    for (const declaration of nodesOf(source.sourceFile, ts.isVariableDeclaration)) {
+      if (
+        !ts.isIdentifier(declaration.name) ||
+        !ts.isVariableDeclarationList(declaration.parent) ||
+        (declaration.parent.flags & ts.NodeFlags.Const) === 0 ||
+        declaration.initializer === undefined
+      )
+        continue
+      const statement = declaration.parent.parent
+      const container = ts.isVariableStatement(statement) ? statement.parent : statement
+      const initializer = declaration.initializer
+      if (ts.isNewExpression(initializer) && ts.isIdentifier(initializer.expression)) {
+        const constructor = checker.getSymbolAtLocation(initializer.expression)
+        if (constructor === undefined || !queryConstructors.has(constructor)) continue
+      } else if (ts.isIdentifier(initializer)) {
+        const target = checker.getSymbolAtLocation(initializer)
+        if (target === undefined || queryClients.get(target) !== container) continue
+      } else continue
+      const symbol = checker.getSymbolAtLocation(declaration.name)
+      if (symbol !== undefined) queryClients.set(symbol, container)
+    }
+    return nodesOf(source.sourceFile, ts.isCallExpression)
+      .filter((call) => {
+        if (!['mount', 'unmount'].includes(callMemberName(call) ?? '')) return false
+        const receiver = ts.isPropertyAccessExpression(call.expression)
+          ? call.expression.expression
+          : undefined
+        const symbol =
+          receiver !== undefined && ts.isIdentifier(receiver)
+            ? checker.getSymbolAtLocation(receiver)
+            : undefined
+        return symbol === undefined || !queryClients.has(symbol)
+      })
+      .map((call) => ({ call, source }))
+  })
+  const mountCalls = applicationLifecycleCalls.filter(
+    ({ call }) => callMemberName(call) === 'mount',
   )
-  const unmountCalls = allSources.flatMap((source) =>
-    nodesOf(source.sourceFile, ts.isCallExpression).filter(
-      (call) => callMemberName(call) === 'unmount',
-    ),
+  const unmountCalls = applicationLifecycleCalls.filter(
+    ({ call }) => callMemberName(call) === 'unmount',
   )
   if (
     mountCalls.length !== 1 ||
@@ -1568,6 +1665,74 @@ function validateVueMount(
   return violations
 }
 
+function vueMountQueryLifecycleProbes(createApplication: ParsedSource): string[] {
+  const prefix =
+    "import { QueryClient } from '@tanstack/vue-query'; import type { App } from 'vue'; const queryClient = new QueryClient(); queryClient.mount(); queryClient.unmount();"
+  const cases = [
+    ['direct QueryClient lifecycle', prefix, false],
+    [
+      'renamed QueryClient import and handle',
+      "import { QueryClient as CacheClient } from '@tanstack/vue-query'; const cache = new CacheClient(); cache.mount(); cache.unmount();",
+      false,
+    ],
+    [
+      'ordinary additional Vue lifecycle',
+      `${prefix} function wrong(app: App) { app.mount('#unexpected'); app.unmount() }`,
+      true,
+    ],
+    [
+      'same-scope immutable lifecycle alias',
+      `${prefix} const lifecycleClient = queryClient; lifecycleClient.mount(); function release() { lifecycleClient.unmount() }`,
+      false,
+    ],
+    [
+      'same-scope immutable alias chain',
+      `${prefix} const lifecycleClient = queryClient, releaseClient = lifecycleClient; lifecycleClient.mount(); releaseClient.unmount();`,
+      false,
+    ],
+    [
+      'alias receiver parameter shadow',
+      `${prefix} const lifecycleClient = queryClient; function wrong(lifecycleClient: App) { lifecycleClient.mount('#unexpected'); lifecycleClient.unmount() }`,
+      true,
+    ],
+    [
+      'alias target parameter shadow',
+      `${prefix} function wrong(queryClient: App) { const lifecycleClient = queryClient; lifecycleClient.mount('#unexpected'); lifecycleClient.unmount() }`,
+      true,
+    ],
+    [
+      'mutable alias reassigned to Vue',
+      `${prefix} function wrong(app: App) { let lifecycleClient: QueryClient | App = queryClient; lifecycleClient = app; lifecycleClient.mount('#unexpected'); lifecycleClient.unmount() }`,
+      true,
+    ],
+    [
+      'receiver parameter shadow',
+      `${prefix} function wrong(queryClient: App) { queryClient.mount('#unexpected'); queryClient.unmount() }`,
+      true,
+    ],
+    [
+      'receiver block shadow',
+      `${prefix} function wrong(app: App) { { const queryClient = app; queryClient.mount('#unexpected'); queryClient.unmount() } }`,
+      true,
+    ],
+    [
+      'constructor parameter shadow',
+      `${prefix} function wrong(QueryClient: new () => App) { const client = new QueryClient(); client.mount('#unexpected'); client.unmount() }`,
+      true,
+    ],
+  ] as const
+  return cases.flatMap(([label, text, rejected]) => {
+    const fixture = parseSource(
+      resolve(webSourceDirectory, 'app/bootstrap/in-memory-mount-contract.ts'),
+      text,
+    )
+    const violations = validateVueMount(createApplication, [createApplication, fixture])
+    return violations.length === (rejected ? 2 : 0)
+      ? []
+      : [`Vue mount Query lifecycle probe failed: ${label}.`]
+  })
+}
+
 function validateProviders(installProviders: ParsedSource, pinia: ParsedSource): string[] {
   const violations: string[] = []
   if (
@@ -1587,6 +1752,25 @@ function validateProviders(installProviders: ParsedSource, pinia: ParsedSource):
   ) {
     violations.push('Provider installation must install Pinia and Appearance exactly once.')
   }
+  const apiBoundaryImport = namedImportLocalName(
+    installProviders.sourceFile,
+    '../api/api-read-boundary',
+    'provideApiReadBoundary',
+  )
+  const apiBoundaryCalls = nodesOf(installProviders.sourceFile, ts.isCallExpression).filter(
+    (call) =>
+      apiBoundaryImport !== undefined &&
+      ts.isIdentifier(call.expression) &&
+      call.expression.text === apiBoundaryImport,
+  )
+  if (
+    apiBoundaryCalls.length !== 1 ||
+    memberPath(apiBoundaryCalls[0]?.arguments[1]).at(-1) !== 'api'
+  )
+    violations.push(
+      'The immutable API read boundary must be installed once with the caller-provided API configuration.',
+    )
+
   const piniaCalls = nodesOf(pinia.sourceFile, ts.isCallExpression).map(callMemberName)
   for (const name of ['createPinia', 'disposePinia', 'getActivePinia', 'setActivePinia']) {
     if (piniaCalls.filter((candidate) => candidate === name).length !== 1) {
@@ -1634,17 +1818,187 @@ function validateRetry(
   ) {
     violations.push('Configuration retry must consume all and only the eleven cause authority.')
   }
-  const kernelText = canonicalText(kernel.sourceFile, kernel)
-  if (!kernelText.includes('configurationRetriesUsed<maximumRetriesPerDocument')) {
+  const counterGetter = nodesOf(kernel.sourceFile, ts.isGetAccessorDeclaration).find(
+    (getter) => propertyName(getter.name) === 'configurationRetriesUsed',
+  )
+  const counterReturn = counterGetter?.body?.statements.find(ts.isReturnStatement)?.expression
+  const counter =
+    counterReturn !== undefined && ts.isIdentifier(counterReturn) ? counterReturn.text : undefined
+  const maximum = nodesOf(kernel.sourceFile, ts.isVariableDeclaration).find((declaration) =>
+    equalArray(memberPath(declaration.initializer), [
+      'startupConfigurationRecoveryPolicy',
+      'maximumRetriesPerDocument',
+    ]),
+  )?.name
+  const maximumName = maximum !== undefined && ts.isIdentifier(maximum) ? maximum.text : undefined
+  const configurationBranch = nodesOf(kernel.sourceFile, ts.isIfStatement).find((statement) => {
+    const condition = unwrapExpression(statement.expression)
+    if (
+      !ts.isBinaryExpression(condition) ||
+      condition.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken
+    )
+      return false
+    const status =
+      literalValue(condition.right) === 'configuration-failure'
+        ? condition.left
+        : literalValue(condition.left) === 'configuration-failure'
+          ? condition.right
+          : undefined
+    const path = memberPath(status)
+    return path.length === 2 && path[1] === 'status'
+  })
+  const configurationCondition =
+    configurationBranch === undefined ? undefined : unwrapExpression(configurationBranch.expression)
+  const outcomeName =
+    configurationCondition !== undefined && ts.isBinaryExpression(configurationCondition)
+      ? memberPath(
+          literalValue(configurationCondition.right) === 'configuration-failure'
+            ? configurationCondition.left
+            : configurationCondition.right,
+        )[0]
+      : undefined
+  const action = (
+    configurationBranch === undefined
+      ? []
+      : nodesOf(configurationBranch.thenStatement, ts.isPropertyAssignment)
+  ).find(
+    (property) =>
+      propertyName(property.name) === 'action' &&
+      ts.isConditionalExpression(unwrapExpression(property.initializer)),
+  )
+  const conditional = action === undefined ? undefined : unwrapExpression(action.initializer)
+  const availability =
+    conditional !== undefined && ts.isConditionalExpression(conditional)
+      ? unwrapExpression(conditional.condition)
+      : undefined
+  const guard =
+    availability !== undefined && ts.isIdentifier(availability)
+      ? variableInitializer(kernel, availability.text)
+      : availability
+  const terms = (expression: ts.Expression | undefined): readonly ts.Expression[] => {
+    if (expression === undefined) return []
+    const value = unwrapExpression(expression)
+    return ts.isBinaryExpression(value) &&
+      value.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken
+      ? [...terms(value.left), ...terms(value.right)]
+      : [value]
+  }
+  const guardTerms = terms(guard)
+  const underBudget = guardTerms.some((term) => {
+    let value = term
+    const negated =
+      ts.isPrefixUnaryExpression(value) && value.operator === ts.SyntaxKind.ExclamationToken
+    if (negated && ts.isPrefixUnaryExpression(value)) value = unwrapExpression(value.operand)
+    if (!ts.isBinaryExpression(value)) return false
+    const left = unwrapExpression(value.left)
+    const right = unwrapExpression(value.right)
+    if (!ts.isIdentifier(left) || !ts.isIdentifier(right)) return false
+    return (
+      (left.text === counter &&
+        right.text === maximumName &&
+        value.operatorToken.kind ===
+          (negated ? ts.SyntaxKind.GreaterThanEqualsToken : ts.SyntaxKind.LessThanToken)) ||
+      (left.text === maximumName &&
+        right.text === counter &&
+        value.operatorToken.kind ===
+          (negated ? ts.SyntaxKind.LessThanEqualsToken : ts.SyntaxKind.GreaterThanToken))
+    )
+  })
+  if (!underBudget) {
     violations.push('Runtime Kernel must guard retry with the per-document maximum.')
   }
-  if ((kernelText.match(/configurationRetriesUsed\+=1/gu) ?? []).length !== 1) {
+  const counterWrites = nodesOf(
+    kernel.sourceFile,
+    (node): node is ts.BinaryExpression | ts.PrefixUnaryExpression | ts.PostfixUnaryExpression =>
+      (ts.isBinaryExpression(node) &&
+        ts.isIdentifier(node.left) &&
+        node.left.text === counter &&
+        node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+        node.operatorToken.kind <= ts.SyntaxKind.LastAssignment) ||
+      ((ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+        ts.isIdentifier(node.operand) &&
+        node.operand.text === counter &&
+        (node.operator === ts.SyntaxKind.PlusPlusToken ||
+          node.operator === ts.SyntaxKind.MinusMinusToken)),
+  )
+  const write = counterWrites[0]
+  const isCounter = (expression: ts.Expression): boolean => {
+    const value = unwrapExpression(expression)
+    return ts.isIdentifier(value) && value.text === counter
+  }
+  const assignedSum =
+    write !== undefined &&
+    ts.isBinaryExpression(write) &&
+    write.operatorToken.kind === ts.SyntaxKind.EqualsToken
+      ? unwrapExpression(write.right)
+      : undefined
+  const assignsOneMore =
+    assignedSum !== undefined &&
+    ts.isBinaryExpression(assignedSum) &&
+    assignedSum.operatorToken.kind === ts.SyntaxKind.PlusToken &&
+    ((isCounter(assignedSum.left) && literalValue(assignedSum.right) === 1) ||
+      (literalValue(assignedSum.left) === 1 && isCounter(assignedSum.right)))
+  const incrementsOnce =
+    write !== undefined &&
+    ((!ts.isBinaryExpression(write) && write.operator === ts.SyntaxKind.PlusPlusToken) ||
+      (ts.isBinaryExpression(write) &&
+        write.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken &&
+        literalValue(write.right) === 1) ||
+      assignsOneMore)
+  const retryObject =
+    conditional !== undefined && ts.isConditionalExpression(conditional)
+      ? objectLiteral(conditional.whenTrue)
+      : undefined
+  const run = retryObject?.properties.find((property) => propertyName(property.name) === 'run')
+  const runExpression =
+    run !== undefined && ts.isPropertyAssignment(run)
+      ? unwrapExpression(run.initializer)
+      : undefined
+  const runBody =
+    run !== undefined && ts.isMethodDeclaration(run)
+      ? run.body
+      : runExpression !== undefined &&
+          (ts.isArrowFunction(runExpression) || ts.isFunctionExpression(runExpression))
+        ? runExpression.body
+        : undefined
+  if (
+    counterWrites.length !== 1 ||
+    !incrementsOnce ||
+    retryObject === undefined ||
+    literalValue(propertyExpression(retryObject, 'kind')) !== 'retry' ||
+    runBody === undefined ||
+    write.parent.parent !== runBody
+  ) {
     violations.push('Runtime Kernel must consume retry budget exactly once per user retry.')
   }
-  if (!kernelText.includes("outcome.status==='configuration-failure'")) {
+  if (configurationBranch === undefined) {
     violations.push('Only Runtime Configuration failure may enter the in-document retry branch.')
   }
-  if (!kernelText.includes('outcome.disposalResult.failedSteps.length===0')) {
+  const completeCleanup = guardTerms.some((term) => {
+    const isFailedLength = (expression: ts.Expression): boolean =>
+      equalArray(memberPath(unwrapExpression(expression)), [
+        outcomeName ?? '',
+        'disposalResult',
+        'failedSteps',
+        'length',
+      ])
+    if (ts.isPrefixUnaryExpression(term) && term.operator === ts.SyntaxKind.ExclamationToken)
+      return isFailedLength(term.operand)
+    if (!ts.isBinaryExpression(term)) return false
+    return (
+      (isFailedLength(term.left) &&
+        literalValue(term.right) === 0 &&
+        [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.LessThanEqualsToken].includes(
+          term.operatorToken.kind,
+        )) ||
+      (literalValue(term.left) === 0 &&
+        isFailedLength(term.right) &&
+        [ts.SyntaxKind.EqualsEqualsEqualsToken, ts.SyntaxKind.GreaterThanEqualsToken].includes(
+          term.operatorToken.kind,
+        ))
+    )
+  })
+  if (!completeCleanup) {
     violations.push('Retry must require complete failed-attempt disposal.')
   }
   const clickAdds = directStringArguments(fatalBoundary, 'addEventListener').filter(
@@ -1667,9 +2021,12 @@ function validateAppearance(source: ParsedSource): string[] {
       '(prefers-color-scheme: dark)',
       '(forced-colors: active)',
       '(prefers-reduced-transparency: reduce)',
+      '(prefers-reduced-motion: reduce)',
     ])
   ) {
-    violations.push('Appearance media authority must contain exactly the three Package 5 queries.')
+    violations.push(
+      'Appearance media authority must contain its three appearance queries and the admitted reduced-motion query.',
+    )
   }
   const addChange = directStringArguments(source, 'addEventListener').filter(
     (event) => event === 'change',
@@ -1945,7 +2302,7 @@ function scrollDocumentLifecycleNegativeProbes(
 
 function validateNoFutureCapabilities(sources: readonly ParsedSource[]): string[] {
   const violations: string[] = []
-  const prohibitedPackages = ['@tanstack/vue-query', 'axios', 'openapi-fetch', 'vue-i18n']
+  const prohibitedPackages = ['axios', 'openapi-fetch', 'vue-i18n']
   for (const source of sources) {
     for (const declaration of nodesOf(source.sourceFile, ts.isImportDeclaration)) {
       const specifier = declaration.moduleSpecifier
@@ -2048,6 +2405,67 @@ function focusedNegativeProbes(input: {
     ).includes('Configuration recovery policy field maximumRetriesPerDocument drifted.')
   ) {
     failures.push('Negative probe failed: retry budget drift was accepted.')
+  }
+  const retryContracts = [
+    'Runtime Kernel must guard retry with the per-document maximum.',
+    'Runtime Kernel must consume retry budget exactly once per user retry.',
+    'Retry must require complete failed-attempt disposal.',
+  ]
+  const retryProbe = parseSource(
+    'retry-expression-probe.ts',
+    `
+const maximum = startupConfigurationRecoveryPolicy.maximumRetriesPerDocument
+let used = 0
+const handle = { get configurationRetriesUsed() { return used } }
+if (failure.status === 'configuration-failure') {
+  const available = failure.disposalResult.failedSteps.length === 0 && used < maximum
+  renderConfigurationFailure({ action: available
+    ? { kind: 'retry', run() { used += 1 } }
+    : { kind: 'reload' } })
+}`,
+  )
+  const retryPositiveProbes: readonly (readonly [string, string])[] = [
+    ['used += 1', 'used++'],
+    ['used += 1', '++used'],
+    ['used += 1', 'used = used + 1'],
+    ['used < maximum', 'maximum > used'],
+    ['used < maximum', '!(used >= maximum)'],
+    [
+      'failure.disposalResult.failedSteps.length === 0',
+      '!failure.disposalResult.failedSteps.length',
+    ],
+    [
+      'failure.disposalResult.failedSteps.length === 0',
+      '0 === failure.disposalResult.failedSteps.length',
+    ],
+    ['run() { used += 1 }', 'run: () => { used += 1 }'],
+  ]
+  for (const [search, replacement] of retryPositiveProbes) {
+    const changed = mutate(retryProbe, search, replacement)
+    if (
+      validateRetry(input.retryPolicy, changed, parseSource('fatal-boundary.ts', 'export {}')).some(
+        (violation) => retryContracts.includes(violation),
+      )
+    ) {
+      failures.push('Retry in-memory positive probe froze an equivalent private expression.')
+    }
+  }
+  const retryNegativeProbes: readonly (readonly [string, string, string])[] = [
+    ['used += 1', 'used += 2', retryContracts[1] ?? ''],
+    ['used < maximum', 'used <= maximum', retryContracts[0] ?? ''],
+    ['failure.disposalResult.failedSteps.length === 0', 'true', retryContracts[2] ?? ''],
+  ]
+  for (const [search, replacement, expected] of retryNegativeProbes) {
+    const changed = mutate(retryProbe, search, replacement)
+    if (
+      !validateRetry(
+        input.retryPolicy,
+        changed,
+        parseSource('fatal-boundary.ts', 'export {}'),
+      ).includes(expected)
+    ) {
+      failures.push('Retry in-memory negative probe lost budget or cleanup protection.')
+    }
   }
   return failures
 }
@@ -2322,6 +2740,7 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     ...pageBoundaryCaptureProbes(coreError, rootBoundary, retention),
     ...validateGlobalCapture(globalCapture, applicationSources),
     ...validateVueMount(createApplication, applicationSources),
+    ...vueMountQueryLifecycleProbes(createApplication),
     ...validateProviders(installProviders, pinia),
     ...validateRetry(retryPolicy, runtimeKernel, fatalBoundary),
     ...validateAppearance(appearance),

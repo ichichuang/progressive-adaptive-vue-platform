@@ -1,4 +1,4 @@
-// Ordinary CSS debt captured from the current production source. Only removal is admitted.
+// Existing ordinary CSS debt: no new debt. Reviewed layer rekeys follow Architecture §15.6/§26.
 // Each tuple is [property, normalized value input, important]; selectors and context are
 // normalized by the ownership checker, so formatting/comments do not create identities.
 export interface StyleDeclarationGroup {
@@ -11,571 +11,9 @@ export interface StyleDeclarationGroup {
 
 export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-section',
-    declarations: [['overflow', 'hidden', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      '.pavp-appearance-theme-toolbar,\n.pavp-appearance-theme-toolbar__summary,\n.pavp-appearance-theme-toolbar__meta,\n.pavp-appearance-theme-option__heading,\n.pavp-appearance-theme-option__meta,\n.pavp-appearance-actions,\n.pavp-appearance-stage-heading,\n.pavp-material-stage__header,\n.pavp-material-stage__identity,\n.pavp-material-stage__actions,\n.pavp-motion-stage__demo',
-    declarations: [
-      ['display', 'flex', false],
-      ['align-items', 'center', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-toolbar',
-    declarations: [
-      ['flex-wrap', 'wrap', false],
-      ['justify-content', 'space-between', false],
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-material-overlay-background)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-toolbar__summary,\n.pavp-appearance-control__copy',
-    declarations: [
-      ['display', 'grid', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-toolbar__meta',
-    declarations: [['flex-wrap', 'wrap', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-legend',
-    declarations: [
-      ['display', 'grid', false],
-      ['grid-template-columns', 'repeat(10, minmax(0, 1fr))', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-      ['padding-inline', 'var(--ui-space-content-gap)', false],
-      ['font-size', 'var(--ui-font-size-body)', false],
-      ['text-align', 'center', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-eyebrow',
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['font-weight', 'var(--ui-font-weight-title)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      '.pavp-appearance-theme-option__heading,\n.pavp-appearance-theme-option__meta,\n.pavp-appearance-stage-heading,\n.pavp-material-stage__header',
-    declarations: [['justify-content', 'space-between', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-option__meta',
-    declarations: [['color', 'var(--ui-color-text-secondary)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-option__title',
-    declarations: [
-      ['min-inline-size', '0', false],
-      ['overflow-wrap', 'anywhere', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-option__status',
-    declarations: [
-      ['flex', 'none', false],
-      ['visibility', 'hidden', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: ".pavp-appearance-theme-option__status[data-visible='true']",
-    declarations: [['visibility', 'visible', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-swatches',
-    declarations: [
-      ['display', 'grid', false],
-      ['grid-template-columns', 'repeat(10, 1fr)', false],
-      ['overflow', 'hidden', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-theme-swatch',
-    declarations: [['block-size', 'calc(var(--ui-control-height) / 2)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      '.pavp-appearance-workspace,\n.pavp-appearance-controls,\n.pavp-appearance-preview,\n.pavp-appearance-control,\n.pavp-material-stage,\n.pavp-material-stage__frame,\n.pavp-material-stage__body,\n.pavp-material-stage__content,\n.pavp-motion-stage',
-    declarations: [
-      ['display', 'grid', false],
-      ['min-inline-size', '0', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-control',
-    declarations: [
-      ['padding-block', 'var(--ui-space-content-gap)', false],
-      ['border-block-end-color', 'var(--ui-color-border-default)', false],
-      ['border-block-end-style', 'solid', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-control__copy',
-    declarations: [['min-inline-size', '0', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-actions,\n.pavp-material-stage__actions,\n.pavp-motion-stage__demo',
-    declarations: [['flex-wrap', 'wrap', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-actions',
-    declarations: [
-      ['justify-content', 'flex-end', false],
-      ['padding-block-start', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-feedback',
-    declarations: [['min-block-size', 'var(--ui-control-height)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-feedback:has(.pavp-appearance-feedback__message)',
-    declarations: [
-      ['display', 'flex', false],
-      ['align-items', 'center', false],
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-color-surface-panel)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: ".pavp-appearance-feedback[data-feedback-phase='odd']",
-    declarations: [['box-shadow', 'none', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: ".pavp-appearance-feedback[data-feedback-phase='even']",
-    declarations: [['box-shadow', 'none', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-appearance-preview',
-    declarations: [
-      ['inline-size', '100%', false],
-      ['max-inline-size', 'var(--ui-layout-content-max-width)', false],
-      ['justify-self', 'center', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__canvas',
-    declarations: [
-      ['display', 'grid', false],
-      ['overflow', 'hidden', false],
-      ['border-color', 'var(--ui-color-border-default)', false],
-      ['border-style', 'solid', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-color-surface-page)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__environment,\n.pavp-material-stage__frame',
-    declarations: [['grid-area', '1 / 1', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__environment',
-    declarations: [
-      ['display', 'grid', false],
-      ['grid-template-columns', '1fr 1fr', false],
-      ['align-content', 'start', false],
-      ['pointer-events', 'none', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__environment > *',
-    declarations: [['block-size', 'calc(var(--ui-control-height) / 4)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__environment > :first-child',
-    declarations: [['background', 'var(--ui-color-action-primary)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__environment > :last-child',
-    declarations: [['background', 'var(--ui-color-surface-panel)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__frame',
-    declarations: [
-      ['position', 'relative', false],
-      ['padding', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__header,\n.pavp-material-stage__navigation',
-    declarations: [
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-material-chrome-background)', false],
-      ['box-shadow', 'var(--ui-shadow-panel)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__identity',
-    declarations: [
-      ['min-inline-size', '0', false],
-      ['flex-wrap', 'wrap', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__mark',
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['font-weight', 'var(--ui-font-weight-title)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__body',
-    declarations: [
-      [
-        'grid-template-columns',
-        'repeat(\n    auto-fit,\n    minmax(min(100%, var(--ui-layout-admin-content-minimum-inline-size)), 1fr)\n  )',
-        false,
-      ],
-      ['align-items', 'start', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__navigation',
-    declarations: [
-      ['display', 'flex', false],
-      ['grid-column', '1 / -1', false],
-      ['align-items', 'center', false],
-      ['justify-content', 'space-between', false],
-      ['min-inline-size', '0', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__navigation-indicator',
-    declarations: [
-      ['display', 'block', false],
-      ['flex', 'none', false],
-      ['inline-size', 'var(--ui-control-height)', false],
-      ['block-size', '0', false],
-      ['border-block-end-color', 'currentColor', false],
-      ['border-block-end-style', 'solid', false],
-      ['border-block-end-width', 'calc(var(--ui-space-content-gap) / 2)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['color', 'var(--ui-color-control-primary)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__content',
-    declarations: [
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-color-surface-panel)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      '.pavp-material-stage__content h4,\n.pavp-material-stage__content p,\n.pavp-appearance-stage-heading h3,\n.pavp-appearance-stage-heading p',
-    declarations: [['margin', '0', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__content h4,\n.pavp-appearance-stage-heading h3',
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['font-weight', 'var(--ui-font-weight-title)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-material-stage__floating',
-    declarations: [
-      ['display', 'grid', false],
-      ['align-content', 'start', false],
-      ['justify-self', 'stretch', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-material-overlay-background)', false],
-      ['box-shadow', 'var(--ui-shadow-panel)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      ".pavp-appearance-preview[data-material-preview='reduced']\n  :where(\n    .pavp-material-stage__header,\n    .pavp-material-stage__navigation,\n    .pavp-material-stage__floating\n  ),\n.pavp-appearance-preview[data-material-preview='solid']\n  :where(\n    .pavp-material-stage__header,\n    .pavp-material-stage__navigation,\n    .pavp-material-stage__floating\n  )",
-    declarations: [['box-shadow', 'none', false]],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-motion-stage',
-    declarations: [
-      ['padding-block-start', 'var(--ui-space-content-gap)', false],
-      ['border-block-start-color', 'var(--ui-color-border-default)', false],
-      ['border-block-start-style', 'solid', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-motion-stage__demo',
-    declarations: [
-      ['justify-content', 'space-between', false],
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['background', 'var(--ui-color-surface-panel)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-motion-stage__indicator',
-    declarations: [
-      ['padding', 'var(--ui-space-content-gap)', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
-      ['color', 'var(--ui-color-text-on-action)', false],
-      ['background', 'var(--ui-color-action-primary)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      ".pavp-admin-shell[data-layout-profile='regular'] .pavp-appearance-workspace,\n.pavp-admin-shell[data-layout-profile='wide'] .pavp-appearance-workspace",
-    declarations: [
-      [
-        'grid-template-columns',
-        'var(--ui-layout-admin-drawer-maximum-inline-size) minmax(0, 1fr)',
-        false,
-      ],
-      ['align-items', 'start', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector:
-      ".pavp-admin-shell[data-layout-profile='regular'] .pavp-appearance-control,\n.pavp-admin-shell[data-layout-profile='wide'] .pavp-appearance-control",
-    declarations: [
-      ['grid-template-columns', 'minmax(0, 1fr) auto', false],
-      ['align-items', 'center', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/appearance.vue',
-    block: 0,
-    context: [],
-    selector: ".pavp-admin-shell[data-layout-profile='wide'] .pavp-appearance-theme-gallery",
-    declarations: [['grid-template-columns', 'repeat(4, minmax(0, 1fr))', false]],
-  },
-  {
-    path: 'apps/web/src/pages/index.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-overview-status',
-    declarations: [
-      ['display', 'flex', false],
-      ['align-items', 'center', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-      ['color', 'var(--ui-color-text-secondary)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/index.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-overview-navigation',
-    declarations: [
-      ['display', 'grid', false],
-      [
-        'grid-template-columns',
-        'repeat(\n    auto-fit,\n    minmax(var(--ui-layout-admin-content-minimum-inline-size), 1fr)\n  )',
-        false,
-      ],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/index.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-overview-navigation a',
-    declarations: [
-      ['display', 'flex', false],
-      ['align-items', 'center', false],
-      ['padding-inline', 'var(--ui-space-page-inline)', false],
-      ['text-decoration', 'none', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/router.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-route-list,\n.pavp-route-list li',
-    declarations: [
-      ['display', 'grid', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-    ],
-  },
-  {
-    path: 'apps/web/src/pages/router.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-route-list',
-    declarations: [['margin', '0', false]],
-  },
-  {
-    path: 'apps/web/src/pages/router.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-route-list li',
-    declarations: [['grid-template-columns', 'minmax(0, 1fr) minmax(0, 1fr)', false]],
-  },
-  {
-    path: 'apps/web/src/pages/runtime-kernel.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-id-list',
-    declarations: [
-      ['display', 'grid', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-      ['margin', '0', false],
-    ],
-  },
-  {
     path: 'packages/ui/src/components/UiSection.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-section,\n.pavp-section__heading',
     declarations: [
       ['display', 'grid', false],
@@ -583,16 +21,9 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     ],
   },
   {
-    path: 'packages/ui/src/components/UiSection.vue',
-    block: 0,
-    context: [],
-    selector: '.pavp-section',
-    declarations: [['padding', 'var(--ui-space-page-inline)', false]],
-  },
-  {
     path: 'packages/ui/src/components/UiPageHeader.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-page-header,\n.pavp-page-header__copy',
     declarations: [
       ['display', 'grid', false],
@@ -602,7 +33,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiRadioCardGroup.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-radio-card-group__content',
     declarations: [
       ['display', 'grid', false],
@@ -614,7 +45,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form__fields',
     declarations: [
       ['display', 'grid', false],
@@ -625,7 +56,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form__actions',
     declarations: [
       ['display', 'flex', false],
@@ -636,7 +67,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector:
       ":global([data-layout-profile='regular']) .pavp-form[data-columns='2'] > .pavp-form__fields,\n:global([data-layout-profile='wide']) .pavp-form[data-columns='2'] > .pavp-form__fields",
     declarations: [['grid-template-columns', 'repeat(2, minmax(0, 1fr))', false]],
@@ -644,7 +75,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form__summary',
     declarations: [
       ['color', 'var(--ui-color-text-primary)', false],
@@ -658,14 +89,14 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form__summary a',
     declarations: [['color', 'inherit', false]],
   },
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form__summary:focus-visible,\n.pavp-form__summary a:focus-visible',
     declarations: [
       ['outline', 'var(--ui-admin-border-focus)', false],
@@ -675,7 +106,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-field,\n.pavp-form-field__content',
     declarations: [
       ['min-inline-size', '0', false],
@@ -685,14 +116,14 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-field__description',
     declarations: [['color', 'var(--ui-color-text-secondary)', false]],
   },
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-field__errors',
     declarations: [
       ['color', 'var(--ui-color-text-on-status-error)', false],
@@ -703,7 +134,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-control',
     declarations: [
       ['inline-size', '100%', false],
@@ -713,7 +144,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-control [data-form-readonly]',
     declarations: [
       ['display', 'inline-flex', false],
@@ -725,14 +156,14 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-control p',
     declarations: [['color', 'var(--ui-color-text-secondary)', false]],
   },
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-form-control button',
     declarations: [
       ['color', 'var(--ui-color-text-primary)', false],
@@ -745,7 +176,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector:
       '.pavp-form-control [data-form-readonly]:focus-visible,\n.pavp-form-control button:focus-visible',
     declarations: [
@@ -756,7 +187,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell',
     declarations: [
       ['position', 'relative', false],
@@ -769,19 +200,17 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__header,\n.pavp-admin-shell__layout',
-    declarations: [
-      ['position', 'relative', false],
-      ['z-index', 'var(--ui-z-base)', false],
-    ],
+    declarations: [['position', 'relative', false]],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__header',
     declarations: [
+      ['z-index', 'var(--ui-z-base)', false],
       ['display', 'flex', false],
       ['align-items', 'center', false],
       ['justify-content', 'space-between', false],
@@ -800,7 +229,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__identity',
     declarations: [
       ['display', 'flex', false],
@@ -811,7 +240,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__eyebrow',
     declarations: [
       ['color', 'var(--ui-color-text-primary)', false],
@@ -821,21 +250,17 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__layout',
-    declarations: [
-      ['min-inline-size', '0', false],
-      ['background', 'transparent', false],
-    ],
+    declarations: [['min-inline-size', '0', false]],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__sidebar',
     declarations: [
       ['position', 'relative', false],
-      ['z-index', 'var(--ui-z-overlay)', false],
       ['flex', '0 0 auto', false],
       ['block-size', '100%', false],
       ['overflow', 'hidden', false],
@@ -846,7 +271,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__navigation-group',
     declarations: [
       ['display', 'grid', false],
@@ -856,7 +281,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__persistent-navigation',
     declarations: [
       ['position', 'relative', false],
@@ -868,7 +293,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__menu',
     declarations: [
       ['min-block-size', '0', false],
@@ -878,7 +303,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__navigation-group-label',
     declarations: [
       ['margin', '0', false],
@@ -891,7 +316,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__action,\n.pavp-admin-shell__navigation-action',
     declarations: [
       ['display', 'inline-flex', false],
@@ -899,7 +324,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
       ['justify-content', 'center', false],
       ['gap', 'var(--ui-space-content-gap)', false],
       ['border', '0', false],
-      ['border-radius', 'var(--ui-radius-panel)', false],
+
       ['color', 'var(--ui-color-text-primary)', false],
       ['font-family', 'var(--ui-font-family-body)', false],
       ['font-size', 'var(--ui-font-size-body)', false],
@@ -915,7 +340,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__navigation-action',
     declarations: [
       ['position', 'relative', false],
@@ -928,7 +353,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__navigation-icon',
     declarations: [
       ['flex', '0 0 auto', false],
@@ -939,7 +364,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__action:hover,\n.pavp-admin-shell__navigation-action:hover',
     declarations: [
       ['color', 'var(--ui-color-text-primary)', false],
@@ -949,14 +374,14 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__action:active,\n.pavp-admin-shell__navigation-action:active',
     declarations: [['transform', 'translateY(calc(var(--ui-space-content-gap) / 4))', false]],
   },
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector:
       '.pavp-admin-shell__action:focus-visible,\n.pavp-admin-shell__navigation-action:focus-visible',
     declarations: [
@@ -967,7 +392,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: ".pavp-admin-shell__navigation-action[aria-current='page']",
     declarations: [
       ['color', 'var(--ui-color-text-primary)', false],
@@ -977,17 +402,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
-    selector: '.pavp-admin-shell__document-layout',
-    declarations: [
-      ['overflow', 'visible', false],
-      ['background', 'transparent', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__workspace',
     declarations: [
       ['display', 'flex', false],
@@ -1001,7 +416,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__content',
     declarations: [
       ['min-block-size', '0', false],
@@ -1016,7 +431,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__content-inner',
     declarations: [
       ['gap', 'var(--ui-space-section-block)', false],
@@ -1036,7 +451,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__drawer-navigation',
     declarations: [
       ['block-size', '100%', false],
@@ -1050,7 +465,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__drawer-content',
     declarations: [
       ['display', 'grid', false],
@@ -1071,7 +486,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__drawer-layer',
     declarations: [
       ['position', 'fixed', false],
@@ -1084,7 +499,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-admin-shell__drawer-heading',
     declarations: [
       ['display', 'flex', false],
@@ -1096,7 +511,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-region',
     declarations: [
       ['display', 'flex', false],
@@ -1113,7 +528,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-viewport',
     declarations: [
       ['min-inline-size', '0', false],
@@ -1123,7 +538,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge',
     declarations: [
       ['position', 'relative', false],
@@ -1145,7 +560,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge--previous',
     declarations: [
       ['border-inline-end-width', 'var(--ui-admin-border-width)', false],
@@ -1156,7 +571,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge--next',
     declarations: [
       ['border-inline-start-width', 'var(--ui-admin-border-width)', false],
@@ -1167,7 +582,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge__mark',
     declarations: [
       ['position', 'relative', false],
@@ -1181,7 +596,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge__icon',
     declarations: [
       ['inline-size', '100%', false],
@@ -1191,7 +606,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge:focus-visible',
     declarations: [
       ['color', 'var(--ui-color-text-primary)', false],
@@ -1202,28 +617,28 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge:disabled',
     declarations: [['cursor', 'not-allowed', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge:disabled .pavp-workspace-tabs-edge__icon',
     declarations: [['opacity', 'var(--ui-admin-state-disabled-opacity)', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge:enabled:hover,\n.pavp-workspace-tabs-edge:enabled:active',
     declarations: [['color', 'var(--ui-color-text-primary)', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs',
     declarations: [
       ['position', 'relative', false],
@@ -1237,7 +652,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs__item',
     declarations: [
       ['position', 'relative', false],
@@ -1250,7 +665,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs button',
     declarations: [
       ['position', 'relative', false],
@@ -1271,7 +686,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs__label',
     declarations: [
       ['position', 'relative', false],
@@ -1281,7 +696,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: ".pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab",
     declarations: [
       ['padding-inline-end', '0', false],
@@ -1291,14 +706,14 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs .pavp-workspace-tabs__close',
     declarations: [['padding-inline', '0', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
     block: 0,
-    context: [],
+    context: ['@layer components'],
     selector: '.pavp-workspace-tabs button:focus-visible',
     declarations: [
       ['outline', 'var(--ui-admin-focus-width) solid var(--ui-color-focus-ring)', false],

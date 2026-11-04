@@ -1,0 +1,1058 @@
+{
+  "schemaVersion": 3,
+  "roleContractVersion": 4,
+  "id": "emerald-grove",
+  "label": "Emerald Grove",
+  "planes": {
+    "light": {
+      "standard": {
+        "color.action.primary": "{palette.roles.primary.solid.background.default}",
+        "color.control.primary": "{palette.roles.primary.foreground.default}",
+        "color.border.default": "{palette.borders.control}",
+        "color.focus.ring": "{palette.roles.primary.focus}",
+        "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
+        "color.surface.page": "{palette.surfaces.canvas}",
+        "color.surface.panel": "{palette.surfaces.surface}",
+        "color.text.on-action": "{palette.roles.primary.solid.foreground}",
+        "color.text.primary": "{palette.text.primary}",
+        "color.text.secondary": "{palette.text.secondary}",
+        "color.status.info": "{palette.roles.info.solid.background.default}",
+        "color.status.info.hover": "{palette.roles.info.solid.background.hover}",
+        "color.status.info.pressed": "{palette.roles.info.solid.background.pressed}",
+        "color.text.on-status.info": "{palette.roles.info.solid.foreground}",
+        "color.status.success": "{palette.roles.success.solid.background.default}",
+        "color.status.success.hover": "{palette.roles.success.solid.background.hover}",
+        "color.status.success.pressed": "{palette.roles.success.solid.background.pressed}",
+        "color.text.on-status.success": "{palette.roles.success.solid.foreground}",
+        "color.status.warning": "{palette.roles.warning.solid.background.default}",
+        "color.status.warning.hover": "{palette.roles.warning.solid.background.hover}",
+        "color.status.warning.pressed": "{palette.roles.warning.solid.background.pressed}",
+        "color.text.on-status.warning": "{palette.roles.warning.solid.foreground}",
+        "color.status.error": "{palette.roles.error.solid.background.default}",
+        "color.status.error.hover": "{palette.roles.error.solid.background.hover}",
+        "color.status.error.pressed": "{palette.roles.error.solid.background.pressed}",
+        "color.text.on-status.error": "{palette.roles.error.solid.foreground}",
+        "color.control.info": "{palette.roles.info.foreground.default}",
+        "color.control.success": "{palette.roles.success.foreground.default}",
+        "color.control.warning": "{palette.roles.warning.foreground.default}",
+        "color.control.error": "{palette.roles.error.foreground.default}"
+      },
+      "enhanced": {
+        "color.action.primary": "{palette.roles.primary.solid.background.default}",
+        "color.control.primary": "{palette.roles.primary.foreground.default}",
+        "color.border.default": "{palette.borders.control}",
+        "color.focus.ring": "{palette.roles.primary.focus}",
+        "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
+        "color.surface.page": "{palette.surfaces.canvas}",
+        "color.surface.panel": "{palette.surfaces.surface}",
+        "color.text.on-action": "{palette.roles.primary.solid.foreground}",
+        "color.text.primary": "{palette.text.primary}",
+        "color.text.secondary": "{palette.text.secondary}",
+        "color.status.info": "{palette.roles.info.solid.background.default}",
+        "color.status.info.hover": "{palette.roles.info.solid.background.hover}",
+        "color.status.info.pressed": "{palette.roles.info.solid.background.pressed}",
+        "color.text.on-status.info": "{palette.roles.info.solid.foreground}",
+        "color.status.success": "{palette.roles.success.solid.background.default}",
+        "color.status.success.hover": "{palette.roles.success.solid.background.hover}",
+        "color.status.success.pressed": "{palette.roles.success.solid.background.pressed}",
+        "color.text.on-status.success": "{palette.roles.success.solid.foreground}",
+        "color.status.warning": "{palette.roles.warning.solid.background.default}",
+        "color.status.warning.hover": "{palette.roles.warning.solid.background.hover}",
+        "color.status.warning.pressed": "{palette.roles.warning.solid.background.pressed}",
+        "color.text.on-status.warning": "{palette.roles.warning.solid.foreground}",
+        "color.status.error": "{palette.roles.error.solid.background.default}",
+        "color.status.error.hover": "{palette.roles.error.solid.background.hover}",
+        "color.status.error.pressed": "{palette.roles.error.solid.background.pressed}",
+        "color.text.on-status.error": "{palette.roles.error.solid.foreground}",
+        "color.control.info": "{palette.roles.info.foreground.default}",
+        "color.control.success": "{palette.roles.success.foreground.default}",
+        "color.control.warning": "{palette.roles.warning.foreground.default}",
+        "color.control.error": "{palette.roles.error.foreground.default}"
+      }
+    },
+    "dark": {
+      "standard": {
+        "color.action.primary": "{palette.roles.primary.solid.background.default}",
+        "color.control.primary": "{palette.roles.primary.foreground.default}",
+        "color.border.default": "{palette.borders.control}",
+        "color.focus.ring": "{palette.roles.primary.focus}",
+        "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
+        "color.surface.page": "{palette.surfaces.canvas}",
+        "color.surface.panel": "{palette.surfaces.surface}",
+        "color.text.on-action": "{palette.roles.primary.solid.foreground}",
+        "color.text.primary": "{palette.text.primary}",
+        "color.text.secondary": "{palette.text.secondary}",
+        "color.status.info": "{palette.roles.info.solid.background.default}",
+        "color.status.info.hover": "{palette.roles.info.solid.background.hover}",
+        "color.status.info.pressed": "{palette.roles.info.solid.background.pressed}",
+        "color.text.on-status.info": "{palette.roles.info.solid.foreground}",
+        "color.status.success": "{palette.roles.success.solid.background.default}",
+        "color.status.success.hover": "{palette.roles.success.solid.background.hover}",
+        "color.status.success.pressed": "{palette.roles.success.solid.background.pressed}",
+        "color.text.on-status.success": "{palette.roles.success.solid.foreground}",
+        "color.status.warning": "{palette.roles.warning.solid.background.default}",
+        "color.status.warning.hover": "{palette.roles.warning.solid.background.hover}",
+        "color.status.warning.pressed": "{palette.roles.warning.solid.background.pressed}",
+        "color.text.on-status.warning": "{palette.roles.warning.solid.foreground}",
+        "color.status.error": "{palette.roles.error.solid.background.default}",
+        "color.status.error.hover": "{palette.roles.error.solid.background.hover}",
+        "color.status.error.pressed": "{palette.roles.error.solid.background.pressed}",
+        "color.text.on-status.error": "{palette.roles.error.solid.foreground}",
+        "color.control.info": "{palette.roles.info.foreground.default}",
+        "color.control.success": "{palette.roles.success.foreground.default}",
+        "color.control.warning": "{palette.roles.warning.foreground.default}",
+        "color.control.error": "{palette.roles.error.foreground.default}"
+      },
+      "enhanced": {
+        "color.action.primary": "{palette.roles.primary.solid.background.default}",
+        "color.control.primary": "{palette.roles.primary.foreground.default}",
+        "color.border.default": "{palette.borders.control}",
+        "color.focus.ring": "{palette.roles.primary.focus}",
+        "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
+        "color.surface.page": "{palette.surfaces.canvas}",
+        "color.surface.panel": "{palette.surfaces.surface}",
+        "color.text.on-action": "{palette.roles.primary.solid.foreground}",
+        "color.text.primary": "{palette.text.primary}",
+        "color.text.secondary": "{palette.text.secondary}",
+        "color.status.info": "{palette.roles.info.solid.background.default}",
+        "color.status.info.hover": "{palette.roles.info.solid.background.hover}",
+        "color.status.info.pressed": "{palette.roles.info.solid.background.pressed}",
+        "color.text.on-status.info": "{palette.roles.info.solid.foreground}",
+        "color.status.success": "{palette.roles.success.solid.background.default}",
+        "color.status.success.hover": "{palette.roles.success.solid.background.hover}",
+        "color.status.success.pressed": "{palette.roles.success.solid.background.pressed}",
+        "color.text.on-status.success": "{palette.roles.success.solid.foreground}",
+        "color.status.warning": "{palette.roles.warning.solid.background.default}",
+        "color.status.warning.hover": "{palette.roles.warning.solid.background.hover}",
+        "color.status.warning.pressed": "{palette.roles.warning.solid.background.pressed}",
+        "color.text.on-status.warning": "{palette.roles.warning.solid.foreground}",
+        "color.status.error": "{palette.roles.error.solid.background.default}",
+        "color.status.error.hover": "{palette.roles.error.solid.background.hover}",
+        "color.status.error.pressed": "{palette.roles.error.solid.background.pressed}",
+        "color.text.on-status.error": "{palette.roles.error.solid.foreground}",
+        "color.control.info": "{palette.roles.info.foreground.default}",
+        "color.control.success": "{palette.roles.success.foreground.default}",
+        "color.control.warning": "{palette.roles.warning.foreground.default}",
+        "color.control.error": "{palette.roles.error.foreground.default}"
+      }
+    }
+  },
+  "uiPalette": {
+    "light": {
+      "standard": {
+        "surfaces": {
+          "canvas": "#F4FBF7",
+          "surface": "#FBFCFB",
+          "raised": "#E8F6EE",
+          "sunken": "#E1F2E9"
+        },
+        "roles": {
+          "primary": {
+            "foreground": {
+              "default": "#006B51",
+              "hover": "#00765A",
+              "pressed": "#005D46",
+              "suppl": "#007055"
+            },
+            "solid": {
+              "background": {
+                "default": "#00785B",
+                "hover": "#008364",
+                "pressed": "#00674F",
+                "focus": "#00785B"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#00785B"
+            },
+            "soft": {
+              "background": {
+                "default": "#D8FCEE",
+                "hover": "#D3F7E9",
+                "pressed": "#CDF1E3"
+              },
+              "foreground": "#006B51",
+              "icon": "#006B51",
+              "border": "#009673"
+            },
+            "focus": "#00765A",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#536B5F",
+              "border": "#AACCBA"
+            }
+          },
+          "info": {
+            "foreground": {
+              "default": "#005FA6",
+              "hover": "#0069B6",
+              "pressed": "#005391",
+              "suppl": "#0064AD"
+            },
+            "solid": {
+              "background": {
+                "default": "#006CBB",
+                "hover": "#0076CB",
+                "pressed": "#005EA3",
+                "focus": "#006CBB"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#006CBB"
+            },
+            "soft": {
+              "background": {
+                "default": "#E9F4FF",
+                "hover": "#E1EFFF",
+                "pressed": "#D6EAFF"
+              },
+              "foreground": "#005FA6",
+              "icon": "#005FA6",
+              "border": "#3686D2"
+            },
+            "focus": "#0069B6",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#536B5F",
+              "border": "#AACCBA"
+            }
+          },
+          "success": {
+            "foreground": {
+              "default": "#486600",
+              "hover": "#507100",
+              "pressed": "#3E5900",
+              "suppl": "#4C6B00"
+            },
+            "solid": {
+              "background": {
+                "default": "#527300",
+                "hover": "#5A7E00",
+                "pressed": "#466400",
+                "focus": "#527300"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#527300"
+            },
+            "soft": {
+              "background": {
+                "default": "#EBF8DA",
+                "hover": "#E6F3D5",
+                "pressed": "#E0EDCF"
+              },
+              "foreground": "#486600",
+              "icon": "#486600",
+              "border": "#6A8F24"
+            },
+            "focus": "#507100",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#536B5F",
+              "border": "#AACCBA"
+            }
+          },
+          "warning": {
+            "foreground": {
+              "default": "#755A00",
+              "hover": "#816300",
+              "pressed": "#664E00",
+              "suppl": "#7A5E00"
+            },
+            "solid": {
+              "background": {
+                "default": "#846600",
+                "hover": "#906F00",
+                "pressed": "#735800",
+                "focus": "#846600"
+              },
+              "foreground": "#FCFCFB",
+              "border": "#846600"
+            },
+            "soft": {
+              "background": {
+                "default": "#FEF2D3",
+                "hover": "#F9EDCE",
+                "pressed": "#F3E7C8"
+              },
+              "foreground": "#755A00",
+              "icon": "#755A00",
+              "border": "#A17E16"
+            },
+            "focus": "#816300",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#536B5F",
+              "border": "#AACCBA"
+            }
+          },
+          "error": {
+            "foreground": {
+              "default": "#B61E00",
+              "hover": "#C72100",
+              "pressed": "#A01900",
+              "suppl": "#BD1F00"
+            },
+            "solid": {
+              "background": {
+                "default": "#CE2300",
+                "hover": "#DF2701",
+                "pressed": "#B51D00",
+                "focus": "#CE2300"
+              },
+              "foreground": "#FCFBFB",
+              "border": "#CE2300"
+            },
+            "soft": {
+              "background": {
+                "default": "#FFEEEB",
+                "hover": "#FFE7E2",
+                "pressed": "#FFDFD9"
+              },
+              "foreground": "#B61E00",
+              "icon": "#B61E00",
+              "border": "#CF604C"
+            },
+            "focus": "#C72100",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#536B5F",
+              "border": "#AACCBA"
+            }
+          },
+          "neutral": {
+            "foreground": {
+              "default": "#4B6357",
+              "hover": "#556D60",
+              "pressed": "#3F574A",
+              "suppl": "#4F675B"
+            },
+            "solid": {
+              "background": {
+                "default": "#566F62",
+                "hover": "#60796C",
+                "pressed": "#496054",
+                "focus": "#566F62"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#566F62"
+            },
+            "soft": {
+              "background": {
+                "default": "#EAF6EF",
+                "hover": "#E5F1EA",
+                "pressed": "#DFEBE4"
+              },
+              "foreground": "#4B6357",
+              "icon": "#4B6357",
+              "border": "#77877F"
+            },
+            "focus": "#556D60",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#536B5F",
+              "border": "#AACCBA"
+            }
+          }
+        },
+        "text": {
+          "primary": "#0C2218",
+          "secondary": "#445C50",
+          "muted": "#536B5F",
+          "onSurface": "#0C2218"
+        },
+        "borders": {
+          "control": "#68907B",
+          "decorative": "#AACCBA"
+        },
+        "tooltip": {
+          "background": "#14231C",
+          "foreground": "#F2FCF6"
+        }
+      },
+      "enhanced": {
+        "surfaces": {
+          "canvas": "#F4FBF7",
+          "surface": "#FBFCFB",
+          "raised": "#E8F6EE",
+          "sunken": "#E1F2E9"
+        },
+        "roles": {
+          "primary": {
+            "foreground": {
+              "default": "#00503C",
+              "hover": "#005A44",
+              "pressed": "#004231",
+              "suppl": "#00543F"
+            },
+            "solid": {
+              "background": {
+                "default": "#005742",
+                "hover": "#00624B",
+                "pressed": "#004836",
+                "focus": "#005742"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#005742"
+            },
+            "soft": {
+              "background": {
+                "default": "#E3FFF4",
+                "hover": "#D8FDEE",
+                "pressed": "#D4F7E9"
+              },
+              "foreground": "#00503C",
+              "icon": "#00503C",
+              "border": "#009976"
+            },
+            "focus": "#005A44",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#3C5347",
+              "border": "#AACCBA"
+            }
+          },
+          "info": {
+            "foreground": {
+              "default": "#00477D",
+              "hover": "#00508D",
+              "pressed": "#003B6A",
+              "suppl": "#004B84"
+            },
+            "solid": {
+              "background": {
+                "default": "#004F8A",
+                "hover": "#00589B",
+                "pressed": "#004174",
+                "focus": "#004F8A"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#004F8A"
+            },
+            "soft": {
+              "background": {
+                "default": "#F2F8FF",
+                "hover": "#EAF4FF",
+                "pressed": "#E1F0FF"
+              },
+              "foreground": "#00477D",
+              "icon": "#00477D",
+              "border": "#3B8BD7"
+            },
+            "focus": "#00508D",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#3C5347",
+              "border": "#AACCBA"
+            }
+          },
+          "success": {
+            "foreground": {
+              "default": "#354C00",
+              "hover": "#3C5600",
+              "pressed": "#2B3F00",
+              "suppl": "#385000"
+            },
+            "solid": {
+              "background": {
+                "default": "#3B5500",
+                "hover": "#435F00",
+                "pressed": "#304600",
+                "focus": "#3B5500"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#3B5500"
+            },
+            "soft": {
+              "background": {
+                "default": "#F0FDDF",
+                "hover": "#EBF9DB",
+                "pressed": "#E6F4D6"
+              },
+              "foreground": "#354C00",
+              "icon": "#354C00",
+              "border": "#6E9329"
+            },
+            "focus": "#3C5600",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#3C5347",
+              "border": "#AACCBA"
+            }
+          },
+          "warning": {
+            "foreground": {
+              "default": "#574200",
+              "hover": "#634B00",
+              "pressed": "#493700",
+              "suppl": "#5C4600"
+            },
+            "solid": {
+              "background": {
+                "default": "#614A00",
+                "hover": "#6D5300",
+                "pressed": "#513D00",
+                "focus": "#614A00"
+              },
+              "foreground": "#FCFCFB",
+              "border": "#614A00"
+            },
+            "soft": {
+              "background": {
+                "default": "#FFF7E4",
+                "hover": "#FFF2D3",
+                "pressed": "#FAEDCF"
+              },
+              "foreground": "#574200",
+              "icon": "#574200",
+              "border": "#A5831D"
+            },
+            "focus": "#634B00",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#3C5347",
+              "border": "#AACCBA"
+            }
+          },
+          "error": {
+            "foreground": {
+              "default": "#8B1400",
+              "hover": "#9B1800",
+              "pressed": "#760F00",
+              "suppl": "#921600"
+            },
+            "solid": {
+              "background": {
+                "default": "#991700",
+                "hover": "#AA1B00",
+                "pressed": "#821200",
+                "focus": "#991700"
+              },
+              "foreground": "#FCFBFB",
+              "border": "#991700"
+            },
+            "soft": {
+              "background": {
+                "default": "#FFF5F3",
+                "hover": "#FFEFEB",
+                "pressed": "#FFE8E3"
+              },
+              "foreground": "#8B1400",
+              "icon": "#8B1400",
+              "border": "#D56551"
+            },
+            "focus": "#9B1800",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#3C5347",
+              "border": "#AACCBA"
+            }
+          },
+          "neutral": {
+            "foreground": {
+              "default": "#334A3E",
+              "hover": "#3C5447",
+              "pressed": "#273E33",
+              "suppl": "#374E42"
+            },
+            "solid": {
+              "background": {
+                "default": "#3A5246",
+                "hover": "#445B4F",
+                "pressed": "#2D4438",
+                "focus": "#3A5246"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#3A5246"
+            },
+            "soft": {
+              "background": {
+                "default": "#EFFBF4",
+                "hover": "#EAF6F0",
+                "pressed": "#E5F1EB"
+              },
+              "foreground": "#334A3E",
+              "icon": "#334A3E",
+              "border": "#7B8B82"
+            },
+            "focus": "#3C5447",
+            "disabled": {
+              "background": "#E8F6EE",
+              "foreground": "#3C5347",
+              "border": "#AACCBA"
+            }
+          }
+        },
+        "text": {
+          "primary": "#0C2218",
+          "secondary": "#2D4439",
+          "muted": "#3C5347",
+          "onSurface": "#0C2218"
+        },
+        "borders": {
+          "control": "#68907B",
+          "decorative": "#AACCBA"
+        },
+        "tooltip": {
+          "background": "#14231C",
+          "foreground": "#F2FCF6"
+        }
+      }
+    },
+    "dark": {
+      "standard": {
+        "surfaces": {
+          "canvas": "#07150E",
+          "surface": "#0E2017",
+          "raised": "#152D22",
+          "sunken": "#050E09"
+        },
+        "roles": {
+          "primary": {
+            "foreground": {
+              "default": "#00C397",
+              "hover": "#00D1A2",
+              "pressed": "#00B38A",
+              "suppl": "#00CA9C"
+            },
+            "solid": {
+              "background": {
+                "default": "#00785B",
+                "hover": "#008364",
+                "pressed": "#00674F",
+                "focus": "#00785B"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#00D1A2"
+            },
+            "soft": {
+              "background": {
+                "default": "#0D2D23",
+                "hover": "#143329",
+                "pressed": "#1B3A2F"
+              },
+              "foreground": "#00C397",
+              "icon": "#00C397",
+              "border": "#00906E"
+            },
+            "focus": "#00D1A2",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#8AA396",
+              "border": "#2B4A3B"
+            }
+          },
+          "info": {
+            "foreground": {
+              "default": "#5DAFFF",
+              "hover": "#79BBFF",
+              "pressed": "#36A0FF",
+              "suppl": "#6CB5FF"
+            },
+            "solid": {
+              "background": {
+                "default": "#006CBB",
+                "hover": "#0076CB",
+                "pressed": "#005EA3",
+                "focus": "#006CBB"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#79BBFF"
+            },
+            "soft": {
+              "background": {
+                "default": "#16283A",
+                "hover": "#1C2E41",
+                "pressed": "#223448"
+              },
+              "foreground": "#5DAFFF",
+              "icon": "#5DAFFF",
+              "border": "#3081CC"
+            },
+            "focus": "#79BBFF",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#8AA396",
+              "border": "#2B4A3B"
+            }
+          },
+          "success": {
+            "foreground": {
+              "default": "#87BB00",
+              "hover": "#91C900",
+              "pressed": "#7CAC00",
+              "suppl": "#8CC200"
+            },
+            "solid": {
+              "background": {
+                "default": "#527300",
+                "hover": "#5A7E00",
+                "pressed": "#466400",
+                "focus": "#527300"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#91C900"
+            },
+            "soft": {
+              "background": {
+                "default": "#212A13",
+                "hover": "#273019",
+                "pressed": "#2D371F"
+              },
+              "foreground": "#87BB00",
+              "icon": "#87BB00",
+              "border": "#658A1C"
+            },
+            "focus": "#91C900",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#8AA396",
+              "border": "#2B4A3B"
+            }
+          },
+          "warning": {
+            "foreground": {
+              "default": "#D2A300",
+              "hover": "#E1AF00",
+              "pressed": "#C19600",
+              "suppl": "#D9A900"
+            },
+            "solid": {
+              "background": {
+                "default": "#846600",
+                "hover": "#906F00",
+                "pressed": "#735800",
+                "focus": "#846600"
+              },
+              "foreground": "#FCFCFB",
+              "border": "#E1AF00"
+            },
+            "soft": {
+              "background": {
+                "default": "#2F250C",
+                "hover": "#352B12",
+                "pressed": "#3C3218"
+              },
+              "foreground": "#D2A300",
+              "icon": "#D2A300",
+              "border": "#9B7909"
+            },
+            "focus": "#E1AF00",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#8AA396",
+              "border": "#2B4A3B"
+            }
+          },
+          "error": {
+            "foreground": {
+              "default": "#FF8872",
+              "hover": "#FF9E8B",
+              "pressed": "#FF6C52",
+              "suppl": "#FF947F"
+            },
+            "solid": {
+              "background": {
+                "default": "#CE2300",
+                "hover": "#DF2701",
+                "pressed": "#B51D00",
+                "focus": "#CE2300"
+              },
+              "foreground": "#FCFBFB",
+              "border": "#FF9E8B"
+            },
+            "soft": {
+              "background": {
+                "default": "#381E19",
+                "hover": "#3F251F",
+                "pressed": "#462B25"
+              },
+              "foreground": "#FF8872",
+              "icon": "#FF8872",
+              "border": "#C95A46"
+            },
+            "focus": "#FF9E8B",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#8AA396",
+              "border": "#2B4A3B"
+            }
+          },
+          "neutral": {
+            "foreground": {
+              "default": "#96B0A2",
+              "hover": "#A2BCAE",
+              "pressed": "#88A294",
+              "suppl": "#9CB6A8"
+            },
+            "solid": {
+              "background": {
+                "default": "#566F62",
+                "hover": "#60796C",
+                "pressed": "#496054",
+                "focus": "#566F62"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#A2BCAE"
+            },
+            "soft": {
+              "background": {
+                "default": "#202924",
+                "hover": "#262F2A",
+                "pressed": "#2C3530"
+              },
+              "foreground": "#96B0A2",
+              "icon": "#96B0A2",
+              "border": "#718178"
+            },
+            "focus": "#A2BCAE",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#8AA396",
+              "border": "#2B4A3B"
+            }
+          }
+        },
+        "text": {
+          "primary": "#F3F9F5",
+          "secondary": "#9AB5A7",
+          "muted": "#8AA396",
+          "onSurface": "#F3F9F5"
+        },
+        "borders": {
+          "control": "#547C67",
+          "decorative": "#2B4A3B"
+        },
+        "tooltip": {
+          "background": "#E5F8EE",
+          "foreground": "#151D19"
+        }
+      },
+      "enhanced": {
+        "surfaces": {
+          "canvas": "#07150E",
+          "surface": "#0E2017",
+          "raised": "#152D22",
+          "sunken": "#050E09"
+        },
+        "roles": {
+          "primary": {
+            "foreground": {
+              "default": "#00DFAD",
+              "hover": "#00EEB9",
+              "pressed": "#00CFA0",
+              "suppl": "#00E7B3"
+            },
+            "solid": {
+              "background": {
+                "default": "#005742",
+                "hover": "#00624B",
+                "pressed": "#004836",
+                "focus": "#005742"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#00EEB9"
+            },
+            "soft": {
+              "background": {
+                "default": "#05261C",
+                "hover": "#0B2A20",
+                "pressed": "#103025"
+              },
+              "foreground": "#00DFAD",
+              "icon": "#00DFAD",
+              "border": "#008566"
+            },
+            "focus": "#00EEB9",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#A2BDAE",
+              "border": "#2B4A3B"
+            }
+          },
+          "info": {
+            "foreground": {
+              "default": "#92C8FF",
+              "hover": "#ABD4FF",
+              "pressed": "#75BAFF",
+              "suppl": "#9FCEFF"
+            },
+            "solid": {
+              "background": {
+                "default": "#004F8A",
+                "hover": "#00589B",
+                "pressed": "#004174",
+                "focus": "#004F8A"
+              },
+              "foreground": "#FBFCFC",
+              "border": "#ABD4FF"
+            },
+            "soft": {
+              "background": {
+                "default": "#0F2032",
+                "hover": "#132538",
+                "pressed": "#182A3D"
+              },
+              "foreground": "#92C8FF",
+              "icon": "#92C8FF",
+              "border": "#2377C1"
+            },
+            "focus": "#ABD4FF",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#A2BDAE",
+              "border": "#2B4A3B"
+            }
+          },
+          "success": {
+            "foreground": {
+              "default": "#9CD700",
+              "hover": "#A8E424",
+              "pressed": "#90C700",
+              "suppl": "#A1DD13"
+            },
+            "solid": {
+              "background": {
+                "default": "#3B5500",
+                "hover": "#435F00",
+                "pressed": "#304600",
+                "focus": "#3B5500"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#A8E424"
+            },
+            "soft": {
+              "background": {
+                "default": "#1A230C",
+                "hover": "#1E2811",
+                "pressed": "#232D15"
+              },
+              "foreground": "#9CD700",
+              "icon": "#9CD700",
+              "border": "#5C800A"
+            },
+            "focus": "#A8E424",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#A2BDAE",
+              "border": "#2B4A3B"
+            }
+          },
+          "warning": {
+            "foreground": {
+              "default": "#F1BC00",
+              "hover": "#FFC923",
+              "pressed": "#E0AE00",
+              "suppl": "#F9C200"
+            },
+            "solid": {
+              "background": {
+                "default": "#614A00",
+                "hover": "#6D5300",
+                "pressed": "#513D00",
+                "focus": "#614A00"
+              },
+              "foreground": "#FCFCFB",
+              "border": "#FFC923"
+            },
+            "soft": {
+              "background": {
+                "default": "#281E05",
+                "hover": "#2C2309",
+                "pressed": "#31280E"
+              },
+              "foreground": "#F1BC00",
+              "icon": "#F1BC00",
+              "border": "#8F6F00"
+            },
+            "focus": "#FFC923",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#A2BDAE",
+              "border": "#2B4A3B"
+            }
+          },
+          "error": {
+            "foreground": {
+              "default": "#FFB0A0",
+              "hover": "#FFC4B7",
+              "pressed": "#FF9985",
+              "suppl": "#FFBAAC"
+            },
+            "solid": {
+              "background": {
+                "default": "#991700",
+                "hover": "#AA1B00",
+                "pressed": "#821200",
+                "focus": "#991700"
+              },
+              "foreground": "#FCFBFB",
+              "border": "#FFC4B7"
+            },
+            "soft": {
+              "background": {
+                "default": "#301712",
+                "hover": "#361C17",
+                "pressed": "#3B211C"
+              },
+              "foreground": "#FFB0A0",
+              "icon": "#FFB0A0",
+              "border": "#BE513D"
+            },
+            "focus": "#FFC4B7",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#A2BDAE",
+              "border": "#2B4A3B"
+            }
+          },
+          "neutral": {
+            "foreground": {
+              "default": "#AFC9BB",
+              "hover": "#BBD6C8",
+              "pressed": "#A1BBAD",
+              "suppl": "#B5D0C1"
+            },
+            "solid": {
+              "background": {
+                "default": "#3A5246",
+                "hover": "#445B4F",
+                "pressed": "#2D4438",
+                "focus": "#3A5246"
+              },
+              "foreground": "#FBFCFB",
+              "border": "#BBD6C8"
+            },
+            "soft": {
+              "background": {
+                "default": "#19221D",
+                "hover": "#1E2622",
+                "pressed": "#222B27"
+              },
+              "foreground": "#AFC9BB",
+              "icon": "#AFC9BB",
+              "border": "#67776F"
+            },
+            "focus": "#BBD6C8",
+            "disabled": {
+              "background": "#152D22",
+              "foreground": "#A2BDAE",
+              "border": "#2B4A3B"
+            }
+          }
+        },
+        "text": {
+          "primary": "#F3F9F5",
+          "secondary": "#B3CEC0",
+          "muted": "#A2BDAE",
+          "onSurface": "#F3F9F5"
+        },
+        "borders": {
+          "control": "#547C67",
+          "decorative": "#2B4A3B"
+        },
+        "tooltip": {
+          "background": "#E5F8EE",
+          "foreground": "#151D19"
+        }
+      }
+    }
+  }
+}

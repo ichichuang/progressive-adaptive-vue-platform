@@ -58,9 +58,22 @@
       }
     },
     "radius": {
+      "control": {
+        "$type": "dimension",
+        "$value": "{radius.control}"
+      },
       "panel": {
         "$type": "dimension",
         "$value": "{radius.md}"
+      },
+      "small": {
+        "$type": "dimension",
+        "$value": "{radius.sm}",
+        "$extensions": {
+          "org.pavp": {
+            "visibility": "ui-internal"
+          }
+        }
       }
     },
     "shadow": {

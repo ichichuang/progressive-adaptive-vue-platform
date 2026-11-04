@@ -6,8 +6,6 @@ import type { LocalePreferencePort } from '../../shared/i18n'
 import { createLocalePreferenceStorage } from './locale-preference-storage'
 import type { StartupAttemptId } from '../bootstrap/lifecycle'
 import type { CoreRuntimeConfiguration } from '../config/runtime-configuration-contract'
-import { createStorageCrossTabHandle, type StorageCrossTabHandle } from './storage-cross-tab'
-import { storageCrossTabEventAllowlist } from './storage-cross-tab-contract'
 import { createStorageErrorAdapter, type StorageErrorAdapter } from './storage-error'
 import { storageErrorMessageTable, type StorageErrorMessage } from './storage-error-messages'
 import { storageErrorRegistry, type StorageErrorRegistryRecord } from './storage-error-registry'
@@ -26,7 +24,6 @@ interface StorageOwner {
   readonly localePreference: LocalePreferencePort
   readonly registry: readonly StorageRegistryRecord[]
   readonly migrationRegistry: readonly StorageMigrationRecord[]
-  readonly crossTabEventAllowlist: readonly string[]
   readonly principalPartitionId: PrincipalPartitionId
   readonly errorRegistry: readonly StorageErrorRegistryRecord[]
   readonly errorMessages: Readonly<Record<string, StorageErrorMessage>>
@@ -35,8 +32,6 @@ interface StorageOwner {
 
 export interface StorageLifecycleHandle {
   readonly owner: StorageOwner
-  readonly broadcastChannel: BroadcastChannel | null
-  readonly storageFallbackListener: (event: StorageEvent) => void
   dispose(): void
 }
 
@@ -53,8 +48,7 @@ function assertRegistryExactEquality(): void {
     envelopeRecords.length !== 0 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
-    storageMigrationRegistry.length !== 0 ||
-    storageCrossTabEventAllowlist.length !== 0
+    storageMigrationRegistry.length !== 0
   ) {
     throw new TypeError('The Storage Registry diverged from the frozen exact contract.')
   }
@@ -87,19 +81,14 @@ export function createAndReadyStorage(input: {
     localePreference: createLocalePreferenceStorage(errorAdapter, () => disposed),
     registry: storageRegistry,
     migrationRegistry: storageMigrationRegistry,
-    crossTabEventAllowlist: storageCrossTabEventAllowlist,
     principalPartitionId: nonePrincipalPartitionId,
     errorRegistry: storageErrorRegistry,
     errorMessages: storageErrorMessageTable,
     errorAdapter,
   })
 
-  const crossTabHandle: StorageCrossTabHandle = createStorageCrossTabHandle()
-
   return {
     owner,
-    broadcastChannel: crossTabHandle.broadcastChannel,
-    storageFallbackListener: crossTabHandle.storageFallbackListener,
     dispose() {
       if (disposed) {
         return
@@ -107,7 +96,6 @@ export function createAndReadyStorage(input: {
 
       disposed = true
       browserPageSession.dispose()
-      crossTabHandle.dispose()
     },
   }
 }

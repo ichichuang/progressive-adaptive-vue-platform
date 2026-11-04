@@ -6,10 +6,10 @@ import { relative, resolve, sep } from 'node:path'
 
 import vue from '@vitejs/plugin-vue'
 import UnoCSS from 'unocss/vite'
-import { defineConfig, type Plugin } from 'vite'
+import { defineConfig, type Plugin, type ProxyOptions } from 'vite'
 import VueRouter from 'vue-router/vite'
 
-import { projectConfig } from '../../project.config'
+import { readDeploymentConfig, rootDeploymentBase } from './config'
 import { applicationConfig } from './src/app/config/app.config'
 import {
   compiledEnvironmentValues,
@@ -25,7 +25,7 @@ type EditableTreeNode = Parameters<NonNullable<VueRouterPluginOptions['extendRou
 
 const repositoryDirectory = resolve(import.meta.dirname, '../..')
 const rootPackageManifestPath = resolve(repositoryDirectory, 'package.json')
-const deploymentBase: string = projectConfig.deployment.deploymentBase
+const deploymentBase: string = rootDeploymentBase
 const runtimeConfigurationArtifactName = 'runtime-configuration.json'
 const firstPaintArtifactNames = ['appearance-init.js', 'critical-theme.css'] as const
 const generatedDirectory = resolve(repositoryDirectory, 'packages/design-system/src/generated')
@@ -157,8 +157,15 @@ function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function isCompiledEnvironment(value: string): value is CompiledEnvironment {
-  return compiledEnvironmentValues.some((environment) => environment === value)
+function assertCompiledEnvironment(value: unknown): asserts value is CompiledEnvironment {
+  if (
+    typeof value !== 'string' ||
+    !compiledEnvironmentValues.some((environment) => environment === value)
+  ) {
+    throw new Error(
+      'Vite mode must be one of the exact compiled environments: development, production.',
+    )
+  }
 }
 
 async function readBuildVersion(): Promise<string> {
@@ -190,6 +197,16 @@ function runtimeConfigurationArtifacts(runtimeConfiguration: CoreRuntimeConfigur
 
   return {
     name: 'pavp-runtime-configuration-and-first-paint-artifacts',
+    config: {
+      order: 'pre',
+      handler(config) {
+        // Vite may default a falsy CLI value before calling the configuration factory.
+        if (config.mode !== undefined) assertCompiledEnvironment(config.mode)
+        if (config.base !== runtimeConfiguration.deploymentBase) {
+          throw new Error('Vite base must exactly match the validated deployment base.')
+        }
+      },
+    },
     buildStart() {
       for (const fileName of firstPaintArtifactNames) {
         this.addWatchFile(resolve(generatedDirectory, fileName))
@@ -382,28 +399,50 @@ function productionRuntimeConfigurationCarrier(): Plugin {
 }
 
 export default defineConfig(async ({ command, isPreview, mode }) => {
-  if (!isCompiledEnvironment(mode)) {
-    throw new Error(
-      'Vite mode must be one of the exact compiled environments: development, staging, production.',
-    )
-  }
+  assertCompiledEnvironment(mode)
 
+  const deployment = await readDeploymentConfig(mode, command === 'serve' && !isPreview)
+  const developmentProxy = deployment.developmentProxy
+  const developmentProxyOptions: Record<string, ProxyOptions> | undefined =
+    developmentProxy === undefined
+      ? undefined
+      : {
+          [developmentProxy.prefix]: {
+            target: developmentProxy.target,
+            changeOrigin: true,
+            followRedirects: false,
+            rewrite: (path) => path.slice(developmentProxy.prefix.length - 1),
+            configure(proxy) {
+              proxy.on('proxyReq', (request) => {
+                request.removeHeader('cookie')
+                request.removeHeader('referer')
+                request.removeHeader('proxy-authorization')
+              })
+              proxy.on('proxyRes', (response) => {
+                delete response.headers['set-cookie']
+              })
+            },
+          },
+        }
   const buildVersion = await readBuildVersion()
   const releaseSha = readReleaseSha()
   const developmentPort =
     command === 'serve' && !isPreview ? await resolveDevelopmentPort() : defaultDevelopmentPort
   const runtimeConfiguration = Object.freeze(
     coreRuntimeConfigurationSchema.parse({
-      schemaVersion: 1,
+      schemaVersion: 2,
       environment: mode,
-      deploymentBase,
+      deploymentBase: deployment.deploymentBase,
       releaseSha,
       buildVersion,
+      api: deployment.api,
     }),
   )
 
   return {
-    base: deploymentBase,
+    base: deployment.deploymentBase,
+    envDir: false as const,
+    envPrefix: [],
     define: {
       __VUE_I18N_FULL_INSTALL__: false,
       __VUE_I18N_LEGACY_API__: false,
@@ -436,6 +475,7 @@ export default defineConfig(async ({ command, isPreview, mode }) => {
       host: true,
       port: developmentPort,
       strictPort: false,
+      ...(developmentProxyOptions === undefined ? {} : { proxy: developmentProxyOptions }),
     },
   }
 })
