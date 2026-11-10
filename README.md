@@ -8,9 +8,8 @@ The delivery target is a business-independent Vue frontend architecture with reu
 components and modules, independently copyable and maintained within each project. Business
 management pages and a real protected business flow are not mandatory core deliverables.
 
-The current developer workbench is the Owner-authorized page reconstruction in
-[Architecture §18.17](./ARCHITECTURE.md#1817-developer-capability-workbench-reconstruction).
-The dashboard reads a real UApi world-time response on request. Color, size, typography and
+The current developer workbench includes a dashboard that reads a real UApi world-time response
+on request. Color, size, typography and
 interaction galleries show implemented public capabilities; click a token specimen to copy its
 CSS expression. System settings are a separate page, reached from the bottom of the sidebar,
 with immediate preference updates and a Done action that returns to the prior workspace.
@@ -19,7 +18,7 @@ Unfinished core capabilities remain separately governed and are hidden from the 
 Source implementation, static verification, runtime/visual acceptance and production release
 remain distinct states; these pages do not prove complete core delivery or Owner acceptance.
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md) for the canonical architecture baseline.
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for the architecture overview.
 
 Deployment inputs are read and validated by [apps/web/config.ts](./apps/web/config.ts).
 `pnpm dev` selects [development](./apps/web/.env.development); `pnpm build` selects
@@ -64,9 +63,9 @@ without global notifications, retries, server-state caching or credential persis
 [The UApi worldtime adapter](./apps/web/src/shared/services/uapi-world-time.ts) is an isolated,
 anonymous verification integration. Its schema is not part of the generic client. Direct
 production CORS is not promised: the provider documents keyless cross-origin restrictions;
-the development proxy is only for local integration. See the canonical
-[HTTP contract](./ARCHITECTURE.md#20-api-transport-target-contract) and
-[configuration contract](./ARCHITECTURE.md#341-build-time-and-runtime-configuration).
+the development proxy is only for local integration. The request and configuration boundaries
+are maintained in [shared/api](./apps/web/src/shared/api/index.ts) and
+[apps/web/config.ts](./apps/web/config.ts).
 
 The read-query entry is [shared/query](./apps/web/src/shared/query/index.ts). Create one
 `createApiQueryRuntime(apiClient)` for a caller-owned lifetime. Its `queryOptions(endpoint,

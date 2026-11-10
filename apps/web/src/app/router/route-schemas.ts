@@ -3,18 +3,30 @@ import { z } from 'zod'
 export const routeParamsSchemaRegistry = Object.freeze([
   Object.freeze({
     id: 'route-params.none',
-    schema: z.object({}).strict(),
+    schema: z.strictObject({}),
   }),
   Object.freeze({
     id: 'route-params.not-found-path',
-    schema: z.object({ path: z.string().min(1) }).strict(),
+    schema: z.strictObject({ path: z.string().min(1) }),
   }),
 ] as const)
 
 export const routeQuerySchemaRegistry = Object.freeze([
   Object.freeze({
+    id: 'route-query.table-editor',
+    schema: z
+      .strictObject({
+        mode: z.enum(['create', 'edit', 'detail']).default('create'),
+        id: z
+          .string()
+          .regex(/^[1-9]\d{0,14}$/u)
+          .optional(),
+      })
+      .refine((value) => value.mode === 'create' || value.id),
+  }),
+  Object.freeze({
     id: 'route-query.none',
-    schema: z.object({}).strict(),
+    schema: z.strictObject({}),
   }),
 ] as const)
 

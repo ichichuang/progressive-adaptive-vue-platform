@@ -1,5 +1,6 @@
 import tokenManifest from './packages/design-system/src/generated/tokens.manifest.json' with { type: 'json' }
 import { structuralColorKeywords } from './scripts/architecture/style-ownership.ts'
+import { privateStyleVariables } from './scripts/architecture/style-owner-contracts.ts'
 import { mappingCssProperties } from './scripts/eslint-rules/style-authority.ts'
 
 // color-mix() has current declaration-level owners. The owner-aware PAVP rule
@@ -270,12 +271,40 @@ const visualAuthorityRules = {
 }
 const shellVisualAuthorityRules = {
   ...visualAuthorityRules,
+  color: colorAuthorityRules([
+    ...textColorVariables,
+    '--pavp-collapsed-foreground',
+    '--pavp-collapsed-active-foreground',
+    '--pavp-collapsed-hover-foreground',
+  ]),
+  'z-index': [
+    disallowOutsideAuthorities(
+      zIndexVariables,
+      ['auto'],
+      [zeroNumberPattern, String.raw`calc\(\s*var\(--ui-z-base\)\s*-\s*1\s*\)`],
+    ),
+  ],
+  [spacingProperties]: [
+    disallowOutsideAuthorities(
+      spacingVariables,
+      ['0', 'auto', 'normal'],
+      [
+        ...approvedSpacingPatterns,
+        `${cssCalcFunction}\\(${cssTrivia}${cssVariablePattern('--ui-space-content-gap')}${cssTrivia}/${cssTrivia}2${cssTrivia}\\)`,
+      ],
+    ),
+  ],
   background: shellBackgroundShorthandRules,
   'background-color': colorAuthorityRules([
     ...backgroundColorVariables,
     ...adminColorVariables,
     ...shellMaterialColorVariables,
   ]),
+}
+const providerVisualAuthorityRules = {
+  ...visualAuthorityRules,
+  color: colorAuthorityRules(textColorVariables),
+  'background-color': colorAuthorityRules([...backgroundColorVariables, ...adminColorVariables]),
 }
 
 const routeTransitionFullDurationPattern = `${cssCalcFunction}\\(${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}\\+${cssTrivia}${cssVariablePattern('--ui-motion-duration')}${cssTrivia}/${cssTrivia}2${cssTrivia}\\)`
@@ -367,6 +396,45 @@ export default {
   plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
     {
+      files: ['**/packages/ui/src/components/UiTable.vue.style-*.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': {
+          ...visualAuthorityRules,
+          // Naive DataTable's native rails sit above fixed columns at local level 3.
+          'z-index': [
+            disallowOutsideAuthorities(
+              zIndexVariables,
+              ['auto'],
+              [zeroNumberPattern, String.raw`calc\(\s*var\(--ui-z-base\)\s*\+\s*3\s*\)`],
+            ),
+          ],
+          'background-color': [
+            rawColorFunction,
+            disallowOutsideAuthorities(
+              [
+                ...backgroundColorVariables,
+                ...adminColorVariables,
+                '--n-merged-th-color',
+                '--n-merged-td-color-hover',
+              ],
+              [],
+              [
+                ...structuralColorPatterns,
+                String.raw`color-mix\(\s*in srgb,\s*var\(--n-merged-td-color-striped\) 80%,\s*var\(--n-merged-td-color-hover\)\s*\)`,
+              ],
+            ),
+          ],
+          color: colorAuthorityRules([...textColorVariables, '--n-th-text-color']),
+        },
+      },
+    },
+    {
+      files: ['**/packages/ui/src/providers/UiProvider.vue.style-*.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': providerVisualAuthorityRules,
+      },
+    },
+    {
       files: ['**/packages/ui/src/components/UiRadioCardGroup.vue.style-*.css'],
       rules: {
         'declaration-property-value-disallowed-list': {
@@ -380,6 +448,12 @@ export default {
     },
     {
       files: ['apps/web/src/app/router/route-transition/route-transition.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': routeTransitionVisualAuthorityRules,
+      },
+    },
+    {
+      files: ['**/apps/web/src/app/workbench/MotionRoutePreview.vue.style-*.css'],
       rules: {
         'declaration-property-value-disallowed-list': routeTransitionVisualAuthorityRules,
       },

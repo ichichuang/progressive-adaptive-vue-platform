@@ -1332,6 +1332,91 @@ const noUnapprovedVisualLiterals = {
     function admittedTemplateStyle(node, attribute) {
       const expression = resolveLocalExpression(node.value?.expression)
       const element = node.parent?.parent
+      if (attribute === 'style' && filename === 'packages/ui/src/components/UiAdminShell.vue') {
+        const callback =
+          expression?.type === 'CallExpression' &&
+          sinks.imported(expression.callee, 'vue', ['computed'])
+            ? expression.arguments[0]
+            : undefined
+        const returns = []
+        const visitReturns = (node) => {
+          if (node.type === 'ReturnStatement') returns.push(node.argument)
+          else
+            for (const key of context.sourceCode.visitorKeys[node.type] ?? []) {
+              const children = node[key]
+              if (Array.isArray(children)) children.forEach((child) => child && visitReturns(child))
+              else if (children?.type) visitReturns(children)
+            }
+        }
+        if (callback?.type === 'ArrowFunctionExpression' && callback.body.type === 'BlockStatement')
+          visitReturns(callback.body)
+        const result = returns.length === 1 ? returns[0] : expression
+        const fields = result?.type === 'ObjectExpression' ? result.properties : []
+        const pairs = {
+          '--n-item-color-active': 'itemColorActiveCollapsed',
+          '--pavp-collapsed-foreground': 'itemIconColorCollapsed',
+          '--pavp-collapsed-active-foreground': 'itemIconColorChildActive',
+          '--pavp-collapsed-hover': 'itemColorHover',
+          '--pavp-collapsed-hover-foreground': 'itemIconColorHover',
+        }
+        return (
+          element?.rawName === 'div' &&
+          staticTemplateClass(element)
+            ?.split(/\s+/u)
+            .includes('pavp-admin-shell__collapsed-menu') &&
+          fields.length === Object.keys(pairs).length &&
+          fields.every((field) => {
+            if (field.type !== 'Property') return false
+            const expected = pairs[getStaticPropertyName(field.key, field.computed)]
+            const value = field.value
+            if (
+              !expected ||
+              value.type !== 'MemberExpression' ||
+              getStaticPropertyName(value.property, value.computed) !== expected
+            )
+              return false
+            const menu = resolveLocalExpression(value.object)
+            if (
+              menu?.type !== 'MemberExpression' ||
+              getStaticPropertyName(menu.property, menu.computed) !== 'Menu'
+            )
+              return false
+            const overrides = menu.object
+            if (
+              overrides.type !== 'MemberExpression' ||
+              getStaticPropertyName(overrides.property, overrides.computed) !== 'themeOverrides'
+            )
+              return false
+            const projection = overrides.object
+            if (
+              projection.type !== 'CallExpression' ||
+              !sinks.imported(projection.callee, '../adapters/naive/pavp-naive-theme', [
+                'createPavpNaiveThemeProjection',
+              ]) ||
+              projection.arguments.length !== 1
+            )
+              return false
+            const appearance = projection.arguments[0]
+            const injection =
+              appearance?.type === 'MemberExpression' &&
+              getStaticPropertyName(appearance.property, appearance.computed) === 'value'
+                ? resolveLocalExpression(appearance.object)
+                : undefined
+            return (
+              injection?.type === 'CallExpression' &&
+              sinks.imported(injection.callee, 'vue', ['inject']) &&
+              sinks.imported(
+                injection.arguments[0],
+                '../adapters/naive/pavp-naive-runtime-context',
+                ['pavpNaiveAppearanceKey'],
+              )
+            )
+          }) &&
+          new Set(fields.map((field) => getStaticPropertyName(field.key, field.computed))).size ===
+            Object.keys(pairs).length &&
+          claimStyleSink('collapsed-navigation-menu-theme')
+        )
+      }
       if (attribute === 'style' && filename === 'packages/ui/src/components/UiRadioCardGroup.vue') {
         const importedGroup = context.sourceCode.ast.body.some(
           (statement) =>
@@ -1346,18 +1431,9 @@ const noUnapprovedVisualLiterals = {
         )
         const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
         const pairs = {
-          '--pavp-radio-card-hover-surface': [
-            'soft.background.hover',
-            'var(--ui-color-text-primary)',
-          ],
-          '--pavp-radio-card-selected-hover-surface': [
-            'solid.background.hover',
-            'var(--ui-color-text-on-action)',
-          ],
-          '--pavp-radio-card-selected-hover-foreground': [
-            'solid.foreground',
-            'var(--ui-color-action-primary)',
-          ],
+          '--pavp-radio-card-hover-surface': 'soft.background.hover',
+          '--pavp-radio-card-selected-hover-surface': 'solid.background.hover',
+          '--pavp-radio-card-selected-hover-foreground': 'solid.foreground',
         }
         return (
           importedGroup &&
@@ -1366,18 +1442,16 @@ const noUnapprovedVisualLiterals = {
             if (field.type !== 'Property') return false
             const expected = pairs[getStaticPropertyName(field.key, field.computed)]
             const value = field.value
-            if (!expected || value.type !== 'LogicalExpression' || value.operator !== '??')
-              return false
+            if (!expected) return false
             const path = []
-            let target = value.left.type === 'ChainExpression' ? value.left.expression : value.left
+            let target = value
             while (target?.type === 'MemberExpression') {
               path.unshift(getStaticPropertyName(target.property, target.computed))
               target = target.object
             }
             const injection = target?.type === 'Identifier' ? sinks.initializer(target) : undefined
             return (
-              path.join('.') === `value.colorPalette.roles.primary.${expected[0]}` &&
-              staticNodeValue(value.right) === expected[1] &&
+              path.join('.') === `value.colorPalette.roles.primary.${expected}` &&
               injection?.type === 'CallExpression' &&
               sinks.imported(injection.callee, 'vue', ['inject']) &&
               sinks.imported(
@@ -1395,8 +1469,8 @@ const noUnapprovedVisualLiterals = {
       if (attribute === 'style' && filename === 'apps/web/src/app/workbench/TokenSpecimen.vue') {
         const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
         return (
-          element?.rawName === 'button' &&
-          staticTemplateClass(element)?.split(/\s+/u).includes('wb-specimen') &&
+          element?.rawName === 'UiCopyAction' &&
+          staticTemplateClass(element)?.split(/\s+/u).includes('wb-token-card') &&
           fields.length === 2 &&
           fields.every(
             (field) =>

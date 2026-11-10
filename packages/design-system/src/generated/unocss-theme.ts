@@ -321,6 +321,195 @@ export const platformUnoMappings = [
     allowedCssProperties: ['height'],
   },
   {
+    roleId: 'interaction.control.segment.width.large',
+    cssVariable: '--ui-control-segment-width-large',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'control-segment-large',
+    classes: ['w-control-segment-large'],
+    allowedCssProperties: ['width'],
+  },
+  {
+    roleId: 'interaction.control.segment.width.medium',
+    cssVariable: '--ui-control-segment-width-medium',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'control-segment-medium',
+    classes: ['w-control-segment-medium'],
+    allowedCssProperties: ['width'],
+  },
+  {
+    roleId: 'interaction.control.segment.width.small',
+    cssVariable: '--ui-control-segment-width-small',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'control-segment-small',
+    classes: ['w-control-segment-small'],
+    allowedCssProperties: ['width'],
+  },
+  {
+    roleId: 'interaction.icon.size.extra-large',
+    cssVariable: '--ui-icon-size-extra-large',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'icon-extra-large',
+    classes: ['size-icon-extra-large'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.icon.size.extra-small',
+    cssVariable: '--ui-icon-size-extra-small',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'icon-extra-small',
+    classes: ['size-icon-extra-small'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.icon.size.large',
+    cssVariable: '--ui-icon-size-large',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'icon-large',
+    classes: ['size-icon-large'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.icon.size.medium',
+    cssVariable: '--ui-icon-size-medium',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'icon-medium',
+    classes: ['size-icon-medium'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.icon.size.small',
+    cssVariable: '--ui-icon-size-small',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'icon-small',
+    classes: ['size-icon-small'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.cell.large',
+    cssVariable: '--ui-indicator-cell-large',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-cell-large',
+    classes: ['size-indicator-cell-large'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.cell.medium',
+    cssVariable: '--ui-indicator-cell-medium',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-cell-medium',
+    classes: ['size-indicator-cell-medium'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.cell.small',
+    cssVariable: '--ui-indicator-cell-small',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-cell-small',
+    classes: ['size-indicator-cell-small'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.circle.multiple-size',
+    cssVariable: '--ui-indicator-circle-multiple-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-circle-multiple',
+    classes: ['size-indicator-circle-multiple'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.circle.size',
+    cssVariable: '--ui-indicator-circle-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-circle',
+    classes: ['size-indicator-circle'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.handle.size',
+    cssVariable: '--ui-indicator-handle-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-handle',
+    classes: ['size-indicator-handle'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.label.height',
+    cssVariable: '--ui-indicator-label-height',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-label',
+    classes: ['h-indicator-label'],
+    allowedCssProperties: ['height'],
+  },
+  {
+    roleId: 'interaction.indicator.marker.size',
+    cssVariable: '--ui-indicator-marker-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-marker',
+    classes: ['size-indicator-marker'],
+    allowedCssProperties: ['width', 'height'],
+  },
+  {
+    roleId: 'interaction.indicator.rail.labeled',
+    cssVariable: '--ui-indicator-rail-labeled',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-rail-labeled',
+    classes: ['h-indicator-rail-labeled'],
+    allowedCssProperties: ['height'],
+  },
+  {
+    roleId: 'interaction.indicator.rail.standard',
+    cssVariable: '--ui-indicator-rail-standard',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-rail-standard',
+    classes: ['h-indicator-rail-standard'],
+    allowedCssProperties: ['height'],
+  },
+  {
+    roleId: 'interaction.indicator.rail.thin',
+    cssVariable: '--ui-indicator-rail-thin',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-rail-thin',
+    classes: ['h-indicator-rail-thin'],
+    allowedCssProperties: ['height'],
+  },
+  {
+    roleId: 'interaction.indicator.slot.icon-inline-size',
+    cssVariable: '--ui-indicator-slot-icon-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-slot-icon',
+    classes: ['w-indicator-slot-icon'],
+    allowedCssProperties: ['width'],
+  },
+  {
+    roleId: 'interaction.indicator.slot.text-inline-size',
+    cssVariable: '--ui-indicator-slot-text-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'indicator-slot-text',
+    classes: ['w-indicator-slot-text'],
+    allowedCssProperties: ['width'],
+  },
+  {
     roleId: 'interaction.motion.duration',
     cssVariable: '--ui-motion-duration',
     generatorKind: 'exact-rule',
@@ -419,6 +608,15 @@ export const platformUnoMappings = [
     allowedCssProperties: ['width'],
   },
   {
+    roleId: 'layout.calendar.weekday.minimum-inline-size',
+    cssVariable: '--ui-layout-calendar-weekday-minimum-inline-size',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'calendar-weekday',
+    classes: ['min-w-calendar-weekday'],
+    allowedCssProperties: ['min-width'],
+  },
+  {
     roleId: 'layout.content.max-width',
     cssVariable: '--ui-layout-content-max-width',
     generatorKind: 'exact-rule',
@@ -513,6 +711,51 @@ export const platformUnoMappings = [
     allowedCssProperties: ['padding-inline'],
   },
   {
+    roleId: 'spacing.calendar.block.gap',
+    cssVariable: '--ui-space-calendar-block-gap',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'calendar-block-gap',
+    classes: ['gap-calendar-block-gap'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.calendar.footer.indent',
+    cssVariable: '--ui-space-calendar-footer-indent',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'calendar-footer-indent',
+    classes: ['gap-calendar-footer-indent'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.calendar.inline.compact',
+    cssVariable: '--ui-space-calendar-inline-compact',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'calendar-inline-compact',
+    classes: ['gap-calendar-inline-compact'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.calendar.inline.tight',
+    cssVariable: '--ui-space-calendar-inline-tight',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'calendar-inline-tight',
+    classes: ['gap-calendar-inline-tight'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.component.unit',
+    cssVariable: '--ui-space-component-unit',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'component-unit',
+    classes: ['gap-component-unit'],
+    allowedCssProperties: ['gap'],
+  },
+  {
     roleId: 'spacing.content.gap',
     cssVariable: '--ui-space-content-gap',
     generatorKind: 'exact-rule',
@@ -520,6 +763,60 @@ export const platformUnoMappings = [
     key: 'content-gap',
     classes: ['gap-content-gap'],
     allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.control.segment.gap',
+    cssVariable: '--ui-space-control-segment-gap',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'control-segment-gap',
+    classes: ['gap-control-segment-gap'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.indicator.cell-gap.compact',
+    cssVariable: '--ui-space-indicator-cell-gap-compact',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'indicator-cell-gap-compact',
+    classes: ['gap-indicator-cell-gap-compact'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.indicator.cell-gap.standard',
+    cssVariable: '--ui-space-indicator-cell-gap-standard',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'indicator-cell-gap-standard',
+    classes: ['gap-indicator-cell-gap-standard'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.indicator.content.gap',
+    cssVariable: '--ui-space-indicator-content-gap',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'indicator-content-gap',
+    classes: ['gap-indicator-content-gap'],
+    allowedCssProperties: ['gap'],
+  },
+  {
+    roleId: 'spacing.indicator.label.inline',
+    cssVariable: '--ui-space-indicator-label-inline',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'indicator-label-inline',
+    classes: ['px-indicator-label-inline'],
+    allowedCssProperties: ['padding-inline'],
+  },
+  {
+    roleId: 'spacing.indicator.label.inline-compact',
+    cssVariable: '--ui-space-indicator-label-inline-compact',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'indicator-label-inline-compact',
+    classes: ['px-indicator-label-inline-compact'],
+    allowedCssProperties: ['padding-inline'],
   },
   {
     roleId: 'spacing.page.inline',
@@ -566,6 +863,15 @@ export const platformUnoMappings = [
     allowedCssProperties: ['--un-leading', 'line-height'],
   },
   {
+    roleId: 'typography.line-height.compact',
+    cssVariable: '--ui-font-line-height-compact',
+    generatorKind: 'theme-entry',
+    family: 'line-height',
+    key: 'compact',
+    classes: ['leading-compact'],
+    allowedCssProperties: ['--un-leading', 'line-height'],
+  },
+  {
     roleId: 'typography.line-height.title',
     cssVariable: '--ui-font-line-height-title',
     generatorKind: 'theme-entry',
@@ -581,6 +887,69 @@ export const platformUnoMappings = [
     family: 'typography',
     key: 'body',
     classes: ['text-body'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.caption',
+    cssVariable: '--ui-font-size-caption',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'caption',
+    classes: ['text-caption'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.control.large',
+    cssVariable: '--ui-font-size-control-large',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'control-large',
+    classes: ['text-control-large'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.control.medium',
+    cssVariable: '--ui-font-size-control-medium',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'control-medium',
+    classes: ['text-control-medium'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.control.small',
+    cssVariable: '--ui-font-size-control-small',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'control-small',
+    classes: ['text-control-small'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.heading',
+    cssVariable: '--ui-font-size-heading',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'heading',
+    classes: ['text-heading'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.metric',
+    cssVariable: '--ui-font-size-metric',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'metric',
+    classes: ['text-metric'],
+    allowedCssProperties: ['font-size'],
+  },
+  {
+    roleId: 'typography.size.subheading',
+    cssVariable: '--ui-font-size-subheading',
+    generatorKind: 'exact-rule',
+    family: 'typography',
+    key: 'subheading',
+    classes: ['text-subheading'],
     allowedCssProperties: ['font-size'],
   },
   {
@@ -760,9 +1129,63 @@ export const platformRules = [
     },
   ],
   [
+    'gap-calendar-block-gap',
+    {
+      gap: 'var(--ui-space-calendar-block-gap)',
+    },
+  ],
+  [
+    'gap-calendar-footer-indent',
+    {
+      gap: 'var(--ui-space-calendar-footer-indent)',
+    },
+  ],
+  [
+    'gap-calendar-inline-compact',
+    {
+      gap: 'var(--ui-space-calendar-inline-compact)',
+    },
+  ],
+  [
+    'gap-calendar-inline-tight',
+    {
+      gap: 'var(--ui-space-calendar-inline-tight)',
+    },
+  ],
+  [
+    'gap-component-unit',
+    {
+      gap: 'var(--ui-space-component-unit)',
+    },
+  ],
+  [
     'gap-content-gap',
     {
       gap: 'var(--ui-space-content-gap)',
+    },
+  ],
+  [
+    'gap-control-segment-gap',
+    {
+      gap: 'var(--ui-space-control-segment-gap)',
+    },
+  ],
+  [
+    'gap-indicator-cell-gap-compact',
+    {
+      gap: 'var(--ui-space-indicator-cell-gap-compact)',
+    },
+  ],
+  [
+    'gap-indicator-cell-gap-standard',
+    {
+      gap: 'var(--ui-space-indicator-cell-gap-standard)',
+    },
+  ],
+  [
+    'gap-indicator-content-gap',
+    {
+      gap: 'var(--ui-space-indicator-content-gap)',
     },
   ],
   [
@@ -782,6 +1205,30 @@ export const platformRules = [
     'h-control',
     {
       height: 'var(--ui-control-height)',
+    },
+  ],
+  [
+    'h-indicator-label',
+    {
+      height: 'var(--ui-indicator-label-height)',
+    },
+  ],
+  [
+    'h-indicator-rail-labeled',
+    {
+      height: 'var(--ui-indicator-rail-labeled)',
+    },
+  ],
+  [
+    'h-indicator-rail-standard',
+    {
+      height: 'var(--ui-indicator-rail-standard)',
+    },
+  ],
+  [
+    'h-indicator-rail-thin',
+    {
+      height: 'var(--ui-indicator-rail-thin)',
     },
   ],
   [
@@ -809,6 +1256,12 @@ export const platformRules = [
     },
   ],
   [
+    'min-w-calendar-weekday',
+    {
+      'min-width': 'var(--ui-layout-calendar-weekday-minimum-inline-size)',
+    },
+  ],
+  [
     'min-w-target-enhanced',
     {
       'min-width': 'var(--ui-layout-target-enhanced-minimum-inline-size)',
@@ -824,6 +1277,18 @@ export const platformRules = [
     'px-button-inline',
     {
       'padding-inline': 'var(--ui-space-button-inline)',
+    },
+  ],
+  [
+    'px-indicator-label-inline',
+    {
+      'padding-inline': 'var(--ui-space-indicator-label-inline)',
+    },
+  ],
+  [
+    'px-indicator-label-inline-compact',
+    {
+      'padding-inline': 'var(--ui-space-indicator-label-inline-compact)',
     },
   ],
   [
@@ -845,9 +1310,99 @@ export const platformRules = [
     },
   ],
   [
+    'size-icon-extra-large',
+    {
+      height: 'var(--ui-icon-size-extra-large)',
+      width: 'var(--ui-icon-size-extra-large)',
+    },
+  ],
+  [
+    'size-icon-extra-small',
+    {
+      height: 'var(--ui-icon-size-extra-small)',
+      width: 'var(--ui-icon-size-extra-small)',
+    },
+  ],
+  [
+    'size-icon-large',
+    {
+      height: 'var(--ui-icon-size-large)',
+      width: 'var(--ui-icon-size-large)',
+    },
+  ],
+  [
+    'size-icon-medium',
+    {
+      height: 'var(--ui-icon-size-medium)',
+      width: 'var(--ui-icon-size-medium)',
+    },
+  ],
+  [
+    'size-icon-small',
+    {
+      height: 'var(--ui-icon-size-small)',
+      width: 'var(--ui-icon-size-small)',
+    },
+  ],
+  [
+    'size-indicator-cell-large',
+    {
+      height: 'var(--ui-indicator-cell-large)',
+      width: 'var(--ui-indicator-cell-large)',
+    },
+  ],
+  [
+    'size-indicator-cell-medium',
+    {
+      height: 'var(--ui-indicator-cell-medium)',
+      width: 'var(--ui-indicator-cell-medium)',
+    },
+  ],
+  [
+    'size-indicator-cell-small',
+    {
+      height: 'var(--ui-indicator-cell-small)',
+      width: 'var(--ui-indicator-cell-small)',
+    },
+  ],
+  [
+    'size-indicator-circle',
+    {
+      height: 'var(--ui-indicator-circle-size)',
+      width: 'var(--ui-indicator-circle-size)',
+    },
+  ],
+  [
+    'size-indicator-circle-multiple',
+    {
+      height: 'var(--ui-indicator-circle-multiple-size)',
+      width: 'var(--ui-indicator-circle-multiple-size)',
+    },
+  ],
+  [
+    'size-indicator-handle',
+    {
+      height: 'var(--ui-indicator-handle-size)',
+      width: 'var(--ui-indicator-handle-size)',
+    },
+  ],
+  [
+    'size-indicator-marker',
+    {
+      height: 'var(--ui-indicator-marker-size)',
+      width: 'var(--ui-indicator-marker-size)',
+    },
+  ],
+  [
     'text-body',
     {
       'font-size': 'var(--ui-font-size-body)',
+    },
+  ],
+  [
+    'text-caption',
+    {
+      'font-size': 'var(--ui-font-size-caption)',
     },
   ],
   [
@@ -863,9 +1418,27 @@ export const platformRules = [
     },
   ],
   [
+    'text-control-large',
+    {
+      'font-size': 'var(--ui-font-size-control-large)',
+    },
+  ],
+  [
+    'text-control-medium',
+    {
+      'font-size': 'var(--ui-font-size-control-medium)',
+    },
+  ],
+  [
     'text-control-primary',
     {
       color: 'var(--ui-color-control-primary)',
+    },
+  ],
+  [
+    'text-control-small',
+    {
+      'font-size': 'var(--ui-font-size-control-small)',
     },
   ],
   [
@@ -878,6 +1451,18 @@ export const platformRules = [
     'text-control-warning',
     {
       color: 'var(--ui-color-control-warning)',
+    },
+  ],
+  [
+    'text-heading',
+    {
+      'font-size': 'var(--ui-font-size-heading)',
+    },
+  ],
+  [
+    'text-metric',
+    {
+      'font-size': 'var(--ui-font-size-metric)',
     },
   ],
   [
@@ -902,6 +1487,12 @@ export const platformRules = [
     'text-on-status-warning',
     {
       color: 'var(--ui-color-text-on-status-warning)',
+    },
+  ],
+  [
+    'text-subheading',
+    {
+      'font-size': 'var(--ui-font-size-subheading)',
     },
   ],
   [
@@ -941,6 +1532,36 @@ export const platformRules = [
     },
   ],
   [
+    'w-control-segment-large',
+    {
+      width: 'var(--ui-control-segment-width-large)',
+    },
+  ],
+  [
+    'w-control-segment-medium',
+    {
+      width: 'var(--ui-control-segment-width-medium)',
+    },
+  ],
+  [
+    'w-control-segment-small',
+    {
+      width: 'var(--ui-control-segment-width-small)',
+    },
+  ],
+  [
+    'w-indicator-slot-icon',
+    {
+      width: 'var(--ui-indicator-slot-icon-inline-size)',
+    },
+  ],
+  [
+    'w-indicator-slot-text',
+    {
+      width: 'var(--ui-indicator-slot-text-inline-size)',
+    },
+  ],
+  [
     'z-base',
     {
       'z-index': 'var(--ui-z-base)',
@@ -964,6 +1585,7 @@ export const platformTheme = {
   },
   leading: {
     body: 'var(--ui-font-line-height-body)',
+    compact: 'var(--ui-font-line-height-compact)',
     title: 'var(--ui-font-line-height-title)',
   },
   radius: {

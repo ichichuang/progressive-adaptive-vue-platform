@@ -29,6 +29,7 @@ export {
   type EffectiveAppearanceState,
 } from './runtime/apply-appearance'
 export { projectUiAppearance, type UiAppearanceSnapshot } from './runtime/ui-appearance-projection'
+export { projectSequentialColorScale } from './runtime/sequential-color-scale'
 export { resolveColorMode, type EffectiveColorMode } from './runtime/resolve-color-mode'
 export { resolveMotion, type ResolveMotionInput } from './runtime/resolve-motion'
 export { resolveMaterial, type EffectiveMaterial } from './runtime/resolve-material'

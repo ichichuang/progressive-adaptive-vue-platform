@@ -55,9 +55,9 @@ import {
 } from './route-registry'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
 import {
+  prepareGeneratedRoute,
   resolveRegisteredDestination,
   routeDestination,
-  routeMetaMatches,
   sameRouteAddress,
   validateRouteInput,
   routeHasPageInput,
@@ -312,10 +312,7 @@ function validateGeneratedRouteClosure(): void {
   for (const record of routeRegistry) {
     const generated = namedRecords.find((candidate) => candidate.name === record.name)
 
-    if (
-      generated?.path !== record.pathPattern ||
-      !routeMetaMatches(generated.meta ?? {}, record.meta)
-    ) {
+    if (generated === undefined || !prepareGeneratedRoute(record, generated)) {
       throw new TypeError('The generated runtime route set diverged from the Route Registry.')
     }
   }
@@ -382,6 +379,7 @@ interface RouteEntryMarker {
 interface NavigationOperation {
   readonly presentationAbort: AbortController
   workspaceActivation?: RouterNavigationOptions['workspaceActivation']
+  workspaceOrigin?: LiveWorkspaceEntry
   readonly navigationId: string
   kind: 'initial' | 'push' | 'replace' | 'pop'
   expectedFullPath: string
@@ -432,6 +430,7 @@ function committedRouteInputProps(router: Router): Readonly<{ routeInput?: Valid
 export interface RouterNavigationOptions {
   readonly replace?: boolean
   readonly workspaceActivation?: Pick<LiveWorkspaceEntry, 'identity' | 'instance'>
+  readonly workspaceOrigin?: LiveWorkspaceEntry
 }
 
 export function isRouterNavigationCurrent(router: Router, navigationId: string): boolean {
@@ -812,6 +811,10 @@ export async function createAndReadyRouter(input: {
     )
       return undefined
     const presented = entry.presented
+    let controller = hasComponentFailure(entry)
+      ? scrollControllers.read(presented.owner)
+      : presented.controller
+    let pendingReplacement: LiveWorkspaceEntry | undefined
     const lease = new AbortController()
     const operationSignal = entry.navigation.operation.presentationAbort.signal
     const cancel = (): void => {
@@ -829,8 +832,11 @@ export async function createAndReadyRouter(input: {
       entryIsCurrent(entry) &&
       entry.navigation.operation.result?.kind === 'allow' &&
       regionOwner(entry.navigation.routeName) === presented.owner &&
-      scrollControllers.read(presented.owner) === presented.controller &&
-      presented.controller.readState().ready &&
+      (pendingReplacement === undefined
+        ? scrollControllers.read(presented.owner) === controller && controller.readState().ready
+        : entry.workspace === pendingReplacement &&
+          renderSnapshot?.workspace === pendingReplacement &&
+          workspace.active === pendingReplacement) &&
       presented.owner.closest('[inert]') === null
     if (!isCurrent()) return undefined
     operationSignal.addEventListener('abort', cancel, { once: true })
@@ -886,6 +892,7 @@ export async function createAndReadyRouter(input: {
         if (replacement === undefined) return undefined
         // Identity adoption is independent of rendering and optional scroll settlement.
         entry.workspace = replacement
+        pendingReplacement = replacement
         try {
           prepare(replacement)
         } finally {
@@ -897,6 +904,7 @@ export async function createAndReadyRouter(input: {
         if (
           resetStarted ||
           !isCurrent() ||
+          pendingReplacement !== replacement ||
           entry.workspace !== replacement ||
           renderSnapshot?.workspace !== replacement ||
           workspace.active !== replacement ||
@@ -963,9 +971,12 @@ export async function createAndReadyRouter(input: {
         // DOM readiness is sampled again after content settles; it is not a reactive promise.
         if (!isCurrent() || workspace.active !== replacement || hasComponentFailure(entry))
           return false
+        controller = scrollControllers.read(presented.owner)
+        pendingReplacement = undefined
+        if (!isCurrent() || hasComponentFailure(entry)) return false
         workspaceRecords.delete(target.identity)
         if (entry.marker !== undefined) regionRecords.delete(entry.marker.entryId)
-        presented.controller.cancelMotion()
+        controller.cancelMotion()
         if (!isCurrent() || hasComponentFailure(entry)) return false
         const position =
           refreshPosition?.instance === target.instance &&
@@ -986,12 +997,13 @@ export async function createAndReadyRouter(input: {
           hasComponentFailure(entry)
         )
           return false
-        if (!writeRegionPosition(presented.controller, position))
+        if (!writeRegionPosition(controller, position))
           throw new TypeError('The locally refreshed Workspace scroll owner is unavailable.')
         if (!isCurrent() || hasComponentFailure(entry)) return false
         entry.presented = {
           ...presented,
           kind: 'page',
+          controller,
           workspace: replacement,
           context: regionContext(entry.to, entry.navigation, presented.owner),
           workspaceContext: regionContext(entry.to, entry.navigation, presented.owner, replacement),
@@ -1605,12 +1617,16 @@ export async function createAndReadyRouter(input: {
       )
     )
       return cancelledRouterNavigationResult()
+    const origin = options?.workspaceOrigin
+    if (origin !== undefined && workspace.active !== origin)
+      return cancelledRouterNavigationResult()
     const target = resolved ?? router.resolve({ name: 'error-invalid-route-input' })
     const request = beginOperation(
       resolved === undefined || options?.replace === true ? 'replace' : 'push',
       target.fullPath,
     )
     request.workspaceActivation = activation
+    if (origin !== undefined) request.workspaceOrigin = origin
     if (resolved === undefined)
       request.result = createFailureResult({
         configuration: input.configuration,
@@ -1757,6 +1773,7 @@ export async function createAndReadyRouter(input: {
         routeDestination(to),
         navigation.input,
         to.matched.at(-1)?.components?.['default'],
+        navigation.operation.workspaceOrigin,
       )
       committedEntry = { to, navigation, marker, workspace: entry, presented: undefined }
       publishWorkspaceSnapshot(committedEntry)

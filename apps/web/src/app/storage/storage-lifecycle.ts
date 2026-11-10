@@ -1,3 +1,4 @@
+import type { FormDraftStorageContext } from '../forms/form-draft-contract'
 import type { NavigationPreferencePort } from '../navigation/navigation-preference-contract'
 import type { WorkspaceSessionPort } from '../workspace/workspace-session-contract'
 import { createWorkspaceSessionStorage } from './workspace-session-storage'
@@ -14,8 +15,11 @@ import { nonePrincipalPartitionId, type PrincipalPartitionId } from './storage-p
 import { storageRegistry, type StorageRegistryRecord } from './storage-registry'
 import type { BrowserPageSessionPort } from '../router/browser-page-session-contract'
 import { createBrowserPageSessionStorage } from './browser-page-session-storage'
+import type { ShellScrollStorageContext } from '../scroll/shell-scroll-storage-key'
 
 interface StorageOwner {
+  readonly shellScroll: ShellScrollStorageContext
+  readonly formDrafts: FormDraftStorageContext
   readonly browserPageSession: BrowserPageSessionPort
   readonly scrollPreference: ScrollPreferencePort
   readonly scrollRefresh: ScrollRefreshPort
@@ -44,8 +48,8 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 8 ||
-    envelopeRecords.length !== 0 ||
+    records.length !== 10 ||
+    envelopeRecords.length !== 1 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
     storageMigrationRegistry.length !== 0
@@ -72,7 +76,10 @@ export function createAndReadyStorage(input: {
 
   let disposed = false
   const browserPageSession = createBrowserPageSessionStorage(errorAdapter, () => disposed)
+  const recordStorageContext = Object.freeze({ errorAdapter, isDisposed: () => disposed })
   const owner = Object.freeze({
+    shellScroll: recordStorageContext,
+    formDrafts: recordStorageContext,
     browserPageSession: browserPageSession.port,
     scrollPreference: createScrollPreferenceStorage(errorAdapter, () => disposed),
     scrollRefresh: createScrollRefreshStorage(errorAdapter, () => disposed),

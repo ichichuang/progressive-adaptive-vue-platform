@@ -12,6 +12,8 @@
     "@platform/design-system": "workspace:*",
     "@platform/ui": "workspace:*",
     "@tanstack/vue-query": "catalog:",
+    "highlight.js": "catalog:",
+    "motion-v": "catalog:",
     "naive-ui": "catalog:",
     "pinia": "catalog:",
     "vue": "catalog:",

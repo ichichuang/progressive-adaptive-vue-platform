@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { EffectiveAppearanceState } from '@platform/design-system'
-import { AnimatePresence, m } from 'motion-v'
+import { AnimatePresence, M, m } from 'motion-v'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import {
   createMotionFeatureRuntime,
@@ -14,6 +14,7 @@ import { projectMotionPolicy } from './motion-policy'
 
 import type { UiWorkspaceTab } from '../../components/contracts'
 import { NDropdown, type DropdownOption } from 'naive-ui/es/dropdown'
+import { NButton } from 'naive-ui/es/button'
 import UiScrollArea from '../../components/UiScrollArea.vue'
 import type { UiScrollController } from '../../components/scroll-contracts'
 
@@ -34,6 +35,7 @@ const emit = defineEmits<{
   activate: [id: string]
   close: [id: string]
   refresh: [id: string]
+  viewport: [element: HTMLElement | null]
 }>()
 const activeIndex = computed(() =>
   props.activeId === null ? -1 : props.items.findIndex((item) => item.id === props.activeId),
@@ -46,12 +48,24 @@ const nextTab = computed(() =>
 )
 const strip = ref<HTMLElement>()
 const viewport = ref<HTMLElement>()
+const rovingId = ref<string | null>(null)
+const tabStopId = computed(() =>
+  props.items.some((item) => item.id === rovingId.value)
+    ? rovingId.value
+    : (props.items[activeIndex.value]?.id ?? props.items[0]?.id),
+)
 let scrollController: UiScrollController | null = null
+let initialReveal = true
 function connectScrollController(controller: UiScrollController | null): void {
   scrollController = controller
+  if (controller === null || !initialReveal) return
+  initialReveal = false
+  const button = props.activeId === null ? null : findTabButton(props.activeId)
+  if (button !== null) revealTab(button, 'instant')
 }
 const groupId = `pavp-workspace-${useId()}`
 const menuId = `${groupId}-menu`
+let contextCaller: HTMLElement | null = null
 const contextMenu = ref<{ readonly id: string | null; readonly x: number; readonly y: number }>({
   id: null,
   x: 0,
@@ -63,22 +77,111 @@ const contextOptions = computed<DropdownOption[]>(() => [
     key: 'refresh',
     label: props.refreshLabel,
     disabled: contextItem.value?.refreshable !== true,
-    props: { role: 'menuitem', 'aria-disabled': contextItem.value?.refreshable !== true },
+    props: {
+      role: 'menuitem',
+      tabindex: -1,
+      'aria-disabled': contextItem.value?.refreshable !== true,
+    },
   },
   {
     key: 'close',
     label: props.closeLabel,
     disabled: contextItem.value?.closable !== true,
-    props: { role: 'menuitem', 'aria-disabled': contextItem.value?.closable !== true },
+    props: {
+      role: 'menuitem',
+      tabindex: -1,
+      'aria-disabled': contextItem.value?.closable !== true,
+    },
   },
 ])
 function closeContextMenu(): void {
   // Keep the anchor stable while the dropdown finishes its leave transition.
   if (contextMenu.value.id !== null) contextMenu.value = { ...contextMenu.value, id: null }
 }
-function openContextMenu(id: string, x: number, y: number): void {
-  if (!props.items.some((item) => item.id === id)) return
+function findTabButton(id: string): HTMLElement | null {
+  const button = document.getElementById(`${id}-tab`)
+  return button !== null &&
+    strip.value?.contains(button) === true &&
+    button.closest('[inert]') === null
+    ? button
+    : null
+}
+function openContextMenu(id: string, x: number, y: number, caller?: HTMLElement): void {
+  const button = findTabButton(id)
+  if (button === null || !props.items.some((item) => item.id === id)) return
+  contextCaller = caller ?? button
   contextMenu.value = { id, x, y }
+}
+function restoreContextCaller(): void {
+  const menu = document.getElementById(menuId)
+  if (
+    menu?.contains(document.activeElement) === true &&
+    contextCaller?.isConnected === true &&
+    contextCaller.closest('[inert]') === null
+  )
+    contextCaller.focus({ preventScroll: true })
+}
+function contextMenuOptions(menu: HTMLElement): HTMLElement[] {
+  return Array.from(
+    menu.querySelectorAll<HTMLElement>('[role="menuitem"]:not([aria-disabled="true"])'),
+  )
+}
+function isComposingKey(event: KeyboardEvent): boolean {
+  // IME boundary keydowns can clear isComposing before the confirming key arrives.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- 229 is the remaining IME compatibility signal.
+  return event.isComposing || event.keyCode === 229
+}
+
+async function handleContextMenuKeydown(id: string, event: KeyboardEvent): Promise<void> {
+  if (event.defaultPrevented || isComposingKey(event)) return
+  if (event.key !== 'ContextMenu' && !(event.shiftKey && event.key === 'F10')) return
+  const button = findTabButton(id)
+  if (button === null || !(event.target instanceof HTMLElement)) return
+  event.preventDefault()
+  event.stopPropagation()
+  const caller = event.target
+  const bounds = button.getBoundingClientRect()
+  openContextMenu(id, bounds.left, bounds.bottom, caller)
+  const opening = contextMenu.value
+  await nextTick()
+  // Opening explicitly from the keyboard owns focus; later route/prop updates do not.
+  if (contextMenu.value !== opening || document.activeElement !== caller) return
+  const menu = document.getElementById(menuId)
+  if (menu !== null) (contextMenuOptions(menu)[0] ?? menu).focus({ preventScroll: true })
+}
+function handleMenuKeydown(event: KeyboardEvent): void {
+  if (event.defaultPrevented || isComposingKey(event)) return
+  const menu = event.currentTarget
+  if (!(menu instanceof HTMLElement) || contextMenu.value.id === null) return
+  if (event.key === 'Tab') {
+    // Resume native traversal at the caller, not at the teleported overlay root.
+    restoreContextCaller()
+    closeContextMenu()
+    return
+  }
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    event.stopPropagation()
+    restoreContextCaller()
+    closeContextMenu()
+    return
+  }
+  const options = contextMenuOptions(menu)
+  const index = options.findIndex((option) => option === document.activeElement)
+  let target: HTMLElement | undefined
+  if (event.key === 'ArrowDown') target = options[(index + 1) % options.length]
+  else if (event.key === 'ArrowUp') target = options[(index - 1 + options.length) % options.length]
+  else if (event.key === 'Home') target = options[0]
+  else if (event.key === 'End') target = options.at(-1)
+  else if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    options[index]?.click()
+    return
+  } else return
+  event.preventDefault()
+  event.stopPropagation()
+  target?.focus({ preventScroll: true })
 }
 function updateContextMenu(show: boolean): void {
   if (!show) dismissContextMenu()
@@ -107,6 +210,7 @@ function dismissContextMenu(event?: MouseEvent): void {
 }
 function selectContextAction(key: string | number): void {
   const item = contextItem.value
+  restoreContextCaller()
   closeContextMenu()
   if (item === undefined) return
   if (key === 'refresh' && item.refreshable) emit('refresh', item.id)
@@ -130,6 +234,7 @@ const leaving = computed(() => policy.value.workspace.leaving)
 const entering = computed(() => policy.value.workspace.entering)
 const closeMarkVariants = computed(() => policy.value.workspace.closeMarkVariants)
 const edgeSurfaceVariants = projectMotionPolicy('none').workspace.edgeSurfaceVariants
+const tabSurfaceVariants = computed(() => policy.value.workspace.tabSurfaceVariants)
 const edgeGestures = projectMotionPolicy('none').workspace.edgeGestures
 const edgeMarkVariants = computed(() => policy.value.workspace.edgeMarkVariants)
 const interruption = createMotionInterruptionOwner(() => policy.value)
@@ -165,7 +270,7 @@ onBeforeUnmount(() => {
   dispose()
 })
 
-function revealTab(button: HTMLElement): void {
+function revealTab(button: HTMLElement, behavior: 'smooth' | 'instant' = 'smooth'): void {
   const owner = viewport.value
   const item = button.closest<HTMLElement>('.pavp-workspace-tabs__item')
   if (owner === undefined || item === null || strip.value?.contains(item) !== true) return
@@ -178,17 +283,68 @@ function revealTab(button: HTMLElement): void {
       : target.right > bounds.right
         ? target.right - bounds.right
         : 0
-  if (offset !== 0) scrollController?.scrollBy({ left: offset, behavior: 'smooth' })
+  if (offset !== 0) scrollController?.scrollBy({ left: offset, behavior })
 }
+
+function focusTab(id: string): void {
+  const button = findTabButton(id)
+  if (button === null) return
+  rovingId.value = id
+  button.focus({ preventScroll: true })
+  revealTab(button)
+}
+function handleTabKeydown(id: string, event: KeyboardEvent): void {
+  if (event.defaultPrevented || isComposingKey(event)) return
+  if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+  const index = props.items.findIndex((item) => item.id === id)
+  if (index < 0) return
+  let target: UiWorkspaceTab | undefined
+  if (event.key === 'ArrowLeft')
+    target = props.items[(index - 1 + props.items.length) % props.items.length]
+  else if (event.key === 'ArrowRight') target = props.items[(index + 1) % props.items.length]
+  else if (event.key === 'Home') target = props.items[0]
+  else if (event.key === 'End') target = props.items.at(-1)
+  else if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    event.stopPropagation()
+    emit('activate', id)
+    return
+  } else return
+  event.preventDefault()
+  event.stopPropagation()
+  if (target !== undefined) focusTab(target.id)
+}
+watch(
+  () => props.items.map((item) => item.id),
+  async (ids, previousIds) => {
+    const focused = document.activeElement
+    const menu = document.getElementById(menuId)
+    const caller = menu?.contains(focused) === true ? contextCaller : focused
+    const item = caller instanceof HTMLElement ? caller.closest('.pavp-workspace-tabs__item') : null
+    if (item === null || strip.value?.contains(item) !== true) return
+    const removedIndex = previousIds.findIndex(
+      (id) => item.querySelector('[role="tab"]')?.id === `${id}-tab`,
+    )
+    const removedId = previousIds[removedIndex]
+    if (removedId === undefined || ids.includes(removedId)) return
+    const neighborId = ids[Math.min(removedIndex, ids.length - 1)]
+    await nextTick()
+    // A close request may be cancelled. Restore only after actual removal, and never
+    // take focus back if the user or the application has already moved it elsewhere.
+    if (document.activeElement !== focused && document.activeElement !== document.body) return
+    if (neighborId !== undefined) focusTab(neighborId)
+  },
+)
 
 watch(
   () => props.activeId,
   async (id) => {
     await nextTick()
-    const button = id === null ? null : document.getElementById(`${id}-tab`)
+    if (id !== props.activeId) return
+    const button = id === null ? null : findTabButton(id)
     if (button !== null) revealTab(button)
   },
-  { immediate: true },
+  // The controller supplies the initial default before shell restoration. Later activation reveals it.
 )
 </script>
 
@@ -209,35 +365,41 @@ watch(
           class="pavp-workspace-tabs-region"
           :data-motion="motion"
         >
-          <m.button
+          <M
             :ref="(element) => interruption.bind('previous', element)"
-            type="button"
-            class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--previous"
-            :aria-label="previousLabel"
-            :disabled="previousTab === undefined"
             :initial="false"
             :animate="previousTab === undefined ? 'disabled' : 'rest'"
             v-bind="previousTab === undefined ? {} : edgeGestures"
             :transition="transition"
-            @click="previousTab !== undefined && emit('activate', previousTab.id)"
+            as-child
           >
-            <m.span
-              class="pavp-workspace-tabs-edge__surface"
-              aria-hidden="true"
-              :initial="false"
-              :variants="edgeSurfaceVariants"
-              :transition="transition"
-            />
-            <m.span
-              class="pavp-workspace-tabs-edge__mark"
-              aria-hidden="true"
-              :initial="false"
-              :variants="edgeMarkVariants"
-              :transition="transition"
+            <NButton
+              attr-type="button"
+              text
+              class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--previous"
+              :aria-label="previousLabel"
+              :disabled="previousTab === undefined"
+              native-focus-behavior
+              @click="previousTab !== undefined && emit('activate', previousTab.id)"
             >
-              <span class="pavp-workspace-tabs-edge__icon i-lucide-chevron-left" />
-            </m.span>
-          </m.button>
+              <m.span
+                class="pavp-workspace-tabs-edge__surface"
+                aria-hidden="true"
+                :initial="false"
+                :variants="edgeSurfaceVariants"
+                :transition="transition"
+              />
+              <m.span
+                class="pavp-workspace-tabs-edge__mark"
+                aria-hidden="true"
+                :initial="false"
+                :variants="edgeMarkVariants"
+                :transition="transition"
+              >
+                <span class="pavp-workspace-tabs-edge__icon i-lucide-chevron-left" />
+              </m.span>
+            </NButton>
+          </M>
           <div
             ref="viewport"
             class="pavp-workspace-tabs-viewport"
@@ -246,6 +408,7 @@ watch(
               owner-id="workspace-tabs"
               x-scrollable
               @controller="connectScrollController"
+              @viewport="emit('viewport', $event)"
             >
               <m.div
                 :ref="setStrip"
@@ -267,17 +430,20 @@ watch(
                   <m.div
                     v-for="item in items"
                     :key="item.id"
-                    class="pavp-workspace-tabs__item hover:text-text-primary"
-                    :class="{ 'text-text-primary': item.id === activeId }"
+                    class="pavp-workspace-tabs__item data-[active=true]:text-text-primary focus-within:text-text-primary hover:text-text-primary"
                     role="presentation"
                     :data-active="item.id === activeId"
                     :data-closable="item.closable"
                     :layout="full ? 'position' : false"
                     :initial="featureReady && motion !== 'none' ? entering : false"
-                    :animate="{ ...resting, y: 0 }"
+                    :variants="{ rest: { ...resting, y: 0 } }"
+                    animate="rest"
+                    while-hover="hover"
+                    while-press="press"
                     :exit="leaving"
                     :transition="transition"
                     @contextmenu.prevent="openContextMenu(item.id, $event.clientX, $event.clientY)"
+                    @keydown="handleContextMenuKeydown(item.id, $event)"
                   >
                     <m.div
                       v-if="full && item.id === activeId"
@@ -292,78 +458,95 @@ watch(
                       class="pavp-workspace-tabs__lens"
                       aria-hidden="true"
                     />
-                    <span
+                    <m.span
                       class="pavp-workspace-tabs__hover"
                       aria-hidden="true"
+                      :variants="tabSurfaceVariants"
+                      :transition="transition"
                     />
-                    <button
+                    <NButton
                       :id="`${item.id}-tab`"
-                      type="button"
+                      attr-type="button"
+                      text
                       role="tab"
                       class="pavp-workspace-tabs__tab"
                       :aria-selected="item.id === activeId"
                       :aria-controls="panelId"
                       aria-haspopup="menu"
                       :aria-expanded="contextMenu.id === item.id"
-                      tabindex="-1"
+                      :tabindex="item.id === tabStopId ? 0 : -1"
+                      @focus="rovingId = item.id"
+                      @keydown="handleTabKeydown(item.id, $event)"
                       @click="emit('activate', item.id)"
                     >
                       <span class="pavp-workspace-tabs__label">{{ item.label }}</span>
-                    </button>
-                    <m.button
+                    </NButton>
+                    <M
                       v-if="item.closable"
-                      type="button"
-                      class="pavp-workspace-tabs__close"
                       :initial="false"
                       animate="rest"
                       while-hover="hover"
                       while-press="press"
                       :transition="transition"
-                      :aria-label="item.closeLabel"
-                      @click.stop="emit('close', item.id)"
+                      as-child
                     >
-                      <m.span
-                        class="pavp-workspace-tabs__close-mark"
-                        aria-hidden="true"
-                        :initial="false"
-                        :variants="closeMarkVariants"
-                        :transition="transition"
-                      />
-                    </m.button>
+                      <NButton
+                        attr-type="button"
+                        text
+                        class="pavp-workspace-tabs__close"
+                        :aria-label="item.closeLabel"
+                        native-focus-behavior
+                        @click.stop="emit('close', item.id)"
+                      >
+                        <m.span
+                          class="pavp-workspace-tabs__close-mark"
+                          aria-hidden="true"
+                          :initial="false"
+                          :variants="closeMarkVariants"
+                          :transition="transition"
+                        />
+                      </NButton>
+                    </M>
                   </m.div>
                 </AnimatePresence>
               </m.div>
             </UiScrollArea>
           </div>
-          <m.button
+          <M
             :ref="(element) => interruption.bind('next', element)"
-            type="button"
-            class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--next"
-            :aria-label="nextLabel"
-            :disabled="nextTab === undefined"
             :initial="false"
             :animate="nextTab === undefined ? 'disabled' : 'rest'"
             v-bind="nextTab === undefined ? {} : edgeGestures"
             :transition="transition"
-            @click="nextTab !== undefined && emit('activate', nextTab.id)"
+            as-child
           >
-            <m.span
-              class="pavp-workspace-tabs-edge__surface"
-              aria-hidden="true"
-              :initial="false"
-              :variants="edgeSurfaceVariants"
-              :transition="transition"
-            />
-            <m.span
-              class="pavp-workspace-tabs-edge__mark"
-              aria-hidden="true"
-              :initial="false"
-              :variants="edgeMarkVariants"
-              :transition="transition"
+            <NButton
+              attr-type="button"
+              text
+              class="pavp-workspace-tabs-edge pavp-workspace-tabs-edge--next"
+              :aria-label="nextLabel"
+              :disabled="nextTab === undefined"
+              native-focus-behavior
+              @click="nextTab !== undefined && emit('activate', nextTab.id)"
             >
-              <span class="pavp-workspace-tabs-edge__icon i-lucide-chevron-right" />
-            </m.span>
-          </m.button>
+              <m.span
+                class="pavp-workspace-tabs-edge__surface"
+                aria-hidden="true"
+                :initial="false"
+                :variants="edgeSurfaceVariants"
+                :transition="transition"
+              />
+              <m.span
+                class="pavp-workspace-tabs-edge__mark"
+                aria-hidden="true"
+                :initial="false"
+                :variants="edgeMarkVariants"
+                :transition="transition"
+              >
+                <span class="pavp-workspace-tabs-edge__icon i-lucide-chevron-right" />
+              </m.span>
+            </NButton>
+          </M>
         </div>
       </LayoutGroup>
     </MotionConfig>
@@ -385,6 +568,7 @@ watch(
     @update:show="updateContextMenu"
     @clickoutside="dismissContextMenu"
     @select="selectContextAction"
+    @keydown="handleMenuKeydown"
   />
 </template>
 
@@ -459,8 +643,8 @@ watch(
   }
   .pavp-workspace-tabs-edge:focus-visible {
     color: var(--ui-color-text-primary);
-    outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
-    outline-offset: calc(var(--ui-admin-focus-width) * -1);
+    outline: none;
+    box-shadow: var(--ui-admin-shadow-focus-ring);
   }
   .pavp-workspace-tabs-edge:disabled {
     cursor: not-allowed;
@@ -542,29 +726,9 @@ watch(
     opacity: 0;
     pointer-events: none;
   }
-  .pavp-workspace-tabs:not([data-motion='none']) .pavp-workspace-tabs__hover {
-    transition: opacity var(--ui-motion-duration) var(--ui-motion-easing);
-  }
-  .pavp-workspace-tabs[data-motion='reduced'] .pavp-workspace-tabs__hover {
-    transition-duration: calc(var(--ui-motion-duration) / 2);
-  }
-  .pavp-workspace-tabs__item:hover > .pavp-workspace-tabs__hover,
-  .pavp-workspace-tabs__item:focus-within > .pavp-workspace-tabs__hover {
-    opacity: 0.6;
-  }
-  .pavp-workspace-tabs__item:has(> button:active) > .pavp-workspace-tabs__hover {
-    opacity: 1;
-  }
   .pavp-workspace-tabs__label {
     position: relative;
     z-index: var(--ui-z-base);
-  }
-  .pavp-workspace-tabs__item[data-active='true'] {
-    --workspace-hover-surface: color-mix(
-      in srgb,
-      var(--ui-admin-navigation-selected) 8%,
-      transparent
-    );
   }
   .pavp-workspace-tabs .pavp-workspace-tabs__tab {
     border-radius: inherit;
@@ -581,7 +745,7 @@ watch(
     border-radius: inherit;
     background: color-mix(
       in srgb,
-      var(--ui-admin-navigation-selected) 12%,
+      var(--ui-admin-navigation-selected) 20%,
       var(--ui-color-surface-panel)
     );
     pointer-events: none;
@@ -599,7 +763,8 @@ watch(
     content: '';
     position: absolute;
     inset-inline: 0;
-    inset-block-end: 0;
+    /* Keep the active marker above the shared horizontal scroll rail. */
+    inset-block-end: calc(var(--ui-space-content-gap) / 6);
     block-size: var(--ui-admin-focus-width);
     background: var(--ui-admin-navigation-selected);
     pointer-events: none;
@@ -638,9 +803,11 @@ watch(
   .pavp-workspace-tabs[data-motion='reduced'] button {
     transition-duration: calc(var(--ui-motion-duration) / 2);
   }
-  .pavp-workspace-tabs button:focus-visible {
-    outline: var(--ui-admin-focus-width) solid var(--ui-color-focus-ring);
-    outline-offset: calc(var(--ui-admin-focus-width) * -1);
+  .pavp-workspace-tabs button:focus-visible,
+  .pavp-workspace-context-menu:focus-visible,
+  .pavp-workspace-context-menu :deep([role='menuitem']:focus-visible) {
+    outline: none;
+    box-shadow: var(--ui-admin-shadow-focus-ring);
   }
   @media (forced-colors: active) {
     .pavp-workspace-tabs [aria-selected='true'] {
@@ -648,9 +815,47 @@ watch(
       outline-offset: calc(var(--ui-admin-border-width) * -1);
     }
     .pavp-workspace-tabs button:focus-visible,
-    .pavp-workspace-tabs-edge:focus-visible {
-      outline-color: Highlight;
+    .pavp-workspace-tabs-edge:focus-visible,
+    .pavp-workspace-context-menu:focus-visible,
+    .pavp-workspace-context-menu :deep([role='menuitem']:focus-visible) {
+      outline: var(--ui-admin-focus-width) solid Highlight;
+      outline-offset: calc(var(--ui-admin-focus-width) * -1);
+      box-shadow: none;
     }
   }
+}
+</style>
+
+<style scoped>
+.pavp-workspace-tabs__tab.n-button,
+.pavp-workspace-tabs__close.n-button,
+.pavp-workspace-tabs-edge.n-button {
+  block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+  color: inherit;
+  font: inherit;
+}
+.pavp-workspace-tabs__tab.n-button {
+  padding-inline: var(--ui-space-content-gap);
+  border-radius: inherit;
+}
+.pavp-workspace-tabs__item[data-closable='true'] .pavp-workspace-tabs__tab.n-button {
+  padding-inline-end: 0;
+  border-start-end-radius: 0;
+}
+.pavp-workspace-tabs__close.n-button {
+  min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+  border-radius: var(--ui-radius-small);
+}
+.pavp-workspace-tabs-edge.n-button {
+  inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
+  color: var(--ui-color-text-secondary);
+}
+.pavp-workspace-tabs-edge.n-button:disabled {
+  opacity: 1;
+}
+.pavp-workspace-tabs-edge.n-button:focus-visible,
+.pavp-workspace-tabs-edge.n-button:enabled:hover,
+.pavp-workspace-tabs-edge.n-button:enabled:active {
+  color: var(--ui-color-text-primary);
 }
 </style>

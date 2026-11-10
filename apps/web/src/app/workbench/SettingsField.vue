@@ -15,11 +15,11 @@ const inputProps = computed(() => ({
 </script>
 <template>
   <div
-    class="wb-settings-field grid min-w-0 items-center gap-content-gap"
+    class="wb-settings-field rounded-control grid min-w-0 items-center bg-surface-page p-page-inline"
     role="group"
     :aria-labelledby="labelledBy"
   >
-    <div class="min-w-0">
+    <div class="grid min-w-0 gap-component-unit">
       <span
         :id="labelledBy"
         class="font-title-weight"
@@ -28,7 +28,7 @@ const inputProps = computed(() => ({
       </span>
       <span
         :id="describedBy"
-        class="sr-only"
+        class="text-caption text-text-secondary"
       >
         {{ description }}
       </span>

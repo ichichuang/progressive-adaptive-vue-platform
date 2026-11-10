@@ -52,6 +52,314 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'component-showcase': RouteRecordInfo<
+      'component-showcase',
+      '/components',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-actions': RouteRecordInfo<
+      'component-actions',
+      '/components/actions',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-combination-drawer': RouteRecordInfo<
+      'component-combination-drawer',
+      '/components/combinations/drawer',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-combination-modal': RouteRecordInfo<
+      'component-combination-modal',
+      '/components/combinations/modal',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-combination-page': RouteRecordInfo<
+      'component-combination-page',
+      '/components/combinations/page',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-combination-query': RouteRecordInfo<
+      'component-combination-query',
+      '/components/combinations/query',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-data': RouteRecordInfo<
+      'component-data',
+      '/components/data',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-feedback': RouteRecordInfo<
+      'component-feedback',
+      '/components/feedback',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-basics': RouteRecordInfo<
+      'component-form-basics',
+      '/components/forms/basics',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-builder': RouteRecordInfo<
+      'component-form-builder',
+      '/components/forms/builder',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-calculations': RouteRecordInfo<
+      'component-form-calculations',
+      '/components/forms/calculations',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-controls': RouteRecordInfo<
+      'component-form-controls',
+      '/components/forms/controls',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-dependencies': RouteRecordInfo<
+      'component-form-dependencies',
+      '/components/forms/dependencies',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-detail': RouteRecordInfo<
+      'component-form-detail',
+      '/components/forms/detail',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-extension': RouteRecordInfo<
+      'component-form-extension',
+      '/components/forms/extension',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-layout': RouteRecordInfo<
+      'component-form-layout',
+      '/components/forms/layout',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-lifecycle': RouteRecordInfo<
+      'component-form-lifecycle',
+      '/components/forms/lifecycle',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-loading': RouteRecordInfo<
+      'component-form-loading',
+      '/components/forms/loading',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-options': RouteRecordInfo<
+      'component-form-options',
+      '/components/forms/options',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-overview': RouteRecordInfo<
+      'component-form-overview',
+      '/components/forms/overview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-structure': RouteRecordInfo<
+      'component-form-structure',
+      '/components/forms/structure',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-submission': RouteRecordInfo<
+      'component-form-submission',
+      '/components/forms/submission',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-validation': RouteRecordInfo<
+      'component-form-validation',
+      '/components/forms/validation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-inputs': RouteRecordInfo<
+      'component-inputs',
+      '/components/inputs',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-layout': RouteRecordInfo<
+      'component-layout',
+      '/components/layout',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-navigation': RouteRecordInfo<
+      'component-navigation',
+      '/components/navigation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-selection': RouteRecordInfo<
+      'component-selection',
+      '/components/selection',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table': RouteRecordInfo<
+      'component-table',
+      '/components/table',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-editor': RouteRecordInfo<
+      'component-table-editor',
+      '/components/table-editor',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-appearance': RouteRecordInfo<
+      'component-table-appearance',
+      '/components/tables/appearance',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-columns': RouteRecordInfo<
+      'component-table-columns',
+      '/components/tables/columns',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-configuration': RouteRecordInfo<
+      'component-table-configuration',
+      '/components/tables/configuration',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-overview': RouteRecordInfo<
+      'component-table-overview',
+      '/components/tables/overview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-remote': RouteRecordInfo<
+      'component-table-remote',
+      '/components/tables/remote',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-rendering': RouteRecordInfo<
+      'component-table-rendering',
+      '/components/tables/rendering',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-responsive': RouteRecordInfo<
+      'component-table-responsive',
+      '/components/tables/responsive',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-scroll': RouteRecordInfo<
+      'component-table-scroll',
+      '/components/tables/scroll',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-selection': RouteRecordInfo<
+      'component-table-selection',
+      '/components/tables/selection',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-sorting': RouteRecordInfo<
+      'component-table-sorting',
+      '/components/tables/sorting',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-states': RouteRecordInfo<
+      'component-table-states',
+      '/components/tables/states',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-summary': RouteRecordInfo<
+      'component-table-summary',
+      '/components/tables/summary',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-theme': RouteRecordInfo<
+      'component-table-theme',
+      '/components/tables/theme',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-virtual': RouteRecordInfo<
+      'component-table-virtual',
+      '/components/tables/virtual',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-table-widths': RouteRecordInfo<
+      'component-table-widths',
+      '/components/tables/widths',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'control-center': RouteRecordInfo<
       'control-center',
       '/control-center',
@@ -108,6 +416,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'workbench-motion': RouteRecordInfo<
+      'workbench-motion',
+      '/motion',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'workbench-sizes': RouteRecordInfo<
       'workbench-sizes',
       '/sizes',
@@ -154,6 +469,358 @@ declare module 'vue-router/auto-routes' {
     'src/pages/colors.vue': {
       routes:
         | 'workbench-colors'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-showcase.vue': {
+      routes:
+        | 'component-showcase'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-actions.vue': {
+      routes:
+        | 'component-actions'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-combination-drawer.vue': {
+      routes:
+        | 'component-combination-drawer'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-combination-modal.vue': {
+      routes:
+        | 'component-combination-modal'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-combination-page.vue': {
+      routes:
+        | 'component-combination-page'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-combination-query.vue': {
+      routes:
+        | 'component-combination-query'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-data.vue': {
+      routes:
+        | 'component-data'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-feedback.vue': {
+      routes:
+        | 'component-feedback'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-basics.vue': {
+      routes:
+        | 'component-form-basics'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-builder.vue': {
+      routes:
+        | 'component-form-builder'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-calculations.vue': {
+      routes:
+        | 'component-form-calculations'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-controls.vue': {
+      routes:
+        | 'component-form-controls'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-dependencies.vue': {
+      routes:
+        | 'component-form-dependencies'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-detail.vue': {
+      routes:
+        | 'component-form-detail'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-extension.vue': {
+      routes:
+        | 'component-form-extension'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-layout.vue': {
+      routes:
+        | 'component-form-layout'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-lifecycle.vue': {
+      routes:
+        | 'component-form-lifecycle'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-loading.vue': {
+      routes:
+        | 'component-form-loading'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-options.vue': {
+      routes:
+        | 'component-form-options'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-overview.vue': {
+      routes:
+        | 'component-form-overview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-structure.vue': {
+      routes:
+        | 'component-form-structure'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-submission.vue': {
+      routes:
+        | 'component-form-submission'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-validation.vue': {
+      routes:
+        | 'component-form-validation'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-inputs.vue': {
+      routes:
+        | 'component-inputs'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-layout.vue': {
+      routes:
+        | 'component-layout'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-navigation.vue': {
+      routes:
+        | 'component-navigation'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-selection.vue': {
+      routes:
+        | 'component-selection'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table.vue': {
+      routes:
+        | 'component-table'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-editor.vue': {
+      routes:
+        | 'component-table-editor'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-appearance.vue': {
+      routes:
+        | 'component-table-appearance'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-columns.vue': {
+      routes:
+        | 'component-table-columns'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-configuration.vue': {
+      routes:
+        | 'component-table-configuration'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-overview.vue': {
+      routes:
+        | 'component-table-overview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-remote.vue': {
+      routes:
+        | 'component-table-remote'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-rendering.vue': {
+      routes:
+        | 'component-table-rendering'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-responsive.vue': {
+      routes:
+        | 'component-table-responsive'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-scroll.vue': {
+      routes:
+        | 'component-table-scroll'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-selection.vue': {
+      routes:
+        | 'component-table-selection'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-sorting.vue': {
+      routes:
+        | 'component-table-sorting'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-states.vue': {
+      routes:
+        | 'component-table-states'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-summary.vue': {
+      routes:
+        | 'component-table-summary'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-theme.vue': {
+      routes:
+        | 'component-table-theme'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-virtual.vue': {
+      routes:
+        | 'component-table-virtual'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-table-widths.vue': {
+      routes:
+        | 'component-table-widths'
       views:
         | never
       pathParamNames:
@@ -218,6 +885,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/interactions.vue': {
       routes:
         | 'workbench-interactions'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/motion.vue': {
+      routes:
+        | 'workbench-motion'
       views:
         | never
       pathParamNames:

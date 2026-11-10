@@ -55,7 +55,7 @@
         "$type": "border",
         "$value": {
           "color": "{color.focus.ring}",
-          "width": "{admin.border.width}",
+          "width": "{admin.focus.width}",
           "style": "solid"
         },
         "$extensions": { "org.pavp": { "role": "admin.border.focus" } }
@@ -137,23 +137,14 @@
       },
       "focus-ring": {
         "$type": "shadow",
-        "$value": [
-          {
-            "color": "{color.focus.ring}",
-            "offsetX": "{dimension.space.0}",
-            "offsetY": "{dimension.space.0}",
-            "blur": "{dimension.space.0}",
-            "spread": "{admin.border.width}",
-            "inset": true
-          },
-          {
-            "color": "{color.focus.ring}",
-            "offsetX": "{dimension.space.0}",
-            "offsetY": "{dimension.space.0}",
-            "blur": "{dimension.space.0}",
-            "spread": "{admin.focus.width}"
-          }
-        ],
+        "$value": {
+          "color": "{color.focus.ring}",
+          "offsetX": "{dimension.space.0}",
+          "offsetY": "{dimension.space.0}",
+          "blur": "{dimension.space.0}",
+          "spread": "{admin.focus.width}",
+          "inset": true
+        },
         "$extensions": { "org.pavp": { "role": "admin.shadow.focus-ring" } }
       },
       "overlay": {

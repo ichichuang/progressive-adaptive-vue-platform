@@ -7,6 +7,13 @@
       }
     },
     "control": {
+      "segment": {
+        "width": {
+          "small": { "$type": "dimension", "$value": "{dimension.control.segment-width-small}" },
+          "medium": { "$type": "dimension", "$value": "{dimension.control.segment-width-medium}" },
+          "large": { "$type": "dimension", "$value": "{dimension.control.segment-width-large}" }
+        }
+      },
       "height": {
         "$type": "dimension",
         "$value": "{density.comfortable.control.height}"
@@ -54,6 +61,89 @@
           "org.pavp": {
             "visibility": "ui-internal"
           }
+        }
+      }
+    },
+    "icon": {
+      "size": {
+        "extra-small": {
+          "$type": "dimension",
+          "$value": "{dimension.icon.extra-small}"
+        },
+        "small": {
+          "$type": "dimension",
+          "$value": "{dimension.icon.small}"
+        },
+        "medium": {
+          "$type": "dimension",
+          "$value": "{dimension.icon.medium}"
+        },
+        "large": {
+          "$type": "dimension",
+          "$value": "{dimension.icon.large}"
+        },
+        "extra-large": {
+          "$type": "dimension",
+          "$value": "{dimension.icon.extra-large}"
+        }
+      }
+    },
+    "indicator": {
+      "cell": {
+        "small": { "$type": "dimension", "$value": "{dimension.indicator.cell-small}" },
+        "medium": { "$type": "dimension", "$value": "{dimension.indicator.cell-medium}" },
+        "large": { "$type": "dimension", "$value": "{dimension.indicator.cell-large}" }
+      },
+      "slot": {
+        "icon-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.slot-icon-inline}"
+        },
+        "text-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.slot-text-inline}"
+        }
+      },
+      "circle": {
+        "size": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.circle}"
+        },
+        "multiple-size": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.circle-multiple}"
+        }
+      },
+      "label": {
+        "height": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.label-height}"
+        }
+      },
+      "rail": {
+        "labeled": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.rail-labeled}"
+        },
+        "thin": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.rail-thin}"
+        },
+        "standard": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.rail-standard}"
+        }
+      },
+      "marker": {
+        "size": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.marker}"
+        }
+      },
+      "handle": {
+        "size": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.handle}"
         }
       }
     },

@@ -3,7 +3,7 @@ import {
   type EffectiveAppearanceState,
   type UiAppearanceSnapshot,
 } from '@platform/design-system'
-import type { ButtonProps, GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
+import type { GlobalTheme, GlobalThemeOverrides } from 'naive-ui'
 import commonDark from 'naive-ui/es/_styles/common/dark'
 import breadcrumbDark from 'naive-ui/es/breadcrumb/styles/dark'
 import buttonDark from 'naive-ui/es/button/styles/dark'
@@ -81,230 +81,6 @@ const darkTheme = {
   Tooltip: tooltipDark,
 } as const satisfies GlobalTheme
 
-const softButtonSuffixes = {
-  default: '',
-  primary: 'Primary',
-  info: 'Info',
-  success: 'Success',
-  warning: 'Warning',
-  error: 'Error',
-} as const
-
-/** Official per-component props keep soft text separate from the filled Button color. */
-export function createPavpNaiveSoftButtonProps(
-  appearance: Readonly<UiAppearanceSnapshot>,
-  type: keyof typeof softButtonSuffixes = 'default',
-): Pick<ButtonProps, 'type' | 'secondary' | 'bordered' | 'themeOverrides'> {
-  const palette = appearance.colorPalette
-  if (palette === null) {
-    if (type !== 'default')
-      throw new TypeError('Role-only Custom themes do not define colored soft Button pairs.')
-    return { type, secondary: true, bordered: false }
-  }
-  const family = palette.roles[type === 'default' ? 'neutral' : type]
-  const suffix = softButtonSuffixes[type]
-  const overrides: NonNullable<GlobalThemeOverrides['Button']> = {}
-  overrides[`color${suffix}`] = family.soft.background.default
-  overrides[`colorHover${suffix}`] = family.soft.background.hover
-  overrides[`colorPressed${suffix}`] = family.soft.background.pressed
-  overrides[`colorFocus${suffix}`] = family.soft.background.hover
-  overrides[`colorDisabled${suffix}`] = family.disabled.background
-  overrides[`textColor${suffix}`] = family.soft.foreground
-  overrides[`textColorHover${suffix}`] = family.soft.foreground
-  overrides[`textColorPressed${suffix}`] = family.soft.foreground
-  overrides[`textColorFocus${suffix}`] = family.soft.foreground
-  overrides[`textColorDisabled${suffix}`] = family.disabled.foreground
-  overrides[`rippleColor${suffix}`] = family.focus
-  return { type, secondary: false, bordered: false, themeOverrides: overrides }
-}
-
-/** Form-only overrides are consumed by the form adapters, without eager control imports. */
-export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppearanceSnapshot>) {
-  const shared = createPavpNaiveThemeProjection(appearance).themeOverrides
-  const errorBorder = `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`
-  const scrollbar = shared.Scrollbar
-  const Input = {
-    heightMedium: enhancedTargetHeight,
-    fontSizeMedium: fontSize,
-    fontWeight,
-    lineHeight,
-    lineHeightTextarea: lineHeight,
-    borderRadius: controlRadius,
-    textColor: colorText,
-    textColorDisabled: colorTextSecondary,
-    textDecorationColor: colorText,
-    placeholderColor: colorTextSecondary,
-    placeholderColorDisabled: colorTextSecondary,
-    color: colorPanel,
-    colorHover: colorPanel,
-    colorFocus: colorPanel,
-    colorDisabled: colorPanel,
-    border: borderControl,
-    borderHover: borderControl,
-    borderDisabled: borderControl,
-    borderFocus,
-    boxShadowFocus: shadowFocusRing,
-    caretColor: colorControl,
-    loadingColor: colorControl,
-    loadingColorError: colorText,
-    borderError: errorBorder,
-    borderHoverError: errorBorder,
-    borderFocusError: errorBorder,
-    colorFocusError: colorPanel,
-    boxShadowFocusError: shadowFocusRing,
-    caretColorError: appearance.statusColors.error.default,
-    clearColor: colorTextSecondary,
-    clearColorHover: colorText,
-    clearColorPressed: colorText,
-    iconColor: colorTextSecondary,
-    iconColorDisabled: colorTextSecondary,
-    iconColorHover: colorText,
-    iconColorPressed: colorText,
-    suffixTextColor: colorTextSecondary,
-    groupLabelColor: colorPanel,
-    groupLabelTextColor: colorText,
-    countTextColor: colorTextSecondary,
-    countTextColorDisabled: colorTextSecondary,
-    peers: { Scrollbar: scrollbar },
-  } satisfies NonNullable<GlobalThemeOverrides['Input']>
-  const themeOverrides = {
-    Form: {
-      labelTextColor: colorText,
-      asteriskColor: colorText,
-      feedbackTextColorError: appearance.statusColors.error.onStatus,
-      feedbackTextColorWarning: colorText,
-      feedbackTextColor: colorTextSecondary,
-      labelFontSizeTopMedium: fontSize,
-      feedbackFontSizeMedium: fontSize,
-      lineHeight,
-      labelFontWeight: fontWeightStrong,
-      blankHeightMedium: enhancedTargetHeight,
-      labelTextAlignVertical: 'start',
-    },
-    Input,
-    InputNumber: {
-      // Naive parses iconColorDisabled with rgba(). Keep that intermediate
-      // concrete; its rendered text-button colors/opacity are overridden here.
-      peers: {
-        Input,
-        Button: shared.Button,
-      },
-    },
-    Select: {
-      menuBoxShadow: shadowOverlay,
-      peers: {
-        InternalSelection: {
-          heightMedium: enhancedTargetHeight,
-          fontSizeMedium: fontSize,
-          borderRadius: controlRadius,
-          textColor: colorText,
-          textColorDisabled: colorTextSecondary,
-          placeholderColor: colorTextSecondary,
-          placeholderColorDisabled: colorTextSecondary,
-          color: colorPanel,
-          colorDisabled: colorPanel,
-          colorActive: colorPanel,
-          border: borderControl,
-          borderHover: borderControl,
-          borderActive: borderFocus,
-          borderFocus,
-          boxShadowHover: 'none',
-          boxShadowActive: shadowFocusRing,
-          boxShadowFocus: shadowFocusRing,
-          caretColor: colorControl,
-          arrowColor: colorTextSecondary,
-          arrowColorDisabled: colorTextSecondary,
-          loadingColor: colorControl,
-          clearColor: colorTextSecondary,
-          clearColorHover: colorText,
-          clearColorPressed: colorText,
-          borderError: errorBorder,
-          borderHoverError: errorBorder,
-          borderActiveError: errorBorder,
-          borderFocusError: errorBorder,
-          boxShadowHoverError: 'none',
-          boxShadowActiveError: shadowFocusRing,
-          boxShadowFocusError: shadowFocusRing,
-          colorActiveError: colorPanel,
-          caretColorError: appearance.statusColors.error.default,
-          peers: {
-            Popover: {
-              color: colorPanel,
-              textColor: colorText,
-              boxShadow: shadowOverlay,
-              borderRadius: panelRadius,
-              fontSize,
-              dividerColor: colorBorder,
-            },
-          },
-        },
-        InternalSelectMenu: {
-          optionFontSizeMedium: fontSize,
-          optionHeightMedium: enhancedTargetHeight,
-          borderRadius: panelRadius,
-          color: colorPanel,
-          groupHeaderTextColor: colorTextSecondary,
-          actionDividerColor: colorBorder,
-          optionTextColor: colorText,
-          optionTextColorPressed: colorText,
-          optionTextColorDisabled: colorTextSecondary,
-          optionTextColorActive: colorText,
-          optionOpacityDisabled: disabledOpacity,
-          optionCheckColor: colorControl,
-          optionColorPending: colorPage,
-          optionColorActive: colorPage,
-          optionColorActivePending: colorPage,
-          actionTextColor: colorText,
-          loadingColor: colorControl,
-          peers: { Scrollbar: scrollbar },
-        },
-      },
-    },
-    Switch: shared.Switch,
-    DatePicker: {
-      itemFontSize: fontSize,
-      calendarDaysFontSize: fontSize,
-      calendarTitleFontSize: fontSize,
-      itemTextColor: colorText,
-      itemTextColorDisabled: colorTextSecondary,
-      itemTextColorActive: colorOnAction,
-      itemTextColorCurrent: colorControl,
-      itemColorIncluded: colorPage,
-      itemColorHover: colorPage,
-      itemColorDisabled: colorPanel,
-      itemColorActive: colorAction,
-      itemBorderRadius: smallRadius,
-      panelColor: colorPanel,
-      panelTextColor: colorText,
-      arrowColor: colorTextSecondary,
-      calendarTitleTextColor: colorText,
-      calendarTitleColorHover: colorPage,
-      calendarDaysTextColor: colorTextSecondary,
-      panelHeaderDividerColor: colorBorder,
-      calendarDaysDividerColor: colorBorder,
-      calendarDividerColor: colorBorder,
-      panelActionDividerColor: colorBorder,
-      panelBoxShadow: shadowOverlay,
-      panelBorderRadius: panelRadius,
-      calendarTitleFontWeight: fontWeightStrong,
-      iconColor: colorTextSecondary,
-      iconColorDisabled: colorTextSecondary,
-      itemSize: enhancedTargetHeight,
-      itemCellWidth: enhancedTargetHeight,
-      itemCellHeight: enhancedTargetHeight,
-      calendarTitleHeight: enhancedTargetHeight,
-      scrollItemHeight: enhancedTargetHeight,
-      peers: { Input, Button: { ...shared.Button }, Scrollbar: scrollbar },
-    },
-  } satisfies GlobalThemeOverrides
-  if (appearance.colorPalette === null) return themeOverrides
-  const projected = projectSemanticNaiveTheme(appearance.colorPalette, themeOverrides)
-  return {
-    ...projected,
-    Form: { ...projected.Form, feedbackTextColorError: appearance.statusColors.error.onStatus },
-  }
-}
-
 function resolveMaterialSurface(material: EffectiveAppearanceState['material']): {
   readonly chrome: string
   readonly shadow: string
@@ -363,6 +139,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
     },
   } satisfies NonNullable<GlobalThemeOverrides['Dropdown']>
   const themeOverrides = Object.freeze({
+    Avatar: { color: colorAction, colorModal: colorAction, colorPopover: colorAction },
     Dropdown: dropdown,
     Scrollbar: {
       width: compactOverlaySpacing,
@@ -518,6 +295,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       paddingMedium: `0 ${tokens['spacing.button.inline']}`,
       borderRadiusMedium: controlRadius,
       fontSizeMedium: fontSize,
+      fontSizeLarge: tokens['typography.size.control.large'],
       iconSizeMedium: headerActionIconSize,
       border: borderControl,
       borderHover: borderAction,
@@ -662,6 +440,7 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       heightMedium: controlHeight,
       borderRadius: controlRadius,
       fontSizeMedium: fontSize,
+
       border: borderControl,
       textColor: colorText,
       colorBordered: material.chrome,
@@ -689,9 +468,11 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
 
   return Object.freeze({
     theme: appearance.colorMode === 'dark' ? darkTheme : null,
-    themeOverrides:
-      appearance.colorPalette === null
-        ? themeOverrides
-        : projectSemanticNaiveTheme(appearance.colorPalette, themeOverrides),
+    themeOverrides: projectSemanticNaiveTheme(
+      appearance.colorPalette,
+      themeOverrides,
+      appearance.contrast,
+      appearance.colorMode,
+    ),
   } satisfies PavpNaiveThemeProjection)
 }

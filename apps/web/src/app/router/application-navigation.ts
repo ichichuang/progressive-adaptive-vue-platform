@@ -1,5 +1,8 @@
 import { inject, onMounted, onScopeDispose, provide, type InjectionKey } from 'vue'
-import type { RouteLocationResolved, Router } from 'vue-router'
+import { useRouter, type RouteLocationResolved, type Router } from 'vue-router'
+import { isLiveWorkspace, useWorkspaceStore } from '../workspace/workspace.store'
+import { workspaceInstanceKey } from '../workspace/workspace-content'
+import { workspaceRetentionKey } from '../workspace/workspace-retention'
 import { z } from 'zod'
 
 import {
@@ -19,7 +22,7 @@ import {
   type BrowserPageDiscovery,
   type BrowserPageSessionSnapshot,
 } from './browser-page-session-contract'
-import type { RouterNavigationOptions } from './router-lifecycle'
+import { isRouterNavigationCurrent, type RouterNavigationOptions } from './router-lifecycle'
 import type { RouteTransitionCoordinator } from './route-transition/route-transition-coordinator'
 
 type ApplicationNavigationOptions = Pick<RouterNavigationOptions, 'replace'> & {
@@ -641,6 +644,60 @@ export function useWorkspaceNavigation(): Pick<RouteTransitionCoordinator, 'navi
   const navigation = inject(workspaceNavigationKey)
   if (navigation === undefined) throw new Error('The Workspace Navigation context is unavailable.')
   return navigation
+}
+
+/** Bounded editor navigation keeps workspace mutations behind the navigation owner. */
+export function useWorkspaceEditorNavigation(hasUnsavedChanges: () => boolean) {
+  const navigation = useWorkspaceNavigation()
+  const workspace = useWorkspaceStore()
+  const router = useRouter()
+  const instance = inject(workspaceInstanceKey)
+  const retention = inject(workspaceRetentionKey)
+  if (instance === undefined || retention === undefined)
+    throw new TypeError('The editor workspace lifecycle is unavailable.')
+
+  return {
+    open(destination: RegisteredRouteDestination): Promise<TypedNavigationResult> {
+      const existing = workspace.entries.find(
+        (entry) => entry.destination.name === destination.name,
+      )
+      return navigation.navigate(
+        destination,
+        existing !== undefined && isLiveWorkspace(existing)
+          ? { workspaceActivation: existing }
+          : workspace.active === undefined
+            ? undefined
+            : { workspaceOrigin: workspace.active },
+      )
+    },
+    async close(fallback: RegisteredRouteDestination): Promise<boolean> {
+      const entry = workspace.active
+      if (entry?.instance !== instance || hasUnsavedChanges()) return false
+      const origin = entry.origin
+      const target = workspace.entries.find((candidate) => candidate.identity === origin?.identity)
+      const result = await navigation.navigate(
+        target?.destination ?? origin?.destination ?? fallback,
+        {
+          replace: true,
+          ...(target !== undefined && isLiveWorkspace(target)
+            ? { workspaceActivation: target }
+            : {}),
+        },
+      )
+      const activeEntry = workspace.active
+      if (
+        result.kind !== 'allow' ||
+        result.presentation !== 'page' ||
+        !isRouterNavigationCurrent(router, result.navigationId) ||
+        activeEntry === undefined ||
+        activeEntry.instance === entry.instance ||
+        !retention.isHealthy(activeEntry) ||
+        hasUnsavedChanges()
+      )
+        return false
+      return retention.close(entry)
+    },
+  }
 }
 
 export function useApplicationLinkActivation(): (

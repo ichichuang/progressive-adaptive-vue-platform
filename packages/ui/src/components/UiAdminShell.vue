@@ -13,9 +13,12 @@ import {
   computed,
   h,
   inject,
+  nextTick,
+  useId,
   onBeforeUnmount,
   onMounted,
   ref,
+  shallowRef,
   watch,
   type FunctionalComponent,
   type Slot,
@@ -25,12 +28,15 @@ import {
 
 import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'
 import { NButton } from 'naive-ui/es/button'
+import { NCollapse, NCollapseItem } from 'naive-ui/es/collapse'
 import { NIcon } from 'naive-ui/es/icon'
 import { NLayout, NLayoutSider } from 'naive-ui/es/layout'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { NMenu, type MenuNodeProps, type MenuOption } from 'naive-ui/es/menu'
-import type { DropdownProps } from 'naive-ui/es/dropdown'
+import { NDropdown, type DropdownProps } from 'naive-ui/es/dropdown'
+import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
+import { loadScrollEnhancement } from '../adapters/scroll/scroll-enhancement-loader'
 import { NTooltip } from 'naive-ui/es/tooltip'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
 import UiScrollArea from './UiScrollArea.vue'
@@ -38,6 +44,7 @@ import type { UiScrollController } from './scroll-contracts'
 import type {
   UiAdminNavigationExpansionUpdate,
   UiAdminNavigationGroup,
+  UiAdminNavigationItem,
   UiAdminShellCopy,
   UiShellComposition,
 } from './contracts'
@@ -49,6 +56,7 @@ const props = defineProps<{
   readonly contentLayout?: 'scroll' | 'contained'
   readonly wideNavigationCollapsed: boolean
   readonly navigationAccordion: boolean
+  readonly colorModeSwitchFailed: boolean
   readonly expandedNavigationGroupIds: readonly string[]
   readonly copy: UiAdminShellCopy
   readonly activeRouteName: string
@@ -57,7 +65,10 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'content-scroll-controller': [controller: UiScrollController | null]
+  'sidebar-viewport': [element: HTMLElement | null]
+  'drawer-viewport': [element: HTMLElement | null]
   navigate: [routeName: string]
+  'toggle-color-mode': []
   'update:wideNavigationCollapsed': [collapsed: boolean]
   'update:expandedNavigationGroupIds': [update: UiAdminNavigationExpansionUpdate]
 }>()
@@ -105,10 +116,17 @@ const ShellFooter: FunctionalComponent<{ content: Slot | undefined }> = ({ conte
 const injectedAppearance = inject(pavpNaiveAppearanceKey)
 
 if (injectedAppearance === undefined) {
-  throw new Error('UiAdminShell requires the private PAVP Naive Appearance context.')
+  throw new Error('UiAdminShell requires appearance.')
 }
 
 const appearance = injectedAppearance
+const colorModeToggleLabel = computed(() =>
+  props.colorModeSwitchFailed
+    ? props.copy.colorModeChangeFailedLabel
+    : appearance.value.colorMode === 'dark'
+      ? props.copy.switchToLightLabel
+      : props.copy.switchToDarkLabel,
+)
 
 const navigationIconClasses = [
   'i-lucide-layout-dashboard',
@@ -148,14 +166,7 @@ function layoutRecord(id: string): LayoutRegistryRecord {
 const regularMinimum = layoutRecord('layout.profile.regular.min-inline-size')
 const wideMinimum = layoutRecord('layout.profile.wide.min-inline-size')
 const railInlineSize = layoutRecord('layout.admin.sidebar.rail-inline-size')
-const railRemMatch = /^(\d+(?:\.\d+)?)rem$/u.exec(railInlineSize.resolvedValue)
-
-if (railRemMatch?.[1] === undefined) {
-  throw new TypeError(
-    `${railInlineSize.id}: Admin Shell rail width must be a finite positive rem value.`,
-  )
-}
-
+const railRemMatch = /^(\d+(?:\.\d+)?)rem$/u.exec(railInlineSize.resolvedValue) ?? []
 const railRemMagnitude = Number(railRemMatch[1])
 
 if (!Number.isFinite(railRemMagnitude) || railRemMagnitude <= 0) {
@@ -175,11 +186,24 @@ function readRootFontSize(): number {
 }
 
 const shell = ref<HTMLElement>()
-const navigationTrigger = ref<HTMLButtonElement>()
+const navigationTrigger = ref<InstanceType<typeof NButton>>()
 const drawerNavigation = ref<HTMLElement>()
-const drawerClose = ref<HTMLButtonElement>()
+const drawerClose = ref<InstanceType<typeof NButton>>()
 const profile = ref<LayoutProfileId>('narrow')
 const navigationOpen = ref(false)
+const drawerVisible = computed(
+  () => administration.value && profile.value === 'narrow' && navigationOpen.value,
+)
+const persistentNavigation = ref<HTMLElement | null>(null)
+const popupOwnerId = useId()
+const collapsedPopupKey = ref<string>()
+const collapsedPopupPath = shallowRef<MenuOption[]>([])
+const focusedNavigationLabelKey = ref<string | number | false>()
+const popupViewport = shallowRef({ height: window.innerHeight })
+let popupTrigger: HTMLButtonElement | undefined
+let popupKeyboardEntry = false
+let drawerFocusGeneration = 0
+let lastDrawerFocus: HTMLElement | undefined
 const currentRootFontSize = ref(readRootFontSize())
 const collapsedNavigationWidth = computed(() => railRemMagnitude * currentRootFontSize.value)
 const persistentNavigationCollapsed = computed(() => {
@@ -194,18 +218,49 @@ const persistentLayoutContentStyle = Object.freeze({ overflow: 'visible' })
 const shellLayoutThemeOverrides = Object.freeze({ color: 'transparent' }) satisfies NonNullable<
   GlobalThemeOverrides['Layout']
 >
+const headerActionThemeOverrides = Object.freeze({ paddingMedium: '0' }) satisfies NonNullable<
+  GlobalThemeOverrides['Button']
+>
+const collapsedMenuStyle = computed(() => {
+  const menu = createPavpNaiveThemeProjection(appearance.value).themeOverrides.Menu
+  return {
+    '--n-item-color-active': menu.itemColorActiveCollapsed,
+    '--pavp-collapsed-foreground': menu.itemIconColorCollapsed,
+    '--pavp-collapsed-active-foreground': menu.itemIconColorChildActive,
+    '--pavp-collapsed-hover': menu.itemColorHover,
+    '--pavp-collapsed-hover-foreground': menu.itemIconColorHover,
+  }
+})
 const persistentSiderContentStyle = Object.freeze({ overflow: 'hidden' })
+
 const wideNavigationCollapseLabel = computed(() =>
   props.wideNavigationCollapsed
     ? props.copy.expandNavigationLabel
     : props.copy.collapseNavigationLabel,
 )
+function navigationLeaves(group: UiAdminNavigationGroup): readonly UiAdminNavigationItem[] {
+  return group.items.flatMap((item) => ('items' in item ? navigationLeaves(item) : [item]))
+}
+
+function navigationGroups(
+  groups: readonly UiAdminNavigationGroup[],
+): readonly UiAdminNavigationGroup[] {
+  return groups.flatMap((group) => [
+    group,
+    ...navigationGroups(
+      group.items.filter((item): item is UiAdminNavigationGroup => 'items' in item),
+    ),
+  ])
+}
+
+const allNavigationGroups = computed(() => navigationGroups(props.navigation))
 const validExpandedNavigationGroupKeys = computed(() => {
   const expandedIds = new Set(props.expandedNavigationGroupIds)
-  return props.navigation
+  return allNavigationGroups.value
     .filter((group) => expandedIds.has(group.id))
     .map((group) => navigationGroupKey(group.id))
 })
+
 const navigationGroupsToggleLabel = computed(() =>
   props.navigationAccordion
     ? props.copy.freeNavigationModeLabel
@@ -215,6 +270,8 @@ let currentShellInlineSize = 0
 let resizeObserver: ResizeObserver | undefined
 let rootOverflow = ''
 let bodyOverflow = ''
+let documentScrollGeneration = 0
+let disposeDocumentScroll: (() => void) | undefined
 
 function closeNavigation(): void {
   navigationOpen.value = false
@@ -235,7 +292,9 @@ function openNavigation(): void {
 
 function isCurrentDestination(routeName: string): boolean {
   return props.navigation.some((group) =>
-    group.items.some((item) => item.routeName === routeName && item.isCurrentDestination),
+    navigationLeaves(group).some(
+      (item) => item.routeName === routeName && item.isCurrentDestination,
+    ),
   )
 }
 
@@ -281,33 +340,36 @@ function renderNavigationIcon(iconClass: string): () => ReturnType<typeof h> {
     })
 }
 
-const navigationMenuOptions = computed<MenuOption[]>(() =>
-  props.navigation.map((group) => {
-    const firstItem = group.items[0]
-
-    if (firstItem === undefined) {
-      throw new TypeError(`${group.id}: Admin Shell navigation group must contain route items.`)
-    }
-
-    return {
-      key: navigationGroupKey(group.id),
-      label: group.label,
-      icon: renderNavigationIcon(firstItem.iconClass),
-      pavpNavigationKind: 'group',
-      children: group.items.map((item) => ({
+function navigationGroupOption(group: UiAdminNavigationGroup): MenuOption {
+  const firstItem = navigationLeaves(group)[0]
+  if (firstItem === undefined) {
+    throw new TypeError(`${group.id}: Admin Shell navigation group must contain route items.`)
+  }
+  return {
+    key: navigationGroupKey(group.id),
+    label: group.label,
+    icon: renderNavigationIcon(firstItem.iconClass),
+    pavpNavigationKind: 'group',
+    children: group.items.map((item) => {
+      if ('items' in item) return navigationGroupOption(item)
+      return {
         key: item.routeName,
         label: item.label,
         icon: renderNavigationIcon(item.iconClass),
         pavpNavigationKind: 'route',
         pavpRouteName: item.routeName,
-      })),
-    } satisfies MenuOption
-  }),
+      }
+    }),
+  }
+}
+
+const navigationMenuOptions = computed<MenuOption[]>(() =>
+  props.navigation.map(navigationGroupOption),
 )
 
 const activeNavigationGroupKey = computed(() => {
   const activeGroup = props.navigation.find((group) =>
-    group.items.some((item) => item.routeName === props.activeRouteName),
+    navigationLeaves(group).some((item) => item.routeName === props.activeRouteName),
   )
 
   return activeGroup === undefined ? undefined : navigationGroupKey(activeGroup.id)
@@ -315,6 +377,13 @@ const activeNavigationGroupKey = computed(() => {
 
 function renderNavigationMenuIcon(option: MenuOption): VNodeChild {
   return typeof option.icon === 'function' ? option.icon() : null
+}
+
+function navigationLabelTruncated(option: MenuOption): boolean {
+  const label = navigationNodes(persistentNavigation.value)
+    .find((node) => node.dataset['pavpNavigationKey'] === String(option.key))
+    ?.querySelector<HTMLElement>('[data-pavp-navigation-label]')
+  return label !== undefined && label !== null && label.scrollWidth > label.clientWidth
 }
 
 function isPersistentNavigationSelectionLensOwner(option: MenuOption): boolean {
@@ -331,86 +400,383 @@ function isPersistentNavigationSelectionLensOwner(option: MenuOption): boolean {
   return optionKind === 'route' && navigationOptionRouteName(option) === props.activeRouteName
 }
 
-function collapsedNavigationGroupRouteName(groupKey: string): string | undefined {
-  if (!persistentNavigationCollapsed.value) {
-    return undefined
-  }
-
-  return props.navigation.find((group) => navigationGroupKey(group.id) === groupKey)?.items[0]
-    ?.routeName
+function visibleFocusTarget(element: HTMLElement): boolean {
+  return (
+    element.isConnected &&
+    !element.closest('[inert], [hidden], [aria-hidden="true"]') &&
+    !element.matches(':disabled') &&
+    element.getClientRects().length > 0 &&
+    getComputedStyle(element).visibility !== 'hidden'
+  )
 }
+
+function navigationNodes(root: HTMLElement | null | undefined): HTMLElement[] {
+  return Array.from(root?.querySelectorAll<HTMLElement>('[data-pavp-navigation-key]') ?? []).filter(
+    visibleFocusTarget,
+  )
+}
+
+function moveNavigationFocus(event: KeyboardEvent, nodes: HTMLElement[]): boolean {
+  const index = nodes.indexOf(event.currentTarget as HTMLElement)
+  const target =
+    event.key === 'Home'
+      ? nodes[0]
+      : event.key === 'End'
+        ? nodes.at(-1)
+        : event.key === 'ArrowDown'
+          ? nodes[(index + 1) % nodes.length]
+          : event.key === 'ArrowUp'
+            ? nodes[(index - 1 + nodes.length) % nodes.length]
+            : undefined
+  if (target === undefined) return false
+  event.preventDefault()
+  target.focus()
+  return true
+}
+
+function setNavigationGroupExpanded(option: MenuOption, expanded: boolean): void {
+  const path: string[] = []
+  const findPath = (options: MenuOption[]): boolean =>
+    options.some((candidate) => {
+      if (navigationOptionKind(candidate) !== 'group' || typeof candidate.key !== 'string')
+        return false
+      path.push(candidate.key)
+      if (candidate.key === option.key || findPath(candidate.children ?? [])) return true
+      path.pop()
+      return false
+    })
+  findPath(navigationMenuOptions.value)
+  const current = validExpandedNavigationGroupKeys.value
+  handleNavigationExpandedKeysUpdate(
+    expanded
+      ? props.navigationAccordion
+        ? path
+        : [...new Set([...current, ...path])]
+      : current.filter((key) => key !== option.key),
+  )
+}
+
+function isComposingKey(event: KeyboardEvent): boolean {
+  // IME boundary keydowns can clear isComposing before the confirming key arrives.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated -- 229 is the remaining IME compatibility signal.
+  return event.isComposing || event.keyCode === 229
+}
+
+function handlePersistentNavigationKeydown(event: KeyboardEvent, option: MenuOption): void {
+  if (
+    event.defaultPrevented ||
+    isComposingKey(event) ||
+    event.target !== event.currentTarget ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey
+  )
+    return
+  if (event.key === 'Escape') focusedNavigationLabelKey.value = false
+  if (moveNavigationFocus(event, navigationNodes(persistentNavigation.value))) return
+  const group = navigationOptionKind(option) === 'group'
+  const expanded = validExpandedNavigationGroupKeys.value.includes(String(option.key))
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault()
+    if (group) setNavigationGroupExpanded(option, !expanded)
+    else {
+      const routeName = navigationOptionRouteName(option)
+      if (routeName !== undefined) navigate(routeName)
+    }
+  } else if (event.key === 'ArrowRight' && group) {
+    event.preventDefault()
+    if (!expanded) setNavigationGroupExpanded(option, true)
+    else {
+      const children = (option.children ?? []) as MenuOption[]
+      navigationNodes(persistentNavigation.value)
+        .find((node) => node.dataset['pavpNavigationKey'] === String(children[0]?.key))
+        ?.focus()
+    }
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    if (group && expanded) setNavigationGroupExpanded(option, false)
+    else {
+      const parent = allNavigationGroups.value.find((candidate) =>
+        candidate.items.some(
+          (item) => ('items' in item ? navigationGroupKey(item.id) : item.routeName) === option.key,
+        ),
+      )
+      navigationNodes(persistentNavigation.value)
+        .find(
+          (node) =>
+            node.dataset['pavpNavigationKey'] ===
+            (parent === undefined ? undefined : navigationGroupKey(parent.id)),
+        )
+        ?.focus()
+    }
+  }
+}
+
+type NavigationNodeAttributes = HTMLAttributes &
+  Record<`data-${string}`, string | undefined> & { onScrollCapture?: () => void }
 
 // Naive 2.45.2 intersects HTMLAttributes with a string/number record. Keep
 // HTML event handlers checked before bridging that incompatible index signature.
-const persistentNavigationNodeProps = ((option: Parameters<MenuNodeProps>[0]): HTMLAttributes => {
-  const optionKind = navigationOptionKind(option)
-
-  if (optionKind === 'group' && typeof option.key === 'string') {
-    const groupKey = option.key
-
-    return {
-      tabindex: -1,
-      onClick: (event: MouseEvent) => {
-        if (event.button !== 0) {
-          return
-        }
-
-        const firstRouteName = collapsedNavigationGroupRouteName(groupKey)
-
-        if (firstRouteName !== undefined) {
-          navigate(firstRouteName)
-        }
-      },
-      onPointerdown: (event: PointerEvent) => {
-        const firstRouteName = collapsedNavigationGroupRouteName(groupKey)
-
-        if (firstRouteName !== undefined) {
-          preserveCurrentPersistentNavigationFocus(event, firstRouteName)
-        }
-      },
-    }
-  }
-
+const persistentNavigationNodeProps = ((
+  option: Parameters<MenuNodeProps>[0],
+): NavigationNodeAttributes => {
   const routeName = navigationOptionRouteName(option)
-
-  if (optionKind !== 'route' || routeName === undefined) {
-    return {}
-  }
-
   return {
+    tabindex: 0,
+    'data-pavp-navigation-key': String(option.key),
+    'aria-expanded':
+      navigationOptionKind(option) === 'group'
+        ? validExpandedNavigationGroupKeys.value.includes(String(option.key))
+        : undefined,
     'aria-current': routeName === props.activeRouteName ? 'page' : undefined,
-    tabindex: -1,
+    onKeydown: (event: KeyboardEvent) => {
+      handlePersistentNavigationKeydown(event, option)
+    },
+    onFocusin: () => {
+      focusedNavigationLabelKey.value = navigationLabelTruncated(option) ? option.key : undefined
+    },
+    onFocusout: () => {
+      focusedNavigationLabelKey.value = undefined
+    },
+    onPointerenter: () => {
+      if (focusedNavigationLabelKey.value === false) focusedNavigationLabelKey.value = undefined
+    },
     onPointerdown: (event: PointerEvent) => {
-      preserveCurrentPersistentNavigationFocus(event, routeName)
+      if (routeName !== undefined) preserveCurrentPersistentNavigationFocus(event, routeName)
     },
   }
 }) as MenuNodeProps
+
+const ShellNavigationIcon: FunctionalComponent<{
+  option: MenuOption
+  render: (option: MenuOption) => VNodeChild
+}> = ({ option, render }) => render(option)
+
+function collapsedPopupRoot(): HTMLElement | undefined {
+  return document.getElementById(`${popupOwnerId}-${String(collapsedPopupKey.value)}`) ?? undefined
+}
+
+function collapsedPopupOptions(option: MenuOption): MenuOption[] {
+  const parent =
+    collapsedPopupKey.value === option.key ? (collapsedPopupPath.value.at(-1) ?? option) : option
+  return parent.children ?? []
+}
+
+function focusCollapsedPopup(last = false): void {
+  const key = collapsedPopupKey.value
+  const active = document.activeElement
+  void nextTick(() => {
+    if (
+      key === undefined ||
+      collapsedPopupKey.value !== key ||
+      (document.activeElement !== active && document.activeElement !== document.body)
+    )
+      return
+    const nodes = navigationNodes(collapsedPopupRoot())
+    ;(last ? nodes.at(-1) : nodes[0])?.focus()
+  })
+}
+
+function closeCollapsedPopup(restoreFocus = false): void {
+  const root = collapsedPopupRoot()
+  const ownsFocus = root?.contains(document.activeElement) === true
+  collapsedPopupKey.value = undefined
+  collapsedPopupPath.value = []
+  popupKeyboardEntry = false
+  if (restoreFocus && ownsFocus && popupTrigger !== undefined && visibleFocusTarget(popupTrigger))
+    popupTrigger.focus({ preventScroll: true })
+}
+
+function handleCollapsedPopupShow(show: boolean, option: MenuOption): void {
+  if (show) {
+    const trigger = navigationNodes(persistentNavigation.value).find(
+      (node) => node.dataset['pavpNavigationKey'] === String(option.key),
+    )
+    popupTrigger = trigger instanceof HTMLButtonElement ? trigger : undefined
+    if (collapsedPopupKey.value !== option.key) collapsedPopupPath.value = []
+    collapsedPopupKey.value = String(option.key)
+  } else if (collapsedPopupKey.value === option.key) {
+    // A pointer leaving the trigger must not dismiss a keyboard-owned menu.
+    if (popupKeyboardEntry && collapsedPopupRoot()?.contains(document.activeElement)) return
+    closeCollapsedPopup()
+  }
+}
+
+function handleCollapsedTriggerKeydown(event: KeyboardEvent, option: MenuOption): void {
+  if (
+    event.defaultPrevented ||
+    isComposingKey(event) ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey
+  )
+    return
+  if (!['Enter', ' ', 'ArrowRight', 'ArrowDown', 'ArrowUp'].includes(event.key)) {
+    moveNavigationFocus(event, navigationNodes(persistentNavigation.value))
+    return
+  }
+  event.preventDefault()
+  popupTrigger = event.currentTarget as HTMLButtonElement
+  popupKeyboardEntry = true
+  collapsedPopupPath.value = []
+  collapsedPopupKey.value = String(option.key)
+  focusCollapsedPopup(event.key === 'ArrowUp')
+}
+
+function collapsedNavigationGroupRouteName(option: MenuOption): string | undefined {
+  const group = props.navigation.find(
+    (candidate) => navigationGroupKey(candidate.id) === option.key,
+  )
+  return group === undefined ? undefined : navigationLeaves(group)[0]?.routeName
+}
+
+function handleCollapsedTriggerClick(event: MouseEvent, option: MenuOption): void {
+  if (event.button !== 0) return
+  // Keyboard and assistive-technology activation opens the choices; pointer keeps the first route shortcut.
+  if (event.detail === 0) {
+    popupTrigger = event.currentTarget as HTMLButtonElement
+    popupKeyboardEntry = true
+    collapsedPopupKey.value = String(option.key)
+    focusCollapsedPopup()
+    return
+  }
+  const routeName = collapsedNavigationGroupRouteName(option)
+  if (routeName !== undefined) navigate(routeName)
+}
+
+function handleCollapsedTriggerPointerdown(event: PointerEvent, option: MenuOption): void {
+  const routeName = collapsedNavigationGroupRouteName(option)
+  if (routeName !== undefined) preserveCurrentPersistentNavigationFocus(event, routeName)
+}
+
+function selectCollapsedRoute(value: string | number): void {
+  closeCollapsedPopup(true)
+  handleNavigationValueUpdate(value)
+}
 
 const persistentNavigationDropdownNodeProps = ((
   option: Parameters<MenuNodeProps>[0],
-): HTMLAttributes => {
-  const routeName = navigationOptionRouteName(option)
+): NavigationNodeAttributes => ({
+  tabindex: 0,
+  role: 'menuitem',
+  'data-pavp-navigation-key': String(option.key),
+  'aria-haspopup': navigationOptionKind(option) === 'group' ? 'menu' : undefined,
+  'aria-current': navigationOptionRouteName(option) === props.activeRouteName ? 'page' : undefined,
+  onPointerdown: (event: PointerEvent) => {
+    const routeName = navigationOptionRouteName(option)
+    if (routeName !== undefined) preserveCurrentPersistentNavigationFocus(event, routeName)
+  },
+  onKeydown: (event: KeyboardEvent) => {
+    if (
+      event.defaultPrevented ||
+      isComposingKey(event) ||
+      event.target !== event.currentTarget ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey
+    )
+      return
+    popupKeyboardEntry = true
+    const root =
+      (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-pavp-navigation-popup]') ??
+      undefined
+    if (moveNavigationFocus(event, navigationNodes(root))) return
+    if (
+      event.key === 'Escape' ||
+      (event.key === 'ArrowLeft' && collapsedPopupPath.value.length === 0)
+    ) {
+      event.preventDefault()
+      closeCollapsedPopup(true)
+    } else if (event.key === 'Tab') {
+      // Return to the trigger before native Tab moves to the adjacent page control.
+      closeCollapsedPopup(true)
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault()
+      collapsedPopupPath.value = collapsedPopupPath.value.slice(0, -1)
+      focusCollapsedPopup()
+    } else if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowRight') {
+      const routeName = navigationOptionRouteName(option)
+      if (navigationOptionKind(option) === 'group') {
+        event.preventDefault()
+        collapsedPopupPath.value = [...collapsedPopupPath.value, option]
+        focusCollapsedPopup()
+      } else if (routeName !== undefined && event.key !== 'ArrowRight') {
+        event.preventDefault()
+        selectCollapsedRoute(routeName)
+      }
+    }
+  },
+})) as MenuNodeProps
 
-  if (routeName === undefined) {
-    return {}
-  }
+function updatePopupViewport(): void {
+  popupViewport.value = { height: window.innerHeight }
+}
 
-  return {
-    'aria-current': routeName === props.activeRouteName ? 'page' : undefined,
-    tabindex: -1,
-    onPointerdown: (event: PointerEvent) => {
-      preserveCurrentPersistentNavigationFocus(event, routeName)
-    },
-  }
-}) as MenuNodeProps
+function collapsedPopupMenuProps(group: MenuOption): NonNullable<DropdownProps['menuProps']> {
+  const viewportHeight = popupViewport.value.height
+  return ((parent: MenuOption | undefined): NavigationNodeAttributes => {
+    const anchor = navigationNodes(
+      parent === undefined ? persistentNavigation.value : collapsedPopupRoot(),
+    ).find((node) => node.dataset['pavpNavigationKey'] === String((parent ?? group).key))
+    const bounds = anchor?.getBoundingClientRect()
+    return {
+      id: parent === undefined ? `${popupOwnerId}-${String(group.key)}` : undefined,
+      class: 'pavp-admin-navigation-dropdown',
+      'data-pavp-navigation-popup': popupOwnerId,
+      style: {
+        maxHeight: `min(calc(100dvh - 2 * var(--ui-space-content-gap)), calc(${String(
+          Math.max(bounds?.bottom ?? 0, viewportHeight - (bounds?.top ?? 0)),
+        )}px - var(--ui-space-content-gap)))`,
+      },
+      onScrollCapture: updatePopupViewport,
+      onFocusout: () => {
+        void nextTick(() => {
+          if (
+            popupKeyboardEntry &&
+            !collapsedPopupRoot()?.contains(document.activeElement) &&
+            document.activeElement !== popupTrigger
+          )
+            closeCollapsedPopup()
+        })
+      },
+    }
+  }) as unknown as NonNullable<DropdownProps['menuProps']>
+}
 
-const persistentNavigationDropdownProps = Object.freeze({
+const persistentNavigationDropdownProps = {
+  // Naive's keyboard handler tracks pending keys globally; this shell focuses real local nodes.
   keyboard: false,
-  menuProps: () => ({ class: 'pavp-admin-navigation-dropdown' }),
+  scrollable: true,
   nodeProps: persistentNavigationDropdownNodeProps,
   to: '#pavp-overlay-root',
   trigger: 'hover',
-}) satisfies DropdownProps
+} satisfies DropdownProps
+
+function renderNavigationMenuLabel(option: MenuOption): VNodeChild {
+  return h(
+    NTooltip,
+    {
+      to: '#pavp-overlay-root',
+      placement: 'right',
+      getDisabled: () => !navigationLabelTruncated(option),
+      show:
+        focusedNavigationLabelKey.value === false
+          ? false
+          : focusedNavigationLabelKey.value === option.key
+            ? true
+            : undefined,
+    },
+    {
+      default: () => String(option.label),
+      trigger: () =>
+        h(
+          'span',
+          { class: 'block truncate', 'data-pavp-navigation-label': '' },
+          String(option.label),
+        ),
+    },
+  )
+}
 
 function handleNavigationValueUpdate(value: string | number): void {
   if (typeof value === 'string') {
@@ -419,35 +785,125 @@ function handleNavigationValueUpdate(value: string | number): void {
 }
 
 function handleNavigationExpandedKeysUpdate(keys: (string | number)[]): void {
-  if (profile.value !== 'wide' || persistentNavigationCollapsed.value) return
-  emit('update:expandedNavigationGroupIds', {
-    expandedGroupIds: props.navigation
-      .filter((group) => keys.includes(navigationGroupKey(group.id)))
-      .map((group) => group.id),
-    intent: 'group',
+  handleNavigationAction('groups', keys)
+}
+
+function handleNavigationAction(
+  action: 'focus' | 'mode' | 'sidebar' | 'groups',
+  keys?: readonly (string | number)[],
+): void {
+  void import('./navigation-actions').then((module) => {
+    void module.runNavigationAction(action, props, shell.value, emit, keys)
   })
 }
 
-function toggleWideNavigation(): void {
-  if (profile.value !== 'wide') return
-  emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed)
+function shellButtonElement(
+  button: InstanceType<typeof NButton> | undefined,
+): HTMLButtonElement | undefined {
+  const element: unknown = button?.$el
+  return element instanceof HTMLButtonElement ? element : undefined
 }
 
-function toggleNavigationMode(): void {
-  if (profile.value !== 'wide' || persistentNavigationCollapsed.value) return
-  emit('update:expandedNavigationGroupIds', {
-    expandedGroupIds: props.navigationAccordion ? props.navigation.map((group) => group.id) : [],
-    intent: 'mode',
-    accordion: !props.navigationAccordion,
-  })
+function drawerTabStops(root: HTMLElement): HTMLElement[] {
+  return Array.from(
+    root.querySelectorAll<HTMLElement>(
+      'button, a[href], input, select, textarea, summary, [tabindex], [contenteditable="true"]',
+    ),
+  )
+    .filter((node) => node.tabIndex >= 0 && visibleFocusTarget(node))
+    .filter(
+      (node, _, nodes) =>
+        !(
+          node instanceof HTMLInputElement &&
+          node.type === 'radio' &&
+          node.name !== '' &&
+          !node.checked &&
+          nodes.some(
+            (candidate) =>
+              candidate instanceof HTMLInputElement &&
+              candidate.type === 'radio' &&
+              candidate.name === node.name &&
+              candidate.form === node.form &&
+              candidate.checked,
+          )
+        ),
+    )
+    .sort((left, right) => (left.tabIndex || Infinity) - (right.tabIndex || Infinity))
 }
 
 function handleDrawerKeydown(event: KeyboardEvent): void {
+  if (event.defaultPrevented || isComposingKey(event) || !drawerVisible.value) return
   if (event.key === 'Escape') {
     event.preventDefault()
     closeNavigation()
+  } else if (event.key === 'Tab') {
+    const root = drawerNavigation.value
+    if (root === undefined) return
+    const stops = drawerTabStops(root)
+    const first = stops[0]
+    const last = stops.at(-1)
+    if (
+      first === undefined ||
+      (event.shiftKey && (document.activeElement === first || document.activeElement === root)) ||
+      (!event.shiftKey && (document.activeElement === last || document.activeElement === root))
+    ) {
+      event.preventDefault()
+      ;(event.shiftKey ? (last ?? root) : (first ?? root)).focus({ preventScroll: true })
+    }
   }
 }
+
+function handleDrawerBeforeLeave(element: Element): void {
+  if (element instanceof HTMLElement) element.inert = true
+}
+
+function handleDrawerFocusin(event: FocusEvent): void {
+  if (event.target instanceof HTMLElement) lastDrawerFocus = event.target
+}
+
+watch(
+  drawerVisible,
+  (visible) => {
+    const generation = ++drawerFocusGeneration
+    const root = drawerNavigation.value
+    const previousFocus = document.activeElement
+    const trigger = shellButtonElement(navigationTrigger.value)
+    const ownedFocus =
+      root?.contains(previousFocus) === true ||
+      (previousFocus === document.body &&
+        lastDrawerFocus !== undefined &&
+        !lastDrawerFocus.isConnected)
+    void nextTick(() => {
+      if (generation !== drawerFocusGeneration) return
+      if (visible) {
+        if (document.activeElement !== previousFocus && document.activeElement !== document.body)
+          return
+        ;(shellButtonElement(drawerClose.value) ?? drawerNavigation.value)?.focus({
+          preventScroll: true,
+        })
+      } else if (ownedFocus) {
+        const active = document.activeElement
+        if (active !== previousFocus && active !== document.body && root?.contains(active) !== true)
+          return
+        const fallback = shell.value?.querySelectorAll<HTMLElement>(
+          'button, a[href], [data-pavp-navigation-key]',
+        )
+        const destination =
+          trigger !== undefined && visibleFocusTarget(trigger)
+            ? trigger
+            : Array.from(fallback ?? []).find(visibleFocusTarget)
+        destination?.focus({ preventScroll: true })
+        lastDrawerFocus = undefined
+      }
+    })
+  },
+  // Capture focus before the queued render; nextTick then waits for refs and inert to update.
+  { flush: 'pre' },
+)
+
+watch([profile, persistentNavigationCollapsed], () => {
+  closeCollapsedPopup()
+})
 
 function updateResponsiveNavigationMetrics(inlineSize = currentShellInlineSize): void {
   currentShellInlineSize = inlineSize
@@ -465,8 +921,16 @@ function updateResponsiveNavigationMetrics(inlineSize = currentShellInlineSize):
 }
 
 function updateDocumentScrollLock(): void {
+  const generation = ++documentScrollGeneration
+  disposeDocumentScroll?.()
+  disposeDocumentScroll = undefined
   document.documentElement.style.overflow = enabled.value ? 'hidden' : rootOverflow
   document.body.style.overflow = enabled.value ? 'hidden' : bodyOverflow
+  if (!enabled.value)
+    void loadScrollEnhancement().then((runtime) => {
+      if (generation === documentScrollGeneration)
+        disposeDocumentScroll = runtime?.attachDocumentScrollbar()
+    })
 }
 
 watch(enabled, updateDocumentScrollLock, { flush: 'post' })
@@ -484,7 +948,7 @@ onMounted(() => {
   const target = shell.value
 
   if (target === undefined) {
-    throw new Error('The Admin Shell query container is unavailable.')
+    throw new Error('UiAdminShell element unavailable.')
   }
 
   rootOverflow = document.documentElement.style.overflow
@@ -492,6 +956,7 @@ onMounted(() => {
   updateDocumentScrollLock()
   updateResponsiveNavigationMetrics(target.getBoundingClientRect().width)
   resizeObserver = new ResizeObserver((entries) => {
+    updatePopupViewport()
     const entry = entries[0]
 
     if (entry !== undefined) {
@@ -504,6 +969,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  drawerFocusGeneration += 1
+  documentScrollGeneration += 1
+  disposeDocumentScroll?.()
   resizeObserver?.disconnect()
   resizeObserver = undefined
   document.documentElement.style.overflow = rootOverflow
@@ -527,32 +995,155 @@ watch(
     :data-header="hasHeader"
     :data-layout-profile="enabled ? profile : undefined"
     :data-navigation-collapsed="persistentNavigationCollapsed ? 'true' : 'false'"
+    @scroll.capture="collapsedPopupKey !== undefined && updatePopupViewport()"
   >
     <header
       v-if="hasHeader"
+      :inert="drawerVisible"
       class="pavp-admin-shell__header shrink-0 h-admin-header"
       data-shell-region="architecture-console-header"
     >
-      <button
+      <NButton
         v-if="administration && profile === 'narrow'"
         ref="navigationTrigger"
+        text
+        native-focus-behavior
         :aria-label="copy.openNavigationLabel"
         class="pavp-admin-shell__action rounded-control min-h-target-enhanced min-w-target-enhanced"
-        type="button"
+        attr-type="button"
         @click="openNavigation"
       >
         {{ copy.navigationActionLabel }}
-      </button>
-      <div class="pavp-admin-shell__identity">
+      </NButton>
+      <div class="pavp-admin-shell__identity min-w-0">
         <span class="pavp-admin-shell__eyebrow">PAVP</span>
-        <strong>{{ copy.consoleTitle }}</strong>
+        <strong class="truncate">{{ copy.consoleTitle }}</strong>
       </div>
-      <div
-        v-if="administration && profile === 'wide'"
-        class="pavp-admin-shell__header-actions flex items-center gap-content-gap"
-      >
+      <div class="flex items-center gap-content-gap">
+        <div
+          v-if="administration && profile === 'wide'"
+          class="pavp-admin-shell__header-actions flex items-center gap-content-gap"
+        >
+          <NTooltip
+            class="pavp-admin-shell__header-action-tooltip"
+            placement="bottom-end"
+            :show-arrow="false"
+            to="#pavp-overlay-root"
+          >
+            <template #trigger>
+              <NButton
+                :aria-label="copy.locateCurrentLabel"
+                :bordered="false"
+                attr-type="button"
+                class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                :theme-overrides="headerActionThemeOverrides"
+                type="tertiary"
+                @click="handleNavigationAction('focus')"
+              >
+                <template #icon>
+                  <NIcon
+                    aria-hidden="true"
+                    class="i-lucide-focus"
+                  />
+                </template>
+              </NButton>
+            </template>
+            {{ copy.locateCurrentLabel }}
+          </NTooltip>
+          <NTooltip
+            v-if="!persistentNavigationCollapsed"
+            class="pavp-admin-shell__header-action-tooltip"
+            placement="bottom-end"
+            :show-arrow="false"
+            to="#pavp-overlay-root"
+          >
+            <template #trigger>
+              <NButton
+                :aria-label="navigationGroupsToggleLabel"
+                :bordered="false"
+                attr-type="button"
+                class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                data-pavp-admin-navigation-groups-control="header-trailing"
+                :theme-overrides="headerActionThemeOverrides"
+                type="tertiary"
+                @click="handleNavigationAction('mode')"
+              >
+                <template #icon>
+                  <span
+                    class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
+                    data-pavp-admin-navigation-icon-stack="groups"
+                  >
+                    <NIcon
+                      :class="{
+                        'pavp-admin-shell__header-action-icon-state--active': !navigationAccordion,
+                      }"
+                      aria-hidden="true"
+                      class="pavp-admin-shell__header-action-icon-state i-lucide-list-collapse col-start-1 row-start-1"
+                      data-pavp-admin-navigation-icon-state="groups-expanded"
+                    />
+                    <NIcon
+                      :class="{
+                        'pavp-admin-shell__header-action-icon-state--active': navigationAccordion,
+                      }"
+                      aria-hidden="true"
+                      class="pavp-admin-shell__header-action-icon-state i-lucide-list-tree col-start-1 row-start-1"
+                      data-pavp-admin-navigation-icon-state="groups-collapsed"
+                    />
+                  </span>
+                </template>
+              </NButton>
+            </template>
+            {{ navigationGroupsToggleLabel }}
+          </NTooltip>
+          <NTooltip
+            class="pavp-admin-shell__header-action-tooltip"
+            placement="bottom-end"
+            :show-arrow="false"
+            to="#pavp-overlay-root"
+          >
+            <template #trigger>
+              <NButton
+                :aria-label="wideNavigationCollapseLabel"
+                :bordered="false"
+                attr-type="button"
+                class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                data-pavp-admin-navigation-collapse-control="header-trailing"
+                :theme-overrides="headerActionThemeOverrides"
+                type="tertiary"
+                @click="handleNavigationAction('sidebar')"
+              >
+                <template #icon>
+                  <span
+                    class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
+                    data-pavp-admin-navigation-icon-stack="sidebar"
+                  >
+                    <NIcon
+                      :class="{
+                        'pavp-admin-shell__header-action-icon-state--active':
+                          !wideNavigationCollapsed,
+                      }"
+                      aria-hidden="true"
+                      class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-close col-start-1 row-start-1"
+                      data-pavp-admin-navigation-icon-state="sidebar-expanded"
+                    />
+                    <NIcon
+                      :class="{
+                        'pavp-admin-shell__header-action-icon-state--active':
+                          wideNavigationCollapsed,
+                      }"
+                      aria-hidden="true"
+                      class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-open col-start-1 row-start-1"
+                      data-pavp-admin-navigation-icon-state="sidebar-collapsed"
+                    />
+                  </span>
+                </template>
+              </NButton>
+            </template>
+            {{ wideNavigationCollapseLabel }}
+          </NTooltip>
+        </div>
         <NTooltip
-          v-if="!persistentNavigationCollapsed"
+          v-if="administration"
           class="pavp-admin-shell__header-action-tooltip"
           placement="bottom-end"
           :show-arrow="false"
@@ -560,86 +1151,43 @@ watch(
         >
           <template #trigger>
             <NButton
-              :aria-label="navigationGroupsToggleLabel"
+              :aria-label="colorModeToggleLabel"
+              :aria-pressed="appearance.colorMode === 'dark'"
               :bordered="false"
               attr-type="button"
-              circle
               class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
-              data-pavp-admin-navigation-groups-control="header-trailing"
+              data-pavp-color-mode-control="header-trailing"
+              :theme-overrides="headerActionThemeOverrides"
               type="tertiary"
-              @click="toggleNavigationMode"
+              @click="emit('toggle-color-mode')"
             >
               <template #icon>
                 <span
                   class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
-                  data-pavp-admin-navigation-icon-stack="groups"
-                >
-                  <NIcon
-                    :class="{
-                      'pavp-admin-shell__header-action-icon-state--active': !navigationAccordion,
-                    }"
-                    aria-hidden="true"
-                    class="pavp-admin-shell__header-action-icon-state i-lucide-list-collapse col-start-1 row-start-1"
-                    data-pavp-admin-navigation-icon-state="groups-expanded"
-                  />
-                  <NIcon
-                    :class="{
-                      'pavp-admin-shell__header-action-icon-state--active': navigationAccordion,
-                    }"
-                    aria-hidden="true"
-                    class="pavp-admin-shell__header-action-icon-state i-lucide-list-tree col-start-1 row-start-1"
-                    data-pavp-admin-navigation-icon-state="groups-collapsed"
-                  />
-                </span>
-              </template>
-            </NButton>
-          </template>
-          {{ navigationGroupsToggleLabel }}
-        </NTooltip>
-        <NTooltip
-          class="pavp-admin-shell__header-action-tooltip"
-          placement="bottom-end"
-          :show-arrow="false"
-          to="#pavp-overlay-root"
-        >
-          <template #trigger>
-            <NButton
-              :aria-label="wideNavigationCollapseLabel"
-              :bordered="false"
-              attr-type="button"
-              circle
-              class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
-              data-pavp-admin-navigation-collapse-control="header-trailing"
-              type="tertiary"
-              @click="toggleWideNavigation"
-            >
-              <template #icon>
-                <span
-                  class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
-                  data-pavp-admin-navigation-icon-stack="sidebar"
                 >
                   <NIcon
                     :class="{
                       'pavp-admin-shell__header-action-icon-state--active':
-                        !wideNavigationCollapsed,
+                        appearance.colorMode === 'light',
                     }"
                     aria-hidden="true"
-                    class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-close col-start-1 row-start-1"
-                    data-pavp-admin-navigation-icon-state="sidebar-expanded"
+                    class="pavp-admin-shell__header-action-icon-state i-lucide-sun col-start-1 row-start-1"
+                    data-pavp-color-mode-icon="light"
                   />
                   <NIcon
                     :class="{
-                      'pavp-admin-shell__header-action-icon-state--active': wideNavigationCollapsed,
+                      'pavp-admin-shell__header-action-icon-state--active':
+                        appearance.colorMode === 'dark',
                     }"
                     aria-hidden="true"
-                    class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-open col-start-1 row-start-1"
-                    data-pavp-admin-navigation-icon-state="sidebar-collapsed"
+                    class="pavp-admin-shell__header-action-icon-state i-lucide-moon col-start-1 row-start-1"
+                    data-pavp-color-mode-icon="dark"
                   />
                 </span>
               </template>
             </NButton>
           </template>
-          {{ wideNavigationCollapseLabel }}
+          {{ colorModeToggleLabel }}
         </NTooltip>
       </div>
     </header>
@@ -669,6 +1217,7 @@ watch(
           <UiScrollArea
             class="flex-1 min-h-0"
             owner-id="architecture-console-sidebar"
+            @viewport="emit('sidebar-viewport', $event)"
           >
             <AdminNavigationSelectionLens
               v-slot="{ featureReady, renderIcon }"
@@ -677,24 +1226,66 @@ watch(
               :render-base-icon="renderNavigationMenuIcon"
             >
               <nav
+                ref="persistentNavigation"
                 :aria-label="copy.navigationLabel"
                 class="pavp-admin-shell__persistent-navigation"
                 :data-pavp-admin-navigation-motion-ready="
                   featureReady && appearance.motion === 'full' ? 'true' : 'false'
                 "
               >
+                <div
+                  v-if="persistentNavigationCollapsed"
+                  class="pavp-admin-shell__collapsed-menu pb-0 grid"
+                  :style="collapsedMenuStyle"
+                >
+                  <NDropdown
+                    v-for="option in navigationMenuOptions"
+                    :key="String(option.key)"
+                    v-bind="persistentNavigationDropdownProps"
+                    :options="collapsedPopupOptions(option)"
+                    :menu-props="collapsedPopupMenuProps(option)"
+                    :show="collapsedPopupKey === option.key"
+                    :value="activeRouteName"
+                    placement="right-start"
+                    size="large"
+                    @update:show="handleCollapsedPopupShow($event, option)"
+                    @select="selectCollapsedRoute"
+                  >
+                    <NButton
+                      attr-type="button"
+                      text
+                      block
+                      native-focus-behavior
+                      class="pavp-admin-shell__collapsed-trigger p-0 border-0 bg-transparent flex w-full cursor-pointer items-center justify-center relative isolate min-h-target-enhanced"
+                      :aria-label="String(option.label)"
+                      aria-haspopup="menu"
+                      :aria-expanded="collapsedPopupKey === option.key"
+                      :data-active="option.key === activeNavigationGroupKey"
+                      :data-pavp-navigation-key="option.key"
+                      @keydown="handleCollapsedTriggerKeydown($event, option)"
+                      @click="handleCollapsedTriggerClick($event, option)"
+                      @pointerdown="handleCollapsedTriggerPointerdown($event, option)"
+                    >
+                      <ShellNavigationIcon
+                        :option="option"
+                        :render="renderIcon"
+                      />
+                    </NButton>
+                  </NDropdown>
+                </div>
                 <NMenu
+                  v-else
                   :accordion="navigationAccordion"
                   class="pavp-admin-shell__menu"
                   :collapsed="persistentNavigationCollapsed"
                   :collapsed-width="collapsedNavigationWidth"
                   children-field="children"
-                  :dropdown-props="persistentNavigationDropdownProps"
                   :expanded-keys="validExpandedNavigationGroupKeys"
                   mode="vertical"
                   :node-props="persistentNavigationNodeProps"
                   :options="navigationMenuOptions"
                   :render-icon="renderIcon"
+                  :render-label="renderNavigationMenuLabel"
                   :value="activeRouteName"
                   @update:expanded-keys="handleNavigationExpandedKeysUpdate"
                   @update:value="handleNavigationValueUpdate"
@@ -752,13 +1343,18 @@ watch(
     </NLayout>
 
     <Teleport to="#pavp-overlay-root">
-      <Transition name="pavp-admin-drawer">
+      <Transition
+        name="pavp-admin-drawer"
+        @before-leave="handleDrawerBeforeLeave"
+      >
         <div
           v-if="administration && profile === 'narrow' && navigationOpen"
           class="pavp-admin-shell__drawer-layer"
           data-shell-region="architecture-console-navigation-overlay"
           @pointerdown="handleDrawerScrimPointerDown($event)"
         >
+          <!-- A modal dialog owns bubbling Escape and boundary Tab handling, including slotted controls. -->
+          <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -->
           <nav
             ref="drawerNavigation"
             :aria-label="copy.navigationLabel"
@@ -766,25 +1362,29 @@ watch(
             class="pavp-admin-shell__drawer-navigation"
             role="dialog"
             tabindex="-1"
+            @keydown="handleDrawerKeydown"
+            @focusin="handleDrawerFocusin"
           >
             <div class="pavp-admin-shell__navigation-stack flex flex-col h-full min-h-0">
               <UiScrollArea
                 class="flex-1 min-h-0"
                 owner-id="architecture-console-drawer"
+                @viewport="emit('drawer-viewport', $event)"
               >
                 <div class="pavp-admin-shell__drawer-content">
                   <div class="pavp-admin-shell__drawer-heading">
                     <strong>{{ copy.navigationLabel }}</strong>
-                    <button
+                    <NButton
                       ref="drawerClose"
+                      text
+                      native-focus-behavior
                       :aria-label="copy.closeNavigationLabel"
                       class="pavp-admin-shell__action rounded-control min-h-target-enhanced min-w-target-enhanced"
-                      type="button"
+                      attr-type="button"
                       @click="closeNavigation"
-                      @keydown="handleDrawerKeydown"
                     >
                       {{ copy.closeActionLabel }}
-                    </button>
+                    </NButton>
                   </div>
                   <div
                     v-for="group in navigation"
@@ -794,22 +1394,82 @@ watch(
                     <p class="pavp-admin-shell__navigation-group-label">
                       {{ group.label }}
                     </p>
-                    <button
+                    <template
                       v-for="item in group.items"
-                      :key="item.routeName"
-                      :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
-                      class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
-                      type="button"
-                      @click="navigate(item.routeName)"
-                      @keydown="handleDrawerKeydown"
+                      :key="'items' in item ? item.id : item.routeName"
                     >
-                      <span
-                        :class="resolveNavigationIconClass(item.iconClass)"
-                        aria-hidden="true"
-                        class="pavp-admin-shell__navigation-icon"
-                      />
-                      <span>{{ item.label }}</span>
-                    </button>
+                      <NCollapse
+                        v-if="'items' in item"
+                        class="pavp-admin-shell__drawer-collapse"
+                        :default-expanded-names="
+                          navigationLeaves(item).some((leaf) => leaf.isCurrentDestination)
+                            ? [item.id]
+                            : []
+                        "
+                      >
+                        <NCollapseItem :name="item.id">
+                          <template #header="{ collapsed }">
+                            <NButton
+                              :aria-expanded="!collapsed"
+                              :aria-controls="`${popupOwnerId}-drawer-${item.id}`"
+                              class="pavp-admin-shell__navigation-action pavp-admin-shell__navigation-disclosure rounded-control min-h-target-enhanced min-w-target-enhanced"
+                              attr-type="button"
+                              text
+                              block
+                              native-focus-behavior
+                            >
+                              {{ item.label }}
+                            </NButton>
+                          </template>
+                          <div
+                            :id="`${popupOwnerId}-drawer-${item.id}`"
+                            class="px-page-inline"
+                          >
+                            <NButton
+                              v-for="leaf in navigationLeaves(item)"
+                              :key="leaf.routeName"
+                              :aria-current="
+                                leaf.routeName === activeRouteName ? 'page' : undefined
+                              "
+                              class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
+                              text
+                              block
+                              native-focus-behavior
+                              attr-type="button"
+                              @click="navigate(leaf.routeName)"
+                            >
+                              <span class="inline-flex items-center gap-content-gap">
+                                <span
+                                  :class="resolveNavigationIconClass(leaf.iconClass)"
+                                  aria-hidden="true"
+                                  class="pavp-admin-shell__navigation-icon"
+                                />
+                                <span>{{ leaf.label }}</span>
+                              </span>
+                            </NButton>
+                          </div>
+                        </NCollapseItem>
+                      </NCollapse>
+                      <NButton
+                        v-else
+                        :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
+                        class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
+                        text
+                        block
+                        native-focus-behavior
+                        attr-type="button"
+                        @click="navigate(item.routeName)"
+                      >
+                        <span class="inline-flex items-center gap-content-gap">
+                          <span
+                            :class="resolveNavigationIconClass(item.iconClass)"
+                            aria-hidden="true"
+                            class="pavp-admin-shell__navigation-icon"
+                          />
+                          <span>{{ item.label }}</span>
+                        </span>
+                      </NButton>
+                    </template>
                   </div>
                 </div>
               </UiScrollArea>
@@ -818,7 +1478,6 @@ watch(
                 class="pavp-admin-shell__navigation-bottom flex-none"
                 data-shell-region="architecture-console-navigation-bottom"
                 role="presentation"
-                @keydown="handleDrawerKeydown"
               >
                 <slot
                   name="navigation-bottom"
@@ -958,7 +1617,7 @@ watch(
     justify-content: center;
     padding-block: var(--ui-space-content-gap)
       max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
-    padding-inline: 0;
+    padding-inline: calc(var(--ui-space-content-gap) / 2);
   }
 
   .pavp-admin-shell__navigation-group-label {
@@ -969,81 +1628,10 @@ watch(
     line-height: var(--ui-font-line-height-body);
   }
 
-  .pavp-admin-shell__action,
-  .pavp-admin-shell__navigation-action {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--ui-space-content-gap);
-    border: 0;
-    color: var(--ui-color-text-primary);
-    font-family: var(--ui-font-family-body);
-    font-size: var(--ui-font-size-body);
-    font-weight: var(--ui-font-weight-body);
-    line-height: var(--ui-font-line-height-body);
-    background: transparent;
-    cursor: pointer;
-    transition-duration: var(--ui-motion-duration);
-    transition-property: color, background-color, box-shadow, transform;
-    transition-timing-function: var(--ui-motion-easing);
-  }
-
-  .pavp-admin-shell__navigation-action {
-    position: relative;
-    justify-content: start;
-    inline-size: 100%;
-    padding-inline: var(--ui-space-page-inline);
-    text-align: start;
-  }
-
   .pavp-admin-shell__navigation-icon {
     flex: 0 0 auto;
     block-size: var(--ui-font-size-body);
     inline-size: var(--ui-font-size-body);
-  }
-
-  .pavp-admin-shell__action:hover,
-  .pavp-admin-shell__navigation-action:hover {
-    color: var(--ui-color-text-primary);
-    background: var(--ui-admin-navigation-hover);
-  }
-
-  .pavp-admin-shell__action:active,
-  .pavp-admin-shell__navigation-action:active {
-    transform: translateY(calc(var(--ui-space-content-gap) / 4));
-  }
-
-  .pavp-admin-shell__action:focus-visible,
-  .pavp-admin-shell__navigation-action:focus-visible {
-    box-shadow: var(--ui-shadow-panel);
-    outline: none;
-  }
-
-  .pavp-admin-shell__navigation-action[aria-current='page'] {
-    color: var(--ui-color-text-primary);
-    background: var(--ui-material-overlay-background);
-  }
-
-  .pavp-admin-shell__navigation-action::after {
-    position: absolute;
-    block-size: calc(var(--ui-space-content-gap) / 2);
-    inline-size: calc(var(--ui-space-content-gap) / 2);
-    border-radius: var(--ui-radius-small);
-    background: var(--ui-admin-navigation-selected);
-    content: '';
-    inset-block-start: 50%;
-    inset-inline-end: var(--ui-space-page-inline);
-    opacity: 0;
-    transform: translateY(-50%) scale(0.72);
-    transform-origin: center;
-    transition-duration: var(--ui-motion-duration);
-    transition-property: opacity, transform;
-    transition-timing-function: var(--ui-motion-easing);
-  }
-
-  .pavp-admin-shell__navigation-action[aria-current='page']::after {
-    opacity: 1;
-    transform: translateY(-50%) scale(1);
   }
 
   .pavp-admin-shell__workspace {
@@ -1144,12 +1732,6 @@ watch(
     }
   }
 
-  @media (forced-colors: active) {
-    .pavp-admin-shell::before {
-      display: none;
-    }
-  }
-
   @media (prefers-reduced-transparency: reduce) {
     .pavp-admin-shell::before {
       opacity: 0;
@@ -1176,6 +1758,173 @@ watch(
 
 .pavp-admin-shell__document-layout {
   overflow: visible;
+}
+.pavp-admin-shell__collapsed-trigger {
+  margin-block-start: calc(var(--ui-space-content-gap) / 2);
+  color: var(--pavp-collapsed-foreground);
+  transition: color var(--ui-motion-duration) var(--ui-motion-easing);
+}
+
+.pavp-admin-shell__collapsed-trigger::before {
+  position: absolute;
+  z-index: calc(var(--ui-z-base) - 1);
+  inset: 0 calc(var(--ui-space-content-gap) / 2);
+  border-radius: var(--ui-radius-control);
+  content: '';
+  transition: background-color var(--ui-motion-duration) var(--ui-motion-easing);
+}
+
+.pavp-admin-shell__collapsed-trigger:hover::before {
+  background: var(--pavp-collapsed-hover);
+}
+
+.pavp-admin-shell__collapsed-trigger:focus {
+  color: var(--pavp-collapsed-foreground);
+}
+
+.pavp-admin-shell__collapsed-trigger:hover {
+  color: var(--pavp-collapsed-hover-foreground);
+}
+
+.pavp-admin-shell__collapsed-trigger[data-active='true']::before {
+  background: var(--n-item-color-active);
+}
+
+.pavp-admin-shell__collapsed-trigger[data-active='true'] {
+  color: var(--pavp-collapsed-active-foreground);
+}
+
+[data-pavp-admin-navigation-motion-ready='true']
+  .pavp-admin-shell__collapsed-trigger[data-active='true']::before {
+  background: transparent;
+}
+
+.pavp-admin-shell__collapsed-trigger:focus-visible {
+  outline: none;
+}
+
+.pavp-admin-shell__collapsed-trigger:focus-visible::before {
+  box-shadow: var(--ui-admin-shadow-focus-ring);
+}
+
+.pavp-admin-shell__action,
+.pavp-admin-shell__navigation-action {
+  border-radius: var(--ui-radius-control);
+  white-space: normal;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--ui-space-content-gap);
+  border: 0;
+  color: var(--ui-color-text-primary);
+  font-family: var(--ui-font-family-body);
+  font-size: var(--ui-font-size-body);
+  font-weight: var(--ui-font-weight-body);
+  line-height: var(--ui-font-line-height-body);
+  background: transparent;
+  cursor: pointer;
+  transition-duration: var(--ui-motion-duration);
+  transition-property: color, background-color, transform;
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+.pavp-admin-shell__navigation-action {
+  position: relative;
+  justify-content: start;
+  inline-size: 100%;
+  padding-inline: var(--ui-space-page-inline);
+  text-align: start;
+}
+
+.pavp-admin-shell__action:focus,
+.pavp-admin-shell__navigation-action:focus {
+  color: var(--ui-color-text-primary);
+}
+
+.pavp-admin-shell__action:hover,
+.pavp-admin-shell__navigation-action:hover {
+  color: var(--ui-color-text-primary);
+  background: var(--ui-admin-navigation-hover);
+}
+
+.pavp-admin-shell__action:active,
+.pavp-admin-shell__navigation-action:active {
+  transform: translateY(calc(var(--ui-space-content-gap) / 4));
+}
+
+.pavp-admin-shell__navigation-action[aria-current='page'] {
+  color: var(--ui-color-text-primary);
+  background: var(--ui-material-overlay-background);
+}
+
+.pavp-admin-shell__navigation-action::after {
+  position: absolute;
+  block-size: calc(var(--ui-space-content-gap) / 2);
+  inline-size: calc(var(--ui-space-content-gap) / 2);
+  border-radius: var(--ui-radius-small);
+  background: var(--ui-admin-navigation-selected);
+  content: '';
+  inset-block-start: 50%;
+  inset-inline-end: var(--ui-space-page-inline);
+  opacity: 0;
+  transform: translateY(-50%) scale(0.72);
+  transform-origin: center;
+  transition-duration: var(--ui-motion-duration);
+  transition-property: opacity, transform;
+  transition-timing-function: var(--ui-motion-easing);
+}
+
+.pavp-admin-shell__navigation-action[aria-current='page']::after {
+  opacity: 1;
+  transform: translateY(-50%) scale(1);
+}
+
+.pavp-admin-shell__action:focus-visible,
+.pavp-admin-shell__navigation-action:focus-visible,
+.pavp-admin-shell__drawer-navigation:focus-visible {
+  box-shadow: var(--ui-admin-shadow-focus-ring);
+  outline: none;
+}
+
+@media (forced-colors: active) {
+  .pavp-admin-shell__action:focus-visible,
+  .pavp-admin-shell__navigation-action:focus-visible,
+  .pavp-admin-shell__drawer-navigation:focus-visible,
+  .pavp-admin-shell__collapsed-trigger:focus-visible {
+    outline: var(--ui-admin-focus-width) solid Highlight;
+    outline-offset: calc(var(--ui-admin-focus-width) * -1);
+  }
+
+  .pavp-admin-shell__collapsed-menu .pavp-admin-shell__collapsed-trigger[data-active='true'] {
+    color: HighlightText;
+  }
+
+  .pavp-admin-shell__collapsed-menu
+    .pavp-admin-shell__collapsed-trigger[data-active='true']::before {
+    background: Highlight;
+  }
+
+  .pavp-admin-shell::before {
+    display: none;
+  }
+}
+
+.pavp-admin-shell__navigation-disclosure {
+  flex-shrink: 1;
+  min-inline-size: 0;
+}
+
+.pavp-admin-shell__drawer-collapse :deep(.n-collapse-item__content-inner) {
+  padding-block-start: 0;
+}
+
+.pavp-admin-shell__drawer-collapse.n-collapse :deep(.n-collapse-item__content-wrapper) {
+  opacity: 1;
+  transition: none;
+}
+
+.pavp-admin-shell__drawer-collapse :deep(.n-collapse-item-arrow) {
+  transition: none;
 }
 </style>
 
@@ -1239,37 +1988,6 @@ watch(
   }
 
   html[data-motion='reduced']
-    .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active
-    .pavp-admin-shell__drawer-navigation,
-  html[data-motion='reduced']
-    .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active
-    .pavp-admin-shell__drawer-navigation,
-  html[data-motion='reduced'] .pavp-admin-shell__sidebar,
-  html[data-motion='reduced'] .pavp-admin-shell__action,
-  html[data-motion='reduced'] .pavp-admin-shell__navigation-action,
-  html[data-motion='reduced'] .pavp-admin-shell__navigation-action::after {
-    transition-duration: calc(var(--ui-motion-duration) / 2);
-  }
-
-  html[data-motion='none']
-    .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active
-    .pavp-admin-shell__drawer-navigation,
-  html[data-motion='none']
-    .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active
-    .pavp-admin-shell__drawer-navigation,
-  html[data-motion='none'] .pavp-admin-shell__sidebar,
-  html[data-motion='none'] .pavp-admin-shell__action,
-  html[data-motion='none'] .pavp-admin-shell__navigation-action,
-  html[data-motion='none'] .pavp-admin-shell__navigation-action::after {
-    transition: none;
-  }
-
-  html[data-motion='reduced'] .pavp-admin-shell__action:active,
-  html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active {
-    transform: none;
-  }
-
-  html[data-motion='reduced']
     .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-from
     .pavp-admin-shell__drawer-navigation,
   html[data-motion='reduced']
@@ -1287,11 +2005,6 @@ watch(
     transform: none;
   }
 
-  html[data-motion='none'] .pavp-admin-shell__action:active,
-  html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
-    transform: none;
-  }
-
   @media (forced-colors: active) {
     .pavp-admin-navigation-selection-lens {
       visibility: hidden;
@@ -1300,7 +2013,8 @@ watch(
 }
 
 @layer vendor-overrides {
-  [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible {
+  [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible,
+  .pavp-admin-navigation-dropdown [data-pavp-navigation-key]:focus-visible {
     border-radius: var(--ui-radius-control);
     box-shadow: var(--ui-admin-shadow-focus-ring);
     outline: none;
@@ -1394,9 +2108,10 @@ watch(
   }
 
   @media (forced-colors: active) {
-    [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible {
-      outline: var(--ui-admin-border-focus);
-      outline-offset: var(--ui-admin-focus-outline-offset);
+    [data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible,
+    .pavp-admin-navigation-dropdown [data-pavp-navigation-key]:focus-visible {
+      outline: var(--ui-admin-focus-width) solid Highlight;
+      outline-offset: calc(var(--ui-admin-focus-width) * -1);
     }
 
     .pavp-admin-shell[data-navigation-collapsed='false']
@@ -1442,6 +2157,10 @@ watch(
 .pavp-admin-navigation-dropdown .n-dropdown-option-body::before {
   transition-duration: var(--ui-motion-duration);
   transition-property: background-color, opacity;
+}
+
+[data-pavp-admin-navigation='persistent'] .n-menu-item-content::before {
+  inset-inline: calc(var(--ui-space-content-gap) / 2);
 }
 
 [data-pavp-admin-navigation='persistent']
@@ -1507,5 +2226,44 @@ html[data-motion='none']
 
 html[data-material='reduced'] .pavp-admin-navigation-dropdown {
   box-shadow: none;
+}
+html[data-motion='reduced']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='reduced']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='reduced'] .pavp-admin-shell__sidebar,
+html[data-motion='reduced'] .pavp-admin-shell__collapsed-trigger,
+html[data-motion='reduced'] .pavp-admin-shell__collapsed-trigger::before,
+html[data-motion='reduced'] .pavp-admin-shell__action,
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action,
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action::after {
+  transition-duration: calc(var(--ui-motion-duration) / 2);
+}
+
+html[data-motion='none']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-enter-active
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='none']
+  .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-active
+  .pavp-admin-shell__drawer-navigation,
+html[data-motion='none'] .pavp-admin-shell__sidebar,
+html[data-motion='none'] .pavp-admin-shell__collapsed-trigger,
+html[data-motion='none'] .pavp-admin-shell__collapsed-trigger::before,
+html[data-motion='none'] .pavp-admin-shell__action,
+html[data-motion='none'] .pavp-admin-shell__navigation-action,
+html[data-motion='none'] .pavp-admin-shell__navigation-action::after {
+  transition: none;
+}
+
+html[data-motion='reduced'] .pavp-admin-shell__action:active,
+html[data-motion='reduced'] .pavp-admin-shell__navigation-action:active {
+  transform: none;
+}
+
+html[data-motion='none'] .pavp-admin-shell__action:active,
+html[data-motion='none'] .pavp-admin-shell__navigation-action:active {
+  transform: none;
 }
 </style>

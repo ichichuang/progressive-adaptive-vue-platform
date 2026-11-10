@@ -7,6 +7,7 @@
       }
     },
     "space": {
+      "component-unit": { "$type": "dimension", "$value": { "value": 0.25, "unit": "rem" } },
       "0": {
         "$type": "dimension",
         "$value": {
@@ -66,6 +67,10 @@
       }
     },
     "control": {
+      "segment-width-small": { "$type": "dimension", "$value": { "value": 1.5, "unit": "rem" } },
+      "segment-width-medium": { "$type": "dimension", "$value": { "value": 1.875, "unit": "rem" } },
+      "segment-width-large": { "$type": "dimension", "$value": { "value": 2.25, "unit": "rem" } },
+      "segment-gap": { "$type": "dimension", "$value": { "value": 0.5, "unit": "rem" } },
       "sm": {
         "$type": "dimension",
         "$value": {
@@ -86,6 +91,85 @@
           "value": 2.75,
           "unit": "rem"
         }
+      }
+    },
+    "calendar": {
+      "weekday-minimum-inline": {
+        "$type": "dimension",
+        "$value": { "value": 1.6875, "unit": "rem" }
+      },
+      "inline-tight": { "$type": "dimension", "$value": { "value": 0.125, "unit": "rem" } },
+      "inline-compact": { "$type": "dimension", "$value": { "value": 0.25, "unit": "rem" } },
+      "block-gap": { "$type": "dimension", "$value": { "value": 0.5, "unit": "rem" } },
+      "footer-indent": { "$type": "dimension", "$value": { "value": 1.0625, "unit": "rem" } }
+    },
+    "icon": {
+      "extra-small": {
+        "$type": "dimension",
+        "$value": { "value": 1, "unit": "rem" }
+      },
+      "small": {
+        "$type": "dimension",
+        "$value": { "value": 1.125, "unit": "rem" }
+      },
+      "medium": {
+        "$type": "dimension",
+        "$value": { "value": 1.25, "unit": "rem" }
+      },
+      "large": {
+        "$type": "dimension",
+        "$value": { "value": 1.5, "unit": "rem" }
+      },
+      "extra-large": {
+        "$type": "dimension",
+        "$value": { "value": 2.25, "unit": "rem" }
+      }
+    },
+    "indicator": {
+      "cell-small": { "$type": "dimension", "$value": { "value": 0.625, "unit": "rem" } },
+      "cell-medium": { "$type": "dimension", "$value": { "value": 0.6875, "unit": "rem" } },
+      "cell-large": { "$type": "dimension", "$value": { "value": 0.75, "unit": "rem" } },
+      "cell-gap-compact": { "$type": "dimension", "$value": { "value": 0.125, "unit": "rem" } },
+      "cell-gap-standard": { "$type": "dimension", "$value": { "value": 0.1875, "unit": "rem" } },
+      "content-gap": { "$type": "dimension", "$value": { "value": 0.875, "unit": "rem" } },
+      "label-inline-compact": { "$type": "dimension", "$value": { "value": 0.25, "unit": "rem" } },
+      "slot-icon-inline": { "$type": "dimension", "$value": { "value": 1.875, "unit": "rem" } },
+      "slot-text-inline": { "$type": "dimension", "$value": { "value": 2.5, "unit": "rem" } },
+      "label-inline": {
+        "$type": "dimension",
+        "$value": { "value": 0.375, "unit": "rem" }
+      },
+      "circle": {
+        "$type": "dimension",
+        "$value": { "value": 7.5, "unit": "rem" }
+      },
+      "circle-multiple": {
+        "$type": "dimension",
+        "$value": { "value": 12.5, "unit": "rem" }
+      },
+      "label-height": {
+        "$type": "dimension",
+        "$value": { "value": 1.125, "unit": "rem" }
+      },
+      "rail-labeled": {
+        "$type": "dimension",
+        "$value": { "value": 1, "unit": "rem" }
+      },
+      "rail-thin": {
+        "$type": "dimension",
+        "$value": { "value": 0.25, "unit": "rem" }
+      },
+      "rail-standard": {
+        "$type": "dimension",
+        "$value": { "value": 0.5, "unit": "rem" }
+      },
+      "marker": {
+        "$type": "dimension",
+        "$value": { "value": 0.5, "unit": "rem" }
+      },
+      "handle": {
+        "$type": "dimension",
+        "$value": { "value": 1.125, "unit": "rem" }
       }
     },
     "layout": {

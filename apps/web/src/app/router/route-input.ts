@@ -4,6 +4,7 @@ import {
   type RouteLocationNormalized,
   type RouteLocationResolved,
   type RouteParamsGeneric,
+  type RouteRecordRaw,
   type Router,
 } from 'vue-router'
 
@@ -107,8 +108,26 @@ export function registeredRouteDestination<const D extends RegisteredRouteDestin
 
 export function validateRouteInput(location: RouteLocationNormalized): RouteInputValidationResult {
   const record = routeRegistry.find((candidate) => candidate.name === location.name)
-  if (record === undefined || location.matched.length === 0) return { kind: 'invalid' }
+  if (record === undefined || location.matched.at(-1)?.name !== record.name)
+    return { kind: 'invalid' }
   for (const matched of location.matched) {
+    if (
+      location.matched.length === 2 &&
+      matched === location.matched[0] &&
+      matched.name === undefined &&
+      matched.path === '/error' &&
+      record.pathPattern.startsWith('/error/') &&
+      matched.components === undefined &&
+      matched.redirect === undefined &&
+      matched.beforeEnter === undefined &&
+      matched.aliasOf === undefined &&
+      Object.keys(matched.meta).length === 0 &&
+      Object.keys(matched.props).length === 0 &&
+      matched.children.some(
+        (child) => child.name === record.name && child.path === record.pathPattern,
+      )
+    )
+      continue
     const declaration = routeRegistry.find((candidate) => candidate.name === matched.name)
     if (
       matched.path !== declaration?.pathPattern ||
@@ -117,7 +136,8 @@ export function validateRouteInput(location: RouteLocationNormalized): RouteInpu
       return { kind: 'invalid' }
   }
   const params = routeParamsSchema(record.paramsSchemaId).safeParse(location.params)
-  const query = routeQuerySchema(record.querySchemaId).safeParse(location.query)
+  const querySchema = routeQuerySchema(record.querySchemaId)
+  const query = querySchema.safeParse(location.query)
   const fragment = location.fullPath.indexOf('#')
   try {
     if (fragment !== -1) decodeURIComponent(location.fullPath.slice(fragment + 1))
@@ -129,7 +149,7 @@ export function validateRouteInput(location: RouteLocationNormalized): RouteInpu
     !params.success ||
     !query.success ||
     !routeMetaMatches(location.meta, record.meta) ||
-    (Object.keys(routeQuerySchema(record.querySchemaId).shape).length === 0 &&
+    (Object.keys(querySchema.shape).length === 0 &&
       search !== -1 &&
       (fragment === -1 || search < fragment)) ||
     (!allowsRouteHash(record.hashPolicy)
@@ -153,7 +173,7 @@ export function validateRouteInput(location: RouteLocationNormalized): RouteInpu
   }
 }
 
-export function routeMetaMatches(
+function routeMetaMatches(
   actual: Readonly<Record<PropertyKey, unknown>>,
   expected: Readonly<Record<string, unknown>>,
 ): boolean {
@@ -167,6 +187,23 @@ export function routeMetaMatches(
             value.every((item, index) => item === received[index])
         : received === value
     })
+  )
+}
+
+export function prepareGeneratedRoute(
+  record: (typeof routeRegistry)[number],
+  generated: RouteRecordRaw,
+): boolean {
+  if (generated.name !== record.name || generated.path !== record.pathPattern) return false
+  const metadata: unknown = generated.meta
+  if (metadata === undefined) {
+    generated.meta = record.meta
+    return true
+  }
+  return (
+    metadata !== null &&
+    typeof metadata === 'object' &&
+    routeMetaMatches(metadata as Readonly<Record<PropertyKey, unknown>>, record.meta)
   )
 }
 

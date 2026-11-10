@@ -48,11 +48,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    'ddcef4b185a05b368fba985e6e9bafbc19d868a80141db772fcdb2007746e531',
+    'bdee98c2c3f7285d53c6af6187f8974f88764e6b737c489d137c1976b2e878d5',
   'packages/design-system/src/generated/tokens.ts':
-    'ed6ccbc84bf0f8bd22ff1273eea4dd3ddc564a8cb9feabf8b719d872613c3136',
+    '8b8f9cfbedf03425295caf5fdf41601348f18ac340c052142b05563851e625ca',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '24c28d415451e6714ecb898d3bde2cb0b51358222dc243d1ed0b9c0b5bc48872',
+    '41df53a033fe3aa942ffc2870488d08013683ea8368719954264c2583dfbace9',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -81,6 +81,7 @@ const expectedPublicRootSymbols = [
   'EffectiveAppearanceState',
   'projectUiAppearance',
   'UiAppearanceSnapshot',
+  'projectSequentialColorScale',
   'resolveColorMode',
   'EffectiveColorMode',
   'resolveMotion',
@@ -1941,11 +1942,7 @@ function validatePersistenceContracts(): readonly string[] {
 function resolvedCustomThemeProbeDefinition(index = 0) {
   const entry = generatedThemeRegistry.builtInEntries[index]
   if (entry === undefined) throw new Error('The canonical theme fixture is unavailable.')
-  const definition = completeBuiltInThemeDefinitionSchema.parse(structuredClone(entry.definition))
-  for (const record of entry.bank.records) {
-    definition.planes[record.colorMode][record.contrast][record.publicRole] = record.resolvedValue
-  }
-  return definition
+  return completeBuiltInThemeDefinitionSchema.parse(structuredClone(entry.definition))
 }
 
 function validateSharedAppearanceSynchronization(): readonly string[] {
@@ -2104,7 +2101,6 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
           !isDeepStrictEqual(startup.appearanceMutationBoundary.preference.value, defaults) ||
           startup.appearanceReadBoundary.snapshot.value.theme.themeId !==
             ProductPreferenceDefault.theme.themeId ||
-          startup.appearanceReadBoundary.snapshot.value.colorPalette === null ||
           !isDeepStrictEqual(storage.values, beforeStartup) ||
           storage.setCalls !== 0 ||
           safetyRestores !== 0
@@ -2951,12 +2947,17 @@ function selectorDeclarations(css: string, selector: string): Map<string, string
 async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[]> {
   const violations: string[] = []
   const generatedDirectory = resolve(rootDirectory, 'packages/design-system/src/generated')
-  const [runtimeCss, criticalCss, initializer, manifestSource] = await Promise.all([
-    readFile(resolve(generatedDirectory, 'tokens.css'), 'utf8'),
-    readFile(resolve(generatedDirectory, 'critical-theme.css'), 'utf8'),
-    readFile(resolve(generatedDirectory, 'appearance-init.js'), 'utf8'),
-    readFile(resolve(generatedDirectory, 'tokens.manifest.json'), 'utf8'),
-  ])
+  const [runtimeCss, criticalCss, initializer, manifestSource, firstPaintFormatter] =
+    await Promise.all([
+      readFile(resolve(generatedDirectory, 'tokens.css'), 'utf8'),
+      readFile(resolve(generatedDirectory, 'critical-theme.css'), 'utf8'),
+      readFile(resolve(generatedDirectory, 'appearance-init.js'), 'utf8'),
+      readFile(resolve(generatedDirectory, 'tokens.manifest.json'), 'utf8'),
+      readFile(
+        resolve(rootDirectory, 'packages/design-system/src/build/formats/first-paint.ts'),
+        'utf8',
+      ),
+    ])
 
   for (const entry of generatedThemeRegistry.builtInEntries) {
     const selector = `html[data-theme-kind='built-in'][data-theme='${entry.themeId}']`
@@ -3002,11 +3003,10 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
 
   if (
     !initializer.includes('Embedded from the declared Color.js dependency') ||
-    !initializer.includes('function isCssColor(value)') ||
-    !initializer.includes('new Color(value)')
+    !firstPaintFormatter.includes('../../schema/css-color.ts')
   ) {
     violations.push(
-      'appearance-init.js: current Custom colors must use the declared Color.js classifier.',
+      'appearance-init.js: current Custom colors must reuse the Design System CSS Color owner.',
     )
   }
 
@@ -3041,8 +3041,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 12 || recordCount !== 438) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 12/438.')
+  if (manifest['schemaVersion'] !== 12 || recordCount !== 602) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 12/602.')
   }
 
   const themes = manifest['themes']
@@ -3096,6 +3096,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
         id: value['themeId'],
         label: value['label'],
         planes: value['planes'],
+        uiPalette: value['uiPalette'],
       })
       const publicRoles = validatePublicRoleRegistry({
         schemaVersion: 2,

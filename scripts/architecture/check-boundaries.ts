@@ -187,7 +187,10 @@ async function validateManifestDependencies(): Promise<string[]> {
       const dependencies = manifest['dependencies']
       const admittedVersion = isJsonObject(dependencies) ? dependencies[dependency] : undefined
 
-      if (description === adminNavigationMotionOwner) {
+      if (
+        description === adminNavigationMotionOwner ||
+        (description === '@platform/web' && dependency === 'motion-v')
+      ) {
         if (
           declarations.length !== 1 ||
           declarations[0]?.[1] !== 'catalog:' ||
@@ -199,7 +202,7 @@ async function validateManifestDependencies(): Promise<string[]> {
         }
       } else if (declarations.length > 0) {
         violations.push(
-          `${description}: ${dependency} is owned only by ${adminNavigationMotionOwner}.`,
+          `${description}: ${dependency} is outside its admitted workspace ownership.`,
         )
       }
     }
@@ -524,9 +527,12 @@ function inspectImport(
       violations.push(`${displayPath}: Motion Vue imports must target the exact "motion-v" root.`)
     }
 
-    if (!normalizedDisplayPath.startsWith(adminNavigationMotionPrivateDirectory)) {
+    if (
+      !normalizedDisplayPath.startsWith(adminNavigationMotionPrivateDirectory) &&
+      normalizedDisplayPath !== 'apps/web/src/app/workbench/MotionGallery.vue'
+    ) {
       violations.push(
-        `${displayPath}: "motion-v" may only be imported by the private Admin Navigation Motion adapter.`,
+        `${displayPath}: "motion-v" may only be imported by its private adapter or exact showcase owner.`,
       )
     }
   }
@@ -768,7 +774,7 @@ async function validateNoApplicationInternalTokenUse(): Promise<string[]> {
   })
   const applicationFiles = await collectApplicationFiles(resolve(rootDirectory, 'apps/web'))
   const workbenchStylePath = resolve(rootDirectory, 'apps/web/src/app/workbench/workbench.css')
-  // §18.17 admits these application-private scales and native focus projection only here.
+  // These existing application owners consume their private scales and native focus projection.
   const workbenchInternalVariables = new Set([
     '--ui-workbench-display-font-size',
     '--ui-workbench-specimen-minimum-inline-size',
@@ -1410,7 +1416,7 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
   })
   const mocks: Readonly<Record<string, unknown>> = {
     vue,
-    '@platform/ui': { UiStatusBadge: wrapper },
+    '@platform/ui': { UiScrollArea: wrapper, UiStatusBadge: wrapper },
     'naive-ui/es/button': { NButton: button },
     'naive-ui/es/card': { NCard: wrapper },
     '@platform/design-system': { builtInAppearanceThemePreviews: [] },

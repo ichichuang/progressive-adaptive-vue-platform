@@ -78,7 +78,7 @@ export const routerErrorRegistry = Object.freeze([
   }),
 ] as const)
 
-export const applicationErrorRegistry = Object.freeze([
+export const applicationErrorRegistry = /* @__PURE__ */ Object.freeze([
   ...coreErrorRegistry,
   ...routerErrorRegistry,
 ] as const)

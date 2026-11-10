@@ -8,8 +8,11 @@ import { baseCompile, type NodeTypes } from '@intlify/message-compiler'
 import ts from 'typescript'
 
 import { applicationConfig } from '../../apps/web/src/app/config/app.config'
-import { getRouteMessageScope, routeRegistry } from '../../apps/web/src/app/router/route-registry'
-import { capabilityMessageKeys } from '../../apps/web/src/generated/capability-manifest'
+import {
+  getRouteMessageScope,
+  routeMessageRegistry,
+  routeRegistry,
+} from '../../apps/web/src/app/router/route-registry'
 import {
   consoleLocaleRegistry,
   consoleLocaleSchema,
@@ -512,9 +515,19 @@ export async function validateI18nArchitecture(): Promise<string[]> {
 
   const sources = new Map<string, ts.SourceFile>()
   const sourceText = new Map<string, string>()
-  const usedKeys = new Set<string>(
-    Object.values(capabilityMessageKeys).flatMap((record) => Object.values(record)),
-  )
+  const usedKeys = new Set<string>()
+  for (const route of routeRegistry) {
+    const message = routeMessageRegistry.find((record) => record.routeName === route.name)
+    report(message !== undefined, `${route.name}: a route presentation message is required.`)
+    for (const key of [route.meta.titleKey, route.meta.breadcrumbKey, message?.key]) {
+      if (key === null || key === undefined) continue
+      report(
+        keyScopes.get(key) === 'common',
+        `${route.name}: route presentation message ${key} must exist in the common catalog.`,
+      )
+      usedKeys.add(key)
+    }
+  }
   const runtimeImports: string[] = []
   const dynamicResources: string[] = []
   const factories: ts.CallExpression[] = []
@@ -657,12 +670,15 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       'no placeholder messages or replacement compiler/resolver are admitted.',
     )
   } else violations.push('I18n: Composer options must be explicit.')
+  const routedKeys = [...keyScopes.entries()]
+    .filter(([, scope]) => scope !== 'capabilities')
+    .map(([key]) => key)
   report(
     equalSet(
-      [...usedKeys].filter((key) => keyScopes.has(key)),
-      [...keyScopes.keys()],
+      [...usedKeys].filter((key) => keyScopes.has(key) && keyScopes.get(key) !== 'capabilities'),
+      routedKeys,
     ),
-    `all catalog messages must have an actual production reference. Unused: ${[...keyScopes.keys()].filter((key) => !usedKeys.has(key)).join(', ')}`,
+    `all routed catalog messages must have an actual production reference. Unused: ${routedKeys.filter((key) => !usedKeys.has(key)).join(', ')}`,
   )
 
   const textAt = (path: string): string => sourceText.get(path) ?? ''

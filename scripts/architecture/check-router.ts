@@ -1,5 +1,5 @@
 import { readFile, readdir } from 'node:fs/promises'
-import { extname, join, relative, resolve } from 'node:path'
+import { basename, extname, join, relative, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 
@@ -18,7 +18,7 @@ import {
 import {
   activeDynamicRouteRegistry,
   activeRedirectRegistry,
-  consoleNavigationRegistry,
+  consoleNavigationItems,
   errorRouteRegistry,
   focusContractRegistry,
   routeLayoutCapabilityRegistry,
@@ -64,6 +64,51 @@ const expectedPageSources = [
   'apps/web/src/pages/sizes.vue',
   'apps/web/src/pages/typography.vue',
   'apps/web/src/pages/interactions.vue',
+  'apps/web/src/pages/motion.vue',
+  'apps/web/src/pages/component-showcase.vue',
+  'apps/web/src/pages/component-actions.vue',
+  'apps/web/src/pages/component-inputs.vue',
+  'apps/web/src/pages/component-selection.vue',
+  'apps/web/src/pages/component-navigation.vue',
+  'apps/web/src/pages/component-data.vue',
+  'apps/web/src/pages/component-feedback.vue',
+  'apps/web/src/pages/component-layout.vue',
+  'apps/web/src/pages/component-form-overview.vue',
+  'apps/web/src/pages/component-form-basics.vue',
+  'apps/web/src/pages/component-form-detail.vue',
+  'apps/web/src/pages/component-form-layout.vue',
+  'apps/web/src/pages/component-form-dependencies.vue',
+  'apps/web/src/pages/component-form-calculations.vue',
+  'apps/web/src/pages/component-form-structure.vue',
+  'apps/web/src/pages/component-form-validation.vue',
+  'apps/web/src/pages/component-form-extension.vue',
+  'apps/web/src/pages/component-form-controls.vue',
+  'apps/web/src/pages/component-form-lifecycle.vue',
+  'apps/web/src/pages/component-form-loading.vue',
+  'apps/web/src/pages/component-form-submission.vue',
+  'apps/web/src/pages/component-form-options.vue',
+  'apps/web/src/pages/component-form-builder.vue',
+  'apps/web/src/pages/component-table.vue',
+  'apps/web/src/pages/component-table-appearance.vue',
+  'apps/web/src/pages/component-table-theme.vue',
+  'apps/web/src/pages/component-table-columns.vue',
+  'apps/web/src/pages/component-table-selection.vue',
+  'apps/web/src/pages/component-table-remote.vue',
+  'apps/web/src/pages/component-table-configuration.vue',
+  'apps/web/src/pages/component-table-overview.vue',
+  'apps/web/src/pages/component-table-scroll.vue',
+  'apps/web/src/pages/component-table-widths.vue',
+  'apps/web/src/pages/component-table-responsive.vue',
+  'apps/web/src/pages/component-table-sorting.vue',
+  'apps/web/src/pages/component-table-rendering.vue',
+  'apps/web/src/pages/component-table-virtual.vue',
+  'apps/web/src/pages/component-table-states.vue',
+  'apps/web/src/pages/component-table-summary.vue',
+  'apps/web/src/pages/component-combination-query.vue',
+  'apps/web/src/pages/component-combination-modal.vue',
+  'apps/web/src/pages/component-combination-drawer.vue',
+  'apps/web/src/pages/component-combination-page.vue',
+  'apps/web/src/pages/component-table-editor.vue',
   'apps/web/src/pages/control-center.vue',
   'apps/web/src/pages/error/400.vue',
   'apps/web/src/pages/error/401.vue',
@@ -73,7 +118,18 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 6)
+const expectedProductPageSources = expectedPageSources.slice(0, 51)
+const expectedTablePageComponents: Readonly<Record<string, string>> = {
+  'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
+  'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
+  'apps/web/src/pages/component-table-widths.vue': 'TableLayoutExample',
+  'apps/web/src/pages/component-table-responsive.vue': 'TableLayoutExample',
+  'apps/web/src/pages/component-table-sorting.vue': 'TableDataCapabilities',
+  'apps/web/src/pages/component-table-rendering.vue': 'TableDataCapabilities',
+  'apps/web/src/pages/component-table-virtual.vue': 'TableDataCapabilities',
+  'apps/web/src/pages/component-table-states.vue': 'TableDataCapabilities',
+  'apps/web/src/pages/component-table-selection.vue': 'TableSelectionExample',
+}
 const expectedRouteRecords = [
   [
     'apps/web/src/pages/index.vue',
@@ -123,6 +179,456 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.workbench-interactions',
     'route.workbench.interactions',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/motion.vue',
+    'workbench-motion',
+    '/motion',
+    'route-params.none',
+    'route-query.none',
+    'route-title.workbench-motion',
+    'route.workbench.motion',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-showcase.vue',
+    'component-showcase',
+    '/components',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-showcase',
+    'route.component.showcase',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-actions.vue',
+    'component-actions',
+    '/components/actions',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-actions',
+    'route.component.actions',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-inputs.vue',
+    'component-inputs',
+    '/components/inputs',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-inputs',
+    'route.component.inputs',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-selection.vue',
+    'component-selection',
+    '/components/selection',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-selection',
+    'route.component.selection',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-navigation.vue',
+    'component-navigation',
+    '/components/navigation',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-navigation',
+    'route.component.navigation',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-data.vue',
+    'component-data',
+    '/components/data',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-data',
+    'route.component.data',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-feedback.vue',
+    'component-feedback',
+    '/components/feedback',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-feedback',
+    'route.component.feedback',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-layout.vue',
+    'component-layout',
+    '/components/layout',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-layout',
+    'route.component.layout',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-overview.vue',
+    'component-form-overview',
+    '/components/forms/overview',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-overview',
+    'route.component.form.overview',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-basics.vue',
+    'component-form-basics',
+    '/components/forms/basics',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-basics',
+    'route.component.form.basics',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-detail.vue',
+    'component-form-detail',
+    '/components/forms/detail',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-detail',
+    'route.component.form.detail',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-layout.vue',
+    'component-form-layout',
+    '/components/forms/layout',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-layout',
+    'route.component.form.layout',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-dependencies.vue',
+    'component-form-dependencies',
+    '/components/forms/dependencies',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-dependencies',
+    'route.component.form.dependencies',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-calculations.vue',
+    'component-form-calculations',
+    '/components/forms/calculations',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-calculations',
+    'route.component.form.calculations',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-structure.vue',
+    'component-form-structure',
+    '/components/forms/structure',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-structure',
+    'route.component.form.structure',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-validation.vue',
+    'component-form-validation',
+    '/components/forms/validation',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-validation',
+    'route.component.form.validation',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-extension.vue',
+    'component-form-extension',
+    '/components/forms/extension',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-extension',
+    'route.component.form.extension',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-controls.vue',
+    'component-form-controls',
+    '/components/forms/controls',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-controls',
+    'route.component.form.controls',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-lifecycle.vue',
+    'component-form-lifecycle',
+    '/components/forms/lifecycle',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-lifecycle',
+    'route.component.form.lifecycle',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-loading.vue',
+    'component-form-loading',
+    '/components/forms/loading',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-loading',
+    'route.component.form.loading',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-submission.vue',
+    'component-form-submission',
+    '/components/forms/submission',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-submission',
+    'route.component.form.submission',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-options.vue',
+    'component-form-options',
+    '/components/forms/options',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-options',
+    'route.component.form.options',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-builder.vue',
+    'component-form-builder',
+    '/components/forms/builder',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-builder',
+    'route.component.form.builder',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table.vue',
+    'component-table',
+    '/components/table',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table',
+    'route.component.table',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-appearance.vue',
+    'component-table-appearance',
+    '/components/tables/appearance',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-appearance',
+    'route.component.table.appearance',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-theme.vue',
+    'component-table-theme',
+    '/components/tables/theme',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-theme',
+    'route.component.table.theme',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-columns.vue',
+    'component-table-columns',
+    '/components/tables/columns',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-columns',
+    'route.component.table.columns',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-selection.vue',
+    'component-table-selection',
+    '/components/tables/selection',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-selection',
+    'route.component.table.selection',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-remote.vue',
+    'component-table-remote',
+    '/components/tables/remote',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-remote',
+    'route.component.table.remote',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-configuration.vue',
+    'component-table-configuration',
+    '/components/tables/configuration',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-configuration',
+    'route.component.table.configuration',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-overview.vue',
+    'component-table-overview',
+    '/components/tables/overview',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-overview',
+    'route.component.table.overview',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-scroll.vue',
+    'component-table-scroll',
+    '/components/tables/scroll',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-scroll',
+    'route.component.table.scroll',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-widths.vue',
+    'component-table-widths',
+    '/components/tables/widths',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-widths',
+    'route.component.table.widths',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-responsive.vue',
+    'component-table-responsive',
+    '/components/tables/responsive',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-responsive',
+    'route.component.table.responsive',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-sorting.vue',
+    'component-table-sorting',
+    '/components/tables/sorting',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-sorting',
+    'route.component.table.sorting',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-rendering.vue',
+    'component-table-rendering',
+    '/components/tables/rendering',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-rendering',
+    'route.component.table.rendering',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-virtual.vue',
+    'component-table-virtual',
+    '/components/tables/virtual',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-virtual',
+    'route.component.table.virtual',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-states.vue',
+    'component-table-states',
+    '/components/tables/states',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-states',
+    'route.component.table.states',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-summary.vue',
+    'component-table-summary',
+    '/components/tables/summary',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-summary',
+    'route.component.table.summary',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-combination-query.vue',
+    'component-combination-query',
+    '/components/combinations/query',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-combination-query',
+    'route.component.combination.query',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-combination-modal.vue',
+    'component-combination-modal',
+    '/components/combinations/modal',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-combination-modal',
+    'route.component.combination.modal',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-combination-drawer.vue',
+    'component-combination-drawer',
+    '/components/combinations/drawer',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-combination-drawer',
+    'route.component.combination.drawer',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-combination-page.vue',
+    'component-combination-page',
+    '/components/combinations/page',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-combination-page',
+    'route.component.combination.page',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-editor.vue',
+    'component-table-editor',
+    '/components/table-editor',
+    'route-params.none',
+    'route-query.table-editor',
+    'route-title.component-table-editor',
+    'route.component.table-editor',
     'route-boundary',
   ],
   [
@@ -242,6 +748,121 @@ const expectedRouteTitles = {
   'route-title.workbench-interactions': getDefaultConsoleMessage(
     'route-title.workbench-interactions',
   ),
+  'route-title.workbench-motion': getDefaultConsoleMessage('route-title.workbench-motion'),
+  'route-title.component-showcase': getDefaultConsoleMessage('route-title.component-showcase'),
+  'route-title.component-actions': getDefaultConsoleMessage('route-title.component-actions'),
+  'route-title.component-inputs': getDefaultConsoleMessage('route-title.component-inputs'),
+  'route-title.component-selection': getDefaultConsoleMessage('route-title.component-selection'),
+  'route-title.component-navigation': getDefaultConsoleMessage('route-title.component-navigation'),
+  'route-title.component-data': getDefaultConsoleMessage('route-title.component-data'),
+  'route-title.component-feedback': getDefaultConsoleMessage('route-title.component-feedback'),
+  'route-title.component-layout': getDefaultConsoleMessage('route-title.component-layout'),
+  'route-title.component-form-overview': getDefaultConsoleMessage(
+    'route-title.component-form-overview',
+  ),
+  'route-title.component-form-basics': getDefaultConsoleMessage(
+    'route-title.component-form-basics',
+  ),
+  'route-title.component-form-detail': getDefaultConsoleMessage(
+    'route-title.component-form-detail',
+  ),
+  'route-title.component-form-layout': getDefaultConsoleMessage(
+    'route-title.component-form-layout',
+  ),
+  'route-title.component-form-dependencies': getDefaultConsoleMessage(
+    'route-title.component-form-dependencies',
+  ),
+  'route-title.component-form-calculations': getDefaultConsoleMessage(
+    'route-title.component-form-calculations',
+  ),
+  'route-title.component-form-structure': getDefaultConsoleMessage(
+    'route-title.component-form-structure',
+  ),
+  'route-title.component-form-validation': getDefaultConsoleMessage(
+    'route-title.component-form-validation',
+  ),
+  'route-title.component-form-extension': getDefaultConsoleMessage(
+    'route-title.component-form-extension',
+  ),
+  'route-title.component-form-controls': getDefaultConsoleMessage(
+    'route-title.component-form-controls',
+  ),
+  'route-title.component-form-lifecycle': getDefaultConsoleMessage(
+    'route-title.component-form-lifecycle',
+  ),
+  'route-title.component-form-loading': getDefaultConsoleMessage(
+    'route-title.component-form-loading',
+  ),
+  'route-title.component-form-submission': getDefaultConsoleMessage(
+    'route-title.component-form-submission',
+  ),
+  'route-title.component-form-options': getDefaultConsoleMessage(
+    'route-title.component-form-options',
+  ),
+  'route-title.component-form-builder': getDefaultConsoleMessage(
+    'route-title.component-form-builder',
+  ),
+  'route-title.component-table': getDefaultConsoleMessage('route-title.component-table'),
+  'route-title.component-table-appearance': getDefaultConsoleMessage(
+    'route-title.component-table-appearance',
+  ),
+  'route-title.component-table-theme': getDefaultConsoleMessage(
+    'route-title.component-table-theme',
+  ),
+  'route-title.component-table-columns': getDefaultConsoleMessage(
+    'route-title.component-table-columns',
+  ),
+  'route-title.component-table-selection': getDefaultConsoleMessage(
+    'route-title.component-table-selection',
+  ),
+  'route-title.component-table-remote': getDefaultConsoleMessage(
+    'route-title.component-table-remote',
+  ),
+  'route-title.component-table-configuration': getDefaultConsoleMessage(
+    'route-title.component-table-configuration',
+  ),
+  'route-title.component-table-overview': getDefaultConsoleMessage(
+    'route-title.component-table-overview',
+  ),
+  'route-title.component-table-scroll': getDefaultConsoleMessage(
+    'route-title.component-table-scroll',
+  ),
+  'route-title.component-table-widths': getDefaultConsoleMessage(
+    'route-title.component-table-widths',
+  ),
+  'route-title.component-table-responsive': getDefaultConsoleMessage(
+    'route-title.component-table-responsive',
+  ),
+  'route-title.component-table-sorting': getDefaultConsoleMessage(
+    'route-title.component-table-sorting',
+  ),
+  'route-title.component-table-rendering': getDefaultConsoleMessage(
+    'route-title.component-table-rendering',
+  ),
+  'route-title.component-table-virtual': getDefaultConsoleMessage(
+    'route-title.component-table-virtual',
+  ),
+  'route-title.component-table-states': getDefaultConsoleMessage(
+    'route-title.component-table-states',
+  ),
+  'route-title.component-table-summary': getDefaultConsoleMessage(
+    'route-title.component-table-summary',
+  ),
+  'route-title.component-combination-query': getDefaultConsoleMessage(
+    'route-title.component-combination-query',
+  ),
+  'route-title.component-combination-modal': getDefaultConsoleMessage(
+    'route-title.component-combination-modal',
+  ),
+  'route-title.component-combination-drawer': getDefaultConsoleMessage(
+    'route-title.component-combination-drawer',
+  ),
+  'route-title.component-combination-page': getDefaultConsoleMessage(
+    'route-title.component-combination-page',
+  ),
+  'route-title.component-table-editor': getDefaultConsoleMessage(
+    'route-title.component-table-editor',
+  ),
   'route-title.control-center': getDefaultConsoleMessage('route-title.control-center'),
   'route-title.error-invalid-route-input': '地址无效',
   'route-title.error-authentication-required': '需要身份认证',
@@ -276,6 +897,231 @@ const expectedMessages = [
     'workbench-interactions',
     'route-message.workbench-interactions-summary',
     getDefaultConsoleMessage('route-message.workbench-interactions-summary'),
+  ],
+  [
+    'workbench-motion',
+    'route-message.workbench-motion-summary',
+    getDefaultConsoleMessage('route-message.workbench-motion-summary'),
+  ],
+  [
+    'component-showcase',
+    'route-message.component-showcase-summary',
+    getDefaultConsoleMessage('route-message.component-showcase-summary'),
+  ],
+  [
+    'component-actions',
+    'route-message.component-actions-summary',
+    getDefaultConsoleMessage('route-message.component-actions-summary'),
+  ],
+  [
+    'component-inputs',
+    'route-message.component-inputs-summary',
+    getDefaultConsoleMessage('route-message.component-inputs-summary'),
+  ],
+  [
+    'component-selection',
+    'route-message.component-selection-summary',
+    getDefaultConsoleMessage('route-message.component-selection-summary'),
+  ],
+  [
+    'component-navigation',
+    'route-message.component-navigation-summary',
+    getDefaultConsoleMessage('route-message.component-navigation-summary'),
+  ],
+  [
+    'component-data',
+    'route-message.component-data-summary',
+    getDefaultConsoleMessage('route-message.component-data-summary'),
+  ],
+  [
+    'component-feedback',
+    'route-message.component-feedback-summary',
+    getDefaultConsoleMessage('route-message.component-feedback-summary'),
+  ],
+  [
+    'component-layout',
+    'route-message.component-layout-summary',
+    getDefaultConsoleMessage('route-message.component-layout-summary'),
+  ],
+  [
+    'component-form-overview',
+    'route-message.component-form-overview-summary',
+    getDefaultConsoleMessage('route-message.component-form-overview-summary'),
+  ],
+  [
+    'component-form-basics',
+    'route-message.component-form-basics-summary',
+    getDefaultConsoleMessage('route-message.component-form-basics-summary'),
+  ],
+  [
+    'component-form-detail',
+    'route-message.component-form-detail-summary',
+    getDefaultConsoleMessage('route-message.component-form-detail-summary'),
+  ],
+  [
+    'component-form-layout',
+    'route-message.component-form-layout-summary',
+    getDefaultConsoleMessage('route-message.component-form-layout-summary'),
+  ],
+  [
+    'component-form-dependencies',
+    'route-message.component-form-dependencies-summary',
+    getDefaultConsoleMessage('route-message.component-form-dependencies-summary'),
+  ],
+  [
+    'component-form-calculations',
+    'route-message.component-form-calculations-summary',
+    getDefaultConsoleMessage('route-message.component-form-calculations-summary'),
+  ],
+  [
+    'component-form-structure',
+    'route-message.component-form-structure-summary',
+    getDefaultConsoleMessage('route-message.component-form-structure-summary'),
+  ],
+  [
+    'component-form-validation',
+    'route-message.component-form-validation-summary',
+    getDefaultConsoleMessage('route-message.component-form-validation-summary'),
+  ],
+  [
+    'component-form-extension',
+    'route-message.component-form-extension-summary',
+    getDefaultConsoleMessage('route-message.component-form-extension-summary'),
+  ],
+  [
+    'component-form-controls',
+    'route-message.component-form-controls-summary',
+    getDefaultConsoleMessage('route-message.component-form-controls-summary'),
+  ],
+  [
+    'component-form-lifecycle',
+    'route-message.component-form-lifecycle-summary',
+    getDefaultConsoleMessage('route-message.component-form-lifecycle-summary'),
+  ],
+  [
+    'component-form-loading',
+    'route-message.component-form-loading-summary',
+    getDefaultConsoleMessage('route-message.component-form-loading-summary'),
+  ],
+  [
+    'component-form-submission',
+    'route-message.component-form-submission-summary',
+    getDefaultConsoleMessage('route-message.component-form-submission-summary'),
+  ],
+  [
+    'component-form-options',
+    'route-message.component-form-options-summary',
+    getDefaultConsoleMessage('route-message.component-form-options-summary'),
+  ],
+  [
+    'component-form-builder',
+    'route-message.component-form-builder-summary',
+    getDefaultConsoleMessage('route-message.component-form-builder-summary'),
+  ],
+  [
+    'component-table',
+    'route-message.component-table-summary',
+    getDefaultConsoleMessage('route-message.component-table-summary'),
+  ],
+  [
+    'component-table-appearance',
+    'route-message.component-table-appearance-summary',
+    getDefaultConsoleMessage('route-message.component-table-appearance-summary'),
+  ],
+  [
+    'component-table-theme',
+    'route-message.component-table-theme-summary',
+    getDefaultConsoleMessage('route-message.component-table-theme-summary'),
+  ],
+  [
+    'component-table-columns',
+    'route-message.component-table-columns-summary',
+    getDefaultConsoleMessage('route-message.component-table-columns-summary'),
+  ],
+  [
+    'component-table-selection',
+    'route-message.component-table-selection-summary',
+    getDefaultConsoleMessage('route-message.component-table-selection-summary'),
+  ],
+  [
+    'component-table-remote',
+    'route-message.component-table-remote-summary',
+    getDefaultConsoleMessage('route-message.component-table-remote-summary'),
+  ],
+  [
+    'component-table-configuration',
+    'route-message.component-table-configuration-summary',
+    getDefaultConsoleMessage('route-message.component-table-configuration-summary'),
+  ],
+  [
+    'component-table-overview',
+    'route-message.component-table-overview-summary',
+    getDefaultConsoleMessage('route-message.component-table-overview-summary'),
+  ],
+  [
+    'component-table-scroll',
+    'route-message.component-table-scroll-summary',
+    getDefaultConsoleMessage('route-message.component-table-scroll-summary'),
+  ],
+  [
+    'component-table-widths',
+    'route-message.component-table-widths-summary',
+    getDefaultConsoleMessage('route-message.component-table-widths-summary'),
+  ],
+  [
+    'component-table-responsive',
+    'route-message.component-table-responsive-summary',
+    getDefaultConsoleMessage('route-message.component-table-responsive-summary'),
+  ],
+  [
+    'component-table-sorting',
+    'route-message.component-table-sorting-summary',
+    getDefaultConsoleMessage('route-message.component-table-sorting-summary'),
+  ],
+  [
+    'component-table-rendering',
+    'route-message.component-table-rendering-summary',
+    getDefaultConsoleMessage('route-message.component-table-rendering-summary'),
+  ],
+  [
+    'component-table-virtual',
+    'route-message.component-table-virtual-summary',
+    getDefaultConsoleMessage('route-message.component-table-virtual-summary'),
+  ],
+  [
+    'component-table-states',
+    'route-message.component-table-states-summary',
+    getDefaultConsoleMessage('route-message.component-table-states-summary'),
+  ],
+  [
+    'component-table-summary',
+    'route-message.component-table-summary-summary',
+    getDefaultConsoleMessage('route-message.component-table-summary-summary'),
+  ],
+  [
+    'component-combination-query',
+    'route-message.component-combination-query-summary',
+    getDefaultConsoleMessage('route-message.component-combination-query-summary'),
+  ],
+  [
+    'component-combination-modal',
+    'route-message.component-combination-modal-summary',
+    getDefaultConsoleMessage('route-message.component-combination-modal-summary'),
+  ],
+  [
+    'component-combination-drawer',
+    'route-message.component-combination-drawer-summary',
+    getDefaultConsoleMessage('route-message.component-combination-drawer-summary'),
+  ],
+  [
+    'component-combination-page',
+    'route-message.component-combination-page-summary',
+    getDefaultConsoleMessage('route-message.component-combination-page-summary'),
+  ],
+  [
+    'component-table-editor',
+    'route-message.component-table-editor-summary',
+    getDefaultConsoleMessage('route-message.component-table-editor-summary'),
   ],
   [
     'control-center',
@@ -391,13 +1237,13 @@ interface RouteTransitionSourceSnapshot {
   readonly checkBundleSource: string
   readonly coordinatorSource: string
   readonly cssSource: string
-  readonly engineeringManifestSource: string
   readonly frameSource: string
   readonly layersSource: string
   readonly lifecycleSource: string
   readonly lockSource: string
   readonly manifestSource: string
   readonly presetSource: string
+  readonly previewStyleSource: string
   readonly projectConfigSource: string
   readonly registrySource: string
   readonly routeInputSource: string
@@ -557,11 +1403,31 @@ function routerInteractionContractViolations(snapshot: RouterInteractionSnapshot
   if (!frameWorkspaceNavigationValid(snapshot.frameSource)) {
     violations.push('FRAME_WORKSPACE_NAVIGATION_PORT')
   }
+  // The separately admitted discard dialog may fail without turning a retained page into
+  // an error route. Navigation handlers must still leave error ownership to the router.
+  const frameScript = ts.createSourceFile(
+    'ConsoleRouteFrame.ts',
+    /<script[^>]*>([\s\S]*?)<\/script>/u.exec(snapshot.frameSource)?.[1] ?? '',
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const navigationCatch = nodesOf(frameScript, ts.isCatchClause).some((clause) => {
+    const statement = clause.parent
+    if (!ts.isTryStatement(statement)) return true
+    const imports = nodesOf(statement.tryBlock, ts.isCallExpression).filter(
+      (call) => call.expression.kind === ts.SyntaxKind.ImportKeyword,
+    )
+    return (
+      imports.length !== 1 ||
+      imports[0]?.arguments[0]?.getText() !== "'../workspace/WorkspaceDiscardDialog.vue'" ||
+      /navigate\s*\(|router\.|throw\b/u.test(statement.getText())
+    )
+  })
   if (
     /error-application-route-failure|\/error\/500|router\.replace\s*\(/u.test(
       snapshot.frameSource,
     ) ||
-    /\bcatch\s*(?:\(|\{)/u.test(snapshot.frameSource)
+    navigationCatch
   ) {
     violations.push('DUPLICATED_NAVIGATION_ERROR_ROUTE')
   }
@@ -621,6 +1487,17 @@ function runRouterInteractionNegativeProbes(
             'await applicationMountedPromise',
             `await applicationMountedPromise\n      ${duplicateGuard}`,
           ),
+      }),
+    ],
+    [
+      'frame-navigation-catch-takes-router-error-ownership',
+      'DUPLICATED_NAVIGATION_ERROR_ROUTE',
+      (snapshot) => ({
+        ...snapshot,
+        frameSource: snapshot.frameSource.replace(
+          duplicatedResultGuard,
+          `try { ${duplicatedResultGuard} } catch { return }`,
+        ),
       }),
     ],
     [
@@ -2674,7 +3551,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact thirteen-record authority.')
+    violations.push('Router Route Registry diverged from the exact fifty-two-record authority.')
   }
 
   if (
@@ -2700,7 +3577,7 @@ function registryViolations(): string[] {
         ? `route-breadcrumb.${record.name}`
         : null
     const expectedWorkspace = expectedRouteRecords
-      .slice(0, 5)
+      .slice(0, 50)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
@@ -2775,7 +3652,7 @@ function registryViolations(): string[] {
       routeRegistry.map((record) => record.meta.telemetryName),
     )
   ) {
-    violations.push('Telemetry-name Registry must project the exact thirteen Route records.')
+    violations.push('Telemetry-name Registry must project the exact fifty-two Route records.')
   }
 
   if (
@@ -2920,7 +3797,7 @@ function registryViolations(): string[] {
       ],
     )
   ) {
-    violations.push('Router landmark Registry diverged from the disabled keyboard focus contract.')
+    violations.push('Router landmark Registry diverged from the no-programmatic-focus contract.')
   }
 
   if (
@@ -2962,6 +3839,7 @@ function schemaViolations(): string[] {
   const noParams = params.get('route-params.none')
   const notFound = params.get('route-params.not-found-path')
   const noQuery = query.get('route-query.none')
+  const tableEditor = query.get('route-query.table-editor')
 
   if (
     paramsSchemas.length !== 2 ||
@@ -2978,13 +3856,24 @@ function schemaViolations(): string[] {
   }
 
   if (
-    querySchemas.length !== 1 ||
+    querySchemas.length !== 2 ||
     noQuery === undefined ||
     !noQuery.safeParse({}).success ||
     noQuery.safeParse({ unexpected: 'value' }).success ||
-    noQuery.safeParse({ unexpected: ['first', 'second'] }).success
+    noQuery.safeParse({ unexpected: ['first', 'second'] }).success ||
+    tableEditor === undefined ||
+    !tableEditor.safeParse({ mode: 'create' }).success ||
+    !tableEditor.safeParse({ mode: 'edit', id: '1' }).success ||
+    !tableEditor.safeParse({ mode: 'detail', id: '1' }).success ||
+    tableEditor.safeParse({ mode: 'edit' }).success ||
+    tableEditor.safeParse({ mode: 'edit', id: '-1' }).success ||
+    tableEditor.safeParse({ mode: 'edit', id: '9'.repeat(309) }).success ||
+    tableEditor.safeParse({ mode: 'detail', id: ['1', '2'] }).success ||
+    tableEditor.safeParse({ mode: 'detail', id: '1', unexpected: 'value' }).success
   ) {
-    violations.push('Router Query Schema Registry diverged from the exact strict-empty schema.')
+    violations.push(
+      'Router Query Schema Registry diverged from the strict empty and table editor schemas.',
+    )
   }
 
   const paramsIds = new Set(paramsSchemas.map((record) => record.id))
@@ -3008,7 +3897,7 @@ async function pageViolations(): Promise<string[]> {
 
   if (!exactSet(pageFiles, expectedPageSources)) {
     return [
-      'Official Router page source root must contain exactly the thirteen admitted Vue files.',
+      'Official Router page source root must contain exactly the fifty-two admitted Vue files.',
     ]
   }
 
@@ -3016,16 +3905,80 @@ async function pageViolations(): Promise<string[]> {
     resolve(rootDirectory, 'apps/web/src/app/workbench/WorkbenchPage.vue'),
     'utf8',
   )
+  const workbenchHeading = /<h1\b([^>]*)>([\s\S]*?)<\/h1>/u.exec(workbenchOwner)
   if (
-    count(workbenchOwner, /<UiPageHeader\b/gu) !== 1 ||
-    count(workbenchOwner, /<(?:main|h1)\b/gu) !== 0 ||
-    !workbenchOwner.includes("from '@platform/ui'")
+    count(workbenchOwner, /<h1\b/gu) !== 1 ||
+    count(workbenchOwner, /<(?:main|UiPageHeader)\b/gu) !== 0 ||
+    workbenchHeading === null ||
+    !/\bclass="[^"]*\bsr-only\b[^"]*"/u.test(workbenchHeading[1] ?? '') ||
+    !/\bdata-route-focus="architecture-console-page-heading"/u.test(workbenchHeading[1] ?? '') ||
+    !/\btabindex="-1"/u.test(workbenchHeading[1] ?? '') ||
+    !/\{\{\s*title\s*\}\}/u.test(workbenchHeading[2] ?? '')
   )
-    violations.push('WorkbenchPage must delegate its one route heading to UiPageHeader.')
+    violations.push('WorkbenchPage must retain one visually hidden named route heading.')
+
+  const formWorkbench = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/workbench/forms/FormCapabilityWorkbench.vue'),
+    'utf8',
+  )
+  if (
+    count(formWorkbench, /<WorkbenchPage\b/gu) !== 1 ||
+    !/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(formWorkbench) ||
+    count(formWorkbench, /owner-id="architecture-console-content"/gu) !== 1 ||
+    !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*\s@controller=/u.test(
+      formWorkbench,
+    ) ||
+    !formWorkbench.includes("from '../../router/router-scroll-controller'") ||
+    !/\binject\(routerScrollControllerKey\)/u.test(formWorkbench) ||
+    !/\bonDeactivated\(/u.test(formWorkbench) ||
+    !/\bonScopeDispose\(/u.test(formWorkbench) ||
+    /\bdata-scroll-owner\s*=/u.test(formWorkbench)
+  )
+    violations.push(
+      'The contained form workbench must reuse the canonical main UiScrollArea and lifecycle-bound Router controller port.',
+    )
+
+  for (const owner of ['TableCapabilityOverview', 'TableCapabilityWorkbench']) {
+    const sourcePath = `apps/web/src/app/workbench/tables/${owner}.vue`
+    const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
+    if (
+      count(source, /<WorkbenchPage\b/gu) !== 1 ||
+      !source.includes("from '../WorkbenchPage.vue'") ||
+      !/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(source) ||
+      count(source, /<UiScrollArea\b/gu) !== 1 ||
+      count(source, /owner-id="architecture-console-content"/gu) !== 1 ||
+      !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*\s@controller=/u.test(
+        source,
+      ) ||
+      !source.includes("from '../../router/router-scroll-controller'") ||
+      !/\binject\(routerScrollControllerKey\)/u.test(source) ||
+      !/\bonDeactivated\(/u.test(source) ||
+      !/\bonScopeDispose\(/u.test(source) ||
+      /\bdata-scroll-owner\s*=/u.test(source) ||
+      count(source, /<(?:main|h1|UiPageHeader)\b/gu) !== 0
+    )
+      violations.push(
+        `${sourcePath}: Table workbenches must preserve the contained WorkbenchPage, one canonical UiScrollArea, and lifecycle-bound Router controller port.`,
+      )
+  }
+
+  for (const owner of ['TableLayoutExample', 'TableDataCapabilities', 'TableSelectionExample']) {
+    const sourcePath = `apps/web/src/app/workbench/tables/${owner}.vue`
+    const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
+    if (
+      count(source, /<TableCapabilityWorkbench\b/gu) !== 1 ||
+      !source.includes("from './TableCapabilityWorkbench.vue'") ||
+      count(source, /<(?:main|h1|UiPageHeader|WorkbenchPage)\b/gu) !== 0
+    )
+      violations.push(
+        `${sourcePath}: Table capability examples must retain their single shared TableCapabilityWorkbench owner.`,
+      )
+  }
 
   for (const sourcePath of expectedPageSources) {
     const source = await readFile(resolve(rootDirectory, sourcePath), 'utf8')
     const productPage = expectedProductPageSources.includes(sourcePath)
+    const tablePageComponent = expectedTablePageComponents[sourcePath]
     if (productPage) {
       const options = [
         ...source.matchAll(/\bdefineOptions\(\{\s*name:\s*['"]([^'"]+)['"]\s*\}\)/gu),
@@ -3043,9 +3996,30 @@ async function pageViolations(): Promise<string[]> {
         (settingsPage
           ? count(source, /<h1\b/gu) !== 1 ||
             count(source, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
+            !/<h1\b[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>/u.test(source) ||
             !/<h1\b[^>]*\btabindex="-1"[^>]*>/u.test(source)
-          : count(source, /<WorkbenchPage\b/gu) !== 1 ||
-            !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+          : (sourcePath === 'apps/web/src/pages/component-form-overview.vue'
+              ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+                count(source, /<UiScrollArea\b/gu) !== 1
+              : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
+                ? count(source, /<FormBasicControls\b/gu) !== 1 ||
+                  !source.includes("from '../app/workbench/forms/FormBasicControls.vue'")
+                : sourcePath.includes('/component-form-') &&
+                    sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
+                  ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                    !source.includes("from '../app/workbench/forms/FormCapabilityWorkbench.vue'")
+                  : tablePageComponent !== undefined
+                    ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !== 1 ||
+                      !source.includes(`from '../app/workbench/tables/${tablePageComponent}.vue'`)
+                    : sourcePath === 'apps/web/src/pages/component-table.vue' ||
+                        /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
+                          sourcePath,
+                        )
+                      ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                        !source.includes("from '../app/workbench/tables/TableExampleWorkbench.vue'")
+                      : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                        !source.includes("from '../app/workbench/WorkbenchPage.vue'")) ||
             count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
     const errorPageInvalid =
       !productPage &&
@@ -3062,9 +4036,34 @@ async function pageViolations(): Promise<string[]> {
     ) {
       violations.push(`${sourcePath} diverged from the exact route document contract.`)
     }
+
+    if (
+      (sourcePath === 'apps/web/src/pages/motion.vue' ||
+        sourcePath === 'apps/web/src/pages/component-table-appearance.vue') &&
+      (!/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(source) ||
+        count(source, /<UiScrollArea\b/gu) !== 1 ||
+        !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*>/u.test(source) ||
+        !/<UiScrollArea\b[^>]*\s@controller=/u.test(source) ||
+        !source.includes("from '../app/router/router-scroll-controller'") ||
+        /\bdata-scroll-owner\s*=/u.test(source))
+    )
+      violations.push(
+        'Contained animation and table-style gallery pages must reuse one main UiScrollArea and the Router controller port without replacing the Shell boundary.',
+      )
   }
 
   const appSource = await readFile(resolve(rootDirectory, 'apps/web/src/App.vue'), 'utf8')
+  if (
+    (!appSource.includes("routeRecord.value.name.startsWith('component-form-')") &&
+      expectedProductPageSources
+        .filter((path) => path.includes('/component-form-'))
+        .some((path) => !appSource.includes(`'${basename(path, '.vue')}'`))) ||
+    !appSource.includes(':contained-content=') ||
+    !appSource.includes('.readFailure(')
+  )
+    violations.push(
+      'Form routes must use contained Shell content while retaining the failure fallback.',
+    )
   if (
     count(appSource, /<RouterView\b/gu) !== 1 ||
     count(appSource, /<main\b/gu) !== 0 ||
@@ -4008,7 +5007,6 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     checkBundleSource,
     coordinatorSource,
     cssSource,
-    engineeringManifestSource,
     frameSource,
     layersSource,
     lifecycleSource,
@@ -4017,6 +5015,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     webManifestSource,
     uiManifestSource,
     presetSource,
+    previewSource,
     projectConfigSource,
     registrySource,
     routeInputSource,
@@ -4030,7 +5029,6 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     readFile(resolve(rootDirectory, 'scripts/verify/check-bundle.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-coordinator.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition.css'), 'utf8'),
-    readFile(resolve(rootDirectory, 'apps/web/src/generated/engineering-manifest.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/console/ConsoleRouteFrame.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/styles/layers.css'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/router-lifecycle.ts'), 'utf8'),
@@ -4039,6 +5037,7 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     readFile(resolve(rootDirectory, 'apps/web/package.json'), 'utf8'),
     readFile(resolve(rootDirectory, 'packages/ui/package.json'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-preset-registry.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, 'apps/web/src/app/workbench/MotionRoutePreview.vue'), 'utf8'),
     readFile(resolve(rootDirectory, 'project.config.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-registry.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-input.ts'), 'utf8'),
@@ -4055,13 +5054,13 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     checkBundleSource,
     coordinatorSource,
     cssSource,
-    engineeringManifestSource,
     frameSource,
     layersSource,
     lifecycleSource,
     lockSource,
     manifestSource: [rootManifestSource, webManifestSource, uiManifestSource].join('\n'),
     presetSource,
+    previewStyleSource: /<style scoped>([\s\S]*?)<\/style>/u.exec(previewSource)?.[1] ?? '',
     projectConfigSource,
     registrySource,
     routeInputSource,
@@ -4271,7 +5270,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 6 &&
+        productRoutes.length === 51 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -4366,7 +5365,7 @@ function routeTransitionSourceProofResults(
       passed:
         snapshot.frameSource.includes('isCurrentDestination:') &&
         snapshot.frameSource.includes('sameRouteAddress(router.currentRoute.value, resolved)') &&
-        snapshot.frameSource.includes('resolveRegisteredDestination(router, item.destination)') &&
+        snapshot.frameSource.includes('resolveRegisteredDestination(router, destination)') &&
         frameMenuNavigation(snapshot.frameSource) !== undefined &&
         snapshot.routeInputSource.includes(
           'stringifyQuery(left.query) === stringifyQuery(right.query)',
@@ -4601,7 +5600,7 @@ function routeTransitionSourceProofResults(
       id: 'ROUTE_TRANSITION_SOURCE_35_DEPENDENCY_AND_BUDGET_CLOSURE',
       passed:
         !/ssgoi|route-transition/u.test(snapshot.manifestSource) &&
-        snapshot.manifestSource.includes('"motion-v": "catalog:"') &&
+        count(snapshot.manifestSource, /"motion-v": "catalog:"/gu) === 2 &&
         snapshot.manifestSource.includes('"@vueuse/core": "catalog:"') &&
         snapshot.lockSource.includes('motion-v@2.4.0.patch') &&
         snapshot.projectConfigSource.includes(
@@ -4610,17 +5609,14 @@ function routeTransitionSourceProofResults(
         snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
         snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
         snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
-        snapshot.engineeringManifestSource.includes(
-          "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 49152",
-        ) &&
         !snapshot.uiSource.includes('route-transition'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 13') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 23') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -4753,7 +5749,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 13') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         snapshot.projectConfigSource.includes(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
@@ -5604,7 +6600,9 @@ function routeTransitionFullPaceProofResults(
     }
   }
   const nonRouteSource = [
-    snapshot.applicationSource.replace(snapshot.cssSource, ''),
+    snapshot.applicationSource
+      .replace(snapshot.cssSource, '')
+      .replace(snapshot.previewStyleSource, ''),
     snapshot.uiSource,
   ].join('\n')
   return [
@@ -5816,21 +6814,31 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
 }> {
   const globalPath = 'route-transition-stylelint-policy.css'
   const routePath = 'apps/web/src/app/router/route-transition/route-transition.css'
+  const previewScope = '**/apps/web/src/app/workbench/MotionRoutePreview.vue.style-*.css'
   const workbenchScope = 'apps/web/src/app/workbench/workbench.css'
   const adminShellScope = '**/packages/ui/src/components/UiAdminShell.vue.style-*.css'
   const radioCardScope = '**/packages/ui/src/components/UiRadioCardGroup.vue.style-*.css'
   const radioCardPath = 'packages/ui/src/components/UiRadioCardGroup.vue.style-0.css'
+  const providerScope = '**/packages/ui/src/providers/UiProvider.vue.style-*.css'
+  const providerPath = 'packages/ui/src/providers/UiProvider.vue.style-0.css'
+  const tableScope = '**/packages/ui/src/components/UiTable.vue.style-*.css'
+  const tablePath = 'packages/ui/src/components/UiTable.vue.style-0.css'
   const expectedOverrideScopes = [
     [routePath],
+    [previewScope],
     [workbenchScope],
     [adminShellScope],
     [radioCardScope],
+    [providerScope],
+    [tableScope],
   ] as const
   const otherPaths = [
     'apps/web/src/app/styles/layers.css',
     'apps/web/src/app/router/route-transition/other.css',
     'packages/ui/src/other.css',
     radioCardPath,
+    providerPath,
+    tablePath,
   ]
   const configModule: unknown = await import(
     pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
@@ -5885,6 +6893,10 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const half = 'calc(var(--ui-motion-duration) / 2)'
   const shellMaterial = 'var(--ui-material-chrome-background)'
   const radioCardForeground = 'var(--pavp-radio-card-selected-hover-foreground)'
+  const softButtonForeground = 'var(--pavp-soft-button-primary-foreground)'
+  const softButtonBackground = 'var(--pavp-soft-button-primary-background)'
+  const tableSummaryForeground = 'var(--n-th-text-color)'
+  const tableSummaryBackground = 'var(--n-merged-th-color)'
   const rule = declarationPolicyRule
   const check = async (
     config: stylelint.Config,
@@ -5924,21 +6936,65 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           radioCardForeground,
           otherPaths[index] !== radioCardPath,
         ),
+        check(config, otherPaths[index] ?? '', 'color', softButtonForeground, true),
+        check(config, otherPaths[index] ?? '', 'background-color', softButtonBackground, true),
+        check(
+          config,
+          otherPaths[index] ?? '',
+          'color',
+          tableSummaryForeground,
+          otherPaths[index] !== tablePath,
+        ),
+        check(
+          config,
+          otherPaths[index] ?? '',
+          'background-color',
+          tableSummaryBackground,
+          otherPaths[index] !== tablePath,
+        ),
       ]),
     )
     const overrideChecks = await Promise.all(
       snapshot.overrideScopes.map(async ({ files, ruleKeys, config }) => {
-        const routeScope = isDeepStrictEqual(files, [routePath])
+        const routeScope =
+          isDeepStrictEqual(files, [routePath]) || isDeepStrictEqual(files, [previewScope])
         const shellScope = isDeepStrictEqual(files, [adminShellScope])
         const workbenchStyleScope = isDeepStrictEqual(files, [workbenchScope])
         const radioScope = isDeepStrictEqual(files, [radioCardScope])
+        const providerStyleScope = isDeepStrictEqual(files, [providerScope])
+        const tableStyleScope = isDeepStrictEqual(files, [tableScope])
         return (
-          (routeScope || shellScope || workbenchStyleScope || radioScope) &&
+          (routeScope ||
+            shellScope ||
+            workbenchStyleScope ||
+            radioScope ||
+            providerStyleScope ||
+            tableStyleScope) &&
           isDeepStrictEqual(ruleKeys, [declarationPolicyRule]) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&
           (await check(config, globalPath, 'transition-duration', full, true)) &&
           (await check(config, globalPath, 'color', radioCardForeground, !radioScope)) &&
+          (await check(config, globalPath, 'color', softButtonForeground, true)) &&
+          (await check(config, globalPath, 'background-color', softButtonBackground, true)) &&
+          (await check(config, globalPath, 'color', tableSummaryForeground, !tableStyleScope)) &&
+          (await check(
+            config,
+            globalPath,
+            'background-color',
+            tableSummaryBackground,
+            !tableStyleScope,
+          )) &&
+          (!tableStyleScope ||
+            (await check(config, globalPath, 'color', 'var(--n-unrelated-color)', true))) &&
+          (!tableStyleScope ||
+            (await check(
+              config,
+              globalPath,
+              'background-color',
+              'var(--n-unrelated-background)',
+              true,
+            ))) &&
           (!radioScope ||
             (await check(config, globalPath, 'color', 'var(--pavp-unrelated-foreground)', true))) &&
           (workbenchStyleScope ||
@@ -5947,7 +7003,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
               globalPath,
               'background',
               shellMaterial,
-              routeScope || radioScope,
+              routeScope || radioScope || providerStyleScope || tableStyleScope,
             )))
         )
       }),
@@ -6007,7 +7063,15 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           ) &&
           overrideChecks.every(Boolean) &&
           snapshot.otherConfigs.length === otherPaths.length &&
-          scopeChecks.every(Boolean),
+          scopeChecks.every(Boolean) &&
+          (await check(snapshot.globalConfig, globalPath, 'color', tableSummaryForeground, true)) &&
+          (await check(
+            snapshot.globalConfig,
+            globalPath,
+            'background-color',
+            tableSummaryBackground,
+            true,
+          )),
       },
       {
         id: 'ROUTE_TRANSITION_SOURCE_52_STYLELINT_EXACT_DECLARATION',
@@ -6078,6 +7142,15 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           ...baseline,
           overrideScopes: baseline.overrideScopes.map((scope) => ({
             ...scope,
+            files: isDeepStrictEqual(scope.files, [providerScope])
+              ? ['**/packages/ui/src/providers/**/*.vue.style-*.css']
+              : scope.files,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
             config: isDeepStrictEqual(scope.files, [adminShellScope])
               ? baseline.routeConfig
               : scope.config,
@@ -6089,6 +7162,45 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             ...scope,
             config: isDeepStrictEqual(scope.files, [radioCardScope])
               ? baseline.routeConfig
+              : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [providerScope])
+              ? baseline.routeConfig
+              : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            files: isDeepStrictEqual(scope.files, [tableScope])
+              ? ['**/packages/ui/src/components/**/*.vue.style-*.css']
+              : scope.files,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [tableScope])
+              ? baseline.routeConfig
+              : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [tableScope])
+              ? withStylelintDeclarationPolicy(scope.config, {
+                  ...stylelintDeclarationPolicy(scope.config),
+                  color: [/^never$/u],
+                })
               : scope.config,
           })),
         },
@@ -6522,6 +7634,50 @@ const workspaceAxisRouteNames = [
   'workbench-sizes',
   'workbench-typography',
   'workbench-interactions',
+  'workbench-motion',
+  'component-showcase',
+  'component-actions',
+  'component-inputs',
+  'component-selection',
+  'component-navigation',
+  'component-data',
+  'component-feedback',
+  'component-layout',
+  'component-form-overview',
+  'component-form-basics',
+  'component-form-detail',
+  'component-form-layout',
+  'component-form-dependencies',
+  'component-form-calculations',
+  'component-form-structure',
+  'component-form-validation',
+  'component-form-extension',
+  'component-form-controls',
+  'component-form-lifecycle',
+  'component-form-loading',
+  'component-form-submission',
+  'component-form-options',
+  'component-form-builder',
+  'component-table-overview',
+  'component-table',
+  'component-table-scroll',
+  'component-table-widths',
+  'component-table-responsive',
+  'component-table-columns',
+  'component-table-sorting',
+  'component-table-selection',
+  'component-table-rendering',
+  'component-table-summary',
+  'component-table-virtual',
+  'component-table-states',
+  'component-table-remote',
+  'component-table-appearance',
+  'component-table-theme',
+  'component-table-configuration',
+  'component-combination-query',
+  'component-combination-modal',
+  'component-combination-drawer',
+  'component-combination-page',
 ] as const
 
 function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {
@@ -6546,9 +7702,7 @@ function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): st
     axis?.ruleId !== 'route-transition-rule.architecture-workspace-axis' ||
     !isDeepStrictEqual(axis.routeNames, workspaceAxisRouteNames) ||
     !isDeepStrictEqual(
-      consoleNavigationRegistry.flatMap((group) =>
-        group.items.map((item) => item.destination.name),
-      ),
+      consoleNavigationItems.map((item) => item.destination.name),
       workspaceAxisRouteNames,
     ) ||
     axis.forwardPresetId !== 'route-transition.axis-inline-soft' ||
@@ -7252,7 +8406,54 @@ function workspaceRefreshPositionViolations(lifecycle: string): string[] {
     .sort((left, right) => left.end - left.pos - (right.end - right.pos))[0]
   const writes = resetCalls.filter((call) => callMemberName(call) === writer?.name?.text)
   const position = writes[0]?.arguments[1]
+  const controllerRead = resetCalls.find(
+    (call) => callMemberName(call) === 'read' && memberPath(call.arguments[0]).at(-1) === 'owner',
+  )
+  const controller = storedValuePath(controllerRead)
+  const leaseResult = nodesOf(lease, ts.isObjectLiteralExpression).find(
+    (object) => objectPropertyValue(object, 'isCurrent') !== undefined,
+  )
+  const currentnessName =
+    leaseResult === undefined ? undefined : objectPropertyValue(leaseResult, 'isCurrent')?.getText()
+  const currentness = nodesOf(lease, ts.isVariableDeclaration).find(
+    (declaration) => declaration.name.getText() === currentnessName,
+  )?.initializer
+  const readiness =
+    currentness === undefined
+      ? undefined
+      : nodesOf(currentness, ts.isCallExpression).find(
+          (call) =>
+            callMemberName(call) === 'readState' &&
+            isDeepStrictEqual(memberPath(call.expression).slice(0, -1), controller),
+        )
+  const identity =
+    currentness === undefined
+      ? undefined
+      : nodesOf(currentness, ts.isBinaryExpression).find(
+          (comparison) =>
+            comparison.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
+            ts.isCallExpression(comparison.left) &&
+            callMemberName(comparison.left) === 'read' &&
+            isDeepStrictEqual(memberPath(comparison.right), controller),
+        )
+  const presentation =
+    reset === undefined
+      ? undefined
+      : nodesOf(reset, ts.isObjectLiteralExpression).find(
+          (object) => objectPropertyValue(object, 'kind')?.getText() === "'page'",
+        )
   const violations: string[] = []
+  if (
+    controllerRead === undefined ||
+    controller.length === 0 ||
+    controllerRead.end >= (writes[0]?.pos ?? 0) ||
+    readiness === undefined ||
+    identity === undefined ||
+    !isDeepStrictEqual(memberPath(writes[0]?.arguments[0]), controller) ||
+    presentation === undefined ||
+    !isDeepStrictEqual(memberPath(objectPropertyValue(presentation, 'controller')), controller)
+  )
+    violations.push('WORKSPACE_REFRESH_CONTROLLER_HANDOFF')
   if (
     sample === undefined ||
     replacement === undefined ||
@@ -7543,7 +8744,21 @@ async function workspaceRefreshViolations(): Promise<string[]> {
   const generation = resetPositionCalls.find(
     (call) => callMemberName(call) === 'readWorkspaceGeneration',
   )
+  const controllerRead = resetPositionCalls.find(
+    (call) => callMemberName(call) === 'read' && memberPath(call.arguments[0]).at(-1) === 'owner',
+  )
+  const presentation =
+    reset === undefined
+      ? undefined
+      : nodesOf(reset, ts.isObjectLiteralExpression).find(
+          (object) => objectPropertyValue(object, 'kind')?.getText() === "'page'",
+        )
   const positionProbes = [
+    ['WORKSPACE_REFRESH_CONTROLLER_HANDOFF', controllerRead],
+    [
+      'WORKSPACE_REFRESH_CONTROLLER_HANDOFF',
+      presentation === undefined ? undefined : objectPropertyValue(presentation, 'controller'),
+    ],
     ['WORKSPACE_REFRESH_POSITION_CAPTURE', positionSample],
     ['WORKSPACE_REFRESH_POSITION_CAPTURE', finiteOffset],
     ['WORKSPACE_REFRESH_POSITION_HANDOFF', enabled],
@@ -8987,6 +10202,111 @@ async function scrollRestorationViolations(): Promise<string[]> {
   return baseline
 }
 
+async function routeInputHierarchyViolations(): Promise<string[]> {
+  const record = routeRegistry.find(
+    (candidate) => candidate.name === 'error-application-route-failure',
+  )
+  if (record === undefined)
+    return ['The registered error route for the hierarchy probe is missing.']
+
+  const routeInputPath = pathToFileURL(resolve(routerDirectory, 'route-input.ts')).href
+  const { validateRouteInput, prepareGeneratedRoute } = (await import(routeInputPath)) as {
+    validateRouteInput: (input: unknown) => { readonly kind: 'valid' | 'invalid' }
+    prepareGeneratedRoute: (record: unknown, generated: Record<string, unknown>) => boolean
+  }
+  const leaf = { name: record.name, path: record.pathPattern, meta: record.meta }
+  const parent = {
+    name: undefined,
+    path: '/error',
+    components: undefined,
+    redirect: undefined,
+    beforeEnter: undefined,
+    aliasOf: undefined,
+    props: {},
+    meta: {},
+    children: [leaf],
+  }
+  const location = {
+    name: record.name,
+    fullPath: record.pathPattern,
+    params: {},
+    query: {},
+    hash: '',
+    meta: record.meta,
+    matched: [parent, leaf],
+  }
+  const withParent = (change: Record<string, unknown>) => ({
+    ...location,
+    matched: [{ ...parent, ...change }, leaf],
+  })
+  const invalid = (value: unknown): boolean => validateRouteInput(value).kind === 'invalid'
+  const generated: Record<string, unknown> = { name: record.name, path: record.pathPattern }
+  const unexpectedMeta = {}
+  const tamperedGenerated: Record<string, unknown> = {
+    name: record.name,
+    path: record.pathPattern,
+    meta: unexpectedMeta,
+  }
+  const wrongPathGenerated: Record<string, unknown> = { name: record.name, path: '/unexpected' }
+  const projected = prepareGeneratedRoute(record, generated)
+  const product = routeRegistry.find((candidate) => candidate.name === 'workbench-dashboard')
+  const probes: readonly [string, boolean][] = [
+    ['generated error metadata projection', projected && generated['meta'] === record.meta],
+    ['idempotent metadata projection', prepareGeneratedRoute(record, generated)],
+    [
+      'unexpected generated metadata',
+      !prepareGeneratedRoute(record, tamperedGenerated) &&
+        tamperedGenerated['meta'] === unexpectedMeta,
+    ],
+    [
+      'unexpected generated path',
+      !prepareGeneratedRoute(record, wrongPathGenerated) && !('meta' in wrongPathGenerated),
+    ],
+    [
+      'unexpected generated name',
+      !prepareGeneratedRoute(record, { name: 'unexpected', path: record.pathPattern }),
+    ],
+    [
+      'generated product metadata projection',
+      product !== undefined &&
+        routeRegistry
+          .filter((candidate) => candidate.meta.routeTransitionFamilyId !== 'route-family.error')
+          .every((candidate) => {
+            const raw = { name: candidate.name, path: candidate.pathPattern }
+            return prepareGeneratedRoute(candidate, raw) && prepareGeneratedRoute(candidate, raw)
+          }),
+    ],
+    ['registered error child', validateRouteInput(location).kind === 'valid'],
+    ['unexpected parent path', invalid(withParent({ path: '/other' }))],
+    ['parent metadata', invalid(withParent({ meta: { injected: true } }))],
+    ['parent component', invalid(withParent({ components: { default: {} } }))],
+    ['parent redirect', invalid(withParent({ redirect: '/' }))],
+    ['parent guard', invalid(withParent({ beforeEnter: () => true }))],
+    ['parent alias', invalid(withParent({ aliasOf: parent }))],
+    ['parent props', invalid(withParent({ props: { default: true } }))],
+    ['missing declared child', invalid(withParent({ children: [] }))],
+    ['extra parent', invalid({ ...location, matched: [parent, parent, leaf] })],
+    ['unregistered leaf', invalid({ ...location, name: 'unknown' })],
+    [
+      'wrong leaf identity',
+      invalid({ ...location, matched: [parent, { ...leaf, name: 'unknown' }] }),
+    ],
+    ['leaf metadata', invalid({ ...location, matched: [parent, { ...leaf, meta: {} }] })],
+    ['unexpected params', invalid({ ...location, params: { x: '1' } })],
+    [
+      'unexpected query',
+      invalid({ ...location, query: { x: '1' }, fullPath: `${record.pathPattern}?x=1` }),
+    ],
+    [
+      'unexpected fragment',
+      invalid({ ...location, hash: '#x', fullPath: `${record.pathPattern}#x` }),
+    ],
+  ]
+  return probes
+    .filter(([, passed]) => !passed)
+    .map(([label]) => `Route hierarchy validation: ${label}.`)
+}
+
 export async function validateRouterArchitecture(): Promise<readonly string[]> {
   const routerSources = await collectFiles(routerDirectory)
   const routeIdOwners = await Promise.all(
@@ -9005,6 +10325,7 @@ export async function validateRouterArchitecture(): Promise<readonly string[]> {
     ...registryViolations(),
     ...guardStageProgressViolations(),
     ...schemaViolations(),
+    ...(await routeInputHierarchyViolations()),
     ...(await pageViolations()),
     ...(await generatedTypeViolations()),
     ...(await navigationContractViolations()),

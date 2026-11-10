@@ -17,6 +17,7 @@ export type WorkspaceInstanceIdentity = symbol & { readonly [workspaceInstance]:
 interface WorkspaceStructure {
   readonly identity: WorkspaceIdentity
   readonly destination: RegisteredRouteDestination
+  readonly origin?: Pick<LiveWorkspaceEntry, 'identity' | 'instance' | 'destination'>
 }
 
 export interface LiveWorkspaceEntry extends WorkspaceStructure {
@@ -65,7 +66,11 @@ export const useWorkspaceStore = defineStore('workspace', () => {
           Object.freeze({
             state: 'dormant',
             identity,
-            destination: registeredRouteDestination({ name: route.name }),
+            // All restorable route-single entries have no params and optional/default query input.
+            // Preserve the registry-proven union without TypeScript expanding every route combination.
+            destination: registeredRouteDestination({
+              name: route.name,
+            } as RegisteredRouteDestination),
           }),
       )
     }
@@ -82,6 +87,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     destination: RegisteredRouteDestination,
     input: ValidatedRouteInput,
     component: unknown,
+    origin?: LiveWorkspaceEntry,
   ): LiveWorkspaceEntry | undefined {
     const route = getRouteRecord(input.name)
     let identity: WorkspaceIdentity
@@ -109,12 +115,28 @@ export const useWorkspaceStore = defineStore('workspace', () => {
         previous !== undefined && isLiveWorkspace(previous)
           ? previous.instance
           : (Symbol(identity) as WorkspaceInstanceIdentity),
+      ...(previous?.origin !== undefined
+        ? { origin: previous.origin }
+        : (previous === undefined || !isLiveWorkspace(previous)) && origin !== undefined
+          ? {
+              origin: {
+                identity: origin.identity,
+                instance: origin.instance,
+                destination: origin.destination,
+              },
+            }
+          : {}),
       componentName: component.name,
       destination,
     })
+    const remaining = entries.value.filter((candidate) => candidate !== previous)
     entries.value =
-      previous === undefined
-        ? [...entries.value, entry]
+      previous === undefined || (!isLiveWorkspace(previous) && origin !== undefined)
+        ? origin !== undefined && remaining.includes(origin)
+          ? remaining.flatMap((candidate) =>
+              candidate === origin ? [candidate, entry] : [candidate],
+            )
+          : [...remaining, entry]
         : entries.value.map((candidate) => (candidate === previous ? entry : candidate))
     activeIdentity.value = identity
     return entry

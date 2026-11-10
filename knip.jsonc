@@ -6,6 +6,7 @@
       "entry": [
         "src/shared/api/index.ts",
         "src/shared/query/index.ts",
+        "src/shared/table/index.ts",
         "src/shared/i18n/index.ts",
         "src/app/router/router-console-projection.ts",
         "src/app/workspace/workspace-content.ts",

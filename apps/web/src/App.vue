@@ -37,6 +37,17 @@ onScopeDispose(() => {
 })
 provideApplicationNavigation(router, routeTransitionCoordinator)
 const routeRecord = computed(() => getRouteRecord(route.name))
+const containedContent = computed(() => {
+  const snapshot = retentionPort.read()
+  return (
+    (routeRecord.value.name === 'control-center' ||
+      routeRecord.value.name === 'workbench-motion' ||
+      routeRecord.value.name.startsWith('component-form-') ||
+      routeRecord.value.name.startsWith('component-table') ||
+      routeRecord.value.name.startsWith('component-combination-')) &&
+    (snapshot === undefined || retention.readFailure(snapshot) === undefined)
+  )
+})
 const composition = computed(
   () => getRouteLayoutCapability(routeRecord.value.meta.layoutCapabilityId).composition,
 )
@@ -56,12 +67,13 @@ const tabpanel = computed(
     <ConsoleRouteFrame
       :active-route-name="routeRecord.name"
       :composition="composition"
+      :contained-content="containedContent"
     >
       <RouterView v-slot="{ Component }">
         <div
           id="pavp-workspace-panel"
           class="pavp-route-content"
-          :class="{ 'flex flex-1 min-h-0 h-full': routeRecord.name === 'control-center' }"
+          :class="{ 'flex flex-1 min-h-0 h-full': containedContent }"
           :role="tabpanel ? 'tabpanel' : undefined"
           :tabindex="tabpanel ? -1 : undefined"
           :aria-labelledby="tabpanel ? `${workspace.activeIdentity}-tab` : undefined"

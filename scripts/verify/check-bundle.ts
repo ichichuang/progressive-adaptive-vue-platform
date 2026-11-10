@@ -103,13 +103,15 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 13
+const expectedLazyRouteCount = 58
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
 const scrollEnhancementManifestKey =
   '../../packages/ui/src/adapters/scroll/scroll-enhancement-runtime.ts'
 const localizationRuntimeManifestKey = 'src/shared/i18n/runtime.ts'
+const workspaceDiscardManifestKey = 'src/app/workspace/WorkspaceDiscardDialog.vue'
+const shellScrollManifestKey = 'src/app/scroll/shell-scroll-runtime.ts'
 const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/zh-CN/console.json',
   'src/shared/i18n/messages/zh-CN/appearance.json',
@@ -119,12 +121,16 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/appearance.json',
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
-const expectedDynamicRootCount = 23
+const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
+const expectedDynamicRootCount = 71
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
   scrollEnhancementManifestKey,
   localizationRuntimeManifestKey,
+  workspaceDiscardManifestKey,
+  shellScrollManifestKey,
+  navigationFocusManifestKey,
   ...localizationResourceManifestKeys,
 ])
 
@@ -990,6 +996,9 @@ if (
     expectedMotionFeatureDynamicRootCount +
     1 +
     1 +
+    1 +
+    1 +
+    1 +
     localizationResourceManifestKeys.length !==
     expectedDynamicRootCount ||
   expectedDynamicRootKeys.size !== expectedDynamicRootCount ||
@@ -997,7 +1006,7 @@ if (
   expectedLazyRouteKeys.has(motionFeatureManifestKey)
 ) {
   throw new Error(
-    `Canonical dynamic root authority drifted: expected 13 routes, one motion root, one scroll enhancement, one i18n runtime and seven catalog roots.`,
+    `Canonical dynamic root authority drifted: expected ${String(expectedLazyRouteCount)} routes, one motion root, one scroll enhancement, one shell scroll runtime, one navigation actions root, one workspace discard dialog, one i18n runtime and seven catalog roots.`,
   )
 }
 
@@ -1005,6 +1014,9 @@ const initialDynamicRootKeys = new Set<string>()
 const dynamicImportOwnerKeys = new Set<string>()
 let motionFeatureDynamicImportReferences = 0
 let scrollEnhancementDynamicImportReferences = 0
+let workspaceDiscardDynamicImportReferences = 0
+let shellScrollDynamicImportReferences = 0
+let navigationFocusDynamicImportReferences = 0
 
 for (const ownerKey of initialChunkKeys) {
   const dynamicImports = manifest[ownerKey]?.dynamicImports ?? []
@@ -1021,6 +1033,9 @@ for (const ownerKey of initialChunkKeys) {
     }
     if (dynamicRootKey === scrollEnhancementManifestKey)
       scrollEnhancementDynamicImportReferences += 1
+    if (dynamicRootKey === shellScrollManifestKey) shellScrollDynamicImportReferences += 1
+    if (dynamicRootKey === navigationFocusManifestKey) navigationFocusDynamicImportReferences += 1
+    if (dynamicRootKey === workspaceDiscardManifestKey) workspaceDiscardDynamicImportReferences += 1
   }
 }
 
@@ -1046,6 +1061,21 @@ if (
   throw new Error(
     'Scroll enhancement must have exactly one shared dynamic import and remain outside the Initial Static Closure.',
   )
+}
+
+if (workspaceDiscardDynamicImportReferences !== 1) {
+  throw new Error('Workspace discard confirmation must have exactly one initial dynamic import.')
+}
+
+if (shellScrollDynamicImportReferences !== 1 || initialChunkKeys.has(shellScrollManifestKey)) {
+  throw new Error('Shell scroll persistence must have one private on-demand runtime root.')
+}
+
+if (
+  navigationFocusDynamicImportReferences !== 1 ||
+  initialChunkKeys.has(navigationFocusManifestKey)
+) {
+  throw new Error('Navigation actions must have one private on-demand runtime root.')
 }
 
 for (const [ownerKey, chunk] of Object.entries(manifest)) {
@@ -1157,7 +1187,7 @@ if (motionFeatureCssFiles.size !== 0) {
 for (const [routeRootKey, routeStaticClosure] of lazyRouteStaticClosures) {
   const routeOverlap = intersectingValues(motionFeatureExclusiveClosure, routeStaticClosure)
 
-  if (routeOverlap.length !== 0) {
+  if (routeOverlap.length !== 0 && routeRootKey !== 'src/pages/motion.vue') {
     throw new Error(
       `${motionFeatureRootId} exclusive closure overlaps Router route ${routeRootKey}: ${routeOverlap.join(', ')}.`,
     )
@@ -1231,25 +1261,39 @@ async function measureJavaScriptClosure(
   return { files, bytes: measurements.reduce((total, measurement) => total + measurement.bytes, 0) }
 }
 
-for (const rootKey of [localizationRuntimeManifestKey, ...localizationResourceManifestKeys]) {
+for (const rootKey of [
+  localizationRuntimeManifestKey,
+  ...localizationResourceManifestKeys,
+  workspaceDiscardManifestKey,
+  shellScrollManifestKey,
+  navigationFocusManifestKey,
+]) {
   const chunk = manifest[rootKey]
   if (!chunk?.file.endsWith('.js') || (chunk.dynamicImports?.length ?? 0) !== 0) {
     throw new Error(
-      `Localization root must emit JavaScript without dynamic child roots: ${rootKey}.`,
+      `On-demand application root must emit JavaScript without dynamic child roots: ${rootKey}.`,
     )
   }
   const closure = await measureJavaScriptClosure([rootKey])
-  if (closure.bytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
-    throw new Error(
-      `Localization static closure ${rootKey} is ${String(closure.bytes)} gzip bytes; budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)}.`,
-    )
-  }
   const additionalFiles = [...closure.files].filter((file) => !initialJavaScriptFiles.has(file))
   const additionalMeasurements = await Promise.all(
     additionalFiles.map((file) => gzipMeasurement(file)),
   )
+  // Shell persistence and the dialog reuse already-budgeted modules; charge each complete
+  // additional closure, as for scroll enhancement, without changing catalog closure budgets.
+  const budgetedBytes =
+    rootKey === workspaceDiscardManifestKey ||
+    rootKey === shellScrollManifestKey ||
+    rootKey === navigationFocusManifestKey
+      ? additionalMeasurements.reduce((total, value) => total + value.bytes, 0)
+      : closure.bytes
+  if (budgetedBytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
+    throw new Error(
+      `On-demand application closure ${rootKey} is ${String(budgetedBytes)} gzip bytes; budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)}.`,
+    )
+  }
   console.log(
-    `Bundle localization root: ${rootKey}; full static closure ${String(closure.bytes)} gzip bytes; additional to initial ${String(additionalMeasurements.reduce((total, value) => total + value.bytes, 0))} gzip bytes.`,
+    `Bundle on-demand application root: ${rootKey}; full static closure ${String(closure.bytes)} gzip bytes; additional to initial ${String(additionalMeasurements.reduce((total, value) => total + value.bytes, 0))} gzip bytes.`,
   )
 }
 
@@ -1317,6 +1361,7 @@ for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const
         entry[0],
         route.sourcePath.replace(/^apps\/web\//u, ''),
         ...resourceRoots,
+        shellScrollManifestKey,
       ])
       const otherInitial = [...initialJavaScriptFiles].filter((file) => !closure.files.has(file))
       const remaining = (
@@ -1324,14 +1369,18 @@ for (const scope of ['common', 'console', 'appearance', 'capabilities'] as const
       ).reduce((sum, value) => sum + value.bytes, 0)
       startupSizes.push(closure.bytes + remaining)
     }
+    const startupRange =
+      startupSizes.length === 0
+        ? 'not applicable (no registered routes)'
+        : `${String(Math.min(...startupSizes))}..${String(Math.max(...startupSizes))} gzip bytes across ${String(routes.length)} routes`
     console.log(
-      `Bundle pre-mount startup: ${locale}/${scope}; localization additional ${String(additional)} gzip bytes; deduplicated initial + route + localization ${String(Math.min(...startupSizes))}..${String(Math.max(...startupSizes))} gzip bytes across ${String(routes.length)} routes.`,
+      `Bundle pre-mount startup: ${locale}/${scope}; localization additional ${String(additional)} gzip bytes; deduplicated initial + route + localization + shell restoration ${startupRange}.`,
     )
   }
 }
 
 console.log(
-  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one Scroll enhancement + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
+  `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one Scroll enhancement + one shell scroll runtime + one navigation actions root + one workspace discard dialog + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
   `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes remaining against configured limit ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,

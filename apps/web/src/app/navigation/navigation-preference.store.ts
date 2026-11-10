@@ -15,6 +15,7 @@ export const useNavigationPreferenceStore = defineStore('navigation-preference',
   const expandedGroupIds = shallowRef<readonly string[]>([])
   let preferencePort: NavigationPreferencePort | undefined
   let admittedGroupIds: readonly string[] = []
+  let groupParents: ReadonlyMap<string, string | undefined> = new Map()
   let initialized = false
   let applying = false
 
@@ -23,13 +24,29 @@ export const useNavigationPreferenceStore = defineStore('navigation-preference',
     useAccordion = accordion.value,
   ): readonly string[] {
     const valid = reconcileNavigationGroupIds(groupIds, admittedGroupIds)
-    return useAccordion ? valid.slice(-1) : valid
+    if (!useAccordion) return valid
+    const selected = new Map<string | undefined, string>()
+    for (const id of valid) selected.set(groupParents.get(id), id)
+    return valid.filter((id) => {
+      if (selected.get(groupParents.get(id)) !== id) return false
+      let parent = groupParents.get(id)
+      while (parent !== undefined) {
+        if (selected.get(groupParents.get(parent)) !== parent) return false
+        parent = groupParents.get(parent)
+      }
+      return true
+    })
   }
 
-  function initialize(port: NavigationPreferencePort, groupIds: readonly string[]): () => void {
+  function initialize(
+    port: NavigationPreferencePort,
+    groupIds: readonly string[],
+    parents: ReadonlyMap<string, string | undefined> = new Map(),
+  ): () => void {
     if (initialized) throw new Error('Navigation preference was already initialized.')
     const restored = port.read()
     admittedGroupIds = [...groupIds]
+    groupParents = parents
     wideNavigationCollapsed.value =
       restored.status === 'found' ? restored.preference.wideNavigationCollapsed : false
     accordion.value =
@@ -54,6 +71,7 @@ export const useNavigationPreferenceStore = defineStore('navigation-preference',
       unsubscribe()
       preferencePort = undefined
       admittedGroupIds = []
+      groupParents = new Map()
     }
   }
 
@@ -134,7 +152,8 @@ export function initializeNavigationPreference(
   pinia: Pinia,
   preference: NavigationPreferencePort,
   groupIds: readonly string[],
+  parents?: ReadonlyMap<string, string | undefined>,
 ): { dispose(): void } {
   const store = useNavigationPreferenceStore(pinia)
-  return { dispose: store.initialize(preference, groupIds) }
+  return { dispose: store.initialize(preference, groupIds, parents) }
 }

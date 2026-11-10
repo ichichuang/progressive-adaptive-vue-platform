@@ -1,4 +1,10 @@
-import type { UiAppearanceSnapshot } from '@platform/design-system'
+import {
+  projectSequentialColorScale,
+  tokens,
+  type ContrastPreference,
+  type EffectiveColorMode,
+  type UiAppearanceSnapshot,
+} from '@platform/design-system'
 import type { GlobalThemeOverrides } from 'naive-ui'
 
 type ColorPalette = NonNullable<UiAppearanceSnapshot['colorPalette']>
@@ -7,6 +13,8 @@ type ColorPalette = NonNullable<UiAppearanceSnapshot['colorPalette']>
 export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
   palette: ColorPalette,
   base: Base,
+  contrast: ContrastPreference,
+  colorMode: EffectiveColorMode,
 ) {
   const { roles, surfaces, text, borders, tooltip } = palette
   const primary = roles.primary
@@ -14,8 +22,17 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
   const selectedBackground = `var(--pavp-navigation-selected-surface, ${primary.soft.background.default})`
   const selectedForeground = `var(--pavp-navigation-selected-foreground, ${primary.soft.foreground})`
   const childForeground = `var(--pavp-navigation-child-active-foreground, ${primary.soft.foreground})`
+  const invertedForeground = colorMode === 'light' ? tooltip.foreground : text.secondary
+  const invertedActiveForeground = primary.solid.foreground
   const border = (color: string) => `var(--ui-admin-border-width) solid ${color}`
-  const focus = (color: string) => `0 0 0 var(--ui-admin-focus-width) ${color}`
+  const focus = (color: string) => `inset 0 0 0 var(--ui-admin-focus-width) ${color}`
+  const indicatorOutline = `0 0 0 ${tokens['interaction.border.width']} ${primary.solid.foreground}`
+  // Naive's pane-padding parser splits on whitespace, including within calc().
+  const componentSpace = (steps: number): string =>
+    steps === 1
+      ? tokens['spacing.component.unit']
+      : `calc(${tokens['spacing.component.unit']}*${String(steps)})`
+  const sequential = projectSequentialColorScale(palette, contrast)
   const common: NonNullable<GlobalThemeOverrides['common']> = {
     ...base.common,
     baseColor: surfaces.surface,
@@ -101,7 +118,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     border: border(neutral.soft.border),
     borderHover: border(neutral.soft.border),
     borderPressed: border(neutral.soft.border),
-    borderFocus: border(neutral.focus),
+    borderFocus: border(neutral.soft.border),
     borderDisabled: border(neutral.disabled.border),
     colorSecondary: neutral.soft.background.default,
     colorSecondaryHover: neutral.soft.background.hover,
@@ -152,12 +169,55 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
   }
   const notification: NonNullable<GlobalThemeOverrides['Notification']> = {
     ...base.Notification,
+    titleFontSize: tokens['typography.size.body'],
+    metaFontSize: tokens['typography.size.caption'],
+    descriptionFontSize: tokens['typography.size.caption'],
     color: surfaces.raised,
     textColor: text.primary,
     headerTextColor: text.primary,
     descriptionTextColor: text.muted,
     actionTextColor: text.primary,
     iconColor: neutral.foreground.default,
+  }
+  // These status and size fields are supplied by the centrally maintained Naive patch.
+  const badge: NonNullable<GlobalThemeOverrides['Badge']> = {
+    ...base.Badge,
+    color: roles.error.solid.background.default,
+    textColor: roles.error.solid.foreground,
+    fontSize: tokens['typography.size.caption'],
+    labelHeight: tokens['interaction.indicator.label.height'],
+    labelPaddingInline: tokens['spacing.indicator.label.inline'],
+    dotSize: tokens['interaction.indicator.marker.size'],
+  }
+  const progress: NonNullable<GlobalThemeOverrides['Progress']> = {
+    ...base.Progress,
+    fillColor: roles.info.solid.background.default,
+    statusTextColor: roles.info.solid.foreground,
+    textColorLineInner: 'var(--n-pavp-status-text-color)',
+    railHeight: tokens['interaction.indicator.rail.standard'],
+    railHeightLabeled: tokens['interaction.indicator.rail.labeled'],
+    indicatorFontSize: tokens['typography.size.caption'],
+    fontSizeCircle: tokens['typography.size.metric'],
+    iconSizeLine: tokens['interaction.icon.size.small'],
+    iconSizeCircle: tokens['interaction.icon.size.extra-large'],
+    circleSize: tokens['interaction.indicator.circle.size'],
+    circleSizeMultiple: tokens['interaction.indicator.circle.multiple-size'],
+    contentGap: tokens['spacing.indicator.content.gap'],
+    outsideLabelPaddingInline: tokens['spacing.indicator.label.inline-compact'],
+    statusIconSlotWidth: tokens['interaction.indicator.slot.icon-inline-size'],
+    textSlotWidth: tokens['interaction.indicator.slot.text-inline-size'],
+  }
+  for (const [tone, suffix] of [
+    ['info', 'Info'],
+    ['success', 'Success'],
+    ['warning', 'Warning'],
+    ['error', 'Error'],
+  ] as const) {
+    const { background, foreground } = roles[tone].solid
+    badge[`color${suffix}`] = background.default
+    badge[`textColor${suffix}`] = foreground
+    progress[`fillColor${suffix}`] = background.default
+    progress[`statusTextColor${suffix}`] = foreground
   }
   for (const [tone, suffix] of [
     ['primary', 'Primary'],
@@ -174,9 +234,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     button[`colorDisabled${suffix}`] = family.disabled.background
     for (const state of ['', 'Hover', 'Pressed', 'Focus'] as const) {
       button[`textColor${state}${suffix}`] = family.solid.foreground
-      button[`border${state}${suffix}`] = border(
-        state === 'Focus' ? family.focus : family.solid.border,
-      )
+      button[`border${state}${suffix}`] = border(family.solid.border)
     }
     button[`textColorDisabled${suffix}`] = family.disabled.foreground
     button[`borderDisabled${suffix}`] = border(family.disabled.border)
@@ -216,6 +274,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
   }
   const input: NonNullable<GlobalThemeOverrides['Input']> = {
     ...base.Input,
+    fontSizeLarge: tokens['typography.size.body'],
     color: surfaces.surface,
     colorHover: surfaces.surface,
     colorFocus: surfaces.surface,
@@ -227,7 +286,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     placeholderColorDisabled: primary.disabled.foreground,
     border: border(borders.control),
     borderHover: border(primary.foreground.hover),
-    borderFocus: border(primary.focus),
+    borderFocus: 'none',
     borderDisabled: border(primary.disabled.border),
     boxShadowFocus: focus(primary.focus),
     caretColor: primary.foreground.default,
@@ -246,8 +305,8 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     placeholderColorDisabled: primary.disabled.foreground,
     border: border(borders.control),
     borderHover: border(primary.foreground.hover),
-    borderActive: border(primary.focus),
-    borderFocus: border(primary.focus),
+    borderActive: 'none',
+    borderFocus: 'none',
     boxShadowFocus: focus(primary.focus),
     boxShadowActive: focus(primary.focus),
     caretColor: primary.foreground.default,
@@ -262,15 +321,15 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     const family = roles[tone]
     input[`border${suffix}`] = border(family.foreground.default)
     input[`borderHover${suffix}`] = border(family.foreground.hover)
-    input[`borderFocus${suffix}`] = border(family.focus)
+    input[`borderFocus${suffix}`] = 'none'
     input[`boxShadowFocus${suffix}`] = focus(family.focus)
     input[`colorFocus${suffix}`] = surfaces.surface
     input[`caretColor${suffix}`] = family.foreground.default
     input[`loadingColor${suffix}`] = family.foreground.default
     selection[`border${suffix}`] = border(family.foreground.default)
     selection[`borderHover${suffix}`] = border(family.foreground.hover)
-    selection[`borderActive${suffix}`] = border(family.focus)
-    selection[`borderFocus${suffix}`] = border(family.focus)
+    selection[`borderActive${suffix}`] = 'none'
+    selection[`borderFocus${suffix}`] = 'none'
     selection[`boxShadowHover${suffix}`] = 'none'
     selection[`boxShadowActive${suffix}`] = focus(family.focus)
     selection[`boxShadowFocus${suffix}`] = focus(family.focus)
@@ -297,6 +356,21 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     dividerColor: borders.control,
     peers: { ...base.Dropdown?.peers, Popover: { ...base.Dropdown?.peers?.Popover, ...popover } },
   }
+  const selectMenu = {
+    color: surfaces.raised,
+    optionTextColor: text.primary,
+    optionTextColorPressed: primary.foreground.pressed,
+    optionTextColorDisabled: primary.disabled.foreground,
+    optionTextColorActive: primary.soft.foreground,
+    groupHeaderTextColor: text.muted,
+    optionCheckColor: primary.foreground.default,
+    optionColorPending: primary.soft.background.pressed,
+    optionColorActive: primary.soft.background.default,
+    optionColorActivePending: primary.soft.background.pressed,
+    actionDividerColor: borders.control,
+    actionTextColor: text.primary,
+    loadingColor: primary.foreground.default,
+  }
   return Object.freeze({
     ...base,
     common,
@@ -320,12 +394,226 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     Alert: alert,
     Message: message,
     Notification: notification,
+    Calendar: {
+      ...base.Calendar,
+      borderColor: borders.decorative,
+      borderColorModal: borders.decorative,
+      borderColorPopover: borders.decorative,
+      textColor: neutral.foreground.default,
+      titleTextColor: text.primary,
+      titleFontSize: tokens['typography.size.heading'],
+      dayTextColor: neutral.disabled.foreground,
+      dateColorCurrent: primary.solid.background.default,
+      dateTextColorCurrent: primary.solid.foreground,
+      cellColor: surfaces.surface,
+      cellColorModal: surfaces.raised,
+      cellColorPopover: surfaces.raised,
+      cellColorHover: neutral.soft.background.hover,
+      cellColorHoverModal: neutral.soft.background.hover,
+      cellColorHoverPopover: neutral.soft.background.hover,
+      barColor: primary.foreground.default,
+      peers: { ...base.Calendar?.peers, Button: button },
+    },
+    Skeleton: {
+      ...base.Skeleton,
+      color: neutral.soft.background.default,
+      colorEnd: neutral.soft.background.hover,
+    },
+    Code: {
+      ...base.Code,
+      textColor: text.primary,
+      lineNumberTextColor: text.muted,
+      lineNumberGap: tokens['spacing.content.gap'],
+      'mono-3': text.muted,
+      'hue-1': roles.info.foreground.default,
+      'hue-2': primary.foreground.default,
+      'hue-3': primary.foreground.pressed,
+      'hue-4': roles.success.foreground.default,
+      'hue-5': roles.error.foreground.default,
+      'hue-5-2': roles.error.foreground.pressed,
+      'hue-6': roles.warning.foreground.default,
+      'hue-6-2': roles.warning.foreground.pressed,
+    },
+    Typography: {
+      ...base.Typography,
+      headerFontSize1: tokens['typography.size.title'],
+      headerFontSize2: tokens['typography.size.heading'],
+      headerFontSize3: tokens['typography.size.subheading'],
+      headerFontSize4: tokens['typography.size.body'],
+      headerFontSize5: tokens['typography.size.body'],
+      headerFontSize6: tokens['typography.size.body'],
+    },
+    Dialog: {
+      ...base.Dialog,
+      titleFontSize: tokens['typography.size.subheading'],
+    },
+    PageHeader: {
+      ...base.PageHeader,
+      titleFontSize: tokens['typography.size.subheading'],
+    },
+    Result: {
+      ...base.Result,
+      titleFontSizeMedium: tokens['typography.size.title'],
+      fontSizeHuge: tokens['typography.size.body'],
+    },
+    TimePicker: {
+      ...base.TimePicker,
+      itemFontSize: tokens['typography.size.caption'],
+      itemTextColor: text.primary,
+      itemTextColorActive: primary.soft.foreground,
+      itemColorHover: primary.soft.background.pressed,
+      panelColor: surfaces.raised,
+    },
+    Timeline: {
+      ...base.Timeline,
+      titleFontSizeLarge: tokens['typography.size.body'],
+    },
+    Transfer: {
+      ...base.Transfer,
+      extraFontSizeSmall: tokens['typography.size.caption'],
+      extraFontSizeMedium: tokens['typography.size.caption'],
+      titleFontSizeMedium: tokens['typography.size.body'],
+      titleFontSizeLarge: tokens['typography.size.body'],
+    },
+    LegacyTransfer: {
+      ...base.LegacyTransfer,
+      extraFontSize: tokens['typography.size.caption'],
+    },
+    Steps: {
+      ...base.Steps,
+      stepHeaderFontSizeMedium: tokens['typography.size.body'],
+      indicatorIndexFontSizeMedium: tokens['typography.size.body'],
+      indicatorTextColorWait: text.secondary,
+      indicatorBorderColorWait: borders.control,
+      splitorColorProcess: borders.control,
+      splitorColorWait: borders.control,
+      splitorColorError: borders.control,
+      headerTextColorWait: text.secondary,
+      headerTextColorFinish: text.secondary,
+      descriptionTextColorWait: text.secondary,
+      descriptionTextColorFinish: text.secondary,
+    },
+    Slider: {
+      ...base.Slider,
+      railHeight: tokens['interaction.indicator.rail.thin'],
+      railWidthVertical: tokens['interaction.indicator.rail.thin'],
+      handleSize: tokens['interaction.indicator.handle.size'],
+      dotHeight: tokens['interaction.indicator.marker.size'],
+      dotWidth: tokens['interaction.indicator.marker.size'],
+      dotBorderRadius: `calc(${tokens['interaction.indicator.marker.size']} / 2)`,
+      railColor: neutral.solid.background.default,
+      railColorHover: neutral.solid.background.default,
+      fillColor: primary.solid.background.default,
+      fillColorHover: primary.solid.background.hover,
+      handleColor: primary.foreground.default,
+      handleBoxShadow: indicatorOutline,
+      handleBoxShadowHover: indicatorOutline,
+      handleBoxShadowActive: indicatorOutline,
+      handleBoxShadowFocus: indicatorOutline,
+      dotColor: primary.foreground.default,
+      dotColorModal: primary.foreground.default,
+      dotColorPopover: primary.foreground.default,
+      dotBorder: border(neutral.solid.background.default),
+      dotBorderActive: border(primary.solid.background.default),
+      indicatorColor: tooltip.background,
+      indicatorTextColor: tooltip.foreground,
+      indicatorBorderRadius: tokens['interaction.radius.panel'],
+    },
+    Badge: badge,
+    FloatButton: {
+      ...base.FloatButton,
+      colorPrimary: primary.solid.background.default,
+      colorPrimaryHover: primary.solid.background.hover,
+      colorPrimaryPressed: primary.solid.background.pressed,
+      textColorPrimary: primary.solid.foreground,
+    },
+    Carousel: {
+      ...base.Carousel,
+      dotSize: tokens['interaction.indicator.marker.size'],
+    },
+    Progress: progress,
+    Heatmap: {
+      ...base.Heatmap,
+      mininumColor: sequential.minimum,
+      activeColors: [...sequential.active],
+      borderColor: borders.control,
+      loadingColorStart: neutral.soft.background.default,
+      loadingColorEnd: neutral.soft.background.hover,
+      cellOutlineWidth: tokens['interaction.border.width'],
+      rectSizeSmall: tokens['interaction.indicator.cell.small'],
+      rectSizeMedium: tokens['interaction.indicator.cell.medium'],
+      rectSizeLarge: tokens['interaction.indicator.cell.large'],
+      xGapSmall: tokens['spacing.indicator.cell-gap.compact'],
+      yGapSmall: tokens['spacing.indicator.cell-gap.compact'],
+      xGapMedium: tokens['spacing.indicator.cell-gap.standard'],
+      yGapMedium: tokens['spacing.indicator.cell-gap.standard'],
+      xGapLarge: tokens['spacing.indicator.cell-gap.standard'],
+      yGapLarge: tokens['spacing.indicator.cell-gap.standard'],
+      calendarWeekdayWidth: tokens['layout.calendar.weekday.minimum-inline-size'],
+      calendarLabelHeight: 'auto',
+      calendarLabelLineHeight: tokens['typography.line-height.compact'],
+      calendarSpaceTight: tokens['spacing.calendar.inline.tight'],
+      calendarSpaceCompact: tokens['spacing.calendar.inline.compact'],
+      calendarSpaceStandard: tokens['spacing.calendar.block.gap'],
+      calendarFooterIndent: tokens['spacing.calendar.footer.indent'],
+      borderRadiusSmall: 'calc(var(--ui-radius-small) / 2)',
+      borderRadiusMedium: 'calc(var(--ui-radius-small) / 2)',
+      borderRadiusLarge: 'calc(var(--ui-radius-small) / 2)',
+    },
+    Rate: {
+      ...base.Rate,
+      itemColor: neutral.soft.border,
+      itemColorActive: primary.foreground.default,
+      itemEmptyFill: 'none',
+      itemEmptyStrokeWidth: '48',
+      sizeSmall: tokens['interaction.icon.size.extra-small'],
+      sizeMedium: tokens['interaction.icon.size.medium'],
+      sizeLarge: tokens['interaction.icon.size.large'],
+    },
+    InternalSelection: selection,
     Input: input,
+    DynamicInput: {
+      ...base.DynamicInput,
+      peers: {
+        ...base.DynamicInput?.peers,
+        Input: { ...input, heightMedium: tokens['layout.target.enhanced.minimum-block-size'] },
+        Button: button,
+      },
+    },
+    InputOtp: {
+      ...base.InputOtp,
+      inputWidthSmall: tokens['interaction.control.segment.width.small'],
+      inputWidthMedium: tokens['interaction.control.segment.width.medium'],
+      inputWidthLarge: tokens['interaction.control.segment.width.large'],
+      gapSmall: tokens['spacing.control.segment.gap'],
+      gapMedium: tokens['spacing.control.segment.gap'],
+      gapLarge: tokens['spacing.control.segment.gap'],
+      peers: { ...base.InputOtp?.peers, Input: input },
+    },
     InputNumber: {
       ...base.InputNumber,
       peers: { ...base.InputNumber?.peers, Input: input, Button: button },
     },
     Form: {
+      feedbackFontSizeSmall: tokens['typography.size.control.small'],
+      feedbackFontSizeMedium: tokens['typography.size.control.medium'],
+      feedbackFontSizeLarge: tokens['typography.size.control.medium'],
+      labelFontSizeLeftSmall: tokens['typography.size.control.medium'],
+      labelFontSizeLeftMedium: tokens['typography.size.control.medium'],
+      labelFontSizeLeftLarge: tokens['typography.size.control.large'],
+      labelFontSizeTopSmall: tokens['typography.size.control.small'],
+      labelFontSizeTopMedium: tokens['typography.size.control.medium'],
+      labelFontSizeTopLarge: tokens['typography.size.control.medium'],
+      feedbackHeightSmall: componentSpace(6),
+      feedbackHeightMedium: componentSpace(6),
+      feedbackHeightLarge: componentSpace(6.5),
+      labelHeightSmall: componentSpace(6),
+      labelHeightMedium: componentSpace(6.5),
+      labelHeightLarge: componentSpace(7),
+      feedbackPadding: `${componentSpace(1)} 0 0 ${componentSpace(0.5)}`,
+      labelPaddingVertical: `0 0 ${componentSpace(1.5)} ${componentSpace(0.5)}`,
+      labelPaddingHorizontal: `0 ${componentSpace(3)} 0 0`,
+      labelFontWeight: tokens['typography.weight.body'],
       ...base.Form,
       labelTextColor: text.primary,
       feedbackTextColor: text.muted,
@@ -344,20 +632,39 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
         },
         InternalSelectMenu: {
           ...base.Select?.peers?.InternalSelectMenu,
-          color: surfaces.raised,
-          optionTextColor: text.primary,
-          optionTextColorPressed: primary.foreground.pressed,
-          optionTextColorDisabled: primary.disabled.foreground,
-          optionTextColorActive: primary.soft.foreground,
-          groupHeaderTextColor: text.muted,
-          optionCheckColor: primary.foreground.default,
-          optionColorPending: neutral.soft.background.hover,
-          optionColorActive: primary.soft.background.default,
-          optionColorActivePending: primary.soft.background.hover,
-          actionDividerColor: borders.control,
-          actionTextColor: text.primary,
-          loadingColor: primary.foreground.default,
+          ...selectMenu,
         },
+      },
+    },
+    AutoComplete: {
+      ...base.AutoComplete,
+      peers: {
+        ...base.AutoComplete?.peers,
+        InternalSelectMenu: { ...base.AutoComplete?.peers?.InternalSelectMenu, ...selectMenu },
+      },
+    },
+    Mention: {
+      ...base.Mention,
+      peers: {
+        ...base.Mention?.peers,
+        InternalSelectMenu: { ...base.Mention?.peers?.InternalSelectMenu, ...selectMenu },
+      },
+    },
+    Popselect: {
+      ...base.Popselect,
+      peers: {
+        ...base.Popselect?.peers,
+        InternalSelectMenu: { ...base.Popselect?.peers?.InternalSelectMenu, ...selectMenu },
+      },
+    },
+    Cascader: {
+      ...base.Cascader,
+      optionColorHover: primary.soft.background.pressed,
+      optionTextColorActive: primary.soft.foreground,
+      menuColor: surfaces.raised,
+      peers: {
+        ...base.Cascader?.peers,
+        InternalSelectMenu: { ...base.Cascader?.peers?.InternalSelectMenu, ...selectMenu },
       },
     },
     Checkbox: {
@@ -371,10 +678,10 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       checkMarkColorDisabledChecked: primary.disabled.foreground,
       border: border(borders.control),
       borderChecked: border(primary.solid.border),
-      borderFocus: border(primary.focus),
+      borderFocus: border(borders.control),
       borderDisabled: border(primary.disabled.border),
       borderDisabledChecked: border(primary.disabled.border),
-      boxShadowFocus: focus(primary.focus),
+      boxShadowFocus: 'none',
       textColor: text.primary,
       textColorDisabled: primary.disabled.foreground,
     },
@@ -389,8 +696,8 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       textColorDisabled: primary.disabled.foreground,
       boxShadow: `inset 0 0 0 var(--ui-admin-border-width) ${borders.control}`,
       boxShadowActive: `inset 0 0 0 var(--ui-admin-border-width) ${primary.solid.border}`,
-      boxShadowHover: focus(primary.foreground.hover),
-      boxShadowFocus: focus(primary.focus),
+      boxShadowHover: `inset 0 0 0 var(--ui-admin-border-width) ${primary.foreground.hover}`,
+      boxShadowFocus: `inset 0 0 0 var(--ui-admin-border-width) ${borders.control}`,
       boxShadowDisabled: `inset 0 0 0 var(--ui-admin-border-width) ${primary.disabled.border}`,
       buttonColor: surfaces.surface,
       buttonColorActive: primary.solid.background.default,
@@ -400,7 +707,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       buttonBorderColor: borders.control,
       buttonBorderColorActive: primary.solid.border,
       buttonBorderColorHover: primary.foreground.hover,
-      buttonBoxShadowFocus: focus(primary.focus),
+      buttonBoxShadowFocus: 'none',
     },
     Switch: {
       ...base.Switch,
@@ -410,11 +717,12 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       textColor: primary.solid.foreground,
       iconColor: primary.solid.background.default,
       loadingColor: primary.foreground.default,
-      boxShadowFocus: focus(primary.focus),
+      boxShadowFocus: 'none',
     },
     Dropdown: dropdown,
     Menu: {
       ...base.Menu,
+      borderColorHorizontal: 'currentColor',
       groupTextColor: text.muted,
       itemTextColor: text.primary,
       itemIconColor: text.secondary,
@@ -439,10 +747,93 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       itemColorActive: selectedBackground,
       itemColorActiveHover: selectedBackground,
       itemColorActiveCollapsed: selectedBackground,
+      groupTextColorInverted: invertedForeground,
+      itemColorHoverInverted: primary.solid.background.hover,
+      itemColorActiveInverted: primary.solid.background.default,
+      itemColorActiveHoverInverted: primary.solid.background.hover,
+      itemColorActiveCollapsedInverted: primary.solid.background.default,
+      itemTextColorInverted: invertedForeground,
+      itemTextColorHoverInverted: invertedActiveForeground,
+      itemTextColorActiveInverted: invertedActiveForeground,
+      itemTextColorActiveHoverInverted: invertedActiveForeground,
+      itemTextColorChildActiveInverted: invertedForeground,
+      itemTextColorChildActiveHoverInverted: invertedActiveForeground,
+      itemIconColorInverted: invertedForeground,
+      itemIconColorHoverInverted: invertedActiveForeground,
+      itemIconColorActiveInverted: invertedActiveForeground,
+      itemIconColorActiveHoverInverted: invertedActiveForeground,
+      itemIconColorChildActiveInverted: invertedForeground,
+      itemIconColorChildActiveHoverInverted: invertedActiveForeground,
+      itemIconColorCollapsedInverted: invertedForeground,
+      arrowColorInverted: invertedForeground,
+      arrowColorHoverInverted: invertedActiveForeground,
+      arrowColorActiveInverted: invertedActiveForeground,
+      arrowColorActiveHoverInverted: invertedActiveForeground,
+      arrowColorChildActiveInverted: invertedForeground,
+      arrowColorChildActiveHoverInverted: invertedActiveForeground,
+      itemTextColorHorizontalInverted: invertedForeground,
+      itemTextColorHoverHorizontalInverted: invertedForeground,
+      itemTextColorActiveHorizontalInverted: invertedForeground,
+      itemTextColorActiveHoverHorizontalInverted: invertedForeground,
+      itemTextColorChildActiveHorizontalInverted: invertedForeground,
+      itemTextColorChildActiveHoverHorizontalInverted: invertedForeground,
+      itemIconColorHorizontalInverted: invertedForeground,
+      itemIconColorHoverHorizontalInverted: invertedForeground,
+      itemIconColorActiveHorizontalInverted: invertedForeground,
+      itemIconColorActiveHoverHorizontalInverted: invertedForeground,
+      itemIconColorChildActiveHorizontalInverted: invertedForeground,
+      itemIconColorChildActiveHoverHorizontalInverted: invertedForeground,
       peers: { ...base.Menu?.peers, Dropdown: dropdown },
     },
     Tabs: {
+      tabFontSizeSmall: tokens['typography.size.control.medium'],
+      tabFontSizeMedium: tokens['typography.size.control.medium'],
+      tabGapSmallLine: componentSpace(9),
+      tabGapMediumLine: componentSpace(9),
+      tabGapLargeLine: componentSpace(9),
+      tabGapSmallLineVertical: componentSpace(2),
+      tabGapMediumLineVertical: componentSpace(2),
+      tabGapLargeLineVertical: componentSpace(2),
+      tabPaddingSmallLine: `${componentSpace(1.5)} 0`,
+      tabPaddingMediumLine: `${componentSpace(2.5)} 0`,
+      tabPaddingLargeLine: `${componentSpace(3.5)} 0`,
+      tabPaddingVerticalSmallLine: `${componentSpace(1.5)} ${componentSpace(3)}`,
+      tabPaddingVerticalMediumLine: `${componentSpace(2)} ${componentSpace(4)}`,
+      tabPaddingVerticalLargeLine: `${componentSpace(2.5)} ${componentSpace(5)}`,
+      tabGapSmallBar: componentSpace(9),
+      tabGapMediumBar: componentSpace(9),
+      tabGapLargeBar: componentSpace(9),
+      tabGapSmallBarVertical: componentSpace(2),
+      tabGapMediumBarVertical: componentSpace(2),
+      tabGapLargeBarVertical: componentSpace(2),
+      tabPaddingSmallBar: `${componentSpace(1)} 0`,
+      tabPaddingMediumBar: `${componentSpace(1.5)} 0`,
+      tabPaddingLargeBar: `${componentSpace(2.5)} 0`,
+      tabPaddingVerticalSmallBar: `${componentSpace(1.5)} ${componentSpace(3)}`,
+      tabPaddingVerticalMediumBar: `${componentSpace(2)} ${componentSpace(4)}`,
+      tabPaddingVerticalLargeBar: `${componentSpace(2.5)} ${componentSpace(5)}`,
+      tabGapSmallCard: componentSpace(1),
+      tabGapMediumCard: componentSpace(1),
+      tabGapLargeCard: componentSpace(1),
+      tabGapSmallCardVertical: componentSpace(1),
+      tabGapMediumCardVertical: componentSpace(1),
+      tabGapLargeCardVertical: componentSpace(1),
+      tabPaddingSmallCard: `${componentSpace(2)} ${componentSpace(4)}`,
+      tabPaddingMediumCard: `${componentSpace(2.5)} ${componentSpace(5)}`,
+      tabPaddingLargeCard: `${componentSpace(3)} ${componentSpace(6)}`,
+      tabPaddingVerticalSmallCard: `${componentSpace(2)} ${componentSpace(3)}`,
+      tabPaddingVerticalMediumCard: `${componentSpace(2.5)} ${componentSpace(4)}`,
+      tabPaddingVerticalLargeCard: `${componentSpace(3)} ${componentSpace(5)}`,
+      tabPaddingSmallSegment: `${componentSpace(1)} 0`,
+      tabPaddingMediumSegment: `${componentSpace(1.5)} 0`,
+      tabPaddingLargeSegment: `${componentSpace(2)} 0`,
+      panePaddingSmall: `${componentSpace(2)} 0 0 0`,
+      panePaddingMedium: `${componentSpace(3)} 0 0 0`,
+      panePaddingLarge: `${componentSpace(4)} 0 0 0`,
+      closeSize: componentSpace(4.5),
+      closeIconSize: componentSpace(3.5),
       ...base.Tabs,
+      tabFontSizeLarge: tokens['typography.size.body'],
       paneTextColor: text.primary,
       barColor: primary.foreground.default,
       tabTextColorLine: text.primary,
@@ -523,7 +914,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       itemTextColorActive: primary.solid.foreground,
       itemTextColorCurrent: primary.foreground.default,
       itemColorIncluded: primary.soft.background.default,
-      itemColorHover: primary.soft.background.hover,
+      itemColorHover: primary.soft.background.pressed,
       itemColorDisabled: primary.disabled.background,
       itemColorActive: primary.solid.background.default,
       panelColor: surfaces.raised,

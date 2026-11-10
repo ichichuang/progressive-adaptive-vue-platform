@@ -1,5 +1,13 @@
 {
   "layout": {
+    "calendar": {
+      "weekday": {
+        "minimum-inline-size": {
+          "$type": "dimension",
+          "$value": "{dimension.calendar.weekday-minimum-inline}"
+        }
+      }
+    },
     "admin": {
       "content": {
         "minimum-inline-size": {

@@ -11,6 +11,27 @@
         "$type": "dimension",
         "$value": "{font.size.body}"
       },
+      "caption": {
+        "$type": "dimension",
+        "$value": "{font.size.caption}"
+      },
+      "control": {
+        "small": { "$type": "dimension", "$value": "{font.size.control-small}" },
+        "medium": { "$type": "dimension", "$value": "{font.size.control-medium}" },
+        "large": { "$type": "dimension", "$value": "{font.size.control-large}" }
+      },
+      "heading": {
+        "$type": "dimension",
+        "$value": "{font.size.heading}"
+      },
+      "subheading": {
+        "$type": "dimension",
+        "$value": "{font.size.subheading}"
+      },
+      "metric": {
+        "$type": "dimension",
+        "$value": "{font.size.metric}"
+      },
       "title": {
         "$type": "dimension",
         "$value": "{font.size.title}"
@@ -27,6 +48,10 @@
       }
     },
     "line-height": {
+      "compact": {
+        "$type": "number",
+        "$value": "{font.line-height.compact}"
+      },
       "body": {
         "$type": "number",
         "$value": "{font.line-height.body}"

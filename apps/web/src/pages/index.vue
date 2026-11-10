@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onDeactivated, onScopeDispose, ref, shallowRef } from 'vue'
-import { UiStatusBadge } from '@platform/ui'
+import { UiScrollArea, UiStatusBadge } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { builtInAppearanceThemePreviews } from '@platform/design-system'
@@ -108,130 +108,27 @@ const links = [
 const payload = computed(() =>
   data.value ? JSON.stringify(data.value, null, 2) : t('workbench.noResponse'),
 )
-const settings = registeredRouteDestination({ name: 'control-center' })
 </script>
 <template>
   <WorkbenchPage
     :title="title"
-    :message="message"
+    :message="t('workbench.welcomeHint')"
   >
-    <template #actions>
-      <NButton
-        tag="a"
-        quaternary
-        class="wb-link min-h-target-enhanced"
-        :href="navigation.resolveHref(settings)"
-        @click="activate($event, settings)"
-      >
-        {{ t('workbench.settings') }} ↗
-      </NButton>
-    </template>
-    <section
-      class="wb-api grid items-start gap-content-gap"
-      :aria-label="t('workbench.worldTime')"
-    >
-      <div
-        class="wb-clock-plane rounded-panel grid relative overflow-hidden isolate bg-action-primary p-page-inline text-text-on-action"
-      >
-        <div
-          class="wb-clock-top flex flex-wrap items-center justify-between relative gap-content-gap"
-        >
-          <span> UApi / {{ t('workbench.worldTime') }} </span>
-          <span> GET </span>
-        </div>
-        <div
-          class="wb-clock-content grid content-center justify-items-start relative gap-content-gap py-section-block"
-        >
-          <span class="wb-kicker font-title-weight m-0">
-            {{ t('workbench.beijing') }}
-          </span>
-          <time
-            class="wb-clock leading-title font-title-weight block tabular-nums layout-narrow:text-title layout-regular:text-title"
-            :datetime="data?.datetime"
-          >
-            {{ clock }}
-          </time>
-          <span class="text-body">
-            {{ data?.datetime ?? t('workbench.awaitingResponse') }}
-          </span>
-        </div>
-        <div
-          class="wb-clock-bottom flex flex-wrap items-center justify-between relative gap-content-gap"
-        >
-          <span>
-            {{ data?.timezone ?? '—' }}
-          </span>
-          <span>
-            {{ data?.offset_string ?? '—' }}
-          </span>
-        </div>
-      </div>
-      <NCard
-        :bordered="false"
-        class="min-w-0"
-        content-class="wb-api-inspector grid min-w-0 gap-content-gap"
-      >
-        <div class="wb-section-head flex flex-wrap items-center justify-between gap-content-gap">
-          <div>
-            <p class="wb-kicker font-title-weight m-0 text-text-secondary">
-              {{ t('workbench.realRequest') }}
-            </p>
-            <h2 class="leading-title font-title-weight m-0 text-title">
-              {{ t('workbench.response') }}
-            </h2>
-          </div>
-          <UiStatusBadge
-            :tone="state === 'success' ? 'complete' : state === 'loading' ? 'active' : 'inactive'"
-            :label="t(apiCopy[state].label)"
-          />
-        </div>
-        <code class="text-text-secondary"> GET /v1/misc/worldtime?city={{ worldTimeZone }} </code>
-        <p
-          class="wb-feedback m-0 flex flex-wrap items-center gap-content-gap text-text-secondary"
-          role="status"
-          aria-live="polite"
-        >
-          {{ stateMessage }}
-          <span v-if="detail"> · {{ detail }} </span>
-        </p>
-        <div class="wb-page-actions flex flex-wrap items-center justify-between gap-content-gap">
-          <NButton
-            type="primary"
-            :loading="state === 'loading' && appearance.snapshot.value.motion === 'full'"
-            :aria-busy="state === 'loading'"
-            :disabled="!api.configured || state === 'loading'"
-            @click="load"
-          >
-            {{ t(data ? 'workbench.refresh' : 'workbench.request') }}
-          </NButton>
-          <NButton
-            v-show="state === 'loading'"
-            @click="cancel"
-          >
-            {{ t('workbench.cancel') }}
-          </NButton>
-        </div>
-        <pre
-          class="wb-payload m-0 rounded-control whitespace-pre-wrap break-anywhere overflow-auto bg-surface-page p-page-inline text-text-primary"
-          tabindex="0"
-          :aria-label="t('workbench.response')"
-          v-text="payload"
-        />
-      </NCard>
-    </section>
     <section
       class="grid gap-content-gap"
       :aria-label="t('workbench.explore')"
     >
       <div class="wb-section-head flex flex-wrap items-center justify-between gap-content-gap">
-        <h2 class="leading-title font-title-weight m-0 text-title">
+        <h2 class="leading-title font-title-weight m-0 text-subheading">
           {{ t('workbench.explore') }}
         </h2>
         <span class="text-text-secondary">
           {{ themeLabel }}
         </span>
       </div>
-      <div class="wb-capability-links grid gap-content-gap">
+      <div
+        class="grid grid-cols-1 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+      >
         <NCard
           v-for="item in links"
           :key="item.key"
@@ -239,12 +136,12 @@ const settings = registeredRouteDestination({ name: 'control-center' })
           :bordered="false"
           hoverable
           class="wb-link wb-capability-link no-underline min-w-0 text-text-primary"
-          content-class="wb-capability-content grid min-w-0 items-center gap-content-gap"
+          content-class="wb-capability-content grid min-w-0 items-center"
           :href="navigation.resolveHref(item.destination)"
           @click="activate($event, item.destination)"
         >
           <span
-            class="wb-capability-mark font-title-weight text-control-primary text-title"
+            class="wb-capability-mark rounded-control grid row-span-2 place-items-center bg-surface-page text-control-primary text-title"
             aria-hidden="true"
           >
             <span
@@ -264,20 +161,126 @@ const settings = registeredRouteDestination({ name: 'control-center' })
               class="i-lucide-sparkles"
             />
           </span>
-          <strong class="font-title-weight">
+          <strong class="font-title-weight text-subheading">
             {{ t(item.key) }}
           </strong>
           <span class="col-start-2 text-text-secondary">
             {{ t(item.caption) }}
           </span>
           <span
-            class="col-start-3 row-start-1"
+            class="row-span-2 col-start-3 row-start-1 text-control-primary"
             aria-hidden="true"
           >
             ↗
           </span>
         </NCard>
       </div>
+    </section>
+    <section
+      class="wb-api grid items-stretch gap-content-gap layout-regular:grid-cols-5 layout-wide:grid-cols-5"
+      :aria-label="t('workbench.worldTime')"
+    >
+      <div
+        class="wb-clock-plane rounded-panel grid min-w-0 relative overflow-hidden isolate bg-surface-panel p-page-inline text-text-primary layout-regular:col-span-2 layout-wide:col-span-2"
+      >
+        <div
+          class="wb-clock-top flex flex-wrap items-center justify-between relative gap-content-gap"
+        >
+          <span class="text-caption text-text-secondary">
+            UApi / {{ t('workbench.worldTime') }}
+          </span>
+          <span class="text-caption text-control-primary"> GET </span>
+        </div>
+        <div
+          class="wb-clock-content grid content-center justify-items-start relative gap-content-gap py-section-block"
+        >
+          <span class="wb-kicker m-0 text-caption text-text-secondary">
+            {{ t('workbench.beijing') }}
+          </span>
+          <time
+            class="wb-clock leading-title font-title-weight block tabular-nums text-control-primary layout-narrow:text-title layout-regular:text-title"
+            :datetime="data?.datetime"
+          >
+            {{ clock }}
+          </time>
+          <span class="break-anywhere text-body text-text-secondary">
+            {{ data?.datetime ?? t('workbench.awaitingResponse') }}
+          </span>
+        </div>
+        <div
+          class="wb-clock-bottom flex flex-wrap items-center justify-between relative gap-content-gap text-caption text-text-secondary"
+        >
+          <span>
+            {{ data?.timezone ?? '—' }}
+          </span>
+          <span>
+            {{ data?.offset_string ?? '—' }}
+          </span>
+        </div>
+      </div>
+      <NCard
+        :bordered="false"
+        class="min-w-0 layout-regular:col-span-3 layout-wide:col-span-3"
+        content-class="wb-api-inspector grid min-w-0 gap-content-gap"
+      >
+        <div class="wb-section-head flex flex-wrap items-center justify-between gap-content-gap">
+          <div>
+            <p class="wb-kicker font-title-weight m-0 text-text-secondary">
+              {{ t('workbench.realRequest') }}
+            </p>
+            <h2 class="leading-title font-title-weight m-0 text-subheading">
+              {{ t('workbench.response') }}
+            </h2>
+          </div>
+          <UiStatusBadge
+            :tone="state === 'success' ? 'complete' : state === 'loading' ? 'active' : 'inactive'"
+            :label="t(apiCopy[state].label)"
+          />
+        </div>
+        <code class="break-anywhere text-caption text-text-secondary">
+          GET /v1/misc/worldtime?city={{ worldTimeZone }}
+        </code>
+        <div class="wb-feedback">
+          <UiScrollArea owner-id="dashboard-feedback">
+            <p
+              class="m-0 flex flex-wrap items-center gap-content-gap text-text-secondary"
+              role="status"
+              aria-live="polite"
+            >
+              {{ stateMessage }}
+              <span v-if="detail"> · {{ detail }} </span>
+            </p>
+          </UiScrollArea>
+        </div>
+        <div class="wb-page-actions flex flex-wrap items-center justify-between gap-content-gap">
+          <NButton
+            type="primary"
+            :loading="state === 'loading' && appearance.snapshot.value.motion === 'full'"
+            :aria-busy="state === 'loading'"
+            :disabled="!api.configured || state === 'loading'"
+            @click="load"
+          >
+            {{ t(data ? 'workbench.refresh' : 'workbench.request') }}
+          </NButton>
+          <NButton
+            v-show="state === 'loading'"
+            @click="cancel"
+          >
+            {{ t('workbench.cancel') }}
+          </NButton>
+        </div>
+        <UiScrollArea
+          owner-id="dashboard-response"
+          class="wb-payload rounded-control bg-surface-page"
+        >
+          <pre
+            class="m-0 whitespace-pre-wrap break-anywhere p-page-inline text-text-primary"
+            tabindex="0"
+            :aria-label="t('workbench.response')"
+            v-text="payload"
+          />
+        </UiScrollArea>
+      </NCard>
     </section>
   </WorkbenchPage>
 </template>

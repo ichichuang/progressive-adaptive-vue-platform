@@ -1,11 +1,11 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { isDeepStrictEqual } from 'node:util'
 import { createRequire } from 'node:module'
-import { join, relative, resolve } from 'node:path'
-import { runInNewContext } from 'node:vm'
+import { dirname, join, relative, resolve } from 'node:path'
 
 import ts from 'typescript'
 
+import { componentExampleConsumers } from '../../apps/web/src/app/workbench/component-example-consumers'
 import { routeRegistry } from '../../apps/web/src/app/router/route-registry'
 import {
   uiPublicComponentRegistry,
@@ -28,6 +28,8 @@ const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/motion-policy.ts',
   'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
   'packages/ui/src/adapters/motion/ScrollViewport.vue',
+  'packages/ui/src/adapters/motion/FormValidationFeedback.vue',
+  'packages/ui/src/adapters/motion/TableSortIcon.vue',
 ] as const
 const forbiddenMotionPublicApi =
   /\b(?:AdminNavigationSelectionLens|WorkspaceTabsSurface|createMotionFeatureRuntime|LayoutGroup|LazyMotion|MotionConfig|MotionPreference|domMax)\b|motion-v|adapters\/motion/u
@@ -534,9 +536,13 @@ function runOverlayNegativeProbes(
 ): readonly OverlayNegativeProbeResult[] {
   const providerTemplate =
     baseline.get(uiProviderPath)?.match(/<template>[\s\S]*?<\/template>/u)?.[0] ?? ''
+  const overlayRootTag =
+    new RegExp(`<div\\b(?=[^>]*\\bid="${overlayRootId}")[^>]*\\/>`, 'u').exec(
+      providerTemplate,
+    )?.[0] ?? '<missing-overlay-root>'
   const rootAfterSlotTemplate = providerTemplate
-    .replace(`  <div id="${overlayRootId}" />\n`, '')
-    .replace('<slot />', `<slot />\n    <div id="${overlayRootId}" />`)
+    .replace(overlayRootTag, '')
+    .replace('<slot />', `<slot />\n    ${overlayRootTag}`)
   const probes: readonly {
     readonly id: string
     readonly expectedFailureCode: string
@@ -558,8 +564,8 @@ function runOverlayNegativeProbes(
       sources: changedOverlaySource(
         baseline,
         uiProviderPath,
-        `<div id="${overlayRootId}" />`,
-        `<div id="${overlayRootId}" />\n  <div id="${overlayRootId}" />`,
+        overlayRootTag,
+        `${overlayRootTag}\n  <div id="${overlayRootId}" />`,
       ),
     },
     {
@@ -578,8 +584,8 @@ function runOverlayNegativeProbes(
       sources: changedOverlaySource(
         baseline,
         uiProviderPath,
-        `<div id="${overlayRootId}" />`,
-        `<div v-if="true" id="${overlayRootId}" />`,
+        overlayRootTag,
+        overlayRootTag.replace('<div', '<div v-if="true"'),
       ),
     },
     {
@@ -588,8 +594,8 @@ function runOverlayNegativeProbes(
       sources: changedOverlaySource(
         baseline,
         uiAdminShellPath,
-        'const drawerClose = ref<HTMLButtonElement>()',
-        'const drawerClose = ref<HTMLButtonElement>()\ndrawerClose.value.focus()',
+        'const drawerClose = ref<InstanceType<typeof NButton>>()',
+        'const drawerClose = ref<InstanceType<typeof NButton>>()\ndrawerClose.value.$el.focus()',
       ),
     },
   ]
@@ -984,27 +990,101 @@ function mainContentFillViolations(source: string): string[] {
   return violations
 }
 
-async function keyboardFocusPolicyViolations(): Promise<string[]> {
+function workspaceKeyboardViolations(source: string): string[] {
+  const template = parseVueTemplate('WorkspaceTabsSurface.vue', source)
+  if (typeof template === 'string') return [template]
   const violations: string[] = []
-  const source = await readFile(
-    resolve(uiSourceDirectory, 'providers/keyboard-focus-policy.ts'),
-    'utf8',
-  )
-  const provider = await readFile(resolve(rootDirectory, uiProviderPath), 'utf8')
-  const script = scriptContent(provider)
+  let tabs = 0
+  let localMenus = 0
+  const handles = (element: VueTemplateNode, event: string): boolean =>
+    element.props?.some((prop) => prop.name === 'on' && prop.arg?.content === event) === true
+  walkVueElements(template.root, (element) => {
+    if (staticAttribute(element, 'role') === 'tab') {
+      tabs += 1
+      const tabindex = element.props.find(
+        (prop) => prop.name === 'bind' && prop.arg?.content === 'tabindex',
+      )?.exp?.content
+      if (
+        element.tag !== 'NButton' ||
+        tabindex === undefined ||
+        Number.isFinite(Number(tabindex)) ||
+        !handles(element, 'keydown') ||
+        !handles(element, 'focus')
+      )
+        violations.push('WORKSPACE_KEYBOARD_ROVING_TAB')
+    }
+    if (element.tag === 'NDropdown' && handles(element, 'keydown')) localMenus += 1
+  })
+  if (tabs !== 1) violations.push('WORKSPACE_KEYBOARD_ROVING_TAB')
+  if (localMenus !== 1) violations.push('WORKSPACE_KEYBOARD_LOCAL_MENU')
+  const keys = new Set<string>()
+  function inspect(node: ts.Node): void {
+    if (ts.isStringLiteral(node)) keys.add(node.text)
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'addEventListener' &&
+      ts.isIdentifier(node.expression.expression) &&
+      ['document', 'window'].includes(node.expression.expression.text) &&
+      node.arguments[0] !== undefined &&
+      ts.isStringLiteral(node.arguments[0]) &&
+      ['keydown', 'keyup', 'keypress', 'focusin'].includes(node.arguments[0].text)
+    )
+      violations.push('WORKSPACE_KEYBOARD_LOCAL_OWNER')
+    ts.forEachChild(node, inspect)
+  }
+  inspect(sourceFile('WorkspaceTabsSurface.vue', scriptContent(source)))
   if (
-    !script.includes("from './keyboard-focus-policy'") ||
-    !/onBeforeMount\s*\(/u.test(script) ||
-    !/onBeforeUnmount\s*\(/u.test(script)
+    ![
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End',
+      'Enter',
+      ' ',
+      'ContextMenu',
+      'F10',
+      'Escape',
+      'Tab',
+    ].every((key) => keys.has(key))
   )
-    violations.push('KEYBOARD_FOCUS_PROVIDER_LIFECYCLE')
+    violations.push('WORKSPACE_KEYBOARD_KEYS')
+  return [...new Set(violations)]
+}
 
-  const fatal = sourceFile(
-    'fatal-boundary.ts',
-    await readFile(resolve(rootDirectory, 'apps/web/src/app/errors/fatal-boundary.ts'), 'utf8'),
-  )
-  const fatalButtons = new Set<string>()
-  const fatalExcluded = new Set<string>()
+function nativeKeyboardBoundaryViolations(provider: string, fatalSource: string): string[] {
+  const violations: string[] = []
+  const script = sourceFile('UiProvider.vue', scriptContent(provider))
+  const keyboardEvents = new Set(['keydown', 'keyup', 'keypress', 'focusin'])
+  function inspectProvider(node: ts.Node): void {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      (node.expression.name.text === 'blur' ||
+        (node.expression.name.text === 'addEventListener' &&
+          node.arguments[0] !== undefined &&
+          ts.isStringLiteral(node.arguments[0]) &&
+          keyboardEvents.has(node.arguments[0].text)))
+    )
+      violations.push('KEYBOARD_PROVIDER_NATIVE_BEHAVIOR')
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      ['onkeydown', 'onkeyup', 'onkeypress', 'onfocusin'].includes(node.left.name.text)
+    )
+      violations.push('KEYBOARD_PROVIDER_NATIVE_BEHAVIOR')
+    ts.forEachChild(node, inspectProvider)
+  }
+  inspectProvider(script)
+  if (provider.includes('keyboard-focus-policy'))
+    violations.push('KEYBOARD_PROVIDER_NATIVE_BEHAVIOR')
+
+  const fatal = sourceFile('fatal-boundary.ts', fatalSource)
+  const buttons = new Set<string>()
+  const tabOverrides = new Set<string>()
   function inspectFatal(node: ts.Node): void {
     if (
       ts.isVariableDeclaration(node) &&
@@ -1015,185 +1095,108 @@ async function keyboardFocusPolicyViolations(): Promise<string[]> {
       node.initializer.expression.name.text === 'createElement' &&
       node.initializer.arguments[0]?.getText(fatal).replaceAll(/['"]/gu, '') === 'button'
     )
-      fatalButtons.add(node.name.text)
+      buttons.add(node.name.text)
     if (
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
       ts.isPropertyAccessExpression(node.left) &&
       ts.isIdentifier(node.left.expression) &&
-      node.left.name.text === 'tabIndex' &&
-      node.right.getText(fatal).replaceAll(/\s/gu, '') === '-1'
+      node.left.name.text === 'tabIndex'
     )
-      fatalExcluded.add(node.left.expression.text)
+      tabOverrides.add(node.left.expression.text)
     ts.forEachChild(node, inspectFatal)
   }
   inspectFatal(fatal)
-  if (fatalButtons.size !== 1 || [...fatalButtons].some((name) => !fatalExcluded.has(name)))
-    violations.push('KEYBOARD_FOCUS_FATAL_BOUNDARY_EXCLUSION')
-
-  class Control {
-    isContentEditable = false
-    type = 'text'
-    control = true
-    blurred = 0
-    blur(): void {
-      this.blurred += 1
-    }
-    closest(): Control | null {
-      return this.control ? this : null
-    }
-  }
-  class Html extends Control {}
-  class Svg extends Control {}
-  class Input extends Html {}
-  class Textarea extends Html {}
-  const exports: { installKeyboardFocusPolicy?: (host: EventTarget) => () => void } = {}
-  runInNewContext(
-    ts.transpileModule(source, {
-      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-    }).outputText,
-    {
-      exports,
-      HTMLElement: Html,
-      SVGElement: Svg,
-      HTMLInputElement: Input,
-      HTMLTextAreaElement: Textarea,
-    },
-    { timeout: 1000 },
-  )
-  if (typeof exports.installKeyboardFocusPolicy !== 'function')
-    return [...violations, 'KEYBOARD_FOCUS_POLICY_MISSING']
-  const host = new EventTarget()
-  const captures: boolean[] = []
-  const add = host.addEventListener.bind(host)
-  host.addEventListener = (type, listener, options) => {
-    captures.push(options === true || (typeof options === 'object' && options.capture === true))
-    add(type, listener, options)
-  }
-  const dispose = exports.installKeyboardFocusPolicy(host)
-  if (captures.length !== 4 || captures.some((capture) => !capture))
-    violations.push('KEYBOARD_FOCUS_CAPTURE')
-  function dispatch(
-    type: string,
-    target: Control,
-    key = '',
-    modifiers: Readonly<Record<string, boolean>> = {},
-  ): Event {
-    const event = new Event(type, { cancelable: true })
-    Object.defineProperties(event, {
-      target: { value: target },
-      composedPath: { value: () => [target, host] },
-      key: { value: key },
-      altKey: { value: modifiers['altKey'] ?? false },
-      ctrlKey: { value: modifiers['ctrlKey'] ?? false },
-      metaKey: { value: modifiers['metaKey'] ?? false },
-      shiftKey: { value: modifiers['shiftKey'] ?? false },
-    })
-    host.dispatchEvent(event)
-    return event
-  }
-  let vendorEvents = 0
-  const vendor = () => {
-    vendorEvents += 1
-  }
-  add('keydown', vendor)
-  const control = new Html()
-  for (const type of ['keydown', 'keyup']) {
-    for (const key of [
-      'Tab',
-      'ArrowUp',
-      'ArrowDown',
-      'ArrowLeft',
-      'ArrowRight',
-      'Home',
-      'End',
-      'Enter',
-      ' ',
-      'ContextMenu',
-    ]) {
-      const before = vendorEvents
-      if (!dispatch(type, control, key).defaultPrevented || vendorEvents !== before)
-        violations.push('KEYBOARD_FOCUS_NAVIGATION_BLOCK')
-    }
-    for (const key of ['Tab', 'F10']) {
-      if (!dispatch(type, control, key, { shiftKey: true }).defaultPrevented)
-        violations.push('KEYBOARD_FOCUS_SHIFT_NAVIGATION_BLOCK')
-    }
-  }
-  if (control.blurred === 0) violations.push('KEYBOARD_FOCUS_EXISTING_CONTROL_RELEASE')
-  for (const input of [
-    new Input(),
-    new Textarea(),
-    Object.assign(new Html(), { isContentEditable: true }),
-  ]) {
-    dispatch('pointerdown', input)
-    dispatch('focusin', input)
-    for (const key of [
-      'a',
-      'Backspace',
-      'Delete',
-      'ArrowLeft',
-      'ArrowRight',
-      'Home',
-      'End',
-      'Enter',
-      ' ',
-      'Process',
-    ]) {
-      if (dispatch('keydown', input, key).defaultPrevented)
-        violations.push('KEYBOARD_FOCUS_TEXT_EDITING_PRESERVATION')
-    }
-    for (const modifiers of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
-      if (dispatch('keydown', input, 'a', modifiers).defaultPrevented)
-        violations.push('KEYBOARD_FOCUS_BROWSER_SHORTCUT_PRESERVATION')
-    }
-    if (input.blurred !== 0) violations.push('KEYBOARD_FOCUS_POINTER_EDITING_PRESERVATION')
-    if (!dispatch('keydown', input, 'Tab').defaultPrevented || input.blurred !== 0)
-      violations.push('KEYBOARD_FOCUS_EDITING_TAB_BLOCK')
-    const requested = new Input()
-    dispatch('focusin', requested)
-    if (requested.blurred !== 1) violations.push('KEYBOARD_FOCUS_TRANSFER_BLOCK')
-    dispatch('pointerdown', requested)
-    dispatch('focusin', requested)
-    if (requested.blurred !== 1) violations.push('KEYBOARD_FOCUS_POINTER_REENTRY')
-  }
-  for (const type of ['checkbox', 'radio', 'range', 'button']) {
-    const input = Object.assign(new Input(), { type })
-    if (!dispatch('keydown', input, 'ArrowRight').defaultPrevented || input.blurred === 0)
-      violations.push('KEYBOARD_FOCUS_NATIVE_CONTROL_BLOCK')
-  }
-  const svg = new Svg()
-  if (!dispatch('keydown', svg, 'Tab').defaultPrevented || svg.blurred === 0)
-    violations.push('KEYBOARD_FOCUS_SVG_BLOCK')
-  dispatch('focusin', svg)
-  if (svg.blurred < 2) violations.push('KEYBOARD_FOCUS_SVG_BLOCK')
-  const pointerInput = new Input()
-  dispatch('pointerdown', pointerInput)
-  dispatch('keyup', pointerInput, 'Shift')
-  dispatch('focusin', pointerInput)
-  if (pointerInput.blurred !== 0) violations.push('KEYBOARD_FOCUS_POINTER_KEYUP_ORDER')
-  const body = Object.assign(new Html(), { control: false })
-  if (
-    dispatch('keydown', body, 'ArrowDown').defaultPrevented ||
-    dispatch('keydown', control, 'Escape').defaultPrevented
-  )
-    violations.push('KEYBOARD_FOCUS_SCROLL_AND_DISMISSAL_PRESERVATION')
-  dispose()
-  const after = new Html()
-  if (dispatch('keydown', after, 'Tab').defaultPrevented || after.blurred !== 0)
-    violations.push('KEYBOARD_FOCUS_LISTENER_DISPOSAL')
-  dispatch('focusin', after)
-  if (after.blurred !== 0) violations.push('KEYBOARD_FOCUS_LISTENER_DISPOSAL')
-  const disposeAgain = exports.installKeyboardFocusPolicy(host)
-  if (!dispatch('keydown', control, 'Tab').defaultPrevented)
-    violations.push('KEYBOARD_FOCUS_REMOUNT')
-  disposeAgain()
-  host.removeEventListener('keydown', vendor)
+  if (buttons.size !== 1 || [...buttons].some((name) => tabOverrides.has(name)))
+    violations.push('KEYBOARD_FATAL_NATIVE_ACTION')
   return [...new Set(violations)]
 }
 
+async function nativeKeyboardViolations(): Promise<string[]> {
+  const provider = await readFile(resolve(rootDirectory, uiProviderPath), 'utf8')
+  const fatal = await readFile(
+    resolve(rootDirectory, 'apps/web/src/app/errors/fatal-boundary.ts'),
+    'utf8',
+  )
+  const violations = nativeKeyboardBoundaryViolations(provider, fatal)
+  for (const statement of [
+    "window.addEventListener('keydown', event => event.preventDefault(), true)",
+    "window.addEventListener('focusin', event => event.target?.blur(), true)",
+    'window.onkeyup = event => event.stopImmediatePropagation()',
+  ]) {
+    if (
+      !nativeKeyboardBoundaryViolations(
+        provider.replace('</script>', `${statement}\n</script>`),
+        fatal,
+      ).includes('KEYBOARD_PROVIDER_NATIVE_BEHAVIOR')
+    )
+      violations.push('KEYBOARD_PROVIDER_NEGATIVE_PROBE')
+  }
+  const fatalProbe = "const action = document.createElement('button'); action.tabIndex = -1"
+  if (
+    !nativeKeyboardBoundaryViolations(provider, fatalProbe).includes('KEYBOARD_FATAL_NATIVE_ACTION')
+  )
+    violations.push('KEYBOARD_FATAL_NEGATIVE_PROBE')
+  return violations
+}
+
+function scrollDisposalRegistered(source: string): boolean {
+  const parsed = sourceFile('UiScrollArea.vue', scriptContent(source))
+  const controllers = new Set<string>()
+  const hooks: ts.CallExpression[] = []
+  function visit(node: ts.Node): void {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer !== undefined &&
+      ts.isCallExpression(node.initializer) &&
+      node.initializer.typeArguments?.some((type) => type.getText() === 'UiScrollController')
+    )
+      controllers.add(node.name.text)
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'onBeforeUnmount'
+    )
+      hooks.push(node)
+    ts.forEachChild(node, visit)
+  }
+  visit(parsed)
+  function isDisposal(value: ts.Expression | undefined): boolean {
+    return (
+      value !== undefined &&
+      ts.isPropertyAccessExpression(value) &&
+      ts.isIdentifier(value.expression) &&
+      controllers.has(value.expression.text) &&
+      value.name.text === 'dispose'
+    )
+  }
+  return hooks.some((hook) => {
+    const callback = hook.arguments[0]
+    if (isDisposal(callback)) return true
+    if (
+      callback === undefined ||
+      (!ts.isArrowFunction(callback) && !ts.isFunctionExpression(callback))
+    )
+      return false
+    const body = callback.body
+    if (!ts.isBlock(body)) return ts.isCallExpression(body) && isDisposal(body.expression)
+    return body.statements.some((statement) => {
+      const expression =
+        ts.isExpressionStatement(statement) || ts.isReturnStatement(statement)
+          ? statement.expression
+          : undefined
+      return (
+        expression !== undefined &&
+        ts.isCallExpression(expression) &&
+        isDisposal(expression.expression)
+      )
+    })
+  })
+}
+
 export async function validateUiPublicComponents(): Promise<string[]> {
-  const violations: string[] = await keyboardFocusPolicyViolations()
+  const violations: string[] = await nativeKeyboardViolations()
   const overlaySources = await loadOverlaySourceMap()
   const overlayNegativeProbeResults = runOverlayNegativeProbes(overlaySources)
   const registry: UiPublicComponentRegistry = uiPublicComponentRegistry
@@ -1203,6 +1206,26 @@ export async function validateUiPublicComponents(): Promise<string[]> {
     resolve(uiSourceDirectory, 'components/UiScrollArea.vue'),
     'utf8',
   )
+  const [scrollRuntime, scrollProvider, naivePatch] = await Promise.all([
+    readFile(resolve(uiSourceDirectory, 'adapters/scroll/scroll-enhancement-runtime.ts'), 'utf8'),
+    readFile(resolve(rootDirectory, uiProviderPath), 'utf8'),
+    readFile(resolve(rootDirectory, 'patches/naive-ui@2.45.2.patch'), 'utf8'),
+  ])
+  const naiveScrollSections = naivePatch
+    .split('diff --git ')
+    .filter((section) =>
+      /^(?:a\/es\/|a\/lib\/)_internal\/scrollbar\/src\/Scrollbar\.(?:mjs|js)\b/u.test(section),
+    )
+  if (
+    !scrollProvider.includes("'pavp.scroll'") ||
+    naiveScrollSections.length !== 2 ||
+    naiveScrollSections.some((section) => !section.includes('"pavp.scroll"')) ||
+    !scrollRuntime.includes("'data-pavp-naive-scroll'") ||
+    !scrollSource.includes('[data-pavp-naive-scroll]')
+  )
+    violations.push(
+      'Naive scrolling must retain its private shared injection and presentation marker.',
+    )
   violations.push(...mainContentFillViolations(scrollSource))
   const contentProbe = `<script setup lang="ts">
 const localContent = ref<HTMLElement>()
@@ -1267,11 +1290,29 @@ function enhance() {
     !/\.scrollLeft\b/u.test(scrollSource) ||
     !/\.scrollTop\b/u.test(scrollSource) ||
     /PavpScrollbarPrimitive|data-overlayscrollbars-initialize/u.test(scrollSource) ||
-    !/onBeforeUnmount\(\s*[\w$]+\.dispose\s*\)/u.test(scriptContent(scrollSource))
+    !scrollDisposalRegistered(scrollSource)
   )
     violations.push(
       'Scroll Area must retain the native PAVP viewport/controller, private enhancement and disposable execution contract.',
     )
+  const disposalProbe = `<script setup lang="ts">
+const local = Object.freeze<UiScrollController>({})
+onBeforeUnmount(local.dispose)
+</script>`
+  for (const callback of ['local.dispose', '() => local.dispose()', '() => { local.dispose() }'])
+    if (
+      !scrollDisposalRegistered(
+        disposalProbe.replace('onBeforeUnmount(local.dispose)', `onBeforeUnmount(${callback})`),
+      )
+    )
+      violations.push('Scroll disposal check rejected an equivalent lifecycle callback.')
+  for (const callback of ['() => {}', '() => local.dispose', '() => other.dispose()'])
+    if (
+      scrollDisposalRegistered(
+        disposalProbe.replace('onBeforeUnmount(local.dispose)', `onBeforeUnmount(${callback})`),
+      )
+    )
+      violations.push('Scroll disposal check accepted a disconnected lifecycle callback.')
   const workspaceScrollSource = await readFile(
     resolve(uiSourceDirectory, 'adapters/motion/WorkspaceTabsSurface.vue'),
     'utf8',
@@ -1363,15 +1404,34 @@ function enhance() {
       !exactSet(actionKeys, ['refresh', 'close']) ||
       !exactSet(disabledActionKeys, ['refresh', 'close']) ||
       !workspaceScrollSource.includes('@contextmenu.prevent=') ||
-      /\.focus\s*\(|@keydown|while-focus/u.test(workspaceScrollSource) ||
+      workspaceScrollSource.includes('while-focus') ||
       !workspaceScrollSource.includes('getBoundingClientRect()') ||
       /\b(?:useRouter|useWorkspaceStore|KeepAlive|localStorage|sessionStorage)\b/u.test(
         workspaceScrollSource,
       )
     )
       violations.push(
-        'Workspace menu must preserve pointer intents, disable keyboard focus and retain UI ownership.',
+        'Workspace menu must preserve pointer intents, local keyboard ownership and UI-only responsibilities.',
       )
+    violations.push(...workspaceKeyboardViolations(workspaceScrollSource))
+    const keyboardProbes: readonly [string, string][] = [
+      [
+        workspaceScrollSource.replace(/:tabindex="[^"]*"/u, 'tabindex="-1"'),
+        'WORKSPACE_KEYBOARD_ROVING_TAB',
+      ],
+      [workspaceScrollSource.replace(/@keydown="[^"]*"/gu, ''), 'WORKSPACE_KEYBOARD_LOCAL_MENU'],
+      [workspaceScrollSource.replace("'ArrowLeft'", "'UnusedKey'"), 'WORKSPACE_KEYBOARD_KEYS'],
+      [
+        workspaceScrollSource.replace(
+          '</script>',
+          "window.addEventListener('keydown', () => {})\n</script>",
+        ),
+        'WORKSPACE_KEYBOARD_LOCAL_OWNER',
+      ],
+    ]
+    for (const [mutated, code] of keyboardProbes)
+      if (mutated === workspaceScrollSource || !workspaceKeyboardViolations(mutated).includes(code))
+        violations.push('Workspace keyboard in-memory negative probe failed.')
     const dismissal = workspaceMenuDismissalViolations(workspaceScrollSource)
     const menuProbe = `<script setup lang="ts">
 const strip = ref<HTMLElement>()
@@ -1426,15 +1486,15 @@ function dismiss(event?: MouseEvent): void {
       controls.push(element)
       labels.add(label)
       if (
-        element.tag !== 'm.button' ||
-        staticAttribute(element, 'type') !== 'button' ||
+        element.tag !== 'NButton' ||
+        staticAttribute(element, 'attr-type') !== 'button' ||
         hasAttributeOrBinding(element, 'role') ||
         !hasAttributeOrBinding(element, 'disabled') ||
         hasAttributeOrBinding(element, 'tabindex') ||
         hasStructuralCondition(element)
       )
         violations.push(
-          'Workspace adjacent activation controls must remain visible native buttons with disabled semantics.',
+          'Workspace adjacent activation controls must remain visible Naive buttons with disabled semantics.',
         )
     })
     if (controls.length !== 2 || labels.size !== 2 || tablists.length !== 1)
@@ -1447,14 +1507,22 @@ function dismiss(event?: MouseEvent): void {
           violations.push('Workspace adjacent activation controls must remain outside the tablist.')
       })
     let fixedRegionCount = 0
+    const unwrapMotionControl = (element: VueTemplateNode): VueTemplateNode | undefined => {
+      if (!isVueElement(element)) return undefined
+      if (element.tag !== 'M' || !hasAttributeOrBinding(element, 'as-child')) return element
+      const children = element.children.filter(isVueElement)
+      return children.length === 1 && !hasStructuralCondition(element) ? children[0] : undefined
+    }
     walkVueElements(workspaceTemplate.root, (element) => {
       const children = element.children.filter(isVueElement)
+      const firstControl = children[0] === undefined ? undefined : unwrapMotionControl(children[0])
+      const lastControl = children[2] === undefined ? undefined : unwrapMotionControl(children[2])
       if (
         children.length === 3 &&
-        children[0] !== undefined &&
-        controls.includes(children[0]) &&
-        children[2] !== undefined &&
-        controls.includes(children[2]) &&
+        firstControl !== undefined &&
+        controls.includes(firstControl) &&
+        lastControl !== undefined &&
+        controls.includes(lastControl) &&
         children[1] !== undefined &&
         containsElementTag(children[1], 'UiScrollArea')
       )
@@ -1471,7 +1539,7 @@ function dismiss(event?: MouseEvent): void {
     resolve(uiSourceDirectory, 'components/form-contracts.ts'),
     'utf8',
   )
-  const inactiveForms = new Set(['UiForm', 'UiFormField'])
+  const formComponents = new Set(['UiForm', 'UiFormField'])
   const parsedFormContracts = sourceFile('form-contracts.ts', formContracts)
   const formInterfaces = parsedFormContracts.statements.filter(ts.isInterfaceDeclaration)
   const compactType = (value: string): string => value.replace(/\s+/gu, '')
@@ -1481,7 +1549,7 @@ function dismiss(event?: MouseEvent): void {
     const slots = formInterfaces.find((node) => node.name.text === `${component}Slots`)
     if (record === undefined || props === undefined || slots === undefined) {
       violations.push(
-        `${component}: exact generic props, slots and inactive source registration are required.`,
+        `${component}: exact generic props, slots and source registration are required.`,
       )
       continue
     }
@@ -1520,7 +1588,7 @@ function dismiss(event?: MouseEvent): void {
   const formInput = formInterfaces.find((node) => node.name.text === 'UiFormInput')
   if (
     formInput === undefined ||
-    ['validation', 'copy', 'onSubmit'].some(
+    ['schema', 'copy'].some(
       (name) =>
         !formInput.members.some(
           (member) =>
@@ -1530,7 +1598,9 @@ function dismiss(event?: MouseEvent): void {
         ),
     )
   ) {
-    violations.push('UiFormInput must require the real validation port, copy and submit callback.')
+    violations.push(
+      'UiFormInput must require JSON schema and localized copy; trusted extensions stay separate.',
+    )
   }
   const controller = formInterfaces.find((node) => node.name.text === 'UiFormController')
   if (
@@ -1543,17 +1613,42 @@ function dismiss(event?: MouseEvent): void {
         'formId',
         'draftId',
         'fields',
+        'schema',
         'copy',
         'values',
         'dirty',
+        'dirtyFields',
+        'pendingFields',
+        'hasPendingInput',
+        'hasUnsavedChanges',
+        'revision',
+        'loadState',
         'touched',
         'issues',
         'phase',
         'submitting',
         'notice',
+        'text',
+        'getValues',
+        'getInitial',
+        'getValue',
         'setValues',
+        'replaceValues',
+        'setValue',
+        'load',
+        'nodeState',
+        'nodeLabel',
+        'canFocusField',
+        'focusField',
+        'rowKeys',
+        'addItem',
+        'insertItem',
+        'duplicateItem',
+        'removeItem',
+        'moveItem',
         'blur',
         'validate',
+        'validateItem',
         'submit',
         'reset',
         'replaceInitial',
@@ -1562,7 +1657,9 @@ function dismiss(event?: MouseEvent): void {
       ],
     )
   )
-    violations.push('UiFormController must retain the bounded Section 21 public surface.')
+    violations.push(
+      'UiFormController must retain the configured form draft, group and lifecycle surface.',
+    )
   if (
     !indexSource.includes("export { useUiForm } from './composables/use-ui-form'") ||
     !indexSource.includes("export type * from './components/form-contracts'")
@@ -1573,11 +1670,13 @@ function dismiss(event?: MouseEvent): void {
   }
   for (const name of ['UiForm', 'UiFormField']) {
     const source = await readFile(resolve(uiSourceDirectory, `components/${name}.vue`), 'utf8')
-    const expectedGeneric = name === 'UiForm' ? 'I' : 'I, K extends UiFormKey<I>'
+    const expectedGeneric = 'I'
     if (
       !source.includes(`generic="${expectedGeneric}"`) ||
-      !macroContractTypes(source).includes(`${name}Props<${name === 'UiForm' ? 'I' : 'I, K'}>`) ||
-      !macroContractTypes(source).includes(`${name}Slots<${name === 'UiForm' ? 'I' : 'I, K'}>`)
+      !macroContractTypes(source).includes(`${name}Props<I>`) ||
+      !macroContractTypes(source).includes(
+        name === 'UiForm' ? 'UiFormSlots<I>' : 'UiFormFieldSlots',
+      )
     ) {
       violations.push(`${name}: public SFC must preserve the admitted generic props and slots.`)
     }
@@ -1591,6 +1690,7 @@ function dismiss(event?: MouseEvent): void {
       continue
     }
     let forms = 0
+    const feedbackReservations: boolean[] = []
     walkVueElements(template.root, (element) => {
       if (element.tag === 'form' || element.tag === 'NForm') {
         forms += 1
@@ -1610,7 +1710,21 @@ function dismiss(event?: MouseEvent): void {
           'Naive forms may project feedback but must not own domain rules or a second model.',
         )
       }
-      if (element.tag === 'NSelect' || element.tag === 'NDatePicker') {
+      if (element.tag === 'NFormItem')
+        feedbackReservations.push(
+          element.props.some(
+            (property) =>
+              property.type === 7 &&
+              property.name === 'bind' &&
+              property.arg?.content === 'show-feedback' &&
+              property.exp?.content?.trim() === 'false',
+          ),
+        )
+      if (
+        element.tag === 'NSelect' ||
+        element.tag === 'NDatePicker' ||
+        element.tag === 'NPopover'
+      ) {
         if (resolvedAttribute(element, 'to') !== overlayTarget)
           violations.push(`${name}: form popups must use the existing overlay root.`)
       }
@@ -1623,11 +1737,14 @@ function dismiss(event?: MouseEvent): void {
       name === 'PavpNaiveFormField' &&
       (/['"]success['"]/u.test(source) ||
         !source.includes("validationStatus: 'error'") ||
-        !source.includes('var(--ui-color-text-on-status-error)') ||
-        !source.includes('background-color: var(--ui-color-status-error)'))
+        !feedbackReservations.includes(true) ||
+        !source.includes('class="sr-only"') ||
+        source.includes('pavp-form-feedback-lane') ||
+        source.includes('var(--ui-color-text-on-status-error)') ||
+        source.includes('background-color: var(--ui-color-status-error)'))
     ) {
       violations.push(
-        'PavpNaiveFormField must keep ordinary validity neutral and pair Error feedback with its Status fill.',
+        'PavpNaiveFormField must keep ordinary validity neutral and keep full errors accessible without reserving a feedback row.',
       )
     }
   }
@@ -1682,18 +1799,18 @@ function dismiss(event?: MouseEvent): void {
   if (
     !Object.isFrozen(registry) ||
     !Object.isFrozen(registry.records) ||
-    registryRecords.some((record) =>
-      inactiveForms.has(record.exportName)
-        ? record.capabilityStatus !== 'TARGET_INACTIVE' ||
-          record.consumerRouteNames.length !== 0 ||
-          record.sourcePath !== `packages/ui/src/components/${record.exportName}.vue`
-        : record.capabilityStatus !== 'ACTIVE' || record.consumerRouteNames.length === 0,
+    registryRecords.some(
+      (record) =>
+        record.capabilityStatus !== 'ACTIVE' ||
+        (formComponents.has(record.exportName) &&
+          record.sourcePath !== `packages/ui/src/components/${record.exportName}.vue`),
     )
   ) {
-    violations.push(
-      'UI Registry must preserve ACTIVE consumers and exactly two unconsumed TARGET_INACTIVE forms.',
-    )
+    violations.push('UI Registry must preserve the current component status and source ownership.')
   }
+
+  if (!exactSet(Object.keys(componentExampleConsumers), registeredExports))
+    violations.push('Workbench example coverage must name the current public UI components.')
 
   const productRoutes = routeRegistry.filter((record) => record.meta.layout !== 'reading')
   const routeNameBySource = new Map(productRoutes.map((record) => [record.sourcePath, record.name]))
@@ -1790,6 +1907,61 @@ function dismiss(event?: MouseEvent): void {
       if (!consumers.includes(routeName)) consumers.push(routeName)
       directConsumers.set(importedName, consumers)
     }
+
+    // Resolve the existing copy/form composites through local showcase components.
+    const workbenchDirectory = resolve(rootDirectory, 'apps/web/src/app/workbench')
+    const visited = new Set<string>()
+    async function collectShowcaseConsumers(path: string): Promise<void> {
+      if (visited.has(path)) return
+      visited.add(path)
+      const source = await readFile(path, 'utf8')
+      const script = scriptContent(source)
+      for (const component of importedNames(script, '@platform/ui')) {
+        if (
+          ![
+            'UiCopyAction',
+            'UiForm',
+            'UiFormField',
+            'UiRadioCardGroup',
+            'UiTable',
+            'UiTableEditor',
+            'UiScrollArea',
+          ].includes(component) ||
+          !new RegExp(`<${component}\\b`, 'u').test(source)
+        )
+          continue
+        // UiForm's recursive field renderer is itself a UiFormField consumer.
+        for (const name of component === 'UiTableEditor'
+          ? ['UiTableEditor', 'UiForm', 'UiFormField']
+          : component === 'UiForm'
+            ? ['UiForm', 'UiFormField']
+            : [component]) {
+          const consumers = directConsumers.get(name) ?? []
+          if (!consumers.includes(routeName)) consumers.push(routeName)
+          directConsumers.set(name, consumers)
+        }
+      }
+      for (const { fileName } of ts.preProcessFile(script, true, true).importedFiles) {
+        if (!fileName.startsWith('.') || !fileName.endsWith('.vue')) continue
+        const imported = resolve(dirname(path), fileName)
+        const workbenchRelative = relative(workbenchDirectory, imported)
+        if (workbenchRelative.startsWith('..') || workbenchRelative === '') continue
+        await collectShowcaseConsumers(imported)
+      }
+    }
+    await collectShowcaseConsumers(resolve(rootDirectory, sourcePath))
+  }
+
+  for (const consumer of ['TokenSpecimen', 'ComponentSpecimen', 'MotionSpecimen']) {
+    const source = await readFile(
+      resolve(rootDirectory, `apps/web/src/app/workbench/${consumer}.vue`),
+      'utf8',
+    )
+    if (
+      !importedNames(scriptContent(source), '@platform/ui').includes('UiCopyAction') ||
+      !/<UiCopyAction\b/u.test(source)
+    )
+      violations.push(`${consumer}: copy actions must use the shared UiCopyAction owner.`)
   }
 
   for (const record of registryRecords) {
@@ -1798,7 +1970,11 @@ function dismiss(event?: MouseEvent): void {
     const expectedEmits = registeredContractNames(record.emits)
     const expectedSlots = registeredContractNames(record.slots)
 
-    const importedContracts = inactiveForms.has(record.exportName) ? formContracts : ''
+    const importedContracts = formComponents.has(record.exportName)
+      ? formContracts
+      : record.exportName === 'UiTable'
+        ? await readFile(resolve(uiSourceDirectory, 'components/table-contracts.ts'), 'utf8')
+        : ''
     if (!exactSet(macroContractNames(source, 'defineProps', importedContracts), expectedProps)) {
       violations.push(`${record.exportName}: defineProps contract diverged from the UI Registry.`)
     }
@@ -1813,6 +1989,51 @@ function dismiss(event?: MouseEvent): void {
 
     if (macroContractTypes(source).some((contract) => forbiddenMotionPublicApi.test(contract))) {
       violations.push(`${record.exportName}: public macro contract leaks private Motion API.`)
+    }
+
+    if (record.exportName === 'UiCopyAction') {
+      const parsed = sourceFile(record.sourcePath, scriptContent(source))
+      const actualProps: { name: string; type: string; required: boolean }[] = []
+      const defaultContract = { disabled: false }
+      function visitCopyContract(node: ts.Node): void {
+        if (ts.isCallExpression(node) && ts.isIdentifier(node.expression)) {
+          const contract = node.typeArguments?.[0]
+          if (
+            node.expression.text === 'defineProps' &&
+            contract !== undefined &&
+            ts.isTypeLiteralNode(contract)
+          )
+            for (const member of contract.members) {
+              if (!ts.isPropertySignature(member) || member.type === undefined) continue
+              actualProps.push({
+                name: member.name.getText(parsed),
+                type: compactType(member.type.getText(parsed)),
+                required: member.questionToken === undefined,
+              })
+            }
+          const defaults = node.arguments[1]
+          if (
+            node.expression.text === 'withDefaults' &&
+            defaults !== undefined &&
+            ts.isObjectLiteralExpression(defaults)
+          )
+            defaultContract.disabled = defaults.properties.some(
+              (property) =>
+                ts.isPropertyAssignment(property) &&
+                property.name.getText(parsed) === 'disabled' &&
+                property.initializer.kind === ts.SyntaxKind.FalseKeyword,
+            )
+        }
+        ts.forEachChild(node, visitCopyContract)
+      }
+      visitCopyContract(parsed)
+      const expected = record.props.map((prop) => ({
+        name: prop.name,
+        type: compactType(prop.type),
+        required: prop.required,
+      }))
+      if (!isDeepStrictEqual(actualProps, expected) || !defaultContract.disabled)
+        violations.push('UiCopyAction exact Props and disabled default must match its Registry.')
     }
 
     if (record.exportName === 'UiRadioCardGroup') {
@@ -1874,9 +2095,9 @@ function dismiss(event?: MouseEvent): void {
         ? productRoutes.map((route) => route.name)
         : (directConsumers.get(record.exportName) ?? [])
 
-    if (!exactSet(actualConsumers, record.consumerRouteNames)) {
+    if (!exactSet(actualConsumers, componentExampleConsumers[record.exportName] ?? [])) {
       violations.push(
-        `${record.exportName}: actual product-route consumers diverged from Registry.`,
+        `${record.exportName}: actual product-route consumers diverged from workbench coverage.`,
       )
     }
   }
@@ -1885,9 +2106,13 @@ function dismiss(event?: MouseEvent): void {
     'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
+    'packages/ui/src/adapters/naive/PavpNaiveFormChoice.vue',
     'packages/ui/src/adapters/naive/use-form-control.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
+    'packages/ui/src/adapters/naive/pavp-naive-form-theme.ts',
+    'packages/ui/src/adapters/naive/pavp-naive-table-theme.ts',
+    'packages/ui/src/adapters/naive/pavp-naive-table-layout.ts',
     'packages/ui/src/adapters/naive/semantic-naive-theme.ts',
   ] as const
   const actualAdapterFiles = (await readdir(resolve(uiSourceDirectory, 'adapters/naive')))
@@ -1932,6 +2157,15 @@ function dismiss(event?: MouseEvent): void {
 
     const source = relativePath.endsWith('.vue') ? scriptContent(rawSource) : rawSource
     const parsed = sourceFile(relativePath, source)
+
+    if (
+      relativePath !== 'packages/ui/src/components/UiCopyAction.vue' &&
+      /\bnavigator\s*(?:\??\.\s*clipboard\b|\[\s*['"]clipboard['"]\s*\])|\bexecCommand\s*\(\s*['"]copy['"]/u.test(
+        rawSource,
+      )
+    ) {
+      violations.push(`${relativePath}: route app clipboard actions through UiCopyAction.`)
+    }
 
     for (const statement of parsed.statements) {
       if (
@@ -2047,6 +2281,123 @@ function dismiss(event?: MouseEvent): void {
     'radioDark@naive-ui/es/radio/styles/dark',
     'tagDark@naive-ui/es/tag/styles/dark',
     'tooltipDark@naive-ui/es/tooltip/styles/dark',
+    'NAlert@naive-ui/es/alert',
+    'NAffix@naive-ui/es/affix',
+    'NAnchor@naive-ui/es/anchor',
+    'NAnchorLink@naive-ui/es/anchor',
+    'NBackTop@naive-ui/es/back-top',
+    'NAutoComplete@naive-ui/es/auto-complete',
+    'NAvatar@naive-ui/es/avatar',
+    'NAvatarGroup@naive-ui/es/avatar-group',
+    'NBadge@naive-ui/es/badge',
+    'NButtonGroup@naive-ui/es/button-group',
+    'NCalendar@naive-ui/es/calendar',
+    'NCarousel@naive-ui/es/carousel',
+    'NCarouselItem@naive-ui/es/carousel',
+    'NCascader@naive-ui/es/cascader',
+    'NCheckbox@naive-ui/es/checkbox',
+    'NCheckboxGroup@naive-ui/es/checkbox',
+    'NLog@naive-ui/es/log',
+    'NImageGroup@naive-ui/es/image',
+    'NImagePreview@naive-ui/es/image',
+    'NLoadingBarProvider@naive-ui/es/loading-bar',
+    'NMessageProvider@naive-ui/es/message',
+    'NModalProvider@naive-ui/es/modal',
+    'NNotificationProvider@naive-ui/es/notification',
+    'useLoadingBar@naive-ui/es/loading-bar',
+    'useMessage@naive-ui/es/message',
+    'useModal@naive-ui/es/modal',
+    'useNotification@naive-ui/es/notification',
+    'NCol@naive-ui/es/legacy-grid',
+    'NCollapse@naive-ui/es/collapse',
+    'NCollapseItem@naive-ui/es/collapse',
+    'NCollapseTransition@naive-ui/es/collapse-transition',
+    'NMarquee@naive-ui/es/marquee',
+    'NScrollbar@naive-ui/es/scrollbar',
+    'NInfiniteScroll@naive-ui/es/infinite-scroll',
+    'NVirtualList@naive-ui/es/virtual-list',
+    'NColorPicker@naive-ui/es/color-picker',
+    'NCountdown@naive-ui/es/countdown',
+    'NDataTable@naive-ui/es/data-table',
+    'NDescriptions@naive-ui/es/descriptions',
+    'NDescriptionsItem@naive-ui/es/descriptions',
+    'NEllipsis@naive-ui/es/ellipsis',
+    'NDialog@naive-ui/es/dialog',
+    'NDivider@naive-ui/es/divider',
+    'NDrawer@naive-ui/es/drawer',
+    'NDrawerContent@naive-ui/es/drawer',
+    'NDynamicInput@naive-ui/es/dynamic-input',
+    'NDynamicTags@naive-ui/es/dynamic-tags',
+    'NEmpty@naive-ui/es/empty',
+    'NFlex@naive-ui/es/flex',
+    'NFloatButton@naive-ui/es/float-button',
+    'NFloatButtonGroup@naive-ui/es/float-button-group',
+    'NFormItemCol@naive-ui/es/form',
+    'NFormItemGi@naive-ui/es/form',
+    'NFormItemRow@naive-ui/es/form',
+    'NGi@naive-ui/es/grid',
+    'NGradientText@naive-ui/es/gradient-text',
+    'NGrid@naive-ui/es/grid',
+    'NH2@naive-ui/es/typography',
+    'NH3@naive-ui/es/typography',
+    'NHeatmap@naive-ui/es/heatmap',
+    'NHighlight@naive-ui/es/highlight',
+    'NImage@naive-ui/es/image',
+    'NIconWrapper@naive-ui/es/icon-wrapper',
+    'NInputOtp@naive-ui/es/input-otp',
+    'NInputGroup@naive-ui/es/input',
+    'NInputGroupLabel@naive-ui/es/input',
+    'NLayoutContent@naive-ui/es/layout',
+    'NLayoutFooter@naive-ui/es/layout',
+    'NLayoutHeader@naive-ui/es/layout',
+    'NList@naive-ui/es/list',
+    'NListItem@naive-ui/es/list',
+    'NMention@naive-ui/es/mention',
+    'NModal@naive-ui/es/modal',
+    'NNumberAnimation@naive-ui/es/number-animation',
+    'NP@naive-ui/es/typography',
+    'NPagination@naive-ui/es/pagination',
+    'NPageHeader@naive-ui/es/page-header',
+    'NPopconfirm@naive-ui/es/popconfirm',
+    'NPopover@naive-ui/es/popover',
+    'NPopselect@naive-ui/es/popselect',
+    'NProgress@naive-ui/es/progress',
+    'NQrCode@naive-ui/es/qr-code',
+    'NRadio@naive-ui/es/radio',
+    'NRate@naive-ui/es/rate',
+    'NResult@naive-ui/es/result',
+    'NRow@naive-ui/es/legacy-grid',
+    'NSkeleton@naive-ui/es/skeleton',
+    'NSlider@naive-ui/es/slider',
+    'NSpace@naive-ui/es/space',
+    'NSpin@naive-ui/es/spin',
+    'NSplit@naive-ui/es/split',
+    'NStatistic@naive-ui/es/statistic',
+    'NStep@naive-ui/es/steps',
+    'NSteps@naive-ui/es/steps',
+    'NTabPane@naive-ui/es/tabs',
+    'NTab@naive-ui/es/tabs',
+    'NTable@naive-ui/es/table',
+    'NTbody@naive-ui/es/table',
+    'NTd@naive-ui/es/table',
+    'NTabs@naive-ui/es/tabs',
+    'NTh@naive-ui/es/table',
+    'NThead@naive-ui/es/table',
+    'NText@naive-ui/es/typography',
+    'NThing@naive-ui/es/thing',
+    'NTime@naive-ui/es/time',
+    'NTimePicker@naive-ui/es/time-picker',
+    'NTimeline@naive-ui/es/timeline',
+    'NTimelineItem@naive-ui/es/timeline',
+    'NTr@naive-ui/es/table',
+    'NTransfer@naive-ui/es/transfer',
+    'NTree@naive-ui/es/tree',
+    'NTreeSelect@naive-ui/es/tree-select',
+    'NUpload@naive-ui/es/upload',
+    'NUploadDragger@naive-ui/es/upload',
+    'NUploadFileList@naive-ui/es/upload',
+    'NUploadTrigger@naive-ui/es/upload',
+    'NWatermark@naive-ui/es/watermark',
   ]
 
   if (

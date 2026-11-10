@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import type { UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiLocale } from '../components/contracts'
+import type { GlobalThemeOverrides } from 'naive-ui'
 import zhCN from 'naive-ui/es/locales/common/zhCN'
 import enUS from 'naive-ui/es/locales/common/enUS'
 import dateZhCN from 'naive-ui/es/locales/date/zhCN'
 import dateEnUS from 'naive-ui/es/locales/date/enUS'
 import { NConfigProvider } from 'naive-ui/es/config-provider'
-import { computed, onBeforeMount, onBeforeUnmount, provide, toRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, provide, ref, toRef } from 'vue'
 
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
 import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
-import { installKeyboardFocusPolicy } from './keyboard-focus-policy'
+import { loadScrollEnhancement } from '../adapters/scroll/scroll-enhancement-loader'
 
 defineOptions({ name: 'UiProvider' })
 
@@ -23,17 +24,74 @@ defineSlots<{
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
 
-const projection = computed(() => createPavpNaiveThemeProjection(props.appearance))
+const controlMetric = ref<HTMLElement | null>(null)
+const enhancedMetric = ref<HTMLElement | null>(null)
+const metrics = ref<{ control: number; enhanced: number } | null>(null)
+let metricObserver: ResizeObserver | undefined
+const projection = computed(() => {
+  const base = createPavpNaiveThemeProjection(props.appearance)
+  if (metrics.value === null) return base
+  const normal = `${String(metrics.value.control)}px`
+  const large = `${String(Math.max(metrics.value.control, metrics.value.enhanced))}px`
+  const menu = { optionHeightSmall: normal, optionHeightMedium: normal, optionHeightLarge: large }
+  const current: GlobalThemeOverrides = base.themeOverrides
+  function withMenu(theme: { peers?: { InternalSelectMenu?: object } } | undefined) {
+    return {
+      ...theme,
+      peers: {
+        ...theme?.peers,
+        InternalSelectMenu: { ...theme?.peers?.InternalSelectMenu, ...menu },
+      },
+    }
+  }
+  const themeOverrides: GlobalThemeOverrides = {
+    ...current,
+    Select: withMenu(current.Select),
+    AutoComplete: withMenu(current.AutoComplete),
+    Popselect: withMenu(current.Popselect),
+    Cascader: { ...withMenu(current.Cascader), optionHeight: normal },
+  }
+  return { ...base, themeOverrides }
+})
 const appearance = toRef(() => props.appearance)
 
 provide(pavpNaiveAppearanceKey, appearance)
+provide(
+  'pavp.scroll',
+  (host: HTMLElement, viewport: HTMLElement, content: HTMLElement, xScrollable: boolean) => {
+    const hadNestedGuard = host.hasAttribute('data-lenis-prevent')
+    host.toggleAttribute('data-lenis-prevent', true)
+    let disposed = false
+    let detach: (() => void) | undefined
+    void loadScrollEnhancement().then((runtime) => {
+      if (!disposed)
+        detach = runtime?.attachNaiveScrollbar(host, viewport, content, xScrollable, appearance)
+    })
+    return () => {
+      disposed = true
+      detach?.()
+      host.toggleAttribute('data-lenis-prevent', hadNestedGuard)
+    }
+  },
+)
 
-let disposeKeyboardFocus: (() => void) | undefined
-onBeforeMount(() => {
-  disposeKeyboardFocus = installKeyboardFocusPolicy(window)
+onMounted(() => {
+  const control = controlMetric.value
+  const enhanced = enhancedMetric.value
+  if (!control || !enhanced) return
+  const updateMetrics = (): void => {
+    const controlHeight = control.getBoundingClientRect().height
+    const enhancedHeight = enhanced.getBoundingClientRect().height
+    if (controlHeight > 0 && enhancedHeight > 0)
+      metrics.value = { control: controlHeight, enhanced: enhancedHeight }
+  }
+  updateMetrics()
+  metricObserver = new ResizeObserver(updateMetrics)
+  metricObserver.observe(control)
+  metricObserver.observe(enhanced)
 })
 onBeforeUnmount(() => {
-  disposeKeyboardFocus?.()
+  metricObserver?.disconnect()
 })
 </script>
 
@@ -46,12 +104,81 @@ onBeforeUnmount(() => {
     :theme="projection.theme"
     :theme-overrides="projection.themeOverrides"
   >
+    <span
+      ref="controlMetric"
+      class="block invisible absolute h-control"
+      aria-hidden="true"
+    />
+    <span
+      ref="enhancedMetric"
+      class="block invisible absolute min-h-target-enhanced"
+      aria-hidden="true"
+    />
     <slot />
   </NConfigProvider>
 </template>
 
 <style>
 @layer vendor-overrides {
+  .n-cascader-menu {
+    max-width: calc(100vw - 2 * var(--ui-space-page-inline));
+  }
+
+  .n-cascader-menu .n-cascader-submenu-wrapper {
+    overflow-x: auto;
+  }
+
+  .n-pagination--simple .n-pagination-quick-jumper .n-input {
+    text-align: center;
+  }
+
+  .n-color-picker .n-color-picker__fill {
+    overflow: hidden;
+  }
+
+  .n-qr-code {
+    box-sizing: content-box;
+  }
+
+  .n-time-picker-col__item:not(.n-time-picker-col__item--disabled):active {
+    --n-item-text-color: var(--n-item-text-color-active);
+  }
+
+  html[data-motion='full']
+    :where(
+      .n-time-picker-col__item,
+      .n-cascader-option,
+      .n-date-panel-month-calendar__picker-col-item
+    ),
+  html[data-motion='full']
+    :where(.n-time-picker-col__item, .n-date-panel-month-calendar__picker-col-item)::before {
+    transition-duration: var(--ui-motion-duration) !important;
+    transition-timing-function: var(--ui-motion-easing) !important;
+  }
+
+  html[data-motion='reduced']
+    :where(
+      .n-time-picker-col__item,
+      .n-cascader-option,
+      .n-date-panel-month-calendar__picker-col-item
+    ),
+  html[data-motion='reduced']
+    :where(.n-time-picker-col__item, .n-date-panel-month-calendar__picker-col-item)::before {
+    transition-duration: calc(var(--ui-motion-duration) / 2) !important;
+    transition-timing-function: var(--ui-motion-easing) !important;
+  }
+
+  html[data-motion='none']
+    :where(
+      .n-time-picker-col__item,
+      .n-cascader-option,
+      .n-date-panel-month-calendar__picker-col-item
+    ),
+  html[data-motion='none']
+    :where(.n-time-picker-col__item, .n-date-panel-month-calendar__picker-col-item)::before {
+    transition: none !important;
+  }
+
   html[data-motion] :where(.n-button .n-base-wave, .n-button .n-icon-slot) {
     transition-duration: var(--ui-motion-duration);
   }
@@ -95,10 +222,6 @@ onBeforeUnmount(() => {
     animation-timing-function: var(--ui-motion-easing);
   }
 
-  .n-button:focus-visible {
-    box-shadow: var(--ui-admin-shadow-focus-ring);
-  }
-
   .pavp-admin-shell__header-action-tooltip.n-popover {
     box-sizing: border-box;
     border-color: var(--ui-color-border-default);
@@ -106,29 +229,6 @@ onBeforeUnmount(() => {
     border-width: var(--ui-admin-border-width);
   }
 
-  @media (forced-colors: active) {
-    .n-button:focus-visible {
-      outline-offset: var(--ui-admin-focus-outline-offset);
-    }
-  }
-
-  @media (forced-colors: active) {
-    .pavp-form-control
-      :focus-visible:not(
-        :is(
-          .n-input__input-el,
-          .n-input__textarea-el,
-          .n-base-selection-label,
-          .n-base-selection-tags,
-          .n-switch[role='switch']
-        )
-      ) {
-      outline: var(--ui-admin-border-focus);
-    }
-    .pavp-form-control :focus-visible {
-      outline-offset: var(--ui-admin-focus-outline-offset);
-    }
-  }
   .pavp-switch :not(:is(.n-switch__rail, .n-switch__button)) {
     transition-duration: var(--ui-motion-duration);
   }
@@ -146,6 +246,7 @@ onBeforeUnmount(() => {
   }
   .pavp-workspace-context-menu:focus-visible {
     outline: var(--ui-admin-border-focus);
+    outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
   }
   @media (forced-colors: active) {
     .pavp-workspace-context-menu.n-dropdown-menu {
@@ -160,6 +261,27 @@ onBeforeUnmount(() => {
   .pavp-admin-shell__sidebar.n-layout-sider
   > .n-layout-sider__border {
   width: var(--ui-admin-border-width);
+}
+
+.n-avatar.n-avatar {
+  color: var(--ui-color-text-on-action);
+}
+
+.n-cascader-menu .n-cascader-submenu {
+  width: min(
+    calc(var(--ui-layout-admin-drawer-maximum-inline-size) / 2),
+    calc((100vw - 2 * var(--ui-space-page-inline)) / 2)
+  );
+  min-width: min(
+    calc(var(--ui-layout-admin-drawer-maximum-inline-size) / 2),
+    calc((100vw - 2 * var(--ui-space-page-inline)) / 2)
+  );
+  height: auto;
+  max-height: calc(6 * var(--ui-control-height));
+}
+
+.n-cascader-menu .n-cascader-option {
+  min-width: 0;
 }
 
 html[data-motion]
@@ -202,10 +324,6 @@ html[data-motion] .n-button .n-icon-slot {
 @media (forced-colors: active) {
   .pavp-admin-shell__header-action.n-button {
     outline: var(--ui-admin-border-control);
-  }
-
-  .n-button:focus-visible {
-    outline: var(--ui-admin-border-focus);
   }
 }
 
@@ -608,15 +726,6 @@ html[data-motion='none'] .pavp-admin-navigation-dropdown.fade-in-scale-up-transi
   transform: none !important;
 }
 
-@media (forced-colors: active) {
-  .pavp-form-control .n-input__input-el:focus-visible,
-  .pavp-form-control .n-input__textarea-el:focus-visible,
-  .pavp-form-control .n-base-selection-label:focus-visible,
-  .pavp-form-control .n-base-selection-tags:focus-visible,
-  .pavp-form-control .n-switch[role='switch']:focus-visible {
-    outline: var(--ui-admin-border-focus);
-  }
-}
 .pavp-switch :is(.n-switch__rail, .n-switch__button) {
   transition-duration: var(--ui-motion-duration);
 }
@@ -624,7 +733,7 @@ html:not([data-motion='full']) .pavp-switch :is(.n-switch__rail, .n-switch__butt
   transition: none;
 }
 @media (forced-colors: active) {
-  .pavp-switch[role='switch'] {
+  .pavp-switch[role='switch'] .n-switch__rail {
     outline: var(--ui-admin-border-width) solid ButtonText;
   }
 }
@@ -643,5 +752,96 @@ html[data-motion='none'] .pavp-workspace-context-menu .n-dropdown-option-body {
   transition: none !important;
   transform: none !important;
   opacity: 1 !important;
+}
+/* Editing focus stays on Naive's state border. Action focus follows the browser. */
+.n-button:focus-visible {
+  outline: var(--ui-admin-focus-width) solid currentColor;
+  outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+}
+
+/* Keep :has() isolated so unsupported selectors do not discard other controls. */
+.n-radio-button:has(.n-radio-input:focus-visible) {
+  outline: var(--ui-admin-focus-width) solid currentColor;
+  outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+}
+
+.n-checkbox:focus-visible .n-checkbox-box__border {
+  outline: var(--ui-admin-border-focus);
+  outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+}
+
+.n-radio:has(.n-radio-input:focus-visible) .n-radio__dot {
+  outline: var(--ui-admin-border-focus);
+  outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+}
+
+.n-checkbox:is(.n-checkbox--checked, .n-checkbox--indeterminate):focus-visible
+  .n-checkbox-box__border {
+  outline-color: var(--n-check-mark-color);
+}
+
+.n-radio.n-radio--checked:has(.n-radio-input:focus-visible) .n-radio__dot {
+  outline-color: var(--n-dot-color-active);
+}
+
+.n-switch:focus-visible .n-switch__rail {
+  outline: var(--ui-admin-focus-width) solid var(--n-text-color);
+  outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+}
+
+/* Focus geometry is immediate; only color changes may transition. */
+html[data-motion]
+  :is(
+    .n-button,
+    .n-button__state-border,
+    .n-checkbox-box__border,
+    .n-radio__dot,
+    .n-radio-button,
+    .n-radio-button__state-border,
+    .n-switch__rail,
+    .n-input__state-border,
+    .n-base-selection__state-border
+  ) {
+  transition-property: background-color, color, border-color, outline-color, opacity !important;
+  transition-duration: var(--ui-motion-duration) !important;
+  transition-timing-function: var(--ui-motion-easing) !important;
+}
+
+html:not([data-motion='full'])
+  :is(
+    .n-button,
+    .n-button__state-border,
+    .n-checkbox-box__border,
+    .n-radio__dot,
+    .n-radio-button,
+    .n-radio-button__state-border,
+    .n-switch__rail,
+    .n-input__state-border,
+    .n-base-selection__state-border
+  ) {
+  transition: none !important;
+}
+
+@media (forced-colors: active) {
+  .n-button:focus-visible,
+  .n-checkbox:focus-visible .n-checkbox-box__border,
+  .n-checkbox:is(.n-checkbox--checked, .n-checkbox--indeterminate):focus-visible
+    .n-checkbox-box__border,
+  .n-switch:focus-visible .n-switch__rail {
+    outline-color: Highlight;
+  }
+
+  .n-radio-button:has(.n-radio-input:focus-visible),
+  .n-radio:has(.n-radio-input:focus-visible) .n-radio__dot,
+  .n-radio.n-radio--checked:has(.n-radio-input:focus-visible) .n-radio__dot {
+    outline-color: Highlight;
+  }
+
+  .n-input--focus > .n-input__state-border,
+  .n-base-selection:is(.n-base-selection--focus, .n-base-selection--active)
+    > .n-base-selection__state-border {
+    outline: var(--ui-admin-focus-width) solid Highlight;
+    outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));
+  }
 }
 </style>

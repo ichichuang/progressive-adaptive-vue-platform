@@ -25,7 +25,6 @@ export interface UiPublicComponentRegistryRecord {
   readonly slots: readonly UiPublicSlotContract[]
   readonly semanticVariants: readonly string[]
   readonly accessibilityContractIds: readonly string[]
-  readonly consumerRouteNames: readonly string[]
   readonly capabilityStatus: 'TARGET_INACTIVE' | 'ACTIVE'
 }
 
@@ -34,19 +33,159 @@ export interface UiPublicComponentRegistry {
   readonly records: readonly UiPublicComponentRegistryRecord[]
 }
 
-const allProductRoutes = Object.freeze([
-  'workbench-dashboard',
-  'workbench-colors',
-  'workbench-sizes',
-  'workbench-typography',
-  'workbench-interactions',
-] as const)
-
-const contentRoutes = Object.freeze([...allProductRoutes, 'control-center'] as const)
-
 export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
   records: Object.freeze([
+    Object.freeze({
+      id: 'ui-table',
+      exportName: 'UiTable',
+      sourcePath: 'packages/ui/src/components/UiTable.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'table',
+          type: 'UiTableController',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'copy', type: 'UiTableCopy', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'virtualScroll',
+          type: 'boolean',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'height',
+          type: 'UiTableHeight',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'appearance',
+          type: 'UiTableAppearance',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'maxHeight', type: 'number', required: false, defaultValue: null }),
+        Object.freeze({
+          name: 'rowActionsWidth',
+          type: 'number',
+          required: false,
+          defaultValue: null,
+        }),
+      ]),
+      emits: Object.freeze([]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'query',
+          slotPropsType: '{ readonly table: UiTableController }',
+          required: false,
+        }),
+        Object.freeze({
+          name: 'actions',
+          slotPropsType: '{ readonly table: UiTableController }',
+          required: false,
+        }),
+        Object.freeze({
+          name: 'rowActions',
+          slotPropsType: '{ readonly row: UiTableReadonlyRecord }',
+          required: false,
+        }),
+        Object.freeze({
+          name: 'summaryCell',
+          slotPropsType:
+            '{ readonly table: UiTableController; readonly rowKey: string; readonly column: UiTableColumn; readonly value: UiTableSummaryValue; readonly text: string }',
+          required: false,
+        }),
+      ]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze([]),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-table-editor',
+      exportName: 'UiTableEditor',
+      sourcePath: 'packages/ui/src/components/UiTableEditor.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'session',
+          type: 'ReturnType<typeof useUiTableForm>',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'copy',
+          type: 'UiTableEditorCopy',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'contained',
+          type: 'boolean',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'scrollOwnerId',
+          type: 'string',
+          required: false,
+          defaultValue: null,
+        }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({
+          name: 'scrollController',
+          payloadType: '[controller: UiScrollController | null]',
+        }),
+        Object.freeze({ name: 'closed', payloadType: '[]' }),
+        Object.freeze({ name: 'closeBlocked', payloadType: '[]' }),
+      ]),
+      slots: Object.freeze([
+        Object.freeze({ name: 'field', slotPropsType: 'UiFormFieldBinding', required: false }),
+        Object.freeze({ name: 'detail', slotPropsType: 'UiFormFieldBinding', required: false }),
+      ]),
+      semanticVariants: Object.freeze(['modal', 'drawer', 'page']),
+      accessibilityContractIds: Object.freeze([]),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-copy-action',
+      exportName: 'UiCopyAction',
+      sourcePath: 'packages/ui/src/components/UiCopyAction.vue',
+      props: Object.freeze([
+        Object.freeze({ name: 'value', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'copyLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'successLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'failureLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'variant',
+          type: "'card' | 'primary' | 'text' | 'tertiary'",
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'disabled',
+          type: 'boolean',
+          required: false,
+          defaultValue: 'false',
+        }),
+      ]),
+      emits: Object.freeze([]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'default',
+          slotPropsType: 'Readonly<Record<string, never>>',
+          required: false,
+        }),
+      ]),
+      semanticVariants: Object.freeze(['card', 'primary', 'text', 'tertiary']),
+      accessibilityContractIds: Object.freeze([
+        'a11y.enhanced-target',
+        'a11y.text-status-equivalent',
+      ]),
+      capabilityStatus: 'ACTIVE',
+    }),
     Object.freeze({
       id: 'ui-scroll-area',
       exportName: 'UiScrollArea',
@@ -69,6 +208,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       emits: Object.freeze([
         Object.freeze({ name: 'controller', payloadType: 'UiScrollController | null' }),
+        Object.freeze({ name: 'viewport', payloadType: 'HTMLElement | null' }),
       ]),
       slots: Object.freeze([
         Object.freeze({
@@ -79,7 +219,6 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze([]),
-      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -93,10 +232,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: true,
           defaultValue: null,
         }),
-        Object.freeze({ name: 'columns', type: '1 | 2', required: false, defaultValue: '1' }),
+        Object.freeze({ name: 'mode', type: 'UiFormMode', required: false, defaultValue: 'edit' }),
+        Object.freeze({ name: 'columns', type: '1 | 2', required: false, defaultValue: null }),
       ]),
       emits: Object.freeze([]),
       slots: Object.freeze([
+        Object.freeze({ name: 'detail', slotPropsType: 'UiFormFieldBinding', required: false }),
         Object.freeze({
           name: 'default',
           slotPropsType: '{ readonly form: UiFormController<I> }',
@@ -104,7 +245,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         }),
         Object.freeze({
           name: 'field',
-          slotPropsType: '{ [K in UiFormKey<I>]: UiFormFieldBinding<I, K> }[UiFormKey<I>]',
+          slotPropsType: 'UiFormFieldBinding',
           required: false,
         }),
         Object.freeze({
@@ -113,13 +254,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: false,
         }),
       ]),
-      semanticVariants: Object.freeze(['1', '2']),
+      semanticVariants: Object.freeze(['edit', 'detail', '1', '2']),
       accessibilityContractIds: Object.freeze([
         'a11y.form-label-feedback',
         'a11y.form-summary-focus',
       ]),
-      consumerRouteNames: Object.freeze([]),
-      capabilityStatus: 'TARGET_INACTIVE',
+      capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
       id: 'ui-form-field',
@@ -132,13 +272,15 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: true,
           defaultValue: null,
         }),
-        Object.freeze({ name: 'name', type: 'K', required: true, defaultValue: null }),
+        Object.freeze({ name: 'mode', type: 'UiFormMode', required: false, defaultValue: 'edit' }),
+        Object.freeze({ name: 'name', type: 'string', required: true, defaultValue: null }),
       ]),
       emits: Object.freeze([]),
       slots: Object.freeze([
+        Object.freeze({ name: 'detail', slotPropsType: 'UiFormFieldBinding', required: false }),
         Object.freeze({
           name: 'default',
-          slotPropsType: 'UiFormFieldBinding<I, K>',
+          slotPropsType: 'UiFormFieldBinding',
           required: false,
         }),
       ]),
@@ -147,8 +289,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         'a11y.form-label-feedback',
         'a11y.form-summary-focus',
       ]),
-      consumerRouteNames: Object.freeze([]),
-      capabilityStatus: 'TARGET_INACTIVE',
+      capabilityStatus: 'ACTIVE',
     }),
 
     Object.freeze({
@@ -190,11 +331,11 @@ export const uiPublicComponentRegistry = Object.freeze({
         Object.freeze({ name: 'activate', payloadType: 'string' }),
         Object.freeze({ name: 'close', payloadType: 'string' }),
         Object.freeze({ name: 'refresh', payloadType: 'string' }),
+        Object.freeze({ name: 'viewport', payloadType: 'HTMLElement | null' }),
       ]),
       slots: Object.freeze([]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
-      consumerRouteNames: allProductRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -239,6 +380,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           defaultValue: null,
         }),
         Object.freeze({
+          name: 'colorModeSwitchFailed',
+          type: 'boolean',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'wideNavigationCollapsed',
           type: 'boolean',
           required: true,
@@ -253,10 +400,13 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       emits: Object.freeze([
         Object.freeze({ name: 'navigate', payloadType: 'string' }),
+        Object.freeze({ name: 'toggle-color-mode', payloadType: 'void' }),
         Object.freeze({
           name: 'content-scroll-controller',
           payloadType: 'UiScrollController | null',
         }),
+        Object.freeze({ name: 'sidebar-viewport', payloadType: 'HTMLElement | null' }),
+        Object.freeze({ name: 'drawer-viewport', payloadType: 'HTMLElement | null' }),
         Object.freeze({
           name: 'update:expandedNavigationGroupIds',
           payloadType: 'UiAdminNavigationExpansionUpdate',
@@ -287,7 +437,6 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze(['narrow', 'regular', 'wide']),
       accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-navigation']),
-      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -303,7 +452,6 @@ export const uiPublicComponentRegistry = Object.freeze({
       slots: Object.freeze([]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.route-focus-primary-heading']),
-      consumerRouteNames: allProductRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -329,7 +477,6 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze([]),
-      consumerRouteNames: contentRoutes,
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -367,7 +514,6 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze(['card-grid']),
       accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
-      consumerRouteNames: Object.freeze(['workbench-interactions', 'control-center']),
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -388,7 +534,6 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze([]),
       accessibilityContractIds: Object.freeze(['a11y.semantic-section-heading']),
-      consumerRouteNames: Object.freeze(['workbench-interactions']),
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({
@@ -409,7 +554,6 @@ export const uiPublicComponentRegistry = Object.freeze({
         'not-started',
       ]),
       accessibilityContractIds: Object.freeze(['a11y.text-status-equivalent']),
-      consumerRouteNames: Object.freeze(['workbench-dashboard']),
       capabilityStatus: 'ACTIVE',
     }),
   ]),

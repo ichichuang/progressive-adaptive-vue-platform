@@ -172,6 +172,7 @@ export function themeRegistryDocument(result: TokenBuildResult) {
         id: theme.id,
         label: theme.label,
         planes: theme.planes,
+        uiPalette: theme.uiPalette,
       },
       source: theme.source,
       uiPalette: theme.uiPalette,
@@ -398,7 +399,7 @@ function createBuiltInTheme(
   return {
     registryKind: 'built-in',
     themeId,
-    definition: { schemaVersion: ${String(representative.definition.schemaVersion)}, roleContractVersion: ${String(representative.definition.roleContractVersion)}, id: themeId, label, planes },
+    definition: { schemaVersion: ${String(representative.definition.schemaVersion)}, roleContractVersion: ${String(representative.definition.roleContractVersion)}, id: themeId, label, planes, uiPalette },
     source,
     uiPalette,
     bank: { visibility: 'ui-internal', records },

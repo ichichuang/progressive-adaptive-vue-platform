@@ -1,9 +1,20 @@
 import { computed, type Ref } from 'vue'
-import type { UiFormController, UiFormKey } from '../components/form-contracts'
+import type { UiFormController } from '../components/form-contracts'
 
 interface FormPresentation {
   readonly generation: Readonly<Ref<number>>
+  readonly feedbackTarget: Readonly<
+    Ref<{ readonly identity: symbol; readonly revision: number } | null>
+  >
+  isFeedbackCurrent(revision: number): boolean
+  requestFeedback(name: string, revision: number): void
+  readonly feedbackRevision: Readonly<Ref<number>>
+  readonly feedbackScope: Readonly<Ref<string | undefined>>
   readonly summaryRevision: Readonly<Ref<number>>
+  nodeLabel(name: string): string
+  nodeControlId(name: string): string
+  setNodeFocusTarget(name: string, owner: symbol, focus: (() => void) | null): void
+  fieldIdentity(name: string): symbol
   isSummaryCurrent(revision: number): boolean
   canFocusField(name: string): boolean
   focusField(name: string): boolean
@@ -31,14 +42,12 @@ export function useFormPresentation<I>(props: { readonly form: UiFormController<
     if (form.phase.value === 'submitting') return form.copy.submitting()
     return form.notice.value?.() ?? ''
   })
-  function canFocus(name: UiFormKey<I> | null): name is UiFormKey<I> {
+  function canFocus(name: string | null): name is string {
     if (name === null) return false
     return presentation.value.canFocusField(name)
   }
-  function label(name: UiFormKey<I> | null): string {
-    return name === null
-      ? ''
-      : (props.form.fields.find((field) => field.name === name)?.label() ?? '')
+  function label(name: string | null): string {
+    return name === null ? '' : presentation.value.nodeLabel(name)
   }
   return { announcement, presentation, canFocus, label }
 }

@@ -1,92 +1,226 @@
 import { toRaw, type DeepReadonly } from 'vue'
+import type {
+  UiFormCondition,
+  UiFormFlag,
+  UiFormNode,
+  UiFormReference,
+  UiFormValue,
+} from '../components/form-contracts'
 import { isDateOnly } from '../components/form-control-values'
 
-import type { UiFormDraftValue, UiFormFieldConfig, UiFormKey } from '../components/form-contracts'
-
-export function isFormKey<I extends object>(values: I, name: string): name is UiFormKey<I> {
-  return Object.hasOwn(values, name)
+const reserved = new Set(['__proto__', 'prototype', 'constructor'])
+export function formPathParts(path: string): string[] {
+  const parts = path.split('.')
+  if (parts.some((part) => !part || reserved.has(part) || /[\[\]]/u.test(part)))
+    throw new TypeError('Invalid form path.')
+  return parts
 }
-
-function isDraftValue(value: unknown): value is UiFormDraftValue {
-  return (
-    value === null ||
-    typeof value === 'string' ||
-    typeof value === 'boolean' ||
-    (typeof value === 'number' && Number.isFinite(value)) ||
-    (Array.isArray(value) &&
-      Array.from<unknown>(value).every(
-        (item: unknown) =>
-          typeof item === 'string' || (typeof item === 'number' && Number.isFinite(item)),
-      ))
-  )
-}
-
-export function sameDraftValue(left: unknown, right: unknown): boolean {
-  return Array.isArray(left) && Array.isArray(right)
-    ? left.length === right.length && left.every((item: unknown, index) => item === right[index])
-    : left === right
-}
-
-export function cloneDraft<I extends object>(values: I): I {
-  // Only the admitted flat scalar/selection shape crosses this cloning boundary.
-  for (const value of Object.values(values)) {
-    if (!isDraftValue(value)) throw new TypeError('Unsupported form draft value.')
-  }
-  const cloned = { ...toRaw(values) }
-  for (const key of Object.keys(cloned)) {
-    if (isFormKey<I>(cloned, key)) cloned[key] = structuredClone(toRaw(values[key]))
-  }
-  return cloned
-}
-
-export function freezeDraftValue<T>(value: T): DeepReadonly<T> {
-  // Callers pass an owned, validated flat draft or one of its values. Freeze its
-  // only possible nested containers as well; no mutable alias escapes.
-  if (typeof value === 'object' && value !== null) {
-    for (const child of Object.values(value)) {
-      if (Array.isArray(child)) Object.freeze(child)
+export function cloneDraft<T>(value: T): T {
+  function clone(candidate: unknown, ancestors: Set<object>, depth: number): UiFormValue {
+    if (candidate === null || typeof candidate === 'string' || typeof candidate === 'boolean')
+      return candidate
+    if (typeof candidate === 'number' && Number.isFinite(candidate)) return candidate
+    if (typeof candidate !== 'object' || depth > 32)
+      throw new TypeError('Forms require finite JSON data.')
+    const raw = toRaw(candidate)
+    if (ancestors.has(raw)) throw new TypeError('Form data cannot contain cycles.')
+    ancestors.add(raw)
+    let result: UiFormValue
+    if (Array.isArray(raw)) {
+      if (raw.length > 10000 || Object.keys(raw).length !== raw.length)
+        throw new TypeError('Invalid form array.')
+      result = raw.map((item: unknown) => clone(item, ancestors, depth + 1))
+    } else {
+      if (Object.getPrototypeOf(raw) !== Object.prototype && Object.getPrototypeOf(raw) !== null)
+        throw new TypeError('Forms require plain JSON objects.')
+      const entries = Object.entries(raw)
+      if (Reflect.ownKeys(raw).length !== entries.length)
+        throw new TypeError('Unsupported form object keys.')
+      const object: Record<string, UiFormValue> = {}
+      for (const [key, child] of entries) {
+        if (reserved.has(key)) throw new TypeError('Reserved form key.')
+        object[key] = clone(child, ancestors, depth + 1)
+      }
+      result = object
     }
+    ancestors.delete(raw)
+    return result
+  }
+  return clone(value, new Set(), 0) as T
+}
+export function freezeDraftValue<T>(value: T): DeepReadonly<T> {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    for (const child of Object.values(value)) freezeDraftValue(child)
     Object.freeze(value)
   }
   return value as DeepReadonly<T>
 }
-
-export function checkDraft<I extends object>(
-  values: I,
-  fields: readonly UiFormFieldConfig<I>[],
-): void {
-  const prototype: unknown = Object.getPrototypeOf(values)
-  if (prototype !== Object.prototype && prototype !== null) {
-    throw new TypeError('Form drafts require a plain top-level value object.')
-  }
-  const keys = Object.keys(values)
+export function sameDraftValue(left: unknown, right: unknown): boolean {
+  if (left === right) return true
   if (
-    Reflect.ownKeys(values).length !== keys.length ||
-    keys.length !== fields.length ||
-    new Set(fields.map((field) => field.name)).size !== keys.length ||
-    fields.some(
-      (field) => !isFormKey(values, field.name) || !field.name || /[.\[\]]/u.test(field.name),
+    typeof left !== 'object' ||
+    left === null ||
+    typeof right !== 'object' ||
+    right === null ||
+    Array.isArray(left) !== Array.isArray(right)
+  )
+    return false
+  const entries = Object.entries(left)
+  return (
+    entries.length === Object.keys(right).length &&
+    entries.every(
+      ([key, value]) =>
+        Object.hasOwn(right, key) && sameDraftValue(value, (right as Record<string, unknown>)[key]),
     )
-  ) {
-    throw new TypeError('Form fields must cover every draft key exactly once.')
+  )
+}
+export function getFormValue(values: unknown, path: string): UiFormValue | undefined {
+  let current = values
+  for (const part of formPathParts(path)) {
+    if (typeof current !== 'object' || current === null || !Object.hasOwn(current, part))
+      return undefined
+    current = (current as Record<string, unknown>)[part]
   }
-  for (const field of fields) {
-    const value = values[field.name]
-    if (
-      !isDraftValue(value) ||
-      ((field.kind === 'text' || field.kind === 'textarea') && typeof value !== 'string') ||
-      (field.kind === 'number' && value !== null && typeof value !== 'number') ||
-      (field.kind === 'switch' && typeof value !== 'boolean') ||
-      (field.kind === 'date' &&
-        value !== null &&
-        (typeof value !== 'string' || !isDateOnly(value))) ||
-      (field.kind === 'select' &&
-        value !== null &&
-        typeof value !== 'string' &&
-        typeof value !== 'number') ||
-      (field.kind === 'multi-select' && !Array.isArray(value))
-    ) {
-      throw new TypeError('Form value is incompatible with its configured control.')
+  return current as UiFormValue | undefined
+}
+export function setFormValue(values: unknown, path: string, value: UiFormValue): void {
+  const parts = formPathParts(path)
+  const last = parts.pop()
+  let current = values
+  for (const part of parts) {
+    if (typeof current !== 'object' || current === null || !Object.hasOwn(current, part))
+      throw new TypeError('Unknown form path.')
+    current = (current as Record<string, unknown>)[part]
+  }
+  if (
+    last === undefined ||
+    typeof current !== 'object' ||
+    current === null ||
+    !Object.hasOwn(current, last)
+  )
+    throw new TypeError('Unknown form path.')
+  ;(current as Record<string, unknown>)[last] = value
+}
+export function createFormValues(
+  nodes: readonly UiFormNode[],
+  supplied?: unknown,
+  budget = { remaining: 10000 },
+): Record<string, UiFormValue> {
+  if (
+    supplied !== undefined &&
+    (typeof supplied !== 'object' || supplied === null || Array.isArray(supplied))
+  )
+    throw new TypeError('Form groups require an object.')
+  const input = supplied === undefined ? {} : (cloneDraft(supplied) as Record<string, UiFormValue>)
+  if (Object.keys(input).some((key) => !nodes.some((node) => node.name === key)))
+    throw new TypeError('Unknown form value key.')
+  const result: Record<string, UiFormValue> = {}
+  for (const node of nodes) {
+    if (--budget.remaining < 0) throw new TypeError('Form values exceed the supported size.')
+    const value = input[node.name]
+    if (node.kind === 'group') result[node.name] = createFormValues(node.fields, value, budget)
+    else if (node.kind === 'repeat') {
+      const rows =
+        value === undefined ? Array.from({ length: node.minItems ?? 0 }, () => ({})) : value
+      if (!Array.isArray(rows)) throw new TypeError('Repeat groups require an array.')
+      result[node.name] = rows.map((row) => createFormValues(node.fields, row, budget))
+    } else {
+      const actual =
+        value !== undefined
+          ? value
+          : node.defaultValue !== undefined
+            ? node.defaultValue
+            : node.kind === 'switch'
+              ? false
+              : node.kind === 'multi-select'
+                ? []
+                : node.kind === 'text' || node.kind === 'textarea'
+                  ? ''
+                  : null
+      const valid =
+        node.kind === 'custom' ||
+        ((node.kind === 'text' || node.kind === 'textarea') && typeof actual === 'string') ||
+        (node.kind === 'number' && (actual === null || typeof actual === 'number')) ||
+        (node.kind === 'switch' && typeof actual === 'boolean') ||
+        (node.kind === 'date' &&
+          (actual === null || (typeof actual === 'string' && isDateOnly(actual)))) ||
+        (node.kind === 'select' &&
+          (actual === null || typeof actual === 'string' || typeof actual === 'number')) ||
+        (node.kind === 'multi-select' &&
+          Array.isArray(actual) &&
+          actual.every((item) => typeof item === 'string' || typeof item === 'number') &&
+          new Set(actual).size === actual.length)
+      if (!valid) throw new TypeError(`Incompatible value for form field ${node.name}.`)
+      result[node.name] = cloneDraft(actual)
     }
   }
+  return result
+}
+export interface FormEntry {
+  readonly node: UiFormNode
+  readonly path: string
+  readonly group: string
+  readonly ancestors: readonly string[]
+}
+export function formEntries(
+  nodes: readonly UiFormNode[],
+  values: unknown,
+  prefix = '',
+  ancestors: readonly string[] = [],
+): FormEntry[] {
+  return nodes.flatMap((node) => {
+    const path = prefix ? `${prefix}.${node.name}` : node.name
+    const entry: FormEntry = { node, path, group: prefix, ancestors }
+    if (node.kind === 'group')
+      return [entry, ...formEntries(node.fields, values, path, [...ancestors, path])]
+    if (node.kind === 'repeat') {
+      const rows = getFormValue(values, path)
+      return [
+        entry,
+        ...(Array.isArray(rows)
+          ? rows.flatMap((_, index) =>
+              formEntries(node.fields, values, `${path}.${String(index)}`, [...ancestors, path]),
+            )
+          : []),
+      ]
+    }
+    return [entry]
+  })
+}
+export function resolveFormReference(reference: UiFormReference, group: string): string {
+  return reference.scope === 'group' && group ? `${group}.${reference.field}` : reference.field
+}
+export function evaluateFormFlag(
+  flag: UiFormFlag | undefined,
+  values: unknown,
+  group: string,
+): boolean {
+  if (typeof flag === 'boolean' || flag === undefined) return flag === true
+  const evaluate = (condition: UiFormCondition): boolean => {
+    if ('all' in condition) return condition.all.every(evaluate)
+    if ('any' in condition) return condition.any.some(evaluate)
+    if ('not' in condition) return !evaluate(condition.not)
+    const value = getFormValue(values, resolveFormReference(condition, group))
+    const empty =
+      value === undefined ||
+      value === null ||
+      value === '' ||
+      (Array.isArray(value) && value.length === 0)
+    switch (condition.operator) {
+      case 'eq':
+        return sameDraftValue(value, condition.value)
+      case 'neq':
+        return !sameDraftValue(value, condition.value)
+      case 'in':
+        return (
+          Array.isArray(condition.value) &&
+          condition.value.some((item) => sameDraftValue(value, item))
+        )
+      case 'empty':
+        return empty
+      case 'not-empty':
+        return !empty
+    }
+  }
+  return evaluate(flag)
 }

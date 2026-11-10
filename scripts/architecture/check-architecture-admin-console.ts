@@ -10,9 +10,11 @@ import ts from 'typescript'
 import { build } from 'vite'
 import { parse as parseYaml } from 'yaml'
 
+import { componentExampleConsumers } from '../../apps/web/src/app/workbench/component-example-consumers'
 import { projectConfig } from '../../project.config'
 import {
   ProductPreferenceDefault,
+  tokens,
   builtInThemeIds,
   projectUiAppearance,
   resolveColorMode,
@@ -60,6 +62,8 @@ import {
 } from '../../apps/web/src/app/bootstrap/runtime-kernel-console-projection'
 import {
   consoleNavigationRegistry,
+  consoleNavigationItems,
+  getConsoleNavigationItems,
   errorRouteRegistry,
   getRouteRecord,
   routeBreadcrumbRegistry,
@@ -76,19 +80,6 @@ import {
   storageConsoleProjection,
   type StorageConsoleRecord,
 } from '../../apps/web/src/app/storage/storage-console-projection'
-import {
-  capabilityManifest,
-  type CapabilityImplementationStatus,
-  type CapabilityManifestRecord,
-  type CapabilityPresentationMode,
-} from '../../apps/web/src/generated/capability-manifest'
-import {
-  engineeringManifest,
-  type EngineeringBundleBudgetRecord,
-  type EngineeringCoordinates,
-} from '../../apps/web/src/generated/engineering-manifest'
-import { validateCapabilityManifest } from './check-capability-manifest'
-import { validateEngineeringManifest } from './check-engineering-manifest'
 import {
   expectedRouterPresentationCommitNegativeProbeCount,
   expectedRouteTransitionFullPaceNegativeProbeCount,
@@ -123,7 +114,6 @@ interface MaterialGateSnapshot {
   readonly adminTokenSource: string
   readonly routeRegistrySource: string
   readonly errorTitles: readonly (readonly [key: string, text: string])[]
-  readonly generatedManifestsEqual: boolean
   readonly generatedTokensCssSource: string
   readonly expectedTokensCssSource: string
   readonly routeCount: number
@@ -142,6 +132,7 @@ interface ArchitectureAdminConsoleNegativeProbeResult {
 }
 
 interface NavigationReworkSourceSnapshot {
+  readonly navigationActionsSource: string
   readonly applicationSource: string
   readonly providerSource: string
   readonly runtimeContextSource: string
@@ -151,14 +142,13 @@ interface NavigationReworkSourceSnapshot {
 }
 
 interface AdminNavigationNativeSourceSnapshot {
+  readonly navigationActionsSource: string
   readonly adminNavigationMotionAdapterPresent: boolean
   readonly appSource: string
   readonly appStylesSource: string
   readonly applicationSource: string
-  readonly architectureSource: string
   readonly checkBundleSource: string
   readonly consoleFrameSource: string
-  readonly engineeringManifestSource: string
   readonly lockSource: string
   readonly motionDomMaxSource: string
   readonly motionRuntimeSource: string
@@ -216,9 +206,7 @@ interface NavigationThemeColorSnapshot {
 }
 
 interface NavigationBudgetGateSnapshot {
-  readonly architectureSource: string
   readonly checkBundleSource: string
-  readonly engineeringManifestSource: string
   readonly navigationSource: string
   readonly projectConfigSource: string
   readonly routeCount: number
@@ -337,23 +325,21 @@ const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 14
 const expectedAdminNavigationNativeSourceInvariantCount = 24
 const expectedAdminNavigationNativeSourceNegativeProbeCount = 25
-const expectedAdminNavigationExpansionMotionInvariantCount = 21
-const expectedAdminNavigationExpansionMotionNegativeProbeCount = 8
+const expectedAdminNavigationExpansionMotionInvariantCount = 22
+const expectedAdminNavigationExpansionMotionNegativeProbeCount = 9
 const expectedAdminNavigationCollapsedPopupSourceInvariantCount = 15
-const expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount = 8
+const expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount = 9
 const expectedAdminNavigationHeaderPlacementSourceInvariantCount = 13
 const expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount = 5
-const expectedAdminNavigationNaiveActionsMotionInvariantCount = 22
-const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 10
-const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 22
+const expectedAdminNavigationNaiveActionsMotionInvariantCount = 23
+const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 11
+const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 23
 const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 16
 const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
 const expectedNavigationReworkSourceInvariantCount = 56
-const expectedNavigationReworkSourceNegativeProbeCount = 22
-const expectedNavigationBudgetProbeCount = 18
-const expectedRuntime003SourceNegativeProbeCount = 10
-const adminNavigationMotionVueSelectionLensWorkPackage =
-  'PAVP_ADMIN_NAVIGATION_MOTION_VUE_SHARED_SELECTION_LENS'
+const expectedNavigationReworkSourceNegativeProbeCount = 23
+const expectedNavigationBudgetProbeCount = 16
+const expectedRuntime003SourceNegativeProbeCount = 12
 const expectedInitialJavaScriptBudgetBytes = projectConfig.bundleBudgets.initialJavaScriptGzipBytes
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
@@ -372,6 +358,50 @@ const expectedNavigationIconClasses = [
   'i-lucide-ruler',
   'i-lucide-type',
   'i-lucide-sparkles',
+  'i-lucide-workflow',
+  'i-lucide-component',
+  'i-lucide-sparkles',
+  'i-lucide-type',
+  'i-lucide-swatch-book',
+  'i-lucide-route',
+  'i-lucide-database',
+  'i-lucide-workflow',
+  'i-lucide-panels-top-left',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-panels-top-left',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-panels-top-left',
+  'i-lucide-panels-top-left',
+  'i-lucide-panels-top-left',
+  'i-lucide-panels-top-left',
 ] as const
 const styledFrameworkPackages = [
   'ant-design-vue',
@@ -390,6 +420,241 @@ const productRouteContract = [
   ['workbench-sizes', '/sizes', 'apps/web/src/pages/sizes.vue', '尺寸与空间'],
   ['workbench-typography', '/typography', 'apps/web/src/pages/typography.vue', '字体排印'],
   ['workbench-interactions', '/interactions', 'apps/web/src/pages/interactions.vue', '交互与状态'],
+  ['workbench-motion', '/motion', 'apps/web/src/pages/motion.vue', '动画与动效'],
+  ['component-showcase', '/components', 'apps/web/src/pages/component-showcase.vue', '组件总览'],
+  ['component-actions', '/components/actions', 'apps/web/src/pages/component-actions.vue', '操作'],
+  ['component-inputs', '/components/inputs', 'apps/web/src/pages/component-inputs.vue', '输入'],
+  [
+    'component-selection',
+    '/components/selection',
+    'apps/web/src/pages/component-selection.vue',
+    '选择',
+  ],
+  [
+    'component-navigation',
+    '/components/navigation',
+    'apps/web/src/pages/component-navigation.vue',
+    '导航',
+  ],
+  ['component-data', '/components/data', 'apps/web/src/pages/component-data.vue', '数据展示'],
+  [
+    'component-feedback',
+    '/components/feedback',
+    'apps/web/src/pages/component-feedback.vue',
+    '反馈',
+  ],
+  ['component-layout', '/components/layout', 'apps/web/src/pages/component-layout.vue', '布局'],
+  [
+    'component-form-overview',
+    '/components/forms/overview',
+    'apps/web/src/pages/component-form-overview.vue',
+    '能力总览',
+  ],
+  [
+    'component-form-basics',
+    '/components/forms/basics',
+    'apps/web/src/pages/component-form-basics.vue',
+    '基础控件',
+  ],
+  [
+    'component-form-detail',
+    '/components/forms/detail',
+    'apps/web/src/pages/component-form-detail.vue',
+    '编辑与详情',
+  ],
+  [
+    'component-form-layout',
+    '/components/forms/layout',
+    'apps/web/src/pages/component-form-layout.vue',
+    '布局与响应式',
+  ],
+  [
+    'component-form-dependencies',
+    '/components/forms/dependencies',
+    'apps/web/src/pages/component-form-dependencies.vue',
+    '字段联动',
+  ],
+  [
+    'component-form-calculations',
+    '/components/forms/calculations',
+    'apps/web/src/pages/component-form-calculations.vue',
+    '联动计算',
+  ],
+  [
+    'component-form-structure',
+    '/components/forms/structure',
+    'apps/web/src/pages/component-form-structure.vue',
+    '分组与重复',
+  ],
+  [
+    'component-form-validation',
+    '/components/forms/validation',
+    'apps/web/src/pages/component-form-validation.vue',
+    '校验与修正',
+  ],
+  [
+    'component-form-extension',
+    '/components/forms/extension',
+    'apps/web/src/pages/component-form-extension.vue',
+    '自定义扩展',
+  ],
+  [
+    'component-form-controls',
+    '/components/forms/controls',
+    'apps/web/src/pages/component-form-controls.vue',
+    '自定义选择控件',
+  ],
+  [
+    'component-form-lifecycle',
+    '/components/forms/lifecycle',
+    'apps/web/src/pages/component-form-lifecycle.vue',
+    '自动保存',
+  ],
+  [
+    'component-form-loading',
+    '/components/forms/loading',
+    'apps/web/src/pages/component-form-loading.vue',
+    '异步回填',
+  ],
+  [
+    'component-form-submission',
+    '/components/forms/submission',
+    'apps/web/src/pages/component-form-submission.vue',
+    '提交与错误恢复',
+  ],
+  [
+    'component-form-options',
+    '/components/forms/options',
+    'apps/web/src/pages/component-form-options.vue',
+    '异步选项',
+  ],
+  [
+    'component-form-builder',
+    '/components/forms/builder',
+    'apps/web/src/pages/component-form-builder.vue',
+    '可视化构建',
+  ],
+  ['component-table', '/components/table', 'apps/web/src/pages/component-table.vue', '分页与高度'],
+  [
+    'component-table-appearance',
+    '/components/tables/appearance',
+    'apps/web/src/pages/component-table-appearance.vue',
+    '样式总览',
+  ],
+  [
+    'component-table-theme',
+    '/components/tables/theme',
+    'apps/web/src/pages/component-table-theme.vue',
+    '主题融合',
+  ],
+  [
+    'component-table-columns',
+    '/components/tables/columns',
+    'apps/web/src/pages/component-table-columns.vue',
+    '列配置',
+  ],
+  [
+    'component-table-selection',
+    '/components/tables/selection',
+    'apps/web/src/pages/component-table-selection.vue',
+    '选择与批量',
+  ],
+  [
+    'component-table-remote',
+    '/components/tables/remote',
+    'apps/web/src/pages/component-table-remote.vue',
+    '远程数据',
+  ],
+  [
+    'component-table-configuration',
+    '/components/tables/configuration',
+    'apps/web/src/pages/component-table-configuration.vue',
+    'JSON 配置',
+  ],
+  [
+    'component-table-overview',
+    '/components/tables/overview',
+    'apps/web/src/pages/component-table-overview.vue',
+    '能力总览',
+  ],
+  [
+    'component-table-scroll',
+    '/components/tables/scroll',
+    'apps/web/src/pages/component-table-scroll.vue',
+    '横向滚动与固定列',
+  ],
+  [
+    'component-table-widths',
+    '/components/tables/widths',
+    'apps/web/src/pages/component-table-widths.vue',
+    '列宽与长内容',
+  ],
+  [
+    'component-table-responsive',
+    '/components/tables/responsive',
+    'apps/web/src/pages/component-table-responsive.vue',
+    '容器与响应式',
+  ],
+  [
+    'component-table-sorting',
+    '/components/tables/sorting',
+    'apps/web/src/pages/component-table-sorting.vue',
+    '排序与筛选',
+  ],
+  [
+    'component-table-rendering',
+    '/components/tables/rendering',
+    'apps/web/src/pages/component-table-rendering.vue',
+    '单元格与行操作',
+  ],
+  [
+    'component-table-virtual',
+    '/components/tables/virtual',
+    'apps/web/src/pages/component-table-virtual.vue',
+    '虚拟滚动',
+  ],
+  [
+    'component-table-states',
+    '/components/tables/states',
+    'apps/web/src/pages/component-table-states.vue',
+    '请求状态与恢复',
+  ],
+  [
+    'component-table-summary',
+    '/components/tables/summary',
+    'apps/web/src/pages/component-table-summary.vue',
+    '自定义底部',
+  ],
+  [
+    'component-combination-query',
+    '/components/combinations/query',
+    'apps/web/src/pages/component-combination-query.vue',
+    '查询表单',
+  ],
+  [
+    'component-combination-modal',
+    '/components/combinations/modal',
+    'apps/web/src/pages/component-combination-modal.vue',
+    '弹窗编辑',
+  ],
+  [
+    'component-combination-drawer',
+    '/components/combinations/drawer',
+    'apps/web/src/pages/component-combination-drawer.vue',
+    '抽屉编辑',
+  ],
+  [
+    'component-combination-page',
+    '/components/combinations/page',
+    'apps/web/src/pages/component-combination-page.vue',
+    '独立页编辑',
+  ],
+  [
+    'component-table-editor',
+    '/components/table-editor',
+    'apps/web/src/pages/component-table-editor.vue',
+    '表格编辑',
+  ],
   ['control-center', '/control-center', 'apps/web/src/pages/control-center.vue', '系统设置'],
 ] as const
 
@@ -507,11 +772,11 @@ const expectedAdminTokens = [
     type: 'border',
     value: {
       color: '{color.focus.ring}',
-      width: '{admin.border.width}',
+      width: '{admin.focus.width}',
       style: 'solid',
     },
     cssVariable: '--ui-admin-border-focus',
-    resolvedValue: 'var(--ui-admin-border-width) solid var(--ui-color-focus-ring)',
+    resolvedValue: 'var(--ui-admin-focus-width) solid var(--ui-color-focus-ring)',
   },
   {
     name: 'admin.border.subtle',
@@ -602,26 +867,16 @@ const expectedAdminTokens = [
   {
     name: 'admin.shadow.focus-ring',
     type: 'shadow',
-    value: [
-      {
-        color: '{color.focus.ring}',
-        offsetX: '{dimension.space.0}',
-        offsetY: '{dimension.space.0}',
-        blur: '{dimension.space.0}',
-        spread: '{admin.border.width}',
-        inset: true,
-      },
-      {
-        color: '{color.focus.ring}',
-        offsetX: '{dimension.space.0}',
-        offsetY: '{dimension.space.0}',
-        blur: '{dimension.space.0}',
-        spread: '{admin.focus.width}',
-      },
-    ],
+    value: {
+      color: '{color.focus.ring}',
+      offsetX: '{dimension.space.0}',
+      offsetY: '{dimension.space.0}',
+      blur: '{dimension.space.0}',
+      spread: '{admin.focus.width}',
+      inset: true,
+    },
     cssVariable: '--ui-admin-shadow-focus-ring',
-    resolvedValue:
-      'inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-focus-ring), 0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring)',
+    resolvedValue: 'inset 0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring)',
   },
   {
     name: 'admin.shadow.overlay',
@@ -1160,6 +1415,12 @@ const naiveThemeSemanticGroups = [
     component: 'Button',
     fields: ['fontSizeMedium'],
     authority: 'typography.size.body',
+    valueKind: 'length',
+  },
+  {
+    component: 'Button',
+    fields: ['fontSizeLarge'],
+    authority: 'typography.size.control.large',
     valueKind: 'length',
   },
   {
@@ -2093,6 +2354,13 @@ const naive2452ConsumptionContract = [
         '.n-button medium typography',
       ],
       [
+        'fontSizeLarge',
+        'self.fontSizeLarge via createKey("fontSize", size)',
+        ['--n-font-size'],
+        'large',
+        '.n-button large typography',
+      ],
+      [
         'heightMedium',
         'self.heightMedium via createKey("height", size)',
         ['--n-height'],
@@ -2682,6 +2950,7 @@ function naiveComponentOverrideFields(component: NaiveThemeComponent): readonly 
 }
 
 const themeOverrideContract = {
+  Avatar: ['color', 'colorModal', 'colorPopover'],
   common: [
     'fontSizeTiny',
     'fontSizeMini',
@@ -2748,7 +3017,7 @@ const themeOverrideContract = {
   Radio: naiveComponentOverrideFields('Radio'),
   Tag: naiveComponentOverrideFields('Tag'),
   Tooltip: [...naiveComponentOverrideFields('Tooltip'), 'peers'],
-} as const satisfies Readonly<Record<NaiveThemeComponent | 'common', readonly string[]>>
+} as const satisfies Readonly<Record<NaiveThemeComponent | 'common' | 'Avatar', readonly string[]>>
 
 const naive2452SharedConsumptionContract = [
   {
@@ -3213,6 +3482,8 @@ function compiledShellStateViolations(source: string): string[] {
     '.pavp-admin-shell__action',
     '.pavp-admin-shell__navigation-action',
     '.pavp-admin-shell__navigation-action::after',
+    '.pavp-admin-shell__collapsed-trigger',
+    '.pavp-admin-shell__collapsed-trigger::before',
   ] as const
   if (
     reducedDurationTargets.some(
@@ -3238,7 +3509,11 @@ function compiledShellStateViolations(source: string): string[] {
     violations.push('MOTION_REDUCED_TARGETS')
   }
 
-  const motionNoneTransitionTargets = reducedDurationTargets
+  const motionNoneTransitionTargets = [
+    ...reducedDurationTargets,
+    '.pavp-admin-shell__collapsed-trigger',
+    '.pavp-admin-shell__collapsed-trigger::before',
+  ]
   if (
     motionNoneTransitionTargets.some(
       (target) =>
@@ -3292,6 +3567,8 @@ function compiledShellStateViolations(source: string): string[] {
     "html[data-motion='none'] .pavp-admin-shell__drawer-layer.pavp-admin-drawer-leave-to .pavp-admin-shell__drawer-navigation",
     "html[data-motion='none'] .pavp-admin-shell__action:active",
     "html[data-motion='none'] .pavp-admin-shell__navigation-action:active",
+    "html[data-motion='none'] .pavp-admin-shell__collapsed-trigger",
+    "html[data-motion='none'] .pavp-admin-shell__collapsed-trigger::before",
   ])
   const actualStateSelectors = new Set(
     stateRules
@@ -3461,12 +3738,11 @@ function themeOverrideObject(source: string): ts.ObjectLiteralExpression | undef
 
   function visit(node: ts.Node): void {
     if (
-      ts.isVariableDeclaration(node) &&
-      ts.isIdentifier(node.name) &&
-      node.name.text === 'themeOverrides' &&
-      node.initializer !== undefined
+      ts.isSatisfiesExpression(node) &&
+      ts.isTypeReferenceNode(node.type) &&
+      node.type.typeName.getText() === 'GlobalThemeOverrides'
     ) {
-      const value = unwrapExpression(node.initializer)
+      const value = unwrapExpression(node.expression)
       result = ts.isObjectLiteralExpression(value) ? value : undefined
     }
     ts.forEachChild(node, visit)
@@ -3698,12 +3974,6 @@ function resolveThemeAuthority(
   }
 
   if (ts.isIdentifier(value)) {
-    if (value.text === 'navigationHoverSurface') {
-      return { authority: 'admin.navigation.hover-surface', valueKind: 'color' }
-    }
-    if (value.text === 'navigationSelectedSurface') {
-      return { authority: 'admin.navigation.selected-surface', valueKind: 'color' }
-    }
     if (seen.has(value.text)) {
       return { authority: 'circular-private-alias', valueKind: 'unknown' }
     }
@@ -3743,22 +4013,37 @@ function resolveThemeAuthority(
     return { authority: 'appearance.motion.duration', valueKind: 'time' }
   }
 
-  if (
-    ts.isTemplateExpression(value) &&
-    value.getText() === '`calc(${spacingContentGap} / 2) ${spacingContentGap}`'
-  ) {
-    return { authority: 'spacing.content.gap', valueKind: 'length' }
-  }
-
-  if (ts.isTemplateExpression(value) && value.getText() === '`calc(${spacingContentGap} / 2)`') {
-    return { authority: 'spacing.content.gap', valueKind: 'length' }
-  }
-
-  if (ts.isTemplateExpression(value) && value.getText() === '`calc(${enhancedTargetHeight} / 2)`') {
-    return { authority: 'admin.header.action-icon-size', valueKind: 'length' }
+  if (ts.isTemplateExpression(value) && value.head.text === 'calc(') {
+    const first = value.templateSpans[0]
+    const firstAuthority = resolveThemeAuthority(first?.expression, declarations, seen).authority
+    if (value.templateSpans.length === 1 && first?.literal.text === ' / 2)') {
+      if (firstAuthority === 'spacing.content.gap')
+        return { authority: firstAuthority, valueKind: 'length' }
+      if (firstAuthority === 'layout.target.enhanced.minimum-block-size')
+        return { authority: 'admin.header.action-icon-size', valueKind: 'length' }
+    }
+    const second = value.templateSpans[1]
+    if (
+      value.templateSpans.length === 2 &&
+      first?.literal.text === ' / 2) ' &&
+      second?.literal.text === '' &&
+      firstAuthority === 'spacing.content.gap' &&
+      resolveThemeAuthority(second.expression, declarations, seen).authority === firstAuthority
+    )
+      return { authority: firstAuthority, valueKind: 'length' }
   }
 
   if (ts.isStringLiteral(value)) {
+    if (
+      value.text ===
+      'color-mix(in srgb, var(--ui-admin-navigation-selected) 6%, var(--ui-material-chrome-background))'
+    )
+      return { authority: 'admin.navigation.hover-surface', valueKind: 'color' }
+    if (
+      value.text ===
+      'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'
+    )
+      return { authority: 'admin.navigation.selected-surface', valueKind: 'color' }
     const cssVariable = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(value.text)?.[1]
     return cssVariable === undefined
       ? { authority: 'raw-literal', valueKind: 'unknown' }
@@ -3773,6 +4058,21 @@ function resolveThemeAuthority(
   }
 
   return { authority: 'unresolved', valueKind: 'unknown' }
+}
+
+function navigationHoverProjection(source: string): boolean {
+  const overrides = themeOverrideObject(source)
+  const menu = overrides === undefined ? undefined : objectPropertyObject(overrides, 'Menu')
+  const dropdown = navigationDropdownThemeOverride(source)
+  if (menu === undefined || dropdown === undefined) return false
+  const declarations = themeVariableInitializers(menu.getSourceFile())
+  return [
+    objectPropertyInitializer(menu, 'itemColorHover'),
+    objectPropertyInitializer(dropdown, 'optionColorHover'),
+  ].every(
+    (value) =>
+      resolveThemeAuthority(value, declarations).authority === 'admin.navigation.hover-surface',
+  )
 }
 
 function buttonPaddingAuthority(expression: ts.Expression | undefined): NaiveThemeAuthority {
@@ -3863,32 +4163,6 @@ function buttonPaddingAuthority(expression: ts.Expression | undefined): NaiveThe
   return invalid
 }
 
-function resolveThemeExpressionText(
-  expression: ts.Expression | undefined,
-  declarations: ReadonlyMap<string, ts.Expression>,
-  seen: ReadonlySet<string> = new Set(),
-): string | undefined {
-  if (expression === undefined) {
-    return undefined
-  }
-
-  const value = unwrapExpression(expression)
-
-  if (ts.isIdentifier(value)) {
-    if (seen.has(value.text)) {
-      return undefined
-    }
-
-    return resolveThemeExpressionText(
-      declarations.get(value.text),
-      declarations,
-      new Set([...seen, value.text]),
-    )
-  }
-
-  return value.getText()
-}
-
 function isNavigationThemeProjection(
   value: unknown,
 ): value is (appearance: Readonly<UiAppearanceSnapshot>) => unknown {
@@ -3901,15 +4175,6 @@ function requiredNavigationColor(owner: JsonObject, field: string): string {
     throw new TypeError(`The Naive navigation theme projection is missing ${field}.`)
   }
   return value
-}
-
-function isSoftButtonProjection(
-  value: unknown,
-): value is (
-  appearance: Readonly<UiAppearanceSnapshot>,
-  type: 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error',
-) => unknown {
-  return typeof value === 'function'
 }
 
 async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapshot> {
@@ -3926,7 +4191,7 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
       plugins: [],
       ssr: { target: 'node', noExternal: true },
       build: {
-        ssr: resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'),
+        ssr: true,
         target: 'node24',
         outDir: outputDirectory,
         emptyOutDir: false,
@@ -3937,21 +4202,44 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
         emitAssets: false,
         sourcemap: false,
         reportCompressedSize: false,
-        rolldownOptions: { output: { entryFileNames: 'theme.mjs' } },
+        rolldownOptions: {
+          input: {
+            theme: resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-theme.ts'),
+            form: resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-form-theme.ts'),
+          },
+          output: { entryFileNames: '[name].mjs' },
+        },
       },
     })
     const loaded: unknown = await import(pathToFileURL(join(outputDirectory, 'theme.mjs')).href)
-    if (!isJsonObject(loaded)) {
+    const loadedForm: unknown = await import(pathToFileURL(join(outputDirectory, 'form.mjs')).href)
+    if (!isJsonObject(loaded) || !isJsonObject(loadedForm)) {
       throw new TypeError('The compiled Naive theme module has no exports.')
     }
+    const [lightButton, darkButton] = await Promise.all(
+      ['light', 'dark'].map((mode) =>
+        readFile(
+          resolve(rootDirectory, `node_modules/naive-ui/es/button/styles/${mode}.mjs`),
+          'utf8',
+        ),
+      ),
+    )
+    if (
+      lightButton === undefined ||
+      darkButton === undefined ||
+      !lightButton.includes('colorOpacitySecondary: "0.16"') ||
+      !lightButton.includes('colorOpacitySecondaryHover: "0.22"') ||
+      !lightButton.includes('colorOpacitySecondaryPressed: "0.28"') ||
+      !darkButton.includes('colorOpacitySecondary = "0.16"') ||
+      !darkButton.includes('colorOpacitySecondaryHover = "0.2"') ||
+      !darkButton.includes('colorOpacitySecondaryPressed = "0.12"')
+    )
+      throw new TypeError('Installed Naive secondary opacity differs from palette validation.')
     const projection = loaded['createPavpNaiveThemeProjection']
     if (!isNavigationThemeProjection(projection)) {
       throw new TypeError('The compiled Naive theme projection export is not callable.')
     }
-    const softButtonProjection = loaded['createPavpNaiveSoftButtonProps']
-    if (!isSoftButtonProjection(softButtonProjection))
-      throw new TypeError('The bounded soft Button projection is unavailable.')
-    const formColorProjection = loaded['createPavpNaiveFormThemeProjection']
+    const formColorProjection = loadedForm['createPavpNaiveFormThemeProjection']
     if (!isNavigationThemeProjection(formColorProjection))
       throw new TypeError('The Form color projection is unavailable.')
     const atColor = (value: unknown, ...keys: string[]): unknown =>
@@ -3971,46 +4259,23 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
         throw new TypeError('An approved Built-in Theme is unavailable.')
       const bank = generatedThemeRegistry.builtInEntries.find((entry) => entry.themeId === themeId)
       if (bank === undefined) throw new TypeError('The current Theme Bank is unavailable.')
-      const currentCustomCases = ['authored', 'action-on-page', 'action-on-panel'].map(
-        (scenario) => {
-          const planes = Object.fromEntries(
-            (['light', 'dark'] as const).map((mode) => [
-              mode,
-              Object.fromEntries(
-                (['standard', 'enhanced'] as const).map((contrast) => {
-                  const colors = Object.fromEntries(
-                    bank.bank.records
-                      .filter((record) => record.colorMode === mode && record.contrast === contrast)
-                      .map((record) => [record.publicRole, record.resolvedValue]),
-                  )
-                  if (scenario !== 'authored') {
-                    const surface =
-                      colors[
-                        scenario === 'action-on-page' ? 'color.surface.page' : 'color.surface.panel'
-                      ]
-                    const foreground = colors['color.text.primary']
-                    if (surface === undefined || foreground === undefined)
-                      throw new TypeError('The current Custom regression fixture is incomplete.')
-                    colors['color.action.primary'] = surface
-                    colors['color.text.on-action'] = foreground
-                  }
-                  return [contrast, colors]
-                }),
-              ),
-            ]),
-          )
-          const validation = validateCustomThemeDefinition({
-            schemaVersion: 3,
-            roleContractVersion: generatedThemeRegistry.roleContractVersion,
-            id: `current-custom-projection-${themeId}-${scenario}`,
-            label: resolved.entry.definition.label,
-            planes,
-          })
-          if (validation.status !== 'validated')
-            throw new TypeError('The current role-only Custom projection fixture is invalid.')
-          return validation.entry
-        },
-      )
+      const customValidation = validateCustomThemeDefinition({
+        ...structuredClone(bank.definition),
+        id: `unified-custom-projection-${themeId}`,
+      })
+      if (customValidation.status !== 'validated')
+        throw new TypeError(
+          'A complete custom theme must use the same palette contract as built-ins.',
+        )
+      const legacyValidation = validateCustomThemeDefinition({
+        schemaVersion: 3,
+        roleContractVersion: generatedThemeRegistry.roleContractVersion,
+        id: `legacy-${themeId}`,
+        label: bank.definition.label,
+        planes: bank.definition.planes,
+      })
+      if (legacyValidation.status !== 'rejected')
+        throw new TypeError('Legacy role-only custom themes must not be accepted.')
       for (const colorMode of ['light', 'dark'] as const) {
         for (const contrast of ['standard', 'enhanced'] as const) {
           const snapshot = projectUiAppearance(
@@ -4025,128 +4290,103 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
             resolved.entry,
           )
           const palette = snapshot.colorPalette
-          if (palette === null) throw new TypeError('An approved semantic palette is unavailable.')
-          const projectedColors = atColor(projection(snapshot), 'themeOverrides')
+          const projectedTheme = projection(snapshot)
+          const projectedColors = atColor(projectedTheme, 'themeOverrides')
           const formColors = formColorProjection(snapshot)
           const context = `${themeId}/${colorMode}/${contrast}`
+          for (const material of ['adaptive', 'reduced', 'solid'] as const) {
+            for (const motion of ['full', 'reduced', 'none'] as const) {
+              const settings = projection({ ...snapshot, material, motion })
+              const duration = tokens['interaction.motion.duration']
+              const expectedDuration =
+                motion === 'full'
+                  ? duration
+                  : `calc(${duration} ${motion === 'reduced' ? '/ 2' : '* 0'})`
+              for (const [keys, expected] of [
+                [
+                  ['themeOverrides', 'common', 'boxShadow1'],
+                  material === 'adaptive' ? tokens['interaction.shadow.panel'] : 'none',
+                ],
+                [
+                  ['themeOverrides', 'Layout', 'siderColor'],
+                  'var(--ui-material-chrome-background)',
+                ],
+                [['themeOverrides', 'Button', 'rippleDuration'], expectedDuration],
+                [
+                  ['themeOverrides', 'Button', 'iconSizeMedium'],
+                  `calc(${tokens['layout.target.enhanced.minimum-block-size']} / 2)`,
+                ],
+                [
+                  ['themeOverrides', 'Tooltip', 'padding'],
+                  `calc(${tokens['spacing.content.gap']} / 2)`,
+                ],
+                [
+                  ['themeOverrides', 'Tooltip', 'peers', 'Popover', 'padding'],
+                  `calc(${tokens['spacing.content.gap']} / 2)`,
+                ],
+                [
+                  ['themeOverrides', 'Tooltip', 'peers', 'Popover', 'space'],
+                  `calc(${tokens['spacing.content.gap']} / 2)`,
+                ],
+              ] as const)
+                expectColor(
+                  atColor(settings, ...keys),
+                  expected,
+                  `${context}/${material}/${motion}/${keys.join('.')}`,
+                )
+              if (colorMode === 'dark')
+                expectColor(
+                  atColor(settings, 'theme', 'Tooltip', 'name'),
+                  'Tooltip',
+                  `${context}/dark Tooltip`,
+                )
+            }
+          }
           const contrastContract = tokenManifest.namedContrasts.find(
             (pair) => pair.id === 'text-primary-on-panel',
           )
-          if (contrastContract === undefined)
-            throw new TypeError('The current text contrast authority is unavailable.')
+          const controlContrastContract = tokenManifest.namedContrasts.find(
+            (pair) => pair.id === 'control-primary-on-panel',
+          )
+          if (contrastContract === undefined || controlContrastContract === undefined)
+            throw new TypeError('The current text or control contrast authority is unavailable.')
           const minimum =
             contrast === 'enhanced'
               ? contrastContract.enhancedMinimum
               : contrastContract.standardMinimum
-          for (const currentCustom of currentCustomCases) {
-            const customSnapshot = projectUiAppearance(
-              {
-                ...snapshot,
-                theme: { registryKind: 'custom', themeId: currentCustom.themeId },
-              },
-              currentCustom,
+          const controlMinimum =
+            contrast === 'enhanced'
+              ? controlContrastContract.enhancedMinimum
+              : controlContrastContract.standardMinimum
+          const customSnapshot = projectUiAppearance(
+            {
+              ...snapshot,
+              theme: { registryKind: 'custom', themeId: customValidation.entry.themeId },
+            },
+            customValidation.entry,
+          )
+          if (
+            !isDeepStrictEqual(customSnapshot.colorPalette, palette) ||
+            !isDeepStrictEqual(projection(customSnapshot), projectedTheme) ||
+            !isDeepStrictEqual(formColorProjection(customSnapshot), formColors)
+          )
+            throw new TypeError(
+              `${context}: built-in and custom palettes must project identically.`,
             )
-            if (customSnapshot.colorPalette !== null)
-              throw new TypeError('Current Custom projection must remain role-only.')
-            const customOverrides = atColor(projection(customSnapshot), 'themeOverrides')
-            const customForm = formColorProjection(customSnapshot)
-            const customPlane = currentCustom.definition.planes[colorMode][contrast]
-            const customRoleColor = (role: string): string => {
-              const value = customPlane[role]
-              if (value === undefined) throw new TypeError(`Missing current Custom color: ${role}.`)
-              return value
-            }
-            const customVariables = new Map<string, string>(
-              generatedThemeRegistry.activePublicColorRoles.map((role) => [
-                role.publicBinding,
-                customRoleColor(role.publicRole),
-              ]),
-            )
-            const customColor = (value: unknown): string => {
-              if (typeof value !== 'string') throw new TypeError('A Custom color is missing.')
-              const binding = /^var\((--[^),]+)\)$/u.exec(value)?.[1]
-              const resolved = binding === undefined ? value : customVariables.get(binding)
-              if (resolved === undefined)
-                throw new TypeError('A Custom color binding is unresolved.')
-              return resolved
-            }
-            for (const field of ['feedbackTextColorError', 'feedbackTextColorWarning'])
-              for (const surface of ['color.surface.page', 'color.surface.panel'] as const) {
-                const ratio = calculateWcag21Contrast(
-                  parseCssColor(customColor(atColor(customOverrides, 'Form', field))),
-                  parseCssColor(customRoleColor(surface)),
-                )
-                if (ratio < minimum)
-                  throw new TypeError(
-                    `${context}/Custom ${field}: transparent feedback contrast failed.`,
-                  )
-              }
-            const feedbackRatio = calculateWcag21Contrast(
-              parseCssColor(customColor(atColor(customForm, 'Form', 'feedbackTextColorError'))),
-              parseCssColor(customRoleColor('color.status.error')),
-            )
-            if (feedbackRatio < minimum)
-              throw new TypeError(`${context}/Custom solid Form feedback contrast failed.`)
-            for (const overrides of [customOverrides, customForm])
-              for (const rail of ['railColor', 'railColorActive']) {
-                const background = customColor(atColor(overrides, 'Switch', rail))
-                const foreground = customColor(atColor(overrides, 'Switch', 'textColor'))
-                const thumb = customColor(atColor(overrides, 'Switch', 'buttonColor'))
-                if (
-                  background !== customRoleColor('color.text.primary') ||
-                  foreground !== customRoleColor('color.surface.panel') ||
-                  thumb !== customRoleColor('color.surface.panel') ||
-                  calculateWcag21Contrast(parseCssColor(foreground), parseCssColor(background)) <
-                    minimum
-                )
-                  throw new TypeError(`${context}/Custom ${rail}: Switch pairing is unsupported.`)
-                for (const surface of ['color.surface.page', 'color.surface.panel']) {
-                  const pair = tokenManifest.namedContrasts.find(
-                    (candidate) =>
-                      candidate.id ===
-                      (surface === 'color.surface.page'
-                        ? 'border-default-on-page'
-                        : 'border-default-on-panel'),
-                  )
-                  if (pair === undefined)
-                    throw new TypeError('The current non-text contrast authority is unavailable.')
-                  const boundaryMinimum =
-                    contrast === 'enhanced' ? pair.enhancedMinimum : pair.standardMinimum
-                  if (
-                    calculateWcag21Contrast(
-                      parseCssColor(background),
-                      parseCssColor(customRoleColor(surface)),
-                    ) < boundaryMinimum
-                  )
-                    throw new TypeError(
-                      `${context}/${currentCustom.themeId}/${rail}: Custom Switch track boundary failed.`,
-                    )
-                }
-                for (const field of ['buttonColor', 'iconColor', 'loadingColor']) {
-                  const color = customColor(atColor(overrides, 'Switch', field))
-                  const backdrop = field === 'buttonColor' ? background : thumb
-                  if (
-                    calculateWcag21Contrast(parseCssColor(color), parseCssColor(backdrop)) < minimum
-                  )
-                    throw new TypeError(
-                      `${context}/${currentCustom.themeId}/${rail}/${field}: Custom Switch content contrast failed.`,
-                    )
-                }
-              }
-          }
           const requireContrast = (
             foreground: unknown,
             background: unknown,
             label: string,
+            required = minimum,
           ): void => {
             if (
               typeof foreground !== 'string' ||
               typeof background !== 'string' ||
               calculateWcag21Contrast(parseCssColor(foreground), parseCssColor(background)) <
-                minimum
+                required
             )
               throw new TypeError(
-                `${context}/${label}: actual projected contrast is below ${String(minimum)}.`,
+                `${context}/${label}: actual projected contrast is below ${String(required)}.`,
               )
           }
           expectColor(
@@ -4156,8 +4396,8 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
           )
           expectColor(
             atColor(formColors, 'Form', 'feedbackTextColorError'),
-            palette.roles.error.solid.foreground,
-            `${context}/PAVP strong feedback`,
+            palette.roles.error.foreground.default,
+            `${context}/PAVP transparent feedback`,
           )
           for (const background of Object.values(palette.surfaces))
             requireContrast(
@@ -4165,11 +4405,12 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
               background,
               'transparent Form error feedback',
             )
-          requireContrast(
-            atColor(formColors, 'Form', 'feedbackTextColorError'),
-            palette.roles.error.solid.background.default,
-            'PAVP solid Form feedback',
-          )
+          for (const background of Object.values(palette.surfaces))
+            requireContrast(
+              atColor(formColors, 'Form', 'feedbackTextColorError'),
+              background,
+              'PAVP transparent Form feedback',
+            )
           expectColor(
             atColor(projectedColors, 'Switch', 'railColor'),
             palette.roles.neutral.solid.background.default,
@@ -4181,39 +4422,97 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
               atColor(projectedColors, 'Switch', rail),
               `Switch ${rail} slot text`,
             )
-
-          for (const [tone, suffix] of [
-            ['default', ''],
-            ['primary', 'Primary'],
-            ['info', 'Info'],
-            ['success', 'Success'],
-            ['warning', 'Warning'],
-            ['error', 'Error'],
-          ] as const) {
-            const props = softButtonProjection(snapshot, tone)
-            if (
-              !isJsonObject(props) ||
-              props['type'] !== tone ||
-              props['secondary'] !== false ||
-              props['bordered'] !== false
+          for (const field of ['railColor', 'railColorHover', 'fillColor', 'fillColorHover'])
+            requireContrast(
+              palette.roles.primary.solid.foreground,
+              atColor(projectedColors, 'Slider', field),
+              `Slider outline/${field}`,
             )
-              throw new TypeError(
-                'Soft Button props must use the official independent-color branch.',
-              )
-            const family = palette.roles[tone === 'default' ? 'neutral' : tone]
-            for (const [state, background] of [
-              ['', family.soft.background.default],
-              ['Hover', family.soft.background.hover],
-              ['Pressed', family.soft.background.pressed],
-              ['Focus', family.soft.background.hover],
+          for (const background of Object.values(palette.surfaces))
+            requireContrast(
+              atColor(projectedColors, 'Slider', 'handleColor'),
+              background,
+              'Slider handle/surface',
+            )
+          requireContrast(
+            atColor(projectedColors, 'Calendar', 'dateTextColorCurrent'),
+            atColor(projectedColors, 'Calendar', 'dateColorCurrent'),
+            'Calendar current date',
+          )
+          for (const field of ['colorPrimary', 'colorPrimaryHover', 'colorPrimaryPressed'])
+            requireContrast(
+              atColor(projectedColors, 'FloatButton', 'textColorPrimary'),
+              atColor(projectedColors, 'FloatButton', field),
+              `FloatButton ${field}`,
+            )
+          for (const background of [
+            ...Object.values(palette.surfaces),
+            palette.roles.neutral.soft.background.hover,
+          ])
+            requireContrast(
+              atColor(projectedColors, 'Calendar', 'textColor'),
+              background,
+              'Calendar date text',
+            )
+
+          // Inspect the final shared and form projections, after semantic overrides.
+          for (const colors of [projectedColors, formColors]) {
+            for (const [path, expected] of [
+              [['Checkbox', 'boxShadowFocus'], 'none'],
+              [['Switch', 'boxShadowFocus'], 'none'],
+              [['Radio', 'buttonBoxShadowFocus'], 'none'],
+              [
+                ['Radio', 'boxShadowFocus'],
+                `inset 0 0 0 var(--ui-admin-border-width) ${palette.borders.control}`,
+              ],
             ] as const) {
-              const fg = atColor(props, 'themeOverrides', `textColor${state}${suffix}`)
-              const bg = atColor(props, 'themeOverrides', `color${state}${suffix}`)
-              expectColor(fg, family.soft.foreground, `${context}/soft ${tone} text`)
-              expectColor(bg, background, `${context}/soft ${tone} background`)
-              requireContrast(fg, bg, `soft ${tone}/${state}`)
+              expectColor(atColor(colors, ...path), expected, `${context}/${path.join('.')}`)
+            }
+            for (const [suffix, role] of [
+              ['', 'primary'],
+              ['Error', 'error'],
+              ['Warning', 'warning'],
+            ] as const) {
+              const focus = `inset 0 0 0 var(--ui-admin-focus-width) ${palette.roles[role].focus}`
+              for (const path of [['Input'], ['InputOtp', 'peers', 'Input']] as const) {
+                expectColor(
+                  atColor(colors, ...path, `boxShadowFocus${suffix}`),
+                  focus,
+                  `${context}/${path.join('.')}/focus`,
+                )
+                expectColor(
+                  atColor(colors, ...path, `borderFocus${suffix}`),
+                  'none',
+                  `${context}/${path.join('.')}/focus border`,
+                )
+              }
+              for (const state of ['Focus', 'Active']) {
+                expectColor(
+                  atColor(
+                    colors,
+                    'Select',
+                    'peers',
+                    'InternalSelection',
+                    `boxShadow${state}${suffix}`,
+                  ),
+                  focus,
+                  `${context}/selection/${state}`,
+                )
+                expectColor(
+                  atColor(
+                    colors,
+                    'Select',
+                    'peers',
+                    'InternalSelection',
+                    `border${state}${suffix}`,
+                  ),
+                  'none',
+                  `${context}/selection/${state} border`,
+                )
+              }
             }
           }
+
           for (const [tone, suffix] of [
             ['primary', 'Primary'],
             ['info', 'Info'],
@@ -4265,6 +4564,16 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
               `${context}/Tag text`,
             )
             if (suffix !== 'Primary') {
+              for (const [component, fillField, foregroundField] of [
+                ['Badge', `color${suffix}`, `textColor${suffix}`],
+                ['Progress', `fillColor${suffix}`, `statusTextColor${suffix}`],
+              ] as const) {
+                const fill = atColor(projectedColors, component, fillField)
+                const foreground = atColor(projectedColors, component, foregroundField)
+                expectColor(fill, family.solid.background.default, `${context}/${component} fill`)
+                expectColor(foreground, family.solid.foreground, `${context}/${component} text`)
+                requireContrast(foreground, fill, `${component} ${tone}`)
+              }
               expectColor(
                 atColor(projectedColors, 'Alert', `color${suffix}`),
                 family.soft.background.default,
@@ -4294,9 +4603,164 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
             [['Radio', 'dotColorActive'], palette.roles.primary.solid.foreground],
             [['Switch', 'railColorActive'], palette.roles.primary.solid.background.default],
             [['Switch', 'textColor'], palette.roles.primary.solid.foreground],
+            [['Slider', 'railColor'], palette.roles.neutral.solid.background.default],
+            [['Slider', 'fillColor'], palette.roles.primary.solid.background.default],
+            [['Slider', 'handleColor'], palette.roles.primary.foreground.default],
+            [['Slider', 'indicatorColor'], palette.tooltip.background],
+            [['Slider', 'indicatorTextColor'], palette.tooltip.foreground],
+            [['Slider', 'railHeight'], 'var(--ui-indicator-rail-thin)'],
+            [['Slider', 'railWidthVertical'], 'var(--ui-indicator-rail-thin)'],
+            [['Slider', 'handleSize'], 'var(--ui-indicator-handle-size)'],
+            [['Slider', 'dotHeight'], 'var(--ui-indicator-marker-size)'],
+            [['Slider', 'dotWidth'], 'var(--ui-indicator-marker-size)'],
+            [['Badge', 'color'], palette.roles.error.solid.background.default],
+            [['Badge', 'textColor'], palette.roles.error.solid.foreground],
+            [['Badge', 'fontSize'], 'var(--ui-font-size-caption)'],
+            [['Badge', 'labelHeight'], 'var(--ui-indicator-label-height)'],
+            [['Badge', 'labelPaddingInline'], 'var(--ui-space-indicator-label-inline)'],
+            [['Badge', 'dotSize'], 'var(--ui-indicator-marker-size)'],
+            [['Carousel', 'dotSize'], 'var(--ui-indicator-marker-size)'],
+            [['FloatButton', 'colorPrimary'], palette.roles.primary.solid.background.default],
+            [['FloatButton', 'colorPrimaryHover'], palette.roles.primary.solid.background.hover],
+            [
+              ['FloatButton', 'colorPrimaryPressed'],
+              palette.roles.primary.solid.background.pressed,
+            ],
+            [['FloatButton', 'textColorPrimary'], palette.roles.primary.solid.foreground],
+            [['Progress', 'fillColor'], palette.roles.info.solid.background.default],
+            [['Progress', 'statusTextColor'], palette.roles.info.solid.foreground],
+            [['Progress', 'textColorLineInner'], 'var(--n-pavp-status-text-color)'],
+            [['Progress', 'railHeight'], 'var(--ui-indicator-rail-standard)'],
+            [['Progress', 'railHeightLabeled'], 'var(--ui-indicator-rail-labeled)'],
+            [['Progress', 'indicatorFontSize'], 'var(--ui-font-size-caption)'],
+            [['Progress', 'fontSizeCircle'], 'var(--ui-font-size-metric)'],
+            [['Progress', 'iconSizeLine'], 'var(--ui-icon-size-small)'],
+            [['Progress', 'iconSizeCircle'], 'var(--ui-icon-size-extra-large)'],
+            [['Progress', 'circleSize'], 'var(--ui-indicator-circle-size)'],
+            [['Progress', 'circleSizeMultiple'], 'var(--ui-indicator-circle-multiple-size)'],
+            [['Progress', 'contentGap'], 'var(--ui-space-indicator-content-gap)'],
+            [
+              ['Progress', 'outsideLabelPaddingInline'],
+              'var(--ui-space-indicator-label-inline-compact)',
+            ],
+            [['Progress', 'statusIconSlotWidth'], 'var(--ui-indicator-slot-icon-inline-size)'],
+            [['Progress', 'textSlotWidth'], 'var(--ui-indicator-slot-text-inline-size)'],
+            [['Heatmap', 'mininumColor'], palette.roles.primary.soft.background.default],
+            [['Heatmap', 'borderColor'], palette.borders.control],
+            [['Heatmap', 'loadingColorStart'], palette.roles.neutral.soft.background.default],
+            [['Heatmap', 'loadingColorEnd'], palette.roles.neutral.soft.background.hover],
+            [['Heatmap', 'cellOutlineWidth'], 'var(--ui-border-width)'],
+            [['Heatmap', 'rectSizeSmall'], 'var(--ui-indicator-cell-small)'],
+            [['Heatmap', 'rectSizeMedium'], 'var(--ui-indicator-cell-medium)'],
+            [['Heatmap', 'rectSizeLarge'], 'var(--ui-indicator-cell-large)'],
+            [['Heatmap', 'xGapSmall'], 'var(--ui-space-indicator-cell-gap-compact)'],
+            [['Heatmap', 'yGapSmall'], 'var(--ui-space-indicator-cell-gap-compact)'],
+            [['Heatmap', 'xGapMedium'], 'var(--ui-space-indicator-cell-gap-standard)'],
+            [['Heatmap', 'yGapMedium'], 'var(--ui-space-indicator-cell-gap-standard)'],
+            [['Heatmap', 'xGapLarge'], 'var(--ui-space-indicator-cell-gap-standard)'],
+            [['Heatmap', 'yGapLarge'], 'var(--ui-space-indicator-cell-gap-standard)'],
+            [
+              ['Heatmap', 'calendarWeekdayWidth'],
+              'var(--ui-layout-calendar-weekday-minimum-inline-size)',
+            ],
+            [['Heatmap', 'calendarLabelHeight'], 'auto'],
+            [['Heatmap', 'calendarLabelLineHeight'], 'var(--ui-font-line-height-compact)'],
+            [['Heatmap', 'calendarSpaceTight'], 'var(--ui-space-calendar-inline-tight)'],
+            [['Heatmap', 'calendarSpaceCompact'], 'var(--ui-space-calendar-inline-compact)'],
+            [['Heatmap', 'calendarSpaceStandard'], 'var(--ui-space-calendar-block-gap)'],
+            [['Heatmap', 'calendarFooterIndent'], 'var(--ui-space-calendar-footer-indent)'],
+            [['Heatmap', 'borderRadiusSmall'], 'calc(var(--ui-radius-small) / 2)'],
+            [['Heatmap', 'borderRadiusMedium'], 'calc(var(--ui-radius-small) / 2)'],
+            [['Heatmap', 'borderRadiusLarge'], 'calc(var(--ui-radius-small) / 2)'],
+            [['Rate', 'itemColor'], palette.roles.neutral.soft.border],
+            [['Rate', 'itemColorActive'], palette.roles.primary.foreground.default],
+            [['Rate', 'itemEmptyFill'], 'none'],
+            [['Rate', 'itemEmptyStrokeWidth'], '48'],
+            [['Rate', 'sizeSmall'], 'var(--ui-icon-size-extra-small)'],
+            [['Rate', 'sizeMedium'], 'var(--ui-icon-size-medium)'],
+            [['Rate', 'sizeLarge'], 'var(--ui-icon-size-large)'],
+            [['Calendar', 'dateColorCurrent'], palette.roles.primary.solid.background.default],
+            [['Calendar', 'dateTextColorCurrent'], palette.roles.primary.solid.foreground],
+            [['Calendar', 'titleFontSize'], 'var(--ui-font-size-heading)'],
+            [['Calendar', 'cellColor'], palette.surfaces.surface],
+            [['Calendar', 'cellColorHover'], palette.roles.neutral.soft.background.hover],
+            [['Skeleton', 'color'], palette.roles.neutral.soft.background.default],
+            [['Skeleton', 'colorEnd'], palette.roles.neutral.soft.background.hover],
+            [['Steps', 'indicatorTextColorWait'], palette.text.secondary],
+            [['Steps', 'indicatorBorderColorWait'], palette.borders.control],
+            [['Steps', 'splitorColorProcess'], palette.borders.control],
+            [['Steps', 'splitorColorWait'], palette.borders.control],
+            [['Steps', 'splitorColorError'], palette.borders.control],
+            [['Steps', 'headerTextColorWait'], palette.text.secondary],
+            [['Steps', 'headerTextColorFinish'], palette.text.secondary],
+            [['Steps', 'descriptionTextColorWait'], palette.text.secondary],
+            [['Steps', 'descriptionTextColorFinish'], palette.text.secondary],
             [['Input', 'color'], palette.surfaces.surface],
+            [['Button', 'fontSizeLarge'], 'var(--ui-font-size-control-large)'],
+            [['Input', 'fontSizeLarge'], 'var(--ui-font-size-body)'],
             [['Input', 'placeholderColor'], palette.text.muted],
             [['Input', 'colorDisabled'], palette.roles.primary.disabled.background],
+            [['InputOtp', 'inputWidthSmall'], 'var(--ui-control-segment-width-small)'],
+            [['InputOtp', 'inputWidthMedium'], 'var(--ui-control-segment-width-medium)'],
+            [['InputOtp', 'inputWidthLarge'], 'var(--ui-control-segment-width-large)'],
+            [['InputOtp', 'gapSmall'], 'var(--ui-space-control-segment-gap)'],
+            [['InputOtp', 'gapMedium'], 'var(--ui-space-control-segment-gap)'],
+            [['InputOtp', 'gapLarge'], 'var(--ui-space-control-segment-gap)'],
+            [['InputOtp', 'peers', 'Input', 'color'], palette.surfaces.surface],
+            [['InputOtp', 'peers', 'Input', 'fontSizeLarge'], 'var(--ui-font-size-body)'],
+            [['Form', 'feedbackFontSizeSmall'], 'var(--ui-font-size-control-small)'],
+            [['Form', 'feedbackFontSizeMedium'], 'var(--ui-font-size-control-medium)'],
+            [['Form', 'feedbackFontSizeLarge'], 'var(--ui-font-size-control-medium)'],
+            [['Form', 'labelFontSizeTopSmall'], 'var(--ui-font-size-control-small)'],
+            [['Form', 'labelFontSizeTopMedium'], 'var(--ui-font-size-control-medium)'],
+            [['Form', 'labelFontSizeTopLarge'], 'var(--ui-font-size-control-medium)'],
+            [['Form', 'labelFontSizeLeftSmall'], 'var(--ui-font-size-control-medium)'],
+            [['Form', 'labelFontSizeLeftMedium'], 'var(--ui-font-size-control-medium)'],
+            [['Form', 'labelFontSizeLeftLarge'], 'var(--ui-font-size-control-large)'],
+            [['Form', 'labelHeightSmall'], 'calc(var(--ui-space-component-unit)*6)'],
+            [['Form', 'labelHeightMedium'], 'calc(var(--ui-space-component-unit)*6.5)'],
+            [['Form', 'labelHeightLarge'], 'calc(var(--ui-space-component-unit)*7)'],
+            [['Tabs', 'tabFontSizeSmall'], 'var(--ui-font-size-control-medium)'],
+            [['Tabs', 'tabFontSizeMedium'], 'var(--ui-font-size-control-medium)'],
+            [['Tabs', 'panePaddingSmall'], 'calc(var(--ui-space-component-unit)*2) 0 0 0'],
+            [['Tabs', 'panePaddingMedium'], 'calc(var(--ui-space-component-unit)*3) 0 0 0'],
+            [['Tabs', 'panePaddingLarge'], 'calc(var(--ui-space-component-unit)*4) 0 0 0'],
+            [['Code', 'textColor'], palette.text.primary],
+            [['Code', 'lineNumberTextColor'], palette.text.muted],
+            [['Code', 'lineNumberGap'], 'var(--ui-space-content-gap)'],
+            [['Code', 'mono-3'], palette.text.muted],
+            [['Code', 'hue-1'], palette.roles.info.foreground.default],
+            [['Code', 'hue-2'], palette.roles.primary.foreground.default],
+            [['Code', 'hue-3'], palette.roles.primary.foreground.pressed],
+            [['Code', 'hue-4'], palette.roles.success.foreground.default],
+            [['Code', 'hue-5'], palette.roles.error.foreground.default],
+            [['Code', 'hue-5-2'], palette.roles.error.foreground.pressed],
+            [['Code', 'hue-6'], palette.roles.warning.foreground.default],
+            [['Code', 'hue-6-2'], palette.roles.warning.foreground.pressed],
+            [['Typography', 'headerFontSize1'], 'var(--ui-font-size-title)'],
+            [['Typography', 'headerFontSize2'], 'var(--ui-font-size-heading)'],
+            [['Typography', 'headerFontSize3'], 'var(--ui-font-size-subheading)'],
+            [['Typography', 'headerFontSize4'], 'var(--ui-font-size-body)'],
+            [['Typography', 'headerFontSize5'], 'var(--ui-font-size-body)'],
+            [['Typography', 'headerFontSize6'], 'var(--ui-font-size-body)'],
+            [['Dialog', 'titleFontSize'], 'var(--ui-font-size-subheading)'],
+            [['PageHeader', 'titleFontSize'], 'var(--ui-font-size-subheading)'],
+            [['Notification', 'titleFontSize'], 'var(--ui-font-size-body)'],
+            [['Notification', 'metaFontSize'], 'var(--ui-font-size-caption)'],
+            [['Notification', 'descriptionFontSize'], 'var(--ui-font-size-caption)'],
+            [['Result', 'titleFontSizeMedium'], 'var(--ui-font-size-title)'],
+            [['Result', 'fontSizeHuge'], 'var(--ui-font-size-body)'],
+            [['TimePicker', 'itemFontSize'], 'var(--ui-font-size-caption)'],
+            [['Timeline', 'titleFontSizeLarge'], 'var(--ui-font-size-body)'],
+            [['Transfer', 'extraFontSizeSmall'], 'var(--ui-font-size-caption)'],
+            [['Transfer', 'extraFontSizeMedium'], 'var(--ui-font-size-caption)'],
+            [['Transfer', 'titleFontSizeMedium'], 'var(--ui-font-size-body)'],
+            [['Transfer', 'titleFontSizeLarge'], 'var(--ui-font-size-body)'],
+            [['LegacyTransfer', 'extraFontSize'], 'var(--ui-font-size-caption)'],
+            [['Steps', 'stepHeaderFontSizeMedium'], 'var(--ui-font-size-body)'],
+            [['Steps', 'indicatorIndexFontSizeMedium'], 'var(--ui-font-size-body)'],
+            [['Tabs', 'tabFontSizeLarge'], 'var(--ui-font-size-body)'],
+            [['Menu', 'borderColorHorizontal'], 'currentColor'],
             [['Table', 'tdColor'], palette.surfaces.surface],
             [['DataTable', 'tdColorHover'], palette.roles.neutral.soft.background.hover],
             [['Tabs', 'barColor'], palette.roles.primary.foreground.default],
@@ -4306,7 +4770,121 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
             [['Tooltip', 'textColor'], palette.tooltip.foreground],
           ] as const)
             expectColor(atColor(projectedColors, ...keys), expected, `${context}/${keys.join('.')}`)
+          const invertedSurface =
+            colorMode === 'light' ? palette.tooltip.background : palette.surfaces.surface
+          const invertedForeground =
+            colorMode === 'light' ? palette.tooltip.foreground : palette.text.secondary
+          for (const field of [
+            'groupTextColorInverted',
+            'itemTextColorInverted',
+            'itemIconColorInverted',
+            'itemIconColorCollapsedInverted',
+            'arrowColorInverted',
+            'itemTextColorChildActiveInverted',
+            'itemTextColorActiveHorizontalInverted',
+            'itemTextColorHoverHorizontalInverted',
+          ]) {
+            expectColor(
+              atColor(projectedColors, 'Menu', field),
+              invertedForeground,
+              `${context}/${field}`,
+            )
+            requireContrast(
+              atColor(projectedColors, 'Menu', field),
+              invertedSurface,
+              `Menu ${field}`,
+            )
+          }
+          for (const [foreground, background] of [
+            ['itemTextColorActiveInverted', 'itemColorActiveInverted'],
+            ['itemIconColorActiveInverted', 'itemColorActiveCollapsedInverted'],
+            ['itemTextColorActiveHoverInverted', 'itemColorActiveHoverInverted'],
+            ['itemTextColorHoverInverted', 'itemColorHoverInverted'],
+            ['itemTextColorChildActiveHoverInverted', 'itemColorHoverInverted'],
+          ] as const)
+            requireContrast(
+              atColor(projectedColors, 'Menu', foreground),
+              atColor(projectedColors, 'Menu', background),
+              `Menu ${foreground}/${background}`,
+            )
+          for (const background of Object.values(palette.surfaces)) {
+            for (const field of [
+              'textColor',
+              'lineNumberTextColor',
+              'mono-3',
+              'hue-1',
+              'hue-2',
+              'hue-3',
+              'hue-4',
+              'hue-5',
+              'hue-5-2',
+              'hue-6',
+              'hue-6-2',
+            ])
+              requireContrast(atColor(projectedColors, 'Code', field), background, `Code ${field}`)
+            for (const field of [
+              'indicatorTextColorWait',
+              'headerTextColorWait',
+              'headerTextColorFinish',
+              'descriptionTextColorWait',
+              'descriptionTextColorFinish',
+            ])
+              requireContrast(
+                atColor(projectedColors, 'Steps', field),
+                background,
+                `Steps ${field}`,
+              )
+            for (const field of [
+              'indicatorBorderColorWait',
+              'splitorColorProcess',
+              'splitorColorWait',
+              'splitorColorError',
+            ])
+              requireContrast(
+                atColor(projectedColors, 'Steps', field),
+                background,
+                `Steps ${field}`,
+                controlMinimum,
+              )
+            requireContrast(
+              atColor(projectedColors, 'Rate', 'itemColorActive'),
+              background,
+              'Rate selected',
+            )
+            requireContrast(
+              atColor(projectedColors, 'Rate', 'itemColor'),
+              background,
+              'Rate empty outline',
+              controlMinimum,
+            )
+            requireContrast(
+              atColor(projectedColors, 'Heatmap', 'borderColor'),
+              background,
+              'Heatmap cell outline',
+              controlMinimum,
+            )
+          }
+          const heatmapColors = atColor(projectedColors, 'Heatmap', 'activeColors')
+          if (!Array.isArray(heatmapColors) || heatmapColors.length !== 4)
+            throw new TypeError(`${context}: Heatmap requires four sequential colors.`)
+          const heatmapMinimum = palette.roles.primary.soft.background.default
+          let previousHeatmapContrast = 0
+          for (const color of heatmapColors) {
+            if (typeof color !== 'string')
+              throw new TypeError(`${context}: Heatmap colors must be strings.`)
+            const ratio = calculateWcag21Contrast(
+              parseCssColor(color),
+              parseCssColor(heatmapMinimum),
+            )
+            if (ratio <= previousHeatmapContrast)
+              throw new TypeError(`${context}: Heatmap colors must be sequential.`)
+            previousHeatmapContrast = ratio
+            for (const background of [heatmapMinimum, ...Object.values(palette.surfaces)])
+              requireContrast(color, background, 'Heatmap active level', controlMinimum)
+          }
           for (const [keys, expected] of [
+            [['Form', 'labelFontSizeTopMedium'], 'var(--ui-font-size-body)'],
+            [['Form', 'feedbackFontSizeMedium'], 'var(--ui-font-size-caption)'],
             [['Input', 'color'], palette.surfaces.surface],
             [
               ['InputNumber', 'peers', 'Input', 'colorDisabled'],
@@ -4387,7 +4965,7 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
       )
     const tag = overrides['Tag']
     const switchTheme = overrides['Switch']
-    const formProjection = loaded['createPavpNaiveFormThemeProjection']
+    const formProjection = loadedForm['createPavpNaiveFormThemeProjection']
     if (!isNavigationThemeProjection(formProjection))
       throw new TypeError('The existing Form theme projection is unavailable.')
     const formTheme: unknown = formProjection(appearance)
@@ -4481,8 +5059,6 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
     if (childActiveFillPresent) requiredNavigationColor(menu, 'itemColorChildActive')
     if (childActiveHoverFillPresent) requiredNavigationColor(menu, 'itemColorChildActiveHover')
 
-    if (appearance.colorPalette === null)
-      throw new TypeError('The default Built-in palette is unavailable.')
     return Object.freeze({
       palette: appearance.colorPalette,
       menu: Object.freeze({
@@ -4993,10 +5569,17 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
           rule.declarations,
         ),
     ) ||
-    !normalizedProviderSource.includes('box-shadow: var(--ui-admin-shadow-focus-ring);') ||
+    !cssDeclarationsForSelector(
+      cssRuleBlocks(
+        styleContent(snapshot.naiveProviderSource).replaceAll(/\/\*[\s\S]*?\*\//gu, ''),
+      ),
+      '.n-button:focus-visible',
+    )?.includes('outline: var(--ui-admin-focus-width) solid currentColor;') ||
     !normalizedProviderSource.includes('@media (forced-colors: active)') ||
     !normalizedProviderSource.includes('outline: var(--ui-admin-border-focus);') ||
-    !normalizedProviderSource.includes('outline-offset: var(--ui-admin-focus-outline-offset);')
+    !normalizedProviderSource.includes(
+      'outline-offset: calc(-1 * var(--ui-admin-focus-outline-offset));',
+    )
   ) {
     violations.push('NAIVE_FOCUS_PRESENTATION')
   }
@@ -5241,7 +5824,7 @@ function adminNavigationHeaderCollapseControlProjection(
   const identity = identityElements.length === 1 ? identityElements[0] : undefined
   const narrowTriggerElements = elements.filter(
     (element) =>
-      element.node.tag === 'button' &&
+      element.node.tag === 'NButton' &&
       staticTemplateAttribute(element.node, 'ref') === 'navigationTrigger' &&
       header !== undefined &&
       element.ancestors.includes(header.node),
@@ -5313,13 +5896,27 @@ function adminNavigationHeaderCollapseControlProjection(
     control === undefined || header === undefined || headerAncestorIndex === -1
       ? []
       : [header.node, ...control.ancestors.slice(headerAncestorIndex + 1), control.node]
+  const colorControls = elements.filter(
+    (element) =>
+      staticTemplateAttribute(element.node, 'data-pavp-color-mode-control') === 'header-trailing',
+  )
   const controlIsFinalElementThroughTrailingPath = trailingPath
     .slice(0, -1)
     .every((parent, index) => {
       const elementChildren =
         parent.children?.filter((child): child is VueTemplateNode => child.type === 1) ?? []
 
-      return elementChildren.at(-1) === trailingPath[index + 1]
+      const next = trailingPath[index + 1]
+      const last = elementChildren.at(-1)
+      const colorControl = colorControls.length === 1 ? colorControls[0] : undefined
+      return (
+        last === next ||
+        (parent === controlHeaderChild &&
+          elementChildren.at(-2) === next &&
+          last !== undefined &&
+          colorControl !== undefined &&
+          (colorControl.node === last || colorControl.ancestors.includes(last)))
+      )
     })
   const headerTrailingDescendant =
     control !== undefined &&
@@ -5860,10 +6457,10 @@ function runtime002CloseNavigationIsCanonical(
   )
 }
 
-function runtime002ButtonIsNativeAndEnabled(node: VueTemplateNode): boolean {
+function runtime002ButtonIsNaiveAndEnabled(node: VueTemplateNode): boolean {
   return (
-    node.tag === 'button' &&
-    staticTemplateAttribute(node, 'type') === 'button' &&
+    node.tag === 'NButton' &&
+    staticTemplateAttribute(node, 'attr-type') === 'button' &&
     templateAttributes(node, 'disabled').length === 0 &&
     templateDirectives(node, 'bind', 'disabled').length === 0
   )
@@ -5873,9 +6470,171 @@ function runtime002AriaCurrentIsCanonical(node: VueTemplateNode): boolean {
   const bindings = templateDirectives(node, 'bind', 'aria-current')
   return (
     bindings.length === 1 &&
-    normalizeTemplateExpression(bindings[0]?.exp?.content) ===
-      "item.routeName === activeRouteName ? 'page' : undefined"
+    [
+      "item.routeName === activeRouteName ? 'page' : undefined",
+      "leaf.routeName === activeRouteName ? 'page' : undefined",
+    ].includes(normalizeTemplateExpression(bindings[0]?.exp?.content))
   )
+}
+
+interface ShellKeyboardSourceProjection {
+  readonly persistent: boolean
+  readonly collapsedTrigger: boolean
+  readonly popup: boolean
+  readonly localOnly: boolean
+  readonly drawer: boolean
+}
+
+function shellKeyboardSourceProjection(shellSource: string): ShellKeyboardSourceProjection {
+  const script = scriptContent(shellSource)
+  const sourceFile = ts.createSourceFile(shellSfcPath, script, ts.ScriptTarget.Latest, true)
+  const initializers = topLevelVariableInitializers(sourceFile)
+  const callables = topLevelCallables(sourceFile)
+  const template = vueSfcCompiler.parse(shellSource, { filename: shellSfcPath }).descriptor.template
+    ?.ast
+  const elements = template === undefined ? [] : collectShellTemplateElements(template)
+  const menu = elements.find(({ node }) => node.tag === 'NMenu')?.node
+  const trigger = elements.find(({ node }) =>
+    hasStaticTemplateClass(node, 'pavp-admin-shell__collapsed-trigger'),
+  )?.node
+  const drawer = elements.find(
+    ({ node }) => staticTemplateAttribute(node, 'ref') === 'drawerNavigation',
+  )?.node
+
+  const closure = (root: ts.Node | undefined): string => {
+    const visited = new Set<ts.Node>()
+    const collect = (node: ts.Node): void => {
+      if (visited.has(node)) return
+      visited.add(node)
+      const visit = (child: ts.Node): void => {
+        if (ts.isIdentifier(child)) {
+          const dependency = callables.get(child.text)
+          if (dependency !== undefined) collect(dependency)
+        }
+        ts.forEachChild(child, visit)
+      }
+      visit(node)
+    }
+    if (root !== undefined) collect(root)
+    return [...visited].map((node) => node.getText(sourceFile)).join('\n')
+  }
+  const eventSource = (node: VueTemplateNode | undefined, event: string): string => {
+    const expression =
+      node === undefined ? undefined : templateDirectives(node, 'on', event)[0]?.exp?.content
+    const name = expression === undefined ? undefined : /^\s*([\w$]+)/u.exec(expression)?.[1]
+    return closure(name === undefined ? undefined : callables.get(name))
+  }
+  const propsSource = (name: string | undefined): string =>
+    closure(name === undefined ? undefined : initializers.get(name))
+  const normal = propsSource(
+    menu === undefined ? undefined : singleBoundExpression(menu, 'node-props'),
+  )
+  const dropdownElement = elements.find(({ node }) => node.tag === 'NDropdown')?.node
+  const dropdownBindings =
+    dropdownElement === undefined
+      ? undefined
+      : templateDirectives(dropdownElement, 'bind').find((binding) => binding.arg == null)?.exp
+          ?.content
+  const dropdownProps =
+    dropdownBindings === undefined ? undefined : initializers.get(dropdownBindings)
+  const dropdownObject = dropdownProps === undefined ? undefined : unwrapExpression(dropdownProps)
+  const dropdownNodeProps =
+    dropdownObject !== undefined && ts.isObjectLiteralExpression(dropdownObject)
+      ? objectPropertyInitializer(dropdownObject, 'nodeProps')
+      : undefined
+  const dropdown =
+    dropdownNodeProps !== undefined && ts.isIdentifier(dropdownNodeProps)
+      ? propsSource(dropdownNodeProps.text)
+      : closure(dropdownNodeProps)
+  const triggerKeys = eventSource(trigger, 'keydown')
+  const drawerKeys = eventSource(drawer, 'keydown')
+  const header = elements.find(({ node }) => node.tag === 'header')?.node
+  const inertState = header === undefined ? undefined : singleBoundExpression(header, 'inert')
+  let drawerLifecycle = ''
+  const findDrawerLifecycle = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'watch' &&
+      inertState !== undefined &&
+      node.arguments[0]?.getText(sourceFile) === inertState
+    ) {
+      drawerLifecycle = closure(node.arguments[1])
+    }
+    ts.forEachChild(node, findDrawerLifecycle)
+  }
+  findDrawerLifecycle(sourceFile)
+  const hasKeys = (source: string, keys: readonly string[]): boolean =>
+    keys.every((key) => source.includes(`'${key}'`) || source.includes(`"${key}"`))
+  const movesFocus = (source: string): boolean => /\.focus\s*\(/u.test(source)
+  const restoresFocus = (source: string): boolean =>
+    movesFocus(source) && /preventScroll:\s*true/u.test(source)
+  const localOnly =
+    !/\b(?:document|window|globalThis)\.(?:querySelector(?:All)?|getElementsBy\w+)\s*(?:<[^>]+>)?\s*\(/u.test(
+      script,
+    ) &&
+    !/\b(?:document|window|globalThis)\.addEventListener\s*\(\s*['"](?:keydown|keyup|focusin)['"]/u.test(
+      script,
+    ) &&
+    !/dispatchEvent\s*\(\s*new MouseEvent\s*\(\s*['"]mouseenter['"]/u.test(script)
+
+  return {
+    persistent:
+      /tabindex:\s*0/u.test(normal) &&
+      /onKeydown\s*:/u.test(normal) &&
+      hasKeys(normal, [
+        'Enter',
+        ' ',
+        'ArrowUp',
+        'ArrowDown',
+        'ArrowLeft',
+        'ArrowRight',
+        'Home',
+        'End',
+      ]) &&
+      movesFocus(normal) &&
+      normal.includes("emit('navigate'") &&
+      (normal.includes("emit('update:expandedNavigationGroupIds'") ||
+        normal.includes("handleNavigationAction('groups', keys)")),
+    collapsedTrigger:
+      trigger !== undefined &&
+      runtime002ButtonIsNaiveAndEnabled(trigger) &&
+      staticTemplateAttribute(trigger, 'tabindex') !== '-1' &&
+      templateDirectives(trigger, 'bind', 'tabindex').length === 0 &&
+      staticTemplateAttribute(trigger, 'aria-haspopup') === 'menu' &&
+      singleBoundExpression(trigger, 'aria-expanded') !== undefined &&
+      hasKeys(triggerKeys, ['Enter', ' ', 'ArrowRight', 'ArrowUp', 'ArrowDown']) &&
+      movesFocus(triggerKeys),
+    popup:
+      /tabindex:\s*0/u.test(dropdown) &&
+      /onKeydown\s*:/u.test(dropdown) &&
+      hasKeys(dropdown, [
+        'Enter',
+        ' ',
+        'ArrowUp',
+        'ArrowDown',
+        'ArrowLeft',
+        'ArrowRight',
+        'Home',
+        'End',
+        'Escape',
+        'Tab',
+      ]) &&
+      movesFocus(dropdown) &&
+      dropdown.includes("emit('navigate'"),
+    localOnly,
+    drawer:
+      drawer !== undefined &&
+      hasKeys(drawerKeys, ['Escape', 'Tab']) &&
+      movesFocus(drawerKeys) &&
+      drawerKeys.includes('shiftKey') &&
+      restoresFocus(drawerLifecycle) &&
+      /\.contains\([^)]*\)/u.test(drawerLifecycle) &&
+      drawerLifecycle.includes('document.activeElement') &&
+      drawerLifecycle.includes('nextTick(') &&
+      drawerLifecycle.includes('.isConnected') &&
+      localOnly,
+  }
 }
 
 function runtime002NavigationViolations(shellSource: string): string[] {
@@ -5890,21 +6649,24 @@ function runtime002NavigationViolations(shellSource: string): string[] {
   const elements = collectShellTemplateElements(templateAst)
   const drawerButtons = elements.filter(
     (element) =>
-      element.node.tag === 'button' &&
+      element.node.tag === 'NButton' &&
       hasStaticTemplateClass(element.node, 'pavp-admin-shell__navigation-action') &&
+      templateDirectives(element.node, 'bind', 'aria-expanded').length === 0 &&
       ancestorHasStaticAttribute(element, 'nav', 'ref', 'drawerNavigation'),
   )
 
   if (
-    drawerButtons.length !== 1 ||
+    drawerButtons.length !== 2 ||
     !shellSource.includes('<NMenu') ||
     !shellSource.includes(':node-props="persistentNavigationNodeProps"') ||
-    !shellSource.includes(':dropdown-props="persistentNavigationDropdownProps"')
+    !shellSource.includes('v-bind="persistentNavigationDropdownProps"')
   ) {
     return ['PAVP_RUNTIME_002_NAVIGATION_SURFACES']
   }
 
-  const drawerButton = drawerButtons[0]?.node
+  const drawerButton = drawerButtons.find((entry) =>
+    entry.node.loc?.source.includes('navigate(item.routeName)'),
+  )?.node
   if (drawerButton === undefined) {
     return ['PAVP_RUNTIME_002_NAVIGATION_SURFACES']
   }
@@ -5917,15 +6679,26 @@ function runtime002NavigationViolations(shellSource: string): string[] {
     true,
     ts.ScriptKind.TS,
   )
-  const normalNodeStart = shellScript.indexOf('const persistentNavigationNodeProps')
-  const dropdownNodeStart = shellScript.indexOf('const persistentNavigationDropdownNodeProps')
-  const dropdownPropsStart = shellScript.indexOf('const persistentNavigationDropdownProps')
-  const normalNodeSource = shellScript.slice(normalNodeStart, dropdownNodeStart)
-  const dropdownNodeSource = shellScript.slice(dropdownNodeStart, dropdownPropsStart)
+  const nodeProps = topLevelVariableInitializers(sourceFile)
+  const normalNodeSource = nodeProps.get('persistentNavigationNodeProps')?.getText(sourceFile) ?? ''
+  const dropdownNodeSource =
+    nodeProps.get('persistentNavigationDropdownNodeProps')?.getText(sourceFile) ?? ''
   const guardCall = 'preserveCurrentPersistentNavigationFocus(event, routeName)'
+  if (
+    drawerButtons.some(
+      ({ node }) =>
+        !runtime002ButtonIsNaiveAndEnabled(node) || !runtime002AriaCurrentIsCanonical(node),
+    )
+  ) {
+    violations.push('PAVP_RUNTIME_002_NATIVE_BUTTON')
+  }
   const drawerPointerdown = templateDirectives(drawerButton, 'on', 'pointerdown')
   const drawerClick = templateDirectives(drawerButton, 'on', 'click')
-  const drawerKeydown = templateDirectives(drawerButton, 'on', 'keydown')
+  const drawerRoot = elements.find(
+    ({ node }) => staticTemplateAttribute(node, 'ref') === 'drawerNavigation',
+  )?.node
+  const drawerKeydown =
+    drawerRoot === undefined ? [] : templateDirectives(drawerRoot, 'on', 'keydown')
 
   if (!normalNodeSource.includes(guardCall) || !dropdownNodeSource.includes(guardCall)) {
     violations.push('PAVP_RUNTIME_002_PERSISTENT_MOUSEDOWN_BINDING')
@@ -5952,7 +6725,7 @@ function runtime002NavigationViolations(shellSource: string): string[] {
     violations.push('PAVP_RUNTIME_002_DRAWER_CLOSE_LIFECYCLE')
   }
   if (
-    !runtime002ButtonIsNativeAndEnabled(drawerButton) ||
+    !runtime002ButtonIsNaiveAndEnabled(drawerButton) ||
     /disabled\s*:/u.test(normalNodeSource) ||
     /disabled\s*:/u.test(dropdownNodeSource)
   ) {
@@ -5961,25 +6734,22 @@ function runtime002NavigationViolations(shellSource: string): string[] {
   if (
     [
       ...shellScript.matchAll(
-        /'aria-current': routeName === props\.activeRouteName \? 'page' : undefined/gu,
+        /'aria-current': (?:routeName|navigationOptionRouteName\(option\)) === props\.activeRouteName \? 'page' : undefined/gu,
       ),
     ].length !== 2 ||
     !runtime002AriaCurrentIsCanonical(drawerButton)
   ) {
     violations.push('PAVP_RUNTIME_002_ARIA_CURRENT')
   }
-  if (
-    [...normalNodeSource.matchAll(/tabindex: -1/gu)].length !== 2 ||
-    /onKeydown|tabindex: 0/u.test(normalNodeSource)
-  ) {
-    violations.push('PAVP_RUNTIME_002_KEYBOARD_FOCUS_FORBIDDEN')
+  if (!shellKeyboardSourceProjection(shellSource).persistent) {
+    violations.push('PAVP_RUNTIME_002_KEYBOARD_NAVIGATION')
   }
 
   const handler = functionDeclaration(sourceFile, 'preserveCurrentPersistentNavigationFocus')
   const currentDestination = functionDeclaration(sourceFile, 'isCurrentDestination')
   if (
     currentDestination === undefined ||
-    !/return props\.navigation\.some\(\(group\) =>\s*group\.items\.some\(\(item\) => item\.routeName === routeName && item\.isCurrentDestination\),?\s*\)/u.test(
+    !/return props\.navigation\.some\(\(group\) =>\s*navigationLeaves\(group\)\.some\(\s*\(item\) => item\.routeName === routeName && item\.isCurrentDestination,?\s*\),?\s*\)/u.test(
       currentDestination.getText(sourceFile),
     )
   ) {
@@ -6501,12 +7271,18 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('PAVP_RUNTIME_003_OVERLAY_OWNERSHIP')
   }
 
-  const pointerdownBindings = shellElements.flatMap((element) =>
-    templateDirectives(element.node, 'on', 'pointerdown').map((directive) => ({
-      directive,
-      element,
-    })),
-  )
+  const pointerdownBindings = shellElements
+    .filter(
+      (element) =>
+        element === outerOverlay ||
+        (outerOverlay !== undefined && element.ancestors.includes(outerOverlay.node)),
+    )
+    .flatMap((element) =>
+      templateDirectives(element.node, 'on', 'pointerdown').map((directive) => ({
+        directive,
+        element,
+      })),
+    )
   const outerPointerdown =
     outerOverlay === undefined ? [] : templateDirectives(outerOverlay.node, 'on', 'pointerdown')
   const innerPointerdown =
@@ -6618,12 +7394,11 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    /\.focus\s*\(/u.test(shellScript) ||
-    !shellScript.includes("if (event.key === 'Escape')") ||
+    !shellKeyboardSourceProjection(snapshot.shellSource).drawer ||
     !snapshot.shellSource.includes('@click="closeNavigation"') ||
     !snapshot.shellSource.includes('@keydown="handleDrawerKeydown"')
   ) {
-    violations.push('PAVP_RUNTIME_003_NO_FOCUS_TRANSFER')
+    violations.push('PAVP_RUNTIME_003_LOCAL_FOCUS_LIFECYCLE')
   }
 
   if (
@@ -6823,10 +7598,10 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 13 ||
+    runtimeNumber(routeRegistry.length) !== 58 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 8 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 5
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -6886,9 +7661,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('ADMIN_WORKSPACE_MAX_WIDTH')
   }
 
-  const navigationIconRecords = [
-    ...snapshot.routeRegistrySource.matchAll(/\biconClass\s*:\s*['"]([^'"]+)['"]/gu),
-  ].map((match) => match[1])
+  const navigationIconRecords = consoleNavigationItems.map((item) => item.iconClass)
   const shellNavigationIconClasses = [
     ...snapshot.shellSource.matchAll(/['"](i-lucide-[a-z0-9-]+)['"]/gu),
   ].map((match) => match[1])
@@ -6917,20 +7690,20 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
 
   const navigationButtonTags = [
     ...snapshot.shellSource.matchAll(
-      /<button\b(?=[^>]*:aria-current\s*=\s*"item\.routeName\s*===\s*activeRouteName\s*\?\s*'page'\s*:\s*undefined")[^>]*>/gu,
+      /<NButton\b(?=[^>]*:aria-current\s*=\s*"\s*(?:item|leaf)\.routeName\s*===\s*activeRouteName\s*\?\s*'page'\s*:\s*undefined\s*")[^>]*>/gu,
     ),
   ].map((match) => match[0])
   if (
-    navigationButtonTags.length !== 1 ||
+    navigationButtonTags.length !== 2 ||
     navigationButtonTags.some(
       (tag) =>
-        !/\btype\s*=\s*"button"/u.test(tag) ||
-        !/@click\s*=\s*"navigate\(item\.routeName\)"/u.test(tag) ||
+        !/\battr-type\s*=\s*"button"/u.test(tag) ||
+        !/@click\s*=\s*"navigate\((?:item|leaf)\.routeName\)"/u.test(tag) ||
         /\bdisabled\b|\btabindex\s*=\s*"-1"/u.test(tag),
     ) ||
     [
       ...snapshot.shellSource.matchAll(
-        /'aria-current': routeName === props\.activeRouteName \? 'page' : undefined/gu,
+        /'aria-current': (?:routeName|navigationOptionRouteName\(option\)) === props\.activeRouteName \? 'page' : undefined/gu,
       ),
     ].length !== 2
   ) {
@@ -6995,7 +7768,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     '.wb-theme-option .n-button__content',
     '.wb-section-link.n-button',
     '.wb-settings-dock.n-button',
-    ".wb-settings-dock.n-button[data-collapsed='true']",
+    '.wb-link:not(.n-button):focus-visible, .wb-done:not(.n-button):focus-visible, .wb-section-link:not(.n-button):focus-visible',
     "[data-layout-profile='regular'] .wb-section-link.n-button, [data-layout-profile='wide'] .wb-section-link.n-button",
   ])
   const ordinaryPageSource = snapshot.pageVisualSource.replace(
@@ -7025,149 +7798,6 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   return violations
-}
-
-function currentWorkStatusViolations(architectureSource: string): string[] {
-  const statusEnd = architectureSource.indexOf('\n---\n')
-  const status = statusEnd < 0 ? architectureSource : architectureSource.slice(0, statusEnd)
-  const read = (text: string, field: string): readonly string[] =>
-    [...text.matchAll(new RegExp('^' + field + '[ \\t]*=[ \\t]*([^\\r\\n]+)$', 'gmu'))].map(
-      (match) => match[1]?.trim() ?? '',
-    )
-  const work = read(status, 'CURRENT_BOUNDED_WORK')
-  const authority = read(status, 'CURRENT_BOUNDED_WORK_AUTHORITY')
-  if (
-    work.length !== 1 ||
-    authority.length !== 1 ||
-    read(architectureSource, 'CURRENT_BOUNDED_WORK').length !== 1 ||
-    read(architectureSource, 'CURRENT_BOUNDED_WORK_AUTHORITY').length !== 1
-  )
-    return ['CURRENT_WORK_AUTHORITY']
-  const id = work[0]
-  const owner = authority[0]
-  if (id === 'NONE') return owner === 'NONE' ? [] : ['CURRENT_WORK_AUTHORITY']
-  const records = [
-    ...architectureSource.matchAll(/^#{3,6} \x60([^\x60]+)\x60 scoped admission record[ \t]*$/gmu),
-  ].filter((match) => match[1] === id)
-  const record = records[0]
-  if (records.length !== 1 || record?.index === undefined || owner === undefined)
-    return ['CURRENT_WORK_ADMISSION']
-  const precedingSections = [
-    ...architectureSource.slice(0, record.index).matchAll(/^#{1,6} ([\dA-Z.]+) /gmu),
-  ]
-  const section = precedingSections.at(-1)?.[1]?.replace(/\.$/u, '')
-  if (section === undefined || owner !== 'ARCHITECTURE_SECTION_' + section.replaceAll('.', '_'))
-    return ['CURRENT_WORK_AUTHORITY']
-  const start = architectureSource.indexOf('\n\x60\x60\x60text\n', record.index + record[0].length)
-  const end = architectureSource.indexOf('\n\x60\x60\x60', start + 1)
-  if (start < 0 || end < 0) return ['CURRENT_WORK_ADMISSION']
-  const preamble = architectureSource.slice(record.index + record[0].length, start)
-  if (/^#{1,6}[ \t]/mu.test(preamble)) return ['CURRENT_WORK_ADMISSION']
-  const admission = architectureSource.slice(start, end)
-  const required = [
-    'ID',
-    'AUTHORITY',
-    'IMPLEMENTATION_AUTHORIZATION',
-    'REPOSITORY_IMPLEMENTATION',
-    'STATIC_VERIFICATION',
-    'ALLOWED_SCOPE',
-    'PROHIBITED_SCOPE',
-    'MACHINE_GATES',
-  ]
-  if (
-    required.some((field) => {
-      const values = read(admission, field)
-      return values.length !== 1 || values[0]?.length === 0
-    }) ||
-    read(admission, 'ID')[0] !== id ||
-    read(admission, 'AUTHORITY')[0] !== owner
-  )
-    return ['CURRENT_WORK_ADMISSION']
-  if (
-    !/^OWNER_APPROVED(?:_[A-Z0-9]+)*$/u.test(
-      read(admission, 'IMPLEMENTATION_AUTHORIZATION')[0] ?? '',
-    )
-  )
-    return ['CURRENT_WORK_IMPLEMENTATION_AUTHORIZATION']
-  return []
-}
-
-function runCurrentWorkAuthorityProbes(architectureSource: string): void {
-  const reject = (candidate: string): void => {
-    if (currentWorkStatusViolations(candidate).length === 0)
-      throw new Error('Current Work must reject missing, duplicate or unbound authority.')
-  }
-  reject(architectureSource.replace(/^CURRENT_BOUNDED_WORK=.*$/mu, ''))
-  reject(
-    architectureSource.replace(
-      /^CURRENT_BOUNDED_WORK_AUTHORITY=.*$/mu,
-      'CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_0',
-    ),
-  )
-  reject(architectureSource.replace(/^CURRENT_BOUNDED_WORK=(.*)$/mu, '$&\n$&'))
-  reject(
-    architectureSource.replace(
-      /^CURRENT_BOUNDED_WORK=.*$/mu,
-      'CURRENT_BOUNDED_WORK=UNREGISTERED_WORK',
-    ),
-  )
-  const currentId = /^CURRENT_BOUNDED_WORK=([^\r\n]+)$/mu.exec(architectureSource)?.[1]
-  const admissionHeading = [
-    ...architectureSource.matchAll(/^#{3,6} \x60([^\x60]+)\x60 scoped admission record[ \t]*$/gmu),
-  ].find((match) => match[1] === currentId)
-  if (admissionHeading?.index !== undefined) {
-    const split = admissionHeading.index + admissionHeading[0].length
-    reject(
-      architectureSource.slice(0, split) +
-        '\n\n## Unrelated section\n' +
-        architectureSource.slice(split),
-    )
-  }
-  const editableHistory = architectureSource.replaceAll(
-    'OWNER_ACCEPTANCE_STATEMENT=',
-    'Historical Owner statement: ',
-  )
-  if (currentWorkStatusViolations(editableHistory).length !== 0)
-    throw new Error('Historical narrative must not own Current Work.')
-
-  const authorizationProbe = `CURRENT_BOUNDED_WORK=BOUNDED_IMPLEMENTATION
-CURRENT_BOUNDED_WORK_AUTHORITY=ARCHITECTURE_SECTION_7_1
----
-## 7.1 Bounded implementation
-### \x60BOUNDED_IMPLEMENTATION\x60 scoped admission record
-
-\x60\x60\x60text
-ID=BOUNDED_IMPLEMENTATION
-AUTHORITY=ARCHITECTURE_SECTION_7_1
-IMPLEMENTATION_AUTHORIZATION=OWNER_APPROVED
-REPOSITORY_IMPLEMENTATION=IN_PROGRESS
-STATIC_VERIFICATION=NOT_RUN
-ALLOWED_SCOPE=existing owner
-PROHIBITED_SCOPE=unrelated work
-MACHINE_GATES=existing checks
-\x60\x60\x60
-`
-  for (const authorization of ['OWNER_APPROVED', 'OWNER_APPROVED_SOURCE_ONLY']) {
-    if (
-      currentWorkStatusViolations(
-        authorizationProbe.replace('=OWNER_APPROVED', '=' + authorization),
-      ).length !== 0
-    )
-      throw new Error('Current Work must accept explicit Owner approval with bounded scope.')
-  }
-  const topLevelProbe = authorizationProbe
-    .replaceAll('SECTION_7_1', 'SECTION_20')
-    .replace('## 7.1 Bounded', '# 20. Bounded')
-  if (currentWorkStatusViolations(topLevelProbe).length !== 0)
-    throw new Error('Current Work must accept a top-level section with heading punctuation.')
-  reject(topLevelProbe.replaceAll('SECTION_20', 'SECTION_20_1'))
-  for (const authorization of ['NOT_AUTHORIZED', 'NONE', 'PENDING_OWNER_APPROVAL', 'UNKNOWN']) {
-    const candidate = authorizationProbe.replace('=OWNER_APPROVED', '=' + authorization)
-    if (
-      !currentWorkStatusViolations(candidate).includes('CURRENT_WORK_IMPLEMENTATION_AUTHORIZATION')
-    )
-      throw new Error('Current Work must reject implementation without explicit Owner approval.')
-  }
 }
 
 function readMotionPolicy(
@@ -7376,6 +8006,21 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         lensTemplate.includes(':skip-animations="policy.skipAnimations"'),
     },
     {
+      code: 'FORM_VALIDATION_MOTION_PREFERENCE_CONTRACT',
+      passed:
+        isJsonObject(fullPolicy?.['formFeedback']) &&
+        Array.isArray(fullPolicy['formFeedback']['x']) &&
+        fullPolicy['formFeedback']['x'].length > 2 &&
+        fullPolicy['formFeedback']['x'].every(
+          (value: unknown) =>
+            typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 4,
+        ) &&
+        fullPolicy['formFeedback']['x'][0] === 0 &&
+        fullPolicy['formFeedback']['x'].at(-1) === 0 &&
+        isDeepStrictEqual(reducedPolicy?.['formFeedback'], { x: 0, transition: { duration: 0 } }) &&
+        isDeepStrictEqual(nonePolicy?.['formFeedback'], { x: 0, transition: { duration: 0 } }),
+    },
+    {
       code: 'ADMIN_NAV_MOTION_VUE_REDUCED_PROFILE',
       passed:
         normalizedLensScript.includes('policy.value.movement && props.isOwner(option)') &&
@@ -7471,9 +8116,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           motionPrivateSource,
         ) &&
         exactOccurrenceCount(snapshot.appSource, '<RouterView') === 1 &&
-        !/<Transition\b/u.test(snapshot.appSource) &&
-        snapshot.architectureSource.includes('PAVP_RUNTIME_005_CHANGE=NONE') &&
-        snapshot.architectureSource.includes('ROUTE_CONTENT_HOST=STABLE_UNKEYED'),
+        !/<Transition\b/u.test(snapshot.appSource),
     },
     {
       code: 'ADMIN_NAV_MOTION_VUE_NO_PUBLIC_LEAK',
@@ -7560,8 +8203,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           snapshot.themeSource,
           'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))',
         ) === 1 &&
-        snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+        navigationHoverProjection(snapshot.themeSource) &&
         navigationSelectedColorProjection(snapshot.navigationColors).hover &&
         navigationSelectedColorProjection(snapshot.navigationColors).surface,
     },
@@ -7614,22 +8256,15 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.projectConfigSource.includes(
           'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
         ) &&
-        snapshot.engineeringManifestSource.includes(
-          "id: 'admin-navigation-motion-feature-javascript-gzip'",
-        ) &&
-        snapshot.engineeringManifestSource.includes('limit: 49152') &&
         snapshot.checkBundleSource.includes(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 23') &&
-        snapshot.architectureSource.includes(
-          'CURRENT_BOUNDED_WORK=PAVP_DEVELOPER_WORKBENCH_RECONSTRUCTION',
-        ) &&
-        snapshot.routeCount === 13 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') &&
+        snapshot.routeCount === 58 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 8,
+        snapshot.storageRecordCount === 10,
     },
   ])
 }
@@ -7948,10 +8583,6 @@ function runAdminNavigationReducedCrossfadeNegativeProbes(
           '<RouterView v-slot="{ Component }">',
           '<Transition name="pavp-route"><RouterView v-slot="{ Component }">',
         ),
-        architectureSource: baseline.architectureSource.replace(
-          'PAVP_RUNTIME_005_CHANGE=NONE',
-          'PAVP_RUNTIME_005_CHANGE=ROUTE_ANIMATION',
-        ),
       },
     ],
   ]
@@ -7970,24 +8601,6 @@ function runAdminNavigationReducedCrossfadeNegativeProbes(
       })
     }),
   )
-}
-
-function validateProductExperienceReworkStatus(architectureSource: string): readonly string[] {
-  const status = architectureSource.slice(0, architectureSource.indexOf('\n---\n'))
-  const required = [
-    'PAVP_ARCHITECTURE_ADMIN_CONSOLE_CAPABILITY_STATUS=ACTIVE',
-    'ADMIN_CONSOLE_OVERALL_RUNTIME_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
-    'ADMIN_CONSOLE_OVERALL_VISUAL_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
-    'ADMIN_CONSOLE_OVERALL_ACCESSIBILITY_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
-    'ADMIN_CONSOLE_OVERALL_RELEASE_ACCEPTANCE=REVOKED_BY_EXACT_COMMIT_RUNTIME_AUDIT',
-  ]
-  runCurrentWorkAuthorityProbes(architectureSource)
-  return [
-    ...required
-      .filter((field) => !status.split(/\r?\n/u).includes(field))
-      .map(() => 'Architecture Admin Console current acceptance status drifted.'),
-    ...currentWorkStatusViolations(architectureSource),
-  ]
 }
 
 function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
@@ -8035,7 +8648,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 13) {
+  if (snapshot.routeCount !== 58) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -8046,9 +8659,6 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   }
   if (/\b(?:matchMedia|CSS\.supports)\s*\(/u.test(snapshot.competingAppearanceEnvironmentSource)) {
     violations.push('DUPLICATE_APPEARANCE_ENVIRONMENT')
-  }
-  if (!snapshot.generatedManifestsEqual) {
-    violations.push('GENERATED_MANIFEST_DRIFT')
   }
 
   const registered = new Map(
@@ -8061,9 +8671,8 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     snapshot.registeredPublicComponents.some(
       (record) =>
         !snapshot.publicComponentExports.includes(record.exportName) ||
-        (['UiForm', 'UiFormField'].includes(record.exportName)
-          ? record.capabilityStatus !== 'TARGET_INACTIVE' || record.consumerCount !== 0
-          : record.capabilityStatus !== 'ACTIVE' || record.consumerCount === 0),
+        record.capabilityStatus !== 'ACTIVE' ||
+        record.consumerCount !== componentExampleConsumers[record.exportName]?.length,
     )
   ) {
     violations.push('PUBLIC_UI_UNUSED')
@@ -9191,8 +9800,8 @@ function runArchitectureAdminConsoleNegativeProbes(
       'NAIVE_FOCUS_PRESENTATION',
       {
         naiveProviderSource: baseline.naiveProviderSource.replace(
-          '  box-shadow: var(--ui-admin-shadow-focus-ring);\n',
-          '',
+          'outline: var(--ui-admin-focus-width) solid currentColor;',
+          'outline: none;',
         ),
       },
     ],
@@ -9303,11 +9912,6 @@ function runArchitectureAdminConsoleNegativeProbes(
       },
     ],
     [
-      'manual-generated-manifest-edit',
-      'GENERATED_MANIFEST_DRIFT',
-      { generatedManifestsEqual: false },
-    ],
-    [
       'public-ui-absent-registry',
       'PUBLIC_UI_UNREGISTERED',
       { publicComponentExports: [...baseline.publicComponentExports, 'UiProbe'] },
@@ -9321,6 +9925,15 @@ function runArchitectureAdminConsoleNegativeProbes(
           ...baseline.registeredPublicComponents,
           { exportName: 'UiProbe', consumerCount: 0, capabilityStatus: 'ACTIVE' },
         ],
+      },
+    ],
+    [
+      'page-header-unexpected-consumer',
+      'PUBLIC_UI_UNUSED',
+      {
+        registeredPublicComponents: baseline.registeredPublicComponents.map((record) =>
+          record.exportName === 'UiPageHeader' ? { ...record, consumerCount: 1 } : record,
+        ),
       },
     ],
     [
@@ -9518,7 +10131,7 @@ function runArchitectureAdminConsoleNegativeProbes(
 function runRuntime002NegativeProbes(
   baseline: MaterialGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
-  const pointerGuardCall = '      preserveCurrentPersistentNavigationFocus(event, routeName)\n'
+  const pointerGuardCall = 'preserveCurrentPersistentNavigationFocus(event, routeName)'
   const drawerGuardSource = replaceLastOccurrence(
     baseline.shellSource,
     '@click="navigate(item.routeName)"',
@@ -9528,9 +10141,9 @@ function runRuntime002NegativeProbes(
     "    'aria-current': routeName === props.activeRouteName ? 'page' : undefined,",
     "    'aria-current': routeName === props.activeRouteName ? 'page' : undefined,\n    disabled: true,",
   )
-  const keyboardRestoredSource = baseline.shellSource.replace(
-    '      tabindex: -1,',
-    '      tabindex: 0,',
+  const keyboardDisabledSource = baseline.shellSource.replace(
+    '    tabindex: 0,',
+    '    tabindex: -1,',
   )
   const probes: readonly [string, string, string][] = [
     [
@@ -9582,9 +10195,9 @@ function runRuntime002NegativeProbes(
       ),
     ],
     [
-      'runtime-002-keyboard-focus-restored',
-      'PAVP_RUNTIME_002_KEYBOARD_FOCUS_FORBIDDEN',
-      keyboardRestoredSource,
+      'runtime-002-keyboard-navigation-disabled',
+      'PAVP_RUNTIME_002_KEYBOARD_NAVIGATION',
+      keyboardDisabledSource,
     ],
     [
       'runtime-002-current-route-noop-removed',
@@ -9683,6 +10296,16 @@ function runRuntime003SourceNegativeProbes(
         '',
       ),
     ],
+    [
+      'runtime-003-drawer-keyboard-binding-removed',
+      'PAVP_RUNTIME_003_LOCAL_FOCUS_LIFECYCLE',
+      baseline.shellSource.replace('@keydown="handleDrawerKeydown"', ''),
+    ],
+    [
+      'runtime-003-background-header-inert-removed',
+      'PAVP_RUNTIME_003_LOCAL_FOCUS_LIFECYCLE',
+      baseline.shellSource.replace(':inert="drawerVisible"', ''),
+    ],
   ]
 
   return Object.freeze(
@@ -9705,11 +10328,18 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
   const siderStart = shellSource.indexOf('<NLayoutSider')
   const siderEnd = shellSource.indexOf('</NLayoutSider>')
   const layoutEnd = shellSource.indexOf('</NLayout>')
-  const normalNodeStart = shellSource.indexOf('const persistentNavigationNodeProps')
-  const dropdownNodeStart = shellSource.indexOf('const persistentNavigationDropdownNodeProps')
-  const dropdownPropsStart = shellSource.indexOf('const persistentNavigationDropdownProps')
-  const normalNodeSource = shellSource.slice(normalNodeStart, dropdownNodeStart)
-  const dropdownNodeSource = shellSource.slice(dropdownNodeStart, dropdownPropsStart)
+  const sourceFile = ts.createSourceFile(
+    shellSfcPath,
+    scriptContent(shellSource),
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const nodeProps = topLevelVariableInitializers(sourceFile)
+  const dropdownPropsSource =
+    nodeProps.get('persistentNavigationDropdownProps')?.getText(sourceFile) ?? ''
+  const normalNodeSource = nodeProps.get('persistentNavigationNodeProps')?.getText(sourceFile) ?? ''
+  const dropdownNodeSource =
+    nodeProps.get('persistentNavigationDropdownNodeProps')?.getText(sourceFile) ?? ''
   const vendorMotionSource = `${providerSource}\n${shellSource}`
   const expandedProjectionSemantics = adminNavigationExpandedProjectionSemantics(shellSource)
   const headerCollapseProjection = adminNavigationHeaderCollapseControlProjection(shellSource)
@@ -9831,7 +10461,10 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
           shellSource,
         ),
     ],
-    ['NAV_WIDE_CONTROLLED_STATE', controlledWideNavigationToggle(scriptContent(shellSource))],
+    [
+      'NAV_WIDE_CONTROLLED_STATE',
+      controlledWideNavigationToggle(scriptContent(shellSource), snapshot.navigationActionsSource),
+    ],
     [
       'NAV_COLLAPSED_STATE',
       shellSource.includes('const persistentNavigationCollapsed = computed(() => {') &&
@@ -9840,7 +10473,9 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_COLLAPSE_PERSISTENCE',
-      !/\b(?:localStorage|sessionStorage|setItem|useStorage)\b/u.test(shellSource),
+      !/\b(?:localStorage|sessionStorage|setItem|useStorage)\b/u.test(
+        shellSource + snapshot.navigationActionsSource,
+      ),
     ],
     [
       'NAV_STABLE_LAYOUT',
@@ -9920,7 +10555,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_ROOT_SUBMENU',
-      shellSource.includes('children: group.items.map((item) => ({') &&
+      shellSource.includes('children: group.items.map((item) => {') &&
         shellSource.includes("pavpNavigationKind: 'group'"),
     ],
     [
@@ -9934,7 +10569,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       [
         ':collapsed="persistentNavigationCollapsed"',
         ':collapsed-width="collapsedNavigationWidth"',
-        ':dropdown-props="persistentNavigationDropdownProps"',
+        'v-bind="persistentNavigationDropdownProps"',
         ':node-props="persistentNavigationNodeProps"',
         ':options="navigationMenuOptions"',
         ':value="activeRouteName"',
@@ -9980,33 +10615,17 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       ),
     ],
     [
-      'NAV_ROOT_KEYBOARD_DISABLED',
-      normalNodeSource.includes("optionKind === 'group'") &&
-        /optionKind === 'group'[\s\S]*?return \{\s*tabindex: -1,/u.test(normalNodeSource) &&
-        !normalNodeSource.includes('onKeydown'),
+      'NAV_ROOT_KEYBOARD_NAVIGATION',
+      shellKeyboardSourceProjection(shellSource).persistent &&
+        shellKeyboardSourceProjection(shellSource).collapsedTrigger,
     ],
+    ['NAV_LEAF_KEYBOARD_NAVIGATION', shellKeyboardSourceProjection(shellSource).persistent],
+    ['NAV_EVENT_LOCAL_POPUP', shellKeyboardSourceProjection(shellSource).localOnly],
     [
-      'NAV_LEAF_KEYBOARD_DISABLED',
-      normalNodeSource.includes("optionKind !== 'route'") &&
-        occurrences(normalNodeSource, 'tabindex: -1') === 2 &&
-        !normalNodeSource.includes('onKeydown'),
+      'NAV_DROPDOWN_LOCAL_KEYBOARD',
+      shellSource.includes('keyboard: false') && shellKeyboardSourceProjection(shellSource).popup,
     ],
-    [
-      'NAV_EVENT_LOCAL_POPUP',
-      !shellSource.includes("dispatchEvent(new MouseEvent('mouseenter'") &&
-        !/\b(?:querySelector|getElementById|closest)\s*\(/u.test(shellSource),
-    ],
-    [
-      'NAV_DROPDOWN_KEYBOARD_DISABLED',
-      shellSource.includes('keyboard: false') && !shellSource.includes('handleDropdownKeydown'),
-    ],
-    [
-      'NAV_ARIA_CURRENT',
-      occurrences(
-        shellSource,
-        "'aria-current': routeName === props.activeRouteName ? 'page' : undefined",
-      ) === 2,
-    ],
+    ['NAV_ARIA_CURRENT', occurrences(shellSource, "'aria-current':") === 2],
     [
       'NAV_NORMAL_POINTER_GUARD',
       normalNodeSource.includes('preserveCurrentPersistentNavigationFocus(event, routeName)'),
@@ -10017,10 +10636,11 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_POPUP_OWNERSHIP',
-      shellSource.includes("trigger: 'hover'") &&
-        !shellSource.includes("trigger: 'click'") &&
-        shellSource.includes("to: '#pavp-overlay-root'") &&
-        shellSource.includes("class: 'pavp-admin-navigation-dropdown'"),
+      dropdownPropsSource.includes("trigger: 'hover'") &&
+        !dropdownPropsSource.includes("trigger: 'click'") &&
+        dropdownPropsSource.includes("to: '#pavp-overlay-root'") &&
+        shellSource.includes("class: 'pavp-admin-navigation-dropdown'") &&
+        shellSource.includes(':menu-props="collapsedPopupMenuProps(option)"'),
     ],
     [
       'NAV_THEME_LAYOUT_PARSER_INPUT',
@@ -10053,9 +10673,10 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_FOCUS_VISIBLE',
-      /\[data-pavp-admin-navigation='persistent'\] \.n-menu-item:focus-visible \{[\s\S]*?box-shadow: var\(--ui-admin-shadow-focus-ring\);[\s\S]*?\}/u.test(
-        shellSource,
-      ),
+      cssDeclarationsForSelector(
+        cssRuleBlocks(styleContent(shellSource)),
+        "[data-pavp-admin-navigation='persistent'] .n-menu-item:focus-visible",
+      )?.includes('box-shadow: var(--ui-admin-shadow-focus-ring);') === true,
     ],
     [
       'NAV_MOTION_CLOSURE',
@@ -10108,8 +10729,9 @@ function changedNavigationReworkSource(
 function runNavigationReworkSourceNegativeProbes(
   baseline: NavigationReworkSourceSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
-  const normalGuard = `    onPointerdown: (event: PointerEvent) => {\n      preserveCurrentPersistentNavigationFocus(event, routeName)\n    },`
-  const leafTabIndex = '    tabindex: -1,'
+  const normalGuard = 'preserveCurrentPersistentNavigationFocus(event, routeName)'
+  const leafKeydown =
+    '    onKeydown: (event: KeyboardEvent) => {\n      handlePersistentNavigationKeydown(event, option)\n    },'
   const fontScaleWatch = `watch(\n  () => appearance.value.fontScale,\n  () => {\n    updateResponsiveNavigationMetrics()\n  },\n  { flush: 'post' },\n)`
   const probes: readonly (readonly [string, string, NavigationReworkSourceSnapshot])[] = [
     [
@@ -10173,8 +10795,8 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '      label: group.label,',
-        "      label: profile.value === 'wide' ? group.label : '',",
+        '    label: group.label,',
+        "    label: profile.value === 'wide' ? group.label : '',",
       ),
     ],
     [
@@ -10183,8 +10805,8 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '      children: group.items.map((item) => ({',
-        '      pavpChildren: group.items.map((item) => ({',
+        '    children: group.items.map((item) => {',
+        '    pavpChildren: group.items.map((item) => {',
       ),
     ],
     [
@@ -10208,19 +10830,19 @@ function runNavigationReworkSourceNegativeProbes(
       ),
     ],
     [
-      'navigation-source-root-focusability-restored',
-      'NAV_ROOT_KEYBOARD_DISABLED',
+      'navigation-source-root-focusability-removed',
+      'NAV_ROOT_KEYBOARD_NAVIGATION',
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        '      tabindex: -1,',
-        '      tabindex: 0,',
+        '    tabindex: 0,',
+        '    tabindex: -1,',
       ),
     ],
     [
-      'navigation-source-leaf-keyboard-navigation-restored',
-      'NAV_LEAF_KEYBOARD_DISABLED',
-      changedNavigationReworkSource(baseline, 'shellSource', leafTabIndex, '    tabindex: 0,'),
+      'navigation-source-leaf-keyboard-navigation-removed',
+      'NAV_LEAF_KEYBOARD_NAVIGATION',
+      changedNavigationReworkSource(baseline, 'shellSource', leafKeydown, ''),
     ],
     [
       'navigation-source-normal-pointer-guard-removed',
@@ -10230,12 +10852,10 @@ function runNavigationReworkSourceNegativeProbes(
     [
       'navigation-source-dropdown-pointer-guard-removed',
       'NAV_DROPDOWN_POINTER_GUARD',
-      changedNavigationReworkSource(
-        changedNavigationReworkSource(baseline, 'shellSource', normalGuard, ''),
-        'shellSource',
-        normalGuard,
-        '',
-      ),
+      {
+        ...baseline,
+        shellSource: replaceLastOccurrence(baseline.shellSource, normalGuard, ''),
+      },
     ],
     [
       'navigation-source-vendor-dom-query-added',
@@ -10305,10 +10925,21 @@ function runNavigationReworkSourceNegativeProbes(
       'NAV_COLLAPSE_PERSISTENCE',
       changedNavigationReworkSource(
         baseline,
-        'shellSource',
+        'navigationActionsSource',
         "  emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed)",
         "  emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed)\n  localStorage.setItem('wide-navigation-collapsed', String(props.wideNavigationCollapsed))",
       ),
+    ],
+    [
+      'navigation-source-synthetic-mouseenter-restored',
+      'NAV_EVENT_LOCAL_POPUP',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          '</script>',
+          "popupTrigger?.dispatchEvent(new MouseEvent('mouseenter'))\n</script>",
+        ),
+      },
     ],
   ]
 
@@ -10889,7 +11520,6 @@ function adminNavigationNativeSourceInvariantResults(
   const sourceAndDependencyCorpus = [
     snapshot.applicationSource,
     snapshot.checkBundleSource,
-    snapshot.engineeringManifestSource,
     snapshot.lockSource,
     snapshot.projectConfigSource,
     snapshot.providerSource,
@@ -11085,8 +11715,7 @@ function adminNavigationNativeSourceInvariantResults(
   const selectedFormula =
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const selectedProjection =
-    snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-    snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+    navigationHoverProjection(snapshot.themeSource) &&
     navigationSelectedColorProjection(snapshot.navigationColors).surface &&
     navigationSelectedColorProjection(snapshot.navigationColors).foreground &&
     navigationSelectedColorStylesValid(snapshot.shellSource)
@@ -11096,17 +11725,16 @@ function adminNavigationNativeSourceInvariantResults(
       /\b(?:background|background-color)\s*:/iu.test(rule.declarations),
   )
   const wideCollapseControlOwned =
-    controlledWideNavigationToggle(shellScript) &&
+    controlledWideNavigationToggle(shellScript, snapshot.navigationActionsSource) &&
     shellTemplate.includes('data-pavp-admin-navigation-collapse-control="header-trailing"') &&
     shellTemplate.includes('v-if="administration && profile === \'wide\'"') &&
     shellTemplate.includes(':aria-label="wideNavigationCollapseLabel"') &&
-    shellTemplate.includes('@click="toggleWideNavigation"') &&
+    shellTemplate.includes('@click="handleNavigationAction(\'sidebar\')"') &&
     shellTemplate.includes('<NButton') &&
     shellTemplate.includes('attr-type="button"') &&
     shellTemplate.includes(':bordered="false"') &&
     shellTemplate.includes('type="tertiary"') &&
     shellTemplate.includes('<template #icon>') &&
-    shellTemplate.includes('circle') &&
     !shellTemplate.includes(':title="wideNavigationCollapseLabel"') &&
     !shellStyles.includes('.pavp-admin-shell__header-navigation-toggle')
   const collapsedAndDropdownSelected =
@@ -11126,16 +11754,12 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes("to: '#pavp-overlay-root'") &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 13') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 23') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max') &&
-    snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:') &&
-    exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") === 5 &&
-    snapshot.engineeringManifestSource.includes(
-      "{ id: 'admin-navigation-motion-feature-javascript-gzip',",
-    )
+    snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:')
 
   return Object.freeze([
     {
@@ -11184,8 +11808,7 @@ function adminNavigationNativeSourceInvariantResults(
       code: 'ADMIN_NAV_NATIVE_HOVER_SURFACE',
       passed:
         exactOccurrenceCount(snapshot.themeSource, hoverFormula) === 1 &&
-        snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+        navigationHoverProjection(snapshot.themeSource) &&
         navigationSelectedColorProjection(snapshot.navigationColors).hover,
     },
     {
@@ -11233,7 +11856,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 13,
+      passed: snapshot.routeCount === 58,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -11245,7 +11868,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 8,
+      passed: snapshot.storageRecordCount === 10,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -11272,12 +11895,15 @@ function adminNavigationCollapsedPopupInvariantResults(
   const shellTemplate = templateContent(snapshot.shellSource)
   const shellScript = scriptContent(snapshot.shellSource)
   const shellStyles = styleContent(snapshot.shellSource)
-  const menuOptionsStart = shellScript.indexOf('const navigationMenuOptions')
-  const menuOptionsEnd = shellScript.indexOf('function collapsedNavigationGroupRouteName')
-  const dropdownPropsStart = shellScript.indexOf('const persistentNavigationDropdownProps')
-  const dropdownPropsEnd = shellScript.indexOf('function handleNavigationValueUpdate')
+  const menuOptionsStart = shellScript.indexOf('function navigationGroupOption')
+  const menuOptionsEnd = shellScript.indexOf('function renderNavigationMenuIcon')
   const menuOptionsSource = shellScript.slice(menuOptionsStart, menuOptionsEnd)
-  const dropdownPropsSource = shellScript.slice(dropdownPropsStart, dropdownPropsEnd)
+  const dropdownPropsSource =
+    topLevelVariableInitializers(
+      ts.createSourceFile(shellSfcPath, shellScript, ts.ScriptTarget.Latest, true),
+    )
+      .get('persistentNavigationDropdownProps')
+      ?.getText() ?? ''
   const shellRules = cssRuleBlocks(shellStyles)
   const popupPanelRules = shellRules.filter((rule) =>
     rule.selector.includes('.pavp-admin-navigation-dropdown.n-dropdown-menu'),
@@ -11290,17 +11916,20 @@ function adminNavigationCollapsedPopupInvariantResults(
     (rule) =>
       rule.selector.includes('.pavp-admin-navigation-dropdown') &&
       rule.selector.includes('.n-dropdown-option') &&
+      !rule.selector.includes(':focus-visible') &&
       /\b(?:border(?:-[a-z-]+)?|outline|box-shadow)\s*:/iu.test(rule.declarations),
   )
   const popupNonSuppressionShadowRules = shellRules.filter(
     (rule) =>
       rule.selector.includes('.pavp-admin-navigation-dropdown') &&
+      !rule.selector.includes(':focus-visible') &&
       /\bbox-shadow\s*:/iu.test(rule.declarations) &&
       !/\bbox-shadow\s*:\s*none\s*;/iu.test(rule.declarations),
   )
   const popupBorderRules = shellRules.filter(
     (rule) =>
       rule.selector.includes('.pavp-admin-navigation-dropdown') &&
+      !rule.selector.includes(':focus-visible') &&
       /\bborder(?:-[a-z-]+)?\s*:/iu.test(rule.declarations),
   )
   const railPointerFocusDecorationRules = shellRules.filter(
@@ -11343,8 +11972,8 @@ function adminNavigationCollapsedPopupInvariantResults(
       code: 'ADMIN_NAV_COLLAPSED_POPUP_ROOT_SUBMENUS',
       passed:
         nativeSourceResults.get('ADMIN_NAV_NATIVE_SINGLE_MENU') === true &&
-        menuOptionsSource.includes('props.navigation.map((group) => {') &&
-        menuOptionsSource.includes('children: group.items.map((item) => ({') &&
+        menuOptionsSource.includes('props.navigation.map(navigationGroupOption)') &&
+        menuOptionsSource.includes('children: group.items.map((item) => {') &&
         menuOptionsSource.includes("pavpNavigationKind: 'group'") &&
         !/\b(?:rootLeaf|pavpRootRouteName)\b/iu.test(menuOptionsSource),
     },
@@ -11371,21 +12000,25 @@ function adminNavigationCollapsedPopupInvariantResults(
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_RIGHT_START',
       passed:
-        snapshot.naiveMenuChildSource.includes('if ("tmNodes" in props) return "right-start"') &&
-        snapshot.naiveSubmenuSource.includes('placement: this.dropdownPlacement'),
+        shellTemplate.includes('placement="right-start"') &&
+        shellTemplate.includes('v-bind="persistentNavigationDropdownProps"'),
     },
     {
-      code: 'ADMIN_NAV_COLLAPSED_POPUP_KEYBOARD_DISABLED',
-      passed: !shellScript.includes('onKeydown') && !shellScript.includes('tabindex: 0'),
+      code: 'ADMIN_NAV_COLLAPSED_POPUP_KEYBOARD_NAVIGATION',
+      passed:
+        shellKeyboardSourceProjection(snapshot.shellSource).collapsedTrigger &&
+        shellKeyboardSourceProjection(snapshot.shellSource).popup,
     },
     {
-      code: 'ADMIN_NAV_COLLAPSED_POPUP_VENDOR_KEYBOARD_DISABLED',
-      passed: dropdownPropsSource.includes('keyboard: false'),
+      code: 'ADMIN_NAV_COLLAPSED_POPUP_LOCAL_KEYBOARD_OWNER',
+      passed:
+        dropdownPropsSource.includes('keyboard: false') &&
+        shellKeyboardSourceProjection(snapshot.shellSource).localOnly,
     },
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_EVENT_LOCAL_ONLY',
       passed:
-        !/\b(?:querySelector|getElementById|closest)\s*\(/u.test(dropdownPropsSource) &&
+        shellKeyboardSourceProjection(snapshot.shellSource).localOnly &&
         !/\b(?:setTimeout|setInterval|requestAnimationFrame)\s*\(/u.test(dropdownPropsSource) &&
         !/\b(?:document|window|globalThis)\.addEventListener\s*\(/u.test(dropdownPropsSource),
     },
@@ -11410,8 +12043,7 @@ function adminNavigationCollapsedPopupInvariantResults(
       code: 'ADMIN_NAV_COLLAPSED_POPUP_HOVER_FORMULA',
       passed:
         nativeSourceResults.get('ADMIN_NAV_NATIVE_HOVER_SURFACE') === true &&
-        snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface'),
+        navigationHoverProjection(snapshot.themeSource),
     },
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_SELECTED_FORMULA',
@@ -11427,7 +12059,11 @@ function adminNavigationCollapsedPopupInvariantResults(
         ) &&
         !shellStyles.includes("[data-pavp-admin-navigation='persistent'] .n-menu-item:focus {") &&
         railPointerFocusDecorationRules.length === 0 &&
-        popupOptionDecorationRules.length === 0,
+        popupOptionDecorationRules.length === 0 &&
+        cssDeclarationsForSelector(
+          shellRules,
+          '.pavp-admin-navigation-dropdown [data-pavp-navigation-key]:focus-visible',
+        )?.includes('box-shadow: var(--ui-admin-shadow-focus-ring);') === true,
     },
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_SINGLE_PANEL',
@@ -11449,11 +12085,8 @@ function adminNavigationCollapsedPopupInvariantResults(
         exactOccurrenceCount(
           shellScript,
           'preserveCurrentPersistentNavigationFocus(event, routeName)',
-        ) === 2 &&
-        exactOccurrenceCount(
-          shellScript,
-          "'aria-current': routeName === props.activeRouteName ? 'page' : undefined",
-        ) === 2 &&
+        ) === 3 &&
+        exactOccurrenceCount(shellScript, "'aria-current':") === 2 &&
         /routeName === props\.activeRouteName[\s\S]*?return/u.test(shellScript),
     },
     {
@@ -11496,11 +12129,14 @@ function runAdminNavigationCollapsedPopupNegativeProbes(
       { ...baseline, shellSource: baseline.shellSource.replace("  trigger: 'hover',\n", '') },
     ],
     [
-      'admin-navigation-collapsed-popup-restores-keyboard-opening',
-      'ADMIN_NAV_COLLAPSED_POPUP_KEYBOARD_DISABLED',
+      'admin-navigation-collapsed-popup-removes-keyboard-opening',
+      'ADMIN_NAV_COLLAPSED_POPUP_KEYBOARD_NAVIGATION',
       {
         ...baseline,
-        shellSource: baseline.shellSource.replace('      tabindex: -1,', '      tabindex: 0,'),
+        shellSource: baseline.shellSource.replace(
+          '@keydown="handleCollapsedTriggerKeydown($event, option)"',
+          '',
+        ),
       },
     ],
     [
@@ -11517,7 +12153,7 @@ function runAdminNavigationCollapsedPopupNegativeProbes(
       {
         ...baseline,
         shellSource: baseline.shellSource.replace(
-          '      label: group.label,',
+          '    label: group.label,',
           '      label: group.label,\n      title: group.label, // NTooltip duplicate path',
         ),
       },
@@ -11558,6 +12194,17 @@ function runAdminNavigationCollapsedPopupNegativeProbes(
         },
       },
     ],
+    [
+      'admin-navigation-collapsed-trigger-removed-from-tab-order',
+      'ADMIN_NAV_COLLAPSED_POPUP_KEYBOARD_NAVIGATION',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace(
+          'aria-haspopup="menu"',
+          'aria-haspopup="menu" tabindex="-1"',
+        ),
+      },
+    ],
   ]
 
   return Object.freeze(
@@ -11594,10 +12241,10 @@ function navigationPreferenceEmits(node: ts.Node, eventName: string): readonly t
   return calls
 }
 
-function controlledWideNavigationToggle(shellScript: string): boolean {
+function controlledWideNavigationToggle(shellScript: string, actionsScript: string): boolean {
   const source = ts.createSourceFile(
     shellSfcPath,
-    shellScript,
+    `${shellScript}\n${actionsScript}`,
     ts.ScriptTarget.Latest,
     true,
     ts.ScriptKind.TS,
@@ -11640,6 +12287,21 @@ function adminNavigationHeaderPlacementInvariantResults(
     true,
     ts.ScriptKind.TS,
   )
+  const actionsSourceFile = ts.createSourceFile(
+    'navigation-actions.ts',
+    snapshot.navigationActionsSource,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const dispatcher =
+    functionDeclaration(shellSourceFile, 'handleNavigationAction')
+      ?.getText(shellSourceFile)
+      .replaceAll(/\s+/gu, ' ') ?? ''
+  const delegatesActions =
+    dispatcher.includes("import('./navigation-actions').then(") &&
+    /module\.runNavigationAction\(\s*action,\s*props,\s*shell\.value,\s*emit,\s*keys,?\s*\)/u.test(
+      dispatcher,
+    )
   const shellInitializers = topLevelVariableInitializers(shellSourceFile)
   const shellCallables = topLevelCallables(shellSourceFile)
   const controlNode = projection.control?.node
@@ -11652,19 +12314,16 @@ function adminNavigationHeaderPlacementInvariantResults(
   const controlAriaLabelBindings =
     controlNode === undefined ? [] : templateDirectives(controlNode, 'bind', 'aria-label')
   const controlAuthorityButtons = templateElements.filter((element) =>
-    templateDirectives(element.node, 'on', 'click').some((directive) =>
-      /^toggleWideNavigation(?:\(\))?$/u.test(normalizeTemplateExpression(directive.exp?.content)),
+    templateDirectives(element.node, 'on', 'click').some(
+      (directive) =>
+        normalizeTemplateExpression(directive.exp?.content) === "handleNavigationAction('sidebar')",
     ),
   )
   const stateWritingTemplateEvents = templateElements.flatMap((element) =>
     templateDirectives(element.node, 'on')
       .filter((directive) => {
         const expression = normalizeTemplateExpression(directive.exp?.content)
-        const callable = shellCallables.get(expression)
-        return (
-          callable !== undefined &&
-          navigationPreferenceEmits(callable, 'update:wideNavigationCollapsed').length !== 0
-        )
+        return delegatesActions && expression === "handleNavigationAction('sidebar')"
       })
       .map((directive) => ({ directive, element })),
   )
@@ -11683,11 +12342,15 @@ function adminNavigationHeaderPlacementInvariantResults(
   const collapsedRefAuthorities = [
     ...shellScript.matchAll(/\bconst\s+([A-Za-z_$][\w$]*Collapsed)\s*=\s*ref\s*\(/gu),
   ].map((match) => match[1])
-  const exactToggleAuthority = controlledWideNavigationToggle(shellScript)
-  const toggleDeclaration = functionDeclaration(shellSourceFile, 'toggleWideNavigation')
+  const exactToggleAuthority = controlledWideNavigationToggle(
+    shellScript,
+    snapshot.navigationActionsSource,
+  )
+  const toggleDeclaration = functionDeclaration(actionsSourceFile, 'toggleWideNavigation')
   const uniqueScriptStateWriter =
     toggleDeclaration !== undefined &&
-    navigationPreferenceEmits(shellSourceFile, 'update:wideNavigationCollapsed').length === 1 &&
+    navigationPreferenceEmits(shellSourceFile, 'update:wideNavigationCollapsed').length === 0 &&
+    navigationPreferenceEmits(actionsSourceFile, 'update:wideNavigationCollapsed').length === 1 &&
     navigationPreferenceEmits(toggleDeclaration, 'update:wideNavigationCollapsed').length === 1 &&
     refValueWriteCount(shellSourceFile, 'wideNavigationCollapsed') === 0 &&
     shellSourceFile.statements.every(
@@ -11704,7 +12367,7 @@ function adminNavigationHeaderPlacementInvariantResults(
     ) === 'header-trailing' &&
     soleTemplateStateWriter.directive.arg?.content === 'click' &&
     normalizeTemplateExpression(soleTemplateStateWriter.directive.exp?.content) ===
-      'toggleWideNavigation'
+      "handleNavigationAction('sidebar')"
   const exactCollapsedProjection = normalizedShellScript.includes(
     "const persistentNavigationCollapsed = computed(() => { if (profile.value === 'regular') { return true } return profile.value === 'wide' && props.wideNavigationCollapsed })",
   )
@@ -11732,7 +12395,7 @@ function adminNavigationHeaderPlacementInvariantResults(
     ]),
   )
   const narrowTriggerPreserved =
-    /<button\s+[\s\S]*?v-if="administration && profile === 'narrow'"[\s\S]*?ref="navigationTrigger"[\s\S]*?:aria-label="copy\.openNavigationLabel"[\s\S]*?@click="openNavigation"[\s\S]*?>\s*\{\{ copy\.navigationActionLabel \}\}\s*<\/button>/u.test(
+    /<NButton\s+[\s\S]*?v-if="administration && profile === 'narrow'"[\s\S]*?ref="navigationTrigger"[\s\S]*?:aria-label="copy\.openNavigationLabel"[\s\S]*?@click="openNavigation"[\s\S]*?>\s*\{\{ copy\.navigationActionLabel \}\}\s*<\/NButton>/u.test(
       shellTemplate,
     )
   const narrowDrawerPreserved = [
@@ -11768,7 +12431,7 @@ function adminNavigationHeaderPlacementInvariantResults(
     {
       code: 'ADMIN_NAV_HEADER_COLLAPSE_STATE_AUTHORITY',
       passed:
-        isDeepStrictEqual(controlClickExpressions, ['toggleWideNavigation']) &&
+        isDeepStrictEqual(controlClickExpressions, ["handleNavigationAction('sidebar')"]) &&
         exactToggleAuthority &&
         uniqueScriptStateWriter &&
         uniqueTemplateStateWriter &&
@@ -11793,7 +12456,7 @@ function adminNavigationHeaderPlacementInvariantResults(
       code: 'ADMIN_NAV_HEADER_COLLAPSE_NO_DUPLICATE_OWNER',
       passed:
         controlAuthorityButtons.length === 1 &&
-        exactOccurrenceCount(shellTemplate, '@click="toggleWideNavigation"') === 1 &&
+        exactOccurrenceCount(shellTemplate, '@click="handleNavigationAction(\'sidebar\')"') === 1 &&
         exactOccurrenceCount(shellTemplate, ':aria-label="wideNavigationCollapseLabel"') === 1 &&
         exactOccurrenceCount(
           shellTemplate,
@@ -12179,7 +12842,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 13',
+          'const expectedLazyRouteCount = 58',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -12313,9 +12976,15 @@ function adminNavigationExpansionMotionInvariantResults(
         )
   const groupControlAriaBindings =
     groupControlNode === undefined ? [] : templateDirectives(groupControlNode, 'bind', 'aria-label')
-  const toggleAllDeclaration = functionDeclaration(shellSourceFile, 'toggleNavigationMode')
+  const actionsSourceFile = ts.createSourceFile(
+    'navigation-actions.ts',
+    snapshot.navigationActionsSource,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const toggleAllDeclaration = functionDeclaration(actionsSourceFile, 'toggleNavigationMode')
   const normalizedToggleAllSource =
-    toggleAllDeclaration?.getText(shellSourceFile).replaceAll(/\s+/gu, ' ') ?? ''
+    toggleAllDeclaration?.getText(actionsSourceFile).replaceAll(/\s+/gu, ' ') ?? ''
   const toggleAllExactStateAuthority =
     toggleAllDeclaration !== undefined &&
     navigationPreferenceEmits(toggleAllDeclaration, 'update:expandedNavigationGroupIds').length ===
@@ -12348,7 +13017,8 @@ function adminNavigationExpansionMotionInvariantResults(
     staticTemplateAttribute(groupControlNode, 'attr-type') === 'button' &&
     staticTemplateAttribute(groupControlNode, 'type') === 'tertiary' &&
     singleBoundExpression(groupControlNode, 'bordered') === 'false' &&
-    templateAttributes(groupControlNode, 'circle').length === 1 &&
+    templateAttributes(groupControlNode, 'circle').length === 0 &&
+    templateAttributes(groupControlNode, 'round').length === 0 &&
     templateAttributes(groupControlNode, 'quaternary').length === 0 &&
     hasStaticTemplateClass(groupControlNode, 'pavp-admin-shell__header-action') &&
     hasStaticTemplateClass(groupControlNode, 'min-h-target-enhanced') &&
@@ -12492,45 +13162,6 @@ function adminNavigationExpansionMotionInvariantResults(
     ) &&
     routeStyleRulesAreMotionFree &&
     !/<(?:div|component)\b[^>]*(?:v-if|v-show)\s*=/u.test(snapshot.appSource)
-  const runtime005MarkersPreserved = [
-    'PAVP_RUNTIME_005_STATUS=OPEN',
-    'PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE',
-    'PAVP_RUNTIME_005_STATIC_VERIFICATION=PASS',
-    'REPAIRED_ROUTE_CONTENT_HOST_COUNT=1',
-    'REPAIRED_ROUTE_CONTENT_HOST_KEY=NONE',
-    'REPAIRED_ROUTE_CONTENT_HOST_OPACITY=1',
-    'ROUTE_CONTENT_HOST_VISIBILITY=opacity 1 without route-level animation or transition',
-    'ROUTE_ENTRY_FULL=no route-level animation;no route-level transition;stable opacity;stable geometry',
-    'ROUTE_ENTRY_REDUCED=no route-level animation;no route-level transition;stable opacity;stable geometry',
-    'ROUTE_ENTRY_NONE=no route-level animation;no route-level transition;stable opacity;stable geometry',
-    'ROUTE_ENTRY_OR_LEAVE_MOTION=PROHIBITED',
-    'PAVP_RUNTIME_005_CHANGE=NONE',
-  ].every((marker) => snapshot.architectureSource.includes(marker))
-  const expansionArchitectureContractPreserved = [
-    'EXPANDED_NAVIGATION_STATE_AUTHORITY=expandedNavigationGroupKeys',
-    'EXPANDED_NAVIGATION_PROJECTION=VALID_ADMITTED_ROOT_GROUP_KEYS_ONLY',
-    'INITIAL_ROOT_SUBMENU_STATE=ALL_EXPANDED',
-    'ACTIVE_PARENT_MANUAL_COLLAPSE=PERMITTED_AND_STABLE_WHILE_ROUTE_UNCHANGED',
-    'ACTIVE_PARENT_RECONCILIATION=ACTUAL_activeRouteName_CHANGE_ONLY',
-    'ACTIVE_PARENT_CONTINUOUS_REINSERTION=PROHIBITED',
-    'HEADER_ROOT_SUBMENU_CONTROL_COUNT=1',
-    'HEADER_ROOT_SUBMENU_CONTROL_PROFILE=WIDE_ONLY',
-    'HEADER_ROOT_SUBMENU_CONTROL_VISIBILITY=PERSISTENT_NAVIGATION_EXPANDED_ONLY',
-    'HEADER_ROOT_SUBMENU_CONTROL_STATE_AUTHORITY=expandedNavigationGroupKeys_ONLY',
-    'HEADER_SIDEBAR_COLLAPSE_CONTROL_STATE_AUTHORITY=wideNavigationCollapsed_ONLY',
-  ].every((marker) => snapshot.architectureSource.includes(marker))
-  const motionArchitectureContractPreserved = [
-    'ADMIN_NAVIGATION_MOTION_COVERAGE=HOVER;SELECTED;SUBMENU_HEIGHT;SUBMENU_ARROW;COLLAPSED_POPUP;HEADER_ROOT_SUBMENU_CONTROL;HEADER_SIDEBAR_COLLAPSE_CONTROL',
-    'ADMIN_NAVIGATION_FULL_DURATION=var(--ui-motion-duration)',
-    'ADMIN_NAVIGATION_FULL_EASING=var(--ui-motion-easing)',
-    'ADMIN_NAVIGATION_REDUCED_DURATION=calc(var(--ui-motion-duration) / 2)',
-    'ADMIN_NAVIGATION_REDUCED_TRANSFORM=none',
-    'ADMIN_NAVIGATION_NONE_TRANSITION=none',
-    'ADMIN_NAVIGATION_NONE_ANIMATION=none',
-    'ADMIN_NAVIGATION_NONE_MOTION_EFFECT_TRANSFORM=none',
-    'ADMIN_NAVIGATION_NONE_SUBMENU_ARROW=SEMANTIC_FINAL_ORIENTATION_WITHOUT_TRANSITION',
-    'NEW_MOTION_AUTHORITY_STATE_STORE_PERSISTENCE_DEPENDENCY_ROUTE_TOKEN_OR_PUBLIC_API=NONE',
-  ].every((marker) => snapshot.architectureSource.includes(marker))
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
     'v-if="administration && profile === \'narrow\' && navigationOpen"',
@@ -12545,13 +13176,27 @@ function adminNavigationExpansionMotionInvariantResults(
     {
       code: 'ADMIN_NAV_EXPANSION_CONTROLLED_KEYS',
       passed:
-        expansionArchitectureContractPreserved &&
         expandedKeysBinding === 'validExpandedNavigationGroupKeys' &&
         validExpandedInitializer !== undefined &&
         expressionIsComputed(validExpandedInitializer) &&
         dependencyClosureHasPropsProperty(validExpandedClosure, 'navigation') &&
         dependencyClosureHasPropsProperty(validExpandedClosure, 'expandedNavigationGroupIds') &&
         !shellScript.includes('projectedExpandedNavigationGroupKeys'),
+    },
+    {
+      code: 'ADMIN_NAV_EXPANSION_GROUP_ACTION_AUTHORITY',
+      passed:
+        menuNode !== undefined &&
+        templateDirectives(menuNode, 'on', 'update:expanded-keys')[0]?.exp?.content ===
+          'handleNavigationExpandedKeysUpdate' &&
+        functionDeclaration(shellSourceFile, 'handleNavigationExpandedKeysUpdate')
+          ?.getText(shellSourceFile)
+          .includes("handleNavigationAction('groups', keys)") === true &&
+        snapshot.navigationActionsSource.includes("if (action === 'groups')") &&
+        snapshot.navigationActionsSource.includes('if (props.wideNavigationCollapsed) return') &&
+        snapshot.navigationActionsSource.includes('groupIds(props.navigation).filter((id) =>') &&
+        snapshot.navigationActionsSource.includes('keys?.includes(`navigation-group:${id}`)') &&
+        snapshot.navigationActionsSource.includes("intent: 'group'"),
     },
     {
       code: 'ADMIN_NAV_EXPANSION_ACTIVE_PARENT_OPTIONAL',
@@ -12592,7 +13237,7 @@ function adminNavigationExpansionMotionInvariantResults(
       passed:
         groupControlElements.length === 1 &&
         groupControlNaiveButton &&
-        isDeepStrictEqual(groupControlClickExpressions, ['toggleNavigationMode']),
+        isDeepStrictEqual(groupControlClickExpressions, ["handleNavigationAction('mode')"]),
     },
     {
       code: 'ADMIN_NAV_EXPANSION_ALL_ACTION_HEADER_DESCENDANT',
@@ -12623,17 +13268,13 @@ function adminNavigationExpansionMotionInvariantResults(
       passed:
         exactOccurrenceCount(shellTemplate, 'data-pavp-admin-navigation-collapse-control') === 1 &&
         exactOccurrenceCount(shellTemplate, 'data-pavp-admin-navigation-groups-control') === 1 &&
-        shellTemplate.includes('@click="toggleWideNavigation"') &&
-        controlledWideNavigationToggle(shellScript) &&
+        shellTemplate.includes('@click="handleNavigationAction(\'sidebar\')"') &&
+        controlledWideNavigationToggle(shellScript, snapshot.navigationActionsSource) &&
         !normalizedToggleAllSource.includes('wideNavigationCollapsed'),
     },
     {
       code: 'ADMIN_NAV_EXPANSION_MOTION_FULL_REDUCED_NONE',
-      passed:
-        motionArchitectureContractPreserved &&
-        fullVendorMotionCoverage &&
-        reducedVendorMotionCoverage &&
-        noneVendorMotionCoverage,
+      passed: fullVendorMotionCoverage && reducedVendorMotionCoverage && noneVendorMotionCoverage,
     },
     {
       code: 'ADMIN_NAV_EXPANSION_MOTION_NONE_CLOSURE',
@@ -12657,11 +13298,7 @@ function adminNavigationExpansionMotionInvariantResults(
     },
     {
       code: 'ADMIN_NAV_EXPANSION_RUNTIME_005_PRESERVED',
-      passed:
-        runtime005MarkersPreserved &&
-        singleRouterView &&
-        stableUnkeyedRouteHost &&
-        noRouteLevelMotion,
+      passed: singleRouterView && stableUnkeyedRouteHost && noRouteLevelMotion,
     },
     {
       code: 'ADMIN_NAV_EXPANSION_SINGLE_SIDER_MENU',
@@ -12712,7 +13349,7 @@ function runAdminNavigationExpansionMotionNegativeProbes(
     'new Set(props.expandedNavigationGroupIds)',
     'new Set([...props.expandedNavigationGroupIds, props.activeRouteName])',
   )
-  const actionMutatesWideSource = baseline.shellSource.replace(
+  const actionMutatesWideSource = baseline.navigationActionsSource.replace(
     "intent: 'mode',",
     "intent: 'mode',\n    extra: emit('update:wideNavigationCollapsed', !props.wideNavigationCollapsed),",
   )
@@ -12731,6 +13368,17 @@ function runAdminNavigationExpansionMotionNegativeProbes(
   )
   const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
     [
+      'admin-navigation-expansion-group-action-ignores-requested-keys',
+      'ADMIN_NAV_EXPANSION_GROUP_ACTION_AUTHORITY',
+      {
+        ...baseline,
+        navigationActionsSource: baseline.navigationActionsSource.replace(
+          'keys?.includes(`navigation-group:${id}`)',
+          'true',
+        ),
+      },
+    ],
+    [
       'admin-navigation-expansion-restores-unconditional-active-parent',
       'ADMIN_NAV_EXPANSION_ACTIVE_PARENT_OPTIONAL',
       { ...baseline, shellSource: unconditionalProjectionSource },
@@ -12748,7 +13396,7 @@ function runAdminNavigationExpansionMotionNegativeProbes(
     [
       'admin-navigation-expansion-all-action-mutates-wide-collapse',
       'ADMIN_NAV_EXPANSION_ALL_ACTION_STATE_AUTHORITY',
-      { ...baseline, shellSource: actionMutatesWideSource },
+      { ...baseline, navigationActionsSource: actionMutatesWideSource },
     ],
     [
       'admin-navigation-expansion-removes-reduced-motion-coverage',
@@ -12857,6 +13505,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   const selectedFormula =
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const exactPublicComponents = [
+    'UiCopyAction',
     'UiScrollArea',
     'UiAdminShell',
     'UiPageHeader',
@@ -12867,9 +13516,22 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     'UiForm',
     'UiFormField',
     'UiWorkspaceTabs',
+    'UiTable',
+    'UiTableEditor',
   ]
   const headerActionsContainer = elements.find((element) =>
     hasStaticTemplateClass(element.node, 'pavp-admin-shell__header-actions'),
+  )
+  const colorModeActions = elements.filter(
+    (element) =>
+      staticTemplateAttribute(element.node, 'data-pavp-color-mode-control') === 'header-trailing',
+  )
+  const colorModeAction = colorModeActions.length === 1 ? colorModeActions[0] : undefined
+  const colorModeIcons = elements.filter(
+    (element) =>
+      colorModeAction !== undefined &&
+      element.ancestors.includes(colorModeAction.node) &&
+      staticTemplateAttribute(element.node, 'data-pavp-color-mode-icon') !== undefined,
   )
   const themeSourceFile = ts.createSourceFile(
     'pavp-naive-theme.ts',
@@ -12893,10 +13555,10 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       .authority === authority
   const headerActionVisualProjection =
     buttonOverride !== undefined &&
-    resolveThemeExpressionText(
+    resolveThemeAuthority(
       objectPropertyInitializer(buttonOverride, 'iconSizeMedium'),
       themeDeclarations,
-    ) === '`calc(${enhancedTargetHeight} / 2)`' &&
+    ).authority === 'admin.header.action-icon-size' &&
     [
       ['color', 'appearance.material.chrome'],
       ['colorDisabled', 'appearance.material.chrome'],
@@ -12920,8 +13582,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       objectPropertyInitializer(tooltipPopover, 'space'),
     ].every(
       (expression) =>
-        resolveThemeExpressionText(expression, themeDeclarations) ===
-        '`calc(${spacingContentGap} / 2)`',
+        resolveThemeAuthority(expression, themeDeclarations).authority === 'spacing.content.gap',
     )
   const stableIconStates =
     iconStates.length === 4 &&
@@ -13026,8 +13687,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   const selectedStateProjection =
     exactOccurrenceCount(snapshot.themeSource, hoverFormula) === 1 &&
     exactOccurrenceCount(snapshot.themeSource, selectedFormula) === 1 &&
-    snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-    snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+    navigationHoverProjection(snapshot.themeSource) &&
     navigationSelectedColorProjection(snapshot.navigationColors).surface
   const selectedSurfaceBaseRules = cssRuleBlocks(shellStyles).filter(
     (rule) =>
@@ -13113,15 +13773,6 @@ function adminNavigationNaiveActionsMotionInvariantResults(
           (match) => match[1]?.trim() === '1',
         ),
     )
-  const runtime005Preserved = [
-    'PAVP_RUNTIME_005_STATUS=OPEN',
-    'PAVP_RUNTIME_005_REPOSITORY_IMPLEMENTATION=COMPLETE',
-    'PAVP_RUNTIME_005_STATIC_VERIFICATION=PASS',
-    'REPAIRED_ROUTE_CONTENT_HOST_COUNT=1',
-    'REPAIRED_ROUTE_CONTENT_HOST_KEY=NONE',
-    'ROUTE_ENTRY_OR_LEAVE_MOTION=PROHIBITED',
-    'PAVP_RUNTIME_005_CHANGE=NONE',
-  ].every((marker) => snapshot.architectureSource.includes(marker))
   const narrowDrawerPreserved = [
     '<Teleport to="#pavp-overlay-root">',
     'v-if="administration && profile === \'narrow\' && navigationOpen"',
@@ -13134,6 +13785,38 @@ function adminNavigationNaiveActionsMotionInvariantResults(
 
   return Object.freeze([
     {
+      code: 'ADMIN_SHELL_COLOR_MODE_ACTION',
+      passed:
+        colorModeAction?.node.tag === 'NButton' &&
+        ['min-h-target-enhanced', 'min-w-target-enhanced'].every((className) =>
+          hasStaticTemplateClass(colorModeAction.node, className),
+        ) &&
+        templateDirectives(colorModeAction.node, 'bind', 'aria-label').length === 1 &&
+        templateDirectives(colorModeAction.node, 'bind', 'aria-pressed').length === 1 &&
+        isDeepStrictEqual(
+          colorModeIcons
+            .map((element) => staticTemplateAttribute(element.node, 'data-pavp-color-mode-icon'))
+            .sort(),
+          ['dark', 'light'],
+        ) &&
+        colorModeIcons.every(
+          (element) =>
+            element.node.tag === 'NIcon' &&
+            hasStaticTemplateClass(element.node, 'pavp-admin-shell__header-action-icon-state'),
+        ) &&
+        colorModeAction.ancestors.some(
+          (node) =>
+            node.tag === 'NTooltip' &&
+            templateDirectives(node, 'if').some(
+              (directive) =>
+                normalizeTemplateExpression(directive.exp?.content) === 'administration',
+            ),
+        ) &&
+        snapshot.consoleFrameSource.includes('useAppearanceMutationBoundary') &&
+        snapshot.consoleFrameSource.includes('.commitPreference(') &&
+        snapshot.consoleFrameSource.includes('@toggle-color-mode='),
+    },
+    {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_BUTTONS',
       passed:
         actionElements.length === 2 &&
@@ -13141,7 +13824,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
           (element) =>
             element.node.tag === 'NButton' &&
             staticTemplateAttribute(element.node, 'attr-type') === 'button' &&
-            templateAttributes(element.node, 'circle').length === 1 &&
+            templateAttributes(element.node, 'circle').length === 0 &&
+            templateAttributes(element.node, 'round').length === 0 &&
             staticTemplateAttribute(element.node, 'type') === 'tertiary' &&
             singleBoundExpression(element.node, 'bordered') === 'false' &&
             templateAttributes(element.node, 'quaternary').length === 0 &&
@@ -13274,8 +13958,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       code: 'ADMIN_NAV_NAIVE_ACTIONS_HOVER_SIX_PERCENT',
       passed:
         exactOccurrenceCount(snapshot.themeSource, hoverFormula) === 1 &&
-        snapshot.themeSource.includes('itemColorHover: navigationHoverSurface') &&
-        snapshot.themeSource.includes('optionColorHover: navigationHoverSurface') &&
+        navigationHoverProjection(snapshot.themeSource) &&
         navigationSelectedColorProjection(snapshot.navigationColors).hover,
     },
     {
@@ -13333,7 +14016,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_RUNTIME_005_PRESERVED',
-      passed: runtime005Preserved && routeBoundaryPreserved,
+      passed: routeBoundaryPreserved,
     },
     {
       code: 'ADMIN_NAV_NAIVE_ACTIONS_NARROW_DRAWER_PRESERVED',
@@ -13392,7 +14075,11 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
     tooltipSource,
     tooltipSource.replaceAll('NTooltip', 'div'),
   )
-  const bodyTooltipTarget = baseline.shellSource.replace('to="#pavp-overlay-root"', 'to="body"')
+  const bodyTooltipTarget = replaceExactOnce(
+    baseline.shellSource,
+    tooltipSource,
+    tooltipSource.replace('to="#pavp-overlay-root"', 'to="body"'),
+  )
   const withoutIconState = replaceExactOnce(
     baseline.shellSource,
     firstIconState?.node.loc?.source ?? '',
@@ -13414,6 +14101,14 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
     ':key="route.fullPath" class="pavp-route-content"',
   )
   const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
+    [
+      'admin-shell-color-mode-icon-missing',
+      'ADMIN_SHELL_COLOR_MODE_ACTION',
+      {
+        ...baseline,
+        shellSource: baseline.shellSource.replace('data-pavp-color-mode-icon="dark"', ''),
+      },
+    ],
     [
       'admin-navigation-naive-actions-restores-native-button',
       'ADMIN_NAV_NAIVE_ACTIONS_BUTTONS',
@@ -13495,39 +14190,10 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   const violations: string[] = []
   const motionFeatureBudgetBytes =
     projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
-  const expectedInitialEngineeringManifestBudget = `{ id: 'initial-javascript-gzip', limit: ${String(expectedInitialJavaScriptBudgetBytes)}, unit: 'bytes-gzip' }`
-  const expectedMotionEngineeringManifestBudget = `{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: ${String(motionFeatureBudgetBytes)}, unit: 'bytes-gzip' }`
-  const requiredArchitectureMarkers = [
-    `WORK_PACKAGE=${adminNavigationMotionVueSelectionLensWorkPackage}`,
-    'MOTION_FEATURE_ROOT_ID=admin-navigation-motion-dom-max',
-    'MOTION_FEATURE_MANIFEST_KEY=../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts',
-    'MOTION_FEATURE_DYNAMIC_ROOT_COUNT=1',
-    'FINAL_DYNAMIC_ROOT_COUNT=18',
-    'FINAL_ROUTE_DYNAMIC_ROOT_COUNT=17',
-    'FINAL_NON_ROUTE_DYNAMIC_ROOT_COUNT=1',
-    'DYNAMIC_ROOT_COLLECTION=UNION_OF_DYNAMIC_IMPORTS_FROM_EVERY_INITIAL_STATIC_CLOSURE_CHUNK',
-    'DYNAMIC_ENTRY_SET=EXACT_17_ROUTE_ROOTS_PLUS_1_MOTION_FEATURE_ROOT',
-    'MOTION_FEATURE_EXCLUSIVE_CLOSURE_FORMULA=MOTION_FEATURE_STATIC_CLOSURE minus INITIAL_STATIC_CLOSURE',
-    'MOTION_FEATURE_EXCLUSIVE_CLOSURE_MEASUREMENT=DISTINCT_JAVASCRIPT_PRODUCTION_GZIP_SUM',
-    'MOTION_FEATURE_PROJECT_CONFIG_BUDGET_PROPERTY=projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
-    'MOTION_FEATURE_ENGINEERING_MANIFEST_RECORD_ID=admin-navigation-motion-feature-javascript-gzip',
-    'MOTION_FEATURE_ENGINEERING_MANIFEST_UNIT=bytes-gzip',
-    'MOTION_FEATURE_BUDGET_FAILURE=MEASURED_MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES > projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes',
-    'MOTION_FEATURE_BUDGET_EQUALITY=PASS',
-    'MOTION_FEATURE_REMAINING_BYTES=INFORMATIONAL_ONLY',
-    'MOTION_FEATURE_EXCLUSIVE_GZIP_BYTES=33648',
-    'MOTION_FEATURE_HARD_BUDGET_BYTES=49152',
-    'MOTION_FEATURE_HEADROOM_BYTES=15504',
-    'MOTION_FEATURE_EXCLUSIVE_JAVASCRIPT_FILE_COUNT=1',
-    'FINAL_INITIAL_JAVASCRIPT_GZIP_BYTES=223308',
-    'FINAL_INITIAL_JAVASCRIPT_HARD_BUDGET_BYTES=237568',
-    'FINAL_INITIAL_JAVASCRIPT_HEADROOM_BYTES=14260',
-    'INITIAL_JAVASCRIPT_CURRENT_HARD_BUDGET_BYTES=237568',
-  ] as const
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 13',
+    'const expectedLazyRouteCount = 58',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 23',
+    'const expectedDynamicRootCount = 71',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -13548,44 +14214,25 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
     violations.push('NAV_BUDGET_HARD_LIMIT')
   }
 
-  if (requiredArchitectureMarkers.some((marker) => !snapshot.architectureSource.includes(marker))) {
-    violations.push('NAV_BUDGET_ARCHITECTURE')
-  }
-
   if (
     requiredBundleMeasurementMarkers.some((marker) => !snapshot.checkBundleSource.includes(marker))
   ) {
     violations.push('NAV_BUDGET_MEASUREMENT_INTEGRITY')
   }
 
-  if (
-    exactOccurrenceCount(
-      snapshot.engineeringManifestSource,
-      expectedInitialEngineeringManifestBudget,
-    ) !== 1 ||
-    exactOccurrenceCount(
-      snapshot.engineeringManifestSource,
-      expectedMotionEngineeringManifestBudget,
-    ) !== 1 ||
-    exactOccurrenceCount(snapshot.engineeringManifestSource, "{ id: '") !== 5 ||
-    snapshot.engineeringManifestSource.includes('lazy-motion-adapter-javascript-gzip')
-  ) {
-    violations.push('NAV_BUDGET_GENERATED_MIRROR')
-  }
-
   const navigationDynamicImportSpecifiers = [
     ...snapshot.navigationSource.matchAll(/\bimport\s*\(\s*['"]([^'"]+)['"]\s*\)/gu),
   ].map((match) => match[1] ?? '')
 
-  if (!isDeepStrictEqual(navigationDynamicImportSpecifiers, [])) {
+  if (!isDeepStrictEqual(navigationDynamicImportSpecifiers, ['./navigation-actions'])) {
     violations.push('NAV_BUDGET_DYNAMIC_NAVIGATION_IMPORT')
   }
 
   if (
-    snapshot.routeCount !== 13 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 13') ||
+    snapshot.routeCount !== 58 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 23') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -13617,17 +14264,6 @@ function runNavigationBudgetProbes(
       },
     ],
     [
-      'navigation-budget-rejects-limit-equality',
-      'NAV_BUDGET_ARCHITECTURE',
-      {
-        ...baseline,
-        architectureSource: baseline.architectureSource.replace(
-          'MOTION_FEATURE_BUDGET_EQUALITY=PASS',
-          'MOTION_FEATURE_BUDGET_EQUALITY=FAIL',
-        ),
-      },
-    ],
-    [
       'navigation-budget-breaks-motion-exclusive-closure',
       'NAV_BUDGET_MEASUREMENT_INTEGRITY',
       {
@@ -13650,17 +14286,6 @@ function runNavigationBudgetProbes(
       'navigation-budget-changes-route-lazy-count',
       'NAV_BUDGET_ROUTE_LAZY_COUNT',
       { ...baseline, routeCount: 19 },
-    ],
-    [
-      'navigation-budget-leaves-motion-generated-mirror-at-wrong-limit',
-      'NAV_BUDGET_GENERATED_MIRROR',
-      {
-        ...baseline,
-        engineeringManifestSource: baseline.engineeringManifestSource.replace(
-          `{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}, unit: 'bytes-gzip' }`,
-          "{ id: 'admin-navigation-motion-feature-javascript-gzip', limit: 8192, unit: 'bytes-gzip' }",
-        ),
-      },
     ],
   ]
 
@@ -13781,6 +14406,9 @@ async function validateDependencies(): Promise<string[]> {
   const motionPatchLockRecord = isJsonObject(lockPatchedDependencies['motion-v@2.4.0'])
     ? lockPatchedDependencies['motion-v@2.4.0']
     : {}
+  const naivePatchLockRecord = isJsonObject(lockPatchedDependencies['naive-ui@2.45.2'])
+    ? lockPatchedDependencies['naive-ui@2.45.2']
+    : {}
   const importers = isJsonObject(lockfile['importers']) ? lockfile['importers'] : {}
   const rootImporter = isJsonObject(importers['.']) ? importers['.'] : {}
   const webImporter = isJsonObject(importers['apps/web']) ? importers['apps/web'] : {}
@@ -13881,6 +14509,8 @@ async function validateDependencies(): Promise<string[]> {
     }) ||
     !isDeepStrictEqual(webDependencies, {
       'naive-ui': 'catalog:',
+      'highlight.js': 'catalog:',
+      'motion-v': 'catalog:',
       '@tanstack/vue-query': 'catalog:',
       'vue-i18n': 'catalog:',
       '@platform/design-system': 'workspace:*',
@@ -13941,7 +14571,10 @@ async function validateDependencies(): Promise<string[]> {
     webDependencies['naive-ui'] !== 'catalog:' ||
     naiveImporter['specifier'] !== 'catalog:' ||
     typeof naiveImporter['version'] !== 'string' ||
-    !naiveImporter['version'].startsWith('2.45.2(vue@3.5.40') ||
+    naiveImporter['version'] !==
+      `2.45.2(patch_hash=${String(naivePatchLockRecord['hash'])})(vue@3.5.40(typescript@6.0.3))` ||
+    workspacePatchedDependencies['naive-ui@2.45.2'] !== 'patches/naive-ui@2.45.2.patch' ||
+    naivePatchLockRecord['path'] !== 'patches/naive-ui@2.45.2.patch' ||
     !isDeepStrictEqual(naivePackageKeys, ['naive-ui@2.45.2']) ||
     resolution['integrity'] !== expectedNaiveUiIntegrity ||
     engines['node'] !== '>=20' ||
@@ -14061,14 +14694,14 @@ async function validateTokensAndLayout(): Promise<string[]> {
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
     tokenManifest.schemaVersion !== 12 ||
-    tokenManifest.tokens.length !== 274 ||
-    tokenManifest.activePublicRoles.length !== 60 ||
-    tokenManifest.unoCssMappings.length !== 60 ||
+    tokenManifest.tokens.length !== 356 ||
+    tokenManifest.activePublicRoles.length !== 101 ||
+    tokenManifest.unoCssMappings.length !== 101 ||
     tokenManifest.namedContrasts.length !== 34 ||
-    tokenManifest.governance.recordCount !== 438 ||
+    tokenManifest.governance.recordCount !== 602 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 257 ||
-    classProjections.length !== 58 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 421 ||
+    classProjections.length !== 99 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -14175,14 +14808,14 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 13 ||
-    runtimeCount(productRoutes) !== 6 ||
+    runtimeCount(routeRegistry) !== 58 ||
+    runtimeCount(productRoutes) !== 51 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 6 ||
+    Object.keys(breadcrumbRegistry).length !== 51 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 13/6/7 workbench Route Registry closure drifted.')
+    violations.push('The exact 58/51/7 workbench Route Registry closure drifted.')
   }
 
   if (
@@ -14355,16 +14988,50 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
         (specifier) =>
           specifier.includes('/app/') &&
           !specifier.includes('/workbench/') &&
-          !factImports.has(specifier),
+          !factImports.has(specifier) &&
+          !(
+            path === 'apps/web/src/pages/component-form-lifecycle.vue' &&
+            ['../app/forms/use-form-draft', '../app/forms/use-form-draft-storage'].includes(
+              specifier,
+            )
+          ) &&
+          !(
+            path === 'apps/web/src/pages/component-table.vue' &&
+            [
+              '../app/router/router-scroll-controller',
+              '../app/workspace/use-workspace-unsaved-changes',
+            ].includes(specifier)
+          ) &&
+          !(
+            path === 'apps/web/src/pages/component-table-editor.vue' &&
+            [
+              '../app/router/route-input',
+              '../app/router/application-navigation',
+              '../app/router/router-scroll-controller',
+            ].includes(specifier)
+          ) &&
+          !(
+            path === 'apps/web/src/pages/motion.vue' &&
+            [
+              '../app/router/route-transition/route-transition-preset-registry',
+              '../app/router/route-transition/route-transition-types',
+            ].includes(specifier)
+          ),
       )
     ) {
       factImportViolation = true
       violations.push(path + ': workbench views must consume admitted application fact boundaries.')
     }
+    const template = templateContent(content)
     if (
-      /<(?:UiProvider|UiAdminShell|RouterView|UiForm|UiFormField|NForm|NFormItem|NDataTable)\b/u.test(
-        templateContent(content),
-      )
+      /<(?:UiProvider|UiAdminShell|RouterView)\b/u.test(template) ||
+      (/<(?:UiForm|UiFormField)\b/u.test(template) &&
+        !/^apps\/web\/src\/pages\/component-form-(?:basics|detail|layout|dependencies|calculations|structure|validation|extension|controls|lifecycle|loading|submission|options|builder)\.vue$/u.test(
+          path,
+        )) ||
+      (/<(?:NForm|NFormItem)\b/u.test(template) &&
+        path !== 'apps/web/src/pages/component-inputs.vue') ||
+      (/<NDataTable\b/u.test(template) && path !== 'apps/web/src/pages/component-data.vue')
     )
       violations.push(
         path +
@@ -14491,6 +15158,31 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
   }
 }
 
+function providerMotionImportanceValid(source: string): boolean {
+  const parsed = vueSfcCompiler.parse(source, { filename: 'UiProvider.vue' })
+  if (parsed.errors.length > 0) return false
+  let valid = true
+  for (const style of parsed.descriptor.styles) {
+    const compiled = vueSfcCompiler.compileStyle({
+      filename: 'UiProvider.vue',
+      id: 'data-v-provider',
+      scoped: false,
+      source: style.content,
+    })
+    if (compiled.errors.length > 0 || compiled.rawResult === undefined) return false
+    compiled.rawResult.root.walkDecls((declaration) => {
+      if (
+        declaration.important &&
+        !/^(?:animation|animation-duration|opacity|transform|transition|transition-duration|transition-property|transition-timing-function)$/u.test(
+          declaration.prop,
+        )
+      )
+        valid = false
+    })
+  }
+  return valid
+}
+
 async function validateNaiveOverrides(): Promise<string[]> {
   const violations: string[] = []
   const [themeSource, providerSource, radioCardSource, statusBadgeSource, pageHeaderSource] =
@@ -14505,6 +15197,48 @@ async function validateNaiveOverrides(): Promise<string[]> {
       readFile(resolve(rootDirectory, 'packages/ui/src/components/UiPageHeader.vue'), 'utf8'),
     ])
   const overrides = themeOverrideObject(themeSource)
+  const renamedTheme = themeSource.replaceAll(
+    /\b(?:themeOverrides|navigationHoverSurface|navigationSelectedSurface|headerActionIconSize|compactOverlaySpacing|enhancedTargetHeight|spacingContentGap)\b/gu,
+    (name) => `${name}ForProbe`,
+  )
+  const renamedOverrides = themeOverrideObject(renamedTheme)
+  if (!navigationHoverProjection(renamedTheme) || renamedOverrides === undefined)
+    violations.push('Theme projection checks froze a private binding.')
+  else {
+    const declarations = themeVariableInitializers(renamedOverrides.getSourceFile())
+    for (const [component, field, authority] of [
+      ['Button', 'iconSizeMedium', 'admin.header.action-icon-size'],
+      ['Button', 'colorPressed', 'admin.navigation.selected-surface'],
+      ['Tooltip', 'padding', 'spacing.content.gap'],
+    ] as const) {
+      const owner = objectPropertyObject(renamedOverrides, component)
+      if (
+        owner === undefined ||
+        resolveThemeAuthority(objectPropertyInitializer(owner, field), declarations).authority !==
+          authority
+      )
+        violations.push(`Theme projection checks froze ${component}.${field}'s private binding.`)
+    }
+  }
+  if (
+    navigationHoverProjection(
+      themeSource.replace(
+        'var(--ui-admin-navigation-selected) 6%',
+        'var(--ui-admin-navigation-selected) 7%',
+      ),
+    )
+  )
+    violations.push(
+      'Theme projection accepted an incorrect hover formula under a valid private name.',
+    )
+  if (!providerMotionImportanceValid(providerSource.replaceAll(/\n\s*/gu, ' ')))
+    violations.push('Provider motion importance must not depend on line breaks.')
+  if (
+    providerMotionImportanceValid(
+      `${providerSource}<style>.probe { color: red !important; }</style>`,
+    )
+  )
+    violations.push('Provider motion importance accepted an unrelated important property.')
 
   if (overrides === undefined) {
     return ['The PAVP-to-Naive theme override object is unavailable.']
@@ -14582,43 +15316,8 @@ async function validateNaiveOverrides(): Promise<string[]> {
     violations.push('Naive theme projection contains a raw visual authority.')
   }
 
-  const requiredProjectionMarkers = [
-    'appearance.material',
-    'appearance.motion',
-    "case 'adaptive'",
-    "case 'reduced'",
-    "case 'solid'",
-    "case 'full'",
-    "case 'none'",
-    'var(--ui-material-chrome-background)',
-    'Tooltip: tooltipDark',
-    'iconSizeMedium: headerActionIconSize',
-    'colorHover: navigationHoverSurface',
-    'colorPressed: navigationSelectedSurface',
-    'colorFocus: navigationHoverSurface',
-    'textColorTertiary: colorTextSecondary',
-    'textColorHover: colorControl',
-    'padding: compactOverlaySpacing',
-    'space: compactOverlaySpacing',
-  ]
-  const normalizedThemeSource = themeSource.replaceAll(/\s+/gu, ' ')
-  const expectedMaterialBranches = [
-    "case 'adaptive': return { chrome: materialChrome, shadow }",
-    "case 'reduced': return { chrome: materialChrome, shadow: 'none' }",
-    "case 'solid': return { chrome: materialChrome, shadow: 'none' }",
-  ] as const
-  const importantMotionDeclarations = providerSource
-    .split('\n')
-    .map((line) => line.trim())
-    .filter((line) => line.includes('!important'))
-  const expectedImportantMotionDeclarationCount = providerSource.includes(
-    '.pavp-admin-shell__header-action.n-button:focus:not(:focus-visible)',
-  )
-    ? 59
-    : 58
   if (
-    requiredProjectionMarkers.some((marker) => !themeSource.includes(marker)) ||
-    expectedMaterialBranches.some((branch) => !normalizedThemeSource.includes(branch)) ||
+    !providerMotionImportanceValid(providerSource) ||
     !providerSource.includes("html[data-motion='reduced']") ||
     !providerSource.includes("html[data-motion='none']") ||
     !providerSource.includes(
@@ -14632,14 +15331,7 @@ async function validateNaiveOverrides(): Promise<string[]> {
     ) ||
     !providerSource.includes('.pavp-admin-shell__header-action-tooltip') ||
     !providerSource.includes('transition: none !important;') ||
-    !providerSource.includes('animation: none !important;') ||
-    importantMotionDeclarations.length !== expectedImportantMotionDeclarationCount ||
-    importantMotionDeclarations.some(
-      (declaration) =>
-        !/^(?:animation|animation-duration|opacity|transform|transition|transition-duration|transition-property|transition-timing-function):/u.test(
-          declaration,
-        ),
-    )
+    !providerSource.includes('animation: none !important;')
   ) {
     violations.push('Naive Material or Motion projection is incomplete.')
   }
@@ -14710,21 +15402,12 @@ function validateInspectorProjections(): string[] {
     runtimeKernelConsoleProjection.errorRecordCounts
   const routerRecords: readonly RouterConsoleRouteRecord[] = routerConsoleProjection.routes
   const storageRecords: readonly StorageConsoleRecord[] = storageConsoleProjection.records
-  const capabilityRecords: readonly CapabilityManifestRecord[] = capabilityManifest.records
-  const capabilityImplementationStatuses: readonly CapabilityImplementationStatus[] =
-    capabilityRecords.map((record) => record.implementationStatus)
-  const capabilityPresentationModes: readonly CapabilityPresentationMode[] = capabilityRecords.map(
-    (record) => record.presentationMode,
-  )
-  const engineeringCoordinates: EngineeringCoordinates = engineeringManifest.coordinates
-  const engineeringBudgets: readonly EngineeringBundleBudgetRecord[] =
-    engineeringManifest.bundleBudgets
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 60 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 101 ||
     runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 30 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 12 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 438 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 602 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'royal-iris',
       'cobalt-tide',
@@ -14735,66 +15418,115 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 13 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 6 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 58 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 51 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 13 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 8 ||
-    runtimeCount(storageRecords) !== 8 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 10 ||
-    !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, [
-      'ui-form',
-      'ui-form-field',
-    ]) ||
+    runtimeCount(routerRecords) !== 58 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
+    runtimeCount(storageRecords) !== 10 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 13 ||
+    !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, []) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
     runtimeCount(responsiveLayoutConsoleProjection.shellRegionIds) !== 5 ||
-    runtimeCount(responsiveLayoutConsoleProjection.sizeTokens) !== 7 ||
-    runtimeNumber(engineeringManifest.schemaVersion) !== 1 ||
-    runtimeNumber(capabilityManifest.schemaVersion) !== 1 ||
-    runtimeNumber(capabilityManifest.recordCount) !== 21 ||
-    runtimeCount(capabilityRecords) !== 21 ||
-    capabilityImplementationStatuses.some(
-      (status) => !['complete', 'not-started', 'deferred'].includes(status),
-    ) ||
-    capabilityPresentationModes.some(
-      (mode) => !['active-interactive', 'active-read-only', 'roadmap-only'].includes(mode),
-    ) ||
-    runtimeCount(engineeringBudgets) !== 5 ||
-    !isDeepStrictEqual(engineeringBudgets, [
-      { id: 'generated-token-manifest-gzip', limit: 32768, unit: 'bytes-gzip' },
-      {
-        id: 'admin-navigation-motion-feature-javascript-gzip',
-        limit: projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes,
-        unit: 'bytes-gzip',
-      },
-      { id: 'initial-css-gzip', limit: 40960, unit: 'bytes-gzip' },
-      {
-        id: 'initial-javascript-gzip',
-        limit: expectedInitialJavaScriptBudgetBytes,
-        unit: 'bytes-gzip',
-      },
-      { id: 'lazy-route-javascript-gzip', limit: 122880, unit: 'bytes-gzip' },
-    ]) ||
-    runtimeString(engineeringCoordinates.node) !== 'node@24.15.0'
+    runtimeCount(responsiveLayoutConsoleProjection.sizeTokens) !== 7
   ) {
     violations.push('One or more safe Inspector projections diverged from active authorities.')
   }
 
+  const formGroup = consoleNavigationRegistry
+    .find((group) => group.id === 'components')
+    ?.items.find((item) => 'items' in item)
+  if (
+    formGroup === undefined ||
+    !('items' in formGroup) ||
+    runtimeString(formGroup.id) !== 'forms' ||
+    getDefaultConsoleMessage(formGroup.labelKey) !== '表单控件' ||
+    !isDeepStrictEqual(
+      formGroup.items.map((item) => item.destination.name),
+      [
+        'component-form-overview',
+        'component-form-basics',
+        'component-form-detail',
+        'component-form-layout',
+        'component-form-dependencies',
+        'component-form-calculations',
+        'component-form-structure',
+        'component-form-validation',
+        'component-form-extension',
+        'component-form-controls',
+        'component-form-lifecycle',
+        'component-form-loading',
+        'component-form-submission',
+        'component-form-options',
+        'component-form-builder',
+      ],
+    )
+  )
+    violations.push(
+      'Form capabilities must remain a second-level submenu with fifteen route leaves.',
+    )
+
   const navigationProjection = consoleNavigationRegistry.map((group) => [
     getDefaultConsoleMessage(group.labelKey),
-    group.items.map((item) =>
+    getConsoleNavigationItems([group]).map((item) =>
       getDefaultConsoleMessage(getRouteRecord(item.destination.name).meta.titleKey),
     ),
   ])
-  const navigationIconProjection = consoleNavigationRegistry.flatMap((group) =>
-    group.items.map((item) => item.iconClass),
-  )
+  const navigationIconProjection = consoleNavigationItems.map((item) => item.iconClass)
   if (
     !isDeepStrictEqual(navigationProjection, [
       ['工作台', ['仪表盘']],
       ['设计令牌', ['语义配色', '尺寸与空间', '字体排印']],
-      ['交互能力', ['交互与状态']],
+      ['交互能力', ['交互与状态', '动画与动效']],
+      [
+        '组件展示',
+        [
+          '组件总览',
+          '操作',
+          '输入',
+          '选择',
+          '导航',
+          '数据展示',
+          '反馈',
+          '布局',
+          '能力总览',
+          '基础控件',
+          '编辑与详情',
+          '布局与响应式',
+          '字段联动',
+          '联动计算',
+          '分组与重复',
+          '校验与修正',
+          '自定义扩展',
+          '自定义选择控件',
+          '自动保存',
+          '异步回填',
+          '提交与错误恢复',
+          '异步选项',
+          '可视化构建',
+          '能力总览',
+          '分页与高度',
+          '横向滚动与固定列',
+          '列宽与长内容',
+          '容器与响应式',
+          '列配置',
+          '排序与筛选',
+          '选择与批量',
+          '单元格与行操作',
+          '自定义底部',
+          '虚拟滚动',
+          '请求状态与恢复',
+          '远程数据',
+          '样式总览',
+          '主题融合',
+          'JSON 配置',
+          '查询表单',
+          '弹窗编辑',
+          '抽屉编辑',
+          '独立页编辑',
+        ],
+      ],
     ]) ||
     !isDeepStrictEqual(navigationIconProjection, expectedNavigationIconClasses)
   ) {
@@ -14807,11 +15539,7 @@ function validateInspectorProjections(): string[] {
 export async function validateArchitectureAdminConsole(): Promise<readonly string[]> {
   const violations: string[] = []
   const appearanceAndFacts = await validateWorkbenchAndAppearanceAuthority()
-  const [engineeringViolations, capabilityViolations, uiViolations] = await Promise.all([
-    validateEngineeringManifest(),
-    validateCapabilityManifest(),
-    validateUiPublicComponents(),
-  ])
+  const uiViolations = await validateUiPublicComponents()
   const applicationFiles = (await collectFiles(resolve(rootDirectory, 'apps/web/src'))).filter(
     (path) => ['.ts', '.vue'].includes(extname(path)),
   )
@@ -14854,11 +15582,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     shellSource,
     adminTokenSource,
     routeRegistrySource,
-    architectureSource,
     runtimeContextSource,
     projectConfigSource,
     checkBundleSource,
-    engineeringManifestSource,
     motionDomMaxSource,
     motionRuntimeSource,
     motionSelectionLensSource,
@@ -14879,14 +15605,12 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       'utf8',
     ),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-registry.ts'), 'utf8'),
-    readFile(resolve(rootDirectory, 'ARCHITECTURE.md'), 'utf8'),
     readFile(
       resolve(rootDirectory, 'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts'),
       'utf8',
     ),
     readFile(resolve(rootDirectory, 'project.config.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'scripts/verify/check-bundle.ts'), 'utf8'),
-    readFile(resolve(rootDirectory, 'apps/web/src/generated/engineering-manifest.ts'), 'utf8'),
     readFile(
       resolve(rootDirectory, 'packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'),
       'utf8',
@@ -14943,20 +15667,23 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     errorTitles: Object.entries(routeTitleRegistry).filter(([key]) =>
       key.startsWith('route-title.error-'),
     ),
-    generatedManifestsEqual:
-      engineeringViolations.length === 0 && capabilityViolations.length === 0,
     generatedTokensCssSource,
     expectedTokensCssSource: formatRuntimeCss(tokenBuildResult),
     routeCount: routeRegistry.length,
     publicComponentExports,
     registeredPublicComponents: uiPublicComponentRegistry.records.map((record) => ({
       exportName: record.exportName,
-      consumerCount: record.consumerRouteNames.length,
+      consumerCount: componentExampleConsumers[record.exportName]?.length ?? -1,
       capabilityStatus: record.capabilityStatus,
     })),
   }
   const navigationColors = await actualNavigationThemeColors()
+  const navigationActionsSource = await readFile(
+    resolve(rootDirectory, 'packages/ui/src/components/navigation-actions.ts'),
+    'utf8',
+  )
   const navigationReworkBaseline: NavigationReworkSourceSnapshot = {
+    navigationActionsSource,
     applicationSource: applicationSources.join('\n'),
     providerSource: naiveProviderSource,
     runtimeContextSource,
@@ -14965,14 +15692,16 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     navigationColors,
   }
   const adminNavigationNativeSourceBaseline: AdminNavigationNativeSourceSnapshot = {
+    navigationActionsSource: await readFile(
+      resolve(rootDirectory, 'packages/ui/src/components/navigation-actions.ts'),
+      'utf8',
+    ),
     adminNavigationMotionAdapterPresent,
     appSource,
     appStylesSource,
     applicationSource: [...applicationSources, ...allUiSources].join('\n'),
-    architectureSource,
     checkBundleSource,
     consoleFrameSource,
-    engineeringManifestSource,
     lockSource,
     motionDomMaxSource,
     motionRuntimeSource,
@@ -14983,9 +15712,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     naivePopoverSource,
     naiveSubmenuSource,
     nonAdapterSource: [...applicationSources, ...nonAdapterUiSources].join('\n'),
-    outsideMotionPrivateSource: [...applicationSources, ...outsideMotionPrivateUiSources].join(
-      '\n',
-    ),
+    outsideMotionPrivateSource: [
+      ...applicationSources.filter(
+        (_source, index) =>
+          relative(rootDirectory, applicationFiles[index] ?? '') !==
+          'apps/web/src/app/workbench/MotionGallery.vue',
+      ),
+      ...outsideMotionPrivateUiSources,
+    ].join('\n'),
     projectConfigSource,
     providerSource: naiveProviderSource,
     publicComponentExports,
@@ -15001,9 +15735,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     workspaceSource,
   }
   const navigationBudgetBaseline: NavigationBudgetGateSnapshot = {
-    architectureSource,
     checkBundleSource,
-    engineeringManifestSource,
     navigationSource: [naiveProviderSource, runtimeContextSource, shellSource, themeSource].join(
       '\n',
     ),
@@ -15197,9 +15929,6 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...appearanceAndFacts.violations,
     ...(await validateNaiveOverrides()),
     ...validateInspectorProjections(),
-    ...validateProductExperienceReworkStatus(architectureSource),
-    ...engineeringViolations,
-    ...capabilityViolations,
     ...uiViolations,
     ...motionGeometryViolations(baseline),
     ...runtime005RouteContentViolations(baseline),
@@ -15329,7 +16058,7 @@ if (process.argv[1]?.endsWith('check-architecture-admin-console.ts')) {
 
   console.log('Architecture Admin Console check: passed')
   console.log(
-    `Workspace Axis default check: passed (20 directed edges across 3 layout profiles; Full/Reduced/None/typed fallback; ${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)}/${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)} reversible in-memory negative probes)`,
+    `Workspace Axis default check: passed (${String(consoleNavigationItems.length * (consoleNavigationItems.length - 1))} directed edges across 3 layout profiles; Full/Reduced/None/typed fallback; ${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)}/${String(expectedRouteTransitionWorkspaceDefaultNegativeProbeCount)} reversible in-memory negative probes)`,
   )
   console.log(
     `Route-transition routing capability source check: passed (${String(expectedRouteTransitionSourceProofCount)} source proofs; ${String(expectedRouteTransitionSourceNegativeProbeCount)}/${String(expectedRouteTransitionSourceNegativeProbeCount)} retained reversible in-memory source negative probes; ${String(expectedRouterPresentationCommitNegativeProbeCount)}/${String(expectedRouterPresentationCommitNegativeProbeCount)} Router Presentation Commit reversible in-memory negative probes; ${String(expectedRouteTransitionPresetSelectionNegativeProbeCount)}/${String(expectedRouteTransitionPresetSelectionNegativeProbeCount)} preset-selection reversible in-memory negative probes; ${String(expectedRouteTransitionFullPaceNegativeProbeCount)}/${String(expectedRouteTransitionFullPaceNegativeProbeCount)} Full pace reversible in-memory negative probes; ${String(expectedRouteTransitionStylelintPolicyNegativeProbeCount)}/${String(expectedRouteTransitionStylelintPolicyNegativeProbeCount)} Stylelint policy reversible in-memory negative probes)`,

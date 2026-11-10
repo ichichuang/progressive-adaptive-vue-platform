@@ -54,19 +54,11 @@ const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined)
   throw new Error('UiRadioCardGroup requires the PAVP Appearance context.')
 const radioCardThemeOverrides = computed(() => ({
-  buttonColor:
-    appearance.value.colorPalette?.roles.neutral.soft.background.default ??
-    'var(--ui-color-surface-page)',
-  buttonColorActive:
-    appearance.value.colorPalette?.roles.primary.solid.background.default ??
-    'var(--ui-color-action-primary)',
-  buttonTextColor:
-    appearance.value.colorPalette?.roles.neutral.soft.foreground ?? 'var(--ui-color-text-primary)',
-  buttonTextColorActive:
-    appearance.value.colorPalette?.roles.primary.solid.foreground ??
-    'var(--ui-color-text-on-action)',
-  buttonTextColorHover:
-    appearance.value.colorPalette?.roles.primary.soft.foreground ?? 'var(--ui-color-surface-panel)',
+  buttonColor: appearance.value.colorPalette.roles.neutral.soft.background.default,
+  buttonColorActive: appearance.value.colorPalette.roles.primary.solid.background.default,
+  buttonTextColor: appearance.value.colorPalette.roles.neutral.soft.foreground,
+  buttonTextColorActive: appearance.value.colorPalette.roles.primary.solid.foreground,
+  buttonTextColorHover: appearance.value.colorPalette.roles.primary.soft.foreground,
   buttonBorderColor: 'transparent',
   buttonBorderColorActive: 'transparent',
   buttonBorderRadius: 'var(--ui-radius-panel)',
@@ -76,14 +68,11 @@ const radioCardThemeOverrides = computed(() => ({
 }))
 const radioCardStyle = computed(() => ({
   '--pavp-radio-card-hover-surface':
-    appearance.value.colorPalette?.roles.primary.soft.background.hover ??
-    'var(--ui-color-text-primary)',
+    appearance.value.colorPalette.roles.primary.soft.background.hover,
   '--pavp-radio-card-selected-hover-surface':
-    appearance.value.colorPalette?.roles.primary.solid.background.hover ??
-    'var(--ui-color-text-on-action)',
+    appearance.value.colorPalette.roles.primary.solid.background.hover,
   '--pavp-radio-card-selected-hover-foreground':
-    appearance.value.colorPalette?.roles.primary.solid.foreground ??
-    'var(--ui-color-action-primary)',
+    appearance.value.colorPalette.roles.primary.solid.foreground,
 }))
 </script>
 

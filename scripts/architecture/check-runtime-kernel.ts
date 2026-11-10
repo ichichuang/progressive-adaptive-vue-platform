@@ -3,6 +3,14 @@ import { extname, join, relative, resolve } from 'node:path'
 
 import ts from 'typescript'
 
+import {
+  createCoreErrorLedger,
+  installCoreErrorDiagnostics,
+  type NormalizedCoreError,
+} from '../../apps/web/src/app/errors/core-error'
+import { normalizeUnhandledPromiseRejection } from '../../apps/web/src/app/errors/error-normalizer'
+import { createStartupAttemptId } from '../../apps/web/src/app/bootstrap/lifecycle'
+
 type JsonPrimitive = boolean | number | string | null
 type ComparableValue =
   JsonPrimitive | readonly ComparableValue[] | { readonly [key: string]: ComparableValue }
@@ -1182,6 +1190,176 @@ function validateNormalizersAndLedger(normalizer: ParsedSource, coreError: Parse
   return violations
 }
 
+function validateLocalDiagnostics(kernel: ParsedSource): string[] {
+  const violations: string[] = []
+  const start = nodesOf(kernel.sourceFile, ts.isFunctionDeclaration).find(
+    (declaration) => declaration.name?.text === 'startRuntimeKernel',
+  )
+  if (start === undefined) return ['Local diagnostics require the running kernel owner.']
+
+  const imports = nodesOf(kernel.sourceFile, ts.isImportDeclaration).find(
+    (declaration) => literalValue(declaration.moduleSpecifier) === '../errors/core-error',
+  )?.importClause?.namedBindings
+  const importedNames =
+    imports !== undefined && ts.isNamedImports(imports)
+      ? new Set(imports.elements.map((element) => element.name.text))
+      : new Set<string>()
+  const installs = nodesOf(start, ts.isCallExpression).filter(
+    (call) =>
+      ts.isIdentifier(call.expression) &&
+      importedNames.has(call.expression.text) &&
+      call.arguments.length === 2 &&
+      call.arguments[0]?.getText(kernel.sourceFile) === 'window' &&
+      call.arguments[1] !== undefined &&
+      ts.isIdentifier(call.arguments[1]),
+  )
+  const install = installs[0]
+  const ledgerArgument = install?.arguments[1]
+  const declaration = install?.parent
+  if (
+    installs.length !== 1 ||
+    ledgerArgument === undefined ||
+    !ts.isIdentifier(ledgerArgument) ||
+    declaration === undefined ||
+    !ts.isVariableDeclaration(declaration) ||
+    !ts.isIdentifier(declaration.name)
+  ) {
+    return ['The running kernel must install exactly one local diagnostic facade.']
+  }
+  const ledgerInitializer = variableInitializer(kernel, ledgerArgument.text)
+  if (
+    ledgerInitializer === undefined ||
+    !ts.isCallExpression(ledgerInitializer) ||
+    !ts.isIdentifier(ledgerInitializer.expression) ||
+    !importedNames.has(ledgerInitializer.expression.text)
+  ) {
+    violations.push('The local diagnostic facade must read the kernel-owned ledger.')
+  }
+
+  const disposal = nodesOf(start, ts.isMethodDeclaration).find(
+    (method) => propertyName(method.name) === 'dispose',
+  )
+  const hasCleanup =
+    disposal !== undefined &&
+    nodesOf(disposal, ts.isTryStatement).some((statement) => {
+      if (statement.finallyBlock === undefined) return false
+      const calls = nodesOf(statement.finallyBlock, ts.isCallExpression)
+      return (
+        calls.some(
+          (call) =>
+            ts.isPropertyAccessExpression(call.expression) &&
+            ts.isIdentifier(call.expression.expression) &&
+            call.expression.expression.text === ledgerArgument.text &&
+            call.expression.name.text === 'dispose',
+        ) &&
+        calls.some(
+          (call) =>
+            ts.isIdentifier(call.expression) && call.expression.text === declaration.name.getText(),
+        )
+      )
+    })
+  if (!hasCleanup)
+    violations.push('Final kernel disposal must clear and release local diagnostics.')
+  return violations
+}
+
+function localDiagnosticsProbes(): string[] {
+  const violations: string[] = []
+  const ledger = createCoreErrorLedger()
+  const target = {}
+  const key = '__PAVP_ERROR_DIAGNOSTICS__'
+  const release = installCoreErrorDiagnostics(target, ledger)
+  const descriptor = Object.getOwnPropertyDescriptor(target, key)
+  const value: unknown = descriptor?.value
+  if (
+    descriptor?.configurable !== true ||
+    descriptor.enumerable !== false ||
+    descriptor.writable !== false ||
+    typeof value !== 'object' ||
+    value === null ||
+    !('snapshot' in value) ||
+    typeof value.snapshot !== 'function' ||
+    !Object.isFrozen(value)
+  ) {
+    release()
+    ledger.dispose()
+    return ['Local diagnostics must expose one immutable, read-only snapshot facade.']
+  }
+  const facade = value as { snapshot(): readonly NormalizedCoreError[] }
+  const emptySnapshot = facade.snapshot()
+  const input = {
+    source: new Error('private diagnostic probe'),
+    applicationStartupState: 'ready' as const,
+    startupAttemptId: createStartupAttemptId(),
+    releaseSha: 'probe',
+    buildVersion: 'probe',
+  }
+  const errors = Array.from({ length: 101 }, () => normalizeUnhandledPromiseRejection(input))
+  for (const error of errors) ledger.capture(error)
+  const snapshot = facade.snapshot()
+  const first = errors[0]
+  const second = errors[1]
+  const last = errors.at(-1)
+  if (
+    first === undefined ||
+    second === undefined ||
+    last === undefined ||
+    snapshot.length !== 100 ||
+    snapshot[0] !== second ||
+    snapshot.at(-1) !== last ||
+    ledger.has(first) ||
+    ledger.capture(first) ||
+    emptySnapshot.length !== 0 ||
+    !Object.isFrozen(snapshot) ||
+    !Object.isFrozen(snapshot[0]) ||
+    !Object.isFrozen(snapshot[0].safeContext) ||
+    JSON.stringify(snapshot).includes('private diagnostic probe')
+  ) {
+    violations.push('Local diagnostics must retain only the latest 100 immutable safe records.')
+  }
+
+  Object.defineProperty(target, key, { configurable: true, value: 'replacement' })
+  release()
+  if (Reflect.get(target, key) !== 'replacement') {
+    violations.push('Diagnostic disposal must preserve a replacement property.')
+  }
+  const secondTarget = {}
+  const releaseSecond = installCoreErrorDiagnostics(secondTarget, ledger)
+  releaseSecond()
+  ledger.dispose()
+  if (Object.hasOwn(secondTarget, key) || facade.snapshot().length !== 0) {
+    violations.push('Diagnostic disposal must remove its facade and clear stale snapshots.')
+  }
+
+  const occupied = Object.defineProperty({}, key, { value: 'occupied' })
+  const inherited = Object.create({ [key]: 'inherited' }) as object
+  const oldWarn = console.warn
+  let warningCount = 0
+  let collisionThrew = false
+  try {
+    console.warn = () => {
+      warningCount += 1
+      throw new Error('simulated console failure')
+    }
+    installCoreErrorDiagnostics(occupied, ledger)()
+    installCoreErrorDiagnostics(inherited, ledger)()
+  } catch {
+    collisionThrew = true
+  } finally {
+    console.warn = oldWarn
+  }
+  if (
+    collisionThrew ||
+    warningCount !== 2 ||
+    Reflect.get(occupied, key) !== 'occupied' ||
+    Object.hasOwn(inherited, key) ||
+    Reflect.get(inherited, key) !== 'inherited'
+  ) {
+    violations.push('A diagnostic property collision must be non-fatal and preserve its owner.')
+  }
+  return violations
+}
+
 function validatePageBoundaryInjection(
   coreError: ParsedSource,
   rootBoundary: ParsedSource,
@@ -1525,6 +1703,34 @@ function validateGlobalCapture(
     !normalizedIds.includes('normalizeUnhandledPromiseRejection')
   ) {
     violations.push('Global listeners must normalize only through the Core Error authority.')
+  }
+  const rejectionRegistration = nodesOf(source.sourceFile, ts.isCallExpression).find(
+    (call) =>
+      callMemberName(call) === 'addEventListener' &&
+      literalValue(call.arguments[0]) === 'unhandledrejection',
+  )
+  const listener = rejectionRegistration?.arguments[1]
+  const callback =
+    listener !== undefined && ts.isIdentifier(listener)
+      ? variableInitializer(source, listener.text)
+      : listener
+  const eventParameter =
+    callback !== undefined && (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback))
+      ? callback.parameters[0]?.name
+      : undefined
+  if (
+    callback === undefined ||
+    eventParameter === undefined ||
+    !ts.isIdentifier(eventParameter) ||
+    !nodesOf(callback, ts.isCallExpression).some(
+      (call) =>
+        ts.isPropertyAccessExpression(call.expression) &&
+        ts.isIdentifier(call.expression.expression) &&
+        call.expression.expression.text === eventParameter.text &&
+        call.expression.name.text === 'preventDefault',
+    )
+  ) {
+    violations.push('Unhandled rejections must not expose raw reasons through browser reporting.')
   }
   return violations
 }
@@ -2732,6 +2938,8 @@ export async function validateRuntimeKernelArchitecture(): Promise<readonly stri
     ...validateCoreErrorRegistry(errorRegistry),
     ...validateCoreErrorMessages(errorMessages),
     ...validateNormalizersAndLedger(errorNormalizer, coreError),
+    ...validateLocalDiagnostics(runtimeKernel),
+    ...localDiagnosticsProbes(),
     ...validatePageBoundaryInjection(coreError, rootBoundary, retention),
     ...validateVueBoundaryCapture(rootBoundary),
     ...validateVueBoundaryCapture(retention),

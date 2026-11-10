@@ -1,4 +1,5 @@
 export { default as UiScrollArea } from './components/UiScrollArea.vue'
+export { default as UiCopyAction } from './components/UiCopyAction.vue'
 export type * from './components/scroll-contracts'
 export { default as UiWorkspaceTabs } from './components/UiWorkspaceTabs.vue'
 export { default as UiAdminShell } from './components/UiAdminShell.vue'
@@ -35,3 +36,17 @@ export { default as UiForm } from './components/UiForm.vue'
 export { default as UiFormField } from './components/UiFormField.vue'
 export { useUiForm } from './composables/use-ui-form'
 export type * from './components/form-contracts'
+
+export { parseUiFormSchema } from './components/form-schema'
+
+export type * from './components/table-contracts'
+export { parseUiTableSchema } from './components/table-schema'
+export { resolveUiTableRequest } from './components/table-request'
+export { useUiTable } from './composables/use-ui-table'
+export { default as UiTable } from './components/UiTable.vue'
+export { useUiTableForm, type UiTableFormInput } from './composables/use-ui-table-form'
+export { useUiTableQuery } from './composables/use-ui-table-query'
+
+export { default as UiTableEditor } from './components/UiTableEditor.vue'
+
+export { useUiTableActions, type UiTableActionsInput } from './composables/use-ui-table-actions'

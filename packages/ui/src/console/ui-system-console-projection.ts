@@ -1,4 +1,7 @@
-import { uiPublicComponentRegistry } from '../registry/ui-public-component-registry'
+import {
+  uiPublicComponentRegistry,
+  type UiPublicComponentRegistryRecord,
+} from '../registry/ui-public-component-registry'
 
 export interface UiSystemConsoleStyledVendor {
   readonly packageName: 'naive-ui'
@@ -18,7 +21,9 @@ export const uiSystemConsoleProjection = Object.freeze({
   publicComponentIds: Object.freeze(uiPublicComponentRegistry.records.map((record) => record.id)),
   inactivePublicComponentIds: Object.freeze(
     uiPublicComponentRegistry.records
-      .filter((record) => record.capabilityStatus === 'TARGET_INACTIVE')
+      .filter(
+        (record: UiPublicComponentRegistryRecord) => record.capabilityStatus === 'TARGET_INACTIVE',
+      )
       .map((record) => record.id),
   ),
   styledVendor: Object.freeze({

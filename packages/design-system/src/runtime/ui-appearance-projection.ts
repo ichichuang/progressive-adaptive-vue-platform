@@ -2,7 +2,7 @@ import { generatedThemeRegistry } from '../generated/theme-registry'
 import { calculateWcag21Contrast, formatOpaqueSrgbColor, parseCssColor } from '../schema/css-color'
 import type { ThemeColorPalette } from '../schema/theme-color-palette.schema'
 import type { EffectiveAppearanceState } from './apply-appearance'
-import type { ThemeRegistryEntry } from './theme-registry'
+import { resolvedThemePlane, type ThemeRegistryEntry } from './theme-registry'
 
 type SemanticStatusAppearanceProjection = Readonly<
   Record<
@@ -18,7 +18,7 @@ type SemanticStatusAppearanceProjection = Readonly<
 >
 
 export interface UiAppearanceSnapshot extends EffectiveAppearanceState {
-  readonly colorPalette: ThemeColorPalette | null
+  readonly colorPalette: ThemeColorPalette
   readonly statusColors: SemanticStatusAppearanceProjection
 }
 
@@ -81,7 +81,7 @@ export function projectUiAppearance(
   for (const contrast of ['standard', 'enhanced'] as const) {
     const resolvedPlane =
       builtIn === undefined
-        ? entry.definition.planes[appearance.colorMode][contrast]
+        ? resolvedThemePlane(entry.definition, appearance.colorMode, contrast)
         : Object.fromEntries(
             builtIn.bank.records
               .filter(
@@ -129,19 +129,16 @@ export function projectUiAppearance(
     throw new Error('The active UI status plane is unavailable.')
   }
 
-  const colorPalette =
-    builtIn === undefined
-      ? null
-      : frozenPalette(builtIn.uiPalette[appearance.colorMode][appearance.contrast])
+  const colorPalette = frozenPalette(
+    entry.definition.uiPalette[appearance.colorMode][appearance.contrast],
+  )
 
   const projectTone = (tone: keyof SemanticStatusAppearanceProjection) =>
     Object.freeze({
       default: requiredColor(plane, `color.status.${tone}`),
       hover: requiredColor(plane, `color.status.${tone}.hover`),
       pressed: requiredColor(plane, `color.status.${tone}.pressed`),
-      supplementary:
-        colorPalette?.roles[tone].foreground.suppl ??
-        generatedThemeRegistry.statusSupplementary[appearance.colorMode][appearance.contrast][tone],
+      supplementary: colorPalette.roles[tone].foreground.suppl,
       onStatus: requiredColor(plane, `color.text.on-status.${tone}`),
     })
 

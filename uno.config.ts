@@ -213,6 +213,9 @@ function blocksUnapprovedUtility(selector: string): boolean {
   if (spacing !== null) {
     const value = unbracket(spacing[1] ?? '')
     if (
+      platformUnoMappings.some(
+        (mapping) => mapping.family === 'spacing' && mapping.key === value,
+      ) ||
       Object.hasOwn(windTheme.spacing, value) ||
       [
         valueHandlers.bracket,

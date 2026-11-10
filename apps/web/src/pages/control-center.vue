@@ -14,6 +14,7 @@ import { computed, inject, onScopeDispose, ref, shallowRef } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { UiRadioCardGroup, UiScrollArea, type UiScrollController } from '@platform/ui'
 import { NCard } from 'naive-ui/es/card'
+import { NScrollbar } from 'naive-ui/es/scrollbar'
 import { NSwitch } from 'naive-ui/es/switch'
 import SettingsField from '../app/workbench/SettingsField.vue'
 import ColorModePreview from '../app/workbench/ColorModePreview.vue'
@@ -124,23 +125,10 @@ const colorModes = [
   { value: 'dark', label: 'settings.dark' },
   { value: 'system', label: 'settings.system' },
 ] as const
-const themeChoiceLayout = computed(() => ({
+const themeChoiceLayout = {
   heightMedium: 'auto',
   paddingMedium: 'var(--ui-space-content-gap)',
-  ...(effective.snapshot.value.colorPalette === null
-    ? {
-        color: 'var(--ui-color-surface-panel)',
-        colorHover: 'var(--ui-color-text-primary)',
-        colorPressed: 'var(--ui-color-surface-panel)',
-        colorFocus: 'var(--ui-color-surface-panel)',
-        rippleColor: 'transparent',
-        textColor: 'var(--ui-color-text-primary)',
-        textColorHover: 'var(--ui-color-surface-panel)',
-        textColorPressed: 'var(--ui-color-text-primary)',
-        textColorFocus: 'var(--ui-color-text-primary)',
-      }
-    : {}),
-}))
+}
 const colorModeOptions = computed(() =>
   colorModes.map((mode) => ({ value: mode.value, label: t(mode.label) })),
 )
@@ -407,36 +395,46 @@ onScopeDispose(() => {
         <header class="wb-settings-heading grid gap-content-gap">
           <h1
             id="control-center-heading"
-            class="leading-title font-title-weight m-0 text-text-primary text-title"
+            class="sr-only"
             data-route-focus="architecture-console-page-heading"
             tabindex="-1"
           >
             {{ t('settings.title') }}
           </h1>
+          <p
+            class="leading-title font-title-weight m-0 text-title"
+            aria-hidden="true"
+          >
+            {{ t('settings.title') }}
+          </p>
           <div class="wb-settings-summary grid gap-content-gap">
-            <p class="sr-only">
+            <p class="m-0 text-body text-text-secondary">
               {{ t('settings.description') }}
             </p>
-            <span
-              class="wb-settings-save flex items-center gap-content-gap"
-              :data-tone="feedback.tone"
-              role="status"
-              aria-live="polite"
-            >
-              <span
-                v-if="feedback.tone === 'success' && language.pendingLocale.value === null"
-                class="i-lucide-check text-control-success"
-                aria-hidden="true"
-              />
-              <span
-                v-else-if="showSaveError"
-                class="i-lucide-circle-alert text-control-error"
-                aria-hidden="true"
-              />
-              <span :key="feedbackRevision">
-                {{ feedbackMessage }}
-              </span>
-            </span>
+            <div class="wb-settings-save">
+              <UiScrollArea owner-id="settings-feedback">
+                <span
+                  class="flex items-center gap-content-gap"
+                  :data-tone="feedback.tone"
+                  role="status"
+                  aria-live="polite"
+                >
+                  <span
+                    v-if="feedback.tone === 'success' && language.pendingLocale.value === null"
+                    class="i-lucide-check text-control-success"
+                    aria-hidden="true"
+                  />
+                  <span
+                    v-else-if="showSaveError"
+                    class="i-lucide-circle-alert text-control-error"
+                    aria-hidden="true"
+                  />
+                  <span :key="feedbackRevision">
+                    {{ feedbackMessage }}
+                  </span>
+                </span>
+              </UiScrollArea>
+            </div>
           </div>
         </header>
 
@@ -445,13 +443,13 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0"
+          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
           aria-labelledby="settings-theme-title"
         >
           <div class="wb-settings-intro grid content-start gap-content-gap">
             <h2
               id="settings-theme-title"
-              class="font-title-weight m-0 text-body"
+              class="font-title-weight m-0 text-subheading"
               tabindex="-1"
             >
               {{ t('settings.section.theme') }}
@@ -494,19 +492,15 @@ onScopeDispose(() => {
               </template>
             </UiRadioCardGroup>
             <div
-              class="wb-theme-options grid min-w-0 gap-content-gap"
+              class="wb-theme-options grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-3"
               role="group"
               :aria-label="t('settings.choose-theme')"
             >
               <NButton
                 v-for="theme in themePreviews"
                 :key="`${theme.registryKind}:${theme.themeId}`"
-                :quaternary="
-                  effective.snapshot.value.colorPalette !== null && !selectedTheme(theme.reference)
-                "
-                :tertiary="
-                  effective.snapshot.value.colorPalette !== null && selectedTheme(theme.reference)
-                "
+                :quaternary="!selectedTheme(theme.reference)"
+                :tertiary="selectedTheme(theme.reference)"
                 :type="selectedTheme(theme.reference) ? 'primary' : 'default'"
                 :bordered="false"
                 :theme-overrides="themeChoiceLayout"
@@ -518,7 +512,7 @@ onScopeDispose(() => {
                 @click="chooseTheme(theme.reference)"
               >
                 <span
-                  class="wb-theme-swatch grid w-full place-items-center min-h-target-enhanced min-w-target-enhanced"
+                  class="wb-theme-swatch grid place-items-center min-h-target-enhanced min-w-target-enhanced"
                   aria-hidden="true"
                 >
                   <span
@@ -526,6 +520,9 @@ onScopeDispose(() => {
                     class="i-lucide-check text-title"
                   />
                 </span>
+                <span class="text-start min-w-0 whitespace-normal text-caption">{{
+                  theme.label
+                }}</span>
               </NButton>
             </div>
             <SettingsField
@@ -555,20 +552,17 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0"
+          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
           aria-labelledby="settings-reading-title"
         >
           <div class="wb-settings-intro grid content-start gap-content-gap">
             <h2
               id="settings-reading-title"
-              class="font-title-weight m-0 text-body"
+              class="font-title-weight m-0 text-subheading"
               tabindex="-1"
             >
               {{ t('settings.section.reading') }}
             </h2>
-            <p class="m-0 text-pretty text-text-secondary">
-              {{ t('settings.font-scale-note') }}
-            </p>
           </div>
           <div class="wb-settings-controls grid min-w-0 gap-content-gap">
             <SettingsField
@@ -619,20 +613,17 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0"
+          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
           aria-labelledby="settings-layout-title"
         >
           <div class="wb-settings-intro grid content-start gap-content-gap">
             <h2
               id="settings-layout-title"
-              class="font-title-weight m-0 text-body"
+              class="font-title-weight m-0 text-subheading"
               tabindex="-1"
             >
               {{ t('settings.section.layout') }}
             </h2>
-            <p class="m-0 text-pretty text-text-secondary">
-              {{ t('settings.density-note') }}
-            </p>
           </div>
           <div class="wb-settings-controls grid min-w-0 gap-content-gap">
             <SettingsField
@@ -690,20 +681,17 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0"
+          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
           aria-labelledby="settings-comfort-title"
         >
           <div class="wb-settings-intro grid content-start gap-content-gap">
             <h2
               id="settings-comfort-title"
-              class="font-title-weight m-0 text-body"
+              class="font-title-weight m-0 text-subheading"
               tabindex="-1"
             >
               {{ t('settings.section.comfort') }}
             </h2>
-            <p class="m-0 text-pretty text-text-secondary">
-              {{ t('settings.material-note') }}
-            </p>
           </div>
           <div class="wb-settings-controls grid min-w-0 gap-content-gap">
             <SettingsField
@@ -784,20 +772,17 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0"
+          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
           aria-labelledby="settings-workspace-title"
         >
           <div class="wb-settings-intro grid content-start gap-content-gap">
             <h2
               id="settings-workspace-title"
-              class="font-title-weight m-0 text-body"
+              class="font-title-weight m-0 text-subheading"
               tabindex="-1"
             >
               {{ t('settings.section.workspace') }}
             </h2>
-            <p class="m-0 text-pretty text-text-secondary">
-              {{ t('settings.scroll-restoration-note') }}
-            </p>
           </div>
           <div class="wb-settings-controls grid min-w-0 gap-content-gap">
             <SettingsField
@@ -834,54 +819,59 @@ onScopeDispose(() => {
       </div>
     </UiScrollArea>
     <aside
-      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 bg-surface-panel p-page-inline"
+      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 items-center order-first bg-surface-panel gap-content-gap layout-regular:order-last layout-wide:order-last layout-regular:p-page-inline layout-wide:p-page-inline"
     >
-      <nav
-        class="wb-section-nav flex flex-col min-h-0 min-w-0 overflow-y-auto gap-content-gap"
-        :aria-label="t('settings.section-navigation')"
+      <NScrollbar
+        class="min-h-0 min-w-0"
+        content-class="h-full"
       >
-        <NButton
-          v-for="section in sections"
-          :key="section.id"
-          :quaternary="activeSection !== section.id"
-          :type="activeSection === section.id ? 'primary' : 'default'"
-          :bordered="false"
-          :aria-label="t(section.label)"
-          class="wb-section-link"
-          :aria-current="activeSection === section.id ? 'location' : undefined"
-          :aria-controls="section.id"
-          @click="jumpTo(section.id)"
+        <nav
+          class="wb-section-nav flex min-h-0 min-w-0 gap-content-gap layout-regular:flex-col layout-wide:flex-col layout-regular:min-h-full layout-wide:min-h-full layout-narrow:gap-component-unit"
+          :aria-label="t('settings.section-navigation')"
         >
-          <span class="flex items-center gap-content-gap">
-            <span
-              v-if="section.id === 'settings-theme'"
-              class="i-lucide-palette"
-              aria-hidden="true"
-            />
-            <span
-              v-else-if="section.id === 'settings-reading'"
-              class="i-lucide-type"
-              aria-hidden="true"
-            />
-            <span
-              v-else-if="section.id === 'settings-layout'"
-              class="i-lucide-panels-top-left"
-              aria-hidden="true"
-            />
-            <span
-              v-else-if="section.id === 'settings-comfort'"
-              class="i-lucide-sparkles"
-              aria-hidden="true"
-            />
-            <span
-              v-else
-              class="i-lucide-layout-dashboard"
-              aria-hidden="true"
-            />
-            <span class="layout-narrow:sr-only">{{ t(section.label) }}</span>
-          </span>
-        </NButton>
-      </nav>
+          <NButton
+            v-for="section in sections"
+            :key="section.id"
+            :quaternary="activeSection !== section.id"
+            :type="activeSection === section.id ? 'primary' : 'default'"
+            :bordered="false"
+            :aria-label="t(section.label)"
+            class="wb-section-link"
+            :aria-current="activeSection === section.id ? 'location' : undefined"
+            :aria-controls="section.id"
+            @click="jumpTo(section.id)"
+          >
+            <span class="flex items-center gap-content-gap">
+              <span
+                v-if="section.id === 'settings-theme'"
+                class="i-lucide-palette"
+                aria-hidden="true"
+              />
+              <span
+                v-else-if="section.id === 'settings-reading'"
+                class="i-lucide-type"
+                aria-hidden="true"
+              />
+              <span
+                v-else-if="section.id === 'settings-layout'"
+                class="i-lucide-panels-top-left"
+                aria-hidden="true"
+              />
+              <span
+                v-else-if="section.id === 'settings-comfort'"
+                class="i-lucide-sparkles"
+                aria-hidden="true"
+              />
+              <span
+                v-else
+                class="i-lucide-layout-dashboard"
+                aria-hidden="true"
+              />
+              <span class="layout-narrow:sr-only">{{ t(section.label) }}</span>
+            </span>
+          </NButton>
+        </nav>
+      </NScrollbar>
       <NButton
         class="wb-done min-h-target-enhanced"
         type="primary"

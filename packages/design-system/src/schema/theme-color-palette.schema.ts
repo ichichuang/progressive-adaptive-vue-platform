@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-// Complete built-in source only. Custom documents keep their public role-map contract.
+// Every complete Theme supplies the same four semantic palette planes.
 const paletteColor = z.string().regex(/^#[0-9A-F]{6}$/u)
 const interactionColors = z.strictObject({
   default: paletteColor,

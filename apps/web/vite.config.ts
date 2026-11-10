@@ -111,7 +111,6 @@ function projectCanonicalFileRoute(route: EditableTreeNode): void {
   const record = getRouteRecordBySourcePath(canonicalPageSourcePath(component))
   route.name = record.name
   route.path = record.pathPattern
-  route.meta = record.meta
 }
 
 function verifyCanonicalFileRouteTree(rootRoute: EditableTreeNode): void {
@@ -463,6 +462,30 @@ export default defineConfig(async ({ command, isPreview, mode }) => {
       manifest: true,
       outDir: 'dist',
       reportCompressedSize: true,
+      rolldownOptions: {
+        output: {
+          codeSplitting: {
+            groups: [
+              {
+                name: 'initial-app',
+                // Consolidate only already-initial application, UI and motion owners.
+                // Keep shared resource loaders separate from the startup application.
+                test: /(?:\/apps\/web\/src\/(?:app\/|App\.vue|main\.ts)|\/packages\/(?:ui|design-system)\/src\/|node_modules\/(?:motion-v|motion-dom|motion-utils)\/)/,
+                tags: ['$initial' as const],
+                includeDependenciesRecursively: false,
+              },
+              {
+                name: 'initial-naive',
+                // Keep the already-initial Naive helpers together without pulling
+                // shared Vue/i18n dependencies into every lazy UI consumer.
+                test: /node_modules\/(?:naive-ui|vueuc|vooks|vdirs|evtd|seemly|treemate|css-render|@css-render\/[^/]+|date-fns|lodash-es)\//,
+                tags: ['$initial' as const],
+                includeDependenciesRecursively: false,
+              },
+            ],
+          },
+        },
+      },
       sourcemap: false,
       target: 'es2022',
     },

@@ -6,7 +6,7 @@ let runtimePromise: Promise<typeof ScrollRuntime | undefined> | undefined
 /** Optional presentation enhancement; native scrolling never waits for this module. */
 export function loadScrollEnhancement(): Promise<typeof ScrollRuntime | undefined> {
   runtimePromise ??= import('./scroll-enhancement-runtime').catch(() => {
-    console.warn('PAVP scroll enhancement unavailable; native scrolling remains active.')
+    console.warn('PAVP scroll: native fallback.')
     return undefined
   })
   return runtimePromise

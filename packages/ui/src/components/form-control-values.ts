@@ -1,6 +1,6 @@
-import type { UiFormController, UiFormFieldBinding, UiFormKey } from './form-contracts'
+import type { UiFormController, UiFormFieldBinding, UiFormValue } from './form-contracts'
 
-export function dateOnly(timestamp: number): string {
+function dateOnly(timestamp: number): string {
   const date = new Date(timestamp)
   return `${String(date.getFullYear()).padStart(4, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
 }
@@ -18,15 +18,18 @@ export function isDateOnly(value: string): boolean {
 }
 
 /** Decode vendor events using the exact admitted kind and its typed option identities. */
-export function acceptsControlValue<I, K extends UiFormKey<I>>(
+export function acceptsControlValue<I>(
   form: UiFormController<I>,
-  binding: UiFormFieldBinding<I, K>,
+  binding: UiFormFieldBinding,
   value: unknown,
-): value is I[K] {
+): value is UiFormValue {
   const config = form.fields.find((field) => field.name === binding.name)
   if (config === undefined) return false
   const option = (candidate: unknown) =>
-    binding.options.some((item) => item.value === candidate && !item.disabled)
+    binding.optionQuery === null
+      ? binding.options.some((item) => item.value === candidate && !item.disabled)
+      : typeof candidate === 'string' ||
+        (typeof candidate === 'number' && Number.isFinite(candidate))
   switch (config.kind) {
     case 'text':
     case 'textarea':

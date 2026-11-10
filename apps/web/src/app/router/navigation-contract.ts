@@ -43,7 +43,7 @@ export function completeActiveGuardStages(progress: ActiveGuardStageProgress): v
   progress.complete()
 }
 
-export const activeNavigationOutcomeRegistry = Object.freeze([
+export const activeNavigationOutcomeRegistry = /* @__PURE__ */ Object.freeze([
   'duplicated',
   'cancelled-by-new-navigation',
   'presentation-unavailable',

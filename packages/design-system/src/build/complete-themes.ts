@@ -21,11 +21,7 @@ import {
   validatePublicRoleRegistry,
 } from './public-role-registry'
 import type { TokenResolver } from './resolve'
-import {
-  themeColorPalettesSchema,
-  type ThemeColorPalette,
-  type ThemeColorPalettes,
-} from '../schema/theme-color-palette.schema'
+import type { ThemeColorPalette, ThemeColorPalettes } from '../schema/theme-color-palette.schema'
 import { themePaletteColorEntries, validateThemeColorPalette } from './theme-color-palette'
 
 const colorModes = ['light', 'dark'] as const
@@ -342,9 +338,9 @@ function validateCompleteThemeSource(
     throw new Error(`${bundle.path}: unsupported complete-theme source path.`)
   }
 
-  const parsed = completeBuiltInThemeDefinitionSchema
-    .extend({ uiPalette: themeColorPalettesSchema })
-    .safeParse(parseJsonSource(bundle.contents, bundle.path))
+  const parsed = completeBuiltInThemeDefinitionSchema.safeParse(
+    parseJsonSource(bundle.contents, bundle.path),
+  )
 
   if (!parsed.success) {
     const issues = parsed.error.issues
@@ -448,6 +444,7 @@ function validateCompleteThemeSource(
     for (const contrast of contrastLevels)
       validateThemeColorPalette(
         theme.uiPalette[mode][contrast],
+        mode,
         contrast,
         `${theme.id}:${mode}.${contrast}`,
       )
@@ -505,6 +502,24 @@ export function validateCompleteBuiltInThemes({
       )
     }
   }
+
+  const canonicalPlane = themes[0]?.planes.light.standard
+  if (canonicalPlane === undefined) throw new Error('The canonical theme bindings are unavailable.')
+  for (const theme of themes)
+    for (const mode of colorModes)
+      for (const contrast of contrastLevels)
+        for (const role of roleIds) {
+          if (role === 'color.scrim.viewport') continue
+          const reference = canonicalPlane[role]
+          if (
+            reference === undefined ||
+            !reference.startsWith('{palette.') ||
+            theme.planes[mode][contrast][role] !== reference
+          )
+            throw new Error(
+              `${theme.id}:${mode}.${contrast}.${role}: semantic palette binding drifted.`,
+            )
+        }
 
   const authoredColorValueCount = themes.reduce(
     (count, theme) => count + theme.authoredColorValueCount,

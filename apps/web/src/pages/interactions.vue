@@ -42,50 +42,83 @@ const names = tokenNames.filter(
     :title="title"
     :message="message"
   >
-    <section class="wb-interaction-grid grid items-start gap-content-gap">
-      <NCard :bordered="false">
-        <UiSection :title="t('workbench.states')">
-          <div class="wb-control-examples flex flex-wrap items-center gap-content-gap">
-            <NButton type="primary">
-              {{ t('workbench.primary') }}
-            </NButton>
-            <NButton type="info">
-              {{ t('workbench.info') }}
-            </NButton>
-            <NButton type="success">
-              {{ t('workbench.success') }}
-            </NButton>
-            <NButton type="warning">
-              {{ t('workbench.warning') }}
-            </NButton>
-            <NButton type="error">
-              {{ t('workbench.error') }}
-            </NButton>
-            <NButton disabled>
-              {{ t('workbench.disabled') }}
-            </NButton>
-            <NSwitch
-              :value="enabled"
-              :aria-label="t('workbench.toggle')"
-              @update:value="enabled = $event"
-            />
+    <section
+      class="wb-interaction-grid grid gap-content-gap layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+    >
+      <NCard
+        class="col-span-full"
+        :bordered="false"
+      >
+        <UiSection
+          :title="t('workbench.states')"
+          :description="t('workbench.statesHint')"
+        >
+          <div
+            class="grid gap-content-gap layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+          >
+            <div
+              class="rounded-control grid content-start bg-surface-page gap-content-gap p-page-inline"
+            >
+              <div class="wb-control-examples flex flex-wrap items-center gap-content-gap">
+                <NButton type="primary">
+                  {{ t('workbench.primary') }}
+                </NButton>
+                <NButton type="info">
+                  {{ t('workbench.info') }}
+                </NButton>
+                <NButton type="success">
+                  {{ t('workbench.success') }}
+                </NButton>
+                <NButton type="warning">
+                  {{ t('workbench.warning') }}
+                </NButton>
+                <NButton type="error">
+                  {{ t('workbench.error') }}
+                </NButton>
+                <NButton disabled>
+                  {{ t('workbench.disabled') }}
+                </NButton>
+              </div>
+              <div class="flex items-center justify-between gap-content-gap text-text-secondary">
+                <span>{{ t('workbench.switchLabel') }}</span>
+                <div class="flex items-center gap-content-gap">
+                  <span class="text-caption">{{
+                    t(enabled ? 'showcase.on' : 'showcase.off')
+                  }}</span>
+                  <NSwitch
+                    :value="enabled"
+                    :aria-label="t('workbench.toggle')"
+                    @update:value="enabled = $event"
+                  />
+                </div>
+              </div>
+            </div>
+            <div
+              class="rounded-control grid content-start bg-surface-page gap-content-gap p-page-inline"
+            >
+              <span class="text-text-secondary">{{ t('workbench.choiceLabel') }}</span>
+              <UiRadioCardGroup
+                class="layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+                :accessible-label="t('workbench.choice')"
+                :options="options"
+                :model-value="selected"
+                @update:model-value="selected = $event"
+              />
+            </div>
           </div>
-          <UiRadioCardGroup
-            :accessible-label="t('workbench.choice')"
-            :options="options"
-            :model-value="selected"
-            @update:model-value="selected = $event"
-          />
         </UiSection>
       </NCard>
       <NCard :bordered="false">
-        <UiSection :title="t('workbench.motionLabel')">
+        <UiSection
+          :title="t('workbench.motionLabel')"
+          :description="t('workbench.motionHint')"
+        >
           <div
             class="wb-motion-stage rounded-control grid items-center overflow-hidden bg-surface-page p-page-inline"
             :data-replayed="replayed"
           >
             <span
-              class="wb-motion-object rounded-control block bg-action-primary min-h-target-enhanced min-w-target-enhanced"
+              class="wb-motion-object rounded-control w-min block bg-action-primary min-h-target-enhanced min-w-target-enhanced"
             />
           </div>
           <div class="wb-page-actions flex flex-wrap items-center justify-between gap-content-gap">
@@ -99,26 +132,31 @@ const names = tokenNames.filter(
         </UiSection>
       </NCard>
       <NCard :bordered="false">
-        <UiSection :title="t('workbench.scroll')">
-          <UiScrollArea
-            class="wb-scroll-example rounded-control bg-surface-page"
-            owner-id="workbench-scroll-specimen"
-            @controller="connect"
-          >
-            <div
-              v-for="row in 12"
-              :key="row"
-              class="wb-scroll-row flex justify-between gap-content-gap min-h-target-enhanced p-page-inline text-text-secondary"
+        <UiSection
+          :title="t('workbench.scroll')"
+          :description="t('workbench.scrollHint')"
+        >
+          <div class="wb-scroll-example">
+            <UiScrollArea
+              class="rounded-control bg-surface-page"
+              owner-id="workbench-scroll-specimen"
+              @controller="connect"
             >
-              {{ t('workbench.scrollRow') }} {{ String(row).padStart(2, '0') }}
-              <span
-                class="text-control-primary"
-                aria-hidden="true"
+              <div
+                v-for="row in 12"
+                :key="row"
+                class="wb-scroll-row flex justify-between gap-content-gap min-h-target-enhanced p-page-inline text-text-secondary"
               >
-                ↗
-              </span>
-            </div>
-          </UiScrollArea>
+                {{ t('workbench.scrollRow') }} {{ String(row).padStart(2, '0') }}
+                <span
+                  class="text-control-primary"
+                  aria-hidden="true"
+                >
+                  ↗
+                </span>
+              </div>
+            </UiScrollArea>
+          </div>
           <div class="wb-page-actions flex flex-wrap items-center justify-between gap-content-gap">
             <NButton @click="scroll?.scrollToStart({ behavior: 'smooth' })">
               {{ t('workbench.toStart') }}

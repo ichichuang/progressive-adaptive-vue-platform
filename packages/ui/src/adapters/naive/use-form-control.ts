@@ -1,15 +1,12 @@
 import { computed, shallowRef, onScopeDispose, useTemplateRef, watch, watchPostEffect } from 'vue'
-import type {
-  UiFormController,
-  UiFormFieldBinding,
-  UiFormKey,
-} from '../../components/form-contracts'
-import { acceptsControlValue, dateOnly, isDateOnly } from '../../components/form-control-values'
+import type { SelectProps } from 'naive-ui/es/select'
+import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
+import { acceptsControlValue, isDateOnly } from '../../components/form-control-values'
 
 /** Typed control projection and transient input commitment, private to Naive presentation. */
-export function useFormControl<I, K extends UiFormKey<I>>(props: {
+export function useFormControl<I>(props: {
   readonly form: UiFormController<I>
-  readonly binding: UiFormFieldBinding<I, K>
+  readonly binding: UiFormFieldBinding
 }) {
   const root = useTemplateRef<HTMLElement>('root')
   const config = computed(() => {
@@ -32,32 +29,44 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
       )
     return typeof value === 'string' || typeof value === 'number' ? value : null
   })
-  const optionItems = computed(() =>
-    props.binding.options.map((option) => ({
-      value: option.value,
-      label: option.label(),
-      disabled: option.disabled === true,
-    })),
-  )
-  const selectedText = computed(() => {
-    const value = selectValue.value
-    const ids = Array.isArray(value) ? value : value === null ? [] : [value]
-    return ids
-      .map(
-        (id) => props.binding.options.find((option) => option.value === id)?.label() ?? String(id),
+  const optionItems = computed<NonNullable<SelectProps['options']>>(() => {
+    const selected = new Map(props.binding.selectedOptions.map((item) => [item.value, item]))
+    return props.binding.options.map((option) => {
+      const evidence = selected.get(option.value)
+      return {
+        value: option.value,
+        label:
+          evidence === undefined
+            ? props.form.text(option.label)
+            : evidence.option === null
+              ? String(evidence.value)
+              : props.form.text(evidence.option.label),
+        disabled: (evidence === undefined ? option : evidence.option)?.disabled === true,
+      }
+    })
+  })
+  function fallbackOption(value: string | number) {
+    // Naive's non-virtual menu renders ignored nodes. Keep only the current page
+    // in options and derive off-page selected labels through its official fallback.
+    const option = props.binding.selectedOptions.find((item) => item.value === value)?.option
+    return {
+      value,
+      label:
+        option === undefined || option === null ? String(value) : props.form.text(option.label),
+      disabled: option?.disabled === true,
+    }
+  }
+  const selectedText = computed(() =>
+    props.binding.selectedOptions
+      .map((item) =>
+        item.option === null ? String(item.value) : props.form.text(item.option.label),
       )
-      .join(', ')
-  })
-  const unknownSelection = computed(() => {
-    const value = selectValue.value
-    const ids = Array.isArray(value) ? value : value === null ? [] : [value]
-    return ids
-      .filter((id) => !props.binding.options.some((option) => option.value === id))
-      .map(String)
-      .join(', ')
-  })
+      .join(', '),
+  )
   const selectDisabled = computed(
-    () => props.binding.disabled || props.binding.optionsState !== 'ready',
+    () =>
+      props.binding.disabled ||
+      (props.binding.optionQuery === null && props.binding.optionsState !== 'ready'),
   )
   const readonlyComposite = computed(
     () =>
@@ -69,6 +78,16 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
   const validationProps = computed(() => ({
     status: props.binding.invalid ? ('error' as const) : ('success' as const),
   }))
+  // Native placeholders never replace entered text, including vendor edit buffers.
+  const placeholder = computed(() => {
+    const value = props.binding.value
+    const empty = value === null || value === '' || (Array.isArray(value) && value.length === 0)
+    const reason = props.binding.invalid && empty ? props.binding.errors[0]?.() : undefined
+    // Detailed/multiple errors remain available in the accessible summary.
+    return reason !== undefined && reason.length <= 48 && !reason.includes('\n')
+      ? reason
+      : props.form.text(config.value.placeholder ?? '')
+  })
   const numberHints = computed(() =>
     config.value.kind === 'number'
       ? {
@@ -81,55 +100,114 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
 
   // Only transient vendor edit syntax lives here; canonical values remain in the controller.
   const composing = shallowRef(false)
-  let buffer: string | null = null
+  const buffer = shallowRef<string | null>(null)
+  const dateText = computed(() => buffer.value ?? textValue.value)
+  const numberFormat = computed(() => {
+    const raw = buffer.value
+    return raw !== null && (composing.value || !Number.isFinite(Number(raw)))
+      ? () => raw
+      : undefined
+  })
+  const numberFormatProps = computed(() =>
+    numberFormat.value === undefined ? {} : { format: numberFormat.value },
+  )
+  function reportPending(): void {
+    // A retired keyed control can observe a shorter record before Vue unmounts
+    // it. Its path no longer owns input and must not register pending state.
+    if (!props.form.fields.some((field) => field.name === props.binding.name)) return
+    const buffered = ['text', 'textarea', 'number', 'date'].includes(config.value.kind)
+    const value = props.binding.value
+    const canonical = typeof value === 'string' || typeof value === 'number' ? String(value) : ''
+    props.binding.setPendingInput(
+      buffered && (composing.value || (buffer.value !== null && buffer.value !== canonical)),
+    )
+  }
+  watch(composing, reportPending, { flush: 'sync' })
   watch(
     () => props.binding.value,
     () => {
-      buffer = null
+      buffer.value = null
+      reportPending()
     },
     { flush: 'sync' },
   )
+  function captureComposition(event: CompositionEvent): void {
+    // Select search is a query, never a pending canonical field edit.
+    if (config.value.kind === 'select' || config.value.kind === 'multi-select') return
+    composing.value = event.type === 'compositionstart'
+  }
   function captureInput(event: Event): void {
-    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
-      buffer = event.target.value
+    if (config.value.kind === 'select' || config.value.kind === 'multi-select') return
+    if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      const correctingNumber = config.value.kind === 'number' && numberFormat.value !== undefined
+      buffer.value = event.target.value
+      reportPending()
+      // A temporary official format override preserves invalid text on blur.
+      // Naive skips immediate updates while it is present, so accept the first
+      // valid correction through the same typed value boundary.
+      if (correctingNumber && !composing.value) {
+        const raw = buffer.value.trim()
+        const value = Number(raw)
+        const unfinished = raw === '-0' || (raw.includes('.') && /[.0]$/u.test(raw))
+        const { min, max } = config.value
+        if (raw === '') update(null)
+        else if (
+          !unfinished &&
+          Number.isFinite(value) &&
+          (min === undefined || value >= min) &&
+          (max === undefined || value <= max)
+        )
+          update(value)
+      }
+    }
   }
   function update(value: unknown): boolean {
     if (!acceptsControlValue(props.form, props.binding, value)) return false
     const result = props.binding.setValue(value)
-    return result === 'applied' || result === 'unchanged'
+    const accepted = result === 'applied' || result === 'unchanged'
+    if (accepted && !composing.value) {
+      buffer.value = null
+      reportPending()
+    }
+    return accepted
+  }
+  function updateDateText(value: string): void {
+    if (buffer.value !== value) {
+      buffer.value = value
+      reportPending()
+    }
+    if (!composing.value && (value === '' || isDateOnly(value))) update(value === '' ? null : value)
   }
   function blurNumber(): void {
-    // Naive normalizes or reverts its numeric text before emitting blur, even
-    // when the canonical value is unchanged and no update:value event fires.
-    if (!composing.value) buffer = null
+    // Invalid text remains visible through the official format prop. Merely
+    // moving focus must not discard it or invalidate a leave confirmation.
+    if (!composing.value && numberFormat.value === undefined) {
+      buffer.value = null
+      reportPending()
+    }
     props.binding.blur()
   }
   function commit(): boolean {
+    if (config.value.kind === 'select' || config.value.kind === 'multi-select') return true
     if (composing.value) return false
-    if (buffer === null) return true
+    if (buffer.value === null) return true
     if (config.value.kind === 'number') {
-      const raw = buffer.trim()
+      const raw = buffer.value.trim()
       // Match Naive's installed numeric parser; the decoder rejects NaN/Infinity.
       return update(raw === '' ? null : Number(raw))
     }
     if (config.value.kind === 'date')
-      return buffer === '' ? update(null) : isDateOnly(buffer) && update(buffer)
-    if (config.value.kind === 'text' || config.value.kind === 'textarea') return update(buffer)
+      return buffer.value === '' ? update(null) : isDateOnly(buffer.value) && update(buffer.value)
+    if (config.value.kind === 'text' || config.value.kind === 'textarea')
+      return update(buffer.value)
     return true
-  }
-  function dateDisabled(timestamp: number): boolean {
-    const field = config.value
-    return (
-      field.kind === 'date' &&
-      field.isDateAllowed?.(dateOnly(timestamp), props.form.values.value) === false
-    )
   }
   function focusElement(): HTMLElement | null {
     return (
       root.value?.querySelector<HTMLElement>(
         readonlyComposite.value
           ? '[data-form-readonly]'
-          : '[role="combobox"], [role="switch"], input, textarea',
+          : '.n-base-selection-label, .n-base-selection-tags, [role="combobox"], [role="switch"], input, textarea',
       ) ?? null
     )
   }
@@ -138,8 +216,10 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
     (binding, previous) => {
       previous?.setFocusTarget(null)
       previous?.setCommitTarget(null)
+      previous?.setPendingInput(false)
       binding.setFocusTarget(() => focusElement()?.focus())
       binding.setCommitTarget(commit)
+      reportPending()
     },
     { immediate: true, flush: 'sync' },
   )
@@ -148,39 +228,55 @@ export function useFormControl<I, K extends UiFormKey<I>>(props: {
     const attributes = {
       id: binding.controlId,
       'aria-labelledby': binding.labelId,
-      'aria-describedby': binding.describedBy,
+      'aria-describedby': [
+        binding.describedBy,
+        ['select', 'multi-select'].includes(config.value.kind)
+          ? `${binding.controlId}-options`
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' '),
       'aria-required': String(binding.required),
       'aria-invalid': String(binding.invalid),
-      'aria-disabled': String(binding.disabled),
+      'aria-disabled': String(
+        ['select', 'multi-select'].includes(config.value.kind)
+          ? selectDisabled.value
+          : binding.disabled,
+      ),
     }
-    // NDatePicker does not expose inputProps. Associate its actual private input,
-    // and the other composite focus elements, without exposing a vendor props bag.
+    // Associate the actual focus element of official controls without exposing
+    // a vendor props bag on the public schema or field binding.
     const element = focusElement()
     for (const [name, value] of Object.entries(attributes)) element?.setAttribute(name, value)
   })
   onScopeDispose(() => {
     props.binding.setFocusTarget(null)
     props.binding.setCommitTarget(null)
-    buffer = null
+    props.binding.setPendingInput(false)
+    buffer.value = null
     composing.value = false
   })
 
   return {
+    root,
     config,
     textValue,
     numberValue,
+    dateText,
     selectValue,
     optionItems,
+    fallbackOption,
     selectedText,
-    unknownSelection,
     selectDisabled,
     readonlyComposite,
     validationProps,
+    placeholder,
     numberHints,
-    composing,
+    numberFormatProps,
+    captureComposition,
     captureInput,
     update,
+    updateDateText,
     blurNumber,
-    dateDisabled,
   }
 }

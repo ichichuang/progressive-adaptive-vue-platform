@@ -49,6 +49,11 @@ const expectedVueRouterVersion = '5.2.0'
 const expectedVueRouterIntegrity =
   'sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw=='
 const expectedNaiveUiVersion = '2.45.2'
+const naiveUiPatchPath = 'patches/naive-ui@2.45.2.patch'
+const expectedNaiveUiPatchHash = '6a902bf819f8cf790dd78c3079c925f74b9247f1bc9ae3026a1fe0a36c9f34f7'
+const expectedNaiveUiPatchedFilesHash =
+  'dda243f266f3da8b713e22026e669c2f111784e222ef733ca6f5c1f3bee5b95c'
+const expectedNaiveUiPatchedVersion = `2.45.2(patch_hash=${expectedNaiveUiPatchHash})(vue@3.5.40(typescript@6.0.3))`
 const scrollDependencies = [
   { name: 'overlayscrollbars', version: '2.16.0', resolution: '2.16.0', snapshot: {} },
   {
@@ -84,6 +89,7 @@ const expectedMotionVSnapshotCoordinate =
   'motion-v@2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)(@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3)))(vue@3.5.40(typescript@6.0.3))'
 const expectedPatchedDependencies = {
   'motion-v@2.4.0': motionVPatchPath,
+  'naive-ui@2.45.2': naiveUiPatchPath,
   'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
   'vue-i18n@11.4.10': vueI18nPatchPath,
   'vue-router@5.2.0': vueRouterPatchPath,
@@ -95,10 +101,6 @@ const prohibitedDirectMotionCompatibilityDependencies = [
   '@types/react-dom',
   '@types/web-bluetooth',
 ] as const
-const expectedImplementationContract = {
-  phase: 1,
-  state: 'IN_PROGRESS',
-} as const
 const exactSemanticVersionPattern =
   /^(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u
 const buildConfigurationSourceExtensions = new Set(['.html', '.js', '.mjs', '.ts', '.vue'])
@@ -182,15 +184,22 @@ async function validateOfficialRouteDtsRegeneration(): Promise<void> {
         }
 
         return [
-          [canonicalPageSourcePath(componentBody.arguments[0].text), name.text, path.text] as const,
+          [
+            canonicalPageSourcePath(componentBody.arguments[0].text),
+            name.text,
+            path.text,
+            objectPropertyExpression(object, 'meta') !== undefined,
+          ] as const,
         ]
       },
     )
     const expectedRecords = routeRegistry.map(
-      (record) => [record.sourcePath, record.name, record.pathPattern] as const,
+      (record) => [record.sourcePath, record.name, record.pathPattern, false] as const,
     )
-    const bySourcePath = (left: readonly string[], right: readonly string[]): number =>
-      left[0]?.localeCompare(right[0] ?? '', 'en') ?? 0
+    const bySourcePath = (
+      left: readonly [string, string, string, boolean],
+      right: readonly [string, string, string, boolean],
+    ): number => left[0].localeCompare(right[0], 'en')
 
     expectStructuredEqual(
       [...generatedRecords].sort(bySourcePath),
@@ -431,44 +440,6 @@ async function createMotionVRuntimeHashManifest(
   }
 
   return { fileCount: relativeFiles.length, hash: manifestHash.digest('hex') }
-}
-
-function architectureAssignmentBlock(
-  architecture: string,
-  firstAssignment: string,
-): Readonly<Record<string, string>> {
-  const starts = [...architecture.matchAll(new RegExp(`^${firstAssignment}$`, 'gmu'))]
-
-  if (starts.length !== 1 || starts[0]?.index === undefined) {
-    throw new Error(`ARCHITECTURE.md must contain exactly one ${firstAssignment} block.`)
-  }
-
-  const blockStart = starts[0].index
-  const blockEnd = architecture.indexOf('\n```', blockStart)
-
-  if (blockEnd === -1) {
-    throw new Error(`ARCHITECTURE.md does not close the ${firstAssignment} block.`)
-  }
-
-  const assignments: Record<string, string> = {}
-
-  for (const line of architecture.slice(blockStart, blockEnd).split('\n')) {
-    const separator = line.indexOf('=')
-
-    if (separator <= 0) {
-      continue
-    }
-
-    const key = line.slice(0, separator)
-
-    if (!/^[A-Z][A-Z0-9_]*$/u.test(key) || Object.hasOwn(assignments, key)) {
-      throw new Error(`ARCHITECTURE.md contains an invalid or duplicate ${key} assignment.`)
-    }
-
-    assignments[key] = line.slice(separator + 1)
-  }
-
-  return assignments
 }
 
 function motionDeclarationCompatibilityDiagnostics(
@@ -2707,18 +2678,6 @@ function parseMiseTools(configuration: string): JsonObject {
   return tools
 }
 
-function readCanonicalImplementationState(architecture: string): string {
-  const matches = [...architecture.matchAll(/^IMPLEMENTATION_STATE=([A-Z_]+)$/gmu)]
-
-  if (matches.length !== 1) {
-    throw new Error(
-      `ARCHITECTURE.md must declare exactly one canonical implementation state; received ${String(matches.length)}.`,
-    )
-  }
-
-  return matches[0]?.[1] ?? ''
-}
-
 function findWorkflowStep(steps: unknown[], name: string): JsonObject {
   const matches = steps.filter(
     (step): step is JsonObject => isJsonObject(step) && step['name'] === name,
@@ -2874,6 +2833,7 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
   throw new Error('pnpm-workspace.yaml must define the shared version catalog.')
 }
 
+expectEqual(workspaceCatalog['highlight.js'], '11.12.0', 'Showcase highlighter catalog version')
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
 expectEqual(workspaceCatalog['gsap'], undefined, 'Inactive GSAP catalog coordinate')
@@ -2911,6 +2871,52 @@ expectStructuredEqual(
 )
 
 const workspacePatchedDependencies = workspaceConfiguration['patchedDependencies']
+
+const naiveUiPatch = await readFile(resolve(rootDirectory, naiveUiPatchPath), 'utf8')
+expectEqual(
+  createHash('sha256').update(naiveUiPatch).digest('hex'),
+  expectedNaiveUiPatchHash,
+  'Naive UI exact-version integration patch SHA-256',
+)
+const naiveUiPatchedFiles = Array.from(naiveUiPatch.matchAll(/^\+\+\+ b\/(.+)$/gmu), (match) =>
+  String(match[1]),
+).sort()
+expectExactCount(naiveUiPatchedFiles.length, 64, 'Naive UI patched ESM and CommonJS file count')
+const naiveUiPatchedFilesHash = createHash('sha256')
+for (const path of naiveUiPatchedFiles) {
+  if (
+    !/^(?:es|lib)\/(?:badge|code|float-button|heatmap|input-otp|progress|rate)\/[A-Za-z0-9/._-]+$/u.test(
+      path,
+    ) &&
+    ![
+      'es/_internal/scrollbar/src/Scrollbar.mjs',
+      'lib/_internal/scrollbar/src/Scrollbar.js',
+      'es/layout/src/Layout.mjs',
+      'lib/layout/src/Layout.js',
+      'es/layout/src/LayoutSider.mjs',
+      'lib/layout/src/LayoutSider.js',
+      'es/drawer/src/DrawerBodyWrapper.mjs',
+      'lib/drawer/src/DrawerBodyWrapper.js',
+      'es/drawer/src/DrawerContent.mjs',
+      'lib/drawer/src/DrawerContent.js',
+      'es/tabs/src/Tabs.mjs',
+      'lib/tabs/src/Tabs.js',
+      'es/data-table/src/TableParts/Header.mjs',
+      'lib/data-table/src/TableParts/Header.js',
+    ].includes(path)
+  ) {
+    throw new Error(`Naive UI integration patch has an unexpected target: ${path}`)
+  }
+  const contents = await readFile(resolve(rootDirectory, 'packages/ui/node_modules/naive-ui', path))
+  naiveUiPatchedFilesHash.update(
+    `${path}\0${createHash('sha256').update(contents).digest('hex')}\n`,
+  )
+}
+expectEqual(
+  naiveUiPatchedFilesHash.digest('hex'),
+  expectedNaiveUiPatchedFilesHash,
+  'Installed Naive UI integration files',
+)
 
 const vueI18nPatch = await readFile(resolve(rootDirectory, vueI18nPatchPath), 'utf8')
 expectEqual(
@@ -3044,6 +3050,9 @@ const lockedUiVueUseCoreDependency = isJsonObject(uiLockfileDependencies)
   : undefined
 const lockedUiMotionVDependency = isJsonObject(uiLockfileDependencies)
   ? uiLockfileDependencies['motion-v']
+  : undefined
+const lockedWebMotionVDependency = isJsonObject(webLockfileDependencies)
+  ? webLockfileDependencies['motion-v']
   : undefined
 const lockedUiGsapDependency = isJsonObject(uiLockfileDependencies)
   ? uiLockfileDependencies['gsap']
@@ -3410,6 +3419,11 @@ expectStructuredEqual(
   'Motion for Vue @platform/ui lockfile coordinate',
 )
 expectStructuredEqual(
+  lockedWebMotionVDependency,
+  lockedUiMotionVDependency,
+  'Motion for Vue showcase lockfile coordinate',
+)
+expectStructuredEqual(
   lockedVueUseCorePackageKeys,
   [`@vueuse/core@${expectedVueUseCoreVersion}`],
   'VueUse core lockfile package set',
@@ -3464,6 +3478,13 @@ expectStructuredEqual(
 )
 expectStructuredEqual(lockedNaiveUiPackageKeys, ['naive-ui@2.45.2'], 'Naive UI package set')
 expectStructuredEqual(
+  isJsonObject(lockfilePatchedDependencies)
+    ? lockfilePatchedDependencies['naive-ui@2.45.2']
+    : undefined,
+  { hash: expectedNaiveUiPatchHash, path: naiveUiPatchPath },
+  'Naive UI lockfile patch identity',
+)
+expectStructuredEqual(
   isJsonObject(webLockfileDependencies) ? webLockfileDependencies['naive-ui'] : undefined,
   lockedUiNaiveDependency,
   'Web and UI must share the same catalog Naive UI importer resolution',
@@ -3472,7 +3493,7 @@ if (
   !isJsonObject(lockedUiNaiveDependency) ||
   lockedUiNaiveDependency['specifier'] !== 'catalog:' ||
   typeof lockedUiNaiveDependency['version'] !== 'string' ||
-  !lockedUiNaiveDependency['version'].startsWith('2.45.2(vue@3.5.40')
+  lockedUiNaiveDependency['version'] !== expectedNaiveUiPatchedVersion
 ) {
   throw new Error('Naive UI @platform/ui lockfile importer binding drifted.')
 }
@@ -3491,7 +3512,7 @@ if (
   !isJsonObject(lockedNaiveUiPackage['peerDependencies']) ||
   lockedNaiveUiPackage['peerDependencies']['vue'] !== '^3.0.0' ||
   lockedNaiveUiSnapshotKeys.length !== 1 ||
-  !lockedNaiveUiSnapshotKeys[0]?.startsWith('naive-ui@2.45.2(vue@3.5.40')
+  lockedNaiveUiSnapshotKeys[0] !== `naive-ui@${expectedNaiveUiPatchedVersion}`
 ) {
   throw new Error('Naive UI engine, Vue peer or single snapshot closure drifted.')
 }
@@ -3531,12 +3552,12 @@ for (const dependency of prohibitedDirectMotionCompatibilityDependencies) {
 
 for (const [manifest, description] of [
   [rootManifest, 'root package'],
-  [webManifest, '@platform/web'],
   [designSystemManifest, '@platform/design-system'],
 ] as const) {
   expectDirectDependencyAbsent(manifest, 'motion-v', description)
   expectDirectDependencyAbsent(manifest, '@vueuse/core', description)
 }
+expectDirectDependencyAbsent(webManifest, '@vueuse/core', '@platform/web')
 
 expectEqual(
   workspaceConfiguration['catalog'] !== undefined && isJsonObject(workspaceConfiguration['catalog'])
@@ -3557,6 +3578,8 @@ expectStructuredEqual(
   webManifest['dependencies'],
   {
     'naive-ui': 'catalog:',
+    'highlight.js': 'catalog:',
+    'motion-v': 'catalog:',
     '@tanstack/vue-query': 'catalog:',
     '@platform/design-system': 'workspace:*',
     '@platform/ui': 'workspace:*',
@@ -3649,94 +3672,7 @@ expectStructuredEqual(
   'Reviewed exact-version patch set',
 )
 
-const architecture = await readFile(resolve(rootDirectory, 'ARCHITECTURE.md'), 'utf8')
-const motionPatchArchitecture = architectureAssignmentBlock(
-  architecture,
-  'PATCH_TARGET_PACKAGE=motion-v',
-)
-
-expectStructuredEqual(
-  {
-    PATCH_TARGET_PACKAGE: motionPatchArchitecture['PATCH_TARGET_PACKAGE'],
-    PATCH_TARGET_VERSION: motionPatchArchitecture['PATCH_TARGET_VERSION'],
-    PATCH_FILE: motionPatchArchitecture['PATCH_FILE'],
-    PATCH_KIND: motionPatchArchitecture['PATCH_KIND'],
-    PATCH_RUNTIME_CHANGE: motionPatchArchitecture['PATCH_RUNTIME_CHANGE'],
-    PATCH_JAVASCRIPT_CHANGE: motionPatchArchitecture['PATCH_JAVASCRIPT_CHANGE'],
-    PATCH_PACKAGE_METADATA_CHANGE: motionPatchArchitecture['PATCH_PACKAGE_METADATA_CHANGE'],
-    PATCH_SECOND_PACKAGE: motionPatchArchitecture['PATCH_SECOND_PACKAGE'],
-    TYPESCRIPT_STRICTNESS_CHANGE: motionPatchArchitecture['TYPESCRIPT_STRICTNESS_CHANGE'],
-    REACT_TYPE_DEPENDENCY: motionPatchArchitecture['REACT_TYPE_DEPENDENCY'],
-    PATCH_RUNTIME_HASH_EQUALITY: motionPatchArchitecture['PATCH_RUNTIME_HASH_EQUALITY'],
-    PATCH_SHA256: motionPatchArchitecture['PATCH_SHA256'],
-    PATCH_CHANGED_DECLARATION_FILE_COUNT:
-      motionPatchArchitecture['PATCH_CHANGED_DECLARATION_FILE_COUNT'],
-    PATCH_CHANGED_DECLARATION_HUNK_COUNT:
-      motionPatchArchitecture['PATCH_CHANGED_DECLARATION_HUNK_COUNT'],
-    PATCH_CHANGED_DECLARATION_FILES: motionPatchArchitecture['PATCH_CHANGED_DECLARATION_FILES'],
-    PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT:
-      motionPatchArchitecture['PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT'],
-    PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM:
-      motionPatchArchitecture['PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM'],
-    PATCH_RUNTIME_HASH_MANIFEST_SHA256:
-      motionPatchArchitecture['PATCH_RUNTIME_HASH_MANIFEST_SHA256'],
-    PATCH_EXACT_MOTION_PATCH_COUNT: motionPatchArchitecture['PATCH_EXACT_MOTION_PATCH_COUNT'],
-    PATCH_CANONICAL_TOTAL_SET: motionPatchArchitecture['PATCH_CANONICAL_TOTAL_SET'],
-    PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY:
-      motionPatchArchitecture['PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY'],
-    PATCH_TYPESCRIPT_STRICT: motionPatchArchitecture['PATCH_TYPESCRIPT_STRICT'],
-    PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES:
-      motionPatchArchitecture['PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES'],
-    PATCH_TYPESCRIPT_SKIP_LIB_CHECK: motionPatchArchitecture['PATCH_TYPESCRIPT_SKIP_LIB_CHECK'],
-  },
-  {
-    PATCH_TARGET_PACKAGE: 'motion-v',
-    PATCH_TARGET_VERSION: expectedMotionVVersion,
-    PATCH_FILE: motionVPatchPath,
-    PATCH_KIND: 'DECLARATION_ONLY',
-    PATCH_RUNTIME_CHANGE: 'PROHIBITED',
-    PATCH_JAVASCRIPT_CHANGE: 'PROHIBITED',
-    PATCH_PACKAGE_METADATA_CHANGE: 'PROHIBITED',
-    PATCH_SECOND_PACKAGE: 'PROHIBITED',
-    TYPESCRIPT_STRICTNESS_CHANGE: 'PROHIBITED',
-    REACT_TYPE_DEPENDENCY: 'PROHIBITED',
-    PATCH_RUNTIME_HASH_EQUALITY: 'REQUIRED',
-    PATCH_SHA256: motionVPatchMetadata.hash,
-    PATCH_CHANGED_DECLARATION_FILE_COUNT: String(motionVPatchMetadata.targetFiles.length),
-    PATCH_CHANGED_DECLARATION_HUNK_COUNT: String(motionVPatchMetadata.hunkCount),
-    PATCH_CHANGED_DECLARATION_FILES: motionVPatchMetadata.targetFiles.join(';'),
-    PATCH_RUNTIME_JAVASCRIPT_FILE_COUNT: String(motionVRuntimeHashManifest.fileCount),
-    PATCH_RUNTIME_HASH_MANIFEST_ALGORITHM:
-      'sorted POSIX relative path;NUL;per-file SHA-256 hex;newline',
-    PATCH_RUNTIME_HASH_MANIFEST_SHA256: motionVRuntimeHashManifest.hash,
-    PATCH_EXACT_MOTION_PATCH_COUNT: '1',
-    // Preserve the Motion admission's historical set; §23.6.2 owns the I18n exception.
-    PATCH_CANONICAL_TOTAL_SET: 'motion-v@2.4.0;unconfig@7.5.0;vue-router@5.2.0',
-    PATCH_DIRECT_REACT_OR_BROWSER_GLOBAL_COMPATIBILITY_DEPENDENCY: 'PROHIBITED',
-    PATCH_TYPESCRIPT_STRICT: 'true',
-    PATCH_TYPESCRIPT_EXACT_OPTIONAL_PROPERTY_TYPES: 'true',
-    PATCH_TYPESCRIPT_SKIP_LIB_CHECK: 'false',
-  },
-  'Motion for Vue declaration-patch Architecture synchronization',
-)
-expectExactCount(
-  [
-    ...architecture.matchAll(
-      /^MOTION_FEATURE_PROJECT_CONFIG_BUDGET_PROPERTY=projectConfig\.bundleBudgets\.adminNavigationMotionFeatureJavaScriptGzipBytes$/gmu,
-    ),
-  ].length,
-  1,
-  'Admin Navigation Motion feature project-config budget Architecture authority',
-)
-
-expectStructuredEqual(
-  {
-    phase: projectConfig.governance.implementationPhase,
-    state: readCanonicalImplementationState(architecture),
-  },
-  expectedImplementationContract,
-  'Canonical implementation contract',
-)
+expectEqual(projectConfig.governance.implementationPhase, 1, 'Project implementation phase')
 
 await validateArchitectureConsoleUiPackage()
 

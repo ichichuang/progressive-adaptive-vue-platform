@@ -5,16 +5,16 @@ description: Route and execute Progressive Adaptive Vue Platform UI work under t
 
 # PAVP UI Workflow
 
-Act as a client-neutral, subordinate execution workflow. Treat `ARCHITECTURE.md` as the only architecture authority. Stop on conflict instead of extending, summarizing, or replacing its contracts.
+Act as a client-neutral, subordinate execution workflow. Read `ARCHITECTURE.md` for the high-level architecture and the existing source owners for implementation contracts.
 
 ## Required load order
 
 1. Read `AGENTS.md`.
-2. Follow [Task-scoped Reading and Canonical Navigation](../../../ARCHITECTURE.md#task-scoped-reading-and-canonical-navigation) for the required architecture reads and scope/status checks.
+2. Read [ARCHITECTURE.md](../../../ARCHITECTURE.md), then inspect the current repository, task scope, and affected source owners.
 3. Read `project.config.ts`.
 4. Read [task-routing.md](references/task-routing.md) and select one task mode.
 5. Read [execution-contract.md](references/execution-contract.md) and hold the task contract in memory.
-6. Read [specialist-lens-policy.md](references/specialist-lens-policy.md) when external research is justified, including the library-selection evidence required by `ARCHITECTURE.md` §2.3 before expanding nontrivial generic capabilities.
+6. Read [specialist-lens-policy.md](references/specialist-lens-policy.md) when external research is justified, including library-selection evidence before expanding nontrivial generic capabilities.
 7. Read [acceptance-report.md](references/acceptance-report.md) before reporting.
 
 ## Workflow

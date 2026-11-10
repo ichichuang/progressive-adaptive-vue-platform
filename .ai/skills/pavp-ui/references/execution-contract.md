@@ -31,8 +31,10 @@ REQUIRED_CAPABILITY_UNAVAILABLE
 - Use `ARCHITECTURE_CONFLICT` when the request or another instruction conflicts with the canonical authority.
 - Use `PHASE_DISALLOWED` when the active phase does not admit the requested work.
 - Use `CANONICAL_CONTRACT_MISSING` when required canonical direction is absent or indeterminate.
-- Use `WORKTREE_SCOPE_CONFLICT` only when an existing dirty change overlaps the task scope.
-- Use `UNINTRODUCED_DEPENDENCY` when the work requires installing or using a dependency that has not passed its canonical gate. Researching a candidate under `ARCHITECTURE.md` §2.3 does not require installation admission and does not authorize installation, upgrades, or capability implementation.
+- Use `WORKTREE_SCOPE_CONFLICT` only when inspection identifies an overlapping change that
+  cannot be safely preserved, or a concurrent writer conflicts. Dirty status alone does not
+  block a scoped continuation or takeover; inspect the current diff and task evidence first.
+- Use `UNINTRODUCED_DEPENDENCY` when the work requires installing or using a dependency that has not passed its applicable gate. Researching a candidate does not require installation admission and does not authorize installation, upgrades, or capability implementation.
 - Use `PUBLIC_BOUNDARY_CONFLICT` when the requested work would violate a canonical public boundary.
 - Use `AUTHORIZATION_REQUIRED` when a required state-changing action exceeds current authorization.
 - Use `REQUIRED_CAPABILITY_UNAVAILABLE` when an applicable required capability cannot be used.

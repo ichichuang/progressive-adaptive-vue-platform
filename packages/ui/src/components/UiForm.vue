@@ -1,44 +1,53 @@
 <script setup lang="ts" generic="I">
 import PavpNaiveForm from '../adapters/naive/PavpNaiveForm.vue'
-import UiFormField from './UiFormField.vue'
+import UiFormFields from './UiFormFields.vue'
 import { NButton } from 'naive-ui/es/button'
 import type { UiFormProps, UiFormSlots } from './form-contracts'
-import { computed, inject } from 'vue'
+import { inject } from 'vue'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
-import { createPavpNaiveSoftButtonProps } from '../adapters/naive/pavp-naive-theme'
 
 /** A single native submit boundary; draft and mutation ownership stay in useUiForm. */
 defineOptions({ name: 'UiForm', inheritAttrs: false })
-withDefaults(defineProps<UiFormProps<I>>(), { columns: 1 })
+withDefaults(defineProps<UiFormProps<I>>(), { mode: 'edit' })
 const slots = defineSlots<UiFormSlots<I>>()
 const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined) throw new TypeError('UiForm requires UiProvider.')
-const resetButtonProps = computed(() => createPavpNaiveSoftButtonProps(appearance.value))
 </script>
 
 <template>
   <PavpNaiveForm
     :form="form"
-    :columns="columns"
+    :columns="columns ?? form.schema.columns ?? 1"
+    :mode="mode"
     v-bind="$attrs"
   >
     <slot :form="form">
-      <UiFormField
-        v-for="config in form.fields"
-        :key="config.name"
+      <UiFormFields
         :form="form"
-        :name="config.name"
+        :nodes="form.schema.fields"
+        prefix=""
+        :mode="mode"
+        :columns="columns ?? form.schema.columns ?? 1"
       >
         <template
-          v-if="config.kind === 'custom' && slots.field"
-          #default="binding"
+          v-if="slots.field"
+          #field="binding"
         >
           <slot
             name="field"
             v-bind="binding"
           />
         </template>
-      </UiFormField>
+        <template
+          v-if="slots.detail"
+          #detail="binding"
+        >
+          <slot
+            name="detail"
+            v-bind="binding"
+          />
+        </template>
+      </UiFormFields>
     </slot>
     <template #actions>
       <slot
@@ -48,6 +57,7 @@ const resetButtonProps = computed(() => createPavpNaiveSoftButtonProps(appearanc
         <NButton
           class="min-h-target-enhanced min-w-target-enhanced"
           attr-type="submit"
+          :aria-busy="form.submitting.value"
           type="primary"
           :disabled="form.submitting.value || form.phase.value === 'disposed'"
         >
@@ -56,7 +66,8 @@ const resetButtonProps = computed(() => createPavpNaiveSoftButtonProps(appearanc
         <NButton
           class="min-h-target-enhanced min-w-target-enhanced"
           :disabled="form.submitting.value || form.phase.value === 'disposed'"
-          v-bind="resetButtonProps"
+          secondary
+          :bordered="false"
           @click="form.reset()"
         >
           {{ form.copy.reset() }}

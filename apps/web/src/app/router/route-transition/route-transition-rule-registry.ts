@@ -1,4 +1,4 @@
-import { routeRegistry, type RouteName } from '../route-registry'
+import { consoleNavigationItems, routeRegistry, type RouteName } from '../route-registry'
 import { getRouteTransitionPreset } from './route-transition-preset-registry'
 import type {
   RouteTransitionDirection,
@@ -34,13 +34,14 @@ export const routeTransitionRuleRegistry = Object.freeze([
     ruleId: 'route-transition-rule.architecture-workspace-axis',
     kind: 'ordered-routes',
     priority: 100,
-    routeNames: Object.freeze([
-      'workbench-dashboard',
-      'workbench-colors',
-      'workbench-sizes',
-      'workbench-typography',
-      'workbench-interactions',
-    ] as const),
+    // The registry validation below rejects fewer than two routes and duplicate names.
+    routeNames: Object.freeze(
+      consoleNavigationItems.map((item) => item.destination.name) as [
+        RouteName,
+        RouteName,
+        ...RouteName[],
+      ],
+    ),
     forwardPresetId: 'route-transition.axis-inline-soft',
     reversePresetId: 'route-transition.axis-inline-soft',
     fallbackPresetId: 'route-transition.content-crossfade',

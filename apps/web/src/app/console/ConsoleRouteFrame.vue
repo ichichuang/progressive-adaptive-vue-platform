@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { explicitThemePreferenceSchema } from '@platform/design-system'
 import {
   UiAdminShell,
   UiWorkspaceTabs,
@@ -10,7 +11,16 @@ import {
 import { NButton } from 'naive-ui/es/button'
 import { NIcon } from 'naive-ui/es/icon'
 import { NTooltip } from 'naive-ui/es/tooltip'
-import { computed, inject, onScopeDispose, ref, watch } from 'vue'
+import {
+  computed,
+  inject,
+  onScopeDispose,
+  provide,
+  ref,
+  shallowRef,
+  watch,
+  type Component,
+} from 'vue'
 import { useRouter } from 'vue-router'
 
 import {
@@ -20,6 +30,7 @@ import {
 } from '../workspace/workspace.store'
 import { isRouterNavigationCurrent } from '../router/router-lifecycle'
 import { workspaceRetentionKey } from '../workspace/workspace-retention'
+import { provideWorkspaceUnsavedChanges } from '../workspace/workspace-unsaved-changes'
 import { useApplicationNavigation, useWorkspaceNavigation } from '../router/application-navigation'
 import {
   routerScrollControllerKey,
@@ -29,20 +40,30 @@ import { reconcileNavigationGroupIds } from '../navigation/navigation-preference
 import { useNavigationPreferenceStore } from '../navigation/navigation-preference.store'
 import { useConsoleI18n } from '../../shared/i18n'
 import { useAppearanceReadBoundary } from '../appearance/appearance-read-boundary'
+import { useAppearanceMutationBoundary } from '../appearance/appearance-mutation-boundary'
 import {
   registeredRouteDestination,
   resolveRegisteredDestination,
   sameRouteAddress,
   type TypedNavigationResult,
 } from '../router/route-input'
-import { consoleNavigationRegistry, getRouteRecord } from '../router/route-registry'
+import {
+  consoleNavigationRegistry,
+  consoleNavigationGroups,
+  consoleNavigationItems,
+  type ConsoleNavigationGroup,
+  getRouteRecord,
+} from '../router/route-registry'
 import { provideSettingsReturn } from '../router/settings-return'
+import { useShellScrollRestoration } from '../scroll/use-shell-scroll-restoration'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
+const shellScroll = useShellScrollRestoration()
 
 const props = defineProps<{
   readonly activeRouteName: string
   readonly composition: UiShellComposition | null
+  readonly containedContent: boolean
 }>()
 
 defineSlots<{
@@ -51,33 +72,40 @@ defineSlots<{
 }>()
 
 const { t } = useConsoleI18n()
-const projectedNavigation = computed(() =>
-  consoleNavigationRegistry
-    .map((group) => ({
-      id: group.id,
-      label: t(group.labelKey),
-      items: group.items.map((item) => ({
-        ...item,
-        destination: registeredRouteDestination(item.destination),
+const colorModeSwitchFailed = ref(false)
+function projectNavigation(group: ConsoleNavigationGroup): UiAdminNavigationGroup {
+  return {
+    id: group.id,
+    label: t(group.labelKey),
+    items: group.items.map((item) => {
+      if ('items' in item) return projectNavigation(item)
+      const destination = registeredRouteDestination(item.destination)
+      const resolved = resolveRegisteredDestination(router, destination)
+      return {
+        iconClass: item.iconClass,
         routeName: item.destination.name,
         label: t(getRouteRecord(item.destination.name).meta.titleKey),
-      })),
-    }))
-    .filter((group) => group.items.length !== 0),
-)
-const navigation = computed((): readonly UiAdminNavigationGroup[] =>
-  projectedNavigation.value.map((group) => ({
-    ...group,
-    items: group.items.map((item) => {
-      const resolved = resolveRegisteredDestination(router, item.destination)
-      return {
-        ...item,
         isCurrentDestination:
           resolved !== undefined && sameRouteAddress(router.currentRoute.value, resolved),
       }
     }),
-  })),
+  }
+}
+const navigation = computed((): readonly UiAdminNavigationGroup[] =>
+  consoleNavigationRegistry.map(projectNavigation),
 )
+
+function activeNavigationPath(groups: readonly UiAdminNavigationGroup[]): readonly string[] {
+  for (const group of groups) {
+    for (const item of group.items) {
+      if ('items' in item) {
+        const childPath = activeNavigationPath([item])
+        if (childPath.length !== 0) return [group.id, ...childPath]
+      } else if (item.isCurrentDestination) return [group.id]
+    }
+  }
+  return []
+}
 const copy = computed(() => ({
   consoleTitle: t('shell.consoleTitle'),
   navigationLabel: t('shell.navigationLabel'),
@@ -87,8 +115,12 @@ const copy = computed(() => ({
   closeActionLabel: t('shell.closeActionLabel'),
   expandNavigationLabel: t('shell.expandNavigationLabel'),
   collapseNavigationLabel: t('shell.collapseNavigationLabel'),
+  locateCurrentLabel: t('shell.locateCurrent'),
   freeNavigationModeLabel: t('shell.freeNavigationModeLabel'),
   accordionNavigationModeLabel: t('shell.accordionNavigationModeLabel'),
+  switchToLightLabel: t('shell.switchToLight'),
+  switchToDarkLabel: t('shell.switchToDark'),
+  colorModeChangeFailedLabel: t('shell.colorModeChangeFailed'),
 }))
 const router = useRouter()
 const applicationNavigation = useApplicationNavigation()
@@ -105,10 +137,21 @@ if (prepareWorkspaceRefresh === undefined)
 if (registerScrollController === undefined)
   throw new Error('The Console requires the Router Scroll Controller port.')
 let unregisterScrollController: (() => void) | undefined
+let unregisterPageScrollController: (() => void) | undefined
+provide(routerScrollControllerKey, (controller) => {
+  const release = registerScrollController(controller)
+  unregisterPageScrollController = release
+  return () => {
+    release()
+    if (unregisterPageScrollController === release) unregisterPageScrollController = undefined
+  }
+})
 watch(
-  () => props.activeRouteName,
-  (name) => {
-    if (name !== 'control-center') return
+  () => [props.activeRouteName, props.containedContent] as const,
+  ([, contained]) => {
+    unregisterPageScrollController?.()
+    unregisterPageScrollController = undefined
+    if (!contained) return
     unregisterScrollController?.()
     unregisterScrollController = undefined
   },
@@ -125,6 +168,23 @@ function connectContentScrollController(controller: UiScrollController | null): 
   unregisterScrollController = registerScrollController?.(controller)
 }
 const workspace = useWorkspaceStore()
+const { confirmation: discardConfirmation, requestDiscard } =
+  provideWorkspaceUnsavedChanges(workspace)
+const WorkspaceDiscardDialog = shallowRef<Component>()
+const discardDialogUnavailable = ref(false)
+watch(discardConfirmation, async (confirmation) => {
+  if (confirmation === undefined) return
+  discardDialogUnavailable.value = false
+  if (WorkspaceDiscardDialog.value !== undefined) return
+  try {
+    WorkspaceDiscardDialog.value = (await import('../workspace/WorkspaceDiscardDialog.vue')).default
+  } catch {
+    // A missing optional dialog chunk must not replace the app and destroy retained edits.
+    if (discardConfirmation.value !== confirmation) return
+    confirmation.cancel()
+    discardDialogUnavailable.value = true
+  }
+})
 const closing = new Set<WorkspaceIdentity>()
 const workspaceTabs = computed(() =>
   workspace.entries.map((entry) => {
@@ -161,7 +221,18 @@ async function refreshWorkspace(id: string): Promise<void> {
   )
     return
   refreshTarget = target.identity
+  discardDialogUnavailable.value = false
   try {
+    const startingRoute = router.currentRoute.value
+    const discard = await requestDiscard(
+      target,
+      'refresh',
+      () =>
+        refreshTarget === target.identity &&
+        !closing.has(target.identity) &&
+        router.currentRoute.value === startingRoute,
+    )
+    if (!discard?.isCurrent()) return
     if (target.identity !== workspace.activeIdentity) {
       const result = await activateWorkspace(id)
       const resolved = resolveRegisteredDestination(router, target.destination)
@@ -182,13 +253,13 @@ async function refreshWorkspace(id: string): Promise<void> {
       return
     // Dormant activation already mounted a fresh instance; never mount it twice.
     if (!isLiveWorkspace(target)) return
-    if (active.instance !== target.instance) return
+    if (active.instance !== target.instance || !discard.isCurrent()) return
     const presentation = prepareWorkspaceRefresh?.(active)
     if (presentation === undefined) return
     try {
       const replacement = await retention.refresh(active, {
         signal: presentation.signal,
-        replace: (prepare) => presentation.replace(prepare),
+        replace: (prepare) => (discard.isCurrent() ? presentation.replace(prepare) : undefined),
         isCurrent: () =>
           refreshTarget === target.identity &&
           !closing.has(target.identity) &&
@@ -208,18 +279,31 @@ async function closeWorkspace(id: string): Promise<void> {
   const index = entries.findIndex((entry) => entry.identity === id)
   const entry = entries[index]
   if (entry === undefined || closing.has(entry.identity)) return
-  if (entry.identity !== workspace.activeIdentity) {
-    await retention.close(entry)
-    return
-  }
   if (entries.length === 1 && entry.destination.name === 'workbench-dashboard') return
-  if (!isLiveWorkspace(entry)) return
-  if (!workspace.canDiscard(entry)) return
-  const fallback = entries[index + 1] ?? entries[index - 1]
-  const destination =
-    fallback?.destination ?? registeredRouteDestination({ name: 'workbench-dashboard' })
+  if (!workspace.canDiscard(entry) || refreshTarget === entry.identity) return
+  const wasActive = entry.identity === workspace.activeIdentity
+  const startingRoute = router.currentRoute.value
   closing.add(entry.identity)
+  discardDialogUnavailable.value = false
   try {
+    const discard = await requestDiscard(
+      entry,
+      'close',
+      () =>
+        closing.has(entry.identity) &&
+        (wasActive
+          ? router.currentRoute.value === startingRoute
+          : workspace.activeIdentity !== entry.identity),
+    )
+    if (!discard?.isCurrent()) return
+    if (!wasActive) {
+      await retention.close(entry)
+      return
+    }
+    if (!isLiveWorkspace(entry)) return
+    const fallback = entries[index + 1] ?? entries[index - 1]
+    const destination =
+      fallback?.destination ?? registeredRouteDestination({ name: 'workbench-dashboard' })
     const result = await workspaceNavigation.navigate(
       destination,
       fallback !== undefined && isLiveWorkspace(fallback)
@@ -251,7 +335,8 @@ async function closeWorkspace(id: string): Promise<void> {
           ? !isLiveWorkspace(candidate) || candidate.instance !== original.instance
           : candidate !== original && !(original === fallback && candidate === active)
       }) ||
-      workspace.entries.length !== entries.length + (fallback === undefined ? 1 : 0)
+      workspace.entries.length !== entries.length + (fallback === undefined ? 1 : 0) ||
+      !discard.isCurrent()
     )
       return
     await retention.close(entry)
@@ -261,20 +346,20 @@ async function closeWorkspace(id: string): Promise<void> {
 }
 const navigationPreference = useNavigationPreferenceStore()
 const activeGroupExplicitlyCollapsed = ref(false)
-const currentGroupIds = computed(() => navigation.value.map((group) => group.id))
+const currentGroupIds = computed(() => consoleNavigationGroups.map((group) => group.id))
 const preferredExpandedGroupIds = computed(() =>
   reconcileNavigationGroupIds(navigationPreference.expandedGroupIds, currentGroupIds.value),
 )
-const activeGroupId = computed(
-  () => navigation.value.find((group) => group.items.some((item) => item.isCurrentDestination))?.id,
-)
+const activeGroupIds = computed(() => activeNavigationPath(navigation.value))
 const effectiveExpandedGroupIds = computed(() =>
   reconcileNavigationGroupIds(
-    activeGroupExplicitlyCollapsed.value || activeGroupId.value === undefined
+    activeGroupExplicitlyCollapsed.value || activeGroupIds.value.length === 0
       ? preferredExpandedGroupIds.value
       : navigationPreference.accordion
-        ? [activeGroupId.value]
-        : [...preferredExpandedGroupIds.value, activeGroupId.value],
+        ? activeGroupIds.value.every((id) => preferredExpandedGroupIds.value.includes(id))
+          ? preferredExpandedGroupIds.value
+          : activeGroupIds.value
+        : [...preferredExpandedGroupIds.value, ...activeGroupIds.value],
     currentGroupIds.value,
   ),
 )
@@ -312,16 +397,33 @@ function updateExpandedNavigationGroups(update: UiAdminNavigationExpansionUpdate
           ? nextEffective.has(id)
           : preferred.has(id),
       )
-  activeGroupExplicitlyCollapsed.value =
-    activeGroupId.value !== undefined && !nextEffective.has(activeGroupId.value)
+  activeGroupExplicitlyCollapsed.value = activeGroupIds.value.some((id) => !nextEffective.has(id))
   navigationPreference.setExpandedGroupIds(nextPreferred)
 }
 
 const appearance = useAppearanceReadBoundary()
+const appearanceMutation = useAppearanceMutationBoundary()
+
+function toggleColorMode(): void {
+  const current = explicitThemePreferenceSchema.safeParse(appearanceMutation.preference.value)
+  if (!current.success) {
+    colorModeSwitchFailed.value = true
+    return
+  }
+  const result = appearanceMutation.commitPreference({
+    ...current.data,
+    appearance: {
+      ...current.data.appearance,
+      colorMode: appearance.snapshot.value.colorMode === 'dark' ? 'light' : 'dark',
+    },
+  })
+  colorModeSwitchFailed.value = result.status !== 'committed'
+}
 
 onScopeDispose(() => {
   refreshTarget = undefined
   unregisterScrollController?.()
+  unregisterPageScrollController?.()
 })
 
 async function navigate(routeName: string): Promise<void> {
@@ -330,26 +432,45 @@ async function navigate(routeName: string): Promise<void> {
       await applicationNavigation.navigate(registeredRouteDestination({ name: 'control-center' }))
     return
   }
-  const item = projectedNavigation.value
-    .flatMap((group) => group.items)
-    .find((candidate) => candidate.routeName === routeName)
+  const item = consoleNavigationItems.find((candidate) => candidate.destination.name === routeName)
   if (item === undefined) return
-  await applicationNavigation.navigate(item.destination)
+  await applicationNavigation.navigate(registeredRouteDestination(item.destination))
 }
 </script>
 
 <template>
+  <WorkspaceDiscardDialog
+    v-if="discardConfirmation !== undefined && WorkspaceDiscardDialog !== undefined"
+    :action="discardConfirmation.action"
+    :workspace-name="t(getRouteRecord(discardConfirmation.entry.destination.name).meta.titleKey)"
+    :accept="discardConfirmation.accept"
+    :cancel="discardConfirmation.cancel"
+  />
+  <div
+    v-if="discardDialogUnavailable"
+    class="flex pointer-events-none inset-x-0 bottom-0 justify-center fixed p-page-inline z-overlay"
+  >
+    <p
+      class="m-0 rounded-panel shadow-panel bg-surface-panel max-w-content p-page-inline text-caption text-text-primary"
+      role="alert"
+      v-text="t('shell.unsavedChangesUnavailable')"
+    />
+  </div>
   <UiAdminShell
     :composition="composition"
-    :content-layout="activeRouteName === 'control-center' ? 'contained' : 'scroll'"
+    :content-layout="containedContent ? 'contained' : 'scroll'"
     :active-route-name="activeRouteName"
     :navigation="navigation"
     :wide-navigation-collapsed="navigationPreference.wideNavigationCollapsed"
     :navigation-accordion="navigationPreference.accordion"
+    :color-mode-switch-failed="colorModeSwitchFailed"
     :expanded-navigation-group-ids="effectiveExpandedGroupIds"
     :copy="copy"
     @navigate="navigate"
+    @toggle-color-mode="toggleColorMode"
     @content-scroll-controller="connectContentScrollController"
+    @sidebar-viewport="shellScroll('sidebar', $event)"
+    @drawer-viewport="shellScroll('drawer', $event)"
     @update:wide-navigation-collapsed="navigationPreference.setWideNavigationCollapsed"
     @update:expanded-navigation-group-ids="updateExpandedNavigationGroups"
   >
@@ -365,16 +486,14 @@ async function navigate(routeName: string): Promise<void> {
         :refresh-label="t('workspace.refreshLabel')"
         :close-label="t('shell.closeActionLabel')"
         panel-id="pavp-workspace-panel"
+        @viewport="shellScroll('tabs', $event)"
         @activate="activateWorkspace"
         @close="closeWorkspace"
         @refresh="refreshWorkspace"
       />
     </template>
     <template #navigation-bottom="{ collapsed, navigate: navigateFromDock }">
-      <div
-        class="flex w-full justify-center"
-        :class="{ 'px-page-inline': !collapsed }"
-      >
+      <div class="flex w-full justify-center">
         <NTooltip
           :disabled="!collapsed"
           placement="right"
@@ -384,8 +503,7 @@ async function navigate(routeName: string): Promise<void> {
             <NButton
               :aria-current="activeRouteName === 'control-center' ? 'page' : undefined"
               :aria-label="t('shell.systemSettings')"
-              :block="!collapsed"
-              :square="collapsed"
+              block
               class="wb-settings-dock min-h-target-enhanced min-w-target-enhanced"
               :data-collapsed="collapsed"
               :quaternary="activeRouteName !== 'control-center'"

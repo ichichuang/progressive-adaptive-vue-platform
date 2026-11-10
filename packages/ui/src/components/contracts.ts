@@ -16,7 +16,7 @@ export interface UiAdminNavigationItem {
 export interface UiAdminNavigationGroup {
   readonly id: string
   readonly label: string
-  readonly items: readonly UiAdminNavigationItem[]
+  readonly items: readonly (UiAdminNavigationItem | UiAdminNavigationGroup)[]
 }
 
 export interface UiRadioCardOption {
@@ -36,8 +36,12 @@ export interface UiAdminShellCopy {
   readonly closeActionLabel: string
   readonly expandNavigationLabel: string
   readonly collapseNavigationLabel: string
+  readonly locateCurrentLabel: string
   readonly freeNavigationModeLabel: string
   readonly accordionNavigationModeLabel: string
+  readonly switchToLightLabel: string
+  readonly switchToDarkLabel: string
+  readonly colorModeChangeFailedLabel: string
 }
 
 export type UiAdminNavigationExpansionUpdate =

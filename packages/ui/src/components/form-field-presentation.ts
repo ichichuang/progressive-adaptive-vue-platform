@@ -1,25 +1,38 @@
-import { computed } from 'vue'
-import type { UiFormFieldProps, UiFormKey } from './form-contracts'
+import { computed, shallowRef, watch } from 'vue'
+import type { UiFormFieldProps } from './form-contracts'
 import { formPresentation } from '../composables/form-presentation'
 
-export function useFormFieldPresentation<I, K extends UiFormKey<I>>(
-  props: UiFormFieldProps<I, K>,
+export function useFormFieldPresentation<I>(
+  props: UiFormFieldProps<I>,
   hasControlSlot: () => boolean,
 ) {
-  const binding = computed(() => props.form.field(props.name))
+  // Creating a binding reads the current draft to validate its path. Keep that
+  // incidental read out of dependency tracking: moved rows retain their binding
+  // until Vue updates the component's concrete path.
+  const binding = shallowRef(props.form.field(props.name))
+  watch(
+    () => [props.form, props.name, formPresentation(props.form).generation.value] as const,
+    ([form, name]) => {
+      binding.value = form.field(name)
+    },
+    // Snapshot replacement publishes generation before rebuilding row metadata.
+    // Bind after that synchronous publication, before this renderer updates.
+    { flush: 'pre' },
+  )
   const config = computed(() => {
     const field = props.form.fields.find((field) => field.name === props.name)
     if (field === undefined) throw new TypeError('Unknown form field.')
-    if (field.kind === 'custom' && !hasControlSlot())
+    if (
+      field.kind === 'custom' &&
+      props.mode !== 'detail' &&
+      !props.form.field(props.name).readonly &&
+      !hasControlSlot()
+    )
       throw new TypeError('Custom form fields require a typed control slot.')
     return field
   })
-  // A new accepted generation or controller/field identity remounts transient
-  // buffers, including custom slot children whose scalar value may be unchanged.
-  const controlScopeKey = computed(() =>
-    Symbol(
-      `${props.form.formId}:${props.name}:${String(formPresentation(props.form).generation.value)}`,
-    ),
-  )
+  // Logical row identity survives reordering; accepted snapshots and a different
+  // field/controller still remount transient buffers and custom slot children.
+  const controlScopeKey = computed(() => formPresentation(props.form).fieldIdentity(props.name))
   return { binding, config, controlScopeKey }
 }

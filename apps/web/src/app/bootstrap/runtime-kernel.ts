@@ -1,7 +1,9 @@
+import { shellScrollStorageKey } from '../scroll/shell-scroll-storage-key'
+import { formDraftStorageKey } from '../forms/form-draft-contract'
 import { createConsoleI18n, type ConsoleI18nHandle } from '../../shared/i18n'
 import { initializeNavigationPreference } from '../navigation/navigation-preference.store'
 import { initializeWorkspaceSession } from '../workspace/workspace-session'
-import { consoleNavigationRegistry, getRouteMessageScope } from '../router/route-registry'
+import { consoleNavigationGroups, getRouteMessageScope } from '../router/route-registry'
 import type { Component } from 'vue'
 
 import {
@@ -20,6 +22,7 @@ import type { CoreRuntimeConfiguration } from '../config/runtime-configuration-c
 import AppErrorBoundary from '../errors/AppErrorBoundary.vue'
 import {
   createCoreErrorLedger,
+  installCoreErrorDiagnostics,
   type CoreErrorLedger,
   type NormalizedCoreError,
 } from '../errors/core-error'
@@ -472,6 +475,8 @@ async function startAttempt(input: {
     })
     throwClaimedStartupFailure()
 
+    // Load alongside router readiness, not after a scroll viewport has painted.
+    const shellScrollLoading = import('../scroll/shell-scroll-runtime').catch(() => undefined)
     enterBootstrapStep('create-and-ready-router')
     resources.router = await createAndReadyRouter({
       application: resources.vueApplication.application,
@@ -493,6 +498,16 @@ async function startAttempt(input: {
     resources.vueApplication.application.provide(
       browserPageSessionKey,
       resources.storage.owner.browserPageSession,
+    )
+    const shellScrollContext = resources.storage.owner.shellScroll
+    const shellScrollRuntime = await shellScrollLoading
+    if (!attemptIsStarting()) return { status: 'cancelled' }
+    resources.vueApplication.application.provide(shellScrollStorageKey, () =>
+      shellScrollRuntime?.createShellScroll(shellScrollContext),
+    )
+    resources.vueApplication.application.provide(
+      formDraftStorageKey,
+      resources.storage.owner.formDrafts,
     )
     throwClaimedStartupFailure()
 
@@ -516,9 +531,8 @@ async function startAttempt(input: {
     resources.navigationPreference = initializeNavigationPreference(
       resources.pinia.pinia,
       resources.storage.owner.navigationPreference,
-      consoleNavigationRegistry
-        .filter((group) => group.items.length !== 0)
-        .map((group) => group.id),
+      consoleNavigationGroups.map((group) => group.id),
+      new Map(consoleNavigationGroups.map((group) => [group.id, group.parentId])),
     )
     throwClaimedStartupFailure()
 
@@ -628,6 +642,7 @@ export function startRuntimeKernel(
   let finalDisposalPromise: Promise<DisposalResult> | undefined
   let activeAttemptCompletion: Promise<void> = Promise.resolve()
   const ledger = createCoreErrorLedger()
+  const disposeDiagnostics = installCoreErrorDiagnostics(window, ledger)
 
   const runAttempt = async (): Promise<void> => {
     kernelState = 'starting'
@@ -750,18 +765,22 @@ export function startRuntimeKernel(
           fatalBoundaryDisposalFailure = new Error('Fatal boundary disposal was incomplete.')
         }
         fatalBoundary = undefined
-        finalDisposalResult =
-          currentAttemptDisposer === undefined
-            ? Object.freeze({ status: 'disposed', failedSteps: Object.freeze([]) })
-            : await currentAttemptDisposer(reason)
-        await activeAttemptCompletion
+        try {
+          finalDisposalResult =
+            currentAttemptDisposer === undefined
+              ? Object.freeze({ status: 'disposed', failedSteps: Object.freeze([]) })
+              : await currentAttemptDisposer(reason)
+          await activeAttemptCompletion
+        } finally {
+          ledger.dispose()
+          disposeDiagnostics()
+        }
 
         if (reason === 'application-disposal') {
           appearanceSafetyRestorationAuthority = undefined
         }
 
         currentAttemptDisposer = undefined
-        ledger.dispose()
         kernelState = 'disposed'
 
         if (fatalBoundaryDisposalFailure !== undefined) {

@@ -42,18 +42,18 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 274,
-      "activePublicRoles": 60,
-      "unoCssMappings": 60,
+      "tokens": 356,
+      "activePublicRoles": 101,
+      "unoCssMappings": 101,
       "namedContrasts": 34,
       "alphaContracts": 1,
       "densities": 3,
       "themes": 5,
       "firstPaint": 1
     },
-    "recordCount": 438,
+    "recordCount": 602,
     "baselineRecordCount": 181,
-    "expectedRecordCountDelta": 257,
+    "expectedRecordCountDelta": 421,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
@@ -166,7 +166,7 @@
         "category": "admin",
         "name": "admin.border.focus"
       },
-      "resolvedValue": "var(--ui-admin-border-width) solid var(--ui-color-focus-ring)",
+      "resolvedValue": "var(--ui-admin-focus-width) solid var(--ui-color-focus-ring)",
       "cssVariable": "--ui-admin-border-focus"
     },
     {
@@ -320,7 +320,7 @@
         "category": "admin",
         "name": "admin.shadow.focus-ring"
       },
-      "resolvedValue": "inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-focus-ring), 0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring)",
+      "resolvedValue": "inset 0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring)",
       "cssVariable": "--ui-admin-shadow-focus-ring"
     },
     {
@@ -2444,6 +2444,71 @@
       "resolvedValue": "1px"
     },
     {
+      "name": "dimension.calendar.block-gap",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.calendar.block-gap"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "dimension.calendar.footer-indent",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.calendar.footer-indent"
+      },
+      "resolvedValue": "1.0625rem"
+    },
+    {
+      "name": "dimension.calendar.inline-compact",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.calendar.inline-compact"
+      },
+      "resolvedValue": "0.25rem"
+    },
+    {
+      "name": "dimension.calendar.inline-tight",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.calendar.inline-tight"
+      },
+      "resolvedValue": "0.125rem"
+    },
+    {
+      "name": "dimension.calendar.weekday-minimum-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.calendar.weekday-minimum-inline"
+      },
+      "resolvedValue": "1.6875rem"
+    },
+    {
       "name": "dimension.control.lg",
       "type": "dimension",
       "tier": "primitive",
@@ -2470,6 +2535,58 @@
       "resolvedValue": "2.25rem"
     },
     {
+      "name": "dimension.control.segment-gap",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.segment-gap"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "dimension.control.segment-width-large",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.segment-width-large"
+      },
+      "resolvedValue": "2.25rem"
+    },
+    {
+      "name": "dimension.control.segment-width-medium",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.segment-width-medium"
+      },
+      "resolvedValue": "1.875rem"
+    },
+    {
+      "name": "dimension.control.segment-width-small",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.segment-width-small"
+      },
+      "resolvedValue": "1.5rem"
+    },
+    {
       "name": "dimension.control.sm",
       "type": "dimension",
       "tier": "primitive",
@@ -2481,6 +2598,305 @@
         "name": "dimension.control.sm"
       },
       "resolvedValue": "2rem"
+    },
+    {
+      "name": "dimension.icon.extra-large",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.icon.extra-large"
+      },
+      "resolvedValue": "2.25rem"
+    },
+    {
+      "name": "dimension.icon.extra-small",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.icon.extra-small"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "dimension.icon.large",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.icon.large"
+      },
+      "resolvedValue": "1.5rem"
+    },
+    {
+      "name": "dimension.icon.medium",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.icon.medium"
+      },
+      "resolvedValue": "1.25rem"
+    },
+    {
+      "name": "dimension.icon.small",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.icon.small"
+      },
+      "resolvedValue": "1.125rem"
+    },
+    {
+      "name": "dimension.indicator.cell-gap-compact",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.cell-gap-compact"
+      },
+      "resolvedValue": "0.125rem"
+    },
+    {
+      "name": "dimension.indicator.cell-gap-standard",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.cell-gap-standard"
+      },
+      "resolvedValue": "0.1875rem"
+    },
+    {
+      "name": "dimension.indicator.cell-large",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.cell-large"
+      },
+      "resolvedValue": "0.75rem"
+    },
+    {
+      "name": "dimension.indicator.cell-medium",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.cell-medium"
+      },
+      "resolvedValue": "0.6875rem"
+    },
+    {
+      "name": "dimension.indicator.cell-small",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.cell-small"
+      },
+      "resolvedValue": "0.625rem"
+    },
+    {
+      "name": "dimension.indicator.circle",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.circle"
+      },
+      "resolvedValue": "7.5rem"
+    },
+    {
+      "name": "dimension.indicator.circle-multiple",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.circle-multiple"
+      },
+      "resolvedValue": "12.5rem"
+    },
+    {
+      "name": "dimension.indicator.content-gap",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.content-gap"
+      },
+      "resolvedValue": "0.875rem"
+    },
+    {
+      "name": "dimension.indicator.handle",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.handle"
+      },
+      "resolvedValue": "1.125rem"
+    },
+    {
+      "name": "dimension.indicator.label-height",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.label-height"
+      },
+      "resolvedValue": "1.125rem"
+    },
+    {
+      "name": "dimension.indicator.label-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.label-inline"
+      },
+      "resolvedValue": "0.375rem"
+    },
+    {
+      "name": "dimension.indicator.label-inline-compact",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.label-inline-compact"
+      },
+      "resolvedValue": "0.25rem"
+    },
+    {
+      "name": "dimension.indicator.marker",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.marker"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "dimension.indicator.rail-labeled",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.rail-labeled"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "dimension.indicator.rail-standard",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.rail-standard"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "dimension.indicator.rail-thin",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.rail-thin"
+      },
+      "resolvedValue": "0.25rem"
+    },
+    {
+      "name": "dimension.indicator.slot-icon-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.slot-icon-inline"
+      },
+      "resolvedValue": "1.875rem"
+    },
+    {
+      "name": "dimension.indicator.slot-text-inline",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.indicator.slot-text-inline"
+      },
+      "resolvedValue": "2.5rem"
     },
     {
       "name": "dimension.layout.admin-content-min-inline",
@@ -2704,6 +3120,19 @@
       "resolvedValue": "16px"
     },
     {
+      "name": "dimension.space.component-unit",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.component-unit"
+      },
+      "resolvedValue": "0.25rem"
+    },
+    {
       "name": "dimension.target.enhanced-min",
       "type": "dimension",
       "tier": "primitive",
@@ -2756,6 +3185,19 @@
       "resolvedValue": "1.5"
     },
     {
+      "name": "font.line-height.compact",
+      "type": "number",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.line-height.compact"
+      },
+      "resolvedValue": "1.2"
+    },
+    {
       "name": "font.line-height.title",
       "type": "number",
       "tier": "primitive",
@@ -2780,6 +3222,97 @@
         "name": "font.size.body"
       },
       "resolvedValue": "1rem"
+    },
+    {
+      "name": "font.size.caption",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.caption"
+      },
+      "resolvedValue": "0.75rem"
+    },
+    {
+      "name": "font.size.control-large",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.control-large"
+      },
+      "resolvedValue": "0.9375rem"
+    },
+    {
+      "name": "font.size.control-medium",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.control-medium"
+      },
+      "resolvedValue": "0.875rem"
+    },
+    {
+      "name": "font.size.control-small",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.control-small"
+      },
+      "resolvedValue": "0.8125rem"
+    },
+    {
+      "name": "font.size.heading",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.heading"
+      },
+      "resolvedValue": "1.375rem"
+    },
+    {
+      "name": "font.size.metric",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.metric"
+      },
+      "resolvedValue": "1.75rem"
+    },
+    {
+      "name": "font.size.subheading",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "font",
+        "name": "font.size.subheading"
+      },
+      "resolvedValue": "1.125rem"
     },
     {
       "name": "font.size.title",
@@ -2909,6 +3442,300 @@
       },
       "resolvedValue": "2.25rem",
       "cssVariable": "--ui-control-height-baseline"
+    },
+    {
+      "name": "interaction.control.segment.width.large",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.segment.width.large"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-control-segment-width-large"
+    },
+    {
+      "name": "interaction.control.segment.width.medium",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.segment.width.medium"
+      },
+      "resolvedValue": "1.875rem",
+      "cssVariable": "--ui-control-segment-width-medium"
+    },
+    {
+      "name": "interaction.control.segment.width.small",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.segment.width.small"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-control-segment-width-small"
+    },
+    {
+      "name": "interaction.icon.size.extra-large",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.icon.size.extra-large"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-icon-size-extra-large"
+    },
+    {
+      "name": "interaction.icon.size.extra-small",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.icon.size.extra-small"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-icon-size-extra-small"
+    },
+    {
+      "name": "interaction.icon.size.large",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.icon.size.large"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-icon-size-large"
+    },
+    {
+      "name": "interaction.icon.size.medium",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.icon.size.medium"
+      },
+      "resolvedValue": "1.25rem",
+      "cssVariable": "--ui-icon-size-medium"
+    },
+    {
+      "name": "interaction.icon.size.small",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.icon.size.small"
+      },
+      "resolvedValue": "1.125rem",
+      "cssVariable": "--ui-icon-size-small"
+    },
+    {
+      "name": "interaction.indicator.cell.large",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.cell.large"
+      },
+      "resolvedValue": "0.75rem",
+      "cssVariable": "--ui-indicator-cell-large"
+    },
+    {
+      "name": "interaction.indicator.cell.medium",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.cell.medium"
+      },
+      "resolvedValue": "0.6875rem",
+      "cssVariable": "--ui-indicator-cell-medium"
+    },
+    {
+      "name": "interaction.indicator.cell.small",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.cell.small"
+      },
+      "resolvedValue": "0.625rem",
+      "cssVariable": "--ui-indicator-cell-small"
+    },
+    {
+      "name": "interaction.indicator.circle.multiple-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.circle.multiple-size"
+      },
+      "resolvedValue": "12.5rem",
+      "cssVariable": "--ui-indicator-circle-multiple-size"
+    },
+    {
+      "name": "interaction.indicator.circle.size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.circle.size"
+      },
+      "resolvedValue": "7.5rem",
+      "cssVariable": "--ui-indicator-circle-size"
+    },
+    {
+      "name": "interaction.indicator.handle.size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.handle.size"
+      },
+      "resolvedValue": "1.125rem",
+      "cssVariable": "--ui-indicator-handle-size"
+    },
+    {
+      "name": "interaction.indicator.label.height",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.label.height"
+      },
+      "resolvedValue": "1.125rem",
+      "cssVariable": "--ui-indicator-label-height"
+    },
+    {
+      "name": "interaction.indicator.marker.size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.marker.size"
+      },
+      "resolvedValue": "0.5rem",
+      "cssVariable": "--ui-indicator-marker-size"
+    },
+    {
+      "name": "interaction.indicator.rail.labeled",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.rail.labeled"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-indicator-rail-labeled"
+    },
+    {
+      "name": "interaction.indicator.rail.standard",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.rail.standard"
+      },
+      "resolvedValue": "0.5rem",
+      "cssVariable": "--ui-indicator-rail-standard"
+    },
+    {
+      "name": "interaction.indicator.rail.thin",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.rail.thin"
+      },
+      "resolvedValue": "0.25rem",
+      "cssVariable": "--ui-indicator-rail-thin"
+    },
+    {
+      "name": "interaction.indicator.slot.icon-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.slot.icon-inline-size"
+      },
+      "resolvedValue": "1.875rem",
+      "cssVariable": "--ui-indicator-slot-icon-inline-size"
+    },
+    {
+      "name": "interaction.indicator.slot.text-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.indicator.slot.text-inline-size"
+      },
+      "resolvedValue": "2.5rem",
+      "cssVariable": "--ui-indicator-slot-text-inline-size"
     },
     {
       "name": "interaction.motion.duration",
@@ -3063,6 +3890,20 @@
       },
       "resolvedValue": "4rem",
       "cssVariable": "--ui-layout-admin-sidebar-rail-inline-size"
+    },
+    {
+      "name": "layout.calendar.weekday.minimum-inline-size",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/layout.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "layout",
+        "name": "layout.calendar.weekday.minimum-inline-size"
+      },
+      "resolvedValue": "1.6875rem",
+      "cssVariable": "--ui-layout-calendar-weekday-minimum-inline-size"
     },
     {
       "name": "layout.content.max-width",
@@ -3546,6 +4387,76 @@
       "cssVariable": "--ui-space-button-inline"
     },
     {
+      "name": "spacing.calendar.block.gap",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.calendar.block.gap"
+      },
+      "resolvedValue": "0.5rem",
+      "cssVariable": "--ui-space-calendar-block-gap"
+    },
+    {
+      "name": "spacing.calendar.footer.indent",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.calendar.footer.indent"
+      },
+      "resolvedValue": "1.0625rem",
+      "cssVariable": "--ui-space-calendar-footer-indent"
+    },
+    {
+      "name": "spacing.calendar.inline.compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.calendar.inline.compact"
+      },
+      "resolvedValue": "0.25rem",
+      "cssVariable": "--ui-space-calendar-inline-compact"
+    },
+    {
+      "name": "spacing.calendar.inline.tight",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.calendar.inline.tight"
+      },
+      "resolvedValue": "0.125rem",
+      "cssVariable": "--ui-space-calendar-inline-tight"
+    },
+    {
+      "name": "spacing.component.unit",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.component.unit"
+      },
+      "resolvedValue": "0.25rem",
+      "cssVariable": "--ui-space-component-unit"
+    },
+    {
       "name": "spacing.content.gap",
       "type": "dimension",
       "tier": "semantic",
@@ -3558,6 +4469,90 @@
       },
       "resolvedValue": "0.75rem",
       "cssVariable": "--ui-space-content-gap"
+    },
+    {
+      "name": "spacing.control.segment.gap",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.control.segment.gap"
+      },
+      "resolvedValue": "0.5rem",
+      "cssVariable": "--ui-space-control-segment-gap"
+    },
+    {
+      "name": "spacing.indicator.cell-gap.compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.indicator.cell-gap.compact"
+      },
+      "resolvedValue": "0.125rem",
+      "cssVariable": "--ui-space-indicator-cell-gap-compact"
+    },
+    {
+      "name": "spacing.indicator.cell-gap.standard",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.indicator.cell-gap.standard"
+      },
+      "resolvedValue": "0.1875rem",
+      "cssVariable": "--ui-space-indicator-cell-gap-standard"
+    },
+    {
+      "name": "spacing.indicator.content.gap",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.indicator.content.gap"
+      },
+      "resolvedValue": "0.875rem",
+      "cssVariable": "--ui-space-indicator-content-gap"
+    },
+    {
+      "name": "spacing.indicator.label.inline",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.indicator.label.inline"
+      },
+      "resolvedValue": "0.375rem",
+      "cssVariable": "--ui-space-indicator-label-inline"
+    },
+    {
+      "name": "spacing.indicator.label.inline-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.indicator.label.inline-compact"
+      },
+      "resolvedValue": "0.25rem",
+      "cssVariable": "--ui-space-indicator-label-inline-compact"
     },
     {
       "name": "spacing.page.inline",
@@ -3616,6 +4611,20 @@
       "cssVariable": "--ui-font-line-height-body"
     },
     {
+      "name": "typography.line-height.compact",
+      "type": "number",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.line-height.compact"
+      },
+      "resolvedValue": "1.2",
+      "cssVariable": "--ui-font-line-height-compact"
+    },
+    {
       "name": "typography.line-height.title",
       "type": "number",
       "tier": "semantic",
@@ -3642,6 +4651,104 @@
       },
       "resolvedValue": "1rem",
       "cssVariable": "--ui-font-size-body"
+    },
+    {
+      "name": "typography.size.caption",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.caption"
+      },
+      "resolvedValue": "0.75rem",
+      "cssVariable": "--ui-font-size-caption"
+    },
+    {
+      "name": "typography.size.control.large",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.control.large"
+      },
+      "resolvedValue": "0.9375rem",
+      "cssVariable": "--ui-font-size-control-large"
+    },
+    {
+      "name": "typography.size.control.medium",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.control.medium"
+      },
+      "resolvedValue": "0.875rem",
+      "cssVariable": "--ui-font-size-control-medium"
+    },
+    {
+      "name": "typography.size.control.small",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.control.small"
+      },
+      "resolvedValue": "0.8125rem",
+      "cssVariable": "--ui-font-size-control-small"
+    },
+    {
+      "name": "typography.size.heading",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.heading"
+      },
+      "resolvedValue": "1.375rem",
+      "cssVariable": "--ui-font-size-heading"
+    },
+    {
+      "name": "typography.size.metric",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.metric"
+      },
+      "resolvedValue": "1.75rem",
+      "cssVariable": "--ui-font-size-metric"
+    },
+    {
+      "name": "typography.size.subheading",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/typography.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "typography",
+        "name": "typography.size.subheading"
+      },
+      "resolvedValue": "1.125rem",
+      "cssVariable": "--ui-font-size-subheading"
     },
     {
       "name": "typography.size.title",
@@ -4434,6 +5541,384 @@
       }
     },
     {
+      "id": "interaction.control.segment.width.large",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-control-segment-width-large",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "control-segment-large",
+        "classes": ["w-control-segment-large"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
+      "id": "interaction.control.segment.width.medium",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-control-segment-width-medium",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "control-segment-medium",
+        "classes": ["w-control-segment-medium"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
+      "id": "interaction.control.segment.width.small",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-control-segment-width-small",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "control-segment-small",
+        "classes": ["w-control-segment-small"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
+      "id": "interaction.icon.size.extra-large",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-icon-size-extra-large",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "icon-extra-large",
+        "classes": ["size-icon-extra-large"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.icon.size.extra-small",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-icon-size-extra-small",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "icon-extra-small",
+        "classes": ["size-icon-extra-small"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.icon.size.large",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-icon-size-large",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "icon-large",
+        "classes": ["size-icon-large"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.icon.size.medium",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-icon-size-medium",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "icon-medium",
+        "classes": ["size-icon-medium"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.icon.size.small",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-icon-size-small",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "icon-small",
+        "classes": ["size-icon-small"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.cell.large",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-cell-large",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-cell-large",
+        "classes": ["size-indicator-cell-large"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.cell.medium",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-cell-medium",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-cell-medium",
+        "classes": ["size-indicator-cell-medium"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.cell.small",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-cell-small",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-cell-small",
+        "classes": ["size-indicator-cell-small"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.circle.multiple-size",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-circle-multiple-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-circle-multiple",
+        "classes": ["size-indicator-circle-multiple"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.circle.size",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-circle-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-circle",
+        "classes": ["size-indicator-circle"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.handle.size",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-handle-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-handle",
+        "classes": ["size-indicator-handle"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.label.height",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-label-height",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-label",
+        "classes": ["h-indicator-label"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.marker.size",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-marker-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-marker",
+        "classes": ["size-indicator-marker"],
+        "allowedCssProperties": ["width", "height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.rail.labeled",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-rail-labeled",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-rail-labeled",
+        "classes": ["h-indicator-rail-labeled"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.rail.standard",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-rail-standard",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-rail-standard",
+        "classes": ["h-indicator-rail-standard"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.rail.thin",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-rail-thin",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-rail-thin",
+        "classes": ["h-indicator-rail-thin"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "interaction.indicator.slot.icon-inline-size",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-slot-icon-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-slot-icon",
+        "classes": ["w-indicator-slot-icon"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
+      "id": "interaction.indicator.slot.text-inline-size",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-indicator-slot-text-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "indicator-slot-text",
+        "classes": ["w-indicator-slot-text"],
+        "allowedCssProperties": ["width"]
+      }
+    },
+    {
       "id": "interaction.motion.duration",
       "tokenType": "duration",
       "category": "interaction",
@@ -4622,6 +6107,24 @@
       }
     },
     {
+      "id": "layout.calendar.weekday.minimum-inline-size",
+      "tokenType": "dimension",
+      "category": "layout",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-layout-calendar-weekday-minimum-inline-size",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "calendar-weekday",
+        "classes": ["min-w-calendar-weekday"],
+        "allowedCssProperties": ["min-width"]
+      }
+    },
+    {
       "id": "layout.content.max-width",
       "tokenType": "dimension",
       "category": "layout",
@@ -4788,6 +6291,96 @@
       }
     },
     {
+      "id": "spacing.calendar.block.gap",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-calendar-block-gap",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "calendar-block-gap",
+        "classes": ["gap-calendar-block-gap"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.calendar.footer.indent",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-calendar-footer-indent",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "calendar-footer-indent",
+        "classes": ["gap-calendar-footer-indent"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.calendar.inline.compact",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-calendar-inline-compact",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "calendar-inline-compact",
+        "classes": ["gap-calendar-inline-compact"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.calendar.inline.tight",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-calendar-inline-tight",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "calendar-inline-tight",
+        "classes": ["gap-calendar-inline-tight"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.component.unit",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-component-unit",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "component-unit",
+        "classes": ["gap-component-unit"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
       "id": "spacing.content.gap",
       "tokenType": "dimension",
       "category": "spacing",
@@ -4803,6 +6396,114 @@
         "key": "content-gap",
         "classes": ["gap-content-gap"],
         "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.control.segment.gap",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-control-segment-gap",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "control-segment-gap",
+        "classes": ["gap-control-segment-gap"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.indicator.cell-gap.compact",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-indicator-cell-gap-compact",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "indicator-cell-gap-compact",
+        "classes": ["gap-indicator-cell-gap-compact"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.indicator.cell-gap.standard",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-indicator-cell-gap-standard",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "indicator-cell-gap-standard",
+        "classes": ["gap-indicator-cell-gap-standard"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.indicator.content.gap",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-indicator-content-gap",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "indicator-content-gap",
+        "classes": ["gap-indicator-content-gap"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
+      "id": "spacing.indicator.label.inline",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-indicator-label-inline",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "indicator-label-inline",
+        "classes": ["px-indicator-label-inline"],
+        "allowedCssProperties": ["padding-inline"]
+      }
+    },
+    {
+      "id": "spacing.indicator.label.inline-compact",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-indicator-label-inline-compact",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "indicator-label-inline-compact",
+        "classes": ["px-indicator-label-inline-compact"],
+        "allowedCssProperties": ["padding-inline"]
       }
     },
     {
@@ -4886,6 +6587,24 @@
       }
     },
     {
+      "id": "typography.line-height.compact",
+      "tokenType": "number",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-line-height-compact",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "theme-entry",
+        "family": "line-height",
+        "key": "compact",
+        "classes": ["leading-compact"],
+        "allowedCssProperties": ["--un-leading", "line-height"]
+      }
+    },
+    {
       "id": "typography.line-height.title",
       "tokenType": "number",
       "category": "typography",
@@ -4918,6 +6637,132 @@
         "family": "typography",
         "key": "body",
         "classes": ["text-body"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.caption",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-caption",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "caption",
+        "classes": ["text-caption"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.control.large",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-control-large",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "control-large",
+        "classes": ["text-control-large"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.control.medium",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-control-medium",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "control-medium",
+        "classes": ["text-control-medium"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.control.small",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-control-small",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "control-small",
+        "classes": ["text-control-small"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.heading",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-heading",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "heading",
+        "classes": ["text-heading"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.metric",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-metric",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "metric",
+        "classes": ["text-metric"],
+        "allowedCssProperties": ["font-size"]
+      }
+    },
+    {
+      "id": "typography.size.subheading",
+      "tokenType": "dimension",
+      "category": "typography",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-font-size-subheading",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "typography",
+        "key": "subheading",
+        "classes": ["text-subheading"],
         "allowedCssProperties": ["font-size"]
       }
     },
@@ -5298,6 +7143,195 @@
       "allowedCssProperties": ["height"]
     },
     {
+      "roleId": "interaction.control.segment.width.large",
+      "cssVariable": "--ui-control-segment-width-large",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "control-segment-large",
+      "classes": ["w-control-segment-large"],
+      "allowedCssProperties": ["width"]
+    },
+    {
+      "roleId": "interaction.control.segment.width.medium",
+      "cssVariable": "--ui-control-segment-width-medium",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "control-segment-medium",
+      "classes": ["w-control-segment-medium"],
+      "allowedCssProperties": ["width"]
+    },
+    {
+      "roleId": "interaction.control.segment.width.small",
+      "cssVariable": "--ui-control-segment-width-small",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "control-segment-small",
+      "classes": ["w-control-segment-small"],
+      "allowedCssProperties": ["width"]
+    },
+    {
+      "roleId": "interaction.icon.size.extra-large",
+      "cssVariable": "--ui-icon-size-extra-large",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "icon-extra-large",
+      "classes": ["size-icon-extra-large"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.icon.size.extra-small",
+      "cssVariable": "--ui-icon-size-extra-small",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "icon-extra-small",
+      "classes": ["size-icon-extra-small"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.icon.size.large",
+      "cssVariable": "--ui-icon-size-large",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "icon-large",
+      "classes": ["size-icon-large"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.icon.size.medium",
+      "cssVariable": "--ui-icon-size-medium",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "icon-medium",
+      "classes": ["size-icon-medium"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.icon.size.small",
+      "cssVariable": "--ui-icon-size-small",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "icon-small",
+      "classes": ["size-icon-small"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.cell.large",
+      "cssVariable": "--ui-indicator-cell-large",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-cell-large",
+      "classes": ["size-indicator-cell-large"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.cell.medium",
+      "cssVariable": "--ui-indicator-cell-medium",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-cell-medium",
+      "classes": ["size-indicator-cell-medium"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.cell.small",
+      "cssVariable": "--ui-indicator-cell-small",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-cell-small",
+      "classes": ["size-indicator-cell-small"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.circle.multiple-size",
+      "cssVariable": "--ui-indicator-circle-multiple-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-circle-multiple",
+      "classes": ["size-indicator-circle-multiple"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.circle.size",
+      "cssVariable": "--ui-indicator-circle-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-circle",
+      "classes": ["size-indicator-circle"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.handle.size",
+      "cssVariable": "--ui-indicator-handle-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-handle",
+      "classes": ["size-indicator-handle"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.label.height",
+      "cssVariable": "--ui-indicator-label-height",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-label",
+      "classes": ["h-indicator-label"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "interaction.indicator.marker.size",
+      "cssVariable": "--ui-indicator-marker-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-marker",
+      "classes": ["size-indicator-marker"],
+      "allowedCssProperties": ["width", "height"]
+    },
+    {
+      "roleId": "interaction.indicator.rail.labeled",
+      "cssVariable": "--ui-indicator-rail-labeled",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-rail-labeled",
+      "classes": ["h-indicator-rail-labeled"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "interaction.indicator.rail.standard",
+      "cssVariable": "--ui-indicator-rail-standard",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-rail-standard",
+      "classes": ["h-indicator-rail-standard"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "interaction.indicator.rail.thin",
+      "cssVariable": "--ui-indicator-rail-thin",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-rail-thin",
+      "classes": ["h-indicator-rail-thin"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "interaction.indicator.slot.icon-inline-size",
+      "cssVariable": "--ui-indicator-slot-icon-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-slot-icon",
+      "classes": ["w-indicator-slot-icon"],
+      "allowedCssProperties": ["width"]
+    },
+    {
+      "roleId": "interaction.indicator.slot.text-inline-size",
+      "cssVariable": "--ui-indicator-slot-text-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "indicator-slot-text",
+      "classes": ["w-indicator-slot-text"],
+      "allowedCssProperties": ["width"]
+    },
+    {
       "roleId": "interaction.motion.duration",
       "cssVariable": "--ui-motion-duration",
       "generatorKind": "exact-rule",
@@ -5396,6 +7430,15 @@
       "allowedCssProperties": ["width"]
     },
     {
+      "roleId": "layout.calendar.weekday.minimum-inline-size",
+      "cssVariable": "--ui-layout-calendar-weekday-minimum-inline-size",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "calendar-weekday",
+      "classes": ["min-w-calendar-weekday"],
+      "allowedCssProperties": ["min-width"]
+    },
+    {
       "roleId": "layout.content.max-width",
       "cssVariable": "--ui-layout-content-max-width",
       "generatorKind": "exact-rule",
@@ -5490,6 +7533,51 @@
       "allowedCssProperties": ["padding-inline"]
     },
     {
+      "roleId": "spacing.calendar.block.gap",
+      "cssVariable": "--ui-space-calendar-block-gap",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "calendar-block-gap",
+      "classes": ["gap-calendar-block-gap"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.calendar.footer.indent",
+      "cssVariable": "--ui-space-calendar-footer-indent",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "calendar-footer-indent",
+      "classes": ["gap-calendar-footer-indent"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.calendar.inline.compact",
+      "cssVariable": "--ui-space-calendar-inline-compact",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "calendar-inline-compact",
+      "classes": ["gap-calendar-inline-compact"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.calendar.inline.tight",
+      "cssVariable": "--ui-space-calendar-inline-tight",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "calendar-inline-tight",
+      "classes": ["gap-calendar-inline-tight"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.component.unit",
+      "cssVariable": "--ui-space-component-unit",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "component-unit",
+      "classes": ["gap-component-unit"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
       "roleId": "spacing.content.gap",
       "cssVariable": "--ui-space-content-gap",
       "generatorKind": "exact-rule",
@@ -5497,6 +7585,60 @@
       "key": "content-gap",
       "classes": ["gap-content-gap"],
       "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.control.segment.gap",
+      "cssVariable": "--ui-space-control-segment-gap",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "control-segment-gap",
+      "classes": ["gap-control-segment-gap"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.indicator.cell-gap.compact",
+      "cssVariable": "--ui-space-indicator-cell-gap-compact",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "indicator-cell-gap-compact",
+      "classes": ["gap-indicator-cell-gap-compact"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.indicator.cell-gap.standard",
+      "cssVariable": "--ui-space-indicator-cell-gap-standard",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "indicator-cell-gap-standard",
+      "classes": ["gap-indicator-cell-gap-standard"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.indicator.content.gap",
+      "cssVariable": "--ui-space-indicator-content-gap",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "indicator-content-gap",
+      "classes": ["gap-indicator-content-gap"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
+      "roleId": "spacing.indicator.label.inline",
+      "cssVariable": "--ui-space-indicator-label-inline",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "indicator-label-inline",
+      "classes": ["px-indicator-label-inline"],
+      "allowedCssProperties": ["padding-inline"]
+    },
+    {
+      "roleId": "spacing.indicator.label.inline-compact",
+      "cssVariable": "--ui-space-indicator-label-inline-compact",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "indicator-label-inline-compact",
+      "classes": ["px-indicator-label-inline-compact"],
+      "allowedCssProperties": ["padding-inline"]
     },
     {
       "roleId": "spacing.page.inline",
@@ -5543,6 +7685,15 @@
       "allowedCssProperties": ["--un-leading", "line-height"]
     },
     {
+      "roleId": "typography.line-height.compact",
+      "cssVariable": "--ui-font-line-height-compact",
+      "generatorKind": "theme-entry",
+      "family": "line-height",
+      "key": "compact",
+      "classes": ["leading-compact"],
+      "allowedCssProperties": ["--un-leading", "line-height"]
+    },
+    {
       "roleId": "typography.line-height.title",
       "cssVariable": "--ui-font-line-height-title",
       "generatorKind": "theme-entry",
@@ -5558,6 +7709,69 @@
       "family": "typography",
       "key": "body",
       "classes": ["text-body"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.caption",
+      "cssVariable": "--ui-font-size-caption",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "caption",
+      "classes": ["text-caption"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.control.large",
+      "cssVariable": "--ui-font-size-control-large",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "control-large",
+      "classes": ["text-control-large"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.control.medium",
+      "cssVariable": "--ui-font-size-control-medium",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "control-medium",
+      "classes": ["text-control-medium"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.control.small",
+      "cssVariable": "--ui-font-size-control-small",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "control-small",
+      "classes": ["text-control-small"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.heading",
+      "cssVariable": "--ui-font-size-heading",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "heading",
+      "classes": ["text-heading"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.metric",
+      "cssVariable": "--ui-font-size-metric",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "metric",
+      "classes": ["text-metric"],
+      "allowedCssProperties": ["font-size"]
+    },
+    {
+      "roleId": "typography.size.subheading",
+      "cssVariable": "--ui-font-size-subheading",
+      "generatorKind": "exact-rule",
+      "family": "typography",
+      "key": "subheading",
+      "classes": ["text-subheading"],
       "allowedCssProperties": ["font-size"]
     },
     {
@@ -5660,8 +7874,8 @@
       "enhancedDifferenceRequired": false,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 8.168,
-        "standard": 5.259
+        "enhanced": 13.937,
+        "standard": 8.132
       }
     },
     {
@@ -5930,8 +8144,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 8.221,
-        "standard": 5.274
+        "enhanced": 13.95,
+        "standard": 8.221
       }
     },
     {
@@ -5945,8 +8159,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 8.19,
-        "standard": 5.334
+        "enhanced": 13.879,
+        "standard": 8.052
       }
     },
     {
@@ -5960,8 +8174,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 8.185,
-        "standard": 5.265
+        "enhanced": 13.878,
+        "standard": 8.099
       }
     },
     {
@@ -5975,8 +8189,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 8.147,
-        "standard": 5.26
+        "enhanced": 14.405,
+        "standard": 8.677
       }
     },
     {
@@ -5990,8 +8204,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 7.109,
-        "standard": 4.588
+        "enhanced": 12.983,
+        "standard": 7.23
       }
     },
     {
@@ -6005,8 +8219,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 7.101,
-        "standard": 4.581
+        "enhanced": 12.859,
+        "standard": 7.083
       }
     },
     {
@@ -6020,8 +8234,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 7.083,
-        "standard": 4.58
+        "enhanced": 12.872,
+        "standard": 7.22
       }
     },
     {
@@ -6035,8 +8249,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 7.079,
-        "standard": 4.581
+        "enhanced": 13.345,
+        "standard": 7.818
       }
     },
     {
@@ -6050,8 +8264,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 10.072,
-        "standard": 6.528
+        "enhanced": 15.404,
+        "standard": 7.911
       }
     },
     {
@@ -6065,8 +8279,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 10.178,
-        "standard": 6.623
+        "enhanced": 15.274,
+        "standard": 7.85
       }
     },
     {
@@ -6080,8 +8294,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 10.052,
-        "standard": 6.531
+        "enhanced": 15.261,
+        "standard": 8.074
       }
     },
     {
@@ -6095,8 +8309,8 @@
       "enhancedDifferenceRequired": true,
       "staticMaterialProjections": [],
       "minimumRatios": {
-        "enhanced": 9.93,
-        "standard": 6.461
+        "enhanced": 15.593,
+        "standard": 8.258
       }
     }
   ],
@@ -6126,7 +8340,7 @@
       "themeId": "royal-iris",
       "label": "Royal Iris",
       "source": "themes/complete/royal-iris.theme.json",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "roleContractVersion": 4,
       "planes": {
         "light": {
@@ -6281,13 +8495,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#833AF0",
-                    "hover": "#8D47FC",
-                    "pressed": "#7524DE",
-                    "focus": "#833AF0"
+                    "default": "#5F2AAF",
+                    "hover": "#6734B8",
+                    "pressed": "#551AA2",
+                    "focus": "#5F2AAF"
                   },
                   "foreground": "#FCFCFC",
-                  "border": "#833AF0"
+                  "border": "#5F2AAF"
                 },
                 "soft": {
                   "background": {
@@ -6315,13 +8529,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#0070A5",
-                    "hover": "#007AB5",
-                    "pressed": "#006190",
-                    "focus": "#0070A5"
+                    "default": "#005178",
+                    "hover": "#005984",
+                    "pressed": "#004769",
+                    "focus": "#005178"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#0070A5"
+                  "border": "#005178"
                 },
                 "soft": {
                   "background": {
@@ -6349,13 +8563,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007948",
-                    "hover": "#00844F",
-                    "pressed": "#00683D",
-                    "focus": "#007948"
+                    "default": "#005835",
+                    "hover": "#00603A",
+                    "pressed": "#004C2D",
+                    "focus": "#005835"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#007948"
+                  "border": "#005835"
                 },
                 "soft": {
                   "background": {
@@ -6383,13 +8597,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#8D6100",
-                    "hover": "#9A6A00",
-                    "pressed": "#7B5400",
-                    "focus": "#8D6100"
+                    "default": "#684700",
+                    "hover": "#714E00",
+                    "pressed": "#5B3E00",
+                    "focus": "#684700"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#8D6100"
+                  "border": "#684700"
                 },
                 "soft": {
                   "background": {
@@ -6417,13 +8631,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D3022F",
-                    "hover": "#E0203A",
-                    "pressed": "#BA0028",
-                    "focus": "#D3022F"
+                    "default": "#910120",
+                    "hover": "#9A1628",
+                    "pressed": "#80001C",
+                    "focus": "#910120"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#D3022F"
+                  "border": "#910120"
                 },
                 "soft": {
                   "background": {
@@ -6509,13 +8723,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#6800CC",
-                    "hover": "#711CD9",
-                    "pressed": "#5800AF",
-                    "focus": "#6800CC"
+                    "default": "#36006B",
+                    "hover": "#3B0F72",
+                    "pressed": "#2E005C",
+                    "focus": "#36006B"
                   },
                   "foreground": "#FCFCFC",
-                  "border": "#6800CC"
+                  "border": "#36006B"
                 },
                 "soft": {
                   "background": {
@@ -6543,13 +8757,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00517A",
-                    "hover": "#005B88",
-                    "pressed": "#004366",
-                    "focus": "#00517A"
+                    "default": "#002C43",
+                    "hover": "#00324B",
+                    "pressed": "#002538",
+                    "focus": "#002C43"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#00517A"
+                  "border": "#002C43"
                 },
                 "soft": {
                   "background": {
@@ -6577,13 +8791,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005833",
-                    "hover": "#00633A",
-                    "pressed": "#004929",
-                    "focus": "#005833"
+                    "default": "#00301C",
+                    "hover": "#003720",
+                    "pressed": "#002817",
+                    "focus": "#00301C"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#005833"
+                  "border": "#00301C"
                 },
                 "soft": {
                   "background": {
@@ -6611,13 +8825,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#684700",
-                    "hover": "#744F00",
-                    "pressed": "#573A00",
-                    "focus": "#684700"
+                    "default": "#382600",
+                    "hover": "#3F2B00",
+                    "pressed": "#2F1F00",
+                    "focus": "#382600"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#684700"
+                  "border": "#382600"
                 },
                 "soft": {
                   "background": {
@@ -6645,13 +8859,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#9E0021",
-                    "hover": "#AF0025",
-                    "pressed": "#86001A",
-                    "focus": "#9E0021"
+                    "default": "#520011",
+                    "hover": "#5B0013",
+                    "pressed": "#46000E",
+                    "focus": "#520011"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#9E0021"
+                  "border": "#520011"
                 },
                 "soft": {
                   "background": {
@@ -6739,12 +8953,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#833AF0",
-                    "hover": "#8D47FC",
-                    "pressed": "#7524DE",
-                    "focus": "#833AF0"
+                    "default": "#C29EF8",
+                    "hover": "#C7A4FE",
+                    "pressed": "#BB93EF",
+                    "focus": "#C29EF8"
                   },
-                  "foreground": "#FCFCFC",
+                  "foreground": "#0A0A12",
                   "border": "#C0ABFF"
                 },
                 "soft": {
@@ -6773,12 +8987,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#0070A5",
-                    "hover": "#007AB5",
-                    "pressed": "#006190",
-                    "focus": "#0070A5"
+                    "default": "#7CB6D1",
+                    "hover": "#7CBBD9",
+                    "pressed": "#7CAEC6",
+                    "focus": "#7CB6D1"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#0A0A12",
                   "border": "#5FC0FF"
                 },
                 "soft": {
@@ -6807,12 +9021,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007948",
-                    "hover": "#00844F",
-                    "pressed": "#00683D",
-                    "focus": "#007948"
+                    "default": "#7DBBA1",
+                    "hover": "#7DC0A5",
+                    "pressed": "#7DB29C",
+                    "focus": "#7DBBA1"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#0A0A12",
                   "border": "#00D381"
                 },
                 "soft": {
@@ -6841,12 +9055,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#8D6100",
-                    "hover": "#9A6A00",
-                    "pressed": "#7B5400",
-                    "focus": "#8D6100"
+                    "default": "#C3AB78",
+                    "hover": "#C9B078",
+                    "pressed": "#B9A478",
+                    "focus": "#C3AB78"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#0A0A12",
                   "border": "#F0A800"
                 },
                 "soft": {
@@ -6875,12 +9089,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D3022F",
-                    "hover": "#E0203A",
-                    "pressed": "#BA0028",
-                    "focus": "#D3022F"
+                    "default": "#EC94A7",
+                    "hover": "#F2A0AB",
+                    "pressed": "#E293A4",
+                    "focus": "#EC94A7"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#0A0A12",
                   "border": "#FF9C99"
                 },
                 "soft": {
@@ -6909,12 +9123,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#67677E",
-                    "hover": "#717188",
-                    "pressed": "#59596F",
-                    "focus": "#67677E"
+                    "default": "#838396",
+                    "hover": "#8B8B9E",
+                    "pressed": "#787889",
+                    "focus": "#838396"
                   },
-                  "foreground": "#FCFCFC",
+                  "foreground": "#0A0A12",
                   "border": "#B4B4CD"
                 },
                 "soft": {
@@ -6967,12 +9181,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#6800CC",
-                    "hover": "#711CD9",
-                    "pressed": "#5800AF",
-                    "focus": "#6800CC"
+                    "default": "#F2EAFB",
+                    "hover": "#F3ECFC",
+                    "pressed": "#F1EAF8",
+                    "focus": "#F2EAFB"
                   },
-                  "foreground": "#FCFCFC",
+                  "foreground": "#0A0A12",
                   "border": "#D5CAFF"
                 },
                 "soft": {
@@ -7001,12 +9215,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00517A",
-                    "hover": "#005B88",
-                    "pressed": "#004366",
-                    "focus": "#00517A"
+                    "default": "#E6EEF2",
+                    "hover": "#E6EFF3",
+                    "pressed": "#E6ECF0",
+                    "focus": "#E6EEF2"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#0A0A12",
                   "border": "#9FD7FF"
                 },
                 "soft": {
@@ -7035,12 +9249,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005833",
-                    "hover": "#00633A",
-                    "pressed": "#004929",
-                    "focus": "#005833"
+                    "default": "#E6EFEB",
+                    "hover": "#E6F0EC",
+                    "pressed": "#E6EDEA",
+                    "focus": "#E6EFEB"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#0A0A12",
                   "border": "#30EF98"
                 },
                 "soft": {
@@ -7069,12 +9283,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#684700",
-                    "hover": "#744F00",
-                    "pressed": "#573A00",
-                    "focus": "#684700"
+                    "default": "#F0ECE5",
+                    "hover": "#F1EDE5",
+                    "pressed": "#EEEBE5",
+                    "focus": "#F0ECE5"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#0A0A12",
                   "border": "#FFC76B"
                 },
                 "soft": {
@@ -7103,12 +9317,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#9E0021",
-                    "hover": "#AF0025",
-                    "pressed": "#86001A",
-                    "focus": "#9E0021"
+                    "default": "#F7EAEC",
+                    "hover": "#F8EAED",
+                    "pressed": "#F5EAEC",
+                    "focus": "#F7EAEC"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#0A0A12",
                   "border": "#FFC1BE"
                 },
                 "soft": {
@@ -7137,12 +9351,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#4B4B60",
-                    "hover": "#55546A",
-                    "pressed": "#3E3E52",
-                    "focus": "#4B4B60"
+                    "default": "#A1A1AC",
+                    "hover": "#A6A5B1",
+                    "pressed": "#9A9AA4",
+                    "focus": "#A1A1AC"
                   },
-                  "foreground": "#FCFCFC",
+                  "foreground": "#0A0A12",
                   "border": "#CDCEE7"
                 },
                 "soft": {
@@ -7191,7 +9405,7 @@
       "themeId": "cobalt-tide",
       "label": "Cobalt Tide",
       "source": "themes/complete/cobalt-tide.theme.json",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "roleContractVersion": 4,
       "planes": {
         "light": {
@@ -7346,13 +9560,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#1058FB",
-                    "hover": "#2467FF",
-                    "pressed": "#0047E6",
-                    "focus": "#1058FB"
+                    "default": "#0C40B8",
+                    "hover": "#1A4BBB",
+                    "pressed": "#0034A8",
+                    "focus": "#0C40B8"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#1058FB"
+                  "border": "#0C40B8"
                 },
                 "soft": {
                   "background": {
@@ -7380,13 +9594,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007387",
-                    "hover": "#007E94",
-                    "pressed": "#006475",
-                    "focus": "#007387"
+                    "default": "#005564",
+                    "hover": "#005E6E",
+                    "pressed": "#004A57",
+                    "focus": "#005564"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#007387"
+                  "border": "#005564"
                 },
                 "soft": {
                   "background": {
@@ -7414,13 +9628,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007A2E",
-                    "hover": "#008633",
-                    "pressed": "#006927",
-                    "focus": "#007A2E"
+                    "default": "#005922",
+                    "hover": "#006225",
+                    "pressed": "#004D1D",
+                    "focus": "#005922"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#007A2E"
+                  "border": "#005922"
                 },
                 "soft": {
                   "background": {
@@ -7448,13 +9662,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#995C00",
-                    "hover": "#A76400",
-                    "pressed": "#864F00",
-                    "focus": "#995C00"
+                    "default": "#704300",
+                    "hover": "#7A4900",
+                    "pressed": "#623A00",
+                    "focus": "#704300"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#995C00"
+                  "border": "#704300"
                 },
                 "soft": {
                   "background": {
@@ -7482,13 +9696,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D2004E",
-                    "hover": "#E20D57",
-                    "pressed": "#B90044",
-                    "focus": "#D2004E"
+                    "default": "#900036",
+                    "hover": "#9B093C",
+                    "pressed": "#7F002F",
+                    "focus": "#900036"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#D2004E"
+                  "border": "#900036"
                 },
                 "soft": {
                   "background": {
@@ -7574,13 +9788,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#003DC8",
-                    "hover": "#0044DD",
-                    "pressed": "#0032AA",
-                    "focus": "#003DC8"
+                    "default": "#00216B",
+                    "hover": "#002577",
+                    "pressed": "#001B5B",
+                    "focus": "#00216B"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#003DC8"
+                  "border": "#00216B"
                 },
                 "soft": {
                   "background": {
@@ -7608,13 +9822,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005564",
-                    "hover": "#005F70",
-                    "pressed": "#004653",
-                    "focus": "#005564"
+                    "default": "#002E37",
+                    "hover": "#00343D",
+                    "pressed": "#00262D",
+                    "focus": "#002E37"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#005564"
+                  "border": "#002E37"
                 },
                 "soft": {
                   "background": {
@@ -7642,13 +9856,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005920",
-                    "hover": "#006425",
-                    "pressed": "#004919",
-                    "focus": "#005920"
+                    "default": "#003112",
+                    "hover": "#003815",
+                    "pressed": "#00290E",
+                    "focus": "#003112"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#005920"
+                  "border": "#003112"
                 },
                 "soft": {
                   "background": {
@@ -7676,13 +9890,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#714200",
-                    "hover": "#7E4A00",
-                    "pressed": "#5F3700",
-                    "focus": "#714200"
+                    "default": "#3E2400",
+                    "hover": "#462900",
+                    "pressed": "#351E00",
+                    "focus": "#3E2400"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#714200"
+                  "border": "#3E2400"
                 },
                 "soft": {
                   "background": {
@@ -7710,13 +9924,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#9D0038",
-                    "hover": "#AE003F",
-                    "pressed": "#85002F",
-                    "focus": "#9D0038"
+                    "default": "#52001D",
+                    "hover": "#5B0021",
+                    "pressed": "#460019",
+                    "focus": "#52001D"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#9D0038"
+                  "border": "#52001D"
                 },
                 "soft": {
                   "background": {
@@ -7804,12 +10018,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#1058FB",
-                    "hover": "#2467FF",
-                    "pressed": "#0047E6",
-                    "focus": "#1058FB"
+                    "default": "#8AAEFD",
+                    "hover": "#94B5FF",
+                    "pressed": "#83A5F3",
+                    "focus": "#8AAEFD"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#060C13",
                   "border": "#92B7FF"
                 },
                 "soft": {
@@ -7838,12 +10052,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007387",
-                    "hover": "#007E94",
-                    "pressed": "#006475",
-                    "focus": "#007387"
+                    "default": "#7FB9C3",
+                    "hover": "#7FBEC9",
+                    "pressed": "#7FB1BA",
+                    "focus": "#7FB9C3"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#060C13",
                   "border": "#00C9EA"
                 },
                 "soft": {
@@ -7872,12 +10086,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007A2E",
-                    "hover": "#008633",
-                    "pressed": "#006927",
-                    "focus": "#007A2E"
+                    "default": "#7EBC95",
+                    "hover": "#7EC298",
+                    "pressed": "#7EB391",
+                    "focus": "#7EBC95"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#060C13",
                   "border": "#43D066"
                 },
                 "soft": {
@@ -7906,12 +10120,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#995C00",
-                    "hover": "#A76400",
-                    "pressed": "#864F00",
-                    "focus": "#995C00"
+                    "default": "#C9A978",
+                    "hover": "#D0AD78",
+                    "pressed": "#BFA278",
+                    "focus": "#C9A978"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#060C13",
                   "border": "#FF9F1F"
                 },
                 "soft": {
@@ -7940,12 +10154,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D2004E",
-                    "hover": "#E20D57",
-                    "pressed": "#B90044",
-                    "focus": "#D2004E"
+                    "default": "#EC92B3",
+                    "hover": "#F397B7",
+                    "pressed": "#E192AF",
+                    "focus": "#EC92B3"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#060C13",
                   "border": "#FF9BA8"
                 },
                 "soft": {
@@ -7974,12 +10188,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#5C6A7D",
-                    "hover": "#657488",
-                    "pressed": "#4E5C6F",
-                    "focus": "#5C6A7D"
+                    "default": "#7B8695",
+                    "hover": "#828E9E",
+                    "pressed": "#6F7B8A",
+                    "focus": "#7B8695"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#060C13",
                   "border": "#A7B7CC"
                 },
                 "soft": {
@@ -8032,12 +10246,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#003DC8",
-                    "hover": "#0044DD",
-                    "pressed": "#0032AA",
-                    "focus": "#003DC8"
+                    "default": "#E8EEFA",
+                    "hover": "#E8EEFC",
+                    "pressed": "#E8EDF7",
+                    "focus": "#E8EEFA"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#060C13",
                   "border": "#B9D1FF"
                 },
                 "soft": {
@@ -8066,12 +10280,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005564",
-                    "hover": "#005F70",
-                    "pressed": "#004653",
-                    "focus": "#005564"
+                    "default": "#E6EFF0",
+                    "hover": "#E6EFF1",
+                    "pressed": "#E6EDEE",
+                    "focus": "#E6EFF0"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#060C13",
                   "border": "#5AE1FF"
                 },
                 "soft": {
@@ -8100,12 +10314,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005920",
-                    "hover": "#006425",
-                    "pressed": "#004919",
-                    "focus": "#005920"
+                    "default": "#E7EFEA",
+                    "hover": "#E7F0EA",
+                    "pressed": "#E7EEE9",
+                    "focus": "#E7EFEA"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#060C13",
                   "border": "#63EC80"
                 },
                 "soft": {
@@ -8134,12 +10348,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#714200",
-                    "hover": "#7E4A00",
-                    "pressed": "#5F3700",
-                    "focus": "#714200"
+                    "default": "#F1ECE6",
+                    "hover": "#F2EDE6",
+                    "pressed": "#EFEBE6",
+                    "focus": "#F1ECE6"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#060C13",
                   "border": "#FFC68C"
                 },
                 "soft": {
@@ -8168,12 +10382,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#9D0038",
-                    "hover": "#AE003F",
-                    "pressed": "#85002F",
-                    "focus": "#9D0038"
+                    "default": "#F7EAEE",
+                    "hover": "#F8EAEF",
+                    "pressed": "#F5EAEE",
+                    "focus": "#F7EAEE"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#060C13",
                   "border": "#FFC1C7"
                 },
                 "soft": {
@@ -8202,12 +10416,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#404E60",
-                    "hover": "#49576A",
-                    "pressed": "#334052",
-                    "focus": "#404E60"
+                    "default": "#9CA3AC",
+                    "hover": "#A0A8B2",
+                    "pressed": "#959CA5",
+                    "focus": "#9CA3AC"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#060C13",
                   "border": "#C0D1E7"
                 },
                 "soft": {
@@ -8256,7 +10470,7 @@
       "themeId": "emerald-grove",
       "label": "Emerald Grove",
       "source": "themes/complete/emerald-grove.theme.json",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "roleContractVersion": 4,
       "planes": {
         "light": {
@@ -8411,13 +10625,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00785B",
-                    "hover": "#008364",
-                    "pressed": "#00674F",
-                    "focus": "#00785B"
+                    "default": "#005944",
+                    "hover": "#00624B",
+                    "pressed": "#004D3B",
+                    "focus": "#005944"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#00785B"
+                  "border": "#005944"
                 },
                 "soft": {
                   "background": {
@@ -8445,13 +10659,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#006CBB",
-                    "hover": "#0076CB",
-                    "pressed": "#005EA3",
-                    "focus": "#006CBB"
+                    "default": "#004F8A",
+                    "hover": "#005795",
+                    "pressed": "#004578",
+                    "focus": "#004F8A"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#006CBB"
+                  "border": "#004F8A"
                 },
                 "soft": {
                   "background": {
@@ -8479,13 +10693,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#527300",
-                    "hover": "#5A7E00",
-                    "pressed": "#466400",
-                    "focus": "#527300"
+                    "default": "#3E5600",
+                    "hover": "#445F00",
+                    "pressed": "#354B00",
+                    "focus": "#3E5600"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#527300"
+                  "border": "#3E5600"
                 },
                 "soft": {
                   "background": {
@@ -8513,13 +10727,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#846600",
-                    "hover": "#906F00",
-                    "pressed": "#735800",
-                    "focus": "#846600"
+                    "default": "#624B00",
+                    "hover": "#6B5200",
+                    "pressed": "#554100",
+                    "focus": "#624B00"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#846600"
+                  "border": "#624B00"
                 },
                 "soft": {
                   "background": {
@@ -8547,13 +10761,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#CE2300",
-                    "hover": "#DF2701",
-                    "pressed": "#B51D00",
-                    "focus": "#CE2300"
+                    "default": "#911900",
+                    "hover": "#9D1C01",
+                    "pressed": "#801400",
+                    "focus": "#911900"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#CE2300"
+                  "border": "#911900"
                 },
                 "soft": {
                   "background": {
@@ -8639,13 +10853,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005742",
-                    "hover": "#00624B",
-                    "pressed": "#004836",
-                    "focus": "#005742"
+                    "default": "#003125",
+                    "hover": "#00382B",
+                    "pressed": "#00291F",
+                    "focus": "#003125"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#005742"
+                  "border": "#003125"
                 },
                 "soft": {
                   "background": {
@@ -8673,13 +10887,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#004F8A",
-                    "hover": "#00589B",
-                    "pressed": "#004174",
-                    "focus": "#004F8A"
+                    "default": "#002C4C",
+                    "hover": "#003156",
+                    "pressed": "#002440",
+                    "focus": "#002C4C"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#004F8A"
+                  "border": "#002C4C"
                 },
                 "soft": {
                   "background": {
@@ -8707,13 +10921,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#3B5500",
-                    "hover": "#435F00",
-                    "pressed": "#304600",
-                    "focus": "#3B5500"
+                    "default": "#212F00",
+                    "hover": "#253500",
+                    "pressed": "#1B2700",
+                    "focus": "#212F00"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#3B5500"
+                  "border": "#212F00"
                 },
                 "soft": {
                   "background": {
@@ -8741,13 +10955,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#614A00",
-                    "hover": "#6D5300",
-                    "pressed": "#513D00",
-                    "focus": "#614A00"
+                    "default": "#362900",
+                    "hover": "#3D2E00",
+                    "pressed": "#2D2200",
+                    "focus": "#362900"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#614A00"
+                  "border": "#362900"
                 },
                 "soft": {
                   "background": {
@@ -8775,13 +10989,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#991700",
-                    "hover": "#AA1B00",
-                    "pressed": "#821200",
-                    "focus": "#991700"
+                    "default": "#520C00",
+                    "hover": "#5C0F00",
+                    "pressed": "#460A00",
+                    "focus": "#520C00"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#991700"
+                  "border": "#520C00"
                 },
                 "soft": {
                   "background": {
@@ -8869,12 +11083,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00785B",
-                    "hover": "#008364",
-                    "pressed": "#00674F",
-                    "focus": "#00785B"
+                    "default": "#81BCAE",
+                    "hover": "#81C1B2",
+                    "pressed": "#81B4A8",
+                    "focus": "#81BCAE"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#050E09",
                   "border": "#00D1A2"
                 },
                 "soft": {
@@ -8903,12 +11117,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#006CBB",
-                    "hover": "#0076CB",
-                    "pressed": "#005EA3",
-                    "focus": "#006CBB"
+                    "default": "#81B7DD",
+                    "hover": "#81BBE5",
+                    "pressed": "#81B0D2",
+                    "focus": "#81B7DD"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#050E09",
                   "border": "#79BBFF"
                 },
                 "soft": {
@@ -8937,12 +11151,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#527300",
-                    "hover": "#5A7E00",
-                    "pressed": "#466400",
-                    "focus": "#527300"
+                    "default": "#A6B77B",
+                    "hover": "#AABC7B",
+                    "pressed": "#9FAF7B",
+                    "focus": "#A6B77B"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#050E09",
                   "border": "#91C900"
                 },
                 "soft": {
@@ -8971,12 +11185,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#846600",
-                    "hover": "#906F00",
-                    "pressed": "#735800",
-                    "focus": "#846600"
+                    "default": "#BFAF79",
+                    "hover": "#C5B479",
+                    "pressed": "#B6A779",
+                    "focus": "#BFAF79"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#050E09",
                   "border": "#E1AF00"
                 },
                 "soft": {
@@ -9005,12 +11219,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#CE2300",
-                    "hover": "#DF2701",
-                    "pressed": "#B51D00",
-                    "focus": "#CE2300"
+                    "default": "#E89A89",
+                    "hover": "#F09B8A",
+                    "pressed": "#DD9789",
+                    "focus": "#E89A89"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#050E09",
                   "border": "#FF9E8B"
                 },
                 "soft": {
@@ -9039,12 +11253,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#566F62",
-                    "hover": "#60796C",
-                    "pressed": "#496054",
-                    "focus": "#566F62"
+                    "default": "#768B80",
+                    "hover": "#7F9388",
+                    "pressed": "#6C7F75",
+                    "focus": "#768B80"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#050E09",
                   "border": "#A2BCAE"
                 },
                 "soft": {
@@ -9097,12 +11311,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#005742",
-                    "hover": "#00624B",
-                    "pressed": "#004836",
-                    "focus": "#005742"
+                    "default": "#E9F1EF",
+                    "hover": "#E9F1F0",
+                    "pressed": "#E9EFEE",
+                    "focus": "#E9F1EF"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#050E09",
                   "border": "#00EEB9"
                 },
                 "soft": {
@@ -9131,12 +11345,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#004F8A",
-                    "hover": "#00589B",
-                    "pressed": "#004174",
-                    "focus": "#004F8A"
+                    "default": "#E9F0F5",
+                    "hover": "#E9F0F6",
+                    "pressed": "#E9EEF3",
+                    "focus": "#E9F0F5"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#050E09",
                   "border": "#ABD4FF"
                 },
                 "soft": {
@@ -9165,12 +11379,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#3B5500",
-                    "hover": "#435F00",
-                    "pressed": "#304600",
-                    "focus": "#3B5500"
+                    "default": "#EDF0E8",
+                    "hover": "#EEF0E8",
+                    "pressed": "#ECEEE8",
+                    "focus": "#EDF0E8"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#050E09",
                   "border": "#A8E424"
                 },
                 "soft": {
@@ -9199,12 +11413,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#614A00",
-                    "hover": "#6D5300",
-                    "pressed": "#513D00",
-                    "focus": "#614A00"
+                    "default": "#F1EFE8",
+                    "hover": "#F2EFE8",
+                    "pressed": "#EFEDE8",
+                    "focus": "#F1EFE8"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#050E09",
                   "border": "#FFC923"
                 },
                 "soft": {
@@ -9233,12 +11447,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#991700",
-                    "hover": "#AA1B00",
-                    "pressed": "#821200",
-                    "focus": "#991700"
+                    "default": "#F7EDEB",
+                    "hover": "#F8EDEB",
+                    "pressed": "#F5ECEB",
+                    "focus": "#F7EDEB"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#050E09",
                   "border": "#FFC4B7"
                 },
                 "soft": {
@@ -9267,12 +11481,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#3A5246",
-                    "hover": "#445B4F",
-                    "pressed": "#2D4438",
-                    "focus": "#3A5246"
+                    "default": "#99A59F",
+                    "hover": "#9EAAA3",
+                    "pressed": "#929E98",
+                    "focus": "#99A59F"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#050E09",
                   "border": "#BBD6C8"
                 },
                 "soft": {
@@ -9321,7 +11535,7 @@
       "themeId": "ember-coral",
       "label": "Ember Coral",
       "source": "themes/complete/ember-coral.theme.json",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "roleContractVersion": 4,
       "planes": {
         "light": {
@@ -9476,13 +11690,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#B64500",
-                    "hover": "#C64C00",
-                    "pressed": "#A03C00",
-                    "focus": "#B64500"
+                    "default": "#843200",
+                    "hover": "#903700",
+                    "pressed": "#742C00",
+                    "focus": "#843200"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#B64500"
+                  "border": "#843200"
                 },
                 "soft": {
                   "background": {
@@ -9510,13 +11724,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#0065DA",
-                    "hover": "#006EED",
-                    "pressed": "#0057BF",
-                    "focus": "#0065DA"
+                    "default": "#00489C",
+                    "hover": "#004FAA",
+                    "pressed": "#003E89",
+                    "focus": "#00489C"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#0065DA"
+                  "border": "#00489C"
                 },
                 "soft": {
                   "background": {
@@ -9544,13 +11758,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007764",
-                    "hover": "#00826E",
-                    "pressed": "#006757",
-                    "focus": "#007764"
+                    "default": "#005649",
+                    "hover": "#005E50",
+                    "pressed": "#004B3F",
+                    "focus": "#005649"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#007764"
+                  "border": "#005649"
                 },
                 "soft": {
                   "background": {
@@ -9578,13 +11792,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#7E6700",
-                    "hover": "#8A7100",
-                    "pressed": "#6D5A00",
-                    "focus": "#7E6700"
+                    "default": "#5D4C00",
+                    "hover": "#665400",
+                    "pressed": "#514300",
+                    "focus": "#5D4C00"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#7E6700"
+                  "border": "#5D4C00"
                 },
                 "soft": {
                   "background": {
@@ -9612,13 +11826,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D10059",
-                    "hover": "#E30061",
-                    "pressed": "#B8004E",
-                    "focus": "#D10059"
+                    "default": "#90003D",
+                    "hover": "#9D0043",
+                    "pressed": "#7F0036",
+                    "focus": "#90003D"
                   },
                   "foreground": "#FCFBFC",
-                  "border": "#D10059"
+                  "border": "#90003D"
                 },
                 "soft": {
                   "background": {
@@ -9704,13 +11918,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#873100",
-                    "hover": "#963800",
-                    "pressed": "#722800",
-                    "focus": "#873100"
+                    "default": "#491A00",
+                    "hover": "#511E00",
+                    "pressed": "#3E1600",
+                    "focus": "#491A00"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#873100"
+                  "border": "#491A00"
                 },
                 "soft": {
                   "background": {
@@ -9738,13 +11952,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#0049A2",
-                    "hover": "#0052B5",
-                    "pressed": "#003D89",
-                    "focus": "#0049A2"
+                    "default": "#002756",
+                    "hover": "#002C60",
+                    "pressed": "#002149",
+                    "focus": "#002756"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#0049A2"
+                  "border": "#002756"
                 },
                 "soft": {
                   "background": {
@@ -9772,13 +11986,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00584A",
-                    "hover": "#006253",
-                    "pressed": "#00483C",
-                    "focus": "#00584A"
+                    "default": "#002E27",
+                    "hover": "#00342C",
+                    "pressed": "#002620",
+                    "focus": "#002E27"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#00584A"
+                  "border": "#002E27"
                 },
                 "soft": {
                   "background": {
@@ -9806,13 +12020,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#5D4C00",
-                    "hover": "#685500",
-                    "pressed": "#4E3F00",
-                    "focus": "#5D4C00"
+                    "default": "#322900",
+                    "hover": "#382E00",
+                    "pressed": "#2A2200",
+                    "focus": "#322900"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#5D4C00"
+                  "border": "#322900"
                 },
                 "soft": {
                   "background": {
@@ -9840,13 +12054,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#9C0041",
-                    "hover": "#AD0048",
-                    "pressed": "#840036",
-                    "focus": "#9C0041"
+                    "default": "#510022",
+                    "hover": "#5A0026",
+                    "pressed": "#45001C",
+                    "focus": "#510022"
                   },
                   "foreground": "#FCFBFC",
-                  "border": "#9C0041"
+                  "border": "#510022"
                 },
                 "soft": {
                   "background": {
@@ -9934,12 +12148,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#B64500",
-                    "hover": "#C64C00",
-                    "pressed": "#A03C00",
-                    "focus": "#B64500"
+                    "default": "#DAA27F",
+                    "hover": "#E2A57F",
+                    "pressed": "#CF9D7F",
+                    "focus": "#DAA27F"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#120806",
                   "border": "#FF9F78"
                 },
                 "soft": {
@@ -9968,12 +12182,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#0065DA",
-                    "hover": "#006EED",
-                    "pressed": "#0057BF",
-                    "focus": "#0065DA"
+                    "default": "#7AAFEC",
+                    "hover": "#7AB3F6",
+                    "pressed": "#7AA7DE",
+                    "focus": "#7AAFEC"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#120806",
                   "border": "#88B8FF"
                 },
                 "soft": {
@@ -10002,12 +12216,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007764",
-                    "hover": "#00826E",
-                    "pressed": "#006757",
-                    "focus": "#007764"
+                    "default": "#77B7AC",
+                    "hover": "#77BCB2",
+                    "pressed": "#77AEA5",
+                    "focus": "#77B7AC"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#120806",
                   "border": "#00D0B2"
                 },
                 "soft": {
@@ -10036,12 +12250,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#7E6700",
-                    "hover": "#8A7100",
-                    "pressed": "#6D5A00",
-                    "focus": "#7E6700"
+                    "default": "#BAAE76",
+                    "hover": "#C0B376",
+                    "pressed": "#B1A776",
+                    "focus": "#BAAE76"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#120806",
                   "border": "#D7B300"
                 },
                 "soft": {
@@ -10070,12 +12284,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D10059",
-                    "hover": "#E30061",
-                    "pressed": "#B8004E",
-                    "focus": "#D10059"
+                    "default": "#EB93B9",
+                    "hover": "#F393BC",
+                    "pressed": "#E193B4",
+                    "focus": "#EB93B9"
                   },
-                  "foreground": "#FCFBFC",
+                  "foreground": "#120806",
                   "border": "#FF9AAD"
                 },
                 "soft": {
@@ -10104,12 +12318,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#7D635C",
-                    "hover": "#876D66",
-                    "pressed": "#6E554E",
-                    "focus": "#7D635C"
+                    "default": "#95807A",
+                    "hover": "#9D8882",
+                    "pressed": "#89756F",
+                    "focus": "#95807A"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#120806",
                   "border": "#CBAFA7"
                 },
                 "soft": {
@@ -10162,12 +12376,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#873100",
-                    "hover": "#963800",
-                    "pressed": "#722800",
-                    "focus": "#873100"
+                    "default": "#F3EAE4",
+                    "hover": "#F4EAE4",
+                    "pressed": "#F0E9E4",
+                    "focus": "#F3EAE4"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#120806",
                   "border": "#FFC4AC"
                 },
                 "soft": {
@@ -10196,12 +12410,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#0049A2",
-                    "hover": "#0052B5",
-                    "pressed": "#003D89",
-                    "focus": "#0049A2"
+                    "default": "#E4ECF5",
+                    "hover": "#E4ECF7",
+                    "pressed": "#E4EAF2",
+                    "focus": "#E4ECF5"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#120806",
                   "border": "#B4D2FF"
                 },
                 "soft": {
@@ -10230,12 +12444,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00584A",
-                    "hover": "#006253",
-                    "pressed": "#00483C",
-                    "focus": "#00584A"
+                    "default": "#E3EDEB",
+                    "hover": "#E3EEEC",
+                    "pressed": "#E3EBEA",
+                    "focus": "#E3EDEB"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#120806",
                   "border": "#00EDCA"
                 },
                 "soft": {
@@ -10264,12 +12478,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#5D4C00",
-                    "hover": "#685500",
-                    "pressed": "#4E3F00",
-                    "focus": "#5D4C00"
+                    "default": "#EDEBE2",
+                    "hover": "#EEECE2",
+                    "pressed": "#EBE9E2",
+                    "focus": "#EDEBE2"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#120806",
                   "border": "#F6CC00"
                 },
                 "soft": {
@@ -10298,12 +12512,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#9C0041",
-                    "hover": "#AD0048",
-                    "pressed": "#840036",
-                    "focus": "#9C0041"
+                    "default": "#F6E8EE",
+                    "hover": "#F7E8EE",
+                    "pressed": "#F4E8ED",
+                    "focus": "#F6E8EE"
                   },
-                  "foreground": "#FCFBFC",
+                  "foreground": "#120806",
                   "border": "#FFC1CB"
                 },
                 "soft": {
@@ -10332,12 +12546,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#5F4740",
-                    "hover": "#69504A",
-                    "pressed": "#513A33",
-                    "focus": "#5F4740"
+                    "default": "#AB9E9B",
+                    "hover": "#B0A3A0",
+                    "pressed": "#A49894",
+                    "focus": "#AB9E9B"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#120806",
                   "border": "#E6C9C0"
                 },
                 "soft": {
@@ -10386,7 +12600,7 @@
       "themeId": "berry-bloom",
       "label": "Berry Bloom",
       "source": "themes/complete/berry-bloom.theme.json",
-      "schemaVersion": 3,
+      "schemaVersion": 4,
       "roleContractVersion": 4,
       "planes": {
         "light": {
@@ -10541,13 +12755,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#C5009E",
-                    "hover": "#D311AA",
-                    "pressed": "#AD008B",
-                    "focus": "#C5009E"
+                    "default": "#88006D",
+                    "hover": "#920C76",
+                    "pressed": "#780060",
+                    "focus": "#88006D"
                   },
                   "foreground": "#FCFBFC",
-                  "border": "#C5009E"
+                  "border": "#88006D"
                 },
                 "soft": {
                   "background": {
@@ -10575,13 +12789,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007291",
-                    "hover": "#007D9F",
-                    "pressed": "#00637E",
-                    "focus": "#007291"
+                    "default": "#00536A",
+                    "hover": "#005C74",
+                    "pressed": "#00485C",
+                    "focus": "#00536A"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#007291"
+                  "border": "#00536A"
                 },
                 "soft": {
                   "background": {
@@ -10609,13 +12823,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007941",
-                    "hover": "#008548",
-                    "pressed": "#006938",
-                    "focus": "#007941"
+                    "default": "#005830",
+                    "hover": "#006135",
+                    "pressed": "#004D29",
+                    "focus": "#005830"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#007941"
+                  "border": "#005830"
                 },
                 "soft": {
                   "background": {
@@ -10643,13 +12857,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#906000",
-                    "hover": "#9D6900",
-                    "pressed": "#7E5300",
-                    "focus": "#906000"
+                    "default": "#6A4600",
+                    "hover": "#734D00",
+                    "pressed": "#5C3D00",
+                    "focus": "#6A4600"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#906000"
+                  "border": "#6A4600"
                 },
                 "soft": {
                   "background": {
@@ -10677,13 +12891,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D60003",
-                    "hover": "#E80003",
-                    "pressed": "#BC0002",
-                    "focus": "#D60003"
+                    "default": "#920002",
+                    "hover": "#9F0002",
+                    "pressed": "#810001",
+                    "focus": "#920002"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#D60003"
+                  "border": "#920002"
                 },
                 "soft": {
                   "background": {
@@ -10769,13 +12983,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#920075",
-                    "hover": "#A20082",
-                    "pressed": "#7C0063",
-                    "focus": "#920075"
+                    "default": "#4C003D",
+                    "hover": "#550044",
+                    "pressed": "#410034",
+                    "focus": "#4C003D"
                   },
                   "foreground": "#FCFBFC",
-                  "border": "#920075"
+                  "border": "#4C003D"
                 },
                 "soft": {
                   "background": {
@@ -10803,13 +13017,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00546B",
-                    "hover": "#005E78",
-                    "pressed": "#004559",
-                    "focus": "#00546B"
+                    "default": "#002D3A",
+                    "hover": "#003341",
+                    "pressed": "#002530",
+                    "focus": "#002D3A"
                   },
                   "foreground": "#FBFCFC",
-                  "border": "#00546B"
+                  "border": "#002D3A"
                 },
                 "soft": {
                   "background": {
@@ -10837,13 +13051,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00592F",
-                    "hover": "#006435",
-                    "pressed": "#004A25",
-                    "focus": "#00592F"
+                    "default": "#002F19",
+                    "hover": "#00351C",
+                    "pressed": "#002714",
+                    "focus": "#002F19"
                   },
                   "foreground": "#FBFCFB",
-                  "border": "#00592F"
+                  "border": "#002F19"
                 },
                 "soft": {
                   "background": {
@@ -10871,13 +13085,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#6A4600",
-                    "hover": "#774E00",
-                    "pressed": "#593A00",
-                    "focus": "#6A4600"
+                    "default": "#392600",
+                    "hover": "#402A00",
+                    "pressed": "#301F00",
+                    "focus": "#392600"
                   },
                   "foreground": "#FCFCFB",
-                  "border": "#6A4600"
+                  "border": "#392600"
                 },
                 "soft": {
                   "background": {
@@ -10905,13 +13119,13 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#A00001",
-                    "hover": "#B10002",
-                    "pressed": "#880001",
-                    "focus": "#A00001"
+                    "default": "#520001",
+                    "hover": "#5B0001",
+                    "pressed": "#460001",
+                    "focus": "#520001"
                   },
                   "foreground": "#FCFBFB",
-                  "border": "#A00001"
+                  "border": "#520001"
                 },
                 "soft": {
                   "background": {
@@ -10999,12 +13213,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#C5009E",
-                    "hover": "#D311AA",
-                    "pressed": "#AD008B",
-                    "focus": "#C5009E"
+                    "default": "#E691D5",
+                    "hover": "#EC98DA",
+                    "pressed": "#DB91CD",
+                    "focus": "#E691D5"
                   },
-                  "foreground": "#FCFBFC",
+                  "foreground": "#10080F",
                   "border": "#FF95DD"
                 },
                 "soft": {
@@ -11033,12 +13247,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007291",
-                    "hover": "#007D9F",
-                    "pressed": "#00637E",
-                    "focus": "#007291"
+                    "default": "#78B5C5",
+                    "hover": "#78BACC",
+                    "pressed": "#78ADBB",
+                    "focus": "#78B5C5"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#10080F",
                   "border": "#00C6F9"
                 },
                 "soft": {
@@ -11067,12 +13281,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#007941",
-                    "hover": "#008548",
-                    "pressed": "#006938",
-                    "focus": "#007941"
+                    "default": "#77B89A",
+                    "hover": "#77BE9D",
+                    "pressed": "#77AF95",
+                    "focus": "#77B89A"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#10080F",
                   "border": "#00D376"
                 },
                 "soft": {
@@ -11101,12 +13315,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#906000",
-                    "hover": "#9D6900",
-                    "pressed": "#7E5300",
-                    "focus": "#906000"
+                    "default": "#C3AA76",
+                    "hover": "#CAAE76",
+                    "pressed": "#BAA376",
+                    "focus": "#C3AA76"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#10080F",
                   "border": "#F4A600"
                 },
                 "soft": {
@@ -11135,12 +13349,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#D60003",
-                    "hover": "#E80003",
-                    "pressed": "#BC0002",
-                    "focus": "#D60003"
+                    "default": "#EE9496",
+                    "hover": "#F59496",
+                    "pressed": "#E39495",
+                    "focus": "#EE9496"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#10080F",
                   "border": "#FF9E8F"
                 },
                 "soft": {
@@ -11169,12 +13383,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#766374",
-                    "hover": "#816D7E",
-                    "pressed": "#685566",
-                    "focus": "#766374"
+                    "default": "#8F808E",
+                    "hover": "#988896",
+                    "pressed": "#847582",
+                    "focus": "#8F808E"
                   },
-                  "foreground": "#FCFBFC",
+                  "foreground": "#10080F",
                   "border": "#C4AFC1"
                 },
                 "soft": {
@@ -11227,12 +13441,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#920075",
-                    "hover": "#A20082",
-                    "pressed": "#7C0063",
-                    "focus": "#920075"
+                    "default": "#F5E7F2",
+                    "hover": "#F6E7F3",
+                    "pressed": "#F2E7F0",
+                    "focus": "#F5E7F2"
                   },
-                  "foreground": "#FCFBFC",
+                  "foreground": "#10080F",
                   "border": "#FFBEE8"
                 },
                 "soft": {
@@ -11261,12 +13475,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00546B",
-                    "hover": "#005E78",
-                    "pressed": "#004559",
-                    "focus": "#00546B"
+                    "default": "#E2ECEE",
+                    "hover": "#E2EDF0",
+                    "pressed": "#E2EAEC",
+                    "focus": "#E2ECEE"
                   },
-                  "foreground": "#FBFCFC",
+                  "foreground": "#10080F",
                   "border": "#81DCFF"
                 },
                 "soft": {
@@ -11295,12 +13509,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#00592F",
-                    "hover": "#006435",
-                    "pressed": "#004A25",
-                    "focus": "#00592F"
+                    "default": "#E2ECE7",
+                    "hover": "#E2EDE8",
+                    "pressed": "#E2EAE6",
+                    "focus": "#E2ECE7"
                   },
-                  "foreground": "#FBFCFB",
+                  "foreground": "#10080F",
                   "border": "#31EF8B"
                 },
                 "soft": {
@@ -11329,12 +13543,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#6A4600",
-                    "hover": "#774E00",
-                    "pressed": "#593A00",
-                    "focus": "#6A4600"
+                    "default": "#EEEAE1",
+                    "hover": "#EFEAE1",
+                    "pressed": "#ECE8E1",
+                    "focus": "#EEEAE1"
                   },
-                  "foreground": "#FCFCFB",
+                  "foreground": "#10080F",
                   "border": "#FFC777"
                 },
                 "soft": {
@@ -11363,12 +13577,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#A00001",
-                    "hover": "#B10002",
-                    "pressed": "#880001",
-                    "focus": "#A00001"
+                    "default": "#F6E7E7",
+                    "hover": "#F8E7E7",
+                    "pressed": "#F4E7E7",
+                    "focus": "#F6E7E7"
                   },
-                  "foreground": "#FCFBFB",
+                  "foreground": "#10080F",
                   "border": "#FFC3B9"
                 },
                 "soft": {
@@ -11397,12 +13611,12 @@
                 },
                 "solid": {
                   "background": {
-                    "default": "#594757",
-                    "hover": "#635061",
-                    "pressed": "#4B3A49",
-                    "focus": "#594757"
+                    "default": "#A89EA7",
+                    "hover": "#ADA3AC",
+                    "pressed": "#A1989F",
+                    "focus": "#A89EA7"
                   },
-                  "foreground": "#FCFBFC",
+                  "foreground": "#10080F",
                   "border": "#DEC9DB"
                 },
                 "soft": {

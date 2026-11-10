@@ -15,7 +15,7 @@ import { resolveColorMode } from '../runtime/resolve-color-mode'
 import { resolveMotion } from '../runtime/resolve-motion'
 import { resolveMaterial } from '../runtime/resolve-material'
 import { resolveRadius } from '../runtime/radius-projection'
-import { validateCustomThemeDefinition } from '../runtime/theme-registry'
+import { resolvedThemePlane, validateCustomThemeDefinition } from '../runtime/theme-registry'
 import { projectUiAppearance } from '../runtime/ui-appearance-projection'
 import { fontScaleValues, radiusPreferenceSchema } from '../schema/appearance.schema'
 import { builtInThemeIds } from '../schema/complete-theme.schema'
@@ -86,6 +86,7 @@ import {
   validatePublicRoleRegistry,
 } from './public-role-registry'
 import { createTokenResolver, type ResolvedTokenRecord, type TokenResolver } from './resolve'
+import { themePaletteColorEntries } from './theme-color-palette'
 
 const buildDirectory = dirname(fileURLToPath(import.meta.url))
 const repositoryRoot = resolve(buildDirectory, '../../../..')
@@ -1124,11 +1125,11 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     'dark',
     'standard',
   )
-  restoredConflictPlane['color.action.primary'] = restoredConflictPlane['color.control.primary']
+  restoredConflictPlane['color.action.primary'] = restoredConflictPlane['color.text.on-action']
   assertContractFailure(
     () => validateDocuments(restoredSingleRoleConflict),
     /contrast/u,
-    'restoring the single-role Dark Action and Control conflict must fail',
+    'an Action fill equal to its text color must fail',
   )
 
   const cappedControlForeground = structuredClone(canonicalDocuments)
@@ -1353,7 +1354,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     result.unoCssMappings,
     unoCssMappingRecords(publicRoleRecords),
-    'Token preprocessing must carry exactly 60 UnoCSS mapping records',
+    'Token preprocessing must carry the exact UnoCSS mapping records',
   )
   assertInvariantEqual(
     result.namedContrasts.map((record) =>
@@ -1766,11 +1767,10 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
       var(--ui-color-border-default);`,
       ) &&
       runtimeCss.includes(
-        `--ui-admin-shadow-focus-ring:
-      inset 0rem 0rem 0rem var(--ui-admin-border-width) var(--ui-color-focus-ring),
-      0rem 0rem 0rem var(--ui-admin-focus-width) var(--ui-color-focus-ring);`,
+        `--ui-admin-shadow-focus-ring: inset 0rem 0rem 0rem var(--ui-admin-focus-width)
+      var(--ui-color-focus-ring);`,
       ),
-    'the admitted single-layer Shadow format must remain backward compatible',
+    'the admitted single-layer Shadow format and inset focus projection must remain stable',
   )
 
   assertContractFailure(
@@ -2472,7 +2472,6 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
           Object.isFrozen(snapshot) &&
             Object.isFrozen(snapshot.theme) &&
             Object.isFrozen(snapshot.statusColors) &&
-            snapshot.colorPalette !== null &&
             Object.isFrozen(snapshot.colorPalette) &&
             Object.isFrozen(snapshot.colorPalette.roles.primary.solid.background),
           'UI Appearance projection must freeze every object boundary',
@@ -3329,21 +3328,6 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
   const currentSource = {
     ...representative.definition,
     id: 'custom.current',
-    planes: Object.fromEntries(
-      ['light', 'dark'].map((mode) => [
-        mode,
-        Object.fromEntries(
-          ['standard', 'enhanced'].map((contrast) => [
-            contrast,
-            Object.fromEntries(
-              representative.bank.records
-                .filter((record) => record.colorMode === mode && record.contrast === contrast)
-                .map((record) => [record.publicRole, record.resolvedValue]),
-            ),
-          ]),
-        ),
-      ]),
-    ),
   }
   const validated = validateCustomThemeDefinition(currentSource)
   assertInvariant(
@@ -3438,6 +3422,50 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         entries: [{ registryKind: 'custom', themeId: definition.id, definition }],
       }),
     })
+  const scrimBank = representative.bank.records.find(
+    (record) =>
+      record.colorMode === 'light' &&
+      record.contrast === 'standard' &&
+      record.publicRole === 'color.scrim.viewport',
+  )
+  assertInvariant(scrimBank !== undefined, 'The Custom color parity probe requires the scrim Bank')
+  for (const [color, expectedValid] of [
+    ['rgb(0 0 0 / 56%)', true],
+    ['hsl(0 0% 0% / 0.56)', true],
+    ['hwb(0 0% 100% / 0.56)', true],
+    ['lab(0% 0 0 / 0.56)', true],
+    ['lch(0% 0 0 / 0.56)', true],
+    ['oklab(0% 0 0 / 0.56)', true],
+    ['oklch(0% 0 0 / 0.56)', true],
+    ['color(srgb 0 0 0 / 0.56)', true],
+    ['rgba(0, 0, 0, 0.5)', false],
+    ['rgb(300 0 0 / 0.56)', false],
+    ['color(display-p3 0 0 0 / 0.56)', false],
+    ['currentColor', false],
+    ['rgb(0 0 / 0.56)', false],
+  ] as const) {
+    const candidate = structuredClone(currentCustomTheme)
+    candidate.planes.light.standard['color.scrim.viewport'] = color
+    const runtime = validateCustomThemeDefinition(candidate)
+    const firstPaint = executeCustomTheme(candidate)
+    assertInvariant(
+      (runtime.status === 'validated') === expectedValid &&
+        (firstPaint.attributes['data-theme-kind'] === 'custom') === expectedValid,
+      `First Paint and runtime must agree on Custom color ${color}`,
+    )
+    if (expectedValid) {
+      assertInvariant(
+        firstPaint.customProperties[scrimBank.bankVariable] === color,
+        `First Paint must preserve the validated Custom color ${color}`,
+      )
+    } else {
+      assertInvariantEqual(
+        firstPaint.customProperties,
+        safetyCustomProperties,
+        `Rejected Custom color ${color} must preserve the safety Bank`,
+      )
+    }
+  }
   for (let radius = 0; radius <= 16; radius += 1) {
     const execution = executeCustomTheme(currentCustomTheme, radius)
     assertInvariantEqual(
@@ -3535,7 +3563,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     const normalized = runtime.entry.definition
     for (const mode of ['light', 'dark'] as const) {
       for (const contrast of ['standard', 'enhanced'] as const) {
-        const plane = normalized.planes[mode][contrast]
+        const plane = resolvedThemePlane(normalized, mode, contrast)
         const snapshot = projectUiAppearance(
           {
             ...ProductPreferenceDefault,
@@ -3564,7 +3592,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         }
         for (const [role, value] of Object.entries(definition.planes[mode][contrast])) {
           assertInvariant(
-            plane[role] === value,
+            normalized.planes[mode][contrast][role] === value,
             `Contract ${String(version)} must retain the authored ${role} string`,
           )
         }
@@ -3572,9 +3600,14 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           Object.keys(plane).length === 30,
           'all normalized planes must contain exactly 30 roles',
         )
-        assertInvariant(
-          snapshot.colorPalette === null,
-          'Current role-only Custom definitions must retain their own projection',
+        assertInvariantEqual(
+          themePaletteColorEntries(snapshot.colorPalette),
+          new Map(
+            [...themePaletteColorEntries(normalized.uiPalette[mode][contrast])].map(
+              ([path, color]) => [path, formatOpaqueSrgbColor(color)],
+            ),
+          ),
+          'Complete Custom definitions must project their own semantic palette',
         )
       }
     }
@@ -3589,7 +3622,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
         ...Object.fromEntries(
           (registry.builtInEntries[0]?.bank.records ?? []).map((record) => [
             record.bankVariable,
-            normalized.planes[record.colorMode][record.contrast][record.publicRole],
+            resolvedThemePlane(normalized, record.colorMode, record.contrast)[record.publicRole],
           ]),
         ),
       },
@@ -3610,6 +3643,9 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       'computed-color',
       'invalid-alpha',
       'invalid-contrast',
+      'mismatched-palette-reference',
+      'invalid-palette-contrast',
+      'missing-palette',
     ] as const) {
       const invalid = structuredClone(definition)
       const plane = invalid.planes.light.standard
@@ -3620,6 +3656,12 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
       if (kind === 'invalid-alpha') plane['color.scrim.viewport'] = 'oklch(0% 0 0 / 0.5)'
       if (kind === 'invalid-contrast')
         plane['color.text.primary'] = plane['color.surface.page'] ?? ''
+      if (kind === 'mismatched-palette-reference')
+        plane['color.action.primary'] = plane['color.control.primary'] ?? ''
+      if (kind === 'invalid-palette-contrast')
+        invalid.uiPalette.light.standard.roles.primary.solid.background.default =
+          invalid.uiPalette.light.standard.surfaces.surface
+      if (kind === 'missing-palette') Reflect.deleteProperty(invalid, 'uiPalette')
       const before = stableJson(invalid)
       const rejected = validateCustomThemeDefinition(invalid)
       const firstPaint = executeCustomTheme(invalid)
@@ -3974,7 +4016,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
       compareCodePoints,
     ),
     projection.mappings.map((mapping) => mapping.roleId).sort(compareCodePoints),
-    'arbitrary public-variable bypass validation must cover all 60 mappings',
+    'arbitrary public-variable bypass validation must cover all mappings',
   )
   assertInvariant(
     new Set(forbiddenCandidates.map((candidate) => candidate.className)).size ===
@@ -4092,7 +4134,7 @@ async function validateInstalledUnoCssPreset(result: TokenBuildResult): Promise<
             : mapping.classes,
       )
       .sort(compareCodePoints),
-    'the actual platformPreset must generate all 60 registered public classes',
+    'the actual platformPreset must generate all registered public classes',
   )
 
   const statusClasses = ['info', 'success', 'warning', 'error'].flatMap((tone) => [

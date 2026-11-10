@@ -125,6 +125,8 @@ export function cssVariableForRole(role: TokenRoleMetadata): string {
     const namespace = {
       border: 'border',
       control: 'control',
+      icon: 'icon',
+      indicator: 'indicator',
       motion: 'motion',
       radius: 'radius',
       shadow: 'shadow',

@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 import { isInSrgbGamut, parseCssColor } from './css-color'
 import { tokenReferenceSchema } from './token-reference.schema'
+import { themeColorPalettesSchema } from './theme-color-palette.schema'
 
 export const builtInThemeIds = [
   'royal-iris',
@@ -10,7 +11,7 @@ export const builtInThemeIds = [
   'ember-coral',
   'berry-bloom',
 ] as const
-export const completeThemeSchemaVersion = 3 as const
+export const completeThemeSchemaVersion = 4 as const
 export const completeThemeRoleContractVersion = 4 as const
 export const builtInThemeIdSchema = z.enum(builtInThemeIds)
 export const customThemeIdSchema = z.string().min(1).brand<'CustomThemeId'>()
@@ -96,7 +97,6 @@ const absoluteCssColorSchema = z.string().refine(isSupportedAbsoluteCssColor, {
 })
 
 const directPrimitiveOrAbsoluteColorSchema = z.union([tokenReferenceSchema, absoluteCssColorSchema])
-const absoluteColorRoleMapSchema = z.record(z.string(), absoluteCssColorSchema)
 const authoredColorRoleMapSchema = z.record(z.string(), directPrimitiveOrAbsoluteColorSchema)
 
 function planeSchema(roleMapSchema: typeof authoredColorRoleMapSchema) {
@@ -120,6 +120,7 @@ const completeThemeContractShape = {
   schemaVersion: z.literal(completeThemeSchemaVersion),
   roleContractVersion: z.literal(completeThemeRoleContractVersion),
   label: z.string().min(1),
+  uiPalette: themeColorPalettesSchema,
 }
 
 export const completeBuiltInThemeDefinitionSchema = z.strictObject({
@@ -131,7 +132,7 @@ export const completeBuiltInThemeDefinitionSchema = z.strictObject({
 export const customThemeDefinitionSchema = z.strictObject({
   ...completeThemeContractShape,
   id: customThemeIdSchema,
-  planes: customPlanesSchema(absoluteColorRoleMapSchema),
+  planes: customPlanesSchema(authoredColorRoleMapSchema),
 })
 
 export type BuiltInThemeId = z.infer<typeof builtInThemeIdSchema>

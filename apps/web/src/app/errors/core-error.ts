@@ -96,6 +96,9 @@ export interface CoreErrorLedger {
   dispose(): void
 }
 
+const coreErrorLedgerCapacity = 100
+const coreErrorDiagnosticsProperty = '__PAVP_ERROR_DIAGNOSTICS__'
+
 export function createCoreErrorLedger(): CoreErrorLedger {
   const capturedErrors = new Map<string, NormalizedCoreError>()
   let disposed = false
@@ -111,6 +114,12 @@ export function createCoreErrorLedger(): CoreErrorLedger {
       }
 
       capturedNormalizedCoreErrors.add(error)
+      if (capturedErrors.size === coreErrorLedgerCapacity) {
+        const oldest = capturedErrors.keys().next()
+        if (!oldest.done) {
+          capturedErrors.delete(oldest.value)
+        }
+      }
       capturedErrors.set(error.errorInstanceId, error)
       return true
     },
@@ -128,5 +137,41 @@ export function createCoreErrorLedger(): CoreErrorLedger {
       disposed = true
       capturedErrors.clear()
     },
+  }
+}
+
+export function installCoreErrorDiagnostics(target: object, ledger: CoreErrorLedger): () => void {
+  const diagnostics = Object.freeze({ snapshot: () => ledger.snapshot() })
+
+  try {
+    if (coreErrorDiagnosticsProperty in target) {
+      throw new Error()
+    }
+    Object.defineProperty(target, coreErrorDiagnosticsProperty, {
+      configurable: true,
+      enumerable: false,
+      value: diagnostics,
+      writable: false,
+    })
+  } catch {
+    try {
+      // eslint-disable-next-line no-console -- This fixed warning reports unavailable local diagnostics without exposing error data.
+      console.warn('[PAVP] Local error diagnostics are unavailable.')
+    } catch {
+      // Diagnostics must never prevent the application from starting.
+    }
+    return () => undefined
+  }
+
+  return () => {
+    try {
+      if (
+        Object.getOwnPropertyDescriptor(target, coreErrorDiagnosticsProperty)?.value === diagnostics
+      ) {
+        Reflect.deleteProperty(target, coreErrorDiagnosticsProperty)
+      }
+    } catch {
+      // Diagnostic cleanup must not interrupt application disposal.
+    }
   }
 }

@@ -45,6 +45,20 @@ const appearanceDirectory = resolve(rootDirectory, 'apps/web/src/app/appearance'
 
 const expectedStorageRegistryRecords = [
   {
+    id: 'form-drafts',
+    ownerDomain: 'apps/web/src/app/forms',
+    key: applicationConfig.forms.draftStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'persisted-envelope',
+    schemaId: 'form-draft',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
+  {
     id: 'appearance-preference',
     ownerDomain: 'apps/web/src/app/appearance',
     key: applicationConfig.appearance.preferenceStorageKey,
@@ -107,6 +121,20 @@ const expectedStorageRegistryRecords = [
     medium: 'local-storage',
     persistenceShape: 'direct-compatibility',
     schemaId: 'workspace-session',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
+  {
+    id: 'shell-scroll',
+    ownerDomain: 'apps/web/src/app/scroll',
+    key: applicationConfig.scroll.shellStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'shell-scroll',
     currentSchemaVersion: 1,
     minimumSupportedSchemaVersion: 1,
     principalPartition: 'none',
@@ -247,11 +275,13 @@ const expectedSafeContextFields = [
 ] as const
 
 const rawStorageKeyLiterals = [
+  'pavp:web:form-drafts',
   'pavp:web:user-preference',
   'pavp:web:custom-theme-registry',
   'pavp:web:locale-preference',
   'pavp:web:navigation-preference',
   'pavp:web:workspace-session',
+  'pavp:web:shell-scroll',
   'pavp:web:scroll-preference',
   'pavp:web:scroll-refresh-session',
   'pavp:web:browser-page-session',
@@ -379,7 +409,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain exactly the eight admitted direct-compatibility records.',
+      'Storage Registry must contain the nine direct-compatibility records and the form-draft envelope.',
     )
   }
 
@@ -389,11 +419,13 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
   }[]
 
   if (
-    shaped.some((record) => record.persistenceShape === 'persisted-envelope') ||
+    shaped.filter((record) => record.persistenceShape === 'persisted-envelope').length !== 1 ||
     shaped.some((record) => record.medium === 'memory') ||
     shaped.some((record) => record.medium === 'indexed-db')
   ) {
-    violations.push('Storage Registry must admit zero envelope, memory-only, or IndexedDB records.')
+    violations.push(
+      'Storage Registry must admit exactly one form-draft envelope and no memory-only or IndexedDB records.',
+    )
   }
 
   return violations
@@ -602,6 +634,7 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     storageBrowserAccess(source)
 
   const localStorageOwners = new Set([
+    'apps/web/src/app/storage/form-draft-storage.ts',
     'apps/web/src/app/storage/shared-preference-events.ts',
     'apps/web/src/app/appearance/preference-storage.ts',
     'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
@@ -609,6 +642,7 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     'apps/web/src/app/storage/navigation-preference-storage.ts',
     'apps/web/src/app/storage/workspace-session-storage.ts',
     'apps/web/src/app/storage/scroll-preference-storage.ts',
+    'apps/web/src/app/storage/shell-scroll-storage.ts',
   ])
   if (
     displayPath.startsWith('apps/web/src/') &&
@@ -655,7 +689,8 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
   )
   if (
     (storageEventRegistration || storageEventHandler) &&
-    displayPath !== 'apps/web/src/app/storage/shared-preference-events.ts'
+    displayPath !== 'apps/web/src/app/storage/shared-preference-events.ts' &&
+    displayPath !== 'apps/web/src/app/storage/form-draft-storage.ts'
   ) {
     violations.push(displayPath + ': Storage change events have no admitted consumer.')
   }
@@ -830,6 +865,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
       isDeepStrictEqual(Object.keys(applicationConfig).sort(), [
         'appearance',
         'browserPage',
+        'forms',
         'localization',
         'navigation',
         'scroll',
@@ -943,7 +979,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         (call) => callMemberName(call) === 'initializeNavigationPreference',
       ).length === 1 &&
       kernel.text.includes('resources.storage.owner.navigationPreference') &&
-      kernel.text.includes('consoleNavigationRegistry'),
+      kernel.text.includes('consoleNavigationGroups'),
     'the Storage port and one pre-mount Kernel initializer must retain their application owners.',
   )
   const definitions = nodesOf(store, ts.isCallExpression).filter(
@@ -1121,18 +1157,18 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain exactly the eight admitted direct-compatibility records.',
+      'Storage Registry must contain the nine direct-compatibility records and the form-draft envelope.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
   }
 
   const mutatedEnvelopeRegistry = storageRegistry.map((record, index) =>
-    index === 0 ? { ...record, persistenceShape: 'persisted-envelope' as const } : record,
+    index === 1 ? { ...record, persistenceShape: 'persisted-envelope' as const } : record,
   )
   if (
     !validateStorageRegistryRecords(mutatedEnvelopeRegistry).includes(
-      'Storage Registry must admit zero envelope, memory-only, or IndexedDB records.',
+      'Storage Registry must admit exactly one form-draft envelope and no memory-only or IndexedDB records.',
     )
   ) {
     failures.push('Negative probe failed: Storage envelope admission was accepted.')
@@ -1425,6 +1461,13 @@ function scrollResultOrchestrationNegativeProbes(source: string): string[] {
 async function scrollStorageViolations(): Promise<string[]> {
   const violations: string[] = []
   const contracts = [
+    [
+      'shell-scroll-contract',
+      'shellScrollSchema',
+      ['schemaVersion', 'sidebarTop', 'drawerTop', 'tabsLeft'],
+      'shell-scroll-storage',
+      'localStorage',
+    ],
     [
       'scroll-preference-contract',
       'scrollPreferenceSchema',
@@ -2315,6 +2358,54 @@ function validatePreferenceMutationResults(): readonly string[] {
     stopScroll?.()
     piniaLibrary.disposePinia(pinia)
     piniaLibrary.setActivePinia(originalPinia)
+  }
+  const nestedIds = ['components', 'forms', 'design']
+  const nestedParents = new Map<string, string | undefined>([
+    ['components', undefined],
+    ['forms', 'components'],
+    ['design', undefined],
+  ])
+  for (const accordion of [false, true]) {
+    const nestedPinia = piniaLibrary.createPinia()
+    let stop: (() => void) | undefined
+    try {
+      const navigation = useNavigationPreferenceStore(nestedPinia)
+      stop = navigation.initialize(
+        {
+          read: () => ({
+            status: 'found',
+            preference: {
+              schemaVersion: 2,
+              wideNavigationCollapsed: false,
+              accordion,
+              expandedGroupIds: ['components', 'forms'],
+            },
+          }),
+          write: () => ({ status: 'saved' }),
+          subscribe: () => () => undefined,
+        },
+        nestedIds,
+        nestedParents,
+      )
+      expect(
+        isDeepStrictEqual(navigation.expandedGroupIds, ['components', 'forms']),
+        'restored nested expansion must preserve the entire ancestor path',
+      )
+      navigation.setExpandedGroupIds(nestedIds)
+      expect(
+        isDeepStrictEqual(navigation.expandedGroupIds, accordion ? ['design'] : nestedIds),
+        'accordion must retain only one sibling branch while free mode preserves every group',
+      )
+      navigation.setExpandedGroupIds(['components', 'forms'])
+      expect(
+        isDeepStrictEqual(navigation.expandedGroupIds, ['components', 'forms']),
+        'opening a nested group must retain its expanded parent',
+      )
+    } finally {
+      stop?.()
+      piniaLibrary.disposePinia(nestedPinia)
+      piniaLibrary.setActivePinia(originalPinia)
+    }
   }
   for (const timing of ['mode', 'groups'] as const) {
     const casePinia = piniaLibrary.createPinia()

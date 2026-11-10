@@ -17,7 +17,7 @@ const edgeGestures = Object.freeze({
   whilePress: 'press',
 })
 
-// This private projection owns only the two admitted production interactions.
+// This private projection owns navigation, workspace, form-feedback and table-sort interactions.
 // Effective mode is resolved once by Design System; values retain their named contracts.
 export function projectMotionPolicy(mode: MotionMode, featureReady = true) {
   const movement = featureReady && mode === 'full'
@@ -29,6 +29,15 @@ export function projectMotionPolicy(mode: MotionMode, featureReady = true) {
     reducedMotion: mode === 'full' ? ('user' as const) : ('always' as const),
     skipAnimations: mode === 'none' || !featureReady,
     navigationTransition,
+    tableSortIcon: Object.freeze({
+      visible: { opacity: 1, scale: 1 },
+      hidden: { opacity: 0, scale: movement ? 0.82 : 1 },
+      transition: { duration, ease: 'easeOut' as const },
+    }),
+    formFeedback: Object.freeze({
+      x: movement ? [0, -3, 3, -2, 1, 0] : 0,
+      transition: { duration: movement ? 0.28 : 0 },
+    }),
     workspace: Object.freeze({
       transition: {
         duration,
@@ -39,6 +48,11 @@ export function projectMotionPolicy(mode: MotionMode, featureReady = true) {
       resting,
       leaving,
       entering: { ...leaving, y: movement ? 3 : 0 },
+      tabSurfaceVariants: {
+        rest: { opacity: 0, scaleX: movement ? 0.92 : 1 },
+        hover: { opacity: 0.6, scaleX: 1 },
+        press: { opacity: 1, scaleX: movement ? 0.98 : 1 },
+      },
       closeMarkVariants: {
         rest: { opacity: 0.68, scale: 1 },
         hover: { opacity: 1, scale: movement ? 1.12 : 1 },

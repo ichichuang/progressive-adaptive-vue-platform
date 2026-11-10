@@ -1,5 +1,6 @@
 import { generatedThemeRegistry } from '../generated/theme-registry'
 import {
+  completeThemeSchemaVersion,
   customThemeDefinitionSchema,
   type BuiltInThemeDefinition,
   type BuiltInThemeId,
@@ -13,6 +14,7 @@ import {
   type ParsedCssColor,
 } from '../schema/css-color'
 import type { ThemeReference } from '../schema/preference.schema'
+import { paletteContrastFailure } from '../schema/theme-palette-validation'
 
 const themeColorModes = ['light', 'dark'] as const
 const themeContrasts = ['standard', 'enhanced'] as const
@@ -143,12 +145,25 @@ function validationEvidence(
   }
 }
 
-function colorPlane(
-  definition: CustomThemeDefinition,
+export function resolvedThemePlane(
+  definition: Pick<CustomThemeDefinition, 'planes' | 'uiPalette'>,
   colorMode: ThemeColorMode,
   contrast: ThemeContrast,
 ): Readonly<Record<string, string>> {
-  return definition.planes[colorMode][contrast]
+  const palette = definition.uiPalette[colorMode][contrast]
+  return Object.fromEntries(
+    Object.entries(definition.planes[colorMode][contrast]).map(([role, value]) => {
+      if (role === 'color.scrim.viewport') return [role, value]
+      const match = /^\{palette\.([a-z][a-z0-9-]*(?:\.[a-z][a-z0-9-]*)+)\}$/u.exec(value)
+      if (match?.[1] === undefined) return [role, '']
+      let resolved: unknown = palette
+      for (const segment of match[1].split('.')) {
+        if (!isRecord(resolved) || !Object.hasOwn(resolved, segment)) return [role, '']
+        resolved = resolved[segment]
+      }
+      return [role, typeof resolved === 'string' ? resolved : '']
+    }),
+  )
 }
 
 function parsedColor(value: string): ParsedCssColor | null {
@@ -164,11 +179,35 @@ function validateCustomThemePlanes(
 ): readonly ThemeValidationEvidence[] {
   const evidence: ThemeValidationEvidence[] = []
   const roleIds = generatedThemeRegistry.activePublicColorRoles.map((record) => record.publicRole)
+  const textContract = generatedThemeRegistry.namedContrasts.find(
+    (record) => record.id === 'text-primary-on-panel',
+  )
+  const boundaryContract = generatedThemeRegistry.namedContrasts.find(
+    (record) => record.id === 'control-primary-on-panel',
+  )
+  if (textContract === undefined || boundaryContract === undefined)
+    throw new Error('The canonical palette contrast requirements are unavailable.')
 
   for (const colorMode of themeColorModes) {
     for (const contrast of themeContrasts) {
       const planeName = `${colorMode}.${contrast}`
-      const plane = colorPlane(definition, colorMode, contrast)
+      const plane = resolvedThemePlane(definition, colorMode, contrast)
+      const minimum = (record: {
+        readonly standardMinimum: number
+        readonly enhancedMinimum: number
+      }) => (contrast === 'enhanced' ? record.enhancedMinimum : record.standardMinimum)
+      const paletteFailure = paletteContrastFailure(
+        definition.uiPalette[colorMode][contrast],
+        colorMode,
+        minimum(textContract),
+        minimum(boundaryContract),
+        (foreground, background) =>
+          calculateWcag21Contrast(parseCssColor(foreground), parseCssColor(background)),
+      )
+      if (paletteFailure !== null)
+        evidence.push(
+          validationEvidence(`uiPalette.${planeName}`, definition.id, { plane: planeName }),
+        )
 
       if (!exactStringSet(Object.keys(plane), roleIds)) {
         evidence.push(
@@ -182,6 +221,22 @@ function validateCustomThemePlanes(
 
       for (const roleId of roleIds) {
         const value = plane[roleId]
+
+        // Public bindings and the component palette are two projections of one
+        // semantic source. A custom theme may change values, not their meaning.
+        const authoredValue = definition.planes[colorMode][contrast][roleId]
+        const canonicalReference =
+          generatedThemeRegistry.builtInEntries[0].definition.planes[colorMode][contrast][roleId]
+        if (roleId !== 'color.scrim.viewport' && authoredValue !== canonicalReference) {
+          evidence.push(
+            validationEvidence(`planes.${planeName}.${roleId}`, definition.id, {
+              plane: planeName,
+              role: roleId,
+              ...(authoredValue === undefined ? {} : { submittedValue: authoredValue }),
+            }),
+          )
+          continue
+        }
 
         if (value === undefined) {
           evidence.push(
@@ -204,7 +259,7 @@ function validateCustomThemePlanes(
             validationEvidence(`planes.${planeName}.${roleId}`, definition.id, {
               plane: planeName,
               role: roleId,
-              submittedValue: value,
+              ...(authoredValue === undefined ? {} : { submittedValue: authoredValue }),
               ...(typeof color?.alpha === 'number' ? { actualAlpha: color.alpha } : {}),
               requiredAlphaPolicy: `exact:${String(requiredAlpha)}`,
             }),
@@ -247,8 +302,8 @@ function validateCustomThemePlanes(
       }
     }
 
-    const standard = colorPlane(definition, colorMode, 'standard')
-    const enhanced = colorPlane(definition, colorMode, 'enhanced')
+    const standard = resolvedThemePlane(definition, colorMode, 'standard')
+    const enhanced = resolvedThemePlane(definition, colorMode, 'enhanced')
     for (const pair of generatedThemeRegistry.namedContrasts) {
       if (!pair.enhancedDifferenceRequired) continue
       const values = [
@@ -318,8 +373,9 @@ export function validateCustomThemeDefinition(input: unknown): CustomThemeValida
       'id',
       'label',
       'planes',
+      'uiPalette',
     ]) &&
-    input['schemaVersion'] === 3 &&
+    input['schemaVersion'] === completeThemeSchemaVersion &&
     typeof input['label'] === 'string' &&
     input['label'].length > 0 &&
     isRecord(input['planes']) &&
@@ -548,7 +604,9 @@ function customBankValues(
 
   const values = sourceRecords.map((record) => ({
     name: record.bankVariable,
-    value: entry.definition.planes[record.colorMode][record.contrast][record.publicRole],
+    value: resolvedThemePlane(entry.definition, record.colorMode, record.contrast)[
+      record.publicRole
+    ],
   }))
 
   if (

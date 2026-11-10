@@ -2,6 +2,7 @@ import { generatedThemeRegistry } from '../generated/theme-registry'
 import { ProductPreferenceDefault } from '../runtime/appearance-defaults'
 import { projectUiAppearance } from '../runtime/ui-appearance-projection'
 import {
+  resolvedThemePlane,
   validateCustomThemeDefinition,
   type CustomThemeRegistryEntry,
   type ThemeRegistryEntry,
@@ -62,7 +63,7 @@ function requiredSwatch(
               record.contrast === contrast &&
               record.publicRole === role,
           )?.resolvedValue
-      : entry.definition.planes[colorMode][contrast][role]
+      : resolvedThemePlane(entry.definition, colorMode, contrast)[role]
 
   if (value === undefined) {
     throw new TypeError(`${entry.themeId}: the Appearance theme preview projection is incomplete.`)

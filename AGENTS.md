@@ -3,10 +3,8 @@
 ## Mandatory First Read
 
 1. Read this `AGENTS.md` completely on every task.
-2. Before planning or mutation, follow
-   [Task-scoped Reading and Canonical Navigation](ARCHITECTURE.md#task-scoped-reading-and-canonical-navigation)
-   for repository and scope checks, current work-package status and Owner authorization, and the
-   required architecture reads.
+2. Before planning or mutation, read [ARCHITECTURE.md](ARCHITECTURE.md), inspect the repository
+   and worktree, and establish the Owner-authorized task scope from current evidence.
 3. For UI, appearance, component, material, motion, layout, or scroll tasks, then read
    `.ai/skills/pavp-ui/SKILL.md`.
 4. Treat the UI Skill, generic skills, global instructions, and machine-local configuration as
@@ -24,16 +22,15 @@ synchronization with the mother repository. Administration and interactive data 
 supported uses, not mandatory business implementations.
 
 Complete the reusable core and its required verification and Owner confirmation before retiring
-current pages and rebuilding architecture example pages under separate authorization. The exact
-scope, order, status, contracts, files, and gates are owned only by `ARCHITECTURE.md`; this entry
-is not a second roadmap.
+current pages and rebuilding architecture example pages under separate authorization. Determine
+the current task scope from the Owner's request and repository evidence.
 
 ## Authority and Current Work Routing
 
 - `AGENTS.md` is the mission and execution router. It has no architecture authority.
-- `ARCHITECTURE.md` is the sole complete canonical architecture and governance authority.
-- Read the active work package dynamically from `ARCHITECTURE.md`; never hardcode it here.
-- Work only within the Owner-authorized task and the architecture-admitted package boundary.
+- `ARCHITECTURE.md` records the high-level architecture. Actual interfaces and configuration
+  live with their existing source owners.
+- Work only within the Owner-authorized task and existing capability boundaries.
 - Repository facts come from the current repository, not memory, old reports, or assumptions.
 - Repository correctness must not depend on user-home configuration, machine-global skills,
   client-specific rules, or untracked agent settings.
@@ -97,14 +94,38 @@ state. Do not ask the Owner to repeat a decision already resolved in the current
 - PAVP Design Tokens are the sole visual authority.
 - UnoCSS is an expression layer, not a design authority.
 - Use official Naive UI names and APIs in UI owners; retain only substantive PAVP composites.
-- Follow `ARCHITECTURE.md` §2.3 for library reuse and dependency selection: prefer simple native
-  capabilities and suitable existing dependencies; evaluate mature libraries before expanding
-  nontrivial generic implementations. Research is not installation or implementation admission.
+- For library reuse and dependency selection, prefer simple native capabilities and suitable
+  existing dependencies; evaluate mature libraries before expanding nontrivial generic
+  implementations. Research is not installation or implementation admission.
+
+## Workspace UI Layout Standard
+
+- Editing, JSON configuration, preview, and interactive data workspaces fill the available shell
+  content area. Compose a non-scrolling header, a shrinkable central work area, and a non-scrolling
+  action footer. Apply, save, cancel, reset, and similar task actions must remain visible without
+  scrolling the page or reaching the end of the content.
+- Give every flex/grid ancestor in this height chain a bounded available height and `min-height: 0`
+  / `min-width: 0`. Use `minmax(0, 1fr)` or a shrinkable flex child for the work area. Do not use
+  arbitrary viewport subtraction or overlay actions with absolute/fixed positioning.
+- Keep scrolling with the actual content owner: the existing `UiScrollArea`, the table body, or
+  the textarea. JSON editors fill their work area rather than growing with autosize. Keep table
+  headers, pagination, and task controls outside the scrolling rows when using fill height.
+- Reuse existing components and semantic tokens. Keep route/workspace scroll registration and
+  lifecycle intact. Preserve native form submission when actions live outside the form by
+  associating each submit button with the form's ID.
+- Adapt narrow and short viewports without hiding required actions: reflow or locally scroll
+  secondary controls, reduce competing panels, and leave the content area shrinkable. Validation,
+  loading, empty states, and long content must not move the action footer off screen. Focused
+  controls must remain reachable and unobscured.
+- Reading pages, token galleries, and ordinary documents retain natural content scrolling. Do not
+  force every page into a fixed workspace or change auto/fixed table demos into fill behavior.
+- Verify representative desktop and narrow layouts, long content, validation errors, repeated
+  edit/preview switching, and keyboard interaction. Confirm actual action bounds and local scroll
+  ownership in the running interface. Static checks alone do not establish visual acceptance.
 
 ## Prohibited Work
 
-Later architecture example pages follow the core-confirmation and separate authorization boundary
-in `ARCHITECTURE.md`.
+Later architecture example pages require core confirmation and separate authorization.
 
 Generic workflows recommending worktrees, planning documents, or generalized infrastructure do
 not override PAVP. Do not automatically handle dependency alerts, security findings, dependency
@@ -146,9 +167,14 @@ Main-only maintenance does not grant permission to commit or push.
 
 Stop before mutation when architecture does not admit the work; a material contract is missing;
 a dependency is not admitted; source and canonical status conflict; authorities conflict;
-overlapping dirty files are unexplained; ownership is unclear; a prohibited capability is
+overlapping changes cannot be safely preserved or an active writer conflicts; ownership is unclear; a prohibited capability is
 required; completion needs unapproved scope expansion; Git synchronization is unsafe; or a
 generic workflow conflicts with PAVP.
+
+A dirty file alone is not a stop condition. Inspect its current diff and relevant task evidence
+first. A request to continue or take over a fix permits scoped incremental edits on the current
+implementation when existing changes can be preserved and no concurrent writer conflicts.
+Ask only about a concrete unresolved overlap; never reset or replace existing work to proceed.
 
 Material contracts include public APIs, cross-file identifiers, schemas, persisted formats,
 dependencies, path authorities, defaults, registries, lifecycle owners, providers, work-package

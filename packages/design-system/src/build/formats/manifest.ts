@@ -52,11 +52,11 @@ const manifestGovernanceContract = {
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 257,
+    expectedCountDelta: 421,
     expectedCounts: {
-      tokens: 274,
-      activePublicRoles: 60,
-      unoCssMappings: 60,
+      tokens: 356,
+      activePublicRoles: 101,
+      unoCssMappings: 101,
       namedContrasts: 34,
       alphaContracts: 1,
       densities: 3,
@@ -245,6 +245,7 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
       id: theme['themeId'],
       label: theme['label'],
       planes,
+      uiPalette: theme['uiPalette'],
     })
     const logicalRecords = deriveThemeBankRecords(definition.planes, activePublicRoles)
     if (logicalRecords.length !== 120) {

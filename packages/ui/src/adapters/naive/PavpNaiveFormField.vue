@@ -1,20 +1,21 @@
-<script setup lang="ts" generic="I, K extends UiFormKey<I>">
+<script setup lang="ts">
 import { NFormItem } from 'naive-ui/es/form'
+import FormValidationFeedback from '../motion/FormValidationFeedback.vue'
 import { computed, inject, useAttrs } from 'vue'
 import type {
   UiFormCopy,
   UiFormFieldBinding,
   UiFormFieldConfig,
-  UiFormKey,
 } from '../../components/form-contracts'
 import { formNativeAttributes } from '../../components/form-native-attributes'
 import { pavpNaiveAppearanceKey } from './pavp-naive-runtime-context'
-import { createPavpNaiveFormThemeProjection } from './pavp-naive-theme'
+import { createPavpNaiveFormThemeProjection } from './pavp-naive-form-theme'
 
 defineOptions({ name: 'PavpNaiveFormField', inheritAttrs: false })
 defineProps<{
-  readonly binding: UiFormFieldBinding<I, K>
-  readonly config: UiFormFieldConfig<I>
+  readonly feedbackRevision: number
+  readonly binding: UiFormFieldBinding
+  readonly config: UiFormFieldConfig
   readonly copy: UiFormCopy
 }>()
 defineSlots<{ default: () => unknown }>()
@@ -34,30 +35,27 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
     :data-invalid="binding.invalid"
     :data-readonly="binding.readonly"
     label-placement="top"
-    :label="config.label()"
+    :label="config.label"
     :label-props="{ id: binding.labelId, for: binding.controlId }"
     :show-require-mark="false"
-    :show-feedback="binding.invalid"
+    :show-feedback="false"
     :theme-overrides="theme"
   >
     <template #label>
-      {{ config.label() }} <span v-if="binding.required">({{ copy.required() }})</span>
+      {{ config.label }} <span v-if="binding.required">({{ copy.required() }})</span>
     </template>
     <div class="pavp-form-field__content">
-      <slot />
-      <p
-        v-if="config.description"
-        :id="`${binding.controlId}-description`"
-        class="pavp-form-field__description"
+      <FormValidationFeedback
+        :motion="appearance.motion"
+        :revision="feedbackRevision"
+        :active="binding.invalid && !binding.hidden && !binding.disabled && !binding.readonly"
+        :errors="binding.errors"
       >
-        {{ config.description() }}
-      </p>
-    </div>
-    <template #feedback>
+        <slot />
+      </FormValidationFeedback>
       <ul
-        v-if="binding.invalid"
         :id="`${binding.controlId}-errors`"
-        class="pavp-form-field__errors"
+        class="sr-only"
       >
         <li
           v-for="(message, index) in binding.errors"
@@ -66,7 +64,14 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
           {{ message() }}
         </li>
       </ul>
-    </template>
+      <p
+        v-if="config.description"
+        :id="`${binding.controlId}-description`"
+        class="pavp-form-field__description"
+      >
+        {{ config.description }}
+      </p>
+    </div>
   </NFormItem>
 </template>
 
@@ -80,16 +85,8 @@ const theme = computed(() => createPavpNaiveFormThemeProjection(appearance.value
   .pavp-form-field__description {
     color: var(--ui-color-text-secondary);
   }
-  .pavp-form-field__errors {
-    color: var(--ui-color-text-on-status-error);
-    margin: 0;
-    padding-inline-start: var(--ui-space-content-gap);
-  }
 }
 @layer vendor-overrides {
-  .pavp-form-field .n-form-item-feedback--error {
-    background-color: var(--ui-color-status-error);
-  }
   .pavp-form-field .n-form-item-label {
     white-space: normal;
   }

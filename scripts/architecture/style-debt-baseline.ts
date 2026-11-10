@@ -1,4 +1,4 @@
-// Existing ordinary CSS debt: no new debt. Reviewed layer rekeys follow Architecture §15.6/§26.
+// Existing ordinary CSS debt: no new debt. Layer rekeys remain subject to the existing style-owner contracts.
 // Each tuple is [property, normalized value input, important]; selectors and context are
 // normalized by the ownership checker, so formatting/comments do not create identities.
 export interface StyleDeclarationGroup {
@@ -94,16 +94,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     declarations: [['color', 'inherit', false]],
   },
   {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-form__summary:focus-visible,\n.pavp-form__summary a:focus-visible',
-    declarations: [
-      ['outline', 'var(--ui-admin-border-focus)', false],
-      ['outline-offset', 'var(--ui-admin-focus-outline-offset)', false],
-    ],
-  },
-  {
     path: 'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     block: 0,
     context: ['@layer components'],
@@ -151,37 +141,6 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
       ['align-items', 'center', false],
       ['white-space', 'pre-wrap', false],
       ['color', 'var(--ui-color-text-primary)', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-form-control p',
-    declarations: [['color', 'var(--ui-color-text-secondary)', false]],
-  },
-  {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-form-control button',
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['background', 'var(--ui-color-surface-panel)', false],
-      ['border-color', 'var(--ui-color-border-default)', false],
-      ['border-style', 'solid', false],
-      ['border-width', 'var(--ui-admin-border-width)', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector:
-      '.pavp-form-control [data-form-readonly]:focus-visible,\n.pavp-form-control button:focus-visible',
-    declarations: [
-      ['outline', 'var(--ui-admin-border-focus)', false],
-      ['outline-offset', 'var(--ui-admin-focus-outline-offset)', false],
     ],
   },
   {
@@ -317,86 +276,11 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     path: 'packages/ui/src/components/UiAdminShell.vue',
     block: 0,
     context: ['@layer components'],
-    selector: '.pavp-admin-shell__action,\n.pavp-admin-shell__navigation-action',
-    declarations: [
-      ['display', 'inline-flex', false],
-      ['align-items', 'center', false],
-      ['justify-content', 'center', false],
-      ['gap', 'var(--ui-space-content-gap)', false],
-      ['border', '0', false],
-
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['font-family', 'var(--ui-font-family-body)', false],
-      ['font-size', 'var(--ui-font-size-body)', false],
-      ['font-weight', 'var(--ui-font-weight-body)', false],
-      ['line-height', 'var(--ui-font-line-height-body)', false],
-      ['background', 'transparent', false],
-      ['cursor', 'pointer', false],
-      ['transition-duration', 'var(--ui-motion-duration)', false],
-      ['transition-property', 'color, background-color, box-shadow, transform', false],
-      ['transition-timing-function', 'var(--ui-motion-easing)', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-admin-shell__navigation-action',
-    declarations: [
-      ['position', 'relative', false],
-      ['justify-content', 'start', false],
-      ['inline-size', '100%', false],
-      ['padding-inline', 'var(--ui-space-page-inline)', false],
-      ['text-align', 'start', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: ['@layer components'],
     selector: '.pavp-admin-shell__navigation-icon',
     declarations: [
       ['flex', '0 0 auto', false],
       ['block-size', 'var(--ui-font-size-body)', false],
       ['inline-size', 'var(--ui-font-size-body)', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-admin-shell__action:hover,\n.pavp-admin-shell__navigation-action:hover',
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['background', 'var(--ui-admin-navigation-hover)', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-admin-shell__action:active,\n.pavp-admin-shell__navigation-action:active',
-    declarations: [['transform', 'translateY(calc(var(--ui-space-content-gap) / 4))', false]],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector:
-      '.pavp-admin-shell__action:focus-visible,\n.pavp-admin-shell__navigation-action:focus-visible',
-    declarations: [
-      ['box-shadow', 'var(--ui-shadow-panel)', false],
-      ['outline', 'none', false],
-    ],
-  },
-  {
-    path: 'packages/ui/src/components/UiAdminShell.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: ".pavp-admin-shell__navigation-action[aria-current='page']",
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['background', 'var(--ui-material-overlay-background)', false],
     ],
   },
   {
@@ -608,11 +492,7 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     block: 0,
     context: ['@layer components'],
     selector: '.pavp-workspace-tabs-edge:focus-visible',
-    declarations: [
-      ['color', 'var(--ui-color-text-primary)', false],
-      ['outline', 'var(--ui-admin-focus-width) solid var(--ui-color-focus-ring)', false],
-      ['outline-offset', 'calc(var(--ui-admin-focus-width) * -1)', false],
-    ],
+    declarations: [['color', 'var(--ui-color-text-primary)', false]],
   },
   {
     path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
@@ -709,15 +589,5 @@ export const ordinaryStyleDebt: readonly StyleDeclarationGroup[] = [
     context: ['@layer components'],
     selector: '.pavp-workspace-tabs .pavp-workspace-tabs__close',
     declarations: [['padding-inline', '0', false]],
-  },
-  {
-    path: 'packages/ui/src/adapters/motion/WorkspaceTabsSurface.vue',
-    block: 0,
-    context: ['@layer components'],
-    selector: '.pavp-workspace-tabs button:focus-visible',
-    declarations: [
-      ['outline', 'var(--ui-admin-focus-width) solid var(--ui-color-focus-ring)', false],
-      ['outline-offset', 'calc(var(--ui-admin-focus-width) * -1)', false],
-    ],
   },
 ]

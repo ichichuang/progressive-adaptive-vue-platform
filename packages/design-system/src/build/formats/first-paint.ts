@@ -1,7 +1,9 @@
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 
 import type { Format } from 'style-dictionary/types'
 import ts from 'typescript'
+import { build } from 'vite'
 
 import { ProductPreferenceDefault } from '../../runtime/appearance-defaults'
 import { colorModeResolutionContract } from '../../runtime/resolve-color-mode'
@@ -15,6 +17,7 @@ import {
   uiDensityValues,
 } from '../../schema/appearance.schema'
 import {
+  completeThemeSchemaVersion,
   cssWideKeywords,
   forbiddenComputedColorSyntax,
   supportedAbsoluteColorSyntax,
@@ -44,17 +47,38 @@ export const preInitializationSafetyBaseline = {
   effectiveDensity: 'comfortable',
 } as const
 
-const colorJsPolicyUnsafeExportName = ['multiply_v', '3_m3x3'].join('')
-const declaredColorJsRuntime = readFileSync(
-  new URL(import.meta.resolve('colorjs.io/dist/color.global.min.js')),
-  'utf8',
-)
-  .replace(/\n?\/\/# sourceMappingURL=.*$/u, '')
-  .trimEnd()
-const embeddedColorJsRuntime = declaredColorJsRuntime.replace(
-  colorJsPolicyUnsafeExportName,
-  'multiplyVectorByMatrix3',
-)
+const colorBuild = await build({
+  configFile: false,
+  envFile: false,
+  logLevel: 'silent',
+  publicDir: false,
+  build: {
+    lib: {
+      entry: fileURLToPath(new URL('../../schema/css-color.ts', import.meta.url)),
+      formats: ['iife'],
+      name: 'PavpFirstPaintColor',
+    },
+    minify: true,
+    reportCompressedSize: false,
+    target: 'es2022',
+    write: false,
+  },
+})
+const colorOutputs = Array.isArray(colorBuild) ? colorBuild : [colorBuild]
+const colorOutput = colorOutputs[0]
+if (
+  colorOutputs.length !== 1 ||
+  colorOutput === undefined ||
+  !('output' in colorOutput) ||
+  colorOutput.output.length !== 1
+) {
+  throw new Error('First Paint color build must produce one self-contained JavaScript chunk.')
+}
+const colorChunk = colorOutput.output[0]
+if (colorChunk.imports.length !== 0 || colorChunk.dynamicImports.length !== 0) {
+  throw new Error('First Paint color build must not depend on other chunks.')
+}
+const embeddedColorJsRuntime = colorChunk.code.trim()
 const duplicateAwareJsonRuntime = ts
   .transpileModule(readFileSync(new URL('../parse-json.ts', import.meta.url), 'utf8'), {
     compilerOptions: {
@@ -79,13 +103,12 @@ const motionResolutionRuntime = ts
   )
   .outputText.replace('export function resolveMotion', 'function resolveMotion')
 
-if (
-  !embeddedColorJsRuntime.startsWith('var Color=') ||
-  declaredColorJsRuntime.split(colorJsPolicyUnsafeExportName).length !== 2 ||
-  embeddedColorJsRuntime.includes(colorJsPolicyUnsafeExportName)
-) {
-  throw new Error('The declared Color.js classic runtime has an unexpected shape.')
-}
+const paletteValidationRuntime = ts
+  .transpileModule(
+    readFileSync(new URL('../../schema/theme-palette-validation.ts', import.meta.url), 'utf8'),
+    { compilerOptions: { target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext } },
+  )
+  .outputText.replace('export function paletteContrastFailure', 'function paletteContrastFailure')
 
 function criticalDeclarations(result: TokenBuildResult): string {
   const materialNames = [
@@ -146,7 +169,21 @@ ${formatTokenCssRules(
     (token) =>
       token.role.name === 'interaction.control.height' ||
       token.role.name === 'interaction.control.height-baseline' ||
-      token.role.name === 'spacing.button.inline',
+      token.role.name.startsWith('interaction.control.segment.') ||
+      token.role.name === 'spacing.button.inline' ||
+      token.role.name.startsWith('spacing.control.segment.') ||
+      token.role.name.startsWith('spacing.component.') ||
+      token.role.name.startsWith('spacing.calendar.') ||
+      token.role.name.startsWith('layout.calendar.') ||
+      token.role.name.startsWith('spacing.indicator.') ||
+      token.role.name.startsWith('interaction.icon.') ||
+      token.role.name.startsWith('interaction.indicator.') ||
+      token.role.name === 'typography.size.heading' ||
+      token.role.name.startsWith('typography.size.control.') ||
+      token.role.name === 'typography.size.subheading' ||
+      token.role.name === 'typography.size.caption' ||
+      token.role.name === 'typography.size.metric' ||
+      token.role.name === 'typography.line-height.compact',
   ),
 )}
 
@@ -211,6 +248,24 @@ function safetyBaselineRestorationLines(): string {
 
 export function formatAppearanceInitScript(result: TokenBuildResult): string {
   const registry = themeRegistryDocument(result)
+  const representative = registry.builtInEntries[0]
+  const textContract = registry.namedContrasts.find(
+    (record) => record.id === 'text-primary-on-panel',
+  )
+  const boundaryContract = registry.namedContrasts.find(
+    (record) => record.id === 'control-primary-on-panel',
+  )
+  if (representative === undefined || textContract === undefined || boundaryContract === undefined)
+    throw new Error('First Paint requires a complete palette and contrast contracts.')
+  const paletteShape = (value: unknown): unknown =>
+    typeof value === 'string'
+      ? true
+      : Object.fromEntries(
+          Object.entries(value as Readonly<Record<string, unknown>>).map(([key, item]) => [
+            key,
+            paletteShape(item),
+          ]),
+        )
 
   return `/* ${generatedNotice} */
 // prettier-ignore
@@ -221,6 +276,7 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   ${embeddedColorJsRuntime}
 
   ${duplicateAwareJsonRuntime}
+  ${paletteValidationRuntime}
 
   var colorModes = ${javascriptLiteral(colorModePreferenceValues)}
   var themeColorModes = ['light', 'dark']
@@ -231,6 +287,11 @@ export function formatAppearanceInitScript(result: TokenBuildResult): string {
   var motions = ${javascriptLiteral(motionPreferenceValues)}
   var builtInThemeIds = ${javascriptLiteral(registry.builtInRegistryOrder)}
   var roleContractVersion = ${javascriptLiteral(registry.roleContractVersion)}
+  var themeSchemaVersion = ${javascriptLiteral(completeThemeSchemaVersion)}
+  var palettePlaneShape = ${javascriptLiteral(paletteShape(representative.uiPalette.light.standard))}
+  var publicRoleReferences = ${javascriptLiteral(representative.definition.planes)}
+  var paletteTextMinimum = ${javascriptLiteral([textContract.standardMinimum, textContract.enhancedMinimum])}
+  var paletteBoundaryMinimum = ${javascriptLiteral([boundaryContract.standardMinimum, boundaryContract.enhancedMinimum])}
   var publicColorBindings = ${javascriptLiteral(
     registry.activePublicColorRoles.map((record) => [record.publicRole, record.publicBinding]),
   )}
@@ -296,7 +357,7 @@ ${motionResolutionRuntime}
     }
 
     try {
-      new Color(value)
+      PavpFirstPaintColor.parseCssColor(value)
       return true
     } catch {
       return false
@@ -311,9 +372,9 @@ ${motionResolutionRuntime}
     }
 
     try {
-      var color = new Color(value)
+      var color = PavpFirstPaintColor.parseCssColor(value)
       var expectedAlpha = roleId === 'color.scrim.viewport' ? 0.56 : 1
-      return color.alpha === expectedAlpha && color.inGamut('srgb')
+      return color.alpha === expectedAlpha && PavpFirstPaintColor.isInSrgbGamut(color)
     } catch {
       return false
     }
@@ -321,14 +382,15 @@ ${motionResolutionRuntime}
 
   function validatedCustomThemeDefinition(value) {
     if (
-      !hasOnlyKeys(value, ['id', 'label', 'planes', 'roleContractVersion', 'schemaVersion']) ||
-      value.schemaVersion !== 3 ||
+      !hasOnlyKeys(value, ['id', 'label', 'planes', 'roleContractVersion', 'schemaVersion', 'uiPalette']) ||
+      value.schemaVersion !== themeSchemaVersion ||
       typeof value.id !== 'string' ||
       value.id.length === 0 ||
       typeof value.label !== 'string' ||
       value.label.length === 0 ||
       value.roleContractVersion !== roleContractVersion ||
-      !hasOnlyKeys(value.planes, ['dark', 'light'])
+      !hasOnlyKeys(value.planes, ['dark', 'light']) ||
+      !hasOnlyKeys(value.uiPalette, ['dark', 'light'])
     ) {
       return null
     }
@@ -339,8 +401,9 @@ ${motionResolutionRuntime}
     for (var colorModeIndex = 0; colorModeIndex < themeColorModes.length; colorModeIndex += 1) {
       var colorMode = themeColorModes[colorModeIndex]
       var modePlanes = value.planes[colorMode]
+      var modePalettes = value.uiPalette[colorMode]
 
-      if (!hasOnlyKeys(modePlanes, contrasts)) {
+      if (!hasOnlyKeys(modePlanes, contrasts) || !hasOnlyKeys(modePalettes, contrasts)) {
         return null
       }
 
@@ -349,22 +412,36 @@ ${motionResolutionRuntime}
       for (var contrastIndex = 0; contrastIndex < contrasts.length; contrastIndex += 1) {
         var contrast = contrasts[contrastIndex]
         var plane = modePlanes[contrast]
+        var palette = modePalettes[contrast]
 
-        if (!hasOnlyKeys(plane, sourceRoles)) {
+        if (!hasOnlyKeys(plane, sourceRoles) || !matchesPaletteShape(palette, palettePlaneShape)) {
           return null
         }
+
+        var paletteFailure = paletteContrastFailure(palette, colorMode,
+          paletteTextMinimum[contrastIndex], paletteBoundaryMinimum[contrastIndex],
+          function (foreground, background) {
+            return PavpFirstPaintColor.calculateWcag21Contrast(
+              PavpFirstPaintColor.parseCssColor(foreground),
+              PavpFirstPaintColor.parseCssColor(background))
+          })
+        if (paletteFailure !== null) return null
 
         var normalizedPlane = {}
 
         for (var roleIndex = 0; roleIndex < sourceRoles.length; roleIndex += 1) {
           var roleId = sourceRoles[roleIndex]
           var authoredValue = plane[roleId]
+          if (roleId !== 'color.scrim.viewport' &&
+              authoredValue !== publicRoleReferences[colorMode][contrast][roleId]) return null
+          var resolvedValue = roleId === 'color.scrim.viewport'
+            ? authoredValue : resolvePaletteReference(palette, authoredValue)
 
-          if (!isThemeColor(roleId, authoredValue)) {
+          if (!isThemeColor(roleId, resolvedValue)) {
             return null
           }
 
-          normalizedPlane[roleId] = authoredValue
+          normalizedPlane[roleId] = resolvedValue
 
         }
 
@@ -380,8 +457,8 @@ ${motionResolutionRuntime}
       var changedStricterEndpoint = false
       for (var pairIndex = 0; pairIndex < namedContrasts.length; pairIndex += 1) {
         var pair = namedContrasts[pairIndex]
-        var standardRatio = new Color(standard[pair[0]]).contrastWCAG21(new Color(standard[pair[1]]))
-        var enhancedRatio = new Color(enhanced[pair[0]]).contrastWCAG21(new Color(enhanced[pair[1]]))
+        var standardRatio = PavpFirstPaintColor.calculateWcag21Contrast(PavpFirstPaintColor.parseCssColor(standard[pair[0]]), PavpFirstPaintColor.parseCssColor(standard[pair[1]]))
+        var enhancedRatio = PavpFirstPaintColor.calculateWcag21Contrast(PavpFirstPaintColor.parseCssColor(enhanced[pair[0]]), PavpFirstPaintColor.parseCssColor(enhanced[pair[1]]))
         if (standardRatio < pair[2] || enhancedRatio < pair[3] ||
           (pair[4] && enhancedRatio <= standardRatio)) return null
         if (pair[3] > pair[2] && (standard[pair[0]] !== enhanced[pair[0]] ||
@@ -397,6 +474,24 @@ ${motionResolutionRuntime}
       label: value.label,
       planes: normalizedPlanes,
     }
+  }
+
+  function matchesPaletteShape(value, shape) {
+    if (shape === true) return typeof value === 'string' && /^#[0-9A-F]{6}$/.test(value)
+    if (!hasOnlyKeys(value, Object.keys(shape))) return false
+    return Object.keys(shape).every(function (key) { return matchesPaletteShape(value[key], shape[key]) })
+  }
+
+  function resolvePaletteReference(palette, value) {
+    if (typeof value !== 'string') return null
+    var match = /^\\{palette\\.([a-z][a-z0-9-]*(?:\\.[a-z][a-z0-9-]*)+)\\}$/u.exec(value)
+    if (match === null) return null
+    var current = palette
+    for (var segment of match[1].split('.')) {
+      if (!isRecord(current) || !Object.prototype.hasOwnProperty.call(current, segment)) return null
+      current = current[segment]
+    }
+    return typeof current === 'string' ? current : null
   }
 
   function readSelectedCustomThemeDefinition(storageKey, themeId) {

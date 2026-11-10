@@ -1,5 +1,9 @@
 import type { UiShellComposition } from '@platform/ui'
-import type { ConsoleMessageScope, ConsoleTranslate } from '../../shared/i18n/message-schema'
+import type {
+  ConsoleCommonMessageKey,
+  ConsoleMessageScope,
+  ConsoleTranslate,
+} from '../../shared/i18n/message-schema'
 import { getDefaultConsoleMessage } from '../../shared/i18n/default-messages'
 import type { RouteParamsSchemaId, RouteQuerySchemaId } from './route-schemas'
 import type { RouteTransitionFamilyId } from './route-transition/route-transition-types'
@@ -31,8 +35,8 @@ export interface ValidatedRouteMeta {
   readonly routeTransitionFamilyId: RouteTransitionFamilyId
 }
 
-export const workspaceIdentityPolicyRegistry = Object.freeze([
-  Object.freeze({ id: 'workspace-identity.route-single', kind: 'route-single' }),
+export const workspaceIdentityPolicyRegistry = /* @__PURE__ */ Object.freeze([
+  /* @__PURE__ */ Object.freeze({ id: 'workspace-identity.route-single', kind: 'route-single' }),
 ] as const)
 
 type WorkspaceIdentityPolicyId = (typeof workspaceIdentityPolicyRegistry)[number]['id']
@@ -233,96 +237,168 @@ function defineRoute(record: RouteRegistryRecord) {
   })
 }
 
-export const routeRegistry = Object.freeze([
-  defineRoute({
-    name: 'workbench-dashboard',
+function defineConsoleWorkspaceRoute<
+  const R extends Pick<RouteRegistryRecord, 'name' | 'pathPattern' | 'sourcePath'> & {
+    readonly meta: Pick<ValidatedRouteMeta, 'telemetryName'>
+  },
+>(record: R) {
+  return defineRoute({
     contentReadiness: 'route-dom',
     scrollRestoration: 'build-static',
     messageScope: 'console',
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    workspaceIdentityPolicyId: 'workspace-identity.route-single',
+    ...record,
+    meta: Object.freeze({
+      ...consoleRouteMeta,
+      titleKey: `route-title.${record.name}` as `route-title.${R['name']}`,
+      breadcrumbKey: `route-breadcrumb.${record.name}` as `route-breadcrumb.${R['name']}`,
+      ...record.meta,
+    }),
+  } as const)
+}
+
+function defineWorkbenchRoute<const S extends string>(suffix: S) {
+  return defineConsoleWorkspaceRoute({
+    name: `workbench-${suffix}`,
+    pathPattern: `/${suffix}`,
+    sourcePath: `apps/web/src/pages/${suffix}.vue`,
+    meta: {
+      telemetryName: `route.workbench.${suffix}`,
+    },
+  } as const)
+}
+
+function defineComponentWorkspaceRoute<const S extends string>(suffix: S) {
+  return defineConsoleWorkspaceRoute({
+    name: `component-${suffix}`,
+    pathPattern: `/components/${suffix}`,
+    sourcePath: `apps/web/src/pages/component-${suffix}.vue`,
+    meta: {
+      telemetryName: `route.component.${suffix}`,
+    },
+  } as const)
+}
+
+function defineFormWorkspaceRoute<const S extends string>(suffix: S) {
+  return defineConsoleWorkspaceRoute({
+    name: `component-form-${suffix}`,
+    pathPattern: `/components/forms/${suffix}`,
+    sourcePath: `apps/web/src/pages/component-form-${suffix}.vue`,
+    meta: {
+      telemetryName: `route.component.form.${suffix}`,
+    },
+  } as const)
+}
+
+function defineTableExampleRoute<const G extends 'table' | 'combination', const S extends string>(
+  group: G,
+  suffix: S,
+) {
+  return defineConsoleWorkspaceRoute({
+    name: `component-${group}-${suffix}`,
+    pathPattern: `/components/${group === 'table' ? 'tables' : 'combinations'}/${suffix}`,
+    sourcePath: `apps/web/src/pages/component-${group}-${suffix}.vue`,
+    meta: { telemetryName: `route.component.${group}.${suffix}` },
+  } as const)
+}
+
+function defineErrorRoute<const Category extends string, const Segment extends string>(
+  category: Category,
+  segment: Segment,
+) {
+  return defineRoute({
+    name: `error-${category}`,
+    contentReadiness: 'route-dom',
+    scrollRestoration: 'none',
+    messageScope: 'common',
+    pathPattern: `/error/${segment}`,
+    sourcePath: `apps/web/src/pages/error/${segment}.vue`,
+    paramsSchemaId: 'route-params.none',
+    querySchemaId: 'route-query.none',
+    capabilityStatus: 'ACTIVE',
+    meta: Object.freeze({
+      ...commonRouteMeta,
+      titleKey: `route-title.error-${category}`,
+      telemetryName: `route.error.${category}`,
+      errorPolicy: 'application-boundary',
+    }),
+  } as const)
+}
+
+const formWorkspaceRoutes = Object.freeze([
+  defineFormWorkspaceRoute('overview'),
+  defineFormWorkspaceRoute('basics'),
+  defineFormWorkspaceRoute('detail'),
+  defineFormWorkspaceRoute('layout'),
+  defineFormWorkspaceRoute('dependencies'),
+  defineFormWorkspaceRoute('calculations'),
+  defineFormWorkspaceRoute('structure'),
+  defineFormWorkspaceRoute('validation'),
+  defineFormWorkspaceRoute('extension'),
+  defineFormWorkspaceRoute('controls'),
+  defineFormWorkspaceRoute('lifecycle'),
+  defineFormWorkspaceRoute('loading'),
+  defineFormWorkspaceRoute('submission'),
+  defineFormWorkspaceRoute('options'),
+  defineFormWorkspaceRoute('builder'),
+] as const)
+
+export const routeRegistry = Object.freeze([
+  defineConsoleWorkspaceRoute({
+    name: 'workbench-dashboard',
     pathPattern: '/',
     sourcePath: 'apps/web/src/pages/index.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    workspaceIdentityPolicyId: 'workspace-identity.route-single',
-    meta: Object.freeze({
-      ...consoleRouteMeta,
-      titleKey: 'route-title.workbench-dashboard',
-      breadcrumbKey: 'route-breadcrumb.workbench-dashboard',
+    meta: {
       telemetryName: 'route.workbench.dashboard',
-    }),
+    },
   }),
-  defineRoute({
-    name: 'workbench-colors',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'build-static',
-    messageScope: 'console',
-    pathPattern: '/colors',
-    sourcePath: 'apps/web/src/pages/colors.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    workspaceIdentityPolicyId: 'workspace-identity.route-single',
-    meta: Object.freeze({
-      ...consoleRouteMeta,
-      titleKey: 'route-title.workbench-colors',
-      breadcrumbKey: 'route-breadcrumb.workbench-colors',
-      telemetryName: 'route.workbench.colors',
-    }),
+  defineWorkbenchRoute('colors'),
+  defineWorkbenchRoute('sizes'),
+  defineWorkbenchRoute('typography'),
+  defineWorkbenchRoute('interactions'),
+  defineWorkbenchRoute('motion'),
+  defineConsoleWorkspaceRoute({
+    name: 'component-showcase',
+    pathPattern: '/components',
+    sourcePath: 'apps/web/src/pages/component-showcase.vue',
+    meta: {
+      telemetryName: 'route.component.showcase',
+    },
   }),
+  defineComponentWorkspaceRoute('actions'),
+  defineComponentWorkspaceRoute('inputs'),
+  defineComponentWorkspaceRoute('selection'),
+  defineComponentWorkspaceRoute('navigation'),
+  defineComponentWorkspaceRoute('data'),
+  defineComponentWorkspaceRoute('feedback'),
+  defineComponentWorkspaceRoute('layout'),
+  ...formWorkspaceRoutes,
+  defineComponentWorkspaceRoute('table'),
+  defineTableExampleRoute('table', 'appearance'),
+  defineTableExampleRoute('table', 'theme'),
+  defineTableExampleRoute('table', 'columns'),
+  defineTableExampleRoute('table', 'selection'),
+  defineTableExampleRoute('table', 'remote'),
+  defineTableExampleRoute('table', 'configuration'),
+  defineTableExampleRoute('table', 'overview'),
+  defineTableExampleRoute('table', 'scroll'),
+  defineTableExampleRoute('table', 'widths'),
+  defineTableExampleRoute('table', 'responsive'),
+  defineTableExampleRoute('table', 'sorting'),
+  defineTableExampleRoute('table', 'rendering'),
+  defineTableExampleRoute('table', 'virtual'),
+  defineTableExampleRoute('table', 'states'),
+  defineTableExampleRoute('table', 'summary'),
+  defineTableExampleRoute('combination', 'query'),
+  defineTableExampleRoute('combination', 'modal'),
+  defineTableExampleRoute('combination', 'drawer'),
+  defineTableExampleRoute('combination', 'page'),
   defineRoute({
-    name: 'workbench-sizes',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'build-static',
-    messageScope: 'console',
-    pathPattern: '/sizes',
-    sourcePath: 'apps/web/src/pages/sizes.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    workspaceIdentityPolicyId: 'workspace-identity.route-single',
-    meta: Object.freeze({
-      ...consoleRouteMeta,
-      titleKey: 'route-title.workbench-sizes',
-      breadcrumbKey: 'route-breadcrumb.workbench-sizes',
-      telemetryName: 'route.workbench.sizes',
-    }),
-  }),
-  defineRoute({
-    name: 'workbench-typography',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'build-static',
-    messageScope: 'console',
-    pathPattern: '/typography',
-    sourcePath: 'apps/web/src/pages/typography.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    workspaceIdentityPolicyId: 'workspace-identity.route-single',
-    meta: Object.freeze({
-      ...consoleRouteMeta,
-      titleKey: 'route-title.workbench-typography',
-      breadcrumbKey: 'route-breadcrumb.workbench-typography',
-      telemetryName: 'route.workbench.typography',
-    }),
-  }),
-  defineRoute({
-    name: 'workbench-interactions',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'build-static',
-    messageScope: 'console',
-    pathPattern: '/interactions',
-    sourcePath: 'apps/web/src/pages/interactions.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    workspaceIdentityPolicyId: 'workspace-identity.route-single',
-    meta: Object.freeze({
-      ...consoleRouteMeta,
-      titleKey: 'route-title.workbench-interactions',
-      breadcrumbKey: 'route-breadcrumb.workbench-interactions',
-      telemetryName: 'route.workbench.interactions',
-    }),
+    ...defineComponentWorkspaceRoute('table-editor'),
+    querySchemaId: 'route-query.table-editor',
   }),
   defineRoute({
     name: 'control-center',
@@ -343,57 +419,9 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.console.control-center',
     }),
   }),
-  defineRoute({
-    name: 'error-invalid-route-input',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/error/400',
-    sourcePath: 'apps/web/src/pages/error/400.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-invalid-route-input',
-      telemetryName: 'route.error.invalid-route-input',
-      errorPolicy: 'application-boundary',
-    }),
-  }),
-  defineRoute({
-    name: 'error-authentication-required',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/error/401',
-    sourcePath: 'apps/web/src/pages/error/401.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-authentication-required',
-      telemetryName: 'route.error.authentication-required',
-      errorPolicy: 'application-boundary',
-    }),
-  }),
-  defineRoute({
-    name: 'error-permission-denied',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/error/403',
-    sourcePath: 'apps/web/src/pages/error/403.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-permission-denied',
-      telemetryName: 'route.error.permission-denied',
-      errorPolicy: 'application-boundary',
-    }),
-  }),
+  defineErrorRoute('invalid-route-input', '400'),
+  defineErrorRoute('authentication-required', '401'),
+  defineErrorRoute('permission-denied', '403'),
   defineRoute({
     name: 'error-route-not-found',
     contentReadiness: 'route-dom',
@@ -411,57 +439,9 @@ export const routeRegistry = Object.freeze([
       errorPolicy: 'application-boundary',
     }),
   }),
-  defineRoute({
-    name: 'error-application-route-failure',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/error/500',
-    sourcePath: 'apps/web/src/pages/error/500.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-application-route-failure',
-      telemetryName: 'route.error.application-route-failure',
-      errorPolicy: 'application-boundary',
-    }),
-  }),
-  defineRoute({
-    name: 'error-network-unavailable',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/error/offline',
-    sourcePath: 'apps/web/src/pages/error/offline.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-network-unavailable',
-      telemetryName: 'route.error.network-unavailable',
-      errorPolicy: 'application-boundary',
-    }),
-  }),
-  defineRoute({
-    name: 'error-service-unavailable',
-    contentReadiness: 'route-dom',
-    scrollRestoration: 'none',
-    messageScope: 'common',
-    pathPattern: '/error/maintenance',
-    sourcePath: 'apps/web/src/pages/error/maintenance.vue',
-    paramsSchemaId: 'route-params.none',
-    querySchemaId: 'route-query.none',
-    capabilityStatus: 'ACTIVE',
-    meta: Object.freeze({
-      ...commonRouteMeta,
-      titleKey: 'route-title.error-service-unavailable',
-      telemetryName: 'route.error.service-unavailable',
-      errorPolicy: 'application-boundary',
-    }),
-  }),
+  defineErrorRoute('application-route-failure', '500'),
+  defineErrorRoute('network-unavailable', 'offline'),
+  defineErrorRoute('service-unavailable', 'maintenance'),
 ] as const satisfies readonly RouteRegistryRecord[])
 
 export type RouteName = (typeof routeRegistry)[number]['name']
@@ -477,9 +457,10 @@ function getDefaultRouteMessages<Key extends RouteTitleKey | RouteBreadcrumbKey>
 ): Readonly<Record<Key, string>> {
   // Object.fromEntries widens keys; every supplied route key receives its default message.
   return Object.freeze(
-    Object.fromEntries(
-      [...new Set(keys)].map((key) => [key, getDefaultConsoleMessage(key)]),
-    ) as Record<Key, string>,
+    Object.fromEntries(keys.map((key) => [key, getDefaultConsoleMessage(key)])) as Record<
+      Key,
+      string
+    >,
   )
 }
 
@@ -487,118 +468,40 @@ export const routeTitleRegistry = getDefaultRouteMessages(
   routeRegistry.map((record) => record.meta.titleKey),
 )
 
-export const routeBreadcrumbRegistry = getDefaultRouteMessages(
-  routeRegistry.map((record) => record.meta.breadcrumbKey).filter((key) => key !== null),
+const routeBreadcrumbKeys = /* @__PURE__ */ routeRegistry.map((record) => record.meta.breadcrumbKey)
+export const routeBreadcrumbRegistry = /* @__PURE__ */ getDefaultRouteMessages(
+  /* @__PURE__ */ routeBreadcrumbKeys.filter((key) => key !== null),
 )
 
-export const routeMessageRegistry = Object.freeze([
-  Object.freeze({
-    routeName: 'workbench-dashboard',
-    key: 'route-message.workbench-dashboard-summary',
-    text: getDefaultConsoleMessage('route-message.workbench-dashboard-summary'),
+export const routeMessageRegistry = Object.freeze(
+  routeRegistry.map((record) => {
+    const key: ConsoleCommonMessageKey =
+      record.messageScope === 'common'
+        ? `route-message.${record.name}`
+        : `route-message.${record.name}-summary`
+    return Object.freeze({ routeName: record.name, key, text: getDefaultConsoleMessage(key) })
   }),
-  Object.freeze({
-    routeName: 'workbench-colors',
-    key: 'route-message.workbench-colors-summary',
-    text: getDefaultConsoleMessage('route-message.workbench-colors-summary'),
-  }),
-  Object.freeze({
-    routeName: 'workbench-sizes',
-    key: 'route-message.workbench-sizes-summary',
-    text: getDefaultConsoleMessage('route-message.workbench-sizes-summary'),
-  }),
-  Object.freeze({
-    routeName: 'workbench-typography',
-    key: 'route-message.workbench-typography-summary',
-    text: getDefaultConsoleMessage('route-message.workbench-typography-summary'),
-  }),
-  Object.freeze({
-    routeName: 'workbench-interactions',
-    key: 'route-message.workbench-interactions-summary',
-    text: getDefaultConsoleMessage('route-message.workbench-interactions-summary'),
-  }),
-  Object.freeze({
-    routeName: 'control-center',
-    key: 'route-message.control-center-summary',
-    text: getDefaultConsoleMessage('route-message.control-center-summary'),
-  }),
-  Object.freeze({
-    routeName: 'error-invalid-route-input',
-    key: 'route-message.error-invalid-route-input',
-    text: getDefaultConsoleMessage('route-message.error-invalid-route-input'),
-  }),
-  Object.freeze({
-    routeName: 'error-authentication-required',
-    key: 'route-message.error-authentication-required',
-    text: getDefaultConsoleMessage('route-message.error-authentication-required'),
-  }),
-  Object.freeze({
-    routeName: 'error-permission-denied',
-    key: 'route-message.error-permission-denied',
-    text: getDefaultConsoleMessage('route-message.error-permission-denied'),
-  }),
-  Object.freeze({
-    routeName: 'error-route-not-found',
-    key: 'route-message.error-route-not-found',
-    text: getDefaultConsoleMessage('route-message.error-route-not-found'),
-  }),
-  Object.freeze({
-    routeName: 'error-application-route-failure',
-    key: 'route-message.error-application-route-failure',
-    text: getDefaultConsoleMessage('route-message.error-application-route-failure'),
-  }),
-  Object.freeze({
-    routeName: 'error-network-unavailable',
-    key: 'route-message.error-network-unavailable',
-    text: getDefaultConsoleMessage('route-message.error-network-unavailable'),
-  }),
-  Object.freeze({
-    routeName: 'error-service-unavailable',
-    key: 'route-message.error-service-unavailable',
-    text: getDefaultConsoleMessage('route-message.error-service-unavailable'),
-  }),
-] as const satisfies readonly {
-  readonly routeName: RouteName
-  readonly key: string
-  readonly text: string
-}[])
-
-export const telemetryNameRegistry = Object.freeze(
-  routeRegistry.map((record) => record.meta.telemetryName),
 )
+
+export const telemetryNameRegistry = /* @__PURE__ */ Object.freeze(
+  /* @__PURE__ */ routeRegistry.map((record) => record.meta.telemetryName),
+)
+
+function defineErrorRouteTarget<const Code extends string, const Category extends string>(
+  code: Code,
+  category: Category,
+) {
+  return Object.freeze({ code, category, routeName: `error-${category}` as const })
+}
 
 export const errorRouteRegistry = Object.freeze([
-  Object.freeze({
-    code: '400',
-    category: 'invalid-route-input',
-    routeName: 'error-invalid-route-input',
-  }),
-  Object.freeze({
-    code: '401',
-    category: 'authentication-required',
-    routeName: 'error-authentication-required',
-  }),
-  Object.freeze({
-    code: '403',
-    category: 'permission-denied',
-    routeName: 'error-permission-denied',
-  }),
-  Object.freeze({ code: '404', category: 'route-not-found', routeName: 'error-route-not-found' }),
-  Object.freeze({
-    code: '500',
-    category: 'application-route-failure',
-    routeName: 'error-application-route-failure',
-  }),
-  Object.freeze({
-    code: 'offline',
-    category: 'network-unavailable',
-    routeName: 'error-network-unavailable',
-  }),
-  Object.freeze({
-    code: 'maintenance',
-    category: 'service-unavailable',
-    routeName: 'error-service-unavailable',
-  }),
+  defineErrorRouteTarget('400', 'invalid-route-input'),
+  defineErrorRouteTarget('401', 'authentication-required'),
+  defineErrorRouteTarget('403', 'permission-denied'),
+  defineErrorRouteTarget('404', 'route-not-found'),
+  defineErrorRouteTarget('500', 'application-route-failure'),
+  defineErrorRouteTarget('offline', 'network-unavailable'),
+  defineErrorRouteTarget('maintenance', 'service-unavailable'),
 ] as const satisfies readonly {
   readonly code: string
   readonly category: string
@@ -648,8 +551,8 @@ export const scrollOwnerRegistry = Object.freeze([
   }),
 ] as const satisfies readonly ScrollOwnerRegistryRecord[])
 
-export const scrollRestorationPolicyRegistry = Object.freeze([
-  Object.freeze({
+export const scrollRestorationPolicyRegistry = /* @__PURE__ */ Object.freeze([
+  /* @__PURE__ */ Object.freeze({
     id: 'route-scroll.architecture-console-content-history',
     historyTraversal: 'finite-saved-native-block-and-inline-offsets-for-matching-owner',
     newNavigation: 'logical-block-and-inline-start',
@@ -661,7 +564,7 @@ export const scrollRestorationPolicyRegistry = Object.freeze([
     scrollHijacking: 'PROHIBITED',
     capabilityStatus: 'ACTIVE',
   }),
-  Object.freeze({
+  /* @__PURE__ */ Object.freeze({
     id: 'route-scroll.document-history',
     historyTraversal: 'finite-saved-native-block-and-inline-offsets-for-matching-owner',
     newNavigation: 'logical-block-and-inline-start',
@@ -702,49 +605,151 @@ export const focusContractRegistry = Object.freeze([
   }),
 ] as const)
 
+export interface ConsoleNavigationItem {
+  readonly iconClass: string
+  readonly destination: {
+    [
+      Name in Extract<
+        (typeof routeRegistry)[number],
+        { readonly paramsSchemaId: 'route-params.none' }
+      >['name']
+    ]: { readonly name: Name }
+  }[Extract<
+    (typeof routeRegistry)[number],
+    { readonly paramsSchemaId: 'route-params.none' }
+  >['name']]
+}
+
+export interface ConsoleNavigationGroup {
+  readonly id: string
+  readonly labelKey: ConsoleCommonMessageKey
+  readonly items: readonly (ConsoleNavigationItem | ConsoleNavigationGroup)[]
+}
+
+function defineNavigationItem<
+  const Name extends ConsoleNavigationItem['destination']['name'],
+  const Icon extends string,
+>(name: Name, iconClass: Icon) {
+  return Object.freeze({ iconClass, destination: Object.freeze({ name }) })
+}
+
 export const consoleNavigationRegistry = Object.freeze([
   Object.freeze({
     id: 'workbench',
     labelKey: 'navigation.workbench',
     items: Object.freeze([
-      Object.freeze({
-        iconClass: 'i-lucide-layout-dashboard',
-        destination: Object.freeze({ name: 'workbench-dashboard' }),
-      }),
+      defineNavigationItem('workbench-dashboard', 'i-lucide-layout-dashboard'),
     ]),
   }),
   Object.freeze({
     id: 'design',
     labelKey: 'navigation.design',
     items: Object.freeze([
-      Object.freeze({
-        iconClass: 'i-lucide-palette',
-        destination: Object.freeze({ name: 'workbench-colors' }),
-      }),
-      Object.freeze({
-        iconClass: 'i-lucide-ruler',
-        destination: Object.freeze({ name: 'workbench-sizes' }),
-      }),
-      Object.freeze({
-        iconClass: 'i-lucide-type',
-        destination: Object.freeze({ name: 'workbench-typography' }),
-      }),
+      defineNavigationItem('workbench-colors', 'i-lucide-palette'),
+      defineNavigationItem('workbench-sizes', 'i-lucide-ruler'),
+      defineNavigationItem('workbench-typography', 'i-lucide-type'),
     ]),
   }),
   Object.freeze({
     id: 'capabilities',
     labelKey: 'navigation.capabilities',
     items: Object.freeze([
+      defineNavigationItem('workbench-interactions', 'i-lucide-sparkles'),
+      defineNavigationItem('workbench-motion', 'i-lucide-workflow'),
+    ]),
+  }),
+  Object.freeze({
+    id: 'components',
+    labelKey: 'navigation.components',
+    items: Object.freeze([
+      defineNavigationItem('component-showcase', 'i-lucide-component'),
+      defineNavigationItem('component-actions', 'i-lucide-sparkles'),
+      defineNavigationItem('component-inputs', 'i-lucide-type'),
+      defineNavigationItem('component-selection', 'i-lucide-swatch-book'),
+      defineNavigationItem('component-navigation', 'i-lucide-route'),
+      defineNavigationItem('component-data', 'i-lucide-database'),
+      defineNavigationItem('component-feedback', 'i-lucide-workflow'),
+      defineNavigationItem('component-layout', 'i-lucide-panels-top-left'),
       Object.freeze({
-        iconClass: 'i-lucide-sparkles',
-        destination: Object.freeze({ name: 'workbench-interactions' }),
+        id: 'forms',
+        labelKey: 'navigation.forms',
+        items: Object.freeze(
+          formWorkspaceRoutes.map(({ name }) =>
+            defineNavigationItem(
+              name,
+              name === 'component-form-builder' ? 'i-lucide-panels-top-left' : 'i-lucide-type',
+            ),
+          ),
+        ),
+      }),
+      Object.freeze({
+        id: 'tables',
+        labelKey: 'navigation.tables',
+        items: Object.freeze([
+          defineNavigationItem('component-table-overview', 'i-lucide-database'),
+          defineNavigationItem('component-table', 'i-lucide-database'),
+          defineNavigationItem('component-table-scroll', 'i-lucide-database'),
+          defineNavigationItem('component-table-widths', 'i-lucide-database'),
+          defineNavigationItem('component-table-responsive', 'i-lucide-database'),
+          defineNavigationItem('component-table-columns', 'i-lucide-database'),
+          defineNavigationItem('component-table-sorting', 'i-lucide-database'),
+          defineNavigationItem('component-table-selection', 'i-lucide-database'),
+          defineNavigationItem('component-table-rendering', 'i-lucide-database'),
+          defineNavigationItem('component-table-summary', 'i-lucide-database'),
+          defineNavigationItem('component-table-virtual', 'i-lucide-database'),
+          defineNavigationItem('component-table-states', 'i-lucide-database'),
+          defineNavigationItem('component-table-remote', 'i-lucide-database'),
+          defineNavigationItem('component-table-appearance', 'i-lucide-database'),
+          defineNavigationItem('component-table-theme', 'i-lucide-database'),
+          defineNavigationItem('component-table-configuration', 'i-lucide-database'),
+        ]),
+      }),
+      Object.freeze({
+        id: 'combinations',
+        labelKey: 'navigation.combinations',
+        items: Object.freeze([
+          defineNavigationItem('component-combination-query', 'i-lucide-panels-top-left'),
+          defineNavigationItem('component-combination-modal', 'i-lucide-panels-top-left'),
+          defineNavigationItem('component-combination-drawer', 'i-lucide-panels-top-left'),
+          defineNavigationItem('component-combination-page', 'i-lucide-panels-top-left'),
+        ]),
       }),
     ]),
   }),
-] as const)
+] as const satisfies readonly ConsoleNavigationGroup[])
 
-export const activeRedirectRegistry = Object.freeze([] as const)
-export const activeDynamicRouteRegistry = Object.freeze([] as const)
+function flattenNavigationGroups(
+  groups: readonly ConsoleNavigationGroup[],
+  parentId?: string,
+): readonly { readonly id: string; readonly parentId: string | undefined }[] {
+  return groups.flatMap((group) => [
+    { id: group.id, parentId },
+    ...flattenNavigationGroups(
+      group.items.filter((item): item is ConsoleNavigationGroup => 'items' in item),
+      group.id,
+    ),
+  ])
+}
+
+export function getConsoleNavigationItems(
+  groups: readonly ConsoleNavigationGroup[],
+): readonly ConsoleNavigationItem[] {
+  return groups.flatMap((group) =>
+    group.items.flatMap((item) =>
+      'destination' in item ? [item] : getConsoleNavigationItems([item]),
+    ),
+  )
+}
+
+export const consoleNavigationGroups = Object.freeze(
+  flattenNavigationGroups(consoleNavigationRegistry),
+)
+export const consoleNavigationItems = Object.freeze(
+  getConsoleNavigationItems(consoleNavigationRegistry),
+)
+
+export const activeRedirectRegistry = /* @__PURE__ */ Object.freeze([] as const)
+export const activeDynamicRouteRegistry = /* @__PURE__ */ Object.freeze([] as const)
 
 export function getErrorRouteName(
   code: ErrorRouteCode,

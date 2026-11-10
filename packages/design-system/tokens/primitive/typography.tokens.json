@@ -14,6 +14,37 @@
           "unit": "rem"
         }
       },
+      "caption": {
+        "$type": "dimension",
+        "$value": {
+          "value": 0.75,
+          "unit": "rem"
+        }
+      },
+      "control-small": { "$type": "dimension", "$value": { "value": 0.8125, "unit": "rem" } },
+      "control-medium": { "$type": "dimension", "$value": { "value": 0.875, "unit": "rem" } },
+      "control-large": { "$type": "dimension", "$value": { "value": 0.9375, "unit": "rem" } },
+      "heading": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1.375,
+          "unit": "rem"
+        }
+      },
+      "subheading": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1.125,
+          "unit": "rem"
+        }
+      },
+      "metric": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        }
+      },
       "title": {
         "$type": "dimension",
         "$value": {
@@ -33,6 +64,10 @@
       }
     },
     "line-height": {
+      "compact": {
+        "$type": "number",
+        "$value": 1.2
+      },
       "body": {
         "$type": "number",
         "$value": 1.5

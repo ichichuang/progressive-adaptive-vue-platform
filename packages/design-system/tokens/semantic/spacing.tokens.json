@@ -1,5 +1,25 @@
 {
   "spacing": {
+    "component": {
+      "unit": { "$type": "dimension", "$value": "{dimension.space.component-unit}" }
+    },
+    "calendar": {
+      "inline": {
+        "tight": { "$type": "dimension", "$value": "{dimension.calendar.inline-tight}" },
+        "compact": { "$type": "dimension", "$value": "{dimension.calendar.inline-compact}" }
+      },
+      "block": {
+        "gap": { "$type": "dimension", "$value": "{dimension.calendar.block-gap}" }
+      },
+      "footer": {
+        "indent": { "$type": "dimension", "$value": "{dimension.calendar.footer-indent}" }
+      }
+    },
+    "control": {
+      "segment": {
+        "gap": { "$type": "dimension", "$value": "{dimension.control.segment-gap}" }
+      }
+    },
     "button": {
       "inline": {
         "$type": "dimension",
@@ -33,6 +53,25 @@
             "role": "spacing.button.inline",
             "conditions": { "density": "spacious" }
           }
+        }
+      }
+    },
+    "indicator": {
+      "cell-gap": {
+        "compact": { "$type": "dimension", "$value": "{dimension.indicator.cell-gap-compact}" },
+        "standard": { "$type": "dimension", "$value": "{dimension.indicator.cell-gap-standard}" }
+      },
+      "content": {
+        "gap": { "$type": "dimension", "$value": "{dimension.indicator.content-gap}" }
+      },
+      "label": {
+        "inline-compact": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.label-inline-compact}"
+        },
+        "inline": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.label-inline}"
         }
       }
     },

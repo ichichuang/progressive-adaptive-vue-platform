@@ -1,0 +1,2001 @@
+diff --git a/es/badge/src/Badge.mjs b/es/badge/src/Badge.mjs
+index 2bc2ba4..d7a58e6 100644
+--- a/es/badge/src/Badge.mjs
++++ b/es/badge/src/Badge.mjs
+@@ -70,11 +70,19 @@ var Badge_default = defineComponent({
+         },
+         self: {
+           [createKey("color", type)]: color,
++          [createKey("textColor", type)]: textColor,
++          labelHeight,
++          labelPaddingInline,
++          dotSize,
+           fontFamily,
+           fontSize
+         }
+       } = themeRef.value;
+       return {
++        "--n-text-color": textColor,
++        "--n-label-height": labelHeight,
++        "--n-label-padding-inline": labelPaddingInline,
++        "--n-dot-size": dotSize,
+         "--n-font-size": fontSize,
+         "--n-font-family": fontFamily,
+         "--n-color": propColor || color,
+diff --git a/es/badge/src/styles/index.cssr.mjs b/es/badge/src/styles/index.cssr.mjs
+index b044797..370fd43 100644
+--- a/es/badge/src/styles/index.cssr.mjs
++++ b/es/badge/src/styles/index.cssr.mjs
+@@ -22,28 +22,28 @@ var index_cssr_default = c([c("@keyframes badge-wave-spread", {
+   transformOrigin: "left bottom",
+   originalTransform: "translateX(0)"
+ })])]), cM("dot", [cB("badge-sup", `
+- height: 8px;
+- width: 8px;
++ height: var(--n-dot-size);
++ width: var(--n-dot-size);
+  padding: 0;
+- min-width: 8px;
++ min-width: var(--n-dot-size);
+  left: 100%;
+- bottom: calc(100% - 4px);
+- `, [c("::before", "border-radius: 4px;")])]), cB("badge-sup", `
++ bottom: calc(100% - var(--n-dot-size) / 2);
++ `, [c("::before", "border-radius: calc(var(--n-dot-size) / 2);")])]), cB("badge-sup", `
+  background: var(--n-color);
+  transition:
+  background-color .3s var(--n-bezier),
+  color .3s var(--n-bezier);
+- color: #FFF;
++ color: var(--n-text-color);
+  position: absolute;
+- height: 18px;
+- line-height: 18px;
+- border-radius: 9px;
+- padding: 0 6px;
++ height: var(--n-label-height);
++ line-height: var(--n-label-height);
++ border-radius: calc(var(--n-label-height) / 2);
++ padding: 0 var(--n-label-padding-inline);
+  text-align: center;
+  font-size: var(--n-font-size);
+  transform: translateX(-50%);
+  left: 100%;
+- bottom: calc(100% - 9px);
++ bottom: calc(100% - var(--n-label-height) / 2);
+  font-variant-numeric: tabular-nums;
+  z-index: 2;
+  display: flex;
+@@ -61,7 +61,7 @@ var index_cssr_default = c([c("@keyframes badge-wave-spread", {
+ }), c("&::before", `
+  opacity: 0;
+  transform: scale(1);
+- border-radius: 9px;
++ border-radius: calc(var(--n-label-height) / 2);
+  content: "";
+  position: absolute;
+  left: 0;
+diff --git a/es/badge/styles/dark.mjs b/es/badge/styles/dark.mjs
+index 74cbc14..40c56bc 100644
+--- a/es/badge/styles/dark.mjs
++++ b/es/badge/styles/dark.mjs
+@@ -17,6 +17,14 @@ const badgeDark = {
+       colorSuccess: successColorSuppl,
+       colorError: errorColorSuppl,
+       colorWarning: warningColorSuppl,
++      textColor: "#FFF",
++      textColorInfo: "#FFF",
++      textColorSuccess: "#FFF",
++      textColorWarning: "#FFF",
++      textColorError: "#FFF",
++      labelHeight: "18px",
++      labelPaddingInline: "6px",
++      dotSize: "8px",
+       fontSize: "12px",
+       fontFamily
+     };
+diff --git a/es/badge/styles/light.d.ts b/es/badge/styles/light.d.ts
+index e131dfb..fdef1f1 100644
+--- a/es/badge/styles/light.d.ts
++++ b/es/badge/styles/light.d.ts
+@@ -8,6 +8,14 @@ declare function self(vars: ThemeCommonVars): {
+   colorSuccess: string;
+   colorError: string;
+   colorWarning: string;
++  textColor: string;
++  textColorInfo: string;
++  textColorSuccess: string;
++  textColorWarning: string;
++  textColorError: string;
++  labelHeight: string;
++  labelPaddingInline: string;
++  dotSize: string;
+   fontSize: string;
+   fontFamily: string;
+ };
+diff --git a/es/badge/styles/light.mjs b/es/badge/styles/light.mjs
+index 61e839d..6964fad 100644
+--- a/es/badge/styles/light.mjs
++++ b/es/badge/styles/light.mjs
+@@ -14,6 +14,14 @@ function self(vars) {
+     colorSuccess: successColor,
+     colorError: errorColor,
+     colorWarning: warningColor,
++    textColor: "#FFF",
++    textColorInfo: "#FFF",
++    textColorSuccess: "#FFF",
++    textColorWarning: "#FFF",
++    textColorError: "#FFF",
++    labelHeight: "18px",
++    labelPaddingInline: "6px",
++    dotSize: "8px",
+     fontSize: "12px",
+     fontFamily
+   };
+diff --git a/es/code/src/Code.mjs b/es/code/src/Code.mjs
+index d9195ad..28785f4 100644
+--- a/es/code/src/Code.mjs
++++ b/es/code/src/Code.mjs
+@@ -5,7 +5,7 @@ import useTheme from "../../_mixins/use-theme.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeVNode } from "../../vue-jsx-vapor/vdom.mjs";
+ import codeLight from "../styles/light.mjs";
+ import index_cssr_default from "./styles/index.cssr.mjs";
+-import { computed, createElementBlock, defineComponent, normalizeStyle, onMounted, openBlock, ref, toRef, watch } from "vue";
++import { computed, createElementBlock, defineComponent, normalizeStyle, onMounted, onUpdated, openBlock, ref, toRef, watch } from "vue";
+ //#region src/code/src/Code.tsx
+ const codeProps = {
+   ...useTheme.props,
+@@ -57,46 +57,56 @@ var Code_default = defineComponent({
+       if (props.inline || props.wordWrap) return false;
+       return props.showLineNumbers;
+     });
++    let codeNodes = [];
++    let hasDefaultSlot = Boolean(slots.default);
++    const clearCodeNodes = (codeEl) => {
++      for (const node of codeNodes) if (node.parentNode === codeEl) codeEl.removeChild(node);
++      codeNodes = [];
++    };
+     const setCode = () => {
+       if (slots.default) return;
+-      const {
+-        value: codeEl
+-      } = codeRef;
++      const { value: codeEl } = codeRef;
+       if (!codeEl) return;
+-      const {
+-        language
+-      } = props;
++      const { language } = props;
+       const code = props.uri ? window.decodeURIComponent(props.code) : props.code;
+-      if (language) {
+-        const html = createCodeHtml(language, code, props.trim);
+-        if (html !== null) {
+-          if (props.inline) codeEl.innerHTML = html;else {
+-            const prevPreEl = codeEl.querySelector(".__code__");
+-            if (prevPreEl) codeEl.removeChild(prevPreEl);
+-            const preEl = document.createElement("pre");
+-            preEl.className = "__code__";
+-            preEl.innerHTML = html;
+-            codeEl.appendChild(preEl);
+-          }
+-          return;
+-        }
+-      }
+-      if (props.inline) {
+-        codeEl.textContent = code;
++      const html = language ? createCodeHtml(language, code, props.trim) : null;
++      const previous = codeNodes.length === 1 ? codeNodes[0] : void 0;
++      if (!props.inline && html === null && previous?.nodeName === "PRE" && previous.parentNode === codeEl) {
++        previous.textContent = code;
+         return;
+       }
+-      const maybePreEl = codeEl.querySelector(".__code__");
+-      if (maybePreEl) maybePreEl.textContent = code;else {
+-        const wrap = document.createElement("pre");
+-        wrap.className = "__code__";
+-        wrap.textContent = code;
+-        codeEl.innerHTML = "";
+-        codeEl.appendChild(wrap);
++      clearCodeNodes(codeEl);
++      if (props.inline) {
++        if (html === null) {
++          const text = document.createTextNode(code);
++          codeNodes = [text];
++          codeEl.appendChild(text);
++        } else {
++          const inlineCode = document.createElement("code");
++          inlineCode.innerHTML = html;
++          codeNodes = Array.from(inlineCode.childNodes);
++          for (const node of codeNodes) codeEl.appendChild(node);
++        }
++      } else {
++        const pre = document.createElement("pre");
++        pre.className = "__code__";
++        if (html === null) pre.textContent = code;else pre.innerHTML = html;
++        codeNodes = [pre];
++        codeEl.appendChild(pre);
+       }
+     };
+     onMounted(setCode);
++    onUpdated(() => {
++      const nextHasDefaultSlot = Boolean(slots.default);
++      if (hasDefaultSlot === nextHasDefaultSlot) return;
++      hasDefaultSlot = nextHasDefaultSlot;
++      if (nextHasDefaultSlot) {
++        if (codeRef.value) clearCodeNodes(codeRef.value);
++      } else setCode();
++    });
+     watch(toRef(props, "language"), setCode);
+     watch(toRef(props, "code"), setCode);
++    watch(toRef(props, "inline"), setCode, { flush: "post" });
+     if (!internalNoHighlight) watch(hljsRef, setCode);
+     const themeRef = useTheme("Code", "-code", index_cssr_default, codeLight, props, mergedClsPrefixRef);
+     const cssVarsRef = computed(() => {
+@@ -110,6 +120,7 @@ var Code_default = defineComponent({
+           fontSize,
+           fontWeightStrong,
+           lineNumberTextColor,
++          lineNumberGap,
+           "mono-3": $1,
+           "hue-1": $2,
+           "hue-2": $3,
+@@ -125,6 +136,7 @@ var Code_default = defineComponent({
+         internalFontSize
+       } = props;
+       return {
++        ...(lineNumberGap === void 0 ? {} : { "--n-line-number-gap": lineNumberGap }),
+         "--n-font-size": internalFontSize ? `${internalFontSize}px` : fontSize,
+         "--n-font-family": fontFamilyMono,
+         "--n-font-weight-strong": fontWeightStrong,
+diff --git a/es/code/src/styles/index.cssr.mjs b/es/code/src/styles/index.cssr.mjs
+index f65bc2f..b8393f5 100644
+--- a/es/code/src/styles/index.cssr.mjs
++++ b/es/code/src/styles/index.cssr.mjs
+@@ -7,7 +7,7 @@ var index_cssr_default = c([cB("code", `
+  display: flex;
+  `), cE("line-numbers", `
+  user-select: none;
+- padding-right: 12px;
++ padding-inline-end: var(--n-line-number-gap, 12px);
+  text-align: right;
+  transition: color .3s var(--n-bezier);
+  color: var(--n-line-number-text-color);
+diff --git a/es/code/styles/light.d.ts b/es/code/styles/light.d.ts
+index a6fee64..2a84c45 100644
+--- a/es/code/styles/light.d.ts
++++ b/es/code/styles/light.d.ts
+@@ -15,6 +15,7 @@ declare function self(vars: ThemeCommonVars): {
+   'hue-6': string;
+   'hue-6-2': string;
+   lineNumberTextColor: string;
++  lineNumberGap?: string;
+ };
+ interface CodeThemeVars extends ReturnType<typeof self> {}
+ declare const codeLight: CodeTheme;
+diff --git a/es/float-button/src/styles/index.cssr.mjs b/es/float-button/src/styles/index.cssr.mjs
+index 714963f..0f3e1e8 100644
+--- a/es/float-button/src/styles/index.cssr.mjs
++++ b/es/float-button/src/styles/index.cssr.mjs
+@@ -23,7 +23,7 @@ var index_cssr_default = cB("float-button", `
+  position: absolute;
+  top: 0;
+  right: 0;
+- bottom: 0
++ bottom: 0;
+  left: 0;
+  transition: background-color .3s var(--n-bezier);
+  border-radius: inherit;
+diff --git a/es/heatmap/src/Heatmap.mjs b/es/heatmap/src/Heatmap.mjs
+index 028ccdf..7c23542 100644
+--- a/es/heatmap/src/Heatmap.mjs
++++ b/es/heatmap/src/Heatmap.mjs
+@@ -86,6 +86,14 @@ var Heatmap_default = defineComponent({
+           fontWeight,
+           textColor,
+           borderColor,
++          cellOutlineWidth = "0px",
++          calendarWeekdayWidth,
++          calendarLabelHeight,
++          calendarLabelLineHeight,
++          calendarSpaceTight,
++          calendarSpaceCompact,
++          calendarSpaceStandard,
++          calendarFooterIndent,
+           loadingColorStart,
+           [createKey("rectSize", size)]: rectSize,
+           [createKey("borderRadius", size)]: sizeBorderRadius,
+@@ -95,12 +103,20 @@ var Heatmap_default = defineComponent({
+         }
+       } = themeRef.value;
+       return {
++                ...(calendarWeekdayWidth === void 0 ? {} : { "--n-calendar-weekday-width": calendarWeekdayWidth }),
++        ...(calendarLabelHeight === void 0 ? {} : { "--n-calendar-label-height": calendarLabelHeight }),
++        ...(calendarLabelLineHeight === void 0 ? {} : { "--n-calendar-label-line-height": calendarLabelLineHeight }),
++        ...(calendarSpaceTight === void 0 ? {} : { "--n-calendar-space-tight": calendarSpaceTight }),
++        ...(calendarSpaceCompact === void 0 ? {} : { "--n-calendar-space-compact": calendarSpaceCompact }),
++        ...(calendarSpaceStandard === void 0 ? {} : { "--n-calendar-space-standard": calendarSpaceStandard }),
++        ...(calendarFooterIndent === void 0 ? {} : { "--n-calendar-footer-indent": calendarFooterIndent }),
+         "--n-bezier": cubicBezierEaseInOut,
+         "--n-font-size": fontSize,
+         "--n-font-weight": fontWeight,
+         "--n-text-color": textColor,
+         "--n-border-radius": sizeBorderRadius,
+         "--n-border-color": borderColor,
++        "--n-cell-outline-width": cellOutlineWidth,
+         "--n-loading-color-start": loadingColorStart,
+         "--n-rect-size": rectSize,
+         "--n-x-gap": xGap !== void 0 ? typeof xGap === "number" ? pxfy(xGap) : xGap : defaultXGap,
+@@ -108,10 +124,9 @@ var Heatmap_default = defineComponent({
+       };
+     });
+     const themeClassHandle = inlineThemeDisabled ? useThemeClass("heatmap", computed(() => {
+-      const {
+-        size
+-      } = props;
+-      return size[0];
++      const { size, xGap, yGap } = props;
++      const gapKey = (value) => value === void 0 ? "u" : `${typeof value === "number" ? "n" : "s"}${Array.from(String(value), (character) => character.codePointAt(0).toString(16)).join("_")}`;
++      return `${size[0]}-x${gapKey(xGap)}-y${gapKey(yGap)}`;
+     }), cssVarsRef, props) : void 0;
+     const mergedColorsRef = computed(() => {
+       const {
+diff --git a/es/heatmap/src/styles/index.cssr.mjs b/es/heatmap/src/styles/index.cssr.mjs
+index ec4f327..4215100 100644
+--- a/es/heatmap/src/styles/index.cssr.mjs
++++ b/es/heatmap/src/styles/index.cssr.mjs
+@@ -12,7 +12,7 @@ var index_cssr_default = c([cB("heatmap", `
+  border-spacing: var(--n-y-gap) var(--n-x-gap);
+  font-size: var(--n-font-size);
+  `), cE("week-header-cell", `
+- width: 27px;
++ width: var(--n-calendar-weekday-width, 27px);
+  padding: 0;
+  border: none;
+  font-size: var(--n-font-size);
+@@ -20,20 +20,21 @@ var index_cssr_default = c([cB("heatmap", `
+  font-size: var(--n-font-size);
+  color: var(--n-text-color);
+  text-align: left;
+- height: 15px;
+- line-height: 15px;
++ height: var(--n-calendar-label-height, 15px);
++ line-height: var(--n-calendar-label-line-height, 15px);
+  font-weight: var(--n-font-weight);
+- padding: 0 2px 8px;
++ padding: 0 var(--n-calendar-space-tight, 2px) var(--n-calendar-space-standard, 8px);
+  vertical-align: bottom;
+  transition: color .3s var(--n-bezier);
+  `), cE("week-label-cell", `
+  font-size: var(--n-font-size);
+  color: var(--n-text-color);
+  text-align: right;
+- width: 27px;
+- height: 11px;
+- line-height: 11px;
+- padding: 0 4px 0 0;
++ width: var(--n-calendar-weekday-width, 27px);
++ height: var(--n-calendar-label-height, 11px);
++ line-height: var(--n-calendar-label-line-height, 11px);
++ padding: 0;
++ padding-inline-end: var(--n-calendar-space-compact, 4px);
+  border: none;
+  vertical-align: middle;
+  white-space: nowrap;
+@@ -53,13 +54,11 @@ var index_cssr_default = c([cB("heatmap", `
+  `), cE("footer", `
+  display: flex;
+  justify-content: space-between;
+- margin-left: 17px;
++ margin-inline-start: var(--n-calendar-footer-indent, 17px);
+  align-items: center;
+- margin-top: 8px;
+- &:has(> :only-child) {
+- justify-content: flex-end;
+- }
++ margin-block-start: var(--n-calendar-space-standard, 8px);
+  `), cE("indicator", `
++ margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+@@ -68,6 +67,7 @@ var index_cssr_default = c([cB("heatmap", `
+  height: var(--n-rect-size);
+  border-radius: var(--n-border-radius);
+  background-color: var(--n-rect-color);
++ outline: var(--n-cell-outline-width) solid var(--n-border-color);
+  transition: background-color .3s var(--n-bezier);
+  `, [cM("loading", `
+  cursor: default;
+@@ -76,7 +76,7 @@ var index_cssr_default = c([cB("heatmap", `
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+- gap: 4px;
++ gap: var(--n-calendar-space-compact, 4px);
+  font-size: var(--n-font-size);
+  `, [cE("cells", `
+  display: flex;
+@@ -85,6 +85,7 @@ var index_cssr_default = c([cB("heatmap", `
+  width: var(--n-rect-size);
+  height: var(--n-rect-size);
+  border-radius: var(--n-border-radius);
++ outline: var(--n-cell-outline-width) solid var(--n-border-color);
+  transition: background-color .3s var(--n-bezier);
+  `), cE("label", `
+  font-size: var(--n-font-size);
+diff --git a/es/heatmap/styles/light.d.ts b/es/heatmap/styles/light.d.ts
+index a132a67..53e2bec 100644
+--- a/es/heatmap/styles/light.d.ts
++++ b/es/heatmap/styles/light.d.ts
+@@ -6,6 +6,14 @@ declare function self(vars: ThemeCommonVars): {
+   activeColors: string[];
+   borderRadius: string;
+   borderColor: string;
++  cellOutlineWidth?: string;
++  calendarWeekdayWidth?: string;
++  calendarLabelHeight?: string;
++  calendarLabelLineHeight?: string;
++  calendarSpaceTight?: string;
++  calendarSpaceCompact?: string;
++  calendarSpaceStandard?: string;
++  calendarFooterIndent?: string;
+   textColor: string;
+   mininumColor: string;
+   fontWeight: string;
+diff --git a/es/heatmap/styles/light.mjs b/es/heatmap/styles/light.mjs
+index b21a7cc..701aa43 100644
+--- a/es/heatmap/styles/light.mjs
++++ b/es/heatmap/styles/light.mjs
+@@ -16,6 +16,7 @@ function self(vars) {
+     activeColors: ["#9be9a8", "#40c463", "#30a14e", "#216e39"],
+     borderRadius,
+     borderColor: cardColor,
++    cellOutlineWidth: "0px",
+     textColor: textColor2,
+     mininumColor: buttonColor2Hover,
+     fontWeight,
+diff --git a/es/input-otp/src/InputOtp.d.ts b/es/input-otp/src/InputOtp.d.ts
+index bbde11f..0648816 100644
+--- a/es/input-otp/src/InputOtp.d.ts
++++ b/es/input-otp/src/InputOtp.d.ts
+@@ -93,6 +93,7 @@ declare const _default: import("vue").DefineComponent<import("vue").ExtractPropT
+       } | undefined;
+     };
+   }>;
++  mergedSize: import("vue").ComputedRef<InputOtpSize>;
+   perItemValueArray: import("vue").ComputedRef<string[]>;
+   mergedClsPrefix: Ref<string, string>;
+   inputRefList: Ref<{
+diff --git a/es/input-otp/src/InputOtp.mjs b/es/input-otp/src/InputOtp.mjs
+index 05448c5..99c9642 100644
+--- a/es/input-otp/src/InputOtp.mjs
++++ b/es/input-otp/src/InputOtp.mjs
+@@ -99,7 +99,9 @@ var InputOtp_default = defineComponent({
+       const {
+         value: size
+       } = mergedSizeRef;
+-      return size[0];
++      const { gap } = props;
++      const gapKey = gap === void 0 ? "u" : `${typeof gap === "number" ? "n" : "s"}${Array.from(String(gap), (character) => character.codePointAt(0).toString(16)).join("_")}`;
++      return `${size[0]}-g${gapKey}`;
+     }), cssVarsRef, props) : void 0;
+     const uncontrolledValueRef = ref(props.defaultValue);
+     const controlledValueRef = toRef(props, "value");
+@@ -274,6 +276,7 @@ var InputOtp_default = defineComponent({
+     };
+     return {
+       mergedTheme: themeRef,
++      mergedSize: mergedSizeRef,
+       perItemValueArray: computed(() => justifyValue(mergedValueRef.value)),
+       mergedClsPrefix: mergedClsPrefixRef,
+       inputRefList,
+@@ -292,8 +295,8 @@ var InputOtp_default = defineComponent({
+     const {
+       mergedTheme,
+       mergedClsPrefix,
+-      perItemValueArray,
+-      size,
++perItemValueArray,
++      mergedSize,
+       placeholder,
+       mergedDisabled,
+       mergedStatus,
+@@ -312,7 +315,7 @@ var InputOtp_default = defineComponent({
+       index,
+       value: perItemValueArray[index],
+       type: inputType,
+-      size,
++      size: mergedSize,
+       placeholder,
+       disabled: mergedDisabled,
+       readonly,
+diff --git a/es/progress/src/Progress.mjs b/es/progress/src/Progress.mjs
+index e231faa..835d27d 100644
+--- a/es/progress/src/Progress.mjs
++++ b/es/progress/src/Progress.mjs
+@@ -91,6 +91,14 @@ var Progress_default = defineComponent({
+           fontSizeCircle,
+           railColor,
+           railHeight,
++          railHeightLabeled,
++          indicatorFontSize,
++          circleSize,
++          circleSizeMultiple,
++          contentGap,
++          outsideLabelPaddingInline,
++          statusIconSlotWidth,
++          textSlotWidth,
+           iconSizeCircle,
+           iconSizeLine,
+           textColorCircle,
+@@ -99,7 +107,8 @@ var Progress_default = defineComponent({
+           lineBgProcessing,
+           fontWeightCircle,
+           [createKey("iconColor", status)]: iconColor,
+-          [createKey("fillColor", status)]: fillColor
++          [createKey("fillColor", status)]: fillColor,
++          [createKey("statusTextColor", status)]: statusTextColor
+         }
+       } = themeRef.value;
+       return {
+@@ -114,6 +123,16 @@ var Progress_default = defineComponent({
+         "--n-line-bg-processing": lineBgProcessing,
+         "--n-rail-color": railColor,
+         "--n-rail-height": railHeight,
++        "--n-rail-height-labeled": railHeightLabeled,
++        "--n-indicator-font-size": indicatorFontSize,
++        "--n-circle-size": circleSize,
++        "--n-circle-size-multiple": circleSizeMultiple,
++        "--n-content-gap": contentGap ?? "14px",
++
++        "--n-outside-label-padding-inline": outsideLabelPaddingInline ?? "4px",
++        "--n-status-icon-slot-width": statusIconSlotWidth ?? "30px",
++        "--n-text-slot-width": textSlotWidth ?? "40px",
++        "--n-pavp-status-text-color": statusTextColor ?? textColorLineInner,
+         "--n-text-color-circle": textColorCircle,
+         "--n-text-color-line-inner": textColorLineInner,
+         "--n-text-color-line-outer": textColorLineOuter
+diff --git a/es/progress/src/styles/index.cssr.mjs b/es/progress/src/styles/index.cssr.mjs
+index 1c552e5..b79314d 100644
+--- a/es/progress/src/styles/index.cssr.mjs
++++ b/es/progress/src/styles/index.cssr.mjs
+@@ -14,22 +14,22 @@ var index_cssr_default = c([cB("progress", {
+  `, [cB("progress-graph", {
+   flex: 1
+ })]), cB("progress-custom-content", {
+-  marginLeft: "14px"
++  marginLeft: "var(--n-content-gap)"
+ }), cB("progress-icon", `
+- width: 30px;
+- padding-left: 14px;
++ width: var(--n-status-icon-slot-width);
++ padding-left: var(--n-content-gap);
+  height: var(--n-icon-size-line);
+  line-height: var(--n-icon-size-line);
+  font-size: var(--n-icon-size-line);
+  `, [cM("as-text", `
+  color: var(--n-text-color-line-outer);
+  text-align: center;
+- width: 40px;
++ width: var(--n-text-slot-width);
+  font-size: var(--n-font-size);
+- padding-left: 4px;
++ padding-left: var(--n-outside-label-padding-inline);
+  transition: color .3s var(--n-bezier);
+  `)])]), cM("circle, dashboard", {
+-  width: "120px"
++  width: "var(--n-circle-size)"
+ }, [cB("progress-custom-content", `
+  position: absolute;
+  left: 50%;
+@@ -61,7 +61,7 @@ var index_cssr_default = c([cB("progress", {
+  color: var(--n-icon-color);
+  font-size: var(--n-icon-size-circle);
+  `)]), cM("multiple-circle", `
+- width: 200px;
++ width: var(--n-circle-size-multiple);
+  color: inherit;
+  `, [cB("progress-text", `
+  font-weight: var(--n-font-weight-circle);
+@@ -93,8 +93,8 @@ var index_cssr_default = c([cB("progress", {
+  overflow: hidden;
+  stroke: var(--n-rail-color);
+  `)]), cB("progress-graph-line", [cM("indicator-inside", [cB("progress-graph-line-rail", `
+- height: 16px;
+- line-height: 16px;
++ height: var(--n-rail-height-labeled);
++ line-height: var(--n-rail-height-labeled);
+  border-radius: 10px;
+  `, [cB("progress-graph-line-fill", `
+  height: inherit;
+@@ -103,14 +103,14 @@ var index_cssr_default = c([cB("progress", {
+  background: #0000;
+  white-space: nowrap;
+  text-align: right;
+- margin-left: 14px;
+- margin-right: 14px;
++ margin-left: var(--n-content-gap);
++ margin-right: var(--n-content-gap);
+  height: inherit;
+- font-size: 12px;
++ font-size: var(--n-indicator-font-size);
+  color: var(--n-text-color-line-inner);
+  transition: color .3s var(--n-bezier);
+  `)])]), cM("indicator-inside-label", `
+- height: 16px;
++ height: var(--n-rail-height-labeled);
+  display: flex;
+  align-items: center;
+  `, [cB("progress-graph-line-rail", `
+@@ -118,12 +118,12 @@ var index_cssr_default = c([cB("progress", {
+  transition: background-color .3s var(--n-bezier);
+  `), cB("progress-graph-line-indicator", `
+  background: var(--n-fill-color);
+- font-size: 12px;
++ font-size: var(--n-indicator-font-size);
+  transform: translateZ(0);
+  display: flex;
+  vertical-align: middle;
+- height: 16px;
+- line-height: 16px;
++ height: var(--n-rail-height-labeled);
++ line-height: var(--n-rail-height-labeled);
+  padding: 0 10px;
+  border-radius: 10px;
+  position: absolute;
+diff --git a/es/progress/styles/light.d.ts b/es/progress/styles/light.d.ts
+index 57b3dfc..84a1dcc 100644
+--- a/es/progress/styles/light.d.ts
++++ b/es/progress/styles/light.d.ts
+@@ -16,6 +16,19 @@ declare function self(vars: ThemeCommonVars): {
+   iconColorError: string;
+   textColorCircle: string;
+   textColorLineInner: string;
++  statusTextColor: string | undefined;
++  statusTextColorInfo: string | undefined;
++  statusTextColorSuccess: string | undefined;
++  statusTextColorWarning: string | undefined;
++  statusTextColorError: string | undefined;
++  railHeightLabeled: string;
++  indicatorFontSize: string;
++  circleSize: string;
++  circleSizeMultiple: string;
++  contentGap: string;
++  outsideLabelPaddingInline: string;
++  statusIconSlotWidth: string;
++  textSlotWidth: string;
+   textColorLineOuter: string;
+   fillColor: string;
+   fillColorInfo: string;
+diff --git a/es/progress/styles/light.mjs b/es/progress/styles/light.mjs
+index 1057561..bd8d01b 100644
+--- a/es/progress/styles/light.mjs
++++ b/es/progress/styles/light.mjs
+@@ -26,6 +26,20 @@ function self(vars) {
+     iconColorError: errorColor,
+     textColorCircle: textColor2,
+     textColorLineInner: "rgb(255, 255, 255)",
++    statusTextColor: void 0,
++    statusTextColorInfo: void 0,
++    statusTextColorSuccess: void 0,
++    statusTextColorWarning: void 0,
++    statusTextColorError: void 0,
++    railHeightLabeled: "16px",
++    indicatorFontSize: "12px",
++    circleSize: "120px",
++    circleSizeMultiple: "200px",
++    contentGap: "14px",
++
++    outsideLabelPaddingInline: "4px",
++    statusIconSlotWidth: "30px",
++    textSlotWidth: "40px",
+     textColorLineOuter: textColor2,
+     fillColor: infoColor,
+     fillColorInfo: infoColor,
+diff --git a/es/rate/src/Rate.mjs b/es/rate/src/Rate.mjs
+index 2d414e9..43bf751 100644
+--- a/es/rate/src/Rate.mjs
++++ b/es/rate/src/Rate.mjs
+@@ -132,7 +132,9 @@ var Rate_default = defineComponent({
+       } = themeRef.value;
+       const {
+         itemColor,
+-        itemColorActive
++        itemColorActive,
++        itemEmptyFill = "currentColor",
++        itemEmptyStrokeWidth = "0"
+       } = self;
+       const {
+         color
+@@ -141,6 +143,8 @@ var Rate_default = defineComponent({
+         "--n-bezier": cubicBezierEaseInOut,
+         "--n-item-color": itemColor,
+         "--n-item-color-active": color || itemColorActive,
++        "--n-rate-empty-fill": itemEmptyFill,
++        "--n-rate-empty-stroke-width": itemEmptyStrokeWidth,
+         "--n-item-size": mergedSizeRef.value
+       };
+     });
+@@ -150,7 +154,7 @@ var Rate_default = defineComponent({
+         color
+       } = props;
+       let hash = "";
+-      if (size) hash += size[0];
++      if (size) hash += `s${Array.from(size, (character) => character.codePointAt(0).toString(16)).join("_")}-`;
+       if (color) hash += color2Class(color);
+       return hash;
+     }), cssVarsRef, props) : void 0;
+diff --git a/es/rate/src/StarIcon.mjs b/es/rate/src/StarIcon.mjs
+index 1d64bd1..3ab67f2 100644
+--- a/es/rate/src/StarIcon.mjs
++++ b/es/rate/src/StarIcon.mjs
+@@ -4,8 +4,13 @@ import { createElementVNode } from "vue";
+ var StarIcon_default = () => (() => {
+   const _cache = createVNodeCache("af92024d2ebf5e47");
+   return _cache[0] || (_cache[0] = createElementVNode("svg", {
+-    viewBox: "0 0 512 512"
++    viewBox: "0 0 512 512",
++    overflow: "visible"
+   }, [createElementVNode("path", {
++    fill: "var(--n-pavp-rate-icon-fill, currentColor)",
++    stroke: "currentColor",
++    "stroke-width": "var(--n-pavp-rate-icon-stroke-width, 0)",
++    "stroke-linejoin": "round",
+     d: "M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z"
+   })], -1));
+ })();
+diff --git a/es/rate/src/styles/index.cssr.mjs b/es/rate/src/styles/index.cssr.mjs
+index ea7cb5e..b40c288 100644
+--- a/es/rate/src/styles/index.cssr.mjs
++++ b/es/rate/src/styles/index.cssr.mjs
+@@ -16,10 +16,14 @@ var index_cssr_default = cB("rate", {
+  transform: scale(1);
+  font-size: var(--n-item-size);
+  color: var(--n-item-color);
++ --n-pavp-rate-icon-fill: var(--n-rate-empty-fill);
++ --n-pavp-rate-icon-stroke-width: var(--n-rate-empty-stroke-width);
+  `, [c("&:not(:first-child)", `
+  margin-left: 6px;
+  `), cM("active", `
+  color: var(--n-item-color-active);
++ --n-pavp-rate-icon-fill: currentColor;
++ --n-pavp-rate-icon-stroke-width: 0;
+  `)]), cNotM("readonly", `
+  cursor: pointer;
+  `, [cE("item", [c("&:hover", `
+@@ -38,6 +42,8 @@ var index_cssr_default = cB("rate", {
+  color: rgba(255, 255, 255, 0);
+  `, [cM("active", `
+  color: var(--n-item-color-active);
++ --n-pavp-rate-icon-fill: currentColor;
++ --n-pavp-rate-icon-stroke-width: 0;
+  `)])]);
+ //#endregion
+ export { index_cssr_default as default };
+\ No newline at end of file
+diff --git a/es/rate/styles/dark.mjs b/es/rate/styles/dark.mjs
+index e9e4c1b..c6d9d2b 100644
+--- a/es/rate/styles/dark.mjs
++++ b/es/rate/styles/dark.mjs
+@@ -10,6 +10,8 @@ const rateDark = {
+     return {
+       itemColor: railColor,
+       itemColorActive: "#CCAA33",
++      itemEmptyFill: "currentColor",
++      itemEmptyStrokeWidth: "0",
+       itemSize: "20px",
+       sizeSmall: "16px",
+       sizeMedium: "20px",
+diff --git a/es/rate/styles/light.d.ts b/es/rate/styles/light.d.ts
+index b557562..b5730c2 100644
+--- a/es/rate/styles/light.d.ts
++++ b/es/rate/styles/light.d.ts
+@@ -5,6 +5,8 @@ import "../../_mixins/index.js";
+ declare function self(vars: ThemeCommonVars): {
+   itemColor: string;
+   itemColorActive: string;
++  itemEmptyFill?: string;
++  itemEmptyStrokeWidth?: string;
+   sizeSmall: string;
+   sizeMedium: string;
+   sizeLarge: string;
+diff --git a/es/rate/styles/light.mjs b/es/rate/styles/light.mjs
+index 10e740d..ac44f57 100644
+--- a/es/rate/styles/light.mjs
++++ b/es/rate/styles/light.mjs
+@@ -7,6 +7,8 @@ function self(vars) {
+   return {
+     itemColor: railColor,
+     itemColorActive: "#FFCC33",
++    itemEmptyFill: "currentColor",
++    itemEmptyStrokeWidth: "0",
+     sizeSmall: "16px",
+     sizeMedium: "20px",
+     sizeLarge: "24px"
+diff --git a/lib/badge/src/Badge.js b/lib/badge/src/Badge.js
+index 4c3628d..daa2a7a 100644
+--- a/lib/badge/src/Badge.js
++++ b/lib/badge/src/Badge.js
+@@ -58,8 +58,12 @@ var Badge_default = (0, vue.defineComponent)({
+ 		const rtlEnabledRef = require__mixins_use_rtl.useRtl("Badge", mergedRtlRef, mergedClsPrefixRef);
+ 		const cssVarsRef = (0, vue.computed)(() => {
+ 			const { type, color: propColor } = props;
+-			const { common: { cubicBezierEaseInOut, cubicBezierEaseOut }, self: { [require__utils_cssr_index.createKey("color", type)]: color, fontFamily, fontSize } } = themeRef.value;
++			const { common: { cubicBezierEaseInOut, cubicBezierEaseOut }, self: { [require__utils_cssr_index.createKey("color", type)]: color, [require__utils_cssr_index.createKey("textColor", type)]: textColor, labelHeight, labelPaddingInline, dotSize, fontFamily, fontSize } } = themeRef.value;
+ 			return {
++				"--n-text-color": textColor,
++				"--n-label-height": labelHeight,
++				"--n-label-padding-inline": labelPaddingInline,
++				"--n-dot-size": dotSize,
+ 				"--n-font-size": fontSize,
+ 				"--n-font-family": fontFamily,
+ 				"--n-color": propColor || color,
+diff --git a/lib/badge/src/styles/index.cssr.js b/lib/badge/src/styles/index.cssr.js
+index deca242..3369fdc 100644
+--- a/lib/badge/src/styles/index.cssr.js
++++ b/lib/badge/src/styles/index.cssr.js
+@@ -22,28 +22,28 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+   transformOrigin: "left bottom",
+   originalTransform: "translateX(0)"
+ })])]), require__utils_cssr_index.cM("dot", [require__utils_cssr_index.cB("badge-sup", `
+- height: 8px;
+- width: 8px;
++ height: var(--n-dot-size);
++ width: var(--n-dot-size);
+  padding: 0;
+- min-width: 8px;
++ min-width: var(--n-dot-size);
+  left: 100%;
+- bottom: calc(100% - 4px);
+- `, [require__utils_cssr_index.c("::before", "border-radius: 4px;")])]), require__utils_cssr_index.cB("badge-sup", `
++ bottom: calc(100% - var(--n-dot-size) / 2);
++ `, [require__utils_cssr_index.c("::before", "border-radius: calc(var(--n-dot-size) / 2);")])]), require__utils_cssr_index.cB("badge-sup", `
+  background: var(--n-color);
+  transition:
+  background-color .3s var(--n-bezier),
+  color .3s var(--n-bezier);
+- color: #FFF;
++ color: var(--n-text-color);
+  position: absolute;
+- height: 18px;
+- line-height: 18px;
+- border-radius: 9px;
+- padding: 0 6px;
++ height: var(--n-label-height);
++ line-height: var(--n-label-height);
++ border-radius: calc(var(--n-label-height) / 2);
++ padding: 0 var(--n-label-padding-inline);
+  text-align: center;
+  font-size: var(--n-font-size);
+  transform: translateX(-50%);
+  left: 100%;
+- bottom: calc(100% - 9px);
++ bottom: calc(100% - var(--n-label-height) / 2);
+  font-variant-numeric: tabular-nums;
+  z-index: 2;
+  display: flex;
+@@ -61,7 +61,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+ }), require__utils_cssr_index.c("&::before", `
+  opacity: 0;
+  transform: scale(1);
+- border-radius: 9px;
++ border-radius: calc(var(--n-label-height) / 2);
+  content: "";
+  position: absolute;
+  left: 0;
+diff --git a/lib/badge/styles/dark.js b/lib/badge/styles/dark.js
+index 9d3d1c8..4e36db4 100644
+--- a/lib/badge/styles/dark.js
++++ b/lib/badge/styles/dark.js
+@@ -10,6 +10,14 @@ const badgeDark = {
+ 			colorSuccess: successColorSuppl,
+ 			colorError: errorColorSuppl,
+ 			colorWarning: warningColorSuppl,
++			textColor: "#FFF",
++			textColorInfo: "#FFF",
++			textColorSuccess: "#FFF",
++			textColorWarning: "#FFF",
++			textColorError: "#FFF",
++			labelHeight: "18px",
++			labelPaddingInline: "6px",
++			dotSize: "8px",
+ 			fontSize: "12px",
+ 			fontFamily
+ 		};
+diff --git a/lib/badge/styles/light.d.ts b/lib/badge/styles/light.d.ts
+index e131dfb..fdef1f1 100644
+--- a/lib/badge/styles/light.d.ts
++++ b/lib/badge/styles/light.d.ts
+@@ -8,6 +8,14 @@ declare function self(vars: ThemeCommonVars): {
+   colorSuccess: string;
+   colorError: string;
+   colorWarning: string;
++  textColor: string;
++  textColorInfo: string;
++  textColorSuccess: string;
++  textColorWarning: string;
++  textColorError: string;
++  labelHeight: string;
++  labelPaddingInline: string;
++  dotSize: string;
+   fontSize: string;
+   fontFamily: string;
+ };
+diff --git a/lib/badge/styles/light.js b/lib/badge/styles/light.js
+index a73eb97..6e0165e 100644
+--- a/lib/badge/styles/light.js
++++ b/lib/badge/styles/light.js
+@@ -8,6 +8,14 @@ function self(vars) {
+ 		colorSuccess: successColor,
+ 		colorError: errorColor,
+ 		colorWarning: warningColor,
++		textColor: "#FFF",
++		textColorInfo: "#FFF",
++		textColorSuccess: "#FFF",
++		textColorWarning: "#FFF",
++		textColorError: "#FFF",
++		labelHeight: "18px",
++		labelPaddingInline: "6px",
++		dotSize: "8px",
+ 		fontSize: "12px",
+ 		fontFamily
+ 	};
+diff --git a/lib/code/src/Code.js b/lib/code/src/Code.js
+index c6a67d3..d4ce2bb 100644
+--- a/lib/code/src/Code.js
++++ b/lib/code/src/Code.js
+@@ -48,50 +48,63 @@ var Code_default = (0, vue.defineComponent)({
+ 			if (props.inline || props.wordWrap) return false;
+ 			return props.showLineNumbers;
+ 		});
++		let codeNodes = [];
++		let hasDefaultSlot = Boolean(slots.default);
++		const clearCodeNodes = (codeEl) => {
++		  for (const node of codeNodes) if (node.parentNode === codeEl) codeEl.removeChild(node);
++		  codeNodes = [];
++		};
+ 		const setCode = () => {
+-			if (slots.default) return;
+-			const { value: codeEl } = codeRef;
+-			if (!codeEl) return;
+-			const { language } = props;
+-			const code = props.uri ? window.decodeURIComponent(props.code) : props.code;
+-			if (language) {
+-				const html = createCodeHtml(language, code, props.trim);
+-				if (html !== null) {
+-					if (props.inline) codeEl.innerHTML = html;
+-					else {
+-						const prevPreEl = codeEl.querySelector(".__code__");
+-						if (prevPreEl) codeEl.removeChild(prevPreEl);
+-						const preEl = document.createElement("pre");
+-						preEl.className = "__code__";
+-						preEl.innerHTML = html;
+-						codeEl.appendChild(preEl);
+-					}
+-					return;
+-				}
+-			}
+-			if (props.inline) {
+-				codeEl.textContent = code;
+-				return;
+-			}
+-			const maybePreEl = codeEl.querySelector(".__code__");
+-			if (maybePreEl) maybePreEl.textContent = code;
+-			else {
+-				const wrap = document.createElement("pre");
+-				wrap.className = "__code__";
+-				wrap.textContent = code;
+-				codeEl.innerHTML = "";
+-				codeEl.appendChild(wrap);
+-			}
++		  if (slots.default) return;
++		  const { value: codeEl } = codeRef;
++		  if (!codeEl) return;
++		  const { language } = props;
++		  const code = props.uri ? window.decodeURIComponent(props.code) : props.code;
++		  const html = language ? createCodeHtml(language, code, props.trim) : null;
++		  const previous = codeNodes.length === 1 ? codeNodes[0] : void 0;
++		  if (!props.inline && html === null && previous?.nodeName === "PRE" && previous.parentNode === codeEl) {
++		    previous.textContent = code;
++		    return;
++		  }
++		  clearCodeNodes(codeEl);
++		  if (props.inline) {
++		    if (html === null) {
++		      const text = document.createTextNode(code);
++		      codeNodes = [text];
++		      codeEl.appendChild(text);
++		    } else {
++		      const inlineCode = document.createElement("code");
++		      inlineCode.innerHTML = html;
++		      codeNodes = Array.from(inlineCode.childNodes);
++		      for (const node of codeNodes) codeEl.appendChild(node);
++		    }
++		  } else {
++		    const pre = document.createElement("pre");
++		    pre.className = "__code__";
++		    if (html === null) pre.textContent = code;else pre.innerHTML = html;
++		    codeNodes = [pre];
++		    codeEl.appendChild(pre);
++		  }
+ 		};
+ 		(0, vue.onMounted)(setCode);
++		(0, vue.onUpdated)(() => {
++		  const nextHasDefaultSlot = Boolean(slots.default);
++		  if (hasDefaultSlot === nextHasDefaultSlot) return;
++		  hasDefaultSlot = nextHasDefaultSlot;
++		  if (nextHasDefaultSlot) {
++		    if (codeRef.value) clearCodeNodes(codeRef.value);
++		  } else setCode();
++		});
+ 		(0, vue.watch)((0, vue.toRef)(props, "language"), setCode);
+ 		(0, vue.watch)((0, vue.toRef)(props, "code"), setCode);
++		(0, vue.watch)((0, vue.toRef)(props, "inline"), setCode, { flush: "post" });
+ 		if (!internalNoHighlight) (0, vue.watch)(hljsRef, setCode);
+ 		const themeRef = require__mixins_use_theme.default("Code", "-code", require_code_src_styles_index_cssr, require_code_styles_light, props, mergedClsPrefixRef);
+ 		const cssVarsRef = (0, vue.computed)(() => {
+-			const { common: { cubicBezierEaseInOut, fontFamilyMono }, self: { textColor, fontSize, fontWeightStrong, lineNumberTextColor, "mono-3": $1, "hue-1": $2, "hue-2": $3, "hue-3": $4, "hue-4": $5, "hue-5": $6, "hue-5-2": $7, "hue-6": $8, "hue-6-2": $9 } } = themeRef.value;
++			const { common: { cubicBezierEaseInOut, fontFamilyMono }, self: { textColor, fontSize, fontWeightStrong, lineNumberTextColor, lineNumberGap, "mono-3": $1, "hue-1": $2, "hue-2": $3, "hue-3": $4, "hue-4": $5, "hue-5": $6, "hue-5-2": $7, "hue-6": $8, "hue-6-2": $9 } } = themeRef.value;
+ 			const { internalFontSize } = props;
+ 			return {
++				...(lineNumberGap === void 0 ? {} : { "--n-line-number-gap": lineNumberGap }),
+ 				"--n-font-size": internalFontSize ? `${internalFontSize}px` : fontSize,
+ 				"--n-font-family": fontFamilyMono,
+ 				"--n-font-weight-strong": fontWeightStrong,
+diff --git a/lib/code/src/styles/index.cssr.js b/lib/code/src/styles/index.cssr.js
+index 1209368..bc5cf0b 100644
+--- a/lib/code/src/styles/index.cssr.js
++++ b/lib/code/src/styles/index.cssr.js
+@@ -7,7 +7,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  display: flex;
+  `), require__utils_cssr_index.cE("line-numbers", `
+  user-select: none;
+- padding-right: 12px;
++ padding-inline-end: var(--n-line-number-gap, 12px);
+  text-align: right;
+  transition: color .3s var(--n-bezier);
+  color: var(--n-line-number-text-color);
+diff --git a/lib/code/styles/light.d.ts b/lib/code/styles/light.d.ts
+index a6fee64..2a84c45 100644
+--- a/lib/code/styles/light.d.ts
++++ b/lib/code/styles/light.d.ts
+@@ -15,6 +15,7 @@ declare function self(vars: ThemeCommonVars): {
+   'hue-6': string;
+   'hue-6-2': string;
+   lineNumberTextColor: string;
++  lineNumberGap?: string;
+ };
+ interface CodeThemeVars extends ReturnType<typeof self> {}
+ declare const codeLight: CodeTheme;
+diff --git a/lib/float-button/src/styles/index.cssr.js b/lib/float-button/src/styles/index.cssr.js
+index 6935941..e984f85 100644
+--- a/lib/float-button/src/styles/index.cssr.js
++++ b/lib/float-button/src/styles/index.cssr.js
+@@ -23,7 +23,7 @@ var index_cssr_default = require__utils_cssr_index.cB("float-button", `
+  position: absolute;
+  top: 0;
+  right: 0;
+- bottom: 0
++ bottom: 0;
+  left: 0;
+  transition: background-color .3s var(--n-bezier);
+  border-radius: inherit;
+diff --git a/lib/heatmap/src/Heatmap.js b/lib/heatmap/src/Heatmap.js
+index a655e61..ba11f14 100644
+--- a/lib/heatmap/src/Heatmap.js
++++ b/lib/heatmap/src/Heatmap.js
+@@ -71,14 +71,22 @@ var Heatmap_default = (0, vue.defineComponent)({
+ 		const rtlEnabledRef = require__mixins_use_rtl.useRtl("Heatmap", mergedRtlRef, mergedClsPrefixRef);
+ 		const cssVarsRef = (0, vue.computed)(() => {
+ 			const { xGap, yGap, size } = props;
+-			const { common: { cubicBezierEaseInOut }, self: { fontWeight, textColor, borderColor, loadingColorStart, [require__utils_cssr_index.createKey("rectSize", size)]: rectSize, [require__utils_cssr_index.createKey("borderRadius", size)]: sizeBorderRadius, [require__utils_cssr_index.createKey("xGap", size)]: defaultXGap, [require__utils_cssr_index.createKey("yGap", size)]: defaultYGap, [require__utils_cssr_index.createKey("fontSize", size)]: fontSize } } = themeRef.value;
++			const { common: { cubicBezierEaseInOut }, self: { fontWeight, textColor, borderColor, cellOutlineWidth = "0px", calendarWeekdayWidth, calendarLabelHeight, calendarLabelLineHeight, calendarSpaceTight, calendarSpaceCompact, calendarSpaceStandard, calendarFooterIndent, loadingColorStart, [require__utils_cssr_index.createKey("rectSize", size)]: rectSize, [require__utils_cssr_index.createKey("borderRadius", size)]: sizeBorderRadius, [require__utils_cssr_index.createKey("xGap", size)]: defaultXGap, [require__utils_cssr_index.createKey("yGap", size)]: defaultYGap, [require__utils_cssr_index.createKey("fontSize", size)]: fontSize } } = themeRef.value;
+ 			return {
++								...(calendarWeekdayWidth === void 0 ? {} : { "--n-calendar-weekday-width": calendarWeekdayWidth }),
++				...(calendarLabelHeight === void 0 ? {} : { "--n-calendar-label-height": calendarLabelHeight }),
++				...(calendarLabelLineHeight === void 0 ? {} : { "--n-calendar-label-line-height": calendarLabelLineHeight }),
++				...(calendarSpaceTight === void 0 ? {} : { "--n-calendar-space-tight": calendarSpaceTight }),
++				...(calendarSpaceCompact === void 0 ? {} : { "--n-calendar-space-compact": calendarSpaceCompact }),
++				...(calendarSpaceStandard === void 0 ? {} : { "--n-calendar-space-standard": calendarSpaceStandard }),
++				...(calendarFooterIndent === void 0 ? {} : { "--n-calendar-footer-indent": calendarFooterIndent }),
+ 				"--n-bezier": cubicBezierEaseInOut,
+ 				"--n-font-size": fontSize,
+ 				"--n-font-weight": fontWeight,
+ 				"--n-text-color": textColor,
+ 				"--n-border-radius": sizeBorderRadius,
+ 				"--n-border-color": borderColor,
++				"--n-cell-outline-width": cellOutlineWidth,
+ 				"--n-loading-color-start": loadingColorStart,
+ 				"--n-rect-size": rectSize,
+ 				"--n-x-gap": xGap !== void 0 ? typeof xGap === "number" ? (0, seemly.pxfy)(xGap) : xGap : defaultXGap,
+@@ -86,8 +94,9 @@ var Heatmap_default = (0, vue.defineComponent)({
+ 			};
+ 		});
+ 		const themeClassHandle = inlineThemeDisabled ? require__mixins_use_css_vars_class.useThemeClass("heatmap", (0, vue.computed)(() => {
+-			const { size } = props;
+-			return size[0];
++			const { size, xGap, yGap } = props;
++			const gapKey = (value) => value === void 0 ? "u" : `${typeof value === "number" ? "n" : "s"}${Array.from(String(value), (character) => character.codePointAt(0).toString(16)).join("_")}`;
++			return `${size[0]}-x${gapKey(xGap)}-y${gapKey(yGap)}`;
+ 		}), cssVarsRef, props) : void 0;
+ 		const mergedColorsRef = (0, vue.computed)(() => {
+ 			const { mininumColor: builtInMinimumColor, activeColors: builtInActiveColors } = themeRef.value.self;
+diff --git a/lib/heatmap/src/styles/index.cssr.js b/lib/heatmap/src/styles/index.cssr.js
+index c57a08b..722ca72 100644
+--- a/lib/heatmap/src/styles/index.cssr.js
++++ b/lib/heatmap/src/styles/index.cssr.js
+@@ -12,7 +12,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  border-spacing: var(--n-y-gap) var(--n-x-gap);
+  font-size: var(--n-font-size);
+  `), require__utils_cssr_index.cE("week-header-cell", `
+- width: 27px;
++ width: var(--n-calendar-weekday-width, 27px);
+  padding: 0;
+  border: none;
+  font-size: var(--n-font-size);
+@@ -20,20 +20,21 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  font-size: var(--n-font-size);
+  color: var(--n-text-color);
+  text-align: left;
+- height: 15px;
+- line-height: 15px;
++ height: var(--n-calendar-label-height, 15px);
++ line-height: var(--n-calendar-label-line-height, 15px);
+  font-weight: var(--n-font-weight);
+- padding: 0 2px 8px;
++ padding: 0 var(--n-calendar-space-tight, 2px) var(--n-calendar-space-standard, 8px);
+  vertical-align: bottom;
+  transition: color .3s var(--n-bezier);
+  `), require__utils_cssr_index.cE("week-label-cell", `
+  font-size: var(--n-font-size);
+  color: var(--n-text-color);
+  text-align: right;
+- width: 27px;
+- height: 11px;
+- line-height: 11px;
+- padding: 0 4px 0 0;
++ width: var(--n-calendar-weekday-width, 27px);
++ height: var(--n-calendar-label-height, 11px);
++ line-height: var(--n-calendar-label-line-height, 11px);
++ padding: 0;
++ padding-inline-end: var(--n-calendar-space-compact, 4px);
+  border: none;
+  vertical-align: middle;
+  white-space: nowrap;
+@@ -53,13 +54,11 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  `), require__utils_cssr_index.cE("footer", `
+  display: flex;
+  justify-content: space-between;
+- margin-left: 17px;
++ margin-inline-start: var(--n-calendar-footer-indent, 17px);
+  align-items: center;
+- margin-top: 8px;
+- &:has(> :only-child) {
+- justify-content: flex-end;
+- }
++ margin-block-start: var(--n-calendar-space-standard, 8px);
+  `), require__utils_cssr_index.cE("indicator", `
++ margin-inline-start: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+@@ -68,6 +67,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  height: var(--n-rect-size);
+  border-radius: var(--n-border-radius);
+  background-color: var(--n-rect-color);
++ outline: var(--n-cell-outline-width) solid var(--n-border-color);
+  transition: background-color .3s var(--n-bezier);
+  `, [require__utils_cssr_index.cM("loading", `
+  cursor: default;
+@@ -76,7 +76,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+- gap: 4px;
++ gap: var(--n-calendar-space-compact, 4px);
+  font-size: var(--n-font-size);
+  `, [require__utils_cssr_index.cE("cells", `
+  display: flex;
+@@ -85,6 +85,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  width: var(--n-rect-size);
+  height: var(--n-rect-size);
+  border-radius: var(--n-border-radius);
++ outline: var(--n-cell-outline-width) solid var(--n-border-color);
+  transition: background-color .3s var(--n-bezier);
+  `), require__utils_cssr_index.cE("label", `
+  font-size: var(--n-font-size);
+diff --git a/lib/heatmap/styles/light.d.ts b/lib/heatmap/styles/light.d.ts
+index a132a67..53e2bec 100644
+--- a/lib/heatmap/styles/light.d.ts
++++ b/lib/heatmap/styles/light.d.ts
+@@ -6,6 +6,14 @@ declare function self(vars: ThemeCommonVars): {
+   activeColors: string[];
+   borderRadius: string;
+   borderColor: string;
++  cellOutlineWidth?: string;
++  calendarWeekdayWidth?: string;
++  calendarLabelHeight?: string;
++  calendarLabelLineHeight?: string;
++  calendarSpaceTight?: string;
++  calendarSpaceCompact?: string;
++  calendarSpaceStandard?: string;
++  calendarFooterIndent?: string;
+   textColor: string;
+   mininumColor: string;
+   fontWeight: string;
+diff --git a/lib/heatmap/styles/light.js b/lib/heatmap/styles/light.js
+index 9e1d123..5b8bcea 100644
+--- a/lib/heatmap/styles/light.js
++++ b/lib/heatmap/styles/light.js
+@@ -16,6 +16,7 @@ function self(vars) {
+ 		],
+ 		borderRadius,
+ 		borderColor: cardColor,
++		cellOutlineWidth: "0px",
+ 		textColor: textColor2,
+ 		mininumColor: buttonColor2Hover,
+ 		fontWeight,
+diff --git a/lib/input-otp/src/InputOtp.d.ts b/lib/input-otp/src/InputOtp.d.ts
+index 61ecc41..6b7794e 100644
+--- a/lib/input-otp/src/InputOtp.d.ts
++++ b/lib/input-otp/src/InputOtp.d.ts
+@@ -93,6 +93,7 @@ declare const _default: import("vue").DefineComponent<import("vue").ExtractPropT
+       } | undefined;
+     };
+   }>;
++  mergedSize: import("vue").ComputedRef<InputOtpSize>;
+   perItemValueArray: import("vue").ComputedRef<string[]>;
+   mergedClsPrefix: Ref<string, string>;
+   inputRefList: Ref<{
+diff --git a/lib/input-otp/src/InputOtp.js b/lib/input-otp/src/InputOtp.js
+index 05f0be3..1635125 100644
+--- a/lib/input-otp/src/InputOtp.js
++++ b/lib/input-otp/src/InputOtp.js
+@@ -77,7 +77,9 @@ var InputOtp_default = (0, vue.defineComponent)({
+ 		});
+ 		const themeClassHandle = inlineThemeDisabled ? require__mixins_use_css_vars_class.useThemeClass("input-otp", (0, vue.computed)(() => {
+ 			const { value: size } = mergedSizeRef;
+-			return size[0];
++			const { gap } = props;
++			const gapKey = gap === void 0 ? "u" : `${typeof gap === "number" ? "n" : "s"}${Array.from(String(gap), (character) => character.codePointAt(0).toString(16)).join("_")}`;
++			return `${size[0]}-g${gapKey}`;
+ 		}), cssVarsRef, props) : void 0;
+ 		const uncontrolledValueRef = (0, vue.ref)(props.defaultValue);
+ 		const controlledValueRef = (0, vue.toRef)(props, "value");
+@@ -232,6 +234,7 @@ var InputOtp_default = (0, vue.defineComponent)({
+ 		const exposedMethods = { focusOnChar };
+ 		return {
+ 			mergedTheme: themeRef,
++			mergedSize: mergedSizeRef,
+ 			perItemValueArray: (0, vue.computed)(() => justifyValue(mergedValueRef.value)),
+ 			mergedClsPrefix: mergedClsPrefixRef,
+ 			inputRefList,
+@@ -247,7 +250,7 @@ var InputOtp_default = (0, vue.defineComponent)({
+ 		};
+ 	},
+ 	render() {
+-		const { mergedTheme, mergedClsPrefix, perItemValueArray, size, placeholder, mergedDisabled, mergedStatus, readonly, inputType, $slots, getTemplateEvents, themeClass, onRender } = this;
++		const { mergedTheme, mergedClsPrefix, perItemValueArray, mergedSize, placeholder, mergedDisabled, mergedStatus, readonly, inputType, $slots, getTemplateEvents, themeClass, onRender } = this;
+ 		onRender?.();
+ 		return (0, vue.openBlock)(), (0, vue.createElementBlock)("div", {
+ 			style: (0, vue.normalizeStyle)(this.cssVars),
+@@ -261,7 +264,7 @@ var InputOtp_default = (0, vue.defineComponent)({
+ 			index,
+ 			value: perItemValueArray[index],
+ 			type: inputType,
+-			size,
++			size: mergedSize,
+ 			placeholder,
+ 			disabled: mergedDisabled,
+ 			readonly,
+diff --git a/lib/progress/src/Progress.js b/lib/progress/src/Progress.js
+index 29362a8..baa649c 100644
+--- a/lib/progress/src/Progress.js
++++ b/lib/progress/src/Progress.js
+@@ -85,7 +85,7 @@ var Progress_default = (0, vue.defineComponent)({
+ 		const themeRef = require__mixins_use_theme.default("Progress", "-progress", require_progress_src_styles_index_cssr, require_progress_styles_light.default, props, mergedClsPrefixRef);
+ 		const cssVarsRef = (0, vue.computed)(() => {
+ 			const { status } = props;
+-			const { common: { cubicBezierEaseInOut }, self: { fontSize, fontSizeCircle, railColor, railHeight, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [require__utils_cssr_index.createKey("iconColor", status)]: iconColor, [require__utils_cssr_index.createKey("fillColor", status)]: fillColor } } = themeRef.value;
++			const { common: { cubicBezierEaseInOut }, self: { fontSize, fontSizeCircle, railColor, railHeight, railHeightLabeled, indicatorFontSize, circleSize, circleSizeMultiple, contentGap, outsideLabelPaddingInline, statusIconSlotWidth, textSlotWidth, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [require__utils_cssr_index.createKey("iconColor", status)]: iconColor, [require__utils_cssr_index.createKey("fillColor", status)]: fillColor, [require__utils_cssr_index.createKey("statusTextColor", status)]: statusTextColor } } = themeRef.value;
+ 			return {
+ 				"--n-bezier": cubicBezierEaseInOut,
+ 				"--n-fill-color": fillColor,
+@@ -98,6 +98,16 @@ var Progress_default = (0, vue.defineComponent)({
+ 				"--n-line-bg-processing": lineBgProcessing,
+ 				"--n-rail-color": railColor,
+ 				"--n-rail-height": railHeight,
++				"--n-rail-height-labeled": railHeightLabeled,
++				"--n-indicator-font-size": indicatorFontSize,
++				"--n-circle-size": circleSize,
++				"--n-circle-size-multiple": circleSizeMultiple,
++				"--n-content-gap": contentGap ?? "14px",
++
++				"--n-outside-label-padding-inline": outsideLabelPaddingInline ?? "4px",
++				"--n-status-icon-slot-width": statusIconSlotWidth ?? "30px",
++				"--n-text-slot-width": textSlotWidth ?? "40px",
++				"--n-pavp-status-text-color": statusTextColor ?? textColorLineInner,
+ 				"--n-text-color-circle": textColorCircle,
+ 				"--n-text-color-line-inner": textColorLineInner,
+ 				"--n-text-color-line-outer": textColorLineOuter
+diff --git a/lib/progress/src/styles/index.cssr.js b/lib/progress/src/styles/index.cssr.js
+index 4803d33..d70ddd1 100644
+--- a/lib/progress/src/styles/index.cssr.js
++++ b/lib/progress/src/styles/index.cssr.js
+@@ -14,22 +14,22 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  `, [require__utils_cssr_index.cB("progress-graph", {
+   flex: 1
+ })]), require__utils_cssr_index.cB("progress-custom-content", {
+-  marginLeft: "14px"
++  marginLeft: "var(--n-content-gap)"
+ }), require__utils_cssr_index.cB("progress-icon", `
+- width: 30px;
+- padding-left: 14px;
++ width: var(--n-status-icon-slot-width);
++ padding-left: var(--n-content-gap);
+  height: var(--n-icon-size-line);
+  line-height: var(--n-icon-size-line);
+  font-size: var(--n-icon-size-line);
+  `, [require__utils_cssr_index.cM("as-text", `
+  color: var(--n-text-color-line-outer);
+  text-align: center;
+- width: 40px;
++ width: var(--n-text-slot-width);
+  font-size: var(--n-font-size);
+- padding-left: 4px;
++ padding-left: var(--n-outside-label-padding-inline);
+  transition: color .3s var(--n-bezier);
+  `)])]), require__utils_cssr_index.cM("circle, dashboard", {
+-  width: "120px"
++  width: "var(--n-circle-size)"
+ }, [require__utils_cssr_index.cB("progress-custom-content", `
+  position: absolute;
+  left: 50%;
+@@ -61,7 +61,7 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  color: var(--n-icon-color);
+  font-size: var(--n-icon-size-circle);
+  `)]), require__utils_cssr_index.cM("multiple-circle", `
+- width: 200px;
++ width: var(--n-circle-size-multiple);
+  color: inherit;
+  `, [require__utils_cssr_index.cB("progress-text", `
+  font-weight: var(--n-font-weight-circle);
+@@ -93,8 +93,8 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  overflow: hidden;
+  stroke: var(--n-rail-color);
+  `)]), require__utils_cssr_index.cB("progress-graph-line", [require__utils_cssr_index.cM("indicator-inside", [require__utils_cssr_index.cB("progress-graph-line-rail", `
+- height: 16px;
+- line-height: 16px;
++ height: var(--n-rail-height-labeled);
++ line-height: var(--n-rail-height-labeled);
+  border-radius: 10px;
+  `, [require__utils_cssr_index.cB("progress-graph-line-fill", `
+  height: inherit;
+@@ -103,14 +103,14 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  background: #0000;
+  white-space: nowrap;
+  text-align: right;
+- margin-left: 14px;
+- margin-right: 14px;
++ margin-left: var(--n-content-gap);
++ margin-right: var(--n-content-gap);
+  height: inherit;
+- font-size: 12px;
++ font-size: var(--n-indicator-font-size);
+  color: var(--n-text-color-line-inner);
+  transition: color .3s var(--n-bezier);
+  `)])]), require__utils_cssr_index.cM("indicator-inside-label", `
+- height: 16px;
++ height: var(--n-rail-height-labeled);
+  display: flex;
+  align-items: center;
+  `, [require__utils_cssr_index.cB("progress-graph-line-rail", `
+@@ -118,12 +118,12 @@ var index_cssr_default = require__utils_cssr_index.c([require__utils_cssr_index.
+  transition: background-color .3s var(--n-bezier);
+  `), require__utils_cssr_index.cB("progress-graph-line-indicator", `
+  background: var(--n-fill-color);
+- font-size: 12px;
++ font-size: var(--n-indicator-font-size);
+  transform: translateZ(0);
+  display: flex;
+  vertical-align: middle;
+- height: 16px;
+- line-height: 16px;
++ height: var(--n-rail-height-labeled);
++ line-height: var(--n-rail-height-labeled);
+  padding: 0 10px;
+  border-radius: 10px;
+  position: absolute;
+diff --git a/lib/progress/styles/light.d.ts b/lib/progress/styles/light.d.ts
+index 57b3dfc..84a1dcc 100644
+--- a/lib/progress/styles/light.d.ts
++++ b/lib/progress/styles/light.d.ts
+@@ -16,6 +16,19 @@ declare function self(vars: ThemeCommonVars): {
+   iconColorError: string;
+   textColorCircle: string;
+   textColorLineInner: string;
++  statusTextColor: string | undefined;
++  statusTextColorInfo: string | undefined;
++  statusTextColorSuccess: string | undefined;
++  statusTextColorWarning: string | undefined;
++  statusTextColorError: string | undefined;
++  railHeightLabeled: string;
++  indicatorFontSize: string;
++  circleSize: string;
++  circleSizeMultiple: string;
++  contentGap: string;
++  outsideLabelPaddingInline: string;
++  statusIconSlotWidth: string;
++  textSlotWidth: string;
+   textColorLineOuter: string;
+   fillColor: string;
+   fillColorInfo: string;
+diff --git a/lib/progress/styles/light.js b/lib/progress/styles/light.js
+index 70c579d..0e1c29a 100644
+--- a/lib/progress/styles/light.js
++++ b/lib/progress/styles/light.js
+@@ -21,6 +21,20 @@ function self(vars) {
+ 		iconColorError: errorColor,
+ 		textColorCircle: textColor2,
+ 		textColorLineInner: "rgb(255, 255, 255)",
++		statusTextColor: void 0,
++		statusTextColorInfo: void 0,
++		statusTextColorSuccess: void 0,
++		statusTextColorWarning: void 0,
++		statusTextColorError: void 0,
++		railHeightLabeled: "16px",
++		indicatorFontSize: "12px",
++		circleSize: "120px",
++		circleSizeMultiple: "200px",
++    contentGap: "14px",
++
++    outsideLabelPaddingInline: "4px",
++    statusIconSlotWidth: "30px",
++    textSlotWidth: "40px",
+ 		textColorLineOuter: textColor2,
+ 		fillColor: infoColor,
+ 		fillColorInfo: infoColor,
+diff --git a/lib/rate/src/Rate.js b/lib/rate/src/Rate.js
+index 92972ba..3c75360 100644
+--- a/lib/rate/src/Rate.js
++++ b/lib/rate/src/Rate.js
+@@ -114,12 +114,14 @@ var Rate_default = (0, vue.defineComponent)({
+ 		});
+ 		const cssVarsRef = (0, vue.computed)(() => {
+ 			const { common: { cubicBezierEaseInOut }, self } = themeRef.value;
+-			const { itemColor, itemColorActive } = self;
++			const { itemColor, itemColorActive, itemEmptyFill = "currentColor", itemEmptyStrokeWidth = "0" } = self;
+ 			const { color } = props;
+ 			return {
+ 				"--n-bezier": cubicBezierEaseInOut,
+ 				"--n-item-color": itemColor,
+ 				"--n-item-color-active": color || itemColorActive,
++				"--n-rate-empty-fill": itemEmptyFill,
++				"--n-rate-empty-stroke-width": itemEmptyStrokeWidth,
+ 				"--n-item-size": mergedSizeRef.value
+ 			};
+ 		});
+@@ -127,7 +129,7 @@ var Rate_default = (0, vue.defineComponent)({
+ 			const size = mergedSizeRef.value;
+ 			const { color } = props;
+ 			let hash = "";
+-			if (size) hash += size[0];
++			if (size) hash += `s${Array.from(size, (character) => character.codePointAt(0).toString(16)).join("_")}-`;
+ 			if (color) hash += require__utils_css_color_to_class.color2Class(color);
+ 			return hash;
+ 		}), cssVarsRef, props) : void 0;
+diff --git a/lib/rate/src/StarIcon.js b/lib/rate/src/StarIcon.js
+index d6e32dd..0d2913a 100644
+--- a/lib/rate/src/StarIcon.js
++++ b/lib/rate/src/StarIcon.js
+@@ -3,7 +3,7 @@ let vue = require("vue");
+ //#region src/rate/src/StarIcon.tsx
+ var StarIcon_default = () => (() => {
+ 	const _cache = require_vdom.createVNodeCache("af92024d2ebf5e47");
+-	return _cache[0] || (_cache[0] = (0, vue.createElementVNode)("svg", { viewBox: "0 0 512 512" }, [(0, vue.createElementVNode)("path", { d: "M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z" })], -1));
++	return _cache[0] || (_cache[0] = (0, vue.createElementVNode)("svg", { viewBox: "0 0 512 512", overflow: "visible" }, [(0, vue.createElementVNode)("path", { fill: "var(--n-pavp-rate-icon-fill, currentColor)", stroke: "currentColor", "stroke-width": "var(--n-pavp-rate-icon-stroke-width, 0)", "stroke-linejoin": "round", d: "M394 480a16 16 0 01-9.39-3L256 383.76 127.39 477a16 16 0 01-24.55-18.08L153 310.35 23 221.2a16 16 0 019-29.2h160.38l48.4-148.95a16 16 0 0130.44 0l48.4 149H480a16 16 0 019.05 29.2L359 310.35l50.13 148.53A16 16 0 01394 480z" })], -1));
+ })();
+ //#endregion
+ module.exports = StarIcon_default;
+diff --git a/lib/rate/src/styles/index.cssr.js b/lib/rate/src/styles/index.cssr.js
+index 468e545..308ac7a 100644
+--- a/lib/rate/src/styles/index.cssr.js
++++ b/lib/rate/src/styles/index.cssr.js
+@@ -16,10 +16,14 @@ var index_cssr_default = require__utils_cssr_index.cB("rate", {
+  transform: scale(1);
+  font-size: var(--n-item-size);
+  color: var(--n-item-color);
++ --n-pavp-rate-icon-fill: var(--n-rate-empty-fill);
++ --n-pavp-rate-icon-stroke-width: var(--n-rate-empty-stroke-width);
+  `, [require__utils_cssr_index.c("&:not(:first-child)", `
+  margin-left: 6px;
+  `), require__utils_cssr_index.cM("active", `
+  color: var(--n-item-color-active);
++ --n-pavp-rate-icon-fill: currentColor;
++ --n-pavp-rate-icon-stroke-width: 0;
+  `)]), require__utils_cssr_index.cNotM("readonly", `
+  cursor: pointer;
+  `, [require__utils_cssr_index.cE("item", [require__utils_cssr_index.c("&:hover", `
+@@ -38,6 +42,8 @@ var index_cssr_default = require__utils_cssr_index.cB("rate", {
+  color: rgba(255, 255, 255, 0);
+  `, [require__utils_cssr_index.cM("active", `
+  color: var(--n-item-color-active);
++ --n-pavp-rate-icon-fill: currentColor;
++ --n-pavp-rate-icon-stroke-width: 0;
+  `)])]);
+ //#endregion
+ module.exports = index_cssr_default;
+\ No newline at end of file
+diff --git a/lib/rate/styles/dark.js b/lib/rate/styles/dark.js
+index 975a1b4..d4b8166 100644
+--- a/lib/rate/styles/dark.js
++++ b/lib/rate/styles/dark.js
+@@ -7,6 +7,8 @@ const rateDark = {
+ 		return {
+ 			itemColor: railColor,
+ 			itemColorActive: "#CCAA33",
++			itemEmptyFill: "currentColor",
++			itemEmptyStrokeWidth: "0",
+ 			itemSize: "20px",
+ 			sizeSmall: "16px",
+ 			sizeMedium: "20px",
+diff --git a/lib/rate/styles/light.d.ts b/lib/rate/styles/light.d.ts
+index b557562..b5730c2 100644
+--- a/lib/rate/styles/light.d.ts
++++ b/lib/rate/styles/light.d.ts
+@@ -5,6 +5,8 @@ import "../../_mixins/index.js";
+ declare function self(vars: ThemeCommonVars): {
+   itemColor: string;
+   itemColorActive: string;
++  itemEmptyFill?: string;
++  itemEmptyStrokeWidth?: string;
+   sizeSmall: string;
+   sizeMedium: string;
+   sizeLarge: string;
+diff --git a/lib/rate/styles/light.js b/lib/rate/styles/light.js
+index e54fb3b..d4bde20 100644
+--- a/lib/rate/styles/light.js
++++ b/lib/rate/styles/light.js
+@@ -5,6 +5,8 @@ function self(vars) {
+ 	return {
+ 		itemColor: railColor,
+ 		itemColorActive: "#FFCC33",
++		itemEmptyFill: "currentColor",
++		itemEmptyStrokeWidth: "0",
+ 		sizeSmall: "16px",
+ 		sizeMedium: "20px",
+ 		sizeLarge: "24px"
+diff --git a/es/_internal/scrollbar/src/Scrollbar.mjs b/es/_internal/scrollbar/src/Scrollbar.mjs
+--- a/es/_internal/scrollbar/src/Scrollbar.mjs
++++ b/es/_internal/scrollbar/src/Scrollbar.mjs
+@@ -9,7 +9,7 @@
+ import scrollbarLight from "../styles/light.mjs";
+ import index_cssr_default from "./styles/index.cssr.mjs";
+ import { depx, getPadding, getPreciseEventTarget, pxfy } from "seemly";
+-import { Fragment, Transition, computed, createBlock, createElementBlock, defineComponent, h, mergeProps, normalizeStyle, onBeforeUnmount, onMounted, openBlock, ref, watchEffect } from "vue";
++import { Fragment, Transition, computed, createBlock, createElementBlock, defineComponent, h, inject, mergeProps, normalizeStyle, onBeforeUnmount, onMounted, openBlock, ref, watchEffect } from "vue";
+ import { off, on } from "evtd";
+ import { useIsIos } from "vooks";
+ import { VResizeObserver } from "vueuc";
+@@ -57,6 +57,15 @@
+     default: "bottom"
+   }
+ };
++function pavpUseNativeScroll(viewportRef, hostRef, contentRef, props) {
++  const enhance = inject("pavp.scroll", null);
++  if (enhance) watchEffect(onCleanup => {
++    const viewport = viewportRef.value;
++    const host = hostRef ? hostRef.value : viewport?.parentElement;
++    const content = contentRef ? contentRef.value || (props.useUnifiedContainer ? viewport : null) : viewport;
++    if (viewport && host && content && (!props || props.scrollable)) onCleanup(enhance(host, viewport, content, props?.xScrollable));
++  }, { flush: "post" });
++}
+ const Scrollbar = defineComponent({
+   name: "Scrollbar",
+   props: scrollbarProps,
+@@ -211,6 +220,7 @@
+       if (content) return content();
+       return contentRef.value;
+     });
++    pavpUseNativeScroll(mergedContainerRef, wrapperRef, mergedContentRef, props);
+     const scrollTo = (options, y) => {
+       if (!props.scrollable) return;
+       if (typeof options === "number") {
+@@ -296,7 +306,7 @@
+     function hideYBar() {
+       if (yBarVanishTimerId !== void 0) window.clearTimeout(yBarVanishTimerId);
+       yBarVanishTimerId = window.setTimeout(() => {
+-        isShowYBarRef.value = false;
++        if (!yBarPressed) isShowYBarRef.value = false;
+       }, props.duration);
+     }
+     function hideXBar() {
+@@ -386,7 +396,7 @@
+       }
+     }
+     function isMouseUpAway(e) {
+-      return !wrapperRef.value?.contains(getPreciseEventTarget(e));
++      return !(props.useUnifiedContainer ? wrapperRef.value?.parentElement : wrapperRef.value)?.contains(getPreciseEventTarget(e));
+     }
+     function handleXScrollMouseDown(e) {
+       e.preventDefault();
+@@ -713,4 +723,4 @@
+ });
+ const XScrollbar = Scrollbar;
+ //#endregion
+-export { XScrollbar, Scrollbar as default };
+\ No newline at end of file
++export { XScrollbar, Scrollbar as default, pavpUseNativeScroll };
+\ No newline at end of file
+diff --git a/es/layout/src/Layout.mjs b/es/layout/src/Layout.mjs
+--- a/es/layout/src/Layout.mjs
++++ b/es/layout/src/Layout.mjs
+@@ -4,7 +4,7 @@
+ import { useThemeClass } from "../../_mixins/use-css-vars-class.mjs";
+ import useTheme from "../../_mixins/use-theme.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeSlots, normalizeVNode } from "../../vue-jsx-vapor/vdom.mjs";
+-import Scrollbar from "../../_internal/scrollbar/src/Scrollbar.mjs";
++import Scrollbar, { pavpUseNativeScroll } from "../../_internal/scrollbar/src/Scrollbar.mjs";
+ import layoutLight from "../styles/light.mjs";
+ import { positionProp } from "./interface.mjs";
+ import layout_cssr_default from "./styles/layout.cssr.mjs";
+@@ -40,6 +40,7 @@
+     },
+     setup(props) {
+       const scrollableElRef = ref(null);
++      pavpUseNativeScroll(scrollableElRef);
+       const scrollbarInstRef = ref(null);
+       const {
+         mergedClsPrefixRef,
+diff --git a/es/layout/src/LayoutSider.mjs b/es/layout/src/LayoutSider.mjs
+--- a/es/layout/src/LayoutSider.mjs
++++ b/es/layout/src/LayoutSider.mjs
+@@ -6,7 +6,7 @@
+ import { useThemeClass } from "../../_mixins/use-css-vars-class.mjs";
+ import useTheme from "../../_mixins/use-theme.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeSlots, normalizeVNode } from "../../vue-jsx-vapor/vdom.mjs";
+-import Scrollbar from "../../_internal/scrollbar/src/Scrollbar.mjs";
++import Scrollbar, { pavpUseNativeScroll } from "../../_internal/scrollbar/src/Scrollbar.mjs";
+ import layoutLight from "../styles/light.mjs";
+ import { layoutSiderInjectionKey, positionProp } from "./interface.mjs";
+ import { layoutInjectionKey } from "./Layout.mjs";
+@@ -80,6 +80,7 @@
+       if (!layoutProps) warn("layout-sider", "Layout sider is not allowed to be put outside layout.");else if (!layoutProps.hasSider) warn("layout-sider", "You are putting `n-layout-sider` in a `n-layout` but haven't set `has-sider` on the `n-layout`.");
+     }
+     const scrollableElRef = ref(null);
++      pavpUseNativeScroll(scrollableElRef);
+     const scrollbarInstRef = ref(null);
+     const uncontrolledCollapsedRef = ref(props.defaultCollapsed);
+     const mergedCollapsedRef = useMergedState(toRef(props, "collapsed"), uncontrolledCollapsedRef);
+diff --git a/es/drawer/src/DrawerContent.mjs b/es/drawer/src/DrawerContent.mjs
+--- a/es/drawer/src/DrawerContent.mjs
++++ b/es/drawer/src/DrawerContent.mjs
+@@ -2,8 +2,8 @@
+ import { throwError } from "../../_utils/naive/warn.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeSlots, normalizeVNode } from "../../vue-jsx-vapor/vdom.mjs";
+ import Close_default from "../../_internal/close/src/Close.mjs";
+-import Scrollbar from "../../_internal/scrollbar/src/Scrollbar.mjs";
+-import { Fragment, createBlock, createElementBlock, createElementVNode, defineComponent, inject, mergeProps, normalizeStyle, openBlock } from "vue";
++import Scrollbar, { pavpUseNativeScroll } from "../../_internal/scrollbar/src/Scrollbar.mjs";
++import { Fragment, createBlock, createElementBlock, createElementVNode, defineComponent, inject, mergeProps, normalizeStyle, openBlock, ref } from "vue";
+ //#region src/drawer/src/DrawerContent.tsx
+ const drawerContentProps = {
+   title: String,
+@@ -26,8 +26,10 @@
+   name: "DrawerContent",
+   props: drawerContentProps,
+   slots: Object,
+-  setup() {
++  setup(props) {
+     const NDrawer = inject(drawerInjectionKey, null);
++    const nativeScrollRef = ref(null);
++    pavpUseNativeScroll(nativeScrollRef);
+     if (!NDrawer) throwError("drawer-content", "`n-drawer-content` must be placed inside `n-drawer`.");
+     const {
+       doUpdateShow
+@@ -36,6 +38,7 @@
+       doUpdateShow(false);
+     }
+     return {
++      nativeScrollRef,
+       handleCloseClick,
+       mergedTheme: NDrawer.mergedThemeRef,
+       mergedClsPrefix: NDrawer.mergedClsPrefixRef
+@@ -86,6 +89,7 @@
+       style: normalizeStyle(bodyStyle),
+       role: "none"
+     }, [createElementVNode("div", {
++      ref: "nativeScrollRef",
+       class: normalizeClass$1([`${mergedClsPrefix}-drawer-body-content-wrapper`, bodyContentClass]),
+       style: normalizeStyle(bodyContentStyle),
+       role: "none"
+diff --git a/es/drawer/src/DrawerBodyWrapper.mjs b/es/drawer/src/DrawerBodyWrapper.mjs
+--- a/es/drawer/src/DrawerBodyWrapper.mjs
++++ b/es/drawer/src/DrawerBodyWrapper.mjs
+@@ -5,7 +5,7 @@
+ import useConfig from "../../_mixins/use-config.mjs";
+ import { useRtl } from "../../_mixins/use-rtl.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeSlots, normalizeVNode } from "../../vue-jsx-vapor/vdom.mjs";
+-import Scrollbar from "../../_internal/scrollbar/src/Scrollbar.mjs";
++import Scrollbar, { pavpUseNativeScroll } from "../../_internal/scrollbar/src/Scrollbar.mjs";
+ import { Transition, computed, createBlock, createElementBlock, defineComponent, h, inject, mergeProps, normalizeStyle, onBeforeUnmount, openBlock, provide, ref, vShow, watch, watchEffect, withDirectives } from "vue";
+ import { VFocusTrap } from "vueuc";
+ import { clickoutside } from "vdirs";
+@@ -64,6 +64,8 @@
+   setup(props) {
+     const displayedRef = ref(!!props.show);
+     const bodyRef = ref(null);
++    const nativeScrollRef = ref(null);
++    pavpUseNativeScroll(nativeScrollRef);
+     const NDrawer = inject(drawerInjectionKey);
+     let startPosition = 0;
+     let memoizedBodyStyleCursor = "";
+@@ -187,6 +189,7 @@
+     provide(popoverBodyInjectionKey, null);
+     provide(modalBodyInjectionKey, null);
+     return {
++      nativeScrollRef,
+       bodyRef,
+       rtlEnabled: rtlEnabledRef,
+       mergedClsPrefix: NDrawer.mergedClsPrefixRef,
+@@ -240,7 +243,8 @@
+           onMousedown: this.handleMousedownResizeTrigger
+         }, null, 42, _hoisted_1)) : null, this.nativeScrollbar ? (openBlock(), createElementBlock("div", {
+           key: 3,
+-          class: normalizeClass$1([`${mergedClsPrefix}-drawer-content-wrapper`, this.contentClass]),
++          ref: "nativeScrollRef",
++      class: normalizeClass$1([`${mergedClsPrefix}-drawer-content-wrapper`, this.contentClass]),
+           style: normalizeStyle(this.contentStyle),
+           role: "none"
+         }, [normalizeVNode(() => $slots.default?.())], 6)) : (openBlock(), createBlock(Scrollbar, mergeProps({
+diff --git a/es/tabs/src/Tabs.mjs b/es/tabs/src/Tabs.mjs
+--- a/es/tabs/src/Tabs.mjs
++++ b/es/tabs/src/Tabs.mjs
+@@ -8,6 +8,7 @@
+ import { useRtl } from "../../_mixins/use-rtl.mjs";
+ import useTheme from "../../_mixins/use-theme.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeSlots, normalizeVNode } from "../../vue-jsx-vapor/vdom.mjs";
++import { pavpUseNativeScroll } from "../../_internal/scrollbar/src/Scrollbar.mjs";
+ import tabsLight from "../styles/light.mjs";
+ import { tabsInjectionKey } from "./interface.mjs";
+ import Tab_default from "./Tab.mjs";
+@@ -100,6 +101,7 @@
+     const addTabInstRef = ref(null);
+     const xScrollInstRef = ref(null);
+     const yScrollElRef = ref(null);
++    pavpUseNativeScroll(computed(() => yScrollElRef.value || xScrollInstRef.value?.$el || null));
+     const startReachedRef = ref(true);
+     const endReachedRef = ref(true);
+     const compitableSizeRef = useCompitable(props, ["labelSize", "size"]);
+diff --git a/lib/_internal/scrollbar/src/Scrollbar.js b/lib/_internal/scrollbar/src/Scrollbar.js
+--- a/lib/_internal/scrollbar/src/Scrollbar.js
++++ b/lib/_internal/scrollbar/src/Scrollbar.js
+@@ -61,6 +61,15 @@
+ 		default: "bottom"
+ 	}
+ };
++function pavpUseNativeScroll(viewportRef, hostRef, contentRef, props) {
++	const enhance = (0, vue.inject)("pavp.scroll", null);
++	if (enhance) (0, vue.watchEffect)((onCleanup) => {
++		const viewport = viewportRef.value;
++		const host = hostRef ? hostRef.value : viewport?.parentElement;
++		const content = contentRef ? contentRef.value || (props.useUnifiedContainer ? viewport : null) : viewport;
++		if (viewport && host && content && (!props || props.scrollable)) onCleanup(enhance(host, viewport, content, props?.xScrollable));
++	}, { flush: "post" });
++}
+ const Scrollbar = (0, vue.defineComponent)({
+ 	name: "Scrollbar",
+ 	props: scrollbarProps,
+@@ -171,6 +180,7 @@
+ 			if (content) return content();
+ 			return contentRef.value;
+ 		});
++		pavpUseNativeScroll(mergedContainerRef, wrapperRef, mergedContentRef, props);
+ 		const scrollTo = (options, y) => {
+ 			if (!props.scrollable) return;
+ 			if (typeof options === "number") {
+@@ -242,7 +252,7 @@
+ 		function hideYBar() {
+ 			if (yBarVanishTimerId !== void 0) window.clearTimeout(yBarVanishTimerId);
+ 			yBarVanishTimerId = window.setTimeout(() => {
+-				isShowYBarRef.value = false;
++				if (!yBarPressed) isShowYBarRef.value = false;
+ 			}, props.duration);
+ 		}
+ 		function hideXBar() {
+@@ -315,7 +325,7 @@
+ 			}
+ 		}
+ 		function isMouseUpAway(e) {
+-			return !wrapperRef.value?.contains((0, seemly.getPreciseEventTarget)(e));
++			return !(props.useUnifiedContainer ? wrapperRef.value?.parentElement : wrapperRef.value)?.contains((0, seemly.getPreciseEventTarget)(e));
+ 		}
+ 		function handleXScrollMouseDown(e) {
+ 			e.preventDefault();
+@@ -569,5 +579,6 @@
+ });
+ const XScrollbar = Scrollbar;
+ //#endregion
++exports.pavpUseNativeScroll = pavpUseNativeScroll;
+ exports.XScrollbar = XScrollbar;
+ exports.default = Scrollbar;
+diff --git a/lib/layout/src/Layout.js b/lib/layout/src/Layout.js
+--- a/lib/layout/src/Layout.js
++++ b/lib/layout/src/Layout.js
+@@ -44,6 +44,7 @@
+ 		},
+ 		setup(props) {
+ 			const scrollableElRef = (0, vue.ref)(null);
++      require__internal_scrollbar_src_Scrollbar.pavpUseNativeScroll(scrollableElRef);
+ 			const scrollbarInstRef = (0, vue.ref)(null);
+ 			const { mergedClsPrefixRef, inlineThemeDisabled } = require__mixins_use_config.default(props);
+ 			const themeRef = require__mixins_use_theme.default("Layout", "-layout", require_layout_src_styles_layout_cssr, require_layout_styles_light.default, props, mergedClsPrefixRef);
+diff --git a/lib/layout/src/LayoutSider.js b/lib/layout/src/LayoutSider.js
+--- a/lib/layout/src/LayoutSider.js
++++ b/lib/layout/src/LayoutSider.js
+@@ -85,6 +85,7 @@
+ 			else if (!layoutProps.hasSider) require__utils_naive_warn.warn("layout-sider", "You are putting `n-layout-sider` in a `n-layout` but haven't set `has-sider` on the `n-layout`.");
+ 		}
+ 		const scrollableElRef = (0, vue.ref)(null);
++      require__internal_scrollbar_src_Scrollbar.pavpUseNativeScroll(scrollableElRef);
+ 		const scrollbarInstRef = (0, vue.ref)(null);
+ 		const uncontrolledCollapsedRef = (0, vue.ref)(props.defaultCollapsed);
+ 		const mergedCollapsedRef = (0, vooks.useMergedState)((0, vue.toRef)(props, "collapsed"), uncontrolledCollapsedRef);
+diff --git a/lib/drawer/src/DrawerContent.js b/lib/drawer/src/DrawerContent.js
+--- a/lib/drawer/src/DrawerContent.js
++++ b/lib/drawer/src/DrawerContent.js
+@@ -30,14 +30,17 @@
+ 	name: "DrawerContent",
+ 	props: drawerContentProps,
+ 	slots: Object,
+-	setup() {
++	setup(props) {
+ 		const NDrawer = (0, vue.inject)(require_drawer_src_interface.drawerInjectionKey, null);
++    const nativeScrollRef = (0, vue.ref)(null);
++    require__internal_scrollbar_src_Scrollbar.pavpUseNativeScroll(nativeScrollRef);
+ 		if (!NDrawer) require__utils_naive_warn.throwError("drawer-content", "`n-drawer-content` must be placed inside `n-drawer`.");
+ 		const { doUpdateShow } = NDrawer;
+ 		function handleCloseClick() {
+ 			doUpdateShow(false);
+ 		}
+ 		return {
++      nativeScrollRef,
+ 			handleCloseClick,
+ 			mergedTheme: NDrawer.mergedThemeRef,
+ 			mergedClsPrefix: NDrawer.mergedClsPrefixRef
+@@ -74,7 +77,8 @@
+ 				style: (0, vue.normalizeStyle)(bodyStyle),
+ 				role: "none"
+ 			}, [(0, vue.createElementVNode)("div", {
+-				class: require_vdom.normalizeClass([`${mergedClsPrefix}-drawer-body-content-wrapper`, bodyContentClass]),
++				ref: "nativeScrollRef",
++      class: require_vdom.normalizeClass([`${mergedClsPrefix}-drawer-body-content-wrapper`, bodyContentClass]),
+ 				style: (0, vue.normalizeStyle)(bodyContentStyle),
+ 				role: "none"
+ 			}, [require_vdom.normalizeVNode(() => $slots.default?.())], 6)], 6)) : ((0, vue.openBlock)(), (0, vue.createBlock)(require__internal_scrollbar_src_Scrollbar.default, (0, vue.mergeProps)({
+diff --git a/lib/drawer/src/DrawerBodyWrapper.js b/lib/drawer/src/DrawerBodyWrapper.js
+--- a/lib/drawer/src/DrawerBodyWrapper.js
++++ b/lib/drawer/src/DrawerBodyWrapper.js
+@@ -68,6 +68,8 @@
+ 	setup(props) {
+ 		const displayedRef = (0, vue.ref)(!!props.show);
+ 		const bodyRef = (0, vue.ref)(null);
++    const nativeScrollRef = (0, vue.ref)(null);
++    require__internal_scrollbar_src_Scrollbar.pavpUseNativeScroll(nativeScrollRef);
+ 		const NDrawer = (0, vue.inject)(require_drawer_src_interface.drawerInjectionKey);
+ 		let startPosition = 0;
+ 		let memoizedBodyStyleCursor = "";
+@@ -179,6 +181,7 @@
+ 		(0, vue.provide)(require_popover_src_interface.popoverBodyInjectionKey, null);
+ 		(0, vue.provide)(require_modal_src_interface.modalBodyInjectionKey, null);
+ 		return {
++      nativeScrollRef,
+ 			bodyRef,
+ 			rtlEnabled: rtlEnabledRef,
+ 			mergedClsPrefix: NDrawer.mergedClsPrefixRef,
+@@ -233,7 +236,8 @@
+ 			onMousedown: this.handleMousedownResizeTrigger
+ 		}, null, 42, _hoisted_1)) : null, this.nativeScrollbar ? ((0, vue.openBlock)(), (0, vue.createElementBlock)("div", {
+ 			key: 3,
+-			class: require_vdom.normalizeClass([`${mergedClsPrefix}-drawer-content-wrapper`, this.contentClass]),
++			ref: "nativeScrollRef",
++      class: require_vdom.normalizeClass([`${mergedClsPrefix}-drawer-content-wrapper`, this.contentClass]),
+ 			style: (0, vue.normalizeStyle)(this.contentStyle),
+ 			role: "none"
+ 		}, [require_vdom.normalizeVNode(() => $slots.default?.())], 6)) : ((0, vue.openBlock)(), (0, vue.createBlock)(require__internal_scrollbar_src_Scrollbar.default, (0, vue.mergeProps)({ key: 4 }, this.scrollbarProps, {
+diff --git a/lib/tabs/src/Tabs.js b/lib/tabs/src/Tabs.js
+--- a/lib/tabs/src/Tabs.js
++++ b/lib/tabs/src/Tabs.js
+@@ -12,6 +12,7 @@
+ const require__mixins_use_rtl = require("../../_mixins/use-rtl.js");
+ const require__mixins_use_theme = require("../../_mixins/use-theme.js");
+ const require_vdom = require("../../vue-jsx-vapor/vdom.js");
++const require__internal_scrollbar_src_Scrollbar = require("../../_internal/scrollbar/src/Scrollbar.js");
+ const require_tabs_styles_light = require("../styles/light.js");
+ const require_tabs_src_interface = require("./interface.js");
+ const require_tabs_src_Tab = require("./Tab.js");
+@@ -94,6 +95,7 @@
+ 		const addTabInstRef = (0, vue.ref)(null);
+ 		const xScrollInstRef = (0, vue.ref)(null);
+ 		const yScrollElRef = (0, vue.ref)(null);
++		require__internal_scrollbar_src_Scrollbar.pavpUseNativeScroll((0, vue.computed)(() => yScrollElRef.value || xScrollInstRef.value?.$el || null));
+ 		const startReachedRef = (0, vue.ref)(true);
+ 		const endReachedRef = (0, vue.ref)(true);
+ 		const compitableSizeRef = (0, vooks.useCompitable)(props, ["labelSize", "size"]);
+diff --git a/es/data-table/src/TableParts/Header.mjs b/es/data-table/src/TableParts/Header.mjs
+--- a/es/data-table/src/TableParts/Header.mjs
++++ b/es/data-table/src/TableParts/Header.mjs
+@@ -1,3 +1,4 @@
++import { pavpUseNativeScroll } from "../../../_internal/scrollbar/src/Scrollbar.mjs";
+ import { formatLength } from "../../../_utils/css/format-length.mjs";
+ import { normalizeClass as normalizeClass$1, normalizeVNode } from "../../../vue-jsx-vapor/vdom.mjs";
+ import Checkbox_default from "../../../checkbox/src/Checkbox.mjs";
+@@ -9,7 +10,7 @@
+ import SortButton_default from "../HeaderButton/SortButton.mjs";
+ import SelectionMenu_default from "./SelectionMenu.mjs";
+ import { happensIn, pxfy } from "seemly";
+-import { Fragment, createBlock, createElementBlock, createElementVNode, defineComponent, inject, mergeProps, normalizeStyle, openBlock, ref, withCtx } from "vue";
++import { Fragment, computed, createBlock, createElementBlock, createElementVNode, defineComponent, inject, mergeProps, normalizeStyle, openBlock, ref, withCtx } from "vue";
+ import { VVirtualList } from "vueuc";
+ //#region src/data-table/src/TableParts/Header.tsx
+ const _hoisted_1 = ["data-n-id"];
+@@ -97,6 +98,9 @@
+       doCheckAll
+     } = inject(dataTableInjectionKey);
+     const virtualListRef = ref();
++    const nativeScrollRef = ref(null);
++    const scrollViewportRef = computed(() => nativeScrollRef.value || virtualListRef.value?.listElRef || null);
++    pavpUseNativeScroll(scrollViewportRef, scrollViewportRef);
+     const cellElsRef = ref({});
+     function getCellActualWidth(key) {
+       return cellElsRef.value[key]?.getBoundingClientRect().width;
+@@ -124,6 +128,7 @@
+       doUpdateResizableWidth(column, limitWidth);
+     }
+     return {
++      nativeScrollRef,
+       cellElsRef,
+       componentId,
+       mergedSortState: mergedSortStateRef,
+@@ -353,6 +358,7 @@
+       scrollX
+     } = this;
+     return openBlock(), createElementBlock("div", {
++      ref: "nativeScrollRef",
+       class: normalizeClass$1(`${mergedClsPrefix}-data-table-base-table-header`),
+       onScroll: handleTableHeaderScroll
+     }, [createElementVNode("table", {
+diff --git a/lib/data-table/src/TableParts/Header.js b/lib/data-table/src/TableParts/Header.js
+--- a/lib/data-table/src/TableParts/Header.js
++++ b/lib/data-table/src/TableParts/Header.js
+@@ -1,3 +1,4 @@
++const require__internal_scrollbar_src_Scrollbar = require("../../../_internal/scrollbar/src/Scrollbar.js");
+ const require__utils_css_format_length = require("../../../_utils/css/format-length.js");
+ const require_vdom = require("../../../vue-jsx-vapor/vdom.js");
+ const require_checkbox_src_Checkbox = require("../../../checkbox/src/Checkbox.js");
+@@ -62,6 +63,9 @@
+ 	setup() {
+ 		const { mergedClsPrefixRef, scrollXRef, fixedColumnLeftMapRef, fixedColumnRightMapRef, mergedCurrentPageRef, allRowsCheckedRef, someRowsCheckedRef, rowsRef, colsRef, mergedThemeRef, checkOptionsRef, mergedSortStateRef, componentId, mergedTableLayoutRef, headerCheckboxDisabledRef, virtualScrollHeaderRef, headerHeightRef, onUnstableColumnResize, doUpdateResizableWidth, handleTableHeaderScroll, deriveNextSorter, doUncheckAll, doCheckAll } = (0, vue.inject)(require_data_table_src_interface.dataTableInjectionKey);
+ 		const virtualListRef = (0, vue.ref)();
++		const nativeScrollRef = (0, vue.ref)(null);
++		const scrollViewportRef = (0, vue.computed)(() => nativeScrollRef.value || virtualListRef.value?.listElRef || null);
++		require__internal_scrollbar_src_Scrollbar.pavpUseNativeScroll(scrollViewportRef, scrollViewportRef);
+ 		const cellElsRef = (0, vue.ref)({});
+ 		function getCellActualWidth(key) {
+ 			return cellElsRef.value[key]?.getBoundingClientRect().width;
+@@ -90,6 +94,7 @@
+ 			doUpdateResizableWidth(column, limitWidth);
+ 		}
+ 		return {
++			nativeScrollRef,
+ 			cellElsRef,
+ 			componentId,
+ 			mergedSortState: mergedSortStateRef,
+@@ -287,6 +292,7 @@
+ 		if (!discrete) return theadVNode;
+ 		const { handleTableHeaderScroll, scrollX } = this;
+ 		return (0, vue.openBlock)(), (0, vue.createElementBlock)("div", {
++			ref: "nativeScrollRef",
+ 			class: require_vdom.normalizeClass(`${mergedClsPrefix}-data-table-base-table-header`),
+ 			onScroll: handleTableHeaderScroll
+ 		}, [(0, vue.createElementVNode)("table", {
