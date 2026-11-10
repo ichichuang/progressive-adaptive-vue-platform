@@ -53,6 +53,7 @@
     "typescript-eslint": "catalog:",
     "unocss": "catalog:",
     "vite": "catalog:",
+    "vue": "catalog:",
     "vue-tsc": "catalog:",
     "yaml": "catalog:"
   }

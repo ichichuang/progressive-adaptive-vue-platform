@@ -4218,10 +4218,7 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
     }
     const [lightButton, darkButton] = await Promise.all(
       ['light', 'dark'].map((mode) =>
-        readFile(
-          resolve(rootDirectory, `node_modules/naive-ui/es/button/styles/${mode}.mjs`),
-          'utf8',
-        ),
+        readFile(requireFromUi.resolve(`naive-ui/es/button/styles/${mode}.mjs`), 'utf8'),
       ),
     )
     if (
@@ -14504,6 +14501,7 @@ async function validateDependencies(): Promise<string[]> {
       'typescript-eslint': 'catalog:',
       unocss: 'catalog:',
       vite: 'catalog:',
+      vue: 'catalog:',
       'vue-tsc': 'catalog:',
       yaml: 'catalog:',
     }) ||
