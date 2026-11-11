@@ -89,6 +89,7 @@ export const shellIconResolverOwner = {
 } as const
 
 export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>> = {
+  'packages/ui/src/components/UiChartTimeRange.vue': [{ scoped: true, lang: 'css' }],
   'apps/web/src/app/workbench/tables/TableLayoutExample.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/components/UiTable.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/components/UiTableEditor.vue': [{ scoped: true, lang: 'css' }],
@@ -200,6 +201,235 @@ export const standaloneStyleOwners: Readonly<Record<string, StyleResponsibility>
 // Exact selector/context/property responsibilities; private optical, gesture, scale, and vendor
 // !important values are local to these declarations, never file grants.
 export const ownedStyleContracts: readonly OwnedStyleContract[] = [
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-chart-range',
+    declarations: [
+      ['padding-inline', 'var(--ui-space-page-inline)', false],
+      ['padding-block-end', 'var(--ui-space-content-gap)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-chart-range-fields',
+    declarations: [
+      [
+        'grid-template-columns',
+        'repeat(auto-fit, minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 0.75)), 1fr))',
+        false,
+      ],
+      ['flex', '1 1 var(--ui-layout-admin-content-minimum-inline-size)', false],
+      ['max-inline-size', 'calc(var(--ui-workbench-specimen-minimum-inline-size) * 2)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-hit',
+    declarations: [['fill', 'transparent', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-track',
+    declarations: [
+      ['display', 'block', false],
+      ['block-size', 'var(--ui-control-height)', false],
+      ['overflow', 'visible', false],
+      ['touch-action', 'none', false],
+      ['user-select', 'none', false],
+      ['cursor', 'crosshair', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-track:focus-visible',
+    declarations: [
+      ['outline', 'var(--ui-border-width) solid var(--ui-color-focus-ring)', false],
+      ['outline-offset', 'var(--ui-space-component-unit)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-backdrop',
+    declarations: [
+      ['fill', 'var(--ui-color-surface-page)', false],
+      ['stroke', 'var(--ui-color-border-default)', false],
+      ['stroke-width', 'var(--ui-border-width)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-area',
+    declarations: [
+      ['fill', 'var(--ui-color-text-secondary)', false],
+      ['fill-opacity', '0.12', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-trend',
+    declarations: [
+      ['fill', 'none', false],
+      ['stroke', 'var(--ui-color-text-secondary)', false],
+      ['stroke-width', 'var(--ui-border-width)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-selected',
+    declarations: [
+      ['fill', 'var(--ui-color-control-primary)', false],
+      ['fill-opacity', '0.08', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-selected-area',
+    declarations: [
+      ['fill', 'var(--ui-color-control-primary)', false],
+      ['fill-opacity', '0.2', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-selected-trend',
+    declarations: [
+      ['fill', 'none', false],
+      ['stroke', 'var(--ui-color-control-primary)', false],
+      ['stroke-width', 'calc(var(--ui-border-width) * 2)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-window',
+    declarations: [
+      ['fill', 'transparent', false],
+      ['stroke', 'var(--ui-color-control-primary)', false],
+      ['stroke-width', 'var(--ui-border-width)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-pan',
+    declarations: [
+      ['fill', 'transparent', false],
+      ['cursor', 'grab', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: ".pavp-chart-time-range[data-dragging='true'] .pavp-chart-time-range-pan",
+    declarations: [['cursor', 'grabbing', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-handle',
+    declarations: [
+      ['cursor', 'ew-resize', false],
+      ['outline', 'none', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-handle-surface',
+    declarations: [
+      ['fill', 'var(--ui-color-surface-panel)', false],
+      ['stroke', 'var(--ui-color-control-primary)', false],
+      ['stroke-width', 'var(--ui-border-width)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      '.pavp-chart-time-range-handle:hover .pavp-chart-time-range-handle-surface, .pavp-chart-time-range-handle:focus-visible .pavp-chart-time-range-handle-surface',
+    declarations: [
+      ['stroke', 'var(--ui-color-focus-ring)', false],
+      ['stroke-width', 'calc(var(--ui-border-width) * 2)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-grip',
+    declarations: [
+      ['fill', 'var(--ui-color-control-primary)', false],
+      ['width', 'var(--ui-border-width)', false],
+      ['pointer-events', 'none', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-chart-time-range-geometry',
+    declarations: [
+      ['transition-property', 'x, width', false],
+      ['transition-duration', 'calc(var(--ui-motion-duration) * 2)', false],
+      ['transition-timing-function', 'var(--ui-motion-easing)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      "html[data-motion='reduced'] .pavp-chart-time-range-geometry, html[data-motion='none'] .pavp-chart-time-range-geometry, .pavp-chart-time-range[data-dragging='true'] .pavp-chart-time-range-geometry",
+    declarations: [['transition', 'none', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
   {
     path: 'apps/web/src/app/workbench/tables/TableLayoutExample.vue',
     block: 0,
@@ -895,6 +1125,47 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
       ['border-style', 'solid', false],
       ['border-width', 'var(--ui-admin-border-width)', false],
     ],
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-chart-picker',
+    declarations: [
+      ['inline-size', 'min(100%, var(--ui-workbench-specimen-minimum-inline-size))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-chart-stage',
+    declarations: [
+      ['flex-basis', 'var(--ui-workbench-api-content-block-size)', false],
+      ['min-block-size', 'var(--ui-workbench-api-content-block-size)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: ".wb-chart-stage[data-narrow='true']",
+    declarations: [
+      ['max-inline-size', 'var(--ui-layout-admin-content-minimum-inline-size)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.wb-chart-preview',
+    declarations: [
+      ['block-size', 'calc(var(--ui-workbench-specimen-preview-block-size) * 2)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {
     path: 'apps/web/src/app/workbench/workbench.css',
@@ -5692,6 +5963,13 @@ export const styleAtRuleOwners: readonly {
   readonly params: string
   readonly occurrences?: number
 }[] = [
+  {
+    path: 'packages/ui/src/components/UiChartTimeRange.vue',
+    block: 0,
+    context: [],
+    name: 'layer',
+    params: 'components',
+  },
   {
     path: 'apps/web/src/app/workbench/tables/TableLayoutExample.vue',
     block: 0,

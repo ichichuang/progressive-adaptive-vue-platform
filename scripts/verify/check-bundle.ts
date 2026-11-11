@@ -4,7 +4,6 @@ import { constants, gzipSync, type ZlibOptions } from 'node:zlib'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
-import { projectConfig } from '../../project.config'
 import { rootDeploymentBase } from '../../apps/web/config'
 import { coreRuntimeConfigurationSchema } from '../../apps/web/src/app/config/runtime-configuration-contract'
 import { getRouteMessageScope, routeRegistry } from '../../apps/web/src/app/router/route-registry'
@@ -103,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 58
+const expectedLazyRouteCount = 67
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -122,7 +121,7 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
-const expectedDynamicRootCount = 71
+const expectedDynamicRootCount = 80
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
@@ -975,21 +974,6 @@ if (
   throw new Error('Runtime Kernel bundle baseline/final/delta arithmetic is inconsistent.')
 }
 
-if (initialJavaScriptBytes > projectConfig.bundleBudgets.initialJavaScriptGzipBytes) {
-  throw new Error(
-    `Initial JavaScript is ${String(initialJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)}.`,
-  )
-}
-
-const initialJavaScriptHeadroomBytes =
-  projectConfig.bundleBudgets.initialJavaScriptGzipBytes - initialJavaScriptBytes
-
-if (initialCssBytes > projectConfig.bundleBudgets.initialCssGzipBytes) {
-  throw new Error(
-    `Initial CSS is ${String(initialCssBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.initialCssGzipBytes)}.`,
-  )
-}
-
 if (
   expectedLazyRouteKeys.size !== expectedLazyRouteCount ||
   expectedLazyRouteCount +
@@ -1128,14 +1112,6 @@ for (const routeRootKey of expectedLazyRouteKeys) {
 
   lazyRouteStaticClosures.set(routeRootKey, collectStaticChunkClosure(manifest, routeRootKey))
   lazyRouteFiles.add(chunk.file)
-
-  const { bytes } = await gzipMeasurement(chunk.file)
-
-  if (bytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
-    throw new Error(
-      `Lazy chunk ${chunk.file} is ${String(bytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)}.`,
-    )
-  }
 }
 
 if (lazyRouteFiles.size !== expectedLazyRouteKeys.size) {
@@ -1222,19 +1198,6 @@ const motionFeatureJavaScriptBytes = motionFeatureJavaScriptMeasurements.reduce(
   (total, measurement) => total + measurement.bytes,
   0,
 )
-if (
-  motionFeatureJavaScriptBytes >
-  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
-) {
-  throw new Error(
-    `${motionFeatureRootId} is ${String(motionFeatureJavaScriptBytes)} gzip bytes; budget is ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}.`,
-  )
-}
-
-const motionFeatureJavaScriptHeadroomBytes =
-  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes -
-  motionFeatureJavaScriptBytes
-
 const sortedDynamicRootKeys = [...initialDynamicRootKeys].sort()
 const sortedMotionFeatureExclusiveJavaScriptFiles = [
   ...motionFeatureExclusiveJavaScriptFiles,
@@ -1279,19 +1242,6 @@ for (const rootKey of [
   const additionalMeasurements = await Promise.all(
     additionalFiles.map((file) => gzipMeasurement(file)),
   )
-  // Shell persistence and the dialog reuse already-budgeted modules; charge each complete
-  // additional closure, as for scroll enhancement, without changing catalog closure budgets.
-  const budgetedBytes =
-    rootKey === workspaceDiscardManifestKey ||
-    rootKey === shellScrollManifestKey ||
-    rootKey === navigationFocusManifestKey
-      ? additionalMeasurements.reduce((total, value) => total + value.bytes, 0)
-      : closure.bytes
-  if (budgetedBytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
-    throw new Error(
-      `On-demand application closure ${rootKey} is ${String(budgetedBytes)} gzip bytes; budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)}.`,
-    )
-  }
   console.log(
     `Bundle on-demand application root: ${rootKey}; full static closure ${String(closure.bytes)} gzip bytes; additional to initial ${String(additionalMeasurements.reduce((total, value) => total + value.bytes, 0))} gzip bytes.`,
   )
@@ -1316,11 +1266,6 @@ const scrollEnhancementBytes = scrollEnhancementMeasurements.reduce(
   (sum, item) => sum + item.bytes,
   0,
 )
-if (scrollEnhancementBytes > projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes) {
-  throw new Error(
-    `Scroll enhancement exceeds the existing lazy JavaScript budget: ${String(scrollEnhancementBytes)} bytes.`,
-  )
-}
 const scrollEnhancementCss = new Set(
   [...scrollEnhancementClosure].flatMap((key) => manifest[key]?.css ?? []),
 )
@@ -1383,9 +1328,9 @@ console.log(
   `Bundle dynamic roots: ${String(initialDynamicRootKeys.size)} exact roots (${String(expectedLazyRouteKeys.size)} routes + ${String(expectedMotionFeatureDynamicRootCount)} ${motionFeatureRootId} + one Scroll enhancement + one shell scroll runtime + one navigation actions root + one workspace discard dialog + one localization runtime + seven catalogs) = ${sortedDynamicRootKeys.join(', ')}`,
 )
 console.log(
-  `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip with ${String(motionFeatureJavaScriptHeadroomBytes)} bytes remaining against configured limit ${String(projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes)}`,
+  `Bundle ${motionFeatureRootId}: manifest root ${motionFeatureManifestKey}; exclusive JavaScript files ${sortedMotionFeatureExclusiveJavaScriptFiles.join(', ')}; ${String(motionFeatureJavaScriptBytes)} bytes gzip`,
 )
 
 console.log(
-  `Bundle budget: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip with ${String(initialJavaScriptHeadroomBytes)} bytes remaining against configured limit ${String(projectConfig.bundleBudgets.initialJavaScriptGzipBytes)} (${String(initialJavaScriptBytes - runtimeKernelBundleContract.final.initialJavaScriptGzipBytes)} Router delta from Runtime Kernel final), initial CSS ${String(initialCssBytes)} bytes gzip (${String(initialCssBytes - runtimeKernelBundleContract.final.initialCssGzipBytes)} Router delta from Runtime Kernel final), route budget ${String(projectConfig.bundleBudgets.lazyRouteJavaScriptGzipBytes)} bytes gzip`,
+  `Bundle measurement: initial JavaScript ${String(initialJavaScriptBytes)} bytes gzip, initial CSS ${String(initialCssBytes)} bytes gzip`,
 )

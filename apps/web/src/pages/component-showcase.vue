@@ -65,7 +65,7 @@ const componentNames = {
   'component-inputs':
     'NInput NInputGroup NInputGroupLabel NInputNumber NInputOtp NAutoComplete NMention NDatePicker NTimePicker NColorPicker NDynamicInput NDynamicTags NUpload NUploadDragger NForm NFormItem',
   'component-selection':
-    'NSwitch NRadioGroup NRadio NRadioButton UiRadioCardGroup NCheckbox NCheckboxGroup NSlider NRate NSelect NPopselect NTreeSelect NCascader NTransfer',
+    'NSwitch NRadioGroup NRadio NRadioButton UiRadioCardGroup NCheckbox NCheckboxGroup NSlider UiChartTimeRange NRate NSelect NPopselect NTreeSelect NCascader NTransfer',
   'component-navigation':
     'NBreadcrumb NBreadcrumbItem NTabs NTab NTabPane NPageHeader NPagination NSteps NStep NMenu NDropdown',
   'component-data':
@@ -90,18 +90,22 @@ const categories = computed(() =>
           {
             label: t(item.labelKey),
             hint: t(
-              item.id === 'tables'
-                ? 'tableExamples.tablesHint'
-                : item.id === 'combinations'
-                  ? 'tableExamples.combinationsHint'
-                  : 'formShowcase.capabilitiesHint',
+              item.id === 'charts'
+                ? 'showcase.category.charts'
+                : item.id === 'tables'
+                  ? 'tableExamples.tablesHint'
+                  : item.id === 'combinations'
+                    ? 'tableExamples.combinationsHint'
+                    : 'formShowcase.capabilitiesHint',
             ),
             componentNames:
-              item.id === 'tables'
-                ? 'UiTable useUiTable useUiTableActions'
-                : item.id === 'combinations'
-                  ? 'UiForm UiTable UiTableEditor useUiTableQuery useUiTableForm'
-                  : 'UiForm UiFormField useUiForm',
+              item.id === 'charts'
+                ? 'UiG2Chart G2'
+                : item.id === 'tables'
+                  ? 'UiTable useUiTable useUiTableActions'
+                  : item.id === 'combinations'
+                    ? 'UiForm UiTable UiTableEditor useUiTableQuery useUiTableForm'
+                    : 'UiForm UiFormField useUiForm',
             destination: registeredRouteDestination(first.destination),
           },
         ]

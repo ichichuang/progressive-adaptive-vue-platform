@@ -25,7 +25,18 @@ allowBuilds:
   style-dictionary: false
   vue-demi: false
 
+packageExtensions:
+  '@antv/g-lite@2.7.2':
+    dependencies:
+      '@types/webxr': 0.5.24
+
 patchedDependencies:
+  '@antv/component@2.1.12': patches/@antv__component@2.1.12.patch
+  '@antv/g-lite@2.7.2': patches/@antv__g-lite@2.7.2.patch
+  '@antv/g2@5.4.8': patches/@antv__g2@5.4.8.patch
+  '@antv/g@6.3.3': patches/@antv__g@6.3.3.patch
+  '@antv/scale@0.4.16': patches/@antv__scale@0.4.16.patch
+  '@antv/scale@0.5.2': patches/@antv__scale@0.5.2.patch
   motion-v@2.4.0: patches/motion-v@2.4.0.patch
   naive-ui@2.45.2: patches/naive-ui@2.45.2.patch
   unconfig@7.5.0: patches/unconfig@7.5.0.patch
@@ -33,6 +44,7 @@ patchedDependencies:
   vue-router@5.2.0: patches/vue-router@5.2.0.patch
 
 catalog:
+  '@antv/g2': 5.4.8
   '@iconify-json/lucide': 1.2.120
   '@intlify/message-compiler': 11.4.10
   '@tanstack/vue-query': 5.105.1

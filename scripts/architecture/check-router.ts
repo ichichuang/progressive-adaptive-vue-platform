@@ -73,6 +73,15 @@ const expectedPageSources = [
   'apps/web/src/pages/component-data.vue',
   'apps/web/src/pages/component-feedback.vue',
   'apps/web/src/pages/component-layout.vue',
+  'apps/web/src/pages/component-charts.vue',
+  'apps/web/src/pages/component-chart-trends.vue',
+  'apps/web/src/pages/component-chart-comparison.vue',
+  'apps/web/src/pages/component-chart-composition.vue',
+  'apps/web/src/pages/component-chart-distribution.vue',
+  'apps/web/src/pages/component-chart-interaction.vue',
+  'apps/web/src/pages/component-chart-live-stream.vue',
+  'apps/web/src/pages/component-chart-live-ranking.vue',
+  'apps/web/src/pages/component-chart-live-distribution.vue',
   'apps/web/src/pages/component-form-overview.vue',
   'apps/web/src/pages/component-form-basics.vue',
   'apps/web/src/pages/component-form-detail.vue',
@@ -118,7 +127,7 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 51)
+const expectedProductPageSources = expectedPageSources.slice(0, 60)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
   'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
@@ -269,6 +278,96 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.component-layout',
     'route.component.layout',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-charts.vue',
+    'component-charts',
+    '/components/charts',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-charts',
+    'route.component.charts',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-trends.vue',
+    'component-chart-trends',
+    '/components/charts/trends',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-trends',
+    'route.component.chart.trends',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-comparison.vue',
+    'component-chart-comparison',
+    '/components/charts/comparison',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-comparison',
+    'route.component.chart.comparison',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-composition.vue',
+    'component-chart-composition',
+    '/components/charts/composition',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-composition',
+    'route.component.chart.composition',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-distribution.vue',
+    'component-chart-distribution',
+    '/components/charts/distribution',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-distribution',
+    'route.component.chart.distribution',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-interaction.vue',
+    'component-chart-interaction',
+    '/components/charts/interaction',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-interaction',
+    'route.component.chart.interaction',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-live-stream.vue',
+    'component-chart-live-stream',
+    '/components/charts/live-stream',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-live-stream',
+    'route.component.chart.live-stream',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-live-ranking.vue',
+    'component-chart-live-ranking',
+    '/components/charts/live-ranking',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-live-ranking',
+    'route.component.chart.live-ranking',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-live-distribution.vue',
+    'component-chart-live-distribution',
+    '/components/charts/live-distribution',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-live-distribution',
+    'route.component.chart.live-distribution',
     'route-boundary',
   ],
   [
@@ -757,6 +856,31 @@ const expectedRouteTitles = {
   'route-title.component-data': getDefaultConsoleMessage('route-title.component-data'),
   'route-title.component-feedback': getDefaultConsoleMessage('route-title.component-feedback'),
   'route-title.component-layout': getDefaultConsoleMessage('route-title.component-layout'),
+  'route-title.component-charts': getDefaultConsoleMessage('route-title.component-charts'),
+  'route-title.component-chart-trends': getDefaultConsoleMessage(
+    'route-title.component-chart-trends',
+  ),
+  'route-title.component-chart-comparison': getDefaultConsoleMessage(
+    'route-title.component-chart-comparison',
+  ),
+  'route-title.component-chart-composition': getDefaultConsoleMessage(
+    'route-title.component-chart-composition',
+  ),
+  'route-title.component-chart-distribution': getDefaultConsoleMessage(
+    'route-title.component-chart-distribution',
+  ),
+  'route-title.component-chart-interaction': getDefaultConsoleMessage(
+    'route-title.component-chart-interaction',
+  ),
+  'route-title.component-chart-live-stream': getDefaultConsoleMessage(
+    'route-title.component-chart-live-stream',
+  ),
+  'route-title.component-chart-live-ranking': getDefaultConsoleMessage(
+    'route-title.component-chart-live-ranking',
+  ),
+  'route-title.component-chart-live-distribution': getDefaultConsoleMessage(
+    'route-title.component-chart-live-distribution',
+  ),
   'route-title.component-form-overview': getDefaultConsoleMessage(
     'route-title.component-form-overview',
   ),
@@ -942,6 +1066,51 @@ const expectedMessages = [
     'component-layout',
     'route-message.component-layout-summary',
     getDefaultConsoleMessage('route-message.component-layout-summary'),
+  ],
+  [
+    'component-charts',
+    'route-message.component-charts-summary',
+    getDefaultConsoleMessage('route-message.component-charts-summary'),
+  ],
+  [
+    'component-chart-trends',
+    'route-message.component-chart-trends-summary',
+    getDefaultConsoleMessage('route-message.component-chart-trends-summary'),
+  ],
+  [
+    'component-chart-comparison',
+    'route-message.component-chart-comparison-summary',
+    getDefaultConsoleMessage('route-message.component-chart-comparison-summary'),
+  ],
+  [
+    'component-chart-composition',
+    'route-message.component-chart-composition-summary',
+    getDefaultConsoleMessage('route-message.component-chart-composition-summary'),
+  ],
+  [
+    'component-chart-distribution',
+    'route-message.component-chart-distribution-summary',
+    getDefaultConsoleMessage('route-message.component-chart-distribution-summary'),
+  ],
+  [
+    'component-chart-interaction',
+    'route-message.component-chart-interaction-summary',
+    getDefaultConsoleMessage('route-message.component-chart-interaction-summary'),
+  ],
+  [
+    'component-chart-live-stream',
+    'route-message.component-chart-live-stream-summary',
+    getDefaultConsoleMessage('route-message.component-chart-live-stream-summary'),
+  ],
+  [
+    'component-chart-live-ranking',
+    'route-message.component-chart-live-ranking-summary',
+    getDefaultConsoleMessage('route-message.component-chart-live-ranking-summary'),
+  ],
+  [
+    'component-chart-live-distribution',
+    'route-message.component-chart-live-distribution-summary',
+    getDefaultConsoleMessage('route-message.component-chart-live-distribution-summary'),
   ],
   [
     'component-form-overview',
@@ -1244,7 +1413,6 @@ interface RouteTransitionSourceSnapshot {
   readonly manifestSource: string
   readonly presetSource: string
   readonly previewStyleSource: string
-  readonly projectConfigSource: string
   readonly registrySource: string
   readonly routeInputSource: string
   readonly resolverSource: string
@@ -1268,7 +1436,7 @@ export const expectedRouteTransitionSourceProofCount = 52
 export const expectedRouteTransitionSourceNegativeProbeCount = 16
 export const expectedRouterPresentationCommitNegativeProbeCount = 8
 export const expectedRouteTransitionPresetSelectionNegativeProbeCount = 7
-export const expectedRouteTransitionFullPaceNegativeProbeCount = 9
+export const expectedRouteTransitionFullPaceNegativeProbeCount = 8
 export const expectedRouteTransitionStylelintPolicyNegativeProbeCount = 3
 export const expectedRouteTransitionWorkspaceDefaultNegativeProbeCount = 4
 
@@ -3551,7 +3719,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact fifty-two-record authority.')
+    violations.push('Router Route Registry diverged from the exact sixty-four-record authority.')
   }
 
   if (
@@ -3577,7 +3745,7 @@ function registryViolations(): string[] {
         ? `route-breadcrumb.${record.name}`
         : null
     const expectedWorkspace = expectedRouteRecords
-      .slice(0, 50)
+      .slice(0, 59)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
@@ -3998,28 +4166,43 @@ async function pageViolations(): Promise<string[]> {
             count(source, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
             !/<h1\b[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>/u.test(source) ||
             !/<h1\b[^>]*\btabindex="-1"[^>]*>/u.test(source)
-          : (sourcePath === 'apps/web/src/pages/component-form-overview.vue'
-              ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
-                count(source, /<UiScrollArea\b/gu) !== 1
-              : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
-                ? count(source, /<FormBasicControls\b/gu) !== 1 ||
-                  !source.includes("from '../app/workbench/forms/FormBasicControls.vue'")
-                : sourcePath.includes('/component-form-') &&
-                    sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
-                  ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
-                    !source.includes("from '../app/workbench/forms/FormCapabilityWorkbench.vue'")
-                  : tablePageComponent !== undefined
-                    ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !== 1 ||
-                      !source.includes(`from '../app/workbench/tables/${tablePageComponent}.vue'`)
-                    : sourcePath === 'apps/web/src/pages/component-table.vue' ||
-                        /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
-                          sourcePath,
-                        )
-                      ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
-                        !source.includes("from '../app/workbench/tables/TableExampleWorkbench.vue'")
-                      : count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                        !source.includes("from '../app/workbench/WorkbenchPage.vue'")) ||
+          : (sourcePath === 'apps/web/src/pages/component-charts.vue'
+              ? count(source, /<ChartCapabilityOverview\b/gu) !== 1 ||
+                !source.includes("from '../app/workbench/charts/ChartCapabilityOverview.vue'")
+              : sourcePath.includes('/component-chart-live-')
+                ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
+                  !source.includes("from '../app/workbench/charts/ChartLiveWorkbench.vue'")
+                : sourcePath.includes('/component-chart-')
+                  ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
+                    !source.includes("from '../app/workbench/charts/ChartExampleWorkbench.vue'")
+                  : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
+                    ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                      !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+                      count(source, /<UiScrollArea\b/gu) !== 1
+                    : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
+                      ? count(source, /<FormBasicControls\b/gu) !== 1 ||
+                        !source.includes("from '../app/workbench/forms/FormBasicControls.vue'")
+                      : sourcePath.includes('/component-form-') &&
+                          sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
+                        ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                          !source.includes(
+                            "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
+                          )
+                        : tablePageComponent !== undefined
+                          ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !== 1 ||
+                            !source.includes(
+                              `from '../app/workbench/tables/${tablePageComponent}.vue'`,
+                            )
+                          : sourcePath === 'apps/web/src/pages/component-table.vue' ||
+                              /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
+                                sourcePath,
+                              )
+                            ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                              !source.includes(
+                                "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                              )
+                            : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                              !source.includes("from '../app/workbench/WorkbenchPage.vue'")) ||
             count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
     const errorPageInvalid =
       !productPage &&
@@ -5016,7 +5199,6 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     uiManifestSource,
     presetSource,
     previewSource,
-    projectConfigSource,
     registrySource,
     routeInputSource,
     resolverSource,
@@ -5038,7 +5220,6 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     readFile(resolve(rootDirectory, 'packages/ui/package.json'), 'utf8'),
     readFile(resolve(transitionDirectory, 'route-transition-preset-registry.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/workbench/MotionRoutePreview.vue'), 'utf8'),
-    readFile(resolve(rootDirectory, 'project.config.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-registry.ts'), 'utf8'),
     readFile(resolve(rootDirectory, 'apps/web/src/app/router/route-input.ts'), 'utf8'),
     readFile(resolve(transitionDirectory, 'resolve-route-transition.ts'), 'utf8'),
@@ -5061,7 +5242,6 @@ async function loadRouteTransitionSourceSnapshot(): Promise<RouteTransitionSourc
     manifestSource: [rootManifestSource, webManifestSource, uiManifestSource].join('\n'),
     presetSource,
     previewStyleSource: /<style scoped>([\s\S]*?)<\/style>/u.exec(previewSource)?.[1] ?? '',
-    projectConfigSource,
     registrySource,
     routeInputSource,
     resolverSource,
@@ -5270,7 +5450,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 51 &&
+        productRoutes.length === 60 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -5597,26 +5777,20 @@ function routeTransitionSourceProofResults(
         ),
     }),
     Object.freeze({
-      id: 'ROUTE_TRANSITION_SOURCE_35_DEPENDENCY_AND_BUDGET_CLOSURE',
+      id: 'ROUTE_TRANSITION_SOURCE_35_DEPENDENCY_CLOSURE',
       passed:
         !/ssgoi|route-transition/u.test(snapshot.manifestSource) &&
         count(snapshot.manifestSource, /"motion-v": "catalog:"/gu) === 2 &&
         snapshot.manifestSource.includes('"@vueuse/core": "catalog:"') &&
         snapshot.lockSource.includes('motion-v@2.4.0.patch') &&
-        snapshot.projectConfigSource.includes(
-          'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
-        ) &&
-        snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
-        snapshot.projectConfigSource.includes('lazyRouteJavaScriptGzipBytes: 120 * 1024') &&
         !snapshot.uiSource.includes('route-transition'),
     }),
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -5749,13 +5923,8 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.projectConfigSource.includes(
-          'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
-        ) &&
-        snapshot.projectConfigSource.includes('initialCssGzipBytes: 40 * 1024') &&
-        snapshot.projectConfigSource.includes('initialJavaScriptGzipBytes: 264 * 1024') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
   ])
@@ -6686,23 +6855,12 @@ function runRouteTransitionFullPaceNegativeProbes(
     ],
     [
       'pace-changes-approved-dependency',
-      'ROUTE_TRANSITION_SOURCE_35_DEPENDENCY_AND_BUDGET_CLOSURE',
+      'ROUTE_TRANSITION_SOURCE_35_DEPENDENCY_CLOSURE',
       {
         ...baseline,
         manifestSource: baseline.manifestSource.replace(
           '"motion-v": "catalog:"',
           '"motion-v": "unapproved"',
-        ),
-      },
-    ],
-    [
-      'pace-raises-route-budget',
-      'ROUTE_TRANSITION_SOURCE_35_DEPENDENCY_AND_BUDGET_CLOSURE',
-      {
-        ...baseline,
-        projectConfigSource: baseline.projectConfigSource.replace(
-          'lazyRouteJavaScriptGzipBytes: 120 * 1024',
-          'lazyRouteJavaScriptGzipBytes: 121 * 1024',
         ),
       },
     ],
@@ -6823,6 +6981,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const providerPath = 'packages/ui/src/providers/UiProvider.vue.style-0.css'
   const tableScope = '**/packages/ui/src/components/UiTable.vue.style-*.css'
   const tablePath = 'packages/ui/src/components/UiTable.vue.style-0.css'
+  const chartRangeScope = '**/packages/ui/src/components/UiChartTimeRange.vue.style-*.css'
+  const chartRangePath = 'packages/ui/src/components/UiChartTimeRange.vue.style-0.css'
   const expectedOverrideScopes = [
     [routePath],
     [previewScope],
@@ -6831,6 +6991,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     [radioCardScope],
     [providerScope],
     [tableScope],
+    [chartRangeScope],
   ] as const
   const otherPaths = [
     'apps/web/src/app/styles/layers.css',
@@ -6839,6 +7000,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     radioCardPath,
     providerPath,
     tablePath,
+    chartRangePath,
   ]
   const configModule: unknown = await import(
     pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
@@ -6891,6 +7053,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   }
   const full = 'calc(var(--ui-motion-duration) + var(--ui-motion-duration) / 2)'
   const half = 'calc(var(--ui-motion-duration) / 2)'
+  const rangeDuration = 'calc(var(--ui-motion-duration) * 2)'
   const shellMaterial = 'var(--ui-material-chrome-background)'
   const radioCardForeground = 'var(--pavp-radio-card-selected-hover-foreground)'
   const softButtonForeground = 'var(--pavp-soft-button-primary-foreground)'
@@ -6932,6 +7095,14 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         check(
           config,
           otherPaths[index] ?? '',
+          'transition-duration',
+          rangeDuration,
+          otherPaths[index] !== chartRangePath,
+        ),
+        check(config, otherPaths[index] ?? '', 'animation-duration', rangeDuration, true),
+        check(
+          config,
+          otherPaths[index] ?? '',
           'color',
           radioCardForeground,
           otherPaths[index] !== radioCardPath,
@@ -6963,17 +7134,35 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         const radioScope = isDeepStrictEqual(files, [radioCardScope])
         const providerStyleScope = isDeepStrictEqual(files, [providerScope])
         const tableStyleScope = isDeepStrictEqual(files, [tableScope])
+        const chartRangeStyleScope = isDeepStrictEqual(files, [chartRangeScope])
         return (
           (routeScope ||
             shellScope ||
             workbenchStyleScope ||
             radioScope ||
             providerStyleScope ||
-            tableStyleScope) &&
+            tableStyleScope ||
+            chartRangeStyleScope) &&
           isDeepStrictEqual(ruleKeys, [declarationPolicyRule]) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&
           (await check(config, globalPath, 'transition-duration', full, true)) &&
+          (await check(
+            config,
+            globalPath,
+            'transition-duration',
+            rangeDuration,
+            !chartRangeStyleScope,
+          )) &&
+          (await check(config, globalPath, 'animation-duration', rangeDuration, true)) &&
+          (await check(config, globalPath, 'transition-duration', '400ms', true)) &&
+          (await check(
+            config,
+            globalPath,
+            'transition-duration',
+            'calc(var(--ui-motion-duration) * 3)',
+            true,
+          )) &&
           (await check(config, globalPath, 'color', radioCardForeground, !radioScope)) &&
           (await check(config, globalPath, 'color', softButtonForeground, true)) &&
           (await check(config, globalPath, 'background-color', softButtonBackground, true)) &&
@@ -7003,7 +7192,11 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
               globalPath,
               'background',
               shellMaterial,
-              routeScope || radioScope || providerStyleScope || tableStyleScope,
+              routeScope ||
+                radioScope ||
+                providerStyleScope ||
+                tableStyleScope ||
+                chartRangeStyleScope,
             )))
         )
       }),
@@ -7019,6 +7212,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         false,
       ),
       check(snapshot.globalConfig, globalPath, 'animation-duration', half, false),
+      check(snapshot.globalConfig, globalPath, 'transition-duration', rangeDuration, true),
     ])
     const invalidDurations = [
       '300ms',
@@ -7201,6 +7395,24 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
                   ...stylelintDeclarationPolicy(scope.config),
                   color: [/^never$/u],
                 })
+              : scope.config,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            files: isDeepStrictEqual(scope.files, [chartRangeScope])
+              ? ['**/packages/ui/src/components/**/*.vue.style-*.css']
+              : scope.files,
+          })),
+        },
+        {
+          ...baseline,
+          overrideScopes: baseline.overrideScopes.map((scope) => ({
+            ...scope,
+            config: isDeepStrictEqual(scope.files, [chartRangeScope])
+              ? baseline.routeConfig
               : scope.config,
           })),
         },
@@ -7643,6 +7855,15 @@ const workspaceAxisRouteNames = [
   'component-data',
   'component-feedback',
   'component-layout',
+  'component-charts',
+  'component-chart-trends',
+  'component-chart-comparison',
+  'component-chart-composition',
+  'component-chart-distribution',
+  'component-chart-interaction',
+  'component-chart-live-stream',
+  'component-chart-live-ranking',
+  'component-chart-live-distribution',
   'component-form-overview',
   'component-form-basics',
   'component-form-detail',

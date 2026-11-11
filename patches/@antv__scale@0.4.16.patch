@@ -1,0 +1,236 @@
+diff --git a/esm/scales/band.d.ts b/esm/scales/band.d.ts
+index 9c876ce06715c1efff95795c8061350165109243..4553128173cfd7a3817ba265f4a1d6758b256da6 100644
+--- a/esm/scales/band.d.ts
++++ b/esm/scales/band.d.ts
+@@ -37,7 +37,7 @@ export declare class Band<O extends BandOptions = BandOptions> extends Ordinal<O
+     clone(): Band<O>;
+     getStep(x?: Domain<BandOptions>): any;
+     getBandWidth(x?: Domain<BandOptions>): any;
+-    getRange(): O["range"];
++    getRange(): number[];
+     protected getPaddingInner(): number;
+     protected getPaddingOuter(): number;
+     protected rescale(): void;
+diff --git a/esm/scales/continuous.d.ts b/esm/scales/continuous.d.ts
+index 4c0c982b7cb331f70b3a8784538ae754ff3f8004..c01b2fb2e323d31859f99e243d83d70000a77633 100644
+--- a/esm/scales/continuous.d.ts
++++ b/esm/scales/continuous.d.ts
+@@ -5,7 +5,7 @@ import { ContinuousOptions, Domain, Range, NiceMethod, TickMethodOptions, Transf
+  * 通过函数柯里化和复合函数可以在映射过程中去掉分支，提高性能。
+  * 参考：https://github.com/d3/d3-scale/blob/master/src/continuous.js
+  */
+-export declare abstract class Continuous<O extends ContinuousOptions> extends Base<O> {
++export declare abstract class Continuous<O extends ContinuousOptions<T>, T extends number | Date = Domain<O>> extends Base<O> {
+     /** 实际上将 x 映射为 y 的函数 */
+     protected output: Transform;
+     /** 实际上将 y 映射为 x 的函数 */
+@@ -27,9 +27,9 @@ export declare abstract class Continuous<O extends ContinuousOptions> extends Ba
+      */
+     invert(x: Range<O>): any;
+     protected nice(): void;
+-    getTicks(): (number | Date)[];
+-    protected getTickMethodOptions(): TickMethodOptions;
+-    protected chooseNice(): NiceMethod<number | Date>;
++    getTicks(): T[];
++    protected getTickMethodOptions(): TickMethodOptions<T>;
++    protected chooseNice(): NiceMethod<T>;
+     protected rescale(): void;
+     protected chooseClamp(transform: Transform): (x: number) => number;
+     protected composeOutput(transform: Transform, clamp: Transform): void;
+diff --git a/esm/scales/diverging.d.ts b/esm/scales/diverging.d.ts
+index 833888ce9fbe0ee0c5d884c5684da0376926e09e..4e6334e47ed4e4e0b30ed67573dd6dc390d4c8dd 100644
+--- a/esm/scales/diverging.d.ts
++++ b/esm/scales/diverging.d.ts
+@@ -1,6 +1,6 @@
+ import { DivergingOptions } from '../types';
+ import { Linear } from './linear';
+-export interface Diverging {
++export interface Diverging extends Omit<Linear, 'invert' | 'clone'> {
+     invert: undefined;
+     getOptions(): DivergingOptions;
+     update(updateOptions: Partial<DivergingOptions>): void;
+@@ -10,7 +10,7 @@ export interface Diverging {
+  *
+  * 构造可创建一个在输入和输出之间通过插值函数进行转换的比例尺
+  */
+-export declare class Diverging extends Linear {
++export declare class Diverging {
+     protected getDefaultOptions(): DivergingOptions;
+     constructor(options?: DivergingOptions);
+     clone(): Diverging;
+diff --git a/esm/scales/sequential.d.ts b/esm/scales/sequential.d.ts
+index 2aaa4f94538714cf3aa94b9a701b8869a5505d82..f908ec8f476e66e03cc6e71a4a26bfb9c53dd1ea 100644
+--- a/esm/scales/sequential.d.ts
++++ b/esm/scales/sequential.d.ts
+@@ -1,6 +1,6 @@
+ import { SequentialOptions } from '../types';
+ import { Linear } from './linear';
+-export interface Sequential {
++export interface Sequential extends Omit<Linear, 'invert' | 'clone'> {
+     invert: undefined;
+     getOptions(): SequentialOptions;
+     update(updateOptions: Partial<SequentialOptions>): void;
+@@ -10,7 +10,7 @@ export interface Sequential {
+  *
+  * 构造可创建一个在输入和输出之间通过插值函数进行转换的比例尺
+  */
+-export declare class Sequential extends Linear {
++export declare class Sequential {
+     protected getDefaultOptions(): SequentialOptions;
+     constructor(options?: SequentialOptions);
+     clone(): Sequential;
+diff --git a/esm/types.d.ts b/esm/types.d.ts
+index 9de38bfe7ad704ad820532b9c00f0b13c846fea0..1675fd361d08086173f470956d6656a11747f43f 100644
+--- a/esm/types.d.ts
++++ b/esm/types.d.ts
+@@ -26,9 +26,9 @@ export type BaseOptions = {
+     domain?: any[];
+ };
+ /** 获得比例尺选项中定义域元素的类型 */
+-export type Domain<O extends BaseOptions> = O['domain'][number];
++export type Domain<O extends BaseOptions> = NonNullable<O['domain']>[number];
+ /** 获得比例尺选项中值域元素的类型 */
+-export type Range<O extends BaseOptions> = O['range'][number];
++export type Range<O extends BaseOptions> = NonNullable<O['range']>[number];
+ /** 获得比例尺选项中 unknown 的类型 */
+ export type Unknown<O extends BaseOptions> = O['unknown'];
+ /** Identity 比例尺的选项 */
+@@ -59,17 +59,17 @@ export type ConstantOptions = {
+     tickMethod?: TickMethod<number>;
+ };
+ /** Constant 比例尺的选项 */
+-export type ContinuousOptions = {
++export type ContinuousOptions<T extends number | Date = number | Date> = {
+     /** 当需要映射的值不合法的时候，返回的值 */
+     unknown?: any;
+     /** 值域，默认为 [0, 1] */
+     range?: (number | string)[];
+     /** 定义域，默认为 [0, 1] */
+-    domain?: (number | Date)[];
++    domain?: T[];
+     /** tick 个数，默认值为 5 */
+     tickCount?: number;
+     /** 计算 ticks 的算法 */
+-    tickMethod?: TickMethod<number | Date>;
++    tickMethod?: TickMethod<T>;
+     /** 是否需要对定义域的范围进行优化 */
+     nice?: boolean;
+     /** 是否需要限制输入的范围在值域内 */
+diff --git a/lib/scales/band.d.ts b/lib/scales/band.d.ts
+index 9c876ce06715c1efff95795c8061350165109243..4553128173cfd7a3817ba265f4a1d6758b256da6 100644
+--- a/lib/scales/band.d.ts
++++ b/lib/scales/band.d.ts
+@@ -37,7 +37,7 @@ export declare class Band<O extends BandOptions = BandOptions> extends Ordinal<O
+     clone(): Band<O>;
+     getStep(x?: Domain<BandOptions>): any;
+     getBandWidth(x?: Domain<BandOptions>): any;
+-    getRange(): O["range"];
++    getRange(): number[];
+     protected getPaddingInner(): number;
+     protected getPaddingOuter(): number;
+     protected rescale(): void;
+diff --git a/lib/scales/continuous.d.ts b/lib/scales/continuous.d.ts
+index 4c0c982b7cb331f70b3a8784538ae754ff3f8004..c01b2fb2e323d31859f99e243d83d70000a77633 100644
+--- a/lib/scales/continuous.d.ts
++++ b/lib/scales/continuous.d.ts
+@@ -5,7 +5,7 @@ import { ContinuousOptions, Domain, Range, NiceMethod, TickMethodOptions, Transf
+  * 通过函数柯里化和复合函数可以在映射过程中去掉分支，提高性能。
+  * 参考：https://github.com/d3/d3-scale/blob/master/src/continuous.js
+  */
+-export declare abstract class Continuous<O extends ContinuousOptions> extends Base<O> {
++export declare abstract class Continuous<O extends ContinuousOptions<T>, T extends number | Date = Domain<O>> extends Base<O> {
+     /** 实际上将 x 映射为 y 的函数 */
+     protected output: Transform;
+     /** 实际上将 y 映射为 x 的函数 */
+@@ -27,9 +27,9 @@ export declare abstract class Continuous<O extends ContinuousOptions> extends Ba
+      */
+     invert(x: Range<O>): any;
+     protected nice(): void;
+-    getTicks(): (number | Date)[];
+-    protected getTickMethodOptions(): TickMethodOptions;
+-    protected chooseNice(): NiceMethod<number | Date>;
++    getTicks(): T[];
++    protected getTickMethodOptions(): TickMethodOptions<T>;
++    protected chooseNice(): NiceMethod<T>;
+     protected rescale(): void;
+     protected chooseClamp(transform: Transform): (x: number) => number;
+     protected composeOutput(transform: Transform, clamp: Transform): void;
+diff --git a/lib/scales/diverging.d.ts b/lib/scales/diverging.d.ts
+index 833888ce9fbe0ee0c5d884c5684da0376926e09e..4e6334e47ed4e4e0b30ed67573dd6dc390d4c8dd 100644
+--- a/lib/scales/diverging.d.ts
++++ b/lib/scales/diverging.d.ts
+@@ -1,6 +1,6 @@
+ import { DivergingOptions } from '../types';
+ import { Linear } from './linear';
+-export interface Diverging {
++export interface Diverging extends Omit<Linear, 'invert' | 'clone'> {
+     invert: undefined;
+     getOptions(): DivergingOptions;
+     update(updateOptions: Partial<DivergingOptions>): void;
+@@ -10,7 +10,7 @@ export interface Diverging {
+  *
+  * 构造可创建一个在输入和输出之间通过插值函数进行转换的比例尺
+  */
+-export declare class Diverging extends Linear {
++export declare class Diverging {
+     protected getDefaultOptions(): DivergingOptions;
+     constructor(options?: DivergingOptions);
+     clone(): Diverging;
+diff --git a/lib/scales/sequential.d.ts b/lib/scales/sequential.d.ts
+index 2aaa4f94538714cf3aa94b9a701b8869a5505d82..f908ec8f476e66e03cc6e71a4a26bfb9c53dd1ea 100644
+--- a/lib/scales/sequential.d.ts
++++ b/lib/scales/sequential.d.ts
+@@ -1,6 +1,6 @@
+ import { SequentialOptions } from '../types';
+ import { Linear } from './linear';
+-export interface Sequential {
++export interface Sequential extends Omit<Linear, 'invert' | 'clone'> {
+     invert: undefined;
+     getOptions(): SequentialOptions;
+     update(updateOptions: Partial<SequentialOptions>): void;
+@@ -10,7 +10,7 @@ export interface Sequential {
+  *
+  * 构造可创建一个在输入和输出之间通过插值函数进行转换的比例尺
+  */
+-export declare class Sequential extends Linear {
++export declare class Sequential {
+     protected getDefaultOptions(): SequentialOptions;
+     constructor(options?: SequentialOptions);
+     clone(): Sequential;
+diff --git a/lib/types.d.ts b/lib/types.d.ts
+index 9de38bfe7ad704ad820532b9c00f0b13c846fea0..1675fd361d08086173f470956d6656a11747f43f 100644
+--- a/lib/types.d.ts
++++ b/lib/types.d.ts
+@@ -26,9 +26,9 @@ export type BaseOptions = {
+     domain?: any[];
+ };
+ /** 获得比例尺选项中定义域元素的类型 */
+-export type Domain<O extends BaseOptions> = O['domain'][number];
++export type Domain<O extends BaseOptions> = NonNullable<O['domain']>[number];
+ /** 获得比例尺选项中值域元素的类型 */
+-export type Range<O extends BaseOptions> = O['range'][number];
++export type Range<O extends BaseOptions> = NonNullable<O['range']>[number];
+ /** 获得比例尺选项中 unknown 的类型 */
+ export type Unknown<O extends BaseOptions> = O['unknown'];
+ /** Identity 比例尺的选项 */
+@@ -59,17 +59,17 @@ export type ConstantOptions = {
+     tickMethod?: TickMethod<number>;
+ };
+ /** Constant 比例尺的选项 */
+-export type ContinuousOptions = {
++export type ContinuousOptions<T extends number | Date = number | Date> = {
+     /** 当需要映射的值不合法的时候，返回的值 */
+     unknown?: any;
+     /** 值域，默认为 [0, 1] */
+     range?: (number | string)[];
+     /** 定义域，默认为 [0, 1] */
+-    domain?: (number | Date)[];
++    domain?: T[];
+     /** tick 个数，默认值为 5 */
+     tickCount?: number;
+     /** 计算 ticks 的算法 */
+-    tickMethod?: TickMethod<number | Date>;
++    tickMethod?: TickMethod<T>;
+     /** 是否需要对定义域的范围进行优化 */
+     nice?: boolean;
+     /** 是否需要限制输入的范围在值域内 */

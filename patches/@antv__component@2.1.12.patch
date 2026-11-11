@@ -1,0 +1,66 @@
+diff --git a/esm/ui/crosshair/base.d.ts b/esm/ui/crosshair/base.d.ts
+index 1a5a3c065cd424fe84fa043a994938b1a50b507c..74a2334751f2291ad199807b3048e5440ae7e6de 100644
+--- a/esm/ui/crosshair/base.d.ts
++++ b/esm/ui/crosshair/base.d.ts
+@@ -23,7 +23,7 @@ export declare abstract class CrosshairBase<T extends CrosshairBaseStyleProps> e
+     private get tagStyle();
+     private get crosshairStyle();
+     constructor(options: CrosshairBaseOptions);
+-    render(attributes: CrosshairBaseStyleProps, container: Group): void;
++    render(attributes: Required<T>, container: Group): void;
+     /**
+      * 设置当前指针的位置
+      * 1. 线条类型 调整位置即可
+diff --git a/esm/ui/navigator/index.js b/esm/ui/navigator/index.js
+index 0fba35ee514a80a9e20bb825f765d3fdfa6541e8..0d948236f3fbf9d31497e073e35933a1a1533670 100644
+--- a/esm/ui/navigator/index.js
++++ b/esm/ui/navigator/index.js
+@@ -124,6 +124,8 @@ var Navigator = /** @class */ (function (_super) {
+         var animation = animate(playWindow, [{ transform: "translate(0, 0)" }, { transform: "translate(".concat(-dx, ", ").concat(-dy, ")") }], animateOptions);
+         onAnimateFinished(animation, function () {
+             animation === null || animation === void 0 ? void 0 : animation.cancel();
++            playWindow.setLocalPosition(0, 0);
++            pageViews[pageNum].setLocalPosition(0, 0);
+             _this.innerCurrPage = pageNum;
+             _this.playState = 'idle';
+             _this.setVisiblePages([pageNum]);
+diff --git a/lib/ui/crosshair/base.d.ts b/lib/ui/crosshair/base.d.ts
+index 1a5a3c065cd424fe84fa043a994938b1a50b507c..74a2334751f2291ad199807b3048e5440ae7e6de 100644
+--- a/lib/ui/crosshair/base.d.ts
++++ b/lib/ui/crosshair/base.d.ts
+@@ -23,7 +23,7 @@ export declare abstract class CrosshairBase<T extends CrosshairBaseStyleProps> e
+     private get tagStyle();
+     private get crosshairStyle();
+     constructor(options: CrosshairBaseOptions);
+-    render(attributes: CrosshairBaseStyleProps, container: Group): void;
++    render(attributes: Required<T>, container: Group): void;
+     /**
+      * 设置当前指针的位置
+      * 1. 线条类型 调整位置即可
+diff --git a/lib/ui/navigator/index.js b/lib/ui/navigator/index.js
+index 9e5010531ed1a86489a53e273c79d576af23e38a..9397b7043b7a725ae329d6d70cf004a83447b2c0 100644
+--- a/lib/ui/navigator/index.js
++++ b/lib/ui/navigator/index.js
+@@ -127,6 +127,8 @@ var Navigator = /** @class */ (function (_super) {
+         var animation = (0, animation_1.animate)(playWindow, [{ transform: "translate(0, 0)" }, { transform: "translate(".concat(-dx, ", ").concat(-dy, ")") }], animateOptions);
+         (0, animation_1.onAnimateFinished)(animation, function () {
+             animation === null || animation === void 0 ? void 0 : animation.cancel();
++            playWindow.setLocalPosition(0, 0);
++            pageViews[pageNum].setLocalPosition(0, 0);
+             _this.innerCurrPage = pageNum;
+             _this.playState = 'idle';
+             _this.setVisiblePages([pageNum]);
+diff --git a/src/ui/navigator/index.ts b/src/ui/navigator/index.ts
+index a83ed455180f38aca64828892540f3d3f1234742..230c6c54238c036e4d24fc9c08475099b854545d 100644
+--- a/src/ui/navigator/index.ts
++++ b/src/ui/navigator/index.ts
+@@ -147,6 +147,9 @@ export class Navigator extends Component<NavigatorStyleProps> {
+ 
+     onAnimateFinished(animation, () => {
+       animation?.cancel();
++      // Keep the settled page inside the clip even when animation is disabled.
++      playWindow.setLocalPosition(0, 0);
++      pageViews[pageNum].setLocalPosition(0, 0);
+       this.innerCurrPage = pageNum;
+       this.playState = 'idle';
+       this.setVisiblePages([pageNum]);

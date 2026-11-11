@@ -1919,6 +1919,8 @@ function dismiss(event?: MouseEvent): void {
       for (const component of importedNames(script, '@platform/ui')) {
         if (
           ![
+            'UiG2Chart',
+            'UiChartTimeRange',
             'UiCopyAction',
             'UiForm',
             'UiFormField',

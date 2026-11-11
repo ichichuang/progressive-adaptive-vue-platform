@@ -1,0 +1,36 @@
+diff --git a/types/plugins/web-animations-api/dom/Animation.d.ts b/types/plugins/web-animations-api/dom/Animation.d.ts
+index 14bd0253c532940ea86c94824ce239a0d5b520ef..2e0c9d229ca8fbfeca844a19f7360daa31608951 100644
+--- a/types/plugins/web-animations-api/dom/Animation.d.ts
++++ b/types/plugins/web-animations-api/dom/Animation.d.ts
+@@ -70,15 +70,15 @@ export declare class Animation implements IAnimation {
+     /**
+      * @see https://developer.mozilla.org/en-US/docs/Web/API/Animation/onfinish
+      */
+-    onfinish: ((this: Animation, ev: AnimationPlaybackEvent) => any) | null;
++    onfinish: ((this: IAnimation, ev: AnimationPlaybackEvent) => any) | null;
+     /**
+      * @see https://developer.mozilla.org/en-US/docs/Web/API/Animation/oncancel
+      */
+-    oncancel: ((this: Animation, ev: AnimationPlaybackEvent) => any) | null;
++    oncancel: ((this: IAnimation, ev: AnimationPlaybackEvent) => any) | null;
+     /**
+      * get called after each frame when running
+      */
+-    onframe: ((this: Animation, ev: AnimationPlaybackEvent) => any) | null;
++    onframe: ((this: IAnimation, ev: AnimationPlaybackEvent) => any) | null;
+     /**
+      * @see https://developer.mozilla.org/en-US/docs/Web/API/Animation/currentTime
+      */
+diff --git a/types/plugins/web-animations-api/dom/AnimationEvent.d.ts b/types/plugins/web-animations-api/dom/AnimationEvent.d.ts
+index bfd1e812e27aebbb986349728e82613de23ac850..60e87f8ae8bb8dd6c93574cdc9c929bdf663fcac 100644
+--- a/types/plugins/web-animations-api/dom/AnimationEvent.d.ts
++++ b/types/plugins/web-animations-api/dom/AnimationEvent.d.ts
+@@ -4,7 +4,7 @@ import type { Animation } from './Animation';
+ /**
+  * @see https://developer.mozilla.org/en-US/docs/Web/API/AnimationPlaybackEvent
+  */
+-export declare class AnimationEvent extends FederatedEvent implements AnimationPlaybackEvent {
++export declare class AnimationEvent extends FederatedEvent implements Omit<AnimationPlaybackEvent, 'target' | 'currentTarget' | 'srcElement' | 'composedPath'> {
+     currentTime: number | null;
+     timelineTime: number;
+     constructor(manager: EventService | null, target: Animation, currentTime: number | null, timelineTime: number);

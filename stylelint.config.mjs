@@ -330,6 +330,24 @@ const routeTransitionVisualAuthorityRules = {
 // requires exact selector/property/input contracts; this is no file-wide grant.
 const specimenVariable = '--pavp-specimen-value'
 const settingsActionClearancePattern = String.raw`calc\(\s*var\(--ui-layout-target-enhanced-minimum-block-size\)\s*\+\s*max\(\s*var\(--ui-space-page-inline\)\s*,\s*env\(safe-area-inset-bottom\)\s*\)\s*\+\s*var\(--ui-space-section-block\)\s*\)`
+const chartRangeDurationPattern = String.raw`calc\(\s*var\(--ui-motion-duration\)\s*\*\s*2\s*\)`
+const chartTimeRangeVisualAuthorityRules = {
+  ...Object.fromEntries(
+    Object.entries(visualAuthorityRules).filter(
+      ([property]) => property !== motionDurationProperties,
+    ),
+  ),
+  '/^(?:animation-delay|animation-duration|transition-delay)$/':
+    motionAuthorityRules[motionDurationProperties],
+  // The style-owner contract admits this derivation only for the chart navigator.
+  'transition-duration': [
+    disallowOutsideAuthorities(
+      durationVariables,
+      [],
+      [...approvedDurationPatterns, chartRangeDurationPattern],
+    ),
+  ],
+}
 const workbenchVisualAuthorityRules = {
   ...visualAuthorityRules,
   color: colorAuthorityRules([
@@ -457,6 +475,10 @@ export default {
       rules: {
         'declaration-property-value-disallowed-list': routeTransitionVisualAuthorityRules,
       },
+    },
+    {
+      files: ['**/packages/ui/src/components/UiChartTimeRange.vue.style-*.css'],
+      rules: { 'declaration-property-value-disallowed-list': chartTimeRangeVisualAuthorityRules },
     },
     {
       files: ['apps/web/src/app/workbench/workbench.css'],

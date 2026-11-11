@@ -282,6 +282,15 @@ function defineComponentWorkspaceRoute<const S extends string>(suffix: S) {
   } as const)
 }
 
+function defineChartWorkspaceRoute<const S extends string>(suffix: S) {
+  return defineConsoleWorkspaceRoute({
+    name: `component-chart-${suffix}`,
+    pathPattern: `/components/charts/${suffix}`,
+    sourcePath: `apps/web/src/pages/component-chart-${suffix}.vue`,
+    meta: { telemetryName: `route.component.chart.${suffix}` },
+  } as const)
+}
+
 function defineFormWorkspaceRoute<const S extends string>(suffix: S) {
   return defineConsoleWorkspaceRoute({
     name: `component-form-${suffix}`,
@@ -375,6 +384,15 @@ export const routeRegistry = Object.freeze([
   defineComponentWorkspaceRoute('data'),
   defineComponentWorkspaceRoute('feedback'),
   defineComponentWorkspaceRoute('layout'),
+  defineComponentWorkspaceRoute('charts'),
+  defineChartWorkspaceRoute('trends'),
+  defineChartWorkspaceRoute('comparison'),
+  defineChartWorkspaceRoute('composition'),
+  defineChartWorkspaceRoute('distribution'),
+  defineChartWorkspaceRoute('interaction'),
+  defineChartWorkspaceRoute('live-stream'),
+  defineChartWorkspaceRoute('live-ranking'),
+  defineChartWorkspaceRoute('live-distribution'),
   ...formWorkspaceRoutes,
   defineComponentWorkspaceRoute('table'),
   defineTableExampleRoute('table', 'appearance'),
@@ -670,6 +688,21 @@ export const consoleNavigationRegistry = Object.freeze([
       defineNavigationItem('component-data', 'i-lucide-database'),
       defineNavigationItem('component-feedback', 'i-lucide-workflow'),
       defineNavigationItem('component-layout', 'i-lucide-panels-top-left'),
+      Object.freeze({
+        id: 'charts',
+        labelKey: 'navigation.charts',
+        items: Object.freeze([
+          defineNavigationItem('component-charts', 'i-lucide-database'),
+          defineNavigationItem('component-chart-trends', 'i-lucide-database'),
+          defineNavigationItem('component-chart-comparison', 'i-lucide-database'),
+          defineNavigationItem('component-chart-composition', 'i-lucide-database'),
+          defineNavigationItem('component-chart-distribution', 'i-lucide-database'),
+          defineNavigationItem('component-chart-interaction', 'i-lucide-database'),
+          defineNavigationItem('component-chart-live-stream', 'i-lucide-database'),
+          defineNavigationItem('component-chart-live-ranking', 'i-lucide-database'),
+          defineNavigationItem('component-chart-live-distribution', 'i-lucide-database'),
+        ]),
+      }),
       Object.freeze({
         id: 'forms',
         labelKey: 'navigation.forms',

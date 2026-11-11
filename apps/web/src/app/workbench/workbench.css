@@ -1,4 +1,31 @@
 @layer components {
+  .wb-chart-picker {
+    inline-size: min(100%, var(--ui-workbench-specimen-minimum-inline-size));
+  }
+  .wb-chart-stage {
+    flex-basis: var(--ui-workbench-api-content-block-size);
+    min-block-size: var(--ui-workbench-api-content-block-size);
+  }
+  .wb-chart-stage[data-narrow='true'] {
+    max-inline-size: var(--ui-layout-admin-content-minimum-inline-size);
+  }
+  .wb-chart-preview {
+    block-size: calc(var(--ui-workbench-specimen-preview-block-size) * 2);
+  }
+
+  .wb-chart-range {
+    padding-inline: var(--ui-space-page-inline);
+    padding-block-end: var(--ui-space-content-gap);
+  }
+  .wb-chart-range-fields {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 0.75)), 1fr)
+    );
+    flex: 1 1 var(--ui-layout-admin-content-minimum-inline-size);
+    max-inline-size: calc(var(--ui-workbench-specimen-minimum-inline-size) * 2);
+  }
+
   .wb-page.wb-form-page {
     gap: var(--ui-space-content-gap);
   }

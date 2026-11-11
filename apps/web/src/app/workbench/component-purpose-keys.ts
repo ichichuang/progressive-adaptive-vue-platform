@@ -6,6 +6,7 @@ export const componentPurposeKeys: Readonly<Partial<Record<string, ConsoleMessag
   UiRadioCardGroup: 'showcase.purpose.UiRadioCardGroup',
   NCheckbox: 'showcase.purpose.NCheckbox',
   NSlider: 'showcase.purpose.NSlider',
+  UiChartTimeRange: 'showcase.purpose.UiChartTimeRange',
   NRate: 'showcase.purpose.NRate',
   NSelect: 'showcase.purpose.NSelect',
   NPopselect: 'showcase.purpose.NPopselect',

@@ -1,0 +1,205 @@
+diff --git a/types/camera/Camera.d.ts b/types/camera/Camera.d.ts
+index 16a271565c307a6f72e28522d98f7aff56349ad9..690834db13e5a05b5bdc73ff2f08a98a5c3a3908 100644
+--- a/types/camera/Camera.d.ts
++++ b/types/camera/Camera.d.ts
+@@ -270,8 +270,8 @@ export declare class Camera implements ICamera {
+     pan(tx: number, ty: number): this;
+     dolly(value: number): this;
+     createLandmark(name: string, params?: Partial<{
+-        position: [number, number, number] | Float32Array | [number, number];
+-        focalPoint: [number, number, number] | Float32Array | [number, number];
++        position: vec3 | vec2;
++        focalPoint: vec3 | vec2;
+         zoom: number;
+         roll: number;
+     }>): Landmark;
+diff --git a/types/css/CSSProperty.d.ts b/types/css/CSSProperty.d.ts
+index 1fa4f8620ba1ff88056a18104f97cd277f743311..6b40df291e310983193ea8268033be9b68c06488 100644
+--- a/types/css/CSSProperty.d.ts
++++ b/types/css/CSSProperty.d.ts
+@@ -1,11 +1,10 @@
+ import type { DisplayObject } from '../display-objects';
+-import type { IElement } from '../dom';
+ import type { GlobalRuntime } from '../global-runtime';
+ export type CSSPropertySyntaxFactory = <P, U>(syntax: string) => CSSProperty<P, U>;
+ export type Interpolatable = number | boolean | number[] | boolean[];
+-type CSSPropertyMixer<Parsed = any, T extends Interpolatable = any> = (left: Parsed, right: Parsed, displayObject: IElement | null) => [T, T, (i: T) => string | any] | undefined;
++type CSSPropertyMixer<Parsed = any, T extends Interpolatable = any> = (left: Parsed, right: Parsed, displayObject: DisplayObject | null) => [T, T, (i: T) => string | any] | undefined;
+ type CSSPropertyParser<Parsed> = (value: string | any, object: DisplayObject) => Parsed;
+-type CSSPropertyCalculator<Parsed, Used> = (name: string, oldParsed: Parsed, parsed: Parsed, object: IElement, runtime: GlobalRuntime) => Used;
++type CSSPropertyCalculator<Parsed, Used> = (name: string, oldParsed: Parsed, parsed: Parsed, object: DisplayObject, runtime: GlobalRuntime) => Used;
+ /**
+  * 1. parser: raw CSS string -> Computed Value
+  * 2. calculator: Computed Value -> Used Value
+@@ -33,11 +32,11 @@ export interface CSSProperty<Parsed, Used> {
+      * used with interpolation in animation system
+      */
+     mixer: CSSPropertyMixer<Used>;
+-    preProcessor: (object: IElement) => void;
++    preProcessor: (object: DisplayObject) => void;
+     /**
+      * eg. update local position after x/y/z caculated
+      */
+-    postProcessor: (object: IElement) => void;
++    postProcessor: (object: DisplayObject) => void;
+ }
+ export {};
+ //# sourceMappingURL=CSSProperty.d.ts.map
+\ No newline at end of file
+diff --git a/types/css/parser/path.d.ts b/types/css/parser/path.d.ts
+index d07420572d84a0cba0220de9a2cb02468cd7a663..52f61f6048b2ff28dfd70b4d9d9db12991828777 100644
+--- a/types/css/parser/path.d.ts
++++ b/types/css/parser/path.d.ts
+@@ -2,5 +2,5 @@ import type { CurveArray, PathArray } from '@antv/util';
+ import type { ParsedPathStyleProps } from '../../display-objects';
+ import type { IElement } from '../../dom';
+ export declare function parsePath(path: string | PathArray): ParsedPathStyleProps['d'];
+-export declare function mergePaths(left: ParsedPathStyleProps['d'], right: ParsedPathStyleProps['d'], object?: IElement): [CurveArray, CurveArray, (b: CurveArray) => CurveArray];
++export declare function mergePaths(left: ParsedPathStyleProps['d'], right: ParsedPathStyleProps['d'], object?: IElement | null): [CurveArray, CurveArray, (b: CurveArray) => CurveArray];
+ //# sourceMappingURL=path.d.ts.map
+\ No newline at end of file
+diff --git a/types/dom/FederatedEvent.d.ts b/types/dom/FederatedEvent.d.ts
+index 20fa835cfb7436b6ee4edbb22dbde1edf325d5a3..d0e8811a42d4b39ba0e0146a494af05663443a46 100644
+--- a/types/dom/FederatedEvent.d.ts
++++ b/types/dom/FederatedEvent.d.ts
+@@ -140,9 +140,9 @@ export declare class FederatedEvent<N extends Event = Event, T = any> {
+     readonly composed = false;
+     isTrusted: boolean;
+     clone(): void;
+-    NONE: number;
+-    CAPTURING_PHASE: number;
+-    AT_TARGET: number;
+-    BUBBLING_PHASE: number;
++    NONE: 0;
++    CAPTURING_PHASE: 1;
++    AT_TARGET: 2;
++    BUBBLING_PHASE: 3;
+ }
+ //# sourceMappingURL=FederatedEvent.d.ts.map
+\ No newline at end of file
+diff --git a/types/dom/FederatedMouseEvent.d.ts b/types/dom/FederatedMouseEvent.d.ts
+index f947e009537d3b980805667863f783878a3ed8ac..b190f1412084ffb354f0ed75e35348a3e8876120 100644
+--- a/types/dom/FederatedMouseEvent.d.ts
++++ b/types/dom/FederatedMouseEvent.d.ts
+@@ -1,7 +1,7 @@
+ import type { DisplayObject } from '../display-objects/DisplayObject';
+ import { Point } from '../shapes/Point';
+ import { FederatedEvent } from './FederatedEvent';
+-export declare class FederatedMouseEvent extends FederatedEvent<MouseEvent | PointerEvent | TouchEvent> implements MouseEvent {
++export declare class FederatedMouseEvent extends FederatedEvent<MouseEvent | PointerEvent | TouchEvent> implements Omit<MouseEvent, 'target' | 'currentTarget' | 'srcElement' | 'relatedTarget' | 'composedPath'> {
+     /** Whether the "alt" key was pressed when this mouse event occurred. */
+     altKey: boolean;
+     /** The specific button that was pressed in this mouse event. */
+diff --git a/types/dom/FederatedPointerEvent.d.ts b/types/dom/FederatedPointerEvent.d.ts
+index f9444e4e58f30da3a287e7a5ca51c3e15fb902ce..22ff3ec470069bbc561974abb9adddb619ce4500 100644
+--- a/types/dom/FederatedPointerEvent.d.ts
++++ b/types/dom/FederatedPointerEvent.d.ts
+@@ -1,5 +1,5 @@
+ import { FederatedMouseEvent } from './FederatedMouseEvent';
+-export declare class FederatedPointerEvent extends FederatedMouseEvent implements PointerEvent {
++export declare class FederatedPointerEvent extends FederatedMouseEvent implements Omit<PointerEvent, 'target' | 'currentTarget' | 'srcElement' | 'relatedTarget' | 'composedPath' | 'altitudeAngle' | 'azimuthAngle' | 'persistentDeviceId'> {
+     /**
+      * The unique identifier of the pointer.
+      *
+diff --git a/types/dom/FederatedWheelEvent.d.ts b/types/dom/FederatedWheelEvent.d.ts
+index 88dc3d43715d4aeaeb6870196bf5212b92578774..17f84481089e461991889643dc0f288aebe260b9 100644
+--- a/types/dom/FederatedWheelEvent.d.ts
++++ b/types/dom/FederatedWheelEvent.d.ts
+@@ -1,5 +1,5 @@
+ import { FederatedMouseEvent } from './FederatedMouseEvent';
+-export declare class FederatedWheelEvent extends FederatedMouseEvent implements WheelEvent {
++export declare class FederatedWheelEvent extends FederatedMouseEvent implements Omit<WheelEvent, 'target' | 'currentTarget' | 'srcElement' | 'relatedTarget' | 'composedPath'> {
+     /**
+      * The units of `deltaX`, `deltaY`, and `deltaZ`. This is one of `DOM_DELTA_LINE`,
+      * `DOM_DELTA_PAGE`, `DOM_DELTA_PIXEL`.
+diff --git a/types/dom/interfaces.d.ts b/types/dom/interfaces.d.ts
+index c9911826d562aa0e8d6f9a2aa11a6b067589d0c7..5b2f309c10749dcfa355d90df04a7795d83b2a1e 100644
+--- a/types/dom/interfaces.d.ts
++++ b/types/dom/interfaces.d.ts
+@@ -344,11 +344,11 @@ export interface IAnimation {
+     playState: AnimationPlayState;
+     ready: Promise<this>;
+     finished: Promise<this>;
+-    onfinish: ((this: this, ev: AnimationPlaybackEvent) => any) | null;
+-    oncancel: ((this: this, ev: AnimationPlaybackEvent) => any) | null;
+-    onframe: ((this: this, ev: AnimationPlaybackEvent) => any) | null;
+-    currentTime: number;
+-    startTime: number;
++    onfinish: ((this: IAnimation, ev: AnimationPlaybackEvent) => any) | null;
++    oncancel: ((this: IAnimation, ev: AnimationPlaybackEvent) => any) | null;
++    onframe: ((this: IAnimation, ev: AnimationPlaybackEvent) => any) | null;
++    currentTime: number | null;
++    startTime: number | null;
+     playbackRate: number;
+     totalDuration: number;
+     play: () => void;
+@@ -458,9 +458,9 @@ export interface ICanvas extends IWindow, IEventTarget {
+     getContextService: () => ContextService<unknown>;
+     getRenderingService: () => RenderingService;
+     getEventService: () => EventService;
+-    mountChildren: (parent: INode) => void;
+-    unmountChildren: (parent: INode) => void;
+-    mountFragment: (fragment: INode) => void;
++    mountChildren: (parent: DisplayObject) => void;
++    unmountChildren: (parent: DisplayObject) => void;
++    mountFragment: (fragment: DisplayObject) => void;
+     client2Viewport: (client: PointLike) => PointLike;
+     viewport2Client: (viewport: PointLike) => PointLike;
+     canvas2Viewport: (canvas: PointLike) => PointLike;
+diff --git a/types/index.d.ts b/types/index.d.ts
+index acee14892f6238da758ed1bc92a77b84bf463278..822587cfa67db91b4e89ed060b3edae326515116 100644
+--- a/types/index.d.ts
++++ b/types/index.d.ts
+@@ -1,3 +1,4 @@
++/// <reference types="webxr" />
+ export * from './AbstractRenderer';
+ export * from './Canvas';
+ export * from './camera';
+diff --git a/types/services/SceneGraphService.d.ts b/types/services/SceneGraphService.d.ts
+index deeb4fcd28f06090dc7542e4c23666e22b953d6e..8e8ff1c7e8cb0d86d6dd4ee64e048468f67a1983 100644
+--- a/types/services/SceneGraphService.d.ts
++++ b/types/services/SceneGraphService.d.ts
+@@ -1,7 +1,7 @@
+ import { mat4, quat, vec2, vec3 } from 'gl-matrix';
+ import { type Transform } from '../components';
+ import { DisplayObject } from '../display-objects';
+-import type { IElement, INode, IParentNode } from '../dom';
++import type { ICanvas, IElement, INode, IParentNode } from '../dom';
+ import { GlobalRuntime } from '../global-runtime';
+ import { AABB, Rectangle } from '../shapes';
+ import type { SceneGraphService } from './interfaces';
+@@ -128,7 +128,7 @@ export declare class DefaultSceneGraphService implements SceneGraphService {
+     private dirtyWorldInternal;
+     dirtyToRoot(element: INode, affectChildren?: boolean): void;
+     dirtyFragment(element: INode): void;
+-    notifyMutationObservers(canvas: Canvas): void;
++    notifyMutationObservers(canvas: ICanvas): void;
+     private displayObjectDependencyMap;
+     updateDisplayObjectDependency(name: string, oldPath: DisplayObject, newPath: DisplayObject, object: DisplayObject): void;
+     informDependentDisplayObjects(object: DisplayObject): void;
+diff --git a/types/services/aabb/HTMLUpdater.d.ts b/types/services/aabb/HTMLUpdater.d.ts
+index 6d5ba516f41ff3ee9c35f2fd53cb854dfb6418c2..5836ae0aa2180beff030fcdb524373985f2a414f 100644
+--- a/types/services/aabb/HTMLUpdater.d.ts
++++ b/types/services/aabb/HTMLUpdater.d.ts
+@@ -1,6 +1,6 @@
+ import type { HTML, ParsedHTMLStyleProps } from '../../display-objects/HTML';
+ import type { GeometryAABBUpdater } from './interfaces';
+-export declare class HTMLUpdater implements GeometryAABBUpdater<ParsedHTMLStyleProps> {
++export declare class HTMLUpdater implements GeometryAABBUpdater<ParsedHTMLStyleProps, HTML> {
+     update(parsedStyle: ParsedHTMLStyleProps, object: HTML): {
+         cx: number;
+         cy: number;
+diff --git a/types/services/aabb/interfaces.d.ts b/types/services/aabb/interfaces.d.ts
+index d98a47d51bda6fde1b30d32baccd1a0c594504a9..56622a30eecaa4f10d87663c41d51619e6899748 100644
+--- a/types/services/aabb/interfaces.d.ts
++++ b/types/services/aabb/interfaces.d.ts
+@@ -1,7 +1,7 @@
+ import type { DisplayObject } from '../../display-objects/DisplayObject';
+ import type { ParsedBaseStyleProps } from '../../types';
+-export interface GeometryAABBUpdater<T extends ParsedBaseStyleProps = any> {
+-    update: (parsedStyle: T, object: DisplayObject) => {
++export interface GeometryAABBUpdater<T extends ParsedBaseStyleProps = any, Object extends DisplayObject = DisplayObject> {
++    update: (parsedStyle: T, object: Object) => {
+         cx: number;
+         cy: number;
+         cz?: number;

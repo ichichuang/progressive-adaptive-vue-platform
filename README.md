@@ -50,8 +50,7 @@ artifact. It preserves that artifact's environment, website base, version and SH
 Git or rebuilding code, and atomically replaces only its API configuration. A new page startup
 reads the updated file. Missing/malformed artifacts and invalid inputs fail without replacing it.
 Version remains rooted in package.json; SHA remains build-owned. Credentials and private keys
-belong to the server, outside browser output. Tokens, preferences, storage keys and budgets keep
-their existing owners.
+belong to the server, outside browser output. Tokens, preferences and storage keys keep their existing owners.
 
 The public request layer is [shared/api](./apps/web/src/shared/api/index.ts). Create a client
 from validated runtime `api` configuration; pass the page's `location.origin` as `origin` when

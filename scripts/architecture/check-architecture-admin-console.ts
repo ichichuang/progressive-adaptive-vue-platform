@@ -11,7 +11,6 @@ import { build } from 'vite'
 import { parse as parseYaml } from 'yaml'
 
 import { componentExampleConsumers } from '../../apps/web/src/app/workbench/component-example-consumers'
-import { projectConfig } from '../../project.config'
 import {
   ProductPreferenceDefault,
   tokens,
@@ -205,10 +204,9 @@ interface NavigationThemeColorSnapshot {
   readonly sharedDropdownPeer: boolean
 }
 
-interface NavigationBudgetGateSnapshot {
+interface NavigationBundleGateSnapshot {
   readonly checkBundleSource: string
   readonly navigationSource: string
-  readonly projectConfigSource: string
   readonly routeCount: number
 }
 
@@ -319,7 +317,7 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedMotionVueVersion = '2.4.0'
 const expectedVueUseCoreVersion = '14.4.0'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 64
+const expectedArchitectureAdminConsoleNegativeProbeCount = 65
 const expectedMotionGeometryNegativeProbeCount = 9
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 14
@@ -333,14 +331,13 @@ const expectedAdminNavigationHeaderPlacementSourceInvariantCount = 13
 const expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount = 5
 const expectedAdminNavigationNaiveActionsMotionInvariantCount = 23
 const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 11
-const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 23
-const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 16
+const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 24
+const expectedAdminNavigationMotionVueSelectionLensSourceNegativeProbeCount = 17
 const expectedAdminNavigationReducedCrossfadeNegativeProbeCount = 8
 const expectedNavigationReworkSourceInvariantCount = 56
 const expectedNavigationReworkSourceNegativeProbeCount = 23
-const expectedNavigationBudgetProbeCount = 16
+const expectedNavigationBundleProbeCount = 3
 const expectedRuntime003SourceNegativeProbeCount = 12
-const expectedInitialJavaScriptBudgetBytes = projectConfig.bundleBudgets.initialJavaScriptGzipBytes
 const shellSfcPath = 'packages/ui/src/components/UiAdminShell.vue'
 const shellSfcScopeId = 'data-v-pavp-admin-shell'
 const requireFromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
@@ -367,6 +364,15 @@ const expectedNavigationIconClasses = [
   'i-lucide-database',
   'i-lucide-workflow',
   'i-lucide-panels-top-left',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
   'i-lucide-type',
   'i-lucide-type',
   'i-lucide-type',
@@ -444,6 +450,55 @@ const productRouteContract = [
     '反馈',
   ],
   ['component-layout', '/components/layout', 'apps/web/src/pages/component-layout.vue', '布局'],
+  ['component-charts', '/components/charts', 'apps/web/src/pages/component-charts.vue', '图表总览'],
+  [
+    'component-chart-trends',
+    '/components/charts/trends',
+    'apps/web/src/pages/component-chart-trends.vue',
+    '趋势与曲线',
+  ],
+  [
+    'component-chart-comparison',
+    '/components/charts/comparison',
+    'apps/web/src/pages/component-chart-comparison.vue',
+    '比较与排名',
+  ],
+  [
+    'component-chart-composition',
+    '/components/charts/composition',
+    'apps/web/src/pages/component-chart-composition.vue',
+    '构成与比例',
+  ],
+  [
+    'component-chart-distribution',
+    '/components/charts/distribution',
+    'apps/web/src/pages/component-chart-distribution.vue',
+    '分布与热力',
+  ],
+  [
+    'component-chart-interaction',
+    '/components/charts/interaction',
+    'apps/web/src/pages/component-chart-interaction.vue',
+    '交互与动效',
+  ],
+  [
+    'component-chart-live-stream',
+    '/components/charts/live-stream',
+    'apps/web/src/pages/component-chart-live-stream.vue',
+    '实时趋势',
+  ],
+  [
+    'component-chart-live-ranking',
+    '/components/charts/live-ranking',
+    'apps/web/src/pages/component-chart-live-ranking.vue',
+    '动态排行榜',
+  ],
+  [
+    'component-chart-live-distribution',
+    '/components/charts/live-distribution',
+    'apps/web/src/pages/component-chart-live-distribution.vue',
+    '实时分布',
+  ],
   [
     'component-form-overview',
     '/components/forms/overview',
@@ -7595,7 +7650,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 58 ||
+    runtimeNumber(routeRegistry.length) !== 67 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
@@ -8107,6 +8162,10 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
       passed: !forbiddenMotionLifecyclePattern.test(motionPrivateSource),
     },
     {
+      code: 'ADMIN_NAV_MOTION_VUE_NO_CHART_VENDOR',
+      passed: !/['"]@antv\/g2(?:\/[^'"]*)?['"]/u.test(motionPrivateSource),
+    },
+    {
       code: 'ADMIN_NAV_MOTION_VUE_NO_ROUTE_MOTION',
       passed:
         !/RouterView|useRoute|routeMotion|routeTransition|route-content|<Transition\b/iu.test(
@@ -8242,7 +8301,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         !shellStyles.includes('.pavp-admin-navigation-selection-lens--none'),
     },
     {
-      code: 'ADMIN_NAV_MOTION_VUE_DEPENDENCY_ROOT_BUDGET_CLOSURE',
+      code: 'ADMIN_NAV_MOTION_VUE_DEPENDENCY_ROOT_CLOSURE',
       passed:
         snapshot.workspaceSource.includes('motion-v: 2.4.0') &&
         snapshot.workspaceSource.includes("'@vueuse/core': 14.4.0") &&
@@ -8250,15 +8309,12 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.lockSource.includes('@vueuse/core@14.4.0') &&
         snapshot.lockSource.includes('motion-v@2.4.0:') &&
         snapshot.lockSource.includes('path: patches/motion-v@2.4.0.patch') &&
-        snapshot.projectConfigSource.includes(
-          'adminNavigationMotionFeatureJavaScriptGzipBytes: 48 * 1024',
-        ) &&
         snapshot.checkBundleSource.includes(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') &&
-        snapshot.routeCount === 58 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') &&
+        snapshot.routeCount === 67 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 10,
@@ -8279,6 +8335,14 @@ function runAdminNavigationMotionVueSelectionLensSourceNegativeProbes(
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
   const baselineFailureCodes = adminNavigationMotionVueSelectionLensSourceViolations(baseline)
   const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
+    [
+      'admin-navigation-motion-vue-imports-chart-vendor',
+      'ADMIN_NAV_MOTION_VUE_NO_CHART_VENDOR',
+      {
+        ...baseline,
+        motionRuntimeSource: `${baseline.motionRuntimeSource}\nimport { Chart } from '@antv/g2'`,
+      },
+    ],
     [
       'admin-navigation-motion-vue-removes-private-integration',
       'ADMIN_NAV_MOTION_VUE_PRIVATE_INTEGRATION',
@@ -8645,7 +8709,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 58) {
+  if (snapshot.routeCount !== 67) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -8661,6 +8725,22 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   const registered = new Map(
     snapshot.registeredPublicComponents.map((record) => [record.exportName, record.consumerCount]),
   )
+  if (
+    registered.get('UiG2Chart') !== 9 ||
+    !isDeepStrictEqual(componentExampleConsumers['UiG2Chart'], [
+      'component-charts',
+      'component-chart-trends',
+      'component-chart-comparison',
+      'component-chart-composition',
+      'component-chart-distribution',
+      'component-chart-interaction',
+      'component-chart-live-stream',
+      'component-chart-live-ranking',
+      'component-chart-live-distribution',
+    ])
+  ) {
+    violations.push('PUBLIC_UI_CHART_CONSUMER')
+  }
   if (snapshot.publicComponentExports.some((exportName) => !registered.has(exportName))) {
     violations.push('PUBLIC_UI_UNREGISTERED')
   }
@@ -9922,6 +10002,15 @@ function runArchitectureAdminConsoleNegativeProbes(
           ...baseline.registeredPublicComponents,
           { exportName: 'UiProbe', consumerCount: 0, capabilityStatus: 'ACTIVE' },
         ],
+      },
+    ],
+    [
+      'g2-chart-missing-example-consumer',
+      'PUBLIC_UI_CHART_CONSUMER',
+      {
+        registeredPublicComponents: baseline.registeredPublicComponents.map((record) =>
+          record.exportName === 'UiG2Chart' ? { ...record, consumerCount: 0 } : record,
+        ),
       },
     ],
     [
@@ -11537,6 +11626,7 @@ function adminNavigationNativeSourceInvariantResults(
   const prohibitedAnimationStatePattern =
     /collapseTimeline|routeTimeline|requestAnimationFrame|navigationMotionState|routeMotionIntent|SelectionFeedbackPhase|selectionFeedback|idle-a|idle-b/iu
   const exactUiDependencies = {
+    '@antv/g2': 'catalog:',
     '@platform/design-system': 'workspace:*',
     '@vueuse/core': 'catalog:',
     lenis: 'catalog:',
@@ -11751,12 +11841,11 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes("to: '#pavp-overlay-root'") &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
-    snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max') &&
-    snapshot.projectConfigSource.includes('adminNavigationMotionFeatureJavaScriptGzipBytes:')
+    snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
   return Object.freeze([
     {
@@ -11853,7 +11942,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 58,
+      passed: snapshot.routeCount === 67,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -12839,7 +12928,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 58',
+          'const expectedLazyRouteCount = 67',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -13502,6 +13591,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   const selectedFormula =
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const exactPublicComponents = [
+    'UiG2Chart',
+    'UiChartTimeRange',
     'UiCopyAction',
     'UiScrollArea',
     'UiAdminShell',
@@ -14183,14 +14274,12 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   )
 }
 
-function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): string[] {
+function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
-  const motionFeatureBudgetBytes =
-    projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 58',
+    'const expectedLazyRouteCount = 67',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 71',
+    'const expectedDynamicRootCount = 80',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14198,23 +14287,9 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   ] as const
 
   if (
-    !Number.isSafeInteger(expectedInitialJavaScriptBudgetBytes) ||
-    expectedInitialJavaScriptBudgetBytes <= 0 ||
-    !Number.isSafeInteger(motionFeatureBudgetBytes) ||
-    motionFeatureBudgetBytes <= 0 ||
-    exactOccurrenceCount(snapshot.projectConfigSource, 'initialJavaScriptGzipBytes:') !== 1 ||
-    exactOccurrenceCount(
-      snapshot.projectConfigSource,
-      'adminNavigationMotionFeatureJavaScriptGzipBytes:',
-    ) !== 1
-  ) {
-    violations.push('NAV_BUDGET_HARD_LIMIT')
-  }
-
-  if (
     requiredBundleMeasurementMarkers.some((marker) => !snapshot.checkBundleSource.includes(marker))
   ) {
-    violations.push('NAV_BUDGET_MEASUREMENT_INTEGRITY')
+    violations.push('NAV_BUNDLE_MEASUREMENT_INTEGRITY')
   }
 
   const navigationDynamicImportSpecifiers = [
@@ -14222,14 +14297,14 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
   ].map((match) => match[1] ?? '')
 
   if (!isDeepStrictEqual(navigationDynamicImportSpecifiers, ['./navigation-actions'])) {
-    violations.push('NAV_BUDGET_DYNAMIC_NAVIGATION_IMPORT')
+    violations.push('NAV_BUNDLE_DYNAMIC_NAVIGATION_IMPORT')
   }
 
   if (
-    snapshot.routeCount !== 58 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 58') ||
+    snapshot.routeCount !== 67 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 71') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -14238,31 +14313,20 @@ function navigationBudgetViolations(snapshot: NavigationBudgetGateSnapshot): str
       "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
     )
   ) {
-    violations.push('NAV_BUDGET_ROUTE_LAZY_COUNT')
+    violations.push('NAV_BUNDLE_ROUTE_LAZY_COUNT')
   }
 
   return violations
 }
 
-function runNavigationBudgetProbes(
-  baseline: NavigationBudgetGateSnapshot,
+function runNavigationBundleProbes(
+  baseline: NavigationBundleGateSnapshot,
 ): readonly ArchitectureAdminConsoleNegativeProbeResult[] {
-  const baselineFailureCodes = navigationBudgetViolations(baseline)
-  const probes: readonly [string, string, NavigationBudgetGateSnapshot][] = [
+  const baselineFailureCodes = navigationBundleViolations(baseline)
+  const probes: readonly [string, string, NavigationBundleGateSnapshot][] = [
     [
-      'navigation-budget-duplicates-initial-hard-limit-authority',
-      'NAV_BUDGET_HARD_LIMIT',
-      {
-        ...baseline,
-        projectConfigSource: baseline.projectConfigSource.replace(
-          'initialJavaScriptGzipBytes:',
-          'initialJavaScriptGzipBytes: 1, initialJavaScriptGzipBytes:',
-        ),
-      },
-    ],
-    [
-      'navigation-budget-breaks-motion-exclusive-closure',
-      'NAV_BUDGET_MEASUREMENT_INTEGRITY',
+      'navigation-bundle-breaks-motion-exclusive-closure',
+      'NAV_BUNDLE_MEASUREMENT_INTEGRITY',
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
@@ -14272,88 +14336,23 @@ function runNavigationBudgetProbes(
       },
     ],
     [
-      'navigation-budget-adds-dynamic-navigation-import',
-      'NAV_BUDGET_DYNAMIC_NAVIGATION_IMPORT',
+      'navigation-bundle-adds-dynamic-navigation-import',
+      'NAV_BUNDLE_DYNAMIC_NAVIGATION_IMPORT',
       {
         ...baseline,
         navigationSource: `${baseline.navigationSource}\nvoid import('./naive-menu')`,
       },
     ],
     [
-      'navigation-budget-changes-route-lazy-count',
-      'NAV_BUDGET_ROUTE_LAZY_COUNT',
+      'navigation-bundle-changes-route-lazy-count',
+      'NAV_BUNDLE_ROUTE_LAZY_COUNT',
       { ...baseline, routeCount: 19 },
     ],
   ]
 
-  const sourceFile = ts.createSourceFile(
-    'check-bundle.ts',
-    baseline.checkBundleSource,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TS,
-  )
-  const limitProbes = [
-    {
-      property: 'initialJavaScriptGzipBytes',
-      measurement: 'initialJavaScriptBytes',
-      cases: [
-        ['below-limit', 270335, 270336, true],
-        ['exact-limit', 270336, 270336, true],
-        ['one-byte-above-limit', 270337, 270336, false],
-        ['non-aligned-limit', 8193, 8193, true],
-        ['recorded-measurement', 263391, 270336, true],
-        ['smaller-bundle', 1, 270336, true],
-      ],
-    },
-    {
-      property: 'adminNavigationMotionFeatureJavaScriptGzipBytes',
-      measurement: 'motionFeatureJavaScriptBytes',
-      cases: [
-        ['below-limit', 49151, 49152, true],
-        ['exact-limit', 49152, 49152, true],
-        ['one-byte-above-limit', 49153, 49152, false],
-        ['non-aligned-limit', 8193, 8193, true],
-        ['recorded-measurement', 33648, 49152, true],
-        ['smaller-bundle', 1, 49152, true],
-      ],
-    },
-  ] as const
-  const limitProbeResults = limitProbes.flatMap(({ property, measurement, cases }) => {
-    const branches = sourceFile.statements.filter(
-      (statement): statement is ts.IfStatement =>
-        ts.isIfStatement(statement) &&
-        statement.expression
-          .getText(sourceFile)
-          .includes(`projectConfig.bundleBudgets.${property}`),
-    )
-    const branch = branches.length === 1 ? branches[0] : undefined
-
-    return cases.map(([id, measuredBytes, configuredBudget, expectedAcceptance]) => {
-      const result: unknown =
-        branch === undefined
-          ? undefined
-          : runInNewContext(
-              `(() => { try { ${branch.getText(sourceFile)}; return 'accepted' } catch (error) { return error instanceof Error && error.name === 'Error' ? 'rejected' : 'invalid' } })()`,
-              {
-                [measurement]: measuredBytes,
-                motionFeatureRootId: 'admin-navigation-motion-dom-max',
-                projectConfig: { bundleBudgets: { [property]: configuredBudget } },
-              },
-              { timeout: 1000 },
-            )
-
-      return Object.freeze({
-        id: `navigation-budget-${property}-${id}`,
-        expectedFailureCode: 'NAV_BUDGET_LIMIT_COMPARISON',
-        passed: result === (expectedAcceptance ? 'accepted' : 'rejected'),
-      })
-    })
-  })
-
   return Object.freeze([
     ...probes.map(([id, expectedFailureCode, mutatedSnapshot]) => {
-      const failureCodes = navigationBudgetViolations(mutatedSnapshot)
+      const failureCodes = navigationBundleViolations(mutatedSnapshot)
 
       return Object.freeze({
         id,
@@ -14364,7 +14363,6 @@ function runNavigationBudgetProbes(
           failureCodes.includes(expectedFailureCode),
       })
     }),
-    ...limitProbeResults,
   ])
 }
 
@@ -14528,6 +14526,7 @@ async function validateDependencies(): Promise<string[]> {
       unocss: 'catalog:',
     }) ||
     !isDeepStrictEqual(uiDependencies, {
+      '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
       lenis: 'catalog:',
@@ -14557,6 +14556,7 @@ async function validateDependencies(): Promise<string[]> {
   if (
     catalog['naive-ui'] !== expectedNaiveUiVersion ||
     !isDeepStrictEqual(uiDependencies, {
+      '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
       lenis: 'catalog:',
@@ -14806,14 +14806,14 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 58 ||
-    runtimeCount(productRoutes) !== 51 ||
+    runtimeCount(routeRegistry) !== 67 ||
+    runtimeCount(productRoutes) !== 60 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 51 ||
+    Object.keys(breadcrumbRegistry).length !== 60 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 58/51/7 workbench Route Registry closure drifted.')
+    violations.push('The exact 67/60/7 workbench Route Registry closure drifted.')
   }
 
   if (
@@ -14934,6 +14934,9 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
   const viewPaths = [
     ...pagePaths,
     'apps/web/src/app/workbench/WorkbenchPage.vue',
+    'apps/web/src/app/workbench/charts/ChartExampleWorkbench.vue',
+    'apps/web/src/app/workbench/charts/ChartLiveWorkbench.vue',
+    'apps/web/src/app/workbench/charts/ChartCapabilityOverview.vue',
     'apps/web/src/app/workbench/TokenGallery.vue',
     'apps/web/src/app/workbench/TokenSpecimen.vue',
   ]
@@ -14966,6 +14969,46 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
         '../shared/i18n',
       ],
     ],
+    [
+      'apps/web/src/pages/component-charts.vue',
+      ['../app/workbench/charts/ChartCapabilityOverview.vue'],
+    ],
+    ['apps/web/src/app/workbench/charts/ChartExampleWorkbench.vue', ['@platform/ui']],
+    ['apps/web/src/app/workbench/charts/ChartLiveWorkbench.vue', ['@platform/ui']],
+    ['apps/web/src/app/workbench/charts/ChartCapabilityOverview.vue', ['@platform/ui']],
+    [
+      'apps/web/src/pages/component-chart-trends.vue',
+      ['../app/workbench/charts/ChartExampleWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-comparison.vue',
+      ['../app/workbench/charts/ChartExampleWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-composition.vue',
+      ['../app/workbench/charts/ChartExampleWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-distribution.vue',
+      ['../app/workbench/charts/ChartExampleWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-interaction.vue',
+      ['../app/workbench/charts/ChartExampleWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-live-stream.vue',
+      ['../app/workbench/charts/ChartLiveWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-live-ranking.vue',
+      ['../app/workbench/charts/ChartLiveWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-live-distribution.vue',
+      ['../app/workbench/charts/ChartLiveWorkbench.vue'],
+    ],
+
     ['apps/web/src/app/workbench/TokenSpecimen.vue', ['@platform/design-system']],
   ])
   for (const path of viewPaths) {
@@ -15416,13 +15459,13 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 58 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 51 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 67 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 60 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 58 ||
+    runtimeCount(routerRecords) !== 67 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
     runtimeCount(storageRecords) !== 10 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 13 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 15 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, []) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
@@ -15432,9 +15475,34 @@ function validateInspectorProjections(): string[] {
     violations.push('One or more safe Inspector projections diverged from active authorities.')
   }
 
+  const chartGroup = consoleNavigationRegistry
+    .find((group) => group.id === 'components')
+    ?.items.find((item) => 'items' in item && item.id === 'charts')
+  if (
+    chartGroup === undefined ||
+    !('items' in chartGroup) ||
+    getDefaultConsoleMessage(chartGroup.labelKey) !== '图表' ||
+    !isDeepStrictEqual(
+      chartGroup.items.map((item) => item.destination.name),
+      [
+        'component-charts',
+        'component-chart-trends',
+        'component-chart-comparison',
+        'component-chart-composition',
+        'component-chart-distribution',
+        'component-chart-interaction',
+        'component-chart-live-stream',
+        'component-chart-live-ranking',
+        'component-chart-live-distribution',
+      ],
+    )
+  ) {
+    violations.push('Chart capabilities must remain a second-level submenu with nine route leaves.')
+  }
+
   const formGroup = consoleNavigationRegistry
     .find((group) => group.id === 'components')
-    ?.items.find((item) => 'items' in item)
+    ?.items.find((item) => 'items' in item && item.id === 'forms')
   if (
     formGroup === undefined ||
     !('items' in formGroup) ||
@@ -15488,6 +15556,15 @@ function validateInspectorProjections(): string[] {
           '数据展示',
           '反馈',
           '布局',
+          '图表总览',
+          '趋势与曲线',
+          '比较与排名',
+          '构成与比例',
+          '分布与热力',
+          '交互与动效',
+          '实时趋势',
+          '动态排行榜',
+          '实时分布',
           '能力总览',
           '基础控件',
           '编辑与详情',
@@ -15732,12 +15809,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     uiManifestSource,
     workspaceSource,
   }
-  const navigationBudgetBaseline: NavigationBudgetGateSnapshot = {
+  const navigationBundleBaseline: NavigationBundleGateSnapshot = {
     checkBundleSource,
     navigationSource: [naiveProviderSource, runtimeContextSource, shellSource, themeSource].join(
       '\n',
     ),
-    projectConfigSource,
     routeCount: routeRegistry.length,
   }
   const negativeProbeResults = runArchitectureAdminConsoleNegativeProbes(baseline)
@@ -15774,7 +15850,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     runAdminNavigationNaiveActionsMotionNegativeProbes(adminNavigationNativeSourceBaseline)
   const navigationReworkSourceNegativeProbeResults =
     runNavigationReworkSourceNegativeProbes(navigationReworkBaseline)
-  const navigationBudgetProbeResults = runNavigationBudgetProbes(navigationBudgetBaseline)
+  const navigationBundleProbeResults = runNavigationBundleProbes(navigationBundleBaseline)
   const runtime003SourceNegativeProbeResults = runRuntime003SourceNegativeProbes(baseline)
 
   if (negativeProbeResults.length !== expectedArchitectureAdminConsoleNegativeProbeCount) {
@@ -15914,9 +15990,9 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       `Naive collapsible multilevel navigation source negative-probe count drifted: expected ${String(expectedNavigationReworkSourceNegativeProbeCount)}, received ${String(navigationReworkSourceNegativeProbeResults.length)}.`,
     )
   }
-  if (navigationBudgetProbeResults.length !== expectedNavigationBudgetProbeCount) {
+  if (navigationBundleProbeResults.length !== expectedNavigationBundleProbeCount) {
     violations.push(
-      `Naive navigation budget probe count drifted: expected ${String(expectedNavigationBudgetProbeCount)}, received ${String(navigationBudgetProbeResults.length)}.`,
+      `Naive navigation bundle probe count drifted: expected ${String(expectedNavigationBundleProbeCount)}, received ${String(navigationBundleProbeResults.length)}.`,
     )
   }
 
@@ -15938,7 +16014,7 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ...adminNavigationCollapsedPopupViolations(adminNavigationNativeSourceBaseline),
     ...adminNavigationHeaderPlacementViolations(adminNavigationNativeSourceBaseline),
     ...adminNavigationNaiveActionsMotionViolations(adminNavigationNativeSourceBaseline),
-    ...navigationBudgetViolations(navigationBudgetBaseline),
+    ...navigationBundleViolations(navigationBundleBaseline),
     ...(await validateRouteTransitionSourceGovernance()),
   )
 
@@ -16036,10 +16112,10 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
       )
     }
   }
-  for (const result of navigationBudgetProbeResults) {
+  for (const result of navigationBundleProbeResults) {
     if (!result.passed) {
       violations.push(
-        `${result.id}: in-memory Naive navigation budget probe did not match its expected result.`,
+        `${result.id}: in-memory Naive navigation bundle probe did not match its expected result.`,
       )
     }
   }

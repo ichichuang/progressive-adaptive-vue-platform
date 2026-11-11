@@ -1968,6 +1968,14 @@ const noUnapprovedVisualLiterals = {
           return
         }
 
+        // Native G2 HTML tooltip placement is measured against the live viewport.
+        // Admit only positional writes in this vendor owner, never color/size authority.
+        if (
+          filename === 'packages/ui/src/adapters/g2/pavp-g2-tooltip.ts' &&
+          (propertyName === 'left' || propertyName === 'top')
+        )
+          return
+
         if (
           filename === 'packages/ui/src/components/UiAdminShell.vue' &&
           propertyName === 'overflow'

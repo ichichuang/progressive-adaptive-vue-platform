@@ -50,3 +50,14 @@ export { useUiTableQuery } from './composables/use-ui-table-query'
 export { default as UiTableEditor } from './components/UiTableEditor.vue'
 
 export { useUiTableActions, type UiTableActionsInput } from './composables/use-ui-table-actions'
+
+export { default as UiG2Chart } from './components/UiG2Chart.vue'
+export type { UiG2ChartOptions } from './components/g2-chart-contracts'
+
+export { default as UiChartTimeRange } from './components/UiChartTimeRange.vue'
+export {
+  normalizeUiChartTimeRange,
+  panUiChartTimeRange,
+  zoomUiChartTimeRange,
+  type UiChartTimeRangeValue,
+} from './components/chart-time-range'

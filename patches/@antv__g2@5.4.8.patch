@@ -1,0 +1,271 @@
+diff --git a/esm/api/extend.d.ts b/esm/api/extend.d.ts
+index 9dcef26f8d2de8f28d89e90d7a6f41805a2764dc..7a63450b11460bfdacf70997c7fab007c914bee4 100644
+--- a/esm/api/extend.d.ts
++++ b/esm/api/extend.d.ts
+@@ -8,8 +8,8 @@ type BuiltinComposition = {
+     'composition.mark': any;
+     'composition.view': any;
+ };
+-export type CompositionOf<Library> = Of<Library, (composite?: any) => CompositionAPI<Library>>;
+-export type CompositionAPI<Library> = CompositionNode<CompositionOf<Library> & MarkOf<Library, (composite?: any) => MarkNode>> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library>;
+-export type API<Spec, Library> = Runtime<Spec> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library & BuiltinComposition>;
++export type CompositionOf<Library extends G2Library> = Of<Library, (composite?: any) => CompositionAPI<Library>>;
++export type CompositionAPI<Library extends G2Library> = CompositionNode<CompositionOf<Library> & MarkOf<Library, (composite?: any) => MarkNode>> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library>;
++export type API<Spec extends G2Spec, Library extends G2Library> = Runtime<Spec> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library & BuiltinComposition>;
+ export declare function extend<Spec extends G2Spec = G2Spec, Library extends G2Library = G2Library>(Runtime: new (options: RuntimeOptions) => Runtime<Spec>, library: Library): new (options?: RuntimeOptions) => API<Spec, Library>;
+ export {};
+diff --git a/esm/interaction/drillDown.d.ts b/esm/interaction/drillDown.d.ts
+index 2e02d7ae963c44ca67e2e21cd181dd6ce6b8096f..4604d3144ea851536390c9eacd0069bc9afa41ba 100644
+--- a/esm/interaction/drillDown.d.ts
++++ b/esm/interaction/drillDown.d.ts
+@@ -1,4 +1,4 @@
+-import { DrillDownInteraction } from 'spec';
++import { DrillDownInteraction } from '../spec';
+ /**
+  * DrillDown interaction for partition visualization.
+  * Based on the proven sunburst drilldown implementation.
+diff --git a/esm/runtime/scale.js b/esm/runtime/scale.js
+index 63cb065bea4b4038c85a73f744139cd8f10db0c1..937145e212a89f7a1705899546c17a304a40b610 100644
+--- a/esm/runtime/scale.js
++++ b/esm/runtime/scale.js
+@@ -13,7 +13,7 @@ export function inferScale(name, values, options, coordinates, theme, library) {
+         return options;
+     const expectedDomain = inferScaleDomain(type, name, values, options);
+     const actualDomain = maybeRatio(type, expectedDomain, options);
+-    return Object.assign(Object.assign(Object.assign({}, options), inferScaleOptions(type, name, values, options, coordinates)), { domain: actualDomain, range: inferScaleRange(type, name, values, options, actualDomain, theme, library), expectedDomain,
++    return Object.assign(Object.assign(Object.assign({}, options), inferScaleOptions(type, name, values, options, coordinates, theme)), { domain: actualDomain, range: inferScaleRange(type, name, values, options, actualDomain, theme, library), expectedDomain,
+         guide,
+         name,
+         type });
+@@ -310,7 +310,7 @@ function inferScaleRange(type, name, values, options, domain, theme, library) {
+             return [];
+     }
+ }
+-function inferScaleOptions(type, name, values, options, coordinates) {
++function inferScaleOptions(type, name, values, options, coordinates, theme) {
+     switch (type) {
+         case 'linear':
+         case 'time':
+@@ -322,7 +322,7 @@ function inferScaleOptions(type, name, values, options, coordinates) {
+         case 'point':
+             return inferOptionsC(type, name, coordinates, options);
+         case 'sequential':
+-            return inferOptionsS(options);
++            return inferOptionsS(options, name === 'color' ? theme.sequential : undefined);
+         default:
+             return options;
+     }
+@@ -368,12 +368,23 @@ function interpolatedColors(palette, domain, offset = (d) => d) {
+     // Otherwise interpolate to get full colors.
+     return domain.map((_, i) => interpolator(offset(i / domain.length)));
+ }
+-function inferOptionsS(options) {
+-    const { palette = 'ylGnBu', offset } = options;
+-    const name = upperFirst(palette);
+-    const interpolator = d3ScaleChromatic[`interpolate${name}`];
+-    if (!interpolator)
+-        throw new Error(`Unknown palette: ${name}`);
++function inferOptionsS(options, sequential) {
++    const { palette, offset, range } = options;
++    let { interpolator } = options;
++    if (!interpolator && palette === undefined && range === undefined && (sequential === null || sequential === void 0 ? void 0 : sequential.length) >= 2) {
++        const scale = new Linear({
++            domain: sequential.map((_, index) => index / (sequential.length - 1)),
++            range: sequential,
++            clamp: true,
++        });
++        interpolator = (value) => scale.map(value);
++    }
++    if (!interpolator) {
++        const name = upperFirst(palette === undefined ? 'ylGnBu' : palette);
++        interpolator = d3ScaleChromatic[`interpolate${name}`];
++        if (!interpolator)
++            throw new Error(`Unknown palette: ${name}`);
++    }
+     return {
+         interpolator: offset ? (x) => interpolator(offset(x)) : interpolator,
+     };
+diff --git a/esm/runtime/types/theme.d.ts b/esm/runtime/types/theme.d.ts
+index 11a64e92f359644274d6266b0b0a74b1ef49950e..dd7b3d9fbbc86ecc9707bf8587d965f485ada471 100644
+--- a/esm/runtime/types/theme.d.ts
++++ b/esm/runtime/types/theme.d.ts
+@@ -85,6 +85,8 @@ export type G2Theme = {
+     color?: string;
+     category10?: string | string[];
+     category20?: string | string[];
++    /** Default numeric color stops; explicit scale colors retain precedence. */
++    sequential?: string[];
+     size?: number;
+     view?: WithPrefix<AreaTheme, 'view'> & WithPrefix<AreaTheme, 'plot'> & WithPrefix<AreaTheme, 'main'> & WithPrefix<AreaTheme, 'content'>;
+ } & MarkTheme & ComponentTheme & AnimationTheme & InteractionTheme;
+diff --git a/lib/api/extend.d.ts b/lib/api/extend.d.ts
+index 9dcef26f8d2de8f28d89e90d7a6f41805a2764dc..7a63450b11460bfdacf70997c7fab007c914bee4 100644
+--- a/lib/api/extend.d.ts
++++ b/lib/api/extend.d.ts
+@@ -8,8 +8,8 @@ type BuiltinComposition = {
+     'composition.mark': any;
+     'composition.view': any;
+ };
+-export type CompositionOf<Library> = Of<Library, (composite?: any) => CompositionAPI<Library>>;
+-export type CompositionAPI<Library> = CompositionNode<CompositionOf<Library> & MarkOf<Library, (composite?: any) => MarkNode>> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library>;
+-export type API<Spec, Library> = Runtime<Spec> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library & BuiltinComposition>;
++export type CompositionOf<Library extends G2Library> = Of<Library, (composite?: any) => CompositionAPI<Library>>;
++export type CompositionAPI<Library extends G2Library> = CompositionNode<CompositionOf<Library> & MarkOf<Library, (composite?: any) => MarkNode>> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library>;
++export type API<Spec extends G2Spec, Library extends G2Library> = Runtime<Spec> & MarkOf<Library, (composite?: any) => MarkNode> & CompositionOf<Library & BuiltinComposition>;
+ export declare function extend<Spec extends G2Spec = G2Spec, Library extends G2Library = G2Library>(Runtime: new (options: RuntimeOptions) => Runtime<Spec>, library: Library): new (options?: RuntimeOptions) => API<Spec, Library>;
+ export {};
+diff --git a/lib/interaction/drillDown.d.ts b/lib/interaction/drillDown.d.ts
+index 2e02d7ae963c44ca67e2e21cd181dd6ce6b8096f..4604d3144ea851536390c9eacd0069bc9afa41ba 100644
+--- a/lib/interaction/drillDown.d.ts
++++ b/lib/interaction/drillDown.d.ts
+@@ -1,4 +1,4 @@
+-import { DrillDownInteraction } from 'spec';
++import { DrillDownInteraction } from '../spec';
+ /**
+  * DrillDown interaction for partition visualization.
+  * Based on the proven sunburst drilldown implementation.
+diff --git a/lib/runtime/scale.js b/lib/runtime/scale.js
+index 414f6834ea56d731f286739e17a9287954f98f2c..35881eb166ced0e426d71209ca9b6d7b49db5633 100644
+--- a/lib/runtime/scale.js
++++ b/lib/runtime/scale.js
+@@ -58,7 +58,7 @@ function inferScale(name, values, options, coordinates, theme, library) {
+         return options;
+     const expectedDomain = inferScaleDomain(type, name, values, options);
+     const actualDomain = maybeRatio(type, expectedDomain, options);
+-    return Object.assign(Object.assign(Object.assign({}, options), inferScaleOptions(type, name, values, options, coordinates)), { domain: actualDomain, range: inferScaleRange(type, name, values, options, actualDomain, theme, library), expectedDomain,
++    return Object.assign(Object.assign(Object.assign({}, options), inferScaleOptions(type, name, values, options, coordinates, theme)), { domain: actualDomain, range: inferScaleRange(type, name, values, options, actualDomain, theme, library), expectedDomain,
+         guide,
+         name,
+         type });
+@@ -355,7 +355,7 @@ function inferScaleRange(type, name, values, options, domain, theme, library) {
+             return [];
+     }
+ }
+-function inferScaleOptions(type, name, values, options, coordinates) {
++function inferScaleOptions(type, name, values, options, coordinates, theme) {
+     switch (type) {
+         case 'linear':
+         case 'time':
+@@ -367,7 +367,7 @@ function inferScaleOptions(type, name, values, options, coordinates) {
+         case 'point':
+             return inferOptionsC(type, name, coordinates, options);
+         case 'sequential':
+-            return inferOptionsS(options);
++            return inferOptionsS(options, name === 'color' ? theme.sequential : undefined);
+         default:
+             return options;
+     }
+@@ -413,12 +413,23 @@ function interpolatedColors(palette, domain, offset = (d) => d) {
+     // Otherwise interpolate to get full colors.
+     return domain.map((_, i) => interpolator(offset(i / domain.length)));
+ }
+-function inferOptionsS(options) {
+-    const { palette = 'ylGnBu', offset } = options;
+-    const name = (0, util_1.upperFirst)(palette);
+-    const interpolator = d3ScaleChromatic[`interpolate${name}`];
+-    if (!interpolator)
+-        throw new Error(`Unknown palette: ${name}`);
++function inferOptionsS(options, sequential) {
++    const { palette, offset, range } = options;
++    let { interpolator } = options;
++    if (!interpolator && palette === undefined && range === undefined && (sequential === null || sequential === void 0 ? void 0 : sequential.length) >= 2) {
++        const scale = new scale_1.Linear({
++            domain: sequential.map((_, index) => index / (sequential.length - 1)),
++            range: sequential,
++            clamp: true,
++        });
++        interpolator = (value) => scale.map(value);
++    }
++    if (!interpolator) {
++        const name = (0, util_1.upperFirst)(palette === undefined ? 'ylGnBu' : palette);
++        interpolator = d3ScaleChromatic[`interpolate${name}`];
++        if (!interpolator)
++            throw new Error(`Unknown palette: ${name}`);
++    }
+     return {
+         interpolator: offset ? (x) => interpolator(offset(x)) : interpolator,
+     };
+diff --git a/lib/runtime/types/theme.d.ts b/lib/runtime/types/theme.d.ts
+index 11a64e92f359644274d6266b0b0a74b1ef49950e..dd7b3d9fbbc86ecc9707bf8587d965f485ada471 100644
+--- a/lib/runtime/types/theme.d.ts
++++ b/lib/runtime/types/theme.d.ts
+@@ -85,6 +85,8 @@ export type G2Theme = {
+     color?: string;
+     category10?: string | string[];
+     category20?: string | string[];
++    /** Default numeric color stops; explicit scale colors retain precedence. */
++    sequential?: string[];
+     size?: number;
+     view?: WithPrefix<AreaTheme, 'view'> & WithPrefix<AreaTheme, 'plot'> & WithPrefix<AreaTheme, 'main'> & WithPrefix<AreaTheme, 'content'>;
+ } & MarkTheme & ComponentTheme & AnimationTheme & InteractionTheme;
+diff --git a/src/runtime/scale.ts b/src/runtime/scale.ts
+index 12d3000046546763180a7203eabc7161394ee982..6b80d69b0d2c1ed2a33716515de8c9084cca7805 100644
+--- a/src/runtime/scale.ts
++++ b/src/runtime/scale.ts
+@@ -38,7 +38,7 @@ export function inferScale(
+   const actualDomain = maybeRatio(type, expectedDomain, options);
+   return {
+     ...options,
+-    ...inferScaleOptions(type, name, values, options, coordinates),
++    ...inferScaleOptions(type, name, values, options, coordinates, theme),
+     domain: actualDomain,
+     range: inferScaleRange(
+       type,
+@@ -412,6 +412,7 @@ function inferScaleOptions(
+   values: Primitive[][],
+   options: G2ScaleOptions,
+   coordinates: G2CoordinateOptions[],
++  theme: G2Theme,
+ ): G2ScaleOptions {
+   switch (type) {
+     case 'linear':
+@@ -424,7 +425,7 @@ function inferScaleOptions(
+     case 'point':
+       return inferOptionsC(type, name, coordinates, options);
+     case 'sequential':
+-      return inferOptionsS(options);
++      return inferOptionsS(options, name === 'color' ? theme.sequential : undefined);
+     default:
+       return options;
+   }
+@@ -483,11 +484,22 @@ function interpolatedColors(
+   return domain.map((_, i) => interpolator(offset(i / domain.length)));
+ }
+ 
+-function inferOptionsS(options) {
+-  const { palette = 'ylGnBu', offset } = options;
+-  const name = upperFirst(palette);
+-  const interpolator = d3ScaleChromatic[`interpolate${name}`];
+-  if (!interpolator) throw new Error(`Unknown palette: ${name}`);
++function inferOptionsS(options, sequential?: string[]) {
++  const { palette, offset, range } = options;
++  let { interpolator } = options;
++  if (!interpolator && palette === undefined && range === undefined && sequential && sequential.length >= 2) {
++    const scale = new Linear({
++      domain: sequential.map((_, index) => index / (sequential.length - 1)),
++      range: sequential,
++      clamp: true,
++    });
++    interpolator = (value) => scale.map(value);
++  }
++  if (!interpolator) {
++    const name = upperFirst(palette === undefined ? 'ylGnBu' : palette);
++    interpolator = d3ScaleChromatic[`interpolate${name}`];
++    if (!interpolator) throw new Error(`Unknown palette: ${name}`);
++  }
+   return {
+     interpolator: offset ? (x) => interpolator(offset(x)) : interpolator,
+   };
+diff --git a/src/runtime/types/theme.ts b/src/runtime/types/theme.ts
+index 28fb989e2371e90b7a868f80bfea8d548b4a4731..12d1acc5dca3df1a723120828bff76dba1e9d555 100644
+--- a/src/runtime/types/theme.ts
++++ b/src/runtime/types/theme.ts
+@@ -121,6 +121,8 @@ export type G2Theme = {
+   color?: string;
+   category10?: string | string[];
+   category20?: string | string[];
++  /** Default numeric color stops; explicit scale colors retain precedence. */
++  sequential?: string[];
+   size?: number;
+   view?: WithPrefix<AreaTheme, 'view'> &
+     WithPrefix<AreaTheme, 'plot'> &

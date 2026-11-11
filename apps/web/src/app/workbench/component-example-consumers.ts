@@ -69,6 +69,15 @@ const allProductRoutes = Object.freeze([
   'component-data',
   'component-feedback',
   'component-layout',
+  'component-charts',
+  'component-chart-trends',
+  'component-chart-comparison',
+  'component-chart-composition',
+  'component-chart-distribution',
+  'component-chart-interaction',
+  'component-chart-live-stream',
+  'component-chart-live-ranking',
+  'component-chart-live-distribution',
 ] as const)
 
 const contentRoutes = Object.freeze([...allProductRoutes, 'control-center'] as const)
@@ -83,6 +92,25 @@ const formExampleRoutes = Object.freeze([
 
 export const componentExampleConsumers: Readonly<Record<string, readonly string[]>> = Object.freeze(
   {
+    UiChartTimeRange: Object.freeze([
+      'component-selection',
+      'component-chart-trends',
+      'component-chart-comparison',
+      'component-chart-composition',
+      'component-chart-distribution',
+      'component-chart-interaction',
+    ]),
+    UiG2Chart: Object.freeze([
+      'component-charts',
+      'component-chart-trends',
+      'component-chart-comparison',
+      'component-chart-composition',
+      'component-chart-distribution',
+      'component-chart-interaction',
+      'component-chart-live-stream',
+      'component-chart-live-ranking',
+      'component-chart-live-distribution',
+    ]),
     UiTable: tableExampleRoutes,
     UiTableEditor: Object.freeze([
       'component-combination-modal',
@@ -108,6 +136,15 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-data',
       'component-feedback',
       'component-layout',
+      'component-charts',
+      'component-chart-trends',
+      'component-chart-comparison',
+      'component-chart-composition',
+      'component-chart-distribution',
+      'component-chart-interaction',
+      'component-chart-live-stream',
+      'component-chart-live-ranking',
+      'component-chart-live-distribution',
     ]),
     UiScrollArea: contentRoutes,
     UiForm: formExampleRoutes,

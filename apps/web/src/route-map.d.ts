@@ -66,6 +66,69 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'component-charts': RouteRecordInfo<
+      'component-charts',
+      '/components/charts',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-comparison': RouteRecordInfo<
+      'component-chart-comparison',
+      '/components/charts/comparison',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-composition': RouteRecordInfo<
+      'component-chart-composition',
+      '/components/charts/composition',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-distribution': RouteRecordInfo<
+      'component-chart-distribution',
+      '/components/charts/distribution',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-interaction': RouteRecordInfo<
+      'component-chart-interaction',
+      '/components/charts/interaction',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-live-distribution': RouteRecordInfo<
+      'component-chart-live-distribution',
+      '/components/charts/live-distribution',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-live-ranking': RouteRecordInfo<
+      'component-chart-live-ranking',
+      '/components/charts/live-ranking',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-live-stream': RouteRecordInfo<
+      'component-chart-live-stream',
+      '/components/charts/live-stream',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-chart-trends': RouteRecordInfo<
+      'component-chart-trends',
+      '/components/charts/trends',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'component-combination-drawer': RouteRecordInfo<
       'component-combination-drawer',
       '/components/combinations/drawer',
@@ -485,6 +548,78 @@ declare module 'vue-router/auto-routes' {
     'src/pages/component-actions.vue': {
       routes:
         | 'component-actions'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-charts.vue': {
+      routes:
+        | 'component-charts'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-comparison.vue': {
+      routes:
+        | 'component-chart-comparison'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-composition.vue': {
+      routes:
+        | 'component-chart-composition'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-distribution.vue': {
+      routes:
+        | 'component-chart-distribution'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-interaction.vue': {
+      routes:
+        | 'component-chart-interaction'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-live-distribution.vue': {
+      routes:
+        | 'component-chart-live-distribution'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-live-ranking.vue': {
+      routes:
+        | 'component-chart-live-ranking'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-live-stream.vue': {
+      routes:
+        | 'component-chart-live-stream'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-chart-trends.vue': {
+      routes:
+        | 'component-chart-trends'
       views:
         | never
       pathParamNames:

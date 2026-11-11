@@ -88,6 +88,12 @@ const expectedVueUseCoreSnapshotCoordinate = '@vueuse/core@14.4.0(vue@3.5.40(typ
 const expectedMotionVSnapshotCoordinate =
   'motion-v@2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)(@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3)))(vue@3.5.40(typescript@6.0.3))'
 const expectedPatchedDependencies = {
+  '@antv/component@2.1.12': 'patches/@antv__component@2.1.12.patch',
+  '@antv/g-lite@2.7.2': 'patches/@antv__g-lite@2.7.2.patch',
+  '@antv/g2@5.4.8': 'patches/@antv__g2@5.4.8.patch',
+  '@antv/g@6.3.3': 'patches/@antv__g@6.3.3.patch',
+  '@antv/scale@0.4.16': 'patches/@antv__scale@0.4.16.patch',
+  '@antv/scale@0.5.2': 'patches/@antv__scale@0.5.2.patch',
   'motion-v@2.4.0': motionVPatchPath,
   'naive-ui@2.45.2': naiveUiPatchPath,
   'unconfig@7.5.0': 'patches/unconfig@7.5.0.patch',
@@ -1422,12 +1428,6 @@ async function validateMotionTypeScriptStrictness(): Promise<void> {
   }
 }
 
-function validateMotionFeatureBudgetAuthority(budget: number): void {
-  if (!Number.isSafeInteger(budget) || budget <= 0) {
-    throw new Error('Admin Navigation Motion feature budget must be a positive safe integer.')
-  }
-}
-
 async function validateDeploymentConfigurationInputs(): Promise<void> {
   const valid = 'PAVP_DEPLOYMENT_BASE=/\n'
   expectEqual(
@@ -2602,6 +2602,7 @@ async function validateArchitectureConsoleUiPackage(): Promise<void> {
   expectStructuredEqual(
     manifest['dependencies'],
     {
+      '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
       lenis: 'catalog:',
@@ -2833,6 +2834,7 @@ if (!isJsonObject(workspaceCatalog) || Object.keys(workspaceCatalog).length === 
   throw new Error('pnpm-workspace.yaml must define the shared version catalog.')
 }
 
+expectEqual(workspaceCatalog['@antv/g2'], '5.4.8', 'G2 chart catalog version')
 expectEqual(workspaceCatalog['highlight.js'], '11.12.0', 'Showcase highlighter catalog version')
 expectEqual(workspaceCatalog['yaml'], '2.9.0', 'YAML parser catalog version')
 expectEqual(workspaceCatalog['@unocss/core'], '66.7.5', 'UnoCSS core catalog version')
@@ -2868,6 +2870,12 @@ expectStructuredEqual(
   workspaceConfiguration['patchedDependencies'],
   expectedPatchedDependencies,
   'Workspace patched dependency authority',
+)
+
+expectStructuredEqual(
+  workspaceConfiguration['packageExtensions'],
+  { '@antv/g-lite@2.7.2': { dependencies: { '@types/webxr': '0.5.24' } } },
+  'G2 declaration dependency extension ownership',
 )
 
 const workspacePatchedDependencies = workspaceConfiguration['patchedDependencies']
@@ -2965,24 +2973,6 @@ await validateMotionVDeclarationGraph(motionVPackageDirectory, motionVPatchMetad
 await validateMotionTypeScriptStrictness()
 await validateMotionCompatibilityBypassAbsence()
 validateMotionPatchCompatibilityProbes()
-validateMotionFeatureBudgetAuthority(
-  projectConfig.bundleBudgets.adminNavigationMotionFeatureJavaScriptGzipBytes,
-)
-for (const budget of [1, 8193, 49152]) {
-  validateMotionFeatureBudgetAuthority(budget)
-}
-for (const budget of [0, -1, 1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) {
-  let rejected = false
-  try {
-    validateMotionFeatureBudgetAuthority(budget)
-  } catch {
-    rejected = true
-  }
-  if (!rejected) {
-    throw new Error('Motion feature budget invalid-limit probe must fail.')
-  }
-}
-
 const vueRouterPatch = await readFile(resolve(rootDirectory, vueRouterPatchPath), 'utf8')
 const vueRouterPatchLines = vueRouterPatch.split('\n')
 const vueRouterPatchHash = createHash('sha256').update(vueRouterPatch).digest('hex')

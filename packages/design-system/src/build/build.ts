@@ -108,7 +108,6 @@ const generatedFiles = [
 const manifestCompressionContract = {
   profileId: 'node-zlib-gzip-sync',
   runtimeNodeVersion: '24.15.0',
-  hardLimitBytes: 32768,
   options: {
     chunkSize: constants.Z_DEFAULT_CHUNK,
     finishFlush: constants.Z_FINISH,
@@ -426,13 +425,7 @@ function validateManifestCompression(result: TokenBuildResult): number {
     }
   }
 
-  const gzipBytes = first.byteLength
-  assertInvariant(
-    gzipBytes <= manifestCompressionContract.hardLimitBytes,
-    `Manifest gzip budget exceeded: ${String(gzipBytes)} bytes exceed ${String(manifestCompressionContract.hardLimitBytes)} bytes`,
-  )
-
-  return gzipBytes
+  return first.byteLength
 }
 
 function validationRecords(

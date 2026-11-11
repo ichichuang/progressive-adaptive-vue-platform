@@ -5,6 +5,7 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
+    "@antv/g2": "catalog:",
     "@platform/design-system": "workspace:*",
     "@vueuse/core": "catalog:",
     "lenis": "catalog:",

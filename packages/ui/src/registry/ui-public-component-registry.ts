@@ -37,6 +37,68 @@ export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
   records: Object.freeze([
     Object.freeze({
+      id: 'ui-chart-time-range',
+      exportName: 'UiChartTimeRange',
+      sourcePath: 'packages/ui/src/components/UiChartTimeRange.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'value',
+          type: 'UiChartTimeRangeValue',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'min', type: 'number', required: true, defaultValue: null }),
+        Object.freeze({ name: 'max', type: 'number', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'overview',
+          type: 'readonly number[]',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'formatValue',
+          type: '(value: number) => string',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'startLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'endLabel', type: 'string', required: true, defaultValue: null }),
+        Object.freeze({ name: 'helpText', type: 'string', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'update:value', payloadType: '[value: [number, number]]' }),
+        Object.freeze({ name: 'start', payloadType: '[]' }),
+        Object.freeze({ name: 'end', payloadType: '[]' }),
+      ]),
+      slots: Object.freeze([]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze([]),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-g2-chart',
+      exportName: 'UiG2Chart',
+      sourcePath: 'packages/ui/src/components/UiG2Chart.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'options',
+          type: 'UiG2ChartOptions',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'rendered', payloadType: '[]' }),
+        Object.freeze({ name: 'error', payloadType: '[error: Error]' }),
+      ]),
+      slots: Object.freeze([]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze([]),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
       id: 'ui-table',
       exportName: 'UiTable',
       sourcePath: 'packages/ui/src/components/UiTable.vue',

@@ -98,6 +98,17 @@ state. Do not ask the Owner to repeat a decision already resolved in the current
   existing dependencies; evaluate mature libraries before expanding nontrivial generic
   implementations. Research is not installation or implementation admission.
 
+## Pointer Interaction Standard
+
+- Mouse-driven spatial interactions use the current pointer position as their origin, never a
+  hardcoded container center. Zooming must keep the data point under the pointer anchored, including
+  after the pointer moves during a wheel gesture. Use actual plot/content bounds, excluding axes,
+  padding and surrounding controls.
+- Apply range limits and discrete-sample rounding explicitly; verify left, center, right and boundary
+  cases. Keep ordinary page scrolling and browser zoom available outside an intentional interaction.
+- Non-spatial clicks retain their normal target semantics; this rule does not introduce artificial
+  zooming or coordinate transforms into buttons and other ordinary actions.
+
 ## Workspace UI Layout Standard
 
 - Editing, JSON configuration, preview, and interactive data workspaces fill the available shell
