@@ -15,7 +15,7 @@ const inputProps = computed(() => ({
 </script>
 <template>
   <div
-    class="wb-settings-field rounded-control grid min-w-0 items-center bg-surface-page p-page-inline"
+    class="wb-settings-field rounded-control grid min-w-0 items-center bg-surface-page p-panel layout-narrow:p-panel-narrow"
     role="group"
     :aria-labelledby="labelledBy"
   >

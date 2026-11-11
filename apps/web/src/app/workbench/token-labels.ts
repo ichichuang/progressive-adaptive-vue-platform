@@ -33,6 +33,11 @@ export const tokenLabelKeys = {
   'color.text.primary': 'workbench.token.color.text.primary.label',
   'color.text.secondary': 'workbench.token.color.text.secondary.label',
   'interaction.border.width': 'workbench.token.interaction.border.width.label',
+  'interaction.control.height-small': 'workbench.token.interaction.control.height-small.label',
+  'interaction.control.height-large': 'workbench.token.interaction.control.height-large.label',
+  'spacing.field.gap': 'workbench.token.spacing.field.gap.label',
+  'spacing.panel.padding': 'workbench.token.spacing.panel.padding.label',
+  'spacing.panel.padding-narrow': 'workbench.token.spacing.panel.padding-narrow.label',
   'interaction.control.height': 'workbench.token.interaction.control.height.label',
   'interaction.control.segment.width.large':
     'workbench.token.interaction.control.segment.width.large.label',

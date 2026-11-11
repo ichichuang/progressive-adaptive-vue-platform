@@ -36,7 +36,8 @@ const borderAction = 'var(--ui-admin-border-action)'
 const borderControl = 'var(--ui-admin-border-control)'
 const borderFocus = 'var(--ui-admin-border-focus)'
 const controlHeight = tokens['interaction.control.height']
-const controlHeightBaseline = 'var(--ui-control-height-baseline)'
+const controlHeightSmall = tokens['interaction.control.height-small']
+const controlHeightLarge = tokens['interaction.control.height-large']
 const disabledOpacity = 'var(--ui-admin-state-disabled-opacity)'
 const enhancedTargetHeight = tokens['layout.target.enhanced.minimum-block-size']
 const headerActionIconSize = `calc(${enhancedTargetHeight} / 2)`
@@ -66,7 +67,7 @@ const shadowFocusRing = 'var(--ui-admin-shadow-focus-ring)'
 const shadowOverlay = 'var(--ui-admin-shadow-overlay)'
 const spacingContentGap = tokens['spacing.content.gap']
 const compactOverlaySpacing = `calc(${spacingContentGap} / 2)`
-const cardPadding = tokens['spacing.page.inline']
+const cardPadding = tokens['spacing.panel.padding']
 const darkTheme = {
   name: 'dark',
   common: commonDark,
@@ -150,6 +151,9 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       borderRadius: smallRadius,
     },
     Form: {
+      blankHeightSmall: controlHeightSmall,
+      blankHeightMedium: controlHeight,
+      blankHeightLarge: controlHeightLarge,
       // Role-only Custom themes guarantee body text on surfaces, not status fills as text.
       feedbackTextColorError: colorText,
       feedbackTextColorWarning: colorText,
@@ -229,9 +233,9 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       fontSizeLarge: tokens['typography.size.title'],
       lineHeight,
       opacityDisabled: disabledOpacity,
-      heightSmall: controlHeightBaseline,
-      heightMedium: controlHeightBaseline,
-      heightLarge: enhancedTargetHeight,
+      heightSmall: controlHeightSmall,
+      heightMedium: controlHeight,
+      heightLarge: controlHeightLarge,
     },
     Breadcrumb: {
       fontSize,
@@ -291,11 +295,13 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       borderHoverError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       borderPressedError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
       borderFocusError: `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`,
-      heightMedium: enhancedTargetHeight,
+      heightMedium: controlHeight,
+      paddingSmall: `0 ${tokens['spacing.button.inline']}`,
+      paddingLarge: `0 ${tokens['spacing.button.inline']}`,
       paddingMedium: `0 ${tokens['spacing.button.inline']}`,
       borderRadiusMedium: controlRadius,
       fontSizeMedium: fontSize,
-      fontSizeLarge: tokens['typography.size.control.large'],
+      fontSizeLarge: fontSize,
       iconSizeMedium: headerActionIconSize,
       border: borderControl,
       borderHover: borderAction,
@@ -396,7 +402,9 @@ export function createPavpNaiveThemeProjection(appearance: Readonly<UiAppearance
       },
     },
     Radio: {
-      buttonHeightMedium: enhancedTargetHeight,
+      buttonHeightSmall: controlHeightSmall,
+      buttonHeightMedium: controlHeight,
+      buttonHeightLarge: controlHeightLarge,
       fontSizeMedium: fontSize,
       buttonBorderColor: colorBorder,
       buttonBorderColorActive: colorControl,

@@ -9,9 +9,18 @@
     "control": {
       "segment": {
         "width": {
-          "small": { "$type": "dimension", "$value": "{dimension.control.segment-width-small}" },
-          "medium": { "$type": "dimension", "$value": "{dimension.control.segment-width-medium}" },
-          "large": { "$type": "dimension", "$value": "{dimension.control.segment-width-large}" }
+          "small": {
+            "$type": "dimension",
+            "$value": "{dimension.control.segment-width-small}"
+          },
+          "medium": {
+            "$type": "dimension",
+            "$value": "{dimension.control.segment-width-medium}"
+          },
+          "large": {
+            "$type": "dimension",
+            "$value": "{dimension.control.segment-width-large}"
+          }
         }
       },
       "height": {
@@ -56,10 +65,90 @@
       },
       "height-baseline": {
         "$type": "dimension",
-        "$value": "{density.comfortable.control.height}",
+        "$value": "{dimension.control.md}",
         "$extensions": {
           "org.pavp": {
             "visibility": "ui-internal"
+          }
+        }
+      },
+      "height-small": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.control.height-small}"
+      },
+      "height-small-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.control.height-small}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height-small",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "height-small-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.control.height-small}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height-small",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "height-small-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.control.height-small}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height-small",
+            "conditions": {
+              "density": "spacious"
+            }
+          }
+        }
+      },
+      "height-large": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.control.height-large}"
+      },
+      "height-large-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.control.height-large}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height-large",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "height-large-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.control.height-large}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height-large",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "height-large-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.control.height-large}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "interaction.control.height-large",
+            "conditions": {
+              "density": "spacious"
+            }
           }
         }
       }
@@ -90,9 +179,18 @@
     },
     "indicator": {
       "cell": {
-        "small": { "$type": "dimension", "$value": "{dimension.indicator.cell-small}" },
-        "medium": { "$type": "dimension", "$value": "{dimension.indicator.cell-medium}" },
-        "large": { "$type": "dimension", "$value": "{dimension.indicator.cell-large}" }
+        "small": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.cell-small}"
+        },
+        "medium": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.cell-medium}"
+        },
+        "large": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.cell-large}"
+        }
       },
       "slot": {
         "icon-inline-size": {

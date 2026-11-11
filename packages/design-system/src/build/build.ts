@@ -2869,14 +2869,14 @@ function validateDensityCss(css: string): void {
     const selector = rule[1]?.trim() ?? ''
     const body = rule[2] ?? ''
     const expression =
-      /(--ui-(?:control-height(?:-baseline)?|space-button-inline))\s*:\s*([^;]+);/gu
+      /(--ui-(?:control-height(?:-baseline|-small|-large)?|space-(?:button-inline|content-gap|field-gap|panel-padding(?:-narrow)?)))\s*:\s*([^;]+);/gu
     const declarations = [...body.matchAll(expression)]
     if (selector.includes('data-density')) {
       assertInvariant(
         declarations.length > 0 &&
           declarations.every((declaration) => declaration[1] !== '--ui-control-height-baseline') &&
           body.replaceAll(expression, '').trim() === '',
-        'Density CSS selectors may write only the admitted public height and button-inline variables',
+        'Density CSS selectors may write only the admitted public height and spacing variables',
       )
     }
     for (const declaration of declarations)
@@ -2885,17 +2885,41 @@ function validateDensityCss(css: string): void {
   assertInvariantEqual(
     projections.sort((a, b) => compareCodePoints(a.join('/'), b.join('/'))),
     [
-      [':root', '--ui-control-height', '2.25rem'],
       [':root', '--ui-control-height-baseline', '2.25rem'],
+      [':root', '--ui-control-height', '2.75rem'],
+      [':root', '--ui-control-height-small', '2.25rem'],
+      [':root', '--ui-control-height-large', '3rem'],
       [':root', '--ui-space-button-inline', '14px'],
-      ["html[data-density='compact']", '--ui-control-height', '2rem'],
-      ["html[data-density='comfortable']", '--ui-control-height', '2.25rem'],
-      ["html[data-density='spacious']", '--ui-control-height', '2.75rem'],
+      [':root', '--ui-space-content-gap', '0.75rem'],
+      [':root', '--ui-space-field-gap', '1.25rem'],
+      [':root', '--ui-space-panel-padding', '1.5rem'],
+      [':root', '--ui-space-panel-padding-narrow', '1.25rem'],
+      ["html[data-density='compact']", '--ui-control-height', '2.25rem'],
+      ["html[data-density='compact']", '--ui-control-height-small', '2rem'],
+      ["html[data-density='compact']", '--ui-control-height-large', '2.75rem'],
       ["html[data-density='compact']", '--ui-space-button-inline', '12px'],
+      ["html[data-density='compact']", '--ui-space-content-gap', '0.5rem'],
+      ["html[data-density='compact']", '--ui-space-field-gap', '1rem'],
+      ["html[data-density='compact']", '--ui-space-panel-padding', '1rem'],
+      ["html[data-density='compact']", '--ui-space-panel-padding-narrow', '1rem'],
+      ["html[data-density='comfortable']", '--ui-control-height', '2.75rem'],
+      ["html[data-density='comfortable']", '--ui-control-height-small', '2.25rem'],
+      ["html[data-density='comfortable']", '--ui-control-height-large', '3rem'],
       ["html[data-density='comfortable']", '--ui-space-button-inline', '14px'],
+      ["html[data-density='comfortable']", '--ui-space-content-gap', '0.75rem'],
+      ["html[data-density='comfortable']", '--ui-space-field-gap', '1.25rem'],
+      ["html[data-density='comfortable']", '--ui-space-panel-padding', '1.5rem'],
+      ["html[data-density='comfortable']", '--ui-space-panel-padding-narrow', '1.25rem'],
+      ["html[data-density='spacious']", '--ui-control-height', '3rem'],
+      ["html[data-density='spacious']", '--ui-control-height-small', '2.5rem'],
+      ["html[data-density='spacious']", '--ui-control-height-large', '3.25rem'],
       ["html[data-density='spacious']", '--ui-space-button-inline', '16px'],
+      ["html[data-density='spacious']", '--ui-space-content-gap', '1rem'],
+      ["html[data-density='spacious']", '--ui-space-field-gap', '1.5rem'],
+      ["html[data-density='spacious']", '--ui-space-panel-padding', '2rem'],
+      ["html[data-density='spacious']", '--ui-space-panel-padding-narrow', '1.5rem'],
     ].sort((a, b) => compareCodePoints(a.join('/'), b.join('/'))),
-    'Density CSS must contain exactly the admitted height and button-inline projections',
+    'Density CSS must contain exactly the admitted height and spacing projections',
   )
 }
 
@@ -2905,20 +2929,20 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
   for (const css of [formatRuntimeCss(result), formatCriticalThemeCss(result)]) {
     validateDensityCss(css)
     for (const invalid of [
-      css.replace('--ui-control-height: 2rem;', '--ui-control-height: 2.25rem;'),
+      css.replace('--ui-control-height: 2.25rem;', '--ui-control-height: 2rem;'),
       css.replace(
         "html[data-density='compact']",
         "html[data-density='compact'][data-color-mode='dark']",
       ),
-      css.replace('--ui-control-height: 2rem;', '--ui-control-height-baseline: 2rem;'),
+      css.replace('--ui-control-height: 2.25rem;', '--ui-control-height-baseline: 2.25rem;'),
       css.replace('--ui-control-height-baseline: 2.25rem;', '--ui-control-height-baseline: 36px;'),
       css.replace('--ui-space-button-inline: 12px;', '--ui-space-button-inline: 14px;'),
       css.replace('--ui-space-button-inline: 12px;', ''),
       css.replace('--ui-space-button-inline: 16px;', '--ui-space-button-inline: 1rem;'),
       css.replace('--ui-space-button-inline: 12px;', '--ui-control-height-baseline: 12px;'),
       css.replace(
-        '--ui-control-height: 2rem;',
-        '--ui-control-height: 2rem; --ui-unapproved: 1rem;',
+        '--ui-control-height: 2.25rem;',
+        '--ui-control-height: 2.25rem; --ui-unapproved: 1rem;',
       ),
     ])
       assertContractFailure(
@@ -3041,7 +3065,7 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
       authoredValue: '{density.comfortable.control.height}',
       reference: 'density.comfortable.control.height',
     }),
-    replace(compact, { resolvedValue: { value: 2.25, unit: 'rem' } }),
+    replace(compact, { resolvedValue: { value: 2, unit: 'rem' } }),
     replace(compact, { type: 'number' }),
     replace(compact, { visibility: 'ui-internal' }),
     replace(compact, { source: 'semantic/other.tokens.json' }),
@@ -3087,10 +3111,38 @@ function validateDensityProjectionContracts(result: TokenBuildResult): void {
       {
         ...baseline,
         path: 'interaction.extra',
+        authoredValue: '{interaction.control.height-baseline}',
+        reference: 'interaction.control.height-baseline',
         role: { ...baseline.role, name: 'interaction.extra' },
       },
     ],
   ]
+  for (const role of [
+    'interaction.control.height-small',
+    'interaction.control.height-large',
+    'spacing.content.gap',
+    'spacing.field.gap',
+    'spacing.panel.padding',
+    'spacing.panel.padding-narrow',
+  ]) {
+    const alias = result.tokens.find(
+      (token) => token.role.name === role && token.conditions.density === 'compact',
+    )
+    assertInvariant(alias !== undefined, `${role}: density probe must exist`)
+    for (const records of [
+      result.tokens.filter((token) => token !== alias),
+      replace(alias, { resolvedValue: { value: 99, unit: 'rem' } }),
+      replace(alias, { conditions: { density: 'compact', colorMode: 'dark' } }),
+      replace(alias, { reference: 'density.comfortable.control.height' }),
+    ])
+      assertContractFailure(
+        () => {
+          validateDensitySources(records)
+        },
+        /Density source contract/u,
+        `${role}: invalid density projection must fail`,
+      )
+  }
   for (const records of invalidRecords)
     assertContractFailure(
       () => {

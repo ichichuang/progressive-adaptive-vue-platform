@@ -1332,6 +1332,28 @@ const noUnapprovedVisualLiterals = {
     function admittedTemplateStyle(node, attribute) {
       const expression = resolveLocalExpression(node.value?.expression)
       const element = node.parent?.parent
+      if (attribute === 'style' && filename === 'packages/ui/src/providers/UiProvider.vue') {
+        const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
+        const geometry = new Set(['width', 'height', 'left', 'top'])
+        return (
+          element?.rawName === 'span' &&
+          staticTemplateClass(element) === 'block invisible pointer-events-none fixed' &&
+          fields.length === geometry.size &&
+          fields.every((field) => {
+            if (field.type !== 'Property') return false
+            const key = getStaticPropertyName(field.key, field.computed)
+            if (!geometry.delete(key)) return false
+            const fieldValue = resolveLocalExpression(field.value)
+            return key === 'width'
+              ? fieldValue?.type === 'MemberExpression' &&
+                  sinks.imported(fieldValue.object, '@platform/design-system', ['tokens']) &&
+                  getStaticPropertyName(fieldValue.property, fieldValue.computed) ===
+                    'layout.profile.regular.min-inline-size'
+              : staticNodeValue(fieldValue) === '0'
+          }) &&
+          claimStyleSink('density-breakpoint-measurement')
+        )
+      }
       if (attribute === 'style' && filename === 'packages/ui/src/components/UiAdminShell.vue') {
         const callback =
           expression?.type === 'CallExpression' &&

@@ -4,11 +4,19 @@
       "control": {
         "height": {
           "$type": "dimension",
-          "$value": "{dimension.control.sm}"
+          "$value": "{dimension.control.md}"
         },
         "padding-inline": {
           "$type": "dimension",
           "$value": "{dimension.space.2}"
+        },
+        "height-small": {
+          "$type": "dimension",
+          "$value": "{dimension.control.sm}"
+        },
+        "height-large": {
+          "$type": "dimension",
+          "$value": "{dimension.control.lg}"
         }
       },
       "button": {
@@ -19,6 +27,28 @@
       },
       "section": {
         "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.space.4}"
+        }
+      },
+      "content": {
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.space.2}"
+        }
+      },
+      "field": {
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.space.4}"
+        }
+      },
+      "panel": {
+        "padding": {
+          "$type": "dimension",
+          "$value": "{dimension.space.4}"
+        },
+        "padding-narrow": {
           "$type": "dimension",
           "$value": "{dimension.space.4}"
         }

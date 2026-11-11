@@ -321,6 +321,24 @@ export const platformUnoMappings = [
     allowedCssProperties: ['height'],
   },
   {
+    roleId: 'interaction.control.height-large',
+    cssVariable: '--ui-control-height-large',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'control-large',
+    classes: ['h-control-large'],
+    allowedCssProperties: ['height'],
+  },
+  {
+    roleId: 'interaction.control.height-small',
+    cssVariable: '--ui-control-height-small',
+    generatorKind: 'exact-rule',
+    family: 'dimension',
+    key: 'control-small',
+    classes: ['h-control-small'],
+    allowedCssProperties: ['height'],
+  },
+  {
     roleId: 'interaction.control.segment.width.large',
     cssVariable: '--ui-control-segment-width-large',
     generatorKind: 'exact-rule',
@@ -774,6 +792,15 @@ export const platformUnoMappings = [
     allowedCssProperties: ['gap'],
   },
   {
+    roleId: 'spacing.field.gap',
+    cssVariable: '--ui-space-field-gap',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'field-gap',
+    classes: ['gap-field-gap'],
+    allowedCssProperties: ['gap'],
+  },
+  {
     roleId: 'spacing.indicator.cell-gap.compact',
     cssVariable: '--ui-space-indicator-cell-gap-compact',
     generatorKind: 'exact-rule',
@@ -834,6 +861,24 @@ export const platformUnoMappings = [
         cssProperty: 'padding',
       },
     ],
+  },
+  {
+    roleId: 'spacing.panel.padding',
+    cssVariable: '--ui-space-panel-padding',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'panel',
+    classes: ['p-panel'],
+    allowedCssProperties: ['padding'],
+  },
+  {
+    roleId: 'spacing.panel.padding-narrow',
+    cssVariable: '--ui-space-panel-padding-narrow',
+    generatorKind: 'exact-rule',
+    family: 'spacing',
+    key: 'panel-narrow',
+    classes: ['p-panel-narrow'],
+    allowedCssProperties: ['padding'],
   },
   {
     roleId: 'spacing.section.block',
@@ -1171,6 +1216,12 @@ export const platformRules = [
     },
   ],
   [
+    'gap-field-gap',
+    {
+      gap: 'var(--ui-space-field-gap)',
+    },
+  ],
+  [
     'gap-indicator-cell-gap-compact',
     {
       gap: 'var(--ui-space-indicator-cell-gap-compact)',
@@ -1205,6 +1256,18 @@ export const platformRules = [
     'h-control',
     {
       height: 'var(--ui-control-height)',
+    },
+  ],
+  [
+    'h-control-large',
+    {
+      height: 'var(--ui-control-height-large)',
+    },
+  ],
+  [
+    'h-control-small',
+    {
+      height: 'var(--ui-control-height-small)',
     },
   ],
   [
@@ -1271,6 +1334,18 @@ export const platformRules = [
     'p-page-inline',
     {
       padding: 'var(--ui-space-page-inline)',
+    },
+  ],
+  [
+    'p-panel',
+    {
+      padding: 'var(--ui-space-panel-padding)',
+    },
+  ],
+  [
+    'p-panel-narrow',
+    {
+      padding: 'var(--ui-space-panel-padding-narrow)',
     },
   ],
   [

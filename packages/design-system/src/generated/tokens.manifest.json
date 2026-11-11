@@ -1,6 +1,6 @@
 {
   "generatedNotice": "Generated file. Do not edit directly.",
-  "schemaVersion": 12,
+  "schemaVersion": 13,
   "sourceFiles": [
     "density/comfortable.tokens.json",
     "density/compact.tokens.json",
@@ -42,18 +42,18 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 356,
-      "activePublicRoles": 101,
-      "unoCssMappings": 101,
+      "tokens": 401,
+      "activePublicRoles": 106,
+      "unoCssMappings": 106,
       "namedContrasts": 34,
       "alphaContracts": 1,
       "densities": 3,
       "themes": 5,
       "firstPaint": 1
     },
-    "recordCount": 602,
+    "recordCount": 657,
     "baselineRecordCount": 181,
-    "expectedRecordCountDelta": 421,
+    "expectedRecordCountDelta": 476,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
@@ -2288,6 +2288,19 @@
       "resolvedValue": "14px"
     },
     {
+      "name": "density.comfortable.content.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.content.gap"
+      },
+      "resolvedValue": "0.75rem"
+    },
+    {
       "name": "density.comfortable.control.height",
       "type": "dimension",
       "tier": "density",
@@ -2297,6 +2310,32 @@
       "role": {
         "category": "density",
         "name": "density.comfortable.control.height"
+      },
+      "resolvedValue": "2.75rem"
+    },
+    {
+      "name": "density.comfortable.control.height-large",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.control.height-large"
+      },
+      "resolvedValue": "3rem"
+    },
+    {
+      "name": "density.comfortable.control.height-small",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.control.height-small"
       },
       "resolvedValue": "2.25rem"
     },
@@ -2312,6 +2351,45 @@
         "name": "density.comfortable.control.padding-inline"
       },
       "resolvedValue": "0.75rem"
+    },
+    {
+      "name": "density.comfortable.field.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.field.gap"
+      },
+      "resolvedValue": "1.25rem"
+    },
+    {
+      "name": "density.comfortable.panel.padding",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.panel.padding"
+      },
+      "resolvedValue": "1.5rem"
+    },
+    {
+      "name": "density.comfortable.panel.padding-narrow",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/comfortable.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.comfortable.panel.padding-narrow"
+      },
+      "resolvedValue": "1.25rem"
     },
     {
       "name": "density.comfortable.section.gap",
@@ -2340,6 +2418,19 @@
       "resolvedValue": "12px"
     },
     {
+      "name": "density.compact.content.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.content.gap"
+      },
+      "resolvedValue": "0.5rem"
+    },
+    {
       "name": "density.compact.control.height",
       "type": "dimension",
       "tier": "density",
@@ -2349,6 +2440,32 @@
       "role": {
         "category": "density",
         "name": "density.compact.control.height"
+      },
+      "resolvedValue": "2.25rem"
+    },
+    {
+      "name": "density.compact.control.height-large",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.control.height-large"
+      },
+      "resolvedValue": "2.75rem"
+    },
+    {
+      "name": "density.compact.control.height-small",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.control.height-small"
       },
       "resolvedValue": "2rem"
     },
@@ -2364,6 +2481,45 @@
         "name": "density.compact.control.padding-inline"
       },
       "resolvedValue": "0.5rem"
+    },
+    {
+      "name": "density.compact.field.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.field.gap"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "density.compact.panel.padding",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.panel.padding"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
+      "name": "density.compact.panel.padding-narrow",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/compact.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.compact.panel.padding-narrow"
+      },
+      "resolvedValue": "1rem"
     },
     {
       "name": "density.compact.section.gap",
@@ -2392,6 +2548,19 @@
       "resolvedValue": "16px"
     },
     {
+      "name": "density.spacious.content.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.content.gap"
+      },
+      "resolvedValue": "1rem"
+    },
+    {
       "name": "density.spacious.control.height",
       "type": "dimension",
       "tier": "density",
@@ -2402,7 +2571,33 @@
         "category": "density",
         "name": "density.spacious.control.height"
       },
-      "resolvedValue": "2.75rem"
+      "resolvedValue": "3rem"
+    },
+    {
+      "name": "density.spacious.control.height-large",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.control.height-large"
+      },
+      "resolvedValue": "3.25rem"
+    },
+    {
+      "name": "density.spacious.control.height-small",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.control.height-small"
+      },
+      "resolvedValue": "2.5rem"
     },
     {
       "name": "density.spacious.control.padding-inline",
@@ -2416,6 +2611,45 @@
         "name": "density.spacious.control.padding-inline"
       },
       "resolvedValue": "1rem"
+    },
+    {
+      "name": "density.spacious.field.gap",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.field.gap"
+      },
+      "resolvedValue": "1.5rem"
+    },
+    {
+      "name": "density.spacious.panel.padding",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.panel.padding"
+      },
+      "resolvedValue": "2rem"
+    },
+    {
+      "name": "density.spacious.panel.padding-narrow",
+      "type": "dimension",
+      "tier": "density",
+      "visibility": "build-only",
+      "source": "density/spacious.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "density",
+        "name": "density.spacious.panel.padding-narrow"
+      },
+      "resolvedValue": "1.5rem"
     },
     {
       "name": "density.spacious.section.gap",
@@ -2509,6 +2743,19 @@
       "resolvedValue": "1.6875rem"
     },
     {
+      "name": "dimension.control.intermediate",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.intermediate"
+      },
+      "resolvedValue": "2.5rem"
+    },
+    {
       "name": "dimension.control.lg",
       "type": "dimension",
       "tier": "primitive",
@@ -2598,6 +2845,32 @@
         "name": "dimension.control.sm"
       },
       "resolvedValue": "2rem"
+    },
+    {
+      "name": "dimension.control.xl",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.xl"
+      },
+      "resolvedValue": "3rem"
+    },
+    {
+      "name": "dimension.control.xxl",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.control.xxl"
+      },
+      "resolvedValue": "3.25rem"
     },
     {
       "name": "dimension.icon.extra-large",
@@ -3055,6 +3328,19 @@
       "resolvedValue": "1rem"
     },
     {
+      "name": "dimension.space.5",
+      "type": "dimension",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/dimension.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "dimension",
+        "name": "dimension.space.5"
+      },
+      "resolvedValue": "1.25rem"
+    },
+    {
       "name": "dimension.space.6",
       "type": "dimension",
       "tier": "primitive",
@@ -3378,7 +3664,7 @@
         "category": "interaction",
         "name": "interaction.control.height"
       },
-      "resolvedValue": "2.25rem",
+      "resolvedValue": "2.75rem",
       "cssVariable": "--ui-control-height"
     },
     {
@@ -3394,7 +3680,7 @@
         "category": "interaction",
         "name": "interaction.control.height"
       },
-      "resolvedValue": "2.25rem",
+      "resolvedValue": "2.75rem",
       "cssVariable": "--ui-control-height"
     },
     {
@@ -3410,7 +3696,7 @@
         "category": "interaction",
         "name": "interaction.control.height"
       },
-      "resolvedValue": "2rem",
+      "resolvedValue": "2.25rem",
       "cssVariable": "--ui-control-height"
     },
     {
@@ -3426,7 +3712,7 @@
         "category": "interaction",
         "name": "interaction.control.height"
       },
-      "resolvedValue": "2.75rem",
+      "resolvedValue": "3rem",
       "cssVariable": "--ui-control-height"
     },
     {
@@ -3442,6 +3728,130 @@
       },
       "resolvedValue": "2.25rem",
       "cssVariable": "--ui-control-height-baseline"
+    },
+    {
+      "name": "interaction.control.height-large",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-large"
+      },
+      "resolvedValue": "3rem",
+      "cssVariable": "--ui-control-height-large"
+    },
+    {
+      "name": "interaction.control.height-large-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-large"
+      },
+      "resolvedValue": "3rem",
+      "cssVariable": "--ui-control-height-large"
+    },
+    {
+      "name": "interaction.control.height-large-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-large"
+      },
+      "resolvedValue": "2.75rem",
+      "cssVariable": "--ui-control-height-large"
+    },
+    {
+      "name": "interaction.control.height-large-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-large"
+      },
+      "resolvedValue": "3.25rem",
+      "cssVariable": "--ui-control-height-large"
+    },
+    {
+      "name": "interaction.control.height-small",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-small"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-control-height-small"
+    },
+    {
+      "name": "interaction.control.height-small-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-small"
+      },
+      "resolvedValue": "2.25rem",
+      "cssVariable": "--ui-control-height-small"
+    },
+    {
+      "name": "interaction.control.height-small-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-small"
+      },
+      "resolvedValue": "2rem",
+      "cssVariable": "--ui-control-height-small"
+    },
+    {
+      "name": "interaction.control.height-small-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/interaction.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "interaction",
+        "name": "interaction.control.height-small"
+      },
+      "resolvedValue": "2.5rem",
+      "cssVariable": "--ui-control-height-small"
     },
     {
       "name": "interaction.control.segment.width.large",
@@ -4471,6 +4881,54 @@
       "cssVariable": "--ui-space-content-gap"
     },
     {
+      "name": "spacing.content.gap-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.content.gap"
+      },
+      "resolvedValue": "0.75rem",
+      "cssVariable": "--ui-space-content-gap"
+    },
+    {
+      "name": "spacing.content.gap-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.content.gap"
+      },
+      "resolvedValue": "0.5rem",
+      "cssVariable": "--ui-space-content-gap"
+    },
+    {
+      "name": "spacing.content.gap-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.content.gap"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-space-content-gap"
+    },
+    {
       "name": "spacing.control.segment.gap",
       "type": "dimension",
       "tier": "semantic",
@@ -4483,6 +4941,68 @@
       },
       "resolvedValue": "0.5rem",
       "cssVariable": "--ui-space-control-segment-gap"
+    },
+    {
+      "name": "spacing.field.gap",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.field.gap"
+      },
+      "resolvedValue": "1.25rem",
+      "cssVariable": "--ui-space-field-gap"
+    },
+    {
+      "name": "spacing.field.gap-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.field.gap"
+      },
+      "resolvedValue": "1.25rem",
+      "cssVariable": "--ui-space-field-gap"
+    },
+    {
+      "name": "spacing.field.gap-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.field.gap"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-space-field-gap"
+    },
+    {
+      "name": "spacing.field.gap-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.field.gap"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-space-field-gap"
     },
     {
       "name": "spacing.indicator.cell-gap.compact",
@@ -4567,6 +5087,130 @@
       },
       "resolvedValue": "1.5rem",
       "cssVariable": "--ui-space-page-inline"
+    },
+    {
+      "name": "spacing.panel.padding",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-space-panel-padding"
+    },
+    {
+      "name": "spacing.panel.padding-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-space-panel-padding"
+    },
+    {
+      "name": "spacing.panel.padding-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-space-panel-padding"
+    },
+    {
+      "name": "spacing.panel.padding-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding"
+      },
+      "resolvedValue": "2rem",
+      "cssVariable": "--ui-space-panel-padding"
+    },
+    {
+      "name": "spacing.panel.padding-narrow",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding-narrow"
+      },
+      "resolvedValue": "1.25rem",
+      "cssVariable": "--ui-space-panel-padding-narrow"
+    },
+    {
+      "name": "spacing.panel.padding-narrow-comfortable",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "comfortable"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding-narrow"
+      },
+      "resolvedValue": "1.25rem",
+      "cssVariable": "--ui-space-panel-padding-narrow"
+    },
+    {
+      "name": "spacing.panel.padding-narrow-compact",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "compact"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding-narrow"
+      },
+      "resolvedValue": "1rem",
+      "cssVariable": "--ui-space-panel-padding-narrow"
+    },
+    {
+      "name": "spacing.panel.padding-narrow-spacious",
+      "type": "dimension",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/spacing.tokens.json",
+      "conditions": {
+        "density": "spacious"
+      },
+      "role": {
+        "category": "spacing",
+        "name": "spacing.panel.padding-narrow"
+      },
+      "resolvedValue": "1.5rem",
+      "cssVariable": "--ui-space-panel-padding-narrow"
     },
     {
       "name": "spacing.section.block",
@@ -5541,6 +6185,42 @@
       }
     },
     {
+      "id": "interaction.control.height-large",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-control-height-large",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "control-large",
+        "classes": ["h-control-large"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
+      "id": "interaction.control.height-small",
+      "tokenType": "dimension",
+      "category": "interaction",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-control-height-small",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "dimension",
+        "key": "control-small",
+        "classes": ["h-control-small"],
+        "allowedCssProperties": ["height"]
+      }
+    },
+    {
       "id": "interaction.control.segment.width.large",
       "tokenType": "dimension",
       "category": "interaction",
@@ -6417,6 +7097,24 @@
       }
     },
     {
+      "id": "spacing.field.gap",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-field-gap",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "field-gap",
+        "classes": ["gap-field-gap"],
+        "allowedCssProperties": ["gap"]
+      }
+    },
+    {
       "id": "spacing.indicator.cell-gap.compact",
       "tokenType": "dimension",
       "category": "spacing",
@@ -6530,6 +7228,42 @@
             "cssProperty": "padding"
           }
         ]
+      }
+    },
+    {
+      "id": "spacing.panel.padding",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-panel-padding",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "panel",
+        "classes": ["p-panel"],
+        "allowedCssProperties": ["padding"]
+      }
+    },
+    {
+      "id": "spacing.panel.padding-narrow",
+      "tokenType": "dimension",
+      "category": "spacing",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-space-panel-padding-narrow",
+      "themePlaneApplicability": "not-applicable",
+      "contrastEndpointId": null,
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "spacing",
+        "key": "panel-narrow",
+        "classes": ["p-panel-narrow"],
+        "allowedCssProperties": ["padding"]
       }
     },
     {
@@ -7143,6 +7877,24 @@
       "allowedCssProperties": ["height"]
     },
     {
+      "roleId": "interaction.control.height-large",
+      "cssVariable": "--ui-control-height-large",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "control-large",
+      "classes": ["h-control-large"],
+      "allowedCssProperties": ["height"]
+    },
+    {
+      "roleId": "interaction.control.height-small",
+      "cssVariable": "--ui-control-height-small",
+      "generatorKind": "exact-rule",
+      "family": "dimension",
+      "key": "control-small",
+      "classes": ["h-control-small"],
+      "allowedCssProperties": ["height"]
+    },
+    {
       "roleId": "interaction.control.segment.width.large",
       "cssVariable": "--ui-control-segment-width-large",
       "generatorKind": "exact-rule",
@@ -7596,6 +8348,15 @@
       "allowedCssProperties": ["gap"]
     },
     {
+      "roleId": "spacing.field.gap",
+      "cssVariable": "--ui-space-field-gap",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "field-gap",
+      "classes": ["gap-field-gap"],
+      "allowedCssProperties": ["gap"]
+    },
+    {
       "roleId": "spacing.indicator.cell-gap.compact",
       "cssVariable": "--ui-space-indicator-cell-gap-compact",
       "generatorKind": "exact-rule",
@@ -7656,6 +8417,24 @@
           "cssProperty": "padding"
         }
       ]
+    },
+    {
+      "roleId": "spacing.panel.padding",
+      "cssVariable": "--ui-space-panel-padding",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "panel",
+      "classes": ["p-panel"],
+      "allowedCssProperties": ["padding"]
+    },
+    {
+      "roleId": "spacing.panel.padding-narrow",
+      "cssVariable": "--ui-space-panel-padding-narrow",
+      "generatorKind": "exact-rule",
+      "family": "spacing",
+      "key": "panel-narrow",
+      "classes": ["p-panel-narrow"],
+      "allowedCssProperties": ["padding"]
     },
     {
       "roleId": "spacing.section.block",

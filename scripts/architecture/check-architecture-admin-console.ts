@@ -317,7 +317,7 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedMotionVueVersion = '2.4.0'
 const expectedVueUseCoreVersion = '14.4.0'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 65
+const expectedArchitectureAdminConsoleNegativeProbeCount = 67
 const expectedMotionGeometryNegativeProbeCount = 9
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 14
@@ -1090,14 +1090,20 @@ interface Naive2452SharedConsumptionRecord {
 const naiveThemeSemanticGroups = [
   {
     component: 'common',
-    fields: ['heightSmall', 'heightMedium'],
-    authority: 'interaction.control.height-baseline',
+    fields: ['heightMedium'],
+    authority: 'interaction.control.height',
+    valueKind: 'length',
+  },
+  {
+    component: 'common',
+    fields: ['heightSmall'],
+    authority: 'interaction.control.height-small',
     valueKind: 'length',
   },
   {
     component: 'common',
     fields: ['heightLarge'],
-    authority: 'layout.target.enhanced.minimum-block-size',
+    authority: 'interaction.control.height-large',
     valueKind: 'length',
   },
   {
@@ -1484,12 +1490,12 @@ const naiveThemeSemanticGroups = [
   {
     component: 'Button',
     fields: ['heightMedium'],
-    authority: 'layout.target.enhanced.minimum-block-size',
+    authority: 'interaction.control.height',
     valueKind: 'length',
   },
   {
     component: 'Button',
-    fields: ['paddingMedium'],
+    fields: ['paddingSmall', 'paddingMedium', 'paddingLarge'],
     authority: 'spacing.button.inline',
     valueKind: 'length',
   },
@@ -1508,7 +1514,7 @@ const naiveThemeSemanticGroups = [
   {
     component: 'Button',
     fields: ['fontSizeLarge'],
-    authority: 'typography.size.control.large',
+    authority: 'typography.size.body',
     valueKind: 'length',
   },
   {
@@ -1659,7 +1665,7 @@ const naiveThemeSemanticGroups = [
   {
     component: 'Card',
     fields: ['paddingMedium', 'paddingLarge', 'paddingHuge'],
-    authority: 'spacing.page.inline',
+    authority: 'spacing.panel.padding',
     valueKind: 'length',
   },
   {
@@ -1739,8 +1745,20 @@ const naiveThemeSemanticGroups = [
   },
   {
     component: 'Radio',
+    fields: ['buttonHeightSmall'],
+    authority: 'interaction.control.height-small',
+    valueKind: 'length',
+  },
+  {
+    component: 'Radio',
+    fields: ['buttonHeightLarge'],
+    authority: 'interaction.control.height-large',
+    valueKind: 'length',
+  },
+  {
+    component: 'Radio',
     fields: ['buttonHeightMedium'],
-    authority: 'layout.target.enhanced.minimum-block-size',
+    authority: 'interaction.control.height',
     valueKind: 'length',
   },
   {
@@ -2463,6 +2481,20 @@ const naive2452ConsumptionContract = [
         '.n-button .n-button__icon medium geometry',
       ],
       [
+        'paddingSmall',
+        'self.paddingSmall via createKey("padding", size)',
+        ['--n-padding'],
+        'normal-small-without-round-circle-or-text',
+        '.n-button normal small padding',
+      ],
+      [
+        'paddingLarge',
+        'self.paddingLarge via createKey("padding", size)',
+        ['--n-padding'],
+        'normal-large-without-round-circle-or-text',
+        '.n-button normal large padding',
+      ],
+      [
         'paddingMedium',
         'self.paddingMedium via createKey("padding", size)',
         ['--n-padding'],
@@ -2858,6 +2890,20 @@ const naive2452ConsumptionContract = [
         ['--n-button-color-active'],
         'checked',
         '.n-radio-button--checked background',
+      ],
+      [
+        'buttonHeightSmall',
+        'self.buttonHeightSmall via createKey("buttonHeight", size)',
+        ['--n-height'],
+        'small',
+        '.n-radio-group--button-group small geometry',
+      ],
+      [
+        'buttonHeightLarge',
+        'self.buttonHeightLarge via createKey("buttonHeight", size)',
+        ['--n-height'],
+        'large',
+        '.n-radio-group--button-group large geometry',
       ],
       [
         'buttonHeightMedium',
@@ -4781,7 +4827,7 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
             [['Steps', 'descriptionTextColorWait'], palette.text.secondary],
             [['Steps', 'descriptionTextColorFinish'], palette.text.secondary],
             [['Input', 'color'], palette.surfaces.surface],
-            [['Button', 'fontSizeLarge'], 'var(--ui-font-size-control-large)'],
+            [['Button', 'fontSizeLarge'], 'var(--ui-font-size-body)'],
             [['Input', 'fontSizeLarge'], 'var(--ui-font-size-body)'],
             [['Input', 'placeholderColor'], palette.text.muted],
             [['Input', 'colorDisabled'], palette.roles.primary.disabled.background],
@@ -5037,12 +5083,12 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
     if (
       !isJsonObject(common) ||
       !isJsonObject(button) ||
-      common['heightSmall'] !== 'var(--ui-control-height-baseline)' ||
-      common['heightMedium'] !== 'var(--ui-control-height-baseline)' ||
-      common['heightLarge'] !== 'var(--ui-layout-target-enhanced-minimum-block-size)' ||
+      common['heightSmall'] !== 'var(--ui-control-height-small)' ||
+      common['heightMedium'] !== 'var(--ui-control-height)' ||
+      common['heightLarge'] !== 'var(--ui-control-height-large)' ||
       Object.hasOwn(button, 'heightSmall') ||
       Object.hasOwn(button, 'heightTiny') ||
-      button['heightMedium'] !== 'var(--ui-layout-target-enhanced-minimum-block-size)' ||
+      button['heightMedium'] !== 'var(--ui-control-height)' ||
       button['paddingMedium'] !== '0 var(--ui-space-button-inline)'
     )
       throw new TypeError(
@@ -5427,7 +5473,7 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
           ? undefined
           : objectPropertyInitializer(componentOverride, field)
       const authority =
-        component === 'Button' && field === 'paddingMedium'
+        component === 'Button' && ['paddingSmall', 'paddingMedium', 'paddingLarge'].includes(field)
           ? buttonPaddingAuthority(expression)
           : resolveThemeAuthority(expression, declarations)
       if (authority.authority === 'invalid-button-padding-shape') {
@@ -9783,7 +9829,7 @@ function runArchitectureAdminConsoleNegativeProbes(
     ],
   ]
   const probes: readonly [string, string, Partial<MaterialGateSnapshot>][] = [
-    ...(['heightSmall', 'heightMedium'] as const).flatMap(
+    ...(['heightSmall', 'heightMedium', 'heightLarge'] as const).flatMap(
       (field): readonly [string, string, Partial<MaterialGateSnapshot>][] => {
         const common =
           overrides === undefined ? undefined : objectPropertyObject(overrides, 'common')
@@ -9798,7 +9844,7 @@ function runArchitectureAdminConsoleNegativeProbes(
           [
             'density-common-' + field + '-public-role',
             'NAIVE_OVERRIDE_SEMANTIC_ROLE',
-            { themeAdapterSource: change("tokens['interaction.control.height']") },
+            { themeAdapterSource: change("tokens['layout.target.enhanced.minimum-block-size']") },
           ],
           [
             'density-common-' + field + '-raw-pixels',
@@ -9816,7 +9862,7 @@ function runArchitectureAdminConsoleNegativeProbes(
           owner === undefined ? undefined : objectPropertyInitializer(owner, 'heightMedium')
         const replacement =
           component === 'Button'
-            ? "tokens['interaction.control.height']"
+            ? "tokens['layout.target.enhanced.minimum-block-size']"
             : "'var(--ui-control-height-baseline)'"
         return [
           'density-' + component + '-height-source',
@@ -14724,15 +14770,15 @@ async function validateTokensAndLayout(): Promise<string[]> {
   if (
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
-    tokenManifest.schemaVersion !== 12 ||
-    tokenManifest.tokens.length !== 356 ||
-    tokenManifest.activePublicRoles.length !== 101 ||
-    tokenManifest.unoCssMappings.length !== 101 ||
+    tokenManifest.schemaVersion !== 13 ||
+    tokenManifest.tokens.length !== 401 ||
+    tokenManifest.activePublicRoles.length !== 106 ||
+    tokenManifest.unoCssMappings.length !== 106 ||
     tokenManifest.namedContrasts.length !== 34 ||
-    tokenManifest.governance.recordCount !== 602 ||
+    tokenManifest.governance.recordCount !== 657 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 421 ||
-    classProjections.length !== 99 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 476 ||
+    classProjections.length !== 104 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -15478,10 +15524,10 @@ function validateInspectorProjections(): string[] {
   const storageRecords: readonly StorageConsoleRecord[] = storageConsoleProjection.records
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 101 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 106 ||
     runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 30 ||
-    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 12 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 602 ||
+    runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 13 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 657 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'royal-iris',
       'cobalt-tide',

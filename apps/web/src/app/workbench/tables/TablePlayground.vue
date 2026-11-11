@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, onScopeDispose, ref, watch } from 'vue'
+import { layoutRegistry } from '@platform/design-system'
 import {
   UiForm,
   UiTable,
@@ -13,6 +14,7 @@ import {
   type UiTableTransport,
 } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
+import TableRowActions from './TableRowActions.vue'
 import { NPopconfirm } from 'naive-ui/es/popconfirm'
 import { useTableShowcase } from './table-showcase'
 import { editExampleProducts } from './local-product-table'
@@ -48,6 +50,23 @@ const query = useUiTableQuery(table, {
 const session = useUiTableForm({ table, transport, copy: demo.copy })
 const batch = useUiTableActions({ table, transport })
 const notice = ref('')
+const container = ref<HTMLElement>()
+const compactActions = ref(false)
+const regularWidth = layoutRegistry.records.find(
+  (record) => record.id === 'layout.profile.regular.min-inline-size',
+)?.resolvedValue
+if (!regularWidth?.endsWith('rem')) throw new TypeError('Expected a rem layout threshold.')
+let resizeObserver: ResizeObserver | undefined
+onMounted(() => {
+  if (!container.value) return
+  resizeObserver = new ResizeObserver(([entry]) => {
+    if (!entry) return
+    const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize)
+    compactActions.value = entry.contentRect.width < Number.parseFloat(regularWidth) * rootFontSize
+  })
+  resizeObserver.observe(container.value)
+})
+onScopeDispose(() => resizeObserver?.disconnect())
 watch(
   () => local.rows,
   (rows) => {
@@ -86,10 +105,14 @@ async function removeSelected(id: string): Promise<void> {
 }
 </script>
 <template>
-  <div class="flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap">
+  <div
+    ref="container"
+    class="flex flex-1 flex-col min-h-0 min-w-0 gap-content-gap"
+  >
     <UiTable
       :table="table"
       :copy="demo.tableCopy"
+      :row-actions-width="compactActions ? 104 : 160"
     >
       <template #query>
         <UiForm
@@ -136,41 +159,13 @@ async function removeSelected(id: string): Promise<void> {
         />
       </template>
       <template #rowActions="{ row }">
-        <div class="flex flex-wrap gap-component-unit">
-          <NButton
-            quaternary
-            class="min-h-target-enhanced"
-            :disabled="session.loading.value || session.form.value?.submitting.value === true"
-            type="primary"
-            @click="open('edit', row)"
-          >
-            {{ t('tableShowcase.edit') }}
-          </NButton>
-          <NButton
-            quaternary
-            class="min-h-target-enhanced"
-            :disabled="session.loading.value || session.form.value?.submitting.value === true"
-            @click="open('detail', row)"
-          >
-            {{ t('tableShowcase.detail') }}
-          </NButton>
-          <NPopconfirm
-            :disabled="session.loading.value || session.form.value?.submitting.value === true"
-            to="#pavp-overlay-root"
-            @positive-click="remove(row)"
-          >
-            <template #trigger>
-              <NButton
-                quaternary
-                :disabled="session.loading.value || session.form.value?.submitting.value === true"
-                class="min-h-target-enhanced"
-              >
-                {{ t('tableShowcase.remove') }}
-              </NButton>
-            </template>
-            {{ t('tableShowcase.confirmRemove') }}
-          </NPopconfirm>
-        </div>
+        <TableRowActions
+          :compact="compactActions"
+          :disabled="session.loading.value || session.form.value?.submitting.value === true"
+          @edit="open('edit', row)"
+          @detail="open('detail', row)"
+          @remove="remove(row)"
+        />
       </template>
     </UiTable>
     <p

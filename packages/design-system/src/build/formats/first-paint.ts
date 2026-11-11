@@ -167,10 +167,13 @@ ${formatTokenCssRules(
   result,
   result.tokens.filter(
     (token) =>
-      token.role.name === 'interaction.control.height' ||
+      token.role.name.startsWith('interaction.control.height') ||
       token.role.name === 'interaction.control.height-baseline' ||
       token.role.name.startsWith('interaction.control.segment.') ||
       token.role.name === 'spacing.button.inline' ||
+      token.role.name === 'spacing.content.gap' ||
+      token.role.name === 'spacing.field.gap' ||
+      token.role.name.startsWith('spacing.panel.') ||
       token.role.name.startsWith('spacing.control.segment.') ||
       token.role.name.startsWith('spacing.component.') ||
       token.role.name.startsWith('spacing.calendar.') ||

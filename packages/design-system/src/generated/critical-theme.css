@@ -14,8 +14,10 @@
   }
 
   :root {
-    --ui-control-height: 2.25rem;
+    --ui-control-height: 2.75rem;
     --ui-control-height-baseline: 2.25rem;
+    --ui-control-height-large: 3rem;
+    --ui-control-height-small: 2.25rem;
     --ui-control-segment-width-large: 2.25rem;
     --ui-control-segment-width-medium: 1.875rem;
     --ui-control-segment-width-small: 1.5rem;
@@ -52,27 +54,49 @@
     --ui-space-calendar-inline-compact: 0.25rem;
     --ui-space-calendar-inline-tight: 0.125rem;
     --ui-space-component-unit: 0.25rem;
+    --ui-space-content-gap: 0.75rem;
     --ui-space-control-segment-gap: 0.5rem;
+    --ui-space-field-gap: 1.25rem;
     --ui-space-indicator-cell-gap-compact: 0.125rem;
     --ui-space-indicator-cell-gap-standard: 0.1875rem;
     --ui-space-indicator-content-gap: 0.875rem;
     --ui-space-indicator-label-inline: 0.375rem;
     --ui-space-indicator-label-inline-compact: 0.25rem;
+    --ui-space-panel-padding: 1.5rem;
+    --ui-space-panel-padding-narrow: 1.25rem;
   }
 
   html[data-density='comfortable'] {
-    --ui-control-height: 2.25rem;
+    --ui-control-height: 2.75rem;
+    --ui-control-height-large: 3rem;
+    --ui-control-height-small: 2.25rem;
     --ui-space-button-inline: 14px;
+    --ui-space-content-gap: 0.75rem;
+    --ui-space-field-gap: 1.25rem;
+    --ui-space-panel-padding: 1.5rem;
+    --ui-space-panel-padding-narrow: 1.25rem;
   }
 
   html[data-density='compact'] {
-    --ui-control-height: 2rem;
+    --ui-control-height: 2.25rem;
+    --ui-control-height-large: 2.75rem;
+    --ui-control-height-small: 2rem;
     --ui-space-button-inline: 12px;
+    --ui-space-content-gap: 0.5rem;
+    --ui-space-field-gap: 1rem;
+    --ui-space-panel-padding: 1rem;
+    --ui-space-panel-padding-narrow: 1rem;
   }
 
   html[data-density='spacious'] {
-    --ui-control-height: 2.75rem;
+    --ui-control-height: 3rem;
+    --ui-control-height-large: 3.25rem;
+    --ui-control-height-small: 2.5rem;
     --ui-space-button-inline: 16px;
+    --ui-space-content-gap: 1rem;
+    --ui-space-field-gap: 1.5rem;
+    --ui-space-panel-padding: 2rem;
+    --ui-space-panel-padding-narrow: 1.5rem;
   }
 
   html[data-theme-kind='built-in'][data-theme='berry-bloom'] {

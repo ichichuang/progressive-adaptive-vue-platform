@@ -446,6 +446,9 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     Dialog: {
       ...base.Dialog,
       titleFontSize: tokens['typography.size.subheading'],
+      padding: tokens['spacing.panel.padding'],
+      actionSpace: tokens['spacing.content.gap'],
+      contentMargin: `${tokens['spacing.field.gap']} 0`,
     },
     PageHeader: {
       ...base.PageHeader,
@@ -576,7 +579,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       ...base.DynamicInput,
       peers: {
         ...base.DynamicInput?.peers,
-        Input: { ...input, heightMedium: tokens['layout.target.enhanced.minimum-block-size'] },
+        Input: input,
         Button: button,
       },
     },

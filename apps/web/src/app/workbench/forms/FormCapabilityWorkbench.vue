@@ -115,60 +115,60 @@ const headings = {
       />
     </template>
     <div
-      class="wb-form-stage flex-1 grid min-h-0 min-w-0 gap-content-gap layout-narrow:grid-rows-3"
+      class="wb-form-stage flex-1 grid min-h-0 min-w-0 gap-content-gap layout-narrow:grid-rows-4"
       :data-capability="capability"
     >
       <section
-        class="wb-form-canvas rounded-panel flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:row-span-2"
+        class="wb-form-canvas rounded-panel flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:row-span-3"
         :aria-label="t(headings[capability])"
         @input.capture="clearCheck"
         @submit.capture.stop.prevent="submit"
       >
-        <header
-          class="wb-form-panel-header shrink-0 min-h-0 min-w-0 items-center gap-component-unit"
-          :class="
-            draftStatus
-              ? 'grid grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2'
-              : 'flex'
-          "
-        >
-          <h3
-            class="font-title-weight m-0 text-body text-text-primary"
-            v-text="t(headings[capability])"
-          />
-          <div
-            v-if="$slots['controls']"
-            class="wb-form-controls flex-1 min-w-0"
-          >
-            <UiScrollArea
-              :owner-id="`${form.formId}-controls`"
-              :enabled="active"
-              x-scrollable
-            >
-              <div
-                class="flex min-w-full w-max whitespace-nowrap items-center gap-component-unit"
-                role="group"
-                :aria-label="t(capabilityInfo.controls)"
-              >
-                <slot name="controls" />
-              </div>
-            </UiScrollArea>
-          </div>
-          <span
-            v-if="draftStatus"
-            class="min-w-0 break-anywhere text-caption text-text-secondary"
-            role="status"
-            aria-live="polite"
-            :title="draftStatus"
-            v-text="draftStatus"
-          />
-        </header>
         <div class="flex-1 min-h-0 min-w-0">
           <UiScrollArea
             owner-id="architecture-console-content"
             :enabled="active"
             @controller="connectContentScroll"
           >
+            <header
+              class="wb-form-panel-header shrink-0 min-h-0 min-w-0 items-center gap-component-unit"
+              :class="
+                draftStatus
+                  ? 'grid grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2'
+                  : 'flex'
+              "
+            >
+              <h3
+                class="font-title-weight m-0 text-body text-text-primary"
+                v-text="t(headings[capability])"
+              />
+              <div
+                v-if="$slots['controls']"
+                class="wb-form-controls flex-1 min-w-0"
+              >
+                <UiScrollArea
+                  :owner-id="`${form.formId}-controls`"
+                  :enabled="active"
+                  x-scrollable
+                >
+                  <div
+                    class="flex min-w-full w-max whitespace-nowrap items-center gap-component-unit"
+                    role="group"
+                    :aria-label="t(capabilityInfo.controls)"
+                  >
+                    <slot name="controls" />
+                  </div>
+                </UiScrollArea>
+              </div>
+              <span
+                v-if="draftStatus"
+                class="min-w-0 break-anywhere text-caption text-text-secondary"
+                role="status"
+                aria-live="polite"
+                :title="draftStatus"
+                v-text="draftStatus"
+              />
+            </header>
             <div class="wb-form-scroll-content grid min-w-0 gap-content-gap">
               <slot />
             </div>
@@ -176,9 +176,19 @@ const headings = {
         </div>
         <footer
           v-if="$slots['actions'] && mode !== 'detail'"
-          class="wb-form-panel-header flex shrink-0 flex-wrap min-w-0 items-center bg-surface-panel gap-content-gap"
+          class="wb-form-panel-header shrink-0 min-w-0 bg-surface-panel"
         >
-          <slot name="actions" />
+          <div class="wb-form-controls min-w-0">
+            <UiScrollArea
+              :owner-id="`${form.formId}-actions`"
+              :enabled="active"
+              x-scrollable
+            >
+              <div class="flex min-w-full w-max whitespace-nowrap items-center gap-content-gap">
+                <slot name="actions" />
+              </div>
+            </UiScrollArea>
+          </div>
         </footer>
       </section>
       <FormLiveResult

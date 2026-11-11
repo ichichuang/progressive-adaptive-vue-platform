@@ -82,7 +82,7 @@ const nodes = computed(() =>
 
 <template>
   <div
-    class="grid grid-cols-1 min-w-0 gap-content-gap"
+    class="grid grid-cols-1 min-w-0 gap-field-gap"
     :class="columns === 2 ? 'layout-regular:grid-cols-2 layout-wide:grid-cols-2' : ''"
     :data-columns="columns"
   >
@@ -94,7 +94,7 @@ const nodes = computed(() =>
         v-if="node.config.kind === 'group' || node.config.kind === 'repeat'"
         :id="node.controlId"
         :ref="(element) => setNodeTarget(node.config.name, node.path, element)"
-        class="pavp-form-section border-transparent rounded-panel border-solid grid min-w-0 border-width-default gap-content-gap py-section-block"
+        class="pavp-form-section border-transparent rounded-panel border-solid grid min-w-0 border-width-default gap-field-gap py-section-block"
         tabindex="-1"
         :class="node.config.span === 1 ? '' : 'col-span-full'"
         :data-span="node.config.span ?? 2"
@@ -175,7 +175,7 @@ const nodes = computed(() =>
           <div
             v-for="(key, index) in form.rowKeys(node.path)"
             :key="key"
-            class="rounded-panel border-solid grid min-w-0 bg-surface-panel border-border-default border-width-default gap-content-gap p-page-inline"
+            class="rounded-panel border-solid grid min-w-0 bg-surface-panel border-border-default border-width-default gap-field-gap p-panel layout-narrow:p-panel-narrow"
           >
             <div class="flex flex-wrap items-center justify-between gap-content-gap">
               <span

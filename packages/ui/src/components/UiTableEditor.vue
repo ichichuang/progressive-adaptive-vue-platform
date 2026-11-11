@@ -88,6 +88,7 @@ function updateShow(show: boolean): void {
   <NDrawer
     v-if="session.presentation === 'drawer'"
     :show="active && session.open.value"
+    :aria-label="title"
     width="min(100vw, calc(2 * var(--ui-layout-admin-drawer-maximum-inline-size)))"
     to="#pavp-overlay-root"
     @update:show="updateShow"

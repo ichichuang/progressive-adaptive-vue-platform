@@ -11,7 +11,7 @@ const names = tokenNames.filter(
     name.startsWith('spacing.') ||
     (name.startsWith('layout.') && !name.startsWith('layout.z.')) ||
     name === 'interaction.border.width' ||
-    name === 'interaction.control.height' ||
+    name.startsWith('interaction.control.height') ||
     name.startsWith('interaction.control.segment.') ||
     name.startsWith('interaction.icon.') ||
     name.startsWith('interaction.indicator.') ||

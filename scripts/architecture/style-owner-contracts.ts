@@ -202,6 +202,46 @@ export const standaloneStyleOwners: Readonly<Record<string, StyleResponsibility>
 // !important values are local to these declarations, never file grants.
 export const ownedStyleContracts: readonly OwnedStyleContract[] = [
   {
+    path: 'packages/ui/src/providers/UiProvider.vue',
+    block: 0,
+    context: [],
+    selector: "html[data-motion='full'][data-ui-size-transition='font-scale']",
+    declarations: [
+      ['transition', 'font-size var(--ui-motion-duration) var(--ui-motion-easing)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector:
+      "html[data-motion='full'][data-ui-size-transition='density']\n    :is(\n      .wb-chart-range,\n      .wb-page.wb-form-page,\n      .wb-form-panel-header,\n      .wb-form-controls,\n      .wb-form-scroll-content,\n      .wb-form-guide,\n      .wb-builder-heading,\n      .wb-builder-inspector-heading,\n      .wb-builder-option,\n      .wb-builder-properties,\n      .wb-builder-property-group,\n      .wb-builder-condition-children,\n      .wb-builder-code\n    )",
+    declarations: [
+      ['transition-property', 'height, min-height, padding, margin, gap', false],
+      ['transition-duration', 'var(--ui-motion-duration)', false],
+      ['transition-timing-function', 'var(--ui-motion-easing)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/providers/UiProvider.vue',
+    block: 0,
+    context: [],
+    selector:
+      "html[data-motion='full'][data-ui-size-transition='density']\n  :where(.n-config-provider, #pavp-overlay-root)\n  :is(\n    [class*='gap-content-gap'],\n    [class*='gap-field-gap'],\n    [class*='p-panel'],\n    [class*='h-control'],\n    .n-button,\n    .n-input,\n    .n-input-wrapper,\n    .n-input__input-el,\n    .n-base-selection,\n    .n-base-selection-label,\n    .n-base-selection-tags,\n    .n-radio-button,\n    .n-tag,\n    .n-card-header,\n    .n-card__content,\n    .n-card__footer,\n    .n-card__action,\n    .n-dialog,\n    .n-drawer-header,\n    .n-drawer-body-content-wrapper,\n    .n-drawer-footer,\n    .n-form-item-label,\n    .n-base-select-option,\n    .n-data-table-th,\n    .n-data-table-td,\n    .n-pagination,\n    .n-pagination-item,\n    .pavp-chart-time-range-track,\n    .pavp-admin-shell__identity,\n    .pavp-admin-shell__navigation-group,\n    .pavp-admin-shell__navigation-bottom\n  ):not([aria-hidden='true'])",
+    declarations: [
+      [
+        'transition-property',
+        'height, min-height, max-height, min-width, padding, margin, gap, line-height, background-color,\n    color, border-color, outline-color, box-shadow, opacity',
+        true,
+      ],
+      ['transition-duration', 'var(--ui-motion-duration)', true],
+      ['transition-timing-function', 'var(--ui-motion-easing)', true],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
@@ -1238,10 +1278,29 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,
     context: ['@layer components'],
+    selector: "[data-layout-profile='narrow'] .wb-form-panel-header",
+    declarations: [['padding-inline', 'var(--ui-space-panel-padding-narrow)', false]],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
+    selector: "[data-layout-profile='narrow'] .wb-form-scroll-content",
+    declarations: [
+      ['padding-inline', 'var(--ui-space-panel-padding-narrow)', false],
+      ['padding-block-end', 'var(--ui-space-panel-padding-narrow)', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'apps/web/src/app/workbench/workbench.css',
+    block: 0,
+    context: ['@layer components'],
     selector: '.wb-form-panel-header',
     declarations: [
       ['padding-block', 'var(--ui-space-content-gap)', false],
-      ['padding-inline', 'var(--ui-space-page-inline)', false],
+      ['padding-inline', 'var(--ui-space-panel-padding)', false],
     ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
@@ -1250,7 +1309,13 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 0,
     context: ['@layer components'],
     selector: '.wb-form-controls',
-    declarations: [['block-size', 'var(--ui-layout-target-enhanced-minimum-block-size)', false]],
+    declarations: [
+      [
+        'block-size',
+        'max(var(--ui-control-height), var(--ui-layout-target-enhanced-minimum-block-size))',
+        false,
+      ],
+    ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {
@@ -1259,8 +1324,8 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     context: ['@layer components'],
     selector: '.wb-form-scroll-content',
     declarations: [
-      ['padding-inline', 'var(--ui-space-page-inline)', false],
-      ['padding-block-end', 'var(--ui-space-page-inline)', false],
+      ['padding-inline', 'var(--ui-space-panel-padding)', false],
+      ['padding-block-end', 'var(--ui-space-panel-padding)', false],
     ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
@@ -1360,7 +1425,9 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     block: 0,
     context: ['@layer components'],
     selector: '.wb-builder-status',
-    declarations: [['block-size', 'var(--ui-layout-target-enhanced-minimum-block-size)', false]],
+    declarations: [
+      ['min-block-size', 'var(--ui-layout-target-enhanced-minimum-block-size)', false],
+    ],
     responsibility: 'RUNTIME_STYLE_OWNER',
   },
   {

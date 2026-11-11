@@ -14,7 +14,7 @@ const colorTextSecondary = tokens['color.text.secondary']
 const borderControl = 'var(--ui-admin-border-control)'
 const borderFocus = 'var(--ui-admin-border-focus)'
 const disabledOpacity = 'var(--ui-admin-state-disabled-opacity)'
-const enhancedTargetHeight = tokens['layout.target.enhanced.minimum-block-size']
+const controlHeight = tokens['interaction.control.height']
 const fontSize = tokens['typography.size.body']
 const fontWeight = tokens['typography.weight.body']
 const fontWeightStrong = tokens['typography.weight.title']
@@ -31,7 +31,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
   const errorBorder = `var(--ui-admin-border-width) solid ${appearance.statusColors.error.default}`
   const scrollbar = shared.Scrollbar
   const Input = {
-    heightMedium: enhancedTargetHeight,
+    heightMedium: controlHeight,
     fontSizeMedium: fontSize,
     fontWeight,
     lineHeight,
@@ -86,7 +86,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       feedbackPadding: '0',
       lineHeight,
       labelFontWeight: fontWeightStrong,
-      blankHeightMedium: enhancedTargetHeight,
+      blankHeightMedium: controlHeight,
       labelTextAlignVertical: 'start',
     },
     Input,
@@ -102,7 +102,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       menuBoxShadow: shadowOverlay,
       peers: {
         InternalSelection: {
-          heightMedium: enhancedTargetHeight,
+          heightMedium: controlHeight,
           fontSizeMedium: fontSize,
           borderRadius: controlRadius,
           textColor: colorText,
@@ -148,7 +148,7 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
         },
         InternalSelectMenu: {
           optionFontSizeMedium: fontSize,
-          optionHeightMedium: enhancedTargetHeight,
+          optionHeightMedium: controlHeight,
           borderRadius: panelRadius,
           color: colorPanel,
           groupHeaderTextColor: colorTextSecondary,
@@ -197,11 +197,11 @@ export function createPavpNaiveFormThemeProjection(appearance: Readonly<UiAppear
       calendarTitleFontWeight: fontWeightStrong,
       iconColor: colorTextSecondary,
       iconColorDisabled: colorTextSecondary,
-      itemSize: enhancedTargetHeight,
-      itemCellWidth: enhancedTargetHeight,
-      itemCellHeight: enhancedTargetHeight,
-      calendarTitleHeight: enhancedTargetHeight,
-      scrollItemHeight: enhancedTargetHeight,
+      itemSize: controlHeight,
+      itemCellWidth: controlHeight,
+      itemCellHeight: controlHeight,
+      calendarTitleHeight: controlHeight,
+      scrollItemHeight: controlHeight,
       peers: { Input, Button: { ...shared.Button }, Scrollbar: scrollbar },
     },
   } satisfies GlobalThemeOverrides

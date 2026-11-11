@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, ref, shallowRef, watch } from 'vue'
+import { computed, onDeactivated, onScopeDispose, ref, shallowRef, watch } from 'vue'
 import { UiTable, useUiTable, type UiTableSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NCheckbox } from 'naive-ui/es/checkbox'
 import { NInputNumber } from 'naive-ui/es/input-number'
+import { NPopover } from 'naive-ui/es/popover'
 import { NSelect } from 'naive-ui/es/select'
 import TableCapabilityWorkbench from './TableCapabilityWorkbench.vue'
 import { createLocalProductTable } from './local-product-table'
@@ -22,6 +23,10 @@ const props = defineProps<{
 }>()
 const demo = useTableShowcase()
 const { t } = demo
+const hintOpen = ref(false)
+onDeactivated(() => {
+  hintOpen.value = false
+})
 const viewport = ref<TableLayoutViewport>(props.example === 'responsive' ? 'full' : 'regular')
 const initialSchema = tableLayoutSchema(props.example)
 const initialTitleWidth = initialSchema.columns.find((column) => column.key === 'title')?.width
@@ -208,9 +213,10 @@ function updatePinnedRight(value: boolean): void {
             </NCheckbox>
           </template>
         </div>
-        <p class="m-0 text-caption text-text-secondary">
-          {{ hint }}
-        </p>
+        <p
+          class="m-0 text-caption text-text-secondary layout-narrow:hidden"
+          v-text="hint"
+        />
       </div>
     </template>
     <div
@@ -223,6 +229,25 @@ function updatePinnedRight(value: boolean): void {
         :copy="demo.tableCopy"
       >
         <template #actions>
+          <NPopover
+            v-model:show="hintOpen"
+            trigger="click"
+            to="#pavp-overlay-root"
+          >
+            <template #trigger>
+              <NButton
+                quaternary
+                class="hidden min-h-target-enhanced layout-narrow:inline-flex"
+                :aria-label="hint"
+              >
+                <span
+                  class="i-lucide-info"
+                  aria-hidden="true"
+                />
+              </NButton>
+            </template>
+            {{ hint }}
+          </NPopover>
           <span
             class="text-caption text-text-secondary"
             v-text="

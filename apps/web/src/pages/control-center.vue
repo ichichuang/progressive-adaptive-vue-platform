@@ -458,7 +458,7 @@ onScopeDispose(() => {
               {{ t('settings.color-mode-note') }}
             </p>
           </div>
-          <div class="wb-settings-controls grid min-w-0 gap-content-gap">
+          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
             <UiRadioCardGroup
               v-if="activePreview && preference !== null"
               class="wb-mode-options layout-regular:grid-cols-3 layout-wide:grid-cols-3"
@@ -564,7 +564,7 @@ onScopeDispose(() => {
               {{ t('settings.section.reading') }}
             </h2>
           </div>
-          <div class="wb-settings-controls grid min-w-0 gap-content-gap">
+          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
             <SettingsField
               id="settings-language"
               class="wb-settings-choice-field"
@@ -625,7 +625,7 @@ onScopeDispose(() => {
               {{ t('settings.section.layout') }}
             </h2>
           </div>
-          <div class="wb-settings-controls grid min-w-0 gap-content-gap">
+          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
             <SettingsField
               id="settings-density"
               class="wb-settings-choice-field"
@@ -693,7 +693,7 @@ onScopeDispose(() => {
               {{ t('settings.section.comfort') }}
             </h2>
           </div>
-          <div class="wb-settings-controls grid min-w-0 gap-content-gap">
+          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
             <SettingsField
               id="settings-material"
               class="wb-settings-choice-field"
@@ -784,7 +784,7 @@ onScopeDispose(() => {
               {{ t('settings.section.workspace') }}
             </h2>
           </div>
-          <div class="wb-settings-controls grid min-w-0 gap-content-gap">
+          <div class="wb-settings-controls grid min-w-0 gap-field-gap">
             <SettingsField
               id="settings-scroll-restoration"
               :label="t('settings.scroll-restoration')"
@@ -802,6 +802,7 @@ onScopeDispose(() => {
             <div class="wb-settings-actions grid gap-content-gap">
               <NButton
                 quaternary
+                class="min-h-target-enhanced"
                 @click="resetAppearance"
               >
                 {{ t('settings.reset-appearance') }}
@@ -819,7 +820,7 @@ onScopeDispose(() => {
       </div>
     </UiScrollArea>
     <aside
-      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 items-center order-first bg-surface-panel gap-content-gap layout-regular:order-last layout-wide:order-last layout-regular:p-page-inline layout-wide:p-page-inline"
+      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 items-center order-first bg-surface-panel gap-content-gap layout-regular:order-last layout-wide:order-last layout-regular:p-panel layout-wide:p-panel"
     >
       <NScrollbar
         class="min-h-0 min-w-0"

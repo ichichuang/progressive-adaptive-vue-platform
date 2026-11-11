@@ -743,6 +743,42 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'interaction.control.height-large',
+      tokenType: 'dimension',
+      category: 'interaction',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-control-height-large',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'dimension',
+        key: 'control-large',
+        classes: ['h-control-large'],
+        allowedCssProperties: ['height'],
+      },
+    },
+    {
+      id: 'interaction.control.height-small',
+      tokenType: 'dimension',
+      category: 'interaction',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-control-height-small',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'dimension',
+        key: 'control-small',
+        classes: ['h-control-small'],
+        allowedCssProperties: ['height'],
+      },
+    },
+    {
       id: 'interaction.control.segment.width.large',
       tokenType: 'dimension',
       category: 'interaction',
@@ -1604,6 +1640,24 @@ export const PublicRoleRegistry = {
       },
     },
     {
+      id: 'spacing.field.gap',
+      tokenType: 'dimension',
+      category: 'spacing',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-space-field-gap',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'spacing',
+        key: 'field-gap',
+        classes: ['gap-field-gap'],
+        allowedCssProperties: ['gap'],
+      },
+    },
+    {
       id: 'spacing.indicator.cell-gap.compact',
       tokenType: 'dimension',
       category: 'spacing',
@@ -1711,6 +1765,42 @@ export const PublicRoleRegistry = {
           { className: 'px-page-inline', cssProperty: 'padding-inline' },
           { className: 'p-page-inline', cssProperty: 'padding' },
         ],
+      },
+    },
+    {
+      id: 'spacing.panel.padding',
+      tokenType: 'dimension',
+      category: 'spacing',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-space-panel-padding',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'spacing',
+        key: 'panel',
+        classes: ['p-panel'],
+        allowedCssProperties: ['padding'],
+      },
+    },
+    {
+      id: 'spacing.panel.padding-narrow',
+      tokenType: 'dimension',
+      category: 'spacing',
+      visibility: 'public',
+      admissionPhase: 1,
+      cssVariable: '--ui-space-panel-padding-narrow',
+      themePlaneApplicability: 'not-applicable',
+      contrastEndpointId: null,
+      alphaContractId: null,
+      unocss: {
+        generatorKind: 'exact-rule',
+        family: 'spacing',
+        key: 'panel-narrow',
+        classes: ['p-panel-narrow'],
+        allowedCssProperties: ['padding'],
       },
     },
     {
@@ -2557,6 +2647,7 @@ const exactRuleContracts = {
   'content-width|max-width': 'max-w',
   'z-index|z-index': 'z',
   'spacing|gap': 'gap',
+  'spacing|padding': 'p',
   'spacing|padding-inline': 'px',
   'spacing|padding-block': 'py',
   'typography|font-size': 'text',
@@ -2617,7 +2708,7 @@ export function validatePublicRoleRegistry(
     .parse(registry)
   const records = parsed.records as unknown as readonly PublicRoleRecord[]
 
-  assertExactCount(records.length, 101, 'Public Role Registry record count')
+  assertExactCount(records.length, 106, 'Public Role Registry record count')
   assertUnique(
     records.map((record) => record.id),
     'Public Role Registry IDs',
@@ -2686,7 +2777,7 @@ export function validatePublicRoleRegistry(
   )
   assertExactCount(
     records.filter((record) => record.unocss.generatorKind === 'exact-rule').length,
-    84,
+    89,
     'Exact UnoCSS rule count',
   )
   assertExactCount(

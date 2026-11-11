@@ -116,33 +116,33 @@ function locate(path: string | null): void {
 
 <template>
   <aside
-    class="wb-form-result rounded-panel grid min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+    class="wb-form-result rounded-panel flex flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
     :aria-label="t('formShowcase.liveResult')"
   >
-    <header class="wb-form-panel-header grid min-w-0 gap-component-unit">
-      <div class="flex min-w-0 items-center justify-between gap-component-unit">
-        <h3
-          class="font-title-weight m-0 min-w-0 truncate text-subheading text-text-primary"
-          :title="form.hasPendingInput.value ? t('formShowcase.livePendingHint') : resultLabel"
-          v-text="resultLabel"
-        />
-        <UiCopyAction
-          class="shrink-0"
-          variant="text"
-          :value="json"
-          :disabled="form.hasPendingInput.value"
-          :label="t('formShowcase.copyData')"
-          :copy-label="t('workbench.copy')"
-          :success-label="t('workbench.copied')"
-          :failure-label="t('workbench.copyFailed')"
-        />
-      </div>
-    </header>
-    <div class="min-h-0 min-w-0">
+    <div class="flex-1 min-h-0 min-w-0">
       <UiScrollArea
         :owner-id="`${form.formId}-result`"
         :enabled="active"
       >
+        <header class="wb-form-panel-header grid min-w-0 gap-component-unit">
+          <div class="flex min-w-0 items-center justify-between gap-component-unit">
+            <h3
+              class="font-title-weight m-0 min-w-0 truncate text-subheading text-text-primary"
+              :title="form.hasPendingInput.value ? t('formShowcase.livePendingHint') : resultLabel"
+              v-text="resultLabel"
+            />
+            <UiCopyAction
+              class="shrink-0"
+              variant="text"
+              :value="json"
+              :disabled="form.hasPendingInput.value"
+              :label="t('formShowcase.copyData')"
+              :copy-label="t('workbench.copy')"
+              :success-label="t('workbench.copied')"
+              :failure-label="t('workbench.copyFailed')"
+            />
+          </div>
+        </header>
         <div class="wb-form-scroll-content grid min-w-0 gap-content-gap">
           <slot name="status" />
           <section

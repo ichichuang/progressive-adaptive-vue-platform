@@ -1,4 +1,25 @@
 @layer components {
+  html[data-motion='full'][data-ui-size-transition='density']
+    :is(
+      .wb-chart-range,
+      .wb-page.wb-form-page,
+      .wb-form-panel-header,
+      .wb-form-controls,
+      .wb-form-scroll-content,
+      .wb-form-guide,
+      .wb-builder-heading,
+      .wb-builder-inspector-heading,
+      .wb-builder-option,
+      .wb-builder-properties,
+      .wb-builder-property-group,
+      .wb-builder-condition-children,
+      .wb-builder-code
+    ) {
+    transition-property: height, min-height, padding, margin, gap;
+    transition-duration: var(--ui-motion-duration);
+    transition-timing-function: var(--ui-motion-easing);
+  }
+
   .wb-chart-picker {
     inline-size: min(100%, var(--ui-workbench-specimen-minimum-inline-size));
   }
@@ -46,14 +67,14 @@
   }
   .wb-form-panel-header {
     padding-block: var(--ui-space-content-gap);
-    padding-inline: var(--ui-space-page-inline);
+    padding-inline: var(--ui-space-panel-padding);
   }
   .wb-form-controls {
-    block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+    block-size: max(var(--ui-control-height), var(--ui-layout-target-enhanced-minimum-block-size));
   }
   .wb-form-scroll-content {
-    padding-inline: var(--ui-space-page-inline);
-    padding-block-end: var(--ui-space-page-inline);
+    padding-inline: var(--ui-space-panel-padding);
+    padding-block-end: var(--ui-space-panel-padding);
   }
   .wb-form-guide {
     padding-block: var(--ui-space-content-gap);
@@ -87,7 +108,7 @@
     padding: var(--ui-space-content-gap);
   }
   .wb-builder-status {
-    block-size: var(--ui-layout-target-enhanced-minimum-block-size);
+    min-block-size: var(--ui-layout-target-enhanced-minimum-block-size);
   }
   .wb-builder-properties {
     padding-inline: var(--ui-space-content-gap);
@@ -120,6 +141,13 @@
   .wb-builder-output .wb-form-scroll-content {
     padding-inline: var(--ui-space-component-unit);
     padding-block-end: var(--ui-space-component-unit);
+  }
+  [data-layout-profile='narrow'] .wb-form-panel-header {
+    padding-inline: var(--ui-space-panel-padding-narrow);
+  }
+  [data-layout-profile='narrow'] .wb-form-scroll-content {
+    padding-inline: var(--ui-space-panel-padding-narrow);
+    padding-block-end: var(--ui-space-panel-padding-narrow);
   }
   [data-layout-profile='narrow'] .wb-builder-layout {
     grid-template-columns: minmax(0, 1fr);

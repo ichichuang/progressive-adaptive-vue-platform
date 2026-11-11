@@ -299,30 +299,30 @@ function compareRecords(left: ResolvedTokenRecord, right: ResolvedTokenRecord): 
 }
 
 export function validateDensitySources(records: readonly ResolvedTokenRecord[]): void {
-  const publicRole = 'interaction.control.height'
   const baselineRole = 'interaction.control.height-baseline'
-  const buttonRole = 'spacing.button.inline'
+  const roleSources: Readonly<Record<string, string>> = {
+    'interaction.control.height': 'control.height',
+    'interaction.control.height-small': 'control.height-small',
+    'interaction.control.height-large': 'control.height-large',
+    'spacing.button.inline': 'button.padding-inline',
+    'spacing.content.gap': 'content.gap',
+    'spacing.field.gap': 'field.gap',
+    'spacing.panel.padding': 'panel.padding',
+    'spacing.panel.padding-narrow': 'panel.padding-narrow',
+  }
   const aliases = records.filter(
-    (record) =>
-      record.role.name === publicRole ||
-      record.role.name === baselineRole ||
-      record.role.name === buttonRole,
+    (record) => record.role.name in roleSources || record.role.name === baselineRole,
   )
-  const expected = [
-    [publicRole, undefined, 'comfortable'],
-    [publicRole, 'compact', 'compact'],
-    [publicRole, 'comfortable', 'comfortable'],
-    [publicRole, 'spacious', 'spacious'],
-    [baselineRole, undefined, 'comfortable'],
-    [buttonRole, undefined, 'comfortable'],
-    [buttonRole, 'compact', 'compact'],
-    [buttonRole, 'comfortable', 'comfortable'],
-    [buttonRole, 'spacious', 'spacious'],
-  ] as const
+  const expected = Object.keys(roleSources).flatMap((role) =>
+    ([undefined, 'compact', 'comfortable', 'spacious'] as const).map(
+      (preset) => [role, preset, preset ?? 'comfortable'] as const,
+    ),
+  )
+  expected.push([baselineRole, undefined, 'comfortable'])
   function fail(detail: string): never {
     throw new Error(`Density source contract: ${detail}.`)
   }
-  if (aliases.length !== expected.length) fail('exactly nine semantic aliases are required')
+  if (aliases.length !== expected.length) fail('the complete semantic density role set is required')
   for (const [role, preset, sourcePreset] of expected) {
     const matches = aliases.filter(
       (record) =>
@@ -331,13 +331,18 @@ export function validateDensitySources(records: readonly ResolvedTokenRecord[]):
           conditionKey(preset === undefined ? {} : { density: preset }),
     )
     const record = matches[0]
-    const button = role === buttonRole
-    const source = `density.${sourcePreset}.${button ? 'button.padding-inline' : 'control.height'}`
+    const spacing = role.startsWith('spacing.')
+    const densitySource = roleSources[role]
+    if (role !== baselineRole && densitySource === undefined) fail(`${role} has no density source`)
+    const source =
+      role === baselineRole
+        ? 'dimension.control.md'
+        : `density.${sourcePreset}.${densitySource ?? ''}`
     if (matches.length !== 1 || record === undefined)
       fail(`${role}/${preset ?? 'default'} must occur exactly once`)
     if (
       record.source !==
-        (button ? 'semantic/spacing.tokens.json' : 'semantic/interaction.tokens.json') ||
+        (spacing ? 'semantic/spacing.tokens.json' : 'semantic/interaction.tokens.json') ||
       record.tier !== 'semantic' ||
       record.type !== 'dimension' ||
       record.visibility !== (role === baselineRole ? 'ui-internal' : 'public') ||
@@ -345,7 +350,8 @@ export function validateDensitySources(records: readonly ResolvedTokenRecord[]):
       record.compound !== undefined ||
       record.authoredValue !== `{${source}}` ||
       record.reference !== source ||
-      (preset === undefined && record.path !== role)
+      (preset === undefined && record.path !== role) ||
+      (role === baselineRole && tokenValueToCss(record.type, record.resolvedValue) !== '2.25rem')
     )
       fail(`${role}/${preset ?? 'default'} has incorrect source or metadata`)
   }
@@ -361,19 +367,49 @@ export function validateDensitySources(records: readonly ResolvedTokenRecord[]):
     )
       fail('density selectors and source visibility must remain isolated')
   }
-  for (const [preset, heightPrimitive, heightValue, buttonPrimitive, buttonValue] of [
-    ['compact', 'sm', '2rem', 'button-inline-compact', '12px'],
-    ['comfortable', 'md', '2.25rem', 'button-inline', '14px'],
-    ['spacious', 'lg', '2.75rem', 'button-inline-spacious', '16px'],
-  ] as const) {
-    for (const [path, primitivePath, cssValue] of [
-      [`density.${preset}.control.height`, `dimension.control.${heightPrimitive}`, heightValue],
+  for (const [preset, definitions] of [
+    [
+      'compact',
       [
-        `density.${preset}.button.padding-inline`,
-        `dimension.space.${buttonPrimitive}`,
-        buttonValue,
+        ['control.height', 'dimension.control.md', '2.25rem'],
+        ['control.height-small', 'dimension.control.sm', '2rem'],
+        ['control.height-large', 'dimension.control.lg', '2.75rem'],
+        ['button.padding-inline', 'dimension.space.button-inline-compact', '12px'],
+        ['content.gap', 'dimension.space.2', '0.5rem'],
+        ['field.gap', 'dimension.space.4', '1rem'],
+        ['panel.padding', 'dimension.space.4', '1rem'],
+        ['panel.padding-narrow', 'dimension.space.4', '1rem'],
       ],
-    ] as const) {
+    ],
+    [
+      'comfortable',
+      [
+        ['control.height', 'dimension.control.lg', '2.75rem'],
+        ['control.height-small', 'dimension.control.md', '2.25rem'],
+        ['control.height-large', 'dimension.control.xl', '3rem'],
+        ['button.padding-inline', 'dimension.space.button-inline', '14px'],
+        ['content.gap', 'dimension.space.3', '0.75rem'],
+        ['field.gap', 'dimension.space.5', '1.25rem'],
+        ['panel.padding', 'dimension.space.6', '1.5rem'],
+        ['panel.padding-narrow', 'dimension.space.5', '1.25rem'],
+      ],
+    ],
+    [
+      'spacious',
+      [
+        ['control.height', 'dimension.control.xl', '3rem'],
+        ['control.height-small', 'dimension.control.intermediate', '2.5rem'],
+        ['control.height-large', 'dimension.control.xxl', '3.25rem'],
+        ['button.padding-inline', 'dimension.space.button-inline-spacious', '16px'],
+        ['content.gap', 'dimension.space.4', '1rem'],
+        ['field.gap', 'dimension.space.6', '1.5rem'],
+        ['panel.padding', 'dimension.space.8', '2rem'],
+        ['panel.padding-narrow', 'dimension.space.6', '1.5rem'],
+      ],
+    ],
+  ] as const) {
+    for (const [role, primitivePath, cssValue] of definitions) {
+      const path = `density.${preset}.${role}`
       const sources = records.filter((record) => record.path === path)
       const record = sources[0]
       const target = records.find((candidate) => candidate.path === primitivePath)

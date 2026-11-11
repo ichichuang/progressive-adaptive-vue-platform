@@ -1,23 +1,41 @@
 {
   "spacing": {
     "component": {
-      "unit": { "$type": "dimension", "$value": "{dimension.space.component-unit}" }
+      "unit": {
+        "$type": "dimension",
+        "$value": "{dimension.space.component-unit}"
+      }
     },
     "calendar": {
       "inline": {
-        "tight": { "$type": "dimension", "$value": "{dimension.calendar.inline-tight}" },
-        "compact": { "$type": "dimension", "$value": "{dimension.calendar.inline-compact}" }
+        "tight": {
+          "$type": "dimension",
+          "$value": "{dimension.calendar.inline-tight}"
+        },
+        "compact": {
+          "$type": "dimension",
+          "$value": "{dimension.calendar.inline-compact}"
+        }
       },
       "block": {
-        "gap": { "$type": "dimension", "$value": "{dimension.calendar.block-gap}" }
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.calendar.block-gap}"
+        }
       },
       "footer": {
-        "indent": { "$type": "dimension", "$value": "{dimension.calendar.footer-indent}" }
+        "indent": {
+          "$type": "dimension",
+          "$value": "{dimension.calendar.footer-indent}"
+        }
       }
     },
     "control": {
       "segment": {
-        "gap": { "$type": "dimension", "$value": "{dimension.control.segment-gap}" }
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.control.segment-gap}"
+        }
       }
     },
     "button": {
@@ -31,7 +49,9 @@
         "$extensions": {
           "org.pavp": {
             "role": "spacing.button.inline",
-            "conditions": { "density": "compact" }
+            "conditions": {
+              "density": "compact"
+            }
           }
         }
       },
@@ -41,7 +61,9 @@
         "$extensions": {
           "org.pavp": {
             "role": "spacing.button.inline",
-            "conditions": { "density": "comfortable" }
+            "conditions": {
+              "density": "comfortable"
+            }
           }
         }
       },
@@ -51,18 +73,29 @@
         "$extensions": {
           "org.pavp": {
             "role": "spacing.button.inline",
-            "conditions": { "density": "spacious" }
+            "conditions": {
+              "density": "spacious"
+            }
           }
         }
       }
     },
     "indicator": {
       "cell-gap": {
-        "compact": { "$type": "dimension", "$value": "{dimension.indicator.cell-gap-compact}" },
-        "standard": { "$type": "dimension", "$value": "{dimension.indicator.cell-gap-standard}" }
+        "compact": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.cell-gap-compact}"
+        },
+        "standard": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.cell-gap-standard}"
+        }
       },
       "content": {
-        "gap": { "$type": "dimension", "$value": "{dimension.indicator.content-gap}" }
+        "gap": {
+          "$type": "dimension",
+          "$value": "{dimension.indicator.content-gap}"
+        }
       },
       "label": {
         "inline-compact": {
@@ -90,7 +123,167 @@
     "content": {
       "gap": {
         "$type": "dimension",
-        "$value": "{dimension.space.3}"
+        "$value": "{density.comfortable.content.gap}"
+      },
+      "gap-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.content.gap}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.content.gap",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "gap-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.content.gap}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.content.gap",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "gap-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.content.gap}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.content.gap",
+            "conditions": {
+              "density": "spacious"
+            }
+          }
+        }
+      }
+    },
+    "field": {
+      "gap": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.field.gap}"
+      },
+      "gap-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.field.gap}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.field.gap",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "gap-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.field.gap}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.field.gap",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "gap-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.field.gap}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.field.gap",
+            "conditions": {
+              "density": "spacious"
+            }
+          }
+        }
+      }
+    },
+    "panel": {
+      "padding": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.panel.padding}"
+      },
+      "padding-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.panel.padding}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.panel.padding",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "padding-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.panel.padding}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.panel.padding",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "padding-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.panel.padding}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.panel.padding",
+            "conditions": {
+              "density": "spacious"
+            }
+          }
+        }
+      },
+      "padding-narrow": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.panel.padding-narrow}"
+      },
+      "padding-narrow-compact": {
+        "$type": "dimension",
+        "$value": "{density.compact.panel.padding-narrow}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.panel.padding-narrow",
+            "conditions": {
+              "density": "compact"
+            }
+          }
+        }
+      },
+      "padding-narrow-comfortable": {
+        "$type": "dimension",
+        "$value": "{density.comfortable.panel.padding-narrow}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.panel.padding-narrow",
+            "conditions": {
+              "density": "comfortable"
+            }
+          }
+        }
+      },
+      "padding-narrow-spacious": {
+        "$type": "dimension",
+        "$value": "{density.spacious.panel.padding-narrow}",
+        "$extensions": {
+          "org.pavp": {
+            "role": "spacing.panel.padding-narrow",
+            "conditions": {
+              "density": "spacious"
+            }
+          }
+        }
       }
     }
   }

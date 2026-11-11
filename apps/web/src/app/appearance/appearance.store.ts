@@ -223,6 +223,24 @@ function commitAppearanceTransition(
   const domCapture = captureAppearanceDom(target)
 
   try {
+    const fontScaleChanged = domCapture.fontScale.value !== String(effectiveAppearance.fontScale)
+    if (
+      previousState.preference !== null &&
+      effectiveAppearance.motion === 'full' &&
+      target.getAttribute('data-motion') === 'full' &&
+      (target.getAttribute('data-density') !== effectiveAppearance.density || fontScaleChanged)
+    ) {
+      // Arm the UI-owned size window before applying the new appearance. Font
+      // scaling animates the root once; nested geometry must follow its rem values
+      // directly rather than repeatedly retargeting their own transitions.
+      const transition =
+        fontScaleChanged || target.getAttribute('data-ui-size-transition') === 'font-scale'
+          ? 'font-scale'
+          : 'density'
+      target.setAttribute('data-ui-size-transition', transition)
+      void target.offsetHeight
+    }
+
     if (resolution.entry.registryKind === 'custom') {
       const installation = installCustomThemeBank(target, resolution.entry)
 
@@ -258,6 +276,11 @@ function commitAppearanceTransition(
 
     return { status: 'committed' }
   } catch {
+    try {
+      target.removeAttribute('data-ui-size-transition')
+    } catch {
+      // A rejected transient UI hint must not prevent appearance rollback.
+    }
     try {
       const rollbackPreference = previousState.preference ?? productDefaultPreference()
       const previousResolution = resolveThemeReference({

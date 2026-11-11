@@ -48,11 +48,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    'bdee98c2c3f7285d53c6af6187f8974f88764e6b737c489d137c1976b2e878d5',
+    'c77bc7dd30582934b6c29c3363846082146665b628d9ed21dcde66f8e870cebd',
   'packages/design-system/src/generated/tokens.ts':
-    '8b8f9cfbedf03425295caf5fdf41601348f18ac340c052142b05563851e625ca',
+    '3e6168d35a551c637c2703f8dbe6d07c57f8cb36efcf818489c0c9634fa86355',
   'packages/design-system/src/generated/unocss-theme.ts':
-    '41df53a033fe3aa942ffc2870488d08013683ea8368719954264c2583dfbace9',
+    'c80e16fbb9e81da732248631d2e690c9259b89920d90e1d5e29b699e7da6dbc2',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -1951,10 +1951,30 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
     const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'document')
     const properties = new Map<string, { value: string; priority: string }>()
     const attributes = new Map<string, string>()
+    const densityEvents: string[] = []
+    const fontScaleEvents: string[] = []
+    let rejectNextDensityWrite = false
+    let rejectNextFontScaleWrite = false
     const target = {
+      get offsetHeight() {
+        densityEvents.push(
+          `measure:${String(attributes.get('data-density'))}:${String(attributes.has('data-ui-size-transition'))}`,
+        )
+        fontScaleEvents.push(
+          `measure:${properties.get('--ui-font-scale')?.value ?? ''}:${attributes.get('data-ui-size-transition') ?? 'unarmed'}`,
+        )
+        return 0
+      },
       hasAttribute: (name: string) => attributes.has(name),
       getAttribute: (name: string) => attributes.get(name) ?? null,
       setAttribute: (name: string, value: string) => {
+        if (name === 'data-density') {
+          densityEvents.push(`write:${value}:${String(attributes.has('data-ui-size-transition'))}`)
+          if (rejectNextDensityWrite) {
+            rejectNextDensityWrite = false
+            throw new Error('Density commit rollback probe.')
+          }
+        }
         attributes.set(name, value)
       },
       removeAttribute: (name: string) => {
@@ -1964,6 +1984,15 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
         getPropertyValue: (name: string) => properties.get(name)?.value ?? '',
         getPropertyPriority: (name: string) => properties.get(name)?.priority ?? '',
         setProperty: (name: string, value: string, priority = '') => {
+          if (name === '--ui-font-scale') {
+            fontScaleEvents.push(
+              `write:${value}:${attributes.get('data-ui-size-transition') ?? 'unarmed'}`,
+            )
+            if (rejectNextFontScaleWrite) {
+              rejectNextFontScaleWrite = false
+              throw new Error('Font scale commit rollback probe.')
+            }
+          }
           properties.set(name, { value, priority })
         },
         removeProperty: (name: string) => {
@@ -1995,6 +2024,194 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
     try {
       if (store.synchronizeAppearance(environment).status !== 'committed')
         failures.push('Missing shared Appearance records must use the product default.')
+      if (
+        densityEvents.some((event) => event.startsWith('measure:')) ||
+        attributes.has('data-ui-size-transition')
+      )
+        failures.push('First appearance restore must not arm size motion.')
+      for (const motion of ['full', 'reduced', 'none'] as const) {
+        const writePreference = (preset: 'compact' | 'spacious') => {
+          storage.values.set(
+            preferenceKey,
+            JSON.stringify({
+              ...defaults,
+              appearance: { ...defaults.appearance, motion, density: { preset, scale: 1 } },
+            }),
+          )
+        }
+        writePreference('compact')
+        store.synchronizeAppearance(environment)
+        attributes.delete('data-ui-size-transition')
+        densityEvents.length = 0
+        writePreference('spacious')
+        const result = store.synchronizeAppearance(environment)
+        const expected =
+          motion === 'full'
+            ? ['measure:compact:true', 'write:spacious:true']
+            : ['write:spacious:false']
+        if (
+          result.status !== 'committed' ||
+          !isDeepStrictEqual(densityEvents, expected) ||
+          (motion === 'full' && attributes.get('data-ui-size-transition') !== 'density') ||
+          store.preference?.appearance.fontScale !== defaults.appearance.fontScale ||
+          properties.get('--ui-font-scale')?.value !== String(defaults.appearance.fontScale)
+        )
+          failures.push(
+            'Density motion must measure the armed old geometry before committing only for full motion and preserve font scale.',
+          )
+        attributes.delete('data-ui-size-transition')
+        if (motion === 'full') {
+          densityEvents.length = 0
+          const previous = JSON.stringify(store.$state)
+          writePreference('compact')
+          rejectNextDensityWrite = true
+          const rejected = store.synchronizeAppearance(environment)
+          if (
+            rejected.status !== 'rejected' ||
+            attributes.has('data-ui-size-transition') ||
+            attributes.get('data-density') !== 'spacious' ||
+            JSON.stringify(store.$state) !== previous ||
+            densityEvents[0] !== 'measure:spacious:true'
+          )
+            failures.push(
+              'Rejected density commits must remove the motion marker and restore prior state and density.',
+            )
+        }
+      }
+      for (const [motion, prefersReducedMotion] of [
+        ['full', false],
+        ['reduced', false],
+        ['none', false],
+        ['full', true],
+      ] as const) {
+        const currentEnvironment = { ...environment, prefersReducedMotion }
+        const initial = explicitThemePreferenceSchema.parse({
+          ...defaults,
+          appearance: {
+            ...defaults.appearance,
+            motion,
+            density: { preset: 'compact', scale: 1.1 },
+            fontScale: 1,
+          },
+        })
+        storage.values.set(preferenceKey, JSON.stringify(initial))
+        store.synchronizeAppearance(currentEnvironment)
+        attributes.delete('data-ui-size-transition')
+        fontScaleEvents.length = 0
+        const smaller = {
+          ...initial,
+          appearance: { ...initial.appearance, fontScale: 0.9 },
+        }
+        const writes = storage.setCalls
+        const result = store.changeAppearancePreference(smaller, currentEnvironment)
+        const expected =
+          motion === 'full' && !prefersReducedMotion
+            ? ['measure:1:font-scale', 'write:0.9:font-scale']
+            : ['write:0.9:unarmed']
+        if (
+          result.status !== 'committed' ||
+          !isDeepStrictEqual(fontScaleEvents, expected) ||
+          !isDeepStrictEqual(store.preference, smaller) ||
+          properties.get('--ui-font-scale')?.value !== '0.9' ||
+          attributes.get('data-density') !== 'compact' ||
+          storage.values.get(preferenceKey) !== JSON.stringify(smaller) ||
+          storage.setCalls !== writes + 1
+        )
+          failures.push(
+            'Font scale 100→90 must arm before measuring old geometry only with effective full motion, persist immediately and preserve density.',
+          )
+        attributes.delete('data-ui-size-transition')
+      }
+
+      const larger = {
+        ...defaults,
+        appearance: { ...defaults.appearance, density: { preset: 'compact', scale: 1.1 } },
+      }
+      const smaller = { ...larger, appearance: { ...larger.appearance, fontScale: 0.9 } }
+      store.$reset()
+      storage.values.set(preferenceKey, JSON.stringify(smaller))
+      properties.set('--ui-font-scale', { value: '1', priority: '' })
+      attributes.set('data-motion', 'full')
+      fontScaleEvents.length = 0
+      const writesBeforeRestore = storage.setCalls
+      if (
+        store.restoreAppearance(environment).status !== 'committed' ||
+        fontScaleEvents.some((event) => event.startsWith('measure:')) ||
+        attributes.has('data-ui-size-transition') ||
+        properties.get('--ui-font-scale')?.value !== '0.9' ||
+        storage.setCalls !== writesBeforeRestore
+      )
+        failures.push('Saved font scale restoration must apply without animation or persistence.')
+
+      for (const preference of [larger, smaller, larger, smaller]) {
+        fontScaleEvents.length = 0
+        const previousScale = properties.get('--ui-font-scale')?.value
+        const writes = storage.setCalls
+        if (
+          store.changeAppearancePreference(preference, environment).status !== 'committed' ||
+          fontScaleEvents[0] !== `measure:${previousScale ?? ''}:font-scale` ||
+          !isDeepStrictEqual(store.preference, preference) ||
+          storage.values.get(preferenceKey) !== JSON.stringify(preference) ||
+          storage.setCalls !== writes + 1
+        )
+          failures.push(
+            'Repeated font changes must preserve the active motion window and commit each latest preference immediately.',
+          )
+      }
+      const densityAfterFont = {
+        ...smaller,
+        appearance: { ...smaller.appearance, density: { preset: 'spacious', scale: 1.1 } },
+      }
+      if (
+        store.changeAppearancePreference(densityAfterFont, environment).status !== 'committed' ||
+        attributes.get('data-ui-size-transition') !== 'font-scale' ||
+        attributes.get('data-density') !== 'spacious' ||
+        properties.get('--ui-font-scale')?.value !== '0.9' ||
+        !isDeepStrictEqual(store.preference, densityAfterFont) ||
+        storage.values.get(preferenceKey) !== JSON.stringify(densityAfterFont)
+      )
+        failures.push(
+          'A density change during font motion must preserve its root transition and independently commit density.',
+        )
+      attributes.delete('data-ui-size-transition')
+
+      for (const rejectedPort of ['font-scale', 'persistence'] as const) {
+        const beforeState = JSON.stringify(store.$state)
+        const beforeProperties = new Map(properties)
+        const beforeAttributes = new Map(attributes)
+        const beforeStorage = new Map(storage.values)
+        const setItem = storage.storage.setItem.bind(storage.storage)
+        fontScaleEvents.length = 0
+        if (rejectedPort === 'font-scale') rejectNextFontScaleWrite = true
+        else
+          storage.storage.setItem = () => {
+            throw new Error('Font scale persistence rollback probe.')
+          }
+        try {
+          const rejected = store.changeAppearancePreference(
+            { ...densityAfterFont, appearance: { ...densityAfterFont.appearance, fontScale: 1 } },
+            environment,
+          )
+          if (
+            rejected.status !== 'rejected' ||
+            fontScaleEvents[0] !== 'measure:0.9:font-scale' ||
+            attributes.has('data-ui-size-transition') ||
+            JSON.stringify(store.$state) !== beforeState ||
+            !isDeepStrictEqual(properties, beforeProperties) ||
+            !isDeepStrictEqual(attributes, beforeAttributes) ||
+            !isDeepStrictEqual(storage.values, beforeStorage)
+          )
+            failures.push(
+              'Rejected font scale DOM or persistence commits must remove motion and restore exact DOM, preference and storage.',
+            )
+        } finally {
+          storage.storage.setItem = setItem
+        }
+      }
+      storage.values.clear()
+      storage.setCalls = 0
+      store.$reset()
+      store.synchronizeAppearance(environment)
       const unrelatedKey = 'appearance-recovery-unrelated-probe'
       const unrelatedValue = '{"preserved":true}'
       storage.values.set(unrelatedKey, unrelatedValue)
@@ -3041,8 +3258,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 12 || recordCount !== 602) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 12/602.')
+  if (manifest['schemaVersion'] !== 13 || recordCount !== 657) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 13/657.')
   }
 
   const themes = manifest['themes']
