@@ -1,3 +1,71 @@
+diff --git a/esm/animation/growInX.js b/esm/animation/growInX.js
+index bdbb736466c0d63d2b02fae6852d6a4d9fccd3c7..ba53adcaf924577feb1e1f09fccae68685275781 100644
+--- a/esm/animation/growInX.js
++++ b/esm/animation/growInX.js
+@@ -14,9 +14,29 @@ export const GrowInX = (options, context) => {
+                 d: `M${x},${y}L${x + width},${y}L${x + width},${y + height}L${x},${y + height}Z`,
+             },
+         });
++        const previousClipPath = shape.style.clipPath;
+         shape.appendChild(clipPath);
+         shape.style.clipPath = clipPath;
+         const animation = ScaleInX(options, context)([clipPath], to, defaults);
++        // The reveal clip belongs to this animation, not to later resized geometry.
++        // Promise cleanup also survives an adapter replacing onfinish during retargeting.
++        const cleanup = () => {
++            if (!shape.destroyed && shape.style.clipPath === clipPath) {
++                if (previousClipPath && !previousClipPath.destroyed)
++                    shape.style.clipPath = previousClipPath;
++                else
++                    shape.removeAttribute('clipPath');
++            }
++            if (!clipPath.destroyed)
++                clipPath.destroy();
++        };
++        if (animation) {
++            animation.finished.then(cleanup, cleanup);
++            // G dispatches cancel without rejecting finished in this locked version.
++            animation.oncancel = cleanup;
++        }
++        else
++            cleanup();
+         return animation;
+     };
+ };
+diff --git a/esm/animation/growInY.js b/esm/animation/growInY.js
+index 3d0c2769099214ab0bd6152fa076e5c1cb15533e..9d1d0c66c052476b80c65ac5d38c5b605e130b9e 100644
+--- a/esm/animation/growInY.js
++++ b/esm/animation/growInY.js
+@@ -14,9 +14,29 @@ export const GrowInY = (options, context) => {
+                 d: `M${x},${y}L${x + width},${y}L${x + width},${y + height}L${x},${y + height}Z`,
+             },
+         });
++        const previousClipPath = shape.style.clipPath;
+         shape.appendChild(clipPath);
+         shape.style.clipPath = clipPath;
+         const animation = ScaleInY(options, context)([clipPath], to, defaults);
++        // The reveal clip belongs to this animation, not to later resized geometry.
++        // Promise cleanup also survives an adapter replacing onfinish during retargeting.
++        const cleanup = () => {
++            if (!shape.destroyed && shape.style.clipPath === clipPath) {
++                if (previousClipPath && !previousClipPath.destroyed)
++                    shape.style.clipPath = previousClipPath;
++                else
++                    shape.removeAttribute('clipPath');
++            }
++            if (!clipPath.destroyed)
++                clipPath.destroy();
++        };
++        if (animation) {
++            animation.finished.then(cleanup, cleanup);
++            // G dispatches cancel without rejecting finished in this locked version.
++            animation.oncancel = cleanup;
++        }
++        else
++            cleanup();
+         return animation;
+     };
+ };
 diff --git a/esm/api/extend.d.ts b/esm/api/extend.d.ts
 index 9dcef26f8d2de8f28d89e90d7a6f41805a2764dc..7a63450b11460bfdacf70997c7fab007c914bee4 100644
 --- a/esm/api/extend.d.ts
@@ -98,6 +166,74 @@ index 11a64e92f359644274d6266b0b0a74b1ef49950e..dd7b3d9fbbc86ecc9707bf8587d965f4
      size?: number;
      view?: WithPrefix<AreaTheme, 'view'> & WithPrefix<AreaTheme, 'plot'> & WithPrefix<AreaTheme, 'main'> & WithPrefix<AreaTheme, 'content'>;
  } & MarkTheme & ComponentTheme & AnimationTheme & InteractionTheme;
+diff --git a/lib/animation/growInX.js b/lib/animation/growInX.js
+index 9cec0a9385ef49a94d098a7c4a439079f307dc90..24d39e85d02ba4777e7922a0bb9fd3d9c599e43b 100644
+--- a/lib/animation/growInX.js
++++ b/lib/animation/growInX.js
+@@ -17,9 +17,29 @@ const GrowInX = (options, context) => {
+                 d: `M${x},${y}L${x + width},${y}L${x + width},${y + height}L${x},${y + height}Z`,
+             },
+         });
++        const previousClipPath = shape.style.clipPath;
+         shape.appendChild(clipPath);
+         shape.style.clipPath = clipPath;
+         const animation = (0, scaleInX_1.ScaleInX)(options, context)([clipPath], to, defaults);
++        // The reveal clip belongs to this animation, not to later resized geometry.
++        // Promise cleanup also survives an adapter replacing onfinish during retargeting.
++        const cleanup = () => {
++            if (!shape.destroyed && shape.style.clipPath === clipPath) {
++                if (previousClipPath && !previousClipPath.destroyed)
++                    shape.style.clipPath = previousClipPath;
++                else
++                    shape.removeAttribute('clipPath');
++            }
++            if (!clipPath.destroyed)
++                clipPath.destroy();
++        };
++        if (animation) {
++            animation.finished.then(cleanup, cleanup);
++            // G dispatches cancel without rejecting finished in this locked version.
++            animation.oncancel = cleanup;
++        }
++        else
++            cleanup();
+         return animation;
+     };
+ };
+diff --git a/lib/animation/growInY.js b/lib/animation/growInY.js
+index c846e5132d079ccdf6d4d1bae0e65558704b2cf9..5ad6c1f3e726b811a55e949d1b42b03395665388 100644
+--- a/lib/animation/growInY.js
++++ b/lib/animation/growInY.js
+@@ -17,9 +17,29 @@ const GrowInY = (options, context) => {
+                 d: `M${x},${y}L${x + width},${y}L${x + width},${y + height}L${x},${y + height}Z`,
+             },
+         });
++        const previousClipPath = shape.style.clipPath;
+         shape.appendChild(clipPath);
+         shape.style.clipPath = clipPath;
+         const animation = (0, scaleInY_1.ScaleInY)(options, context)([clipPath], to, defaults);
++        // The reveal clip belongs to this animation, not to later resized geometry.
++        // Promise cleanup also survives an adapter replacing onfinish during retargeting.
++        const cleanup = () => {
++            if (!shape.destroyed && shape.style.clipPath === clipPath) {
++                if (previousClipPath && !previousClipPath.destroyed)
++                    shape.style.clipPath = previousClipPath;
++                else
++                    shape.removeAttribute('clipPath');
++            }
++            if (!clipPath.destroyed)
++                clipPath.destroy();
++        };
++        if (animation) {
++            animation.finished.then(cleanup, cleanup);
++            // G dispatches cancel without rejecting finished in this locked version.
++            animation.oncancel = cleanup;
++        }
++        else
++            cleanup();
+         return animation;
+     };
+ };
 diff --git a/lib/api/extend.d.ts b/lib/api/extend.d.ts
 index 9dcef26f8d2de8f28d89e90d7a6f41805a2764dc..7a63450b11460bfdacf70997c7fab007c914bee4 100644
 --- a/lib/api/extend.d.ts

@@ -141,7 +141,7 @@ patchedDependencies:
     hash: 5927d2a3488306963f5409ae62992132a15fc1ddc6d671270599bd5e3621f048
     path: patches/@antv__g-lite@2.7.2.patch
   '@antv/g2@5.4.8':
-    hash: 69ac6eedc09291a46070fab5cee34b104763ab86fcd169122b70ebd73a65f086
+    hash: 1f5414cfec7d3c2d031f80ac36a657dca7d08cb06e5f1682bc00046f484f9caa
     path: patches/@antv__g2@5.4.8.patch
   '@antv/g@6.3.3':
     hash: 7657514e414e703e67979d2e7a5c91b5b4e463eb9dc4fa42beb8a0eba1f10c41
@@ -301,7 +301,7 @@ importers:
     dependencies:
       '@antv/g2':
         specifier: 'catalog:'
-        version: 5.4.8(patch_hash=69ac6eedc09291a46070fab5cee34b104763ab86fcd169122b70ebd73a65f086)
+        version: 5.4.8(patch_hash=1f5414cfec7d3c2d031f80ac36a657dca7d08cb06e5f1682bc00046f484f9caa)
       '@platform/design-system':
         specifier: workspace:*
         version: link:../design-system
@@ -3640,7 +3640,7 @@ snapshots:
       '@babel/runtime': 7.29.13
       tslib: 2.8.1
 
-  '@antv/g2@5.4.8(patch_hash=69ac6eedc09291a46070fab5cee34b104763ab86fcd169122b70ebd73a65f086)':
+  '@antv/g2@5.4.8(patch_hash=1f5414cfec7d3c2d031f80ac36a657dca7d08cb06e5f1682bc00046f484f9caa)':
     dependencies:
       '@antv/component': 2.1.12(patch_hash=b39d43e1d3ff0b82d8552d286d3ff7e6768e14fa09d08a28472e5078eff78828)
       '@antv/coord': 0.4.7

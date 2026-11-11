@@ -35,7 +35,7 @@ const options = shallowRef<UiG2ChartOptions>({
 - 原生 HTML tooltip 默认挂载到 `UiProvider` 的 `#pavp-overlay-root` 内的组件独立视口浮层，图表容器不设置超出隐藏；不放宽工作区、卡片或滚动区的裁切。提示层保留主题和动效，按实时视口/图表位置翻转并在边缘收束，长标题和名称可换行；超出屏幕高度的内容局部滚动，需要交互内容时使用原生 `interaction.tooltip.enterable: true`。外层滚动时清除过期提示，视口变化时重新校验边界，重新悬停时使用最新位置。卸载/失活释放提示节点和监听。显式 `mount`、`bounding`、`position`、`render`、`enterable`、`css` 及关闭设置向子图继承；自行指定挂载点时，其外层裁切与定位由调用方负责。
 - ResizeObserver 监听真实容器及排版测量，不依赖 window resize。零尺寸时延后绘制；重新可见、KeepAlive 激活后恢复。卸载/失活会释放 observer、帧任务和 G2 实例。
 - 配置与数据变更自动更新，在绘制准备阶段帧合并，以最新配置为准；前一帧完成绘制后即可重新定向正在播放的过渡，不需要等旧动画结束。使用 G2 公开的 render/context 接口完整替换配置，不残留已删除的轴/样式。实例不暴露，避免绕过统一策略与生命周期。配置先复制，不让 G2 的标准化修改调用方的普通对象/数组。
-- 容器尺寸变化时即时重排，避免旧像素几何在新画布边缘被裁切；后续数据更新与 hover 仍使用当前动效偏好。
+- 容器尺寸变化时即时重排，避免旧像素几何在新画布边缘被裁切；后续数据更新与 hover 仍使用当前动效偏好。示例页主动切换“窄容器”时单独重播入场，保留当前数据、筛选与范围；普通窗口缩放不触发重播。
 - 给数据项提供稳定的 `encode.key`，可获得 G2 原生的进入、更新、退出过渡。大数据推荐 `shallowRef` 并替换配置，减少 Vue 深层响应式开销。
 
 ## 统一外观与动效
@@ -56,7 +56,7 @@ const options = shallowRef<UiG2ChartOptions>({
 - 使用应用已有 API/query 层取数后传入 data，不在图表配置中另建请求、缓存或鉴权。
 - Canvas 内容带 `role="img"` 和名称，但这不等于可访问的数据表或键盘交互。重要数据应在图表外提供文本摘要/表格；不能把 tooltip 或颜色作为唯一信息来源。
 - 不添加业务页面或全局注册；从 UI 公共入口按需导入。没有消费者时 G2 不进入现有应用首屏包。
-- `pnpm check:chart` 验证配置隔离、外观映射、尺寸与动效策略，并纳入 `pnpm verify`。依赖声明兼容使用锁定版本的 `.d.ts` 补丁，保留 strict、exactOptionalPropertyTypes 和完整依赖类型检查。G2 5.4.8 的连续颜色推断另有最小兼容补丁：原生数值 color 推断支持适配器的 `theme.sequential` 默认色阶，并尊重显式 interpolator/palette；没有平台默认值时仍使用 G2 原生行为。补丁不重写数据转换、域推断或分类色逻辑。AntV Component 的 Navigator 补丁只在翻页完成时归零播放容器和目标页的位置，修复 `navAnimate: false` 时页码更新但内容被裁切为空的问题；full 动画过程保持原样。
+- `pnpm check:chart` 验证配置隔离、外观映射、尺寸与动效策略，并纳入 `pnpm verify`。依赖声明兼容使用锁定版本的 `.d.ts` 补丁，保留 strict、exactOptionalPropertyTypes 和完整依赖类型检查。G2 5.4.8 的连续颜色推断另有最小兼容补丁：原生数值 color 推断支持适配器的 `theme.sequential` 默认色阶，并尊重显式 interpolator/palette；没有平台默认值时仍使用 G2 原生行为。补丁不重写数据转换、域推断或分类色逻辑。`growInX/growInY` 的最小生命周期补丁在动画完成或取消时释放自身创建的临时裁剪路径，并保留调用方裁剪，避免尺寸变化后继续使用旧位置裁切图元。AntV Component 的 Navigator 补丁只在翻页完成时归零播放容器和目标页的位置，修复 `navAnimate: false` 时页码更新但内容被裁切为空的问题；full 动画过程保持原样。
 
 ## 连续范围交互示例
 

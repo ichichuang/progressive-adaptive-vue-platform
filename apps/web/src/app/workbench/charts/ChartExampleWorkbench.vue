@@ -225,6 +225,11 @@ function restart(): void {
   rendered.value = false
   error.value = false
 }
+function toggleWidth(): void {
+  narrow.value = !narrow.value
+  rendered.value = false
+  error.value = false
+}
 function updateRange(value: number | number[]): void {
   if (!Array.isArray(value) || value.length !== 2) return
   const start = value[0]
@@ -459,7 +464,7 @@ onScopeDispose(() => {
           <NButton
             secondary
             :aria-pressed="narrow"
-            @click="narrow = !narrow"
+            @click="toggleWidth"
           >
             {{ t('chartExamples.narrow') }}
           </NButton>
@@ -555,7 +560,7 @@ onScopeDispose(() => {
           </div>
           <UiG2Chart
             v-else
-            :key="`${kind}-${String(replay)}-${String(timelineStopped)}`"
+            :key="`${kind}-${String(replay)}-${String(timelineStopped)}-${String(narrow)}`"
             :options="options"
             :label="label"
             @rendered="rendered = true"

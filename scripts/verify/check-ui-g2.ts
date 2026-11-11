@@ -904,6 +904,85 @@ barMovement.cancel()
 advanceAnimations(2700)
 assert.equal(labelShape.getAttribute('x') as unknown, 150)
 
+// Native grow animations own temporary clipping, never a persistent layout boundary.
+const growAnimations = (
+  uiRequire('@antv/g2') as {
+    stdlib(): Record<
+      string,
+      (
+        options: Record<string, never>,
+        context: { coordinate: { getOptions(): { transformations: [] } } },
+      ) => (
+        from: RetargetTarget[],
+        to: RetargetTarget[],
+        timing: KeyframeEffectOptions,
+      ) => RetargetAnimation
+    >
+  }
+).stdlib()
+let growTime = 3000
+for (const name of ['growInX', 'growInY']) {
+  for (const completion of [
+    'finished',
+    'retargeted',
+    'replaced',
+    'cancelled',
+    'destroyed',
+  ] as const) {
+    const shape = new nativeAnimations.Rect({
+      style: { x: 100, y: 20, width: 80, height: 60 },
+    })
+    const originalClip = new nativeAnimations.Rect({ style: { width: 200, height: 200 } })
+    if (completion === 'retargeted') shape.setAttribute('clipPath', originalClip)
+    const appendChild = shape.appendChild.bind(shape)
+    Object.defineProperty(shape, 'appendChild', {
+      value: (child: RetargetTarget) => {
+        Object.defineProperty(child, 'animate', {
+          value: (frames: Keyframe[], timing: KeyframeEffectOptions) =>
+            animationTimeline.play(child, frames, timing),
+        })
+        return appendChild(child)
+      },
+    })
+    const factory = growAnimations[`animation.${name}`]
+    assert.ok(factory)
+    const animation = factory({}, { coordinate: { getOptions: () => ({ transformations: [] }) } })(
+      [shape],
+      [],
+      { duration: 800, fill: 'both' },
+    )
+    const completed = animation.finished
+    const temporaryClip = shape.getAttribute('clipPath') as RetargetTarget
+    assert.notEqual(temporaryClip, originalClip)
+    advanceAnimations(growTime)
+    advanceAnimations(growTime + 100)
+    assert.equal(shape.getAttribute('clipPath'), temporaryClip)
+    if (completion === 'replaced') shape.setAttribute('clipPath', originalClip)
+    if (completion === 'retargeted') settleG2Animations({ animations: [animation] }, true)
+    else if (completion === 'cancelled') animation.cancel()
+    else if (completion === 'destroyed') shape.destroy()
+    else animation.finish()
+    if (completion === 'cancelled' || completion === 'destroyed')
+      await new Promise<void>((resolve) => setTimeout(resolve, 0))
+    else await completed
+    if (!shape.destroyed)
+      assert.equal(
+        shape.getAttribute('clipPath'),
+        completion === 'retargeted' || completion === 'replaced' ? originalClip : undefined,
+        `${name} must release its temporary clip without overwriting caller clipping.`,
+      )
+    assert.equal(temporaryClip.destroyed, true)
+    if (!shape.destroyed) {
+      shape.setAttribute('x', 10)
+      shape.setAttribute('width', 20)
+    }
+    animation.cancel()
+    advanceAnimations(growTime + 200)
+    assert.equal(shape.children.length, 0)
+    growTime += 300
+  }
+}
+
 const resizedChart = projectG2Options(source, appearance, metrics, 320, 240, undefined, true)
 assert.equal(record(resizedChart)['animate'], false)
 assert.equal(record(children(resizedChart)[0])['animate'], false)
