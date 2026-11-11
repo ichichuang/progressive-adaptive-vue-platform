@@ -1,7 +1,7 @@
 import type { z } from 'zod'
 
 import type { ApiConfiguration } from './configuration'
-import type { ApiRequestPolicyId } from './policies'
+import type { ApiPolicyOverrides, ApiRequestPolicyId } from './policies'
 
 export type ApiMethod = 'GET' | 'HEAD' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 export type ApiResponseMode = 'json' | 'text' | 'blob' | 'array-buffer' | 'empty'
@@ -16,6 +16,8 @@ export type ApiErrorCategory =
   | 'schema'
   | 'timeout'
   | 'caller-abort'
+  | 'hook'
+  | 'consumer'
 
 export interface ApiEndpoint<Response, ErrorData = never> {
   readonly id: string
@@ -31,9 +33,20 @@ export interface ApiEndpoint<Response, ErrorData = never> {
   readonly errorSchema?: z.ZodType<ErrorData>
 }
 
+export interface ApiStreamEndpoint<Value, ErrorData = never> extends Omit<
+  ApiEndpoint<Value, ErrorData>,
+  'response' | 'policy'
+> {
+  readonly policy: 'stream'
+  readonly response: {
+    readonly mode: 'sse' | 'ndjson'
+    readonly mimeTypes: readonly string[]
+    readonly schema: z.ZodType<Value>
+  }
+}
+
 type QueryValue = string | number | boolean
-export interface ApiRequestInput {
-  readonly signal: AbortSignal
+export interface ApiRequestParameters {
   readonly query?: Readonly<Record<string, QueryValue | readonly QueryValue[] | undefined>>
   readonly headers?: HeadersInit
   readonly body?:
@@ -42,6 +55,31 @@ export interface ApiRequestInput {
         readonly kind: 'native'
         readonly value: string | Blob | FormData | URLSearchParams | ArrayBuffer
       }
+}
+
+export interface ApiHookContext {
+  readonly endpointId: string
+  readonly requestId: string
+  readonly method: ApiMethod
+  readonly signal: AbortSignal
+}
+
+export interface ApiResponseHookContext extends ApiHookContext {
+  readonly httpStatus: number
+  readonly responseKind: 'success' | 'error' | 'event'
+}
+
+export interface ApiHooks {
+  readonly beforeRequest?: (
+    parameters: ApiRequestParameters,
+    context: ApiHookContext,
+  ) => ApiRequestParameters | Promise<ApiRequestParameters>
+  readonly transformResponse?: (value: unknown, context: ApiResponseHookContext) => unknown
+}
+
+export interface ApiRequestInput extends ApiRequestParameters {
+  readonly signal: AbortSignal
+  readonly hooks?: ApiHooks
 }
 
 export interface ApiError<ErrorData = never> {
@@ -75,6 +113,45 @@ export interface ApiClientInput {
   readonly origin?: string
   readonly fetch?: ApiFetch
   readonly authorize?: ApiAuthorizationProvider
+  readonly hooks?: ApiHooks
+  readonly policies?: ApiPolicyOverrides
+}
+
+export interface ApiBatchRequest<Value = unknown, ErrorData = unknown> {
+  readonly endpoint: ApiEndpoint<Value, ErrorData>
+  readonly input: ApiRequestParameters & {
+    readonly signal?: AbortSignal
+    readonly hooks?: ApiHooks
+  }
+}
+
+export interface ApiBatchOptions {
+  readonly signal: AbortSignal
+  readonly concurrency?: number
+}
+
+export type ApiBatchResults<Requests extends readonly ApiBatchRequest[]> = {
+  readonly [Index in keyof Requests]: Requests[Index] extends ApiBatchRequest<
+    infer Value,
+    infer ErrorData
+  >
+    ? ApiResult<Value, ErrorData>
+    : never
+}
+
+export interface ApiStreamEvent<Value> {
+  readonly data: Value
+  readonly index: number
+  readonly event?: string
+  readonly id?: string
+}
+
+export interface ApiStreamInput<Value> extends ApiRequestInput {
+  readonly onEvent: (event: ApiStreamEvent<Value>, context: ApiHookContext) => void | Promise<void>
+}
+
+export interface ApiStreamSummary {
+  readonly eventCount: number
 }
 
 export interface ApiClient {
@@ -82,4 +159,12 @@ export interface ApiClient {
     endpoint: ApiEndpoint<Response, ErrorData>,
     input: ApiRequestInput,
   ): Promise<ApiResult<Response, ErrorData>>
+  batch<const Requests extends readonly ApiBatchRequest[]>(
+    requests: Requests,
+    options: ApiBatchOptions,
+  ): Promise<ApiBatchResults<Requests>>
+  stream<Value, ErrorData = never>(
+    endpoint: ApiStreamEndpoint<Value, ErrorData>,
+    input: ApiStreamInput<Value>,
+  ): Promise<ApiResult<ApiStreamSummary, ErrorData>>
 }

@@ -356,6 +356,15 @@ const expectedNavigationIconClasses = [
   'i-lucide-type',
   'i-lucide-sparkles',
   'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-workflow',
+  'i-lucide-panels-top-left',
+  'i-lucide-workflow',
   'i-lucide-component',
   'i-lucide-sparkles',
   'i-lucide-type',
@@ -422,6 +431,30 @@ const styledFrameworkPackages = [
 ] as const
 const productRouteContract = [
   ['workbench-dashboard', '/', 'apps/web/src/pages/index.vue', '仪表盘'],
+  ['api-overview', '/requests/overview', 'apps/web/src/pages/api-overview.vue', '能力总览'],
+  ['api-basics', '/requests/basics', 'apps/web/src/pages/api-basics.vue', '基础请求'],
+  ['api-responses', '/requests/responses', 'apps/web/src/pages/api-responses.vue', '响应与校验'],
+  [
+    'api-cancellation',
+    '/requests/cancellation',
+    'apps/web/src/pages/api-cancellation.vue',
+    '取消与超时',
+  ],
+  ['api-errors', '/requests/errors', 'apps/web/src/pages/api-errors.vue', '错误与恢复'],
+  ['api-query', '/requests/query', 'apps/web/src/pages/api-query.vue', '查询与缓存'],
+  [
+    'api-authorization',
+    '/requests/authorization',
+    'apps/web/src/pages/api-authorization.vue',
+    '认证与请求边界',
+  ],
+  [
+    'api-integration',
+    '/requests/integration',
+    'apps/web/src/pages/api-integration.vue',
+    '表单与表格联动',
+  ],
+  ['api-advanced', '/requests/advanced', 'apps/web/src/pages/api-advanced.vue', '高级请求'],
   ['workbench-colors', '/colors', 'apps/web/src/pages/colors.vue', '语义配色'],
   ['workbench-sizes', '/sizes', 'apps/web/src/pages/sizes.vue', '尺寸与空间'],
   ['workbench-typography', '/typography', 'apps/web/src/pages/typography.vue', '字体排印'],
@@ -7650,7 +7683,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 67 ||
+    runtimeNumber(routeRegistry.length) !== 76 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
@@ -8313,8 +8346,8 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') &&
-        snapshot.routeCount === 67 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') &&
+        snapshot.routeCount === 76 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 10,
@@ -8709,7 +8742,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 67) {
+  if (snapshot.routeCount !== 76) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -11841,9 +11874,9 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes("to: '#pavp-overlay-root'") &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -11942,7 +11975,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 67,
+      passed: snapshot.routeCount === 76,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -12928,7 +12961,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 67',
+          'const expectedLazyRouteCount = 76',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -14277,9 +14310,9 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 67',
+    'const expectedLazyRouteCount = 76',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 80',
+    'const expectedDynamicRootCount = 89',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14301,10 +14334,10 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 67 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') ||
+    snapshot.routeCount !== 76 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -14806,14 +14839,14 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 67 ||
-    runtimeCount(productRoutes) !== 60 ||
+    runtimeCount(routeRegistry) !== 76 ||
+    runtimeCount(productRoutes) !== 69 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 60 ||
+    Object.keys(breadcrumbRegistry).length !== 69 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 67/60/7 workbench Route Registry closure drifted.')
+    violations.push('The exact 76/69/7 workbench Route Registry closure drifted.')
   }
 
   if (
@@ -15459,10 +15492,10 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 67 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 60 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 76 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 69 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 67 ||
+    runtimeCount(routerRecords) !== 76 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
     runtimeCount(storageRecords) !== 10 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 15 ||
@@ -15545,6 +15578,20 @@ function validateInspectorProjections(): string[] {
       ['工作台', ['仪表盘']],
       ['设计令牌', ['语义配色', '尺寸与空间', '字体排印']],
       ['交互能力', ['交互与状态', '动画与动效']],
+      [
+        'API 请求',
+        [
+          '能力总览',
+          '基础请求',
+          '响应与校验',
+          '取消与超时',
+          '错误与恢复',
+          '查询与缓存',
+          '认证与请求边界',
+          '表单与表格联动',
+          '高级请求',
+        ],
+      ],
       [
         '组件展示',
         [

@@ -28,3 +28,11 @@ export function rejectApiInput(
 ): Extract<ApiResult<never>, { status: 'failure' }> {
   return createApiFailure(createApiRequestIdentity(endpointId), 'request')
 }
+
+export class ApiProcessingError extends Error {
+  readonly category: ApiErrorCategory
+  constructor(category: ApiErrorCategory) {
+    super(`API processing failed: ${category}`)
+    this.category = category
+  }
+}

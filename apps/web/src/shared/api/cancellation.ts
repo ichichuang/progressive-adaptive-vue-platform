@@ -1,6 +1,8 @@
 export interface ApiAttempt {
   readonly signal: AbortSignal
   run<Value>(operation: () => Promise<Value>): Promise<Value>
+  cancel(): void
+  wait<Value>(operation: () => Promise<Value>, timeoutMilliseconds: number): Promise<Value>
   timedOut(): boolean
   dispose(): void
 }
@@ -20,8 +22,25 @@ export function createApiAttempt(caller: AbortSignal, timeoutMilliseconds: numbe
     }
   }, timeoutMilliseconds)
 
-  return {
+  const attempt: ApiAttempt = {
     signal: controller.signal,
+    cancel,
+    async wait<Value>(
+      operation: () => Promise<Value>,
+      timeoutMilliseconds: number,
+    ): Promise<Value> {
+      const idle = setTimeout(() => {
+        if (!controller.signal.aborted) {
+          timeout = true
+          controller.abort()
+        }
+      }, timeoutMilliseconds)
+      try {
+        return await attempt.run(operation)
+      } finally {
+        clearTimeout(idle)
+      }
+    },
     timedOut: () => timeout,
     dispose() {
       clearTimeout(timer)
@@ -30,6 +49,7 @@ export function createApiAttempt(caller: AbortSignal, timeoutMilliseconds: numbe
     run<Value>(operation: () => Promise<Value>): Promise<Value> {
       return new Promise<Value>((resolve, reject) => {
         const abort = (): void => {
+          controller.signal.removeEventListener('abort', abort)
           reject(new DOMException('Request cancelled.', 'AbortError'))
         }
         if (controller.signal.aborted) {
@@ -42,11 +62,18 @@ export function createApiAttempt(caller: AbortSignal, timeoutMilliseconds: numbe
             controller.signal.throwIfAborted()
             return operation()
           })
-          .then(resolve, reject)
-          .finally(() => {
-            controller.signal.removeEventListener('abort', abort)
-          })
+          .then(
+            (value) => {
+              controller.signal.removeEventListener('abort', abort)
+              resolve(value)
+            },
+            (error: unknown) => {
+              controller.signal.removeEventListener('abort', abort)
+              reject(error instanceof Error ? error : new Error('API operation failed.'))
+            },
+          )
       })
     },
   }
+  return attempt
 }

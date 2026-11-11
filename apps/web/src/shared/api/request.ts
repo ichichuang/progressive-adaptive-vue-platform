@@ -1,4 +1,4 @@
-import type { ApiEndpoint, ApiRequestInput } from './contracts'
+import type { ApiEndpoint, ApiRequestParameters, ApiStreamEndpoint } from './contracts'
 import { apiRequestPolicies } from './policies'
 
 function encodeJsonBody(value: unknown): string | undefined {
@@ -15,8 +15,8 @@ const managedAuthorizationHeaders = new Set([
 
 export function createApiRequest<Response, ErrorData>(
   baseUrl: string,
-  endpoint: ApiEndpoint<Response, ErrorData>,
-  input: ApiRequestInput,
+  endpoint: ApiEndpoint<Response, ErrorData> | ApiStreamEndpoint<Response, ErrorData>,
+  input: ApiRequestParameters,
 ): { readonly url: URL; readonly headers: Headers; readonly body: BodyInit | undefined } {
   if (
     !['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(endpoint.method) ||
@@ -31,7 +31,9 @@ export function createApiRequest<Response, ErrorData>(
         segment === '..' ||
         /[\\/]/u.test(segment),
     ) ||
-    !['json', 'text', 'blob', 'array-buffer', 'empty'].includes(endpoint.response.mode) ||
+    !['json', 'text', 'blob', 'array-buffer', 'empty', 'sse', 'ndjson'].includes(
+      endpoint.response.mode,
+    ) ||
     (endpoint.response.mode !== 'empty' && endpoint.response.mimeTypes.length === 0)
   )
     throw new TypeError('The endpoint definition is invalid.')
@@ -102,4 +104,52 @@ export function createApiRequest<Response, ErrorData>(
   } else if (body instanceof URLSearchParams) body = new URLSearchParams(body)
   else if (body instanceof ArrayBuffer) body = body.slice(0)
   return { url, headers, body }
+}
+
+// Capture caller-owned mutable values before the first asynchronous boundary.
+export function snapshotApiParameters(input: ApiRequestParameters): ApiRequestParameters {
+  const query =
+    input.query === undefined
+      ? undefined
+      : Object.fromEntries(
+          Object.entries(input.query).map(([key, value]) => [
+            key,
+            typeof value === 'object' ? [...value] : value,
+          ]),
+        )
+  let body = input.body
+  if (body?.kind === 'json') {
+    const encoded = encodeJsonBody(body.value)
+    if (encoded === undefined) throw new TypeError('The JSON body is invalid.')
+    body = { kind: 'json', value: JSON.parse(encoded) as unknown }
+  } else if (body?.kind === 'native') {
+    const value = body.value
+    if (value instanceof FormData) {
+      const copy = new FormData()
+      for (const [name, entry] of value) copy.append(name, entry)
+      body = { kind: 'native', value: copy }
+    } else if (value instanceof URLSearchParams)
+      body = { kind: 'native', value: new URLSearchParams(value) }
+    else if (value instanceof ArrayBuffer) body = { kind: 'native', value: value.slice(0) }
+    else body = { ...body }
+  }
+  return {
+    ...(query === undefined ? {} : { query }),
+    ...(input.headers === undefined ? {} : { headers: new Headers(input.headers) }),
+    ...(body === undefined ? {} : { body }),
+  }
+}
+
+export function snapshotApiEndpoint<
+  Definition extends ApiEndpoint<unknown, unknown> | ApiStreamEndpoint<unknown, unknown>,
+>(endpoint: Definition): Definition {
+  const snapshot: Definition = {
+    ...endpoint,
+    path: Object.freeze([...endpoint.path]),
+    response: Object.freeze({
+      ...endpoint.response,
+      mimeTypes: Object.freeze([...endpoint.response.mimeTypes]),
+    }),
+  }
+  return Object.freeze(snapshot)
 }

@@ -49,7 +49,20 @@ const combinationRoutes = Object.freeze([
   'component-combination-page',
 ] as const)
 
+const apiShowcaseRoutes = Object.freeze([
+  'api-overview',
+  'api-basics',
+  'api-responses',
+  'api-cancellation',
+  'api-errors',
+  'api-query',
+  'api-authorization',
+  'api-integration',
+  'api-advanced',
+] as const)
+
 const allProductRoutes = Object.freeze([
+  ...apiShowcaseRoutes,
   'workbench-dashboard',
   'workbench-colors',
   'workbench-sizes',
@@ -83,6 +96,7 @@ const allProductRoutes = Object.freeze([
 const contentRoutes = Object.freeze([...allProductRoutes, 'control-center'] as const)
 
 const formExampleRoutes = Object.freeze([
+  'api-integration',
   'component-inputs',
   ...formCapabilityRoutes,
   ...tableDataCapabilityRoutes,
@@ -111,7 +125,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-live-ranking',
       'component-chart-live-distribution',
     ]),
-    UiTable: tableExampleRoutes,
+    UiTable: Object.freeze([...tableExampleRoutes, 'api-integration']),
     UiTableEditor: Object.freeze([
       'component-combination-modal',
       'component-combination-drawer',
@@ -119,6 +133,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-table-editor',
     ]),
     UiCopyAction: Object.freeze([
+      ...apiShowcaseRoutes,
       'workbench-colors',
       'workbench-sizes',
       'workbench-typography',

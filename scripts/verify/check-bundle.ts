@@ -102,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 67
+const expectedLazyRouteCount = 76
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -121,7 +121,7 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
-const expectedDynamicRootCount = 80
+const expectedDynamicRootCount = 89
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,

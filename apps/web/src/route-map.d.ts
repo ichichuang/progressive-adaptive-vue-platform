@@ -486,6 +486,69 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'api-advanced': RouteRecordInfo<
+      'api-advanced',
+      '/requests/advanced',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-authorization': RouteRecordInfo<
+      'api-authorization',
+      '/requests/authorization',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-basics': RouteRecordInfo<
+      'api-basics',
+      '/requests/basics',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-cancellation': RouteRecordInfo<
+      'api-cancellation',
+      '/requests/cancellation',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-errors': RouteRecordInfo<
+      'api-errors',
+      '/requests/errors',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-integration': RouteRecordInfo<
+      'api-integration',
+      '/requests/integration',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-overview': RouteRecordInfo<
+      'api-overview',
+      '/requests/overview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-query': RouteRecordInfo<
+      'api-query',
+      '/requests/query',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'api-responses': RouteRecordInfo<
+      'api-responses',
+      '/requests/responses',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'workbench-sizes': RouteRecordInfo<
       'workbench-sizes',
       '/sizes',
@@ -1028,6 +1091,78 @@ declare module 'vue-router/auto-routes' {
     'src/pages/motion.vue': {
       routes:
         | 'workbench-motion'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-advanced.vue': {
+      routes:
+        | 'api-advanced'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-authorization.vue': {
+      routes:
+        | 'api-authorization'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-basics.vue': {
+      routes:
+        | 'api-basics'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-cancellation.vue': {
+      routes:
+        | 'api-cancellation'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-errors.vue': {
+      routes:
+        | 'api-errors'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-integration.vue': {
+      routes:
+        | 'api-integration'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-overview.vue': {
+      routes:
+        | 'api-overview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-query.vue': {
+      routes:
+        | 'api-query'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/api-responses.vue': {
+      routes:
+        | 'api-responses'
       views:
         | never
       pathParamNames:

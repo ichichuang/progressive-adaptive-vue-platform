@@ -60,6 +60,15 @@ const pagesDirectory = resolve(rootDirectory, 'apps/web/src/pages')
 const generatedRouteMapPath = resolve(rootDirectory, 'apps/web/src/route-map.d.ts')
 const expectedPageSources = [
   'apps/web/src/pages/index.vue',
+  'apps/web/src/pages/api-overview.vue',
+  'apps/web/src/pages/api-basics.vue',
+  'apps/web/src/pages/api-responses.vue',
+  'apps/web/src/pages/api-cancellation.vue',
+  'apps/web/src/pages/api-errors.vue',
+  'apps/web/src/pages/api-query.vue',
+  'apps/web/src/pages/api-authorization.vue',
+  'apps/web/src/pages/api-integration.vue',
+  'apps/web/src/pages/api-advanced.vue',
   'apps/web/src/pages/colors.vue',
   'apps/web/src/pages/sizes.vue',
   'apps/web/src/pages/typography.vue',
@@ -127,7 +136,7 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 60)
+const expectedProductPageSources = expectedPageSources.slice(0, 69)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
   'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
@@ -148,6 +157,96 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.workbench-dashboard',
     'route.workbench.dashboard',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-overview.vue',
+    'api-overview',
+    '/requests/overview',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-overview',
+    'route.api.overview',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-basics.vue',
+    'api-basics',
+    '/requests/basics',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-basics',
+    'route.api.basics',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-responses.vue',
+    'api-responses',
+    '/requests/responses',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-responses',
+    'route.api.responses',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-cancellation.vue',
+    'api-cancellation',
+    '/requests/cancellation',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-cancellation',
+    'route.api.cancellation',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-errors.vue',
+    'api-errors',
+    '/requests/errors',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-errors',
+    'route.api.errors',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-query.vue',
+    'api-query',
+    '/requests/query',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-query',
+    'route.api.query',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-authorization.vue',
+    'api-authorization',
+    '/requests/authorization',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-authorization',
+    'route.api.authorization',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-integration.vue',
+    'api-integration',
+    '/requests/integration',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-integration',
+    'route.api.integration',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/api-advanced.vue',
+    'api-advanced',
+    '/requests/advanced',
+    'route-params.none',
+    'route-query.none',
+    'route-title.api-advanced',
+    'route.api.advanced',
     'route-boundary',
   ],
   [
@@ -840,6 +939,15 @@ const expectedConsoleCommonMeta = {
   routeTransitionFamilyId: 'route-family.architecture-workspace',
 } as const
 const expectedRouteTitles = {
+  'route-title.api-overview': getDefaultConsoleMessage('route-title.api-overview'),
+  'route-title.api-basics': getDefaultConsoleMessage('route-title.api-basics'),
+  'route-title.api-responses': getDefaultConsoleMessage('route-title.api-responses'),
+  'route-title.api-cancellation': getDefaultConsoleMessage('route-title.api-cancellation'),
+  'route-title.api-errors': getDefaultConsoleMessage('route-title.api-errors'),
+  'route-title.api-query': getDefaultConsoleMessage('route-title.api-query'),
+  'route-title.api-authorization': getDefaultConsoleMessage('route-title.api-authorization'),
+  'route-title.api-integration': getDefaultConsoleMessage('route-title.api-integration'),
+  'route-title.api-advanced': getDefaultConsoleMessage('route-title.api-advanced'),
   'route-title.workbench-dashboard': getDefaultConsoleMessage('route-title.workbench-dashboard'),
   'route-title.workbench-colors': getDefaultConsoleMessage('route-title.workbench-colors'),
   'route-title.workbench-sizes': getDefaultConsoleMessage('route-title.workbench-sizes'),
@@ -1001,6 +1109,51 @@ const expectedMessages = [
     'workbench-dashboard',
     'route-message.workbench-dashboard-summary',
     getDefaultConsoleMessage('route-message.workbench-dashboard-summary'),
+  ],
+  [
+    'api-overview',
+    'route-message.api-overview-summary',
+    getDefaultConsoleMessage('route-message.api-overview-summary'),
+  ],
+  [
+    'api-basics',
+    'route-message.api-basics-summary',
+    getDefaultConsoleMessage('route-message.api-basics-summary'),
+  ],
+  [
+    'api-responses',
+    'route-message.api-responses-summary',
+    getDefaultConsoleMessage('route-message.api-responses-summary'),
+  ],
+  [
+    'api-cancellation',
+    'route-message.api-cancellation-summary',
+    getDefaultConsoleMessage('route-message.api-cancellation-summary'),
+  ],
+  [
+    'api-errors',
+    'route-message.api-errors-summary',
+    getDefaultConsoleMessage('route-message.api-errors-summary'),
+  ],
+  [
+    'api-query',
+    'route-message.api-query-summary',
+    getDefaultConsoleMessage('route-message.api-query-summary'),
+  ],
+  [
+    'api-authorization',
+    'route-message.api-authorization-summary',
+    getDefaultConsoleMessage('route-message.api-authorization-summary'),
+  ],
+  [
+    'api-integration',
+    'route-message.api-integration-summary',
+    getDefaultConsoleMessage('route-message.api-integration-summary'),
+  ],
+  [
+    'api-advanced',
+    'route-message.api-advanced-summary',
+    getDefaultConsoleMessage('route-message.api-advanced-summary'),
   ],
   [
     'workbench-colors',
@@ -3719,7 +3872,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact sixty-four-record authority.')
+    violations.push('Router Route Registry diverged from the exact seventy-six-record authority.')
   }
 
   if (
@@ -3745,7 +3898,7 @@ function registryViolations(): string[] {
         ? `route-breadcrumb.${record.name}`
         : null
     const expectedWorkspace = expectedRouteRecords
-      .slice(0, 59)
+      .slice(0, 68)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
@@ -3820,7 +3973,7 @@ function registryViolations(): string[] {
       routeRegistry.map((record) => record.meta.telemetryName),
     )
   ) {
-    violations.push('Telemetry-name Registry must project the exact fifty-two Route records.')
+    violations.push('Telemetry-name Registry must project the exact seventy-six Route records.')
   }
 
   if (
@@ -4065,7 +4218,7 @@ async function pageViolations(): Promise<string[]> {
 
   if (!exactSet(pageFiles, expectedPageSources)) {
     return [
-      'Official Router page source root must contain exactly the fifty-two admitted Vue files.',
+      'Official Router page source root must contain exactly the seventy-six admitted Vue files.',
     ]
   }
 
@@ -4166,43 +4319,57 @@ async function pageViolations(): Promise<string[]> {
             count(source, /data-route-focus="architecture-console-page-heading"/gu) !== 1 ||
             !/<h1\b[^>]*\bclass="[^"]*\bsr-only\b[^"]*"[^>]*>/u.test(source) ||
             !/<h1\b[^>]*\btabindex="-1"[^>]*>/u.test(source)
-          : (sourcePath === 'apps/web/src/pages/component-charts.vue'
-              ? count(source, /<ChartCapabilityOverview\b/gu) !== 1 ||
-                !source.includes("from '../app/workbench/charts/ChartCapabilityOverview.vue'")
-              : sourcePath.includes('/component-chart-live-')
-                ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
-                  !source.includes("from '../app/workbench/charts/ChartLiveWorkbench.vue'")
-                : sourcePath.includes('/component-chart-')
-                  ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
-                    !source.includes("from '../app/workbench/charts/ChartExampleWorkbench.vue'")
-                  : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
-                    ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                      !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
-                      count(source, /<UiScrollArea\b/gu) !== 1
-                    : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
-                      ? count(source, /<FormBasicControls\b/gu) !== 1 ||
-                        !source.includes("from '../app/workbench/forms/FormBasicControls.vue'")
-                      : sourcePath.includes('/component-form-') &&
-                          sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
-                        ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
-                          !source.includes(
-                            "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
-                          )
-                        : tablePageComponent !== undefined
-                          ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !== 1 ||
+          : (sourcePath.includes('/api-')
+              ? (() => {
+                  const component = sourcePath.endsWith('/api-overview.vue')
+                    ? 'ApiOverview'
+                    : sourcePath.endsWith('/api-advanced.vue')
+                      ? 'ApiAdvancedDemo'
+                      : /\/api-(?:query|integration)\.vue$/u.test(sourcePath)
+                        ? 'ApiFeaturePage'
+                        : 'ApiRequestDemo'
+                  return (
+                    count(source, new RegExp(`<${component}\\b`, 'gu')) !== 1 ||
+                    !source.includes(`from '../app/workbench/api/${component}.vue'`)
+                  )
+                })()
+              : sourcePath === 'apps/web/src/pages/component-charts.vue'
+                ? count(source, /<ChartCapabilityOverview\b/gu) !== 1 ||
+                  !source.includes("from '../app/workbench/charts/ChartCapabilityOverview.vue'")
+                : sourcePath.includes('/component-chart-live-')
+                  ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
+                    !source.includes("from '../app/workbench/charts/ChartLiveWorkbench.vue'")
+                  : sourcePath.includes('/component-chart-')
+                    ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
+                      !source.includes("from '../app/workbench/charts/ChartExampleWorkbench.vue'")
+                    : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
+                      ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                        !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+                        count(source, /<UiScrollArea\b/gu) !== 1
+                      : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
+                        ? count(source, /<FormBasicControls\b/gu) !== 1 ||
+                          !source.includes("from '../app/workbench/forms/FormBasicControls.vue'")
+                        : sourcePath.includes('/component-form-') &&
+                            sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
+                          ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
                             !source.includes(
-                              `from '../app/workbench/tables/${tablePageComponent}.vue'`,
+                              "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
                             )
-                          : sourcePath === 'apps/web/src/pages/component-table.vue' ||
-                              /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
-                                sourcePath,
-                              )
-                            ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                          : tablePageComponent !== undefined
+                            ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !== 1 ||
                               !source.includes(
-                                "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                `from '../app/workbench/tables/${tablePageComponent}.vue'`,
                               )
-                            : count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                              !source.includes("from '../app/workbench/WorkbenchPage.vue'")) ||
+                            : sourcePath === 'apps/web/src/pages/component-table.vue' ||
+                                /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
+                                  sourcePath,
+                                )
+                              ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                                !source.includes(
+                                  "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                )
+                              : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                                !source.includes("from '../app/workbench/WorkbenchPage.vue'")) ||
             count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
     const errorPageInvalid =
       !productPage &&
@@ -5450,7 +5617,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 60 &&
+        productRoutes.length === 69 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -5788,9 +5955,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 80') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -5923,7 +6090,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 67') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
@@ -7847,6 +8014,15 @@ const workspaceAxisRouteNames = [
   'workbench-typography',
   'workbench-interactions',
   'workbench-motion',
+  'api-overview',
+  'api-basics',
+  'api-responses',
+  'api-cancellation',
+  'api-errors',
+  'api-query',
+  'api-authorization',
+  'api-integration',
+  'api-advanced',
   'component-showcase',
   'component-actions',
   'component-inputs',

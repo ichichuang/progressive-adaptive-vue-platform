@@ -42,6 +42,7 @@ const containedContent = computed(() => {
   return (
     (routeRecord.value.name === 'control-center' ||
       routeRecord.value.name === 'workbench-motion' ||
+      (routeRecord.value.name.startsWith('api-') && routeRecord.value.name !== 'api-overview') ||
       routeRecord.value.name === 'component-charts' ||
       routeRecord.value.name.startsWith('component-chart-') ||
       routeRecord.value.name.startsWith('component-form-') ||

@@ -1,5 +1,6 @@
 import type { ApiAttempt } from './cancellation'
-import type { ApiEndpoint, ApiErrorCategory } from './contracts'
+import type { ApiEndpoint, ApiErrorCategory, ApiStreamEndpoint } from './contracts'
+import type { ApiResponseTransform } from './hooks'
 
 export type ApiResponseResult<Value, ErrorData> =
   | { readonly status: 'success' | 'accepted'; readonly data: Value }
@@ -51,9 +52,10 @@ async function readBody(
 
 export async function readApiResponse<Value, ErrorData>(
   response: Response,
-  endpoint: ApiEndpoint<Value, ErrorData>,
+  endpoint: ApiEndpoint<Value, ErrorData> | ApiStreamEndpoint<Value, ErrorData>,
   attempt: ApiAttempt,
   maximumBytes: number,
+  transform?: ApiResponseTransform,
 ): Promise<ApiResponseResult<Value, ErrorData>> {
   const failed = (category: ApiErrorCategory): ApiResponseResult<Value, ErrorData> => ({
     status: 'failure',
@@ -118,6 +120,14 @@ export async function readApiResponse<Value, ErrorData>(
       const buffer = new ArrayBuffer(body.byteLength)
       new Uint8Array(buffer).set(body)
       data = endpoint.response.mode === 'blob' ? new Blob([buffer], { type: mime }) : buffer
+    }
+  }
+  if (transform !== undefined) {
+    try {
+      data = await transform(data, response.ok ? 'success' : 'error')
+    } catch {
+      attempt.signal.throwIfAborted()
+      return failed('hook')
     }
   }
   if (!response.ok) {

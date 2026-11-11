@@ -314,6 +314,15 @@ function defineTableExampleRoute<const G extends 'table' | 'combination', const 
   } as const)
 }
 
+function defineApiWorkspaceRoute<const S extends string>(suffix: S) {
+  return defineConsoleWorkspaceRoute({
+    name: `api-${suffix}`,
+    pathPattern: `/requests/${suffix}`,
+    sourcePath: `apps/web/src/pages/api-${suffix}.vue`,
+    meta: { telemetryName: `route.api.${suffix}` },
+  } as const)
+}
+
 function defineErrorRoute<const Category extends string, const Segment extends string>(
   category: Category,
   segment: Segment,
@@ -364,6 +373,15 @@ export const routeRegistry = Object.freeze([
       telemetryName: 'route.workbench.dashboard',
     },
   }),
+  defineApiWorkspaceRoute('overview'),
+  defineApiWorkspaceRoute('basics'),
+  defineApiWorkspaceRoute('responses'),
+  defineApiWorkspaceRoute('cancellation'),
+  defineApiWorkspaceRoute('errors'),
+  defineApiWorkspaceRoute('query'),
+  defineApiWorkspaceRoute('authorization'),
+  defineApiWorkspaceRoute('integration'),
+  defineApiWorkspaceRoute('advanced'),
   defineWorkbenchRoute('colors'),
   defineWorkbenchRoute('sizes'),
   defineWorkbenchRoute('typography'),
@@ -674,6 +692,21 @@ export const consoleNavigationRegistry = Object.freeze([
     items: Object.freeze([
       defineNavigationItem('workbench-interactions', 'i-lucide-sparkles'),
       defineNavigationItem('workbench-motion', 'i-lucide-workflow'),
+    ]),
+  }),
+  Object.freeze({
+    id: 'api',
+    labelKey: 'navigation.api',
+    items: Object.freeze([
+      defineNavigationItem('api-overview', 'i-lucide-workflow'),
+      defineNavigationItem('api-basics', 'i-lucide-workflow'),
+      defineNavigationItem('api-responses', 'i-lucide-workflow'),
+      defineNavigationItem('api-cancellation', 'i-lucide-workflow'),
+      defineNavigationItem('api-errors', 'i-lucide-workflow'),
+      defineNavigationItem('api-query', 'i-lucide-workflow'),
+      defineNavigationItem('api-authorization', 'i-lucide-workflow'),
+      defineNavigationItem('api-integration', 'i-lucide-panels-top-left'),
+      defineNavigationItem('api-advanced', 'i-lucide-workflow'),
     ]),
   }),
   Object.freeze({
