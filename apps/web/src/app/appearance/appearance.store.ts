@@ -132,6 +132,7 @@ function deriveEffectiveAppearance(
       prefersReducedMotion: environment.prefersReducedMotion,
     }),
     radius: preference.appearance.radius,
+    colorStyle: preference.appearance.colorStyle,
   }
 }
 

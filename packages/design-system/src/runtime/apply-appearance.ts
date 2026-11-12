@@ -1,3 +1,4 @@
+import type { ColorStyle } from '../schema/color-style.schema'
 import {
   radiusPreferenceSchema,
   type ContrastPreference,
@@ -28,6 +29,7 @@ interface AppearanceTarget {
 }
 
 export interface EffectiveAppearanceState {
+  readonly colorStyle: ColorStyle
   readonly colorMode: EffectiveColorMode
   readonly contrast: ContrastPreference
   readonly density: UiDensity

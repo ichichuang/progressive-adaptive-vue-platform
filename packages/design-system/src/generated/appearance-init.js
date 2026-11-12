@@ -875,6 +875,7 @@ function resolveMotion({ storedMotion, prefersReducedMotion, }) {
   function isExplicitAppearance(value) {
     return (
       hasOnlyKeys(value, [
+        'colorStyle',
         'colorMode',
         'contrast',
         'density',
@@ -884,6 +885,7 @@ function resolveMotion({ storedMotion, prefersReducedMotion, }) {
         'theme',
         'radius',
       ]) &&
+      includes(['unified', 'dark-navigation', 'brand-sidebar', 'brand-header', 'dark-frame', 'brand-frame', 'soft-frame'], value.colorStyle) &&
       includes(colorModes, value.colorMode) &&
       includes(contrasts, value.contrast) &&
       isDensity(value.density) &&

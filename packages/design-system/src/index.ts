@@ -63,3 +63,12 @@ export {
   type AppearanceThemePreviewProjection,
   type AppearanceThemePreviewSwatches,
 } from './console/appearance-workspace-theme-projection'
+
+export {
+  colorStyleIds,
+  colorStyleSchema,
+  type ColorStyle,
+  appearanceRegionKeys,
+  type AppearanceRegion,
+} from './schema/color-style.schema'
+export { projectRegionAppearance } from './runtime/region-appearance'

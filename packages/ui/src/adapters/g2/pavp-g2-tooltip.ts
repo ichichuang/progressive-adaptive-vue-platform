@@ -1,3 +1,5 @@
+import { loadScrollEnhancement, type ScrollEnhancement } from '../scroll/scroll-enhancement-loader'
+
 interface Bounds {
   readonly x: number
   readonly y: number
@@ -38,11 +40,74 @@ export interface G2TooltipViewport {
   }
 }
 
-export function createG2TooltipViewport(host: HTMLElement, mount: HTMLElement, hide: () => void) {
+export function createG2TooltipViewport(
+  host: HTMLElement,
+  mount: HTMLElement,
+  hide: () => void,
+  fullMotion: boolean,
+) {
   const document = host.ownerDocument
   const window = document.defaultView
   if (!window) throw new Error('UiG2Chart requires a browser viewport.')
   let margin = 0
+  let destroyed = false
+  let loading = false
+  let runtime: Awaited<ReturnType<typeof loadScrollEnhancement>>
+  const scrollbars = new Map<HTMLElement, ScrollEnhancement>()
+  const observed = new Set<HTMLElement>()
+  const resizeObserver = new ResizeObserver(constrain)
+
+  function syncScrollbars(): void {
+    if (destroyed) return
+    for (const element of observed) {
+      if (mount.contains(element)) continue
+      resizeObserver.unobserve(element)
+      observed.delete(element)
+      scrollbars.get(element)?.dispose()
+      scrollbars.delete(element)
+    }
+    for (const element of mount.querySelectorAll<HTMLElement>('.g2-tooltip')) {
+      if (!observed.has(element)) {
+        observed.add(element)
+        resizeObserver.observe(element)
+      }
+      // G2 owns hover/zoom gestures. Only an explicitly enterable, overflowing
+      // tooltip becomes a scroll owner; ordinary pointer-transparent tips do not.
+      if (scrollbars.has(element) || window?.getComputedStyle(element).pointerEvents === 'none')
+        continue
+      if (
+        element.scrollWidth <= element.clientWidth + 1 &&
+        element.scrollHeight <= element.clientHeight + 1
+      )
+        continue
+      if (!runtime) {
+        if (!loading) {
+          loading = true
+          void loadScrollEnhancement().then((loaded) => {
+            if (destroyed) return
+            runtime = loaded
+            if (runtime) syncScrollbars()
+          })
+        }
+        continue
+      }
+      try {
+        const enhancement = runtime.createScrollEnhancement({
+          host: element,
+          viewport: element,
+          content: element,
+          horizontal: false,
+          bothAxes: true,
+          viewportTarget: true,
+        })
+        scrollbars.set(element, enhancement)
+        enhancement.setFullMotion(fullMotion)
+      } catch {
+        // The native overflow remains usable if optional enhancement is unavailable.
+        console.warn('PAVP chart tooltip: native scroll fallback.')
+      }
+    }
+  }
   const observer = new MutationObserver(constrain)
   const bounding = new ViewportBounds(() => {
     const bounds = viewport()
@@ -61,6 +126,7 @@ export function createG2TooltipViewport(host: HTMLElement, mount: HTMLElement, h
   }
 
   function constrain(): void {
+    syncScrollbars()
     const bounds = viewport()
     // G2 only flips once. A popup wider than either side of the pointer still needs
     // a final viewport clamp. Read its destination, not its animated intermediate rect.
@@ -100,7 +166,12 @@ export function createG2TooltipViewport(host: HTMLElement, mount: HTMLElement, h
     },
     constrain,
     destroy(): void {
+      destroyed = true
       observer.disconnect()
+      resizeObserver.disconnect()
+      for (const enhancement of scrollbars.values()) enhancement.dispose()
+      scrollbars.clear()
+      observed.clear()
       document.removeEventListener('scroll', invalidate, true)
       window.removeEventListener('resize', invalidate)
       window.visualViewport?.removeEventListener('resize', invalidate)

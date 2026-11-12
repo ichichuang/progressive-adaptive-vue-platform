@@ -463,6 +463,24 @@ watch(
   { flush: 'post' },
 )
 
+async function navigateHome(): Promise<void> {
+  if (props.activeRouteName === 'workbench-dashboard') {
+    navigationFocusRequest.value += 1
+    return
+  }
+  const fromSettings = props.activeRouteName === 'control-center'
+  const result = await applicationNavigation.navigate(
+    registeredRouteDestination({ name: 'workbench-dashboard' }),
+  )
+  if (
+    result.kind !== 'allow' ||
+    result.presentation !== 'page' ||
+    !isRouterNavigationCurrent(router, result.navigationId)
+  )
+    return
+  if (!fromSettings) navigationFocusRequest.value += 1
+}
+
 async function prepareNavigationFocus(): Promise<boolean> {
   if (props.activeRouteName !== 'control-center') return true
   await settingsReturn.finish()
@@ -513,6 +531,7 @@ async function navigate(routeName: string): Promise<void> {
     :expanded-navigation-group-ids="effectiveExpandedGroupIds"
     :copy="copy"
     @navigate="navigate"
+    @navigate-home="navigateHome"
     @toggle-color-mode="toggleColorMode"
     @content-scroll-controller="connectContentScrollController"
     @sidebar-viewport="shellScroll('sidebar', $event)"
@@ -553,7 +572,7 @@ async function navigate(routeName: string): Promise<void> {
               class="wb-settings-dock min-h-target-enhanced min-w-target-enhanced"
               :data-collapsed="collapsed"
               :quaternary="activeRouteName !== 'control-center'"
-              :tertiary="activeRouteName === 'control-center'"
+              :type="activeRouteName === 'control-center' ? 'primary' : 'default'"
               :bordered="false"
               @click="navigateFromDock('control-center')"
             >

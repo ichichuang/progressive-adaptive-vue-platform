@@ -7148,6 +7148,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const providerPath = 'packages/ui/src/providers/UiProvider.vue.style-0.css'
   const tableScope = '**/packages/ui/src/components/UiTable.vue.style-*.css'
   const tablePath = 'packages/ui/src/components/UiTable.vue.style-0.css'
+  const colorStyleScope = '**/apps/web/src/app/workbench/ThemeStyleSettings.vue.style-*.css'
+  const colorStylePath = 'apps/web/src/app/workbench/ThemeStyleSettings.vue.style-0.css'
   const chartRangeScope = '**/packages/ui/src/components/UiChartTimeRange.vue.style-*.css'
   const chartRangePath = 'packages/ui/src/components/UiChartTimeRange.vue.style-0.css'
   const expectedOverrideScopes = [
@@ -7159,6 +7161,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     [providerScope],
     [tableScope],
     [chartRangeScope],
+    [colorStyleScope],
   ] as const
   const otherPaths = [
     'apps/web/src/app/styles/layers.css',
@@ -7168,6 +7171,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     providerPath,
     tablePath,
     chartRangePath,
+    colorStylePath,
   ]
   const configModule: unknown = await import(
     pathToFileURL(resolve(rootDirectory, 'stylelint.config.mjs')).href
@@ -7302,6 +7306,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         const providerStyleScope = isDeepStrictEqual(files, [providerScope])
         const tableStyleScope = isDeepStrictEqual(files, [tableScope])
         const chartRangeStyleScope = isDeepStrictEqual(files, [chartRangeScope])
+        const colorStylePreviewScope = isDeepStrictEqual(files, [colorStyleScope])
         return (
           (routeScope ||
             shellScope ||
@@ -7309,7 +7314,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             radioScope ||
             providerStyleScope ||
             tableStyleScope ||
-            chartRangeStyleScope) &&
+            chartRangeStyleScope ||
+            colorStylePreviewScope) &&
           isDeepStrictEqual(ruleKeys, [declarationPolicyRule]) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&
@@ -7332,6 +7338,14 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
           )) &&
           (await check(config, globalPath, 'color', radioCardForeground, !radioScope)) &&
           (await check(config, globalPath, 'color', softButtonForeground, true)) &&
+          (await check(
+            config,
+            globalPath,
+            'color',
+            'var(--preview-header-text)',
+            !colorStylePreviewScope,
+          )) &&
+          (await check(config, globalPath, 'color', 'var(--preview-unrelated)', true)) &&
           (await check(config, globalPath, 'background-color', softButtonBackground, true)) &&
           (await check(config, globalPath, 'color', tableSummaryForeground, !tableStyleScope)) &&
           (await check(
@@ -7363,7 +7377,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
                 radioScope ||
                 providerStyleScope ||
                 tableStyleScope ||
-                chartRangeStyleScope,
+                chartRangeStyleScope ||
+                colorStylePreviewScope,
             )))
         )
       }),

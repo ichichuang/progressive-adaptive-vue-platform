@@ -109,6 +109,8 @@ interface MaterialGateSnapshot {
   readonly themeAdapterSource: string
   readonly naiveProviderSource: string
   readonly uiProviderSource: string
+  readonly colorScopeSource: string
+  readonly regionalNavigationSource: string
   readonly shellSource: string
   readonly adminTokenSource: string
   readonly routeRegistrySource: string
@@ -317,7 +319,7 @@ const rootDirectory = process.cwd()
 const expectedNaiveUiVersion = '2.45.2'
 const expectedMotionVueVersion = '2.4.0'
 const expectedVueUseCoreVersion = '14.4.0'
-const expectedArchitectureAdminConsoleNegativeProbeCount = 67
+const expectedArchitectureAdminConsoleNegativeProbeCount = 76
 const expectedMotionGeometryNegativeProbeCount = 9
 const expectedRuntime002NegativeProbeCount = 10
 const expectedRuntime005NegativeProbeCount = 14
@@ -5099,6 +5101,7 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
         }),
         motion: preference.motion,
         radius: preference.radius,
+        colorStyle: preference.colorStyle,
         theme: preference.theme,
       },
       resolution.entry,
@@ -5774,9 +5777,232 @@ function naiveThemeStateViolations(snapshot: MaterialGateSnapshot): string[] {
     violations.push('NAIVE_RAW_VISUAL_AUTHORITY')
   }
 
+  const scopeScript = ts.createSourceFile(
+    'UiColorScope.ts',
+    scriptContent(snapshot.colorScopeSource),
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TS,
+  )
+  // Resolve this provider's local bindings from their sources, not their private names.
+  const scopeDeclarations: ts.VariableDeclaration[] = []
+  function collectScopeDeclarations(node: ts.Node): void {
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      node.initializer !== undefined
+    )
+      scopeDeclarations.push(node)
+    ts.forEachChild(node, collectScopeDeclarations)
+  }
+  collectScopeDeclarations(scopeScript)
+  const initializer = (node: ts.VariableDeclaration): string =>
+    node.initializer?.getText(scopeScript).replaceAll(/\s+/gu, ' ') ?? ''
+  const binding = (predicate: (expression: string) => boolean): string => {
+    const matches = scopeDeclarations.filter((node) => predicate(initializer(node)))
+    return matches.length === 1
+      ? (matches[0]?.name.getText(scopeScript) ?? '<unresolved>')
+      : '<unresolved>'
+  }
+  const rootBinding = binding((expression) => expression === 'inject(pavpRootAppearanceKey)')
+  const measuredBinding = binding((expression) => expression === 'inject(pavpMeasuredThemeKey)')
+  const propsBinding = binding((expression) => expression.startsWith('defineProps<'))
+  const regionBinding = binding(
+    (expression) =>
+      expression.startsWith('computed(') &&
+      expression.includes(`projectRegionAppearance(${rootBinding}.value, ${propsBinding}.region)`),
+  )
+  const appearanceBinding = binding(
+    (expression) =>
+      expression === `computed(() => ${regionBinding}.value?.appearance ?? ${rootBinding}.value)`,
+  )
+  const themeBinding = binding(
+    (expression) =>
+      expression.startsWith('computed(') &&
+      expression.includes(`createPavpNaiveThemeProjection(${appearanceBinding}.value)`),
+  )
+  const navigationImport = scopeScript.statements.flatMap((statement) =>
+    ts.isImportDeclaration(statement) &&
+    ts.isStringLiteral(statement.moduleSpecifier) &&
+    statement.moduleSpecifier.text === '../adapters/naive/regional-navigation-theme' &&
+    statement.importClause?.namedBindings !== undefined &&
+    ts.isNamedImports(statement.importClause.namedBindings)
+      ? statement.importClause.namedBindings.elements
+          .filter(
+            (entry) => (entry.propertyName?.text ?? entry.name.text) === 'regionalNavigationTheme',
+          )
+          .map((entry) => entry.name.text)
+      : [],
+  )
+  const navigationBinding =
+    navigationImport.length === 1 ? (navigationImport[0] ?? '<unresolved>') : '<unresolved>'
+  const menuBinding = binding(
+    (expression) =>
+      expression.startsWith('computed(') &&
+      expression.includes(`Menu: ${navigationBinding}(${regionBinding}.value.appearance)`),
+  )
+  const overlayBinding = binding(
+    (expression) =>
+      expression === `${propsBinding}.overlayId ?? \`pavp-color-overlay-\${useId()}\``,
+  )
+  const scopeMenus: ts.PropertyAssignment[] = []
+  function inspectScope(node: ts.Node): void {
+    if (ts.isPropertyAssignment(node) && objectPropertyName(node) === 'Menu') scopeMenus.push(node)
+    ts.forEachChild(node, inspectScope)
+  }
+  inspectScope(scopeScript)
+  const adapter = ts.createSourceFile(
+    'regional-navigation-theme.ts',
+    snapshot.regionalNavigationSource,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const adapterFunction = adapter.statements.find(
+    (node): node is ts.FunctionDeclaration =>
+      ts.isFunctionDeclaration(node) && node.name?.text === 'regionalNavigationTheme',
+  )
+  const snapshotTypeNames = adapter.statements.flatMap((statement) =>
+    ts.isImportDeclaration(statement) &&
+    ts.isStringLiteral(statement.moduleSpecifier) &&
+    statement.moduleSpecifier.text === '@platform/design-system' &&
+    statement.importClause?.namedBindings !== undefined &&
+    ts.isNamedImports(statement.importClause.namedBindings)
+      ? statement.importClause.namedBindings.elements
+          .filter(
+            (entry) => (entry.propertyName?.text ?? entry.name.text) === 'UiAppearanceSnapshot',
+          )
+          .map((entry) => entry.name.text)
+      : [],
+  )
+  if (
+    snapshotTypeNames.length !== 1 ||
+    adapterFunction?.parameters[0]?.type?.getText(adapter) !== snapshotTypeNames[0]
+  )
+    violations.push('REGIONAL_NAVIGATION_STATE_PROJECTION')
+  const paths = new Map<string, string>()
+  const parameter = adapterFunction?.parameters[0]
+  if (parameter !== undefined && ts.isIdentifier(parameter.name))
+    paths.set(parameter.name.text, 'appearance')
+  function semanticPath(expression: ts.Expression): string {
+    if (ts.isIdentifier(expression)) return paths.get(expression.text) ?? '<unresolved>'
+    if (ts.isPropertyAccessExpression(expression))
+      return `${semanticPath(expression.expression)}.${expression.name.text}`
+    return expression.getText(adapter)
+  }
+  const adapterReturns: ts.ObjectLiteralExpression[] = []
+  function inspectAdapter(node: ts.Node): void {
+    if (ts.isVariableDeclaration(node) && node.initializer !== undefined) {
+      if (ts.isIdentifier(node.name)) paths.set(node.name.text, semanticPath(node.initializer))
+      if (ts.isObjectBindingPattern(node.name))
+        for (const element of node.name.elements) {
+          if (ts.isIdentifier(element.name))
+            paths.set(
+              element.name.text,
+              `${semanticPath(node.initializer)}.${element.propertyName?.getText(adapter) ?? element.name.text}`,
+            )
+        }
+    }
+    if (ts.isReturnStatement(node) && node.expression !== undefined) {
+      const result = ts.isSatisfiesExpression(node.expression)
+        ? node.expression.expression
+        : node.expression
+      if (ts.isObjectLiteralExpression(result)) adapterReturns.push(result)
+    }
+    ts.forEachChild(node, inspectAdapter)
+  }
+  if (adapterFunction !== undefined) inspectAdapter(adapterFunction)
+  const expectedNavigationFields = new Map<string, string>([
+    ['color', "'transparent'"],
+    ...['groupTextColor', 'arrowColor'].map(
+      (key) => [key, 'appearance.colorPalette.text.secondary'] as const,
+    ),
+    ...['itemTextColor', 'itemIconColor', 'itemIconColorCollapsed'].map(
+      (key) => [key, 'appearance.colorPalette.text.primary'] as const,
+    ),
+    ['itemColorHover', 'appearance.colorPalette.roles.neutral.soft.background.pressed'],
+    ...[
+      'itemTextColorHover',
+      'itemIconColorHover',
+      'arrowColorHover',
+      'itemTextColorChildActiveHover',
+      'itemIconColorChildActiveHover',
+      'arrowColorChildActiveHover',
+    ].map((key) => [key, 'appearance.colorPalette.roles.neutral.soft.foreground'] as const),
+    ...['itemColorActive', 'itemColorActiveCollapsed'].map(
+      (key) => [key, 'appearance.colorPalette.roles.primary.solid.background.default'] as const,
+    ),
+    ['itemColorActiveHover', 'appearance.colorPalette.roles.primary.solid.background.hover'],
+    ...[
+      'itemTextColorActive',
+      'itemTextColorActiveHover',
+      'itemIconColorActive',
+      'itemIconColorActiveHover',
+      'arrowColorActive',
+      'arrowColorActiveHover',
+    ].map((key) => [key, 'appearance.colorPalette.roles.primary.solid.foreground'] as const),
+    ...['itemTextColorChildActive', 'itemIconColorChildActive', 'arrowColorChildActive'].map(
+      (key) => [key, 'appearance.colorPalette.roles.primary.foreground.default'] as const,
+    ),
+  ])
+  const projectedNavigation = adapterReturns[0]
+  if (
+    adapterReturns.length !== 1 ||
+    projectedNavigation === undefined ||
+    !isDeepStrictEqual(
+      projectedNavigation.properties.map(objectPropertyName).sort(),
+      [...expectedNavigationFields.keys()].sort(),
+    ) ||
+    !projectedNavigation.properties.every(
+      (property) =>
+        ts.isPropertyAssignment(property) &&
+        expectedNavigationFields.get(objectPropertyName(property) ?? '') ===
+          semanticPath(property.initializer),
+    )
+  )
+    violations.push('REGIONAL_NAVIGATION_STATE_PROJECTION')
+  const scopeTemplate = (
+    vueSfcCompiler.parse(snapshot.colorScopeSource, { filename: 'UiColorScope.vue' }).descriptor
+      .template?.content ?? ''
+  ).replaceAll(/\s+/gu, ' ')
+  const scopeBindings = [...scopeTemplate.matchAll(/:theme-overrides="([^"]*)"/gu)].map(
+    (match) => match[1],
+  )
+  if (
+    [
+      rootBinding,
+      measuredBinding,
+      propsBinding,
+      regionBinding,
+      appearanceBinding,
+      themeBinding,
+      navigationBinding,
+      menuBinding,
+      overlayBinding,
+    ].includes('<unresolved>') ||
+    scopeMenus.length !== 1 ||
+    scopeMenus[0]?.initializer.getText(scopeScript) !==
+      `${navigationBinding}(${regionBinding}.value.appearance)` ||
+    [...scopeTemplate.matchAll(/<NConfigProvider\b/gu)].length !== 3 ||
+    !isDeepStrictEqual(scopeBindings, [`${measuredBinding} ?? {}`, menuBinding]) ||
+    [...scopeTemplate.matchAll(/themeOverrides/gu)].length !== 2 ||
+    [...scopeTemplate.matchAll(/v-bind=/gu)].length !== 1 ||
+    !scopeTemplate.includes(
+      `${themeBinding} === undefined ? {} : { theme: ${themeBinding}.theme, themeOverrides: ${themeBinding}.themeOverrides }`,
+    ) ||
+    /#[\da-f]{3,8}\b|\b(?:rgb|hsl|oklch)\s*\(/iu.test(snapshot.colorScopeSource) ||
+    !snapshot.colorScopeSource.includes(
+      `provide(pavpOverlayTargetKey, \`#\${${overlayBinding}}\`)`,
+    ) ||
+    !scopeTemplate.includes('<Teleport to="#pavp-overlay-root">') ||
+    !scopeTemplate.includes(`:id="${overlayBinding}"`)
+  ) {
+    violations.push('NAIVE_OVERRIDE_OUTSIDE_PRIVATE_ADAPTER')
+  }
+
   const nonShellUiSource = snapshot.nonAdapterUiSource
     .replace(snapshot.shellSource, '')
     .replace(snapshot.uiProviderSource, '')
+    .replace(snapshot.colorScopeSource, '')
     // Styles retain exact declaration/context owners in validateVueStyleGuardrails;
     // this text probe covers non-style source, without a second class-prefix ban.
     .replaceAll(/<style(?:\s[^>]*)?>[\s\S]*?<\/style>/gu, '')
@@ -7607,7 +7833,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
       'inline-size': '100%',
       'max-inline-size': 'var(--ui-layout-admin-drawer-maximum-inline-size)',
       overflow: 'hidden',
-      background: 'var(--ui-material-overlay-background)',
+      background: 'var(--pavp-region-background, var(--ui-material-overlay-background))',
       'box-shadow': 'var(--ui-admin-shadow-overlay)',
     }) ||
     !snapshot.shellSource.includes('owner-id="architecture-console-drawer"') ||
@@ -7891,7 +8117,24 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
         'MATERIAL_REDUCED_SHADOW_TARGETS',
       ].includes(violation),
     ) ||
-    !snapshot.shellSource.includes('background: var(--ui-material-chrome-background);') ||
+    ![
+      ['.pavp-admin-shell__header', 'var(--pavp-region-background, transparent)'],
+      [
+        '.pavp-admin-shell__sidebar',
+        'var(--pavp-region-background, var(--ui-color-surface-panel))',
+      ],
+      [
+        '.pavp-admin-shell__drawer-navigation',
+        'var(--pavp-region-background, var(--ui-material-overlay-background))',
+      ],
+    ].every(
+      ([selector, background]) =>
+        selector !== undefined &&
+        background !== undefined &&
+        selectorHasDeclarations(cssRuleBlocks(styleContent(snapshot.shellSource)), selector, {
+          background,
+        }),
+    ) ||
     !snapshot.shellSource.includes('background: var(--ui-material-overlay-background);') ||
     shellMaterialVariables.some((variable) => !allowedShellMaterialVariables.has(variable)) ||
     snapshot.shellSource.includes('--ui-admin-chrome-header') ||
@@ -10051,6 +10294,50 @@ function runArchitectureAdminConsoleNegativeProbes(
         ),
       },
     ],
+    ...[
+      [
+        'regional-normal-uses-active',
+        'itemTextColor: text.primary',
+        'itemTextColor: primary.solid.foreground',
+      ],
+      [
+        'regional-hover-loses-pair',
+        'itemTextColorHover: neutral.soft.foreground',
+        'itemTextColorHover: text.primary',
+      ],
+      [
+        'regional-active-loses-brand',
+        'itemColorActive: primary.solid.background.default',
+        'itemColorActive: neutral.soft.background.default',
+      ],
+    ].map(
+      ([name = '', from = '', to = '']) =>
+        [
+          name,
+          'REGIONAL_NAVIGATION_STATE_PROJECTION',
+          { regionalNavigationSource: baseline.regionalNavigationSource.replace(from, to) },
+        ] as [string, string, Partial<MaterialGateSnapshot>],
+    ),
+    ...[
+      ['scope-wrong-root', 'inject(pavpRootAppearanceKey)', 'inject(pavpNaiveAppearanceKey)'],
+      [
+        'scope-raw-menu-color',
+        'Menu: regionalNavigationTheme(resolved.value.appearance)',
+        "Menu: { itemTextColor: '#ff0000' }",
+      ],
+      [
+        'scope-extra-override-sink',
+        ':theme-overrides="surfaceOverrides"',
+        ':theme-overrides="surfaceOverrides" :theme-overrides="{}"',
+      ],
+    ].map(
+      ([name = '', from = '', to = '']) =>
+        [
+          name,
+          'NAIVE_OVERRIDE_OUTSIDE_PRIVATE_ADAPTER',
+          { colorScopeSource: baseline.colorScopeSource.replace(from, to) },
+        ] as [string, string, Partial<MaterialGateSnapshot>],
+    ),
     [
       'naive-component-local-override',
       'NAIVE_OVERRIDE_OUTSIDE_PRIVATE_ADAPTER',
@@ -10151,6 +10438,36 @@ function runArchitectureAdminConsoleNegativeProbes(
       'ADMIN_ADAPTIVE_PIN',
       {
         adminTokenSource: `${baseline.adminTokenSource}\n"$value": "{material.chrome.adaptive.background}"`,
+      },
+    ],
+    [
+      'floating-header-region-background-missing',
+      'MATERIAL_BRANCH_INCOMPLETE',
+      {
+        shellSource: baseline.shellSource.replace(
+          'background: var(--pavp-region-background, transparent);',
+          'background: transparent;',
+        ),
+      },
+    ],
+    [
+      'floating-sidebar-region-background-missing',
+      'MATERIAL_BRANCH_INCOMPLETE',
+      {
+        shellSource: baseline.shellSource.replace(
+          'background: var(--pavp-region-background, var(--ui-color-surface-panel));',
+          'background: transparent;',
+        ),
+      },
+    ],
+    [
+      'floating-drawer-region-background-missing',
+      'MATERIAL_BRANCH_INCOMPLETE',
+      {
+        shellSource: baseline.shellSource.replace(
+          'background: var(--pavp-region-background, var(--ui-material-overlay-background));',
+          'background: transparent;',
+        ),
       },
     ],
     [
@@ -10461,8 +10778,8 @@ function runRuntime003SourceNegativeProbes(
       'runtime-003-inner-panel-pointer-close-added',
       'PAVP_RUNTIME_003_INNER_POINTER_BOUNDARY',
       baseline.shellSource.replace(
-        '            class="pavp-admin-shell__drawer-navigation"\n            role="dialog"',
-        '            class="pavp-admin-shell__drawer-navigation"\n            role="dialog"\n            @pointerdown="handleDrawerScrimPointerDown($event)"',
+        'class="pavp-admin-shell__drawer-navigation"',
+        'class="pavp-admin-shell__drawer-navigation" @pointerdown="handleDrawerScrimPointerDown($event)"',
       ),
     ],
     [
@@ -10833,7 +11150,8 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       'NAV_POPUP_OWNERSHIP',
       dropdownPropsSource.includes("trigger: 'hover'") &&
         !dropdownPropsSource.includes("trigger: 'click'") &&
-        dropdownPropsSource.includes("to: '#pavp-overlay-root'") &&
+        dropdownPropsSource.includes('to: `#${sidebarOverlayId}`') &&
+        shellSource.includes(':overlay-id="sidebarOverlayId"') &&
         shellSource.includes("class: 'pavp-admin-navigation-dropdown'") &&
         shellSource.includes(':menu-props="collapsedPopupMenuProps(option)"'),
     ],
@@ -11010,7 +11328,7 @@ function runNavigationReworkSourceNegativeProbes(
       changedNavigationReworkSource(
         baseline,
         'shellSource',
-        "  to: '#pavp-overlay-root',",
+        '  to: `#${sidebarOverlayId}`,',
         "  to: 'body',",
       ),
     ],
@@ -11947,7 +12265,7 @@ function adminNavigationNativeSourceInvariantResults(
     shellTemplate.includes('aria-modal="true"') &&
     shellTemplate.includes('role="dialog"') &&
     shellTemplate.includes('@pointerdown="handleDrawerScrimPointerDown($event)"') &&
-    shellScript.includes("to: '#pavp-overlay-root'") &&
+    shellScript.includes('to: `#${sidebarOverlayId}`') &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
     snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
@@ -12188,7 +12506,7 @@ function adminNavigationCollapsedPopupInvariantResults(
     {
       code: 'ADMIN_NAV_COLLAPSED_POPUP_OVERLAY_TARGET',
       passed:
-        exactOccurrenceCount(dropdownPropsSource, "to: '#pavp-overlay-root'") === 1 &&
+        exactOccurrenceCount(dropdownPropsSource, 'to: `#${sidebarOverlayId}`') === 1 &&
         !/\bto:\s*['"]body['"]/u.test(dropdownPropsSource) &&
         exactOccurrenceCount(shellTemplate, '<Teleport to="#pavp-overlay-root">') === 1,
     },
@@ -12339,7 +12657,7 @@ function runAdminNavigationCollapsedPopupNegativeProbes(
       'ADMIN_NAV_COLLAPSED_POPUP_OVERLAY_TARGET',
       {
         ...baseline,
-        shellSource: baseline.shellSource.replace("  to: '#pavp-overlay-root',", "  to: 'body',"),
+        shellSource: baseline.shellSource.replace('  to: `#${sidebarOverlayId}`,', "  to: 'body',"),
       },
     ],
     [
@@ -14076,7 +14394,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
         actionTooltips.every(
           (tooltip) =>
             tooltip !== undefined &&
-            staticTemplateAttribute(tooltip, 'to') === '#pavp-overlay-root' &&
+            singleBoundExpression(tooltip, 'to') === '`#${headerOverlayId}`' &&
             staticTemplateAttribute(tooltip, 'placement') === 'bottom-end' &&
             singleBoundExpression(tooltip, 'show-arrow') === 'false',
         ) &&
@@ -14275,7 +14593,7 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   const bodyTooltipTarget = replaceExactOnce(
     baseline.shellSource,
     tooltipSource,
-    tooltipSource.replace('to="#pavp-overlay-root"', 'to="body"'),
+    tooltipSource.replace(':to="`#${headerOverlayId}`"', 'to="body"'),
   )
   const withoutIconState = replaceExactOnce(
     baseline.shellSource,
@@ -15825,6 +16143,10 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     readFile(resolve(rootDirectory, 'packages/ui/src/index.ts'), 'utf8'),
   ])
   const uiProviderSource = naiveProviderSource
+  const colorScopeSource = await readFile(
+    resolve(rootDirectory, 'packages/ui/src/providers/UiColorScope.vue'),
+    'utf8',
+  )
   const [naiveDropdownSource, naiveMenuChildSource, naivePopoverSource, naiveSubmenuSource] =
     await Promise.all([
       readFile(requireFromUi.resolve('naive-ui/es/dropdown/src/Dropdown.mjs'), 'utf8'),
@@ -15859,6 +16181,11 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     themeAdapterSource: themeSource,
     naiveProviderSource,
     uiProviderSource,
+    colorScopeSource,
+    regionalNavigationSource: await readFile(
+      resolve(rootDirectory, 'packages/ui/src/adapters/naive/regional-navigation-theme.ts'),
+      'utf8',
+    ),
     shellSource,
     adminTokenSource,
     routeRegistrySource,
@@ -15939,6 +16266,43 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     ),
     routeCount: routeRegistry.length,
   }
+  const scopeRenameNames = [
+    'props',
+    'global',
+    'forcedColors',
+    'resolved',
+    'overlayTarget',
+    'measured',
+    'appearance',
+    'projection',
+    'surfaceOverrides',
+    'foreground',
+    'hover',
+    'style',
+  ]
+  let renamedScopeSource = baseline.colorScopeSource
+  for (const name of scopeRenameNames) {
+    // Property names and string literals remain semantic public keys.
+    renamedScopeSource = renamedScopeSource.replaceAll(
+      new RegExp(`(?<![.\\w-])${name}(?![\\w-]|\\s*:)`, 'gu'),
+      `renamed_${name}`,
+    )
+  }
+  // Only binding expressions, not directive names or public property paths, are renamed.
+  renamedScopeSource = renamedScopeSource
+    .replaceAll(':renamed_style=', ':style=')
+    .replaceAll('<renamed_style', '<style')
+    .replaceAll('</renamed_style>', '</style>')
+  const scopeRenameViolations = naiveThemeStateViolations({
+    ...baseline,
+    colorScopeSource: renamedScopeSource,
+    nonAdapterUiSource: baseline.nonAdapterUiSource.replace(
+      baseline.colorScopeSource,
+      renamedScopeSource,
+    ),
+  })
+  if (scopeRenameViolations.length !== 0)
+    violations.push(`Color scope benign local rename failed: ${scopeRenameViolations.join(', ')}`)
   const negativeProbeResults = runArchitectureAdminConsoleNegativeProbes(baseline)
   const motionGeometryNegativeProbeResults = runMotionGeometryNegativeProbes(baseline)
   const runtime002NegativeProbeResults = runRuntime002NegativeProbes(baseline)

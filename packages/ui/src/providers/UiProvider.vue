@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { tokens, type UiAppearanceSnapshot } from '@platform/design-system'
+import { projectRegionAppearance, tokens, type UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiLocale } from '../components/contracts'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import zhCN from 'naive-ui/es/locales/common/zhCN'
@@ -9,7 +9,12 @@ import dateEnUS from 'naive-ui/es/locales/date/enUS'
 import { NConfigProvider } from 'naive-ui/es/config-provider'
 import { computed, onBeforeUnmount, onMounted, provide, ref, toRef } from 'vue'
 
-import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
+import {
+  pavpNaiveAppearanceKey,
+  pavpRootAppearanceKey,
+  pavpMeasuredThemeKey,
+  pavpForcedColorsKey,
+} from '../adapters/naive/pavp-naive-runtime-context'
 import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
 import { loadScrollEnhancement } from '../adapters/scroll/scroll-enhancement-loader'
 
@@ -24,6 +29,16 @@ defineSlots<{
   default: (props: Readonly<Record<string, never>>) => unknown
 }>()
 
+const forcedColorsMedia = window.matchMedia('(forced-colors: active)')
+const forcedColors = ref(forcedColorsMedia.matches)
+provide(pavpForcedColorsKey, forcedColors)
+const synchronizeForcedColors = (): void => {
+  forcedColors.value = forcedColorsMedia.matches
+}
+forcedColorsMedia.addEventListener('change', synchronizeForcedColors)
+onBeforeUnmount(() => {
+  forcedColorsMedia.removeEventListener('change', synchronizeForcedColors)
+})
 const controlMetric = ref<HTMLElement | null>(null)
 const smallMetric = ref<HTMLElement | null>(null)
 const largeMetric = ref<HTMLElement | null>(null)
@@ -49,6 +64,28 @@ function finishSizeTransition(): void {
   sizeFrame = undefined
   document.documentElement.removeAttribute('data-ui-size-transition')
 }
+const measuredTheme = computed<GlobalThemeOverrides>(() => {
+  if (metrics.value === null) return {}
+  const menu = {
+    optionHeightSmall: `${String(metrics.value.small)}px`,
+    optionHeightMedium: `${String(metrics.value.control)}px`,
+    optionHeightLarge: `${String(metrics.value.large)}px`,
+  }
+  const padding = metrics.value.narrow
+    ? tokens['spacing.panel.padding-narrow']
+    : tokens['spacing.panel.padding']
+  const peers = { InternalSelectMenu: menu }
+  return {
+    Card: { paddingMedium: padding, paddingLarge: padding, paddingHuge: padding },
+    Dialog: { padding },
+    Drawer: { bodyPadding: padding, headerPadding: padding, footerPadding: padding },
+    Select: { peers },
+    AutoComplete: { peers },
+    Popselect: { peers },
+    Cascader: { peers, optionHeight: `${String(metrics.value.control)}px` },
+  }
+})
+provide(pavpMeasuredThemeKey, measuredTheme)
 const projection = computed(() => {
   const base = createPavpNaiveThemeProjection(props.appearance)
   if (metrics.value === null) return base
@@ -94,14 +131,18 @@ const projection = computed(() => {
   }
   return { ...base, themeOverrides }
 })
+const contentRegion = computed(() => {
+  if (forcedColors.value || props.appearance.colorStyle === 'unified') return null
+  const projection = projectRegionAppearance(props.appearance, 'content')
+  return projection.isCustomized ? projection : null
+})
 const appearance = toRef(() => props.appearance)
 
 provide(pavpNaiveAppearanceKey, appearance)
+provide(pavpRootAppearanceKey, appearance)
 provide(
   'pavp.scroll',
   (host: HTMLElement, viewport: HTMLElement, content: HTMLElement, xScrollable: boolean) => {
-    const hadNestedGuard = host.hasAttribute('data-lenis-prevent')
-    host.toggleAttribute('data-lenis-prevent', true)
     let disposed = false
     let detach: (() => void) | undefined
     void loadScrollEnhancement().then((runtime) => {
@@ -111,7 +152,6 @@ provide(
     return () => {
       disposed = true
       detach?.()
-      host.toggleAttribute('data-lenis-prevent', hadNestedGuard)
     }
   },
 )
@@ -260,7 +300,14 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div id="pavp-overlay-root" />
+  <div
+    id="pavp-overlay-root"
+    :data-pavp-color-scope="contentRegion !== null ? '' : undefined"
+    :data-color-mode="contentRegion?.appearance.colorMode"
+    :data-material="contentRegion?.appearance.material"
+    :data-contrast="contentRegion?.appearance.contrast"
+    :style="contentRegion === null ? undefined : contentRegion.cssVariables"
+  />
   <NConfigProvider
     :preflight-style-disabled="true"
     :locale="locale === 'zh-CN' ? zhCN : enUS"

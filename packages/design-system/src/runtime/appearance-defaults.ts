@@ -16,6 +16,7 @@ export const ProductPreferenceDefault = freezeProductPreferenceDefault(
   explicitThemePreferenceSchema.parse({
     schemaVersion: 4,
     appearance: {
+      colorStyle: 'unified',
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',

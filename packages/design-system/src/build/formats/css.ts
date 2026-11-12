@@ -95,6 +95,7 @@ function wrapCssSegments(
   firstPrefix: string,
   continuedPrefix: string,
   finalSuffix: ',' | ';',
+  printWidth = cssPrintWidth,
 ): string[] {
   const lines: string[] = []
   let line = firstPrefix
@@ -104,7 +105,7 @@ function wrapCssSegments(
     const candidate = `${line}${spacer}${segment}`
     const suffixLength = index === segments.length - 1 ? finalSuffix.length : 0
 
-    if (line !== firstPrefix && candidate.length + suffixLength > cssPrintWidth) {
+    if (line !== firstPrefix && candidate.length + suffixLength > printWidth) {
       lines.push(line)
       line = `${continuedPrefix}${segment}`
     } else {
@@ -116,7 +117,7 @@ function wrapCssSegments(
   return lines
 }
 
-function formatShadowDeclaration(declaration: { name: string; value: string }): string {
+function formatShadowDeclaration(declaration: { name: string; value: string }, indent = 0): string {
   const layers = splitTopLevelCssValue(declaration.value, ',')
 
   if (layers.length > 1) {
@@ -126,6 +127,7 @@ function formatShadowDeclaration(declaration: { name: string; value: string }): 
         continuationIndent,
         `${continuationIndent}  `,
         index === layers.length - 1 ? ';' : ',',
+        cssPrintWidth - indent,
       ),
     )
 
@@ -137,18 +139,22 @@ function formatShadowDeclaration(declaration: { name: string; value: string }): 
     `${declarationIndent}${declaration.name}: `,
     continuationIndent,
     ';',
+    cssPrintWidth - indent,
   ).join('\n')
 }
 
-function formatDeclaration(declaration: {
-  name: string
-  type?: DtcgTokenType
-  value: string
-}): string {
+function formatDeclaration(
+  declaration: {
+    name: string
+    type?: DtcgTokenType
+    value: string
+  },
+  indent = 0,
+): string {
   const singleLine = `    ${declaration.name}: ${declaration.value};`
   const variableReference = /^var\((--ui-[a-z0-9-]+)\)$/u.exec(declaration.value)
 
-  if (singleLine.length <= cssPrintWidth) {
+  if (singleLine.length <= cssPrintWidth - indent) {
     return singleLine
   }
 
@@ -156,7 +162,7 @@ function formatDeclaration(declaration: {
     return `    ${declaration.name}: var(\n      ${variableReference[1]}\n    );`
   }
 
-  return declaration.type === 'shadow' ? formatShadowDeclaration(declaration) : singleLine
+  return declaration.type === 'shadow' ? formatShadowDeclaration(declaration, indent) : singleLine
 }
 
 const axisSelector = {
@@ -304,7 +310,7 @@ function tokenSelectorGroups(
   return [...groups.values()]
 }
 
-function formatSelectorGroups(groups: readonly SelectorGroup[]): string {
+function formatSelectorGroups(groups: readonly SelectorGroup[], indent = 0): string {
   return [...groups]
     .sort(
       (left, right) =>
@@ -315,12 +321,15 @@ function formatSelectorGroups(groups: readonly SelectorGroup[]): string {
     .map((group) => {
       const declarations = group.declarations
         .sort((left, right) => compareCodePoints(left.name, right.name))
-        .map(formatDeclaration)
+        .map((declaration) => formatDeclaration(declaration, indent))
         .join('\n')
 
       return `  ${group.selector} {\n${declarations}\n  }`
     })
     .join('\n\n')
+    .split('\n')
+    .map((line) => (line === '' ? line : ' '.repeat(indent) + line))
+    .join('\n')
 }
 
 export function formatTokenCssRules(
@@ -340,6 +349,21 @@ export function formatRuntimeCss(result: TokenBuildResult): string {
       (token) => !activePublicColorRoles.has(token.role.name),
     ),
   )
+  // Rebind color-dependent aliases at each local color boundary. Use the same
+  // resolved token records and conditions as the root; never maintain a second
+  // list of material or component formulas in the UI adapter.
+  const regionalGroups = groups
+    .map((group) => ({
+      ...group,
+      selector: group.selector.replace(/^(?:html(?::root)?|:root)/u, '[data-pavp-color-scope]'),
+      declarations: group.declarations.filter(
+        (declaration) =>
+          declaration.name.startsWith('--ui-material-') ||
+          declaration.name.startsWith('--ui-color-material-support-') ||
+          /var\(--ui-(?:color-|material-|shadow-panel)/u.test(declaration.value),
+      ),
+    }))
+    .filter((group) => group.declarations.length > 0)
   const blocks = formatSelectorGroups([
     ...groups,
     ...themeBankSelectorGroups(result, groups.length),
@@ -350,6 +374,12 @@ ${canonicalLayerOrder}
 
 @layer tokens {
 ${blocks}
+}
+
+@media (forced-colors: none) {
+  @layer tokens {
+${formatSelectorGroups(regionalGroups, 2)}
+  }
 }
 
 ${formatForcedColorsCss()}
@@ -441,7 +471,7 @@ export function formatThemeBankCss(result: TokenBuildResult): string {
     .map((group) => {
       const declarations = group.declarations
         .sort((left, right) => compareCodePoints(left.name, right.name))
-        .map(formatDeclaration)
+        .map((declaration) => formatDeclaration(declaration))
         .join('\n')
 
       return `  ${group.selector} {\n${declarations}\n  }`

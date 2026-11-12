@@ -31,18 +31,18 @@ function previewStyle(
   >
     <span
       v-if="mode !== 'dark'"
-      class="wb-mode-scene flex-1 grid min-w-0 gap-content-gap"
+      class="wb-mode-scene flex-1 grid min-w-0 gap-component-unit"
       :style="previewStyle(theme, 'light', contrast)"
     >
       <span class="wb-mode-scene-toolbar block" />
-      <span class="wb-mode-scene-sidebar grid content-start gap-content-gap">
+      <span class="wb-mode-scene-sidebar grid content-start gap-component-unit">
         <span />
         <span />
         <span />
       </span>
-      <span class="wb-mode-scene-content grid content-center gap-content-gap">
+      <span class="wb-mode-scene-content grid content-center gap-component-unit">
         <span class="wb-mode-scene-title" />
-        <span class="wb-mode-scene-tiles grid gap-content-gap">
+        <span class="wb-mode-scene-tiles grid gap-component-unit">
           <span />
           <span />
         </span>
@@ -50,18 +50,18 @@ function previewStyle(
     </span>
     <span
       v-if="mode !== 'light'"
-      class="wb-mode-scene flex-1 grid min-w-0 gap-content-gap"
+      class="wb-mode-scene flex-1 grid min-w-0 gap-component-unit"
       :style="previewStyle(theme, 'dark', contrast)"
     >
       <span class="wb-mode-scene-toolbar block" />
-      <span class="wb-mode-scene-sidebar grid content-start gap-content-gap">
+      <span class="wb-mode-scene-sidebar grid content-start gap-component-unit">
         <span />
         <span />
         <span />
       </span>
-      <span class="wb-mode-scene-content grid content-center gap-content-gap">
+      <span class="wb-mode-scene-content grid content-center gap-component-unit">
         <span class="wb-mode-scene-title" />
-        <span class="wb-mode-scene-tiles grid gap-content-gap">
+        <span class="wb-mode-scene-tiles grid gap-component-unit">
           <span />
           <span />
         </span>

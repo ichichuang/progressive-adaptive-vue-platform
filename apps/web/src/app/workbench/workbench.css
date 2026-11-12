@@ -171,7 +171,7 @@
     background: var(--pavp-mode-preview-border);
   }
   .wb-mode-scene-tiles > span {
-    block-size: var(--ui-control-height);
+    block-size: var(--ui-space-content-gap);
     background: var(--pavp-mode-preview-action);
     border-radius: var(--ui-radius-control);
   }
@@ -455,13 +455,13 @@
   }
   .wb-mode-scene {
     background: var(--pavp-mode-preview-page);
-    padding: var(--ui-space-content-gap);
+    padding: var(--ui-space-component-unit);
     grid-template-columns: minmax(0, 1fr) minmax(0, 3fr);
     grid-template-rows: auto 1fr;
   }
   .wb-mode-scene-toolbar {
     grid-column: 1 / -1;
-    block-size: var(--ui-space-content-gap);
+    block-size: var(--ui-space-component-unit);
     background: var(--pavp-mode-preview-panel);
   }
   .wb-mode-scene-sidebar {
@@ -469,7 +469,7 @@
   }
   .wb-mode-scene-title {
     inline-size: 50%;
-    block-size: var(--ui-space-content-gap);
+    block-size: var(--ui-space-component-unit);
     background: var(--pavp-mode-preview-control);
   }
   .wb-mode-scene-tiles {
@@ -537,7 +537,7 @@
     padding: 0;
   }
   [data-layout-profile='wide'] .wb-settings-section-body {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    grid-template-columns: minmax(0, 1fr);
   }
   [data-layout-profile='regular'] .wb-section-link.n-button,
   [data-layout-profile='wide'] .wb-section-link.n-button {

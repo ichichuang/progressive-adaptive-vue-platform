@@ -16,6 +16,7 @@ import { UiRadioCardGroup, UiScrollArea, type UiScrollController } from '@platfo
 import { NCard } from 'naive-ui/es/card'
 import { NScrollbar } from 'naive-ui/es/scrollbar'
 import { NSwitch } from 'naive-ui/es/switch'
+import ThemeStyleSettings from '../app/workbench/ThemeStyleSettings.vue'
 import SettingsField from '../app/workbench/SettingsField.vue'
 import ColorModePreview from '../app/workbench/ColorModePreview.vue'
 
@@ -30,7 +31,7 @@ import { consoleLocaleRegistry, useConsoleI18n, type ConsoleMessageKey } from '.
 
 defineOptions({ name: 'ControlCenterPage' })
 
-type AppearanceAxis = Exclude<keyof ExplicitThemePreference['appearance'], 'theme'>
+type AppearanceAxis = Exclude<keyof ExplicitThemePreference['appearance'], 'theme' | 'colorStyle'>
 type FeedbackKey = Extract<ConsoleMessageKey, `settings.feedback.${string}`>
 type FeedbackTone = 'neutral' | 'success' | 'warning' | 'error'
 
@@ -73,6 +74,7 @@ const localeNoticeKeys = {
 } as const
 const sections = [
   { id: 'settings-theme', label: 'settings.section.theme' },
+  { id: 'settings-style', label: 'settings.styles.title' },
   { id: 'settings-reading', label: 'settings.section.reading' },
   { id: 'settings-layout', label: 'settings.section.layout' },
   { id: 'settings-comfort', label: 'settings.section.comfort' },
@@ -127,7 +129,7 @@ const colorModes = [
 ] as const
 const themeChoiceLayout = {
   heightMedium: 'auto',
-  paddingMedium: 'var(--ui-space-content-gap)',
+  paddingMedium: 'var(--ui-space-component-unit)',
 }
 const colorModeOptions = computed(() =>
   colorModes.map((mode) => ({ value: mode.value, label: t(mode.label) })),
@@ -229,8 +231,8 @@ function themeStyle(theme: AppearanceThemePreviewProjection): Readonly<Record<st
   const snapshot = effective.snapshot.value
   const swatches = theme.planes[snapshot.colorMode][snapshot.contrast]
   return {
-    '--pavp-settings-theme-color': swatches.controlPrimary,
-    '--pavp-settings-theme-on-color': swatches.surfacePanel,
+    '--pavp-settings-theme-color': swatches.actionPrimary,
+    '--pavp-settings-theme-on-color': swatches.onAction,
   }
 }
 
@@ -391,8 +393,10 @@ onScopeDispose(() => {
       owner-id="architecture-console-content"
       @controller="connectContentScroll"
     >
-      <div class="wb-settings-content grid min-w-0">
-        <header class="wb-settings-heading grid gap-content-gap">
+      <div class="wb-settings-content grid min-w-0 gap-field-gap">
+        <header
+          class="wb-settings-heading flex flex-wrap items-center justify-between gap-content-gap"
+        >
           <h1
             id="control-center-heading"
             class="sr-only"
@@ -407,10 +411,9 @@ onScopeDispose(() => {
           >
             {{ t('settings.title') }}
           </p>
-          <div class="wb-settings-summary grid gap-content-gap">
-            <p class="m-0 text-body text-text-secondary">
-              {{ t('settings.description') }}
-            </p>
+          <div
+            class="wb-settings-summary flex flex-wrap items-center justify-between gap-content-gap"
+          >
             <div class="wb-settings-save">
               <UiScrollArea owner-id="settings-feedback">
                 <span
@@ -443,10 +446,12 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
+          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-theme-title"
         >
-          <div class="wb-settings-intro grid content-start gap-content-gap">
+          <div
+            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          >
             <h2
               id="settings-theme-title"
               class="font-title-weight m-0 text-subheading"
@@ -454,14 +459,14 @@ onScopeDispose(() => {
             >
               {{ t('settings.section.theme') }}
             </h2>
-            <p class="m-0 text-pretty text-text-secondary">
+            <p class="m-0 text-pretty text-caption text-text-secondary">
               {{ t('settings.color-mode-note') }}
             </p>
           </div>
           <div class="wb-settings-controls grid min-w-0 gap-field-gap">
             <UiRadioCardGroup
               v-if="activePreview && preference !== null"
-              class="wb-mode-options layout-regular:grid-cols-3 layout-wide:grid-cols-3"
+              class="wb-mode-options wb-mode-options-compact layout-regular:grid-cols-3 layout-wide:grid-cols-3"
               :accessible-label="t('settings.color-mode')"
               :model-value="preference.appearance.colorMode"
               :options="colorModeOptions"
@@ -470,74 +475,76 @@ onScopeDispose(() => {
             >
               <template #option="{ option, selected }">
                 <ColorModePreview
+                  class="layout-narrow:hidden"
                   :theme="activePreview"
                   :mode="colorModePreferenceSchema.parse(option.value)"
                   :contrast="effective.snapshot.value.contrast"
                 />
                 <span
-                  class="wb-mode-caption leading-body flex items-center justify-center gap-content-gap text-body"
+                  class="wb-mode-caption leading-body flex items-center justify-center gap-component-unit text-body"
                 >
                   <span
                     v-if="selected"
-                    class="i-lucide-circle-check"
+                    class="i-lucide-circle-check shrink-0"
                     aria-hidden="true"
                   />
                   <span
                     v-else
-                    class="i-lucide-circle"
+                    class="i-lucide-circle shrink-0"
                     aria-hidden="true"
                   />
-                  {{ option.label }}
+                  <span class="whitespace-nowrap">{{ option.label }}</span>
                 </span>
               </template>
             </UiRadioCardGroup>
-            <div
-              class="wb-theme-options grid grid-cols-1 min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-3"
-              role="group"
-              :aria-label="t('settings.choose-theme')"
-            >
-              <NButton
-                v-for="theme in themePreviews"
-                :key="`${theme.registryKind}:${theme.themeId}`"
-                :quaternary="!selectedTheme(theme.reference)"
-                :tertiary="selectedTheme(theme.reference)"
-                :type="selectedTheme(theme.reference) ? 'primary' : 'default'"
-                :bordered="false"
-                :theme-overrides="themeChoiceLayout"
-                class="wb-theme-option"
-                :style="themeStyle(theme)"
-                :aria-pressed="selectedTheme(theme.reference)"
-                :aria-label="theme.label"
-                :disabled="preference === null || returning"
-                @click="chooseTheme(theme.reference)"
+            <div class="grid min-w-0 gap-content-gap">
+              <span class="font-title-weight text-caption text-text-secondary">{{
+                t('settings.choose-theme')
+              }}</span>
+              <div
+                class="wb-theme-options flex flex-wrap min-w-0 gap-content-gap"
+                role="group"
+                :aria-label="t('settings.choose-theme')"
               >
-                <span
-                  class="wb-theme-swatch grid place-items-center min-h-target-enhanced min-w-target-enhanced"
-                  aria-hidden="true"
+                <NButton
+                  v-for="theme in themePreviews"
+                  :key="`${theme.registryKind}:${theme.themeId}`"
+                  :quaternary="!selectedTheme(theme.reference)"
+                  :tertiary="selectedTheme(theme.reference)"
+                  :type="selectedTheme(theme.reference) ? 'primary' : 'default'"
+                  :bordered="false"
+                  :theme-overrides="themeChoiceLayout"
+                  class="wb-theme-option"
+                  :style="themeStyle(theme)"
+                  :aria-pressed="selectedTheme(theme.reference)"
+                  :aria-label="theme.label"
+                  :disabled="preference === null || returning"
+                  @click="chooseTheme(theme.reference)"
                 >
                   <span
-                    v-if="selectedTheme(theme.reference)"
-                    class="i-lucide-check text-title"
-                  />
-                </span>
-                <span class="text-start min-w-0 whitespace-normal text-caption">{{
-                  theme.label
-                }}</span>
-              </NButton>
+                    class="wb-theme-swatch grid place-items-center min-h-target-enhanced min-w-target-enhanced"
+                    aria-hidden="true"
+                  >
+                    <span
+                      v-if="selectedTheme(theme.reference)"
+                      class="i-lucide-check text-title"
+                    />
+                  </span>
+                  <span class="sr-only">{{ theme.label }}</span>
+                </NButton>
+              </div>
             </div>
             <SettingsField
               id="settings-contrast"
               class="wb-settings-choice-field"
               :label="t('settings.contrast')"
-              :description="t('settings.contrast-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.contrast')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   :model-value="String(appearanceValue('contrast') ?? '')"
                   :options="choices.contrast"
                   :disabled="preference === null || returning"
@@ -548,14 +555,39 @@ onScopeDispose(() => {
           </div>
         </NCard>
         <NCard
+          id="settings-style"
+          tag="section"
+          :bordered="false"
+          class="wb-settings-section min-w-0"
+          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
+          aria-labelledby="settings-style-title"
+        >
+          <h2
+            id="settings-style-title"
+            class="sr-only"
+            tabindex="-1"
+          >
+            {{ t('settings.styles.title') }}
+          </h2>
+          <ThemeStyleSettings
+            v-if="preference !== null"
+            :model-value="preference.appearance.colorStyle"
+            :appearance="effective.snapshot.value"
+            :disabled="returning"
+            @update:model-value="commitAppearance({ colorStyle: $event })"
+          />
+        </NCard>
+        <NCard
           id="settings-reading"
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
+          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-reading-title"
         >
-          <div class="wb-settings-intro grid content-start gap-content-gap">
+          <div
+            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          >
             <h2
               id="settings-reading-title"
               class="font-title-weight m-0 text-subheading"
@@ -569,15 +601,13 @@ onScopeDispose(() => {
               id="settings-language"
               class="wb-settings-choice-field"
               :label="t('settings.language')"
-              :description="t('settings.language-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.language')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   :model-value="language.pendingLocale.value ?? language.locale.value"
                   :options="choices.language"
                   :disabled="returning || language.pendingLocale.value !== null"
@@ -590,15 +620,13 @@ onScopeDispose(() => {
               id="settings-font-scale"
               class="wb-settings-choice-field"
               :label="t('settings.font-scale')"
-              :description="t('settings.font-scale-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.font-scale')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   :model-value="String(appearanceValue('fontScale') ?? '')"
                   :options="choices.fontScale"
                   :disabled="preference === null || returning"
@@ -613,10 +641,12 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
+          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-layout-title"
         >
-          <div class="wb-settings-intro grid content-start gap-content-gap">
+          <div
+            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          >
             <h2
               id="settings-layout-title"
               class="font-title-weight m-0 text-subheading"
@@ -630,15 +660,13 @@ onScopeDispose(() => {
               id="settings-density"
               class="wb-settings-choice-field"
               :label="t('settings.density')"
-              :description="t('settings.density-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-3 layout-wide:grid-cols-3"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.density')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   :model-value="String(appearanceValue('density') ?? '')"
                   :options="choices.density"
                   :disabled="preference === null || returning"
@@ -649,13 +677,11 @@ onScopeDispose(() => {
             <SettingsField
               id="settings-navigation-collapsed"
               :label="t('settings.navigation-collapsed')"
-              :description="t('settings.navigation-collapsed-note')"
             >
               <template #default="field">
                 <NSwitch
                   :value="navigation.wideNavigationCollapsed"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   @update:value="updateNavigation('collapsed', $event)"
                 />
               </template>
@@ -663,13 +689,11 @@ onScopeDispose(() => {
             <SettingsField
               id="settings-navigation-accordion"
               :label="t('settings.navigation-accordion')"
-              :description="t('settings.navigation-accordion-note')"
             >
               <template #default="field">
                 <NSwitch
                   :value="navigation.accordion"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   @update:value="updateNavigation('accordion', $event)"
                 />
               </template>
@@ -681,10 +705,12 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
+          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-comfort-title"
         >
-          <div class="wb-settings-intro grid content-start gap-content-gap">
+          <div
+            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          >
             <h2
               id="settings-comfort-title"
               class="font-title-weight m-0 text-subheading"
@@ -698,15 +724,13 @@ onScopeDispose(() => {
               id="settings-material"
               class="wb-settings-choice-field"
               :label="t('settings.material')"
-              :description="t('settings.material-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-3 layout-wide:grid-cols-3"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.material')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   :model-value="String(appearanceValue('material') ?? '')"
                   :options="choices.material"
                   :disabled="preference === null || returning"
@@ -718,19 +742,14 @@ onScopeDispose(() => {
               id="settings-radius"
               class="wb-settings-choice-field"
               :label="t('settings.radius')"
-              :description="t('settings.radius-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.radius')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="
-                    hasCustomRadius
-                      ? `${field.describedBy} settings-radius-custom`
-                      : field.describedBy
-                  "
+                  :aria-describedby="hasCustomRadius ? 'settings-radius-custom' : undefined"
                   :model-value="String(appearanceValue('radius') ?? '')"
                   :options="choices.radius"
                   :disabled="preference === null || returning"
@@ -749,15 +768,13 @@ onScopeDispose(() => {
               id="settings-motion"
               class="wb-settings-choice-field"
               :label="t('settings.motion')"
-              :description="t('settings.motion-note')"
             >
               <template #default="field">
                 <UiRadioCardGroup
                   :id="field.inputProps.id"
-                  class="wb-setting-choice layout-narrow:grid-cols-1 layout-regular:grid-cols-3 layout-wide:grid-cols-3"
+                  class="wb-setting-choice"
                   :accessible-label="t('settings.motion')"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   :model-value="String(appearanceValue('motion') ?? '')"
                   :options="choices.motion"
                   :disabled="preference === null || returning"
@@ -772,10 +789,12 @@ onScopeDispose(() => {
           tag="section"
           :bordered="false"
           class="wb-settings-section min-w-0"
-          content-class="wb-settings-section-body grid min-w-0 layout-wide:grid-cols-1"
+          content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-workspace-title"
         >
-          <div class="wb-settings-intro grid content-start gap-content-gap">
+          <div
+            class="wb-settings-intro flex flex-wrap items-baseline justify-between gap-content-gap"
+          >
             <h2
               id="settings-workspace-title"
               class="font-title-weight m-0 text-subheading"
@@ -788,13 +807,11 @@ onScopeDispose(() => {
             <SettingsField
               id="settings-scroll-restoration"
               :label="t('settings.scroll-restoration')"
-              :description="t('settings.scroll-restoration-note')"
             >
               <template #default="field">
                 <NSwitch
                   :value="scroll.restoreOnRefresh"
                   :aria-labelledby="field.labelledBy"
-                  :aria-describedby="field.describedBy"
                   @update:value="updateScroll"
                 />
               </template>
@@ -820,14 +837,14 @@ onScopeDispose(() => {
       </div>
     </UiScrollArea>
     <aside
-      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 items-center order-first bg-surface-panel gap-content-gap layout-regular:order-last layout-wide:order-last layout-regular:p-panel layout-wide:p-panel"
+      class="wb-settings-navigation rounded-panel grid min-h-0 min-w-0 items-center order-first bg-surface-panel gap-content-gap layout-regular:order-last layout-wide:order-last layout-regular:p-panel-narrow layout-wide:p-panel-narrow"
     >
       <NScrollbar
         class="min-h-0 min-w-0"
         content-class="h-full"
       >
         <nav
-          class="wb-section-nav flex min-h-0 min-w-0 gap-content-gap layout-regular:flex-col layout-wide:flex-col layout-regular:min-h-full layout-wide:min-h-full layout-narrow:gap-component-unit"
+          class="wb-section-nav flex min-h-0 min-w-0 justify-center gap-content-gap layout-regular:flex-col layout-wide:flex-col layout-regular:min-h-full layout-wide:min-h-full layout-narrow:gap-component-unit"
           :aria-label="t('settings.section-navigation')"
         >
           <NButton
@@ -846,6 +863,11 @@ onScopeDispose(() => {
               <span
                 v-if="section.id === 'settings-theme'"
                 class="i-lucide-palette"
+                aria-hidden="true"
+              />
+              <span
+                v-else-if="section.id === 'settings-style'"
+                class="i-lucide-panels-top-left"
                 aria-hidden="true"
               />
               <span
@@ -895,3 +917,40 @@ onScopeDispose(() => {
     </aside>
   </div>
 </template>
+
+<style scoped>
+.wb-setting-choice {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(var(--ui-font-size-body) * 7)), 1fr)
+  );
+}
+.wb-setting-choice :deep(.pavp-radio-card-group__content) {
+  padding-inline: var(--ui-space-component-unit);
+  white-space: nowrap;
+}
+.wb-mode-options-compact {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.wb-mode-options-compact :deep(.pavp-radio-card-group__content) {
+  padding: var(--ui-space-content-gap);
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+}
+
+.wb-mode-options-compact :deep(.wb-mode-preview) {
+  inline-size: calc(var(--ui-control-height) * 2);
+  block-size: calc(var(--ui-control-height) * 1.25);
+}
+.wb-mode-options-compact :deep(.wb-mode-caption) {
+  font-size: var(--ui-font-size-body);
+}
+:global([data-layout-profile='narrow'] .wb-mode-options-compact .pavp-radio-card-group__content) {
+  grid-template-columns: minmax(0, 1fr);
+  padding: var(--ui-space-component-unit);
+}
+:global([data-layout-profile='narrow'] .wb-mode-options-compact .wb-mode-caption) {
+  font-size: var(--ui-font-size-caption);
+}
+</style>

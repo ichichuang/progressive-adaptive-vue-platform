@@ -1,3 +1,4 @@
+import { colorStyleSchema } from './color-style.schema'
 import { z } from 'zod'
 import { radiusProjection } from '../generated/radius-projection'
 
@@ -41,6 +42,7 @@ const themeReferenceSchema = z.discriminatedUnion('registryKind', [
 ])
 
 export const explicitThemeAppearancePreferenceSchema = z.strictObject({
+  colorStyle: colorStyleSchema,
   colorMode: colorModePreferenceSchema,
   theme: themeReferenceSchema,
   contrast: contrastPreferenceSchema,

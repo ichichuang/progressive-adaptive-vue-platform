@@ -480,6 +480,7 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       emits: Object.freeze([
         Object.freeze({ name: 'navigate', payloadType: 'string' }),
+        Object.freeze({ name: 'navigate-home', payloadType: 'void' }),
         Object.freeze({ name: 'toggle-color-mode', payloadType: 'void' }),
         Object.freeze({
           name: 'content-scroll-controller',

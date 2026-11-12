@@ -1,3 +1,4 @@
+import { colorStyleIds } from '../../schema/color-style.schema'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
@@ -573,6 +574,7 @@ ${motionResolutionRuntime}
   function isExplicitAppearance(value) {
     return (
       hasOnlyKeys(value, [
+        'colorStyle',
         'colorMode',
         'contrast',
         'density',
@@ -582,6 +584,7 @@ ${motionResolutionRuntime}
         'theme',
         'radius',
       ]) &&
+      includes(${javascriptLiteral(colorStyleIds)}, value.colorStyle) &&
       includes(colorModes, value.colorMode) &&
       includes(contrasts, value.contrast) &&
       isDensity(value.density) &&

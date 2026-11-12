@@ -156,7 +156,7 @@ patchedDependencies:
     hash: fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59
     path: patches/motion-v@2.4.0.patch
   naive-ui@2.45.2:
-    hash: 8f94ad96e80d6818132cbdd27ab6c2158f903818a275bc292c91d853fa4e5c06
+    hash: 16cdef688867a9780cf97a6f5004b20210f00d6843580f0d9d405b650c608bfd
     path: patches/naive-ui@2.45.2.patch
   unconfig@7.5.0:
     hash: c66d637949b6f04539e5b4a0e40546dea815c8f13897e8f568464b6af3596bab
@@ -261,7 +261,7 @@ importers:
         version: 2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)(@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3)))(vue@3.5.40(typescript@6.0.3))
       naive-ui:
         specifier: 'catalog:'
-        version: 2.45.2(patch_hash=8f94ad96e80d6818132cbdd27ab6c2158f903818a275bc292c91d853fa4e5c06)(vue@3.5.40(typescript@6.0.3))
+        version: 2.45.2(patch_hash=16cdef688867a9780cf97a6f5004b20210f00d6843580f0d9d405b650c608bfd)(vue@3.5.40(typescript@6.0.3))
       pinia:
         specifier: 'catalog:'
         version: 3.0.4(typescript@6.0.3)(vue@3.5.40(typescript@6.0.3))
@@ -316,7 +316,7 @@ importers:
         version: 2.4.0(patch_hash=fe15a8c9fbe1795b63b62db2b0a262c44c45fe58fc75b14cd89c51ead0e19d59)(@vueuse/core@14.4.0(vue@3.5.40(typescript@6.0.3)))(vue@3.5.40(typescript@6.0.3))
       naive-ui:
         specifier: 'catalog:'
-        version: 2.45.2(patch_hash=8f94ad96e80d6818132cbdd27ab6c2158f903818a275bc292c91d853fa4e5c06)(vue@3.5.40(typescript@6.0.3))
+        version: 2.45.2(patch_hash=16cdef688867a9780cf97a6f5004b20210f00d6843580f0d9d405b650c608bfd)(vue@3.5.40(typescript@6.0.3))
       overlayscrollbars:
         specifier: 'catalog:'
         version: 2.16.0
@@ -6046,7 +6046,7 @@ snapshots:
 
   muggle-string@0.4.1: {}
 
-  naive-ui@2.45.2(patch_hash=8f94ad96e80d6818132cbdd27ab6c2158f903818a275bc292c91d853fa4e5c06)(vue@3.5.40(typescript@6.0.3)):
+  naive-ui@2.45.2(patch_hash=16cdef688867a9780cf97a6f5004b20210f00d6843580f0d9d405b650c608bfd)(vue@3.5.40(typescript@6.0.3)):
     dependencies:
       '@css-render/plugin-bem': 0.15.14(css-render@0.15.14)
       '@css-render/vue3-ssr': 0.15.14(vue@3.5.40(typescript@6.0.3))

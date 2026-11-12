@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {
   layoutRegistry,
+  projectRegionAppearance,
   tokens,
   type LayoutProfileId,
   type LayoutRegistryRecord,
@@ -35,12 +36,17 @@ import { NLayout, NLayoutSider } from 'naive-ui/es/layout'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { NMenu, type MenuNodeProps, type MenuOption } from 'naive-ui/es/menu'
 import { NDropdown, type DropdownProps } from 'naive-ui/es/dropdown'
+import { regionalNavigationTheme } from '../adapters/naive/regional-navigation-theme'
 import { createPavpNaiveThemeProjection } from '../adapters/naive/pavp-naive-theme'
-import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
+import {
+  pavpNaiveAppearanceKey,
+  pavpForcedColorsKey,
+} from '../adapters/naive/pavp-naive-runtime-context'
 import { loadScrollEnhancement } from '../adapters/scroll/scroll-enhancement-loader'
 import { NTooltip } from 'naive-ui/es/tooltip'
 import { resolveAdminShellProfile } from '../internal/layout/resolve-admin-shell-profile'
 import UiScrollArea from './UiScrollArea.vue'
+import UiColorScope from '../providers/UiColorScope.vue'
 import type { UiScrollController } from './scroll-contracts'
 import type {
   UiAdminNavigationExpansionUpdate,
@@ -71,6 +77,7 @@ const emit = defineEmits<{
   'sidebar-viewport': [element: HTMLElement | null]
   'drawer-viewport': [element: HTMLElement | null]
   navigate: [routeName: string]
+  'navigate-home': []
   'toggle-color-mode': []
   'update:wideNavigationCollapsed': [collapsed: boolean]
   'update:expandedNavigationGroupIds': [update: UiAdminNavigationExpansionUpdate]
@@ -110,7 +117,10 @@ const ShellFooter: FunctionalComponent<{ content: Slot | undefined }> = ({ conte
   return hasFooterContent(content)
     ? h(
         'footer',
-        { class: 'mt-auto shrink-0', 'data-shell-region': 'architecture-console-footer' },
+        {
+          class: 'pavp-admin-shell__footer mt-auto shrink-0',
+          'data-shell-region': 'architecture-console-footer',
+        },
         content,
       )
     : null
@@ -123,6 +133,28 @@ if (injectedAppearance === undefined) {
 }
 
 const appearance = injectedAppearance
+const forcedColors = inject(pavpForcedColorsKey)
+const sidebarRegion = computed(() => {
+  if (forcedColors?.value === true || appearance.value.colorStyle === 'unified') return null
+  const projection = projectRegionAppearance(appearance.value, 'sidebar')
+  return projection.isCustomized ? projection : null
+})
+const sidebarStyle = computed(() => {
+  const region = sidebarRegion.value
+  return region === null
+    ? undefined
+    : { background: region.surface.background, color: region.surface.foreground }
+})
+const drawerColorStyle = computed(() => {
+  const region = sidebarRegion.value
+  return region === null
+    ? undefined
+    : {
+        ...region.cssVariables,
+        '--pavp-region-background': region.surface.background,
+        '--pavp-region-foreground': region.surface.foreground,
+      }
+})
 const colorModeToggleLabel = computed(() =>
   props.colorModeSwitchFailed
     ? props.copy.colorModeChangeFailedLabel
@@ -199,6 +231,9 @@ const drawerVisible = computed(
 )
 const persistentNavigation = ref<HTMLElement | null>(null)
 const popupOwnerId = useId()
+const headerOverlayId = `pavp-header-${popupOwnerId}`
+const sidebarOverlayId = `pavp-sidebar-${popupOwnerId}`
+const tabsOverlayId = `pavp-tabs-${popupOwnerId}`
 const collapsedPopupKey = ref<string>()
 const collapsedPopupPath = shallowRef<MenuOption[]>([])
 const focusedNavigationLabelKey = ref<string | number | false>()
@@ -221,15 +256,26 @@ const persistentLayoutContentStyle = Object.freeze({ overflow: 'visible' })
 const shellLayoutThemeOverrides = Object.freeze({ color: 'transparent' }) satisfies NonNullable<
   GlobalThemeOverrides['Layout']
 >
-const headerActionThemeOverrides = Object.freeze({ paddingMedium: '0' }) satisfies NonNullable<
-  GlobalThemeOverrides['Button']
+const sidebarThemeOverrides = Object.freeze({
+  siderColor: 'var(--pavp-region-background, var(--ui-color-surface-panel))',
+}) satisfies NonNullable<GlobalThemeOverrides['Layout']>
+const navigationMenuThemeOverrides = Object.freeze({ color: 'transparent' }) satisfies NonNullable<
+  GlobalThemeOverrides['Menu']
 >
+const headerActionThemeOverrides = Object.freeze({
+  paddingSmall: tokens['spacing.component.unit'],
+  heightSmall: tokens['interaction.control.height-small'],
+  iconSizeSmall: tokens['typography.size.body'],
+}) satisfies NonNullable<GlobalThemeOverrides['Button']>
 const collapsedMenuStyle = computed(() => {
-  const menu = createPavpNaiveThemeProjection(appearance.value).themeOverrides.Menu
+  const menu =
+    sidebarRegion.value === null
+      ? createPavpNaiveThemeProjection(appearance.value).themeOverrides.Menu
+      : regionalNavigationTheme(sidebarRegion.value.appearance)
   return {
     '--n-item-color-active': menu.itemColorActiveCollapsed,
     '--pavp-collapsed-foreground': menu.itemIconColorCollapsed,
-    '--pavp-collapsed-active-foreground': menu.itemIconColorChildActive,
+    '--pavp-collapsed-active-foreground': menu.itemIconColorActive,
     '--pavp-collapsed-hover': menu.itemColorHover,
     '--pavp-collapsed-hover-foreground': menu.itemIconColorHover,
   }
@@ -752,7 +798,7 @@ const persistentNavigationDropdownProps = {
   keyboard: false,
   scrollable: true,
   nodeProps: persistentNavigationDropdownNodeProps,
-  to: '#pavp-overlay-root',
+  to: `#${sidebarOverlayId}`,
   trigger: 'hover',
 } satisfies DropdownProps
 
@@ -760,7 +806,7 @@ function renderNavigationMenuLabel(option: MenuOption): VNodeChild {
   return h(
     NTooltip,
     {
-      to: '#pavp-overlay-root',
+      to: `#${sidebarOverlayId}`,
       placement: 'right',
       getDisabled: () => !navigationLabelTruncated(option),
       show:
@@ -1027,227 +1073,244 @@ watch(
     :data-navigation-collapsed="persistentNavigationCollapsed ? 'true' : 'false'"
     @scroll.capture="collapsedPopupKey !== undefined && updatePopupViewport()"
   >
-    <header
-      v-if="hasHeader"
-      :inert="drawerVisible"
-      class="pavp-admin-shell__header shrink-0 h-admin-header"
-      data-shell-region="architecture-console-header"
+    <UiColorScope
+      region="header"
+      :overlay-id="headerOverlayId"
     >
-      <NButton
-        v-if="administration && profile === 'narrow'"
-        ref="navigationTrigger"
-        text
-        native-focus-behavior
-        :aria-label="copy.openNavigationLabel"
-        class="pavp-admin-shell__action rounded-control min-h-target-enhanced min-w-target-enhanced"
-        attr-type="button"
-        @click="openNavigation"
+      <header
+        v-if="hasHeader"
+        :inert="drawerVisible"
+        class="pavp-admin-shell__header shrink-0"
+        data-shell-region="architecture-console-header"
       >
-        {{ copy.navigationActionLabel }}
-      </NButton>
-      <div class="pavp-admin-shell__identity min-w-0">
-        <NImage
-          v-if="copy.logoUrl"
-          :src="copy.logoUrl"
-          :alt="copy.brandName ?? copy.consoleTitle"
-          :preview-disabled="true"
-          width="100%"
-          height="100%"
-          class="shrink-0 self-center size-icon-extra-large"
-          object-fit="contain"
+        <NButton
+          v-if="administration && profile === 'narrow'"
+          ref="navigationTrigger"
+          text
+          native-focus-behavior
+          :aria-label="copy.openNavigationLabel"
+          class="pavp-admin-shell__action rounded-control min-h-target-enhanced min-w-target-enhanced"
+          attr-type="button"
+          @click="openNavigation"
         >
-          <template #error>
-            <NIcon
-              class="h-full w-full"
-              aria-hidden="true"
+          {{ copy.navigationActionLabel }}
+        </NButton>
+        <NButton
+          text
+          attr-type="button"
+          class="pavp-admin-shell__identity min-w-0"
+          @click="emit('navigate-home')"
+        >
+          <span class="inline-flex min-w-0 items-baseline gap-content-gap">
+            <NImage
+              v-if="copy.logoUrl"
+              :src="copy.logoUrl"
+              :alt="copy.brandName ?? copy.consoleTitle"
+              :preview-disabled="true"
+              width="100%"
+              height="100%"
+              class="shrink-0 self-center size-icon-extra-large"
+              object-fit="contain"
             >
-              <span class="i-lucide-building-2 h-full w-full block" />
-            </NIcon>
-          </template>
-        </NImage>
-        <span
-          v-else-if="!copy.brandName"
-          class="pavp-admin-shell__eyebrow"
-          v-text="'PAVP'"
-        />
-        <strong
-          class="truncate"
-          :title="copy.consoleTitle"
-          v-text="copy.consoleTitle"
-        />
-      </div>
-      <div class="flex items-center gap-content-gap">
-        <div
-          v-if="administration && profile === 'wide'"
-          class="pavp-admin-shell__header-actions flex items-center gap-content-gap"
-        >
+              <template #error>
+                <NIcon
+                  class="h-full w-full"
+                  aria-hidden="true"
+                >
+                  <span class="i-lucide-building-2 h-full w-full block" />
+                </NIcon>
+              </template>
+            </NImage>
+            <span
+              v-else-if="!copy.brandName"
+              class="pavp-admin-shell__eyebrow"
+              v-text="'PAVP'"
+            />
+            <strong
+              class="truncate"
+              :title="copy.consoleTitle"
+              v-text="copy.consoleTitle"
+            />
+          </span>
+        </NButton>
+        <div class="flex items-center gap-content-gap">
+          <div
+            v-if="administration && profile === 'wide'"
+            class="pavp-admin-shell__header-actions flex items-center gap-content-gap"
+          >
+            <NTooltip
+              class="pavp-admin-shell__header-action-tooltip"
+              placement="bottom-end"
+              :show-arrow="false"
+              :to="`#${headerOverlayId}`"
+            >
+              <template #trigger>
+                <NButton
+                  :aria-label="copy.locateCurrentLabel"
+                  :bordered="false"
+                  attr-type="button"
+                  class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                  size="small"
+                  :theme-overrides="headerActionThemeOverrides"
+                  type="tertiary"
+                  @click="handleNavigationAction('focus')"
+                >
+                  <template #icon>
+                    <NIcon
+                      aria-hidden="true"
+                      class="i-lucide-focus"
+                    />
+                  </template>
+                </NButton>
+              </template>
+              {{ copy.locateCurrentLabel }}
+            </NTooltip>
+            <NTooltip
+              v-if="!persistentNavigationCollapsed"
+              class="pavp-admin-shell__header-action-tooltip"
+              placement="bottom-end"
+              :show-arrow="false"
+              :to="`#${headerOverlayId}`"
+            >
+              <template #trigger>
+                <NButton
+                  :aria-label="navigationGroupsToggleLabel"
+                  :bordered="false"
+                  attr-type="button"
+                  class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                  size="small"
+                  data-pavp-admin-navigation-groups-control="header-trailing"
+                  :theme-overrides="headerActionThemeOverrides"
+                  type="tertiary"
+                  @click="handleNavigationAction('mode')"
+                >
+                  <template #icon>
+                    <span
+                      class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
+                      data-pavp-admin-navigation-icon-stack="groups"
+                    >
+                      <NIcon
+                        :class="{
+                          'pavp-admin-shell__header-action-icon-state--active':
+                            !navigationAccordion,
+                        }"
+                        aria-hidden="true"
+                        class="pavp-admin-shell__header-action-icon-state i-lucide-list-collapse col-start-1 row-start-1"
+                        data-pavp-admin-navigation-icon-state="groups-expanded"
+                      />
+                      <NIcon
+                        :class="{
+                          'pavp-admin-shell__header-action-icon-state--active': navigationAccordion,
+                        }"
+                        aria-hidden="true"
+                        class="pavp-admin-shell__header-action-icon-state i-lucide-list-tree col-start-1 row-start-1"
+                        data-pavp-admin-navigation-icon-state="groups-collapsed"
+                      />
+                    </span>
+                  </template>
+                </NButton>
+              </template>
+              {{ navigationGroupsToggleLabel }}
+            </NTooltip>
+            <NTooltip
+              class="pavp-admin-shell__header-action-tooltip"
+              placement="bottom-end"
+              :show-arrow="false"
+              :to="`#${headerOverlayId}`"
+            >
+              <template #trigger>
+                <NButton
+                  :aria-label="wideNavigationCollapseLabel"
+                  :bordered="false"
+                  attr-type="button"
+                  class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                  size="small"
+                  data-pavp-admin-navigation-collapse-control="header-trailing"
+                  :theme-overrides="headerActionThemeOverrides"
+                  type="tertiary"
+                  @click="handleNavigationAction('sidebar')"
+                >
+                  <template #icon>
+                    <span
+                      class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
+                      data-pavp-admin-navigation-icon-stack="sidebar"
+                    >
+                      <NIcon
+                        :class="{
+                          'pavp-admin-shell__header-action-icon-state--active':
+                            !wideNavigationCollapsed,
+                        }"
+                        aria-hidden="true"
+                        class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-close col-start-1 row-start-1"
+                        data-pavp-admin-navigation-icon-state="sidebar-expanded"
+                      />
+                      <NIcon
+                        :class="{
+                          'pavp-admin-shell__header-action-icon-state--active':
+                            wideNavigationCollapsed,
+                        }"
+                        aria-hidden="true"
+                        class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-open col-start-1 row-start-1"
+                        data-pavp-admin-navigation-icon-state="sidebar-collapsed"
+                      />
+                    </span>
+                  </template>
+                </NButton>
+              </template>
+              {{ wideNavigationCollapseLabel }}
+            </NTooltip>
+          </div>
           <NTooltip
+            v-if="administration"
             class="pavp-admin-shell__header-action-tooltip"
             placement="bottom-end"
             :show-arrow="false"
-            to="#pavp-overlay-root"
+            :to="`#${headerOverlayId}`"
           >
             <template #trigger>
               <NButton
-                :aria-label="copy.locateCurrentLabel"
+                :aria-label="colorModeToggleLabel"
+                :aria-pressed="appearance.colorMode === 'dark'"
                 :bordered="false"
                 attr-type="button"
                 class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
+                size="small"
+                data-pavp-color-mode-control="header-trailing"
                 :theme-overrides="headerActionThemeOverrides"
                 type="tertiary"
-                @click="handleNavigationAction('focus')"
-              >
-                <template #icon>
-                  <NIcon
-                    aria-hidden="true"
-                    class="i-lucide-focus"
-                  />
-                </template>
-              </NButton>
-            </template>
-            {{ copy.locateCurrentLabel }}
-          </NTooltip>
-          <NTooltip
-            v-if="!persistentNavigationCollapsed"
-            class="pavp-admin-shell__header-action-tooltip"
-            placement="bottom-end"
-            :show-arrow="false"
-            to="#pavp-overlay-root"
-          >
-            <template #trigger>
-              <NButton
-                :aria-label="navigationGroupsToggleLabel"
-                :bordered="false"
-                attr-type="button"
-                class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
-                data-pavp-admin-navigation-groups-control="header-trailing"
-                :theme-overrides="headerActionThemeOverrides"
-                type="tertiary"
-                @click="handleNavigationAction('mode')"
+                @click="emit('toggle-color-mode')"
               >
                 <template #icon>
                   <span
                     class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
-                    data-pavp-admin-navigation-icon-stack="groups"
                   >
                     <NIcon
                       :class="{
-                        'pavp-admin-shell__header-action-icon-state--active': !navigationAccordion,
+                        'pavp-admin-shell__header-action-icon-state--active':
+                          appearance.colorMode === 'light',
                       }"
                       aria-hidden="true"
-                      class="pavp-admin-shell__header-action-icon-state i-lucide-list-collapse col-start-1 row-start-1"
-                      data-pavp-admin-navigation-icon-state="groups-expanded"
+                      class="pavp-admin-shell__header-action-icon-state i-lucide-sun col-start-1 row-start-1"
+                      data-pavp-color-mode-icon="light"
                     />
                     <NIcon
                       :class="{
-                        'pavp-admin-shell__header-action-icon-state--active': navigationAccordion,
+                        'pavp-admin-shell__header-action-icon-state--active':
+                          appearance.colorMode === 'dark',
                       }"
                       aria-hidden="true"
-                      class="pavp-admin-shell__header-action-icon-state i-lucide-list-tree col-start-1 row-start-1"
-                      data-pavp-admin-navigation-icon-state="groups-collapsed"
+                      class="pavp-admin-shell__header-action-icon-state i-lucide-moon col-start-1 row-start-1"
+                      data-pavp-color-mode-icon="dark"
                     />
                   </span>
                 </template>
               </NButton>
             </template>
-            {{ navigationGroupsToggleLabel }}
-          </NTooltip>
-          <NTooltip
-            class="pavp-admin-shell__header-action-tooltip"
-            placement="bottom-end"
-            :show-arrow="false"
-            to="#pavp-overlay-root"
-          >
-            <template #trigger>
-              <NButton
-                :aria-label="wideNavigationCollapseLabel"
-                :bordered="false"
-                attr-type="button"
-                class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
-                data-pavp-admin-navigation-collapse-control="header-trailing"
-                :theme-overrides="headerActionThemeOverrides"
-                type="tertiary"
-                @click="handleNavigationAction('sidebar')"
-              >
-                <template #icon>
-                  <span
-                    class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
-                    data-pavp-admin-navigation-icon-stack="sidebar"
-                  >
-                    <NIcon
-                      :class="{
-                        'pavp-admin-shell__header-action-icon-state--active':
-                          !wideNavigationCollapsed,
-                      }"
-                      aria-hidden="true"
-                      class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-close col-start-1 row-start-1"
-                      data-pavp-admin-navigation-icon-state="sidebar-expanded"
-                    />
-                    <NIcon
-                      :class="{
-                        'pavp-admin-shell__header-action-icon-state--active':
-                          wideNavigationCollapsed,
-                      }"
-                      aria-hidden="true"
-                      class="pavp-admin-shell__header-action-icon-state i-lucide-panel-left-open col-start-1 row-start-1"
-                      data-pavp-admin-navigation-icon-state="sidebar-collapsed"
-                    />
-                  </span>
-                </template>
-              </NButton>
-            </template>
-            {{ wideNavigationCollapseLabel }}
+            {{ colorModeToggleLabel }}
           </NTooltip>
         </div>
-        <NTooltip
-          v-if="administration"
-          class="pavp-admin-shell__header-action-tooltip"
-          placement="bottom-end"
-          :show-arrow="false"
-          to="#pavp-overlay-root"
-        >
-          <template #trigger>
-            <NButton
-              :aria-label="colorModeToggleLabel"
-              :aria-pressed="appearance.colorMode === 'dark'"
-              :bordered="false"
-              attr-type="button"
-              class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
-              data-pavp-color-mode-control="header-trailing"
-              :theme-overrides="headerActionThemeOverrides"
-              type="tertiary"
-              @click="emit('toggle-color-mode')"
-            >
-              <template #icon>
-                <span
-                  class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
-                >
-                  <NIcon
-                    :class="{
-                      'pavp-admin-shell__header-action-icon-state--active':
-                        appearance.colorMode === 'light',
-                    }"
-                    aria-hidden="true"
-                    class="pavp-admin-shell__header-action-icon-state i-lucide-sun col-start-1 row-start-1"
-                    data-pavp-color-mode-icon="light"
-                  />
-                  <NIcon
-                    :class="{
-                      'pavp-admin-shell__header-action-icon-state--active':
-                        appearance.colorMode === 'dark',
-                    }"
-                    aria-hidden="true"
-                    class="pavp-admin-shell__header-action-icon-state i-lucide-moon col-start-1 row-start-1"
-                    data-pavp-color-mode-icon="dark"
-                  />
-                </span>
-              </template>
-            </NButton>
-          </template>
-          {{ colorModeToggleLabel }}
-        </NTooltip>
-      </div>
-    </header>
+      </header>
+    </UiColorScope>
 
     <NLayout
       :class="enabled ? 'pavp-admin-shell__layout min-h-0' : 'pavp-admin-shell__document-layout'"
@@ -1257,301 +1320,331 @@ watch(
       :has-sider="administration && profile !== 'narrow'"
       :native-scrollbar="true"
     >
-      <NLayoutSider
-        v-if="administration && profile !== 'narrow'"
-        :bordered="false"
-        class="pavp-admin-shell__sidebar"
-        :collapsed="persistentNavigationCollapsed"
-        :collapsed-width="collapsedNavigationWidth"
-        collapse-mode="width"
-        :content-style="persistentSiderContentStyle"
-        data-shell-region="architecture-console-navigation"
-        :native-scrollbar="true"
-        :show-trigger="false"
-        :width="expandedNavigationWidth"
+      <UiColorScope
+        region="sidebar"
+        :overlay-id="sidebarOverlayId"
       >
-        <div class="pavp-admin-shell__navigation-stack flex flex-col h-full min-h-0">
-          <UiScrollArea
-            class="flex-1 min-h-0"
-            owner-id="architecture-console-sidebar"
-            @viewport="emit('sidebar-viewport', $event)"
-          >
-            <AdminNavigationSelectionLens
-              v-slot="{ featureReady, renderIcon }"
-              :is-owner="isPersistentNavigationSelectionLensOwner"
-              :motion="appearance.motion"
-              :render-base-icon="renderNavigationMenuIcon"
+        <NLayoutSider
+          v-if="administration && profile !== 'narrow'"
+          :bordered="false"
+          class="pavp-admin-shell__sidebar"
+          :style="sidebarStyle"
+          :theme-overrides="sidebarThemeOverrides"
+          :collapsed="persistentNavigationCollapsed"
+          :collapsed-width="collapsedNavigationWidth"
+          collapse-mode="width"
+          :content-style="persistentSiderContentStyle"
+          data-shell-region="architecture-console-navigation"
+          :native-scrollbar="true"
+          :show-trigger="false"
+          :width="expandedNavigationWidth"
+        >
+          <div class="pavp-admin-shell__navigation-stack flex flex-col h-full min-h-0">
+            <UiScrollArea
+              class="flex-1 min-h-0"
+              owner-id="architecture-console-sidebar"
+              @viewport="emit('sidebar-viewport', $event)"
             >
-              <nav
-                ref="persistentNavigation"
-                :aria-label="copy.navigationLabel"
-                class="pavp-admin-shell__persistent-navigation"
-                :data-pavp-admin-navigation-motion-ready="
-                  featureReady && appearance.motion === 'full' ? 'true' : 'false'
-                "
+              <AdminNavigationSelectionLens
+                v-slot="{ featureReady, renderIcon }"
+                :is-owner="isPersistentNavigationSelectionLensOwner"
+                :motion="appearance.motion"
+                :render-base-icon="renderNavigationMenuIcon"
               >
-                <div
-                  v-if="persistentNavigationCollapsed"
-                  class="pavp-admin-shell__collapsed-menu pb-0 grid"
-                  :style="collapsedMenuStyle"
+                <nav
+                  ref="persistentNavigation"
+                  :aria-label="copy.navigationLabel"
+                  class="pavp-admin-shell__persistent-navigation"
+                  :data-pavp-admin-navigation-motion-ready="
+                    featureReady && appearance.motion === 'full' ? 'true' : 'false'
+                  "
                 >
-                  <NDropdown
-                    v-for="option in navigationMenuOptions"
-                    :key="String(option.key)"
-                    v-bind="persistentNavigationDropdownProps"
-                    :options="collapsedPopupOptions(option)"
-                    :menu-props="collapsedPopupMenuProps(option)"
-                    :show="collapsedPopupKey === option.key"
-                    :value="activeRouteName"
-                    placement="right-start"
-                    size="large"
-                    @update:show="handleCollapsedPopupShow($event, option)"
-                    @select="selectCollapsedRoute"
+                  <div
+                    v-if="persistentNavigationCollapsed"
+                    class="pavp-admin-shell__collapsed-menu pb-0 grid"
+                    :style="collapsedMenuStyle"
                   >
-                    <NButton
-                      attr-type="button"
-                      text
-                      block
-                      native-focus-behavior
-                      class="pavp-admin-shell__collapsed-trigger p-0 border-0 bg-transparent flex w-full cursor-pointer items-center justify-center relative isolate min-h-target-enhanced"
-                      :aria-label="String(option.label)"
-                      aria-haspopup="menu"
-                      :aria-expanded="collapsedPopupKey === option.key"
-                      :data-active="option.key === activeNavigationGroupKey"
-                      :data-pavp-navigation-key="option.key"
-                      @keydown="handleCollapsedTriggerKeydown($event, option)"
-                      @click="handleCollapsedTriggerClick($event, option)"
-                      @pointerdown="handleCollapsedTriggerPointerdown($event, option)"
+                    <NDropdown
+                      v-for="option in navigationMenuOptions"
+                      :key="String(option.key)"
+                      v-bind="persistentNavigationDropdownProps"
+                      :options="collapsedPopupOptions(option)"
+                      :menu-props="collapsedPopupMenuProps(option)"
+                      :show="collapsedPopupKey === option.key"
+                      :value="activeRouteName"
+                      placement="right-start"
+                      size="large"
+                      @update:show="handleCollapsedPopupShow($event, option)"
+                      @select="selectCollapsedRoute"
                     >
-                      <ShellNavigationIcon
-                        :option="option"
-                        :render="renderIcon"
-                      />
-                    </NButton>
-                  </NDropdown>
-                </div>
-                <NMenu
-                  v-else
-                  :accordion="navigationAccordion"
-                  class="pavp-admin-shell__menu"
-                  :collapsed="persistentNavigationCollapsed"
-                  :collapsed-width="collapsedNavigationWidth"
-                  children-field="children"
-                  :expanded-keys="validExpandedNavigationGroupKeys"
-                  mode="vertical"
-                  :node-props="persistentNavigationNodeProps"
-                  :options="navigationMenuOptions"
-                  :render-icon="renderIcon"
-                  :render-label="renderNavigationMenuLabel"
-                  :value="activeRouteName"
-                  @update:expanded-keys="handleNavigationExpandedKeysUpdate"
-                  @update:value="handleNavigationValueUpdate"
-                />
-              </nav>
-            </AdminNavigationSelectionLens>
-          </UiScrollArea>
-          <div
-            v-if="$slots['navigation-bottom']"
-            class="pavp-admin-shell__navigation-bottom flex-none"
-            data-shell-region="architecture-console-navigation-bottom"
-          >
-            <slot
-              name="navigation-bottom"
-              :collapsed="persistentNavigationCollapsed"
-              :navigate="navigate"
-            />
+                      <NButton
+                        attr-type="button"
+                        text
+                        block
+                        native-focus-behavior
+                        class="pavp-admin-shell__collapsed-trigger p-0 border-0 bg-transparent flex w-full cursor-pointer items-center justify-center relative isolate min-h-target-enhanced"
+                        :aria-label="String(option.label)"
+                        aria-haspopup="menu"
+                        :aria-expanded="collapsedPopupKey === option.key"
+                        :data-active="option.key === activeNavigationGroupKey"
+                        :data-pavp-navigation-key="option.key"
+                        @keydown="handleCollapsedTriggerKeydown($event, option)"
+                        @click="handleCollapsedTriggerClick($event, option)"
+                        @pointerdown="handleCollapsedTriggerPointerdown($event, option)"
+                      >
+                        <ShellNavigationIcon
+                          :option="option"
+                          :render="renderIcon"
+                        />
+                      </NButton>
+                    </NDropdown>
+                  </div>
+                  <NMenu
+                    v-else
+                    :accordion="navigationAccordion"
+                    class="pavp-admin-shell__menu"
+                    :theme-overrides="navigationMenuThemeOverrides"
+                    :collapsed="persistentNavigationCollapsed"
+                    :collapsed-width="collapsedNavigationWidth"
+                    children-field="children"
+                    :expanded-keys="validExpandedNavigationGroupKeys"
+                    mode="vertical"
+                    :node-props="persistentNavigationNodeProps"
+                    :options="navigationMenuOptions"
+                    :render-icon="renderIcon"
+                    :render-label="renderNavigationMenuLabel"
+                    :value="activeRouteName"
+                    @update:expanded-keys="handleNavigationExpandedKeysUpdate"
+                    @update:value="handleNavigationValueUpdate"
+                  />
+                </nav>
+              </AdminNavigationSelectionLens>
+            </UiScrollArea>
+            <div
+              v-if="$slots['navigation-bottom']"
+              class="pavp-admin-shell__navigation-bottom flex-none"
+              data-shell-region="architecture-console-navigation-bottom"
+            >
+              <slot
+                name="navigation-bottom"
+                :collapsed="persistentNavigationCollapsed"
+                :navigate="navigate"
+              />
+            </div>
           </div>
-        </div>
-      </NLayoutSider>
+        </NLayoutSider>
+      </UiColorScope>
 
       <div
         :class="enabled ? 'pavp-admin-shell__workspace' : undefined"
         :inert="administration && profile === 'narrow' && navigationOpen"
       >
-        <slot
-          v-if="administration"
-          name="workspace"
-        />
-        <div
-          :role="enabled ? 'main' : undefined"
-          :class="enabled ? 'pavp-admin-shell__content min-w-0' : undefined"
-          :data-scroll-owner="enabled ? 'architecture-console-content' : undefined"
-          :data-shell-region="enabled ? 'architecture-console-content' : undefined"
-          :inert="administration && profile === 'narrow' && navigationOpen"
+        <UiColorScope
+          region="tabs"
+          :overlay-id="tabsOverlayId"
         >
-          <UiScrollArea
-            owner-id="architecture-console-content"
-            :enabled="enabled && !containedContent"
-            :contained="containedContent"
-            @controller="emit('content-scroll-controller', $event)"
+          <slot
+            v-if="administration"
+            name="workspace"
+          />
+        </UiColorScope>
+        <UiColorScope region="content">
+          <div
+            :role="enabled ? 'main' : undefined"
+            :class="enabled ? 'pavp-admin-shell__content min-w-0' : undefined"
+            :data-scroll-owner="enabled ? 'architecture-console-content' : undefined"
+            :data-shell-region="enabled ? 'architecture-console-content' : undefined"
+            :inert="administration && profile === 'narrow' && navigationOpen"
           >
-            <div
-              :class="
-                enabled ? 'pavp-admin-shell__content-inner flex flex-col flex-1 min-w-0' : undefined
-              "
-              :data-contained="containedContent"
+            <UiScrollArea
+              owner-id="architecture-console-content"
+              :enabled="enabled && !containedContent"
+              :contained="containedContent"
+              @controller="emit('content-scroll-controller', $event)"
             >
-              <slot />
-              <ShellFooter :content="$slots['footer']" />
-            </div>
-          </UiScrollArea>
-        </div>
+              <div
+                :class="
+                  enabled
+                    ? 'pavp-admin-shell__content-inner flex flex-col flex-1 min-w-0'
+                    : undefined
+                "
+                :data-contained="containedContent"
+              >
+                <slot />
+                <UiColorScope region="footer">
+                  <ShellFooter :content="$slots['footer']" />
+                </UiColorScope>
+              </div>
+            </UiScrollArea>
+          </div>
+        </UiColorScope>
       </div>
     </NLayout>
 
-    <Teleport to="#pavp-overlay-root">
-      <Transition
-        name="pavp-admin-drawer"
-        @before-leave="handleDrawerBeforeLeave"
-      >
-        <div
-          v-if="administration && profile === 'narrow' && navigationOpen"
-          class="pavp-admin-shell__drawer-layer"
-          data-shell-region="architecture-console-navigation-overlay"
-          @pointerdown="handleDrawerScrimPointerDown($event)"
+    <UiColorScope region="sidebar">
+      <Teleport to="#pavp-overlay-root">
+        <Transition
+          name="pavp-admin-drawer"
+          @before-leave="handleDrawerBeforeLeave"
         >
-          <!-- A modal dialog owns bubbling Escape and boundary Tab handling, including slotted controls. -->
-          <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -->
-          <nav
-            ref="drawerNavigation"
-            :aria-label="copy.navigationLabel"
-            aria-modal="true"
-            class="pavp-admin-shell__drawer-navigation"
-            role="dialog"
-            tabindex="-1"
-            @keydown="handleDrawerKeydown"
-            @focusin="handleDrawerFocusin"
+          <div
+            v-if="administration && profile === 'narrow' && navigationOpen"
+            class="pavp-admin-shell__drawer-layer"
+            :data-pavp-color-scope="sidebarRegion !== null ? '' : undefined"
+            :data-color-mode="sidebarRegion?.appearance.colorMode"
+            :data-material="sidebarRegion?.appearance.material"
+            :data-contrast="sidebarRegion?.appearance.contrast"
+            :style="drawerColorStyle"
+            data-shell-region="architecture-console-navigation-overlay"
+            @pointerdown="handleDrawerScrimPointerDown($event)"
           >
-            <div class="pavp-admin-shell__navigation-stack flex flex-col h-full min-h-0">
-              <UiScrollArea
-                class="flex-1 min-h-0"
-                owner-id="architecture-console-drawer"
-                @viewport="emit('drawer-viewport', $event)"
-              >
-                <div class="pavp-admin-shell__drawer-content">
-                  <div class="pavp-admin-shell__drawer-heading">
-                    <strong>{{ copy.navigationLabel }}</strong>
-                    <NButton
-                      ref="drawerClose"
-                      text
-                      native-focus-behavior
-                      :aria-label="copy.closeNavigationLabel"
-                      class="pavp-admin-shell__action rounded-control min-h-target-enhanced min-w-target-enhanced"
-                      attr-type="button"
-                      @click="closeNavigation"
-                    >
-                      {{ copy.closeActionLabel }}
-                    </NButton>
-                  </div>
-                  <div
-                    v-for="group in navigation"
-                    :key="group.id"
-                    class="pavp-admin-shell__navigation-group"
-                  >
-                    <p class="pavp-admin-shell__navigation-group-label">
-                      {{ group.label }}
-                    </p>
-                    <template
-                      v-for="item in group.items"
-                      :key="'items' in item ? item.id : item.routeName"
-                    >
-                      <NCollapse
-                        v-if="'items' in item"
-                        class="pavp-admin-shell__drawer-collapse"
-                        :default-expanded-names="
-                          navigationLeaves(item).some((leaf) => leaf.isCurrentDestination)
-                            ? [item.id]
-                            : []
-                        "
-                      >
-                        <NCollapseItem :name="item.id">
-                          <template #header="{ collapsed }">
-                            <NButton
-                              :aria-expanded="!collapsed"
-                              :aria-controls="`${popupOwnerId}-drawer-${item.id}`"
-                              class="pavp-admin-shell__navigation-action pavp-admin-shell__navigation-disclosure rounded-control min-h-target-enhanced min-w-target-enhanced"
-                              attr-type="button"
-                              text
-                              block
-                              native-focus-behavior
-                            >
-                              {{ item.label }}
-                            </NButton>
-                          </template>
-                          <div
-                            :id="`${popupOwnerId}-drawer-${item.id}`"
-                            class="px-page-inline"
-                          >
-                            <NButton
-                              v-for="leaf in navigationLeaves(item)"
-                              :key="leaf.routeName"
-                              :aria-current="
-                                leaf.routeName === activeRouteName ? 'page' : undefined
-                              "
-                              class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
-                              text
-                              block
-                              native-focus-behavior
-                              attr-type="button"
-                              @click="navigate(leaf.routeName)"
-                            >
-                              <span class="inline-flex items-center gap-content-gap">
-                                <span
-                                  :class="resolveNavigationIconClass(leaf.iconClass)"
-                                  aria-hidden="true"
-                                  class="pavp-admin-shell__navigation-icon"
-                                />
-                                <span>{{ leaf.label }}</span>
-                              </span>
-                            </NButton>
-                          </div>
-                        </NCollapseItem>
-                      </NCollapse>
+            <!-- A modal dialog owns bubbling Escape and boundary Tab handling, including slotted controls. -->
+            <!-- eslint-disable-next-line vuejs-accessibility/no-static-element-interactions -->
+            <nav
+              ref="drawerNavigation"
+              :aria-label="copy.navigationLabel"
+              aria-modal="true"
+              class="pavp-admin-shell__drawer-navigation"
+              role="dialog"
+              tabindex="-1"
+              @keydown="handleDrawerKeydown"
+              @focusin="handleDrawerFocusin"
+            >
+              <div class="pavp-admin-shell__navigation-stack flex flex-col h-full min-h-0">
+                <UiScrollArea
+                  class="flex-1 min-h-0"
+                  owner-id="architecture-console-drawer"
+                  @viewport="emit('drawer-viewport', $event)"
+                >
+                  <div class="pavp-admin-shell__drawer-content">
+                    <div class="pavp-admin-shell__drawer-heading">
+                      <strong>{{ copy.navigationLabel }}</strong>
                       <NButton
-                        v-else
-                        :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
-                        class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
+                        ref="drawerClose"
                         text
-                        block
                         native-focus-behavior
+                        :aria-label="copy.closeNavigationLabel"
+                        class="pavp-admin-shell__action rounded-control min-h-target-enhanced min-w-target-enhanced"
                         attr-type="button"
-                        @click="navigate(item.routeName)"
+                        @click="closeNavigation"
                       >
-                        <span class="inline-flex items-center gap-content-gap">
-                          <span
-                            :class="resolveNavigationIconClass(item.iconClass)"
-                            aria-hidden="true"
-                            class="pavp-admin-shell__navigation-icon"
-                          />
-                          <span>{{ item.label }}</span>
-                        </span>
+                        {{ copy.closeActionLabel }}
                       </NButton>
-                    </template>
+                    </div>
+                    <div
+                      v-for="group in navigation"
+                      :key="group.id"
+                      class="pavp-admin-shell__navigation-group"
+                    >
+                      <p class="pavp-admin-shell__navigation-group-label">
+                        {{ group.label }}
+                      </p>
+                      <template
+                        v-for="item in group.items"
+                        :key="'items' in item ? item.id : item.routeName"
+                      >
+                        <NCollapse
+                          v-if="'items' in item"
+                          class="pavp-admin-shell__drawer-collapse"
+                          :default-expanded-names="
+                            navigationLeaves(item).some((leaf) => leaf.isCurrentDestination)
+                              ? [item.id]
+                              : []
+                          "
+                        >
+                          <NCollapseItem :name="item.id">
+                            <template #header="{ collapsed }">
+                              <NButton
+                                :aria-expanded="!collapsed"
+                                :aria-controls="`${popupOwnerId}-drawer-${item.id}`"
+                                class="pavp-admin-shell__navigation-action pavp-admin-shell__navigation-disclosure rounded-control min-h-target-enhanced min-w-target-enhanced"
+                                attr-type="button"
+                                text
+                                block
+                                native-focus-behavior
+                              >
+                                {{ item.label }}
+                              </NButton>
+                            </template>
+                            <div
+                              :id="`${popupOwnerId}-drawer-${item.id}`"
+                              class="px-page-inline"
+                            >
+                              <NButton
+                                v-for="leaf in navigationLeaves(item)"
+                                :key="leaf.routeName"
+                                :aria-current="
+                                  leaf.routeName === activeRouteName ? 'page' : undefined
+                                "
+                                class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
+                                text
+                                block
+                                native-focus-behavior
+                                attr-type="button"
+                                @click="navigate(leaf.routeName)"
+                              >
+                                <span class="inline-flex items-center gap-content-gap">
+                                  <span
+                                    :class="resolveNavigationIconClass(leaf.iconClass)"
+                                    aria-hidden="true"
+                                    class="pavp-admin-shell__navigation-icon"
+                                  />
+                                  <span>{{ leaf.label }}</span>
+                                </span>
+                              </NButton>
+                            </div>
+                          </NCollapseItem>
+                        </NCollapse>
+                        <NButton
+                          v-else
+                          :aria-current="item.routeName === activeRouteName ? 'page' : undefined"
+                          class="pavp-admin-shell__navigation-action rounded-control min-h-target-enhanced min-w-target-enhanced"
+                          text
+                          block
+                          native-focus-behavior
+                          attr-type="button"
+                          @click="navigate(item.routeName)"
+                        >
+                          <span class="inline-flex items-center gap-content-gap">
+                            <span
+                              :class="resolveNavigationIconClass(item.iconClass)"
+                              aria-hidden="true"
+                              class="pavp-admin-shell__navigation-icon"
+                            />
+                            <span>{{ item.label }}</span>
+                          </span>
+                        </NButton>
+                      </template>
+                    </div>
                   </div>
+                </UiScrollArea>
+                <div
+                  v-if="$slots['navigation-bottom']"
+                  class="pavp-admin-shell__navigation-bottom flex-none"
+                  data-shell-region="architecture-console-navigation-bottom"
+                  role="presentation"
+                >
+                  <slot
+                    name="navigation-bottom"
+                    :collapsed="false"
+                    :navigate="navigate"
+                  />
                 </div>
-              </UiScrollArea>
-              <div
-                v-if="$slots['navigation-bottom']"
-                class="pavp-admin-shell__navigation-bottom flex-none"
-                data-shell-region="architecture-console-navigation-bottom"
-                role="presentation"
-              >
-                <slot
-                  name="navigation-bottom"
-                  :collapsed="false"
-                  :navigate="navigate"
-                />
               </div>
-            </div>
-          </nav>
-        </div>
-      </Transition>
-    </Teleport>
+            </nav>
+          </div>
+        </Transition>
+      </Teleport>
+    </UiColorScope>
   </div>
 </template>
 
 <style scoped>
 @layer components {
+  .pavp-admin-shell__footer {
+    background: var(--pavp-region-background);
+    color: var(--pavp-region-foreground);
+  }
   .pavp-admin-shell {
     --pavp-safe-area-top: env(safe-area-inset-top, 0px);
     --pavp-safe-area-right: env(safe-area-inset-right, 0px);
@@ -1565,6 +1658,8 @@ watch(
     container-name: pavp-admin-shell;
     container-type: inline-size;
     isolation: isolate;
+    padding: var(--ui-space-content-gap);
+    gap: var(--ui-space-content-gap);
   }
 
   @supports (height: 100dvh) {
@@ -1579,28 +1674,14 @@ watch(
     background:
       radial-gradient(
         circle at 12% 4%,
-        color-mix(in srgb, var(--ui-admin-ambient-light-primary) 20%, transparent),
+        color-mix(in srgb, var(--ui-admin-ambient-light-primary) 8%, transparent),
         transparent 42%
       ),
       radial-gradient(
         circle at 88% 2%,
-        color-mix(in srgb, var(--ui-admin-ambient-light-accent) 16%, transparent),
+        color-mix(in srgb, var(--ui-admin-ambient-light-accent) 6%, transparent),
         transparent 38%
-      ),
-      linear-gradient(
-        color-mix(in srgb, var(--ui-admin-ambient-grid) 14%, transparent) 1px,
-        transparent 1px
-      ),
-      linear-gradient(
-        90deg,
-        color-mix(in srgb, var(--ui-admin-ambient-grid) 14%, transparent) 1px,
-        transparent 1px
       );
-    background-size:
-      auto,
-      auto,
-      var(--ui-space-section-block) var(--ui-space-section-block),
-      var(--ui-space-section-block) var(--ui-space-section-block);
     content: '';
     inset: 0;
     pointer-events: none;
@@ -1615,27 +1696,34 @@ watch(
 
   .pavp-admin-shell__header {
     z-index: var(--ui-z-base);
-    min-block-size: calc(var(--ui-layout-admin-header-block-size) + var(--pavp-safe-area-top));
+    min-block-size: calc(
+      var(--ui-layout-target-enhanced-minimum-block-size) + var(--pavp-safe-area-top)
+    );
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--ui-space-content-gap);
     padding-block-start: var(--pavp-safe-area-top);
-    padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
-      max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
-    color: var(--ui-color-text-primary);
-    background: var(--ui-material-chrome-background);
-    box-shadow: var(--ui-admin-shadow-chrome);
+    padding-inline: max(var(--ui-space-content-gap), var(--pavp-safe-area-left))
+      max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
+    border-radius: var(--ui-radius-panel);
+    color: var(--pavp-region-foreground, var(--ui-color-text-primary));
+    background: var(--pavp-region-background, transparent);
   }
 
   .pavp-admin-shell__identity {
     display: flex;
     align-items: baseline;
     gap: var(--ui-space-content-gap);
+    font-size: inherit;
+  }
+
+  .pavp-admin-shell__header-action {
+    background-clip: content-box;
   }
 
   .pavp-admin-shell__eyebrow {
-    color: var(--ui-color-text-primary);
+    color: inherit;
     font-weight: var(--ui-font-weight-title);
   }
 
@@ -1643,12 +1731,17 @@ watch(
     min-inline-size: 0;
   }
 
+  .pavp-admin-shell__layout :deep(> .n-layout-scroll-container) {
+    gap: var(--ui-space-content-gap);
+  }
+
   .pavp-admin-shell__sidebar {
     position: relative;
     flex: 0 0 auto;
     block-size: 100%;
     overflow: hidden;
-    background: var(--ui-material-chrome-background);
+    background: var(--pavp-region-background, var(--ui-color-surface-panel));
+    border-radius: var(--ui-radius-panel);
     box-shadow: var(--ui-admin-shadow-chrome);
   }
 
@@ -1662,6 +1755,7 @@ watch(
     z-index: var(--ui-z-base);
     min-inline-size: 0;
     padding-block: var(--ui-space-content-gap);
+    padding-inline: calc(var(--ui-space-content-gap) / 2);
   }
 
   .pavp-admin-shell__menu {
@@ -1669,17 +1763,25 @@ watch(
     min-inline-size: 0;
   }
 
+  .pavp-admin-shell__menu :deep(> .n-submenu) {
+    margin-block-end: calc(var(--ui-space-content-gap) / 2);
+  }
+
+  .pavp-admin-shell__menu :deep(> .n-submenu > .n-menu-item-content) {
+    font-weight: var(--ui-font-weight-title);
+  }
+
   .pavp-admin-shell__navigation-bottom {
     display: flex;
     justify-content: center;
     padding-block: var(--ui-space-content-gap)
       max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
-    padding-inline: calc(var(--ui-space-content-gap) / 2);
+    padding-inline: var(--ui-space-content-gap);
   }
 
   .pavp-admin-shell__navigation-group-label {
     margin: 0;
-    color: var(--ui-color-text-secondary);
+    color: var(--pavp-region-foreground, var(--ui-color-text-secondary));
     font-size: var(--ui-font-size-body);
     font-weight: var(--ui-font-weight-title);
     line-height: var(--ui-font-line-height-body);
@@ -1698,6 +1800,7 @@ watch(
     flex-direction: column;
     min-inline-size: 0;
     min-block-size: 0;
+    gap: var(--ui-space-content-gap);
   }
 
   .pavp-admin-shell__content {
@@ -1707,15 +1810,16 @@ watch(
     inline-size: 100%;
     overflow: hidden;
     overscroll-behavior: contain;
-    color: var(--ui-color-text-primary);
-    background: var(--ui-admin-surface-content);
+    border-radius: var(--ui-radius-panel);
+    color: var(--pavp-region-foreground, var(--ui-color-text-primary));
+    background: var(--pavp-region-background, var(--ui-admin-surface-content));
   }
 
   .pavp-admin-shell__content-inner {
     gap: var(--ui-space-section-block);
     inline-size: 100%;
-    padding-block: var(--ui-space-section-block)
-      max(var(--ui-space-section-block), var(--pavp-safe-area-bottom));
+    padding-block: var(--ui-space-page-inline)
+      max(var(--ui-space-page-inline), var(--pavp-safe-area-bottom));
     padding-inline: max(var(--ui-space-page-inline), var(--pavp-safe-area-left))
       max(var(--ui-space-page-inline), var(--pavp-safe-area-right));
   }
@@ -1730,11 +1834,13 @@ watch(
   }
 
   .pavp-admin-shell__drawer-navigation {
+    background: var(--pavp-region-background, var(--ui-material-overlay-background));
+    color: var(--pavp-region-foreground, var(--ui-color-text-primary));
     block-size: 100%;
     inline-size: 100%;
     max-inline-size: var(--ui-layout-admin-drawer-maximum-inline-size);
+    border-radius: var(--ui-radius-panel);
     overflow: hidden;
-    background: var(--ui-material-overlay-background);
     box-shadow: var(--ui-admin-shadow-overlay);
   }
 
@@ -1758,6 +1864,19 @@ watch(
     inset-block: 0;
     inset-inline: 0;
     background: var(--ui-color-scrim-viewport);
+    padding-block: max(var(--ui-space-content-gap), var(--pavp-safe-area-top))
+      max(var(--ui-space-content-gap), var(--pavp-safe-area-bottom));
+    padding-inline: max(var(--ui-space-content-gap), var(--pavp-safe-area-left))
+      max(var(--ui-space-content-gap), var(--pavp-safe-area-right));
+  }
+
+  .pavp-admin-shell[data-layout-profile='narrow'] {
+    padding: calc(var(--ui-space-content-gap) / 2);
+    gap: calc(var(--ui-space-content-gap) / 2);
+  }
+
+  .pavp-admin-shell[data-layout-profile='narrow'] .pavp-admin-shell__content-inner {
+    padding: var(--ui-space-content-gap);
   }
 
   .pavp-admin-shell__drawer-heading {
@@ -1873,7 +1992,7 @@ watch(
   justify-content: center;
   gap: var(--ui-space-content-gap);
   border: 0;
-  color: var(--ui-color-text-primary);
+  color: var(--pavp-region-foreground, var(--ui-color-text-primary));
   font-family: var(--ui-font-family-body);
   font-size: var(--ui-font-size-body);
   font-weight: var(--ui-font-weight-body);
@@ -1895,7 +2014,7 @@ watch(
 
 .pavp-admin-shell__action:focus,
 .pavp-admin-shell__navigation-action:focus {
-  color: var(--ui-color-text-primary);
+  color: var(--pavp-region-foreground, var(--ui-color-text-primary));
 }
 
 .pavp-admin-shell__action:hover,

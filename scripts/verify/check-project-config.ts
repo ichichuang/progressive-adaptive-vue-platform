@@ -50,9 +50,9 @@ const expectedVueRouterIntegrity =
   'sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw=='
 const expectedNaiveUiVersion = '2.45.2'
 const naiveUiPatchPath = 'patches/naive-ui@2.45.2.patch'
-const expectedNaiveUiPatchHash = '8f94ad96e80d6818132cbdd27ab6c2158f903818a275bc292c91d853fa4e5c06'
+const expectedNaiveUiPatchHash = '16cdef688867a9780cf97a6f5004b20210f00d6843580f0d9d405b650c608bfd'
 const expectedNaiveUiPatchedFilesHash =
-  '79e5f1963bf179b3494d2a8f391d9b20605d5b96fea004e12819a222b6165ce9'
+  'f066c54b319b019de04d0684cd138e8c4cd9b0e8a34cfb0ebc18c5885d1e3930'
 const expectedNaiveUiPatchedVersion = `2.45.2(patch_hash=${expectedNaiveUiPatchHash})(vue@3.5.40(typescript@6.0.3))`
 const scrollDependencies = [
   { name: 'overlayscrollbars', version: '2.16.0', resolution: '2.16.0', snapshot: {} },
@@ -2890,7 +2890,7 @@ expectEqual(
 const naiveUiPatchedFiles = Array.from(naiveUiPatch.matchAll(/^\+\+\+ b\/(.+)$/gmu), (match) =>
   String(match[1]),
 ).sort()
-expectExactCount(naiveUiPatchedFiles.length, 74, 'Naive UI patched ESM and CommonJS file count')
+expectExactCount(naiveUiPatchedFiles.length, 76, 'Naive UI patched ESM and CommonJS file count')
 const naiveUiPatchedFilesHash = createHash('sha256')
 for (const path of naiveUiPatchedFiles) {
   if (
@@ -2910,6 +2910,8 @@ for (const path of naiveUiPatchedFiles) {
       'lib/switch/styles/light.d.ts',
       'es/_internal/scrollbar/src/Scrollbar.mjs',
       'lib/_internal/scrollbar/src/Scrollbar.js',
+      'es/cascader/src/CascaderMenu.mjs',
+      'lib/cascader/src/CascaderMenu.js',
       'es/layout/src/Layout.mjs',
       'lib/layout/src/Layout.js',
       'es/layout/src/LayoutSider.mjs',

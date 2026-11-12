@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { EffectiveAppearanceState } from '@platform/design-system'
 import { AnimatePresence, M, m } from 'motion-v'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, ref, useId, watch } from 'vue'
 import {
   createMotionFeatureRuntime,
   createMotionInterruptionOwner,
@@ -12,6 +12,7 @@ import {
 
 import { projectMotionPolicy } from './motion-policy'
 
+import { pavpOverlayTargetKey } from '../naive/pavp-naive-runtime-context'
 import type { UiWorkspaceTab } from '../../components/contracts'
 import { NDropdown, type DropdownOption } from 'naive-ui/es/dropdown'
 import { NButton } from 'naive-ui/es/button'
@@ -19,6 +20,7 @@ import UiScrollArea from '../../components/UiScrollArea.vue'
 import type { UiScrollController } from '../../components/scroll-contracts'
 
 defineOptions({ name: 'WorkspaceTabsSurface' })
+const overlayTarget = inject(pavpOverlayTargetKey, '#pavp-overlay-root')
 
 const props = defineProps<{
   readonly motion: EffectiveAppearanceState['motion']
@@ -560,7 +562,7 @@ watch(
     trigger="manual"
     :keyboard="false"
     size="large"
-    to="#pavp-overlay-root"
+    :to="overlayTarget"
     :show="contextMenu.id !== null"
     :x="contextMenu.x"
     :y="contextMenu.y"
@@ -580,10 +582,9 @@ watch(
     flex: 0 0 auto;
     padding-inline-start: var(--pavp-safe-area-left);
     padding-inline-end: var(--pavp-safe-area-right);
-    background-color: var(--ui-color-surface-panel);
-    border-block-end-width: var(--ui-admin-border-width);
-    border-block-end-style: solid;
-    border-block-end-color: var(--ui-color-border-default);
+    background-color: var(--pavp-region-background, var(--ui-color-surface-panel));
+    border-radius: var(--ui-radius-panel);
+    padding-block: var(--ui-space-field-gap);
   }
   .pavp-workspace-tabs-region:dir(rtl) {
     padding-inline-start: var(--pavp-safe-area-right);
@@ -604,20 +605,10 @@ watch(
     min-inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
     padding: 0;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--ui-radius-control);
     background: transparent;
-    color: var(--ui-color-text-secondary);
+    color: var(--pavp-region-foreground, var(--ui-color-text-secondary));
     cursor: pointer;
-  }
-  .pavp-workspace-tabs-edge--previous {
-    border-inline-end-width: var(--ui-admin-border-width);
-    border-inline-end-style: solid;
-    border-inline-end-color: var(--ui-color-border-default);
-  }
-  .pavp-workspace-tabs-edge--next {
-    border-inline-start-width: var(--ui-admin-border-width);
-    border-inline-start-style: solid;
-    border-inline-start-color: var(--ui-color-border-default);
   }
   .pavp-workspace-tabs-edge__surface {
     position: absolute;
@@ -677,30 +668,16 @@ watch(
     isolation: isolate;
     display: flex;
     flex: 0 0 auto;
-    gap: 0;
-    color: var(--ui-color-text-secondary);
+    gap: var(--ui-space-field-gap);
+    color: var(--pavp-region-foreground, var(--ui-color-text-secondary));
   }
   .pavp-workspace-tabs__item {
-    border-radius: var(--ui-radius-control) var(--ui-radius-control) 0 0;
+    border-radius: var(--ui-radius-control);
     position: relative;
     isolation: isolate;
     display: flex;
     flex: 0 0 auto;
     align-items: center;
-  }
-  .pavp-workspace-tabs__item::before {
-    border-radius: inherit;
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-block-start-width: var(--ui-admin-border-width);
-    border-block-start-style: solid;
-    border-block-start-color: var(--ui-color-border-default);
-    border-inline-end-width: var(--ui-admin-border-width);
-    border-inline-end-style: solid;
-    border-inline-end-color: var(--ui-color-border-default);
-    opacity: 0.4;
-    pointer-events: none;
   }
   .pavp-workspace-tabs button {
     position: relative;
@@ -762,7 +739,8 @@ watch(
   .pavp-workspace-tabs__lens::after {
     content: '';
     position: absolute;
-    inset-inline: 0;
+    inset-inline: var(--ui-space-content-gap);
+    border-radius: var(--ui-radius-small);
     /* Keep the active marker above the shared horizontal scroll rail. */
     inset-block-end: calc(var(--ui-space-content-gap) / 6);
     block-size: var(--ui-admin-focus-width);
@@ -848,7 +826,7 @@ watch(
 }
 .pavp-workspace-tabs-edge.n-button {
   inline-size: var(--ui-layout-target-enhanced-minimum-inline-size);
-  color: var(--ui-color-text-secondary);
+  color: var(--pavp-region-foreground, var(--ui-color-text-secondary));
 }
 .pavp-workspace-tabs-edge.n-button:disabled {
   opacity: 1;

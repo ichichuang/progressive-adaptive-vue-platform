@@ -215,9 +215,9 @@ const motionShorthandRules = [
   rawTimingFunction,
   disallowUnapprovedUiVariables(motionVariables),
 ]
-const colorAuthorityRules = (variables) => [
+const colorAuthorityRules = (variables, patterns = []) => [
   rawColorFunction,
-  disallowOutsideAuthorities(variables, [], structuralColorPatterns),
+  disallowOutsideAuthorities(variables, [], [...structuralColorPatterns, ...patterns]),
 ]
 const transitionPropertyRules = [transitionPropertyAll]
 const transitionRules = [/(?:^|[,\s])all(?=[,\s]|$)/iu]
@@ -241,10 +241,16 @@ const motionAuthorityRules = {
 }
 const visualAuthorityRules = {
   background: backgroundShorthandRules,
-  'background-color': colorAuthorityRules([...backgroundColorVariables, ...adminColorVariables]),
+  // Exact declaration contracts still limit the regional input to its owning tabs surface.
+  'background-color': colorAuthorityRules(
+    [...backgroundColorVariables, ...adminColorVariables],
+    [String.raw`var\(\s*--pavp-region-background\s*,\s*var\(\s*--ui-color-surface-panel\s*\)\s*\)`],
+  ),
   [borderShorthandProperties]: borderShorthandRules,
   [borderColorProperties]: colorAuthorityRules(borderColorVariables),
-  color: colorAuthorityRules(textColorVariables),
+  color: colorAuthorityRules(textColorVariables, [
+    String.raw`var\(\s*--pavp-region-foreground\s*,\s*var\(\s*--ui-color-text-(?:primary|secondary)\s*\)\s*\)`,
+  ]),
   [nonShorthandColorProperties]: colorRulesWithoutExactAuthority,
   [spacingProperties]: [
     disallowOutsideAuthorities(spacingVariables, ['0', 'auto', 'normal'], approvedSpacingPatterns),
@@ -271,12 +277,18 @@ const visualAuthorityRules = {
 }
 const shellVisualAuthorityRules = {
   ...visualAuthorityRules,
-  color: colorAuthorityRules([
-    ...textColorVariables,
-    '--pavp-collapsed-foreground',
-    '--pavp-collapsed-active-foreground',
-    '--pavp-collapsed-hover-foreground',
-  ]),
+  color: colorAuthorityRules(
+    [
+      ...textColorVariables,
+      '--pavp-collapsed-foreground',
+      '--pavp-collapsed-active-foreground',
+      '--pavp-collapsed-hover-foreground',
+      '--pavp-region-foreground',
+    ],
+    [
+      String.raw`var\(\s*--pavp-region-foreground\s*,\s*var\(\s*--ui-color-text-(?:primary|secondary)\s*\)\s*\)`,
+    ],
+  ),
   'z-index': [
     disallowOutsideAuthorities(
       zIndexVariables,
@@ -413,6 +425,21 @@ const workbenchVisualAuthorityRules = {
 export default {
   plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
+    {
+      files: ['**/apps/web/src/app/workbench/ThemeStyleSettings.vue.style-*.css'],
+      rules: {
+        'declaration-property-value-disallowed-list': {
+          ...visualAuthorityRules,
+          color: colorAuthorityRules([
+            ...textColorVariables,
+            '--preview-sidebar-text',
+            '--preview-header-text',
+            '--preview-menu-content',
+            '--preview-on-accent',
+          ]),
+        },
+      },
+    },
     {
       files: ['**/packages/ui/src/components/UiTable.vue.style-*.css'],
       rules: {

@@ -178,9 +178,14 @@ async function render(): Promise<void> {
 function start(): void {
   if (active || !host.value || !metric.value || !tooltipMount.value) return
   active = true
-  tooltipViewport = createG2TooltipViewport(host.value, tooltipMount.value, () => {
-    chart?.emit('tooltip:hide', {})
-  })
+  tooltipViewport = createG2TooltipViewport(
+    host.value,
+    tooltipMount.value,
+    () => {
+      chart?.emit('tooltip:hide', {})
+    },
+    appearance?.value.motion === 'full',
+  )
   observer = new ResizeObserver(schedule)
   observer.observe(host.value)
   observer.observe(metric.value)

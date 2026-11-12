@@ -1,3 +1,5 @@
+import { colorStyleIds, appearanceRegionKeys } from '../schema/color-style.schema'
+import { projectRegionAppearance } from '../runtime/region-appearance'
 import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, relative, resolve, sep } from 'node:path'
@@ -20,7 +22,7 @@ import { projectUiAppearance } from '../runtime/ui-appearance-projection'
 import { fontScaleValues, radiusPreferenceSchema } from '../schema/appearance.schema'
 import { builtInThemeIds } from '../schema/complete-theme.schema'
 import { explicitThemePreferenceSchema } from '../schema/preference.schema'
-import { formatOpaqueSrgbColor } from '../schema/css-color'
+import { formatOpaqueSrgbColor, calculateWcag21Contrast, parseCssColor } from '../schema/css-color'
 import { tokenPathFromReference } from '../schema/token.schema'
 import { validateCompleteBuiltInThemes } from './complete-themes'
 import { validateContrastAndMaterialContracts } from './contrast'
@@ -2354,6 +2356,7 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   assertInvariantEqual(
     ProductPreferenceDefault,
     {
+      colorStyle: 'unified',
       colorMode: 'system',
       theme: {
         registryKind: 'built-in',
@@ -2440,11 +2443,55 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
           entry,
         )
 
+        for (const colorStyle of colorStyleIds) {
+          const root = { ...snapshot, colorStyle }
+          for (const region of appearanceRegionKeys) {
+            const scoped = projectRegionAppearance(root, region)
+            const minimum = contrast === 'enhanced' ? 7 : 4.5
+            assertInvariant(
+              calculateWcag21Contrast(
+                parseCssColor(scoped.surface.foreground),
+                parseCssColor(scoped.surface.background),
+              ) >= minimum,
+              `${entry.themeId}/${colorMode}/${contrast}/${colorStyle}/${region}: curated surface must meet contrast`,
+            )
+            assertInvariant(
+              scoped.appearance.theme.themeId === snapshot.theme.themeId &&
+                scoped.appearance.density === snapshot.density &&
+                scoped.appearance.fontScale === snapshot.fontScale &&
+                scoped.appearance.motion === snapshot.motion &&
+                scoped.appearance.radius === snapshot.radius,
+              'color recipes must preserve brand and independent size/motion axes',
+            )
+            const expectedRegions: Readonly<
+              Record<(typeof colorStyleIds)[number], readonly string[]>
+            > = {
+              unified: [],
+              'dark-navigation': ['sidebar'],
+              'brand-sidebar': ['sidebar'],
+              'brand-header': ['header'],
+              'dark-frame': ['header', 'sidebar'],
+              'brand-frame': ['header', 'sidebar'],
+              'soft-frame': ['header', 'sidebar', 'tabs', 'footer'],
+            }
+            const emphasized = expectedRegions[colorStyle].includes(region)
+            assertInvariant(
+              scoped.isCustomized === emphasized,
+              'curated style must only customize its designated region',
+            )
+            assertInvariant(
+              Object.values(scoped.cssVariables).every((value) => value.length > 0),
+              'regional semantic projection must be complete',
+            )
+          }
+        }
+
         assertInvariantEqual(
           Object.keys(snapshot).sort(compareCodePoints),
           [
             'colorMode',
             'colorPalette',
+            'colorStyle',
             'contrast',
             'density',
             'fontScale',
@@ -2453,8 +2500,9 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
             'radius',
             'statusColors',
             'theme',
+            'themeEntry',
           ],
-          'UiAppearanceSnapshot must preserve all eight Appearance axes and project the built-in colorPalette plus statusColors',
+          'UiAppearanceSnapshot must preserve all Appearance axes and project the built-in colorPalette plus statusColors',
         )
         assertInvariantEqual(
           Object.keys(snapshot.statusColors),
@@ -2849,11 +2897,33 @@ function validateForcedColorsOutput(css: string, artifact: string): number {
 
     if (mappedDeclarations.length === 0) continue
 
+    const regionalStart = css.indexOf('@media (forced-colors: none) {')
+    let regionalEnd = regionalStart
+    if (regionalStart >= 0) {
+      let depth = 0
+      for (let index = css.indexOf('{', regionalStart); index < css.length; index += 1) {
+        if (css[index] === '{') depth += 1
+        if (css[index] === '}') depth -= 1
+        if (depth === 0) {
+          regionalEnd = index + 1
+          break
+        }
+      }
+    }
+    const isolatedRegionalWriter =
+      regionalStart >= 0 &&
+      rule.index > regionalStart &&
+      rule.index < regionalEnd &&
+      ruleSelector !== undefined &&
+      /^\[data-pavp-color-scope\](?:\[data-(?:color-mode|contrast|material)='[a-z]+'\])*$/u.test(
+        ruleSelector,
+      )
     assertInvariant(
       ruleSelector !== undefined &&
-        /^(?::root|html\[data-contrast='(?:standard|enhanced)'\]|html\[data-material='(?:adaptive|reduced|solid)'\])$/u.test(
-          ruleSelector,
-        ) &&
+        (isolatedRegionalWriter ||
+          /^(?::root|html\[data-contrast='(?:standard|enhanced)'\]|html\[data-material='(?:adaptive|reduced|solid)'\])$/u.test(
+            ruleSelector,
+          )) &&
         rule.index < mediaStart &&
         mappedDeclarations.every((declaration) => !/!\s*important\b/iu.test(declaration)),
       `${artifact}: ordinary mapped-property writers must remain weaker or equal and precede forced-colors`,
@@ -3287,6 +3357,39 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
     prefersDark: true,
     rawPreference: JSON.stringify(builtInPreference),
   })
+
+  for (const colorStyle of colorStyleIds) {
+    const preference = {
+      ...builtInPreference,
+      appearance: { ...builtInPreference.appearance, colorStyle },
+    }
+    assertInvariantEqual(
+      executeAppearanceInit(appearanceInit, {
+        prefersDark: true,
+        rawPreference: JSON.stringify(preference),
+      }),
+      builtInExecution,
+      'curated style must preserve the root first paint until region scopes mount',
+    )
+  }
+  for (const colorStyle of [null, 'unknown', { mode: 'custom' }]) {
+    const invalid = {
+      ...builtInPreference,
+      appearance: { ...builtInPreference.appearance, colorStyle },
+    }
+    assertInvariant(
+      !explicitThemePreferenceSchema.safeParse(invalid).success,
+      'style schema must reject invalid IDs',
+    )
+    assertInvariantEqual(
+      executeAppearanceInit(appearanceInit, {
+        prefersDark: true,
+        rawPreference: JSON.stringify(invalid),
+      }),
+      executeAppearanceInit(appearanceInit, { prefersDark: true, rawPreference: null }),
+      'first-paint style validation must reject invalid IDs without migration',
+    )
+  }
 
   assertInvariantEqual(
     builtInExecution,

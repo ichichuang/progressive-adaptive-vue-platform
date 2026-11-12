@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { inject, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { inject, onActivated, onBeforeUnmount, onDeactivated, onMounted, ref, watch } from 'vue'
 import {
   loadScrollEnhancement,
   type ScrollEnhancement,
@@ -34,6 +34,8 @@ let enhancement: ScrollEnhancement | undefined
 let enhancementGeneration = 0
 let disposed = false
 let mounted = false
+let deactivated = false
+let retainedOffset: UiScrollOffset | undefined
 let releaseTarget: (() => void) | undefined
 let pendingTarget: ScrollTargetReceipt | undefined
 let targetCommand = false
@@ -46,6 +48,7 @@ function readState(): ReturnType<UiScrollController['readState']> {
     ready:
       mounted &&
       !disposed &&
+      !deactivated &&
       props.enabled &&
       view?.isConnected === true &&
       body?.isConnected === true &&
@@ -65,8 +68,21 @@ function readOffset(): UiScrollOffset {
   return { left: viewport.value?.scrollLeft ?? 0, top: viewport.value?.scrollTop ?? 0 }
 }
 
+function captureRetainedOffset(): void {
+  const view = viewport.value
+  if (
+    !disposed &&
+    !deactivated &&
+    props.enabled &&
+    view?.isConnected === true &&
+    view.clientWidth > 0 &&
+    view.clientHeight > 0
+  )
+    retainedOffset = readOffset()
+}
+
 function canEnhance(): boolean {
-  return mounted && !disposed && props.enabled
+  return mounted && !disposed && !deactivated && props.enabled
 }
 
 async function enhance(): Promise<void> {
@@ -371,6 +387,7 @@ const controller = Object.freeze<UiScrollController>({
     }
     if (enhancement !== undefined) enhancement.scrollTo(command)
     else viewport.value?.scrollTo(command)
+    captureRetainedOffset()
   },
   scrollBy(input) {
     if (!valid(input)) return
@@ -437,6 +454,7 @@ const controller = Object.freeze<UiScrollController>({
     enhancementGeneration += 1
     enhancement?.dispose()
     enhancement = undefined
+    viewport.value?.removeEventListener('scroll', captureRetainedOffset)
     emit('controller', null)
   },
 })
@@ -451,7 +469,8 @@ onMounted(() => {
 })
 watch(
   () => [props.enabled, props.ownerId, props.xScrollable] as const,
-  ([enabled]) => {
+  ([enabled, ownerId], [, previousOwnerId]) => {
+    if (ownerId !== previousOwnerId) retainedOffset = undefined
     if (mounted && !disposed) {
       registerTarget()
       emit('controller', null)
@@ -472,20 +491,34 @@ watch(
 )
 watch(
   viewport,
-  (element) => {
+  (element, previous) => {
+    previous?.removeEventListener('scroll', captureRetainedOffset)
+    element?.addEventListener('scroll', captureRetainedOffset, { passive: true })
     registerTarget()
     if (mounted && !disposed) emit('viewport', element ?? null)
   },
   { flush: 'post' },
 )
 onBeforeUnmount(controller.dispose)
+onDeactivated(() => {
+  // KeepAlive detaches the viewport before this hook; its native offset can already be zero.
+  // Preserve the last connected sample and stop vendors from sampling the detached layout.
+  deactivated = true
+  pendingTarget?.cancel()
+  void enhance()
+})
+onActivated(() => {
+  if (!deactivated) return
+  deactivated = false
+  if (retainedOffset !== undefined) controller.scrollTo({ ...retainedOffset, behavior: 'instant' })
+  void enhance()
+})
 </script>
 
 <template>
   <div
     ref="host"
     class="pavp-scroll-area"
-    :data-lenis-prevent="enabled ? '' : undefined"
     :data-enabled="enabled"
     :data-enhancement-pending="enabled && enhancementPending"
     :data-contained="contained"

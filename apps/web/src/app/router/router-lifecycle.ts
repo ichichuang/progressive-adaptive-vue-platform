@@ -1109,23 +1109,26 @@ export async function createAndReadyRouter(input: {
     return [
       input.configuration.releaseSha,
       input.configuration.buildVersion,
-      localization.locale.value,
-      getRouteMessageScope(navigation.routeName),
-      snapshot.colorMode,
-      snapshot.contrast,
-      snapshot.density,
-      snapshot.fontScale,
-      snapshot.material,
-      snapshot.motion,
-      snapshot.theme.registryKind,
-      snapshot.theme.themeId,
+      // A live page keeps its reading position across settings and viewport changes.
+      // Persisted reload/history coordinates still require the exact visual context.
+      ...(policy === 'workspace'
+        ? []
+        : [
+            localization.locale.value,
+            getRouteMessageScope(navigation.routeName),
+            snapshot.colorMode,
+            snapshot.contrast,
+            snapshot.density,
+            snapshot.fontScale,
+            snapshot.material,
+            snapshot.motion,
+            snapshot.theme.registryKind,
+            snapshot.theme.themeId,
+          ]),
       route.meta.layoutCapabilityId,
       route.meta.blockScrollOwnerId,
       route.meta.inlineScrollOwnerId,
-      profile,
-      viewport.width,
-      viewport.height,
-      rootFontSize,
+      ...(policy === 'workspace' ? [] : [profile, viewport.width, viewport.height, rootFontSize]),
       style.writingMode,
       style.direction,
       ...(policy === 'workspace' ? [content?.revision ?? 0] : []),
@@ -1442,7 +1445,9 @@ export async function createAndReadyRouter(input: {
                   ? undefined
                   : regionContext(to, navigation, owner, workspaceEntry)
               const workspaceGeneration = refreshScroll?.readWorkspaceGeneration()
-              if (workspaceActivation) {
+              // Resume the same live page from tabs, shell navigation or browser history.
+              // A matching history entry takes precedence over the latest workspace offset.
+              if (workspaceEntry !== undefined && !preserve && !restored) {
                 const record = workspaceRecords.get(workspaceEntry.identity)
                 if (record !== undefined) {
                   if (

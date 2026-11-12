@@ -314,10 +314,7 @@ const carouselItems = computed(() => [
             span="wide"
             reserved
           >
-            <div
-              class="wb-scroll-example w-full relative"
-              data-lenis-prevent
-            >
+            <div class="wb-scroll-example w-full relative">
               <UiScrollArea
                 owner-id="component-anchor"
                 @viewport="anchorViewport = $event"
@@ -377,10 +374,7 @@ const carouselItems = computed(() => [
             name="NScrollbar"
             span="wide"
           >
-            <div
-              class="wb-scroll-example w-full"
-              data-lenis-prevent
-            >
+            <div class="wb-scroll-example w-full">
               <NScrollbar class="h-full">
                 <div
                   v-for="item in scrollItems"
@@ -396,10 +390,7 @@ const carouselItems = computed(() => [
             name="NInfiniteScroll"
             span="wide"
           >
-            <div
-              class="wb-scroll-example w-full"
-              data-lenis-prevent
-            >
+            <div class="wb-scroll-example w-full">
               <NInfiniteScroll
                 class="h-full"
                 :on-load="
@@ -422,10 +413,7 @@ const carouselItems = computed(() => [
             name="NVirtualList"
             span="wide"
           >
-            <div
-              class="wb-scroll-example w-full relative"
-              data-lenis-prevent
-            >
+            <div class="wb-scroll-example w-full relative">
               <span
                 ref="itemTarget"
                 class="invisible absolute min-h-target-enhanced"
@@ -451,10 +439,7 @@ const carouselItems = computed(() => [
             pavp
             span="full"
           >
-            <div
-              class="wb-scroll-example w-full"
-              data-lenis-prevent
-            >
+            <div class="wb-scroll-example w-full">
               <UiScrollArea
                 owner-id="component-showcase-scroll"
                 @controller="scroll = $event"

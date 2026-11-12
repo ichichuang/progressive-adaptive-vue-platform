@@ -1079,6 +1079,7 @@ const noUnapprovedVisualLiterals = {
     const filename = relative(process.cwd(), context.filename).replaceAll('\\', '/')
     const sinks = createStyleSinkResolver(context)
     const previewProjectionFunctions = new Set()
+    const colorStylePreviewFunctions = new Set()
     const overflowWrites = []
     const usedStyleSinks = new Set()
 
@@ -1329,9 +1330,269 @@ const noUnapprovedVisualLiterals = {
       return returns.length > 0 && returns.every((result) => publicTokenValue(result, next))
     }
 
+    function computedStyleReturns(value) {
+      if (value?.type !== 'CallExpression' || !sinks.imported(value.callee, 'vue', ['computed']))
+        return undefined
+      const callback = value.arguments[0]
+      if (callback?.type !== 'ArrowFunctionExpression' || callback.body.type !== 'BlockStatement')
+        return undefined
+      const returns = []
+      const visit = (node) => {
+        if (node.type === 'ReturnStatement') returns.push(node.argument)
+        else if (
+          !['FunctionExpression', 'FunctionDeclaration', 'ArrowFunctionExpression'].includes(
+            node.type,
+          )
+        )
+          for (const key of context.sourceCode.visitorKeys[node.type] ?? []) {
+            const children = node[key]
+            if (Array.isArray(children)) children.forEach((child) => child && visit(child))
+            else if (children?.type) visit(children)
+          }
+      }
+      visit(callback.body)
+      return returns
+    }
+
+    // Regional sinks accept only the DS projection's named outputs.
+    function regionalProjection(expression, seen = new Set(), region) {
+      if (!expression || seen.has(expression)) return false
+      const next = new Set([...seen, expression])
+      const value = resolveLocalExpression(expression)
+      if (value?.type === 'ChainExpression')
+        return regionalProjection(value.expression, next, region)
+      if (
+        value?.type === 'MemberExpression' &&
+        getStaticPropertyName(value.property, value.computed) === 'value'
+      )
+        return regionalProjection(value.object, next, region)
+      const returns = computedStyleReturns(value)
+      if (returns !== undefined)
+        return (
+          returns.some((result) => regionalProjection(result, next, region)) &&
+          returns.every(
+            (result) =>
+              (result?.type === 'Literal' && result.value === null) ||
+              regionalProjection(result, next, region),
+          )
+        )
+      if (value?.type === 'ConditionalExpression')
+        return (
+          (value.alternate.type === 'Literal' &&
+            value.alternate.value === null &&
+            regionalProjection(value.consequent, next, region)) ||
+          (value.consequent.type === 'Literal' &&
+            value.consequent.value === null &&
+            regionalProjection(value.alternate, next, region))
+        )
+      return (
+        value?.type === 'CallExpression' &&
+        value.arguments.length === 2 &&
+        (region === undefined || staticNodeValue(value.arguments[1]) === region) &&
+        sinks.imported(value.callee, '@platform/design-system', ['projectRegionAppearance'])
+      )
+    }
+
+    function regionalField(expression, path, region) {
+      const value = resolveLocalExpression(expression)
+      if (value?.type === 'ChainExpression') return regionalField(value.expression, path, region)
+      if (path.length === 0) return regionalProjection(value, new Set(), region)
+      return (
+        value?.type === 'MemberExpression' &&
+        getStaticPropertyName(value.property, value.computed) === path.at(-1) &&
+        regionalField(value.object, path.slice(0, -1), region)
+      )
+    }
+
+    function previewNavigationSelection(expression, path) {
+      const value = resolveLocalExpression(expression)
+      if (path.length > 0)
+        return (
+          value?.type === 'MemberExpression' &&
+          getStaticPropertyName(value.property, value.computed) === path.at(-1) &&
+          previewNavigationSelection(value.object, path.slice(0, -1))
+        )
+      return (
+        value?.type === 'ConditionalExpression' &&
+        regionalField(value.test, ['isCustomized'], 'sidebar') &&
+        regionalField(
+          value.consequent,
+          ['appearance', 'colorPalette', 'roles', 'primary', 'solid'],
+          'sidebar',
+        ) &&
+        regionalField(
+          value.alternate,
+          ['appearance', 'colorPalette', 'roles', 'primary', 'soft'],
+          'sidebar',
+        )
+      )
+    }
+
+    function regionalStyle(expression, kind, seen = new Set()) {
+      if (!expression || seen.has(expression)) return false
+      const next = new Set([...seen, expression])
+      const value = resolveLocalExpression(expression)
+      const returns = computedStyleReturns(value)
+      if (returns !== undefined)
+        return (
+          returns.some((result) => regionalStyle(result, kind, next)) &&
+          returns.every(
+            (result) => sinks.global(result, 'undefined') || regionalStyle(result, kind, next),
+          )
+        )
+      if (value?.type === 'ConditionalExpression')
+        return (
+          (sinks.global(value.consequent, 'undefined') &&
+            regionalStyle(value.alternate, kind, next)) ||
+          (sinks.global(value.alternate, 'undefined') &&
+            regionalStyle(value.consequent, kind, next))
+        )
+      if (kind === 'variables') return regionalField(value, ['cssVariables'])
+      const fields = value?.type === 'ObjectExpression' ? value.properties : []
+      const pairs =
+        kind === 'scope'
+          ? { '--pavp-region-background': 'background', '--pavp-region-foreground': 'foreground' }
+          : { background: 'background', color: 'foreground' }
+      const remaining = new Set(Object.keys(pairs))
+      let spread = kind === 'scope'
+      return (
+        fields.length === remaining.size + Number(spread) &&
+        fields.every((field) => {
+          if (
+            field.type === 'SpreadElement' &&
+            spread &&
+            regionalField(field.argument, ['cssVariables'])
+          ) {
+            spread = false
+            return true
+          }
+          if (field.type !== 'Property') return false
+          const key = getStaticPropertyName(field.key, field.computed)
+          return remaining.delete(key) && regionalField(field.value, ['surface', pairs[key]])
+        }) &&
+        remaining.size === 0 &&
+        !spread
+      )
+    }
+
+    function injectedAppearance(expression) {
+      const value = resolveLocalExpression(expression)
+      if (
+        value?.type !== 'MemberExpression' ||
+        getStaticPropertyName(value.property, value.computed) !== 'value'
+      )
+        return false
+      const injection = resolveLocalExpression(value.object)
+      return (
+        injection?.type === 'CallExpression' &&
+        sinks.imported(injection.callee, 'vue', ['inject']) &&
+        sinks.imported(injection.arguments[0], '../adapters/naive/pavp-naive-runtime-context', [
+          'pavpNaiveAppearanceKey',
+        ])
+      )
+    }
+
+    function navigationMenuProjection(expression, seen = new Set()) {
+      if (!expression || seen.has(expression)) return false
+      const next = new Set([...seen, expression])
+      const value = resolveLocalExpression(expression)
+      if (value?.type === 'ConditionalExpression')
+        return (
+          navigationMenuProjection(value.consequent, next) &&
+          navigationMenuProjection(value.alternate, next)
+        )
+      if (
+        value?.type === 'CallExpression' &&
+        value.arguments.length === 1 &&
+        sinks.imported(value.callee, '../adapters/naive/regional-navigation-theme', [
+          'regionalNavigationTheme',
+        ])
+      )
+        return regionalField(value.arguments[0], ['appearance'])
+      if (
+        value?.type !== 'MemberExpression' ||
+        getStaticPropertyName(value.property, value.computed) !== 'Menu'
+      )
+        return false
+      const overrides = value.object
+      if (
+        overrides.type !== 'MemberExpression' ||
+        getStaticPropertyName(overrides.property, overrides.computed) !== 'themeOverrides'
+      )
+        return false
+      const projection = overrides.object
+      return (
+        projection.type === 'CallExpression' &&
+        projection.arguments.length === 1 &&
+        sinks.imported(projection.callee, '../adapters/naive/pavp-naive-theme', [
+          'createPavpNaiveThemeProjection',
+        ]) &&
+        injectedAppearance(projection.arguments[0])
+      )
+    }
+
     function admittedTemplateStyle(node, attribute) {
       const expression = resolveLocalExpression(node.value?.expression)
       const element = node.parent?.parent
+      if (attribute === 'style') {
+        const classes = staticTemplateClass(element)?.split(/\s+/u) ?? []
+        const staticAttribute = (name) =>
+          element?.startTag?.attributes?.find(
+            (candidate) => !candidate.directive && candidate.key?.name === name,
+          )?.value?.value
+        if (
+          filename === 'apps/web/src/app/workbench/ThemeStyleSettings.vue' &&
+          element?.rawName === 'span' &&
+          classes.includes('theme-style-scene') &&
+          expression?.type === 'CallExpression' &&
+          expression.arguments.length === 1 &&
+          expression.callee.type === 'Identifier' &&
+          colorStylePreviewFunctions.has(sinks.variable(expression.callee))
+        )
+          return claimStyleSink('color-style-preview')
+        if (filename === 'packages/ui/src/providers/UiColorScope.vue') {
+          if (
+            element?.rawName === 'NConfigProvider' &&
+            classes.includes('pavp-color-scope') &&
+            regionalStyle(node.value?.expression, 'scope')
+          )
+            return claimStyleSink('regional-color-scope')
+          const teleport = element?.parent
+          if (
+            element?.rawName === 'div' &&
+            teleport?.rawName === 'Teleport' &&
+            teleport.startTag.attributes.some(
+              (candidate) =>
+                !candidate.directive &&
+                candidate.key.name === 'to' &&
+                candidate.value?.value === '#pavp-overlay-root',
+            ) &&
+            regionalStyle(expression, 'variables')
+          )
+            return claimStyleSink('regional-color-overlay')
+        }
+        if (
+          filename === 'packages/ui/src/providers/UiProvider.vue' &&
+          element?.rawName === 'div' &&
+          staticAttribute('id') === 'pavp-overlay-root' &&
+          regionalStyle(expression, 'variables')
+        )
+          return claimStyleSink('content-region-overlay')
+        if (filename === 'packages/ui/src/components/UiAdminShell.vue') {
+          if (
+            element?.rawName === 'NLayoutSider' &&
+            classes.includes('pavp-admin-shell__sidebar') &&
+            regionalStyle(expression, 'surface')
+          )
+            return claimStyleSink('sidebar-region-surface')
+          if (
+            element?.rawName === 'div' &&
+            classes.includes('pavp-admin-shell__drawer-layer') &&
+            regionalStyle(expression, 'scope')
+          )
+            return claimStyleSink('sidebar-region-drawer')
+        }
+      }
       if (attribute === 'style' && filename === 'packages/ui/src/providers/UiProvider.vue') {
         const fields = expression?.type === 'ObjectExpression' ? expression.properties : []
         const geometry = new Set(['width', 'height', 'left', 'top'])
@@ -1377,7 +1638,7 @@ const noUnapprovedVisualLiterals = {
         const pairs = {
           '--n-item-color-active': 'itemColorActiveCollapsed',
           '--pavp-collapsed-foreground': 'itemIconColorCollapsed',
-          '--pavp-collapsed-active-foreground': 'itemIconColorChildActive',
+          '--pavp-collapsed-active-foreground': 'itemIconColorActive',
           '--pavp-collapsed-hover': 'itemColorHover',
           '--pavp-collapsed-hover-foreground': 'itemIconColorHover',
         }
@@ -1397,42 +1658,7 @@ const noUnapprovedVisualLiterals = {
               getStaticPropertyName(value.property, value.computed) !== expected
             )
               return false
-            const menu = resolveLocalExpression(value.object)
-            if (
-              menu?.type !== 'MemberExpression' ||
-              getStaticPropertyName(menu.property, menu.computed) !== 'Menu'
-            )
-              return false
-            const overrides = menu.object
-            if (
-              overrides.type !== 'MemberExpression' ||
-              getStaticPropertyName(overrides.property, overrides.computed) !== 'themeOverrides'
-            )
-              return false
-            const projection = overrides.object
-            if (
-              projection.type !== 'CallExpression' ||
-              !sinks.imported(projection.callee, '../adapters/naive/pavp-naive-theme', [
-                'createPavpNaiveThemeProjection',
-              ]) ||
-              projection.arguments.length !== 1
-            )
-              return false
-            const appearance = projection.arguments[0]
-            const injection =
-              appearance?.type === 'MemberExpression' &&
-              getStaticPropertyName(appearance.property, appearance.computed) === 'value'
-                ? resolveLocalExpression(appearance.object)
-                : undefined
-            return (
-              injection?.type === 'CallExpression' &&
-              sinks.imported(injection.callee, 'vue', ['inject']) &&
-              sinks.imported(
-                injection.arguments[0],
-                '../adapters/naive/pavp-naive-runtime-context',
-                ['pavpNaiveAppearanceKey'],
-              )
-            )
+            return navigationMenuProjection(value.object)
           }) &&
           new Set(fields.map((field) => getStaticPropertyName(field.key, field.computed))).size ===
             Object.keys(pairs).length &&
@@ -1892,6 +2118,51 @@ const noUnapprovedVisualLiterals = {
         )
         const returns = node.body.body.filter((statement) => statement.type === 'ReturnStatement')
         const returned = returns[0]?.argument
+        if (
+          filename === 'apps/web/src/app/workbench/ThemeStyleSettings.vue' &&
+          node.id !== null &&
+          returns.length === 1
+        ) {
+          const pairs = {
+            '--preview-sidebar': ['sidebar', 'surface.background'],
+            '--preview-sidebar-text': ['sidebar', 'appearance.colorPalette.text.primary'],
+            '--preview-header': ['header', 'surface.background'],
+            '--preview-header-text': ['header', 'surface.foreground'],
+            '--preview-tabs': ['tabs', 'surface.background'],
+            '--preview-content': ['content', 'surface.background'],
+            '--preview-panel': ['content', 'appearance.colorPalette.surfaces.raised'],
+            '--preview-on-accent': [
+              'content',
+              'appearance.colorPalette.roles.primary.solid.foreground',
+            ],
+            '--preview-accent': [
+              'content',
+              'appearance.colorPalette.roles.primary.solid.background.default',
+            ],
+          }
+          const fields = returned?.type === 'ObjectExpression' ? returned.properties : []
+          const selections = {
+            '--preview-menu-active': ['background', 'default'],
+            '--preview-menu-content': ['foreground'],
+          }
+          const remaining = new Set([...Object.keys(pairs), ...Object.keys(selections)])
+          if (
+            fields.length === remaining.size &&
+            fields.every((field) => {
+              if (field.type !== 'Property') return false
+              const key = getStaticPropertyName(field.key, field.computed)
+              const pair = pairs[key]
+              return (
+                remaining.delete(key) &&
+                (selections[key] !== undefined
+                  ? previewNavigationSelection(field.value, selections[key])
+                  : regionalField(field.value, pair[1].split('.'), pair[0]))
+              )
+            }) &&
+            remaining.size === 0
+          )
+            colorStylePreviewFunctions.add(sinks.variable(node.id))
+        }
         const modePreview = filename === 'apps/web/src/app/workbench/ColorModePreview.vue'
         const pairs = modePreview
           ? {
@@ -1902,8 +2173,8 @@ const noUnapprovedVisualLiterals = {
               '--pavp-mode-preview-border': 'borderDefault',
             }
           : {
-              '--pavp-settings-theme-color': 'controlPrimary',
-              '--pavp-settings-theme-on-color': 'surfacePanel',
+              '--pavp-settings-theme-color': 'actionPrimary',
+              '--pavp-settings-theme-on-color': 'onAction',
             }
         const fields = returned?.type === 'ObjectExpression' ? returned.properties : []
         if (

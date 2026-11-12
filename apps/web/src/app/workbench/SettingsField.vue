@@ -3,19 +3,16 @@ import { computed } from 'vue'
 const props = defineProps<{
   readonly id: string
   readonly label: string
-  readonly description: string
 }>()
 const labelledBy = computed(() => `${props.id}-label`)
-const describedBy = computed(() => `${props.id}-note`)
 const inputProps = computed(() => ({
   id: props.id,
   'aria-labelledby': labelledBy.value,
-  'aria-describedby': describedBy.value,
 }))
 </script>
 <template>
   <div
-    class="wb-settings-field rounded-control grid min-w-0 items-center bg-surface-page p-panel layout-narrow:p-panel-narrow"
+    class="wb-settings-field grid min-w-0 items-center"
     role="group"
     :aria-labelledby="labelledBy"
   >
@@ -26,18 +23,11 @@ const inputProps = computed(() => ({
       >
         {{ label }}
       </span>
-      <span
-        :id="describedBy"
-        class="text-caption text-text-secondary"
-      >
-        {{ description }}
-      </span>
     </div>
     <div class="wb-field-control min-w-0">
       <slot
         :input-props="inputProps"
         :labelled-by="labelledBy"
-        :described-by="describedBy"
       />
     </div>
   </div>

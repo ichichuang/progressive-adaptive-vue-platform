@@ -299,13 +299,22 @@ function discard(): void {
             kind="table"
             :label="t('tableShowcase.configuration')"
           />
-          <p
+          <div
             v-if="error"
-            role="alert"
-            class="m-0 min-h-0 break-words overflow-y-auto text-caption text-control-error"
+            class="wb-feedback shrink-0 min-h-0 min-w-0"
           >
-            {{ error }}
-          </p>
+            <UiScrollArea
+              owner-id="table-configuration-error"
+              :enabled="active"
+            >
+              <p
+                role="alert"
+                class="m-0 break-words text-caption text-control-error"
+              >
+                {{ error }}
+              </p>
+            </UiScrollArea>
+          </div>
         </section>
         <div
           v-show="!configurationEditing"

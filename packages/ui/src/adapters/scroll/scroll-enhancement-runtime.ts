@@ -10,6 +10,17 @@ import type { UiScrollInput } from '../../components/scroll-contracts'
 // table body/summary pair. This owns only cancellation, never offsets or targets.
 let cancelActiveWheelMotion: (() => void) | undefined
 
+// Register ownership, not an unconditional event barrier. A fitted table/menu
+// must let its parent smooth-scroll; a genuinely overflowing child owns its axis.
+const scrollOwners = new WeakMap<
+  EventTarget,
+  {
+    readonly viewport: HTMLElement
+    readonly horizontal: boolean
+    readonly bothAxes: boolean
+  }
+>()
+
 /** Private vendor execution only; offsets and all navigation policy remain PAVP-owned. */
 export function createScrollEnhancement(input: {
   readonly host: HTMLElement
@@ -27,6 +38,41 @@ export function createScrollEnhancement(input: {
   let disposed = false
   let scrollbar: ReturnType<typeof OverlayScrollbars> | undefined
   let textareaObserver: ResizeObserver | undefined
+  const owner = { viewport, horizontal: input.horizontal, bothAxes: input.bothAxes === true }
+  scrollOwners.set(host, owner)
+
+  function hasRange(axis: 'x' | 'y'): boolean {
+    return axis === 'x'
+      ? viewport.scrollWidth > viewport.clientWidth + 1
+      : viewport.scrollHeight > viewport.clientHeight + 1
+  }
+
+  function nestedOwnsAxis(event: Event, axis: 'x' | 'y'): boolean {
+    const path = event.composedPath()
+    return path.slice(0, path.indexOf(viewport)).some((node) => {
+      const nested = scrollOwners.get(node)
+      if (!nested || nested.viewport === viewport) return false
+      const port = nested.viewport
+      return axis === 'x'
+        ? (nested.horizontal || nested.bothAxes) && port.scrollWidth > port.clientWidth + 1
+        : !nested.horizontal && port.scrollHeight > port.clientHeight + 1
+    })
+  }
+
+  // Vendor setup/teardown reparents content. Preserve native state for the whole
+  // subtree in that synchronous transaction, including independently owned scrollers.
+  function retainNativeOffsets(): () => void {
+    const positions = [viewport, ...viewport.querySelectorAll('*')].flatMap((element) =>
+      element instanceof HTMLElement &&
+      (element === viewport || element.scrollLeft !== 0 || element.scrollTop !== 0)
+        ? [{ element, left: element.scrollLeft, top: element.scrollTop }]
+        : [],
+    )
+    return () => {
+      for (const { element, left, top } of positions)
+        element.scrollTo({ left, top, behavior: 'instant' })
+    }
+  }
 
   function revealScrollbar(): void {
     host.removeAttribute('data-pavp-scroll-idle')
@@ -115,6 +161,8 @@ export function createScrollEnhancement(input: {
     const nested = path.slice(0, path.indexOf(viewport))
     if (
       (x !== 0 && getComputedStyle(viewport).direction !== 'ltr') ||
+      (x !== 0 && nestedOwnsAxis(event, 'x')) ||
+      (y !== 0 && nestedOwnsAxis(event, 'y')) ||
       nested.some(
         (node) =>
           node instanceof HTMLElement &&
@@ -129,7 +177,7 @@ export function createScrollEnhancement(input: {
     }
     // A discrete table header can scroll X without any vertical content. Leave
     // pure Y input to its existing ancestor scroll chain instead of swallowing it.
-    if ((x === 0 && y === 0) || (x === 0 && lenis.limit <= 0)) return
+    if (!(x !== 0 && hasRange('x')) && !(y !== 0 && hasRange('y'))) return
     if (cancelActiveWheelMotion !== cancelMotion) {
       cancelActiveWheelMotion?.()
       // A peer's latest scroll synchronization may precede its native scroll event.
@@ -166,10 +214,18 @@ export function createScrollEnhancement(input: {
           eventsTarget: viewport,
           orientation: input.horizontal ? 'horizontal' : 'vertical',
           gestureOrientation: input.horizontal ? 'both' : 'vertical',
-          virtualScroll: ({ event }) => {
+          virtualScroll: ({ event, deltaX, deltaY }) => {
             if (input.textarea) resizeMotion()
             // Virtualized vendors may already own and cancel the same wheel event.
-            if (!event.defaultPrevented && supportsSmoothAxis()) return true
+            const axis = input.horizontal ? 'x' : 'y'
+            if (
+              !event.defaultPrevented &&
+              supportsSmoothAxis() &&
+              hasRange(axis) &&
+              (input.horizontal ? deltaX !== 0 || deltaY !== 0 : deltaY !== 0) &&
+              !nestedOwnsAxis(event, axis)
+            )
+              return true
             cancelMotion()
             return false
           },
@@ -207,6 +263,7 @@ export function createScrollEnhancement(input: {
   function dispose(): void {
     if (disposed) return
     disposed = true
+    if (scrollOwners.get(host) === owner) scrollOwners.delete(host)
     destroyMotion()
     revealScrollbar()
     host.removeEventListener('pointerenter', onPointerEnter)
@@ -220,11 +277,13 @@ export function createScrollEnhancement(input: {
     viewport.removeEventListener('wheel', onBothAxesWheel, true)
     viewport.removeEventListener('scroll', onNativePosition)
     textareaObserver?.disconnect()
+    const restoreOffsets = scrollbar === undefined ? undefined : retainNativeOffsets()
     scrollbar?.destroy()
+    restoreOffsets?.()
   }
 
   try {
-    const position = { left: viewport.scrollLeft, top: viewport.scrollTop }
+    const restoreOffsets = input.textarea ? undefined : retainNativeOffsets()
     // Reload/re-entry can mount under a stationary pointer without a new enter event.
     // Seed visibility before creating rails; touch-only sticky :hover is not mouse hover.
     const canHover = window.matchMedia('(any-hover: hover)').matches
@@ -277,7 +336,7 @@ export function createScrollEnhancement(input: {
       (scrollbar?.state().destroyed || scrollbar?.elements().scrollOffsetElement !== viewport)
     )
       throw new Error('Document scroll owner unavailable.')
-    if (!input.textarea) viewport.scrollTo({ ...position, behavior: 'instant' })
+    if (!input.textarea) restoreOffsets?.()
     else {
       textareaObserver = new ResizeObserver(resizeMotion)
       textareaObserver.observe(viewport)

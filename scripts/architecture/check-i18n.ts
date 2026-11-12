@@ -974,7 +974,6 @@ export async function validateI18nArchitecture(): Promise<string[]> {
         'options',
         'accessible-label',
         'aria-labelledby',
-        'aria-describedby',
         'aria-busy',
         'disabled',
       ].every((name) => (languageBindings.get(name)?.trim().length ?? 0) > 0) &&
@@ -984,7 +983,7 @@ export async function validateI18nArchitecture(): Promise<string[]> {
       languageControl?.props?.some(
         (prop) => prop.name === 'on' && prop.arg?.content === 'update:model-value',
       ) === true,
-    'the standalone language radio group must expose its controlled pending choice, visible options, accessible name/description, busy/disabled state and update action through the existing public component.',
+    'the standalone language radio group must expose its controlled pending choice, visible options, accessible name, busy/disabled state and update action through the existing public component.',
   )
   report(
     textAt('apps/web/src/App.vue').includes(':locale="locale"') &&

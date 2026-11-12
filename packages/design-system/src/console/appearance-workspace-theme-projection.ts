@@ -16,6 +16,7 @@ import type { ThemeReference } from '../schema/preference.schema'
 export interface AppearanceThemePreviewSwatches {
   readonly surfacePage: string
   readonly surfacePanel: string
+  readonly onAction: string
   readonly actionPrimary: string
   readonly controlPrimary: string
   readonly borderDefault: string
@@ -94,6 +95,7 @@ function projectSwatches(
     surfacePage: requiredSwatch(entry, colorMode, contrast, 'color.surface.page'),
     surfacePanel: requiredSwatch(entry, colorMode, contrast, 'color.surface.panel'),
     actionPrimary: requiredSwatch(entry, colorMode, contrast, 'color.action.primary'),
+    onAction: requiredSwatch(entry, colorMode, contrast, 'color.text.on-action'),
     controlPrimary: requiredSwatch(entry, colorMode, contrast, 'color.control.primary'),
     borderDefault: requiredSwatch(entry, colorMode, contrast, 'color.border.default'),
     focusRing: requiredSwatch(entry, colorMode, contrast, 'color.focus.ring'),

@@ -18,6 +18,7 @@ type SemanticStatusAppearanceProjection = Readonly<
 >
 
 export interface UiAppearanceSnapshot extends EffectiveAppearanceState {
+  readonly themeEntry: Readonly<ThemeRegistryEntry>
   readonly colorPalette: ThemeColorPalette
   readonly statusColors: SemanticStatusAppearanceProjection
 }
@@ -145,6 +146,7 @@ export function projectUiAppearance(
   return Object.freeze({
     ...appearance,
     theme: Object.freeze({ ...appearance.theme }),
+    themeEntry: entry,
     colorPalette,
     statusColors: Object.freeze({
       info: projectTone('info'),

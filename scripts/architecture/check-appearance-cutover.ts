@@ -5,11 +5,15 @@ import { isDeepStrictEqual } from 'node:util'
 
 import {
   ProductPreferenceDefault,
+  colorStyleIds,
+  appearanceRegionKeys,
   applyAppearance,
   captureRadius,
   builtInThemeIds,
   builtInAppearanceThemePreviews,
   projectAccessibleCustomAppearanceThemePreviews,
+  projectUiAppearance,
+  projectRegionAppearance,
   explicitThemePreferenceSchema,
   fontScaleValues,
   installCustomThemeBank,
@@ -17,6 +21,10 @@ import {
   validateCustomThemeDefinition,
 } from '@platform/design-system'
 import ts from 'typescript'
+import {
+  calculateWcag21Contrast,
+  parseCssColor,
+} from '../../packages/design-system/src/schema/css-color'
 
 import {
   parseCustomThemeRegistrySnapshot,
@@ -111,6 +119,12 @@ const expectedPublicRootSymbols = [
   'projectAccessibleCustomAppearanceThemePreviews',
   'AppearanceThemePreviewProjection',
   'AppearanceThemePreviewSwatches',
+  'colorStyleIds',
+  'colorStyleSchema',
+  'ColorStyle',
+  'appearanceRegionKeys',
+  'AppearanceRegion',
+  'projectRegionAppearance',
 ] as const
 const expectedStoreActions = [
   'restoreAppearance',
@@ -688,6 +702,7 @@ async function validateFiveBuiltInThemes(): Promise<readonly string[]> {
           ['surfacePage', 'color.surface.page'],
           ['surfacePanel', 'color.surface.panel'],
           ['actionPrimary', 'color.action.primary'],
+          ['onAction', 'color.text.on-action'],
           ['controlPrimary', 'color.control.primary'],
           ['borderDefault', 'color.border.default'],
           ['focusRing', 'color.focus.ring'],
@@ -1682,6 +1697,13 @@ function withInMemoryLocalStorage<Result>(operation: (storage: InMemoryStorageHa
   }
 }
 
+function regionalPreferenceProbe() {
+  return explicitThemePreferenceSchema.parse({
+    schemaVersion: 4,
+    appearance: { ...ProductPreferenceDefault, colorStyle: 'dark-navigation' },
+  })
+}
+
 function validatePersistenceContracts(): readonly string[] {
   return withInMemoryLocalStorage((storage) => {
     const violations: string[] = []
@@ -1752,6 +1774,36 @@ function validatePersistenceContracts(): readonly string[] {
       !exactKeys(writtenPreference, ['schemaVersion', 'appearance'])
     ) {
       violations.push('Preference Writer must persist one direct Explicit Preference value.')
+    }
+
+    const regionalPreference = regionalPreferenceProbe()
+    if (writeStoredPreference(regionalPreference).status !== 'written')
+      violations.push('Regional appearance must persist through the existing Preference Writer.')
+    const regionalRead = readStoredPreference()
+    if (
+      regionalRead.status !== 'restored' ||
+      !isDeepStrictEqual(regionalRead.preference, regionalPreference)
+    )
+      violations.push(
+        'Regional appearance must roundtrip every region and mode without normalization loss.',
+      )
+    for (const colorStyle of [undefined, 'unsupported', {}, { mode: 'custom', regions: {} }]) {
+      const raw = JSON.stringify({
+        ...regionalPreference,
+        appearance: { ...regionalPreference.appearance, colorStyle },
+      })
+      storage.values.set(preferenceKey, raw)
+      const writes = storage.setCalls
+      const removals = storage.removeCalls
+      if (
+        readStoredPreference().status !== 'rejected' ||
+        storage.setCalls !== writes ||
+        storage.removeCalls !== removals ||
+        storage.values.get(preferenceKey) !== raw
+      )
+        violations.push(
+          'Absent or invalid regional configuration must be rejected without migration, writeback or deletion.',
+        )
     }
 
     const firstValidation = validateCustomThemeDefinition({
@@ -2035,7 +2087,7 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
         failures.push('First appearance restore must not arm size motion.')
       const deploymentDefault = explicitThemePreferenceSchema.parse({
         ...defaults,
-        appearance: { ...defaults.appearance, fontScale: 1.1 },
+        appearance: { ...regionalPreferenceProbe().appearance, fontScale: 1.1 },
       })
       const originalGetItem = storage.storage.getItem.bind(storage.storage)
       for (const mode of ['missing', 'corrupt', 'disabled', 'saved'] as const) {
@@ -2064,6 +2116,66 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
           storage.storage.getItem = originalGetItem
         }
       }
+      const regionalPreference = regionalPreferenceProbe()
+      store.$reset()
+      storage.values.delete(preferenceKey)
+      if (
+        store.restoreAppearance(environment, regionalPreference).status !== 'committed' ||
+        !isDeepStrictEqual(
+          store.readEffectiveAppearance(environment)?.colorStyle,
+          regionalPreference.appearance.colorStyle,
+        )
+      )
+        failures.push(
+          'Deployment regional defaults must reach the effective appearance before rendering.',
+        )
+      storage.values.set(preferenceKey, JSON.stringify(defaults))
+      store.synchronizeAppearance(environment)
+      storage.values.set(preferenceKey, JSON.stringify(regionalPreference))
+      const regionalSyncWrites = storage.setCalls
+      if (
+        store.synchronizeAppearance(environment).status !== 'committed' ||
+        !isDeepStrictEqual(
+          store.readEffectiveAppearance(environment)?.colorStyle,
+          regionalPreference.appearance.colorStyle,
+        ) ||
+        storage.setCalls !== regionalSyncWrites
+      )
+        failures.push(
+          'Cross-tab regional changes must reach effective appearance without feedback writes.',
+        )
+      const unifiedPreference = explicitThemePreferenceSchema.parse({
+        ...regionalPreference,
+        appearance: {
+          ...regionalPreference.appearance,
+          colorStyle: 'unified',
+        },
+      })
+      const originalRegionalWrite = storage.storage.setItem.bind(storage.storage)
+      storage.storage.setItem = () => {
+        throw new Error('Regional persistence rollback probe.')
+      }
+      try {
+        if (
+          store.changeAppearancePreference(unifiedPreference, environment).status !== 'rejected' ||
+          !isDeepStrictEqual(store.preference, regionalPreference) ||
+          !isDeepStrictEqual(
+            store.readEffectiveAppearance(environment)?.colorStyle,
+            regionalPreference.appearance.colorStyle,
+          ) ||
+          storage.values.get(preferenceKey) !== JSON.stringify(regionalPreference)
+        )
+          failures.push(
+            'A failed regional persistence write must restore the exact prior preference and effective state.',
+          )
+      } finally {
+        storage.storage.setItem = originalRegionalWrite
+      }
+      if (
+        store.changeAppearancePreference(unifiedPreference, environment).status !== 'committed' ||
+        !isDeepStrictEqual(store.preference?.appearance.colorStyle, 'unified')
+      )
+        failures.push('Switching to unified mode must restore the unified recipe.')
       store.$reset()
       storage.values.delete(preferenceKey)
       store.restoreAppearance(environment)
@@ -2341,6 +2453,61 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
           configurable: true,
           value: { supports: () => false },
         })
+        for (const saved of [false, true]) {
+          store.$reset()
+          storage.values.delete(preferenceKey)
+          if (saved) storage.values.set(preferenceKey, JSON.stringify(defaults))
+          const writes = storage.setCalls
+          const regionalStartup = installAppearanceProvider(
+            provider.pinia,
+            {
+              handoff: undefined,
+              safetyRestorationAuthority: undefined,
+              restoreSafetyForFailedStartup: () => {
+                safetyRestores += 1
+              },
+              dispose: () => undefined,
+            },
+            deploymentDefault,
+          )
+          try {
+            const expected = saved ? defaults : deploymentDefault
+            if (
+              !isDeepStrictEqual(
+                regionalStartup.appearanceMutationBoundary.preference.value,
+                expected,
+              ) ||
+              !isDeepStrictEqual(
+                regionalStartup.appearanceReadBoundary.snapshot.value.colorStyle,
+                expected.appearance.colorStyle,
+              ) ||
+              storage.setCalls !== writes
+            )
+              failures.push(
+                'Before mount, provider snapshots must contain deployment regions or the saved user override without storage writes.',
+              )
+            if (
+              regionalStartup.appearanceMutationBoundary.resetPreference().status !== 'committed' ||
+              !isDeepStrictEqual(
+                regionalStartup.appearanceMutationBoundary.preference.value,
+                deploymentDefault,
+              ) ||
+              !isDeepStrictEqual(
+                regionalStartup.appearanceReadBoundary.snapshot.value.colorStyle,
+                deploymentDefault.appearance.colorStyle,
+              ) ||
+              storage.values.get(preferenceKey) !== JSON.stringify(deploymentDefault) ||
+              storage.setCalls !== writes + 1
+            )
+              failures.push(
+                'Reset must restore and persist deployment regional defaults, not compiled product defaults.',
+              )
+          } finally {
+            regionalStartup.dispose('normal-or-hmr')
+          }
+        }
+        store.$reset()
+        storage.setCalls = 0
         storage.values.set(preferenceKey, JSON.stringify({ schemaVersion: 3 }))
         const beforeStartup = new Map(storage.values)
         startup = installAppearanceProvider(provider.pinia, {
@@ -2406,11 +2573,16 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
           appearance: {
             ...defaults.appearance,
             theme: { registryKind: 'built-in', themeId: 'emerald-grove' },
+            colorStyle: regionalPreference.appearance.colorStyle,
           },
         }
         if (
           startup.appearanceMutationBoundary.commitPreference(choice).status !== 'committed' ||
           startup.appearanceReadBoundary.snapshot.value.theme.themeId !== 'emerald-grove' ||
+          !isDeepStrictEqual(
+            startup.appearanceReadBoundary.snapshot.value.colorStyle,
+            regionalPreference.appearance.colorStyle,
+          ) ||
           storage.values.get(preferenceKey) !== JSON.stringify(choice) ||
           storage.values.get(registryKey) !== invalidRegistry ||
           storage.values.get(unrelatedKey) !== unrelatedValue ||
@@ -2808,10 +2980,11 @@ function validateRuntimeContracts(): readonly string[] {
     fontScale: 1,
     motion: 'full',
     radius: 8,
+    colorStyle: ProductPreferenceDefault.colorStyle,
   }
 
   if (!isDeepStrictEqual(ProductPreferenceDefault, expectedProductDefault)) {
-    violations.push('ProductPreferenceDefault drifted from the current eight-axis authority.')
+    violations.push('ProductPreferenceDefault drifted from the current appearance authority.')
   }
 
   const defaultPreference = explicitThemePreferenceSchema.safeParse({
@@ -3006,6 +3179,7 @@ function validateRuntimeContracts(): readonly string[] {
     fontScale: 1,
     motion: 'full',
     radius: ProductPreferenceDefault.radius,
+    colorStyle: ProductPreferenceDefault.colorStyle,
   })
 
   if (
@@ -3025,6 +3199,7 @@ function validateRuntimeContracts(): readonly string[] {
     fontScale: 1,
     motion: 'full',
     radius: 8,
+    colorStyle: ProductPreferenceDefault.colorStyle,
   } as const
   for (const [radius, control, panel, small] of [
     [0, '0px', '0px', '0px'],
@@ -3420,6 +3595,111 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
   return violations
 }
 
+function validateRegionalAppearanceProjection(): readonly string[] {
+  const failures: string[] = []
+  const custom = validateCustomThemeDefinition({
+    ...resolvedCustomThemeProbeDefinition(),
+    id: 'style-custom-probe',
+  })
+  if (custom.status !== 'validated') return ['Custom style fixture must validate.']
+  const entries = [...generatedThemeRegistry.builtInEntries, custom.entry]
+  const ratio = (foreground: string, background: string) =>
+    calculateWcag21Contrast(parseCssColor(foreground), parseCssColor(background))
+  for (const entry of entries)
+    for (const colorMode of ['light', 'dark'] as const)
+      for (const contrast of ['standard', 'enhanced'] as const)
+        for (const colorStyle of colorStyleIds) {
+          const root = projectUiAppearance(
+            {
+              ...ProductPreferenceDefault,
+              theme:
+                entry.registryKind === 'custom'
+                  ? { registryKind: 'custom', themeId: entry.themeId }
+                  : { registryKind: 'built-in', themeId: entry.themeId },
+              colorMode,
+              contrast,
+              colorStyle,
+              density: ProductPreferenceDefault.density.preset,
+              material: 'solid',
+            },
+            entry,
+          )
+          const before = JSON.stringify(root)
+          for (const region of appearanceRegionKeys) {
+            const label = `${entry.themeId}/${colorMode}/${contrast}/${colorStyle}/${region}`
+            const result = projectRegionAppearance(root, region)
+            const minimum = contrast === 'enhanced' ? 7 : 4.5
+            if (ratio(result.surface.foreground, result.surface.background) < minimum)
+              failures.push(`${label}: surface foreground contrast failed.`)
+            for (const role of Object.values(result.appearance.colorPalette.roles)) {
+              for (const background of Object.values(role.solid.background))
+                if (ratio(role.solid.foreground, background) < minimum)
+                  failures.push(`${label}: solid role contrast failed.`)
+              for (const background of Object.values(role.soft.background))
+                if (ratio(role.soft.foreground, background) < minimum)
+                  failures.push(`${label}: soft role contrast failed.`)
+            }
+            const darkRegion =
+              (region === 'sidebar' &&
+                ['dark-navigation', 'brand-sidebar', 'dark-frame', 'brand-frame'].includes(
+                  colorStyle,
+                )) ||
+              (region === 'header' && ['dark-frame'].includes(colorStyle))
+            const expectedMode = darkRegion ? 'dark' : colorMode
+            const palette = result.appearance.colorPalette
+            const solidRegion =
+              region === 'header' && ['brand-header', 'brand-frame'].includes(colorStyle)
+            const tintedRegion =
+              (region === 'sidebar' && ['brand-sidebar', 'brand-frame'].includes(colorStyle)) ||
+              (['soft-frame'].includes(colorStyle) && region !== 'content')
+            const sunkenRegion =
+              (region === 'sidebar' && colorStyle === 'dark-navigation') ||
+              (['dark-frame'].includes(colorStyle) && (region === 'sidebar' || region === 'header'))
+            const expectedSurface = solidRegion
+              ? {
+                  background: palette.roles.primary.solid.background.default,
+                  foreground: palette.roles.primary.solid.foreground,
+                }
+              : tintedRegion
+                ? {
+                    background: palette.roles.primary.soft.background.default,
+                    foreground: palette.roles.primary.soft.foreground,
+                  }
+                : {
+                    background:
+                      region === 'content'
+                        ? palette.surfaces.canvas
+                        : sunkenRegion
+                          ? palette.surfaces.sunken
+                          : palette.surfaces.surface,
+                    foreground: palette.text.primary,
+                  }
+            if (!isDeepStrictEqual(result.surface, expectedSurface))
+              failures.push(
+                `${label}: complete style recipe must pair its specified surface and foreground.`,
+              )
+            if (
+              result.appearance.colorMode !== expectedMode ||
+              result.appearance.theme.themeId !== root.theme.themeId ||
+              result.appearance.theme.registryKind !== root.theme.registryKind ||
+              result.appearance.contrast !== contrast ||
+              result.appearance.fontScale !== root.fontScale ||
+              result.appearance.density !== root.density ||
+              result.appearance.motion !== root.motion ||
+              result.appearance.radius !== root.radius ||
+              JSON.stringify(root) !== before
+            )
+              failures.push(
+                `${label}: recipe must retain brand, non-color preferences and root immutability.`,
+              )
+            for (const role of generatedThemeRegistry.activePublicColorRoles)
+              if (!result.cssVariables[role.publicBinding])
+                failures.push(`${label}: missing ${role.publicRole}.`)
+          }
+        }
+  return failures
+}
+
 export async function validateAppearanceCutover(): Promise<readonly string[]> {
   const violations: string[] = []
   const checks: readonly (() => readonly string[] | Promise<readonly string[]>)[] = [
@@ -3432,6 +3712,7 @@ export async function validateAppearanceCutover(): Promise<readonly string[]> {
     validateParserCorpus,
     validatePersistenceContracts,
     validateRuntimeContracts,
+    validateRegionalAppearanceProjection,
     validateSharedAppearanceSynchronization,
     validateGeneratedThemeBankAndManifest,
   ]

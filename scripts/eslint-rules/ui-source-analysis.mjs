@@ -180,11 +180,16 @@ function buildStyleSinkResolver(context) {
     if (['ObjectExpression', 'ArrayExpression'].includes(node.type)) return true
     if (node.type === 'Identifier') return container(bindingInitializer(node), seen)
     if (node.type === 'MemberExpression') return container(node.object, seen)
+    if (node.type === 'ConditionalExpression')
+      return container(node.consequent, seen) || container(node.alternate, seen)
     if (node.type === 'NewExpression')
       return ['Map', 'Set', 'WeakMap', 'WeakSet'].some((kind) => global(node.callee, kind))
     if (node.type === 'CallExpression')
       return (
         imported(node.callee, 'vue', ['ref', 'shallowRef', 'computed']) ||
+        imported(node.callee, '../adapters/naive/regional-navigation-theme', [
+          'regionalNavigationTheme',
+        ]) ||
         (node.callee.type === 'MemberExpression' &&
           global(node.callee.object, 'Object') &&
           name(node.callee.property, node.callee.computed) === 'freeze')
@@ -210,6 +215,27 @@ function buildStyleSinkResolver(context) {
         'createBlock',
         'createElementBlock',
         'cloneVNode',
+      ])
+    )
+      return true
+    // These projections consume readonly snapshots and produce frozen DS values;
+    // passing a regional projection into them does not escape its mutable authority.
+    if (
+      imported(callee, '@platform/design-system', ['projectRegionAppearance']) ||
+      imported(callee, '../adapters/naive/pavp-naive-theme', ['createPavpNaiveThemeProjection']) ||
+      imported(callee, '../adapters/naive/regional-navigation-theme', [
+        'regionalNavigationTheme',
+        'regionalHeaderTheme',
+      ])
+    )
+      return true
+    if (
+      filename === 'packages/ui/src/providers/UiColorScope.vue' &&
+      imported(callee, 'vue', ['provide']) &&
+      call.arguments.length === 2 &&
+      call.arguments[1] === reference &&
+      imported(call.arguments[0], '../adapters/naive/pavp-naive-runtime-context', [
+        'pavpNaiveAppearanceKey',
       ])
     )
       return true

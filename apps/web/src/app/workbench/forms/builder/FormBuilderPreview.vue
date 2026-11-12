@@ -237,7 +237,7 @@ onScopeDispose(() => {
       @input.capture="clearCheck"
     >
       <header
-        class="wb-form-panel-header flex shrink-0 min-w-0 items-center overflow-x-auto gap-component-unit"
+        class="wb-form-panel-header flex shrink-0 flex-wrap min-w-0 items-center gap-component-unit"
       >
         <h2 class="font-title-weight m-0 mr-auto text-body text-text-primary layout-narrow:hidden">
           {{ t('formBuilder.preview') }}

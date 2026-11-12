@@ -1365,7 +1365,13 @@ onBeforeUnmount(local.dispose)
       menus.length !== 1 ||
       menu === undefined ||
       staticAttribute(menu, 'trigger') !== 'manual' ||
-      staticAttribute(menu, 'to') !== overlayTarget ||
+      !menu.props.some(
+        (prop) =>
+          prop.name === 'bind' &&
+          prop.arg?.content === 'to' &&
+          prop.exp?.content === 'overlayTarget',
+      ) ||
+      !workspaceScrollSource.includes("inject(pavpOverlayTargetKey, '#pavp-overlay-root')") ||
       !menu.props.some(
         (prop) =>
           prop.name === 'bind' && prop.arg?.content === 'keyboard' && prop.exp?.content === 'false',
@@ -2111,6 +2117,7 @@ function dismiss(event?: MouseEvent): void {
     'packages/ui/src/adapters/naive/PavpNaiveFormChoice.vue',
     'packages/ui/src/adapters/naive/use-form-control.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
+    'packages/ui/src/adapters/naive/regional-navigation-theme.ts',
     'packages/ui/src/adapters/naive/pavp-naive-theme.ts',
     'packages/ui/src/adapters/naive/pavp-naive-form-theme.ts',
     'packages/ui/src/adapters/naive/pavp-naive-table-theme.ts',
@@ -2233,8 +2240,13 @@ function dismiss(event?: MouseEvent): void {
         if (element.propertyName !== undefined && element.propertyName.text !== element.name.text) {
           violations.push(`${relativePath}: use the official Naive import name.`)
         }
-        if (element.name.text === 'NConfigProvider' && relativePath !== uiProviderPath) {
-          violations.push(relativePath + ': NConfigProvider is owned exclusively by UiProvider.')
+        if (
+          element.name.text === 'NConfigProvider' &&
+          ![uiProviderPath, 'packages/ui/src/providers/UiColorScope.vue'].includes(relativePath)
+        ) {
+          violations.push(
+            relativePath + ': NConfigProvider is owned exclusively by UiProvider and UiColorScope.',
+          )
         }
         const clauseTypeOnly = importClause.phaseModifier === ts.SyntaxKind.TypeKeyword
         const elementTypeOnly = element.getText(parsed).startsWith('type ')
@@ -2404,9 +2416,9 @@ function dismiss(event?: MouseEvent): void {
 
   if (
     runtimeImports.filter((entry) => entry === 'NConfigProvider@naive-ui/es/config-provider')
-      .length !== 1
+      .length !== 2
   ) {
-    violations.push('UiProvider must own the single NConfigProvider import.')
+    violations.push('UiProvider and UiColorScope must each own one NConfigProvider import.')
   }
   if (!exactSet([...new Set(runtimeImports)], expectedRuntimeImports)) {
     violations.push('Direct Naive runtime imports diverged from the admitted exact set.')
