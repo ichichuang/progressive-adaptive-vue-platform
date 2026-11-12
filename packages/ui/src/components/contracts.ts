@@ -39,6 +39,10 @@ export interface UiAdminShellCopy {
   readonly expandNavigationLabel: string
   readonly collapseNavigationLabel: string
   readonly locateCurrentLabel: string
+  readonly fullscreenLabel: string
+  readonly exitFullscreenLabel: string
+  readonly fullscreenUnavailableLabel: string
+  readonly fullscreenFailedLabel: string
   readonly freeNavigationModeLabel: string
   readonly accordionNavigationModeLabel: string
   readonly switchToLightLabel: string

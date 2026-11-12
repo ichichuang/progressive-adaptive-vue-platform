@@ -404,7 +404,7 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
     selector: '.pavp-workspace-tabs-region',
     declarations: [
       ['border-radius', 'var(--ui-radius-panel)', false],
-      ['padding-block', 'var(--ui-space-field-gap)', false],
+      ['padding-block', 'var(--ui-space-component-unit)', false],
     ],
     responsibility: 'BROWSER_OR_PLATFORM_OWNER',
   },

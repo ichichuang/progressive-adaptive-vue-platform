@@ -10861,6 +10861,16 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     hasStaticTemplateClass(headerCollapseControl, 'pavp-admin-shell__header-action') &&
     hasStaticTemplateClass(headerCollapseControl, 'min-h-target-enhanced') &&
     hasStaticTemplateClass(headerCollapseControl, 'min-w-target-enhanced')
+  // Only the identity click discriminator and fullscreen state listener are allowed;
+  // neither may become a second responsive-navigation measurement owner.
+  const identityClickTimer = `homeClickTimer = setTimeout(() => {
+    homeClickTimer = undefined
+    emit('navigate-home')
+  }, 500)`
+  const fullscreenListener = "document.addEventListener('fullscreenchange', synchronizeFullscreen)"
+  const responsiveLifecycleSource = shellSource
+    .replace(identityClickTimer, '')
+    .replace(fullscreenListener, '')
   const occurrences = (source: string, value: string): number => source.split(value).length - 1
   const requiredMenuThemeFields = [
     'color: material.chrome',
@@ -10956,8 +10966,13 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     [
       'NAV_RESPONSIVE_LIFECYCLE',
       !/\b(?:MutationObserver|matchMedia|setTimeout|setInterval|requestAnimationFrame)\s*\(/u.test(
-        shellSource,
-      ) && !/\b(?:window|document)\.addEventListener\s*\(/u.test(shellSource),
+        responsiveLifecycleSource,
+      ) &&
+        !/\b(?:window|document)\.addEventListener\s*\(/u.test(responsiveLifecycleSource) &&
+        shellSource.includes(
+          "onBeforeUnmount(() => {\n  cancelHomeClick()\n  document.removeEventListener('fullscreenchange', synchronizeFullscreen)",
+        ) &&
+        shellSource.includes('clearTimeout(homeClickTimer)'),
     ],
     [
       'NAV_FONT_SCALE_INVALIDATION',

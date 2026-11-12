@@ -221,6 +221,61 @@ function readRootFontSize(): number {
 }
 
 const shell = ref<HTMLElement>()
+let homeClickTimer: ReturnType<typeof setTimeout> | undefined
+const fullscreenActive = ref(false)
+const fullscreenAvailable = ref(false)
+const fullscreenPending = ref(false)
+const fullscreenFailed = ref(false)
+const fullscreenLabel = computed(() =>
+  !fullscreenAvailable.value
+    ? props.copy.fullscreenUnavailableLabel
+    : fullscreenFailed.value
+      ? props.copy.fullscreenFailedLabel
+      : fullscreenActive.value
+        ? props.copy.exitFullscreenLabel
+        : props.copy.fullscreenLabel,
+)
+function cancelHomeClick(): void {
+  if (homeClickTimer !== undefined) clearTimeout(homeClickTimer)
+  homeClickTimer = undefined
+}
+function handleIdentityClick(event: MouseEvent): void {
+  cancelHomeClick()
+  if (event.detail === 0) {
+    emit('navigate-home')
+    return
+  }
+  if (event.detail > 1) return
+  // Keep the double-click discrimination window independent of animation preferences.
+  homeClickTimer = setTimeout(() => {
+    homeClickTimer = undefined
+    emit('navigate-home')
+  }, 500)
+}
+function handleIdentityDoubleClick(): void {
+  cancelHomeClick()
+  void handleNavigationAction('focus')
+}
+function synchronizeFullscreen(): void {
+  fullscreenAvailable.value = document.fullscreenEnabled
+  fullscreenActive.value = document.fullscreenElement !== null
+  fullscreenFailed.value = false
+}
+async function toggleFullscreen(): Promise<void> {
+  if (!fullscreenAvailable.value || fullscreenPending.value) return
+  fullscreenPending.value = true
+  fullscreenFailed.value = false
+  try {
+    if (document.fullscreenElement === null) await document.documentElement.requestFullscreen()
+    else await document.exitFullscreen()
+    synchronizeFullscreen()
+  } catch {
+    fullscreenFailed.value = true
+  } finally {
+    fullscreenPending.value = false
+  }
+}
+
 const navigationTrigger = ref<InstanceType<typeof NButton>>()
 const drawerNavigation = ref<HTMLElement>()
 const drawerClose = ref<InstanceType<typeof NButton>>()
@@ -1021,6 +1076,8 @@ watch(
 )
 
 onMounted(() => {
+  synchronizeFullscreen()
+  document.addEventListener('fullscreenchange', synchronizeFullscreen)
   const target = shell.value
 
   if (target === undefined) {
@@ -1045,6 +1102,8 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  cancelHomeClick()
+  document.removeEventListener('fullscreenchange', synchronizeFullscreen)
   drawerFocusGeneration += 1
   documentScrollGeneration += 1
   disposeDocumentScroll?.()
@@ -1099,7 +1158,8 @@ watch(
           text
           attr-type="button"
           class="pavp-admin-shell__identity min-w-0"
-          @click="emit('navigate-home')"
+          @click="handleIdentityClick"
+          @dblclick="handleIdentityDoubleClick"
         >
           <span class="inline-flex min-w-0 items-baseline gap-content-gap">
             <NImage
@@ -1146,24 +1206,40 @@ watch(
             >
               <template #trigger>
                 <NButton
-                  :aria-label="copy.locateCurrentLabel"
+                  :aria-label="fullscreenLabel"
+                  :aria-pressed="fullscreenActive"
+                  :disabled="!fullscreenAvailable || fullscreenPending"
                   :bordered="false"
                   attr-type="button"
                   class="pavp-admin-shell__header-action shrink-0 min-h-target-enhanced min-w-target-enhanced"
                   size="small"
                   :theme-overrides="headerActionThemeOverrides"
                   type="tertiary"
-                  @click="handleNavigationAction('focus')"
+                  @click="toggleFullscreen"
                 >
                   <template #icon>
-                    <NIcon
-                      aria-hidden="true"
-                      class="i-lucide-focus"
-                    />
+                    <span
+                      class="pavp-admin-shell__header-action-icon-stack inline-grid items-center justify-center"
+                    >
+                      <NIcon
+                        aria-hidden="true"
+                        class="pavp-admin-shell__header-action-icon-state i-lucide-maximize col-start-1 row-start-1"
+                        :class="{
+                          'pavp-admin-shell__header-action-icon-state--active': !fullscreenActive,
+                        }"
+                      />
+                      <NIcon
+                        aria-hidden="true"
+                        class="pavp-admin-shell__header-action-icon-state i-lucide-minimize col-start-1 row-start-1"
+                        :class="{
+                          'pavp-admin-shell__header-action-icon-state--active': fullscreenActive,
+                        }"
+                      />
+                    </span>
                   </template>
                 </NButton>
               </template>
-              {{ copy.locateCurrentLabel }}
+              {{ fullscreenLabel }}
             </NTooltip>
             <NTooltip
               v-if="!persistentNavigationCollapsed"

@@ -584,7 +584,7 @@ watch(
     padding-inline-end: var(--pavp-safe-area-right);
     background-color: var(--pavp-region-background, var(--ui-color-surface-panel));
     border-radius: var(--ui-radius-panel);
-    padding-block: var(--ui-space-field-gap);
+    padding-block: var(--ui-space-component-unit);
   }
   .pavp-workspace-tabs-region:dir(rtl) {
     padding-inline-start: var(--pavp-safe-area-right);

@@ -766,6 +766,21 @@ const noDynamicUnoCssClasses = {
         return
       }
       const nextSeen = new Set([...seen, expression])
+      // A finite owner class-map only toggles its static key; reactive boolean
+      // values cannot inject class names, even when synchronized from the browser.
+      if (
+        expression.type === 'ObjectExpression' &&
+        expression.properties.length === 1 &&
+        expression.properties.every(
+          (property) =>
+            property.type === 'Property' &&
+            !property.computed &&
+            exactDynamicClassOwners.get(filename)?.has(sinks.name(property.key, false)) &&
+            property.value.type === 'Identifier' &&
+            property.value.name === 'fullscreenActive',
+        )
+      )
+        return
       if (sinks.untrusted(expression)) {
         unresolved(expression)
         return
