@@ -770,9 +770,11 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
 
   if (
     storeState?.members.map((member) => propertyName(member.name)).join(',') !==
-    'preference,customThemeRegistry'
+    'preference,deploymentDefault,customThemeRegistry'
   ) {
-    violations.push('appearance.store.ts: AppearanceStoreState must contain exactly two fields.')
+    violations.push(
+      'appearance.store.ts: AppearanceStoreState must contain preference, deploymentDefault and customThemeRegistry.',
+    )
   }
 
   const storeExports = exportNames(file)
@@ -846,9 +848,11 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
 
     if (
       stateObject?.properties.map((property) => propertyName(property.name)).join(',') !==
-      'preference,customThemeRegistry'
+      'preference,deploymentDefault,customThemeRegistry'
     ) {
-      violations.push('appearance.store.ts: Pinia state must initialize exactly two fields.')
+      violations.push(
+        'appearance.store.ts: Pinia state must initialize preference, deploymentDefault and customThemeRegistry.',
+      )
     }
   }
 
@@ -1113,7 +1117,7 @@ function validateStoreAst(path: string, sourceText: string): readonly string[] {
     )
   }
 
-  if (!sourceText.includes('previousState.preference ?? productDefaultPreference()')) {
+  if (!sourceText.includes('previousState.preference ?? store.deploymentDefault')) {
     violations.push(
       'appearance.store.ts: a null prior Preference must still clear a failed Custom Bank semantically.',
     )
@@ -2029,6 +2033,40 @@ function validateSharedAppearanceSynchronization(): readonly string[] {
         attributes.has('data-ui-size-transition')
       )
         failures.push('First appearance restore must not arm size motion.')
+      const deploymentDefault = explicitThemePreferenceSchema.parse({
+        ...defaults,
+        appearance: { ...defaults.appearance, fontScale: 1.1 },
+      })
+      const originalGetItem = storage.storage.getItem.bind(storage.storage)
+      for (const mode of ['missing', 'corrupt', 'disabled', 'saved'] as const) {
+        store.$reset()
+        storage.values.delete(preferenceKey)
+        if (mode === 'corrupt') storage.values.set(preferenceKey, '{')
+        if (mode === 'saved') storage.values.set(preferenceKey, JSON.stringify(defaults))
+        storage.storage.getItem =
+          mode === 'disabled'
+            ? () => {
+                throw new Error('Storage disabled by probe.')
+              }
+            : originalGetItem
+        const writes = storage.setCalls
+        try {
+          const result = store.restoreAppearance(environment, deploymentDefault)
+          const expected = mode === 'saved' ? defaults : deploymentDefault
+          if (
+            result.status !== 'committed' ||
+            !isDeepStrictEqual(store.preference, expected) ||
+            properties.get('--ui-font-scale')?.value !== String(expected.appearance.fontScale) ||
+            storage.setCalls !== writes
+          )
+            failures.push(`Deployment appearance default/override failed for ${mode}.`)
+        } finally {
+          storage.storage.getItem = originalGetItem
+        }
+      }
+      store.$reset()
+      storage.values.delete(preferenceKey)
+      store.restoreAppearance(environment)
       for (const motion of ['full', 'reduced', 'none'] as const) {
         const writePreference = (preset: 'compact' | 'spacious') => {
           storage.values.set(

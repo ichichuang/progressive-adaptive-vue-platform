@@ -26,7 +26,10 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
   const invertedActiveForeground = primary.solid.foreground
   const border = (color: string) => `var(--ui-admin-border-width) solid ${color}`
   const focus = (color: string) => `inset 0 0 0 var(--ui-admin-focus-width) ${color}`
-  const indicatorOutline = `0 0 0 ${tokens['interaction.border.width']} ${primary.solid.foreground}`
+  const indicatorOutline =
+    colorMode === 'dark' && primary.solid.foreground !== neutral.solid.foreground
+      ? `0 0 0 ${tokens['interaction.border.width']} ${primary.solid.foreground}, 0 0 0 calc(${tokens['interaction.border.width']} * 2) ${neutral.solid.foreground}`
+      : `0 0 0 ${tokens['interaction.border.width']} ${primary.solid.foreground}`
   // Naive's pane-padding parser splits on whitespace, including within calc().
   const componentSpace = (steps: number): string =>
     steps === 1
@@ -227,6 +230,11 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
     ['error', 'Error'],
   ] as const) {
     const family = roles[tone]
+    button[`textColorSecondary${suffix}`] = family.soft.foreground
+    button[`colorSecondary${suffix}`] = family.soft.background.default
+    button[`colorSecondaryHover${suffix}`] = family.soft.background.hover
+    button[`colorSecondaryPressed${suffix}`] = family.soft.background.pressed
+    button[`colorSecondaryFocus${suffix}`] = family.soft.background.hover
     button[`color${suffix}`] = family.solid.background.default
     button[`colorHover${suffix}`] = family.solid.background.hover
     button[`colorPressed${suffix}`] = family.solid.background.pressed
@@ -718,6 +726,7 @@ export function projectSemanticNaiveTheme<Base extends GlobalThemeOverrides>(
       railColorActive: primary.solid.background.default,
       buttonColor: primary.solid.foreground,
       textColor: primary.solid.foreground,
+      textColorInactive: neutral.solid.foreground,
       iconColor: primary.solid.background.default,
       loadingColor: primary.foreground.default,
       boxShadowFocus: 'none',

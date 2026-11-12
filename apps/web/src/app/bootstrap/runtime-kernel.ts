@@ -1,4 +1,13 @@
+import {
+  defaultRuntimePresentation,
+  type CoreRuntimeConfiguration,
+} from '../config/runtime-configuration-contract'
+import {
+  runtimePresentationKey,
+  applyRuntimeDocumentPresentation,
+} from '../config/runtime-presentation'
 import { shellScrollStorageKey } from '../scroll/shell-scroll-storage-key'
+import { tableColumnPreferenceKey } from '../tables/table-column-preference-context'
 import { formDraftStorageKey } from '../forms/form-draft-contract'
 import { createConsoleI18n, type ConsoleI18nHandle } from '../../shared/i18n'
 import { initializeNavigationPreference } from '../navigation/navigation-preference.store'
@@ -18,7 +27,6 @@ import {
   loadRuntimeConfiguration,
   type RuntimeConfigurationLoadHandle,
 } from '../config/runtime-configuration'
-import type { CoreRuntimeConfiguration } from '../config/runtime-configuration-contract'
 import AppErrorBoundary from '../errors/AppErrorBoundary.vue'
 import {
   createCoreErrorLedger,
@@ -379,6 +387,7 @@ async function startAttempt(input: {
   }
 
   resources.configuration = configurationResult.configuration
+  const presentation = resources.configuration.presentation ?? defaultRuntimePresentation
 
   try {
     enterBootstrapStep('install-pre-vue-global-failure-capture')
@@ -466,12 +475,15 @@ async function startAttempt(input: {
     resources.pinia = createPiniaProvider(input.startupAttemptId)
     throwClaimedStartupFailure()
 
+    resources.vueApplication.application.provide(runtimePresentationKey, presentation)
+    applyRuntimeDocumentPresentation(document, presentation)
     enterBootstrapStep('install-platform-providers')
     resources.providers = installPlatformProviders({
       application: resources.vueApplication.application,
       pinia: resources.pinia.pinia,
       handoff: resources.appearanceHandoff,
       api: resources.configuration.api,
+      appearanceDefault: { schemaVersion: 4, appearance: presentation.appearance },
     })
     throwClaimedStartupFailure()
 
@@ -499,6 +511,10 @@ async function startAttempt(input: {
       browserPageSessionKey,
       resources.storage.owner.browserPageSession,
     )
+    resources.vueApplication.application.provide(
+      tableColumnPreferenceKey,
+      resources.storage.owner.tableColumns,
+    )
     const shellScrollContext = resources.storage.owner.shellScroll
     const shellScrollRuntime = await shellScrollLoading
     if (!attemptIsStarting()) return { status: 'cancelled' }
@@ -517,6 +533,7 @@ async function startAttempt(input: {
       application: resources.vueApplication.application,
       document,
       preference: resources.storage.owner.localePreference,
+      defaultLocale: presentation.locale,
       initialScope: getRouteMessageScope(router.router.currentRoute.value.name),
       onLocaleCommitted: (translate) => {
         router.refreshCurrentRouteTitle(translate)

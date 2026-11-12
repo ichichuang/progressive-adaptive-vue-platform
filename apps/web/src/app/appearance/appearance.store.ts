@@ -26,6 +26,7 @@ import { readStoredPreference, writeStoredPreference } from './preference-storag
 
 interface AppearanceStoreState {
   preference: ExplicitThemePreference | null
+  deploymentDefault: ExplicitThemePreference
   customThemeRegistry: readonly CustomThemeRegistryEntry[] | null
 }
 
@@ -218,6 +219,7 @@ function commitAppearanceTransition(
   }
   const previousState: AppearanceStoreState = {
     preference: store.preference,
+    deploymentDefault: store.deploymentDefault,
     customThemeRegistry: store.customThemeRegistry,
   }
   const domCapture = captureAppearanceDom(target)
@@ -282,7 +284,7 @@ function commitAppearanceTransition(
       // A rejected transient UI hint must not prevent appearance rollback.
     }
     try {
-      const rollbackPreference = previousState.preference ?? productDefaultPreference()
+      const rollbackPreference = previousState.preference ?? store.deploymentDefault
       const previousResolution = resolveThemeReference({
         reference: rollbackPreference.appearance.theme,
         customThemeRegistry: previousState.customThemeRegistry,
@@ -321,15 +323,19 @@ function commitAppearanceTransition(
 export const useAppearanceStore = defineStore('appearance', {
   state: (): AppearanceStoreState => ({
     preference: null,
+    deploymentDefault: productDefaultPreference(),
     customThemeRegistry: null,
   }),
   actions: {
-    restoreAppearance(environment: AppearanceEnvironment): AppearanceTransitionResult {
+    restoreAppearance(
+      environment: AppearanceEnvironment,
+      deploymentDefault?: ExplicitThemePreference,
+    ): AppearanceTransitionResult {
+      if (deploymentDefault !== undefined)
+        this.deploymentDefault = explicitThemePreferenceSchema.parse(deploymentDefault)
       const preferenceRead = readStoredPreference()
       const candidatePreference =
-        preferenceRead.status === 'restored'
-          ? preferenceRead.preference
-          : productDefaultPreference()
+        preferenceRead.status === 'restored' ? preferenceRead.preference : this.deploymentDefault
       const registryRead = readCustomThemeRegistry(candidatePreference.appearance.theme)
       const candidateRegistry = registryRead.status === 'accessible' ? registryRead.entries : null
 
@@ -351,7 +357,7 @@ export const useAppearanceStore = defineStore('appearance', {
         result = commitAppearanceTransition(
           this,
           document.documentElement,
-          productDefaultPreference(),
+          this.deploymentDefault,
           candidateRegistry,
           environment,
           'none',
@@ -371,7 +377,7 @@ export const useAppearanceStore = defineStore('appearance', {
       if (preference.status !== 'restored' && preference.status !== 'missing')
         return { status: 'rejected' }
       const candidate =
-        preference.status === 'restored' ? preference.preference : productDefaultPreference()
+        preference.status === 'restored' ? preference.preference : this.deploymentDefault
       const registry = readCustomThemeRegistry(candidate.appearance.theme)
       const entries = registry.status === 'accessible' ? registry.entries : null
       if (
@@ -417,7 +423,7 @@ export const useAppearanceStore = defineStore('appearance', {
       return commitAppearanceTransition(
         this,
         document.documentElement,
-        productDefaultPreference(),
+        this.deploymentDefault,
         registry.status === 'accessible' ? registry.entries : null,
         environment,
         'preference',

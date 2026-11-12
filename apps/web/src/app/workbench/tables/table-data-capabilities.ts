@@ -4,9 +4,24 @@ import type {
   UiTableResolvedRequest,
   UiTableSchema,
   UiTableTransport,
+  UiTableSortComparator,
 } from '@platform/ui'
 
 export type TableDataCapability = 'sorting' | 'rendering' | 'virtual' | 'states'
+export type TableSortExample = 'single' | 'multiple' | 'business'
+
+/** Trusted application rule. JSON refers only to this registry key. */
+export const tableDemoSortComparators: Readonly<Record<string, UiTableSortComparator>> = {
+  categoryPriority: (left, right) => {
+    const priority = ['Research', 'Engineering', 'Design']
+    const rank = (value: unknown) => {
+      const index = typeof value === 'string' ? priority.indexOf(value) : -1
+      return index < 0 ? priority.length : index
+    }
+    return rank(left) - rank(right)
+  },
+}
+
 export type TableDemoResponse = 'rows' | 'empty' | 'error' | 'slow'
 
 /** Deterministic, local sample records. These are not fetched from a service. */
@@ -24,6 +39,7 @@ export function tableDataCapabilitySchema(
   example: TableDataCapability,
   mode: 'submit' | 'change' = 'submit',
   debounce = 250,
+  sorting: TableSortExample = 'single',
 ): UiTableSchema {
   const query = {
     mode,
@@ -50,6 +66,9 @@ export function tableDataCapabilitySchema(
     { key: 'id', title: 'tableShowcase.id', kind: 'number' as const, width: 104, sortable: true },
     { key: 'title', title: 'tableShowcase.title', width: 200, sortable: true },
     {
+      ...(example === 'sorting' && sorting === 'business'
+        ? { sortComparator: 'categoryPriority' }
+        : {}),
       key: 'category',
       title: 'tableShowcase.category',
       kind: 'tag' as const,
@@ -74,6 +93,9 @@ export function tableDataCapabilitySchema(
   return {
     id: `table-capability-${example}`,
     rowKey: 'id',
+    ...(example === 'sorting'
+      ? { sorting: sorting === 'single' ? ('single' as const) : ('multiple' as const) }
+      : {}),
     height: { mode: 'fill' },
     source:
       example === 'states'

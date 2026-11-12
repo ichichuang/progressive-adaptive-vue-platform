@@ -25,6 +25,20 @@ export interface StorageRegistryRecord {
 
 export const storageRegistry = Object.freeze([
   Object.freeze({
+    id: 'table-column-preferences',
+    ownerDomain: 'apps/web/src/app/tables',
+    key: applicationConfig.tables.columnPreferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'table-column-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  }),
+  Object.freeze({
     id: 'form-drafts',
     ownerDomain: 'apps/web/src/app/forms',
     key: applicationConfig.forms.draftStorageKey,

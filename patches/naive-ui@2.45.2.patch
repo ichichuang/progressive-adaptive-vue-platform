@@ -1999,3 +1999,215 @@ diff --git a/lib/data-table/src/TableParts/Header.js b/lib/data-table/src/TableP
  			class: require_vdom.normalizeClass(`${mergedClsPrefix}-data-table-base-table-header`),
  			onScroll: handleTableHeaderScroll
  		}, [(0, vue.createElementVNode)("table", {
+diff --git a/es/button/src/Button.mjs b/es/button/src/Button.mjs
+--- a/es/button/src/Button.mjs
++++ b/es/button/src/Button.mjs
+@@ -248,22 +248,22 @@
+           "--n-text-color-disabled": mergedTextColor || self[createKey("textColorGhostDisabled", mergedType)]
+         };
+       } else if (secondary) {
+-        const typeTextColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : self[createKey("color", mergedType)];
++        const typeTextColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : (self[createKey("textColorSecondary", mergedType)] ?? self[createKey("color", mergedType)]);
+         const mergedTextColor = color || typeTextColor;
+         const isColoredType = type !== "default" && type !== "tertiary";
+         colorProps = {
+-          "--n-color": isColoredType ? changeColor(mergedTextColor, {
++          "--n-color": (color ? undefined : self[createKey("colorSecondary", mergedType)]) ?? (isColoredType ? changeColor(mergedTextColor, {
+             alpha: Number(self.colorOpacitySecondary)
+-          }) : self.colorSecondary,
+-          "--n-color-hover": isColoredType ? changeColor(mergedTextColor, {
++          }) : self.colorSecondary),
++          "--n-color-hover": (color ? undefined : self[createKey("colorSecondaryHover", mergedType)]) ?? (isColoredType ? changeColor(mergedTextColor, {
+             alpha: Number(self.colorOpacitySecondaryHover)
+-          }) : self.colorSecondaryHover,
+-          "--n-color-pressed": isColoredType ? changeColor(mergedTextColor, {
++          }) : self.colorSecondaryHover),
++          "--n-color-pressed": (color ? undefined : self[createKey("colorSecondaryPressed", mergedType)]) ?? (isColoredType ? changeColor(mergedTextColor, {
+             alpha: Number(self.colorOpacitySecondaryPressed)
+-          }) : self.colorSecondaryPressed,
+-          "--n-color-focus": isColoredType ? changeColor(mergedTextColor, {
++          }) : self.colorSecondaryPressed),
++          "--n-color-focus": (color ? undefined : self[createKey("colorSecondaryFocus", mergedType)]) ?? (isColoredType ? changeColor(mergedTextColor, {
+             alpha: Number(self.colorOpacitySecondaryHover)
+-          }) : self.colorSecondaryHover,
++          }) : self.colorSecondaryHover),
+           "--n-color-disabled": self.colorSecondary,
+           "--n-ripple-color": "#0000",
+           "--n-text-color": mergedTextColor,
+@@ -273,7 +273,7 @@
+           "--n-text-color-disabled": mergedTextColor
+         };
+       } else if (tertiary || quaternary) {
+-        const typeColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : self[createKey("color", mergedType)];
++        const typeColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : (self[createKey("textColorSecondary", mergedType)] ?? self[createKey("color", mergedType)]);
+         const mergedColor = color || typeColor;
+         if (tertiary) {
+           colorProps["--n-color"] = self.colorTertiary;
+diff --git a/es/button/styles/light.d.ts b/es/button/styles/light.d.ts
+--- a/es/button/styles/light.d.ts
++++ b/es/button/styles/light.d.ts
+@@ -3,6 +3,31 @@
+ import "../../_mixins/index.js";
+ //#region src/button/styles/light.d.ts
+ declare function self(vars: ThemeCommonVars): {
++  textColorSecondaryPrimary?: string;
++  colorSecondaryPrimary?: string;
++  colorSecondaryHoverPrimary?: string;
++  colorSecondaryPressedPrimary?: string;
++  colorSecondaryFocusPrimary?: string;
++  textColorSecondaryInfo?: string;
++  colorSecondaryInfo?: string;
++  colorSecondaryHoverInfo?: string;
++  colorSecondaryPressedInfo?: string;
++  colorSecondaryFocusInfo?: string;
++  textColorSecondarySuccess?: string;
++  colorSecondarySuccess?: string;
++  colorSecondaryHoverSuccess?: string;
++  colorSecondaryPressedSuccess?: string;
++  colorSecondaryFocusSuccess?: string;
++  textColorSecondaryWarning?: string;
++  colorSecondaryWarning?: string;
++  colorSecondaryHoverWarning?: string;
++  colorSecondaryPressedWarning?: string;
++  colorSecondaryFocusWarning?: string;
++  textColorSecondaryError?: string;
++  colorSecondaryError?: string;
++  colorSecondaryHoverError?: string;
++  colorSecondaryPressedError?: string;
++  colorSecondaryFocusError?: string;
+   heightTiny: string;
+   heightSmall: string;
+   heightMedium: string;
+diff --git a/es/switch/src/Switch.mjs b/es/switch/src/Switch.mjs
+--- a/es/switch/src/Switch.mjs
++++ b/es/switch/src/Switch.mjs
+@@ -221,6 +221,7 @@
+         "--n-box-shadow-focus": boxShadowFocus,
+         "--n-loading-color": loadingColor,
+         "--n-text-color": textColor,
++        "--n-text-color-inactive": themeRef.value.self.textColorInactive ?? textColor,
+         "--n-icon-color": iconColor
+       };
+     });
+diff --git a/es/switch/src/styles/index.cssr.mjs b/es/switch/src/styles/index.cssr.mjs
+--- a/es/switch/src/styles/index.cssr.mjs
++++ b/es/switch/src/styles/index.cssr.mjs
+@@ -51,6 +51,7 @@
+  right: 0;
+  padding-right: calc(1.25 * var(--n-rail-height) - var(--n-offset));
+  `), cE("unchecked", `
++ color: var(--n-text-color-inactive);
+  left: 0;
+  justify-content: flex-end;
+  padding-left: calc(1.25 * var(--n-rail-height) - var(--n-offset));
+diff --git a/es/switch/styles/light.d.ts b/es/switch/styles/light.d.ts
+--- a/es/switch/styles/light.d.ts
++++ b/es/switch/styles/light.d.ts
+@@ -5,6 +5,7 @@
+ declare function self(vars: ThemeCommonVars): {
+   iconColor: string;
+   textColor: string;
++  textColorInactive?: string;
+   loadingColor: string;
+   opacityDisabled: string;
+   railColor: string;
+diff --git a/lib/button/src/Button.js b/lib/button/src/Button.js
+--- a/lib/button/src/Button.js
++++ b/lib/button/src/Button.js
+@@ -202,14 +202,14 @@
+ 					"--n-text-color-disabled": mergedTextColor || self[require__utils_cssr_index.createKey("textColorGhostDisabled", mergedType)]
+ 				};
+ 			} else if (secondary) {
+-				const typeTextColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : self[require__utils_cssr_index.createKey("color", mergedType)];
++				const typeTextColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : (self[require__utils_cssr_index.createKey("textColorSecondary", mergedType)] ?? self[require__utils_cssr_index.createKey("color", mergedType)]);
+ 				const mergedTextColor = color || typeTextColor;
+ 				const isColoredType = type !== "default" && type !== "tertiary";
+ 				colorProps = {
+-					"--n-color": isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondary) }) : self.colorSecondary,
+-					"--n-color-hover": isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondaryHover) }) : self.colorSecondaryHover,
+-					"--n-color-pressed": isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondaryPressed) }) : self.colorSecondaryPressed,
+-					"--n-color-focus": isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondaryHover) }) : self.colorSecondaryHover,
++					"--n-color": (color ? undefined : self[require__utils_cssr_index.createKey("colorSecondary", mergedType)]) ?? (isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondary) }) : self.colorSecondary),
++					"--n-color-hover": (color ? undefined : self[require__utils_cssr_index.createKey("colorSecondaryHover", mergedType)]) ?? (isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondaryHover) }) : self.colorSecondaryHover),
++					"--n-color-pressed": (color ? undefined : self[require__utils_cssr_index.createKey("colorSecondaryPressed", mergedType)]) ?? (isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondaryPressed) }) : self.colorSecondaryPressed),
++					"--n-color-focus": (color ? undefined : self[require__utils_cssr_index.createKey("colorSecondaryFocus", mergedType)]) ?? (isColoredType ? (0, seemly.changeColor)(mergedTextColor, { alpha: Number(self.colorOpacitySecondaryHover) }) : self.colorSecondaryHover),
+ 					"--n-color-disabled": self.colorSecondary,
+ 					"--n-ripple-color": "#0000",
+ 					"--n-text-color": mergedTextColor,
+@@ -219,7 +219,7 @@
+ 					"--n-text-color-disabled": mergedTextColor
+ 				};
+ 			} else if (tertiary || quaternary) {
+-				const typeColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : self[require__utils_cssr_index.createKey("color", mergedType)];
++				const typeColor = typeIsDefault ? self.textColor : typeIsTertiary ? self.textColorTertiary : (self[require__utils_cssr_index.createKey("textColorSecondary", mergedType)] ?? self[require__utils_cssr_index.createKey("color", mergedType)]);
+ 				const mergedColor = color || typeColor;
+ 				if (tertiary) {
+ 					colorProps["--n-color"] = self.colorTertiary;
+diff --git a/lib/button/styles/light.d.ts b/lib/button/styles/light.d.ts
+--- a/lib/button/styles/light.d.ts
++++ b/lib/button/styles/light.d.ts
+@@ -3,6 +3,31 @@
+ import "../../_mixins/index.js";
+ //#region src/button/styles/light.d.ts
+ declare function self(vars: ThemeCommonVars): {
++  textColorSecondaryPrimary?: string;
++  colorSecondaryPrimary?: string;
++  colorSecondaryHoverPrimary?: string;
++  colorSecondaryPressedPrimary?: string;
++  colorSecondaryFocusPrimary?: string;
++  textColorSecondaryInfo?: string;
++  colorSecondaryInfo?: string;
++  colorSecondaryHoverInfo?: string;
++  colorSecondaryPressedInfo?: string;
++  colorSecondaryFocusInfo?: string;
++  textColorSecondarySuccess?: string;
++  colorSecondarySuccess?: string;
++  colorSecondaryHoverSuccess?: string;
++  colorSecondaryPressedSuccess?: string;
++  colorSecondaryFocusSuccess?: string;
++  textColorSecondaryWarning?: string;
++  colorSecondaryWarning?: string;
++  colorSecondaryHoverWarning?: string;
++  colorSecondaryPressedWarning?: string;
++  colorSecondaryFocusWarning?: string;
++  textColorSecondaryError?: string;
++  colorSecondaryError?: string;
++  colorSecondaryHoverError?: string;
++  colorSecondaryPressedError?: string;
++  colorSecondaryFocusError?: string;
+   heightTiny: string;
+   heightSmall: string;
+   heightMedium: string;
+diff --git a/lib/switch/src/Switch.js b/lib/switch/src/Switch.js
+--- a/lib/switch/src/Switch.js
++++ b/lib/switch/src/Switch.js
+@@ -206,6 +206,7 @@
+ 				"--n-box-shadow-focus": boxShadowFocus,
+ 				"--n-loading-color": loadingColor,
+ 				"--n-text-color": textColor,
++				"--n-text-color-inactive": themeRef.value.self.textColorInactive ?? textColor,
+ 				"--n-icon-color": iconColor
+ 			};
+ 		});
+diff --git a/lib/switch/src/styles/index.cssr.js b/lib/switch/src/styles/index.cssr.js
+--- a/lib/switch/src/styles/index.cssr.js
++++ b/lib/switch/src/styles/index.cssr.js
+@@ -51,6 +51,7 @@
+  right: 0;
+  padding-right: calc(1.25 * var(--n-rail-height) - var(--n-offset));
+  `), require__utils_cssr_index.cE("unchecked", `
++ color: var(--n-text-color-inactive);
+  left: 0;
+  justify-content: flex-end;
+  padding-left: calc(1.25 * var(--n-rail-height) - var(--n-offset));
+diff --git a/lib/switch/styles/light.d.ts b/lib/switch/styles/light.d.ts
+--- a/lib/switch/styles/light.d.ts
++++ b/lib/switch/styles/light.d.ts
+@@ -5,6 +5,7 @@
+ declare function self(vars: ThemeCommonVars): {
+   iconColor: string;
+   textColor: string;
++  textColorInactive?: string;
+   loadingColor: string;
+   opacityDisabled: string;
+   railColor: string;

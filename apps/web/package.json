@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build",
-    "dev": "vite",
-    "preview": "vite preview"
+    "build": "vite build --configLoader runner",
+    "dev": "vite --configLoader runner",
+    "preview": "vite preview --configLoader runner"
   },
   "dependencies": {
     "@platform/design-system": "workspace:*",

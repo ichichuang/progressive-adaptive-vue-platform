@@ -71,7 +71,16 @@ export function useFormControl<I>(props: {
   const readonlyComposite = computed(
     () =>
       props.binding.readonly &&
-      ['select', 'multi-select', 'switch', 'date'].includes(config.value.kind),
+      [
+        'select',
+        'multi-select',
+        'radio',
+        'checkbox-group',
+        'switch',
+        'date',
+        'date-range',
+        'time',
+      ].includes(config.value.kind),
   )
   // Naive's explicit non-error presentation is named "success". It does not
   // represent domain validity; only the controller's validation port decides it.
@@ -133,11 +142,21 @@ export function useFormControl<I>(props: {
   )
   function captureComposition(event: CompositionEvent): void {
     // Select search is a query, never a pending canonical field edit.
-    if (config.value.kind === 'select' || config.value.kind === 'multi-select') return
+    if (
+      ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
+        config.value.kind,
+      )
+    )
+      return
     composing.value = event.type === 'compositionstart'
   }
   function captureInput(event: Event): void {
-    if (config.value.kind === 'select' || config.value.kind === 'multi-select') return
+    if (
+      ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
+        config.value.kind,
+      )
+    )
+      return
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
       const correctingNumber = config.value.kind === 'number' && numberFormat.value !== undefined
       buffer.value = event.target.value
@@ -188,7 +207,12 @@ export function useFormControl<I>(props: {
     props.binding.blur()
   }
   function commit(): boolean {
-    if (config.value.kind === 'select' || config.value.kind === 'multi-select') return true
+    if (
+      ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
+        config.value.kind,
+      )
+    )
+      return true
     if (composing.value) return false
     if (buffer.value === null) return true
     if (config.value.kind === 'number') {
@@ -203,6 +227,13 @@ export function useFormControl<I>(props: {
     return true
   }
   function focusElement(): HTMLElement | null {
+    if (!readonlyComposite.value && config.value.kind === 'radio')
+      return root.value?.querySelector<HTMLElement>('input[type="radio"]:not(:disabled)') ?? null
+    if (!readonlyComposite.value && config.value.kind === 'checkbox-group')
+      return (
+        root.value?.querySelector<HTMLElement>('[role="checkbox"]:not([aria-disabled="true"])') ??
+        null
+      )
     return (
       root.value?.querySelector<HTMLElement>(
         readonlyComposite.value
@@ -230,7 +261,7 @@ export function useFormControl<I>(props: {
       'aria-labelledby': binding.labelId,
       'aria-describedby': [
         binding.describedBy,
-        ['select', 'multi-select'].includes(config.value.kind)
+        ['select', 'multi-select', 'radio', 'checkbox-group'].includes(config.value.kind)
           ? `${binding.controlId}-options`
           : '',
       ]
@@ -239,14 +270,17 @@ export function useFormControl<I>(props: {
       'aria-required': String(binding.required),
       'aria-invalid': String(binding.invalid),
       'aria-disabled': String(
-        ['select', 'multi-select'].includes(config.value.kind)
+        ['select', 'multi-select', 'radio', 'checkbox-group'].includes(config.value.kind)
           ? selectDisabled.value
           : binding.disabled,
       ),
     }
     // Associate the actual focus element of official controls without exposing
     // a vendor props bag on the public schema or field binding.
-    const element = focusElement()
+    const element =
+      !readonlyComposite.value && ['radio', 'checkbox-group'].includes(config.value.kind)
+        ? root.value?.querySelector<HTMLElement>('.n-radio-group, .n-checkbox-group')
+        : focusElement()
     for (const [name, value] of Object.entries(attributes)) element?.setAttribute(name, value)
   })
   onScopeDispose(() => {

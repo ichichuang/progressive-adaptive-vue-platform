@@ -10,7 +10,8 @@ import {
   type UiScrollController,
 } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
-import { NInput } from 'naive-ui/es/input'
+import { NPopover } from 'naive-ui/es/popover'
+import ConfigurationJsonEditor from '../configuration/ConfigurationJsonEditor.vue'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NRadioButton, NRadioGroup } from 'naive-ui/es/radio'
 import WorkbenchPage from '../WorkbenchPage.vue'
@@ -269,14 +270,20 @@ function discard(): void {
           :aria-label="t('tableShowcase.configuration')"
         >
           <div class="flex shrink-0 min-w-0 items-start gap-content-gap">
-            <details class="flex-1 min-w-0 text-caption text-text-secondary">
-              <summary class="cursor-pointer content-center min-h-target-enhanced">
-                {{ t('tableExamples.configuration.notes') }}
-              </summary>
-              <p class="m-0">
+            <NPopover
+              trigger="click"
+              scrollable
+              to="#pavp-overlay-root"
+            >
+              <template #trigger>
+                <NButton secondary>
+                  {{ t('tableExamples.configuration.notes') }}
+                </NButton>
+              </template>
+              <p class="m-0 text-caption text-text-secondary">
                 {{ t('tableExamples.configBoundary') }}
               </p>
-            </details>
+            </NPopover>
             <UiCopyAction
               class="shrink-0"
               variant="text"
@@ -287,12 +294,10 @@ function discard(): void {
               :failure-label="t('workbench.copyFailed')"
             />
           </div>
-          <NInput
+          <ConfigurationJsonEditor
             v-model:value="schemaText"
-            type="textarea"
-            class="flex-1 h-full min-h-0"
-            :resizable="false"
-            :input-props="{ 'aria-label': t('tableShowcase.configuration'), spellcheck: false }"
+            kind="table"
+            :label="t('tableShowcase.configuration')"
           />
           <p
             v-if="error"

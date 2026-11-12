@@ -133,18 +133,23 @@ export type UiFormFieldConfig =
       readonly rules?: UiFormRules
     })
   | (UiFormFieldBase & {
-      readonly kind: 'date'
+      readonly kind: 'date' | 'time'
       readonly defaultValue?: string | null
       readonly rules?: UiFormRules
     })
+  | (UiFormFieldBase & {
+      readonly kind: 'date-range'
+      readonly defaultValue?: [string, string] | null
+      readonly rules?: UiFormRules
+    })
   | (Omit<UiFormFieldBase, 'options'> & {
-      readonly kind: 'select'
+      readonly kind: 'select' | 'radio'
       readonly defaultValue?: string | number | null
       readonly options: UiFormOptions
       readonly rules?: UiFormRules
     })
   | (Omit<UiFormFieldBase, 'options'> & {
-      readonly kind: 'multi-select'
+      readonly kind: 'multi-select' | 'checkbox-group'
       readonly defaultValue?: (string | number)[]
       readonly options: UiFormOptions
       readonly rules?: UiFormLengthRules
@@ -186,13 +191,15 @@ type UiFormNodeValue<Node extends UiFormNode> = Node extends UiFormGroupConfig
         ? number | null
         : Node extends { readonly kind: 'switch' }
           ? boolean
-          : Node extends { readonly kind: 'date' }
+          : Node extends { readonly kind: 'date' | 'time' }
             ? string | null
-            : Node extends { readonly kind: 'select' }
-              ? string | number | null
-              : Node extends { readonly kind: 'multi-select' }
-                ? (string | number)[]
-                : UiFormValue
+            : Node extends { readonly kind: 'date-range' }
+              ? [string, string] | null
+              : Node extends { readonly kind: 'select' | 'radio' }
+                ? string | number | null
+                : Node extends { readonly kind: 'multi-select' | 'checkbox-group' }
+                  ? (string | number)[]
+                  : UiFormValue
 
 export interface UiFormWorkContext {
   readonly signal: AbortSignal

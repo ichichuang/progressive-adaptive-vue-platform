@@ -66,6 +66,7 @@ export interface ConsoleI18nInput {
   readonly application: App
   readonly document: Document
   readonly preference: LocalePreferencePort
+  readonly defaultLocale?: ConsoleLocale
   readonly initialScope: ConsoleMessageScope
   readonly onLocaleCommitted: (translate: ConsoleTranslate) => void
 }

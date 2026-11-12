@@ -45,6 +45,20 @@ const appearanceDirectory = resolve(rootDirectory, 'apps/web/src/app/appearance'
 
 const expectedStorageRegistryRecords = [
   {
+    id: 'table-column-preferences',
+    ownerDomain: 'apps/web/src/app/tables',
+    key: applicationConfig.tables.columnPreferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'table-column-preference',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
+  {
     id: 'form-drafts',
     ownerDomain: 'apps/web/src/app/forms',
     key: applicationConfig.forms.draftStorageKey,
@@ -275,6 +289,7 @@ const expectedSafeContextFields = [
 ] as const
 
 const rawStorageKeyLiterals = [
+  'pavp:web:table-column-preferences',
   'pavp:web:form-drafts',
   'pavp:web:user-preference',
   'pavp:web:custom-theme-registry',
@@ -409,7 +424,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain the nine direct-compatibility records and the form-draft envelope.',
+      'Storage Registry must contain the ten direct-compatibility records and the form-draft envelope.',
     )
   }
 
@@ -643,6 +658,7 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     'apps/web/src/app/storage/workspace-session-storage.ts',
     'apps/web/src/app/storage/scroll-preference-storage.ts',
     'apps/web/src/app/storage/shell-scroll-storage.ts',
+    'apps/web/src/app/storage/table-column-preference-storage.ts',
   ])
   if (
     displayPath.startsWith('apps/web/src/') &&
@@ -869,6 +885,7 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         'localization',
         'navigation',
         'scroll',
+        'tables',
         'workspace',
       ]) &&
       isDeepStrictEqual(Object.keys(applicationConfig.navigation), ['preferenceStorageKey']),
@@ -1157,14 +1174,14 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain the nine direct-compatibility records and the form-draft envelope.',
+      'Storage Registry must contain the ten direct-compatibility records and the form-draft envelope.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
   }
 
   const mutatedEnvelopeRegistry = storageRegistry.map((record, index) =>
-    index === 1 ? { ...record, persistenceShape: 'persisted-envelope' as const } : record,
+    index === 2 ? { ...record, persistenceShape: 'persisted-envelope' as const } : record,
   )
   if (
     !validateStorageRegistryRecords(mutatedEnvelopeRegistry).includes(

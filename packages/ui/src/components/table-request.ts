@@ -24,6 +24,7 @@ export function tablePathParts(value: unknown): string[] {
 function reference(value: unknown): void {
   const [root, ...parts] = tablePathParts(value)
   if (['page', 'pageSize', 'offset'].includes(root ?? '') && parts.length === 0) return
+  if (root === 'sorts' && parts.length === 0) return
   if (root === 'sort' && parts.length === 1 && ['key', 'order'].includes(parts[0] ?? '')) return
   if (root === 'selection' && parts.length === 1 && ['keys', 'rows'].includes(parts[0] ?? ''))
     return

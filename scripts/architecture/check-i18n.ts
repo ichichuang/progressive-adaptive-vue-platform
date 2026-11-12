@@ -157,6 +157,69 @@ async function sharedLocalePreferenceProbes(source: string, root: string): Promi
       )
   const nextTask = () => new Promise<undefined>((resolve) => setTimeout(resolve, 0))
   const failures: string[] = []
+  for (const preference of [
+    { status: 'missing' },
+    { status: 'unusable', reason: 'unavailable' },
+    { status: 'unusable', reason: 'invalid' },
+    { status: 'found', locale: 'zh-CN' },
+  ] as const) {
+    const attributes = new Map<string, string>()
+    let writes = 0
+    const documentTarget = {
+      documentElement: {
+        get lang() {
+          return attributes.get('lang') ?? ''
+        },
+        set lang(value: string) {
+          attributes.set('lang', value)
+        },
+        get dir() {
+          return attributes.get('dir') ?? ''
+        },
+        set dir(value: string) {
+          attributes.set('dir', value)
+        },
+        getAttribute: (key: string) => attributes.get(key) ?? null,
+        setAttribute: (key: string, value: string) => attributes.set(key, value),
+        removeAttribute: (key: string) => attributes.delete(key),
+      },
+    } as unknown as Document
+    const handle = createRuntime(
+      {
+        application: vue.createApp({ render: () => null }),
+        document: documentTarget,
+        initialScope: 'console',
+        defaultLocale: 'en',
+        preference: {
+          read: () => preference,
+          write: () => {
+            writes += 1
+            return { status: 'saved' }
+          },
+          subscribe: () => () => undefined,
+        },
+        onLocaleCommitted: () => undefined,
+      },
+      (locale, scope) => {
+        const messages = resources.get(locale + '/' + scope)
+        if (messages === undefined) throw new Error('Deployment locale fixture is unavailable.')
+        return Promise.resolve(messages)
+      },
+    )
+    try {
+      const ready = await handle.ready
+      if (
+        ready.status !== 'ready' ||
+        documentTarget.documentElement.lang !== (preference.status === 'found' ? 'zh-CN' : 'en') ||
+        writes !== 0
+      )
+        failures.push(
+          `Deployment locale default/override failed for ${JSON.stringify(preference)}.`,
+        )
+    } finally {
+      handle.dispose()
+    }
+  }
   for (const [phase, outcome, replacement] of [
     ['startup', 'resolve', 'zh-CN'],
     ['startup', 'reject', 'zh-CN'],

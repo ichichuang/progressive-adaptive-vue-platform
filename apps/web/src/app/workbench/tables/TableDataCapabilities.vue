@@ -2,6 +2,7 @@
 import { computed, ref, shallowRef } from 'vue'
 import {
   UiForm,
+  UiScrollArea,
   UiTable,
   useUiTable,
   useUiTableQuery,
@@ -16,6 +17,8 @@ import TableCapabilityWorkbench from './TableCapabilityWorkbench.vue'
 import { useTableShowcase } from './table-showcase'
 import {
   createTableDemoTransport,
+  tableDemoSortComparators,
+  type TableSortExample,
   tableCapabilityRows,
   tableDataCapabilitySchema,
   type TableDataCapability,
@@ -29,8 +32,9 @@ const props = withDefaults(
     readonly example: TableDataCapability
     readonly queryMode?: 'submit' | 'change'
     readonly debounce?: number
+    readonly sorting?: TableSortExample
   }>(),
-  { queryMode: 'submit', debounce: 250 },
+  { queryMode: 'submit', debounce: 250, sorting: 'single' },
 )
 defineSlots<{ controls?: () => unknown }>()
 const demo = useTableShowcase()
@@ -44,7 +48,12 @@ const translate = (value: string) =>
   value.startsWith('tableCapabilities.data.')
     ? t(value as ConsoleMessageKey)
     : demo.translate(value)
-const schema = tableDataCapabilitySchema(props.example, props.queryMode, props.debounce)
+const schema = tableDataCapabilitySchema(
+  props.example,
+  props.queryMode,
+  props.debounce,
+  props.sorting,
+)
 const rows =
   props.example === 'rendering'
     ? [
@@ -83,15 +92,12 @@ const rows =
 const simulation = createTableDemoTransport(rows, () =>
   t('tableCapabilities.data.simulatedFailure'),
 )
-const queryEvents = ref(0)
-const selectionEvents = ref(0)
 const table = useUiTable({
   schema,
+  sortComparators: tableDemoSortComparators,
   rows,
   ...(props.example === 'states' ? { transport: simulation.transport } : {}),
   translate,
-  onQueryChange: () => queryEvents.value++,
-  onSelectionChange: () => selectionEvents.value++,
 })
 const query = schema.query
   ? useUiTableQuery(table, {
@@ -133,10 +139,14 @@ const applied = computed(() =>
     .join(' · '),
 )
 const sortLabel = computed(() => {
-  const sort = table.query.value.sort
-  if (!sort) return t('tableCapabilities.data.unsorted')
-  const column = schema.columns.find((item) => item.key === sort.key)
-  return `${translate(column?.title ?? sort.key)} · ${t(sort.order === 'ascend' ? 'tableCapabilities.data.ascending' : 'tableCapabilities.data.descending')}`
+  const sorts = table.query.value.sorts
+  if (!sorts.length) return t('tableCapabilities.data.unsorted')
+  return sorts
+    .map((sort, index) => {
+      const column = schema.columns.find((item) => item.key === sort.key)
+      return `${String(index + 1)}. ${translate(column?.title ?? sort.key)} · ${t(sort.order === 'ascend' ? 'tableCapabilities.data.ascending' : 'tableCapabilities.data.descending')}`
+    })
+    .join(' → ')
 })
 const requestLabel = computed(() => {
   const request = simulation.lastRequest.value
@@ -155,6 +165,11 @@ const copyValue = computed(() =>
     props.title,
     props.message,
     t(hintKeys[props.example]),
+    ...(props.example === 'sorting'
+      ? [
+          'useUiTable · schema.sorting · setSorts · query.sorts · sortComparators · column.sortComparator',
+        ]
+      : []),
     ...(props.example === 'rendering' ? [t('tableCapabilities.data.renderingSlot')] : []),
     ...(props.example === 'states' ? [t('tableCapabilities.data.transportCopy')] : []),
     'apps/web/src/app/workbench/tables/TableDataCapabilities.vue',
@@ -194,64 +209,79 @@ function openDetail(row: UiTableReadonlyRecord): void {
     :copy-value="copyValue"
   >
     <template #controls>
-      <div class="flex flex-wrap items-center gap-content-gap">
-        <slot name="controls" />
-        <NCheckbox
-          v-if="example === 'virtual'"
-          v-model:checked="virtualScroll"
-        >
-          {{ t('tableCapabilities.data.virtualEnabled') }}
-        </NCheckbox>
+      <UiScrollArea
+        owner-id="table-capability-controls"
+        x-scrollable
+      >
         <div
-          v-if="example === 'states'"
-          class="flex min-w-0 w-full items-center gap-component-unit"
+          class="flex flex-wrap items-center gap-content-gap layout-narrow:flex-nowrap layout-narrow:w-max"
         >
-          <NSelect
-            v-model:value="response"
-            class="flex-1 min-w-0"
-            :options="responseOptions"
-            :aria-label="t('tableCapabilities.data.nextResponse')"
-          />
+          <slot name="controls" />
+          <NCheckbox
+            v-if="example === 'virtual'"
+            v-model:checked="virtualScroll"
+          >
+            {{ t('tableCapabilities.data.virtualEnabled') }}
+          </NCheckbox>
+          <div
+            v-if="example === 'states'"
+            class="flex min-w-0 w-full items-center gap-component-unit"
+          >
+            <NSelect
+              v-model:value="response"
+              class="flex-1 min-w-0"
+              :options="responseOptions"
+              :aria-label="t('tableCapabilities.data.nextResponse')"
+            />
+            <NButton
+              type="primary"
+              class="shrink-0"
+              @click="runRequest"
+            >
+              {{
+                t(
+                  table.loading.value
+                    ? 'tableCapabilities.data.replaceRequest'
+                    : 'tableCapabilities.data.runRequest',
+                )
+              }}
+            </NButton>
+          </div>
           <NButton
-            type="primary"
-            class="shrink-0"
-            @click="runRequest"
+            v-if="query"
+            secondary
+            @click="filtersOpen = true"
+          >
+            {{ t('tableCapabilities.data.filters') }}
+          </NButton>
+          <p
+            v-if="example === 'states'"
+            class="m-0 min-w-0 text-caption text-text-secondary"
+          >
+            {{ t('tableCapabilities.data.localSimulation') }}
+          </p>
+          <p
+            v-if="example === 'sorting'"
+            class="m-0 min-w-0 text-caption text-text-secondary"
           >
             {{
               t(
-                table.loading.value
-                  ? 'tableCapabilities.data.replaceRequest'
-                  : 'tableCapabilities.data.runRequest',
+                sorting === 'business'
+                  ? 'tableCapabilities.data.businessHint'
+                  : sorting === 'multiple'
+                    ? 'tableCapabilities.data.multipleHint'
+                    : 'tableCapabilities.data.sortingCompact',
               )
             }}
-          </NButton>
+          </p>
+          <p
+            v-if="!query"
+            class="m-0 min-w-0 text-caption text-text-secondary"
+          >
+            {{ t(hintKeys[example]) }}
+          </p>
         </div>
-        <NButton
-          v-if="query"
-          secondary
-          @click="filtersOpen = true"
-        >
-          {{ t('tableCapabilities.data.filters') }}
-        </NButton>
-        <p
-          v-if="example === 'states'"
-          class="m-0 min-w-0 text-caption text-text-secondary"
-        >
-          {{ t('tableCapabilities.data.localSimulation') }}
-        </p>
-        <p
-          v-if="example === 'sorting'"
-          class="m-0 min-w-0 text-caption text-text-secondary"
-        >
-          {{ t('tableCapabilities.data.sortingCompact') }}
-        </p>
-        <p
-          v-if="!query"
-          class="m-0 min-w-0 text-caption text-text-secondary"
-        >
-          {{ t(hintKeys[example]) }}
-        </p>
-      </div>
+      </UiScrollArea>
     </template>
     <UiTable
       :table="table"
@@ -271,6 +301,14 @@ function openDetail(row: UiTableReadonlyRecord): void {
             v-text="` · ${t('tableExamples.selected')} ${String(table.selectedKeys.value.length)}`"
           />
         </span>
+        <NButton
+          v-if="example === 'sorting'"
+          text
+          :disabled="table.query.value.sorts.length === 0"
+          @click="table.setSorts([])"
+        >
+          {{ t('tableCapabilities.data.clearSort') }}
+        </NButton>
         <NButton
           v-if="example === 'sorting'"
           text
@@ -311,14 +349,13 @@ function openDetail(row: UiTableReadonlyRecord): void {
                 : 'tableExamples.appliedFilters',
             )
           }}
-          {{ applied || t('tableExamples.allRecords') }} · {{ sortLabel }}
+          {{ applied || t('tableExamples.allRecords') }}
         </p>
         <p
           v-if="example === 'sorting'"
           class="m-0"
         >
-          {{ t('tableCapabilities.data.queryEvents') }} {{ queryEvents }} ·
-          {{ t('tableCapabilities.data.selectionEvents') }} {{ selectionEvents }}
+          {{ t('tableCapabilities.data.sortPriority') }}: {{ sortLabel }}
         </p>
         <template v-if="example === 'states'">
           <p

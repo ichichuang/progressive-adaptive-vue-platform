@@ -89,7 +89,10 @@ export function useUiForm<const Schema extends UiFormSchema>(
     for (const node of nodes) {
       if (node.kind === 'group' || node.kind === 'repeat') validateSources(node.fields)
       else if (
-        (node.kind === 'select' || node.kind === 'multi-select') &&
+        (node.kind === 'select' ||
+          node.kind === 'multi-select' ||
+          node.kind === 'radio' ||
+          node.kind === 'checkbox-group') &&
         'source' in node.options
       ) {
         const name = node.options.source
@@ -678,7 +681,13 @@ export function useUiForm<const Schema extends UiFormSchema>(
   function loadOptions(name: string, retry = false) {
     if (disposed.value) return
     const { node, group } = fieldFor(name)
-    if (node.kind !== 'select' && node.kind !== 'multi-select') return
+    if (
+      node.kind !== 'select' &&
+      node.kind !== 'multi-select' &&
+      node.kind !== 'radio' &&
+      node.kind !== 'checkbox-group'
+    )
+      return
     let state = options.get(name)
     if (state === undefined) {
       const source = 'source' in node.options ? registeredSource(node.options.source) : undefined

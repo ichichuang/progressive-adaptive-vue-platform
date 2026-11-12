@@ -168,8 +168,8 @@ export function createConsoleI18nRuntime(
     const latest = input.preference.read()
     return latest.status === 'found'
       ? latest.locale
-      : latest.status === 'missing'
-        ? defaultConsoleLocale
+      : latest.status === 'missing' || !hasDocumentPresentation()
+        ? (input.defaultLocale ?? defaultConsoleLocale)
         : undefined
   }
 

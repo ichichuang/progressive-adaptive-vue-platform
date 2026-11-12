@@ -7,7 +7,13 @@ import type {
   UiTableQuery,
   UiTableReadonlyRecord,
   UiTableSummaryRow,
+  UiTableSort,
 } from '../components/table-contracts'
+import {
+  parseUiTableColumnPreference,
+  restoreTableColumns,
+} from '../components/table-column-preference'
+import { createTableCsv } from '../components/table-csv'
 import { parseUiTableSchema } from '../components/table-schema'
 import {
   parseTableSummary,
@@ -22,6 +28,16 @@ export function useUiTable(input: UiTableInput): UiTableController {
   const schema = parseUiTableSchema(input.schema)
   if (schema.source.kind === 'remote' && !input.transport)
     throw new TypeError('A remote table requires a transport.')
+  for (const column of schema.columns) {
+    const name = column.sortComparator
+    if (
+      name &&
+      (!input.sortComparators ||
+        !Object.hasOwn(input.sortComparators, name) ||
+        typeof input.sortComparators[name] !== 'function')
+    )
+      throw new TypeError(`Unknown table sort comparator: ${name}`)
+  }
   const snapshot = <T>(value: T): T => freezeDraftValue(cloneDraft(value)) as T
   const initialFilters = snapshot(input.filters ?? {})
   const transport = input.transport
@@ -32,9 +48,35 @@ export function useUiTable(input: UiTableInput): UiTableController {
       pageSize: schema.pagination?.pageSize ?? 20,
       filters: initialFilters,
       sort: null,
+      sorts: [],
     }),
   )
-  const columns = shallowRef<readonly UiTableColumn[]>(schema.columns)
+  const preferenceKey = schema.columnPreferenceKey
+  const preferenceStorage = input.columnPreferenceStorage
+  if (preferenceKey && !preferenceStorage)
+    throw new TypeError('Column preferences require an application storage port.')
+  let initialColumns = schema.columns
+  if (preferenceKey && preferenceStorage) {
+    try {
+      const saved = preferenceStorage.read(preferenceKey)
+      if (saved !== null && saved !== undefined)
+        initialColumns = restoreTableColumns(schema.columns, parseUiTableColumnPreference(saved))
+    } catch {
+      // Unavailable or invalid storage must not prevent using the table.
+    }
+  }
+  const columns = shallowRef<readonly UiTableColumn[]>(snapshot(initialColumns))
+  function persistColumns(): void {
+    if (!preferenceKey || !preferenceStorage) return
+    try {
+      preferenceStorage.write(preferenceKey, {
+        schemaVersion: 1,
+        columns: columns.value.map(({ key, hidden }) => ({ key, hidden: hidden === true })),
+      })
+    } catch {
+      // The application adapter owns persistence diagnostics; current interaction still works.
+    }
+  }
   const summary = shallowRef<readonly UiTableSummaryRow[]>(schema.summary ?? snapshot([]))
   // Publish rows, filtered local rows and server metadata as one accepted response.
   const accepted = shallowRef({
@@ -106,16 +148,26 @@ export function useUiTable(input: UiTableInput): UiTableController {
         return Object.is(cell, value)
       }),
     )
-    const sort = current.sort
-    if (sort)
+    if (current.sorts.length)
       matching.sort((a, b) => {
-        const left = getFormValue(a, sort.key)
-        const right = getFormValue(b, sort.key)
-        const result =
-          typeof left === 'number' && typeof right === 'number'
-            ? left - right
-            : display(left).localeCompare(display(right))
-        return sort.order === 'ascend' ? result : -result
+        for (const sort of current.sorts) {
+          const column = schema.columns.find((item) => item.key === sort.key)
+          const left = getFormValue(a, sort.key)
+          const right = getFormValue(b, sort.key)
+          const comparator = column?.sortComparator
+            ? input.sortComparators?.[column.sortComparator]
+            : undefined
+          const result =
+            comparator && column
+              ? comparator(left, right, { column, leftRow: a, rightRow: b })
+              : typeof left === 'number' && typeof right === 'number'
+                ? left - right
+                : display(left).localeCompare(display(right))
+          if (!Number.isFinite(result))
+            throw new TypeError('Table sort comparators must return a finite number.')
+          if (result !== 0) return sort.order === 'ascend' ? result : -result
+        }
+        return 0
       })
     const start = (current.page - 1) * current.pageSize
     return {
@@ -201,6 +253,32 @@ export function useUiTable(input: UiTableInput): UiTableController {
     input.onQueryChange?.(query.value)
     await refresh()
   }
+  function setSorts(sorts: readonly UiTableSort[]): Promise<void> {
+    if (!Array.isArray(sorts) || (schema.sorting !== 'multiple' && sorts.length > 1))
+      throw new TypeError('Multiple sorting requires sorting: multiple.')
+    const candidates: readonly unknown[] = sorts
+    const entries: UiTableSort[] = []
+    const seen = new Set<string>()
+    for (const candidate of candidates) {
+      if (typeof candidate !== 'object' || candidate === null)
+        throw new TypeError('Invalid table sort.')
+      const sort = candidate as Record<string, unknown>
+      if (
+        typeof sort['key'] !== 'string' ||
+        !schema.columns.some((column) => column.key === sort['key'] && column.sortable)
+      )
+        throw new TypeError('This table column is not sortable.')
+      if (
+        (sort['order'] !== 'ascend' && sort['order'] !== 'descend') ||
+        seen.has(sort['key']) ||
+        Object.keys(sort).some((key) => key !== 'key' && key !== 'order')
+      )
+        throw new TypeError('Invalid or duplicate table sort.')
+      seen.add(sort['key'])
+      entries.push({ key: sort['key'], order: sort['order'] })
+    }
+    return change({ page: 1, sorts: entries, sort: entries[0] ?? null })
+  }
   const controller: UiTableController = {
     schema,
     text: (value) => input.translate?.(value) ?? value,
@@ -223,7 +301,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
     selectedKeys: computed(() => selectedKeys.value),
     refresh,
     search: (filters) => change({ page: 1, filters: snapshot(filters) }),
-    reset: () => change({ page: 1, filters: initialFilters, sort: null }),
+    reset: () => change({ page: 1, filters: initialFilters, sort: null, sorts: [] }),
     setPage: (page) => {
       if (!Number.isSafeInteger(page) || page < 1) throw new TypeError('Invalid table page.')
       return change({ page })
@@ -233,11 +311,8 @@ export function useUiTable(input: UiTableInput): UiTableController {
         throw new TypeError('Invalid table page size.')
       return change({ page: 1, pageSize })
     },
-    setSort: (sort) => {
-      if (sort && !schema.columns.some((column) => column.key === sort.key && column.sortable))
-        throw new TypeError('This table column is not sortable.')
-      return change({ page: 1, sort })
-    },
+    setSort: (sort) => setSorts(sort ? [sort] : []),
+    setSorts,
     setSelection: (keys) => {
       if (disposed) return
       const visible = new Set(rows.value.map(rowKey))
@@ -265,6 +340,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
           column.key === key ? { ...column, hidden: !visible } : column,
         ),
       )
+      persistColumns()
     },
     moveColumn: (key, direction) => {
       if (disposed) return
@@ -277,9 +353,32 @@ export function useUiTable(input: UiTableInput): UiTableController {
       const [column] = next.splice(index, 1)
       if (column) next.splice(target, 0, column)
       columns.value = snapshot(next)
+      persistColumns()
     },
     resetColumns: () => {
-      if (!disposed) columns.value = schema.columns
+      if (disposed) return
+      columns.value = schema.columns
+      if (preferenceKey && preferenceStorage) {
+        try {
+          preferenceStorage.clear(preferenceKey)
+        } catch {
+          // A failed storage operation does not block resetting this session.
+        }
+      }
+    },
+    exportCsv: (scope) => {
+      const configuration = schema.csvExport
+      if (!configuration?.scopes.includes(scope))
+        throw new TypeError('This CSV scope is not enabled.')
+      if (disposed || loading.value || error.value)
+        throw new Error('Table data is not ready for export.')
+      const selected = new Set(selectedKeys.value)
+      const exportRows =
+        scope === 'page' ? rows.value : rows.value.filter((row) => selected.has(rowKey(row)))
+      if (exportRows.length === 0) throw new Error('No rows are available for this export scope.')
+      return createTableCsv(configuration.fileName, columns.value, exportRows, (value) =>
+        controller.text(value),
+      )
     },
     setSummary: (value) => {
       if (!disposed) summary.value = parseTableSummary(value, schema.columns, schema.source.kind)

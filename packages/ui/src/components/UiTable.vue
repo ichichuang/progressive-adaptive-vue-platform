@@ -8,17 +8,22 @@ import {
   onBeforeUnmount,
   ref,
   watch,
+  useId,
   type VNodeChild,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import {
   NDataTable,
   type DataTableColumns,
+  type DataTableBaseColumn,
   type DataTableInst,
   type DataTableSortState,
 } from 'naive-ui/es/data-table'
 import { NPagination, type PaginationProps } from 'naive-ui/es/pagination'
 import { NTag } from 'naive-ui/es/tag'
+import { projectTableColumnGroups, type TableHeaderNode } from './table-column-groups'
+import TableCsvActions from './TableCsvActions.vue'
+import UiScrollArea from './UiScrollArea.vue'
 import TableColumnSettings from './TableColumnSettings.vue'
 import TableSortIcon from '../adapters/motion/TableSortIcon.vue'
 import { pavpNaiveAppearanceKey } from '../adapters/naive/pavp-naive-runtime-context'
@@ -39,11 +44,19 @@ import type {
 
 /** Presentation only: the controller owns both local and remote query results. */
 defineOptions({ name: 'UiTable' })
+const toolbarId = `table-toolbar-${useId()}`
+
 const props = defineProps<UiTableProps>()
 const slots = defineSlots<{
   query?: (binding: { readonly table: UiTableController }) => unknown
   actions?: (binding: { readonly table: UiTableController }) => unknown
   rowActions?: (binding: { readonly row: UiTableReadonlyRecord }) => unknown
+  cell?: (binding: {
+    readonly row: UiTableReadonlyRecord
+    readonly column: UiTableColumn
+    readonly value: UiFormValue | undefined
+    readonly text: string
+  }) => VNodeChild
   summaryCell?: (binding: {
     readonly table: UiTableController
     readonly rowKey: string
@@ -52,6 +65,13 @@ const slots = defineSlots<{
     readonly text: string
   }) => unknown
 }>()
+const hasToolbar = computed(
+  () =>
+    slots.actions !== undefined ||
+    props.table.schema.csvExport !== undefined ||
+    props.table.schema.columnSettings !== undefined ||
+    props.table.schema.source.kind === 'remote',
+)
 const providerAppearance = inject(pavpNaiveAppearanceKey)
 if (providerAppearance === undefined) throw new TypeError('UiTable requires UiProvider.')
 
@@ -142,6 +162,7 @@ function text(value: UiFormValue | undefined): string {
 }
 function cell(row: TableRow, column: UiTableColumn): VNodeChild {
   const value = getFormValue(row.record, column.key)
+  if (slots.cell) return slots.cell({ row: row.record, column, value, text: text(value) })
   if (column.kind === 'boolean')
     return typeof value === 'boolean' ? props.copy.boolean(value) : props.copy.empty()
   if (column.kind === 'number')
@@ -156,17 +177,32 @@ function cell(row: TableRow, column: UiTableColumn): VNodeChild {
     return h(NTag, { bordered: false, size: 'small' }, () => text(value))
   return text(value)
 }
-const columns = computed<DataTableColumns<TableRow>>(() => {
-  const querySort = props.table.query.value.sort
+const leafColumns = computed<DataTableColumns<TableRow>>(() => {
+  const querySorts = props.table.query.value.sorts
   const result: DataTableColumns<TableRow> = props.table.columns.value
     .filter((column) => !column.hidden)
     .map((column) => ({
       key: column.key,
-      title: props.table.text(column.title),
+      title:
+        props.table.schema.sorting === 'multiple' &&
+        querySorts.some((sort) => sort.key === column.key)
+          ? () =>
+              h('span', { class: 'inline-flex items-center gap-component-unit' }, [
+                props.table.text(column.title),
+                h(NTag, { size: 'small', type: 'primary', bordered: false }, () =>
+                  String(querySorts.findIndex((sort) => sort.key === column.key) + 1),
+                ),
+              ])
+          : props.table.text(column.title),
       align: column.kind === 'number' ? 'right' : 'left',
       ...(column.width === undefined ? {} : { width: column.width }),
       ...(column.fixed === undefined ? {} : { fixed: column.fixed }),
-      sorter: column.sortable === true,
+      sorter:
+        column.sortable === true
+          ? props.table.schema.sorting === 'multiple'
+            ? { multiple: 1 }
+            : true
+          : false,
       // The native button bubbles to Naive's header, preserving its sorting cycle.
       renderSorterIcon: ({ order }) => {
         const label = props.copy.sortLabel(props.table.text(column.title), order)
@@ -182,7 +218,7 @@ const columns = computed<DataTableColumns<TableRow>>(() => {
           h(TableSortIcon, { order, motion: providerAppearance.value.motion }),
         )
       },
-      sortOrder: querySort?.key === column.key ? querySort.order : false,
+      sortOrder: querySorts.find((sort) => sort.key === column.key)?.order ?? false,
       render: (row: TableRow) => cell(row, column),
     }))
   if (props.table.schema.selection === 'single' || props.table.schema.selection === 'multiple')
@@ -201,6 +237,32 @@ const columns = computed<DataTableColumns<TableRow>>(() => {
   }
   return result
 })
+const columns = computed<DataTableColumns<TableRow>>(() => {
+  const leaves = leafColumns.value
+  const byKey = new Map(
+    leaves.flatMap((column) => ('key' in column ? [[column.key, column] as const] : [])),
+  )
+  function render(nodes: readonly TableHeaderNode[]): DataTableBaseColumn<TableRow>[] {
+    return nodes.map((node) => {
+      if (node.kind === 'column') return byKey.get(node.column.key) as DataTableBaseColumn<TableRow>
+      return {
+        key: node.key,
+        title: props.table.text(node.title),
+        titleAlign: 'center' as const,
+        ...(node.fixed === undefined ? {} : { fixed: node.fixed }),
+        children: render(node.children),
+      }
+    })
+  }
+  const grouped: DataTableColumns<TableRow> = render(
+    projectTableColumnGroups(props.table.columns.value, props.table.schema.columnGroups ?? []),
+  )
+  const selection = leaves.find((column) => column.type === 'selection')
+  if (selection) grouped.unshift(selection)
+  const actions = byKey.get('__pavp_row_actions__')
+  if (actions) grouped.push(actions)
+  return grouped
+})
 // The main table remains the sole column-width authority. The summary uses the same
 // native table/fixed-column renderer, but lives outside its vertical data viewport.
 const mainElement = ref<HTMLElement>()
@@ -217,16 +279,21 @@ function observeColumns(): void {
   disconnectColumns?.()
   disconnectColumns = undefined
   if (!mainElement.value || !summaryRows.value.length) return
-  disconnectColumns = observePavpNaiveTableColumns(mainElement.value, (columns) => {
-    const widths = columns.map((column) => column.width)
-    const offsets = columns.map(({ left, right }) => ({ left, right }))
-    if (JSON.stringify(offsets) !== JSON.stringify(fixedOffsets.value)) fixedOffsets.value = offsets
-    if (
-      widths.length !== measuredWidths.value.length ||
-      widths.some((width, index) => Math.abs(width - (measuredWidths.value[index] ?? 0)) > 0.1)
-    )
-      measuredWidths.value = widths
-  })
+  disconnectColumns = observePavpNaiveTableColumns(
+    mainElement.value,
+    leafColumns.value,
+    (columns) => {
+      const widths = columns.map((column) => column.width)
+      const offsets = columns.map(({ left, right }) => ({ left, right }))
+      if (JSON.stringify(offsets) !== JSON.stringify(fixedOffsets.value))
+        fixedOffsets.value = offsets
+      if (
+        widths.length !== measuredWidths.value.length ||
+        widths.some((width, index) => Math.abs(width - (measuredWidths.value[index] ?? 0)) > 0.1)
+      )
+        measuredWidths.value = widths
+    },
+  )
 }
 watch([mainElement, columns, rows, () => summaryRows.value.length], observeColumns, {
   flush: 'post',
@@ -256,7 +323,7 @@ watch(measuredWidths, async () => {
 })
 // Fresh column renderers keep a dynamically enabled summary slot reactive.
 function summaryColumns(): DataTableColumns<UiTableResolvedSummaryRow> {
-  return columns.value.map((column, index) => {
+  return leafColumns.value.map((column, index) => {
     const source =
       'key' in column
         ? props.table.columns.value.find((item) => item.key === column.key)
@@ -300,12 +367,20 @@ function rowKey(row: TableRow): UiTableKey {
   return row.key
 }
 function sort(value: DataTableSortState | DataTableSortState[] | null): void {
-  const next = Array.isArray(value) ? value[0] : value
-  void props.table.setSort(
-    next?.order && typeof next.columnKey === 'string'
-      ? { key: next.columnKey, order: next.order }
-      : null,
+  const states = (Array.isArray(value) ? value : value ? [value] : []).flatMap((next) =>
+    next.order && typeof next.columnKey === 'string'
+      ? [{ key: next.columnKey, order: next.order }]
+      : [],
   )
+  // Naive emits controlled columns in display order. Preserve the user's existing priorities.
+  const existing = props.table.query.value.sorts.flatMap((sort) => {
+    const next = states.find((state) => state.key === sort.key)
+    return next ? [next] : []
+  })
+  void props.table.setSorts([
+    ...existing,
+    ...states.filter((state) => !existing.some((sort) => sort.key === state.key)),
+  ])
 }
 </script>
 
@@ -324,62 +399,75 @@ function sort(value: DataTableSortState | DataTableSortState[] | null): void {
         :table="table"
       />
     </div>
-    <div
-      v-if="slots.actions || table.schema.columnSettings || table.schema.source.kind === 'remote'"
-      class="flex shrink-0 flex-wrap min-w-0 items-center gap-content-gap"
+    <UiScrollArea
+      v-if="hasToolbar"
+      :owner-id="toolbarId"
+      x-scrollable
+      class="shrink-0 h-auto"
     >
-      <div class="flex flex-1 flex-wrap min-w-0 items-center gap-content-gap">
-        <slot
-          name="actions"
-          :table="table"
-        />
-      </div>
-      <span
-        v-if="table.error.value"
-        role="alert"
-        class="text-caption text-control-error"
+      <div
+        class="flex shrink-0 flex-wrap min-w-0 items-center gap-content-gap layout-narrow:flex-nowrap layout-narrow:w-max"
       >
-        {{ copy.error() }}
-      </span>
-      <TableColumnSettings
-        v-if="table.schema.columnSettings"
-        :table="table"
-        :copy="copy"
-      />
-      <NButton
-        v-if="table.schema.source.kind === 'remote'"
-        quaternary
-        class="min-h-target-enhanced min-w-target-enhanced"
-        :disabled="table.loading.value"
-        :aria-label="refreshLabel"
-        :aria-busy="table.loading.value"
-        :title="table.error.value ? copy.error() : refreshLabel"
-        @click="table.refresh()"
-      >
-        <span class="flex items-center gap-component-unit">
-          <span
-            class="i-lucide-refresh-cw shrink-0"
-            aria-hidden="true"
+        <div
+          class="flex flex-1 flex-wrap min-w-0 items-center gap-content-gap layout-narrow:flex-nowrap"
+        >
+          <slot
+            name="actions"
+            :table="table"
           />
-          <span class="grid">
+        </div>
+        <span
+          v-if="table.error.value"
+          role="alert"
+          class="text-caption text-control-error"
+        >
+          {{ copy.error() }}
+        </span>
+        <TableCsvActions
+          v-if="table.schema.csvExport"
+          :table="table"
+          :copy="copy"
+        />
+        <TableColumnSettings
+          v-if="table.schema.columnSettings"
+          :table="table"
+          :copy="copy"
+        />
+        <NButton
+          v-if="table.schema.source.kind === 'remote'"
+          quaternary
+          class="min-h-target-enhanced min-w-target-enhanced"
+          :disabled="table.loading.value"
+          :aria-label="refreshLabel"
+          :aria-busy="table.loading.value"
+          :title="table.error.value ? copy.error() : refreshLabel"
+          @click="table.refresh()"
+        >
+          <span class="flex items-center gap-component-unit">
             <span
-              v-for="(label, index) in [copy.refresh(), copy.retry()]"
-              :key="index"
-              class="col-start-1 row-start-1 invisible"
+              class="i-lucide-refresh-cw shrink-0"
               aria-hidden="true"
-            >
-              {{ label }}
-            </span>
-            <span
-              class="col-start-1 row-start-1"
-              aria-hidden="true"
-            >
-              {{ refreshLabel }}
+            />
+            <span class="grid">
+              <span
+                v-for="(label, index) in [copy.refresh(), copy.retry()]"
+                :key="index"
+                class="col-start-1 row-start-1 invisible"
+                aria-hidden="true"
+              >
+                {{ label }}
+              </span>
+              <span
+                class="col-start-1 row-start-1"
+                aria-hidden="true"
+              >
+                {{ refreshLabel }}
+              </span>
             </span>
           </span>
-        </span>
-      </NButton>
-    </div>
+        </NButton>
+      </div>
+    </UiScrollArea>
     <span
       class="sr-only"
       role="status"

@@ -4,6 +4,8 @@ import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
 import FormBuilderNumber from './FormBuilderNumber.vue'
 import { NSelect } from 'naive-ui/es/select'
+import { NDatePicker } from 'naive-ui/es/date-picker'
+import { NTimePicker } from 'naive-ui/es/time-picker'
 import { NSwitch } from 'naive-ui/es/switch'
 import FormBuilderDate from './FormBuilderDate.vue'
 import type { UiFormFlag, UiFormOption, UiFormValue } from '@platform/ui'
@@ -28,10 +30,29 @@ const inspectorId = useId()
 function labelId(property: string): string {
   return `${inspectorId}-${property}`
 }
+function isChoice(
+  node: BuilderEditableNode,
+): node is Extract<
+  BuilderEditableNode,
+  { kind: 'select' | 'radio' | 'multi-select' | 'checkbox-group' }
+> {
+  return ['select', 'radio', 'multi-select', 'checkbox-group'].includes(node.kind)
+}
+function hasLength(
+  node: BuilderEditableNode,
+): node is Extract<
+  BuilderEditableNode,
+  { kind: 'text' | 'textarea' | 'multi-select' | 'checkbox-group' }
+> {
+  return ['text', 'textarea', 'multi-select', 'checkbox-group'].includes(node.kind)
+}
 const leaf = computed(() => props.node.kind !== 'group' && props.node.kind !== 'repeat')
 const isText = computed(() => props.node.kind === 'text' || props.node.kind === 'textarea')
 const choices = computed<readonly UiFormOption[]>(() =>
-  (props.node.kind === 'select' || props.node.kind === 'multi-select') &&
+  (props.node.kind === 'select' ||
+    props.node.kind === 'radio' ||
+    props.node.kind === 'multi-select' ||
+    props.node.kind === 'checkbox-group') &&
   Array.isArray(props.node.options)
     ? props.node.options
     : [],
@@ -122,7 +143,13 @@ function optionKey(option: UiFormOption): string {
 const optionWarning = computed(() => {
   const identities = choices.value.map(optionKey)
   if (new Set(identities).size !== identities.length) return t('formBuilder.duplicateOption')
-  if (props.node.kind !== 'select' && props.node.kind !== 'multi-select') return ''
+  if (
+    props.node.kind !== 'select' &&
+    props.node.kind !== 'radio' &&
+    props.node.kind !== 'multi-select' &&
+    props.node.kind !== 'checkbox-group'
+  )
+    return ''
   const current = props.node.defaultValue
   const selected = Array.isArray(current)
     ? current
@@ -255,10 +282,29 @@ function removeDefault(): void {
         :input="editor.inputState('defaultValue')"
         @update:value="defaultValue"
       />
+      <NDatePicker
+        v-else-if="node.kind === 'date-range'"
+        type="daterange"
+        :formatted-value="node.defaultValue ?? null"
+        value-format="yyyy-MM-dd"
+        clearable
+        :aria-label="t('formBuilder.defaultValue')"
+        to="#pavp-overlay-root"
+        @update:formatted-value="defaultValue"
+      />
+      <NTimePicker
+        v-else-if="node.kind === 'time'"
+        :formatted-value="node.defaultValue ?? null"
+        value-format="HH:mm:ss"
+        clearable
+        :aria-label="t('formBuilder.defaultValue')"
+        to="#pavp-overlay-root"
+        @update:formatted-value="defaultValue"
+      />
       <NSelect
-        v-else-if="node.kind === 'select' || node.kind === 'multi-select'"
-        :value="node.defaultValue ?? (node.kind === 'multi-select' ? [] : null)"
-        :multiple="node.kind === 'multi-select'"
+        v-else-if="isChoice(node)"
+        :value="node.defaultValue ?? null"
+        :multiple="node.kind === 'multi-select' || node.kind === 'checkbox-group'"
         :options="defaultChoices"
         clearable
         :aria-label="t('formBuilder.defaultValue')"
@@ -276,7 +322,7 @@ function removeDefault(): void {
       </NButton>
     </section>
     <section
-      v-if="node.kind === 'select' || node.kind === 'multi-select'"
+      v-if="isChoice(node)"
       class="wb-builder-property-group grid min-w-0 gap-content-gap"
       :aria-label="t('formBuilder.options')"
     >
@@ -507,21 +553,27 @@ function removeDefault(): void {
       <h4 class="font-title-weight m-0 col-span-full text-body text-text-primary">
         {{ t('formBuilder.validation') }}
       </h4>
-      <template
-        v-if="node.kind === 'text' || node.kind === 'textarea' || node.kind === 'multi-select'"
-      >
+      <template v-if="hasLength(node)">
         <div class="grid gap-component-unit">
           <span
             :id="labelId('minLength')"
             v-text="
-              t(node.kind === 'multi-select' ? 'formBuilder.minChoices' : 'formBuilder.minLength')
+              t(
+                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                  ? 'formBuilder.minChoices'
+                  : 'formBuilder.minLength',
+              )
             "
           /><FormBuilderNumber
             :value="node.rules?.minLength ?? null"
             integer
             :labelled-by="labelId('minLength')"
             :label="
-              t(node.kind === 'multi-select' ? 'formBuilder.minChoices' : 'formBuilder.minLength')
+              t(
+                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                  ? 'formBuilder.minChoices'
+                  : 'formBuilder.minLength',
+              )
             "
             :input="editor.inputState('minLength')"
             @update:value="rule('minLength', $event)"
@@ -531,14 +583,22 @@ function removeDefault(): void {
           <span
             :id="labelId('maxLength')"
             v-text="
-              t(node.kind === 'multi-select' ? 'formBuilder.maxChoices' : 'formBuilder.maxLength')
+              t(
+                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                  ? 'formBuilder.maxChoices'
+                  : 'formBuilder.maxLength',
+              )
             "
           /><FormBuilderNumber
             :value="node.rules?.maxLength ?? null"
             integer
             :labelled-by="labelId('maxLength')"
             :label="
-              t(node.kind === 'multi-select' ? 'formBuilder.maxChoices' : 'formBuilder.maxLength')
+              t(
+                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                  ? 'formBuilder.maxChoices'
+                  : 'formBuilder.maxLength',
+              )
             "
             :input="editor.inputState('maxLength')"
             @update:value="rule('maxLength', $event)"

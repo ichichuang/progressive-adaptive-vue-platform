@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, onScopeDispose, ref } from 'vue'
+import { computed, onDeactivated, onScopeDispose, ref } from 'vue'
 import { NButton } from 'naive-ui/es/button'
+import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
+import ConfigurationJsonEditor from '../../configuration/ConfigurationJsonEditor.vue'
 import { NPopover } from 'naive-ui/es/popover'
 import { NPopconfirm } from 'naive-ui/es/popconfirm'
 import { useConsoleI18n } from '../../../../shared/i18n'
@@ -16,6 +18,21 @@ const props = defineProps<{
 }>()
 const { t } = useConsoleI18n()
 const fileNotice = ref('')
+const jsonOpen = ref(false)
+const jsonText = ref('')
+const jsonNotice = ref('')
+onDeactivated(() => {
+  jsonOpen.value = false
+})
+function openJson(): void {
+  jsonNotice.value = ''
+  jsonText.value = props.builder.json.value
+  jsonOpen.value = true
+}
+function applyJson(): void {
+  if (props.builder.importJson(jsonText.value)) jsonOpen.value = false
+  else jsonNotice.value = props.builder.notice.value
+}
 const reading = ref(false)
 let active = true
 onScopeDispose(() => {
@@ -136,6 +153,12 @@ function exportFile(): void {
         </NPopconfirm>
         <NButton
           :disabled="builder.pending.value"
+          @click="openJson"
+        >
+          {{ t('configurationAssist.edit') }}
+        </NButton>
+        <NButton
+          :disabled="builder.pending.value"
           @click="exportFile"
         >
           {{ t('formBuilder.exportJson') }}
@@ -149,5 +172,41 @@ function exportFile(): void {
         </p>
       </div>
     </NPopover>
+    <NDrawer
+      v-model:show="jsonOpen"
+      width="100%"
+      to="#pavp-overlay-root"
+      :aria-label="t('configurationAssist.edit')"
+    >
+      <NDrawerContent
+        :title="t('configurationAssist.edit')"
+        closable
+        :native-scrollbar="false"
+        body-content-class="flex flex-col h-full min-h-0"
+      >
+        <ConfigurationJsonEditor
+          v-model:value="jsonText"
+          kind="form"
+          :label="t('formBuilder.schema')"
+        />
+        <template #footer>
+          <span
+            class="min-w-0 truncate text-caption text-control-error"
+            :title="jsonNotice"
+            role="status"
+            v-text="jsonNotice"
+          />
+          <NButton @click="jsonOpen = false">
+            {{ t('formBuilder.cancel') }}
+          </NButton>
+          <NButton
+            type="primary"
+            @click="applyJson"
+          >
+            {{ t('tableShowcase.apply') }}
+          </NButton>
+        </template>
+      </NDrawerContent>
+    </NDrawer>
   </div>
 </template>

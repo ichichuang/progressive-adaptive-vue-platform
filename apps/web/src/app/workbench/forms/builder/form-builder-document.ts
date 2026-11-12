@@ -26,7 +26,12 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
         )
       const declaration = group ? `${group}.${node.name}` : node.name
       entries.push({ node, group, declaration })
-      if (node.kind === 'select' || node.kind === 'multi-select') {
+      if (
+        node.kind === 'select' ||
+        node.kind === 'radio' ||
+        node.kind === 'multi-select' ||
+        node.kind === 'checkbox-group'
+      ) {
         if (!Array.isArray(node.options))
           throw new UnsupportedBuilderSchema('Remote options require a registered source editor.')
         const options = node.options
@@ -97,13 +102,18 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
           const value = flag.value
           if (
             target.kind === 'multi-select' ||
+            target.kind === 'checkbox-group' ||
+            target.kind === 'date-range' ||
             ((target.kind === 'text' || target.kind === 'textarea') && typeof value !== 'string') ||
             (target.kind === 'number' && value !== null && typeof value !== 'number') ||
             (target.kind === 'date' &&
               value !== null &&
               (typeof value !== 'string' || value === '' || invalidBuilderDateInput(value))) ||
+            (target.kind === 'time' &&
+              value !== null &&
+              (typeof value !== 'string' || !/^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/u.test(value))) ||
             (target.kind === 'switch' && typeof value !== 'boolean') ||
-            (target.kind === 'select' &&
+            ((target.kind === 'select' || target.kind === 'radio') &&
               value !== null &&
               typeof value !== 'string' &&
               typeof value !== 'number')
@@ -133,6 +143,10 @@ const editorNodeSchema = z.strictObject({
     'number',
     'switch',
     'date',
+    'date-range',
+    'time',
+    'radio',
+    'checkbox-group',
     'select',
     'multi-select',
     'group',
@@ -241,7 +255,10 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
     if ((editor.kind === 'group' || editor.kind === 'repeat') && !editor.fields)
       throw new TypeError('A container editor requires children.')
     if (
-      (editor.kind === 'select' || editor.kind === 'multi-select') &&
+      (editor.kind === 'select' ||
+        editor.kind === 'radio' ||
+        editor.kind === 'multi-select' ||
+        editor.kind === 'checkbox-group') &&
       editor.options?.length !== snapshot.optionIds.length
     )
       throw new TypeError('Option editor identities are inconsistent.')
@@ -251,13 +268,20 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
       value !== undefined &&
       (((editor.kind === 'text' || editor.kind === 'textarea') && typeof value !== 'string') ||
         (editor.kind === 'number' && value !== null && typeof value !== 'number') ||
-        (editor.kind === 'date' && value !== null && typeof value !== 'string') ||
+        ((editor.kind === 'date' || editor.kind === 'time') &&
+          value !== null &&
+          typeof value !== 'string') ||
+        (editor.kind === 'date-range' &&
+          value !== null &&
+          (!Array.isArray(value) ||
+            value.length !== 2 ||
+            value.some((item) => typeof item !== 'string'))) ||
         (editor.kind === 'switch' && typeof value !== 'boolean') ||
-        (editor.kind === 'select' &&
+        ((editor.kind === 'select' || editor.kind === 'radio') &&
           value !== null &&
           typeof value !== 'number' &&
           typeof value !== 'string') ||
-        (editor.kind === 'multi-select' &&
+        ((editor.kind === 'multi-select' || editor.kind === 'checkbox-group') &&
           (!Array.isArray(value) ||
             value.some((item) => typeof item !== 'string' && typeof item !== 'number'))))
     )
@@ -296,7 +320,7 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
     }
     if (
       (['minLength', 'maxLength'].includes(input.key) &&
-        ['text', 'textarea', 'multi-select'].includes(editor.kind)) ||
+        ['text', 'textarea', 'multi-select', 'checkbox-group'].includes(editor.kind)) ||
       (['minItems', 'maxItems'].includes(input.key) && editor.kind === 'repeat')
     ) {
       kind = 'number'

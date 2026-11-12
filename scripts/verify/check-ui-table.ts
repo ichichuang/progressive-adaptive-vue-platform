@@ -27,12 +27,22 @@ import type {
   UiTableSummaryCell,
   UiTableSummaryRow,
 } from '../../packages/ui/src/components/table-contracts'
-import { parseUiTableSchema } from '../../packages/ui/src/components/table-schema'
+import {
+  projectTableColumnGroups,
+  type TableHeaderNode,
+} from '../../packages/ui/src/components/table-column-groups'
+import {
+  parseUiTableSchema,
+  inspectUiTableSchema,
+} from '../../packages/ui/src/components/table-schema'
 import { useUiTable } from '../../packages/ui/src/composables/use-ui-table'
 import { useUiForm } from '../../packages/ui/src/composables/use-ui-form'
 import { useUiTableQuery } from '../../packages/ui/src/composables/use-ui-table-query'
 import { useUiTableForm } from '../../packages/ui/src/composables/use-ui-table-form'
-import { parseUiFormSchema } from '../../packages/ui/src/components/form-schema'
+import {
+  parseUiFormSchema,
+  inspectUiFormSchema,
+} from '../../packages/ui/src/components/form-schema'
 import { useFormFieldPresentation } from '../../packages/ui/src/components/form-field-presentation'
 import type { UiFormCopy } from '../../packages/ui/src/components/form-contracts'
 
@@ -1116,6 +1126,581 @@ async function verifyTableReadonlySnapshots(): Promise<void> {
   table.dispose()
 }
 
+function verifyColumnPreferences(): void {
+  const stored = new Map<string, unknown>()
+  let writes = 0
+  const storage = {
+    read: (key: string): unknown => stored.get(key),
+    write: (key: string, value: unknown): void => {
+      writes++
+      stored.set(key, structuredClone(value))
+    },
+    clear: (key: string): void => {
+      stored.delete(key)
+    },
+  }
+  const schema: UiTableSchema = {
+    id: 'preferences',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columnPreferenceKey: 'first',
+    columns: [
+      { key: 'id', title: 'ID' },
+      { key: 'name', title: 'Name' },
+      { key: 'old', title: 'Old' },
+    ],
+  }
+  const create = (configuration = schema) =>
+    useUiTable({ schema: configuration, columnPreferenceStorage: storage, immediate: false })
+  const first = create()
+  assert.equal(writes, 0)
+  first.moveColumn('name', 'up')
+  first.setColumnVisibility('old', false)
+  assert.deepEqual(stored.get('first'), {
+    schemaVersion: 1,
+    columns: [
+      { key: 'name', hidden: false },
+      { key: 'id', hidden: false },
+      { key: 'old', hidden: true },
+    ],
+  })
+  first.dispose()
+  first.resetColumns()
+  assert.equal(stored.has('first'), true)
+  const restored = create()
+  assert.deepEqual(
+    restored.columns.value.map((c) => c.key),
+    ['name', 'id', 'old'],
+  )
+  assert.equal(restored.columns.value[2]?.hidden, true)
+  assert.equal(writes, 2)
+  const independent = create({ ...schema, columnPreferenceKey: 'second' })
+  assert.deepEqual(independent.columns.value, schema.columns)
+  const changed = create({
+    ...schema,
+    columns: [
+      { key: 'id', title: 'New ID', width: 123 },
+      { key: 'name', title: 'New Name' },
+      { key: 'added', title: 'Added', hidden: true },
+    ],
+  })
+  assert.deepEqual(
+    changed.columns.value.map((c) => c.key),
+    ['name', 'id', 'added'],
+  )
+  assert.equal(changed.columns.value[1]?.width, 123)
+  assert.equal(changed.columns.value[2]?.hidden, true)
+  stored.set('first', {
+    schemaVersion: 1,
+    columns: [
+      { key: 'id', hidden: true },
+      { key: 'name', hidden: true },
+      { key: 'old', hidden: true },
+    ],
+  })
+  assert.ok(create().columns.value.some((c) => !c.hidden))
+  for (const invalid of [
+    null,
+    'bad',
+    { schemaVersion: 2, columns: [] },
+    { schemaVersion: 1, columns: [{ key: 'id', hidden: 'yes' }] },
+    {
+      schemaVersion: 1,
+      columns: [
+        { key: 'id', hidden: true },
+        { key: 'id', hidden: false },
+      ],
+    },
+  ]) {
+    stored.set('first', invalid)
+    assert.deepEqual(create().columns.value, schema.columns)
+  }
+  restored.resetColumns()
+  assert.equal(stored.has('first'), false)
+  assert.deepEqual(create().columns.value, schema.columns)
+  assert.throws(() => useUiTable({ schema }), /storage port/)
+  assert.throws(() => parseUiTableSchema({ ...schema, columnPreferenceKey: ' ' }))
+  const unavailable = useUiTable({
+    schema,
+    columnPreferenceStorage: {
+      read() {
+        throw new Error('unavailable')
+      },
+      write() {
+        throw new Error('quota')
+      },
+      clear() {
+        throw new Error('denied')
+      },
+    },
+    immediate: false,
+  })
+  unavailable.setColumnVisibility('old', false)
+  unavailable.moveColumn('name', 'up')
+  unavailable.resetColumns()
+  assert.deepEqual(unavailable.columns.value, schema.columns)
+  const disabled = create({
+    id: schema.id,
+    rowKey: schema.rowKey,
+    columns: schema.columns,
+    source: schema.source,
+  })
+  disabled.setColumnVisibility('old', false)
+  assert.equal(stored.has('first'), false)
+}
+async function verifyCommonFormFields(): Promise<void> {
+  const schema = parseUiFormSchema({
+    fields: [
+      {
+        kind: 'radio',
+        name: 'choice',
+        label: 'Choice',
+        options: [
+          { value: 1, label: 'One' },
+          { value: '1', label: 'String one' },
+        ],
+        required: true,
+      },
+      {
+        kind: 'checkbox-group',
+        name: 'choices',
+        label: 'Choices',
+        options: [
+          { value: 1, label: 'One' },
+          { value: 2, label: 'Two' },
+        ],
+        rules: { minLength: 2 },
+      },
+      { kind: 'date-range', name: 'period', label: 'Period', required: true },
+      { kind: 'time', name: 'time', label: 'Time', required: true },
+    ],
+  })
+  const form = useUiForm({
+    formId: 'common-fields',
+    schema,
+    initial: { draftId: 'sample', values: { choice: null, choices: [], period: null, time: null } },
+    copy: formCopy,
+  })
+  assert.equal(await form.validate(), 'invalid')
+  assert.equal(form.field('choice').setValue(1), 'applied')
+  assert.equal(form.field('choices').setValue([1, 2]), 'applied')
+  assert.equal(form.field('period').setValue(['2026-11-01', '2026-11-30']), 'applied')
+  assert.equal(form.field('time').setValue('09:30:00'), 'applied')
+  assert.equal(await form.validate(), 'valid')
+  assert.equal(form.field('choice').selectedOptions[0]?.option?.label, 'One')
+  for (const [kind, invalid] of [
+    ['time', '24:00:00'],
+    ['time', '09:30'],
+    ['date-range', ['2026-11-30', '2026-11-01']],
+    ['date-range', ['2026-02-30', '2026-03-01']],
+    ['date-range', ['2026-11-01']],
+  ])
+    assert.throws(() =>
+      parseUiFormSchema({
+        fields: [{ kind, name: 'invalid', label: 'Invalid', defaultValue: invalid }],
+      }),
+    )
+  assert.throws(() =>
+    parseUiFormSchema({
+      fields: [
+        {
+          kind: 'checkbox-group',
+          name: 'invalid',
+          label: 'Invalid',
+          options: [],
+          defaultValue: [1, 1],
+        },
+      ],
+    }),
+  )
+  form.dispose()
+}
+async function verifyMultipleSorting(): Promise<void> {
+  const records = [
+    { id: 1, category: 'low', amount: 2 },
+    { id: 2, category: 'high', amount: 3 },
+    { id: 3, category: 'high', amount: 1 },
+    { id: 4, category: 'low', amount: 2 },
+  ]
+  const config: UiTableSchema = {
+    id: 'multi-sort',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    sorting: 'multiple',
+    pagination: { pageSize: 10 },
+    columns: [
+      { key: 'category', title: 'Category', sortable: true, sortComparator: 'priority' },
+      { key: 'amount', title: 'Amount', sortable: true },
+    ],
+  }
+  const table = useUiTable({
+    schema: parseUiTableSchema(JSON.parse(JSON.stringify(config))),
+    rows: records,
+    sortComparators: {
+      priority: (left, right) => Number(left === 'low') - Number(right === 'low'),
+    },
+  })
+  await table.setSorts([
+    { key: 'category', order: 'ascend' },
+    { key: 'amount', order: 'descend' },
+  ])
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [2, 3, 1, 4],
+  )
+  assert.deepEqual(table.query.value.sort, table.query.value.sorts[0])
+  await table.setSorts([
+    { key: 'category', order: 'ascend' },
+    { key: 'amount', order: 'ascend' },
+  ])
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [3, 2, 1, 4],
+  )
+  const query = table.query.value
+  assert.throws(
+    () =>
+      table.setSorts([
+        { key: 'amount', order: 'ascend' },
+        { key: 'amount', order: 'descend' },
+      ]),
+    /duplicate/u,
+  )
+  assert.throws(() => table.setSorts([{ key: 'amount', order: 'invalid' as 'ascend' }]), /Invalid/u)
+  assert.equal(table.query.value, query)
+  await table.setSort({ key: 'amount', order: 'ascend' })
+  assert.equal(table.query.value.sorts.length, 1)
+  await table.reset()
+  assert.deepEqual(table.query.value.sorts, [])
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1, 2, 3, 4],
+  )
+  table.dispose()
+  assert.throws(() => useUiTable({ schema: config }), /Unknown table sort comparator/u)
+  assert.throws(() => parseUiTableSchema({ ...config, sorting: 'unexpected' }))
+  assert.throws(() =>
+    parseUiTableSchema({
+      ...config,
+      columns: [{ key: 'amount', title: 'Amount', sortComparator: 'priority' }],
+    }),
+  )
+  assert.throws(
+    () =>
+      parseUiTableSchema({
+        ...config,
+        source: { kind: 'remote', request: { api: '/rows', method: 'GET' } },
+      }),
+    /server/u,
+  )
+  const bad = useUiTable({
+    schema: config,
+    rows: records,
+    sortComparators: { priority: () => NaN },
+  })
+  await bad.setSort({ key: 'category', order: 'ascend' })
+  assert.match(bad.error.value?.message ?? '', /finite/u)
+  bad.dispose()
+  const single = useUiTable({
+    schema: {
+      ...config,
+      sorting: 'single',
+      columns: [{ key: 'amount', title: 'Amount', sortable: true }],
+    },
+    rows: records,
+  })
+  assert.throws(
+    () =>
+      single.setSorts([
+        { key: 'amount', order: 'ascend' },
+        { key: 'category', order: 'ascend' },
+      ]),
+    /Multiple sorting/u,
+  )
+  single.dispose()
+  let received: UiTableResolvedRequest | undefined
+  const remote = useUiTable({
+    schema: {
+      ...config,
+      columns: config.columns.map(({ key, title }) => ({ key, title, sortable: true })),
+      source: {
+        kind: 'remote',
+        request: {
+          api: '/rows',
+          method: 'POST',
+          body: { sorting: { from: 'sorts' }, primary: { from: 'sort.key' } },
+        },
+      },
+    },
+    transport: {
+      list: (request) => {
+        received = request
+        return Promise.resolve({ rows: records, total: records.length })
+      },
+    },
+  })
+  await remote.setSorts([
+    { key: 'category', order: 'descend' },
+    { key: 'amount', order: 'ascend' },
+  ])
+  assert.ok(received)
+  assert.deepEqual(received.body['sorting'], remote.query.value.sorts)
+  assert.equal(received.body['primary'], 'category')
+  assert.deepEqual(
+    remote.rows.value,
+    records,
+    'Remote ordering must not be replaced by local sorting.',
+  )
+  await remote.setSorts([])
+  assert.deepEqual(received.body['sorting'], [])
+  remote.dispose()
+}
+function verifyColumnGroups(): void {
+  const config = {
+    id: 'grouped',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [
+      { key: 'name', title: 'Name', fixed: 'left' },
+      { key: 'amount', title: 'Amount', sortable: true },
+      { key: 'stock', title: 'Stock' },
+      { key: 'other', title: 'Other' },
+    ],
+    columnGroups: [
+      {
+        key: 'business',
+        title: 'Business',
+        children: ['name', { key: 'metrics', title: 'Metrics', children: ['amount', 'stock'] }],
+      },
+    ],
+  }
+  const schema = parseUiTableSchema(config)
+  const groups = schema.columnGroups ?? []
+  const tree = projectTableColumnGroups(schema.columns, groups)
+  function leaves(nodes: readonly TableHeaderNode[]): string[] {
+    return nodes.flatMap((node) =>
+      node.kind === 'column' ? [node.column.key] : leaves(node.children),
+    )
+  }
+  assert.deepEqual(leaves(tree), ['name', 'amount', 'stock', 'other'])
+  assert.equal(tree.length, 3, 'Pinned and center group sections remain separate.')
+  assert.equal(tree[0]?.kind === 'group' && tree[0].fixed, 'left')
+  const amount = schema.columns[1]
+  const stock = schema.columns[2]
+  const other = schema.columns[3]
+  assert.ok(amount && stock && other)
+  const split = projectTableColumnGroups([amount, other, stock], groups)
+  assert.equal(split.length, 3, 'Separated members must not reorder unrelated columns.')
+  assert.deepEqual(leaves(split), ['amount', 'other', 'stock'])
+  const hidden = projectTableColumnGroups(
+    schema.columns.map((col) => ({ ...col, hidden: col.key !== 'other' })),
+    groups,
+  )
+  assert.deepEqual(hidden, [{ kind: 'column', column: { ...other, hidden: false } }])
+  assert.deepEqual(leaves(projectTableColumnGroups([stock, amount], groups)), ['stock', 'amount'])
+  for (const columnGroups of [
+    [{ key: 'group', title: 'Group', children: ['missing'] }],
+    [{ key: 'group', title: 'Group', children: ['amount', 'amount'] }],
+    [{ key: 'amount', title: 'Group', children: ['stock'] }],
+    [{ key: 'group', title: 'Group', children: [] }],
+    [{ key: 'group', title: 'Group', children: ['amount'], fixed: 'left' }],
+    [
+      {
+        key: 'group',
+        title: 'Group',
+        children: [{ key: 'group', title: 'Nested', children: ['stock'] }],
+      },
+    ],
+  ])
+    assert.throws(() => parseUiTableSchema({ ...config, columnGroups }))
+  const table = useUiTable({
+    schema,
+    rows: [
+      { id: 1, amount: 2 },
+      { id: 2, amount: 1 },
+    ],
+  })
+  table.setColumnVisibility('stock', false)
+  assert.equal(
+    leaves(projectTableColumnGroups(table.columns.value, groups)).includes('stock'),
+    false,
+  )
+  table.moveColumn('amount', 'down')
+  assert.deepEqual(
+    leaves(projectTableColumnGroups(table.columns.value, groups)),
+    table.columns.value.filter((col) => !col.hidden).map((col) => col.key),
+  )
+  table.resetColumns()
+  assert.deepEqual(leaves(projectTableColumnGroups(table.columns.value, groups)), [
+    'name',
+    'amount',
+    'stock',
+    'other',
+  ])
+  table.dispose()
+}
+async function verifyCsvExport(): Promise<void> {
+  const schema: UiTableSchema = {
+    id: 'csv',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    selection: 'multiple',
+    pagination: { pageSize: 2 },
+    csvExport: { fileName: '中文.csv', scopes: ['page', 'selected'] },
+    columns: [
+      { key: 'name', title: '名称' },
+      { key: 'amount', title: '金额', sortable: true },
+      { key: 'profile.note', title: '备注' },
+      { key: 'secret', title: 'Hidden', hidden: true },
+    ],
+  }
+  const table = useUiTable({
+    schema,
+    immediate: false,
+    rows: [
+      {
+        id: 1,
+        name: '中文,"引号"\n换行',
+        amount: -2,
+        profile: { note: '=SUM(A1)' },
+        secret: 'not exported',
+      },
+      { id: 2, name: ' @formula', amount: 3, profile: { note: '\t=1+1' } },
+      { id: 3, name: 'third', amount: 1, profile: { note: null } },
+    ],
+  })
+  assert.throws(() => table.exportCsv('page'), /No rows/)
+  await table.refresh()
+  const file = table.exportCsv('page')
+  assert.equal(file.fileName, '中文.csv')
+  assert.equal(file.mimeType, 'text/csv;charset=utf-8')
+  assert.equal(file.rowCount, 2)
+  assert.equal(
+    file.content,
+    '\uFEFF"名称","金额","备注"\r\n"中文,""引号""\n换行","-2","\'=SUM(A1)"\r\n"\' @formula","3","\'\t=1+1"\r\n',
+  )
+  assert.ok(!file.content.includes('not exported'))
+  assert.throws(() => table.exportCsv('selected'), /No rows/)
+  table.setSelection([2])
+  assert.equal(table.exportCsv('selected').rowCount, 1)
+  table.moveColumn('amount', 'up')
+  table.setColumnVisibility('profile.note', false)
+  assert.ok(table.exportCsv('page').content.startsWith('\uFEFF"金额","名称"'))
+  await table.setSort({ key: 'amount', order: 'descend' })
+  assert.ok(table.exportCsv('page').content.includes('"third"'))
+  assert.throws(() => table.exportCsv('selected'), /No rows/)
+  await table.setPage(2)
+  assert.equal(table.exportCsv('page').rowCount, 1)
+  table.dispose()
+  assert.throws(() => table.exportCsv('page'), /not ready/)
+  for (const invalid of [
+    { ...schema, csvExport: { fileName: '../data.csv', scopes: ['page'] } },
+    { ...schema, csvExport: { fileName: 'data.csv', scopes: ['all'] } },
+    { ...schema, csvExport: { fileName: 'data.csv', scopes: ['page', 'page'] } },
+    { ...schema, selection: 'none', csvExport: { fileName: 'data.csv', scopes: ['selected'] } },
+  ])
+    assert.throws(() => parseUiTableSchema(invalid))
+  let requests = 0
+  const remote = useUiTable({
+    schema: { ...schema, source: { kind: 'remote', request: { api: '/rows', method: 'GET' } } },
+    immediate: false,
+    transport: {
+      list: () => {
+        requests += 1
+        return Promise.resolve({ rows: [{ id: 1, name: 'remote' }], total: 200 })
+      },
+    },
+  })
+  await remote.refresh()
+  assert.equal(remote.exportCsv('page').rowCount, 1)
+  assert.equal(requests, 1, 'CSV export never fetches other pages')
+  remote.dispose()
+}
+async function verifyInlineEditing(): Promise<void> {
+  const original = [
+    { id: 1, title: 'Original', stock: 9 },
+    { id: 2, title: 'Other', stock: 3 },
+  ]
+  const schema: UiTableSchema = {
+    id: 'inline-probe',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [{ key: 'title', title: 'Title', sortable: true }],
+    pagination: { pageSize: 1 },
+    editor: {
+      form: {
+        fields: [
+          { kind: 'text', name: 'title', label: 'Title', required: true },
+          { kind: 'number', name: 'stock', label: 'Stock', required: true, min: 0 },
+        ],
+      },
+      update: {
+        api: '/update',
+        method: 'PATCH',
+        body: {
+          id: { from: 'row.id' },
+          title: { from: 'form.title' },
+          stock: { from: 'form.stock' },
+        },
+      },
+    },
+  }
+  const table = useUiTable({ schema, rows: original, immediate: false })
+  await table.refresh()
+  let fail = true
+  const calls: UiTableResolvedRequest[] = []
+  const session = useUiTableForm({
+    table,
+    copy: formCopy,
+    transport: {
+      list: () => Promise.resolve({ rows: original, total: original.length }),
+      mutate: (request) => {
+        calls.push(request)
+        return fail ? Promise.reject(new Error('Offline')) : Promise.resolve()
+      },
+    },
+  })
+  assert.equal(await session.show('edit', original[0], { fields: ['title'] }), true)
+  assert.equal(Object.isFrozen(session.row.value), true)
+  const form = session.form.value
+  assert.ok(form)
+  assert.equal(form.fields.length, 1)
+  form.field('title').setValue('')
+  await form.submit()
+  assert.equal(calls.length, 0, 'Invalid cell never submits')
+  form.field('title').setValue('Changed')
+  await table.setPage(2)
+  await table.setSort({ key: 'title', order: 'descend' })
+  await form.submit()
+  assert.equal(session.open.value, true, 'Failure keeps the draft open')
+  assert.ok(form.field('title').value === 'Changed')
+  assert.deepEqual(
+    calls[0]?.body,
+    { id: 1, title: 'Changed', stock: 9 },
+    'Stable identity and untouched values survive query changes',
+  )
+  assert.equal(session.close(), false, 'Dirty draft cannot be silently replaced')
+  fail = false
+  await form.submit()
+  await nextTick()
+  assert.equal(session.open.value, false)
+  session.release()
+  assert.equal(await session.show('edit', original[0], { fields: ['title', 'stock'] }), true)
+  session.form.value?.field('stock').setValue(25)
+  assert.equal(session.close(true), true)
+  session.release()
+  assert.equal(original[0]?.stock, 9, 'Cancel never changes source records')
+  assert.equal(await session.show('edit', original[0], { fields: ['missing'] }), false)
+  assert.ok(session.error.value)
+  session.dispose()
+  table.dispose()
+}
+await verifyInlineEditing()
+await verifyCsvExport()
+verifyColumnGroups()
+await verifyMultipleSorting()
+await verifyCommonFormFields()
+verifyColumnPreferences()
 verifyPublicValueTypes()
 await verifyFormValueBoundaries()
 await verifyTableFormSources()
@@ -1131,3 +1716,35 @@ await verifyRemote()
 console.info(
   'Form schema/value types, table option sources and readonly snapshots, UiForm binding lifetimes, grouped table queries, UiTable theme contrast, reading states, summary parser, local calculations, sort icon motion, three-state sorting, state preservation and remote races passed.',
 )
+
+// Editor hints are collected from the same parser branches as runtime validation.
+const formInspection = inspectUiFormSchema({
+  fields: [{ kind: 'text', name: 'name', label: 'Name' }],
+})
+assert.equal(formInspection.valid, true)
+assert.ok(formInspection.hints.some((hint) => hint.choices?.includes('date-range')))
+assert.equal(
+  inspectUiFormSchema({ fields: [{ kind: 'invalid', name: 'name', label: 'Name' }] }).valid,
+  false,
+)
+assert.match(
+  inspectUiFormSchema({ fields: [{ kind: 'text', name: 'name', label: 'Name', extra: true }] })
+    .issue ?? '',
+  /fields.*0.*extra/,
+)
+const inspectedTable = {
+  id: 'inspect',
+  rowKey: 'id',
+  columns: [{ key: 'id', title: 'ID' }],
+  source: { kind: 'local' },
+  sorting: 'multiple',
+}
+const tableInspection = inspectUiTableSchema(inspectedTable)
+assert.equal(tableInspection.valid, true)
+assert.deepEqual(tableInspection.hints.find((hint) => hint.path.join('.') === 'sorting')?.choices, [
+  'single',
+  'multiple',
+])
+assert.equal(inspectedTable.sorting, 'multiple')
+assert.match(inspectUiTableSchema({ ...inspectedTable, sorting: 'invalid' }).issue ?? '', /sorting/)
+assert.equal(inspectUiTableSchema(null).valid, false)

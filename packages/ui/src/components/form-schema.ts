@@ -1,3 +1,7 @@
+import {
+  createConfigurationInspection,
+  type UiConfigurationInspection,
+} from './configuration-inspection'
 import type { UiFormCondition, UiFormNode, UiFormReference, UiFormSchema } from './form-contracts'
 import {
   cloneDraft,
@@ -8,30 +12,42 @@ import {
 
 /** Validate an untrusted JSON payload before any component, event or source is resolved. */
 export function parseUiFormSchema(input: unknown): UiFormSchema {
+  return parseConfiguration(input)
+}
+/** Parser-backed suggestions; stops at the first invalid node and never applies a configuration. */
+export function inspectUiFormSchema(input: unknown): UiConfigurationInspection {
+  let hints: UiConfigurationInspection['hints'] = []
+  try {
+    parseConfiguration(input, (value) => {
+      hints = value
+    })
+    return { valid: true, issue: null, hints }
+  } catch (cause) {
+    return { valid: false, issue: cause instanceof Error ? cause.message : String(cause), hints }
+  }
+}
+function parseConfiguration(
+  input: unknown,
+  collect?: (hints: UiConfigurationInspection['hints']) => void,
+): UiFormSchema {
   const cloned: unknown = cloneDraft(input)
-  function record(value: unknown): Record<string, unknown> {
-    if (typeof value !== 'object' || value === null || Array.isArray(value))
-      throw new TypeError('Expected a form configuration object.')
-    return value as Record<string, unknown>
-  }
-  function keys(value: Record<string, unknown>, allowed: readonly string[]): void {
-    if (Object.keys(value).some((key) => !allowed.includes(key)))
-      throw new TypeError('Unsupported form configuration property.')
-  }
+  const inspection = createConfigurationInspection(cloned)
+  collect?.(inspection.hints)
+  const { record, keys, error } = inspection
   function text(value: unknown): void {
-    if (typeof value !== 'string') throw new TypeError('Expected form text.')
+    if (typeof value !== 'string') throw error('Expected form text.')
   }
   function path(value: unknown): void {
     text(value)
     if (formPathParts(value as string).some((part) => part.includes('*')))
-      throw new TypeError('Wildcard form paths are not supported.')
+      throw error('Wildcard form paths are not supported.')
   }
   function reference(value: unknown): void {
     const ref = record(value)
     keys(ref, ['field', 'scope'])
     path(ref['field'])
     if (ref['scope'] !== undefined && ref['scope'] !== 'form' && ref['scope'] !== 'group')
-      throw new TypeError('Invalid form reference scope.')
+      throw error('Invalid form reference scope.')
   }
   function condition(value: unknown): void {
     const item = record(value)
@@ -40,7 +56,7 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
         keys(item, [key])
         const list = item[key]
         if (!Array.isArray(list) || list.length === 0)
-          throw new TypeError('A form condition group cannot be empty.')
+          throw error('A form condition group cannot be empty.')
         list.forEach(condition)
         return
       }
@@ -59,11 +75,11 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
       typeof operator !== 'string' ||
       !['eq', 'neq', 'in', 'empty', 'not-empty'].includes(operator)
     )
-      throw new TypeError('Invalid condition operator.')
+      throw error('Invalid condition operator.')
     if (['eq', 'neq', 'in'].includes(operator) && !Object.hasOwn(item, 'value'))
-      throw new TypeError('Condition value is required.')
+      throw error('Condition value is required.')
     if (operator === 'in' && !Array.isArray(item['value']))
-      throw new TypeError('The in condition requires an array.')
+      throw error('The in condition requires an array.')
   }
   function number(value: unknown, integer = false): void {
     if (
@@ -71,14 +87,14 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
       !Number.isFinite(value) ||
       (integer && (!Number.isInteger(value) || value < 0))
     )
-      throw new TypeError('Invalid form numeric configuration.')
+      throw error('Invalid form numeric configuration.')
   }
   let count = 0
   function fields(value: unknown): void {
-    if (!Array.isArray(value)) throw new TypeError('Form fields must be an array.')
+    if (!Array.isArray(value)) throw error('Form fields must be an array.')
     const names = new Set<string>()
     for (const raw of value) {
-      if (++count > 1000) throw new TypeError('Too many configured form nodes.')
+      if (++count > 1000) throw error('Too many configured form nodes.')
       const node = record(raw)
       const kind = node['kind']
       const shared = [
@@ -97,12 +113,12 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
         /^\d+$/u.test(node['name'] as string) ||
         names.has(node['name'] as string)
       )
-        throw new TypeError('Form node names must be unique local keys.')
+        throw error('Form node names must be unique local keys.')
       names.add(node['name'] as string)
       text(node['label'])
       if (node['description'] !== undefined) text(node['description'])
       if (node['span'] !== undefined && node['span'] !== 1 && node['span'] !== 2)
-        throw new TypeError('Invalid field span.')
+        throw error('Invalid field span.')
       for (const key of ['hidden', 'disabled', 'readonly', 'required'])
         if (node[key] !== undefined && typeof node[key] !== 'boolean') condition(node[key])
       if (kind === 'group' || kind === 'repeat') {
@@ -115,31 +131,31 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
         for (const key of ['minItems', 'maxItems'])
           if (node[key] !== undefined) {
             number(node[key], true)
-            if ((node[key] as number) > 1000)
-              throw new TypeError('Repeat bounds cannot exceed 1000 rows.')
+            if ((node[key] as number) > 1000) throw error('Repeat bounds cannot exceed 1000 rows.')
           }
         if (
           typeof node['minItems'] === 'number' &&
           typeof node['maxItems'] === 'number' &&
           node['minItems'] > node['maxItems']
         )
-          throw new TypeError('Invalid repeat bounds.')
+          throw error('Invalid repeat bounds.')
         for (const key of ['addLabel', 'itemLabel']) if (node[key] !== undefined) text(node[key])
         continue
       }
-      if (
-        ![
-          'text',
-          'textarea',
-          'number',
-          'switch',
-          'date',
-          'select',
-          'multi-select',
-          'custom',
-        ].includes(String(kind))
-      )
-        throw new TypeError('Unsupported form field kind.')
+      inspection.choice(node, 'kind', [
+        'text',
+        'textarea',
+        'number',
+        'switch',
+        'date',
+        'time',
+        'date-range',
+        'radio',
+        'checkbox-group',
+        'select',
+        'multi-select',
+        'custom',
+      ])
       keys(node, [
         ...shared,
         'placeholder',
@@ -154,18 +170,23 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
       if (node['placeholder'] !== undefined) text(node['placeholder'])
       for (const key of ['min', 'max', 'step'])
         if (node[key] !== undefined) {
-          if (kind !== 'number') throw new TypeError('Numeric hints require a number field.')
+          if (kind !== 'number') throw error('Numeric hints require a number field.')
           number(node[key])
         }
       if (typeof node['step'] === 'number' && node['step'] <= 0)
-        throw new TypeError('Number step must be positive.')
+        throw error('Number step must be positive.')
       if (
         typeof node['min'] === 'number' &&
         typeof node['max'] === 'number' &&
         node['min'] > node['max']
       )
-        throw new TypeError('Invalid number bounds.')
-      if (kind === 'select' || kind === 'multi-select') {
+        throw error('Invalid number bounds.')
+      if (
+        kind === 'select' ||
+        kind === 'multi-select' ||
+        kind === 'radio' ||
+        kind === 'checkbox-group'
+      ) {
         const options = node['options']
         if (Array.isArray(options)) {
           const identities = new Set<unknown>()
@@ -177,32 +198,29 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
               (typeof option['value'] !== 'string' && typeof option['value'] !== 'number') ||
               identities.has(option['value'])
             )
-              throw new TypeError('Invalid or duplicate option identity.')
+              throw error('Invalid or duplicate option identity.')
             identities.add(option['value'])
             if (option['disabled'] !== undefined && typeof option['disabled'] !== 'boolean')
-              throw new TypeError('Invalid option state.')
+              throw error('Invalid option state.')
           }
         } else {
           const source = record(options)
           keys(source, ['source', 'dependsOn'])
           text(source['source'])
-          if (!(source['source'] as string).trim())
-            throw new TypeError('Option source name is required.')
+          if (!(source['source'] as string).trim()) throw error('Option source name is required.')
           if (source['dependsOn'] !== undefined) {
-            if (!Array.isArray(source['dependsOn']))
-              throw new TypeError('Invalid option dependencies.')
+            if (!Array.isArray(source['dependsOn'])) throw error('Invalid option dependencies.')
             source['dependsOn'].forEach(reference)
           }
         }
-      } else if (node['options'] !== undefined)
-        throw new TypeError('Only selection fields accept options.')
+      } else if (node['options'] !== undefined) throw error('Only selection fields accept options.')
       if (node['rules'] !== undefined) {
         const rules = record(node['rules'])
         keys(rules, ['min', 'max', 'minLength', 'maxLength', 'format', 'message'])
         for (const key of ['min', 'max', 'minLength', 'maxLength'])
           if (rules[key] !== undefined) number(rules[key], key.endsWith('Length'))
         if (rules['format'] !== undefined && rules['format'] !== 'email')
-          throw new TypeError('Unsupported form format.')
+          throw error('Unsupported form format.')
         if (rules['message'] !== undefined) text(rules['message'])
         if (
           (typeof rules['min'] === 'number' &&
@@ -212,23 +230,23 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
             typeof rules['maxLength'] === 'number' &&
             rules['minLength'] > rules['maxLength'])
         )
-          throw new TypeError('Invalid validation bounds.')
+          throw error('Invalid validation bounds.')
         if (kind !== 'number' && (rules['min'] !== undefined || rules['max'] !== undefined))
-          throw new TypeError('Numeric rules require a number field.')
+          throw error('Numeric rules require a number field.')
         if (
-          !['text', 'textarea', 'multi-select'].includes(String(kind)) &&
+          !['text', 'textarea', 'multi-select', 'checkbox-group'].includes(String(kind)) &&
           (rules['minLength'] !== undefined || rules['maxLength'] !== undefined)
         )
-          throw new TypeError('Length rules require text or multiple selection.')
+          throw error('Length rules require text or multiple selection.')
         if (!['text', 'textarea'].includes(String(kind)) && rules['format'] !== undefined)
-          throw new TypeError('Format rules require text.')
+          throw error('Format rules require text.')
       }
     }
   }
   const schema = record(cloned)
   keys(schema, ['fields', 'columns'])
   if (schema['columns'] !== undefined && schema['columns'] !== 1 && schema['columns'] !== 2)
-    throw new TypeError('Invalid form columns.')
+    throw error('Invalid form columns.')
   fields(schema['fields'])
   const parsed = cloned as UiFormSchema
   const declarations: { node: UiFormNode; path: string; group: string }[] = []
@@ -249,10 +267,10 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
     let nodes = parsed.fields
     for (let index = 0; index < parts.length; index += 1) {
       const node = nodes.find((candidate) => candidate.name === parts[index])
-      if (node === undefined) throw new TypeError(`Unknown form dependency: ${path}`)
+      if (node === undefined) throw error(`Unknown form dependency: ${path}`)
       if (index === parts.length - 1) return
       if (node.kind !== 'group' && node.kind !== 'repeat')
-        throw new TypeError(`Unknown form dependency: ${path}`)
+        throw error(`Unknown form dependency: ${path}`)
       if (node.kind === 'repeat') {
         const position = parts[++index]
         if (
@@ -261,7 +279,7 @@ export function parseUiFormSchema(input: unknown): UiFormSchema {
             (!/^(0|[1-9]\d*)$/u.test(position) || !Number.isSafeInteger(Number(position)))) ||
           index === parts.length - 1
         )
-          throw new TypeError(`Invalid repeat dependency: ${path}`)
+          throw error(`Invalid repeat dependency: ${path}`)
       }
       nodes = node.fields
     }

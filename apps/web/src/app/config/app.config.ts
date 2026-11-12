@@ -1,4 +1,5 @@
 export const applicationConfig = {
+  tables: { columnPreferenceStorageKey: 'pavp:web:table-column-preferences' },
   forms: {
     draftStorageKey: 'pavp:web:form-drafts',
     builderDraftMaxAgeMs: 7 * 24 * 60 * 60 * 1000,

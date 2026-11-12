@@ -77,6 +77,9 @@ function immutableConfiguration(configuration: CoreRuntimeConfiguration): CoreRu
     releaseSha: configuration.releaseSha,
     buildVersion: configuration.buildVersion,
     api: Object.freeze(configuration.api),
+    ...(configuration.presentation === undefined
+      ? {}
+      : { presentation: Object.freeze(configuration.presentation) }),
   })
 }
 

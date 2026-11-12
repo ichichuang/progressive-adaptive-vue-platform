@@ -4350,22 +4350,15 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
     if (!isJsonObject(loaded) || !isJsonObject(loadedForm)) {
       throw new TypeError('The compiled Naive theme module has no exports.')
     }
-    const [lightButton, darkButton] = await Promise.all(
-      ['light', 'dark'].map((mode) =>
-        readFile(requireFromUi.resolve(`naive-ui/es/button/styles/${mode}.mjs`), 'utf8'),
-      ),
+    const buttonSource = await readFile(
+      requireFromUi.resolve('naive-ui/es/button/src/Button.mjs'),
+      'utf8',
     )
     if (
-      lightButton === undefined ||
-      darkButton === undefined ||
-      !lightButton.includes('colorOpacitySecondary: "0.16"') ||
-      !lightButton.includes('colorOpacitySecondaryHover: "0.22"') ||
-      !lightButton.includes('colorOpacitySecondaryPressed: "0.28"') ||
-      !darkButton.includes('colorOpacitySecondary = "0.16"') ||
-      !darkButton.includes('colorOpacitySecondaryHover = "0.2"') ||
-      !darkButton.includes('colorOpacitySecondaryPressed = "0.12"')
+      !buttonSource.includes('"textColorSecondary"') ||
+      !buttonSource.includes('"colorSecondaryPressed"')
     )
-      throw new TypeError('Installed Naive secondary opacity differs from palette validation.')
+      throw new TypeError('Installed Naive Button must support semantic secondary colors.')
     const projection = loaded['createPavpNaiveThemeProjection']
     if (!isNavigationThemeProjection(projection)) {
       throw new TypeError('The compiled Naive theme projection export is not callable.')
@@ -4547,15 +4540,52 @@ async function actualNavigationThemeColors(): Promise<NavigationThemeColorSnapsh
             palette.roles.neutral.solid.background.default,
             `${context}/Switch unchecked rail`,
           )
+          for (const [tone, suffix] of [
+            ['primary', 'Primary'],
+            ['info', 'Info'],
+            ['success', 'Success'],
+            ['warning', 'Warning'],
+            ['error', 'Error'],
+          ] as const) {
+            const soft = palette.roles[tone].soft
+            expectColor(
+              atColor(projectedColors, 'Button', `textColorSecondary${suffix}`),
+              soft.foreground,
+              `${context}/${tone}/secondary text`,
+            )
+            for (const [state, background] of [
+              ['', soft.background.default],
+              ['Hover', soft.background.hover],
+              ['Pressed', soft.background.pressed],
+              ['Focus', soft.background.hover],
+            ] as const) {
+              expectColor(
+                atColor(projectedColors, 'Button', `colorSecondary${state}${suffix}`),
+                background,
+                `${context}/${tone}/secondary ${state}`,
+              )
+              requireContrast(
+                atColor(projectedColors, 'Button', `textColorSecondary${suffix}`),
+                atColor(projectedColors, 'Button', `colorSecondary${state}${suffix}`),
+                `${tone} secondary ${state}`,
+              )
+            }
+          }
           for (const rail of ['railColor', 'railColorActive'])
             requireContrast(
-              atColor(projectedColors, 'Switch', 'textColor'),
+              atColor(
+                projectedColors,
+                'Switch',
+                rail === 'railColor' ? 'textColorInactive' : 'textColor',
+              ),
               atColor(projectedColors, 'Switch', rail),
               `Switch ${rail} slot text`,
             )
           for (const field of ['railColor', 'railColorHover', 'fillColor', 'fillColorHover'])
             requireContrast(
-              palette.roles.primary.solid.foreground,
+              field.startsWith('rail')
+                ? palette.roles.neutral.solid.foreground
+                : palette.roles.primary.solid.foreground,
               atColor(projectedColors, 'Slider', field),
               `Slider outline/${field}`,
             )
@@ -6726,7 +6756,7 @@ function shellKeyboardSourceProjection(shellSource: string): ShellKeyboardSource
       movesFocus(normal) &&
       normal.includes("emit('navigate'") &&
       (normal.includes("emit('update:expandedNavigationGroupIds'") ||
-        normal.includes("handleNavigationAction('groups', keys)")),
+        /handleNavigationAction\(\s*'groups'\s*,/u.test(normal)),
     collapsedTrigger:
       trigger !== undefined &&
       runtime002ButtonIsNaiveAndEnabled(trigger) &&
@@ -7732,7 +7762,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
     runtimeNumber(routeRegistry.length) !== 76 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 11 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 5
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -8396,7 +8426,7 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
         snapshot.routeCount === 76 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 10,
+        snapshot.storageRecordCount === 11,
     },
   ])
 }
@@ -12033,7 +12063,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 10,
+      passed: snapshot.storageRecordCount === 11,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -15542,8 +15572,8 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(routerConsoleProjection.productRouteCount) !== 69 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
     runtimeCount(routerRecords) !== 76 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 10 ||
-    runtimeCount(storageRecords) !== 10 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 11 ||
+    runtimeCount(storageRecords) !== 11 ||
     runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 15 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, []) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||

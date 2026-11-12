@@ -35,7 +35,7 @@ const schema = {
 } as const satisfies UiFormSchema
 ```
 
-字段类型为 `text`、`textarea`、`number`、`switch`、`date`、`select`、`multi-select`、`custom`。日期保存为 `YYYY-MM-DD` 或 `null`。选项身份保留字符串/数字类型，显示 label。`group` 对应对象，`repeat` 对应对象数组，允许继续嵌套。字段名是本层键，不含点或方括号；调用接口时使用 `address.city`、`contacts.0.email` 路径。
+字段类型为 `text`、`textarea`、`number`、`switch`、`date`、`date-range`、`time`、`select`、`multi-select`、`radio`、`checkbox-group`、`custom`。日期保存为 `YYYY-MM-DD` 或 `null`。日期范围保存为升序的两个日期 `[start, end]` 或 `null`；时间为 `HH:mm:ss` 或 `null`，不包含时区转换。单选组使用单个选项身份，复选组使用身份数组，均复用静态、异步与分页选项来源。选项身份保留字符串/数字类型，显示 label。`group` 对应对象，`repeat` 对应对象数组，允许继续嵌套。字段名是本层键，不含点或方括号；调用接口时使用 `address.city`、`contacts.0.email` 路径。
 
 文本、数字、日期和选择控件使用配置的 placeholder，并经过 translate。两列布局中，普通字段默认占一列，group/repeat 默认占满；所有节点可用 span: 1 或 span: 2 指定宽度，窄屏自动回到单列。
 

@@ -16,6 +16,7 @@ import { NTag } from 'naive-ui/es/tag'
 import TableSummaryControls from './TableSummaryControls.vue'
 import { createLocalProductTable } from './local-product-table'
 import { createPublicProductTableTransport } from './public-product-table'
+import { useTableColumnPreferences } from '../../tables/use-table-column-preferences'
 import { useTableShowcase } from './table-showcase'
 const props = defineProps<{
   readonly schema: UiTableSchema
@@ -35,6 +36,7 @@ const { t } = demo
 const local = createLocalProductTable()
 const table = useUiTable({
   schema: props.schema,
+  columnPreferenceStorage: useTableColumnPreferences(),
   rows: local.rows,
   transport: createPublicProductTableTransport(),
   translate: demo.translate,

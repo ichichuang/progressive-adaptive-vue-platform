@@ -614,12 +614,12 @@
             },
             "solid": {
               "background": {
-                "default": "#8AAEFD",
-                "hover": "#94B5FF",
-                "pressed": "#83A5F3",
-                "focus": "#8AAEFD"
+                "default": "#365FC4",
+                "hover": "#416BCD",
+                "pressed": "#2C50B2",
+                "focus": "#365FC4"
               },
-              "foreground": "#060C13",
+              "foreground": "#F5F8FF",
               "border": "#92B7FF"
             },
             "soft": {
@@ -842,12 +842,12 @@
             },
             "solid": {
               "background": {
-                "default": "#E8EEFA",
-                "hover": "#E8EEFC",
-                "pressed": "#E8EDF7",
-                "focus": "#E8EEFA"
+                "default": "#23469E",
+                "hover": "#2B4FA8",
+                "pressed": "#1D3C8E",
+                "focus": "#23469E"
               },
-              "foreground": "#060C13",
+              "foreground": "#F5F8FF",
               "border": "#B9D1FF"
             },
             "soft": {

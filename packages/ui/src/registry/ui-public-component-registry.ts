@@ -154,6 +154,12 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: false,
         }),
         Object.freeze({
+          name: 'cell',
+          slotPropsType:
+            '{ readonly row: UiTableReadonlyRecord; readonly column: UiTableColumn; readonly value: UiFormValue | undefined; readonly text: string }',
+          required: false,
+        }),
+        Object.freeze({
           name: 'summaryCell',
           slotPropsType:
             '{ readonly table: UiTableController; readonly rowKey: string; readonly column: UiTableColumn; readonly value: UiTableSummaryValue; readonly text: string }',
@@ -409,6 +415,18 @@ export const uiPublicComponentRegistry = Object.freeze({
           name: 'composition',
           type: 'UiShellComposition | null',
           required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'navigationFocusRequest',
+          type: 'number',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
+          name: 'prepareNavigationFocus',
+          type: '() => Promise<boolean>',
+          required: false,
           defaultValue: null,
         }),
         Object.freeze({

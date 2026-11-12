@@ -103,6 +103,9 @@ export function tableShowcaseSchema(
   }
 }
 const translatedSchemaLabels = [
+  'tableExamples.columns.detailsGroup',
+  'tableExamples.columns.businessGroup',
+  'tableExamples.columns.metricsGroup',
   'tableShowcase.id',
   'tableShowcase.title',
   'tableShowcase.category',
@@ -124,6 +127,8 @@ export function useTableShowcase() {
   const demo = useFormShowcase()
   const { t } = demo
   const tableCopy: UiTableCopy = {
+    exportPage: () => t('tableShowcase.exportPage'),
+    exportSelected: () => t('tableShowcase.exportSelected'),
     sortLabel: (title, order) =>
       `${title} · ${t(
         order === 'ascend'

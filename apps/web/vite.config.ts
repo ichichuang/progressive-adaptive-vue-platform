@@ -12,6 +12,7 @@ import VueRouter from 'vue-router/vite'
 import { readDeploymentConfig, rootDeploymentBase } from './config'
 import { applicationConfig } from './src/app/config/app.config'
 import {
+  defaultRuntimePresentation,
   compiledEnvironmentValues,
   coreRuntimeConfigurationSchema,
   type CompiledEnvironment,
@@ -435,6 +436,7 @@ export default defineConfig(async ({ command, isPreview, mode }) => {
       releaseSha,
       buildVersion,
       api: deployment.api,
+      presentation: defaultRuntimePresentation,
     }),
   )
 
@@ -456,6 +458,11 @@ export default defineConfig(async ({ command, isPreview, mode }) => {
       vue(),
       UnoCSS(),
     ],
+    // File routes are generated virtually, outside Vite's initial HTML dependency scan.
+    // Scan their real sources up front; production routes remain asynchronously imported.
+    optimizeDeps: {
+      entries: ['index.html', `${routerFileGenerationOptions.routesFolder}/**/*.vue`],
+    },
     build: {
       cssCodeSplit: true,
       emptyOutDir: true,

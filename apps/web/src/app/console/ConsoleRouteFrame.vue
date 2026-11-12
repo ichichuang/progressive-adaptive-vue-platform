@@ -55,10 +55,12 @@ import {
   getRouteRecord,
 } from '../router/route-registry'
 import { provideSettingsReturn } from '../router/settings-return'
+import { useRuntimePresentation } from '../config/runtime-presentation'
 import { useShellScrollRestoration } from '../scroll/use-shell-scroll-restoration'
 
 defineOptions({ name: 'ConsoleRouteFrame' })
 const shellScroll = useShellScrollRestoration()
+const presentation = useRuntimePresentation()
 
 const props = defineProps<{
   readonly activeRouteName: string
@@ -107,7 +109,9 @@ function activeNavigationPath(groups: readonly UiAdminNavigationGroup[]): readon
   return []
 }
 const copy = computed(() => ({
-  consoleTitle: t('shell.consoleTitle'),
+  ...(presentation.name === null ? {} : { brandName: presentation.name }),
+  ...(presentation.logo === null ? {} : { logoUrl: presentation.logo }),
+  consoleTitle: presentation.name ?? t('shell.consoleTitle'),
   navigationLabel: t('shell.navigationLabel'),
   navigationActionLabel: t('shell.navigationActionLabel'),
   openNavigationLabel: t('shell.openNavigationLabel'),
@@ -125,7 +129,7 @@ const copy = computed(() => ({
 const router = useRouter()
 const applicationNavigation = useApplicationNavigation()
 const workspaceNavigation = useWorkspaceNavigation()
-provideSettingsReturn()
+const settingsReturn = provideSettingsReturn()
 const registerScrollController = inject(routerScrollControllerKey)
 const prepareWorkspaceRefresh = inject(routerWorkspaceRefreshKey)
 const retentionCommands = inject(workspaceRetentionKey)
@@ -186,6 +190,20 @@ watch(discardConfirmation, async (confirmation) => {
   }
 })
 const closing = new Set<WorkspaceIdentity>()
+// Navigation must succeed before discarding a workspace. Present that two-step
+// transaction to the tab strip as one selection/layout change, not two targets.
+const closingTabActivation = shallowRef<{
+  readonly source: WorkspaceIdentity
+  readonly destination: WorkspaceIdentity
+} | null>(null)
+const workspaceTabActiveId = computed(() => {
+  const closingActivation = closingTabActivation.value
+  return closingActivation !== null &&
+    workspace.activeIdentity === closingActivation.destination &&
+    workspace.entries.some((entry) => entry.identity === closingActivation.source)
+    ? closingActivation.source
+    : workspace.activeIdentity
+})
 const workspaceTabs = computed(() =>
   workspace.entries.map((entry) => {
     const label = t(getRouteRecord(entry.destination.name).meta.titleKey)
@@ -304,6 +322,14 @@ async function closeWorkspace(id: string): Promise<void> {
     const fallback = entries[index + 1] ?? entries[index - 1]
     const destination =
       fallback?.destination ?? registeredRouteDestination({ name: 'workbench-dashboard' })
+    const closingActivation =
+      fallback === undefined
+        ? null
+        : {
+            source: entry.identity,
+            destination: fallback.identity,
+          }
+    closingTabActivation.value = closingActivation
     const result = await workspaceNavigation.navigate(
       destination,
       fallback !== undefined && isLiveWorkspace(fallback)
@@ -341,6 +367,7 @@ async function closeWorkspace(id: string): Promise<void> {
       return
     await retention.close(entry)
   } finally {
+    if (closingTabActivation.value?.source === entry.identity) closingTabActivation.value = null
     closing.delete(entry.identity)
   }
 }
@@ -426,6 +453,23 @@ onScopeDispose(() => {
   unregisterPageScrollController?.()
 })
 
+// One successful settings departure owns positioning for Done, history and shell navigation.
+const navigationFocusRequest = ref(0)
+watch(
+  () => props.activeRouteName,
+  (to, from) => {
+    if (from === 'control-center' && to !== from) navigationFocusRequest.value += 1
+  },
+  { flush: 'post' },
+)
+
+async function prepareNavigationFocus(): Promise<boolean> {
+  if (props.activeRouteName !== 'control-center') return true
+  await settingsReturn.finish()
+  // The successful departure hook above positions once, after the new route renders.
+  return false
+}
+
 async function navigate(routeName: string): Promise<void> {
   if (routeName === 'control-center') {
     if (props.activeRouteName !== 'control-center')
@@ -458,6 +502,8 @@ async function navigate(routeName: string): Promise<void> {
   </div>
   <UiAdminShell
     :composition="composition"
+    :prepare-navigation-focus="prepareNavigationFocus"
+    :navigation-focus-request="navigationFocusRequest"
     :content-layout="containedContent ? 'contained' : 'scroll'"
     :active-route-name="activeRouteName"
     :navigation="navigation"
@@ -478,7 +524,7 @@ async function navigate(routeName: string): Promise<void> {
       <UiWorkspaceTabs
         v-if="activeRouteName !== 'control-center'"
         :items="workspaceTabs"
-        :active-id="workspace.activeIdentity"
+        :active-id="workspaceTabActiveId"
         :motion="appearance.snapshot.value.motion"
         :label="t('workspace.label')"
         :previous-label="t('workspace.previousLabel')"

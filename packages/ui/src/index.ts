@@ -41,10 +41,15 @@ export { parseUiFormSchema } from './components/form-schema'
 
 export type * from './components/table-contracts'
 export { parseUiTableSchema } from './components/table-schema'
+export { parseUiTableColumnPreference } from './components/table-column-preference'
 export { resolveUiTableRequest } from './components/table-request'
 export { useUiTable } from './composables/use-ui-table'
 export { default as UiTable } from './components/UiTable.vue'
-export { useUiTableForm, type UiTableFormInput } from './composables/use-ui-table-form'
+export {
+  useUiTableForm,
+  type UiTableFormInput,
+  type UiTableFormScope,
+} from './composables/use-ui-table-form'
 export { useUiTableQuery } from './composables/use-ui-table-query'
 
 export { default as UiTableEditor } from './components/UiTableEditor.vue'
@@ -61,3 +66,10 @@ export {
   zoomUiChartTimeRange,
   type UiChartTimeRangeValue,
 } from './components/chart-time-range'
+
+export { inspectUiFormSchema } from './components/form-schema'
+export { inspectUiTableSchema } from './components/table-schema'
+export type {
+  UiConfigurationHint,
+  UiConfigurationInspection,
+} from './components/configuration-inspection'

@@ -21,7 +21,15 @@ export interface UiTableColumn {
   readonly width?: number
   readonly fixed?: 'left' | 'right'
   readonly sortable?: boolean
+  /** Trusted comparator registry name for local data; never executable JSON. */
+  readonly sortComparator?: string
   readonly hidden?: boolean
+}
+/** Nested groups reference existing leaf column keys; unlisted columns remain ungrouped. */
+export interface UiTableColumnGroup {
+  readonly key: string
+  readonly title: string
+  readonly children: readonly (string | UiTableColumnGroup)[]
 }
 export type UiTableSummaryValue = string | number | null
 export interface UiTableSummaryFormat {
@@ -102,7 +110,20 @@ export interface UiTableAppearance {
   /** Defaults to the provider density. Changes cell padding, never text size. */
   readonly density?: UiDensity
 }
+export type UiTableCsvScope = 'page' | 'selected'
+/** Exports only loaded page rows; selected means selected rows on that page. */
+export interface UiTableCsvConfiguration {
+  readonly fileName: string
+  readonly scopes: readonly UiTableCsvScope[]
+}
+export interface UiTableCsvFile {
+  readonly fileName: string
+  readonly content: string
+  readonly mimeType: 'text/csv;charset=utf-8'
+  readonly rowCount: number
+}
 export interface UiTableSchema {
+  readonly csvExport?: UiTableCsvConfiguration
   /** Defaults to auto. The page owns a definite available height when using fill. */
   readonly height?: UiTableHeight
   readonly appearance?: UiTableAppearance
@@ -111,6 +132,7 @@ export interface UiTableSchema {
   readonly id: string
   readonly rowKey: string
   readonly columns: readonly UiTableColumn[]
+  readonly columnGroups?: readonly UiTableColumnGroup[]
   readonly source:
     { readonly kind: 'local' } | { readonly kind: 'remote'; readonly request: UiTableRequest }
   readonly query?: {
@@ -119,7 +141,11 @@ export interface UiTableSchema {
     readonly debounce?: number
   }
   readonly pagination?: { readonly pageSize?: number; readonly pageSizes?: readonly number[] }
+  /** Defaults to single. Multiple retains click order as sort priority. */
+  readonly sorting?: 'single' | 'multiple'
   readonly columnSettings?: boolean
+  /** Opt-in stable identity; use a distinct key for each independent table. */
+  readonly columnPreferenceKey?: string
   readonly batchActions?: readonly UiTableBatchAction[]
   readonly selection?: 'none' | 'single' | 'multiple'
   readonly editor?: {
@@ -131,11 +157,27 @@ export interface UiTableSchema {
     readonly remove?: UiTableRequest
   }
 }
+export interface UiTableSort {
+  readonly key: string
+  readonly order: 'ascend' | 'descend'
+}
+/** Return a finite ascending comparison. Direction is applied by the table. */
+export type UiTableSortComparator = (
+  left: UiFormReadonlyValue | undefined,
+  right: UiFormReadonlyValue | undefined,
+  context: {
+    readonly column: UiTableColumn
+    readonly leftRow: UiTableReadonlyRecord
+    readonly rightRow: UiTableReadonlyRecord
+  },
+) => number
 export interface UiTableQuery {
   readonly page: number
   readonly pageSize: number
   readonly filters: UiTableReadonlyRecord
-  readonly sort: { readonly key: string; readonly order: 'ascend' | 'descend' } | null
+  /** Complete priority-ordered list; sort is its primary projection for existing bindings. */
+  readonly sorts: readonly UiTableSort[]
+  readonly sort: UiTableSort | null
 }
 export interface UiTableRequestContext extends UiTableQuery {
   readonly selection?: UiTableSelection
@@ -161,7 +203,20 @@ export interface UiTableTransport {
   detail?(request: UiTableResolvedRequest, signal: AbortSignal): Promise<UiTableRecord>
   mutate?(request: UiTableResolvedRequest, signal: AbortSignal): Promise<void>
 }
+/** Only column keys and visibility are persisted, never row or query data. */
+export interface UiTableColumnPreference {
+  readonly schemaVersion: 1
+  readonly columns: readonly { readonly key: string; readonly hidden: boolean }[]
+}
+/** Synchronous restoration before the first render. Application owns browser storage. */
+export interface UiTableColumnPreferenceStorage {
+  read(key: string): unknown
+  write(key: string, preference: UiTableColumnPreference): void
+  clear(key: string): void
+}
 export interface UiTableInput {
+  readonly sortComparators?: Readonly<Record<string, UiTableSortComparator>>
+  readonly columnPreferenceStorage?: UiTableColumnPreferenceStorage
   readonly schema: UiTableSchema
   readonly rows?: readonly UiTableReadonlyRecord[]
   readonly transport?: UiTableTransport
@@ -190,17 +245,24 @@ export interface UiTableController {
   reset(): Promise<void>
   setPage(page: number): Promise<void>
   setPageSize(size: number): Promise<void>
+  /** Replaces the complete sort with zero or one column, even in multiple mode. */
   setSort(sort: UiTableQuery['sort']): Promise<void>
+  /** Replaces the priority-ordered list. Multiple entries require sorting: multiple. */
+  setSorts(sorts: readonly UiTableSort[]): Promise<void>
   setSelection(keys: readonly UiTableKey[]): void
   setColumnVisibility(key: string, visible: boolean): void
   moveColumn(key: string, direction: 'up' | 'down'): void
   resetColumns(): void
+  /** Produces a safe CSV snapshot; does not fetch or download data. */
+  exportCsv(scope: UiTableCsvScope): UiTableCsvFile
   /** Replaces only summary configuration, preserving query, pagination, selection and columns. */
   setSummary(summary: readonly UiTableSummaryRow[]): void
   setRows(rows: readonly UiTableReadonlyRecord[]): Promise<void>
   dispose(): void
 }
 export interface UiTableCopy {
+  readonly exportPage: () => string
+  readonly exportSelected: () => string
   /** Current sort state and next action, used by the keyboard-accessible icon button. */
   readonly sortLabel: (title: string, order: 'ascend' | 'descend' | false) => string
   readonly columns: () => string

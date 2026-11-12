@@ -1370,7 +1370,12 @@ export async function createAndReadyRouter(input: {
             advanceActiveGuardStage(navigation.guardStageProgress, 'commit-focus-and-scroll')
             settlementStarted = true
           }
-          document.title = getRoutePresentation(navigation.routeName, localization?.t).title
+          document.title = [
+            getRoutePresentation(navigation.routeName, localization?.t).title,
+            input.configuration.presentation?.name,
+          ]
+            .filter(Boolean)
+            .join(' · ')
           const locked = owner?.closest('[inert]') !== null && owner !== undefined
           if (!entryIsCurrent(entry)) {
             cancelBoundRouterPresentationCommit(presentationCommitBroker, to)
@@ -1958,7 +1963,12 @@ export async function createAndReadyRouter(input: {
     refreshCurrentRouteTitle(translate) {
       if (disposed) return
       const record = getRouteRecord(router.currentRoute.value.name)
-      document.title = getRoutePresentation(record.name, translate).title
+      document.title = [
+        getRoutePresentation(record.name, translate).title,
+        input.configuration.presentation?.name,
+      ]
+        .filter(Boolean)
+        .join(' · ')
     },
     markApplicationMounted() {
       if (disposed || applicationMounted) return

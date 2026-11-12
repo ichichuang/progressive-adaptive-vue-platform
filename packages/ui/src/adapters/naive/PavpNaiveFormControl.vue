@@ -3,6 +3,9 @@ import { NInput } from 'naive-ui/es/input'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NSelect, type SelectInst, type SelectProps } from 'naive-ui/es/select'
 import { NSwitch } from 'naive-ui/es/switch'
+import { NTimePicker } from 'naive-ui/es/time-picker'
+import { NRadio, NRadioGroup } from 'naive-ui/es/radio'
+import { NCheckbox, NCheckboxGroup } from 'naive-ui/es/checkbox'
 import { NDatePicker } from 'naive-ui/es/date-picker'
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
@@ -175,6 +178,18 @@ function retryQueryOptions(): void {
     () => !optionActionsDisabled.value && props.binding.optionsState === 'failed',
   )?.retryOptions('query')
 }
+const rangeValue = computed<[string, string] | null>(() => {
+  const value = props.binding.value
+  return Array.isArray(value) && typeof value[0] === 'string' && typeof value[1] === 'string'
+    ? [value[0], value[1]]
+    : null
+})
+const scalarChoice = computed(() =>
+  typeof selectValue.value === 'string' || typeof selectValue.value === 'number'
+    ? selectValue.value
+    : null,
+)
+const multipleChoices = computed(() => (Array.isArray(selectValue.value) ? selectValue.value : []))
 const calendarOpen = shallowRef(false)
 watch(
   () => props.binding.disabled,
@@ -213,7 +228,13 @@ function chooseDate(value: string | null): void {
       data-form-readonly
       :tabindex="binding.disabled ? -1 : 0"
     >
-      {{ config.kind === 'date' ? textValue : selectedText }}
+      {{
+        config.kind === 'date-range'
+          ? rangeValue?.join(' – ')
+          : config.kind === 'date' || config.kind === 'time'
+            ? textValue
+            : selectedText
+      }}
     </div>
     <NInput
       v-else-if="config.kind === 'text' || config.kind === 'textarea'"
@@ -341,6 +362,118 @@ function chooseDate(value: string | null): void {
         </NSelect>
       </template>
     </PavpNaiveFormChoice>
+    <PavpNaiveFormChoice
+      v-else-if="config.kind === 'radio' || config.kind === 'checkbox-group'"
+      :form="form"
+      :binding="binding"
+      :label="form.text(config.label)"
+    >
+      <template #default="{ statusText }">
+        <div class="grid min-w-0 gap-component-unit">
+          <NInput
+            v-if="binding.optionQuery !== null"
+            :value="binding.optionQuery.search"
+            :placeholder="placeholder"
+            :disabled="optionActionsDisabled"
+            @update:value="binding.searchOptions"
+          />
+          <NRadioGroup
+            v-if="config.kind === 'radio'"
+            :value="scalarChoice"
+            :name="binding.controlId"
+            :disabled="selectDisabled"
+            @update:value="update"
+            @focusout="binding.blur()"
+          >
+            <div class="flex flex-wrap gap-content-gap">
+              <NRadio
+                v-for="option in binding.options"
+                :key="`${typeof option.value}:${option.value}`"
+                :value="option.value"
+                :disabled="option.disabled"
+              >
+                {{ form.text(option.label) }}
+              </NRadio>
+            </div>
+          </NRadioGroup>
+          <NCheckboxGroup
+            v-else
+            :value="multipleChoices"
+            :disabled="selectDisabled"
+            @update:value="update"
+            @focusout="binding.blur()"
+          >
+            <div class="flex flex-wrap gap-content-gap">
+              <NCheckbox
+                v-for="option in binding.options"
+                :key="`${typeof option.value}:${option.value}`"
+                :value="option.value"
+                :disabled="option.disabled"
+              >
+                {{ form.text(option.label) }}
+              </NCheckbox>
+            </div>
+          </NCheckboxGroup>
+          <span
+            v-if="binding.options.length === 0"
+            class="text-caption text-text-secondary"
+          >
+            {{ queryStatusText || statusText || form.copy.noOptions() }}
+          </span>
+          <div
+            v-if="binding.optionQuery !== null && pagingCopy !== null"
+            class="flex flex-wrap items-center gap-component-unit"
+          >
+            <NButton
+              :disabled="pagingDisabled || binding.optionQuery.page <= 1"
+              @click="binding.setOptionsPage(binding.optionQuery.page - 1)"
+            >
+              {{ pagingCopy.previousOptionsPage() }}
+            </NButton>
+            <span class="text-caption">{{ pagingCopy.optionsPage(binding.optionQuery.page) }}</span>
+            <NButton
+              :disabled="pagingDisabled || !binding.optionQuery.hasNext"
+              @click="binding.setOptionsPage(binding.optionQuery.page + 1)"
+            >
+              {{ pagingCopy.nextOptionsPage() }}
+            </NButton>
+            <NButton
+              v-if="binding.optionsState === 'failed'"
+              :disabled="optionActionsDisabled"
+              @click="binding.retryOptions('query')"
+            >
+              {{ form.copy.retryOptions() }}
+            </NButton>
+          </div>
+        </div>
+      </template>
+    </PavpNaiveFormChoice>
+    <NDatePicker
+      v-else-if="config.kind === 'date-range'"
+      type="daterange"
+      :formatted-value="rangeValue"
+      value-format="yyyy-MM-dd"
+      clearable
+      input-readonly
+      :disabled="binding.disabled"
+      :status="validationProps.status"
+      :theme-overrides="theme.DatePicker"
+      to="#pavp-overlay-root"
+      @update:formatted-value="update"
+      @blur="binding.blur()"
+    />
+    <NTimePicker
+      v-else-if="config.kind === 'time'"
+      :formatted-value="binding.value === null ? null : textValue"
+      value-format="HH:mm:ss"
+      clearable
+      input-readonly
+      :disabled="binding.disabled"
+      :status="validationProps.status"
+      to="#pavp-overlay-root"
+      @update:formatted-value="update"
+      @blur="binding.blur()"
+    />
     <NSwitch
       v-else-if="config.kind === 'switch'"
       :value="binding.value === true"

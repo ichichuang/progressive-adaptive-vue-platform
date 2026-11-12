@@ -16,6 +16,7 @@ import {
 import { consoleNavigationRegistry, getRouteRecord } from '../app/router/route-registry'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
 import ComponentSpecimen from '../app/workbench/ComponentSpecimen.vue'
+import { discoverCapabilities } from '../app/workbench/capability-discovery'
 import { componentPurposeKeys } from '../app/workbench/component-purpose-keys'
 
 defineOptions({ name: 'ComponentShowcasePage' })
@@ -24,6 +25,7 @@ const { t } = useConsoleI18n()
 const navigation = useApplicationNavigation()
 const activate = useApplicationLinkActivation()
 const search = ref('')
+const capabilities = computed(() => discoverCapabilities(search.value, t))
 const searchTerm = computed(() => search.value.trim().toLocaleLowerCase())
 const livePavpNames = 'UiProvider · UiAdminShell · UiWorkspaceTabs'
 const liveNaiveNames = 'NConfigProvider · NLayoutSider'
@@ -154,6 +156,60 @@ const categories = computed(() =>
           :aria-label="t('showcase.search')"
         />
       </NCard>
+      <div
+        v-if="capabilities.length > 0"
+        class="grid col-span-full min-w-0 gap-content-gap"
+      >
+        <div>
+          <h2 class="font-title-weight m-0 text-subheading">
+            {{ t('showcase.intent.title') }}
+          </h2>
+          <p class="mt-control-gap m-0 text-caption text-text-secondary">
+            {{ t('showcase.intent.hint') }}
+          </p>
+        </div>
+        <div
+          class="grid min-w-0 gap-content-gap layout-regular:grid-cols-2 layout-wide:grid-cols-2"
+        >
+          <NCard
+            v-for="capability in capabilities"
+            :key="capability.destination.name"
+            :bordered="false"
+            hoverable
+            class="min-w-0"
+            content-class="flex min-w-0 flex-col gap-content-gap"
+          >
+            <h3 class="font-title-weight m-0 text-subheading">
+              {{ capability.title }}
+            </h3>
+            <p class="m-0 text-text-secondary">
+              {{ capability.description }}
+            </p>
+            <p class="m-0 text-caption text-text-secondary">
+              {{ capability.note }}
+            </p>
+            <div class="mt-auto flex flex-wrap items-center justify-between gap-content-gap">
+              <NButton
+                tag="a"
+                type="primary"
+                secondary
+                :href="navigation.resolveHref(capability.destination)"
+                @click="activate($event, capability.destination)"
+              >
+                {{ t('showcase.intent.try') }}
+              </NButton>
+              <UiCopyAction
+                variant="tertiary"
+                :value="capability.copyValue"
+                :label="t('formShowcase.copyAI')"
+                :copy-label="t('workbench.copy')"
+                :success-label="t('workbench.copied')"
+                :failure-label="t('workbench.copyFailed')"
+              />
+            </div>
+          </NCard>
+        </div>
+      </div>
       <NCard
         v-for="category in categories"
         :key="category.destination.name"
@@ -233,7 +289,9 @@ const categories = computed(() =>
         </NButton>
       </NCard>
       <NCard
-        v-if="categories.length === 0 && !showLivePavp && !showLiveNaive"
+        v-if="
+          categories.length === 0 && capabilities.length === 0 && !showLivePavp && !showLiveNaive
+        "
         :bordered="false"
         class="col-span-full min-w-0"
       >

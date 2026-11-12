@@ -3,7 +3,7 @@ import type { ThemeColorPalette } from './theme-color-palette.schema'
 /** Shared by build, runtime and the generated synchronous first-paint initializer. */
 export function paletteContrastFailure(
   palette: ThemeColorPalette,
-  mode: 'light' | 'dark',
+  _mode: 'light' | 'dark',
   textMinimum: number,
   boundaryMinimum: number,
   contrast: (foreground: string, background: string) => number,
@@ -43,34 +43,12 @@ export function paletteContrastFailure(
   }
   pair(palette.tooltip.foreground, palette.tooltip.background, textMinimum, 'tooltip')
   pair(
-    palette.roles.primary.solid.foreground,
+    palette.roles.neutral.solid.foreground,
     palette.roles.neutral.solid.background.default,
     textMinimum,
     'switch.off-content',
   )
 
-  // Naive 2.45.2 composes colored secondary fills from the solid color and these
-  // native light/dark state opacities. The same check runs before first paint.
-  const opacity = mode === 'light' ? [0.16, 0.22, 0.28] : [0.16, 0.2, 0.12]
-  const channels = (value: string): number[] =>
-    [1, 3, 5].map((at) => parseInt(value.slice(at, at + 2), 16))
-  for (const tone of ['primary', 'info', 'success', 'warning', 'error'] as const) {
-    const foreground = palette.roles[tone].solid.background.default
-    const foregroundChannels = channels(foreground)
-    for (const [surface, background] of surfaces) {
-      const backgroundChannels = channels(background)
-      for (const [state, alpha] of opacity.entries()) {
-        const composed = foregroundChannels.map(
-          (value, index) => value * alpha + (backgroundChannels[index] ?? 0) * (1 - alpha),
-        )
-        pair(
-          foreground,
-          `rgb(${composed.join(' ')})`,
-          textMinimum,
-          `${tone}.native-secondary.${String(state)}/${surface}`,
-        )
-      }
-    }
-  }
+  // Naive colored secondary buttons use the opaque soft role, validated above.
   return failure
 }

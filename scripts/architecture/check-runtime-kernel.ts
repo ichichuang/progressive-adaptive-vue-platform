@@ -919,9 +919,12 @@ function validateConfigurationContract(source: ParsedSource): string[] {
       'releaseSha',
       'buildVersion',
       'api',
+      'presentation',
     ])
   ) {
-    violations.push('Core Runtime Configuration schema must contain exactly six fields.')
+    violations.push(
+      'Core Runtime Configuration schema must contain the build identity, API and presentation fields.',
+    )
     return violations
   }
 

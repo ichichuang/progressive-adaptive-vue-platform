@@ -22,7 +22,11 @@ const feedbackRevision = computed(() => {
 })
 const detail = computed(() => props.mode === 'detail' || binding.value.readonly)
 const choice = computed(
-  () => config.value.kind === 'select' || config.value.kind === 'multi-select',
+  () =>
+    config.value.kind === 'select' ||
+    config.value.kind === 'multi-select' ||
+    config.value.kind === 'radio' ||
+    config.value.kind === 'checkbox-group',
 )
 const displayValues = computed(() => {
   const value = binding.value.value
@@ -32,6 +36,7 @@ const displayValues = computed(() => {
     )
   if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) return []
   if (typeof value === 'boolean') return [value ? props.form.copy.yes() : props.form.copy.no()]
+  if (config.value.kind === 'date-range' && Array.isArray(value)) return [value.join(' – ')]
   if (Array.isArray(value)) return value.map(String)
   if (typeof value === 'object') return [JSON.stringify(value)]
   return [String(value)]

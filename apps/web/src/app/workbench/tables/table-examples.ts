@@ -47,11 +47,31 @@ export function tableExampleSchema(example: TableExample): UiTableSchema {
   return {
     ...table,
     id: `table-example-${example}`,
+    ...(example === 'columns'
+      ? {
+          columnPreferenceKey: 'showcase-columns',
+          columnGroups: [
+            {
+              key: 'product-details',
+              title: 'tableExamples.columns.detailsGroup',
+              children: ['category', 'description'],
+            },
+            {
+              key: 'business',
+              title: 'tableExamples.columns.businessGroup',
+              children: [
+                {
+                  key: 'metrics',
+                  title: 'tableExamples.columns.metricsGroup',
+                  children: ['price', 'stock'],
+                },
+              ],
+            },
+          ],
+        }
+      : {}),
     height: { mode: 'fill' },
-    ...(example === 'columns' ||
-    example === 'summary' ||
-    example === 'configuration' ||
-    example === 'remote'
+    ...(example === 'summary' || example === 'configuration' || example === 'remote'
       ? { summary: tableSummaryExample() }
       : {}),
     ...(example === 'appearance' || example === 'theme'
@@ -77,12 +97,15 @@ export function tableExampleSchema(example: TableExample): UiTableSchema {
       : {}),
     columns:
       example === 'columns'
-        ? [
-            ...table.columns.map((column) =>
-              column.key === 'title' ? { ...column, fixed: 'left' as const } : column,
-            ),
-            { key: 'description', title: 'tableShowcase.description', width: 260, hidden: true },
-          ]
+        ? table.columns.flatMap((column) => {
+            if (column.key === 'title') return [{ ...column, fixed: 'left' as const }]
+            if (column.key === 'category')
+              return [
+                column,
+                { key: 'description', title: 'tableShowcase.description', width: 260 },
+              ]
+            return [column]
+          })
         : table.columns,
     ...(example === 'query'
       ? {
@@ -120,7 +143,7 @@ export const tableExampleApis: Record<TableExample, string> = {
   appearance: 'UiTable · appearance · bordered · rowDividers · columnDividers · striped · density',
   theme: 'UiTable · appearance.headerTone: neutral / soft / solid · selectedKeys · setSelection',
   columns:
-    'UiTable · columnSettings · setColumnVisibility · moveColumn · resetColumns · table.summary · table.setSummary · summaryCell',
+    'UiTable · columnGroups · columnSettings · columnPreferenceKey · setColumnVisibility · moveColumn · resetColumns · table.summary · table.setSummary · summaryCell',
   summary: 'UiTable · summary · setSummary · summaryCell · page / filtered / server values',
   selection: 'UiTable · selectedKeys · setSelection · useUiTableActions',
   remote: 'useUiTable · resolveUiTableRequest · createTableHttpTransport · summary: page scope',

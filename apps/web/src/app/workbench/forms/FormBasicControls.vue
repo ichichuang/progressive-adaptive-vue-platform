@@ -60,6 +60,26 @@ const configuration = {
       label: 'configuredForm.date',
       placeholder: 'formShowcase.datePlaceholder',
     },
+    {
+      kind: 'radio',
+      name: 'audience',
+      label: 'formShowcase.radio',
+      options: [
+        { value: 'internal', label: 'configuredForm.internal' },
+        { value: 'external', label: 'configuredForm.external' },
+      ],
+    },
+    {
+      kind: 'checkbox-group',
+      name: 'interests',
+      label: 'formShowcase.checkboxGroup',
+      options: [
+        { value: 'design', label: 'configuredForm.design' },
+        { value: 'engineering', label: 'configuredForm.engineering' },
+      ],
+    },
+    { kind: 'date-range', name: 'period', label: 'formShowcase.dateRange' },
+    { kind: 'time', name: 'startTime', label: 'formShowcase.time' },
     { kind: 'switch', name: 'enabled', label: 'formShowcase.enabled' },
     {
       kind: 'textarea',
@@ -85,6 +105,10 @@ const form = useUiForm({
       category: null as string | null,
       tags: [] as string[],
       startDate: null as string | null,
+      audience: null as string | null,
+      interests: [] as string[],
+      period: null as [string, string] | null,
+      startTime: null as string | null,
       enabled: true,
       notes: '',
     },
@@ -96,6 +120,10 @@ const draft = useFormExampleDraft(form, [
   'category',
   'tags',
   'startDate',
+  'audience',
+  'interests',
+  'period',
+  'startTime',
   'enabled',
   'notes',
 ])

@@ -68,7 +68,13 @@ export function previewValues(
         JSON.stringify(value) === JSON.stringify(oldDefault)
       )
         continue
-      if ((node.kind === 'select' || node.kind === 'multi-select') && Array.isArray(node.options)) {
+      if (
+        (node.kind === 'select' ||
+          node.kind === 'radio' ||
+          node.kind === 'multi-select' ||
+          node.kind === 'checkbox-group') &&
+        Array.isArray(node.options)
+      ) {
         const options = node.options
         const chosen = Array.isArray(value) ? value : value === null ? [] : [value]
         if (

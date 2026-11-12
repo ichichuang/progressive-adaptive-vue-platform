@@ -28,6 +28,8 @@ export type UiStatusTone = 'active' | 'complete' | 'deferred' | 'inactive' | 'no
 
 export type UiLocale = 'zh-CN' | 'en'
 export interface UiAdminShellCopy {
+  readonly brandName?: string
+  readonly logoUrl?: string
   readonly consoleTitle: string
   readonly navigationLabel: string
   readonly navigationActionLabel: string

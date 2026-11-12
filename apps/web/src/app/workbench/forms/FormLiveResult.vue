@@ -29,7 +29,10 @@ const fields = computed(() =>
       path: field.name,
       label: props.form.text(field.label),
       value:
-        field.kind === 'select' || field.kind === 'multi-select'
+        field.kind === 'select' ||
+        field.kind === 'multi-select' ||
+        field.kind === 'radio' ||
+        field.kind === 'checkbox-group'
           ? binding.selectedOptions
               .map((item) =>
                 item.option
@@ -47,9 +50,11 @@ const fields = computed(() =>
               ? value
                 ? props.form.copy.yes()
                 : props.form.copy.no()
-              : typeof value === 'object'
-                ? JSON.stringify(value)
-                : String(value),
+              : field.kind === 'date-range' && Array.isArray(value)
+                ? value.join(' – ')
+                : typeof value === 'object'
+                  ? JSON.stringify(value)
+                  : String(value),
       binding,
       access: binding.hidden
         ? t('formShowcase.hiddenValue')

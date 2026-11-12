@@ -100,7 +100,7 @@
   }
 
   html[data-theme-kind='built-in'][data-theme='berry-bloom'] {
-    --ui-theme-bank-dark-enhanced-action-primary: #f5e7f2;
+    --ui-theme-bank-dark-enhanced-action-primary: #85236e;
     --ui-theme-bank-dark-enhanced-border-default: #866782;
     --ui-theme-bank-dark-enhanced-control-error: #ffafa3;
     --ui-theme-bank-dark-enhanced-control-info: #50d2ff;
@@ -123,14 +123,14 @@
     --ui-theme-bank-dark-enhanced-status-warning-pressed: #ece8e1;
     --ui-theme-bank-dark-enhanced-surface-page: #180e17;
     --ui-theme-bank-dark-enhanced-surface-panel: #241722;
-    --ui-theme-bank-dark-enhanced-text-on-action: #10080f;
+    --ui-theme-bank-dark-enhanced-text-on-action: #fff5fc;
     --ui-theme-bank-dark-enhanced-text-on-status-error: #10080f;
     --ui-theme-bank-dark-enhanced-text-on-status-info: #10080f;
     --ui-theme-bank-dark-enhanced-text-on-status-success: #10080f;
     --ui-theme-bank-dark-enhanced-text-on-status-warning: #10080f;
     --ui-theme-bank-dark-enhanced-text-primary: #faf5fa;
     --ui-theme-bank-dark-enhanced-text-secondary: #d7c1d4;
-    --ui-theme-bank-dark-standard-action-primary: #e691d5;
+    --ui-theme-bank-dark-standard-action-primary: #a63c8b;
     --ui-theme-bank-dark-standard-border-default: #866782;
     --ui-theme-bank-dark-standard-control-error: #ff8877;
     --ui-theme-bank-dark-standard-control-info: #00b8e8;
@@ -153,7 +153,7 @@
     --ui-theme-bank-dark-standard-status-warning-pressed: #baa376;
     --ui-theme-bank-dark-standard-surface-page: #180e17;
     --ui-theme-bank-dark-standard-surface-panel: #241722;
-    --ui-theme-bank-dark-standard-text-on-action: #10080f;
+    --ui-theme-bank-dark-standard-text-on-action: #fff5fc;
     --ui-theme-bank-dark-standard-text-on-status-error: #10080f;
     --ui-theme-bank-dark-standard-text-on-status-info: #10080f;
     --ui-theme-bank-dark-standard-text-on-status-success: #10080f;
@@ -223,7 +223,7 @@
   }
 
   html[data-theme-kind='built-in'][data-theme='cobalt-tide'] {
-    --ui-theme-bank-dark-enhanced-action-primary: #e8eefa;
+    --ui-theme-bank-dark-enhanced-action-primary: #23469e;
     --ui-theme-bank-dark-enhanced-border-default: #5c7492;
     --ui-theme-bank-dark-enhanced-control-error: #ffadb6;
     --ui-theme-bank-dark-enhanced-control-info: #00d7f9;
@@ -246,14 +246,14 @@
     --ui-theme-bank-dark-enhanced-status-warning-pressed: #efebe6;
     --ui-theme-bank-dark-enhanced-surface-page: #0a121c;
     --ui-theme-bank-dark-enhanced-surface-panel: #121c2a;
-    --ui-theme-bank-dark-enhanced-text-on-action: #060c13;
+    --ui-theme-bank-dark-enhanced-text-on-action: #f5f8ff;
     --ui-theme-bank-dark-enhanced-text-on-status-error: #060c13;
     --ui-theme-bank-dark-enhanced-text-on-status-info: #060c13;
     --ui-theme-bank-dark-enhanced-text-on-status-success: #060c13;
     --ui-theme-bank-dark-enhanced-text-on-status-warning: #060c13;
     --ui-theme-bank-dark-enhanced-text-primary: #f4f7fd;
     --ui-theme-bank-dark-enhanced-text-secondary: #b9c9df;
-    --ui-theme-bank-dark-standard-action-primary: #8aaefd;
+    --ui-theme-bank-dark-standard-action-primary: #365fc4;
     --ui-theme-bank-dark-standard-border-default: #5c7492;
     --ui-theme-bank-dark-standard-control-error: #ff8496;
     --ui-theme-bank-dark-standard-control-info: #00bbda;
@@ -276,7 +276,7 @@
     --ui-theme-bank-dark-standard-status-warning-pressed: #bfa278;
     --ui-theme-bank-dark-standard-surface-page: #0a121c;
     --ui-theme-bank-dark-standard-surface-panel: #121c2a;
-    --ui-theme-bank-dark-standard-text-on-action: #060c13;
+    --ui-theme-bank-dark-standard-text-on-action: #f5f8ff;
     --ui-theme-bank-dark-standard-text-on-status-error: #060c13;
     --ui-theme-bank-dark-standard-text-on-status-info: #060c13;
     --ui-theme-bank-dark-standard-text-on-status-success: #060c13;

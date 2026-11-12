@@ -143,7 +143,7 @@ const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-widths.vue': 'TableLayoutExample',
   'apps/web/src/pages/component-table-responsive.vue': 'TableLayoutExample',
   'apps/web/src/pages/component-table-sorting.vue': 'TableDataCapabilities',
-  'apps/web/src/pages/component-table-rendering.vue': 'TableDataCapabilities',
+  'apps/web/src/pages/component-table-rendering.vue': 'TableRenderingWorkbench',
   'apps/web/src/pages/component-table-virtual.vue': 'TableDataCapabilities',
   'apps/web/src/pages/component-table-states.vue': 'TableDataCapabilities',
   'apps/web/src/pages/component-table-selection.vue': 'TableSelectionExample',
@@ -1773,8 +1773,8 @@ function runRouterInteractionNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'document.title = getRoutePresentation(',
-          'document.body.focus(); document.title = getRoutePresentation(',
+          'document.title = [',
+          'document.body.focus(); document.title = [',
         ),
       }),
     ],
@@ -1784,8 +1784,8 @@ function runRouterInteractionNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'document.title = getRoutePresentation(',
-          'heading.focus({ preventScroll: true }); document.title = getRoutePresentation(',
+          'document.title = [',
+          'heading.focus({ preventScroll: true }); document.title = [',
         ),
       }),
     ],
@@ -6003,7 +6003,7 @@ function routeTransitionSourceProofResults(
             'bindRouterPresentationCommit(presentationCommitBroker, to, routeName, navigationId)',
           ) &&
         !/\.focus\s*\(/u.test(scrollBehaviorSource) &&
-        scrollBehaviorSource.indexOf('document.title = getRoutePresentation(') <
+        scrollBehaviorSource.indexOf('document.title = [') <
           scrollBehaviorSource.indexOf(
             'resolveBoundRouterPresentationCommit(presentationCommitBroker, to)',
           ),
@@ -6329,8 +6329,8 @@ function runRouterPresentationCommitNegativeProbes(
       (snapshot) => ({
         ...snapshot,
         lifecycleSource: snapshot.lifecycleSource.replace(
-          'document.title = getRoutePresentation(',
-          'heading.focus({ preventScroll: true }); document.title = getRoutePresentation(',
+          'document.title = [',
+          'heading.focus({ preventScroll: true }); document.title = [',
         ),
       }),
     ],

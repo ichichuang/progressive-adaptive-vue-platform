@@ -1,4 +1,5 @@
 import type { App as VueApplication } from 'vue'
+import type { ExplicitThemePreference } from '@platform/design-system'
 
 import {
   installAppearanceProvider,
@@ -24,11 +25,12 @@ export function installPlatformProviders(input: {
   readonly application: VueApplication
   readonly handoff: AppearanceFirstPaintHandoffHandle
   readonly pinia: PiniaProviderHandle['pinia']
+  readonly appearanceDefault?: ExplicitThemePreference
   readonly api: ApiConfiguration
 }): InstalledPlatformProvidersHandle {
   input.application.use(input.pinia)
   provideApiReadBoundary(input.application, input.api)
-  const appearance = installAppearanceProvider(input.pinia, input.handoff)
+  const appearance = installAppearanceProvider(input.pinia, input.handoff, input.appearanceDefault)
   provideAppearanceReadBoundary(input.application, appearance.appearanceReadBoundary)
   provideAppearanceMutationBoundary(input.application, appearance.appearanceMutationBoundary)
   let disposed = false

@@ -20,17 +20,23 @@ export const builderKinds = {
   number: 'formBuilder.number',
   switch: 'formBuilder.switch',
   date: 'formBuilder.date',
+  'date-range': 'formBuilder.dateRange',
+  time: 'formBuilder.time',
+  radio: 'formBuilder.radio',
+  'checkbox-group': 'formBuilder.checkboxGroup',
   select: 'formBuilder.select',
   'multi-select': 'formBuilder.multiSelect',
   group: 'formBuilder.group',
   repeat: 'formBuilder.repeat',
 } as const
 export type BuilderKind = keyof typeof builderKinds
-type Mutable<T> = T extends readonly (infer Item)[]
-  ? Mutable<Item>[]
-  : T extends object
-    ? { -readonly [Key in keyof T]: Mutable<T[Key]> }
-    : T
+type Mutable<T> = T extends readonly [infer A, infer B]
+  ? [Mutable<A>, Mutable<B>]
+  : T extends readonly (infer Item)[]
+    ? Mutable<Item>[]
+    : T extends object
+      ? { -readonly [Key in keyof T]: Mutable<T[Key]> }
+      : T
 export type BuilderEditableNode = Mutable<UiFormNode>
 export interface BuilderInputState {
   readonly raw: string | null
@@ -269,7 +275,10 @@ export function useFormBuilder(t: ConsoleTranslate) {
       : null
     const options = selectedNode.value
     optionIds.value =
-      (options?.kind === 'select' || options?.kind === 'multi-select') &&
+      (options?.kind === 'select' ||
+        options?.kind === 'radio' ||
+        options?.kind === 'multi-select' ||
+        options?.kind === 'checkbox-group') &&
       Array.isArray(options.options)
         ? options.options.map(() => ++nextOptionId)
         : []
@@ -310,7 +319,10 @@ export function useFormBuilder(t: ConsoleTranslate) {
       inputs: [],
       optionIds:
         node &&
-        (node.kind === 'select' || node.kind === 'multi-select') &&
+        (node.kind === 'select' ||
+          node.kind === 'radio' ||
+          node.kind === 'multi-select' ||
+          node.kind === 'checkbox-group') &&
         Array.isArray(node.options)
           ? node.options.map((_, index) => index + 1)
           : [],
@@ -362,6 +374,7 @@ export function useFormBuilder(t: ConsoleTranslate) {
           ? 'formBuilder.importUnsupported'
           : 'formBuilder.importInvalid',
       )
+      if (error instanceof Error) issue.value += ` ${error.message}`
       return false
     }
   }
@@ -371,7 +384,10 @@ export function useFormBuilder(t: ConsoleTranslate) {
       const accepted = parseUiFormSchema(candidate)
       for (const { node } of builderEntries(accepted)) {
         if (
-          (node.kind !== 'select' && node.kind !== 'multi-select') ||
+          (node.kind !== 'select' &&
+            node.kind !== 'radio' &&
+            node.kind !== 'multi-select' &&
+            node.kind !== 'checkbox-group') ||
           !Array.isArray(node.options)
         )
           continue
@@ -431,14 +447,17 @@ export function useFormBuilder(t: ConsoleTranslate) {
         : container?.kind === 'group' || container?.kind === 'repeat'
           ? container.fields
           : []
-    const prefix = kind === 'multi-select' ? 'choices' : kind
+    const prefix = kind.replaceAll('-', '_')
     let suffix = 1
     while (siblings.some((node) => node.name === `${prefix}${String(suffix)}`)) suffix += 1
     const base = { name: `${prefix}${String(suffix)}`, label: t(builderKinds[kind]) }
     const node: UiFormNode =
       kind === 'group' || kind === 'repeat'
         ? { ...base, kind, fields: [], ...(kind === 'repeat' ? { minItems: 1 } : {}) }
-        : kind === 'select' || kind === 'multi-select'
+        : kind === 'select' ||
+            kind === 'multi-select' ||
+            kind === 'radio' ||
+            kind === 'checkbox-group'
           ? {
               ...base,
               kind,

@@ -17,7 +17,10 @@ import type { BrowserPageSessionPort } from '../router/browser-page-session-cont
 import { createBrowserPageSessionStorage } from './browser-page-session-storage'
 import type { ShellScrollStorageContext } from '../scroll/shell-scroll-storage-key'
 
+import type { TableColumnPreferenceContext } from '../tables/table-column-preference-context'
+
 interface StorageOwner {
+  readonly tableColumns: TableColumnPreferenceContext
   readonly shellScroll: ShellScrollStorageContext
   readonly formDrafts: FormDraftStorageContext
   readonly browserPageSession: BrowserPageSessionPort
@@ -48,7 +51,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 10 ||
+    records.length !== 11 ||
     envelopeRecords.length !== 1 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -78,6 +81,7 @@ export function createAndReadyStorage(input: {
   const browserPageSession = createBrowserPageSessionStorage(errorAdapter, () => disposed)
   const recordStorageContext = Object.freeze({ errorAdapter, isDisposed: () => disposed })
   const owner = Object.freeze({
+    tableColumns: recordStorageContext,
     shellScroll: recordStorageContext,
     formDrafts: recordStorageContext,
     browserPageSession: browserPageSession.port,

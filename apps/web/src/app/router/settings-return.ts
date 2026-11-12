@@ -29,7 +29,7 @@ interface SettingsReturn {
 
 const settingsReturnKey: InjectionKey<SettingsReturn> = Symbol('PAVP Settings Return')
 
-export function provideSettingsReturn(): void {
+export function provideSettingsReturn(): SettingsReturn {
   const router = useRouter()
   const workspace = useWorkspaceStore()
   const navigation = useWorkspaceNavigation()
@@ -96,6 +96,7 @@ export function provideSettingsReturn(): void {
     origin = undefined
     pending = undefined
   })
+  return settingsReturn
 }
 
 export function useSettingsReturn(): SettingsReturn {

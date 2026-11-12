@@ -16,7 +16,7 @@ import type {
 } from '../components/table-contracts'
 import { useUiForm } from './use-ui-form'
 import { resolveUiTableRequest } from '../components/table-request'
-import { cloneDraft } from './form-draft-values'
+import { cloneDraft, freezeDraftValue } from './form-draft-values'
 
 export interface UiTableFormInput {
   readonly table: UiTableController
@@ -25,12 +25,17 @@ export interface UiTableFormInput {
   readonly sources?: Readonly<Record<string, UiFormOptionSource<UiTableRecord>>>
   readonly context?: UiTableReadonlyRecord
 }
-/** Shared form session for modal, drawer and route hosts. Never manufactures mutation success. */
+export interface UiTableFormScope {
+  /** Independent top-level fields of an existing row to edit in place. The original record supplies untouched request values. */
+  readonly fields: readonly string[]
+}
+/** Shared form session for inline, modal, drawer and route hosts. Never manufactures mutation success. */
 export function useUiTableForm(input: UiTableFormInput) {
   const configuration = input.table.schema.editor
   if (!configuration) throw new TypeError('Table editor configuration is required.')
   const editor = configuration
   const form = shallowRef<UiFormController<UiTableRecord> | null>(null)
+  const row = shallowRef<UiTableReadonlyRecord | null>(null)
   const mode = shallowRef<'create' | 'edit' | 'detail'>('create')
   const loading = shallowRef(false)
   const error = shallowRef<Error | null>(null)
@@ -87,11 +92,14 @@ export function useUiTableForm(input: UiTableFormInput) {
   }
   async function show(
     nextMode: 'create' | 'edit' | 'detail',
-    row: UiTableReadonlyRecord = {},
+    recordInput: UiTableReadonlyRecord = {},
+    scope?: UiTableFormScope,
   ): Promise<boolean> {
     if (disposed || !close()) return false
     release()
-    const selected = cloneDraft(row)
+    const selected = cloneDraft(recordInput)
+    freezeDraftValue<unknown>(selected)
+    row.value = selected
     const ticket = ++sequence
     active = new AbortController()
     const signal = active.signal
@@ -100,6 +108,8 @@ export function useUiTableForm(input: UiTableFormInput) {
     loading.value = true
     error.value = null
     try {
+      if (scope !== undefined && nextMode !== 'edit')
+        throw new TypeError('Scoped table forms only support editing existing rows.')
       let record = selected
       if (nextMode !== 'create' && editor.detail) {
         if (!input.transport.detail) throw new TypeError('Detail transport is required.')
@@ -114,13 +124,28 @@ export function useUiTableForm(input: UiTableFormInput) {
         )
       }
       if (!current(ticket, signal)) return false
+      const names = scope === undefined ? null : new Set(scope.fields)
+      if (
+        names &&
+        (names.size === 0 ||
+          names.size !== scope?.fields.length ||
+          [...names].some((name) => !editor.form.fields.some((field) => field.name === name)))
+      )
+        throw new TypeError('Inline fields must be unique existing top-level form fields.')
+      const schema = names
+        ? { ...editor.form, fields: editor.form.fields.filter((field) => names.has(field.name)) }
+        : editor.form
+      const baseline = fieldsOnly(
+        editor.form.fields.filter((field) => !names?.has(field.name)),
+        record,
+      )
       let saved = false
       const session = useUiForm<UiFormSchema>({
         formId: `${input.table.schema.id}-editor`,
-        schema: editor.form,
+        schema,
         initial: {
           draftId: `${input.table.schema.id}-${String(ticket)}`,
-          values: fieldsOnly(editor.form.fields, record),
+          values: fieldsOnly(schema.fields, record),
         },
         copy: input.copy,
         ...(input.sources === undefined ? {} : { sources: input.sources }),
@@ -138,7 +163,7 @@ export function useUiTableForm(input: UiTableFormInput) {
                 ...input.table.query.value,
                 context,
                 row: selected,
-                form: values,
+                form: names ? { ...baseline, ...values } : values,
               }),
               work.signal,
             )
@@ -225,6 +250,7 @@ export function useUiTableForm(input: UiTableFormInput) {
   if (getCurrentScope()) onScopeDispose(dispose)
   return {
     form: computed(() => form.value),
+    row: computed(() => row.value),
     mode: computed(() => mode.value),
     open: computed(() => open.value),
     loading: computed(() => loading.value),

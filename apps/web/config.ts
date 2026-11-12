@@ -122,7 +122,7 @@ export async function readDeploymentConfig(
   })
 }
 
-export async function generateRuntimeConfiguration(
+export async function validateRuntimeConfigurationArtifact(
   artifactDirectory: string,
 ): Promise<CoreRuntimeConfiguration> {
   const target = resolve(artifactDirectory, 'runtime-configuration.json')
@@ -133,9 +133,20 @@ export async function generateRuntimeConfiguration(
     throw new Error('The existing runtime configuration artifact could not be read.')
   }
   const artifact = coreRuntimeConfigurationSchema.safeParse(raw)
-  if (!artifact.success) throw new Error('The existing runtime configuration artifact is invalid.')
-  const deployment = await readDeploymentConfig(artifact.data.environment)
-  const result = coreRuntimeConfigurationSchema.parse({ ...artifact.data, api: deployment.api })
+  if (!artifact.success)
+    throw new Error(
+      `Invalid runtime configuration: ${artifact.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ')}`,
+    )
+  return artifact.data
+}
+
+export async function generateRuntimeConfiguration(
+  artifactDirectory: string,
+): Promise<CoreRuntimeConfiguration> {
+  const target = resolve(artifactDirectory, 'runtime-configuration.json')
+  const artifact = await validateRuntimeConfigurationArtifact(artifactDirectory)
+  const deployment = await readDeploymentConfig(artifact.environment)
+  const result = coreRuntimeConfigurationSchema.parse({ ...artifact, api: deployment.api })
   const temporary = resolve(artifactDirectory, `.runtime-configuration-${randomUUID()}.json`)
   const handle = await open(temporary, 'wx', (await stat(target)).mode & 0o777)
   try {
@@ -155,18 +166,25 @@ if (
   process.argv[1] !== undefined &&
   pathToFileURL(resolve(process.argv[1])).href === import.meta.url
 ) {
-  const arguments_ = process.argv.slice(2)
+  const checkOnly = process.argv[2] === '--check'
+  const arguments_ = process.argv.slice(checkOnly ? 3 : 2)
   try {
     if (
       arguments_.length !== 0 &&
       (arguments_.length !== 2 || arguments_[0] !== '--artifact-dir' || !arguments_[1])
     )
       throw new Error('Use --artifact-dir with one existing build directory.')
-    await generateRuntimeConfiguration(arguments_[1] ?? resolve(import.meta.dirname, 'dist'))
-    console.log('Runtime API configuration generated; build identity preserved.')
-  } catch {
+    const directory = arguments_[1] ?? resolve(import.meta.dirname, 'dist')
+    if (checkOnly) {
+      await validateRuntimeConfigurationArtifact(directory)
+      console.log('Runtime configuration is valid; artifact unchanged.')
+    } else {
+      await generateRuntimeConfiguration(directory)
+      console.log('Runtime API configuration generated; build identity and presentation preserved.')
+    }
+  } catch (error) {
     console.error(
-      'Runtime configuration generation failed; validate the existing artifact and environment inputs.',
+      error instanceof Error ? error.message : 'Runtime configuration validation failed.',
     )
     process.exitCode = 1
   }

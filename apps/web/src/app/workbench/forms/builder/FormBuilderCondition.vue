@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { NTimePicker } from 'naive-ui/es/time-picker'
 import { computed } from 'vue'
 import { NDropdown } from 'naive-ui/es/dropdown'
 import { NButton } from 'naive-ui/es/button'
@@ -177,7 +178,9 @@ const options = computed(() =>
   })),
 )
 const operators = computed(() => [
-  ...(reference.value?.node.kind === 'multi-select'
+  ...(reference.value?.node.kind === 'multi-select' ||
+  reference.value?.node.kind === 'checkbox-group' ||
+  reference.value?.node.kind === 'date-range'
     ? []
     : [
         { value: 'eq', label: t('formBuilder.equals') },
@@ -189,7 +192,7 @@ const operators = computed(() => [
 const comparison = computed(() => condition.value?.value)
 const choiceOptions = computed(() => {
   const node = reference.value?.node
-  return node?.kind === 'select' && Array.isArray(node.options)
+  return (node?.kind === 'select' || node?.kind === 'radio') && Array.isArray(node.options)
     ? node.options.map((option: UiFormOption) => ({
         ...option,
         label: `${option.label} (${typeof option.value === 'number' ? t('formBuilder.numberValue') : t('formBuilder.stringValue')}: ${String(option.value)})`,
@@ -220,7 +223,10 @@ function setOperator(operator: 'eq' | 'neq' | 'empty' | 'not-empty'): void {
         ? false
         : node?.kind === 'number'
           ? 0
-          : node?.kind === 'date' || node?.kind === 'select'
+          : node?.kind === 'date' ||
+              node?.kind === 'time' ||
+              node?.kind === 'select' ||
+              node?.kind === 'radio'
             ? null
             : ''
     emit('update', { field, ...(scope ? { scope } : {}), operator, value })
@@ -364,6 +370,15 @@ function setValue(value: UiFormValue): void {
           :input="input"
           @update:value="setValue"
         />
+        <NTimePicker
+          v-else-if="reference?.node.kind === 'time'"
+          :formatted-value="typeof comparison === 'string' ? comparison : null"
+          value-format="HH:mm:ss"
+          :aria-label="`${accessibleLabel} ${t('formBuilder.compareValue')}`"
+          clearable
+          to="#pavp-overlay-root"
+          @update:formatted-value="setValue"
+        />
         <FormBuilderDate
           v-else-if="reference?.node.kind === 'date'"
           :key="`${condition?.field}:${condition?.operator}`"
@@ -373,7 +388,7 @@ function setValue(value: UiFormValue): void {
           @update:value="setValue"
         />
         <NSelect
-          v-else-if="reference?.node.kind === 'select'"
+          v-else-if="reference?.node.kind === 'select' || reference?.node.kind === 'radio'"
           :value="
             typeof comparison === 'string' || typeof comparison === 'number' ? comparison : null
           "

@@ -17,6 +17,19 @@ export function isDateOnly(value: string): boolean {
   return dateOnly(date.getTime()) === value
 }
 
+export function isTimeOnly(value: string): boolean {
+  return /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/u.test(value)
+}
+
+export function isDateRange(value: unknown): value is [string, string] {
+  return (
+    Array.isArray(value) &&
+    value.length === 2 &&
+    value.every((item: unknown) => typeof item === 'string' && isDateOnly(item)) &&
+    value[0] <= value[1]
+  )
+}
+
 /** Decode vendor events using the exact admitted kind and its typed option identities. */
 export function acceptsControlValue<I>(
   form: UiFormController<I>,
@@ -40,8 +53,14 @@ export function acceptsControlValue<I>(
       return typeof value === 'boolean'
     case 'date':
       return value === null || (typeof value === 'string' && isDateOnly(value))
+    case 'time':
+      return value === null || (typeof value === 'string' && isTimeOnly(value))
+    case 'date-range':
+      return value === null || isDateRange(value)
+    case 'radio':
     case 'select':
       return value === null || option(value)
+    case 'checkbox-group':
     case 'multi-select':
       return Array.isArray(value) && value.every(option)
     case 'custom':

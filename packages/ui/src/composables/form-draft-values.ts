@@ -6,7 +6,7 @@ import type {
   UiFormReference,
   UiFormValue,
 } from '../components/form-contracts'
-import { isDateOnly } from '../components/form-control-values'
+import { isDateOnly, isDateRange, isTimeOnly } from '../components/form-control-values'
 
 const reserved = new Set(['__proto__', 'prototype', 'constructor'])
 export function formPathParts(path: string): string[] {
@@ -132,7 +132,7 @@ export function createFormValues(
             ? node.defaultValue
             : node.kind === 'switch'
               ? false
-              : node.kind === 'multi-select'
+              : node.kind === 'multi-select' || node.kind === 'checkbox-group'
                 ? []
                 : node.kind === 'text' || node.kind === 'textarea'
                   ? ''
@@ -144,9 +144,12 @@ export function createFormValues(
         (node.kind === 'switch' && typeof actual === 'boolean') ||
         (node.kind === 'date' &&
           (actual === null || (typeof actual === 'string' && isDateOnly(actual)))) ||
-        (node.kind === 'select' &&
+        (node.kind === 'time' &&
+          (actual === null || (typeof actual === 'string' && isTimeOnly(actual)))) ||
+        (node.kind === 'date-range' && (actual === null || isDateRange(actual))) ||
+        ((node.kind === 'select' || node.kind === 'radio') &&
           (actual === null || typeof actual === 'string' || typeof actual === 'number')) ||
-        (node.kind === 'multi-select' &&
+        ((node.kind === 'multi-select' || node.kind === 'checkbox-group') &&
           Array.isArray(actual) &&
           actual.every((item) => typeof item === 'string' || typeof item === 'number') &&
           new Set(actual).size === actual.length)

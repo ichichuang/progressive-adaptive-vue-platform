@@ -13,7 +13,6 @@ defineProps<{ readonly title: string; readonly message: string }>()
     <template #default="{ schema, updateConfiguration, updateSummaryRenderer }">
       <TableDataExample
         :schema="schema"
-        summary-controls
         @configuration-change="updateConfiguration"
         @summary-renderer-change="updateSummaryRenderer"
       />

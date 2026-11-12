@@ -50,9 +50,9 @@ const expectedVueRouterIntegrity =
   'sha512-QAC5i0LEb1GLG0LXDQmHu8L7FX12j0KwU/JTKmLQUJMrn04gQdKP6Du+p0QwpHb3iy71vBlqnHQ8WAfOSAWhqw=='
 const expectedNaiveUiVersion = '2.45.2'
 const naiveUiPatchPath = 'patches/naive-ui@2.45.2.patch'
-const expectedNaiveUiPatchHash = '6a902bf819f8cf790dd78c3079c925f74b9247f1bc9ae3026a1fe0a36c9f34f7'
+const expectedNaiveUiPatchHash = '8f94ad96e80d6818132cbdd27ab6c2158f903818a275bc292c91d853fa4e5c06'
 const expectedNaiveUiPatchedFilesHash =
-  'dda243f266f3da8b713e22026e669c2f111784e222ef733ca6f5c1f3bee5b95c'
+  '79e5f1963bf179b3494d2a8f391d9b20605d5b96fea004e12819a222b6165ce9'
 const expectedNaiveUiPatchedVersion = `2.45.2(patch_hash=${expectedNaiveUiPatchHash})(vue@3.5.40(typescript@6.0.3))`
 const scrollDependencies = [
   { name: 'overlayscrollbars', version: '2.16.0', resolution: '2.16.0', snapshot: {} },
@@ -2161,6 +2161,7 @@ async function validateRuntimeKernelBuildConfiguration(): Promise<void> {
           'releaseSha',
           'buildVersion',
           'api',
+          'presentation',
         ]),
     ],
     [
@@ -2889,7 +2890,7 @@ expectEqual(
 const naiveUiPatchedFiles = Array.from(naiveUiPatch.matchAll(/^\+\+\+ b\/(.+)$/gmu), (match) =>
   String(match[1]),
 ).sort()
-expectExactCount(naiveUiPatchedFiles.length, 64, 'Naive UI patched ESM and CommonJS file count')
+expectExactCount(naiveUiPatchedFiles.length, 74, 'Naive UI patched ESM and CommonJS file count')
 const naiveUiPatchedFilesHash = createHash('sha256')
 for (const path of naiveUiPatchedFiles) {
   if (
@@ -2897,6 +2898,16 @@ for (const path of naiveUiPatchedFiles) {
       path,
     ) &&
     ![
+      'es/button/src/Button.mjs',
+      'es/button/styles/light.d.ts',
+      'es/switch/src/Switch.mjs',
+      'es/switch/src/styles/index.cssr.mjs',
+      'es/switch/styles/light.d.ts',
+      'lib/button/src/Button.js',
+      'lib/button/styles/light.d.ts',
+      'lib/switch/src/Switch.js',
+      'lib/switch/src/styles/index.cssr.js',
+      'lib/switch/styles/light.d.ts',
       'es/_internal/scrollbar/src/Scrollbar.mjs',
       'lib/_internal/scrollbar/src/Scrollbar.js',
       'es/layout/src/Layout.mjs',

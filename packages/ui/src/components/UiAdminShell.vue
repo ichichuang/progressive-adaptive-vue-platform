@@ -30,6 +30,7 @@ import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSele
 import { NButton } from 'naive-ui/es/button'
 import { NCollapse, NCollapseItem } from 'naive-ui/es/collapse'
 import { NIcon } from 'naive-ui/es/icon'
+import { NImage } from 'naive-ui/es/image'
 import { NLayout, NLayoutSider } from 'naive-ui/es/layout'
 import type { GlobalThemeOverrides } from 'naive-ui'
 import { NMenu, type MenuNodeProps, type MenuOption } from 'naive-ui/es/menu'
@@ -53,6 +54,8 @@ defineOptions({ name: 'UiAdminShell' })
 
 const props = defineProps<{
   readonly composition: UiShellComposition | null
+  readonly navigationFocusRequest?: number
+  readonly prepareNavigationFocus?: () => Promise<boolean>
   readonly contentLayout?: 'scroll' | 'contained'
   readonly wideNavigationCollapsed: boolean
   readonly navigationAccordion: boolean
@@ -447,7 +450,8 @@ function setNavigationGroupExpanded(option: MenuOption, expanded: boolean): void
     })
   findPath(navigationMenuOptions.value)
   const current = validExpandedNavigationGroupKeys.value
-  handleNavigationExpandedKeysUpdate(
+  void handleNavigationAction(
+    'groups',
     expanded
       ? props.navigationAccordion
         ? path
@@ -785,17 +789,43 @@ function handleNavigationValueUpdate(value: string | number): void {
 }
 
 function handleNavigationExpandedKeysUpdate(keys: (string | number)[]): void {
-  handleNavigationAction('groups', keys)
+  if (props.navigationAccordion) {
+    // Naive only closes root siblings. Resolve a newly opened branch before
+    // persistence normalizes key order, retaining its ancestors at every depth.
+    const openedKey = keys.find(
+      (key) => !validExpandedNavigationGroupKeys.value.includes(String(key)),
+    )
+    const openedGroup = allNavigationGroups.value.find(
+      (group) => navigationGroupKey(group.id) === openedKey,
+    )
+    if (openedGroup !== undefined) {
+      setNavigationGroupExpanded(navigationGroupOption(openedGroup), true)
+      return
+    }
+  }
+  void handleNavigationAction('groups', keys)
 }
 
-function handleNavigationAction(
+async function handleNavigationAction(
   action: 'focus' | 'mode' | 'sidebar' | 'groups',
   keys?: readonly (string | number)[],
-): void {
+): Promise<void> {
+  if (action === 'focus' && props.prepareNavigationFocus !== undefined) {
+    if (!(await props.prepareNavigationFocus().catch(() => false))) return
+    await nextTick()
+  }
   void import('./navigation-actions').then((module) => {
     void module.runNavigationAction(action, props, shell.value, emit, keys)
   })
 }
+
+watch(
+  () => props.navigationFocusRequest,
+  () => {
+    void handleNavigationAction('focus')
+  },
+  { flush: 'post' },
+)
 
 function shellButtonElement(
   button: InstanceType<typeof NButton> | undefined,
@@ -1016,8 +1046,35 @@ watch(
         {{ copy.navigationActionLabel }}
       </NButton>
       <div class="pavp-admin-shell__identity min-w-0">
-        <span class="pavp-admin-shell__eyebrow">PAVP</span>
-        <strong class="truncate">{{ copy.consoleTitle }}</strong>
+        <NImage
+          v-if="copy.logoUrl"
+          :src="copy.logoUrl"
+          :alt="copy.brandName ?? copy.consoleTitle"
+          :preview-disabled="true"
+          width="100%"
+          height="100%"
+          class="shrink-0 self-center size-icon-extra-large"
+          object-fit="contain"
+        >
+          <template #error>
+            <NIcon
+              class="h-full w-full"
+              aria-hidden="true"
+            >
+              <span class="i-lucide-building-2 h-full w-full block" />
+            </NIcon>
+          </template>
+        </NImage>
+        <span
+          v-else-if="!copy.brandName"
+          class="pavp-admin-shell__eyebrow"
+          v-text="'PAVP'"
+        />
+        <strong
+          class="truncate"
+          :title="copy.consoleTitle"
+          v-text="copy.consoleTitle"
+        />
       </div>
       <div class="flex items-center gap-content-gap">
         <div

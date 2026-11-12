@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import TableDataCapabilities from '../app/workbench/tables/TableDataCapabilities.vue'
+import TableRenderingWorkbench from '../app/workbench/tables/TableRenderingWorkbench.vue'
 defineOptions({ name: 'ComponentTableRenderingPage' })
-defineProps<{ readonly title: string; readonly message: string }>()
+defineProps<{ readonly title: string; readonly message: string; readonly breadcrumb?: string }>()
 </script>
 <template>
-  <TableDataCapabilities
+  <TableRenderingWorkbench
     :title="title"
     :message="message"
-    example="rendering"
   />
 </template>

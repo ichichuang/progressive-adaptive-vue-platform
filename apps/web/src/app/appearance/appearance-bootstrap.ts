@@ -4,6 +4,7 @@ import {
   projectUiAppearance,
   resolveThemeReference,
   type UiAppearanceSnapshot,
+  type ExplicitThemePreference,
 } from '@platform/design-system'
 
 import { useAppearanceStore } from './appearance.store'
@@ -227,13 +228,14 @@ function orderedMediaQueries(mediaQueries: AppearanceMediaQueries): readonly Med
 export function installAppearanceProvider(
   pinia: AppearancePinia,
   handoffHandle: AppearanceFirstPaintHandoffHandle,
+  deploymentDefault?: ExplicitThemePreference,
 ): AppearanceProviderHandle {
   const mediaQueries = createAppearanceMediaQueries()
   const currentEnvironment = (): AppearanceEnvironment => appearanceEnvironment(mediaQueries)
   const store = useAppearanceStore(pinia)
 
   try {
-    const restoration = store.restoreAppearance(currentEnvironment())
+    const restoration = store.restoreAppearance(currentEnvironment(), deploymentDefault)
 
     if (restoration.status === 'rejected') {
       throw new Error('Appearance restoration was rejected.')
