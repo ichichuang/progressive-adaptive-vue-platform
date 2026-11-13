@@ -1,3 +1,4 @@
+import { isRichTextDocument, richTextPlainText } from '../components/rich-text-document'
 import type {
   UiFormCopy,
   UiFormFieldConfig,
@@ -14,7 +15,10 @@ export function validateFormField(
   copy: UiFormCopy,
   translate?: (text: string) => string,
 ): readonly UiFormIssue[] {
+  const richText =
+    field.kind === 'rich-text' && isRichTextDocument(value) ? richTextPlainText(value) : undefined
   const empty =
+    richText?.trim().length === 0 ||
     value === null ||
     value === undefined ||
     value === '' ||
@@ -24,7 +28,12 @@ export function validateFormField(
   const rules = field.rules
   const min = rules?.min ?? field.min
   const max = rules?.max ?? field.max
-  const length = typeof value === 'string' || Array.isArray(value) ? value.length : undefined
+  const length =
+    richText !== undefined
+      ? richText.length
+      : typeof value === 'string' || Array.isArray(value)
+        ? value.length
+        : undefined
   const attachmentSize = field.kind === 'attachment' ? field.maxSize : undefined
   const invalid =
     (field.kind === 'mask' &&
@@ -43,7 +52,9 @@ export function validateFormField(
     (length !== undefined &&
       ((rules?.minLength !== undefined && length < rules.minLength) ||
         (rules?.maxLength !== undefined && length > rules.maxLength))) ||
-    (rules?.format === 'email' &&
+    (rules !== undefined &&
+      'format' in rules &&
+      rules.format === 'email' &&
       (typeof value !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)))
   return invalid
     ? [

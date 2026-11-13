@@ -510,7 +510,24 @@ function overlayContractViolations(sources: ReadonlyMap<string, string>): string
           return hosts === 1
         })
 
+      // A single inert report projection is body-owned solely for print pagination.
+      const reportPrintTarget =
+        path === 'packages/ui/src/components/UiReportPreview.vue' &&
+        targetProperties.length === 1 &&
+        targetProperties[0]?.type === 6 &&
+        staticAttribute(element, 'to') === 'body' &&
+        element.children.filter(isVueElement).length === 1 &&
+        element.children.some(
+          (child) =>
+            isVueElement(child) &&
+            child.tag === 'div' &&
+            staticAttribute(child, 'ref') === 'host' &&
+            staticAttribute(child, 'class') === 'pavp-report-print-host' &&
+            staticAttribute(child, 'aria-hidden') === 'true',
+        )
+
       if (
+        !reportPrintTarget &&
         !localTableTarget &&
         (targetProperties.length !== 1 ||
           targetProperties[0]?.type !== 6 ||
@@ -1716,6 +1733,9 @@ function dismiss(event?: MouseEvent): void {
         'moveItem',
         'blur',
         'validate',
+        'validateFields',
+        'resetFields',
+        'clearErrors',
         'validateItem',
         'goNextStep',
         'goBackStep',
@@ -1733,6 +1753,7 @@ function dismiss(event?: MouseEvent): void {
     )
   if (
     !indexSource.includes("export { useUiForm } from './composables/use-ui-form'") ||
+    !indexSource.includes("export { useUiDynamicForm } from './composables/use-ui-dynamic-form'") ||
     !indexSource.includes("export type * from './components/form-contracts'")
   ) {
     violations.push(
@@ -1990,6 +2011,7 @@ function dismiss(event?: MouseEvent): void {
       for (const component of importedNames(script, '@platform/ui')) {
         if (
           ![
+            'UiReportPreview',
             'UiDisplayStage',
             'UiDashboardGrid',
             'UiG2Chart',
@@ -2178,6 +2200,9 @@ function dismiss(event?: MouseEvent): void {
   }
 
   const adapterFiles = [
+    'packages/ui/src/adapters/naive/PavpReportContent.vue',
+    'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    'packages/ui/src/adapters/naive/rich-text-value.ts',
     'packages/ui/src/adapters/naive/PavpNaiveForm.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',

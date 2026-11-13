@@ -1,3 +1,4 @@
+import { richTextTools, parseRichTextDocument } from './rich-text-document'
 import {
   createConfigurationInspection,
   type UiConfigurationInspection,
@@ -145,6 +146,7 @@ function parseConfiguration(
       inspection.choice(node, 'kind', [
         'text',
         'textarea',
+        'rich-text',
         'number',
         'switch',
         'date',
@@ -170,10 +172,23 @@ function parseConfiguration(
         'max',
         'step',
         'rules',
+        ...(kind === 'rich-text' ? ['tools'] : []),
         ...(kind === 'mask' ? ['mask'] : []),
         ...(kind === 'rating' ? ['count', 'allowHalf'] : []),
-        ...(kind === 'attachment' ? ['source', 'accept', 'maxFiles', 'maxSize'] : []),
+        ...(kind === 'attachment'
+          ? ['source', 'accept', 'maxFiles', 'maxSize', 'imageProcessing', 'preview']
+          : []),
       ])
+      if (kind === 'rich-text') {
+        if (
+          node['tools'] !== undefined &&
+          (!Array.isArray(node['tools']) ||
+            node['tools'].some((tool: unknown) => !richTextTools.includes(tool as never)) ||
+            new Set(node['tools']).size !== node['tools'].length)
+        )
+          throw error('Invalid rich text tools.')
+        if (node['defaultValue'] !== undefined) parseRichTextDocument(node['defaultValue'])
+      }
       if (kind === 'mask') {
         text(node['mask'])
         if (!/[#A*]/u.test(node['mask'] as string) || (node['mask'] as string).length > 128)
@@ -195,6 +210,50 @@ function parseConfiguration(
           throw error('Invalid rating precision.')
       }
       if (kind === 'attachment') {
+        if (node['imageProcessing'] !== undefined) {
+          const processing = record(node['imageProcessing'])
+          keys(processing, ['crop', 'output'])
+          if (processing['crop'] === undefined && processing['output'] === undefined)
+            throw error('Image processing requires crop or output settings.')
+          if (processing['crop'] !== undefined) {
+            const crop = record(processing['crop'])
+            keys(crop, ['aspectRatio'])
+            if (crop['aspectRatio'] !== undefined) {
+              number(crop['aspectRatio'])
+              if ((crop['aspectRatio'] as number) <= 0) throw error('Crop ratio must be positive.')
+            }
+          }
+          if (processing['output'] !== undefined) {
+            const output = record(processing['output'])
+            keys(output, ['mimeType', 'quality', 'maxWidth', 'maxHeight'])
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(String(output['mimeType'])))
+              throw error('Unsupported image output format.')
+            if (output['quality'] !== undefined) {
+              number(output['quality'])
+              if ((output['quality'] as number) <= 0 || (output['quality'] as number) > 1)
+                throw error('Image quality must be greater than zero and at most one.')
+            }
+            for (const dimension of ['maxWidth', 'maxHeight'])
+              if (output[dimension] !== undefined) {
+                number(output[dimension], true)
+                if ((output[dimension] as number) < 1 || (output[dimension] as number) > 8192)
+                  throw error('Image output dimensions must be 1–8192.')
+              }
+          }
+        }
+        if (node['preview'] !== undefined) {
+          const preview = record(node['preview'])
+          keys(preview, ['types'])
+          const types = preview['types']
+          if (
+            !Array.isArray(types) ||
+            types.length === 0 ||
+            types.length > 2 ||
+            new Set(types).size !== types.length ||
+            types.some((type) => type !== 'image' && type !== 'pdf')
+          )
+            throw error('Attachment previews require unique image or pdf types.')
+        }
         text(node['source'])
         if (!(node['source'] as string).trim()) throw error('Attachment source is required.')
         if (node['accept'] !== undefined) text(node['accept'])
@@ -276,9 +335,15 @@ function parseConfiguration(
         )
           throw error('Numeric rules require a number field.')
         if (
-          !['text', 'textarea', 'mask', 'attachment', 'multi-select', 'checkbox-group'].includes(
-            String(kind),
-          ) &&
+          ![
+            'text',
+            'textarea',
+            'rich-text',
+            'mask',
+            'attachment',
+            'multi-select',
+            'checkbox-group',
+          ].includes(String(kind)) &&
           (rules['minLength'] !== undefined || rules['maxLength'] !== undefined)
         )
           throw error('Length rules require text or multiple selection.')

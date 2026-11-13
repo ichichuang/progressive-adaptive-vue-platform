@@ -5,14 +5,19 @@
   "type": "module",
   "sideEffects": false,
   "dependencies": {
+    "@tiptap/vue-3": "catalog:",
+    "@tiptap/pm": "catalog:",
+    "@tiptap/starter-kit": "catalog:",
     "@antv/g2": "catalog:",
     "@platform/design-system": "workspace:*",
     "@vueuse/core": "catalog:",
+    "cropperjs": "catalog:",
     "gridstack": "catalog:",
     "lenis": "catalog:",
     "motion-v": "catalog:",
     "naive-ui": "catalog:",
     "overlayscrollbars": "catalog:",
+    "pdfjs-dist": "catalog:",
     "vue": "catalog:"
   },
   "exports": {

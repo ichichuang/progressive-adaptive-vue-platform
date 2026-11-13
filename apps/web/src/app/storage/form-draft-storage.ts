@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { applicationConfig } from '../config/app.config'
-import type { FormDraftFailure, FormDraftStorage } from '../forms/form-draft-contract'
+import type {
+  FormDraftFailure,
+  FormDraftStorage,
+  FormDraftPort,
+  FormDraftWrite,
+} from '../forms/form-draft-contract'
 import type { StorageErrorAdapter } from './storage-error'
 import type { StorageErrorId } from './storage-error-registry'
 
@@ -17,6 +22,13 @@ export function createFormDraftStorage(
   errorAdapter: StorageErrorAdapter,
   isDisposed: () => boolean,
 ): FormDraftStorage {
+  const targets = new WeakMap<
+    object,
+    {
+      scope: string
+      adopt(data: unknown, expected: string | null | undefined): FormDraftWrite
+    }
+  >()
   function failure(id: StorageErrorId, source?: unknown): void {
     errorAdapter.normalize(id, {
       source,
@@ -46,8 +58,9 @@ export function createFormDraftStorage(
       // A comparison token prevents stale tabs from silently replacing a newer draft.
       let observed: string | null | undefined
       let rejected = false
+      let retired = false
       function access(): Storage | undefined {
-        if (isDisposed()) return undefined
+        if (isDisposed() || retired) return undefined
         try {
           return window.localStorage
         } catch (source: unknown) {
@@ -72,7 +85,56 @@ export function createFormDraftStorage(
         }
         return undefined
       }
-      return {
+      function writeData(data: T): FormDraftWrite {
+        if (rejected) return { status: 'failed' as const, reason: 'invalid' as const }
+        const storage = access()
+        if (!storage) return { status: 'failed' as const, reason: 'unavailable' as const }
+        const conflict = writable(storage)
+        if (conflict) return { status: 'failed' as const, reason: conflict }
+        const savedAt = Date.now()
+        const expiresAt = savedAt + input.maxAgeMs
+        let serialized: string
+        try {
+          const envelope = envelopeSchema.parse({
+            schemaVersion: 1,
+            scope: input.scope,
+            schemaKey: input.schemaKey,
+            savedAt,
+            expiresAt,
+            data: input.parse(data),
+          })
+          serialized = JSON.stringify(envelope)
+          // Verify JSON round-trip before mutating persisted data.
+          input.parse(envelopeSchema.parse(JSON.parse(serialized)).data)
+        } catch (source: unknown) {
+          failure('storage-serialization-failed', source)
+          return { status: 'failed' as const, reason: 'invalid' as const }
+        }
+        const finalConflict = writable(storage)
+        if (finalConflict) return { status: 'failed', reason: finalConflict }
+        try {
+          storage.setItem(key, serialized)
+        } catch (source: unknown) {
+          failure(
+            source instanceof DOMException && source.name === 'QuotaExceededError'
+              ? 'storage-quota-exceeded'
+              : 'storage-write-denied',
+            source,
+          )
+          return { status: 'failed' as const, reason: 'unavailable' as const }
+        }
+        const confirmed = current(storage)
+        if (confirmed?.raw !== serialized) {
+          failure('storage-readback-mismatch')
+          return {
+            status: 'failed' as const,
+            reason: confirmed ? ('conflict' as const) : ('unavailable' as const),
+          }
+        }
+        observed = serialized
+        return { status: 'saved' as const, savedAt, expiresAt }
+      }
+      const port: FormDraftPort<T> = {
         read() {
           const storage = access()
           const latest = storage && current(storage)
@@ -133,52 +195,15 @@ export function createFormDraftStorage(
             return { status: 'unusable' as const, reason: 'invalid' as const }
           }
         },
-        write(data: T) {
-          if (rejected) return { status: 'failed' as const, reason: 'invalid' as const }
-          const storage = access()
-          if (!storage) return { status: 'failed' as const, reason: 'unavailable' as const }
-          const conflict = writable(storage)
-          if (conflict) return { status: 'failed' as const, reason: conflict }
-          const savedAt = Date.now()
-          const expiresAt = savedAt + input.maxAgeMs
-          let serialized: string
-          try {
-            const envelope = envelopeSchema.parse({
-              schemaVersion: 1,
-              scope: input.scope,
-              schemaKey: input.schemaKey,
-              savedAt,
-              expiresAt,
-              data: input.parse(data),
-            })
-            serialized = JSON.stringify(envelope)
-            // Verify JSON round-trip before mutating persisted data.
-            input.parse(envelopeSchema.parse(JSON.parse(serialized)).data)
-          } catch (source: unknown) {
-            failure('storage-serialization-failed', source)
-            return { status: 'failed' as const, reason: 'invalid' as const }
-          }
-          try {
-            storage.setItem(key, serialized)
-          } catch (source: unknown) {
-            failure(
-              source instanceof DOMException && source.name === 'QuotaExceededError'
-                ? 'storage-quota-exceeded'
-                : 'storage-write-denied',
-              source,
-            )
-            return { status: 'failed' as const, reason: 'unavailable' as const }
-          }
-          const confirmed = current(storage)
-          if (confirmed?.raw !== serialized) {
-            failure('storage-readback-mismatch')
-            return {
-              status: 'failed' as const,
-              reason: confirmed ? ('conflict' as const) : ('unavailable' as const),
-            }
-          }
-          observed = serialized
-          return { status: 'saved' as const, savedAt, expiresAt }
+        write: writeData,
+        handoff<U>(target: FormDraftPort<U>, data: U): FormDraftWrite {
+          if (retired || rejected) return { status: 'failed', reason: 'invalid' }
+          const destination = targets.get(target)
+          if (destination?.scope !== input.scope)
+            return { status: 'failed', reason: 'incompatible' }
+          const result = destination.adopt(data, observed)
+          if (result.status === 'saved') retired = true
+          return result
         },
         clear() {
           const storage = access()
@@ -204,6 +229,16 @@ export function createFormDraftStorage(
           return { status: 'cleared' as const }
         },
       }
+      targets.set(port, {
+        scope: input.scope,
+        adopt(data, expected) {
+          if (retired || observed !== undefined) return { status: 'failed', reason: 'conflict' }
+          // The destination has not read storage: only the old session's observation authorizes replacement.
+          observed = expected
+          return writeData(data as T)
+        },
+      })
+      return port
     },
   }
 }

@@ -1,6 +1,12 @@
 import { getCurrentScope, onScopeDispose, watch } from 'vue'
-import type { UiFormCopy, UiFormOptionSource, UiFormSchema } from '../components/form-contracts'
+import type {
+  UiFormCopy,
+  UiFormOptionSource,
+  UiFormSchema,
+  UiFormInput,
+} from '../components/form-contracts'
 import type { UiTableController, UiTableRecord } from '../components/table-contracts'
+import { invalidLocalFilters } from '../components/table-local-filters'
 import { useUiForm } from './use-ui-form'
 import { createFormValues, sameDraftValue } from './form-draft-values'
 
@@ -9,6 +15,7 @@ export function useUiTableQuery(
   table: UiTableController,
   copy: UiFormCopy,
   sources?: Readonly<Record<string, UiFormOptionSource<UiTableRecord>>>,
+  validation?: UiFormInput<UiTableRecord>['validation'],
 ) {
   const config = table.schema.query
   if (!config) throw new TypeError('Table query form configuration is required.')
@@ -21,11 +28,30 @@ export function useUiTableQuery(
     draftId: table.schema.id,
     values: createFormValues(config.form.fields, table.query.value.filters),
   }
+  const validateQuery: NonNullable<UiFormInput<UiTableRecord>['validation']> = async (
+    values,
+    context,
+  ) => {
+    const candidate: unknown = values
+    const local = invalidLocalFilters(
+      candidate as Readonly<Record<string, unknown>>,
+      table.schema.localFilters ?? [],
+    ).map((definition) => ({
+      field: definition.parameter,
+      message:
+        definition.invalidMessage === undefined
+          ? copy.invalidValue
+          : () => table.text(definition.invalidMessage ?? ''),
+    }))
+    const custom = (await validation?.(values, context)) ?? []
+    return [...local, ...custom]
+  }
   const form = useUiForm<UiFormSchema>({
     formId: `${table.schema.id}-query`,
     initial,
     schema: config.form,
     copy,
+    validation: validateQuery,
     ...(sources === undefined ? {} : { sources }),
     translate: (value) => table.text(value),
     onSubmit: async (values) => {

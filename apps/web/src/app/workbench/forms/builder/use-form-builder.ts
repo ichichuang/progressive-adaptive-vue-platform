@@ -17,6 +17,7 @@ import type { ConsoleTranslate } from '../../../../shared/i18n'
 export const builderKinds = {
   text: 'formBuilder.text',
   textarea: 'formBuilder.textarea',
+  'rich-text': 'formBuilder.richText',
   number: 'formBuilder.number',
   mask: 'formFields.reference',
   slider: 'formFields.progress',
@@ -470,15 +471,21 @@ export function useFormBuilder(t: ConsoleTranslate) {
                 { value: 'option2', label: `${t('formBuilder.option')} 2` },
               ],
             }
-          : kind === 'mask'
-            ? { ...base, kind, mask: 'AAA-####', placeholder: 'ABC-1234' }
-            : kind === 'slider'
-              ? { ...base, kind, min: 0, max: 100, step: 1 }
-              : kind === 'rating'
-                ? { ...base, kind, count: 5, allowHalf: true }
-                : kind === 'attachment'
-                  ? { ...base, kind, source: 'attachments', maxFiles: 3, maxSize: 5242880 }
-                  : { ...base, kind }
+          : kind === 'rich-text'
+            ? {
+                ...base,
+                kind,
+                defaultValue: { type: 'doc', content: [{ type: 'paragraph', content: [] }] },
+              }
+            : kind === 'mask'
+              ? { ...base, kind, mask: 'AAA-####', placeholder: 'ABC-1234' }
+              : kind === 'slider'
+                ? { ...base, kind, min: 0, max: 100, step: 1 }
+                : kind === 'rating'
+                  ? { ...base, kind, count: 5, allowHalf: true }
+                  : kind === 'attachment'
+                    ? { ...base, kind, source: 'attachments', maxFiles: 3, maxSize: 5242880 }
+                    : { ...base, kind }
     commit(
       {
         ...schema.value,

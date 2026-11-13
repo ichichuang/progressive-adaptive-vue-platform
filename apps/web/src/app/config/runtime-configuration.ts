@@ -83,7 +83,7 @@ function immutableConfiguration(configuration: CoreRuntimeConfiguration): CoreRu
   })
 }
 
-function readRuntimeConfigurationSource(documentReference: Document): string | undefined {
+export function readRuntimeConfigurationSource(documentReference: Document): string | undefined {
   const attributedElements = documentReference.querySelectorAll('[data-runtime-configuration-url]')
 
   if (attributedElements.length !== 1) {
@@ -105,7 +105,7 @@ function readRuntimeConfigurationSource(documentReference: Document): string | u
   return attributeValue
 }
 
-function isRuntimeConfigurationUrlAllowed(url: URL, locationReference: Location): boolean {
+export function isRuntimeConfigurationUrlAllowed(url: URL, locationReference: Location): boolean {
   if (
     url.username.length !== 0 ||
     url.password.length !== 0 ||

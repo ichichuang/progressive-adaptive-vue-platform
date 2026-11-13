@@ -91,6 +91,11 @@ export const shellIconResolverOwner = {
 } as const
 
 export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>> = {
+  'packages/ui/src/components/UiReportPreview.vue': [
+    { scoped: true, lang: 'css' },
+    { scoped: false, lang: 'css' },
+  ],
+  'packages/ui/src/adapters/naive/PavpFormRichText.vue': [{ scoped: false, lang: 'css' }],
   'apps/web/src/app/console/ThemeQuickPicker.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/components/UiDashboardGrid.vue': [{ scoped: true, lang: 'css' }],
   'apps/web/src/app/workbench/ThemeStyleSettings.vue': [{ scoped: true, lang: 'css' }],
@@ -103,6 +108,8 @@ export const vueStyleOwners: Readonly<Record<string, readonly StyleBlockOwner[]>
   'packages/ui/src/components/UiTableEditor.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/components/UiFormFields.vue': [{ scoped: false, lang: 'css' }],
   'apps/web/src/app/workspace/WorkspaceDiscardDialog.vue': [{ scoped: false, lang: 'css' }],
+  'packages/ui/src/adapters/media/PavpImageProcessor.vue': [{ scoped: true, lang: 'css' }],
+  'packages/ui/src/adapters/media/PavpAttachmentPreview.vue': [{ scoped: true, lang: 'css' }],
   'packages/ui/src/components/UiCopyAction.vue': [
     { scoped: true, lang: 'css' },
     { scoped: true, lang: 'css' },
@@ -209,6 +216,277 @@ export const standaloneStyleOwners: Readonly<Record<string, StyleResponsibility>
 // Exact selector/context/property responsibilities; private optical, gesture, scale, and vendor
 // !important values are local to these declarations, never file grants.
 export const ownedStyleContracts: readonly OwnedStyleContract[] = [
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: 'html:has(body[data-report-printing]),\nbody[data-report-printing]',
+    declarations: [
+      ['overflow', 'visible', true],
+      ['height', 'auto', true],
+      ['max-height', 'none', true],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-report-preview',
+    declarations: [
+      ['width', 'calc(100vw - 2 * var(--ui-space-page-inline))', false],
+      ['height', 'calc(100dvh - 2 * var(--ui-space-page-inline))', false],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: [],
+    selector: '.pavp-report-print-host',
+    declarations: [['display', 'none', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: 'body[data-report-printing] > :not([data-report-print-active])',
+    declarations: [['display', 'none', true]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: 'body[data-report-printing] > [data-report-print-active]',
+    declarations: [
+      ['display', 'block', false],
+      ['color', 'black', false],
+      ['background', 'white', false],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: '[data-report-print-active] *',
+    declarations: [
+      ['color', 'black', true],
+      ['background', 'transparent', true],
+      ['box-shadow', 'none', true],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: '[data-report-print-active] table',
+    declarations: [
+      ['width', '100%', false],
+      ['table-layout', 'fixed', false],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: '[data-report-print-active] thead',
+    declarations: [['display', 'table-header-group', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector:
+      '[data-report-print-active] tr,\n[data-report-print-active] .pavp-report-field,\n[data-report-print-active] img',
+    declarations: [['break-inside', 'avoid', false]],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: ['@media print'],
+    selector: '[data-report-print-active] img',
+    declarations: [
+      ['max-width', '100%', false],
+      ['height', 'auto', false],
+    ],
+    responsibility: 'BROWSER_OR_PLATFORM_OWNER',
+  },
+
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap h1',
+    declarations: [['font-size', 'var(--ui-font-size-title)', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap h2',
+    declarations: [['font-size', 'var(--ui-font-size-heading)', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap h3',
+    declarations: [['font-size', 'var(--ui-font-size-subheading)', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap :is(h1, h2, h3)',
+    declarations: [
+      ['font-weight', 'var(--ui-font-weight-title)', false],
+      ['line-height', 'var(--ui-font-line-height-title)', false],
+      ['margin-block', 'var(--ui-space-component-unit)', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap :is(ul, ol)',
+    declarations: [
+      ['padding-inline-start', 'var(--ui-space-content-gap)', false],
+      ['margin-block', 'var(--ui-space-component-unit)', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap ul',
+    declarations: [['list-style-type', 'disc', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap ol',
+    declarations: [['list-style-type', 'decimal', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap blockquote',
+    declarations: [
+      ['margin', '0', false],
+      ['padding', 'var(--ui-space-component-unit)', false],
+      ['border-radius', 'var(--ui-radius-control)', false],
+      ['background', 'var(--ui-color-surface-page)', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text__viewport',
+    declarations: [
+      ['height', 'calc(var(--ui-layout-target-enhanced-minimum-block-size) * 6)', false],
+      ['min-height', '0', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap',
+    declarations: [
+      ['min-height', 'calc(var(--ui-layout-target-enhanced-minimum-block-size) * 5)', false],
+      ['outline', 'none', false],
+      ['padding', 'var(--ui-space-component-unit)', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap p',
+    declarations: [['margin-block', 'var(--ui-space-component-unit)', false]],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: ['@layer components'],
+    selector: '.pavp-rich-text .tiptap a',
+    declarations: [
+      ['color', 'var(--ui-color-text-primary)', false],
+      ['text-decoration', 'underline', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+
+  {
+    path: 'packages/ui/src/adapters/media/PavpAttachmentPreview.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-attachment-preview',
+    declarations: [
+      ['width', 'calc(100vw - 2 * var(--ui-space-page-inline))', false],
+      ['height', 'calc(100dvh - 2 * var(--ui-space-page-inline))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/media/PavpImageProcessor.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-image-processor',
+    declarations: [
+      [
+        'width',
+        'min(calc(100vw - 2 * var(--ui-space-page-inline)), calc(2 * var(--ui-layout-admin-drawer-maximum-inline-size)))',
+        true,
+      ],
+      ['max-height', '100%', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/media/PavpImageProcessor.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-image-processor__canvas',
+    declarations: [
+      ['height', 'min(50dvh, var(--ui-layout-admin-drawer-maximum-inline-size))', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+  {
+    path: 'packages/ui/src/adapters/media/PavpImageProcessor.vue',
+    block: 0,
+    context: [],
+    selector: '.pavp-image-processor__canvas :deep(cropper-canvas)',
+    declarations: [
+      ['width', '100%', false],
+      ['height', '100%', false],
+    ],
+    responsibility: 'RUNTIME_STYLE_OWNER',
+  },
+
   {
     path: 'apps/web/src/app/console/ThemeQuickPicker.vue',
     block: 0,
@@ -1971,6 +2249,19 @@ export const ownedStyleContracts: readonly OwnedStyleContract[] = [
         true,
       ],
       ['max-height', 'calc(100dvh - 2 * var(--ui-space-page-inline))', false],
+    ],
+    responsibility: 'VENDOR_ADAPTER_OWNER',
+  },
+  {
+    path: 'packages/ui/src/components/UiTableEditor.vue',
+    block: 0,
+    context: ['@layer vendor-overrides'],
+    selector: ".pavp-table-modal__card[data-maximized='true']",
+    declarations: [
+      ['width', 'calc(100vw - 2 * var(--ui-space-page-inline))', true],
+      ['height', 'calc(100dvh - 2 * var(--ui-space-page-inline))', false],
+      ['left', '0', true],
+      ['top', '0', true],
     ],
     responsibility: 'VENDOR_ADAPTER_OWNER',
   },
@@ -7383,6 +7674,20 @@ export const styleAtRuleOwners: readonly {
   readonly params: string
   readonly occurrences?: number
 }[] = [
+  {
+    path: 'packages/ui/src/components/UiReportPreview.vue',
+    block: 1,
+    context: [],
+    name: 'media',
+    params: 'print',
+  },
+  {
+    path: 'packages/ui/src/adapters/naive/PavpFormRichText.vue',
+    block: 0,
+    context: [],
+    name: 'layer',
+    params: 'components',
+  },
   {
     path: 'apps/web/src/app/workbench/workbench.css',
     block: 0,

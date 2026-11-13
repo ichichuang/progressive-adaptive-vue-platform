@@ -16,6 +16,7 @@ import { UiRadioCardGroup, UiScrollArea, type UiScrollController } from '@platfo
 import { NCard } from 'naive-ui/es/card'
 import { NScrollbar } from 'naive-ui/es/scrollbar'
 import { NSwitch } from 'naive-ui/es/switch'
+import RuntimeVersionSettings from '../app/workbench/RuntimeVersionSettings.vue'
 import ThemeStyleSettings from '../app/workbench/ThemeStyleSettings.vue'
 import SettingsField from '../app/workbench/SettingsField.vue'
 import ColorModePreview from '../app/workbench/ColorModePreview.vue'
@@ -874,6 +875,7 @@ onScopeDispose(() => {
                 />
               </template>
             </SettingsField>
+            <RuntimeVersionSettings />
             <div class="wb-settings-actions grid gap-content-gap">
               <NButton
                 quaternary

@@ -44,6 +44,7 @@ export function tableShowcaseSchema(
     },
     editor: {
       presentation,
+      ...(presentation === 'modal' ? { modal: { maximizable: true, draggable: true } } : {}),
       form: {
         columns: 2,
         fields: [
@@ -163,6 +164,8 @@ export function useTableShowcase() {
     boolean: (value) => t(value ? 'configuredForm.yes' : 'configuredForm.no'),
   }
   const editorCopy: UiTableEditorCopy = {
+    maximize: () => t('tableShowcase.maximizeEditor'),
+    restore: () => t('tableShowcase.restoreEditor'),
     title: (mode) =>
       t(
         mode === 'create'

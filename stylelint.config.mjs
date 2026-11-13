@@ -429,6 +429,17 @@ export default {
   plugins: ['./scripts/eslint-rules/css-authoring.mjs'],
   overrides: [
     {
+      files: ['**/packages/ui/src/components/UiReportPreview.vue.style-2.css'],
+      rules: {
+        // Paper colors are admitted only by exact print selector/context contracts.
+        'color-named': null,
+        'declaration-property-value-disallowed-list': {
+          ...visualAuthorityRules,
+          color: colorAuthorityRules(textColorVariables, ['black']),
+        },
+      },
+    },
+    {
       files: ['**/apps/web/src/app/workbench/ThemeStyleSettings.vue.style-*.css'],
       rules: {
         'declaration-property-value-disallowed-list': {

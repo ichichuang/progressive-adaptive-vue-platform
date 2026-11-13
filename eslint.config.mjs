@@ -167,6 +167,7 @@ export default typescriptEslint.config(
     ignores: [
       'apps/web/src/shared/api/client.ts',
       'apps/web/src/app/config/runtime-configuration.ts',
+      'apps/web/src/app/config/runtime-update-monitor.ts',
       'apps/web/src/app/bootstrap/runtime-kernel.ts',
       '**/*.d.ts',
     ],
@@ -179,6 +180,19 @@ export default typescriptEslint.config(
             { name: 'fetch', message: 'Use the shared API client.' },
             { name: 'XMLHttpRequest', message: 'Use the shared API client.' },
           ],
+          checkGlobalObject: true,
+        },
+      ],
+    },
+  },
+  {
+    // Package-owned PDF binary assets are not application API requests.
+    files: ['packages/ui/src/adapters/media/pdf-preview.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          globals: [{ name: 'XMLHttpRequest', message: 'Use the shared API client.' }],
           checkGlobalObject: true,
         },
       ],

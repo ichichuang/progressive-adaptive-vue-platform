@@ -103,6 +103,9 @@ const expectedPageSources = [
   'apps/web/src/pages/component-form-calculations.vue',
   'apps/web/src/pages/component-form-structure.vue',
   'apps/web/src/pages/component-form-steps.vue',
+  'apps/web/src/pages/component-form-dynamic.vue',
+  'apps/web/src/pages/component-form-media.vue',
+  'apps/web/src/pages/component-form-rich-text.vue',
   'apps/web/src/pages/component-form-validation.vue',
   'apps/web/src/pages/component-form-extension.vue',
   'apps/web/src/pages/component-form-controls.vue',
@@ -133,6 +136,7 @@ const expectedPageSources = [
   'apps/web/src/pages/component-combination-modal.vue',
   'apps/web/src/pages/component-combination-drawer.vue',
   'apps/web/src/pages/component-combination-page.vue',
+  'apps/web/src/pages/component-combination-report.vue',
   'apps/web/src/pages/component-table-editor.vue',
   'apps/web/src/pages/control-center.vue',
   'apps/web/src/pages/error/400.vue',
@@ -143,7 +147,7 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 76)
+const expectedProductPageSources = expectedPageSources.slice(0, 80)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
   'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
@@ -599,6 +603,36 @@ const expectedRouteRecords = [
     'route-boundary',
   ],
   [
+    'apps/web/src/pages/component-form-dynamic.vue',
+    'component-form-dynamic',
+    '/components/forms/dynamic',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-dynamic',
+    'route.component.form.dynamic',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-media.vue',
+    'component-form-media',
+    '/components/forms/media',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-media',
+    'route.component.form.media',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-rich-text.vue',
+    'component-form-rich-text',
+    '/components/forms/rich-text',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-rich-text',
+    'route.component.form.rich-text',
+    'route-boundary',
+  ],
+  [
     'apps/web/src/pages/component-form-validation.vue',
     'component-form-validation',
     '/components/forms/validation',
@@ -900,6 +934,16 @@ const expectedRouteRecords = [
     'route-boundary',
   ],
   [
+    'apps/web/src/pages/component-combination-report.vue',
+    'component-combination-report',
+    '/components/combinations/report',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-combination-report',
+    'route.component.combination.report',
+    'route-boundary',
+  ],
+  [
     'apps/web/src/pages/component-table-editor.vue',
     'component-table-editor',
     '/components/table-editor',
@@ -1099,6 +1143,13 @@ const expectedRouteTitles = {
     'route-title.component-form-structure',
   ),
   'route-title.component-form-steps': getDefaultConsoleMessage('route-title.component-form-steps'),
+  'route-title.component-form-dynamic': getDefaultConsoleMessage(
+    'route-title.component-form-dynamic',
+  ),
+  'route-title.component-form-media': getDefaultConsoleMessage('route-title.component-form-media'),
+  'route-title.component-form-rich-text': getDefaultConsoleMessage(
+    'route-title.component-form-rich-text',
+  ),
   'route-title.component-form-validation': getDefaultConsoleMessage(
     'route-title.component-form-validation',
   ),
@@ -1184,6 +1235,9 @@ const expectedRouteTitles = {
   ),
   'route-title.component-combination-page': getDefaultConsoleMessage(
     'route-title.component-combination-page',
+  ),
+  'route-title.component-combination-report': getDefaultConsoleMessage(
+    'route-title.component-combination-report',
   ),
   'route-title.component-table-editor': getDefaultConsoleMessage(
     'route-title.component-table-editor',
@@ -1419,6 +1473,21 @@ const expectedMessages = [
     getDefaultConsoleMessage('route-message.component-form-steps-summary'),
   ],
   [
+    'component-form-dynamic',
+    'route-message.component-form-dynamic-summary',
+    getDefaultConsoleMessage('route-message.component-form-dynamic-summary'),
+  ],
+  [
+    'component-form-media',
+    'route-message.component-form-media-summary',
+    getDefaultConsoleMessage('route-message.component-form-media-summary'),
+  ],
+  [
+    'component-form-rich-text',
+    'route-message.component-form-rich-text-summary',
+    getDefaultConsoleMessage('route-message.component-form-rich-text-summary'),
+  ],
+  [
     'component-form-validation',
     'route-message.component-form-validation-summary',
     getDefaultConsoleMessage('route-message.component-form-validation-summary'),
@@ -1568,6 +1637,11 @@ const expectedMessages = [
     'component-combination-page',
     'route-message.component-combination-page-summary',
     getDefaultConsoleMessage('route-message.component-combination-page-summary'),
+  ],
+  [
+    'component-combination-report',
+    'route-message.component-combination-report-summary',
+    getDefaultConsoleMessage('route-message.component-combination-report-summary'),
   ],
   [
     'component-table-editor',
@@ -4027,7 +4101,7 @@ function registryViolations(): string[] {
         ? `route-breadcrumb.${record.name}`
         : null
     const expectedWorkspace = expectedRouteRecords
-      .slice(0, 75)
+      .slice(0, 79)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
@@ -5765,7 +5839,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 76 &&
+        productRoutes.length === 80 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -6103,9 +6177,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -6238,7 +6312,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
@@ -7300,7 +7374,9 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
   const colorStylePath = 'apps/web/src/app/workbench/ThemeStyleSettings.vue.style-0.css'
   const chartRangeScope = '**/packages/ui/src/components/UiChartTimeRange.vue.style-*.css'
   const chartRangePath = 'packages/ui/src/components/UiChartTimeRange.vue.style-0.css'
+  const reportPrintScope = '**/packages/ui/src/components/UiReportPreview.vue.style-2.css'
   const expectedOverrideScopes = [
+    [reportPrintScope],
     [routePath],
     [previewScope],
     [workbenchScope],
@@ -7446,6 +7522,7 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
     )
     const overrideChecks = await Promise.all(
       snapshot.overrideScopes.map(async ({ files, ruleKeys, config }) => {
+        const reportScope = isDeepStrictEqual(files, [reportPrintScope])
         const routeScope =
           isDeepStrictEqual(files, [routePath]) || isDeepStrictEqual(files, [previewScope])
         const shellScope = isDeepStrictEqual(files, [adminShellScope])
@@ -7456,7 +7533,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
         const chartRangeStyleScope = isDeepStrictEqual(files, [chartRangeScope])
         const colorStylePreviewScope = isDeepStrictEqual(files, [colorStyleScope])
         return (
-          (routeScope ||
+          (reportScope ||
+            routeScope ||
             shellScope ||
             workbenchStyleScope ||
             radioScope ||
@@ -7464,7 +7542,12 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
             tableStyleScope ||
             chartRangeStyleScope ||
             colorStylePreviewScope) &&
-          isDeepStrictEqual(ruleKeys, [declarationPolicyRule]) &&
+          isDeepStrictEqual(
+            ruleKeys,
+            reportScope ? ['color-named', declarationPolicyRule] : [declarationPolicyRule],
+          ) &&
+          (!reportScope || (await check(config, globalPath, 'color', 'black', false))) &&
+          (!reportScope || (await check(config, globalPath, 'color', 'red', true))) &&
           (await check(config, globalPath, 'animation-duration', full, !routeScope)) &&
           (await check(config, globalPath, 'animation-duration', half, false)) &&
           (await check(config, globalPath, 'transition-duration', full, true)) &&
@@ -7521,7 +7604,8 @@ async function routeTransitionStylelintPolicyGovernance(cssSource: string): Prom
               globalPath,
               'background',
               shellMaterial,
-              routeScope ||
+              reportScope ||
+                routeScope ||
                 radioScope ||
                 providerStyleScope ||
                 tableStyleScope ||
@@ -8215,6 +8299,9 @@ const workspaceAxisRouteNames = [
   'component-form-calculations',
   'component-form-structure',
   'component-form-steps',
+  'component-form-dynamic',
+  'component-form-media',
+  'component-form-rich-text',
   'component-form-validation',
   'component-form-extension',
   'component-form-controls',
@@ -8245,6 +8332,7 @@ const workspaceAxisRouteNames = [
   'component-combination-modal',
   'component-combination-drawer',
   'component-combination-page',
+  'component-combination-report',
 ] as const
 
 function workspaceAxisDefaultFailures(rules: readonly RouteTransitionRule[]): string[] {

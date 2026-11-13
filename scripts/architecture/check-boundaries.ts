@@ -550,6 +550,22 @@ function inspectImport(
     }
   }
 
+  if (specifier.startsWith('@tiptap/')) {
+    if (
+      normalizedDisplayPath !== 'packages/ui/src/adapters/naive/PavpFormRichText.vue' ||
+      !['@tiptap/vue-3', '@tiptap/starter-kit'].includes(specifier)
+    ) {
+      violations.push(`${displayPath}: Tiptap imports belong to the private rich text adapter.`)
+    }
+  }
+  if (/^(?:cropperjs|pdfjs-dist)(?:\/|$)/u.test(specifier)) {
+    if (
+      !normalizedDisplayPath.startsWith('packages/ui/src/adapters/media/') &&
+      normalizedDisplayPath !== 'scripts/verify/check-form-media-preview.ts'
+    )
+      violations.push(`${displayPath}: Attachment media vendors belong to private media adapters.`)
+  }
+
   if (/^gridstack(?:\/|$)/u.test(specifier)) {
     if (
       normalizedDisplayPath !== 'packages/ui/src/adapters/dashboard/grid-runtime.ts' ||

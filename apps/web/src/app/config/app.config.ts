@@ -1,4 +1,5 @@
 export const applicationConfig = {
+  updates: { pollIntervalMs: 300000, minimumCheckIntervalMs: 60000, timeoutMs: 10000 },
   tables: { columnPreferenceStorageKey: 'pavp:web:table-column-preferences' },
   forms: {
     draftStorageKey: 'pavp:web:form-drafts',

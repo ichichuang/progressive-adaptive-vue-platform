@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { effectScope, shallowRef } from 'vue'
+import { computed, effectScope, shallowRef } from 'vue'
 import type { UiFormAttachment, UiFormCopy } from '../../packages/ui/src/components/form-contracts'
 import { useUiForm } from '../../packages/ui/src/composables/use-ui-form'
 import { useFormAttachments } from '../../packages/ui/src/composables/use-form-attachments'
@@ -136,4 +136,102 @@ export async function verifyFormAttachments(copy: UiFormCopy): Promise<void> {
   console.log(
     'Attachment field: success, unrelated edits, competing field replacement, disabled/readonly/hidden, reset, failure, limits and disposal passed.',
   )
+  const mediaScope = effectScope()
+  let finishCrop: ((value: File | null) => void) | undefined
+  let cropSignal: AbortSignal | undefined
+  let uploads = 0
+  const mediaState = mediaScope.run(() => {
+    const config = {
+      kind: 'attachment',
+      name: 'photo',
+      label: 'Photo',
+      source: 'photos',
+      imageProcessing: { crop: {} },
+      maxSize: 20,
+    } as const
+    const mediaForm = useUiForm({
+      formId: 'crop-lifecycle',
+      schema: { fields: [config] },
+      initial: { draftId: 'crop', values: { photo: [{ id: 'kept', name: 'kept.png' }] } },
+      copy: {
+        ...copy,
+        chooseAttachment: () => 'Choose',
+        uploadingAttachment: () => 'Processing',
+        attachmentFailed: () => 'Failed',
+        media: {
+          cropTitle: () => 'Crop',
+          previewTitle: () => 'Preview',
+          cancel: () => 'Cancel',
+          confirm: () => 'Use',
+          rotateLeft: () => 'Left',
+          rotateRight: () => 'Right',
+          reset: () => 'Reset',
+          processing: () => 'Processing',
+          loading: () => 'Loading',
+          failed: () => 'Failed',
+          previousPage: () => 'Previous',
+          nextPage: () => 'Next',
+          zoomIn: () => 'Zoom in',
+          zoomOut: () => 'Zoom out',
+        },
+      },
+      attachments: {
+        photos: {
+          upload: (selected, { signal }) => {
+            signal.throwIfAborted()
+            uploads++
+            return Promise.resolve({ id: 'uploaded', name: selected.name })
+          },
+          resolvePreview: () => Promise.resolve(new Blob()),
+        },
+      },
+    })
+    const reactiveBinding = computed(() => {
+      void mediaForm.hasPendingInput.value
+      void mediaForm.revision.value
+      return mediaForm.field('photo')
+    })
+    const mediaSession = useFormAttachments({
+      form: mediaForm,
+      get binding() {
+        return reactiveBinding.value
+      },
+      config,
+      processImage: (_file, _options, signal) => {
+        cropSignal = signal
+        return new Promise((resolve) => {
+          finishCrop = resolve
+        })
+      },
+    })
+    return { mediaForm, mediaSession }
+  })
+  assert.ok(mediaState)
+  const cancelledCrop = mediaState.mediaSession.choose(file)
+  assert.equal(mediaState.mediaForm.hasPendingInput.value, true)
+  finishCrop?.(null)
+  assert.equal(await cancelledCrop, false)
+  assert.equal(mediaState.mediaSession.failed.value, false)
+  assert.equal(uploads, 0)
+  assert.deepEqual(mediaState.mediaForm.getValue('photo'), [{ id: 'kept', name: 'kept.png' }])
+  const largeOriginal = new File(['x'.repeat(30)], 'original.png', { type: 'image/png' })
+  const completedCrop = mediaState.mediaSession.choose(largeOriginal)
+  assert.equal(cropSignal?.aborted, false)
+  finishCrop?.(file)
+  assert.equal(await completedCrop, true)
+  assert.equal(uploads, 1)
+  assert.equal(mediaState.mediaForm.hasPendingInput.value, false)
+  const oversizedOutput = mediaState.mediaSession.choose(largeOriginal)
+  finishCrop?.(new File(['x'.repeat(21)], 'still-large.png', { type: 'image/png' }))
+  assert.equal(await oversizedOutput, false)
+  assert.equal(uploads, 1)
+  assert.equal(mediaState.mediaSession.failed.value, true)
+  assert.equal(mediaState.mediaForm.hasPendingInput.value, false)
+  const resetCrop = mediaState.mediaSession.choose(file)
+  mediaState.mediaForm.reset()
+  assert.equal(cropSignal.aborted, true)
+  finishCrop?.(file)
+  assert.equal(await resetCrop, false)
+  assert.equal(uploads, 1)
+  mediaScope.stop()
 }

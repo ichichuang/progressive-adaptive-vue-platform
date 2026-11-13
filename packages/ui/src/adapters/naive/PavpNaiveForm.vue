@@ -100,9 +100,7 @@ function locateFirstIssue(
   for (const issue of props.form.issues.value) {
     if (selectedField !== undefined && issue.field !== selectedField) continue
     if (!canFocus(issue.field)) continue
-    const scope = presentation.value.feedbackScope.value
-    if (selectedField === undefined && scope !== undefined && !issue.field.startsWith(scope))
-      continue
+    if (selectedField === undefined && !presentation.value.isFeedbackInScope(issue.field)) continue
     const id = presentation.value.nodeControlId(issue.field)
     const matches = elements.filter((element) => element.id === id)
     const target = matches.length === 1 ? matches[0] : undefined

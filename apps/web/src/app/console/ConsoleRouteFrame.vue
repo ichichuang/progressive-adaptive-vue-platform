@@ -9,6 +9,11 @@ import {
   type UiShellComposition,
 } from '@platform/ui'
 import ThemeQuickPicker from './ThemeQuickPicker.vue'
+import { NCard } from 'naive-ui/es/card'
+import { useRuntimeUpdateReload } from '../config/use-runtime-update-reload'
+import { createRuntimeUpdateMonitor } from '../config/runtime-update-monitor'
+import { runtimeUpdateKey, type RuntimeUpdateStatus } from '../config/runtime-update-context'
+import type { CompiledBuildIdentity } from '../config/runtime-configuration'
 import { NButton } from 'naive-ui/es/button'
 import { NIcon } from 'naive-ui/es/icon'
 import { NTooltip } from 'naive-ui/es/tooltip'
@@ -179,8 +184,12 @@ function connectContentScrollController(controller: UiScrollController | null): 
   unregisterScrollController = registerScrollController?.(controller)
 }
 const workspace = useWorkspaceStore()
-const { confirmation: discardConfirmation, requestDiscard } =
-  provideWorkspaceUnsavedChanges(workspace)
+const {
+  confirmation: discardConfirmation,
+  reloadConfirmation,
+  requestDiscard,
+  requestReload,
+} = provideWorkspaceUnsavedChanges(workspace)
 const WorkspaceDiscardDialog = shallowRef<Component>()
 const discardDialogUnavailable = ref(false)
 watch(discardConfirmation, async (confirmation) => {
@@ -195,6 +204,36 @@ watch(discardConfirmation, async (confirmation) => {
     confirmation.cancel()
     discardDialogUnavailable.value = true
   }
+})
+const releaseCandidate = shallowRef<CompiledBuildIdentity | null>(null)
+const releaseStatus = ref<RuntimeUpdateStatus>('idle')
+const releaseMonitor = createRuntimeUpdateMonitor({
+  document,
+  window,
+  onCandidate: (identity) => {
+    releaseCandidate.value = identity
+  },
+  onStatus: (status) => {
+    releaseStatus.value = status
+  },
+})
+provide(runtimeUpdateKey, { status: releaseStatus, check: releaseMonitor.check })
+onScopeDispose(() => {
+  releaseMonitor.dispose()
+})
+watch(reloadConfirmation, async (confirmation) => {
+  if (!confirmation || WorkspaceDiscardDialog.value) return
+  try {
+    WorkspaceDiscardDialog.value = (await import('../workspace/WorkspaceDiscardDialog.vue')).default
+  } catch {
+    if (reloadConfirmation.value !== confirmation) return
+    confirmation.cancel()
+    discardDialogUnavailable.value = true
+  }
+})
+const { busy: releaseReloading, reload: reloadRelease } = useRuntimeUpdateReload({
+  candidate: () => releaseCandidate.value,
+  requestReload,
 })
 const closing = new Set<WorkspaceIdentity>()
 // Navigation must succeed before discarding a workspace. Present that two-step
@@ -506,6 +545,43 @@ async function navigate(routeName: string): Promise<void> {
 </script>
 
 <template>
+  <WorkspaceDiscardDialog
+    v-if="reloadConfirmation !== undefined && WorkspaceDiscardDialog !== undefined"
+    action="reload"
+    workspace-name=""
+    :accept="reloadConfirmation.accept"
+    :cancel="reloadConfirmation.cancel"
+  />
+  <div
+    v-if="releaseCandidate"
+    class="flex pointer-events-none inset-x-0 bottom-0 justify-center fixed p-page-inline z-overlay"
+  >
+    <NCard
+      class="pointer-events-auto shadow-panel max-w-content"
+      :title="t('shell.releaseChanged')"
+      size="small"
+      role="status"
+    >
+      <div class="flex flex-wrap items-center justify-between gap-content-gap">
+        <span class="text-text-secondary">{{ t('shell.releaseDescription') }}</span>
+        <div class="gap-control flex">
+          <NButton
+            :disabled="releaseReloading"
+            @click="releaseMonitor.dismiss"
+          >
+            {{ t('shell.releaseLater') }}
+          </NButton>
+          <NButton
+            type="primary"
+            :loading="releaseReloading"
+            @click="reloadRelease"
+          >
+            {{ t('shell.releaseRefresh') }}
+          </NButton>
+        </div>
+      </div>
+    </NCard>
+  </div>
   <WorkspaceDiscardDialog
     v-if="discardConfirmation !== undefined && WorkspaceDiscardDialog !== undefined"
     :action="discardConfirmation.action"

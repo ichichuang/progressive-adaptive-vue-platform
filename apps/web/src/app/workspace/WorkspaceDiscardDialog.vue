@@ -3,7 +3,7 @@ import { NModal } from 'naive-ui/es/modal'
 import { useConsoleI18n } from '../../shared/i18n'
 
 defineProps<{
-  readonly action: 'refresh' | 'close'
+  readonly action: 'refresh' | 'close' | 'reload'
   readonly workspaceName: string
   readonly accept: () => void
   readonly cancel: () => void
@@ -18,8 +18,20 @@ const { t } = useConsoleI18n()
     to="#pavp-overlay-root"
     preset="dialog"
     type="warning"
-    :title="`${t('shell.unsavedChangesTitle')} · ${workspaceName}`"
-    :content="t(action === 'refresh' ? 'shell.unsavedChangesRefresh' : 'shell.unsavedChangesClose')"
+    :title="
+      action === 'reload'
+        ? t('shell.unsavedChangesTitle')
+        : `${t('shell.unsavedChangesTitle')} · ${workspaceName}`
+    "
+    :content="
+      t(
+        action === 'reload'
+          ? 'shell.unsavedChangesReload'
+          : action === 'refresh'
+            ? 'shell.unsavedChangesRefresh'
+            : 'shell.unsavedChangesClose',
+      )
+    "
     :positive-text="t('shell.unsavedChangesDiscard')"
     :negative-text="t('shell.unsavedChangesCancel')"
     @positive-click="accept"

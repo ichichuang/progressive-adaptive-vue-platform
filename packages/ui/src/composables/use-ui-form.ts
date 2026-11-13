@@ -10,6 +10,7 @@ import {
 } from 'vue'
 import type {
   UiFormController,
+  UiFormAttachmentService,
   UiFormFieldBinding,
   UiFormFieldConfig,
   UiFormInput,
@@ -59,6 +60,7 @@ interface ItemValidationScope {
   /** When set, match these top-level roots (and descendants) instead of prefix. */
   readonly roots?: readonly string[]
   readonly current: () => boolean
+  readonly excludeFormIssues?: boolean
 }
 
 /** A controller owns one draft and all work bound to that draft's lifetime. */
@@ -69,7 +71,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
   if (!input.formId.trim() || !input.initial.draftId.trim())
     throw new TypeError('Form identities are required.')
   const schema = parseUiFormSchema(input.schema)
-  const attachments = new Map<string, NonNullable<typeof input.attachments>[string]>()
+  const attachments = new Map<string, UiFormAttachmentService>()
   function captureAttachments(nodes: readonly UiFormNode[]): void {
     for (const node of nodes) {
       if (node.kind === 'group' || node.kind === 'repeat') captureAttachments(node.fields)
@@ -78,12 +80,36 @@ export function useUiForm<const Schema extends UiFormSchema>(
           input.attachments !== undefined && Object.hasOwn(input.attachments, node.source)
             ? input.attachments[node.source]
             : undefined
-        if (typeof source !== 'function')
+        const service = typeof source === 'function' ? { upload: source } : source
+        if (service === undefined || typeof service.upload !== 'function')
           throw new TypeError('Attachment fields require a trusted registered source.')
+        if (node.preview !== undefined && typeof service.resolvePreview !== 'function')
+          throw new TypeError('Attachment preview requires a trusted resolver.')
+        if (node.imageProcessing !== undefined || node.preview !== undefined) {
+          const media = input.copy.media
+          for (const key of [
+            'cropTitle',
+            'previewTitle',
+            'cancel',
+            'confirm',
+            'rotateLeft',
+            'rotateRight',
+            'reset',
+            'processing',
+            'loading',
+            'failed',
+            'previousPage',
+            'nextPage',
+            'zoomIn',
+            'zoomOut',
+          ] as const)
+            if (typeof media?.[key] !== 'function')
+              throw new TypeError('Attachment media requires complete interface copy.')
+        }
         for (const key of ['chooseAttachment', 'uploadingAttachment', 'attachmentFailed'] as const)
           if (typeof input.copy[key] !== 'function')
             throw new TypeError('Attachment fields require selection, uploading and failure copy.')
-        attachments.set(node.source, source)
+        attachments.set(node.source, service)
       }
     }
   }
@@ -179,6 +205,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
   let explicitCheck: ReturnType<typeof createFormOperation<ValidationOutcome>> | null = null
   let checkingItem: ItemValidationScope | undefined
   const feedbackScope = shallowRef<string | undefined>()
+  const feedbackRoots = shallowRef<readonly string[] | undefined>()
   let valueRevision = 0
   const revision = shallowRef(0)
   let summaryValueRevision = -1
@@ -372,15 +399,18 @@ export function useUiForm<const Schema extends UiFormSchema>(
     result: readonly UiFormIssue[],
     scope?: string,
     roots?: readonly string[],
+    excludeFormIssues = false,
   ) {
+    const matches = (field: string | null) =>
+      !(excludeFormIssues && field === null) && inScope(field, scope, roots)
     const retained =
       scope === undefined && roots === undefined
         ? []
-        : issues.value.filter((issue) => !inScope(issue.field, scope, roots) && issueCurrent(issue))
+        : issues.value.filter((issue) => !matches(issue.field) && issueCurrent(issue))
     issues.value = Object.freeze([
       ...retained,
       ...result
-        .filter((issue) => inScope(issue.field, scope, roots))
+        .filter((issue) => matches(issue.field))
         .filter(
           (issue) =>
             (scope === undefined && roots === undefined) ||
@@ -1094,6 +1124,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     baseline?: I,
     current = () => true,
     identityChange = false,
+    validateAfterChange = true,
   ): UiFormMutationResult {
     const blocked = mutationGuard()
     if (blocked !== null) return blocked
@@ -1136,9 +1167,9 @@ export function useUiForm<const Schema extends UiFormSchema>(
     if (!ownsPublication()) return 'applied'
     refreshMetadata()
     if (!ownsPublication()) return 'applied'
-    refreshIssues()
+    if (validateAfterChange) refreshIssues()
     if (!ownsPublication()) return 'applied'
-    if (validationVisible() && !committing) void check()
+    if (validateAfterChange && validationVisible() && !committing) void check()
     if (!ownsPublication()) return 'applied'
     changing = true
     try {
@@ -1378,8 +1409,8 @@ export function useUiForm<const Schema extends UiFormSchema>(
         break
       }
     }
-    // Step-scoped failures mount only the active step; leave feedbackScope open.
-    feedbackScope.value = roots !== undefined ? undefined : scope
+    feedbackScope.value = scope
+    feedbackRoots.value = roots
     // Explicit validation and submit failures share the existing reveal/feedback attempt.
     summaryValueRevision = valueRevision
     summaryRevision.value += 1
@@ -1454,7 +1485,8 @@ export function useUiForm<const Schema extends UiFormSchema>(
   ): boolean {
     if (left === right) return true
     if (left === undefined || right === undefined) return false
-    if (left.prefix !== right.prefix) return false
+    if (left.prefix !== right.prefix || left.excludeFormIssues !== right.excludeFormIssues)
+      return false
     const leftRoots = left.roots
     const rightRoots = right.roots
     if (leftRoots === rightRoots) return true
@@ -1537,6 +1569,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
           ],
           scope,
           roots,
+          item?.excludeFormIssues,
         )
         if (!current()) return
         if (
@@ -1546,7 +1579,11 @@ export function useUiForm<const Schema extends UiFormSchema>(
         )
           notice.value = null
         if (!current()) return
-        const invalid = issues.value.some((issue) => inScope(issue.field, scope, roots))
+        const invalid = issues.value.some(
+          (issue) =>
+            !(item?.excludeFormIssues === true && issue.field === null) &&
+            inScope(issue.field, scope, roots),
+        )
         if (invalid && explicitCheck === work) publishFeedbackAttempt(scope, roots)
         if (!current()) return
         checkingItem = undefined
@@ -1577,6 +1614,102 @@ export function useUiForm<const Schema extends UiFormSchema>(
         else work.resolve('cancelled')
       })
     return work.promise
+  }
+  function selectedRoots(paths: readonly string[]): readonly string[] {
+    // Validate the whole request before any mutation; a typo must not partly reset a form.
+    for (const path of paths) entryFor(path)
+    const unique = [...new Set(paths)]
+    return Object.freeze(
+      unique.filter(
+        (path) => !unique.some((parent) => parent !== path && path.startsWith(`${parent}.`)),
+      ),
+    )
+  }
+  function validateFields(paths: readonly string[]) {
+    if (disposed.value) return Promise.resolve('cancelled' as const)
+    if (mutationGuard() !== null) return Promise.resolve('busy' as const)
+    const roots = selectedRoots(paths)
+    if (roots.length === 0) return Promise.resolve('valid' as const)
+    const originGeneration = generation.value
+    return check(true, {
+      prefix: '',
+      roots,
+      excludeFormIssues: true,
+      current: () => generation.value === originGeneration,
+    })
+  }
+  function clearErrors(paths: readonly string[]): UiFormMutationResult {
+    const blocked = mutationGuard()
+    if (blocked !== null) return blocked
+    const roots = selectedRoots(paths)
+    if (roots.length === 0) return 'unchanged'
+    const originRevision = revision.value
+    cancelValidation()
+    if (originRevision !== revision.value || disposed.value) return 'blocked'
+    const retained = issues.value.filter(
+      (issue) => issue.field === null || !inScope(issue.field, undefined, roots),
+    )
+    if (retained.length === issues.value.length) return 'unchanged'
+    issues.value = Object.freeze(retained)
+    // Clearing feedback is not a new validation attempt or reveal request.
+    feedbackValueRevision = -1
+    summaryValueRevision = -1
+    feedbackTarget.value = null
+    feedbackRevision.value += 1
+    return 'applied'
+  }
+  function resetFields(paths: readonly string[]): UiFormMutationResult {
+    const blocked = mutationGuard()
+    if (blocked !== null) return blocked
+    const roots = selectedRoots(paths)
+    if (roots.length === 0) return 'unchanged'
+    const selected = (path: string) => inScope(path, undefined, roots)
+    const next = cloneDraft(draft.value)
+    for (const path of roots) {
+      const { node } = entryFor(path)
+      const baseline = getFormValue(accepted.value, path)
+      const fallback = createFormValues([node])[node.name]
+      if (fallback === undefined) throw new TypeError('Missing field default.')
+      setFormValue(next, path, cloneDraft(baseline === undefined ? fallback : baseline))
+    }
+    const touchedNext = Object.freeze(
+      Object.fromEntries(Object.entries(touched.value).filter(([path]) => !selected(path))),
+    )
+    const issuesNext = Object.freeze(
+      issues.value.filter((issue) => issue.field === null || !selected(issue.field)),
+    )
+    return applyValues(
+      next,
+      (_, current) => {
+        for (const [path, state] of [...options]) {
+          if (!selected(path)) continue
+          options.delete(path)
+          stopOptions(state)
+          if (!current()) return
+        }
+        for (const entry of entries.value) {
+          if (!selected(entry.path)) continue
+          if (entry.node.kind !== 'group' && entry.node.kind !== 'repeat')
+            controlKeys.delete(controlIdentity(entry.path))
+        }
+        for (const path of keys.keys()) if (selected(path)) keys.delete(path)
+        for (const path of focuses.keys()) if (selected(path)) focuses.delete(path)
+        for (const path of commits.keys()) if (selected(path)) commits.delete(path)
+        for (const path of pendingInputs.keys()) if (selected(path)) pendingInputs.delete(path)
+        return (current) => {
+          touched.value = touchedNext
+          if (!current()) return
+          issues.value = issuesNext
+          if (!current()) return
+          publishPendingInputs()
+        }
+      },
+      true,
+      undefined,
+      undefined,
+      true,
+      false,
+    )
   }
   function validateItem(path: string, index: number) {
     if (disposed.value) return Promise.resolve('cancelled' as const)
@@ -1727,11 +1860,13 @@ export function useUiForm<const Schema extends UiFormSchema>(
     const owner = Symbol(name)
     const originGeneration = generation.value
     const originIdentity = controlIdentity(name)
+    const originControl = fieldIdentity(name)
     const current = () =>
       !disposed.value &&
       originGeneration === generation.value &&
       entries.value.some((entry) => entry.path === name) &&
-      controlIdentity(name) === originIdentity
+      controlIdentity(name) === originIdentity &&
+      fieldIdentity(name) === originControl
     const relocate = (path: string) => {
       name = path
     }
@@ -2152,6 +2287,16 @@ export function useUiForm<const Schema extends UiFormSchema>(
     focus.run()
     return true
   }
+  function fieldIdentity(name: string): symbol {
+    void revision.value
+    const identity = controlIdentity(name)
+    let key = controlKeys.get(identity)
+    if (key === undefined) {
+      key = Symbol(identity)
+      controlKeys.set(identity, key)
+    }
+    return key
+  }
   const form: UiFormController<I> = Object.freeze({
     formId: input.formId,
     text: (value: string) => (value === '' ? '' : (input.translate?.(value) ?? value)),
@@ -2222,6 +2367,9 @@ export function useUiForm<const Schema extends UiFormSchema>(
     focusField,
     submit,
     validateItem,
+    validateFields,
+    resetFields,
+    clearErrors,
     goNextStep,
     goBackStep,
     setActiveStep,
@@ -2266,17 +2414,20 @@ export function useUiForm<const Schema extends UiFormSchema>(
     attachmentSource(name) {
       const source = attachments.get(name)
       if (source === undefined) throw new TypeError('Unknown attachment source.')
-      return source
+      return source.upload
+    },
+    attachmentPreview(name) {
+      return attachments.get(name)?.resolvePreview
     },
     generation: computed(() => generation.value),
     feedbackRevision: computed(() => feedbackRevision.value),
-    feedbackScope: computed(() => feedbackScope.value),
+    isFeedbackInScope: (name) => inScope(name, feedbackScope.value, feedbackRoots.value),
     feedbackTarget: computed(() => feedbackTarget.value),
     isFeedbackCurrent,
     requestFeedback(name, revision) {
       if (
         !isFeedbackCurrent(revision) ||
-        !inScope(name, feedbackScope.value) ||
+        !inScope(name, feedbackScope.value, feedbackRoots.value) ||
         !issues.value.some((issue) => issue.field === name)
       )
         return
@@ -2299,15 +2450,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
       entryFor(name)
       focuses.set(name, { owner, run: focus, relocate: () => undefined })
     },
-    fieldIdentity(name) {
-      const identity = controlIdentity(name)
-      let key = controlKeys.get(identity)
-      if (key === undefined) {
-        key = Symbol(identity)
-        controlKeys.set(identity, key)
-      }
-      return key
-    },
+    fieldIdentity,
     isSummaryCurrent: (revision) =>
       revision === summaryRevision.value && summaryValueRevision === valueRevision,
     canFocusField,

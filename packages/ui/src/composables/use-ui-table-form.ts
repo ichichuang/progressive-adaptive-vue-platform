@@ -291,6 +291,7 @@ export function useUiTableForm(input: UiTableFormInput) {
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     presentation: editor.presentation ?? 'modal',
+    modal: editor.modal,
     inlineFields: computed(() => inlineFields.value),
     showInline,
     isInlineEditing,

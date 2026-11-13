@@ -1,3 +1,16 @@
+import { verifyRuntimeUpdate } from './check-runtime-update'
+import { verifyWorkspaceReload } from './check-workspace-reload'
+import { verifyReportForm } from './check-report-form'
+import { verifyReportTable } from './check-report-table'
+import { verifyReportPrint } from './check-report-print'
+import { verifyFormRichText } from './check-form-rich-text'
+import { verifyFormMediaPreview } from './check-form-media-preview'
+import { verifyFormImageProcessing } from './check-form-image-processing'
+import { verifyFormDraftHandoff } from './check-form-draft-handoff'
+import { verifyDynamicForm } from './check-form-dynamic'
+import { createRequire } from 'node:module'
+import { createTableQueryLinkCodec } from '../../apps/web/src/app/tables/table-query-link'
+import { formPresentation } from '../../packages/ui/src/composables/form-presentation'
 import { verifyDashboard } from './check-dashboard'
 import { verifyDateTime } from './check-date-time'
 import { adjacentVisibleTableColumn } from '../../packages/ui/src/components/table-column-preference'
@@ -1513,6 +1526,308 @@ async function verifyCommonFormFields(): Promise<void> {
   )
   form.dispose()
 }
+async function verifyTableLocalFilters(): Promise<void> {
+  const schema: UiTableSchema = {
+    id: 'typed-local-filters',
+    rowKey: 'id',
+    pagination: { pageSize: 10, pageSizes: [10] },
+    source: { kind: 'local' },
+    selection: 'multiple',
+    csvExport: { fileName: 'filtered.csv', scopes: ['page'] },
+    columns: [
+      { key: 'id', title: 'ID' },
+      { key: 'name', title: 'Name' },
+      { key: 'amount', title: 'Amount' },
+      { key: 'date', title: 'Date' },
+      { key: 'note', title: 'Note' },
+    ],
+    localFilters: [
+      { parameter: 'bounds', field: 'amount', kind: 'number-range' },
+      { parameter: 'period', field: 'date', kind: 'date-range' },
+      { parameter: 'presence', field: 'note', kind: 'empty' },
+      { parameter: 'shorthand', field: 'name', kind: 'text', match: 'fuzzy' },
+    ],
+  }
+  let changes = 0
+  const table = useUiTable({
+    schema,
+    rows: [
+      { id: 1, name: 'Alpha Beta', amount: 0, date: '2024-02-29', note: null },
+      { id: 2, name: 'Beta', amount: 10, date: '2024-03-01', note: '' },
+      { id: 3, name: 'Gamma', amount: 20, date: '2024-03-02', note: false },
+    ],
+    onQueryChange: () => {
+      changes++
+    },
+  })
+  await table.refresh()
+  await table.search({ bounds: { min: 0, max: 10 } })
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1, 2],
+  )
+  await table.search({ bounds: { min: null, max: 0 } })
+  assert.equal(table.total.value, 1)
+  await table.search({ bounds: { min: null, max: null } })
+  assert.equal(table.total.value, 3)
+  await table.search({ period: ['2024-02-29', '2024-03-01'] })
+  assert.equal(table.total.value, 2)
+  await table.search({ presence: 'empty' })
+  assert.equal(table.total.value, 2)
+  await table.search({ presence: 'not-empty' })
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [3],
+  )
+  await table.search({ shorthand: 'AaBt' })
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1],
+  )
+  await table.search({ shorthand: 'BtAa' })
+  assert.equal(table.total.value, 0)
+  // Zod belongs to the application workspace, as does the URL codec under test.
+  const applicationZod = createRequire(resolve('apps/web/package.json'))('zod') as {
+    strictObject(shape: Record<string, unknown>): Parameters<typeof createTableQueryLinkCodec>[0]
+    unknown(): { optional(): unknown }
+  }
+  const codec = createTableQueryLinkCodec(
+    applicationZod.strictObject({
+      bounds: applicationZod.unknown().optional(),
+      period: applicationZod.unknown().optional(),
+      presence: applicationZod.unknown().optional(),
+      shorthand: applicationZod.unknown().optional(),
+    }),
+    { sortableKeys: [], pageSizes: [10], pageSize: 10 },
+  )
+  await table.search({
+    bounds: { min: 0, max: 10 },
+    period: ['2024-02-29', '2024-03-01'],
+    presence: 'empty',
+    shorthand: 'AaBt',
+  })
+  const shared = codec.encode(table.query.value)
+  await table.reset()
+  await table.applyQuery(codec.decode(shared))
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1],
+  )
+  const csv = table.exportCsv('page')
+  assert.equal(csv.rowCount, 1)
+  assert.ok(csv.content.includes('Alpha Beta'))
+  assert.ok(!csv.content.includes('Gamma'))
+  await table.reset()
+  table.setSelection([1])
+  const previous = table.query.value
+  const count = changes
+  for (const filters of [
+    { bounds: { min: 2, max: 1 } },
+    { bounds: { min: '2', max: 3 } },
+    { bounds: { min: 0 } },
+    { period: ['2023-02-29', '2024-01-01'] },
+    { presence: true },
+  ]) {
+    assert.throws(() => table.search(filters))
+    assert.throws(() => table.applyQuery({ ...previous, filters }))
+    assert.equal(table.query.value, previous)
+    assert.equal(changes, count)
+    assert.deepEqual(table.selectedKeys.value, [1])
+  }
+  assert.throws(() =>
+    parseUiTableSchema({
+      ...schema,
+      source: { kind: 'remote', request: { api: 'records', method: 'GET' } },
+    }),
+  )
+  assert.throws(() => parseUiTableSchema({ ...schema, tree: {} }))
+  assert.throws(() =>
+    parseUiTableSchema({
+      ...schema,
+      localFilters: [
+        ...(schema.localFilters ?? []),
+        { parameter: 'bounds.min', field: 'amount', kind: 'empty' },
+      ],
+    }),
+  )
+  table.dispose()
+  for (const mode of ['submit', 'change'] as const) {
+    const ranged = useUiTable({
+      schema: {
+        ...schema,
+        query: {
+          mode,
+          debounce: 0,
+          form: {
+            fields: [
+              {
+                kind: 'group',
+                name: 'bounds',
+                label: 'Range',
+                fields: [
+                  { kind: 'number', name: 'min', label: 'Min' },
+                  { kind: 'number', name: 'max', label: 'Max' },
+                ],
+              },
+            ],
+          },
+        },
+      },
+      rows: [{ id: 1, amount: 5 }],
+    })
+    await ranged.refresh()
+    const form = useUiTableQuery(ranged, formCopy)
+    form.setValue('bounds.min', 20)
+    form.setValue('bounds.max', 10)
+    if (mode === 'submit') assert.equal(await form.submit(), 'invalid')
+    else await new Promise((resolve) => setTimeout(resolve, 20))
+    assert.equal(ranged.total.value, 1)
+    assert.deepEqual(ranged.query.value.filters, {})
+    assert.equal(form.issues.value[0]?.field, 'bounds')
+    form.setValue('bounds.min', 0)
+    if (mode === 'submit') assert.equal(await form.submit(), 'success')
+    else await new Promise((resolve) => setTimeout(resolve, 20))
+    assert.deepEqual(ranged.query.value.filters, { bounds: { min: 0, max: 10 } })
+    form.dispose()
+    ranged.dispose()
+  }
+}
+
+async function verifyFormLocalOperations(): Promise<void> {
+  const form = useUiForm({
+    formId: 'local-operations',
+    copy: formCopy,
+    schema: {
+      fields: [
+        { kind: 'text', name: 'title', label: 'Title', required: true },
+        {
+          kind: 'group',
+          name: 'profile',
+          label: 'Profile',
+          fields: [
+            { kind: 'text', name: 'email', label: 'Email', required: true },
+            { kind: 'number', name: 'amount', label: 'Amount', defaultValue: 7 },
+          ],
+        },
+        {
+          kind: 'repeat',
+          name: 'rows',
+          label: 'Rows',
+          fields: [{ kind: 'text', name: 'name', label: 'Name', required: true }],
+        },
+      ],
+    },
+    initial: {
+      draftId: 'local',
+      values: { title: '', profile: { email: '', amount: null }, rows: [{ name: 'Original' }] },
+    },
+  })
+  assert.equal(await form.validate(), 'invalid')
+  const titleIssue = form.issues.value.find((issue) => issue.field === 'title')
+  assert.ok(titleIssue)
+  assert.equal(await form.validateFields(['profile']), 'invalid')
+  assert.ok(form.issues.value.includes(titleIssue))
+  const feedback = formPresentation(form)
+  assert.equal(feedback.isFeedbackInScope('title'), false)
+  assert.equal(feedback.isFeedbackInScope('profile.email'), true)
+  const rowKey = form.rowKeys('rows')[0]
+  const title = form.field('title')
+  title.setPendingInput(true)
+  form.setValue('profile.amount', 4)
+  const oldAmount = form.field('profile.amount')
+  oldAmount.setPendingInput(true)
+  const preservedIssue = form.issues.value.find((issue) => issue.field === 'title')
+  assert.ok(preservedIssue)
+  assert.equal(form.resetFields(['profile']), 'applied')
+  assert.equal(form.getValue('profile.amount'), null)
+  assert.deepEqual(form.pendingFields.value, ['title'])
+  assert.equal(form.rowKeys('rows')[0], rowKey)
+  assert.ok(form.issues.value.includes(preservedIssue))
+  assert.equal(oldAmount.setValue(9), 'blocked', 'reset invalidates stale target bindings')
+  title.setPendingInput(false)
+  assert.equal(title.setValue('Keep'), 'applied', 'unrelated binding remains usable')
+  assert.equal(form.resetFields([]), 'unchanged')
+  assert.equal(form.clearErrors([]), 'unchanged')
+  assert.equal(await form.validateFields([]), 'valid')
+  assert.throws(() => form.resetFields(['profile', 'missing']))
+  assert.equal(form.getValue('title'), 'Keep')
+  assert.equal(await form.validateFields(['profile.email']), 'invalid')
+  assert.equal(form.clearErrors(['profile.email']), 'applied')
+  assert.equal(feedback.isFeedbackCurrent(feedback.feedbackRevision.value), false)
+  assert.equal(feedback.isSummaryCurrent(feedback.summaryRevision.value), false)
+  assert.equal(
+    form.issues.value.some((issue) => issue.field === 'profile.email'),
+    false,
+  )
+  assert.equal(await form.validateFields(['profile.email']), 'invalid', 'clear is not validity')
+  form.addItem('rows')
+  form.setValue('rows.1.name', 'New')
+  form.resetFields(['rows.1.name'])
+  assert.equal(form.getValue('rows.1.name'), '', 'new rows reset to schema defaults')
+  form.resetFields(['rows'])
+  assert.deepEqual(form.getValue('rows'), [{ name: 'Original' }])
+  form.dispose()
+  assert.equal(form.resetFields(['title']), 'disposed')
+
+  let finish: ((issues: readonly { field: string; message: () => string }[]) => void) | undefined
+  const asyncForm = useUiForm({
+    formId: 'local-async',
+    copy: formCopy,
+    schema: { fields: [{ kind: 'text', name: 'name', label: 'Name' }] },
+    initial: { draftId: 'async', values: { name: 'Initial' } },
+    validation: () =>
+      new Promise((resolve) => {
+        finish = resolve
+      }),
+  })
+  const checking = asyncForm.validateFields(['name'])
+  await nextTick()
+  await Promise.resolve()
+  await Promise.resolve()
+  assert.ok(finish)
+  asyncForm.resetFields(['name'])
+  finish([{ field: 'name', message: () => 'Stale' }])
+  assert.equal(await checking, 'cancelled')
+  assert.equal(asyncForm.issues.value.length, 0)
+  asyncForm.dispose()
+  for (const action of ['move', 'remove'] as const) {
+    let complete:
+      ((issues: readonly { field: string; message: () => string }[]) => void) | undefined
+    const rows = useUiForm({
+      formId: `local-row-${action}`,
+      copy: formCopy,
+      schema: {
+        fields: [
+          { kind: 'text', name: 'other', label: 'Other' },
+          {
+            kind: 'repeat',
+            name: 'rows',
+            label: 'Rows',
+            fields: [{ kind: 'text', name: 'name', label: 'Name' }],
+          },
+        ],
+      },
+      initial: { draftId: action, values: { other: '', rows: [{ name: 'A' }, { name: 'B' }] } },
+      validation: () =>
+        new Promise((resolve) => {
+          complete = resolve
+        }),
+    })
+    rows.field('other').setPendingInput(true)
+    const pending = rows.validateFields(['rows.0.name'])
+    await nextTick()
+    await Promise.resolve()
+    await Promise.resolve()
+    assert.ok(complete)
+    if (action === 'move') rows.moveItem('rows', 0, 1)
+    else rows.removeItem('rows', 0)
+    complete([{ field: 'rows.0.name', message: () => 'Old row' }])
+    assert.equal(await pending, 'cancelled')
+    assert.equal(rows.issues.value.length, 0)
+    assert.deepEqual(rows.pendingFields.value, ['other'])
+    rows.dispose()
+  }
+}
 async function verifyFormSteps(): Promise<void> {
   assert.throws(() =>
     parseUiFormSchema({
@@ -2006,6 +2321,45 @@ async function verifyCsvExport(): Promise<void> {
   assert.equal(requests, 1, 'CSV export never fetches other pages')
   remote.dispose()
 }
+function verifyEditorModalOptions(): void {
+  const base: UiTableSchema = {
+    id: 'modal-options',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [{ key: 'title', title: 'Title' }],
+    editor: { form: { fields: [{ kind: 'text', name: 'title', label: 'Title' }] } },
+  }
+  const configured = parseUiTableSchema({
+    ...base,
+    editor: { ...base.editor, modal: { maximizable: true, draggable: true } },
+  })
+  assert.deepEqual(configured.editor?.modal, { maximizable: true, draggable: true })
+  assert.ok(Object.isFrozen(configured.editor.modal))
+  for (const modal of [{ maximizable: 'true' }, { draggable: 1 }, { unknown: true }])
+    assert.throws(() => parseUiTableSchema({ ...base, editor: { ...base.editor, modal } }))
+  for (const presentation of ['drawer', 'page'])
+    assert.throws(() =>
+      parseUiTableSchema({ ...base, editor: { ...base.editor, presentation, modal: {} } }),
+    )
+  const table = useUiTable({
+    schema: configured,
+    rows: [{ id: 1, title: 'Record' }],
+    immediate: false,
+  })
+  const session = useUiTableForm({
+    table,
+    copy: formCopy,
+    transport: {
+      list: () => Promise.resolve({ rows: [], total: 0 }),
+      mutate: () => Promise.resolve(),
+    },
+  })
+  assert.equal(session.presentation, 'modal')
+  assert.deepEqual(session.modal, { maximizable: true, draggable: true })
+  session.dispose()
+  table.dispose()
+}
+
 async function verifyInlineEditing(): Promise<void> {
   const original = [
     { id: 1, title: 'Original', stock: 9 },
@@ -2243,11 +2597,14 @@ async function verifyKeywordSearch(): Promise<void> {
 }
 await verifyKeywordSearch()
 await verifyConfiguredInlineEditing()
+verifyEditorModalOptions()
 await verifyInlineEditing()
 await verifyCsvExport()
 verifyColumnGroups()
 await verifyMultipleSorting()
 await verifyCommonFormFields()
+await verifyTableLocalFilters()
+await verifyFormLocalOperations()
 await verifyFormSteps()
 verifyColumnPreferences()
 verifyColumnManipulation()
@@ -2802,3 +3159,19 @@ await verifyContinuousRace()
 verifyDateTime()
 
 verifyDashboard()
+
+await verifyDynamicForm(formCopy)
+
+await verifyFormDraftHandoff(formCopy)
+
+await verifyFormImageProcessing()
+
+await verifyFormMediaPreview()
+
+await verifyFormRichText(formCopy)
+
+await verifyReportForm(formCopy)
+await verifyReportTable()
+verifyReportPrint()
+await verifyWorkspaceReload()
+await verifyRuntimeUpdate()

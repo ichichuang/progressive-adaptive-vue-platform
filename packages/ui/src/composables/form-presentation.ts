@@ -1,8 +1,13 @@
 import { computed, type Ref } from 'vue'
-import type { UiFormController, UiFormAttachmentSource } from '../components/form-contracts'
+import type {
+  UiFormController,
+  UiFormAttachmentSource,
+  UiFormAttachmentResolver,
+} from '../components/form-contracts'
 
 interface FormPresentation {
   attachmentSource(name: string): UiFormAttachmentSource
+  attachmentPreview(name: string): UiFormAttachmentResolver | undefined
 
   readonly generation: Readonly<Ref<number>>
   readonly feedbackTarget: Readonly<
@@ -11,7 +16,7 @@ interface FormPresentation {
   isFeedbackCurrent(revision: number): boolean
   requestFeedback(name: string, revision: number): void
   readonly feedbackRevision: Readonly<Ref<number>>
-  readonly feedbackScope: Readonly<Ref<string | undefined>>
+  isFeedbackInScope(name: string): boolean
   readonly summaryRevision: Readonly<Ref<number>>
   nodeLabel(name: string): string
   nodeControlId(name: string): string

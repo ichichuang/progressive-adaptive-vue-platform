@@ -4,9 +4,25 @@ import { NInputNumber } from 'naive-ui/es/input-number'
 import { NSwitch } from 'naive-ui/es/switch'
 import { useConsoleI18n } from '../../../../shared/i18n'
 import type { BuilderEditableNode } from './use-form-builder'
-defineProps<{ readonly node: BuilderEditableNode }>()
+const props = defineProps<{ readonly node: BuilderEditableNode }>()
 const emit = defineEmits<{ patch: [property: string, value: unknown] }>()
 const { t } = useConsoleI18n()
+function setCompression(enabled: boolean): void {
+  if (props.node.kind !== 'attachment') return
+  const current = props.node.imageProcessing
+  emit(
+    'patch',
+    'imageProcessing',
+    enabled
+      ? {
+          ...current,
+          output: { mimeType: 'image/webp', quality: 0.85, maxWidth: 1600, maxHeight: 1600 },
+        }
+      : current?.crop
+        ? { crop: current.crop }
+        : undefined,
+  )
+}
 </script>
 <template>
   <section
@@ -86,5 +102,39 @@ const { t } = useConsoleI18n()
       :input-props="{ 'aria-label': t('formBuilder.attachmentSize') }"
       @update:value="emit('patch', 'maxSize', $event ?? undefined)"
     />
+    <div class="flex items-center justify-between gap-component-unit">
+      <span>{{ t('formMedia.cropTitle') }}</span>
+      <NSwitch
+        :value="Boolean(node.imageProcessing?.crop)"
+        :aria-label="t('formMedia.cropTitle')"
+        @update:value="
+          emit(
+            'patch',
+            'imageProcessing',
+            $event
+              ? { ...node.imageProcessing, crop: {} }
+              : node.imageProcessing?.output
+                ? { output: node.imageProcessing.output }
+                : undefined,
+          )
+        "
+      />
+    </div>
+    <div class="flex items-center justify-between gap-component-unit">
+      <span>{{ t('formMedia.compress') }}</span>
+      <NSwitch
+        :value="Boolean(node.imageProcessing?.output)"
+        :aria-label="t('formMedia.compress')"
+        @update:value="setCompression"
+      />
+    </div>
+    <div class="flex items-center justify-between gap-component-unit">
+      <span>{{ t('formMedia.previewTitle') }}</span>
+      <NSwitch
+        :value="Boolean(node.preview)"
+        :aria-label="t('formMedia.previewTitle')"
+        @update:value="emit('patch', 'preview', $event ? { types: ['image', 'pdf'] } : undefined)"
+      />
+    </div>
   </section>
 </template>

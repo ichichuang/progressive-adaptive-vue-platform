@@ -231,3 +231,63 @@ source name with their real handler.
 ## 日期显示上下文
 
 `UiForm` 的可选 `dateTime` 属性统一详情模式的日期、时间、日期范围显示；上下文为 `{ locale, timeZone, hourCycle? }`，语言不推导时区。原始日期仍为 `YYYY-MM-DD`、时间仍为 `HH:mm:ss`，不会按时区移位，也不会改写提交值。组件未传时继承 `UiProvider.dateTime`；两者都未配置时保留原值显示。`UiTableEditor.dateTime` 同样传递到详情表单。`useUiDateTime()` 为图表与自定义组件提供只读响应式上下文，不建立第二份偏好状态。`formatUiDateTime` 支持显式 instant、date、time 与注明秒/毫秒的 timestamp，非法值返回 null；`formatUiRelativeTime` 由调用者提供 now，不建立全局时钟。表格列的 JSON `dateTime` 指定输入 kind、timestamp unit 和可选 preset，`UiTable.dateTime` 提供同一显示上下文，排序/筛选/导出保留原始值。G2 的轴与 tooltip 在可信前端 formatter 中复用公共函数，不将函数放入后端 JSON。
+
+## Scoped form operations
+
+`validateFields(paths)` validates concrete field or group paths through the existing validation
+engine. It commits only selected mounted controls, retains unrelated feedback and does not
+certify the complete form. Form-level issues are not cleared by a partial operation.
+`clearErrors(paths)` only clears matching feedback; subsequent validation still checks data.
+`resetFields(paths)` restores selected values from the accepted baseline (new repeat fields
+without an accepted value use schema defaults). Selected transient controls are reset; unrelated
+input buffers, values, errors and repeat identities remain intact. It emits the existing change
+event, not a whole-form reset event. Resetting a repeat collection replaces that collection's
+row identities; resetting an individual leaf preserves its row identity.
+
+Empty path lists are no-ops. Unknown paths reject the entire request before mutation. Paths are
+current concrete paths, not patterns. Overlapping roots are normalized. Submitting forms reject
+these mutations as busy. Old asynchronous validation results cannot restore cleared feedback.
+
+## Dynamic JSON configuration
+
+`useUiDynamicForm` owns a replaceable `form` ref. Its values are JSON records, not the old
+literal schema's static type. `replaceSchema` parses before publication, migrates current
+and accepted values separately, keeps compatible named fields, uses defaults for new fields,
+and restores steps by name. Removed fields disappear. Public migration never guesses renames.
+Pending control input, submission and active loading block replacement. Invalid configuration
+leaves the current instance intact; a competing replacement or intervening edit cancels the
+prepared candidate. Candidate option reads can start before publication and are cancelled when
+that candidate is discarded. Migration does not emit consumer change/reset events.
+
+`onReplaced` runs after publication and before the retired controller is disposed. Application
+persistence may stop the previous draft session without flushing, then hand off its original
+observed storage record to the new schema's explicitly allowlisted snapshot in one CAS write.
+Failure keeps the migrated form in memory and must remain visibly unsaved/conflicted. It does
+not roll back the form or erase stored data. JSON configuration itself is not automatically
+persisted: the backend or application still provides the schema on a later load.
+
+## Attachment media
+
+Attachment references remain `{ id, name, size? }`. Browser files, preview blobs and object URLs never enter form values or drafts. Existing `attachments[source]` upload functions remain valid; use `{ upload, resolvePreview }` when preview is enabled. The trusted resolver returns a Blob and receives the same AbortSignal/field context convention. JSON config cannot contain executable code or arbitrary preview URLs.
+
+Set `imageProcessing.crop` to enable a cancellable crop dialog; set `imageProcessing.output` for JPEG, PNG or WebP encoding with optional quality and maximum dimensions. Compression without crop needs no extra confirmation. Set `preview.types` to image and/or PDF to enable preview in editing and detail views. Supply `copy.media` for the media controls. Defaults leave ordinary attachments unchanged.
+
+Processing and uploading share one pending selection. Cancel is not an error; reset, field removal, schema replacement and deactivation invalidate late work. Reordering a repeat row may cancel processing rather than assign its result to a different row. Preview work has its own cancellable read-only lifetime and never marks a field as edited.
+
+Raster decoding checks signatures, MIME agreement, bytes and dimensions before decoding and verifies decoded dimensions. Supported raster formats are JPEG, PNG and WebP; SVG is not executed. Processing rejects animated PNG/WebP instead of silently flattening frames; original animated images remain eligible for read-only preview. Private safety bounds are 32 MiB and 40 million pixels. Field `maxSize` limits the file that will be uploaded: the original file for ordinary attachments, or the processed output when image processing is enabled. Original image safety bounds remain separate, so a safe larger image can be compressed below the upload limit. Output encoding may increase size; no compression ratio is promised. PDF preview uses a lazy local PDF.js worker, byte-only input, at most 500 pages and a bounded current-page canvas; it does not instantiate scripting, annotation links or XFA. Closing previews releases rendering tasks and object URLs. Applications remain responsible for authenticated preview resolution and server-side validation.
+
+## 富文本 JSON
+
+`kind: 'rich-text'` 的值是 `UiRichTextDocument`，不是 HTML。缺省为空段落文档。
+允许段落、1–3 级标题、引用、有序/无序列表、文本、换行，以及粗体、斜体、删除线和链接。
+`tools` 从 `richTextTools` 选择工具栏操作；隐藏工具不删除已保存的合法格式。
+链接只接受绝对 HTTP/HTTPS 地址，拒绝凭据、控制字符、空白及脚本/文件/临时对象 URL。
+JSON 不接受颜色、CSS、事件、原始 HTML、图片或任意扩展属性；附件仍由上传字段负责。
+文档最多 10000 节点、24 层及 100000 个文本 UTF-16 码元，另受表单整体 JSON 预算约束。
+`required` 按去除空白后的可见文本判断，`minLength`/`maxLength` 按可见文本 UTF-16 长度计算，
+块之间及硬换行计一个换行字符，不按 JSON 大小计算。读取结果可用 `isRichTextDocument` 和
+`richTextPlainText`，完整结构仍可通过表单 JSON 导出/回填；不要把 HTML 直接作为值传入。
+
+前端 copy 使用 `richText` 工具文案映射及 `richTextLinkLabel`、`richTextLinkApply`、
+`richTextLinkInvalid`。编辑器按需加载，详情用同一文档规则的只读呈现，不使用 `v-html`。
+输入法组合期间控件持有 pending 状态，提交不得截断输入；外部重置/替换沿用表单缓冲保护。

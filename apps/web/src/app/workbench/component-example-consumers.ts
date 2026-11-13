@@ -7,6 +7,9 @@ const formCapabilityRoutes = Object.freeze([
   'component-form-calculations',
   'component-form-structure',
   'component-form-steps',
+  'component-form-dynamic',
+  'component-form-media',
+  'component-form-rich-text',
   'component-form-validation',
   'component-form-extension',
   'component-form-controls',
@@ -43,6 +46,7 @@ const tableExampleRoutes = Object.freeze([
   'component-combination-modal',
   'component-combination-drawer',
   'component-combination-page',
+  'component-combination-report',
 ] as const)
 
 const combinationRoutes = Object.freeze([
@@ -50,6 +54,7 @@ const combinationRoutes = Object.freeze([
   'component-combination-modal',
   'component-combination-drawer',
   'component-combination-page',
+  'component-combination-report',
 ] as const)
 
 const apiShowcaseRoutes = Object.freeze([
@@ -124,7 +129,9 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-distribution',
       'component-chart-interaction',
     ]),
+    UiReportPreview: Object.freeze(['component-combination-report']),
     UiG2Chart: Object.freeze([
+      'component-combination-report',
       'workbench-interactions',
       'workbench-welcome',
       'component-charts',

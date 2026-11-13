@@ -60,6 +60,7 @@ function parseConfiguration(
     'editor',
     'columnSettings',
     'keywordSearch',
+    'localFilters',
     'reorderableColumns',
     'sorting',
     'columnPreferenceKey',
@@ -243,6 +244,42 @@ function parseConfiguration(
     if (schema['tree'] !== undefined)
       throw error('Keyword search is not supported for tree tables.')
   }
+  if (schema['localFilters'] !== undefined) {
+    if (record(schema['source'])['kind'] !== 'local' || schema['tree'] !== undefined)
+      throw error('Local filters require a flat local table.')
+    const filters = schema['localFilters']
+    if (!Array.isArray(filters) || filters.length === 0)
+      throw error('Local filters must be a nonempty array.')
+    const parameters: string[] = []
+    const keyword =
+      schema['keywordSearch'] === undefined
+        ? undefined
+        : record(schema['keywordSearch'])['parameter']
+    for (const item of filters) {
+      const filter = record(item)
+      choice(filter, 'kind', ['number-range', 'date-range', 'empty', 'text'])
+      keys(
+        filter,
+        filter['kind'] === 'text'
+          ? ['parameter', 'field', 'kind', 'match', 'invalidMessage']
+          : ['parameter', 'field', 'kind', 'invalidMessage'],
+      )
+      if (filter['invalidMessage'] !== undefined) text(filter['invalidMessage'])
+      tablePathParts(filter['parameter'])
+      tablePathParts(filter['field'])
+      const parameter = String(filter['parameter'])
+      if (!columnKeys.has(String(filter['field'])))
+        throw error('Local filters require a configured column.')
+      const overlaps = (other: string) =>
+        other === parameter ||
+        other.startsWith(`${parameter}.`) ||
+        parameter.startsWith(`${other}.`)
+      if (parameters.some(overlaps) || (typeof keyword === 'string' && overlaps(keyword)))
+        throw error('Local filter parameters must not overlap.')
+      if (filter['kind'] === 'text') choice(filter, 'match', ['contains', 'fuzzy'])
+      parameters.push(parameter)
+    }
+  }
   if (schema['columnGroups'] !== undefined)
     schema['columnGroups'] = parseTableColumnGroups(
       schema['columnGroups'],
@@ -395,7 +432,16 @@ function parseConfiguration(
   }
   if (schema['editor'] !== undefined) {
     const editor = record(schema['editor'])
-    keys(editor, ['form', 'presentation', 'inline', 'create', 'update', 'detail', 'remove'])
+    keys(editor, [
+      'form',
+      'presentation',
+      'modal',
+      'inline',
+      'create',
+      'update',
+      'detail',
+      'remove',
+    ])
     const form = parseUiFormSchema(editor['form'])
     editor['form'] = form
     if (editor['inline'] !== undefined) {
@@ -420,6 +466,15 @@ function parseConfiguration(
     }
     if (editor['presentation'] !== undefined)
       choice(editor, 'presentation', ['modal', 'drawer', 'page'])
+    if (editor['modal'] !== undefined) {
+      if (editor['presentation'] !== undefined && editor['presentation'] !== 'modal')
+        throw error('Modal options require modal presentation.')
+      const modal = record(editor['modal'])
+      keys(modal, ['maximizable', 'draggable'])
+      for (const flag of ['maximizable', 'draggable'])
+        if (modal[flag] !== undefined && typeof modal[flag] !== 'boolean')
+          throw error('Modal options must be boolean.')
+    }
     for (const operation of ['create', 'update', 'detail', 'remove'])
       if (editor[operation] !== undefined) editor[operation] = parseTableRequest(editor[operation])
   }

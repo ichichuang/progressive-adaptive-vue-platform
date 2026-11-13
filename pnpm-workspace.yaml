@@ -44,6 +44,9 @@ patchedDependencies:
   vue-router@5.2.0: patches/vue-router@5.2.0.patch
 
 catalog:
+  '@tiptap/vue-3': 3.34.0
+  '@tiptap/pm': 3.34.0
+  '@tiptap/starter-kit': 3.34.0
   '@antv/g2': 5.4.8
   '@iconify-json/lucide': 1.2.120
   '@intlify/message-compiler': 11.4.10
@@ -56,6 +59,7 @@ catalog:
   '@vitejs/plugin-vue': 6.0.8
   '@vueuse/core': 14.4.0
   colorjs.io: 0.7.1
+  cropperjs: 2.3.1
   eslint: 10.8.0
   eslint-plugin-boundaries: 7.1.0
   eslint-plugin-vue: 10.10.0
@@ -67,6 +71,7 @@ catalog:
   motion-v: 2.4.0
   naive-ui: 2.45.2
   overlayscrollbars: 2.16.0
+  pdfjs-dist: 6.5.438
   pinia: 3.0.4
   prettier: 3.9.6
   stylelint: 17.14.1

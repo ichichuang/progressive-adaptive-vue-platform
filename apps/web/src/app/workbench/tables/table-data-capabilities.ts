@@ -47,6 +47,39 @@ export function tableDataCapabilitySchema(
     form: {
       columns: 2 as const,
       fields: [
+        ...(example === 'sorting'
+          ? [
+              {
+                kind: 'group' as const,
+                name: 'priceRange',
+                label: 'tableCapabilities.data.priceRange',
+                fields: [
+                  { kind: 'number' as const, name: 'min', label: 'tableCapabilities.data.minimum' },
+                  { kind: 'number' as const, name: 'max', label: 'tableCapabilities.data.maximum' },
+                ],
+              },
+              {
+                kind: 'date-range' as const,
+                name: 'dates',
+                label: 'tableCapabilities.data.dateRange',
+              },
+              {
+                kind: 'select' as const,
+                name: 'noteState',
+                label: 'tableCapabilities.data.noteState',
+                options: [
+                  { value: 'empty', label: 'tableCapabilities.data.empty' },
+                  { value: 'not-empty', label: 'tableCapabilities.data.notEmpty' },
+                ],
+              },
+              {
+                kind: 'text' as const,
+                name: 'nameMatch',
+                label: 'tableCapabilities.data.fuzzyName',
+                placeholder: 'tableCapabilities.data.fuzzyHint',
+              },
+            ]
+          : []),
         {
           kind: 'text' as const,
           name: 'title',
@@ -92,6 +125,26 @@ export function tableDataCapabilitySchema(
   ]
   return {
     id: `table-capability-${example}`,
+    ...(example === 'sorting'
+      ? {
+          localFilters: [
+            {
+              parameter: 'priceRange',
+              field: 'price',
+              kind: 'number-range' as const,
+              invalidMessage: 'tableCapabilities.data.invalidRange',
+            },
+            { parameter: 'dates', field: 'date', kind: 'date-range' as const },
+            { parameter: 'noteState', field: 'note', kind: 'empty' as const },
+            {
+              parameter: 'nameMatch',
+              field: 'title',
+              kind: 'text' as const,
+              match: 'fuzzy' as const,
+            },
+          ],
+        }
+      : {}),
     rowKey: 'id',
     ...(example === 'sorting'
       ? {
@@ -143,7 +196,23 @@ export function tableDataCapabilitySchema(
             { key: 'profile.name', title: 'tableCapabilities.data.nested', width: 180 },
             { key: 'note', title: 'tableCapabilities.data.longContent', width: 300 },
           ]
-        : columns,
+        : example === 'sorting'
+          ? [
+              ...columns,
+              {
+                key: 'date',
+                title: 'tableCapabilities.data.date',
+                kind: 'date' as const,
+                width: 150,
+              },
+              {
+                key: 'note',
+                title: 'tableCapabilities.data.note',
+                emptyText: 'tableCapabilities.data.empty',
+                width: 160,
+              },
+            ]
+          : columns,
     ...(example === 'sorting' || example === 'states' ? { query } : {}),
     ...(example === 'states'
       ? {

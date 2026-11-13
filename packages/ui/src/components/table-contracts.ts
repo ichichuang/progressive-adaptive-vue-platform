@@ -166,7 +166,25 @@ export interface UiTableTree {
    */
   readonly childrenRequest?: UiTableRequest
 }
+/**
+ * Local matching only; parameters retain their JSON shape. Missing/null disables matching.
+ * number-range: { min: number | null, max: number | null }, inclusive and finite.
+ * date-range: [YYYY-MM-DD, YYYY-MM-DD], inclusive valid calendar dates, without timezone conversion.
+ * empty: 'empty' | 'not-empty'; only undefined/null/empty string count as empty, never 0/false.
+ * text: string; fuzzy means case-insensitive ordered subsequence, not spelling correction.
+ */
+export type UiTableLocalFilter = {
+  /** Translatable query-form feedback; defaults to the form invalidValue message. */
+  readonly invalidMessage?: string
+  readonly parameter: string
+  readonly field: string
+} & (
+  | { readonly kind: 'number-range' | 'date-range' | 'empty' }
+  | { readonly kind: 'text'; readonly match: 'contains' | 'fuzzy' }
+)
 export interface UiTableSchema {
+  /** Opt-in typed matching for flat local tables; never rewrites remote requests. */
+  readonly localFilters?: readonly UiTableLocalFilter[]
   /** Expand the same live table into the application overlay. */
   readonly maximizable?: boolean
   readonly csvExport?: UiTableCsvConfiguration
@@ -215,6 +233,8 @@ export interface UiTableSchema {
     /** Optional JSON-controlled in-place editing using the same form and update request. */
     readonly inline?: { readonly mode?: 'cell' | 'row'; readonly fields: readonly string[] }
     readonly presentation?: 'modal' | 'drawer' | 'page'
+    /** Opt-in modal surface controls. Not applicable to drawer/page presentations. */
+    readonly modal?: { readonly maximizable?: boolean; readonly draggable?: boolean }
     readonly create?: UiTableRequest
     readonly update?: UiTableRequest
     readonly detail?: UiTableRequest
@@ -342,6 +362,8 @@ export interface UiTableController {
   resetColumns(): void
   /** Produces a safe CSV snapshot; does not fetch or download data. */
   exportCsv(scope: UiTableCsvScope): UiTableCsvFile
+  /** Snapshot currently loaded rows only; no fetching and independent of CSV permissions. */
+  captureRows(scope: UiTableCsvScope): readonly UiTableReadonlyRecord[]
   /** Replaces only summary configuration, preserving query, pagination, selection and columns. */
   setSummary(summary: readonly UiTableSummaryRow[]): void
   setRows(rows: readonly UiTableReadonlyRecord[]): Promise<void>
@@ -394,6 +416,8 @@ export interface UiTableProps {
   readonly maxHeight?: number
 }
 export interface UiTableEditorCopy {
+  readonly maximize?: () => string
+  readonly restore?: () => string
   readonly cancel: () => string
   readonly save: () => string
   readonly continueEditing: () => string

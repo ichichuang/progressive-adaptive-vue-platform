@@ -1,7 +1,12 @@
 import { computed, onScopeDispose, readonly, ref, shallowRef, toRef, watch } from 'vue'
 import { subscribeFormDraftChanges } from '../storage/form-draft-storage'
 import { formDraftSignature } from './form-draft-signature'
-import type { FormDraftFailure, FormDraftPort, FormDraftRead } from './form-draft-contract'
+import type {
+  FormDraftFailure,
+  FormDraftPort,
+  FormDraftRead,
+  FormDraftWrite,
+} from './form-draft-contract'
 
 export type DraftSessionStatus =
   'empty' | 'available' | 'restored' | 'saved' | 'changed' | 'cleared' | FormDraftFailure
@@ -13,13 +18,15 @@ export function useDraftSession<T>(input: {
   readonly restore: (data: T) => boolean
   readonly automatic?: boolean
   readonly enabled?: () => boolean
+  readonly adopted?: FormDraftWrite
 }) {
+  const stopped = ref(false)
   const status = ref<DraftSessionStatus>('empty')
   const available = shallowRef<Extract<FormDraftRead<T>, { status: 'found' }> | null>(null)
   const savedAt = ref<number | null>(null)
   const expiresAt = ref<number | null>(null)
   const ready = ref(false)
-  const active = computed(() => ready.value && (input.enabled?.() ?? true))
+  const active = computed(() => !stopped.value && ready.value && (input.enabled?.() ?? true))
   const serialized = computed(() => formDraftSignature(input.snapshot()))
   const initial = serialized.value
   const acknowledged = ref(initial)
@@ -77,10 +84,10 @@ export function useDraftSession<T>(input: {
     scheduleExpiry()
   }
   function inspect(): void {
-    acceptRead(input.port.read(), true)
+    if (!stopped.value) acceptRead(input.port.read(), true)
   }
   function recheck(): void {
-    acceptRead(input.port.read(), false)
+    if (!stopped.value) acceptRead(input.port.read(), false)
   }
   function remember(data: T, time: { savedAt: number; expiresAt: number }): void {
     observed = formDraftSignature({
@@ -115,6 +122,7 @@ export function useDraftSession<T>(input: {
     return true
   }
   function restore(): boolean {
+    if (stopped.value) return false
     const draft = available.value
     if (!draft || needsInspection) return false
     const latest = input.port.read()
@@ -146,7 +154,7 @@ export function useDraftSession<T>(input: {
   }
   function clear(): boolean {
     cancel()
-    if (needsInspection) return false
+    if (stopped.value || needsInspection) return false
     const result = input.port.clear()
     if (result.status === 'failed') {
       status.value = result.reason
@@ -164,9 +172,23 @@ export function useDraftSession<T>(input: {
     scheduleExpiry()
     return true
   }
-  inspect()
-  if (input.automatic && serialized.value === initial && (input.enabled?.() ?? true)) restore()
-  watch(
+  if (input.adopted?.status === 'saved') {
+    remember(input.snapshot(), input.adopted)
+    ready.value = true
+    status.value = 'saved'
+  } else if (input.adopted?.status === 'failed') {
+    status.value = input.adopted.reason
+    recoverable.value = null
+    needsInspection = true
+  } else inspect()
+  if (
+    input.adopted === undefined &&
+    input.automatic &&
+    serialized.value === initial &&
+    (input.enabled?.() ?? true)
+  )
+    restore()
+  const stopWatch = watch(
     () => [serialized.value, input.enabled?.() ?? true],
     () => {
       cancel()
@@ -187,14 +209,17 @@ export function useDraftSession<T>(input: {
   }
   const unsubscribe = subscribeFormDraftChanges(recheck)
   // Close the initial read-before-listen gap without overwriting any draft.
-  recheck()
+  if (input.adopted === undefined) recheck()
   if (input.automatic) window.addEventListener('beforeunload', flush)
   window.addEventListener('pagehide', flush)
   window.addEventListener('pageshow', recheck)
   window.addEventListener('focus', recheck)
   document.addEventListener('visibilitychange', visibilityChanged)
-  onScopeDispose(() => {
-    flush()
+  function stop(options: { readonly flush?: boolean } = {}): void {
+    if (stopped.value) return
+    if (options.flush !== false) flush()
+    stopped.value = true
+    stopWatch()
     cancel()
     if (expiryTimer !== undefined) clearTimeout(expiryTimer)
     unsubscribe()
@@ -203,8 +228,16 @@ export function useDraftSession<T>(input: {
     window.removeEventListener('pageshow', recheck)
     window.removeEventListener('focus', recheck)
     document.removeEventListener('visibilitychange', visibilityChanged)
-  })
+  }
+  onScopeDispose(stop)
   return {
+    stop,
+    handoff<U>(target: FormDraftPort<U>, data: U): FormDraftWrite {
+      const permitted = !needsInspection && ready.value && (input.enabled?.() ?? true)
+      stop({ flush: false })
+      if (!permitted) return { status: 'failed', reason: 'conflict' }
+      return input.port.handoff(target, data)
+    },
     status: readonly(status),
     available: readonly(available),
     savedAt: readonly(savedAt),

@@ -12,12 +12,24 @@ import { NCheckbox, NCheckboxGroup } from 'naive-ui/es/checkbox'
 import { NDatePicker } from 'naive-ui/es/date-picker'
 import { NButton } from 'naive-ui/es/button'
 import { NPopover } from 'naive-ui/es/popover'
-import { computed, inject, nextTick, onScopeDispose, shallowRef, useTemplateRef, watch } from 'vue'
+import {
+  defineAsyncComponent,
+  type Component,
+  computed,
+  inject,
+  nextTick,
+  onScopeDispose,
+  shallowRef,
+  useTemplateRef,
+  watch,
+} from 'vue'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
 import PavpNaiveFormChoice from './PavpNaiveFormChoice.vue'
 import { useFormControl } from './use-form-control'
 import { pavpNaiveAppearanceKey } from './pavp-naive-runtime-context'
 import { createPavpNaiveFormThemeProjection } from './pavp-naive-form-theme'
+
+const PavpFormRichText = defineAsyncComponent<Component>(() => import('./PavpFormRichText.vue'))
 
 defineOptions({ name: 'PavpNaiveFormControl', inheritAttrs: false })
 const props = defineProps<{
@@ -234,8 +246,13 @@ function chooseDate(value: string | null): void {
     @compositionstart.capture="captureComposition"
     @compositionend.capture="captureComposition"
   >
+    <PavpFormRichText
+      v-if="config.kind === 'rich-text'"
+      :form="form"
+      :binding="binding"
+    />
     <div
-      v-if="readonlyComposite && config.kind === 'switch'"
+      v-else-if="readonlyComposite && config.kind === 'switch'"
       data-form-readonly
       role="checkbox"
       :aria-checked="binding.value === true"

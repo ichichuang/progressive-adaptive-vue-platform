@@ -37,6 +37,28 @@ export const uiPublicComponentRegistry = Object.freeze({
   schemaVersion: 1,
   records: Object.freeze([
     Object.freeze({
+      id: 'ui-report-preview',
+      exportName: 'UiReportPreview',
+      sourcePath: 'packages/ui/src/components/UiReportPreview.vue',
+      props: Object.freeze([
+        Object.freeze({ name: 'show', type: 'boolean', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'snapshot',
+          type: 'UiReportSnapshot | null',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'copy', type: 'UiReportCopy', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'update:show', payloadType: '[value: boolean]' }),
+      ]),
+      slots: Object.freeze([]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze([]),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
       id: 'ui-chart-time-range',
       exportName: 'UiChartTimeRange',
       sourcePath: 'packages/ui/src/components/UiChartTimeRange.vue',

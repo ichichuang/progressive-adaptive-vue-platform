@@ -107,3 +107,31 @@ export type {
 export { default as UiDisplayStage } from './components/UiDisplayStage.vue'
 export { fitUiDisplayStage } from './components/display-stage'
 export type { UiDisplayRatio, UiDisplayStageSize } from './components/display-stage'
+
+export { useUiDynamicForm } from './composables/use-ui-dynamic-form'
+export type {
+  UiDynamicFormInput,
+  UiDynamicFormReplacement,
+} from './composables/use-ui-dynamic-form'
+export { migrateFormValues } from './components/form-value-migration'
+
+export type { UiFormMigrationPolicy } from './components/form-value-migration'
+
+export type {
+  UiFormImageProcessing,
+  UiFormAttachmentResolver,
+  UiFormAttachmentService,
+  UiFormMediaCopy,
+} from './components/form-contracts'
+
+export {
+  isRichTextDocument,
+  richTextPlainText,
+  richTextTools,
+} from './components/rich-text-document'
+
+export { default as UiReportPreview } from './components/UiReportPreview.vue'
+export type * from './components/report-contracts'
+export { captureUiFormReport } from './components/report-form'
+export { captureUiTableReport } from './components/report-table'
+export { captureUiChartReport, createUiReportSnapshot } from './components/report-snapshot'

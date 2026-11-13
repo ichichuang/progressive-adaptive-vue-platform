@@ -1,6 +1,7 @@
 import { onScopeDispose, ref, watch } from 'vue'
 import type {
   UiFormController,
+  UiFormImageProcessing,
   UiFormFieldBinding,
   UiFormFieldConfig,
 } from '../components/form-contracts'
@@ -12,6 +13,11 @@ import { formPresentation } from './form-presentation'
 export function useFormAttachments<I>(props: {
   readonly form: UiFormController<I>
   readonly binding: UiFormFieldBinding
+  readonly processImage?: (
+    file: File,
+    options: UiFormImageProcessing,
+    signal: AbortSignal,
+  ) => Promise<File | null>
   readonly config: Extract<UiFormFieldConfig, { kind: 'attachment' }>
 }) {
   const busy = ref(false)
@@ -33,9 +39,13 @@ export function useFormAttachments<I>(props: {
     },
     { flush: 'sync' },
   )
-  watch(() => [formPresentation(props.form).generation.value, props.binding.controlId], cancel, {
-    flush: 'sync',
-  })
+  watch(
+    [() => formPresentation(props.form).generation.value, () => props.binding.controlId],
+    cancel,
+    {
+      flush: 'sync',
+    },
+  )
   watch(
     () => props.binding.value,
     (value) => {
@@ -55,7 +65,9 @@ export function useFormAttachments<I>(props: {
     const { maxFiles, maxSize } = props.config
     if (
       (maxFiles !== undefined && current.length >= maxFiles) ||
-      (maxSize !== undefined && selected.size > maxSize)
+      (props.config.imageProcessing === undefined &&
+        maxSize !== undefined &&
+        selected.size > maxSize)
     ) {
       failed.value = true
       return false
@@ -67,10 +79,24 @@ export function useFormAttachments<I>(props: {
     failed.value = false
     binding.setPendingInput(true)
     try {
-      const attachment = await formPresentation(form).attachmentSource(props.config.source)(
-        selected,
-        { signal: active.controller.signal, field: binding.name },
-      )
+      let file = selected
+      if (props.config.imageProcessing !== undefined) {
+        if (!props.processImage) throw new TypeError('Image processor is unavailable.')
+        const processed = await props.processImage(
+          selected,
+          props.config.imageProcessing,
+          active.controller.signal,
+        )
+        if (processed === null || active.controller.signal.aborted || request !== active)
+          return false
+        if (maxSize !== undefined && processed.size > maxSize)
+          throw new TypeError('Processed image exceeds the attachment limit.')
+        file = processed
+      }
+      const attachment = await formPresentation(form).attachmentSource(props.config.source)(file, {
+        signal: active.controller.signal,
+        field: binding.name,
+      })
       if (
         active.controller.signal.aborted ||
         request !== active ||

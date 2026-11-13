@@ -1,3 +1,5 @@
+import type { UiRichTextDocument, UiRichTextTool } from './rich-text-document'
+export type { UiRichTextDocument, UiRichTextTool } from './rich-text-document'
 import type { UiDateTimeContext } from '../date-time/date-time'
 /** JSON configuration is data. Callbacks and services belong to the trusted frontend input. */
 import type { DeepReadonly, Ref } from 'vue'
@@ -121,6 +123,39 @@ export type UiFormAttachmentSource = (
   file: File,
   context: UiFormWorkContext & { readonly field: string },
 ) => Promise<UiFormAttachment>
+export interface UiFormImageProcessing {
+  readonly crop?: { readonly aspectRatio?: number }
+  readonly output?: {
+    readonly mimeType: 'image/jpeg' | 'image/png' | 'image/webp'
+    readonly quality?: number
+    readonly maxWidth?: number
+    readonly maxHeight?: number
+  }
+}
+export type UiFormAttachmentResolver = (
+  attachment: UiFormAttachment,
+  context: UiFormWorkContext & { readonly field: string },
+) => Promise<Blob>
+export interface UiFormAttachmentService {
+  readonly upload: UiFormAttachmentSource
+  readonly resolvePreview?: UiFormAttachmentResolver
+}
+export interface UiFormMediaCopy {
+  readonly cropTitle: UiFormText
+  readonly previewTitle: UiFormText
+  readonly cancel: UiFormText
+  readonly confirm: UiFormText
+  readonly rotateLeft: UiFormText
+  readonly rotateRight: UiFormText
+  readonly reset: UiFormText
+  readonly processing: UiFormText
+  readonly loading: UiFormText
+  readonly failed: UiFormText
+  readonly previousPage: UiFormText
+  readonly nextPage: UiFormText
+  readonly zoomIn: UiFormText
+  readonly zoomOut: UiFormText
+}
 export type UiFormFieldConfig =
   | (UiFormFieldBase & {
       readonly kind: 'mask'
@@ -150,11 +185,19 @@ export type UiFormFieldConfig =
   | (UiFormFieldBase & {
       readonly kind: 'attachment'
       readonly source: string
+      readonly imageProcessing?: UiFormImageProcessing
+      readonly preview?: { readonly types: readonly ('image' | 'pdf')[] }
       readonly accept?: string
       readonly maxFiles?: number
       readonly maxSize?: number
       readonly defaultValue?: UiFormAttachment[]
       readonly rules?: UiFormLengthRules
+    })
+  | (UiFormFieldBase & {
+      readonly kind: 'rich-text'
+      readonly tools?: readonly UiRichTextTool[]
+      readonly defaultValue?: DeepReadonly<UiRichTextDocument>
+      readonly rules?: Omit<UiFormLengthRules, 'format'>
     })
   | (UiFormFieldBase & {
       readonly kind: 'text' | 'textarea'
@@ -239,25 +282,27 @@ type UiFormNodeValue<Node extends UiFormNode> = Node extends UiFormGroupConfig
   ? UiFormSchemaValues<Node>
   : Node extends UiFormRepeatConfig
     ? UiFormSchemaValues<Node>[]
-    : Node extends { readonly kind: 'text' | 'textarea' | 'mask' }
-      ? string
-      : Node extends { readonly kind: 'slider' | 'rating' }
-        ? number
-        : Node extends { readonly kind: 'attachment' }
-          ? UiFormAttachment[]
-          : Node extends { readonly kind: 'number' }
-            ? number | null
-            : Node extends { readonly kind: 'switch' }
-              ? boolean
-              : Node extends { readonly kind: 'date' | 'time' }
-                ? string | null
-                : Node extends { readonly kind: 'date-range' }
-                  ? [string, string] | null
-                  : Node extends { readonly kind: 'select' | 'radio' }
-                    ? string | number | null
-                    : Node extends { readonly kind: 'multi-select' | 'checkbox-group' }
-                      ? (string | number)[]
-                      : UiFormValue
+    : Node extends { readonly kind: 'rich-text' }
+      ? UiRichTextDocument
+      : Node extends { readonly kind: 'text' | 'textarea' | 'mask' }
+        ? string
+        : Node extends { readonly kind: 'slider' | 'rating' }
+          ? number
+          : Node extends { readonly kind: 'attachment' }
+            ? UiFormAttachment[]
+            : Node extends { readonly kind: 'number' }
+              ? number | null
+              : Node extends { readonly kind: 'switch' }
+                ? boolean
+                : Node extends { readonly kind: 'date' | 'time' }
+                  ? string | null
+                  : Node extends { readonly kind: 'date-range' }
+                    ? [string, string] | null
+                    : Node extends { readonly kind: 'select' | 'radio' }
+                      ? string | number | null
+                      : Node extends { readonly kind: 'multi-select' | 'checkbox-group' }
+                        ? (string | number)[]
+                        : UiFormValue
 
 export interface UiFormWorkContext {
   readonly signal: AbortSignal
@@ -286,6 +331,10 @@ export type UiFormSubmitResult<I> =
 export type UiFormSubmitOutcome = 'success' | 'invalid' | 'failure' | 'cancelled'
 export type UiFormMutationResult = 'applied' | 'unchanged' | 'blocked' | 'busy' | 'disposed'
 export interface UiFormCopy {
+  readonly richTextLinkLabel?: UiFormText
+  readonly richTextLinkApply?: UiFormText
+  readonly richTextLinkInvalid?: UiFormText
+  readonly richText?: Readonly<Record<UiRichTextTool, UiFormText>>
   readonly submit: UiFormText
   readonly reset: UiFormText
   readonly required: UiFormText
@@ -323,6 +372,7 @@ export interface UiFormCopy {
   readonly chooseAttachment?: UiFormText
   readonly uploadingAttachment?: UiFormText
   readonly attachmentFailed?: UiFormText
+  readonly media?: UiFormMediaCopy
 }
 export interface UiFormChange<I> {
   readonly previous: DeepReadonly<I>
@@ -348,7 +398,7 @@ export interface UiFormInput<I> {
   readonly onBlur?: (event: { readonly field: string; readonly values: DeepReadonly<I> }) => void
   readonly onReset?: (values: DeepReadonly<I>) => void
   readonly sources?: Readonly<Record<string, UiFormOptionSource<I>>>
-  readonly attachments?: Readonly<Record<string, UiFormAttachmentSource>>
+  readonly attachments?: Readonly<Record<string, UiFormAttachmentSource | UiFormAttachmentService>>
 }
 export interface UiFormNodeState {
   readonly hidden: boolean
@@ -395,6 +445,12 @@ export interface UiFormController<I> {
   ): Promise<UiFormLoadOutcome>
   blur(name: string): void
   validate(): Promise<'valid' | 'invalid' | 'cancelled'>
+  /** Validate concrete fields/groups only; an empty list is a no-op, not full validation. */
+  validateFields(paths: readonly string[]): Promise<'valid' | 'invalid' | 'busy' | 'cancelled'>
+  /** Restore selected fields/groups to the accepted baseline, retaining other input/state. */
+  resetFields(paths: readonly string[]): UiFormMutationResult
+  /** Clear selected feedback only; this does not certify validity or change data. */
+  clearErrors(paths: readonly string[]): UiFormMutationResult
   /** Check one existing repeat row subtree; success does not certify the whole form. */
   validateItem(
     path: string,

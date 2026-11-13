@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import {
   computed,
-  effectScope,
   inject,
   nextTick,
   onActivated,
   onDeactivated,
   onScopeDispose,
   ref,
-  shallowRef,
   watch,
 } from 'vue'
 import { NButton } from 'naive-ui/es/button'
@@ -16,18 +14,18 @@ import {
   UiForm,
   UiScrollArea,
   UiCopyAction,
-  useUiForm,
+  useUiDynamicForm,
   type UiFormSchema,
   type UiFormValue,
-  type UiFormReadonlyValue,
   type UiScrollController,
 } from '@platform/ui'
+import { formDraftSignature } from '../../../forms/form-draft-signature'
 import { routerScrollControllerKey } from '../../../router/router-scroll-controller'
 import { useFormShowcase, useFormExampleCheck } from '../form-showcase'
 import { useFormExampleUndo } from '../use-form-example-undo'
 import { builderEntries, builderKinds, type BuilderKind } from './use-form-builder'
 import { builderAttachments } from './builder-attachments'
-import { previewValues } from './form-preview-values'
+import { builderMigrationPolicy } from './form-preview-values'
 import type { BuilderTrialState } from './form-builder-draft'
 
 const props = defineProps<{
@@ -58,34 +56,27 @@ const resetFields = ref<readonly string[]>([])
 const resetNotice = computed(() =>
   resetFields.value.length ? `${t('formBuilder.valuesReset')} ${resetFields.value.join('、')}` : '',
 )
-function createPreview(schema: UiFormSchema) {
-  const form = useUiForm({
-    formId: 'visual-builder-preview',
-    schema,
-    // Preview explicitly stays local. Imported source names are preserved in exported JSON,
-    // never interpreted as endpoints or executed by the builder.
-    attachments: builderAttachments(schema),
-    initial: { draftId: 'visual-builder-preview', values: {} },
-    copy,
-  })
-  const defaults = JSON.parse(JSON.stringify(form.values.value)) as Readonly<
-    Record<string, UiFormReadonlyValue>
-  >
-  return { sourceSchema: schema, form, defaults, ...useFormExampleCheck(form) }
-}
-// A controller's schema is immutable. Keep its mounted controls while any raw input is pending.
-let formScope = effectScope()
-const initialPreview = formScope.run(() => createPreview(props.schema))
-if (!initialPreview) throw new Error('The form builder preview scope is unavailable.')
-// Recovery changes current values, never the schema-owned reset baseline.
-if (props.initialValues) initialPreview.form.replaceValues(props.initialValues)
-const preview = shallowRef(initialPreview)
+const attachmentBlobs = new Map<string, Blob>()
+const dynamic = useUiDynamicForm({
+  formId: 'visual-builder-preview',
+  schema: props.schema,
+  initial: { draftId: 'visual-builder-preview', values: {} },
+  copy,
+  migrationPolicy: builderMigrationPolicy,
+  // Imported source names remain JSON references, never executable endpoints.
+  resolveRuntime: (schema) => ({ attachments: builderAttachments(schema, attachmentBlobs) }),
+})
+const form = dynamic.form
+// Recovery changes trial values, never the accepted reset baseline.
+if (props.initialValues) form.value.replaceValues(props.initialValues)
+const check = useFormExampleCheck(() => form.value)
 let disposed = false
+const isDisposed = () => disposed
 const controls = ref<HTMLElement | null>(null)
 const controlsFocused = ref(false)
 function ownsFocus(target: EventTarget | null): boolean {
   return (
-    preview.value.form.schema.fields.length > 0 &&
+    form.value.schema.fields.length > 0 &&
     target instanceof Node &&
     Boolean(controls.value?.contains(target))
   )
@@ -103,56 +94,45 @@ function afterFocusOut(event: FocusEvent): void {
   })
 }
 watch(
-  () => [props.schema, preview.value.form.hasPendingInput.value, controlsFocused.value] as const,
-  ([schema, pendingInput, focused]) => {
-    const previous = preview.value
-    if (disposed || pendingInput || focused || schema === previous.sourceSchema) return
-    const values = JSON.parse(JSON.stringify(previous.form.values.value)) as Readonly<
-      Record<string, UiFormReadonlyValue>
-    >
-    const nextScope = effectScope()
-    const next = nextScope.run(() => createPreview(schema))
-    if (!next) throw new Error('The form builder preview scope is unavailable.')
-    const reset: string[] = []
-    next.form.setValues(
-      previewValues(
-        previous.form.schema.fields,
-        schema.fields,
-        values,
-        previous.defaults,
-        next.defaults,
-        reset,
-      ),
+  [() => props.schema, () => form.value.hasPendingInput.value, () => controlsFocused.value],
+  async ([schema, pendingInput, focused]) => {
+    if (
+      disposed ||
+      pendingInput ||
+      focused ||
+      formDraftSignature(schema) === formDraftSignature(form.value.schema)
     )
-    if (reset.length) resetFields.value = [...new Set(reset)]
-    const previousScope = formScope
-    formScope = nextScope
-    preview.value = next
-    previousScope.stop()
+      return
+    const outcome = await dynamic.replaceSchema(schema)
+    if (isDisposed()) return
+    if (outcome.status === 'applied' || outcome.status === 'unchanged') {
+      if (outcome.status === 'applied') resetFields.value = outcome.resetFields
+    }
   },
-  // Let the input's synchronous commit/reset finish before replacing its controller.
+  // Let synchronous input commitment finish before replacing its controller.
   { flush: 'post' },
 )
 onScopeDispose(() => {
   disposed = true
-  formScope.stop()
+  attachmentBlobs.clear()
 })
-const previewHeld = computed(() => props.schema !== preview.value.sourceSchema)
+const previewHeld = computed(
+  () => formDraftSignature(props.schema) !== formDraftSignature(form.value.schema),
+)
 const previewHint = computed(() =>
   previewHeld.value
     ? t('formBuilder.previewHeld')
-    : preview.value.form.hasPendingInput.value
+    : form.value.hasPendingInput.value
       ? t('formBuilder.previewPendingHint')
       : '',
 )
 const modelNotice = computed(() =>
   previewHeld.value
     ? t('formBuilder.previewHeldShort')
-    : preview.value.form.hasPendingInput.value
+    : form.value.hasPendingInput.value
       ? t('formBuilder.previewPendingShort')
       : resetNotice.value,
 )
-const form = computed(() => preview.value.form)
 const history = useFormExampleUndo(() => form.value)
 async function startField(): Promise<void> {
   emit('add', 'text')
@@ -160,18 +140,18 @@ async function startField(): Promise<void> {
   controls.value?.querySelector<HTMLInputElement>('input')?.focus()
 }
 watch(
-  () => [form.value.hasPendingInput.value, form.value.revision.value],
+  () => [form.value, form.value.hasPendingInput.value, form.value.revision.value],
   () => {
     emit('change', {
-      schema: preview.value.sourceSchema,
+      schema: form.value.schema,
       values: form.value.getValues(),
       pending: form.value.hasPendingInput.value,
       revision: form.value.revision.value,
     })
   },
-  { immediate: true, flush: 'sync' },
+  { immediate: true, flush: 'post' },
 )
-const checked = computed(() => preview.value.checked.value)
+const checked = check.checked
 const modelHint = computed(
   () =>
     previewHint.value ||
@@ -181,9 +161,9 @@ const modelHint = computed(
         ? t('formShowcase.checkValid')
         : ''),
 )
-const validate = () => preview.value.validate()
+const validate = check.validate
 const clearCheck = () => {
-  preview.value.clearCheck()
+  check.clearCheck()
   resetFields.value = []
 }
 function reset(): void {

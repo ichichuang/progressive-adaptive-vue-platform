@@ -35,7 +35,7 @@ useWorkspaceUnsavedChanges(
   () => props.hasUnsavedChanges?.() ?? props.form.hasUnsavedChanges.value,
   () => [props.form.revision.value, props.hasUnsavedChanges?.()],
 )
-const { checked, validate, clearCheck } = useFormExampleCheck(props.form)
+const { checked, validate, clearCheck } = useFormExampleCheck(() => props.form)
 function submit(): void {
   if (props.mode === 'detail') return
   if (props.submitMode === 'submit') void props.form.submit()
@@ -80,6 +80,9 @@ onScopeDispose(() => {
 })
 
 const headings = {
+  richText: 'formCapabilities.richText.canvas',
+  dynamic: 'formCapabilities.dynamic.canvas',
+  media: 'formCapabilities.media.canvas',
   basics: 'formShowcase.basicsCanvas',
   detail: 'formShowcase.detailCanvas',
   dependencies: 'formShowcase.dependenciesCanvas',

@@ -3,6 +3,33 @@ import type { UiFormController, UiFormCopy } from '@platform/ui'
 import { useConsoleI18n, type ConsoleMessageKey } from '../../../shared/i18n'
 
 export const formCapabilities = {
+  richText: {
+    hint: 'formCapabilities.richText.hint',
+    purpose: 'formCapabilities.richText.purpose',
+    try: 'formCapabilities.richText.try',
+    boundary: 'formCapabilities.richText.boundary',
+    controls: 'formCapabilities.richText.controls',
+    api: 'UiForm rich-text · structured document · configurable tools · detail mode',
+    sources: ['apps/web/src/pages/component-form-rich-text.vue'],
+  },
+  media: {
+    hint: 'formCapabilities.media.hint',
+    purpose: 'formCapabilities.media.purpose',
+    try: 'formCapabilities.media.try',
+    boundary: 'formCapabilities.media.boundary',
+    controls: 'formCapabilities.media.controls',
+    api: 'UiForm attachment · imageProcessing · preview · UiFormAttachmentService',
+    sources: ['apps/web/src/pages/component-form-media.vue'],
+  },
+  dynamic: {
+    hint: 'formCapabilities.dynamic.hint',
+    purpose: 'formCapabilities.dynamic.purpose',
+    try: 'formCapabilities.dynamic.try',
+    boundary: 'formCapabilities.dynamic.boundary',
+    controls: 'formCapabilities.dynamic.controls',
+    api: 'useUiDynamicForm · replaceSchema · compatible values · step identity · scoped draft lifetime',
+    sources: ['apps/web/src/pages/component-form-dynamic.vue'],
+  },
   layout: {
     hint: 'formCapabilities.layout.hint',
     purpose: 'formCapabilities.layout.purpose',
@@ -189,6 +216,37 @@ export function useFormShowcase() {
     chooseAttachment: () => t('formFields.chooseAttachment'),
     uploadingAttachment: () => t('formFields.processingAttachment'),
     attachmentFailed: () => t('formFields.attachmentFailed'),
+    richTextLinkLabel: () => t('formCapabilities.richText.linkAddress'),
+    richTextLinkApply: () => t('formCapabilities.richText.linkApply'),
+    richTextLinkInvalid: () => t('formCapabilities.richText.linkInvalid'),
+    richText: {
+      bold: () => t('formCapabilities.richText.bold'),
+      italic: () => t('formCapabilities.richText.italic'),
+      strike: () => t('formCapabilities.richText.strike'),
+      heading: () => t('formCapabilities.richText.heading'),
+      'bullet-list': () => t('formCapabilities.richText.bullet-list'),
+      'ordered-list': () => t('formCapabilities.richText.ordered-list'),
+      blockquote: () => t('formCapabilities.richText.blockquote'),
+      link: () => t('formCapabilities.richText.link'),
+      undo: () => t('formCapabilities.richText.undo'),
+      redo: () => t('formCapabilities.richText.redo'),
+    },
+    media: {
+      cropTitle: () => t('formCapabilities.media.cropTitle'),
+      previewTitle: () => t('formCapabilities.media.previewTitle'),
+      cancel: () => t('formCapabilities.media.cancel'),
+      confirm: () => t('formCapabilities.media.confirm'),
+      rotateLeft: () => t('formCapabilities.media.rotateLeft'),
+      rotateRight: () => t('formCapabilities.media.rotateRight'),
+      reset: () => t('formCapabilities.media.reset'),
+      processing: () => t('formCapabilities.media.processing'),
+      loading: () => t('formCapabilities.media.loading'),
+      failed: () => t('formCapabilities.media.failed'),
+      previousPage: () => t('formCapabilities.media.previousPage'),
+      nextPage: () => t('formCapabilities.media.nextPage'),
+      zoomIn: () => t('formCapabilities.media.zoomIn'),
+      zoomOut: () => t('formCapabilities.media.zoomOut'),
+    },
     minItems: (count) => `${t('configuredForm.minItems')} ${String(count)}`,
     maxItems: (count) => `${t('configuredForm.maxItems')} ${String(count)}`,
   }
@@ -200,10 +258,11 @@ export function useFormShowcase() {
 }
 
 /** Page-only checks never call submit or replace the reset baseline. */
-export function useFormExampleCheck<I>(form: UiFormController<I>) {
+export function useFormExampleCheck<I>(source: UiFormController<I> | (() => UiFormController<I>)) {
+  const current = () => (typeof source === 'function' ? source() : source)
   const checked = ref<'valid' | 'invalid' | 'cancelled' | null>(null)
   watch(
-    form.values,
+    () => [current(), current().values.value],
     () => {
       checked.value = null
     },
@@ -216,8 +275,9 @@ export function useFormExampleCheck<I>(form: UiFormController<I>) {
   }
   async function validate(): Promise<void> {
     const revision = inputRevision
+    const form = current()
     const result = await form.validate()
-    if (revision === inputRevision) checked.value = result
+    if (revision === inputRevision && current() === form) checked.value = result
   }
   return { checked, validate, clearCheck }
 }

@@ -123,10 +123,11 @@ export function useFormControl<I>(props: {
     numberFormat.value === undefined ? {} : { format: numberFormat.value },
   )
   function reportPending(): void {
-    if (config.value.kind === 'attachment') return // Attachment session owns its pending lifecycle.
     // A retired keyed control can observe a shorter record before Vue unmounts
     // it. Its path no longer owns input and must not register pending state.
     if (!props.form.fields.some((field) => field.name === props.binding.name)) return
+    if (config.value.kind === 'rich-text') return
+    if (config.value.kind === 'attachment') return // Attachment session owns its pending lifecycle.
     const buffered = ['text', 'textarea', 'mask', 'number', 'date'].includes(config.value.kind)
     const value = props.binding.value
     const canonical = typeof value === 'string' || typeof value === 'number' ? String(value) : ''
@@ -146,18 +147,30 @@ export function useFormControl<I>(props: {
   function captureComposition(event: CompositionEvent): void {
     // Select search is a query, never a pending canonical field edit.
     if (
-      ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
-        config.value.kind,
-      )
+      [
+        'rich-text',
+        'select',
+        'multi-select',
+        'radio',
+        'checkbox-group',
+        'date-range',
+        'time',
+      ].includes(config.value.kind)
     )
       return
     composing.value = event.type === 'compositionstart'
   }
   function captureInput(event: Event): void {
     if (
-      ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
-        config.value.kind,
-      )
+      [
+        'rich-text',
+        'select',
+        'multi-select',
+        'radio',
+        'checkbox-group',
+        'date-range',
+        'time',
+      ].includes(config.value.kind)
     )
       return
     if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
@@ -212,11 +225,18 @@ export function useFormControl<I>(props: {
     props.binding.blur()
   }
   function commit(): boolean {
+    if (config.value.kind === 'rich-text') return !props.binding.pendingInput
     if (config.value.kind === 'attachment') return !props.binding.pendingInput
     if (
-      ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
-        config.value.kind,
-      )
+      [
+        'rich-text',
+        'select',
+        'multi-select',
+        'radio',
+        'checkbox-group',
+        'date-range',
+        'time',
+      ].includes(config.value.kind)
     )
       return true
     if (composing.value) return false
@@ -255,6 +275,7 @@ export function useFormControl<I>(props: {
   watch(
     () => props.binding,
     (binding, previous) => {
+      if (config.value.kind === 'rich-text') return
       previous?.setFocusTarget(null)
       previous?.setCommitTarget(null)
       previous?.setPendingInput(false)
@@ -265,6 +286,7 @@ export function useFormControl<I>(props: {
     { immediate: true, flush: 'sync' },
   )
   watchPostEffect(() => {
+    if (config.value.kind === 'rich-text') return
     const binding = props.binding
     const attributes = {
       id: binding.controlId,
@@ -294,6 +316,7 @@ export function useFormControl<I>(props: {
     for (const [name, value] of Object.entries(attributes)) element?.setAttribute(name, value)
   })
   onScopeDispose(() => {
+    if (config.value.kind === 'rich-text') return
     props.binding.setFocusTarget(null)
     props.binding.setCommitTarget(null)
     props.binding.setPendingInput(false)

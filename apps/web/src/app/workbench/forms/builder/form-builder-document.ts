@@ -3,6 +3,7 @@ import { formDraftSignature } from '../../../forms/form-draft-signature'
 import { invalidBuilderDateInput, parseBuilderNumberInput } from './builder-input-values'
 import {
   parseUiFormSchema,
+  richTextTools,
   type UiFormSchema,
   type UiFormNode,
   type UiFormCondition,
@@ -144,6 +145,7 @@ const editorNodeSchema = z.strictObject({
   kind: z.enum([
     'text',
     'textarea',
+    'rich-text',
     'number',
     'mask',
     'slider',
@@ -174,6 +176,7 @@ const editorNodeSchema = z.strictObject({
   max: z.number().optional(),
   step: z.number().optional(),
   mask: z.string().optional(),
+  tools: z.array(z.enum(richTextTools)).optional(),
   count: z.number().optional(),
   allowHalf: z.boolean().optional(),
   source: z.string().optional(),
@@ -347,9 +350,15 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
     }
     if (
       (['minLength', 'maxLength'].includes(input.key) &&
-        ['text', 'textarea', 'mask', 'attachment', 'multi-select', 'checkbox-group'].includes(
-          editor.kind,
-        )) ||
+        [
+          'text',
+          'textarea',
+          'rich-text',
+          'mask',
+          'attachment',
+          'multi-select',
+          'checkbox-group',
+        ].includes(editor.kind)) ||
       (['minItems', 'maxItems'].includes(input.key) && editor.kind === 'repeat')
     ) {
       kind = 'number'

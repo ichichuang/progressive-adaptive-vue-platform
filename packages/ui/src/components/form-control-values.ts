@@ -1,3 +1,4 @@
+import { isRichTextDocument } from './rich-text-document'
 import { isUiDateOnly, isUiTimeOnly } from '../date-time/date-time'
 import type { UiFormController, UiFormFieldBinding, UiFormValue } from './form-contracts'
 
@@ -33,6 +34,8 @@ export function acceptsControlValue<I>(
       : typeof candidate === 'string' ||
         (typeof candidate === 'number' && Number.isFinite(candidate))
   switch (config.kind) {
+    case 'rich-text':
+      return isRichTextDocument(value)
     case 'text':
     case 'textarea':
     case 'mask':

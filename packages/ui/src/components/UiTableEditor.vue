@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import type { UiDateTimeContext } from '../date-time/date-time'
-import { computed, inject, onActivated, onDeactivated, ref, useId, watch } from 'vue'
+import {
+  computed,
+  inject,
+  nextTick,
+  onActivated,
+  onDeactivated,
+  onMounted,
+  onBeforeUnmount,
+  ref,
+  useId,
+  watch,
+} from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { NDrawer, NDrawerContent } from 'naive-ui/es/drawer'
@@ -41,6 +52,63 @@ onActivated(() => {
 })
 onDeactivated(() => {
   active.value = false
+})
+// Surface geometry is transient UI state, never a second form or a persisted draft.
+const modalCard = ref<InstanceType<typeof NCard>>()
+const maximized = ref(false)
+const correction = ref({ x: 0, y: 0 })
+const canMaximize = computed(() => props.session.modal?.maximizable === true)
+watch(
+  canMaximize,
+  (enabled) => {
+    if (enabled && (!props.copy.maximize || !props.copy.restore))
+      throw new TypeError('Maximizable editor requires maximize and restore copy.')
+  },
+  { immediate: true },
+)
+function keepModalVisible(): void {
+  if (!props.session.open.value || props.session.presentation !== 'modal' || maximized.value) return
+  const element: unknown = modalCard.value?.$el
+  if (!(element instanceof HTMLElement)) return
+  const rect = element.getBoundingClientRect()
+  // Correct vendor drag offsets after viewport changes without touching its private state.
+  const x =
+    rect.left < 0 ? -rect.left : rect.right > window.innerWidth ? window.innerWidth - rect.right : 0
+  const y =
+    rect.top < 0
+      ? -rect.top
+      : rect.bottom > window.innerHeight
+        ? window.innerHeight - rect.bottom
+        : 0
+  if (x || y) correction.value = { x: correction.value.x + x, y: correction.value.y + y }
+  element.style.translate = `${String(correction.value.x)}px ${String(correction.value.y)}px`
+}
+function resizeModal(): void {
+  void nextTick(keepModalVisible)
+}
+function toggleMaximize(): void {
+  maximized.value = !maximized.value
+  const element: unknown = modalCard.value?.$el
+  if (element instanceof HTMLElement)
+    element.style.translate = maximized.value
+      ? 'none'
+      : `${String(correction.value.x)}px ${String(correction.value.y)}px`
+  void nextTick(keepModalVisible)
+}
+function preventMaximizedDrag(event: MouseEvent): void {
+  // Naive starts drag listeners on after-enter, not on reactive draggable changes.
+  if (maximized.value) event.stopImmediatePropagation()
+}
+function releaseModal(): void {
+  maximized.value = false
+  correction.value = { x: 0, y: 0 }
+  props.session.release()
+}
+onMounted(() => {
+  window.addEventListener('resize', resizeModal)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', resizeModal)
 })
 const blocked = ref(false)
 const title = computed(() => props.copy.title(props.session.mode.value))
@@ -160,73 +228,105 @@ function updateShow(show: boolean): void {
   <NModal
     v-else-if="session.presentation === 'modal'"
     :show="active && session.open.value"
+    :draggable="session.modal?.draggable === true"
     to="#pavp-overlay-root"
     @update:show="updateShow"
-    @after-leave="session.release"
+    @after-leave="releaseModal"
   >
-    <NCard
-      class="pavp-table-modal__card min-h-0 min-w-0"
-      :title="title"
-      content-class="grid min-h-0 min-w-0 grid-rows-1"
-      role="dialog"
-      aria-modal="true"
-      :aria-label="title"
-    >
-      <UiScrollArea
-        :owner-id="ownerId"
-        contained
+    <template #default="{ draggableClass }">
+      <NCard
+        ref="modalCard"
+        :data-maximized="maximized"
+        class="pavp-table-modal__card min-h-0 min-w-0"
+        content-class="grid min-h-0 min-w-0 grid-rows-1"
+        role="dialog"
+        aria-modal="true"
+        :aria-label="title"
       >
-        <UiTableEditorBody
-          :inert="!session.open.value"
-          :session="session"
-          v-bind="dateTime === undefined ? {} : { dateTime }"
-          :status="status"
+        <template #header>
+          <span
+            :class="[
+              draggableClass === 'n-draggable' ? 'n-draggable' : '',
+              !maximized && draggableClass === 'n-draggable' ? 'cursor-move' : 'cursor-default',
+            ]"
+            role="presentation"
+            @mousedown.capture="preventMaximizedDrag"
+            v-text="title"
+          />
+        </template>
+        <template
+          v-if="canMaximize"
+          #header-extra
         >
-          <template
-            v-if="slots.field"
-            #field="binding"
-          >
-            <slot
-              name="field"
-              v-bind="binding"
-            />
-          </template>
-          <template
-            v-if="slots.detail"
-            #detail="binding"
-          >
-            <slot
-              name="detail"
-              v-bind="binding"
-            />
-          </template>
-        </UiTableEditorBody>
-      </UiScrollArea>
-      <template #footer>
-        <div class="flex flex-wrap justify-end gap-content-gap">
           <NButton
-            class="min-h-target-enhanced min-w-target-enhanced"
-            :disabled="session.form.value?.submitting.value === true"
-            @click="close()"
+            quaternary
+            :aria-label="maximized ? copy.restore?.() : copy.maximize?.()"
+            :title="maximized ? copy.restore?.() : copy.maximize?.()"
+            @click="toggleMaximize"
           >
-            {{ session.mode.value === 'detail' ? copy.close() : copy.cancel() }}
+            <span
+              :class="maximized ? 'i-lucide-minimize-2' : 'i-lucide-maximize-2'"
+              class="size-icon"
+              aria-hidden="true"
+            />
           </NButton>
-          <NButton
-            v-if="session.mode.value !== 'detail'"
-            class="min-h-target-enhanced min-w-target-enhanced"
-            type="primary"
-            attr-type="submit"
-            :form="session.form.value?.formId"
-            :loading="session.form.value?.submitting.value === true"
-            :disabled="
-              !session.open.value || !session.form.value || session.form.value.submitting.value
-            "
+        </template>
+        <UiScrollArea
+          :owner-id="ownerId"
+          contained
+        >
+          <UiTableEditorBody
+            :inert="!session.open.value"
+            :session="session"
+            v-bind="dateTime === undefined ? {} : { dateTime }"
+            :status="status"
           >
-            {{ copy.save() }}
-          </NButton>
-        </div>
-      </template>
-    </NCard>
+            <template
+              v-if="slots.field"
+              #field="binding"
+            >
+              <slot
+                name="field"
+                v-bind="binding"
+              />
+            </template>
+            <template
+              v-if="slots.detail"
+              #detail="binding"
+            >
+              <slot
+                name="detail"
+                v-bind="binding"
+              />
+            </template>
+          </UiTableEditorBody>
+        </UiScrollArea>
+        <template #footer>
+          <div class="flex flex-wrap justify-end gap-content-gap">
+            <NButton
+              class="min-h-target-enhanced min-w-target-enhanced"
+              :disabled="session.form.value?.submitting.value === true"
+              @click="close()"
+            >
+              {{ session.mode.value === 'detail' ? copy.close() : copy.cancel() }}
+            </NButton>
+            <NButton
+              v-if="session.mode.value !== 'detail'"
+              class="min-h-target-enhanced min-w-target-enhanced"
+              type="primary"
+              attr-type="submit"
+              :form="session.form.value?.formId"
+              :loading="session.form.value?.submitting.value === true"
+              :disabled="
+                !session.open.value || !session.form.value || session.form.value.submitting.value
+              "
+            >
+              {{ copy.save() }}
+            </NButton>
+          </div>
+        </template>
+      </NCard>
+    </template>
   </NModal>
   <!-- Keep the contained scroll host available while the owner handles return navigation. -->
   <section
@@ -339,6 +439,12 @@ function updateShow(show: boolean): void {
       calc(2 * var(--ui-layout-admin-drawer-maximum-inline-size))
     ) !important;
     max-height: calc(100dvh - 2 * var(--ui-space-page-inline));
+  }
+  .pavp-table-modal__card[data-maximized='true'] {
+    width: calc(100vw - 2 * var(--ui-space-page-inline)) !important;
+    height: calc(100dvh - 2 * var(--ui-space-page-inline));
+    left: 0 !important;
+    top: 0 !important;
   }
 }
 </style>

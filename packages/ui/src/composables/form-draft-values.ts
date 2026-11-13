@@ -1,3 +1,8 @@
+import {
+  emptyRichTextDocument,
+  isRichTextDocument,
+  parseRichTextDocument,
+} from '../components/rich-text-document'
 import { toRaw, type DeepReadonly } from 'vue'
 import type {
   UiFormCondition,
@@ -132,21 +137,24 @@ export function createFormValues(
           ? value
           : node.defaultValue !== undefined
             ? node.defaultValue
-            : node.kind === 'switch'
-              ? false
-              : node.kind === 'multi-select' ||
-                  node.kind === 'checkbox-group' ||
-                  node.kind === 'attachment'
-                ? []
-                : node.kind === 'text' || node.kind === 'textarea' || node.kind === 'mask'
-                  ? ''
-                  : node.kind === 'slider'
-                    ? node.min
-                    : node.kind === 'rating'
-                      ? 0
-                      : null
+            : node.kind === 'rich-text'
+              ? emptyRichTextDocument()
+              : node.kind === 'switch'
+                ? false
+                : node.kind === 'multi-select' ||
+                    node.kind === 'checkbox-group' ||
+                    node.kind === 'attachment'
+                  ? []
+                  : node.kind === 'text' || node.kind === 'textarea' || node.kind === 'mask'
+                    ? ''
+                    : node.kind === 'slider'
+                      ? node.min
+                      : node.kind === 'rating'
+                        ? 0
+                        : null
       const valid =
         node.kind === 'custom' ||
+        (node.kind === 'rich-text' && isRichTextDocument(actual)) ||
         (node.kind === 'slider' && typeof actual === 'number') ||
         (node.kind === 'rating' &&
           typeof actual === 'number' &&
@@ -174,7 +182,10 @@ export function createFormValues(
           actual.every((item) => typeof item === 'string' || typeof item === 'number') &&
           new Set(actual).size === actual.length)
       if (!valid) throw new TypeError(`Incompatible value for form field ${node.name}.`)
-      result[node.name] = cloneDraft(actual)
+      result[node.name] =
+        node.kind === 'rich-text'
+          ? parseRichTextDocument(actual)
+          : (cloneDraft(actual) as UiFormValue)
     }
   }
   return result

@@ -11,8 +11,17 @@ export function useFormFieldPresentation<I>(
   // until Vue updates the component's concrete path.
   const binding = shallowRef(props.form.field(props.name))
   watch(
-    () => [props.form, props.name, formPresentation(props.form).generation.value] as const,
-    ([form, name]) => {
+    [
+      () => props.form,
+      () => props.name,
+      () =>
+        props.form.fields.some((field) => field.name === props.name)
+          ? formPresentation(props.form).fieldIdentity(props.name)
+          : undefined,
+    ],
+    ([form, name, identity]) => {
+      // A repeat shrink can invalidate the old path before Vue unmounts its row.
+      if (identity === undefined) return
       binding.value = form.field(name)
     },
     // Snapshot replacement publishes generation before rebuilding row metadata.

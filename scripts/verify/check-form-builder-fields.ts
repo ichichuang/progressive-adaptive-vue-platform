@@ -2,15 +2,29 @@ import assert from 'node:assert/strict'
 import { resolve } from 'node:path'
 import { createServer } from 'vite'
 import type { ConsoleTranslate } from '../../apps/web/src/shared/i18n'
+import type { previewValues as ProjectPreview } from '../../apps/web/src/app/workbench/forms/builder/form-preview-values'
+import type { UiFormNode } from '../../packages/ui/src/components/form-contracts'
 import type { useFormBuilder as CreateBuilder } from '../../apps/web/src/app/workbench/forms/builder/use-form-builder'
 
 export async function verifyFormBuilderFields(): Promise<void> {
-  // These modules consume only the public parser at runtime; resolve that export to its owner
-  // to keep this controller test independent of the Vue SFC presentation graph.
+  await verifyPreviewMigration()
+  // Re-export the actual public parser and tool authority without loading the SFC graph.
   const server = await createServer({
     configFile: false,
     server: { middlewareMode: true },
-    resolve: { alias: { '@platform/ui': resolve('packages/ui/src/components/form-schema.ts') } },
+    plugins: [
+      {
+        name: 'builder-public-ui-exports',
+        enforce: 'pre',
+        resolveId(id) {
+          return id === '@platform/ui' ? '\0builder-public-ui-exports' : undefined
+        },
+        load(id) {
+          if (id !== '\0builder-public-ui-exports') return undefined
+          return `export { parseUiFormSchema } from ${JSON.stringify(resolve('packages/ui/src/components/form-schema.ts'))}; export { richTextTools } from ${JSON.stringify(resolve('packages/ui/src/components/rich-text-document.ts'))};`
+        },
+      },
+    ],
   })
   try {
     const module = await server.ssrLoadModule(
@@ -18,10 +32,11 @@ export async function verifyFormBuilderFields(): Promise<void> {
     )
     const create = module['useFormBuilder'] as typeof CreateBuilder
     const builder = create(((key: string) => key) as ConsoleTranslate)
-    for (const kind of ['mask', 'slider', 'rating', 'attachment'] as const) builder.add(kind)
+    for (const kind of ['mask', 'slider', 'rating', 'attachment', 'rich-text'] as const)
+      builder.add(kind)
     assert.deepEqual(
       builder.schema.value.fields.map((node) => node.kind),
-      ['mask', 'slider', 'rating', 'attachment'],
+      ['mask', 'slider', 'rating', 'attachment', 'rich-text'],
     )
     const raw = JSON.stringify(builder.schema.value)
     assert.equal(builder.importJson(raw), true)
@@ -64,6 +79,76 @@ export async function verifyFormBuilderFields(): Promise<void> {
     )
     console.log(
       'Visual form builder special fields: creation, live editing, JSON roundtrip, draft snapshots and invalid ranges passed.',
+    )
+  } finally {
+    await server.close()
+  }
+}
+
+async function verifyPreviewMigration(): Promise<void> {
+  const server = await createServer({
+    configFile: false,
+    server: { middlewareMode: true },
+    resolve: {
+      alias: { '@platform/ui': resolve('packages/ui/src/components/form-value-migration.ts') },
+    },
+  })
+  try {
+    const module = await server.ssrLoadModule(
+      '/apps/web/src/app/workbench/forms/builder/form-preview-values.ts',
+    )
+    const project = module['previewValues'] as typeof ProjectPreview
+    const text = (name: string, defaultValue = ''): UiFormNode => ({
+      kind: 'text',
+      name,
+      label: name,
+      defaultValue,
+    })
+    const previous: UiFormNode[] = [
+      { kind: 'group', name: 'one', label: 'One', fields: [text('a')] },
+      { kind: 'group', name: 'two', label: 'Two', fields: [text('a'), text('b')] },
+      text('default', 'old'),
+    ]
+    const next: UiFormNode[] = [
+      { kind: 'group', name: 'one', label: 'One', fields: [text('b')] },
+      { kind: 'group', name: 'two', label: 'Two', fields: [text('b'), text('c'), text('d')] },
+      text('default', 'new'),
+    ]
+    const values = {
+      one: { a: 'rename me' },
+      two: { a: 'do not transfer', b: 'keep b' },
+      default: 'old',
+    }
+    const defaults = { one: { a: '' }, two: { a: '', b: '' }, default: 'old' }
+    const nextDefaults = { one: { b: '' }, two: { b: '', c: '', d: '' }, default: 'new' }
+    assert.deepEqual(project(previous, next, values, defaults, nextDefaults, []), {
+      one: { b: 'rename me' },
+      two: { b: 'keep b', c: '', d: '' },
+      default: 'new',
+    })
+    assert.equal(
+      project(previous, next, { ...values, default: 'edited' }, defaults, nextDefaults, [])[
+        'default'
+      ],
+      'edited',
+    )
+    assert.deepEqual(
+      project(
+        [{ kind: 'repeat', name: 'rows', label: 'Rows', fields: [text('name')] }],
+        [
+          {
+            kind: 'repeat',
+            name: 'rows',
+            label: 'Rows',
+            fields: [text('name'), text('note', 'fresh')],
+          },
+        ],
+        { rows: [{ name: 'Existing' }] },
+        { rows: [] },
+        { rows: [] },
+        [],
+      ),
+      { rows: [{ name: 'Existing', note: 'fresh' }] },
     )
   } finally {
     await server.close()

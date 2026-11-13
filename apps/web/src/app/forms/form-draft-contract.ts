@@ -13,7 +13,15 @@ export type FormDraftRead<T> =
     }
   | { readonly status: 'unusable'; readonly reason: FormDraftFailure }
 
-export interface FormDraftPort<T> {
+export type FormDraftWrite =
+  | { readonly status: 'saved'; readonly savedAt: number; readonly expiresAt: number }
+  | { readonly status: 'failed'; readonly reason: FormDraftFailure }
+
+export interface FormDraftHandoff {
+  handoff<T>(target: FormDraftPort<T>, data: T): FormDraftWrite
+}
+
+export interface FormDraftPort<T> extends FormDraftHandoff {
   read(): FormDraftRead<T>
   write(
     data: T,

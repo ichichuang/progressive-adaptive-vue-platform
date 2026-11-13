@@ -923,9 +923,15 @@ async function navigationPreferenceViolations(): Promise<string[]> {
         'navigation',
         'scroll',
         'tables',
+        'updates',
         'workspace',
       ]) &&
-      isDeepStrictEqual(Object.keys(applicationConfig.navigation), ['preferenceStorageKey']),
+      isDeepStrictEqual(Object.keys(applicationConfig.navigation), ['preferenceStorageKey']) &&
+      isDeepStrictEqual(applicationConfig.updates, {
+        pollIntervalMs: 300000,
+        minimumCheckIntervalMs: 60000,
+        timeoutMs: 10000,
+      }),
     'the exact application configuration key surface drifted.',
   )
   const schema = nodesOf(contract, ts.isVariableDeclaration).find(

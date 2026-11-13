@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { UiFormController, UiFormNode, UiFormValue } from '@platform/ui'
 import { useFormDraftStorage } from './use-form-draft-storage'
 import { formDraftSignature } from './form-draft-signature'
+import type { FormDraftHandoff } from './form-draft-contract'
 import { useDraftSession } from './use-draft-session'
 
 const dataSchema = z.strictObject({
@@ -17,6 +18,7 @@ const reservedKeys = new Set(['__proto__', 'prototype', 'constructor'])
 
 /** Explicit schema roots only; repeat contents are saved atomically, never by row index. */
 export function useFormDraft<I extends Record<string, UiFormValue>>(input: {
+  readonly previous?: FormDraftHandoff
   readonly form: UiFormController<I>
   readonly scope: string
   readonly maxAgeMs: number
@@ -140,15 +142,23 @@ export function useFormDraft<I extends Record<string, UiFormValue>>(input: {
     }
     return data
   }
+  const port = storage.create({
+    scope: input.scope,
+    schemaKey: JSON.stringify({ schema: form.schema, fields }, (key, value: unknown) =>
+      key === 'defaultValue' ? undefined : value,
+    ),
+    maxAgeMs: input.maxAgeMs,
+    parse,
+  })
+  const adopted =
+    input.previous === undefined
+      ? undefined
+      : fields.length > 0 && input.enabled()
+        ? input.previous.handoff(port, snapshot())
+        : { status: 'failed' as const, reason: 'incompatible' as const }
   const session = useDraftSession({
-    port: storage.create({
-      scope: input.scope,
-      schemaKey: JSON.stringify({ schema: form.schema, fields }, (key, value: unknown) =>
-        key === 'defaultValue' ? undefined : value,
-      ),
-      maxAgeMs: input.maxAgeMs,
-      parse,
-    }),
+    port,
+    ...(adopted === undefined ? {} : { adopted }),
     snapshot,
     automatic: input.automatic ?? false,
     enabled: () => fields.length > 0 && input.enabled() && form.draftId.value === draftIdentity,

@@ -2603,9 +2603,14 @@ async function validateArchitectureConsoleUiPackage(): Promise<void> {
   expectStructuredEqual(
     manifest['dependencies'],
     {
+      '@tiptap/vue-3': 'catalog:',
+      '@tiptap/pm': 'catalog:',
+      '@tiptap/starter-kit': 'catalog:',
       '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      cropperjs: 'catalog:',
+      'pdfjs-dist': 'catalog:',
       gridstack: 'catalog:',
       lenis: 'catalog:',
       'motion-v': 'catalog:',

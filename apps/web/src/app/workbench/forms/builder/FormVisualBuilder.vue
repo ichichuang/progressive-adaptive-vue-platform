@@ -63,7 +63,8 @@ const session = useDraftSession({
   // pairs. Accepted values may still save while a raw input is pending; that input stays guarded.
   enabled: () =>
     !builder.hasActiveComposition.value &&
-    (!trial.value || trial.value.schema === builder.schema.value),
+    (!trial.value ||
+      formDraftSignature(trial.value.schema) === formDraftSignature(builder.schema.value)),
 })
 useWorkspaceUnsavedChanges(
   () =>
@@ -71,7 +72,7 @@ useWorkspaceUnsavedChanges(
   () => [builder.snapshot(), trial.value?.revision],
 )
 const trialState = computed(() =>
-  trial.value && trial.value.schema !== builder.schema.value
+  trial.value && formDraftSignature(trial.value.schema) !== formDraftSignature(builder.schema.value)
     ? 'held'
     : trial.value?.pending
       ? 'pending'

@@ -178,6 +178,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'component-combination-report': RouteRecordInfo<
+      'component-combination-report',
+      '/components/combinations/report',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'component-data': RouteRecordInfo<
       'component-data',
       '/components/data',
@@ -234,6 +241,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'component-form-dynamic': RouteRecordInfo<
+      'component-form-dynamic',
+      '/components/forms/dynamic',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'component-form-extension': RouteRecordInfo<
       'component-form-extension',
       '/components/forms/extension',
@@ -262,6 +276,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    'component-form-media': RouteRecordInfo<
+      'component-form-media',
+      '/components/forms/media',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     'component-form-options': RouteRecordInfo<
       'component-form-options',
       '/components/forms/options',
@@ -272,6 +293,13 @@ declare module 'vue-router/auto-routes' {
     'component-form-overview': RouteRecordInfo<
       'component-form-overview',
       '/components/forms/overview',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    'component-form-rich-text': RouteRecordInfo<
+      'component-form-rich-text',
+      '/components/forms/rich-text',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -793,6 +821,14 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/component-combination-report.vue': {
+      routes:
+        | 'component-combination-report'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/component-data.vue': {
       routes:
         | 'component-data'
@@ -857,6 +893,14 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/component-form-dynamic.vue': {
+      routes:
+        | 'component-form-dynamic'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/component-form-extension.vue': {
       routes:
         | 'component-form-extension'
@@ -889,6 +933,14 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/component-form-media.vue': {
+      routes:
+        | 'component-form-media'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/component-form-options.vue': {
       routes:
         | 'component-form-options'
@@ -900,6 +952,14 @@ declare module 'vue-router/auto-routes' {
     'src/pages/component-form-overview.vue': {
       routes:
         | 'component-form-overview'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/component-form-rich-text.vue': {
+      routes:
+        | 'component-form-rich-text'
       views:
         | never
       pathParamNames:

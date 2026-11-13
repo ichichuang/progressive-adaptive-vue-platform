@@ -102,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 83
+const expectedLazyRouteCount = 87
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -121,7 +121,7 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
-const expectedDynamicRootCount = 96
+const expectedDynamicRootCount = 100
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
@@ -131,6 +131,16 @@ const expectedDynamicRootKeys = new Set([
   shellScrollManifestKey,
   navigationFocusManifestKey,
   ...localizationResourceManifestKeys,
+])
+
+const richTextDynamicRootKey = '../../packages/ui/src/adapters/naive/PavpFormRichText.vue'
+
+// Attachment processors are loaded only when their form controls are used.
+const mediaDynamicRootKeys = new Set([
+  '../../node_modules/.pnpm/cropperjs@2.3.1/node_modules/cropperjs/dist/cropper.esm.raw.js',
+  '../../node_modules/.pnpm/pdfjs-dist@6.5.438/node_modules/pdfjs-dist/build/pdf.mjs',
+  '../../node_modules/.pnpm/pdfjs-dist@6.5.438/node_modules/pdfjs-dist/build/pdf.worker.min.mjs?url',
+  '../../packages/ui/src/adapters/media/pdf-font-assets.ts',
 ])
 
 function isManifestChunk(value: unknown): value is ManifestChunk {
@@ -1062,12 +1072,33 @@ if (
   throw new Error('Navigation actions must have one private on-demand runtime root.')
 }
 
+const mediaOwners = collectStaticChunkClosure(manifest, 'src/pages/component-form-media.vue')
+const richTextOwners = collectStaticChunkClosure(manifest, 'src/pages/component-form-rich-text.vue')
+const mediaReferences = new Map<string, number>()
+let richTextReferences = 0
 for (const [ownerKey, chunk] of Object.entries(manifest)) {
   if ((chunk.dynamicImports?.length ?? 0) !== 0 && !initialChunkKeys.has(ownerKey)) {
-    throw new Error(
-      `Dynamic import owner must belong to the Initial Static Closure: ${ownerKey} references ${(chunk.dynamicImports ?? []).join(', ')}.`,
-    )
+    for (const key of chunk.dynamicImports ?? []) {
+      if (mediaDynamicRootKeys.has(key) && mediaOwners.has(ownerKey)) {
+        mediaReferences.set(key, (mediaReferences.get(key) ?? 0) + 1)
+      } else if (key === richTextDynamicRootKey && richTextOwners.has(ownerKey)) {
+        richTextReferences += 1
+      } else {
+        throw new Error(`Unadmitted deferred dependency owner: ${ownerKey}.`)
+      }
+    }
   }
+}
+for (const key of mediaDynamicRootKeys) {
+  if (mediaReferences.get(key) !== 1 || initialChunkKeys.has(key)) {
+    throw new Error(`Attachment dependency must remain uniquely owned and deferred: ${key}.`)
+  }
+}
+
+if (richTextReferences !== 1 || initialChunkKeys.has(richTextDynamicRootKey)) {
+  throw new Error(
+    'Rich text must have one shared deferred adapter and stay outside the initial closure.',
+  )
 }
 
 if (dynamicImportOwnerKeys.size === 0) {
@@ -1080,9 +1111,14 @@ const dynamicEntryKeys = new Set(
     .map(([key]) => key),
 )
 
-if (!setsEqual(dynamicEntryKeys, expectedDynamicRootKeys)) {
+if (
+  !setsEqual(
+    dynamicEntryKeys,
+    new Set([...expectedDynamicRootKeys, ...mediaDynamicRootKeys, richTextDynamicRootKey]),
+  )
+) {
   throw new Error(
-    `Vite dynamic entry set drifted: expected ${String(expectedDynamicRootKeys.size)} exact roots, received ${String(dynamicEntryKeys.size)}.`,
+    `Vite dynamic entry set drifted: expected ${String(expectedDynamicRootKeys.size + mediaDynamicRootKeys.size + 1)} exact roots, received ${String(dynamicEntryKeys.size)}.`,
   )
 }
 

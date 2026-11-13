@@ -403,6 +403,9 @@ const expectedNavigationIconClasses = [
   'i-lucide-type',
   'i-lucide-type',
   'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
+  'i-lucide-type',
   'i-lucide-panels-top-left',
   'i-lucide-database',
   'i-lucide-database',
@@ -422,6 +425,7 @@ const expectedNavigationIconClasses = [
   'i-lucide-database',
   'i-lucide-database',
   'i-lucide-database',
+  'i-lucide-panels-top-left',
   'i-lucide-panels-top-left',
   'i-lucide-panels-top-left',
   'i-lucide-panels-top-left',
@@ -609,6 +613,24 @@ const productRouteContract = [
     '分步表单',
   ],
   [
+    'component-form-dynamic',
+    '/components/forms/dynamic',
+    'apps/web/src/pages/component-form-dynamic.vue',
+    '动态配置',
+  ],
+  [
+    'component-form-media',
+    '/components/forms/media',
+    'apps/web/src/pages/component-form-media.vue',
+    '图片与附件',
+  ],
+  [
+    'component-form-rich-text',
+    '/components/forms/rich-text',
+    'apps/web/src/pages/component-form-rich-text.vue',
+    '富文本编辑',
+  ],
+  [
     'component-form-validation',
     '/components/forms/validation',
     'apps/web/src/pages/component-form-validation.vue',
@@ -783,6 +805,12 @@ const productRouteContract = [
     '/components/combinations/page',
     'apps/web/src/pages/component-combination-page.vue',
     '独立页编辑',
+  ],
+  [
+    'component-combination-report',
+    '/components/combinations/report',
+    'apps/web/src/pages/component-combination-report.vue',
+    '报告预览',
   ],
   [
     'component-table-editor',
@@ -7999,7 +8027,7 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 83 ||
+    runtimeNumber(routeRegistry.length) !== 87 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
@@ -8691,8 +8719,8 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') &&
-        snapshot.routeCount === 83 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') &&
+        snapshot.routeCount === 87 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
         snapshot.storageRecordCount === 13,
@@ -9087,7 +9115,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 83) {
+  if (snapshot.routeCount !== 87) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -9104,8 +9132,9 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     snapshot.registeredPublicComponents.map((record) => [record.exportName, record.consumerCount]),
   )
   if (
-    registered.get('UiG2Chart') !== 15 ||
+    registered.get('UiG2Chart') !== 16 ||
     !isDeepStrictEqual(componentExampleConsumers['UiG2Chart'], [
+      'component-combination-report',
       'workbench-interactions',
       'workbench-welcome',
       'component-charts',
@@ -12110,6 +12139,11 @@ function adminNavigationNativeSourceInvariantResults(
     '@antv/g2': 'catalog:',
     '@platform/design-system': 'workspace:*',
     '@vueuse/core': 'catalog:',
+    '@tiptap/vue-3': 'catalog:',
+    '@tiptap/pm': 'catalog:',
+    '@tiptap/starter-kit': 'catalog:',
+    cropperjs: 'catalog:',
+    'pdfjs-dist': 'catalog:',
     gridstack: 'catalog:',
     lenis: 'catalog:',
     'motion-v': 'catalog:',
@@ -12323,9 +12357,9 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes('to: `#${sidebarOverlayId}`') &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -12424,7 +12458,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 83,
+      passed: snapshot.routeCount === 87,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -13429,7 +13463,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 83',
+          'const expectedLazyRouteCount = 87',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -14090,6 +14124,7 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   const selectedFormula =
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const exactPublicComponents = [
+    'UiReportPreview',
     'UiDisplayStage',
     'UiDashboardGrid',
     'UiG2Chart',
@@ -14781,9 +14816,9 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 83',
+    'const expectedLazyRouteCount = 87',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 96',
+    'const expectedDynamicRootCount = 100',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14805,10 +14840,10 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 83 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') ||
+    snapshot.routeCount !== 87 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 87') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 100') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -15033,6 +15068,11 @@ async function validateDependencies(): Promise<string[]> {
       '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      '@tiptap/vue-3': 'catalog:',
+      '@tiptap/pm': 'catalog:',
+      '@tiptap/starter-kit': 'catalog:',
+      cropperjs: 'catalog:',
+      'pdfjs-dist': 'catalog:',
       gridstack: 'catalog:',
       lenis: 'catalog:',
       'motion-v': 'catalog:',
@@ -15064,6 +15104,11 @@ async function validateDependencies(): Promise<string[]> {
       '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      '@tiptap/vue-3': 'catalog:',
+      '@tiptap/pm': 'catalog:',
+      '@tiptap/starter-kit': 'catalog:',
+      cropperjs: 'catalog:',
+      'pdfjs-dist': 'catalog:',
       gridstack: 'catalog:',
       lenis: 'catalog:',
       'motion-v': 'catalog:',
@@ -15312,14 +15357,14 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 83 ||
-    runtimeCount(productRoutes) !== 76 ||
+    runtimeCount(routeRegistry) !== 87 ||
+    runtimeCount(productRoutes) !== 80 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 76 ||
+    Object.keys(breadcrumbRegistry).length !== 80 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 83/76/7 workbench Route Registry closure drifted.')
+    violations.push('The exact 87/80/7 workbench Route Registry closure drifted.')
   }
 
   if (
@@ -15557,6 +15602,12 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
             )
           ) &&
           !(
+            path === 'apps/web/src/pages/component-form-dynamic.vue' &&
+            ['../app/forms/use-draft-session', '../app/forms/use-form-draft-storage'].includes(
+              specifier,
+            )
+          ) &&
+          !(
             path === 'apps/web/src/pages/component-table.vue' &&
             [
               '../app/router/router-scroll-controller',
@@ -15587,7 +15638,8 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
     if (
       /<(?:UiProvider|UiAdminShell|RouterView)\b/u.test(template) ||
       (/<(?:UiForm|UiFormField)\b/u.test(template) &&
-        !/^apps\/web\/src\/pages\/component-form-(?:basics|detail|layout|dependencies|calculations|structure|steps|validation|extension|controls|lifecycle|loading|submission|options|builder)\.vue$/u.test(
+        path !== 'apps/web/src/pages/component-combination-report.vue' &&
+        !/^apps\/web\/src\/pages\/component-form-(?:basics|detail|layout|dependencies|calculations|structure|steps|dynamic|media|rich-text|validation|extension|controls|lifecycle|loading|submission|options|builder)\.vue$/u.test(
           path,
         )) ||
       (/<(?:NForm|NFormItem)\b/u.test(template) &&
@@ -15979,13 +16031,13 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 83 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 76 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 87 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 80 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 83 ||
+    runtimeCount(routerRecords) !== 87 ||
     runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
     runtimeCount(storageRecords) !== 13 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 17 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 18 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, []) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
@@ -16044,6 +16096,9 @@ function validateInspectorProjections(): string[] {
         'component-form-calculations',
         'component-form-structure',
         'component-form-steps',
+        'component-form-dynamic',
+        'component-form-media',
+        'component-form-rich-text',
         'component-form-validation',
         'component-form-extension',
         'component-form-controls',
@@ -16056,7 +16111,7 @@ function validateInspectorProjections(): string[] {
     )
   )
     violations.push(
-      'Form capabilities must remain a second-level submenu with sixteen route leaves.',
+      'Form capabilities must remain a second-level submenu with eighteen route leaves.',
     )
 
   const navigationProjection = consoleNavigationRegistry.map((group) => [
@@ -16116,6 +16171,9 @@ function validateInspectorProjections(): string[] {
           '联动计算',
           '分组与重复',
           '分步表单',
+          '动态配置',
+          '图片与附件',
+          '富文本编辑',
           '校验与修正',
           '自定义扩展',
           '自定义选择控件',
@@ -16146,6 +16204,7 @@ function validateInspectorProjections(): string[] {
           '弹窗编辑',
           '抽屉编辑',
           '独立页编辑',
+          '报告预览',
         ],
       ],
     ]) ||

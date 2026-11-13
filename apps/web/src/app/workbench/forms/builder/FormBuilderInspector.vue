@@ -9,7 +9,12 @@ import { NDatePicker } from 'naive-ui/es/date-picker'
 import { NTimePicker } from 'naive-ui/es/time-picker'
 import { NSwitch } from 'naive-ui/es/switch'
 import FormBuilderDate from './FormBuilderDate.vue'
-import type { UiFormFlag, UiFormOption, UiFormValue } from '@platform/ui'
+import {
+  richTextTools as availableRichTextTools,
+  type UiFormFlag,
+  type UiFormOption,
+  type UiFormValue,
+} from '@platform/ui'
 import { useConsoleI18n } from '../../../../shared/i18n'
 import FormBuilderCondition from './FormBuilderCondition.vue'
 import {
@@ -39,18 +44,29 @@ function isChoice(
 > {
   return ['select', 'radio', 'multi-select', 'checkbox-group'].includes(node.kind)
 }
-function hasLength(
-  node: BuilderEditableNode,
-): node is Extract<
+function hasLength(node: BuilderEditableNode): node is Extract<
   BuilderEditableNode,
-  { kind: 'text' | 'textarea' | 'mask' | 'attachment' | 'multi-select' | 'checkbox-group' }
+  {
+    kind:
+      'text' | 'textarea' | 'rich-text' | 'mask' | 'attachment' | 'multi-select' | 'checkbox-group'
+  }
 > {
-  return ['text', 'textarea', 'mask', 'attachment', 'multi-select', 'checkbox-group'].includes(
-    node.kind,
-  )
+  return [
+    'text',
+    'textarea',
+    'rich-text',
+    'mask',
+    'attachment',
+    'multi-select',
+    'checkbox-group',
+  ].includes(node.kind)
 }
 const leaf = computed(() => props.node.kind !== 'group' && props.node.kind !== 'repeat')
 const isText = computed(() => props.node.kind === 'text' || props.node.kind === 'textarea')
+const emailRuleEnabled = computed(() => {
+  const node = props.node
+  return (node.kind === 'text' || node.kind === 'textarea') && node.rules?.format === 'email'
+})
 const choices = computed<readonly UiFormOption[]>(() =>
   (props.node.kind === 'select' ||
     props.node.kind === 'radio' ||
@@ -70,6 +86,24 @@ const valueTypes = computed(() => [
   { value: 'string', label: t('formBuilder.stringValue') },
   { value: 'number', label: t('formBuilder.numberValue') },
 ])
+const richTextToolLabels = {
+  bold: 'formCapabilities.richText.bold',
+  italic: 'formCapabilities.richText.italic',
+  strike: 'formCapabilities.richText.strike',
+  heading: 'formCapabilities.richText.heading',
+  'bullet-list': 'formCapabilities.richText.bullet-list',
+  'ordered-list': 'formCapabilities.richText.ordered-list',
+  blockquote: 'formCapabilities.richText.blockquote',
+  link: 'formCapabilities.richText.link',
+  undo: 'formCapabilities.richText.undo',
+  redo: 'formCapabilities.richText.redo',
+} as const
+const richTextTools = computed(() =>
+  availableRichTextTools.map((value) => ({
+    value,
+    label: t(richTextToolLabels[value]),
+  })),
+)
 const spans = computed(() => [
   { value: 1, label: t('formBuilder.oneColumn') },
   { value: 2, label: t('formBuilder.twoColumns') },
@@ -245,8 +279,26 @@ function removeDefault(): void {
         @update:value="patch('span', $event)"
       />
     </div>
+    <div
+      v-if="node.kind === 'rich-text'"
+      class="grid min-w-0 gap-component-unit"
+    >
+      <span
+        :id="labelId('tools')"
+        class="text-caption text-text-primary"
+        v-text="t('formBuilder.richTextTools')"
+      />
+      <NSelect
+        multiple
+        :value="node.tools ?? richTextTools.map((tool) => tool.value)"
+        :options="richTextTools"
+        :aria-label="t('formBuilder.richTextTools')"
+        to="#pavp-overlay-root"
+        @update:value="patch('tools', $event)"
+      />
+    </div>
     <section
-      v-if="leaf && node.kind !== 'attachment'"
+      v-if="leaf && node.kind !== 'attachment' && node.kind !== 'rich-text'"
       class="grid min-w-0 gap-component-unit"
       :aria-label="t('formBuilder.defaultValue')"
     >
@@ -651,7 +703,7 @@ function removeDefault(): void {
         class="flex flex-wrap col-span-full items-center justify-between gap-component-unit"
       >
         <span v-text="t('formBuilder.email')" /><NSwitch
-          :value="'rules' in node && node.rules?.format === 'email'"
+          :value="emailRuleEnabled"
           :aria-label="t('formBuilder.email')"
           @update:value="rule('format', $event ? 'email' : undefined)"
         />

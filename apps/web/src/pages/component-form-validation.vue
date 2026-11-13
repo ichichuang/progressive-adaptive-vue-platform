@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { UiForm, useUiForm, type UiFormIssue, type UiFormSchema } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import FormCapabilityWorkbench from '../app/workbench/forms/FormCapabilityWorkbench.vue'
@@ -105,6 +106,11 @@ function fill(valid: boolean): void {
   })
 }
 
+const hasContactErrors = computed(() =>
+  form.issues.value.some(
+    (issue) => issue.field === 'contacts' || issue.field?.startsWith('contacts.'),
+  ),
+)
 const draft = useFormExampleDraft(form, ['name', 'email', 'capacity', 'alias', 'contacts'])
 const history = useFormExampleUndo(() => form)
 </script>
@@ -139,6 +145,31 @@ const history = useFormExampleUndo(() => form)
         {{ t('formShowcase.fillValid') }}
       </NButton>
     </template>
+    <div class="flex flex-wrap items-center gap-component-unit">
+      <NButton
+        secondary
+        :bordered="false"
+        :disabled="form.phase.value !== 'idle'"
+        @click="form.validateFields(['contacts'])"
+      >
+        {{ t('formShowcase.checkContacts') }}
+      </NButton>
+      <NButton
+        secondary
+        :bordered="false"
+        :disabled="form.phase.value !== 'idle'"
+        @click="form.resetFields(['contacts'])"
+      >
+        {{ t('formShowcase.resetContacts') }}
+      </NButton>
+      <NButton
+        quaternary
+        :disabled="form.phase.value !== 'idle' || !hasContactErrors"
+        @click="form.clearErrors(['contacts'])"
+      >
+        {{ t('formShowcase.clearContactErrors') }}
+      </NButton>
+    </div>
     <UiForm
       class="grid gap-content-gap"
       :form="form"

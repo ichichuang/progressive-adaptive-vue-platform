@@ -10,6 +10,7 @@ import {
 } from '@platform/ui'
 import { NButton } from 'naive-ui/es/button'
 import { NCheckbox } from 'naive-ui/es/checkbox'
+import { NCard } from 'naive-ui/es/card'
 import { NModal } from 'naive-ui/es/modal'
 import { NSelect } from 'naive-ui/es/select'
 import type { ConsoleMessageKey } from '../../../shared/i18n'
@@ -92,7 +93,20 @@ const rows =
           note: t('tableCapabilities.data.nullSample'),
         },
       ]
-    : tableCapabilityRows(props.example === 'virtual' ? 2000 : 36)
+    : tableCapabilityRows(props.example === 'virtual' ? 2000 : 36).map((row, index) =>
+        props.example === 'sorting'
+          ? {
+              ...row,
+              date: `2026-11-${String((index % 28) + 1).padStart(2, '0')}`,
+              note:
+                index % 3 === 0
+                  ? null
+                  : index % 3 === 1
+                    ? ''
+                    : t('tableCapabilities.data.noteSample'),
+            }
+          : row,
+      )
 const simulation = createTableDemoTransport(rows, () =>
   t('tableCapabilities.data.simulatedFailure'),
 )
@@ -135,11 +149,35 @@ const responseOptions = computed(() =>
 )
 const applied = computed(() =>
   Object.entries(table.query.value.filters)
-    .filter(([, value]) => value !== '' && value !== null)
-    .map(
-      ([key, value]) =>
-        `${translate(key === 'keyword' ? 'tableShowcase.search' : key === 'title' ? 'tableShowcase.title' : 'tableShowcase.category')}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`,
-    )
+    .flatMap(([key, value]) => {
+      if (value === '' || value === null) return []
+      if (key === 'priceRange' && typeof value === 'object' && !Array.isArray(value)) {
+        const bounds = value as Readonly<Record<string, unknown>>
+        if (bounds['min'] === null && bounds['max'] === null) return []
+        return [
+          `${t('tableCapabilities.data.priceRange')}: ${typeof bounds['min'] === 'number' ? String(bounds['min']) : '…'} – ${typeof bounds['max'] === 'number' ? String(bounds['max']) : '…'}`,
+        ]
+      }
+      if (key === 'dates' && Array.isArray(value))
+        return [`${t('tableCapabilities.data.dateRange')}: ${value.join(' – ')}`]
+      if (key === 'noteState')
+        return [
+          t(value === 'empty' ? 'tableCapabilities.data.empty' : 'tableCapabilities.data.notEmpty'),
+        ]
+      const label =
+        key === 'nameMatch'
+          ? t('tableCapabilities.data.fuzzyName')
+          : translate(
+              key === 'keyword'
+                ? 'tableShowcase.search'
+                : key === 'title'
+                  ? 'tableShowcase.title'
+                  : 'tableShowcase.category',
+            )
+      return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+        ? [`${label}: ${String(value)}`]
+        : []
+    })
     .join(' · '),
 )
 const sortLabel = computed(() => {
@@ -396,18 +434,37 @@ function openDetail(row: UiTableReadonlyRecord): void {
   <NModal
     v-if="query"
     v-model:show="filtersOpen"
-    preset="dialog"
     to="#pavp-overlay-root"
-    :title="t('tableCapabilities.data.filters')"
   >
-    <div class="grid gap-content-gap">
-      <UiForm
-        :form="query"
-        class="grid gap-content-gap"
+    <NCard
+      class="wb-provider-modal max-h-dvh"
+      content-class="flex flex-1 min-h-0 min-w-0 overflow-hidden"
+      :title="t('tableCapabilities.data.filters')"
+      role="dialog"
+      aria-modal="true"
+      :aria-label="t('tableCapabilities.data.filters')"
+      closable
+      @close="filtersOpen = false"
+    >
+      <UiScrollArea
+        :owner-id="`${table.schema.id}-filter-dialog`"
+        class="flex-1 min-h-0 min-w-0"
+        contained
       >
-        <template #actions>
+        <UiForm
+          :form="query"
+          class="grid gap-content-gap"
+        >
+          <template #actions>
+            <span />
+          </template>
+        </UiForm>
+      </UiScrollArea>
+      <template #footer>
+        <div class="flex flex-wrap items-center gap-component-unit">
           <NButton
             attr-type="submit"
+            :form="query.formId"
             type="primary"
             class="min-h-target-enhanced min-w-target-enhanced"
             :disabled="query.submitting.value"
@@ -430,16 +487,14 @@ function openDetail(row: UiTableReadonlyRecord): void {
           >
             {{ t('tableShowcase.close') }}
           </NButton>
-        </template>
-      </UiForm>
-      <p
-        class="m-0 text-caption text-text-secondary"
-        role="status"
-        aria-live="polite"
-      >
-        {{ t('tableExamples.results') }} {{ table.total.value }} · {{ sortLabel }}
-      </p>
-    </div>
+          <span
+            class="text-caption text-text-secondary"
+            role="status"
+            v-text="`${t('tableExamples.results')} ${String(table.total.value)}`"
+          />
+        </div>
+      </template>
+    </NCard>
   </NModal>
   <NModal
     v-model:show="detailOpen"

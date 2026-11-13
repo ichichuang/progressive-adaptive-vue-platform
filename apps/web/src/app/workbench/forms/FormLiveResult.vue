@@ -1,7 +1,13 @@
 <script setup lang="ts" generic="I">
 import { NButton } from 'naive-ui/es/button'
 import { computed, nextTick, onActivated, onDeactivated, ref } from 'vue'
-import { UiCopyAction, UiScrollArea, type UiFormController } from '@platform/ui'
+import {
+  UiCopyAction,
+  UiScrollArea,
+  isRichTextDocument,
+  richTextPlainText,
+  type UiFormController,
+} from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
 
 const props = defineProps<{
@@ -29,40 +35,42 @@ const fields = computed(() =>
       path: field.name,
       label: props.form.text(field.label),
       value:
-        field.kind === 'attachment' && Array.isArray(value)
-          ? value
-              .map((item: unknown) =>
-                typeof item === 'object' && item !== null && 'name' in item
-                  ? String(item.name)
-                  : '',
-              )
-              .join(' / ') || props.form.copy.empty()
-          : field.kind === 'select' ||
-              field.kind === 'multi-select' ||
-              field.kind === 'radio' ||
-              field.kind === 'checkbox-group'
-            ? binding.selectedOptions
-                .map((item) =>
-                  item.option
-                    ? props.form.text(item.option.label)
-                    : item.status === 'loading'
-                      ? props.form.copy.loadingOptions()
-                      : item.status === 'failed'
-                        ? props.form.copy.optionsFailed()
-                        : props.form.copy.invalidValue(),
+        field.kind === 'rich-text' && isRichTextDocument(value)
+          ? richTextPlainText(value) || props.form.copy.empty()
+          : field.kind === 'attachment' && Array.isArray(value)
+            ? value
+                .map((item: unknown) =>
+                  typeof item === 'object' && item !== null && 'name' in item
+                    ? String(item.name)
+                    : '',
                 )
                 .join(' / ') || props.form.copy.empty()
-            : value === null || value === ''
-              ? props.form.copy.empty()
-              : typeof value === 'boolean'
-                ? value
-                  ? props.form.copy.yes()
-                  : props.form.copy.no()
-                : field.kind === 'date-range' && Array.isArray(value)
-                  ? value.join(' – ')
-                  : typeof value === 'object'
-                    ? JSON.stringify(value)
-                    : String(value),
+            : field.kind === 'select' ||
+                field.kind === 'multi-select' ||
+                field.kind === 'radio' ||
+                field.kind === 'checkbox-group'
+              ? binding.selectedOptions
+                  .map((item) =>
+                    item.option
+                      ? props.form.text(item.option.label)
+                      : item.status === 'loading'
+                        ? props.form.copy.loadingOptions()
+                        : item.status === 'failed'
+                          ? props.form.copy.optionsFailed()
+                          : props.form.copy.invalidValue(),
+                  )
+                  .join(' / ') || props.form.copy.empty()
+              : value === null || value === ''
+                ? props.form.copy.empty()
+                : typeof value === 'boolean'
+                  ? value
+                    ? props.form.copy.yes()
+                    : props.form.copy.no()
+                  : field.kind === 'date-range' && Array.isArray(value)
+                    ? value.join(' – ')
+                    : typeof value === 'object'
+                      ? JSON.stringify(value)
+                      : String(value),
       binding,
       access: binding.hidden
         ? t('formShowcase.hiddenValue')

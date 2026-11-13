@@ -9,6 +9,7 @@ import {
 } from 'vue'
 import type {
   UiTableColumn,
+  UiTableCsvScope,
   UiTableController,
   UiTableInput,
   UiTableKey,
@@ -22,6 +23,7 @@ import {
   restoreTableColumns,
 } from '../components/table-column-preference'
 import { createTableCsv } from '../components/table-csv'
+import { matchesLocalFilters, validateLocalFilters } from '../components/table-local-filters'
 import { parseUiTableSchema } from '../components/table-schema'
 import {
   parseTableSummary,
@@ -59,7 +61,15 @@ export function useUiTable(input: UiTableInput): UiTableController {
       throw new TypeError(`Unknown table sort comparator: ${name}`)
   }
   const snapshot = <T>(value: T): T => freezeDraftValue(cloneDraft(value)) as T
-  const initialFilters = snapshot(input.filters ?? {})
+  function acceptFilters(value: UiTableReadonlyRecord): UiTableReadonlyRecord {
+    const candidate: unknown = value
+    if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
+      throw new TypeError('Table filters must be a JSON record.')
+    const filters = snapshot(value)
+    validateLocalFilters(filters, schema.localFilters ?? [])
+    return filters
+  }
+  const initialFilters = acceptFilters(input.filters ?? {})
   const transport = input.transport
   const context = snapshot(input.context ?? {})
   const query = shallowRef<UiTableQuery>(
@@ -191,6 +201,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
   ): readonly (readonly [string, UiTableReadonlyRecord[string]])[] {
     return Object.entries(filters).flatMap(([key, value]) => {
       const path = prefix ? `${prefix}.${key}` : key
+      if (schema.localFilters?.some((definition) => definition.parameter === path)) return []
       return value !== null && typeof value === 'object' && !Array.isArray(value)
         ? filterLeaves(value as UiTableReadonlyRecord, path)
         : [[path, value] as const]
@@ -200,27 +211,29 @@ export function useUiTable(input: UiTableInput): UiTableController {
     // Grouped form values retain their nested request shape. Only the local
     // matcher projects them to the same paths used by flat filters and columns.
     const filters = filterLeaves(current.filters)
-    const matching = localRows.filter((row) =>
-      filters.every(([key, value]) => {
-        if (key === schema.keywordSearch?.parameter) {
-          if (value === null || value === '') return true
-          if (typeof value !== 'string') return false
-          const keyword = value.trim().toLocaleLowerCase()
-          return (
-            !keyword ||
-            schema.keywordSearch.fields.some((field) =>
-              display(getFormValue(row, field)).toLocaleLowerCase().includes(keyword),
+    const matching = localRows.filter(
+      (row) =>
+        matchesLocalFilters(row, current.filters, schema.localFilters ?? []) &&
+        filters.every(([key, value]) => {
+          if (key === schema.keywordSearch?.parameter) {
+            if (value === null || value === '') return true
+            if (typeof value !== 'string') return false
+            const keyword = value.trim().toLocaleLowerCase()
+            return (
+              !keyword ||
+              schema.keywordSearch.fields.some((field) =>
+                display(getFormValue(row, field)).toLocaleLowerCase().includes(keyword),
+              )
             )
-          )
-        }
-        if (value === '' || value === null || (Array.isArray(value) && value.length === 0))
-          return true
-        const cell = getFormValue(row, key)
-        if (typeof value === 'string')
-          return display(cell).toLocaleLowerCase().includes(value.toLocaleLowerCase())
-        if (Array.isArray(value)) return value.some((item) => Object.is(item, cell))
-        return Object.is(cell, value)
-      }),
+          }
+          if (value === '' || value === null || (Array.isArray(value) && value.length === 0))
+            return true
+          const cell = getFormValue(row, key)
+          if (typeof value === 'string')
+            return display(cell).toLocaleLowerCase().includes(value.toLocaleLowerCase())
+          if (Array.isArray(value)) return value.some((item) => Object.is(item, cell))
+          return Object.is(cell, value)
+        }),
     )
     if (current.sorts.length)
       matching.sort((a, b) => {
@@ -429,6 +442,16 @@ export function useUiTable(input: UiTableInput): UiTableController {
     const entries = validateSorts(sorts)
     return change({ page: 1, sorts: entries, sort: entries[0] ?? null })
   }
+  function captureRows(scope: UiTableCsvScope): readonly UiTableReadonlyRecord[] {
+    if (!['page', 'selected'].includes(scope)) throw new TypeError('Invalid table row scope.')
+    if (disposed || loading.value || error.value)
+      throw new Error('Table data is not ready for export.')
+    const selected = new Set(selectedKeys.value)
+    const loaded = tree ? flattenTreeRecords(rows.value, tree.childrenKey) : rows.value
+    const captured = scope === 'page' ? loaded : loaded.filter((row) => selected.has(rowKey(row)))
+    if (captured.length === 0) throw new Error('No rows are available for this export scope.')
+    return snapshot(captured)
+  }
   const controller: UiTableController = {
     schema,
     text: (value) => input.translate?.(value) ?? value,
@@ -470,7 +493,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
       const candidate: unknown = value.filters
       if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
         throw new TypeError('Table filters must be a JSON record.')
-      const filters = snapshot(value.filters)
+      const filters = acceptFilters(value.filters)
       if (tree && Object.keys(filters).length)
         throw new TypeError('Tree tables do not support local filters.')
       return change({
@@ -481,7 +504,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
         sort: sorts[0] ?? null,
       })
     },
-    search: (filters) => change({ page: 1, filters: snapshot(filters) }),
+    search: (filters) => change({ page: 1, filters: acceptFilters(filters) }),
     reset: () => change({ page: 1, filters: initialFilters, sort: null, sorts: [] }),
     setPage: (page) => {
       if (!Number.isSafeInteger(page) || page < 1) throw new TypeError('Invalid table page.')
@@ -596,17 +619,12 @@ export function useUiTable(input: UiTableInput): UiTableController {
         }
       }
     },
+    captureRows,
     exportCsv: (scope) => {
       const configuration = schema.csvExport
       if (!configuration?.scopes.includes(scope))
         throw new TypeError('This CSV scope is not enabled.')
-      if (disposed || loading.value || error.value)
-        throw new Error('Table data is not ready for export.')
-      const selected = new Set(selectedKeys.value)
-      const loaded = tree ? flattenTreeRecords(rows.value, tree.childrenKey) : rows.value
-      const exportRows =
-        scope === 'page' ? loaded : loaded.filter((row) => selected.has(rowKey(row)))
-      if (exportRows.length === 0) throw new Error('No rows are available for this export scope.')
+      const exportRows = captureRows(scope)
       return createTableCsv(configuration.fileName, columns.value, exportRows, (value) =>
         controller.text(value),
       )

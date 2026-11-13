@@ -2289,6 +2289,25 @@ const noUnapprovedVisualLiterals = {
         )
           return
 
+        // PDF canvas CSS dimensions are measured page geometry, separate from DPR backing pixels.
+        if (
+          filename === 'packages/ui/src/adapters/media/pdf-preview.ts' &&
+          (propertyName === 'width' || propertyName === 'height') &&
+          node.right.type === 'TemplateLiteral' &&
+          node.right.expressions.length === 1 &&
+          node.right.quasis.length === 2 &&
+          node.right.quasis[0].value.raw === '' &&
+          node.right.quasis[1].value.raw === 'px'
+        )
+          return
+
+        // One editor surface compensates measured viewport overflow without replacing its live form.
+        if (
+          filename === 'packages/ui/src/components/UiTableEditor.vue' &&
+          propertyName === 'translate'
+        )
+          return
+
         // Native G2 HTML tooltip placement is measured against the live viewport.
         // Admit only positional writes in this vendor owner, never color/size authority.
         if (
