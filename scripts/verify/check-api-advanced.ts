@@ -516,3 +516,6 @@ lateHeaders.resolve(
 await pause(0)
 assert.equal(lateHeadersReleased, true)
 console.log('Advanced stream response-header idle deadline and late-body cleanup passed.')
+
+await (await import('./check-upload')).verifyUploads()
+await (await import('./check-form-upload-source')).verifyFormUploadSource()

@@ -33,8 +33,9 @@ const props = withDefaults(
     readonly queryMode?: 'submit' | 'change'
     readonly debounce?: number
     readonly sorting?: TableSortExample
+    readonly continuous?: boolean
   }>(),
-  { queryMode: 'submit', debounce: 250, sorting: 'single' },
+  { queryMode: 'submit', debounce: 250, sorting: 'single', continuous: false },
 )
 defineSlots<{ controls?: () => unknown }>()
 const demo = useTableShowcase()
@@ -48,12 +49,15 @@ const translate = (value: string) =>
   value.startsWith('tableCapabilities.data.')
     ? t(value as ConsoleMessageKey)
     : demo.translate(value)
-const schema = tableDataCapabilitySchema(
+const baseSchema = tableDataCapabilitySchema(
   props.example,
   props.queryMode,
   props.debounce,
   props.sorting,
 )
+const schema = props.continuous
+  ? { ...baseSchema, pagination: { mode: 'load-more' as const, pageSize: 100 } }
+  : baseSchema
 const rows =
   props.example === 'rendering'
     ? [
@@ -134,7 +138,7 @@ const applied = computed(() =>
     .filter(([, value]) => value !== '' && value !== null)
     .map(
       ([key, value]) =>
-        `${translate(key === 'title' ? 'tableShowcase.title' : 'tableShowcase.category')}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`,
+        `${translate(key === 'keyword' ? 'tableShowcase.search' : key === 'title' ? 'tableShowcase.title' : 'tableShowcase.category')}: ${typeof value === 'object' ? JSON.stringify(value) : String(value)}`,
     )
     .join(' · '),
 )
@@ -278,7 +282,7 @@ function openDetail(row: UiTableReadonlyRecord): void {
             v-if="!query"
             class="m-0 min-w-0 text-caption text-text-secondary"
           >
-            {{ t(hintKeys[example]) }}
+            {{ t(continuous ? 'tableShowcase.continuousHint' : hintKeys[example]) }}
           </p>
         </div>
       </UiScrollArea>
@@ -294,7 +298,11 @@ function openDetail(row: UiTableReadonlyRecord): void {
           {{ t('tableExamples.results') }} {{ table.total.value }}
           <span
             v-if="example === 'virtual'"
-            v-text="` · ${t('tableCapabilities.data.onePage')}`"
+            v-text="
+              continuous
+                ? ` · ${table.rows.value.length} / ${table.total.value}`
+                : ` · ${t('tableCapabilities.data.onePage')}`
+            "
           />
           <span
             v-if="example === 'sorting'"

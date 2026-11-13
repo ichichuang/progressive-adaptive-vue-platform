@@ -30,7 +30,7 @@ const feature = computed(
         advanced: {
           hint: 'apiShowcase.advanced.hint',
           source: 'apiShowcase.local',
-          entry: 'createApiClient · apps/web/src/shared/api/index.ts',
+          entry: 'createApiClient / createUploadQueue · apps/web/src/shared/api/index.ts',
           component: 'ApiAdvancedDemo',
         },
       }) as const
@@ -68,10 +68,15 @@ const copy = computed(() =>
       <NTag
         size="small"
         :bordered="false"
+        type="info"
       >
         {{ t(feature.source) }}
       </NTag>
     </div>
-    <slot />
+    <div
+      class="wb-table-stage rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+    >
+      <slot />
+    </div>
   </WorkbenchPage>
 </template>

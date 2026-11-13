@@ -144,3 +144,15 @@ const client = createApiClient({
 
 本模块没有新增缓存、认证系统、自动重连、重放或服务端协议。读查询去重与缓存仍由现有 shared/query 负责。
 EOF 仅表示本次传输结束；业务任务完成与否仍由服务契约判断。
+
+## Chunk upload tasks
+
+`createUploadQueue` owns an in-memory task queue, bounded concurrent files and sequential chunks per file. Supply a trusted `UploadAdapter` that calls the existing `ApiClient` with your backend's chunk and completion endpoints. Treat non-success API results as rejected adapter promises. No upload endpoint, authentication scheme, or backend response format is invented by the queue.
+
+Use `enqueue`, `pause`, `resume`, `cancel`, and `dispose`. Resume retains only acknowledged chunks in this queue's lifetime; failed tasks can be explicitly resumed. Progress counts acknowledged bytes, not network transfer events. A fully transmitted file remains uploading until completion is acknowledged. Zero-byte files go directly to completion.
+
+The adapter must honor AbortSignal and settle its promise after cancellation. An ignored abort keeps its concurrency slot occupied until the promise settles, preventing overlapping retries. The adapter must deduplicate `(taskId, index)` and make completion idempotent: a response can be interrupted after the server accepts it. Pausing or cancelling stops local work, not already accepted server data. Backend cleanup is the adapter/application's responsibility. Disposal clears retained tasks and suppresses late observer callbacks; an in-flight adapter can retain its file until it settles. There is no refresh-persistent resume, automatic retry, hash guarantee, or hidden global queue. Call dispose at the owning scope's end.
+
+### Form attachment integration
+
+`app/forms/create-form-upload-source.ts` composes this queue with the existing `UiFormAttachmentSource` port without introducing a network dependency into the UI package. Pass an `UploadAdapter<UiFormAttachment>` whose completion result is the backend-confirmed reference; register the returned `source` in `useUiForm.attachments`. Its returned `queue` is the same task authority for progress, pause, resume and cancellation. The source resolves only after completion, rejects on failure/cancellation, and disconnects its signal listener at termination. Dispose through the returned queue to cancel and settle outstanding form requests. A failed source is terminal: retrying its old task does not silently mutate the form; selecting the file again starts a new source request. The API showcase uses a clearly labelled local transport simulation.

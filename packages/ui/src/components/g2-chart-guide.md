@@ -40,7 +40,7 @@ const options = shallowRef<UiG2ChartOptions>({
 
 ## 统一外观与动效
 
-- 默认颜色来自当前主题的语义色板，包括浅色/深色、增强对比度和已验证自定义主题。单色与分类色使用主题语义角色；数值颜色默认使用设计系统已有的连续色阶，跟随主题、浅深和对比度。轴、图例、标签、标题、tooltip、滑块和滚动条均有对应投影。
+- 默认颜色来自当前主题的语义色板，包括浅色/深色、增强对比度和已验证自定义主题。单色使用主题主色，分类色使用主题的独立八色 dataViz.categorical；数值颜色默认使用设计系统已有的连续色阶，跟随主题、浅深和对比度。轴、图例、标签、标题、tooltip、滑块和滚动条均有对应投影。
 - 字体、字号、间距、线宽、圆角和时长由组件所在作用域的语义 UnoCSS 类解析成实际像素/毫秒，跟随字号；图表边距、图例行列间距和滑块尺寸另外使用现有控件高度/水平内边距响应 comfortable、compact、spacious 密度。Canvas 不直接接收无法解析的 CSS var/calc/rem。
 - `options.theme` 是图表级显式覆写，递归合并到平台默认值并向下继承。开发者可用原生 `scale.color.range`、`scale.color.palette`、`scale.color.interpolator` 或 mark `style.fill/stroke` 自由定义单图配色；这些显式颜色优先于平台默认。消费者对显式覆写的可读性负责。不要为普通图表复制一份平台主题。
 - `full` 保留 G2 原生高级动画和显式时长/缓动；图表默认入场、数据更新、退出分别使用系统时长的 5、4、2 倍，有限时间序列每帧为 8 倍。内置 200ms 基础时长对应 1000/800/400ms 及 1600ms 时间帧；只投影图表节奏，不修改全局控件时长。显式 theme、animate、编码时长仍优先，缓动沿用系统曲线。
@@ -61,3 +61,42 @@ const options = shallowRef<UiG2ChartOptions>({
 ## 连续范围交互示例
 
 工作台的滑块与框选示例共用共享 `UiChartTimeRange` 趋势缩略时间轴和一份范围状态，再映射到 `G2Spec.scale.x.domain`，提供 96 小时、双系列连续数据。时间轴支持双端缩放、整段平移、方向键 / PageUp / PageDown / Home / End，以及触屏指针捕获；Esc 取消拖动。聚焦图表或时间轴后滚轮缩放，Shift + 滚轮平移；Alt + 滚轮直接操作。未聚焦时保留页面滚动，Ctrl / Meta 组合保留浏览器缩放。框选使用原生 brushXHighlight 的域事件更新同一范围，不使用独立内部状态的 brushXFilter。拖动时关闭图形/坐标轴补间，保持最后确认的纵轴范围；释放或选择预设后平滑收束到当前范围的纵轴。这样把直接操控的跟手性与释放后的过渡分开，不用长动画追赶指针。原生 G2 slider/filter API 仍可使用，但它自己的过滤路径会关闭动画；适配器没有修改厂商内部实现。
+
+## 图片导出与恢复视图
+
+组件 ref 暴露 `UiG2ChartHandle.exportImage(): Promise<Blob>`，返回当前已就绪画布的 PNG。
+保留渲染像素密度、当前可见数据、图形颜色与交互状态，并以当前主题面板色填充背景，避免深色图表导出后文字落在透明白底上。
+导出不重新请求数据，不重启动画，不暴露 G2 实例；尚未就绪、正在更新或已经失活时拒绝。
+调用方负责下载文件、按钮忙碌状态和失败反馈。外部标题、HTML tooltip、时间轴及操作区不属于画布图片。
+
+“恢复视图”由消费方原有状态负责：范围图恢复完整范围，构成图恢复被隐藏分类，不重置已更新的数据。
+没有可恢复筛选的图表不显示无意义的恢复按钮。工作台通过这些状态演示导出与恢复。
+
+## 分类颜色与标签
+
+默认分类色为当前主题的八个固定槽位，category10/category20 是 G2 的 API 字段名，不代表平台设计了十色或二十色。超过八类时原生 ordinal 映射会循环颜色，应使用分面、筛选、标签/形状或显式更长 range，不能仅依赖颜色区别。消费者应提供稳定的 scale.color.domain，以免筛选、排序后改变系列对应颜色；平台不猜测业务类别。显式 range/palette/interpolator 和 mark 颜色仍优先。
+
+内置 inside/inner 标签无显式 fill 或 transform 时使用 G2 contrastReverse，按实际图形填充选择黑/白内容色，而不是借用主色按钮的配套文字。标签默认基于现有 text.primary；显式填充、变换及复杂透明叠加的可读性由消费者验证。
+
+## 自动巡游
+
+可选 `tour` 是纯 JSON：`targets` 为 `{ id, field, value }` 的数组，ID 必须非空且唯一，
+field 按直接数据对象的自有字段严格匹配 string / finite number。相同字段值可聚焦多个系列的点。
+`intervalMs` 默认 4000，最低 1000；`loop` 默认 true；`autoplay` 默认 false。
+停留间隔与动画时长分开，过渡沿用全局动效配置。没有 tour 时不改变原图表交互。
+
+支持单视图的 interval（柱形或 theta 环形）、point，以及 line/area 背景加 point 的组合。
+只传 line 没有 point、分面、多视图、时间序列动画或自定义 focus/state 不属于当前合同，会发出 error，
+不悄悄覆盖原交互。复杂 transform 后的目标字段需要消费方按实际展示数据显式提供；不存在或不可见的
+目标不参与巡游。配置中不执行函数或脚本；请求仍由已有应用 API/query 层负责。
+
+组件 handle 增加 `playTour()`、`pauseTour()`、`stopTour()`、`nextTour()`、`previousTour()`。
+`tourChange` 提供 `UiChartTourState`（status / targetId / reason），不要从 tooltip DOM 反推状态。
+暂停保留当前项；停止清除强调，下一次播放从首项开始；前后项转为手动暂停状态。
+点击图元锁定该目标；悬停/键盘进入临时接管，离开后等待完整间隔继续，不抢用户操作。
+
+后台文档、不可见容器、KeepAlive 停用、正在重新绘制时暂停；卸载清除 timer/observer/listener。
+用户手动暂停不会因返回页面而恢复播放。数据更新/排序按目标 ID 维持当前项；该目标消失后选择下一个
+有效位置，空数据不启动 timer，单项不创建循环 timer。减少/关闭动效时不自动轮播，仍支持手动前后项。
+原生 hover 与自动巡游复用同一强调执行器，不重绘数据几何、不创建第二套颜色或动画时钟。
+展示页 `/components/charts/tour` 提供柱图、双系列时间趋势和环形占比，文本摘要及固定操作区。

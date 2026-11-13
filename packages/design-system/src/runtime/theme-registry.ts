@@ -158,8 +158,9 @@ export function resolvedThemePlane(
       if (match?.[1] === undefined) return [role, '']
       let resolved: unknown = palette
       for (const segment of match[1].split('.')) {
-        if (!isRecord(resolved) || !Object.hasOwn(resolved, segment)) return [role, '']
-        resolved = resolved[segment]
+        const property = segment.replace(/-([a-z])/gu, (_, letter: string) => letter.toUpperCase())
+        if (!isRecord(resolved) || !Object.hasOwn(resolved, property)) return [role, '']
+        resolved = resolved[property]
       }
       return [role, typeof resolved === 'string' ? resolved : '']
     }),

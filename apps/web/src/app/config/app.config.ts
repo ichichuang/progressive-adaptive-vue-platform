@@ -12,6 +12,8 @@ export const applicationConfig = {
   },
   workspace: { sessionStorageKey: 'pavp:web:workspace-session' },
   navigation: { preferenceStorageKey: 'pavp:web:navigation-preference' },
+  dashboard: { layoutStorageKey: 'pavp:web:dashboard-layout' },
+  dateTime: { preferenceStorageKey: 'pavp:web:date-time-preference' },
   localization: { preferenceStorageKey: 'pavp:web:locale-preference' },
   appearance: {
     customThemeRegistryStorageKey: 'pavp:web:custom-theme-registry',

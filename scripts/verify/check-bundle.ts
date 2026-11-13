@@ -102,7 +102,7 @@ const productionBundleGzipOptions = {
 const expectedLazyRouteKeys = new Set(
   routeRegistry.map((record) => record.sourcePath.replace(/^apps\/web\//u, '')),
 )
-const expectedLazyRouteCount = 76
+const expectedLazyRouteCount = 83
 const motionFeatureRootId = 'admin-navigation-motion-dom-max'
 const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'
 const expectedMotionFeatureDynamicRootCount = 1
@@ -121,7 +121,7 @@ const localizationResourceManifestKeys = [
   'src/shared/i18n/messages/en/capabilities.json',
 ] as const
 const navigationFocusManifestKey = '../../packages/ui/src/components/navigation-actions.ts'
-const expectedDynamicRootCount = 89
+const expectedDynamicRootCount = 96
 const expectedDynamicRootKeys = new Set([
   ...expectedLazyRouteKeys,
   motionFeatureManifestKey,
@@ -1163,7 +1163,11 @@ if (motionFeatureCssFiles.size !== 0) {
 for (const [routeRootKey, routeStaticClosure] of lazyRouteStaticClosures) {
   const routeOverlap = intersectingValues(motionFeatureExclusiveClosure, routeStaticClosure)
 
-  if (routeOverlap.length !== 0 && routeRootKey !== 'src/pages/motion.vue') {
+  if (
+    routeOverlap.length !== 0 &&
+    routeRootKey !== 'src/pages/motion.vue' &&
+    routeRootKey !== 'src/pages/index.vue'
+  ) {
     throw new Error(
       `${motionFeatureRootId} exclusive closure overlaps Router route ${routeRootKey}: ${routeOverlap.join(', ')}.`,
     )

@@ -49,6 +49,19 @@ export function paletteContrastFailure(
     'switch.off-content',
   )
 
+  for (const [name, accent] of Object.entries(palette.expression)) {
+    for (const [surface, background] of surfaces)
+      pair(accent.foreground, background, textMinimum, `expression.${name}/${surface}`)
+    pair(accent.soft.foreground, accent.soft.background, textMinimum, `expression.${name}.soft`)
+    pair(accent.solid.foreground, accent.solid.background, textMinimum, `expression.${name}.solid`)
+  }
+  const categories = Object.entries(palette.dataViz.categorical)
+  if (new Set(categories.map(([, color]) => color)).size !== categories.length)
+    return 'dataViz.categorical: every series must have a distinct color.'
+  for (const [name, color] of categories)
+    for (const [surface, background] of surfaces)
+      pair(color, background, boundaryMinimum, `dataViz.${name}/${surface}`)
+
   // Naive colored secondary buttons use the opaque soft role, validated above.
   return failure
 }

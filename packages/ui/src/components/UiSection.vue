@@ -14,7 +14,7 @@ defineSlots<{
 <template>
   <section class="pavp-section">
     <div class="pavp-section__heading">
-      <h2 class="leading-body font-title-weight m-0 text-body text-text-primary">
+      <h2 class="leading-title font-title-weight m-0 text-subheading text-text-primary">
         {{ title }}
       </h2>
       <p

@@ -59,20 +59,50 @@ function focusSummary(): void {
   const element: unknown = summary.value?.$el
   if (element instanceof HTMLElement) element.focus({ preventScroll: true })
 }
-function focusIssue(field: string): void {
+function canNavigateIssue(field: string | null): field is string {
+  if (field === null) return false
+  if (canFocus(field)) return true
+  if (props.form.stepIndexForField(field) === null) return false
+  const state = props.form.nodeState(field)
+  return !state.hidden && !state.disabled && !state.readonly
+}
+async function focusIssue(field: string): Promise<void> {
+  const form = props.form
+  const owner = presentation.value
+  const step = form.stepIndexForField(field)
+  if (step !== null && step !== form.activeStepIndex.value) {
+    const outcome = await form.setActiveStep(step, { relax: true })
+    if (outcome !== 'applied') return
+  }
   summaryExpanded.value = false
-  presentation.value.focusField(field)
+  cancelFeedback()
+  const current = request
+  await nextTick()
+  await nextTick()
+  if (current !== request || props.form !== form || presentation.value !== owner) return
+  const located = locateFirstIssue(true, field)
+  if (located === undefined) return
+  receipt = located.receipt
+  const ready = await receipt.settled
+  if (current !== request || props.form !== form || presentation.value !== owner) return
+  receipt = undefined
+  if (!ready) return
+  owner.focusField(field)
+  owner.requestFeedback(field, owner.feedbackRevision.value)
 }
 function locateFirstIssue(
   scroll: boolean,
+  selectedField?: string,
 ): { field: string; receipt: ScrollTargetReceipt } | undefined {
   const root: unknown = formElement.value?.$el
   if (!(root instanceof HTMLElement)) return undefined
   const elements = [...root.querySelectorAll<HTMLElement>('[id]')]
   for (const issue of props.form.issues.value) {
+    if (selectedField !== undefined && issue.field !== selectedField) continue
     if (!canFocus(issue.field)) continue
     const scope = presentation.value.feedbackScope.value
-    if (scope !== undefined && !issue.field.startsWith(scope)) continue
+    if (selectedField === undefined && scope !== undefined && !issue.field.startsWith(scope))
+      continue
     const id = presentation.value.nodeControlId(issue.field)
     const matches = elements.filter((element) => element.id === id)
     const target = matches.length === 1 ? matches[0] : undefined
@@ -137,21 +167,28 @@ watchPostEffect(() => {
     return
   feedbackRevision = revision
   cancelFeedback()
-  const located = locateFirstIssue(revealFailure)
-  if (located === undefined) return
-  receipt = located.receipt
-  const current = request
-  void located.receipt.settled.then((ready) => {
-    if (current !== request) return
-    receipt = undefined
-    if (
-      ready &&
-      props.mode === 'edit' &&
-      presentation.value === owner &&
-      owner.isFeedbackCurrent(revision)
-    )
-      owner.requestFeedback(located.field, revision)
-  })
+  // Wait for step field remounts after activeStepIndex changes with the feedback.
+  const current = ++request
+  void nextTick()
+    .then(() => nextTick())
+    .then(() => {
+      if (current !== request || !owner.isFeedbackCurrent(revision) || presentation.value !== owner)
+        return
+      const located = locateFirstIssue(revealFailure)
+      if (located === undefined) return
+      receipt = located.receipt
+      void located.receipt.settled.then((ready) => {
+        if (current !== request) return
+        receipt = undefined
+        if (
+          ready &&
+          props.mode === 'edit' &&
+          presentation.value === owner &&
+          owner.isFeedbackCurrent(revision)
+        )
+          owner.requestFeedback(located.field, revision)
+      })
+    })
 })
 onBeforeUnmount(cancelFeedback)
 </script>
@@ -240,7 +277,7 @@ onBeforeUnmount(cancelFeedback)
                 :key="index"
               >
                 <NButton
-                  v-if="canFocus(issue.field)"
+                  v-if="canNavigateIssue(issue.field)"
                   tag="a"
                   text
                   :href="`#${presentation.nodeControlId(issue.field)}`"

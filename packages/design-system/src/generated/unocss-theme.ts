@@ -28,6 +28,168 @@ export const platformUnoMappings = [
     allowedCssProperties: ['border-color'],
   },
   {
+    roleId: 'color.data-viz.categorical.series-1',
+    cssVariable: '--ui-color-data-viz-categorical-series-1',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-1',
+    classes: ['bg-data-viz-categorical-series-1'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-2',
+    cssVariable: '--ui-color-data-viz-categorical-series-2',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-2',
+    classes: ['bg-data-viz-categorical-series-2'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-3',
+    cssVariable: '--ui-color-data-viz-categorical-series-3',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-3',
+    classes: ['bg-data-viz-categorical-series-3'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-4',
+    cssVariable: '--ui-color-data-viz-categorical-series-4',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-4',
+    classes: ['bg-data-viz-categorical-series-4'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-5',
+    cssVariable: '--ui-color-data-viz-categorical-series-5',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-5',
+    classes: ['bg-data-viz-categorical-series-5'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-6',
+    cssVariable: '--ui-color-data-viz-categorical-series-6',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-6',
+    classes: ['bg-data-viz-categorical-series-6'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-7',
+    cssVariable: '--ui-color-data-viz-categorical-series-7',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-7',
+    classes: ['bg-data-viz-categorical-series-7'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.data-viz.categorical.series-8',
+    cssVariable: '--ui-color-data-viz-categorical-series-8',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'data-viz-categorical-series-8',
+    classes: ['bg-data-viz-categorical-series-8'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.expression.accent-a.foreground',
+    cssVariable: '--ui-color-expression-accent-a-foreground',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-a-foreground',
+    classes: ['text-expression-accent-a-foreground'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.expression.accent-a.soft.background',
+    cssVariable: '--ui-color-expression-accent-a-soft-background',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-a-soft-background',
+    classes: ['bg-expression-accent-a-soft-background'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.expression.accent-a.soft.foreground',
+    cssVariable: '--ui-color-expression-accent-a-soft-foreground',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-a-soft-foreground',
+    classes: ['text-expression-accent-a-soft-foreground'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.expression.accent-a.solid.background',
+    cssVariable: '--ui-color-expression-accent-a-solid-background',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-a-solid-background',
+    classes: ['bg-expression-accent-a-solid-background'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.expression.accent-a.solid.foreground',
+    cssVariable: '--ui-color-expression-accent-a-solid-foreground',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-a-solid-foreground',
+    classes: ['text-expression-accent-a-solid-foreground'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.expression.accent-b.foreground',
+    cssVariable: '--ui-color-expression-accent-b-foreground',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-b-foreground',
+    classes: ['text-expression-accent-b-foreground'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.expression.accent-b.soft.background',
+    cssVariable: '--ui-color-expression-accent-b-soft-background',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-b-soft-background',
+    classes: ['bg-expression-accent-b-soft-background'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.expression.accent-b.soft.foreground',
+    cssVariable: '--ui-color-expression-accent-b-soft-foreground',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-b-soft-foreground',
+    classes: ['text-expression-accent-b-soft-foreground'],
+    allowedCssProperties: ['color'],
+  },
+  {
+    roleId: 'color.expression.accent-b.solid.background',
+    cssVariable: '--ui-color-expression-accent-b-solid-background',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-b-solid-background',
+    classes: ['bg-expression-accent-b-solid-background'],
+    allowedCssProperties: ['background-color'],
+  },
+  {
+    roleId: 'color.expression.accent-b.solid.foreground',
+    cssVariable: '--ui-color-expression-accent-b-solid-foreground',
+    generatorKind: 'exact-rule',
+    family: 'color',
+    key: 'expression-accent-b-solid-foreground',
+    classes: ['text-expression-accent-b-solid-foreground'],
+    allowedCssProperties: ['color'],
+  },
+  {
     roleId: 'color.focus.ring',
     cssVariable: '--ui-color-focus-ring',
     generatorKind: 'exact-rule',
@@ -1034,6 +1196,78 @@ export const platformRules = [
     },
   ],
   [
+    'bg-data-viz-categorical-series-1',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-1)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-2',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-2)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-3',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-3)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-4',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-4)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-5',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-5)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-6',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-6)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-7',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-7)',
+    },
+  ],
+  [
+    'bg-data-viz-categorical-series-8',
+    {
+      'background-color': 'var(--ui-color-data-viz-categorical-series-8)',
+    },
+  ],
+  [
+    'bg-expression-accent-a-soft-background',
+    {
+      'background-color': 'var(--ui-color-expression-accent-a-soft-background)',
+    },
+  ],
+  [
+    'bg-expression-accent-a-solid-background',
+    {
+      'background-color': 'var(--ui-color-expression-accent-a-solid-background)',
+    },
+  ],
+  [
+    'bg-expression-accent-b-soft-background',
+    {
+      'background-color': 'var(--ui-color-expression-accent-b-soft-background)',
+    },
+  ],
+  [
+    'bg-expression-accent-b-solid-background',
+    {
+      'background-color': 'var(--ui-color-expression-accent-b-solid-background)',
+    },
+  ],
+  [
     'bg-scrim-viewport',
     {
       'background-color': 'var(--ui-color-scrim-viewport)',
@@ -1526,6 +1760,42 @@ export const platformRules = [
     'text-control-warning',
     {
       color: 'var(--ui-color-control-warning)',
+    },
+  ],
+  [
+    'text-expression-accent-a-foreground',
+    {
+      color: 'var(--ui-color-expression-accent-a-foreground)',
+    },
+  ],
+  [
+    'text-expression-accent-a-soft-foreground',
+    {
+      color: 'var(--ui-color-expression-accent-a-soft-foreground)',
+    },
+  ],
+  [
+    'text-expression-accent-a-solid-foreground',
+    {
+      color: 'var(--ui-color-expression-accent-a-solid-foreground)',
+    },
+  ],
+  [
+    'text-expression-accent-b-foreground',
+    {
+      color: 'var(--ui-color-expression-accent-b-foreground)',
+    },
+  ],
+  [
+    'text-expression-accent-b-soft-foreground',
+    {
+      color: 'var(--ui-color-expression-accent-b-soft-foreground)',
+    },
+  ],
+  [
+    'text-expression-accent-b-solid-foreground',
+    {
+      color: 'var(--ui-color-expression-accent-b-solid-foreground)',
     },
   ],
   [

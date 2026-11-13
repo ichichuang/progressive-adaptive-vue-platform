@@ -330,7 +330,7 @@ const expectedAdminNavigationExpansionMotionNegativeProbeCount = 9
 const expectedAdminNavigationCollapsedPopupSourceInvariantCount = 15
 const expectedAdminNavigationCollapsedPopupSourceNegativeProbeCount = 9
 const expectedAdminNavigationHeaderPlacementSourceInvariantCount = 13
-const expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount = 5
+const expectedAdminNavigationHeaderPlacementSourceNegativeProbeCount = 7
 const expectedAdminNavigationNaiveActionsMotionInvariantCount = 23
 const expectedAdminNavigationNaiveActionsMotionNegativeProbeCount = 11
 const expectedAdminNavigationMotionVueSelectionLensSourceInvariantCount = 24
@@ -352,6 +352,7 @@ const expectedMotionVueIntegrity =
 const expectedVueUseCoreIntegrity =
   'sha512-X4WHz1HlCzCBoYXesUkifzzWBAcZgXG8Fi5iNPQg/epdzOB3gu8Fawj3hvuwYR1nGcXGnvxwYYcUC/71++svtQ=='
 const expectedNavigationIconClasses = [
+  'i-lucide-map',
   'i-lucide-layout-dashboard',
   'i-lucide-palette',
   'i-lucide-ruler',
@@ -384,6 +385,10 @@ const expectedNavigationIconClasses = [
   'i-lucide-database',
   'i-lucide-database',
   'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-database',
+  'i-lucide-type',
   'i-lucide-type',
   'i-lucide-type',
   'i-lucide-type',
@@ -407,6 +412,8 @@ const expectedNavigationIconClasses = [
   'i-lucide-database',
   'i-lucide-database',
   'i-lucide-database',
+  'i-lucide-list-tree',
+  'i-lucide-link',
   'i-lucide-database',
   'i-lucide-database',
   'i-lucide-database',
@@ -432,7 +439,8 @@ const styledFrameworkPackages = [
   'vuetify',
 ] as const
 const productRouteContract = [
-  ['workbench-dashboard', '/', 'apps/web/src/pages/index.vue', '仪表盘'],
+  ['workbench-welcome', '/', 'apps/web/src/pages/index.vue', '欢迎'],
+  ['workbench-dashboard', '/dashboard', 'apps/web/src/pages/dashboard.vue', '仪表盘'],
   ['api-overview', '/requests/overview', 'apps/web/src/pages/api-overview.vue', '能力总览'],
   ['api-basics', '/requests/basics', 'apps/web/src/pages/api-basics.vue', '基础请求'],
   ['api-responses', '/requests/responses', 'apps/web/src/pages/api-responses.vue', '响应与校验'],
@@ -535,6 +543,24 @@ const productRouteContract = [
     '实时分布',
   ],
   [
+    'component-chart-linked',
+    '/components/charts/linked',
+    'apps/web/src/pages/component-chart-linked.vue',
+    '多图联动',
+  ],
+  [
+    'component-chart-tour',
+    '/components/charts/tour',
+    'apps/web/src/pages/component-chart-tour.vue',
+    '自动巡游',
+  ],
+  [
+    'component-chart-stage',
+    '/components/charts/stage',
+    'apps/web/src/pages/component-chart-stage.vue',
+    '比例大屏',
+  ],
+  [
     'component-form-overview',
     '/components/forms/overview',
     'apps/web/src/pages/component-form-overview.vue',
@@ -575,6 +601,12 @@ const productRouteContract = [
     '/components/forms/structure',
     'apps/web/src/pages/component-form-structure.vue',
     '分组与重复',
+  ],
+  [
+    'component-form-steps',
+    '/components/forms/steps',
+    'apps/web/src/pages/component-form-steps.vue',
+    '分步表单',
   ],
   [
     'component-form-validation',
@@ -648,6 +680,19 @@ const productRouteContract = [
     '/components/tables/selection',
     'apps/web/src/pages/component-table-selection.vue',
     '选择与批量',
+  ],
+  [
+    'component-table-tree',
+    '/components/tables/tree',
+    'apps/web/src/pages/component-table-tree.vue',
+    '树形表格',
+  ],
+
+  [
+    'component-table-query-link',
+    '/components/tables/query-link',
+    'apps/web/src/pages/component-table-query-link.vue',
+    '查询链接分享',
   ],
   [
     'component-table-remote',
@@ -6057,7 +6102,7 @@ interface AdminNavigationHeaderCollapseControlProjection {
   readonly controlSource: string
   readonly forbiddenAncestryAbsent: boolean
   readonly headerProfileIndependent: boolean
-  readonly headerTrailingDescendant: boolean
+  readonly sidebarToolbarDescendant: boolean
   readonly identityProfileIndependent: boolean
   readonly narrowTriggerProfileIndependent: boolean
   readonly wideConditionSource: string
@@ -6180,7 +6225,7 @@ function adminNavigationHeaderCollapseControlProjection(
       controlSource: '',
       forbiddenAncestryAbsent: false,
       headerProfileIndependent: false,
-      headerTrailingDescendant: false,
+      sidebarToolbarDescendant: false,
       identityProfileIndependent: false,
       narrowTriggerProfileIndependent: false,
       wideConditionSource: '',
@@ -6192,7 +6237,7 @@ function adminNavigationHeaderCollapseControlProjection(
   const controlElements = elements.filter(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-collapse-control') ===
-      'header-trailing',
+      'sidebar-toolbar',
   )
   const control = controlElements.length === 1 ? controlElements[0] : undefined
   const headerElements = elements.filter(
@@ -6265,64 +6310,33 @@ function adminNavigationHeaderCollapseControlProjection(
     ['else-if', 'else', 'show', 'for'].every(
       (directiveName) => templateDirectives(narrowTrigger.node, directiveName).length === 0,
     )
-  const headerChildren =
-    header?.node.children?.filter((child): child is VueTemplateNode => child.type === 1) ?? []
-  const controlHeaderChild = headerChildren.find(
-    (child) => control?.node === child || control?.ancestors.includes(child) === true,
+  const toolbar = elements.find((element) =>
+    hasStaticTemplateClass(element.node, 'pavp-admin-shell__sidebar-controls'),
   )
-  const identityHeaderChild = headerChildren.find(
-    (child) => identity?.node === child || identity?.ancestors.includes(child) === true,
-  )
-  const controlHeaderChildIndex =
-    controlHeaderChild === undefined ? -1 : headerChildren.indexOf(controlHeaderChild)
-  const identityHeaderChildIndex =
-    identityHeaderChild === undefined ? -1 : headerChildren.indexOf(identityHeaderChild)
-  const headerAncestorIndex =
-    control === undefined || header === undefined ? -1 : control.ancestors.indexOf(header.node)
+  const toolbarIndex =
+    toolbar === undefined || control === undefined ? -1 : control.ancestors.indexOf(toolbar.node)
   const trailingPath =
-    control === undefined || header === undefined || headerAncestorIndex === -1
+    toolbarIndex === -1 || control === undefined
       ? []
-      : [header.node, ...control.ancestors.slice(headerAncestorIndex + 1), control.node]
-  const colorControls = elements.filter(
-    (element) =>
-      staticTemplateAttribute(element.node, 'data-pavp-color-mode-control') === 'header-trailing',
-  )
-  const controlIsFinalElementThroughTrailingPath = trailingPath
-    .slice(0, -1)
-    .every((parent, index) => {
-      const elementChildren =
-        parent.children?.filter((child): child is VueTemplateNode => child.type === 1) ?? []
-
-      const next = trailingPath[index + 1]
-      const last = elementChildren.at(-1)
-      const colorControl = colorControls.length === 1 ? colorControls[0] : undefined
-      return (
-        last === next ||
-        (parent === controlHeaderChild &&
-          elementChildren.at(-2) === next &&
-          last !== undefined &&
-          colorControl !== undefined &&
-          (colorControl.node === last || colorControl.ancestors.includes(last)))
-      )
-    })
-  const headerTrailingDescendant =
+      : [...control.ancestors.slice(toolbarIndex), control.node]
+  const anchor = toolbar?.node.children?.find((child) => child.type === 1)
+  const sidebarToolbarDescendant =
     control !== undefined &&
-    header !== undefined &&
-    identity !== undefined &&
-    control.ancestors.includes(header.node) &&
-    controlHeaderChildIndex > identityHeaderChildIndex &&
-    controlHeaderChildIndex === headerChildren.length - 1 &&
-    controlIsFinalElementThroughTrailingPath
+    toolbar !== undefined &&
+    anchor !== undefined &&
+    control.ancestors.includes(toolbar.node) &&
+    control.ancestors.includes(anchor) &&
+    hasStaticTemplateClass(anchor, 'w-admin-sidebar-rail') &&
+    hasStaticTemplateClass(anchor, 'shrink-0') &&
+    toolbar.ancestors.some((node) => node.tag === 'NLayoutSider')
   const forbiddenAncestryAbsent =
     control !== undefined &&
     !control.ancestors.some(
       (ancestor) =>
-        ancestor.tag === 'NLayoutSider' ||
-        ancestor.tag === 'NMenu' ||
-        hasStaticTemplateClass(ancestor, 'pavp-admin-shell__drawer-navigation') ||
-        (ancestor.tag === 'nav' && staticTemplateAttribute(ancestor, 'aria-label') === '架构导航'),
+        ['header', 'nav', 'NMenu', 'UiScrollArea'].includes(ancestor.tag ?? '') ||
+        hasStaticTemplateClass(ancestor, 'pavp-admin-shell__drawer-navigation'),
     )
-  const visibilityNodes = trailingPath.slice(1)
+  const visibilityNodes = trailingPath
   const visibilityDirectives = visibilityNodes.flatMap((node) =>
     ['if', 'else-if', 'else', 'show'].flatMap((directiveName) =>
       templateDirectives(node, directiveName),
@@ -6347,7 +6361,7 @@ function adminNavigationHeaderCollapseControlProjection(
     controlSource: control?.node.loc?.source ?? '',
     forbiddenAncestryAbsent,
     headerProfileIndependent,
-    headerTrailingDescendant,
+    sidebarToolbarDescendant,
     identityProfileIndependent,
     narrowTriggerProfileIndependent,
     wideConditionSource: wideCondition?.loc.source ?? '',
@@ -7985,10 +7999,10 @@ function runtime003SourceViolations(snapshot: MaterialGateSnapshot): string[] {
   }
 
   if (
-    runtimeNumber(routeRegistry.length) !== 76 ||
+    runtimeNumber(routeRegistry.length) !== 83 ||
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 11 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
     runtimeNumber(designSystemConsoleProjection.builtInThemeIds.length) !== 5
   ) {
     violations.push('PAVP_RUNTIME_003_PRESERVED_AUTHORITIES')
@@ -8003,11 +8017,21 @@ function nativeNavigationCollapseProjection(source: string): boolean {
   const owners = collectShellTemplateElements(template).filter(
     ({ node }) => node.tag === 'NLayoutSider' || node.tag === 'NMenu',
   )
+  const sider = owners.find(({ node }) => node.tag === 'NLayoutSider')?.node
+  const menu = owners.find(({ node }) => node.tag === 'NMenu')?.node
+  // One collapse authority owns the sider and the retained expanded menu's visibility.
+  // Do not collapse Naive's hidden tree: doing so remounts every child on expansion.
   return (
     owners.length === 2 &&
-    owners.every(
-      ({ node }) => singleBoundExpression(node, 'collapsed') === 'persistentNavigationCollapsed',
-    )
+    sider !== undefined &&
+    menu !== undefined &&
+    singleBoundExpression(sider, 'collapsed') === 'persistentNavigationCollapsed' &&
+    singleBoundExpression(menu, 'collapsed') === 'false' &&
+    templateDirectives(menu, 'show').length === 1 &&
+    normalizeTemplateExpression(templateDirectives(menu, 'show')[0]?.exp?.content) ===
+      '!persistentNavigationCollapsed' &&
+    templateDirectives(menu, 'if').length === 0 &&
+    templateDirectives(menu, 'else').length === 0
   )
 }
 
@@ -8068,7 +8092,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     !snapshot.shellSource.includes(':class="resolveNavigationIconClass(item.iconClass)"') ||
     !snapshot.shellSource.includes('class="pavp-admin-shell__navigation-icon"') ||
     !snapshot.shellSource.includes(
-      'data-pavp-admin-navigation-collapse-control="header-trailing"',
+      'data-pavp-admin-navigation-collapse-control="sidebar-toolbar"',
     ) ||
     !snapshot.shellSource.includes('aria-hidden="true"')
   ) {
@@ -8172,6 +8196,7 @@ function shellExperienceViolations(snapshot: MaterialGateSnapshot): string[] {
     '.wb-theme-option .n-button__content',
     '.wb-section-link.n-button',
     '.wb-settings-dock.n-button',
+    '.wb-overview-card.n-card',
     '.wb-link:not(.n-button):focus-visible, .wb-done:not(.n-button):focus-visible, .wb-section-link:not(.n-button):focus-visible',
     "[data-layout-profile='regular'] .wb-section-link.n-button, [data-layout-profile='wide'] .wb-section-link.n-button",
   ])
@@ -8332,8 +8357,9 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "import AdminNavigationSelectionLens from '../adapters/motion/AdminNavigationSelectionLens.vue'",
         ) === 1 &&
         [...shellTemplate.matchAll(/<AdminNavigationSelectionLens(?=[\s>])/gu)].length === 1 &&
-        shellTemplate.includes('v-slot="{ featureReady, renderIcon }"') &&
-        shellTemplate.includes(':render-icon="renderIcon"') &&
+        shellTemplate.includes('v-slot="{ featureReady, renderIcon, renderExpandedIcon }"') &&
+        shellTemplate.includes(':render-icon="renderExpandedIcon"') &&
+        lensScript.includes('(!expanded || !props.collapsed)') &&
         shellTemplate.includes(':render-base-icon="renderNavigationMenuIcon"') &&
         !shellTemplate
           .slice(shellTemplate.indexOf('<Teleport to="#pavp-overlay-root">'))
@@ -8665,11 +8691,11 @@ function adminNavigationMotionVueSelectionLensSourceInvariantResults(
           "const motionFeatureManifestKey = '../../packages/ui/src/adapters/motion/admin-navigation-dom-max.ts'",
         ) &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') &&
-        snapshot.routeCount === 76 &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') &&
+        snapshot.routeCount === 83 &&
         snapshot.runtimeKernelStepCount === 15 &&
         snapshot.activeProviderIds.join(',') === 'pinia,appearance' &&
-        snapshot.storageRecordCount === 11,
+        snapshot.storageRecordCount === 13,
     },
   ])
 }
@@ -9061,7 +9087,7 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
   if ([...snapshot.appTemplateSource.matchAll(/<RouterView\b/gu)].length !== 1) {
     violations.push('ROUTER_OUTLET_COUNT')
   }
-  if (snapshot.routeCount !== 76) {
+  if (snapshot.routeCount !== 83) {
     violations.push('ROUTE_COUNT')
   }
   if (snapshot.factImportViolation) {
@@ -9078,8 +9104,10 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
     snapshot.registeredPublicComponents.map((record) => [record.exportName, record.consumerCount]),
   )
   if (
-    registered.get('UiG2Chart') !== 9 ||
+    registered.get('UiG2Chart') !== 15 ||
     !isDeepStrictEqual(componentExampleConsumers['UiG2Chart'], [
+      'workbench-interactions',
+      'workbench-welcome',
       'component-charts',
       'component-chart-trends',
       'component-chart-comparison',
@@ -9089,6 +9117,10 @@ function materialGateViolations(snapshot: MaterialGateSnapshot): string[] {
       'component-chart-live-stream',
       'component-chart-live-ranking',
       'component-chart-live-distribution',
+      'component-chart-linked',
+      'component-chart-tour',
+      'component-chart-stage',
+      'workbench-dashboard',
     ])
   ) {
     violations.push('PUBLIC_UI_CHART_CONSUMER')
@@ -10871,6 +10903,8 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
   const responsiveLifecycleSource = shellSource
     .replace(identityClickTimer, '')
     .replace(fullscreenListener, '')
+    .replace("window.matchMedia('(hover: none)')", '')
+    .replace("window.addEventListener('resize', closeThemePickerForViewport)", '')
   const occurrences = (source: string, value: string): number => source.split(value).length - 1
   const requiredMenuThemeFields = [
     'color: material.chrome',
@@ -11053,7 +11087,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     [
       'NAV_WIDE_CONTROL_VISIBILITY',
       headerCollapseProjection.controlElements.length === 1 &&
-        headerCollapseProjection.headerTrailingDescendant &&
+        headerCollapseProjection.sidebarToolbarDescendant &&
         headerCollapseProjection.forbiddenAncestryAbsent &&
         headerCollapseProjection.wideOnly,
     ],
@@ -11067,7 +11101,7 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
     ],
     [
       'NAV_WIDE_CONTROL_ICON',
-      shellSource.includes('data-pavp-admin-navigation-collapse-control="header-trailing"') &&
+      shellSource.includes('data-pavp-admin-navigation-collapse-control="sidebar-toolbar"') &&
         shellSource.includes('data-pavp-admin-navigation-icon-state="sidebar-expanded"') &&
         shellSource.includes('data-pavp-admin-navigation-icon-state="sidebar-collapsed"') &&
         shellSource.includes('i-lucide-panel-left-close') &&
@@ -11132,7 +11166,12 @@ function navigationReworkSourceViolations(snapshot: NavigationReworkSourceSnapsh
       expandedProjectionSemantics.controlledProjection &&
         !expandedProjectionSemantics.activeParentIncluded &&
         shellSource.includes('const validExpandedNavigationGroupKeys = computed(() => {') &&
-        !shellSource.includes('() => props.activeRouteName') &&
+        !shellSource
+          .replace(
+            'watch(\n  () => props.activeRouteName,\n  () => {\n    closeThemePicker()\n  },\n)',
+            '',
+          )
+          .includes('() => props.activeRouteName') &&
         !shellSource.includes('ensureActiveNavigationGroupExpanded'),
     ],
     [
@@ -12015,7 +12054,7 @@ function adminNavigationExpandedProjectionSemantics(
           .filter(
             (node) =>
               staticTemplateAttribute(node, 'data-pavp-admin-navigation-collapse-control') ===
-              'header-trailing',
+              'sidebar-toolbar',
           )
   const collapseAction = collapseActions.length === 1 ? collapseActions.at(0) : undefined
   const collapseClickExpression =
@@ -12071,6 +12110,7 @@ function adminNavigationNativeSourceInvariantResults(
     '@antv/g2': 'catalog:',
     '@platform/design-system': 'workspace:*',
     '@vueuse/core': 'catalog:',
+    gridstack: 'catalog:',
     lenis: 'catalog:',
     'motion-v': 'catalog:',
     'naive-ui': 'catalog:',
@@ -12255,7 +12295,7 @@ function adminNavigationNativeSourceInvariantResults(
   )
   const wideCollapseControlOwned =
     controlledWideNavigationToggle(shellScript, snapshot.navigationActionsSource) &&
-    shellTemplate.includes('data-pavp-admin-navigation-collapse-control="header-trailing"') &&
+    shellTemplate.includes('data-pavp-admin-navigation-collapse-control="sidebar-toolbar"') &&
     shellTemplate.includes('v-if="administration && profile === \'wide\'"') &&
     shellTemplate.includes(':aria-label="wideNavigationCollapseLabel"') &&
     shellTemplate.includes('@click="handleNavigationAction(\'sidebar\')"') &&
@@ -12283,9 +12323,9 @@ function adminNavigationNativeSourceInvariantResults(
     shellScript.includes('to: `#${sidebarOverlayId}`') &&
     shellScript.includes('function handleDrawerKeydown(event: KeyboardEvent): void')
   const admittedDynamicRoots =
-    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
+    snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') &&
     snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') &&
+    snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') &&
     snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') &&
     snapshot.checkBundleSource.includes('admin-navigation-motion-dom-max')
 
@@ -12384,7 +12424,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_ROUTE_COUNT',
-      passed: snapshot.routeCount === 76,
+      passed: snapshot.routeCount === 83,
     },
     {
       code: 'ADMIN_NAV_NATIVE_KERNEL_COUNT',
@@ -12396,7 +12436,7 @@ function adminNavigationNativeSourceInvariantResults(
     },
     {
       code: 'ADMIN_NAV_NATIVE_STORAGE_COUNT',
-      passed: snapshot.storageRecordCount === 11,
+      passed: snapshot.storageRecordCount === 13,
     },
     {
       code: 'ADMIN_NAV_NATIVE_SCOPED_MOTION_DEPENDENCIES',
@@ -12892,7 +12932,7 @@ function adminNavigationHeaderPlacementInvariantResults(
     staticTemplateAttribute(
       soleTemplateStateWriter.element.node,
       'data-pavp-admin-navigation-collapse-control',
-    ) === 'header-trailing' &&
+    ) === 'sidebar-toolbar' &&
     soleTemplateStateWriter.directive.arg?.content === 'click' &&
     normalizeTemplateExpression(soleTemplateStateWriter.directive.exp?.content) ===
       "handleNavigationAction('sidebar')"
@@ -12945,8 +12985,8 @@ function adminNavigationHeaderPlacementInvariantResults(
         staticTemplateAttribute(controlNode, 'attr-type') === 'button',
     },
     {
-      code: 'ADMIN_NAV_HEADER_COLLAPSE_HEADER_TRAILING_DESCENDANT',
-      passed: projection.headerTrailingDescendant,
+      code: 'ADMIN_NAV_SIDEBAR_COLLAPSE_FIXED_TOOLBAR',
+      passed: projection.sidebarToolbarDescendant,
     },
     {
       code: 'ADMIN_NAV_HEADER_COLLAPSE_FORBIDDEN_ANCESTRY_ABSENT',
@@ -13009,8 +13049,7 @@ function adminNavigationHeaderPlacementInvariantResults(
         runtimeSingleSiderMenu &&
         singleBoundExpression(siderNodes[0]?.node ?? { type: 0 }, 'collapsed') ===
           'persistentNavigationCollapsed' &&
-        singleBoundExpression(menuNodes[0]?.node ?? { type: 0 }, 'collapsed') ===
-          'persistentNavigationCollapsed' &&
+        singleBoundExpression(menuNodes[0]?.node ?? { type: 0 }, 'collapsed') === 'false' &&
         exactOccurrenceCount(shellScript, 'const persistentNavigationCollapsed = computed(') ===
           1 &&
         exactCollapsedProjection &&
@@ -13082,10 +13121,17 @@ function runAdminNavigationHeaderPlacementNegativeProbes(
     projection.controlSource,
     `${projection.controlSource}\n      ${projection.controlSource}`,
   )
+  const toolbarSource =
+    projection.control?.ancestors.find((node) =>
+      hasStaticTemplateClass(node, 'pavp-admin-shell__sidebar-controls'),
+    )?.loc?.source ?? ''
   const outsideWideConditionSource = replaceExactOnce(
     baseline.shellSource,
-    projection.wideConditionSource,
-    projection.wideConditionSource.replace("profile === 'wide'", "profile !== 'wide'"),
+    toolbarSource,
+    toolbarSource.replace(
+      projection.wideConditionSource,
+      projection.wideConditionSource.replace("profile === 'wide'", "profile !== 'wide'"),
+    ),
   )
   const dynamicAriaLabelRemovedSource = replaceExactOnce(
     baseline.shellSource,
@@ -13098,7 +13144,20 @@ function runAdminNavigationHeaderPlacementNegativeProbes(
   )
   const probes: readonly [string, string, AdminNavigationNativeSourceSnapshot][] = [
     [
-      'admin-navigation-header-collapse-moved-back-inside-sider',
+      'admin-navigation-sidebar-collapse-loses-fixed-anchor',
+      'ADMIN_NAV_SIDEBAR_COLLAPSE_FIXED_TOOLBAR',
+      { ...baseline, shellSource: baseline.shellSource.replace('w-admin-sidebar-rail', 'w-full') },
+    ],
+    [
+      'admin-navigation-sidebar-collapse-restores-header-control',
+      'ADMIN_NAV_SIDEBAR_COLLAPSE_FIXED_TOOLBAR',
+      {
+        ...baseline,
+        shellSource: withoutControl.replace('</header>', `${projection.controlSource}</header>`),
+      },
+    ],
+    [
+      'admin-navigation-sidebar-collapse-moved-into-scroll-navigation',
       'ADMIN_NAV_HEADER_COLLAPSE_FORBIDDEN_ANCESTRY_ABSENT',
       { ...baseline, shellSource: movedInsideSiderSource },
     ],
@@ -13370,7 +13429,7 @@ function runAdminNavigationNativeSourceNegativeProbes(
       {
         ...baseline,
         checkBundleSource: baseline.checkBundleSource.replace(
-          'const expectedLazyRouteCount = 76',
+          'const expectedLazyRouteCount = 83',
           'const expectedLazyRouteCount = 19',
         ),
       },
@@ -13457,17 +13516,14 @@ function adminNavigationExpansionMotionInvariantResults(
     ) &&
     !/\bexpandedNavigationGroupKeys\s*=\s*(?:ref|shallowRef|reactive)\b/u.test(shellScript)
 
-  const headers = shellElements.filter(
-    (element) =>
-      element.node.tag === 'header' &&
-      hasStaticTemplateClass(element.node, 'pavp-admin-shell__header') &&
-      staticTemplateAttribute(element.node, 'data-shell-region') === 'architecture-console-header',
+  const headers = shellElements.filter((element) =>
+    hasStaticTemplateClass(element.node, 'pavp-admin-shell__sidebar-controls'),
   )
   const header = headers.length === 1 ? headers[0] : undefined
   const groupControlElements = shellElements.filter(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-groups-control') ===
-      'header-trailing',
+      'sidebar-toolbar',
   )
   const groupControl = groupControlElements.length === 1 ? groupControlElements[0] : undefined
   const groupControlNode = groupControl?.node
@@ -13479,7 +13535,7 @@ function adminNavigationExpansionMotionInvariantResults(
   const groupControlPath =
     groupControl === undefined || header === undefined || groupControlHeaderIndex === -1
       ? []
-      : [...groupControl.ancestors.slice(groupControlHeaderIndex + 1), groupControl.node]
+      : [...groupControl.ancestors.slice(groupControlHeaderIndex), groupControl.node]
   const groupControlVisibilityExpressions = groupControlPath.flatMap((node) =>
     ['if', 'else-if', 'show'].flatMap((directiveName) =>
       templateDirectives(node, directiveName).map((directive) =>
@@ -13491,7 +13547,8 @@ function adminNavigationExpansionMotionInvariantResults(
     groupControl !== undefined &&
     !groupControl.ancestors.some(
       (ancestor) =>
-        ancestor.tag === 'NLayoutSider' ||
+        ancestor.tag === 'UiScrollArea' ||
+        ancestor.tag === 'header' ||
         ancestor.tag === 'NMenu' ||
         hasStaticTemplateClass(ancestor, 'pavp-admin-shell__drawer-navigation') ||
         (ancestor.tag === 'nav' && staticTemplateAttribute(ancestor, 'aria-label') === '架构导航'),
@@ -13862,7 +13919,7 @@ function runAdminNavigationExpansionMotionNegativeProbes(
   const groupControl = elements.find(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-groups-control') ===
-      'header-trailing',
+      'sidebar-toolbar',
   )
   const groupControlSource = groupControl?.node.loc?.source ?? ''
   const withoutGroupControl = replaceExactOnce(baseline.shellSource, groupControlSource, '')
@@ -13917,7 +13974,7 @@ function runAdminNavigationExpansionMotionNegativeProbes(
       { ...baseline, shellSource: withoutGroupControl },
     ],
     [
-      'admin-navigation-expansion-moves-all-action-inside-sider',
+      'admin-navigation-expansion-moves-all-action-into-scroll-navigation',
       'ADMIN_NAV_EXPANSION_ALL_ACTION_FORBIDDEN_ANCESTRY',
       { ...baseline, shellSource: movedInsideSiderSource },
     ],
@@ -13981,17 +14038,17 @@ function adminNavigationNaiveActionsMotionInvariantResults(
     [
       'data-pavp-admin-navigation-groups-control',
       'data-pavp-admin-navigation-collapse-control',
-    ].some((attribute) => staticTemplateAttribute(element.node, attribute) === 'header-trailing'),
+    ].some((attribute) => staticTemplateAttribute(element.node, attribute) === 'sidebar-toolbar'),
   )
   const groupAction = actionElements.find(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-groups-control') ===
-      'header-trailing',
+      'sidebar-toolbar',
   )
   const sidebarAction = actionElements.find(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-collapse-control') ===
-      'header-trailing',
+      'sidebar-toolbar',
   )
   const actionTooltips = actionElements.map((action) =>
     [...action.ancestors].reverse().find((ancestor) => ancestor.tag === 'NTooltip'),
@@ -14033,6 +14090,8 @@ function adminNavigationNaiveActionsMotionInvariantResults(
   const selectedFormula =
     "'color-mix(in srgb, var(--ui-admin-navigation-selected) 16%, var(--ui-material-overlay-background))'"
   const exactPublicComponents = [
+    'UiDisplayStage',
+    'UiDashboardGrid',
     'UiG2Chart',
     'UiChartTimeRange',
     'UiCopyAction',
@@ -14336,7 +14395,9 @@ function adminNavigationNaiveActionsMotionInvariantResults(
         ) &&
         colorModeAction.ancestors.some(
           (node) =>
-            node.tag === 'NTooltip' &&
+            node.tag === 'NPopover' &&
+            singleBoundExpression(node, 'show') === 'themePickerOpen' &&
+            staticTemplateAttribute(node, 'trigger') === 'hover' &&
             templateDirectives(node, 'if').some(
               (directive) =>
                 normalizeTemplateExpression(directive.exp?.content) === 'administration',
@@ -14407,10 +14468,11 @@ function adminNavigationNaiveActionsMotionInvariantResults(
       code: 'ADMIN_NAV_NAIVE_ACTIONS_TOOLTIP_TARGET',
       passed:
         actionTooltips.every(
-          (tooltip) =>
+          (tooltip, index) =>
             tooltip !== undefined &&
-            singleBoundExpression(tooltip, 'to') === '`#${headerOverlayId}`' &&
-            staticTemplateAttribute(tooltip, 'placement') === 'bottom-end' &&
+            singleBoundExpression(tooltip, 'to') === '`#${sidebarOverlayId}`' &&
+            staticTemplateAttribute(tooltip, 'placement') ===
+              (actionElements[index] === sidebarAction ? 'right' : 'bottom') &&
             singleBoundExpression(tooltip, 'show-arrow') === 'false',
         ) &&
         !actionTooltips.some(
@@ -14576,7 +14638,7 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   const groupAction = elements.find(
     (element) =>
       staticTemplateAttribute(element.node, 'data-pavp-admin-navigation-groups-control') ===
-      'header-trailing',
+      'sidebar-toolbar',
   )
   const groupTooltip = [...(groupAction?.ancestors ?? [])]
     .reverse()
@@ -14608,7 +14670,7 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
   const bodyTooltipTarget = replaceExactOnce(
     baseline.shellSource,
     tooltipSource,
-    tooltipSource.replace(':to="`#${headerOverlayId}`"', 'to="body"'),
+    tooltipSource.replace(':to="`#${sidebarOverlayId}`"', 'to="body"'),
   )
   const withoutIconState = replaceExactOnce(
     baseline.shellSource,
@@ -14719,9 +14781,9 @@ function runAdminNavigationNaiveActionsMotionNegativeProbes(
 function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): string[] {
   const violations: string[] = []
   const requiredBundleMeasurementMarkers = [
-    'const expectedLazyRouteCount = 76',
+    'const expectedLazyRouteCount = 83',
     'const expectedMotionFeatureDynamicRootCount = 1',
-    'const expectedDynamicRootCount = 89',
+    'const expectedDynamicRootCount = 96',
     '...localizationResourceManifestKeys,',
     'for (const ownerKey of initialChunkKeys)',
     'collectStaticChunkClosure(manifest, motionFeatureManifestKey)',
@@ -14743,10 +14805,10 @@ function navigationBundleViolations(snapshot: NavigationBundleGateSnapshot): str
   }
 
   if (
-    snapshot.routeCount !== 76 ||
-    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') ||
+    snapshot.routeCount !== 83 ||
+    !snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') ||
     !snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') ||
-    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') ||
+    !snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') ||
     !snapshot.checkBundleSource.includes('...localizationResourceManifestKeys,') ||
     !snapshot.checkBundleSource.includes(
       "const motionFeatureRootId = 'admin-navigation-motion-dom-max'",
@@ -14971,6 +15033,7 @@ async function validateDependencies(): Promise<string[]> {
       '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      gridstack: 'catalog:',
       lenis: 'catalog:',
       'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
@@ -15001,6 +15064,7 @@ async function validateDependencies(): Promise<string[]> {
       '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      gridstack: 'catalog:',
       lenis: 'catalog:',
       'motion-v': 'catalog:',
       'naive-ui': 'catalog:',
@@ -15134,14 +15198,14 @@ async function validateTokensAndLayout(): Promise<string[]> {
     runtimeNumber(layoutRegistry.schemaVersion) !== 1 ||
     !isDeepStrictEqual(layoutProjection, expectedLayoutRecords) ||
     tokenManifest.schemaVersion !== 13 ||
-    tokenManifest.tokens.length !== 401 ||
-    tokenManifest.activePublicRoles.length !== 106 ||
-    tokenManifest.unoCssMappings.length !== 106 ||
-    tokenManifest.namedContrasts.length !== 34 ||
-    tokenManifest.governance.recordCount !== 657 ||
+    tokenManifest.tokens.length !== 437 ||
+    tokenManifest.activePublicRoles.length !== 124 ||
+    tokenManifest.unoCssMappings.length !== 124 ||
+    tokenManifest.namedContrasts.length !== 58 ||
+    tokenManifest.governance.recordCount !== 753 ||
     tokenManifest.governance.baselineRecordCount !== 181 ||
-    tokenManifest.governance.expectedRecordCountDelta !== 476 ||
-    classProjections.length !== 104 ||
+    tokenManifest.governance.expectedRecordCountDelta !== 572 ||
+    classProjections.length !== 122 ||
     containerProjections.length !== 2 ||
     containerContributions.length !== 4 ||
     !exactSet(layoutVariantIds, ['layout-narrow', 'layout-regular', 'layout-wide'])
@@ -15248,14 +15312,14 @@ async function validateRoutesShellAndMotion(): Promise<string[]> {
   )
 
   if (
-    runtimeCount(routeRegistry) !== 76 ||
-    runtimeCount(productRoutes) !== 69 ||
+    runtimeCount(routeRegistry) !== 83 ||
+    runtimeCount(productRoutes) !== 76 ||
     runtimeCount(errorRouteRegistry) !== 7 ||
-    Object.keys(breadcrumbRegistry).length !== 69 ||
+    Object.keys(breadcrumbRegistry).length !== 76 ||
     !exactSet(layoutPresets, ['workspace']) ||
     !isDeepStrictEqual(actualProduct, productRouteContract)
   ) {
-    violations.push('The exact 76/69/7 workbench Route Registry closure drifted.')
+    violations.push('The exact 83/76/7 workbench Route Registry closure drifted.')
   }
 
   if (
@@ -15388,6 +15452,7 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
     '../app/appearance/appearance-mutation-boundary',
     '../app/navigation/navigation-preference.store',
     '../app/scroll/scroll-preference.store',
+    '../app/date-time/date-time.store',
     '../app/router/application-navigation',
     '../app/router/route-input',
     '../app/router/route-registry',
@@ -15396,7 +15461,7 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
   ])
   const requiredConsumerImports = new Map<string, readonly string[]>([
     [
-      'apps/web/src/pages/index.vue',
+      'apps/web/src/pages/dashboard.vue',
       ['../app/api/api-read-boundary', '../shared/services/uapi-world-time'],
     ],
     [
@@ -15406,6 +15471,7 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
         '../app/appearance/appearance-read-boundary',
         '../app/navigation/navigation-preference.store',
         '../app/scroll/scroll-preference.store',
+        '../app/date-time/date-time.store',
         '../app/router/settings-return',
         '../app/router/router-scroll-controller',
         '../shared/i18n',
@@ -15449,6 +15515,18 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
     [
       'apps/web/src/pages/component-chart-live-distribution.vue',
       ['../app/workbench/charts/ChartLiveWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-linked.vue',
+      ['../app/workbench/charts/ChartLinkedWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-tour.vue',
+      ['../app/workbench/charts/ChartTourWorkbench.vue'],
+    ],
+    [
+      'apps/web/src/pages/component-chart-stage.vue',
+      ['../app/workbench/charts/ChartStageWorkbench.vue'],
     ],
 
     ['apps/web/src/app/workbench/TokenSpecimen.vue', ['@platform/design-system']],
@@ -15509,7 +15587,7 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
     if (
       /<(?:UiProvider|UiAdminShell|RouterView)\b/u.test(template) ||
       (/<(?:UiForm|UiFormField)\b/u.test(template) &&
-        !/^apps\/web\/src\/pages\/component-form-(?:basics|detail|layout|dependencies|calculations|structure|validation|extension|controls|lifecycle|loading|submission|options|builder)\.vue$/u.test(
+        !/^apps\/web\/src\/pages\/component-form-(?:basics|detail|layout|dependencies|calculations|structure|steps|validation|extension|controls|lifecycle|loading|submission|options|builder)\.vue$/u.test(
           path,
         )) ||
       (/<(?:NForm|NFormItem)\b/u.test(template) &&
@@ -15615,7 +15693,7 @@ async function validateWorkbenchAndAppearanceAuthority(): Promise<{
     !bootstrapSource.includes("{ detached: true, flush: 'sync' }") ||
     mutationBoundarySource.includes('installCuratedThemeCatalog') ||
     bootstrapSource.includes('installCuratedCustomThemeCatalog') ||
-    defineStoreCount !== 4 ||
+    defineStoreCount !== 5 ||
     competingEnvironmentSources.length !== 0
   ) {
     violations.push(
@@ -15887,10 +15965,10 @@ function validateInspectorProjections(): string[] {
   const storageRecords: readonly StorageConsoleRecord[] = storageConsoleProjection.records
 
   if (
-    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 106 ||
-    runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 30 ||
+    runtimeNumber(designSystemConsoleProjection.publicRoleCount) !== 124 ||
+    runtimeNumber(designSystemConsoleProjection.publicColorRoleCount) !== 48 ||
     runtimeNumber(designSystemConsoleProjection.manifestSchemaVersion) !== 13 ||
-    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 657 ||
+    runtimeNumber(designSystemConsoleProjection.manifestRecordCount) !== 753 ||
     !isDeepStrictEqual(designSystemConsoleProjection.builtInThemeIds, [
       'royal-iris',
       'cobalt-tide',
@@ -15901,13 +15979,13 @@ function validateInspectorProjections(): string[] {
     runtimeNumber(runtimeKernelConsoleProjection.stepCount) !== 15 ||
     runtimeNumber(runtimeErrorCounts.total) !== 21 ||
     !isDeepStrictEqual(runtimeKernelConsoleProjection.activeProviderIds, ['pinia', 'appearance']) ||
-    runtimeNumber(routerConsoleProjection.routeCount) !== 76 ||
-    runtimeNumber(routerConsoleProjection.productRouteCount) !== 69 ||
+    runtimeNumber(routerConsoleProjection.routeCount) !== 83 ||
+    runtimeNumber(routerConsoleProjection.productRouteCount) !== 76 ||
     runtimeNumber(routerConsoleProjection.errorRouteCount) !== 7 ||
-    runtimeCount(routerRecords) !== 76 ||
-    runtimeNumber(storageConsoleProjection.recordCount) !== 11 ||
-    runtimeCount(storageRecords) !== 11 ||
-    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 15 ||
+    runtimeCount(routerRecords) !== 83 ||
+    runtimeNumber(storageConsoleProjection.recordCount) !== 13 ||
+    runtimeCount(storageRecords) !== 13 ||
+    runtimeCount(uiSystemConsoleProjection.publicComponentIds) !== 17 ||
     !isDeepStrictEqual(uiSystemConsoleProjection.inactivePublicComponentIds, []) ||
     runtimeString(uiSystemConsoleProjection.styledVendor.coordinate) !== 'naive-ui@2.45.2' ||
     runtimeCount(responsiveLayoutConsoleProjection.profiles) !== 3 ||
@@ -15936,10 +16014,15 @@ function validateInspectorProjections(): string[] {
         'component-chart-live-stream',
         'component-chart-live-ranking',
         'component-chart-live-distribution',
+        'component-chart-linked',
+        'component-chart-tour',
+        'component-chart-stage',
       ],
     )
   ) {
-    violations.push('Chart capabilities must remain a second-level submenu with nine route leaves.')
+    violations.push(
+      'Chart capabilities must remain a second-level submenu with twelve route leaves.',
+    )
   }
 
   const formGroup = consoleNavigationRegistry
@@ -15960,6 +16043,7 @@ function validateInspectorProjections(): string[] {
         'component-form-dependencies',
         'component-form-calculations',
         'component-form-structure',
+        'component-form-steps',
         'component-form-validation',
         'component-form-extension',
         'component-form-controls',
@@ -15972,7 +16056,7 @@ function validateInspectorProjections(): string[] {
     )
   )
     violations.push(
-      'Form capabilities must remain a second-level submenu with fifteen route leaves.',
+      'Form capabilities must remain a second-level submenu with sixteen route leaves.',
     )
 
   const navigationProjection = consoleNavigationRegistry.map((group) => [
@@ -15984,7 +16068,7 @@ function validateInspectorProjections(): string[] {
   const navigationIconProjection = consoleNavigationItems.map((item) => item.iconClass)
   if (
     !isDeepStrictEqual(navigationProjection, [
-      ['工作台', ['仪表盘']],
+      ['工作台', ['欢迎', '仪表盘']],
       ['设计令牌', ['语义配色', '尺寸与空间', '字体排印']],
       ['交互能力', ['交互与状态', '动画与动效']],
       [
@@ -16021,6 +16105,9 @@ function validateInspectorProjections(): string[] {
           '实时趋势',
           '动态排行榜',
           '实时分布',
+          '多图联动',
+          '自动巡游',
+          '比例大屏',
           '能力总览',
           '基础控件',
           '编辑与详情',
@@ -16028,6 +16115,7 @@ function validateInspectorProjections(): string[] {
           '字段联动',
           '联动计算',
           '分组与重复',
+          '分步表单',
           '校验与修正',
           '自定义扩展',
           '自定义选择控件',
@@ -16044,6 +16132,8 @@ function validateInspectorProjections(): string[] {
           '列配置',
           '排序与筛选',
           '选择与批量',
+          '树形表格',
+          '查询链接分享',
           '单元格与行操作',
           '自定义底部',
           '虚拟滚动',
@@ -16253,11 +16343,14 @@ export async function validateArchitectureAdminConsole(): Promise<readonly strin
     naiveSubmenuSource,
     nonAdapterSource: [...applicationSources, ...nonAdapterUiSources].join('\n'),
     outsideMotionPrivateSource: [
-      ...applicationSources.filter(
-        (_source, index) =>
-          relative(rootDirectory, applicationFiles[index] ?? '') !==
-          'apps/web/src/app/workbench/MotionGallery.vue',
-      ),
+      ...applicationSources.filter((_source, index) => {
+        const path = relative(rootDirectory, applicationFiles[index] ?? '')
+        return (
+          path !== 'apps/web/src/app/workbench/MotionGallery.vue' &&
+          path !== 'apps/web/src/app/workbench/WelcomeCapabilityStage.vue' &&
+          path !== 'apps/web/src/app/workbench/WelcomeExperience.vue'
+        )
+      }),
       ...outsideMotionPrivateUiSources,
     ].join('\n'),
     projectConfigSource,

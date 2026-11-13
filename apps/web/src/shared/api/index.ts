@@ -33,3 +33,11 @@ export type {
   ApiResponseMode,
   ApiResult,
 } from './contracts'
+export { createUploadQueue } from './upload'
+export type {
+  UploadAdapter,
+  UploadChunkInput,
+  UploadQueue,
+  UploadTaskSnapshot,
+  UploadTaskStatus,
+} from './upload'

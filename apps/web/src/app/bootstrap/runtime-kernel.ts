@@ -1,3 +1,5 @@
+import { dashboardStoragePortKey } from '../dashboard/dashboard-contract'
+import { dateTimePreferencePortKey } from '../date-time/date-time-preference'
 import {
   defaultRuntimePresentation,
   type CoreRuntimeConfiguration,
@@ -570,6 +572,14 @@ async function startAttempt(input: {
     )
     throwClaimedStartupFailure()
 
+    resources.vueApplication.application.provide(
+      dashboardStoragePortKey,
+      resources.storage.owner.dashboardLayout,
+    )
+    resources.vueApplication.application.provide(
+      dateTimePreferencePortKey,
+      resources.storage.owner.dateTimePreference,
+    )
     enterBootstrapStep('mount-application')
     mounting = true
     try {

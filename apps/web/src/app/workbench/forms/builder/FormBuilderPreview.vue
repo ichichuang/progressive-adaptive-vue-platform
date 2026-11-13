@@ -25,7 +25,8 @@ import {
 import { routerScrollControllerKey } from '../../../router/router-scroll-controller'
 import { useFormShowcase, useFormExampleCheck } from '../form-showcase'
 import { useFormExampleUndo } from '../use-form-example-undo'
-import { builderKinds, type BuilderKind } from './use-form-builder'
+import { builderEntries, builderKinds, type BuilderKind } from './use-form-builder'
+import { builderAttachments } from './builder-attachments'
 import { previewValues } from './form-preview-values'
 import type { BuilderTrialState } from './form-builder-draft'
 
@@ -50,6 +51,9 @@ function dropField(event: DragEvent): void {
   if (!props.pending && kind && Object.hasOwn(builderKinds, kind)) emit('add', kind as BuilderKind)
 }
 const { t, copy } = useFormShowcase()
+const hasAttachments = computed(() =>
+  builderEntries(props.schema).some(({ node }) => node.kind === 'attachment'),
+)
 const resetFields = ref<readonly string[]>([])
 const resetNotice = computed(() =>
   resetFields.value.length ? `${t('formBuilder.valuesReset')} ${resetFields.value.join('、')}` : '',
@@ -58,6 +62,9 @@ function createPreview(schema: UiFormSchema) {
   const form = useUiForm({
     formId: 'visual-builder-preview',
     schema,
+    // Preview explicitly stays local. Imported source names are preserved in exported JSON,
+    // never interpreted as endpoints or executed by the builder.
+    attachments: builderAttachments(schema),
     initial: { draftId: 'visual-builder-preview', values: {} },
     copy,
   })
@@ -267,6 +274,12 @@ onScopeDispose(() => {
           @focusin="updateFocus"
           @focusout="afterFocusOut"
         >
+          <p
+            v-if="hasAttachments"
+            class="m-0 text-caption text-text-secondary"
+          >
+            {{ t('formBuilder.attachmentPreview') }}
+          </p>
           <div
             v-if="!form.schema.fields.length"
             class="text-center grid min-w-0 justify-items-center gap-content-gap py-section-block text-text-secondary"

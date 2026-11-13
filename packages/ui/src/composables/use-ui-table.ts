@@ -1,4 +1,12 @@
-import { computed, getCurrentScope, onScopeDispose, shallowRef } from 'vue'
+import {
+  computed,
+  getCurrentInstance,
+  getCurrentScope,
+  onActivated,
+  onDeactivated,
+  onScopeDispose,
+  shallowRef,
+} from 'vue'
 import type {
   UiTableColumn,
   UiTableController,
@@ -21,6 +29,15 @@ import {
   resolveTableSummary,
 } from '../components/table-summary'
 import { resolveUiTableRequest } from '../components/table-request'
+import {
+  attachTreeChildren,
+  collectTreeKeys,
+  flattenTreeRecords,
+  findTreeRecord,
+  readTreeChildren,
+  resolveUiTableTree,
+  walkTreeRecords,
+} from '../components/table-tree'
 import { cloneDraft, freezeDraftValue, getFormValue } from './form-draft-values'
 
 /** One owner for applied query, selection and cancellable list work. No HTTP or storage singleton. */
@@ -28,6 +45,9 @@ export function useUiTable(input: UiTableInput): UiTableController {
   const schema = parseUiTableSchema(input.schema)
   if (schema.source.kind === 'remote' && !input.transport)
     throw new TypeError('A remote table requires a transport.')
+  const tree = schema.tree ? resolveUiTableTree(schema.tree) : undefined
+  if (tree?.childrenRequest && !input.transport)
+    throw new TypeError('Tree childrenRequest requires a transport.')
   for (const column of schema.columns) {
     const name = column.sortComparator
     if (
@@ -51,6 +71,7 @@ export function useUiTable(input: UiTableInput): UiTableController {
       sorts: [],
     }),
   )
+  const queryChangeReason = shallowRef<'change' | 'page-correction'>('change')
   const preferenceKey = schema.columnPreferenceKey
   const preferenceStorage = input.columnPreferenceStorage
   if (preferenceKey && !preferenceStorage)
@@ -71,7 +92,11 @@ export function useUiTable(input: UiTableInput): UiTableController {
     try {
       preferenceStorage.write(preferenceKey, {
         schemaVersion: 1,
-        columns: columns.value.map(({ key, hidden }) => ({ key, hidden: hidden === true })),
+        columns: columns.value.map(({ key, hidden, width }) => ({
+          key,
+          hidden: hidden === true,
+          ...(width === undefined ? {} : { width }),
+        })),
       })
     } catch {
       // The application adapter owns persistence diagnostics; current interaction still works.
@@ -90,10 +115,15 @@ export function useUiTable(input: UiTableInput): UiTableController {
   const loading = shallowRef(false)
   const error = shallowRef<Error | null>(null)
   const selectedKeys = shallowRef<readonly UiTableKey[]>([])
+  const expandedKeys = shallowRef<readonly UiTableKey[]>(snapshot(tree?.defaultExpandedKeys ?? []))
   let localRows = snapshot(input.rows ?? [])
   let sequence = 0
   let disposed = false
   let active: AbortController | undefined
+  const treeLoadErrors = shallowRef<readonly { readonly key: UiTableKey; readonly error: Error }[]>(
+    [],
+  )
+  const childLoads = new Map<UiTableKey, AbortController>()
   function rowKey(row: UiTableReadonlyRecord): UiTableKey {
     const key = getFormValue(row, schema.rowKey)
     if (typeof key !== 'string' && typeof key !== 'number')
@@ -102,10 +132,43 @@ export function useUiTable(input: UiTableInput): UiTableController {
   }
   function validateRows(value: readonly UiTableReadonlyRecord[]): void {
     const keys = new Set<UiTableKey>()
-    for (const row of value) {
+    const visit = (row: UiTableReadonlyRecord): void => {
       const key = rowKey(row)
       if (keys.has(key)) throw new TypeError('Table row keys must be unique.')
       keys.add(key)
+      if (!tree) return
+      const children = readTreeChildren(row, tree.childrenKey)
+      if (children === undefined) return
+      for (const child of children) visit(child)
+    }
+    for (const row of value) visit(row)
+  }
+  function visibleKeys(value: readonly UiTableReadonlyRecord[] = rows.value): Set<UiTableKey> {
+    if (!tree) return new Set(value.map(rowKey))
+    return new Set(collectTreeKeys(value, rowKey, tree.childrenKey))
+  }
+  function publishRows(
+    nextRows: readonly UiTableReadonlyRecord[],
+    totalCount: number,
+    filteredRows: readonly UiTableReadonlyRecord[],
+    summaryData: UiTableReadonlyRecord,
+  ): void {
+    accepted.value = {
+      rows: nextRows,
+      total: totalCount,
+      filteredRows,
+      summary: summaryData,
+    }
+    const nextVisible = visibleKeys(nextRows)
+    const nextSelection = selectedKeys.value.filter((key) => nextVisible.has(key))
+    if (nextSelection.length !== selectedKeys.value.length) {
+      selectedKeys.value = snapshot(nextSelection)
+      input.onSelectionChange?.(selectedKeys.value)
+    }
+    if (tree) {
+      const nextExpanded = expandedKeys.value.filter((key) => nextVisible.has(key))
+      if (nextExpanded.length !== expandedKeys.value.length)
+        expandedKeys.value = snapshot(nextExpanded)
     }
   }
   function display(value: unknown): string {
@@ -139,6 +202,17 @@ export function useUiTable(input: UiTableInput): UiTableController {
     const filters = filterLeaves(current.filters)
     const matching = localRows.filter((row) =>
       filters.every(([key, value]) => {
+        if (key === schema.keywordSearch?.parameter) {
+          if (value === null || value === '') return true
+          if (typeof value !== 'string') return false
+          const keyword = value.trim().toLocaleLowerCase()
+          return (
+            !keyword ||
+            schema.keywordSearch.fields.some((field) =>
+              display(getFormValue(row, field)).toLocaleLowerCase().includes(keyword),
+            )
+          )
+        }
         if (value === '' || value === null || (Array.isArray(value) && value.length === 0))
           return true
         const cell = getFormValue(row, key)
@@ -183,13 +257,26 @@ export function useUiTable(input: UiTableInput): UiTableController {
     return transport.list(request, signal)
   }
   validateRows(localRows)
+  const continuous = schema.pagination?.mode === 'load-more'
+  let activeAppend = false
   async function refresh(): Promise<void> {
+    if (continuous && query.value.page !== 1) {
+      query.value = snapshot({ ...query.value, page: 1 })
+      input.onQueryChange?.(query.value)
+    }
+    await fetchPage(false)
+  }
+  async function fetchPage(append: boolean): Promise<void> {
     if (disposed) return
+    activeAppend = append
     active?.abort()
+    for (const child of childLoads.values()) child.abort()
+    childLoads.clear()
+    treeLoadErrors.value = []
     const controller = new AbortController()
     active = controller
     const ticket = ++sequence
-    const current = query.value
+    const current = append ? snapshot({ ...query.value, page: query.value.page + 1 }) : query.value
     loading.value = true
     error.value = null
     try {
@@ -213,7 +300,10 @@ export function useUiTable(input: UiTableInput): UiTableController {
       if (!Number.isSafeInteger(result.total) || result.total < 0 || !Array.isArray(result.rows))
         throw new TypeError('Invalid table page response.')
       const lastPage = Math.max(1, Math.ceil(result.total / current.pageSize))
+      if (append && current.page > lastPage)
+        throw new TypeError('Table total changed; refresh the collection before continuing.')
       if (current.page > lastPage) {
+        queryChangeReason.value = 'page-correction'
         query.value = snapshot({ ...current, page: lastPage })
         input.onQueryChange?.(query.value)
         await refresh()
@@ -224,18 +314,18 @@ export function useUiTable(input: UiTableInput): UiTableController {
       validateRows(nextRows)
       if (nextRows.length > current.pageSize || result.total < nextRows.length)
         throw new TypeError('Table page size or total is inconsistent.')
-      accepted.value = {
-        rows: nextRows,
-        total: result.total,
-        filteredRows: snapshot(next.filteredRows),
-        summary: summaryData,
-      }
-      const visibleKeys = new Set(nextRows.map(rowKey))
-      const nextSelection = selectedKeys.value.filter((key) => visibleKeys.has(key))
-      if (nextSelection.length !== selectedKeys.value.length) {
-        selectedKeys.value = snapshot(nextSelection)
-        input.onSelectionChange?.(selectedKeys.value)
-      }
+      for (const controller of childLoads.values()) controller.abort()
+      childLoads.clear()
+      if (append) {
+        const merged = new Map(rows.value.map((row) => [rowKey(row), row]))
+        const previousCount = merged.size
+        for (const row of nextRows) merged.set(rowKey(row), row)
+        if (merged.size === previousCount || merged.size > result.total)
+          throw new TypeError('The next table page must add records within the reported total.')
+        publishRows([...merged.values()], result.total, snapshot(next.filteredRows), summaryData)
+        query.value = current
+        input.onQueryChange?.(query.value)
+      } else publishRows(nextRows, result.total, snapshot(next.filteredRows), summaryData)
     } catch (cause) {
       if (isCurrent(ticket, controller.signal))
         error.value = cause instanceof Error ? cause : new Error('Table request failed.')
@@ -245,15 +335,71 @@ export function useUiTable(input: UiTableInput): UiTableController {
   }
   async function change(patch: Partial<UiTableQuery>): Promise<void> {
     if (disposed) return
+    queryChangeReason.value = 'change'
     query.value = snapshot({ ...query.value, ...patch })
     if (selectedKeys.value.length) {
       selectedKeys.value = []
       input.onSelectionChange?.(selectedKeys.value)
     }
+    if (tree && expandedKeys.value.length) expandedKeys.value = []
     input.onQueryChange?.(query.value)
     await refresh()
   }
-  function setSorts(sorts: readonly UiTableSort[]): Promise<void> {
+  async function loadTreeChildren(row: UiTableReadonlyRecord): Promise<void> {
+    if (disposed) return
+    if (!tree?.childrenRequest || !transport)
+      throw new TypeError('Tree childrenRequest requires a configured transport.')
+    const parentKey = rowKey(row)
+    const existing = findTreeRecord(rows.value, parentKey, rowKey, tree.childrenKey)
+    if (!existing) throw new TypeError('Unknown tree parent row.')
+    if (readTreeChildren(existing, tree.childrenKey) !== undefined) return
+    childLoads.get(parentKey)?.abort()
+    const controller = new AbortController()
+    childLoads.set(parentKey, controller)
+    const ticket = sequence
+    treeLoadErrors.value = treeLoadErrors.value.filter(({ key }) => key !== parentKey)
+    try {
+      const response = await transport.list(
+        resolveUiTableRequest(tree.childrenRequest, {
+          ...query.value,
+          context,
+          row: existing,
+          form: {},
+        }),
+        controller.signal,
+      )
+      // Read through a function so an awaited dispose() is not narrowed away.
+      if (!isCurrent(ticket, controller.signal)) return
+      if (!Array.isArray(response.rows)) throw new TypeError('Invalid tree children response.')
+      const children = snapshot(response.rows)
+      validateRows(children)
+      walkTreeRecords(children, tree.childrenKey, (child) => {
+        if (Object.is(rowKey(child), parentKey))
+          throw new TypeError('Tree children cannot reuse the parent key.')
+      })
+      const nextRoots = snapshot(
+        attachTreeChildren(rows.value, parentKey, children, rowKey, tree.childrenKey),
+      )
+      validateRows(nextRoots)
+      if (schema.source.kind === 'local') {
+        localRows = snapshot(
+          attachTreeChildren(localRows, parentKey, children, rowKey, tree.childrenKey),
+        )
+      }
+      publishRows(nextRoots, total.value, accepted.value.filteredRows, accepted.value.summary)
+    } catch (cause) {
+      if (!isCurrent(ticket, controller.signal)) return
+      const failure = cause instanceof Error ? cause : new Error('Tree children request failed.')
+      treeLoadErrors.value = [
+        ...treeLoadErrors.value.filter(({ key }) => key !== parentKey),
+        { key: parentKey, error: failure },
+      ]
+      throw failure
+    } finally {
+      if (childLoads.get(parentKey) === controller) childLoads.delete(parentKey)
+    }
+  }
+  function validateSorts(sorts: readonly UiTableSort[]): readonly UiTableSort[] {
     if (!Array.isArray(sorts) || (schema.sorting !== 'multiple' && sorts.length > 1))
       throw new TypeError('Multiple sorting requires sorting: multiple.')
     const candidates: readonly unknown[] = sorts
@@ -277,6 +423,10 @@ export function useUiTable(input: UiTableInput): UiTableController {
       seen.add(sort['key'])
       entries.push({ key: sort['key'], order: sort['order'] })
     }
+    return entries
+  }
+  function setSorts(sorts: readonly UiTableSort[]): Promise<void> {
+    const entries = validateSorts(sorts)
     return change({ page: 1, sorts: entries, sort: entries[0] ?? null })
   }
   const controller: UiTableController = {
@@ -296,10 +446,41 @@ export function useUiTable(input: UiTableInput): UiTableController {
     rows: computed(() => rows.value),
     total: computed(() => total.value),
     query: computed(() => query.value),
+    queryChangeReason: computed(() => queryChangeReason.value),
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     selectedKeys: computed(() => selectedKeys.value),
+    treeLoadErrors: computed(() => treeLoadErrors.value),
+    expandedKeys: computed(() => expandedKeys.value),
     refresh,
+    hasMore: computed(() => continuous && rows.value.length < total.value),
+    loadMore: async () => {
+      if (disposed || !continuous || loading.value || rows.value.length >= total.value) return
+      await fetchPage(true)
+    },
+    applyQuery: (value) => {
+      if (
+        !Number.isSafeInteger(value.page) ||
+        value.page < 1 ||
+        !Number.isSafeInteger(value.pageSize) ||
+        value.pageSize < 1
+      )
+        throw new TypeError('Invalid table pagination.')
+      const sorts = validateSorts(value.sorts)
+      const candidate: unknown = value.filters
+      if (candidate === null || Array.isArray(candidate) || typeof candidate !== 'object')
+        throw new TypeError('Table filters must be a JSON record.')
+      const filters = snapshot(value.filters)
+      if (tree && Object.keys(filters).length)
+        throw new TypeError('Tree tables do not support local filters.')
+      return change({
+        page: value.page,
+        pageSize: value.pageSize,
+        filters,
+        sorts,
+        sort: sorts[0] ?? null,
+      })
+    },
     search: (filters) => change({ page: 1, filters: snapshot(filters) }),
     reset: () => change({ page: 1, filters: initialFilters, sort: null, sorts: [] }),
     setPage: (page) => {
@@ -314,11 +495,12 @@ export function useUiTable(input: UiTableInput): UiTableController {
     setSort: (sort) => setSorts(sort ? [sort] : []),
     setSorts,
     setSelection: (keys) => {
-      if (disposed) return
-      const visible = new Set(rows.value.map(rowKey))
+      if (disposed) return false
+      const visible = visibleKeys()
       const unique = [...new Set(keys)].filter((key) => visible.has(key))
       if (unique.some((key) => typeof key !== 'string' && typeof key !== 'number'))
         throw new TypeError('Invalid selected row key.')
+      if (schema.maxSelection !== undefined && unique.length > schema.maxSelection) return false
       selectedKeys.value = snapshot(
         schema.selection === 'multiple'
           ? unique
@@ -327,7 +509,30 @@ export function useUiTable(input: UiTableInput): UiTableController {
             : [],
       )
       input.onSelectionChange?.(selectedKeys.value)
+      return true
     },
+    setExpandedKeys: (keys) => {
+      if (disposed) return
+      if (!tree) {
+        if (keys.length) throw new TypeError('Expanded keys require a tree table.')
+        expandedKeys.value = []
+        return
+      }
+      const visible = visibleKeys()
+      const unique = [...new Set(keys)].filter((key) => visible.has(key))
+      if (unique.some((key) => typeof key !== 'string' && typeof key !== 'number'))
+        throw new TypeError('Invalid expanded row key.')
+      expandedKeys.value = snapshot(
+        unique.filter((key) => {
+          const row = findTreeRecord(rows.value, key, rowKey, tree.childrenKey)
+          return (
+            !tree.childrenRequest ||
+            (row !== undefined && readTreeChildren(row, tree.childrenKey) !== undefined)
+          )
+        }),
+      )
+    },
+    loadTreeChildren,
     setColumnVisibility: (key, visible) => {
       if (disposed) return
       if (!columns.value.some((column) => column.key === key))
@@ -355,6 +560,31 @@ export function useUiTable(input: UiTableInput): UiTableController {
       columns.value = snapshot(next)
       persistColumns()
     },
+    reorderColumn: (key, targetKey, placement) => {
+      if (disposed) return
+      const column = columns.value.find((item) => item.key === key)
+      if (!column || !columns.value.some((item) => item.key === targetKey))
+        throw new TypeError('Unknown table column.')
+      if (!['before', 'after'].includes(placement)) throw new TypeError('Invalid column placement.')
+      if (key === targetKey) return
+      const next = columns.value.filter((item) => item.key !== key)
+      const target = next.findIndex((item) => item.key === targetKey)
+      next.splice(target + (placement === 'after' ? 1 : 0), 0, column)
+      columns.value = snapshot(next)
+      persistColumns()
+    },
+    setColumnWidth: (key, width) => {
+      if (disposed) return
+      const column = columns.value.find((item) => item.key === key)
+      if (!column) throw new TypeError('Unknown table column.')
+      if (!Number.isFinite(width) || width <= 0)
+        throw new TypeError('Table column width must be a positive finite number.')
+      const bounded = Math.min(column.maxWidth ?? Infinity, Math.max(column.minWidth ?? 1, width))
+      columns.value = snapshot(
+        columns.value.map((item) => (item.key === key ? { ...item, width: bounded } : item)),
+      )
+      persistColumns()
+    },
     resetColumns: () => {
       if (disposed) return
       columns.value = schema.columns
@@ -373,14 +603,16 @@ export function useUiTable(input: UiTableInput): UiTableController {
       if (disposed || loading.value || error.value)
         throw new Error('Table data is not ready for export.')
       const selected = new Set(selectedKeys.value)
+      const loaded = tree ? flattenTreeRecords(rows.value, tree.childrenKey) : rows.value
       const exportRows =
-        scope === 'page' ? rows.value : rows.value.filter((row) => selected.has(rowKey(row)))
+        scope === 'page' ? loaded : loaded.filter((row) => selected.has(rowKey(row)))
       if (exportRows.length === 0) throw new Error('No rows are available for this export scope.')
       return createTableCsv(configuration.fileName, columns.value, exportRows, (value) =>
         controller.text(value),
       )
     },
     setSummary: (value) => {
+      if (tree) throw new TypeError('Tree tables do not support summary rows.')
       if (!disposed) summary.value = parseTableSummary(value, schema.columns, schema.source.kind)
     },
     setRows: (value) => {
@@ -395,8 +627,24 @@ export function useUiTable(input: UiTableInput): UiTableController {
       disposed = true
       ++sequence
       active?.abort()
+      for (const controller of childLoads.values()) controller.abort()
+      childLoads.clear()
       loading.value = false
     },
+  }
+  if (continuous && getCurrentInstance()) {
+    let resume = false
+    onDeactivated(() => {
+      resume = loading.value
+      ++sequence
+      active?.abort()
+      loading.value = false
+    })
+    onActivated(() => {
+      if (!resume) return
+      resume = false
+      void fetchPage(activeAppend)
+    })
   }
   if (getCurrentScope())
     onScopeDispose(() => {

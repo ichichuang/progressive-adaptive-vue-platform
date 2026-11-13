@@ -82,6 +82,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       sourcePath: 'packages/ui/src/components/UiG2Chart.vue',
       props: Object.freeze([
         Object.freeze({
+          name: 'tour',
+          type: 'UiChartTourConfig',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'options',
           type: 'UiG2ChartOptions',
           required: true,
@@ -90,6 +96,7 @@ export const uiPublicComponentRegistry = Object.freeze({
         Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
       ]),
       emits: Object.freeze([
+        Object.freeze({ name: 'tourChange', payloadType: '[state: UiChartTourState]' }),
         Object.freeze({ name: 'rendered', payloadType: '[]' }),
         Object.freeze({ name: 'error', payloadType: '[error: Error]' }),
       ]),
@@ -104,12 +111,24 @@ export const uiPublicComponentRegistry = Object.freeze({
       sourcePath: 'packages/ui/src/components/UiTable.vue',
       props: Object.freeze([
         Object.freeze({
+          name: 'dateTime',
+          type: 'UiDateTimeContext',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({
           name: 'table',
           type: 'UiTableController',
           required: true,
           defaultValue: null,
         }),
         Object.freeze({ name: 'copy', type: 'UiTableCopy', required: true, defaultValue: null }),
+        Object.freeze({
+          name: 'inlineEditing',
+          type: 'UiTableInlineEditing',
+          required: false,
+          defaultValue: null,
+        }),
         Object.freeze({
           name: 'virtualScroll',
           type: 'boolean',
@@ -175,6 +194,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       exportName: 'UiTableEditor',
       sourcePath: 'packages/ui/src/components/UiTableEditor.vue',
       props: Object.freeze([
+        Object.freeze({
+          name: 'dateTime',
+          type: 'UiDateTimeContext',
+          required: false,
+          defaultValue: null,
+        }),
         Object.freeze({
           name: 'session',
           type: 'ReturnType<typeof useUiTableForm>',
@@ -294,6 +319,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       exportName: 'UiForm',
       sourcePath: 'packages/ui/src/components/UiForm.vue',
       props: Object.freeze([
+        Object.freeze({
+          name: 'dateTime',
+          type: 'UiDateTimeContext',
+          required: false,
+          defaultValue: null,
+        }),
         Object.freeze({
           name: 'form',
           type: 'UiFormController<I>',
@@ -506,6 +537,11 @@ export const uiPublicComponentRegistry = Object.freeze({
           required: false,
         }),
         Object.freeze({
+          name: 'theme-picker',
+          slotPropsType: 'Readonly<Record<string, never>>',
+          required: false,
+        }),
+        Object.freeze({
           name: 'workspace',
           slotPropsType: 'Readonly<Record<string, never>>',
           required: true,
@@ -540,6 +576,12 @@ export const uiPublicComponentRegistry = Object.freeze({
       exportName: 'UiProvider',
       sourcePath: 'packages/ui/src/providers/UiProvider.vue',
       props: Object.freeze([
+        Object.freeze({
+          name: 'dateTime',
+          type: 'UiDateTimeContext',
+          required: false,
+          defaultValue: null,
+        }),
         Object.freeze({ name: 'locale', type: 'UiLocale', required: true, defaultValue: null }),
         Object.freeze({
           name: 'appearance',
@@ -595,6 +637,58 @@ export const uiPublicComponentRegistry = Object.freeze({
       ]),
       semanticVariants: Object.freeze(['card-grid']),
       accessibilityContractIds: Object.freeze(['a11y.enhanced-target', 'a11y.named-control-group']),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-display-stage',
+      exportName: 'UiDisplayStage',
+      sourcePath: 'packages/ui/src/components/UiDisplayStage.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'ratio',
+          type: 'UiDisplayRatio',
+          required: false,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([Object.freeze({ name: 'resize', payloadType: 'UiDisplayStageSize' })]),
+      slots: Object.freeze([
+        Object.freeze({
+          name: 'default',
+          slotPropsType: 'Readonly<Record<string, never>>',
+          required: true,
+        }),
+      ]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze(['a11y.named-control-group']),
+      capabilityStatus: 'ACTIVE',
+    }),
+    Object.freeze({
+      id: 'ui-dashboard-grid',
+      exportName: 'UiDashboardGrid',
+      sourcePath: 'packages/ui/src/components/UiDashboardGrid.vue',
+      props: Object.freeze([
+        Object.freeze({
+          name: 'layout',
+          type: 'readonly UiDashboardItemPosition[]',
+          required: true,
+          defaultValue: null,
+        }),
+        Object.freeze({ name: 'rowHeight', type: 'number', required: false, defaultValue: null }),
+        Object.freeze({ name: 'columns', type: '1 | 12', required: true, defaultValue: null }),
+        Object.freeze({ name: 'editing', type: 'boolean', required: true, defaultValue: null }),
+        Object.freeze({ name: 'label', type: 'string', required: true, defaultValue: null }),
+      ]),
+      emits: Object.freeze([
+        Object.freeze({ name: 'update:layout', payloadType: 'readonly UiDashboardItemPosition[]' }),
+        Object.freeze({ name: 'interaction', payloadType: 'boolean' }),
+      ]),
+      slots: Object.freeze([
+        Object.freeze({ name: 'item', slotPropsType: '{ id: string }', required: true }),
+      ]),
+      semanticVariants: Object.freeze([]),
+      accessibilityContractIds: Object.freeze(['a11y.named-control-group']),
       capabilityStatus: 'ACTIVE',
     }),
     Object.freeze({

@@ -93,6 +93,7 @@ const headings = {
   controls: 'formCapabilities.controls.canvas',
   loading: 'formCapabilities.loading.canvas',
   submission: 'formCapabilities.submission.canvas',
+  steps: 'formCapabilities.steps.canvas',
 } as const
 </script>
 
@@ -139,7 +140,11 @@ const headings = {
               "
             >
               <h3
-                class="font-title-weight m-0 text-body text-text-primary"
+                :class="
+                  capability === 'steps'
+                    ? 'sr-only'
+                    : 'font-title-weight m-0 text-body text-text-primary'
+                "
                 v-text="t(headings[capability])"
               />
               <div

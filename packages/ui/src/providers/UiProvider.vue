@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { UiDateTimeContext } from '../date-time/date-time'
+import { uiDateTimeContext } from '../date-time/date-time-context'
 import { projectRegionAppearance, tokens, type UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiLocale } from '../components/contracts'
 import type { GlobalThemeOverrides } from 'naive-ui'
@@ -21,9 +23,15 @@ import { loadScrollEnhancement } from '../adapters/scroll/scroll-enhancement-loa
 defineOptions({ name: 'UiProvider' })
 
 const props = defineProps<{
+  readonly dateTime?: UiDateTimeContext
   readonly appearance: Readonly<UiAppearanceSnapshot>
   readonly locale: UiLocale
 }>()
+
+provide(
+  uiDateTimeContext,
+  computed(() => props.dateTime),
+)
 
 defineSlots<{
   default: (props: Readonly<Record<string, never>>) => unknown

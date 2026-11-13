@@ -724,7 +724,13 @@ export function useApplicationLinkActivation(
 ) => Promise<TypedNavigationResult | BrowserPageOpenResult | TrackedBrowserPageResult> | undefined {
   const navigation = useApplicationNavigation()
   return (event, destination) => {
-    const anchor = event.currentTarget
+    const current = event.currentTarget
+    const anchor =
+      current instanceof HTMLAnchorElement
+        ? current
+        : current instanceof Element
+          ? current.closest('a')
+          : null
     if (
       event.defaultPrevented ||
       !event.cancelable ||

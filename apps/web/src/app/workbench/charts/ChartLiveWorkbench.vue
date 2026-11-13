@@ -184,7 +184,7 @@ onScopeDispose(() => {
       />
     </template>
     <section
-      class="rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+      class="wb-table-stage rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
       data-chart-live-workbench="true"
       :aria-label="title"
     >

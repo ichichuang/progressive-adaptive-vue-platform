@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed, inject, onActivated, onDeactivated, onScopeDispose, ref } from 'vue'
-import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { UiCopyAction, UiScrollArea, type UiScrollController } from '@platform/ui'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
@@ -25,6 +24,7 @@ const groups = [
       'component-form-basics',
       'component-form-layout',
       'component-form-detail',
+      'component-form-steps',
       'component-form-builder',
     ],
   },
@@ -140,27 +140,32 @@ onScopeDispose(() => {
             <NCard
               v-for="item in section.items"
               :key="item.destination.name"
+              tag="a"
               :bordered="false"
-              class="min-w-0"
-              content-class="grid min-w-0 gap-component-unit"
+              hoverable
+              class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
+              content-class="wb-capability-content grid min-w-0 items-center"
+              :href="navigation.resolveHref(item.destination)"
+              @click="activate($event, item.destination)"
             >
-              <NButton
-                tag="a"
-                text
-                type="primary"
-                class="justify-self-start min-h-target-enhanced"
-                :href="navigation.resolveHref(item.destination)"
-                @click="activate($event, item.destination)"
+              <span
+                class="wb-capability-mark rounded-control grid row-span-2 place-items-center bg-surface-page text-control-primary text-title"
+                aria-hidden="true"
               >
-                {{ item.title
-                }}<span
-                  class="i-lucide-arrow-up-right"
-                  aria-hidden="true"
-                />
-              </NButton>
-              <p class="m-0 text-caption text-text-secondary">
+                <span class="i-lucide-type" />
+              </span>
+              <strong class="font-title-weight text-subheading">
+                {{ item.title }}
+              </strong>
+              <span class="col-start-2 text-caption text-text-secondary">
                 {{ item.message }}
-              </p>
+              </span>
+              <span
+                class="row-span-2 col-start-3 row-start-1 text-control-primary"
+                aria-hidden="true"
+              >
+                ↗
+              </span>
             </NCard>
           </div>
         </section>

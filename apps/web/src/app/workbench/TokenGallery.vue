@@ -7,6 +7,8 @@ import TokenSpecimen from './TokenSpecimen.vue'
 const props = defineProps<{ readonly names: readonly TokenName[]; readonly label: string }>()
 const { t } = useConsoleI18n()
 const groupLabels = {
+  expression: 'workbench.tokenGroup.expression',
+  categorical: 'workbench.tokenGroup.categorical',
   surfaces: 'workbench.tokenGroup.surfaces',
   foregrounds: 'workbench.tokenGroup.foregrounds',
   status: 'workbench.tokenGroup.status',
@@ -19,6 +21,8 @@ const groupLabels = {
   interaction: 'workbench.tokenGroup.interaction',
 } as const
 const subgroupLabels = {
+  accentA: 'workbench.tokenSubgroup.accentA',
+  accentB: 'workbench.tokenSubgroup.accentB',
   textColors: 'workbench.tokenSubgroup.textColors',
   controlColors: 'workbench.tokenSubgroup.controlColors',
   statusInfo: 'workbench.tokenSubgroup.statusInfo',
@@ -53,6 +57,8 @@ const statusColors: Readonly<Partial<Record<keyof typeof subgroupLabels, string>
 type Group = keyof typeof groupLabels
 type Subgroup = keyof typeof subgroupLabels
 function groupFor(name: TokenName): Group {
+  if (name.startsWith('color.expression.')) return 'expression'
+  if (name.startsWith('color.data-viz.')) return 'categorical'
   if (name.startsWith('color.status.')) return 'status'
   if (name.startsWith('color.text.') || name.startsWith('color.control.')) return 'foregrounds'
   if (name.startsWith('color.')) return 'surfaces'
@@ -71,7 +77,8 @@ function groupFor(name: TokenName): Group {
   return 'controls'
 }
 function subgroupFor(name: TokenName, group: Group): Subgroup | null {
-  if (group === 'surfaces') return null
+  if (group === 'expression') return name.includes('.accent-a.') ? 'accentA' : 'accentB'
+  if (group === 'categorical' || group === 'surfaces') return null
   if (group === 'foregrounds')
     return name.startsWith('color.text.') ? 'textColors' : 'controlColors'
   if (group === 'status') {
@@ -165,7 +172,8 @@ const groups = computed(() => {
           class="wb-specimen-grid grid items-start gap-content-gap"
           :class="{
             'layout-regular:grid-cols-2 layout-wide:grid-cols-3': group === 'surfaces',
-            'layout-regular:grid-cols-3 layout-wide:grid-cols-3': group === 'status',
+            'layout-regular:grid-cols-3 layout-wide:grid-cols-3':
+              group === 'status' || group === 'expression' || group === 'categorical',
             'grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2':
               group === 'typeSize' || group === 'typeStyle',
           }"

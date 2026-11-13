@@ -1,6 +1,6 @@
 <script setup lang="ts" generic="I">
 import { NButton } from 'naive-ui/es/button'
-import { computed, onActivated, onDeactivated, ref } from 'vue'
+import { computed, nextTick, onActivated, onDeactivated, ref } from 'vue'
 import { UiCopyAction, UiScrollArea, type UiFormController } from '@platform/ui'
 import { useConsoleI18n } from '../../../shared/i18n'
 
@@ -29,32 +29,40 @@ const fields = computed(() =>
       path: field.name,
       label: props.form.text(field.label),
       value:
-        field.kind === 'select' ||
-        field.kind === 'multi-select' ||
-        field.kind === 'radio' ||
-        field.kind === 'checkbox-group'
-          ? binding.selectedOptions
-              .map((item) =>
-                item.option
-                  ? props.form.text(item.option.label)
-                  : item.status === 'loading'
-                    ? props.form.copy.loadingOptions()
-                    : item.status === 'failed'
-                      ? props.form.copy.optionsFailed()
-                      : props.form.copy.invalidValue(),
+        field.kind === 'attachment' && Array.isArray(value)
+          ? value
+              .map((item: unknown) =>
+                typeof item === 'object' && item !== null && 'name' in item
+                  ? String(item.name)
+                  : '',
               )
               .join(' / ') || props.form.copy.empty()
-          : value === null || value === ''
-            ? props.form.copy.empty()
-            : typeof value === 'boolean'
-              ? value
-                ? props.form.copy.yes()
-                : props.form.copy.no()
-              : field.kind === 'date-range' && Array.isArray(value)
-                ? value.join(' – ')
-                : typeof value === 'object'
-                  ? JSON.stringify(value)
-                  : String(value),
+          : field.kind === 'select' ||
+              field.kind === 'multi-select' ||
+              field.kind === 'radio' ||
+              field.kind === 'checkbox-group'
+            ? binding.selectedOptions
+                .map((item) =>
+                  item.option
+                    ? props.form.text(item.option.label)
+                    : item.status === 'loading'
+                      ? props.form.copy.loadingOptions()
+                      : item.status === 'failed'
+                        ? props.form.copy.optionsFailed()
+                        : props.form.copy.invalidValue(),
+                )
+                .join(' / ') || props.form.copy.empty()
+            : value === null || value === ''
+              ? props.form.copy.empty()
+              : typeof value === 'boolean'
+                ? value
+                  ? props.form.copy.yes()
+                  : props.form.copy.no()
+                : field.kind === 'date-range' && Array.isArray(value)
+                  ? value.join(' – ')
+                  : typeof value === 'object'
+                    ? JSON.stringify(value)
+                    : String(value),
       binding,
       access: binding.hidden
         ? t('formShowcase.hiddenValue')
@@ -96,26 +104,47 @@ const resultLabel = computed(() =>
   t(props.form.hasPendingInput.value ? 'formShowcase.livePending' : 'formShowcase.liveResult'),
 )
 const checkLabel = computed(() =>
-  props.form.hasPendingInput.value
-    ? t('formShowcase.livePendingHint')
-    : props.form.phase.value === 'validating'
-      ? t('configuredForm.validating')
-      : props.form.issues.value.length
-        ? t('formShowcase.checkInvalid')
-        : props.checked === 'valid'
-          ? t('formShowcase.checkValid')
-          : '',
+  props.mode !== 'edit'
+    ? ''
+    : props.form.hasPendingInput.value
+      ? t('formShowcase.livePendingHint')
+      : props.form.phase.value === 'validating'
+        ? t('configuredForm.validating')
+        : props.form.issues.value.length
+          ? t('formShowcase.checkInvalid')
+          : props.checked === 'valid'
+            ? t('formShowcase.checkValid')
+            : '',
 )
+function canLocate(path: string | null): boolean {
+  const activeStep = props.form.activeStepIndex.value
+  if (props.mode !== 'edit' || path === null) return false
+  if (props.form.canFocusField(path)) return true
+  const step = props.form.stepIndexForField(path)
+  if (step === null || step === activeStep) return false
+  const state = props.form.nodeState(path)
+  return !state.hidden && !state.disabled && !state.readonly
+}
 const issues = computed(() =>
   props.form.issues.value.map((issue) => ({
     path: issue.field,
     label: `${issue.field === null ? t('configuredForm.errorSummary') : props.form.nodeLabel(issue.field)}: ${issue.message()}`,
-    canLocate:
-      props.mode === 'edit' && issue.field !== null && props.form.canFocusField(issue.field),
+    canLocate: canLocate(issue.field),
   })),
 )
-function locate(path: string | null): void {
-  if (props.mode === 'edit' && path !== null) props.form.focusField(path)
+let locateRequest = 0
+async function locate(path: string | null): Promise<void> {
+  if (props.mode !== 'edit' || path === null) return
+  const request = ++locateRequest
+  const form = props.form
+  const step = form.stepIndexForField(path)
+  if (step !== null && step !== form.activeStepIndex.value) {
+    if ((await form.setActiveStep(step, { relax: true })) !== 'applied') return
+  }
+  await nextTick()
+  await nextTick()
+  if (request === locateRequest && active.value && props.form === form && canLocate(path))
+    form.focusField(path)
 }
 </script>
 

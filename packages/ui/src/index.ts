@@ -57,7 +57,13 @@ export { default as UiTableEditor } from './components/UiTableEditor.vue'
 export { useUiTableActions, type UiTableActionsInput } from './composables/use-ui-table-actions'
 
 export { default as UiG2Chart } from './components/UiG2Chart.vue'
-export type { UiG2ChartOptions } from './components/g2-chart-contracts'
+export type {
+  UiG2ChartHandle,
+  UiG2ChartOptions,
+  UiChartTourTarget,
+  UiChartTourConfig,
+  UiChartTourState,
+} from './components/g2-chart-contracts'
 
 export { default as UiChartTimeRange } from './components/UiChartTimeRange.vue'
 export {
@@ -73,3 +79,31 @@ export type {
   UiConfigurationHint,
   UiConfigurationInspection,
 } from './components/configuration-inspection'
+
+export { useUiInteraction } from './composables/use-ui-interaction'
+export type {
+  UiInteractionDirection,
+  UiInteractionGesture,
+  UiInteractionOptions,
+  UiInteractionPhase,
+  UiInteractionPoint,
+} from './composables/use-ui-interaction'
+
+export { formatUiDateTime, formatUiRelativeTime } from './date-time/date-time'
+export type {
+  UiDateTimeContext,
+  UiDateTimeValue,
+  UiDateTimePreset,
+  UiDateTimeColumnFormat,
+} from './date-time/date-time'
+
+export { useUiDateTime } from './date-time/date-time-context'
+
+export { default as UiDashboardGrid } from './components/UiDashboardGrid.vue'
+export type {
+  UiDashboardItemPosition,
+  UiDashboardGridHandle,
+} from './dashboard/dashboard-contracts'
+export { default as UiDisplayStage } from './components/UiDisplayStage.vue'
+export { fitUiDisplayStage } from './components/display-stage'
+export type { UiDisplayRatio, UiDisplayStageSize } from './components/display-stage'

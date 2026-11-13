@@ -30,9 +30,7 @@ export function projectG2Theme(appearance: UiAppearanceSnapshot, metrics: G2Them
     radius,
   } = metrics
   const primary = palette.roles.primary.foreground.default
-  const colors = ['primary', 'info', 'success', 'warning', 'error', 'neutral'].map(
-    (role) => palette.roles[role as keyof typeof palette.roles].foreground.default,
-  )
+  const colors = Object.values(palette.dataViz.categorical)
   const axis = {
     labelFontFamily: fontFamily,
     labelFontSize: captionSize,
@@ -156,7 +154,7 @@ export function projectG2Theme(appearance: UiAppearanceSnapshot, metrics: G2Them
       spacing,
     },
     label: { ...label, connectorStroke: palette.borders.control, connectorLineWidth: borderWidth },
-    innerLabel: { ...label, fill: palette.roles.primary.solid.foreground },
+    innerLabel: label,
     htmlLabel: { fontFamily, fontSize: captionSize, color: palette.text.primary, opacity: 1 },
     text: { text: label, badge: label },
     line: { line: { lineWidth: borderWidth * 2, lineCap: 'round', lineJoin: 'round' } },

@@ -1,3 +1,7 @@
+import { createDashboardLayoutStorage } from './dashboard-layout-storage'
+import type { DashboardStoragePort } from '../dashboard/dashboard-contract'
+import { createDateTimePreferenceStorage } from './date-time-preference-storage'
+import type { DateTimePreferencePort } from '../date-time/date-time-preference'
 import type { FormDraftStorageContext } from '../forms/form-draft-contract'
 import type { NavigationPreferencePort } from '../navigation/navigation-preference-contract'
 import type { WorkspaceSessionPort } from '../workspace/workspace-session-contract'
@@ -28,6 +32,8 @@ interface StorageOwner {
   readonly scrollRefresh: ScrollRefreshPort
   readonly workspaceSession: WorkspaceSessionPort
   readonly navigationPreference: NavigationPreferencePort
+  readonly dashboardLayout: DashboardStoragePort
+  readonly dateTimePreference: DateTimePreferencePort
   readonly localePreference: LocalePreferencePort
   readonly registry: readonly StorageRegistryRecord[]
   readonly migrationRegistry: readonly StorageMigrationRecord[]
@@ -51,7 +57,7 @@ function assertRegistryExactEquality(): void {
   const indexedDbRecords = records.filter((record) => record.medium === 'indexed-db')
 
   if (
-    records.length !== 11 ||
+    records.length !== 13 ||
     envelopeRecords.length !== 1 ||
     memoryRecords.length !== 0 ||
     indexedDbRecords.length !== 0 ||
@@ -89,6 +95,8 @@ export function createAndReadyStorage(input: {
     scrollRefresh: createScrollRefreshStorage(errorAdapter, () => disposed),
     workspaceSession: createWorkspaceSessionStorage(errorAdapter, () => disposed),
     navigationPreference: createNavigationPreferenceStorage(errorAdapter, () => disposed),
+    dashboardLayout: createDashboardLayoutStorage(errorAdapter, () => disposed),
+    dateTimePreference: createDateTimePreferenceStorage(errorAdapter, () => disposed),
     localePreference: createLocalePreferenceStorage(errorAdapter, () => disposed),
     registry: storageRegistry,
     migrationRegistry: storageMigrationRegistry,

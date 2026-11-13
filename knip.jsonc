@@ -1,6 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "ignore": ["packages/design-system/src/generated/appearance-init.js"],
+  "ignore": [
+    "packages/design-system/src/generated/appearance-init.js",
+    // Nested accidental checkout; not the active parent worktree.
+    "progressive-adaptive-vue-platform/**",
+  ],
   "workspaces": {
     "apps/web": {
       "entry": [

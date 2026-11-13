@@ -56,11 +56,11 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const stableGeneratedHashes = {
   'packages/design-system/src/generated/token-names.ts':
-    'c77bc7dd30582934b6c29c3363846082146665b628d9ed21dcde66f8e870cebd',
+    '4fa9a9f9588bb8b307639b6e2b14e3fb26a89db6d5b284ed9d6f777dca203cfc',
   'packages/design-system/src/generated/tokens.ts':
-    '3e6168d35a551c637c2703f8dbe6d07c57f8cb36efcf818489c0c9634fa86355',
+    'ed23acd10e926b5a94a490bf2fc7af9400a56a5862a9b612c57e69eba6989515',
   'packages/design-system/src/generated/unocss-theme.ts':
-    'c80e16fbb9e81da732248631d2e690c9259b89920d90e1d5e29b699e7da6dbc2',
+    'ef83608046bff761e622db8dfab971247d60ea552841e1d75ce810da26516cd8',
 } as const
 const expectedPublicRootSymbols = [
   'colorModePreferenceSchema',
@@ -750,13 +750,13 @@ async function validateFiveBuiltInThemes(): Promise<readonly string[]> {
   const appearanceFiles = await readdir(resolve(rootDirectory, 'apps/web/src/app/appearance'))
 
   if (
-    colorValues.length !== 600 ||
-    colorValues.filter((value) => value.startsWith('{palette.')).length !== 580 ||
+    colorValues.length !== 960 ||
+    colorValues.filter((value) => value.startsWith('{palette.')).length !== 940 ||
     scrimValues.length !== 20 ||
     scrimValues.some((value) => typeof value !== 'string' || value !== 'rgba(0, 0, 0, 0.56)')
   ) {
     violations.push(
-      'Five Built-in Themes must use 580 local palette aliases and 20 unchanged fixed-alpha scrims.',
+      'Five Built-in Themes must use 940 local palette aliases and 20 unchanged fixed-alpha scrims.',
     )
   }
 
@@ -1313,6 +1313,7 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
   if (
     !isDeepStrictEqual(piniaImporters.sort(compareCodePoints), [
       'apps/web/src/app/appearance/appearance.store.ts',
+      'apps/web/src/app/date-time/date-time.store.ts',
       'apps/web/src/app/navigation/navigation-preference.store.ts',
       'apps/web/src/app/providers/pinia.ts',
       'apps/web/src/app/scroll/scroll-preference.store.ts',
@@ -1320,7 +1321,7 @@ async function validateApplicationOrchestration(): Promise<readonly string[]> {
     ])
   ) {
     violations.push(
-      'Pinia imports must remain limited to its Runtime Kernel provider owner, appearance.store.ts, navigation-preference.store.ts and workspace.store.ts.',
+      'Pinia imports must remain limited to its Runtime Kernel provider owner, appearance, date-time, navigation, scroll and workspace stores.',
     )
   }
 
@@ -3102,7 +3103,7 @@ function validateRuntimeContracts(): readonly string[] {
       [...generatedThemeRegistry.customBankVariables].sort(compareCodePoints),
     )
   ) {
-    violations.push('Custom Theme Bank installation escaped its fixed 120-variable allowlist.')
+    violations.push('Custom Theme Bank installation escaped its fixed 192-variable allowlist.')
   }
 
   const firstBankVariable = generatedThemeRegistry.customBankVariables[0]
@@ -3399,7 +3400,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
       const declarations = selectorDeclarations(css, selector)
 
       if (
-        declarations?.size !== 120 ||
+        declarations?.size !== 192 ||
         entry.bank.records.some(
           (record) =>
             declarations.get(record.bankVariable) !== formatThemeBankCssValue(record.resolvedValue),
@@ -3471,8 +3472,8 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
     0,
   )
 
-  if (manifest['schemaVersion'] !== 13 || recordCount !== 657) {
-    violations.push('tokens.manifest.json: current discriminator/count must equal 13/657.')
+  if (manifest['schemaVersion'] !== 13 || recordCount !== 753) {
+    violations.push('tokens.manifest.json: current discriminator/count must equal 13/753.')
   }
 
   const themes = manifest['themes']
@@ -3553,7 +3554,7 @@ async function validateGeneratedThemeBankAndManifest(): Promise<readonly string[
           publicBinding,
         }),
       )
-      if (records.length !== 120 || !isDeepStrictEqual(records, expectedRecords)) {
+      if (records.length !== 192 || !isDeepStrictEqual(records, expectedRecords)) {
         violations.push(
           `tokens.manifest.json: ${expectedEntry.themeId} logical Bank records lost information or order.`,
         )

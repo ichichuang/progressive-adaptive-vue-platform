@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { tableQuerySharingCodec } from '../tables/table-query-sharing-example'
 
 export const routeParamsSchemaRegistry = Object.freeze([
   Object.freeze({
@@ -12,6 +13,7 @@ export const routeParamsSchemaRegistry = Object.freeze([
 ] as const)
 
 export const routeQuerySchemaRegistry = Object.freeze([
+  Object.freeze({ id: 'route-query.table-query-link', schema: tableQuerySharingCodec.querySchema }),
   Object.freeze({
     id: 'route-query.table-editor',
     schema: z

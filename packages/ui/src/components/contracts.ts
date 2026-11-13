@@ -47,6 +47,8 @@ export interface UiAdminShellCopy {
   readonly accordionNavigationModeLabel: string
   readonly switchToLightLabel: string
   readonly switchToDarkLabel: string
+  readonly themePickerLabel?: string
+  readonly themePickerKeyboardHint?: string
   readonly colorModeChangeFailedLabel: string
 }
 

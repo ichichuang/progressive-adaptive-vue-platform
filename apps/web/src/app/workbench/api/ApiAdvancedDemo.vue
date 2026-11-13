@@ -26,9 +26,10 @@ import {
   type AdvancedStreamMode,
   type AdvancedStreamScenario,
 } from './api-advanced-scenarios'
+import ApiUploadDemo from './ApiUploadDemo.vue'
 import type { ApiResult } from '../../../shared/api'
 
-const capability = ref<'hooks' | 'batch' | 'stream'>('hooks')
+const capability = ref<'hooks' | 'batch' | 'stream' | 'upload'>('hooks')
 const { t } = useConsoleI18n()
 const active = ref(true)
 const pending = ref(false)
@@ -62,6 +63,7 @@ const capabilityOptions = computed(() => [
   { value: 'hooks', label: t('apiShowcase.advanced.hooks') },
   { value: 'batch', label: t('apiShowcase.advanced.batch') },
   { value: 'stream', label: t('apiShowcase.advanced.stream') },
+  { value: 'upload', label: t('apiShowcase.upload.title') },
 ])
 const concurrencyOptions = [1, 2, 4].map((value) => ({ value, label: String(value) }))
 const hint = computed(() =>
@@ -198,7 +200,13 @@ onScopeDispose(() => {
         to="#pavp-overlay-root"
       />
     </div>
+    <ApiUploadDemo
+      v-if="capability === 'upload'"
+      :active="active"
+      @controller="connect"
+    />
     <UiScrollArea
+      v-else
       owner-id="architecture-console-content"
       :enabled="active"
       class="flex-1 min-h-0"
@@ -412,6 +420,7 @@ onScopeDispose(() => {
       </div>
     </UiScrollArea>
     <footer
+      v-if="capability !== 'upload'"
       class="shrink-0 grid min-w-0 gap-component-unit"
       data-api-actions
     >

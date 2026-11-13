@@ -75,10 +75,13 @@ function typeScriptLiteral(
   if (typeof value === 'object') {
     const padding = ' '.repeat(indentation)
     const properties = Object.entries(value)
-      .map(
-        ([key, entry]) =>
-          `${' '.repeat(indentation + 2)}${propertyName(key)}: ${typeScriptLiteral(entry, indentation + 2, references)},`,
-      )
+      .map(([key, entry]) => {
+        const prefix = `${' '.repeat(indentation + 2)}${propertyName(key)}:`
+        const literal = typeScriptLiteral(entry, indentation + 2, references)
+        return typeof entry === 'string' && prefix.length + literal.length + 2 > 100
+          ? `${prefix}\n${' '.repeat(indentation + 4)}${literal},`
+          : `${prefix} ${literal},`
+      })
       .join('\n')
 
     return `{\n${properties}\n${padding}}`
@@ -342,7 +345,8 @@ function resolvePaletteValue(value: string, palette: unknown): string {
   for (const key of value.slice('{palette.'.length, -1).split('.')) {
     if (resolved === null || typeof resolved !== 'object')
       throw new Error('Invalid generated palette path.')
-    resolved = (resolved as Readonly<Record<string, unknown>>)[key]
+    const property = key.replace(/-([a-z])/gu, (_, letter: string) => letter.toUpperCase())
+    resolved = (resolved as Readonly<Record<string, unknown>>)[property]
   }
   if (typeof resolved !== 'string') throw new Error('Missing generated palette color.')
   return resolved

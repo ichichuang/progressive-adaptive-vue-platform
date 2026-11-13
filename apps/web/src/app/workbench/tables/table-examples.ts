@@ -50,6 +50,8 @@ export function tableExampleSchema(example: TableExample): UiTableSchema {
     ...(example === 'columns'
       ? {
           columnPreferenceKey: 'showcase-columns',
+          maximizable: true,
+          reorderableColumns: true,
           columnGroups: [
             {
               key: 'product-details',
@@ -92,20 +94,49 @@ export function tableExampleSchema(example: TableExample): UiTableSchema {
       : {}),
     columnSettings: example === 'columns' || example === 'summary' || example === 'configuration',
     selection: example === 'selection' || example === 'theme' ? 'multiple' : 'none',
+    ...(example === 'selection' ? { maxSelection: 3 } : {}),
     ...(example === 'selection' && source.batchActions
       ? { batchActions: source.batchActions }
       : {}),
     columns:
       example === 'columns'
-        ? table.columns.flatMap((column) => {
-            if (column.key === 'title') return [{ ...column, fixed: 'left' as const }]
-            if (column.key === 'category')
-              return [
-                column,
-                { key: 'description', title: 'tableShowcase.description', width: 260 },
-              ]
-            return [column]
-          })
+        ? table.columns
+            .map((column) => ({
+              ...column,
+              resizable: true,
+              width: Math.max(160, column.width ?? 160),
+              minWidth: 160,
+              maxWidth: 600,
+              ...(column.key === 'price' ? { format: { decimalPlaces: 2, prefix: '$' } } : {}),
+              ...(column.key === 'stock' ? { align: 'center' as const } : {}),
+              ...(column.key === 'category'
+                ? {
+                    kind: 'tag' as const,
+                    options: [
+                      { value: 'Design', label: 'Design', tone: 'primary' as const },
+                      { value: 'Engineering', label: 'Engineering', tone: 'success' as const },
+                      { value: 'Research', label: 'Research', tone: 'info' as const },
+                    ],
+                  }
+                : {}),
+            }))
+            .flatMap((column) => {
+              if (column.key === 'title') return [{ ...column, fixed: 'left' as const }]
+              if (column.key === 'category')
+                return [
+                  column,
+                  {
+                    key: 'description',
+                    title: 'tableShowcase.description',
+                    width: 260,
+                    overflow: 'ellipsis' as const,
+                    minWidth: 100,
+                    maxWidth: 600,
+                    resizable: true,
+                  },
+                ]
+              return [column]
+            })
         : table.columns,
     ...(example === 'query'
       ? {
@@ -143,7 +174,7 @@ export const tableExampleApis: Record<TableExample, string> = {
   appearance: 'UiTable · appearance · bordered · rowDividers · columnDividers · striped · density',
   theme: 'UiTable · appearance.headerTone: neutral / soft / solid · selectedKeys · setSelection',
   columns:
-    'UiTable · columnGroups · columnSettings · columnPreferenceKey · setColumnVisibility · moveColumn · resetColumns · table.summary · table.setSummary · summaryCell',
+    'UiTable · columnGroups · columnSettings · columnPreferenceKey · setColumnVisibility · moveColumn · reorderColumn · setColumnWidth · resetColumns · table.summary · table.setSummary · summaryCell',
   summary: 'UiTable · summary · setSummary · summaryCell · page / filtered / server values',
   selection: 'UiTable · selectedKeys · setSelection · useUiTableActions',
   remote: 'useUiTable · resolveUiTableRequest · createTableHttpTransport · summary: page scope',

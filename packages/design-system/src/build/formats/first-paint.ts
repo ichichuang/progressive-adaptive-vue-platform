@@ -492,8 +492,9 @@ ${motionResolutionRuntime}
     if (match === null) return null
     var current = palette
     for (var segment of match[1].split('.')) {
-      if (!isRecord(current) || !Object.prototype.hasOwnProperty.call(current, segment)) return null
-      current = current[segment]
+      var property = segment.replace(/-([a-z])/gu, function (_, letter) { return letter.toUpperCase() })
+      if (!isRecord(current) || !Object.prototype.hasOwnProperty.call(current, property)) return null
+      current = current[property]
     }
     return typeof current === 'string' ? current : null
   }

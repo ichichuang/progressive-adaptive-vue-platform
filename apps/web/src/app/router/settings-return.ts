@@ -79,7 +79,7 @@ export function provideSettingsReturn(): SettingsReturn {
       const result =
         target !== undefined && isLiveWorkspace(target) && source !== undefined
           ? navigation.navigate(source.destination, { workspaceActivation: target })
-          : navigation.navigate(registeredRouteDestination({ name: 'workbench-dashboard' }))
+          : navigation.navigate(registeredRouteDestination({ name: 'workbench-welcome' }))
       pending = result
       void result
         .finally(() => {

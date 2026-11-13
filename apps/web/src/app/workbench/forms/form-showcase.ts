@@ -132,6 +132,15 @@ export const formCapabilities = {
       'apps/web/src/app/workbench/forms/FormExtensionControl.vue',
     ],
   },
+  steps: {
+    hint: 'formCapabilities.steps.hint',
+    purpose: 'formCapabilities.steps.purpose',
+    try: 'formCapabilities.steps.try',
+    api: 'UiFormSchema.steps · activeStepIndex · goNextStep · goBackStep · setActiveStep · validate · submit',
+    boundary: 'formCapabilities.steps.boundary',
+    controls: 'formShowcase.viewMode',
+    sources: ['apps/web/src/pages/component-form-steps.vue'],
+  },
 } as const satisfies Record<
   string,
   {
@@ -158,6 +167,8 @@ export function useFormShowcase() {
     previousOptionsPage: () => t('configuredForm.previousOptionsPage'),
     nextOptionsPage: () => t('configuredForm.nextOptionsPage'),
     optionsPage: (page) => `${t('configuredForm.optionsPage')} ${String(page)}`,
+    previousStep: () => t('configuredForm.previousStep'),
+    nextStep: () => t('configuredForm.nextStep'),
     validating: () => t('configuredForm.validating'),
     submitting: () => t('configuredForm.submitting'),
     submitSucceeded: () => t('configuredForm.submitSucceeded'),
@@ -175,6 +186,9 @@ export function useFormShowcase() {
     moveUp: () => t('configuredForm.moveUp'),
     moveDown: () => t('configuredForm.moveDown'),
     invalidValue: () => t('configuredForm.invalidValue'),
+    chooseAttachment: () => t('formFields.chooseAttachment'),
+    uploadingAttachment: () => t('formFields.processingAttachment'),
+    attachmentFailed: () => t('formFields.attachmentFailed'),
     minItems: (count) => `${t('configuredForm.minItems')} ${String(count)}`,
     maxItems: (count) => `${t('configuredForm.maxItems')} ${String(count)}`,
   }

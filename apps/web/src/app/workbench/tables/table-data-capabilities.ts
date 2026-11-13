@@ -94,6 +94,15 @@ export function tableDataCapabilitySchema(
     id: `table-capability-${example}`,
     rowKey: 'id',
     ...(example === 'sorting'
+      ? {
+          keywordSearch: {
+            parameter: 'keyword',
+            fields: ['title', 'category'],
+            placeholder: 'tableShowcase.keywordHint',
+          },
+        }
+      : {}),
+    ...(example === 'sorting'
       ? { sorting: sorting === 'single' ? ('single' as const) : ('multiple' as const) }
       : {}),
     height: { mode: 'fill' },

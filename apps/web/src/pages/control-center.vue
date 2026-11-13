@@ -39,6 +39,25 @@ const mutation = useAppearanceMutationBoundary()
 const effective = useAppearanceReadBoundary()
 const navigation = useNavigationPreferenceStore()
 const scroll = useScrollPreferenceStore()
+import { useDateTimeStore } from '../app/date-time/date-time.store'
+const dateTimeStore = useDateTimeStore()
+const dateZones = computed(() => [
+  { value: 'system', label: t('dateShowcase.system') },
+  ...[
+    ...new Set([
+      'Asia/Shanghai',
+      'UTC',
+      'America/New_York',
+      'Europe/London',
+      ...(dateTimeStore.preference.timeZone === 'system'
+        ? []
+        : [dateTimeStore.preference.timeZone]),
+    ]),
+  ].map((value) => ({
+    value,
+    label: value,
+  })),
+])
 const language = useConsoleI18n()
 const settingsReturn = useSettingsReturn()
 const { t } = language
@@ -445,7 +464,7 @@ onScopeDispose(() => {
           id="settings-theme"
           tag="section"
           :bordered="false"
-          class="wb-settings-section min-w-0"
+          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-theme-title"
         >
@@ -558,7 +577,7 @@ onScopeDispose(() => {
           id="settings-style"
           tag="section"
           :bordered="false"
-          class="wb-settings-section min-w-0"
+          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-style-title"
         >
@@ -581,7 +600,7 @@ onScopeDispose(() => {
           id="settings-reading"
           tag="section"
           :bordered="false"
-          class="wb-settings-section min-w-0"
+          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-reading-title"
         >
@@ -617,6 +636,45 @@ onScopeDispose(() => {
               </template>
             </SettingsField>
             <SettingsField
+              id="settings-time-zone"
+              class="wb-settings-choice-field"
+              :label="t('dateShowcase.zone')"
+            >
+              <UiRadioCardGroup
+                class="wb-setting-choice"
+                :accessible-label="t('dateShowcase.zone')"
+                :model-value="dateTimeStore.preference.timeZone"
+                :options="dateZones"
+                @update:model-value="
+                  dateTimeStore.update({ ...dateTimeStore.preference, timeZone: $event })
+                "
+              />
+            </SettingsField>
+            <SettingsField
+              id="settings-hour-cycle"
+              class="wb-settings-choice-field"
+              :label="t('dateShowcase.hours')"
+            >
+              <UiRadioCardGroup
+                class="wb-setting-choice"
+                :accessible-label="t('dateShowcase.hours')"
+                :model-value="dateTimeStore.preference.hourCycle"
+                :options="[
+                  { value: 'h12', label: '12h' },
+                  { value: 'h23', label: '24h' },
+                ]"
+                @update:model-value="
+                  dateTimeStore.update({ ...dateTimeStore.preference, hourCycle: $event })
+                "
+              />
+              <span
+                class="text-caption"
+                :class="{ invisible: !dateTimeStore.persistenceFailed }"
+                role="status"
+                v-text="t('dateShowcase.notSaved')"
+              />
+            </SettingsField>
+            <SettingsField
               id="settings-font-scale"
               class="wb-settings-choice-field"
               :label="t('settings.font-scale')"
@@ -640,7 +698,7 @@ onScopeDispose(() => {
           id="settings-layout"
           tag="section"
           :bordered="false"
-          class="wb-settings-section min-w-0"
+          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-layout-title"
         >
@@ -704,7 +762,7 @@ onScopeDispose(() => {
           id="settings-comfort"
           tag="section"
           :bordered="false"
-          class="wb-settings-section min-w-0"
+          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-comfort-title"
         >
@@ -788,7 +846,7 @@ onScopeDispose(() => {
           id="settings-workspace"
           tag="section"
           :bordered="false"
-          class="wb-settings-section min-w-0"
+          class="wb-settings-section wb-overview-card min-w-0 shadow-panel"
           content-class="wb-settings-section-body grid min-w-0 gap-field-gap"
           aria-labelledby="settings-workspace-title"
         >

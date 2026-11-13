@@ -1,5 +1,12 @@
 import * as G2 from '@antv/g2'
 import type { CustomInteraction } from '@antv/g2'
+import type { ChartTourRuntime } from '../../components/chart-tour-runtime'
+import type { UiChartTourTarget } from '../../components/g2-chart-contracts'
+export interface G2TourFocus {
+  readonly runtime: ChartTourRuntime
+  readonly targets: readonly UiChartTourTarget[]
+  readonly seriesTooltip: boolean
+}
 
 type G2Element = ReturnType<typeof G2.selectG2Elements>[number]
 type G2Animation = NonNullable<ReturnType<G2Element['animate']>>
@@ -55,10 +62,11 @@ export function createG2Hover(
   duration: number,
   easing: string,
   movement = true,
+  tour?: G2TourFocus,
 ): NonNullable<CustomInteraction['type']> {
   const interaction: NonNullable<CustomInteraction['type']> =
     () =>
-    ({ container, view }) => {
+    ({ container, view }, _views, emitter) => {
       const plot = G2.selectPlotArea(container)
       const elements = G2.selectG2Elements(plot)
       const elementSet = new Set(elements)
@@ -89,6 +97,54 @@ export function createG2Hover(
       )
       let active: G2Element | null = null
       let disposed = false
+      const tourMatches = new Map<
+        G2Element,
+        { datum: Record<string, unknown>; x: unknown; ids: string[] }
+      >()
+      if (tour) {
+        for (const element of elements) {
+          const kind = 'markType' in element ? element.markType : undefined
+          if (kind !== 'interval' && kind !== 'point') continue
+          const binding = datumOf(element)
+          if (
+            !binding ||
+            typeof binding !== 'object' ||
+            !('markKey' in binding) ||
+            !('index' in binding) ||
+            typeof binding.index !== 'number'
+          )
+            continue
+          const owner = Array.from(view.markState.keys()).find(
+            (mark) => mark.key === binding.markKey,
+          )
+          const data: unknown = owner?.data
+          const datum: unknown = Array.isArray(data) ? data[binding.index] : undefined
+          if (!datum || typeof datum !== 'object' || Array.isArray(datum)) continue
+          const row = datum as Record<string, unknown>
+          const encode: unknown = owner?.encode?.['x']
+          const field =
+            encode &&
+            typeof encode === 'object' &&
+            'field' in encode &&
+            typeof encode.field === 'string'
+              ? encode.field
+              : null
+          tourMatches.set(element, {
+            datum: row,
+            x: field ? row[field] : undefined,
+            ids: tour.targets
+              .filter(
+                (target) => Object.hasOwn(row, target.field) && row[target.field] === target.value,
+              )
+              .map((target) => target.id),
+          })
+        }
+        tour.runtime.available([
+          ...new Set([...tourMatches.values()].flatMap((match) => match.ids)),
+        ])
+      }
+      let autoElements = new Set<G2Element>()
+      let tooltipOwned = false
 
       function hasEncodedSize(element: G2Element): boolean {
         const datum = datumOf(element)
@@ -127,7 +183,7 @@ export function createG2Hover(
           return
         }
         if (!state) {
-          if (!active) return
+          if (!active && autoElements.size === 0) return
           const markType = 'markType' in element ? element.markType : undefined
           const emphasize =
             movement && (markType === 'line' || markType === 'point') && !hasEncodedSize(element)
@@ -156,7 +212,7 @@ export function createG2Hover(
           state.target.opacity === target.opacity &&
           state.target.lineWidth === target.lineWidth
         ) {
-          if (!active && !state.animation) states.delete(element)
+          if (!active && autoElements.size === 0 && !state.animation) states.delete(element)
           return
         }
         // G's cancel clears animated attributes. Capture the displayed frame first,
@@ -171,23 +227,51 @@ export function createG2Hover(
             : null
         state.animation = animation
         if (!animation) {
-          writeStyle(element, active ? target : state.original)
-          if (!active) states.delete(element)
+          writeStyle(element, active || autoElements.size > 0 ? target : state.original)
+          if (!active && autoElements.size === 0) states.delete(element)
           return
         }
         const current = state
         animation.onfinish = () => {
           if (disposed || current.animation !== animation) return
           stopAnimation(current)
-          writeStyle(element, active ? target : current.original)
-          if (!active) states.delete(element)
+          writeStyle(element, active || autoElements.size > 0 ? target : current.original)
+          if (!active && autoElements.size === 0) states.delete(element)
         }
       }
 
       function update() {
         for (const element of elements)
-          transition(element, element === active, active !== null && element !== active)
+          transition(
+            element,
+            active ? element === active : autoElements.has(element),
+            active ? element !== active : autoElements.size > 0 && !autoElements.has(element),
+          )
       }
+
+      function syncTour(): void {
+        const target = tour?.runtime.target()
+        autoElements = new Set(
+          [...tourMatches]
+            .filter(([, match]) => target && match.ids.includes(target.id))
+            .map(([element]) => element),
+        )
+        update()
+        const first = [...autoElements][0]
+        const match = first ? tourMatches.get(first) : undefined
+        if (match && emitter && (!tour?.seriesTooltip || match.x !== undefined)) {
+          tooltipOwned = true
+          emitter.emit('tooltip:show', {
+            nativeEvent: false,
+            data: { data: tour?.seriesTooltip ? { x: match.x } : match.datum },
+          })
+        } else if (tooltipOwned) {
+          tooltipOwned = false
+          emitter?.emit('tooltip:hide', { nativeEvent: false })
+        }
+      }
+      const unsubscribe = tour?.runtime.subscribe(syncTour)
+      syncTour()
 
       function pointerMove(event: { target: unknown }) {
         let target = event.target
@@ -199,17 +283,25 @@ export function createG2Hover(
         update()
       }
 
+      function pointerDown(event: { target: unknown }): void {
+        pointerMove(event)
+        const id = active ? tourMatches.get(active)?.ids[0] : undefined
+        if (id) tour?.runtime.select(id)
+      }
       function pointerLeave() {
         active = null
         update()
       }
 
+      if (tour) plot.addEventListener('pointerdown', pointerDown)
       plot.addEventListener('pointerover', pointerMove)
       plot.addEventListener('pointermove', pointerMove)
       plot.addEventListener('pointerleave', pointerLeave)
       plot.addEventListener('pointerout', pointerLeave)
       return () => {
         disposed = true
+        unsubscribe?.()
+        if (tour) plot.removeEventListener('pointerdown', pointerDown)
         plot.removeEventListener('pointerover', pointerMove)
         plot.removeEventListener('pointermove', pointerMove)
         plot.removeEventListener('pointerleave', pointerLeave)

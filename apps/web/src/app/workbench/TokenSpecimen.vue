@@ -11,6 +11,7 @@ const label = computed(() => t(tokenLabelKeys[props.name]))
 const kind = computed(() => {
   const name = props.name
   if (name.startsWith('color.')) {
+    if (name.startsWith('color.expression.') && name.endsWith('.foreground')) return 'foreground'
     if (name === 'color.border.default') return 'border'
     if (name === 'color.focus.ring') return 'focus'
     if (name.startsWith('color.text.') || name.startsWith('color.control.')) return 'foreground'
@@ -42,6 +43,10 @@ const kind = computed(() => {
     : 'inline-size'
 })
 const pairedBackground = computed(() => {
+  for (const accent of ['accent-a', 'accent-b'] as const)
+    for (const surface of ['soft', 'solid'] as const)
+      if (props.name === `color.expression.${accent}.${surface}.foreground`)
+        return tokens[`color.expression.${accent}.${surface}.background`]
   if (props.name === 'color.text.on-action') return tokens['color.action.primary']
   for (const tone of ['info', 'success', 'warning', 'error'] as const)
     if (props.name === `color.text.on-status.${tone}`) return tokens[`color.status.${tone}`]
@@ -90,7 +95,7 @@ const pairedBackground = computed(() => {
       </span>
       <span
         v-else-if="kind === 'radius'"
-        class="wb-radius-sample border-solid grid place-items-center border-width-default text-control-primary text-title"
+        class="wb-radius-sample grid place-items-center text-control-primary text-title"
       >
         ↗
       </span>
@@ -112,10 +117,8 @@ const pairedBackground = computed(() => {
         v-else-if="kind === 'layer'"
         class="wb-layer-sample relative isolate"
       >
-        <span
-          class="border-solid absolute bg-surface-page border-border-default border-width-default z-overlay"
-        />
-        <span class="border-solid absolute bg-action-primary border-width-default" />
+        <span class="border-solid absolute bg-surface-page z-overlay" />
+        <span class="border-solid absolute bg-action-primary" />
       </span>
       <span
         v-else-if="name.startsWith('typography.')"
@@ -130,8 +133,5 @@ const pairedBackground = computed(() => {
         <span class="rounded-control bg-current block" />
       </span>
     </span>
-    <code class="min-w-0 break-anywhere order-last text-caption text-text-secondary">
-      {{ expression }}
-    </code>
   </UiCopyAction>
 </template>

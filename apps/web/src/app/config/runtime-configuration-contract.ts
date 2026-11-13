@@ -1,3 +1,4 @@
+import { dateTimeSettingsSchema, defaultDateTimeSettings } from '../date-time/date-time-preference'
 import { z } from 'zod'
 import { explicitThemePreferenceSchema, ProductPreferenceDefault } from '@platform/design-system'
 import { consoleLocaleSchema, defaultConsoleLocale } from '../../shared/i18n/locale-contract'
@@ -39,6 +40,7 @@ const runtimePresentationSchema = z.strictObject({
   favicon: publicAssetUrlSchema,
   logo: publicAssetUrlSchema.nullable(),
   locale: consoleLocaleSchema,
+  dateTime: dateTimeSettingsSchema.default(defaultDateTimeSettings),
   appearance: explicitThemePreferenceSchema.shape.appearance.refine(
     (value) => value.theme.registryKind === 'built-in',
     'Deployment defaults must use a bundled built-in theme.',

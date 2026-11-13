@@ -9,6 +9,7 @@ defineProps<{
   readonly title: string
   readonly message: string
   readonly copyValue: string
+  readonly scrollControls?: boolean
 }>()
 defineSlots<{ default: () => unknown; controls?: () => unknown; footer?: () => unknown }>()
 const { t } = useTableShowcase()
@@ -51,10 +52,22 @@ onScopeDispose(() => {
       />
     </template>
     <section
-      class="wb-table-stage rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+      :data-scroll-controls="scrollControls || undefined"
+      :class="scrollControls ? 'layout-narrow:grid layout-regular:flex layout-wide:flex' : 'flex'"
+      class="wb-table-stage rounded-panel flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
     >
+      <UiScrollArea
+        v-if="$slots['controls'] && scrollControls"
+        owner-id="table-showcase-controls"
+        :enabled="active"
+        class="h-auto layout-narrow:h-full"
+      >
+        <div class="wb-form-panel-header min-w-0">
+          <slot name="controls" />
+        </div>
+      </UiScrollArea>
       <div
-        v-if="$slots['controls']"
+        v-else-if="$slots['controls']"
         class="wb-form-panel-header shrink-0 min-w-0"
       >
         <slot name="controls" />

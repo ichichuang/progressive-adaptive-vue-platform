@@ -6,6 +6,7 @@ const formCapabilityRoutes = Object.freeze([
   'component-form-dependencies',
   'component-form-calculations',
   'component-form-structure',
+  'component-form-steps',
   'component-form-validation',
   'component-form-extension',
   'component-form-controls',
@@ -29,6 +30,8 @@ const tableExampleRoutes = Object.freeze([
   'component-table-theme',
   'component-table-columns',
   'component-table-selection',
+  'component-table-tree',
+  'component-table-query-link',
   'component-table-remote',
   'component-table-configuration',
   'component-table-scroll',
@@ -63,6 +66,7 @@ const apiShowcaseRoutes = Object.freeze([
 
 const allProductRoutes = Object.freeze([
   ...apiShowcaseRoutes,
+  'workbench-welcome',
   'workbench-dashboard',
   'workbench-colors',
   'workbench-sizes',
@@ -91,22 +95,28 @@ const allProductRoutes = Object.freeze([
   'component-chart-live-stream',
   'component-chart-live-ranking',
   'component-chart-live-distribution',
+  'component-chart-linked',
+  'component-chart-tour',
+  'component-chart-stage',
 ] as const)
 
 const contentRoutes = Object.freeze([...allProductRoutes, 'control-center'] as const)
 
 const formExampleRoutes = Object.freeze([
   'api-integration',
+  'api-advanced',
   'component-inputs',
   ...formCapabilityRoutes,
   ...tableDataCapabilityRoutes,
   ...combinationRoutes,
   'component-table-editor',
+  'component-table-query-link',
 ] as const)
 
 export const componentExampleConsumers: Readonly<Record<string, readonly string[]>> = Object.freeze(
   {
     UiChartTimeRange: Object.freeze([
+      'component-chart-linked',
       'component-selection',
       'component-chart-trends',
       'component-chart-comparison',
@@ -115,6 +125,8 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-interaction',
     ]),
     UiG2Chart: Object.freeze([
+      'workbench-interactions',
+      'workbench-welcome',
       'component-charts',
       'component-chart-trends',
       'component-chart-comparison',
@@ -124,8 +136,12 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-live-stream',
       'component-chart-live-ranking',
       'component-chart-live-distribution',
+      'component-chart-linked',
+      'component-chart-tour',
+      'component-chart-stage',
+      'workbench-dashboard',
     ]),
-    UiTable: Object.freeze([...tableExampleRoutes, 'api-integration']),
+    UiTable: Object.freeze([...tableExampleRoutes, 'api-integration', 'workbench-interactions']),
     UiTableEditor: Object.freeze([
       'component-combination-modal',
       'component-combination-drawer',
@@ -133,6 +149,7 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-table-editor',
     ]),
     UiCopyAction: Object.freeze([
+      'workbench-dashboard',
       ...apiShowcaseRoutes,
       'workbench-colors',
       'workbench-sizes',
@@ -160,10 +177,13 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-chart-live-stream',
       'component-chart-live-ranking',
       'component-chart-live-distribution',
+      'component-chart-linked',
+      'component-chart-tour',
+      'component-chart-stage',
     ]),
     UiScrollArea: contentRoutes,
-    UiForm: formExampleRoutes,
-    UiFormField: formExampleRoutes,
+    UiForm: Object.freeze([...formExampleRoutes, 'workbench-interactions']),
+    UiFormField: Object.freeze([...formExampleRoutes, 'workbench-interactions']),
     UiWorkspaceTabs: allProductRoutes,
     UiAdminShell: contentRoutes,
     UiPageHeader: Object.freeze([]),
@@ -175,6 +195,8 @@ export const componentExampleConsumers: Readonly<Record<string, readonly string[
       'component-form-controls',
     ]),
     UiSection: Object.freeze(['workbench-interactions', 'component-layout']),
+    UiDisplayStage: Object.freeze(['component-chart-stage']),
+    UiDashboardGrid: Object.freeze(['workbench-dashboard', 'component-chart-stage']),
     UiStatusBadge: Object.freeze(['workbench-dashboard', 'component-showcase', 'component-data']),
   },
 )

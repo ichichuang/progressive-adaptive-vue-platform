@@ -13,7 +13,10 @@ export function themePaletteColorEntries(palette: ThemeColorPalette): ReadonlyMa
     }
     if (value === null || typeof value !== 'object' || Array.isArray(value))
       throw new Error(`${path}: invalid theme palette source.`)
-    for (const [key, item] of Object.entries(value)) collect(item, path ? `${path}.${key}` : key)
+    for (const [key, item] of Object.entries(value)) {
+      const segment = key.replace(/[A-Z]/gu, (letter) => `-${letter.toLowerCase()}`)
+      collect(item, path ? `${path}.${segment}` : segment)
+    }
   }
   collect(palette, '')
   return entries

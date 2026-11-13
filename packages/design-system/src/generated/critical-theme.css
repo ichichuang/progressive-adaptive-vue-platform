@@ -107,6 +107,24 @@
     --ui-theme-bank-dark-enhanced-control-primary: #ffa7e2;
     --ui-theme-bank-dark-enhanced-control-success: #0ce17f;
     --ui-theme-bank-dark-enhanced-control-warning: #ffb53b;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-1: #ff7ad8;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-2: #b29aef;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-3: #63c5d0;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-4: #eaaa80;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-5: #8eaeeb;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-6: #bbca7a;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-7: #e18da4;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-8: #b7aca3;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-foreground: #b8a9dc;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-background: #31213a;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-foreground: #b9abdd;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-background: #5f479a;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-foreground: #78bcc2;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-background: #222a34;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-foreground: #80c0c6;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-background: #0f5f65;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-enhanced-focus-ring: #ffbee8;
     --ui-theme-bank-dark-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-enhanced-status-error: #f6e7e7;
@@ -137,6 +155,24 @@
     --ui-theme-bank-dark-standard-control-primary: #ff7ad8;
     --ui-theme-bank-dark-standard-control-success: #00c46d;
     --ui-theme-bank-dark-standard-control-warning: #e49a00;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-1: #ff7ad8;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-2: #b29aef;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-3: #63c5d0;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-4: #eaaa80;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-5: #8eaeeb;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-6: #bbca7a;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-7: #e18da4;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-8: #b7aca3;
+    --ui-theme-bank-dark-standard-expression-accent-a-foreground: #9782cc;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-background: #31213a;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-foreground: #9883cd;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-background: #7356ba;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-standard-expression-accent-b-foreground: #329aa2;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-background: #222a34;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-foreground: #3a9ea6;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-background: #147f88;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-standard-focus-ring: #ff95dd;
     --ui-theme-bank-dark-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-standard-status-error: #ee9496;
@@ -167,6 +203,24 @@
     --ui-theme-bank-light-enhanced-control-primary: #840069;
     --ui-theme-bank-light-enhanced-control-success: #004f29;
     --ui-theme-bank-light-enhanced-control-warning: #5f3e00;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-1: #a63c8b;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-2: #7356ba;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-3: #168c95;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-4: #c16b43;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-5: #506fb3;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-6: #7d8e38;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-7: #b74f66;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-8: #747a91;
+    --ui-theme-bank-light-enhanced-expression-accent-a-foreground: #56408b;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-background: #f0ecf6;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-foreground: #56408b;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-background: #5f479a;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-enhanced-expression-accent-b-foreground: #0d555b;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-background: #e7f1f3;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-foreground: #0d555b;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-background: #0f5f65;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-enhanced-focus-ring: #930075;
     --ui-theme-bank-light-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-enhanced-status-error: #520001;
@@ -197,6 +251,24 @@
     --ui-theme-bank-light-standard-control-primary: #ae008b;
     --ui-theme-bank-light-standard-control-success: #006d3a;
     --ui-theme-bank-light-standard-control-warning: #7f5400;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-1: #a63c8b;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-2: #7356ba;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-3: #168c95;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-4: #c16b43;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-5: #506fb3;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-6: #7d8e38;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-7: #b74f66;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-8: #747a91;
+    --ui-theme-bank-light-standard-expression-accent-a-foreground: #7356ba;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-background: #f0ecf6;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-foreground: #7356ba;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-background: #7356ba;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-standard-expression-accent-b-foreground: #12767d;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-background: #e7f1f3;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-foreground: #12767d;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-background: #147f88;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-standard-focus-ring: #be0099;
     --ui-theme-bank-light-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-standard-status-error: #920002;
@@ -230,6 +302,24 @@
     --ui-theme-bank-dark-enhanced-control-primary: #a5c4ff;
     --ui-theme-bank-dark-enhanced-control-success: #54df74;
     --ui-theme-bank-dark-enhanced-control-warning: #ffb362;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-1: #7ea9ff;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-2: #58c7b9;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-3: #e69fcb;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-4: #b49ce7;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-5: #e3b55f;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-6: #81bfde;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-7: #ef786b;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-8: #a0baa5;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-foreground: #7dbfba;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-background: #132e38;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-foreground: #82c2bd;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-background: #0f615a;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-foreground: #d5a5c2;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-background: #2c273b;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-foreground: #d7a9c4;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-background: #7e4266;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-enhanced-focus-ring: #b9d1ff;
     --ui-theme-bank-dark-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-enhanced-status-error: #f7eaee;
@@ -260,6 +350,24 @@
     --ui-theme-bank-dark-standard-control-primary: #7ea9ff;
     --ui-theme-bank-dark-standard-control-success: #31c35a;
     --ui-theme-bank-dark-standard-control-warning: #f09300;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-1: #7ea9ff;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-2: #58c7b9;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-3: #e69fcb;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-4: #b49ce7;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-5: #e3b55f;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-6: #81bfde;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-7: #ef786b;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-8: #a0baa5;
+    --ui-theme-bank-dark-standard-expression-accent-a-foreground: #399d96;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-background: #132e38;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-foreground: #3fa099;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-background: #14827a;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-standard-expression-accent-b-foreground: #c078a3;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-background: #2c273b;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-foreground: #c17ba5;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-background: #a95889;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-standard-focus-ring: #92b7ff;
     --ui-theme-bank-dark-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-standard-status-error: #ec92b3;
@@ -290,6 +398,24 @@
     --ui-theme-bank-light-enhanced-control-primary: #0036b4;
     --ui-theme-bank-light-enhanced-control-success: #00501c;
     --ui-theme-bank-light-enhanced-control-warning: #663b00;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-1: #365fc4;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-2: #168c83;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-3: #b45e92;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-4: #8b6ac7;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-5: #b47725;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-6: #507eaf;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-7: #a05261;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-8: #667f73;
+    --ui-theme-bank-light-enhanced-expression-accent-a-foreground: #0e5853;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-background: #e6f2f1;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-foreground: #0e5853;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-background: #0f615a;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-enhanced-expression-accent-b-foreground: #733c5d;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-background: #f5eef2;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-foreground: #733c5d;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-background: #7e4266;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-enhanced-focus-ring: #003dca;
     --ui-theme-bank-light-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-enhanced-status-error: #52001d;
@@ -320,6 +446,24 @@
     --ui-theme-bank-light-standard-control-primary: #004aec;
     --ui-theme-bank-light-standard-control-success: #006e29;
     --ui-theme-bank-light-standard-control-warning: #885100;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-1: #365fc4;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-2: #168c83;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-3: #b45e92;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-4: #8b6ac7;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-5: #b47725;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-6: #507eaf;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-7: #a05261;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-8: #667f73;
+    --ui-theme-bank-light-standard-expression-accent-a-foreground: #137871;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-background: #e6f2f1;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-foreground: #137871;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-background: #14827a;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-standard-expression-accent-b-foreground: #9d527f;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-background: #f5eef2;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-foreground: #9d527f;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-background: #a95889;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-standard-focus-ring: #0e56f9;
     --ui-theme-bank-light-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-standard-status-error: #900036;
@@ -353,6 +497,24 @@
     --ui-theme-bank-dark-enhanced-control-primary: #ffb191;
     --ui-theme-bank-dark-enhanced-control-success: #00debd;
     --ui-theme-bank-dark-enhanced-control-warning: #e7c000;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-1: #ff8a57;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-2: #ed8bb8;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-3: #69c7d4;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-4: #b2a2ea;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-5: #d4bc70;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-6: #95b8e1;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-7: #98c8a0;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-8: #d0a5c1;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-foreground: #dba2b9;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-background: #3f1e22;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-foreground: #dca4ba;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-background: #90375b;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-foreground: #86bac5;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-background: #282827;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-foreground: #8abcc7;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-background: #1c5e6b;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-enhanced-focus-ring: #ffc4ac;
     --ui-theme-bank-dark-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-enhanced-status-error: #f6e8ee;
@@ -383,6 +545,24 @@
     --ui-theme-bank-dark-standard-control-primary: #ff8a57;
     --ui-theme-bank-dark-standard-control-success: #00c2a5;
     --ui-theme-bank-dark-standard-control-warning: #c9a600;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-1: #ff8a57;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-2: #ed8bb8;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-3: #69c7d4;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-4: #b2a2ea;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-5: #d4bc70;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-6: #95b8e1;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-7: #98c8a0;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-8: #d0a5c1;
+    --ui-theme-bank-dark-standard-expression-accent-a-foreground: #c87496;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-background: #3f1e22;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-foreground: #c97597;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-background: #b64573;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-standard-expression-accent-b-foreground: #4a98a8;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-background: #282827;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-foreground: #4e9aaa;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-background: #257d8f;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-standard-focus-ring: #ff9f78;
     --ui-theme-bank-dark-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-standard-status-error: #eb93b9;
@@ -413,6 +593,24 @@
     --ui-theme-bank-light-enhanced-control-primary: #792b00;
     --ui-theme-bank-light-enhanced-control-success: #004e41;
     --ui-theme-bank-light-enhanced-control-warning: #524300;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-1: #a94b25;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-2: #b64573;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-3: #278497;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-4: #7565bd;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-5: #9a7f25;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-6: #527baa;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-7: #5c8a64;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-8: #956c83;
+    --ui-theme-bank-light-enhanced-expression-accent-a-foreground: #813152;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-background: #f6ebef;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-foreground: #813152;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-background: #90375b;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-enhanced-expression-accent-b-foreground: #195461;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-background: #e9f0f2;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-foreground: #195461;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-background: #1c5e6b;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-enhanced-focus-ring: #883200;
     --ui-theme-bank-light-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-enhanced-status-error: #510022;
@@ -443,6 +641,24 @@
     --ui-theme-bank-light-standard-control-primary: #a13d00;
     --ui-theme-bank-light-standard-control-success: #006a5a;
     --ui-theme-bank-light-standard-control-warning: #705c00;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-1: #a94b25;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-2: #b64573;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-3: #278497;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-4: #7565bd;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-5: #9a7f25;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-6: #527baa;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-7: #5c8a64;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-8: #956c83;
+    --ui-theme-bank-light-standard-expression-accent-a-foreground: #b14370;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-background: #f6ebef;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-foreground: #b14370;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-background: #b64573;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-standard-expression-accent-b-foreground: #227485;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-background: #e9f0f2;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-foreground: #227485;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-background: #257d8f;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-standard-focus-ring: #b14300;
     --ui-theme-bank-light-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-standard-status-error: #90003d;
@@ -476,6 +692,24 @@
     --ui-theme-bank-dark-enhanced-control-primary: #00dfad;
     --ui-theme-bank-dark-enhanced-control-success: #9cd700;
     --ui-theme-bank-dark-enhanced-control-warning: #f1bc00;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-1: #00c397;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-2: #65b9df;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-3: #ddb963;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-4: #ae99df;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-5: #e091b8;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-6: #a4c38d;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-7: #e6a07a;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-8: #a0bec9;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-foreground: #8fbad0;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-background: #122e2e;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-foreground: #92bcd1;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-background: #1e5c7c;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-foreground: #d0b07c;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-background: #282f19;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-foreground: #d3b584;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-background: #735018;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-enhanced-focus-ring: #00eeb9;
     --ui-theme-bank-dark-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-enhanced-status-error: #f7edeb;
@@ -506,6 +740,24 @@
     --ui-theme-bank-dark-standard-control-primary: #00c397;
     --ui-theme-bank-dark-standard-control-success: #87bb00;
     --ui-theme-bank-dark-standard-control-warning: #d2a300;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-1: #00c397;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-2: #65b9df;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-3: #ddb963;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-4: #ae99df;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-5: #e091b8;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-6: #a4c38d;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-7: #e6a07a;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-8: #a0bec9;
+    --ui-theme-bank-dark-standard-expression-accent-a-foreground: #5797b9;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-background: #122e2e;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-foreground: #5998ba;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-background: #287aa5;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-standard-expression-accent-b-foreground: #b88739;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-background: #282f19;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-foreground: #ba8b3f;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-background: #986a20;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-standard-focus-ring: #00d1a2;
     --ui-theme-bank-dark-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-standard-status-error: #e89a89;
@@ -536,6 +788,24 @@
     --ui-theme-bank-light-enhanced-control-primary: #00503c;
     --ui-theme-bank-light-enhanced-control-success: #354c00;
     --ui-theme-bank-light-enhanced-control-warning: #574200;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-1: #08785e;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-2: #287aa5;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-3: #b17b25;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-4: #7d62b5;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-5: #b7547a;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-6: #547c47;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-7: #b45e3c;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-8: #68666c;
+    --ui-theme-bank-light-enhanced-expression-accent-a-foreground: #1c5472;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-background: #e8f0f3;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-foreground: #1c5472;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-background: #1e5c7c;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-enhanced-expression-accent-b-foreground: #684916;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-background: #f4f0e8;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-foreground: #684916;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-background: #735018;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-enhanced-focus-ring: #005a44;
     --ui-theme-bank-light-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-enhanced-status-error: #520c00;
@@ -566,6 +836,24 @@
     --ui-theme-bank-light-standard-control-primary: #006b51;
     --ui-theme-bank-light-standard-control-success: #486600;
     --ui-theme-bank-light-standard-control-warning: #755a00;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-1: #08785e;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-2: #287aa5;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-3: #b17b25;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-4: #7d62b5;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-5: #b7547a;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-6: #547c47;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-7: #b45e3c;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-8: #68666c;
+    --ui-theme-bank-light-standard-expression-accent-a-foreground: #257199;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-background: #e8f0f3;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-foreground: #257199;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-background: #287aa5;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-standard-expression-accent-b-foreground: #8e621e;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-background: #f4f0e8;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-foreground: #8e621e;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-background: #986a20;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-standard-focus-ring: #00765a;
     --ui-theme-bank-light-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-standard-status-error: #911900;
@@ -599,6 +887,24 @@
     --ui-theme-bank-dark-enhanced-control-primary: #cab9ff;
     --ui-theme-bank-dark-enhanced-control-success: #08e18b;
     --ui-theme-bank-dark-enhanced-control-warning: #ffb417;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-1: #b59aff;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-2: #68bcee;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-3: #f398cb;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-4: #69c7ad;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-5: #ddbb62;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-6: #8eabf1;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-7: #e6a18a;
+    --ui-theme-bank-dark-enhanced-data-viz-categorical-series-8: #a6b0c7;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-foreground: #89b8dc;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-background: #1c2a41;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-soft-foreground: #8ebbdd;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-background: #1c5988;
+    --ui-theme-bank-dark-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-foreground: #e29ebf;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-background: #362339;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-soft-foreground: #e3a3c2;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-background: #8c3961;
+    --ui-theme-bank-dark-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-enhanced-focus-ring: #d5caff;
     --ui-theme-bank-dark-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-enhanced-status-error: #f7eaec;
@@ -629,6 +935,24 @@
     --ui-theme-bank-dark-standard-control-primary: #b59aff;
     --ui-theme-bank-dark-standard-control-success: #00c478;
     --ui-theme-bank-dark-standard-control-warning: #e09d00;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-1: #b59aff;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-2: #68bcee;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-3: #f398cb;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-4: #69c7ad;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-5: #ddbb62;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-6: #8eabf1;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-7: #e6a18a;
+    --ui-theme-bank-dark-standard-data-viz-categorical-series-8: #a6b0c7;
+    --ui-theme-bank-dark-standard-expression-accent-a-foreground: #4d94cb;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-background: #1c2a41;
+    --ui-theme-bank-dark-standard-expression-accent-a-soft-foreground: #5297cd;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-background: #2679b8;
+    --ui-theme-bank-dark-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-dark-standard-expression-accent-b-foreground: #d36c9e;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-background: #362339;
+    --ui-theme-bank-dark-standard-expression-accent-b-soft-foreground: #d470a1;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-background: #bb4b82;
+    --ui-theme-bank-dark-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-dark-standard-focus-ring: #c0abff;
     --ui-theme-bank-dark-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-dark-standard-status-error: #ec94a7;
@@ -659,6 +983,24 @@
     --ui-theme-bank-light-enhanced-control-primary: #5e00ba;
     --ui-theme-bank-light-enhanced-control-success: #00502e;
     --ui-theme-bank-light-enhanced-control-warning: #5d3f00;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-1: #7743c7;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-2: #287ec0;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-3: #cb528d;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-4: #3a967d;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-5: #ac7a21;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-6: #5467bd;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-7: #a75f4c;
+    --ui-theme-bank-light-enhanced-data-viz-categorical-series-8: #72798e;
+    --ui-theme-bank-light-enhanced-expression-accent-a-foreground: #1a517b;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-background: #e9f1f7;
+    --ui-theme-bank-light-enhanced-expression-accent-a-soft-foreground: #1a517b;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-background: #1c5988;
+    --ui-theme-bank-light-enhanced-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-enhanced-expression-accent-b-foreground: #7e3357;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-background: #f8edf2;
+    --ui-theme-bank-light-enhanced-expression-accent-b-soft-foreground: #7e3357;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-background: #8c3961;
+    --ui-theme-bank-light-enhanced-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-enhanced-focus-ring: #6902cf;
     --ui-theme-bank-light-enhanced-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-enhanced-status-error: #520011;
@@ -689,6 +1031,24 @@
     --ui-theme-bank-light-standard-control-primary: #7727e0;
     --ui-theme-bank-light-standard-control-success: #006d40;
     --ui-theme-bank-light-standard-control-warning: #7c5500;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-1: #7743c7;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-2: #287ec0;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-3: #cb528d;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-4: #3a967d;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-5: #ac7a21;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-6: #5467bd;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-7: #a75f4c;
+    --ui-theme-bank-light-standard-data-viz-categorical-series-8: #72798e;
+    --ui-theme-bank-light-standard-expression-accent-a-foreground: #236fa9;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-background: #e9f1f7;
+    --ui-theme-bank-light-standard-expression-accent-a-soft-foreground: #236fa9;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-background: #2679b8;
+    --ui-theme-bank-light-standard-expression-accent-a-solid-foreground: #f8fdff;
+    --ui-theme-bank-light-standard-expression-accent-b-foreground: #ad4678;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-background: #f8edf2;
+    --ui-theme-bank-light-standard-expression-accent-b-soft-foreground: #ad4678;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-background: #bb4b82;
+    --ui-theme-bank-light-standard-expression-accent-b-solid-foreground: #fffaff;
     --ui-theme-bank-light-standard-focus-ring: #8036ed;
     --ui-theme-bank-light-standard-scrim-viewport: rgba(0, 0, 0, 0.56);
     --ui-theme-bank-light-standard-status-error: #910120;
@@ -735,6 +1095,60 @@
     );
     --ui-theme-bank-effective-enhanced-control-warning: var(
       --ui-theme-bank-dark-enhanced-control-warning
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-1: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-1
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-2: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-2
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-3: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-3
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-4: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-4
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-5: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-5
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-6: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-6
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-7: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-7
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-8: var(
+      --ui-theme-bank-dark-enhanced-data-viz-categorical-series-8
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-foreground: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-a-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-soft-background: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-a-soft-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-soft-foreground: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-a-soft-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-solid-background: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-a-solid-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-solid-foreground: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-a-solid-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-foreground: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-b-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-soft-background: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-b-soft-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-soft-foreground: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-b-soft-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-solid-background: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-b-solid-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-solid-foreground: var(
+      --ui-theme-bank-dark-enhanced-expression-accent-b-solid-foreground
     );
     --ui-theme-bank-effective-enhanced-focus-ring: var(--ui-theme-bank-dark-enhanced-focus-ring);
     --ui-theme-bank-effective-enhanced-scrim-viewport: var(
@@ -821,6 +1235,60 @@
     );
     --ui-theme-bank-effective-standard-control-warning: var(
       --ui-theme-bank-dark-standard-control-warning
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-1: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-1
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-2: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-2
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-3: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-3
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-4: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-4
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-5: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-5
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-6: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-6
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-7: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-7
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-8: var(
+      --ui-theme-bank-dark-standard-data-viz-categorical-series-8
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-foreground: var(
+      --ui-theme-bank-dark-standard-expression-accent-a-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-soft-background: var(
+      --ui-theme-bank-dark-standard-expression-accent-a-soft-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-soft-foreground: var(
+      --ui-theme-bank-dark-standard-expression-accent-a-soft-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-solid-background: var(
+      --ui-theme-bank-dark-standard-expression-accent-a-solid-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-solid-foreground: var(
+      --ui-theme-bank-dark-standard-expression-accent-a-solid-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-foreground: var(
+      --ui-theme-bank-dark-standard-expression-accent-b-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-soft-background: var(
+      --ui-theme-bank-dark-standard-expression-accent-b-soft-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-soft-foreground: var(
+      --ui-theme-bank-dark-standard-expression-accent-b-soft-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-solid-background: var(
+      --ui-theme-bank-dark-standard-expression-accent-b-solid-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-solid-foreground: var(
+      --ui-theme-bank-dark-standard-expression-accent-b-solid-foreground
     );
     --ui-theme-bank-effective-standard-focus-ring: var(--ui-theme-bank-dark-standard-focus-ring);
     --ui-theme-bank-effective-standard-scrim-viewport: var(
@@ -911,6 +1379,60 @@
     --ui-theme-bank-effective-enhanced-control-warning: var(
       --ui-theme-bank-light-enhanced-control-warning
     );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-1: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-1
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-2: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-2
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-3: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-3
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-4: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-4
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-5: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-5
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-6: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-6
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-7: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-7
+    );
+    --ui-theme-bank-effective-enhanced-data-viz-categorical-series-8: var(
+      --ui-theme-bank-light-enhanced-data-viz-categorical-series-8
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-foreground: var(
+      --ui-theme-bank-light-enhanced-expression-accent-a-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-soft-background: var(
+      --ui-theme-bank-light-enhanced-expression-accent-a-soft-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-soft-foreground: var(
+      --ui-theme-bank-light-enhanced-expression-accent-a-soft-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-solid-background: var(
+      --ui-theme-bank-light-enhanced-expression-accent-a-solid-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-a-solid-foreground: var(
+      --ui-theme-bank-light-enhanced-expression-accent-a-solid-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-foreground: var(
+      --ui-theme-bank-light-enhanced-expression-accent-b-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-soft-background: var(
+      --ui-theme-bank-light-enhanced-expression-accent-b-soft-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-soft-foreground: var(
+      --ui-theme-bank-light-enhanced-expression-accent-b-soft-foreground
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-solid-background: var(
+      --ui-theme-bank-light-enhanced-expression-accent-b-solid-background
+    );
+    --ui-theme-bank-effective-enhanced-expression-accent-b-solid-foreground: var(
+      --ui-theme-bank-light-enhanced-expression-accent-b-solid-foreground
+    );
     --ui-theme-bank-effective-enhanced-focus-ring: var(--ui-theme-bank-light-enhanced-focus-ring);
     --ui-theme-bank-effective-enhanced-scrim-viewport: var(
       --ui-theme-bank-light-enhanced-scrim-viewport
@@ -997,6 +1519,60 @@
     --ui-theme-bank-effective-standard-control-warning: var(
       --ui-theme-bank-light-standard-control-warning
     );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-1: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-1
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-2: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-2
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-3: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-3
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-4: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-4
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-5: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-5
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-6: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-6
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-7: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-7
+    );
+    --ui-theme-bank-effective-standard-data-viz-categorical-series-8: var(
+      --ui-theme-bank-light-standard-data-viz-categorical-series-8
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-foreground: var(
+      --ui-theme-bank-light-standard-expression-accent-a-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-soft-background: var(
+      --ui-theme-bank-light-standard-expression-accent-a-soft-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-soft-foreground: var(
+      --ui-theme-bank-light-standard-expression-accent-a-soft-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-solid-background: var(
+      --ui-theme-bank-light-standard-expression-accent-a-solid-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-a-solid-foreground: var(
+      --ui-theme-bank-light-standard-expression-accent-a-solid-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-foreground: var(
+      --ui-theme-bank-light-standard-expression-accent-b-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-soft-background: var(
+      --ui-theme-bank-light-standard-expression-accent-b-soft-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-soft-foreground: var(
+      --ui-theme-bank-light-standard-expression-accent-b-soft-foreground
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-solid-background: var(
+      --ui-theme-bank-light-standard-expression-accent-b-solid-background
+    );
+    --ui-theme-bank-effective-standard-expression-accent-b-solid-foreground: var(
+      --ui-theme-bank-light-standard-expression-accent-b-solid-foreground
+    );
     --ui-theme-bank-effective-standard-focus-ring: var(--ui-theme-bank-light-standard-focus-ring);
     --ui-theme-bank-effective-standard-scrim-viewport: var(
       --ui-theme-bank-light-standard-scrim-viewport
@@ -1072,6 +1648,60 @@
     --ui-color-control-primary: var(--ui-theme-bank-effective-enhanced-control-primary);
     --ui-color-control-success: var(--ui-theme-bank-effective-enhanced-control-success);
     --ui-color-control-warning: var(--ui-theme-bank-effective-enhanced-control-warning);
+    --ui-color-data-viz-categorical-series-1: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-1
+    );
+    --ui-color-data-viz-categorical-series-2: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-2
+    );
+    --ui-color-data-viz-categorical-series-3: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-3
+    );
+    --ui-color-data-viz-categorical-series-4: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-4
+    );
+    --ui-color-data-viz-categorical-series-5: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-5
+    );
+    --ui-color-data-viz-categorical-series-6: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-6
+    );
+    --ui-color-data-viz-categorical-series-7: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-7
+    );
+    --ui-color-data-viz-categorical-series-8: var(
+      --ui-theme-bank-effective-enhanced-data-viz-categorical-series-8
+    );
+    --ui-color-expression-accent-a-foreground: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-a-foreground
+    );
+    --ui-color-expression-accent-a-soft-background: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-a-soft-background
+    );
+    --ui-color-expression-accent-a-soft-foreground: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-a-soft-foreground
+    );
+    --ui-color-expression-accent-a-solid-background: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-a-solid-background
+    );
+    --ui-color-expression-accent-a-solid-foreground: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-a-solid-foreground
+    );
+    --ui-color-expression-accent-b-foreground: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-b-foreground
+    );
+    --ui-color-expression-accent-b-soft-background: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-b-soft-background
+    );
+    --ui-color-expression-accent-b-soft-foreground: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-b-soft-foreground
+    );
+    --ui-color-expression-accent-b-solid-background: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-b-solid-background
+    );
+    --ui-color-expression-accent-b-solid-foreground: var(
+      --ui-theme-bank-effective-enhanced-expression-accent-b-solid-foreground
+    );
     --ui-color-focus-ring: var(--ui-theme-bank-effective-enhanced-focus-ring);
     --ui-color-scrim-viewport: var(--ui-theme-bank-effective-enhanced-scrim-viewport);
     --ui-color-status-error: var(--ui-theme-bank-effective-enhanced-status-error);
@@ -1113,6 +1743,60 @@
     --ui-color-control-primary: var(--ui-theme-bank-effective-standard-control-primary);
     --ui-color-control-success: var(--ui-theme-bank-effective-standard-control-success);
     --ui-color-control-warning: var(--ui-theme-bank-effective-standard-control-warning);
+    --ui-color-data-viz-categorical-series-1: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-1
+    );
+    --ui-color-data-viz-categorical-series-2: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-2
+    );
+    --ui-color-data-viz-categorical-series-3: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-3
+    );
+    --ui-color-data-viz-categorical-series-4: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-4
+    );
+    --ui-color-data-viz-categorical-series-5: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-5
+    );
+    --ui-color-data-viz-categorical-series-6: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-6
+    );
+    --ui-color-data-viz-categorical-series-7: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-7
+    );
+    --ui-color-data-viz-categorical-series-8: var(
+      --ui-theme-bank-effective-standard-data-viz-categorical-series-8
+    );
+    --ui-color-expression-accent-a-foreground: var(
+      --ui-theme-bank-effective-standard-expression-accent-a-foreground
+    );
+    --ui-color-expression-accent-a-soft-background: var(
+      --ui-theme-bank-effective-standard-expression-accent-a-soft-background
+    );
+    --ui-color-expression-accent-a-soft-foreground: var(
+      --ui-theme-bank-effective-standard-expression-accent-a-soft-foreground
+    );
+    --ui-color-expression-accent-a-solid-background: var(
+      --ui-theme-bank-effective-standard-expression-accent-a-solid-background
+    );
+    --ui-color-expression-accent-a-solid-foreground: var(
+      --ui-theme-bank-effective-standard-expression-accent-a-solid-foreground
+    );
+    --ui-color-expression-accent-b-foreground: var(
+      --ui-theme-bank-effective-standard-expression-accent-b-foreground
+    );
+    --ui-color-expression-accent-b-soft-background: var(
+      --ui-theme-bank-effective-standard-expression-accent-b-soft-background
+    );
+    --ui-color-expression-accent-b-soft-foreground: var(
+      --ui-theme-bank-effective-standard-expression-accent-b-soft-foreground
+    );
+    --ui-color-expression-accent-b-solid-background: var(
+      --ui-theme-bank-effective-standard-expression-accent-b-solid-background
+    );
+    --ui-color-expression-accent-b-solid-foreground: var(
+      --ui-theme-bank-effective-standard-expression-accent-b-solid-foreground
+    );
     --ui-color-focus-ring: var(--ui-theme-bank-effective-standard-focus-ring);
     --ui-color-scrim-viewport: var(--ui-theme-bank-effective-standard-scrim-viewport);
     --ui-color-status-error: var(--ui-theme-bank-effective-standard-status-error);

@@ -380,7 +380,10 @@ const workbenchVisualAuthorityRules = {
     disallowOutsideAuthorities(
       [...fontSizeVariables, specimenVariable, '--ui-workbench-display-font-size'],
       ['0'],
-      [zeroLengthPattern],
+      [
+        zeroLengthPattern,
+        String.raw`clamp\(\s*var\(--ui-font-size-title\),\s*min\(10cqi,\s*14cqb\),\s*calc\(var\(--ui-workbench-display-font-size\)\s*\*\s*2\)\s*\)`,
+      ],
     ),
   ],
   'font-weight': [disallowOutsideAuthorities([...fontWeightVariables, specimenVariable])],

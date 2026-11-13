@@ -90,6 +90,23 @@ export function previewValues(
           continue
         }
       }
+      if (
+        node.kind === 'rating' &&
+        (typeof value !== 'number' ||
+          value > (node.count ?? 5) ||
+          !Number.isInteger(value * (node.allowHalf ? 2 : 1)))
+      ) {
+        resetFields.push(node.label)
+        continue
+      }
+      if (
+        node.kind === 'attachment' &&
+        before.kind === 'attachment' &&
+        before.source !== node.source
+      ) {
+        resetFields.push(node.label)
+        continue
+      }
       result[node.name] = JSON.parse(JSON.stringify(value)) as UiFormValue
     }
   }

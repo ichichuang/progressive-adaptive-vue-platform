@@ -155,6 +155,10 @@ function parseConfiguration(
         'select',
         'multi-select',
         'custom',
+        'mask',
+        'slider',
+        'rating',
+        'attachment',
       ])
       keys(node, [
         ...shared,
@@ -166,11 +170,45 @@ function parseConfiguration(
         'max',
         'step',
         'rules',
+        ...(kind === 'mask' ? ['mask'] : []),
+        ...(kind === 'rating' ? ['count', 'allowHalf'] : []),
+        ...(kind === 'attachment' ? ['source', 'accept', 'maxFiles', 'maxSize'] : []),
       ])
+      if (kind === 'mask') {
+        text(node['mask'])
+        if (!/[#A*]/u.test(node['mask'] as string) || (node['mask'] as string).length > 128)
+          throw error('A mask requires at least one #, A or * slot and at most 128 characters.')
+      }
+      if (kind === 'slider') {
+        number(node['min'])
+        number(node['max'])
+        if ((node['min'] as number) >= (node['max'] as number))
+          throw error('A slider requires increasing bounds.')
+      }
+      if (kind === 'rating') {
+        if (node['count'] !== undefined) {
+          number(node['count'], true)
+          if ((node['count'] as number) < 1 || (node['count'] as number) > 10)
+            throw error('Rating count must be 1–10.')
+        }
+        if (node['allowHalf'] !== undefined && typeof node['allowHalf'] !== 'boolean')
+          throw error('Invalid rating precision.')
+      }
+      if (kind === 'attachment') {
+        text(node['source'])
+        if (!(node['source'] as string).trim()) throw error('Attachment source is required.')
+        if (node['accept'] !== undefined) text(node['accept'])
+        for (const key of ['maxFiles', 'maxSize'])
+          if (node[key] !== undefined) {
+            number(node[key], true)
+            if ((node[key] as number) < 1) throw error('Attachment bounds must be positive.')
+          }
+      }
       if (node['placeholder'] !== undefined) text(node['placeholder'])
       for (const key of ['min', 'max', 'step'])
         if (node[key] !== undefined) {
-          if (kind !== 'number') throw error('Numeric hints require a number field.')
+          if (kind !== 'number' && kind !== 'slider')
+            throw error('Numeric hints require a number field.')
           number(node[key])
         }
       if (typeof node['step'] === 'number' && node['step'] <= 0)
@@ -231,10 +269,16 @@ function parseConfiguration(
             rules['minLength'] > rules['maxLength'])
         )
           throw error('Invalid validation bounds.')
-        if (kind !== 'number' && (rules['min'] !== undefined || rules['max'] !== undefined))
+        if (
+          kind !== 'number' &&
+          kind !== 'slider' &&
+          (rules['min'] !== undefined || rules['max'] !== undefined)
+        )
           throw error('Numeric rules require a number field.')
         if (
-          !['text', 'textarea', 'multi-select', 'checkbox-group'].includes(String(kind)) &&
+          !['text', 'textarea', 'mask', 'attachment', 'multi-select', 'checkbox-group'].includes(
+            String(kind),
+          ) &&
           (rules['minLength'] !== undefined || rules['maxLength'] !== undefined)
         )
           throw error('Length rules require text or multiple selection.')
@@ -244,11 +288,47 @@ function parseConfiguration(
     }
   }
   const schema = record(cloned)
-  keys(schema, ['fields', 'columns'])
+  keys(schema, ['fields', 'columns', 'steps'])
   if (schema['columns'] !== undefined && schema['columns'] !== 1 && schema['columns'] !== 2)
     throw error('Invalid form columns.')
   fields(schema['fields'])
   const parsed = cloned as UiFormSchema
+  const topLevelNames = new Set(parsed.fields.map((node) => node.name))
+  if (schema['steps'] !== undefined) {
+    if (!Array.isArray(schema['steps']) || schema['steps'].length === 0)
+      throw error('Form steps must be a non-empty array.')
+    const stepNames = new Set<string>()
+    const claimed = new Set<string>()
+    for (const raw of schema['steps']) {
+      const step = record(raw)
+      keys(step, ['name', 'label', 'description', 'fields'])
+      path(step['name'])
+      if (
+        (step['name'] as string).includes('.') ||
+        /^\d+$/u.test(step['name'] as string) ||
+        stepNames.has(step['name'] as string)
+      )
+        throw error('Form step names must be unique local keys.')
+      stepNames.add(step['name'] as string)
+      text(step['label'])
+      if (step['description'] !== undefined) text(step['description'])
+      if (!Array.isArray(step['fields']) || step['fields'].length === 0)
+        throw error('Each form step requires a non-empty field list.')
+      const local = new Set<string>()
+      for (const fieldName of step['fields']) {
+        text(fieldName)
+        if (local.has(fieldName as string)) throw error('Duplicate field in a form step.')
+        local.add(fieldName as string)
+        if (!topLevelNames.has(fieldName as string))
+          throw error(`Unknown form step field: ${String(fieldName)}`)
+        if (claimed.has(fieldName as string))
+          throw error(`Form step field claimed twice: ${String(fieldName)}`)
+        claimed.add(fieldName as string)
+      }
+    }
+    for (const name of topLevelNames)
+      if (!claimed.has(name)) throw error(`Form field missing from steps: ${name}`)
+  }
   const declarations: { node: UiFormNode; path: string; group: string }[] = []
   function declare(nodes: readonly UiFormNode[], group = ''): void {
     for (const node of nodes) {

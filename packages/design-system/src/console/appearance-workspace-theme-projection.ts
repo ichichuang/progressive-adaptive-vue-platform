@@ -14,6 +14,8 @@ import {
 import type { ThemeReference } from '../schema/preference.schema'
 
 export interface AppearanceThemePreviewSwatches {
+  readonly accentA: string
+  readonly accentB: string
   readonly surfacePage: string
   readonly surfacePanel: string
   readonly onAction: string
@@ -92,6 +94,18 @@ function projectSwatches(
   )
 
   return Object.freeze({
+    accentA: requiredSwatch(
+      entry,
+      colorMode,
+      contrast,
+      'color.expression.accent-a.solid.background',
+    ),
+    accentB: requiredSwatch(
+      entry,
+      colorMode,
+      contrast,
+      'color.expression.accent-b.solid.background',
+    ),
     surfacePage: requiredSwatch(entry, colorMode, contrast, 'color.surface.page'),
     surfacePanel: requiredSwatch(entry, colorMode, contrast, 'color.surface.panel'),
     actionPrimary: requiredSwatch(entry, colorMode, contrast, 'color.action.primary'),

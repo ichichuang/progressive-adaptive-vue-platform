@@ -488,6 +488,96 @@
           }
         }
       }
+    },
+    "expression": {
+      "accent-a": {
+        "foreground": {
+          "$type": "color",
+          "$value": "{color.palette.expression.accent-a.foreground}"
+        },
+        "soft": {
+          "background": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-a.soft.background}"
+          },
+          "foreground": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-a.soft.foreground}"
+          }
+        },
+        "solid": {
+          "background": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-a.solid.background}"
+          },
+          "foreground": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-a.solid.foreground}"
+          }
+        }
+      },
+      "accent-b": {
+        "foreground": {
+          "$type": "color",
+          "$value": "{color.palette.expression.accent-b.foreground}"
+        },
+        "soft": {
+          "background": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-b.soft.background}"
+          },
+          "foreground": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-b.soft.foreground}"
+          }
+        },
+        "solid": {
+          "background": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-b.solid.background}"
+          },
+          "foreground": {
+            "$type": "color",
+            "$value": "{color.palette.expression.accent-b.solid.foreground}"
+          }
+        }
+      }
+    },
+    "data-viz": {
+      "categorical": {
+        "series-1": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-1}"
+        },
+        "series-2": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-2}"
+        },
+        "series-3": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-3}"
+        },
+        "series-4": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-4}"
+        },
+        "series-5": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-5}"
+        },
+        "series-6": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-6}"
+        },
+        "series-7": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-7}"
+        },
+        "series-8": {
+          "$type": "color",
+          "$value": "{color.palette.data-viz.categorical.series-8}"
+        }
+      }
     }
   }
 }

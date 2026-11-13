@@ -18,6 +18,10 @@ export const builderKinds = {
   text: 'formBuilder.text',
   textarea: 'formBuilder.textarea',
   number: 'formBuilder.number',
+  mask: 'formFields.reference',
+  slider: 'formFields.progress',
+  rating: 'formFields.rating',
+  attachment: 'formFields.attachments',
   switch: 'formBuilder.switch',
   date: 'formBuilder.date',
   'date-range': 'formBuilder.dateRange',
@@ -466,7 +470,15 @@ export function useFormBuilder(t: ConsoleTranslate) {
                 { value: 'option2', label: `${t('formBuilder.option')} 2` },
               ],
             }
-          : { ...base, kind }
+          : kind === 'mask'
+            ? { ...base, kind, mask: 'AAA-####', placeholder: 'ABC-1234' }
+            : kind === 'slider'
+              ? { ...base, kind, min: 0, max: 100, step: 1 }
+              : kind === 'rating'
+                ? { ...base, kind, count: 5, allowHalf: true }
+                : kind === 'attachment'
+                  ? { ...base, kind, source: 'attachments', maxFiles: 3, maxSize: 5242880 }
+                  : { ...base, kind }
     commit(
       {
         ...schema.value,

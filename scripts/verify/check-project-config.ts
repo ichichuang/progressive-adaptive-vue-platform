@@ -2606,6 +2606,7 @@ async function validateArchitectureConsoleUiPackage(): Promise<void> {
       '@antv/g2': 'catalog:',
       '@platform/design-system': 'workspace:*',
       '@vueuse/core': 'catalog:',
+      gridstack: 'catalog:',
       lenis: 'catalog:',
       'motion-v': 'catalog:',
       'naive-ui': 'catalog:',

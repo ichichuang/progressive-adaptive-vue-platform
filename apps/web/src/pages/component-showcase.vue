@@ -143,7 +143,7 @@ const categories = computed(() =>
     >
       <NCard
         :bordered="false"
-        class="col-span-full min-w-0"
+        class="wb-overview-card col-span-full min-w-0 shadow-panel"
         content-class="grid min-w-0 content-center gap-content-gap"
       >
         <h2 class="font-title-weight m-0 text-subheading">
@@ -176,7 +176,7 @@ const categories = computed(() =>
             :key="capability.destination.name"
             :bordered="false"
             hoverable
-            class="min-w-0"
+            class="wb-overview-card min-w-0 shadow-panel"
             content-class="flex min-w-0 flex-col gap-content-gap"
           >
             <h3 class="font-title-weight m-0 text-subheading">
@@ -184,9 +184,6 @@ const categories = computed(() =>
             </h3>
             <p class="m-0 text-text-secondary">
               {{ capability.description }}
-            </p>
-            <p class="m-0 text-caption text-text-secondary">
-              {{ capability.note }}
             </p>
             <div class="mt-auto flex flex-wrap items-center justify-between gap-content-gap">
               <NButton
@@ -215,77 +212,73 @@ const categories = computed(() =>
         :key="category.destination.name"
         :bordered="false"
         hoverable
-        class="min-w-0"
-        content-class="grid grid-cols-1 min-w-0 gap-content-gap"
+        class="wb-overview-card min-w-0 shadow-panel"
+        content-class="grid grid-cols-1 min-w-0 gap-content-gap h-full"
       >
-        <div
-          class="rounded-control flex w-max items-center justify-center bg-surface-page min-h-target-enhanced min-w-target-enhanced text-control-primary"
-        >
+        <div class="flex items-center justify-between gap-content-gap">
           <span
-            v-if="category.destination.name === 'component-actions'"
-            class="i-lucide-sparkles"
+            class="wb-capability-mark rounded-control flex items-center justify-center bg-surface-page min-h-target-enhanced min-w-target-enhanced text-control-primary"
             aria-hidden="true"
-          />
-          <span
-            v-else-if="category.destination.name === 'component-inputs'"
-            class="i-lucide-type"
-            aria-hidden="true"
-          />
-          <span
-            v-else-if="category.destination.name === 'component-selection'"
-            class="i-lucide-swatch-book"
-            aria-hidden="true"
-          />
-          <span
-            v-else-if="category.destination.name === 'component-navigation'"
-            class="i-lucide-route"
-            aria-hidden="true"
-          />
-          <span
-            v-else-if="category.destination.name === 'component-data'"
-            class="i-lucide-database"
-            aria-hidden="true"
-          />
-          <span
-            v-else-if="category.destination.name === 'component-feedback'"
-            class="i-lucide-workflow"
-            aria-hidden="true"
-          />
-          <span
-            v-else
-            class="i-lucide-panels-top-left"
-            aria-hidden="true"
+          >
+            <span
+              v-if="category.destination.name === 'component-actions'"
+              class="i-lucide-sparkles"
+            />
+            <span
+              v-else-if="category.destination.name === 'component-inputs'"
+              class="i-lucide-type"
+            />
+            <span
+              v-else-if="category.destination.name === 'component-selection'"
+              class="i-lucide-swatch-book"
+            />
+            <span
+              v-else-if="category.destination.name === 'component-navigation'"
+              class="i-lucide-route"
+            />
+            <span
+              v-else-if="category.destination.name === 'component-data'"
+              class="i-lucide-database"
+            />
+            <span
+              v-else-if="category.destination.name === 'component-feedback'"
+              class="i-lucide-workflow"
+            />
+            <span
+              v-else
+              class="i-lucide-panels-top-left"
+            />
+          </span>
+          <UiCopyAction
+            variant="tertiary"
+            :value="category.componentNames"
+            :label="t('formShowcase.copyAI')"
+            :copy-label="t('workbench.copy')"
+            :success-label="t('workbench.copied')"
+            :failure-label="t('workbench.copyFailed')"
           />
         </div>
-        <div class="grid gap-content-gap">
+        <div class="grid gap-component-unit">
           <h2 class="font-title-weight m-0 text-subheading">
             {{ category.label }}
           </h2>
           <p class="m-0 text-caption text-text-secondary">
             {{ category.hint }}
           </p>
-          <div class="flex flex-wrap gap-content-gap">
-            <UiCopyAction
-              v-for="name in category.componentNames.split(' ').slice(0, 3)"
-              :key="name"
-              variant="text"
-              :value="name"
-              :label="name"
-              :copy-label="t('workbench.copy')"
-              :success-label="t('workbench.copied')"
-              :failure-label="t('workbench.copyFailed')"
-            />
-          </div>
         </div>
         <NButton
           tag="a"
-          text
           type="primary"
-          class="mt-auto self-start justify-self-start"
+          secondary
+          class="mt-auto self-start justify-self-start min-h-target-enhanced"
           :href="navigation.resolveHref(category.destination)"
           @click="activate($event, category.destination)"
         >
-          {{ t('showcase.open') }} ↗
+          {{ t('showcase.open') }}
+          <span
+            class="i-lucide-arrow-up-right"
+            aria-hidden="true"
+          />
         </NButton>
       </NCard>
       <NCard

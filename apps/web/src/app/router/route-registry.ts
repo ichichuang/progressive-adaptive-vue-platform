@@ -354,6 +354,7 @@ const formWorkspaceRoutes = Object.freeze([
   defineFormWorkspaceRoute('dependencies'),
   defineFormWorkspaceRoute('calculations'),
   defineFormWorkspaceRoute('structure'),
+  defineFormWorkspaceRoute('steps'),
   defineFormWorkspaceRoute('validation'),
   defineFormWorkspaceRoute('extension'),
   defineFormWorkspaceRoute('controls'),
@@ -366,9 +367,17 @@ const formWorkspaceRoutes = Object.freeze([
 
 export const routeRegistry = Object.freeze([
   defineConsoleWorkspaceRoute({
-    name: 'workbench-dashboard',
+    name: 'workbench-welcome',
     pathPattern: '/',
     sourcePath: 'apps/web/src/pages/index.vue',
+    meta: {
+      telemetryName: 'route.workbench.welcome',
+    },
+  }),
+  defineConsoleWorkspaceRoute({
+    name: 'workbench-dashboard',
+    pathPattern: '/dashboard',
+    sourcePath: 'apps/web/src/pages/dashboard.vue',
     meta: {
       telemetryName: 'route.workbench.dashboard',
     },
@@ -411,12 +420,20 @@ export const routeRegistry = Object.freeze([
   defineChartWorkspaceRoute('live-stream'),
   defineChartWorkspaceRoute('live-ranking'),
   defineChartWorkspaceRoute('live-distribution'),
+  defineChartWorkspaceRoute('linked'),
+  defineChartWorkspaceRoute('tour'),
+  defineChartWorkspaceRoute('stage'),
   ...formWorkspaceRoutes,
   defineComponentWorkspaceRoute('table'),
   defineTableExampleRoute('table', 'appearance'),
   defineTableExampleRoute('table', 'theme'),
   defineTableExampleRoute('table', 'columns'),
   defineTableExampleRoute('table', 'selection'),
+  defineTableExampleRoute('table', 'tree'),
+  defineRoute({
+    ...defineTableExampleRoute('table', 'query-link'),
+    querySchemaId: 'route-query.table-query-link',
+  }),
   defineTableExampleRoute('table', 'remote'),
   defineTableExampleRoute('table', 'configuration'),
   defineTableExampleRoute('table', 'overview'),
@@ -674,6 +691,7 @@ export const consoleNavigationRegistry = Object.freeze([
     id: 'workbench',
     labelKey: 'navigation.workbench',
     items: Object.freeze([
+      defineNavigationItem('workbench-welcome', 'i-lucide-map'),
       defineNavigationItem('workbench-dashboard', 'i-lucide-layout-dashboard'),
     ]),
   }),
@@ -734,6 +752,9 @@ export const consoleNavigationRegistry = Object.freeze([
           defineNavigationItem('component-chart-live-stream', 'i-lucide-database'),
           defineNavigationItem('component-chart-live-ranking', 'i-lucide-database'),
           defineNavigationItem('component-chart-live-distribution', 'i-lucide-database'),
+          defineNavigationItem('component-chart-linked', 'i-lucide-database'),
+          defineNavigationItem('component-chart-tour', 'i-lucide-database'),
+          defineNavigationItem('component-chart-stage', 'i-lucide-database'),
         ]),
       }),
       Object.freeze({
@@ -760,6 +781,8 @@ export const consoleNavigationRegistry = Object.freeze([
           defineNavigationItem('component-table-columns', 'i-lucide-database'),
           defineNavigationItem('component-table-sorting', 'i-lucide-database'),
           defineNavigationItem('component-table-selection', 'i-lucide-database'),
+          defineNavigationItem('component-table-tree', 'i-lucide-list-tree'),
+          defineNavigationItem('component-table-query-link', 'i-lucide-link'),
           defineNavigationItem('component-table-rendering', 'i-lucide-database'),
           defineNavigationItem('component-table-summary', 'i-lucide-database'),
           defineNavigationItem('component-table-virtual', 'i-lucide-database'),

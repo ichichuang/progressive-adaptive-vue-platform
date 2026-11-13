@@ -10,6 +10,7 @@ import {
   zoomUiChartTimeRange,
   UiG2Chart,
   UiScrollArea,
+  type UiG2ChartHandle,
   type UiG2ChartOptions,
   type UiScrollController,
 } from '@platform/ui'
@@ -42,6 +43,9 @@ const narrow = ref(false)
 const showData = ref(false)
 const error = ref(false)
 const rendered = ref(false)
+const chart = ref<UiG2ChartHandle | null>(null)
+const exporting = ref(false)
+const exportFailed = ref(false)
 const timelineStopped = ref(false)
 const active = ref(true)
 const range = ref<[number, number]>([0, chartSampleHours - 1])
@@ -57,18 +61,15 @@ const hiddenCategories = ref<string[]>([])
 const compositionData = computed(() =>
   example.value.data.filter((row) => !hiddenCategories.value.includes(row.key)),
 )
-const compositionColors = computed(() => {
-  const roles = appearance.snapshot.value.colorPalette.roles
-  return [roles.primary, roles.info, roles.success, roles.warning, roles.error].map(
-    (role) => role.foreground.default,
-  )
-})
+const compositionColors = computed(() =>
+  Object.values(appearance.snapshot.value.colorPalette.dataViz.categorical),
+)
 const compositionColorClasses = [
-  'text-control-primary',
-  'text-control-info',
-  'text-control-success',
-  'text-control-warning',
-  'text-control-error',
+  'bg-data-viz-categorical-series-1',
+  'bg-data-viz-categorical-series-2',
+  'bg-data-viz-categorical-series-3',
+  'bg-data-viz-categorical-series-4',
+  'bg-data-viz-categorical-series-5',
 ]
 const compositionTotal = computed(() =>
   compositionData.value.reduce((sum, row) => sum + row.value, 0),
@@ -195,6 +196,7 @@ const label = computed(
   () => `${t(chartKindCopy[kind.value].title)}. ${t(chartKindCopy[kind.value].description)}`,
 )
 const status = computed(() => {
+  if (exportFailed.value) return t('chartExamples.exportFailed')
   if (error.value) return t('chartExamples.renderFailed')
   if (showData.value) return t('chartExamples.dataView')
   if (trackingRange.value) return t('chartExamples.trackingRange')
@@ -224,6 +226,43 @@ function restart(): void {
   timelineStopped.value = false
   rendered.value = false
   error.value = false
+}
+const canRestore = computed(() =>
+  hasRange.value
+    ? range.value[0] !== 0 || range.value[1] !== chartSampleHours - 1
+    : hiddenCategories.value.length > 0,
+)
+function restoreView(): void {
+  if (hasRange.value) chooseRange(chartSampleHours)
+  if (hasCompositionLegend.value) hiddenCategories.value = []
+}
+async function exportImage(): Promise<void> {
+  if (!chart.value || exporting.value) return
+  exporting.value = true
+  exportFailed.value = false
+  let url: string | undefined
+  let link: HTMLAnchorElement | undefined
+  try {
+    const image = await chart.value.exportImage()
+    url = URL.createObjectURL(image)
+    link = document.createElement('a')
+    link.href = url
+    link.download = `pavp-${kind.value}.png`
+    link.hidden = true
+    document.body.append(link)
+    link.click()
+  } catch {
+    exportFailed.value = true
+  } finally {
+    link?.remove()
+    if (url) {
+      const snapshotUrl = url
+      setTimeout(() => {
+        URL.revokeObjectURL(snapshotUrl)
+      }, 1000)
+    }
+    exporting.value = false
+  }
 }
 function toggleWidth(): void {
   narrow.value = !narrow.value
@@ -396,6 +435,7 @@ function isRangeSelected(hours: number): boolean {
 }
 watch(options, () => {
   rendered.value = false
+  exportFailed.value = false
 })
 watch(kind, () => {
   stopWheel()
@@ -445,7 +485,7 @@ onScopeDispose(() => {
       />
     </template>
     <section
-      class="rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
+      class="wb-table-stage rounded-panel flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden bg-surface-panel"
       data-chart-workbench="true"
       :aria-label="title"
     >
@@ -467,6 +507,19 @@ onScopeDispose(() => {
             @click="toggleWidth"
           >
             {{ t('chartExamples.narrow') }}
+          </NButton>
+          <NButton
+            :disabled="showData || !rendered || error"
+            :loading="exporting"
+            @click="exportImage"
+          >
+            <template #icon>
+              <span
+                class="i-lucide-download"
+                aria-hidden="true"
+              />
+            </template>
+            {{ t('chartExamples.exportImage') }}
           </NButton>
           <NButton
             secondary
@@ -560,6 +613,7 @@ onScopeDispose(() => {
           </div>
           <UiG2Chart
             v-else
+            ref="chart"
             :key="`${kind}-${String(replay)}-${String(timelineStopped)}-${String(narrow)}`"
             :options="options"
             :label="label"
@@ -585,7 +639,7 @@ onScopeDispose(() => {
           >
             <span class="inline-flex items-center gap-component-unit">
               <span
-                class="i-lucide-circle-dot shrink-0 text-caption"
+                class="rounded-control shrink-0 size-icon-small"
                 :class="compositionColorClasses[index]"
                 aria-hidden="true"
               />
@@ -686,6 +740,13 @@ onScopeDispose(() => {
             @click="timelineStopped = true"
           >
             {{ t('chartExamples.stopTimeline') }}
+          </NButton>
+          <NButton
+            v-if="hasRange || hasCompositionLegend"
+            :disabled="!canRestore"
+            @click="restoreView"
+          >
+            {{ t('chartExamples.restoreView') }}
           </NButton>
           <NButton
             :disabled="showData"

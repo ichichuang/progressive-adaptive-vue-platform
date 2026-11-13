@@ -1,4 +1,9 @@
 @layer components {
+  .wb-dashboard-chart {
+    block-size: calc(var(--ui-workbench-specimen-preview-block-size) * 2);
+    min-inline-size: 0;
+  }
+
   html[data-motion='full'][data-ui-size-transition='density']
     :is(
       .wb-chart-range,
@@ -49,6 +54,9 @@
 
   .wb-page.wb-form-page {
     gap: var(--ui-space-content-gap);
+  }
+  [data-layout-profile='narrow'] .wb-table-stage[data-scroll-controls='true'] {
+    grid-template-rows: minmax(0, 2fr) minmax(0, 3fr) auto;
   }
   .wb-form-stage {
     grid-template-columns: minmax(0, 1fr);
@@ -165,6 +173,200 @@
   .wb-settings-content,
   .wb-settings-section-body {
     gap: var(--ui-space-section-block);
+  }
+  .wb-overview-card.n-card {
+    background-color: var(--ui-color-surface-panel);
+  }
+  .wb-home-viewport {
+    container-type: size;
+    container-name: welcome;
+  }
+  .wb-home-first-screen {
+    min-block-size: 100cqb;
+    grid-template-rows: minmax(min-content, 1fr) auto;
+    gap: var(--ui-space-section-block);
+    padding-block-end: var(--ui-space-content-gap);
+  }
+  .wb-home-hero {
+    display: grid;
+    align-items: center;
+  }
+  .wb-home-expression {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 1.4)), 1fr)
+    );
+    padding: var(--ui-space-section-block);
+    background: var(--ui-color-surface-panel);
+    margin-block: var(--ui-space-section-block);
+  }
+  .wb-home-expression-preview {
+    padding: var(--ui-space-section-block);
+  }
+  .wb-home-expression-mark {
+    inline-size: calc(var(--ui-control-height) * 2);
+    block-size: calc(var(--ui-control-height) * 2);
+    font-size: var(--ui-font-size-title);
+  }
+  .wb-home {
+    padding-inline-end: var(--ui-space-content-gap);
+    gap: var(--ui-space-section-block);
+  }
+  .wb-home-hero-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 1.4)), 1fr)
+    );
+    column-gap: var(--ui-space-section-block);
+  }
+  .wb-home-editorial {
+    gap: var(--ui-space-content-gap);
+    padding-block: var(--ui-space-content-gap);
+  }
+  .wb-home-eyebrow {
+    line-height: var(--ui-font-line-height-body);
+  }
+  .wb-home-headline {
+    font-size: clamp(
+      var(--ui-font-size-title),
+      min(10cqi, 14cqb),
+      calc(var(--ui-workbench-display-font-size) * 2)
+    );
+    line-height: var(--ui-font-line-height-title);
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+  }
+  .wb-home-subtitle {
+    display: block;
+    font-size: var(--ui-font-size-title);
+    color: var(--ui-color-expression-accent-a-foreground);
+    letter-spacing: normal;
+    margin-block-start: var(--ui-space-content-gap);
+  }
+  .wb-home-description {
+    max-inline-size: calc(var(--ui-workbench-specimen-minimum-inline-size) * 1.7);
+    line-height: var(--ui-font-line-height-body);
+  }
+  .wb-home-signature {
+    display: flex;
+    padding-block-start: var(--ui-space-component-unit);
+  }
+  .wb-home-signature > span {
+    white-space: nowrap;
+  }
+  .wb-home-universe {
+    min-inline-size: 0;
+    display: grid;
+    gap: var(--ui-space-content-gap);
+    align-content: center;
+  }
+  .wb-home-preview {
+    gap: var(--ui-space-content-gap);
+    grid-template-columns: minmax(0, 1fr);
+    min-inline-size: 0;
+    padding: var(--ui-space-content-gap);
+  }
+  .wb-home-app-icon {
+    inline-size: var(--ui-control-height);
+    block-size: var(--ui-control-height);
+  }
+  .wb-home-preview-chart {
+    block-size: clamp(
+      var(--ui-workbench-specimen-preview-block-size),
+      27cqb,
+      calc(var(--ui-workbench-specimen-preview-block-size) * 3)
+    );
+    min-inline-size: 0;
+  }
+  .wb-home-palette-card {
+    min-inline-size: 0;
+  }
+  .wb-home-palette-fan {
+    block-size: var(--ui-control-height);
+    gap: var(--ui-space-component-unit);
+  }
+  .wb-home-palette-fan > span {
+    flex: 1;
+    border-radius: var(--ui-radius-control);
+  }
+  .wb-home-feature-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, var(--ui-workbench-specimen-minimum-inline-size)), 1fr)
+    );
+    gap: var(--ui-space-section-block);
+  }
+  .wb-home-feature {
+    gap: var(--ui-space-content-gap);
+    align-content: start;
+    grid-template-rows: auto 1fr auto;
+    padding-block: var(--ui-space-content-gap);
+  }
+  .wb-home-feature p {
+    line-height: var(--ui-font-line-height-body);
+  }
+  .wb-home-swatch-ribbon {
+    block-size: var(--ui-control-height);
+    border-radius: var(--ui-radius-control);
+    overflow: hidden;
+  }
+  .wb-home-swatch-ribbon > span {
+    flex: 1;
+  }
+  .wb-home-flow {
+    min-block-size: var(--ui-control-height);
+    flex-wrap: wrap;
+  }
+  .wb-home-flow > span:where(:not([aria-hidden])) {
+    padding: var(--ui-space-component-unit);
+  }
+  .wb-home-motion-wave {
+    block-size: var(--ui-control-height);
+  }
+  .wb-home-motion-wave > span {
+    flex: 1;
+    block-size: 100%;
+    transform-origin: bottom;
+  }
+  @container welcome (max-height: 32rem) {
+    .wb-home-first-screen,
+    .wb-home-editorial,
+    .wb-home-preview,
+    .wb-home-universe,
+    .wb-home-feature {
+      gap: var(--ui-space-component-unit);
+    }
+    .wb-home-editorial,
+    .wb-home-feature {
+      padding-block: 0;
+    }
+    .wb-home-eyebrow,
+    .wb-home-signature,
+    .wb-home-palette-card > .text-caption {
+      display: none;
+    }
+    .wb-home-preview {
+      padding: var(--ui-space-component-unit);
+    }
+    .wb-home-preview-chart {
+      block-size: calc(var(--ui-workbench-specimen-preview-block-size) * 0.75);
+    }
+    .wb-home-palette-fan,
+    .wb-home-motion-wave,
+    .wb-home-swatch-ribbon {
+      block-size: calc(var(--ui-control-height) * 0.6);
+    }
+  }
+  .wb-home-dashboard-grid {
+    grid-template-columns: repeat(
+      auto-fit,
+      minmax(min(100%, calc(var(--ui-workbench-specimen-minimum-inline-size) * 1.4)), 1fr)
+    );
+    align-items: start;
+  }
+  .wb-home-clock {
+    font-size: var(--ui-font-size-title);
+    overflow-wrap: anywhere;
   }
   .wb-mode-scene-sidebar > span {
     block-size: var(--ui-border-width);

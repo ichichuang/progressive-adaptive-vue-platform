@@ -37,6 +37,8 @@ const schema = {
 
 字段类型为 `text`、`textarea`、`number`、`switch`、`date`、`date-range`、`time`、`select`、`multi-select`、`radio`、`checkbox-group`、`custom`。日期保存为 `YYYY-MM-DD` 或 `null`。日期范围保存为升序的两个日期 `[start, end]` 或 `null`；时间为 `HH:mm:ss` 或 `null`，不包含时区转换。单选组使用单个选项身份，复选组使用身份数组，均复用静态、异步与分页选项来源。选项身份保留字符串/数字类型，显示 label。`group` 对应对象，`repeat` 对应对象数组，允许继续嵌套。字段名是本层键，不含点或方括号；调用接口时使用 `address.city`、`contacts.0.email` 路径。
 
+可选的顶层 `steps` 把长表单分成有序步骤，只影响展示与逐步校验，不改变值树、也不嵌套成 group。每个步骤有 `name`、`label`、可选 `description`，以及 `fields`：必须列出本层顶层字段名，且全部顶层字段恰好属于一个步骤。省略 `steps` 时行为与普通表单完全一致。前进前校验当前步骤内可见字段的 schema 与未完成输入，并执行已有 `validation`，仅当前步骤字段错误和表单级错误阻止前进；不运行 `onSubmit`。自动输入校验仅发布当前步骤错误，不提前展示未到达步骤的问题。后退和自由切步不重新校验规则，但必须提交控件缓冲；未完成的原始输入会保留并阻止切步，避免丢失。`goNextStep` / `goBackStep` / `setActiveStep` 与 `activeStepIndex` 由同一控制器持有。整表 `validate`/`submit` 仍覆盖所有非隐藏字段；失败时先切到首个可定位错误所在步骤，再沿用既有滚动与晃动反馈。错误汇总支持跨步骤定位，步骤选择支持鼠标及 Enter/Space 键盘操作；详情模式可自由切换步骤。copy 在声明了 steps 时需提供 `previousStep` / `nextStep`；最后一步主操作仍用 `submit`。应用草稿可额外保存 `activeStepIndex`，与字段值同一份持久化契约。
+
 文本、数字、日期和选择控件使用配置的 placeholder，并经过 translate。两列布局中，普通字段默认占一列，group/repeat 默认占满；所有节点可用 span: 1 或 span: 2 指定宽度，窄屏自动回到单列。
 
 缺少值时补 `defaultValue`，或按字段类型补空字符串、false、空数组、null。缺少的重复组补足 `minItems`，明确传入的数组保持原样，数量不足或超出由校验报告。未知值键及不匹配的类型会被拒绝。非有限数字、非 JSON 对象、循环、保留原型键也会拒绝。配置最多 1000 个节点；单个重复组配置上限 1000 行，按 schema 展开的规范化模型最多 10000 个节点，JSON 深度最多 32；10000 节点预算不统计 custom 对象内部的每个成员。请求体字节大小、custom 值体积、数据源响应大小仍由应用限制。
@@ -202,3 +204,30 @@ reset、replaceInitial、replaceValues、删除所属行与 dispose 释放相应
 演示中的 JSON 模式是本地序列化往返，选项来源是本地函数；示例只校验当前输入，不调用保存接口，也不表示已连接后端。后端需输出受支持的 schema，或由应用先适配为该契约；选项源、错误路径和保存结果都由可信前端映射。表单不会自动创建 API、表格、权限、文件上传、草稿持久化、可视化配置设计器或任意表达式引擎。表格 CRUD 应在应用层组合记录选择、请求、replaceInitial 与 submit；上传等专门控件通过可信插槽接入。
 
 可视化构建页 `/components/forms/builder` 是应用层的配置消费示例：通过可视操作生成同一份 `UiFormSchema`，使用公开解析与表单接口预览并导出 JSON。它不新增共享核心的设计器 API，也不改变配置的数据边界。
+
+## Additional built-in fields
+
+`slider` declares finite `min` and `max`, an optional positive `step`, and a numeric value.
+`rating` uses 0 for no rating, `count` (1–10, default 5), and optional `allowHalf`.
+`mask` stores the formatted string; `#` accepts a digit, `A` an ASCII letter, and `*` an
+alphanumeric character. Other characters are literal separators. Partial input remains editable
+and fails validation until every slot is filled. Empty optional inputs remain valid.
+
+`attachment` stores only JSON references `{ id, name, size? }[]`. Its `source` resolves through
+the trusted frontend `attachments` registry supplied to `useUiForm`. The handler receives a
+browser `File`, `{ signal, field }`, and returns a reference after its own processing/upload.
+JSON never supplies executable callbacks or a network destination. The control never posts a
+file itself; `File` objects and byte content never enter form values or persistent drafts.
+Provide `chooseAttachment`, `uploadingAttachment`, and `attachmentFailed` copy. Optional
+`accept`, `maxFiles`, and `maxSize` (bytes) constrain selection; servers must independently
+validate uploaded data. Removing a reference does not delete a remote file. Reset/unmount
+cancels pending work and ignores late results. Applications still own orphan-file cleanup.
+
+The basic controls showcase demonstrates local selection only, not remote upload or file-byte
+persistence. The visual builder creates and edits all four kinds and preserves their JSON
+configuration. Builder attachment previews stay local; applications register the exported
+source name with their real handler.
+
+## 日期显示上下文
+
+`UiForm` 的可选 `dateTime` 属性统一详情模式的日期、时间、日期范围显示；上下文为 `{ locale, timeZone, hourCycle? }`，语言不推导时区。原始日期仍为 `YYYY-MM-DD`、时间仍为 `HH:mm:ss`，不会按时区移位，也不会改写提交值。组件未传时继承 `UiProvider.dateTime`；两者都未配置时保留原值显示。`UiTableEditor.dateTime` 同样传递到详情表单。`useUiDateTime()` 为图表与自定义组件提供只读响应式上下文，不建立第二份偏好状态。`formatUiDateTime` 支持显式 instant、date、time 与注明秒/毫秒的 timestamp，非法值返回 null；`formatUiRelativeTime` 由调用者提供 now，不建立全局时钟。表格列的 JSON `dateTime` 指定输入 kind、timestamp unit 和可选 preset，`UiTable.dateTime` 提供同一显示上下文，排序/筛选/导出保留原始值。G2 的轴与 tooltip 在可信前端 formatter 中复用公共函数，不将函数放入后端 JSON。

@@ -29,6 +29,14 @@ export function projectMotionPolicy(mode: MotionMode, featureReady = true) {
     reducedMotion: mode === 'full' ? ('user' as const) : ('always' as const),
     skipAnimations: mode === 'none' || !featureReady,
     navigationTransition,
+    themePicker: Object.freeze({
+      entering: { opacity: 0, y: movement ? 10 : 0, scale: movement ? 0.97 : 1 },
+      visible: { opacity: 1, y: 0, scale: 1 },
+      transition: {
+        duration: mode === 'none' ? 0 : movement ? 0.38 : 0.12,
+        ease: [0.2, 0, 0, 1] as [number, number, number, number],
+      },
+    }),
     tableSortIcon: Object.freeze({
       visible: { opacity: 1, scale: 1 },
       hidden: { opacity: 0, scale: movement ? 0.82 : 1 },

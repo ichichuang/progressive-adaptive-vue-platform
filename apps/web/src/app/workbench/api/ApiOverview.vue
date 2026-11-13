@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
 import { NTag } from 'naive-ui/es/tag'
 import { UiCopyAction } from '@platform/ui'
@@ -59,14 +58,34 @@ const copy = computed(() =>
       <NCard
         v-for="section in sections"
         :key="section.id"
+        tag="a"
         :bordered="false"
-        class="min-w-0"
-        content-class="flex flex-col items-start gap-content-gap"
+        hoverable
+        class="wb-overview-card wb-link no-underline min-w-0 shadow-panel text-text-primary"
+        content-class="flex flex-col items-start gap-content-gap h-full"
+        :href="navigation.resolveHref(section.destination)"
+        @click="activate($event, section.destination)"
       >
-        <span
-          class="i-lucide-network text-subheading text-text-secondary"
-          aria-hidden="true"
-        />
+        <div class="flex w-full items-center justify-between gap-content-gap">
+          <span
+            class="wb-capability-mark rounded-control grid place-items-center bg-surface-page text-control-primary text-title"
+            aria-hidden="true"
+          >
+            <span class="i-lucide-network" />
+          </span>
+          <NTag
+            size="small"
+            :bordered="false"
+          >
+            {{
+              t(
+                section.id === 'basics' || section.id === 'integration'
+                  ? 'apiShowcase.public'
+                  : 'apiShowcase.local',
+              )
+            }}
+          </NTag>
+        </div>
         <div class="grid min-w-0 gap-component-unit">
           <h2 class="font-title-weight m-0 text-subheading text-text-primary">
             {{ section.title }}
@@ -75,32 +94,13 @@ const copy = computed(() =>
             {{ t(section.hint) }}
           </p>
         </div>
-        <NTag
-          size="small"
-          :bordered="false"
-        >
-          {{
-            t(
-              section.id === 'basics' || section.id === 'integration'
-                ? 'apiShowcase.public'
-                : 'apiShowcase.local',
-            )
-          }}
-        </NTag>
-        <NButton
-          tag="a"
-          text
-          type="primary"
-          class="mt-auto min-h-target-enhanced"
-          :href="navigation.resolveHref(section.destination)"
-          @click="activate($event, section.destination)"
-        >
-          {{ t('apiShowcase.explore')
-          }}<span
+        <span class="mt-auto inline-flex items-center gap-component-unit text-control-primary">
+          {{ t('apiShowcase.explore') }}
+          <span
             class="i-lucide-arrow-up-right"
             aria-hidden="true"
           />
-        </NButton>
+        </span>
       </NCard>
     </div>
   </WorkbenchPage>

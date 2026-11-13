@@ -5,7 +5,7 @@ import { UiScrollArea } from '@platform/ui'
 import { useConsoleI18n } from '../../../../shared/i18n'
 import FormBuilderOutline from './FormBuilderOutline.vue'
 import FormBuilderInspector from './FormBuilderInspector.vue'
-import { builderKinds, type useFormBuilder } from './use-form-builder'
+import { builderKinds, type BuilderKind, type useFormBuilder } from './use-form-builder'
 defineProps<{
   readonly builder: ReturnType<typeof useFormBuilder>
   readonly ownerId: string
@@ -40,7 +40,7 @@ const { t } = useConsoleI18n()
               v-if="builder.selectedNode.value"
               class="truncate text-caption text-text-secondary"
               v-text="
-                `${t('formBuilder.properties')} / ${builder.selectedNode.value.kind === 'custom' ? 'custom' : t(builderKinds[builder.selectedNode.value.kind])}`
+                `${t('formBuilder.properties')} / ${Object.hasOwn(builderKinds, builder.selectedNode.value.kind) ? t(builderKinds[builder.selectedNode.value.kind as BuilderKind]) : builder.selectedNode.value.kind}`
               "
             />
           </div>

@@ -10,6 +10,7 @@ const dataSchema = z.strictObject({
   draftId: z.string(),
   values: z.record(z.string(), z.json()),
   initial: z.record(z.string(), z.json()),
+  activeStepIndex: z.number().int().nonnegative().optional(),
 })
 
 const reservedKeys = new Set(['__proto__', 'prototype', 'constructor'])
@@ -106,11 +107,13 @@ export function useFormDraft<I extends Record<string, UiFormValue>>(input: {
     return Object.fromEntries(fields.map((path) => [path, valueAt(source, path)]))
   }
   function snapshot() {
+    const step = form.activeStepIndex.value
     return {
       formId: form.formId,
       draftId: form.draftId.value,
       values: pick(form.getValues()),
       initial: pick(form.getInitial().values),
+      ...(step === null ? {} : { activeStepIndex: step }),
     }
   }
   function parse(value: unknown) {
@@ -128,6 +131,12 @@ export function useFormDraft<I extends Record<string, UiFormValue>>(input: {
     for (const { path, schema } of schemas) {
       schema.parse(data.values[path])
       schema.parse(data.initial[path])
+    }
+    if (data.activeStepIndex !== undefined) {
+      if (form.activeStepIndex.value === null)
+        throw new TypeError('The saved draft step does not apply to this form.')
+      if (form.schema.steps === undefined || data.activeStepIndex >= form.schema.steps.length)
+        throw new TypeError('The saved draft step is out of range.')
     }
     return data
   }
@@ -165,7 +174,12 @@ export function useFormDraft<I extends Record<string, UiFormValue>>(input: {
       // The form owner validates leaf semantics. Strict collection shapes above prevent its
       // default-filling normalization from silently repairing an incomplete persisted row.
       const result = form.replaceValues(current)
-      return result === 'applied' || result === 'unchanged'
+      if (result !== 'applied' && result !== 'unchanged') return false
+      if (data.activeStepIndex !== undefined && form.activeStepIndex.value !== null) {
+        // Restore progress without re-validating; values already pass replaceValues.
+        void form.setActiveStep(data.activeStepIndex, { relax: true })
+      }
+      return true
     },
   })
   return {

@@ -689,6 +689,150 @@
             }
           }
         }
+      },
+      "expression": {
+        "accent-a": {
+          "foreground": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.524644066, 0.116663684, 246.078871021]
+            }
+          },
+          "soft": {
+            "background": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.953849294, 0.011767622, 239.907303061]
+              }
+            },
+            "foreground": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.524644066, 0.116663684, 246.078871021]
+              }
+            }
+          },
+          "solid": {
+            "background": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.557927266, 0.124789768, 246.05529368]
+              }
+            },
+            "foreground": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.990854929, 0.005939279, 223.454184678]
+              }
+            }
+          }
+        },
+        "accent-b": {
+          "foreground": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.545825014, 0.14496615, 352.7315876]
+            }
+          },
+          "soft": {
+            "background": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.956125541, 0.013522763, 347.9466535]
+              }
+            },
+            "foreground": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.545825014, 0.14496615, 352.7315876]
+              }
+            }
+          },
+          "solid": {
+            "background": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.576627467, 0.155493122, 352.514110607]
+              }
+            },
+            "foreground": {
+              "$type": "color",
+              "$value": {
+                "colorSpace": "oklch",
+                "components": [0.990338709, 0.008411296, 325.640166031]
+              }
+            }
+          }
+        }
+      },
+      "data-viz": {
+        "categorical": {
+          "series-1": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.515864263, 0.19479056, 297.133433847]
+            }
+          },
+          "series-2": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.574796004, 0.129251463, 246.317185149]
+            }
+          },
+          "series-3": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.612790292, 0.165217986, 352.726767796]
+            }
+          },
+          "series-4": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.611092747, 0.095405038, 172.107173666]
+            }
+          },
+          "series-5": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.615198109, 0.117210437, 76.745123417]
+            }
+          },
+          "series-6": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.541127335, 0.135547922, 271.810693]
+            }
+          },
+          "series-7": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.563433546, 0.098777249, 35.665986704]
+            }
+          },
+          "series-8": {
+            "$type": "color",
+            "$value": {
+              "colorSpace": "oklch",
+              "components": [0.577667179, 0.033351938, 270.781681257]
+            }
+          }
+        }
       }
     }
   }

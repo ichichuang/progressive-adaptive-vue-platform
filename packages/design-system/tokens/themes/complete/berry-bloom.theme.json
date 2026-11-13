@@ -9,6 +9,24 @@
         "color.action.primary": "{palette.roles.primary.solid.background.default}",
         "color.control.primary": "{palette.roles.primary.foreground.default}",
         "color.border.default": "{palette.borders.control}",
+        "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+        "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+        "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+        "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+        "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+        "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+        "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+        "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+        "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+        "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+        "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+        "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+        "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+        "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+        "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+        "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+        "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+        "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
         "color.focus.ring": "{palette.roles.primary.focus}",
         "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
         "color.surface.page": "{palette.surfaces.canvas}",
@@ -41,6 +59,24 @@
         "color.action.primary": "{palette.roles.primary.solid.background.default}",
         "color.control.primary": "{palette.roles.primary.foreground.default}",
         "color.border.default": "{palette.borders.control}",
+        "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+        "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+        "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+        "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+        "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+        "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+        "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+        "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+        "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+        "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+        "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+        "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+        "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+        "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+        "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+        "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+        "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+        "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
         "color.focus.ring": "{palette.roles.primary.focus}",
         "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
         "color.surface.page": "{palette.surfaces.canvas}",
@@ -75,6 +111,24 @@
         "color.action.primary": "{palette.roles.primary.solid.background.default}",
         "color.control.primary": "{palette.roles.primary.foreground.default}",
         "color.border.default": "{palette.borders.control}",
+        "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+        "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+        "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+        "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+        "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+        "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+        "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+        "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+        "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+        "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+        "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+        "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+        "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+        "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+        "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+        "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+        "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+        "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
         "color.focus.ring": "{palette.roles.primary.focus}",
         "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
         "color.surface.page": "{palette.surfaces.canvas}",
@@ -107,6 +161,24 @@
         "color.action.primary": "{palette.roles.primary.solid.background.default}",
         "color.control.primary": "{palette.roles.primary.foreground.default}",
         "color.border.default": "{palette.borders.control}",
+        "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+        "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+        "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+        "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+        "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+        "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+        "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+        "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+        "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+        "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+        "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+        "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+        "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+        "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+        "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+        "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+        "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+        "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
         "color.focus.ring": "{palette.roles.primary.focus}",
         "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
         "color.surface.page": "{palette.surfaces.canvas}",
@@ -365,6 +437,42 @@
         "tooltip": {
           "background": "#261B25",
           "foreground": "#FEF6FD"
+        },
+        "expression": {
+          "accentA": {
+            "foreground": "#7356BA",
+            "soft": {
+              "background": "#F0ECF6",
+              "foreground": "#7356BA"
+            },
+            "solid": {
+              "background": "#7356BA",
+              "foreground": "#F8FDFF"
+            }
+          },
+          "accentB": {
+            "foreground": "#12767D",
+            "soft": {
+              "background": "#E7F1F3",
+              "foreground": "#12767D"
+            },
+            "solid": {
+              "background": "#147F88",
+              "foreground": "#FFFAFF"
+            }
+          }
+        },
+        "dataViz": {
+          "categorical": {
+            "series1": "#A63C8B",
+            "series2": "#7356BA",
+            "series3": "#168C95",
+            "series4": "#C16B43",
+            "series5": "#506FB3",
+            "series6": "#7D8E38",
+            "series7": "#B74F66",
+            "series8": "#747A91"
+          }
         }
       },
       "enhanced": {
@@ -593,6 +701,42 @@
         "tooltip": {
           "background": "#261B25",
           "foreground": "#FEF6FD"
+        },
+        "expression": {
+          "accentA": {
+            "foreground": "#56408B",
+            "soft": {
+              "background": "#F0ECF6",
+              "foreground": "#56408B"
+            },
+            "solid": {
+              "background": "#5F479A",
+              "foreground": "#F8FDFF"
+            }
+          },
+          "accentB": {
+            "foreground": "#0D555B",
+            "soft": {
+              "background": "#E7F1F3",
+              "foreground": "#0D555B"
+            },
+            "solid": {
+              "background": "#0F5F65",
+              "foreground": "#FFFAFF"
+            }
+          }
+        },
+        "dataViz": {
+          "categorical": {
+            "series1": "#A63C8B",
+            "series2": "#7356BA",
+            "series3": "#168C95",
+            "series4": "#C16B43",
+            "series5": "#506FB3",
+            "series6": "#7D8E38",
+            "series7": "#B74F66",
+            "series8": "#747A91"
+          }
         }
       }
     },
@@ -823,6 +967,42 @@
         "tooltip": {
           "background": "#FDEDFB",
           "foreground": "#1E181D"
+        },
+        "expression": {
+          "accentA": {
+            "foreground": "#9782CC",
+            "soft": {
+              "background": "#31213A",
+              "foreground": "#9883CD"
+            },
+            "solid": {
+              "background": "#7356BA",
+              "foreground": "#F8FDFF"
+            }
+          },
+          "accentB": {
+            "foreground": "#329AA2",
+            "soft": {
+              "background": "#222A34",
+              "foreground": "#3A9EA6"
+            },
+            "solid": {
+              "background": "#147F88",
+              "foreground": "#FFFAFF"
+            }
+          }
+        },
+        "dataViz": {
+          "categorical": {
+            "series1": "#FF7AD8",
+            "series2": "#B29AEF",
+            "series3": "#63C5D0",
+            "series4": "#EAAA80",
+            "series5": "#8EAEEB",
+            "series6": "#BBCA7A",
+            "series7": "#E18DA4",
+            "series8": "#B7ACA3"
+          }
         }
       },
       "enhanced": {
@@ -1051,6 +1231,42 @@
         "tooltip": {
           "background": "#FDEDFB",
           "foreground": "#1E181D"
+        },
+        "expression": {
+          "accentA": {
+            "foreground": "#B8A9DC",
+            "soft": {
+              "background": "#31213A",
+              "foreground": "#B9ABDD"
+            },
+            "solid": {
+              "background": "#5F479A",
+              "foreground": "#F8FDFF"
+            }
+          },
+          "accentB": {
+            "foreground": "#78BCC2",
+            "soft": {
+              "background": "#222A34",
+              "foreground": "#80C0C6"
+            },
+            "solid": {
+              "background": "#0F5F65",
+              "foreground": "#FFFAFF"
+            }
+          }
+        },
+        "dataViz": {
+          "categorical": {
+            "series1": "#FF7AD8",
+            "series2": "#B29AEF",
+            "series3": "#63C5D0",
+            "series4": "#EAAA80",
+            "series5": "#8EAEEB",
+            "series6": "#BBCA7A",
+            "series7": "#E18DA4",
+            "series8": "#B7ACA3"
+          }
         }
       }
     }

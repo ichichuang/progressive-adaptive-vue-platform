@@ -16,7 +16,7 @@ defineProps<{
 const { t } = useConsoleI18n()
 const navigation = useApplicationNavigation()
 const activate = useApplicationLinkActivation()
-const destination = registeredRouteDestination({ name: 'workbench-dashboard' })
+const destination = registeredRouteDestination({ name: 'workbench-welcome' })
 </script>
 
 <template>

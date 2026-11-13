@@ -1,4 +1,6 @@
+import type { UiDateTimeContext, UiDateTimeColumnFormat } from '../date-time/date-time'
 import type { Ref } from 'vue'
+import type { useUiTableForm } from '../composables/use-ui-table-form'
 import type { UiDensity } from '@platform/design-system'
 import type { UiFormReadonlyValue, UiFormRecord, UiFormSchema, UiFormValue } from './form-contracts'
 
@@ -18,7 +20,23 @@ export interface UiTableColumn {
   readonly key: string
   readonly title: string
   readonly kind?: 'text' | 'number' | 'boolean' | 'date' | 'tag'
+  readonly align?: 'left' | 'center' | 'right'
+  readonly overflow?: 'wrap' | 'ellipsis'
+  readonly emptyText?: string
+  readonly format?: UiTableSummaryFormat
+  /** Explicit input semantics; requires a component or provider dateTime display context. */
+  readonly dateTime?: UiDateTimeColumnFormat
+  /** Exact scalar matching, never expressions or executable templates. */
+  readonly options?: readonly {
+    readonly value: string | number | boolean
+    readonly label: string
+    readonly tone?: 'default' | 'primary' | 'info' | 'success' | 'warning' | 'error'
+  }[]
   readonly width?: number
+  readonly minWidth?: number
+  readonly maxWidth?: number
+  /** Opt-in direct resizing. Width remains controller-owned. */
+  readonly resizable?: boolean
   readonly fixed?: 'left' | 'right'
   readonly sortable?: boolean
   /** Trusted comparator registry name for local data; never executable JSON. */
@@ -122,7 +140,35 @@ export interface UiTableCsvFile {
   readonly mimeType: 'text/csv;charset=utf-8'
   readonly rowCount: number
 }
+/**
+ * Opt-in hierarchical rows on the existing UiTable stack.
+ * Unsupported with tree: column sorting, local query filters, summary rows, and virtual scrolling.
+ * Pagination applies to root rows only. Lazy children reuse UiTableTransport.list via childrenRequest.
+ * CSV exports currently loaded roots and descendants; unloaded lazy nodes are omitted.
+ */
+export interface UiTableTree {
+  /** Record path holding child records. Defaults to children. Must be a single path segment. */
+  readonly childrenKey?: string
+  /** Optional boolean path: true marks a leaf. false marks a lazy or expandable parent. */
+  readonly leafKey?: string
+  /** Naive indent in CSS pixels. Defaults to 16. */
+  readonly indent?: number
+  /**
+   * Parent/child checkbox cascade with indeterminate ancestors.
+   * Defaults to true when selection is multiple; ignored for single/none.
+   */
+  readonly selectionCascade?: boolean
+  /** Initial expanded keys for already-loaded ancestors. */
+  readonly defaultExpandedKeys?: readonly UiTableKey[]
+  /**
+   * Lazy child list request. Resolved with the parent as row context and executed through
+   * the same transport.list path as the root source.
+   */
+  readonly childrenRequest?: UiTableRequest
+}
 export interface UiTableSchema {
+  /** Expand the same live table into the application overlay. */
+  readonly maximizable?: boolean
   readonly csvExport?: UiTableCsvConfiguration
   /** Defaults to auto. The page owns a definite available height when using fill. */
   readonly height?: UiTableHeight
@@ -140,16 +186,34 @@ export interface UiTableSchema {
     readonly mode?: 'submit' | 'change'
     readonly debounce?: number
   }
-  readonly pagination?: { readonly pageSize?: number; readonly pageSizes?: readonly number[] }
+  readonly pagination?: {
+    readonly mode?: 'pages' | 'load-more'
+    readonly pageSize?: number
+    readonly pageSizes?: readonly number[]
+  }
   /** Defaults to single. Multiple retains click order as sort priority. */
   readonly sorting?: 'single' | 'multiple'
+  /** Opt-in header dragging; keyboard alternatives remain in column settings. */
+  readonly reorderableColumns?: boolean
+  readonly keywordSearch?: {
+    /** Top-level filter parameter, available to remote request bindings as filters.<parameter>. */
+    readonly parameter: string
+    readonly fields: readonly string[]
+    readonly placeholder?: string
+  }
   readonly columnSettings?: boolean
   /** Opt-in stable identity; use a distinct key for each independent table. */
   readonly columnPreferenceKey?: string
   readonly batchActions?: readonly UiTableBatchAction[]
   readonly selection?: 'none' | 'single' | 'multiple'
+  /** Reject selection changes exceeding this cap; existing selection stays intact. */
+  readonly maxSelection?: number
+  /** Opt-in tree rows. Omit to keep flat-table behavior unchanged. */
+  readonly tree?: UiTableTree
   readonly editor?: {
     readonly form: UiFormSchema
+    /** Optional JSON-controlled in-place editing using the same form and update request. */
+    readonly inline?: { readonly mode?: 'cell' | 'row'; readonly fields: readonly string[] }
     readonly presentation?: 'modal' | 'drawer' | 'page'
     readonly create?: UiTableRequest
     readonly update?: UiTableRequest
@@ -203,10 +267,14 @@ export interface UiTableTransport {
   detail?(request: UiTableResolvedRequest, signal: AbortSignal): Promise<UiTableRecord>
   mutate?(request: UiTableResolvedRequest, signal: AbortSignal): Promise<void>
 }
-/** Only column keys and visibility are persisted, never row or query data. */
+/** Only column order, visibility and width are persisted, never row or query data. */
 export interface UiTableColumnPreference {
   readonly schemaVersion: 1
-  readonly columns: readonly { readonly key: string; readonly hidden: boolean }[]
+  readonly columns: readonly {
+    readonly key: string
+    readonly hidden: boolean
+    readonly width?: number
+  }[]
 }
 /** Synchronous restoration before the first render. Application owns browser storage. */
 export interface UiTableColumnPreferenceStorage {
@@ -236,11 +304,24 @@ export interface UiTableController {
   readonly rows: Readonly<Ref<readonly UiTableReadonlyRecord[]>>
   readonly total: Readonly<Ref<number>>
   readonly query: Readonly<Ref<UiTableQuery>>
+  /** Origin of the latest query publication; automatic page correction must replace URL history. */
+  readonly queryChangeReason: Readonly<Ref<'change' | 'page-correction'>>
   readonly loading: Readonly<Ref<boolean>>
   readonly error: Readonly<Ref<Error | null>>
   readonly selectedKeys: Readonly<Ref<readonly UiTableKey[]>>
+  /** Empty when tree is not configured. */
+  /** Failed child requests only; root list errors remain on error. Retry with loadTreeChildren. */
+  readonly treeLoadErrors: Readonly<
+    Ref<readonly { readonly key: UiTableKey; readonly error: Error }[]>
+  >
+  readonly expandedKeys: Readonly<Ref<readonly UiTableKey[]>>
   text(value: string): string
   refresh(): Promise<void>
+  readonly hasMore: Readonly<Ref<boolean>>
+  /** Append the next batch in load-more mode; refresh/filter/sort restart at page one. */
+  loadMore(): Promise<void>
+  /** Atomically restore applied filters, sorting and pagination; one list refresh. */
+  applyQuery(query: Omit<UiTableQuery, 'sort'>): Promise<void>
   search(filters: UiTableReadonlyRecord): Promise<void>
   reset(): Promise<void>
   setPage(page: number): Promise<void>
@@ -249,9 +330,15 @@ export interface UiTableController {
   setSort(sort: UiTableQuery['sort']): Promise<void>
   /** Replaces the priority-ordered list. Multiple entries require sorting: multiple. */
   setSorts(sorts: readonly UiTableSort[]): Promise<void>
-  setSelection(keys: readonly UiTableKey[]): void
+  setSelection(keys: readonly UiTableKey[]): boolean
+  setExpandedKeys(keys: readonly UiTableKey[]): void
+  /** Loads lazy children for a parent row through childrenRequest + transport.list. */
+  loadTreeChildren(row: UiTableReadonlyRecord): Promise<void>
   setColumnVisibility(key: string, visible: boolean): void
   moveColumn(key: string, direction: 'up' | 'down'): void
+  /** Move a column before/after another column without changing its group or pinning. */
+  reorderColumn(key: string, targetKey: string, placement: 'before' | 'after'): void
+  setColumnWidth(key: string, width: number): void
   resetColumns(): void
   /** Produces a safe CSV snapshot; does not fetch or download data. */
   exportCsv(scope: UiTableCsvScope): UiTableCsvFile
@@ -261,10 +348,18 @@ export interface UiTableController {
   dispose(): void
 }
 export interface UiTableCopy {
+  readonly loadMore?: () => string
+  readonly loadedAll?: () => string
+  readonly maximize?: () => string
+  readonly restore?: () => string
   readonly exportPage: () => string
   readonly exportSelected: () => string
   /** Current sort state and next action, used by the keyboard-accessible icon button. */
   readonly sortLabel: (title: string, order: 'ascend' | 'descend' | false) => string
+  readonly resizeColumn?: (title: string) => string
+  readonly search?: () => string
+  readonly selectionLimit?: (selected: number, maximum: number) => string
+  readonly reorderColumn?: (title: string) => string
   readonly columns: () => string
   readonly resetColumns: () => string
   readonly moveColumn: (title: string, direction: 'up' | 'down') => string
@@ -276,9 +371,17 @@ export interface UiTableCopy {
   readonly retry: () => string
   readonly boolean: (value: boolean) => string
 }
+export interface UiTableInlineEditing {
+  readonly session: ReturnType<typeof useUiTableForm>
+  readonly copy: UiTableEditorCopy
+  /** Presentation override; the JSON schema provides the default. */
+  readonly mode?: 'cell' | 'row'
+}
 export interface UiTableProps {
+  readonly dateTime?: UiDateTimeContext
   readonly table: UiTableController
   readonly copy: UiTableCopy
+  readonly inlineEditing?: UiTableInlineEditing
   /** Presentation override of schema.height, without recreating the data controller. */
   readonly height?: UiTableHeight
   /** Defined fields override schema.appearance without recreating the data controller. */

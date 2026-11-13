@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { UiProvider } from '@platform/ui'
+import { UiProvider, type UiDateTimeContext } from '@platform/ui'
 import { computed, inject, onScopeDispose, provide } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 
@@ -17,7 +17,22 @@ import {
 import { createRouteTransitionCoordinator } from './app/router/route-transition/route-transition-coordinator'
 import { getRouteLayoutCapability, getRouteRecord } from './app/router/route-registry'
 
+import { useDateTimeStore } from './app/date-time/date-time.store'
+import { useDateTimePreferencePort } from './app/date-time/date-time-preference'
+import { useRuntimePresentation } from './app/config/runtime-presentation'
 const { t, locale } = useConsoleI18n()
+const dateTimeStore = useDateTimeStore()
+onScopeDispose(
+  dateTimeStore.initialize(useDateTimePreferencePort(), useRuntimePresentation().dateTime),
+)
+const dateTime = computed<UiDateTimeContext>(() => ({
+  locale: locale.value,
+  hourCycle: dateTimeStore.preference.hourCycle,
+  timeZone:
+    dateTimeStore.preference.timeZone === 'system'
+      ? Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+      : dateTimeStore.preference.timeZone,
+}))
 const route = useRoute()
 const router = useRouter()
 const workspace = useWorkspaceStore()
@@ -41,6 +56,8 @@ const containedContent = computed(() => {
   const snapshot = retentionPort.read()
   return (
     (routeRecord.value.name === 'control-center' ||
+      routeRecord.value.name === 'workbench-welcome' ||
+      routeRecord.value.name === 'workbench-dashboard' ||
       routeRecord.value.name === 'workbench-motion' ||
       (routeRecord.value.name.startsWith('api-') && routeRecord.value.name !== 'api-overview') ||
       routeRecord.value.name === 'component-charts' ||
@@ -66,6 +83,7 @@ const tabpanel = computed(
   <UiProvider
     :appearance="appearance.snapshot.value"
     :locale="locale"
+    :date-time="dateTime"
   >
     <ConsoleRouteFrame
       :active-route-name="routeRecord.name"

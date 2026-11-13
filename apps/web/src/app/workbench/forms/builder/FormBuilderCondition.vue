@@ -180,7 +180,8 @@ const options = computed(() =>
 const operators = computed(() => [
   ...(reference.value?.node.kind === 'multi-select' ||
   reference.value?.node.kind === 'checkbox-group' ||
-  reference.value?.node.kind === 'date-range'
+  reference.value?.node.kind === 'date-range' ||
+  reference.value?.node.kind === 'attachment'
     ? []
     : [
         { value: 'eq', label: t('formBuilder.equals') },
@@ -221,7 +222,7 @@ function setOperator(operator: 'eq' | 'neq' | 'empty' | 'not-empty'): void {
     const value: UiFormValue =
       node?.kind === 'switch'
         ? false
-        : node?.kind === 'number'
+        : node?.kind === 'number' || node?.kind === 'slider' || node?.kind === 'rating'
           ? 0
           : node?.kind === 'date' ||
               node?.kind === 'time' ||
@@ -363,7 +364,7 @@ function setValue(value: UiFormValue): void {
           @update:value="setValue"
         />
         <FormBuilderNumber
-          v-else-if="reference?.node.kind === 'number'"
+          v-else-if="['number', 'slider', 'rating'].includes(reference?.node.kind ?? '')"
           :key="`${condition?.field}:${condition?.operator}`"
           :value="typeof comparison === 'number' ? comparison : null"
           :label="`${accessibleLabel} ${t('formBuilder.compareValue')}`"

@@ -104,8 +104,12 @@ export function parseBuilderSchema(value: unknown): UiFormSchema {
             target.kind === 'multi-select' ||
             target.kind === 'checkbox-group' ||
             target.kind === 'date-range' ||
-            ((target.kind === 'text' || target.kind === 'textarea') && typeof value !== 'string') ||
-            (target.kind === 'number' && value !== null && typeof value !== 'number') ||
+            target.kind === 'attachment' ||
+            ((target.kind === 'text' || target.kind === 'textarea' || target.kind === 'mask') &&
+              typeof value !== 'string') ||
+            (['number', 'slider', 'rating'].includes(target.kind) &&
+              value !== null &&
+              typeof value !== 'number') ||
             (target.kind === 'date' &&
               value !== null &&
               (typeof value !== 'string' || value === '' || invalidBuilderDateInput(value))) ||
@@ -141,6 +145,10 @@ const editorNodeSchema = z.strictObject({
     'text',
     'textarea',
     'number',
+    'mask',
+    'slider',
+    'rating',
+    'attachment',
     'switch',
     'date',
     'date-range',
@@ -165,6 +173,13 @@ const editorNodeSchema = z.strictObject({
   min: z.number().optional(),
   max: z.number().optional(),
   step: z.number().optional(),
+  mask: z.string().optional(),
+  count: z.number().optional(),
+  allowHalf: z.boolean().optional(),
+  source: z.string().optional(),
+  accept: z.string().optional(),
+  maxFiles: z.number().optional(),
+  maxSize: z.number().optional(),
   minItems: z.number().optional(),
   maxItems: z.number().optional(),
   addLabel: z.string().optional(),
@@ -263,11 +278,20 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
     )
       throw new TypeError('Option editor identities are inconsistent.')
     const fallback = selectedNode
+    if (
+      editor.kind === 'attachment' &&
+      formDraftSignature(editor.defaultValue) !==
+        formDraftSignature(fallback.kind === 'attachment' ? fallback.defaultValue : undefined)
+    )
+      throw new TypeError('Attachment references are not edited by the visual inspector.')
     const value = editor.defaultValue
     if (
       value !== undefined &&
-      (((editor.kind === 'text' || editor.kind === 'textarea') && typeof value !== 'string') ||
-        (editor.kind === 'number' && value !== null && typeof value !== 'number') ||
+      (((editor.kind === 'text' || editor.kind === 'textarea' || editor.kind === 'mask') &&
+        typeof value !== 'string') ||
+        (['number', 'slider', 'rating'].includes(editor.kind) &&
+          value !== null &&
+          typeof value !== 'number') ||
         ((editor.kind === 'date' || editor.kind === 'time') &&
           value !== null &&
           typeof value !== 'string') ||
@@ -298,13 +322,16 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
     let required = false
     let integer = false
     let displayed: unknown = undefined
-    if (input.key === 'defaultValue' && (editor.kind === 'number' || editor.kind === 'date')) {
-      kind = editor.kind
+    if (
+      input.key === 'defaultValue' &&
+      (['number', 'slider', 'rating'].includes(editor.kind) || editor.kind === 'date')
+    ) {
+      kind = editor.kind === 'date' ? 'date' : 'number'
       displayed = editor.defaultValue
     }
     if (
       ['minimum', 'maximum', 'step', 'ruleMin', 'ruleMax'].includes(input.key) &&
-      editor.kind === 'number'
+      (editor.kind === 'number' || editor.kind === 'slider')
     ) {
       kind = 'number'
       displayed =
@@ -320,7 +347,9 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
     }
     if (
       (['minLength', 'maxLength'].includes(input.key) &&
-        ['text', 'textarea', 'multi-select', 'checkbox-group'].includes(editor.kind)) ||
+        ['text', 'textarea', 'mask', 'attachment', 'multi-select', 'checkbox-group'].includes(
+          editor.kind,
+        )) ||
       (['minItems', 'maxItems'].includes(input.key) && editor.kind === 'repeat')
     ) {
       kind = 'number'
@@ -380,8 +409,13 @@ export function parseBuilderSnapshot(value: unknown): BuilderSnapshot {
           target = fields.find((node) => node.name === part)
           fields = target?.kind === 'group' || target?.kind === 'repeat' ? target.fields : []
         }
-        if (target?.kind === 'number' || target?.kind === 'date') {
-          kind = target.kind
+        if (
+          target?.kind === 'number' ||
+          target?.kind === 'slider' ||
+          target?.kind === 'rating' ||
+          target?.kind === 'date'
+        ) {
+          kind = target.kind === 'date' ? 'date' : 'number'
           displayed = flag['value']
         }
       }

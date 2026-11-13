@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { UiDateTimeContext } from '../date-time/date-time'
 import type { useUiTableForm } from '../composables/use-ui-table-form'
 import type { UiFormSlots } from './form-contracts'
 import type { UiTableRecord } from './table-contracts'
@@ -6,6 +7,7 @@ import UiForm from './UiForm.vue'
 
 defineOptions({ name: 'UiTableEditorBody' })
 defineProps<{
+  readonly dateTime?: UiDateTimeContext
   readonly session: ReturnType<typeof useUiTableForm>
   readonly status: string
 }>()
@@ -25,6 +27,7 @@ const slots = defineSlots<Pick<UiFormSlots<UiTableRecord>, 'field' | 'detail'>>(
     <UiForm
       v-if="session.form.value"
       :form="session.form.value"
+      v-bind="dateTime === undefined ? {} : { dateTime }"
       :mode="session.mode.value === 'detail' ? 'detail' : 'edit'"
     >
       <template

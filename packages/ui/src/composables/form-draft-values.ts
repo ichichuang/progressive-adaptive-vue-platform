@@ -8,6 +8,8 @@ import type {
 } from '../components/form-contracts'
 import { isDateOnly, isDateRange, isTimeOnly } from '../components/form-control-values'
 
+import { isFormAttachment } from '../components/form-special-values'
+
 const reserved = new Set(['__proto__', 'prototype', 'constructor'])
 export function formPathParts(path: string): string[] {
   const parts = path.split('.')
@@ -132,14 +134,32 @@ export function createFormValues(
             ? node.defaultValue
             : node.kind === 'switch'
               ? false
-              : node.kind === 'multi-select' || node.kind === 'checkbox-group'
+              : node.kind === 'multi-select' ||
+                  node.kind === 'checkbox-group' ||
+                  node.kind === 'attachment'
                 ? []
-                : node.kind === 'text' || node.kind === 'textarea'
+                : node.kind === 'text' || node.kind === 'textarea' || node.kind === 'mask'
                   ? ''
-                  : null
+                  : node.kind === 'slider'
+                    ? node.min
+                    : node.kind === 'rating'
+                      ? 0
+                      : null
       const valid =
         node.kind === 'custom' ||
-        ((node.kind === 'text' || node.kind === 'textarea') && typeof actual === 'string') ||
+        (node.kind === 'slider' && typeof actual === 'number') ||
+        (node.kind === 'rating' &&
+          typeof actual === 'number' &&
+          actual >= 0 &&
+          actual <= (node.count ?? 5) &&
+          Number.isInteger(actual * (node.allowHalf ? 2 : 1))) ||
+        (node.kind === 'attachment' &&
+          Array.isArray(actual) &&
+          actual.every(isFormAttachment) &&
+          new Set(actual.map((item) => (isFormAttachment(item) ? item.id : ''))).size ===
+            actual.length) ||
+        ((node.kind === 'text' || node.kind === 'textarea' || node.kind === 'mask') &&
+          typeof actual === 'string') ||
         (node.kind === 'number' && (actual === null || typeof actual === 'number')) ||
         (node.kind === 'switch' && typeof actual === 'boolean') ||
         (node.kind === 'date' &&

@@ -6,6 +6,7 @@ import { UiCopyAction, useUiForm, type UiFormValue } from '@platform/ui'
 import { useFormShowcase } from '../form-showcase'
 import FormBuilderConfiguration from './FormBuilderConfiguration.vue'
 import FormBuilderPreview from './FormBuilderPreview.vue'
+import { builderAttachments } from './builder-attachments'
 import { useFormBuilder } from './use-form-builder'
 import FormBuilderActions from './FormBuilderActions.vue'
 import { parseBuilderDraft, type BuilderTrialState } from './form-builder-draft'
@@ -43,6 +44,7 @@ const session = useDraftSession({
           useUiForm({
             formId: 'visual-builder-preview',
             schema: data.schema,
+            attachments: builderAttachments(data.schema),
             initial: { draftId: 'visual-builder-preview', values },
             copy,
           }).getValues(),

@@ -115,6 +115,7 @@ const translatedSchemaLabels = [
   'tableShowcase.search',
   'tableShowcase.searchHint',
   'tableShowcase.removeSelected',
+  'tableShowcase.keywordHint',
   'tableExamples.summary.sum',
   'tableExamples.summary.avg',
   'tableExamples.summary.min',
@@ -122,6 +123,9 @@ const translatedSchemaLabels = [
   'tableExamples.summary.average',
   'tableExamples.summary.customText',
   'tableExamples.summary.pageTotal',
+  'tableCapabilities.tree.name',
+  'tableCapabilities.tree.kind',
+  'tableCapabilities.tree.stock',
 ] as const satisfies readonly ConsoleMessageKey[]
 export function useTableShowcase() {
   const demo = useFormShowcase()
@@ -137,6 +141,15 @@ export function useTableShowcase() {
             ? 'tableShowcase.sortDescending'
             : 'tableShowcase.sortNone',
       )}`,
+    search: () => t('tableShowcase.search'),
+    selectionLimit: (selected, maximum) =>
+      `${t('tableExamples.selected')} ${String(selected)} / ${String(maximum)}`,
+    loadMore: () => t('tableShowcase.loadMore'),
+    loadedAll: () => t('tableShowcase.loadedAll'),
+    maximize: () => t('tableShowcase.maximize'),
+    restore: () => t('tableShowcase.restore'),
+    resizeColumn: (title) => `${title} · ${t('tableShowcase.resizeColumn')}`,
+    reorderColumn: (title) => `${title} · ${t('tableShowcase.reorderColumn')}`,
     columns: () => t('tableShowcase.columns'),
     resetColumns: () => t('tableShowcase.resetColumns'),
     moveColumn: (title, direction) =>

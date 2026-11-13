@@ -949,14 +949,14 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.authoredColorValueCount, 0) ===
-      builtInThemeIds.length * 4 * 30,
-    'complete built-in Themes must contain exactly 600 authored color bindings',
+      builtInThemeIds.length * 4 * 48,
+    'complete built-in Themes must contain exactly 960 authored color bindings',
   )
   assertInvariant(
     result.completeThemes.reduce((count, theme) => count + theme.absoluteColorValueCount, 0) ===
       builtInThemeIds.length * 4 &&
       result.completeThemes.every(
-        (theme) => theme.primitiveAliasValueCount === 0 && theme.paletteAliasValueCount === 116,
+        (theme) => theme.primitiveAliasValueCount === 0 && theme.paletteAliasValueCount === 188,
       ),
     'Built-in Themes must use local approved palette aliases and preserve the four scrim values',
   )
@@ -996,7 +996,7 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
   )
   for (const entry of registry.builtInEntries) {
     const logicalRecords = deriveThemeBankRecords(entry.definition.planes, result.activePublicRoles)
-    assertInvariant(logicalRecords.length === 120, `${entry.themeId}: exactly 120 logical records`)
+    assertInvariant(logicalRecords.length === 192, `${entry.themeId}: exactly 192 logical records`)
     assertInvariantEqual(
       logicalRecords,
       entry.bank.records.map(
@@ -1138,6 +1138,39 @@ function validateCompleteThemeContracts(result: TokenBuildResult): void {
     () => validateDocuments(cappedControlForeground),
     /contrast/u,
     'an unreadable Control Foreground on its canvas must fail',
+  )
+
+  for (const [role, background] of [
+    ['color.expression.accent-a.solid.foreground', 'color.expression.accent-a.solid.background'],
+    ['color.expression.accent-b.soft.foreground', 'color.expression.accent-b.soft.background'],
+    ['color.data-viz.categorical.series-1', 'color.surface.panel'],
+  ] as const) {
+    const invalid = structuredClone(canonicalDocuments)
+    const plane = mutableThemeRoleMap(invalid[0] ?? {}, 'light', 'standard')
+    plane[role] = plane[background]
+    assertContractFailure(
+      () => validateDocuments(invalid),
+      /contrast/u,
+      `${role}: unreadable expression/data-visualization bindings must fail`,
+    )
+  }
+
+  const duplicateCategory = structuredClone(canonicalDocuments)
+  const palettes = duplicateCategory[0]?.['uiPalette']
+  assertInvariant(isUnknownRecord(palettes), 'category probe palettes must exist')
+  const lightPalette = palettes['light']
+  assertInvariant(isUnknownRecord(lightPalette), 'category probe light palette must exist')
+  const standardPalette = lightPalette['standard']
+  assertInvariant(isUnknownRecord(standardPalette), 'category probe standard palette must exist')
+  const dataViz = standardPalette['dataViz']
+  assertInvariant(isUnknownRecord(dataViz), 'category probe data palette must exist')
+  const categories = dataViz['categorical']
+  assertInvariant(isUnknownRecord(categories), 'category probe categories must exist')
+  categories['series2'] = categories['series1']
+  assertContractFailure(
+    () => validateDocuments(duplicateCategory),
+    /distinct color/u,
+    'duplicate categorical colors must fail',
   )
 
   const extraRole = structuredClone(canonicalDocuments)
@@ -1358,7 +1391,7 @@ function validateGeneratorContracts(result: TokenBuildResult): void {
       ),
     ),
     namedContrasts,
-    'Token preprocessing must carry the exact 34-record Named Contrast Registry',
+    'Token preprocessing must carry the exact 58-record Named Contrast Registry',
   )
   assertInvariant(
     layoutRegistryDocument(result).records.length === 9,
@@ -2394,13 +2427,13 @@ function validateAppearanceContracts(result: TokenBuildResult): void {
   )
   assertInvariant(
     registry.builtInEntries.length === builtInThemeIds.length &&
-      registry.builtInEntries.every((entry) => entry.bank.records.length === 120),
-    'the generated Built-in Theme Registry must contain five complete 120-cell Banks',
+      registry.builtInEntries.every((entry) => entry.bank.records.length === 192),
+    'the generated Built-in Theme Registry must contain five complete 192-cell Banks',
   )
   assertInvariant(
-    registry.customBankVariables.length === 120 &&
-      new Set(registry.customBankVariables).size === 120,
-    'the generated Custom Theme Bank allowlist must contain exactly 120 fixed variables',
+    registry.customBankVariables.length === 192 &&
+      new Set(registry.customBankVariables).size === 192,
+    'the generated Custom Theme Bank allowlist must contain exactly 192 fixed variables',
   )
   assertInvariantEqual(
     formatThemeRegistryTypeScript(result),
@@ -3745,8 +3778,8 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           )
         }
         assertInvariant(
-          Object.keys(plane).length === 30,
-          'all normalized planes must contain exactly 30 roles',
+          Object.keys(plane).length === 48,
+          'all normalized planes must contain exactly 48 roles',
         )
         assertInvariantEqual(
           themePaletteColorEntries(snapshot.colorPalette),
@@ -3774,7 +3807,7 @@ function validateFirstPaintContracts(result: TokenBuildResult): void {
           ]),
         ),
       },
-      `Contract ${String(version)} First Paint must install all 120 bindings identically to runtime normalization`,
+      `Contract ${String(version)} First Paint must install all 192 bindings identically to runtime normalization`,
     )
     assertInvariant(
       execution.attributes['data-theme-kind'] === 'custom' &&

@@ -3,6 +3,8 @@ import type { SelectProps } from 'naive-ui/es/select'
 import type { UiFormController, UiFormFieldBinding } from '../../components/form-contracts'
 import { acceptsControlValue, isDateOnly } from '../../components/form-control-values'
 
+import { formatFormMask } from '../../components/form-special-values'
+
 /** Typed control projection and transient input commitment, private to Naive presentation. */
 export function useFormControl<I>(props: {
   readonly form: UiFormController<I>
@@ -121,10 +123,11 @@ export function useFormControl<I>(props: {
     numberFormat.value === undefined ? {} : { format: numberFormat.value },
   )
   function reportPending(): void {
+    if (config.value.kind === 'attachment') return // Attachment session owns its pending lifecycle.
     // A retired keyed control can observe a shorter record before Vue unmounts
     // it. Its path no longer owns input and must not register pending state.
     if (!props.form.fields.some((field) => field.name === props.binding.name)) return
-    const buffered = ['text', 'textarea', 'number', 'date'].includes(config.value.kind)
+    const buffered = ['text', 'textarea', 'mask', 'number', 'date'].includes(config.value.kind)
     const value = props.binding.value
     const canonical = typeof value === 'string' || typeof value === 'number' ? String(value) : ''
     props.binding.setPendingInput(
@@ -181,6 +184,8 @@ export function useFormControl<I>(props: {
     }
   }
   function update(value: unknown): boolean {
+    if (config.value.kind === 'mask' && typeof value === 'string')
+      value = formatFormMask(value, config.value.mask)
     if (!acceptsControlValue(props.form, props.binding, value)) return false
     const result = props.binding.setValue(value)
     const accepted = result === 'applied' || result === 'unchanged'
@@ -207,6 +212,7 @@ export function useFormControl<I>(props: {
     props.binding.blur()
   }
   function commit(): boolean {
+    if (config.value.kind === 'attachment') return !props.binding.pendingInput
     if (
       ['select', 'multi-select', 'radio', 'checkbox-group', 'date-range', 'time'].includes(
         config.value.kind,
@@ -222,7 +228,11 @@ export function useFormControl<I>(props: {
     }
     if (config.value.kind === 'date')
       return buffer.value === '' ? update(null) : isDateOnly(buffer.value) && update(buffer.value)
-    if (config.value.kind === 'text' || config.value.kind === 'textarea')
+    if (
+      config.value.kind === 'text' ||
+      config.value.kind === 'textarea' ||
+      config.value.kind === 'mask'
+    )
       return update(buffer.value)
     return true
   }
@@ -238,7 +248,7 @@ export function useFormControl<I>(props: {
       root.value?.querySelector<HTMLElement>(
         readonlyComposite.value
           ? '[data-form-readonly]'
-          : '.n-base-selection-label, .n-base-selection-tags, [role="combobox"], [role="switch"], input, textarea',
+          : '.n-base-selection-label, .n-base-selection-tags, [role="combobox"], [role="switch"], [role="slider"], button, input, textarea',
       ) ?? null
     )
   }

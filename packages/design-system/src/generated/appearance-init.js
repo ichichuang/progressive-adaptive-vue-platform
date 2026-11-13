@@ -202,6 +202,18 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
     }
     pair(palette.tooltip.foreground, palette.tooltip.background, textMinimum, 'tooltip');
     pair(palette.roles.neutral.solid.foreground, palette.roles.neutral.solid.background.default, textMinimum, 'switch.off-content');
+    for (const [name, accent] of Object.entries(palette.expression)) {
+        for (const [surface, background] of surfaces)
+            pair(accent.foreground, background, textMinimum, `expression.${name}/${surface}`);
+        pair(accent.soft.foreground, accent.soft.background, textMinimum, `expression.${name}.soft`);
+        pair(accent.solid.foreground, accent.solid.background, textMinimum, `expression.${name}.solid`);
+    }
+    const categories = Object.entries(palette.dataViz.categorical);
+    if (new Set(categories.map(([, color]) => color)).size !== categories.length)
+        return 'dataViz.categorical: every series must have a distinct color.';
+    for (const [name, color] of categories)
+        for (const [surface, background] of surfaces)
+            pair(color, background, boundaryMinimum, `dataViz.${name}/${surface}`);
     // Naive colored secondary buttons use the opaque soft role, validated above.
     return failure;
 }
@@ -218,6 +230,42 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
   var roleContractVersion = 4
   var themeSchemaVersion = 4
   var palettePlaneShape = {
+  expression: {
+    accentA: {
+      foreground: true,
+      soft: {
+        background: true,
+        foreground: true,
+      },
+      solid: {
+        background: true,
+        foreground: true,
+      },
+    },
+    accentB: {
+      foreground: true,
+      soft: {
+        background: true,
+        foreground: true,
+      },
+      solid: {
+        background: true,
+        foreground: true,
+      },
+    },
+  },
+  dataViz: {
+    categorical: {
+      series1: true,
+      series2: true,
+      series3: true,
+      series4: true,
+      series5: true,
+      series6: true,
+      series7: true,
+      series8: true,
+    },
+  },
   surfaces: {
     canvas: true,
     surface: true,
@@ -451,6 +499,24 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
       'color.action.primary': '{palette.roles.primary.solid.background.default}',
       'color.control.primary': '{palette.roles.primary.foreground.default}',
       'color.border.default': '{palette.borders.control}',
+      'color.data-viz.categorical.series-1': '{palette.data-viz.categorical.series1}',
+      'color.data-viz.categorical.series-2': '{palette.data-viz.categorical.series2}',
+      'color.data-viz.categorical.series-3': '{palette.data-viz.categorical.series3}',
+      'color.data-viz.categorical.series-4': '{palette.data-viz.categorical.series4}',
+      'color.data-viz.categorical.series-5': '{palette.data-viz.categorical.series5}',
+      'color.data-viz.categorical.series-6': '{palette.data-viz.categorical.series6}',
+      'color.data-viz.categorical.series-7': '{palette.data-viz.categorical.series7}',
+      'color.data-viz.categorical.series-8': '{palette.data-viz.categorical.series8}',
+      'color.expression.accent-a.foreground': '{palette.expression.accent-a.foreground}',
+      'color.expression.accent-a.soft.background': '{palette.expression.accent-a.soft.background}',
+      'color.expression.accent-a.soft.foreground': '{palette.expression.accent-a.soft.foreground}',
+      'color.expression.accent-a.solid.background': '{palette.expression.accent-a.solid.background}',
+      'color.expression.accent-a.solid.foreground': '{palette.expression.accent-a.solid.foreground}',
+      'color.expression.accent-b.foreground': '{palette.expression.accent-b.foreground}',
+      'color.expression.accent-b.soft.background': '{palette.expression.accent-b.soft.background}',
+      'color.expression.accent-b.soft.foreground': '{palette.expression.accent-b.soft.foreground}',
+      'color.expression.accent-b.solid.background': '{palette.expression.accent-b.solid.background}',
+      'color.expression.accent-b.solid.foreground': '{palette.expression.accent-b.solid.foreground}',
       'color.focus.ring': '{palette.roles.primary.focus}',
       'color.scrim.viewport': 'rgba(0, 0, 0, 0.56)',
       'color.surface.page': '{palette.surfaces.canvas}',
@@ -483,6 +549,24 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
       'color.action.primary': '{palette.roles.primary.solid.background.default}',
       'color.control.primary': '{palette.roles.primary.foreground.default}',
       'color.border.default': '{palette.borders.control}',
+      'color.data-viz.categorical.series-1': '{palette.data-viz.categorical.series1}',
+      'color.data-viz.categorical.series-2': '{palette.data-viz.categorical.series2}',
+      'color.data-viz.categorical.series-3': '{palette.data-viz.categorical.series3}',
+      'color.data-viz.categorical.series-4': '{palette.data-viz.categorical.series4}',
+      'color.data-viz.categorical.series-5': '{palette.data-viz.categorical.series5}',
+      'color.data-viz.categorical.series-6': '{palette.data-viz.categorical.series6}',
+      'color.data-viz.categorical.series-7': '{palette.data-viz.categorical.series7}',
+      'color.data-viz.categorical.series-8': '{palette.data-viz.categorical.series8}',
+      'color.expression.accent-a.foreground': '{palette.expression.accent-a.foreground}',
+      'color.expression.accent-a.soft.background': '{palette.expression.accent-a.soft.background}',
+      'color.expression.accent-a.soft.foreground': '{palette.expression.accent-a.soft.foreground}',
+      'color.expression.accent-a.solid.background': '{palette.expression.accent-a.solid.background}',
+      'color.expression.accent-a.solid.foreground': '{palette.expression.accent-a.solid.foreground}',
+      'color.expression.accent-b.foreground': '{palette.expression.accent-b.foreground}',
+      'color.expression.accent-b.soft.background': '{palette.expression.accent-b.soft.background}',
+      'color.expression.accent-b.soft.foreground': '{palette.expression.accent-b.soft.foreground}',
+      'color.expression.accent-b.solid.background': '{palette.expression.accent-b.solid.background}',
+      'color.expression.accent-b.solid.foreground': '{palette.expression.accent-b.solid.foreground}',
       'color.focus.ring': '{palette.roles.primary.focus}',
       'color.scrim.viewport': 'rgba(0, 0, 0, 0.56)',
       'color.surface.page': '{palette.surfaces.canvas}',
@@ -517,6 +601,24 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
       'color.action.primary': '{palette.roles.primary.solid.background.default}',
       'color.control.primary': '{palette.roles.primary.foreground.default}',
       'color.border.default': '{palette.borders.control}',
+      'color.data-viz.categorical.series-1': '{palette.data-viz.categorical.series1}',
+      'color.data-viz.categorical.series-2': '{palette.data-viz.categorical.series2}',
+      'color.data-viz.categorical.series-3': '{palette.data-viz.categorical.series3}',
+      'color.data-viz.categorical.series-4': '{palette.data-viz.categorical.series4}',
+      'color.data-viz.categorical.series-5': '{palette.data-viz.categorical.series5}',
+      'color.data-viz.categorical.series-6': '{palette.data-viz.categorical.series6}',
+      'color.data-viz.categorical.series-7': '{palette.data-viz.categorical.series7}',
+      'color.data-viz.categorical.series-8': '{palette.data-viz.categorical.series8}',
+      'color.expression.accent-a.foreground': '{palette.expression.accent-a.foreground}',
+      'color.expression.accent-a.soft.background': '{palette.expression.accent-a.soft.background}',
+      'color.expression.accent-a.soft.foreground': '{palette.expression.accent-a.soft.foreground}',
+      'color.expression.accent-a.solid.background': '{palette.expression.accent-a.solid.background}',
+      'color.expression.accent-a.solid.foreground': '{palette.expression.accent-a.solid.foreground}',
+      'color.expression.accent-b.foreground': '{palette.expression.accent-b.foreground}',
+      'color.expression.accent-b.soft.background': '{palette.expression.accent-b.soft.background}',
+      'color.expression.accent-b.soft.foreground': '{palette.expression.accent-b.soft.foreground}',
+      'color.expression.accent-b.solid.background': '{palette.expression.accent-b.solid.background}',
+      'color.expression.accent-b.solid.foreground': '{palette.expression.accent-b.solid.foreground}',
       'color.focus.ring': '{palette.roles.primary.focus}',
       'color.scrim.viewport': 'rgba(0, 0, 0, 0.56)',
       'color.surface.page': '{palette.surfaces.canvas}',
@@ -549,6 +651,24 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
       'color.action.primary': '{palette.roles.primary.solid.background.default}',
       'color.control.primary': '{palette.roles.primary.foreground.default}',
       'color.border.default': '{palette.borders.control}',
+      'color.data-viz.categorical.series-1': '{palette.data-viz.categorical.series1}',
+      'color.data-viz.categorical.series-2': '{palette.data-viz.categorical.series2}',
+      'color.data-viz.categorical.series-3': '{palette.data-viz.categorical.series3}',
+      'color.data-viz.categorical.series-4': '{palette.data-viz.categorical.series4}',
+      'color.data-viz.categorical.series-5': '{palette.data-viz.categorical.series5}',
+      'color.data-viz.categorical.series-6': '{palette.data-viz.categorical.series6}',
+      'color.data-viz.categorical.series-7': '{palette.data-viz.categorical.series7}',
+      'color.data-viz.categorical.series-8': '{palette.data-viz.categorical.series8}',
+      'color.expression.accent-a.foreground': '{palette.expression.accent-a.foreground}',
+      'color.expression.accent-a.soft.background': '{palette.expression.accent-a.soft.background}',
+      'color.expression.accent-a.soft.foreground': '{palette.expression.accent-a.soft.foreground}',
+      'color.expression.accent-a.solid.background': '{palette.expression.accent-a.solid.background}',
+      'color.expression.accent-a.solid.foreground': '{palette.expression.accent-a.solid.foreground}',
+      'color.expression.accent-b.foreground': '{palette.expression.accent-b.foreground}',
+      'color.expression.accent-b.soft.background': '{palette.expression.accent-b.soft.background}',
+      'color.expression.accent-b.soft.foreground': '{palette.expression.accent-b.soft.foreground}',
+      'color.expression.accent-b.solid.background': '{palette.expression.accent-b.solid.background}',
+      'color.expression.accent-b.solid.foreground': '{palette.expression.accent-b.solid.foreground}',
       'color.focus.ring': '{palette.roles.primary.focus}',
       'color.scrim.viewport': 'rgba(0, 0, 0, 0.56)',
       'color.surface.page': '{palette.surfaces.canvas}',
@@ -581,9 +701,9 @@ function paletteContrastFailure(palette, _mode, textMinimum, boundaryMinimum, co
 }
   var paletteTextMinimum = [4.5, 7]
   var paletteBoundaryMinimum = [3, 3]
-  var publicColorBindings = [['color.action.primary', '--ui-color-action-primary'], ['color.control.primary', '--ui-color-control-primary'], ['color.border.default', '--ui-color-border-default'], ['color.focus.ring', '--ui-color-focus-ring'], ['color.scrim.viewport', '--ui-color-scrim-viewport'], ['color.surface.page', '--ui-color-surface-page'], ['color.surface.panel', '--ui-color-surface-panel'], ['color.text.on-action', '--ui-color-text-on-action'], ['color.text.primary', '--ui-color-text-primary'], ['color.text.secondary', '--ui-color-text-secondary'], ['color.status.info', '--ui-color-status-info'], ['color.status.info.hover', '--ui-color-status-info-hover'], ['color.status.info.pressed', '--ui-color-status-info-pressed'], ['color.text.on-status.info', '--ui-color-text-on-status-info'], ['color.status.success', '--ui-color-status-success'], ['color.status.success.hover', '--ui-color-status-success-hover'], ['color.status.success.pressed', '--ui-color-status-success-pressed'], ['color.text.on-status.success', '--ui-color-text-on-status-success'], ['color.status.warning', '--ui-color-status-warning'], ['color.status.warning.hover', '--ui-color-status-warning-hover'], ['color.status.warning.pressed', '--ui-color-status-warning-pressed'], ['color.text.on-status.warning', '--ui-color-text-on-status-warning'], ['color.status.error', '--ui-color-status-error'], ['color.status.error.hover', '--ui-color-status-error-hover'], ['color.status.error.pressed', '--ui-color-status-error-pressed'], ['color.text.on-status.error', '--ui-color-text-on-status-error'], ['color.control.info', '--ui-color-control-info'], ['color.control.success', '--ui-color-control-success'], ['color.control.warning', '--ui-color-control-warning'], ['color.control.error', '--ui-color-control-error']]
+  var publicColorBindings = [['color.action.primary', '--ui-color-action-primary'], ['color.control.primary', '--ui-color-control-primary'], ['color.border.default', '--ui-color-border-default'], ['color.data-viz.categorical.series-1', '--ui-color-data-viz-categorical-series-1'], ['color.data-viz.categorical.series-2', '--ui-color-data-viz-categorical-series-2'], ['color.data-viz.categorical.series-3', '--ui-color-data-viz-categorical-series-3'], ['color.data-viz.categorical.series-4', '--ui-color-data-viz-categorical-series-4'], ['color.data-viz.categorical.series-5', '--ui-color-data-viz-categorical-series-5'], ['color.data-viz.categorical.series-6', '--ui-color-data-viz-categorical-series-6'], ['color.data-viz.categorical.series-7', '--ui-color-data-viz-categorical-series-7'], ['color.data-viz.categorical.series-8', '--ui-color-data-viz-categorical-series-8'], ['color.expression.accent-a.foreground', '--ui-color-expression-accent-a-foreground'], ['color.expression.accent-a.soft.background', '--ui-color-expression-accent-a-soft-background'], ['color.expression.accent-a.soft.foreground', '--ui-color-expression-accent-a-soft-foreground'], ['color.expression.accent-a.solid.background', '--ui-color-expression-accent-a-solid-background'], ['color.expression.accent-a.solid.foreground', '--ui-color-expression-accent-a-solid-foreground'], ['color.expression.accent-b.foreground', '--ui-color-expression-accent-b-foreground'], ['color.expression.accent-b.soft.background', '--ui-color-expression-accent-b-soft-background'], ['color.expression.accent-b.soft.foreground', '--ui-color-expression-accent-b-soft-foreground'], ['color.expression.accent-b.solid.background', '--ui-color-expression-accent-b-solid-background'], ['color.expression.accent-b.solid.foreground', '--ui-color-expression-accent-b-solid-foreground'], ['color.focus.ring', '--ui-color-focus-ring'], ['color.scrim.viewport', '--ui-color-scrim-viewport'], ['color.surface.page', '--ui-color-surface-page'], ['color.surface.panel', '--ui-color-surface-panel'], ['color.text.on-action', '--ui-color-text-on-action'], ['color.text.primary', '--ui-color-text-primary'], ['color.text.secondary', '--ui-color-text-secondary'], ['color.status.info', '--ui-color-status-info'], ['color.status.info.hover', '--ui-color-status-info-hover'], ['color.status.info.pressed', '--ui-color-status-info-pressed'], ['color.text.on-status.info', '--ui-color-text-on-status-info'], ['color.status.success', '--ui-color-status-success'], ['color.status.success.hover', '--ui-color-status-success-hover'], ['color.status.success.pressed', '--ui-color-status-success-pressed'], ['color.text.on-status.success', '--ui-color-text-on-status-success'], ['color.status.warning', '--ui-color-status-warning'], ['color.status.warning.hover', '--ui-color-status-warning-hover'], ['color.status.warning.pressed', '--ui-color-status-warning-pressed'], ['color.text.on-status.warning', '--ui-color-text-on-status-warning'], ['color.status.error', '--ui-color-status-error'], ['color.status.error.hover', '--ui-color-status-error-hover'], ['color.status.error.pressed', '--ui-color-status-error-pressed'], ['color.text.on-status.error', '--ui-color-text-on-status-error'], ['color.control.info', '--ui-color-control-info'], ['color.control.success', '--ui-color-control-success'], ['color.control.warning', '--ui-color-control-warning'], ['color.control.error', '--ui-color-control-error']]
   var activePublicColorRoles = publicColorBindings.map(function (record) { return record[0] })
-  var namedContrasts = [['color.text.primary', 'color.surface.page', 4.5, 7, false], ['color.text.primary', 'color.surface.panel', 4.5, 7, false], ['color.text.secondary', 'color.surface.page', 4.5, 7, false], ['color.text.secondary', 'color.surface.panel', 4.5, 7, false], ['color.text.on-action', 'color.action.primary', 4.5, 7, false], ['color.focus.ring', 'color.surface.page', 3, 3, false], ['color.focus.ring', 'color.surface.panel', 3, 3, false], ['color.control.primary', 'color.surface.page', 3, 3, false], ['color.control.primary', 'color.surface.panel', 3, 3, false], ['color.border.default', 'color.surface.page', 3, 3, false], ['color.border.default', 'color.surface.panel', 3, 3, false], ['color.control.info', 'color.surface.page', 3, 3, false], ['color.control.success', 'color.surface.page', 3, 3, false], ['color.control.warning', 'color.surface.page', 3, 3, false], ['color.control.error', 'color.surface.page', 3, 3, false], ['color.control.info', 'color.surface.panel', 3, 3, false], ['color.control.success', 'color.surface.panel', 3, 3, false], ['color.control.warning', 'color.surface.panel', 3, 3, false], ['color.control.error', 'color.surface.panel', 3, 3, false], ['color.text.on-status.info', 'color.status.info', 4.5, 7, true], ['color.text.on-status.success', 'color.status.success', 4.5, 7, true], ['color.text.on-status.warning', 'color.status.warning', 4.5, 7, true], ['color.text.on-status.error', 'color.status.error', 4.5, 7, true], ['color.text.on-status.info', 'color.status.info.hover', 4.5, 7, true], ['color.text.on-status.success', 'color.status.success.hover', 4.5, 7, true], ['color.text.on-status.warning', 'color.status.warning.hover', 4.5, 7, true], ['color.text.on-status.error', 'color.status.error.hover', 4.5, 7, true], ['color.text.on-status.info', 'color.status.info.pressed', 4.5, 7, true], ['color.text.on-status.success', 'color.status.success.pressed', 4.5, 7, true], ['color.text.on-status.warning', 'color.status.warning.pressed', 4.5, 7, true], ['color.text.on-status.error', 'color.status.error.pressed', 4.5, 7, true]]
+  var namedContrasts = [['color.expression.accent-a.foreground', 'color.surface.page', 4.5, 7, false], ['color.expression.accent-a.foreground', 'color.surface.panel', 4.5, 7, false], ['color.expression.accent-a.soft.foreground', 'color.expression.accent-a.soft.background', 4.5, 7, false], ['color.expression.accent-a.solid.foreground', 'color.expression.accent-a.solid.background', 4.5, 7, false], ['color.expression.accent-b.foreground', 'color.surface.page', 4.5, 7, false], ['color.expression.accent-b.foreground', 'color.surface.panel', 4.5, 7, false], ['color.expression.accent-b.soft.foreground', 'color.expression.accent-b.soft.background', 4.5, 7, false], ['color.expression.accent-b.solid.foreground', 'color.expression.accent-b.solid.background', 4.5, 7, false], ['color.data-viz.categorical.series-1', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-1', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-2', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-2', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-3', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-3', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-4', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-4', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-5', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-5', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-6', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-6', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-7', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-7', 'color.surface.panel', 3, 3, false], ['color.data-viz.categorical.series-8', 'color.surface.page', 3, 3, false], ['color.data-viz.categorical.series-8', 'color.surface.panel', 3, 3, false], ['color.text.primary', 'color.surface.page', 4.5, 7, false], ['color.text.primary', 'color.surface.panel', 4.5, 7, false], ['color.text.secondary', 'color.surface.page', 4.5, 7, false], ['color.text.secondary', 'color.surface.panel', 4.5, 7, false], ['color.text.on-action', 'color.action.primary', 4.5, 7, false], ['color.focus.ring', 'color.surface.page', 3, 3, false], ['color.focus.ring', 'color.surface.panel', 3, 3, false], ['color.control.primary', 'color.surface.page', 3, 3, false], ['color.control.primary', 'color.surface.panel', 3, 3, false], ['color.border.default', 'color.surface.page', 3, 3, false], ['color.border.default', 'color.surface.panel', 3, 3, false], ['color.control.info', 'color.surface.page', 3, 3, false], ['color.control.success', 'color.surface.page', 3, 3, false], ['color.control.warning', 'color.surface.page', 3, 3, false], ['color.control.error', 'color.surface.page', 3, 3, false], ['color.control.info', 'color.surface.panel', 3, 3, false], ['color.control.success', 'color.surface.panel', 3, 3, false], ['color.control.warning', 'color.surface.panel', 3, 3, false], ['color.control.error', 'color.surface.panel', 3, 3, false], ['color.text.on-status.info', 'color.status.info', 4.5, 7, true], ['color.text.on-status.success', 'color.status.success', 4.5, 7, true], ['color.text.on-status.warning', 'color.status.warning', 4.5, 7, true], ['color.text.on-status.error', 'color.status.error', 4.5, 7, true], ['color.text.on-status.info', 'color.status.info.hover', 4.5, 7, true], ['color.text.on-status.success', 'color.status.success.hover', 4.5, 7, true], ['color.text.on-status.warning', 'color.status.warning.hover', 4.5, 7, true], ['color.text.on-status.error', 'color.status.error.hover', 4.5, 7, true], ['color.text.on-status.info', 'color.status.info.pressed', 4.5, 7, true], ['color.text.on-status.success', 'color.status.success.pressed', 4.5, 7, true], ['color.text.on-status.warning', 'color.status.warning.pressed', 4.5, 7, true], ['color.text.on-status.error', 'color.status.error.pressed', 4.5, 7, true]]
   var forbiddenColorKeywords = ['inherit', 'initial', 'revert', 'revert-layer', 'unset', 'accentcolor', 'accentcolortext', 'activeborder', 'activecaption', 'activetext', 'appworkspace', 'background', 'buttonborder', 'buttonface', 'buttonhighlight', 'buttonshadow', 'buttontext', 'canvas', 'canvastext', 'captiontext', 'field', 'fieldtext', 'graytext', 'highlight', 'highlighttext', 'inactiveborder', 'inactivecaption', 'inactivecaptiontext', 'infobackground', 'infotext', 'linktext', 'mark', 'marktext', 'menu', 'menutext', 'scrollbar', 'selecteditem', 'selecteditemtext', 'threeddarkshadow', 'threedface', 'threedhighlight', 'threedlightshadow', 'threedshadow', 'visitedtext', 'window', 'windowframe', 'windowtext']
   var supportedColorSyntax = new RegExp('^(?:#[0-9a-f]{3,4}|#[0-9a-f]{6}|#[0-9a-f]{8}|[a-z][a-z0-9-]*|(?:hsl|hsla|hwb|lab|lch|oklab|oklch|rgb|rgba)\\(.+\\)|color\\(\\s*srgb\\s+.+\\))$', 'iu')
   var forbiddenColorSyntax = new RegExp('\\b(?:attr|calc|color-mix|env|light-dark|var)\\s*\\(|\\bcurrentcolor\\b|\\(\\s*from\\b', 'iu')
@@ -793,8 +913,9 @@ function resolveMotion({ storedMotion, prefersReducedMotion, }) {
     if (match === null) return null
     var current = palette
     for (var segment of match[1].split('.')) {
-      if (!isRecord(current) || !Object.prototype.hasOwnProperty.call(current, segment)) return null
-      current = current[segment]
+      var property = segment.replace(/-([a-z])/gu, function (_, letter) { return letter.toUpperCase() })
+      if (!isRecord(current) || !Object.prototype.hasOwnProperty.call(current, property)) return null
+      current = current[property]
     }
     return typeof current === 'string' ? current : null
   }

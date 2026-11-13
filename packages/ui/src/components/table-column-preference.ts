@@ -18,16 +18,23 @@ export function parseUiTableColumnPreference(value: unknown): UiTableColumnPrefe
     const entry = item as Record<string, unknown>
     const key = entry['key']
     const hidden = entry['hidden']
+    const width = entry['width']
     if (
       typeof key !== 'string' ||
       !key.trim() ||
       typeof hidden !== 'boolean' ||
       keys.has(key) ||
-      Object.keys(entry).some((name) => !['key', 'hidden'].includes(name))
+      (width !== undefined &&
+        (typeof width !== 'number' || !Number.isFinite(width) || width <= 0)) ||
+      Object.keys(entry).some((name) => !['key', 'hidden', 'width'].includes(name))
     )
       throw new TypeError('Invalid table column preference entry.')
     keys.add(key)
-    return Object.freeze({ key, hidden })
+    return Object.freeze({
+      key,
+      hidden,
+      ...(width === undefined ? {} : { width }),
+    })
   })
   return Object.freeze({ schemaVersion: 1, columns: Object.freeze(columns) })
 }
@@ -41,7 +48,18 @@ export function restoreTableColumns(
   for (const entry of preference.columns) {
     const column = remaining.get(entry.key)
     if (!column) continue
-    restored.push({ ...column, hidden: entry.hidden })
+    restored.push({
+      ...column,
+      hidden: entry.hidden,
+      ...(entry.width === undefined
+        ? {}
+        : {
+            width: Math.min(
+              column.maxWidth ?? Infinity,
+              Math.max(column.minWidth ?? 1, entry.width),
+            ),
+          }),
+    })
     remaining.delete(entry.key)
   }
   restored.push(...remaining.values())
@@ -53,4 +71,15 @@ export function restoreTableColumns(
     )
   }
   return restored
+}
+
+/** Header keyboard movement follows visible neighbors, not hidden configuration entries. */
+export function adjacentVisibleTableColumn(
+  columns: readonly UiTableColumn[],
+  key: string,
+  direction: 'left' | 'right',
+): string | undefined {
+  const visible = columns.filter((column) => !column.hidden)
+  const index = visible.findIndex((column) => column.key === key)
+  return index === -1 ? undefined : visible[index + (direction === 'left' ? -1 : 1)]?.key
 }

@@ -6,6 +6,7 @@ import type {
   UiTableSelection,
   UiTableTransport,
 } from '../components/table-contracts'
+import { flattenTreeRecords } from '../components/table-tree'
 import { resolveUiTableRequest } from '../components/table-request'
 import { cloneDraft, freezeDraftValue, getFormValue } from './form-draft-values'
 
@@ -45,7 +46,13 @@ export function useUiTableActions(input: UiTableActionsInput) {
     const selected = new Set(keys)
     const selection: UiTableSelection = snapshot({
       keys,
-      rows: input.table.rows.value.filter((row) => {
+      rows: (input.table.schema.tree
+        ? flattenTreeRecords(
+            input.table.rows.value,
+            input.table.schema.tree.childrenKey ?? 'children',
+          )
+        : input.table.rows.value
+      ).filter((row) => {
         const key = getFormValue(row, input.table.schema.rowKey)
         return (typeof key === 'string' || typeof key === 'number') && selected.has(key)
       }),

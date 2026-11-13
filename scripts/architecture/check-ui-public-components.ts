@@ -30,6 +30,7 @@ const motionAdapterFiles = [
   'packages/ui/src/adapters/motion/ScrollViewport.vue',
   'packages/ui/src/adapters/motion/FormValidationFeedback.vue',
   'packages/ui/src/adapters/motion/TableSortIcon.vue',
+  'packages/ui/src/adapters/motion/ThemePickerSurface.vue',
 ] as const
 const forbiddenMotionPublicApi =
   /\b(?:AdminNavigationSelectionLens|WorkspaceTabsSurface|createMotionFeatureRuntime|LayoutGroup|LazyMotion|MotionConfig|MotionPreference|domMax)\b|motion-v|adapters\/motion/u
@@ -472,10 +473,48 @@ function overlayContractViolations(sources: ReadonlyMap<string, string>): string
         propertyTargetsName(property, 'to'),
       )
 
+      // One private table may move its existing subtree into its own modal host.
+      // The target ref must remain local to NModal; all other Teleports retain the root rule.
+      const localTableTarget =
+        path === 'packages/ui/src/components/TableMaximizeSurface.vue' &&
+        element.props.some(
+          (property) =>
+            propertyTargetsName(property, 'to') &&
+            property.exp?.content === 'target ?? overlayTarget',
+        ) &&
+        element.props.some(
+          (property) =>
+            propertyTargetsName(property, 'disabled') &&
+            property.exp?.content === '!props.expanded || !target',
+        ) &&
+        (sources.get(path)?.includes('const target = ref<HTMLElement>()') ?? false) &&
+        (sources
+          .get(path)
+          ?.includes("const overlayTarget = inject(pavpOverlayTargetKey, '#pavp-overlay-root')") ??
+          false) &&
+        !/target\.value\s*=/.test(sources.get(path) ?? '') &&
+        (root.children ?? []).some((node) => {
+          if (
+            !isVueElement(node) ||
+            node.tag !== 'NModal' ||
+            !node.props.some(
+              (property) =>
+                propertyTargetsName(property, 'to') && property.exp?.content === 'overlayTarget',
+            )
+          )
+            return false
+          let hosts = 0
+          walkVueElements(node, (child) => {
+            if (staticAttribute(child, 'ref') === 'target' && child.tag === 'div') hosts++
+          })
+          return hosts === 1
+        })
+
       if (
-        targetProperties.length !== 1 ||
-        targetProperties[0]?.type !== 6 ||
-        staticAttribute(element, 'to') !== overlayTarget
+        !localTableTarget &&
+        (targetProperties.length !== 1 ||
+          targetProperties[0]?.type !== 6 ||
+          staticAttribute(element, 'to') !== overlayTarget)
       ) {
         violations.push(
           `TELEPORT_TARGET: ${path} Teleport must statically target ${overlayTarget}.`,
@@ -548,6 +587,27 @@ function runOverlayNegativeProbes(
     readonly expectedFailureCode: string
     readonly sources: ReadonlyMap<string, string>
   }[] = [
+    ...(
+      [
+        ['table-modal-external-target', 'target ?? overlayTarget', "'body'"],
+        ['table-modal-external-host', ':to="overlayTarget"', 'to="body"'],
+        ['table-modal-missing-host', 'ref="target"', 'ref="other"'],
+        [
+          'table-modal-mutated-target',
+          'const target = ref<HTMLElement>()',
+          'const target = ref<HTMLElement>()\ntarget.value = document.body',
+        ],
+      ] as const
+    ).map(([id, search, replacement]) => ({
+      id,
+      expectedFailureCode: 'TELEPORT_TARGET',
+      sources: changedOverlaySource(
+        baseline,
+        'packages/ui/src/components/TableMaximizeSurface.vue',
+        search,
+        replacement,
+      ),
+    })),
     {
       id: 'overlay-root-after-slot',
       expectedFailureCode: 'OVERLAY_ROOT_ORDER',
@@ -1634,6 +1694,7 @@ function dismiss(event?: MouseEvent): void {
         'phase',
         'submitting',
         'notice',
+        'activeStepIndex',
         'text',
         'getValues',
         'getInitial',
@@ -1646,6 +1707,7 @@ function dismiss(event?: MouseEvent): void {
         'nodeLabel',
         'canFocusField',
         'focusField',
+        'stepIndexForField',
         'rowKeys',
         'addItem',
         'insertItem',
@@ -1655,6 +1717,9 @@ function dismiss(event?: MouseEvent): void {
         'blur',
         'validate',
         'validateItem',
+        'goNextStep',
+        'goBackStep',
+        'setActiveStep',
         'submit',
         'reset',
         'replaceInitial',
@@ -1925,6 +1990,8 @@ function dismiss(event?: MouseEvent): void {
       for (const component of importedNames(script, '@platform/ui')) {
         if (
           ![
+            'UiDisplayStage',
+            'UiDashboardGrid',
             'UiG2Chart',
             'UiChartTimeRange',
             'UiCopyAction',
@@ -2115,6 +2182,7 @@ function dismiss(event?: MouseEvent): void {
     'packages/ui/src/adapters/naive/PavpNaiveFormField.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormControl.vue',
     'packages/ui/src/adapters/naive/PavpNaiveFormChoice.vue',
+    'packages/ui/src/adapters/naive/PavpNaiveFormAttachment.vue',
     'packages/ui/src/adapters/naive/use-form-control.ts',
     'packages/ui/src/adapters/naive/pavp-naive-runtime-context.ts',
     'packages/ui/src/adapters/naive/regional-navigation-theme.ts',
@@ -2463,5 +2531,5 @@ if (process.argv[1]?.endsWith('check-ui-public-components.ts')) {
     throw new Error(violations.join('\n'))
   }
 
-  console.log('UI Public Component check: passed (5/5 overlay negative probes)')
+  console.log('UI Public Component check: passed (9/9 overlay negative probes)')
 }

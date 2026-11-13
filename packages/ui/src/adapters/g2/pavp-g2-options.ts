@@ -2,7 +2,7 @@ import type { UiAppearanceSnapshot } from '@platform/design-system'
 import type { UiG2ChartOptions } from '../../components/g2-chart-contracts'
 import { projectG2Theme, type G2ThemeMetrics } from './pavp-g2-theme'
 import { createG2ThetaEnter, createG2ThetaUpdate } from './pavp-g2-theta'
-import { createG2Hover } from './pavp-g2-hover'
+import { createG2Hover, type G2TourFocus } from './pavp-g2-hover'
 import type { G2TooltipViewport } from './pavp-g2-tooltip'
 
 type OptionsRecord = Record<string, unknown>
@@ -83,6 +83,14 @@ function hasFocusOverride(value: unknown): boolean {
   )
 }
 
+function hasLabelTheme(value: unknown): boolean {
+  if (!record(value)) return false
+  const theme = record(value['theme']) ? value['theme'] : {}
+  if (theme['innerLabel'] !== undefined || theme['label'] !== undefined) return true
+  const children = value['children']
+  return typeof children === 'function' || (Array.isArray(children) && children.some(hasLabelTheme))
+}
+
 /** Private vendor projection, not a second chart grammar or appearance state. */
 export function projectG2Options(
   options: UiG2ChartOptions,
@@ -92,6 +100,7 @@ export function projectG2Options(
   height: number,
   tooltipViewport?: G2TooltipViewport,
   resizing = false,
+  tour?: G2TourFocus,
 ): UiG2ChartOptions {
   const measuredValues = [
     metrics.bodySize,
@@ -116,6 +125,28 @@ export function projectG2Options(
   const theme = projectG2Theme(appearance, metrics)
   const movement = appearance.motion === 'full'
   const platformHover = !hasFocusOverride(options)
+  if (tour && !platformHover)
+    throw new Error('Chart tour cannot override caller-owned focus or state interactions.')
+  if (tour) {
+    const root: unknown = options
+    const nodes = record(root) && root['type'] === 'view' ? root['children'] : [root]
+    if (
+      !Array.isArray(nodes) ||
+      !nodes.length ||
+      nodes.some(
+        (node: unknown) =>
+          !record(node) || !['interval', 'point', 'line', 'area'].includes(String(node['type'])),
+      ) ||
+      !nodes.some(
+        (node: unknown) =>
+          record(node) && (node['type'] === 'point' || node['type'] === 'interval'),
+      )
+    )
+      throw new Error(
+        'Chart tour supports a single view of interval or point marks, optionally with line/area context.',
+      )
+  }
+  const platformInnerContrast = !hasLabelTheme(options)
   function project(
     value: unknown,
     inheritedTheme: OptionsRecord = theme,
@@ -206,7 +237,18 @@ export function projectG2Options(
               : position === 'top'
                 ? { dy: -metrics.spacing * 2, textBaseline: 'bottom' }
                 : {}
-        return { ...placement, ...label }
+        // Native contrast transform measures the actual mark fill, not the primary
+        // button background. Explicit label colors/transforms remain caller-owned.
+        const labelStyle = record(label['style']) ? label['style'] : {}
+        const contrastTransform =
+          platformInnerContrast &&
+          (position === 'inside' || position === 'inner') &&
+          label['fill'] === undefined &&
+          labelStyle['fill'] === undefined &&
+          label['transform'] === undefined
+            ? { transform: [{ type: 'contrastReverse' }] }
+            : {}
+        return { ...placement, ...contrastTransform, ...label }
       })
     }
     const customTheme = node['theme']
@@ -351,7 +393,7 @@ export function projectG2Options(
     const sharedTooltip =
       record(interaction['tooltip']) && interaction['tooltip']['shared'] === true
     const hoverRequested =
-      inheritedHover || interaction['elementHighlight'] === true || sharedTooltip
+      Boolean(tour) || inheritedHover || interaction['elementHighlight'] === true || sharedTooltip
     if (
       platformHover &&
       hoverRequested &&
@@ -365,7 +407,7 @@ export function projectG2Options(
       node['interaction'] = {
         ...interaction,
         elementHighlight: false,
-        pavpHover: { type: createG2Hover(hoverDuration, metrics.easing, movement) },
+        pavpHover: { type: createG2Hover(hoverDuration, metrics.easing, movement, tour) },
       }
     } else if (interaction['pavpHover'] === undefined) {
       // G2 retires custom interaction listeners only when the next spec names them.

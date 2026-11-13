@@ -1,3 +1,4 @@
+import type { UiDateTimeContext } from '../date-time/date-time'
 /** JSON configuration is data. Callbacks and services belong to the trusted frontend input. */
 import type { DeepReadonly, Ref } from 'vue'
 
@@ -110,7 +111,51 @@ type UiFormLengthRules = Omit<UiFormRules, 'minLength' | 'maxLength'> & {
   readonly minLength?: number
   readonly maxLength?: number
 }
+/** Persistent attachment references only; browser File objects never enter form values. */
+export type UiFormAttachment = Readonly<{
+  readonly id: string
+  readonly name: string
+  readonly size?: number
+}>
+export type UiFormAttachmentSource = (
+  file: File,
+  context: UiFormWorkContext & { readonly field: string },
+) => Promise<UiFormAttachment>
 export type UiFormFieldConfig =
+  | (UiFormFieldBase & {
+      readonly kind: 'mask'
+      /** # = digit, A = ASCII letter, * = alphanumeric; other characters are literals. */
+      readonly mask: string
+      readonly defaultValue?: string
+      readonly rules?: UiFormLengthRules
+    })
+  | (Omit<UiFormFieldBase, 'min' | 'max' | 'step'> & {
+      readonly kind: 'slider'
+      readonly min: number
+      readonly max: number
+      readonly step?: number
+      readonly defaultValue?: number
+      readonly rules?: Omit<UiFormRules, 'min' | 'max'> & {
+        readonly min?: number
+        readonly max?: number
+      }
+    })
+  | (UiFormFieldBase & {
+      readonly kind: 'rating'
+      readonly count?: number
+      readonly allowHalf?: boolean
+      readonly defaultValue?: number
+      readonly rules?: UiFormRules
+    })
+  | (UiFormFieldBase & {
+      readonly kind: 'attachment'
+      readonly source: string
+      readonly accept?: string
+      readonly maxFiles?: number
+      readonly maxSize?: number
+      readonly defaultValue?: UiFormAttachment[]
+      readonly rules?: UiFormLengthRules
+    })
   | (UiFormFieldBase & {
       readonly kind: 'text' | 'textarea'
       readonly defaultValue?: string
@@ -172,9 +217,18 @@ export interface UiFormRepeatConfig extends UiFormNodeBase {
   readonly itemLabel?: string
 }
 export type UiFormNode = UiFormFieldConfig | UiFormGroupConfig | UiFormRepeatConfig
+/** Layout-only step partition; does not nest values. Top-level field names only. */
+export interface UiFormStepConfig {
+  readonly name: string
+  readonly label: string
+  readonly description?: string
+  readonly fields: readonly string[]
+}
 export interface UiFormSchema {
   readonly columns?: 1 | 2
   readonly fields: readonly UiFormNode[]
+  /** Optional ordered steps that partition top-level fields. Absent → ordinary form. */
+  readonly steps?: readonly UiFormStepConfig[]
 }
 /** Editable values follow field kinds, not the narrower initial snapshot or defaults. */
 export type UiFormSchemaValues<S extends UiFormSchema> = string extends S['fields'][number]['name']
@@ -185,21 +239,25 @@ type UiFormNodeValue<Node extends UiFormNode> = Node extends UiFormGroupConfig
   ? UiFormSchemaValues<Node>
   : Node extends UiFormRepeatConfig
     ? UiFormSchemaValues<Node>[]
-    : Node extends { readonly kind: 'text' | 'textarea' }
+    : Node extends { readonly kind: 'text' | 'textarea' | 'mask' }
       ? string
-      : Node extends { readonly kind: 'number' }
-        ? number | null
-        : Node extends { readonly kind: 'switch' }
-          ? boolean
-          : Node extends { readonly kind: 'date' | 'time' }
-            ? string | null
-            : Node extends { readonly kind: 'date-range' }
-              ? [string, string] | null
-              : Node extends { readonly kind: 'select' | 'radio' }
-                ? string | number | null
-                : Node extends { readonly kind: 'multi-select' | 'checkbox-group' }
-                  ? (string | number)[]
-                  : UiFormValue
+      : Node extends { readonly kind: 'slider' | 'rating' }
+        ? number
+        : Node extends { readonly kind: 'attachment' }
+          ? UiFormAttachment[]
+          : Node extends { readonly kind: 'number' }
+            ? number | null
+            : Node extends { readonly kind: 'switch' }
+              ? boolean
+              : Node extends { readonly kind: 'date' | 'time' }
+                ? string | null
+                : Node extends { readonly kind: 'date-range' }
+                  ? [string, string] | null
+                  : Node extends { readonly kind: 'select' | 'radio' }
+                    ? string | number | null
+                    : Node extends { readonly kind: 'multi-select' | 'checkbox-group' }
+                      ? (string | number)[]
+                      : UiFormValue
 
 export interface UiFormWorkContext {
   readonly signal: AbortSignal
@@ -239,6 +297,9 @@ export interface UiFormCopy {
   readonly previousOptionsPage?: UiFormText
   readonly nextOptionsPage?: UiFormText
   readonly optionsPage?: (page: number) => string
+  /** Required when the schema declares steps. */
+  readonly previousStep?: UiFormText
+  readonly nextStep?: UiFormText
   readonly validating: UiFormText
   readonly submitting: UiFormText
   readonly submitSucceeded: UiFormText
@@ -258,6 +319,10 @@ export interface UiFormCopy {
   readonly minItems: (count: number) => string
   readonly maxItems: (count: number) => string
   readonly invalidValue: UiFormText
+  /** Required by attachment fields. */
+  readonly chooseAttachment?: UiFormText
+  readonly uploadingAttachment?: UiFormText
+  readonly attachmentFailed?: UiFormText
 }
 export interface UiFormChange<I> {
   readonly previous: DeepReadonly<I>
@@ -283,6 +348,7 @@ export interface UiFormInput<I> {
   readonly onBlur?: (event: { readonly field: string; readonly values: DeepReadonly<I> }) => void
   readonly onReset?: (values: DeepReadonly<I>) => void
   readonly sources?: Readonly<Record<string, UiFormOptionSource<I>>>
+  readonly attachments?: Readonly<Record<string, UiFormAttachmentSource>>
 }
 export interface UiFormNodeState {
   readonly hidden: boolean
@@ -313,6 +379,8 @@ export interface UiFormController<I> {
   readonly phase: Readonly<Ref<'idle' | 'validating' | 'submitting' | 'disposed'>>
   readonly submitting: Readonly<Ref<boolean>>
   readonly notice: Readonly<Ref<null | UiFormText>>
+  /** Null when the schema has no steps. */
+  readonly activeStepIndex: Readonly<Ref<number | null>>
   text(value: string): string
   getValues(): I
   getInitial(): UiFormSnapshot<I>
@@ -332,6 +400,19 @@ export interface UiFormController<I> {
     path: string,
     index: number,
   ): Promise<'valid' | 'invalid' | 'blocked' | 'busy' | 'cancelled'>
+  /** Validate the current step only, then advance. No-op without steps. */
+  goNextStep(): Promise<'applied' | 'invalid' | 'blocked' | 'busy' | 'cancelled'>
+  /** Move back without re-validating rules; incomplete control input blocks navigation. */
+  goBackStep(): Promise<'applied' | 'blocked' | 'busy' | 'cancelled'>
+  /**
+   * Select a step by index. Forward movement validates the current step first unless
+   * `options.relax` is true (detail / free navigation). Leaving a step always commits
+   * mounted controls; incomplete input blocks navigation without discarding its buffer.
+   */
+  setActiveStep(
+    index: number,
+    options?: { readonly relax?: boolean },
+  ): Promise<'applied' | 'invalid' | 'blocked' | 'busy' | 'cancelled'>
   submit(): Promise<UiFormSubmitOutcome>
   reset(): void
   replaceInitial(snapshot: UiFormSnapshot<I>): void
@@ -343,6 +424,8 @@ export interface UiFormController<I> {
   canFocusField(path: string): boolean
   /** Locate through the mounted node's registered focus target; false when unavailable. */
   focusField(path: string): boolean
+  /** Owning step index for a concrete field path, or null when steps are absent. */
+  stepIndexForField(path: string): number | null
   rowKeys(path: string): readonly string[]
   addItem(path: string): UiFormMutationResult
   /** Insert schema defaults before an integer index in 0..length. */
@@ -380,6 +463,7 @@ export interface UiFormFieldBinding extends UiFormNodeState {
   setPendingInput(pending: boolean): void
 }
 export interface UiFormProps<I> {
+  readonly dateTime?: UiDateTimeContext
   readonly form: UiFormController<I>
   readonly mode?: UiFormMode
   readonly columns?: 1 | 2

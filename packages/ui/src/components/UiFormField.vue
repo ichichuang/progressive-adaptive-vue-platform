@@ -1,5 +1,7 @@
 <script setup lang="ts" generic="I">
-import { computed } from 'vue'
+import { computed, inject } from 'vue'
+import { uiDateTimeContext } from '../date-time/date-time-context'
+import { formatUiDateTime } from '../date-time/date-time'
 import { formPresentation } from '../composables/form-presentation'
 import UiScrollArea from './UiScrollArea.vue'
 import PavpNaiveFormChoice from '../adapters/naive/PavpNaiveFormChoice.vue'
@@ -28,6 +30,7 @@ const choice = computed(
     config.value.kind === 'radio' ||
     config.value.kind === 'checkbox-group',
 )
+const dateTime = inject(uiDateTimeContext, undefined)
 const displayValues = computed(() => {
   const value = binding.value.value
   if (choice.value)
@@ -35,8 +38,31 @@ const displayValues = computed(() => {
       item.option === null ? String(item.value) : props.form.text(item.option.label),
     )
   if (value === null || value === '' || (Array.isArray(value) && value.length === 0)) return []
+  const context = dateTime?.value
+  if (
+    context &&
+    (config.value.kind === 'date' || config.value.kind === 'time') &&
+    typeof value === 'string'
+  )
+    return [
+      formatUiDateTime({ kind: config.value.kind, value }, context) ?? props.form.copy.empty(),
+    ]
+  if (context && config.value.kind === 'date-range' && Array.isArray(value))
+    return [
+      value
+        .map((item) =>
+          typeof item === 'string'
+            ? (formatUiDateTime({ kind: 'date', value: item }, context) ?? props.form.copy.empty())
+            : props.form.copy.empty(),
+        )
+        .join(' – '),
+    ]
   if (typeof value === 'boolean') return [value ? props.form.copy.yes() : props.form.copy.no()]
   if (config.value.kind === 'date-range' && Array.isArray(value)) return [value.join(' – ')]
+  if (config.value.kind === 'attachment' && Array.isArray(value))
+    return value.map((item: unknown) =>
+      typeof item === 'object' && item !== null && 'name' in item ? String(item.name) : '',
+    )
   if (Array.isArray(value)) return value.map(String)
   if (typeof value === 'object') return [JSON.stringify(value)]
   return [String(value)]

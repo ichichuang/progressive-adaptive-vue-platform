@@ -56,6 +56,8 @@ type OptionStatus = 'idle' | 'loading' | 'ready' | 'failed'
 type IssueOrigin = 'schema' | 'validation' | 'server' | 'input'
 interface ItemValidationScope {
   readonly prefix: string
+  /** When set, match these top-level roots (and descendants) instead of prefix. */
+  readonly roots?: readonly string[]
   readonly current: () => boolean
 }
 
@@ -67,6 +69,25 @@ export function useUiForm<const Schema extends UiFormSchema>(
   if (!input.formId.trim() || !input.initial.draftId.trim())
     throw new TypeError('Form identities are required.')
   const schema = parseUiFormSchema(input.schema)
+  const attachments = new Map<string, NonNullable<typeof input.attachments>[string]>()
+  function captureAttachments(nodes: readonly UiFormNode[]): void {
+    for (const node of nodes) {
+      if (node.kind === 'group' || node.kind === 'repeat') captureAttachments(node.fields)
+      else if (node.kind === 'attachment') {
+        const source =
+          input.attachments !== undefined && Object.hasOwn(input.attachments, node.source)
+            ? input.attachments[node.source]
+            : undefined
+        if (typeof source !== 'function')
+          throw new TypeError('Attachment fields require a trusted registered source.')
+        for (const key of ['chooseAttachment', 'uploadingAttachment', 'attachmentFailed'] as const)
+          if (typeof input.copy[key] !== 'function')
+            throw new TypeError('Attachment fields require selection, uploading and failure copy.')
+        attachments.set(node.source, source)
+      }
+    }
+  }
+  captureAttachments(schema.fields)
   // Capture only explicit registrations used by this immutable schema. Later
   // mutation of an application object cannot replace this controller's provider.
   const sources = new Map<string, UiFormOptionSource<I>>()
@@ -128,6 +149,11 @@ export function useUiForm<const Schema extends UiFormSchema>(
     }
   }
   validateSources(schema.fields)
+  if (schema.steps !== undefined) {
+    if (typeof input.copy.previousStep !== 'function' || typeof input.copy.nextStep !== 'function')
+      throw new TypeError('Form steps require previousStep and nextStep copy.')
+  }
+  const stepRoots = schema.steps?.map((step) => Object.freeze([...step.fields])) ?? null
   const normalize = (value: unknown) => createFormValues(schema.fields, value) as I
   const initial = normalize(input.initial.values)
   // Baseline, current values and identity are one publication. Synchronous
@@ -141,6 +167,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
   const draft = computed(() => record.value.values)
   const values = computed<DeepReadonly<I>>(() => freezeDraftValue<I>(draft.value))
   const draftId = computed(() => record.value.draftId)
+  const activeStepIndex = shallowRef<number | null>(schema.steps === undefined ? null : 0)
   const generation = shallowRef(0)
   const summaryRevision = shallowRef(0)
   const feedbackRevision = shallowRef(0)
@@ -284,14 +311,14 @@ export function useUiForm<const Schema extends UiFormSchema>(
       throw new TypeError('Expected a form field.')
     return { ...entry, node: entry.node }
   }
-  function nodeState(path: string) {
+  function nodeState(path: string, includeBusy = true) {
     const entry = entryFor(path)
     const lineage = [...entry.ancestors.map(entryFor), entry]
     return Object.freeze({
       hidden: lineage.some(({ node, group }) => evaluateFormFlag(node.hidden, draft.value, group)),
       disabled:
         disposed.value ||
-        (submission.value !== null && !committing) ||
+        (includeBusy && submission.value !== null && !committing) ||
         lineage.some(({ node, group }) => evaluateFormFlag(node.disabled, draft.value, group)),
       readonly: lineage.some(({ node, group }) =>
         evaluateFormFlag(node.readonly, draft.value, group),
@@ -314,8 +341,23 @@ export function useUiForm<const Schema extends UiFormSchema>(
     if (metadata !== undefined) issueMetadata.set(moved, metadata)
     return moved
   }
-  function inScope(name: string | null, scope?: string): boolean {
+  function inScope(name: string | null, scope?: string, roots?: readonly string[]): boolean {
+    if (roots !== undefined) {
+      if (name === null) return true
+      return roots.some((root) => name === root || name.startsWith(`${root}.`))
+    }
     return scope === undefined || (name?.startsWith(scope) ?? false)
+  }
+  function stepIndexForField(path: string): number | null {
+    if (stepRoots === null) return null
+    entryFor(path)
+    const root = path.split('.')[0]
+    if (root === undefined) return null
+    const index = stepRoots.findIndex((fields) => fields.includes(root))
+    return index >= 0 ? index : null
+  }
+  function resetActiveStep(): void {
+    if (stepRoots !== null) activeStepIndex.value = 0
   }
   function issueCurrent(issue: UiFormIssue): boolean {
     if (!(optionIssueCurrent.get(issue.message)?.() ?? true)) return false
@@ -326,18 +368,24 @@ export function useUiForm<const Schema extends UiFormSchema>(
       : entries.value.some((entry) => entry.path === issue.field) &&
           sameDraftValue(metadata.value, getFormValue(draft.value, issue.field))
   }
-  function publishIssues(result: readonly UiFormIssue[], scope?: string) {
+  function publishIssues(
+    result: readonly UiFormIssue[],
+    scope?: string,
+    roots?: readonly string[],
+  ) {
     const retained =
-      scope === undefined
+      scope === undefined && roots === undefined
         ? []
-        : issues.value.filter((issue) => !inScope(issue.field, scope) && issueCurrent(issue))
+        : issues.value.filter((issue) => !inScope(issue.field, scope, roots) && issueCurrent(issue))
     issues.value = Object.freeze([
       ...retained,
       ...result
-        .filter((issue) => inScope(issue.field, scope))
+        .filter((issue) => inScope(issue.field, scope, roots))
         .filter(
           (issue) =>
-            scope === undefined || entries.value.some((entry) => entry.path === issue.field),
+            (scope === undefined && roots === undefined) ||
+            (roots !== undefined && issue.field === null) ||
+            entries.value.some((entry) => entry.path === issue.field),
         )
         .filter((issue) => optionIssueCurrent.get(issue.message)?.() ?? true)
         .filter(
@@ -364,19 +412,33 @@ export function useUiForm<const Schema extends UiFormSchema>(
   function validationVisible() {
     return showAll.value || Object.keys(touched.value).length > 0
   }
+  function activeStepScope(): ItemValidationScope | undefined {
+    const index = activeStepIndex.value
+    const roots = index === null ? undefined : stepRoots?.[index]
+    if (roots === undefined) return undefined
+    const originGeneration = generation.value
+    return {
+      prefix: '',
+      roots,
+      current: () =>
+        !disposed.value && generation.value === originGeneration && activeStepIndex.value === index,
+    }
+  }
   function refreshIssues() {
     if (!validationVisible()) return
-    const scope = checkingItem?.prefix
+    const roots =
+      checkingItem?.roots ?? (checkingItem === undefined ? activeStepScope()?.roots : undefined)
+    const scope = roots === undefined ? checkingItem?.prefix : undefined
     // Keep custom feedback until its replacement has finished. Server/input
     // feedback belongs to the exact value that was rejected, not its index.
     const retained = issues.value.filter((issue) => {
-      if (!inScope(issue.field, scope)) return false
+      if (!inScope(issue.field, scope, roots)) return false
       const metadata = issueMetadata.get(issue)
       if (metadata?.origin === 'validation') return true
       if (metadata?.origin !== 'server' && metadata?.origin !== 'input') return false
       return issueCurrent(issue)
     })
-    publishIssues([...retained, ...validateSchema(draft.value, scope)], scope)
+    publishIssues([...retained, ...validateSchema(draft.value, scope, roots)], scope, roots)
   }
   function cancelValidation(previous = checking.value) {
     if (checking.value === previous) {
@@ -1222,10 +1284,14 @@ export function useUiForm<const Schema extends UiFormSchema>(
       })
     return work.promise
   }
-  function validateSchema(captured: I, scope?: string): readonly UiFormIssue[] {
+  function validateSchema(
+    captured: I,
+    scope?: string,
+    roots?: readonly string[],
+  ): readonly UiFormIssue[] {
     const result: UiFormIssue[] = []
     for (const { node, path } of entries.value) {
-      if (node.kind !== 'repeat' || !inScope(path, scope) || nodeState(path).hidden) continue
+      if (node.kind !== 'repeat' || !inScope(path, scope, roots) || nodeState(path).hidden) continue
       const rows = getFormValue(captured, path)
       if (!Array.isArray(rows)) continue
       const minimum = node.minItems
@@ -1236,7 +1302,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
         result.push({ field: path, message: () => input.copy.maxItems(maximum) })
     }
     for (const config of fields.value) {
-      if (!inScope(config.name, scope) || nodeState(config.name).hidden) continue
+      if (!inScope(config.name, scope, roots) || nodeState(config.name).hidden) continue
       const { group } = fieldFor(config.name)
       const value = getFormValue(captured, config.name)
       result.push(
@@ -1250,7 +1316,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
       )
     }
     for (const config of fields.value) {
-      if (!inScope(config.name, scope) || nodeState(config.name).hidden) continue
+      if (!inScope(config.name, scope, roots) || nodeState(config.name).hidden) continue
       const value = getFormValue(captured, config.name)
       const state = options.get(config.name)
       if (state !== undefined) {
@@ -1286,6 +1352,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     captured: I,
     signal: AbortSignal,
     scope?: string,
+    roots?: readonly string[],
   ): Promise<readonly UiFormIssue[]> {
     const result: UiFormIssue[] = []
     if (input.validation !== undefined) {
@@ -1294,10 +1361,25 @@ export function useUiForm<const Schema extends UiFormSchema>(
       result.push(...custom.map((issue) => rememberIssue(issue, 'validation')))
     }
     // Source completion can change availability while custom validation awaits.
-    return [...result, ...validateSchema(captured, scope)]
+    return [...result, ...validateSchema(captured, scope, roots)]
   }
-  function publishFeedbackAttempt(scope?: string): void {
-    feedbackScope.value = scope
+  function publishFeedbackAttempt(scope?: string, roots?: readonly string[]): void {
+    if (stepRoots !== null && activeStepIndex.value !== null) {
+      // A buffered control must not be unmounted while revealing another step's error.
+      const pending = issues.value.filter(
+        (issue) => issue.field !== null && pendingFields.value.includes(issue.field),
+      )
+      for (const issue of pending.length > 0 ? pending : issues.value) {
+        if (issue.field === null || !inScope(issue.field, scope, roots)) continue
+        const state = nodeState(issue.field, false)
+        if (state.hidden || state.disabled || state.readonly) continue
+        const step = stepIndexForField(issue.field)
+        if (step !== null) activeStepIndex.value = step
+        break
+      }
+    }
+    // Step-scoped failures mount only the active step; leave feedbackScope open.
+    feedbackScope.value = roots !== undefined ? undefined : scope
     // Explicit validation and submit failures share the existing reveal/feedback attempt.
     summaryValueRevision = valueRevision
     summaryRevision.value += 1
@@ -1314,12 +1396,16 @@ export function useUiForm<const Schema extends UiFormSchema>(
       submission.value === null
     )
   }
-  function commitInputs(current: () => boolean, scope?: string): readonly UiFormIssue[] | null {
+  function commitInputs(
+    current: () => boolean,
+    scope?: string,
+    roots?: readonly string[],
+  ): readonly UiFormIssue[] | null {
     const incomplete: UiFormIssue[] = []
     committing = true
     try {
       for (const name of [...commits.keys()]) {
-        if (!inScope(name, scope)) continue
+        if (!inScope(name, scope, roots)) continue
         const target = commits.get(name)
         if (target === undefined) continue
         const binding = field(name)
@@ -1330,7 +1416,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
         if (!current()) return null
       }
       for (const name of pendingFields.value) {
-        if (!inScope(name, scope)) continue
+        if (!inScope(name, scope, roots)) continue
         const binding = field(name)
         if (
           !binding.hidden &&
@@ -1350,6 +1436,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
   function incompleteFeedback(
     incomplete: readonly UiFormIssue[],
     scope?: string,
+    roots?: readonly string[],
     previous: readonly UiFormIssue[] = issues.value,
   ) {
     // Raw input has not been validated by the custom callback. Keep its prior
@@ -1357,17 +1444,35 @@ export function useUiForm<const Schema extends UiFormSchema>(
     const blocked = new Set(incomplete.map((issue) => issue.field))
     return [
       ...previous.filter((issue) => issueMetadata.get(issue)?.origin === 'validation'),
-      ...validateSchema(draft.value, scope).filter((issue) => !blocked.has(issue.field)),
+      ...validateSchema(draft.value, scope, roots).filter((issue) => !blocked.has(issue.field)),
       ...incomplete,
     ]
   }
+  function sameValidationItem(
+    left: ItemValidationScope | undefined,
+    right: ItemValidationScope | undefined,
+  ): boolean {
+    if (left === right) return true
+    if (left === undefined || right === undefined) return false
+    if (left.prefix !== right.prefix) return false
+    const leftRoots = left.roots
+    const rightRoots = right.roots
+    if (leftRoots === rightRoots) return true
+    if (leftRoots === undefined || rightRoots === undefined) return false
+    return (
+      leftRoots.length === rightRoots.length &&
+      leftRoots.every((root, index) => root === rightRoots[index])
+    )
+  }
   function check(explicit = false, item?: ItemValidationScope): Promise<ValidationOutcome> {
+    // Passive validation follows the visible step; explicit full validation remains global.
+    if (!explicit && item === undefined) item = activeStepScope()
     if (disposed.value || (item !== undefined && !item.current()))
       return Promise.resolve('cancelled')
     if (submission.value !== null)
       return item === undefined ? submission.value.validation.promise : Promise.resolve('cancelled')
     if (checking.value !== null) {
-      if (!explicit || (explicitCheck === checking.value && checkingItem?.prefix === item?.prefix))
+      if (!explicit || (explicitCheck === checking.value && sameValidationItem(checkingItem, item)))
         return checking.value.promise
       // An explicit request must commit its own controls, not reuse an automatic
       // or differently scoped snapshot. A replacement created on abort wins.
@@ -1375,13 +1480,14 @@ export function useUiForm<const Schema extends UiFormSchema>(
       const replacement = cancelValidation()
       if (originRevision !== revision.value) return Promise.resolve('cancelled')
       if (replacement !== null)
-        return explicitCheck === replacement && checkingItem?.prefix === item?.prefix
+        return explicitCheck === replacement && sameValidationItem(checkingItem, item)
           ? replacement.promise
           : Promise.resolve('cancelled')
       return check(explicit, item)
     }
     const work = createFormOperation<ValidationOutcome>('cancelled')
-    const scope = item?.prefix
+    const roots = item?.roots
+    const scope = roots === undefined ? item?.prefix : undefined
     let capturedRevision: number | undefined
     let incompleteInput = false
     checkingItem = item
@@ -1398,26 +1504,26 @@ export function useUiForm<const Schema extends UiFormSchema>(
         if (explicit) {
           await nextTick()
           if (!current()) return null
-          if (scope !== undefined) {
+          if (scope !== undefined || roots !== undefined) {
             touched.value = Object.freeze({
               ...touched.value,
               ...Object.fromEntries(
                 entries.value
-                  .filter(({ path }) => inScope(path, scope))
+                  .filter(({ path }) => inScope(path, scope, roots))
                   .map(({ path }) => [path, true]),
               ),
             })
             if (!current()) return null
           }
-          const incomplete = commitInputs(current, scope)
+          const incomplete = commitInputs(current, scope, roots)
           if (incomplete === null) return null
           capturedRevision = revision.value
           if (incomplete.length > 0) {
             incompleteInput = true
-            return incompleteFeedback(incomplete, scope)
+            return incompleteFeedback(incomplete, scope, roots)
           }
         }
-        return validateCaptured(cloneDraft(draft.value), work.signal, scope)
+        return validateCaptured(cloneDraft(draft.value), work.signal, scope, roots)
       })
       .then((result) => {
         if (!current() || result === null) return
@@ -1430,6 +1536,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
             ...result,
           ],
           scope,
+          roots,
         )
         if (!current()) return
         if (
@@ -1439,8 +1546,8 @@ export function useUiForm<const Schema extends UiFormSchema>(
         )
           notice.value = null
         if (!current()) return
-        const invalid = issues.value.some((issue) => inScope(issue.field, scope))
-        if (invalid && explicitCheck === work) publishFeedbackAttempt(scope)
+        const invalid = issues.value.some((issue) => inScope(issue.field, scope, roots))
+        if (invalid && explicitCheck === work) publishFeedbackAttempt(scope, roots)
         if (!current()) return
         checkingItem = undefined
         checking.value = null
@@ -1459,7 +1566,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
           notice.value = input.copy.validationUnavailable
         }
         if (!current()) return
-        if (explicitCheck === work) publishFeedbackAttempt(scope)
+        if (explicitCheck === work) publishFeedbackAttempt(scope, roots)
         if (!current()) return
         checkingItem = undefined
         checking.value = null
@@ -1516,6 +1623,8 @@ export function useUiForm<const Schema extends UiFormSchema>(
     if (!active()) return false
     showAll.value = false
     if (!active()) return false
+    resetActiveStep()
+    if (!active()) return false
     keys.clear()
     controlKeys.clear()
     focuses.clear()
@@ -1534,13 +1643,81 @@ export function useUiForm<const Schema extends UiFormSchema>(
     revision.value += 1
     return active()
   }
+  async function setActiveStep(
+    index: number,
+    options?: { readonly relax?: boolean },
+  ): Promise<'applied' | 'invalid' | 'blocked' | 'busy' | 'cancelled'> {
+    if (disposed.value) return 'cancelled'
+    if (stepRoots === null || activeStepIndex.value === null) return 'blocked'
+    if (!Number.isInteger(index) || index < 0 || index >= stepRoots.length) return 'blocked'
+    const currentIndex = activeStepIndex.value
+    if (index === currentIndex) return 'applied'
+    const guard = mutationGuard()
+    if (guard === 'disposed') return 'cancelled'
+    if (guard === 'busy') return 'busy'
+    const scope = activeStepScope()
+    if (scope === undefined) return 'blocked'
+    if (index < currentIndex || options?.relax === true) {
+      // Back/free navigation skips rules, never the mounted control's raw-input contract.
+      cancelValidation()
+      if (!scope.current()) return 'cancelled'
+      const incomplete = commitInputs(scope.current, undefined, scope.roots)
+      if (incomplete === null || !scope.current()) return 'cancelled'
+      if (incomplete.length > 0) {
+        touched.value = Object.freeze({
+          ...touched.value,
+          ...Object.fromEntries(
+            incomplete.flatMap((issue) => (issue.field === null ? [] : [[issue.field, true]])),
+          ),
+        })
+        publishIssues(
+          incompleteFeedback(incomplete, undefined, scope.roots),
+          undefined,
+          scope.roots,
+        )
+        publishFeedbackAttempt(undefined, scope.roots)
+        return 'blocked'
+      }
+      activeStepIndex.value = index
+      return 'applied'
+    }
+    showAll.value = true
+    const outcome = await check(true, scope)
+    if (outcome === 'cancelled') return 'cancelled'
+    if (outcome === 'invalid') return 'invalid'
+    if (activeStepIndex.value !== currentIndex) return 'cancelled'
+    activeStepIndex.value = index
+    return 'applied'
+  }
+  function goNextStep() {
+    if (disposed.value) return Promise.resolve('cancelled' as const)
+    if (stepRoots === null || activeStepIndex.value === null)
+      return Promise.resolve('blocked' as const)
+    if (activeStepIndex.value >= stepRoots.length - 1) return Promise.resolve('blocked' as const)
+    return setActiveStep(activeStepIndex.value + 1)
+  }
+  function goBackStep(): Promise<'applied' | 'blocked' | 'busy' | 'cancelled'> {
+    if (disposed.value) return Promise.resolve('cancelled')
+    if (stepRoots === null || activeStepIndex.value === null) return Promise.resolve('blocked')
+    if (activeStepIndex.value <= 0) return Promise.resolve('blocked')
+    return setActiveStep(activeStepIndex.value - 1).then((result) =>
+      result === 'invalid' ? 'blocked' : result,
+    )
+  }
   function blur(name: string) {
     if (disposed.value || submission.value !== null) return
     fieldFor(name)
     touched.value = Object.freeze({ ...touched.value, [name]: true })
     const originGeneration = generation.value
     const previous = checking.value
-    if (checkingItem !== undefined && !inScope(name, checkingItem.prefix))
+    if (
+      checkingItem !== undefined &&
+      !inScope(
+        name,
+        checkingItem.roots === undefined ? checkingItem.prefix : undefined,
+        checkingItem.roots,
+      )
+    )
       cancelValidation(previous)
     input.onBlur?.(Object.freeze({ field: name, values: values.value }))
     if (originGeneration === generation.value) void check()
@@ -1872,7 +2049,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
         const incomplete = commitInputs(current)
         if (incomplete === null) return
         if (incomplete.length > 0) {
-          publishIssues(incompleteFeedback(incomplete, undefined, previousIssues))
+          publishIssues(incompleteFeedback(incomplete, undefined, undefined, previousIssues))
           invalid()
           return
         }
@@ -2025,6 +2202,7 @@ export function useUiForm<const Schema extends UiFormSchema>(
     ),
     submitting: computed(() => submission.value !== null),
     notice: computed(() => notice.value),
+    activeStepIndex: computed(() => activeStepIndex.value),
     getValues: () => cloneDraft(draft.value),
     getInitial: () => ({ draftId: draftId.value, values: cloneDraft(accepted.value) }),
     getValue(path: string) {
@@ -2044,6 +2222,10 @@ export function useUiForm<const Schema extends UiFormSchema>(
     focusField,
     submit,
     validateItem,
+    goNextStep,
+    goBackStep,
+    setActiveStep,
+    stepIndexForField,
     rowKeys(path: string) {
       const entry = entryFor(path)
       if (entry.node.kind !== 'repeat') throw new TypeError('Expected a repeat group.')
@@ -2081,6 +2263,11 @@ export function useUiForm<const Schema extends UiFormSchema>(
     },
   })
   registerFormPresentation(form, {
+    attachmentSource(name) {
+      const source = attachments.get(name)
+      if (source === undefined) throw new TypeError('Unknown attachment source.')
+      return source
+    },
     generation: computed(() => generation.value),
     feedbackRevision: computed(() => feedbackRevision.value),
     feedbackScope: computed(() => feedbackScope.value),

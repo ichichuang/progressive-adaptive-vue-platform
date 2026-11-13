@@ -9,6 +9,32 @@ export const tokens = {
   'color.control.primary': 'var(--ui-color-control-primary)',
   'color.control.success': 'var(--ui-color-control-success)',
   'color.control.warning': 'var(--ui-color-control-warning)',
+  'color.data-viz.categorical.series-1': 'var(--ui-color-data-viz-categorical-series-1)',
+  'color.data-viz.categorical.series-2': 'var(--ui-color-data-viz-categorical-series-2)',
+  'color.data-viz.categorical.series-3': 'var(--ui-color-data-viz-categorical-series-3)',
+  'color.data-viz.categorical.series-4': 'var(--ui-color-data-viz-categorical-series-4)',
+  'color.data-viz.categorical.series-5': 'var(--ui-color-data-viz-categorical-series-5)',
+  'color.data-viz.categorical.series-6': 'var(--ui-color-data-viz-categorical-series-6)',
+  'color.data-viz.categorical.series-7': 'var(--ui-color-data-viz-categorical-series-7)',
+  'color.data-viz.categorical.series-8': 'var(--ui-color-data-viz-categorical-series-8)',
+  'color.expression.accent-a.foreground': 'var(--ui-color-expression-accent-a-foreground)',
+  'color.expression.accent-a.soft.background':
+    'var(--ui-color-expression-accent-a-soft-background)',
+  'color.expression.accent-a.soft.foreground':
+    'var(--ui-color-expression-accent-a-soft-foreground)',
+  'color.expression.accent-a.solid.background':
+    'var(--ui-color-expression-accent-a-solid-background)',
+  'color.expression.accent-a.solid.foreground':
+    'var(--ui-color-expression-accent-a-solid-foreground)',
+  'color.expression.accent-b.foreground': 'var(--ui-color-expression-accent-b-foreground)',
+  'color.expression.accent-b.soft.background':
+    'var(--ui-color-expression-accent-b-soft-background)',
+  'color.expression.accent-b.soft.foreground':
+    'var(--ui-color-expression-accent-b-soft-foreground)',
+  'color.expression.accent-b.solid.background':
+    'var(--ui-color-expression-accent-b-solid-background)',
+  'color.expression.accent-b.solid.foreground':
+    'var(--ui-color-expression-accent-b-solid-foreground)',
   'color.focus.ring': 'var(--ui-color-focus-ring)',
   'color.scrim.viewport': 'var(--ui-color-scrim-viewport)',
   'color.status.error': 'var(--ui-color-status-error)',

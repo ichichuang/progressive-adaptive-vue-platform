@@ -1,24 +1,13 @@
+import { isUiDateOnly, isUiTimeOnly } from '../date-time/date-time'
 import type { UiFormController, UiFormFieldBinding, UiFormValue } from './form-contracts'
 
-function dateOnly(timestamp: number): string {
-  const date = new Date(timestamp)
-  return `${String(date.getFullYear()).padStart(4, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-}
+import { isFormAttachment } from './form-special-values'
 
 export function isDateOnly(value: string): boolean {
-  if (!/^\d{4}-\d{2}-\d{2}$/u.test(value)) return false
-  if (Number(value.slice(0, 4)) === 0) return false
-  const date = new Date(0)
-  date.setFullYear(
-    Number(value.slice(0, 4)),
-    Number(value.slice(5, 7)) - 1,
-    Number(value.slice(8, 10)),
-  )
-  return dateOnly(date.getTime()) === value
+  return isUiDateOnly(value)
 }
-
 export function isTimeOnly(value: string): boolean {
-  return /^(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d$/u.test(value)
+  return value.length === 8 && isUiTimeOnly(value)
 }
 
 export function isDateRange(value: unknown): value is [string, string] {
@@ -46,7 +35,13 @@ export function acceptsControlValue<I>(
   switch (config.kind) {
     case 'text':
     case 'textarea':
+    case 'mask':
       return typeof value === 'string'
+    case 'slider':
+    case 'rating':
+      return typeof value === 'number' && Number.isFinite(value)
+    case 'attachment':
+      return Array.isArray(value) && value.every(isFormAttachment)
     case 'number':
       return value === null || (typeof value === 'number' && Number.isFinite(value))
     case 'switch':

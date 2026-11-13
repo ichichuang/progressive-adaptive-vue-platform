@@ -22,13 +22,13 @@ defineProps<{
     </NBreadcrumb>
     <div class="pavp-page-header__copy">
       <h1
-        class="leading-title font-title-weight m-0 text-text-primary text-title"
+        class="pavp-page-header__title leading-title font-title-weight m-0 text-text-primary text-title"
         data-route-focus="architecture-console-page-heading"
         tabindex="-1"
       >
         {{ title }}
       </h1>
-      <p class="leading-body m-0 text-body text-text-secondary">
+      <p class="pavp-page-header__summary leading-body m-0 text-body text-text-secondary">
         {{ summary }}
       </p>
     </div>

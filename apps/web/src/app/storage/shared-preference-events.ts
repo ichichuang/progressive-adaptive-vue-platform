@@ -1,6 +1,7 @@
 import type { applicationConfig } from '../config/app.config'
 
 type SharedPreferenceKey =
+  | typeof applicationConfig.dateTime.preferenceStorageKey
   | typeof applicationConfig.appearance.preferenceStorageKey
   | typeof applicationConfig.appearance.customThemeRegistryStorageKey
   | typeof applicationConfig.localization.preferenceStorageKey

@@ -1,3 +1,10 @@
+import { verifyDashboard } from './check-dashboard'
+import { verifyDateTime } from './check-date-time'
+import { adjacentVisibleTableColumn } from '../../packages/ui/src/components/table-column-preference'
+import { verifyFormBuilderFields } from './check-form-builder-fields'
+import { resolveTableColumnDisplay } from '../../packages/ui/src/components/table-column-display'
+import { verifyFormSpecialFields } from './check-form-fields'
+import { tableQuerySharingCodec } from '../../apps/web/src/app/tables/table-query-sharing-example'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
@@ -22,6 +29,7 @@ import type {
   UiTablePage,
   UiTableQuery,
   UiTableRecord,
+  UiTableReadonlyRecord,
   UiTableResolvedRequest,
   UiTableSchema,
   UiTableSummaryCell,
@@ -35,6 +43,7 @@ import {
   parseUiTableSchema,
   inspectUiTableSchema,
 } from '../../packages/ui/src/components/table-schema'
+import { useUiTableActions } from '../../packages/ui/src/composables/use-ui-table-actions'
 import { useUiTable } from '../../packages/ui/src/composables/use-ui-table'
 import { useUiForm } from '../../packages/ui/src/composables/use-ui-form'
 import { useUiTableQuery } from '../../packages/ui/src/composables/use-ui-table-query'
@@ -1126,6 +1135,195 @@ async function verifyTableReadonlySnapshots(): Promise<void> {
   table.dispose()
 }
 
+function verifyColumnDisplay(): void {
+  const base = { key: 'value', title: 'Value' }
+  assert.equal(
+    resolveTableColumnDisplay(
+      { ...base, kind: 'boolean', emptyText: 'missing' },
+      true,
+      (value) => (value === true ? 'Yes' : 'No'),
+      (value) => value,
+    ).text,
+    'Yes',
+  )
+  assert.equal(
+    resolveTableColumnDisplay(
+      { ...base, kind: 'number', emptyText: 'missing' },
+      'invalid',
+      () => 'Wrong',
+      (value) => value,
+    ).text,
+    'missing',
+  )
+  assert.equal(
+    resolveTableColumnDisplay(
+      { ...base, kind: 'number', emptyText: 'missing' },
+      12,
+      (value) => (typeof value === 'number' ? value.toFixed(2) : ''),
+      (value) => value,
+    ).text,
+    '12.00',
+  )
+  const fallback = (value: unknown) =>
+    typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+      ? String(value)
+      : 'Empty'
+  const translated = (text: string) => `translated:${text}`
+  assert.deepEqual(
+    resolveTableColumnDisplay(
+      { ...base, format: { decimalPlaces: 2, prefix: '$', suffix: ' USD' } },
+      12.3,
+      fallback,
+      translated,
+    ),
+    { text: '$12.30 USD', tone: undefined },
+  )
+  assert.equal(
+    resolveTableColumnDisplay({ ...base, emptyText: 'missing' }, null, fallback, translated).text,
+    'translated:missing',
+  )
+  const options = [
+    { value: true, label: 'enabled', tone: 'success' as const },
+    { value: 'true', label: 'literal' },
+  ]
+  assert.deepEqual(resolveTableColumnDisplay({ ...base, options }, true, fallback, translated), {
+    text: 'translated:enabled',
+    tone: 'success',
+  })
+  assert.equal(
+    resolveTableColumnDisplay({ ...base, options }, 'true', fallback, translated).text,
+    'translated:literal',
+  )
+  assert.equal(
+    resolveTableColumnDisplay({ ...base, options }, 'unknown', fallback, translated).text,
+    'unknown',
+  )
+  const schema = { id: 'format', rowKey: 'id', source: { kind: 'local' }, columns: [base] }
+  for (const invalid of [
+    { align: 'top' },
+    { overflow: 'hidden' },
+    { format: { decimalPlaces: 21 } },
+    { format: { expression: 'x' } },
+    {
+      options: [
+        { value: 1, label: 'a' },
+        { value: 1, label: 'b' },
+      ],
+    },
+    { options: [{ value: {}, label: 'x' }] },
+    { options: [{ value: 'a', label: 'A', tone: 'red' }] },
+  ])
+    assert.throws(() => {
+      parseUiTableSchema({ ...schema, columns: [{ ...base, ...invalid }] })
+    })
+  assert.doesNotThrow(() => {
+    parseUiTableSchema({
+      ...schema,
+      columns: [
+        {
+          ...base,
+          align: 'center',
+          overflow: 'ellipsis',
+          options,
+          format: { decimalPlaces: 2 },
+          emptyText: '',
+        },
+      ],
+    })
+  })
+}
+
+function verifyColumnManipulation(): void {
+  const neighbors = [
+    { key: 'a', title: 'A' },
+    { key: 'hidden', title: 'Hidden', hidden: true },
+    { key: 'b', title: 'B' },
+  ]
+  assert.equal(adjacentVisibleTableColumn(neighbors, 'a', 'right'), 'b')
+  assert.equal(adjacentVisibleTableColumn(neighbors, 'b', 'left'), 'a')
+  assert.equal(adjacentVisibleTableColumn(neighbors, 'a', 'left'), undefined)
+  const stored = new Map<string, unknown>()
+  const storage = {
+    read: (key: string): unknown => stored.get(key),
+    write: (key: string, value: unknown): void => {
+      stored.set(key, structuredClone(value))
+    },
+    clear: (key: string): void => {
+      stored.delete(key)
+    },
+  }
+  const schema: UiTableSchema = {
+    id: 'column-manipulation',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columnPreferenceKey: 'manipulation',
+    reorderableColumns: true,
+    columns: [
+      { key: 'id', title: 'ID', width: 120, minWidth: 80, maxWidth: 200, resizable: true },
+      { key: 'name', title: 'Name', width: 240 },
+      { key: 'amount', title: 'Amount', hidden: true },
+    ],
+  }
+  const create = () => useUiTable({ schema, columnPreferenceStorage: storage, immediate: false })
+  const table = create()
+  table.setColumnWidth('id', 1000)
+  assert.equal(table.columns.value[0]?.width, 200)
+  table.setColumnWidth('id', 10)
+  assert.equal(table.columns.value[0].width, 80)
+  table.setColumnWidth('id', 152.5)
+  table.reorderColumn('id', 'amount', 'after')
+  assert.deepEqual(
+    table.columns.value.map((column) => column.key),
+    ['name', 'amount', 'id'],
+  )
+  assert.equal(table.columns.value[1]?.hidden, true)
+  const restored = create()
+  assert.deepEqual(
+    restored.columns.value,
+    table.columns.value.map((column) => ({ ...column, hidden: column.hidden === true })),
+  )
+  restored.reorderColumn('id', 'name', 'before')
+  assert.equal(restored.columns.value[0]?.key, 'id')
+  assert.throws(() => {
+    table.setColumnWidth('missing', 100)
+  })
+  for (const width of [NaN, Infinity, 0, -1])
+    assert.throws(() => {
+      table.setColumnWidth('id', width)
+    })
+  for (const column of [
+    { width: Infinity },
+    { minWidth: 0 },
+    { maxWidth: -1 },
+    { minWidth: 200, maxWidth: 100 },
+    { width: 60, minWidth: 80 },
+    { width: 300, maxWidth: 200 },
+    { resizable: 'yes' },
+  ])
+    assert.throws(() =>
+      parseUiTableSchema({ ...schema, columns: [{ key: 'id', title: 'ID', ...column }] }),
+    )
+  const narrowed = useUiTable({
+    schema: { ...schema, columns: [{ key: 'id', title: 'ID', maxWidth: 100 }] },
+    columnPreferenceStorage: storage,
+    immediate: false,
+  })
+  assert.equal(narrowed.columns.value[0]?.width, 100)
+  for (const width of [NaN, Infinity, 0, -1, '100']) {
+    stored.set('manipulation', { schemaVersion: 1, columns: [{ key: 'id', hidden: false, width }] })
+    assert.deepEqual(create().columns.value, schema.columns)
+  }
+  table.resetColumns()
+  assert.equal(stored.has('manipulation'), false)
+  assert.deepEqual(table.columns.value, schema.columns)
+  table.dispose()
+  table.setColumnWidth('id', 180)
+  table.reorderColumn('id', 'amount', 'after')
+  assert.deepEqual(table.columns.value, schema.columns)
+  restored.dispose()
+  narrowed.dispose()
+}
+
 function verifyColumnPreferences(): void {
   const stored = new Map<string, unknown>()
   let writes = 0
@@ -1314,6 +1512,198 @@ async function verifyCommonFormFields(): Promise<void> {
     }),
   )
   form.dispose()
+}
+async function verifyFormSteps(): Promise<void> {
+  assert.throws(() =>
+    parseUiFormSchema({
+      fields: [
+        { kind: 'text', name: 'a', label: 'A' },
+        { kind: 'text', name: 'b', label: 'B' },
+      ],
+      steps: [{ name: 'one', label: 'One', fields: ['a'] }],
+    }),
+  )
+  assert.throws(() =>
+    parseUiFormSchema({
+      fields: [{ kind: 'text', name: 'a', label: 'A' }],
+      steps: [
+        { name: 'one', label: 'One', fields: ['a'] },
+        { name: 'two', label: 'Two', fields: ['a'] },
+      ],
+    }),
+  )
+  const schema = parseUiFormSchema({
+    fields: [
+      { kind: 'text', name: 'name', label: 'Name', required: true },
+      {
+        kind: 'text',
+        name: 'phone',
+        label: 'Phone',
+        required: { field: 'needsPhone', operator: 'eq', value: true },
+        hidden: { field: 'needsPhone', operator: 'eq', value: false },
+      },
+      { kind: 'switch', name: 'needsPhone', label: 'Need phone' },
+      { kind: 'text', name: 'city', label: 'City', required: true },
+    ],
+    steps: [
+      { name: 'identity', label: 'Identity', fields: ['name', 'needsPhone', 'phone'] },
+      { name: 'location', label: 'Location', fields: ['city'] },
+    ],
+  })
+  const form = useUiForm({
+    formId: 'form-steps',
+    schema,
+    initial: {
+      draftId: 'steps',
+      values: { name: '', needsPhone: false, phone: '', city: '' },
+    },
+    copy: {
+      ...formCopy,
+      previousStep: () => 'Previous',
+      nextStep: () => 'Next',
+    },
+  })
+  assert.equal(form.activeStepIndex.value, 0)
+  assert.equal(await form.goNextStep(), 'invalid')
+  assert.equal(form.activeStepIndex.value, 0)
+  assert.ok(form.issues.value.some((issue) => issue.field === 'name'))
+  assert.equal(form.setValue('name', 'Ada'), 'applied')
+  assert.equal(await form.goNextStep(), 'applied')
+  assert.equal(form.activeStepIndex.value, 1)
+  assert.equal(form.getValue('name'), 'Ada')
+  assert.equal(await form.goBackStep(), 'applied')
+  assert.equal(form.activeStepIndex.value, 0)
+  assert.equal(form.getValue('name'), 'Ada')
+  assert.equal(await form.goNextStep(), 'applied')
+  assert.equal(await form.validate(), 'invalid')
+  assert.equal(form.activeStepIndex.value, 1)
+  assert.ok(form.issues.value.some((issue) => issue.field === 'city'))
+  assert.equal(form.stepIndexForField('city'), 1)
+  assert.equal(form.setValue('city', 'London'), 'applied')
+  assert.equal(await form.validate(), 'valid')
+  assert.equal(form.setValue('needsPhone', true), 'applied')
+  assert.equal(await form.setActiveStep(0), 'applied')
+  assert.equal(await form.goNextStep(), 'invalid')
+  assert.equal(form.activeStepIndex.value, 0)
+  assert.ok(form.issues.value.some((issue) => issue.field === 'phone'))
+  assert.equal(form.setValue('phone', '123'), 'applied')
+  assert.equal(await form.goNextStep(), 'applied')
+  assert.equal(await form.setActiveStep(0, { relax: true }), 'applied')
+  assert.equal(form.activeStepIndex.value, 0)
+  form.reset()
+  assert.equal(form.activeStepIndex.value, 0)
+  form.dispose()
+
+  const stepCopy = { ...formCopy, previousStep: () => 'Back', nextStep: () => 'Next' }
+  const simpleSchema = parseUiFormSchema({
+    fields: [
+      { kind: 'text', name: 'a', label: 'A', required: true },
+      { kind: 'number', name: 'b', label: 'B', required: true },
+    ],
+    steps: [
+      { name: 'first', label: 'First', fields: ['a'] },
+      { name: 'second', label: 'Second', fields: ['b'] },
+    ],
+  })
+  let customCalls = 0
+  let customIssue: 'current' | 'future' | 'global' = 'current'
+  const scoped = useUiForm({
+    formId: 'step-validation',
+    schema: simpleSchema,
+    copy: stepCopy,
+    initial: { draftId: 'r', values: { a: 'ready', b: null } },
+    validation: () => {
+      customCalls += 1
+      return [
+        {
+          field: customIssue === 'global' ? null : customIssue === 'current' ? 'a' : 'b',
+          message: () => 'Custom rejection',
+        },
+      ]
+    },
+  })
+  assert.equal(await scoped.goNextStep(), 'invalid')
+  assert.equal(customCalls, 1)
+  assert.equal(scoped.activeStepIndex.value, 0)
+  assert.deepEqual(
+    scoped.issues.value.map((issue) => issue.field),
+    ['a'],
+  )
+  customIssue = 'global'
+  assert.equal(await scoped.goNextStep(), 'invalid')
+  assert.deepEqual(
+    scoped.issues.value.map((issue) => issue.field),
+    [null],
+  )
+  customIssue = 'future'
+  assert.equal(await scoped.goNextStep(), 'applied')
+  assert.equal(scoped.issues.value.length, 0)
+  assert.equal(await scoped.goBackStep(), 'applied')
+  scoped.field('a').blur()
+  for (let tick = 0; tick < 12; tick += 1) await nextTick()
+  assert.equal(scoped.issues.value.length, 0, 'Blur must not publish unseen step errors')
+  scoped.dispose()
+
+  const buffered = useUiForm({
+    formId: 'step-pending',
+    schema: simpleSchema,
+    copy: stepCopy,
+    initial: { draftId: 'r', values: { a: 'ready', b: null } },
+  })
+  assert.equal(await buffered.goNextStep(), 'applied')
+  const control = buffered.field('b')
+  let commits = 0
+  control.setCommitTarget(() => {
+    commits += 1
+    return false
+  })
+  control.setPendingInput(true)
+  assert.equal(await buffered.goBackStep(), 'blocked')
+  assert.equal(commits, 1)
+  assert.equal(buffered.activeStepIndex.value, 1)
+  assert.equal(buffered.hasPendingInput.value, true)
+  assert.equal(await buffered.setActiveStep(0, { relax: true }), 'blocked')
+  assert.equal(buffered.activeStepIndex.value, 1)
+  control.setCommitTarget(() => {
+    control.setValue(42)
+    control.setPendingInput(false)
+    return true
+  })
+  assert.equal(await buffered.goBackStep(), 'applied')
+  assert.equal(buffered.getValue('b'), 42)
+  assert.equal(buffered.hasPendingInput.value, false)
+  control.setCommitTarget(null)
+  assert.equal(await buffered.setActiveStep(1, { relax: true }), 'applied')
+  buffered.setValue('a', '')
+  assert.equal(await buffered.submit(), 'invalid')
+  assert.equal(
+    buffered.activeStepIndex.value,
+    0,
+    'Submit must reveal an off-step error despite temporary submission locking',
+  )
+  buffered.dispose()
+
+  let finishValidation: (() => void) | undefined
+  const race = useUiForm({
+    formId: 'step-race',
+    schema: simpleSchema,
+    copy: stepCopy,
+    initial: { draftId: 'r', values: { a: 'ready', b: 1 } },
+    validation: () =>
+      new Promise((resolve) => {
+        finishValidation = () => {
+          resolve([])
+        }
+      }),
+  })
+  const advance = race.goNextStep()
+  for (let tick = 0; tick < 8; tick += 1) await nextTick()
+  assert.ok(finishValidation)
+  race.reset()
+  finishValidation()
+  assert.equal(await advance, 'cancelled')
+  assert.equal(race.activeStepIndex.value, 0, 'A stale validation must not advance a reset record')
+  race.dispose()
 }
 async function verifyMultipleSorting(): Promise<void> {
   const records = [
@@ -1695,12 +2085,173 @@ async function verifyInlineEditing(): Promise<void> {
   session.dispose()
   table.dispose()
 }
+async function verifyConfiguredInlineEditing(): Promise<void> {
+  const schema: UiTableSchema = {
+    id: 'configured-inline',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [
+      { key: 'name', title: 'Name' },
+      { key: 'count', title: 'Count' },
+    ],
+    editor: {
+      inline: { mode: 'cell', fields: ['name', 'count'] },
+      form: {
+        fields: [
+          { kind: 'text', name: 'name', label: 'Name', required: true },
+          { kind: 'number', name: 'count', label: 'Count' },
+        ],
+        steps: [
+          { name: 'name-step', label: 'Name', fields: ['name'] },
+          { name: 'count-step', label: 'Count', fields: ['count'] },
+        ],
+      },
+      update: {
+        api: '/rows/{id}',
+        method: 'PATCH',
+        path: { id: { from: 'row.id' } },
+        body: { name: { from: 'form.name' }, count: { from: 'form.count' } },
+      },
+    },
+  }
+  const row = { id: 1, name: 'Before', count: 4 }
+  const table = useUiTable({ schema, rows: [row], immediate: false })
+  const requests: UiTableResolvedRequest[] = []
+  const session = useUiTableForm({
+    table,
+    copy: formCopy,
+    transport: {
+      list: () => Promise.resolve({ rows: [row], total: 1 }),
+      mutate: (value) => {
+        requests.push(value)
+        return Promise.resolve()
+      },
+    },
+  })
+  assert.equal(await session.showInline(row, 'name'), true)
+  assert.equal(session.isInlineEditing(row, 'name'), true)
+  assert.equal(session.isInlineEditing({ ...row, id: 2 }, 'name'), false)
+  assert.equal(session.isInlineEditing(row, 'count'), false)
+  assert.equal(
+    await session.showInline({ ...row, id: 2 }),
+    false,
+    'Active inline draft cannot be replaced',
+  )
+  assert.equal(
+    session.form.value?.schema.steps,
+    undefined,
+    'Scoped editing does not retain an invalid step partition',
+  )
+  session.form.value?.field('name').setValue('')
+  assert.equal(await session.saveInline(), 'invalid')
+  assert.equal(requests.length, 0)
+  session.form.value?.field('name').setValue('After')
+  await session.saveInline()
+  await nextTick()
+  assert.deepEqual(requests[0]?.body, { name: 'After', count: 4 })
+  assert.equal(session.open.value, false)
+  assert.equal(session.inlineFields.value.length, 0)
+  assert.equal(await session.showInline(row), true)
+  assert.equal(session.isInlineEditing(row, 'count'), true)
+  session.form.value?.field('count').setValue(10)
+  assert.equal(session.close(true), true)
+  session.release()
+  assert.equal(row.count, 4)
+  await assert.rejects(session.showInline(row, 'missing'))
+  for (const inline of [
+    { fields: [] },
+    { fields: ['name', 'name'] },
+    { fields: ['missing'] },
+    { mode: 'popup', fields: ['name'] },
+  ])
+    assert.throws(() => {
+      parseUiTableSchema({ ...schema, editor: { ...schema.editor, inline } })
+    })
+  session.dispose()
+  table.dispose()
+}
+function verifySelectionLimit(): void {
+  const schema: UiTableSchema = {
+    id: 'selection-cap',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [{ key: 'id', title: 'ID' }],
+    selection: 'multiple',
+    maxSelection: 2,
+  }
+  const table = useUiTable({ schema, rows: [{ id: 1 }, { id: 2 }, { id: 3 }], immediate: false })
+  // Local data is loaded synchronously during refresh's local branch.
+  void table.refresh()
+  assert.equal(table.setSelection([1, 2]), true)
+  assert.equal(table.setSelection([1, 2, 3]), false)
+  assert.deepEqual(table.selectedKeys.value, [1, 2])
+  assert.equal(table.setSelection([2]), true)
+  assert.equal(table.setSelection([2, 3]), true)
+  assert.equal(table.setSelection([]), true)
+  for (const maxSelection of [0, -1, 1.5, Infinity])
+    assert.throws(() => {
+      parseUiTableSchema({ ...schema, maxSelection })
+    })
+  assert.throws(() => {
+    parseUiTableSchema({ ...schema, selection: 'single' })
+  })
+  table.dispose()
+  assert.equal(table.setSelection([1]), false)
+}
+verifySelectionLimit()
+async function verifyKeywordSearch(): Promise<void> {
+  const schema: UiTableSchema = {
+    id: 'keyword',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [
+      { key: 'name', title: 'Name' },
+      { key: 'category', title: 'Category' },
+    ],
+    keywordSearch: { parameter: 'keyword', fields: ['name', 'category'] },
+    pagination: { pageSize: 1 },
+  }
+  const table = useUiTable({
+    schema,
+    rows: [
+      { id: 1, name: 'Alpha', category: 'Design' },
+      { id: 2, name: 'Beta', category: 'Engineering' },
+      { id: 3, name: 'Gamma', category: 'Design' },
+    ],
+    immediate: false,
+  })
+  await table.search({ keyword: '  DESIGN  ' })
+  assert.equal(table.total.value, 2)
+  await table.setPage(2)
+  assert.equal(table.rows.value[0]?.['id'], 3)
+  await table.search({ keyword: 'beta' })
+  assert.equal(table.query.value.page, 1)
+  assert.equal(table.rows.value[0]['id'], 2)
+  await table.search({ keyword: 'Design', name: 'Gamma' })
+  assert.equal(table.total.value, 1)
+  await table.reset()
+  assert.equal(table.total.value, 3)
+  for (const keywordSearch of [
+    { parameter: 'nested.q', fields: ['name'] },
+    { parameter: 'q', fields: ['missing'] },
+    { parameter: 'q', fields: ['name', 'name'] },
+  ])
+    assert.throws(() => {
+      parseUiTableSchema({ ...schema, keywordSearch })
+    })
+  table.dispose()
+}
+await verifyKeywordSearch()
+await verifyConfiguredInlineEditing()
 await verifyInlineEditing()
 await verifyCsvExport()
 verifyColumnGroups()
 await verifyMultipleSorting()
 await verifyCommonFormFields()
+await verifyFormSteps()
 verifyColumnPreferences()
+verifyColumnManipulation()
+verifyColumnDisplay()
 verifyPublicValueTypes()
 await verifyFormValueBoundaries()
 await verifyTableFormSources()
@@ -1713,9 +2264,145 @@ verifySortIconMotion()
 await verifyLocal()
 await verifySorting()
 await verifyRemote()
+await verifyTreeTable()
+await verifyTreeFailureBoundaries()
+await verifyTableQueryLinks()
 console.info(
-  'Form schema/value types, table option sources and readonly snapshots, UiForm binding lifetimes, grouped table queries, UiTable theme contrast, reading states, summary parser, local calculations, sort icon motion, three-state sorting, state preservation and remote races passed.',
+  'Form schema/value types, table option sources and readonly snapshots, UiForm binding lifetimes, grouped table queries, UiTable theme contrast, reading states, summary parser, local calculations, sort icon motion, three-state sorting, state preservation, remote races and tree rows passed.',
 )
+
+async function verifyTreeTable(): Promise<void> {
+  assert.throws(
+    () =>
+      parseUiTableSchema({
+        id: 'tree-sort',
+        rowKey: 'id',
+        source: { kind: 'local' },
+        columns: [{ key: 'name', title: 'Name', sortable: true }],
+        tree: {},
+      }),
+    /sorting/i,
+  )
+  assert.throws(
+    () =>
+      parseUiTableSchema({
+        id: 'tree-summary',
+        rowKey: 'id',
+        source: { kind: 'local' },
+        columns: [{ key: 'name', title: 'Name' }],
+        summary: [{ key: 'total', cells: { name: { kind: 'text', text: 'Total' } } }],
+        tree: {},
+      }),
+    /summary/i,
+  )
+  assert.throws(
+    () =>
+      parseUiTableSchema({
+        id: 'tree-local-query',
+        rowKey: 'id',
+        source: { kind: 'local' },
+        columns: [{ key: 'name', title: 'Name' }],
+        query: { form: { fields: [{ kind: 'text', name: 'name', label: 'Name' }] } },
+        tree: {},
+      }),
+    /query/i,
+  )
+  const flat = useUiTable({
+    schema: {
+      id: 'flat-control',
+      rowKey: 'id',
+      source: { kind: 'local' },
+      selection: 'multiple',
+      pagination: { pageSize: 10 },
+      columns: [{ key: 'name', title: 'Name' }],
+    },
+    rows: [
+      { id: 1, name: 'A', children: [{ id: 2, name: 'Nested' }] },
+      { id: 3, name: 'B' },
+    ],
+  })
+  await flat.refresh()
+  assert.deepEqual(
+    flat.rows.value.map((row) => row['id']),
+    [1, 3],
+  )
+  flat.setSelection([1, 2])
+  assert.deepEqual(flat.selectedKeys.value, [1], 'Flat tables ignore nested children fields.')
+  assert.deepEqual(flat.expandedKeys.value, [])
+  flat.dispose()
+
+  let childCalls = 0
+  const tree = useUiTable({
+    schema: {
+      id: 'tree-demo',
+      rowKey: 'id',
+      source: { kind: 'local' },
+      selection: 'multiple',
+      pagination: { pageSize: 10 },
+      columns: [
+        { key: 'name', title: 'Name' },
+        { key: 'stock', title: 'Stock', kind: 'number' },
+      ],
+      tree: {
+        childrenKey: 'children',
+        leafKey: 'isLeaf',
+        selectionCascade: true,
+        defaultExpandedKeys: ['root'],
+        childrenRequest: {
+          api: 'local/children',
+          method: 'POST',
+          body: { parentId: { from: 'row.id' } },
+        },
+      },
+      csvExport: { fileName: 'tree.csv', scopes: ['page', 'selected'] },
+    },
+    rows: [
+      {
+        id: 'root',
+        name: 'Root',
+        stock: 2,
+        isLeaf: false,
+        children: [
+          { id: 'static-child', name: 'Static', stock: 1, isLeaf: true },
+          { id: 'lazy-parent', name: 'Lazy', stock: 1, isLeaf: false },
+        ],
+      },
+    ],
+    transport: {
+      list(request) {
+        childCalls += 1
+        assert.equal(request.body['parentId'], 'lazy-parent')
+        return Promise.resolve({
+          rows: [{ id: 'lazy-child', name: 'Loaded', stock: 1, isLeaf: true }],
+          total: 1,
+        })
+      },
+    },
+  })
+  await tree.refresh()
+  assert.deepEqual(tree.expandedKeys.value, ['root'])
+  tree.setSelection(['root', 'static-child'])
+  assert.deepEqual(tree.selectedKeys.value, ['root', 'static-child'])
+  const before = tree.exportCsv('page')
+  assert.match(before.content, /Static/)
+  assert.doesNotMatch(before.content, /Loaded/)
+  const rootChildren = tree.rows.value[0]?.['children'] as UiTableReadonlyRecord[] | undefined
+  const lazyParentRow = rootChildren?.[1]
+  assert.ok(lazyParentRow)
+  await tree.loadTreeChildren(lazyParentRow)
+  assert.equal(childCalls, 1)
+  const loaded = tree.rows.value[0]?.['children'] as UiTableReadonlyRecord[] | undefined
+  const lazyParent = loaded?.find((row) => row['id'] === 'lazy-parent')
+  assert.deepEqual(
+    (lazyParent?.['children'] as UiTableReadonlyRecord[] | undefined)?.map((row) => row['id']),
+    ['lazy-child'],
+  )
+  tree.setSelection(['lazy-child'])
+  assert.deepEqual(tree.selectedKeys.value, ['lazy-child'])
+  const after = tree.exportCsv('selected')
+  assert.match(after.content, /Loaded/)
+  tree.dispose()
+}
 
 // Editor hints are collected from the same parser branches as runtime validation.
 const formInspection = inspectUiFormSchema({
@@ -1748,3 +2435,370 @@ assert.deepEqual(tableInspection.hints.find((hint) => hint.path.join('.') === 's
 assert.equal(inspectedTable.sorting, 'multiple')
 assert.match(inspectUiTableSchema({ ...inspectedTable, sorting: 'invalid' }).issue ?? '', /sorting/)
 assert.equal(inspectUiTableSchema(null).valid, false)
+
+async function verifyTreeFailureBoundaries(): Promise<void> {
+  const schema: UiTableSchema = {
+    id: 'tree-boundaries',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [{ key: 'name', title: 'Name' }],
+    selection: 'multiple',
+    tree: { childrenRequest: { api: 'children', method: 'GET' } },
+    batchActions: [
+      {
+        id: 'update',
+        label: 'Update',
+        request: {
+          api: 'batch',
+          method: 'POST',
+          body: { items: { from: 'selection.rows' } },
+        },
+      },
+    ],
+  }
+  const batch = useUiTable({
+    schema,
+    immediate: false,
+    rows: [{ id: 'root', children: [{ id: 'child', name: 'Child' }] }],
+    transport: { list: () => Promise.resolve({ rows: [], total: 0 }) },
+  })
+  await batch.refresh()
+  batch.setSelection(['child'])
+  const actions = useUiTableActions({
+    table: batch,
+    transport: {
+      list: () => Promise.resolve({ rows: [], total: 0 }),
+      mutate: (request) => {
+        assert.deepEqual(request.body['items'], [{ id: 'child', name: 'Child' }])
+        return Promise.resolve()
+      },
+    },
+  })
+  assert.equal(
+    await actions.execute('update', (_action, selection) => {
+      assert.deepEqual(selection.keys, ['child'])
+      assert.deepEqual(selection.rows, [{ id: 'child', name: 'Child' }])
+      return true
+    }),
+    true,
+  )
+  actions.dispose()
+  batch.dispose()
+
+  let fail = true
+  const retry = useUiTable({
+    schema,
+    immediate: false,
+    rows: [{ id: 'root' }],
+    transport: {
+      list: () => {
+        if (fail) return Promise.reject(new Error('Child service unavailable'))
+        return Promise.resolve({ rows: [{ id: 'loaded' }], total: 1 })
+      },
+    },
+  })
+  await retry.refresh()
+  const parent = retry.rows.value[0]
+  assert.ok(parent)
+  await assert.rejects(retry.loadTreeChildren(parent), /Child service/)
+  assert.equal(retry.error.value, null, 'A child failure must not fail the root list.')
+  assert.equal(retry.treeLoadErrors.value[0]?.key, 'root')
+  retry.setExpandedKeys(['root'])
+  assert.deepEqual(retry.expandedKeys.value, [], 'Failed onLoad must not falsely expand.')
+  fail = false
+  await retry.loadTreeChildren(parent)
+  assert.deepEqual(retry.treeLoadErrors.value, [])
+  retry.setExpandedKeys(['root'])
+  assert.deepEqual(retry.expandedKeys.value, ['root'])
+  retry.dispose()
+
+  let resolveChild: (page: UiTablePage) => void = () => {
+    throw new Error('Child request not created')
+  }
+  let resolveRoot: (page: UiTablePage) => void = () => {
+    throw new Error('Root request not created')
+  }
+  const childResponse = new Promise<UiTablePage>((resolve) => {
+    resolveChild = resolve
+  })
+  const rootResponse = new Promise<UiTablePage>((resolve) => {
+    resolveRoot = resolve
+  })
+  let roots = 0
+  let childSignal: AbortSignal | undefined
+  const race = useUiTable({
+    schema: { ...schema, source: { kind: 'remote', request: { api: 'roots', method: 'GET' } } },
+    immediate: false,
+    transport: {
+      list: (request, signal) => {
+        if (request.api === 'children') {
+          childSignal = signal
+          return childResponse
+        }
+        roots += 1
+        return roots === 1
+          ? Promise.resolve({ rows: [{ id: 'root', name: 'Old' }], total: 1 })
+          : rootResponse
+      },
+    },
+  })
+  await race.refresh()
+  const oldRoot = race.rows.value[0]
+  assert.ok(oldRoot)
+  const loadingChild = race.loadTreeChildren(oldRoot)
+  const refreshing = race.refresh()
+  assert.equal(childSignal?.aborted, true, 'Root refresh must cancel children immediately.')
+  resolveChild({ rows: [{ id: 'stale' }], total: 1 })
+  await loadingChild
+  assert.deepEqual(
+    race.rows.value,
+    [{ id: 'root', name: 'Old' }],
+    'Even abort-ignoring transports cannot write stale children.',
+  )
+  resolveRoot({ rows: [{ id: 'root', name: 'New' }], total: 1 })
+  await refreshing
+  assert.deepEqual(race.treeLoadErrors.value, [], 'Cancellation is not a user-facing error.')
+  race.dispose()
+}
+
+async function verifyTableQueryLinks(): Promise<void> {
+  const codec = tableQuerySharingCodec
+  const state = {
+    page: 2,
+    pageSize: 5,
+    filters: { title: 'PAVP', category: 'Design', privateToken: 'never-share' },
+    sorts: [
+      { key: 'price', order: 'descend' as const },
+      { key: 'id', order: 'ascend' as const },
+    ],
+  }
+  const link = codec.encode(state)
+  assert.ok(!JSON.stringify(link).includes('privateToken'))
+  assert.ok(!JSON.stringify(link).includes('never-share'))
+  assert.deepEqual(codec.decode(link), { ...state, filters: { title: 'PAVP', category: 'Design' } })
+  assert.deepEqual(codec.encode(codec.decode({})), {})
+  for (const value of [
+    { table: '{' },
+    { table: ['{}'] },
+    { token: 'private' },
+    { table: JSON.stringify({ ...state, page: 0 }) },
+    { table: JSON.stringify({ ...state, pageSize: 999 }) },
+    {
+      table: JSON.stringify({
+        ...state,
+        filters: { title: 'x', category: null, token: 'private' },
+      }),
+    },
+    { table: JSON.stringify({ ...state, sorts: [{ key: 'secret', order: 'ascend' }] }) },
+    { table: JSON.stringify({ ...state, filters: { title: 'x'.repeat(81), category: null } }) },
+  ])
+    assert.equal(codec.querySchema.safeParse(value).success, false)
+  let calls = 0
+  const table = useUiTable({
+    immediate: false,
+    schema: {
+      id: 'query-restore',
+      rowKey: 'id',
+      sorting: 'multiple',
+      source: { kind: 'remote', request: { api: 'records', method: 'GET' } },
+      columns: [
+        { key: 'price', title: 'Price', sortable: true },
+        { key: 'id', title: 'ID', sortable: true },
+      ],
+      pagination: { pageSize: 10 },
+      query: {
+        mode: 'submit',
+        form: { fields: [{ name: 'title', kind: 'text', label: 'Title' }] },
+      },
+    },
+    transport: {
+      list() {
+        calls++
+        return Promise.resolve({ rows: [{ id: 1, price: 2 }], total: 60 })
+      },
+    },
+  })
+  const form = useUiTableQuery(table, formCopy)
+  await table.applyQuery(codec.decode(link))
+  await nextTick()
+  assert.equal(calls, 1, 'Atomic query hydration must issue exactly one request.')
+  assert.equal(table.query.value.page, 2)
+  assert.equal(table.queryChangeReason.value, 'change')
+  assert.equal(table.query.value.sort?.key, 'price')
+  assert.equal(form.getValue('title'), 'PAVP', 'History restoration must update the query form.')
+  const before = table.query.value
+  assert.throws(() => table.applyQuery({ ...codec.decode(link), page: 0 }), /pagination/u)
+  assert.throws(
+    () => table.applyQuery({ ...codec.decode(link), sorts: [{ key: 'missing', order: 'ascend' }] }),
+    /sortable/u,
+  )
+  assert.equal(
+    table.query.value,
+    before,
+    'Invalid restore must be atomic and leave state untouched.',
+  )
+  assert.equal(calls, 1)
+  await table.setPage(3)
+  assert.equal(calls, 2)
+  form.setValue('title', 'unfinished')
+  await table.setPage(4)
+  await nextTick()
+  assert.equal(
+    form.getValue('title'),
+    'unfinished',
+    'Paging must not erase unsubmitted filter drafts.',
+  )
+  await table.applyQuery(codec.decode({}))
+  await nextTick()
+  assert.equal(form.getValue('title'), '')
+  assert.equal(table.query.value.page, 1)
+  form.dispose()
+  await table.applyQuery({ ...codec.decode(link), filters: { title: 'PAVP' } })
+  const linkedForm = useUiTableQuery(table, formCopy)
+  linkedForm.reset()
+  await nextTick()
+  linkedForm.reset()
+  await nextTick()
+  assert.equal(
+    linkedForm.getValue('title'),
+    '',
+    'Repeated reset must not restore the original shared filters.',
+  )
+  assert.deepEqual(table.query.value.filters, {})
+  linkedForm.dispose()
+  await table.applyQuery({ ...codec.decode({}), page: 999 })
+  assert.equal(table.query.value.page, 6)
+  assert.equal(table.queryChangeReason.value, 'page-correction')
+  await table.setPage(2)
+  assert.equal(
+    table.queryChangeReason.value,
+    'change',
+    'A user page decrease is not automatic normalization.',
+  )
+  table.dispose()
+}
+
+await verifyFormSpecialFields(formCopy)
+
+await verifyFormBuilderFields()
+
+async function verifyContinuousLoading(): Promise<void> {
+  const schema: UiTableSchema = {
+    id: 'continuous',
+    rowKey: 'id',
+    source: { kind: 'local' },
+    columns: [{ key: 'id', title: 'ID' }],
+    pagination: { mode: 'load-more', pageSize: 2 },
+  }
+  const table = useUiTable({
+    schema,
+    rows: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }],
+    immediate: false,
+  })
+  await table.refresh()
+  assert.equal(table.rows.value.length, 2)
+  assert.equal(table.hasMore.value, true)
+  await table.loadMore()
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1, 2, 3, 4],
+  )
+  assert.equal(table.query.value.page, 2)
+  await table.loadMore()
+  assert.equal(table.rows.value.length, 5)
+  assert.equal(table.hasMore.value, false)
+  await table.loadMore()
+  assert.equal(table.query.value.page, 3)
+  await table.refresh()
+  assert.equal(table.query.value.page, 1)
+  assert.equal(table.rows.value.length, 2)
+  await table.search({ id: 5 })
+  assert.equal(table.rows.value.length, 1)
+  table.dispose()
+  let fail = true
+  const remote = useUiTable({
+    schema: {
+      ...schema,
+      source: {
+        kind: 'remote',
+        request: { api: '/records', method: 'GET', params: { page: { from: 'page' } } },
+      },
+    },
+    immediate: false,
+    transport: {
+      async list(request) {
+        await Promise.resolve()
+        const page = request.params['page']
+        if (page === 2 && fail) throw new Error('retryable')
+        return { rows: page === 1 ? [{ id: 1 }, { id: 2 }] : [{ id: 3 }], total: 3 }
+      },
+    },
+  })
+  await remote.refresh()
+  await remote.loadMore()
+  assert.equal(remote.error.value?.message, 'retryable')
+  assert.equal(remote.query.value.page, 1)
+  assert.equal(remote.rows.value.length, 2)
+  fail = false
+  await remote.loadMore()
+  assert.equal(remote.rows.value.length, 3)
+  assert.equal(remote.query.value.page, 2)
+  remote.dispose()
+}
+await verifyContinuousLoading()
+
+async function verifyContinuousRace(): Promise<void> {
+  let resolvePage: ((page: UiTablePage) => void) | undefined
+  let pendingSignal: AbortSignal | undefined
+  let requests = 0
+  const table = useUiTable({
+    schema: {
+      id: 'continuous-race',
+      rowKey: 'id',
+      columns: [{ key: 'id', title: 'ID' }],
+      pagination: { mode: 'load-more', pageSize: 1 },
+      source: {
+        kind: 'remote',
+        request: { api: '/records', method: 'GET', params: { page: { from: 'page' } } },
+      },
+    },
+    immediate: false,
+    transport: {
+      list(request, signal) {
+        requests++
+        if (request.params['page'] === 1) return Promise.resolve({ rows: [{ id: 1 }], total: 3 })
+        pendingSignal = signal
+        return new Promise<UiTablePage>((resolve) => {
+          resolvePage = resolve
+        })
+      },
+    },
+  })
+  await table.refresh()
+  const pending = table.loadMore()
+  await table.loadMore()
+  assert.equal(requests, 2, 'Overlapping loadMore is ignored.')
+  await table.search({ q: 'new' })
+  assert.equal(pendingSignal?.aborted, true)
+  resolvePage?.({ rows: [{ id: 2 }], total: 3 })
+  await pending
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1],
+  )
+  assert.equal(table.query.value.page, 1)
+  const disposedPending = table.loadMore()
+  table.dispose()
+  assert.equal(pendingSignal.aborted, true)
+  resolvePage?.({ rows: [{ id: 3 }], total: 3 })
+  await disposedPending
+  assert.deepEqual(
+    table.rows.value.map((row) => row['id']),
+    [1],
+  )
+}
+await verifyContinuousRace()
+
+verifyDateTime()
+
+verifyDashboard()

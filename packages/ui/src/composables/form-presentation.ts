@@ -1,7 +1,9 @@
 import { computed, type Ref } from 'vue'
-import type { UiFormController } from '../components/form-contracts'
+import type { UiFormController, UiFormAttachmentSource } from '../components/form-contracts'
 
 interface FormPresentation {
+  attachmentSource(name: string): UiFormAttachmentSource
+
   readonly generation: Readonly<Ref<number>>
   readonly feedbackTarget: Readonly<
     Ref<{ readonly identity: symbol; readonly revision: number } | null>

@@ -82,6 +82,39 @@ const configuration = {
     { kind: 'time', name: 'startTime', label: 'formShowcase.time' },
     { kind: 'switch', name: 'enabled', label: 'formShowcase.enabled' },
     {
+      kind: 'mask',
+      name: 'reference',
+      label: 'formFields.reference',
+      mask: 'AAA-####',
+      placeholder: 'formFields.referencePlaceholder',
+    },
+    {
+      kind: 'slider',
+      name: 'progress',
+      label: 'formFields.progress',
+      min: 0,
+      max: 100,
+      step: 5,
+      defaultValue: 40,
+    },
+    {
+      kind: 'rating',
+      name: 'rating',
+      label: 'formFields.rating',
+      count: 5,
+      allowHalf: true,
+      defaultValue: 3.5,
+    },
+    {
+      kind: 'attachment',
+      name: 'attachments',
+      label: 'formFields.attachments',
+      description: 'formFields.localAttachment',
+      source: 'local-selection',
+      maxFiles: 3,
+      maxSize: 5242880,
+    },
+    {
       kind: 'textarea',
       name: 'notes',
       label: 'formShowcase.notes',
@@ -95,6 +128,15 @@ const schema =
     : configuration
 const form = useUiForm({
   ...demo,
+  // Demonstrates file selection only. No request or claim of server persistence.
+  attachments: {
+    'local-selection': (file) =>
+      Promise.resolve({
+        id: crypto.randomUUID(),
+        name: file.name,
+        size: file.size,
+      }),
+  },
   formId: 'form-basic-controls',
   schema,
   initial: {
@@ -125,6 +167,10 @@ const draft = useFormExampleDraft(form, [
   'period',
   'startTime',
   'enabled',
+  'reference',
+  'progress',
+  'rating',
+  'attachments',
   'notes',
 ])
 function switchSource(value: 'code' | 'json'): void {

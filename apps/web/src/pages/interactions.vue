@@ -9,6 +9,8 @@ import { useConsoleI18n } from '../shared/i18n'
 import { useAppearanceReadBoundary } from '../app/appearance/appearance-read-boundary'
 import WorkbenchPage from '../app/workbench/WorkbenchPage.vue'
 import TokenGallery from '../app/workbench/TokenGallery.vue'
+import DateTimeShowcase from '../app/workbench/DateTimeShowcase.vue'
+import InteractionGestures from '../app/workbench/InteractionGestures.vue'
 defineOptions({ name: 'WorkbenchInteractionsPage' })
 defineProps<{ readonly title: string; readonly breadcrumb?: string; readonly message: string }>()
 const { t } = useConsoleI18n()
@@ -42,11 +44,12 @@ const names = tokenNames.filter(
     :title="title"
     :message="message"
   >
+    <DateTimeShowcase />
     <section
       class="wb-interaction-grid grid gap-content-gap layout-narrow:grid-cols-1 layout-regular:grid-cols-2 layout-wide:grid-cols-2"
     >
       <NCard
-        class="col-span-full"
+        class="wb-overview-card col-span-full shadow-panel"
         :bordered="false"
       >
         <UiSection
@@ -108,7 +111,10 @@ const names = tokenNames.filter(
           </div>
         </UiSection>
       </NCard>
-      <NCard :bordered="false">
+      <NCard
+        class="wb-overview-card shadow-panel"
+        :bordered="false"
+      >
         <UiSection
           :title="t('workbench.motionLabel')"
           :description="t('workbench.motionHint')"
@@ -131,7 +137,10 @@ const names = tokenNames.filter(
           </div>
         </UiSection>
       </NCard>
-      <NCard :bordered="false">
+      <NCard
+        class="wb-overview-card shadow-panel"
+        :bordered="false"
+      >
         <UiSection
           :title="t('workbench.scroll')"
           :description="t('workbench.scrollHint')"
@@ -168,6 +177,7 @@ const names = tokenNames.filter(
         </UiSection>
       </NCard>
     </section>
+    <InteractionGestures />
     <TokenGallery
       :names="names"
       :label="t('workbench.interactions')"

@@ -60,6 +60,7 @@ const pagesDirectory = resolve(rootDirectory, 'apps/web/src/pages')
 const generatedRouteMapPath = resolve(rootDirectory, 'apps/web/src/route-map.d.ts')
 const expectedPageSources = [
   'apps/web/src/pages/index.vue',
+  'apps/web/src/pages/dashboard.vue',
   'apps/web/src/pages/api-overview.vue',
   'apps/web/src/pages/api-basics.vue',
   'apps/web/src/pages/api-responses.vue',
@@ -91,6 +92,9 @@ const expectedPageSources = [
   'apps/web/src/pages/component-chart-live-stream.vue',
   'apps/web/src/pages/component-chart-live-ranking.vue',
   'apps/web/src/pages/component-chart-live-distribution.vue',
+  'apps/web/src/pages/component-chart-linked.vue',
+  'apps/web/src/pages/component-chart-tour.vue',
+  'apps/web/src/pages/component-chart-stage.vue',
   'apps/web/src/pages/component-form-overview.vue',
   'apps/web/src/pages/component-form-basics.vue',
   'apps/web/src/pages/component-form-detail.vue',
@@ -98,6 +102,7 @@ const expectedPageSources = [
   'apps/web/src/pages/component-form-dependencies.vue',
   'apps/web/src/pages/component-form-calculations.vue',
   'apps/web/src/pages/component-form-structure.vue',
+  'apps/web/src/pages/component-form-steps.vue',
   'apps/web/src/pages/component-form-validation.vue',
   'apps/web/src/pages/component-form-extension.vue',
   'apps/web/src/pages/component-form-controls.vue',
@@ -111,6 +116,8 @@ const expectedPageSources = [
   'apps/web/src/pages/component-table-theme.vue',
   'apps/web/src/pages/component-table-columns.vue',
   'apps/web/src/pages/component-table-selection.vue',
+  'apps/web/src/pages/component-table-tree.vue',
+  'apps/web/src/pages/component-table-query-link.vue',
   'apps/web/src/pages/component-table-remote.vue',
   'apps/web/src/pages/component-table-configuration.vue',
   'apps/web/src/pages/component-table-overview.vue',
@@ -136,7 +143,7 @@ const expectedPageSources = [
   'apps/web/src/pages/error/offline.vue',
   'apps/web/src/pages/error/maintenance.vue',
 ] as const
-const expectedProductPageSources = expectedPageSources.slice(0, 69)
+const expectedProductPageSources = expectedPageSources.slice(0, 76)
 const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-overview.vue': 'TableCapabilityOverview',
   'apps/web/src/pages/component-table-scroll.vue': 'TableLayoutExample',
@@ -147,12 +154,24 @@ const expectedTablePageComponents: Readonly<Record<string, string>> = {
   'apps/web/src/pages/component-table-virtual.vue': 'TableDataCapabilities',
   'apps/web/src/pages/component-table-states.vue': 'TableDataCapabilities',
   'apps/web/src/pages/component-table-selection.vue': 'TableSelectionExample',
+  'apps/web/src/pages/component-table-tree.vue': 'TableTreeExample',
+  'apps/web/src/pages/component-table-query-link.vue': 'TableQueryLinkExample',
 }
 const expectedRouteRecords = [
   [
     'apps/web/src/pages/index.vue',
-    'workbench-dashboard',
+    'workbench-welcome',
     '/',
+    'route-params.none',
+    'route-query.none',
+    'route-title.workbench-welcome',
+    'route.workbench.welcome',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/dashboard.vue',
+    'workbench-dashboard',
+    '/dashboard',
     'route-params.none',
     'route-query.none',
     'route-title.workbench-dashboard',
@@ -470,6 +489,36 @@ const expectedRouteRecords = [
     'route-boundary',
   ],
   [
+    'apps/web/src/pages/component-chart-linked.vue',
+    'component-chart-linked',
+    '/components/charts/linked',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-linked',
+    'route.component.chart.linked',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-tour.vue',
+    'component-chart-tour',
+    '/components/charts/tour',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-tour',
+    'route.component.chart.tour',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-chart-stage.vue',
+    'component-chart-stage',
+    '/components/charts/stage',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-chart-stage',
+    'route.component.chart.stage',
+    'route-boundary',
+  ],
+  [
     'apps/web/src/pages/component-form-overview.vue',
     'component-form-overview',
     '/components/forms/overview',
@@ -537,6 +586,16 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.component-form-structure',
     'route.component.form.structure',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-form-steps.vue',
+    'component-form-steps',
+    '/components/forms/steps',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-form-steps',
+    'route.component.form.steps',
     'route-boundary',
   ],
   [
@@ -667,6 +726,27 @@ const expectedRouteRecords = [
     'route-query.none',
     'route-title.component-table-selection',
     'route.component.table.selection',
+    'route-boundary',
+  ],
+  [
+    'apps/web/src/pages/component-table-tree.vue',
+    'component-table-tree',
+    '/components/tables/tree',
+    'route-params.none',
+    'route-query.none',
+    'route-title.component-table-tree',
+    'route.component.table.tree',
+    'route-boundary',
+  ],
+
+  [
+    'apps/web/src/pages/component-table-query-link.vue',
+    'component-table-query-link',
+    '/components/tables/query-link',
+    'route-params.none',
+    'route-query.table-query-link',
+    'route-title.component-table-query-link',
+    'route.component.table.query-link',
     'route-boundary',
   ],
   [
@@ -948,6 +1028,7 @@ const expectedRouteTitles = {
   'route-title.api-authorization': getDefaultConsoleMessage('route-title.api-authorization'),
   'route-title.api-integration': getDefaultConsoleMessage('route-title.api-integration'),
   'route-title.api-advanced': getDefaultConsoleMessage('route-title.api-advanced'),
+  'route-title.workbench-welcome': getDefaultConsoleMessage('route-title.workbench-welcome'),
   'route-title.workbench-dashboard': getDefaultConsoleMessage('route-title.workbench-dashboard'),
   'route-title.workbench-colors': getDefaultConsoleMessage('route-title.workbench-colors'),
   'route-title.workbench-sizes': getDefaultConsoleMessage('route-title.workbench-sizes'),
@@ -989,6 +1070,13 @@ const expectedRouteTitles = {
   'route-title.component-chart-live-distribution': getDefaultConsoleMessage(
     'route-title.component-chart-live-distribution',
   ),
+  'route-title.component-chart-linked': getDefaultConsoleMessage(
+    'route-title.component-chart-linked',
+  ),
+  'route-title.component-chart-tour': getDefaultConsoleMessage('route-title.component-chart-tour'),
+  'route-title.component-chart-stage': getDefaultConsoleMessage(
+    'route-title.component-chart-stage',
+  ),
   'route-title.component-form-overview': getDefaultConsoleMessage(
     'route-title.component-form-overview',
   ),
@@ -1010,6 +1098,7 @@ const expectedRouteTitles = {
   'route-title.component-form-structure': getDefaultConsoleMessage(
     'route-title.component-form-structure',
   ),
+  'route-title.component-form-steps': getDefaultConsoleMessage('route-title.component-form-steps'),
   'route-title.component-form-validation': getDefaultConsoleMessage(
     'route-title.component-form-validation',
   ),
@@ -1046,6 +1135,10 @@ const expectedRouteTitles = {
   ),
   'route-title.component-table-selection': getDefaultConsoleMessage(
     'route-title.component-table-selection',
+  ),
+  'route-title.component-table-tree': getDefaultConsoleMessage('route-title.component-table-tree'),
+  'route-title.component-table-query-link': getDefaultConsoleMessage(
+    'route-title.component-table-query-link',
   ),
   'route-title.component-table-remote': getDefaultConsoleMessage(
     'route-title.component-table-remote',
@@ -1105,6 +1198,11 @@ const expectedRouteTitles = {
   'route-title.error-service-unavailable': '服务不可用',
 } as const
 const expectedMessages = [
+  [
+    'workbench-welcome',
+    'route-message.workbench-welcome-summary',
+    getDefaultConsoleMessage('route-message.workbench-welcome-summary'),
+  ],
   [
     'workbench-dashboard',
     'route-message.workbench-dashboard-summary',
@@ -1266,6 +1364,21 @@ const expectedMessages = [
     getDefaultConsoleMessage('route-message.component-chart-live-distribution-summary'),
   ],
   [
+    'component-chart-linked',
+    'route-message.component-chart-linked-summary',
+    getDefaultConsoleMessage('route-message.component-chart-linked-summary'),
+  ],
+  [
+    'component-chart-tour',
+    'route-message.component-chart-tour-summary',
+    getDefaultConsoleMessage('route-message.component-chart-tour-summary'),
+  ],
+  [
+    'component-chart-stage',
+    'route-message.component-chart-stage-summary',
+    getDefaultConsoleMessage('route-message.component-chart-stage-summary'),
+  ],
+  [
     'component-form-overview',
     'route-message.component-form-overview-summary',
     getDefaultConsoleMessage('route-message.component-form-overview-summary'),
@@ -1299,6 +1412,11 @@ const expectedMessages = [
     'component-form-structure',
     'route-message.component-form-structure-summary',
     getDefaultConsoleMessage('route-message.component-form-structure-summary'),
+  ],
+  [
+    'component-form-steps',
+    'route-message.component-form-steps-summary',
+    getDefaultConsoleMessage('route-message.component-form-steps-summary'),
   ],
   [
     'component-form-validation',
@@ -1364,6 +1482,17 @@ const expectedMessages = [
     'component-table-selection',
     'route-message.component-table-selection-summary',
     getDefaultConsoleMessage('route-message.component-table-selection-summary'),
+  ],
+  [
+    'component-table-tree',
+    'route-message.component-table-tree-summary',
+    getDefaultConsoleMessage('route-message.component-table-tree-summary'),
+  ],
+
+  [
+    'component-table-query-link',
+    'route-message.component-table-query-link-summary',
+    getDefaultConsoleMessage('route-message.component-table-query-link-summary'),
   ],
   [
     'component-table-remote',
@@ -3872,7 +4001,7 @@ function registryViolations(): string[] {
   ])
 
   if (!isDeepStrictEqual(actualRoutes, expectedRouteRecords)) {
-    violations.push('Router Route Registry diverged from the exact seventy-six-record authority.')
+    violations.push('Router Route Registry diverged from the exact eighty-one-record authority.')
   }
 
   if (
@@ -3898,7 +4027,7 @@ function registryViolations(): string[] {
         ? `route-breadcrumb.${record.name}`
         : null
     const expectedWorkspace = expectedRouteRecords
-      .slice(0, 68)
+      .slice(0, 75)
       .some((expected) => expected[1] === record.name)
     const expectedMessageScope =
       record.name === 'control-center' ? 'appearance' : expectedWorkspace ? 'console' : 'common'
@@ -3973,7 +4102,7 @@ function registryViolations(): string[] {
       routeRegistry.map((record) => record.meta.telemetryName),
     )
   ) {
-    violations.push('Telemetry-name Registry must project the exact seventy-six Route records.')
+    violations.push('Telemetry-name Registry must project the exact eighty-one Route records.')
   }
 
   if (
@@ -4177,7 +4306,7 @@ function schemaViolations(): string[] {
   }
 
   if (
-    querySchemas.length !== 2 ||
+    querySchemas.length !== 3 ||
     noQuery === undefined ||
     !noQuery.safeParse({}).success ||
     noQuery.safeParse({ unexpected: 'value' }).success ||
@@ -4218,7 +4347,7 @@ async function pageViolations(): Promise<string[]> {
 
   if (!exactSet(pageFiles, expectedPageSources)) {
     return [
-      'Official Router page source root must contain exactly the seventy-six admitted Vue files.',
+      'Official Router page source root must contain exactly the eighty-one admitted Vue files.',
     ]
   }
 
@@ -4266,7 +4395,11 @@ async function pageViolations(): Promise<string[]> {
       count(source, /<WorkbenchPage\b/gu) !== 1 ||
       !source.includes("from '../WorkbenchPage.vue'") ||
       !/<WorkbenchPage\b[^>]*\scontained(?:\s|>)/u.test(source) ||
-      count(source, /<UiScrollArea\b/gu) !== 1 ||
+      count(source, /<UiScrollArea\b/gu) !== (owner === 'TableCapabilityWorkbench' ? 2 : 1) ||
+      (owner === 'TableCapabilityWorkbench' &&
+        !/<UiScrollArea\b[^>]*v-if="\$slots\['controls'\] && scrollControls"[^>]*owner-id="table-showcase-controls"[^>]*:enabled="active"/u.test(
+          source,
+        )) ||
       count(source, /owner-id="architecture-console-content"/gu) !== 1 ||
       !/<UiScrollArea\b[^>]*\bowner-id="architecture-console-content"[^>]*\s@controller=/u.test(
         source,
@@ -4336,41 +4469,56 @@ async function pageViolations(): Promise<string[]> {
               : sourcePath === 'apps/web/src/pages/component-charts.vue'
                 ? count(source, /<ChartCapabilityOverview\b/gu) !== 1 ||
                   !source.includes("from '../app/workbench/charts/ChartCapabilityOverview.vue'")
-                : sourcePath.includes('/component-chart-live-')
-                  ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
-                    !source.includes("from '../app/workbench/charts/ChartLiveWorkbench.vue'")
-                  : sourcePath.includes('/component-chart-')
-                    ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
-                      !source.includes("from '../app/workbench/charts/ChartExampleWorkbench.vue'")
-                    : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
-                      ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                        !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
-                        count(source, /<UiScrollArea\b/gu) !== 1
-                      : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
-                        ? count(source, /<FormBasicControls\b/gu) !== 1 ||
-                          !source.includes("from '../app/workbench/forms/FormBasicControls.vue'")
-                        : sourcePath.includes('/component-form-') &&
-                            sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
-                          ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                : sourcePath === 'apps/web/src/pages/component-chart-stage.vue'
+                  ? count(source, /<ChartStageWorkbench\b/gu) !== 1 ||
+                    !source.includes("from '../app/workbench/charts/ChartStageWorkbench.vue'")
+                  : sourcePath === 'apps/web/src/pages/component-chart-tour.vue'
+                    ? count(source, /<ChartTourWorkbench\b/gu) !== 1 ||
+                      !source.includes("from '../app/workbench/charts/ChartTourWorkbench.vue'")
+                    : sourcePath === 'apps/web/src/pages/component-chart-linked.vue'
+                      ? count(source, /<ChartLinkedWorkbench\b/gu) !== 1 ||
+                        !source.includes("from '../app/workbench/charts/ChartLinkedWorkbench.vue'")
+                      : sourcePath.includes('/component-chart-live-')
+                        ? count(source, /<ChartLiveWorkbench\b/gu) !== 1 ||
+                          !source.includes("from '../app/workbench/charts/ChartLiveWorkbench.vue'")
+                        : sourcePath.includes('/component-chart-')
+                          ? count(source, /<ChartExampleWorkbench\b/gu) !== 1 ||
                             !source.includes(
-                              "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
+                              "from '../app/workbench/charts/ChartExampleWorkbench.vue'",
                             )
-                          : tablePageComponent !== undefined
-                            ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !== 1 ||
-                              !source.includes(
-                                `from '../app/workbench/tables/${tablePageComponent}.vue'`,
-                              )
-                            : sourcePath === 'apps/web/src/pages/component-table.vue' ||
-                                /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
-                                  sourcePath,
-                                )
-                              ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                          : sourcePath === 'apps/web/src/pages/component-form-overview.vue'
+                            ? count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                              !source.includes("from '../app/workbench/WorkbenchPage.vue'") ||
+                              count(source, /<UiScrollArea\b/gu) !== 1
+                            : sourcePath === 'apps/web/src/pages/component-form-basics.vue'
+                              ? count(source, /<FormBasicControls\b/gu) !== 1 ||
                                 !source.includes(
-                                  "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                  "from '../app/workbench/forms/FormBasicControls.vue'",
                                 )
-                              : count(source, /<WorkbenchPage\b/gu) !== 1 ||
-                                !source.includes("from '../app/workbench/WorkbenchPage.vue'")) ||
-            count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
+                              : sourcePath.includes('/component-form-') &&
+                                  sourcePath !== 'apps/web/src/pages/component-form-builder.vue'
+                                ? count(source, /<FormCapabilityWorkbench\b/gu) !== 1 ||
+                                  !source.includes(
+                                    "from '../app/workbench/forms/FormCapabilityWorkbench.vue'",
+                                  )
+                                : tablePageComponent !== undefined
+                                  ? count(source, new RegExp(`<${tablePageComponent}\\b`, 'gu')) !==
+                                      1 ||
+                                    !source.includes(
+                                      `from '../app/workbench/tables/${tablePageComponent}.vue'`,
+                                    )
+                                  : sourcePath === 'apps/web/src/pages/component-table.vue' ||
+                                      /\/component-(?:table-(?:theme|columns|remote|configuration|summary)|combination-(?:query|modal|drawer|page))\.vue$/u.test(
+                                        sourcePath,
+                                      )
+                                    ? count(source, /<TableExampleWorkbench\b/gu) !== 1 ||
+                                      !source.includes(
+                                        "from '../app/workbench/tables/TableExampleWorkbench.vue'",
+                                      )
+                                    : count(source, /<WorkbenchPage\b/gu) !== 1 ||
+                                      !source.includes(
+                                        "from '../app/workbench/WorkbenchPage.vue'",
+                                      )) || count(source, /<(?:h1|UiPageHeader)\b/gu) !== 0))
     const errorPageInvalid =
       !productPage &&
       (count(source, /<main\b/gu) !== 1 ||
@@ -5617,7 +5765,7 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_02_PRODUCT_FAMILIES',
       passed:
-        productRoutes.length === 69 &&
+        productRoutes.length === 76 &&
         snapshot.registrySource.includes(
           "routeTransitionFamilyId: 'route-family.architecture-workspace'",
         ),
@@ -5955,9 +6103,9 @@ function routeTransitionSourceProofResults(
     Object.freeze({
       id: 'ROUTE_TRANSITION_SOURCE_36_ADMITTED_DYNAMIC_ROOTS',
       passed:
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
-        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 89') &&
+        snapshot.checkBundleSource.includes('const expectedDynamicRootCount = 96') &&
         !/\bimport\s*\(/u.test(
           [
             snapshot.boundarySource,
@@ -6090,7 +6238,7 @@ function routeTransitionSourceProofResults(
         !/requestAnimationFrame|requestIdleCallback|setTimeout|setInterval/u.test(
           presentationCommitBrokerSource + snapshot.coordinatorSource,
         ) &&
-        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 76') &&
+        snapshot.checkBundleSource.includes('const expectedLazyRouteCount = 83') &&
         snapshot.checkBundleSource.includes('const expectedMotionFeatureDynamicRootCount = 1') &&
         !/ssgoi|route-transition/u.test(snapshot.manifestSource),
     }),
@@ -8023,6 +8171,7 @@ async function validateRouteTransitionDividerGovernance(): Promise<readonly stri
 
 // Owner-confirmed order is a production direction contract, not declaration-order precedence.
 const workspaceAxisRouteNames = [
+  'workbench-welcome',
   'workbench-dashboard',
   'workbench-colors',
   'workbench-sizes',
@@ -8055,6 +8204,9 @@ const workspaceAxisRouteNames = [
   'component-chart-live-stream',
   'component-chart-live-ranking',
   'component-chart-live-distribution',
+  'component-chart-linked',
+  'component-chart-tour',
+  'component-chart-stage',
   'component-form-overview',
   'component-form-basics',
   'component-form-detail',
@@ -8062,6 +8214,7 @@ const workspaceAxisRouteNames = [
   'component-form-dependencies',
   'component-form-calculations',
   'component-form-structure',
+  'component-form-steps',
   'component-form-validation',
   'component-form-extension',
   'component-form-controls',
@@ -8078,6 +8231,8 @@ const workspaceAxisRouteNames = [
   'component-table-columns',
   'component-table-sorting',
   'component-table-selection',
+  'component-table-tree',
+  'component-table-query-link',
   'component-table-rendering',
   'component-table-summary',
   'component-table-virtual',

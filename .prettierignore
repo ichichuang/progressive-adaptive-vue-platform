@@ -4,3 +4,5 @@ dist/
 ARCHITECTURE.md
 pnpm-lock.yaml
 apps/web/src/route-map.d.ts
+# Nested accidental checkout; not the active parent worktree.
+progressive-adaptive-vue-platform/

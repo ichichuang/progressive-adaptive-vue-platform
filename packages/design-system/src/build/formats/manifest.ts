@@ -52,12 +52,12 @@ const manifestGovernanceContract = {
   compressionProfileId: 'node-zlib-gzip-sync',
   records: {
     baselineCount: 181,
-    expectedCountDelta: 476,
+    expectedCountDelta: 572,
     expectedCounts: {
-      tokens: 401,
-      activePublicRoles: 106,
-      unoCssMappings: 106,
-      namedContrasts: 34,
+      tokens: 437,
+      activePublicRoles: 124,
+      unoCssMappings: 124,
+      namedContrasts: 58,
       alphaContracts: 1,
       densities: 3,
       themes: 5,
@@ -248,9 +248,9 @@ function validateActiveThemeManifest(document: ManifestDocument): void {
       uiPalette: theme['uiPalette'],
     })
     const logicalRecords = deriveThemeBankRecords(definition.planes, activePublicRoles)
-    if (logicalRecords.length !== 120) {
+    if (logicalRecords.length !== 192) {
       throw new Error(
-        `${description}: the compact Theme must derive exactly 120 logical Bank records.`,
+        `${description}: the compact Theme must derive exactly 192 logical Bank records.`,
       )
     }
   }

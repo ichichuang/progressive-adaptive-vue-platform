@@ -42,18 +42,18 @@
       "firstPaint"
     ],
     "recordCounts": {
-      "tokens": 401,
-      "activePublicRoles": 106,
-      "unoCssMappings": 106,
-      "namedContrasts": 34,
+      "tokens": 437,
+      "activePublicRoles": 124,
+      "unoCssMappings": 124,
+      "namedContrasts": 58,
       "alphaContracts": 1,
       "densities": 3,
       "themes": 5,
       "firstPaint": 1
     },
-    "recordCount": 657,
+    "recordCount": 753,
     "baselineRecordCount": 181,
-    "expectedRecordCountDelta": 476,
+    "expectedRecordCountDelta": 572,
     "compressionProfileId": "node-zlib-gzip-sync"
   },
   "tokens": [
@@ -494,6 +494,258 @@
       "cssVariable": "--ui-color-control-warning"
     },
     {
+      "name": "color.data-viz.categorical.series-1",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-1"
+      },
+      "resolvedValue": "oklch(51.5864% 0.194791 297.133434)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-1"
+    },
+    {
+      "name": "color.data-viz.categorical.series-2",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-2"
+      },
+      "resolvedValue": "oklch(57.4796% 0.129251 246.317185)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-2"
+    },
+    {
+      "name": "color.data-viz.categorical.series-3",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-3"
+      },
+      "resolvedValue": "oklch(61.279% 0.165218 352.726768)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-3"
+    },
+    {
+      "name": "color.data-viz.categorical.series-4",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-4"
+      },
+      "resolvedValue": "oklch(61.1093% 0.095405 172.107174)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-4"
+    },
+    {
+      "name": "color.data-viz.categorical.series-5",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-5"
+      },
+      "resolvedValue": "oklch(61.5198% 0.11721 76.745123)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-5"
+    },
+    {
+      "name": "color.data-viz.categorical.series-6",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-6"
+      },
+      "resolvedValue": "oklch(54.1127% 0.135548 271.810693)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-6"
+    },
+    {
+      "name": "color.data-viz.categorical.series-7",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-7"
+      },
+      "resolvedValue": "oklch(56.3434% 0.098777 35.665987)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-7"
+    },
+    {
+      "name": "color.data-viz.categorical.series-8",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.data-viz.categorical.series-8"
+      },
+      "resolvedValue": "oklch(57.7667% 0.033352 270.781681)",
+      "cssVariable": "--ui-color-data-viz-categorical-series-8"
+    },
+    {
+      "name": "color.expression.accent-a.foreground",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-a.foreground"
+      },
+      "resolvedValue": "oklch(52.4644% 0.116664 246.078871)",
+      "cssVariable": "--ui-color-expression-accent-a-foreground"
+    },
+    {
+      "name": "color.expression.accent-a.soft.background",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-a.soft.background"
+      },
+      "resolvedValue": "oklch(95.3849% 0.011768 239.907303)",
+      "cssVariable": "--ui-color-expression-accent-a-soft-background"
+    },
+    {
+      "name": "color.expression.accent-a.soft.foreground",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-a.soft.foreground"
+      },
+      "resolvedValue": "oklch(52.4644% 0.116664 246.078871)",
+      "cssVariable": "--ui-color-expression-accent-a-soft-foreground"
+    },
+    {
+      "name": "color.expression.accent-a.solid.background",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-a.solid.background"
+      },
+      "resolvedValue": "oklch(55.7927% 0.12479 246.055294)",
+      "cssVariable": "--ui-color-expression-accent-a-solid-background"
+    },
+    {
+      "name": "color.expression.accent-a.solid.foreground",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-a.solid.foreground"
+      },
+      "resolvedValue": "oklch(99.0855% 0.005939 223.454185)",
+      "cssVariable": "--ui-color-expression-accent-a-solid-foreground"
+    },
+    {
+      "name": "color.expression.accent-b.foreground",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-b.foreground"
+      },
+      "resolvedValue": "oklch(54.5825% 0.144966 352.731588)",
+      "cssVariable": "--ui-color-expression-accent-b-foreground"
+    },
+    {
+      "name": "color.expression.accent-b.soft.background",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-b.soft.background"
+      },
+      "resolvedValue": "oklch(95.6126% 0.013523 347.946654)",
+      "cssVariable": "--ui-color-expression-accent-b-soft-background"
+    },
+    {
+      "name": "color.expression.accent-b.soft.foreground",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-b.soft.foreground"
+      },
+      "resolvedValue": "oklch(54.5825% 0.144966 352.731588)",
+      "cssVariable": "--ui-color-expression-accent-b-soft-foreground"
+    },
+    {
+      "name": "color.expression.accent-b.solid.background",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-b.solid.background"
+      },
+      "resolvedValue": "oklch(57.6627% 0.155493 352.514111)",
+      "cssVariable": "--ui-color-expression-accent-b-solid-background"
+    },
+    {
+      "name": "color.expression.accent-b.solid.foreground",
+      "type": "color",
+      "tier": "semantic",
+      "visibility": "public",
+      "source": "semantic/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.expression.accent-b.solid.foreground"
+      },
+      "resolvedValue": "oklch(99.0339% 0.008411 325.640166)",
+      "cssVariable": "--ui-color-expression-accent-b-solid-foreground"
+    },
+    {
       "name": "color.focus.ring",
       "type": "color",
       "tier": "semantic",
@@ -728,6 +980,240 @@
         "name": "color.palette.blue.600"
       },
       "resolvedValue": "oklch(54% 0.15 250)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-1",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-1"
+      },
+      "resolvedValue": "oklch(51.5864% 0.194791 297.133434)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-2",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-2"
+      },
+      "resolvedValue": "oklch(57.4796% 0.129251 246.317185)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-3",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-3"
+      },
+      "resolvedValue": "oklch(61.279% 0.165218 352.726768)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-4",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-4"
+      },
+      "resolvedValue": "oklch(61.1093% 0.095405 172.107174)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-5",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-5"
+      },
+      "resolvedValue": "oklch(61.5198% 0.11721 76.745123)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-6",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-6"
+      },
+      "resolvedValue": "oklch(54.1127% 0.135548 271.810693)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-7",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-7"
+      },
+      "resolvedValue": "oklch(56.3434% 0.098777 35.665987)"
+    },
+    {
+      "name": "color.palette.data-viz.categorical.series-8",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.data-viz.categorical.series-8"
+      },
+      "resolvedValue": "oklch(57.7667% 0.033352 270.781681)"
+    },
+    {
+      "name": "color.palette.expression.accent-a.foreground",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-a.foreground"
+      },
+      "resolvedValue": "oklch(52.4644% 0.116664 246.078871)"
+    },
+    {
+      "name": "color.palette.expression.accent-a.soft.background",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-a.soft.background"
+      },
+      "resolvedValue": "oklch(95.3849% 0.011768 239.907303)"
+    },
+    {
+      "name": "color.palette.expression.accent-a.soft.foreground",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-a.soft.foreground"
+      },
+      "resolvedValue": "oklch(52.4644% 0.116664 246.078871)"
+    },
+    {
+      "name": "color.palette.expression.accent-a.solid.background",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-a.solid.background"
+      },
+      "resolvedValue": "oklch(55.7927% 0.12479 246.055294)"
+    },
+    {
+      "name": "color.palette.expression.accent-a.solid.foreground",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-a.solid.foreground"
+      },
+      "resolvedValue": "oklch(99.0855% 0.005939 223.454185)"
+    },
+    {
+      "name": "color.palette.expression.accent-b.foreground",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-b.foreground"
+      },
+      "resolvedValue": "oklch(54.5825% 0.144966 352.731588)"
+    },
+    {
+      "name": "color.palette.expression.accent-b.soft.background",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-b.soft.background"
+      },
+      "resolvedValue": "oklch(95.6126% 0.013523 347.946654)"
+    },
+    {
+      "name": "color.palette.expression.accent-b.soft.foreground",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-b.soft.foreground"
+      },
+      "resolvedValue": "oklch(54.5825% 0.144966 352.731588)"
+    },
+    {
+      "name": "color.palette.expression.accent-b.solid.background",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-b.solid.background"
+      },
+      "resolvedValue": "oklch(57.6627% 0.155493 352.514111)"
+    },
+    {
+      "name": "color.palette.expression.accent-b.solid.foreground",
+      "type": "color",
+      "tier": "primitive",
+      "visibility": "build-only",
+      "source": "primitive/color.tokens.json",
+      "conditions": {},
+      "role": {
+        "category": "color",
+        "name": "color.palette.expression.accent-b.solid.foreground"
+      },
+      "resolvedValue": "oklch(99.0339% 0.008411 325.640166)"
     },
     {
       "name": "color.palette.neutral.0",
@@ -5631,6 +6117,330 @@
       }
     },
     {
+      "id": "color.data-viz.categorical.series-1",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-1",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-1",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-1",
+        "classes": ["bg-data-viz-categorical-series-1"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-2",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-2",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-2",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-2",
+        "classes": ["bg-data-viz-categorical-series-2"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-3",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-3",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-3",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-3",
+        "classes": ["bg-data-viz-categorical-series-3"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-4",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-4",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-4",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-4",
+        "classes": ["bg-data-viz-categorical-series-4"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-5",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-5",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-5",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-5",
+        "classes": ["bg-data-viz-categorical-series-5"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-6",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-6",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-6",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-6",
+        "classes": ["bg-data-viz-categorical-series-6"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-7",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-7",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-7",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-7",
+        "classes": ["bg-data-viz-categorical-series-7"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.data-viz.categorical.series-8",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-data-viz-categorical-series-8",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.data-viz.categorical.series-8",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "data-viz-categorical-series-8",
+        "classes": ["bg-data-viz-categorical-series-8"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-a.foreground",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-a-foreground",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-a.foreground",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-a-foreground",
+        "classes": ["text-expression-accent-a-foreground"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-a.soft.background",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-a-soft-background",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-a.soft.background",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-a-soft-background",
+        "classes": ["bg-expression-accent-a-soft-background"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-a.soft.foreground",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-a-soft-foreground",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-a.soft.foreground",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-a-soft-foreground",
+        "classes": ["text-expression-accent-a-soft-foreground"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-a.solid.background",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-a-solid-background",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-a.solid.background",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-a-solid-background",
+        "classes": ["bg-expression-accent-a-solid-background"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-a.solid.foreground",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-a-solid-foreground",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-a.solid.foreground",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-a-solid-foreground",
+        "classes": ["text-expression-accent-a-solid-foreground"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-b.foreground",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-b-foreground",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-b.foreground",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-b-foreground",
+        "classes": ["text-expression-accent-b-foreground"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-b.soft.background",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-b-soft-background",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-b.soft.background",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-b-soft-background",
+        "classes": ["bg-expression-accent-b-soft-background"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-b.soft.foreground",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-b-soft-foreground",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-b.soft.foreground",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-b-soft-foreground",
+        "classes": ["text-expression-accent-b-soft-foreground"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-b.solid.background",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-b-solid-background",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-b.solid.background",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-b-solid-background",
+        "classes": ["bg-expression-accent-b-solid-background"],
+        "allowedCssProperties": ["background-color"]
+      }
+    },
+    {
+      "id": "color.expression.accent-b.solid.foreground",
+      "tokenType": "color",
+      "category": "color",
+      "visibility": "public",
+      "admissionPhase": 1,
+      "cssVariable": "--ui-color-expression-accent-b-solid-foreground",
+      "themePlaneApplicability": "target-required-after-atomic-cutover",
+      "contrastEndpointId": "color.expression.accent-b.solid.foreground",
+      "alphaContractId": null,
+      "unocss": {
+        "generatorKind": "exact-rule",
+        "family": "color",
+        "key": "expression-accent-b-solid-foreground",
+        "classes": ["text-expression-accent-b-solid-foreground"],
+        "allowedCssProperties": ["color"]
+      }
+    },
+    {
       "id": "color.focus.ring",
       "tokenType": "color",
       "category": "color",
@@ -7584,6 +8394,168 @@
       "allowedCssProperties": ["border-color"]
     },
     {
+      "roleId": "color.data-viz.categorical.series-1",
+      "cssVariable": "--ui-color-data-viz-categorical-series-1",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-1",
+      "classes": ["bg-data-viz-categorical-series-1"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-2",
+      "cssVariable": "--ui-color-data-viz-categorical-series-2",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-2",
+      "classes": ["bg-data-viz-categorical-series-2"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-3",
+      "cssVariable": "--ui-color-data-viz-categorical-series-3",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-3",
+      "classes": ["bg-data-viz-categorical-series-3"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-4",
+      "cssVariable": "--ui-color-data-viz-categorical-series-4",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-4",
+      "classes": ["bg-data-viz-categorical-series-4"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-5",
+      "cssVariable": "--ui-color-data-viz-categorical-series-5",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-5",
+      "classes": ["bg-data-viz-categorical-series-5"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-6",
+      "cssVariable": "--ui-color-data-viz-categorical-series-6",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-6",
+      "classes": ["bg-data-viz-categorical-series-6"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-7",
+      "cssVariable": "--ui-color-data-viz-categorical-series-7",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-7",
+      "classes": ["bg-data-viz-categorical-series-7"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.data-viz.categorical.series-8",
+      "cssVariable": "--ui-color-data-viz-categorical-series-8",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "data-viz-categorical-series-8",
+      "classes": ["bg-data-viz-categorical-series-8"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.expression.accent-a.foreground",
+      "cssVariable": "--ui-color-expression-accent-a-foreground",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-a-foreground",
+      "classes": ["text-expression-accent-a-foreground"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.expression.accent-a.soft.background",
+      "cssVariable": "--ui-color-expression-accent-a-soft-background",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-a-soft-background",
+      "classes": ["bg-expression-accent-a-soft-background"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.expression.accent-a.soft.foreground",
+      "cssVariable": "--ui-color-expression-accent-a-soft-foreground",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-a-soft-foreground",
+      "classes": ["text-expression-accent-a-soft-foreground"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.expression.accent-a.solid.background",
+      "cssVariable": "--ui-color-expression-accent-a-solid-background",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-a-solid-background",
+      "classes": ["bg-expression-accent-a-solid-background"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.expression.accent-a.solid.foreground",
+      "cssVariable": "--ui-color-expression-accent-a-solid-foreground",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-a-solid-foreground",
+      "classes": ["text-expression-accent-a-solid-foreground"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.expression.accent-b.foreground",
+      "cssVariable": "--ui-color-expression-accent-b-foreground",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-b-foreground",
+      "classes": ["text-expression-accent-b-foreground"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.expression.accent-b.soft.background",
+      "cssVariable": "--ui-color-expression-accent-b-soft-background",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-b-soft-background",
+      "classes": ["bg-expression-accent-b-soft-background"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.expression.accent-b.soft.foreground",
+      "cssVariable": "--ui-color-expression-accent-b-soft-foreground",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-b-soft-foreground",
+      "classes": ["text-expression-accent-b-soft-foreground"],
+      "allowedCssProperties": ["color"]
+    },
+    {
+      "roleId": "color.expression.accent-b.solid.background",
+      "cssVariable": "--ui-color-expression-accent-b-solid-background",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-b-solid-background",
+      "classes": ["bg-expression-accent-b-solid-background"],
+      "allowedCssProperties": ["background-color"]
+    },
+    {
+      "roleId": "color.expression.accent-b.solid.foreground",
+      "cssVariable": "--ui-color-expression-accent-b-solid-foreground",
+      "generatorKind": "exact-rule",
+      "family": "color",
+      "key": "expression-accent-b-solid-foreground",
+      "classes": ["text-expression-accent-b-solid-foreground"],
+      "allowedCssProperties": ["color"]
+    },
+    {
       "roleId": "color.focus.ring",
       "cssVariable": "--ui-color-focus-ring",
       "generatorKind": "exact-rule",
@@ -8583,6 +9555,366 @@
   ],
   "namedContrasts": [
     {
+      "id": "accent-a-on-page",
+      "foregroundRole": "color.expression.accent-a.foreground",
+      "backgroundRole": "color.surface.page",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.807,
+        "standard": 5.029
+      }
+    },
+    {
+      "id": "accent-a-on-panel",
+      "foregroundRole": "color.expression.accent-a.foreground",
+      "backgroundRole": "color.surface.panel",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.975,
+        "standard": 5.169
+      }
+    },
+    {
+      "id": "accent-a-soft",
+      "foregroundRole": "color.expression.accent-a.soft.foreground",
+      "backgroundRole": "color.expression.accent-a.soft.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.048,
+        "standard": 4.54
+      }
+    },
+    {
+      "id": "accent-a-solid",
+      "foregroundRole": "color.expression.accent-a.solid.foreground",
+      "backgroundRole": "color.expression.accent-a.solid.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.104,
+        "standard": 4.543
+      }
+    },
+    {
+      "id": "accent-b-on-page",
+      "foregroundRole": "color.expression.accent-b.foreground",
+      "backgroundRole": "color.surface.page",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.829,
+        "standard": 5.036
+      }
+    },
+    {
+      "id": "accent-b-on-panel",
+      "foregroundRole": "color.expression.accent-b.foreground",
+      "backgroundRole": "color.surface.panel",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.997,
+        "standard": 5.144
+      }
+    },
+    {
+      "id": "accent-b-soft",
+      "foregroundRole": "color.expression.accent-b.soft.foreground",
+      "backgroundRole": "color.expression.accent-b.soft.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.062,
+        "standard": 4.536
+      }
+    },
+    {
+      "id": "accent-b-solid",
+      "foregroundRole": "color.expression.accent-b.solid.foreground",
+      "backgroundRole": "color.expression.accent-b.solid.background",
+      "kind": "normal-text",
+      "standardMinimum": 4.5,
+      "enhancedMinimum": 7,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 7.049,
+        "standard": 4.583
+      }
+    },
+    {
+      "id": "series-1-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-1",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 5.181,
+        "standard": 5.181
+      }
+    },
+    {
+      "id": "series-1-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-1",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 5.292,
+        "standard": 5.292
+      }
+    },
+    {
+      "id": "series-2-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-2",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.888,
+        "standard": 3.888
+      }
+    },
+    {
+      "id": "series-2-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-2",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.996,
+        "standard": 3.996
+      }
+    },
+    {
+      "id": "series-3-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-3",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.489,
+        "standard": 3.489
+      }
+    },
+    {
+      "id": "series-3-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-3",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.564,
+        "standard": 3.564
+      }
+    },
+    {
+      "id": "series-4-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-4",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.402,
+        "standard": 3.402
+      }
+    },
+    {
+      "id": "series-4-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-4",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.506,
+        "standard": 3.506
+      }
+    },
+    {
+      "id": "series-5-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-5",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.545,
+        "standard": 3.545
+      }
+    },
+    {
+      "id": "series-5-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-5",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.644,
+        "standard": 3.644
+      }
+    },
+    {
+      "id": "series-6-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-6",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.423,
+        "standard": 3.423
+      }
+    },
+    {
+      "id": "series-6-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-6",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.509,
+        "standard": 3.509
+      }
+    },
+    {
+      "id": "series-7-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-7",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.768,
+        "standard": 3.768
+      }
+    },
+    {
+      "id": "series-7-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-7",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 3.855,
+        "standard": 3.855
+      }
+    },
+    {
+      "id": "series-8-on-page",
+      "foregroundRole": "color.data-viz.categorical.series-8",
+      "backgroundRole": "color.surface.page",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 4.022,
+        "standard": 4.022
+      }
+    },
+    {
+      "id": "series-8-on-panel",
+      "foregroundRole": "color.data-viz.categorical.series-8",
+      "backgroundRole": "color.surface.panel",
+      "kind": "non-text",
+      "standardMinimum": 3,
+      "enhancedMinimum": 3,
+      "maximumUsefulRatio": null,
+      "enhancedDifferenceRequired": false,
+      "staticMaterialProjections": [],
+      "minimumRatios": {
+        "enhanced": 4.122,
+        "standard": 4.122
+      }
+    },
+    {
       "id": "text-primary-on-page",
       "foregroundRole": "color.text.primary",
       "backgroundRole": "color.surface.page",
@@ -9127,6 +10459,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -9159,6 +10509,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -9193,6 +10561,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -9225,6 +10611,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -9258,6 +10662,42 @@
       "uiPalette": {
         "light": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#236FA9",
+                "soft": {
+                  "background": "#E9F1F7",
+                  "foreground": "#236FA9"
+                },
+                "solid": {
+                  "background": "#2679B8",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#AD4678",
+                "soft": {
+                  "background": "#F8EDF2",
+                  "foreground": "#AD4678"
+                },
+                "solid": {
+                  "background": "#BB4B82",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#7743C7",
+                "series2": "#287EC0",
+                "series3": "#CB528D",
+                "series4": "#3A967D",
+                "series5": "#AC7A21",
+                "series6": "#5467BD",
+                "series7": "#A75F4C",
+                "series8": "#72798E"
+              }
+            },
             "surfaces": {
               "canvas": "#F8F8FF",
               "surface": "#FCFCFC",
@@ -9486,6 +10926,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#1A517B",
+                "soft": {
+                  "background": "#E9F1F7",
+                  "foreground": "#1A517B"
+                },
+                "solid": {
+                  "background": "#1C5988",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#7E3357",
+                "soft": {
+                  "background": "#F8EDF2",
+                  "foreground": "#7E3357"
+                },
+                "solid": {
+                  "background": "#8C3961",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#7743C7",
+                "series2": "#287EC0",
+                "series3": "#CB528D",
+                "series4": "#3A967D",
+                "series5": "#AC7A21",
+                "series6": "#5467BD",
+                "series7": "#A75F4C",
+                "series8": "#72798E"
+              }
+            },
             "surfaces": {
               "canvas": "#F8F8FF",
               "surface": "#FCFCFC",
@@ -9716,6 +11192,42 @@
         },
         "dark": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#4D94CB",
+                "soft": {
+                  "background": "#1C2A41",
+                  "foreground": "#5297CD"
+                },
+                "solid": {
+                  "background": "#2679B8",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#D36C9E",
+                "soft": {
+                  "background": "#362339",
+                  "foreground": "#D470A1"
+                },
+                "solid": {
+                  "background": "#BB4B82",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#B59AFF",
+                "series2": "#68BCEE",
+                "series3": "#F398CB",
+                "series4": "#69C7AD",
+                "series5": "#DDBB62",
+                "series6": "#8EABF1",
+                "series7": "#E6A18A",
+                "series8": "#A6B0C7"
+              }
+            },
             "surfaces": {
               "canvas": "#10101C",
               "surface": "#1A1A29",
@@ -9944,6 +11456,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#89B8DC",
+                "soft": {
+                  "background": "#1C2A41",
+                  "foreground": "#8EBBDD"
+                },
+                "solid": {
+                  "background": "#1C5988",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#E29EBF",
+                "soft": {
+                  "background": "#362339",
+                  "foreground": "#E3A3C2"
+                },
+                "solid": {
+                  "background": "#8C3961",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#B59AFF",
+                "series2": "#68BCEE",
+                "series3": "#F398CB",
+                "series4": "#69C7AD",
+                "series5": "#DDBB62",
+                "series6": "#8EABF1",
+                "series7": "#E6A18A",
+                "series8": "#A6B0C7"
+              }
+            },
             "surfaces": {
               "canvas": "#10101C",
               "surface": "#1A1A29",
@@ -10192,6 +11740,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -10224,6 +11790,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -10258,6 +11842,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -10290,6 +11892,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -10323,6 +11943,42 @@
       "uiPalette": {
         "light": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#137871",
+                "soft": {
+                  "background": "#E6F2F1",
+                  "foreground": "#137871"
+                },
+                "solid": {
+                  "background": "#14827A",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#9D527F",
+                "soft": {
+                  "background": "#F5EEF2",
+                  "foreground": "#9D527F"
+                },
+                "solid": {
+                  "background": "#A95889",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#365FC4",
+                "series2": "#168C83",
+                "series3": "#B45E92",
+                "series4": "#8B6AC7",
+                "series5": "#B47725",
+                "series6": "#507EAF",
+                "series7": "#A05261",
+                "series8": "#667F73"
+              }
+            },
             "surfaces": {
               "canvas": "#F5F9FF",
               "surface": "#FBFCFC",
@@ -10551,6 +12207,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#0E5853",
+                "soft": {
+                  "background": "#E6F2F1",
+                  "foreground": "#0E5853"
+                },
+                "solid": {
+                  "background": "#0F615A",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#733C5D",
+                "soft": {
+                  "background": "#F5EEF2",
+                  "foreground": "#733C5D"
+                },
+                "solid": {
+                  "background": "#7E4266",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#365FC4",
+                "series2": "#168C83",
+                "series3": "#B45E92",
+                "series4": "#8B6AC7",
+                "series5": "#B47725",
+                "series6": "#507EAF",
+                "series7": "#A05261",
+                "series8": "#667F73"
+              }
+            },
             "surfaces": {
               "canvas": "#F5F9FF",
               "surface": "#FBFCFC",
@@ -10781,6 +12473,42 @@
         },
         "dark": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#399D96",
+                "soft": {
+                  "background": "#132E38",
+                  "foreground": "#3FA099"
+                },
+                "solid": {
+                  "background": "#14827A",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#C078A3",
+                "soft": {
+                  "background": "#2C273B",
+                  "foreground": "#C17BA5"
+                },
+                "solid": {
+                  "background": "#A95889",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#7EA9FF",
+                "series2": "#58C7B9",
+                "series3": "#E69FCB",
+                "series4": "#B49CE7",
+                "series5": "#E3B55F",
+                "series6": "#81BFDE",
+                "series7": "#EF786B",
+                "series8": "#A0BAA5"
+              }
+            },
             "surfaces": {
               "canvas": "#0A121C",
               "surface": "#121C2A",
@@ -11009,6 +12737,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#7DBFBA",
+                "soft": {
+                  "background": "#132E38",
+                  "foreground": "#82C2BD"
+                },
+                "solid": {
+                  "background": "#0F615A",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#D5A5C2",
+                "soft": {
+                  "background": "#2C273B",
+                  "foreground": "#D7A9C4"
+                },
+                "solid": {
+                  "background": "#7E4266",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#7EA9FF",
+                "series2": "#58C7B9",
+                "series3": "#E69FCB",
+                "series4": "#B49CE7",
+                "series5": "#E3B55F",
+                "series6": "#81BFDE",
+                "series7": "#EF786B",
+                "series8": "#A0BAA5"
+              }
+            },
             "surfaces": {
               "canvas": "#0A121C",
               "surface": "#121C2A",
@@ -11257,6 +13021,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -11289,6 +13071,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -11323,6 +13123,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -11355,6 +13173,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -11388,6 +13224,42 @@
       "uiPalette": {
         "light": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#257199",
+                "soft": {
+                  "background": "#E8F0F3",
+                  "foreground": "#257199"
+                },
+                "solid": {
+                  "background": "#287AA5",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#8E621E",
+                "soft": {
+                  "background": "#F4F0E8",
+                  "foreground": "#8E621E"
+                },
+                "solid": {
+                  "background": "#986A20",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#08785E",
+                "series2": "#287AA5",
+                "series3": "#B17B25",
+                "series4": "#7D62B5",
+                "series5": "#B7547A",
+                "series6": "#547C47",
+                "series7": "#B45E3C",
+                "series8": "#68666C"
+              }
+            },
             "surfaces": {
               "canvas": "#F4FBF7",
               "surface": "#FBFCFB",
@@ -11616,6 +13488,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#1C5472",
+                "soft": {
+                  "background": "#E8F0F3",
+                  "foreground": "#1C5472"
+                },
+                "solid": {
+                  "background": "#1E5C7C",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#684916",
+                "soft": {
+                  "background": "#F4F0E8",
+                  "foreground": "#684916"
+                },
+                "solid": {
+                  "background": "#735018",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#08785E",
+                "series2": "#287AA5",
+                "series3": "#B17B25",
+                "series4": "#7D62B5",
+                "series5": "#B7547A",
+                "series6": "#547C47",
+                "series7": "#B45E3C",
+                "series8": "#68666C"
+              }
+            },
             "surfaces": {
               "canvas": "#F4FBF7",
               "surface": "#FBFCFB",
@@ -11846,6 +13754,42 @@
         },
         "dark": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#5797B9",
+                "soft": {
+                  "background": "#122E2E",
+                  "foreground": "#5998BA"
+                },
+                "solid": {
+                  "background": "#287AA5",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#B88739",
+                "soft": {
+                  "background": "#282F19",
+                  "foreground": "#BA8B3F"
+                },
+                "solid": {
+                  "background": "#986A20",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#00C397",
+                "series2": "#65B9DF",
+                "series3": "#DDB963",
+                "series4": "#AE99DF",
+                "series5": "#E091B8",
+                "series6": "#A4C38D",
+                "series7": "#E6A07A",
+                "series8": "#A0BEC9"
+              }
+            },
             "surfaces": {
               "canvas": "#07150E",
               "surface": "#0E2017",
@@ -12074,6 +14018,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#8FBAD0",
+                "soft": {
+                  "background": "#122E2E",
+                  "foreground": "#92BCD1"
+                },
+                "solid": {
+                  "background": "#1E5C7C",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#D0B07C",
+                "soft": {
+                  "background": "#282F19",
+                  "foreground": "#D3B584"
+                },
+                "solid": {
+                  "background": "#735018",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#00C397",
+                "series2": "#65B9DF",
+                "series3": "#DDB963",
+                "series4": "#AE99DF",
+                "series5": "#E091B8",
+                "series6": "#A4C38D",
+                "series7": "#E6A07A",
+                "series8": "#A0BEC9"
+              }
+            },
             "surfaces": {
               "canvas": "#07150E",
               "surface": "#0E2017",
@@ -12322,6 +14302,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -12354,6 +14352,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -12388,6 +14404,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -12420,6 +14454,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -12453,6 +14505,42 @@
       "uiPalette": {
         "light": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#B14370",
+                "soft": {
+                  "background": "#F6EBEF",
+                  "foreground": "#B14370"
+                },
+                "solid": {
+                  "background": "#B64573",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#227485",
+                "soft": {
+                  "background": "#E9F0F2",
+                  "foreground": "#227485"
+                },
+                "solid": {
+                  "background": "#257D8F",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#A94B25",
+                "series2": "#B64573",
+                "series3": "#278497",
+                "series4": "#7565BD",
+                "series5": "#9A7F25",
+                "series6": "#527BAA",
+                "series7": "#5C8A64",
+                "series8": "#956C83"
+              }
+            },
             "surfaces": {
               "canvas": "#FFF7F5",
               "surface": "#FCFBFB",
@@ -12681,6 +14769,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#813152",
+                "soft": {
+                  "background": "#F6EBEF",
+                  "foreground": "#813152"
+                },
+                "solid": {
+                  "background": "#90375B",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#195461",
+                "soft": {
+                  "background": "#E9F0F2",
+                  "foreground": "#195461"
+                },
+                "solid": {
+                  "background": "#1C5E6B",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#A94B25",
+                "series2": "#B64573",
+                "series3": "#278497",
+                "series4": "#7565BD",
+                "series5": "#9A7F25",
+                "series6": "#527BAA",
+                "series7": "#5C8A64",
+                "series8": "#956C83"
+              }
+            },
             "surfaces": {
               "canvas": "#FFF7F5",
               "surface": "#FCFBFB",
@@ -12911,6 +15035,42 @@
         },
         "dark": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#C87496",
+                "soft": {
+                  "background": "#3F1E22",
+                  "foreground": "#C97597"
+                },
+                "solid": {
+                  "background": "#B64573",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#4A98A8",
+                "soft": {
+                  "background": "#282827",
+                  "foreground": "#4E9AAA"
+                },
+                "solid": {
+                  "background": "#257D8F",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#FF8A57",
+                "series2": "#ED8BB8",
+                "series3": "#69C7D4",
+                "series4": "#B2A2EA",
+                "series5": "#D4BC70",
+                "series6": "#95B8E1",
+                "series7": "#98C8A0",
+                "series8": "#D0A5C1"
+              }
+            },
             "surfaces": {
               "canvas": "#1B0E0A",
               "surface": "#281712",
@@ -13139,6 +15299,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#DBA2B9",
+                "soft": {
+                  "background": "#3F1E22",
+                  "foreground": "#DCA4BA"
+                },
+                "solid": {
+                  "background": "#90375B",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#86BAC5",
+                "soft": {
+                  "background": "#282827",
+                  "foreground": "#8ABCC7"
+                },
+                "solid": {
+                  "background": "#1C5E6B",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#FF8A57",
+                "series2": "#ED8BB8",
+                "series3": "#69C7D4",
+                "series4": "#B2A2EA",
+                "series5": "#D4BC70",
+                "series6": "#95B8E1",
+                "series7": "#98C8A0",
+                "series8": "#D0A5C1"
+              }
+            },
             "surfaces": {
               "canvas": "#1B0E0A",
               "surface": "#281712",
@@ -13387,6 +15583,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -13419,6 +15633,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -13453,6 +15685,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -13485,6 +15735,24 @@
             "color.action.primary": "{palette.roles.primary.solid.background.default}",
             "color.control.primary": "{palette.roles.primary.foreground.default}",
             "color.border.default": "{palette.borders.control}",
+            "color.data-viz.categorical.series-1": "{palette.data-viz.categorical.series1}",
+            "color.data-viz.categorical.series-2": "{palette.data-viz.categorical.series2}",
+            "color.data-viz.categorical.series-3": "{palette.data-viz.categorical.series3}",
+            "color.data-viz.categorical.series-4": "{palette.data-viz.categorical.series4}",
+            "color.data-viz.categorical.series-5": "{palette.data-viz.categorical.series5}",
+            "color.data-viz.categorical.series-6": "{palette.data-viz.categorical.series6}",
+            "color.data-viz.categorical.series-7": "{palette.data-viz.categorical.series7}",
+            "color.data-viz.categorical.series-8": "{palette.data-viz.categorical.series8}",
+            "color.expression.accent-a.foreground": "{palette.expression.accent-a.foreground}",
+            "color.expression.accent-a.soft.background": "{palette.expression.accent-a.soft.background}",
+            "color.expression.accent-a.soft.foreground": "{palette.expression.accent-a.soft.foreground}",
+            "color.expression.accent-a.solid.background": "{palette.expression.accent-a.solid.background}",
+            "color.expression.accent-a.solid.foreground": "{palette.expression.accent-a.solid.foreground}",
+            "color.expression.accent-b.foreground": "{palette.expression.accent-b.foreground}",
+            "color.expression.accent-b.soft.background": "{palette.expression.accent-b.soft.background}",
+            "color.expression.accent-b.soft.foreground": "{palette.expression.accent-b.soft.foreground}",
+            "color.expression.accent-b.solid.background": "{palette.expression.accent-b.solid.background}",
+            "color.expression.accent-b.solid.foreground": "{palette.expression.accent-b.solid.foreground}",
             "color.focus.ring": "{palette.roles.primary.focus}",
             "color.scrim.viewport": "rgba(0, 0, 0, 0.56)",
             "color.surface.page": "{palette.surfaces.canvas}",
@@ -13518,6 +15786,42 @@
       "uiPalette": {
         "light": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#7356BA",
+                "soft": {
+                  "background": "#F0ECF6",
+                  "foreground": "#7356BA"
+                },
+                "solid": {
+                  "background": "#7356BA",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#12767D",
+                "soft": {
+                  "background": "#E7F1F3",
+                  "foreground": "#12767D"
+                },
+                "solid": {
+                  "background": "#147F88",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#A63C8B",
+                "series2": "#7356BA",
+                "series3": "#168C95",
+                "series4": "#C16B43",
+                "series5": "#506FB3",
+                "series6": "#7D8E38",
+                "series7": "#B74F66",
+                "series8": "#747A91"
+              }
+            },
             "surfaces": {
               "canvas": "#FCF7FC",
               "surface": "#FCFBFC",
@@ -13746,6 +16050,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#56408B",
+                "soft": {
+                  "background": "#F0ECF6",
+                  "foreground": "#56408B"
+                },
+                "solid": {
+                  "background": "#5F479A",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#0D555B",
+                "soft": {
+                  "background": "#E7F1F3",
+                  "foreground": "#0D555B"
+                },
+                "solid": {
+                  "background": "#0F5F65",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#A63C8B",
+                "series2": "#7356BA",
+                "series3": "#168C95",
+                "series4": "#C16B43",
+                "series5": "#506FB3",
+                "series6": "#7D8E38",
+                "series7": "#B74F66",
+                "series8": "#747A91"
+              }
+            },
             "surfaces": {
               "canvas": "#FCF7FC",
               "surface": "#FCFBFC",
@@ -13976,6 +16316,42 @@
         },
         "dark": {
           "standard": {
+            "expression": {
+              "accentA": {
+                "foreground": "#9782CC",
+                "soft": {
+                  "background": "#31213A",
+                  "foreground": "#9883CD"
+                },
+                "solid": {
+                  "background": "#7356BA",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#329AA2",
+                "soft": {
+                  "background": "#222A34",
+                  "foreground": "#3A9EA6"
+                },
+                "solid": {
+                  "background": "#147F88",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#FF7AD8",
+                "series2": "#B29AEF",
+                "series3": "#63C5D0",
+                "series4": "#EAAA80",
+                "series5": "#8EAEEB",
+                "series6": "#BBCA7A",
+                "series7": "#E18DA4",
+                "series8": "#B7ACA3"
+              }
+            },
             "surfaces": {
               "canvas": "#180E17",
               "surface": "#241722",
@@ -14204,6 +16580,42 @@
             }
           },
           "enhanced": {
+            "expression": {
+              "accentA": {
+                "foreground": "#B8A9DC",
+                "soft": {
+                  "background": "#31213A",
+                  "foreground": "#B9ABDD"
+                },
+                "solid": {
+                  "background": "#5F479A",
+                  "foreground": "#F8FDFF"
+                }
+              },
+              "accentB": {
+                "foreground": "#78BCC2",
+                "soft": {
+                  "background": "#222A34",
+                  "foreground": "#80C0C6"
+                },
+                "solid": {
+                  "background": "#0F5F65",
+                  "foreground": "#FFFAFF"
+                }
+              }
+            },
+            "dataViz": {
+              "categorical": {
+                "series1": "#FF7AD8",
+                "series2": "#B29AEF",
+                "series3": "#63C5D0",
+                "series4": "#EAAA80",
+                "series5": "#8EAEEB",
+                "series6": "#BBCA7A",
+                "series7": "#E18DA4",
+                "series8": "#B7ACA3"
+              }
+            },
             "surfaces": {
               "canvas": "#180E17",
               "surface": "#241722",

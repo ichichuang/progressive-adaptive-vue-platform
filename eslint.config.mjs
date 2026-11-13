@@ -59,7 +59,17 @@ function allowDependencies(from, to) {
 
 export default typescriptEslint.config(
   {
-    ignores: ['**/.git/**', '**/node_modules/**', '**/dist/**', 'pnpm-lock.yaml'],
+    // Global ignores must be an ignores-only object in flat config.
+    ignores: [
+      '**/.git/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      'pnpm-lock.yaml',
+      // Nested accidental checkout; not the active parent worktree.
+      'progressive-adaptive-vue-platform/**',
+    ],
+  },
+  {
     linterOptions: {
       reportUnusedDisableDirectives: 'error',
       reportUnusedInlineConfigs: 'error',

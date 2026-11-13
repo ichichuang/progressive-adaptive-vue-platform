@@ -7,17 +7,72 @@ import { settleG2Animations } from '../adapters/g2/pavp-g2-retarget'
 import { animateG2Labels, captureG2Labels } from '../adapters/g2/pavp-g2-label-motion'
 import { createG2TooltipViewport } from '../adapters/g2/pavp-g2-tooltip'
 import type { G2ThemeMetrics } from '../adapters/g2/pavp-g2-theme'
-import type { UiG2ChartOptions } from './g2-chart-contracts'
+import { createChartTour } from './chart-tour-runtime'
+import type {
+  UiChartTourConfig,
+  UiChartTourState,
+  UiG2ChartHandle,
+  UiG2ChartOptions,
+} from './g2-chart-contracts'
 
 defineOptions({ name: 'UiG2Chart' })
-const props = defineProps<{ readonly options: UiG2ChartOptions; readonly label: string }>()
-const emit = defineEmits<{ rendered: []; error: [error: Error] }>()
+const props = defineProps<{
+  readonly options: UiG2ChartOptions
+  readonly label: string
+  readonly tour?: UiChartTourConfig
+}>()
+const emit = defineEmits<{
+  rendered: []
+  error: [error: Error]
+  tourChange: [state: UiChartTourState]
+}>()
 const appearance = inject(pavpNaiveAppearanceKey)
 if (appearance === undefined) throw new Error('UiG2Chart requires UiProvider.')
 const host = ref<HTMLElement | null>(null)
 const container = ref<HTMLElement | null>(null)
+const resizePreview = ref<HTMLCanvasElement | null>(null)
+const resizing = ref(false)
 const metric = ref<HTMLElement | null>(null)
 const tooltipMount = ref<HTMLElement | null>(null)
+const tourRuntime = createChartTour((state) => {
+  emit('tourChange', state)
+})
+let tourConfig: UiChartTourConfig | undefined
+let visibilityObserver: IntersectionObserver | undefined
+let pointerInside = false
+let focusInside = false
+let onscreen = true
+function setPointer(value: boolean): void {
+  pointerInside = value
+  syncInteraction()
+}
+function setFocus(value: boolean): void {
+  focusInside = value
+  syncInteraction()
+}
+function syncInteraction(): void {
+  tourRuntime.suspend('interaction', pointerInside || focusInside)
+}
+function syncVisibility(): void {
+  tourRuntime.suspend('hidden', !active || !onscreen || document.hidden)
+}
+function tourSeriesTooltip(value: unknown): boolean {
+  if (!value || typeof value !== 'object') return false
+  if (
+    'interaction' in value &&
+    value.interaction &&
+    typeof value.interaction === 'object' &&
+    'tooltip' in value.interaction
+  ) {
+    const tooltip = value.interaction.tooltip
+    if (tooltip && typeof tooltip === 'object' && 'series' in tooltip && tooltip.series === false)
+      return false
+  }
+  if ('type' in value && (value.type === 'line' || value.type === 'area')) return true
+  return (
+    'children' in value && Array.isArray(value.children) && value.children.some(tourSeriesTooltip)
+  )
+}
 let tooltipViewport: ReturnType<typeof createG2TooltipViewport> | undefined
 const caption = ref<HTMLElement | null>(null)
 const title = ref<HTMLElement | null>(null)
@@ -26,6 +81,10 @@ let chart: Chart | undefined
 let chartHost: HTMLElement | undefined
 let observer: ResizeObserver | undefined
 let frame: number | undefined
+let resizeFrame: number | undefined
+let previewFrame: number | undefined
+let observedSize: { width: number; height: number } | undefined
+let observedMetrics = ''
 let active = false
 let generation = 0
 let revision = 0
@@ -54,10 +113,61 @@ function readMetrics(): G2ThemeMetrics {
   }
 }
 
+function observeLayout(): void {
+  if (!active || !host.value) return
+  const size = { width: host.value.clientWidth, height: host.value.clientHeight }
+  const metrics = JSON.stringify(readMetrics())
+  const changed = observedSize?.width !== size.width || observedSize.height !== size.height
+  const metricsChanged = observedMetrics !== metrics
+  observedSize = size
+  observedMetrics = metrics
+  if (changed && paintedSize && size.width > 0 && size.height > 0) {
+    // Retain the last painted pixels while layout is moving. Rebuilding the scene on
+    // every ResizeObserver delivery clears the canvas and competes with shell motion.
+    if (!resizing.value && chart && resizePreview.value) {
+      const source = chart.getContext().canvas?.getContextService().getDomElement()
+      if (source instanceof HTMLCanvasElement) {
+        const preview = resizePreview.value
+        preview.width = source.width
+        preview.height = source.height
+        preview.getContext('2d')?.drawImage(source, 0, 0)
+        resizing.value = true
+        chart.emit('tooltip:hide', {})
+      }
+    }
+    if (previewFrame !== undefined) cancelAnimationFrame(previewFrame)
+    previewFrame = undefined
+    if (resizeFrame !== undefined) cancelAnimationFrame(resizeFrame)
+    let stableFrames = 0
+    let previous = size
+    const settle = (): void => {
+      if (!active || !host.value) return
+      const current = { width: host.value.clientWidth, height: host.value.clientHeight }
+      stableFrames =
+        current.width === previous.width && current.height === previous.height
+          ? stableFrames + 1
+          : 0
+      previous = current
+      if (stableFrames < 2) {
+        resizeFrame = requestAnimationFrame(settle)
+        return
+      }
+      resizeFrame = undefined
+      schedule()
+    }
+    resizeFrame = requestAnimationFrame(settle)
+    revision += 1
+    dirty = true
+    busy.value = true
+    tourRuntime.suspend('rendering', true)
+  } else if (metricsChanged || !paintedSize) schedule()
+}
+
 function schedule(): void {
   dirty = true
+  tourRuntime.suspend('rendering', true)
   revision += 1
-  if (!active || frame !== undefined) return
+  if (!active || frame !== undefined || resizeFrame !== undefined) return
   // A native keyframe generator owns its sequence until completion. Drain obsolete
   // frames before starting the latest spec, rather than waiting seconds behind it.
   if (timeline || appearance?.value.motion !== 'full') finishAnimations()
@@ -72,7 +182,14 @@ function isCurrent(currentGeneration: number, currentRevision: number): boolean 
   return active && generation === currentGeneration && revision === currentRevision
 }
 function renderPending(): void {
-  if (dirty && active && frame === undefined && !painting && !timeline) {
+  if (
+    dirty &&
+    active &&
+    frame === undefined &&
+    resizeFrame === undefined &&
+    !painting &&
+    !timeline
+  ) {
     frame = requestAnimationFrame(() => {
       frame = undefined
       void render()
@@ -93,6 +210,21 @@ function hasTimeline(options: unknown): boolean {
   )
 }
 function painted(): void {
+  if (resizing.value && resizeFrame === undefined && !dirty) {
+    // AFTER_PAINT is a scene event; retain the preview through the canvas paint frame.
+    previewFrame = requestAnimationFrame(() => {
+      previewFrame = requestAnimationFrame(() => {
+        previewFrame = undefined
+        if (resizeFrame === undefined && !dirty) {
+          resizing.value = false
+          if (resizePreview.value) {
+            resizePreview.value.width = 0
+            resizePreview.value.height = 0
+          }
+        }
+      })
+    })
+  }
   if (chart && labelFrames && appearance?.value.motion === 'full')
     animateG2Labels(chart.getContext(), labelFrames)
   labelFrames = undefined
@@ -102,7 +234,16 @@ function painted(): void {
 }
 
 async function render(): Promise<void> {
-  if (!active || !host.value || !container.value || !appearance || painting || timeline) return
+  if (
+    !active ||
+    !host.value ||
+    !container.value ||
+    !appearance ||
+    painting ||
+    timeline ||
+    resizeFrame !== undefined
+  )
+    return
   let width = host.value.clientWidth
   let height = host.value.clientHeight
   if (width <= 0 || height <= 0) return
@@ -143,6 +284,13 @@ async function render(): Promise<void> {
       height,
       tooltipViewport?.options(metrics.spacing),
       resized,
+      tourConfig
+        ? {
+            runtime: tourRuntime,
+            targets: tourConfig.targets,
+            seriesTooltip: tourSeriesTooltip(props.options),
+          }
+        : undefined,
     )
     sequence = hasTimeline(options)
     timeline = sequence
@@ -158,9 +306,15 @@ async function render(): Promise<void> {
       }
       renderG2(options, chart.getContext(), resolve, reject)
     })
-    if (isCurrent(currentGeneration, currentRevision)) emit('rendered')
+    if (isCurrent(currentGeneration, currentRevision)) {
+      tourRuntime.suspend('rendering', false)
+      emit('rendered')
+    }
   } catch (error: unknown) {
-    if (generation === currentGeneration) painting = false
+    if (generation === currentGeneration) {
+      painting = false
+      resizing.value = false
+    }
     if (isCurrent(currentGeneration, currentRevision))
       emit('error', error instanceof Error ? error : new Error(String(error)))
   } finally {
@@ -175,9 +329,72 @@ async function render(): Promise<void> {
   }
 }
 
+/** Snapshot the ready canvas, rather than restarting animation or exporting stale options. */
+async function exportImage(): Promise<Blob> {
+  if (
+    !active ||
+    !chart ||
+    busy.value ||
+    resizing.value ||
+    dirty ||
+    painting ||
+    timeline ||
+    !appearance
+  )
+    throw new Error('The chart is not ready to export.')
+  const source = chart.getContext().canvas?.getContextService().getDomElement()
+  if (!(source instanceof HTMLCanvasElement) || source.width <= 0 || source.height <= 0)
+    throw new Error('The chart canvas is unavailable.')
+  // Copy synchronously: later data/theme changes cannot mix into this snapshot.
+  const snapshot = document.createElement('canvas')
+  snapshot.width = source.width
+  snapshot.height = source.height
+  const context = snapshot.getContext('2d')
+  if (!context) throw new Error('Image export is unavailable.')
+  context.fillStyle = appearance.value.colorPalette.surfaces.surface
+  context.fillRect(0, 0, snapshot.width, snapshot.height)
+  context.drawImage(source, 0, 0)
+  return await new Promise<Blob>((resolve, reject) => {
+    snapshot.toBlob((blob) => {
+      if (blob) resolve(blob)
+      else reject(new Error('The chart image could not be encoded.'))
+    }, 'image/png')
+  })
+}
+defineExpose<UiG2ChartHandle>({
+  exportImage,
+  playTour: () => {
+    tourRuntime.play()
+  },
+  pauseTour: () => {
+    tourRuntime.pause()
+  },
+  stopTour: () => {
+    tourRuntime.stop()
+  },
+  nextTour: () => {
+    tourRuntime.step(1)
+  },
+  previousTour: () => {
+    tourRuntime.step(-1)
+  },
+})
+
 function start(): void {
   if (active || !host.value || !metric.value || !tooltipMount.value) return
   active = true
+  onscreen = true
+  pointerInside = host.value.matches(':hover')
+  focusInside = host.value.contains(document.activeElement)
+  syncInteraction()
+  syncVisibility()
+  tourRuntime.suspend('motion', appearance?.value.motion !== 'full')
+  document.addEventListener('visibilitychange', syncVisibility)
+  visibilityObserver = new IntersectionObserver((entries) => {
+    onscreen = entries.some((entry) => entry.isIntersecting)
+    syncVisibility()
+  })
+  visibilityObserver.observe(host.value)
   tooltipViewport = createG2TooltipViewport(
     host.value,
     tooltipMount.value,
@@ -186,7 +403,7 @@ function start(): void {
     },
     appearance?.value.motion === 'full',
   )
-  observer = new ResizeObserver(schedule)
+  observer = new ResizeObserver(observeLayout)
   observer.observe(host.value)
   observer.observe(metric.value)
   if (caption.value) observer.observe(caption.value)
@@ -195,11 +412,23 @@ function start(): void {
 }
 function stop(): void {
   active = false
+  tourRuntime.suspend('hidden', true)
+  tourRuntime.suspend('rendering', true)
+  visibilityObserver?.disconnect()
+  visibilityObserver = undefined
+  document.removeEventListener('visibilitychange', syncVisibility)
   generation += 1
   observer?.disconnect()
   observer = undefined
   if (frame !== undefined) cancelAnimationFrame(frame)
   frame = undefined
+  if (resizeFrame !== undefined) cancelAnimationFrame(resizeFrame)
+  if (previewFrame !== undefined) cancelAnimationFrame(previewFrame)
+  resizeFrame = undefined
+  previewFrame = undefined
+  observedSize = undefined
+  observedMetrics = ''
+  resizing.value = false
   chart?.destroy()
   tooltipViewport?.destroy()
   tooltipViewport = undefined
@@ -212,6 +441,22 @@ function stop(): void {
   paintedSize = undefined
   busy.value = false
 }
+watch(
+  () => props.tour,
+  (value) => {
+    try {
+      tourRuntime.configure(value)
+      tourConfig = value
+      schedule()
+    } catch (error: unknown) {
+      tourRuntime.configure(undefined)
+      tourConfig = undefined
+      schedule()
+      emit('error', error instanceof Error ? error : new Error(String(error)))
+    }
+  },
+  { deep: true, immediate: true },
+)
 watch(() => props.options, schedule, { deep: true, flush: 'post' })
 watch(
   appearance,
@@ -227,7 +472,10 @@ watch(
 onMounted(start)
 onActivated(start)
 onDeactivated(stop)
-onBeforeUnmount(stop)
+onBeforeUnmount(() => {
+  stop()
+  tourRuntime.dispose()
+})
 </script>
 
 <template>
@@ -237,10 +485,22 @@ onBeforeUnmount(stop)
     role="img"
     :aria-label="label"
     :aria-busy="busy"
+    @pointerenter="setPointer(true)"
+    @pointerleave="setPointer(false)"
+    @pointerdown="tourRuntime.pause()"
+    @focusin="setFocus(true)"
+    @focusout="setFocus(host?.contains($event.relatedTarget as Node | null) ?? false)"
   >
     <div
+      v-show="!resizing"
       ref="container"
       class="inset-0 absolute"
+      aria-hidden="true"
+    />
+    <canvas
+      v-show="resizing"
+      ref="resizePreview"
+      class="h-full w-full inset-0 absolute"
       aria-hidden="true"
     />
     <Teleport to="#pavp-overlay-root">

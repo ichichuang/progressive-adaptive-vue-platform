@@ -1,3 +1,10 @@
+import { computed } from 'vue'
+import {
+  linkedSamples,
+  linkedChartOptions,
+  linkedChartEvents,
+  linkedChannelOf,
+} from '../../apps/web/src/app/workbench/charts/chart-linked-example'
 import assert from 'node:assert/strict'
 import { ESLint } from 'eslint'
 import {
@@ -26,7 +33,10 @@ import {
   projectG2Theme,
   type G2ThemeMetrics,
 } from '../../packages/ui/src/adapters/g2/pavp-g2-theme'
-import type { UiG2ChartOptions } from '../../packages/ui/src/components/g2-chart-contracts'
+import type {
+  UiG2ChartOptions,
+  UiChartTourState,
+} from '../../packages/ui/src/components/g2-chart-contracts'
 
 const resolution = resolveThemeReference({
   reference: ProductPreferenceDefault.theme,
@@ -513,7 +523,15 @@ for (const themeId of builtInThemeIds) {
       assert.equal(colorAt(reversed, 1), colorAt(scale, 0))
       const category = inferColor(state, {}, [['A', 'B', 'C']])
       assert.equal(category['type'], 'ordinal')
-      assert.deepEqual(category['range'], projectG2Theme(state, metrics).category10)
+      assert.deepEqual(category['range'], Object.values(state.colorPalette.dataViz.categorical))
+      assert.equal(projectG2Theme(state, metrics).category10.length, 8)
+      assert.deepEqual(
+        projectG2Theme(state, metrics).category20,
+        projectG2Theme(state, metrics).category10,
+      )
+      const stable = inferColor(state, { domain: ['A', 'B', 'C'] }, [['C', 'A']])
+      assert.deepEqual(stable['domain'], ['A', 'B', 'C'])
+      assert.deepEqual(stable['range'], category['range'])
     }
   }
 }
@@ -1077,6 +1095,184 @@ for (const [file, property, rejected] of [
   )
 }
 
+// Linked examples use the same time window and category identity across three views.
+const linkedRows = linkedSamples(0, (...args) => args[0])
+assert.equal(linkedRows.length, 216)
+assert.deepEqual(
+  linkedRows,
+  linkedSamples(0, (...args) => args[0]),
+)
+assert.notDeepEqual(
+  linkedRows,
+  linkedSamples(1, (...args) => args[0]),
+)
+assert.equal(linkedChannelOf({ data: { data: { channel: 'web' } } }), 'web')
+assert.equal(linkedChannelOf({ data: { data: [{ channel: 'api' }] } }), 'api')
+assert.equal(linkedChannelOf({ data: { data: { channel: 'unknown' } } }), null)
+const linkedListeners = new Map<string, (event: unknown) => void>()
+let linkedSelected: string | null = null
+const linkedBridge = linkedChartEvents(
+  (channel) => {
+    linkedSelected = channel
+  },
+  () => undefined,
+  computed(() => null),
+  () => ({ duration: 0, easing: 'linear' }),
+)
+const linkedCleanup = linkedBridge()(
+  { container: { querySelectorAll: () => [] }, view: { markState: new Map() } },
+  [],
+  {
+    on: (name, listener) => linkedListeners.set(name, listener),
+    off: (name) => linkedListeners.delete(name),
+  },
+)
+linkedListeners.get('element:click')?.({ data: { data: { channel: 'mobile' } } })
+assert.equal(linkedSelected, 'mobile')
+linkedCleanup()
+assert.equal(linkedListeners.size, 0)
+const linkedSpecs = linkedChartOptions(linkedRows, [48, 71], ['a', 'b', 'c'], linkedBridge, false)
+const linkedTrend = record(linkedSpecs.trend)['data'] as { value: number }[]
+const linkedRank = record(linkedSpecs.ranking)['data'] as { value: number }[]
+const linkedShare = record(linkedSpecs.composition)['data'] as { value: number }[]
+assert.equal(linkedTrend.length, 72)
+assert.equal(
+  linkedTrend.reduce((sum, row) => sum + row.value, 0),
+  7530,
+)
+assert.equal(
+  linkedRank.reduce((sum, row) => sum + row.value, 0),
+  7530,
+)
+assert.equal(
+  linkedShare.reduce((sum, row) => sum + row.value, 0),
+  7530,
+)
+
+const innerDefaults = projectG2Options(
+  { type: 'interval', labels: [{ text: 'value', position: 'inside' }] },
+  appearance,
+  metrics,
+  600,
+  320,
+)
+assert.deepEqual(record((record(innerDefaults)['labels'] as unknown[])[0])['transform'], [
+  { type: 'contrastReverse' },
+])
+const innerExplicit = projectG2Options(
+  { type: 'interval', labels: [{ text: 'value', position: 'inside', style: { fill: '#123456' } }] },
+  appearance,
+  metrics,
+  600,
+  320,
+)
+assert.equal(record((record(innerExplicit)['labels'] as unknown[])[0])['transform'], undefined)
+
+const innerThemed = projectG2Options(
+  {
+    type: 'interval',
+    theme: { innerLabel: { fill: '#123456' } },
+    labels: [{ text: 'value', position: 'inside' }],
+  },
+  appearance,
+  metrics,
+  600,
+  320,
+)
+assert.equal(record((record(innerThemed)['labels'] as unknown[])[0])['transform'], undefined)
+
 console.log(
   'G2: bounded live simulation, rolling windows, stable ranking identities, histogram totals/P95, native options, 20 theme/color states, color overrides, tooltip portals/inheritance and positioning ownership, tooltip/guide motion and pagination, sizes, immutability, timeline/facet and pointer range policies passed.',
 )
+
+// Tour lifecycle uses a fake clock: no browser timers or vendor instance escape.
+{
+  const { createChartTour } = await import('../../packages/ui/src/components/chart-tour-runtime')
+  let callback: (() => void) | undefined
+  let current: UiChartTourState = {
+    status: 'stopped',
+    targetId: null,
+    reason: null,
+  }
+  const tour = createChartTour(
+    (state) => {
+      current = state
+    },
+    {
+      set: (next) => {
+        callback = next
+        return 1
+      },
+      clear: () => {
+        callback = undefined
+      },
+    },
+  )
+  function tick(): void {
+    const run = callback
+    callback = undefined
+    run?.()
+  }
+  const targets = ['a', 'b', 'c'].map((id) => ({ id, field: 'key', value: id }))
+  tour.configure({ targets, autoplay: true, intervalMs: 4000 })
+  tour.available(['a', 'b', 'c'])
+  assert.equal(current.status, 'waiting')
+  tour.suspend('rendering', false)
+  assert.equal(current.status, 'playing')
+  assert.equal(current.targetId, 'a')
+  tick()
+  assert.equal(current.targetId, 'b')
+  tour.suspend('interaction', true)
+  assert.equal(callback, undefined)
+  assert.equal(tour.target(), null)
+  tour.suspend('interaction', false)
+  assert.equal(tour.target()?.id, 'b')
+  tour.pause()
+  tour.suspend('hidden', true)
+  tour.suspend('hidden', false)
+  assert.equal(current.status, 'paused')
+  assert.equal(callback, undefined)
+  tour.configure({ targets: [...targets].reverse(), autoplay: true })
+  assert.equal(current.targetId, 'b')
+  tour.available(['a', 'c'])
+  assert.equal(current.targetId, 'a')
+  tour.stop()
+  assert.equal(current.targetId, null)
+  tour.step(-1)
+  assert.equal(current.targetId, 'a')
+  tour.play()
+  tour.suspend('motion', true)
+  assert.equal(current.reason, 'motion')
+  assert.equal(callback, undefined)
+  tour.suspend('motion', false)
+  tour.available([])
+  assert.equal(current.reason, 'empty')
+  assert.equal(callback, undefined)
+  tour.available(['a'])
+  assert.equal(current.status, 'playing')
+  assert.equal(callback, undefined)
+  tour.stop()
+  tour.configure({ targets, loop: false })
+  tour.available(['a', 'b', 'c'])
+  tour.play()
+  tick()
+  tick()
+  tick()
+  assert.equal(current.targetId, 'c')
+  assert.equal(current.status, 'paused')
+  assert.equal(callback, undefined)
+  assert.throws(() => {
+    tour.configure({ targets, intervalMs: 0 })
+  }, /intervalMs/u)
+  assert.throws(() => {
+    tour.configure({
+      targets: [
+        { id: 'a', field: 'key', value: 'a' },
+        { id: 'a', field: 'key', value: 'a' },
+      ],
+    })
+  }, /unique IDs/u)
+  tour.play()
+  tour.dispose()
+  assert.equal(callback, undefined)
+}

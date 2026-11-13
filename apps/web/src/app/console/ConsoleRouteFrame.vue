@@ -8,6 +8,7 @@ import {
   type UiScrollController,
   type UiShellComposition,
 } from '@platform/ui'
+import ThemeQuickPicker from './ThemeQuickPicker.vue'
 import { NButton } from 'naive-ui/es/button'
 import { NIcon } from 'naive-ui/es/icon'
 import { NTooltip } from 'naive-ui/es/tooltip'
@@ -129,6 +130,8 @@ const copy = computed(() => ({
   switchToLightLabel: t('shell.switchToLight'),
   switchToDarkLabel: t('shell.switchToDark'),
   colorModeChangeFailedLabel: t('shell.colorModeChangeFailed'),
+  themePickerLabel: t('shell.themePickerLabel'),
+  themePickerKeyboardHint: t('shell.themePickerKeyboardHint'),
 }))
 const router = useRouter()
 const applicationNavigation = useApplicationNavigation()
@@ -215,9 +218,7 @@ const workspaceTabs = computed(() =>
       id: entry.identity,
       label,
       closeLabel: `${t('shell.closeActionLabel')} ${label}`,
-      closable: !(
-        workspace.entries.length === 1 && entry.destination.name === 'workbench-dashboard'
-      ),
+      closable: !(workspace.entries.length === 1 && entry.destination.name === 'workbench-welcome'),
       refreshable: workspace.canDiscard(entry),
     }
   }),
@@ -301,7 +302,7 @@ async function closeWorkspace(id: string): Promise<void> {
   const index = entries.findIndex((entry) => entry.identity === id)
   const entry = entries[index]
   if (entry === undefined || closing.has(entry.identity)) return
-  if (entries.length === 1 && entry.destination.name === 'workbench-dashboard') return
+  if (entries.length === 1 && entry.destination.name === 'workbench-welcome') return
   if (!workspace.canDiscard(entry) || refreshTarget === entry.identity) return
   const wasActive = entry.identity === workspace.activeIdentity
   const startingRoute = router.currentRoute.value
@@ -325,7 +326,7 @@ async function closeWorkspace(id: string): Promise<void> {
     if (!isLiveWorkspace(entry)) return
     const fallback = entries[index + 1] ?? entries[index - 1]
     const destination =
-      fallback?.destination ?? registeredRouteDestination({ name: 'workbench-dashboard' })
+      fallback?.destination ?? registeredRouteDestination({ name: 'workbench-welcome' })
     const closingActivation =
       fallback === undefined
         ? null
@@ -468,13 +469,13 @@ watch(
 )
 
 async function navigateHome(): Promise<void> {
-  if (props.activeRouteName === 'workbench-dashboard') {
+  if (props.activeRouteName === 'workbench-welcome') {
     navigationFocusRequest.value += 1
     return
   }
   const fromSettings = props.activeRouteName === 'control-center'
   const result = await applicationNavigation.navigate(
-    registeredRouteDestination({ name: 'workbench-dashboard' }),
+    registeredRouteDestination({ name: 'workbench-welcome' }),
   )
   if (
     result.kind !== 'allow' ||
@@ -543,6 +544,9 @@ async function navigate(routeName: string): Promise<void> {
     @update:wide-navigation-collapsed="navigationPreference.setWideNavigationCollapsed"
     @update:expanded-navigation-group-ids="updateExpandedNavigationGroups"
   >
+    <template #theme-picker>
+      <ThemeQuickPicker />
+    </template>
     <template #workspace>
       <UiWorkspaceTabs
         v-if="activeRouteName !== 'control-center'"

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { UiDateTimeContext } from '../date-time/date-time'
 import { computed, inject, onActivated, onDeactivated, ref, useId, watch } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NCard } from 'naive-ui/es/card'
@@ -15,6 +16,7 @@ import UiScrollArea from './UiScrollArea.vue'
 /** The form session owns draft, mutation and close guards in every presentation. */
 defineOptions({ name: 'UiTableEditor', inheritAttrs: false })
 const props = defineProps<{
+  readonly dateTime?: UiDateTimeContext
   readonly session: ReturnType<typeof useUiTableForm>
   readonly copy: UiTableEditorCopy
   readonly contained?: boolean
@@ -106,6 +108,7 @@ function updateShow(show: boolean): void {
         <UiTableEditorBody
           :inert="!session.open.value"
           :session="session"
+          v-bind="dateTime === undefined ? {} : { dateTime }"
           :status="status"
         >
           <template
@@ -176,6 +179,7 @@ function updateShow(show: boolean): void {
         <UiTableEditorBody
           :inert="!session.open.value"
           :session="session"
+          v-bind="dateTime === undefined ? {} : { dateTime }"
           :status="status"
         >
           <template
@@ -244,6 +248,7 @@ function updateShow(show: boolean): void {
     >
       <UiTableEditorBody
         :session="session"
+        v-bind="dateTime === undefined ? {} : { dateTime }"
         :status="status"
       >
         <template

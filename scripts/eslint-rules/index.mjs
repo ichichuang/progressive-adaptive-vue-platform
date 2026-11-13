@@ -2276,6 +2276,19 @@ const noUnapprovedVisualLiterals = {
           return
         }
 
+        // Display-stage contain geometry owns only measured descendant dimensions.
+        // No color, spacing, transform or public token writes are admitted here.
+        if (
+          filename === 'packages/ui/src/components/UiDisplayStage.vue' &&
+          (propertyName === 'width' || propertyName === 'height') &&
+          node.right.type === 'TemplateLiteral' &&
+          node.right.expressions.length === 1 &&
+          node.right.quasis.length === 2 &&
+          node.right.quasis[0].value.raw === '' &&
+          node.right.quasis[1].value.raw === 'px'
+        )
+          return
+
         // Native G2 HTML tooltip placement is measured against the live viewport.
         // Admit only positional writes in this vendor owner, never color/size authority.
         if (

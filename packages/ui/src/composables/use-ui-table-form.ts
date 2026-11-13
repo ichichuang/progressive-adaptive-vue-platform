@@ -16,7 +16,7 @@ import type {
 } from '../components/table-contracts'
 import { useUiForm } from './use-ui-form'
 import { resolveUiTableRequest } from '../components/table-request'
-import { cloneDraft, freezeDraftValue } from './form-draft-values'
+import { cloneDraft, freezeDraftValue, getFormValue } from './form-draft-values'
 
 export interface UiTableFormInput {
   readonly table: UiTableController
@@ -40,6 +40,7 @@ export function useUiTableForm(input: UiTableFormInput) {
   const loading = shallowRef(false)
   const error = shallowRef<Error | null>(null)
   const open = shallowRef(false)
+  const inlineFields = shallowRef<readonly string[]>([])
   let active: AbortController | undefined
   let sequence = 0
   let disposed = false
@@ -77,6 +78,7 @@ export function useUiTableForm(input: UiTableFormInput) {
     ++sequence
     active?.abort()
     open.value = false
+    inlineFields.value = []
     loading.value = false
     if (editor.presentation === 'page') release()
     return true
@@ -132,8 +134,10 @@ export function useUiTableForm(input: UiTableFormInput) {
           [...names].some((name) => !editor.form.fields.some((field) => field.name === name)))
       )
         throw new TypeError('Inline fields must be unique existing top-level form fields.')
+      const { steps, ...scopedForm } = editor.form
+      void steps
       const schema = names
-        ? { ...editor.form, fields: editor.form.fields.filter((field) => names.has(field.name)) }
+        ? { ...scopedForm, fields: editor.form.fields.filter((field) => names.has(field.name)) }
         : editor.form
       const baseline = fieldsOnly(
         editor.form.fields.filter((field) => !names?.has(field.name)),
@@ -193,6 +197,37 @@ export function useUiTableForm(input: UiTableFormInput) {
     } finally {
       if (ticket === sequence) loading.value = false
     }
+  }
+  async function showInline(record: UiTableReadonlyRecord, field?: string): Promise<boolean> {
+    const inline = editor.inline
+    if (!inline) throw new TypeError('Inline editor configuration is required.')
+    if (open.value || disposed) return false
+    const fields = field === undefined ? inline.fields : [field]
+    if (fields.some((name) => !inline.fields.includes(name)))
+      throw new TypeError('The field is not configured for inline editing.')
+    const opened = await show('edit', record, { fields })
+    if (opened) inlineFields.value = fields
+    return opened
+  }
+  function isInlineEditing(record: UiTableReadonlyRecord, field: string): boolean {
+    return (
+      open.value &&
+      inlineFields.value.includes(field) &&
+      row.value !== null &&
+      getFormValue(record, input.table.schema.rowKey) ===
+        getFormValue(row.value, input.table.schema.rowKey)
+    )
+  }
+  async function saveInline() {
+    if (!inlineFields.value.length || !form.value) return undefined
+    const session = form.value
+    const result = await session.submit()
+    if (result === 'invalid') {
+      const first = session.issues.value.find((issue) => issue.field !== null)
+      if (first?.field) session.focusField(first.field)
+    }
+    if (!open.value) release()
+    return result
   }
   async function remove(
     row: UiTableReadonlyRecord,
@@ -256,6 +291,10 @@ export function useUiTableForm(input: UiTableFormInput) {
     loading: computed(() => loading.value),
     error: computed(() => error.value),
     presentation: editor.presentation ?? 'modal',
+    inlineFields: computed(() => inlineFields.value),
+    showInline,
+    isInlineEditing,
+    saveInline,
     show,
     remove,
     close,

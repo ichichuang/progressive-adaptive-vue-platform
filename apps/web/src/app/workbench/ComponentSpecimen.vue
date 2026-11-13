@@ -75,7 +75,7 @@ onDeactivated(() => {
 <template>
   <NCard
     :bordered="false"
-    class="min-w-0"
+    class="wb-specimen-card min-w-0"
     :data-span="span"
     :content-class="
       span === 'full'
@@ -83,10 +83,10 @@ onDeactivated(() => {
         : 'grid min-w-0 gap-content-gap layout-regular:grid-cols-3 layout-wide:grid-cols-3'
     "
   >
-    <div class="flex flex-col min-w-0 items-start gap-content-gap">
-      <div class="flex flex-wrap items-center justify-between gap-content-gap">
+    <div class="wb-specimen-meta flex flex-col min-w-0 items-start gap-content-gap">
+      <div class="flex flex-wrap w-full items-center justify-between gap-content-gap">
         <h3 class="font-title-weight m-0 min-w-0 break-anywhere text-subheading text-text-primary">
-          {{ name }}
+          {{ purpose ? t(purpose) : name }}
         </h3>
         <NTag
           :bordered="false"
@@ -98,9 +98,9 @@ onDeactivated(() => {
       </div>
       <p
         v-if="purpose"
-        class="m-0 text-body text-text-secondary"
+        class="m-0 text-caption text-text-secondary"
       >
-        {{ t(purpose) }}
+        {{ name }}
       </p>
       <div class="flex flex-wrap items-center gap-component-unit">
         <UiCopyAction
@@ -116,7 +116,7 @@ onDeactivated(() => {
       </div>
     </div>
     <div
-      class="grid min-w-0 content-start gap-content-gap"
+      class="wb-specimen-body grid min-w-0 content-start gap-content-gap"
       :class="{ 'layout-regular:col-span-2 layout-wide:col-span-2': span !== 'full' }"
     >
       <div

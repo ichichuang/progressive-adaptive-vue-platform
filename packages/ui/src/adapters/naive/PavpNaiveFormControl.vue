@@ -1,4 +1,7 @@
 <script setup lang="ts" generic="I">
+import { NSlider } from 'naive-ui/es/slider'
+import { NRate } from 'naive-ui/es/rate'
+import PavpNaiveFormAttachment from './PavpNaiveFormAttachment.vue'
 import { NInput } from 'naive-ui/es/input'
 import { NInputNumber } from 'naive-ui/es/input-number'
 import { NSelect, type SelectInst, type SelectProps } from 'naive-ui/es/select'
@@ -46,6 +49,26 @@ const {
   updateDateText,
   blurNumber,
 } = useFormControl(props)
+function updateRatingKey(event: KeyboardEvent): void {
+  const field = config.value
+  if (field.kind !== 'rating' || props.binding.disabled || props.binding.readonly) return
+  const step = field.allowHalf ? 0.5 : 1
+  const current = numberValue.value ?? 0
+  const maximum = field.count ?? 5
+  const next =
+    event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? maximum
+        : event.key === 'ArrowRight' || event.key === 'ArrowUp'
+          ? current + step
+          : event.key === 'ArrowLeft' || event.key === 'ArrowDown'
+            ? current - step
+            : null
+  if (next === null) return
+  event.preventDefault()
+  update(Math.max(0, Math.min(maximum, next)))
+}
 const pagingCopy = computed(() => {
   if (props.binding.optionQuery === null) return null
   const { previousOptionsPage, nextOptionsPage, optionsPage } = props.form.copy
@@ -237,9 +260,9 @@ function chooseDate(value: string | null): void {
       }}
     </div>
     <NInput
-      v-else-if="config.kind === 'text' || config.kind === 'textarea'"
-      :type="config.kind"
-      :value="textValue"
+      v-else-if="config.kind === 'text' || config.kind === 'textarea' || config.kind === 'mask'"
+      :type="config.kind === 'textarea' ? 'textarea' : 'text'"
+      :value="config.kind === 'mask' ? dateText : textValue"
       :placeholder="placeholder"
       :readonly="binding.readonly"
       :disabled="binding.disabled"
@@ -247,6 +270,37 @@ function chooseDate(value: string | null): void {
       v-bind="validationProps"
       @update:value="update"
       @blur="binding.blur()"
+    />
+    <NSlider
+      v-else-if="config.kind === 'slider'"
+      :value="numberValue ?? config.min"
+      :min="config.min"
+      :max="config.max"
+      :step="config.step ?? 1"
+      :disabled="binding.disabled"
+      @update:value="update"
+      @focusout="binding.blur()"
+    />
+    <NRate
+      v-else-if="config.kind === 'rating'"
+      role="slider"
+      :tabindex="binding.disabled ? -1 : 0"
+      :aria-valuemin="0"
+      :aria-valuemax="config.count ?? 5"
+      :aria-valuenow="numberValue ?? 0"
+      :value="numberValue ?? 0"
+      :count="config.count ?? 5"
+      :allow-half="config.allowHalf ?? false"
+      :disabled="binding.disabled"
+      @keydown="updateRatingKey"
+      @update:value="update"
+      @focusout="binding.blur()"
+    />
+    <PavpNaiveFormAttachment
+      v-else-if="config.kind === 'attachment'"
+      :form="form"
+      :binding="binding"
+      :config="config"
     />
     <NInputNumber
       v-else-if="config.kind === 'number'"

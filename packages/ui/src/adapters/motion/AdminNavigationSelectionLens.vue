@@ -8,6 +8,7 @@ import {
   onBeforeUnmount,
   onMounted,
   watch,
+  type FunctionalComponent,
   type HTMLAttributes,
   type VNodeChild,
   type VNodeProps,
@@ -28,6 +29,7 @@ defineOptions({ name: 'AdminNavigationSelectionLens' })
 
 const props = defineProps<{
   readonly isOwner: (option: MenuOption) => boolean
+  readonly collapsed: boolean
   readonly motion: EffectiveAppearanceState['motion']
   readonly renderBaseIcon: (option: MenuOption) => VNodeChild
 }>()
@@ -35,6 +37,7 @@ const props = defineProps<{
 defineSlots<{
   default: (props: {
     readonly featureReady: boolean
+    readonly renderExpandedIcon: (option: MenuOption) => VNodeChild
     readonly renderIcon: (option: MenuOption) => VNodeChild
   }) => unknown
 }>()
@@ -74,11 +77,23 @@ function renderSelectionLens(): VNodeChild {
   })
 }
 
-function renderIcon(option: MenuOption): VNodeChild {
-  return h(Fragment, null, [
-    policy.value.movement && props.isOwner(option) ? renderSelectionLens() : null,
+// Isolate selection reads from Naive Menu's parent render effect.
+const SelectionIcon: FunctionalComponent<{ option: MenuOption; expanded: boolean }> = ({
+  option,
+  expanded,
+}) =>
+  h(Fragment, null, [
+    (!expanded || !props.collapsed) && policy.value.movement && props.isOwner(option)
+      ? renderSelectionLens()
+      : null,
     props.renderBaseIcon(option),
   ])
+
+function renderIcon(option: MenuOption): VNodeChild {
+  return h(SelectionIcon, { option, expanded: false })
+}
+function renderExpandedIcon(option: MenuOption): VNodeChild {
+  return h(SelectionIcon, { option, expanded: true })
 }
 
 onMounted(() => {
@@ -104,6 +119,7 @@ onBeforeUnmount(() => {
         <slot
           :feature-ready="featureReady"
           :render-icon="renderIcon"
+          :render-expanded-icon="renderExpandedIcon"
         />
       </LayoutGroup>
     </MotionConfig>

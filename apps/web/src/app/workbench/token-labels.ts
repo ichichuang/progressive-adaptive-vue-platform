@@ -2,6 +2,42 @@ import type { TokenName } from '@platform/design-system'
 import type { ConsoleMessageKey } from '../../shared/i18n'
 
 export const tokenLabelKeys = {
+  'color.expression.accent-a.foreground':
+    'workbench.token.color.expression.accent-a.foreground.label',
+  'color.expression.accent-a.soft.background':
+    'workbench.token.color.expression.accent-a.soft.background.label',
+  'color.expression.accent-a.soft.foreground':
+    'workbench.token.color.expression.accent-a.soft.foreground.label',
+  'color.expression.accent-a.solid.background':
+    'workbench.token.color.expression.accent-a.solid.background.label',
+  'color.expression.accent-a.solid.foreground':
+    'workbench.token.color.expression.accent-a.solid.foreground.label',
+  'color.expression.accent-b.foreground':
+    'workbench.token.color.expression.accent-b.foreground.label',
+  'color.expression.accent-b.soft.background':
+    'workbench.token.color.expression.accent-b.soft.background.label',
+  'color.expression.accent-b.soft.foreground':
+    'workbench.token.color.expression.accent-b.soft.foreground.label',
+  'color.expression.accent-b.solid.background':
+    'workbench.token.color.expression.accent-b.solid.background.label',
+  'color.expression.accent-b.solid.foreground':
+    'workbench.token.color.expression.accent-b.solid.foreground.label',
+  'color.data-viz.categorical.series-1':
+    'workbench.token.color.data-viz.categorical.series-1.label',
+  'color.data-viz.categorical.series-2':
+    'workbench.token.color.data-viz.categorical.series-2.label',
+  'color.data-viz.categorical.series-3':
+    'workbench.token.color.data-viz.categorical.series-3.label',
+  'color.data-viz.categorical.series-4':
+    'workbench.token.color.data-viz.categorical.series-4.label',
+  'color.data-viz.categorical.series-5':
+    'workbench.token.color.data-viz.categorical.series-5.label',
+  'color.data-viz.categorical.series-6':
+    'workbench.token.color.data-viz.categorical.series-6.label',
+  'color.data-viz.categorical.series-7':
+    'workbench.token.color.data-viz.categorical.series-7.label',
+  'color.data-viz.categorical.series-8':
+    'workbench.token.color.data-viz.categorical.series-8.label',
   'color.action.primary': 'workbench.token.color.action.primary.label',
   'color.border.default': 'workbench.token.color.border.default.label',
   'color.control.error': 'workbench.token.color.control.error.label',

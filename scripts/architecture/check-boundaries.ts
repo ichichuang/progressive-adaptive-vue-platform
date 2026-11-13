@@ -1,3 +1,4 @@
+import { formatUiDateTime } from '../../packages/ui/src/date-time/date-time'
 import { readFile, readdir } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { getEventListeners } from 'node:events'
@@ -51,7 +52,12 @@ type JsonObject = Record<string, unknown>
 const rootDirectory = process.cwd()
 const sourceExtensions = new Set(['.ts', '.vue'])
 const importSourceExtensions = new Set(['.cjs', '.js', '.mjs', '.ts', '.vue'])
-const excludedDirectoryNames = new Set(['.git', 'node_modules'])
+const excludedDirectoryNames = new Set([
+  '.git',
+  'node_modules',
+  // Nested accidental checkout; not the active parent worktree.
+  'progressive-adaptive-vue-platform',
+])
 const generatedOutputDirectories = new Set([resolve(rootDirectory, 'apps/web/dist')])
 const rootTypeScriptConfigurationSuffix = '.config.ts'
 // Current implementation admission, not a permanent judgment of library suitability.
@@ -182,7 +188,12 @@ async function validateManifestDependencies(): Promise<string[]> {
       }
     }
 
-    for (const dependency of [...adminNavigationMotionPackages, 'overlayscrollbars', 'lenis']) {
+    for (const dependency of [
+      ...adminNavigationMotionPackages,
+      'overlayscrollbars',
+      'lenis',
+      'gridstack',
+    ]) {
       const declarations = dependencyEntries(manifest).filter(([name]) => name === dependency)
       const dependencies = manifest['dependencies']
       const admittedVersion = isJsonObject(dependencies) ? dependencies[dependency] : undefined
@@ -529,11 +540,22 @@ function inspectImport(
 
     if (
       !normalizedDisplayPath.startsWith(adminNavigationMotionPrivateDirectory) &&
-      normalizedDisplayPath !== 'apps/web/src/app/workbench/MotionGallery.vue'
+      normalizedDisplayPath !== 'apps/web/src/app/workbench/MotionGallery.vue' &&
+      normalizedDisplayPath !== 'apps/web/src/app/workbench/WelcomeCapabilityStage.vue' &&
+      normalizedDisplayPath !== 'apps/web/src/app/workbench/WelcomeExperience.vue'
     ) {
       violations.push(
         `${displayPath}: "motion-v" may only be imported by its private adapter or exact showcase owner.`,
       )
+    }
+  }
+
+  if (/^gridstack(?:\/|$)/u.test(specifier)) {
+    if (
+      normalizedDisplayPath !== 'packages/ui/src/adapters/dashboard/grid-runtime.ts' ||
+      !['gridstack', 'gridstack/dist/gridstack.min.css'].includes(specifier)
+    ) {
+      violations.push(`${displayPath}: GridStack belongs to the private dashboard adapter only.`)
     }
   }
 
@@ -1392,7 +1414,7 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
   const fromWeb = createRequire(resolve(rootDirectory, 'apps/web/package.json'))
   const vue = fromWeb('vue') as typeof VueRuntime
   const compiler = fromWeb('vue/compiler-sfc') as typeof VueSfc
-  const source = await readFile(resolve(rootDirectory, 'apps/web/src/pages/index.vue'), 'utf8')
+  const source = await readFile(resolve(rootDirectory, 'apps/web/src/pages/dashboard.vue'), 'utf8')
   const { descriptor } = compiler.parse(source)
   const component = compiler.compileScript(descriptor, {
     id: 'dashboard-request-probe',
@@ -1405,7 +1427,7 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
   const wrapper = vue.defineComponent({
     inheritAttrs: false,
     setup(_props, { slots, attrs }) {
-      return () => vue.h('div', attrs, slots['default']?.())
+      return () => vue.h('div', attrs, [slots['actions']?.(), slots['default']?.()])
     },
   })
   const button = vue.defineComponent({
@@ -1414,13 +1436,37 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
       return () => vue.h('button', attrs, slots['default']?.())
     },
   })
+  const radioGroup = vue.defineComponent({
+    inheritAttrs: false,
+    emits: ['update:value'],
+    setup(_props, { emit }) {
+      return () =>
+        vue.h(
+          'button',
+          {
+            onClick: () => {
+              emit('update:value', 'overview')
+            },
+          },
+          'open-dashboard-overview',
+        )
+    },
+  })
   const mocks: Readonly<Record<string, unknown>> = {
     vue,
-    '@platform/ui': { UiScrollArea: wrapper, UiStatusBadge: wrapper },
+    '@platform/ui': {
+      UiScrollArea: wrapper,
+      UiStatusBadge: wrapper,
+      formatUiDateTime,
+      useUiDateTime: () =>
+        vue.computed(() => ({ locale: 'zh-CN', timeZone: 'Asia/Shanghai', hourCycle: 'h23' })),
+    },
     'naive-ui/es/button': { NButton: button },
     'naive-ui/es/card': { NCard: wrapper },
     '@platform/design-system': { builtInAppearanceThemePreviews: [] },
-    '../shared/i18n': { useConsoleI18n: () => ({ t: (key: string) => key }) },
+    '../shared/i18n': {
+      useConsoleI18n: () => ({ t: (key: string) => key, locale: vue.ref('zh-CN') }),
+    },
     '../shared/api': {
       createApiClient: (input: ApiCore.ApiClientInput) =>
         createApiClient({
@@ -1453,6 +1499,9 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
     },
     '../app/router/route-input': { registeredRouteDestination: (value: unknown) => value },
     '../app/workbench/WorkbenchPage.vue': wrapper,
+    '../app/workbench/dashboard/DashboardComposer.vue': wrapper,
+    '../app/router/router-scroll-controller': { routerScrollControllerKey: Symbol('test-scroll') },
+    'naive-ui/es/radio': { NRadioGroup: radioGroup, NRadioButton: wrapper },
   }
   const module = { exports: {} as { default?: VueRuntime.Component } }
   runInNewContext(compiled, {
@@ -1513,6 +1562,10 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
       element.parent?.children[element.parent.children.indexOf(element) + 1] ?? null,
     patchProp: (element, key, _previous, value) => {
       element.props[key] = value
+      if (key === 'textContent') {
+        element.text = String(value ?? '')
+        element.children.length = 0
+      }
     },
   })
   const root = node('root')
@@ -1524,6 +1577,13 @@ async function validateDashboardWorldTime(worldTime: UapiWorldTime): Promise<boo
   const text = (element: ProbeNode): string => element.text + element.children.map(text).join('')
   try {
     app.mount(root)
+    const overviewButton = children(root).find(
+      (element) => text(element) === 'open-dashboard-overview' && element.tag === 'button',
+    )
+    const openOverview = overviewButton?.props['onClick'] as (() => void) | undefined
+    if (typeof openOverview !== 'function') return false
+    openOverview()
+    await vue.nextTick()
     const requestButton = children(root).find(
       (element) => element.tag === 'button' && text(element).includes('workbench.request'),
     )

@@ -284,7 +284,7 @@ onScopeDispose(() => {
       :data-panel="panel"
     >
       <section
-        class="rounded-panel flex flex-col col-span-2 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
+        class="wb-table-stage rounded-panel flex flex-col col-span-2 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
         :aria-label="t('apiShowcase.request')"
         :class="panel === 'result' ? 'layout-narrow:hidden' : ''"
       >
@@ -403,7 +403,7 @@ onScopeDispose(() => {
         </UiScrollArea>
       </section>
       <section
-        class="rounded-panel flex flex-col col-span-3 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
+        class="wb-table-stage rounded-panel flex flex-col col-span-3 min-h-0 min-w-0 overflow-hidden bg-surface-panel layout-narrow:col-span-1"
         :aria-label="t('apiShowcase.result')"
         :class="panel === 'request' ? 'layout-narrow:hidden' : ''"
       >

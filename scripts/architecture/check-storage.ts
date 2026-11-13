@@ -45,6 +45,20 @@ const appearanceDirectory = resolve(rootDirectory, 'apps/web/src/app/appearance'
 
 const expectedStorageRegistryRecords = [
   {
+    id: 'dashboard-layout',
+    ownerDomain: 'apps/web/src/app/dashboard',
+    key: applicationConfig.dashboard.layoutStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'dashboard-layout',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
+  {
     id: 'table-column-preferences',
     ownerDomain: 'apps/web/src/app/tables',
     key: applicationConfig.tables.columnPreferenceStorageKey,
@@ -93,6 +107,21 @@ const expectedStorageRegistryRecords = [
     medium: 'local-storage',
     persistenceShape: 'direct-compatibility',
     schemaId: 'custom-theme-registry-snapshot',
+    currentSchemaVersion: 1,
+    minimumSupportedSchemaVersion: 1,
+    principalPartition: 'none',
+    containsSensitiveData: false,
+    corruptionPolicy: 'preserve-in-place-reject-read',
+    capabilityStatus: 'ACTIVE',
+  },
+
+  {
+    id: 'date-time-preference',
+    ownerDomain: 'apps/web/src/app/date-time',
+    key: applicationConfig.dateTime.preferenceStorageKey,
+    medium: 'local-storage',
+    persistenceShape: 'direct-compatibility',
+    schemaId: 'date-time-preference',
     currentSchemaVersion: 1,
     minimumSupportedSchemaVersion: 1,
     principalPartition: 'none',
@@ -294,6 +323,8 @@ const rawStorageKeyLiterals = [
   'pavp:web:user-preference',
   'pavp:web:custom-theme-registry',
   'pavp:web:locale-preference',
+  'pavp:web:dashboard-layout',
+  'pavp:web:date-time-preference',
   'pavp:web:navigation-preference',
   'pavp:web:workspace-session',
   'pavp:web:shell-scroll',
@@ -424,7 +455,7 @@ function validateStorageRegistryRecords(records: readonly unknown[]): string[] {
 
   if (!isDeepStrictEqual(records, expectedStorageRegistryRecords)) {
     violations.push(
-      'Storage Registry must contain the ten direct-compatibility records and the form-draft envelope.',
+      'Storage Registry must contain the twelve direct-compatibility records and the form-draft envelope.',
     )
   }
 
@@ -509,7 +540,9 @@ function rawStorageKeyFileViolation(displayPath: string, sourceText: string): st
   for (const keyLiteral of rawStorageKeyLiterals) {
     if (
       sourceText.includes(keyLiteral) &&
-      (keyLiteral === 'pavp:web:locale-preference' ||
+      (keyLiteral === 'pavp:web:dashboard-layout' ||
+      keyLiteral === 'pavp:web:date-time-preference' ||
+      keyLiteral === 'pavp:web:locale-preference' ||
       keyLiteral === 'pavp:web:navigation-preference' ||
       keyLiteral === 'pavp:web:workspace-session' ||
       keyLiteral === 'pavp:web:scroll-preference' ||
@@ -654,6 +687,8 @@ function storageOwnerClosureFileViolation(displayPath: string, source: ts.Source
     'apps/web/src/app/appearance/preference-storage.ts',
     'apps/web/src/app/appearance/custom-theme-registry-storage.ts',
     'apps/web/src/app/storage/locale-preference-storage.ts',
+    'apps/web/src/app/storage/dashboard-layout-storage.ts',
+    'apps/web/src/app/storage/date-time-preference-storage.ts',
     'apps/web/src/app/storage/navigation-preference-storage.ts',
     'apps/web/src/app/storage/workspace-session-storage.ts',
     'apps/web/src/app/storage/scroll-preference-storage.ts',
@@ -881,6 +916,8 @@ async function navigationPreferenceViolations(): Promise<string[]> {
       isDeepStrictEqual(Object.keys(applicationConfig).sort(), [
         'appearance',
         'browserPage',
+        'dashboard',
+        'dateTime',
         'forms',
         'localization',
         'navigation',
@@ -1174,14 +1211,16 @@ function focusedNegativeProbes(): string[] {
   )
   if (
     !validateStorageRegistryRecords(mutatedRegistry).includes(
-      'Storage Registry must contain the ten direct-compatibility records and the form-draft envelope.',
+      'Storage Registry must contain the twelve direct-compatibility records and the form-draft envelope.',
     )
   ) {
     failures.push('Negative probe failed: Storage Registry drift was accepted.')
   }
 
-  const mutatedEnvelopeRegistry = storageRegistry.map((record, index) =>
-    index === 2 ? { ...record, persistenceShape: 'persisted-envelope' as const } : record,
+  const mutatedEnvelopeRegistry = storageRegistry.map((record) =>
+    record.id === 'appearance-preference'
+      ? { ...record, persistenceShape: 'persisted-envelope' as const }
+      : record,
   )
   if (
     !validateStorageRegistryRecords(mutatedEnvelopeRegistry).includes(

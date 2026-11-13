@@ -2,6 +2,7 @@
 import { computed, useId } from 'vue'
 import { NButton } from 'naive-ui/es/button'
 import { NInput } from 'naive-ui/es/input'
+import FormBuilderSpecial from './FormBuilderSpecial.vue'
 import FormBuilderNumber from './FormBuilderNumber.vue'
 import { NSelect } from 'naive-ui/es/select'
 import { NDatePicker } from 'naive-ui/es/date-picker'
@@ -42,9 +43,11 @@ function hasLength(
   node: BuilderEditableNode,
 ): node is Extract<
   BuilderEditableNode,
-  { kind: 'text' | 'textarea' | 'multi-select' | 'checkbox-group' }
+  { kind: 'text' | 'textarea' | 'mask' | 'attachment' | 'multi-select' | 'checkbox-group' }
 > {
-  return ['text', 'textarea', 'multi-select', 'checkbox-group'].includes(node.kind)
+  return ['text', 'textarea', 'mask', 'attachment', 'multi-select', 'checkbox-group'].includes(
+    node.kind,
+  )
 }
 const leaf = computed(() => props.node.kind !== 'group' && props.node.kind !== 'repeat')
 const isText = computed(() => props.node.kind === 'text' || props.node.kind === 'textarea')
@@ -215,7 +218,7 @@ function removeDefault(): void {
       />
     </div>
     <div
-      v-if="leaf"
+      v-if="leaf && !['slider', 'rating', 'attachment'].includes(node.kind)"
       class="grid min-w-0 gap-component-unit"
     >
       <span
@@ -243,7 +246,7 @@ function removeDefault(): void {
       />
     </div>
     <section
-      v-if="leaf"
+      v-if="leaf && node.kind !== 'attachment'"
       class="grid min-w-0 gap-component-unit"
       :aria-label="t('formBuilder.defaultValue')"
     >
@@ -254,14 +257,14 @@ function removeDefault(): void {
         {{ t('formBuilder.defaultValue') }}
       </h4>
       <NInput
-        v-if="node.kind === 'text' || node.kind === 'textarea'"
+        v-if="node.kind === 'text' || node.kind === 'textarea' || node.kind === 'mask'"
         :value="node.defaultValue ?? ''"
         :type="node.kind === 'textarea' ? 'textarea' : 'text'"
         :input-props="{ 'aria-labelledby': labelId('defaultValue') }"
         @update:value="defaultValue"
       />
       <FormBuilderNumber
-        v-else-if="node.kind === 'number'"
+        v-else-if="node.kind === 'number' || node.kind === 'slider' || node.kind === 'rating'"
         :value="node.defaultValue ?? null"
         :label="t('formBuilder.defaultValue')"
         :labelled-by="labelId('defaultValue')"
@@ -399,7 +402,7 @@ function removeDefault(): void {
       </p>
     </section>
     <section
-      v-if="node.kind === 'number'"
+      v-if="node.kind === 'number' || node.kind === 'slider'"
       class="wb-builder-property-group grid grid-cols-2 min-w-0 gap-content-gap"
       :aria-label="t('formBuilder.numberBounds')"
     >
@@ -443,6 +446,10 @@ function removeDefault(): void {
         />
       </div>
     </section>
+    <FormBuilderSpecial
+      :node="node"
+      @patch="patch"
+    />
     <section
       v-if="node.kind === 'repeat'"
       class="wb-builder-property-group grid grid-cols-2 min-w-0 gap-content-gap"
@@ -559,7 +566,9 @@ function removeDefault(): void {
             :id="labelId('minLength')"
             v-text="
               t(
-                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                node.kind === 'multi-select' ||
+                  node.kind === 'checkbox-group' ||
+                  node.kind === 'attachment'
                   ? 'formBuilder.minChoices'
                   : 'formBuilder.minLength',
               )
@@ -570,7 +579,9 @@ function removeDefault(): void {
             :labelled-by="labelId('minLength')"
             :label="
               t(
-                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                node.kind === 'multi-select' ||
+                  node.kind === 'checkbox-group' ||
+                  node.kind === 'attachment'
                   ? 'formBuilder.minChoices'
                   : 'formBuilder.minLength',
               )
@@ -584,7 +595,9 @@ function removeDefault(): void {
             :id="labelId('maxLength')"
             v-text="
               t(
-                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                node.kind === 'multi-select' ||
+                  node.kind === 'checkbox-group' ||
+                  node.kind === 'attachment'
                   ? 'formBuilder.maxChoices'
                   : 'formBuilder.maxLength',
               )
@@ -595,7 +608,9 @@ function removeDefault(): void {
             :labelled-by="labelId('maxLength')"
             :label="
               t(
-                node.kind === 'multi-select' || node.kind === 'checkbox-group'
+                node.kind === 'multi-select' ||
+                  node.kind === 'checkbox-group' ||
+                  node.kind === 'attachment'
                   ? 'formBuilder.maxChoices'
                   : 'formBuilder.maxLength',
               )
@@ -605,7 +620,7 @@ function removeDefault(): void {
           />
         </div>
       </template>
-      <template v-if="node.kind === 'number'">
+      <template v-if="node.kind === 'number' || node.kind === 'slider'">
         <div class="grid gap-component-unit">
           <span
             :id="labelId('ruleMin')"
